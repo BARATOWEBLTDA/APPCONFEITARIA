@@ -66,7 +66,7 @@ type KitItem = { nome: string; quantidade: string };
 // Tipos pra novo sistema Produto + Variações + Personalização
 type Variacao = { id: string; nome: string; preco: number; foto?: string };
 type OpcaoPersonalizacao = { id: string; nome: string; adicional: number; foto?: string; tipo_adicional?: "fixo" | "por_kg" | "por_unidade" | "por_quantidade" };
-type OpcaoTamanho = { id: string; nome: string; preco: number; peso_kg?: number | null; foto?: string };
+type OpcaoTamanho = { id: string; nome: string; preco: number; peso_kg?: number | null; serve?: string; foto?: string };
 type DistribuicaoModo = "nenhuma" | "igual" | "livre";
 type GrupoPersonalizacao = {
   ativo: boolean;
@@ -1846,6 +1846,18 @@ function PersonalizacaoStep({
                                 />
                               </div>
                             )}
+                            <div className="pv3-opcao-serve" title="Quantas pessoas serve (opcional)">
+                              <input
+                                type="text"
+                                placeholder="Ex: 8"
+                                value={op.serve || ""}
+                                onChange={e => {
+                                  const valor = e.target.value.slice(0, 12);
+                                  onChange({ grupo_tamanhos: { ...grupoTamanhos, opcoes: grupoTamanhos.opcoes.map(o => o.id === op.id ? { ...o, serve: valor } : o) } } as any);
+                                }}
+                              />
+                              <span className="pv3-opcao-serve-suf">pessoas</span>
+                            </div>
                             <button
                               type="button"
                               className="pv3-opcao-del"
@@ -2498,6 +2510,23 @@ function PersonalizacaoStep({
           padding: 4px 8px;
           flex-shrink: 0;
         }
+        .pv3-opcao-serve {
+          display: inline-flex; align-items: center; gap: 4px;
+          background: #F5F3EF;
+          border: 1.5px solid #E8E5DC;
+          border-radius: 8px;
+          padding: 4px 8px;
+          flex-shrink: 0;
+        }
+        .pv3-opcao-serve:focus-within { border-color: #6B5D64; }
+        .pv3-opcao-serve input {
+          all: unset;
+          width: 38px;
+          font-size: 13px; font-weight: 700;
+          color: #2D1F26;
+          text-align: right;
+        }
+        .pv3-opcao-serve-suf { font-size: 11px; color: #6B7280; white-space: nowrap; font-weight: 600; }
         .pv3-opcao-preco:focus-within { border-color: #E85A8C; }
         .pv3-opcao-preco-prefix { font-size: 11.5px; font-weight: 800; color: #E85A8C; white-space: nowrap; }
         .pv3-opcao-preco input {

@@ -295,16 +295,9 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           : `Escolha ${g.min_selecionavel} a ${g.max_selecionavel}`)
       : 'Opcional'
 
-    // ═══ Modo dropdown (usado pra tamanhos com muitas opções) ═══
+    // ═══ Modo lista vertical limpa (Modelo 2 — pra tamanhos) ═══
     if (useDropdown && tipoEscolha === 'single') {
       const idSel = typeof valorAtual === 'string' ? valorAtual : null
-      const opSel = g.opcoes.find((o: any) => o.id === idSel)
-      let precoLabelSel = ''
-      if (opSel) {
-        if (g.tipo === 'sabor' && saborTemPrecoProprio && opSel.preco > 0) precoLabelSel = formatCurrency(opSel.preco)
-        else if (g.tipo === 'tamanho' && opSel.preco > 0) precoLabelSel = formatCurrency(opSel.preco)
-        else if ((opSel.adicional || 0) > 0) precoLabelSel = `+${formatCurrency(opSel.adicional)}`
-      }
       return (
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
@@ -313,57 +306,53 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
               {hintObrigatoriedade}
             </span>
           </div>
-          {/* Botão principal do dropdown */}
-          <button
-            onClick={() => setShowTamanhoDropdown(v => !v)}
-            style={{
-              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '12px 14px', borderRadius: '10px',
-              border: `2px solid ${opSel ? corBotao : 'var(--border)'}`,
-              background: opSel ? `${corBotao}12` : 'var(--bg-card)',
-              cursor: 'pointer', transition: 'all 0.15s',
-            }}
-          >
-            <span style={{ fontSize: '14px', fontWeight: 600, color: opSel ? corBotao : 'var(--text-muted)', textAlign: 'left' }}>
-              {opSel ? opSel.nome : 'Selecione uma opção'}
-            </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              {precoLabelSel && (
-                <span style={{ fontSize: 13, fontWeight: 700, color: corBotao }}>{precoLabelSel}</span>
-              )}
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-muted)', transform: showTamanhoDropdown ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.15s' }}>
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </div>
-          </button>
-          {/* Lista expandida em grid */}
-          {showTamanhoDropdown && (
-            <div style={{ marginTop: 8, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, padding: 10, background: 'var(--bg-subtle)', borderRadius: 10, maxHeight: 260, overflowY: 'auto' }}>
-              {g.opcoes.map((op: any) => {
-                const ativo = op.id === idSel
-                let precoLabel = ''
-                if (g.tipo === 'sabor' && saborTemPrecoProprio && op.preco > 0) precoLabel = formatCurrency(op.preco)
-                else if (g.tipo === 'tamanho' && op.preco > 0) precoLabel = formatCurrency(op.preco)
-                else if ((op.adicional || 0) > 0) precoLabel = `+${formatCurrency(op.adicional)}`
-                return (
-                  <button
-                    key={op.id}
-                    onClick={() => { toggle(op.id); setShowTamanhoDropdown(false) }}
-                    style={{
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-                      padding: '8px 4px', borderRadius: 8,
-                      border: `1.5px solid ${ativo ? corBotao : 'transparent'}`,
-                      background: ativo ? `${corBotao}15` : '#fff',
-                      cursor: 'pointer', transition: 'all 0.12s',
-                    }}
-                  >
-                    <span style={{ fontSize: 13, fontWeight: 700, color: ativo ? corBotao : 'var(--text-primary)' }}>{op.nome}</span>
-                    {precoLabel && <span style={{ fontSize: 11, fontWeight: 600, color: ativo ? corBotao : 'var(--text-muted)' }}>{precoLabel}</span>}
-                  </button>
-                )
-              })}
-            </div>
-          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {g.opcoes.map((op: any) => {
+              const ativo = op.id === idSel
+              let precoLabel = ''
+              if (g.tipo === 'sabor' && saborTemPrecoProprio && op.preco > 0) precoLabel = formatCurrency(op.preco)
+              else if (g.tipo === 'tamanho' && op.preco > 0) precoLabel = formatCurrency(op.preco)
+              else if ((op.adicional || 0) > 0) precoLabel = `+${formatCurrency(op.adicional)}`
+              const serveTxt = op.serve ? `Serve ${op.serve} ${/^\d+$/.test(String(op.serve).trim()) ? 'pessoas' : ''}`.trim() : ''
+              return (
+                <button
+                  key={op.id}
+                  onClick={() => toggle(op.id)}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '13px 14px', borderRadius: 10,
+                    border: `1.5px solid ${ativo ? corBotao : '#F0EBED'}`,
+                    background: ativo ? `${corBotao}0D` : 'var(--bg-card)',
+                    cursor: 'pointer', transition: 'all 0.12s',
+                    width: '100%', textAlign: 'left',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
+                    <span style={{
+                      width: 20, height: 20, borderRadius: '50%',
+                      border: `2px solid ${ativo ? corBotao : '#D1D5DB'}`,
+                      background: '#fff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0,
+                    }}>
+                      {ativo && <span style={{ width: 10, height: 10, borderRadius: '50%', background: corBotao }} />}
+                    </span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: ativo ? corBotao : 'var(--text-primary)' }}>{op.nome}</span>
+                      {serveTxt && (
+                        <span style={{ fontSize: 11.5, color: 'var(--text-muted)', fontWeight: 500 }}>{serveTxt}</span>
+                      )}
+                    </div>
+                  </div>
+                  {precoLabel && (
+                    <span style={{ fontSize: 14, fontWeight: 700, color: '#16a34a', flexShrink: 0, marginLeft: 8 }}>
+                      {precoLabel}
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
         </div>
       )
     }
@@ -532,7 +521,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
         {/* Nome + descrição — corpo scrollável */}
         <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 14, flex: 1, overflowY: 'auto', minHeight: 0, overscrollBehavior: 'contain', touchAction: 'pan-y' }}>
           <div>
-            <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-title)', margin: 0 }}>{product.nome}</h2>
+            <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#2C1219', margin: 0, textAlign: 'center', lineHeight: 1.15, letterSpacing: '-0.01em' }}>{product.nome}</h2>
             {product.descricao && (
               <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '6px 0 0', lineHeight: 1.4 }}>
                 {product.descricao}

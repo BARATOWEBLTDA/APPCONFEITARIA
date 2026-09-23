@@ -24,6 +24,7 @@ export type OpcaoGenerica = {
   adicional: number;       // pra tipos que somam ao preço (massa/recheio/cobertura)
   preco?: number;          // pra tipos com preço próprio (tamanho, sabor com preco_proprio)
   peso_kg?: number | null; // só pra tamanho — peso aproximado
+  serve?: string;          // só pra tamanho — "quantas pessoas serve" (opcional)
   foto?: string;
 };
 
@@ -306,6 +307,7 @@ export function carregarGruposDoBanco(produto: any): GrupoOpcoes[] {
         adicional: o.adicional ?? 0,
         ...(cfg.temPreco ? { preco: o.preco ?? 0 } : {}),
         ...(cfg.temPeso ? { peso_kg: o.peso_kg ?? null } : {}),
+        ...(o.serve ? { serve: o.serve } : {}),
         ...(o.foto ? { foto: o.foto } : {}),
       }));
     }
