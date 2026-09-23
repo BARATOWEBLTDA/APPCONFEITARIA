@@ -2859,6 +2859,19 @@ export default function Inicio() {
           .ini-content { grid-template-columns: minmax(0, 1fr); }
           .ini-content--done { grid-template-columns: minmax(0, 1fr); }
         }
+
+        /* Desktop (qualquer largura ≥ 768px): atalhos com fundo rosa clarinho uniforme */
+        @media (min-width: 768px) {
+          .ini-nav-icon {
+            background: #FFF5F9 !important;
+            color: #2C1219 !important;
+          }
+          /* "Nova Venda" continua branco por dentro (card é vinho) */
+          .ini-nav-card[data-nav="nova-venda"] .ini-nav-icon {
+            background: rgba(255,255,255,0.16) !important;
+            color: #FFFFFF !important;
+          }
+        }
       `}</style>
 
       {/* Modal de crop da foto de perfil (aberto pelo ícone de câmera) */}
