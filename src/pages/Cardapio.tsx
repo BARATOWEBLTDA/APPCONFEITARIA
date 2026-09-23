@@ -10,6 +10,7 @@ import { useProfile, getCardapioUrl, isPro } from "@/hooks/useProfile";
 import { validarCardapio } from "@/lib/cardapio-validacao";
 import { supabase } from "@/lib/supabase";
 import AppPageHeader from "@/components/AppPageHeader";
+import PassoAPassoCardapio from "@/components/PassoAPassoCardapio";
 
 type Periodo = "hoje" | "7d" | "30d" | "tudo";
 
@@ -219,27 +220,13 @@ export default function Cardapio() {
       });
 
       // ─── Alertas ───
+      // Alertas de "cadastrar produto" e "adicionar foto" foram movidos pro
+      // passo a passo (PassoAPassoCardapio) no topo, evitando duplicação.
+      // Aqui ficam só os alertas operacionais (preço faltando etc).
       const novosAlertas: Alerta[] = [];
       const produtos = produtosRes.data || [];
       const disponiveis = produtos.filter((p: any) => p.disponivel !== false);
 
-      if (disponiveis.length === 0) {
-        novosAlertas.push({
-          tipo: "warning",
-          texto: "Nenhum produto disponível no cardápio",
-          cta: "Cadastrar produto",
-          onClick: () => navigate("/produtos"),
-        });
-      }
-      const semFoto = disponiveis.filter((p: any) => !p.imagem_url).length;
-      if (semFoto > 0) {
-        novosAlertas.push({
-          tipo: "warning",
-          texto: `${semFoto} produto${semFoto === 1 ? "" : "s"} sem foto`,
-          cta: "Revisar",
-          onClick: () => navigate("/produtos"),
-        });
-      }
       const semPreco = disponiveis.filter((p: any) => !p.preco_normal || Number(p.preco_normal) <= 0).length;
       if (semPreco > 0) {
         novosAlertas.push({
@@ -249,24 +236,8 @@ export default function Cardapio() {
           onClick: () => navigate("/produtos"),
         });
       }
-      const desc = (profile as any)?.descricao_loja;
-      if (!desc || desc.trim().length === 0) {
-        novosAlertas.push({
-          tipo: "info",
-          texto: "Descrição da loja está vazia",
-          cta: "Preencher",
-          onClick: () => navigate("/cardapio-config"),
-        });
-      }
-      const logo = (profile as any)?.logo_url;
-      if (!logo) {
-        novosAlertas.push({
-          tipo: "info",
-          texto: "Logo da loja não foi adicionada",
-          cta: "Adicionar",
-          onClick: () => navigate("/cardapio-design"),
-        });
-      }
+      // Alertas de logo e descrição foram removidos daqui — agora estão no
+      // passo a passo no topo (PassoAPassoCardapio), evitando duplicação.
 
       setAlertas(novosAlertas);
     } catch (err) {
@@ -348,6 +319,12 @@ export default function Cardapio() {
       infoTip={<>Copie o link do seu cardápio e coloque na <strong>bio do Instagram</strong> ou envie no WhatsApp.</>}
     />
     <div className="cardapio-hub">
+      {/* Passo a passo pra configurar cardápio (some quando 100%) */}
+      <PassoAPassoCardapio
+        userId={profile?.id}
+        publicado={publicado}
+        onShareClick={handleShare}
+      />
       {/* Status + link + ações */}
       <div className="ch-status-card">
         <div className="ch-status-row">
