@@ -2556,21 +2556,20 @@ export default function Inicio() {
             padding-top: var(--space-6);
           }
 
-          /* Hero rosa volta no desktop pra os cards encavalarem nele */
+          /* Hero desktop: só uma faixa rosa vazia (sem saudação/avatar) */
           .ini-hero {
-            display: flex;
-            padding-bottom: 90px;
+            display: block;
+            padding: 60px 0;
+            min-height: 0;
           }
+          .ini-hero > *:not(.ini-hero-sparkles) { display: none; }
+          .ini-hero-sparkles { display: none; }
 
-          /* Acesso Rápido encavala parcialmente no hero (efeito "float over") */
-          .ini-main .ini-section--nav {
-            margin-top: -70px;
+          /* Métricas encavalam parcialmente na faixa rosa */
+          .ini-main .ini-section--metrics {
+            margin-top: -60px;
             position: relative;
             z-index: 2;
-          }
-          .ini-main .ini-section--nav .ini-section-title {
-            color: #FFFFFF;
-            margin-bottom: 12px;
           }
 
           /* ── Card de métrica em destaque: escondido no desktop
