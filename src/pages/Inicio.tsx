@@ -1056,20 +1056,6 @@ export default function Inicio() {
         </section>
       )}
 
-      {alertasVisiveis.length === 0 && !loading && !isSnoozed && !(!onboarding.loading && onboarding.produtosCount === 0) && (
-        <section className="ini-section ini-section--alertas">
-          <div className="ini-tudo-ok">
-            <span className="ini-tudo-ok-icon">
-              <Heart size={20} weight="fill" />
-            </span>
-            <div>
-              <p className="ini-tudo-ok-title">Você está em dia!</p>
-              <p className="ini-tudo-ok-sub">Sem alertas por enquanto</p>
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* Modal: todos os alertas */}
       {showAllAlerts && (
         <FinModal title="Atenção hoje" onClose={() => setShowAllAlerts(false)}>
