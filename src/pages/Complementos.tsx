@@ -156,9 +156,41 @@ export default function Complementos() {
 
         {items.length === 0 ? (
           <div className="cpl-empty">
-            <div className="cpl-empty-ico"><Package size={40} weight="duotone" /></div>
-            <p className="cpl-empty-title">Nenhuma personalização cadastrada</p>
-            <p className="cpl-empty-sub">Cadastre uma vez e reutilize em vários produtos.<br/>Ex: brigadeiro extra, tag de nome, enfeite...</p>
+            <div className="cpl-empty-avatar">
+              <img src="/Sistema/doo.png" alt="Doo" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement!.innerHTML = '✨'; }} />
+            </div>
+            <p className="cpl-empty-title">Personalize seus produtos</p>
+            <p className="cpl-empty-sub">É assim que vai aparecer no seu cardápio pro cliente escolher:</p>
+
+            <div className="cpl-empty-preview">
+              <div className="cpl-empty-preview-label">Preview no cardápio</div>
+
+              <div className="cpl-empty-preview-product">
+                <div className="cpl-empty-preview-img">🎂</div>
+                <div className="cpl-empty-preview-info">
+                  <div className="cpl-empty-preview-nome">Bolo de aniversário</div>
+                  <div className="cpl-empty-preview-preco">R$ 80,00</div>
+                </div>
+              </div>
+
+              <div className="cpl-empty-preview-opts">
+                <div className="cpl-empty-preview-opt-lbl">Escreva no topo</div>
+                <div className="cpl-empty-preview-opt-input">Parabéns, João!</div>
+              </div>
+
+              <div className="cpl-empty-preview-opts">
+                <div className="cpl-empty-preview-opt-lbl">Escolha o topo <span className="cpl-empty-preview-opt-extra">+ R$ 15</span></div>
+                <div className="cpl-empty-preview-opt-item"><div className="cpl-empty-preview-radio filled" /> Homem Aranha</div>
+                <div className="cpl-empty-preview-opt-item"><div className="cpl-empty-preview-radio" /> Barbie</div>
+                <div className="cpl-empty-preview-opt-item"><div className="cpl-empty-preview-radio" /> Princesa</div>
+              </div>
+            </div>
+
+            <p className="cpl-empty-desc">
+              Cadastre <b>uma vez</b> aqui e escolha em quais produtos aparece.<br />
+              Ideal pra escritas, topos, temas e papel de arroz.
+            </p>
+
             <button className="cpl-btn-novo cpl-btn-novo--empty" onClick={abrirNovo}>
               <Plus size={16} weight="bold" /> Criar primeira personalização
             </button>
@@ -371,10 +403,31 @@ const styles = `
   .cpl-btn-novo:hover { background: #d54a7a; }
   .cpl-btn-novo--empty { margin-top: 16px; }
 
-  .cpl-empty { text-align: center; padding: 60px 20px; background: #fff; border-radius: 14px; border: 1.5px solid #F0EBED; }
-  .cpl-empty-ico { color: #E85A8C; display: inline-flex; margin-bottom: 12px; padding: 14px; background: #FCE0E9; border-radius: 50%; }
-  .cpl-empty-title { margin: 0 0 6px; font-size: 15px; font-weight: 800; color: #1F1F23; }
-  .cpl-empty-sub { margin: 0; font-size: 12.5px; color: #6B7280; line-height: 1.5; }
+  .cpl-empty { text-align: center; padding: 32px 20px 24px; background: #fff; border-radius: 14px; border: 1.5px solid #F0EBED; }
+  .cpl-empty-avatar { width: 72px; height: 72px; margin: 0 auto 14px; background: linear-gradient(135deg, #3D2A32, #2C1219); border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 32px; }
+  .cpl-empty-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .cpl-empty-title { margin: 0 0 6px; font-size: 16px; font-weight: 800; color: #2C1219; letter-spacing: -0.02em; }
+  .cpl-empty-sub { margin: 0 0 16px; font-size: 12.5px; color: #6B7280; line-height: 1.5; }
+
+  /* Preview de como aparece no cardápio */
+  .cpl-empty-preview { border: 1px dashed #F0D8DE; border-radius: 8px; padding: 14px; margin-bottom: 16px; background: #FFF5F9; text-align: left; }
+  .cpl-empty-preview-label { font-size: 9.5px; font-weight: 800; color: #C33A6E; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+  .cpl-empty-preview-product { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .cpl-empty-preview-img { width: 40px; height: 40px; border-radius: 6px; background: linear-gradient(135deg, #FCE0E9, #F0D8DE); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .cpl-empty-preview-info { flex: 1; }
+  .cpl-empty-preview-nome { font-size: 12.5px; font-weight: 700; color: #2C1219; line-height: 1.2; }
+  .cpl-empty-preview-preco { font-size: 11px; color: #6B7280; margin-top: 2px; }
+  .cpl-empty-preview-opts { background: #fff; border-radius: 4px; padding: 10px 12px; margin-bottom: 8px; }
+  .cpl-empty-preview-opts:last-child { margin-bottom: 0; }
+  .cpl-empty-preview-opt-lbl { font-size: 10px; font-weight: 700; color: #4B5563; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+  .cpl-empty-preview-opt-extra { font-size: 9.5px; color: #C33A6E; font-weight: 800; text-transform: none; letter-spacing: 0; }
+  .cpl-empty-preview-opt-input { font-size: 12px; color: #2C1219; padding: 6px 8px; background: #F5F0F2; border-radius: 3px; font-style: italic; }
+  .cpl-empty-preview-opt-item { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #2C1219; padding: 3px 0; }
+  .cpl-empty-preview-radio { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid #E85A8C; flex-shrink: 0; }
+  .cpl-empty-preview-radio.filled { background: #E85A8C; border-color: #E85A8C; box-shadow: inset 0 0 0 2px #fff; }
+
+  .cpl-empty-desc { margin: 0 0 18px; font-size: 12px; color: #6B7280; line-height: 1.5; }
+  .cpl-empty-desc b { color: #2C1219; }
   .cpl-noresult { text-align: center; color: #9CA3AF; font-size: 13px; padding: 40px 20px; margin: 0; }
 
   .cpl-list { display: flex; flex-direction: column; gap: 8px; }
