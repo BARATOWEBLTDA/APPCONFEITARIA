@@ -2556,11 +2556,16 @@ export default function Inicio() {
             padding-top: var(--space-6);
           }
 
-          /* Hero desktop: só uma faixa rosa vazia (sem saudação/avatar) */
+          /* Hero desktop: faixa rosa edge-to-edge (100% largura) */
           .ini-hero {
             display: block;
+            width: auto;
+            margin-left: -36px;
+            margin-right: -80px;
+            margin-top: calc(var(--space-6) * -1);
             padding: 60px 0;
             min-height: 0;
+            border-radius: 0;
           }
           .ini-hero > *:not(.ini-hero-sparkles) { display: none; }
           .ini-hero-sparkles { display: none; }
