@@ -2802,8 +2802,8 @@ export default function Inicio() {
             border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
-            background: var(--bg-card) !important;
-            color: var(--primary-dark) !important;
+            background: #FFF5F9 !important;
+            color: #2C1219 !important;
           }
           .ini-main .ini-section--nav .ini-nav-arrow {
             color: var(--text-muted);
