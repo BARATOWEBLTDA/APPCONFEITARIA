@@ -323,6 +323,7 @@ export default function Cardapio() {
       <PassoAPassoCardapio
         userId={profile?.id}
         publicado={publicado}
+        linkCardapio={linkCardapio}
         onShareClick={handleShare}
       />
       {/* Status + link + ações */}

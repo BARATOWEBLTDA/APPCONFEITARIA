@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, CaretRight } from "@phosphor-icons/react";
+import { Check, CaretRight, WhatsappLogo, Copy } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 
 interface Step {
@@ -13,17 +13,23 @@ interface Step {
 interface Props {
   userId: string | undefined;
   publicado: boolean;
+  linkCardapio: string;
   onShareClick: () => void;
 }
 
 /**
  * Passo a passo pra configurar o cardápio. Lê o estado direto do Supabase
- * (não do cache do useProfile) pra evitar falso-positivos. Some quando
- * todos os passos estiverem concluídos.
+ * (não do cache do useProfile) pra evitar falso-positivos.
+ *
+ * Estados de UI:
+ * 1. Incompleto: lista com progresso
+ * 2. Quase pronto (só falta compartilhar): card premium grafite com 2 CTAs
+ * 3. 100%: banner verde "cardápio configurado"
  */
-export default function PassoAPassoCardapio({ userId, publicado, onShareClick }: Props) {
+export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, onShareClick }: Props) {
   const [steps, setSteps] = useState<Step[]>([]);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -100,19 +106,55 @@ export default function PassoAPassoCardapio({ userId, publicado, onShareClick }:
   const total = steps.length;
   const pct = total === 0 ? 0 : Math.round((feitos / total) * 100);
 
+  const marcarCompartilhado = () => {
+    if (userId) localStorage.setItem(`doonly_cardapio_compartilhado_${userId}`, "1");
+  };
+
   const handleClick = (step: Step) => {
     if (step.key === "share") {
       onShareClick();
-      // Marca como compartilhado
-      if (userId) localStorage.setItem(`doonly_cardapio_compartilhado_${userId}`, "1");
+      marcarCompartilhado();
       return;
     }
     navigate(step.path);
   };
 
+  const handleWhatsApp = () => {
+    if (!publicado || !linkCardapio) {
+      onShareClick();
+      return;
+    }
+    const texto = encodeURIComponent(`Confira o cardápio da minha confeitaria: ${linkCardapio}`);
+    window.open(`https://wa.me/?text=${texto}`, "_blank");
+    marcarCompartilhado();
+    // Força re-render pra atualizar o estado
+    setSteps((s) => s.map((st) => st.key === "share" ? { ...st, done: true } : st));
+  };
+
+  const handleCopy = async () => {
+    if (!linkCardapio) {
+      onShareClick();
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(linkCardapio);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      marcarCompartilhado();
+      setSteps((s) => s.map((st) => st.key === "share" ? { ...st, done: true } : st));
+    } catch {
+      onShareClick();
+    }
+  };
+
   if (loading || !userId) return null;
 
-  // Estado 100% concluído — mostra banner de sucesso
+  const shareStep = steps.find((s) => s.key === "share");
+  const outrosFeitos = steps.filter((s) => s.key !== "share" && s.done).length;
+  const outrosTotais = steps.length - 1;
+  const soFaltaCompartilhar = outrosFeitos === outrosTotais && shareStep && !shareStep.done;
+
+  // ─── Estado 100% concluído ───
   if (feitos === total) {
     return (
       <div className="pap-done">
@@ -147,6 +189,115 @@ export default function PassoAPassoCardapio({ userId, publicado, onShareClick }:
     );
   }
 
+  // ─── Estado "só falta compartilhar" — premium grafite com 2 CTAs ───
+  if (soFaltaCompartilhar) {
+    return (
+      <div className="pap-share">
+        <div className="pap-share-glow" />
+        <div className="pap-share-top">
+          <div className="pap-share-check"><Check size={11} weight="bold" /></div>
+          <span className="pap-share-tag">Pronto</span>
+        </div>
+        <p className="pap-share-t">Seu cardápio tá no ar</p>
+        <p className="pap-share-s">Divulgue e comece a receber pedidos.</p>
+        <div className="pap-share-actions">
+          <button className="pap-share-btn pap-share-btn-wa" onClick={handleWhatsApp}>
+            <WhatsappLogo size={16} weight="fill" /> WhatsApp
+          </button>
+          <button className="pap-share-btn pap-share-btn-copy" onClick={handleCopy}>
+            <Copy size={15} weight="bold" /> {copied ? "Copiado!" : "Copiar link"}
+          </button>
+        </div>
+        <style>{`
+          .pap-share {
+            position: relative;
+            background: linear-gradient(135deg, #2C1219, #4B3D46);
+            color: #fff;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+            overflow: hidden;
+          }
+          .pap-share-glow {
+            position: absolute;
+            top: -30px; right: -30px;
+            width: 100px; height: 100px;
+            background: radial-gradient(circle, rgba(22,163,74,0.35), transparent 70%);
+            pointer-events: none;
+          }
+          .pap-share-top {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+            position: relative;
+          }
+          .pap-share-check {
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            background: #16a34a;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+          }
+          .pap-share-tag {
+            font-size: 10px;
+            font-weight: 800;
+            color: #86EFAC;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+          }
+          .pap-share-t {
+            font-size: 15px;
+            font-weight: 800;
+            margin: 0 0 4px;
+            position: relative;
+          }
+          .pap-share-s {
+            font-size: 11.5px;
+            opacity: 0.75;
+            margin: 0 0 14px;
+            position: relative;
+          }
+          .pap-share-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            position: relative;
+          }
+          .pap-share-btn {
+            padding: 10px;
+            font-size: 11.5px;
+            font-weight: 800;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            font-family: inherit;
+            transition: transform 0.15s, background 0.15s;
+          }
+          .pap-share-btn:active { transform: scale(0.97); }
+          .pap-share-btn-wa {
+            background: #16a34a;
+            color: #fff;
+          }
+          .pap-share-btn-wa:hover { background: #15803d; }
+          .pap-share-btn-copy {
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+          }
+          .pap-share-btn-copy:hover { background: rgba(255,255,255,0.18); }
+        `}</style>
+      </div>
+    );
+  }
+
+  // ─── Estado padrão: lista de passos com progresso ───
   return (
     <div className="pap">
       <div className="pap-header">
