@@ -1239,8 +1239,9 @@ export default function Inicio() {
         {/* ── Últimas atualizações (mobile) — sempre visível ── */}
         <div className="ini-mobile-updates"><UpdatesFeed /></div>
 
-        {/* ── Engajamento (mobile, rodapé) — sempre visível ── */}
-        <section className="ini-engaja">
+        {/* ── Engajamento (Play Store + Instagram) — temporariamente removido ── */}
+        {false && (
+          <section className="ini-engaja">
             <a href="https://www.google.com" target="_blank" rel="noopener noreferrer" className="ini-engaja-card ini-engaja-card--play">
               <div className="ini-engaja-icon ini-engaja-icon--play">
                 {/* Google Play Store official logo */}
@@ -1268,6 +1269,7 @@ export default function Inicio() {
               <CaretRight size={16} weight="bold" className="ini-engaja-arrow" />
             </a>
           </section>
+        )}
       </div>
 
       <style>{`
