@@ -4,7 +4,7 @@ import {
   ChartBar, Eye, Storefront, Sliders, PaintBrush, Tag,
   Share, Percent, ForkKnife, Copy, CheckCircle, Warning, Lightbulb,
   TrendUp, TrendDown, ShoppingBag, Users as UsersIcon, CurrencyDollar,
-  CaretRight,
+  CaretRight, SquaresFour,
 } from "@phosphor-icons/react";
 import { useProfile, getCardapioUrl, isPro } from "@/hooks/useProfile";
 import { validarCardapio } from "@/lib/cardapio-validacao";
@@ -348,7 +348,7 @@ export default function Cardapio() {
           </button>
           <button className="cd-quick-item" onClick={() => navigate("/categorias")}>
             <span className="cd-quick-ico cd-quick-ico--amber">
-              <ForkKnife size={20} weight="regular" />
+              <SquaresFour size={20} weight="regular" />
             </span>
             <div className="cd-quick-info">
               <div className="cd-quick-name">Categorias</div>
@@ -356,20 +356,6 @@ export default function Cardapio() {
                 {contadores.categorias === 0
                   ? "Organize seus produtos em grupos"
                   : `${contadores.categorias} categoria${contadores.categorias === 1 ? "" : "s"} cadastrada${contadores.categorias === 1 ? "" : "s"}`}
-              </div>
-            </div>
-            <CaretRight size={14} weight="bold" className="cd-quick-arrow" />
-          </button>
-          <button className="cd-quick-item" onClick={() => navigate("/promocoes")}>
-            <span className="cd-quick-ico cd-quick-ico--red">
-              <Percent size={20} weight="regular" />
-            </span>
-            <div className="cd-quick-info">
-              <div className="cd-quick-name">Promoções</div>
-              <div className="cd-quick-desc">
-                {contadores.promocoes === 0
-                  ? "Crie descontos e ofertas por tempo limitado"
-                  : `${contadores.promocoes} ativa${contadores.promocoes === 1 ? "" : "s"}`}
               </div>
             </div>
             <CaretRight size={14} weight="bold" className="cd-quick-arrow" />

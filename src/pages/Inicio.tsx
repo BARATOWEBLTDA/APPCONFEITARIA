@@ -11,7 +11,7 @@ import {
   Bell, Storefront, SignOut, Camera,
   Package, CookingPot, Users, ChartLineUp, ForkKnife, CaretRight,
   InstagramLogo, DotsThreeOutline, Clock, Heart,
-  Cake, Percent, Receipt, SealPercent, BookOpen,
+  Cake, Percent, Receipt, SealPercent, BookOpen, Gear,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { enableNotifications, disableNotifications, getStoredNotifState } from "@/lib/notifications";
@@ -982,7 +982,7 @@ export default function Inicio() {
             { icon: <Users          size={22} weight="regular" />, label: "Clientes",   sub: "Base de clientes",             path: "/clientes",        key: "clientes" },
             { icon: <CurrencyDollar size={22} weight="regular" />, label: "Financeiro", sub: "Contas e controle",            path: "/financeiro",      key: "financeiro" },
             { icon: <Cake           size={22} weight="regular" />, label: "Produtos",   sub: "Itens do cardápio",            path: "/produtos",        key: "produtos" },
-            { icon: <SealPercent    size={22} weight="regular" />, label: "Promoções",  sub: "Campanhas ativas",             path: "/promocoes",       key: "promocoes" },
+            { icon: <Gear           size={22} weight="regular" />, label: "Configurações", sub: "Preferências e conta",       path: "/configuracoes",   key: "configuracoes" },
           ].map((item) => (
             <button key={item.path} className="ini-nav-card" data-nav={item.key} onClick={() => navigate(item.path)}>
               <div className="ini-nav-icon">{item.icon}</div>
