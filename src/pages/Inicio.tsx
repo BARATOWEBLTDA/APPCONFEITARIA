@@ -2760,17 +2760,17 @@ export default function Inicio() {
             padding: var(--space-5);
           }
           .ini-main .ini-section--nav .ini-nav-grid {
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
             gap: var(--space-3);
           }
           .ini-main .ini-section--nav .ini-nav-card {
             display: flex;
             align-items: center;
-            gap: var(--space-3);
+            gap: 8px;
             padding: var(--space-3) var(--space-4);
-            background: var(--bg-subtle);
+            background: #F5F0F2;
             border: none;
-            border-radius: 10px;
+            border-radius: 4px;
             cursor: pointer;
             font-family: inherit;
             text-align: left;
@@ -2778,54 +2778,34 @@ export default function Inicio() {
                         transform var(--dur-fast) var(--ease-out);
           }
           .ini-main .ini-section--nav .ini-nav-card:hover {
-            background: var(--primary-light);
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(232, 90, 140, 0.18);
-            border-color: var(--primary);
+            background: #EDE6E8;
+            transform: none;
+            box-shadow: none;
           }
           .ini-main .ini-section--nav .ini-nav-icon {
-            width: 40px; height: 40px;
-            border-radius: 8px;
+            width: 24px; height: 24px;
+            border-radius: 4px;
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
-            background: #FFF5F9 !important;
+            background: transparent !important;
             color: #2C1219 !important;
           }
-          .ini-main .ini-section--nav .ini-nav-sub {
-            display: block;
-            font-size: var(--font-caption);
-            color: var(--text-muted);
-            margin-top: 1px;
-          }
-          .ini-main .ini-section--nav .ini-nav-arrow {
-            display: block;
-            color: var(--text-muted);
-            flex-shrink: 0;
-            transition: transform var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
-          }
-          /* Nova Venda no desktop volta a ocupar 1 coluna (grid define) */
+          /* Desktop também sem subtítulo/seta (igual mobile, mais simples) */
+          .ini-main .ini-section--nav .ini-nav-sub { display: none; }
+          .ini-main .ini-section--nav .ini-nav-arrow { display: none; }
+          /* Nova Venda: card cinza escurinho (mesmo padrão do mobile) */
           .ini-main .ini-section--nav .ini-nav-card[data-nav="nova-venda"] {
             grid-column: auto;
-          }
-          .ini-main .ini-section--nav .ini-nav-card:hover .ini-nav-arrow {
-            color: var(--primary);
-            transform: translateX(2px);
-          }
-          /* "Novo pedido" vira card de destaque vinho no desktop */
-          .ini-main .ini-section--nav .ini-nav-card[data-nav="nova-venda"] {
-            background: var(--primary-dark);
+            background: #E5DDE0;
           }
           .ini-main .ini-section--nav .ini-nav-card[data-nav="nova-venda"]:hover {
-            background: var(--text-title);
+            background: #D8CFD1;
           }
           .ini-main .ini-section--nav .ini-nav-card[data-nav="nova-venda"] .ini-nav-icon {
-            background: rgba(255,255,255,0.16) !important;
-            color: #FFFFFF !important;
+            background: transparent !important;
+            color: #2C1219 !important;
           }
-          .ini-main .ini-section--nav .ini-nav-card[data-nav="nova-venda"] .ini-nav-label { color: #FFFFFF; }
-          .ini-main .ini-section--nav .ini-nav-card[data-nav="nova-venda"] .ini-nav-sub { color: rgba(255,255,255,0.7); }
-          .ini-main .ini-section--nav .ini-nav-card[data-nav="nova-venda"] .ini-nav-arrow { color: rgba(255,255,255,0.7); }
-          .ini-main .ini-section--nav .ini-nav-card[data-nav="nova-venda"]:hover .ini-nav-arrow { color: #FFFFFF; }
+          .ini-main .ini-section--nav .ini-nav-card[data-nav="nova-venda"] .ini-nav-label { color: #2C1219; }
 
           /* ────────────────────────────────────────────
              GRÁFICO — faturamento 30 dias, largura total
