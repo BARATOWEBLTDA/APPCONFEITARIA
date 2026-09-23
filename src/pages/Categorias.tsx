@@ -139,12 +139,11 @@ export default function Categorias() {
 
   const handleSalvar = async () => {
     if (!form.nome.trim()) return alert("Nome é obrigatório");
-    if (!form.imagem_url) return alert("Selecione um ícone para a categoria");
     setSaving(true);
     if (form.id) {
-      await supabase.from("categorias").update({ nome: form.nome, imagem_url: form.imagem_url, ordem: form.ordem }).eq("id", form.id);
+      await supabase.from("categorias").update({ nome: form.nome, imagem_url: form.imagem_url || null, ordem: form.ordem }).eq("id", form.id);
     } else {
-      await supabase.from("categorias").insert({ nome: form.nome, imagem_url: form.imagem_url, ordem: form.ordem, user_id: userId });
+      await supabase.from("categorias").insert({ nome: form.nome, imagem_url: form.imagem_url || null, ordem: form.ordem, user_id: userId });
     }
     await loadCategorias(userId);
     setSaving(false);

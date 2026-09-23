@@ -686,11 +686,25 @@ function CardapioContent() {
           </>
         )}
         <div className="container mx-auto py-4 pb-24" style={{ padding: '16px 10px 96px' }}>
-          {!design.ocultar_categorias && (
-            <CategoryFilter categories={getCategories()} selectedCategory={selectedCategory} onCategorySelect={setSelectedCategory} categoryIcons={design.category_icons || {}} categoryImages={categoryImages} />
-          )}
           {filteredProdutos.length > 0 ? (
-            <ProductList produtos={filteredProdutos} favorites={favorites} onToggleFavorite={toggleFavorite} backgroundColor={design.cor_background||'#fff'} borderColor={design.cor_borda||'#E85A8C'} corBotao={design.cor_botao||'#E85A8C'} selectedCategory={selectedCategory} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+            <ProductList
+              produtos={filteredProdutos}
+              favorites={favorites}
+              onToggleFavorite={toggleFavorite}
+              backgroundColor={design.cor_background||'#fff'}
+              borderColor={design.cor_borda||'#E85A8C'}
+              corBotao={design.cor_botao||'#E85A8C'}
+              selectedCategory={selectedCategory}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              categories={!design.ocultar_categorias ? getCategories().map((c: any) => typeof c === 'string' ? c : c.name) : []}
+              onCategorySelect={!design.ocultar_categorias ? setSelectedCategory : undefined}
+              categoryCounts={getCategories().reduce((acc: Record<string, number>, c: any) => {
+                const nome = typeof c === 'string' ? c : c.name
+                acc[nome] = produtos.filter(p => p.categoria === nome).length
+                return acc
+              }, {} as Record<string, number>)}
+            />
           ) : <EmptyState />}
         </div>
         <Footer textoRodape={design.texto_rodape} />

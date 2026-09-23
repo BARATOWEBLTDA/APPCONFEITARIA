@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Search } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Search, ChevronDown, Check } from 'lucide-react'
 import { ProductCard } from './ProductCard'
 import { Produto } from '@/types/database'
 import { ProductModal } from '@/components/cart/ProductModal'
@@ -14,18 +14,28 @@ interface Props {
   selectedCategory: string | null
   searchTerm: string
   onSearchChange: (t: string) => void
+  categories?: string[]
+  onCategorySelect?: (cat: string | null) => void
+  categoryCounts?: Record<string, number>
 }
 
-export function ProductList({ produtos, favorites, onToggleFavorite, backgroundColor, borderColor, corBotao = '#E85A8C', selectedCategory, searchTerm, onSearchChange }: Props) {
-  const [viewMode, setViewMode] = useState<'grid' | 'lista'>(() =>
-    (localStorage.getItem('cardapio_viewMode') as 'grid' | 'lista') || 'grid'
-  )
+export function ProductList({ produtos, favorites, onToggleFavorite, backgroundColor, borderColor, corBotao = '#E85A8C', selectedCategory, searchTerm, onSearchChange, categories = [], onCategorySelect, categoryCounts = {} }: Props) {
+  const [viewMode] = useState<'grid' | 'lista'>('grid')
   const [modalProduct, setModalProduct] = useState<Produto | null>(null)
+  const [catOpen, setCatOpen] = useState(false)
+  const catRef = useRef<HTMLDivElement>(null)
 
-  const toggleView = (mode: 'grid' | 'lista') => {
-    setViewMode(mode)
-    localStorage.setItem('cardapio_viewMode', mode)
-  }
+  useEffect(() => {
+    if (!catOpen) return
+    const handler = (e: MouseEvent) => {
+      if (catRef.current && !catRef.current.contains(e.target as Node)) setCatOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [catOpen])
+
+  const totalProdutos = Object.values(categoryCounts).reduce((a: number, b: number) => a + b, 0) || produtos.length
+  const catLabel = selectedCategory || 'Categorias'
 
   const filtered = produtos.filter(p => {
     const s = p.nome.toLowerCase().includes(searchTerm.toLowerCase()) || p.descricao?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -77,22 +87,129 @@ export function ProductList({ produtos, favorites, onToggleFavorite, backgroundC
 
   return (
     <div>
-      {/* Barra de busca + toggle */}
+      {/* Barra de busca + botão Categorias */}
       <div className="mb-4 px-4">
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input type="text" placeholder="Buscar produtos..." value={searchTerm} onChange={e => onSearchChange(e.target.value)} className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-lg focus:border-pink-400 focus:outline-none" style={{ backgroundColor: '#fff' }} />
           </div>
-          {/* Toggle grid/lista */}
-          <div style={{ display: 'flex', background: 'var(--bg-card)', borderRadius: '10px', padding: '3px', gap: '2px', border: '1px solid var(--border)', flexShrink: 0 }}>
-            <button onClick={() => toggleView('grid')} style={{ width: '34px', height: '34px', borderRadius: '8px', border: 'none', cursor: 'pointer', background: viewMode === 'grid' ? '#fdf2f8' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={viewMode === 'grid' ? '#E85A8C' : '#9ca3af'} strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-            </button>
-            <button onClick={() => toggleView('lista')} style={{ width: '34px', height: '34px', borderRadius: '8px', border: 'none', cursor: 'pointer', background: viewMode === 'lista' ? '#fdf2f8' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={viewMode === 'lista' ? '#E85A8C' : '#9ca3af'} strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-            </button>
-          </div>
+          {/* Botão Categorias com dropdown */}
+          {onCategorySelect && categories.length > 0 && (
+            <div ref={catRef} style={{ position: 'relative', flexShrink: 0 }}>
+              <button
+                onClick={() => setCatOpen(v => !v)}
+                style={{
+                  background: selectedCategory ? corBotao : '#F5F0F2',
+                  color: selectedCategory ? '#fff' : '#2C1219',
+                  borderRadius: '10px',
+                  padding: '11px 14px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontFamily: 'inherit',
+                  transition: 'background 0.15s',
+                  whiteSpace: 'nowrap',
+                  maxWidth: '160px',
+                }}
+              >
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{catLabel}</span>
+                <ChevronDown size={14} style={{ transform: catOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.15s', flexShrink: 0 }} />
+              </button>
+
+              {catOpen && (
+                <div style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 6px)',
+                  right: 0,
+                  background: '#fff',
+                  borderRadius: '12px',
+                  boxShadow: '0 12px 32px rgba(0,0,0,0.15), 0 0 0 1px #F0EBED',
+                  padding: '6px',
+                  zIndex: 30,
+                  minWidth: '200px',
+                  maxHeight: '340px',
+                  overflowY: 'auto',
+                }}>
+                  <button
+                    onClick={() => { onCategorySelect(null); setCatOpen(false) }}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      fontSize: '13px',
+                      color: !selectedCategory ? corBotao : '#2C1219',
+                      background: !selectedCategory ? `${corBotao}0F` : 'transparent',
+                      borderRadius: '8px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      fontWeight: !selectedCategory ? 700 : 500,
+                      fontFamily: 'inherit',
+                      textAlign: 'left',
+                    }}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {!selectedCategory && <Check size={13} />}
+                      Todos os produtos
+                    </span>
+                    <span style={{
+                      fontSize: '11px',
+                      color: !selectedCategory ? '#fff' : '#9CA3AF',
+                      background: !selectedCategory ? corBotao : '#F5F0F2',
+                      padding: '2px 8px',
+                      borderRadius: '20px',
+                      fontWeight: 700,
+                    }}>{totalProdutos}</span>
+                  </button>
+                  {categories.map(cat => {
+                    const isSel = selectedCategory === cat
+                    const count = categoryCounts[cat] ?? 0
+                    return (
+                      <button
+                        key={cat}
+                        onClick={() => { onCategorySelect(cat); setCatOpen(false) }}
+                        style={{
+                          width: '100%',
+                          padding: '10px 12px',
+                          fontSize: '13px',
+                          color: isSel ? corBotao : '#2C1219',
+                          background: isSel ? `${corBotao}0F` : 'transparent',
+                          borderRadius: '8px',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          fontWeight: isSel ? 700 : 500,
+                          fontFamily: 'inherit',
+                          textAlign: 'left',
+                        }}
+                      >
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {isSel && <Check size={13} />}
+                          {cat}
+                        </span>
+                        <span style={{
+                          fontSize: '11px',
+                          color: isSel ? '#fff' : '#9CA3AF',
+                          background: isSel ? corBotao : '#F5F0F2',
+                          padding: '2px 8px',
+                          borderRadius: '20px',
+                          fontWeight: 700,
+                        }}>{count}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
