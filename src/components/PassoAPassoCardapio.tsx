@@ -158,21 +158,45 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
   if (feitos === total) {
     return (
       <div className="pap-done">
-        <div className="pap-done-icon"><Check size={18} weight="bold" /></div>
-        <div className="pap-done-info">
-          <p className="pap-done-t">Cardápio configurado</p>
-          <p className="pap-done-s">Tudo pronto. Continue divulgando seu link!</p>
+        <div className="pap-done-glow" />
+        <div className="pap-done-top">
+          <div className="pap-done-icon"><Check size={18} weight="bold" /></div>
+          <div className="pap-done-info">
+            <p className="pap-done-t">Cardápio configurado</p>
+            <p className="pap-done-s">Continue divulgando seu link.</p>
+          </div>
+        </div>
+        <div className="pap-done-actions">
+          <button className="pap-done-btn pap-done-btn-wa" onClick={handleWhatsApp}>
+            <WhatsappLogo size={16} weight="fill" /> WhatsApp
+          </button>
+          <button className="pap-done-btn pap-done-btn-copy" onClick={handleCopy}>
+            <Copy size={15} weight="bold" /> {copied ? "Copiado!" : "Copiar link"}
+          </button>
         </div>
         <style>{`
           .pap-done {
+            position: relative;
             background: linear-gradient(135deg, #16a34a, #15803d);
             color: #fff;
-            padding: 12px 14px;
+            padding: 14px 16px;
             border-radius: 6px;
+            margin-bottom: 16px;
+            overflow: hidden;
+          }
+          .pap-done-glow {
+            position: absolute;
+            top: -30px; right: -30px;
+            width: 100px; height: 100px;
+            background: radial-gradient(circle, rgba(255,255,255,0.18), transparent 70%);
+            pointer-events: none;
+          }
+          .pap-done-top {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
+            position: relative;
           }
           .pap-done-icon {
             width: 32px; height: 32px;
@@ -182,8 +206,39 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
             flex-shrink: 0;
           }
           .pap-done-info { flex: 1; }
-          .pap-done-t { font-size: 13px; font-weight: 800; margin: 0; }
+          .pap-done-t { font-size: 13.5px; font-weight: 800; margin: 0; }
           .pap-done-s { font-size: 11px; opacity: 0.9; margin: 1px 0 0; }
+          .pap-done-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            position: relative;
+          }
+          .pap-done-btn {
+            padding: 10px;
+            font-size: 11.5px;
+            font-weight: 800;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            font-family: inherit;
+            transition: transform 0.15s, background 0.15s;
+          }
+          .pap-done-btn:active { transform: scale(0.97); }
+          .pap-done-btn-wa {
+            background: #fff;
+            color: #15803d;
+          }
+          .pap-done-btn-wa:hover { background: #F5F5F5; }
+          .pap-done-btn-copy {
+            background: rgba(255,255,255,0.18);
+            color: #fff;
+          }
+          .pap-done-btn-copy:hover { background: rgba(255,255,255,0.28); }
         `}</style>
       </div>
     );
