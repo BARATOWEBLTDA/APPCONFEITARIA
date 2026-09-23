@@ -670,20 +670,7 @@ export default function Inicio() {
 
   return (
     <>
-    {!isMobile && (
-      <AppPageHeader
-        title="Início"
-        subtitle="Sua visão geral do dia"
-        infoIcon="🏠"
-        infoContent={
-          <>
-            <p>Aqui você tem um <strong>resumo do que está rolando</strong> na sua confeitaria: pedidos do dia, faturamento, agenda e atalhos.</p>
-            <p>É a sua <strong>central de controle</strong> — bate o olho e sabe o que está acontecendo.</p>
-          </>
-        }
-        infoTip={<>Use os <strong>cards de acesso rápido</strong> pra ir direto pras funções mais usadas.</>}
-      />
-    )}
+    {/* AppPageHeader removido — hero rosa já é suficiente como saudação */}
     <div className="ini-root">
       {/* ── Hero wine com foto da confeiteira, coroinha (PRO) e sparkles ── */}
       <div className="ini-hero">
@@ -2569,8 +2556,22 @@ export default function Inicio() {
             padding-top: var(--space-6);
           }
 
-          /* Hero escondido no desktop — saudação fica na sidebar */
-          .ini-hero { display: none; }
+          /* Hero rosa volta no desktop pra os cards encavalarem nele */
+          .ini-hero {
+            display: flex;
+            padding-bottom: 90px;
+          }
+
+          /* Acesso Rápido encavala parcialmente no hero (efeito "float over") */
+          .ini-main .ini-section--nav {
+            margin-top: -70px;
+            position: relative;
+            z-index: 2;
+          }
+          .ini-main .ini-section--nav .ini-section-title {
+            color: #FFFFFF;
+            margin-bottom: 12px;
+          }
 
           /* ── Card de métrica em destaque: escondido no desktop
              (os 4 cards de métrica abaixo já mostram Faturamento — evita redundância) ── */
