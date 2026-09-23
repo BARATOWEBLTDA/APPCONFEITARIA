@@ -11,7 +11,7 @@ import {
   Bell, Storefront, SignOut, Camera,
   Package, CookingPot, Users, ChartLineUp, ForkKnife, CaretRight,
   InstagramLogo, DotsThreeOutline, Clock, Heart,
-  Cake, Percent, Receipt,
+  Cake, Percent, Receipt, SealPercent, BookOpen,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { enableNotifications, disableNotifications, getStoredNotifState } from "@/lib/notifications";
@@ -990,11 +990,11 @@ export default function Inicio() {
             { icon: <Plus           size={22} weight="regular" />, label: "Nova Venda", sub: "Registrar venda ou encomenda", path: "/vendas/novo",     key: "nova-venda" },
             { icon: <Receipt        size={22} weight="regular" />, label: "Pedidos",    sub: "Acompanhar em andamento",      path: "/pedidos",         key: "pedidos" },
             { icon: <CalendarDots   size={22} weight="regular" />, label: "Agenda",     sub: "Datas de entrega",             path: "/agenda",          key: "agenda" },
-            { icon: <ForkKnife      size={22} weight="regular" />, label: "Cardápio",   sub: "Editar e personalizar",        path: "/cardapio-config", key: "cardapio" },
+            { icon: <BookOpen       size={22} weight="regular" />, label: "Cardápio",   sub: "Editar e personalizar",        path: "/cardapio-config", key: "cardapio" },
             { icon: <Users          size={22} weight="regular" />, label: "Clientes",   sub: "Base de clientes",             path: "/clientes",        key: "clientes" },
             { icon: <CurrencyDollar size={22} weight="regular" />, label: "Financeiro", sub: "Contas e controle",            path: "/financeiro",      key: "financeiro" },
             { icon: <Cake           size={22} weight="regular" />, label: "Produtos",   sub: "Itens do cardápio",            path: "/produtos",        key: "produtos" },
-            { icon: <Percent        size={22} weight="regular" />, label: "Promoções",  sub: "Campanhas ativas",             path: "/promocoes",       key: "promocoes" },
+            { icon: <SealPercent    size={22} weight="regular" />, label: "Promoções",  sub: "Campanhas ativas",             path: "/promocoes",       key: "promocoes" },
           ].map((item) => (
             <button key={item.path} className="ini-nav-card" data-nav={item.key} onClick={() => navigate(item.path)}>
               <div className="ini-nav-icon">{item.icon}</div>
