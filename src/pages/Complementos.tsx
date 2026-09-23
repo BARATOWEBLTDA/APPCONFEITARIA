@@ -159,7 +159,7 @@ export default function Complementos() {
         {items.length === 0 ? (
           <div className="cpl-empty">
             <div className="cpl-empty-avatar">
-              <img src="/Sistema/logo.png" alt="Doonly" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement!.innerHTML = '✨'; }} />
+              <img src="/log.png" alt="Doonly" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement!.innerHTML = '✨'; }} />
             </div>
             <p className="cpl-empty-title">Personalize seus produtos</p>
             <p className="cpl-empty-sub">É assim que vai aparecer no seu cardápio pro cliente escolher:</p>
