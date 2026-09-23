@@ -2175,15 +2175,15 @@ export default function Inicio() {
           align-items: center;
           gap: var(--space-3);
           padding: var(--space-3) var(--space-4);
-          background: var(--bg-card);
-          border: 1px solid var(--border);
+          background: #F5F0F2;
+          border: none;
           border-radius: 10px;
           cursor: pointer;
           font-family: inherit;
           text-align: left;
           transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
         }
-        .ini-nav-card:active { background: var(--primary-light); transform: scale(0.99); }
+        .ini-nav-card:active { background: #EDE6E8; transform: scale(0.99); }
         .ini-nav-icon {
           width: 34px; height: 34px;
           border-radius: 8px;
