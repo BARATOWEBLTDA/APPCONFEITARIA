@@ -11,7 +11,7 @@ import {
   Bell, Storefront, SignOut, Camera,
   Package, CookingPot, Users, ChartLineUp, ForkKnife, CaretRight,
   InstagramLogo, DotsThreeOutline, Clock, Heart,
-  Cake, Percent,
+  Cake, Percent, Receipt,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { enableNotifications, disableNotifications, getStoredNotifState } from "@/lib/notifications";
@@ -987,14 +987,14 @@ export default function Inicio() {
         </h2>
         <div className="ini-nav-grid">
           {[
-            { icon: <Plus         size={20} weight="bold" />,     label: "Nova Venda",   sub: "Registrar venda ou encomenda", path: "/vendas/novo",  color: "var(--text-title)", bg: "#FFF1F7", key: "nova-venda" },
-            { icon: <ClipboardText size={20} weight="duotone" />, label: "Pedidos",      sub: "Acompanhar em andamento",      path: "/pedidos",      color: "#2C1219",           bg: "#FFF5F9", key: "pedidos" },
-            { icon: <CalendarDots size={20} weight="duotone" />,  label: "Agenda",       sub: "Datas de entrega",             path: "/agenda",       color: "#2C1219",           bg: "#FFF5F9", key: "agenda" },
-            { icon: <ForkKnife    size={20} weight="duotone" />,  label: "Cardápio",     sub: "Editar e personalizar",        path: "/cardapio-config", color: "#2C1219",        bg: "#FFF5F9", key: "cardapio" },
-            { icon: <Users        size={20} weight="duotone" />,  label: "Clientes",     sub: "Base de clientes",             path: "/clientes",     color: "#2C1219",           bg: "#FFF5F9", key: "clientes" },
-            { icon: <CurrencyDollar size={20} weight="duotone" />, label: "Financeiro",  sub: "Contas e controle",            path: "/financeiro",   color: "#2C1219",           bg: "#FFF5F9", key: "financeiro" },
-            { icon: <Cake         size={20} weight="duotone" />,  label: "Produtos",     sub: "Itens do cardápio",            path: "/produtos",     color: "#2C1219",           bg: "#FFF5F9", key: "produtos" },
-            { icon: <Percent      size={20} weight="duotone" />,  label: "Promoções",    sub: "Campanhas ativas",             path: "/promocoes",    color: "#2C1219",           bg: "#FFF5F9", key: "promocoes" },
+            { icon: <Plus           size={22} weight="bold" />, label: "Nova Venda", sub: "Registrar venda ou encomenda", path: "/vendas/novo",     color: "var(--text-title)", bg: "#FFF1F7", key: "nova-venda" },
+            { icon: <Receipt        size={22} weight="bold" />, label: "Pedidos",    sub: "Acompanhar em andamento",      path: "/pedidos",         color: "#2C1219",           bg: "#FFF5F9", key: "pedidos" },
+            { icon: <CalendarDots   size={22} weight="bold" />, label: "Agenda",     sub: "Datas de entrega",             path: "/agenda",          color: "#2C1219",           bg: "#FFF5F9", key: "agenda" },
+            { icon: <ForkKnife      size={22} weight="bold" />, label: "Cardápio",   sub: "Editar e personalizar",        path: "/cardapio-config", color: "#2C1219",           bg: "#FFF5F9", key: "cardapio" },
+            { icon: <Users          size={22} weight="bold" />, label: "Clientes",   sub: "Base de clientes",             path: "/clientes",        color: "#2C1219",           bg: "#FFF5F9", key: "clientes" },
+            { icon: <CurrencyDollar size={22} weight="bold" />, label: "Financeiro", sub: "Contas e controle",            path: "/financeiro",      color: "#2C1219",           bg: "#FFF5F9", key: "financeiro" },
+            { icon: <Cake           size={22} weight="bold" />, label: "Produtos",   sub: "Itens do cardápio",            path: "/produtos",        color: "#2C1219",           bg: "#FFF5F9", key: "produtos" },
+            { icon: <Percent        size={22} weight="bold" />, label: "Promoções",  sub: "Campanhas ativas",             path: "/promocoes",       color: "#2C1219",           bg: "#FFF5F9", key: "promocoes" },
           ].map((item) => (
             <button key={item.path} className="ini-nav-card" data-nav={item.key} onClick={() => navigate(item.path)}>
               <div className="ini-nav-icon" style={{ background: item.bg, color: item.color }}>{item.icon}</div>
@@ -2169,7 +2169,7 @@ export default function Inicio() {
         .ini-nav-card {
           display: flex;
           align-items: center;
-          gap: var(--space-3);
+          gap: 8px;
           padding: var(--space-3) var(--space-4);
           background: #F5F0F2;
           border: none;
@@ -2181,7 +2181,7 @@ export default function Inicio() {
         }
         .ini-nav-card:active { background: #EDE6E8; transform: scale(0.99); }
         .ini-nav-icon {
-          width: 34px; height: 34px;
+          width: 24px; height: 24px;
           border-radius: 4px;
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
@@ -2199,16 +2199,16 @@ export default function Inicio() {
         /* Subtítulo escondido no mobile (fica só a label) */
         .ini-nav-sub { display: none; }
         .ini-nav-arrow { display: none; }
-        /* Nova Venda vira card verde do grid (mesmo tamanho dos outros) */
+        /* Nova Venda vira card cinza escurinho do grid (destaque sutil) */
         .ini-nav-card[data-nav="nova-venda"] {
-          background: #16a34a;
+          background: #E5DDE0;
         }
-        .ini-nav-card[data-nav="nova-venda"]:active { background: #15803d; }
+        .ini-nav-card[data-nav="nova-venda"]:active { background: #D8CFD1; }
         .ini-nav-card[data-nav="nova-venda"] .ini-nav-icon {
           background: transparent !important;
-          color: #FFFFFF !important;
+          color: #2C1219 !important;
         }
-        .ini-nav-card[data-nav="nova-venda"] .ini-nav-label { color: #FFFFFF; }
+        .ini-nav-card[data-nav="nova-venda"] .ini-nav-label { color: #2C1219; }
 
         /* ── Agenda de Entregas ── */
         .ini-agenda-header {
@@ -2534,7 +2534,7 @@ export default function Inicio() {
         .ini-section--metrics { display: none; }
         .ini-section--chart   { display: none; }
         /* Menos espaço vazio entre MetricaDestaque e Acesso rápido no mobile */
-        .ini-content { margin-top: var(--space-2); gap: var(--space-3); }
+        .ini-content { margin-top: var(--space-2); gap: var(--space-6); }
         .ini-main > .ini-section:first-child { margin-top: var(--space-3); }
 
         /* ── Desktop ajustes ── */
