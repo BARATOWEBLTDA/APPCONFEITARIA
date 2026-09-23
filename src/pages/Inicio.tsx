@@ -987,17 +987,17 @@ export default function Inicio() {
         </h2>
         <div className="ini-nav-grid">
           {[
-            { icon: <Plus           size={22} weight="bold" />, label: "Nova Venda", sub: "Registrar venda ou encomenda", path: "/vendas/novo",     color: "var(--text-title)", bg: "#FFF1F7", key: "nova-venda" },
-            { icon: <Receipt        size={22} weight="bold" />, label: "Pedidos",    sub: "Acompanhar em andamento",      path: "/pedidos",         color: "#2C1219",           bg: "#FFF5F9", key: "pedidos" },
-            { icon: <CalendarDots   size={22} weight="bold" />, label: "Agenda",     sub: "Datas de entrega",             path: "/agenda",          color: "#2C1219",           bg: "#FFF5F9", key: "agenda" },
-            { icon: <ForkKnife      size={22} weight="bold" />, label: "Cardápio",   sub: "Editar e personalizar",        path: "/cardapio-config", color: "#2C1219",           bg: "#FFF5F9", key: "cardapio" },
-            { icon: <Users          size={22} weight="bold" />, label: "Clientes",   sub: "Base de clientes",             path: "/clientes",        color: "#2C1219",           bg: "#FFF5F9", key: "clientes" },
-            { icon: <CurrencyDollar size={22} weight="bold" />, label: "Financeiro", sub: "Contas e controle",            path: "/financeiro",      color: "#2C1219",           bg: "#FFF5F9", key: "financeiro" },
-            { icon: <Cake           size={22} weight="bold" />, label: "Produtos",   sub: "Itens do cardápio",            path: "/produtos",        color: "#2C1219",           bg: "#FFF5F9", key: "produtos" },
-            { icon: <Percent        size={22} weight="bold" />, label: "Promoções",  sub: "Campanhas ativas",             path: "/promocoes",       color: "#2C1219",           bg: "#FFF5F9", key: "promocoes" },
+            { icon: <Plus           size={22} weight="regular" />, label: "Nova Venda", sub: "Registrar venda ou encomenda", path: "/vendas/novo",     key: "nova-venda" },
+            { icon: <Receipt        size={22} weight="regular" />, label: "Pedidos",    sub: "Acompanhar em andamento",      path: "/pedidos",         key: "pedidos" },
+            { icon: <CalendarDots   size={22} weight="regular" />, label: "Agenda",     sub: "Datas de entrega",             path: "/agenda",          key: "agenda" },
+            { icon: <ForkKnife      size={22} weight="regular" />, label: "Cardápio",   sub: "Editar e personalizar",        path: "/cardapio-config", key: "cardapio" },
+            { icon: <Users          size={22} weight="regular" />, label: "Clientes",   sub: "Base de clientes",             path: "/clientes",        key: "clientes" },
+            { icon: <CurrencyDollar size={22} weight="regular" />, label: "Financeiro", sub: "Contas e controle",            path: "/financeiro",      key: "financeiro" },
+            { icon: <Cake           size={22} weight="regular" />, label: "Produtos",   sub: "Itens do cardápio",            path: "/produtos",        key: "produtos" },
+            { icon: <Percent        size={22} weight="regular" />, label: "Promoções",  sub: "Campanhas ativas",             path: "/promocoes",       key: "promocoes" },
           ].map((item) => (
             <button key={item.path} className="ini-nav-card" data-nav={item.key} onClick={() => navigate(item.path)}>
-              <div className="ini-nav-icon" style={{ background: item.bg, color: item.color }}>{item.icon}</div>
+              <div className="ini-nav-icon">{item.icon}</div>
               <div className="ini-nav-meta">
                 <span className="ini-nav-label">{item.label}</span>
                 <span className="ini-nav-sub">{item.sub}</span>
@@ -2186,14 +2186,14 @@ export default function Inicio() {
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
           background: transparent !important;
-          color: var(--primary-dark) !important;
+          color: #2C1219 !important;
         }
         .ini-nav-meta { flex: 1; min-width: 0; }
         .ini-nav-label {
           display: block;
           font-size: var(--font-button);
-          font-weight: var(--fw-bold);
-          color: var(--text-title);
+          font-weight: var(--fw-semibold);
+          color: #2C1219;
           line-height: 1.2;
         }
         /* Subtítulo escondido no mobile (fica só a label) */
