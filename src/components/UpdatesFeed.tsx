@@ -60,7 +60,7 @@ export default function UpdatesFeed() {
         .uf-root {
           background: var(--bg-card);
           border: 1px solid var(--border);
-          border-radius: var(--radius-xl);
+          border-radius: 6px;
           overflow: hidden;
           box-shadow: 0 2px 12px rgba(0,0,0,0.06);
         }
@@ -69,7 +69,6 @@ export default function UpdatesFeed() {
           align-items: center;
           gap: 0.5rem;
           padding: 1.15rem 1.25rem;
-          border-bottom: 1px solid var(--border);
           color: var(--text-title);
         }
         .uf-header h2 {
@@ -85,10 +84,8 @@ export default function UpdatesFeed() {
           display: flex;
           gap: 0.75rem;
           padding: 0.9rem 1.25rem;
-          border-bottom: 1px solid var(--border);
           transition: background var(--dur-fast);
         }
-        .uf-item:last-child { border-bottom: none; }
         .uf-item:hover { background: var(--bg-body); }
         .uf-icon {
           width: 36px;
