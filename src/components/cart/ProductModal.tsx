@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { X, Plus, Minus, Camera } from 'lucide-react'
+import { X, Plus, Minus, Camera, Ruler, ChevronRight, ChevronDown } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
 import { supabase } from '@/lib/supabase'
 import { Produto } from '@/types/database'
@@ -384,69 +384,134 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
     // ═══ Modo lista vertical compacta (pra tamanhos) ═══
     if (useDropdown && tipoEscolha === 'single') {
       const idSel = typeof valorAtual === 'string' ? valorAtual : null
+      const opSelecionada = idSel ? g.opcoes.find((o: any) => o.id === idSel) : null
+      const isOpen = showTamanhoDropdown
+      const totalOpcoes = g.opcoes.length
+
+      // Constrói texto e preço da opção selecionada
+      let selecTitulo = ''
+      let selecSub = ''
+      let selecPreco = ''
+      if (opSelecionada) {
+        selecTitulo = opSelecionada.nome
+        if (opSelecionada.peso_kg) selecTitulo += ` · ${opSelecionada.peso_kg} kg`
+        if (opSelecionada.serve) {
+          const s = String(opSelecionada.serve).trim()
+          selecSub = `Serve ${s}${/^\d+$/.test(s) ? ' pessoas' : ''}`
+        }
+        if (g.tipo === 'sabor' && saborTemPrecoProprio && opSelecionada.preco > 0) selecPreco = formatCurrency(opSelecionada.preco)
+        else if (g.tipo === 'tamanho' && opSelecionada.preco > 0) selecPreco = formatCurrency(opSelecionada.preco)
+        else if ((opSelecionada.adicional || 0) > 0) selecPreco = `+${formatCurrency(opSelecionada.adicional)}`
+      }
+
       return (
-        <div style={{ borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-title)' }}>{g.nome_exibicao}</span>
-            <span style={{ fontSize: '11px', color: g.min_selecionavel > 0 ? '#831843' : 'var(--text-muted)', background: g.min_selecionavel > 0 ? '#FCE0E9' : 'var(--border)', padding: '2px 8px', borderRadius: '50px', fontWeight: 700 }}>
-              {hintObrigatoriedade}
-            </span>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#2C1219' }}>{g.nome_exibicao}</span>
+            {g.min_selecionavel > 0 && (
+              <span style={{ display: 'inline-block', padding: '2px 6px', background: '#FCE0E9', color: '#C33A6E', fontSize: 9.5, fontWeight: 800, borderRadius: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Obrigatório
+              </span>
+            )}
           </div>
-          <div style={{
-            display: 'flex', flexDirection: 'column', gap: 0,
-            background: '#fff',
-            border: '1px solid #F0EBED',
-            borderRadius: 12,
-            overflow: 'hidden',
-          }}>
-            {g.opcoes.map((op: any, idx: number) => {
-              const ativo = op.id === idSel
-              let precoLabel = ''
-              if (g.tipo === 'sabor' && saborTemPrecoProprio && op.preco > 0) precoLabel = formatCurrency(op.preco)
-              else if (g.tipo === 'tamanho' && op.preco > 0) precoLabel = formatCurrency(op.preco)
-              else if ((op.adicional || 0) > 0) precoLabel = `+${formatCurrency(op.adicional)}`
-              const serveTxt = op.serve ? `${op.serve}${/^\d+$/.test(String(op.serve).trim()) ? ' pessoas' : ''}`.trim() : ''
-              return (
-                <button
-                  key={op.id}
-                  onClick={() => toggle(op.id)}
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '10px 12px',
-                    border: 'none',
-                    borderTop: idx > 0 ? '1px solid #F5F0F2' : 'none',
-                    background: ativo ? `${corBotao}0A` : '#fff',
-                    cursor: 'pointer', transition: 'background 0.12s',
-                    width: '100%', textAlign: 'left',
-                    minHeight: 44,
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
+
+          {/* Caixa fechada */}
+          <button
+            type="button"
+            onClick={() => setShowTamanhoDropdown(v => !v)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 12,
+              padding: '14px 16px',
+              background: opSelecionada ? '#FFF5F9' : '#fff',
+              border: `1.5px solid ${opSelecionada ? corBotao : (isOpen ? corBotao : '#F0D8DE')}`,
+              borderRadius: 10, cursor: 'pointer',
+              fontFamily: 'inherit', textAlign: 'left', width: '100%',
+              transition: 'all 0.15s',
+            }}
+          >
+            <div style={{
+              width: 36, height: 36, borderRadius: 8,
+              background: '#FCE0E9', color: '#C33A6E',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              <Ruler size={18} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13.5, fontWeight: 700, color: '#2C1219', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {opSelecionada ? selecTitulo : `Selecione o ${g.nome_exibicao.toLowerCase()}`}
+              </div>
+              <div style={{ fontSize: 11.5, color: '#6B7280', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {opSelecionada ? (selecSub || `${totalOpcoes} opções disponíveis`) : `${totalOpcoes} ${totalOpcoes === 1 ? 'opção disponível' : 'opções disponíveis'}`}
+              </div>
+            </div>
+            {opSelecionada && selecPreco ? (
+              <span style={{ fontSize: 13.5, fontWeight: 800, color: '#C33A6E', flexShrink: 0 }}>{selecPreco}</span>
+            ) : null}
+            <span style={{ color: '#C33A6E', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+              {isOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+            </span>
+          </button>
+
+          {/* Lista aberta */}
+          {isOpen && (
+            <div style={{
+              marginTop: 8,
+              background: '#fff',
+              border: '1.5px solid #F0D8DE',
+              borderRadius: 10,
+              overflow: 'hidden',
+              animation: 'dropIn 0.18s ease-out',
+            }}>
+              {g.opcoes.map((op: any, idx: number) => {
+                const ativo = op.id === idSel
+                let precoLabel = ''
+                if (g.tipo === 'sabor' && saborTemPrecoProprio && op.preco > 0) precoLabel = formatCurrency(op.preco)
+                else if (g.tipo === 'tamanho' && op.preco > 0) precoLabel = formatCurrency(op.preco)
+                else if ((op.adicional || 0) > 0) precoLabel = `+${formatCurrency(op.adicional)}`
+                const serveTxt = op.serve ? `${String(op.serve).trim()}${/^\d+$/.test(String(op.serve).trim()) ? ' pessoas' : ''}`.trim() : ''
+                const pesoTxt = op.peso_kg ? `${op.peso_kg} kg` : ''
+                const tituloOp = pesoTxt ? `${op.nome} · ${pesoTxt}` : op.nome
+
+                return (
+                  <button
+                    type="button"
+                    key={op.id}
+                    onClick={() => { toggle(op.id); setShowTamanhoDropdown(false) }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '14px 16px',
+                      background: ativo ? '#FFF5F9' : '#fff',
+                      border: 'none',
+                      borderTop: idx > 0 ? '1px solid #F5F0F2' : 'none',
+                      cursor: 'pointer', transition: 'background 0.12s',
+                      width: '100%', textAlign: 'left',
+                      fontFamily: 'inherit',
+                    }}
+                  >
                     <span style={{
-                      width: 16, height: 16, borderRadius: '50%',
-                      border: `2px solid ${ativo ? corBotao : '#D1D5DB'}`,
-                      background: '#fff',
+                      width: 18, height: 18, borderRadius: '50%',
+                      border: `2px solid ${ativo ? corBotao : '#C0C0C0'}`,
+                      background: ativo ? corBotao : '#fff',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       flexShrink: 0,
-                    }}>
-                      {ativo && <span style={{ width: 8, height: 8, borderRadius: '50%', background: corBotao }} />}
-                    </span>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 0, minWidth: 0 }}>
-                      <span style={{ fontSize: 13.5, fontWeight: 700, color: ativo ? corBotao : '#2C1219', lineHeight: 1.2 }}>{op.nome}</span>
+                      boxShadow: ativo ? `inset 0 0 0 3px #fff` : 'none',
+                    }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 700, color: '#2C1219', lineHeight: 1.2 }}>{tituloOp}</div>
                       {serveTxt && (
-                        <span style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 500, marginTop: 1 }}>Serve {serveTxt}</span>
+                        <div style={{ fontSize: 11, color: '#6B7280', marginTop: 2 }}>Serve {serveTxt}</div>
                       )}
                     </div>
-                  </div>
-                  {precoLabel && (
-                    <span style={{ fontSize: 13.5, fontWeight: 700, color: '#16a34a', flexShrink: 0, marginLeft: 8 }}>
-                      {precoLabel}
-                    </span>
-                  )}
-                </button>
-              )
-            })}
-          </div>
+                    {precoLabel && (
+                      <span style={{ fontSize: 13.5, fontWeight: 800, color: '#C33A6E', flexShrink: 0 }}>{precoLabel}</span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          <style>{`@keyframes dropIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
         </div>
       )
     }
