@@ -119,6 +119,12 @@ export default function Complementos() {
     setModalStep(1);
     setModalOpen(true);
   };
+  const abrirProdutos = (c: Complemento) => {
+    setEditing(c);
+    setForm({ nome: c.nome, valor: c.valor, categorias: c.categorias || [] });
+    setModalStep(2);
+    setModalOpen(true);
+  };
   const fechar = () => { setModalOpen(false); setEditing(null); setModalStep(1); };
 
   const salvar = async () => {
@@ -266,8 +272,8 @@ export default function Complementos() {
               const isGratis = !item.valor || item.valor === 0;
 
               return (
-                <div key={item.id} className="cpl-card">
-                  <div className="cpl-card-hdr" onClick={() => abrirEditar(item)}>
+                <div key={item.id} className="cpl-card" onClick={() => setMenuAbertoId(menuAbertoId === item.id ? null : item.id)}>
+                  <div className="cpl-card-hdr">
                     <div className="cpl-card-nome-wrap">
                       <p className="cpl-card-nome">{item.nome}</p>
                       <span className={`cpl-card-valor ${isGratis ? "cpl-card-valor--gratis" : ""}`}>
@@ -294,6 +300,12 @@ export default function Complementos() {
                             <PencilSimple size={15} weight="bold" /> Editar
                           </button>
                           <button
+                            className="cpl-card-menu-item"
+                            onClick={() => { setMenuAbertoId(null); abrirProdutos(item); }}
+                          >
+                            <Package size={15} weight="bold" /> Adicionar produtos
+                          </button>
+                          <button
                             className="cpl-card-menu-item cpl-card-menu-item--del"
                             onClick={() => { setMenuAbertoId(null); setConfirmDel(item); }}
                           >
@@ -305,11 +317,11 @@ export default function Complementos() {
                   </div>
 
                   {emTodos ? (
-                    <div className="cpl-card-todos" onClick={() => abrirEditar(item)}>
+                    <div className="cpl-card-todos">
                       <CheckCircle size={14} weight="fill" /> Aparece em todos os produtos
                     </div>
                   ) : (
-                    <div className="cpl-card-fotos" onClick={() => abrirEditar(item)}>
+                    <div className="cpl-card-fotos">
                       {mostrarFotos.map(p => (
                         <div key={p.id} className="cpl-card-foto" title={p.nome}>
                           {p.imagem_url ? (
@@ -557,27 +569,28 @@ const styles = `
   .cpl-noresult { text-align: center; color: #9CA3AF; font-size: 13px; padding: 40px 20px; margin: 0; }
 
   .cpl-list { display: flex; flex-direction: column; gap: 8px; }
-  .cpl-card { padding: 14px; background: #fff; border: 1.5px solid #F0EBED; border-radius: 10px; transition: border-color 0.15s; }
+  .cpl-card { padding: 14px; background: #fff; border: 1.5px solid #F0EBED; border-radius: 10px; transition: border-color 0.15s; cursor: pointer; }
   .cpl-card:hover { border-color: #E85A8C; }
-  .cpl-card-hdr { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; cursor: pointer; }
-  .cpl-card-nome-wrap { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .cpl-card-hdr { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+  .cpl-card-nome-wrap { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .cpl-card-nome { margin: 0; font-size: 15px; font-weight: 800; color: #2C1219; letter-spacing: -0.01em; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .cpl-card-valor {
     display: inline-flex;
     align-items: center;
-    padding: 4px 10px;
+    padding: 2px 7px;
     background: linear-gradient(135deg, #22C55E, #16a34a);
     color: #fff;
-    border-radius: 5px;
-    font-size: 12px;
+    border-radius: 4px;
+    font-size: 10.5px;
     font-weight: 800;
-    box-shadow: 0 2px 6px rgba(22, 163, 74, 0.3);
+    box-shadow: 0 1px 3px rgba(22, 163, 74, 0.3);
     white-space: nowrap;
     flex-shrink: 0;
+    letter-spacing: 0.01em;
   }
   .cpl-card-valor--gratis {
     background: linear-gradient(135deg, #16a34a, #15803d);
-    box-shadow: 0 2px 6px rgba(21, 128, 61, 0.3);
+    box-shadow: 0 1px 3px rgba(21, 128, 61, 0.3);
   }
   .cpl-card-actions { display: flex; gap: 4px; flex-shrink: 0; position: relative; }
   .cpl-card-btn { background: transparent; border: none; width: 32px; height: 32px; border-radius: 6px; color: #6B7280; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
@@ -614,11 +627,11 @@ const styles = `
   .cpl-card-menu-item:hover { background: #F5F0F2; }
   .cpl-card-menu-item--del { color: #DC2626; }
   .cpl-card-menu-item--del:hover { background: #FEE2E2; }
-  .cpl-card-fotos { display: flex; align-items: center; gap: 6px; padding-top: 10px; border-top: 1px solid #F5F0F2; cursor: pointer; }
+  .cpl-card-fotos { display: flex; align-items: center; gap: 6px; padding-top: 10px; border-top: 1px solid #F5F0F2; }
   .cpl-card-foto { width: 28px; height: 28px; border-radius: 5px; background: linear-gradient(135deg, #FCE0E9, #F0D8DE); display: flex; align-items: center; justify-content: center; font-size: 14px; overflow: hidden; flex-shrink: 0; }
   .cpl-card-foto img { width: 100%; height: 100%; object-fit: cover; }
   .cpl-card-fotos-txt { font-size: 11.5px; color: #6B7280; font-weight: 600; margin-left: 4px; }
-  .cpl-card-todos { display: flex; align-items: center; gap: 6px; padding-top: 10px; border-top: 1px solid #F5F0F2; font-size: 12px; color: #C33A6E; font-weight: 700; cursor: pointer; }
+  .cpl-card-todos { display: flex; align-items: center; gap: 6px; padding-top: 10px; border-top: 1px solid #F5F0F2; font-size: 12px; color: #C33A6E; font-weight: 700; }
 
   .cpl-modal-ov { position: fixed; inset: 0; z-index: 10000; background: rgba(45, 31, 38, 0.55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: flex; align-items: flex-end; justify-content: center; animation: cplfade 0.2s; overscroll-behavior: contain; touch-action: none; }
   @keyframes cplfade { from { opacity: 0; } to { opacity: 1; } }
