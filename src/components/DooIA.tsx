@@ -317,14 +317,27 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
     })
   }, [])
 
-  // Scroll lock ao abrir
+  // Scroll lock ao abrir — iOS Safari safe (salva scrollY e restaura ao fechar)
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
+    if (!open) return
+    const scrollY = window.scrollY
+    const prev = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width,
     }
-    return () => { document.body.style.overflow = '' }
+    document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.width = '100%'
+    return () => {
+      document.body.style.overflow = prev.overflow
+      document.body.style.position = prev.position
+      document.body.style.top = prev.top
+      document.body.style.width = prev.width
+      window.scrollTo(0, scrollY)
+    }
   }, [open])
 
   // Scroll para última mensagem
@@ -598,23 +611,20 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
       {open && isPro && (
         <div onClick={handleClose} style={{
           position: 'fixed', inset: 0,
-          backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)',
-          background: 'rgba(0,0,0,0.15)', zIndex: 198,
+          backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
+          background: 'rgba(45,31,38,0.45)', zIndex: 198,
           animation: 'dooFadeIn 0.2s ease',
+          touchAction: 'none',
         }} />
       )}
 
       {/* ── Janela do chat ── */}
       {open && isPro && (
-        <div style={{
-          position: 'fixed', bottom: '1.5rem', right: '1.25rem',
-          width: 'min(380px, calc(100vw - 2.5rem))',
-          height: 'min(560px, calc(100vh - 5rem))',
-          background: 'white', borderRadius: '20px',
+        <div className="dooia-panel" style={{
+          background: 'white',
           boxShadow: '0 8px 40px rgba(110,53,72,0.18), 0 2px 8px rgba(0,0,0,0.08)',
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
           zIndex: 199, border: `1px solid rgba(110,53,72,0.12)`,
-          animation: 'dooSlideUp 0.25s cubic-bezier(0.16,1,0.3,1)',
         }}>
 
           {/* Header */}
@@ -895,6 +905,38 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
             --doo-btn-bottom: 2rem;
             --doo-btn-right: 2.25rem;
           }
+        }
+
+        /* Painel do chat — MOBILE: centralizado, quase tela cheia */
+        .dooia-panel {
+          position: fixed;
+          top: 50%; left: 50%;
+          transform: translate(-50%, -50%);
+          width: calc(100vw - 24px);
+          max-width: 420px;
+          height: calc(100dvh - 32px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+          max-height: 720px;
+          border-radius: 20px;
+          animation: dooPanelIn 0.28s cubic-bezier(0.16,1,0.3,1);
+        }
+
+        /* DESKTOP: volta pro canto inferior direito */
+        @media (min-width: 768px) {
+          .dooia-panel {
+            top: auto; left: auto;
+            transform: none;
+            bottom: 1.5rem;
+            right: 1.25rem;
+            width: min(380px, calc(100vw - 2.5rem));
+            height: min(560px, calc(100vh - 5rem));
+            max-height: none;
+            animation: dooSlideUp 0.25s cubic-bezier(0.16,1,0.3,1);
+          }
+        }
+
+        @keyframes dooPanelIn {
+          from { opacity: 0; transform: translate(-50%, -46%) scale(0.96); }
+          to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
         }
         @keyframes dooPulse {
           0% { transform: scale(1); opacity: 0.8; }
