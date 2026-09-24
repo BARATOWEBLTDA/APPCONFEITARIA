@@ -1275,6 +1275,17 @@ function PersonalizacaoStep({
   const [gerarDe, setGerarDe] = useState("0,5");
   const [gerarAte, setGerarAte] = useState("5");
   const [gerarPasso, setGerarPasso] = useState(0.5);
+  // 3️⃣ Modo avançado — mostra campo "Serve X pessoas" em cada tamanho.
+  // Fica off por padrão pra deixar a lista limpa. Ativa automaticamente
+  // se detectar que algum tamanho já tem serve preenchido (evita esconder
+  // dado de um produto que já foi configurado antes).
+  const jaTemServe = grupoTamanhos.opcoes.some(o => (o.serve || "").trim().length > 0);
+  const [modoAvancadoTam, setModoAvancadoTam] = useState<boolean>(jaTemServe);
+  useEffect(() => {
+    // Se editar produto que já tem serve, liga o modo avançado
+    if (jaTemServe && !modoAvancadoTam) setModoAvancadoTam(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jaTemServe]);
 
   const grupos: Array<{
     key: "massas" | "recheios" | "coberturas" | "sabores" | "tamanhos";
@@ -1905,6 +1916,45 @@ function PersonalizacaoStep({
                         </button>
                       );
                     })()}
+                    {/* Toggle "Modo avançado" — só aparece quando tem tamanhos.
+                        Off: lista limpa com só nome+delete. On: mostra campo Serve. */}
+                    {grupoTamanhos.opcoes.length > 0 && grupoTamanhos.modo_preco_tamanho && (
+                      <button
+                        type="button"
+                        className={`pv3-modo-adv ${modoAvancadoTam ? "pv3-modo-adv--on" : ""}`}
+                        onClick={() => {
+                          if (modoAvancadoTam && jaTemServe) {
+                            const ok = confirm("Desligar o modo avançado vai apagar as informações de 'Serve X' já preenchidas. Continuar?");
+                            if (!ok) return;
+                            // Limpa o serve de todos os tamanhos
+                            onChange({ grupo_tamanhos: { ...grupoTamanhos, opcoes: grupoTamanhos.opcoes.map(o => ({ ...o, serve: "" })) } } as any);
+                          }
+                          setModoAvancadoTam(v => !v);
+                        }}
+                      >
+                        <div className="pv3-modo-adv-info">
+                          <div className="pv3-modo-adv-ico">
+                            {modoAvancadoTam ? (
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            ) : (
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                            )}
+                          </div>
+                          <div className="pv3-modo-adv-txt">
+                            <div className="pv3-modo-adv-t">
+                              {modoAvancadoTam ? "Modo avançado ativado" : "Modo avançado"}
+                            </div>
+                            <div className="pv3-modo-adv-s">
+                              {modoAvancadoTam
+                                ? "Configure porções/fatias em cada tamanho"
+                                : "Informe quantas pessoas/porções cada tamanho serve"}
+                            </div>
+                          </div>
+                        </div>
+                        <span className={`pv3-modo-adv-switch ${modoAvancadoTam ? "on" : ""}`} aria-hidden="true" />
+                      </button>
+                    )}
+
                     <div className={`pv3-opcoes-list ${grupoTamanhos.modo_preco_tamanho !== "preco_fixo" ? "pv3-opcoes-list--grid" : ""}`}>
                       {grupoTamanhos.opcoes.map((op, idx) => {
                         const isFirst = idx === 0;
@@ -1948,6 +1998,7 @@ function PersonalizacaoStep({
                                 />
                               </div>
                             )}
+                            {modoAvancadoTam && (
                             <div className="pv3-opcao-serve" title="Quantas pessoas/porções serve (opcional)">
                               {(() => {
                                 // Extrai número + unidade do valor atual (ex: "8 pessoas")
@@ -1988,6 +2039,7 @@ function PersonalizacaoStep({
                                 </>;
                               })()}
                             </div>
+                            )}
                             <button
                               type="button"
                               className="pv3-opcao-del"
@@ -2602,7 +2654,30 @@ function PersonalizacaoStep({
           gap: 6px;
         }
         .pv3-opcoes-list--grid .pv3-opcao-row {
-          padding: 8px 10px;
+          padding: 10px 12px;
+          flex-direction: column;
+          align-items: stretch;
+          gap: 8px;
+        }
+        /* Primeira "linha" dentro do card (nome + delete) */
+        .pv3-opcoes-list--grid .pv3-opcao-row > .pv3-opcao-nome {
+          flex: none;
+          font-size: 13px;
+        }
+        .pv3-opcoes-list--grid .pv3-opcao-row .pv3-opcao-move { display: none; }
+        /* Serve ocupa largura total no grid mode */
+        .pv3-opcoes-list--grid .pv3-opcao-row .pv3-opcao-serve {
+          width: 100%;
+          margin: 0;
+        }
+        /* Delete solta do final e vira canto do topo direito */
+        .pv3-opcoes-list--grid .pv3-opcao-row {
+          position: relative;
+        }
+        .pv3-opcoes-list--grid .pv3-opcao-row .pv3-opcao-del {
+          position: absolute;
+          top: 6px;
+          right: 6px;
         }
         .pv3-opcoes-list--grid .pv3-empty {
           grid-column: 1 / -1;
@@ -2668,11 +2743,13 @@ function PersonalizacaoStep({
           border-radius: 8px;
           padding: 4px 8px;
           flex-shrink: 0;
+          min-width: 0;
         }
         .pv3-opcao-serve:focus-within { border-color: #6B5D64; }
         .pv3-opcao-serve input {
           all: unset;
-          width: 38px;
+          width: 40px;
+          min-width: 0;
           font-size: 13px; font-weight: 700;
           color: #2D1F26;
           text-align: right;
@@ -2852,6 +2929,53 @@ function PersonalizacaoStep({
         .pv3-serve-chips { display: inline-flex; padding: 2px; background: #F5F0F2; border-radius: 6px; gap: 2px; margin-left: 6px; }
         .pv3-serve-chip { all: unset; cursor: pointer; padding: 4px 8px; font-size: 10.5px; font-weight: 700; color: #6B7280; border-radius: 4px; font-family: inherit; transition: all 0.12s; }
         .pv3-serve-chip--on { background: #fff; color: #E85A8C; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+
+        /* ═══ Toggle "Modo avançado" ═══ */
+        .pv3-modo-adv {
+          all: unset;
+          box-sizing: border-box;
+          display: flex; align-items: center; justify-content: space-between;
+          gap: 12px;
+          padding: 12px 14px;
+          background: #FFF5F9;
+          border: 1px solid #F0D8DE;
+          border-radius: 10px;
+          margin-bottom: 12px;
+          cursor: pointer;
+          transition: all 0.15s;
+          font-family: inherit;
+        }
+        .pv3-modo-adv:hover { border-color: #E85A8C; }
+        .pv3-modo-adv--on { background: #DCFCE7; border-color: #86EFAC; }
+        .pv3-modo-adv--on:hover { border-color: #16a34a; }
+        .pv3-modo-adv-info { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .pv3-modo-adv-ico {
+          width: 32px; height: 32px; border-radius: 8px;
+          background: #FCE0E9; color: #C33A6E;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        .pv3-modo-adv--on .pv3-modo-adv-ico { background: #BBF7D0; color: #16a34a; }
+        .pv3-modo-adv-txt { min-width: 0; }
+        .pv3-modo-adv-t { font-size: 13px; font-weight: 800; color: #2C1219; }
+        .pv3-modo-adv-s { font-size: 11px; color: #6B7280; margin-top: 1px; line-height: 1.4; }
+        .pv3-modo-adv-switch {
+          width: 40px; height: 22px;
+          background: #E5E7EB;
+          border-radius: 999px;
+          position: relative;
+          transition: background 0.2s;
+          flex-shrink: 0;
+        }
+        .pv3-modo-adv-switch.on { background: #E85A8C; }
+        .pv3-modo-adv-switch::after {
+          content: ''; position: absolute; top: 2px; left: 2px;
+          width: 18px; height: 18px;
+          background: #fff; border-radius: 50%;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+          transition: transform 0.2s;
+        }
+        .pv3-modo-adv-switch.on::after { transform: translateX(18px); }
 
         /* Badge "Sugerido" — pra opção que o sistema recomenda */
         .pv3-sugerido-badge {
