@@ -251,17 +251,6 @@ export default function Complementos() {
             <div className="cpl-modal-head">
               <div style={{display:"flex", alignItems:"center", gap:8, flex:1, minWidth:0}}>
                 <h3 className="cpl-modal-title">{editing ? "Editar personalização" : "Nova personalização"}</h3>
-                {!editing && (
-                  <button
-                    type="button"
-                    className="cpl-info-tip"
-                    onClick={() => setShowInfo(true)}
-                    aria-label="Sobre personalização"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                  </button>
-                )}
-                <span className="cpl-step-badge">Etapa {modalStep} de 2</span>
               </div>
               <button className="cpl-modal-close" onClick={fechar}><X size={16} weight="bold" /></button>
             </div>
@@ -279,7 +268,6 @@ export default function Complementos() {
                       placeholder="Ex: Topo de bolo, Escrita, Papel de arroz..."
                       value={form.nome}
                       onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
-                      autoFocus={!editing}
                     />
                   </div>
                   <div className="cpl-field">
@@ -479,7 +467,7 @@ const styles = `
 
   .cpl-modal-ov { position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.5); display: flex; align-items: flex-end; justify-content: center; animation: cplfade 0.2s; }
   @keyframes cplfade { from { opacity: 0; } to { opacity: 1; } }
-  .cpl-modal { background: #fff; width: 100%; max-width: 520px; max-height: 90vh; border-radius: 20px 20px 0 0; display: flex; flex-direction: column; overflow: hidden; animation: cplup 0.28s cubic-bezier(0.32,0.72,0,1); font-family: inherit; }
+  .cpl-modal { background: #fff; width: 100%; max-width: 520px; height: 90vh; max-height: 90vh; border-radius: 20px 20px 0 0; display: flex; flex-direction: column; overflow: hidden; animation: cplup 0.28s cubic-bezier(0.32,0.72,0,1); font-family: inherit; }
   .cpl-modal--sm { max-width: 400px; }
   @media (min-width: 720px) { .cpl-modal-ov { align-items: center; padding: 24px; } .cpl-modal { border-radius: 16px; max-height: 82vh; } }
   @keyframes cplup { from { transform: translateY(100%); } to { transform: translateY(0); } }
