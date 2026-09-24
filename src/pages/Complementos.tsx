@@ -61,12 +61,29 @@ export default function Complementos() {
 
   // Bloqueia scroll do body enquanto o modal ou o info estiver aberto (evita
   // o "fundo scrollando" atrás do modal, comum em mobile).
+  // Guardar o scrollY antes e restaurar depois pra evitar salto de posição
+  // ao fechar o modal (iOS Safari e Chrome mobile).
   useEffect(() => {
     const algumAberto = modalOpen || showInfo || !!confirmDel;
     if (algumAberto) {
-      const prev = document.body.style.overflow;
+      const scrollY = window.scrollY;
+      const prev = {
+        overflow: document.body.style.overflow,
+        position: document.body.style.position,
+        top: document.body.style.top,
+        width: document.body.style.width,
+      };
       document.body.style.overflow = "hidden";
-      return () => { document.body.style.overflow = prev; };
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
+      return () => {
+        document.body.style.overflow = prev.overflow;
+        document.body.style.position = prev.position;
+        document.body.style.top = prev.top;
+        document.body.style.width = prev.width;
+        window.scrollTo(0, scrollY);
+      };
     }
   }, [modalOpen, showInfo, confirmDel]);
 
@@ -476,7 +493,7 @@ const styles = `
   .cpl-card-btn:hover { background: #F5F3EF; color: #E85A8C; }
   .cpl-card-btn--del:hover { color: #DC2626; background: #FEE2E2; }
 
-  .cpl-modal-ov { position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.5); display: flex; align-items: flex-end; justify-content: center; animation: cplfade 0.2s; }
+  .cpl-modal-ov { position: fixed; inset: 0; z-index: 10000; background: rgba(45, 31, 38, 0.55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: flex; align-items: flex-end; justify-content: center; animation: cplfade 0.2s; overscroll-behavior: contain; touch-action: none; }
   @keyframes cplfade { from { opacity: 0; } to { opacity: 1; } }
   .cpl-modal { background: #fff; width: 100%; max-width: 520px; height: 70vh; max-height: 70vh; border-radius: 20px 20px 0 0; display: flex; flex-direction: column; overflow: hidden; animation: cplup 0.28s cubic-bezier(0.32,0.72,0,1); font-family: inherit; }
   .cpl-modal--sm { max-width: 400px; }
@@ -487,12 +504,14 @@ const styles = `
   .cpl-modal-title { margin: 0; font-size: 16px; font-weight: 800; color: #1F1F23; }
   .cpl-modal-close { background: #F3F4F6; border: none; width: 30px; height: 30px; border-radius: 8px; color: #6B7280; cursor: pointer; display: flex; align-items: center; justify-content: center; }
   .cpl-modal-body { padding: 18px 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 16px; }
-  .cpl-modal-foot { padding: 14px 16px; padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid #F3F4F6; display: flex; gap: 8px; }
-  .cpl-modal-btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: 700; font-size: 13.5px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
-  .cpl-modal-btn--sec { background: #F3F4F6; color: #4B5563; }
-  .cpl-modal-btn--sec:hover { background: #E5E7EB; }
-  .cpl-modal-btn--pri { background: #E85A8C; color: #fff; box-shadow: 0 4px 12px rgba(232,90,140,0.35); font-weight: 800; flex: 2; }
-  .cpl-modal-btn--pri:hover:not(:disabled) { background: #d54a7a; }
+  .cpl-modal-foot { padding: 14px 16px; padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 10px; }
+  .cpl-modal-btn { flex: 1; padding: 14px; border: none; border-radius: 8px; font-weight: 800; font-size: 13.5px; cursor: pointer; font-family: inherit; transition: transform 0.1s ease, box-shadow 0.1s ease; }
+  .cpl-modal-btn--sec { background: #F3F4F6; color: #4B5563; box-shadow: 0 3px 0 #D1D5DB; }
+  .cpl-modal-btn--sec:hover { background: #E5E7EB; transform: translateY(-1px); box-shadow: 0 4px 0 #D1D5DB; }
+  .cpl-modal-btn--sec:active { transform: translateY(2px); box-shadow: 0 1px 0 #D1D5DB; }
+  .cpl-modal-btn--pri { background: linear-gradient(135deg, #E85A8C, #C33A6E); color: #fff; font-weight: 800; flex: 2; box-shadow: 0 3px 0 #993556, 0 6px 14px rgba(232, 90, 140, 0.3); }
+  .cpl-modal-btn--pri:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 0 #993556, 0 8px 18px rgba(232, 90, 140, 0.4); }
+  .cpl-modal-btn--pri:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #993556, 0 3px 8px rgba(232, 90, 140, 0.3); }
   .cpl-modal-btn--pri:disabled { background: #E5E7EB; color: #9CA3AF; box-shadow: none; cursor: not-allowed; }
 
   .cpl-field { display: flex; flex-direction: column; gap: 6px; }
