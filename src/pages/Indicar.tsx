@@ -121,6 +121,9 @@ export default function Indicar() {
 
   return (
     <div className="ind-root">
+      <div className="ind-grid">
+
+      <div className="ind-col-left">
       {/* ── HERO — Banner dentro de card ─────────────── */}
       <div className="ind-banner-card">
         <img
@@ -160,28 +163,6 @@ export default function Indicar() {
           </>
         )}
       </div>
-
-      {/* ── CONTADOR DESTAQUE (dinâmico) ────────────── */}
-      {conversoes === 0 ? (
-        <div className="ind-contador ind-contador--zero">
-          <div className="ind-contador-emoji">🎁</div>
-          <div className="ind-contador-title-zero">Comece agora sua jornada!</div>
-          <div className="ind-contador-desc-zero">
-            Compartilhe seu link e ganhe seu 1º prêmio:<br/>
-            <b>1 mês PRO grátis</b> com apenas 3 assinantes.
-          </div>
-        </div>
-      ) : (
-        <div className="ind-contador">
-          <div className="ind-contador-label">Você já tem</div>
-          <div className="ind-contador-num">{conversoes}</div>
-          <div className="ind-contador-desc">
-            {proximoIdx !== -1
-              ? `assinantes. Faltam ${PREMIOS[proximoIdx].meta - conversoes} para o próximo prêmio!`
-              : "assinantes. Você conquistou todos os prêmios! 🎉"}
-          </div>
-        </div>
-      )}
 
       {/* ── ROADMAP DE PRÊMIOS (cards grandes com foto) ── */}
       <div className="ind-premios-hdr">Seus prêmios</div>
@@ -240,6 +221,30 @@ export default function Indicar() {
           );
         })}
       </div>
+      </div>{/* fim col-left */}
+
+      <div className="ind-col-right">
+      {/* ── CONTADOR DESTAQUE (dinâmico) ────────────── */}
+      {conversoes === 0 ? (
+        <div className="ind-contador ind-contador--zero">
+          <div className="ind-contador-emoji">🎁</div>
+          <div className="ind-contador-title-zero">Comece agora sua jornada!</div>
+          <div className="ind-contador-desc-zero">
+            Compartilhe seu link e ganhe seu 1º prêmio:<br/>
+            <b>1 mês PRO grátis</b> com apenas 3 assinantes.
+          </div>
+        </div>
+      ) : (
+        <div className="ind-contador">
+          <div className="ind-contador-label">Você já tem</div>
+          <div className="ind-contador-num">{conversoes}</div>
+          <div className="ind-contador-desc">
+            {proximoIdx !== -1
+              ? `assinantes. Faltam ${PREMIOS[proximoIdx].meta - conversoes} para o próximo prêmio!`
+              : "assinantes. Você conquistou todos os prêmios! 🎉"}
+          </div>
+        </div>
+      )}
 
       {/* ── QUEM ENTROU PELO SEU LINK (sempre visível) ── */}
       <div className="ind-card">
@@ -295,6 +300,9 @@ export default function Indicar() {
           </div>
         </div>
       </div>
+      </div>{/* fim col-right */}
+
+      </div>{/* fim ind-grid */}
 
       <style>{`
         .ind-root {
@@ -675,22 +683,50 @@ export default function Indicar() {
         .ind-passo-txt { font-size: 12.5px; color: #5F5E5A; line-height: 1.5; }
 
         /* ═══════════════════════════════════════════════════ */
-        /* ═══  DESKTOP — container centrado, grid prêmios ═══ */
+        /* ═══  DESKTOP — 2 colunas com sidebar sticky      ═══ */
         /* ═══════════════════════════════════════════════════ */
+
+        /* Mobile: grid vira coluna única normal */
+        .ind-grid { display: flex; flex-direction: column; }
+        .ind-col-left, .ind-col-right { display: contents; }
+
         @media (min-width: 900px) {
           .ind-root {
-            max-width: 760px;
+            max-width: 1100px;
             margin: 0 auto;
             padding: 8px 24px 40px;
             background: transparent;
             min-height: 0;
           }
 
-          /* Banner mais controlado no desktop */
-          .ind-banner-card { margin-bottom: 16px; }
-          .ind-card { margin-bottom: 16px; padding: 20px 22px; }
+          .ind-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            align-items: start;
+          }
+          .ind-col-left {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-width: 0;
+          }
+          .ind-col-right {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: sticky;
+            top: 20px;
+            min-width: 0;
+          }
 
-          /* Roadmap de prêmios em grid 2 colunas */
+          /* Zerar margins mobile-only nos cards das colunas */
+          .ind-col-left > *, .ind-col-right > * { margin-bottom: 0 !important; }
+
+          /* Banner mais controlado no desktop */
+          .ind-card { padding: 20px 22px; }
+
+          /* Roadmap de prêmios em grid 2 colunas dentro da col-left */
           .ind-premios {
             display: grid;
             grid-template-columns: 1fr 1fr;
