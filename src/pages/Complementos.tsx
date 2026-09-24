@@ -117,7 +117,7 @@ export default function Complementos() {
   if (loading) {
     return (
       <div className="cpl-root">
-        <AppPageHeader title="Personalização" subtitle="Crie personalizações e escolha quais produtos as terão" infoContent={null} />
+        <AppPageHeader title="Personalização" subtitle="Adicionais e extras dos seus produtos" infoContent={null} />
         <div className="cpl-loading"><div className="cpl-spinner" /></div>
         <style>{stylesLoading}</style>
       </div>
@@ -128,7 +128,7 @@ export default function Complementos() {
     <div className="cpl-root">
       <AppPageHeader
         title="Personalização"
-        subtitle="Crie personalizações e escolha quais produtos as terão"
+        subtitle="Adicionais e extras dos seus produtos"
         infoContent={
           <div style={{ fontSize: 13, lineHeight: 1.5, color: "#4B5563" }}>
             <p style={{ margin: "0 0 8px" }}>Personalizações são <b>opções que o cliente escolhe</b> ao pedir um produto — como topo de bolo, escrita personalizada, papel de arroz.</p>
