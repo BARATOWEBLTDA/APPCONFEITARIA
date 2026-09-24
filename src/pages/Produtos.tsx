@@ -1276,11 +1276,21 @@ function PersonalizacaoStep({
   const [gerarAte, setGerarAte] = useState("5");
   const [gerarPasso, setGerarPasso] = useState(0.5);
   // 3️⃣ Modo avançado — mostra campo "Serve X pessoas" em cada tamanho.
-  // Lógica: se algum tamanho já tem serve preenchido, modo ativa auto.
-  // Se o user clicou no toggle manualmente, o clique dele prevalece.
+  // Persiste dentro de grupo_tamanhos.modo_avancado no banco.
+  // Fallback: se algum tamanho já tem serve, ativa auto (produtos antigos).
   const jaTemServe = grupoTamanhos.opcoes.some(o => (o.serve || "").trim().length > 0);
-  const [modoAvancadoOverride, setModoAvancadoOverride] = useState<boolean | null>(null);
-  const modoAvancadoTam = modoAvancadoOverride ?? jaTemServe;
+  const modoSalvo = (grupoTamanhos as any).modo_avancado;
+  const modoAvancadoTam = typeof modoSalvo === "boolean" ? modoSalvo : jaTemServe;
+  const toggleModoAvancado = () => {
+    const proximo = !modoAvancadoTam;
+    if (!proximo && jaTemServe) {
+      const ok = confirm("Desligar o modo avançado vai apagar as informações de 'Serve X' já preenchidas. Continuar?");
+      if (!ok) return;
+      onChange({ grupo_tamanhos: { ...grupoTamanhos, modo_avancado: proximo, opcoes: grupoTamanhos.opcoes.map(o => ({ ...o, serve: "" })) } } as any);
+      return;
+    }
+    onChange({ grupo_tamanhos: { ...grupoTamanhos, modo_avancado: proximo } } as any);
+  };
 
   const grupos: Array<{
     key: "massas" | "recheios" | "coberturas" | "sabores" | "tamanhos";
@@ -2076,15 +2086,7 @@ function PersonalizacaoStep({
                   <button
                     type="button"
                     className={`pv3-modo-adv ${modoAvancadoTam ? "pv3-modo-adv--on" : ""}`}
-                    onClick={() => {
-                      const proximo = !modoAvancadoTam;
-                      if (!proximo && jaTemServe) {
-                        const ok = confirm("Desligar o modo avançado vai apagar as informações de 'Serve X' já preenchidas. Continuar?");
-                        if (!ok) return;
-                        onChange({ grupo_tamanhos: { ...grupoTamanhos, opcoes: grupoTamanhos.opcoes.map(o => ({ ...o, serve: "" })) } } as any);
-                      }
-                      setModoAvancadoOverride(proximo);
-                    }}
+                    onClick={toggleModoAvancado}
                   >
                     <div className="pv3-modo-adv-info">
                       <div className="pv3-modo-adv-ico">
@@ -2562,6 +2564,9 @@ function PersonalizacaoStep({
           background: #F8F5F6;
           border-radius: 12px;
           padding: 5px;
+          box-sizing: border-box;
+          width: 100%;
+          overflow: hidden;
         }
         .pv3-opcoes-list--grid .pv3-opcao-row {
           padding: 12px;
@@ -2571,6 +2576,8 @@ function PersonalizacaoStep({
           flex-direction: column;
           align-items: stretch;
           gap: 8px;
+          min-width: 0;
+          overflow: hidden;
         }
         .pv3-opcoes-list--grid .pv3-opcao-row:hover {
           border: none !important;
