@@ -418,7 +418,18 @@ const styles = `
   .cpl-search-clear { background: #F3F4F6; border: none; width: 20px; height: 20px; border-radius: 50%; color: #6B7280; cursor: pointer; display: flex; align-items: center; justify-content: center; }
   .cpl-btn-novo { display: inline-flex; align-items: center; gap: 6px; padding: 10px 14px; background: #E85A8C; color: #fff; border: none; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer; font-family: inherit; box-shadow: 0 4px 12px rgba(232,90,140,0.35); white-space: nowrap; }
   .cpl-btn-novo:hover { background: #d54a7a; }
-  .cpl-btn-novo--empty { margin-top: 16px; }
+  .cpl-btn-novo--empty {
+    margin-top: 16px;
+    padding: 14px 24px;
+    font-size: 14px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #E85A8C, #C33A6E);
+    box-shadow: 0 3px 0 #993556, 0 6px 14px rgba(232, 90, 140, 0.35);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+    letter-spacing: 0.01em;
+  }
+  .cpl-btn-novo--empty:hover { background: linear-gradient(135deg, #E85A8C, #C33A6E); transform: translateY(-1px); box-shadow: 0 4px 0 #993556, 0 8px 18px rgba(232, 90, 140, 0.4); }
+  .cpl-btn-novo--empty:active { transform: translateY(2px); box-shadow: 0 1px 0 #993556, 0 3px 8px rgba(232, 90, 140, 0.3); }
 
   .cpl-empty { text-align: center; padding: 32px 20px 24px; background: #fff; border-radius: 14px; border: 1.5px solid #F0EBED; }
   .cpl-empty-avatar { width: 96px; height: 96px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 40px; }
