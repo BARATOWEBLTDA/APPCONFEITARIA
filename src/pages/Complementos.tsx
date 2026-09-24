@@ -11,10 +11,21 @@ type Complemento = {
   categorias: string[]; // reaproveitado: agora guarda IDs de produtos
 };
 
+// Formata nome do produto pra evitar CAIXA ALTA feia: transforma
+// "BOLO DE PAÇOCA" em "Bolo de Paçoca" (preposições em minúsculas).
+function formatNomeProduto(nome: string): string {
+  const preps = new Set(["de", "da", "do", "das", "dos", "e", "com", "para", "a", "o"]);
+  return nome.toLowerCase().split(/\s+/).map((w, i) => {
+    if (i > 0 && preps.has(w)) return w;
+    return w.charAt(0).toUpperCase() + w.slice(1);
+  }).join(" ");
+}
+
 type ProdutoLite = {
   id: string;
   nome: string;
   categoria?: string;
+  imagem_url?: string | null;
 };
 
 function formatBRL(v: number) {
@@ -53,7 +64,7 @@ export default function Complementos() {
       if (profile?.nome) setPrimeiroNome(profile.nome.trim().split(/\s+/)[0]);
       const { data } = await supabase.from("biblioteca_extras").select("*").eq("user_id", uid).order("nome");
       if (data) setItems(data as Complemento[]);
-      const { data: prods } = await supabase.from("produtos").select("id, nome, categoria").eq("user_id", uid).order("nome");
+      const { data: prods } = await supabase.from("produtos").select("id, nome, categoria, imagem_url").eq("user_id", uid).order("nome");
       if (prods) setProdutos(prods as ProdutoLite[]);
       setLoading(false);
     })();
@@ -318,24 +329,8 @@ export default function Complementos() {
                 </>
               ) : (
                 <div className="cpl-field">
-                  <div className="cpl-prods-hdr">
-                    <div>
-                      <label style={{ margin: 0 }}>Aparece em quais produtos?</label>
-                      <p className="cpl-prods-hint">Deixe vazio pra aparecer em todos</p>
-                    </div>
-                    {produtos.length > 0 && (
-                      <button
-                        type="button"
-                        className="cpl-prods-todos"
-                        onClick={() => {
-                          const todosMarcados = produtos.every(p => form.categorias.includes(p.id));
-                          setForm(f => ({ ...f, categorias: todosMarcados ? [] : produtos.map(p => p.id) }));
-                        }}
-                      >
-                        {produtos.every(p => form.categorias.includes(p.id)) ? "Limpar" : "Todos"}
-                      </button>
-                    )}
-                  </div>
+                  <label style={{ margin: 0 }}>Aparece em quais produtos?</label>
+                  <p className="cpl-prods-hint">Deixe vazio pra aparecer em todos</p>
                   {produtos.length === 0 ? (
                     <p style={{ margin: 0, fontSize: 12.5, color: "#9CA3AF" }}>Você ainda não tem produtos cadastrados.</p>
                   ) : (
@@ -349,15 +344,19 @@ export default function Complementos() {
                             className={`cpl-prod-item ${ativo ? "cpl-prod-item--on" : ""}`}
                             onClick={() => toggleProduto(p.id)}
                           >
-                            <div className="cpl-prod-info">
-                              <span className="cpl-prod-nome">{p.nome}</span>
-                              {p.categoria && <span className="cpl-prod-cat">{p.categoria}</span>}
-                            </div>
                             <div className="cpl-prod-check">
                               {ativo && (
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                               )}
                             </div>
+                            <div className="cpl-prod-foto">
+                              {p.imagem_url ? (
+                                <img src={p.imagem_url} alt={p.nome} />
+                              ) : (
+                                <span>🎂</span>
+                              )}
+                            </div>
+                            <span className="cpl-prod-nome">{formatNomeProduto(p.nome)}</span>
                           </button>
                         );
                       })}
@@ -549,17 +548,7 @@ const styles = `
   .cpl-field-prefix { position: absolute; left: 14px; font-size: 13px; font-weight: 700; color: #6B7280; pointer-events: none; z-index: 1; }
   .cpl-field-input-wrap input[type="text"] { padding-left: 40px !important; width: 100%; box-sizing: border-box; }
 
-  .cpl-prods-hdr { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
-  .cpl-prods-hint { font-size: 11px; color: #6B7280; margin: 2px 0 0; font-weight: 500; }
-  .cpl-prods-todos {
-    all: unset; box-sizing: border-box; cursor: pointer;
-    padding: 6px 12px; font-size: 11.5px; font-weight: 800;
-    color: #C33A6E; background: #FCE0E9; border-radius: 6px;
-    text-transform: uppercase; letter-spacing: 0.04em;
-    flex-shrink: 0;
-    transition: background 0.15s;
-  }
-  .cpl-prods-todos:hover { background: #F0D8DE; }
+  .cpl-prods-hint { font-size: 11px; color: #6B7280; margin: 2px 0 8px; font-weight: 500; }
   .cpl-prods-list {
     display: flex; flex-direction: column; gap: 6px;
     max-height: 320px; overflow-y: auto;
@@ -567,8 +556,8 @@ const styles = `
   }
   .cpl-prod-item {
     all: unset; box-sizing: border-box; cursor: pointer;
-    display: flex; align-items: center; gap: 10px;
-    padding: 12px 14px;
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px;
     background: #fff;
     border: 1.5px solid #F0EBED;
     border-radius: 8px;
@@ -577,7 +566,6 @@ const styles = `
   }
   .cpl-prod-item:hover { border-color: #F5B8CD; }
   .cpl-prod-item--on { background: #FFF5F9; border-color: #E85A8C; }
-  .cpl-prod-info { flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; }
   .cpl-prod-check {
     width: 22px; height: 22px; border-radius: 6px;
     border: 2px solid #D1D5DB; background: #fff;
@@ -585,8 +573,14 @@ const styles = `
     flex-shrink: 0; transition: all 0.15s;
   }
   .cpl-prod-item--on .cpl-prod-check { background: #E85A8C; border-color: #E85A8C; }
-  .cpl-prod-nome { font-size: 13.5px; font-weight: 700; color: #2C1219; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .cpl-prod-cat { font-size: 10.5px; padding: 2px 8px; background: #F5F0F2; border-radius: 6px; color: #6B7280; font-weight: 600; flex-shrink: 0; }
+  .cpl-prod-foto {
+    width: 40px; height: 40px; border-radius: 6px;
+    background: linear-gradient(135deg, #FCE0E9, #F0D8DE);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; overflow: hidden; flex-shrink: 0;
+  }
+  .cpl-prod-foto img { width: 100%; height: 100%; object-fit: cover; }
+  .cpl-prod-nome { flex: 1; font-size: 14px; font-weight: 700; color: #2C1219; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   /* Info tip (i) ao lado do título */
   .cpl-info-tip {
