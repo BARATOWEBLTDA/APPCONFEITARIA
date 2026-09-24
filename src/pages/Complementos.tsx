@@ -377,13 +377,13 @@ export default function Complementos() {
                       Quanto custa essa personalização
                       <ReqTag />
                     </label>
-                    <div className="cpl-field-input-wrap">
+                    <div className={`cpl-field-input-wrap ${form.valor > 0 ? "cpl-field-input-wrap--filled" : ""}`}>
                       <span className="cpl-field-prefix">R$</span>
                       <input
                         type="text"
                         inputMode="numeric"
-                        placeholder="0,00"
-                        value={formatBRL(form.valor)}
+                        placeholder="Digite o valor aqui"
+                        value={form.valor > 0 ? formatBRL(form.valor) : ""}
                         onChange={e => setForm(f => ({ ...f, valor: parsePreco(e.target.value) }))}
                       />
                     </div>
@@ -661,8 +661,10 @@ const styles = `
   .cpl-field input[type="text"] { padding: 12px 14px; border: 1.5px solid #E5E7EB; border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; transition: border 0.15s; }
   .cpl-field input:focus { border-color: #E85A8C; }
   .cpl-field-input-wrap { position: relative; display: flex; align-items: center; }
-  .cpl-field-prefix { position: absolute; left: 14px; font-size: 13px; font-weight: 700; color: #6B7280; pointer-events: none; z-index: 1; }
-  .cpl-field-input-wrap input[type="text"] { padding-left: 40px !important; width: 100%; box-sizing: border-box; }
+  .cpl-field-prefix { position: absolute; left: 14px; font-size: 13px; font-weight: 700; color: #6B7280; pointer-events: none; z-index: 1; opacity: 0; transition: opacity 0.15s; }
+  .cpl-field-input-wrap--filled .cpl-field-prefix { opacity: 1; }
+  .cpl-field-input-wrap input[type="text"] { width: 100%; box-sizing: border-box; padding-left: 14px; transition: padding-left 0.15s; }
+  .cpl-field-input-wrap--filled input[type="text"] { padding-left: 40px !important; }
 
   .cpl-prods-hint { font-size: 11px; color: #6B7280; margin: 2px 0 8px; font-weight: 500; }
   .cpl-prods-list {
