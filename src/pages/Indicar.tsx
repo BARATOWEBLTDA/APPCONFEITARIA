@@ -673,6 +673,34 @@ export default function Indicar() {
           flex-shrink: 0;
         }
         .ind-passo-txt { font-size: 12.5px; color: #5F5E5A; line-height: 1.5; }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* ═══  DESKTOP — container centrado, grid prêmios ═══ */
+        /* ═══════════════════════════════════════════════════ */
+        @media (min-width: 900px) {
+          .ind-root {
+            max-width: 760px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 8px 24px 40px;
+            background: transparent;
+          }
+
+          /* Banner mais controlado no desktop */
+          .ind-banner-card { margin-bottom: 16px; }
+          .ind-card { margin-bottom: 16px; padding: 20px 22px; }
+
+          /* Roadmap de prêmios em grid 2 colunas */
+          .ind-premios {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+          }
+          .ind-premios-hdr { margin-top: 4px; }
+
+          /* Contador central com respiro */
+          .ind-contador { padding: 24px 20px; }
+        }
       `}</style>
     </div>
   );
