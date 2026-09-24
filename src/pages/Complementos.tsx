@@ -318,23 +318,49 @@ export default function Complementos() {
                 </>
               ) : (
                 <div className="cpl-field">
-                  <label>Aparece em quais produtos? <span className="cpl-field-hint">(opcional — deixe vazio pra aparecer em todos)</span></label>
+                  <div className="cpl-prods-hdr">
+                    <div>
+                      <label style={{ margin: 0 }}>Aparece em quais produtos?</label>
+                      <p className="cpl-prods-hint">Deixe vazio pra aparecer em todos</p>
+                    </div>
+                    {produtos.length > 0 && (
+                      <button
+                        type="button"
+                        className="cpl-prods-todos"
+                        onClick={() => {
+                          const todosMarcados = produtos.every(p => form.categorias.includes(p.id));
+                          setForm(f => ({ ...f, categorias: todosMarcados ? [] : produtos.map(p => p.id) }));
+                        }}
+                      >
+                        {produtos.every(p => form.categorias.includes(p.id)) ? "Limpar" : "Todos"}
+                      </button>
+                    )}
+                  </div>
                   {produtos.length === 0 ? (
                     <p style={{ margin: 0, fontSize: 12.5, color: "#9CA3AF" }}>Você ainda não tem produtos cadastrados.</p>
                   ) : (
                     <div className="cpl-prods-list">
-                      {produtos.map(p => (
-                        <label key={p.id} className={`cpl-prod-item ${form.categorias.includes(p.id) ? "cpl-prod-item--on" : ""}`}>
-                          <input type="checkbox" checked={form.categorias.includes(p.id)} onChange={() => toggleProduto(p.id)} />
-                          <div className="cpl-prod-check">
-                            {form.categorias.includes(p.id) && (
-                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                            )}
-                          </div>
-                          <span className="cpl-prod-nome">{p.nome}</span>
-                          {p.categoria && <span className="cpl-prod-cat">{p.categoria}</span>}
-                        </label>
-                      ))}
+                      {produtos.map(p => {
+                        const ativo = form.categorias.includes(p.id);
+                        return (
+                          <button
+                            type="button"
+                            key={p.id}
+                            className={`cpl-prod-item ${ativo ? "cpl-prod-item--on" : ""}`}
+                            onClick={() => toggleProduto(p.id)}
+                          >
+                            <div className="cpl-prod-info">
+                              <span className="cpl-prod-nome">{p.nome}</span>
+                              {p.categoria && <span className="cpl-prod-cat">{p.categoria}</span>}
+                            </div>
+                            <div className="cpl-prod-check">
+                              {ativo && (
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -523,36 +549,44 @@ const styles = `
   .cpl-field-prefix { position: absolute; left: 14px; font-size: 13px; font-weight: 700; color: #6B7280; pointer-events: none; z-index: 1; }
   .cpl-field-input-wrap input[type="text"] { padding-left: 40px !important; width: 100%; box-sizing: border-box; }
 
+  .cpl-prods-hdr { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+  .cpl-prods-hint { font-size: 11px; color: #6B7280; margin: 2px 0 0; font-weight: 500; }
+  .cpl-prods-todos {
+    all: unset; box-sizing: border-box; cursor: pointer;
+    padding: 6px 12px; font-size: 11.5px; font-weight: 800;
+    color: #C33A6E; background: #FCE0E9; border-radius: 6px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .cpl-prods-todos:hover { background: #F0D8DE; }
   .cpl-prods-list {
-    display: flex; flex-direction: column; gap: 4px;
-    max-height: 280px; overflow-y: auto;
-    padding: 4px;
-    border: 1.5px solid #F0EBED;
-    border-radius: 10px;
-    background: #FAF8F5;
+    display: flex; flex-direction: column; gap: 6px;
+    max-height: 320px; overflow-y: auto;
+    padding: 4px 4px 4px 0;
   }
   .cpl-prod-item {
+    all: unset; box-sizing: border-box; cursor: pointer;
     display: flex; align-items: center; gap: 10px;
-    padding: 10px 12px;
+    padding: 12px 14px;
     background: #fff;
-    border: 1.5px solid transparent;
+    border: 1.5px solid #F0EBED;
     border-radius: 8px;
-    cursor: pointer;
     transition: all 0.15s;
-    user-select: none;
+    font-family: inherit;
   }
   .cpl-prod-item:hover { border-color: #F5B8CD; }
   .cpl-prod-item--on { background: #FFF5F9; border-color: #E85A8C; }
-  .cpl-prod-item input { display: none; }
+  .cpl-prod-info { flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; }
   .cpl-prod-check {
-    width: 20px; height: 20px; border-radius: 6px;
+    width: 22px; height: 22px; border-radius: 6px;
     border: 2px solid #D1D5DB; background: #fff;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0; transition: all 0.15s;
   }
   .cpl-prod-item--on .cpl-prod-check { background: #E85A8C; border-color: #E85A8C; }
-  .cpl-prod-nome { flex: 1; font-size: 13.5px; font-weight: 700; color: #1F1F23; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .cpl-prod-cat { font-size: 10.5px; padding: 2px 8px; background: #F5F3EF; border-radius: 6px; color: #6B7280; font-weight: 600; flex-shrink: 0; }
+  .cpl-prod-nome { font-size: 13.5px; font-weight: 700; color: #2C1219; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cpl-prod-cat { font-size: 10.5px; padding: 2px 8px; background: #F5F0F2; border-radius: 6px; color: #6B7280; font-weight: 600; flex-shrink: 0; }
 
   /* Info tip (i) ao lado do título */
   .cpl-info-tip {
