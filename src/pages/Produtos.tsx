@@ -1796,17 +1796,41 @@ function PersonalizacaoStep({
                       </div>
                     </div>
 
-                    {/* Botão gerar tamanhos padrão (só no modo por_peso) */}
-                    {grupoTamanhos.modo_preco_tamanho === "por_peso" && (
-                      <button
-                        type="button"
-                        className="pv3-gerar-tamanhos"
-                        onClick={() => setGerarModalAberto(true)}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                        Gerar tamanhos automaticamente
-                      </button>
-                    )}
+                    {/* Botões de ação em linha: gerar automático + biblioteca */}
+                    <div className="pv3-tam-actions">
+                      {/* Botão gerar tamanhos padrão (só no modo por_peso) */}
+                      {grupoTamanhos.modo_preco_tamanho === "por_peso" && (
+                        <button
+                          type="button"
+                          className="pv3-gerar-tamanhos"
+                          onClick={() => setGerarModalAberto(true)}
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                          Gerar automaticamente
+                        </button>
+                      )}
+
+                      {/* Sugestões da biblioteca — só se modo escolhido */}
+                      {grupoTamanhos.modo_preco_tamanho && (() => {
+                        const bibl = biblioteca.tamanhos || [];
+                        const nomesAtuais = grupoTamanhos.opcoes.map(o => o.nome.toLowerCase());
+                        const sugestoes = bibl.filter(b => !nomesAtuais.includes(b.nome.toLowerCase()));
+                        if (sugestoes.length === 0) return null;
+                        return (
+                          <button
+                            type="button"
+                            className="pv3-bib-btn"
+                            onClick={() => abrirBibSheet("tamanhos")}
+                          >
+                            <span className="pv3-bib-btn-txt">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                              Escolher da biblioteca
+                            </span>
+                            <span className="pv3-bib-btn-count">{sugestoes.length}</span>
+                          </button>
+                        );
+                      })()}
+                    </div>
 
                     {/* Modal Gerar Tamanhos (range editável) */}
                     {gerarModalAberto && (() => {
@@ -1896,65 +1920,6 @@ function PersonalizacaoStep({
                       );
                     })()}
 
-                    {/* Sugestões da biblioteca — só se modo escolhido */}
-                    {grupoTamanhos.modo_preco_tamanho && (() => {
-                      const bibl = biblioteca.tamanhos || [];
-                      const nomesAtuais = grupoTamanhos.opcoes.map(o => o.nome.toLowerCase());
-                      const sugestoes = bibl.filter(b => !nomesAtuais.includes(b.nome.toLowerCase()));
-                      if (sugestoes.length === 0) return null;
-                      return (
-                        <button
-                          type="button"
-                          className="pv3-bib-btn"
-                          onClick={() => abrirBibSheet("tamanhos")}
-                        >
-                          <span className="pv3-bib-btn-txt">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                            Escolher da minha biblioteca
-                          </span>
-                          <span className="pv3-bib-btn-count">{sugestoes.length}</span>
-                        </button>
-                      );
-                    })()}
-                    {/* Toggle "Modo avançado" — só aparece quando tem tamanhos.
-                        Off: lista limpa com só nome+delete. On: mostra campo Serve. */}
-                    {grupoTamanhos.opcoes.length > 0 && grupoTamanhos.modo_preco_tamanho && (
-                      <button
-                        type="button"
-                        className={`pv3-modo-adv ${modoAvancadoTam ? "pv3-modo-adv--on" : ""}`}
-                        onClick={() => {
-                          if (modoAvancadoTam && jaTemServe) {
-                            const ok = confirm("Desligar o modo avançado vai apagar as informações de 'Serve X' já preenchidas. Continuar?");
-                            if (!ok) return;
-                            // Limpa o serve de todos os tamanhos
-                            onChange({ grupo_tamanhos: { ...grupoTamanhos, opcoes: grupoTamanhos.opcoes.map(o => ({ ...o, serve: "" })) } } as any);
-                          }
-                          setModoAvancadoTam(v => !v);
-                        }}
-                      >
-                        <div className="pv3-modo-adv-info">
-                          <div className="pv3-modo-adv-ico">
-                            {modoAvancadoTam ? (
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                            ) : (
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
-                            )}
-                          </div>
-                          <div className="pv3-modo-adv-txt">
-                            <div className="pv3-modo-adv-t">
-                              {modoAvancadoTam ? "Modo avançado ativado" : "Modo avançado"}
-                            </div>
-                            <div className="pv3-modo-adv-s">
-                              {modoAvancadoTam
-                                ? "Configure porções/fatias em cada tamanho"
-                                : "Informe quantas pessoas/porções cada tamanho serve"}
-                            </div>
-                          </div>
-                        </div>
-                        <span className={`pv3-modo-adv-switch ${modoAvancadoTam ? "on" : ""}`} aria-hidden="true" />
-                      </button>
-                    )}
-
                     <div className={`pv3-opcoes-list ${grupoTamanhos.modo_preco_tamanho !== "preco_fixo" ? "pv3-opcoes-list--grid" : ""}`}>
                       {grupoTamanhos.opcoes.map((op, idx) => {
                         const isFirst = idx === 0;
@@ -1999,7 +1964,7 @@ function PersonalizacaoStep({
                               </div>
                             )}
                             {modoAvancadoTam && (
-                            <div className="pv3-opcao-serve" title="Quantas pessoas/porções serve (opcional)">
+                            <div className="pv3-serve-box">
                               {(() => {
                                 // Extrai número + unidade do valor atual (ex: "8 pessoas")
                                 const raw = String(op.serve || "");
@@ -2017,13 +1982,19 @@ function PersonalizacaoStep({
                                   const valor = numLimpo ? `${numLimpo.trim()} ${label}` : "";
                                   onChange({ grupo_tamanhos: { ...grupoTamanhos, opcoes: grupoTamanhos.opcoes.map(o => o.id === op.id ? { ...o, serve: valor } : o) } } as any);
                                 };
+                                const unidLabel = unid === "porcoes" ? "porções" : unid;
                                 return <>
-                                  <input
-                                    type="text"
-                                    placeholder="Ex: 8"
-                                    value={num}
-                                    onChange={e => update(e.target.value, unid)}
-                                  />
+                                  <span className="pv3-serve-label">Serve</span>
+                                  <div className="pv3-serve-input">
+                                    <input
+                                      type="text"
+                                      inputMode="numeric"
+                                      placeholder="0"
+                                      value={num}
+                                      onChange={e => update(e.target.value, unid)}
+                                    />
+                                    <span className="pv3-serve-sufixo">{unidLabel}</span>
+                                  </div>
                                   <div className="pv3-serve-chips" role="tablist">
                                     {(["pessoas","porcoes","fatias"] as const).map(u => (
                                       <button
@@ -2113,6 +2084,46 @@ function PersonalizacaoStep({
                     </div>
                     )}
                   </>
+                )}
+
+                {/* Toggle "Modo avançado" — só pra tamanhos, agrupado com Config avançadas.
+                    Off: lista limpa. On: mostra campo Serve em cada tamanho. */}
+                {g.key === "tamanhos" && grupoTamanhos.opcoes.length > 0 && grupoTamanhos.modo_preco_tamanho && (
+                  <div style={{marginTop: 14, borderTop: "1px dashed #E5D8DE", paddingTop: 12}}>
+                    <button
+                      type="button"
+                      className={`pv3-modo-adv ${modoAvancadoTam ? "pv3-modo-adv--on" : ""}`}
+                      onClick={() => {
+                        if (modoAvancadoTam && jaTemServe) {
+                          const ok = confirm("Desligar o modo avançado vai apagar as informações de 'Serve X' já preenchidas. Continuar?");
+                          if (!ok) return;
+                          onChange({ grupo_tamanhos: { ...grupoTamanhos, opcoes: grupoTamanhos.opcoes.map(o => ({ ...o, serve: "" })) } } as any);
+                        }
+                        setModoAvancadoTam(v => !v);
+                      }}
+                    >
+                      <div className="pv3-modo-adv-info">
+                        <div className="pv3-modo-adv-ico">
+                          {modoAvancadoTam ? (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          ) : (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                          )}
+                        </div>
+                        <div className="pv3-modo-adv-txt">
+                          <div className="pv3-modo-adv-t">
+                            {modoAvancadoTam ? "Modo avançado ativado" : "Modo avançado"}
+                          </div>
+                          <div className="pv3-modo-adv-s">
+                            {modoAvancadoTam
+                              ? "Configure porções/fatias em cada tamanho"
+                              : "Informe quantas pessoas cada tamanho serve"}
+                          </div>
+                        </div>
+                      </div>
+                      <span className={`pv3-modo-adv-switch ${modoAvancadoTam ? "on" : ""}`} aria-hidden="true" />
+                    </button>
+                  </div>
                 )}
 
                 {/* ═══ Configurações avançadas — só quando confeiteira quer configurar min/max ═══ */}
@@ -2666,7 +2677,8 @@ function PersonalizacaoStep({
         }
         .pv3-opcoes-list--grid .pv3-opcao-row .pv3-opcao-move { display: none; }
         /* Serve ocupa largura total no grid mode */
-        .pv3-opcoes-list--grid .pv3-opcao-row .pv3-opcao-serve {
+        .pv3-opcoes-list--grid .pv3-opcao-row .pv3-opcao-serve,
+        .pv3-opcoes-list--grid .pv3-opcao-row .pv3-serve-box {
           width: 100%;
           margin: 0;
         }
@@ -2929,6 +2941,67 @@ function PersonalizacaoStep({
         .pv3-serve-chips { display: inline-flex; padding: 2px; background: #F5F0F2; border-radius: 6px; gap: 2px; margin-left: 6px; }
         .pv3-serve-chip { all: unset; cursor: pointer; padding: 4px 8px; font-size: 10.5px; font-weight: 700; color: #6B7280; border-radius: 4px; font-family: inherit; transition: all 0.12s; }
         .pv3-serve-chip--on { background: #fff; color: #E85A8C; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+
+        /* ═══ Botões de ação dos tamanhos em linha ═══ */
+        .pv3-tam-actions {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+          margin-bottom: 10px;
+        }
+        .pv3-tam-actions .pv3-gerar-tamanhos,
+        .pv3-tam-actions .pv3-bib-btn {
+          margin-bottom: 0;
+          flex: 1 1 180px;
+          min-width: 0;
+          justify-content: center;
+        }
+
+        /* ═══ Serve — visual mais claro ═══ */
+        .pv3-serve-box {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-wrap: wrap;
+          margin-top: 6px;
+          padding: 8px 10px;
+          background: #FFF5F9;
+          border: 1px solid #F0D8DE;
+          border-radius: 8px;
+        }
+        .pv3-serve-label {
+          font-size: 11px;
+          font-weight: 800;
+          color: #C33A6E;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+        }
+        .pv3-serve-input {
+          display: inline-flex;
+          align-items: center;
+          background: #fff;
+          border: 1.5px solid #F0D8DE;
+          border-radius: 6px;
+          overflow: hidden;
+          transition: border-color 0.15s;
+        }
+        .pv3-serve-input:focus-within { border-color: #E85A8C; }
+        .pv3-serve-input input {
+          all: unset;
+          width: 46px;
+          padding: 6px 4px 6px 10px;
+          font-size: 14px;
+          font-weight: 800;
+          color: #2C1219;
+          text-align: center;
+        }
+        .pv3-serve-input input::placeholder { color: #C0B3B8; }
+        .pv3-serve-sufixo {
+          padding: 6px 8px 6px 4px;
+          font-size: 12px;
+          font-weight: 700;
+          color: #6B7280;
+        }
 
         /* ═══ Toggle "Modo avançado" ═══ */
         .pv3-modo-adv {
