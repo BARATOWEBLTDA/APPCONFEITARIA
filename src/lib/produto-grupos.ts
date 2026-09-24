@@ -276,17 +276,10 @@ export type GrupoAntigoTamanhos = {
  * Senão, monta a partir das 4 colunas antigas.
  */
 export function carregarGruposDoBanco(produto: any): GrupoOpcoes[] {
-  // Se já tem estrutura nova, usa e garante os 5 tipos
-  if (Array.isArray(produto?.grupos_opcoes) && produto.grupos_opcoes.length > 0) {
-    let grupos = produto.grupos_opcoes as GrupoOpcoes[];
-    // Garante que todos os 5 tipos existem (adiciona faltantes vazios)
-    (["massa", "recheio", "cobertura", "sabor", "tamanho"] as TipoGrupo[]).forEach(t => {
-      grupos = garantirGrupo(grupos, t);
-    });
-    return grupos;
-  }
-
-  // Fallback: converte do formato antigo
+  // Sempre monta a partir das colunas antigas (que são o que a UI edita).
+  // O grupos_opcoes[] é apenas destino de escrita, nunca fonte de leitura,
+  // pra evitar divergência (ex: modo_avancado, serve, novos campos que a UI
+  // adiciona só nas colunas antigas).
   const grupos: GrupoOpcoes[] = [];
 
   const mapearAntigo = (
@@ -301,6 +294,13 @@ export function carregarGruposDoBanco(produto: any): GrupoOpcoes[] {
       g.max_selecionavel = antigo.max ?? cfg.max_default;
       g.foto_por_opcao = !!antigo.foto_por_opcao;
       if (tipo === "recheio") g.distribuicao = antigo.distribuicao || "nenhuma";
+      // Preserva campos extras do grupo (modo_avancado, modo_preco_tamanho, etc)
+      // — copia tudo que não é gerenciado explicitamente acima
+      Object.keys(antigo).forEach(k => {
+        if (!["ativo", "min", "max", "foto_por_opcao", "distribuicao", "opcoes"].includes(k)) {
+          (g as any)[k] = (antigo as any)[k];
+        }
+      });
       g.opcoes = (antigo.opcoes || []).map((o: any) => ({
         id: o.id || `opc_${gerarId()}`,
         nome: o.nome || "",
@@ -317,7 +317,7 @@ export function carregarGruposDoBanco(produto: any): GrupoOpcoes[] {
   mapearAntigo("massa", produto?.grupo_massas);
   mapearAntigo("recheio", produto?.grupo_recheios);
   mapearAntigo("cobertura", produto?.grupo_coberturas);
-  mapearAntigo("sabor", produto?.grupo_sabores); // vazio se não existe
+  mapearAntigo("sabor", produto?.grupo_sabores);
   mapearAntigo("tamanho", produto?.grupo_tamanhos);
 
   return grupos;
@@ -372,6 +372,14 @@ export function salvarGruposParaBanco(grupos: GrupoOpcoes[]): Record<string, any
     };
   }
   if (tamanho) {
+    // Preserva campos extras (modo_avancado, modo_preco_tamanho, etc)
+    // que a UI armazena diretamente no grupo, além dos campos padrões
+    const extras: Record<string, any> = {};
+    Object.keys(tamanho).forEach(k => {
+      if (!["tipo", "nome_exibicao", "ativo", "min_selecionavel", "max_selecionavel", "distribuicao", "opcoes", "foto_por_opcao"].includes(k)) {
+        extras[k] = (tamanho as any)[k];
+      }
+    });
     payload.grupo_tamanhos = {
       ativo: tamanho.ativo,
       min: tamanho.min_selecionavel,
@@ -379,6 +387,7 @@ export function salvarGruposParaBanco(grupos: GrupoOpcoes[]): Record<string, any
       distribuicao: "nenhuma",
       opcoes: tamanho.opcoes,
       foto_por_opcao: tamanho.foto_por_opcao,
+      ...extras,
     };
   }
   // Sabor não tem coluna antiga — só grupos_opcoes
