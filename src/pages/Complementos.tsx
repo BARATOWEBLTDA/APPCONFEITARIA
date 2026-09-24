@@ -271,7 +271,7 @@ export default function Complementos() {
                     <div className="cpl-card-nome-wrap">
                       <p className="cpl-card-nome">{item.nome}</p>
                       <span className={`cpl-card-valor ${isGratis ? "cpl-card-valor--gratis" : ""}`}>
-                        {isGratis ? "Grátis" : `+ R$ ${formatBRL(item.valor)}`}
+                        {isGratis ? "Grátis" : `R$ ${formatBRL(item.valor)}`}
                       </span>
                     </div>
                     <div className="cpl-card-actions">
@@ -560,10 +560,25 @@ const styles = `
   .cpl-card { padding: 14px; background: #fff; border: 1.5px solid #F0EBED; border-radius: 10px; transition: border-color 0.15s; }
   .cpl-card:hover { border-color: #E85A8C; }
   .cpl-card-hdr { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; cursor: pointer; }
-  .cpl-card-nome-wrap { flex: 1; min-width: 0; }
+  .cpl-card-nome-wrap { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .cpl-card-nome { margin: 0; font-size: 15px; font-weight: 800; color: #2C1219; letter-spacing: -0.01em; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .cpl-card-valor { display: inline-block; padding: 3px 8px; background: #FCE0E9; color: #C33A6E; border-radius: 5px; font-size: 12px; font-weight: 800; margin-top: 6px; }
-  .cpl-card-valor--gratis { background: #DCFCE7; color: #16a34a; }
+  .cpl-card-valor {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    background: linear-gradient(135deg, #22C55E, #16a34a);
+    color: #fff;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 800;
+    box-shadow: 0 2px 6px rgba(22, 163, 74, 0.3);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .cpl-card-valor--gratis {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    box-shadow: 0 2px 6px rgba(21, 128, 61, 0.3);
+  }
   .cpl-card-actions { display: flex; gap: 4px; flex-shrink: 0; position: relative; }
   .cpl-card-btn { background: transparent; border: none; width: 32px; height: 32px; border-radius: 6px; color: #6B7280; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
   .cpl-card-btn:hover { background: #F5F0F2; color: #2C1219; }
