@@ -1233,10 +1233,16 @@ function PersonalizacaoStep({
   };
 
   // Gera tamanhos em intervalo (0,5 a 10 de 0,5 em 0,5 = 20 tamanhos) — pra modo por_peso
-  const gerarTamanhosPadrao = () => {
+  const gerarTamanhosPadrao = (deKg: number = 0.5, ateKg: number = 5, passoKg: number = 0.5) => {
     const existentes = new Set(grupoTamanhos.opcoes.map(o => o.nome.toLowerCase()));
     const novos: { id: string; nome: string; preco: number }[] = [];
-    for (let peso = 0.5; peso <= 10; peso += 0.5) {
+    // Trabalha com inteiros (× 100) pra evitar erros de ponto flutuante do JS
+    const deI = Math.round(deKg * 100);
+    const ateI = Math.round(ateKg * 100);
+    const passoI = Math.round(passoKg * 100);
+    if (passoI <= 0 || deI > ateI) return;
+    for (let pesoI = deI; pesoI <= ateI; pesoI += passoI) {
+      const peso = pesoI / 100;
       const nome = peso % 1 === 0 ? `${peso}kg` : `${peso.toString().replace(".", ",")}kg`;
       if (existentes.has(nome.toLowerCase())) continue;
       novos.push({ id: gerarId(), nome, preco: 0 });
@@ -1261,6 +1267,14 @@ function PersonalizacaoStep({
   const [novoSaborInput, setNovoSaborInput] = useState("");
   const [novoTamanhoNome, setNovoTamanhoNome] = useState("");
   const [novoTamanhoPreco, setNovoTamanhoPreco] = useState("");
+  // 2️⃣ Cadastro manual: chip de unidade selecionada
+  type UnidadeTam = "kg" | "cm" | "un" | "fatia";
+  const [novoTamanhoUnid, setNovoTamanhoUnid] = useState<UnidadeTam>("kg");
+  // 1️⃣ Modal do "gerar tamanhos"
+  const [gerarModalAberto, setGerarModalAberto] = useState(false);
+  const [gerarDe, setGerarDe] = useState("0,5");
+  const [gerarAte, setGerarAte] = useState("5");
+  const [gerarPasso, setGerarPasso] = useState(0.5);
 
   const grupos: Array<{
     key: "massas" | "recheios" | "coberturas" | "sabores" | "tamanhos";
@@ -1776,12 +1790,100 @@ function PersonalizacaoStep({
                       <button
                         type="button"
                         className="pv3-gerar-tamanhos"
-                        onClick={gerarTamanhosPadrao}
+                        onClick={() => setGerarModalAberto(true)}
                       >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M14 3l7 7-11 11-7-7 11-11z"/></svg>
-                        Gerar tamanhos padrão (0,5kg a 10kg)
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                        Gerar tamanhos automaticamente
                       </button>
                     )}
+
+                    {/* Modal Gerar Tamanhos (range editável) */}
+                    {gerarModalAberto && (() => {
+                      const parseNum = (s: string) => parseFloat(s.replace(",", ".")) || 0;
+                      const de = parseNum(gerarDe);
+                      const ate = parseNum(gerarAte);
+                      const passo = gerarPasso;
+                      let qtd = 0;
+                      const listaPreview: string[] = [];
+                      if (passo > 0 && de > 0 && ate >= de) {
+                        const deI = Math.round(de * 100);
+                        const ateI = Math.round(ate * 100);
+                        const passoI = Math.round(passo * 100);
+                        for (let p = deI; p <= ateI; p += passoI) {
+                          qtd++;
+                          const val = p / 100;
+                          if (listaPreview.length < 6) {
+                            const label = val % 1 === 0 ? `${val}kg` : `${val.toString().replace(".", ",")}kg`;
+                            listaPreview.push(label);
+                          }
+                        }
+                      }
+                      const previewText = qtd === 0
+                        ? "Valores inválidos"
+                        : `Vai criar ${qtd} tamanho${qtd === 1 ? "" : "s"}: ${listaPreview.join(", ")}${qtd > 6 ? "..." : ""}`;
+                      return (
+                        <div className="pv3-gerar-overlay" onClick={() => setGerarModalAberto(false)}>
+                          <div className="pv3-gerar-modal" onClick={e => e.stopPropagation()}>
+                            <div className="pv3-gerar-hdr">
+                              <p className="pv3-gerar-tit">Gerar tamanhos em kg</p>
+                              <button className="pv3-gerar-close" onClick={() => setGerarModalAberto(false)} aria-label="Fechar">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                              </button>
+                            </div>
+                            <p className="pv3-gerar-sub">Escolha o range e o passo. Ex: 0,5kg até 5kg com passo 0,5kg = 10 tamanhos.</p>
+
+                            <div className="pv3-gerar-row">
+                              <div className="pv3-gerar-field">
+                                <div className="pv3-gerar-lbl">De</div>
+                                <div className="pv3-gerar-input">
+                                  <input type="text" inputMode="decimal" value={gerarDe} onChange={e => setGerarDe(e.target.value)} />
+                                  <span>kg</span>
+                                </div>
+                              </div>
+                              <span className="pv3-gerar-arr">→</span>
+                              <div className="pv3-gerar-field">
+                                <div className="pv3-gerar-lbl">Até</div>
+                                <div className="pv3-gerar-input">
+                                  <input type="text" inputMode="decimal" value={gerarAte} onChange={e => setGerarAte(e.target.value)} />
+                                  <span>kg</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="pv3-gerar-lbl">Passo</div>
+                            <div className="pv3-gerar-chips">
+                              {[0.1, 0.25, 0.5, 1].map(p => (
+                                <button
+                                  key={p}
+                                  type="button"
+                                  className={`pv3-gerar-chip ${gerarPasso === p ? "pv3-gerar-chip--on" : ""}`}
+                                  onClick={() => setGerarPasso(p)}
+                                >
+                                  {p.toString().replace(".", ",")} kg
+                                </button>
+                              ))}
+                            </div>
+
+                            <div className="pv3-gerar-preview">{previewText}</div>
+
+                            <div className="pv3-gerar-actions">
+                              <button type="button" className="pv3-gerar-btn pv3-gerar-btn--sec" onClick={() => setGerarModalAberto(false)}>Cancelar</button>
+                              <button
+                                type="button"
+                                className="pv3-gerar-btn pv3-gerar-btn--pri"
+                                disabled={qtd === 0}
+                                onClick={() => {
+                                  gerarTamanhosPadrao(de, ate, passo);
+                                  setGerarModalAberto(false);
+                                }}
+                              >
+                                Gerar {qtd > 0 ? `${qtd} tamanhos` : ""}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
 
                     {/* Sugestões da biblioteca — só se modo escolhido */}
                     {grupoTamanhos.modo_preco_tamanho && (() => {
@@ -1846,17 +1948,45 @@ function PersonalizacaoStep({
                                 />
                               </div>
                             )}
-                            <div className="pv3-opcao-serve" title="Quantas pessoas serve (opcional)">
-                              <input
-                                type="text"
-                                placeholder="Ex: 8"
-                                value={op.serve || ""}
-                                onChange={e => {
-                                  const valor = e.target.value.slice(0, 12);
+                            <div className="pv3-opcao-serve" title="Quantas pessoas/porções serve (opcional)">
+                              {(() => {
+                                // Extrai número + unidade do valor atual (ex: "8 pessoas")
+                                const raw = String(op.serve || "");
+                                const m = raw.match(/^\s*([\d\s,-]*?)\s*(pessoas|porções|porcoes|fatias)?\s*$/i);
+                                const num = m ? (m[1] || "") : raw;
+                                let unid: "pessoas" | "porcoes" | "fatias" = "pessoas";
+                                if (m && m[2]) {
+                                  const u = m[2].toLowerCase();
+                                  if (u.startsWith("por")) unid = "porcoes";
+                                  else if (u.startsWith("fat")) unid = "fatias";
+                                }
+                                const update = (novoNum: string, novaUnid: typeof unid) => {
+                                  const numLimpo = novoNum.slice(0, 8);
+                                  const label = novaUnid === "porcoes" ? "porções" : novaUnid;
+                                  const valor = numLimpo ? `${numLimpo.trim()} ${label}` : "";
                                   onChange({ grupo_tamanhos: { ...grupoTamanhos, opcoes: grupoTamanhos.opcoes.map(o => o.id === op.id ? { ...o, serve: valor } : o) } } as any);
-                                }}
-                              />
-                              <span className="pv3-opcao-serve-suf">pessoas</span>
+                                };
+                                return <>
+                                  <input
+                                    type="text"
+                                    placeholder="Ex: 8"
+                                    value={num}
+                                    onChange={e => update(e.target.value, unid)}
+                                  />
+                                  <div className="pv3-serve-chips" role="tablist">
+                                    {(["pessoas","porcoes","fatias"] as const).map(u => (
+                                      <button
+                                        key={u}
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={unid === u}
+                                        className={`pv3-serve-chip ${unid === u ? "pv3-serve-chip--on" : ""}`}
+                                        onClick={() => update(num, u)}
+                                      >{u === "porcoes" ? "porções" : u}</button>
+                                    ))}
+                                  </div>
+                                </>;
+                              })()}
                             </div>
                             <button
                               type="button"
@@ -1885,22 +2015,43 @@ function PersonalizacaoStep({
                     <div className="pv3-add-row">
                       <input
                         type="text"
-                        placeholder="Ex: P, M, G, 1kg..."
+                        placeholder="Ex: P, M, G, 1,5..."
                         value={novoTamanhoNome}
                         onChange={e => setNovoTamanhoNome(e.target.value)}
                         onKeyDown={e => {
                           if (e.key === "Enter") {
                             e.preventDefault();
-                            addTamanho(novoTamanhoNome, 0);
+                            const nome = novoTamanhoNome.trim();
+                            if (!nome) return;
+                            // Se é só número, concatena a unidade escolhida
+                            const soNumero = /^[\d.,]+$/.test(nome);
+                            const nomeFinal = soNumero ? `${nome} ${novoTamanhoUnid}` : nome;
+                            addTamanho(nomeFinal, 0);
                             setNovoTamanhoNome("");
                           }
                         }}
                       />
+                      <div className="pv3-unid-chips" role="tablist" aria-label="Unidade">
+                        {(["kg","cm","un","fatia"] as const).map(u => (
+                          <button
+                            key={u}
+                            type="button"
+                            role="tab"
+                            aria-selected={novoTamanhoUnid === u}
+                            className={`pv3-unid-chip ${novoTamanhoUnid === u ? "pv3-unid-chip--on" : ""}`}
+                            onClick={() => setNovoTamanhoUnid(u)}
+                          >{u}</button>
+                        ))}
+                      </div>
                       <button
                         type="button"
                         className="pv3-add-btn"
                         onClick={() => {
-                          addTamanho(novoTamanhoNome, 0);
+                          const nome = novoTamanhoNome.trim();
+                          if (!nome) return;
+                          const soNumero = /^[\d.,]+$/.test(nome);
+                          const nomeFinal = soNumero ? `${nome} ${novoTamanhoUnid}` : nome;
+                          addTamanho(nomeFinal, 0);
                           setNovoTamanhoNome("");
                         }}
                       >
@@ -2650,6 +2801,57 @@ function PersonalizacaoStep({
           transition: all 0.15s ease;
         }
         .pv3-gerar-tamanhos:hover { background: #E85A8C; color: #fff; }
+
+        /* ═══ Modal Gerar Tamanhos (range editável) ═══ */
+        .pv3-gerar-overlay {
+          position: fixed; inset: 0; z-index: 10001;
+          background: rgba(45, 31, 38, 0.55);
+          backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+          display: flex; align-items: center; justify-content: center;
+          padding: 20px;
+          animation: pv3-fade 0.2s ease-out;
+        }
+        .pv3-gerar-modal {
+          background: #fff; width: 100%; max-width: 440px;
+          border-radius: 14px; padding: 20px;
+          font-family: 'Geist', sans-serif;
+          animation: pv3-in 0.22s cubic-bezier(0.32,0.72,0,1);
+        }
+        @keyframes pv3-fade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes pv3-in { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .pv3-gerar-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+        .pv3-gerar-tit { font-size: 15px; font-weight: 800; color: #2C1219; margin: 0; }
+        .pv3-gerar-close { all: unset; cursor: pointer; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #6B7280; }
+        .pv3-gerar-close:hover { background: #F5F0F2; }
+        .pv3-gerar-sub { font-size: 12px; color: #6B7280; margin: 0 0 16px; line-height: 1.45; }
+        .pv3-gerar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+        .pv3-gerar-field { flex: 1; }
+        .pv3-gerar-lbl { font-size: 10.5px; font-weight: 800; color: #6B7280; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+        .pv3-gerar-input { display: flex; align-items: center; background: #fff; border: 1.5px solid #F0EBED; border-radius: 8px; overflow: hidden; }
+        .pv3-gerar-input input { flex: 1; padding: 10px 12px; border: none; outline: none; font-size: 14px; font-weight: 700; color: #2C1219; font-family: inherit; min-width: 0; }
+        .pv3-gerar-input span { padding: 10px 12px; background: #F5F0F2; font-size: 12.5px; font-weight: 700; color: #C33A6E; }
+        .pv3-gerar-arr { color: #6B7280; font-size: 16px; }
+        .pv3-gerar-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+        .pv3-gerar-chip { all: unset; cursor: pointer; padding: 6px 12px; background: #fff; border: 1.5px solid #F0EBED; border-radius: 6px; font-size: 12px; font-weight: 700; color: #6B7280; font-family: inherit; }
+        .pv3-gerar-chip--on { background: #E85A8C; color: #fff; border-color: #E85A8C; }
+        .pv3-gerar-preview { background: #FFF5F9; border: 1px solid #F0D8DE; border-radius: 8px; padding: 10px 12px; font-size: 12px; color: #4B5563; line-height: 1.5; margin-bottom: 16px; }
+        .pv3-gerar-actions { display: flex; gap: 8px; }
+        .pv3-gerar-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer; transition: all 0.12s ease; }
+        .pv3-gerar-btn--sec { background: #F3F4F6; color: #4B5563; box-shadow: 0 3px 0 #D1D5DB; }
+        .pv3-gerar-btn--sec:active { transform: translateY(2px); box-shadow: 0 1px 0 #D1D5DB; }
+        .pv3-gerar-btn--pri { background: linear-gradient(135deg, #E85A8C, #C33A6E); color: #fff; box-shadow: 0 3px 0 #993556, 0 6px 14px rgba(232,90,140,0.3); flex: 2; }
+        .pv3-gerar-btn--pri:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #993556; }
+        .pv3-gerar-btn--pri:disabled { background: #E5E7EB; color: #9CA3AF; box-shadow: none; cursor: not-allowed; }
+
+        /* ═══ Chips de unidade no cadastro manual ═══ */
+        .pv3-unid-chips { display: inline-flex; padding: 3px; background: #F5F0F2; border-radius: 8px; gap: 2px; }
+        .pv3-unid-chip { all: unset; cursor: pointer; padding: 6px 10px; font-size: 11.5px; font-weight: 700; color: #6B7280; border-radius: 6px; font-family: inherit; transition: all 0.12s; }
+        .pv3-unid-chip--on { background: #fff; color: #E85A8C; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+        /* ═══ Chips de unidade no campo Serve ═══ */
+        .pv3-serve-chips { display: inline-flex; padding: 2px; background: #F5F0F2; border-radius: 6px; gap: 2px; margin-left: 6px; }
+        .pv3-serve-chip { all: unset; cursor: pointer; padding: 4px 8px; font-size: 10.5px; font-weight: 700; color: #6B7280; border-radius: 4px; font-family: inherit; transition: all 0.12s; }
+        .pv3-serve-chip--on { background: #fff; color: #E85A8C; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
 
         /* Badge "Sugerido" — pra opção que o sistema recomenda */
         .pv3-sugerido-badge {
