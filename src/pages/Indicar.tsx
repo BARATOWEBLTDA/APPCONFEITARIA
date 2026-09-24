@@ -680,10 +680,10 @@ export default function Indicar() {
         @media (min-width: 900px) {
           .ind-root {
             max-width: 760px;
-            margin-left: auto;
-            margin-right: auto;
+            margin: 0 auto;
             padding: 8px 24px 40px;
             background: transparent;
+            min-height: 0;
           }
 
           /* Banner mais controlado no desktop */
