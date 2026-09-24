@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
-import { X, Plus, Minus } from 'lucide-react'
+import { X, Plus, Minus, Camera } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
+import { supabase } from '@/lib/supabase'
 import { Produto } from '@/types/database'
 import { formatCurrency } from '@/utils/helpers'
 import type { EscolhasV3, EscolhaOpcao, PrecoBreakdownCarrinho } from '@/types/cart'
@@ -11,6 +12,15 @@ import {
   aplicarRegraConflito,
   REGRA_CONFLITO_DEFAULT,
 } from '@/lib/produto-precificacao'
+
+// Personalização da biblioteca (tabela biblioteca_extras).
+// Cadastradas pelo dono do cardápio na aba "Personalização".
+interface ExtraBiblioteca {
+  id: string
+  nome: string
+  valor: number
+  categorias: string[] // IDs dos produtos vinculados (vazio = todos)
+}
 
 interface Props {
   isOpen: boolean
@@ -35,6 +45,66 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
   const [escolhaSabor, setEscolhaSabor] = useState<string | null>(null)
   const [escolhaTamanho, setEscolhaTamanho] = useState<string | null>(null)
   const [showTamanhoDropdown, setShowTamanhoDropdown] = useState(false)
+
+  // ═══ Personalizações da biblioteca (aba /complementos) ══════════════
+  // Buscamos direto no banco quando o modal abre. Se o dono cadastrou
+  // extras marcados pra esse produto (ou pra todos), aparecem aqui.
+  const [extrasBiblioteca, setExtrasBiblioteca] = useState<ExtraBiblioteca[]>([])
+  const [extrasMarcados, setExtrasMarcados] = useState<Set<string>>(new Set())
+  const [fotoRef, setFotoRef] = useState<string | null>(null)
+  const [fotoRefUploading, setFotoRefUploading] = useState(false)
+
+  useEffect(() => {
+    if (!isOpen || !product) {
+      setExtrasMarcados(new Set())
+      setFotoRef(null)
+      return
+    }
+    const uid = (product as any).user_id
+    if (!uid) return
+    supabase
+      .from('biblioteca_extras')
+      .select('id, nome, valor, categorias')
+      .eq('user_id', uid)
+      .then(({ data }) => {
+        if (!data) { setExtrasBiblioteca([]); return }
+        // Filtra: sem categorias (aparece em todos) ou vinculado a esse produto
+        const filtrados = (data as ExtraBiblioteca[]).filter(e => {
+          const cats = e.categorias || []
+          return cats.length === 0 || cats.includes(product.id)
+        })
+        setExtrasBiblioteca(filtrados)
+      })
+  }, [isOpen, product?.id])
+
+  const toggleExtra = (id: string) => {
+    setExtrasMarcados(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      return next
+    })
+  }
+
+  // Upload da foto de referência (opcional). Cliente escolhe uma imagem
+  // pra ilustrar o que quer (ex: "queria um bolo assim").
+  const handleFotoRef = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !product) return
+    setFotoRefUploading(true)
+    try {
+      // Salvar como base64 no state — só é enviado junto do pedido.
+      // Pra armazenar no storage precisaria de auth do cliente; base64 é mais simples.
+      const reader = new FileReader()
+      reader.onload = () => {
+        setFotoRef(reader.result as string)
+        setFotoRefUploading(false)
+      }
+      reader.onerror = () => setFotoRefUploading(false)
+      reader.readAsDataURL(file)
+    } catch {
+      setFotoRefUploading(false)
+    }
+  }
 
   // ═══ Carrega grupos usando o helper (V3 ou fallback antigo) ═══════
   const grupos = useMemo<GrupoOpcoes[]>(() => {
@@ -182,6 +252,14 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
       }
     }
 
+    // Extras da biblioteca de personalização — soma valor dos marcados
+    let extrasBibliotecaTotal = 0
+    extrasMarcados.forEach(id => {
+      const e = extrasBiblioteca.find(x => x.id === id)
+      if (e) extrasBibliotecaTotal += Number(e.valor) || 0
+    })
+    adicionaisTotal += extrasBibliotecaTotal
+
     const subtotal = baseEfetivo + adicionaisTotal
     const desconto = descPct > 0 ? parseFloat((subtotal * descPct).toFixed(2)) : 0
     const final = parseFloat((subtotal - desconto).toFixed(2))
@@ -194,7 +272,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
       desconto,
       final,
     }
-  }, [product, grupos, quantity, opMassa, opCobertura, opSabor, opTamanho, opsRecheios.length, basePrice, descPct])
+  }, [product, grupos, quantity, opMassa, opCobertura, opSabor, opTamanho, opsRecheios.length, basePrice, descPct, extrasMarcados, extrasBiblioteca])
 
   // ═══ Validação: obrigatórios preenchidos ═══════════════════════════
   const podeAdicionar = useMemo(() => {
@@ -234,6 +312,11 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
       escolhas.tamanho = e
     }
 
+    // Extras da biblioteca (aba /complementos) — nome + valor de cada marcado
+    const extrasEscolhidos = extrasBiblioteca
+      .filter(e => extrasMarcados.has(e.id))
+      .map(e => ({ id: e.id, nome: e.nome, valor: Number(e.valor) || 0 }))
+
     addItem({
       id: product.id, name: product.nome, description: product.descricao || '',
       price: calculo.final,
@@ -247,7 +330,10 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
       // V3
       escolhas: Object.keys(escolhas).length > 0 ? escolhas : undefined,
       precoBreakdown: calculo,
-    })
+      // Personalização (biblioteca de extras)
+      extrasBiblioteca: extrasEscolhidos.length > 0 ? extrasEscolhidos : undefined,
+      fotoReferencia: fotoRef || undefined,
+    } as any)
     onClose()
   }
 
@@ -571,6 +657,96 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           )}
           {gCobertura && (
             <RenderGrupo g={gCobertura} tipoEscolha="single" valorAtual={escolhaCobertura} onChange={setEscolhaCobertura} />
+          )}
+
+          {/* ═══ Personalizações da biblioteca (aba /complementos) ═══ */}
+          {extrasBiblioteca.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: '#2C1219', letterSpacing: '-0.01em' }}>
+                Adicionais
+              </div>
+              {extrasBiblioteca.map(e => {
+                const marcado = extrasMarcados.has(e.id)
+                const isGratis = !e.valor || e.valor === 0
+                return (
+                  <button
+                    type="button"
+                    key={e.id}
+                    onClick={() => toggleExtra(e.id)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '12px 14px',
+                      background: marcado ? '#FFF5F9' : '#fff',
+                      border: `1.5px solid ${marcado ? corBotao : '#F0EBED'}`,
+                      borderRadius: 10, cursor: 'pointer',
+                      fontFamily: 'inherit', textAlign: 'left', width: '100%',
+                    }}
+                  >
+                    <div style={{
+                      width: 22, height: 22, borderRadius: 5,
+                      border: `2px solid ${marcado ? corBotao : '#D1D5DB'}`,
+                      background: marcado ? corBotao : '#fff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    }}>
+                      {marcado && (
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      )}
+                    </div>
+                    <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: '#2C1219' }}>{e.nome}</span>
+                    <span style={{
+                      fontSize: 12.5, fontWeight: 800,
+                      color: isGratis ? '#16a34a' : '#C33A6E',
+                    }}>
+                      {isGratis ? 'Grátis' : `+ ${formatCurrency(e.valor)}`}
+                    </span>
+                  </button>
+                )
+              })}
+
+              {/* Upload de foto de referência (opcional) */}
+              <label style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '12px 14px',
+                background: fotoRef ? '#FFF5F9' : '#FEFCFD',
+                border: `1.5px dashed ${fotoRef ? corBotao : '#F0D8DE'}`,
+                borderRadius: 10, cursor: 'pointer',
+              }}>
+                {fotoRef ? (
+                  <img src={fotoRef} alt="Referência" style={{ width: 44, height: 44, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
+                ) : (
+                  <div style={{
+                    width: 36, height: 36, borderRadius: 6,
+                    background: '#FCE0E9', color: '#C33A6E',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  }}>
+                    <Camera size={20} />
+                  </div>
+                )}
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#2C1219' }}>
+                    {fotoRefUploading ? 'Carregando...' : fotoRef ? 'Foto anexada' : 'Enviar foto de referência'}
+                  </div>
+                  <div style={{ fontSize: 11, color: '#6B7280', marginTop: 2 }}>
+                    {fotoRef ? 'Toque pra trocar' : 'Opcional — envie uma imagem pra inspirar'}
+                  </div>
+                </div>
+                {fotoRef && (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setFotoRef(null); }}
+                    style={{
+                      width: 26, height: 26, borderRadius: '50%', border: 'none',
+                      background: '#F5F0F2', color: '#6B7280', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    }}
+                    aria-label="Remover foto"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+                <input type="file" accept="image/*" onChange={handleFotoRef} style={{ display: 'none' }} />
+              </label>
+            </div>
           )}
         </div>{/* fim body scrollável */}
 
