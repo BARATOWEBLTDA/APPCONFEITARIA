@@ -162,7 +162,7 @@ export default function Complementos() {
               <img src="/log.png" alt="Doonly" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement!.innerHTML = '✨'; }} />
             </div>
             <p className="cpl-empty-title">Personalize seus produtos</p>
-            <p className="cpl-empty-sub">É assim que vai aparecer no seu cardápio pro cliente escolher:</p>
+            <p className="cpl-empty-sub">Cadastre uma vez aqui e escolha em quais produtos aparece. Ideal pra escritas, topos, temas e papel de arroz.</p>
 
             <div className="cpl-empty-preview">
               <div className="cpl-empty-preview-product">
@@ -207,10 +207,6 @@ export default function Complementos() {
                 </div>
               </div>
             </div>
-
-            <p className="cpl-empty-desc">
-              Cadastre uma vez aqui e escolha em quais produtos aparece. Ideal pra escritas, topos, temas e papel de arroz.
-            </p>
 
             <button className="cpl-btn-novo cpl-btn-novo--empty" onClick={abrirNovo}>
               <Plus size={16} weight="bold" /> Criar primeira personalização
