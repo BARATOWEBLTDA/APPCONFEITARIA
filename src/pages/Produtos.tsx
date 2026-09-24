@@ -1793,8 +1793,8 @@ function PersonalizacaoStep({
 
                     {/* Botões de ação em linha: gerar automático + biblioteca */}
                     <div className="pv3-tam-actions">
-                      {/* Botão gerar tamanhos padrão (só no modo por_peso) */}
-                      {grupoTamanhos.modo_preco_tamanho === "por_peso" && (
+                      {/* Botão gerar tamanhos padrão (só no modo por_peso e quando ainda não tem tamanhos) */}
+                      {grupoTamanhos.modo_preco_tamanho === "por_peso" && grupoTamanhos.opcoes.length === 0 && (
                         <button
                           type="button"
                           className="pv3-gerar-tamanhos"
