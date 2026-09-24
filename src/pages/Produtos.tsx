@@ -1276,16 +1276,11 @@ function PersonalizacaoStep({
   const [gerarAte, setGerarAte] = useState("5");
   const [gerarPasso, setGerarPasso] = useState(0.5);
   // 3️⃣ Modo avançado — mostra campo "Serve X pessoas" em cada tamanho.
-  // Fica off por padrão pra deixar a lista limpa. Ativa automaticamente
-  // se detectar que algum tamanho já tem serve preenchido (evita esconder
-  // dado de um produto que já foi configurado antes).
+  // Lógica: se algum tamanho já tem serve preenchido, modo ativa auto.
+  // Se o user clicou no toggle manualmente, o clique dele prevalece.
   const jaTemServe = grupoTamanhos.opcoes.some(o => (o.serve || "").trim().length > 0);
-  const [modoAvancadoTam, setModoAvancadoTam] = useState<boolean>(jaTemServe);
-  useEffect(() => {
-    // Se editar produto que já tem serve, liga o modo avançado
-    if (jaTemServe && !modoAvancadoTam) setModoAvancadoTam(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [jaTemServe]);
+  const [modoAvancadoOverride, setModoAvancadoOverride] = useState<boolean | null>(null);
+  const modoAvancadoTam = modoAvancadoOverride ?? jaTemServe;
 
   const grupos: Array<{
     key: "massas" | "recheios" | "coberturas" | "sabores" | "tamanhos";
@@ -1920,7 +1915,7 @@ function PersonalizacaoStep({
                       );
                     })()}
 
-                    <div className={`pv3-opcoes-list ${grupoTamanhos.modo_preco_tamanho !== "preco_fixo" ? "pv3-opcoes-list--grid" : ""}`}>
+                    <div className={`pv3-opcoes-list ${grupoTamanhos.modo_preco_tamanho !== "preco_fixo" ? "pv3-opcoes-list--grid" : ""} ${modoAvancadoTam ? "pv3-opcoes-list--adv" : ""}`}>
                       {grupoTamanhos.opcoes.map((op, idx) => {
                         const isFirst = idx === 0;
                         const isLast = idx === grupoTamanhos.opcoes.length - 1;
@@ -2082,12 +2077,13 @@ function PersonalizacaoStep({
                     type="button"
                     className={`pv3-modo-adv ${modoAvancadoTam ? "pv3-modo-adv--on" : ""}`}
                     onClick={() => {
-                      if (modoAvancadoTam && jaTemServe) {
+                      const proximo = !modoAvancadoTam;
+                      if (!proximo && jaTemServe) {
                         const ok = confirm("Desligar o modo avançado vai apagar as informações de 'Serve X' já preenchidas. Continuar?");
                         if (!ok) return;
                         onChange({ grupo_tamanhos: { ...grupoTamanhos, opcoes: grupoTamanhos.opcoes.map(o => ({ ...o, serve: "" })) } } as any);
                       }
-                      setModoAvancadoTam(v => !v);
+                      setModoAvancadoOverride(proximo);
                     }}
                   >
                     <div className="pv3-modo-adv-info">
@@ -2924,9 +2920,11 @@ function PersonalizacaoStep({
         }
 
         /* ═══ Serve Modelo D — input + select nativo ═══ */
+        /* Estica pra ocupar largura toda no card */
         .pv3-serve-d {
-          display: inline-flex;
-          align-items: center;
+          display: flex;
+          align-items: stretch;
+          width: 100%;
           background: #fff;
           border: 1px solid #F0D8DE;
           border-radius: 6px;
@@ -2936,32 +2934,42 @@ function PersonalizacaoStep({
         .pv3-serve-d:focus-within { border-color: #E85A8C; }
         .pv3-serve-d input {
           all: unset;
-          width: 46px;
-          padding: 6px 4px 6px 10px;
+          flex: 1;
+          min-width: 0;
+          padding: 8px 10px;
           font-size: 13px;
           font-weight: 800;
           color: #C33A6E;
-          text-align: right;
+          text-align: left;
         }
         .pv3-serve-d input::placeholder {
-          font-size: 10.5px;
+          font-size: 11.5px;
           font-weight: 600;
           color: #C0B3B8;
-          text-align: right;
+          text-align: left;
           letter-spacing: 0;
         }
         .pv3-serve-d select {
           all: unset;
-          padding: 6px 24px 6px 8px;
+          padding: 8px 26px 8px 10px;
           font-size: 12px;
           font-weight: 700;
           color: #C33A6E;
           background: #FFF5F9;
           cursor: pointer;
           font-family: inherit;
+          flex-shrink: 0;
           background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23C33A6E' stroke-width='2.4' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
           background-repeat: no-repeat;
           background-position: right 8px center;
+          border-left: 1px solid #F0D8DE;
+        }
+
+        /* Mobile: 1 coluna quando modo avançado on (fica mais fácil editar) */
+        @media (max-width: 720px) {
+          .pv3-opcoes-list--grid.pv3-opcoes-list--adv {
+            grid-template-columns: 1fr;
+          }
         }
 
         /* ═══ Modo avançado — versão compacta (uma linha só) ═══ */
