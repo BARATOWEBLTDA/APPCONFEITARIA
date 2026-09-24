@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import AppPageHeader from "@/components/AppPageHeader";
-import { Package, Plus, PencilSimple, Trash, MagnifyingGlass, X, CheckCircle } from "@phosphor-icons/react";
+import { Package, Plus, PencilSimple, Trash, MagnifyingGlass, X, CheckCircle, DotsThree } from "@phosphor-icons/react";
 import ReqTag from "@/components/ReqTag";
 
 type Complemento = {
@@ -52,6 +52,7 @@ export default function Complementos() {
   const [form, setForm] = useState<{ nome: string; valor: number; categorias: string[] }>({ nome: "", valor: 0, categorias: [] });
   const [saving, setSaving] = useState(false);
   const [confirmDel, setConfirmDel] = useState<Complemento | null>(null);
+  const [menuAbertoId, setMenuAbertoId] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -69,6 +70,14 @@ export default function Complementos() {
       setLoading(false);
     })();
   }, []);
+
+  // Fecha o menu de ações do card ao clicar em qualquer lugar fora dele.
+  useEffect(() => {
+    if (!menuAbertoId) return;
+    const close = () => setMenuAbertoId(null);
+    document.addEventListener("click", close);
+    return () => document.removeEventListener("click", close);
+  }, [menuAbertoId]);
 
   // Bloqueia scroll do body enquanto o modal ou o info estiver aberto (evita
   // o "fundo scrollando" atrás do modal, comum em mobile).
@@ -266,12 +275,32 @@ export default function Complementos() {
                       </span>
                     </div>
                     <div className="cpl-card-actions">
-                      <button className="cpl-card-btn" onClick={(e) => { e.stopPropagation(); abrirEditar(item); }} aria-label="Editar">
-                        <PencilSimple size={16} weight="bold" />
+                      <button
+                        className="cpl-card-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setMenuAbertoId(menuAbertoId === item.id ? null : item.id);
+                        }}
+                        aria-label="Ações"
+                      >
+                        <DotsThree size={20} weight="bold" />
                       </button>
-                      <button className="cpl-card-btn cpl-card-btn--del" onClick={(e) => { e.stopPropagation(); setConfirmDel(item); }} aria-label="Excluir">
-                        <Trash size={16} weight="bold" />
-                      </button>
+                      {menuAbertoId === item.id && (
+                        <div className="cpl-card-menu" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            className="cpl-card-menu-item"
+                            onClick={() => { setMenuAbertoId(null); abrirEditar(item); }}
+                          >
+                            <PencilSimple size={15} weight="bold" /> Editar
+                          </button>
+                          <button
+                            className="cpl-card-menu-item cpl-card-menu-item--del"
+                            onClick={() => { setMenuAbertoId(null); setConfirmDel(item); }}
+                          >
+                            <Trash size={15} weight="bold" /> Remover
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -535,10 +564,41 @@ const styles = `
   .cpl-card-nome { margin: 0; font-size: 15px; font-weight: 800; color: #2C1219; letter-spacing: -0.01em; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .cpl-card-valor { display: inline-block; padding: 3px 8px; background: #FCE0E9; color: #C33A6E; border-radius: 5px; font-size: 12px; font-weight: 800; margin-top: 6px; }
   .cpl-card-valor--gratis { background: #DCFCE7; color: #16a34a; }
-  .cpl-card-actions { display: flex; gap: 4px; flex-shrink: 0; }
-  .cpl-card-btn { background: transparent; border: none; width: 30px; height: 30px; border-radius: 6px; color: #6B7280; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .cpl-card-actions { display: flex; gap: 4px; flex-shrink: 0; position: relative; }
+  .cpl-card-btn { background: transparent; border: none; width: 32px; height: 32px; border-radius: 6px; color: #6B7280; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
   .cpl-card-btn:hover { background: #F5F0F2; color: #2C1219; }
   .cpl-card-btn--del:hover { color: #DC2626; background: #FEE2E2; }
+
+  .cpl-card-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    background: #fff;
+    border: 1px solid #F0EBED;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    min-width: 140px;
+    padding: 4px;
+    z-index: 10;
+    animation: cplMenuIn 0.15s ease-out;
+  }
+  @keyframes cplMenuIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .cpl-card-menu-item {
+    all: unset; box-sizing: border-box; cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 13px; font-weight: 600; color: #2C1219;
+    border-radius: 5px;
+    font-family: inherit;
+    transition: background 0.12s;
+  }
+  .cpl-card-menu-item:hover { background: #F5F0F2; }
+  .cpl-card-menu-item--del { color: #DC2626; }
+  .cpl-card-menu-item--del:hover { background: #FEE2E2; }
   .cpl-card-fotos { display: flex; align-items: center; gap: 6px; padding-top: 10px; border-top: 1px solid #F5F0F2; cursor: pointer; }
   .cpl-card-foto { width: 28px; height: 28px; border-radius: 5px; background: linear-gradient(135deg, #FCE0E9, #F0D8DE); display: flex; align-items: center; justify-content: center; font-size: 14px; overflow: hidden; flex-shrink: 0; }
   .cpl-card-foto img { width: 100%; height: 100%; object-fit: cover; }
