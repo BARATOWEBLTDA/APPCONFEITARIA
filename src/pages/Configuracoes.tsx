@@ -597,280 +597,178 @@ export default function Configuracoes() {
       </div>
 
       {/* ─────────────── DESKTOP ─────────────── */}
-      <div className="cfg-desktop">
-        <div className="cfg-desk-header">
-          <div>
-            <h1 className="cfg-desk-h1">Configurações</h1>
-            <p className="cfg-desk-sub">Gerencie sua conta e preferências</p>
-          </div>
-          <div className="cfg-desk-header-actions">
-            {error && <span className="cfg-toast cfg-toast-error" style={{width:"auto"}}>{error}</span>}
-            {success && <span className="cfg-toast cfg-toast-success" style={{width:"auto"}}>✓ Salvo!</span>}
-          </div>
-        </div>
-
+      <div className="cfgd-desktop">
         <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{display:"none"}} />
 
-        {/* Faixa de perfil — gradiente rosa */}
-        <div className="cfg-desk-profile-banner">
-          <div className="cfg-desk-profile-left">
-            <div className="cfg-hero-avatar cfg-hero-avatar--desk" onClick={() => !uploading && fileRef.current?.click()}>
+        {/* ── HERO USER (branco/neutro) ─────────────────────── */}
+        <div className="cfgd-hero">
+          <div className="cfgd-hero-avatar" onClick={() => !uploading && fileRef.current?.click()}>
+            <div className="cfgd-hero-avatar-inner">
               {preview
-                ? <img src={preview} alt="foto" className="cfg-hero-img" />
-                : <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
-              <div className="cfg-hero-cam">
-                {uploading
-                  ? <span className="cfg-spinner-sm" />
-                  : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>}
+                ? <img src={preview} alt="Perfil" />
+                : <span className="cfgd-hero-inicial">{(form.nome || "?").trim().charAt(0).toUpperCase()}</span>
+              }
+            </div>
+            <div className="cfgd-hero-cam">
+              {uploading
+                ? <span className="cfg-spinner-sm" />
+                : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>}
+            </div>
+          </div>
+          <div className="cfgd-hero-info">
+            <div className="cfgd-hero-nome">{form.nome || "Seu nome"}</div>
+            <div className="cfgd-hero-email">{userEmail}</div>
+          </div>
+          <button className="cfgd-hero-edit" onClick={() => setEditarOpen(true)}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Editar perfil
+          </button>
+        </div>
+
+        {/* ── CARD ASSINATURA ──────────────────────────────── */}
+        <div className="cfgd-card cfgd-sub">
+          <div className="cfgd-sub-top">
+            <div>
+              <div className="cfgd-sub-label">Sua assinatura</div>
+              <div className="cfgd-sub-plan">
+                {plano === "pro" && <span className="cfgd-sub-plan-name">Plano PRO</span>}
+                {plano === "trial" && <span className="cfgd-sub-plan-name">Plano Grátis</span>}
+                {plano === "expirado" && <span className="cfgd-sub-plan-name">Plano expirado</span>}
+                {plano === "pro" && <span className="cfgd-sub-badge cfgd-sub-badge--pro">ATIVO</span>}
+                {plano === "trial" && <span className="cfgd-sub-badge cfgd-sub-badge--trial">TRIAL</span>}
+                {plano === "expirado" && <span className="cfgd-sub-badge cfgd-sub-badge--exp">EXPIRADO</span>}
               </div>
             </div>
-            <div>
-              <p className="cfg-desk-profile-name">{form.nome || "Seu nome"}</p>
-              {form.nome_loja && <p className="cfg-desk-profile-loja">{form.nome_loja}</p>}
-              <p className="cfg-desk-profile-email">{userEmail}</p>
-              {plano === "pro"      && <span className="cfg-badge cfg-badge--pro-desk">✨ PRO ativo</span>}
-              {plano === "trial"    && <span className="cfg-badge cfg-badge--trial-desk">Plano Grátis</span>}
-              {plano === "expirado" && <span className="cfg-badge cfg-badge--exp-desk">⚠️ Expirado</span>}
+            <span className="cfgd-sub-crown"><img src="/coroa.png" alt="" /></span>
+          </div>
+
+          {plano === "trial" && (
+            <div className="cfgd-sub-info">
+              Aproveite todas as funcionalidades no seu período grátis. Ative o PRO pra continuar sem interrupções.
             </div>
+          )}
+          {plano === "expirado" && (
+            <div className="cfgd-sub-info cfgd-sub-info--danger">
+              Seu período grátis acabou. Ative o PRO pra reativar todas as funcionalidades.
+            </div>
+          )}
+          {plano === "pro" && (
+            <div className="cfgd-sub-info">
+              Você tem acesso a todas as funcionalidades. Obrigada por apoiar o Doonly! 💖
+            </div>
+          )}
+
+          {plano !== "pro" && (
+            <button className="cfgd-sub-cta" onClick={() => navigate("/assinar")}>
+              <img src="/coroa.png" alt="" />
+              <span>Ativar PRO por R$ 29,90/mês</span>
+            </button>
+          )}
+          {plano === "pro" && (
+            <button className="cfgd-sub-cta cfgd-sub-cta--manage" onClick={() => navigate("/assinar")}>
+              Gerenciar assinatura
+            </button>
+          )}
+        </div>
+
+        {/* ── AÇÕES RÁPIDAS ──────────────────────────────── */}
+        <div className="cfgd-card cfgd-quick">
+          <div className="cfgd-quick-hdr">
+            <div className="cfgd-quick-title">Ações rápidas</div>
+            <div className="cfgd-quick-sub">Suporte, sugestões e indicações</div>
+          </div>
+          <div className="cfgd-quick-list">
+            <button className="cfgd-quick-item" onClick={() => navigate("/indicar")}>
+              <span className="cfgd-quick-ico cfgd-quick-ico--pink">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              </span>
+              <div className="cfgd-quick-info">
+                <div className="cfgd-quick-name">Convide para o Doonly</div>
+                <div className="cfgd-quick-desc">Ganhe prêmios por cada assinante indicada</div>
+              </div>
+              <svg className="cfgd-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+
+            <button className="cfgd-quick-item" onClick={() => setSugestaoOpen(true)}>
+              <span className="cfgd-quick-ico cfgd-quick-ico--amber">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
+              </span>
+              <div className="cfgd-quick-info">
+                <div className="cfgd-quick-name">Enviar uma sugestão</div>
+                <div className="cfgd-quick-desc">Conte o que falta ou o que melhoraria</div>
+              </div>
+              <svg className="cfgd-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+
+            <button className="cfgd-quick-item" onClick={() => alert("🚀 Em breve! Você poderá relatar problemas por aqui.")}>
+              <span className="cfgd-quick-ico cfgd-quick-ico--red">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="6" width="8" height="14" rx="4"/><path d="M19 7l-3 2"/><path d="M5 7l3 2"/><path d="M19 13h-3"/><path d="M8 13H5"/><path d="M19 19l-3-2"/><path d="M5 19l3-2"/><path d="M12 6V3"/><path d="M10 3h4"/></svg>
+              </span>
+              <div className="cfgd-quick-info">
+                <div className="cfgd-quick-name">Relatar um problema</div>
+                <div className="cfgd-quick-desc">Algo não funcionou? Conte para a equipe</div>
+              </div>
+              <svg className="cfgd-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+
+            <button className="cfgd-quick-item" onClick={() => alert("💬 Em breve! Chat de suporte a caminho.")}>
+              <span className="cfgd-quick-ico cfgd-quick-ico--blue">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"/></svg>
+              </span>
+              <div className="cfgd-quick-info">
+                <div className="cfgd-quick-name">Fale com o suporte</div>
+                <div className="cfgd-quick-desc">Abra uma conversa com a equipe</div>
+              </div>
+              <svg className="cfgd-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+
+            <button className="cfgd-quick-item" onClick={() => alert("🚀 Central de ajuda em breve!")}>
+              <span className="cfgd-quick-ico cfgd-quick-ico--gray">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </span>
+              <div className="cfgd-quick-info">
+                <div className="cfgd-quick-name">Central de ajuda</div>
+                <div className="cfgd-quick-desc">Perguntas frequentes e tutoriais</div>
+              </div>
+              <svg className="cfgd-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+
+            <button className="cfgd-quick-item cfgd-quick-item--last" onClick={() => setTermosOpen(true)}>
+              <span className="cfgd-quick-ico cfgd-quick-ico--gray">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              </span>
+              <div className="cfgd-quick-info">
+                <div className="cfgd-quick-name">Termos e privacidade</div>
+                <div className="cfgd-quick-desc">Nossos termos de uso e políticas</div>
+              </div>
+              <svg className="cfgd-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
           </div>
         </div>
 
-        {/* Grid 2 cards + espaço vazio */}
-        <div className="cfg-desk-grid2">
+        {/* ── SAIR + EXCLUIR ──────────────────────────────── */}
+        <button className="cfgd-logout" onClick={handleLogout}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Sair da conta
+        </button>
 
-          {/* ── Card 1 — Dados da loja ── */}
-          <div className="cfg-desk-card">
-            <div className="cfg-card-header">
-              <span className="cfg-card-icon">🏪</span>
-              <span>Dados da loja</span>
-            </div>
-            <div className="cfg-desk-fields">
-              <div className="cfg-desk-field">
-                <label>Seu nome</label>
-                <input type="text" placeholder="Ex: Ana Paula" value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} />
-              </div>
-              <div className="cfg-desk-field">
-                <label>Nome da confeitaria</label>
-                <input type="text" placeholder="Ex: Doces da Ana" value={form.nome_loja} onChange={e => setForm({...form, nome_loja: e.target.value})} />
-              </div>
-              <div className="cfg-desk-field">
-                <label>WhatsApp</label>
-                <input type="tel" placeholder="(41) 9 9999-9999" value={form.telefone} onChange={e => setForm({...form, telefone: formatPhone(e.target.value)})} />
-              </div>
-              <div className="cfg-desk-field">
-                <label>E-mail</label>
-                <input type="email" value={userEmail} disabled style={{opacity:0.5,cursor:"not-allowed"}} />
-              </div>
-            </div>
-
-            {/* Alterar Senha + Excluir Conta — mesma linha */}
-            <div style={{ display:"flex", gap:"0.75rem", flexWrap:"wrap" }}>
-              {!showAlterarSenha && !showExcluir && (
-                <>
-                  <button onClick={() => setShowAlterarSenha(true)} className="cfg-desk-inline-btn">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                    Alterar senha
-                  </button>
-                  <button onClick={() => setShowExcluir(true)} className="cfg-desk-inline-btn cfg-desk-inline-btn--danger">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                    Excluir conta
-                  </button>
-                </>
-              )}
-            </div>
-
-            {/* Painel Alterar Senha */}
-            {showAlterarSenha && (
-              <div className="cfg-desk-inline-section">
-                <p className="cfg-desk-inline-label">🔒 Alterar Senha</p>
-                <div className="cfg-desk-fields">
-                  <div className="cfg-desk-field">
-                    <label>Senha atual</label>
-                    <input type="password" placeholder="Sua senha atual" value={senhaAtual} onChange={e => setSenhaAtual(e.target.value)} />
-                  </div>
-                  <div className="cfg-desk-field">
-                    <label>Nova senha</label>
-                    <input type="password" placeholder="Mínimo 6 caracteres" value={novaSenha} onChange={e => setNovaSenha(e.target.value)} />
-                  </div>
-                  <div className="cfg-desk-field">
-                    <label>Confirmar nova senha</label>
-                    <input type="password" placeholder="Repita a senha" value={confirmSenha} onChange={e => setConfirmSenha(e.target.value)} />
-                  </div>
-                </div>
-                {senhaMsg && <p style={{fontSize:"0.82rem",color:senhaMsg.startsWith("✓")?"var(--success)":"var(--error)",margin:0}}>{senhaMsg}</p>}
-                <div style={{display:"flex",gap:"8px"}}>
-                  <button onClick={() => {setShowAlterarSenha(false);setSenhaAtual("");setNovaSenha("");setConfirmSenha("");setSenhaMsg("");}} className="cfg-btn-ghost" style={{flex:1}}>Cancelar</button>
-                  <button onClick={handleAlterarSenha} disabled={savingSenha} className="cfg-btn-save" style={{flex:2,minHeight:"38px",fontSize:"0.85rem",borderRadius:"10px"}}>
-                    {savingSenha ? <span className="cfg-spinner" /> : "Confirmar alteração"}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Painel Excluir Conta */}
-            {showExcluir && (
-              <div className="cfg-desk-inline-section cfg-desk-inline-section--danger">
-                <p className="cfg-desk-inline-label" style={{color:"var(--error)"}}>🗑️ Excluir conta</p>
-                <p style={{fontSize:"0.82rem",color:"var(--text-secondary)",margin:0}}>Esta ação é <strong>irreversível</strong>. Todos os seus dados serão removidos permanentemente.</p>
-                <div className="cfg-desk-field">
-                  <label>Digite <strong>EXCLUIR</strong> para confirmar</label>
-                  <input type="text" placeholder="EXCLUIR" value={excluirConfirm} onChange={e => setExcluirConfirm(e.target.value)} style={{borderColor:excluirConfirm==="EXCLUIR"?"var(--error)":undefined}} />
-                </div>
-                <div style={{display:"flex",gap:"8px"}}>
-                  <button onClick={() => {setShowExcluir(false);setExcluirConfirm("");}} className="cfg-btn-ghost" style={{flex:1}}>Cancelar</button>
-                  <button onClick={handleExcluirConta} disabled={excluirConfirm!=="EXCLUIR"} style={{flex:2,padding:"0.6rem",background:excluirConfirm==="EXCLUIR"?"var(--error)":"var(--bg-body)",color:excluirConfirm==="EXCLUIR"?"var(--text-inverse)":"var(--text-muted)",border:"none",borderRadius:"10px",fontFamily:"Geist,sans-serif",fontSize:"0.85rem",fontWeight:600,cursor:excluirConfirm==="EXCLUIR"?"pointer":"not-allowed"}}>
-                    Confirmar exclusão
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <button className="cfg-btn-save cfg-btn-save--sm" onClick={handleSave} disabled={saving||uploading} style={{alignSelf:"flex-start"}}>
-              {saving ? <span className="cfg-spinner" /> : "Salvar alterações"}
+        <div className="cfgd-delete-link">
+          {!showExcluir ? (
+            <button className="cfgd-delete-link-btn" onClick={() => setShowExcluir(true)}>
+              Não quer mais usar? <span>Excluir minha conta</span>
             </button>
-          </div>
-
-          {/* ── Card 2 — Assinatura + Notificações ── */}
-          <div style={{display:"flex",flexDirection:"column",gap:"1.25rem"}}>
-
-            {/* Assinatura */}
-            <div className="cfg-desk-card">
-              <div className="cfg-card-header">
-                <span className="cfg-card-icon">💎</span>
-                <span>Sua assinatura</span>
-              </div>
-              {plano === "pro" && (
-                <div className="cfg-plan-info cfg-plan-info--pro">
-                  <p className="cfg-plan-title">Plano PRO ativo</p>
-                  <p className="cfg-plan-sub">Você tem acesso completo a todos os recursos do Doonly — Gestão para Confeitarias.</p>
-                </div>
-              )}
-              {plano === "trial" && (
-                <div className="cfg-plan-info cfg-plan-info--trial">
-                  <p className="cfg-plan-title">Período gratuito</p>
-                  <p className="cfg-plan-sub">Você tem <strong>{diasRestantes} dias restantes</strong> no seu período de teste.</p>
-                </div>
-              )}
-              {plano === "expirado" && (
-                <div className="cfg-plan-info cfg-plan-info--exp">
-                  <p className="cfg-plan-title">Período expirado</p>
-                  <p className="cfg-plan-sub">Seu período gratuito encerrou. Assine para continuar usando o Doonly.</p>
-                </div>
-              )}
-            </div>
-
-            {/* Configure seu Doonly */}
-            {cfgProgress < 100 ? (
-              <div className="cfg-desk-card" style={{marginBottom:"0.5rem"}}>
-                <div className="cfg-card-header">
-                  <span className="cfg-card-icon">🛠️</span>
-                  <span>Configure seu Doonly</span>
-                  <span style={{marginLeft:"auto",fontSize:"0.85rem",fontWeight:700,color:"var(--primary)"}}>{cfgProgress}%</span>
-                </div>
-                <div className="dash-progress-bar" style={{margin:"0.5rem 0 0.75rem"}}>
-                  <div className="dash-progress-fill" style={{width:`${cfgProgress}%`}} />
-                </div>
-                {cfgNextStep && (
-                  <div className="dash-next-step" style={{marginBottom:"0.75rem"}}>
-                    <div>
-                      <p style={{fontSize:"0.7rem",color:"var(--text-muted)",margin:0}}>Próximo passo</p>
-                      <p style={{fontSize:"0.85rem",fontWeight:600,color:"var(--text-title)",margin:0}}>{cfgNextStep.label}</p>
-                    </div>
-                    <button className="dash-btn-config" onClick={() => navigate(cfgNextStep.path)}>Configurar →</button>
-                  </div>
-                )}
-                <div className="dash-steps">
-                  {cfgSteps.map((group, gi) => {
-                    const groupDone = group.items.filter(i => i.done).length;
-                    const isOpen = openGroup === gi;
-                    const allDone = groupDone === group.items.length;
-                    return (
-                      <div key={gi} className="step-group">
-                        <button className="step-group-header" onClick={() => setOpenGroup(isOpen ? null : gi)}>
-                          <div className="step-group-left"><span>{group.emoji}</span><span className="step-group-title">{group.title}</span></div>
-                          <div className="step-group-right">
-                            <span className={"step-badge" + (allDone ? " done" : "")}>{allDone ? "✓ Completo" : `${groupDone}/${group.items.length}`}</span>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" style={{transform:isOpen?"rotate(180deg)":"none",transition:"0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
-                          </div>
-                        </button>
-                        {isOpen && (
-                          <div className="step-items">
-                            {group.items.map((item, ii) => (
-                              <button key={ii} className="step-item" onClick={() => !item.done && navigate(item.path)}>
-                                <div className={"step-check" + (item.done ? " checked" : "")}>
-                                  {item.done && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
-                                </div>
-                                <span className="step-item-label">{item.label}</span>
-                                <span className={"step-status" + (item.done ? " done" : " pending")}>{item.done ? "Concluído" : "Fazer agora"}</span>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-disabled)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="complete-banner" style={{marginTop:"0.75rem"}}>🎁 Complete 100% e ganhe 3 dias de PRO grátis!</div>
-              </div>
-            ) : !proResgatado ? (
-              <div className="cfg-desk-card" style={{marginBottom:"0.5rem",background:"linear-gradient(135deg,#f0fdf4,#dcfce7)",border:"1px solid #bbf7d0"}}>
-                <div style={{textAlign:"center",padding:"0.5rem 0"}}>
-                  <p style={{fontSize:"1.5rem",margin:"0 0 0.25rem"}}>🎉</p>
-                  <p style={{fontWeight:700,color:"#15803d",margin:"0 0 0.5rem"}}>Configuração completa!</p>
-                  <button onClick={handleResgatarPro} disabled={resgatando} style={{padding:"0.6rem 1.2rem",background:"linear-gradient(135deg,#22c55e,#16a34a)",color:"white",border:"none",borderRadius:"10px",fontFamily:"inherit",fontSize:"0.88rem",fontWeight:700,cursor:"pointer"}}>
-                    {resgatando ? "Ativando..." : "✨ Ativar PRO por 3 dias"}
-                  </button>
-                </div>
-              </div>
-            ) : null}
-
-            {/* Notificações */}
-            <div className="cfg-desk-card">
-              <div className="cfg-card-header">
-                <span className="cfg-card-icon">🔔</span>
-                <span>Notificações</span>
-              </div>
-              <div style={{display:"flex",flexDirection:"column",gap:"0.75rem"}}>
-
-                {/* Botão push real */}
-                <PushToggle />
-              <SomToggle />
-
-                <div style={{borderTop:"1px solid var(--border)", paddingTop:"0.75rem"}}>
-                {([
-                  { key:"receitas",     label:"Novas receitas" },
-                  { key:"comunidade",   label:"Comunidade" },
-                  { key:"atualizacoes", label:"Atualizações do app" },
-                ] as { key: keyof typeof notifs; label: string }[]).map(item => (
-                  <div key={item.key} className="cfg-notif-row">
-                    <p className="cfg-notif-label" style={{color: notifDesativar ? "var(--border)" : undefined}}>{item.label}</p>
-                    <label className="toggle">
-                      <input
-                        type="checkbox"
-                        checked={notifs[item.key]}
-                        disabled={notifDesativar}
-                        onChange={e => setNotifs(n => ({...n, [item.key]: e.target.checked}))}
-                      />
-                      <span className="toggle-slider" style={{opacity: notifDesativar ? 0.4 : 1}} />
-                    </label>
-                  </div>
-                ))}
-                </div>
-                <div className="cfg-notif-row" style={{paddingTop:"0.5rem",borderTop:"1px solid var(--border)"}}>
-                  <p className="cfg-notif-label" style={{color:"var(--text-muted)",fontSize:"0.82rem"}}>Não quero receber notificações</p>
-                  <label className="toggle">
-                    <input type="checkbox" checked={notifDesativar} onChange={e => toggleNotifDesativar(e.target.checked)} />
-                    <span className="toggle-slider" />
-                  </label>
-                </div>
+          ) : (
+            <div className="cfgd-delete-panel">
+              <p className="cfgd-delete-warn">⚠️ Esta ação é permanente. Digite <b>EXCLUIR</b> para confirmar.</p>
+              <input type="text" placeholder="Digite EXCLUIR" value={excluirConfirm} onChange={e => setExcluirConfirm(e.target.value)} className="cfgd-delete-input" />
+              <div className="cfgd-delete-actions">
+                <button className="cfgd-delete-cancel" onClick={() => { setShowExcluir(false); setExcluirConfirm(""); }}>Cancelar</button>
+                <button className="cfgd-delete-confirm" onClick={handleExcluirConta} disabled={excluirConfirm !== "EXCLUIR"}>Excluir permanentemente</button>
               </div>
             </div>
+          )}
+        </div>
 
-          </div>
-
-
-        </div>{/* fim cfg-desk-grid2 */}
       </div>
 
       <style>{`
@@ -926,7 +824,7 @@ export default function Configuracoes() {
 
         /* ── Mobile ── */
         .cfg-mobile { display: flex; flex-direction: column; gap: 0.85rem; }
-        .cfg-desktop { display: none; }
+        .cfgd-desktop { display: none; }
 
         .cfg-hero { background: var(--primary-gradient); border-radius: var(--radius-xl); padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; box-shadow: 0 6px 20px rgba(255,111,169,0.25); }
         .cfg-hero-left { display: flex; flex-direction: column; align-items: flex-start; gap: 0; flex: 1; min-width: 0; }
@@ -1216,9 +1114,221 @@ export default function Configuracoes() {
         .toggle input:checked + .toggle-slider:before { transform: translateX(20px); }
 
         /* ── Desktop ── */
+        /* ═══════════════════════════════════════════════════ */
+        /* ═══  DESKTOP NOVO — espelha mobile               ═══ */
+        /* ═══════════════════════════════════════════════════ */
+
+        /* Hero user — sem gradient rosa, neutro */
+        .cfgd-hero {
+          display: flex; align-items: center; gap: 18px;
+          background: #fff;
+          border: 1px solid #F0EBED;
+          border-radius: 14px;
+          padding: 20px 22px;
+        }
+        .cfgd-hero-avatar {
+          width: 68px; height: 68px; border-radius: 50%;
+          background: linear-gradient(135deg, #FCE0E9, #F0D8DE);
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+          position: relative;
+          cursor: pointer;
+          overflow: hidden;
+        }
+        .cfgd-hero-avatar-inner {
+          width: 100%; height: 100%; border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          overflow: hidden;
+        }
+        .cfgd-hero-avatar-inner img { width: 100%; height: 100%; object-fit: cover; }
+        .cfgd-hero-inicial { font-size: 26px; font-weight: 800; color: #C33A6E; }
+        .cfgd-hero-cam {
+          position: absolute; bottom: 0; right: 0;
+          width: 22px; height: 22px;
+          background: rgba(0,0,0,0.55);
+          border-radius: 50% 0 0 0;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .cfgd-hero-info { flex: 1; min-width: 0; }
+        .cfgd-hero-nome { font-size: 16px; font-weight: 800; color: #2C1219; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cfgd-hero-email { font-size: 12.5px; color: #6B7280; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cfgd-hero-edit {
+          background: #FFF5F9;
+          border: 1px solid #F0D8DE;
+          color: #C33A6E;
+          padding: 9px 14px;
+          border-radius: 8px;
+          font-size: 12.5px; font-weight: 700;
+          cursor: pointer;
+          display: inline-flex; align-items: center; gap: 6px;
+          font-family: inherit;
+          transition: all 0.15s;
+          flex-shrink: 0;
+        }
+        .cfgd-hero-edit:hover { background: #E85A8C; color: #fff; border-color: #E85A8C; }
+
+        /* Card base */
+        .cfgd-card {
+          background: #fff;
+          border: 1px solid #F0EBED;
+          border-radius: 14px;
+          padding: 20px;
+        }
+
+        /* Assinatura */
+        .cfgd-sub-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; gap: 12px; }
+        .cfgd-sub-label { font-size: 11px; font-weight: 800; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; }
+        .cfgd-sub-plan { display: flex; align-items: center; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
+        .cfgd-sub-plan-name { font-size: 19px; font-weight: 800; color: #2C1219; }
+        .cfgd-sub-badge { padding: 3px 8px; border-radius: 5px; font-size: 10px; font-weight: 800; letter-spacing: 0.05em; }
+        .cfgd-sub-badge--pro { background: #DCFCE7; color: #15803D; }
+        .cfgd-sub-badge--trial { background: #FEF3C7; color: #B45309; }
+        .cfgd-sub-badge--exp { background: #FEE2E2; color: #DC2626; }
+        .cfgd-sub-crown {
+          width: 44px; height: 44px;
+          background: #FEF3C7;
+          border-radius: 12px;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        .cfgd-sub-crown img { width: 28px; height: 28px; object-fit: contain; }
+        .cfgd-sub-info {
+          background: #FFF5F9;
+          border-radius: 8px;
+          padding: 11px 14px;
+          font-size: 12.5px;
+          color: #4B5563;
+          line-height: 1.5;
+          margin-bottom: 12px;
+        }
+        .cfgd-sub-info--danger { background: #FEE2E2; color: #991B1B; }
+        .cfgd-sub-cta {
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+          width: 100%;
+          padding: 13px;
+          background: linear-gradient(135deg, #FFC947, #DDAA00);
+          color: #2C1219;
+          border: none; border-radius: 10px;
+          font-size: 13.5px; font-weight: 800;
+          cursor: pointer;
+          box-shadow: 0 3px 0 #B58900;
+          font-family: inherit;
+          transition: transform 0.1s;
+        }
+        .cfgd-sub-cta:active { transform: translateY(2px); box-shadow: 0 1px 0 #B58900; }
+        .cfgd-sub-cta img { width: 20px; height: 20px; object-fit: contain; }
+        .cfgd-sub-cta--manage {
+          background: #F5F0F2;
+          color: #4B5563;
+          box-shadow: 0 3px 0 #D1C7CC;
+        }
+
+        /* Ações rápidas */
+        .cfgd-quick-hdr { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #F5F0F2; }
+        .cfgd-quick-title { font-size: 15px; font-weight: 800; color: #2C1219; }
+        .cfgd-quick-sub { font-size: 12px; color: #6B7280; margin-top: 2px; }
+        .cfgd-quick-list { display: flex; flex-direction: column; }
+        .cfgd-quick-item {
+          all: unset;
+          box-sizing: border-box;
+          display: flex; align-items: center; gap: 12px;
+          padding: 12px 8px;
+          border-bottom: 1px solid #F5F0F2;
+          cursor: pointer;
+          font-family: inherit;
+          width: 100%;
+          transition: background 0.15s;
+          border-radius: 8px;
+        }
+        .cfgd-quick-item--last, .cfgd-quick-item:last-child { border-bottom: none; }
+        .cfgd-quick-item:hover { background: #FFF5F9; }
+        .cfgd-quick-ico {
+          width: 36px; height: 36px; border-radius: 9px;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        .cfgd-quick-ico--pink { background: #FCE0E9; color: #C33A6E; }
+        .cfgd-quick-ico--amber { background: #FEF3C7; color: #B45309; }
+        .cfgd-quick-ico--red { background: #FEE2E2; color: #DC2626; }
+        .cfgd-quick-ico--blue { background: #DBEAFE; color: #1D4ED8; }
+        .cfgd-quick-ico--gray { background: #F3F4F6; color: #4B5563; }
+        .cfgd-quick-info { flex: 1; min-width: 0; }
+        .cfgd-quick-name { font-size: 13.5px; font-weight: 700; color: #2C1219; }
+        .cfgd-quick-desc { font-size: 11.5px; color: #6B7280; margin-top: 2px; }
+        .cfgd-quick-arrow { color: #C0B3B8; flex-shrink: 0; }
+
+        /* Sair */
+        .cfgd-logout {
+          background: #fff;
+          border: 1px solid #F0EBED;
+          color: #4B5563;
+          padding: 13px;
+          border-radius: 10px;
+          font-size: 13px; font-weight: 700;
+          cursor: pointer;
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+          font-family: inherit;
+          transition: all 0.15s;
+        }
+        .cfgd-logout:hover { background: #FEE2E2; border-color: #FCA5A5; color: #DC2626; }
+
+        /* Excluir conta */
+        .cfgd-delete-link { text-align: center; padding: 8px; }
+        .cfgd-delete-link-btn {
+          all: unset;
+          cursor: pointer;
+          font-size: 12px;
+          color: #9CA3AF;
+          font-family: inherit;
+        }
+        .cfgd-delete-link-btn span { color: #DC2626; font-weight: 700; margin-left: 4px; }
+        .cfgd-delete-link-btn:hover span { text-decoration: underline; }
+        .cfgd-delete-panel {
+          background: #fff;
+          border: 1px solid #FCA5A5;
+          border-radius: 12px;
+          padding: 16px;
+          text-align: left;
+          display: flex; flex-direction: column; gap: 12px;
+        }
+        .cfgd-delete-warn { font-size: 13px; color: #7F1D1D; margin: 0; line-height: 1.5; }
+        .cfgd-delete-input {
+          padding: 10px 12px;
+          border: 1.5px solid #F0EBED;
+          border-radius: 8px;
+          font-size: 13px;
+          font-family: inherit;
+          outline: none;
+        }
+        .cfgd-delete-input:focus { border-color: #DC2626; }
+        .cfgd-delete-actions { display: flex; gap: 8px; }
+        .cfgd-delete-cancel {
+          flex: 1;
+          padding: 10px;
+          background: #F3F4F6;
+          color: #4B5563;
+          border: none;
+          border-radius: 8px;
+          font-size: 12.5px; font-weight: 700;
+          cursor: pointer;
+          font-family: inherit;
+        }
+        .cfgd-delete-confirm {
+          flex: 2;
+          padding: 10px;
+          background: #DC2626;
+          color: #fff;
+          border: none;
+          border-radius: 8px;
+          font-size: 12.5px; font-weight: 700;
+          cursor: pointer;
+          font-family: inherit;
+        }
+        .cfgd-delete-confirm:disabled { background: #F3F4F6; color: #9CA3AF; cursor: not-allowed; }
+
         @media (min-width: 900px) {
           .cfg-mobile { display: none; }
-          .cfg-desktop { display: block; }
+          .cfgd-desktop { display: flex; flex-direction: column; gap: 16px; max-width: 720px; margin: 0 auto; padding: 8px 24px 40px; }
         }
 
         .cfg-desk-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.75rem; gap: 1rem; flex-wrap: wrap; }
