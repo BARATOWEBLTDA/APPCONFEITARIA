@@ -588,7 +588,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           background: #FFFFFF;
           color: var(--primary-dark, #A8235A);
           border: none;
-          border-radius: 999px;
+          border-radius: 12px;
           cursor: pointer;
           box-shadow: 0 8px 24px rgba(60, 15, 40, 0.3);
           transition: transform 0.15s, box-shadow 0.2s;
@@ -598,6 +598,24 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           box-shadow: 0 12px 32px rgba(60, 15, 40, 0.4);
         }
         .ob-final-cta:active { transform: translateY(0); }
+
+        /* ── Foguete lançando ao clicar em "Configurar minha confeitaria" ── */
+        .ob-final-sparkle--launching {
+          animation: obRocketLaunch 1.4s cubic-bezier(0.5, 0, 0.75, 0.35) forwards !important;
+        }
+        @keyframes obRocketLaunch {
+          0%   { transform: translateY(0) scale(1); opacity: 1; }
+          15%  { transform: translateY(6px) scale(0.95); opacity: 1; }
+          30%  { transform: translateY(-20px) scale(1.05); opacity: 1; }
+          100% { transform: translateY(-160vh) scale(0.6); opacity: 0; }
+        }
+        .ob-final-cta--launching {
+          animation: obCtaFade 0.5s ease forwards;
+          pointer-events: none;
+        }
+        @keyframes obCtaFade {
+          to { opacity: 0; transform: translateY(20px); }
+        }
 
         /* ── Slide 2: Pedidos cards (replica do .ped-card do app) ── */
         .ob-pedidos-stack {
@@ -2479,7 +2497,7 @@ function SlideClientes({ onReady }: { onReady: () => void }) {
         ))}
       </div>
 
-      <p className="ob-slide-subtitle-top" style={{ marginTop: "1rem" }}>Histórico, pedidos e informações importantes sempre à mão.</p>
+      <p className="ob-slide-subtitle-top" style={{ marginTop: "1rem", fontSize: "1.05rem", color: "rgba(255,255,255,0.88)" }}>Salve o endereço, o aniversário e o que cada cliente já pediu — pra nunca esquecer de um detalhe importante.</p>
     </div>
   );
 }
@@ -2809,7 +2827,7 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
         )}
       </div>
 
-      <p className="ob-slide-subtitle-top" style={{ marginTop: "1rem" }}>Acompanhe cada encomenda sem depender de papel ou planilha.</p>
+      <p className="ob-slide-subtitle-top" style={{ marginTop: "1rem", fontSize: "1.05rem", color: "rgba(255,255,255,0.88)", maxWidth: "34ch", marginLeft: "auto", marginRight: "auto" }}>Acompanhe cada encomenda sem depender de papel ou planilha.</p>
     </>
   );
 }
@@ -3014,7 +3032,6 @@ function Slide3Ingredientes({ onReady }: { onReady: () => void }) {
       <div className="ob-slide-textabove">
         <span className="ob-slide-eyebrow">Cadastre uma vez</span>
         <h2 className="ob-slide-title">SEUS INGREDIENTES<br/><span className="ob-fill">SEMPRE ATUALIZADOS</span></h2>
-        <p className="ob-slide-subtitle-top">Informe preço e quantidade para o Doonly usar nas suas receitas.</p>
       </div>
 
       <div className={`ob-ing-wrap ${wrapFull ? "ob-ing-wrap--full" : ""}`}>
@@ -3295,13 +3312,24 @@ function Slide4Precificacao({ onReady }: { onReady: () => void }) {
 
 /* ─── Slide Final ────────────────────────────────── */
 function SlideFinal({ onStart }: { onStart: () => void }) {
+  const [launching, setLaunching] = React.useState(false);
+  const handleLaunch = () => {
+    if (launching) return;
+    setLaunching(true);
+    // Espera o foguete sair da tela antes de sair pra o app
+    window.setTimeout(() => { onStart(); }, 1200);
+  };
   return (
     <>
-      <div className="ob-final-sparkle">🚀</div>
+      <div className={`ob-final-sparkle ${launching ? "ob-final-sparkle--launching" : ""}`}>🚀</div>
       <p className="ob-slide-eyebrow" style={{ marginBottom: "0.35rem" }}>Tudo pronto para começar</p>
       <h2 className="ob-final-title">AGORA É A <span className="ob-fill">SUA VEZ</span></h2>
       <p className="ob-final-sub">Vamos deixar o Doonly com a cara da sua confeitaria.</p>
-      <button className="ob-final-cta" onClick={onStart}>
+      <button
+        className={`ob-final-cta ${launching ? "ob-final-cta--launching" : ""}`}
+        onClick={handleLaunch}
+        disabled={launching}
+      >
         Configurar minha confeitaria
       </button>
     </>
