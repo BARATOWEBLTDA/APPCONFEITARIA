@@ -453,11 +453,11 @@ const styles = `
   .cpl-root { min-height: 100vh; background: var(--bg-body); font-family: 'Geist', sans-serif; }
   .cpl-content { max-width: 720px; margin: 0 auto; padding: 20px 16px 100px; }
 
-  .cpl-topbar { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; }
-  .cpl-search { flex: 1; position: relative; display: flex; align-items: center; gap: 8px; background: #fff; border: 1.5px solid #F0EBED; border-radius: 10px; padding: 10px 12px; color: #6B7280; }
-  .cpl-search input { flex: 1; border: none; outline: none; background: transparent; font-size: 13.5px; color: #1F1F23; font-family: inherit; }
+  .cpl-topbar { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+  .cpl-search { flex: 1 1 200px; min-width: 0; position: relative; display: flex; align-items: center; gap: 8px; background: #fff; border: 1.5px solid #F0EBED; border-radius: 10px; padding: 10px 12px; color: #6B7280; }
+  .cpl-search input { flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-size: 13.5px; color: #1F1F23; font-family: inherit; }
   .cpl-search-clear { background: #F3F4F6; border: none; width: 20px; height: 20px; border-radius: 50%; color: #6B7280; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-  .cpl-btn-novo { display: inline-flex; align-items: center; gap: 6px; padding: 10px 14px; background: #E85A8C; color: #fff; border: none; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer; font-family: inherit; box-shadow: 0 4px 12px rgba(232,90,140,0.35); white-space: nowrap; }
+  .cpl-btn-novo { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 14px; background: #E85A8C; color: #fff; border: none; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer; font-family: inherit; box-shadow: 0 4px 12px rgba(232,90,140,0.35); white-space: nowrap; flex-shrink: 0; }
   .cpl-btn-novo:hover { background: #d54a7a; }
   .cpl-btn-novo--empty {
     margin-top: 16px;
