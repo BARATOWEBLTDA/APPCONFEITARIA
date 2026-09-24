@@ -85,6 +85,30 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
     })
   }
 
+  // Bloqueia scroll do body enquanto o modal está aberto (evita "fundo scrollando").
+  // Guarda scrollY antes e restaura ao fechar, pra não ter salto de posição (iOS).
+  useEffect(() => {
+    if (!isOpen) return
+    const scrollY = window.scrollY
+    const prev = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width,
+    }
+    document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.width = '100%'
+    return () => {
+      document.body.style.overflow = prev.overflow
+      document.body.style.position = prev.position
+      document.body.style.top = prev.top
+      document.body.style.width = prev.width
+      window.scrollTo(0, scrollY)
+    }
+  }, [isOpen])
+
   // Upload da foto de referência (opcional). Cliente escolhe uma imagem
   // pra ilustrar o que quer (ex: "queria um bolo assim").
   const handleFotoRef = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -511,7 +535,11 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
             </div>
           )}
 
-          <style>{`@keyframes dropIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+          <style>{`
+            @keyframes dropIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+          `}</style>
         </div>
       )
     }
@@ -593,24 +621,30 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
   return (
     <div style={{
       position: 'fixed',
-      top: 0, left: 0, right: 0,
-      // Mobile: deixa a bottom nav (~52px) visível embaixo. Desktop: cobre tudo.
-      bottom: isDesktop ? 0 : 'calc(52px + env(safe-area-inset-bottom, 0px))',
+      top: 0, left: 0, right: 0, bottom: 0,
       zIndex: 9999,
-      background: 'rgba(0,0,0,0.55)',
-      display: 'flex', alignItems: isDesktop ? 'center' : 'flex-end', justifyContent: 'center',
-      touchAction: 'none', // impede scroll do fundo no mobile
+      background: 'rgba(45, 31, 38, 0.55)',
+      backdropFilter: 'blur(4px)',
+      WebkitBackdropFilter: 'blur(4px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: isDesktop ? '24px' : '16px',
+      paddingBottom: isDesktop ? '24px' : 'calc(16px + env(safe-area-inset-bottom, 0px))',
+      paddingTop: isDesktop ? '24px' : 'calc(16px + env(safe-area-inset-top, 0px))',
+      touchAction: 'none',
       overscrollBehavior: 'contain',
+      animation: 'fadeIn 0.2s ease-out',
     }}
       onClick={onClose}
     >
       <div style={{
         background: 'var(--bg-card)', width: '100%', maxWidth: '500px',
         maxHeight: '100%',
-        height: isDesktop ? 'auto' : '100%',
-        borderRadius: isDesktop ? '20px' : '20px 20px 0 0',
+        height: 'auto',
+        borderRadius: '20px',
         display: 'flex', flexDirection: 'column',
-        overflow: 'hidden', // não deixa scroll no wrapper
+        overflow: 'hidden',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+        animation: 'modalIn 0.25s cubic-bezier(0.32, 0.72, 0, 1)',
       }}
         onClick={e => e.stopPropagation()}
       >
