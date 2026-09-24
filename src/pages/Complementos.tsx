@@ -59,6 +59,17 @@ export default function Complementos() {
     })();
   }, []);
 
+  // Bloqueia scroll do body enquanto o modal ou o info estiver aberto (evita
+  // o "fundo scrollando" atrás do modal, comum em mobile).
+  useEffect(() => {
+    const algumAberto = modalOpen || showInfo || !!confirmDel;
+    if (algumAberto) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = prev; };
+    }
+  }, [modalOpen, showInfo, confirmDel]);
+
   const abrirNovo = () => {
     setEditing(null);
     setForm({ nome: "", valor: 0, categorias: [] });
@@ -467,7 +478,7 @@ const styles = `
 
   .cpl-modal-ov { position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.5); display: flex; align-items: flex-end; justify-content: center; animation: cplfade 0.2s; }
   @keyframes cplfade { from { opacity: 0; } to { opacity: 1; } }
-  .cpl-modal { background: #fff; width: 100%; max-width: 520px; height: 90vh; max-height: 90vh; border-radius: 20px 20px 0 0; display: flex; flex-direction: column; overflow: hidden; animation: cplup 0.28s cubic-bezier(0.32,0.72,0,1); font-family: inherit; }
+  .cpl-modal { background: #fff; width: 100%; max-width: 520px; height: 70vh; max-height: 70vh; border-radius: 20px 20px 0 0; display: flex; flex-direction: column; overflow: hidden; animation: cplup 0.28s cubic-bezier(0.32,0.72,0,1); font-family: inherit; }
   .cpl-modal--sm { max-width: 400px; }
   @media (min-width: 720px) { .cpl-modal-ov { align-items: center; padding: 24px; } .cpl-modal { border-radius: 16px; max-height: 82vh; } }
   @keyframes cplup { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -490,8 +501,8 @@ const styles = `
   .cpl-field input[type="text"] { padding: 12px 14px; border: 1.5px solid #E5E7EB; border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; transition: border 0.15s; }
   .cpl-field input:focus { border-color: #E85A8C; }
   .cpl-field-input-wrap { position: relative; display: flex; align-items: center; }
-  .cpl-field-prefix { position: absolute; left: 14px; font-size: 13px; font-weight: 700; color: #6B7280; pointer-events: none; }
-  .cpl-field-input-wrap input { padding-left: 40px; width: 100%; box-sizing: border-box; }
+  .cpl-field-prefix { position: absolute; left: 14px; font-size: 13px; font-weight: 700; color: #6B7280; pointer-events: none; z-index: 1; }
+  .cpl-field-input-wrap input[type="text"] { padding-left: 40px !important; width: 100%; box-sizing: border-box; }
 
   .cpl-prods-list {
     display: flex; flex-direction: column; gap: 4px;
