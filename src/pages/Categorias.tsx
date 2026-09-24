@@ -193,10 +193,14 @@ export default function Categorias() {
     )}
     <div className="cat-root">
       {isStandalone ? (
-        <div className="cat-header-novo">
-          <ViewToggle viewMode={viewMode} onChange={setViewMode} />
-          <BtnNovo label="Nova categoria" onClick={openNova} />
-        </div>
+        // Desktop: header com viewToggle + botão só aparece se tem categorias.
+        // Se estiver vazio, o hero grande abaixo já traz o CTA principal.
+        categorias.length > 0 && (
+          <div className="cat-header-novo">
+            <ViewToggle viewMode={viewMode} onChange={setViewMode} />
+            <BtnNovo label="Nova categoria" onClick={openNova} />
+          </div>
+        )
       ) : (
         <div className="cat-header">
           <div>
@@ -208,13 +212,37 @@ export default function Categorias() {
       )}
 
       {categorias.length === 0 ? (
-        <EmptyDoo
-          image="categorias.png"
-          title="Vamos organizar seu cardápio?"
-          description='Crie categorias como "Bolos", "Doces" ou "Salgados" para que sua confeitaria fique linda e organizada para os clientes!'
-          actionLabel="Criar primeira categoria"
-          onAction={openNova}
-        />
+        isStandalone ? (
+          // Desktop: hero grande estilo Produtos
+          <div className="cat-hero-empty">
+            <span className="cat-hero-eyebrow">✨ VAMOS COMEÇAR</span>
+            <h1 className="cat-hero-title">Organize seu<br/>cardápio</h1>
+            <p className="cat-hero-desc">
+              Crie categorias como "Bolos", "Doces" ou "Salgados" pra sua confeitaria ficar linda e organizada pros clientes.
+            </p>
+            <div className="cat-hero-actions">
+              <button className="cat-hero-btn" onClick={openNova}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                CRIAR PRIMEIRA CATEGORIA
+              </button>
+            </div>
+            <div className="cat-hero-tip">
+              <div className="cat-hero-tip-icon">💡</div>
+              <div>
+                <p className="cat-hero-tip-t">Dica: categorias facilitam a busca</p>
+                <p className="cat-hero-tip-d">Clientes acham o produto mais rápido quando o cardápio está bem separado.</p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <EmptyDoo
+            image="categorias.png"
+            title="Vamos organizar seu cardápio?"
+            description='Crie categorias como "Bolos", "Doces" ou "Salgados" para que sua confeitaria fique linda e organizada para os clientes!'
+            actionLabel="Criar primeira categoria"
+            onAction={openNova}
+          />
+        )
       ) : viewMode === "grid" ? (
         <div className="cat-grid">
           {categorias.map((cat, idx) => {
@@ -398,6 +426,99 @@ export default function Categorias() {
         .cat-title { font-size: var(--font-page-title); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 0.15rem; }
         .cat-sub { font-size: var(--font-helper); color:var(--text-muted); margin:0; }
         .cat-btn-novo { display:none; }
+
+        /* ── Hero empty (desktop) — mesmo padrão do Produtos ── */
+        .cat-hero-empty {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          padding: 4rem 2rem 3rem;
+          max-width: 640px;
+          margin: 2rem auto 0;
+        }
+        .cat-hero-eyebrow {
+          display: inline-block;
+          font-size: 11px;
+          font-weight: var(--fw-black);
+          color: var(--primary);
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          background: var(--primary-light, #FCE0E9);
+          padding: 6px 14px;
+          border-radius: 999px;
+        }
+        .cat-hero-title {
+          font-size: 2rem;
+          font-weight: var(--fw-black);
+          letter-spacing: -0.03em;
+          line-height: 1.1;
+          color: var(--text-title);
+          margin: 1rem 0 0;
+        }
+        .cat-hero-desc {
+          font-size: var(--text-md, 15px);
+          color: var(--text-secondary);
+          line-height: 1.55;
+          margin: 1rem 0 0;
+          max-width: 480px;
+        }
+        .cat-hero-actions {
+          display: flex; gap: 0.75rem; flex-wrap: wrap;
+          margin-top: 1.5rem;
+          justify-content: center;
+        }
+        .cat-hero-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          background: var(--primary);
+          color: #fff;
+          border: none;
+          padding: 14px 24px;
+          border-radius: 12px;
+          font-size: 14px;
+          font-weight: var(--fw-black, 900);
+          cursor: pointer;
+          font-family: inherit;
+          letter-spacing: 0.03em;
+          text-transform: uppercase;
+          box-shadow: 0 4px 0 var(--primary-dark, #C33A6E);
+          transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.15s ease;
+        }
+        .cat-hero-btn:hover { filter: brightness(1.05); }
+        .cat-hero-btn:active {
+          transform: translateY(4px);
+          box-shadow: 0 0 0 var(--primary-dark, #C33A6E);
+        }
+        .cat-hero-tip {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          margin-top: 2rem;
+          padding: 16px 20px;
+          background: #FEF9E7;
+          border: 1px solid #FCE795;
+          border-radius: 12px;
+          max-width: 480px;
+          text-align: left;
+        }
+        .cat-hero-tip-icon {
+          font-size: 22px;
+          flex-shrink: 0;
+        }
+        .cat-hero-tip-t {
+          font-size: 13.5px;
+          font-weight: 800;
+          color: #78350F;
+          margin: 0 0 3px;
+        }
+        .cat-hero-tip-d {
+          font-size: 12.5px;
+          color: #92400E;
+          margin: 0;
+          line-height: 1.45;
+        }
 
         /* ── Toggle Grid/Lista ────────────────────────────── */
         .cat-view-toggle { display: inline-flex; background: #F5F1F3; border-radius: 10px; padding: 3px; gap: 2px; }
