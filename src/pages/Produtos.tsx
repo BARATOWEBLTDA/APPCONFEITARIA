@@ -4537,25 +4537,25 @@ export default function Produtos() {
                   className={`prod-edit-tab ${editTab === "info" ? "prod-edit-tab--ativo" : ""}`}
                   onClick={() => setEditTab("info")}
                 >
-                  <span className="prod-edit-tab-icon">📝</span> Info
+                  Info
                 </button>
                 <button
                   className={`prod-edit-tab ${editTab === "opcoes" ? "prod-edit-tab--ativo" : ""}`}
                   onClick={() => setEditTab("opcoes")}
                 >
-                  <span className="prod-edit-tab-icon">🎨</span> Opções
+                  Opções
                 </button>
                 <button
                   className={`prod-edit-tab ${editTab === "preco" ? "prod-edit-tab--ativo" : ""}`}
                   onClick={() => setEditTab("preco")}
                 >
-                  <span className="prod-edit-tab-icon">💰</span> Preço
+                  Preço
                 </button>
                 <button
                   className={`prod-edit-tab ${editTab === "fotos" ? "prod-edit-tab--ativo" : ""}`}
                   onClick={() => setEditTab("fotos")}
                 >
-                  <span className="prod-edit-tab-icon">📷</span> Fotos
+                  Fotos
                 </button>
               </div>
             )}
