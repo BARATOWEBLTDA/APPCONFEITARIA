@@ -200,7 +200,7 @@ export default function Layout() {
             </div>
           )}
 
-          <NavLink to="/cardapio-config" className={({ isActive }) => `nav-item ${(isActive || location.pathname.startsWith("/cardapio")) ? "active" : ""}`}>
+          <NavLink to="/cardapio-config" data-tour="cardapio" className={({ isActive }) => `nav-item ${(isActive || location.pathname.startsWith("/cardapio")) ? "active" : ""}`}>
             <span className="nav-icon"><ShoppingBag size={18} weight="duotone" /></span>Cardápio Digital
           </NavLink>
 
@@ -291,9 +291,9 @@ export default function Layout() {
         <nav className="bottom-nav">
           <div className="bottom-nav-pill">
             {[
-              { to: "/inicio",   icon: <House          size={20} weight="regular" />, label: "Início"   },
-              { to: "/cardapio", icon: <BookOpen       size={20} weight="regular" />, label: "Cardápio" },
-              { to: "/pedidos",  icon: <Receipt        size={20} weight="regular" />, label: "Pedidos"  },
+              { to: "/inicio",   icon: <House          size={20} weight="regular" />, label: "Início",   tour: undefined },
+              { to: "/cardapio", icon: <BookOpen       size={20} weight="regular" />, label: "Cardápio", tour: "cardapio" },
+              { to: "/pedidos",  icon: <Receipt        size={20} weight="regular" />, label: "Pedidos",  tour: undefined },
             ].map((item) => {
               const isActive =
                 location.pathname === item.to ||
@@ -302,6 +302,7 @@ export default function Layout() {
                 <button
                   key={item.to}
                   className={`bn-item${isActive ? " bn-item--active" : ""}`}
+                  data-tour={item.tour}
                   onClick={() => navigate(item.to)}
                 >
                   <span className="bn-icon">{item.icon}</span>
@@ -319,6 +320,7 @@ export default function Layout() {
             </button>
             <button
               className={`bn-item${dooOpen ? " bn-item--active" : ""}`}
+              data-tour="doo"
               onClick={() => setDooOpen(true)}
               aria-label="Abrir Doo IA"
             >

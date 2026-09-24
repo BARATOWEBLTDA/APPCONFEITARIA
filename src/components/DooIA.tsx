@@ -495,6 +495,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
           display: 'none',
           alignItems: 'center', justifyContent: 'center',
         }}
+        data-tour="doo"
         aria-label="Abrir assistente Doo"
       >
         <div style={{
