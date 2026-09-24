@@ -103,7 +103,7 @@ export default function Layout() {
               <div className="sidebar-avatar">
                 {profile?.foto_url
                   ? <img src={profile.foto_url} alt="Foto de perfil" />
-                  : <div className="sidebar-avatar-placeholder"><User size={36} weight="duotone" color="var(--primary)" /></div>
+                  : <div className="sidebar-avatar-placeholder"><span className="sidebar-avatar-inicial">{(profile?.nome || "?").trim().charAt(0).toUpperCase()}</span></div>
                 }
               </div>
             </div>
@@ -378,12 +378,12 @@ export default function Layout() {
           background: var(--primary-dark);
           transform: scale(1.1);
         }
-        .sidebar-avatar-ring { width: 100px; height: 100px; border-radius: 50%; padding: 3px; background: var(--primary-gradient); background-size: 300% 300%; animation: gradientRing 3s ease infinite; flex-shrink: 0; }
-        @keyframes gradientRing { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .sidebar-avatar-ring { width: 100px; height: 100px; border-radius: 50%; padding: 2px; background: #F0EBED; flex-shrink: 0; }
 
-        .sidebar-avatar { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; border: 3px solid var(--text-inverse); background: rgba(var(--primary-rgb), 0.1); }
+        .sidebar-avatar { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; border: 3px solid var(--text-inverse); background: #F8F5F6; }
         .sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .sidebar-avatar-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        .sidebar-avatar-inicial { font-family: var(--font-base); font-size: 32px; font-weight: 900; color: #C33A6E; letter-spacing: -0.02em; line-height: 1; text-transform: uppercase; }
 
         .sidebar-avatar-container {
           position: relative;
