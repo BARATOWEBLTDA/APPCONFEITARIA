@@ -1964,49 +1964,38 @@ function PersonalizacaoStep({
                               </div>
                             )}
                             {modoAvancadoTam && (
-                            <div className="pv3-serve-box">
+                            <div className="pv3-serve-d">
                               {(() => {
-                                // Extrai número + unidade do valor atual (ex: "8 pessoas")
                                 const raw = String(op.serve || "");
                                 const m = raw.match(/^\s*([\d\s,-]*?)\s*(pessoas|porções|porcoes|fatias)?\s*$/i);
-                                const num = m ? (m[1] || "") : raw;
-                                let unid: "pessoas" | "porcoes" | "fatias" = "pessoas";
+                                const num = m ? (m[1] || "").trim() : raw;
+                                let unid: "pessoas" | "porções" | "fatias" = "pessoas";
                                 if (m && m[2]) {
                                   const u = m[2].toLowerCase();
-                                  if (u.startsWith("por")) unid = "porcoes";
+                                  if (u.startsWith("por")) unid = "porções";
                                   else if (u.startsWith("fat")) unid = "fatias";
                                 }
                                 const update = (novoNum: string, novaUnid: typeof unid) => {
-                                  const numLimpo = novoNum.slice(0, 8);
-                                  const label = novaUnid === "porcoes" ? "porções" : novaUnid;
-                                  const valor = numLimpo ? `${numLimpo.trim()} ${label}` : "";
+                                  const numLimpo = novoNum.slice(0, 8).trim();
+                                  const valor = numLimpo ? `${numLimpo} ${novaUnid}` : "";
                                   onChange({ grupo_tamanhos: { ...grupoTamanhos, opcoes: grupoTamanhos.opcoes.map(o => o.id === op.id ? { ...o, serve: valor } : o) } } as any);
                                 };
-                                const unidLabel = unid === "porcoes" ? "porções" : unid;
                                 return <>
-                                  <span className="pv3-serve-label">Serve</span>
-                                  <div className="pv3-serve-input">
-                                    <input
-                                      type="text"
-                                      inputMode="numeric"
-                                      placeholder="0"
-                                      value={num}
-                                      onChange={e => update(e.target.value, unid)}
-                                    />
-                                    <span className="pv3-serve-sufixo">{unidLabel}</span>
-                                  </div>
-                                  <div className="pv3-serve-chips" role="tablist">
-                                    {(["pessoas","porcoes","fatias"] as const).map(u => (
-                                      <button
-                                        key={u}
-                                        type="button"
-                                        role="tab"
-                                        aria-selected={unid === u}
-                                        className={`pv3-serve-chip ${unid === u ? "pv3-serve-chip--on" : ""}`}
-                                        onClick={() => update(num, u)}
-                                      >{u === "porcoes" ? "porções" : u}</button>
-                                    ))}
-                                  </div>
+                                  <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    placeholder="Serve"
+                                    value={num}
+                                    onChange={e => update(e.target.value, unid)}
+                                  />
+                                  <select
+                                    value={unid}
+                                    onChange={e => update(num, e.target.value as typeof unid)}
+                                  >
+                                    <option value="pessoas">pessoas</option>
+                                    <option value="porções">porções</option>
+                                    <option value="fatias">fatias</option>
+                                  </select>
                                 </>;
                               })()}
                             </div>
@@ -2086,133 +2075,44 @@ function PersonalizacaoStep({
                   </>
                 )}
 
-                {/* Toggle "Modo avançado" — só pra tamanhos, agrupado com Config avançadas.
+                {/* Toggle "Modo avançado" — só pra tamanhos.
                     Off: lista limpa. On: mostra campo Serve em cada tamanho. */}
                 {g.key === "tamanhos" && grupoTamanhos.opcoes.length > 0 && grupoTamanhos.modo_preco_tamanho && (
-                  <div style={{marginTop: 14, borderTop: "1px dashed #E5D8DE", paddingTop: 12}}>
-                    <button
-                      type="button"
-                      className={`pv3-modo-adv ${modoAvancadoTam ? "pv3-modo-adv--on" : ""}`}
-                      onClick={() => {
-                        if (modoAvancadoTam && jaTemServe) {
-                          const ok = confirm("Desligar o modo avançado vai apagar as informações de 'Serve X' já preenchidas. Continuar?");
-                          if (!ok) return;
-                          onChange({ grupo_tamanhos: { ...grupoTamanhos, opcoes: grupoTamanhos.opcoes.map(o => ({ ...o, serve: "" })) } } as any);
-                        }
-                        setModoAvancadoTam(v => !v);
-                      }}
-                    >
-                      <div className="pv3-modo-adv-info">
-                        <div className="pv3-modo-adv-ico">
-                          {modoAvancadoTam ? (
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                          ) : (
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
-                          )}
+                  <button
+                    type="button"
+                    className={`pv3-modo-adv ${modoAvancadoTam ? "pv3-modo-adv--on" : ""}`}
+                    onClick={() => {
+                      if (modoAvancadoTam && jaTemServe) {
+                        const ok = confirm("Desligar o modo avançado vai apagar as informações de 'Serve X' já preenchidas. Continuar?");
+                        if (!ok) return;
+                        onChange({ grupo_tamanhos: { ...grupoTamanhos, opcoes: grupoTamanhos.opcoes.map(o => ({ ...o, serve: "" })) } } as any);
+                      }
+                      setModoAvancadoTam(v => !v);
+                    }}
+                  >
+                    <div className="pv3-modo-adv-info">
+                      <div className="pv3-modo-adv-ico">
+                        {modoAvancadoTam ? (
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="16 10 11 15 8 12"/></svg>
+                        ) : (
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                        )}
+                      </div>
+                      <div className="pv3-modo-adv-txt">
+                        <div className="pv3-modo-adv-t">
+                          {modoAvancadoTam ? "Modo avançado ativado" : "Modo avançado"}
                         </div>
-                        <div className="pv3-modo-adv-txt">
-                          <div className="pv3-modo-adv-t">
-                            {modoAvancadoTam ? "Modo avançado ativado" : "Modo avançado"}
-                          </div>
-                          <div className="pv3-modo-adv-s">
-                            {modoAvancadoTam
-                              ? "Configure porções/fatias em cada tamanho"
-                              : "Informe quantas pessoas cada tamanho serve"}
-                          </div>
+                        <div className="pv3-modo-adv-s">
+                          {modoAvancadoTam
+                            ? "Configure porções/fatias em cada tamanho"
+                            : "Informe quantas pessoas cada tamanho serve"}
                         </div>
                       </div>
-                      <span className={`pv3-modo-adv-switch ${modoAvancadoTam ? "on" : ""}`} aria-hidden="true" />
-                    </button>
-                  </div>
+                    </div>
+                    <span className={`pv3-modo-adv-switch ${modoAvancadoTam ? "on" : ""}`} aria-hidden="true" />
+                  </button>
                 )}
 
-                {/* ═══ Configurações avançadas — só quando confeiteira quer configurar min/max ═══ */}
-                {g.dados.opcoes.length > 0 && (
-                  <div style={{marginTop: 14, borderTop: "1px dashed #E5D8DE", paddingTop: 10}}>
-                    <button
-                      type="button"
-                      onClick={() => setAvancadoOpen(prev => ({ ...prev, [g.key]: !prev[g.key] }))}
-                      style={{
-                        all: "unset",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                        fontSize: 12,
-                        fontWeight: 700,
-                        color: "#6B5D64",
-                        cursor: "pointer",
-                        padding: "6px 8px",
-                        borderRadius: 6,
-                        fontFamily: "inherit",
-                      }}
-                    >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                      </svg>
-                      {avancadoOpen[g.key] ? "Ocultar avançado" : "Configurações avançadas"}
-                    </button>
-
-                    {avancadoOpen[g.key] && (
-                      <div style={{
-                        marginTop: 10,
-                        padding: 12,
-                        background: "#FAF8F5",
-                        border: "1px solid #F0EBED",
-                        borderRadius: 10,
-                      }}>
-                        <div style={{fontSize: 12.5, fontWeight: 700, color: "#2D1F26", marginBottom: 8}}>
-                          Quantas opções o cliente pode escolher?
-                        </div>
-                        <div style={{display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap"}}>
-                          <label style={{display: "inline-flex", flexDirection: "column", gap: 4}}>
-                            <span style={{fontSize: 11, color: "#6B5D64", fontWeight: 700}}>Mínimo</span>
-                            <input
-                              type="number"
-                              min={0}
-                              max={g.dados.opcoes.length}
-                              value={g.dados.min ?? 1}
-                              onChange={e => {
-                                const min = Math.max(0, Math.min(parseInt(e.target.value) || 0, g.dados.opcoes.length));
-                                const campoKey = `grupo_${g.key}`;
-                                onChange({ [campoKey]: { ...g.dados, min } } as any);
-                              }}
-                              style={{
-                                width: 60, padding: "6px 8px", border: "1.5px solid #E5D8DE",
-                                borderRadius: 6, fontSize: 13, fontWeight: 700, color: "#2D1F26",
-                                textAlign: "center", fontFamily: "inherit", outline: "none",
-                              }}
-                            />
-                          </label>
-                          <label style={{display: "inline-flex", flexDirection: "column", gap: 4}}>
-                            <span style={{fontSize: 11, color: "#6B5D64", fontWeight: 700}}>Máximo</span>
-                            <input
-                              type="number"
-                              min={1}
-                              max={g.dados.opcoes.length || 99}
-                              value={g.dados.max ?? 1}
-                              onChange={e => {
-                                const max = Math.max(1, Math.min(parseInt(e.target.value) || 1, g.dados.opcoes.length || 99));
-                                const campoKey = `grupo_${g.key}`;
-                                onChange({ [campoKey]: { ...g.dados, max } } as any);
-                              }}
-                              style={{
-                                width: 60, padding: "6px 8px", border: "1.5px solid #E5D8DE",
-                                borderRadius: 6, fontSize: 13, fontWeight: 700, color: "#2D1F26",
-                                textAlign: "center", fontFamily: "inherit", outline: "none",
-                              }}
-                            />
-                          </label>
-                          <span style={{fontSize: 11.5, color: "#6B5D64", flex: 1, minWidth: 120}}>
-                            {g.dados.min === g.dados.max
-                              ? `Cliente escolhe exatamente ${g.dados.min} ${g.dados.min === 1 ? "opção" : "opções"}`
-                              : `Cliente escolhe de ${g.dados.min} a ${g.dados.max} opções`}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             )}
           </div>
@@ -2662,24 +2562,38 @@ function PersonalizacaoStep({
         .pv3-opcoes-list--grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 6px;
+          gap: 5px;
+          background: #F8F5F6;
+          border-radius: 12px;
+          padding: 5px;
         }
         .pv3-opcoes-list--grid .pv3-opcao-row {
-          padding: 10px 12px;
+          padding: 12px;
+          background: #fff;
+          border: none !important;
+          border-radius: 8px;
           flex-direction: column;
           align-items: stretch;
           gap: 8px;
         }
+        .pv3-opcoes-list--grid .pv3-opcao-row:hover {
+          border: none !important;
+          box-shadow: none;
+        }
+        .pv3-opcoes-list--grid .pv3-opcao-row:hover .pv3-opcao-del {
+          opacity: 1;
+        }
         /* Primeira "linha" dentro do card (nome + delete) */
         .pv3-opcoes-list--grid .pv3-opcao-row > .pv3-opcao-nome {
           flex: none;
-          font-size: 13px;
+          font-size: 13.5px;
+          padding-right: 22px;
         }
         .pv3-opcoes-list--grid .pv3-opcao-row .pv3-opcao-move { display: none; }
         /* Serve ocupa largura total no grid mode */
         .pv3-opcoes-list--grid .pv3-opcao-row .pv3-opcao-serve,
         .pv3-opcoes-list--grid .pv3-opcao-row .pv3-serve-box {
-          width: 100%;
+          width: auto;
           margin: 0;
         }
         /* Delete solta do final e vira canto do topo direito */
@@ -2688,8 +2602,14 @@ function PersonalizacaoStep({
         }
         .pv3-opcoes-list--grid .pv3-opcao-row .pv3-opcao-del {
           position: absolute;
-          top: 6px;
-          right: 6px;
+          top: 10px;
+          right: 10px;
+          opacity: 0.35;
+          transition: opacity 0.15s, color 0.15s;
+        }
+        .pv3-opcoes-list--grid .pv3-opcao-row .pv3-opcao-del:hover {
+          opacity: 1;
+          color: #DC2626;
         }
         .pv3-opcoes-list--grid .pv3-empty {
           grid-column: 1 / -1;
@@ -3003,37 +2923,76 @@ function PersonalizacaoStep({
           color: #6B7280;
         }
 
-        /* ═══ Toggle "Modo avançado" ═══ */
+        /* ═══ Serve Modelo D — input + select nativo ═══ */
+        .pv3-serve-d {
+          display: inline-flex;
+          align-items: center;
+          background: #fff;
+          border: 1px solid #F0D8DE;
+          border-radius: 6px;
+          overflow: hidden;
+          transition: border-color 0.15s;
+        }
+        .pv3-serve-d:focus-within { border-color: #E85A8C; }
+        .pv3-serve-d input {
+          all: unset;
+          width: 46px;
+          padding: 6px 4px 6px 10px;
+          font-size: 13px;
+          font-weight: 800;
+          color: #C33A6E;
+          text-align: right;
+        }
+        .pv3-serve-d input::placeholder {
+          font-size: 10.5px;
+          font-weight: 600;
+          color: #C0B3B8;
+          text-align: right;
+          letter-spacing: 0;
+        }
+        .pv3-serve-d select {
+          all: unset;
+          padding: 6px 24px 6px 8px;
+          font-size: 12px;
+          font-weight: 700;
+          color: #C33A6E;
+          background: #FFF5F9;
+          cursor: pointer;
+          font-family: inherit;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23C33A6E' stroke-width='2.4' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 8px center;
+        }
+
+        /* ═══ Modo avançado — versão compacta (uma linha só) ═══ */
         .pv3-modo-adv {
           all: unset;
           box-sizing: border-box;
-          display: flex; align-items: center; justify-content: space-between;
-          gap: 12px;
-          padding: 12px 14px;
-          background: #FFF5F9;
-          border: 1px solid #F0D8DE;
-          border-radius: 10px;
-          margin-bottom: 12px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px 0 0;
+          margin-top: 14px;
+          border-top: 1px solid #F5F0F2;
           cursor: pointer;
-          transition: all 0.15s;
           font-family: inherit;
+          width: 100%;
         }
-        .pv3-modo-adv:hover { border-color: #E85A8C; }
-        .pv3-modo-adv--on { background: #DCFCE7; border-color: #86EFAC; }
-        .pv3-modo-adv--on:hover { border-color: #16a34a; }
-        .pv3-modo-adv-info { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .pv3-modo-adv-info {
+          display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;
+        }
         .pv3-modo-adv-ico {
-          width: 32px; height: 32px; border-radius: 8px;
-          background: #FCE0E9; color: #C33A6E;
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
+          color: #6B7280;
+          display: flex;
+          align-items: center;
         }
-        .pv3-modo-adv--on .pv3-modo-adv-ico { background: #BBF7D0; color: #16a34a; }
-        .pv3-modo-adv-txt { min-width: 0; }
-        .pv3-modo-adv-t { font-size: 13px; font-weight: 800; color: #2C1219; }
-        .pv3-modo-adv-s { font-size: 11px; color: #6B7280; margin-top: 1px; line-height: 1.4; }
+        .pv3-modo-adv--on .pv3-modo-adv-ico { color: #16a34a; }
+        .pv3-modo-adv-txt { min-width: 0; flex: 1; }
+        .pv3-modo-adv-t { font-size: 12.5px; font-weight: 700; color: #4B5563; }
+        .pv3-modo-adv--on .pv3-modo-adv-t { color: #16a34a; }
+        .pv3-modo-adv-s { font-size: 11px; color: #9CA3AF; margin-top: 1px; line-height: 1.4; }
         .pv3-modo-adv-switch {
-          width: 40px; height: 22px;
+          width: 36px; height: 20px;
           background: #E5E7EB;
           border-radius: 999px;
           position: relative;
@@ -3042,13 +3001,16 @@ function PersonalizacaoStep({
         }
         .pv3-modo-adv-switch.on { background: #E85A8C; }
         .pv3-modo-adv-switch::after {
-          content: ''; position: absolute; top: 2px; left: 2px;
-          width: 18px; height: 18px;
-          background: #fff; border-radius: 50%;
+          content: '';
+          position: absolute;
+          top: 2px; left: 2px;
+          width: 16px; height: 16px;
+          background: #fff;
+          border-radius: 50%;
           box-shadow: 0 1px 3px rgba(0,0,0,0.15);
           transition: transform 0.2s;
         }
-        .pv3-modo-adv-switch.on::after { transform: translateX(18px); }
+        .pv3-modo-adv-switch.on::after { transform: translateX(16px); }
 
         /* Badge "Sugerido" — pra opção que o sistema recomenda */
         .pv3-sugerido-badge {
