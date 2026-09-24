@@ -166,58 +166,44 @@ export default function Complementos() {
 
             <div className="cpl-empty-preview">
               <div className="cpl-empty-preview-product">
-                <div className="cpl-empty-preview-img">🎂</div>
+                <div className="cpl-empty-preview-img">
+                  <img src="/Sistema/bolo.jpg" alt="Bolo" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement!.innerHTML = '🎂'; }} />
+                </div>
                 <div className="cpl-empty-preview-info">
-                  <div className="cpl-empty-preview-nome">Bolo de aniversário</div>
-                  <div className="cpl-empty-preview-preco">R$ 80,00</div>
+                  <div className="cpl-empty-preview-nome">Bolo de Paçoca</div>
+                  <div className="cpl-empty-preview-preco">R$ 47,90 <span className="cpl-empty-preview-un">/ kg</span></div>
                 </div>
               </div>
 
-              <div className="cpl-empty-preview-grupo">
-                <div className="cpl-empty-preview-grupo-hdr">
-                  <div className="cpl-empty-preview-grupo-tit">Topo de bolo</div>
-                  <div className="cpl-empty-preview-grupo-sub">Obrigatório</div>
+              <div className="cpl-empty-preview-item selected">
+                <div className="cpl-empty-preview-check">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 </div>
-                <div className="cpl-empty-preview-opt selected">
-                  <div className="cpl-empty-preview-radio" />
-                  <div className="cpl-empty-preview-opt-nome">Homem Aranha</div>
-                  <div className="cpl-empty-preview-opt-preco">+ R$ 15</div>
-                </div>
-                <div className="cpl-empty-preview-opt">
-                  <div className="cpl-empty-preview-radio" />
-                  <div className="cpl-empty-preview-opt-nome">Barbie</div>
-                  <div className="cpl-empty-preview-opt-preco">+ R$ 15</div>
-                </div>
+                <div className="cpl-empty-preview-nm">Topo de bolo</div>
+                <div className="cpl-empty-preview-pr">+ R$ 15</div>
+              </div>
+              <div className="cpl-empty-preview-item">
+                <div className="cpl-empty-preview-check" />
+                <div className="cpl-empty-preview-nm">Papel de arroz</div>
+                <div className="cpl-empty-preview-pr">+ R$ 10</div>
+              </div>
+              <div className="cpl-empty-preview-item">
+                <div className="cpl-empty-preview-check" />
+                <div className="cpl-empty-preview-nm">Escrita</div>
+                <div className="cpl-empty-preview-pr gratis">Grátis</div>
               </div>
 
-              <div className="cpl-empty-preview-grupo">
-                <div className="cpl-empty-preview-grupo-hdr">
-                  <div className="cpl-empty-preview-grupo-tit">Papel de arroz</div>
-                  <div className="cpl-empty-preview-grupo-sub">Opcional</div>
+              <div className="cpl-empty-preview-upload">
+                <div className="cpl-empty-preview-upload-ico">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
                 </div>
-                <div className="cpl-empty-preview-opt">
-                  <div className="cpl-empty-preview-radio" />
-                  <div className="cpl-empty-preview-opt-nome">Foto do aniversariante</div>
-                  <div className="cpl-empty-preview-opt-preco">+ R$ 20</div>
-                </div>
-              </div>
-
-              <div className="cpl-empty-preview-grupo">
-                <div className="cpl-empty-preview-grupo-hdr">
-                  <div className="cpl-empty-preview-grupo-tit">Foto de referência</div>
-                  <div className="cpl-empty-preview-grupo-sub">Opcional</div>
-                </div>
-                <div className="cpl-empty-preview-upload">
-                  <div className="cpl-empty-preview-upload-ico">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                      <circle cx="12" cy="13" r="4"/>
-                    </svg>
-                  </div>
-                  <div className="cpl-empty-preview-upload-info">
-                    <div className="cpl-empty-preview-upload-tit">Anexar foto</div>
-                    <div className="cpl-empty-preview-upload-sub">Envie uma imagem de referência</div>
-                  </div>
+                <div className="cpl-empty-preview-upload-info">
+                  <div className="cpl-empty-preview-upload-tit">Enviar referência</div>
+                  <div className="cpl-empty-preview-upload-sub">Anexe uma foto ou imagem</div>
                 </div>
               </div>
             </div>
@@ -444,27 +430,25 @@ const styles = `
   .cpl-empty-title { margin: 0 0 6px; font-size: 16px; font-weight: 800; color: #2C1219; letter-spacing: -0.02em; }
   .cpl-empty-sub { margin: 0 0 16px; font-size: 12.5px; color: #6B7280; line-height: 1.5; }
 
-  /* Preview de como aparece no cardápio (Modelo lista compacta) */
-  .cpl-empty-preview { border: 1px solid #F0D8DE; border-radius: 10px; padding: 18px; margin-bottom: 20px; background: #FFF5F9; text-align: left; }
-  .cpl-empty-preview-product { display: flex; align-items: center; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid #F0D8DE; margin-bottom: 14px; }
-  .cpl-empty-preview-img { width: 52px; height: 52px; border-radius: 8px; background: linear-gradient(135deg, #FCE0E9, #F0D8DE); display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; }
+  /* Preview de como aparece no cardápio (lista com checkbox) */
+  .cpl-empty-preview { border: 1px solid #F0D8DE; border-radius: 10px; padding: 18px; margin-bottom: 20px; background: #fff; text-align: left; }
+  .cpl-empty-preview-product { display: flex; align-items: center; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid #F0D8DE; margin-bottom: 4px; }
+  .cpl-empty-preview-img { width: 60px; height: 60px; border-radius: 8px; background: linear-gradient(135deg, #F5DEB3, #DEB887); display: flex; align-items: center; justify-content: center; font-size: 30px; flex-shrink: 0; overflow: hidden; }
+  .cpl-empty-preview-img img { width: 100%; height: 100%; object-fit: cover; }
   .cpl-empty-preview-info { flex: 1; min-width: 0; }
   .cpl-empty-preview-nome { font-size: 15px; font-weight: 800; color: #2C1219; line-height: 1.2; letter-spacing: -0.01em; }
-  .cpl-empty-preview-preco { font-size: 13px; color: #C33A6E; font-weight: 700; margin-top: 3px; }
+  .cpl-empty-preview-preco { font-size: 14px; color: #C33A6E; font-weight: 700; margin-top: 3px; }
+  .cpl-empty-preview-un { font-size: 11px; font-weight: 600; color: #6B7280; margin-left: 2px; }
 
-  .cpl-empty-preview-grupo { padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid #F0D8DE; }
-  .cpl-empty-preview-grupo:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
-  .cpl-empty-preview-grupo-hdr { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; gap: 8px; }
-  .cpl-empty-preview-grupo-tit { font-size: 14px; font-weight: 800; color: #2C1219; }
-  .cpl-empty-preview-grupo-sub { font-size: 11px; color: #6B7280; }
+  .cpl-empty-preview-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #F0D8DE; }
+  .cpl-empty-preview-item:last-of-type { border-bottom: none; }
+  .cpl-empty-preview-check { width: 20px; height: 20px; border-radius: 5px; border: 2px solid #C0C0C0; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #fff; background: #fff; }
+  .cpl-empty-preview-item.selected .cpl-empty-preview-check { border-color: #E85A8C; background: #E85A8C; }
+  .cpl-empty-preview-nm { flex: 1; font-size: 14px; color: #2C1219; font-weight: 600; }
+  .cpl-empty-preview-pr { font-size: 13px; color: #C33A6E; font-weight: 700; }
+  .cpl-empty-preview-pr.gratis { color: #16a34a; }
 
-  .cpl-empty-preview-opt { display: flex; align-items: center; gap: 12px; padding: 6px 0; }
-  .cpl-empty-preview-opt-nome { flex: 1; font-size: 13px; color: #2C1219; }
-  .cpl-empty-preview-opt-preco { font-size: 12.5px; color: #C33A6E; font-weight: 700; }
-  .cpl-empty-preview-radio { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #C0C0C0; flex-shrink: 0; background: #fff; }
-  .cpl-empty-preview-opt.selected .cpl-empty-preview-radio { border-color: #E85A8C; background: #E85A8C; box-shadow: inset 0 0 0 2px #fff; }
-
-  .cpl-empty-preview-upload { display: flex; align-items: center; gap: 12px; padding: 12px; background: #fff; border: 1.5px dashed #F0D8DE; border-radius: 6px; }
+  .cpl-empty-preview-upload { display: flex; align-items: center; gap: 12px; padding: 12px; background: #FFF5F9; border: 1.5px dashed #F0D8DE; border-radius: 6px; margin-top: 14px; }
   .cpl-empty-preview-upload-ico { width: 36px; height: 36px; border-radius: 6px; background: #FCE0E9; color: #C33A6E; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .cpl-empty-preview-upload-info { flex: 1; }
   .cpl-empty-preview-upload-tit { font-size: 13px; font-weight: 700; color: #2C1219; line-height: 1.2; }
