@@ -409,7 +409,7 @@ const stylesLoading = `
 
 const styles = `
   ${stylesLoading}
-  .cpl-root { min-height: 100vh; background: #F5F3EF; font-family: 'Geist', sans-serif; }
+  .cpl-root { min-height: 100vh; background: var(--bg-body); font-family: 'Geist', sans-serif; }
   .cpl-content { max-width: 720px; margin: 0 auto; padding: 20px 16px 100px; }
 
   .cpl-topbar { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; }
