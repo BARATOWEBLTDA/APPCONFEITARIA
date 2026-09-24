@@ -1805,8 +1805,8 @@ function PersonalizacaoStep({
                         </button>
                       )}
 
-                      {/* Sugestões da biblioteca — só se modo escolhido */}
-                      {grupoTamanhos.modo_preco_tamanho && (() => {
+                      {/* Sugestões da biblioteca — só se ainda não tem tamanhos cadastrados */}
+                      {grupoTamanhos.modo_preco_tamanho && grupoTamanhos.opcoes.length === 0 && (() => {
                         const bibl = biblioteca.tamanhos || [];
                         const nomesAtuais = grupoTamanhos.opcoes.map(o => o.nome.toLowerCase());
                         const sugestoes = bibl.filter(b => !nomesAtuais.includes(b.nome.toLowerCase()));
@@ -2752,10 +2752,12 @@ function PersonalizacaoStep({
           background: #FAF8F5;
           border-radius: 10px;
           border: 1px dashed #E5D8DE;
+          flex-wrap: wrap;
+          align-items: center;
         }
         .pv3-add-row input {
-          flex: 1;
-          padding: 8px 12px;
+          flex: 1 1 100%;
+          padding: 10px 12px;
           border: 1px solid #F0EBED;
           border-radius: 8px;
           font-size: 13px;
@@ -2767,12 +2769,14 @@ function PersonalizacaoStep({
         .pv3-add-row input:focus {
           border-color: #E85A8C;
         }
+        /* Mobile: input em linha própria, chips + botão embaixo lado a lado */
+        .pv3-add-row .pv3-unid-chips { flex: 1 1 auto; }
         .pv3-add-btn {
           all: unset;
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          padding: 8px 14px;
+          padding: 10px 14px;
           background: #E85A8C;
           color: #fff;
           font-size: 12.5px;
@@ -2783,9 +2787,16 @@ function PersonalizacaoStep({
           transition: transform 0.1s;
           white-space: nowrap;
           font-family: inherit;
+          flex-shrink: 0;
         }
         .pv3-add-btn:hover { transform: translateY(-1px); }
         .pv3-add-btn:active { transform: translateY(1px); box-shadow: 0 0 0 #C33A6E; }
+
+        /* Desktop: tudo na mesma linha */
+        @media (min-width: 640px) {
+          .pv3-add-row input { flex: 1 1 auto; }
+          .pv3-add-row .pv3-unid-chips { flex: 0 0 auto; }
+        }
 
         .pv3-gerar-tamanhos {
           all: unset;
