@@ -605,7 +605,7 @@ const styles = `
     border: 1px solid #F0EBED;
     border-radius: 8px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-    min-width: 140px;
+    min-width: 200px;
     padding: 4px;
     z-index: 10;
     animation: cplMenuIn 0.15s ease-out;
@@ -623,6 +623,7 @@ const styles = `
     border-radius: 5px;
     font-family: inherit;
     transition: background 0.12s;
+    white-space: nowrap;
   }
   .cpl-card-menu-item:hover { background: #F5F0F2; }
   .cpl-card-menu-item--del { color: #DC2626; }
