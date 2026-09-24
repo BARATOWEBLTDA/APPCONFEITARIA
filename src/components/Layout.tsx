@@ -224,11 +224,6 @@ export default function Layout() {
             <span className="nav-icon"><Gear size={18} weight="duotone" /></span>Configurações
           </NavLink>
         </nav>
-
-        <a href="/completar-cadastro" className="sidebar-cad-complete">
-          <span className="sidebar-cad-complete-icon" aria-hidden="true">🎁</span>
-          <span className="sidebar-cad-complete-text">COMPLETAR CADASTRO</span>
-        </a>
       </aside>
 
       <main className={`layout-main${isAssinar ? " layout-main--no-header" : ""}`}>
