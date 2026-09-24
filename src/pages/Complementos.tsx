@@ -173,21 +173,52 @@ export default function Complementos() {
                 </div>
               </div>
 
-              <div className="cpl-empty-preview-divider" />
-
-              <div className="cpl-empty-preview-opts">
-                <div className="cpl-empty-preview-opt-lbl">Escreva no topo</div>
-                <div className="cpl-empty-preview-opt-input">Parabéns, João!</div>
+              <div className="cpl-empty-preview-grupo">
+                <div className="cpl-empty-preview-grupo-hdr">
+                  <div className="cpl-empty-preview-grupo-tit">Topo de bolo</div>
+                  <div className="cpl-empty-preview-grupo-sub">Obrigatório</div>
+                </div>
+                <div className="cpl-empty-preview-opt selected">
+                  <div className="cpl-empty-preview-radio" />
+                  <div className="cpl-empty-preview-opt-nome">Homem Aranha</div>
+                  <div className="cpl-empty-preview-opt-preco">+ R$ 15</div>
+                </div>
+                <div className="cpl-empty-preview-opt">
+                  <div className="cpl-empty-preview-radio" />
+                  <div className="cpl-empty-preview-opt-nome">Barbie</div>
+                  <div className="cpl-empty-preview-opt-preco">+ R$ 15</div>
+                </div>
               </div>
 
-              <div className="cpl-empty-preview-opts">
-                <div className="cpl-empty-preview-opt-lbl">
-                  <span>Escolha o topo</span>
-                  <span className="cpl-empty-preview-opt-extra">+ R$ 15</span>
+              <div className="cpl-empty-preview-grupo">
+                <div className="cpl-empty-preview-grupo-hdr">
+                  <div className="cpl-empty-preview-grupo-tit">Papel de arroz</div>
+                  <div className="cpl-empty-preview-grupo-sub">Opcional</div>
                 </div>
-                <div className="cpl-empty-preview-opt-item"><div className="cpl-empty-preview-radio filled" /> Homem Aranha</div>
-                <div className="cpl-empty-preview-opt-item"><div className="cpl-empty-preview-radio" /> Barbie</div>
-                <div className="cpl-empty-preview-opt-item"><div className="cpl-empty-preview-radio" /> Princesa</div>
+                <div className="cpl-empty-preview-opt">
+                  <div className="cpl-empty-preview-radio" />
+                  <div className="cpl-empty-preview-opt-nome">Foto do aniversariante</div>
+                  <div className="cpl-empty-preview-opt-preco">+ R$ 20</div>
+                </div>
+              </div>
+
+              <div className="cpl-empty-preview-grupo">
+                <div className="cpl-empty-preview-grupo-hdr">
+                  <div className="cpl-empty-preview-grupo-tit">Foto de referência</div>
+                  <div className="cpl-empty-preview-grupo-sub">Opcional</div>
+                </div>
+                <div className="cpl-empty-preview-upload">
+                  <div className="cpl-empty-preview-upload-ico">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                      <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                  </div>
+                  <div className="cpl-empty-preview-upload-info">
+                    <div className="cpl-empty-preview-upload-tit">Anexar foto</div>
+                    <div className="cpl-empty-preview-upload-sub">Envie uma imagem de referência</div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -413,22 +444,31 @@ const styles = `
   .cpl-empty-title { margin: 0 0 6px; font-size: 16px; font-weight: 800; color: #2C1219; letter-spacing: -0.02em; }
   .cpl-empty-sub { margin: 0 0 16px; font-size: 12.5px; color: #6B7280; line-height: 1.5; }
 
-  /* Preview de como aparece no cardápio */
+  /* Preview de como aparece no cardápio (Modelo lista compacta) */
   .cpl-empty-preview { border: 1px solid #F0D8DE; border-radius: 10px; padding: 18px; margin-bottom: 20px; background: #FFF5F9; text-align: left; }
-  .cpl-empty-preview-product { display: flex; align-items: center; gap: 12px; }
+  .cpl-empty-preview-product { display: flex; align-items: center; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid #F0D8DE; margin-bottom: 14px; }
   .cpl-empty-preview-img { width: 52px; height: 52px; border-radius: 8px; background: linear-gradient(135deg, #FCE0E9, #F0D8DE); display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; }
   .cpl-empty-preview-info { flex: 1; min-width: 0; }
   .cpl-empty-preview-nome { font-size: 15px; font-weight: 800; color: #2C1219; line-height: 1.2; letter-spacing: -0.01em; }
   .cpl-empty-preview-preco { font-size: 13px; color: #C33A6E; font-weight: 700; margin-top: 3px; }
-  .cpl-empty-preview-divider { height: 1px; background: #F0D8DE; margin: 16px 0; }
-  .cpl-empty-preview-opts { background: #fff; border-radius: 6px; padding: 12px 14px; margin-bottom: 10px; }
-  .cpl-empty-preview-opts:last-child { margin-bottom: 0; }
-  .cpl-empty-preview-opt-lbl { font-size: 13px; font-weight: 700; color: #2C1219; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-  .cpl-empty-preview-opt-extra { font-size: 12px; color: #C33A6E; font-weight: 700; }
-  .cpl-empty-preview-opt-input { font-size: 13px; color: #2C1219; padding: 8px 10px; background: #F5F0F2; border-radius: 4px; font-style: italic; }
-  .cpl-empty-preview-opt-item { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #2C1219; padding: 5px 0; font-weight: 500; }
-  .cpl-empty-preview-radio { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #E85A8C; flex-shrink: 0; }
-  .cpl-empty-preview-radio.filled { background: #E85A8C; border-color: #E85A8C; box-shadow: inset 0 0 0 2px #fff; }
+
+  .cpl-empty-preview-grupo { padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid #F0D8DE; }
+  .cpl-empty-preview-grupo:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+  .cpl-empty-preview-grupo-hdr { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; gap: 8px; }
+  .cpl-empty-preview-grupo-tit { font-size: 14px; font-weight: 800; color: #2C1219; }
+  .cpl-empty-preview-grupo-sub { font-size: 11px; color: #6B7280; }
+
+  .cpl-empty-preview-opt { display: flex; align-items: center; gap: 12px; padding: 6px 0; }
+  .cpl-empty-preview-opt-nome { flex: 1; font-size: 13px; color: #2C1219; }
+  .cpl-empty-preview-opt-preco { font-size: 12.5px; color: #C33A6E; font-weight: 700; }
+  .cpl-empty-preview-radio { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #C0C0C0; flex-shrink: 0; background: #fff; }
+  .cpl-empty-preview-opt.selected .cpl-empty-preview-radio { border-color: #E85A8C; background: #E85A8C; box-shadow: inset 0 0 0 2px #fff; }
+
+  .cpl-empty-preview-upload { display: flex; align-items: center; gap: 12px; padding: 12px; background: #fff; border: 1.5px dashed #F0D8DE; border-radius: 6px; }
+  .cpl-empty-preview-upload-ico { width: 36px; height: 36px; border-radius: 6px; background: #FCE0E9; color: #C33A6E; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .cpl-empty-preview-upload-info { flex: 1; }
+  .cpl-empty-preview-upload-tit { font-size: 13px; font-weight: 700; color: #2C1219; line-height: 1.2; }
+  .cpl-empty-preview-upload-sub { font-size: 11px; color: #6B7280; margin-top: 2px; }
 
   .cpl-empty-desc { max-width: 320px; margin: 0 auto 20px; font-size: 13px; color: #6B7280; line-height: 1.55; }
   .cpl-noresult { text-align: center; color: #9CA3AF; font-size: 13px; padding: 40px 20px; margin: 0; }
