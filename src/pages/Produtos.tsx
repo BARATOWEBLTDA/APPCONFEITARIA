@@ -1300,6 +1300,23 @@ function PersonalizacaoStep({
     dados: GrupoPersonalizacao | GrupoTamanhos | GrupoSabores;
   }> = [
     {
+      key: "tamanhos",
+      icone: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M2 12h20"/>
+          <path d="M6 8v8"/>
+          <path d="M10 6v12"/>
+          <path d="M14 8v8"/>
+          <path d="M18 10v4"/>
+        </svg>
+      ),
+      titulo: grupoTamanhos.nome_exibicao || "Tamanhos e Pesos",
+      subtitulo: (grupoTamanhos.nome_exibicao === "Quantidades")
+        ? "50 un, 100 un, 200 un — cada um com seu preço"
+        : "P, M, G — cada um com seu preço",
+      dados: grupoTamanhos,
+    },
+    {
       key: "massas",
       icone: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -1344,23 +1361,6 @@ function PersonalizacaoStep({
       titulo: "Sabores",
       subtitulo: "Tradicional, chocolate, ninho...",
       dados: grupoSabores,
-    },
-    {
-      key: "tamanhos",
-      icone: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M2 12h20"/>
-          <path d="M6 8v8"/>
-          <path d="M10 6v12"/>
-          <path d="M14 8v8"/>
-          <path d="M18 10v4"/>
-        </svg>
-      ),
-      titulo: grupoTamanhos.nome_exibicao || "Tamanhos e Pesos",
-      subtitulo: (grupoTamanhos.nome_exibicao === "Quantidades")
-        ? "50 un, 100 un, 200 un — cada um com seu preço"
-        : "P, M, G — cada um com seu preço",
-      dados: grupoTamanhos,
     },
   ];
 
