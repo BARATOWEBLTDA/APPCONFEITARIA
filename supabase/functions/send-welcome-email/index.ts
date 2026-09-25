@@ -45,21 +45,21 @@ function buildWelcomeEmailHTML(nome: string): string {
     <tr>
       <td align="center">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-               style="max-width:520px;background-color:#FFFFFF;border-radius:16px;border:1px solid #EFE7EA;box-shadow:0 4px 16px rgba(61,26,36,0.06);overflow:hidden;">
+               style="max-width:640px;background-color:#FFFFFF;border-radius:16px;border:1px solid #EFE7EA;box-shadow:0 4px 16px rgba(61,26,36,0.06);overflow:hidden;">
 
           <!-- BANNER -->
           <tr>
             <td align="center" style="padding:0;line-height:0;font-size:0;">
               <img src="https://raw.githubusercontent.com/BARATOWEBLTDA/APPCONFEITARIA/main/public/emails/banner.png"
                    alt="Doonly — Sua confeitaria acaba de ganhar uma ajudinha"
-                   width="520"
-                   style="display:block;width:100%;max-width:520px;height:auto;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;">
+                   width="640"
+                   style="display:block;width:100%;max-width:640px;height:auto;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;">
             </td>
           </tr>
 
           <!-- HERO -->
           <tr>
-            <td style="padding:32px 36px 8px;">
+            <td style="padding:36px 44px 8px;">
               <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#4A3439;">
                 Olá${primeiroNome ? `, ${primeiroNome}` : ""}! A partir de agora, você pode organizar <strong>produtos, pedidos, clientes</strong> e sua rotina em um só lugar &mdash; com mais clareza e menos correria.
               </p>
@@ -68,7 +68,7 @@ function buildWelcomeEmailHTML(nome: string): string {
 
           <!-- CTA -->
           <tr>
-            <td align="center" style="padding:0 36px 32px;">
+            <td align="center" style="padding:0 44px 32px;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
                 <tr>
                   <td align="center" style="border-radius:10px;background:#6E3548;box-shadow:0 4px 12px rgba(110,53,72,0.25);">
@@ -84,7 +84,7 @@ function buildWelcomeEmailHTML(nome: string): string {
 
           <!-- CARD DE 3 PASSOS -->
           <tr>
-            <td style="padding:0 36px 32px;">
+            <td style="padding:0 44px 32px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
                      style="background-color:#FBF6F7;border-radius:12px;border:1px solid #EFE7EA;">
                 <tr>
@@ -143,14 +143,14 @@ function buildWelcomeEmailHTML(nome: string): string {
 
           <!-- DIVISOR -->
           <tr>
-            <td style="padding:0 36px;">
+            <td style="padding:0 44px;">
               <div style="border-top:1px solid #EFE7EA;height:1px;line-height:1px;font-size:1px;">&nbsp;</div>
             </td>
           </tr>
 
           <!-- FOOTER -->
           <tr>
-            <td align="center" style="padding:28px 36px 36px;">
+            <td align="center" style="padding:32px 44px 40px;">
               <p style="margin:0 0 6px;font-size:14px;color:#4A3439;line-height:1.55;">
                 Estamos felizes em fazer parte do crescimento da sua confeitaria. <span style="color:#E85A8C;">&#10084;</span>
               </p>
