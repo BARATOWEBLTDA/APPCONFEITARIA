@@ -34,64 +34,47 @@ function buildWelcomeEmailHTML(nome: string): string {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light">
-  <title>Bem-vinda ao Doonly!</title>
+  <meta name="x-apple-disable-message-reformatting">
+  <title>Boas-vindas ao Doonly</title>
 </head>
 <body style="margin:0;padding:0;background-color:#F7F0F2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#3D1A24;-webkit-font-smoothing:antialiased;">
   <div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#F7F0F2;opacity:0;">
-    Sua conta no Doonly foi criada com sucesso. Acesse pelo botão abaixo.
+    Sua conta no Doonly está pronta. Comece agora.
   </div>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F7F0F2;padding:40px 16px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F7F0F2;padding:32px 16px;">
     <tr>
       <td align="center">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-               style="max-width:520px;background-color:#FFFFFF;border-radius:20px;border:1px solid #EFE7EA;box-shadow:0 8px 32px rgba(61,26,36,0.08);overflow:hidden;">
+               style="max-width:520px;background-color:#FFFFFF;border-radius:16px;border:1px solid #EFE7EA;box-shadow:0 4px 16px rgba(61,26,36,0.06);overflow:hidden;">
 
-          <!-- HEADER -->
+          <!-- BANNER -->
           <tr>
-            <td align="center" style="background:linear-gradient(135deg,#986274 0%,#6E3548 100%);padding:40px 32px;">
-              <img src="https://raw.githubusercontent.com/BARATOWEBLTDA/APPCONFEITARIA/main/public/mail.png"
-                   width="72" height="72"
-                   alt="Doonly"
-                   style="display:block;margin:0 auto 14px;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;">
-              <div style="font-size:24px;font-weight:700;color:#FFFFFF;letter-spacing:-0.02em;line-height:1;margin-bottom:10px;">
-                Doonly
-              </div>
-              <div style="font-size:11px;color:rgba(255,255,255,0.75);letter-spacing:0.12em;text-transform:uppercase;font-weight:500;">
-                Bem-vinda ao time
-              </div>
+            <td align="center" style="padding:0;line-height:0;font-size:0;">
+              <img src="https://raw.githubusercontent.com/BARATOWEBLTDA/APPCONFEITARIA/main/public/emails/banner.png"
+                   alt="Doonly — Sua confeitaria acaba de ganhar uma ajudinha"
+                   width="520"
+                   style="display:block;width:100%;max-width:520px;height:auto;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;">
             </td>
           </tr>
 
           <!-- HERO -->
           <tr>
-            <td align="center" style="padding:40px 40px 0;">
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 20px;">
-                <tr>
-                  <td align="center" valign="middle"
-                      style="width:80px;height:80px;background:linear-gradient(135deg,#986274 0%,#6E3548 100%);border-radius:50%;text-align:center;vertical-align:middle;box-shadow:0 6px 20px rgba(110,53,72,0.22);">
-                    <span style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:38px;font-weight:800;color:#FFFFFF;line-height:80px;letter-spacing:-0.03em;">D</span>
-                  </td>
-                </tr>
-              </table>
-              <h1 style="margin:0 0 16px;font-size:26px;font-weight:700;color:#3D1A24;line-height:1.25;letter-spacing:-0.02em;">
-                Olá${primeiroNome ? `, ${primeiroNome}` : ""}!
-              </h1>
-              <p style="margin:0 0 28px;font-size:16px;line-height:1.55;color:#4A3439;">
-                A partir de agora, você organiza pedidos, clientes, receitas e finanças da sua confeitaria em um só lugar.
+            <td style="padding:32px 36px 8px;">
+              <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#4A3439;">
+                Olá${primeiroNome ? `, ${primeiroNome}` : ""}! A partir de agora, você pode organizar <strong>produtos, pedidos, clientes</strong> e sua rotina em um só lugar &mdash; com mais clareza e menos correria.
               </p>
             </td>
           </tr>
 
           <!-- CTA -->
           <tr>
-            <td align="center" style="padding:0 40px 28px;">
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+            <td align="center" style="padding:0 36px 32px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
                 <tr>
-                  <td align="center"
-                      style="background:linear-gradient(135deg,#986274 0%,#6E3548 100%);border-radius:12px;box-shadow:0 6px 20px rgba(110,53,72,0.28);">
+                  <td align="center" style="border-radius:10px;background:#6E3548;box-shadow:0 4px 12px rgba(110,53,72,0.25);">
                     <a href="https://doonly.com.br/inicio"
-                       style="display:inline-block;padding:0 48px;height:54px;line-height:54px;font-size:15px;font-weight:700;color:#FFFFFF;text-decoration:none;letter-spacing:0.4px;border-radius:12px;">
-                      Abrir meu Doonly
+                       style="display:inline-block;padding:15px 40px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:15px;font-weight:700;color:#FFFFFF;text-decoration:none;letter-spacing:0.2px;border-radius:10px;">
+                      Abrir meu Doonly &rarr;
                     </a>
                   </td>
                 </tr>
@@ -99,34 +82,56 @@ function buildWelcomeEmailHTML(nome: string): string {
             </td>
           </tr>
 
-          <!-- CARD DE PRIMEIROS PASSOS -->
+          <!-- CARD DE 3 PASSOS -->
           <tr>
-            <td style="padding:0 40px 32px;">
+            <td style="padding:0 36px 32px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-                     style="background-color:#F7F0F2;border-radius:14px;border:1px solid #EFE7EA;">
+                     style="background-color:#FBF6F7;border-radius:12px;border:1px solid #EFE7EA;">
                 <tr>
-                  <td style="padding:20px 22px;">
-                    <div style="margin:0 0 12px;font-size:13px;font-weight:700;color:#6E3548;letter-spacing:0.05em;text-transform:uppercase;">
-                      <span style="font-size:15px;vertical-align:middle;">✨</span>
-                      <span style="vertical-align:middle;margin-left:6px;">Primeiros passos</span>
+                  <td style="padding:22px 22px 20px;">
+                    <div style="margin:0 0 18px;font-size:11px;font-weight:700;color:#6E3548;letter-spacing:0.12em;text-transform:uppercase;">
+                      Comece em 3 passos
                     </div>
+
+                    <!-- Passo 1 -->
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                       <tr>
-                        <td style="padding:4px 0;font-size:14px;color:#4A3439;line-height:1.55;vertical-align:top;">
-                          <span style="color:#6E3548;font-weight:700;">1.</span>
-                          <span style="margin-left:6px;">Cadastre seus <strong>produtos</strong> com fotos e preços.</span>
+                        <td width="42" style="vertical-align:top;padding-top:2px;">
+                          <div style="font-size:20px;font-weight:800;color:#986274;letter-spacing:-0.02em;line-height:1;">01</div>
+                        </td>
+                        <td style="padding-bottom:14px;vertical-align:top;">
+                          <div style="font-size:15px;font-weight:700;color:#3D1A24;line-height:1.3;margin:0 0 3px;">Configure sua confeitaria</div>
+                          <div style="font-size:13.5px;color:#7A5F65;line-height:1.5;">Adicione nome, logo e informações do seu negócio.</div>
                         </td>
                       </tr>
+                    </table>
+
+                    <div style="border-top:1px solid #EFE7EA;height:1px;line-height:1px;font-size:1px;margin:0 0 14px;">&nbsp;</div>
+
+                    <!-- Passo 2 -->
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                       <tr>
-                        <td style="padding:4px 0;font-size:14px;color:#4A3439;line-height:1.55;vertical-align:top;">
-                          <span style="color:#6E3548;font-weight:700;">2.</span>
-                          <span style="margin-left:6px;">Ative seu <strong>cardápio online</strong> e receba pedidos.</span>
+                        <td width="42" style="vertical-align:top;padding-top:2px;">
+                          <div style="font-size:20px;font-weight:800;color:#986274;letter-spacing:-0.02em;line-height:1;">02</div>
+                        </td>
+                        <td style="padding-bottom:14px;vertical-align:top;">
+                          <div style="font-size:15px;font-weight:700;color:#3D1A24;line-height:1.3;margin:0 0 3px;">Cadastre seu primeiro produto</div>
+                          <div style="font-size:13.5px;color:#7A5F65;line-height:1.5;">Monte seu cardápio com preços, sabores e opções.</div>
                         </td>
                       </tr>
+                    </table>
+
+                    <div style="border-top:1px solid #EFE7EA;height:1px;line-height:1px;font-size:1px;margin:0 0 14px;">&nbsp;</div>
+
+                    <!-- Passo 3 -->
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                       <tr>
-                        <td style="padding:4px 0;font-size:14px;color:#4A3439;line-height:1.55;vertical-align:top;">
-                          <span style="color:#6E3548;font-weight:700;">3.</span>
-                          <span style="margin-left:6px;">Configure seus <strong>custos</strong> para ver sua real lucratividade.</span>
+                        <td width="42" style="vertical-align:top;padding-top:2px;">
+                          <div style="font-size:20px;font-weight:800;color:#986274;letter-spacing:-0.02em;line-height:1;">03</div>
+                        </td>
+                        <td style="vertical-align:top;">
+                          <div style="font-size:15px;font-weight:700;color:#3D1A24;line-height:1.3;margin:0 0 3px;">Registre seu primeiro pedido</div>
+                          <div style="font-size:13.5px;color:#7A5F65;line-height:1.5;">E veja o Doonly ajudando a manter tudo organizado.</div>
                         </td>
                       </tr>
                     </table>
@@ -138,29 +143,32 @@ function buildWelcomeEmailHTML(nome: string): string {
 
           <!-- DIVISOR -->
           <tr>
-            <td style="padding:0 40px;">
+            <td style="padding:0 36px;">
               <div style="border-top:1px solid #EFE7EA;height:1px;line-height:1px;font-size:1px;">&nbsp;</div>
             </td>
           </tr>
 
           <!-- FOOTER -->
           <tr>
-            <td align="center" style="padding:32px 40px 40px;">
-              <p style="margin:0 0 14px;font-size:14px;font-weight:600;color:#3D1A24;line-height:1.4;">
+            <td align="center" style="padding:28px 36px 36px;">
+              <p style="margin:0 0 6px;font-size:14px;color:#4A3439;line-height:1.55;">
+                Estamos felizes em fazer parte do crescimento da sua confeitaria. <span style="color:#E85A8C;">&#10084;</span>
+              </p>
+              <p style="margin:0 0 22px;font-size:14px;font-weight:700;color:#3D1A24;line-height:1.4;">
                 Equipe Doonly
               </p>
               <p style="margin:0 0 4px;font-size:13px;color:#8B6F76;line-height:1.55;">
-                Precisa de ajuda? Fale com a gente:
+                Dúvida ou sugestão? Fala com a gente:
               </p>
-              <p style="margin:0 0 20px;font-size:13px;line-height:1.55;">
+              <p style="margin:0 0 18px;font-size:13px;line-height:1.55;">
                 <a href="mailto:contato@doonly.com.br" style="color:#6E3548;text-decoration:none;font-weight:600;">
                   contato@doonly.com.br
                 </a>
               </p>
               <p style="margin:0;font-size:11px;color:#B8A0A6;line-height:1.5;">
                 <a href="https://doonly.com.br" style="color:#B8A0A6;text-decoration:none;">doonly.com.br</a>
-                &nbsp;·&nbsp;
-                © 2026 Doonly
+                &nbsp;&middot;&nbsp;
+                &copy; 2026 Doonly
               </p>
             </td>
           </tr>
