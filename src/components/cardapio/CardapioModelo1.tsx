@@ -104,12 +104,16 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
     <div className="cm1-root">
       {/* ── Hero ───────────────────────────────────────── */}
       <div className="cm1-hero">
-        <div className="cm1-hero-fallback" style={{ background: design.cor_background
-            ? `linear-gradient(135deg, ${design.cor_background} 0%, ${design.cor_background}dd 100%)`
-            : `linear-gradient(135deg, #FCE0E9 0%, #F5B8CD 60%, #E85A8C 100%)` }}>
-          <div className="cm1-hero-pattern" />
-        </div>
-        <div className="cm1-hero-overlay" />
+        {design.banner_topo_url ? (
+          <div className="cm1-hero-img-wrap" style={{ backgroundImage: `url(${design.banner_topo_url})` }} />
+        ) : (
+          <div className="cm1-hero-fallback" style={{ background: design.cor_background
+              ? `linear-gradient(135deg, ${design.cor_background} 0%, ${design.cor_background}dd 100%)`
+              : `linear-gradient(135deg, #FCE0E9 0%, #F5B8CD 60%, #E85A8C 100%)` }}>
+            <div className="cm1-hero-pattern" />
+          </div>
+        )}
+        <div className={`cm1-hero-overlay ${design.banner_topo_url ? 'cm1-hero-overlay--img' : ''}`} />
 
         {/* Status badge no hero (bottom-left, onde ficava a estrela) */}
         {status && (
@@ -262,6 +266,13 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
           object-fit: cover;
           display: block;
         }
+        .cm1-hero-img-wrap {
+          width: 100%;
+          height: 175px;
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+        }
         .cm1-hero-fallback {
           width: 100%;
           height: 175px;
@@ -281,6 +292,10 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
           inset: 0;
           background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.3) 100%);
           pointer-events: none;
+        }
+        /* Overlay mais forte quando tem imagem — garante status badge legível */
+        .cm1-hero-overlay--img {
+          background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.5) 100%);
         }
 
         /* ── Status badge no hero (bottom-left) ───────── */

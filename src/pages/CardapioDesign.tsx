@@ -25,6 +25,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
   const [banner1Url, setBanner1Url] = useState("");
   const [banner2Url, setBanner2Url] = useState("");
   const [banner3Url, setBanner3Url] = useState("");
+  const [bannerTopoUrl, setBannerTopoUrl] = useState("");
   const [uploading, setUploading] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
@@ -49,13 +50,14 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     useRef<HTMLInputElement>(null),
     useRef<HTMLInputElement>(null),
   ];
+  const bannerTopoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const load = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("logo_url, nome_loja, banner_url, banner1_url, banner2_url, banner3_url, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo").eq("id", user.id).single();
+      const { data } = await supabase.from("profiles").select("logo_url, nome_loja, banner_url, banner1_url, banner2_url, banner3_url, banner_topo_url, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo").eq("id", user.id).single();
       if (data) {
         setLogoUrl(data.logo_url || "");
         setNomeLoja(data.nome_loja || "");
@@ -63,6 +65,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         setBanner1Url(data.banner1_url || "");
         setBanner2Url(data.banner2_url || "");
         setBanner3Url(data.banner3_url || "");
+        setBannerTopoUrl(data.banner_topo_url || "");
         setCorBorda(data.cor_borda || "#FF6FA9");
         setCorBackground(data.cor_background || "#FFF1F7");
         setCorNome(data.cor_nome || "#1f2937");
@@ -141,6 +144,23 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     await supabase.from("profiles").update({ [keys[index]]: null }).eq("id", userId);
   };
 
+  const handleBannerTopoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]; if (!file || !userId) return;
+    setUploading("banner-topo");
+    const url = await uploadImage(file, `banners/${userId}-topo`);
+    if (url) {
+      setBannerTopoUrl(url);
+      await supabase.from("profiles").update({ banner_topo_url: url }).eq("id", userId);
+      showSuccess();
+    }
+    setUploading(null);
+  };
+  const handleRemoveBannerTopo = async () => {
+    if (!userId) return;
+    setBannerTopoUrl("");
+    await supabase.from("profiles").update({ banner_topo_url: null }).eq("id", userId);
+  };
+
   const colorSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleColorChange = (field: string, value: string, setter: (v: string) => void) => {
     setter(value);
@@ -175,6 +195,39 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     )}
     <div className="cd-root">
       {/* Header removido — a página pai (CardapioConfigPage) já mostra "Meu Cardápio" acima */}
+
+      {/* Banner do topo — só pro Modelo 1 */}
+      {cardapioModelo === "modelo1" && (
+        <div className="cd-card" style={isMobile ? {} : { gridColumn: '1 / -1' }}>
+          <SectionLabel
+            sub="Aparece no topo do seu cardápio como fundo — atrás da logo. Recomendado: fotos horizontais em alta qualidade (1200×400 ideal). Só no Modelo 1."
+          >Banner do topo do app</SectionLabel>
+          <div className="cd-banner-topo">
+            {bannerTopoUrl ? (
+              <div className="cd-banner-topo-thumb">
+                <img src={bannerTopoUrl} alt="Banner do topo" />
+                <div className="cd-banner-topo-overlay-preview" />
+                <button className="cd-banner-swap-overlay" onClick={() => bannerTopoRef.current?.click()}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                  Trocar
+                </button>
+                <button className="cd-remove-btn" onClick={handleRemoveBannerTopo}>✕</button>
+              </div>
+            ) : (
+              <div className="cd-upload-box cd-banner-topo-empty" onClick={() => !uploading && bannerTopoRef.current?.click()}>
+                {uploading === "banner-topo" ? <span className="cd-spinner-sm" /> : (
+                  <>
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    <span className="cd-upload-hint">Adicionar banner do topo</span>
+                    <span className="cd-upload-hint-sub">Formato horizontal — 1200×400</span>
+                  </>
+                )}
+              </div>
+            )}
+            <input ref={bannerTopoRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleBannerTopoUpload} />
+          </div>
+        </div>
+      )}
 
       {/* Banners — ocupa largura total do grid */}
       <div className="cd-card" style={isMobile ? {} : { gridColumn: '1 / -1' }}>
@@ -638,6 +691,29 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         .cd-upload-slot { width:100%; aspect-ratio:16/9; }
         .cd-upload-label { font-size: var(--font-button); font-weight: var(--fw-bold); color:var(--primary-dark); margin:0; }
         .cd-upload-hint { font-size: var(--font-caption); color:var(--primary); margin:0; font-weight: var(--fw-semibold); }
+        .cd-upload-hint-sub { font-size: 10.5px; color: var(--text-muted, #6B7280); margin: 3px 0 0; font-weight: 500; }
+
+        /* Banner do topo */
+        .cd-banner-topo { display: flex; flex-direction: column; gap: 6px; }
+        .cd-banner-topo-thumb {
+          position: relative;
+          width: 100%;
+          aspect-ratio: 3 / 1;
+          border-radius: 10px;
+          overflow: hidden;
+          background: #F5F0F2;
+        }
+        .cd-banner-topo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .cd-banner-topo-overlay-preview {
+          position: absolute; inset: 0;
+          background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.5) 100%);
+          pointer-events: none;
+        }
+        .cd-banner-topo-empty {
+          aspect-ratio: 3 / 1;
+          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+          text-align: center;
+        }
 
         /* ── Logo area ── */
         .cd-logo-area { display:flex; flex-direction:column; align-items:center; gap:0.85rem; }

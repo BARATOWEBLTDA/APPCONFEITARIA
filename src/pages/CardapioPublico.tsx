@@ -684,7 +684,14 @@ function CardapioContent() {
         ) : (
           /* ── Layout Padrão (Free ou PRO que não trocou) ── */
           <>
-            <div style={{ height: '160px', backgroundColor: navBg }} />
+            <div style={{ height: '160px', backgroundColor: (() => {
+              const c = design.cor_navbar;
+              const isWhite = !c || ['#fff','#ffffff','#fefefe','white','transparent'].includes((c || '').trim().toLowerCase());
+              if (!isWhite) return c;
+              const cb = design.cor_borda;
+              const cbWhite = !cb || ['#fff','#ffffff','#fefefe','white','transparent'].includes((cb || '').trim().toLowerCase());
+              return cbWhite ? '#E85A8C' : cb;
+            })() }} />
             <Logo logoUrl={design.logo_url} borderColor={design.cor_borda} storeName={design.nome_loja} storeDescription={design.descricao_loja} corNome={design.cor_nome} avaliacaoMedia={config?.avaliacao_media} configuracoes={config} hideStars={design.hide_stars} />
             <div style={{ marginTop:'16px' }}>
               <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />

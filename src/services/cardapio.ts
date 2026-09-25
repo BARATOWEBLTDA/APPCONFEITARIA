@@ -99,6 +99,7 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     banner1_url: profile.banner1_url || '',
     banner2_url: profile.banner2_url || '',
     banner3_url: profile.banner3_url || '',
+    banner_topo_url: profile.banner_topo_url || '',
     cor_borda: profile.cor_borda || '#ec4899',
     cor_background: profile.cor_background || '#fef2f2',
     cor_nome: profile.cor_nome || '#1f2937',

@@ -27,6 +27,7 @@ export interface DesignSettings {
   descricao_loja?: string
   logo_url?: string
   banner_url?: string
+  banner_topo_url?: string
   cor_borda?: string
   cor_background?: string
   cor_nome?: string
