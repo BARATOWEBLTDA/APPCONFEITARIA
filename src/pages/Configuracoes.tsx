@@ -370,13 +370,14 @@ export default function Configuracoes() {
   const handleSave = async () => {
     if (!userId) return;
     setSaving(true); setError("");
-    const endereco = JSON.stringify({ rua: form.rua, numero: form.numero, bairro: form.bairro, cidade: form.cidade, estado: form.estado, cep: form.cep });
-    const payload: any = { id: userId, nome: form.nome, nome_loja: form.nome_loja, foto_url: form.foto_url, og_image_url: form.og_image_url, telefone: form.telefone, endereco, faz_entrega: entrega.faz_entrega, taxa_entrega: entrega.taxa_entrega ? parseFloat(entrega.taxa_entrega) : null, tempo_entrega: entrega.tempo_entrega, area_entrega: entrega.area_entrega };
-    if (entrega.pedido_minimo) payload.pedido_minimo = parseFloat(entrega.pedido_minimo) || null;
-    if (entrega.entrega_gratis_acima) payload.entrega_gratis_acima = parseFloat(entrega.entrega_gratis_acima) || null;
-    if (entrega.horario_entrega !== undefined) payload.horario_entrega = entrega.horario_entrega;
-    if (entrega.observacoes_entrega !== undefined) payload.observacoes_entrega = entrega.observacoes_entrega;
-    payload.ocultar_categorias = ocultarCategorias;
+    // Payload mínimo — só os campos que o modal Editar Perfil edita
+    const payload: any = {
+      id: userId,
+      nome: form.nome,
+      nome_loja: form.nome_loja,
+      foto_url: form.foto_url,
+      telefone: form.telefone,
+    };
     const { error: err } = await supabase.from("profiles").upsert(payload, { onConflict: "id" });
     if (err) { setError("Erro ao salvar. Tente novamente."); }
     else {
@@ -1305,7 +1306,7 @@ export default function Configuracoes() {
         .cfgd-logout:hover { background: #FEE2E2; border-color: #FCA5A5; color: #DC2626; }
 
         /* Excluir conta */
-        .cfgd-delete-link { text-align: center; padding: 8px; }
+        .cfgd-delete-link { display: none; text-align: center; padding: 8px; }
         .cfgd-delete-link-btn {
           all: unset;
           cursor: pointer;
