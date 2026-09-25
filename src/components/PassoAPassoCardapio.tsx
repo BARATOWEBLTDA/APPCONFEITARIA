@@ -54,7 +54,6 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
 
       const produtosAtivos = (produtos || []).filter((p) => p.disponivel !== false);
       const temProduto = produtosAtivos.length > 0;
-      const todosProdComFoto = temProduto && produtosAtivos.every((p) => p.imagem_url);
 
       const linkKey = `doonly_cardapio_compartilhado_${userId}`;
       const jaCompartilhou = localStorage.getItem(linkKey) === "1";
@@ -66,18 +65,6 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
       const escolheuDesign = !!profileData?.cardapio_modelo;
 
       const list: Step[] = [
-        {
-          key: "produto",
-          label: "Cadastrar primeiro produto",
-          done: temProduto,
-          path: "/produtos",
-        },
-        {
-          key: "design",
-          label: "Escolher design do cardápio",
-          done: escolheuDesign,
-          path: "/cardapio-design",
-        },
         {
           key: "logo",
           label: "Adicionar logo da loja",
@@ -91,10 +78,16 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           path: "/cardapio-config",
         },
         {
-          key: "fotos",
-          label: "Adicionar foto em todos os produtos",
-          done: todosProdComFoto,
+          key: "produto",
+          label: "Cadastrar primeiro produto",
+          done: temProduto,
           path: "/produtos",
+        },
+        {
+          key: "design",
+          label: "Escolher design do cardápio",
+          done: escolheuDesign,
+          path: "/cardapio-design",
         },
         {
           key: "share",
