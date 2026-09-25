@@ -381,9 +381,10 @@ export default function Layout() {
         .sidebar-avatar-ring { width: 100px; height: 100px; border-radius: 50%; padding: 0; background: transparent; flex-shrink: 0; }
 
         .sidebar-avatar { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; border: 3px solid #fff; background: #F8F5F6; box-shadow: 0 8px 24px rgba(153,53,86,0.15), 0 2px 6px rgba(0,0,0,0.06); }
+        .sidebar-avatar:has(.sidebar-avatar-placeholder) { background: #993556; }
         .sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .sidebar-avatar-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-        .sidebar-avatar-inicial { font-family: var(--font-base); font-size: 32px; font-weight: 900; color: #C33A6E; letter-spacing: -0.02em; line-height: 1; text-transform: uppercase; }
+        .sidebar-avatar-inicial { font-family: var(--font-base); font-size: 40px; font-weight: 900; color: #FCE0E9; letter-spacing: -0.02em; line-height: 1; text-transform: uppercase; }
 
         .sidebar-avatar-container {
           position: relative;
