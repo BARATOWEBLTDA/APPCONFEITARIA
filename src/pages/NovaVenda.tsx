@@ -675,7 +675,13 @@ export default function NovaVenda() {
           />
         </div>
         <style>{`
-          .nv-empty-root { padding: 1rem; }
+          .nv-empty-root {
+            padding: 1rem;
+            min-height: calc(100vh - 200px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
           @media (min-width: 900px) {
             .nv-empty-root { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; }
           }
