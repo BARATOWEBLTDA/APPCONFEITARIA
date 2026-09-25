@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, CaretRight, WhatsappLogo, Copy } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Step {
   key: string;
@@ -27,6 +28,7 @@ interface Props {
  * 3. 100%: banner verde "cardápio configurado"
  */
 export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, onShareClick }: Props) {
+  const isMobile = useIsMobile();
   const [steps, setSteps] = useState<Step[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -157,6 +159,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
   };
 
   if (loading || !userId) return null;
+  if (!isMobile) return null; // Apenas mobile
 
   const shareStep = steps.find((s) => s.key === "share");
   const outrosFeitos = steps.filter((s) => s.key !== "share" && s.done).length;
