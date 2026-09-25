@@ -1,5 +1,15 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { CaretRight } from "@phosphor-icons/react";
+import { tocarSom } from "@/hooks/useSom";
+
+// Vibração leve (só mobile, ignora silenciosamente onde não tem suporte)
+const vibrarLeve = () => {
+  try {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(15);
+    }
+  } catch {}
+};
 
 /**
  * Onboarding — Tela cheia, controlado pelo pai (isOpen + onClose).
@@ -24,13 +34,40 @@ interface OnboardingProps {
   onClose: (slideAlcancada: number) => void;
 }
 
-const TOTAL_SLIDES = 9; // v2
+const TOTAL_SLIDES = 8; // v3 (removido "Monte a receita")
 
 export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
   const [slideIdx, setSlideIdx] = useState(0);
   const [slideReady, setSlideReady] = useState(false);
 
   const handleSlideReady = useCallback(() => setSlideReady(true), []);
+
+  // ── Efeito glow que segue o mouse (mesmo do Auth) ─────────────
+  // Só ativa em desktop. Usa easing suave (0.06) pra dar sensação premium.
+  const glowRef = useRef<HTMLDivElement>(null);
+  const mouseRef = useRef({ x: 0, y: 0 });
+  const currentRef = useRef({ x: 0, y: 0 });
+  const rafRef = useRef<number>(0);
+  useEffect(() => {
+    if (!isOpen) return;
+    if (window.innerWidth < 900) return;
+    const onMove = (e: MouseEvent) => { mouseRef.current = { x: e.clientX, y: e.clientY }; };
+    window.addEventListener("mousemove", onMove);
+    const animate = () => {
+      currentRef.current.x += (mouseRef.current.x - currentRef.current.x) * 0.06;
+      currentRef.current.y += (mouseRef.current.y - currentRef.current.y) * 0.06;
+      if (glowRef.current) {
+        glowRef.current.style.left = `${currentRef.current.x}px`;
+        glowRef.current.style.top = `${currentRef.current.y}px`;
+      }
+      rafRef.current = requestAnimationFrame(animate);
+    };
+    animate();
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      cancelAnimationFrame(rafRef.current);
+    };
+  }, [isOpen]);
 
   // Pré-carrega TODAS as imagens do tutorial assim que ele abre.
   // Enquanto o usuário lê o Welcome, o browser baixa tudo em background,
@@ -59,9 +96,12 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
   }, [isOpen]);
 
   if (!isOpen) return null;
+  if (typeof window !== "undefined" && window.matchMedia("(min-width: 900px)").matches) return null; // Apenas mobile
 
   const next = () => {
     if (slideIdx < TOTAL_SLIDES - 1) {
+      tocarSom('click');
+      vibrarLeve();
       setSlideReady(false);
       setSlideIdx((i) => i + 1);
     } else {
@@ -70,6 +110,8 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
   };
 
   const finish = () => {
+    tocarSom('sucesso');
+    vibrarLeve();
     const alcancada = slideIdx;
     setSlideIdx(0); // reset pra próxima vez
     setSlideReady(false);
@@ -78,6 +120,9 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
   return (
     <div className="ob-root" role="dialog" aria-modal="true" aria-label="Boas-vindas ao Doonly">
+      {/* Glow que segue o mouse (desktop) */}
+      <div ref={glowRef} className="ob-mouse-glow" aria-hidden="true" />
+
       {/* Indicador de progresso (bolinhas) */}
       <div className="ob-dots" role="tablist" aria-label="Progresso do onboarding">
         {Array.from({ length: TOTAL_SLIDES }).map((_, i) => (
@@ -98,9 +143,8 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         {slideIdx === 3 && <Slide3Ingredientes onReady={handleSlideReady} />}
         {slideIdx === 4 && <Slide4Precificacao onReady={handleSlideReady} />}
         {slideIdx === 5 && <SlideCardapio onReady={handleSlideReady} />}
-        {slideIdx === 6 && <SlidePlaceholder eyebrow="Receitas que fazem as contas" title="MONTE A RECEITA. O DOONLY CALCULA." subtitle="Ingredientes, embalagem, custos e lucro reunidos automaticamente." emoji="📝" onReady={handleSlideReady} />}
-        {slideIdx === 7 && <SlidePlaceholder eyebrow="Tudo trabalhando junto" title="VOCÊ FAZ OS DOCES. O DOONLY ORGANIZA." subtitle="Sua rotina, seus números e seu negócio mais fáceis de acompanhar." emoji="📊" onReady={handleSlideReady} />}
-        {slideIdx === 8 && <SlideFinal onStart={finish} />}
+        {slideIdx === 6 && <SlidePlaceholder eyebrow="Tudo trabalhando junto" title={<>VOCÊ FAZ OS DOCES.<br/>O DOONLY <span className="ob-fill">ORGANIZA</span>.</>} subtitle="Sua rotina, seus números e seu negócio mais fáceis de acompanhar." emoji="📊" onReady={handleSlideReady} />}
+        {slideIdx === 7 && <SlideFinal onStart={finish} />}
       </div>
 
       {/* Navegação inferior — esconde os botões na última (CTA está na slide) */}
@@ -118,9 +162,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           position: fixed;
           inset: 0;
           z-index: 9999;
-          background: linear-gradient(160deg, #FF9AC1 0%, #E85A8C 40%, #A8235A 70%, #E85A8C 100%);
-          background-size: 200% 200%;
-          animation: obBgMove 18s ease infinite;
+          background: linear-gradient(135deg, #FF9AC1 0%, #E85A8C 50%, #A8235A 100%);
           color: #fff;
           font-family: var(--font-base);
           display: flex;
@@ -131,11 +173,10 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           width: 100vw;
           height: 100vh;
           height: 100dvh; /* mobile dynamic viewport */
-        }
-        @keyframes obBgMove {
-          0%   { background-position: 0% 50%; }
-          50%  { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
+          -webkit-tap-highlight-color: transparent;
+          -webkit-touch-callout: none;
+          touch-action: pan-y;
+          overscroll-behavior: contain;
         }
 
         /* ── Botão pular (X canto direito) ── */
@@ -172,10 +213,11 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           justify-content: center;
           padding: 1.5rem 1.75rem;
           text-align: center;
-          animation: obFade 0.5s ease;
+          animation: obSlideIn 0.55s cubic-bezier(0.22, 1, 0.36, 1);
           overflow-y: auto;
           scrollbar-width: none; /* Firefox */
           -ms-overflow-style: none; /* IE/Edge antigo */
+          -webkit-overflow-scrolling: touch;
         }
         /* Quando tem textabove (telas com título fixo em cima), remove o centering
            e fixa o texto no topo — evita oscilação com conteúdo dinâmico */
@@ -186,9 +228,26 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         .ob-content::-webkit-scrollbar {
           display: none; /* Chrome/Safari/Opera */
         }
-        @keyframes obFade {
-          from { opacity: 0; transform: translateY(12px); }
-          to { opacity: 1; transform: translateY(0); }
+        @keyframes obSlideIn {
+          from {
+            opacity: 0;
+            transform: translateY(24px) scale(0.98);
+          }
+          60% {
+            opacity: 1;
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        /* Respeita usuário que pediu menos animação */
+        @media (prefers-reduced-motion: reduce) {
+          .ob-content { animation: obFadeSimple 0.2s ease; }
+        }
+        @keyframes obFadeSimple {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
 
         /* ── Navegação inferior ── */
@@ -209,6 +268,10 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           justify-content: center;
           gap: 6px;
           transition: transform 0.15s;
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
+          user-select: none;
+          -webkit-user-select: none;
         }
         .ob-nav-btn:active { transform: scale(0.97); }
         .ob-nav-btn--next {
@@ -302,28 +365,27 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           pointer-events: none;
         }
         .ob-welcome-coroa {
-          width: 130px;
+          width: clamp(200px, 55vw, 280px);
           height: auto;
-          margin-bottom: 2rem;
+          margin-bottom: 1.5rem;
           opacity: 0;
           transform: scale(0.6);
-          filter: hue-rotate(-25deg) saturate(0.7);
           animation:
             obCoroaEntrada 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s forwards,
             obCoroaPulse 4.5s ease-in-out 0.9s infinite;
         }
         @keyframes obCoroaEntrada {
-          from { opacity: 0; transform: scale(0.6); filter: hue-rotate(-25deg) saturate(0.7); }
-          to   { opacity: 1; transform: scale(1); filter: hue-rotate(-25deg) saturate(0.7); }
+          from { opacity: 0; transform: scale(0.6); }
+          to   { opacity: 1; transform: scale(1); }
         }
         @keyframes obCoroaPulse {
           0%, 100% {
             transform: scale(1);
-            filter: hue-rotate(-25deg) saturate(0.7) drop-shadow(0 0 14px rgba(244,196,160,0.4));
+            filter: drop-shadow(0 0 14px rgba(255,255,255,0.35));
           }
           50% {
-            transform: scale(1.05);
-            filter: hue-rotate(-25deg) saturate(0.7) drop-shadow(0 0 32px rgba(244,196,160,0.9)) drop-shadow(0 0 70px rgba(244,196,160,0.5));
+            transform: scale(1.04);
+            filter: drop-shadow(0 0 32px rgba(255,255,255,0.65)) drop-shadow(0 0 70px rgba(255,220,235,0.4));
           }
         }
 
@@ -348,19 +410,26 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           animation: obFadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
         .ob-welcome-block {
-          font-size: 1.55rem;
+          font-size: clamp(1.25rem, 6.5vw, 1.7rem);
           font-weight: 800;
-          line-height: 1.18;
+          line-height: 1.22;
           letter-spacing: 0.005em;
           opacity: 0;
           transform: translateY(14px);
           animation: obFadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
-        .ob-welcome-anchor .ob-fill {
+        .ob-welcome-anchor .ob-fill,
+        .ob-slide-title .ob-fill,
+        .ob-final-title .ob-fill {
+          display: inline-block;
           font-weight: 900;
           text-shadow: none;
-          color: #FFFFFF;
-          filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.85)) drop-shadow(0 0 28px rgba(255, 200, 220, 0.5));
+          color: #FFF8F0;
+          background: rgba(255, 255, 255, 0.14);
+          padding: 0.02em 0.35em;
+          border-radius: 0.35em;
+          backdrop-filter: blur(2px);
+          -webkit-backdrop-filter: blur(2px);
         }
 
         /* ── Slide 1: layout split (mobile = fluxo normal, desktop = 2 colunas) ── */
@@ -371,12 +440,30 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           display: contents;
         }
         .ob-slide1-orb { display: none; }
+        /* Por padrão (mobile), esconde as quebras específicas de desktop */
+        .ob-br-desktop { display: none; }
+        /* Glow do mouse — só aparece em desktop */
+        .ob-mouse-glow {
+          position: fixed;
+          z-index: 1;
+          width: 350px;
+          height: 350px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+          transform: translate(-50%, -50%);
+          pointer-events: none;
+          will-change: transform;
+          display: none;
+        }
+        @media (min-width: 900px) {
+          .ob-mouse-glow { display: block; }
+        }
 
         @media (min-width: 900px) {
           .ob-slide1-split {
             display: grid;
             grid-template-columns: auto auto;
-            gap: 3rem;
+            gap: 1rem;
             max-width: 900px;
             width: 100%;
             align-items: center;
@@ -401,8 +488,9 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
             z-index: 2;
           }
           .ob-slide1-right .ob-welcome-coroa {
-            width: 280px;
+            width: 240px;
             margin-bottom: 0;
+            margin-top: -70px;
           }
           .ob-slide1-left .ob-welcome-anchor {
             text-align: left;
@@ -414,8 +502,16 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
             line-height: 1.15;
           }
           .ob-slide1-left .ob-welcome-eyebrow {
-            font-size: 0.95rem;
+            font-size: 1.2rem !important;
+            line-height: 1.5 !important;
+            max-width: 360px;
+            text-wrap: balance;
           }
+          /* Quebras condicionais no desktop:
+             - Esconde a quebra que só serve pro mobile
+             - Mostra a quebra específica do desktop (junta ORGANIZADA + DO) */
+          .ob-slide1-left .ob-br-mobile { display: none; }
+          .ob-slide1-left .ob-br-desktop { display: inline; }
           /* Orbs decorativos atrás do mascote */
           .ob-slide1-orb {
             display: block;
@@ -493,7 +589,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           background: #FFFFFF;
           color: var(--primary-dark, #A8235A);
           border: none;
-          border-radius: 999px;
+          border-radius: 12px;
           cursor: pointer;
           box-shadow: 0 8px 24px rgba(60, 15, 40, 0.3);
           transition: transform 0.15s, box-shadow 0.2s;
@@ -503,6 +599,24 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           box-shadow: 0 12px 32px rgba(60, 15, 40, 0.4);
         }
         .ob-final-cta:active { transform: translateY(0); }
+
+        /* ── Foguete lançando ao clicar em "Configurar minha confeitaria" ── */
+        .ob-final-sparkle--launching {
+          animation: obRocketLaunch 1.4s cubic-bezier(0.5, 0, 0.75, 0.35) forwards !important;
+        }
+        @keyframes obRocketLaunch {
+          0%   { transform: translateY(0) scale(1); opacity: 1; }
+          15%  { transform: translateY(6px) scale(0.95); opacity: 1; }
+          30%  { transform: translateY(-20px) scale(1.05); opacity: 1; }
+          100% { transform: translateY(-160vh) scale(0.6); opacity: 0; }
+        }
+        .ob-final-cta--launching {
+          animation: obCtaFade 0.5s ease forwards;
+          pointer-events: none;
+        }
+        @keyframes obCtaFade {
+          to { opacity: 0; transform: translateY(20px); }
+        }
 
         /* ── Slide 2: Pedidos cards (replica do .ped-card do app) ── */
         .ob-pedidos-stack {
@@ -613,7 +727,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           gap: 0.75rem;
           width: 100%;
           max-width: 360px;
-          margin-top: 1.5rem;
+          margin-top: 0.75rem;
         }
         @media (min-width: 900px) {
           .ob-clientes-stack {
@@ -621,53 +735,44 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
             grid-template-columns: repeat(3, 1fr);
             gap: 1rem;
             max-width: 900px;
+            margin-top: 1.25rem;
           }
         }
         .ob-cli-card {
           background: #fff;
-          color: #431524;
+          color: #2C2C2A;
           border-radius: 14px;
-          border: 1.5px solid #ECC2D0;
-          padding: 0.85rem;
-          box-shadow: 0 12px 30px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2);
-          animation: obClienteFlowIn 0.6s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+          border: 1px solid #F0EBED;
+          padding: 18px 16px;
+          text-align: left;
+          animation: obClienteFlowIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
           transform-origin: center top;
         }
         @keyframes obClienteFlowIn {
-          0% {
+          from {
             opacity: 0;
-            transform: translateY(-30px) scale(0.85);
-            max-height: 0;
-            margin-top: 0;
-            margin-bottom: 0;
-            padding-top: 0;
-            padding-bottom: 0;
+            transform: translateY(-14px) scale(0.97);
           }
-          50% {
-            opacity: 1;
-            max-height: 300px;
-          }
-          100% {
+          to {
             opacity: 1;
             transform: translateY(0) scale(1);
-            max-height: 300px;
           }
         }
         .ob-cli-header {
           display: flex;
           align-items: center;
-          gap: 0.65rem;
+          gap: 14px;
         }
         .ob-cli-avatar {
-          width: 44px;
-          height: 44px;
+          width: 56px;
+          height: 56px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #fff;
-          font-weight: 700;
-          font-size: 0.95rem;
+          font-weight: 800;
+          font-size: 20px;
+          letter-spacing: -0.02em;
           flex-shrink: 0;
           overflow: hidden;
         }
@@ -682,93 +787,150 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           min-width: 0;
         }
         .ob-cli-nome {
-          font-size: 0.9rem;
-          font-weight: 700;
-          color: #431524;
-          line-height: 1.2;
+          font-size: 17px;
+          font-weight: 800;
+          color: #2C2C2A;
+          line-height: 1.15;
+          letter-spacing: -0.015em;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
         .ob-cli-sub {
-          font-size: 0.7rem;
-          color: #6E3548;
-          margin-top: 2px;
-        }
-        .ob-cli-badge-aniv {
-          background: #FEF3C7;
-          color: #B45309;
-          border: 1px solid #FCD34D;
-          font-size: 0.62rem;
-          font-weight: 600;
-          padding: 3px 7px;
-          border-radius: 999px;
-          white-space: nowrap;
-          display: flex;
-          align-items: center;
-          gap: 3px;
-          flex-shrink: 0;
+          font-size: 13px;
+          color: #888780;
+          margin-top: 3px;
+          font-weight: 500;
         }
         .ob-cli-divider {
           height: 1px;
-          background: linear-gradient(90deg, transparent, #ECC2D0, transparent);
-          margin: 0.65rem 0;
+          background: #F0EBED;
+          margin: 14px 0;
         }
-        .ob-cli-metricas {
-          display: flex;
-          gap: 0.55rem;
-          font-size: 0.72rem;
+        .ob-cli-stats {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 6px;
+          margin-bottom: 12px;
         }
-        .ob-cli-metrica {
-          flex: 1;
-          background: #FBF6F3;
-          border-radius: 8px;
-          padding: 0.5rem 0.6rem;
+        .ob-cli-stat {
+          background: #F8F5F1;
+          border-radius: 10px;
+          padding: 10px 8px;
+          text-align: center;
           min-width: 0;
         }
-        .ob-cli-metrica-label {
-          color: #6E3548;
-          font-size: 0.6rem;
-          text-transform: uppercase;
-          letter-spacing: 0.03em;
-          white-space: nowrap;
-        }
-        .ob-cli-metrica-valor {
-          color: #431524;
+        .ob-cli-stat-label {
+          font-size: 9.5px;
+          color: #888780;
           font-weight: 700;
-          font-size: 0.88rem;
-          margin-top: 3px;
-          white-space: nowrap;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
         }
+        .ob-cli-stat-valor {
+          font-size: 18px;
+          font-weight: 800;
+          color: #2C2C2A;
+          margin-top: 3px;
+          letter-spacing: -0.02em;
+          font-variant-numeric: tabular-nums;
+        }
+        .ob-cli-stat-valor--money {
+          font-size: 15px;
+        }
+        .ob-cli-end-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 10px 12px;
+          background: #FAF8F5;
+          border-radius: 10px;
+          margin-bottom: 8px;
+        }
+        .ob-cli-end-info {
+          min-width: 0;
+          flex: 1;
+        }
+        .ob-cli-end-label {
+          font-size: 10px;
+          color: #888780;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          margin-bottom: 3px;
+        }
+        .ob-cli-end-rua {
+          font-size: 13px;
+          font-weight: 700;
+          color: #2C2C2A;
+          letter-spacing: -0.01em;
+          line-height: 1.3;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .ob-cli-end-sec {
+          font-size: 11.5px;
+          color: #888780;
+          margin-top: 2px;
+          font-weight: 500;
+        }
+        .ob-cli-mapa {
+          width: 54px;
+          height: 54px;
+          border-radius: 10px;
+          overflow: hidden;
+          border: 1px solid #E0E5DC;
+          flex-shrink: 0;
+        }
+        .ob-cli-mapa svg { display: block; }
         .ob-cli-inline {
-          margin-top: 0.5rem;
-          font-size: 0.72rem;
-          color: #6E3548;
+          font-size: 12px;
+          color: #5F5E5A;
           display: flex;
           justify-content: space-between;
           align-items: center;
           gap: 6px;
+          padding: 4px 2px;
         }
         .ob-cli-inline strong {
-          color: #431524;
+          color: #2C2C2A;
           font-weight: 700;
+          font-variant-numeric: tabular-nums;
         }
-        .ob-cli-aniv {
-          margin-top: 0.6rem;
-          background: #FEF3C7;
-          border: 1px solid #FCD34D;
-          color: #92400E;
-          border-radius: 8px;
-          padding: 0.45rem 0.6rem;
-          font-size: 0.72rem;
-          font-weight: 600;
+        .ob-cli-inline-l {
+          color: #888780;
+          font-weight: 500;
+        }
+        .ob-cli-aniv-row {
           display: flex;
+          justify-content: space-between;
           align-items: center;
-          gap: 4px;
-          flex-wrap: wrap;
+          gap: 8px;
+          padding: 8px 12px;
+          margin-top: 8px;
+          background: #FEF0DF;
+          border-radius: 10px;
+          font-size: 12px;
+          color: #854F0B;
         }
-        .ob-cli-acao {
-          color: #B45309;
-          text-decoration: underline;
+        .ob-cli-aniv-row strong {
+          color: #854F0B;
+          font-weight: 800;
+          font-variant-numeric: tabular-nums;
+        }
+        .ob-cli-aniv-row .ob-cli-inline-l {
+          color: #854F0B;
+          font-weight: 600;
+        }
+        .ob-cli-aniv-cta {
+          font-size: 11.5px;
           font-weight: 700;
-          cursor: pointer;
+          color: #E85A8C;
+          text-decoration: underline;
+          text-decoration-thickness: 1.5px;
+          text-underline-offset: 2px;
+          white-space: nowrap;
         }
 
         /* === CARDÁPIO — mockup fiel ao app === */
@@ -1614,6 +1776,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
         /* Resultado */
         .ob-prec-resultado {
+          position: relative;
           margin-top: 0.55rem;
           padding: 0.65rem 0.75rem;
           border-radius: 12px;
@@ -1674,11 +1837,25 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         }
         .ob-prec-resultado--prejuizo .ob-prec-resultado-margem { color: #dc2626; }
         .ob-prec-resultado--lucro .ob-prec-resultado-margem { color: #15803d; }
-        .ob-prec-resultado-ideal {
-          font-size: 0.7rem;
-          font-weight: 600;
-          color: #6E3548;
-          margin-top: 1px;
+        .ob-prec-resultado-flag {
+          position: absolute;
+          top: -2px;
+          right: 14px;
+          background: #15803d;
+          color: #fff;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 5px 8px 10px;
+          clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
+          filter: drop-shadow(0 2px 3px rgba(21, 128, 61, 0.25));
+          animation: obFlagDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both;
+          transform-origin: top center;
+        }
+        @keyframes obFlagDown {
+          from { opacity: 0; transform: translateY(-8px) scale(0.7); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         /* ── Desktop: aumenta tipografia e centraliza melhor ── */
@@ -1699,6 +1876,185 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
             box-sizing: border-box;
             padding: 1rem 1.5rem 4rem;
           }
+        }
+
+        /* ── Slide 2: Card de pedido novo (mesmo do Pedidos.tsx real) ── */
+        .ob-newped-lista {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          padding: 0;
+        }
+        .ob-newped-lista-label {
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+          color: rgba(255,255,255,0.72);
+          text-align: center;
+          margin: 0 0 6px;
+          text-transform: uppercase;
+        }
+        @keyframes obNewPedIn {
+          from { opacity: 0; transform: translateY(-14px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .ob-newped-card {
+          background: #fff;
+          border: 1px solid #F0EBED;
+          border-radius: 16px;
+          padding: 18px 20px;
+          font-family: var(--font-base), -apple-system, sans-serif;
+          color: #2C2C2A;
+          text-align: left;
+        }
+        .ob-newped-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .ob-newped-avatar {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 15px;
+          font-weight: 800;
+          letter-spacing: -0.01em;
+          flex-shrink: 0;
+          overflow: hidden;
+        }
+        .ob-newped-avatar img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+        .ob-newped-header-info { flex: 1; min-width: 0; }
+        .ob-newped-cliente-row {
+          display: flex;
+          align-items: baseline;
+          gap: 8px;
+        }
+        .ob-newped-cliente {
+          font-size: 15px;
+          font-weight: 700;
+          color: #2C2C2A;
+          letter-spacing: -0.01em;
+        }
+        .ob-newped-num {
+          font-size: 13px;
+          font-weight: 600;
+          color: #B4B2A9;
+        }
+        .ob-newped-tel {
+          font-size: 13px;
+          color: #888780;
+          margin-top: 2px;
+        }
+        .ob-newped-menu {
+          padding: 2px 4px;
+          color: #888780;
+          display: flex;
+          align-items: center;
+        }
+        .ob-newped-tags {
+          display: flex;
+          gap: 5px;
+          flex-wrap: wrap;
+          margin: 10px 0 12px;
+        }
+        .ob-newped-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 3px 9px;
+          border-radius: 999px;
+          letter-spacing: -0.005em;
+          white-space: nowrap;
+        }
+        .ob-newped-tag--origem {
+          background: #F1EFE8;
+          color: #5F5E5A;
+        }
+        .ob-newped-datas {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+        }
+        .ob-newped-data-row {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          font-size: 13px;
+          color: #5F5E5A;
+          line-height: 1.55;
+        }
+        .ob-newped-data-ic {
+          color: #888780;
+          display: inline-flex;
+          align-items: center;
+        }
+        .ob-newped-data-label { color: #5F5E5A; }
+        .ob-newped-data-val { color: #2C2C2A; font-weight: 500; }
+        .ob-newped-divisor {
+          height: 1px;
+          background: #E8E5DC;
+          margin: 12px 0 10px;
+        }
+        .ob-newped-itens {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+        }
+        .ob-newped-item-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          font-size: 13px;
+          color: #2C2C2A;
+        }
+        .ob-newped-item-nome {
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .ob-newped-item-qtd {
+          color: #888780;
+          font-weight: 700;
+          margin-right: 6px;
+        }
+        .ob-newped-item-val {
+          flex-shrink: 0;
+          font-variant-numeric: tabular-nums;
+          color: #5F5E5A;
+        }
+        .ob-newped-total-row {
+          display: flex;
+          justify-content: space-between;
+          font-size: 15px;
+          font-weight: 800;
+          color: #2C2C2A;
+          margin-top: 12px;
+          letter-spacing: -0.01em;
+        }
+        .ob-newped-total-row span:last-child {
+          font-variant-numeric: tabular-nums;
+        }
+        .ob-newped-cta {
+          text-align: center;
+          margin-top: 14px;
+          background: #E85A8C;
+          color: #fff;
+          border-radius: 12px;
+          padding: 12px 14px;
+          font-size: 14px;
+          font-weight: 700;
+          letter-spacing: -0.01em;
         }
       `}</style>
     </div>
@@ -1721,7 +2077,7 @@ function Slide1Welcome({ onReady }: { onReady: () => void }) {
         <div className="ob-slide1-orb ob-slide1-orb--b" aria-hidden="true" />
         <div className="ob-coroa-wrap">
           <img
-            src="/Sistema/TUTORIAL.png"
+            src="/log.png"
             alt=""
             className="ob-welcome-coroa"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
@@ -1733,10 +2089,11 @@ function Slide1Welcome({ onReady }: { onReady: () => void }) {
         <div className="ob-welcome-anchor">
           <div className="ob-welcome-block" style={{ animationDelay: "0.15s" }}>
             SUA CONFEITARIA<br/>
-            <span className="ob-fill">ORGANIZADA</span><br/>
-            DO PEDIDO AO <span className="ob-fill">LUCRO</span>
+            <span className="ob-fill">ORGANIZADA</span><br className="ob-br-mobile"/>{" "}
+            DO<br className="ob-br-desktop"/>{" "}
+            PEDIDO AO <span className="ob-fill">LUCRO</span>
           </div>
-          <div className="ob-welcome-eyebrow" style={{ animationDelay: "0.35s", marginTop: "0.9rem", textTransform: "none", letterSpacing: "0", opacity: 0.85 }}>
+          <div className="ob-welcome-eyebrow" style={{ animationDelay: "0.35s", marginTop: "1.1rem", textTransform: "none", letterSpacing: "0", opacity: 0.9, fontSize: "1.05rem", fontWeight: 500, lineHeight: 1.45 }}>
             Tudo o que você precisa para cuidar do seu negócio em um só lugar.
           </div>
         </div>
@@ -1746,7 +2103,7 @@ function Slide1Welcome({ onReady }: { onReady: () => void }) {
 }
 
 /* ─── Slide Placeholder (será substituído nas próximas etapas) ─── */
-function SlidePlaceholder({ eyebrow, title, subtitle, emoji, onReady }: { eyebrow?: string; title: string; subtitle: string; emoji: string; onReady: () => void }) {
+function SlidePlaceholder({ eyebrow, title, subtitle, emoji, onReady }: { eyebrow?: string; title: React.ReactNode; subtitle: string; emoji: string; onReady: () => void }) {
   useEffect(() => {
     const t = window.setTimeout(onReady, 500);
     return () => clearTimeout(t);
@@ -1945,15 +2302,20 @@ const CLIENTES_DEMO = [
   {
     id: 1,
     nome: "Ana Cristina Vieira",
+    telefone: "(41) 99530-5803",
     initials: "AC",
-    avatarBg: "#F97316", // laranja
+    avatarBg: "#FCE0E9",
+    avatarColor: "#993556",
     imagem: "/tutorial/cliente1.jpeg",
     tempo: "8 meses",
-    totalPedidos: 3,
-    totalGasto: "R$ 279,90",
-    ticketMedio: "R$ 93,30",
-    ultimaCompra: "há 1 mês",
+    totalPedidos: 12,
+    totalGasto: "R$ 1.800",
+    ticketMedio: "R$ 150",
+    ultimaCompra: "há 3 dias",
     aniversario: "em 7 dias",
+    dataAniversario: "15/03",
+    endereco: "Rua das Palmeiras, 342",
+    enderecoSec: "Batel · Curitiba/PR",
   },
   {
     id: 2,
@@ -2023,72 +2385,51 @@ const CLIENTES_DEMO = [
 ];
 
 function SlideClientes({ onReady }: { onReady: () => void }) {
-  const [visiveis, setVisiveis] = useState<typeof CLIENTES_DEMO>([]);
-  const [isDesktop] = useState(() =>
-    typeof window !== "undefined" ? window.matchMedia("(min-width: 900px)").matches : false
-  );
+  const [visivel, setVisivel] = useState(false);
 
   useEffect(() => {
     const timers: number[] = [];
 
-    const imagensPraCarregar = CLIENTES_DEMO.map((c) => c.imagem).filter((s): s is string => !!s);
-    const preload = Promise.all(
-      imagensPraCarregar.map(
-        (src) =>
-          new Promise<void>((resolve) => {
-            const img = new Image();
-            img.onload = () => resolve();
-            img.onerror = () => resolve();
-            img.src = src;
-          })
-      )
-    );
+    // Pré-carrega a imagem do primeiro cliente
+    const primeiroImg = CLIENTES_DEMO[0]?.imagem;
+    const preload = primeiroImg
+      ? new Promise<void>((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve();
+          img.onerror = () => resolve();
+          img.src = primeiroImg;
+        })
+      : Promise.resolve();
 
     let cancelado = false;
     preload.then(() => {
       if (cancelado) return;
-
-      if (isDesktop) {
-        // Desktop: mostra os 6 em cascata rápida
-        CLIENTES_DEMO.forEach((_, idx) => {
-          timers.push(window.setTimeout(() => {
-            setVisiveis(CLIENTES_DEMO.slice(0, idx + 1));
-          }, 200 + idx * 220));
-        });
-        timers.push(window.setTimeout(onReady, 200 + CLIENTES_DEMO.length * 220 + 400));
-      } else {
-        // Mobile: apenas 2 clientes (comportamento original)
-        timers.push(window.setTimeout(() => {
-          setVisiveis([CLIENTES_DEMO[0]]);
-        }, 300));
-        timers.push(window.setTimeout(() => {
-          setVisiveis([CLIENTES_DEMO[1], CLIENTES_DEMO[0]]);
-        }, 1700));
-        timers.push(window.setTimeout(onReady, 3000));
-      }
+      timers.push(window.setTimeout(() => setVisivel(true), 300));
+      timers.push(window.setTimeout(onReady, 900));
     });
 
     return () => {
       cancelado = true;
       timers.forEach((t) => clearTimeout(t));
     };
-  }, [onReady, isDesktop]);
+  }, [onReady]);
+
+  const visiveis = visivel ? [CLIENTES_DEMO[0]] : [];
 
   return (
     <div className="ob-slide-textabove">
       <p className="ob-slide-eyebrow">Seus clientes, mais perto</p>
       <h2 className="ob-slide-title">
-        LEMBRE DE CADA CLIENTE
+        LEMBRE DE <span className="ob-fill">CADA CLIENTE</span>
         <br />
-        E DE CADA DETALHE
+        E DE <span className="ob-fill">CADA DETALHE</span>
       </h2>
-      <p className="ob-slide-subtitle-top">Histórico, pedidos e informações importantes sempre à mão.</p>
 
       <div className="ob-clientes-stack">
         {visiveis.map((c) => (
           <div key={c.id} className="ob-cli-card">
             <div className="ob-cli-header">
-              <div className="ob-cli-avatar" style={{ background: c.avatarBg }}>
+              <div className="ob-cli-avatar" style={{ background: c.avatarBg, color: (c as any).avatarColor || '#993556' }}>
                 {c.imagem
                   ? <img src={c.imagem} alt={c.nome} onError={(e) => {
                       const img = e.target as HTMLImageElement;
@@ -2100,39 +2441,64 @@ function SlideClientes({ onReady }: { onReady: () => void }) {
               </div>
               <div className="ob-cli-nome-bloco">
                 <div className="ob-cli-nome">{c.nome}</div>
-                <div className="ob-cli-sub">Cliente há {c.tempo}</div>
+                <div className="ob-cli-sub">{(c as any).telefone || `Cliente há ${c.tempo}`}</div>
               </div>
             </div>
 
             <div className="ob-cli-divider" />
 
-            <div className="ob-cli-metricas">
-              <div className="ob-cli-metrica">
-                <div className="ob-cli-metrica-label">Pedidos</div>
-                <div className="ob-cli-metrica-valor">{c.totalPedidos}</div>
+            <div className="ob-cli-stats">
+              <div className="ob-cli-stat">
+                <div className="ob-cli-stat-label">Pedidos</div>
+                <div className="ob-cli-stat-valor">{c.totalPedidos}</div>
               </div>
-              <div className="ob-cli-metrica">
-                <div className="ob-cli-metrica-label">Total gasto</div>
-                <div className="ob-cli-metrica-valor">{c.totalGasto}</div>
+              <div className="ob-cli-stat">
+                <div className="ob-cli-stat-label">Total</div>
+                <div className="ob-cli-stat-valor ob-cli-stat-valor--money">{c.totalGasto}</div>
+              </div>
+              <div className="ob-cli-stat">
+                <div className="ob-cli-stat-label">Ticket</div>
+                <div className="ob-cli-stat-valor ob-cli-stat-valor--money">{c.ticketMedio}</div>
               </div>
             </div>
 
+            {(c as any).endereco && (
+              <div className="ob-cli-end-row">
+                <div className="ob-cli-end-info">
+                  <div className="ob-cli-end-label">Endereço</div>
+                  <div className="ob-cli-end-rua">{(c as any).endereco}</div>
+                  <div className="ob-cli-end-sec">{(c as any).enderecoSec}</div>
+                </div>
+                <div className="ob-cli-mapa" aria-hidden="true">
+                  <svg width="54" height="54" viewBox="0 0 54 54" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="54" height="54" fill="#EDEBE0"/>
+                    <path d="M0 18 L54 22" stroke="#CFD3C0" strokeWidth="4" fill="none"/>
+                    <path d="M0 36 L54 40" stroke="#CFD3C0" strokeWidth="3" fill="none"/>
+                    <path d="M18 0 L22 54" stroke="#D8DCC9" strokeWidth="2.5" fill="none"/>
+                    <path d="M38 0 L40 54" stroke="#D8DCC9" strokeWidth="2" fill="none"/>
+                    <path d="M0 8 L54 6" stroke="#DCE0CD" strokeWidth="1.5" fill="none" opacity="0.7"/>
+                    <circle cx="28" cy="26" r="8" fill="#E85A8C" opacity="0.95"/>
+                    <circle cx="28" cy="26" r="3" fill="#fff"/>
+                  </svg>
+                </div>
+              </div>
+            )}
+
             <div className="ob-cli-inline">
-              <span>Ticket médio:</span>
-              <strong>{c.ticketMedio}</strong>
-            </div>
-            <div className="ob-cli-inline">
-              <span>⏱ Última compra:</span>
+              <span className="ob-cli-inline-l">⏱ Última compra:</span>
               <strong>{c.ultimaCompra}</strong>
             </div>
-            {c.aniversario && (
-              <div className="ob-cli-aniv">
-                🎂 Aniversário {c.aniversario} — <span className="ob-cli-acao">Enviar Cardápio</span>
+            {(c as any).dataAniversario && (
+              <div className="ob-cli-aniv-row">
+                <span className="ob-cli-inline-l">🎂 Aniversário: <strong>{(c as any).dataAniversario}</strong></span>
+                <span className="ob-cli-aniv-cta">Enviar cardápio</span>
               </div>
             )}
           </div>
         ))}
       </div>
+
+      <p className="ob-slide-subtitle-top" style={{ marginTop: "1rem", fontSize: "1.05rem", color: "rgba(255,255,255,0.88)" }}>Salve o endereço, o aniversário e o que cada cliente já pediu — pra nunca esquecer de um detalhe importante.</p>
     </div>
   );
 }
@@ -2208,8 +2574,7 @@ function SlideCardapio({ onReady }: { onReady: () => void }) {
     <>
       <div className="ob-slide-textabove">
         <span className="ob-slide-eyebrow">Sua vitrine online</span>
-        <h2 className="ob-slide-title">UM CARDÁPIO BONITO<br/>E PRONTO PARA VENDER</h2>
-        <p className="ob-slide-subtitle-top">Mostre seus produtos e facilite o pedido das suas clientes.</p>
+        <h2 className="ob-slide-title">UM CARDÁPIO BONITO<br/>E <span className="ob-fill">PRONTO PARA VENDER</span></h2>
       </div>
 
       <div className="ob-cardapio-phone">
@@ -2292,241 +2657,178 @@ function PedidoImg({ src, alt, emoji }: { src?: string; alt: string; emoji: stri
   );
 }
 
-function Slide2Pedidos({ onReady }: { onReady: () => void }) {
-  const [proximoIdx, setProximoIdx] = useState(0);
-  const [visiveis, setVisiveis] = useState<typeof PEDIDOS_DEMO>([]);
-  const [isDesktop] = useState(() =>
-    typeof window !== "undefined" ? window.matchMedia("(min-width: 900px)").matches : false
+// ── Slide 2: PEDIDOS (design novo, mesmo do Pedidos.tsx real) ──
+// 2 cards com status diferentes, entrando com fade+slide
+
+const ONBOARDING_PEDIDOS = [
+  {
+    id: 1,
+    numero: "5",
+    cliente: "Ana Cristina Vieira",
+    telefone: "(41) 99530-5803",
+    initials: "AC",
+    avatarBg: "#FCE0E9",
+    avatarColor: "#993556",
+    imagem: "/tutorial/cliente1.jpeg",
+    origem: "manual" as const,
+    statusKey: "aguardando_aceite",
+    statusLabel: "Aguardando aprovação",
+    statusBg: "#FEF0DF",
+    statusColor: "#854F0B",
+    statusIcon: "clock",
+    tipoEntrega: "retirada" as const,
+    dataPedido: "15 de setembro às 09:45",
+    dataEntrega: "15 de setembro às 11:00",
+    itens: [{ qtd: 1, nome: "Bolo de Chocolate", valor: "R$ 40,00" }],
+    total: "R$ 40,00",
+    ctaLabel: "Aceitar pedido",
+  },
+  {
+    id: 2,
+    numero: "6",
+    cliente: "Marina Silva",
+    telefone: "(41) 98812-4471",
+    initials: "MS",
+    avatarBg: "#E6F1FB",
+    avatarColor: "#185FA5",
+    origem: "manual" as const,
+    statusKey: "em_producao",
+    statusLabel: "Em produção",
+    statusBg: "#FCE0E9",
+    statusColor: "#993556",
+    statusIcon: "chef",
+    tipoEntrega: "entrega" as const,
+    dataPedido: "14 de setembro às 18:30",
+    dataEntrega: "15 de setembro às 14:00",
+    itens: [
+      { qtd: 2, nome: "Brigadeiro gourmet", valor: "R$ 60,00" },
+      { qtd: 1, nome: "Bolo Red Velvet", valor: "R$ 90,00" },
+    ],
+    total: "R$ 150,00",
+    ctaLabel: "Finalizar produção",
+  },
+];
+
+// SVGs inline pequenos para as tags e datas
+function IconeNewPed({ nome }: { nome: string }) {
+  const c = "currentColor";
+  switch (nome) {
+    case "clock":    return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+    case "chef":     return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z"/><line x1="6" y1="17" x2="18" y2="17"/></svg>;
+    case "hand":     return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 17V5a1.5 1.5 0 0 1 3 0v6"/><path d="M14 11a1.5 1.5 0 0 1 3 0v3"/><path d="M17 12a1.5 1.5 0 0 1 3 0v4a6 6 0 0 1-6 6h-2c-2 0-2.5-.4-4-2l-3.5-3.5C4 15.6 4.5 14 6 14h1"/><path d="M11 11V6a1.5 1.5 0 0 0-3 0v9"/></svg>;
+    case "calendar": return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
+    case "home":     return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
+    case "truck":    return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>;
+    case "dots":     return <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>;
+    default:         return null;
+  }
+}
+
+function CardPedidoNovo({ p }: { p: typeof ONBOARDING_PEDIDOS[0] }) {
+  const iconeEntrega = p.tipoEntrega === "entrega" ? "truck" : "home";
+  const labelEntrega = p.tipoEntrega === "entrega" ? "Entrega" : "Retirada";
+  return (
+    <div className="ob-newped-card">
+      <div className="ob-newped-header">
+        <div className="ob-newped-avatar" style={{ background: p.avatarBg, color: p.avatarColor }}>
+          {(p as any).imagem
+            ? <img src={(p as any).imagem} alt={p.cliente} onError={(e) => {
+                const img = e.target as HTMLImageElement;
+                img.style.display = 'none';
+                const parent = img.parentElement;
+                if (parent) parent.textContent = p.initials;
+              }} />
+            : p.initials}
+        </div>
+        <div className="ob-newped-header-info">
+          <div className="ob-newped-cliente-row">
+            <span className="ob-newped-cliente">{p.cliente}</span>
+            <span className="ob-newped-num">#{p.numero}</span>
+          </div>
+          <div className="ob-newped-tel">{p.telefone}</div>
+        </div>
+        <div className="ob-newped-menu"><IconeNewPed nome="dots" /></div>
+      </div>
+
+      <div className="ob-newped-tags">
+        <span className="ob-newped-tag ob-newped-tag--origem">
+          <IconeNewPed nome="hand" />
+          Manual
+        </span>
+        <span className="ob-newped-tag" style={{ background: p.statusBg, color: p.statusColor }}>
+          <IconeNewPed nome={p.statusIcon} />
+          {p.statusLabel}
+        </span>
+      </div>
+
+      <div className="ob-newped-datas">
+        <div className="ob-newped-data-row">
+          <span className="ob-newped-data-ic"><IconeNewPed nome="calendar" /></span>
+          <span className="ob-newped-data-label">Pedido:</span>
+          <span className="ob-newped-data-val">{p.dataPedido}</span>
+        </div>
+        <div className="ob-newped-data-row">
+          <span className="ob-newped-data-ic"><IconeNewPed nome={iconeEntrega} /></span>
+          <span className="ob-newped-data-label">{labelEntrega}:</span>
+          <span className="ob-newped-data-val">{p.dataEntrega}</span>
+        </div>
+      </div>
+
+      <div className="ob-newped-divisor" />
+
+      <div className="ob-newped-itens">
+        {p.itens.map((it, i) => (
+          <div key={i} className="ob-newped-item-row">
+            <span className="ob-newped-item-nome">
+              <span className="ob-newped-item-qtd">{it.qtd}x</span>
+              {it.nome}
+            </span>
+            <span className="ob-newped-item-val">{it.valor}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="ob-newped-total-row">
+        <span>Total</span>
+        <span>{p.total}</span>
+      </div>
+
+      <div className="ob-newped-cta">{p.ctaLabel}</div>
+    </div>
   );
+}
 
-  // Trio de pedidos para a animação. Larissa é o mais novo, entra por último e fica no topo.
-  const pedidos = useMemo(() => {
-    const now = new Date();
-    const diasSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
-    const randomHour = 8 + Math.floor(Math.random() * 12);
-    const randomMin = Math.floor(Math.random() * 60);
-    const hh = String(randomHour).padStart(2, "0");
-    const mm = String(randomMin).padStart(2, "0");
-    const entregaLarissa = new Date(now);
-    entregaLarissa.setDate(entregaLarissa.getDate() + 2);
-    const diaEntregaLarissa = diasSemana[entregaLarissa.getDay()];
-    const retiradaCamila = new Date(now);
-    retiradaCamila.setDate(retiradaCamila.getDate() - 1);
-    const diaRetiradaCamila = diasSemana[retiradaCamila.getDay()];
-
-    return [
-      { ...PEDIDOS_DEMO[2], numero: "120" },
-      { ...PEDIDOS_DEMO[4], numero: "121", dataLabel: diaRetiradaCamila },
-      { ...PEDIDOS_DEMO[5], numero: "122", datetime: `Hoje · ${hh}:${mm}`, dataLabel: diaEntregaLarissa },
-    ];
-  }, []);
-
-  // Kanban: agrupamento por status (desktop)
-  const kanbanCols = useMemo(() => {
-    return [
-      {
-        titulo: "Novos",
-        color: "#1d4ed8",
-        bg: "#dbeafe",
-        pedidos: PEDIDOS_DEMO.filter(p => p.statusLabel === "Novo" || p.statusLabel === "Confirmado"),
-      },
-      {
-        titulo: "Em Produção",
-        color: "#d97706",
-        bg: "#FAEEDA",
-        pedidos: PEDIDOS_DEMO.filter(p => p.statusLabel === "Em Produção"),
-      },
-      {
-        titulo: "Finalizados",
-        color: "#15803d",
-        bg: "#dcfce7",
-        pedidos: PEDIDOS_DEMO.filter(p => p.statusLabel === "Entregue"),
-      },
-    ];
-  }, []);
+function Slide2Pedidos({ onReady }: { onReady: () => void }) {
+  const [visivel, setVisivel] = useState(false);
 
   useEffect(() => {
     const timers: number[] = [];
-
-    // No desktop, o kanban é estático — libera o botão rápido
-    if (isDesktop) {
-      timers.push(window.setTimeout(onReady, 500));
-      return () => timers.forEach((t) => clearTimeout(t));
-    }
-
-    // Pré-carrega imagens antes de iniciar a animação (evita que a foto apareça
-    // depois do card)
-    const imagensPraCarregar = pedidos.map((p) => p.imagem).filter((s): s is string => !!s);
-
-    const preload = Promise.all(
-      imagensPraCarregar.map(
-        (src) =>
-          new Promise<void>((resolve) => {
-            const img = new Image();
-            img.onload = () => resolve();
-            img.onerror = () => resolve();
-            img.src = src;
-          })
-      )
-    );
-
-    let cancelado = false;
-    preload.then(() => {
-      if (cancelado) return;
-
-      // Primeiro pedido entra rápido
-      timers.push(window.setTimeout(() => {
-        setVisiveis([pedidos[0]]);
-        setProximoIdx(1);
-      }, 300));
-
-      // Depois entra a cada 1.4s até o último
-      for (let i = 1; i < 3; i++) {
-        timers.push(window.setTimeout(() => {
-          setVisiveis((prev) => {
-            const next = [pedidos[i], ...prev];
-            return next.slice(0, 3);
-          });
-          setProximoIdx(i + 1);
-        }, 300 + i * 1400));
-      }
-
-      // Marca pronto depois do último
-      timers.push(window.setTimeout(onReady, 300 + 3 * 1400 + 500));
-    });
-
-    return () => {
-      cancelado = true;
-      timers.forEach((t) => clearTimeout(t));
-    };
-  }, [onReady, pedidos, isDesktop]);
+    // Card entra rápido
+    timers.push(window.setTimeout(() => setVisivel(true), 350));
+    // Libera o botão "Próximo"
+    timers.push(window.setTimeout(onReady, 900));
+    return () => timers.forEach((t) => clearTimeout(t));
+  }, [onReady]);
 
   return (
     <>
       <div className="ob-slide-textabove">
         <span className="ob-slide-eyebrow">Sua rotina mais leve</span>
-        <h2 className="ob-slide-title">TODOS OS PEDIDOS<br/>NO LUGAR CERTO</h2>
-        <p className="ob-slide-subtitle-top">Acompanhe cada encomenda sem depender de papel ou planilha.</p>
+        <h2 className="ob-slide-title">TODOS OS PEDIDOS<br/>NO <span className="ob-fill">LUGAR CERTO</span></h2>
       </div>
 
-      <div className="ob-pedidos-stack">
-        {isDesktop ? (
-          /* KANBAN DESKTOP: 3 colunas por status */
-          <>
-            {kanbanCols.map((col) => (
-              <div key={col.titulo} className="ob-ped-kanban-col">
-                <div className="ob-ped-kanban-header" style={{ color: col.color, background: col.bg }}>
-                  <span className="ob-ped-kanban-dot" style={{ background: col.color }} />
-                  {col.titulo}
-                  <span className="ob-ped-kanban-count">{col.pedidos.length}</span>
-                </div>
-                <div className="ob-ped-kanban-list">
-                  {col.pedidos.map((p) => (
-                    <div key={p.id} className="ob-ped-card ob-ped-card--kanban">
-                      <div className="ob-mob-card-topo">
-                        <div className="ob-ped-card-head-row">
-                          <span className="ob-ped-card-numero">Pedido #{p.numero}</span>
-                        </div>
-                        <p className="ob-mob-card-cliente">{p.cliente}</p>
-                        <span className="ob-mob-card-datetime">{p.datetime}</span>
-                      </div>
-                      <div className="ob-mob-card-divider" />
-                      <div className="ob-mob-card-produto">
-                        <div className="ob-mob-card-produto-img" style={{ position: "relative" }}>
-                          <PedidoImg src={p.imagem} alt={p.produto} emoji={p.emoji || "🎂"} />
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p className="ob-mob-card-produto-nome">{p.produto}</p>
-                          <p className="ob-mob-card-produto-qtd">{p.qtd}</p>
-                        </div>
-                        <p className="ob-mob-card-valor">{p.valor}</p>
-                      </div>
-                      <div className="ob-mob-card-divider" />
-                      <div className="ob-mob-card-rodape">
-                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                          <span className="ob-mob-card-info-label">Pgto:</span>
-                          <span style={{ fontSize: "0.7rem", color: p.pagamentoColor, fontWeight: 600 }}>{p.pagamento}</span>
-                        </div>
-                        <span style={{ fontSize: "0.7rem", color: "#6E3548", display: "flex", alignItems: "center", gap: 4 }}>
-                          {p.entregaIcon.startsWith("/")
-                            ? <img src={p.entregaIcon} alt="" style={{ width: 12, height: 12, objectFit: "contain" }} />
-                            : <span>{p.entregaIcon}</span>}
-                          <span style={{ color: "#431524", fontWeight: 600 }}>{p.dataLabel}</span>
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </>
-        ) : (
-          /* STACK MOBILE: comportamento original */
-          visiveis.map((p, idx) => {
-          const isPeek = idx === 2; // 3º card é o peek
-          const isOldest = idx === visiveis.length - 1 && visiveis.length === 3;
-          return (
-            <div
-              key={p.id}
-              className={`ob-ped-card ob-ped-card--flow ${isPeek ? "ob-ped-card--peek" : ""}`}
-            >
-              {/* Topo: número + status + cliente + datetime */}
-              <div className="ob-mob-card-topo">
-                <div className="ob-ped-card-head-row">
-                  <span className="ob-ped-card-numero">Pedido #{p.numero}</span>
-                  <span className="ob-ped-card-status" style={{ color: p.statusColor, background: p.statusBg }}>
-                    <span className="ob-ped-card-status-dot" style={{ background: p.statusDot }} />
-                    {p.statusLabel}
-                  </span>
-                </div>
-                <p className="ob-mob-card-cliente">{p.cliente}</p>
-                <span className="ob-mob-card-datetime">{p.datetime}</span>
-              </div>
-
-              {!isPeek && (
-                <>
-                  <div className="ob-mob-card-divider" />
-
-                  {/* Produto + valor */}
-                  <div className="ob-mob-card-produto">
-                    <div className="ob-mob-card-produto-img" style={{ position: "relative" }}>
-                      <PedidoImg src={p.imagem} alt={p.produto} emoji={p.emoji || "🎂"} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p className="ob-mob-card-produto-nome">{p.produto}</p>
-                      <p className="ob-mob-card-produto-qtd">{p.qtd}</p>
-                    </div>
-                    <p className="ob-mob-card-valor">{p.valor}</p>
-                  </div>
-
-                  <div className="ob-mob-card-divider" />
-
-                  {/* Rodapé: pagamento + entrega */}
-                  <div className="ob-mob-card-rodape">
-                    <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                      <span className="ob-mob-card-info-label">Pagamento:</span>
-                      <span style={{ fontSize: "0.7rem", color: p.pagamentoColor, fontWeight: 600 }}>{p.pagamento}</span>
-                      <span className="ob-ped-card-status" style={{ color: p.pagamentoColor, background: p.pagamentoBg, fontSize: "0.6rem", padding: "2px 6px" }}>
-                        {p.pagamentoStatus}
-                      </span>
-                    </div>
-                    <span style={{ fontSize: "0.7rem", color: "#6E3548", display: "flex", alignItems: "center", gap: 4 }}>
-                      {p.entregaIcon.startsWith("/")
-                        ? <img src={p.entregaIcon} alt="" style={{ width: 12, height: 12, objectFit: "contain" }} />
-                        : <span>{p.entregaIcon}</span>}
-                      {p.entregaLabel}
-                      <span style={{ color: "#431524", fontWeight: 600 }}>· {p.dataLabel}</span>
-                    </span>
-                  </div>
-                </>
-              )}
-
-              {isPeek && <div className="ob-ped-card-peek-fade" />}
-            </div>
-          );
-        })
+      <div className="ob-newped-lista">
+        {visivel && (
+          <div
+            className="ob-newped-wrap"
+            style={{ animation: "obNewPedIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both" }}
+          >
+            <CardPedidoNovo p={ONBOARDING_PEDIDOS[0]} />
+          </div>
         )}
       </div>
+
+      <p className="ob-slide-subtitle-top" style={{ marginTop: "1rem", fontSize: "1.05rem", color: "rgba(255,255,255,0.88)", maxWidth: "34ch", marginLeft: "auto", marginRight: "auto" }}>Acompanhe cada encomenda sem depender de papel ou planilha.</p>
     </>
   );
 }
@@ -2730,8 +3032,7 @@ function Slide3Ingredientes({ onReady }: { onReady: () => void }) {
     <>
       <div className="ob-slide-textabove">
         <span className="ob-slide-eyebrow">Cadastre uma vez</span>
-        <h2 className="ob-slide-title">SEUS INGREDIENTES<br/>SEMPRE ATUALIZADOS</h2>
-        <p className="ob-slide-subtitle-top">Informe preço e quantidade para o Doonly usar nas suas receitas.</p>
+        <h2 className="ob-slide-title">SEUS INGREDIENTES<br/><span className="ob-fill">SEMPRE ATUALIZADOS</span></h2>
       </div>
 
       <div className={`ob-ing-wrap ${wrapFull ? "ob-ing-wrap--full" : ""}`}>
@@ -2920,9 +3221,8 @@ function Slide4Precificacao({ onReady }: { onReady: () => void }) {
         <span className="ob-slide-eyebrow">Seu trabalho tem valor</span>
         <h2 className="ob-slide-title" style={{ fontSize: "clamp(1.05rem, 4.6vw, 1.45rem)" }}>
           PARE DE VENDER,<br/>
-          SEM SABER SE LUCROU
+          SEM SABER SE <span className="ob-fill">LUCROU</span>
         </h2>
-        <p className="ob-slide-subtitle-top">O Doonly mostra quanto custa produzir e quanto sobra para você.</p>
       </div>
 
       <div className="ob-prec-card">
@@ -2991,6 +3291,7 @@ function Slide4Precificacao({ onReady }: { onReady: () => void }) {
         {/* Resultado */}
         {mostrandoResultado && (
           <div className={`ob-prec-resultado ${isPrejuizo ? "ob-prec-resultado--prejuizo" : "ob-prec-resultado--lucro"}`} key={rodadaIdx}>
+            {!isPrejuizo && <span className="ob-prec-resultado-flag">Ideal</span>}
             <span className="ob-prec-resultado-label">
               {isPrejuizo ? "Margem apertada" : "Lucro por caixa"}
             </span>
@@ -3003,7 +3304,6 @@ function Slide4Precificacao({ onReady }: { onReady: () => void }) {
                 {margem.toFixed(0)}% margem
               </span>
             </div>
-            {!isPrejuizo && <span className="ob-prec-resultado-ideal">Margem ideal!</span>}
           </div>
         )}
       </div>
@@ -3013,13 +3313,24 @@ function Slide4Precificacao({ onReady }: { onReady: () => void }) {
 
 /* ─── Slide Final ────────────────────────────────── */
 function SlideFinal({ onStart }: { onStart: () => void }) {
+  const [launching, setLaunching] = React.useState(false);
+  const handleLaunch = () => {
+    if (launching) return;
+    setLaunching(true);
+    // Espera o foguete sair da tela antes de sair pra o app
+    window.setTimeout(() => { onStart(); }, 1200);
+  };
   return (
     <>
-      <div className="ob-final-sparkle">🚀</div>
+      <div className={`ob-final-sparkle ${launching ? "ob-final-sparkle--launching" : ""}`}>🚀</div>
       <p className="ob-slide-eyebrow" style={{ marginBottom: "0.35rem" }}>Tudo pronto para começar</p>
-      <h2 className="ob-final-title">AGORA É A SUA VEZ</h2>
+      <h2 className="ob-final-title">AGORA É A <span className="ob-fill">SUA VEZ</span></h2>
       <p className="ob-final-sub">Vamos deixar o Doonly com a cara da sua confeitaria.</p>
-      <button className="ob-final-cta" onClick={onStart}>
+      <button
+        className={`ob-final-cta ${launching ? "ob-final-cta--launching" : ""}`}
+        onClick={handleLaunch}
+        disabled={launching}
+      >
         Configurar minha confeitaria
       </button>
     </>
