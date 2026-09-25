@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import AppPageHeader from "@/components/AppPageHeader";
+import EmptyDoo from "@/components/EmptyDoo";
 import { Package, Plus, PencilSimple, Trash, MagnifyingGlass, X, CheckCircle, DotsThree } from "@phosphor-icons/react";
 import ReqTag from "@/components/ReqTag";
 
@@ -40,6 +42,7 @@ function parsePreco(s: string): number {
 }
 
 export default function Complementos() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string>("");
   const [items, setItems] = useState<Complemento[]>([]);
@@ -180,6 +183,40 @@ export default function Complementos() {
         <AppPageHeader title="Personalização" subtitle="Adicionais e extras dos seus produtos" infoContent={null} />
         <div className="cpl-loading"><div className="cpl-spinner" /></div>
         <style>{stylesLoading}</style>
+      </div>
+    );
+  }
+
+  // ── Bloqueio: precisa ter ao menos 1 produto cadastrado ───────────────
+  if (produtos.length === 0) {
+    return (
+      <div className="cpl-root">
+        <AppPageHeader
+          title="Personalização"
+          subtitle="Adicionais e extras dos seus produtos"
+          infoContent={null}
+        />
+        <div className="cpl-empty-root">
+          <EmptyDoo
+            image="semprodutos.png"
+            title="Cadastre seu primeiro produto"
+            description="Personalizações são vinculadas aos seus produtos. Cadastre pelo menos um produto antes de criar personalizações."
+            actionLabel="Cadastrar produto"
+            onAction={() => navigate('/produtos')}
+          />
+        </div>
+        <style>{`
+          .cpl-empty-root {
+            padding: 1rem;
+            min-height: calc(100vh - 200px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          @media (min-width: 900px) {
+            .cpl-empty-root { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; }
+          }
+        `}</style>
       </div>
     );
   }
