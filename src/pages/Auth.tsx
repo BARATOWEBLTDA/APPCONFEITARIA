@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { User, Phone, Envelope, Eye, EyeSlash } from "@phosphor-icons/react";
+import { User, Storefront, Phone, Envelope, Eye, EyeSlash } from "@phosphor-icons/react";
 
 // ───────────────────────────────────────────────────────────────
 // Links de download do app (desktop ≥1200px)
@@ -130,7 +130,7 @@ export default function Auth() {
   const [showCadastroSenha, setShowCadastroSenha] = useState(false);
   const [showConfirmarSenha, setShowConfirmarSenha] = useState(false);
   const [cadastroForm, setCadastroForm] = useState({
-    nome: "", telefone: "", email: "", senha: "", confirmarSenha: ""
+    nome: "", nomeLoja: "", telefone: "", email: "", senha: "", confirmarSenha: ""
   });
   const [cadastroErrors, setCadastroErrors] = useState<Record<string, string>>({});
   const [cadastroTouched, setCadastroTouched] = useState<Record<string, boolean>>({});
@@ -291,6 +291,7 @@ export default function Auth() {
         options: {
           data: {
             nome: cadastroForm.nome,
+            nome_loja: cadastroForm.nomeLoja,
             telefone: cadastroForm.telefone,
           },
         }
@@ -306,6 +307,22 @@ export default function Auth() {
           password: cadastroForm.senha,
         });
         if (signInError) throw signInError;
+      }
+
+      // ── 2.1) Salva nome_loja no profile ─────────────────────
+      // O trigger handle_new_user cria a row com nome/telefone, mas não com nome_loja.
+      // Fazemos update explícito aqui.
+      if (cadastroForm.nomeLoja.trim()) {
+        try {
+          const { data: userRes } = await supabase.auth.getUser();
+          if (userRes?.user?.id) {
+            await supabase.from("profiles").update({
+              nome_loja: cadastroForm.nomeLoja.trim(),
+            }).eq("id", userRes.user.id);
+          }
+        } catch (err) {
+          console.warn("[signup] falha ao salvar nome_loja:", err);
+        }
       }
 
       // ── 3) Vincula indicação (se veio via ?ref=CODIGO) ──────
@@ -552,6 +569,22 @@ export default function Auth() {
             {cadastroTouched.nome && cadastroErrors.nome && (
               <span className="cad-error">{cadastroErrors.nome}</span>
             )}
+          </div>
+
+          {/* Nome da confeitaria */}
+          <div className="cad-field-wrap">
+            <div className="cad-field">
+              <input
+                type="text"
+                placeholder="Nome da minha confeitaria (ex: Doces da Ana)"
+                value={cadastroForm.nomeLoja}
+                onChange={e => handleCadastroChange("nomeLoja", e.target.value)}
+                autoComplete="organization"
+                autoCapitalize="words"
+                enterKeyHint="next"
+              />
+              <Storefront className="cad-icon" size={20} weight="regular" />
+            </div>
           </div>
 
           {/* Telefone */}
