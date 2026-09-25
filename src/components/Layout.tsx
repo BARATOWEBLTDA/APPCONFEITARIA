@@ -221,7 +221,7 @@ export default function Layout() {
           </NavLink>
 
           <NavLink to="/configuracoes" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-icon"><Gear size={18} weight="duotone" /></span>Configurações
+            <span className="nav-icon"><Gear size={18} weight="duotone" /></span>Minha conta
           </NavLink>
         </nav>
       </aside>
