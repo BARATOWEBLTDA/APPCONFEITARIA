@@ -44,7 +44,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
       // Lê perfil direto (evita cache do useProfile)
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("logo_url, foto_url, descricao_loja, cardapio_modelo")
+        .select("logo_url, foto_url, descricao_loja, cardapio_modelo, nome_loja")
         .eq("id", userId)
         .single();
 
@@ -60,25 +60,22 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
       const linkKey = `doonly_cardapio_compartilhado_${userId}`;
       const jaCompartilhou = localStorage.getItem(linkKey) === "1";
 
-      // Logo: pode estar em logo_url (desktop) OU foto_url (mobile) — vale qualquer um
-      const temLogo = !!(profileData?.logo_url || profileData?.foto_url);
-
       // Design escolhido: cardapio_modelo salvo explicitamente (não null)
       const escolheuDesign = !!profileData?.cardapio_modelo;
 
       const list: Step[] = [
         {
-          key: "logo",
-          label: "Adicionar logo da loja",
-          desc: "Sua marca em destaque no topo",
+          key: "nome_loja",
+          label: "Preencher nome da loja",
+          desc: "O nome que os clientes vão ver no cardápio",
           icon: <Storefront size={18} weight="fill" />,
-          done: temLogo,
+          done: !!(profileData?.nome_loja && profileData.nome_loja.trim().length > 0),
           path: "/cardapio-config",
         },
         {
           key: "descricao",
           label: "Preencher descrição da loja",
-          desc: "Conte a história da sua confeitaria",
+          desc: "Conte a história da sua confeitaria (pode gerar com IA)",
           icon: <PencilLine size={18} weight="fill" />,
           done: !!(profileData?.descricao_loja && profileData.descricao_loja.trim().length > 0),
           path: "/cardapio-config",
@@ -86,7 +83,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         {
           key: "produto",
           label: "Cadastrar primeiro produto",
-          desc: "Adicione com foto e preço",
+          desc: "Adicione foto, nome e preço — fotos boas vendem 3x mais",
           icon: <ShoppingBag size={18} weight="fill" />,
           done: temProduto,
           path: "/produtos",
@@ -94,15 +91,15 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         {
           key: "design",
           label: "Escolher design do cardápio",
-          desc: "Padrão ou Editorial",
+          desc: "Padrão (grátis) ou Editorial (PRO com foto de fundo)",
           icon: <Palette size={18} weight="fill" />,
           done: escolheuDesign,
           path: "/cardapio-design",
         },
         {
           key: "share",
-          label: "Compartilhar o link do cardápio",
-          desc: "WhatsApp, Instagram, bio",
+          label: "Compartilhar o link",
+          desc: "Divulgue no WhatsApp, Instagram, bio",
           icon: <ShareNetwork size={18} weight="fill" />,
           done: jaCompartilhou && publicado,
           path: "__share__",
@@ -369,39 +366,61 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
     );
   }
 
-  // ─── Estado padrão: lista de passos com progresso ───
+  // ─── Estado padrão: hero destaque + lista compacta ───
+  // Encontra o próximo passo pendente (primeiro da lista que não está done)
+  const proximoPasso = steps.find((s) => !s.done);
+
   return (
     <div className="pap">
       <div className="pap-header">
         <p className="pap-title">Configurar cardápio</p>
-        <p className="pap-sub">Você tá quase lá!</p>
+        <p className="pap-sub">Vamos montar juntos 💪</p>
       </div>
+
       <div className="pap-progress">
         <span className="pap-progress-num">{feitos}/{total}</span>
         <div className="pap-progress-bar"><div className="pap-progress-fill" style={{ width: `${pct}%` }} /></div>
         <span className="pap-progress-pct">{pct}%</span>
       </div>
-      {steps.map((step) => (
-        <button
-          key={step.key}
-          className={`pap-item ${step.done ? "done" : "todo"}`}
-          onClick={() => handleClick(step)}
-          disabled={step.done}
-        >
-          <span className="pap-icon">
-            {step.done ? <Check size={16} weight="bold" /> : step.icon}
-          </span>
-          <span className="pap-body">
-            <span className="pap-item-t">{step.label}</span>
-            <span className="pap-item-d">{step.done ? "Concluído" : step.desc}</span>
-          </span>
-          {!step.done && <span className="pap-arr">&rarr;</span>}
+
+      {/* Hero destaque do próximo passo */}
+      {proximoPasso && (
+        <button className="pap-hero" onClick={() => handleClick(proximoPasso)}>
+          <div className="pap-hero-glow" />
+          <div className="pap-hero-content">
+            <p className="pap-hero-eyebrow">Próximo passo</p>
+            <p className="pap-hero-title">{proximoPasso.label}</p>
+            <p className="pap-hero-desc">{proximoPasso.desc}</p>
+            <span className="pap-hero-cta">
+              Começar agora <span style={{ marginLeft: 4 }}>&rarr;</span>
+            </span>
+          </div>
         </button>
-      ))}
+      )}
+
+      {/* Lista compacta dos outros passos */}
+      <p className="pap-list-title">Todos os passos</p>
+      {steps.map((step, idx) => {
+        const isNext = step === proximoPasso;
+        return (
+          <button
+            key={step.key}
+            className={`pap-item ${step.done ? "done" : isNext ? "next" : "todo"}`}
+            onClick={() => handleClick(step)}
+            disabled={step.done}
+          >
+            <span className="pap-item-ic">
+              {step.done ? <Check size={11} weight="bold" /> : (idx + 1)}
+            </span>
+            <span className="pap-item-t">{step.label}</span>
+            {isNext && <span className="pap-item-tag">Agora</span>}
+          </button>
+        );
+      })}
+
       <style>{`
         .pap {
           margin-bottom: 16px;
-          padding: 0 2px;
         }
         .pap-header {
           text-align: center;
@@ -425,21 +444,17 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           align-items: center;
           gap: 10px;
           padding: 9px 14px;
-          background: #fff;
+          background: #F0FDF4;
           border-radius: 10px;
-          margin-bottom: 10px;
-          border: 1px solid #DCFCE7;
+          margin-bottom: 14px;
           font-size: 11.5px;
           font-weight: 800;
           color: #16a34a;
         }
-        .pap-progress-num, .pap-progress-pct {
-          flex-shrink: 0;
-        }
         .pap-progress-bar {
           flex: 1;
           height: 6px;
-          background: #F0FDF4;
+          background: #DCFCE7;
           border-radius: 3px;
           overflow: hidden;
         }
@@ -448,77 +463,148 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           background: linear-gradient(90deg, #16a34a, #22c55e);
           transition: width 0.4s ease;
         }
+
+        /* Hero destaque - GRAFITE ESCURO pra não competir com rosa da página */
+        .pap-hero {
+          position: relative;
+          display: block;
+          width: 100%;
+          padding: 20px 18px;
+          background: linear-gradient(135deg, #2C1219 0%, #4B2334 100%);
+          color: #fff;
+          border: none;
+          border-radius: 14px;
+          margin-bottom: 14px;
+          overflow: hidden;
+          box-shadow: 0 6px 20px rgba(44,18,25,0.25);
+          cursor: pointer;
+          text-align: left;
+          font-family: inherit;
+          transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .pap-hero:active {
+          transform: scale(0.98);
+          box-shadow: 0 3px 10px rgba(44,18,25,0.25);
+        }
+        .pap-hero-glow {
+          position: absolute;
+          top: -30px; right: -30px;
+          width: 140px; height: 140px;
+          background: radial-gradient(circle, rgba(232,90,140,0.28), transparent 70%);
+          pointer-events: none;
+        }
+        .pap-hero-content {
+          position: relative;
+          z-index: 2;
+        }
+        .pap-hero-eyebrow {
+          font-size: 9.5px;
+          font-weight: 800;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: #E85A8C;
+          margin: 0 0 6px;
+        }
+        .pap-hero-title {
+          font-size: 17px;
+          font-weight: 900;
+          color: #fff;
+          margin: 0 0 6px;
+          letter-spacing: -0.01em;
+          line-height: 1.25;
+        }
+        .pap-hero-desc {
+          font-size: 12.5px;
+          line-height: 1.5;
+          color: rgba(255,255,255,0.75);
+          margin: 0 0 14px;
+        }
+        .pap-hero-cta {
+          display: inline-flex;
+          align-items: center;
+          padding: 10px 18px;
+          background: #E85A8C;
+          color: #fff;
+          border-radius: 8px;
+          font-size: 12.5px;
+          font-weight: 800;
+          box-shadow: 0 3px 0 #7A1B47;
+        }
+
+        /* Lista compacta */
+        .pap-list-title {
+          font-size: 10px;
+          font-weight: 800;
+          color: #6B7280;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          margin: 0 4px 8px;
+        }
         .pap-item {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 10px;
           width: 100%;
-          padding: 12px 14px;
+          padding: 10px 14px;
           background: #fff;
           border: 1px solid #F0EBED;
-          border-radius: 10px;
-          margin-bottom: 8px;
+          border-radius: 8px;
+          margin-bottom: 6px;
           font-family: inherit;
           text-align: left;
           cursor: pointer;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-          transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+          font-size: 12.5px;
         }
         .pap-item:last-child { margin-bottom: 0; }
-        .pap-item.todo:active {
-          transform: scale(0.98);
-          box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-        }
         .pap-item.done {
-          background: #F0FDF4;
-          border-color: #BBF7D0;
+          background: transparent;
+          border-color: transparent;
           cursor: default;
-          box-shadow: none;
+        }
+        .pap-item.done .pap-item-t {
+          color: #6B7280;
+          text-decoration: line-through;
+        }
+        .pap-item.next {
+          border-color: #E85A8C;
+          background: #FFF5F9;
+        }
+        .pap-item.next .pap-item-t {
+          font-weight: 800;
         }
         .pap-item:disabled { cursor: default; }
-        .pap-icon {
-          width: 34px; height: 34px;
-          border-radius: 9px;
-          background: #FFF5F9;
-          color: #E85A8C;
+        .pap-item.todo:active { transform: scale(0.98); }
+        .pap-item.next:active { transform: scale(0.98); }
+        .pap-item-ic {
+          width: 22px; height: 22px;
+          border-radius: 50%;
           display: flex; align-items: center; justify-content: center;
+          font-size: 10px; font-weight: 800;
           flex-shrink: 0;
+          background: #F5F0F2;
+          color: #6B7280;
         }
-        .pap-item.done .pap-icon {
+        .pap-item.done .pap-item-ic {
           background: #16a34a;
           color: #fff;
         }
-        .pap-body {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-          min-width: 0;
+        .pap-item.next .pap-item-ic {
+          background: #E85A8C;
+          color: #fff;
         }
         .pap-item-t {
-          font-size: 13.5px;
-          font-weight: 700;
+          flex: 1;
+          font-weight: 600;
           color: #2C1219;
           line-height: 1.3;
         }
-        .pap-item-d {
-          font-size: 11px;
-          color: #6B7280;
-          line-height: 1.3;
-        }
-        .pap-item.done .pap-item-t {
-          color: #15803D;
-        }
-        .pap-item.done .pap-item-d {
-          color: #16a34a;
-          font-weight: 600;
-        }
-        .pap-arr {
+        .pap-item-tag {
+          font-size: 9px;
+          font-weight: 800;
           color: #E85A8C;
-          font-size: 16px;
-          font-weight: 700;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
           flex-shrink: 0;
-          line-height: 1;
         }
       `}</style>
     </div>
