@@ -59,7 +59,13 @@ function NavLink({ label, icon, defaultActive, navBg, onClick }: any) {
 function DeskNav({ design, searchTerm, onSearchChange }: any) {
   const { items } = useCart()
   const count = items.reduce((a: number, i: any) => a + (i.saleType === 'kg' ? 1 : Math.floor(i.quantity)), 0)
-  const navBg = design.cor_navbar || design.cor_borda || '#E85A8C'
+  // Rejeita cores "brancas" (feio de cardápio) — usa cor_borda ou rosa como fallback
+  const corValida = (c: string | undefined | null): boolean => {
+    if (!c) return false
+    const norm = c.trim().toLowerCase().replace(/\s/g, '')
+    return norm !== '' && norm !== '#fff' && norm !== '#ffffff' && norm !== '#fefefe' && norm !== 'white' && norm !== 'transparent' && norm !== 'rgb(255,255,255)' && norm !== 'rgba(255,255,255,1)'
+  }
+  const navBg = corValida(design.cor_navbar) ? design.cor_navbar! : (corValida(design.cor_borda) ? design.cor_borda! : '#E85A8C')
   const corBorda = design.cor_borda || '#E85A8C'
   const [showConta, setShowConta] = useState(false)
   const [contaAba, setContaAba] = useState<'pedidos'|'perfil'>('pedidos')
@@ -678,7 +684,7 @@ function CardapioContent() {
         ) : (
           /* ── Layout Padrão (Free ou PRO que não trocou) ── */
           <>
-            <div style={{ height: '160px', backgroundColor: design.cor_navbar || '#E85A8C' }} />
+            <div style={{ height: '160px', backgroundColor: navBg }} />
             <Logo logoUrl={design.logo_url} borderColor={design.cor_borda} storeName={design.nome_loja} storeDescription={design.descricao_loja} corNome={design.cor_nome} avaliacaoMedia={config?.avaliacao_media} configuracoes={config} hideStars={design.hide_stars} />
             <div style={{ marginTop:'16px' }}>
               <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
