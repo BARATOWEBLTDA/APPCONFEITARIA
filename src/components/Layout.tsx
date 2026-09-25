@@ -380,7 +380,7 @@ export default function Layout() {
         }
         .sidebar-avatar-ring { width: 100px; height: 100px; border-radius: 50%; padding: 2px; background: #F0EBED; flex-shrink: 0; }
 
-        .sidebar-avatar { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; border: 3px solid var(--text-inverse); background: #F8F5F6; }
+        .sidebar-avatar { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; border: 3px solid #E0D6DA; background: #F8F5F6; }
         .sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .sidebar-avatar-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
         .sidebar-avatar-inicial { font-family: var(--font-base); font-size: 32px; font-weight: 900; color: #C33A6E; letter-spacing: -0.02em; line-height: 1; text-transform: uppercase; }
