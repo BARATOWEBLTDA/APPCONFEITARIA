@@ -651,8 +651,26 @@ export default function NovaVenda() {
     )
   }
 
+  // ── Loading inicial (evita flash do formulário antes de saber se tem produtos) ──
+  if (!produtosLoaded) {
+    return (
+      <>
+        <AppPageHeader
+          title="Registrar Venda"
+          subtitle="Encomenda ou pronta entrega"
+          infoIcon="🛒"
+          infoContent={<><p>Cadastre vendas rápido — encomendas ou pronta entrega.</p></>}
+        />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 200px)' }}>
+          <span style={{ width: 32, height: 32, border: '3px solid #F0EBED', borderTopColor: '#E85A8C', borderRadius: '50%', display: 'inline-block', animation: 'nvSpin 0.7s linear infinite' }} />
+          <style>{`@keyframes nvSpin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+      </>
+    )
+  }
+
   // ── Bloqueio: precisa ter ao menos 1 produto cadastrado ───────────────
-  if (produtosLoaded && produtos.length === 0) {
+  if (produtos.length === 0) {
     return (
       <>
         <AppPageHeader
