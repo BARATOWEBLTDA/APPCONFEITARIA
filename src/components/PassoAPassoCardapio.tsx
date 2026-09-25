@@ -395,19 +395,21 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           margin-bottom: 16px;
         }
         .pap-header {
-          padding: 14px 16px 10px;
+          padding: 18px 16px 12px;
           border-bottom: 1px solid #F5F0F2;
+          text-align: center;
         }
         .pap-title {
-          font-size: 13px;
+          font-size: 18px;
           font-weight: 800;
           color: #2C1219;
-          margin: 0 0 2px;
+          margin: 0 0 4px;
+          letter-spacing: -0.01em;
         }
         .pap-sub {
-          font-size: 11px;
+          font-size: 12px;
           color: #6B7280;
-          margin: 0 0 8px;
+          margin: 0 0 10px;
         }
         .pap-bar {
           height: 4px;
