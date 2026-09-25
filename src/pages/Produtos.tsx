@@ -2186,7 +2186,7 @@ function PersonalizacaoStep({
 
       <style>{`
         .pv3-root { display: flex; flex-direction: column; gap: 12px; }
-        .pv3-header { margin-bottom: 4px; text-align: center; }
+        .pv3-header { margin-top: 24px; margin-bottom: 20px; text-align: center; }
         .pv3-eyebrow {
           font-size: 11px; color: #E85A8C; font-weight: 800;
           text-transform: uppercase; letter-spacing: 0.08em;
