@@ -51,6 +51,7 @@ export default function Complementos() {
   const [showInfo, setShowInfo] = useState(false);
   const [primeiroNome, setPrimeiroNome] = useState<string>("");
   const [form, setForm] = useState<{ nome: string; descricao: string; valor: number; categorias: string[] }>({ nome: "", descricao: "", valor: 0, categorias: [] });
+  const [modoPreco, setModoPreco] = useState<"cobrar" | "gratis">("cobrar");
   const [saving, setSaving] = useState(false);
   const [confirmDel, setConfirmDel] = useState<Complemento | null>(null);
   const [menuAbertoId, setMenuAbertoId] = useState<string | null>(null);
@@ -111,18 +112,21 @@ export default function Complementos() {
   const abrirNovo = () => {
     setEditing(null);
     setForm({ nome: "", descricao: "", valor: 0, categorias: [] });
+    setModoPreco("cobrar");
     setModalStep(1);
     setModalOpen(true);
   };
   const abrirEditar = (c: Complemento) => {
     setEditing(c);
     setForm({ nome: c.nome, descricao: c.descricao || "", valor: c.valor, categorias: c.categorias || [] });
+    setModoPreco(c.valor > 0 ? "cobrar" : "gratis");
     setModalStep(1);
     setModalOpen(true);
   };
   const abrirProdutos = (c: Complemento) => {
     setEditing(c);
     setForm({ nome: c.nome, descricao: c.descricao || "", valor: c.valor, categorias: c.categorias || [] });
+    setModoPreco(c.valor > 0 ? "cobrar" : "gratis");
     setModalStep(2);
     setModalOpen(true);
   };
@@ -131,18 +135,19 @@ export default function Complementos() {
   const salvar = async () => {
     const nomeLimpo = form.nome.trim();
     if (!nomeLimpo) return alert("Digite o nome da personalização");
-    if (form.valor <= 0) return alert("Digite um valor válido");
+    if (modoPreco === "cobrar" && form.valor <= 0) return alert("Digite um valor válido ou escolha \"Grátis\"");
+    const valorFinal = modoPreco === "gratis" ? 0 : form.valor;
     setSaving(true);
     try {
       if (editing) {
         const { data, error } = await supabase.from("biblioteca_extras")
-          .update({ nome: nomeLimpo, descricao: form.descricao.trim() || null, valor: form.valor, categorias: form.categorias })
+          .update({ nome: nomeLimpo, descricao: form.descricao.trim() || null, valor: valorFinal, categorias: form.categorias })
           .eq("id", editing.id).eq("user_id", userId).select().single();
         if (error) throw error;
         if (data) setItems(prev => prev.map(i => i.id === editing.id ? (data as Complemento) : i).sort((a, b) => a.nome.localeCompare(b.nome)));
       } else {
         const { data, error } = await supabase.from("biblioteca_extras")
-          .insert({ user_id: userId, nome: nomeLimpo, descricao: form.descricao.trim() || null, valor: form.valor, categorias: form.categorias })
+          .insert({ user_id: userId, nome: nomeLimpo, descricao: form.descricao.trim() || null, valor: valorFinal, categorias: form.categorias })
           .select().single();
         if (error) throw error;
         if (data) setItems(prev => [...prev, data as Complemento].sort((a, b) => a.nome.localeCompare(b.nome)));
@@ -390,17 +395,36 @@ export default function Complementos() {
                       Quanto custa essa personalização
                       <ReqTag />
                     </label>
-                    <div className={`cpl-field-input-wrap ${form.valor > 0 ? "cpl-field-input-wrap--filled" : ""}`}>
-                      <span className="cpl-field-prefix">R$</span>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="Digite o valor aqui"
-                        value={form.valor > 0 ? formatBRL(form.valor) : ""}
-                        onChange={e => setForm(f => ({ ...f, valor: parsePreco(e.target.value) }))}
-                      />
+                    <div className="cpl-seg">
+                      <button
+                        type="button"
+                        className={`cpl-seg-btn ${modoPreco === "cobrar" ? "cpl-seg-btn--active" : ""}`}
+                        onClick={() => setModoPreco("cobrar")}
+                      >
+                        Cobrar valor
+                      </button>
+                      <button
+                        type="button"
+                        className={`cpl-seg-btn ${modoPreco === "gratis" ? "cpl-seg-btn--active-green" : ""}`}
+                        onClick={() => setModoPreco("gratis")}
+                      >
+                        Grátis
+                      </button>
                     </div>
-                    <p className="cpl-field-explain">Se for grátis, deixe R$ 0,00.</p>
+                    {modoPreco === "cobrar" ? (
+                      <div className={`cpl-field-input-wrap ${form.valor > 0 ? "cpl-field-input-wrap--filled" : ""}`}>
+                        <span className="cpl-field-prefix">R$</span>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="Digite o valor aqui"
+                          value={form.valor > 0 ? formatBRL(form.valor) : ""}
+                          onChange={e => setForm(f => ({ ...f, valor: parsePreco(e.target.value) }))}
+                        />
+                      </div>
+                    ) : (
+                      <div className="cpl-gratis-info">Sem custo adicional</div>
+                    )}
                   </div>
                 </>
               ) : (
@@ -676,6 +700,48 @@ const styles = `
   .cpl-desc-input { padding: 10px 14px; border: 1.5px solid #E5E7EB; border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; resize: vertical; min-height: 60px; transition: border 0.15s; width: 100%; box-sizing: border-box; }
   .cpl-desc-input:focus { border-color: #E85A8C; }
   .cpl-req-opt { display: inline-block; margin-left: 8px; padding: 2px 7px; background: #F3F4F6; color: #6B7280; font-size: 10px; font-weight: 700; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.04em; vertical-align: middle; }
+
+  /* Segmented control Cobrar / Grátis */
+  .cpl-seg {
+    display: flex; gap: 6px;
+    padding: 4px;
+    background: #F5F0F2;
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+  .cpl-seg-btn {
+    flex: 1;
+    padding: 9px 8px;
+    background: transparent;
+    border: none;
+    border-radius: 7px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #6B7280;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+  }
+  .cpl-seg-btn--active {
+    background: #fff;
+    color: #C33A6E;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .cpl-seg-btn--active-green {
+    background: #16a34a;
+    color: #fff;
+    box-shadow: 0 1px 3px rgba(22,163,74,0.3);
+  }
+  .cpl-gratis-info {
+    padding: 14px;
+    background: #F0FDF4;
+    border: 1.5px solid #86EFAC;
+    border-radius: 10px;
+    text-align: center;
+    color: #15803D;
+    font-weight: 700;
+    font-size: 14px;
+  }
   .cpl-field-input-wrap { position: relative; display: flex; align-items: center; }
   .cpl-field-prefix { position: absolute; left: 14px; font-size: 13px; font-weight: 700; color: #6B7280; pointer-events: none; z-index: 1; opacity: 0; transition: opacity 0.15s; }
   .cpl-field-input-wrap--filled .cpl-field-prefix { opacity: 1; }
