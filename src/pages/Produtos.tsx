@@ -1892,14 +1892,17 @@ function PersonalizacaoStep({
 
                             <div className="pv3-gerar-lbl">Passo</div>
                             <div className="pv3-gerar-chips">
-                              {[0.1, 0.25, 0.5, 1].map(p => (
+                              {[
+                                { valor: 0.5, label: "500g" },
+                                { valor: 1,   label: "1 kg" },
+                              ].map(p => (
                                 <button
-                                  key={p}
+                                  key={p.valor}
                                   type="button"
-                                  className={`pv3-gerar-chip ${gerarPasso === p ? "pv3-gerar-chip--on" : ""}`}
-                                  onClick={() => setGerarPasso(p)}
+                                  className={`pv3-gerar-chip ${gerarPasso === p.valor ? "pv3-gerar-chip--on" : ""}`}
+                                  onClick={() => setGerarPasso(p.valor)}
                                 >
-                                  {p.toString().replace(".", ",")} kg
+                                  {p.label}
                                 </button>
                               ))}
                             </div>
@@ -2847,13 +2850,13 @@ function PersonalizacaoStep({
         .pv3-gerar-close { all: unset; cursor: pointer; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #6B7280; }
         .pv3-gerar-close:hover { background: #F5F0F2; }
         .pv3-gerar-sub { font-size: 12px; color: #6B7280; margin: 0 0 16px; line-height: 1.45; }
-        .pv3-gerar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-        .pv3-gerar-field { flex: 1; }
-        .pv3-gerar-lbl { font-size: 10.5px; font-weight: 800; color: #6B7280; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+        .pv3-gerar-row { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 14px; }
+        .pv3-gerar-field { flex: 1; min-width: 0; }
+        .pv3-gerar-lbl { font-size: 11px; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
         .pv3-gerar-input { display: flex; align-items: center; background: #fff; border: 1.5px solid #F0EBED; border-radius: 8px; overflow: hidden; }
-        .pv3-gerar-input input { flex: 1; padding: 10px 12px; border: none; outline: none; font-size: 14px; font-weight: 700; color: #2C1219; font-family: inherit; min-width: 0; }
-        .pv3-gerar-input span { padding: 10px 12px; background: #F5F0F2; font-size: 12.5px; font-weight: 700; color: #C33A6E; }
-        .pv3-gerar-arr { color: #6B7280; font-size: 16px; }
+        .pv3-gerar-input input { flex: 1; padding: 10px 8px; border: none; outline: none; font-size: 14px; font-weight: 700; color: #2C1219; font-family: inherit; min-width: 0; width: 100%; }
+        .pv3-gerar-input span { padding: 10px 10px; background: #F5F0F2; font-size: 12px; font-weight: 700; color: #C33A6E; flex-shrink: 0; }
+        .pv3-gerar-arr { color: #6B7280; font-size: 16px; flex-shrink: 0; margin-bottom: 10px; }
         .pv3-gerar-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
         .pv3-gerar-chip { all: unset; cursor: pointer; padding: 6px 12px; background: #fff; border: 1.5px solid #F0EBED; border-radius: 6px; font-size: 12px; font-weight: 700; color: #6B7280; font-family: inherit; }
         .pv3-gerar-chip--on { background: #E85A8C; color: #fff; border-color: #E85A8C; }
