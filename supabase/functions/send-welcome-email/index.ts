@@ -41,44 +41,28 @@ function buildWelcomeEmailHTML(nome: string): string {
   <div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#F7F0F2;opacity:0;">
     Sua conta no Doonly está pronta. Comece agora.
   </div>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F7F0F2;padding:32px 16px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F7F0F2;padding:20px 8px;">
     <tr>
       <td align="center">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-               style="max-width:640px;background-color:#FFFFFF;border-radius:16px;border:1px solid #EFE7EA;box-shadow:0 4px 16px rgba(61,26,36,0.06);overflow:hidden;">
+               style="max-width:720px;background-color:#FFFFFF;border-radius:16px;border:1px solid #EFE7EA;box-shadow:0 4px 16px rgba(61,26,36,0.06);overflow:hidden;">
 
           <!-- BANNER -->
           <tr>
             <td align="center" style="padding:0;line-height:0;font-size:0;">
               <img src="https://raw.githubusercontent.com/BARATOWEBLTDA/APPCONFEITARIA/main/public/emails/banner.png"
                    alt="Doonly — Sua confeitaria acaba de ganhar uma ajudinha"
-                   width="640"
-                   style="display:block;width:100%;max-width:640px;height:auto;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;">
+                   width="720"
+                   style="display:block;width:100%;max-width:720px;height:auto;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;">
             </td>
           </tr>
 
           <!-- HERO -->
           <tr>
-            <td style="padding:36px 44px 8px;">
+            <td style="padding:36px 44px 32px;">
               <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#4A3439;">
                 Olá${primeiroNome ? `, ${primeiroNome}` : ""}! A partir de agora, você pode organizar <strong>produtos, pedidos, clientes</strong> e sua rotina em um só lugar &mdash; com mais clareza e menos correria.
               </p>
-            </td>
-          </tr>
-
-          <!-- CTA -->
-          <tr>
-            <td align="center" style="padding:0 44px 32px;">
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
-                <tr>
-                  <td align="center" style="border-radius:10px;background:#6E3548;box-shadow:0 4px 12px rgba(110,53,72,0.25);">
-                    <a href="https://doonly.com.br/inicio"
-                       style="display:inline-block;padding:15px 40px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:15px;font-weight:700;color:#FFFFFF;text-decoration:none;letter-spacing:0.2px;border-radius:10px;">
-                      Abrir meu Doonly &rarr;
-                    </a>
-                  </td>
-                </tr>
-              </table>
             </td>
           </tr>
 
