@@ -7,6 +7,7 @@ import ReqTag from "@/components/ReqTag";
 type Complemento = {
   id: string;
   nome: string;
+  descricao?: string;
   valor: number;
   categorias: string[]; // reaproveitado: agora guarda IDs de produtos
 };
@@ -49,7 +50,7 @@ export default function Complementos() {
   const [modalStep, setModalStep] = useState<1 | 2>(1);
   const [showInfo, setShowInfo] = useState(false);
   const [primeiroNome, setPrimeiroNome] = useState<string>("");
-  const [form, setForm] = useState<{ nome: string; valor: number; categorias: string[] }>({ nome: "", valor: 0, categorias: [] });
+  const [form, setForm] = useState<{ nome: string; descricao: string; valor: number; categorias: string[] }>({ nome: "", descricao: "", valor: 0, categorias: [] });
   const [saving, setSaving] = useState(false);
   const [confirmDel, setConfirmDel] = useState<Complemento | null>(null);
   const [menuAbertoId, setMenuAbertoId] = useState<string | null>(null);
@@ -109,19 +110,19 @@ export default function Complementos() {
 
   const abrirNovo = () => {
     setEditing(null);
-    setForm({ nome: "", valor: 0, categorias: [] });
+    setForm({ nome: "", descricao: "", valor: 0, categorias: [] });
     setModalStep(1);
     setModalOpen(true);
   };
   const abrirEditar = (c: Complemento) => {
     setEditing(c);
-    setForm({ nome: c.nome, valor: c.valor, categorias: c.categorias || [] });
+    setForm({ nome: c.nome, descricao: c.descricao || "", valor: c.valor, categorias: c.categorias || [] });
     setModalStep(1);
     setModalOpen(true);
   };
   const abrirProdutos = (c: Complemento) => {
     setEditing(c);
-    setForm({ nome: c.nome, valor: c.valor, categorias: c.categorias || [] });
+    setForm({ nome: c.nome, descricao: c.descricao || "", valor: c.valor, categorias: c.categorias || [] });
     setModalStep(2);
     setModalOpen(true);
   };
@@ -135,13 +136,13 @@ export default function Complementos() {
     try {
       if (editing) {
         const { data, error } = await supabase.from("biblioteca_extras")
-          .update({ nome: nomeLimpo, valor: form.valor, categorias: form.categorias })
+          .update({ nome: nomeLimpo, descricao: form.descricao.trim() || null, valor: form.valor, categorias: form.categorias })
           .eq("id", editing.id).eq("user_id", userId).select().single();
         if (error) throw error;
         if (data) setItems(prev => prev.map(i => i.id === editing.id ? (data as Complemento) : i).sort((a, b) => a.nome.localeCompare(b.nome)));
       } else {
         const { data, error } = await supabase.from("biblioteca_extras")
-          .insert({ user_id: userId, nome: nomeLimpo, valor: form.valor, categorias: form.categorias })
+          .insert({ user_id: userId, nome: nomeLimpo, descricao: form.descricao.trim() || null, valor: form.valor, categorias: form.categorias })
           .select().single();
         if (error) throw error;
         if (data) setItems(prev => [...prev, data as Complemento].sort((a, b) => a.nome.localeCompare(b.nome)));
@@ -371,6 +372,18 @@ export default function Complementos() {
                       value={form.nome}
                       onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
                     />
+                  </div>
+                  <div className="cpl-field">
+                    <label>Descrição <span className="cpl-req-opt">opcional</span></label>
+                    <textarea
+                      className="cpl-desc-input"
+                      placeholder="Ex: Escolha um tema da galeria ou envie sua imagem"
+                      value={form.descricao}
+                      onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
+                      maxLength={140}
+                      rows={2}
+                    />
+                    <p className="cpl-field-explain">Explica pro cliente o que ele precisa fazer. Aparece embaixo do nome no cardápio.</p>
                   </div>
                   <div className="cpl-field">
                     <label>
@@ -660,6 +673,9 @@ const styles = `
   .cpl-field-hint { font-weight: 500; color: #9CA3AF; }
   .cpl-field input[type="text"] { padding: 12px 14px; border: 1.5px solid #E5E7EB; border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; transition: border 0.15s; }
   .cpl-field input:focus { border-color: #E85A8C; }
+  .cpl-desc-input { padding: 10px 14px; border: 1.5px solid #E5E7EB; border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; resize: vertical; min-height: 60px; transition: border 0.15s; width: 100%; box-sizing: border-box; }
+  .cpl-desc-input:focus { border-color: #E85A8C; }
+  .cpl-req-opt { display: inline-block; margin-left: 8px; padding: 2px 7px; background: #F3F4F6; color: #6B7280; font-size: 10px; font-weight: 700; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.04em; vertical-align: middle; }
   .cpl-field-input-wrap { position: relative; display: flex; align-items: center; }
   .cpl-field-prefix { position: absolute; left: 14px; font-size: 13px; font-weight: 700; color: #6B7280; pointer-events: none; z-index: 1; opacity: 0; transition: opacity 0.15s; }
   .cpl-field-input-wrap--filled .cpl-field-prefix { opacity: 1; }

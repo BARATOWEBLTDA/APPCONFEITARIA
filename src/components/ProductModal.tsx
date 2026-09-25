@@ -18,6 +18,7 @@ import {
 interface ExtraBiblioteca {
   id: string
   nome: string
+  descricao?: string
   valor: number
   categorias: string[] // IDs dos produtos vinculados (vazio = todos)
 }
@@ -64,7 +65,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
     if (!uid) return
     supabase
       .from('biblioteca_extras')
-      .select('id, nome, valor, categorias')
+      .select('id, nome, descricao, valor, categorias')
       .eq('user_id', uid)
       .then(({ data }) => {
         if (!data) { setExtrasBiblioteca([]); return }
@@ -84,6 +85,30 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
       return next
     })
   }
+
+  // Bloqueia scroll do body enquanto o modal está aberto (evita "fundo scrollando").
+  // Guarda scrollY antes e restaura ao fechar, pra não ter salto de posição (iOS).
+  useEffect(() => {
+    if (!isOpen) return
+    const scrollY = window.scrollY
+    const prev = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width,
+    }
+    document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.width = '100%'
+    return () => {
+      document.body.style.overflow = prev.overflow
+      document.body.style.position = prev.position
+      document.body.style.top = prev.top
+      document.body.style.width = prev.width
+      window.scrollTo(0, scrollY)
+    }
+  }, [isOpen])
 
   // Upload da foto de referência (opcional). Cliente escolhe uma imagem
   // pra ilustrar o que quer (ex: "queria um bolo assim").
@@ -422,8 +447,8 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
             style={{
               display: 'flex', alignItems: 'center', gap: 12,
               padding: '14px 16px',
-              background: opSelecionada ? '#FFF5F9' : '#fff',
-              border: `1.5px solid ${opSelecionada ? corBotao : (isOpen ? corBotao : '#F0D8DE')}`,
+              background: opSelecionada ? '#F0FDF4' : '#fff',
+              border: `1.5px solid ${opSelecionada ? '#16a34a' : (isOpen ? corBotao : '#F0D8DE')}`,
               borderRadius: 10, cursor: 'pointer',
               fontFamily: 'inherit', textAlign: 'left', width: '100%',
               transition: 'all 0.15s',
@@ -431,8 +456,10 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           >
             <div style={{
               width: 36, height: 36, borderRadius: 8,
-              background: '#FCE0E9', color: '#C33A6E',
+              background: opSelecionada ? '#16a34a' : '#FCE0E9',
+              color: opSelecionada ? '#fff' : '#C33A6E',
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              transition: 'all 0.15s',
             }}>
               <Ruler size={18} />
             </div>
@@ -447,7 +474,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
             {opSelecionada && selecPreco ? (
               <span style={{ fontSize: 13.5, fontWeight: 800, color: '#C33A6E', flexShrink: 0 }}>{selecPreco}</span>
             ) : null}
-            <span style={{ color: '#C33A6E', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+            <span style={{ color: opSelecionada ? '#16a34a' : '#C33A6E', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
               {isOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
             </span>
           </button>
@@ -480,7 +507,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                     style={{
                       display: 'flex', alignItems: 'center', gap: 12,
                       padding: '14px 16px',
-                      background: ativo ? '#FFF5F9' : '#fff',
+                      background: ativo ? '#F0FDF4' : '#fff',
                       border: 'none',
                       borderTop: idx > 0 ? '1px solid #F5F0F2' : 'none',
                       cursor: 'pointer', transition: 'background 0.12s',
@@ -490,8 +517,8 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                   >
                     <span style={{
                       width: 18, height: 18, borderRadius: '50%',
-                      border: `2px solid ${ativo ? corBotao : '#C0C0C0'}`,
-                      background: ativo ? corBotao : '#fff',
+                      border: `2px solid ${ativo ? '#16a34a' : '#C0C0C0'}`,
+                      background: ativo ? '#16a34a' : '#fff',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       flexShrink: 0,
                       boxShadow: ativo ? `inset 0 0 0 3px #fff` : 'none',
@@ -511,7 +538,11 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
             </div>
           )}
 
-          <style>{`@keyframes dropIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+          <style>{`
+            @keyframes dropIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+          `}</style>
         </div>
       )
     }
@@ -593,24 +624,30 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
   return (
     <div style={{
       position: 'fixed',
-      top: 0, left: 0, right: 0,
-      // Mobile: deixa a bottom nav (~52px) visível embaixo. Desktop: cobre tudo.
-      bottom: isDesktop ? 0 : 'calc(52px + env(safe-area-inset-bottom, 0px))',
+      top: 0, left: 0, right: 0, bottom: 0,
       zIndex: 9999,
-      background: 'rgba(0,0,0,0.55)',
-      display: 'flex', alignItems: isDesktop ? 'center' : 'flex-end', justifyContent: 'center',
-      touchAction: 'none', // impede scroll do fundo no mobile
+      background: 'rgba(45, 31, 38, 0.55)',
+      backdropFilter: 'blur(4px)',
+      WebkitBackdropFilter: 'blur(4px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: isDesktop ? '24px' : '16px',
+      paddingBottom: isDesktop ? '24px' : 'calc(16px + env(safe-area-inset-bottom, 0px))',
+      paddingTop: isDesktop ? '24px' : 'calc(16px + env(safe-area-inset-top, 0px))',
+      touchAction: 'none',
       overscrollBehavior: 'contain',
+      animation: 'fadeIn 0.2s ease-out',
     }}
       onClick={onClose}
     >
       <div style={{
         background: 'var(--bg-card)', width: '100%', maxWidth: '500px',
         maxHeight: '100%',
-        height: isDesktop ? 'auto' : '100%',
-        borderRadius: isDesktop ? '20px' : '20px 20px 0 0',
+        height: 'auto',
+        borderRadius: '20px',
         display: 'flex', flexDirection: 'column',
-        overflow: 'hidden', // não deixa scroll no wrapper
+        overflow: 'hidden',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+        animation: 'modalIn 0.25s cubic-bezier(0.32, 0.72, 0, 1)',
       }}
         onClick={e => e.stopPropagation()}
       >
@@ -757,7 +794,12 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                       )}
                     </div>
-                    <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: '#2C1219' }}>{e.nome}</span>
+                    <span style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ display: 'block', fontSize: 14, fontWeight: 600, color: '#2C1219' }}>{e.nome}</span>
+                      {e.descricao && (
+                        <span style={{ display: 'block', fontSize: 12, color: '#6B7280', marginTop: 2, lineHeight: 1.4 }}>{e.descricao}</span>
+                      )}
+                    </span>
                     <span style={{
                       fontSize: 12.5, fontWeight: 800,
                       color: isGratis ? '#16a34a' : '#C33A6E',
