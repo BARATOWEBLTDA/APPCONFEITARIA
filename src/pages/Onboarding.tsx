@@ -96,7 +96,6 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
   }, [isOpen]);
 
   if (!isOpen) return null;
-  if (typeof window !== "undefined" && window.matchMedia("(min-width: 900px)").matches) return null; // Apenas mobile
 
   const next = () => {
     if (slideIdx < TOTAL_SLIDES - 1) {

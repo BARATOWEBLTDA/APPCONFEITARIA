@@ -77,8 +77,9 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
   // Decidido SÍNCRONO no primeiro render — evita o "app pisca antes do tutorial".
   // Se o usuário nunca viu o tutorial e nunca teve auto-abertura, mostramos o
-  // Onboarding em tela cheia ANTES de montar o Layout/rotas privadas.
+  // Onboarding tela cheia — SÓ MOBILE. Desktop nunca abre.
   const [showFirstTutorial, setShowFirstTutorial] = useState<boolean>(() => {
+    if (typeof window !== "undefined" && window.matchMedia("(min-width: 900px)").matches) return false;
     try {
       const visto = localStorage.getItem("doonly_tutorial_visto");
       const autoAberto = localStorage.getItem("doonly_tutorial_auto_aberto");
