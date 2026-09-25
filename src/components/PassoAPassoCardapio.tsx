@@ -40,7 +40,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
       // Lê perfil direto (evita cache do useProfile)
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("logo_url, foto_url, descricao_loja")
+        .select("logo_url, foto_url, descricao_loja, cardapio_modelo")
         .eq("id", userId)
         .single();
 
@@ -60,7 +60,22 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
       // Logo: pode estar em logo_url (desktop) OU foto_url (mobile) — vale qualquer um
       const temLogo = !!(profileData?.logo_url || profileData?.foto_url);
 
+      // Design escolhido: cardapio_modelo salvo explicitamente (não null)
+      const escolheuDesign = !!profileData?.cardapio_modelo;
+
       const list: Step[] = [
+        {
+          key: "produto",
+          label: "Cadastrar primeiro produto",
+          done: temProduto,
+          path: "/produtos",
+        },
+        {
+          key: "design",
+          label: "Escolher design do cardápio",
+          done: escolheuDesign,
+          path: "/cardapio-design",
+        },
         {
           key: "logo",
           label: "Adicionar logo da loja",
@@ -72,12 +87,6 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           label: "Preencher descrição da loja",
           done: !!(profileData?.descricao_loja && profileData.descricao_loja.trim().length > 0),
           path: "/cardapio-config",
-        },
-        {
-          key: "produto",
-          label: "Cadastrar primeiro produto",
-          done: temProduto,
-          path: "/produtos",
         },
         {
           key: "fotos",
