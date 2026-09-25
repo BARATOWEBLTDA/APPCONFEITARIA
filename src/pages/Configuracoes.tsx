@@ -600,7 +600,10 @@ export default function Configuracoes() {
       <div className="cfgd-desktop">
         <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{display:"none"}} />
 
-        {/* ── HERO USER (branco/neutro) ─────────────────────── */}
+        <div className="cfgd-grid">
+
+        <div className="cfgd-col-left">
+        {/* ── HERO USER (cinza clarinho) ─────────────────── */}
         <div className="cfgd-hero">
           <div className="cfgd-hero-avatar" onClick={() => !uploading && fileRef.current?.click()}>
             <div className="cfgd-hero-avatar-inner">
@@ -671,6 +674,32 @@ export default function Configuracoes() {
           )}
         </div>
 
+        {/* ── SAIR + EXCLUIR (dentro do col-left) ────────── */}
+        <button className="cfgd-logout" onClick={handleLogout}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Sair da conta
+        </button>
+
+        <div className="cfgd-delete-link">
+          {!showExcluir ? (
+            <button className="cfgd-delete-link-btn" onClick={() => setShowExcluir(true)}>
+              Não quer mais usar? <span>Excluir minha conta</span>
+            </button>
+          ) : (
+            <div className="cfgd-delete-panel">
+              <p className="cfgd-delete-warn">⚠️ Esta ação é permanente. Digite <b>EXCLUIR</b> para confirmar.</p>
+              <input type="text" placeholder="Digite EXCLUIR" value={excluirConfirm} onChange={e => setExcluirConfirm(e.target.value)} className="cfgd-delete-input" />
+              <div className="cfgd-delete-actions">
+                <button className="cfgd-delete-cancel" onClick={() => { setShowExcluir(false); setExcluirConfirm(""); }}>Cancelar</button>
+                <button className="cfgd-delete-confirm" onClick={handleExcluirConta} disabled={excluirConfirm !== "EXCLUIR"}>Excluir permanentemente</button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        </div>{/* fim col-left */}
+
+        <div className="cfgd-col-right">
         {/* ── AÇÕES RÁPIDAS ──────────────────────────────── */}
         <div className="cfgd-card cfgd-quick">
           <div className="cfgd-quick-hdr">
@@ -745,29 +774,9 @@ export default function Configuracoes() {
             </button>
           </div>
         </div>
+        </div>{/* fim col-right */}
 
-        {/* ── SAIR + EXCLUIR ──────────────────────────────── */}
-        <button className="cfgd-logout" onClick={handleLogout}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          Sair da conta
-        </button>
-
-        <div className="cfgd-delete-link">
-          {!showExcluir ? (
-            <button className="cfgd-delete-link-btn" onClick={() => setShowExcluir(true)}>
-              Não quer mais usar? <span>Excluir minha conta</span>
-            </button>
-          ) : (
-            <div className="cfgd-delete-panel">
-              <p className="cfgd-delete-warn">⚠️ Esta ação é permanente. Digite <b>EXCLUIR</b> para confirmar.</p>
-              <input type="text" placeholder="Digite EXCLUIR" value={excluirConfirm} onChange={e => setExcluirConfirm(e.target.value)} className="cfgd-delete-input" />
-              <div className="cfgd-delete-actions">
-                <button className="cfgd-delete-cancel" onClick={() => { setShowExcluir(false); setExcluirConfirm(""); }}>Cancelar</button>
-                <button className="cfgd-delete-confirm" onClick={handleExcluirConta} disabled={excluirConfirm !== "EXCLUIR"}>Excluir permanentemente</button>
-              </div>
-            </div>
-          )}
-        </div>
+        </div>{/* fim cfgd-grid */}
 
       </div>
 
@@ -1118,11 +1127,11 @@ export default function Configuracoes() {
         /* ═══  DESKTOP NOVO — espelha mobile               ═══ */
         /* ═══════════════════════════════════════════════════ */
 
-        /* Hero user — sem gradient rosa, neutro */
+        /* Hero user — cinza clarinho */
         .cfgd-hero {
           display: flex; align-items: center; gap: 18px;
-          background: #fff;
-          border: 1px solid #F0EBED;
+          background: #F5F0F2;
+          border: 1px solid #EAE0E3;
           border-radius: 14px;
           padding: 20px 22px;
         }
@@ -1203,25 +1212,48 @@ export default function Configuracoes() {
         }
         .cfgd-sub-info--danger { background: #FEE2E2; color: #991B1B; }
         .cfgd-sub-cta {
+          position: relative;
           display: flex; align-items: center; justify-content: center; gap: 8px;
           width: 100%;
-          padding: 13px;
-          background: linear-gradient(135deg, #FFC947, #DDAA00);
-          color: #2C1219;
-          border: none; border-radius: 10px;
+          padding: 14px;
+          background: linear-gradient(100deg, #C33A6E 0%, #E85A8C 50%, #C33A6E 100%);
+          background-size: 200% 100%;
+          color: #fff;
+          border: none; border-radius: 12px;
           font-size: 13.5px; font-weight: 800;
           cursor: pointer;
-          box-shadow: 0 3px 0 #B58900;
+          box-shadow: 0 3px 0 #7A1B47, 0 4px 20px rgba(232,90,140,0.35);
+          animation: cfgdRoseShift 3.5s linear infinite;
+          overflow: hidden;
+          letter-spacing: 0.02em;
           font-family: inherit;
-          transition: transform 0.1s;
         }
-        .cfgd-sub-cta:active { transform: translateY(2px); box-shadow: 0 1px 0 #B58900; }
+        .cfgd-sub-cta::before {
+          content: '';
+          position: absolute; inset: 0;
+          background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+          transform: translateX(-100%);
+          animation: cfgdRoseSweep 3.5s ease-in-out infinite;
+          pointer-events: none;
+        }
+        .cfgd-sub-cta > * { position: relative; z-index: 1; }
+        @keyframes cfgdRoseShift {
+          0% { background-position: 200% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @keyframes cfgdRoseSweep {
+          0% { transform: translateX(-100%); }
+          50%, 100% { transform: translateX(200%); }
+        }
+        .cfgd-sub-cta:active { transform: translateY(2px); box-shadow: 0 1px 0 #7A1B47, 0 2px 12px rgba(232,90,140,0.35); }
         .cfgd-sub-cta img { width: 20px; height: 20px; object-fit: contain; }
         .cfgd-sub-cta--manage {
           background: #F5F0F2;
           color: #4B5563;
           box-shadow: 0 3px 0 #D1C7CC;
+          animation: none;
         }
+        .cfgd-sub-cta--manage::before { display: none; }
 
         /* Ações rápidas */
         .cfgd-quick-hdr { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #F5F0F2; }
@@ -1328,7 +1360,15 @@ export default function Configuracoes() {
 
         @media (min-width: 900px) {
           .cfg-mobile { display: none; }
-          .cfgd-desktop { display: flex; flex-direction: column; gap: 16px; max-width: 720px; margin: 0 auto; padding: 8px 24px 40px; }
+          .cfgd-desktop { display: block; max-width: 1100px; margin: 0 auto; padding: 8px 24px 40px; }
+          .cfgd-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            align-items: start;
+          }
+          .cfgd-col-left { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+          .cfgd-col-right { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 20px; min-width: 0; }
         }
 
         .cfg-desk-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.75rem; gap: 1rem; flex-wrap: wrap; }
