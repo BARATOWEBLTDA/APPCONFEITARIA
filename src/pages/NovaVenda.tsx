@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useIsMobile } from '@/hooks/use-mobile'
 import AppPageHeader from '@/components/AppPageHeader'
+import EmptyDoo from '@/components/EmptyDoo'
 import HorarioSheet from '@/components/HorarioSheet'
 import { tocarSom } from '@/hooks/useSom'
 import { criarBreakdownV1, criarPersonalizacoesV1, SNAPSHOT_VERSION_ATUAL } from '@/lib/pedido-snapshot'
@@ -126,6 +127,7 @@ export default function NovaVenda() {
   // Modal produtos
   const [modalProduto, setModalProduto] = useState(false)
   const [produtos, setProdutos] = useState<Produto[]>([])
+  const [produtosLoaded, setProdutosLoaded] = useState(false)
   const [buscaProduto, setBuscaProduto] = useState('')
   const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null)
   const [dropdownAberto, setDropdownAberto] = useState(false)
@@ -181,6 +183,7 @@ export default function NovaVenda() {
       ])
       setProdutos(prds || [])
       setClientes(cls || [])
+      setProdutosLoaded(true)
     })
   }, [])
 
@@ -642,6 +645,39 @@ export default function NovaVenda() {
             background: linear-gradient(160deg, #F59E0B 0%, #D97706 100%);
             color: #fff;
             box-shadow: 0 2px 4px rgba(217,119,6,0.3);
+          }
+        `}</style>
+      </>
+    )
+  }
+
+  // ── Bloqueio: precisa ter ao menos 1 produto cadastrado ───────────────
+  if (produtosLoaded && produtos.length === 0) {
+    return (
+      <>
+        <AppPageHeader
+          title="Registrar Venda"
+          subtitle="Encomenda ou pronta entrega"
+          infoIcon="🛒"
+          infoContent={
+            <>
+              <p>Aqui você <strong>cadastra vendas rápido</strong> — sejam encomendas com data marcada ou pronta entrega que o cliente levou na hora.</p>
+            </>
+          }
+        />
+        <div className="nv-empty-root">
+          <EmptyDoo
+            image="semprodutos.png"
+            title="Cadastre seu primeiro produto"
+            description="Você precisa ter pelo menos um produto cadastrado para começar a registrar vendas."
+            actionLabel="Cadastrar produto"
+            onAction={() => navigate('/produtos')}
+          />
+        </div>
+        <style>{`
+          .nv-empty-root { padding: 1rem; }
+          @media (min-width: 900px) {
+            .nv-empty-root { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; }
           }
         `}</style>
       </>
