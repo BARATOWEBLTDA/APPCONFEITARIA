@@ -576,7 +576,7 @@ export default function Auth() {
             <div className="cad-field">
               <input
                 type="text"
-                placeholder="Nome da minha confeitaria (ex: Doces da Ana)"
+                placeholder="Nome da confeitaria"
                 value={cadastroForm.nomeLoja}
                 onChange={e => handleCadastroChange("nomeLoja", e.target.value)}
                 autoComplete="organization"
@@ -1139,138 +1139,6 @@ export default function Auth() {
           .cad-mobile-login-link { display: none; }
           /* Restaura o topbar no desktop */
           .auth-topbar-login { display: inline-flex !important; }
-        }
-            text-transform: none;
-          }
-          /* Botão login topbar só aparece em desktop */
-          .auth-topbar-login { display: inline-flex !important; }
-
-          .auth-promo {
-            display: flex !important;
-            flex-direction: column;
-            gap: 1rem;
-            width: 100%;
-            padding: 1.75rem 1.5rem;
-            border-radius: var(--radius-lg);
-            background: linear-gradient(160deg, var(--primary) 0%, var(--primary-dark) 45%, var(--text-title) 100%);
-            color: white;
-            box-shadow: 0 12px 48px rgba(61, 26, 36, 0.35);
-            animation: promoFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-            animation-delay: 0.1s;
-          }
-
-          .auth-promo-head {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-          }
-          .auth-promo-badge {
-            width: 44px; height: 44px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(8px);
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-          }
-          .auth-promo h2 {
-            font-size: 1.35rem;
-            font-weight: 700;
-            color: white;
-            margin: 0;
-            letter-spacing: -0.01em;
-            line-height: 1.2;
-          }
-
-          .auth-promo-text {
-            font-size: 0.95rem;
-            line-height: 1.5;
-            color: rgba(255, 255, 255, 0.85);
-            margin: 0;
-          }
-
-          .auth-promo-cta {
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: rgba(255, 255, 255, 0.6);
-            margin: 0;
-          }
-
-          .auth-promo-stores {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-          }
-
-          .auth-promo-store {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.7rem 1.1rem;
-            background: rgba(0, 0, 0, 0.35);
-            border: 1.5px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            text-decoration: none;
-            color: white;
-            transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
-            cursor: pointer;
-          }
-          .auth-promo-store:hover {
-            background: rgba(0, 0, 0, 0.5);
-            border-color: rgba(255, 255, 255, 0.35);
-            transform: translateY(-1px);
-          }
-          .auth-promo-store-labels {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.1;
-          }
-          .auth-promo-store-small {
-            font-size: 0.62rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            opacity: 0.85;
-          }
-          .auth-promo-store-big {
-            font-size: 1.1rem;
-            font-weight: 600;
-            letter-spacing: -0.01em;
-          }
-
-          .auth-promo-divider {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.75rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-          }
-          .auth-promo-divider::before,
-          .auth-promo-divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: rgba(255, 255, 255, 0.2);
-          }
-
-          .auth-promo-qr {
-            display: flex;
-            justify-content: center;
-            padding: 0.85rem;
-            background: white;
-            border-radius: 14px;
-            margin: 0 auto;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-          }
-          .auth-promo-qr img {
-            width: 120px;
-            height: 120px;
-            display: block;
-          }
         }
       `}</style>
     </div>
