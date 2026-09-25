@@ -43,7 +43,7 @@ const STEPS: Step[] = [
     cardPosition: "bottom",
   },
   {
-    selector: '[data-tour="cardapio"]',
+    selector: '.bn-item[data-tour="cardapio"]',
     title: "Seu cardápio digital",
     desc: "Depois de cadastrar os produtos, personalize e compartilhe o link do seu cardápio online.",
     shape: "rect",
@@ -51,7 +51,7 @@ const STEPS: Step[] = [
     cardPosition: "top",
   },
   {
-    selector: '[data-tour="doo"]',
+    selector: '.bn-item[data-tour="doo"]',
     title: "Conheça o Doo IA",
     desc: "Sua assistente pessoal de confeitaria. Tire dúvidas sobre receitas, preços, gestão e crie até topos de bolo.",
     shape: "circle",
@@ -229,6 +229,7 @@ export default function TourInicio({ forceOpen = false, onClose }: Props) {
     }
   };
 
+  if (isDesktop) return null; // Tour aparece apenas no mobile
   if (!visible) return null;
 
   const step = stepsAtivos[current];
