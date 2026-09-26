@@ -2467,6 +2467,9 @@ export default function Inicio() {
         }
 
         /* ── Mobile: ordem e visibilidade ── */
+        /* Esconde wrappers vazios (quando componente retorna null) — evita gap fantasma */
+        .ini-mobile-banner:empty,
+        .ini-mobile-updates:empty { display: none; }
         /* Nível 1: filhos diretos de .ini-content */
         .ini-aside          { order: 99; }
         .ini-main           { order: 2; display: flex; flex-direction: column; }
