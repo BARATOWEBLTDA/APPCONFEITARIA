@@ -164,10 +164,10 @@ export default function Noticias() {
         }
         .nl-tabs::-webkit-scrollbar { display: none; }
         .nl-tab {
-          padding: 7px 14px;
+          padding: 8px 14px;
           background: #F5F0F2;
           border: none;
-          border-radius: 20px;
+          border-radius: 0;
           font-size: 12px; font-weight: 700;
           color: #6B7280;
           cursor: pointer;
@@ -228,11 +228,11 @@ export default function Noticias() {
         .nl-capa-emoji { font-size: 32px; }
         .nl-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
         .nl-cat {
-          font-size: 9.5px; font-weight: 800;
-          padding: 2px 6px;
-          background: #FCE7F3; color: #C33A6E;
-          border-radius: 4px;
-          text-transform: uppercase; letter-spacing: 0.06em;
+          font-size: 10px; font-weight: 700;
+          padding: 3px 8px;
+          background: #F5F0F2; color: #4B5563;
+          border-radius: 2px;
+          letter-spacing: 0.02em;
           align-self: flex-start;
         }
         .nl-t {

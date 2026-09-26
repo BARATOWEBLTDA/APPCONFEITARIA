@@ -158,11 +158,11 @@ export default function UpdatesFeed() {
         .uf-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
         .uf-tags { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
         .uf-cat {
-          font-size: 9px; font-weight: 800;
-          padding: 2px 6px;
-          background: #FCE7F3; color: #C33A6E;
-          border-radius: 4px;
-          text-transform: uppercase; letter-spacing: 0.05em;
+          font-size: 10px; font-weight: 700;
+          padding: 3px 8px;
+          background: #F5F0F2; color: #4B5563;
+          border-radius: 2px;
+          letter-spacing: 0.02em;
         }
         .uf-fix-tag {
           font-size: 9px; font-weight: 800;
