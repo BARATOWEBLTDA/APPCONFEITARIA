@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Newspaper, CaretRight } from "@phosphor-icons/react";
+import { Newspaper, CaretRight, PushPin } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 
 interface Noticia {
@@ -13,6 +13,7 @@ interface Noticia {
   categoria: string | null;
   tempo_leitura: number | null;
   publicado_em: string;
+  fixada: boolean;
 }
 
 function tempoRelativo(iso: string): string {
@@ -35,14 +36,31 @@ export default function UpdatesFeed() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
+      // 1) Busca a notícia fixada (se houver — limite 1 no banco)
+      const { data: fixadaData } = await supabase
         .from("admin_noticias")
-        .select("id, emoji, titulo, descricao, imagem_capa, slug, categoria, tempo_leitura, publicado_em")
+        .select("id, emoji, titulo, descricao, imagem_capa, slug, categoria, tempo_leitura, publicado_em, fixada")
         .eq("ativo", true)
+        .eq("fixada", true)
+        .limit(1);
+
+      const fixada = (fixadaData?.[0] as Noticia | undefined) || null;
+
+      // 2) Busca as recentes NÃO fixadas (até 2 se tem fixada, até 3 se não tem)
+      const limiteRecentes = fixada ? 2 : 3;
+      const { data: recentesData } = await supabase
+        .from("admin_noticias")
+        .select("id, emoji, titulo, descricao, imagem_capa, slug, categoria, tempo_leitura, publicado_em, fixada")
+        .eq("ativo", true)
+        .eq("fixada", false)
         .order("ordem", { ascending: false })
         .order("publicado_em", { ascending: false })
-        .limit(3);
-      if (data) setNoticias(data as Noticia[]);
+        .limit(limiteRecentes);
+
+      const recentes = (recentesData || []) as Noticia[];
+      const lista = fixada ? [fixada, ...recentes] : recentes;
+
+      setNoticias(lista);
       setLoading(false);
     })();
   }, []);
@@ -58,12 +76,20 @@ export default function UpdatesFeed() {
       </div>
       <div className="uf-list">
         {noticias.map((n) => (
-          <button key={n.id} className="uf-item" onClick={() => navigate(`/noticias/${n.slug}`)}>
+          <button key={n.id} className={`uf-item ${n.fixada ? "uf-item--fix" : ""}`} onClick={() => navigate(`/noticias/${n.slug}`)}>
             <div className="uf-capa" style={n.imagem_capa ? { backgroundImage: `url(${n.imagem_capa})` } : undefined}>
               {!n.imagem_capa && <span className="uf-capa-emoji">{n.emoji}</span>}
+              {n.fixada && (
+                <span className="uf-pin" title="Fixada">
+                  <PushPin size={10} weight="fill" />
+                </span>
+              )}
             </div>
             <div className="uf-body">
-              {n.categoria && <span className="uf-cat">{n.categoria}</span>}
+              <div className="uf-tags">
+                {n.fixada && <span className="uf-fix-tag">📌 Fixada</span>}
+                {n.categoria && <span className="uf-cat">{n.categoria}</span>}
+              </div>
               <p className="uf-title">{n.titulo}</p>
               <p className="uf-meta">
                 {tempoRelativo(n.publicado_em)}
@@ -103,9 +129,13 @@ export default function UpdatesFeed() {
           cursor: pointer;
           transition: background var(--dur-fast);
           width: 100%;
+          position: relative;
         }
         .uf-item:hover { background: var(--bg-body); }
+        .uf-item--fix { background: linear-gradient(to right, #FEF9E7, transparent 60%); }
+        .uf-item--fix:hover { background: linear-gradient(to right, #FEF3C7, var(--bg-body) 60%); }
         .uf-capa {
+          position: relative;
           width: 62px; height: 62px;
           flex-shrink: 0;
           background: linear-gradient(135deg, #FCE0E9, #E85A8C);
@@ -114,14 +144,32 @@ export default function UpdatesFeed() {
           display: flex; align-items: center; justify-content: center;
         }
         .uf-capa-emoji { font-size: 26px; }
+        .uf-pin {
+          position: absolute;
+          top: -6px; right: -6px;
+          width: 20px; height: 20px;
+          background: #F59E0B;
+          color: #fff;
+          border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          border: 2px solid var(--bg-card);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
         .uf-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+        .uf-tags { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
         .uf-cat {
           font-size: 9px; font-weight: 800;
           padding: 2px 6px;
           background: #FCE7F3; color: #C33A6E;
           border-radius: 4px;
           text-transform: uppercase; letter-spacing: 0.05em;
-          align-self: flex-start;
+        }
+        .uf-fix-tag {
+          font-size: 9px; font-weight: 800;
+          padding: 2px 6px;
+          background: #FEF3C7; color: #B45309;
+          border-radius: 4px;
+          text-transform: uppercase; letter-spacing: 0.05em;
         }
         .uf-title {
           margin: 0;

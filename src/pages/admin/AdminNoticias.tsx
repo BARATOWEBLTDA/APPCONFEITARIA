@@ -20,6 +20,7 @@ interface Noticia {
   ativo: boolean;
   views: number;
   publicado_em: string;
+  fixada: boolean;
 }
 
 const EMOJIS_SUGERIDOS = ["📢", "👋", "💡", "🤖", "🎨", "✨", "🎂", "🍰", "⭐", "🚀", "🔥", "🎁", "📱", "🎉"];
@@ -42,13 +43,13 @@ export default function AdminNoticias() {
   const [uploadingCapa, setUploadingCapa] = useState(false);
   const [msg, setMsg] = useState<{ text: string; kind: "ok" | "err" } | null>(null);
   const capaRef = useRef<HTMLInputElement>(null);
-  const [form, setForm] = useState({ emoji: "📢", titulo: "", descricao: "", conteudo: null as any, imagem_capa: "", autor: "Equipe Doonly", categoria: "", cta_texto: "", cta_url: "", ativo: true });
+  const [form, setForm] = useState({ emoji: "📢", titulo: "", descricao: "", conteudo: null as any, imagem_capa: "", autor: "Equipe Doonly", categoria: "", cta_texto: "", cta_url: "", ativo: true, fixada: false });
 
   useEffect(() => { load(); }, []);
 
   const load = async () => {
     setLoading(true);
-    const { data, error } = await supabase.from("admin_noticias").select("*").order("ordem", { ascending: false }).order("publicado_em", { ascending: false });
+    const { data, error } = await supabase.from("admin_noticias").select("*").order("fixada", { ascending: false }).order("ordem", { ascending: false }).order("publicado_em", { ascending: false });
     if (error) setMsg({ text: "Erro: " + error.message, kind: "err" });
     else setRows(data as Noticia[]);
     setLoading(false);
@@ -58,13 +59,13 @@ export default function AdminNoticias() {
 
   const abrirNovo = () => {
     setEditing(null);
-    setForm({ emoji: "📢", titulo: "", descricao: "", conteudo: null, imagem_capa: "", autor: "Equipe Doonly", categoria: "", cta_texto: "", cta_url: "", ativo: true });
+    setForm({ emoji: "📢", titulo: "", descricao: "", conteudo: null, imagem_capa: "", autor: "Equipe Doonly", categoria: "", cta_texto: "", cta_url: "", ativo: true, fixada: false });
     setModalOpen(true);
   };
 
   const abrirEditar = (n: Noticia) => {
     setEditing(n);
-    setForm({ emoji: n.emoji, titulo: n.titulo, descricao: n.descricao, conteudo: n.conteudo, imagem_capa: n.imagem_capa || "", autor: n.autor || "Equipe Doonly", categoria: n.categoria || "", cta_texto: n.cta_texto || "", cta_url: n.cta_url || "", ativo: n.ativo });
+    setForm({ emoji: n.emoji, titulo: n.titulo, descricao: n.descricao, conteudo: n.conteudo, imagem_capa: n.imagem_capa || "", autor: n.autor || "Equipe Doonly", categoria: n.categoria || "", cta_texto: n.cta_texto || "", cta_url: n.cta_url || "", ativo: n.ativo, fixada: n.fixada || false });
     setModalOpen(true);
   };
 
@@ -100,6 +101,7 @@ export default function AdminNoticias() {
         cta_url: form.cta_url.trim() || null,
         tempo_leitura: estimarTempoLeitura(form.conteudo),
         ativo: form.ativo,
+        fixada: form.fixada,
       };
       if (editing) {
         const { error } = await supabase.from("admin_noticias").update(payload).eq("id", editing.id);
@@ -162,6 +164,7 @@ export default function AdminNoticias() {
               <div className="an-card-capa">{n.imagem_capa ? <img src={n.imagem_capa} alt="" /> : <span>{n.emoji}</span>}</div>
               <div className="an-card-body">
                 <div className="an-card-tags">
+                  {n.fixada && <span className="an-tag an-tag--fix">📌 Fixada</span>}
                   {n.categoria && <span className="an-tag">{n.categoria}</span>}
                   {!n.ativo && <span className="an-tag an-tag--off">Desativada</span>}
                   {n.views > 0 && <span className="an-views">{n.views} views</span>}
@@ -253,6 +256,18 @@ export default function AdminNoticias() {
                   <span>Ativa (aparece pra usuários)</span>
                 </label>
               </div>
+
+              <div className="an-field">
+                <label className="an-toggle-lbl">
+                  <input type="checkbox" checked={form.fixada} onChange={e => setForm(f => ({ ...f, fixada: e.target.checked }))} />
+                  <span>📌 <b>Fixar no topo</b> (sempre visível na Home)</span>
+                </label>
+                {form.fixada && (
+                  <p className="an-fix-hint">
+                    ⚠️ Só pode ter <b>1 notícia fixada</b>. Se já existir outra, ela vai ser desafixada automaticamente ao salvar.
+                  </p>
+                )}
+              </div>
             </div>
             <div className="an-modal-foot">
               <button className="an-btn-cancel" onClick={() => !saving && setModalOpen(false)}>Cancelar</button>
@@ -283,6 +298,8 @@ export default function AdminNoticias() {
         .an-card-tags { display: flex; gap: 6px; align-items: center; margin-bottom: 4px; flex-wrap: wrap; }
         .an-tag { font-size: 9.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; background: #FCE7F3; color: #C33A6E; text-transform: uppercase; }
         .an-tag--off { background: #F5F0F2; color: #6B7280; }
+        .an-tag--fix { background: #FEF3C7; color: #B45309; font-weight: 800; }
+        .an-fix-hint { margin: 6px 0 0; font-size: 11px; color: #B45309; background: #FEF3C7; padding: 8px 10px; border-radius: 6px; }
         .an-views { font-size: 10px; color: #6B7280; }
         .an-ordem { font-size: 10px; color: #9CA3AF; margin-left: auto; }
         .an-card-t { font-size: 14px; font-weight: 800; margin: 0 0 3px; color: #2C1219; }

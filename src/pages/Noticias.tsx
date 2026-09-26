@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { CaretLeft, MagnifyingGlass } from "@phosphor-icons/react";
+import { MagnifyingGlass } from "@phosphor-icons/react";
+import AppPageHeader from "@/components/AppPageHeader";
 
 interface Noticia {
   id: string;
@@ -13,6 +14,7 @@ interface Noticia {
   categoria: string | null;
   tempo_leitura: number | null;
   publicado_em: string;
+  fixada: boolean;
 }
 
 function tempoRelativo(iso: string): string {
@@ -39,8 +41,9 @@ export default function Noticias() {
     (async () => {
       const { data } = await supabase
         .from("admin_noticias")
-        .select("id, emoji, titulo, descricao, imagem_capa, slug, categoria, tempo_leitura, publicado_em")
+        .select("id, emoji, titulo, descricao, imagem_capa, slug, categoria, tempo_leitura, publicado_em, fixada")
         .eq("ativo", true)
+        .order("fixada", { ascending: false })
         .order("publicado_em", { ascending: false });
       if (data) setNoticias(data as Noticia[]);
       setLoading(false);
@@ -56,16 +59,20 @@ export default function Noticias() {
   });
 
   return (
-    <div className="nl-root">
-      <div className="nl-header">
-        <button className="nl-back" onClick={() => navigate(-1)}>
-          <CaretLeft size={18} weight="bold" />
-        </button>
-        <div className="nl-header-t">
-          <h1>Notícias</h1>
-          <p>Dicas, novidades e tutoriais do Doonly</p>
-        </div>
-      </div>
+    <>
+      <AppPageHeader
+        title="Notícias"
+        subtitle="Dicas, novidades e tutoriais do Doonly"
+        infoIcon="📰"
+        infoContent={
+          <>
+            <p>Aqui você encontra <strong>todas as notícias</strong> do Doonly: dicas pra vender mais, novidades do sistema, tutoriais passo a passo e avisos importantes.</p>
+            <p>Notícias <strong>fixadas</strong> aparecem sempre no topo, mesmo quando publicarmos novidades. As demais rolam pelo mais recente.</p>
+          </>
+        }
+        infoTip={<>Use as <strong>abas de categoria</strong> pra filtrar entre Dicas, Novidades, Tutoriais e mais.</>}
+      />
+      <div className="nl-root">
 
       <div className="nl-search">
         <MagnifyingGlass size={16} weight="bold" />
@@ -100,12 +107,15 @@ export default function Noticias() {
       ) : (
         <div className="nl-list">
           {filtradas.map((n) => (
-            <button key={n.id} className="nl-item" onClick={() => navigate(`/noticias/${n.slug}`)}>
+            <button key={n.id} className={`nl-item ${n.fixada ? "nl-item--fix" : ""}`} onClick={() => navigate(`/noticias/${n.slug}`)}>
               <div className="nl-capa" style={n.imagem_capa ? { backgroundImage: `url(${n.imagem_capa})` } : undefined}>
                 {!n.imagem_capa && <span className="nl-capa-emoji">{n.emoji}</span>}
               </div>
               <div className="nl-body">
-                {n.categoria && <span className="nl-cat">{n.categoria}</span>}
+                <div className="nl-tags">
+                  {n.fixada && <span className="nl-fix-tag">📌 Fixada</span>}
+                  {n.categoria && <span className="nl-cat">{n.categoria}</span>}
+                </div>
                 <p className="nl-t">{n.titulo}</p>
                 {n.descricao && <p className="nl-d">{n.descricao}</p>}
                 <p className="nl-meta">
@@ -123,33 +133,7 @@ export default function Noticias() {
           font-family: 'Geist', sans-serif;
           max-width: 720px;
           margin: 0 auto;
-          padding: 20px 16px 100px;
-        }
-        .nl-header {
-          display: flex; align-items: flex-start; gap: 12px;
-          margin-bottom: 20px;
-        }
-        .nl-back {
-          width: 36px; height: 36px;
-          background: #F5F0F2;
-          color: #2C1219;
-          border: none;
-          border-radius: 50%;
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer;
-          flex-shrink: 0;
-        }
-        .nl-back:hover { background: #E5DDE0; }
-        .nl-header-t h1 {
-          font-size: 24px; font-weight: 900;
-          margin: 0 0 3px;
-          color: #2C1219;
-          letter-spacing: -0.02em;
-        }
-        .nl-header-t p {
-          font-size: 12.5px;
-          color: #6B7280;
-          margin: 0;
+          padding: 16px 16px 100px;
         }
 
         .nl-search {
@@ -220,6 +204,18 @@ export default function Noticias() {
         }
         .nl-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         .nl-item:active { transform: scale(0.99); }
+        .nl-item--fix {
+          background: linear-gradient(to right, #FEF9E7, #fff 60%);
+          border-color: #FDE68A;
+        }
+        .nl-tags { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; align-self: flex-start; }
+        .nl-fix-tag {
+          font-size: 9.5px; font-weight: 800;
+          padding: 2px 6px;
+          background: #FEF3C7; color: #B45309;
+          border-radius: 4px;
+          text-transform: uppercase; letter-spacing: 0.06em;
+        }
         .nl-capa {
           width: 90px; height: 90px;
           flex-shrink: 0;
@@ -262,5 +258,6 @@ export default function Noticias() {
         }
       `}</style>
     </div>
+    </>
   );
 }
