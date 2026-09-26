@@ -983,7 +983,7 @@ export default function Inicio() {
             { icon: <Users          size={22} weight="bold" />, label: "Clientes",       sub: "Gerencie seus clientes.",                     path: "/clientes",        key: "clientes" },
             { icon: <CurrencyDollar size={22} weight="bold" />, label: "Financeiro",     sub: "Controle suas entradas, saídas e lucros.",    path: "/financeiro",      key: "financeiro" },
             { icon: <Cake           size={22} weight="bold" />, label: "Produtos",       sub: "Cadastre e edite seus produtos e receitas.",  path: "/produtos",        key: "produtos" },
-            { icon: <Gear           size={22} weight="bold" />, label: "Configurações",  sub: "Personalize o app e suas preferências.",      path: "/configuracoes",   key: "configuracoes" },
+            { icon: <Gear           size={22} weight="bold" />, label: "Ajustes",        sub: "Personalize o app e suas preferências.",      path: "/configuracoes",   key: "configuracoes" },
           ].map((item) => (
             <button key={item.path} className="ini-nav-card" data-nav={item.key} onClick={() => navigate(item.path)}>
               <div className="ini-nav-icon">{item.icon}</div>
@@ -2083,7 +2083,7 @@ export default function Inicio() {
         .ini-nav-card {
           display: flex;
           align-items: flex-start;
-          gap: 8px;
+          gap: 7px;
           padding: 11px 10px;
           background: #fff;
           border: 1px solid #F0EBED;
@@ -2098,15 +2098,15 @@ export default function Inicio() {
         }
         .ini-nav-card:active { transform: scale(0.98); background: #FAF7F8; }
         .ini-nav-icon {
-          width: 32px; height: 32px;
-          border-radius: 8px;
+          width: 28px; height: 28px;
+          border-radius: 7px;
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
           background: #FFF5F9 !important;
           color: #E85A8C !important;
           margin-top: 1px;
         }
-        .ini-nav-icon svg { width: 18px; height: 18px; }
+        .ini-nav-icon svg { width: 15px; height: 15px; }
         .ini-nav-meta {
           flex: 1;
           min-width: 0;
@@ -2116,7 +2116,7 @@ export default function Inicio() {
         }
         .ini-nav-label {
           display: block;
-          font-size: 12.5px;
+          font-size: 13px;
           font-weight: 800;
           color: #2C1219;
           line-height: 1.15;
