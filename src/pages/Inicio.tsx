@@ -22,6 +22,7 @@ import AppPageHeader from "@/components/AppPageHeader";
 import TourInicio from "@/components/TourInicio";
 import WelcomeChecklist from "@/components/WelcomeChecklist";
 import UpdatesFeed from "@/components/UpdatesFeed";
+import MinhasAtualizacoes from "@/components/MinhasAtualizacoes";
 import AdminBannerMobile from "@/components/AdminBannerMobile";
 import DooIAPanel from "@/components/DooIAPanel";
 import { FinModal } from "@/components/financeiro";
@@ -996,87 +997,6 @@ export default function Inicio() {
         </div>
       </section>
 
-      {/* ── Atenção hoje ── */}
-      {alertasVisiveis.length > 0 && !isSnoozed && (
-        <section className="ini-section ini-section--alertas">
-          <div className="ini-alertas-head">
-            <h2 className="ini-section-title">Atenção hoje</h2>
-            <button
-              className="ini-alertas-snooze"
-              onClick={snoozeAlerts}
-              title="Esconde os alertas até amanhã"
-            >
-              <Clock size={14} weight="bold" />
-              Lembrar amanhã
-            </button>
-          </div>
-          <div className="ini-alertas">
-            {alertasVisiveis.slice(0, ALERT_LIMIT_VISIBLE).map((a) => (
-              <button key={a.tipo} className={`ini-alerta ini-alerta--${a.tipo}`} onClick={a.onClick}>
-                <span className="ini-alerta-icon">
-                  {a.tipo === "pedido"     && <ClipboardText size={18} weight="fill" />}
-                  {a.tipo === "entrega"    && <CalendarDots  size={18} weight="fill" />}
-                  {a.tipo === "aniversario"&& <img src="/Sistema/aniversario.png" alt="" width={28} height={28} style={{ objectFit: "contain" }} />}
-                </span>
-                <div className="ini-alerta-body">
-                  <span className="ini-alerta-texto">
-                    {a.tipo === "aniversario" && aniversariantesDetalhe
-                      ? a.texto
-                      : <><strong>{a.count}</strong> {a.texto}</>
-                    }
-                  </span>
-                </div>
-                <span className="ini-alerta-cta">{a.cta} ›</span>
-              </button>
-            ))}
-
-            {alertasVisiveis.length > ALERT_LIMIT_VISIBLE && (
-              <button className="ini-alerta ini-alerta--more" onClick={() => setShowAllAlerts(true)}>
-                <span className="ini-alerta-icon ini-alerta-icon--neutral">
-                  <DotsThreeOutline size={18} weight="fill" />
-                </span>
-                <div className="ini-alerta-body">
-                  <span className="ini-alerta-texto">
-                    + {alertasVisiveis.length - ALERT_LIMIT_VISIBLE} {alertasVisiveis.length - ALERT_LIMIT_VISIBLE === 1 ? "outro alerta" : "outros alertas"} pra hoje
-                  </span>
-                </div>
-                <span className="ini-alerta-cta">Ver todos ›</span>
-              </button>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Modal: todos os alertas */}
-      {showAllAlerts && (
-        <FinModal title="Atenção hoje" onClose={() => setShowAllAlerts(false)}>
-          <div className="ini-alertas">
-            {alertasVisiveis.map((a) => (
-              <button
-                key={a.tipo}
-                className={`ini-alerta ini-alerta--${a.tipo}`}
-                onClick={() => { setShowAllAlerts(false); a.onClick(); }}
-              >
-                <span className="ini-alerta-icon">
-                  {a.tipo === "pedido"      && <ClipboardText size={18} weight="fill" />}
-                  {a.tipo === "entrega"     && <CalendarDots  size={18} weight="fill" />}
-                  {a.tipo === "aniversario" && <img src="/Sistema/aniversario.png" alt="" width={28} height={28} style={{ objectFit: "contain" }} />}
-                </span>
-                <div className="ini-alerta-body">
-                  <span className="ini-alerta-texto">
-                    {a.tipo === "aniversario" && aniversariantesDetalhe
-                      ? a.texto
-                      : <><strong>{a.count}</strong> {a.texto}</>
-                    }
-                  </span>
-                </div>
-                <span className="ini-alerta-cta">{a.cta} ›</span>
-              </button>
-            ))}
-          </div>
-        </FinModal>
-      )}
-
       {/* ── Resumo da semana ── */}
       <section className="ini-section ini-section--resumo">
         <h2 className="ini-section-title">Resumo da semana</h2>
@@ -1228,6 +1148,7 @@ export default function Inicio() {
         <div className="ini-mobile-banner"><AdminBannerMobile /></div>
 
         {/* ── Últimas atualizações (mobile) — sempre visível ── */}
+        <div className="ini-mobile-updates"><MinhasAtualizacoes /></div>
         <div className="ini-mobile-updates"><UpdatesFeed /></div>
 
         {/* ── Engajamento (Play Store + Instagram) — temporariamente removido ── */}
