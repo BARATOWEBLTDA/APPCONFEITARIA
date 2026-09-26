@@ -975,14 +975,14 @@ export default function Inicio() {
         </h2>
         <div className="ini-nav-grid">
           {[
-            { icon: <Plus           size={22} weight="regular" />, label: "Nova Venda", sub: "Registrar venda ou encomenda", path: "/vendas/novo",     key: "nova-venda" },
-            { icon: <Receipt        size={22} weight="regular" />, label: "Pedidos",    sub: "Acompanhar em andamento",      path: "/pedidos",         key: "pedidos" },
-            { icon: <CalendarDots   size={22} weight="regular" />, label: "Agenda",     sub: "Datas de entrega",             path: "/agenda",          key: "agenda" },
-            { icon: <BookOpen       size={22} weight="regular" />, label: "Cardápio",   sub: "Editar e personalizar",        path: "/cardapio-config", key: "cardapio" },
-            { icon: <Users          size={22} weight="regular" />, label: "Clientes",   sub: "Base de clientes",             path: "/clientes",        key: "clientes" },
-            { icon: <CurrencyDollar size={22} weight="regular" />, label: "Financeiro", sub: "Contas e controle",            path: "/financeiro",      key: "financeiro" },
-            { icon: <Cake           size={22} weight="regular" />, label: "Produtos",   sub: "Itens do cardápio",            path: "/produtos",        key: "produtos" },
-            { icon: <Gear           size={22} weight="regular" />, label: "Configurações", sub: "Preferências e conta",       path: "/configuracoes",   key: "configuracoes" },
+            { icon: <Plus           size={22} weight="bold" />, label: "Nova Venda",     sub: "Registre um novo pedido da sua loja.",       path: "/vendas/novo",     key: "nova-venda" },
+            { icon: <Receipt        size={22} weight="bold" />, label: "Pedidos",        sub: "Gerencie seus pedidos.",                      path: "/pedidos",         key: "pedidos" },
+            { icon: <CalendarDots   size={22} weight="bold" />, label: "Agenda",         sub: "Seus agendamentos.",                          path: "/agenda",          key: "agenda" },
+            { icon: <BookOpen       size={22} weight="bold" />, label: "Cardápio",       sub: "Acesse seu cardápio e produtos.",             path: "/cardapio-config", key: "cardapio" },
+            { icon: <Users          size={22} weight="bold" />, label: "Clientes",       sub: "Gerencie seus clientes.",                     path: "/clientes",        key: "clientes" },
+            { icon: <CurrencyDollar size={22} weight="bold" />, label: "Financeiro",     sub: "Controle suas entradas, saídas e lucros.",    path: "/financeiro",      key: "financeiro" },
+            { icon: <Cake           size={22} weight="bold" />, label: "Produtos",       sub: "Cadastre e edite seus produtos e receitas.",  path: "/produtos",        key: "produtos" },
+            { icon: <Gear           size={22} weight="bold" />, label: "Configurações",  sub: "Personalize o app e suas preferências.",      path: "/configuracoes",   key: "configuracoes" },
           ].map((item) => (
             <button key={item.path} className="ini-nav-card" data-nav={item.key} onClick={() => navigate(item.path)}>
               <div className="ini-nav-icon">{item.icon}</div>
@@ -2157,51 +2157,81 @@ export default function Inicio() {
         .ini-nav-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: var(--gap-tight);
+          gap: 8px;
         }
         .ini-nav-card {
           display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: var(--space-3) var(--space-4);
-          background: #F5F0F2;
-          border: none;
-          border-radius: 4px;
+          align-items: flex-start;
+          gap: 10px;
+          padding: 14px 12px;
+          background: #fff;
+          border: 1px solid #F0EBED;
+          border-radius: 12px;
           cursor: pointer;
           font-family: inherit;
           text-align: left;
-          transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+          min-height: 82px;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+          transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
         }
-        .ini-nav-card:active { background: #EDE6E8; transform: scale(0.99); }
+        .ini-nav-card:active { transform: scale(0.98); background: #FAF7F8; }
         .ini-nav-icon {
-          width: 24px; height: 24px;
-          border-radius: 4px;
+          width: 38px; height: 38px;
+          border-radius: 10px;
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
-          background: transparent !important;
-          color: #2C1219 !important;
+          background: #FFF5F9 !important;
+          color: #E85A8C !important;
+          margin-top: 1px;
         }
-        .ini-nav-meta { flex: 1; min-width: 0; }
+        .ini-nav-meta {
+          flex: 1;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
         .ini-nav-label {
           display: block;
-          font-size: var(--font-button);
-          font-weight: var(--fw-semibold);
+          font-size: 13.5px;
+          font-weight: 800;
           color: #2C1219;
           line-height: 1.2;
         }
-        /* Subtítulo escondido no mobile (fica só a label) */
-        .ini-nav-sub { display: none; }
-        .ini-nav-arrow { display: none; }
-        /* Nova Venda vira card cinza escurinho do grid (destaque sutil) */
+        .ini-nav-sub {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          font-size: 10.5px;
+          color: #6B7280;
+          line-height: 1.35;
+        }
+        .ini-nav-arrow {
+          display: block;
+          color: #E85A8C;
+          font-weight: 700;
+          flex-shrink: 0;
+          margin-top: 2px;
+        }
+        /* Nova Venda em destaque com gradiente rosa da marca */
         .ini-nav-card[data-nav="nova-venda"] {
-          background: #E5DDE0;
+          background: linear-gradient(135deg, #E85A8C 0%, #C33A6E 100%);
+          border-color: transparent;
+          box-shadow: 0 4px 12px rgba(232,90,140,0.28);
         }
-        .ini-nav-card[data-nav="nova-venda"]:active { background: #D8CFD1; }
+        .ini-nav-card[data-nav="nova-venda"]:active {
+          background: linear-gradient(135deg, #C33A6E 0%, #A62E5C 100%);
+          transform: scale(0.98);
+        }
         .ini-nav-card[data-nav="nova-venda"] .ini-nav-icon {
-          background: transparent !important;
-          color: #2C1219 !important;
+          background: rgba(255,255,255,0.2) !important;
+          color: #fff !important;
         }
-        .ini-nav-card[data-nav="nova-venda"] .ini-nav-label { color: #2C1219; }
+        .ini-nav-card[data-nav="nova-venda"] .ini-nav-label { color: #fff; }
+        .ini-nav-card[data-nav="nova-venda"] .ini-nav-sub { color: rgba(255,255,255,0.85); }
+        .ini-nav-card[data-nav="nova-venda"] .ini-nav-arrow { color: #fff; }
 
         /* ── Agenda de Entregas ── */
         .ini-agenda-header {
