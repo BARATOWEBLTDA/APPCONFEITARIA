@@ -66,7 +66,67 @@ export default function UpdatesFeed() {
   }, []);
 
   if (loading) return null;
-  if (noticias.length === 0) return null;
+  if (noticias.length === 0) {
+    return (
+      <div className="uf-root">
+        <div className="uf-header">
+          <Newspaper size={18} weight="fill" />
+          <h2>Notícias</h2>
+        </div>
+        <div className="uf-empty">
+          <div className="uf-empty-ic">
+            <Newspaper size={26} weight="regular" />
+          </div>
+          <p className="uf-empty-t">Sem notícias por aqui ainda</p>
+          <p className="uf-empty-d">Em breve traremos dicas, novidades e tutoriais pra te ajudar a vender mais.</p>
+        </div>
+        <style>{`
+          .uf-root {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+          }
+          .uf-header {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 1.15rem 1.25rem;
+            color: var(--text-title);
+          }
+          .uf-header h2 { margin: 0; font-size: 0.95rem; font-weight: var(--fw-bold); }
+          .uf-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 20px 24px 28px;
+            border-top: 1px solid var(--border);
+          }
+          .uf-empty-ic {
+            width: 52px; height: 52px;
+            border-radius: 50%;
+            background: #FFF5F9;
+            color: #E85A8C;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 12px;
+          }
+          .uf-empty-t {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #2C1219;
+            margin: 0 0 4px;
+          }
+          .uf-empty-d {
+            font-size: 12px;
+            color: #6B7280;
+            margin: 0;
+            line-height: 1.45;
+            max-width: 240px;
+          }
+        `}</style>
+      </div>
+    );
+  }
 
   return (
     <div className="uf-root">
