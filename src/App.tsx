@@ -18,6 +18,8 @@ import EditarPedido from "@/pages/EditarPedido";
 import NovaVenda from "@/pages/NovaVenda";
 import Dashboard from "@/pages/Dashboard";
 import Inicio from "@/pages/Inicio";
+import Noticias from "@/pages/Noticias";
+import NoticiaDetalhe from "@/pages/NoticiaDetalhe";
 import Agenda from "@/pages/Agenda";
 import Insumos from "@/pages/Insumos";
 import Assinar from "@/pages/Assinar";
@@ -207,6 +209,8 @@ export default function App() {
         <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/inicio" element={<Inicio />} />
+          <Route path="/noticias" element={<Noticias />} />
+          <Route path="/noticias/:slug" element={<NoticiaDetalhe />} />
           <Route path="/assinar" element={<Assinar />} />
           <Route path="/receitas" element={<Receitas />} />
           <Route path="/notificacoes" element={<Notificacoes />} />

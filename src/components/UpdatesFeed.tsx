@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Newspaper } from "@phosphor-icons/react";
+import { useNavigate } from "react-router-dom";
+import { Newspaper, CaretRight } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 
 interface Noticia {
@@ -7,33 +8,28 @@ interface Noticia {
   emoji: string;
   titulo: string;
   descricao: string;
+  imagem_capa: string | null;
+  slug: string;
   categoria: string | null;
-  created_at: string;
+  tempo_leitura: number | null;
+  publicado_em: string;
 }
 
-// Formata data em "há X dias / horas / min"
 function tempoRelativo(iso: string): string {
   const d = new Date(iso);
-  const diffMs = Date.now() - d.getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-  const diffH = Math.floor(diffMin / 60);
-  const diffDias = Math.floor(diffH / 24);
-  const diffSem = Math.floor(diffDias / 7);
-
-  if (diffMin < 1) return "agora";
-  if (diffMin < 60) return `há ${diffMin} min`;
-  if (diffH < 24) return `há ${diffH}h`;
+  const diffDias = Math.floor((Date.now() - d.getTime()) / 86400000);
+  if (diffDias === 0) return "hoje";
   if (diffDias === 1) return "ontem";
   if (diffDias < 7) return `há ${diffDias} dias`;
-  if (diffSem === 1) return "há 1 semana";
-  if (diffSem < 4) return `há ${diffSem} semanas`;
+  const semanas = Math.floor(diffDias / 7);
+  if (semanas < 4) return `há ${semanas} sem`;
   const meses = Math.floor(diffDias / 30);
   if (meses < 12) return `há ${meses} ${meses === 1 ? "mês" : "meses"}`;
-  const anos = Math.floor(diffDias / 365);
-  return `há ${anos} ${anos === 1 ? "ano" : "anos"}`;
+  return `há ${Math.floor(diffDias / 365)} anos`;
 }
 
 export default function UpdatesFeed() {
+  const navigate = useNavigate();
   const [noticias, setNoticias] = useState<Noticia[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -41,10 +37,10 @@ export default function UpdatesFeed() {
     (async () => {
       const { data } = await supabase
         .from("admin_noticias")
-        .select("id, emoji, titulo, descricao, categoria, created_at")
+        .select("id, emoji, titulo, descricao, imagem_capa, slug, categoria, tempo_leitura, publicado_em")
         .eq("ativo", true)
         .order("ordem", { ascending: false })
-        .order("created_at", { ascending: false })
+        .order("publicado_em", { ascending: false })
         .limit(3);
       if (data) setNoticias(data as Noticia[]);
       setLoading(false);
@@ -60,21 +56,27 @@ export default function UpdatesFeed() {
         <Newspaper size={18} weight="fill" />
         <h2>Notícias</h2>
       </div>
-
       <div className="uf-list">
         {noticias.map((n) => (
-          <div key={n.id} className="uf-item">
-            <div className="uf-emoji">{n.emoji}</div>
+          <button key={n.id} className="uf-item" onClick={() => navigate(`/noticias/${n.slug}`)}>
+            <div className="uf-capa" style={n.imagem_capa ? { backgroundImage: `url(${n.imagem_capa})` } : undefined}>
+              {!n.imagem_capa && <span className="uf-capa-emoji">{n.emoji}</span>}
+            </div>
             <div className="uf-body">
               {n.categoria && <span className="uf-cat">{n.categoria}</span>}
               <p className="uf-title">{n.titulo}</p>
-              <p className="uf-desc">{n.descricao}</p>
-              <span className="uf-time">{tempoRelativo(n.created_at)}</span>
+              <p className="uf-meta">
+                {tempoRelativo(n.publicado_em)}
+                {n.tempo_leitura && ` · ${n.tempo_leitura} min`}
+              </p>
             </div>
-          </div>
+            <CaretRight size={14} weight="bold" className="uf-arr" />
+          </button>
         ))}
       </div>
-
+      <button className="uf-ver-todas" onClick={() => navigate("/noticias")}>
+        Ver todas as notícias <CaretRight size={12} weight="bold" />
+      </button>
       <style>{`
         .uf-root {
           background: var(--bg-card);
@@ -84,49 +86,42 @@ export default function UpdatesFeed() {
           box-shadow: 0 2px 12px rgba(0,0,0,0.06);
         }
         .uf-header {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
+          display: flex; align-items: center; gap: 0.5rem;
           padding: 1.15rem 1.25rem;
           color: var(--text-title);
         }
-        .uf-header h2 {
-          margin: 0;
-          font-size: 0.95rem;
-          font-weight: var(--fw-bold);
-        }
+        .uf-header h2 { margin: 0; font-size: 0.95rem; font-weight: var(--fw-bold); }
         .uf-list { display: flex; flex-direction: column; }
         .uf-item {
-          display: flex;
-          gap: 0.75rem;
+          display: flex; gap: 12px;
           padding: 0.9rem 1.25rem;
-          transition: background var(--dur-fast);
+          background: transparent;
+          border: none;
           border-top: 1px solid var(--border);
+          font-family: inherit;
+          text-align: left;
+          cursor: pointer;
+          transition: background var(--dur-fast);
+          width: 100%;
         }
         .uf-item:hover { background: var(--bg-body); }
-        .uf-emoji {
-          width: 36px;
-          height: 36px;
-          border-radius: var(--radius-md);
-          background: #FFF5F9;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+        .uf-capa {
+          width: 62px; height: 62px;
           flex-shrink: 0;
-          font-size: 20px;
+          background: linear-gradient(135deg, #FCE0E9, #E85A8C);
+          background-size: cover; background-position: center;
+          border-radius: 8px;
+          display: flex; align-items: center; justify-content: center;
         }
-        .uf-body { flex: 1; min-width: 0; }
+        .uf-capa-emoji { font-size: 26px; }
+        .uf-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
         .uf-cat {
-          display: inline-block;
-          font-size: 9.5px;
-          font-weight: 800;
+          font-size: 9px; font-weight: 800;
           padding: 2px 6px;
-          background: #FCE7F3;
-          color: #C33A6E;
+          background: #FCE7F3; color: #C33A6E;
           border-radius: 4px;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          margin-bottom: 4px;
+          text-transform: uppercase; letter-spacing: 0.05em;
+          align-self: flex-start;
         }
         .uf-title {
           margin: 0;
@@ -134,19 +129,32 @@ export default function UpdatesFeed() {
           font-weight: var(--fw-semibold);
           color: var(--text-title);
           line-height: 1.3;
+          overflow: hidden; text-overflow: ellipsis;
+          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
         }
-        .uf-desc {
-          margin: 3px 0 0;
-          font-size: 0.78rem;
-          color: var(--text-secondary);
-          line-height: 1.45;
-        }
-        .uf-time {
-          font-size: 0.7rem;
+        .uf-meta {
+          margin: auto 0 0;
+          font-size: 10.5px;
           color: var(--text-muted);
-          margin-top: 4px;
-          display: block;
         }
+        .uf-arr {
+          align-self: center;
+          color: #C0B3B8;
+          flex-shrink: 0;
+        }
+        .uf-ver-todas {
+          display: flex; align-items: center; justify-content: center; gap: 4px;
+          width: 100%;
+          padding: 12px;
+          background: transparent;
+          border: none;
+          border-top: 1px solid var(--border);
+          color: #C33A6E;
+          font-size: 12px; font-weight: 800;
+          cursor: pointer;
+          font-family: inherit;
+        }
+        .uf-ver-todas:hover { background: #FFF5F9; }
       `}</style>
     </div>
   );
