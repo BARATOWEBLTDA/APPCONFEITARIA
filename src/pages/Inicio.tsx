@@ -975,7 +975,7 @@ export default function Inicio() {
         </h2>
         <div className="ini-nav-grid">
           {[
-            { icon: <Plus           size={22} weight="bold" />, label: "Nova Venda",     sub: "Registre um novo pedido da sua loja.",       path: "/vendas/novo",     key: "nova-venda" },
+            { icon: <ShoppingBag    size={22} weight="bold" />, label: "Nova Venda",     sub: "Registre um novo pedido da sua loja.",       path: "/vendas/novo",     key: "nova-venda" },
             { icon: <Receipt        size={22} weight="bold" />, label: "Pedidos",        sub: "Gerencie seus pedidos.",                      path: "/pedidos",         key: "pedidos" },
             { icon: <CalendarDots   size={22} weight="bold" />, label: "Agenda",         sub: "Seus agendamentos.",                          path: "/agenda",          key: "agenda" },
             { icon: <BookOpen       size={22} weight="bold" />, label: "Cardápio",       sub: "Acesse seu cardápio e produtos.",             path: "/cardapio-config", key: "cardapio" },
