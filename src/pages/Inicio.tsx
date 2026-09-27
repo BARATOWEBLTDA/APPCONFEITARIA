@@ -2083,43 +2083,36 @@ export default function Inicio() {
         .ini-nav-card {
           display: flex;
           align-items: flex-start;
-          gap: 7px;
-          padding: 11px 10px;
+          gap: 0;
+          padding: 14px;
           background: #fff;
           border: 1px solid #F0EBED;
           border-radius: 12px;
           cursor: pointer;
           font-family: inherit;
           text-align: left;
-          min-height: 74px;
+          min-height: 82px;
           box-shadow: 0 1px 2px rgba(0,0,0,0.03);
           transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
           overflow: hidden;
         }
         .ini-nav-card:active { transform: scale(0.98); background: #FAF7F8; }
         .ini-nav-icon {
-          width: 28px; height: 28px;
-          border-radius: 7px;
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
-          background: #FFF5F9 !important;
-          color: #E85A8C !important;
-          margin-top: 1px;
+          display: none;
         }
-        .ini-nav-icon svg { width: 15px; height: 15px; }
         .ini-nav-meta {
           flex: 1;
           min-width: 0;
           display: flex;
           flex-direction: column;
-          gap: 1px;
+          gap: 2px;
         }
         .ini-nav-label {
           display: block;
-          font-size: 13px;
+          font-size: 14.5px;
           font-weight: 800;
           color: #2C1219;
-          line-height: 1.15;
+          line-height: 1.2;
         }
         .ini-nav-sub {
           display: -webkit-box;
@@ -2127,17 +2120,18 @@ export default function Inicio() {
           -webkit-box-orient: vertical;
           overflow: hidden;
           text-overflow: ellipsis;
-          font-size: 10px;
+          font-size: 11.5px;
           color: #6B7280;
-          line-height: 1.3;
+          line-height: 1.4;
         }
         .ini-nav-arrow {
           display: block;
           color: #E85A8C;
           font-weight: 700;
           flex-shrink: 0;
-          margin-top: 2px;
-          font-size: 12px;
+          margin-top: 3px;
+          margin-left: 6px;
+          font-size: 14px;
         }
         /* Nova Venda em destaque com gradiente rosa da marca */
         .ini-nav-card[data-nav="nova-venda"] {
