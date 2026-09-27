@@ -313,10 +313,10 @@ export default function Layout() {
             <button
               className={`bn-item${maisOpen ? " bn-item--active" : ""}`}
               onClick={() => setMaisOpen(!maisOpen)}
-              aria-label="Gestão"
+              aria-label="Mais"
             >
               <span className="bn-icon"><SquaresFour size={20} weight="regular" /></span>
-              <span className="bn-label">Gestão</span>
+              <span className="bn-label">Mais</span>
             </button>
             <button
               className={`bn-item${dooOpen ? " bn-item--active" : ""}`}

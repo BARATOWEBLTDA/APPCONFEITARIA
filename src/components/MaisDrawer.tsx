@@ -2,10 +2,10 @@ import { useEffect, type ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   CurrencyDollar, ChartLineUp,
-  Package, BookOpen, Files, Bell, ClipboardText,
+  Package, BookOpen, Files, ClipboardText,
   Gear, PaintBrush, Crown,
-  SquaresFour, UserPlus,
-  X,
+  SquaresFour, UserPlus, Storefront,
+  X, CaretRight,
 } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 
@@ -16,6 +16,7 @@ interface MaisDrawerProps {
 
 interface DrawerItem {
   label: string;
+  desc: string;
   path: string;
   icon: ReactElement;
 }
@@ -29,39 +30,37 @@ const GROUPS: DrawerGroup[] = [
   {
     label: "Cadastros",
     items: [
-      { label: "Categorias",       path: "/categorias",     icon: <SquaresFour   size={20} weight="duotone" /> },
-      { label: "Ingredientes",     path: "/insumos",        icon: <Package       size={20} weight="duotone" /> },
-      { label: "Receitas",         path: "/receitas",       icon: <BookOpen      size={20} weight="duotone" /> },
-      { label: "Ficha técnica",    path: "/ficha-tecnica",  icon: <ClipboardText size={20} weight="duotone" /> },
+      { label: "Categorias",    desc: "Organize seus produtos",   path: "/categorias",    icon: <SquaresFour   size={16} weight="bold" /> },
+      { label: "Ingredientes",  desc: "Insumos e custos",         path: "/insumos",       icon: <Package       size={16} weight="bold" /> },
+      { label: "Receitas",      desc: "Suas receitas",            path: "/receitas",      icon: <BookOpen      size={16} weight="bold" /> },
+      { label: "Ficha técnica", desc: "Calcule o custo real",     path: "/ficha-tecnica", icon: <ClipboardText size={16} weight="bold" /> },
     ],
   },
   {
     label: "Análises",
     items: [
-      { label: "Lucratividade",           path: "/lucratividade",         icon: <ChartLineUp    size={20} weight="duotone" /> },
-      { label: "Transações detalhadas",   path: "/financeiro/transacoes", icon: <CurrencyDollar size={20} weight="duotone" /> },
+      { label: "Lucratividade", desc: "Análise de margem",       path: "/lucratividade",         icon: <ChartLineUp    size={16} weight="bold" /> },
+      { label: "Transações",    desc: "Histórico detalhado",     path: "/financeiro/transacoes", icon: <CurrencyDollar size={16} weight="bold" /> },
     ],
   },
   {
     label: "Configuração",
     items: [
-      { label: "Cardápio Design",  path: "/cardapio-design",  icon: <PaintBrush size={20} weight="duotone" /> },
-      { label: "Checkout",         path: "/checkout-config",  icon: <Gear       size={20} weight="duotone" /> },
-      { label: "Configurações",    path: "/configuracoes",    icon: <Gear       size={20} weight="duotone" /> },
-      { label: "Notificações",     path: "/notificacoes",     icon: <Bell       size={20} weight="duotone" /> },
+      { label: "Cardápio Design", desc: "Personalize o cardápio", path: "/cardapio-design", icon: <PaintBrush size={16} weight="bold" /> },
+      { label: "Checkout",        desc: "Configure o pagamento",   path: "/checkout-config", icon: <Storefront size={16} weight="bold" /> },
+      { label: "Configurações",   desc: "Ajustes gerais do app",   path: "/configuracoes",   icon: <Gear       size={16} weight="bold" /> },
     ],
   },
   {
-    label: "Conta",
+    label: "Meu plano",
     items: [
-      { label: "Assinatura",     path: "/assinar",  icon: <Crown    size={20} weight="duotone" /> },
-      { label: "Indicar amigo",  path: "/indicar",  icon: <UserPlus size={20} weight="duotone" /> },
-      { label: "Arquivos",       path: "/arquivos", icon: <Files    size={20} weight="duotone" /> },
+      { label: "Assinatura",    desc: "Gerencie seu PRO",         path: "/assinar",  icon: <Crown    size={16} weight="bold" /> },
+      { label: "Indicar amigo", desc: "Ganhe indicando",          path: "/indicar",  icon: <UserPlus size={16} weight="bold" /> },
+      { label: "Meus arquivos", desc: "PDFs e materiais",         path: "/arquivos", icon: <Files    size={16} weight="bold" /> },
     ],
   },
 ];
 
-/** Retorna "Bom dia" (5h–11h), "Boa tarde" (12h–17h) ou "Boa noite" (18h–4h). */
 function saudacao(): string {
   const h = new Date().getHours();
   if (h >= 5 && h < 12) return "Bom dia";
@@ -73,88 +72,66 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const primeiroNome = profile?.nome ? profile.nome.trim().split(/\s+/)[0] : "";
+  const inicial = (profile?.nome || "?").trim().charAt(0).toUpperCase();
+  const isPro = (profile as any)?.plano === "pro" || (profile as any)?.is_pro;
 
-  // Bloqueia scroll do body quando aberto
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
+    if (open) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "";
+    return () => { document.body.style.overflow = ""; };
   }, [open]);
 
-  // Fecha com ESC
   useEffect(() => {
     if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [open, onClose]);
 
-  const go = (path: string) => {
-    navigate(path);
-    onClose();
-  };
+  const go = (path: string) => { navigate(path); onClose(); };
 
   return (
     <>
-      {/* Overlay */}
-      <div
-        className={`mais-overlay ${open ? "open" : ""}`}
-        onClick={onClose}
-        aria-hidden="true"
-      />
+      <div className={`mais-overlay ${open ? "open" : ""}`} onClick={onClose} aria-hidden="true" />
 
-      {/* Drawer */}
-      <aside
-        className={`mais-drawer ${open ? "open" : ""}`}
-        role="dialog"
-        aria-label="Menu Mais"
-        aria-modal="true"
-      >
+      <aside className={`mais-drawer ${open ? "open" : ""}`} role="dialog" aria-label="Menu" aria-modal="true">
         <div className="mais-handle" />
 
         <div className="mais-head">
           <div className="mais-greeting">
-            <div className="mais-avatar">
-              <div className="mais-avatar-inner">
-                <img src="/Sistema/doo.png" alt="" aria-hidden="true" />
-              </div>
-            </div>
+            {profile?.foto_url ? (
+              <div className="mais-avt"><img src={profile.foto_url} alt="" /></div>
+            ) : (
+              <div className="mais-avt mais-avt--letter">{inicial}</div>
+            )}
             <div className="mais-greeting-text">
               <p className="mais-greeting-line1">
                 {saudacao()}{primeiroNome ? `, ${primeiroNome}` : ""}
+                {isPro && <span className="mais-pro">👑 PRO</span>}
               </p>
-              <p className="mais-greeting-line2">Vamos gerenciar sua confeitaria?</p>
+              <p className="mais-greeting-line2">O que quer fazer hoje?</p>
             </div>
           </div>
           <button className="mais-close" onClick={onClose} aria-label="Fechar">
-            <X size={20} weight="bold" />
+            <X size={18} weight="bold" />
           </button>
         </div>
 
         <div className="mais-body">
           {GROUPS.map((group) => (
-            <section key={group.label} className="mais-group">
-              <h3 className="mais-group-label">{group.label}</h3>
-              <div className="mais-items">
-                {group.items.map((item) => (
-                  <button
-                    key={item.path}
-                    className="mais-item"
-                    onClick={() => go(item.path)}
-                  >
-                    <span className="mais-item-icon">{item.icon}</span>
-                    <span className="mais-item-label">{item.label}</span>
-                  </button>
-                ))}
-              </div>
-            </section>
+            <div key={group.label} className="mais-card">
+              <p className="mais-sec-lbl">{group.label}</p>
+              {group.items.map((item) => (
+                <button key={item.path} className="mais-it" onClick={() => go(item.path)}>
+                  <span className="mais-it-ic">{item.icon}</span>
+                  <div className="mais-it-txt">
+                    <div className="mais-it-t">{item.label}</div>
+                    <div className="mais-it-d">{item.desc}</div>
+                  </div>
+                  <CaretRight size={14} weight="bold" className="mais-it-arr" />
+                </button>
+              ))}
+            </div>
           ))}
         </div>
       </aside>
@@ -165,90 +142,70 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
           background: rgba(0,0,0,0);
           z-index: 1000;
           pointer-events: none;
-          transition: background var(--dur-normal) var(--ease-out);
+          transition: background 0.3s;
         }
-        .mais-overlay.open {
-          background: rgba(0,0,0,0.45);
-          pointer-events: all;
-        }
+        .mais-overlay.open { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); pointer-events: all; }
 
         .mais-drawer {
           position: fixed;
           left: 0; right: 0; bottom: 0;
           z-index: 1001;
-          background: #fff;
-          border-radius: var(--radius-xl) 24px 0 0;
-          padding: 0.5rem 0 1rem;
+          background: #F8F5F6;
+          border-radius: 20px 20px 0 0;
           max-height: 88vh;
           display: flex; flex-direction: column;
           transform: translateY(100%);
           transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
           box-shadow: 0 -8px 32px rgba(0,0,0,0.18);
           font-family: 'Geist', sans-serif;
+          overflow: hidden;
         }
-        .mais-drawer.open {
-          transform: translateY(0);
-        }
+        .mais-drawer.open { transform: translateY(0); }
 
-        .mais-handle {
-          width: 36px; height: 4px;
-          background: #E9E9EE;
-          border-radius: var(--radius-full);
-          margin: 0.5rem auto 0.25rem;
-        }
+        .mais-handle { width: 36px; height: 4px; background: #E9E9EE; border-radius: 2px; margin: 8px auto 4px; }
 
         .mais-head {
-          display: flex; align-items: center; justify-content: space-between;
-          gap: 0.75rem;
-          padding: 0.5rem 1.1rem 0.85rem;
+          padding: 8px 18px 14px;
+          display: flex; align-items: center; gap: 10px;
+          background: linear-gradient(180deg, #FFF5F9 0%, #F8F5F6 100%);
         }
-        .mais-greeting {
-          display: flex; align-items: center; gap: 0.7rem;
-          min-width: 0; flex: 1;
-        }
-        .mais-avatar {
+        .mais-greeting { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+        .mais-avt {
           width: 44px; height: 44px;
-          border-radius: 28%;
-          background: var(--text-title);
+          border-radius: 50%;
+          background: linear-gradient(135deg, #FCE0E9, #E85A8C);
           display: flex; align-items: center; justify-content: center;
+          overflow: hidden;
           flex-shrink: 0;
-          box-shadow: 0 4px 12px rgba(61, 26, 36, 0.22);
         }
-        .mais-avatar-inner {
-          width: 36px; height: 36px;
-          border-radius: 26%;
-          background: #fff;
-          display: flex; align-items: center; justify-content: center;
-          overflow: hidden;
-        }
-        .mais-avatar-inner img {
-          width: 46px; height: 46px;
-          object-fit: cover;
-          object-position: top center;
-        }
-        .mais-greeting-text {
-          display: flex; flex-direction: column;
-          min-width: 0;
-        }
+        .mais-avt img { width: 100%; height: 100%; object-fit: cover; }
+        .mais-avt--letter { color: #fff; font-weight: 900; font-size: 16px; }
+        .mais-greeting-text { flex: 1; min-width: 0; }
         .mais-greeting-line1 {
-          font-size: var(--font-modal-title); font-weight: var(--fw-black);
-          color: var(--text-title);
+          font-size: 15px; font-weight: 900;
+          color: #2C1219;
           margin: 0;
-          letter-spacing: -0.01em;
-          line-height: 1.2;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
+          display: flex; align-items: center; gap: 6px;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .mais-greeting-line2 {
-          font-size: var(--font-helper);
-          color: var(--text-secondary);
-          margin: 3px 0 0;
-          line-height: 1.3;
+          font-size: 11.5px;
+          color: #6B7280;
+          margin: 2px 0 0;
+        }
+        .mais-pro {
+          background: linear-gradient(135deg, #E85A8C, #C33A6E);
+          color: #fff;
+          font-size: 9px;
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-weight: 900;
+          letter-spacing: 0.05em;
+          flex-shrink: 0;
         }
         .mais-close {
           width: 34px; height: 34px;
-          border: none; border-radius: var(--radius-md);
+          border: none; border-radius: 8px;
           background: #F4F4F6; color: #6B7280;
           display: flex; align-items: center; justify-content: center;
           cursor: pointer;
@@ -258,55 +215,65 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
 
         .mais-body {
           overflow-y: auto;
-          padding: 0.5rem 1rem 1rem;
-          display: flex; flex-direction: column;
-          gap: 1.1rem;
+          padding: 8px 12px 24px;
         }
 
-        .mais-group { display: flex; flex-direction: column; gap: 0.5rem; }
-        .mais-group-label {
-          font-size: var(--font-caption);
-          font-weight: var(--fw-bold);
-          text-transform: uppercase;
-          letter-spacing: 0.07em;
+        .mais-card {
+          background: #fff;
+          border-radius: 12px;
+          border: 1px solid #F0EBED;
+          padding: 4px;
+          margin-bottom: 10px;
+        }
+        .mais-sec-lbl {
+          font-size: 10px; font-weight: 800;
+          letter-spacing: 0.1em; text-transform: uppercase;
           color: #9CA3AF;
-          margin: 0 0 0 0.3rem;
+          margin: 8px 10px 4px;
+          padding-top: 4px;
         }
-        .mais-items {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-          gap: 0.45rem;
-        }
-        .mais-item {
-          display: flex; align-items: center; gap: 0.6rem;
-          padding: 0.7rem 0.85rem;
-          background: #F7F7F8;
-          border: 1px solid transparent;
-          border-radius: var(--radius-md);
+        .mais-it {
+          display: flex; align-items: center; gap: 12px;
+          width: 100%;
+          padding: 11px 10px;
+          background: transparent;
+          border: none;
+          border-radius: 8px;
           cursor: pointer;
           font-family: inherit;
           text-align: left;
-          transition: all var(--dur-fast) var(--ease-out);
+          transition: background 0.15s;
         }
-        .mais-item:hover {
-          background: #FFF1F7;
-          border-color: var(--text-title);
-        }
-        .mais-item-icon {
-          width: 30px; height: 30px;
+        .mais-it + .mais-it { border-top: 1px solid #F5F0F2; border-radius: 0; }
+        .mais-it:first-of-type { border-radius: 8px 8px 0 0; }
+        .mais-it:last-of-type { border-radius: 0 0 8px 8px; }
+        .mais-it:only-of-type { border-radius: 8px; }
+        .mais-it:hover, .mais-it:active { background: #FAFAFA; }
+        .mais-it-ic {
+          width: 32px; height: 32px;
+          background: #F5F0F2;
+          border-radius: 8px;
           display: flex; align-items: center; justify-content: center;
-          color: var(--text-title);
+          color: #2C1219;
           flex-shrink: 0;
         }
-        .mais-item-label {
-          font-size: var(--font-button); font-weight: var(--fw-semibold);
-          color: var(--text-primary);
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
+        .mais-it-txt { flex: 1; min-width: 0; }
+        .mais-it-t {
+          font-size: 13px; font-weight: 700;
+          color: #2C1219;
+          line-height: 1.2;
+        }
+        .mais-it-d {
+          font-size: 10.5px;
+          color: #9CA3AF;
+          margin-top: 1px;
+          line-height: 1.3;
+        }
+        .mais-it-arr {
+          color: #C0B3B8;
+          flex-shrink: 0;
         }
 
-        /* Desktop: drawer não aparece (sidebar já cobre tudo) */
         @media (min-width: 768px) {
           .mais-drawer, .mais-overlay { display: none; }
         }
