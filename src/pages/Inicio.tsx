@@ -2081,48 +2081,51 @@ export default function Inicio() {
           gap: 8px;
         }
         .ini-nav-card {
+          position: relative;
           display: flex;
           align-items: flex-start;
-          gap: 10px;
-          padding: 14px;
+          gap: 0;
+          padding: 14px 26px 12px 12px;
           background: #fff;
           border: 1px solid #F0EBED;
           border-radius: 8px;
           cursor: pointer;
           font-family: inherit;
           text-align: left;
-          min-height: 82px;
+          min-height: 84px;
           box-shadow: 0 1px 2px rgba(0,0,0,0.03);
           transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
           overflow: hidden;
         }
         .ini-nav-card:active { transform: scale(0.98); background: #FAF7F8; }
         .ini-nav-icon {
-          display: flex;
+          position: absolute;
+          left: 0; top: 0;
+          width: 26px; height: 26px;
+          border-radius: 0 0 8px 0;
+          background: #F5F0F2 !important;
+          color: #2C1219 !important;
+          display: flex !important;
           align-items: center;
           justify-content: center;
-          flex-shrink: 0;
-          width: auto !important;
-          height: auto !important;
-          background: transparent !important;
-          color: #2C1219 !important;
-          filter: drop-shadow(0 2px 4px rgba(44, 18, 25, 0.25));
-          margin-top: 1px;
+          filter: none;
+          margin-top: 0;
         }
-        .ini-nav-icon svg { width: 24px; height: 24px; }
+        .ini-nav-icon svg { width: 13px; height: 13px; }
         .ini-nav-meta {
           flex: 1;
           min-width: 0;
           display: flex;
           flex-direction: column;
-          gap: 2px;
+          gap: 3px;
         }
         .ini-nav-label {
           display: block;
-          font-size: 14px;
-          font-weight: 800;
+          font-size: 13px;
+          font-weight: 700;
           color: #2C1219;
           line-height: 1.2;
+          margin-top: 20px;
         }
         .ini-nav-sub {
           display: -webkit-box;
@@ -2130,37 +2133,37 @@ export default function Inicio() {
           -webkit-box-orient: vertical;
           overflow: hidden;
           text-overflow: ellipsis;
-          font-size: 11px;
-          color: #6B7280;
+          font-size: 10.5px;
+          color: #9CA3AF;
           line-height: 1.4;
         }
         .ini-nav-arrow {
-          display: block;
-          color: #E85A8C;
+          position: absolute;
+          top: 8px;
+          right: 10px;
+          color: #C0B3B8;
           font-weight: 700;
-          flex-shrink: 0;
-          margin-top: 3px;
-          margin-left: 4px;
-          font-size: 14px;
+          font-size: 12px;
+          margin: 0;
         }
-        /* Nova Venda em destaque com gradiente rosa da marca */
+        /* Remove destaque Nova Venda — todos iguais */
         .ini-nav-card[data-nav="nova-venda"] {
-          background: linear-gradient(135deg, #E85A8C 0%, #C33A6E 100%);
-          border-color: transparent;
-          box-shadow: 0 4px 12px rgba(232,90,140,0.28);
+          background: #fff;
+          border-color: #F0EBED;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.03);
         }
         .ini-nav-card[data-nav="nova-venda"]:active {
-          background: linear-gradient(135deg, #C33A6E 0%, #A62E5C 100%);
+          background: #FAF7F8;
           transform: scale(0.98);
         }
         .ini-nav-card[data-nav="nova-venda"] .ini-nav-icon {
-          background: transparent !important;
-          color: #fff !important;
-          filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.25));
+          background: #F5F0F2 !important;
+          color: #2C1219 !important;
+          filter: none;
         }
-        .ini-nav-card[data-nav="nova-venda"] .ini-nav-label { color: #fff; }
-        .ini-nav-card[data-nav="nova-venda"] .ini-nav-sub { color: rgba(255,255,255,0.85); }
-        .ini-nav-card[data-nav="nova-venda"] .ini-nav-arrow { color: #fff; }
+        .ini-nav-card[data-nav="nova-venda"] .ini-nav-label { color: #2C1219; }
+        .ini-nav-card[data-nav="nova-venda"] .ini-nav-sub { color: #9CA3AF; }
+        .ini-nav-card[data-nav="nova-venda"] .ini-nav-arrow { color: #C0B3B8; }
 
         /* ── Agenda de Entregas ── */
         .ini-agenda-header {
