@@ -2083,11 +2083,11 @@ export default function Inicio() {
         .ini-nav-card {
           display: flex;
           align-items: flex-start;
-          gap: 0;
+          gap: 10px;
           padding: 14px;
           background: #fff;
           border: 1px solid #F0EBED;
-          border-radius: 12px;
+          border-radius: 8px;
           cursor: pointer;
           font-family: inherit;
           text-align: left;
@@ -2098,8 +2098,18 @@ export default function Inicio() {
         }
         .ini-nav-card:active { transform: scale(0.98); background: #FAF7F8; }
         .ini-nav-icon {
-          display: none;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          width: auto !important;
+          height: auto !important;
+          background: transparent !important;
+          color: #E85A8C !important;
+          filter: drop-shadow(0 3px 6px rgba(232, 90, 140, 0.35));
+          margin-top: 1px;
         }
+        .ini-nav-icon svg { width: 24px; height: 24px; }
         .ini-nav-meta {
           flex: 1;
           min-width: 0;
@@ -2109,7 +2119,7 @@ export default function Inicio() {
         }
         .ini-nav-label {
           display: block;
-          font-size: 14.5px;
+          font-size: 14px;
           font-weight: 800;
           color: #2C1219;
           line-height: 1.2;
@@ -2120,7 +2130,7 @@ export default function Inicio() {
           -webkit-box-orient: vertical;
           overflow: hidden;
           text-overflow: ellipsis;
-          font-size: 11.5px;
+          font-size: 11px;
           color: #6B7280;
           line-height: 1.4;
         }
@@ -2130,7 +2140,7 @@ export default function Inicio() {
           font-weight: 700;
           flex-shrink: 0;
           margin-top: 3px;
-          margin-left: 6px;
+          margin-left: 4px;
           font-size: 14px;
         }
         /* Nova Venda em destaque com gradiente rosa da marca */
@@ -2144,8 +2154,9 @@ export default function Inicio() {
           transform: scale(0.98);
         }
         .ini-nav-card[data-nav="nova-venda"] .ini-nav-icon {
-          background: rgba(255,255,255,0.2) !important;
+          background: transparent !important;
           color: #fff !important;
+          filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.25));
         }
         .ini-nav-card[data-nav="nova-venda"] .ini-nav-label { color: #fff; }
         .ini-nav-card[data-nav="nova-venda"] .ini-nav-sub { color: rgba(255,255,255,0.85); }
