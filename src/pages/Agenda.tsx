@@ -13,13 +13,22 @@ const VIEW_KEY = "agenda_view_mode";
 type StatusGroup = "agendado" | "producao" | "concluido" | "cancelado";
 
 const STATUS_CONFIG: Record<string, { label: string; dot: string; group: StatusGroup }> = {
-  novo:         { label: "Novo",         dot: "#7F77DD", group: "agendado" },
+  // ─── Status reais do sistema ───
+  aguardando_pagamento: { label: "Aguardando Pagamento", dot: "#EF9F27", group: "agendado" },
+  aguardando_aceite:    { label: "Aguardando Aceite",    dot: "#EF9F27", group: "agendado" },
+  novo:                 { label: "Novo",                 dot: "#7F77DD", group: "agendado" },
+  agendado:             { label: "Agendado",             dot: "#0891b2", group: "agendado" },
+  em_producao:          { label: "Em Produção",          dot: "#EF9F27", group: "producao" },
+  finalizado:           { label: "Finalizado",           dot: "#22c55e", group: "concluido" },
+  aguardando_retirada:  { label: "Aguardando Retirada",  dot: "#22c55e", group: "concluido" },
+  em_entrega:           { label: "Em Entrega",           dot: "#0ea5e9", group: "concluido" },
+  entregue:             { label: "Entregue",             dot: "#9ca3af", group: "concluido" },
+  cancelado:            { label: "Cancelado",            dot: "#E24B4A", group: "cancelado" },
+  // ─── Legado (pedidos antigos com status desatualizados) ───
   confirmado:   { label: "Confirmado",   dot: "#0891b2", group: "agendado" },
-  em_producao:  { label: "Em produção",  dot: "#EF9F27", group: "producao" },
   pronto:       { label: "Pronto",       dot: "#22c55e", group: "concluido" },
   a_caminho:    { label: "A caminho",    dot: "#0ea5e9", group: "concluido" },
   concluido:    { label: "Concluído",    dot: "#9ca3af", group: "concluido" },
-  cancelado:    { label: "Cancelado",    dot: "#E24B4A", group: "cancelado" },
 };
 const getStatusConfig = (s: string) => STATUS_CONFIG[s] || STATUS_CONFIG.novo;
 
@@ -40,7 +49,12 @@ const DOW_MINI  = ["dom", "seg", "ter", "qua", "qui", "sex", "sab"];
 const DOW_FULL  = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 const MESES_SHORT = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
-const STATUS_FILTRAVEIS = ["novo", "confirmado", "em_producao", "pronto", "a_caminho", "concluido", "cancelado"];
+const STATUS_FILTRAVEIS = [
+  "aguardando_pagamento", "aguardando_aceite", "novo", "agendado",
+  "em_producao",
+  "finalizado", "aguardando_retirada", "em_entrega", "entregue",
+  "cancelado",
+];
 
 /* ═══════════════════════════════════════════════════════════════════════════
  * HELPERS
@@ -239,7 +253,7 @@ export default function Agenda() {
 
   const pedidosDoDia = useMemo(() =>
     pedidosBuscados
-      .filter(p => p.data_entrega === diaSel && p.status !== "cancelado")
+      .filter(p => p.data_entrega === diaSel)
       .sort((a, b) => (a.horario_entrega || "99").localeCompare(b.horario_entrega || "99")),
     [pedidosBuscados, diaSel]
   );
