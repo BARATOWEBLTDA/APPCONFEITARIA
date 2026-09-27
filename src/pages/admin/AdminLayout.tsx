@@ -12,6 +12,7 @@ const menuItems = [
   { path: "/admin/notif-templates", label: "Templates auto", emoji: "⚡" },
   { path: "/admin/banner", label: "Banner mobile", emoji: "🖼️" },
   { path: "/admin/noticias", label: "Notícias da Home", emoji: "📰" },
+  { path: "/admin/autores", label: "Autores", emoji: "✍️" },
   { path: "/admin/relatorios", label: "Relatórios", emoji: "📈" },
 ];
 

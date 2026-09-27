@@ -13,6 +13,7 @@ interface Noticia {
   icone_url: string | null;
   slug: string;
   autor: string;
+  autor_id: string | null;
   categoria: string | null;
   cta_texto: string | null;
   cta_url: string | null;
@@ -20,8 +21,16 @@ interface Noticia {
   ordem: number;
   ativo: boolean;
   views: number;
+  likes_base: number;
+  likes_count: number;
   publicado_em: string;
   fixada: boolean;
+}
+
+interface AutorOpt {
+  id: string;
+  nome: string;
+  foto_url: string | null;
 }
 
 const EMOJIS_SUGERIDOS = ["📢", "👋", "💡", "🤖", "🎨", "✨", "🎂", "🍰", "⭐", "🚀", "🔥", "🎁", "📱", "🎉"];
@@ -46,9 +55,10 @@ export default function AdminNoticias() {
   const capaRef = useRef<HTMLInputElement>(null);
   const iconeRef = useRef<HTMLInputElement>(null);
   const [uploadingIcone, setUploadingIcone] = useState(false);
-  const [form, setForm] = useState({ emoji: "📢", titulo: "", descricao: "", conteudo: null as any, imagem_capa: "", icone_url: "", autor: "Equipe Doonly", categoria: "", cta_texto: "", cta_url: "", ativo: true, fixada: false });
+  const [autoresList, setAutoresList] = useState<AutorOpt[]>([]);
+  const [form, setForm] = useState({ emoji: "📢", titulo: "", descricao: "", conteudo: null as any, imagem_capa: "", icone_url: "", autor: "Equipe Doonly", autor_id: "", categoria: "", cta_texto: "", cta_url: "", ativo: true, fixada: false, likes_base: 0 });
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); loadAutores(); }, []);
 
   const load = async () => {
     setLoading(true);
@@ -58,17 +68,22 @@ export default function AdminNoticias() {
     setLoading(false);
   };
 
+  const loadAutores = async () => {
+    const { data } = await supabase.from("admin_autores").select("id, nome, foto_url").eq("ativo", true).order("ordem", { ascending: true });
+    setAutoresList((data as AutorOpt[]) || []);
+  };
+
   const showMsg = (text: string, kind: "ok" | "err") => { setMsg({ text, kind }); setTimeout(() => setMsg(null), 3500); };
 
   const abrirNovo = () => {
     setEditing(null);
-    setForm({ emoji: "📢", titulo: "", descricao: "", conteudo: null, imagem_capa: "", icone_url: "", autor: "Equipe Doonly", categoria: "", cta_texto: "", cta_url: "", ativo: true, fixada: false });
+    setForm({ emoji: "📢", titulo: "", descricao: "", conteudo: null, imagem_capa: "", icone_url: "", autor: "Equipe Doonly", autor_id: "", categoria: "", cta_texto: "", cta_url: "", ativo: true, fixada: false, likes_base: 0 });
     setModalOpen(true);
   };
 
   const abrirEditar = (n: Noticia) => {
     setEditing(n);
-    setForm({ emoji: n.emoji, titulo: n.titulo, descricao: n.descricao, conteudo: n.conteudo, imagem_capa: n.imagem_capa || "", icone_url: n.icone_url || "", autor: n.autor || "Equipe Doonly", categoria: n.categoria || "", cta_texto: n.cta_texto || "", cta_url: n.cta_url || "", ativo: n.ativo, fixada: n.fixada || false });
+    setForm({ emoji: n.emoji, titulo: n.titulo, descricao: n.descricao, conteudo: n.conteudo, imagem_capa: n.imagem_capa || "", icone_url: n.icone_url || "", autor: n.autor || "Equipe Doonly", autor_id: n.autor_id || "", categoria: n.categoria || "", cta_texto: n.cta_texto || "", cta_url: n.cta_url || "", ativo: n.ativo, fixada: n.fixada || false, likes_base: n.likes_base || 0 });
     setModalOpen(true);
   };
 
@@ -116,6 +131,8 @@ export default function AdminNoticias() {
         imagem_capa: form.imagem_capa || null,
         icone_url: form.icone_url || null,
         autor: form.autor.trim() || "Equipe Doonly",
+        autor_id: form.autor_id || null,
+        likes_base: form.likes_base || 0,
         categoria: form.categoria.trim() || null,
         cta_texto: form.cta_texto.trim() || null,
         cta_url: form.cta_url.trim() || null,
@@ -264,8 +281,29 @@ export default function AdminNoticias() {
                 </div>
                 <div className="an-field">
                   <label>Autor</label>
-                  <input type="text" value={form.autor} onChange={e => setForm(f => ({ ...f, autor: e.target.value }))} />
+                  {autoresList.length > 0 ? (
+                    <select value={form.autor_id} onChange={e => {
+                      const id = e.target.value;
+                      const a = autoresList.find(x => x.id === id);
+                      setForm(f => ({ ...f, autor_id: id, autor: a ? a.nome : f.autor }));
+                    }}>
+                      <option value="">— Usar texto livre —</option>
+                      {autoresList.map(a => <option key={a.id} value={a.id}>{a.nome}</option>)}
+                    </select>
+                  ) : (
+                    <input type="text" value={form.autor} onChange={e => setForm(f => ({ ...f, autor: e.target.value }))} placeholder="Ex: Equipe Doonly" />
+                  )}
+                  {autoresList.length > 0 && !form.autor_id && (
+                    <input type="text" value={form.autor} onChange={e => setForm(f => ({ ...f, autor: e.target.value }))} placeholder="Ou digite um nome livre" style={{ marginTop: 6 }} />
+                  )}
+                  {autoresList.length === 0 && (
+                    <span className="an-hint" style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4, display: "block" }}>Cadastre autores em /admin/autores pra selecionar aqui.</span>
+                  )}
                 </div>
+              </div>
+              <div className="an-field">
+                <label>Likes iniciais (opcional) — soma aos likes reais</label>
+                <input type="number" min={0} value={form.likes_base} onChange={e => setForm(f => ({ ...f, likes_base: Math.max(0, parseInt(e.target.value) || 0) }))} placeholder="Ex: 42 (evita começar do zero)" />
               </div>
               <div className="an-field">
                 <label>Descrição curta (aparece no card da Home)</label>
