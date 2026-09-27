@@ -2105,8 +2105,8 @@ export default function Inicio() {
           width: auto !important;
           height: auto !important;
           background: transparent !important;
-          color: #E85A8C !important;
-          filter: drop-shadow(0 3px 6px rgba(232, 90, 140, 0.35));
+          color: #2C1219 !important;
+          filter: drop-shadow(0 2px 4px rgba(44, 18, 25, 0.25));
           margin-top: 1px;
         }
         .ini-nav-icon svg { width: 24px; height: 24px; }
