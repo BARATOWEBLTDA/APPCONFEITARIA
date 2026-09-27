@@ -76,7 +76,7 @@ export default function CardapioPrevia() {
       >
         {/* Voltar */}
         <button
-          onClick={() => navigate("/cardapio-config")}
+          onClick={() => navigate("/cardapio")}
           style={{
             background: "rgba(255,255,255,0.08)",
             border: "none",

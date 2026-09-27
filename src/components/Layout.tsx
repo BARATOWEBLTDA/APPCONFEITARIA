@@ -200,7 +200,7 @@ export default function Layout() {
             </div>
           )}
 
-          <NavLink to="/cardapio-config" data-tour="cardapio" className={({ isActive }) => `nav-item ${(isActive || location.pathname.startsWith("/cardapio")) ? "active" : ""}`}>
+          <NavLink to="/cardapio" data-tour="cardapio" className={({ isActive }) => `nav-item ${(isActive || location.pathname.startsWith("/cardapio")) ? "active" : ""}`}>
             <span className="nav-icon"><ShoppingBag size={18} weight="duotone" /></span>Cardápio Digital
           </NavLink>
 

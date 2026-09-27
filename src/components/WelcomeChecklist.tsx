@@ -98,7 +98,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           id: "loja",
           icon: <Storefront size={iconSize} weight="duotone" />,
           title: "Configurar loja",
-          path: "/cardapio-config",
+          path: "/cardapio",
           done: lojaConfigurada,
         },
         {

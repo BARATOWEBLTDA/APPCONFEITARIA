@@ -811,7 +811,7 @@ export default function Inicio() {
                     <span>Solicitar recursos</span>
                   </button>
 
-                  <button className="ini-menu-novo-item" onClick={() => { setMenuOpen(false); navigate("/cardapio-config"); }}>
+                  <button className="ini-menu-novo-item" onClick={() => { setMenuOpen(false); navigate("/cardapio"); }}>
                     <span className="ini-menu-novo-icon">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                     </span>
@@ -979,7 +979,7 @@ export default function Inicio() {
             { icon: <ShoppingBag    size={22} weight="bold" />, label: "Nova Venda",     sub: "Registre um novo pedido da sua loja.",       path: "/vendas/novo",     key: "nova-venda" },
             { icon: <Receipt        size={22} weight="bold" />, label: "Pedidos",        sub: "Gerencie seus pedidos.",                      path: "/pedidos",         key: "pedidos" },
             { icon: <CalendarDots   size={22} weight="bold" />, label: "Agenda",         sub: "Seus agendamentos.",                          path: "/agenda",          key: "agenda" },
-            { icon: <BookOpen       size={22} weight="bold" />, label: "Cardápio",       sub: "Acesse seu cardápio e produtos.",             path: "/cardapio-config", key: "cardapio" },
+            { icon: <BookOpen       size={22} weight="bold" />, label: "Cardápio",       sub: "Acesse seu cardápio e produtos.",             path: "/cardapio",        key: "cardapio" },
             { icon: <Users          size={22} weight="bold" />, label: "Clientes",       sub: "Gerencie seus clientes.",                     path: "/clientes",        key: "clientes" },
             { icon: <CurrencyDollar size={22} weight="bold" />, label: "Financeiro",     sub: "Controle suas entradas, saídas e lucros.",    path: "/financeiro",      key: "financeiro" },
             { icon: <Cake           size={22} weight="bold" />, label: "Produtos",       sub: "Cadastre e edite seus produtos e receitas.",  path: "/produtos",        key: "produtos" },

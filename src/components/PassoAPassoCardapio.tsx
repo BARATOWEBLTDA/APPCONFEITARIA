@@ -70,7 +70,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           desc: "O nome que os clientes vão ver no cardápio",
           icon: <Storefront size={18} weight="fill" />,
           done: !!(profileData?.nome_loja && profileData.nome_loja.trim().length > 0),
-          path: "/cardapio-config",
+          path: "/cardapio",
         },
         {
           key: "descricao",
@@ -78,7 +78,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           desc: "Conte a história da sua confeitaria (pode gerar com IA)",
           icon: <PencilLine size={18} weight="fill" />,
           done: !!(profileData?.descricao_loja && profileData.descricao_loja.trim().length > 0),
-          path: "/cardapio-config",
+          path: "/cardapio",
         },
         {
           key: "produto",
