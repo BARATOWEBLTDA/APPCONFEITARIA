@@ -25,6 +25,7 @@ import Insumos from "@/pages/Insumos";
 import Assinar from "@/pages/Assinar";
 import Receitas from "@/pages/Receitas";
 import Notificacoes from "@/pages/Notificacoes";
+import SolicitarRecurso from "@/pages/SolicitarRecurso";
 import AdminLogin from "@/pages/admin/AdminLogin";
 import AdminLayout from "@/pages/admin/AdminLayout";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
@@ -215,6 +216,7 @@ export default function App() {
           <Route path="/assinar" element={<Assinar />} />
           <Route path="/receitas" element={<Receitas />} />
           <Route path="/notificacoes" element={<Notificacoes />} />
+          <Route path="/solicitar-recurso" element={<SolicitarRecurso />} />
           <Route path="/produtos" element={<Produtos />} />
           <Route path="/produtos/categorias" element={<Produtos />} />
           <Route path="/categorias" element={<Categorias />} />
