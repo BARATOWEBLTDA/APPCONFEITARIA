@@ -74,29 +74,31 @@ export default function Noticias() {
       />
       <div className="nl-root">
 
-      <div className="nl-search">
-        <MagnifyingGlass size={16} weight="bold" />
-        <input
-          type="text"
-          placeholder="Buscar notícia..."
-          value={busca}
-          onChange={e => setBusca(e.target.value)}
-        />
-      </div>
-
-      {categorias.length > 1 && (
-        <div className="nl-tabs">
-          {categorias.map(c => (
-            <button
-              key={c}
-              className={`nl-tab ${categoria === c ? "on" : ""}`}
-              onClick={() => setCategoria(c)}
-            >
-              {c === "todas" ? "Todas" : c}
-            </button>
-          ))}
+      <div className="nl-toolbar">
+        <div className="nl-search">
+          <MagnifyingGlass size={16} weight="bold" />
+          <input
+            type="text"
+            placeholder="Buscar notícia..."
+            value={busca}
+            onChange={e => setBusca(e.target.value)}
+          />
         </div>
-      )}
+
+        {categorias.length > 1 && (
+          <div className="nl-tabs">
+            {categorias.map(c => (
+              <button
+                key={c}
+                className={`nl-tab ${categoria === c ? "on" : ""}`}
+                onClick={() => setCategoria(c)}
+              >
+                {c === "todas" ? "Todas" : c}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {loading ? (
         <div className="nl-empty">Carregando...</div>
@@ -136,12 +138,15 @@ export default function Noticias() {
           padding: 16px 16px 100px;
         }
 
+        .nl-toolbar {
+          margin-bottom: 14px;
+        }
         .nl-search {
           display: flex; align-items: center; gap: 8px;
           padding: 10px 14px;
           background: #F5F0F2;
           border-radius: 10px;
-          margin-bottom: 14px;
+          margin-bottom: 10px;
           color: #6B7280;
         }
         .nl-search input {
@@ -159,7 +164,6 @@ export default function Noticias() {
           display: flex; gap: 6px;
           overflow-x: auto;
           padding-bottom: 4px;
-          margin-bottom: 16px;
           scrollbar-width: none;
         }
         .nl-tabs::-webkit-scrollbar { display: none; }
@@ -255,6 +259,93 @@ export default function Noticias() {
           font-size: 10.5px;
           color: #9CA3AF;
           margin: auto 0 0;
+        }
+
+        /* ════════════════ DESKTOP ════════════════ */
+        @media (min-width: 900px) {
+          .nl-root {
+            max-width: 1200px;
+            padding: 24px 32px 80px;
+          }
+
+          .nl-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 16px 20px;
+            background: #fff;
+            border: 1px solid #F0EBED;
+            border-radius: 12px;
+            margin-bottom: 24px;
+          }
+          .nl-search {
+            flex: 0 0 320px;
+            margin-bottom: 0;
+            padding: 10px 14px;
+          }
+          .nl-tabs {
+            flex: 1;
+            padding-bottom: 0;
+            flex-wrap: wrap;
+          }
+
+          .nl-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+          }
+          .nl-item {
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            overflow: hidden;
+            gap: 0;
+            transition: transform 0.2s, box-shadow 0.2s;
+          }
+          .nl-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+          }
+          .nl-item--fix {
+            background: linear-gradient(to bottom, #FEF9E7, #fff 40%);
+            border-color: #FDE68A;
+          }
+          .nl-capa {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 16/9;
+            border-radius: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .nl-capa-emoji { font-size: 48px; }
+          .nl-body {
+            padding: 16px 18px 18px;
+            gap: 8px;
+            flex: 1;
+          }
+          .nl-tags { align-self: flex-start; }
+          .nl-t {
+            font-size: 15px;
+            -webkit-line-clamp: 2;
+            letter-spacing: -0.01em;
+          }
+          .nl-d {
+            font-size: 12.5px;
+            -webkit-line-clamp: 3;
+            line-height: 1.5;
+          }
+          .nl-meta {
+            font-size: 11px;
+            padding-top: 4px;
+          }
+        }
+
+        @media (min-width: 900px) and (max-width: 1200px) {
+          .nl-list {
+            grid-template-columns: repeat(2, 1fr);
+          }
         }
       `}</style>
     </div>
