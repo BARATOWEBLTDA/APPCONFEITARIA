@@ -1,19 +1,58 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import {
+  ChartLine, UsersThree, Newspaper, PenNib, Image as ImageIcon,
+  Cake, Medal, FilePdf, Bell, ChartBar,
+  ArrowLeft, SignOut, List,
+} from "@phosphor-icons/react";
 
-const menuItems = [
-  { path: "/admin", label: "Dashboard", emoji: "📊" },
-  { path: "/admin/usuarios", label: "Usuários", emoji: "👥" },
-  { path: "/admin/receitas", label: "Receitas Comunidade", emoji: "👩‍🍳" },
-  { path: "/admin/receitas-doonly", label: "Receitas Doonly", emoji: "🏅" },
-  { path: "/admin/pdfs", label: "Biblioteca PDF", emoji: "📄" },
-  { path: "/admin/notificacoes", label: "Notificações", emoji: "🔔" },
-  { path: "/admin/notif-templates", label: "Templates auto", emoji: "⚡" },
-  { path: "/admin/banner", label: "Banner mobile", emoji: "🖼️" },
-  { path: "/admin/noticias", label: "Notícias da Home", emoji: "📰" },
-  { path: "/admin/autores", label: "Autores", emoji: "✍️" },
-  { path: "/admin/relatorios", label: "Relatórios", emoji: "📈" },
+interface MenuItem {
+  path: string;
+  label: string;
+  icon: React.ReactNode;
+}
+
+interface MenuSection {
+  title?: string;
+  items: MenuItem[];
+}
+
+const menuSections: MenuSection[] = [
+  {
+    items: [
+      { path: "/admin", label: "Dashboard", icon: <ChartLine size={16} weight="fill" /> },
+      { path: "/admin/usuarios", label: "Usuários", icon: <UsersThree size={16} weight="bold" /> },
+    ],
+  },
+  {
+    title: "Conteúdo",
+    items: [
+      { path: "/admin/noticias", label: "Notícias", icon: <Newspaper size={16} weight="bold" /> },
+      { path: "/admin/autores", label: "Autores", icon: <PenNib size={16} weight="bold" /> },
+      { path: "/admin/banner", label: "Banner mobile", icon: <ImageIcon size={16} weight="bold" /> },
+    ],
+  },
+  {
+    title: "Biblioteca",
+    items: [
+      { path: "/admin/receitas", label: "Receitas Comunidade", icon: <Cake size={16} weight="bold" /> },
+      { path: "/admin/receitas-doonly", label: "Receitas Doonly", icon: <Medal size={16} weight="bold" /> },
+      { path: "/admin/pdfs", label: "Biblioteca PDF", icon: <FilePdf size={16} weight="bold" /> },
+    ],
+  },
+  {
+    title: "Comunicação",
+    items: [
+      { path: "/admin/notificacoes", label: "Notificações", icon: <Bell size={16} weight="bold" /> },
+    ],
+  },
+  {
+    title: "Análise",
+    items: [
+      { path: "/admin/relatorios", label: "Relatórios", icon: <ChartBar size={16} weight="bold" /> },
+    ],
+  },
 ];
 
 export default function AdminLayout() {
@@ -22,6 +61,8 @@ export default function AdminLayout() {
   const [authorized, setAuthorized] = useState(false);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
+  const [userName, setUserName] = useState("Admin");
 
   useEffect(() => {
     const check = async () => {
@@ -30,62 +71,97 @@ export default function AdminLayout() {
       if (!session) { navigate("/admin/login"); setLoading(false); return; }
       if (ADMIN_EMAILS.includes(session.user.email || "")) {
         setAuthorized(true);
+        setUserEmail(session.user.email || "");
+        setUserName((session.user.email || "A").split("@")[0]);
       } else {
         navigate("/admin/login");
       }
       setLoading(false);
     };
     check();
-  }, []);
+  }, [navigate]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/admin/login");
   };
 
-  if (loading) return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", fontFamily: "inherit", color: "#9ca3af" }}>
-      Verificando acesso...
-    </div>
+  if (loading) return null;
+  if (!authorized) return null;
+
+  const isActive = (path: string) => {
+    if (path === "/admin") return location.pathname === "/admin";
+    return location.pathname === path;
+  };
+
+  const renderNav = () => (
+    <nav className="adm-nav">
+      {menuSections.map((sec, idx) => (
+        <div key={idx} className="adm-nav-section">
+          {sec.title && <p className="adm-nav-sec-title">{sec.title}</p>}
+          {sec.items.map(item => (
+            <button
+              key={item.path}
+              className={`adm-nav-item ${isActive(item.path) ? "on" : ""}`}
+              onClick={() => { navigate(item.path); setMenuOpen(false); }}
+            >
+              <span className="adm-nav-icon">{item.icon}</span>
+              <span className="adm-nav-label">{item.label}</span>
+            </button>
+          ))}
+        </div>
+      ))}
+    </nav>
   );
 
-  if (!authorized) return null;
+  const renderBottom = () => (
+    <div className="adm-sidebar-bottom">
+      <div className="adm-user">
+        <div className="adm-user-avt">{userName.charAt(0).toUpperCase()}</div>
+        <div className="adm-user-info">
+          <div className="adm-user-name">{userName}</div>
+          <div className="adm-user-mail">{userEmail}</div>
+        </div>
+      </div>
+      <button className="adm-side-btn" onClick={() => navigate("/inicio")}>
+        <ArrowLeft size={14} weight="bold" />
+        <span>Voltar ao app</span>
+      </button>
+      <button className="adm-side-btn danger" onClick={handleLogout}>
+        <SignOut size={14} weight="bold" />
+        <span>Sair</span>
+      </button>
+    </div>
+  );
 
   return (
     <div className="adm-root">
       {/* Sidebar desktop */}
       <aside className="adm-sidebar">
-        <div className="adm-sidebar-logo">
-          <img src="/logoapp.png" alt="Doonly" style={{ height: "48px", objectFit: "contain" }} />
-          <span className="adm-admin-badge">Admin</span>
+        <div className="adm-sidebar-top">
+          <div className="adm-logo-square">
+            <img src="/logoapp.png" alt="Doonly" />
+          </div>
+          <div className="adm-brand">
+            <span className="adm-brand-name">Doonly</span>
+            <span className="adm-brand-role">Painel Admin</span>
+          </div>
         </div>
-
-        <nav className="adm-nav">
-          {menuItems.map(item => (
-            <button key={item.path} className={`adm-nav-item ${location.pathname === item.path ? "active" : ""}`}
-              onClick={() => navigate(item.path)}>
-              <span className="adm-nav-emoji">{item.emoji}</span>
-              <span className="adm-nav-label">{item.label}</span>
-            </button>
-          ))}
-        </nav>
-
-        <div className="adm-sidebar-bottom">
-          <button className="adm-app-btn" onClick={() => navigate("/inicio")}>
-            ← Voltar ao app
-          </button>
-          <button className="adm-logout-btn" onClick={handleLogout}>Sair</button>
-        </div>
+        {renderNav()}
+        {renderBottom()}
       </aside>
 
       {/* Mobile header */}
       <div className="adm-mobile-header">
-        <img src="/logoapp.png" alt="Doonly" style={{ height: "36px", objectFit: "contain" }} />
-        <span className="adm-admin-badge">Admin</span>
+        <div className="adm-logo-square adm-logo-square--sm">
+          <img src="/logoapp.png" alt="Doonly" />
+        </div>
+        <div className="adm-brand">
+          <span className="adm-brand-name">Doonly</span>
+          <span className="adm-brand-role">Admin</span>
+        </div>
         <button className="adm-menu-btn" onClick={() => setMenuOpen(!menuOpen)}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-          </svg>
+          <List size={22} weight="bold" />
         </button>
       </div>
 
@@ -93,15 +169,17 @@ export default function AdminLayout() {
       {menuOpen && (
         <div className="adm-drawer-overlay" onClick={() => setMenuOpen(false)}>
           <div className="adm-drawer" onClick={e => e.stopPropagation()}>
-            {menuItems.map(item => (
-              <button key={item.path} className={`adm-nav-item ${location.pathname === item.path ? "active" : ""}`}
-                onClick={() => { navigate(item.path); setMenuOpen(false); }}>
-                <span className="adm-nav-emoji">{item.emoji}</span>
-                <span className="adm-nav-label">{item.label}</span>
-              </button>
-            ))}
-            <button className="adm-app-btn" style={{ marginTop: "1rem" }} onClick={() => navigate("/inicio")}>← Voltar ao app</button>
-            <button className="adm-logout-btn" onClick={handleLogout}>Sair</button>
+            <div className="adm-sidebar-top">
+              <div className="adm-logo-square">
+                <img src="/logoapp.png" alt="Doonly" />
+              </div>
+              <div className="adm-brand">
+                <span className="adm-brand-name">Doonly</span>
+                <span className="adm-brand-role">Painel Admin</span>
+              </div>
+            </div>
+            {renderNav()}
+            {renderBottom()}
           </div>
         </div>
       )}
@@ -112,39 +190,184 @@ export default function AdminLayout() {
       </main>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; }
-        .adm-root { display: flex; min-height: 100vh; font-family: 'Geist', sans-serif; background: #f9fafb; }
+        .adm-root { display: flex; min-height: 100vh; font-family: 'Geist', sans-serif; background: #F8F5F6; }
 
-        /* Sidebar */
-        .adm-sidebar { width: 240px; min-height: 100vh; background: #181419; display: flex; flex-direction: column; position: fixed; left: 0; top: 0; z-index: 30; }
-        .adm-sidebar-logo { display: flex; align-items: center; gap: 0.75rem; padding: 1.25rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
-        .adm-admin-badge { background: linear-gradient(135deg, #f9007a, #d4006a); color: white; font-size: var(--font-caption); font-weight: var(--fw-bold); padding: 0.2rem 0.6rem; border-radius: var(--radius-xl); letter-spacing: 0.5px; }
+        /* ═══════════ Sidebar desktop ═══════════ */
+        .adm-sidebar {
+          width: 260px;
+          min-height: 100vh;
+          background: #1A1418;
+          display: flex; flex-direction: column;
+          position: fixed;
+          left: 0; top: 0; bottom: 0;
+          z-index: 30;
+        }
+        .adm-sidebar-top {
+          padding: 20px;
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+          display: flex; align-items: center; gap: 12px;
+        }
+        .adm-logo-square {
+          width: 40px; height: 40px;
+          border-radius: 10px;
+          background: linear-gradient(135deg, #E85A8C, #C33A6E);
+          display: flex; align-items: center; justify-content: center;
+          box-shadow: 0 4px 12px rgba(232,90,140,0.25);
+          overflow: hidden;
+          flex-shrink: 0;
+        }
+        .adm-logo-square img { width: 26px; height: 26px; object-fit: contain; filter: brightness(0) invert(1); }
+        .adm-logo-square--sm { width: 34px; height: 34px; }
+        .adm-logo-square--sm img { width: 22px; height: 22px; }
 
-        .adm-nav { flex: 1; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 0.25rem; }
-        .adm-nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 0.9rem; border-radius: var(--radius-md); border: none; background: none; cursor: pointer; font-family: 'Geist', sans-serif; font-size: var(--font-button); font-weight: var(--fw-medium); color: rgba(255,255,255,0.6); width: 100%; text-align: left; transition: all 0.15s; }
-        .adm-nav-item:hover { background: rgba(255,255,255,0.06); color: white; }
-        .adm-nav-item.active { background: rgba(249,0,122,0.15); color: #f9007a; border-left: 3px solid #f9007a; padding-left: calc(0.9rem - 3px); }
-        .adm-nav-emoji { font-size: var(--font-input); }
-        .adm-nav-label { font-size: var(--font-helper); }
+        .adm-brand { display: flex; flex-direction: column; min-width: 0; }
+        .adm-brand-name { font-size: 15px; font-weight: 900; color: #fff; line-height: 1.1; }
+        .adm-brand-role { font-size: 10px; color: #9CA3AF; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; }
 
-        .adm-sidebar-bottom { padding: 1rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 0.5rem; }
-        .adm-app-btn { padding: 0.6rem 0.9rem; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); border: none; border-radius: var(--radius-sm); font-family: 'Geist', sans-serif; font-size: var(--font-helper); font-weight: var(--fw-medium); cursor: pointer; text-align: left; transition: background 0.15s; }
-        .adm-app-btn:hover { background: rgba(255,255,255,0.12); }
-        .adm-logout-btn { padding: 0.6rem 0.9rem; background: rgba(239,68,68,0.1); color: #ef4444; border: none; border-radius: var(--radius-sm); font-family: 'Geist', sans-serif; font-size: var(--font-helper); font-weight: var(--fw-semibold); cursor: pointer; text-align: left; }
+        .adm-nav {
+          flex: 1;
+          padding: 12px 12px 20px;
+          overflow-y: auto;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255,255,255,0.15) transparent;
+        }
+        .adm-nav::-webkit-scrollbar { width: 4px; }
+        .adm-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
 
-        .adm-main { margin-left: 240px; flex: 1; padding: 2rem; min-height: 100vh; }
+        .adm-nav-section { margin-bottom: 4px; }
+        .adm-nav-sec-title {
+          font-size: 10px;
+          font-weight: 800;
+          color: #6B7280;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          padding: 14px 12px 6px;
+          margin: 0;
+        }
 
-        /* Mobile */
-        .adm-mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 30; background: #181419; padding: 0.75rem 1rem; align-items: center; gap: 0.75rem; }
-        .adm-menu-btn { margin-left: auto; background: none; border: none; cursor: pointer; }
-        .adm-drawer-overlay { position: fixed; inset: 0; z-index: 40; background: rgba(0,0,0,0.5); }
-        .adm-drawer { position: fixed; left: 0; top: 0; bottom: 0; width: 260px; background: #181419; padding: 1.5rem 0.75rem; display: flex; flex-direction: column; gap: 0.25rem; overflow-y: auto; }
+        .adm-nav-item {
+          display: flex; align-items: center; gap: 10px;
+          width: 100%;
+          padding: 9px 12px;
+          border-radius: 8px;
+          border: none;
+          background: transparent;
+          color: #C9B4BB;
+          cursor: pointer;
+          font-family: inherit;
+          font-size: 13px;
+          font-weight: 600;
+          text-align: left;
+          transition: all 0.15s;
+          margin-bottom: 2px;
+        }
+        .adm-nav-icon { display: flex; align-items: center; justify-content: center; width: 18px; }
+        .adm-nav-item:hover {
+          background: rgba(255,255,255,0.06);
+          color: #fff;
+        }
+        .adm-nav-item.on {
+          background: linear-gradient(135deg, #E85A8C, #C33A6E);
+          color: #fff;
+          font-weight: 700;
+          box-shadow: 0 4px 12px rgba(232,90,140,0.25);
+        }
+        .adm-nav-label { flex: 1; }
+
+        /* Bottom sidebar */
+        .adm-sidebar-bottom {
+          padding: 12px;
+          border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .adm-user {
+          display: flex; align-items: center; gap: 10px;
+          padding: 10px 12px;
+          border-radius: 8px;
+          background: rgba(255,255,255,0.04);
+          margin-bottom: 8px;
+        }
+        .adm-user-avt {
+          width: 32px; height: 32px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #FCE0E9, #E85A8C);
+          display: flex; align-items: center; justify-content: center;
+          color: #fff;
+          font-size: 13px;
+          font-weight: 900;
+          flex-shrink: 0;
+        }
+        .adm-user-info { flex: 1; min-width: 0; }
+        .adm-user-name { font-size: 12px; font-weight: 800; color: #fff; text-transform: capitalize; }
+        .adm-user-mail { font-size: 10px; color: #9CA3AF; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .adm-side-btn {
+          display: flex; align-items: center; gap: 8px;
+          width: 100%;
+          padding: 8px 12px;
+          border-radius: 6px;
+          border: none;
+          background: transparent;
+          color: #9CA3AF;
+          font-size: 12px;
+          font-weight: 600;
+          font-family: inherit;
+          cursor: pointer;
+          text-align: left;
+          margin-top: 2px;
+          transition: all 0.15s;
+        }
+        .adm-side-btn:hover { background: rgba(255,255,255,0.06); color: #fff; }
+        .adm-side-btn.danger { color: #F87171; }
+        .adm-side-btn.danger:hover { background: rgba(248,113,113,0.1); color: #FCA5A5; }
+
+        /* ═══════════ Main ═══════════ */
+        .adm-main {
+          margin-left: 260px;
+          flex: 1;
+          min-height: 100vh;
+        }
+
+        /* ═══════════ Mobile ═══════════ */
+        .adm-mobile-header {
+          display: none;
+          position: fixed; top: 0; left: 0; right: 0;
+          z-index: 30;
+          background: #1A1418;
+          padding: 12px 16px;
+          align-items: center;
+          gap: 12px;
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .adm-menu-btn {
+          margin-left: auto;
+          background: rgba(255,255,255,0.06);
+          border: none;
+          color: #fff;
+          cursor: pointer;
+          width: 38px; height: 38px;
+          border-radius: 8px;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .adm-drawer-overlay {
+          position: fixed; inset: 0;
+          z-index: 40;
+          background: rgba(0,0,0,0.6);
+          backdrop-filter: blur(4px);
+        }
+        .adm-drawer {
+          position: fixed;
+          left: 0; top: 0; bottom: 0;
+          width: 270px;
+          background: #1A1418;
+          display: flex; flex-direction: column;
+          overflow-y: auto;
+        }
 
         @media (max-width: 768px) {
           .adm-sidebar { display: none; }
           .adm-mobile-header { display: flex; }
-          .adm-main { margin-left: 0; padding: 1rem; padding-top: 4.5rem; }
+          .adm-main { margin-left: 0; padding-top: 62px; }
         }
       `}</style>
     </div>
