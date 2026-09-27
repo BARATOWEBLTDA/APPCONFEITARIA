@@ -10,6 +10,7 @@ interface Noticia {
   titulo: string;
   descricao: string;
   imagem_capa: string | null;
+  icone_url: string | null;
   slug: string;
   categoria: string | null;
   tempo_leitura: number | null;
@@ -41,7 +42,7 @@ export default function Noticias() {
     (async () => {
       const { data } = await supabase
         .from("admin_noticias")
-        .select("id, emoji, titulo, descricao, imagem_capa, slug, categoria, tempo_leitura, publicado_em, fixada")
+        .select("id, emoji, titulo, descricao, imagem_capa, icone_url, slug, categoria, tempo_leitura, publicado_em, fixada")
         .eq("ativo", true)
         .order("fixada", { ascending: false })
         .order("publicado_em", { ascending: false });
@@ -110,14 +111,15 @@ export default function Noticias() {
         <div className="nl-list">
           {filtradas.map((n) => (
             <button key={n.id} className={`nl-item ${n.fixada ? "nl-item--fix" : ""}`} onClick={() => navigate(`/noticias/${n.slug}`)}>
-              <div className="nl-capa" style={n.imagem_capa ? { backgroundImage: `url(${n.imagem_capa})` } : undefined}>
-                {!n.imagem_capa && <span className="nl-capa-emoji">{n.emoji}</span>}
+              <div className="nl-capa" style={n.icone_url ? { backgroundImage: `url(${n.icone_url})` } : (n.imagem_capa ? { backgroundImage: `url(${n.imagem_capa})` } : undefined)}>
+                {!n.icone_url && !n.imagem_capa && <span className="nl-capa-emoji">{n.emoji}</span>}
               </div>
               <div className="nl-body">
-                <div className="nl-tags">
-                  {n.fixada && <span className="nl-fix-tag">📌 Fixada</span>}
-                  {n.categoria && <span className="nl-cat">{n.categoria}</span>}
-                </div>
+                {n.categoria && (
+                  <div className="nl-tags">
+                    <span className="nl-cat">{n.categoria}</span>
+                  </div>
+                )}
                 <p className="nl-t">{n.titulo}</p>
                 {n.descricao && <p className="nl-d">{n.descricao}</p>}
                 <p className="nl-meta">

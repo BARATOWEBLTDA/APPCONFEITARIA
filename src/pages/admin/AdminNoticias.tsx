@@ -10,6 +10,7 @@ interface Noticia {
   descricao: string;
   conteudo: any;
   imagem_capa: string | null;
+  icone_url: string | null;
   slug: string;
   autor: string;
   categoria: string | null;
@@ -43,7 +44,9 @@ export default function AdminNoticias() {
   const [uploadingCapa, setUploadingCapa] = useState(false);
   const [msg, setMsg] = useState<{ text: string; kind: "ok" | "err" } | null>(null);
   const capaRef = useRef<HTMLInputElement>(null);
-  const [form, setForm] = useState({ emoji: "📢", titulo: "", descricao: "", conteudo: null as any, imagem_capa: "", autor: "Equipe Doonly", categoria: "", cta_texto: "", cta_url: "", ativo: true, fixada: false });
+  const iconeRef = useRef<HTMLInputElement>(null);
+  const [uploadingIcone, setUploadingIcone] = useState(false);
+  const [form, setForm] = useState({ emoji: "📢", titulo: "", descricao: "", conteudo: null as any, imagem_capa: "", icone_url: "", autor: "Equipe Doonly", categoria: "", cta_texto: "", cta_url: "", ativo: true, fixada: false });
 
   useEffect(() => { load(); }, []);
 
@@ -59,13 +62,13 @@ export default function AdminNoticias() {
 
   const abrirNovo = () => {
     setEditing(null);
-    setForm({ emoji: "📢", titulo: "", descricao: "", conteudo: null, imagem_capa: "", autor: "Equipe Doonly", categoria: "", cta_texto: "", cta_url: "", ativo: true, fixada: false });
+    setForm({ emoji: "📢", titulo: "", descricao: "", conteudo: null, imagem_capa: "", icone_url: "", autor: "Equipe Doonly", categoria: "", cta_texto: "", cta_url: "", ativo: true, fixada: false });
     setModalOpen(true);
   };
 
   const abrirEditar = (n: Noticia) => {
     setEditing(n);
-    setForm({ emoji: n.emoji, titulo: n.titulo, descricao: n.descricao, conteudo: n.conteudo, imagem_capa: n.imagem_capa || "", autor: n.autor || "Equipe Doonly", categoria: n.categoria || "", cta_texto: n.cta_texto || "", cta_url: n.cta_url || "", ativo: n.ativo, fixada: n.fixada || false });
+    setForm({ emoji: n.emoji, titulo: n.titulo, descricao: n.descricao, conteudo: n.conteudo, imagem_capa: n.imagem_capa || "", icone_url: n.icone_url || "", autor: n.autor || "Equipe Doonly", categoria: n.categoria || "", cta_texto: n.cta_texto || "", cta_url: n.cta_url || "", ativo: n.ativo, fixada: n.fixada || false });
     setModalOpen(true);
   };
 
@@ -85,6 +88,22 @@ export default function AdminNoticias() {
     e.target.value = "";
   };
 
+  const uploadIcone = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingIcone(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+      const fileName = `icone-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
+      const { error } = await supabase.storage.from("noticias-capas").upload(fileName, file, { cacheControl: "3600" });
+      if (error) throw error;
+      const { data } = supabase.storage.from("noticias-capas").getPublicUrl(fileName);
+      setForm(f => ({ ...f, icone_url: data.publicUrl }));
+    } catch (err: any) { showMsg("Erro upload: " + err.message, "err"); }
+    setUploadingIcone(false);
+    e.target.value = "";
+  };
+
   const salvar = async () => {
     if (!form.titulo.trim()) { alert("Preencha o título"); return; }
     setSaving(true);
@@ -95,6 +114,7 @@ export default function AdminNoticias() {
         descricao: form.descricao.trim(),
         conteudo: form.conteudo,
         imagem_capa: form.imagem_capa || null,
+        icone_url: form.icone_url || null,
         autor: form.autor.trim() || "Equipe Doonly",
         categoria: form.categoria.trim() || null,
         cta_texto: form.cta_texto.trim() || null,
@@ -219,6 +239,21 @@ export default function AdminNoticias() {
                 )}
                 <input ref={capaRef} type="file" accept="image/*" style={{ display: "none" }} onChange={uploadCapa} />
               </div>
+
+              <div className="an-field">
+                <label>Ícone pequeno (imagem quadrada) — aparece no card da Home</label>
+                {form.icone_url ? (
+                  <div className="an-icone-preview">
+                    <img src={form.icone_url} alt="" />
+                    <button className="an-capa-remove" onClick={() => setForm(f => ({ ...f, icone_url: "" }))}>✕ Remover</button>
+                  </div>
+                ) : (
+                  <div className="an-icone-upload" onClick={() => !uploadingIcone && iconeRef.current?.click()}>
+                    {uploadingIcone ? <span>Enviando...</span> : (<><ImageIcon size={22} weight="regular" /><span>Enviar ícone quadrado</span><span className="an-capa-hint">1:1 · até 500KB · Se vazio, usa o emoji</span></>)}
+                  </div>
+                )}
+                <input ref={iconeRef} type="file" accept="image/*" style={{ display: "none" }} onChange={uploadIcone} />
+              </div>
               <div className="an-row">
                 <div className="an-field">
                   <label>Categoria</label>
@@ -338,6 +373,10 @@ export default function AdminNoticias() {
         .an-capa-preview { position: relative; width: 100%; aspect-ratio: 16/9; border-radius: 10px; overflow: hidden; }
         .an-capa-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .an-capa-remove { position: absolute; top: 8px; right: 8px; padding: 6px 10px; background: rgba(0,0,0,0.65); color: #fff; border: none; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; backdrop-filter: blur(6px); }
+        .an-icone-upload { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #FAFAFA; border: 2px dashed #E5DDE0; border-radius: 10px; color: #6B7280; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .an-icone-upload:hover { background: #F5F0F2; border-color: #E85A8C; color: #C33A6E; }
+        .an-icone-preview { position: relative; display: inline-block; }
+        .an-icone-preview img { width: 84px; height: 84px; object-fit: cover; border-radius: 10px; display: block; border: 1px solid #F0EBED; }
       `}</style>
     </div>
   );
