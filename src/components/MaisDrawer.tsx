@@ -8,6 +8,7 @@ import {
   X, CaretRight,
 } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
+import { usePlano } from "@/hooks/usePlano";
 
 interface MaisDrawerProps {
   open: boolean;
@@ -71,9 +72,9 @@ function saudacao(): string {
 export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
   const navigate = useNavigate();
   const { profile } = useProfile();
+  const { isPro } = usePlano();
   const primeiroNome = profile?.nome ? profile.nome.trim().split(/\s+/)[0] : "";
   const inicial = (profile?.nome || "?").trim().charAt(0).toUpperCase();
-  const isPro = (profile as any)?.plano === "pro" || (profile as any)?.is_pro;
 
   useEffect(() => {
     if (open) document.body.style.overflow = "hidden";
@@ -107,7 +108,12 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
             <div className="mais-greeting-text">
               <p className="mais-greeting-line1">
                 {saudacao()}{primeiroNome ? `, ${primeiroNome}` : ""}
-                {isPro && <span className="mais-pro">👑 PRO</span>}
+                {isPro && (
+                  <span className="mais-pro">
+                    <img src="/coroa.png" alt="" />
+                    PRO
+                  </span>
+                )}
               </p>
               <p className="mais-greeting-line2">O que quer fazer hoje?</p>
             </div>
@@ -194,15 +200,22 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
           margin: 2px 0 0;
         }
         .mais-pro {
-          background: linear-gradient(135deg, #E85A8C, #C33A6E);
+          background: #2D1F26;
           color: #fff;
-          font-size: 9px;
-          padding: 2px 6px;
-          border-radius: 4px;
-          font-weight: 900;
-          letter-spacing: 0.05em;
+          font-size: 10px;
+          font-weight: 700;
+          padding: 4px 8px;
+          border-radius: 6px;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          line-height: 1;
           flex-shrink: 0;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.2);
         }
+        .mais-pro img { width: 10px; height: 10px; object-fit: contain; display: block; flex-shrink: 0; }
         .mais-close {
           width: 34px; height: 34px;
           border: none; border-radius: 8px;
