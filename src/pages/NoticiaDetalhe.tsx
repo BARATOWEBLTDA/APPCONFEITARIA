@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { CaretLeft, ShareNetwork, Clock } from "@phosphor-icons/react";
+import { CaretLeft, Clock } from "@phosphor-icons/react";
 import { RichContent } from "@/components/RichEditor";
 
 interface Noticia {
@@ -64,19 +64,6 @@ export default function NoticiaDetalhe() {
     })();
   }, [slug, navigate]);
 
-  const handleShare = async () => {
-    if (!noticia) return;
-    const url = window.location.href;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: noticia.titulo, text: noticia.descricao, url });
-      } catch { /* usuário cancelou */ }
-    } else {
-      await navigator.clipboard.writeText(url);
-      alert("Link copiado!");
-    }
-  };
-
   if (loading) {
     return (
       <div className="nd-loading">
@@ -94,17 +81,18 @@ export default function NoticiaDetalhe() {
 
   return (
     <div className="nd-root">
-      {/* Hero */}
-      <div className="nd-hero" style={noticia.imagem_capa ? { backgroundImage: `url(${noticia.imagem_capa})` } : undefined}>
-        {!noticia.imagem_capa && (
-          <div className="nd-hero-emoji">{noticia.emoji}</div>
-        )}
-        <button className="nd-hero-btn nd-hero-btn--back" onClick={() => navigate(-1)}>
-          <CaretLeft size={18} weight="bold" />
-        </button>
-        <button className="nd-hero-btn nd-hero-btn--share" onClick={handleShare}>
-          <ShareNetwork size={16} weight="bold" />
-        </button>
+      {/* Botão voltar flutuante */}
+      <button className="nd-back-fab" onClick={() => navigate(-1)}>
+        <CaretLeft size={18} weight="bold" />
+      </button>
+
+      {/* Hero em container com padding lateral igual ao body */}
+      <div className="nd-hero-wrap">
+        <div className="nd-hero" style={noticia.imagem_capa ? { backgroundImage: `url(${noticia.imagem_capa})` } : undefined}>
+          {!noticia.imagem_capa && (
+            <div className="nd-hero-emoji">{noticia.emoji}</div>
+          )}
+        </div>
       </div>
 
       <article className="nd-article">
@@ -164,37 +152,45 @@ export default function NoticiaDetalhe() {
           font-family: 'Geist', sans-serif;
           max-width: 720px;
           margin: 0 auto;
-          padding: 0 0 100px;
+          padding: 16px 20px 100px;
+          position: relative;
+        }
+        .nd-back-fab {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px; height: 36px;
+          background: #F5F0F2;
+          color: #2C1219;
+          border: none;
+          border-radius: 50%;
+          cursor: pointer;
+          margin-bottom: 16px;
+          transition: background 0.15s;
+        }
+        .nd-back-fab:hover { background: #E5DDE0; }
+        .nd-hero-wrap {
+          margin-bottom: 20px;
         }
         .nd-hero {
           position: relative;
           width: 100%;
           aspect-ratio: 16 / 9;
           background: linear-gradient(135deg, #FCE0E9 0%, #E85A8C 100%);
-          background-size: cover;
+          background-size: contain;
           background-position: center;
+          background-repeat: no-repeat;
+          background-color: #F5F0F2;
+          border-radius: 12px;
+          overflow: hidden;
           display: flex; align-items: center; justify-content: center;
         }
         .nd-hero-emoji {
           font-size: 80px;
         }
-        .nd-hero-btn {
-          position: absolute;
-          width: 36px; height: 36px;
-          background: rgba(0,0,0,0.5);
-          color: #fff;
-          border: none;
-          border-radius: 50%;
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer;
-          backdrop-filter: blur(8px);
-        }
-        .nd-hero-btn--back { top: 16px; left: 16px; }
-        .nd-hero-btn--share { top: 16px; right: 16px; }
-        .nd-hero-btn:hover { background: rgba(0,0,0,0.7); }
 
         .nd-article {
-          padding: 24px 20px 32px;
+          padding: 0;
         }
         .nd-meta {
           display: flex; align-items: center; gap: 10px;
@@ -203,11 +199,11 @@ export default function NoticiaDetalhe() {
           flex-wrap: wrap;
         }
         .nd-cat {
-          font-size: 10.5px; font-weight: 800;
-          padding: 3px 8px;
-          background: #FCE7F3; color: #C33A6E;
-          border-radius: 5px;
-          text-transform: uppercase; letter-spacing: 0.06em;
+          font-size: 11px; font-weight: 700;
+          padding: 4px 10px;
+          background: #F5F0F2; color: #4B5563;
+          border-radius: 2px;
+          letter-spacing: 0.02em;
         }
         .nd-time, .nd-read {
           display: inline-flex; align-items: center; gap: 4px;
