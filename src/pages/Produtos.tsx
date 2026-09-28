@@ -9382,6 +9382,8 @@ export default function Produtos() {
           cursor: not-allowed;
         }
 
+        .prod-row-2:has(.prod-preco-input--promo) { align-items: end; }
+
         /* ═══ Mobile: cadastro em TELA CHEIA (aprovado 28/09) ═══
            Sem cantos arredondados, sem fundo aparecendo, altura fixa (não pula entre etapas).
            O rodapé fica no vinho do menu inferior, com os botões do cadastro no lugar dele. */
@@ -9395,8 +9397,9 @@ export default function Produtos() {
           }
           .prod-modal--novo .prod-modal-header-novo {
             padding-top: calc(env(safe-area-inset-top, 0px) + 14px);
-            border-bottom: 1px solid #F3ECEE;
           }
+          /* Descrição: altura suficiente pro exemplo do placeholder aparecer inteiro */
+          .prod-modal--novo #prod-desc-input { min-height: 176px !important; }
           .prod-modal--novo .prod-modal-footer--novo {
             background: #2C1219 !important;
             border-top: none !important;
@@ -10940,7 +10943,10 @@ export default function Produtos() {
           background: #FFF5F9;
           box-shadow: 0 2px 8px rgba(232, 90, 140, 0.15);
         }
-        .prod-mchk-checkbox { display: none; }
+        .prod-mchk-checkbox,
+        .prod-modal .prod-mchk-item input.prod-mchk-checkbox {
+          display: none !important; /* o visual é o .prod-mchk-check-visual — sem isso aparecia check duplo */
+        }
         .prod-mchk-check-visual {
           width: 22px; height: 22px;
           border-radius: 6px;
