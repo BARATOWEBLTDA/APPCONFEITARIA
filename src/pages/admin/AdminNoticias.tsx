@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
-import { Plus, PencilSimple, Trash, ArrowUp, ArrowDown, Eye, EyeSlash, X, Image as ImageIcon } from "@phosphor-icons/react";
+import { Plus, PencilSimple, Trash, ArrowUp, ArrowDown, Eye, EyeSlash, X, Image as ImageIcon, CaretDown } from "@phosphor-icons/react";
 import RichEditor from "@/components/RichEditor";
 
 interface Noticia {
@@ -56,6 +56,13 @@ export default function AdminNoticias() {
   const iconeRef = useRef<HTMLInputElement>(null);
   const [uploadingIcone, setUploadingIcone] = useState(false);
   const [autoresList, setAutoresList] = useState<AutorOpt[]>([]);
+
+  // ── Notificação push ao salvar ──
+  // Campos vazios = usa os dados da notícia. imagemModo: capa da notícia, outra imagem ou sem imagem.
+  const NOTIF_VAZIA = { enviar: true, aberta: false, titulo: "", texto: "", imagemModo: "capa" as "capa" | "custom" | "nenhuma", imagemUrl: "" };
+  const [notif, setNotif] = useState(NOTIF_VAZIA);
+  const [uploadingNotifImg, setUploadingNotifImg] = useState(false);
+  const notifImgRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({ emoji: "📢", titulo: "", descricao: "", conteudo: null as any, imagem_capa: "", icone_url: "", autor: "Equipe Doonly", autor_id: "", categoria: "", cta_texto: "", cta_url: "", ativo: true, fixada: false, likes_base: 0 });
 
   useEffect(() => { load(); loadAutores(); }, []);
@@ -78,12 +85,15 @@ export default function AdminNoticias() {
   const abrirNovo = () => {
     setEditing(null);
     setForm({ emoji: "📢", titulo: "", descricao: "", conteudo: null, imagem_capa: "", icone_url: "", autor: "Equipe Doonly", autor_id: "", categoria: "", cta_texto: "", cta_url: "", ativo: true, fixada: false, likes_base: 0 });
+    setNotif(NOTIF_VAZIA);
     setModalOpen(true);
   };
 
   const abrirEditar = (n: Noticia) => {
     setEditing(n);
     setForm({ emoji: n.emoji, titulo: n.titulo, descricao: n.descricao, conteudo: n.conteudo, imagem_capa: n.imagem_capa || "", icone_url: n.icone_url || "", autor: n.autor || "Equipe Doonly", autor_id: n.autor_id || "", categoria: n.categoria || "", cta_texto: n.cta_texto || "", cta_url: n.cta_url || "", ativo: n.ativo, fixada: n.fixada || false, likes_base: n.likes_base || 0 });
+    // Editando: não reenvia por padrão (evita notificar todo mundo ao corrigir um detalhe)
+    setNotif({ ...NOTIF_VAZIA, enviar: false });
     setModalOpen(true);
   };
 
@@ -119,6 +129,45 @@ export default function AdminNoticias() {
     e.target.value = "";
   };
 
+  const uploadNotifImg = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingNotifImg(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const fileName = `notif-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
+      const { error } = await supabase.storage.from("noticias-capas").upload(fileName, file, { cacheControl: "3600" });
+      if (error) throw error;
+      const { data } = supabase.storage.from("noticias-capas").getPublicUrl(fileName);
+      setNotif(n => ({ ...n, imagemModo: "custom", imagemUrl: data.publicUrl }));
+    } catch (err: any) { showMsg("Erro upload: " + err.message, "err"); }
+    setUploadingNotifImg(false);
+    e.target.value = "";
+  };
+
+  // Valores finais da notificação (personalizado ou herdado da notícia)
+  const notifTituloFinal = notif.titulo.trim() || form.titulo.trim();
+  const notifTextoFinal = notif.texto.trim() || form.descricao.trim();
+  const notifImagemFinal =
+    notif.imagemModo === "nenhuma" ? "" :
+    notif.imagemModo === "custom" ? notif.imagemUrl :
+    form.imagem_capa;
+  const podeNotificar = form.ativo;
+
+  const enviarPushNoticia = async (id: string, slug: string | null) => {
+    const { data, error } = await supabase.functions.invoke("send-push", {
+      body: {
+        titulo: notifTituloFinal,
+        mensagem: notifTextoFinal,
+        imagem_url: notifImagemFinal || null,
+        tag: `noticia-${id}`,
+        url: slug ? `/noticias/${slug}` : "/noticias",
+      },
+    });
+    if (error) throw new Error(error.message || "falha no envio");
+    return (data?.sent as number | undefined) ?? 0;
+  };
+
   const salvar = async () => {
     if (!form.titulo.trim()) { alert("Preencha o título"); return; }
     setSaving(true);
@@ -140,15 +189,31 @@ export default function AdminNoticias() {
         ativo: form.ativo,
         fixada: form.fixada,
       };
+      let salvaId = "";
+      let salvaSlug: string | null = null;
       if (editing) {
         const { error } = await supabase.from("admin_noticias").update(payload).eq("id", editing.id);
         if (error) throw error;
-        showMsg("Atualizada!", "ok");
+        salvaId = editing.id;
+        salvaSlug = editing.slug || null;
       } else {
         const maxOrdem = rows.length > 0 ? Math.max(...rows.map(r => r.ordem)) : 0;
-        const { error } = await supabase.from("admin_noticias").insert({ ...payload, ordem: maxOrdem + 10 });
+        const { data: nova, error } = await supabase.from("admin_noticias").insert({ ...payload, ordem: maxOrdem + 10 }).select("id, slug").single();
         if (error) throw error;
-        showMsg("Criada!", "ok");
+        salvaId = nova?.id || "";
+        salvaSlug = nova?.slug || null;
+      }
+      const acao = editing ? "Atualizada" : "Criada";
+
+      if (notif.enviar && podeNotificar && salvaId) {
+        try {
+          const enviados = await enviarPushNoticia(salvaId, salvaSlug);
+          showMsg(`${acao}! Notificação enviada para ${enviados} ${enviados === 1 ? "aparelho" : "aparelhos"}.`, "ok");
+        } catch (pushErr: any) {
+          showMsg(`${acao}, mas a notificação falhou: ${pushErr.message}`, "err");
+        }
+      } else {
+        showMsg(`${acao}!`, "ok");
       }
       setModalOpen(false);
       await load();
@@ -341,6 +406,72 @@ export default function AdminNoticias() {
                   </p>
                 )}
               </div>
+
+              {/* ── Notificação no celular ── */}
+              <div className={`an-notif${!podeNotificar ? " an-notif--off" : ""}`}>
+                <label className="an-toggle-lbl">
+                  <input
+                    type="checkbox"
+                    checked={notif.enviar && podeNotificar}
+                    disabled={!podeNotificar}
+                    onChange={e => setNotif(n => ({ ...n, enviar: e.target.checked }))}
+                  />
+                  <span>🔔 <b>{editing ? "Reenviar notificação no celular" : "Enviar notificação no celular"}</b> (todos com notificações ativas)</span>
+                </label>
+                {!podeNotificar && <p className="an-notif-hint">Ative a notícia pra poder notificar.</p>}
+
+                {notif.enviar && podeNotificar && (
+                  <>
+                    <button type="button" className="an-notif-toggle" onClick={() => setNotif(n => ({ ...n, aberta: !n.aberta }))}>
+                      Personalizar notificação
+                      <CaretDown size={12} weight="bold" style={{ transform: notif.aberta ? "rotate(180deg)" : "none", transition: "transform .15s" }} />
+                    </button>
+
+                    {notif.aberta && (
+                      <div className="an-notif-body">
+                        <div className="an-field">
+                          <label>Título da notificação <span className="an-notif-count">{notifTituloFinal.length}/40</span></label>
+                          <input type="text" value={notif.titulo} maxLength={80}
+                            onChange={e => setNotif(n => ({ ...n, titulo: e.target.value }))}
+                            placeholder={form.titulo || "Vazio = usa o título da notícia"} />
+                        </div>
+                        <div className="an-field">
+                          <label>Texto <span className="an-notif-count">{notifTextoFinal.length}/100</span></label>
+                          <textarea value={notif.texto} rows={2} maxLength={200}
+                            onChange={e => setNotif(n => ({ ...n, texto: e.target.value }))}
+                            placeholder={form.descricao || "Vazio = usa a descrição da notícia"} />
+                        </div>
+                        <div className="an-field">
+                          <label>Imagem (só aparece no Android)</label>
+                          <div className="an-notif-img-opts">
+                            <button type="button" className={notif.imagemModo === "capa" ? "on" : ""} onClick={() => setNotif(n => ({ ...n, imagemModo: "capa" }))}>Capa da notícia</button>
+                            <button type="button" className={notif.imagemModo === "custom" ? "on" : ""} onClick={() => notif.imagemUrl ? setNotif(n => ({ ...n, imagemModo: "custom" })) : notifImgRef.current?.click()}>
+                              {uploadingNotifImg ? "Enviando..." : "Outra imagem"}
+                            </button>
+                            <button type="button" className={notif.imagemModo === "nenhuma" ? "on" : ""} onClick={() => setNotif(n => ({ ...n, imagemModo: "nenhuma" }))}>Sem imagem</button>
+                          </div>
+                          {notif.imagemModo === "custom" && notif.imagemUrl && (
+                            <button type="button" className="an-notif-trocar" onClick={() => notifImgRef.current?.click()}>Trocar imagem</button>
+                          )}
+                          <input ref={notifImgRef} type="file" accept="image/*" style={{ display: "none" }} onChange={uploadNotifImg} />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Prévia (estilo Android) */}
+                    <div className="an-notif-prev">
+                      <div className="an-notif-prev-top">
+                        <img src="/Sistema/icon-192.png" alt="" />
+                        <span>Doonly · agora</span>
+                      </div>
+                      <p className="an-notif-prev-t">{notifTituloFinal || "Título da notificação"}</p>
+                      <p className="an-notif-prev-d">{notifTextoFinal || "Texto da notificação"}</p>
+                      {notifImagemFinal && <img className="an-notif-prev-img" src={notifImagemFinal} alt="" />}
+                      <p className="an-notif-prev-link">Ao tocar, abre esta notícia</p>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
             <div className="an-modal-foot">
               <button className="an-btn-cancel" onClick={() => !saving && setModalOpen(false)}>Cancelar</button>
@@ -372,6 +503,23 @@ export default function AdminNoticias() {
         .an-tag { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 2px; background: #F5F0F2; color: #4B5563; letter-spacing: 0.02em; }
         .an-tag--off { background: #F5F0F2; color: #6B7280; }
         .an-tag--fix { background: #FEF3C7; color: #B45309; font-weight: 800; }
+        .an-notif { margin-bottom: 16px; padding: 12px; border-radius: 10px; background: #FAF7F8; }
+        .an-notif--off { opacity: 0.6; }
+        .an-notif-hint { margin: 6px 0 0 26px; font-size: 11px; color: #6B7280; }
+        .an-notif-toggle { display: flex; align-items: center; gap: 6px; margin: 10px 0 0 26px; padding: 0; background: none; border: none; font-family: inherit; font-size: 12px; font-weight: 700; color: #C33A6E; cursor: pointer; }
+        .an-notif-body { margin: 12px 0 0; }
+        .an-notif-count { float: right; font-weight: 500; color: #9CA3AF; }
+        .an-notif-img-opts { display: flex; gap: 6px; flex-wrap: wrap; }
+        .an-notif-img-opts button { padding: 7px 12px; border-radius: 6px; border: 1.5px solid #F0EBED; background: #fff; font-family: inherit; font-size: 12px; font-weight: 600; color: #4B5563; cursor: pointer; }
+        .an-notif-img-opts button.on { border-color: #E85A8C; color: #C33A6E; background: #FFF5F9; }
+        .an-notif-trocar { margin-top: 6px; padding: 0; background: none; border: none; font-family: inherit; font-size: 11.5px; font-weight: 600; color: #6B7280; text-decoration: underline; cursor: pointer; }
+        .an-notif-prev { margin-top: 12px; background: #fff; border-radius: 14px; padding: 12px 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); max-width: 360px; }
+        .an-notif-prev-top { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #6B7280; margin-bottom: 6px; }
+        .an-notif-prev-top img { width: 16px; height: 16px; border-radius: 4px; }
+        .an-notif-prev-t { margin: 0; font-size: 13.5px; font-weight: 700; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .an-notif-prev-d { margin: 2px 0 0; font-size: 12.5px; color: #4B5563; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .an-notif-prev-img { display: block; width: 100%; aspect-ratio: 2/1; object-fit: cover; border-radius: 8px; margin-top: 8px; }
+        .an-notif-prev-link { margin: 8px 0 0; font-size: 10.5px; color: #9CA3AF; }
         .an-fix-hint { margin: 6px 0 0; font-size: 11px; color: #B45309; background: #FEF3C7; padding: 8px 10px; border-radius: 6px; }
         .an-views { font-size: 10px; color: #6B7280; }
         .an-ordem { font-size: 10px; color: #9CA3AF; margin-left: auto; }
