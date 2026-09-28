@@ -11,7 +11,7 @@ import {
   Bell, Storefront, SignOut, Camera,
   Package, CookingPot, Users, ChartLineUp, ForkKnife, CaretRight,
   InstagramLogo, DotsThreeOutline, Clock, Heart,
-  Cake, Percent, Receipt, SealPercent, BookOpen, Gear,
+  Cake, Percent, Receipt, SealPercent, BookOpen, Gear, ChartBar, Cube,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { enableNotifications, disableNotifications, getStoredNotifState } from "@/lib/notifications";
@@ -82,15 +82,6 @@ export default function Inicio() {
   const [checklistDone, setChecklistDone] = useState(false);
   const [copiado, setCopiado] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [homeVariant, setHomeVariant] = useState<"preto" | "minimal">(() => {
-    const saved = localStorage.getItem("home_variant");
-    return (saved === "minimal" ? "minimal" : "preto") as "preto" | "minimal";
-  });
-  const toggleVariant = () => {
-    const next = homeVariant === "preto" ? "minimal" : "preto";
-    setHomeVariant(next);
-    localStorage.setItem("home_variant", next);
-  };
   const [confirmSair, setConfirmSair] = useState(false);
   const [email, setEmail] = useState("");
 
@@ -684,7 +675,14 @@ export default function Inicio() {
     {/* AppPageHeader removido — hero rosa já é suficiente como saudação */}
     <div className="ini-root">
       {/* ── Hero wine com foto da confeiteira, coroinha (PRO) e sparkles ── */}
-      <div className={`ini-hero ini-hero--${homeVariant}`}>
+      <div className="ini-hero">
+        {/* Fundo mobile: ondas vinho (fica recortado pelo border-radius do hero) */}
+        <div className="ini-hero-bg" aria-hidden="true">
+          <svg className="ini-hero-waves" viewBox="0 0 390 125" preserveAspectRatio="none">
+            <path d="M84 125 C 140 116, 196 101, 232 84 S 300 64, 390 58 L 390 125 Z" fill="#4F1E2C" />
+            <path d="M232 125 C 250 112, 268 90, 292 76 S 350 58, 390 54 L 390 125 Z" fill="#5B2533" />
+          </svg>
+        </div>
         {/* Decoração: sparkles brancos sutis sobre o hero rosa */}
         <svg className="ini-hero-sparkles" viewBox="0 0 100 50" preserveAspectRatio="none" aria-hidden="true">
           <g fill="#FFFFFF" opacity="0.5">
@@ -987,30 +985,33 @@ export default function Inicio() {
         {/* Hero Nova Venda — destaque principal */}
         <button className="ini-hero-cta" onClick={() => navigate("/vendas/novo")}>
           <div className="ini-hero-cta-ic">
-            <ShoppingBag size={22} weight="fill" />
+            {isMobile
+              ? <span className="ini-hero-cta-plus"><Plus size={14} weight="bold" /></span>
+              : <ShoppingBag size={22} weight="fill" />}
           </div>
           <div className="ini-hero-cta-txt">
             <div className="ini-hero-cta-t">Nova Venda</div>
             <div className="ini-hero-cta-d">Comece um pedido em segundos</div>
           </div>
+          {isMobile && <img src="/nova-venda-sacola.svg" alt="" aria-hidden="true" className="ini-hero-cta-bag" />}
           <CaretRight size={18} weight="bold" className="ini-hero-cta-arr" />
         </button>
 
         <div className="ini-nav-grid">
           {[
-            { icon: <Receipt        size={22} weight="bold" />, label: "Pedidos",        sub: "Gerencie seus pedidos.",                      path: "/pedidos",         key: "pedidos" },
-            { icon: <CalendarDots   size={22} weight="bold" />, label: "Agenda",         sub: "Seus agendamentos.",                          path: "/agenda",          key: "agenda" },
-            { icon: <BookOpen       size={22} weight="bold" />, label: "Cardápio",       sub: "Acesse seu cardápio e produtos.",             path: "/cardapio",        key: "cardapio" },
-            { icon: <Users          size={22} weight="bold" />, label: "Clientes",       sub: "Gerencie seus clientes.",                     path: "/clientes",        key: "clientes" },
-            { icon: <CurrencyDollar size={22} weight="bold" />, label: "Financeiro",     sub: "Controle suas entradas, saídas e lucros.",    path: "/financeiro",      key: "financeiro" },
-            { icon: <Cake           size={22} weight="bold" />, label: "Produtos",       sub: "Cadastre e edite seus produtos e receitas.",  path: "/produtos",        key: "produtos" },
-            { icon: <Gear           size={22} weight="bold" />, label: "Ajustes",        sub: "Personalize o app e suas preferências.",      path: "/configuracoes",   key: "configuracoes" },
+            { icon: <Receipt        size={22} weight="bold" />, iconM: <ClipboardText size={26} weight="bold" />, label: "Pedidos",    sub: "Gerencie seus pedidos.",                     subM: "Gerencie seus pedidos.",                     path: "/pedidos",       key: "pedidos" },
+            { icon: <CalendarDots   size={22} weight="bold" />, iconM: <CalendarDots  size={26} weight="bold" />, label: "Agenda",     sub: "Seus agendamentos.",                         subM: "Seus agendamentos.",                         path: "/agenda",        key: "agenda" },
+            { icon: <BookOpen       size={22} weight="bold" />, iconM: <Cake          size={26} weight="fill" />, label: "Cardápio",   sub: "Acesse seu cardápio e produtos.",            subM: "Ajuste seu cardápio e preços.",              path: "/cardapio",      key: "cardapio" },
+            { icon: <Users          size={22} weight="bold" />, iconM: <Users         size={26} weight="fill" />, label: "Clientes",   sub: "Gerencie seus clientes.",                    subM: "Gerencie seus clientes.",                    path: "/clientes",      key: "clientes" },
+            { icon: <CurrencyDollar size={22} weight="bold" />, iconM: <ChartBar      size={26} weight="fill" />, label: "Financeiro", sub: "Controle suas entradas, saídas e lucros.",   subM: "Controle suas entradas, saídas e lucros.",   path: "/financeiro",    key: "financeiro" },
+            { icon: <Cake           size={22} weight="bold" />, iconM: <Cube          size={26} weight="fill" />, label: "Produtos",   sub: "Cadastre e edite seus produtos e receitas.", subM: "Cadastre e edite seus produtos e receitas.", path: "/produtos",      key: "produtos" },
+            { icon: <Gear           size={22} weight="bold" />, iconM: <Gear          size={26} weight="fill" />, label: "Ajustes",    sub: "Personalize o app e suas preferências.",     subM: "Personalize o app e suas preferências.",     path: "/configuracoes", key: "configuracoes" },
           ].map((item) => (
             <button key={item.path} className="ini-nav-card" data-nav={item.key} onClick={() => navigate(item.path)}>
-              <div className="ini-nav-icon">{item.icon}</div>
+              <div className="ini-nav-icon">{isMobile ? item.iconM : item.icon}</div>
               <div className="ini-nav-meta">
                 <span className="ini-nav-label">{item.label}</span>
-                <span className="ini-nav-sub">{item.sub}</span>
+                <span className="ini-nav-sub">{isMobile ? item.subM : item.sub}</span>
               </div>
               <CaretRight size={14} weight="bold" className="ini-nav-arrow" />
             </button>
@@ -2556,44 +2557,6 @@ export default function Inicio() {
         .ini-hero-cta-d { font-size: 11.5px; opacity: 0.9; margin-top: 2px; }
         .ini-hero-cta-arr { color: #fff; opacity: 0.9; z-index: 1; flex-shrink: 0; }
 
-        /* ═════ Variante PRETO ═════ */
-        @media (max-width: 767px) {
-          .ini-hero--preto {
-            background: #1A1418 !important;
-          }
-          .ini-hero--preto .ini-hero-sparkles g {
-            fill: #E85A8C;
-            opacity: 0.4;
-          }
-        }
-
-        /* ═════ Variante MINIMAL ═════ */
-        @media (max-width: 767px) {
-          .ini-hero--minimal {
-            background: #FEFCFD !important;
-            padding-top: calc(0.6rem + env(safe-area-inset-top, 0px)) !important;
-            padding-bottom: 0.65rem !important;
-            border-radius: 0 !important;
-            border-bottom: 1px solid #F0EBED;
-          }
-          .ini-hero--minimal .ini-hero-sparkles { display: none; }
-          .ini-hero--minimal .ini-hero-greeting h1,
-          .ini-hero--minimal .ini-hero-greeting p {
-            color: #2C1219 !important;
-          }
-          .ini-hero--minimal .ini-hero-greeting p {
-            color: #6B7280 !important;
-            opacity: 1 !important;
-          }
-          .ini-hero--minimal .ini-profile-btn {
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important;
-            border: none !important;
-          }
-          .ini-hero--minimal .sidebar-badge--pro,
-          .ini-hero--minimal .sidebar-badge {
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important;
-          }
-        }
         .ini-section--resumo  { display: none; }
         .ini-section--agenda  { display: none; }
         .ini-section--metrics { display: none; }
@@ -2913,6 +2876,161 @@ export default function Inicio() {
             color: #FFFFFF !important;
           }
         }
+
+        /* ═══════════════════════════════════════════════════════════
+           INÍCIO MOBILE — layout novo (mockup aprovado 28/09)
+           Só < 768px. Desktop não é afetado.
+           ═══════════════════════════════════════════════════════════ */
+        .ini-hero-bg, .ini-hero-cta-bag, .ini-hero-cta-plus { display: none; }
+        @media (max-width: 767.98px) {
+          /* Header */
+          .ini-root .ini-hero {
+            background: #3B1620 !important;
+            border-radius: 0 0 26px 26px;
+            padding: max(calc(env(safe-area-inset-top, 0px) + 4px), 14px) 15px 8px 18px;
+            gap: 0;
+          }
+          .ini-root .ini-profile-wrapper { margin-left: 12px; }
+          .ini-root .ini-hero-bg {
+            display: block;
+            position: absolute; inset: 0;
+            border-radius: inherit;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+          }
+          .ini-root .ini-hero-waves { display: block; width: 100%; height: 100%; }
+          .ini-root .ini-hero-sparkles { display: none; }
+          .ini-root .ini-hero-greeting h1 {
+            font-size: 21px; font-weight: 800;
+            letter-spacing: -0.3px;
+            gap: 10px;
+          }
+          .ini-root .ini-hero-data-mobile {
+            font-size: 12.5px; font-weight: 400;
+            color: #F4E9EC;
+            margin-top: 4px;
+            letter-spacing: 0;
+          }
+          .ini-root .ini-plan-tag--pro {
+            height: 21px;
+            padding: 0 9px 0 7px;
+            margin-left: 0;
+            border-radius: 11px;
+            background: #3F101A;
+            border: 1px solid #C84473;
+            box-shadow: none;
+            font-size: 11.5px; font-weight: 800;
+            letter-spacing: 0.02em;
+          }
+          .ini-root .ini-plan-tag--pro img { width: 13px; height: 13px; }
+          .ini-root .ini-profile-btn {
+            width: 70px; height: 70px;
+            border: 2px solid #FFF5F0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+          }
+          .ini-root .ini-profile-btn:hover { transform: none; box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
+
+          /* Espaçamentos gerais */
+          .ini-root { padding-left: 5px; padding-right: 5px; }
+          .ini-root .ini-content { gap: 10px; }
+          .ini-root .ini-main > .ini-section--nav { margin-top: 6px; gap: 0; }
+          .ini-root .ini-section--nav .ini-section-title {
+            font-size: 16px; font-weight: 800;
+            letter-spacing: -0.2px;
+            color: #2C1219;
+            margin: 0 5px 10px;
+          }
+
+          /* Nova Venda */
+          .ini-root .ini-hero-cta {
+            height: 71px;
+            padding: 0 16px;
+            gap: 13px;
+            border-radius: 13px;
+            margin-bottom: 0;
+            background: linear-gradient(100deg, #E95B8D 0%, #DD5082 45%, #C94271 75%, #B23560 100%);
+            box-shadow: 0 6px 16px rgba(200,60,110,0.22);
+          }
+          .ini-root .ini-hero-cta::before { content: none; }
+          .ini-root .ini-hero-cta-ic {
+            width: 44px; height: 44px;
+            border-radius: 11px;
+            background: rgba(255,255,255,0.22);
+            box-shadow: none;
+            z-index: 2;
+          }
+          .ini-root .ini-hero-cta-plus {
+            display: flex; align-items: center; justify-content: center;
+            width: 23px; height: 23px;
+            border-radius: 6px;
+            background: #fff;
+            color: #E85A8C;
+          }
+          .ini-root .ini-hero-cta-txt { position: relative; z-index: 2; }
+          .ini-root .ini-hero-cta-t { font-size: 17px; font-weight: 800; letter-spacing: -0.2px; line-height: 1.2; }
+          .ini-root .ini-hero-cta-d { font-size: 11.5px; opacity: 0.95; margin-top: 2px; }
+          .ini-root .ini-hero-cta-bag {
+            display: block;
+            position: absolute;
+            right: 22px; top: -4px;
+            width: 104px; height: calc(100% + 4px);
+            object-fit: cover;
+            pointer-events: none;
+            z-index: 1;
+          }
+          .ini-root .ini-hero-cta-arr {
+            position: absolute;
+            right: 14px; top: 50%;
+            width: 15px; height: 15px;
+            transform: translateY(-50%);
+            opacity: 1;
+            z-index: 2;
+          }
+
+          /* Grade do Acesso rápido */
+          .ini-root .ini-nav-grid { gap: 8px; margin-top: 12px; }
+          .ini-root .ini-nav-card,
+          .ini-root .ini-nav-card[data-nav] {
+            align-items: center;
+            min-height: 64px;
+            padding: 8px 17px 8px 7px;
+            border: none;
+            border-radius: 13px;
+            background: #fff;
+            box-shadow: 0 1px 2px rgba(60,20,35,0.04), 0 4px 14px rgba(60,20,35,0.05);
+          }
+          .ini-root .ini-nav-card:active { background: #fff; transform: scale(0.98); }
+          .ini-root .ini-nav-card .ini-nav-icon,
+          .ini-root .ini-nav-card[data-nav] .ini-nav-icon {
+            position: static;
+            flex-shrink: 0;
+            width: 41px; height: 41px;
+            border-radius: 11px;
+            background: #FFEEF3 !important;
+            color: #C2416D !important;
+          }
+          .ini-root .ini-nav-icon svg { width: 26px; height: 26px; }
+          .ini-root .ini-nav-meta { margin-left: 10px; gap: 0; }
+          .ini-root .ini-nav-card .ini-nav-label {
+            margin-top: 0;
+            font-size: 13.5px; font-weight: 700;
+            letter-spacing: -0.25px;
+            color: #2C1219;
+          }
+          .ini-root .ini-nav-card .ini-nav-sub {
+            margin-top: 2px;
+            font-size: 10px;
+            letter-spacing: -0.15px;
+            line-height: 1.35;
+            color: #7C7A8E;
+          }
+          .ini-root .ini-nav-card .ini-nav-arrow {
+            top: 13px; right: 12px;
+            width: 12px; height: 12px;
+            color: #5A3A46;
+          }
+        }
       `}</style>
 
       {/* Modal de crop da foto de perfil (aberto pelo ícone de câmera) */}
@@ -2929,31 +3047,6 @@ export default function Inicio() {
       {/* Tour de boas-vindas — auto-abre no primeiro login (1s de delay) */}
       <TourInicio />
 
-      {/* ⚠️ TEMPORÁRIO — botão pra testar as 2 versões do header */}
-      <button
-        onClick={toggleVariant}
-        style={{
-          position: "fixed",
-          bottom: "80px",
-          right: "16px",
-          zIndex: 999,
-          padding: "10px 14px",
-          background: "#2C1219",
-          color: "#fff",
-          border: "2px solid #E85A8C",
-          borderRadius: "999px",
-          fontSize: "11px",
-          fontWeight: 800,
-          boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
-          fontFamily: "inherit",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          gap: "6px",
-        }}
-      >
-        🔄 Ver versão {homeVariant === "preto" ? "Minimal" : "Preto"}
-      </button>
     </div>
     </>
   );

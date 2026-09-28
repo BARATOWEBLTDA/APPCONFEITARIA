@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Newspaper, CaretRight } from "@phosphor-icons/react";
+import { Newspaper, CaretRight, Megaphone } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 
 interface Noticia {
@@ -15,19 +15,6 @@ interface Noticia {
   tempo_leitura: number | null;
   publicado_em: string;
   fixada: boolean;
-}
-
-function tempoRelativo(iso: string): string {
-  const d = new Date(iso);
-  const diffDias = Math.floor((Date.now() - d.getTime()) / 86400000);
-  if (diffDias === 0) return "hoje";
-  if (diffDias === 1) return "ontem";
-  if (diffDias < 7) return `há ${diffDias} dias`;
-  const semanas = Math.floor(diffDias / 7);
-  if (semanas < 4) return `há ${semanas} sem`;
-  const meses = Math.floor(diffDias / 30);
-  if (meses < 12) return `há ${meses} ${meses === 1 ? "mês" : "meses"}`;
-  return `há ${Math.floor(diffDias / 365)} anos`;
 }
 
 export default function UpdatesFeed() {
@@ -65,131 +52,123 @@ export default function UpdatesFeed() {
   }, []);
 
   if (loading) return null;
-  if (noticias.length === 0) {
-    return (
-      <div className="uf-root">
-        <div className="uf-header">
-          <Newspaper size={18} weight="fill" />
-          <h2>Notícias</h2>
-        </div>
+
+  const header = (
+    <div className="uf-header">
+      <Megaphone size={20} weight="fill" className="uf-header-ic" />
+      <h2>Notícias</h2>
+      <button className="uf-ver-todas" onClick={() => navigate("/noticias")}>
+        Ver todas <CaretRight size={11} weight="bold" />
+      </button>
+    </div>
+  );
+
+  return (
+    <div className="uf-root">
+      {header}
+      {noticias.length === 0 ? (
         <div className="uf-empty">
           <div className="uf-empty-ic"><Newspaper size={26} weight="regular" /></div>
           <p className="uf-empty-t">Sem notícias por aqui ainda</p>
           <p className="uf-empty-d">Em breve traremos dicas, novidades e tutoriais pra te ajudar a vender mais.</p>
         </div>
-        <style>{`
-          .uf-root { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-          .uf-header { display: flex; align-items: center; gap: 0.5rem; padding: 1.15rem 1.25rem; color: var(--text-title); }
-          .uf-header h2 { margin: 0; font-size: 0.95rem; font-weight: var(--fw-bold); }
-          .uf-empty { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 24px 28px; border-top: 1px solid var(--border); }
-          .uf-empty-ic { width: 52px; height: 52px; border-radius: 50%; background: #FFF5F9; color: #E85A8C; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
-          .uf-empty-t { font-size: 13.5px; font-weight: 800; color: #2C1219; margin: 0 0 4px; }
-          .uf-empty-d { font-size: 12px; color: #6B7280; margin: 0; line-height: 1.45; max-width: 240px; }
-        `}</style>
-      </div>
-    );
-  }
-
-  return (
-    <div className="uf-root">
-      <div className="uf-header">
-        <Newspaper size={18} weight="fill" />
-        <h2>Notícias</h2>
-      </div>
-      <div className="uf-list">
-        {noticias.map((n) => (
-          <button key={n.id} className="uf-item" onClick={() => navigate(`/noticias/${n.slug}`)}>
-            <div className="uf-capa" style={n.icone_url ? { backgroundImage: `url(${n.icone_url})` } : undefined}>
-              {!n.icone_url && <span className="uf-capa-emoji">{n.emoji}</span>}
-            </div>
-            <div className="uf-body">
-              {n.categoria && <span className="uf-cat">{n.categoria}</span>}
-              <p className="uf-title">{n.titulo}</p>
-              {n.descricao && <p className="uf-desc">{n.descricao}</p>}
-              <p className="uf-meta">
-                {tempoRelativo(n.publicado_em)}
-                {n.tempo_leitura && ` · ${n.tempo_leitura} min`}
-              </p>
-            </div>
-            <CaretRight size={14} weight="bold" className="uf-arr" />
-          </button>
-        ))}
-      </div>
-      <button className="uf-ver-todas" onClick={() => navigate("/noticias")}>
-        Ver todas as notícias <CaretRight size={12} weight="bold" />
-      </button>
+      ) : (
+        <div className="uf-list">
+          {noticias.map((n) => (
+            <button key={n.id} className="uf-item" onClick={() => navigate(`/noticias/${n.slug}`)}>
+              <div className="uf-capa" style={n.icone_url ? { backgroundImage: `url(${n.icone_url})` } : undefined}>
+                {!n.icone_url && <span className="uf-capa-emoji">{n.emoji}</span>}
+              </div>
+              <div className="uf-body">
+                {n.categoria && <span className="uf-cat">{n.categoria}</span>}
+                <p className="uf-title">{n.titulo}</p>
+                {n.descricao && <p className="uf-desc">{n.descricao}</p>}
+              </div>
+              <CaretRight size={13} weight="bold" className="uf-arr" />
+            </button>
+          ))}
+        </div>
+      )}
       <style>{`
-        .uf-root { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-        .uf-header { display: flex; align-items: center; gap: 0.5rem; padding: 1.15rem 1.25rem; color: var(--text-title); }
-        .uf-header h2 { margin: 0; font-size: 0.95rem; font-weight: var(--fw-bold); }
+        .uf-root {
+          background: #fff;
+          border: 1px solid #F4E9EC;
+          border-radius: 14px;
+          overflow: hidden;
+          box-shadow: 0 4px 14px rgba(60,20,35,0.04);
+        }
+        .uf-header {
+          display: flex; align-items: center; gap: 10px;
+          padding: 12px 14px 11px 18px;
+          border-bottom: 1px solid #F3ECEE;
+        }
+        .uf-header-ic { color: #8C132F; flex-shrink: 0; }
+        .uf-header h2 {
+          flex: 1; margin: 0;
+          font-size: 14.5px; font-weight: 800;
+          color: #2C1219;
+        }
+        .uf-ver-todas {
+          display: flex; align-items: center; gap: 6px;
+          padding: 0; background: none; border: none;
+          font-family: inherit; font-size: 12.5px; font-weight: 400;
+          color: #6E5A66;
+          cursor: pointer;
+        }
         .uf-list { display: flex; flex-direction: column; }
         .uf-item {
-          display: flex; gap: 12px;
-          padding: 0.9rem 1.25rem;
+          display: flex; align-items: center; gap: 10px;
+          width: 100%;
+          padding: 12px 14px 14px 13px;
           background: transparent;
           border: none;
-          border-top: 1px solid var(--border);
           font-family: inherit;
           text-align: left;
           cursor: pointer;
-          transition: background var(--dur-fast);
-          width: 100%;
         }
-        .uf-item:hover { background: var(--bg-body); }
+        .uf-item + .uf-item { border-top: 1px solid #F3ECEE; }
+        .uf-item:active { background: #FFF9FB; }
         .uf-capa {
-          width: 62px; height: 62px;
+          width: 58px; height: 58px;
           flex-shrink: 0;
           background: linear-gradient(135deg, #FCE0E9, #E85A8C);
           background-size: cover; background-position: center;
-          border-radius: 8px;
+          border-radius: 14px;
           display: flex; align-items: center; justify-content: center;
         }
         .uf-capa-emoji { font-size: 26px; }
-        .uf-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+        .uf-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
         .uf-cat {
-          font-size: 10px; font-weight: 700;
-          padding: 3px 8px;
-          background: #F5F0F2; color: #4B5563;
-          border-radius: 2px;
-          letter-spacing: 0.02em;
           align-self: flex-start;
+          padding: 2px 9px;
+          border-radius: 9px;
+          background: #FEE8EE;
+          color: #E0578A;
+          font-size: 9px; font-weight: 700;
+          letter-spacing: 0.3px;
+          text-transform: uppercase;
         }
         .uf-title {
-          margin: 0;
-          font-size: 0.85rem;
-          font-weight: var(--fw-semibold);
-          color: var(--text-title);
+          margin: 4px 0 0;
+          font-size: 13px; font-weight: 800;
+          color: #2C1219;
           line-height: 1.3;
           overflow: hidden; text-overflow: ellipsis;
           display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
         }
         .uf-desc {
-          margin: 0;
-          font-size: 0.72rem;
-          color: var(--text-secondary);
+          margin: 3px 0 0;
+          font-size: 10.8px;
+          color: #7C7A8E;
           line-height: 1.4;
           overflow: hidden; text-overflow: ellipsis;
           display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
         }
-        .uf-meta {
-          margin: 4px 0 0;
-          font-size: 10.5px;
-          color: var(--text-muted);
-        }
-        .uf-arr { align-self: center; color: #C0B3B8; flex-shrink: 0; }
-        .uf-ver-todas {
-          display: flex; align-items: center; justify-content: center; gap: 4px;
-          width: 100%;
-          padding: 12px;
-          background: transparent;
-          border: none;
-          border-top: 1px solid var(--border);
-          color: #C33A6E;
-          font-size: 12px; font-weight: 800;
-          cursor: pointer;
-          font-family: inherit;
-        }
-        .uf-ver-todas:hover { background: #FFF5F9; }
+        .uf-arr { color: #5A3A46; flex-shrink: 0; }
+        .uf-empty { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 24px 24px; }
+        .uf-empty-ic { width: 52px; height: 52px; border-radius: 50%; background: #FFF5F9; color: #E85A8C; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+        .uf-empty-t { font-size: 13.5px; font-weight: 800; color: #2C1219; margin: 0 0 4px; }
+        .uf-empty-d { font-size: 12px; color: #6B7280; margin: 0; line-height: 1.45; max-width: 240px; }
       `}</style>
     </div>
   );
