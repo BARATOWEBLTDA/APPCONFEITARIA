@@ -5,6 +5,7 @@ import { refreshProfile } from "@/hooks/useProfile";
 import SugestaoWizard from "@/components/SugestaoWizard";
 import TermosModal from "@/components/TermosModal";
 import EditarPerfilModal from "@/components/EditarPerfilModal";
+import InstalarAppCard from "@/components/InstalarAppCard";
 
 
 const Field = ({ icon, placeholder, value, onChange, type = "text", maxLength, disabled }: any) => (
@@ -357,6 +358,9 @@ export default function Configuracoes() {
             </button>
           )}
         </div>
+
+        {/* ── INSTALAR APP (some quando já está instalado) ── */}
+        <InstalarAppCard />
 
         {/* ── AÇÕES RÁPIDAS ──────────────────────────────── */}
         <div className="cfgp-card cfgp-quick">

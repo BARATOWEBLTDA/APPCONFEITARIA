@@ -7,6 +7,7 @@ import { ThemeProvider } from './context/ThemeContext'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import App from './App.tsx'
 import { ensureServiceWorker } from './lib/notifications'
+import './lib/installPrompt' // captura o convite de instalação do Chrome o quanto antes
 
 // Registra o Service Worker cedo (não bloqueia render).
 // Isso deixa o app pronto pra receber push notifications quando
