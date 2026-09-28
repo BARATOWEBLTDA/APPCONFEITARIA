@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, WhatsappLogo, Copy, Storefront, PencilLine, ShoppingBag, Palette, ShareNetwork } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
+import { apiFetch } from "@/lib/apiFetch";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Step {
@@ -34,6 +35,12 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
   const [steps, setSteps] = useState<Step[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  // Passos 1 e 2 são preenchidos dentro do próprio card
+  const [nomeLoja, setNomeLoja] = useState("");
+  const [descDraft, setDescDraft] = useState("");
+  const [salvando, setSalvando] = useState(false);
+  const [gerando, setGerando] = useState(false);
+  const [aviso, setAviso] = useState<{ txt: string; tipo: "ok" | "err" } | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -67,18 +74,18 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         {
           key: "nome_loja",
           label: "Preencher nome da loja",
-          desc: "O nome que os clientes vão ver no cardápio",
+          desc: "O nome que os clientes vão ver no topo do cardápio.",
           icon: <Storefront size={18} weight="fill" />,
           done: !!(profileData?.nome_loja && profileData.nome_loja.trim().length > 0),
-          path: "/cardapio",
+          path: "/cardapio-config",
         },
         {
           key: "descricao",
           label: "Preencher descrição da loja",
-          desc: "Conte a história da sua confeitaria (pode gerar com IA)",
+          desc: "É a primeira coisa que o cliente lê no seu cardápio. Escreva ou peça pra IA.",
           icon: <PencilLine size={18} weight="fill" />,
           done: !!(profileData?.descricao_loja && profileData.descricao_loja.trim().length > 0),
-          path: "/cardapio",
+          path: "/cardapio-config",
         },
         {
           key: "produto",
@@ -108,6 +115,8 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
 
       if (!cancelled) {
         setSteps(list);
+        setNomeLoja(profileData?.nome_loja || "");
+        setDescDraft(profileData?.descricao_loja || "");
         setLoading(false);
       }
     })();
@@ -118,6 +127,63 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
   const feitos = steps.filter((s) => s.done).length;
   const total = steps.length;
   const pct = total === 0 ? 0 : Math.round((feitos / total) * 100);
+
+  const mostrarAviso = (txt: string, tipo: "ok" | "err" = "ok") => {
+    setAviso({ txt, tipo });
+    window.setTimeout(() => setAviso(null), 3000);
+  };
+
+  const concluirPasso = (key: string) =>
+    setSteps((s) => s.map((st) => (st.key === key ? { ...st, done: true } : st)));
+
+  const salvarNome = async () => {
+    const nome = nomeLoja.trim();
+    if (!userId || !nome) return;
+    setSalvando(true);
+    const { error } = await supabase.from("profiles").update({ nome_loja: nome }).eq("id", userId);
+    setSalvando(false);
+    if (error) return mostrarAviso("Não foi possível salvar. Tente de novo.", "err");
+    concluirPasso("nome_loja");
+    mostrarAviso("✓ Nome da loja salvo");
+  };
+
+  const salvarDescricao = async () => {
+    const desc = descDraft.trim();
+    if (!userId || !desc) return;
+    setSalvando(true);
+    const { error } = await supabase.from("profiles").update({ descricao_loja: desc }).eq("id", userId);
+    setSalvando(false);
+    if (error) return mostrarAviso("Não foi possível salvar. Tente de novo.", "err");
+    concluirPasso("descricao");
+    mostrarAviso("✓ Descrição salva");
+  };
+
+  const gerarDescricao = async () => {
+    if (!nomeLoja.trim()) return;
+    setGerando(true);
+    try {
+      const res = await apiFetch("/api/gerar-descricao", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: `Crie uma descrição curta e atraente para uma confeitaria chamada "${nomeLoja.trim()}". Máximo 150 caracteres, português brasileiro, transmita carinho e qualidade. Retorne APENAS a descrição, sem aspas.`,
+        }),
+      });
+      const data = await res.json();
+      const texto = data.content?.[0]?.text?.trim();
+      if (texto) setDescDraft(texto.slice(0, 200));
+      else mostrarAviso("A IA não respondeu. Tente de novo.", "err");
+    } catch {
+      mostrarAviso("A IA não respondeu. Tente de novo.", "err");
+    }
+    setGerando(false);
+  };
+
+  const CTA_POR_PASSO: Record<string, string> = {
+    produto: "Cadastrar produto",
+    design: "Escolher design",
+    share: "Compartilhar link",
+  };
 
   const marcarCompartilhado = () => {
     if (userId) localStorage.setItem(`doonly_cardapio_compartilhado_${userId}`, "1");
@@ -383,19 +449,68 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         <span className="pap-progress-pct">{pct}%</span>
       </div>
 
+      {aviso && <p className={`pap-aviso pap-aviso--${aviso.tipo}`}>{aviso.txt}</p>}
+
       {/* Hero destaque do próximo passo */}
       {proximoPasso && (
-        <button className="pap-hero" onClick={() => handleClick(proximoPasso)}>
+        <div className="pap-hero">
           <div className="pap-hero-glow" />
           <div className="pap-hero-content">
-            <p className="pap-hero-eyebrow">Próximo passo</p>
-            <p className="pap-hero-title">{proximoPasso.label}</p>
+            <p className="pap-hero-eyebrow">Passo {steps.indexOf(proximoPasso) + 1} de {total}</p>
+            <p className="pap-hero-title">
+              {proximoPasso.key === "nome_loja" ? "Nome da loja" : proximoPasso.key === "descricao" ? "Descrição da loja" : proximoPasso.label}
+            </p>
             <p className="pap-hero-desc">{proximoPasso.desc}</p>
-            <span className="pap-hero-cta">
-              Começar agora <span style={{ marginLeft: 4 }}>&rarr;</span>
-            </span>
+
+            {proximoPasso.key === "nome_loja" && (
+              <>
+                <input
+                  className="pap-in"
+                  value={nomeLoja}
+                  maxLength={60}
+                  placeholder="Ex: Doce Formiga Confeitaria"
+                  onChange={(e) => setNomeLoja(e.target.value)}
+                  aria-label="Nome da loja"
+                />
+                <div className="pap-row">
+                  <button className="pap-btn-save" onClick={salvarNome} disabled={salvando || !nomeLoja.trim()}>
+                    {salvando ? "Salvando..." : "Salvar"}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {proximoPasso.key === "descricao" && (
+              <>
+                <div className="pap-ta-wrap">
+                  <textarea
+                    className="pap-ta"
+                    value={descDraft}
+                    maxLength={200}
+                    placeholder="Ex: Doces artesanais feitos com carinho e ingredientes selecionados."
+                    onChange={(e) => setDescDraft(e.target.value)}
+                    aria-label="Descrição da loja"
+                  />
+                  <span className="pap-ta-count">{descDraft.length}/200</span>
+                </div>
+                <div className="pap-row">
+                  <button className="pap-btn-ia" onClick={gerarDescricao} disabled={gerando || salvando || !nomeLoja.trim()}>
+                    {gerando ? "Gerando..." : "✨ Gerar com IA"}
+                  </button>
+                  <button className="pap-btn-save" onClick={salvarDescricao} disabled={salvando || gerando || !descDraft.trim()}>
+                    {salvando ? "Salvando..." : "Salvar"}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {proximoPasso.key !== "nome_loja" && proximoPasso.key !== "descricao" && (
+              <button className="pap-hero-cta" onClick={() => handleClick(proximoPasso)}>
+                {CTA_POR_PASSO[proximoPasso.key] || "Começar agora"} <span style={{ marginLeft: 4 }}>&rarr;</span>
+              </button>
+            )}
           </div>
-        </button>
+        </div>
       )}
 
       {/* Lista compacta dos outros passos */}
@@ -477,14 +592,9 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           margin-bottom: 14px;
           overflow: hidden;
           box-shadow: 0 6px 20px rgba(44,18,25,0.25);
-          cursor: pointer;
           text-align: left;
           font-family: inherit;
           transition: transform 0.15s, box-shadow 0.15s;
-        }
-        .pap-hero:active {
-          transform: scale(0.98);
-          box-shadow: 0 3px 10px rgba(44,18,25,0.25);
         }
         .pap-hero-glow {
           position: absolute;
@@ -502,7 +612,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           font-weight: 800;
           letter-spacing: 0.14em;
           text-transform: uppercase;
-          color: #E85A8C;
+          color: #F9A8C9;
           margin: 0 0 6px;
         }
         .pap-hero-title {
@@ -522,14 +632,38 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         .pap-hero-cta {
           display: inline-flex;
           align-items: center;
-          padding: 10px 18px;
-          background: #E85A8C;
-          color: #fff;
-          border-radius: 8px;
-          font-size: 12.5px;
+          padding: 11px 18px;
+          background: #fff;
+          color: #2C1219;
+          border: none;
+          border-radius: 10px;
+          font-family: inherit;
+          font-size: 13.5px;
           font-weight: 800;
-          box-shadow: 0 3px 0 #7A1B47;
+          cursor: pointer;
         }
+        .pap-hero-cta:active { transform: scale(0.98); }
+        .pap-in, .pap-ta {
+          width: 100%; box-sizing: border-box; border: none; border-radius: 10px; background: #fff;
+          font-family: inherit; font-size: 14px; color: #2C1219;
+        }
+        .pap-in { height: 44px; padding: 0 12px; }
+        .pap-ta { min-height: 92px; resize: none; padding: 11px 12px 22px; line-height: 1.45; display: block; }
+        .pap-in:focus, .pap-ta:focus { outline: 2px solid #F9A8C9; outline-offset: 0; }
+        .pap-in::placeholder, .pap-ta::placeholder { color: #A8A0A4; }
+        .pap-ta-wrap { position: relative; }
+        .pap-ta-count { position: absolute; right: 10px; bottom: 7px; font-size: 10.5px; color: #9CA3AF; }
+        .pap-row { display: flex; gap: 8px; margin-top: 10px; }
+        .pap-btn-ia, .pap-btn-save {
+          flex: 1; height: 42px; border-radius: 10px; cursor: pointer;
+          font-family: inherit; font-size: 13.5px; font-weight: 800;
+        }
+        .pap-btn-ia { background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+        .pap-btn-save { background: #fff; color: #2C1219; border: none; }
+        .pap-btn-ia:disabled, .pap-btn-save:disabled { opacity: 0.5; cursor: default; }
+        .pap-aviso { margin: 0 0 10px; padding: 9px 12px; border-radius: 10px; font-size: 12.5px; font-weight: 800; }
+        .pap-aviso--ok { background: #DCFCE7; color: #15803D; }
+        .pap-aviso--err { background: #FEE2E2; color: #B91C1C; }
 
         /* Lista compacta */
         .pap-list-title {
@@ -566,8 +700,8 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           text-decoration: line-through;
         }
         .pap-item.next {
-          border-color: #E85A8C;
-          background: #FFF5F9;
+          border-color: #2C1219;
+          background: #fff;
         }
         .pap-item.next .pap-item-t {
           font-weight: 800;
@@ -589,7 +723,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           color: #fff;
         }
         .pap-item.next .pap-item-ic {
-          background: #E85A8C;
+          background: #2C1219;
           color: #fff;
         }
         .pap-item-t {
@@ -601,7 +735,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         .pap-item-tag {
           font-size: 9px;
           font-weight: 800;
-          color: #E85A8C;
+          color: #2C1219;
           letter-spacing: 0.06em;
           text-transform: uppercase;
           flex-shrink: 0;
