@@ -1857,6 +1857,95 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
 
+        /* ── Slide Pedidos: cascata de 3 pedidos ── */
+        .ob-casc { position: relative; width: 100%; max-width: 360px; margin: 1.4rem auto 0; text-align: left; }
+        .ob-casc-card {
+          position: relative; background: #fff; border-radius: 14px; padding: 12px;
+          box-shadow: 0 10px 24px rgba(80,10,40,0.22);
+          margin-left: calc(var(--i) * 14px); margin-right: calc((2 - var(--i)) * 14px);
+          opacity: 0; animation: obCascDrop 0.55s cubic-bezier(0.22,1,0.36,1) forwards;
+          animation-delay: calc(0.3s + var(--i) * 0.45s);
+        }
+        .ob-casc-card + .ob-casc-card { margin-top: 10px; }
+        @keyframes obCascDrop { from { opacity: 0; transform: translateY(-26px) rotate(-2deg); } to { opacity: 1; transform: none; } }
+        .ob-casc-top { display: flex; align-items: flex-start; gap: 10px; }
+        .ob-casc-av { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .ob-casc-av--ini { display: flex; align-items: center; justify-content: center; background: #E6F1FB; color: #185FA5; font-size: 12px; font-weight: 800; }
+        .ob-casc-who { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+        .ob-casc-who b { font-size: 13px; font-weight: 800; color: #2C1219; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+        .ob-casc-pill { margin-top: 4px; font-size: 10.5px; font-weight: 800; padding: 3px 8px; border-radius: 6px; white-space: nowrap; }
+        .ob-casc-meta { font-size: 10.5px; color: #888780; white-space: nowrap; margin-top: 2px; }
+        .ob-casc-item { display: flex; align-items: center; gap: 10px; margin-top: 10px; background: #FAF7F8; border-radius: 9px; padding: 6px 8px 6px 6px; }
+        .ob-casc-item img { width: 34px; height: 34px; border-radius: 7px; object-fit: cover; flex-shrink: 0; }
+        .ob-casc-item span { flex: 1; min-width: 0; font-size: 12px; color: #4B3A42; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ob-casc-item b { font-size: 12.5px; color: #2C1219; white-space: nowrap; }
+        .ob-casc-toast {
+          position: absolute; top: -34px; left: 50%; z-index: 3;
+          background: #2C1219; color: #fff; font-size: 12px; padding: 7px 12px; border-radius: 999px;
+          white-space: nowrap; box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+          opacity: 0; transform: translate(-50%, 6px);
+          animation: obCascToast 3.2s ease 1.9s forwards;
+        }
+        .ob-casc-toast b { font-weight: 800; }
+        @keyframes obCascToast {
+          0% { opacity: 0; transform: translate(-50%, 6px); }
+          12%, 78% { opacity: 1; transform: translate(-50%, 0); }
+          100% { opacity: 0; transform: translate(-50%, -6px); }
+        }
+        .ob-casc-sp { position: absolute; opacity: 0; animation: obCascTw 2.4s ease-in-out infinite; pointer-events: none; }
+        .ob-casc-sp--1 { width: 14px; top: 2%; left: -2%; animation-delay: 0.6s; }
+        .ob-casc-sp--2 { width: 10px; top: 30%; right: -3%; animation-delay: 1.3s; }
+        .ob-casc-sp--3 { width: 12px; bottom: -4%; left: 4%; animation-delay: 1.9s; }
+        .ob-casc-sp--4 { width: 8px; bottom: 30%; left: -4%; animation-delay: 0.9s; }
+        @keyframes obCascTw { 0%, 100% { opacity: 0; transform: scale(0.6); } 50% { opacity: 0.85; transform: scale(1); } }
+        .ob-casc-sub { margin: 1.2rem auto 0 !important; font-size: 1.05rem !important; color: rgba(255,255,255,0.88) !important; max-width: 34ch; }
+        @media (prefers-reduced-motion: reduce) {
+          .ob-casc-card, .ob-casc-toast { animation-duration: 0.01s; animation-delay: 0s; }
+          .ob-casc-sp { animation: none; }
+        }
+        @media (max-width: 767px) and (max-height: 760px) {
+          .ob-content:has(.ob-casc) { padding-top: 1.1rem; padding-bottom: 0.5rem; }
+          .ob-content:has(.ob-casc) .ob-slide-title { font-size: 1.28rem; margin-bottom: 0.4rem; }
+          .ob-casc { margin-top: 1.1rem; }
+          .ob-casc-card { padding: 9px 10px; }
+          .ob-casc-card + .ob-casc-card { margin-top: 7px; }
+          .ob-casc-item { margin-top: 7px; padding: 4px 6px 4px 4px; }
+          .ob-casc-item img, .ob-casc-av { width: 30px; height: 30px; }
+          .ob-casc-sub { margin-top: 0.8rem !important; font-size: 0.95rem !important; }
+        }
+        /* Telas bem baixas (ex.: 360x640 com barra do navegador): aperta mais um pouco */
+        @media (max-width: 767px) and (max-height: 680px) {
+          .ob-casc { margin-top: 0.9rem; }
+          .ob-casc-card { padding: 8px 10px; }
+          .ob-casc-card + .ob-casc-card { margin-top: 6px; }
+          .ob-casc-item { margin-top: 6px; }
+          .ob-casc-sub { margin-top: 0.6rem !important; }
+        }
+        /* Celulares muito pequenos (iPhone SE 1ª geração): some a linha do doce */
+        @media (max-width: 767px) and (max-height: 600px) {
+          .ob-casc-item { display: none; }
+          .ob-cli-end-row { display: none; }
+          .ob-cli-inline, .ob-cli-divider { display: none; }
+          .ob-cli-header { margin-bottom: 8px; }
+        }
+
+        /* ── Celulares com tela baixa (ou com barra do navegador): compacta o
+              slide de Clientes pra frase de baixo não ficar escondida ── */
+        @media (max-width: 767px) and (max-height: 760px) {
+          .ob-content:has(.ob-clientes-stack) { padding-top: 1.1rem; padding-bottom: 0.5rem; }
+          .ob-content:has(.ob-clientes-stack) .ob-slide-title { font-size: 1.28rem; margin-bottom: 0.6rem; max-width: 26ch; }
+          .ob-cli-card { padding: 12px 12px; }
+          .ob-cli-avatar { width: 44px; height: 44px; font-size: 16px; }
+          .ob-cli-divider { margin: 10px 0; }
+          .ob-cli-stats { margin-bottom: 8px; }
+          .ob-cli-stat { padding: 7px 6px; }
+          .ob-cli-end-row { padding: 8px 10px; margin-bottom: 4px; }
+          .ob-cli-mapa { width: 44px; height: 44px; }
+          .ob-cli-aniv-row { margin-top: 4px; padding: 6px 10px; }
+          .ob-content:has(.ob-clientes-stack) .ob-slide-subtitle-top { margin-top: 0.7rem !important; font-size: 0.95rem !important; }
+          .ob-nav { padding-top: 0.6rem; padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); }
+        }
+
         /* ── Desktop: aumenta tipografia e centraliza melhor ── */
         @media (min-width: 768px) {
           .ob-content { padding: 2rem; }
@@ -2797,16 +2886,30 @@ function CardPedidoNovo({ p }: { p: typeof ONBOARDING_PEDIDOS[0] }) {
   );
 }
 
-function Slide2Pedidos({ onReady }: { onReady: () => void }) {
-  const [visivel, setVisivel] = useState(false);
+// Slide Pedidos — cascata de 3 pedidos, cada um num status (mockup aprovado 28/09)
+const CASCATA_PEDIDOS = [
+  { id: 5, cliente: "Ana Cristina Vieira", foto: "/tutorial/cliente1.jpeg", quando: "hoje 11h",
+    item: "1x Bolo Dois Amores", img: "/tutorial/doisamores.jpg", total: "R$ 40,00",
+    status: "⏳ Aguardando aprovação", bg: "#FEF0DF", cor: "#854F0B" },
+  { id: 6, cliente: "Marina Silva", foto: "/tutorial/cliente2.jpeg", quando: "hoje 14h",
+    item: "1x Caixa de Brigadeiro", img: "/tutorial/caixa4.jpg", total: "R$ 150,00",
+    status: "👩‍🍳 Em produção", bg: "#FCE0E9", cor: "#993556" },
+  { id: 7, cliente: "Juliana Souza", iniciais: "JS", quando: "amanhã 9h",
+    item: "100x Salgadinhos", img: "/tutorial/salgadinhos.jpg", total: "R$ 95,00",
+    status: "✓ Pronto p/ retirada", bg: "#DCFCE7", cor: "#15803D" },
+];
 
+const Brilho = ({ className }: { className: string }) => (
+  <svg className={`ob-casc-sp ${className}`} viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12 0c.7 6.6 5.4 11.3 12 12-6.6.7-11.3 5.4-12 12-.7-6.6-5.4-11.3-12-12C6.6 11.3 11.3 6.6 12 0z" fill="#fff" />
+  </svg>
+);
+
+function Slide2Pedidos({ onReady }: { onReady: () => void }) {
   useEffect(() => {
-    const timers: number[] = [];
-    // Card entra rápido
-    timers.push(window.setTimeout(() => setVisivel(true), 350));
-    // Libera o botão "Próximo"
-    timers.push(window.setTimeout(onReady, 900));
-    return () => timers.forEach((t) => clearTimeout(t));
+    // Libera o "Próximo" quando o último card terminou de cair (~1,8s)
+    const t = window.setTimeout(onReady, 1600);
+    return () => clearTimeout(t);
   }, [onReady]);
 
   return (
@@ -2816,18 +2919,34 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
         <h2 className="ob-slide-title">TODOS OS PEDIDOS<br/>NO <span className="ob-fill">LUGAR CERTO</span></h2>
       </div>
 
-      <div className="ob-newped-lista">
-        {visivel && (
-          <div
-            className="ob-newped-wrap"
-            style={{ animation: "obNewPedIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both" }}
-          >
-            <CardPedidoNovo p={ONBOARDING_PEDIDOS[0]} />
+      <div className="ob-casc">
+        <Brilho className="ob-casc-sp--1" />
+        <Brilho className="ob-casc-sp--2" />
+        <Brilho className="ob-casc-sp--3" />
+        <Brilho className="ob-casc-sp--4" />
+        <div className="ob-casc-toast">🔔 <b>Novo pedido</b> pelo cardápio</div>
+        {CASCATA_PEDIDOS.map((p, i) => (
+          <div key={p.id} className="ob-casc-card" style={{ ["--i" as any]: i }}>
+            <div className="ob-casc-top">
+              {p.foto
+                ? <img className="ob-casc-av" src={p.foto} alt="" />
+                : <span className="ob-casc-av ob-casc-av--ini">{p.iniciais}</span>}
+              <div className="ob-casc-who">
+                <b>{p.cliente}</b>
+                <span className="ob-casc-pill" style={{ background: p.bg, color: p.cor }}>{p.status}</span>
+              </div>
+              <span className="ob-casc-meta">#{p.id} · {p.quando}</span>
+            </div>
+            <div className="ob-casc-item">
+              <img src={p.img} alt="" />
+              <span>{p.item}</span>
+              <b>{p.total}</b>
+            </div>
           </div>
-        )}
+        ))}
       </div>
 
-      <p className="ob-slide-subtitle-top" style={{ marginTop: "1rem", fontSize: "1.05rem", color: "rgba(255,255,255,0.88)", maxWidth: "34ch", marginLeft: "auto", marginRight: "auto" }}>Acompanhe cada encomenda sem depender de papel ou planilha.</p>
+      <p className="ob-slide-subtitle-top ob-casc-sub">Acompanhe cada encomenda sem depender de papel ou planilha.</p>
     </>
   );
 }
