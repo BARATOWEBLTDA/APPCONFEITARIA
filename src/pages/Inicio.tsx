@@ -2973,20 +2973,13 @@ export default function Inicio() {
           .ini-root .ini-hero-cta-bag {
             display: block;
             position: absolute;
-            right: 22px; top: -4px;
+            right: 4px; top: -4px;
             width: 104px; height: calc(100% + 4px);
             object-fit: cover;
             pointer-events: none;
             z-index: 1;
           }
-          .ini-root .ini-hero-cta-arr {
-            position: absolute;
-            right: 14px; top: 50%;
-            width: 15px; height: 15px;
-            transform: translateY(-50%);
-            opacity: 1;
-            z-index: 2;
-          }
+          .ini-root .ini-hero-cta-arr { display: none; }
 
           /* Grade do Acesso rápido */
           .ini-root .ini-nav-grid { gap: 8px; margin-top: 12px; }
