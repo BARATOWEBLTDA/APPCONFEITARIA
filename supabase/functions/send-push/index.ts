@@ -2,6 +2,7 @@
 // Edge Function: send-push
 //
 // Envia Web Push notification para TODOS os subscribers.
+// Só aceita chamadas autenticadas do admin (gestao@doonly.com.br).
 // Chamada pelo AdminNotificacoes após inserir na tabela notificacoes.
 //
 // Payload esperado:
@@ -31,6 +32,25 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    // ── Segurança: só o admin pode disparar push pra todos ──
+    const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.replace("Bearer ", "");
+    if (!token) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const authClient = createClient(supabaseUrl, serviceKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+    const { data: { user: caller }, error: callerError } = await authClient.auth.getUser(token);
+    const ADMIN_EMAILS = ["gestao@doonly.com.br"];
+    if (callerError || !caller || !ADMIN_EMAILS.includes(caller.email || "")) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const vapidPublic = Deno.env.get("VAPID_PUBLIC_KEY");
     const vapidPrivate = Deno.env.get("VAPID_PRIVATE_KEY");
     const vapidSubject = Deno.env.get("VAPID_SUBJECT") || "mailto:contato@doonly.com.br";

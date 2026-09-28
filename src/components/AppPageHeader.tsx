@@ -11,9 +11,11 @@ interface AppPageHeaderProps {
   subtitle: string
   infoTitle?: string
   infoIcon?: string
-  infoContent: ReactNode
+  infoContent?: ReactNode
   infoTip?: ReactNode
   rightActions?: ReactNode
+  /** Mostra botão de voltar à esquerda do título */
+  onBack?: () => void
 }
 
 export default function AppPageHeader({
@@ -24,6 +26,7 @@ export default function AppPageHeader({
   infoContent,
   infoTip,
   rightActions,
+  onBack,
 }: AppPageHeaderProps) {
   const navigate = useNavigate()
   const [showInfo, setShowInfo] = useState(false)
@@ -36,15 +39,22 @@ export default function AppPageHeader({
     <>
       {/* ══════════════ HEADER FIXO ══════════════ */}
       <div className="app-header-novo">
+        {onBack && (
+          <button type="button" className="app-header-back" onClick={onBack} aria-label="Voltar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+          </button>
+        )}
         <div className="app-header-info">
           <div className="app-header-title-row">
             <h1 className="app-header-title">{title}</h1>
+            {infoContent && (
             <button
               className="app-header-info-icon"
               onClick={() => setShowInfo(true)}
               aria-label="Sobre esta tela"
               type="button"
             >i</button>
+            )}
           </div>
           <p className="app-header-sub">{subtitle}</p>
         </div>
@@ -219,6 +229,17 @@ export default function AppPageHeader({
           }
           .app-header-title { font-size: 28px; }
         }
+        .app-header-back {
+          width: 34px; height: 34px;
+          flex-shrink: 0;
+          border-radius: 10px;
+          border: none;
+          background: rgba(255,255,255,0.2);
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          padding: 0;
+        }
+        .app-header-back:active { transform: scale(0.95); }
         .app-header-info { flex: 1; min-width: 0; }
         .app-header-title-row { display: flex; align-items: center; gap: 8px; }
         .app-header-title { font-size: 22px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.15; color: #fff; margin: 0; font-family: var(--font-base) !important; }

@@ -2,149 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { refreshProfile } from "@/hooks/useProfile";
-import { usePushSubscription } from "@/hooks/usePushSubscription";
-import { sonsHabilitados, setSonsHabilitados, tocarSom, somNotificacaoHabilitado, setSomNotificacaoHabilitado, somPedidoHabilitado, setSomPedidoHabilitado } from "@/hooks/useSom";
 import SugestaoWizard from "@/components/SugestaoWizard";
 import TermosModal from "@/components/TermosModal";
 import EditarPerfilModal from "@/components/EditarPerfilModal";
 
-
-// ── Componente inline: toggle de push notifications ──────────
-function SomToggle() {
-  const [ativo, setAtivo] = useState(sonsHabilitados());
-  return (
-    <div className="cfg-push-row">
-      <div style={{ flex: 1 }}>
-        <p className="cfg-notif-label">Sons do app</p>
-        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-          {ativo ? 'Ativado — toca um som ao registrar vendas.' : 'Desativado — sem efeitos sonoros.'}
-        </p>
-      </div>
-      <label className="toggle">
-        <input
-          type="checkbox"
-          checked={ativo}
-          onChange={() => {
-            const novo = !ativo;
-            setAtivo(novo);
-            setSonsHabilitados(novo);
-            if (novo) setTimeout(() => tocarSom('sucesso'), 100); // preview
-          }}
-        />
-        <span className="toggle-slider" />
-      </label>
-    </div>
-  );
-}
-
-function SomNotificacaoToggle() {
-  const [ativo, setAtivo] = useState(somNotificacaoHabilitado());
-  const mestre = sonsHabilitados();
-  return (
-    <div className="cfg-push-row">
-      <div style={{ flex: 1 }}>
-        <p className="cfg-notif-label">Som de notificação</p>
-        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-          {!mestre ? 'Desative "Sons do app" acima primeiro' : (ativo ? 'Ativado — toca ao chegar novidades.' : 'Desativado — notificações em silêncio.')}
-        </p>
-      </div>
-      <label className="toggle">
-        <input
-          type="checkbox"
-          checked={ativo && mestre}
-          disabled={!mestre}
-          onChange={() => {
-            const novo = !ativo;
-            setAtivo(novo);
-            setSomNotificacaoHabilitado(novo);
-            if (novo) setTimeout(() => tocarSom('notificacao'), 100);
-          }}
-        />
-        <span className="toggle-slider" style={{ opacity: !mestre ? 0.4 : 1 }} />
-      </label>
-    </div>
-  );
-}
-
-function SomPedidoToggle() {
-  const [ativo, setAtivo] = useState(somPedidoHabilitado());
-  const mestre = sonsHabilitados();
-  return (
-    <div className="cfg-push-row">
-      <div style={{ flex: 1 }}>
-        <p className="cfg-notif-label">Som de pedido novo</p>
-        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-          {!mestre ? 'Desative "Sons do app" acima primeiro' : (ativo ? 'Ativado — toca ao registrar pedidos.' : 'Desativado — pedidos em silêncio.')}
-        </p>
-      </div>
-      <label className="toggle">
-        <input
-          type="checkbox"
-          checked={ativo && mestre}
-          disabled={!mestre}
-          onChange={() => {
-            const novo = !ativo;
-            setAtivo(novo);
-            setSomPedidoHabilitado(novo);
-            if (novo) setTimeout(() => tocarSom('pedido'), 100);
-          }}
-        />
-        <span className="toggle-slider" style={{ opacity: !mestre ? 0.4 : 1 }} />
-      </label>
-    </div>
-  );
-}
-
-function PushToggle() {
-  const { isSupported, isSubscribed, permission, loading, error, subscribe, unsubscribe } = usePushSubscription();
-
-  if (!isSupported) {
-    return (
-      <div className="cfg-push-row">
-        <div>
-          <p className="cfg-notif-label">Notificações push</p>
-          <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-            Seu navegador não suporta notificações push. Use Chrome ou instale o app como PWA.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (permission === 'denied') {
-    return (
-      <div className="cfg-push-row">
-        <div>
-          <p className="cfg-notif-label">Notificações push</p>
-          <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--error)', lineHeight: 1.4 }}>
-            Permissão bloqueada. Vá nas configurações do navegador para reativar.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="cfg-push-row">
-      <div style={{ flex: 1 }}>
-        <p className="cfg-notif-label">Notificações push</p>
-        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-          {isSubscribed ? 'Ativado — você será avisada sobre novidades do Doonly.' : 'Ative para receber avisos de novidades e atualizações.'}
-        </p>
-        {error && <p style={{ margin: '4px 0 0', fontSize: '0.72rem', color: 'var(--error)' }}>{error}</p>}
-      </div>
-      <label className="toggle">
-        <input
-          type="checkbox"
-          checked={isSubscribed}
-          disabled={loading}
-          onChange={() => isSubscribed ? unsubscribe() : subscribe()}
-        />
-        <span className="toggle-slider" style={{ opacity: loading ? 0.5 : 1 }} />
-      </label>
-    </div>
-  );
-}
 
 const Field = ({ icon, placeholder, value, onChange, type = "text", maxLength, disabled }: any) => (
   <div className={`cfg-field${disabled ? " cfg-field-disabled" : ""}`}>
@@ -501,9 +362,20 @@ export default function Configuracoes() {
         <div className="cfgp-card cfgp-quick">
           <div className="cfgp-quick-hdr">
             <div className="cfgp-quick-title">Ações rápidas</div>
-            <div className="cfgp-quick-sub">Suporte, sugestões e indicações</div>
+            <div className="cfgp-quick-sub">Preferências, suporte e indicações</div>
           </div>
           <div className="cfgp-quick-list">
+            <button className="cfgp-quick-item" onClick={() => navigate("/configuracoes/notificacoes")}>
+              <span className="cfgp-quick-ico cfgp-quick-ico--gray">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              </span>
+              <div className="cfgp-quick-info">
+                <div className="cfgp-quick-name">Notificações e sons</div>
+                <div className="cfgp-quick-desc">Avisos no celular e sons do app</div>
+              </div>
+              <svg className="cfgp-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+
             <button className="cfgp-quick-item" onClick={() => navigate("/indicar")}>
               <span className="cfgp-quick-ico cfgp-quick-ico--pink">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>

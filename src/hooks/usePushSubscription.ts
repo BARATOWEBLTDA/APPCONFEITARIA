@@ -63,6 +63,18 @@ export function usePushSubscription() {
             const sub = await reg.pushManager.getSubscription()
             if (sub) {
               setIsSubscribed(true)
+              // Ressincroniza com o banco: se a linha foi apagada (ex.: expirou),
+              // o aparelho continuaria "ativado" mas sem receber nada.
+              const j = sub.toJSON()
+              const { data: { user } } = await supabase.auth.getUser()
+              if (user && j.endpoint && j.keys?.p256dh && j.keys?.auth) {
+                await supabase.from('push_subscriptions').upsert({
+                  user_id: user.id,
+                  endpoint: j.endpoint,
+                  p256dh: j.keys.p256dh,
+                  auth: j.keys.auth,
+                }, { onConflict: 'endpoint' })
+              }
             }
           }
         } catch (e) {
@@ -74,8 +86,12 @@ export function usePushSubscription() {
   }, [])
 
   const subscribe = useCallback(async () => {
-    if (!isSupported || !VAPID_PUBLIC_KEY) {
-      setError('Notificações push não são suportadas neste navegador.')
+    if (!isSupported) {
+      setError('Este navegador não recebe notificações.')
+      return false
+    }
+    if (!VAPID_PUBLIC_KEY) {
+      setError('Notificações ainda não configuradas (chave VAPID ausente).')
       return false
     }
 
@@ -83,18 +99,18 @@ export function usePushSubscription() {
     setError(null)
 
     try {
-      // 1. Registra service worker (se ainda não está)
-      const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' })
-      await navigator.serviceWorker.ready
-
-      // 2. Pede permissão
+      // 1. Pede permissão PRIMEIRO — no iPhone ela precisa sair direto do toque
       const perm = await Notification.requestPermission()
       setPermission(perm)
       if (perm !== 'granted') {
-        setError('Permissão de notificação negada.')
+        setError(perm === 'denied' ? null : 'Permissão de notificação não concedida.')
         setLoading(false)
         return false
       }
+
+      // 2. Registra service worker (se ainda não está)
+      const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      await navigator.serviceWorker.ready
 
       // 3. Subscribe no Push Manager
       const subscription = await registration.pushManager.subscribe({
@@ -146,6 +162,7 @@ export function usePushSubscription() {
   }, [isSupported])
 
   const unsubscribe = useCallback(async () => {
+    setLoading(true)
     try {
       const reg = await navigator.serviceWorker.getRegistration('/sw.js')
       if (reg) {
@@ -161,6 +178,7 @@ export function usePushSubscription() {
     } catch (err) {
       console.error('Push unsubscribe error:', err)
     }
+    setLoading(false)
   }, [])
 
   return {
