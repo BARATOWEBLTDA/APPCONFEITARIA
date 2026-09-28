@@ -292,6 +292,11 @@ export default function Configuracoes() {
       <div className="cfg-mobile">
         {/* ── HERO USER ────────────────────────────────────── */}
         <div className="cfgp-hero">
+          {/* Ondas vinho — mesmo desenho do header da Home */}
+          <svg className="cfgp-hero-waves" viewBox="0 0 366 96" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M80 96 C 130 88, 180 76, 214 63 S 280 48, 366 44 L 366 96 Z" fill="#4F1E2C" />
+            <path d="M214 96 C 232 86, 250 69, 272 58 S 326 44, 366 41 L 366 96 Z" fill="#5B2533" />
+          </svg>
           <div className="cfgp-hero-avatar" onClick={() => !uploading && fileRef.current?.click()}>
             <div className="cfgp-hero-avatar-inner">
               {preview
@@ -742,7 +747,9 @@ export default function Configuracoes() {
         .cfg-mobile .cfgp-card:last-of-type { margin-bottom: 8px; }
 
         /* Hero */
-        .cfgp-hero { background: linear-gradient(135deg, #E85A8C 0%, #C33A6E 100%); border-radius: 14px; padding: 18px 16px; color: #fff; margin-bottom: 12px; display: flex; align-items: center; gap: 14px; }
+        .cfgp-hero { background: #3B1620; border-radius: 14px; padding: 18px 16px; color: #fff; margin-bottom: 12px; display: flex; align-items: center; gap: 14px; position: relative; overflow: hidden; }
+        .cfgp-hero-waves { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+        .cfgp-hero > .cfgp-hero-info, .cfgp-hero > .cfgp-hero-edit { position: relative; }
         .cfgp-hero-avatar { width: 60px; height: 60px; border-radius: 50%; flex-shrink: 0; cursor: pointer; position: relative; }
         .cfgp-hero-avatar-inner { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.35); display: flex; align-items: center; justify-content: center; }
         .cfgp-hero-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -756,13 +763,13 @@ export default function Configuracoes() {
           cursor: pointer;
           width: 36px; height: 36px;
           border-radius: 10px;
-          background: rgba(255, 255, 255, 0.18);
+          background: rgba(255, 255, 255, 0.14);
           color: #fff;
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
           transition: background 0.15s ease, transform 0.12s ease;
         }
-        .cfgp-hero-edit:hover { background: rgba(255, 255, 255, 0.28); transform: translateY(-1px); }
+        .cfgp-hero-edit:hover { background: rgba(255, 255, 255, 0.24); transform: translateY(-1px); }
         .cfgp-hero-edit:active { transform: translateY(1px); }
 
         /* Card assinatura */
@@ -775,7 +782,7 @@ export default function Configuracoes() {
         .cfgp-sub-badge--pro { background: #DCFCE7; color: #166534; }
         .cfgp-sub-badge--trial { background: #FEF0DF; color: #854F0B; }
         .cfgp-sub-badge--exp { background: #FEE2E2; color: #B91C1C; }
-        .cfgp-sub-crown { width: 40px; height: 40px; border-radius: 12px; background: #FCE0E9; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .cfgp-sub-crown { width: 40px; height: 40px; border-radius: 12px; background: #2D1F26; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .cfgp-sub-crown img { width: 22px; height: 22px; object-fit: contain; }
         .cfgp-sub-info { background: #F8F5F1; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; font-size: 12.5px; color: #5F5E5A; line-height: 1.5; }
         .cfgp-sub-info--danger { background: #FEE2E2; color: #B91C1C; }
@@ -785,20 +792,20 @@ export default function Configuracoes() {
           display: flex; align-items: center; justify-content: center; gap: 6px;
           width: 100%;
           padding: 13px;
-          background: #E85A8C;
+          background: #2D1F26;
           color: #fff;
           border-radius: 12px;
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 800;
           letter-spacing: -0.01em;
           cursor: pointer;
           font-family: var(--font-base) !important;
-          box-shadow: 0 4px 14px rgba(232, 90, 140, 0.28), inset 0 -2px 0 rgba(0,0,0,0.08);
+          box-shadow: 0 4px 14px rgba(45, 31, 38, 0.25);
           transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease;
         }
-        .cfgp-sub-cta:hover { background: #C33A6E; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(232, 90, 140, 0.35), inset 0 -2px 0 rgba(0,0,0,0.08); }
-        .cfgp-sub-cta:active { transform: translateY(1px); box-shadow: 0 2px 6px rgba(232, 90, 140, 0.25), inset 0 -1px 0 rgba(0,0,0,0.06); }
-        .cfgp-sub-cta img { width: 16px; height: 16px; object-fit: contain; }
+        .cfgp-sub-cta:hover { background: #3D2A33; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(45, 31, 38, 0.3); }
+        .cfgp-sub-cta:active { transform: translateY(1px); box-shadow: 0 2px 6px rgba(45, 31, 38, 0.2); }
+        .cfgp-sub-cta img { width: 18px; height: 18px; object-fit: contain; }
         .cfgp-sub-cta--manage {
           background: transparent;
           color: #E85A8C;

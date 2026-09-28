@@ -109,7 +109,7 @@ export default function InstalarAppCard() {
         .ia-d { margin: 2px 0 0; font-size: 12px; color: #888780; line-height: 1.4; }
         .ia-btn {
           width: 100%; height: 44px; margin-top: 14px; border: none; border-radius: 10px; cursor: pointer;
-          background: #E85A8C; color: #fff; font-family: inherit; font-size: 14px; font-weight: 800;
+          background: #F5F0F2; color: #2C1219; font-family: inherit; font-size: 14px; font-weight: 800;
         }
         .ia-btn:active { transform: scale(0.99); }
         .ia-btn--ghost { background: #F5F0F2; color: #2C1219; }
