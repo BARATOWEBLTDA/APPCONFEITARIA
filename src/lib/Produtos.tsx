@@ -10,6 +10,7 @@ import BtnNovo from "@/components/BtnNovo";
 import Categorias from "@/pages/Categorias";
 import QuickAddInsumo from "@/components/QuickAddInsumo";
 import AppPageHeader from "@/components/AppPageHeader";
+import { apiFetch } from "@/lib/apiFetch";
 
 // ── Helpers de conversão de unidades (ficha técnica) ──
 const UNIT_FAMILIES_MAP: Record<string, { family: string; base: string; toBase: number }> = {
@@ -2547,7 +2548,7 @@ export default function Produtos() {
                         if (!form.nome.trim() || !isPro) return;
                         setForm(f => ({ ...f, descricao: "Gerando..." }));
                         try {
-                          const res = await fetch("/api/gerar-descricao", {
+                          const res = await apiFetch("/api/gerar-descricao", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ prompt: `Crie uma descrição MUITO curta e atraente para um produto de confeitaria chamado "${form.nome}". MÁXIMO 2 frases curtas (até 100 caracteres no total). Português brasileiro, transmita qualidade e sabor. Retorne APENAS a descrição, sem aspas, sem emojis.` })

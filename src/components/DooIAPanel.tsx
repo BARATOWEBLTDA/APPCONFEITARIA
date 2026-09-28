@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useProfile } from "@/hooks/useProfile";
+import { apiFetch } from "@/lib/apiFetch";
 
 interface Message {
   role: "user" | "assistant";
@@ -54,7 +55,7 @@ export default function DooIAPanel() {
     const historyForApi = newMessages.slice(-MAX_HISTORY);
 
     try {
-      const res = await fetch("/api/doo-chat", {
+      const res = await apiFetch("/api/doo-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import ReqTag from "@/components/ReqTag";
+import { apiFetch } from "@/lib/apiFetch";
 
 export type InsumoQuick = {
   id: string;
@@ -205,7 +206,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
     setBuscandoImg(true);
     setImagens([]);
     try {
-      const res = await fetch(`/api/buscar-imagem?q=${encodeURIComponent(termo)}`);
+      const res = await apiFetch(`/api/buscar-imagem?q=${encodeURIComponent(termo)}`);
       const data = await res.json();
       if (data.images) setImagens(data.images.slice(0, 3));
     } catch (e) { console.error(e); }

@@ -6,6 +6,7 @@ import CardapioDesign from "@/pages/CardapioDesign";
 import CheckoutConfigPage from "@/pages/CheckoutConfigPage";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import AppPageHeader from "@/components/AppPageHeader";
+import { apiFetch } from "@/lib/apiFetch";
 
 const SectionLabel = ({ children, sub }: any) => (
   <div className="ccc-section-header">
@@ -204,7 +205,7 @@ export default function CardapioConfigPage() {
     if (!form.nome_loja.trim()) return alert("Digite o nome da loja primeiro.");
     setGerandoDescricao(true);
     try {
-      const response = await fetch("/api/gerar-descricao", {
+      const response = await apiFetch("/api/gerar-descricao", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

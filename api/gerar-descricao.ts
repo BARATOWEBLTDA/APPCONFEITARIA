@@ -1,9 +1,15 @@
+import { usuarioDoToken, respostaNaoAutorizado } from "./_auth";
+
 export const config = { runtime: "edge" };
 
 export default async function handler(req: Request) {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }
+
+  // Só quem está logado no Doonly pode usar (cada chamada gasta crédito da API)
+  const usuario = await usuarioDoToken(req);
+  if (!usuario) return respostaNaoAutorizado();
 
   const { prompt } = await req.json();
 

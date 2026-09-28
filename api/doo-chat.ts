@@ -1,15 +1,21 @@
+import { usuarioDoToken, respostaNaoAutorizado } from "./_auth";
+
 export const config = { runtime: "edge" };
 
 const CORS = {
   "Content-Type": "application/json",
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
 export default async function handler(req: Request) {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
+
+  // Só quem está logado no Doonly pode usar (cada chamada gasta crédito da API)
+  const usuario = await usuarioDoToken(req);
+  if (!usuario) return respostaNaoAutorizado(CORS);
 
   const apiKey = (globalThis as any).process?.env?.VITE_ANTHROPIC_KEY ?? "";
   if (!apiKey) return new Response(JSON.stringify({ error: "missing_key" }), { status: 500, headers: CORS });

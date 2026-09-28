@@ -20,6 +20,7 @@ import Categorias from "@/pages/Categorias";
 import QuickAddInsumo from "@/components/QuickAddInsumo";
 import AppPageHeader from "@/components/AppPageHeader";
 import ReqTag from "@/components/ReqTag";
+import { apiFetch } from "@/lib/apiFetch";
 
 // ── Helpers de conversão de unidades (ficha técnica) ──
 const UNIT_FAMILIES_MAP: Record<string, { family: string; base: string; toBase: number }> = {
@@ -4795,7 +4796,7 @@ export default function Produtos() {
                           const prompt = ehMelhorar
                             ? `Melhore esta descrição de produto de confeitaria, mantendo a intenção e informações originais. Torne mais atraente, clara e profissional. Máximo 2 frases curtas (até 150 caracteres). Português brasileiro. Retorne APENAS a descrição melhorada, sem aspas, sem emojis, sem introdução.\n\nProduto: "${form.nome}"\nDescrição atual: "${textoAtual}"`
                             : `Crie uma descrição MUITO curta e atraente para um produto de confeitaria chamado "${form.nome}". MÁXIMO 2 frases curtas (até 100 caracteres no total). Português brasileiro, transmita qualidade e sabor. Retorne APENAS a descrição, sem aspas, sem emojis.`;
-                          const res = await fetch("/api/gerar-descricao", {
+                          const res = await apiFetch("/api/gerar-descricao", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ prompt })

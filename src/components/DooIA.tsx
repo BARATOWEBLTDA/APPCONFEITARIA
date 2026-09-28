@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { usePlano } from '@/hooks/usePlano'
+import { apiFetch } from "@/lib/apiFetch";
 
 interface Message {
   role: 'user' | 'assistant'
@@ -408,7 +409,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         setLoading(false)
         setGeneratingImage(true)
 
-        const res = await fetch('/api/doo-image', {
+        const res = await apiFetch('/api/doo-image', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt: buildImagePrompt(text) })
@@ -439,7 +440,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
           return msg.content
         }
 
-        const res = await fetch('/api/doo-chat', {
+        const res = await apiFetch('/api/doo-chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
