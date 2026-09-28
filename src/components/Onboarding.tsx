@@ -102,6 +102,8 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
       "/tutorial/nutella.webp",
       "/tutorial/sicao.png",
       "/tutorial/forminha.webp",
+      "/tutorial/cardapio-exemplo.jpg",
+      "/tutorial/cardapio-exemplo-nav.jpg",
     ];
     urls.forEach((src) => {
       const img = new Image();
@@ -1903,6 +1905,17 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
 
+        /* ── Slide Cardápio: print real rolando dentro do celular ── */
+        /* Faixa de cima na cor da barra do celular do print, pro notch não cobrir o logo */
+        .ob-cardapio-screen--print { padding-top: 26px; height: 470px; min-height: 0; background: #3A1A25; }
+        .ob-cardapio-scroller {
+          height: 100%; overflow-y: auto; overscroll-behavior: contain;
+          -webkit-overflow-scrolling: touch; scrollbar-width: none; touch-action: pan-y;
+        }
+        .ob-cardapio-scroller::-webkit-scrollbar { display: none; }
+        .ob-cardapio-print { display: block; width: 100%; height: auto; pointer-events: none; user-select: none; -webkit-user-drag: none; }
+        .ob-cardapio-print-nav { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; display: block; pointer-events: none; }
+
         /* ── Slide Pedidos: cascata de 3 pedidos ── */
         .ob-casc { position: relative; width: 100%; max-width: 360px; margin: 1.4rem auto 0; text-align: left; }
         .ob-casc-card {
@@ -2691,43 +2704,52 @@ const CARDAPIO_ITEMS = [
 ];
 
 function SlideCardapio({ onReady }: { onReady: () => void }) {
-  const [visiveis, setVisiveis] = useState<typeof CARDAPIO_ITEMS>([]);
+  // Print real de um cardápio feito no Doonly (Doce Formiga).
+  // Rola sozinho devagar; se a pessoa arrastar dentro do celular, ela assume
+  // e 3s depois de soltar a rolagem automática volta.
+  const scrollerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const timers: number[] = [];
-
-    // Pré-carrega imagens
-    const imgs = CARDAPIO_ITEMS.map((i) => i.imagem);
-    const preload = Promise.all(
-      imgs.map(
-        (src) =>
-          new Promise<void>((resolve) => {
-            const img = new Image();
-            img.onload = () => resolve();
-            img.onerror = () => resolve();
-            img.src = src;
-          })
-      )
-    );
-
-    let cancelado = false;
-    preload.then(() => {
-      if (cancelado) return;
-      // Itens entram um por um
-      CARDAPIO_ITEMS.forEach((item, i) => {
-        timers.push(window.setTimeout(() => {
-          setVisiveis((prev) => [...prev, item]);
-        }, 800 + i * 500));
-      });
-      // Libera botão depois do último
-      timers.push(window.setTimeout(onReady, 800 + CARDAPIO_ITEMS.length * 500 + 800));
-    });
-
-    return () => {
-      cancelado = true;
-      timers.forEach((t) => clearTimeout(t));
-    };
+    const t = window.setTimeout(onReady, 900);
+    return () => clearTimeout(t);
   }, [onReady]);
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+
+    const VELOCIDADE = 38; // px por segundo
+    let dir = 1;
+    let pos = 0;
+    let pausadoAte = performance.now() + 1200; // espera o celular entrar na tela
+    let ultimo = performance.now();
+    let raf = 0;
+
+    const tick = (agora: number) => {
+      const dt = Math.min((agora - ultimo) / 1000, 0.1);
+      ultimo = agora;
+      if (agora > pausadoAte) {
+        const max = el.scrollHeight - el.clientHeight;
+        pos += dir * VELOCIDADE * dt;
+        if (pos >= max) { pos = max; dir = -1; pausadoAte = agora + 1200; }
+        if (pos <= 0) { pos = 0; dir = 1; pausadoAte = agora + 1200; }
+        el.scrollTop = pos;
+      } else {
+        pos = el.scrollTop; // continua de onde a pessoa deixou
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+
+    const pausar = () => { pausadoAte = performance.now() + 3000; };
+    const eventos = ["touchstart", "touchmove", "pointerdown", "wheel"] as const;
+    eventos.forEach((ev) => el.addEventListener(ev, pausar, { passive: true }));
+    return () => {
+      cancelAnimationFrame(raf);
+      eventos.forEach((ev) => el.removeEventListener(ev, pausar));
+    };
+  }, []);
 
   return (
     <>
@@ -2738,45 +2760,11 @@ function SlideCardapio({ onReady }: { onReady: () => void }) {
 
       <div className="ob-cardapio-phone">
         <div className="ob-cardapio-notch" />
-        <div className="ob-cardapio-screen">
-          {/* Faixa colorida rosa (identity) */}
-          <div className="ob-cardapio-faixa" />
-          {/* Logo circular sobreposta */}
-          <div className="ob-cardapio-logo-wrap">
-            <div className="ob-cardapio-logo">L</div>
+        <div className="ob-cardapio-screen ob-cardapio-screen--print">
+          <div className="ob-cardapio-scroller" ref={scrollerRef}>
+            <img className="ob-cardapio-print" src="/tutorial/cardapio-exemplo.jpg" alt="Cardápio online de uma confeitaria feito no Doonly" />
           </div>
-          {/* Info da loja */}
-          <div className="ob-cardapio-info">
-            <div className="ob-cardapio-nome">Confeitaria da Larissa</div>
-            <div className="ob-cardapio-sub">⭐ 4.9 · Delícias artesanais</div>
-          </div>
-          {/* Chips de categoria */}
-          <div className="ob-cardapio-chips">
-            <span className="ob-cardapio-chip ob-cardapio-chip--active">Todos</span>
-            <span className="ob-cardapio-chip">Bolos</span>
-            <span className="ob-cardapio-chip">Doces</span>
-            <span className="ob-cardapio-chip">Salgados</span>
-          </div>
-          {/* Lista de produtos (modo lista) */}
-          <div className="ob-cardapio-lista">
-            {visiveis.map((item) => (
-              <div key={item.id} className="ob-cardapio-item">
-                <div className="ob-cardapio-item-img">
-                  <img
-                    src={item.imagem}
-                    alt={item.nome}
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                  />
-                </div>
-                <div className="ob-cardapio-item-info">
-                  <div className="ob-cardapio-item-nome">{item.nome}</div>
-                  <div className="ob-cardapio-item-desc">{item.desc}</div>
-                  <div className="ob-cardapio-item-preco">{item.preco}</div>
-                </div>
-                <button className="ob-cardapio-item-btn">+ Adicionar</button>
-              </div>
-            ))}
-          </div>
+          <img className="ob-cardapio-print-nav" src="/tutorial/cardapio-exemplo-nav.jpg" alt="" aria-hidden="true" />
         </div>
       </div>
     </>
