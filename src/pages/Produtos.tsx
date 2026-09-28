@@ -9382,6 +9382,39 @@ export default function Produtos() {
           cursor: not-allowed;
         }
 
+        /* ═══ Mobile: cadastro em TELA CHEIA (aprovado 28/09) ═══
+           Sem cantos arredondados, sem fundo aparecendo, altura fixa (não pula entre etapas).
+           O rodapé fica no vinho do menu inferior, com os botões do cadastro no lugar dele. */
+        @media (max-width: 640px) {
+          .prod-modal-overlay:has(.prod-modal--novo) { backdrop-filter: none; -webkit-backdrop-filter: none; }
+          .prod-modal--novo {
+            border-radius: 0 !important;
+            height: 100vh !important; max-height: 100vh !important;
+            height: 100dvh !important; max-height: 100dvh !important;
+            box-shadow: none !important;
+          }
+          .prod-modal--novo .prod-modal-header-novo {
+            padding-top: calc(env(safe-area-inset-top, 0px) + 14px);
+            border-bottom: 1px solid #F3ECEE;
+          }
+          .prod-modal--novo .prod-modal-footer--novo {
+            background: #2C1219 !important;
+            border-top: none !important;
+            padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)) !important;
+          }
+          .prod-modal--novo .prod-btn-cancelar-novo { color: rgba(255,255,255,0.78); }
+          .prod-modal--novo .prod-btn-cancelar-novo:hover,
+          .prod-modal--novo .prod-btn-cancelar-novo:active { background: rgba(255,255,255,0.08); }
+          .prod-modal--novo .prod-btn-avancar-novo {
+            background: #fff; color: #2C1219; box-shadow: none; font-weight: 800;
+          }
+          .prod-modal--novo .prod-btn-avancar-novo:active:not(:disabled) { transform: scale(0.98); box-shadow: none; }
+          .prod-modal--novo .prod-btn-avancar-novo:disabled {
+            background: rgba(255,255,255,0.16); color: rgba(255,255,255,0.5); box-shadow: none;
+          }
+          .prod-modal--novo .prod-btn-avancar-novo .prod-spinner-sm { border-color: rgba(44,18,25,0.25); border-top-color: #2C1219; }
+        }
+
         /* ═══ Labels novo estilo ═══ */
         .prod-field-label-novo {
           display: flex !important;
