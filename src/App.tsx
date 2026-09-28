@@ -37,6 +37,7 @@ import AdminNotificacoes from "@/pages/admin/AdminNotificacoes";
 import AdminNotifTemplates from "@/pages/admin/AdminNotifTemplates";
 import AdminBanner from "@/pages/admin/AdminBanner";
 import AdminNoticias from "@/pages/admin/AdminNoticias";
+import AdminIdeias from "@/pages/admin/AdminIdeias";
 import AdminAutores from "@/pages/admin/AdminAutores";
 import AdminRelatorios from "@/pages/admin/AdminRelatorios";
 import Configuracoes from "@/pages/Configuracoes";
@@ -263,6 +264,7 @@ export default function App() {
           <Route path="notif-templates" element={<AdminNotifTemplates />} />
           <Route path="banner" element={<AdminBanner />} />
           <Route path="noticias" element={<AdminNoticias />} />
+          <Route path="ideias" element={<AdminIdeias />} />
           <Route path="autores" element={<AdminAutores />} />
           <Route path="relatorios" element={<AdminRelatorios />} />
         </Route>

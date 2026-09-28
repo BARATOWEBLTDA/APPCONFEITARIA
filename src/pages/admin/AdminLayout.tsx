@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import {
   ChartLine, UsersThree, Newspaper, PenNib, Image as ImageIcon,
-  Cake, Medal, FilePdf, Bell, ChartBar,
+  Cake, Medal, FilePdf, Bell, ChartBar, Lightbulb,
   ArrowLeft, SignOut, List,
 } from "@phosphor-icons/react";
 
@@ -45,6 +45,7 @@ const menuSections: MenuSection[] = [
     title: "Comunicação",
     items: [
       { path: "/admin/notificacoes", label: "Notificações", icon: <Bell size={16} weight="bold" /> },
+      { path: "/admin/ideias", label: "Ideias", icon: <Lightbulb size={16} weight="bold" /> },
     ],
   },
   {
@@ -63,6 +64,22 @@ export default function AdminLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [userName, setUserName] = useState("Admin");
+  const [ideiasNovas, setIdeiasNovas] = useState(0);
+
+  // Contador de ideias novas na sidebar (recebida ou sem status)
+  useEffect(() => {
+    if (!authorized) return;
+    const contar = async () => {
+      const { count } = await supabase
+        .from("sugestoes")
+        .select("id", { count: "exact", head: true })
+        .or("status.is.null,status.eq.recebida");
+      setIdeiasNovas(count || 0);
+    };
+    contar();
+    window.addEventListener("admin-ideias-changed", contar);
+    return () => window.removeEventListener("admin-ideias-changed", contar);
+  }, [authorized]);
 
   useEffect(() => {
     const check = async () => {
@@ -107,6 +124,9 @@ export default function AdminLayout() {
             >
               <span className="adm-nav-icon">{item.icon}</span>
               <span className="adm-nav-label">{item.label}</span>
+              {item.path === "/admin/ideias" && ideiasNovas > 0 && (
+                <span className="adm-nav-badge">{ideiasNovas > 99 ? "99+" : ideiasNovas}</span>
+              )}
             </button>
           ))}
         </div>
@@ -274,6 +294,11 @@ export default function AdminLayout() {
           box-shadow: 0 4px 12px rgba(232,90,140,0.25);
         }
         .adm-nav-label { flex: 1; }
+        .adm-nav-badge {
+          min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px;
+          background: #fff; color: #C33A6E; font-size: 11px; font-weight: 900;
+          display: inline-flex; align-items: center; justify-content: center;
+        }
 
         /* Bottom sidebar */
         .adm-sidebar-bottom {
