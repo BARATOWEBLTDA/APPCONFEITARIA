@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import {
   ChartLine, UsersThree, Newspaper, PenNib, Image as ImageIcon,
   Cake, Medal, FilePdf, Bell, ChartBar, Lightbulb,
-  ArrowLeft, SignOut, List,
+  ArrowLeft, SignOut, DotsThreeOutline, CaretRight, X,
 } from "@phosphor-icons/react";
 
 interface MenuItem {
@@ -55,6 +55,16 @@ const menuSections: MenuSection[] = [
     ],
   },
 ];
+
+// Barra de navegação mobile: 4 telas fixas + "Mais" (resto do menu)
+const BOTTOM_NAV: { path: string; label: string; icon: React.ReactNode }[] = [
+  { path: "/admin", label: "Painel", icon: <ChartLine size={22} weight="bold" /> },
+  { path: "/admin/ideias", label: "Ideias", icon: <Lightbulb size={22} weight="bold" /> },
+  { path: "/admin/noticias", label: "Notícias", icon: <Newspaper size={22} weight="bold" /> },
+  { path: "/admin/notificacoes", label: "Avisos", icon: <Bell size={22} weight="bold" /> },
+];
+const BOTTOM_PATHS = BOTTOM_NAV.map(i => i.path);
+const MAIS_ITEMS = menuSections.flatMap(s => s.items).filter(i => !BOTTOM_PATHS.includes(i.path));
 
 export default function AdminLayout() {
   const navigate = useNavigate();
@@ -171,7 +181,7 @@ export default function AdminLayout() {
         {renderBottom()}
       </aside>
 
-      {/* Mobile header */}
+      {/* Mobile header — só a marca; navegação fica na barra de baixo */}
       <div className="adm-mobile-header">
         <div className="adm-logo-square adm-logo-square--sm">
           <img src="/logoapp.png" alt="Doonly" />
@@ -180,26 +190,60 @@ export default function AdminLayout() {
           <span className="adm-brand-name">Doonly</span>
           <span className="adm-brand-role">Admin</span>
         </div>
-        <button className="adm-menu-btn" onClick={() => setMenuOpen(!menuOpen)}>
-          <List size={22} weight="bold" />
-        </button>
       </div>
 
-      {/* Mobile drawer */}
+      {/* Mobile: barra de navegação inferior */}
+      <nav className="adm-bnav" aria-label="Navegação do admin">
+        {BOTTOM_NAV.map(item => (
+          <button
+            key={item.path}
+            className={`adm-bnav-it${!menuOpen && isActive(item.path) ? " on" : ""}`}
+            onClick={() => { navigate(item.path); setMenuOpen(false); }}
+          >
+            <span className="adm-bnav-ic">
+              {item.icon}
+              {item.path === "/admin/ideias" && ideiasNovas > 0 && (
+                <span className="adm-bnav-badge">{ideiasNovas > 99 ? "99+" : ideiasNovas}</span>
+              )}
+            </span>
+            <span>{item.label}</span>
+          </button>
+        ))}
+        <button
+          className={`adm-bnav-it${menuOpen || !BOTTOM_PATHS.some(p => isActive(p)) ? " on" : ""}`}
+          onClick={() => setMenuOpen(o => !o)}
+          aria-expanded={menuOpen}
+        >
+          <span className="adm-bnav-ic"><DotsThreeOutline size={22} weight="fill" /></span>
+          <span>Mais</span>
+        </button>
+      </nav>
+
+      {/* Mobile: folha "Mais" */}
       {menuOpen && (
-        <div className="adm-drawer-overlay" onClick={() => setMenuOpen(false)}>
-          <div className="adm-drawer" onClick={e => e.stopPropagation()}>
-            <div className="adm-sidebar-top">
-              <div className="adm-logo-square">
-                <img src="/logoapp.png" alt="Doonly" />
-              </div>
-              <div className="adm-brand">
-                <span className="adm-brand-name">Doonly</span>
-                <span className="adm-brand-role">Painel Admin</span>
-              </div>
+        <div className="adm-sheet-ov" onClick={() => setMenuOpen(false)}>
+          <div className="adm-sheet" role="dialog" aria-modal="true" aria-label="Mais opções" onClick={e => e.stopPropagation()}>
+            <div className="adm-sheet-grab" />
+            <div className="adm-sheet-hdr">
+              <b>Mais</b>
+              <button className="adm-sheet-x" onClick={() => setMenuOpen(false)} aria-label="Fechar"><X size={14} weight="bold" /></button>
             </div>
-            {renderNav()}
-            {renderBottom()}
+            {MAIS_ITEMS.map(item => (
+              <button
+                key={item.path}
+                className={`adm-sheet-it${isActive(item.path) ? " on" : ""}`}
+                onClick={() => { navigate(item.path); setMenuOpen(false); }}
+              >
+                <span className="adm-sheet-ic">{item.icon}</span>
+                <span className="adm-sheet-l">{item.label}</span>
+                <CaretRight size={13} weight="bold" />
+              </button>
+            ))}
+            <div className="adm-sheet-sep" />
+            <div className="adm-sheet-foot">
+              <button onClick={() => navigate("/inicio")}><ArrowLeft size={14} weight="bold" /> Voltar ao app</button>
+              <button className="danger" onClick={handleLogout}><SignOut size={14} weight="bold" /> Sair</button>
+            </div>
           </div>
         </div>
       )}
@@ -350,8 +394,12 @@ export default function AdminLayout() {
         .adm-main {
           margin-left: 260px;
           flex: 1;
+          min-width: 0;
           min-height: 100vh;
+          padding: 28px 32px 48px;
         }
+        /* Páginas que já tinham padding próprio passam a usar o do layout */
+        .adm-main .an-root, .adm-main .ab-root, .adm-main .aa-root, .adm-main .ai-root { padding: 0; }
 
         /* ═══════════ Mobile ═══════════ */
         .adm-mobile-header {
@@ -364,35 +412,66 @@ export default function AdminLayout() {
           gap: 12px;
           border-bottom: 1px solid rgba(255,255,255,0.08);
         }
-        .adm-menu-btn {
-          margin-left: auto;
-          background: rgba(255,255,255,0.06);
-          border: none;
-          color: #fff;
-          cursor: pointer;
-          width: 38px; height: 38px;
-          border-radius: 8px;
-          display: flex; align-items: center; justify-content: center;
+        /* Barra inferior + folha "Mais" (só mobile) */
+        .adm-bnav { display: none; }
+        .adm-bnav-it {
+          flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+          background: none; border: none; cursor: pointer; padding: 0;
+          font-family: inherit; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.62);
         }
-        .adm-drawer-overlay {
-          position: fixed; inset: 0;
-          z-index: 40;
-          background: rgba(0,0,0,0.6);
-          backdrop-filter: blur(4px);
+        .adm-bnav-it.on { color: #F28AB0; font-weight: 800; }
+        .adm-bnav-ic { position: relative; display: flex; }
+        .adm-bnav-badge {
+          position: absolute; top: -5px; right: -10px;
+          min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px;
+          background: #E85A8C; color: #fff; font-size: 10px; font-weight: 900;
+          display: flex; align-items: center; justify-content: center; border: 2px solid #1A1418;
         }
-        .adm-drawer {
-          position: fixed;
-          left: 0; top: 0; bottom: 0;
-          width: 270px;
-          background: #1A1418;
-          display: flex; flex-direction: column;
-          overflow-y: auto;
+        .adm-sheet-ov { position: fixed; top: 0; left: 0; right: 0; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); z-index: 40; background: rgba(20,10,15,0.45); }
+        .adm-sheet {
+          position: fixed; left: 0; right: 0;
+          bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+          max-height: 75vh; overflow-y: auto;
+          background: #fff; border-radius: 20px 20px 0 0; padding: 10px 12px 12px;
+          animation: admSheetIn 0.2s ease-out;
         }
+        @keyframes admSheetIn { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+        .adm-sheet-grab { width: 38px; height: 4px; border-radius: 2px; background: #E5DDE0; margin: 0 auto 10px; }
+        .adm-sheet-hdr { display: flex; align-items: center; justify-content: space-between; padding: 0 6px 8px; }
+        .adm-sheet-hdr b { font-size: 16px; font-weight: 800; color: #2C1219; }
+        .adm-sheet-x { width: 32px; height: 32px; border-radius: 8px; border: none; background: #F5F0F2; color: #2C1219; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .adm-sheet-it {
+          display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 8px;
+          border: none; border-radius: 10px; background: none; cursor: pointer; text-align: left;
+          font-family: inherit; color: #9CA3AF;
+        }
+        .adm-sheet-it:active, .adm-sheet-it.on { background: #FAF7F8; }
+        .adm-sheet-ic { width: 36px; height: 36px; border-radius: 10px; background: #F5F0F2; color: #2C1219; display: flex; align-items: center; justify-content: center; }
+        .adm-sheet-it.on .adm-sheet-ic { background: #FCE0E9; color: #C33A6E; }
+        .adm-sheet-l { flex: 1; font-size: 14px; font-weight: 700; color: #2C1219; }
+        .adm-sheet-sep { height: 1px; background: #F3ECEE; margin: 8px 6px; }
+        .adm-sheet-foot { display: flex; gap: 8px; padding: 4px 6px 2px; }
+        .adm-sheet-foot button {
+          flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; height: 42px;
+          border: none; border-radius: 10px; background: #F5F0F2; color: #2C1219; cursor: pointer;
+          font-family: inherit; font-size: 13px; font-weight: 700;
+        }
+        .adm-sheet-foot button.danger { color: #DC2626; background: #FEF2F2; }
 
         @media (max-width: 768px) {
           .adm-sidebar { display: none; }
-          .adm-mobile-header { display: flex; }
-          .adm-main { margin-left: 0; padding-top: 62px; }
+          .adm-mobile-header { display: flex; padding-top: calc(12px + env(safe-area-inset-top, 0px)); }
+          .adm-main {
+            margin-left: 0;
+            padding: calc(62px + 20px + env(safe-area-inset-top, 0px)) 16px calc(64px + 24px + env(safe-area-inset-bottom, 0px));
+          }
+          .adm-bnav {
+            display: flex; justify-content: space-around; align-items: flex-start;
+            position: fixed; left: 0; right: 0; bottom: 0; z-index: 35;
+            height: calc(64px + env(safe-area-inset-bottom, 0px));
+            padding: 9px 4px env(safe-area-inset-bottom, 0px);
+            background: #1A1418;
+          }
         }
       `}</style>
     </div>
