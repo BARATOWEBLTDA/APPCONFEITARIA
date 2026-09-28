@@ -34,13 +34,27 @@ interface OnboardingProps {
   onClose: (slideAlcancada: number) => void;
 }
 
-const TOTAL_SLIDES = 8; // v3 (removido "Monte a receita")
+// v4 (28/09): 5 telas — Boas-vindas, Cardápio, Pedidos, Precificação, Final.
+// Clientes, Ingredientes e "Tudo trabalhando junto" saíram (componentes ficam no arquivo).
+const TOTAL_SLIDES = 5;
+// O "Próximo" nunca demora mais que isso, mesmo se a animação do slide for longa
+const MAX_ESPERA_PROXIMO = 1800;
 
 export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
   const [slideIdx, setSlideIdx] = useState(0);
   const [slideReady, setSlideReady] = useState(false);
 
   const handleSlideReady = useCallback(() => setSlideReady(true), []);
+
+  // Libera o "Próximo" no máximo em 1,8s (animação continua rodando por trás)
+  useEffect(() => {
+    if (!isOpen) return;
+    const t = window.setTimeout(() => setSlideReady(true), MAX_ESPERA_PROXIMO);
+    return () => clearTimeout(t);
+  }, [slideIdx, isOpen]);
+
+  // Arrastar pro lado troca de tela
+  const touchRef = useRef<{ x: number; y: number } | null>(null);
 
   // ── Efeito glow que segue o mouse (mesmo do Auth) ─────────────
   // Só ativa em desktop. Usa easing suave (0.06) pra dar sensação premium.
@@ -108,6 +122,29 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
     }
   };
 
+  const prev = () => {
+    if (slideIdx === 0) return;
+    vibrarLeve();
+    setSlideReady(false);
+    setSlideIdx((i) => i - 1);
+  };
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    const t0 = e.touches[0];
+    touchRef.current = { x: t0.clientX, y: t0.clientY };
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const ini = touchRef.current;
+    touchRef.current = null;
+    if (!ini) return;
+    const t1 = e.changedTouches[0];
+    const dx = t1.clientX - ini.x;
+    const dy = t1.clientY - ini.y;
+    if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx)) return; // foi rolagem, não arrasto
+    if (dx < 0 && slideReady && slideIdx < TOTAL_SLIDES - 1) next();
+    if (dx > 0) prev();
+  };
+
   const finish = () => {
     tocarSom('sucesso');
     vibrarLeve();
@@ -118,7 +155,11 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
   };
 
   return (
-    <div className="ob-root" role="dialog" aria-modal="true" aria-label="Boas-vindas ao Doonly">
+    <div className="ob-root" role="dialog" aria-modal="true" aria-label="Boas-vindas ao Doonly" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      {/* Pular — some na última tela (que já tem o botão de começar) */}
+      {slideIdx < TOTAL_SLIDES - 1 && (
+        <button className="ob-skip-link" onClick={finish}>Pular</button>
+      )}
       {/* Glow que segue o mouse (desktop) */}
       <div ref={glowRef} className="ob-mouse-glow" aria-hidden="true" />
 
@@ -137,13 +178,10 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
       {/* Conteúdo da slide */}
       <div className="ob-content" key={slideIdx}>
         {slideIdx === 0 && <Slide1Welcome onReady={handleSlideReady} />}
-        {slideIdx === 1 && <SlideClientes onReady={handleSlideReady} />}
+        {slideIdx === 1 && <SlideCardapio onReady={handleSlideReady} />}
         {slideIdx === 2 && <Slide2Pedidos onReady={handleSlideReady} />}
-        {slideIdx === 3 && <Slide3Ingredientes onReady={handleSlideReady} />}
-        {slideIdx === 4 && <Slide4Precificacao onReady={handleSlideReady} />}
-        {slideIdx === 5 && <SlideCardapio onReady={handleSlideReady} />}
-        {slideIdx === 6 && <SlidePlaceholder eyebrow="Tudo trabalhando junto" title={<>VOCÊ FAZ OS DOCES.<br/>O DOONLY <span className="ob-fill">ORGANIZA</span>.</>} subtitle="Sua rotina, seus números e seu negócio mais fáceis de acompanhar." emoji="📊" onReady={handleSlideReady} />}
-        {slideIdx === 7 && <SlideFinal onStart={finish} />}
+        {slideIdx === 3 && <Slide4Precificacao onReady={handleSlideReady} />}
+        {slideIdx === 4 && <SlideFinal onStart={finish} />}
       </div>
 
       {/* Navegação inferior — esconde os botões na última (CTA está na slide) */}
@@ -179,7 +217,15 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         }
 
         /* ── Botão pular (X canto direito) ── */
-        /* (ob-skip removido) */
+        .ob-skip-link {
+          position: absolute; z-index: 5;
+          top: calc(env(safe-area-inset-top, 0px) + 12px); right: 12px;
+          padding: 8px 12px; border: none; border-radius: 999px;
+          background: rgba(255,255,255,0.14); color: rgba(255,255,255,0.9);
+          font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .ob-skip-link:active { background: rgba(255,255,255,0.24); }
 
         /* ── Dots de progresso ── */
         .ob-dots {
@@ -1929,6 +1975,31 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           .ob-cli-header { margin-bottom: 8px; }
         }
 
+        /* ── Cardápio e Precificação em telas baixas: nada fica escondido atrás do botão ── */
+        @media (max-width: 767px) and (max-height: 760px) {
+          .ob-content:has(.ob-cardapio-phone) { padding-top: 1.1rem; padding-bottom: 0.5rem; }
+          .ob-content:has(.ob-cardapio-phone) .ob-slide-title,
+          .ob-content:has(.ob-prec-card) .ob-slide-title { font-size: 1.28rem !important; margin-bottom: 0.4rem; }
+          .ob-cardapio-phone { width: 265px; border-radius: 30px; }
+          .ob-cardapio-screen { min-height: 0; height: 375px; border-radius: 23px; }
+          .ob-content:has(.ob-prec-card) { padding-top: 1.1rem; padding-bottom: 0.5rem; }
+          .ob-prec-detalhes { margin-top: 0.4rem; padding-top: 0.4rem; }
+          .ob-prec-linha { padding: 0.12rem 0; }
+          .ob-prec-pergunta { padding: 0.45rem 0 0.2rem; }
+        }
+        @media (max-width: 767px) and (max-height: 680px) {
+          .ob-cardapio-phone { width: 258px; }
+          .ob-cardapio-screen { height: 335px; }
+          .ob-prec-card { padding: 0.6rem 0.75rem; }
+          .ob-prec-produto { padding-bottom: 0.35rem; }
+        }
+        @media (max-width: 767px) and (max-height: 600px) {
+          .ob-welcome-coroa { width: 96px !important; margin-bottom: 0.8rem !important; }
+          .ob-cardapio-screen { height: 270px; }
+          .ob-prec-detalhes-titulo { display: none; }
+          .ob-prec-linha { padding: 0.05rem 0; }
+        }
+
         /* ── Celulares com tela baixa (ou com barra do navegador): compacta o
               slide de Clientes pra frase de baixo não ficar escondida ── */
         @media (max-width: 767px) and (max-height: 760px) {
@@ -3336,7 +3407,7 @@ function Slide4Precificacao({ onReady }: { onReady: () => void }) {
   return (
     <>
       <div className="ob-slide-textabove">
-        <span className="ob-slide-eyebrow">Seu trabalho tem valor</span>
+        <span className="ob-slide-eyebrow">Dos ingredientes ao lucro</span>
         <h2 className="ob-slide-title" style={{ fontSize: "clamp(1.05rem, 4.6vw, 1.45rem)" }}>
           PARE DE VENDER,<br/>
           SEM SABER SE <span className="ob-fill">LUCROU</span>
@@ -3449,7 +3520,7 @@ function SlideFinal({ onStart }: { onStart: () => void }) {
         onClick={handleLaunch}
         disabled={launching}
       >
-        Configurar minha confeitaria
+        Começar agora
       </button>
     </>
   );

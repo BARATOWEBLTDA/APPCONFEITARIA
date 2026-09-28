@@ -139,17 +139,16 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
     return (
       <Onboarding
         isOpen={true}
-        onClose={(slideAlcancada) => {
+        onClose={() => {
+          // Terminou ou tocou em "Pular": nos dois casos o guia não volta mais
           try {
             localStorage.setItem("doonly_tutorial_auto_aberto", "1");
-            if (slideAlcancada >= 5) {
-              localStorage.setItem("doonly_tutorial_visto", "1");
-            }
+            localStorage.setItem("doonly_tutorial_visto", "1");
           } catch {
             // localStorage indisponível — segue o baile
           }
           // Persiste no Supabase (cross-device). Silencioso se coluna não existir.
-          if (session?.user?.id && slideAlcancada >= 5) {
+          if (session?.user?.id) {
             supabase
               .from("profiles")
               .update({ tutorial_visto: true })
