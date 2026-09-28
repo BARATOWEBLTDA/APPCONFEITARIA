@@ -82,6 +82,15 @@ export default function Inicio() {
   const [checklistDone, setChecklistDone] = useState(false);
   const [copiado, setCopiado] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [homeVariant, setHomeVariant] = useState<"preto" | "minimal">(() => {
+    const saved = localStorage.getItem("home_variant");
+    return (saved === "minimal" ? "minimal" : "preto") as "preto" | "minimal";
+  });
+  const toggleVariant = () => {
+    const next = homeVariant === "preto" ? "minimal" : "preto";
+    setHomeVariant(next);
+    localStorage.setItem("home_variant", next);
+  };
   const [confirmSair, setConfirmSair] = useState(false);
   const [email, setEmail] = useState("");
 
@@ -675,7 +684,7 @@ export default function Inicio() {
     {/* AppPageHeader removido — hero rosa já é suficiente como saudação */}
     <div className="ini-root">
       {/* ── Hero wine com foto da confeiteira, coroinha (PRO) e sparkles ── */}
-      <div className="ini-hero">
+      <div className={`ini-hero ini-hero--${homeVariant}`}>
         {/* Decoração: sparkles brancos sutis sobre o hero rosa */}
         <svg className="ini-hero-sparkles" viewBox="0 0 100 50" preserveAspectRatio="none" aria-hidden="true">
           <g fill="#FFFFFF" opacity="0.5">
@@ -974,9 +983,21 @@ export default function Inicio() {
         <h2 className="ini-section-title">
           {!onboarding.loading && onboarding.produtosCount === 0 ? "Explorar" : "Acesso rápido"}
         </h2>
+
+        {/* Hero Nova Venda — destaque principal */}
+        <button className="ini-hero-cta" onClick={() => navigate("/vendas/novo")}>
+          <div className="ini-hero-cta-ic">
+            <ShoppingBag size={22} weight="fill" />
+          </div>
+          <div className="ini-hero-cta-txt">
+            <div className="ini-hero-cta-t">Nova Venda</div>
+            <div className="ini-hero-cta-d">Comece um pedido em segundos</div>
+          </div>
+          <CaretRight size={18} weight="bold" className="ini-hero-cta-arr" />
+        </button>
+
         <div className="ini-nav-grid">
           {[
-            { icon: <ShoppingBag    size={22} weight="bold" />, label: "Nova Venda",     sub: "Registre um novo pedido da sua loja.",       path: "/vendas/novo",     key: "nova-venda" },
             { icon: <Receipt        size={22} weight="bold" />, label: "Pedidos",        sub: "Gerencie seus pedidos.",                      path: "/pedidos",         key: "pedidos" },
             { icon: <CalendarDots   size={22} weight="bold" />, label: "Agenda",         sub: "Seus agendamentos.",                          path: "/agenda",          key: "agenda" },
             { icon: <BookOpen       size={22} weight="bold" />, label: "Cardápio",       sub: "Acesse seu cardápio e produtos.",             path: "/cardapio",        key: "cardapio" },
@@ -2488,6 +2509,91 @@ export default function Inicio() {
         .ini-section--checklist-top { order: 0; margin-top: var(--space-3); }
         .ini-section--alertas { order: 1; }
         .ini-section--nav     { order: 2; }
+
+        /* ═════ Hero Nova Venda (CTA de destaque) ═════ */
+        .ini-hero-cta {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 16px;
+          background: linear-gradient(135deg, #E85A8C 0%, #C33A6E 100%);
+          border-radius: 14px;
+          color: #fff;
+          margin-bottom: 10px;
+          box-shadow: 0 8px 20px rgba(232,90,140,0.32);
+          position: relative;
+          overflow: hidden;
+          border: none;
+          cursor: pointer;
+          font-family: inherit;
+          text-align: left;
+          width: 100%;
+          transition: transform 0.15s ease;
+        }
+        .ini-hero-cta:active { transform: scale(0.98); }
+        .ini-hero-cta::before {
+          content: '🛍️';
+          position: absolute;
+          right: -14px;
+          bottom: -22px;
+          font-size: 100px;
+          opacity: 0.14;
+          line-height: 1;
+          pointer-events: none;
+        }
+        .ini-hero-cta-ic {
+          width: 44px; height: 44px;
+          border-radius: 12px;
+          background: rgba(255,255,255,0.22);
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+          z-index: 1;
+          color: #fff;
+        }
+        .ini-hero-cta-txt { flex: 1; z-index: 1; }
+        .ini-hero-cta-t { font-size: 16px; font-weight: 900; line-height: 1.15; }
+        .ini-hero-cta-d { font-size: 11.5px; opacity: 0.9; margin-top: 2px; }
+        .ini-hero-cta-arr { color: #fff; opacity: 0.9; z-index: 1; flex-shrink: 0; }
+
+        /* ═════ Variante PRETO ═════ */
+        @media (max-width: 767px) {
+          .ini-hero--preto {
+            background: #1A1418 !important;
+          }
+          .ini-hero--preto .ini-hero-sparkles g {
+            fill: #E85A8C;
+            opacity: 0.4;
+          }
+        }
+
+        /* ═════ Variante MINIMAL ═════ */
+        @media (max-width: 767px) {
+          .ini-hero--minimal {
+            background: #FEFCFD !important;
+            padding-top: calc(0.6rem + env(safe-area-inset-top, 0px)) !important;
+            padding-bottom: 0.65rem !important;
+            border-radius: 0 !important;
+            border-bottom: 1px solid #F0EBED;
+          }
+          .ini-hero--minimal .ini-hero-sparkles { display: none; }
+          .ini-hero--minimal .ini-hero-greeting h1,
+          .ini-hero--minimal .ini-hero-greeting p {
+            color: #2C1219 !important;
+          }
+          .ini-hero--minimal .ini-hero-greeting p {
+            color: #6B7280 !important;
+            opacity: 1 !important;
+          }
+          .ini-hero--minimal .ini-profile-btn {
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important;
+            border: none !important;
+          }
+          .ini-hero--minimal .sidebar-badge--pro,
+          .ini-hero--minimal .sidebar-badge {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important;
+          }
+        }
         .ini-section--resumo  { display: none; }
         .ini-section--agenda  { display: none; }
         .ini-section--metrics { display: none; }
@@ -2822,6 +2928,32 @@ export default function Inicio() {
 
       {/* Tour de boas-vindas — auto-abre no primeiro login (1s de delay) */}
       <TourInicio />
+
+      {/* ⚠️ TEMPORÁRIO — botão pra testar as 2 versões do header */}
+      <button
+        onClick={toggleVariant}
+        style={{
+          position: "fixed",
+          bottom: "80px",
+          right: "16px",
+          zIndex: 999,
+          padding: "10px 14px",
+          background: "#2C1219",
+          color: "#fff",
+          border: "2px solid #E85A8C",
+          borderRadius: "999px",
+          fontSize: "11px",
+          fontWeight: 800,
+          boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+          fontFamily: "inherit",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+        }}
+      >
+        🔄 Ver versão {homeVariant === "preto" ? "Minimal" : "Preto"}
+      </button>
     </div>
     </>
   );
