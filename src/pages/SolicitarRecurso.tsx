@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import AppPageHeader from "@/components/AppPageHeader";
 import { useProfile } from "@/hooks/useProfile";
@@ -60,7 +61,9 @@ function tituloDe(s: Sugestao): string {
 
 export default function SolicitarRecurso() {
   const { profile } = useProfile();
-  const [aba, setAba] = useState<"nova" | "minhas">("nova");
+  // ?aba=minhas abre direto no histórico (usado pela notificação "Sua ideia virou realidade")
+  const [searchParams] = useSearchParams();
+  const [aba, setAba] = useState<"nova" | "minhas">(searchParams.get("aba") === "minhas" ? "minhas" : "nova");
   const [area, setArea] = useState<string | null>(null);
   const [titulo, setTitulo] = useState("");
   const [descricao, setDescricao] = useState("");
