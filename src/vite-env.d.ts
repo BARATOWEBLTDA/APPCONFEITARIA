@@ -8,3 +8,6 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }
+
+/** Etiqueta da versão (data/hora do build), definida no vite.config.ts */
+declare const __BUILD_ID__: string

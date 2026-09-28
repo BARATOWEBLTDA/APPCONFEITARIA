@@ -6,6 +6,7 @@ import SugestaoWizard from "@/components/SugestaoWizard";
 import TermosModal from "@/components/TermosModal";
 import EditarPerfilModal from "@/components/EditarPerfilModal";
 import InstalarAppCard from "@/components/InstalarAppCard";
+import AtualizarAppItem from "@/components/AtualizarAppItem";
 
 
 const Field = ({ icon, placeholder, value, onChange, type = "text", maxLength, disabled }: any) => (
@@ -379,6 +380,8 @@ export default function Configuracoes() {
               </div>
               <svg className="cfgp-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
+
+            <AtualizarAppItem />
 
             <button className="cfgp-quick-item" onClick={() => navigate("/indicar")}>
               <span className="cfgp-quick-ico cfgp-quick-ico--pink">
