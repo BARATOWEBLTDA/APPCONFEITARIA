@@ -54,22 +54,20 @@ export default function AdminBannerMobile() {
     <div className="admin-banner-mobile" onClick={handleClick}>
       <img src={row.imagem_url} alt="Banner promocional" />
       <style>{`
+        /* Sem fundo, sem corte e sem proporção fixa: a arte manda.
+           PNG com transparência (ex.: personagem saindo pra fora) aparece inteiro. */
         .admin-banner-mobile {
           display: block;
           width: 100%;
-          aspect-ratio: 3 / 1;
-          border-radius: 6px;
-          overflow: hidden;
           cursor: pointer;
-          background: #F5F0F2;
+          background: transparent;
           transition: transform 0.15s;
         }
         .admin-banner-mobile:active { transform: scale(0.99); }
         .admin-banner-mobile img {
           display: block;
           width: 100%;
-          height: 100%;
-          object-fit: cover;
+          height: auto;
         }
         /* Desktop esconde por enquanto — banner é só mobile */
         @media (min-width: 1100px) {
