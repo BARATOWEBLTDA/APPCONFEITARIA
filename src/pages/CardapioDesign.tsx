@@ -19,7 +19,20 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  // Marca o passo "Escolher design" do passo a passo (ignora erro se a coluna ainda não existir)
+  const marcarDesignEscolhido = (uid: string | null | undefined) => {
+    if (!uid) return;
+    supabase.from("profiles").update({ design_escolhido: true }).eq("id", uid).then(() => {}, () => {});
+  };
   const [logoUrl, setLogoUrl] = useState("");
+  // Avaliação (veio de Dados da loja em 29/09)
+  const [hideStars, setHideStars] = useState(false);
+  const [avaliacaoMedia, setAvaliacaoMedia] = useState(5.0);
+  const salvarAvaliacao = async (campos: { hide_stars?: boolean; avaliacao_media?: number }) => {
+    if (!userId) return;
+    await supabase.from("profiles").update(campos).eq("id", userId);
+    showSuccess();
+  };
   const [nomeLoja, setNomeLoja] = useState("");
   const [bannerUrl, setBannerUrl] = useState("");
   const [banner1Url, setBanner1Url] = useState("");
@@ -57,9 +70,11 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("logo_url, nome_loja, banner_url, banner1_url, banner2_url, banner3_url, banner_topo_url, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo").eq("id", user.id).single();
+      const { data } = await supabase.from("profiles").select("logo_url, nome_loja, banner_url, banner1_url, banner2_url, banner3_url, banner_topo_url, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo, hide_stars, avaliacao_media").eq("id", user.id).single();
       if (data) {
         setLogoUrl(data.logo_url || "");
+        setHideStars(!!(data as any).hide_stars);
+        setAvaliacaoMedia(Number((data as any).avaliacao_media) || 5.0);
         setNomeLoja(data.nome_loja || "");
         setBannerUrl(data.banner_url || "");
         setBanner1Url(data.banner1_url || "");
@@ -115,7 +130,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       const { data } = supabase.storage.from("products").getPublicUrl(path);
       const url = `${data.publicUrl}?t=${Date.now()}`;
       setLogoUrl(url);
-      await supabase.from("profiles").update({ logo_url: url }).eq("id", userId);
+      await supabase.from("profiles").update({ logo_url: url }).eq("id", userId); marcarDesignEscolhido(userId);
       showSuccess();
     }
     setUploading(null);
@@ -130,7 +145,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       const fields = [setBannerUrl, setBanner1Url, setBanner2Url, setBanner3Url];
       const keys = ["banner_url", "banner1_url", "banner2_url", "banner3_url"];
       fields[index](url);
-      await supabase.from("profiles").update({ [keys[index]]: url }).eq("id", userId);
+      await supabase.from("profiles").update({ [keys[index]]: url }).eq("id", userId); marcarDesignEscolhido(userId);
       showSuccess();
     }
     setUploading(null);
@@ -150,7 +165,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     const url = await uploadImage(file, `banners/${userId}-topo`);
     if (url) {
       setBannerTopoUrl(url);
-      await supabase.from("profiles").update({ banner_topo_url: url }).eq("id", userId);
+      await supabase.from("profiles").update({ banner_topo_url: url }).eq("id", userId); marcarDesignEscolhido(userId);
       showSuccess();
     }
     setUploading(null);
@@ -167,7 +182,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     if (colorSaveTimer.current) clearTimeout(colorSaveTimer.current);
     colorSaveTimer.current = setTimeout(async () => {
       if (!userId) return;
-      await supabase.from("profiles").update({ [field]: value }).eq("id", userId);
+      await supabase.from("profiles").update({ [field]: value }).eq("id", userId); marcarDesignEscolhido(userId);
       showSuccess();
     }, 600);
   };
@@ -195,6 +210,26 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     )}
     <div className="cd-root">
       {/* Header removido — a página pai (CardapioConfigPage) já mostra "Meu Cardápio" acima */}
+
+      {/* Logo da loja (veio de Dados da loja em 29/09) */}
+      <div className="cd-card" style={isMobile ? {} : { gridColumn: '1 / -1' }}>
+        <SectionLabel sub="Aparece no topo do cardápio">Logo da loja</SectionLabel>
+        <input ref={logoRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleLogoUpload} />
+        <div className="cd-logo-row">
+          <button type="button" className="cd-logo-circ" onClick={() => logoRef.current?.click()} aria-label="Trocar logo">
+            {logoUrl
+              ? <img src={logoUrl} alt="Logo da loja" />
+              : <span>{(nomeLoja || "?").trim().charAt(0).toUpperCase()}</span>}
+          </button>
+          <div className="cd-logo-txt">
+            <b>{logoUrl ? "Seu logo" : "Adicione seu logo"}</b>
+            <span>Imagem quadrada fica melhor</span>
+          </div>
+          <button type="button" className="cd-logo-btn" onClick={() => logoRef.current?.click()} disabled={uploading === "logo"}>
+            {uploading === "logo" ? "Enviando..." : logoUrl ? "Trocar" : "Enviar"}
+          </button>
+        </div>
+      </div>
 
       {/* Banner do topo — só pro Modelo 1 */}
       {cardapioModelo === "modelo1" && (
@@ -302,7 +337,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
               if (!userId) return;
               setSalvandoModelo(true);
               setCardapioModelo('padrao');
-              await supabase.from("profiles").update({ cardapio_modelo: 'padrao' }).eq("id", userId);
+              await supabase.from("profiles").update({ cardapio_modelo: 'padrao' }).eq("id", userId); marcarDesignEscolhido(userId);
               setSalvandoModelo(false);
               showSuccess();
             }}
@@ -335,7 +370,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
               if (!userId) return;
               setSalvandoModelo(true);
               setCardapioModelo('modelo1');
-              await supabase.from("profiles").update({ cardapio_modelo: 'modelo1' }).eq("id", userId);
+              await supabase.from("profiles").update({ cardapio_modelo: 'modelo1' }).eq("id", userId); marcarDesignEscolhido(userId);
               setSalvandoModelo(false);
               showSuccess();
             }}
@@ -367,7 +402,27 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       </div>
 
       {/* Card Avaliações (via prop) — fica lado a lado com Layout no grid 1fr 1fr */}
-      {avaliacoesCard}
+      {avaliacoesCard ?? (
+        <div className="cd-card">
+          <div className="cd-aval-row">
+            <div>
+              <p className="cd-section-label" style={{ margin: 0 }}>Mostrar avaliação</p>
+              <p className="cd-section-sub" style={{ margin: "2px 0 0" }}>Estrelas ao lado do nome da loja</p>
+            </div>
+            <label className="cd-aval-toggle">
+              <input type="checkbox" checked={!hideStars} onChange={(e) => { const hide = !e.target.checked; setHideStars(hide); salvarAvaliacao({ hide_stars: hide }); }} aria-label="Mostrar avaliação" />
+              <span />
+            </label>
+          </div>
+          {!hideStars && (
+            <div className="cd-aval-notas">
+              {[5.0, 4.9, 4.8].map((n) => (
+                <button key={n} type="button" className={avaliacaoMedia === n ? "on" : ""} onClick={() => { setAvaliacaoMedia(n); salvarAvaliacao({ avaliacao_media: n }); }}>★ {n.toFixed(1)}</button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Cores */}
       <div className="cd-card" style={isMobile ? {} : { gridColumn: '1 / -1' }}>
@@ -715,6 +770,27 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
           text-align: center;
         }
 
+        /* ── Card Logo da loja ── */
+        .cd-logo-row { display: flex; align-items: center; gap: 12px; }
+        .cd-logo-circ { width: 64px; height: 64px; flex-shrink: 0; border-radius: 50%; border: 2px solid #F0EBED; background: #F5F0F2; overflow: hidden; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .cd-logo-circ img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .cd-logo-circ span { font-size: 24px; font-weight: 800; color: #9CA3AF; }
+        .cd-logo-txt { flex: 1; min-width: 0; }
+        .cd-logo-txt b { display: block; font-size: 13.5px; color: #2C1219; }
+        .cd-logo-txt span { font-size: 11.5px; color: #888780; }
+        .cd-logo-btn { padding: 8px 14px; border-radius: 9px; border: 1px solid #EAE3E6; background: #fff; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #2C1219; cursor: pointer; }
+        .cd-logo-btn:disabled { opacity: .6; cursor: default; }
+        /* ── Card Avaliação ── */
+        .cd-aval-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .cd-aval-toggle { position: relative; width: 46px; height: 26px; flex-shrink: 0; }
+        .cd-aval-toggle input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; z-index: 1; }
+        .cd-aval-toggle span { position: absolute; inset: 0; border-radius: 13px; background: #E5DDE0; transition: .2s; }
+        .cd-aval-toggle span::before { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.15); transition: .2s; }
+        .cd-aval-toggle input:checked + span { background: #2C1219; }
+        .cd-aval-toggle input:checked + span::before { transform: translateX(20px); }
+        .cd-aval-notas { display: flex; gap: 6px; margin-top: 12px; }
+        .cd-aval-notas button { flex: 1; padding: 9px 0; border: none; border-radius: 9px; background: #F5F0F2; font-family: inherit; font-size: 12.5px; font-weight: 800; color: #7C7A8E; cursor: pointer; }
+        .cd-aval-notas button.on { background: #2C1219; color: #fff; }
         /* ── Logo area ── */
         .cd-logo-area { display:flex; flex-direction:column; align-items:center; gap:0.85rem; }
         .cd-logo-preview {
