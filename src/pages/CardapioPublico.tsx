@@ -684,7 +684,11 @@ function CardapioContent() {
         ) : (
           /* ── Layout Padrão (Free ou PRO que não trocou) ── */
           <>
-            <div style={{ height: '160px', backgroundColor: (() => {
+            {/* Faixa na cor da loja: degradê + pontilhado sutil (mesmo detalhe do Modelo 1 sem foto) */}
+            <div style={{ height: '150px', position: 'relative', overflow: 'hidden',
+              backgroundImage: 'linear-gradient(160deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.14) 100%), radial-gradient(circle at 20% 50%, rgba(255,255,255,0.16) 1.2px, transparent 1.3px), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.16) 1.2px, transparent 1.3px), radial-gradient(circle at 50% 80%, rgba(255,255,255,0.16) 1.8px, transparent 1.9px)',
+              backgroundSize: '100% 100%, 60px 60px, 80px 80px, 40px 40px',
+              backgroundColor: (() => {
               const c = design.cor_navbar;
               const isWhite = !c || ['#fff','#ffffff','#fefefe','white','transparent'].includes((c || '').trim().toLowerCase());
               if (!isWhite) return c;

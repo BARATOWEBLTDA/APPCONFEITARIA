@@ -1,4 +1,3 @@
-import { Star } from 'lucide-react'
 import { useState } from 'react'
 
 interface LogoProps {
@@ -73,11 +72,6 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
   const [modalEndereco, setModalEndereco] = useState(false)
   const status = getStatusLoja(configuracoes?.horario || null)
 
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star key={i} size={14} fill={i < Math.floor(rating) ? '#fbbf24' : 'none'} color={i < Math.ceil(rating) ? '#fbbf24' : '#d1d5db'} />
-    ))
-  }
 
   // Monta endereço a partir do JSON
   const getEndereco = () => {
@@ -100,60 +94,78 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
   const mostrarCidade = configuracoes?.mostrar_apenas_cidade && cidade
   const mostrarCompleto = configuracoes?.mostrar_localizacao && enderecoCompleto
 
+  const accent = borderColor || '#E85A8C'
+  const iconeAtalho = (d: string) => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ display: 'block' }}>
+      <path d={d} />
+    </svg>
+  )
+
   return (
     <div className="relative">
-      <div style={{ position: 'absolute', top: '-50px', left: '50%', transform: 'translateX(-50%)', zIndex: 30 }}>
+      {/* Logo: menor e com sombra, "pousado" na borda de cima do card
+          (o marginTop negativo do card "sobe" este wrapper junto, por isso -58 = metade do logo) */}
+      <div style={{ position: 'absolute', top: '-58px', left: '50%', transform: 'translateX(-50%)', zIndex: 30 }}>
         {logoUrl ? (
-          <div style={{ width: '160px', height: '160px', borderRadius: '50%', border: `3px solid ${borderColor || '#ec4899'}`, padding: '3px', backgroundColor: 'white', overflow: 'hidden' }}>
-            <div style={{ width: '100%', height: '100%', borderRadius: '50%', border: '3px solid white', overflow: 'hidden' }}>
-              <img src={logoUrl} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '50%' }} />
+          <div style={{ width: '116px', height: '116px', borderRadius: '50%', padding: '4px', backgroundColor: 'white', boxShadow: '0 6px 18px rgba(60,20,35,0.18)' }}>
+            <div style={{ width: '100%', height: '100%', borderRadius: '50%', border: `2px solid ${accent}`, overflow: 'hidden', background: '#fff' }}>
+              <img src={logoUrl} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '50%', display: 'block' }} />
             </div>
           </div>
         ) : (
-          <div style={{ width: '160px', height: '160px', borderRadius: '50%', border: `3px solid ${borderColor || '#ec4899'}`, backgroundColor: borderColor || '#ec4899', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px', color: 'white' }}>
+          <div style={{ width: '116px', height: '116px', borderRadius: '50%', border: '4px solid white', backgroundColor: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '40px', color: 'white', boxShadow: '0 6px 18px rgba(60,20,35,0.18)' }}>
             {storeName?.charAt(0) || '🧁'}
           </div>
         )}
       </div>
 
-      <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: '12px', padding: '6px', paddingTop: '100px', margin: '0 16px', marginTop: '-100px', boxShadow: 'var(--shadow-md)', zIndex: 20, position: 'relative' }}>
-        <div style={{ textAlign: 'center', marginTop: '28px', marginBottom: '12px' }}>
-          <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-title)', marginBottom: '4px' }}>{storeName}</h1>
+      <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: '18px', padding: '66px 16px 14px', margin: '0 14px', marginTop: '-70px', boxShadow: '0 8px 24px rgba(60,20,35,0.10)', zIndex: 20, position: 'relative', textAlign: 'center' }}>
+        <h1 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-title)', margin: 0, letterSpacing: '-0.02em', lineHeight: 1.2 }}>{storeName}</h1>
 
-          {!hideStars && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '4px' }}>
-              <div style={{ display: 'flex', gap: '2px' }}>{renderStars(avaliacaoMedia)}</div>
-              <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{avaliacaoMedia}/5.0</span>
-            </div>
-          )}
-
-          {/* Cidade */}
-          {(cidade || enderecoCompleto) && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '4px' }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span style={{ fontSize: '14px', color: 'var(--text-secondary)', fontWeight: 500 }}>{cidade}</span>
-              {enderecoCompleto && (
-                <button onClick={() => setModalEndereco(true)} style={{ fontSize: '12px', color: borderColor || '#ec4899', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
-                  Ver no mapa
-                </button>
-              )}
-            </div>
-          )}
-
-          {storeDescription && (
-            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px', lineHeight: '1.4', padding: '0 1.25rem' }}>{storeDescription}</p>
-          )}
-
-          {/* Status aberto/fechado */}
-          {status && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '5px 12px', borderRadius: '50px', background: status.aberto ? '#dcfce7' : '#fef2f2', marginBottom: '6px' }}>
-              <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: status.aberto ? '#22c55e' : '#ef4444', flexShrink: 0 }} />
-              <span style={{ fontSize: '12px', fontWeight: 700, color: status.aberto ? '#15803d' : '#dc2626' }}>
-                {status.aberto ? 'Aberto Agora' : `Fechado · ${status.msg}`}
+        {/* Status + nota numa linha só */}
+        {(status || !hideStars) && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '5px', fontSize: '12.5px', fontWeight: 700, flexWrap: 'wrap' }}>
+            {status && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: status.aberto ? '#15803d' : '#dc2626' }}>
+                <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: status.aberto ? '#22c55e' : '#ef4444', flexShrink: 0 }} />
+                {status.aberto ? 'Aberto agora' : `Fechado · ${status.msg}`}
               </span>
+            )}
+            {status && !hideStars && <span style={{ color: '#D1D5DB' }}>·</span>}
+            {!hideStars && <span style={{ color: '#B45309' }}>★ {Number(avaliacaoMedia || 0).toFixed(1)}</span>}
+          </div>
+        )}
+
+        {storeDescription && (
+          <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: 1.5, margin: '10px 4px 0' }}>{storeDescription}</p>
+        )}
+
+        {/* Atalhos de entrega (iguais ao Modelo 1) */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', border: '1px solid #F0EBED', borderRadius: '12px', marginTop: '12px' }}>
+          {[
+            { d: 'M13 2 4 14h7l-1 8 9-12h-7z', l1: 'Pronta', l2: 'entrega' },
+            { d: 'M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM16 3v4M8 3v4M3 10h18', l1: 'Sob', l2: 'encomenda' },
+            { d: 'M1 6h14v11H1zM15 10h4l3 3v4h-7M6 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4z', l1: 'Entrega e', l2: 'retirada' },
+          ].map((a, i) => (
+            <div key={a.l2} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '9px 4px', borderLeft: i > 0 ? '1px solid #F0EBED' : 'none' }}>
+              {iconeAtalho(a.d)}
+              <span style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--text-title)', lineHeight: 1.2 }}>{a.l1}<br />{a.l2}</span>
             </div>
-          )}
+          ))}
         </div>
+
+        {/* Cidade + Ver no mapa */}
+        {(cidade || enderecoCompleto) && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '10px' }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span style={{ fontSize: '12.5px', color: 'var(--text-secondary)', fontWeight: 500 }}>{cidade}</span>
+            {enderecoCompleto && (
+              <button onClick={() => setModalEndereco(true)} style={{ fontSize: '12px', color: accent, fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
+                Ver no mapa
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Modal endereço completo */}
