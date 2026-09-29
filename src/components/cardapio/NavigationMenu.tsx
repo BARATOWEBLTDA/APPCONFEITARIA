@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { ShoppingBag, X, MessageCircle, Trash2, Home, Tag, ClipboardList, User, ChevronRight, Minus, Plus, MapPin } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
@@ -294,18 +294,11 @@ function CartContent({
       try {
         const telefoneLimpo = telefone.replace(/\D/g, '')
         let clienteId: string | null = null
-        const { data: clienteExistente } = await supabase
-          .from('clientes').select('id').eq('user_id', confeteiraUserId)
-          .or(`telefone.ilike.%${telefoneLimpo}%,whatsapp.ilike.%${telefoneLimpo}%`).single()
-
-        if (clienteExistente) {
-          clienteId = clienteExistente.id
-        } else {
-          const { data: novoCliente } = await supabase.from('clientes')
-            .insert({ user_id: confeteiraUserId, nome: nome.trim(), telefone: telefone.trim(), whatsapp: telefone.trim() })
-            .select('id').single()
-          if (novoCliente) clienteId = novoCliente.id
-        }
+        // Função segura no banco: acha o cliente pelo telefone ou cria (sem ler a tabela direto)
+        const { data: listaCliente } = await supabase.rpc('cardapio_cliente', {
+          p_loja: confeteiraUserId, p_telefone: telefone.trim(), p_nome: nome.trim(),
+        })
+        if (Array.isArray(listaCliente) && listaCliente[0]) clienteId = listaCliente[0].id
 
         // Loga o cliente automaticamente após o pedido (se ainda não estiver logado)
         if (clienteId && !localStorage.getItem(`cardapio_cliente_${confeteiraUserId}`)) {
@@ -314,7 +307,12 @@ function CartContent({
           }))
         }
 
-        const { data: pedidoSalvo } = await supabase.from('pedidos').insert({
+        // O id é gerado aqui, então o pedido é gravado sem precisar ler a tabela de volta
+        const novoPedidoId: string = (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
+          ? crypto.randomUUID()
+          : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16) })
+        const { error: erroPedido } = await supabase.from('pedidos').insert({
+            id: novoPedidoId,
             user_id: confeteiraUserId, cliente_id: clienteId,
             cliente_nome: nome.trim(), cliente_telefone: telefone.trim(), cliente_whatsapp: telefone.trim(),
             status: 'novo', origem: 'cardapio', prioridade: 'media',
@@ -331,10 +329,31 @@ function CartContent({
             valor_produtos: totalPrice, cupom_codigo: cupomAplicado?.codigo || null,
             cupom_desconto: desconto || 0, desconto: desconto || 0,
             valor_total: totalFinal, observacoes: observacoes || null,
-          }).select('id, numero').single()
+          })
+        if (erroPedido) throw erroPedido
+        const pedidoSalvo = { id: novoPedidoId }
+
+        // Entrega: guarda o endereço em "Dados pessoais" pra próxima compra (sem repetir)
+        if (formaEntrega === 'entrega_propria' && rua.trim()) {
+          try {
+            const chave = `enderecos_${confeteiraUserId}_${telefoneLimpo}`
+            const lista: any[] = JSON.parse(localStorage.getItem(chave) || '[]')
+            const cepLimpo = cep.replace(/\D/g, '')
+            const jaTem = lista.some((e: any) =>
+              (e.rua || '').trim().toLowerCase() === rua.trim().toLowerCase() &&
+              (e.numero || '').trim() === numero.trim() &&
+              (e.cep || '').replace(/\D/g, '') === cepLimpo)
+            if (!jaTem) {
+              lista.unshift({ rua: rua.trim(), numero: numero.trim(), complemento: complemento.trim(), bairro: bairro.trim(), cidade: cidade.trim(), cep })
+              localStorage.setItem(chave, JSON.stringify(lista.slice(0, 5)))
+            }
+          } catch { /* sem localStorage: ignora */ }
+        }
 
         if (pedidoSalvo) {
-          numeroPedido = pedidoSalvo.numero
+          // Número do pedido (função segura no banco)
+          const { data: num } = await supabase.rpc('cardapio_numero_pedido', { p_pedido: novoPedidoId })
+          if (typeof num === 'number') numeroPedido = num
           if (items.length > 0) {
             await supabase.from('pedido_itens').insert(
               items.map((item: any) => {
@@ -817,6 +836,16 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
   const [isOpen, setIsOpen] = useState(false)
   const [step, setStep] = useState<'cart' | 'dados' | 'entrega' | 'checkout'>('cart')
   const [activeTab, setActiveTab] = useState('inicio')
+  // Altura real do rodapé (menu + faixa "Meu pedido") — as abas Pedidos/Perfil param em cima dele
+  const rodapeRef = useRef<HTMLDivElement>(null)
+  const [alturaRodape, setAlturaRodape] = useState(62)
+  useEffect(() => {
+    const el = rodapeRef.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(() => setAlturaRodape(el.getBoundingClientRect().height))
+    ro.observe(el)
+    return () => ro.disconnect()
+  })
   const isMobile = useIsMobile()
 
   const clienteLogado = (() => {
@@ -899,7 +928,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
       {/* ═══ MOBILE: tab bar + cart vindo de baixo ═══ */}
       {isMobile && (
         <>
-          <div className="fixed bottom-0 left-0 right-0 z-30" style={{paddingBottom:'env(safe-area-inset-bottom)', boxShadow:'0 -2px 12px rgba(0,0,0,0.15)'}}>
+          <div ref={rodapeRef} className="fixed bottom-0 left-0 right-0 z-30" style={{paddingBottom:'env(safe-area-inset-bottom)', boxShadow:'0 -2px 12px rgba(0,0,0,0.15)'}}>
             {count > 0 && (
               <div
                 onClick={() => setIsOpen(true)}
@@ -957,23 +986,22 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
 
           {/* Painel Perfil */}
           {activeTab === 'perfil' && (
-            <div style={{position:'fixed',inset:0,zIndex:200,background:'#fff',display:'flex',flexDirection:'column',paddingBottom:'env(safe-area-inset-bottom)'}}>
-              <div style={{flexShrink:0,height:'62px'}} />
+            /* Termina em cima do menu de baixo (antes cobria o menu e o cliente não conseguia voltar) */
+            <div style={{position:'fixed',top:0,left:0,right:0,bottom:alturaRodape,zIndex:200,background:'#fff',display:'flex',flexDirection:'column',overflowY:'auto'}}>
+              <div style={{flexShrink:0,height:'env(safe-area-inset-top, 0px)'}} />
               <PerfilTab accent={accent} confeteiraUserId={localStorage.getItem('cardapio_user_id') || ''} />
-              <div style={{height:'62px',flexShrink:0}} />
             </div>
           )}
 
           {/* Painel Pedidos */}
           {activeTab === 'pedidos' && (
-            <div style={{position:'fixed',inset:0,zIndex:200,background:'#fff',display:'flex',flexDirection:'column'}}>
-              <div style={{flexShrink:0,height:'0px'}} />
+            <div style={{position:'fixed',top:0,left:0,right:0,bottom:alturaRodape,zIndex:200,background:'#fff',display:'flex',flexDirection:'column',overflowY:'auto'}}>
+              <div style={{flexShrink:0,height:'env(safe-area-inset-top, 0px)'}} />
               <PedidosTab
                 accent={accent}
                 confeteiraUserId={localStorage.getItem('cardapio_user_id') || ''}
                 onIrParaPerfil={() => setActiveTab('perfil')}
               />
-              <div style={{height:'62px',flexShrink:0}} />
             </div>
           )}
 

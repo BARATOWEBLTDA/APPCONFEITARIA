@@ -103,20 +103,12 @@ export function PerfilTab({ accent, confeteiraUserId }: { accent: string; confet
     if (!telefone || !confeteiraUserId) return
     setLoading(true)
     try {
-      const tel = telefone.replace(/\D/g,'')
-      const sufixo = tel.slice(-8)
-
-      // Busca pedidos diretamente pelo telefone do cliente, sem depender de cliente_id
-      const { data, error } = await supabase
-        .from('pedidos')
-        .select('*, pedido_itens(nome_produto, quantidade, valor_unitario, produtos(imagem_url))')
-        .eq('user_id', confeteiraUserId)
-        .or(`cliente_telefone.ilike.%${sufixo}%,cliente_whatsapp.ilike.%${sufixo}%`)
-        .order('created_at', { ascending: false })
-        .limit(20)
-
+      // Função segura no banco: só pedidos desse telefone exato, nessa loja
+      const { data, error } = await supabase.rpc('cardapio_pedidos_do_cliente', {
+        p_loja: confeteiraUserId, p_telefone: telefone,
+      })
       if (error) console.error('Erro ao buscar pedidos:', error)
-      setPedidos(data || [])
+      setPedidos(Array.isArray(data) ? data : [])
     } catch (err) {
       console.error('Erro ao buscar pedidos:', err)
     }
@@ -129,15 +121,11 @@ export function PerfilTab({ accent, confeteiraUserId }: { accent: string; confet
     if (tel.length < 10) { setErro('Digite um telefone válido'); return }
     setLoading(true)
     try {
-      // Tenta buscar pelos últimos 8 dígitos em telefone ou whatsapp
-      const sufixo = tel.slice(-8)
-      const { data } = await supabase
-        .from('clientes').select('id, nome, telefone, email')
-        .eq('user_id', confeteiraUserId)
-        .or(`telefone.ilike.%${sufixo}%,whatsapp.ilike.%${sufixo}%`)
-        .maybeSingle()
+      // Função segura no banco: procura o cliente pelo telefone exato
+      const { data: lista } = await supabase.rpc('cardapio_cliente', { p_loja: confeteiraUserId, p_telefone: tel })
+      const data = Array.isArray(lista) ? lista[0] : null
       if (data) {
-        const c = { id: data.id, nome: data.nome, telefone: data.telefone, email: data.email }
+        const c = { id: data.id, nome: data.nome, telefone: data.telefone }
         setCliente(c)
         localStorage.setItem(`cardapio_cliente_${confeteiraUserId}`, JSON.stringify(c))
         buscarPedidos(data.telefone)
@@ -155,12 +143,12 @@ export function PerfilTab({ accent, confeteiraUserId }: { accent: string; confet
     if (tel.length < 10) { setErro('Digite um telefone válido'); return }
     setLoading(true)
     try {
-      const { data: existe } = await supabase.from('clientes').select('id, nome, telefone')
-        .eq('user_id', confeteiraUserId).like('telefone', `%${tel.slice(-8)}%`).maybeSingle()
-      const c = existe
-        ? { id: existe.id, nome: existe.nome, telefone: existe.telefone }
-        : await supabase.from('clientes').insert({ user_id: confeteiraUserId, nome: cadNome.trim(), telefone: tel, whatsapp: tel })
-            .select('id, nome, telefone').single().then(r => r.data ? { id: r.data.id, nome: r.data.nome, telefone: r.data.telefone } : null)
+      // Função segura no banco: devolve o cliente existente ou cria um novo
+      const { data: lista } = await supabase.rpc('cardapio_cliente', {
+        p_loja: confeteiraUserId, p_telefone: cadTel, p_nome: cadNome.trim(),
+      })
+      const r = Array.isArray(lista) ? lista[0] : null
+      const c = r ? { id: r.id, nome: r.nome, telefone: r.telefone } : null
       if (c) {
         setCliente(c); localStorage.setItem(`cardapio_cliente_${confeteiraUserId}`, JSON.stringify(c))
         buscarPedidos(c.telefone); carregarEnderecos(c.telefone); setShowCadastro(false)

@@ -48,19 +48,12 @@ export function PedidosTab({ accent, confeteiraUserId, onIrParaPerfil }: {
   const buscarPedidos = async (telefone: string) => {
     setLoading(true)
     try {
-      const tel = telefone.replace(/\D/g,'')
-      const sufixo = tel.slice(-8)
-
-      const { data, error } = await supabase
-        .from('pedidos')
-        .select('*, pedido_itens(nome_produto, quantidade, valor_unitario, produtos(imagem_url))')
-        .eq('user_id', confeteiraUserId)
-        .or(`cliente_telefone.ilike.%${sufixo}%,cliente_whatsapp.ilike.%${sufixo}%`)
-        .order('created_at', { ascending: false })
-        .limit(20)
-
+      // Função segura no banco: só pedidos desse telefone exato, nessa loja
+      const { data, error } = await supabase.rpc('cardapio_pedidos_do_cliente', {
+        p_loja: confeteiraUserId, p_telefone: telefone,
+      })
       if (error) console.error('Erro ao buscar pedidos:', error)
-      setPedidos(data || [])
+      setPedidos(Array.isArray(data) ? data : [])
     } catch (err) {
       console.error('Erro ao buscar pedidos:', err)
     }
