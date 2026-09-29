@@ -83,7 +83,10 @@ export default function CheckoutConfigPage() {
         setEnderecoRetirada(data.endereco_retirada || '')
         setHorarioRetirada(data.horario_retirada || '')
         setExibirCampoTroco(data.exibir_campo_troco !== false)
-        setCupons((data.cupons_desconto || []).map((c: any) => ({
+        // Cupons ficam na tabela privada loja_cupons (fallback: os antigos do perfil)
+        const { data: lc } = await supabase.from('loja_cupons').select('cupons').eq('user_id', user.id).maybeSingle()
+        const listaCupons = Array.isArray(lc?.cupons) ? lc!.cupons : (data.cupons_desconto || [])
+        setCupons((listaCupons || []).map((c: any) => ({
           codigo: c.codigo || '',
           tipo: c.tipo || 'percentual',
           valor: c.valor?.toString() || '0',
@@ -114,7 +117,11 @@ export default function CheckoutConfigPage() {
         endereco_retirada: enderecoRetirada,
         horario_retirada: horarioRetirada,
         exibir_campo_troco: exibirCampoTroco,
-        cupons_desconto: cupons.filter(c => c.codigo.trim()).map(c => ({
+        aceita_agendamento: aceitaAgendamento,
+        prazo_minimo_horas: Number.isFinite(parseInt(prazoMinimo)) ? parseInt(prazoMinimo) : 24,
+      }).eq('id', userId)
+      // Cupons: tabela privada (o visitante do cardápio não consegue ler)
+      const cuponsParaSalvar = cupons.filter(c => c.codigo.trim()).map(c => ({
           codigo: c.codigo,
           tipo: c.tipo,
           valor: parseFloat(c.valor) || 0,
@@ -124,10 +131,8 @@ export default function CheckoutConfigPage() {
           limite_uso: c.limite_uso ? parseInt(c.limite_uso) : null,
           valor_minimo: c.valor_minimo ? parseFloat(c.valor_minimo) : null,
           usos: c.usos || 0,
-        })),
-        aceita_agendamento: aceitaAgendamento,
-        prazo_minimo_horas: Number.isFinite(parseInt(prazoMinimo)) ? parseInt(prazoMinimo) : 24,
-      }).eq('id', userId)
+        }))
+      await supabase.from('loja_cupons').upsert({ user_id: userId, cupons: cuponsParaSalvar, updated_at: new Date().toISOString() })
       setAutoSaved(true)
       setTimeout(() => setAutoSaved(false), 2000)
     }, 2000)

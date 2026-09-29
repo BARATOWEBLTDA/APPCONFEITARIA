@@ -72,6 +72,8 @@ export interface Configuracoes {
   horario_retirada?: string
   exibir_campo_troco?: boolean
   cupons_desconto?: { codigo: string; tipo: string; valor: number; ativo: boolean }[]
+  /** A loja tem cupom ativo? (os códigos ficam privados, validados no banco) */
+  tem_cupom?: boolean
   aceita_agendamento?: boolean
   prazo_minimo_horas?: number
 }

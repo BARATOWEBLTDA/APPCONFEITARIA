@@ -19,6 +19,7 @@ interface CheckoutConfig {
   horario_retirada: string
   exibir_campo_troco: boolean
   cupons_desconto: { codigo: string; tipo: string; valor: number; ativo: boolean }[]
+  tem_cupom?: boolean
   aceita_agendamento: boolean
   prazo_minimo_horas: number
 }
@@ -196,17 +197,28 @@ function CartContent({
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   }, [config.prazo_minimo_horas])
 
-  const aplicarCupom = () => {
+  const [validandoCupom, setValidandoCupom] = useState(false)
+  const aplicarCupom = async () => {
     setCupomErro('')
     const code = cupomDigitado.trim().toUpperCase()
     if (!code) return
-    const found = config.cupons_desconto.find((c: any) => c.codigo.toUpperCase() === code && c.ativo)
-    if (found) {
-      setCupomAplicado({ codigo: found.codigo, tipo: found.tipo, valor: found.valor })
-    } else {
-      setCupomErro('Cupom inválido ou expirado')
+    const loja = localStorage.getItem('cardapio_user_id') || ''
+    setValidandoCupom(true)
+    try {
+      // Validação no banco: ativo, período, valor mínimo e limite de usos
+      const { data, error } = await supabase.rpc('cardapio_validar_cupom', { p_loja: loja, p_codigo: code, p_subtotal: totalPrice })
+      const r: any = data
+      if (!error && r?.ok) {
+        setCupomAplicado({ codigo: r.codigo, tipo: r.tipo, valor: Number(r.valor) || 0 })
+      } else {
+        setCupomErro(r?.erro || 'Cupom inválido ou expirado')
+        setCupomAplicado(null)
+      }
+    } catch {
+      setCupomErro('Não foi possível validar o cupom. Tente de novo.')
       setCupomAplicado(null)
     }
+    setValidandoCupom(false)
   }
 
   const removerCupom = () => { setCupomAplicado(null); setCupomDigitado(''); setCupomErro('') }
@@ -787,7 +799,7 @@ function CartContent({
             </div>
 
             {/* Cupom */}
-            {config.cupons_desconto.length > 0 && (
+            {(config.tem_cupom || config.cupons_desconto.length > 0) && (
               <div>
                 <SectionHeader title="Cupom de desconto" />
                 {cupomAplicado ? (
@@ -800,7 +812,7 @@ function CartContent({
                     <input value={cupomDigitado} onChange={e=>{setCupomDigitado(e.target.value.toUpperCase());setCupomErro('')}} placeholder="Código do cupom"
                       style={{flex:1,padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',textTransform:'uppercase',fontFamily:'inherit'}}
                       onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
-                    <button onClick={aplicarCupom} style={{padding:'12px 20px',background:accent,color:'white',border:'none',borderRadius:'10px',fontWeight:700,fontSize:'14px',cursor:'pointer',fontFamily:'inherit'}}>Aplicar</button>
+                    <button onClick={aplicarCupom} disabled={validandoCupom} style={{padding:'12px 20px',background:accent,color:'white',border:'none',borderRadius:'10px',fontWeight:700,fontSize:'14px',cursor:'pointer',fontFamily:'inherit'}}>{validandoCupom ? '...' : 'Aplicar'}</button>
                   </div>
                 )}
                 {cupomErro && <p style={{margin:'6px 0 0',fontSize:'12px',color:'#ef4444'}}>{cupomErro}</p>}

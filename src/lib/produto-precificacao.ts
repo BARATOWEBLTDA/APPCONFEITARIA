@@ -73,7 +73,7 @@ export const REGRA_CONFLITO_DEFAULT: RegraConflitoTamanho = "preco_tamanho";
  *
  * SEMÂNTICA:
  * - fixo:           adicional × 1
- * - por_unidade:    adicional × quantidade_pedido
+ * - por_unidade:    adicional por unidade (o preço é unitário; a sacola já multiplica pela quantidade)
  * - por_kg:         adicional × peso_em_kg (do tamanho escolhido ou quantidade_pedido se venda por kg)
  * - por_quantidade: adicional × (quantidade_pedido / quantidade_base)
  *                   Ex: cento (base=100), cliente pede 300 → 3 × adicional
@@ -99,7 +99,8 @@ export function calcularAdicionalOpcao(
       break;
 
     case "por_unidade":
-      resultado = adicional * qtd;
+      // Antes multiplicava pela quantidade AQUI e de novo na sacola (cobrava qtd² vezes)
+      resultado = adicional;
       break;
 
     case "por_kg": {

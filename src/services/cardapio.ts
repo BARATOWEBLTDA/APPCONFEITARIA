@@ -68,9 +68,11 @@ export async function getCardapioBySlug(slug: string): Promise<CardapioData> {
 }
 
 async function fetchByUserId(userId: string, profile: any): Promise<CardapioData> {
-  const [{ data: produtos }, { data: categorias }] = await Promise.all([
+  const [{ data: produtos }, { data: categorias }, { data: temCupom }] = await Promise.all([
     supabase.from('produtos').select('*').eq('user_id', userId).eq('disponivel', true).order('created_at', { ascending: false }),
-    supabase.from('categorias').select('nome, imagem_url').eq('user_id', userId).order('ordem').order('nome')
+    supabase.from('categorias').select('nome, imagem_url').eq('user_id', userId).order('ordem').order('nome'),
+    // Só sim/não — os códigos dos cupons não vêm mais pro navegador do cliente
+    supabase.rpc('cardapio_tem_cupom', { p_loja: userId }),
   ])
 
   const categoryImages: { [key: string]: string } = {}
@@ -128,7 +130,8 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     endereco_retirada: profile.endereco_retirada || '',
     horario_retirada: profile.horario_retirada || '',
     exibir_campo_troco: profile.exibir_campo_troco !== false,
-    cupons_desconto: profile.cupons_desconto || [],
+    cupons_desconto: [],
+    tem_cupom: temCupom === true || (Array.isArray(profile.cupons_desconto) && profile.cupons_desconto.some((c: any) => c?.ativo)),
     aceita_agendamento: profile.aceita_agendamento !== false,
     prazo_minimo_horas: profile.prazo_minimo_horas ?? 24,
   }
