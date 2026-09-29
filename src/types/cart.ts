@@ -28,6 +28,8 @@ export interface PrecoBreakdownCarrinho {
 // ═══ Item do carrinho ═════════════════════════════════════════════
 export interface CartItem {
   id: string
+  /** Identifica a LINHA da sacola (mesmo produto com opções diferentes = linhas diferentes) */
+  lineId?: string
   name: string
   description: string
   price: number  // preço unitário final (mantido pra retrocompat)

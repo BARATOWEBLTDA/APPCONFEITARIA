@@ -305,6 +305,7 @@ export function carregarGruposDoBanco(produto: any): GrupoOpcoes[] {
         id: o.id || `opc_${gerarId()}`,
         nome: o.nome || "",
         adicional: o.adicional ?? 0,
+        ...(o.tipo_adicional ? { tipo_adicional: o.tipo_adicional } : {}),
         ...(cfg.temPreco ? { preco: o.preco ?? 0 } : {}),
         ...(cfg.temPeso ? { peso_kg: o.peso_kg ?? null } : {}),
         ...(o.serve ? { serve: o.serve } : {}),

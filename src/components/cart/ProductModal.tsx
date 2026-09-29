@@ -148,14 +148,14 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
   const gSabor = grupoAtivo('sabor')
   const gTamanho = grupoAtivo('tamanho')
 
-  // Reset ao abrir/trocar produto
+  // Reset ao abrir/trocar produto (inclusive reabrindo o MESMO produto)
   useEffect(() => {
-    if (product) {
+    if (product && isOpen) {
       setQuantity(1); setObservations(''); setShowObs(false); setImgIndex(0)
       setEscolhaMassa(null); setEscolhasRecheio([]); setEscolhaCobertura(null)
       setEscolhaSabor(null); setEscolhaTamanho(null)
     }
-  }, [product])
+  }, [product, isOpen])
 
   useEffect(() => {
     if (isOpen) {
@@ -185,10 +185,9 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
   const inc = () => setQuantity(q => Math.min(q + step, 50))
   const dec = () => setQuantity(q => Math.max(q - step, minQtd))
 
-  // Preço base do produto (com promoção aplicada, se houver)
-  const basePrice = product
-    ? (product.promocao && product.preco_promocional ? product.preco_promocional : product.preco_normal)
-    : 0
+  // Preço base = preço CHEIO. A promoção entra uma vez só, pelo descPct lá embaixo
+  // (antes usava o preço promocional E aplicava o desconto de novo: 52,90 → 47,61 → 42,85)
+  const basePrice = product ? (product.preco_normal || 0) : 0
 
   const descPct = product
     ? ((product as any).tipo_promocao === 'percentual' && product.promocao
@@ -419,7 +418,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
       let selecPreco = ''
       if (opSelecionada) {
         selecTitulo = opSelecionada.nome
-        if (opSelecionada.peso_kg) selecTitulo += ` · ${opSelecionada.peso_kg} kg`
+        if (opSelecionada.peso_kg) selecTitulo += ` · ${String(opSelecionada.peso_kg).replace('.', ',')} kg`
         if (opSelecionada.serve) {
           const s = String(opSelecionada.serve).trim()
           selecSub = `Serve ${s}${/^\d+$/.test(s) ? ' pessoas' : ''}`
@@ -465,7 +464,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 13.5, fontWeight: 700, color: '#2C1219', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {opSelecionada ? selecTitulo : `Selecione o ${g.nome_exibicao.toLowerCase()}`}
+                {opSelecionada ? selecTitulo : `Selecione o ${g.tipo === 'tamanho' ? 'tamanho' : g.nome_exibicao.toLowerCase()}`}
               </div>
               <div style={{ fontSize: 11.5, color: '#6B7280', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {opSelecionada ? (selecSub || `${totalOpcoes} opções disponíveis`) : `${totalOpcoes} ${totalOpcoes === 1 ? 'opção disponível' : 'opções disponíveis'}`}
@@ -496,7 +495,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                 else if (g.tipo === 'tamanho' && op.preco > 0) precoLabel = formatCurrency(op.preco)
                 else if ((op.adicional || 0) > 0) precoLabel = `+${formatCurrency(op.adicional)}`
                 const serveTxt = op.serve ? `${String(op.serve).trim()}${/^\d+$/.test(String(op.serve).trim()) ? ' pessoas' : ''}`.trim() : ''
-                const pesoTxt = op.peso_kg ? `${op.peso_kg} kg` : ''
+                const pesoTxt = op.peso_kg ? `${String(op.peso_kg).replace('.', ',')} kg` : ''
                 const tituloOp = pesoTxt ? `${op.nome} · ${pesoTxt}` : op.nome
 
                 return (

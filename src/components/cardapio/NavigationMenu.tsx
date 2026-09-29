@@ -183,16 +183,17 @@ function CartContent({
 
   const desconto = useMemo(() => {
     if (!cupomAplicado) return 0
-    if (cupomAplicado.tipo === 'percentual') return totalPrice * (cupomAplicado.valor / 100)
+    if (cupomAplicado.tipo === 'percentual') return Math.round(totalPrice * cupomAplicado.valor) / 100
     return Math.min(cupomAplicado.valor, totalPrice)
   }, [cupomAplicado, totalPrice])
 
-  const totalFinal = totalPrice - desconto + freteValor
+  const totalFinal = Math.round((totalPrice - desconto + freteValor) * 100) / 100
 
   const minDate = useMemo(() => {
     const d = new Date()
-    d.setHours(d.getHours() + config.prazo_minimo_horas)
-    return d.toISOString().split('T')[0]
+    d.setHours(d.getHours() + (Number(config.prazo_minimo_horas) || 0))
+    // Data no fuso do aparelho (toISOString é UTC e, depois das 21h, pulava pro dia seguinte)
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   }, [config.prazo_minimo_horas])
 
   const aplicarCupom = () => {
@@ -535,7 +536,7 @@ function CartContent({
               </div>
             ) : (
               items.map((item: any) => (
-                <CartItemComponent key={item.id} item={item} onUpdateQuantity={updateQuantity} onUpdateObservations={updateObservations} onRemove={removeItem} />
+                <CartItemComponent key={item.lineId ?? item.id} item={item} onUpdateQuantity={updateQuantity} onUpdateObservations={updateObservations} onRemove={removeItem} />
               ))
             )}
           </div>

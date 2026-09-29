@@ -10,12 +10,14 @@ interface Props {
 }
 
 export function CartItemComponent({ item, onUpdateQuantity, onRemove }: Props) {
+  // Age só nesta linha da sacola (mesmo produto com opções diferentes = linhas separadas)
+  const linha = (item as any).lineId ?? item.id
   const dec = () => {
     const d = item.saleType === 'kg' ? 0.5 : 1
-    if (item.quantity > d) onUpdateQuantity(item.id, item.quantity - d)
-    else onRemove(item.id)
+    if (item.quantity > d) onUpdateQuantity(linha, item.quantity - d)
+    else onRemove(linha)
   }
-  const inc = () => onUpdateQuantity(item.id, item.quantity + (item.saleType === 'kg' ? 0.5 : 1))
+  const inc = () => onUpdateQuantity(linha, item.quantity + (item.saleType === 'kg' ? 0.5 : 1))
   const qtyLabel = item.saleType === 'kg' ? `${item.quantity}kg` : `${item.quantity}`
   const unitLabel = item.saleType === 'kg' ? '/kg' : '/un'
 
@@ -37,7 +39,7 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove }: Props) {
         }
         {/* Botão remover sobre a imagem */}
         <button
-          onClick={() => onRemove(item.id)}
+          onClick={() => onRemove(linha)}
           style={{
             position:'absolute', top:'4px', right:'4px',
             width:'20px', height:'20px', borderRadius:'50%',

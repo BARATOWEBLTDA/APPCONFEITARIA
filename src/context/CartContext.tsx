@@ -20,39 +20,53 @@ const norm = (v: string | null | undefined): string | null => v ?? null
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
 
+  // Chave da linha: produto + TODAS as escolhas (tamanho, sabor, massa, recheios, cobertura,
+  // adicionais, foto, observação) + preço. Opções diferentes = linha diferente na sacola.
+  const chaveLinha = (it: any): string => {
+    const base = JSON.stringify({
+      id: it.id,
+      escolhas: it.escolhas ?? null,
+      massa: norm(it.selectedMassa), recheio: norm(it.selectedRecheio), cobertura: norm(it.selectedCobertura),
+      extras: Array.isArray(it.extrasBiblioteca) ? it.extrasBiblioteca.map((x: any) => x.id).sort() : [],
+      foto: it.fotoReferencia ?? null,
+      obs: (it.observations || '').trim(),
+      preco: it.price,
+    })
+    let h = 0
+    for (let i = 0; i < base.length; i++) h = (h * 31 + base.charCodeAt(i)) | 0
+    return `${it.id}#${(h >>> 0).toString(36)}`
+  }
+  const mesmaLinha = (i: CartItem, alvo: string) => (i.lineId ?? i.id) === alvo
+
   const addItem = useCallback((newItem: CartItem) => {
     setItems(prev => {
-      const existing = prev.find(i =>
-        i.id === newItem.id &&
-        norm(i.selectedMassa)     === norm(newItem.selectedMassa) &&
-        norm(i.selectedRecheio)   === norm(newItem.selectedRecheio) &&
-        norm(i.selectedCobertura) === norm(newItem.selectedCobertura)
-      )
+      const lineId = chaveLinha(newItem)
+      const existing = prev.find(i => i.lineId === lineId)
 
       if (existing) {
-        // Item já existe com mesma personalização: apenas soma a quantidade
+        // Mesma personalização: apenas soma a quantidade
         return prev.map(i =>
           i === existing ? { ...i, quantity: i.quantity + newItem.quantity } : i
         )
       }
 
       // Item novo: adiciona ao carrinho e dispara evento
-      const updated = [...prev, newItem]
+      const updated = [...prev, { ...newItem, lineId }]
       window.dispatchEvent(new CustomEvent('cartUpdated', { detail: updated }))
       return updated
     })
   }, [])
 
   const updateQuantity = useCallback((id: string, quantity: number) => {
-    setItems(prev => prev.map(i => i.id === id ? { ...i, quantity } : i))
+    setItems(prev => prev.map(i => mesmaLinha(i, id) ? { ...i, quantity } : i))
   }, [])
 
   const updateObservations = useCallback((id: string, observations: string) => {
-    setItems(prev => prev.map(i => i.id === id ? { ...i, observations } : i))
+    setItems(prev => prev.map(i => mesmaLinha(i, id) ? { ...i, observations } : i))
   }, [])
 
   const removeItem = useCallback((id: string) => {
-    setItems(prev => prev.filter(i => i.id !== id))
+    setItems(prev => prev.filter(i => !mesmaLinha(i, id)))
   }, [])
 
   const clearCart = useCallback(() => setItems([]), [])

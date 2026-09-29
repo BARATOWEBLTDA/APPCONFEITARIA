@@ -130,7 +130,7 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     exibir_campo_troco: profile.exibir_campo_troco !== false,
     cupons_desconto: profile.cupons_desconto || [],
     aceita_agendamento: profile.aceita_agendamento !== false,
-    prazo_minimo_horas: profile.prazo_minimo_horas || 24,
+    prazo_minimo_horas: profile.prazo_minimo_horas ?? 24,
   }
 
   return {

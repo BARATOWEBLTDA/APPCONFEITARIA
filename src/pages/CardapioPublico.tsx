@@ -616,7 +616,7 @@ function CardapioContent() {
           exibir_campo_troco: config.exibir_campo_troco !== false,
           cupons_desconto: config.cupons_desconto || [],
           aceita_agendamento: config.aceita_agendamento !== false,
-          prazo_minimo_horas: config.prazo_minimo_horas || 24,
+          prazo_minimo_horas: config.prazo_minimo_horas ?? 24,
         }))
       }
       setLoading(false)

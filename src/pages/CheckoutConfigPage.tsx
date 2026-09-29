@@ -95,7 +95,7 @@ export default function CheckoutConfigPage() {
           usos: c.usos || 0,
         })))
         setAceitaAgendamento(data.aceita_agendamento !== false)
-        setPrazoMinimo(data.prazo_minimo_horas?.toString() || '24')
+        setPrazoMinimo(data.prazo_minimo_horas != null ? data.prazo_minimo_horas.toString() : '24')
       }
       setLoading(false)
     }
@@ -126,7 +126,7 @@ export default function CheckoutConfigPage() {
           usos: c.usos || 0,
         })),
         aceita_agendamento: aceitaAgendamento,
-        prazo_minimo_horas: parseInt(prazoMinimo) || 24,
+        prazo_minimo_horas: Number.isFinite(parseInt(prazoMinimo)) ? parseInt(prazoMinimo) : 24,
       }).eq('id', userId)
       setAutoSaved(true)
       setTimeout(() => setAutoSaved(false), 2000)
