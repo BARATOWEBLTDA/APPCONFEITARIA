@@ -4,13 +4,17 @@ import AppPageHeader from "@/components/AppPageHeader";
 
 /**
  * Receitas (tela nova, aprovada 29/09 — opção A "cor do doce + desenho").
- * Abas: Receitas Doonly · Receitas Salvas. Busca + filtro de tema (menu que desce).
+ * Abre nas CATEGORIAS (cartões com foto, ou cor + desenho) → toca → receitas da categoria.
+ * Busca em tudo, atalho "Receitas salvas" e ranking "Mais curtidas" na primeira tela.
  * Ranking por curtidas. Receita em página corrida (ingredientes → modo de preparo → dicas).
  * Campos novos (receitas_v2.sql): infos, ingredientes_etapas, passos_etapas, dicas, cor, curtidas.
  * Receitas antigas (só texto) continuam funcionando: cada linha vira um item.
  */
 
 type Etapa = { etapa: string | null; itens: string[] };
+interface Categoria { id?: string; nome: string; imagem_url?: string | null; cor?: string | null; ordem?: number | null }
+type Vista = { tipo: "home" } | { tipo: "categoria"; nome: string } | { tipo: "salvas" };
+
 interface Receita {
   id: string;
   nome: string;
@@ -91,10 +95,9 @@ export default function ReceitasV2() {
   const [userId, setUserId] = useState<string | null>(null);
   const [receitas, setReceitas] = useState<Receita[]>([]);
   const [loading, setLoading] = useState(true);
-  const [aba, setAba] = useState<"doonly" | "salvas">("doonly");
+  const [vista, setVista] = useState<Vista>({ tipo: "home" });
   const [busca, setBusca] = useState("");
-  const [tema, setTema] = useState("Todos");
-  const [temaAberto, setTemaAberto] = useState(false);
+  const [categoriasDb, setCategoriasDb] = useState<Categoria[]>([]);
   const [curti, setCurti] = useState<Set<string>>(new Set());
   const [salvas, setSalvas] = useState<Set<string>>(new Set());
   const [aberta, setAberta] = useState<Receita | null>(null);
@@ -104,11 +107,13 @@ export default function ReceitasV2() {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUserId(user?.id || null);
-      const [{ data: rs }, { data: cs }, { data: ss }] = await Promise.all([
+      const [{ data: rs }, { data: cs }, { data: ss }, { data: cats }] = await Promise.all([
         supabase.from("receitas_doonly").select("*").order("created_at", { ascending: false }),
         user ? supabase.from("receitas_doonly_curtidas").select("receita_id").eq("user_id", user.id) : Promise.resolve({ data: [] as any[] }),
         user ? supabase.from("receitas_doonly_salvas").select("receita_id").eq("user_id", user.id) : Promise.resolve({ data: [] as any[] }),
+        supabase.from("receitas_categorias").select("*").order("ordem", { ascending: true }),
       ]);
+      setCategoriasDb((cats || []) as Categoria[]);
       setReceitas(((rs || []) as Receita[]).filter(r => r.publicada !== false));
       setCurti(new Set((cs || []).map((x: any) => x.receita_id)));
       setSalvas(new Set((ss || []).map((x: any) => x.receita_id)));
@@ -122,25 +127,33 @@ export default function ReceitasV2() {
   const ordenadas = useMemo(() => [...receitas].sort((a, b) =>
     (b.curtidas || 0) - (a.curtidas || 0) || String(b.created_at || "").localeCompare(String(a.created_at || ""))), [receitas]);
 
-  const temas = useMemo(() => {
-    const m = new Map<string, number>();
-    receitas.forEach(r => { const t = r.categoria || "Outras"; m.set(t, (m.get(t) || 0) + 1); });
-    return [["Todos", receitas.length] as [string, number], ...[...m.entries()].sort((a, b) => a[0].localeCompare(b[0]))];
-  }, [receitas]);
+  // Categorias da tela inicial: as cadastradas (na ordem do admin) que têm receita,
+  // mais qualquer categoria usada numa receita e ainda não cadastrada
+  const categorias = useMemo(() => {
+    const cont = new Map<string, number>();
+    receitas.forEach(r => { const c = r.categoria || "Outras"; cont.set(c, (cont.get(c) || 0) + 1); });
+    const lista: (Categoria & { qtd: number })[] = categoriasDb
+      .filter(c => (cont.get(c.nome) || 0) > 0)
+      .map(c => ({ ...c, qtd: cont.get(c.nome) || 0 }));
+    [...cont.keys()].sort().forEach(n => { if (!lista.some(c => c.nome === n)) lista.push({ nome: n, qtd: cont.get(n) || 0 }); });
+    return lista;
+  }, [receitas, categoriasDb]);
+  const catInfo = (nome: string) => categorias.find(c => c.nome === nome);
 
-  const filtradas = useMemo(() => {
-    const q = busca.trim().toLowerCase();
-    return ordenadas.filter(r => {
-      if (aba === "salvas" && !salvas.has(r.id)) return false;
-      if (tema !== "Todos" && (r.categoria || "Outras") !== tema) return false;
-      if (!q) return true;
-      const alvo = [r.nome, r.categoria, r.ingredientes, ...ingredientesDe(r).flatMap(g => g.itens)].join(" ").toLowerCase();
-      return semMarcacao(alvo).includes(q);
-    });
-  }, [ordenadas, aba, salvas, tema, busca]);
-
-  const semFiltro = aba === "doonly" && tema === "Todos" && !busca.trim();
-  const top = semFiltro ? ordenadas.filter(r => (r.curtidas || 0) > 0).slice(0, 3) : [];
+  const bate = (r: Receita, q: string) => {
+    if (!q) return true;
+    const alvo = [r.nome, r.categoria, r.ingredientes, ...ingredientesDe(r).flatMap(g => g.itens)].join(" ").toLowerCase();
+    return semMarcacao(alvo).includes(q);
+  };
+  const q = busca.trim().toLowerCase();
+  const filtradas = useMemo(() => ordenadas.filter(r => {
+    if (vista.tipo === "salvas" && !salvas.has(r.id)) return false;
+    if (vista.tipo === "categoria" && (r.categoria || "Outras") !== vista.nome) return false;
+    return bate(r, q);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [ordenadas, vista, salvas, q]);
+  const top = ordenadas.filter(r => (r.curtidas || 0) > 0).slice(0, 3);
+  const irPara = (v: Vista) => { setVista(v); setBusca(""); window.scrollTo(0, 0); };
 
   // ── Curtir / salvar (otimista: muda na tela na hora e grava no banco) ──
   const alternarCurtida = async (r: Receita) => {
@@ -260,45 +273,80 @@ export default function ReceitasV2() {
     );
   }
 
-  // ═══════════ Lista ═══════════
+  // ═══════════ Listas ═══════════
+  const grade = () => filtradas.length === 0 ? (
+    <div className="rv-vazio">{vista.tipo === "salvas" && !q ? "Você ainda não salvou nenhuma receita. Toque no marcador dentro de uma receita pra guardar aqui." : "Nenhuma receita encontrada."}</div>
+  ) : <div className="rv-grid">{filtradas.map(r => <Card key={r.id} r={r} />)}</div>;
+
+  // Função (não componente) pra o campo não perder o foco a cada letra digitada
+  const campoBusca = (ph: string) => (
+    <div className="rv-busca">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A8A0A4" strokeWidth="2.2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+      <input value={busca} onChange={e => setBusca(e.target.value)} placeholder={ph} />
+      {busca && <button type="button" className="rv-limpa" onClick={() => setBusca("")} aria-label="Limpar busca">×</button>}
+    </div>
+  );
+
+  // Dentro de uma categoria ou das salvas
+  if (vista.tipo !== "home") {
+    const nome = vista.tipo === "categoria" ? vista.nome : "Receitas salvas";
+    const info = vista.tipo === "categoria" ? catInfo(vista.nome) : undefined;
+    const [bg, fg] = vista.tipo === "salvas" ? ["#F5F0F2", "#2C1219"] : (CORES[info?.cor || ""] || CORES[COR_TEMA[vista.nome] || ""] || CORES.creme);
+    const total = vista.tipo === "categoria" ? (info?.qtd || 0) : salvas.size;
+    return (
+      <div className="rv-root">
+        <div className={`rv-cat-h${info?.imagem_url ? " com-foto" : ""}`} style={{ background: info?.imagem_url ? "#000" : bg, color: fg }}>
+          {info?.imagem_url ? <><img src={info.imagem_url} alt="" /><span className="rv-cat-grad" /></>
+            : vista.tipo === "salvas" ? <span className="rv-cat-ic"><IcSalvar cheio /></span>
+            : <span className="rv-cat-ic"><Icone tema={vista.nome} size={60} /></span>}
+          <button type="button" className="rv-voltar" onClick={() => irPara({ tipo: "home" })} aria-label="Voltar">‹</button>
+          <div className="rv-cat-t"><b>{nome}</b><span>{total} receita{total === 1 ? "" : "s"}</span></div>
+        </div>
+        <div className="rv-pad">
+          {campoBusca(vista.tipo === "salvas" ? "Buscar nas salvas..." : `Buscar em ${nome}...`)}
+          <p className="rv-sub">{q ? `${filtradas.length} receita${filtradas.length === 1 ? "" : "s"}` : "Mais curtidas primeiro"}</p>
+          {grade()}
+        </div>
+        {aviso && <div className="rv-aviso">{aviso}</div>}
+        <style>{CSS}</style>
+      </div>
+    );
+  }
+
+  // Tela inicial: categorias
   return (
     <>
-      <AppPageHeader title="Receitas" subtitle="Receitas testadas pra sua confeitaria" />
+      <AppPageHeader title="Receitas" subtitle="Escolha uma categoria" />
       <div className="rv-root">
-        <div className="rv-abas">
-          <button type="button" className={aba === "doonly" ? "on" : ""} onClick={() => setAba("doonly")}>Receitas Doonly</button>
-          <button type="button" className={aba === "salvas" ? "on" : ""} onClick={() => setAba("salvas")}>Receitas Salvas {salvas.size > 0 && <em>{salvas.size}</em>}</button>
-        </div>
-
-        <div className="rv-tool">
-          <div className="rv-busca">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A8A0A4" strokeWidth="2.2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-            <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar receita ou ingrediente..." />
-          </div>
-          <div style={{ position: "relative" }}>
-            <button type="button" className={`rv-drop${tema !== "Todos" ? " on" : ""}`} onClick={() => setTemaAberto(o => !o)} aria-expanded={temaAberto}>
-              Tema: {tema}
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" style={{ transform: temaAberto ? "rotate(180deg)" : "none" }}><polyline points="6 9 12 15 18 9" /></svg>
-            </button>
-            {temaAberto && (
-              <>
-                <div className="rv-fundo" onClick={() => setTemaAberto(false)} />
-                <div className="rv-menu">
-                  {temas.map(([t, q]) => (
-                    <button type="button" key={t} className={tema === t ? "on" : ""} onClick={() => { setTema(t); setTemaAberto(false); }}>
-                      <span>{t}</span><em>{q}</em>
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-
+        <div style={{ marginTop: 12 }}>{campoBusca("Buscar em todas as receitas...")}</div>
         {loading ? (
           <div className="rv-vazio">Carregando receitas...</div>
+        ) : q ? (
+          <>
+            <p className="rv-sub">{filtradas.length} receita{filtradas.length === 1 ? "" : "s"} encontrada{filtradas.length === 1 ? "" : "s"}</p>
+            {grade()}
+          </>
         ) : (
           <>
+            <button type="button" className="rv-salvas" onClick={() => irPara({ tipo: "salvas" })}>
+              <IcSalvar cheio={salvas.size > 0} /><b>Receitas salvas</b>{salvas.size > 0 && <em>{salvas.size}</em>}<span>›</span>
+            </button>
+            {categorias.length === 0 ? (
+              <div className="rv-vazio">Nenhuma receita por aqui ainda.</div>
+            ) : (
+              <div className="rv-tiles">
+                {categorias.map(c => {
+                  const [bg, fg] = CORES[c.cor || ""] || CORES[COR_TEMA[c.nome] || ""] || CORES.creme;
+                  return (
+                    <button type="button" key={c.nome} className={`rv-tile${c.imagem_url ? " com-foto" : ""}`} onClick={() => irPara({ tipo: "categoria", nome: c.nome })}
+                      style={c.imagem_url ? undefined : { background: bg, color: fg }}>
+                      {c.imagem_url ? <><img src={c.imagem_url} alt="" /><span className="rv-tile-grad" /></> : <span className="rv-tile-ic"><Icone tema={c.nome} size={30} /></span>}
+                      <span className="rv-tile-t"><b>{c.nome}</b><small>{c.qtd} receita{c.qtd === 1 ? "" : "s"}</small></span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             {top.length > 0 && (
               <>
                 <p className="rv-sec">🏆 Mais curtidas</p>
@@ -313,12 +361,6 @@ export default function ReceitasV2() {
                 </div>
               </>
             )}
-            <p className="rv-sec">{aba === "salvas" ? "Suas receitas salvas" : semFiltro ? "Todas as receitas" : `${filtradas.length} receita${filtradas.length === 1 ? "" : "s"}`}</p>
-            {filtradas.length === 0 ? (
-              <div className="rv-vazio">{aba === "salvas" ? "Você ainda não salvou nenhuma receita. Toque no marcador dentro de uma receita pra guardar aqui." : "Nenhuma receita encontrada."}</div>
-            ) : (
-              <div className="rv-grid">{filtradas.map(r => <Card key={r.id} r={r} />)}</div>
-            )}
           </>
         )}
       </div>
@@ -330,22 +372,34 @@ export default function ReceitasV2() {
 
 const CSS = `
   .rv-root { font-family: var(--font-base); color: #2C1219; max-width: 1100px; margin: 0 auto; padding: 0 2px 24px; }
-  .rv-abas { display: flex; border-bottom: 1px solid #F0EBED; margin: 4px 0 12px; }
-  .rv-abas button { flex: 1; padding: 12px 0 10px; border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #888780; border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; }
-  .rv-abas button.on { color: #2C1219; border-color: #2C1219; }
-  .rv-abas em { font-style: normal; font-size: 10.5px; background: #F5F0F2; padding: 1px 6px; border-radius: 4px; margin-left: 4px; color: #6B5D64; }
-  .rv-tool { display: flex; gap: 8px; }
   .rv-busca { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; border: 1px solid #E5DDE0; border-radius: 6px; padding: 0 11px; height: 42px; background: #fff; }
   .rv-busca:focus-within { border-color: #2C1219; }
   .rv-busca input { flex: 1; min-width: 0; border: none; outline: none; background: none; font-family: inherit; font-size: 14px; color: #2C1219; }
-  .rv-drop { height: 42px; display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; border: 1px solid #E5DDE0; border-radius: 6px; background: #fff; font-family: inherit; font-size: 13px; font-weight: 700; color: #2C1219; white-space: nowrap; cursor: pointer; }
-  .rv-drop.on { background: #2C1219; border-color: #2C1219; color: #fff; }
-  .rv-fundo { position: fixed; inset: 0; z-index: 40; }
-  .rv-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 41; width: 220px; background: #fff; border: 1px solid #E5DDE0; border-radius: 6px; box-shadow: 0 12px 30px rgba(44,18,25,.16); padding: 4px; }
-  .rv-menu button { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 10px; border: none; border-radius: 4px; background: none; font-family: inherit; font-size: 13.5px; font-weight: 600; color: #2C1219; cursor: pointer; text-align: left; }
-  .rv-menu button:hover { background: #FAF7F8; } .rv-menu button.on { background: #F5F0F2; font-weight: 800; }
-  .rv-menu em { font-style: normal; font-size: 11.5px; color: #888780; }
   .rv-sec { font-size: 15px; font-weight: 800; margin: 18px 0 9px; }
+  .rv-sub { font-size: 11.5px; font-weight: 700; color: #888780; margin: 12px 2px 8px; }
+  .rv-pad { padding: 12px 14px 0; }
+  .rv-limpa { border: none; background: none; font-size: 20px; color: #A8A0A4; cursor: pointer; line-height: 1; padding: 0 2px; }
+  .rv-salvas { width: 100%; display: flex; align-items: center; gap: 9px; margin-top: 10px; padding: 11px 12px; border: 1px solid #F0EBED; border-radius: 6px; background: #fff; font-family: inherit; font-size: 13.5px; color: #2C1219; cursor: pointer; text-align: left; }
+  .rv-salvas b { flex: 1; font-weight: 800; } .rv-salvas em { font-style: normal; font-size: 11px; font-weight: 800; background: #F5F0F2; padding: 1px 7px; border-radius: 4px; }
+  .rv-salvas span { color: #C4B8BE; font-size: 18px; }
+  .rv-tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 12px; }
+  @media (min-width: 700px) { .rv-tiles { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 1000px) { .rv-tiles { grid-template-columns: repeat(4, 1fr); } }
+  .rv-tile { position: relative; height: 120px; border: 1px solid #F0EBED; border-radius: 6px; overflow: hidden; padding: 0; font-family: inherit; cursor: pointer; text-align: left; }
+  .rv-tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .rv-tile-grad { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(20,8,12,.72)); }
+  .rv-tile-ic { position: absolute; top: 12px; right: 12px; }
+  .rv-tile-t { position: absolute; left: 11px; bottom: 9px; display: flex; flex-direction: column; }
+  .rv-tile-t b { font-size: 15px; font-weight: 900; } .rv-tile-t small { font-size: 11px; font-weight: 700; opacity: .8; }
+  .rv-tile.com-foto .rv-tile-t { color: #fff; }
+  .rv-cat-h { position: relative; height: 160px; margin: 0 -2px; overflow: hidden; }
+  .rv-cat-h img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .rv-cat-grad { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.05) 30%, rgba(20,8,12,.7)); }
+  .rv-cat-ic { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+  .rv-cat-ic svg { width: 60px; height: 60px; }
+  .rv-cat-t { position: absolute; left: 16px; bottom: 12px; display: flex; flex-direction: column; }
+  .rv-cat-t b { font-size: 23px; font-weight: 900; } .rv-cat-t span { font-size: 12px; font-weight: 700; opacity: .75; }
+  .rv-cat-h.com-foto .rv-cat-t { color: #fff; }
   .rv-rank { border: 1px solid #F0EBED; border-radius: 6px; background: #fff; }
   .rv-rk { width: 100%; display: flex; align-items: center; gap: 10px; padding: 9px 10px; border: none; border-top: 1px solid #F3ECEE; background: none; font-family: inherit; text-align: left; cursor: pointer; }
   .rv-rk:first-child { border-top: none; }
