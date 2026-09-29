@@ -91,9 +91,15 @@ function maskPhone(value: string): string {
   return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
 }
 
+/** "AAAA-MM-DD" como data LOCAL (new Date("1990-10-02") é UTC e no Brasil vira dia 1º) */
+function dataLocal(data: string): Date {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(data || "");
+  return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : new Date(data);
+}
+
 function getDaysUntil(data: string) {
-  const hoje = new Date();
-  const nasc = new Date(data);
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const nasc = dataLocal(data);
   const aniv = new Date(hoje.getFullYear(), nasc.getMonth(), nasc.getDate());
   if (aniv < hoje) aniv.setFullYear(hoje.getFullYear() + 1);
   return Math.ceil((aniv.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
@@ -101,7 +107,7 @@ function getDaysUntil(data: string) {
 
 function getHoursUntil(data: string) {
   const hoje = new Date();
-  const nasc = new Date(data);
+  const nasc = dataLocal(data);
   const aniv = new Date(hoje.getFullYear(), nasc.getMonth(), nasc.getDate());
   if (aniv < hoje) aniv.setFullYear(hoje.getFullYear() + 1);
   return Math.ceil((aniv.getTime() - hoje.getTime()) / (1000 * 60 * 60));
@@ -1699,7 +1705,7 @@ export default function Clientes() {
                 {aniversariantes.length === 0 ? (
                   <p style={{color:"var(--text-muted)",textAlign:"center",padding:"2rem"}}>Nenhum nos próximos 30 dias</p>
                 ) : aniversariantes.map(c => {
-                  const nasc = new Date(c.data_nascimento!);
+                  const nasc = dataLocal(c.data_nascimento!);
                   const diff = getDaysUntil(c.data_nascimento!);
                   const hours = getHoursUntil(c.data_nascimento!);
                   return (
@@ -1727,158 +1733,181 @@ export default function Clientes() {
 
       {/* ═══════════════════════ DESKTOP ═══════════════════════ */}
       <div className="cli-desktop">
-        <div className="cli-layout">
-          <div className="cli-main">
-            {/* Header desktop */}
-            <div className="cli-page-hdr">
-              <div>
-                <h1 className="cli-page-title">Clientes</h1>
-                <p className="cli-page-sub">{clientes.length} {clientes.length === 1 ? "cliente cadastrado" : "clientes cadastrados"}</p>
-              </div>
-              <div className="cli-page-actions">
-                <button className="cli-btn-new" onClick={() => openNew()}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" style={{marginRight: 6}}><path d="M12 5v14M5 12h14"/></svg>
-                  Novo cliente
-                </button>
-                <button
-                  className={`cli-btn-pro${!usuarioEhPro ? " cli-btn-pro--off" : ""}`}
-                  onClick={handleAbrirImportarContatos}
-                  disabled={!usuarioEhPro}
-                  title={usuarioEhPro ? "Importar contatos do celular" : "Feature PRO — assine para desbloquear"}
-                >
-                  <span style={{fontSize: "0.95rem"}}>📱</span>
-                  Importar
-                  <span className="cli-btn-pro-badge">PRO</span>
-                </button>
-              </div>
-            </div>
+        {(() => {
+          // ── Resumo (calculado dos pedidos que já vêm com cada cliente) ──
+          const agora = Date.now();
+          const dias = (iso?: string | null) => iso ? Math.floor((agora - new Date(iso).getTime()) / 86400000) : Infinity;
+          const inicioMes = new Date(); inicioMes.setDate(1); inicioMes.setHours(0, 0, 0, 0);
+          const novosMes = clientes.filter(c => c.created_at && new Date(c.created_at) >= inicioMes).length;
+          const compraram30 = clientes.filter(c => dias(c._ultimaCompra) <= 30).length;
+          const somaPed = clientes.reduce((s, c) => s + (c._totalPedidos || 0), 0);
+          const somaGasto = clientes.reduce((s, c) => s + (c._totalGasto || 0), 0);
+          const ticketGeral = somaPed > 0 ? somaGasto / somaPed : 0;
+          const semPedir = clientes
+            .filter(c => (c._totalPedidos || 0) > 0 && dias(c._ultimaCompra) > 60)
+            .sort((x, y) => dias(y._ultimaCompra) - dias(x._ultimaCompra));
 
-            {/* Busca + filtro na mesma linha */}
-            <div className="cli-search-row cli-search-row--desktop">
-              <div className="cli-search-wrap">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" placeholder="Buscar por nome, telefone ou e-mail..." value={search} onChange={e => setSearch(e.target.value)} className="cli-search" autoComplete="off" />
+          const etiqueta = (c: Cliente): { txt: string; cls: string } | null => {
+            const ped = c._totalPedidos || 0;
+            if (ped > 0 && dias(c._ultimaCompra) > 60) return { txt: "Inativa", cls: "cd-tag--inativa" };
+            if (ped >= 5) return { txt: "Fiel", cls: "cd-tag--fiel" };
+            if (dias(c.created_at) <= 30 && ped <= 1) return { txt: "Nova", cls: "cd-tag--nova" };
+            return null;
+          };
+          const iniciaisDe = (n: string) => (n || "?").trim().split(/\s+/).slice(0, 2).map(x => x[0]?.toUpperCase() || "").join("");
+          const linkWhats = (c: Cliente, texto?: string) => {
+            let d = (c.whatsapp || (c as any).telefone || "").replace(/\D/g, "");
+            if (!d) return null;
+            if (!d.startsWith("55")) d = "55" + d;
+            return `https://wa.me/${d}${texto ? `?text=${encodeURIComponent(texto)}` : ""}`;
+          };
+          const primeiroNome = (n: string) => (n || "").trim().split(/\s+/)[0] || "";
+          const niverCurto = (data?: string | null) => {
+            if (!data) return "—";
+            const d = dataLocal(data);
+            return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+          };
+          const rotuloFiltro = filtroChip === "aniversariantes" ? "Aniversariantes" : filtroChip === "recentes" ? "Recentes" : "Todos";
+          const IcWhats = () => (
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="#16a34a" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-3.3-.8-2.8-1.2-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.3-.3.6-.3.8-.3h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l2 1c.3.1.5.2.5.3.1.2.1.8-.1 1.4z"/></svg>
+          );
+          const Avatar = ({ c }: { c: Cliente }) => (
+            <span className="cd-av">{c.foto_url ? <img src={c.foto_url} alt="" /> : iniciaisDe(c.nome)}</span>
+          );
+
+          return (
+            <div className="cd-wrap">
+              {/* Resumo */}
+              <div className="cd-stats">
+                <div className="cd-stat"><small>Clientes</small><b>{clientes.length}</b><span className="cd-stat-ok">{novosMes > 0 ? `+${novosMes} este mês` : "nenhuma nova este mês"}</span></div>
+                <div className="cd-stat"><small>Compraram nos últimos 30 dias</small><b>{compraram30}</b><span>{clientes.length > 0 ? `${Math.round((compraram30 / clientes.length) * 100)}% da base` : "—"}</span></div>
+                <div className="cd-stat"><small>Aniversários (30 dias)</small><b>{aniversariantes.length}</b><span className="cd-stat-rosa">{aniversariantes[0] ? (getDaysUntil(aniversariantes[0].data_nascimento!) === 0 ? "hoje tem aniversário!" : `próximo em ${getDaysUntil(aniversariantes[0].data_nascimento!)} dias`) : "nenhum próximo"}</span></div>
+                <div className="cd-stat"><small>Ticket médio</small><b>{formatMoneyFull(ticketGeral)}</b><span>por pedido</span></div>
               </div>
-              <div style={{position:"relative"}}>
-                <button className="cli-filter-btn" onClick={() => setFilterOpen(o => !o)} title="Filtrar" aria-label="Filtrar">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                  {filtroChip !== "todos" && <span className="cli-filter-dot" />}
-                </button>
-                {filterOpen && (
-                  <>
-                    <div className="cli-filter-backdrop" onClick={() => setFilterOpen(false)} />
-                    <div className="cli-filter-panel">
-                      <div className="cli-filter-title">Filtrar clientes</div>
-                      <button className={`cli-filter-opt${filtroChip === "todos" ? " cli-filter-opt--active" : ""}`} onClick={() => { setFiltroChip("todos"); setFilterOpen(false); }}>
-                        <div className="cli-filter-radio" />
-                        <span>Todos</span>
-                        <span className="cli-filter-count">{clientes.length}</span>
-                      </button>
-                      {aniversariantes.length > 0 && (
-                        <button className={`cli-filter-opt${filtroChip === "aniversariantes" ? " cli-filter-opt--active" : ""}`} onClick={() => { setFiltroChip("aniversariantes"); setFilterOpen(false); }}>
-                          <div className="cli-filter-radio" />
-                          <span>Aniversariantes</span>
-                          <span className="cli-filter-count">{aniversariantes.length}</span>
-                        </button>
-                      )}
-                      <button className={`cli-filter-opt${filtroChip === "recentes" ? " cli-filter-opt--active" : ""}`} onClick={() => { setFiltroChip("recentes"); setFilterOpen(false); }}>
-                        <div className="cli-filter-radio" />
-                        <span>Recentes (30 dias)</span>
-                      </button>
+
+              <div className="cd-grid">
+                {/* Lista */}
+                <div className="cd-card">
+                  <div className="cd-tool">
+                    <div className="cd-search">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                      <input type="text" placeholder="Buscar por nome, telefone ou e-mail..." value={search} onChange={e => setSearch(e.target.value)} autoComplete="off" />
                     </div>
-                  </>
-                )}
-              </div>
-            </div>
-            {loading ? (
-              <div className="cli-loading"><span className="spinner" /></div>
-            ) : filtered.length === 0 ? (
-              <div className="cli-empty"><p>Nenhum cliente encontrado</p></div>
-            ) : (
-              <div className="cli-list">
-                {filtered.map(c => {
-                  const totalPed = c._totalPedidos || 0;
-                  const totalGasto = c._totalGasto || 0;
-                  const ticketMedio = c._ticketMedio || 0;
-                  const ultimaCompra = c._ultimaCompra;
-                  return (
-                    <div key={c.id} className="cli-card" onClick={() => navigate(`/clientes/${c.id}`)} style={{cursor:"pointer"}}>
-                      <div className="cli-card-header">
-                        <div className="cli-avatar">
-                          {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0).toUpperCase()}</span>}
-                        </div>
-                        <div className="cli-info">
-                          <p className="cli-nome">{c.nome}</p>
-                          <p className="cli-since">{formatClienteHa(c.created_at)}</p>
-                        </div>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" style={{flexShrink: 0}}><polyline points="9 18 15 12 9 6"/></svg>
-                      </div>
-
-                      {totalPed > 0 ? (
+                    {/* Filtro em menu que desce */}
+                    <div style={{ position: "relative" }}>
+                      <button className={`cd-filtro${filtroChip !== "todos" ? " cd-filtro--on" : ""}`} onClick={() => setFilterOpen(o => !o)} aria-expanded={filterOpen}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                        {rotuloFiltro}
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" style={{ transform: filterOpen ? "rotate(180deg)" : "none", transition: "transform .15s" }}><polyline points="6 9 12 15 18 9"/></svg>
+                      </button>
+                      {filterOpen && (
                         <>
-                          <div className="cli-card-divider" />
-                          <div className="cli-card-metricas">
-                            <div className="cli-metrica">
-                              <div className="cli-metrica-label">Pedidos</div>
-                              <div className="cli-metrica-valor">{totalPed}</div>
-                            </div>
-                            <div className="cli-metrica">
-                              <div className="cli-metrica-label">Total gasto</div>
-                              <div className="cli-metrica-valor">{formatMoneyCompacto(totalGasto)}</div>
-                            </div>
+                          <div className="cli-filter-backdrop" onClick={() => setFilterOpen(false)} />
+                          <div className="cd-drop">
+                            {([
+                              ["todos", "Todos", clientes.length],
+                              ["aniversariantes", "Aniversariantes (30 dias)", aniversariantes.length],
+                              ["recentes", "Cadastrados nos últimos 30 dias", null],
+                            ] as const).map(([k, l, n]) => (
+                              <button key={k} className={`cd-drop-opt${filtroChip === k ? " cd-drop-opt--on" : ""}`} onClick={() => { setFiltroChip(k as any); setFilterOpen(false); }}>
+                                <span>{l}</span>{n != null && <em>{n}</em>}
+                              </button>
+                            ))}
                           </div>
-                          <div className="cli-card-inline">
-                            <span className="cli-inline-l">Ticket médio:</span>
-                            <strong>{formatMoneyFull(ticketMedio)}</strong>
-                          </div>
-                          {ultimaCompra && (
-                            <div className="cli-card-inline">
-                              <span className="cli-inline-l">⏱ Última compra:</span>
-                              <strong>{formatUltimaCompra(ultimaCompra)}</strong>
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        <>
-                          <div className="cli-card-divider" />
-                          <div className="cli-card-empty">Nenhum pedido ainda</div>
                         </>
                       )}
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                    <button className={`cd-btn cd-btn--claro${!usuarioEhPro ? " cd-btn--off" : ""}`} onClick={handleAbrirImportarContatos} disabled={!usuarioEhPro}
+                      title={usuarioEhPro ? "Importar contatos do celular" : "Feature PRO — assine para desbloquear"}>
+                      Importar <span className="cd-pro">PRO</span>
+                    </button>
+                    <button className="cd-btn cd-btn--escuro" onClick={() => openNew()}>+ Novo cliente</button>
+                  </div>
 
-          {/* Sidebar aniversariantes */}
-          <div className="cli-sidebar">
-            {aniversariantes.length > 0 && (
-              <div className="cli-panel">
-                <p className="cli-panel-title">🎂 Aniversariantes</p>
-                {aniversariantes.map(c => {
-                  const nasc = new Date(c.data_nascimento!);
-                  const diff = getDaysUntil(c.data_nascimento!);
-                  const hours = getHoursUntil(c.data_nascimento!);
-                  return (
-                    <div key={c.id} className="cli-aniv-item" style={{cursor: "pointer"}} onClick={() => navigate(`/clientes/${c.id}`)}>
-                      <div className="cli-aniv-avatar">
-                        {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0)}</span>}
-                      </div>
-                      <div className="cli-aniv-info">
-                        <p className="cli-aniv-nome">{c.nome}</p>
-                        <p className="cli-aniv-data">{nasc.toLocaleDateString("pt-BR",{day:"2-digit",month:"long"})}</p>
-                      </div>
-                      <span className={`cli-aniv-badge${diff <= 7 ? " soon" : ""}`}>
-                        {diff === 0 ? "🎉 Hoje!" : hours <= 24 ? `${hours}h` : `${diff}d`}
-                      </span>
+                  {loading ? (
+                    <div className="cli-loading"><span className="spinner" /></div>
+                  ) : filtered.length === 0 ? (
+                    <div className="cd-vazio">{clientes.length === 0 ? "Nenhum cliente cadastrado ainda." : "Nenhum cliente encontrado."}</div>
+                  ) : (
+                    <div className="cd-tabela-wrap">
+                      <table className="cd-tabela">
+                        <thead><tr>
+                          <th>Cliente</th><th className="num">Pedidos</th><th className="num">Total gasto</th><th className="num">Ticket médio</th><th>Última compra</th><th>Aniversário</th><th />
+                        </tr></thead>
+                        <tbody>
+                          {filtered.map(c => {
+                            const ped = c._totalPedidos || 0;
+                            const tag = etiqueta(c);
+                            const wa = linkWhats(c);
+                            return (
+                              <tr key={c.id} onClick={() => navigate(`/clientes/${c.id}`)}>
+                                <td>
+                                  <div className="cd-cli">
+                                    <Avatar c={c} />
+                                    <div>
+                                      <div className="cd-nome"><b>{c.nome}</b>{tag && <span className={`cd-tag ${tag.cls}`}>{tag.txt}</span>}</div>
+                                      <small>{c.whatsapp || "sem WhatsApp"}</small>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="num">{ped}</td>
+                                <td className="num"><b>{ped > 0 ? formatMoneyFull(c._totalGasto || 0) : "—"}</b></td>
+                                <td className="num cd-mut">{ped > 0 ? formatMoneyFull(c._ticketMedio || 0) : "—"}</td>
+                                <td className="cd-mut">{ped > 0 ? formatUltimaCompra(c._ultimaCompra) : "nunca comprou"}</td>
+                                <td className="cd-mut">{niverCurto(c.data_nascimento)}</td>
+                                <td>
+                                  <div className="cd-acoes" onClick={e => e.stopPropagation()}>
+                                    {wa && <a className="cd-acao" href={wa} target="_blank" rel="noopener noreferrer" title="Abrir WhatsApp" aria-label="Abrir WhatsApp"><IcWhats /></a>}
+                                    <button className="cd-acao" onClick={() => navigate(`/clientes/${c.id}`)} title="Ver perfil" aria-label="Ver perfil"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B5D64" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
                     </div>
-                  );
-                })}
+                  )}
+                </div>
+
+                {/* Coluna da direita */}
+                <div className="cd-lado">
+                  <div className="cd-painel">
+                    <p className="cd-painel-t">🎂 Aniversários próximos</p>
+                    {aniversariantes.length === 0 ? (
+                      <p className="cd-painel-vazio">Nenhum aniversário nos próximos 30 dias.</p>
+                    ) : aniversariantes.slice(0, 6).map(c => {
+                      const dd = getDaysUntil(c.data_nascimento!);
+                      const wa = linkWhats(c, `Feliz aniversário, ${primeiroNome(c.nome)}! 🎂 Que seu dia seja muito doce!`);
+                      return (
+                        <div key={c.id} className="cd-item" onClick={() => navigate(`/clientes/${c.id}`)}>
+                          <Avatar c={c} />
+                          <div className="cd-item-t"><b>{c.nome}</b><span>🎂 {niverCurto(c.data_nascimento)} · {dd === 0 ? "hoje!" : dd === 1 ? "amanhã" : `em ${dd} dias`}</span></div>
+                          {wa && <a className="cd-mini" href={wa} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}><IcWhats /> Parabéns</a>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="cd-painel">
+                    <p className="cd-painel-t">Sem pedir há mais de 60 dias</p>
+                    {semPedir.length === 0 ? (
+                      <p className="cd-painel-vazio">Todas as clientes com pedido compraram nos últimos 60 dias.</p>
+                    ) : semPedir.slice(0, 5).map(c => {
+                      const wa = linkWhats(c, `Oi, ${primeiroNome(c.nome)}! Sentimos sua falta por aqui 🧁 Que tal um docinho essa semana?`);
+                      return (
+                        <div key={c.id} className="cd-item" onClick={() => navigate(`/clientes/${c.id}`)}>
+                          <Avatar c={c} />
+                          <div className="cd-item-t"><b>{c.nome}</b><span>última compra {formatUltimaCompra(c._ultimaCompra)}</span></div>
+                          {wa && <a className="cd-mini" href={wa} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}><IcWhats /> Chamar</a>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
-            )}
-          </div>
-        </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* ═══════════════════════ MODAIS COMPARTILHADOS ═══════════════════════ */}
@@ -2066,6 +2095,63 @@ export default function Clientes() {
         @media (min-width: 900px) {
           .cli-root { padding-top: 40px; }
         }
+
+        /* ═══ Clientes no computador (aprovado 29/09): resumo + tabela + coluna lateral ═══ */
+        .cd-wrap { font-family: var(--font-base); color: #2C1219; }
+        .cd-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px; }
+        .cd-stat { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 16px; }
+        .cd-stat small { font-size: 11px; font-weight: 700; color: #888780; letter-spacing: .04em; text-transform: uppercase; }
+        .cd-stat b { display: block; font-size: 24px; font-weight: 800; margin-top: 4px; color: #2C1219; }
+        .cd-stat span { font-size: 11.5px; font-weight: 700; color: #6B5D64; }
+        .cd-stat .cd-stat-ok { color: #15803D; } .cd-stat .cd-stat-rosa { color: #BE185D; }
+        .cd-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; align-items: start; }
+        .cd-card { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; overflow: visible; }
+        .cd-tool { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid #F3ECEE; }
+        .cd-search { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; border: 1px solid #EAE3E6; border-radius: 10px; padding: 0 12px; height: 40px; background: #fff; }
+        .cd-search:focus-within { border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
+        .cd-search input { flex: 1; min-width: 0; border: none; outline: none; background: none; font-family: inherit; font-size: 13.5px; color: #2C1219; }
+        .cd-filtro { display: inline-flex; align-items: center; gap: 7px; height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid #EAE3E6; background: #fff; font-family: inherit; font-size: 13px; font-weight: 700; color: #4B3A42; cursor: pointer; white-space: nowrap; }
+        .cd-filtro--on { background: #2C1219; border-color: #2C1219; color: #fff; }
+        .cd-drop { position: absolute; top: calc(100% + 6px); right: 0; z-index: 50; min-width: 260px; background: #fff; border: 1px solid #F0EBED; border-radius: 12px; box-shadow: 0 12px 32px rgba(44,18,25,.14); padding: 6px; }
+        .cd-drop-opt { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: none; border-radius: 8px; background: none; font-family: inherit; font-size: 13px; font-weight: 600; color: #2C1219; cursor: pointer; text-align: left; }
+        .cd-drop-opt:hover { background: #FAF7F8; }
+        .cd-drop-opt--on { background: #F5F0F2; font-weight: 800; }
+        .cd-drop-opt em { font-style: normal; font-size: 11.5px; font-weight: 800; color: #888780; background: #F5F0F2; padding: 2px 8px; border-radius: 999px; }
+        .cd-btn { height: 40px; padding: 0 14px; border-radius: 10px; border: none; font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
+        .cd-btn--claro { background: #F5F0F2; color: #2C1219; } .cd-btn--escuro { background: #2C1219; color: #fff; }
+        .cd-btn--off { opacity: .55; cursor: not-allowed; }
+        .cd-pro { font-size: 9px; font-weight: 800; background: #F59E0B; color: #fff; padding: 2px 5px; border-radius: 4px; }
+        .cd-tabela-wrap { overflow-x: auto; }
+        .cd-tabela { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .cd-tabela th { white-space: nowrap; text-align: left; font-size: 10.5px; font-weight: 700; color: #888780; letter-spacing: .04em; text-transform: uppercase; padding: 10px 9px; background: #FAF7F8; border-bottom: 1px solid #F3ECEE; }
+        .cd-tabela td { white-space: nowrap; padding: 10px 9px; border-bottom: 1px solid #F7F2F4; vertical-align: middle; }
+        .cd-tabela tbody tr { cursor: pointer; } .cd-tabela tbody tr:hover td { background: #FFFBFC; }
+        .cd-tabela .num { text-align: right; } .cd-mut { color: #6B5D64; }
+        .cd-cli { display: flex; align-items: center; gap: 10px; }
+        .cd-cli small { display: block; font-size: 11.5px; color: #888780; margin-top: 1px; }
+        .cd-nome { display: flex; align-items: center; gap: 6px; } .cd-nome b { font-size: 13.5px; }
+        .cd-av { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; overflow: hidden; background: #F5F0F2; color: #6B5D64; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; }
+        .cd-av img { width: 100%; height: 100%; object-fit: cover; }
+        .cd-tag { font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
+        .cd-tag--fiel { background: #FCE7F3; color: #BE185D; } .cd-tag--nova { background: #DCFCE7; color: #15803D; } .cd-tag--inativa { background: #F3F4F6; color: #6B7280; }
+        .cd-acoes { display: flex; gap: 6px; justify-content: flex-end; }
+        .cd-acao { height: 30px; min-width: 30px; padding: 0 10px; border-radius: 8px; border: none; background: #F5F0F2; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; text-decoration: none; }
+        .cd-acao--txt { font-family: inherit; font-size: 12px; font-weight: 700; color: #2C1219; }
+        .cd-vazio { padding: 40px 16px; text-align: center; font-size: 13.5px; color: #888780; }
+        .cd-lado { display: flex; flex-direction: column; gap: 14px; }
+        .cd-painel { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 14px; }
+        .cd-painel-t { font-size: 14px; font-weight: 800; margin: 0 0 8px; }
+        .cd-painel-vazio { font-size: 12.5px; color: #888780; margin: 0; line-height: 1.45; }
+        .cd-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid #F7F2F4; cursor: pointer; }
+        .cd-item:first-of-type { border-top: none; }
+        .cd-item-t { flex: 1; min-width: 0; } .cd-item-t b { display: block; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cd-item-t span { font-size: 11.5px; color: #6B5D64; }
+        .cd-mini { display: inline-flex; align-items: center; gap: 4px; padding: 6px 9px; border-radius: 8px; background: #F0FDF4; color: #15803D; font-size: 11.5px; font-weight: 800; text-decoration: none; white-space: nowrap; }
+        .cd-tabela th:first-child, .cd-tabela td:first-child { padding-left: 16px; }
+        .cd-tabela th:last-child, .cd-tabela td:last-child { padding-right: 16px; }
+        /* Telas menores: a coluna lateral desce pra baixo da tabela (lado a lado) */
+        @media (max-width: 1400px) { .cd-grid { grid-template-columns: 1fr; } .cd-lado { display: grid; grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 1000px) { .cd-stats { grid-template-columns: repeat(2, 1fr); } .cd-lado { grid-template-columns: 1fr; } }
 
         .cli-mobile  { display: flex; flex-direction: column; gap: 0.75rem; }
         .cli-desktop { display: none; }
