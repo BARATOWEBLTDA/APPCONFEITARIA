@@ -9416,6 +9416,16 @@ export default function Produtos() {
             background: rgba(255,255,255,0.16); color: rgba(255,255,255,0.5); box-shadow: none;
           }
           .prod-modal--novo .prod-btn-avancar-novo .prod-spinner-sm { border-color: rgba(44,18,25,0.25); border-top-color: #2C1219; }
+          /* "Vamos montar as opções": sem sobra embaixo que gerava rolagem à toa */
+          .prod-modal--novo .prod-mchk-wrap { padding-bottom: 4px; }
+          .prod-modal--novo .prod-mchk-list { margin-bottom: 0; }
+        }
+        /* Celulares mais baixos (ou com barra do navegador): aperta o checklist pra caber sem rolar */
+        @media (max-width: 640px) and (max-height: 760px) {
+          .prod-modal--novo .pv3-header { margin-top: 10px; margin-bottom: 14px; }
+          .prod-modal--novo .prod-mchk-list { gap: 8px; }
+          .prod-modal--novo .prod-mchk-item { padding: 11px 12px; }
+          .prod-modal--novo .prod-mchk-ico { width: 32px; height: 32px; }
         }
 
         /* ═══ Labels novo estilo ═══ */
