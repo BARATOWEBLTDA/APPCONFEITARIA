@@ -5281,7 +5281,7 @@ export default function Produtos() {
                       </div>
                     </div>
                     <div className="prod-field">
-                      <label>Preço promocional <span className="prod-field-hint">(opcional)</span></label>
+                      <label>Preço promocional</label>
                       <div className="prod-preco-input prod-preco-input--big prod-preco-input--promo">
                         <span>R$</span>
                         <input
