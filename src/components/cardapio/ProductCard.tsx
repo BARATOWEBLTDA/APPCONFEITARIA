@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Heart } from 'lucide-react'
 import { Produto } from '@/types/database'
 import { ProductModal } from '@/components/cart/ProductModal'
+import { SeloEntregaFoto } from "@/lib/entregaProduto";
 
 interface Props {
   product: Produto
@@ -53,6 +54,7 @@ export function ProductCard({ product, isFavorite, onToggleFavorite, backgroundC
           {product.promocao && (
             <div className="absolute top-3 -right-10 bg-red-500 text-white font-bold px-4 py-1 transform rotate-45 shadow-md z-10" style={{ width: '130px', textAlign: 'center', fontSize: '0.6rem' }}>PROMOÇÃO</div>
           )}
+          <SeloEntregaFoto produto={product} />
         </div>
         <div className="p-3 flex-1 flex flex-col items-center text-center">
           <h4 className="font-bold leading-tight line-clamp-2 mb-1" style={{ color: '#2C1219', fontSize: '13px' }}>{product.nome}</h4>

@@ -5779,7 +5779,7 @@ export default function Produtos() {
                         );
                       })}
                     </div>
-                    <p style={{margin:"8px 0 0", fontSize:11.5, color:"#6B5D64"}}>Cliente verá no cardápio quantos dias antes precisa fazer o pedido.</p>
+                    <p style={{margin:"8px 0 0", fontSize:11.5, color:"#6B5D64"}}>No cardápio aparece "Pedir X antes" na foto do produto, e um aviso quando o cliente abre o produto.</p>
                   </div>
                 )}
               </div>

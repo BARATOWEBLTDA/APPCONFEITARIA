@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Heart } from 'lucide-react'
 import { Produto } from '@/types/database'
 import { ProductModal } from '@/components/cart/ProductModal'
+import { SeloEntregaFoto } from "@/lib/entregaProduto";
 
 interface Props {
   product: Produto
@@ -61,12 +62,13 @@ export function DesktopProductCard({ product, isFavorite, onToggleFavorite, back
         <div style={{
           width: '100%', aspectRatio: '4/3',
           background: backgroundColor || '#f9fafb',
-          overflow: 'hidden',
+          overflow: 'hidden', position: 'relative',
         }}>
           {firstImage
             ? <img src={firstImage} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '40px' }}>🧁</div>
           }
+          <SeloEntregaFoto produto={product} />
         </div>
 
         {/* Conteúdo */}

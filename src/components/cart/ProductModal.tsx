@@ -1,3 +1,4 @@
+import { AvisoAntecedencia } from "@/lib/entregaProduto";
 import { useState, useEffect, useMemo } from 'react'
 import { X, Plus, Minus, Camera, Ruler, ChevronRight, ChevronDown } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
@@ -734,6 +735,9 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
               {formatCurrency(calculo.final)} <span style={{ fontSize: 12, color: '#6B5D64', fontWeight: 700 }}>/{FORMA_LABEL[product.forma_venda] || 'un'}</span>
             </span>
           </div>
+
+          {/* Encomenda: avisa a antecedência (pronta entrega não precisa de aviso) */}
+          <AvisoAntecedencia produto={product} />
 
           {/* Grupos V3 (renderiza os ativos) */}
           {gTamanho && (
