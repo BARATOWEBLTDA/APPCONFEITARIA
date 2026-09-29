@@ -39,7 +39,7 @@ const CORES: Record<string, [string, string]> = {
   amarelo: ["#FCF1CF", "#8A6A12"], rosa: ["#FCE7F3", "#9D174D"], morango: ["#FDE2E4", "#9F1239"],
   limao: ["#EEF6D8", "#4D6B12"], verde: ["#E3F4E8", "#166534"],
 };
-const COR_TEMA: Record<string, string> = { Recheios: "creme", Bolos: "rosa", Coberturas: "chocolate", "Doces finos": "cacau", Tortas: "limao", Salgados: "caramelo", Pudins: "caramelo" };
+const COR_TEMA: Record<string, string> = { Recheios: "creme", Bolos: "rosa", Coberturas: "chocolate", "Doces finos": "cacau", Tortas: "limao", Salgados: "caramelo", Pudins: "caramelo", Massas: "creme", Bombons: "cacau" };
 const corDe = (r: Receita): [string, string] => CORES[r.cor || ""] || CORES[COR_TEMA[r.categoria || ""] || ""] || CORES.creme;
 
 // Desenhos de linha por tema (feitos aqui — sem imagem de terceiros)
@@ -51,6 +51,8 @@ const ICONES: Record<string, string> = {
   Tortas: "M6 34L24 12l18 22zM6 34v6h36v-6M14 24l20 0",
   Salgados: "M24 8c-7 8-12 16-12 23a12 12 0 0 0 24 0c0-7-5-15-12-23zM16 34h16",
   Pudins: "M13 38h22l-3.5-17h-15zM9 38h30M16.5 21c2-2.5 4.5-3.5 7.5-3.5s5.5 1 7.5 3.5M21 17.5v-3h6v3M18 27c2 1.5 4 1.5 6 0s4-1.5 6 0",
+  Massas: "M10 22h28l-3 16a4 4 0 0 1-4 3H17a4 4 0 0 1-4-3zM8 22h32M30 20L38 6M34 8c3 0 5 3 4 6",
+  Bombons: "M14 20h20l-2 18H16zM12 20h24M17 20c0-5 3-8 7-8s7 3 7 8M20 12l-2-4M28 12l2-4",
 };
 const Icone = ({ tema, size = 30 }: { tema?: string | null; size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -221,11 +223,12 @@ export default function ReceitasV2() {
     const ing = ingredientesDe(r); const passos = passosDe(r);
     let n = 0;
     return (
-      <div className="rv-root">
-        <div className="rv-hero" style={{ background: r.foto_url ? "#000" : bg, color: fg }}>
+      <>
+        <div className="rv-hero rv-sangra" style={{ background: r.foto_url ? "#000" : bg, color: fg }}>
           {r.foto_url ? <img src={r.foto_url} alt="" /> : <Icone tema={r.categoria} size={62} />}
           <button type="button" className="rv-voltar" onClick={() => setAberta(null)} aria-label="Voltar">‹</button>
         </div>
+      <div className="rv-root">
         <div className="rv-det">
           <span className="rv-tema">{r.categoria || "Receita"}</span>
           <h1>{r.nome}</h1>
@@ -271,6 +274,7 @@ export default function ReceitasV2() {
         {aviso && <div className="rv-aviso">{aviso}</div>}
         <style>{CSS}</style>
       </div>
+      </>
     );
   }
 
@@ -295,14 +299,15 @@ export default function ReceitasV2() {
     const [bg, fg] = vista.tipo === "salvas" ? ["#F5F0F2", "#2C1219"] : (CORES[info?.cor || ""] || CORES[COR_TEMA[vista.nome] || ""] || CORES.creme);
     const total = vista.tipo === "categoria" ? (info?.qtd || 0) : salvas.size;
     return (
-      <div className="rv-root">
-        <div className={`rv-cat-h${info?.imagem_url ? " com-foto" : ""}`} style={{ background: info?.imagem_url ? "#000" : bg, color: fg }}>
+      <>
+      <div className={`rv-cat-h rv-sangra${info?.imagem_url ? " com-foto" : ""}`} style={{ background: info?.imagem_url ? "#000" : bg, color: fg }}>
           {info?.imagem_url ? <><img src={info.imagem_url} alt="" /><span className="rv-cat-grad" /></>
             : vista.tipo === "salvas" ? <span className="rv-cat-ic"><IcSalvar cheio /></span>
             : <span className="rv-cat-ic"><Icone tema={vista.nome} size={60} /></span>}
           <button type="button" className="rv-voltar" onClick={() => irPara({ tipo: "home" })} aria-label="Voltar">‹</button>
           <div className="rv-cat-t"><b>{nome}</b><span>{total} receita{total === 1 ? "" : "s"}</span></div>
-        </div>
+      </div>
+      <div className="rv-root">
         <div className="rv-pad">
           {campoBusca(vista.tipo === "salvas" ? "Buscar nas salvas..." : `Buscar em ${nome}...`)}
           <p className="rv-sub">{q ? `${filtradas.length} receita${filtradas.length === 1 ? "" : "s"}` : "Mais curtidas primeiro"}</p>
@@ -311,6 +316,7 @@ export default function ReceitasV2() {
         {aviso && <div className="rv-aviso">{aviso}</div>}
         <style>{CSS}</style>
       </div>
+      </>
     );
   }
 
@@ -393,7 +399,8 @@ const CSS = `
   .rv-tile-t { position: absolute; left: 11px; bottom: 9px; display: flex; flex-direction: column; }
   .rv-tile-t b { font-size: 15px; font-weight: 900; } .rv-tile-t small { font-size: 11px; font-weight: 700; opacity: .8; }
   .rv-tile.com-foto .rv-tile-t { color: #fff; }
-  .rv-cat-h { position: relative; height: 160px; margin: 0 -2px; overflow: hidden; }
+  .rv-cat-h { position: relative; height: calc(180px + env(safe-area-inset-top, 0px)); overflow: hidden; }
+  @media (min-width: 768px) { .rv-cat-h { height: 220px; } }
   .rv-cat-h img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .rv-cat-grad { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.05) 30%, rgba(20,8,12,.7)); }
   .rv-cat-ic { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
@@ -423,8 +430,18 @@ const CSS = `
   .rv-card-b { display: flex; justify-content: space-between; align-items: center; padding: 7px 9px; }
   .rv-card-nome { font-size: 12.5px; font-weight: 800; padding: 0 9px 9px; color: #2C1219; }
   .rv-vazio { padding: 34px 12px; text-align: center; font-size: 13.5px; color: #888780; line-height: 1.5; }
+  /* Faixa de cima (receita e categoria) ocupando 100% da largura, colada no topo */
+  .rv-sangra {
+    margin-top: calc(-1 * (var(--pad-page-top, 1.5rem) + env(safe-area-inset-top, 0px)));
+    margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw);
+    width: 100vw; box-sizing: border-box;
+  }
+  @media (min-width: 768px) {
+    .rv-sangra { margin-top: -3rem; margin-left: -2rem; margin-right: -2rem; width: auto; }
+  }
   /* Receita aberta */
-  .rv-hero { position: relative; height: 190px; display: flex; align-items: center; justify-content: center; margin: 0 -2px; }
+  .rv-hero { position: relative; height: calc(230px + env(safe-area-inset-top, 0px)); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  @media (min-width: 768px) { .rv-hero { height: 300px; } }
   .rv-hero img { width: 100%; height: 100%; object-fit: cover; }
   .rv-voltar { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 12px); left: 12px; width: 36px; height: 36px; border-radius: 6px; border: none; background: rgba(255,255,255,.94); font-size: 24px; font-weight: 700; color: #2C1219; cursor: pointer; line-height: 1; }
   .rv-det { max-width: 760px; margin: 0 auto; padding: 14px 16px 30px; }
