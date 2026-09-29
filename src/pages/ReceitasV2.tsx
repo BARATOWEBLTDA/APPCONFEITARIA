@@ -39,7 +39,7 @@ const CORES: Record<string, [string, string]> = {
   amarelo: ["#FCF1CF", "#8A6A12"], rosa: ["#FCE7F3", "#9D174D"], morango: ["#FDE2E4", "#9F1239"],
   limao: ["#EEF6D8", "#4D6B12"], verde: ["#E3F4E8", "#166534"],
 };
-const COR_TEMA: Record<string, string> = { Recheios: "creme", Bolos: "rosa", Coberturas: "chocolate", "Doces finos": "cacau", Tortas: "limao", Salgados: "caramelo" };
+const COR_TEMA: Record<string, string> = { Recheios: "creme", Bolos: "rosa", Coberturas: "chocolate", "Doces finos": "cacau", Tortas: "limao", Salgados: "caramelo", Pudins: "caramelo" };
 const corDe = (r: Receita): [string, string] => CORES[r.cor || ""] || CORES[COR_TEMA[r.categoria || ""] || ""] || CORES.creme;
 
 // Desenhos de linha por tema (feitos aqui — sem imagem de terceiros)
@@ -50,6 +50,7 @@ const ICONES: Record<string, string> = {
   "Doces finos": "M14 26h20l-3 14H17zM12 26h24M24 26a8 8 0 0 1-8-8c0-4 4-8 8-8s8 4 8 8a8 8 0 0 1-8 8",
   Tortas: "M6 34L24 12l18 22zM6 34v6h36v-6M14 24l20 0",
   Salgados: "M24 8c-7 8-12 16-12 23a12 12 0 0 0 24 0c0-7-5-15-12-23zM16 34h16",
+  Pudins: "M13 38h22l-3.5-17h-15zM9 38h30M16.5 21c2-2.5 4.5-3.5 7.5-3.5s5.5 1 7.5 3.5M21 17.5v-3h6v3M18 27c2 1.5 4 1.5 6 0s4-1.5 6 0",
 };
 const Icone = ({ tema, size = 30 }: { tema?: string | null; size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
