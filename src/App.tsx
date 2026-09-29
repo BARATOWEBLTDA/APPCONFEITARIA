@@ -24,6 +24,7 @@ import Agenda from "@/pages/Agenda";
 import Insumos from "@/pages/Insumos";
 import Assinar from "@/pages/Assinar";
 import Receitas from "@/pages/Receitas";
+import ReceitasV2 from "@/pages/ReceitasV2";
 import Notificacoes from "@/pages/Notificacoes";
 import SolicitarRecurso from "@/pages/SolicitarRecurso";
 import AdminLogin from "@/pages/admin/AdminLogin";
@@ -216,7 +217,8 @@ export default function App() {
           <Route path="/noticias" element={<Noticias />} />
           <Route path="/noticias/:slug" element={<NoticiaDetalhe />} />
           <Route path="/assinar" element={<Assinar />} />
-          <Route path="/receitas" element={<Receitas />} />
+          <Route path="/receitas" element={<ReceitasV2 />} />
+          <Route path="/receitas-antigas" element={<Receitas />} />
           <Route path="/notificacoes" element={<Notificacoes />} />
           <Route path="/solicitar-recurso" element={<SolicitarRecurso />} />
           <Route path="/produtos" element={<Produtos />} />
