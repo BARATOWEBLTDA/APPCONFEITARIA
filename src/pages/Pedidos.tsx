@@ -1268,13 +1268,13 @@ function FiltroDrawer({ statusSelecionados, setStatusSelecionados, periodoFiltro
 
   // Contadores por status (só considera o filtro de status pra dar sensação viva)
   const countByStatus = TODOS_STATUS.reduce((acc, s) => {
-    acc[s.key] = pedidos.filter(p => p.status === s.key).length
+    acc[s.key] = pedidos.filter(p => getStatusGroup(p.status) === s.key).length
     return acc
   }, {} as Record<string, number>)
 
   // Preview: quantos pedidos vão aparecer com os filtros selecionados
   const previewCount = pedidos.filter(p => {
-    if (!localStatus.includes(p.status)) return false
+    if (!localStatus.includes(getStatusGroup(p.status))) return false
     if (localPeriodo === 'todos') return true
     if (!p.data_entrega) return localPeriodo === 'todos'
     const hoje = new Date(); hoje.setHours(0, 0, 0, 0)
@@ -1890,7 +1890,8 @@ export default function Pedidos() {
     const tipoVenda = p.tipo_venda || 'encomenda'
     if (tipoVenda !== abaAtiva) return false
 
-    const matchStatus = statusSelecionados.includes(p.status)
+    // Status antigos/do cardápio ('novo' etc.) contam como o grupo equivalente
+    const matchStatus = statusSelecionados.includes(getStatusGroup(p.status))
     const matchBusca = !busca ||
       p.cliente_nome?.toLowerCase().includes(busca.toLowerCase()) ||
       String(p.numero).includes(busca)

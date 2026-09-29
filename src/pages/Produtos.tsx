@@ -3482,12 +3482,17 @@ export default function Produtos() {
   const [wizardOpts, setWizardOpts] = useState({ complementos: false, personalizacao: false, promocao: false });
   const [form, setForm] = useState<Produto>(EMPTY);
 
-  // Auto-sync: se modo do tamanho é por_peso, forma_venda vira kg automaticamente
+  // Auto-sync: se modo do tamanho é por_peso, forma_venda vira kg automaticamente.
+  // E se ela trocar de volta pra "Preço fixo por opção", desfaz (antes o produto ficava "por kg" pra sempre)
+  const modoTamanhoAnterior = useRef<string | undefined>(undefined);
   useEffect(() => {
     const modo = form.grupo_tamanhos?.modo_preco_tamanho;
     if (modo === "por_peso" && form.forma_venda !== "kg") {
       setForm(f => ({ ...f, forma_venda: "kg" }));
+    } else if (modo !== "por_peso" && modoTamanhoAnterior.current === "por_peso" && form.forma_venda === "kg") {
+      setForm(f => ({ ...f, forma_venda: "unidade" }));
     }
+    modoTamanhoAnterior.current = modo;
   }, [form.grupo_tamanhos?.modo_preco_tamanho]);
 
   const [showDraftBanner, setShowDraftBanner] = useState(false);
