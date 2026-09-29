@@ -7,6 +7,7 @@ import { formatCurrency } from '@/utils/helpers'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { PerfilTab } from './PerfilTab'
 import { PedidosTab } from './PedidosTab'
+import HorarioSheet from '@/components/HorarioSheet'
 import { criarBreakdownV1, criarPersonalizacoesV1, SNAPSHOT_VERSION_ATUAL } from '@/lib/pedido-snapshot'
 
 interface CheckoutConfig {
@@ -97,6 +98,7 @@ function CartContent({
 }: any) {
   const [dataEntrega, setDataEntrega] = useState('')
   const [horaEntrega, setHoraEntrega] = useState('')
+  const [horaSheetAberto, setHoraSheetAberto] = useState(false)
   const [observacoes, setObservacoes] = useState('')
   const [cupomDigitado, setCupomDigitado] = useState('')
   const [cupomAplicado, setCupomAplicado] = useState<{ codigo: string; tipo: string; valor: number } | null>(null)
@@ -220,71 +222,75 @@ function CartContent({
     const storeName = localStorage.getItem('cardapio_nome') || 'Cardápio'
     const confeteiraUserId = localStorage.getItem('cardapio_user_id') || ''
 
-    const dataFormatada = dataEntrega.length === 10
-      ? dataEntrega // já está dd/mm/yyyy
-      : dataEntrega
-
-    let msg = `Olá! 👋\n\n`
-    msg += `🧁 *NOVO PEDIDO — ${storeName.toUpperCase()}*\n\n`
-    msg += `👤 *Nome:* ${nome}\n📞 *WhatsApp:* ${telefone}\n\n`
-    msg += `━━━━━━━━━━━━━━━━━\n🛒 *ITENS DO PEDIDO*\n━━━━━━━━━━━━━━━━━\n\n`
-
-    items.forEach((item: any, i: number) => {
-      const qty = item.saleType === 'kg' ? `${item.quantity}kg` : `${item.quantity} un`
-      msg += `*${i + 1}. ${item.name}*\n`
-      msg += `   Qtd: ${qty} × ${formatCurrency(item.price)} = *${formatCurrency(item.price * item.quantity)}*\n`
-
-      // V3: escolhas ricas (se existir)
-      const e = item.escolhas
-      if (e) {
-        if (e.tamanho?.nome) {
-          const peso = e.tamanho.peso_kg ? ` (~${e.tamanho.peso_kg}kg)` : ''
-          msg += `   📏 Tamanho: ${e.tamanho.nome}${peso}\n`
-        }
-        if (e.sabor?.nome) msg += `   🍨 Sabor: ${e.sabor.nome}\n`
-        if (e.massa?.nome) msg += `   🎂 Massa: ${e.massa.nome}\n`
-        if (e.recheios && e.recheios.length > 0) {
-          msg += `   🥄 Recheio${e.recheios.length > 1 ? 's' : ''}: ${e.recheios.map((r: any) => r.nome).join(', ')}\n`
-        }
-        if (e.cobertura?.nome) msg += `   ✨ Cobertura: ${e.cobertura.nome}\n`
-      } else {
-        // Legado
-        if (item.selectedMassa) msg += `   🎂 Massa: ${item.selectedMassa}\n`
-        if (item.selectedRecheio) msg += `   🥄 Recheio: ${item.selectedRecheio}\n`
-        if (item.selectedCobertura) msg += `   ✨ Cobertura: ${item.selectedCobertura}\n`
+    // ── Mensagem do WhatsApp (montada depois de salvar, pra levar o nº do pedido) ──
+    const montarMensagem = (numPedido: number) => {
+      const diaSemana = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado']
+      let quando = ''
+      if (dataEntrega) {
+        const d = new Date(dataEntrega + 'T12:00:00')
+        if (!isNaN(d.getTime())) quando = `${diaSemana[d.getDay()]}, ${d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}`
       }
-      msg += `\n`
-    })
+      if (horaEntrega) quando += quando ? ` às ${horaEntrega}` : `às ${horaEntrega}`
 
-    msg += `━━━━━━━━━━━━━━━━━\n`
-    if (config.aceita_agendamento && dataEntrega) {
-      msg += `📅 *Data:* ${dataFormatada}\n`
-      msg += `🕒 *Horário:* ${horaEntrega}\n\n`
+      let m = `Oi, *${storeName}*! Acabei de fazer um pedido pelo cardápio 🧁\n\n`
+      if (numPedido) m += `*PEDIDO #${numPedido}*\n\n`
+
+      items.forEach((item: any) => {
+        const qtd = item.saleType === 'kg' ? `${item.quantity} kg` : `${item.quantity}×`
+        m += `*${qtd} ${item.name}* — ${formatCurrency(item.price * item.quantity)}\n`
+        const detalhes: string[] = []
+        const e = item.escolhas
+        if (e) {
+          if (e.tamanho?.nome) detalhes.push(`Tamanho ${e.tamanho.nome}${e.tamanho.peso_kg ? ` (~${String(e.tamanho.peso_kg).replace('.', ',')} kg)` : ''}`)
+          if (e.sabor?.nome) detalhes.push(`Sabor ${e.sabor.nome}`)
+          if (e.massa?.nome) detalhes.push(`Massa ${e.massa.nome}`)
+          if (e.recheios?.length) {
+            const nomes = e.recheios.map((r: any) => r.nome)
+            const lista = nomes.length > 1 ? nomes.slice(0, -1).join(', ') + ' e ' + nomes[nomes.length - 1] : nomes[0]
+            detalhes.push(`Recheio${nomes.length > 1 ? 's' : ''}: ${lista}`)
+          }
+          if (e.cobertura?.nome) detalhes.push(`Cobertura ${e.cobertura.nome}`)
+        } else {
+          if (item.selectedMassa) detalhes.push(`Massa ${item.selectedMassa}`)
+          if (item.selectedRecheio) detalhes.push(`Recheio: ${item.selectedRecheio}`)
+          if (item.selectedCobertura) detalhes.push(`Cobertura ${item.selectedCobertura}`)
+        }
+        if (detalhes.length) m += `_${detalhes.join(' · ')}_\n`
+        // Adicionais cadastrados pela confeiteira (topo de bolo, vela...)
+        if (Array.isArray(item.extrasBiblioteca) && item.extrasBiblioteca.length) {
+          m += `Adicionais: ${item.extrasBiblioteca.map((x: any) => x.valor > 0 ? `${x.nome} (+${formatCurrency(x.valor)})` : x.nome).join(', ')}\n`
+        }
+        if (item.observations) m += `Obs.: ${item.observations}\n`
+        if (item.fotoReferencia) m += `Foto de referência: ${item.fotoReferencia}\n`
+        m += `\n`
+      })
+
+      m += `Subtotal: ${formatCurrency(totalPrice)}\n`
+      if (freteValor > 0) m += `Entrega: ${formatCurrency(freteValor)}\n`
+      if (desconto > 0) m += `${cupomAplicado ? `Cupom ${cupomAplicado.codigo}` : 'Desconto'}: − ${formatCurrency(desconto)}\n`
+      m += `*Total: ${formatCurrency(totalFinal)}*\n\n`
+
+      const pgtoLabel = LABEL_PAGAMENTO[formaPagamento]?.label || formaPagamento
+      m += `*Pagamento:* ${pgtoLabel}`
+      if (formaPagamento === 'dinheiro' && trocoParaStr) m += ` (troco pra R$ ${trocoParaStr})`
+      m += `\n\n`
+
+      if (formaEntrega === 'retirada') {
+        m += `*Retirada:* ${quando || 'a combinar'}\n`
+      } else if (formaEntrega === 'entrega_propria') {
+        m += `*Entrega:* ${quando || 'a combinar'}\n`
+        if (rua) m += `${rua}${numero ? ', ' + numero : ''}${complemento ? ' · ' + complemento : ''}\n`
+        if (bairro || cidade || cep) m += `${[bairro, cidade].filter(Boolean).join(', ')}${cep ? ` · CEP ${cep}` : ''}\n`
+      } else {
+        m += `*Entrega:* ${LABEL_ENTREGA[formaEntrega]?.label || formaEntrega}${quando ? ` · ${quando}` : ''}\n`
+      }
+
+      if (observacoes.trim()) m += `\n*Observação:* ${observacoes.trim()}\n`
+      m += `\n*Cliente:* ${nome.trim()} · ${telefone.trim()}`
+      return m
     }
-    if (observacoes.trim()) msg += `📝 *Observações:* ${observacoes}\n\n`
-    if (cupomAplicado) msg += `🏷️ *Cupom:* ${cupomAplicado.codigo} (${cupomAplicado.tipo === 'percentual' ? `-${cupomAplicado.valor}%` : `-${formatCurrency(cupomAplicado.valor)}`})\n\n`
-
-    const entregaLabel = LABEL_ENTREGA[formaEntrega]?.label || formaEntrega
-    msg += `🚚 *Entrega:* ${entregaLabel}\n`
-    if (formaEntrega === 'entrega_propria') {
-      if (rua) msg += `   📍 ${rua}${numero ? ', '+numero : ''}${complemento ? ' - '+complemento : ''}\n`
-      if (bairro) msg += `   🏘️ ${bairro}${cidade ? ' - '+cidade : ''}\n`
-      if (cep) msg += `   📮 CEP: ${cep}\n`
-    }
-
-    const pgtoLabel = LABEL_PAGAMENTO[formaPagamento]?.label || formaPagamento
-    msg += `💳 *Pagamento:* ${pgtoLabel}\n`
-    if (formaPagamento === 'dinheiro' && trocoParaStr) msg += `   💰 Troco para: R$ ${trocoParaStr}\n`
-
-    msg += `\n━━━━━━━━━━━━━━━━━\n`
-    msg += `🛒 Subtotal: ${formatCurrency(totalPrice)}\n`
-    if (desconto > 0) msg += `🏷️ Desconto: -${formatCurrency(desconto)}\n`
-    if (freteValor > 0) msg += `🚚 Frete: ${formatCurrency(freteValor)}\n`
-    else if (formaEntrega) msg += `🚚 Frete: Grátis\n`
-    msg += `\n✅ *TOTAL: ${formatCurrency(totalFinal)}*`
 
     const num = whatsapp.replace(/\D/g, '')
-    const whatsappUrl = `https://wa.me/55${num}?text=${encodeURIComponent(msg)}`
 
     // Resumo para tela de sucesso (mantém referência aos itens originais)
 
@@ -378,11 +384,21 @@ function CartContent({
                   ? item.precoBreakdown
                   : criarBreakdownV1({ final: item.price })
 
+                // Adicionais (topo, vela...) e foto de referência também vão pro pedido
+                const temExtras = Array.isArray(item.extrasBiblioteca) && item.extrasBiblioteca.length > 0
+                const personalizacoesFinal = (temExtras || item.fotoReferencia)
+                  ? {
+                      ...(personalizacoes || {}),
+                      ...(temExtras ? { extras: item.extrasBiblioteca.map((x: any) => ({ nome: x.nome, valor: Number(x.valor) || 0 })) } : {}),
+                      ...(item.fotoReferencia ? { foto_referencia: item.fotoReferencia } : {}),
+                    }
+                  : personalizacoes
+
                 return {
                   pedido_id: pedidoSalvo.id, user_id: confeteiraUserId, produto_id: item.id,
                   nome_produto: item.name, quantidade: item.quantity, valor_unitario: item.price,
                   desconto: 0, observacoes: item.observations || null,
-                  personalizacoes,
+                  personalizacoes: personalizacoesFinal,
                   preco_breakdown: breakdown,
                   snapshot_version: SNAPSHOT_VERSION_ATUAL,
                 }
@@ -402,6 +418,7 @@ function CartContent({
     clearCart()
     setStep('cart')
     // Mostra tela de sucesso em vez de fechar
+    const whatsappUrl = `https://wa.me/55${num}?text=${encodeURIComponent(montarMensagem(numeroPedido))}`
     setPedidoConfirmado({ numero: numeroPedido, itens: items, whatsapp: whatsappUrl, storeName })
   }
 
@@ -613,11 +630,20 @@ function CartContent({
                   </div>
                   <div>
                     <label style={{fontSize:'12px',fontWeight:600,color:'#717171',display:'block',marginBottom:'6px'}}>Horário</label>
-                    <label style={{position:'relative',display:'flex',alignItems:'center',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color: horaEntrega ? '#3e3e3e' : '#a0a0a0',background:'#fff',cursor:'pointer',boxSizing:'border-box',fontFamily:'inherit'}}>
+                    {/* Mesmo seletor que sobe de baixo pra cima do app da confeiteira */}
+                    <button type="button" onClick={() => setHoraSheetAberto(true)}
+                      style={{width:'100%',display:'flex',alignItems:'center',gap:'8px',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color: horaEntrega ? '#3e3e3e' : '#a0a0a0',background:'#fff',cursor:'pointer',boxSizing:'border-box',fontFamily:'inherit',textAlign:'left'}}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true" style={{flexShrink:0}}><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
                       {horaEntrega || 'Definir hora'}
-                      <input type="time" value={horaEntrega} onChange={e => setHoraEntrega(e.target.value)}
-                        style={{position:'absolute',opacity:0,inset:0,width:'100%',height:'100%',cursor:'pointer',fontSize:'16px'}} />
-                    </label>
+                    </button>
+                    {horaSheetAberto && (
+                      <HorarioSheet
+                        titulo="Horário"
+                        value={horaEntrega}
+                        onChange={(v) => setHoraEntrega(v)}
+                        onClose={() => setHoraSheetAberto(false)}
+                      />
+                    )}
                   </div>
                 </div>
               </div>

@@ -369,6 +369,8 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido, onAcaoRapida, onMen
     if (massa) extras.push(`Massa: ${massa}`)
     if (recheios) extras.push(`Recheio: ${recheios}`)
     if (cobertura) extras.push(`Cobertura: ${cobertura}`)
+    if (Array.isArray(p.extras) && p.extras.length) extras.push(`Adicionais: ${p.extras.map((x: any) => x.nome).join(', ')}`)
+    if (p.foto_referencia) extras.push('Com foto de referência')
     if (item.observacoes) extras.push(item.observacoes)
   })
 
@@ -1154,6 +1156,14 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
                             {massa && <p className="mp-item-extra">Massa: {massa}</p>}
                             {recheios && <p className="mp-item-extra">Recheio: {recheios}</p>}
                             {cobertura && <p className="mp-item-extra">Cobertura: {cobertura}</p>}
+                            {Array.isArray(p.extras) && p.extras.length > 0 && (
+                              <p className="mp-item-extra">Adicionais: {p.extras.map((x: any) => x.valor > 0 ? `${x.nome} (+${formatMoney(x.valor)})` : x.nome).join(', ')}</p>
+                            )}
+                            {p.foto_referencia && (
+                              <p className="mp-item-extra">
+                                <a href={p.foto_referencia} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', fontWeight: 700 }}>Ver foto de referência</a>
+                              </p>
+                            )}
                           </>
                         )
                       })()}
