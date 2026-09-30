@@ -62,7 +62,6 @@ export function BoloOpcoesStep({ form, setForm }: { form: any; setForm: (fn: (f:
 
       {TIPOS_OPCAO.map(t => {
         const g = grupo(t.key);
-        const sugestoes = t.sug.filter(s => !g.opcoes.some(o => o.nome.toLowerCase() === s.toLowerCase()));
         return (
           <div key={t.key} className={`bw-opt${g.ativo ? " on" : ""}`}>
             <button type="button" className="bw-opt-h" onClick={() => alternar(t.key)} aria-pressed={g.ativo}>
@@ -100,9 +99,6 @@ export function BoloOpcoesStep({ form, setForm }: { form: any; setForm: (fn: (f:
                     onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); adicionar(t.key, texto[t.key] || ""); } }} aria-label={`Nova opção de ${t.titulo.toLowerCase()}`} />
                   <button type="button" onClick={() => adicionar(t.key, texto[t.key] || "")} disabled={!(texto[t.key] || "").trim()}>Adicionar</button>
                 </div>
-                {sugestoes.length > 0 && (
-                  <div className="bw-sug">{sugestoes.slice(0, 6).map(s => <button type="button" key={s} onClick={() => adicionar(t.key, s)}>+ {s}</button>)}</div>
-                )}
                 {t.key === "grupo_recheios" && (
                   <div className="bw-frase">
                     O cliente escolhe até
