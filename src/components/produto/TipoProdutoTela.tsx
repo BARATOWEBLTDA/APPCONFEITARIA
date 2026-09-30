@@ -8,9 +8,9 @@ export type TipoProduto = "bolos" | "doces" | "salgados" | "sobremesas" | "kitfe
 
 export const TIPOS: { id: TipoProduto; img?: string; emoji: string; titulo: string; sub: string; dica: string; bg: [string, string]; cor: string }[] = [
   { id: "bolos", img: "/Sistema/bolocard.png", emoji: "🎂", titulo: "Bolos", sub: "Tamanhos, massas e recheios", dica: "a categoria Bolos já vem marcada e o cadastro sugere tamanhos, massas e recheios", bg: ["#FCE7F3", "#F9D1E0"], cor: "#9D174D" },
-  { id: "doces", emoji: "🍬", titulo: "Doces", sub: "Docinhos em kit ou por unidade", dica: "o cadastro já abre o kit de docinhos (50 e 100 unidades, até 2 sabores). Se vender por unidade, é só desligar o kit", bg: ["#FEF3C7", "#FDE68A"], cor: "#92400E" },
-  { id: "salgados", emoji: "🥟", titulo: "Salgados", sub: "Cento, kits e atacado", dica: "o cadastro já abre o kit de salgados (de 100 a 4.000, preço do cento)", bg: ["#FFEDD5", "#FED7AA"], cor: "#9A3412" },
-  { id: "sobremesas", emoji: "🍮", titulo: "Sobremesas", sub: "Potes, fatias, tortas", dica: "a categoria Sobremesas já vem marcada, pra um produto simples (pote, fatia, unidade)", bg: ["#E0E7FF", "#C7D2FE"], cor: "#3730A3" },
+  { id: "doces", img: "/Sistema/brigadeiro.jpeg", emoji: "🍬", titulo: "Doces", sub: "Docinhos em kit ou por unidade", dica: "o cadastro já abre o kit de docinhos (50 e 100 unidades, até 2 sabores). Se vender por unidade, é só desligar o kit", bg: ["#FEF3C7", "#FDE68A"], cor: "#92400E" },
+  { id: "salgados", img: "/Sistema/salgados.png", emoji: "🥟", titulo: "Salgados", sub: "Cento, kits e atacado", dica: "o cadastro já abre o kit de salgados (de 100 a 4.000, preço do cento)", bg: ["#FFEDD5", "#FED7AA"], cor: "#9A3412" },
+  { id: "sobremesas", img: "/Sistema/pudim.webp", emoji: "🍮", titulo: "Sobremesas", sub: "Potes, fatias, tortas", dica: "a categoria Sobremesas já vem marcada, pra um produto simples (pote, fatia, unidade)", bg: ["#E0E7FF", "#C7D2FE"], cor: "#3730A3" },
   { id: "kitfesta", img: "/Sistema/kitfesta.webp", emoji: "🎉", titulo: "Kit festa", sub: "Combos: bolo + salgados + doces", dica: "o cadastro já vem com os tamanhos do combo (20, 40, 60 pessoas…), cada um com seu preço. Conte o que vem em cada um na descrição", bg: ["#DCFCE7", "#BBF7D0"], cor: "#166534" },
   { id: "outros", emoji: "✏️", titulo: "Outros", sub: "Monte do seu jeito", dica: "o cadastro começa em branco, do seu jeito", bg: ["#F5F0F2", "#E9E1E5"], cor: "#4B3A42" },
 ];
