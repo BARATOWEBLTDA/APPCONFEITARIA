@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import DooInfoModal from "@/components/DooInfoModal";
 
 /**
@@ -89,8 +90,8 @@ export function BoloOpcoesStep({ form, setForm }: { form: any; setForm: (fn: (f:
                   return (
                     <div className="bw-extra">
                       <span><b>{o.nome}</b> cobra a mais?</span>
-                      <label className="bw-rs">R$ <input inputMode="decimal" autoFocus defaultValue={moeda(o.adicional)} placeholder="0,00"
-                        onChange={e => setGrupo(t.key, { opcoes: g.opcoes.map(x => x.id === o.id ? { ...x, adicional: num(e.target.value), tipo_adicional: "fixo" } : x) })} /></label>
+                      <label className="bw-rs">R$ <MoneyInput autoFocus value={o.adicional} ariaLabel={`Quanto ${o.nome} custa a mais`}
+                        onChange={v => setGrupo(t.key, { opcoes: g.opcoes.map(x => x.id === o.id ? { ...x, adicional: v, tipo_adicional: "fixo" } : x) })} /></label>
                       <button type="button" onClick={() => setEditando(null)}>Pronto</button>
                     </div>
                   );
@@ -122,6 +123,18 @@ export function BoloOpcoesStep({ form, setForm }: { form: any; setForm: (fn: (f:
   );
 }
 
+// ═══════════════════ Campo de dinheiro (formata enquanto digita) ═══════════════════
+/** Digita só números: 1 → 0,01 · 125000 → 1.250,00 */
+export function MoneyInput({ value, onChange, className, ariaLabel, autoFocus }: {
+  value: number; onChange: (v: number) => void; className?: string; ariaLabel?: string; autoFocus?: boolean;
+}) {
+  const txt = value > 0 ? value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "";
+  return (
+    <input className={className} inputMode="numeric" value={txt} placeholder="0,00" aria-label={ariaLabel} autoFocus={autoFocus}
+      onChange={e => { const d = e.target.value.replace(/\D/g, "").slice(0, 9); onChange(d ? parseInt(d, 10) / 100 : 0); }} />
+  );
+}
+
 // ═══════════════════ Etapa 3 · Tamanhos e preço ═══════════════════
 export type BoloTam = "sim" | "nao" | null;
 
@@ -135,36 +148,53 @@ export function boloTamanhosOk(form: any, escolha: BoloTam): boolean {
   return linhas.every(o => o.preco > 0);
 }
 
+const VENDA = [
+  { v: "unidade", t: "Unidade", suf: "unidade" },
+  { v: "kg", t: "Por kg", suf: "kg" },
+  { v: "fatia", t: "Fatia", suf: "fatia" },
+];
+
 export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, primeiroNome }: {
   form: any; setForm: (fn: (f: any) => any) => void; escolha: BoloTam; setEscolha: (e: BoloTam) => void; primeiroNome?: string;
 }) {
   const [infoBase, setInfoBase] = useState(false);
-  // Gerador de tamanhos por kg (modo "Calcular pelo peso")
+  const [gerarAberto, setGerarAberto] = useState(false);
+  const [gModo, setGModo] = useState<"pmg" | "peso">("pmg");
   const [gDe, setGDe] = useState("1");
   const [gAte, setGAte] = useState("3");
   const [gPasso, setGPasso] = useState(0.5);
+
   const gt = { ...GRUPO_VAZIO, modo_preco_tamanho: "preco_fixo", nome_exibicao: "Tamanhos e Pesos", ...(form.grupo_tamanhos || {}) } as any;
   const tams: Tam[] = gt.opcoes || [];
   const porPeso = gt.modo_preco_tamanho === "por_peso";
+  const fatias = gt.rendimento_unidade === "fatias";
+  const [mostrarServe, setMostrarServe] = useState(() => tams.some(t => t.serve));
   const setGt = (patch: any) => setForm((f: any) => ({ ...f, grupo_tamanhos: { ...GRUPO_VAZIO, modo_preco_tamanho: "preco_fixo", nome_exibicao: "Tamanhos e Pesos", ...(f.grupo_tamanhos || {}), ...patch } }));
   const setTam = (id: string, patch: Partial<Tam>) => setGt({ opcoes: tams.map(t => t.id === id ? { ...t, ...patch } : t) });
+  const linhaVazia = (): Tam => ({ id: uid(), nome: "", preco: 0, peso_kg: null, serve: "" });
+
+  // Ao sair da etapa, tira as linhas que ficaram sem nome
+  useEffect(() => () => {
+    setForm((f: any) => {
+      const g = f.grupo_tamanhos; if (!g?.opcoes?.length) return f;
+      const limpas = g.opcoes.filter((o: Tam) => o.nome?.trim());
+      return limpas.length === g.opcoes.length ? f : { ...f, grupo_tamanhos: { ...g, opcoes: limpas } };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const escolher = (e: "sim" | "nao") => {
     setEscolha(e);
     if (e === "sim") {
-      setForm((f: any) => ({ ...f, forma_venda: "unidade", grupo_tamanhos: { ...GRUPO_VAZIO, modo_preco_tamanho: "preco_fixo", nome_exibicao: "Tamanhos e Pesos", ...(f.grupo_tamanhos || {}), ativo: true, min: 1, max: 1 } }));
+      setForm((f: any) => {
+        const g = { ...GRUPO_VAZIO, modo_preco_tamanho: "preco_fixo", nome_exibicao: "Tamanhos e Pesos", ...(f.grupo_tamanhos || {}) };
+        return { ...f, forma_venda: "unidade", grupo_tamanhos: { ...g, ativo: true, min: 1, max: 1, opcoes: g.opcoes?.length ? g.opcoes : [linhaVazia()] } };
+      });
     } else {
-      setForm((f: any) => ({ ...f, forma_venda: "unidade", grupo_tamanhos: { ...GRUPO_VAZIO, ...(f.grupo_tamanhos || {}), ativo: false } }));
+      setForm((f: any) => ({ ...f, forma_venda: VENDA.some(x => x.v === f.forma_venda) ? f.forma_venda : "unidade", grupo_tamanhos: { ...GRUPO_VAZIO, ...(f.grupo_tamanhos || {}), ativo: false } }));
     }
   };
-  const usarPMG = () => setGt({
-    opcoes: [
-      { id: uid(), nome: "P", preco: 0, peso_kg: 1, serve: "10" },
-      { id: uid(), nome: "M", preco: 0, peso_kg: 1.5, serve: "20" },
-      { id: uid(), nome: "G", preco: 0, peso_kg: 2, serve: "30" },
-    ],
-  });
-  const fatias = gt.rendimento_unidade === "fatias";
+
   const kgTxt = (v: number) => `${String(Math.round(v * 100) / 100).replace(".", ",")} kg`;
   const pesosGerados = (() => {
     const de = numKg(gDe), ate = numKg(gAte);
@@ -173,9 +203,14 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, primeiroN
     for (let v = de; v <= ate + 1e-9 && out.length < 20; v += gPasso) out.push(Math.round(v * 100) / 100);
     return out;
   })();
-  const gerarPorKg = () => setGt({ opcoes: pesosGerados.map(p => ({ id: uid(), nome: kgTxt(p), preco: 0, peso_kg: p, serve: "" })) });
+  const gerados: Tam[] = gModo === "pmg"
+    ? [{ id: uid(), nome: "P", preco: 0, peso_kg: 1, serve: "" }, { id: uid(), nome: "M", preco: 0, peso_kg: 1.5, serve: "" }, { id: uid(), nome: "G", preco: 0, peso_kg: 2, serve: "" }]
+    : pesosGerados.map(p => ({ id: uid(), nome: kgTxt(p), preco: 0, peso_kg: p, serve: "" }));
+  const temNomes = tams.some(t => t.nome.trim());
   const precoBase = form.preco_normal || 0;
   const exBase = precoBase > 0 ? precoBase : 80;
+  const suf = VENDA.find(x => x.v === form.forma_venda)?.suf || "unidade";
+  const cols = mostrarServe ? "bw-tam--serve" : "";
 
   return (
     <div className="bw">
@@ -191,97 +226,127 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, primeiroN
         </button>
       </div>
 
+      {escolha === "nao" && (
+        <div className="bw-box">
+          <p className="bw-bt">Como você vende esse bolo?</p>
+          <div className="bw-seg3" role="radiogroup">
+            {VENDA.map(x => (
+              <button key={x.v} type="button" role="radio" aria-checked={form.forma_venda === x.v} className={form.forma_venda === x.v ? "on" : ""}
+                onClick={() => setForm((f: any) => ({ ...f, forma_venda: x.v }))}>{x.t}</button>
+            ))}
+          </div>
+          <p className="bw-bt bw-bt--mt">Qual o preço?</p>
+          <label className="bw-money">
+            <span>R$</span>
+            <MoneyInput value={form.preco_normal || 0} onChange={v => setForm((f: any) => ({ ...f, preco_normal: v }))} ariaLabel="Preço do bolo" />
+            <em>/ {suf}</em>
+          </label>
+          <p className="bw-hint">Digite só os números — a vírgula e o ponto aparecem sozinhos.</p>
+        </div>
+      )}
+
       {escolha === "sim" && (
         <>
-          <p className="bw-lb">Como é o preço?</p>
-          <div className="bw-modos" role="radiogroup">
-            <button type="button" role="radio" aria-checked={!porPeso} className={!porPeso ? "on" : ""} onClick={() => setGt({ modo_preco_tamanho: "preco_fixo" })}>
-              <i aria-hidden="true" /><span><b>Cada tamanho tem seu preço</b><small>Você digita o preço de cada um</small></span>
-            </button>
-            <button type="button" role="radio" aria-checked={porPeso} className={porPeso ? "on" : ""} onClick={() => setGt({ modo_preco_tamanho: "por_peso" })}>
-              <i aria-hidden="true" /><span><b>Calcular pelo peso</b><small>Você diz o preço do kg e o app calcula</small></span>
-            </button>
-          </div>
-
-          {porPeso && (
-            <div className="bw-kg">
-              <span className="bw-kg-t">Preço base
-                <button type="button" className="bw-i" onClick={() => setInfoBase(true)} aria-label="O que é o preço base?">i</button>
-                <small>por kg</small>
-              </span>
-              <label className="bw-rs bw-rs--lg">R$ <input inputMode="decimal" defaultValue={moeda(form.preco_normal || 0)} placeholder="0,00"
-                onChange={e => setForm((f: any) => ({ ...f, preco_normal: num(e.target.value) }))} aria-label="Preço do kg" /></label>
-            </div>
-          )}
-
-          <div className="bw-tams-h">
-            <p className="bw-lb">Tamanhos</p>
-            <div className="bw-rend" role="radiogroup" aria-label="Mostrar rendimento em">
-              <span>Rendimento em</span>
-              <button type="button" role="radio" aria-checked={!fatias} className={!fatias ? "on" : ""} onClick={() => setGt({ rendimento_unidade: "pessoas" })}>pessoas</button>
-              <button type="button" role="radio" aria-checked={fatias} className={fatias ? "on" : ""} onClick={() => setGt({ rendimento_unidade: "fatias" })}>fatias</button>
-            </div>
-          </div>
-          {tams.length === 0 ? (
-            porPeso ? (
-              <div className="bw-gerar">
-                <b>Gerar tamanhos por kg</b>
-                <div className="bw-frase bw-frase--gerar">De
-                  <label className="bw-in bw-suf bw-in--curto"><input inputMode="decimal" value={gDe} onChange={e => setGDe(e.target.value)} aria-label="Peso inicial" /><em>kg</em></label>
-                  até
-                  <label className="bw-in bw-suf bw-in--curto"><input inputMode="decimal" value={gAte} onChange={e => setGAte(e.target.value)} aria-label="Peso final" /><em>kg</em></label>
-                  de
-                  <span className="bw-passos">
-                    {[0.5, 1].map(p => <button type="button" key={p} className={gPasso === p ? "on" : ""} onClick={() => setGPasso(p)}>{p === 0.5 ? "0,5" : "1"} em {p === 0.5 ? "0,5" : "1"}</button>)}
-                  </span>
-                </div>
-                {pesosGerados.length > 0 && (
-                  <div className="bw-prev">
-                    {pesosGerados.map(p => <span key={p}>{kgTxt(p)} <b>{precoBase > 0 ? brl(precoBase * p) : "—"}</b></span>)}
-                  </div>
-                )}
-                <button type="button" className="bw-gerar-bt" disabled={!pesosGerados.length} onClick={gerarPorKg}>
-                  Gerar {pesosGerados.length || ""} {pesosGerados.length === 1 ? "tamanho" : "tamanhos"}
-                </button>
-              </div>
-            ) : (
-              <button type="button" className="bw-pmg" onClick={usarPMG}>
-                <b>Começar com P, M e G</b><small>1 kg · 1,5 kg · 2 kg — dá pra mudar tudo</small>
+          <div className="bw-box">
+            <p className="bw-bt">Como é o preço?</p>
+            <div className="bw-modos" role="radiogroup">
+              <button type="button" role="radio" aria-checked={!porPeso} className={!porPeso ? "on" : ""} onClick={() => setGt({ modo_preco_tamanho: "preco_fixo" })}>
+                <i aria-hidden="true" /><span><b>Cada tamanho tem seu preço</b><small>Você digita o preço de cada um</small></span>
               </button>
-            )
-          ) : (
-            <div className="bw-tams">
-              <div className="bw-tam bw-tam--h" aria-hidden="true"><span>Nome</span><span>Peso</span><span>{fatias ? "Rende" : "Serve"}</span><span>{porPeso ? "Fica" : "Preço"}</span><span /></div>
+              <button type="button" role="radio" aria-checked={porPeso} className={porPeso ? "on" : ""} onClick={() => setGt({ modo_preco_tamanho: "por_peso" })}>
+                <i aria-hidden="true" /><span><b>Calcular pelo peso</b><small>Você diz o preço do kg e o app calcula</small></span>
+              </button>
+            </div>
+            {porPeso && (
+              <div className="bw-kg">
+                <span className="bw-kg-t">Preço base
+                  <button type="button" className="bw-i" onClick={() => setInfoBase(true)} aria-label="O que é o preço base?">i</button>
+                  <small>por kg</small>
+                </span>
+                <label className="bw-money bw-money--sm"><span>R$</span>
+                  <MoneyInput value={precoBase} onChange={v => setForm((f: any) => ({ ...f, preco_normal: v }))} ariaLabel="Preço base por kg" />
+                </label>
+              </div>
+            )}
+          </div>
+
+          <div className="bw-box">
+            <div className="bw-bh">
+              <p className="bw-bt">Tamanhos</p>
+              <button type="button" className="bw-gerar-pill" onClick={() => { setGModo(porPeso ? "peso" : "pmg"); setGerarAberto(true); }}>⚡ Gerar automático</button>
+            </div>
+            <div className={`bw-tabela ${cols}`}>
+              <div className="bw-tam bw-tam--h" aria-hidden="true">
+                <span>Nome</span><span>Peso</span>
+                {mostrarServe && (
+                  <button type="button" className="bw-col-sel" onClick={() => setGt({ rendimento_unidade: fatias ? "pessoas" : "fatias" })} title="Trocar entre pessoas e fatias">
+                    {fatias ? "Fatias" : "Serve"} ▾
+                  </button>
+                )}
+                <span>{porPeso ? "Fica" : "Preço"}</span><span />
+              </div>
               {tams.map(t => (
                 <div className="bw-tam" key={t.id}>
-                  <input className="bw-in bw-in--nome" value={t.nome} placeholder="P" onChange={e => setTam(t.id, { nome: e.target.value })} aria-label="Nome do tamanho" />
+                  <input className="bw-in bw-in--nome" value={t.nome} placeholder={porPeso ? "1 kg" : "P"} onChange={e => setTam(t.id, { nome: e.target.value })} aria-label="Nome do tamanho" />
                   <label className="bw-in bw-suf"><input inputMode="decimal" defaultValue={t.peso_kg ? String(t.peso_kg).replace(".", ",") : ""} placeholder="1,5"
                     onChange={e => setTam(t.id, { peso_kg: numKg(e.target.value) || null })} aria-label="Peso em kg" /><em>kg</em></label>
-                  <label className="bw-in bw-suf"><input inputMode="numeric" value={t.serve || ""} placeholder="20"
-                    onChange={e => setTam(t.id, { serve: e.target.value.replace(/\D/g, "") })} aria-label={fatias ? "Rende quantas fatias" : "Serve quantas pessoas"} /><em>{fatias ? "fatias" : "pessoas"}</em></label>
+                  {mostrarServe && (
+                    <label className="bw-in bw-suf"><input inputMode="numeric" value={t.serve || ""} placeholder="20"
+                      onChange={e => setTam(t.id, { serve: e.target.value.replace(/\D/g, "") })} aria-label={fatias ? "Quantas fatias" : "Serve quantas pessoas"} /><em>{fatias ? "fatias" : "pess."}</em></label>
+                  )}
                   {porPeso ? (
-                    <span className="bw-calc">{(form.preco_normal || 0) > 0 && (t.peso_kg || 0) > 0 ? brl((form.preco_normal || 0) * (t.peso_kg || 0)) : "—"}</span>
+                    <span className="bw-calc">{precoBase > 0 && (t.peso_kg || 0) > 0 ? brl(precoBase * (t.peso_kg || 0)) : "—"}</span>
                   ) : (
-                    <label className={`bw-rs${t.preco > 0 ? " ok" : ""}`}>R$ <input inputMode="decimal" defaultValue={moeda(t.preco)} placeholder="0,00"
-                      onChange={e => setTam(t.id, { preco: num(e.target.value) })} aria-label={`Preço do tamanho ${t.nome}`} /></label>
+                    <label className={`bw-rs${t.preco > 0 ? " ok" : ""}`}>R$
+                      <MoneyInput value={t.preco} onChange={v => setTam(t.id, { preco: v })} ariaLabel={`Preço do tamanho ${t.nome || "novo"}`} />
+                    </label>
                   )}
                   <button type="button" className="bw-x" onClick={() => setGt({ opcoes: tams.filter(x => x.id !== t.id) })} aria-label="Remover tamanho">✕</button>
                 </div>
               ))}
-              <button type="button" className="bw-link" onClick={() => setGt({ opcoes: [...tams, { id: uid(), nome: "", preco: 0, peso_kg: null, serve: "" }] })}>+ Outro tamanho</button>
             </div>
-          )}
-
+            <button type="button" className="bw-link" onClick={() => setGt({ opcoes: [...tams, linhaVazia()] })}>+ Adicionar tamanho</button>
+            <button type="button" className="bw-link bw-link--sec" onClick={() => setMostrarServe(v => !v)}>
+              {mostrarServe ? "Esconder quantas pessoas serve" : "+ Mostrar quantas pessoas cada tamanho serve"} <small>(opcional)</small>
+            </button>
+          </div>
         </>
       )}
 
-      {escolha === "nao" && (
-        <>
-          <p className="bw-lb">Qual o preço do bolo?</p>
-          <label className="bw-rs bw-rs--xl">R$ <input inputMode="decimal" defaultValue={moeda(form.preco_normal || 0)} placeholder="0,00" autoFocus
-            onChange={e => setForm((f: any) => ({ ...f, preco_normal: num(e.target.value) }))} aria-label="Preço do bolo" /></label>
-        </>
-      )}
+      {/* ⚡ Gerar automático — abre por baixo */}
+      {gerarAberto && createPortal(
+        <div className="bw-sheet-bg" onClick={() => setGerarAberto(false)}>
+          <div className="bw-sheet" onClick={e => e.stopPropagation()} role="dialog" aria-label="Gerar tamanhos">
+            <div className="bw-grab" aria-hidden="true" />
+            <div className="bw-sheet-h"><b>⚡ Gerar tamanhos</b><button type="button" onClick={() => setGerarAberto(false)} aria-label="Fechar">✕</button></div>
+            <p className="bw-hint bw-hint--top">Escolha um jeito rápido de começar. Depois dá pra editar tudo.</p>
+            <button type="button" className={`bw-gopt${gModo === "pmg" ? " on" : ""}`} onClick={() => setGModo("pmg")}>
+              <i aria-hidden="true" /><span><b>P, M e G</b><small>1 kg · 1,5 kg · 2 kg</small></span>
+            </button>
+            <div className={`bw-gopt${gModo === "peso" ? " on" : ""}`} onClick={() => setGModo("peso")} role="button" tabIndex={0}>
+              <i aria-hidden="true" />
+              <span><b>Por peso</b>
+                <span className="bw-frase bw-frase--gerar">De
+                  <label className="bw-in bw-suf bw-in--curto"><input inputMode="decimal" value={gDe} onChange={e => setGDe(e.target.value)} onFocus={() => setGModo("peso")} aria-label="Peso inicial" /><em>kg</em></label>
+                  até
+                  <label className="bw-in bw-suf bw-in--curto"><input inputMode="decimal" value={gAte} onChange={e => setGAte(e.target.value)} onFocus={() => setGModo("peso")} aria-label="Peso final" /><em>kg</em></label>
+                </span>
+                <span className="bw-passos">
+                  {[0.5, 1].map(p => <button type="button" key={p} className={gPasso === p ? "on" : ""} onClick={() => { setGModo("peso"); setGPasso(p); }}>de {p === 0.5 ? "0,5" : "1"} em {p === 0.5 ? "0,5" : "1"} kg</button>)}
+                </span>
+              </span>
+            </div>
+            {gerados.length > 0 && (
+              <div className="bw-prev">{gerados.map(g => <span key={g.id}>{g.nome}{porPeso && precoBase > 0 && g.peso_kg ? <b> {brl(precoBase * g.peso_kg)}</b> : null}</span>)}</div>
+            )}
+            {temNomes && <p className="bw-hint">Isso substitui os tamanhos que você já digitou.</p>}
+            <button type="button" className="bw-gerar-bt" disabled={!gerados.length}
+              onClick={() => { setGt({ opcoes: gerados }); setGerarAberto(false); }}>
+              Criar {gerados.length} {gerados.length === 1 ? "tamanho" : "tamanhos"}
+            </button>
+          </div>
+        </div>, document.body)}
+
       {infoBase && (
         <DooInfoModal open onClose={() => setInfoBase(false)} image="/Sistema/precifique.png" imageAlt="Preço base"
           ariaLabel="O que é o preço base" title={<>{primeiroNome ? `${primeiroNome}, entenda` : "Entenda"} o <span style={{ color: "#C33A6E" }}>preço base</span>.</>}>
@@ -346,6 +411,58 @@ const CSS = `
   .bw-modos button.on { border-color: #2C1219; background: #FAF7F8; } .bw-modos button.on i { border: 5px solid #2C1219; }
   .bw-modos b { display: block; font-size: 13.5px; font-weight: 700; } .bw-modos small { display: block; font-size: 12px; color: #888780; margin-top: 2px; line-height: 1.35; }
   .bw-kg { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: #FAF7F8; font-size: 14px; font-weight: 700; }
+  .bw-box { border: 1px solid #F0EBED; border-radius: 16px; padding: 16px; margin-top: 14px; background: #fff; }
+  .bw-bh { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+  .bw-bt { font-size: 14px; font-weight: 700; color: #2C1219; margin: 0 0 10px; }
+  .bw-bh .bw-bt { margin: 0; }
+  .bw-bt--mt { margin-top: 18px; }
+  .bw-seg3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; background: #EFE9EB; border-radius: 12px; }
+  .bw-seg3 button { border: none; background: none; border-radius: 9px; padding: 10px 4px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #7C7A8E; cursor: pointer; }
+  .bw-seg3 button.on { background: #fff; color: #2C1219; box-shadow: 0 1px 3px rgba(44,18,25,.1); }
+  .bw-money { display: flex; align-items: center; gap: 8px; height: 58px; border: 1.5px solid #EAE3E6; border-radius: 14px; padding: 0 16px; background: #fff; transition: border-color .15s; }
+  .bw-money:focus-within { border-color: #2C1219; }
+  .bw-money > span { font-size: 15px; font-weight: 700; color: #9A8E94; }
+  .bw-money input { flex: 1; min-width: 0; border: none; outline: none; background: none; font-family: inherit; font-size: 24px; font-weight: 800; color: #2C1219; }
+  .bw-money input::placeholder { color: #D6CBD0; }
+  .bw-money em { font-style: normal; font-size: 13px; font-weight: 600; color: #888780; white-space: nowrap; }
+  .bw-money--sm { height: 44px; width: 150px; padding: 0 12px; } .bw-money--sm input { font-size: 16px; }
+  .bw-hint { font-size: 12px; color: #9A8E94; margin: 8px 0 0; line-height: 1.45; }
+  .bw-hint--top { margin: 2px 0 12px; }
+  .bw-gerar-pill { border: 1px solid #F9D1E0; background: #FFF1F6; color: #C33A6E; border-radius: 999px; padding: 7px 13px; font-family: inherit; font-size: 12.5px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+  .bw-gerar-pill:hover { background: #FCE7F3; }
+  .bw-col-sel { border: none; background: none; padding: 0 0 0 4px; font-family: inherit; font-size: 11px; font-weight: 800; color: #C33A6E; text-transform: uppercase; letter-spacing: .04em; cursor: pointer; text-align: left; }
+  .bw-link--sec { display: block; color: #6B5D64; font-weight: 600; font-size: 12.5px; padding-top: 2px; }
+  .bw-link--sec small { color: #B5AAB0; font-weight: 500; }
+  .bw-tabela .bw-tam { grid-template-columns: 76px 1fr 1.3fr 24px; }
+  .bw-tabela.bw-tam--serve .bw-tam { grid-template-columns: 70px 1fr 1fr 1.3fr 24px; }
+  .bw-sheet-bg { position: fixed; inset: 0; z-index: 900; background: rgba(45,31,38,.45); display: flex; align-items: center; justify-content: center; padding: 16px; font-family: var(--font-base); }
+  .bw-sheet { width: 100%; max-width: 440px; background: #fff; border-radius: 22px; padding: 16px 18px 18px; box-shadow: 0 24px 60px rgba(44,18,25,.3); color: #2C1219; }
+  .bw-grab { display: none; width: 40px; height: 4px; border-radius: 2px; background: #E5DDE0; margin: 0 auto 10px; }
+  .bw-sheet-h { display: flex; align-items: center; justify-content: space-between; }
+  .bw-sheet-h b { font-size: 17px; font-weight: 800; }
+  .bw-sheet-h button { width: 32px; height: 32px; border-radius: 50%; border: none; background: #F5F0F2; color: #6B5D64; cursor: pointer; font-size: 13px; }
+  .bw-sheet .bw-gerar-bt { width: 100%; height: 48px; margin-top: 16px; }
+  .bw-sheet .bw-prev { margin-top: 12px; }
+  .bw-gopt { width: 100%; display: flex; gap: 10px; align-items: flex-start; text-align: left; border: 1.5px solid #EAE3E6; border-radius: 14px; padding: 12px; margin-top: 8px; background: #fff; font-family: inherit; cursor: pointer; color: #2C1219; }
+  .bw-gopt > i { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #D6CBD0; flex-shrink: 0; margin-top: 1px; }
+  .bw-gopt.on { border-color: #2C1219; background: #FAF7F8; } .bw-gopt.on > i { border: 5px solid #2C1219; }
+  .bw-gopt > span { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .bw-gopt b { font-size: 14px; } .bw-gopt small { font-size: 12.5px; color: #888780; margin-top: 2px; }
+  .bw-gopt .bw-frase--gerar { margin-top: 10px; font-size: 13.5px; }
+  .bw-gopt .bw-passos { margin-top: 10px; }
+  @media (max-width: 767px) {
+    .bw-sheet-bg { align-items: flex-end; padding: 0; }
+    .bw-sheet { max-width: none; border-radius: 22px 22px 0 0; padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
+    .bw-grab { display: block; }
+    .bw-tabela .bw-tam, .bw-tabela.bw-tam--serve .bw-tam { grid-template-areas: none; }
+    .bw-tabela .bw-tam { grid-template-columns: 68px 1fr 1.3fr 20px; }
+    .bw-tabela.bw-tam--serve .bw-tam { grid-template-columns: 62px 1fr 1fr 1.2fr 18px; }
+    .bw-tabela input.bw-in { font-size: 13.5px; padding: 0 6px; }
+    .bw-tabela .bw-tam > * { grid-area: auto !important; }
+    .bw-tabela .bw-tam--h { display: grid; }
+    .bw-tabela .bw-tam { border-bottom: none; padding-bottom: 0; }
+    .bw-money input { font-size: 22px; }
+  }
   .bw-kg-t { display: inline-flex; align-items: center; gap: 8px; }
   .bw-kg-t small { font-size: 12px; font-weight: 600; color: #9A8E94; }
   .bw-i { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #C33A6E; background: #fff; color: #C33A6E; font-family: inherit; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
