@@ -83,6 +83,7 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove }: Props) {
               })
             }
             if (escolhas.cobertura?.nome) chips.push({ label: 'Cobertura', valor: escolhas.cobertura.nome })
+            if (escolhas.kit?.sabores?.length) chips.push({ label: `Kit ${escolhas.kit.total} un`, valor: escolhas.kit.sabores.map((s: any) => `${s.nome} × ${s.qtd}`).join(', ') })
           } else {
             // Legado — strings antigas
             if (item.selectedMassa) chips.push({ label: 'Massa', valor: item.selectedMassa })

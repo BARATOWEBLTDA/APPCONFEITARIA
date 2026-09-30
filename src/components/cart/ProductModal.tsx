@@ -1,4 +1,6 @@
 import { AvisoAntecedencia } from "@/lib/entregaProduto";
+import KitPicker from '@/components/cardapio/KitPicker'
+import { kitAtivo, calcularKit, selecaoInicial, type KitSelecao } from '@/lib/kitQuantidade'
 import { useState, useEffect, useMemo } from 'react'
 import { X, Plus, Minus, Camera, Ruler, ChevronRight, ChevronDown } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
@@ -33,6 +35,10 @@ interface Props {
 export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }: Props) {
   const { addItem } = useCart()
   const [quantity, setQuantity] = useState(1)
+  // Kit por quantidade (docinhos/salgados): quantos de cada sabor
+  const [kitSel, setKitSel] = useState<KitSelecao>({ kitId: '', qtdLivre: 0, qtds: {} })
+  const kitCfg = kitAtivo((product as any)?.kit_qtd) ? (product as any).kit_qtd : null
+  const kitInfo = kitCfg ? calcularKit(kitCfg, kitSel) : null
   const [observations, setObservations] = useState('')
   const [showObs, setShowObs] = useState(false)
   const [imgIndex, setImgIndex] = useState(0)
@@ -154,6 +160,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
       setQuantity(1); setObservations(''); setShowObs(false); setImgIndex(0)
       setEscolhaMassa(null); setEscolhasRecheio([]); setEscolhaCobertura(null)
       setEscolhaSabor(null); setEscolhaTamanho(null)
+      if (kitAtivo((product as any).kit_qtd)) setKitSel(selecaoInicial((product as any).kit_qtd))
     }
   }, [product, isOpen])
 
@@ -253,6 +260,9 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
       }
     }
 
+    // Kit por quantidade: o preço vem do kit escolhido
+    if (kitInfo) baseEfetivo = kitInfo.preco
+
     // Soma adicionais das opções escolhidas
     let adicionaisTotal = 0
     const ctx = {
@@ -296,7 +306,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
       desconto,
       final,
     }
-  }, [product, grupos, quantity, opMassa, opCobertura, opSabor, opTamanho, opsRecheios.length, basePrice, descPct, extrasMarcados, extrasBiblioteca])
+  }, [product, grupos, quantity, opMassa, opCobertura, opSabor, opTamanho, opsRecheios.length, basePrice, descPct, extrasMarcados, extrasBiblioteca, kitInfo?.preco])
 
   // ═══ Validação: obrigatórios preenchidos ═══════════════════════════
   const podeAdicionar = useMemo(() => {
@@ -305,8 +315,9 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
     if (gSabor && gSabor.min_selecionavel > 0 && !escolhaSabor) return false
     if (gTamanho && gTamanho.min_selecionavel > 0 && !escolhaTamanho) return false
     if (gRecheio && gRecheio.min_selecionavel > 0 && escolhasRecheio.length < gRecheio.min_selecionavel) return false
+    if (kitInfo && !kitInfo.completo) return false
     return true
-  }, [gMassa, gCobertura, gSabor, gTamanho, gRecheio, escolhaMassa, escolhaCobertura, escolhaSabor, escolhaTamanho, escolhasRecheio.length])
+  }, [gMassa, gCobertura, gSabor, gTamanho, gRecheio, escolhaMassa, escolhaCobertura, escolhaSabor, escolhaTamanho, escolhasRecheio.length, kitInfo?.completo])
 
   // ═══ Early return DEPOIS de todos os hooks (regra do React) ══════
   if (!isOpen || !product) return null
@@ -335,6 +346,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
       if (opTamanho.peso_kg) e.peso_kg = opTamanho.peso_kg
       escolhas.tamanho = e
     }
+    if (kitInfo) escolhas.kit = kitInfo.escolha
 
     // Extras da biblioteca (aba /complementos) — nome + valor de cada marcado
     const extrasEscolhidos = extrasBiblioteca
@@ -737,6 +749,9 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
 
           {/* Encomenda: avisa a antecedência (pronta entrega não precisa de aviso) */}
           <AvisoAntecedencia produto={product} />
+
+          {/* Kit por quantidade: o cliente monta o kit */}
+          {kitCfg && <KitPicker kit={kitCfg} sel={kitSel} onChange={setKitSel} />}
 
           {/* Grupos V3 (renderiza os ativos) */}
           {gTamanho && (

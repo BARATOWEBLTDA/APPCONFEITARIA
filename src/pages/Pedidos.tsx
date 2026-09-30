@@ -369,6 +369,7 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido, onAcaoRapida, onMen
     if (massa) extras.push(`Massa: ${massa}`)
     if (recheios) extras.push(`Recheio: ${recheios}`)
     if (cobertura) extras.push(`Cobertura: ${cobertura}`)
+    if (p.kit?.sabores?.length) extras.push(`Kit ${p.kit.total} un: ${p.kit.sabores.map((s: any) => `${s.nome} × ${s.qtd}`).join(', ')}`)
     if (Array.isArray(p.extras) && p.extras.length) extras.push(`Adicionais: ${p.extras.map((x: any) => x.nome).join(', ')}`)
     if (p.foto_referencia) extras.push('Com foto de referência')
     if (item.observacoes) extras.push(item.observacoes)
@@ -1156,6 +1157,9 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
                             {massa && <p className="mp-item-extra">Massa: {massa}</p>}
                             {recheios && <p className="mp-item-extra">Recheio: {recheios}</p>}
                             {cobertura && <p className="mp-item-extra">Cobertura: {cobertura}</p>}
+                            {p.kit?.sabores?.length > 0 && (
+                              <p className="mp-item-extra"><b>Kit {p.kit.total} un:</b> {p.kit.sabores.map((s: any) => `${s.nome} × ${s.qtd}`).join(', ')}</p>
+                            )}
                             {Array.isArray(p.extras) && p.extras.length > 0 && (
                               <p className="mp-item-extra">Adicionais: {p.extras.map((x: any) => x.valor > 0 ? `${x.nome} (+${formatMoney(x.valor)})` : x.nome).join(', ')}</p>
                             )}

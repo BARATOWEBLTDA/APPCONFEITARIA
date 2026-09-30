@@ -14,6 +14,8 @@ export interface EscolhasV3 {
   cobertura?: EscolhaOpcao | null
   sabor?: EscolhaOpcao | null
   tamanho?: EscolhaOpcao | null
+  /** Kit por quantidade: quantos de cada sabor (docinhos, salgados...) */
+  kit?: { modo: "fechado" | "livre"; total: number; sabores: { nome: string; qtd: number }[] } | null
 }
 
 export interface PrecoBreakdownCarrinho {

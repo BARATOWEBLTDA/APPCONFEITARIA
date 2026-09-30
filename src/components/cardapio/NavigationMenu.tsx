@@ -263,6 +263,7 @@ function CartContent({
             detalhes.push(`Recheio${nomes.length > 1 ? 's' : ''}: ${lista}`)
           }
           if (e.cobertura?.nome) detalhes.push(`Cobertura ${e.cobertura.nome}`)
+          if (e.kit?.sabores?.length) detalhes.push(`Kit ${e.kit.total} un: ${e.kit.sabores.map((s: any) => `${s.nome} × ${s.qtd}`).join(', ')}`)
         } else {
           if (item.selectedMassa) detalhes.push(`Massa ${item.selectedMassa}`)
           if (item.selectedRecheio) detalhes.push(`Recheio: ${item.selectedRecheio}`)
@@ -379,13 +380,14 @@ function CartContent({
                 // ─── Snapshot v1 RICO (Cardápio V3) ─────────────────
                 // Prioriza item.escolhas (V3) — se ausente, cai no legado
                 const escolhas = item.escolhas || {}
-                const personalizacoes = escolhas.massa || escolhas.recheios || escolhas.cobertura || escolhas.sabor || escolhas.tamanho
+                const personalizacoes = escolhas.massa || escolhas.recheios || escolhas.cobertura || escolhas.sabor || escolhas.tamanho || escolhas.kit
                   ? {
                       massa: escolhas.massa || null,
                       recheios: escolhas.recheios || undefined,
                       cobertura: escolhas.cobertura || null,
                       sabor: escolhas.sabor || null,
                       tamanho: escolhas.tamanho || null,
+                      ...(escolhas.kit ? { kit: escolhas.kit } : {}),
                     }
                   : criarPersonalizacoesV1({
                       massa: item.selectedMassa || null,

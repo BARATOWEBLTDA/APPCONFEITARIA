@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import KitQuantidadeEditor from "@/components/produto/KitQuantidadeEditor";
+import { kitAtivo, erroKit, precoMinKit } from "@/lib/kitQuantidade";
 import { supabase } from "@/lib/supabase";
 import { listarBiblioteca, salvarNaBiblioteca, type BibliotecaOpcao } from "@/lib/biblioteca";
 import { carregarGruposDoBanco, salvarGruposParaBanco } from "@/lib/produto-grupos";
@@ -967,8 +969,8 @@ function SelectDoonly({
 function PersonalizacaoStep({
   grupoMassas, grupoRecheios, grupoCoberturas, grupoSabores, grupoTamanhos,
   precoBase, quantidadeBase, formaVenda, onChange, onPrecoBaseChange, onFormaVendaChange,
-  mobileMode, onGoToFill, onBackToChecklist, primeiroNome, produtoNome, produtoCategoria,
-}: PersonalizacaoStepProps) {
+  mobileMode, onGoToFill, onBackToChecklist, primeiroNome, produtoNome, produtoCategoria, ocultarTamanhosSabores,
+}: PersonalizacaoStepProps & { ocultarTamanhosSabores?: boolean }) {
   const [expandido, setExpandido] = useState<string | null>(null);
   // Bottom sheet "Escolher da biblioteca"
   const [bibSheetGrupo, setBibSheetGrupo] = useState<"massas" | "recheios" | "coberturas" | "sabores" | "tamanhos" | null>(null);
@@ -1475,7 +1477,7 @@ function PersonalizacaoStep({
       {mobileMode === "checklist" && (
         <div className="prod-mchk-wrap">
           <div className="prod-mchk-list">
-            {grupos.map(g => {
+            {grupos.filter(g => !(ocultarTamanhosSabores && (g.key === "tamanhos" || g.key === "sabores"))).map(g => {
               const ativo = g.dados.ativo;
               return (
                 <label key={g.key} className={`prod-mchk-item ${ativo ? "prod-mchk-item--on" : ""}`}>
@@ -1505,7 +1507,7 @@ function PersonalizacaoStep({
       )}
 
       {/* Desktop OU mobileMode === "fill": renderiza os grupos. No fill filtra só ativos */}
-      {mobileMode !== "checklist" && grupos.filter(g => mobileMode === "fill" ? g.dados.ativo : true).map(g => {
+      {mobileMode !== "checklist" && grupos.filter(g => !(ocultarTamanhosSabores && (g.key === "tamanhos" || g.key === "sabores"))).filter(g => mobileMode === "fill" ? g.dados.ativo : true).map(g => {
         const aberto = expandido === g.key || mobileMode === "fill";
         const ativo = g.dados.ativo;
         const qtdOpcoes = g.dados.opcoes.length;
@@ -3994,7 +3996,7 @@ export default function Produtos() {
       precoBase = Math.min(...valores);
     } else if (isPersonalizavel) {
       const grupos = [form.grupo_massas, form.grupo_recheios, form.grupo_coberturas, form.grupo_sabores, form.grupo_tamanhos];
-      const algumAtivo = grupos.some(g => g?.ativo && (g.opcoes?.length || 0) > 0);
+      const algumAtivo = grupos.some(g => g?.ativo && (g.opcoes?.length || 0) > 0) || kitAtivo((form as any).kit_qtd);
       if (!algumAtivo) return alert("Ative ao menos uma categoria de personalização com opções");
       // Se tem Tamanhos ativos, preço base vem do MENOR tamanho
       const gt = form.grupo_tamanhos;
@@ -4039,6 +4041,9 @@ export default function Produtos() {
     // ─── Limpar campos que NÃO pertencem à tabela produtos ───
     // (evita Supabase rejeitar silenciosamente o update inteiro)
     const { produto_insumos, created_at, ...formLimpo } = form as any;
+
+    // Kit por quantidade: o preço base é o menor preço do kit
+    if (kitAtivo((form as any).kit_qtd) && precoMinKit((form as any).kit_qtd) > 0) precoBase = precoMinKit((form as any).kit_qtd);
 
     const payload = {
       ...formLimpo,
@@ -4880,6 +4885,27 @@ export default function Produtos() {
                   primeiroNome={primeiroNome}
                   produtoNome={form.nome}
                   produtoCategoria={form.categoria}
+                  ocultarTamanhosSabores={kitAtivo((form as any).kit_qtd)}
+                />
+                {/* Kit por quantidade (docinhos, salgados...) */}
+                <KitQuantidadeEditor
+                  kit={(form as any).kit_qtd}
+                  mobileMode={isMobileMain && !form.id ? mobilePersonaStep : undefined}
+                  onChange={(k) => setForm(f => {
+                    const ligando = k.ativo && !kitAtivo((f as any).kit_qtd);
+                    return {
+                      ...f,
+                      kit_qtd: k,
+                      // Com o kit ligado, Tamanhos e Sabores saem (o kit tem os dele)
+                      ...(ligando ? {
+                        grupo_tamanhos: { ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO), ativo: false },
+                        grupo_sabores: { ...(f.grupo_sabores || GRUPO_SABORES_VAZIO), ativo: false },
+                        forma_venda: "unidade",
+                      } : {}),
+                      // "A partir de" do cardápio = menor preço do kit
+                      ...(k.ativo && precoMinKit(k) > 0 ? { preco_normal: precoMinKit(k) } : {}),
+                    } as any;
+                  })}
                 />
               </div>
             )}
@@ -5818,15 +5844,19 @@ export default function Produtos() {
                     const gm = form.grupo_massas, gr = form.grupo_recheios, gc = form.grupo_coberturas, gt = form.grupo_tamanhos;
                     // Mobile na etapa checklist: basta ter 1 grupo marcado (opcoes vem depois)
                     if (isMobileMain && !form.id && mobilePersonaStep === "checklist") {
-                      const anyAtivo = [gm, gr, gc, gt, form.grupo_sabores].some(g => g?.ativo);
+                      const anyAtivo = [gm, gr, gc, gt, form.grupo_sabores].some(g => g?.ativo) || kitAtivo((form as any).kit_qtd);
                       return anyAtivo;
                     }
                     const gruposAtivos = [gm, gr, gc, gt].filter(g => g?.ativo);
                     if (gruposAtivos.some(g => (g?.opcoes.length || 0) === 0)) return false;
+                    // Kit por quantidade ligado: precisa estar completo
+                    if (kitAtivo((form as any).kit_qtd) && erroKit((form as any).kit_qtd)) return false;
                     return true;
                   }
                   // Step 4: Preço e venda — valida preço base OU preços dos tamanhos
                   if (wizardStep === 4) {
+                    // Kit por quantidade: o preço vem dos kits
+                    if (kitAtivo((form as any).kit_qtd)) return precoMinKit((form as any).kit_qtd) > 0;
                     const gt = form.grupo_tamanhos;
                     const temTamanhoAtivo = gt?.ativo && gt.opcoes.length > 0;
                     if (temTamanhoAtivo) {
