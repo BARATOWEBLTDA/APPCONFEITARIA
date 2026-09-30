@@ -4460,14 +4460,21 @@ export default function Produtos() {
                   </div>
                 )}
                 {!p.disponivel && <div className="prod-card-indisponivel">Despublicado</div>}
-                {p.promocao && <div className="prod-card-promo">🔥 Promoção</div>}
-                {(p.tamanhos_disponiveis && p.tamanhos_disponiveis.length > 0) && (
-                  <div className="prod-card-badge-var">
-                    📏 {p.tamanhos_disponiveis.length === 1 ? p.tamanhos_disponiveis[0].label : `${p.tamanhos_disponiveis.length} opções`}
-                  </div>
-                )}
-                {p.pronta_entrega === false && <div className="prod-card-encomenda">Encomenda</div>}
-                {catInvalida && <div style={{ position: "absolute", top: "0.4rem", left: "0.4rem", background: "var(--warning)", color: "var(--text-inverse)", fontSize: "0.6rem", fontWeight: 700, padding: "2px 6px", borderRadius: "6px" }}>Sem categoria</div>}
+                {/* Etiquetas empilhadas (antes ficavam uma em cima da outra no mesmo canto) */}
+                <div className="prod-card-tags prod-card-tags--dir">
+                  {p.promocao && <div className="prod-card-promo">🔥 Promoção</div>}
+                  {/* Mesma regra do cardápio: só é encomenda quando tem antecedência marcada
+                      (antes aparecia "Encomenda" em produto sem nada marcado) */}
+                  {!!(p as any).antecedencia && <div className="prod-card-encomenda">Encomenda</div>}
+                </div>
+                <div className="prod-card-tags prod-card-tags--esq">
+                  {catInvalida && <div className="prod-card-semcat">Sem categoria</div>}
+                  {(p.tamanhos_disponiveis && p.tamanhos_disponiveis.length > 0) && (
+                    <div className="prod-card-badge-var">
+                      📏 {p.tamanhos_disponiveis.length === 1 ? p.tamanhos_disponiveis[0].label : `${p.tamanhos_disponiveis.length} opções`}
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="prod-card-info">
                 <p className="prod-card-cat" style={{ color: catInvalida ? "var(--warning)" : undefined }}>{catInvalida ? p.categoria : p.categoria}</p>
@@ -7202,6 +7209,11 @@ export default function Produtos() {
           font-weight: var(--fw-medium);
           line-height: 1.1;
         }
+        .prod-card-tags { position: absolute; top: 8px; display: flex; flex-direction: column; gap: 4px; z-index: 1; pointer-events: none; }
+        .prod-card-tags--dir { right: 8px; align-items: flex-end; }
+        .prod-card-tags--esq { left: 8px; align-items: flex-start; }
+        .prod-card-tags > * { position: static !important; top: auto !important; left: auto !important; right: auto !important; }
+        .prod-card-semcat { background: var(--warning); color: var(--text-inverse); font-size: 0.6rem; font-weight: 700; padding: 2px 6px; border-radius: 6px; }
         .prod-card-encomenda { position:absolute; top:0.4rem; right:0.4rem; background:var(--warning); color:var(--text-inverse); font-size: var(--font-caption); font-weight: var(--fw-bold); padding:0.15rem 0.45rem; border-radius: var(--radius-xl); }
         .prod-card-info { padding:0.65rem 0.75rem; flex:1; display:flex; flex-direction:column; }
         .prod-card-bottom { margin-top:auto; }
