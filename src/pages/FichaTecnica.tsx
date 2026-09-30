@@ -448,8 +448,11 @@ export default function FichaTecnica() {
           Voltar
         </button>
 
+        {/* ═══ Computador: 2 colunas (o celular ignora esses wrappers — display: contents) ═══ */}
+        <div className="ft-desk-grid"><div className="ft-desk-main">
+
         {/* Cabeçalho do produto: foto à esquerda, título + lucro à direita */}
-        <div className="ft-tree">
+        <div className="ft-tree ft-so-cel">
           <div className="ft-tree-foto">
             {selected.imagem_url
               ? <img src={selected.imagem_url.split(",")[0]} alt={selected.nome} />
@@ -467,7 +470,7 @@ export default function FichaTecnica() {
         </div>
 
         {/* Breakdown de precificação */}
-        <div className="ft-pricing-card">
+        <div className="ft-pricing-card ft-so-cel">
           <div className="ft-pricing-row">
             <span className="ft-pricing-label">CMV (ingredientes)</span>
             <span className="ft-pricing-value">R$ {fmt(cmvLive)}</span>
@@ -516,6 +519,84 @@ export default function FichaTecnica() {
               </div>
             )}
           </div>
+
+          {/* Computador: estados vazios */}
+          {ficha.length === 0 && (
+            <div className="ft-desk-vazio">
+              {insumosCadastrados.length === 0 ? (
+                <>
+                  <div className="ft-desk-vazio-ic" aria-hidden="true">🧂</div>
+                  <b>Cadastre seus ingredientes pra calcular o custo</b>
+                  <p>A ficha técnica soma o custo de cada ingrediente que vai no produto. Comece pelo que você mais usa — leite condensado, farinha, ovos, chocolate…</p>
+                  <button type="button" className="ft-desk-vazio-bt" onClick={() => { setQuickAddName(""); setShowQuickAdd(true); }}>+ Cadastrar primeiro ingrediente</button>
+                  <div className="ft-desk-passos">
+                    <div><b>1. Cadastre</b>nome, embalagem e quanto pagou</div>
+                    <div><b>2. Adicione</b>à ficha com a quantidade usada</div>
+                    <div><b>3. Veja</b>o custo e o lucro na hora</div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <b>Nenhum ingrediente nesta ficha ainda</b>
+                  <p>Adicione o que vai no {selected.nome} pra saber quanto ele custa.</p>
+                  <div className="ft-desk-vazio-acoes">
+                    <button type="button" className="ft-desk-vazio-bt" onClick={abrirPicker}>+ Adicionar ingrediente</button>
+                    <button type="button" className="ft-desk-vazio-bt ft-desk-vazio-bt--claro" onClick={() => { setQuickAddName(""); setShowQuickAdd(true); }}>+ Cadastrar novo ingrediente</button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Computador: ingredientes em tabela (mesmas ações do celular) */}
+          {ficha.length > 0 && (
+            <div className="ft-desk-tabela">
+              <table>
+                <thead><tr><th>Ingrediente</th><th>Quantidade usada</th><th className="num">Custo</th><th aria-label="Remover" /></tr></thead>
+                <tbody>
+                  {ficha.map(f => {
+                    const ins = f.insumo;
+                    const custoLinha = calcCusto(f.quantidade, f.unidade_utilizada, ins);
+                    const unidades = getCompatibleUnits(ins);
+                    return (
+                      <tr key={f.insumo_id}>
+                        <td>
+                          <div className="ft-dt-ins">
+                            {ins.imagem_url
+                              ? <img src={ins.imagem_url} alt="" className="ft-dt-img" />
+                              : <span className="ft-dt-img ft-dt-img--ph">{ins.nome.charAt(0).toUpperCase()}</span>}
+                            <b>{ins.nome}</b>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="ft-dt-qtd">
+                            <input type="number" value={f.quantidade || ""} step="any" min="0" placeholder="0"
+                              onChange={e => setQtd(f.insumo_id, parseFloat(e.target.value) || 0)} aria-label={`Quantidade de ${ins.nome}`} />
+                            {unidades.length > 1 ? (
+                              <select value={f.unidade_utilizada} onChange={e => setUnidade(f.insumo_id, e.target.value)} aria-label="Unidade">
+                                {unidades.map(u => <option key={u} value={u}>{u}</option>)}
+                              </select>
+                            ) : <span className="ft-dt-un">{f.unidade_utilizada}</span>}
+                          </div>
+                        </td>
+                        <td className="num">
+                          <b>R$ {fmt(custoLinha)}</b>
+                          <button type="button" className={`ft-dt-info${infoCustoAberto === f.insumo_id ? " on" : ""}`}
+                            onClick={() => setInfoCustoAberto(prev => prev === f.insumo_id ? null : f.insumo_id)}
+                            aria-label="Como esse valor é calculado" title="Como esse valor é calculado">i</button>
+                        </td>
+                        <td className="ft-dt-x">
+                          <button type="button" onClick={() => removeInsumo(f.insumo_id)} aria-label="Remover" title="Remover">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
 
           {ficha.length === 0 ? (
             <div className="ft-edit-empty">
@@ -607,7 +688,7 @@ export default function FichaTecnica() {
           )}
 
           {/* Ações: adicionar existente / cadastrar novo */}
-          <div className="ft-add-actions">
+          <div className={`ft-add-actions${ficha.length === 0 ? " ft-add-actions--vazio" : ""}`}>
             <button type="button" className="ft-add-existente" onClick={abrirPicker}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
               Adicionar insumo
@@ -710,6 +791,7 @@ export default function FichaTecnica() {
           document.body
         )}
 
+        <div className="ft-desk-par">
         {/* Custos invisíveis */}
         <div className="ft-edit-card">
           <div className="ft-card-head">
@@ -781,7 +863,9 @@ export default function FichaTecnica() {
         </div>
 
         {/* Detalhes extras */}
-        <div className="ft-edit-card">
+        </div>{/* fim ft-desk-par */}
+
+        <div className="ft-edit-card ft-info-card">
           <div className="ft-card-head">
             <h2 className="ft-card-title">Informações do produto</h2>
             <label className="ft-switch">
@@ -827,9 +911,64 @@ export default function FichaTecnica() {
 
         
 
-        <button className="ft-btn-salvar" onClick={salvarFicha} disabled={saving}>
+        <button className="ft-btn-salvar ft-so-cel" onClick={salvarFicha} disabled={saving}>
           {saving ? "Salvando..." : "Salvar precificação"}
         </button>
+
+        </div>{/* fim ft-desk-main */}
+
+        {/* Computador: resumo fixo ao lado */}
+        <aside className="ft-desk-side">
+          <div className="ft-sum">
+            <div className="ft-sum-top">
+              {/* Mesma foto (e o mesmo "Sem imagem") do topo da ficha no celular */}
+              <div className="ft-tree-foto ft-sum-foto">
+                {selected.imagem_url
+                  ? <img src={selected.imagem_url.split(",")[0]} alt={selected.nome} />
+                  : <div className="ft-tree-foto-placeholder">Sem imagem</div>}
+              </div>
+              <div><b>{selected.nome}</b><span>Preço de venda R$ {fmt(precoLive)}</span></div>
+            </div>
+            <div className={`ft-sum-lucro${lucroLive < 0 ? " neg" : ""}`}>
+              <small>Seu lucro</small>
+              <b>R$ {fmt(lucroLive)}</b>
+              <span>{fmtPct(margemLucroLive)}% de margem</span>
+              {precoLive > 0 && (() => {
+                const pc = (v: number) => `${Math.max(0, Math.min(100, (v / precoLive) * 100))}%`;
+                return (
+                  <>
+                    <div className="ft-sum-barra" aria-hidden="true">
+                      <i style={{ width: pc(cmvLive), background: "#C33A6E" }} />
+                      <i style={{ width: pc(cvLive), background: "#F59E0B" }} />
+                      {moLive > 0 && <i style={{ width: pc(moLive), background: "#6366F1" }} />}
+                      <i style={{ width: pc(Math.max(0, lucroLive)), background: "#16a34a" }} />
+                    </div>
+                    <div className="ft-sum-leg">
+                      <span style={{ ["--c" as any]: "#C33A6E" }}>Ingredientes</span>
+                      <span style={{ ["--c" as any]: "#F59E0B" }}>Invisíveis</span>
+                      {moLive > 0 && <span style={{ ["--c" as any]: "#6366F1" }}>Mão de obra</span>}
+                      <span style={{ ["--c" as any]: "#16a34a" }}>Lucro</span>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+            <div className="ft-sum-linhas">
+              <div><span>CMV (ingredientes)</span><span>R$ {fmt(cmvLive)}</span></div>
+              <div><span>+ Custos invisíveis ({fmtPct(cvPct)}%)</span><span>R$ {fmt(cvLive)}</span></div>
+              <div><span>+ Mão de obra {tempoMin > 0 ? `(${tempoMin} min)` : ""}</span><span>R$ {fmt(moLive)}</span></div>
+              <div className="t"><span>Custo total</span><span>R$ {fmt(custoTotalLive)}</span></div>
+              <div className="pv"><span>Preço de venda</span><span>R$ {fmt(precoLive)}</span></div>
+              {(parseFloat(extras.rendimento_qtd) || 0) > 0 && (
+                <div><span>Custo por unidade ({extras.rendimento_qtd})</span><span>R$ {fmt(custoTotalLive / (parseFloat(extras.rendimento_qtd) || 1))}</span></div>
+              )}
+            </div>
+            <button type="button" className="ft-sum-salvar" onClick={salvarFicha} disabled={saving}>
+              {saving ? "Salvando..." : "Salvar precificação"}
+            </button>
+          </div>
+        </aside>
+        </div>{/* fim ft-desk-grid */}
 
         {savedToast && <div className="ft-toast">Ficha técnica salva!</div>}
 
@@ -1608,6 +1747,79 @@ const detailStyles = `
   .ft-field { display: flex; flex-direction: column; gap: var(--space-1); grid-column: 1 / -1; min-width: 0; justify-content: flex-end; }
   .ft-field--half { grid-column: span 1; }
   .ft-field label { font-size: var(--font-field-label); color: var(--text-secondary); font-weight: var(--fw-semibold); }
+
+  /* ═══ Ficha técnica no computador (aprovado 30/09) — celular intocado ═══ */
+  .ft-desk-grid, .ft-desk-main, .ft-desk-par { display: contents; }
+  .ft-desk-side, .ft-desk-tabela, .ft-desk-vazio { display: none; }
+  @media (min-width: 1100px) {
+    .ft-root { max-width: 1180px !important; margin-left: auto; margin-right: auto; }
+    .ft-list-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1rem; }
+    .ft-desk-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
+    .ft-desk-main { display: block; min-width: 0; }
+    .ft-desk-par { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+    .ft-desk-par > .ft-edit-card { margin-top: 0; margin-bottom: 0; }
+    .ft-desk-par { margin: 16px 0; }
+    .ft-desk-main > .ft-edit-card { margin-top: 0; margin-bottom: 0; }
+    .ft-add-actions { flex-direction: row !important; }
+    .ft-add-actions > button { flex: 1; }
+    .ft-so-cel, .ft-view-toggle, .ft-edit-list, .ft-list-mode, .ft-edit-empty, .ft-add-actions--vazio { display: none !important; }
+    .ft-info-card, .ft-info-card * { font-family: var(--font-base) !important; }
+    .ft-info-card .ft-extras-edit { display: grid !important; grid-template-columns: repeat(3, 1fr); gap: 10px 14px; }
+    .ft-info-card .ft-extras-edit .ft-field { width: auto !important; min-width: 0; }
+    .ft-info-card .ft-extras-edit .ft-field:not(.ft-field--half) { grid-column: 1 / -1; }
+
+    .ft-desk-tabela { display: block; overflow-x: auto; }
+    .ft-desk-tabela table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    .ft-desk-tabela th { text-align: left; font-size: 10.5px; font-weight: 700; color: #888780; letter-spacing: .04em; text-transform: uppercase; padding: 8px 10px; background: #FAF7F8; white-space: nowrap; }
+    .ft-desk-tabela th.num, .ft-desk-tabela td.num { text-align: right; white-space: nowrap; }
+    .ft-desk-tabela td { padding: 8px 10px; border-bottom: 1px solid #F5F0F2; vertical-align: middle; }
+    .ft-dt-ins { display: flex; align-items: center; gap: 10px; }
+    .ft-dt-ins b { font-size: 13.5px; color: var(--text-title); }
+    .ft-dt-img { width: 32px; height: 32px; border-radius: 7px; object-fit: cover; flex-shrink: 0; }
+    .ft-dt-img--ph { display: flex; align-items: center; justify-content: center; background: #FCE7F3; color: #C33A6E; font-weight: 800; font-size: 13px; }
+    .ft-dt-qtd { display: inline-flex; align-items: stretch; border: 1px solid #EAE3E6; border-radius: 8px; overflow: hidden; background: #fff; }
+    .ft-dt-qtd:focus-within { border-color: #2C1219; }
+    .ft-dt-qtd input { width: 84px; border: none; outline: none; padding: 7px 10px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--text-title); background: none; }
+    .ft-dt-qtd select, .ft-dt-un { border: none; outline: none; background: #F5F0F2; padding: 0 8px; font-family: inherit; font-size: 12px; color: #6B5D64; display: flex; align-items: center; }
+    .ft-dt-info { display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; margin-left: 6px; border-radius: 50%; border: 1.5px solid #C33A6E; background: none; color: #C33A6E; font-family: inherit; font-size: 10px; font-weight: 800; cursor: pointer; vertical-align: 1px; padding: 0; }
+    .ft-dt-info.on { background: #C33A6E; color: #fff; }
+    .ft-dt-x { width: 34px; text-align: center; }
+    .ft-dt-x button { border: none; background: none; color: #C4B8BE; cursor: pointer; padding: 4px; }
+    .ft-dt-x button:hover { color: #DC2626; }
+
+    .ft-desk-vazio { display: block; text-align: center; padding: 26px 16px; }
+    .ft-desk-vazio-ic { width: 64px; height: 64px; border-radius: 16px; background: #FCE7F3; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-size: 30px; }
+    .ft-desk-vazio b { display: block; font-size: 17px; font-weight: 800; color: var(--text-title); }
+    .ft-desk-vazio p { font-size: 13px; color: #6B5D64; line-height: 1.5; max-width: 440px; margin: 6px auto 16px; }
+    .ft-desk-vazio-acoes { display: flex; gap: 8px; justify-content: center; }
+    .ft-desk-vazio-bt { height: 42px; padding: 0 18px; border: none; border-radius: 10px; background: #2C1219; color: #fff; font-family: inherit; font-size: 13.5px; font-weight: 800; cursor: pointer; }
+    .ft-desk-vazio-bt--claro { background: #F5F0F2; color: #2C1219; }
+    .ft-desk-passos { display: flex; gap: 10px; justify-content: center; margin-top: 18px; }
+    .ft-desk-passos div { width: 160px; background: #FAF7F8; border-radius: 10px; padding: 10px; font-size: 11.5px; color: #4B3A42; line-height: 1.4; text-align: left; }
+    .ft-desk-passos b { font-size: 12px; margin-bottom: 2px; }
+
+    .ft-desk-side { display: block; position: sticky; top: 20px; }
+    .ft-sum { background: var(--bg-card); border: 1px solid #F0EBED; border-radius: 14px; overflow: hidden; }
+    .ft-sum-top { display: flex; gap: 12px; align-items: center; padding: 14px; border-bottom: 1px solid #F3ECEE; }
+    .ft-sum-foto { width: 84px !important; height: 84px !important; border: none !important; }
+    .ft-sum-top b { display: block; font-size: 15px; color: var(--text-title); }
+    .ft-sum-top span { font-size: 12px; color: #888780; }
+    .ft-sum-lucro { padding: 14px; background: #F0FDF4; color: #15803D; }
+    .ft-sum-lucro.neg { background: #FEF2F2; color: #B91C1C; }
+    .ft-sum-lucro small { font-size: 10.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+    .ft-sum-lucro b { display: block; font-size: 28px; font-weight: 800; line-height: 1.15; }
+    .ft-sum-lucro > span { font-size: 12.5px; font-weight: 700; }
+    .ft-sum-barra { height: 8px; border-radius: 4px; background: #E5DDE0; margin: 10px 0 5px; display: flex; overflow: hidden; }
+    .ft-sum-barra i { display: block; height: 100%; }
+    .ft-sum-leg { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 10.5px; color: #6B5D64; }
+    .ft-sum-leg span::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; background: var(--c); }
+    .ft-sum-linhas { padding: 12px 14px; }
+    .ft-sum-linhas > div { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; padding: 5px 0; color: #4B3A42; }
+    .ft-sum-linhas > div.t { border-top: 1px solid #F0EBED; margin-top: 4px; padding-top: 9px; font-weight: 800; color: var(--text-title); }
+    .ft-sum-linhas > div.pv { font-weight: 800; color: #C33A6E; }
+    .ft-sum-salvar { display: block; width: calc(100% - 28px); margin: 0 14px 14px; height: 46px; border: none; border-radius: 12px; background: var(--primary); color: #fff; font-family: inherit; font-size: 14.5px; font-weight: 800; cursor: pointer; }
+    .ft-sum-salvar:disabled { opacity: .6; cursor: default; }
+  }
   .ft-field input, .ft-field select, .ft-field textarea {
     width: 100%; box-sizing: border-box; min-width: 0; max-width: 100%;
     padding: var(--pad-input); border: 1.5px solid var(--border); border-radius: var(--radius-md);
