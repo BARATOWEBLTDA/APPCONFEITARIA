@@ -3718,6 +3718,8 @@ export default function Produtos() {
         wizardTipo,
         wizardSubtipo,
         wizardOpts,
+        tipoCadastro,
+        boloTam,
         ts: Date.now(),
       }));
     } catch {}
@@ -3726,6 +3728,8 @@ export default function Produtos() {
   const limparDraft = () => {
     try { localStorage.removeItem(DRAFT_KEY); } catch {}
     setShowDraftBanner(false);
+    // Descartou o rascunho: começa do jeito certo, pela tela "Que tipo de produto?"
+    if (!form.id) { setForm(EMPTY); setWizardStep(2); setKitTela(false); setTipoCadastro(null); setBoloTam(null); setMobilePersonaStep("checklist"); setTipoTela(true); }
   };
 
   const restaurarDraft = () => {
@@ -3738,6 +3742,8 @@ export default function Produtos() {
       if (d?.wizardTipo) setWizardTipo(d.wizardTipo);
       if (d?.wizardSubtipo !== undefined) setWizardSubtipo(d.wizardSubtipo);
       if (d?.wizardOpts) setWizardOpts(d.wizardOpts);
+      setTipoCadastro(d?.tipoCadastro ?? null);
+      setBoloTam(d?.boloTam ?? null);
       setShowDraftBanner(false);
     } catch {}
   };
@@ -3759,7 +3765,7 @@ export default function Produtos() {
   const openNovo = () => {
     // Se tem rascunho, abre o modal vazio + mostra banner pra escolher
     if (hasDraft()) {
-      setForm(EMPTY); setFichaTecnica([]); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setMobilePersonaStep("checklist"); setModal(true);
+      setForm(EMPTY); setFichaTecnica([]); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setMobilePersonaStep("checklist"); setKitTela(false); setTipoCadastro(null); setBoloTam(null); setTipoTela(false); setModal(true);
       setShowDraftBanner(true);
       return;
     }
