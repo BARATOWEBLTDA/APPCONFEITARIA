@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import KitQuantidadeEditor from "@/components/produto/KitQuantidadeEditor";
 import { kitAtivo, erroKit, precoMinKit, presetKit, type KitQtdConfig } from "@/lib/kitQuantidade";
 import TipoProdutoTela, { type TipoProduto as TipoCadastro } from "@/components/produto/TipoProdutoTela";
+import { BoloOpcoesStep, BoloTamanhosStep, boloOpcoesOk, boloTamanhosOk, type BoloTam } from "@/components/produto/BoloWizard";
 import { supabase } from "@/lib/supabase";
 import { listarBiblioteca, salvarNaBiblioteca, type BibliotecaOpcao } from "@/lib/biblioteca";
 import { carregarGruposDoBanco, salvarGruposParaBanco } from "@/lib/produto-grupos";
@@ -3471,6 +3472,9 @@ export default function Produtos() {
   // Cadastro fácil: 1ª tela "Que tipo de produto?" e a tela separada "Monte seu kit"
   const [tipoTela, setTipoTela] = useState(false);
   const [kitTela, setKitTela] = useState(false);
+  // Cadastro de bolo em 4 etapas (tipo "Bolos" no cadastro novo)
+  const [tipoCadastro, setTipoCadastro] = useState<TipoCadastro | null>(null);
+  const [boloTam, setBoloTam] = useState<BoloTam>(null);
   const [isMobileMain, setIsMobileMain] = useState(false);
   useEffect(() => {
     const check = () => setIsMobileMain(window.innerWidth <= 720);
@@ -3494,7 +3498,8 @@ export default function Produtos() {
   const modoTamanhoAnterior = useRef<string | undefined>(undefined);
   useEffect(() => {
     const modo = form.grupo_tamanhos?.modo_preco_tamanho;
-    if (modo === "por_peso" && form.forma_venda !== "kg") {
+    // Bolo com tamanhos pelo peso continua "por unidade" (o cliente compra um bolo P/M/G, não quilos)
+    if (modo === "por_peso" && form.forma_venda !== "kg" && !(tipoCadastro === "bolos" && !form.id)) {
       setForm(f => ({ ...f, forma_venda: "kg" }));
     } else if (modo !== "por_peso" && modoTamanhoAnterior.current === "por_peso" && form.forma_venda === "kg") {
       setForm(f => ({ ...f, forma_venda: "unidade" }));
@@ -3758,7 +3763,7 @@ export default function Produtos() {
       setShowDraftBanner(true);
       return;
     }
-    setForm(EMPTY); setFichaTecnica([]); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setMobilePersonaStep("checklist"); setKitTela(false); setTipoTela(true); setModal(true);
+    setForm(EMPTY); setFichaTecnica([]); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setMobilePersonaStep("checklist"); setKitTela(false); setTipoCadastro(null); setBoloTam(null); setTipoTela(true); setModal(true);
   };
   // "Que tipo de produto?" → prepara o cadastro (categoria, opções sugeridas, kit pronto)
   const aplicarTipoProduto = (tp: TipoCadastro) => {
@@ -3773,11 +3778,7 @@ export default function Produtos() {
       ...(!(f.grupo_recheios?.opcoes?.length) ? { grupo_recheios: { ...(f.grupo_recheios || GRUPO_VAZIO), ativo: false } } : {}),
       ...(!((f as any).kit_qtd?.sabores?.length) ? { kit_qtd: null } : {}),
       ...(cat ? { categoria: cat } : {}),
-      ...(tp === "bolos" ? {
-        grupo_tamanhos: { ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO), ativo: true, min: 1, max: 1 },
-        grupo_massas: { ...(f.grupo_massas || GRUPO_VAZIO), ativo: true, min: 1, max: 1 },
-        grupo_recheios: { ...(f.grupo_recheios || GRUPO_VAZIO), ativo: true, min: 1, max: 99 },
-      } : {}),
+      ...(tp === "bolos" ? { forma_venda: "unidade" } : {}),
       ...(tp === "doces" ? { kit_qtd: presetKit("docinhos") } : {}),
       // Kit festa: tamanhos do combo (20, 40, 60 pessoas…) com preço fixo cada
       ...(tp === "kitfesta" ? {
@@ -3785,8 +3786,9 @@ export default function Produtos() {
       } : {}),
       ...(tp === "salgados" ? { kit_qtd: presetKit("salgados") } : {}),
     } as any));
-    setKitTela(false); setTipoTela(false); setWizardStep(2);
+    setKitTela(false); setTipoCadastro(tp); setTipoTela(false); setWizardStep(2);
   };
+  const isBolo = tipoCadastro === "bolos" && !form.id;
   // Liga/desliga e edita o kit (Tamanhos e Sabores saem quando o kit liga)
   const onKitChange = (k: KitQtdConfig) => setForm(f => {
     const ligando = k.ativo && !kitAtivo((f as any).kit_qtd);
@@ -4043,7 +4045,7 @@ export default function Produtos() {
     } else if (isPersonalizavel) {
       const grupos = [form.grupo_massas, form.grupo_recheios, form.grupo_coberturas, form.grupo_sabores, form.grupo_tamanhos];
       const algumAtivo = grupos.some(g => g?.ativo && (g.opcoes?.length || 0) > 0) || kitAtivo((form as any).kit_qtd);
-      if (!algumAtivo) return alert("Ative ao menos uma categoria de personalização com opções");
+      if (!algumAtivo && !(tipoCadastro === "bolos" && !form.id)) return alert("Ative ao menos uma categoria de personalização com opções");
       // Se tem Tamanhos ativos, preço base vem do MENOR tamanho
       const gt = form.grupo_tamanhos;
       const gs = form.grupo_sabores;
@@ -4926,7 +4928,12 @@ export default function Produtos() {
                 <KitQuantidadeEditor modo="completo" kit={(form as any).kit_qtd} onChange={onKitChange} nomeProduto={form.nome} />
               </div>
             )}
-            {((wizardStep === 3 && !form.id && !kitTela) || (form.id && editTab === "opcoes")) && (
+            {wizardStep === 3 && isBolo && (
+              <div className="prod-modal-body">
+                <BoloOpcoesStep form={form} setForm={setForm as any} />
+              </div>
+            )}
+            {((wizardStep === 3 && !form.id && !kitTela && !isBolo) || (form.id && editTab === "opcoes")) && (
               <div className="prod-modal-body">
                 <PersonalizacaoStep
                   grupoMassas={form.grupo_massas || GRUPO_VAZIO}
@@ -5254,7 +5261,10 @@ export default function Produtos() {
               )}
 
               {/* Preços por Tamanho — só se tem tamanhos ativos */}
-              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && form.grupo_tamanhos.modo_preco_tamanho !== "sob_consulta" && form.grupo_tamanhos.modo_preco_tamanho !== "por_peso" && (
+              {wizardStep === 4 && isBolo && (
+                <BoloTamanhosStep form={form} setForm={setForm as any} escolha={boloTam} setEscolha={setBoloTam} />
+              )}
+              {((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco")) && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && form.grupo_tamanhos.modo_preco_tamanho !== "sob_consulta" && form.grupo_tamanhos.modo_preco_tamanho !== "por_peso" && (
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">
                     Preço por {(form.grupo_tamanhos.nome_exibicao || "Tamanhos").toLowerCase().slice(0, -1)} <ReqTag />
@@ -5293,7 +5303,7 @@ export default function Produtos() {
               )}
 
               {/* Preços por Sabor — só se tem sabores ativos E sabor_tem_preco_proprio */}
-              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && form.grupo_sabores?.ativo && (form.grupo_sabores.opcoes.length || 0) > 0 && form.grupo_sabores.sabor_tem_preco_proprio && (
+              {((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco")) && form.grupo_sabores?.ativo && (form.grupo_sabores.opcoes.length || 0) > 0 && form.grupo_sabores.sabor_tem_preco_proprio && (
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">
                     Preço por sabor <ReqTag />
@@ -5332,7 +5342,7 @@ export default function Produtos() {
               )}
 
               {/* Título e subtítulo (mesmo estilo do step 3) */}
-              {wizardStep === 4 && !form.id && (
+              {wizardStep === 4 && !form.id && !isBolo && (
                 <div className="prod-step-header">
                   <div className="prod-step-title">Preço e venda</div>
                   <div className="prod-step-sub">
@@ -5343,7 +5353,7 @@ export default function Produtos() {
 
               {/* ══════ SEÇÃO 1: Preço base + Forma de venda ══════ */}
               {/* Aparece quando: (a) não tem tamanho, OU (b) modo é por_peso (precisa do R$/kg) */}
-              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (
+              {((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco")) && (
                 !(form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0) ||
                 form.grupo_tamanhos?.modo_preco_tamanho === "por_peso"
               ) && (
@@ -5419,7 +5429,7 @@ export default function Produtos() {
               )}
 
               {/* ══════ SEÇÃO 2: Adicionais das opções ══════ */}
-              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (() => {
+              {((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco")) && (() => {
                 const gruposComOpcoes = [
                   { key: "massas", label: "Massas", grupo: form.grupo_massas },
                   { key: "recheios", label: "Recheios", grupo: form.grupo_recheios },
@@ -5499,7 +5509,7 @@ export default function Produtos() {
 
               {/* ══════ SEÇÃO 3: Regra de conflito Sabor × Tamanho ══════
                   Aparece SÓ quando há conflito real de preço (Passo 4) */}
-              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (() => {
+              {((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco")) && (() => {
                 const gs = form.grupo_sabores;
                 const gt = form.grupo_tamanhos;
                 const conflito = existeConflitoSaborTamanho({
@@ -5636,7 +5646,7 @@ export default function Produtos() {
               {/* ══════ Extras pagos (V3) — DESATIVADO temporariamente
                   Vai virar seção exclusiva de "Complementos" (já existe página /complementos)
                   Integração no cadastro de produto será feita em fase futura. ══════ */}
-              {false && ((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (
+              {false && ((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco")) && (
               <>
 
               {/* Adicionais */}
@@ -5741,7 +5751,7 @@ export default function Produtos() {
               </div>
 
               {/* Promoção — DESATIVADA: agora está inline no bloco "Preço cheio / Preço promocional" acima */}
-              {false && ((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (
+              {false && ((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco")) && (
               <div className="prod-section">
                 <p className="prod-section-label">Promoção</p>
                 <Toggle label="Produto em promoção" value={form.promocao} onChange={(v: boolean) => setForm(f => ({ ...f, promocao: v }))} colorClass="active-pink" />
@@ -5886,6 +5896,8 @@ export default function Produtos() {
                   //   Se ativou algum grupo, precisa ter pelo menos 1 opção nele
                   //   Se Tamanhos ativo, precisa pelo menos 1 tamanho com preço
                   //   Preço base é validado no step 4 (Fotos e finalização)
+                  if (wizardStep === 3 && isBolo) return boloOpcoesOk(form);
+                  if (wizardStep === 4 && isBolo) return boloTamanhosOk(form, boloTam);
                   if (wizardStep === 3) {
                     const gm = form.grupo_massas, gr = form.grupo_recheios, gc = form.grupo_coberturas, gt = form.grupo_tamanhos;
                     // Mobile na etapa checklist: basta ter 1 grupo marcado (opcoes vem depois)
@@ -5952,7 +5964,7 @@ export default function Produtos() {
                       if (!canAdvance) return;
                       // Mobile: se está no checklist da personalização, primeiro avança pra fill (não pro próximo step)
                       const kitLigado = kitAtivo((form as any).kit_qtd);
-                      if (isMobileMain && !form.id && wizardStep === 3 && mobilePersonaStep === "checklist") {
+                      if (isMobileMain && !form.id && wizardStep === 3 && mobilePersonaStep === "checklist" && !isBolo) {
                         const outros = [form.grupo_massas, form.grupo_recheios, form.grupo_coberturas, form.grupo_sabores, form.grupo_tamanhos].some(g => g?.ativo);
                         // Só o kit ligado: vai direto pra "Monte seu kit"
                         if (kitLigado && !outros) { setKitTela(true); return; }
