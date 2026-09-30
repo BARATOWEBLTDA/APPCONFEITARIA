@@ -35,89 +35,139 @@ export function boloOpcoesOk(form: any): boolean {
   return TIPOS_OPCAO.every(t => { const g = form[t.key] as Grupo | undefined; return !g?.ativo || (g.opcoes?.length || 0) > 0; });
 }
 
+const ICONE: Record<string, string> = { grupo_massas: "🍰", grupo_recheios: "🍫", grupo_coberturas: "🧁" };
+const EXEMPLO: Record<string, string> = {
+  grupo_massas: "Branca, chocolate, red velvet…",
+  grupo_recheios: "Ninho, brigadeiro, doce de leite…",
+  grupo_coberturas: "Chantilly, ganache, pasta americana…",
+};
+const NOVA: Record<string, string> = { grupo_massas: "Nova massa…", grupo_recheios: "Novo recheio…", grupo_coberturas: "Nova cobertura…" };
+const LIXEIRA = <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6" /></svg>;
+
 export function BoloOpcoesStep({ form, setForm }: { form: any; setForm: (fn: (f: any) => any) => void }) {
   const [texto, setTexto] = useState<Record<string, string>>({});
-  const [editando, setEditando] = useState<string | null>(null); // id da opção com o "cobra a mais?" aberto
+  const [aberto, setAberto] = useState<string | null>(null);           // cartão sendo editado
+  const [extra, setExtra] = useState<{ key: string; id: string; valor: number } | null>(null); // "custa a mais?"
   const nome = (form.nome || "").trim() || "seu bolo";
   const grupo = (key: string): Grupo => ({ ...GRUPO_VAZIO, ...(form[key] || {}) });
   const setGrupo = (key: string, patch: Partial<Grupo>) => setForm((f: any) => ({ ...f, [key]: { ...GRUPO_VAZIO, ...(f[key] || {}), ...patch } }));
+  const maxRecheio = (g: Grupo) => (g.max >= 99 || !g.max ? 2 : g.max);
 
   const alternar = (key: string) => {
     const g = grupo(key);
-    const ligando = !g.ativo;
-    setGrupo(key, { ativo: ligando, min: 1, max: key === "grupo_recheios" ? (g.max > 1 && g.max < 99 ? g.max : 2) : 1 });
+    if (g.ativo) { setGrupo(key, { ativo: false }); if (aberto === key) setAberto(null); return; }
+    // Recheio começa com "até 2" (o normal em bolo)
+    setGrupo(key, { ativo: true, min: 1, max: key === "grupo_recheios" ? (g.max > 1 && g.max < 99 ? g.max : 2) : 1 });
+    setAberto(key);
   };
-  const adicionar = (key: string, valor: string) => {
-    const n = titulo(valor);
+  const adicionar = (key: string) => {
+    const n = titulo(texto[key] || "");
     if (!n) return;
     const g = grupo(key);
-    if (g.opcoes.some(o => o.nome.toLowerCase() === n.toLowerCase())) { setTexto(t => ({ ...t, [key]: "" })); return; }
-    setGrupo(key, { opcoes: [...g.opcoes, { id: uid(), nome: n, adicional: 0 }] });
-    setTexto(t => ({ ...t, [key]: "" }));
+    if (!g.opcoes.some(o => o.nome.toLowerCase() === n.toLowerCase())) setGrupo(key, { opcoes: [...g.opcoes, { id: uid(), nome: n, adicional: 0 }] });
+    setTexto(x => ({ ...x, [key]: "" }));
   };
+  const salvarExtra = (valor: number) => {
+    if (!extra) return;
+    const g = grupo(extra.key);
+    setGrupo(extra.key, { opcoes: g.opcoes.map(o => o.id === extra.id ? { ...o, adicional: valor, tipo_adicional: "fixo" } : o) });
+    setExtra(null);
+  };
+  const opExtra = extra ? grupo(extra.key).opcoes.find(o => o.id === extra.id) : null;
 
   return (
     <div className="bw">
-      <p className="bw-eta">Etapa 2 de 4</p>
-      <h2 className="bw-h">O <span>{nome}</span> deixa o cliente escolher alguma opção?</h2>
-      <p className="bw-sub">Marque só o que o cliente escolhe. Se não tiver nenhuma, é só tocar em Avançar.</p>
+      <div className="bw-topo">
+        <p className="bw-eta">Etapa 2 de 4</p>
+        <h2 className="bw-h">O cliente escolhe alguma opção?</h2>
+        <p className="bw-sub">No <b>{nome}</b>. Marque só o que ele escolhe — se nada, é só avançar.</p>
+      </div>
 
       {TIPOS_OPCAO.map(t => {
         const g = grupo(t.key);
+        const editando = g.ativo && (aberto === t.key || g.opcoes.length === 0);
+        const resumo = g.ativo && !editando;
+        const qtd = g.opcoes.length;
+        const sub = !g.ativo ? EXEMPLO[t.key]
+          : `${qtd} ${qtd === 1 ? "opção" : "opções"}${t.key === "grupo_recheios" && qtd > 0 ? ` · o cliente escolhe até ${maxRecheio(g)}` : ""}`;
         return (
-          <div key={t.key} className={`bw-opt${g.ativo ? " on" : ""}`}>
-            <button type="button" className="bw-opt-h" onClick={() => alternar(t.key)} aria-pressed={g.ativo}>
-              <i aria-hidden="true">{g.ativo ? "✓" : ""}</i>
-              <b>{t.titulo}</b>
-              {g.ativo && g.opcoes.length > 0 && <em>{g.opcoes.length} {g.opcoes.length === 1 ? "opção" : "opções"}</em>}
-            </button>
-            {g.ativo && (
-              <div className="bw-opt-b">
-                {g.opcoes.length > 0 && (
-                  <div className="bw-chips">
-                    {g.opcoes.map(o => (
-                      <span key={o.id} className={`bw-chip${editando === o.id ? " ed" : ""}`}>
-                        <button type="button" className="bw-chip-n" onClick={() => setEditando(e => e === o.id ? null : o.id)} title="Toque pra cobrar a mais por essa opção">
-                          {o.nome}{o.adicional > 0 && <small> +{brl(o.adicional)}</small>}
-                        </button>
-                        <button type="button" className="bw-chip-x" onClick={() => setGrupo(t.key, { opcoes: g.opcoes.filter(x => x.id !== o.id) })} aria-label={`Tirar ${o.nome}`}>✕</button>
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {editando && g.opcoes.some(o => o.id === editando) && (() => {
-                  const o = g.opcoes.find(x => x.id === editando)!;
-                  return (
-                    <div className="bw-extra">
-                      <span><b>{o.nome}</b> cobra a mais?</span>
-                      <label className="bw-rs">R$ <MoneyInput autoFocus value={o.adicional} ariaLabel={`Quanto ${o.nome} custa a mais`}
-                        onChange={v => setGrupo(t.key, { opcoes: g.opcoes.map(x => x.id === o.id ? { ...x, adicional: v, tipo_adicional: "fixo" } : x) })} /></label>
-                      <button type="button" onClick={() => setEditando(null)}>Pronto</button>
+          <div key={t.key} className={`bo-card${g.ativo ? " on" : ""}${resumo ? " resumo" : ""}`}>
+            <div className="bo-h">
+              <button type="button" className="bo-h-main" onClick={() => g.ativo ? setAberto(editando ? null : t.key) : alternar(t.key)}>
+                <span className="bo-ic" aria-hidden="true">{ICONE[t.key]}</span>
+                <span className="bo-tx">
+                  <b>{t.titulo}</b>
+                  {resumo ? (
+                    <span className="bo-rs">
+                      {g.opcoes.map((o, i) => (
+                        <span key={o.id}>{o.nome}{o.adicional > 0 && <em> +{brl(o.adicional)}</em>}{i < g.opcoes.length - 1 ? ", " : ""}</span>
+                      ))}
+                      {t.key === "grupo_recheios" && <small>O cliente escolhe até {maxRecheio(g)}</small>}
+                    </span>
+                  ) : <small className={g.ativo ? "on" : ""}>{sub}</small>}
+                </span>
+              </button>
+              {resumo ? (
+                <button type="button" className="bo-editar" onClick={() => setAberto(t.key)}>Editar</button>
+              ) : (
+                <button type="button" className={`bo-ck${g.ativo ? " on" : ""}`} onClick={() => alternar(t.key)} aria-pressed={g.ativo} aria-label={g.ativo ? `Desmarcar ${t.titulo}` : `Marcar ${t.titulo}`}>
+                  {g.ativo ? "✓" : ""}
+                </button>
+              )}
+            </div>
+
+            {editando && (
+              <div className="bo-body">
+                <div className="bo-lista">
+                  {g.opcoes.map(o => (
+                    <div className="bo-li" key={o.id}>
+                      <span className="bo-nm">{o.nome}</span>
+                      <button type="button" className={`bo-vx${o.adicional > 0 ? " tem" : ""}`} onClick={() => setExtra({ key: t.key, id: o.id, valor: o.adicional || 0 })}>
+                        {o.adicional > 0 ? `+ ${brl(o.adicional)}` : "+ valor extra"}
+                      </button>
+                      <button type="button" className="bo-rm" onClick={() => setGrupo(t.key, { opcoes: g.opcoes.filter(x => x.id !== o.id) })} aria-label={`Remover ${o.nome}`}>{LIXEIRA}</button>
                     </div>
-                  );
-                })()}
-                <div className="bw-add">
-                  <input value={texto[t.key] || ""} placeholder={t.ph} onChange={e => setTexto(x => ({ ...x, [t.key]: e.target.value }))}
-                    onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); adicionar(t.key, texto[t.key] || ""); } }} aria-label={`Nova opção de ${t.titulo.toLowerCase()}`} />
-                  <button type="button" onClick={() => adicionar(t.key, texto[t.key] || "")} disabled={!(texto[t.key] || "").trim()}>Adicionar</button>
+                  ))}
+                  <div className="bo-li bo-li--add">
+                    <input value={texto[t.key] || ""} placeholder={NOVA[t.key]} onChange={e => setTexto(x => ({ ...x, [t.key]: e.target.value }))}
+                      onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); adicionar(t.key); } }} aria-label={NOVA[t.key]} />
+                    <button type="button" onClick={() => adicionar(t.key)} disabled={!(texto[t.key] || "").trim()}>+ Adicionar</button>
+                  </div>
                 </div>
                 {t.key === "grupo_recheios" && (
-                  <div className="bw-frase">
-                    O cliente escolhe até
+                  <div className="bo-lim">
+                    <span>O cliente escolhe até</span>
                     <span className="bw-stepper">
-                      <button type="button" onClick={() => setGrupo(t.key, { max: Math.max(1, (g.max || 1) - 1) })} disabled={(g.max || 1) <= 1} aria-label="Menos">−</button>
-                      <b>{g.max >= 99 ? 2 : g.max}</b>
-                      <button type="button" onClick={() => setGrupo(t.key, { max: Math.min(5, (g.max >= 99 ? 2 : g.max) + 1) })} disabled={g.max >= 5 && g.max < 99} aria-label="Mais">+</button>
+                      <button type="button" onClick={() => setGrupo(t.key, { max: Math.max(1, maxRecheio(g) - 1) })} disabled={maxRecheio(g) <= 1} aria-label="Menos">−</button>
+                      <b>{maxRecheio(g)}</b>
+                      <button type="button" onClick={() => setGrupo(t.key, { max: Math.min(5, maxRecheio(g) + 1) })} disabled={maxRecheio(g) >= 5} aria-label="Mais">+</button>
                     </span>
-                    {(g.max >= 99 ? 2 : g.max) === 1 ? "recheio" : "recheios"}
                   </div>
                 )}
-                {g.opcoes.length > 0 && <p className="bw-dica">Dica: toque numa opção pra cobrar a mais por ela (ex: Nutella + R$ 10).</p>}
               </div>
             )}
           </div>
         );
       })}
+
+      <p className="bo-tip">💡 Toque em “+ valor extra” pra cobrar a mais por uma opção (ex: Nutella + R$ 10).</p>
+
+      {/* "Quanto essa opção custa a mais?" — abre por baixo */}
+      {extra && opExtra && createPortal(
+        <div className="bw-sheet-bg" onClick={() => setExtra(null)}>
+          <div className="bw-sheet" onClick={e => e.stopPropagation()} role="dialog" aria-label={`Valor extra de ${opExtra.nome}`}>
+            <div className="bw-grab" aria-hidden="true" />
+            <div className="bw-sheet-h"><b>{opExtra.nome}</b><button type="button" onClick={() => setExtra(null)} aria-label="Fechar">✕</button></div>
+            <p className="bw-hint bw-hint--top">Quanto essa opção custa a mais?</p>
+            <label className="bw-money"><span>+ R$</span>
+              <MoneyInput autoFocus value={extra.valor} onChange={v => setExtra(x => x ? { ...x, valor: v } : x)} ariaLabel={`Valor extra de ${opExtra.nome}`} />
+            </label>
+            <div className="bo-sheet-acts">
+              <button type="button" className="bo-sheet-tirar" onClick={() => salvarExtra(0)}>{opExtra.adicional > 0 ? "Tirar valor extra" : "Não cobra a mais"}</button>
+              <button type="button" className="bo-sheet-ok" onClick={() => salvarExtra(extra.valor)}>Salvar</button>
+            </div>
+          </div>
+        </div>, document.body)}
       <style>{CSS}</style>
     </div>
   );
@@ -213,9 +263,11 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, primeiroN
 
   return (
     <div className="bw">
-      <p className="bw-eta">Etapa 3 de 4</p>
-      <h2 className="bw-h">Esse bolo tem mais de um tamanho ou peso?</h2>
-      <p className="bw-sub">Ex: P, M e G · aro 15, 20 e 25 · 1 kg, 2 kg e 3 kg</p>
+      <div className="bw-topo">
+        <p className="bw-eta">Etapa 3 de 4</p>
+        <h2 className="bw-h">Esse bolo tem mais de um tamanho ou peso?</h2>
+        <p className="bw-sub">Ex: P, M e G · aro 15, 20 e 25 · 1 kg, 2 kg e 3 kg</p>
+      </div>
       <div className="bw-sn" role="radiogroup">
         <button type="button" role="radio" aria-checked={escolha === "sim"} className={escolha === "sim" ? "on" : ""} onClick={() => escolher("sim")}>
           <b>Sim</b><small>P, M, G ou por kg</small>
@@ -565,5 +617,55 @@ const CSS = `
     .bw-tabela input.bw-in { padding: 0 8px; } .bw-tabela .bw-in input { padding-left: 8px; } .bw-tabela .bw-rs { padding-left: 8px; }
     .bw-tabela .bw-calc { padding: 0 8px; font-size: 12px; } .bw-tabela .bw-calc.ok { font-size: 13.5px; }
     .bw-rend-in { width: 140px; }
+  }
+
+  /* Topo centralizado (igual às outras telas do cadastro) */
+  .bw-topo { text-align: center; margin-bottom: 18px; }
+  .bw-topo .bw-h { margin: 6px auto 6px; max-width: 520px; }
+  .bw-topo .bw-sub { margin: 0 auto; max-width: 440px; }
+  .bw-topo .bw-sub b { color: #2C1219; }
+
+  /* Etapa 2 — cartões de opção (aprovado 30/09) */
+  .bo-card { border: 1px solid #EDE5E8; border-radius: 12px; background: #fff; margin-bottom: 10px; transition: border-color .15s, box-shadow .15s; }
+  .bo-card.on { border-color: #E85A8C; box-shadow: 0 0 0 3px #FCE7F3; }
+  .bo-card.resumo { border-color: #F0E0E7; box-shadow: none; background: #FFFCFD; }
+  .bo-h { display: flex; align-items: center; gap: 10px; padding: 12px 14px; }
+  .bo-h-main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; border: none; background: none; padding: 0; font-family: inherit; text-align: left; cursor: pointer; color: #2C1219; }
+  .bo-ic { width: 42px; height: 42px; border-radius: 10px; background: #FCE7F3; display: flex; align-items: center; justify-content: center; font-size: 21px; flex-shrink: 0; }
+  .bo-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .bo-tx b { font-size: 15px; font-weight: 700; }
+  .bo-tx small { font-size: 12.5px; color: #888780; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bo-tx small.on { color: #C33A6E; font-weight: 600; }
+  .bo-rs { font-size: 13px; color: #4B3A42; margin-top: 3px; line-height: 1.45; }
+  .bo-rs em { font-style: normal; color: #15803D; font-weight: 700; }
+  .bo-rs small { display: block; font-size: 12px; color: #9A8E94; margin-top: 2px; white-space: normal; }
+  .bo-ck { width: 26px; height: 26px; border-radius: 7px; border: 2px solid #D6CBD0; background: #fff; color: #fff; font-size: 14px; font-weight: 900; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; padding: 0; }
+  .bo-ck.on { background: #E85A8C; border-color: #E85A8C; }
+  .bo-editar { border: 1px solid #F9D1E0; background: #FFF1F6; color: #C33A6E; border-radius: 8px; padding: 7px 12px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
+  .bo-body { padding: 0 14px 14px; }
+  .bo-lista { border: 1px solid #F0EBED; border-radius: 10px; overflow: hidden; }
+  .bo-li { display: flex; align-items: center; gap: 8px; min-height: 50px; padding: 0 6px 0 14px; border-top: 1px solid #F3ECEE; }
+  .bo-li:first-child { border-top: none; }
+  .bo-nm { flex: 1; min-width: 0; font-size: 14.5px; font-weight: 700; color: #2C1219; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bo-vx { border: 1.5px dashed #DCCFD5; background: none; border-radius: 999px; padding: 6px 12px; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #9A8E94; cursor: pointer; white-space: nowrap; }
+  .bo-vx:hover { border-color: #C33A6E; color: #C33A6E; }
+  .bo-vx.tem { border: 1.5px solid #BBF7D0; background: #F0FDF4; color: #15803D; font-weight: 800; }
+  .bo-rm { width: 36px; height: 36px; border: none; background: none; border-radius: 8px; color: #B5AAB0; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-left: 2px; }
+  .bo-rm:hover { color: #DC2626; background: #FEF2F2; }
+  .bo-li--add { background: #FCFAFB; padding-right: 10px; }
+  .bo-li--add input { flex: 1; min-width: 0; height: 48px; border: none; outline: none; background: none; font-family: inherit; font-size: 14.5px; color: #2C1219; }
+  .bo-li--add input::placeholder { color: #B5AAB0; }
+  .bo-li--add button { border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 800; color: #C33A6E; cursor: pointer; padding: 8px 4px; white-space: nowrap; }
+  .bo-li--add button:disabled { color: #D6CBD0; cursor: default; }
+  .bo-lim { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #F3ECEE; font-size: 14px; font-weight: 600; color: #2C1219; }
+  .bo-tip { font-size: 12.5px; color: #9A8E94; margin: 6px 0 0; text-align: center; }
+  .bo-sheet-acts { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
+  .bo-sheet-tirar { border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #6B5D64; cursor: pointer; padding: 8px 0; }
+  .bo-sheet-ok { height: 46px; border: none; border-radius: 8px; background: #2C1219; color: #fff; font-family: inherit; font-size: 14.5px; font-weight: 800; padding: 0 28px; cursor: pointer; }
+  @media (max-width: 767px) {
+    .bo-h { padding: 12px; } .bo-ic { width: 40px; height: 40px; font-size: 20px; }
+    .bo-body { padding: 0 12px 12px; }
+    .bo-li { padding-left: 12px; }
+    .bo-vx { padding: 6px 10px; font-size: 12px; }
   }
 `;
