@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { precoCardapio } from '@/lib/precoCardapio'
+import { formatCurrency as fmtBRL } from '@/utils/helpers'
 import { Heart } from 'lucide-react'
 import { Produto } from '@/types/database'
 import { ProductModal } from '@/components/cart/ProductModal'
@@ -35,8 +37,10 @@ export function ProductCard({ product, isFavorite, onToggleFavorite, backgroundC
         ? 1 - (product.preco_promocional / product.preco_normal)
         : 0
     : 0
+  // Preço mostrado: com tamanhos/kit é o menor ("a partir de")
+  const { valor: precoBase, aPartir } = precoCardapio(product)
   const precoPromocional = isPromo && descRatio > 0
-    ? parseFloat((product.preco_normal * (1 - descRatio)).toFixed(2))
+    ? parseFloat((precoBase * (1 - descRatio)).toFixed(2))
     : (product.preco_promocional || 0)
 
   return (
@@ -60,13 +64,14 @@ export function ProductCard({ product, isFavorite, onToggleFavorite, backgroundC
           <h4 className="font-bold leading-tight line-clamp-2 mb-1" style={{ color: '#2C1219', fontSize: '13px' }}>{product.nome}</h4>
           <p className="text-gray-500 line-clamp-3 mb-2" style={{ fontSize: '11.5px', lineHeight: 1.4 }}>{product.descricao}</p>
           <div className="mt-auto flex items-baseline justify-center gap-1.5 flex-wrap">
+            {aPartir && <span className="text-gray-500" style={{ fontSize: '10.5px', width: '100%' }}>a partir de</span>}
             {isPromo && precoPromocional > 0 ? (
               <>
-                <span className="text-red-500 line-through" style={{ fontSize: '11px' }}>R$ {product.preco_normal.toFixed(2)}</span>
-                <span className="font-bold text-green-600" style={{ fontSize: '14.5px' }}>R$ {precoPromocional.toFixed(2)}</span>
+                <span className="text-red-500 line-through" style={{ fontSize: '11px' }}>{fmtBRL(precoBase)}</span>
+                <span className="font-bold text-green-600" style={{ fontSize: '14.5px' }}>{fmtBRL(precoPromocional)}</span>
               </>
             ) : (
-              <span className="font-bold text-green-600" style={{ fontSize: '14.5px' }}>R$ {product.preco_normal.toFixed(2)}</span>
+              <span className="font-bold text-green-600" style={{ fontSize: '14.5px' }}>{fmtBRL(precoBase)}</span>
             )}
           </div>
         </div>

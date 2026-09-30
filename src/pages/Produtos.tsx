@@ -3701,7 +3701,10 @@ export default function Produtos() {
   };
 
   // ═══ Draft de produto (mobile - autosave em localStorage) ═══
+  // Rascunho automático DESLIGADO (causava bug: pulava a tela de tipos). Limpa o que ficou salvo.
+  useEffect(() => { try { localStorage.removeItem(DRAFT_KEY); } catch {} }, []);
   const hasDraft = (): boolean => {
+    return false;
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (!raw) return false;
@@ -3750,6 +3753,7 @@ export default function Produtos() {
 
   // Autosave: salva o form no localStorage enquanto o modal está aberto e é NOVO produto (sem id)
   useEffect(() => {
+    return; // rascunho automático desligado
     if (!modal || form.id) return;
     if (draftSaveTimer.current) clearTimeout(draftSaveTimer.current);
     draftSaveTimer.current = setTimeout(() => {
@@ -5128,7 +5132,7 @@ export default function Produtos() {
                   <div className="prod-section">
                     <p className="prod-section-label prod-section-label--novo">
                       Fotos por opção
-                      {!isPro && <img src="/coroa.png" alt="PRO" style={{width: 12, height: 12, objectFit: "contain", marginLeft: 6, verticalAlign: "middle"}} />}
+                      {!isPro && <span className="prod-pro-tag"><img src="/coroa.png" alt="" />PRO</span>}
                     </p>
                     <p style={{fontSize: 12, color: "#6B5D64", margin: "0 0 14px"}}>
                       Ative pra ter uma foto de cada opção. Cliente verá a foto ao escolher no cardápio.
@@ -5146,8 +5150,8 @@ export default function Produtos() {
                           </div>
                           <div className="pv3-sub-toggle-txt">
                             <div className="pv3-sub-toggle-titulo">
-                              Foto por {label.toLowerCase().slice(0, -1)}
-                              {!isPro && <img src="/coroa.png" alt="PRO" className="pv3-sub-toggle-crown" style={{width: 14, height: 14, objectFit: "contain"}} />}
+                              Foto por {({ massas: "massa", recheios: "recheio", coberturas: "cobertura", sabores: "sabor", tamanhos: "tamanho" } as Record<string, string>)[key] || label.toLowerCase()}
+                              {!isPro && <span className="prod-pro-tag"><img src="/coroa.png" alt="" />PRO</span>}
                             </div>
                             <div className="pv3-sub-toggle-desc">
                               {grupo.foto_por_opcao ? "✓ Ativo — adicione as fotos abaixo" : `${grupo.opcoes.length} opções cadastradas`}
@@ -5268,7 +5272,7 @@ export default function Produtos() {
 
               {/* Preços por Tamanho — só se tem tamanhos ativos */}
               {wizardStep === 4 && isBolo && (
-                <BoloTamanhosStep form={form} setForm={setForm as any} escolha={boloTam} setEscolha={setBoloTam} />
+                <BoloTamanhosStep form={form} setForm={setForm as any} escolha={boloTam} setEscolha={setBoloTam} primeiroNome={primeiroNome} />
               )}
               {((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco")) && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && form.grupo_tamanhos.modo_preco_tamanho !== "sob_consulta" && form.grupo_tamanhos.modo_preco_tamanho !== "por_peso" && (
                 <div className="prod-section">
@@ -7310,6 +7314,9 @@ export default function Produtos() {
           font-weight: var(--fw-medium);
           line-height: 1.1;
         }
+        /* Tag PRO padrão do app (igual à do menu Mais: coroa + "PRO") */
+        .prod-pro-tag { background: #2D1F26; color: #fff; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 6px; letter-spacing: .04em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 4px; line-height: 1; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,.2); margin-left: 8px; vertical-align: middle; font-family: var(--font-base); }
+        .prod-pro-tag img { width: 10px; height: 10px; object-fit: contain; display: block; flex-shrink: 0; }
         .prod-card-tags { position: absolute; top: 8px; display: flex; flex-direction: column; gap: 4px; z-index: 1; pointer-events: none; }
         .prod-card-tags--dir { right: 8px; align-items: flex-end; }
         .prod-card-tags--esq { left: 8px; align-items: flex-start; }

@@ -1,5 +1,6 @@
 import { AvisoAntecedencia } from "@/lib/entregaProduto";
 import KitPicker from '@/components/cardapio/KitPicker'
+import { precoCardapio } from '@/lib/precoCardapio'
 import { kitAtivo, calcularKit, selecaoInicial, type KitSelecao } from '@/lib/kitQuantidade'
 import { useState, useEffect, useMemo } from 'react'
 import { X, Plus, Minus, Camera, Ruler, ChevronRight, ChevronDown } from 'lucide-react'
@@ -433,7 +434,8 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
         if (opSelecionada.peso_kg) selecTitulo += ` · ${String(opSelecionada.peso_kg).replace('.', ',')} kg`
         if (opSelecionada.serve) {
           const s = String(opSelecionada.serve).trim()
-          selecSub = `Serve ${s}${/^\d+$/.test(s) ? ' pessoas' : ''}`
+          const emFatias = (product as any)?.grupo_tamanhos?.rendimento_unidade === 'fatias'
+          selecSub = /^\d+$/.test(s) ? (emFatias ? `${s} fatias` : `Serve ${s} pessoas`) : `Serve ${s}`
         }
         if (g.tipo === 'sabor' && saborTemPrecoProprio && opSelecionada.preco > 0) selecPreco = formatCurrency(opSelecionada.preco)
         else if (g.tipo === 'tamanho' && opSelecionada.preco > 0) selecPreco = formatCurrency(opSelecionada.preco)
@@ -506,7 +508,8 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                 if (g.tipo === 'sabor' && saborTemPrecoProprio && op.preco > 0) precoLabel = formatCurrency(op.preco)
                 else if (g.tipo === 'tamanho' && op.preco > 0) precoLabel = formatCurrency(op.preco)
                 else if ((op.adicional || 0) > 0) precoLabel = `+${formatCurrency(op.adicional)}`
-                const serveTxt = op.serve ? `${String(op.serve).trim()}${/^\d+$/.test(String(op.serve).trim()) ? ' pessoas' : ''}`.trim() : ''
+                const emFatias = (product as any)?.grupo_tamanhos?.rendimento_unidade === 'fatias'
+                const serveTxt = op.serve ? `${String(op.serve).trim()}${/^\d+$/.test(String(op.serve).trim()) ? (emFatias ? ' fatias' : ' pessoas') : ''}`.trim() : ''
                 const pesoTxt = op.peso_kg ? `${String(op.peso_kg).replace('.', ',')} kg` : ''
                 const tituloOp = pesoTxt ? `${op.nome} · ${pesoTxt}` : op.nome
 
@@ -741,10 +744,19 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '10px 14px', background: '#FDF3F7', borderRadius: 10, border: '1px solid #FCE0E9',
           }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#6B5D64' }}>Preço unitário</span>
-            <span style={{ fontSize: 18, fontWeight: 800, color: corBotao }}>
-              {formatCurrency(calculo.final)} <span style={{ fontSize: 12, color: '#6B5D64', fontWeight: 700 }}>/{FORMA_LABEL[product.forma_venda] || 'un'}</span>
-            </span>
+            {(() => {
+              // Com tamanhos e nenhum escolhido ainda: mostra o menor preço ("A partir de")
+              const semTamanho = !!gTamanho && !opTamanho && !kitInfo
+              const valor = semTamanho ? Math.round(precoCardapio(product).valor * (1 - descPct) * 100) / 100 : calculo.final
+              return (
+                <>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#6B5D64' }}>{semTamanho ? 'A partir de' : 'Preço unitário'}</span>
+                  <span style={{ fontSize: 18, fontWeight: 800, color: corBotao }}>
+                    {formatCurrency(valor)} {!semTamanho && <span style={{ fontSize: 12, color: '#6B5D64', fontWeight: 700 }}>/{FORMA_LABEL[product.forma_venda] || 'un'}</span>}
+                  </span>
+                </>
+              )
+            })()}
           </div>
 
           {/* Encomenda: avisa a antecedência (pronta entrega não precisa de aviso) */}

@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { precoCardapio } from '@/lib/precoCardapio'
+import { formatCurrency as fmtBRL } from '@/utils/helpers'
 import { Heart } from 'lucide-react'
 import { Produto } from '@/types/database'
 import { ProductModal } from '@/components/cart/ProductModal'
@@ -92,16 +94,17 @@ export function DesktopProductCard({ product, isFavorite, onToggleFavorite, back
             {product.descricao}
           </p>
 
-          {/* Preço */}
+          {/* Preço (com tamanhos/kit: o menor, "a partir de") */}
           <div style={{ marginTop: 'auto' }}>
+            {precoCardapio(product).aPartir && <span style={{ display: 'block', fontSize: '11px', color: '#6B7280', marginBottom: '1px' }}>a partir de</span>}
             {product.promocao && product.preco_promocional ? (
               <div style={{ marginBottom: '10px' }}>
                 <span style={{ fontSize: '12px', color: '#ef4444', textDecoration: 'line-through' }}>
-                  R$ {product.preco_normal.toFixed(2)}
+                  {fmtBRL(product.preco_normal)}
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
                   <span style={{ fontSize: '18px', fontWeight: 800, color: '#16a34a' }}>
-                    R$ {product.preco_promocional.toFixed(2)}
+                    {fmtBRL(product.preco_promocional)}
                   </span>
                   <span style={{
                     fontSize: '10px', fontWeight: 700, padding: '2px 6px',
@@ -114,7 +117,7 @@ export function DesktopProductCard({ product, isFavorite, onToggleFavorite, back
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
                 <span style={{ fontSize: '18px', fontWeight: 800, color: '#16a34a' }}>
-                  R$ {product.preco_normal.toFixed(2)}
+                  {fmtBRL(precoCardapio(product).valor)}
                 </span>
                 <span style={{
                   fontSize: '10px', fontWeight: 700, padding: '2px 6px',
