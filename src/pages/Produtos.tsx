@@ -3763,7 +3763,7 @@ export default function Produtos() {
   // "Que tipo de produto?" → prepara o cadastro (categoria, opções sugeridas, kit pronto)
   const aplicarTipoProduto = (tp: TipoCadastro) => {
     const norm = (x: string) => x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-    const palavras: Record<string, RegExp> = { bolos: /bolo/, doces: /doce|docinho|brigadeiro|bombo/, salgados: /salgad/, sobremesas: /sobremesa|pudi|torta|pote|mousse/ };
+    const palavras: Record<string, RegExp> = { bolos: /bolo/, doces: /doce|docinho|brigadeiro|bombo/, salgados: /salgad/, sobremesas: /sobremesa|pudi|torta|pote|mousse/, kitfesta: /kit|combo|festa/ };
     const cat = palavras[tp] ? categorias.find(c => palavras[tp].test(norm(c))) : undefined;
     setForm(f => ({
       ...f,
@@ -3779,6 +3779,10 @@ export default function Produtos() {
         grupo_recheios: { ...(f.grupo_recheios || GRUPO_VAZIO), ativo: true, min: 1, max: 99 },
       } : {}),
       ...(tp === "doces" ? { kit_qtd: presetKit("docinhos") } : {}),
+      // Kit festa: tamanhos do combo (20, 40, 60 pessoas…) com preço fixo cada
+      ...(tp === "kitfesta" ? {
+        grupo_tamanhos: { ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO), ativo: true, min: 1, max: 1, modo_preco_tamanho: "preco_fixo", nome_exibicao: "Tamanhos do combo" },
+      } : {}),
       ...(tp === "salgados" ? { kit_qtd: presetKit("salgados") } : {}),
     } as any));
     setKitTela(false); setTipoTela(false); setWizardStep(2);
