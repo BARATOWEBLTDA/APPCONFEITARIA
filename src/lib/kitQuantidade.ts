@@ -14,6 +14,8 @@ export interface KitLivre { min: number; passo: number; max: number; preco_cento
 
 export interface KitQtdConfig {
   ativo: boolean
+  /** Modelo escolhido no cadastro (docinhos, salgados ou do meu jeito) */
+  modelo?: "docinhos" | "salgados" | "livre"
   sabores: KitSabor[]
   modo: "fechado" | "livre"
   kits: KitFechado[]
@@ -107,4 +109,25 @@ export function calcularKit(k: KitQtdConfig, sel: KitSelecao): KitCalculo {
   const usados = sabores.filter(s => s.qtd > 0).length
   const completo = alvo > 0 && soma === alvo && usados >= 1 && usados <= (k.max_sabores || 1)
   return { alvo, soma, usados, preco, completo, restante: alvo - soma, escolha: { modo: k.modo, total: alvo, sabores: sabores.filter(s => s.qtd > 0) } }
+}
+
+// ═══ Modelos prontos (cadastro fácil) ═══
+export function presetKit(modelo: "docinhos" | "salgados" | "livre", atual?: KitQtdConfig | null): KitQtdConfig {
+  const sabores = atual?.sabores || []
+  if (modelo === "docinhos") return {
+    ativo: true, modelo, sabores, modo: "fechado",
+    kits: [{ id: novoId(), qtd: 50, preco: 0 }, { id: novoId(), qtd: 100, preco: 0 }],
+    livre: { ...KIT_VAZIO.livre }, max_sabores: 2, passo_sabor: 25,
+  }
+  if (modelo === "salgados") return {
+    ativo: true, modelo, sabores, modo: "livre", kits: [],
+    livre: { min: 100, passo: 50, max: 4000, preco_cento: 0 }, max_sabores: 4, passo_sabor: 25,
+  }
+  return { ...KIT_VAZIO, ativo: true, modelo, sabores, kits: [{ id: novoId(), qtd: 0, preco: 0 }], max_sabores: 2, passo_sabor: 1 }
+}
+
+export const SUGESTOES_SABORES: Record<string, string[]> = {
+  docinhos: ["Brigadeiro", "Beijinho", "Cajuzinho", "Ninho", "Casadinho", "Paçoca", "Churros", "Bicho de pé"],
+  salgados: ["Coxinha", "Risole de carne", "Bolinha de queijo", "Kibe", "Enroladinho de salsicha", "Esfiha", "Pastel", "Empadinha"],
+  livre: [],
 }

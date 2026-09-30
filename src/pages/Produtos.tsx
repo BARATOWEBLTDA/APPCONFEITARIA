@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import KitQuantidadeEditor from "@/components/produto/KitQuantidadeEditor";
-import { kitAtivo, erroKit, precoMinKit } from "@/lib/kitQuantidade";
+import { kitAtivo, erroKit, precoMinKit, presetKit, type KitQtdConfig } from "@/lib/kitQuantidade";
+import TipoProdutoTela, { type TipoProduto as TipoCadastro } from "@/components/produto/TipoProdutoTela";
 import { supabase } from "@/lib/supabase";
 import { listarBiblioteca, salvarNaBiblioteca, type BibliotecaOpcao } from "@/lib/biblioteca";
 import { carregarGruposDoBanco, salvarGruposParaBanco } from "@/lib/produto-grupos";
@@ -969,8 +970,8 @@ function SelectDoonly({
 function PersonalizacaoStep({
   grupoMassas, grupoRecheios, grupoCoberturas, grupoSabores, grupoTamanhos,
   precoBase, quantidadeBase, formaVenda, onChange, onPrecoBaseChange, onFormaVendaChange,
-  mobileMode, onGoToFill, onBackToChecklist, primeiroNome, produtoNome, produtoCategoria, ocultarTamanhosSabores,
-}: PersonalizacaoStepProps & { ocultarTamanhosSabores?: boolean }) {
+  mobileMode, onGoToFill, onBackToChecklist, primeiroNome, produtoNome, produtoCategoria, ocultarTamanhosSabores, slotTopo,
+}: PersonalizacaoStepProps & { ocultarTamanhosSabores?: boolean; slotTopo?: React.ReactNode }) {
   const [expandido, setExpandido] = useState<string | null>(null);
   // Bottom sheet "Escolher da biblioteca"
   const [bibSheetGrupo, setBibSheetGrupo] = useState<"massas" | "recheios" | "coberturas" | "sabores" | "tamanhos" | null>(null);
@@ -1472,6 +1473,7 @@ function PersonalizacaoStep({
           </div>
         )}
       </div>
+      {slotTopo}
 
       {/* MOBILE — Etapa 1: Checklist (marcar categorias). Etapa 2: mostrar botão voltar */}
       {mobileMode === "checklist" && (
@@ -3466,6 +3468,9 @@ export default function Produtos() {
   const [wizardStep, setWizardStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   // Mobile: divide step 3 (personalização) em 2 sub-etapas: 'checklist' (só marca as categorias) → 'fill' (preenche)
   const [mobilePersonaStep, setMobilePersonaStep] = useState<"checklist" | "fill">("checklist");
+  // Cadastro fácil: 1ª tela "Que tipo de produto?" e a tela separada "Monte seu kit"
+  const [tipoTela, setTipoTela] = useState(false);
+  const [kitTela, setKitTela] = useState(false);
   const [isMobileMain, setIsMobileMain] = useState(false);
   useEffect(() => {
     const check = () => setIsMobileMain(window.innerWidth <= 720);
@@ -3753,8 +3758,45 @@ export default function Produtos() {
       setShowDraftBanner(true);
       return;
     }
-    setForm(EMPTY); setFichaTecnica([]); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setMobilePersonaStep("checklist"); setModal(true);
+    setForm(EMPTY); setFichaTecnica([]); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setMobilePersonaStep("checklist"); setKitTela(false); setTipoTela(true); setModal(true);
   };
+  // "Que tipo de produto?" → prepara o cadastro (categoria, opções sugeridas, kit pronto)
+  const aplicarTipoProduto = (tp: TipoCadastro) => {
+    const norm = (x: string) => x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const palavras: Record<string, RegExp> = { bolos: /bolo/, doces: /doce|docinho|brigadeiro|bombo/, salgados: /salgad/, sobremesas: /sobremesa|pudi|torta|pote|mousse/ };
+    const cat = palavras[tp] ? categorias.find(c => palavras[tp].test(norm(c))) : undefined;
+    setForm(f => ({
+      ...f,
+      // Trocou de tipo (voltou e escolheu outro): desfaz o que o tipo anterior ligou, se ainda estiver vazio
+      ...(!(f.grupo_tamanhos?.opcoes?.length) ? { grupo_tamanhos: { ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO), ativo: false } } : {}),
+      ...(!(f.grupo_massas?.opcoes?.length) ? { grupo_massas: { ...(f.grupo_massas || GRUPO_VAZIO), ativo: false } } : {}),
+      ...(!(f.grupo_recheios?.opcoes?.length) ? { grupo_recheios: { ...(f.grupo_recheios || GRUPO_VAZIO), ativo: false } } : {}),
+      ...(!((f as any).kit_qtd?.sabores?.length) ? { kit_qtd: null } : {}),
+      ...(cat ? { categoria: cat } : {}),
+      ...(tp === "bolos" ? {
+        grupo_tamanhos: { ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO), ativo: true, min: 1, max: 1 },
+        grupo_massas: { ...(f.grupo_massas || GRUPO_VAZIO), ativo: true, min: 1, max: 1 },
+        grupo_recheios: { ...(f.grupo_recheios || GRUPO_VAZIO), ativo: true, min: 1, max: 99 },
+      } : {}),
+      ...(tp === "doces" ? { kit_qtd: presetKit("docinhos") } : {}),
+      ...(tp === "salgados" ? { kit_qtd: presetKit("salgados") } : {}),
+    } as any));
+    setKitTela(false); setTipoTela(false); setWizardStep(2);
+  };
+  // Liga/desliga e edita o kit (Tamanhos e Sabores saem quando o kit liga)
+  const onKitChange = (k: KitQtdConfig) => setForm(f => {
+    const ligando = k.ativo && !kitAtivo((f as any).kit_qtd);
+    return {
+      ...f,
+      kit_qtd: k,
+      ...(ligando ? {
+        grupo_tamanhos: { ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO), ativo: false },
+        grupo_sabores: { ...(f.grupo_sabores || GRUPO_SABORES_VAZIO), ativo: false },
+        forma_venda: "unidade",
+      } : {}),
+      ...(k.ativo && precoMinKit(k) > 0 ? { preco_normal: precoMinKit(k) } : {}),
+    } as any;
+  });
   const openEditar = async (p: Produto, limparCopiaTag = false) => {
     // Migração silenciosa: "sob-encomenda" era misturado no forma_venda,
     // agora é modo de produção separado (pronta_entrega=false)
@@ -3802,7 +3844,7 @@ export default function Produtos() {
       }
     }
   };
-  const fecharModal = () => { setModal(false); setForm(EMPTY); setFichaTecnica([]); setFichaModalOpen(false); setShowQuickAdd(false); setBuscaInsumo(""); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setConfirmDiscardProd(false); };
+  const fecharModal = () => { setTipoTela(false); setKitTela(false); setModal(false); setForm(EMPTY); setFichaTecnica([]); setFichaModalOpen(false); setShowQuickAdd(false); setBuscaInsumo(""); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setConfirmDiscardProd(false); };
 
   // Guard: verifica se o produto tem dados preenchidos (pra decidir se avisa antes de fechar)
   const hasProdData = (): boolean => {
@@ -4526,10 +4568,20 @@ export default function Produtos() {
       {modal && (
         <div className="prod-modal-overlay" onClick={handleTryClose}>
           <div className="prod-modal prod-modal--novo" onClick={e => e.stopPropagation()}>
+            {tipoTela && !form.id ? (
+              <TipoProdutoTela onEscolher={aplicarTipoProduto} onFechar={handleTryClose} />
+            ) : (<>
             {wizardStep >= 2 && (
             <div className="prod-modal-header-novo">
-              {wizardStep > 2 && !form.id ? (
+              {wizardStep >= 2 && !form.id ? (
                 <button className="prod-modal-back-novo" onClick={() => {
+                  if (wizardStep === 2) { setTipoTela(true); return; }
+                  if (wizardStep === 3 && kitTela) {
+                    setKitTela(false);
+                    const outros = [form.grupo_massas, form.grupo_recheios, form.grupo_coberturas, form.grupo_sabores, form.grupo_tamanhos].some(g => g?.ativo);
+                    if (isMobileMain && !outros) setMobilePersonaStep("checklist");
+                    return;
+                  }
                   // Mobile: se está preenchendo personalização, volta pro checklist ao invés do step anterior
                   if (isMobileMain && !form.id && wizardStep === 3 && mobilePersonaStep === "fill") {
                     setMobilePersonaStep("checklist");
@@ -4544,7 +4596,7 @@ export default function Produtos() {
                 <div className="prod-modal-title-novo">
                   {form.id ? "Editar produto" : (() => {
                     if (wizardStep === 2) return "Informações do produto";
-                    if (wizardStep === 3) return "";
+                    if (wizardStep === 3) return kitTela ? "Monte seu kit" : "";
                     if (wizardStep === 4) return "";
                     if (wizardStep === 5) return "";
                     return "";
@@ -4865,7 +4917,12 @@ export default function Produtos() {
             )}
 
             {/* ══════ WIZARD STEP 3 (UNIFICADO — PERSONALIZAÇÃO V3) ══════ */}
-            {((wizardStep === 3 && !form.id) || (form.id && editTab === "opcoes")) && (
+            {wizardStep === 3 && !form.id && kitTela && (
+              <div className="prod-modal-body">
+                <KitQuantidadeEditor modo="completo" kit={(form as any).kit_qtd} onChange={onKitChange} nomeProduto={form.nome} />
+              </div>
+            )}
+            {((wizardStep === 3 && !form.id && !kitTela) || (form.id && editTab === "opcoes")) && (
               <div className="prod-modal-body">
                 <PersonalizacaoStep
                   grupoMassas={form.grupo_massas || GRUPO_VAZIO}
@@ -4886,27 +4943,12 @@ export default function Produtos() {
                   produtoNome={form.nome}
                   produtoCategoria={form.categoria}
                   ocultarTamanhosSabores={kitAtivo((form as any).kit_qtd)}
+                  slotTopo={<KitQuantidadeEditor modo="compacto" kit={(form as any).kit_qtd} onChange={onKitChange} />}
                 />
-                {/* Kit por quantidade (docinhos, salgados...) */}
-                <KitQuantidadeEditor
-                  kit={(form as any).kit_qtd}
-                  mobileMode={isMobileMain && !form.id ? mobilePersonaStep : undefined}
-                  onChange={(k) => setForm(f => {
-                    const ligando = k.ativo && !kitAtivo((f as any).kit_qtd);
-                    return {
-                      ...f,
-                      kit_qtd: k,
-                      // Com o kit ligado, Tamanhos e Sabores saem (o kit tem os dele)
-                      ...(ligando ? {
-                        grupo_tamanhos: { ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO), ativo: false },
-                        grupo_sabores: { ...(f.grupo_sabores || GRUPO_SABORES_VAZIO), ativo: false },
-                        forma_venda: "unidade",
-                      } : {}),
-                      // "A partir de" do cardápio = menor preço do kit
-                      ...(k.ativo && precoMinKit(k) > 0 ? { preco_normal: precoMinKit(k) } : {}),
-                    } as any;
-                  })}
-                />
+                {/* Edição: o kit fica aqui mesmo, completo */}
+                {form.id && kitAtivo((form as any).kit_qtd) && (
+                  <KitQuantidadeEditor modo="completo" kit={(form as any).kit_qtd} onChange={onKitChange} nomeProduto={form.nome} />
+                )}
               </div>
             )}
 
@@ -5847,10 +5889,10 @@ export default function Produtos() {
                       const anyAtivo = [gm, gr, gc, gt, form.grupo_sabores].some(g => g?.ativo) || kitAtivo((form as any).kit_qtd);
                       return anyAtivo;
                     }
+                    // Tela "Monte seu kit": precisa estar completo
+                    if (kitTela) return !erroKit((form as any).kit_qtd);
                     const gruposAtivos = [gm, gr, gc, gt].filter(g => g?.ativo);
                     if (gruposAtivos.some(g => (g?.opcoes.length || 0) === 0)) return false;
-                    // Kit por quantidade ligado: precisa estar completo
-                    if (kitAtivo((form as any).kit_qtd) && erroKit((form as any).kit_qtd)) return false;
                     return true;
                   }
                   // Step 4: Preço e venda — valida preço base OU preços dos tamanhos
@@ -5905,10 +5947,16 @@ export default function Produtos() {
                     onClick={() => {
                       if (!canAdvance) return;
                       // Mobile: se está no checklist da personalização, primeiro avança pra fill (não pro próximo step)
+                      const kitLigado = kitAtivo((form as any).kit_qtd);
                       if (isMobileMain && !form.id && wizardStep === 3 && mobilePersonaStep === "checklist") {
+                        const outros = [form.grupo_massas, form.grupo_recheios, form.grupo_coberturas, form.grupo_sabores, form.grupo_tamanhos].some(g => g?.ativo);
+                        // Só o kit ligado: vai direto pra "Monte seu kit"
+                        if (kitLigado && !outros) { setKitTela(true); return; }
                         setMobilePersonaStep("fill");
                         return;
                       }
+                      // Kit ligado: depois das opções vem a tela "Monte seu kit"
+                      if (!form.id && wizardStep === 3 && kitLigado && !kitTela) { setKitTela(true); return; }
                       setWizardStep(s => (s + 1) as 1 | 2 | 3 | 4 | 5);
                     }}
                   >
@@ -5919,6 +5967,7 @@ export default function Produtos() {
               })()}
             </div>
             )}
+            </>)}
           </div>
 
         </div>
