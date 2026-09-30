@@ -210,7 +210,6 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, primeiroN
   const precoBase = form.preco_normal || 0;
   const exBase = precoBase > 0 ? precoBase : 80;
   const suf = VENDA.find(x => x.v === form.forma_venda)?.suf || "unidade";
-  const cols = mostrarServe ? "bw-tam--serve" : "";
 
   return (
     <div className="bw">
@@ -275,29 +274,19 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, primeiroN
               <p className="bw-bt">Tamanhos</p>
               <button type="button" className="bw-gerar-pill" onClick={() => { setGModo(porPeso ? "peso" : "pmg"); setGerarAberto(true); }}>⚡ Gerar automático</button>
             </div>
-            <div className={`bw-tabela ${cols}`}>
+            <div className="bw-tabela">
               <div className="bw-tam bw-tam--h" aria-hidden="true">
-                <span>Nome</span><span>Peso</span>
-                {mostrarServe && (
-                  <button type="button" className="bw-col-sel" onClick={() => setGt({ rendimento_unidade: fatias ? "pessoas" : "fatias" })} title="Trocar entre pessoas e fatias">
-                    {fatias ? "Fatias" : "Serve"} ▾
-                  </button>
-                )}
-                <span>{porPeso ? "Fica" : "Preço"}</span><span />
+                <span>Nome do tamanho</span><span>Peso</span><span>{porPeso ? "Preço calculado" : "Preço"}</span><span />
               </div>
               {tams.map(t => (
                 <div className="bw-tam" key={t.id}>
-                  <input className="bw-in bw-in--nome" value={t.nome} placeholder={porPeso ? "1 kg" : "P"} onChange={e => setTam(t.id, { nome: e.target.value })} aria-label="Nome do tamanho" />
-                  <label className="bw-in bw-suf"><input inputMode="decimal" defaultValue={t.peso_kg ? String(t.peso_kg).replace(".", ",") : ""} placeholder="1,5"
+                  <input className="bw-in bw-in--nome" value={t.nome} placeholder={porPeso ? "Ex: 1 kg" : "Ex: P"} onChange={e => setTam(t.id, { nome: e.target.value })} aria-label="Nome do tamanho" />
+                  <label className="bw-in bw-suf"><input inputMode="decimal" defaultValue={t.peso_kg ? String(t.peso_kg).replace(".", ",") : ""} placeholder="Ex: 1,5"
                     onChange={e => setTam(t.id, { peso_kg: numKg(e.target.value) || null })} aria-label="Peso em kg" /><em>kg</em></label>
-                  {mostrarServe && (
-                    <label className="bw-in bw-suf"><input inputMode="numeric" value={t.serve || ""} placeholder="20"
-                      onChange={e => setTam(t.id, { serve: e.target.value.replace(/\D/g, "") })} aria-label={fatias ? "Quantas fatias" : "Serve quantas pessoas"} /><em>{fatias ? "fatias" : "pess."}</em></label>
-                  )}
                   {porPeso ? (
-                    <span className="bw-calc">{precoBase > 0 && (t.peso_kg || 0) > 0 ? brl(precoBase * (t.peso_kg || 0)) : "—"}</span>
+                    <span className={`bw-in bw-calc${precoBase > 0 && (t.peso_kg || 0) > 0 ? " ok" : ""}`}>{precoBase > 0 && (t.peso_kg || 0) > 0 ? brl(precoBase * (t.peso_kg || 0)) : "Preencha o peso"}</span>
                   ) : (
-                    <label className={`bw-rs${t.preco > 0 ? " ok" : ""}`}>R$
+                    <label className={`bw-in bw-rs${t.preco > 0 ? " ok" : ""}`}><span className="bw-rs-p">R$</span>
                       <MoneyInput value={t.preco} onChange={v => setTam(t.id, { preco: v })} ariaLabel={`Preço do tamanho ${t.nome || "novo"}`} />
                     </label>
                   )}
@@ -306,9 +295,31 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, primeiroN
               ))}
             </div>
             <button type="button" className="bw-link" onClick={() => setGt({ opcoes: [...tams, linhaVazia()] })}>+ Adicionar tamanho</button>
-            <button type="button" className="bw-link bw-link--sec" onClick={() => setMostrarServe(v => !v)}>
-              {mostrarServe ? "Esconder quantas pessoas serve" : "+ Mostrar quantas pessoas cada tamanho serve"} <small>(opcional)</small>
-            </button>
+            <div className="bw-rendbox">
+              <button type="button" className={`bw-check${mostrarServe ? " on" : ""}`} onClick={() => setMostrarServe(v => !v)} aria-pressed={mostrarServe}>
+                <i aria-hidden="true">{mostrarServe ? "✓" : ""}</i>
+                <span>Informar o rendimento de cada tamanho</span>
+                <span className="prod-field-req prod-field-req--opt">opcional</span>
+              </button>
+              {mostrarServe && (
+                <div className="bw-rend-body">
+                  <div className="bw-rend-uni" role="radiogroup" aria-label="Rendimento em">
+                    <span>Contar em</span>
+                    <button type="button" role="radio" aria-checked={!fatias} className={!fatias ? "on" : ""} onClick={() => setGt({ rendimento_unidade: "pessoas" })}>Pessoas</button>
+                    <button type="button" role="radio" aria-checked={fatias} className={fatias ? "on" : ""} onClick={() => setGt({ rendimento_unidade: "fatias" })}>Fatias</button>
+                  </div>
+                  {tams.filter(x => x.nome.trim()).length === 0 ? (
+                    <p className="bw-hint">Cadastre os tamanhos acima pra informar o rendimento.</p>
+                  ) : tams.filter(x => x.nome.trim()).map(x => (
+                    <div className="bw-rend-row" key={x.id}>
+                      <span className="bw-rend-lb">Rendimento <b>{x.nome}</b>{x.peso_kg ? <small> · {kgTxt(x.peso_kg)}</small> : null}</span>
+                      <label className="bw-in bw-suf bw-rend-in"><input inputMode="numeric" value={x.serve || ""} placeholder={`Ex: ${Math.max(5, Math.round((x.peso_kg || 1) * 10))}`}
+                        onChange={e => setTam(x.id, { serve: e.target.value.replace(/\D/g, "") })} aria-label={`Rendimento do tamanho ${x.nome}`} /><em>{fatias ? "fatias" : "pessoas"}</em></label>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </>
       )}
@@ -519,5 +530,40 @@ const CSS = `
     .bw-tam > :nth-child(1) { grid-area: n; } .bw-tam > :nth-child(2) { grid-area: p; } .bw-tam > :nth-child(3) { grid-area: s; }
     .bw-tam > :nth-child(4) { grid-area: r; } .bw-tam > :nth-child(5) { grid-area: x; justify-self: end; }
     .bw-tam { grid-template-columns: 52px 1fr 1fr; }
+  }
+  /* Ajustes de design (30/09): cantos menores, colunas largas, sem abreviação */
+  .bw-in, .bw-rs, .bw-add input, .bw-add button, .bw-money, .bw-stepper, .bw-passos button, .bw-gerar-bt, .bw-extra > button { border-radius: 8px !important; }
+  .bw-sn button, .bw-modos button, .bw-opt, .bw-gopt, .bw-box, .bw-pmg, .bw-gerar { border-radius: 12px !important; }
+  .bw-seg3 { border-radius: 10px; } .bw-seg3 button { border-radius: 7px; }
+  .bw-tabela .bw-tam, .bw-tabela.bw-tam--serve .bw-tam { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.2fr) 28px; gap: 10px; margin-top: 8px; }
+  .bw-tabela .bw-tam--h { margin-top: 0; }
+  .bw-tabela .bw-tam--h span { font-size: 11px; font-weight: 700; color: #9A8E94; text-transform: uppercase; letter-spacing: .05em; padding-left: 2px; }
+  .bw-tabela input.bw-in { text-align: left; padding: 0 12px; font-size: 14.5px; font-weight: 700; }
+  .bw-tabela .bw-in input { padding-left: 12px; }
+  .bw-tabela .bw-rs { padding-left: 12px; }
+  .bw-rs-p { font-size: 13px; font-weight: 700; color: #9A8E94; }
+  .bw-tabela .bw-calc { display: flex; align-items: center; padding: 0 12px; background: #FAF7F8; border-color: #F0EBED; color: #B5AAB0; font-size: 13px; font-weight: 600; }
+  .bw-tabela .bw-calc.ok { background: #F0FDF4; border-color: #DCFCE7; color: #15803D; font-size: 14.5px; font-weight: 800; }
+  .bw-rendbox { margin-top: 14px; padding-top: 14px; border-top: 1px solid #F3ECEE; }
+  .bw-check { display: flex; align-items: center; gap: 10px; width: 100%; border: none; background: none; padding: 4px 0; font-family: inherit; font-size: 14px; font-weight: 600; color: #2C1219; cursor: pointer; text-align: left; }
+  .bw-check i { width: 20px; height: 20px; border-radius: 6px; border: 2px solid #D6CBD0; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 12px; font-weight: 900; color: #fff; flex-shrink: 0; }
+  .bw-check.on i { background: #E85A8C; border-color: #E85A8C; }
+  .bw-rend-body { margin-top: 12px; padding: 14px; border-radius: 12px; background: #FAF7F8; }
+  .bw-rend-uni { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; font-size: 13px; color: #6B5D64; font-weight: 600; }
+  .bw-rend-uni span { margin-right: 4px; }
+  .bw-rend-uni button { border: 1.5px solid #EAE3E6; background: #fff; border-radius: 8px; padding: 7px 14px; font-family: inherit; font-size: 13px; font-weight: 700; color: #6B5D64; cursor: pointer; }
+  .bw-rend-uni button.on { border-color: #2C1219; background: #2C1219; color: #fff; }
+  .bw-rend-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 0; }
+  .bw-rend-row + .bw-rend-row { border-top: 1px solid #F0E9EC; }
+  .bw-rend-lb { font-size: 14px; color: #4B3A42; } .bw-rend-lb b { color: #2C1219; } .bw-rend-lb small { color: #9A8E94; font-size: 12.5px; }
+  .bw-rend-in { width: 170px; background: #fff; flex-shrink: 0; }
+  .bw-rend-in em { padding-right: 12px; }
+  @media (max-width: 767px) {
+    .bw-tabela .bw-tam, .bw-tabela.bw-tam--serve .bw-tam { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.25fr) 20px; gap: 6px; }
+    .bw-tabela .bw-tam--h span { font-size: 10px; letter-spacing: .03em; }
+    .bw-tabela input.bw-in, .bw-tabela .bw-in input { font-size: 14px; }
+    .bw-tabela input.bw-in { padding: 0 8px; } .bw-tabela .bw-in input { padding-left: 8px; } .bw-tabela .bw-rs { padding-left: 8px; }
+    .bw-tabela .bw-calc { padding: 0 8px; font-size: 12px; } .bw-tabela .bw-calc.ok { font-size: 13.5px; }
+    .bw-rend-in { width: 140px; }
   }
 `;
