@@ -44,7 +44,7 @@ const EXEMPLO: Record<string, string> = {
 const NOVA: Record<string, string> = { grupo_massas: "Nova massa…", grupo_recheios: "Novo recheio…", grupo_coberturas: "Nova cobertura…" };
 const LIXEIRA = <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6" /></svg>;
 
-export function BoloOpcoesStep({ form, setForm }: { form: any; setForm: (fn: (f: any) => any) => void }) {
+export function BoloOpcoesStep({ form, setForm, edicao }: { form: any; setForm: (fn: (f: any) => any) => void; edicao?: boolean }) {
   const [texto, setTexto] = useState<Record<string, string>>({});
   const [aberto, setAberto] = useState<string | null>(null);           // cartão sendo editado
   const [extra, setExtra] = useState<{ key: string; id: string; valor: number } | null>(null); // "custa a mais?"
@@ -78,7 +78,7 @@ export function BoloOpcoesStep({ form, setForm }: { form: any; setForm: (fn: (f:
   return (
     <div className="bw">
       <div className="bw-topo">
-        <p className="bw-eta">Etapa 2 de 4</p>
+        {!edicao && <p className="bw-eta">Etapa 2 de 5</p>}
         <h2 className="bw-h">O cliente escolhe alguma opção?</h2>
         <p className="bw-produto">{nome}</p>
         <p className="bw-sub">Marque só o que o cliente escolhe. Se não tiver nada, é só avançar.</p>
@@ -185,11 +185,18 @@ export function MoneyInput({ value, onChange, className, ariaLabel, autoFocus }:
   );
 }
 
-// ═══════════════════ Etapa 3 · Tamanhos e preço ═══════════════════
+// ═══════════════════ Etapa 3 · Tamanhos  ·  Etapa 4 · Preço ═══════════════════
 export type BoloTam = "sim" | "nao" | null;
 
+/** Etapa 3: respondeu Sim/Não e, se Sim, tem pelo menos 1 tamanho com nome */
 export function boloTamanhosOk(form: any, escolha: BoloTam): boolean {
   if (!escolha) return false;
+  if (escolha === "nao") return true;
+  return (form.grupo_tamanhos?.opcoes || []).some((o: Tam) => o.nome?.trim());
+}
+
+/** Etapa 4: preços preenchidos */
+export function boloPrecoOk(form: any, escolha: BoloTam): boolean {
   if (escolha === "nao") return (form.preco_normal || 0) > 0;
   const gt = form.grupo_tamanhos;
   const linhas: Tam[] = (gt?.opcoes || []).filter((o: Tam) => o.nome?.trim());
@@ -203,27 +210,34 @@ const VENDA = [
   { v: "kg", t: "Por kg", suf: "kg" },
   { v: "fatia", t: "Fatia", suf: "fatia" },
 ];
+const GT_PADRAO = { ...GRUPO_VAZIO, nome_exibicao: "Tamanhos e Pesos" };
+const kgTxt = (v: number) => `${String(Math.round(v * 100) / 100).replace(".", ",")} kg`;
 
-export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, primeiroNome }: {
-  form: any; setForm: (fn: (f: any) => any) => void; escolha: BoloTam; setEscolha: (e: BoloTam) => void; primeiroNome?: string;
+/** Atualiza grupo_tamanhos sempre com um modo de preço definido */
+function useTamanhos(form: any, setForm: (fn: (f: any) => any) => void) {
+  const gt = { ...GT_PADRAO, ...(form.grupo_tamanhos || {}) } as any;
+  const tams: Tam[] = gt.opcoes || [];
+  const setGt = (patch: any) => setForm((f: any) => {
+    const g = { ...GT_PADRAO, ...(f.grupo_tamanhos || {}), ...patch };
+    return { ...f, grupo_tamanhos: { ...g, modo_preco_tamanho: g.modo_preco_tamanho || "preco_fixo" } };
+  });
+  const setTam = (id: string, patch: Partial<Tam>) => setGt({ opcoes: tams.map(x => x.id === id ? { ...x, ...patch } : x) });
+  return { gt, tams, setGt, setTam, porPeso: gt.modo_preco_tamanho === "por_peso", fatias: gt.rendimento_unidade === "fatias" };
+}
+
+const LIX = <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6" /></svg>;
+
+// ─────────── Etapa 3 · Tamanhos (nome, peso e rendimento — sem preço) ───────────
+export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, edicao }: {
+  form: any; setForm: (fn: (f: any) => any) => void; escolha: BoloTam; setEscolha: (e: BoloTam) => void; edicao?: boolean;
 }) {
-  const [infoBase, setInfoBase] = useState(false);
+  const { tams, setGt, setTam, porPeso, fatias } = useTamanhos(form, setForm);
   const [gerarAberto, setGerarAberto] = useState(false);
   const [gModo, setGModo] = useState<"pmg" | "peso">("pmg");
   const [gDe, setGDe] = useState("1");
   const [gAte, setGAte] = useState("3");
   const [gPasso, setGPasso] = useState(0.5);
-
-  const gt = { ...GRUPO_VAZIO, modo_preco_tamanho: "preco_fixo", nome_exibicao: "Tamanhos e Pesos", ...(form.grupo_tamanhos || {}) } as any;
-  const tams: Tam[] = gt.opcoes || [];
-  const porPeso = gt.modo_preco_tamanho === "por_peso";
-  const fatias = gt.rendimento_unidade === "fatias";
-  const [mostrarServe, setMostrarServe] = useState(() => tams.some(t => t.serve));
-  const setGt = (patch: any) => setForm((f: any) => {
-    const g = { ...GRUPO_VAZIO, nome_exibicao: "Tamanhos e Pesos", ...(f.grupo_tamanhos || {}), ...patch };
-    return { ...f, grupo_tamanhos: { ...g, modo_preco_tamanho: g.modo_preco_tamanho || "preco_fixo" } };
-  });
-  const setTam = (id: string, patch: Partial<Tam>) => setGt({ opcoes: tams.map(t => t.id === id ? { ...t, ...patch } : t) });
+  const [mostrarRend, setMostrarRend] = useState(() => tams.some(x => x.serve));
   const linhaVazia = (): Tam => ({ id: uid(), nome: "", preco: 0, peso_kg: null, serve: "" });
 
   // Ao sair da etapa, tira as linhas que ficaram sem nome
@@ -240,15 +254,14 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, primeiroN
     setEscolha(e);
     if (e === "sim") {
       setForm((f: any) => {
-        const g = { ...GRUPO_VAZIO, modo_preco_tamanho: "preco_fixo", nome_exibicao: "Tamanhos e Pesos", ...(f.grupo_tamanhos || {}) };
+        const g = { ...GT_PADRAO, ...(f.grupo_tamanhos || {}) };
         return { ...f, forma_venda: "unidade", grupo_tamanhos: { ...g, modo_preco_tamanho: g.modo_preco_tamanho || "preco_fixo", ativo: true, min: 1, max: 1, opcoes: g.opcoes?.length ? g.opcoes : [linhaVazia()] } };
       });
     } else {
-      setForm((f: any) => ({ ...f, forma_venda: VENDA.some(x => x.v === f.forma_venda) ? f.forma_venda : "unidade", grupo_tamanhos: { ...GRUPO_VAZIO, ...(f.grupo_tamanhos || {}), ativo: false } }));
+      setForm((f: any) => ({ ...f, forma_venda: VENDA.some(x => x.v === f.forma_venda) ? f.forma_venda : "unidade", grupo_tamanhos: { ...GT_PADRAO, ...(f.grupo_tamanhos || {}), ativo: false } }));
     }
   };
 
-  const kgTxt = (v: number) => `${String(Math.round(v * 100) / 100).replace(".", ",")} kg`;
   const pesosGerados = (() => {
     const de = numKg(gDe), ate = numKg(gAte);
     if (!(de > 0 && ate >= de && gPasso > 0)) return [] as number[];
@@ -259,15 +272,13 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, primeiroN
   const gerados: Tam[] = gModo === "pmg"
     ? [{ id: uid(), nome: "P", preco: 0, peso_kg: 1, serve: "" }, { id: uid(), nome: "M", preco: 0, peso_kg: 1.5, serve: "" }, { id: uid(), nome: "G", preco: 0, peso_kg: 2, serve: "" }]
     : pesosGerados.map(p => ({ id: uid(), nome: kgTxt(p), preco: 0, peso_kg: p, serve: "" }));
-  const temNomes = tams.some(t => t.nome.trim());
-  const precoBase = form.preco_normal || 0;
-  const exBase = precoBase > 0 ? precoBase : 80;
-  const suf = VENDA.find(x => x.v === form.forma_venda)?.suf || "unidade";
+  const temNomes = tams.some(x => x.nome.trim());
+  const nomeados = tams.filter(x => x.nome.trim());
 
   return (
     <div className="bw">
       <div className="bw-topo">
-        <p className="bw-eta">Etapa 3 de 4</p>
+        {!edicao && <p className="bw-eta">Etapa 3 de 5</p>}
         <h2 className="bw-h">Esse bolo tem mais de um tamanho ou peso?</h2>
       </div>
       <div className="bw-sn" role="radiogroup">
@@ -278,112 +289,58 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, primeiroN
           <b>Não</b><small>É um tamanho só</small>
         </button>
       </div>
-
-      {escolha === "nao" && (
-        <div className="bw-box">
-          <p className="bw-bt">Como você vende esse bolo?</p>
-          <div className="bw-seg3" role="radiogroup">
-            {VENDA.map(x => (
-              <button key={x.v} type="button" role="radio" aria-checked={form.forma_venda === x.v} className={form.forma_venda === x.v ? "on" : ""}
-                onClick={() => setForm((f: any) => ({ ...f, forma_venda: x.v }))}>{x.t}</button>
-            ))}
-          </div>
-          <p className="bw-bt bw-bt--mt">Qual o preço?</p>
-          <label className="bw-money">
-            <span>R$</span>
-            <MoneyInput value={form.preco_normal || 0} onChange={v => setForm((f: any) => ({ ...f, preco_normal: v }))} ariaLabel="Preço do bolo" />
-            <em>/ {suf}</em>
-          </label>
-          <p className="bw-hint">Digite só os números — a vírgula e o ponto aparecem sozinhos.</p>
-        </div>
-      )}
+      {escolha === "nao" && !edicao && <p className="bw-hint bw-hint--centro">Tudo certo — o preço você define na próxima etapa.</p>}
 
       {escolha === "sim" && (
-        <>
-          <div className="bw-box">
-            <p className="bw-bt">Como é o preço?</p>
-            <div className="bw-modos" role="radiogroup">
-              <button type="button" role="radio" aria-checked={!porPeso} className={!porPeso ? "on" : ""} onClick={() => setGt({ modo_preco_tamanho: "preco_fixo" })}>
-                <i aria-hidden="true" /><span><b>Cada tamanho tem seu preço</b><small>Você digita o preço de cada um</small></span>
-              </button>
-              <button type="button" role="radio" aria-checked={porPeso} className={porPeso ? "on" : ""} onClick={() => setGt({ modo_preco_tamanho: "por_peso" })}>
-                <i aria-hidden="true" /><span><b>Calcular pelo peso</b><small>Você diz o preço do kg e o app calcula</small></span>
-              </button>
-            </div>
-            {porPeso && (
-              <div className="bw-kg">
-                <span className="bw-kg-t">Preço base
-                  <button type="button" className="bw-i" onClick={() => setInfoBase(true)} aria-label="O que é o preço base?">i</button>
-                  <small>por kg</small>
-                </span>
-                <label className="bw-money bw-money--sm"><span>R$</span>
-                  <MoneyInput value={precoBase} onChange={v => setForm((f: any) => ({ ...f, preco_normal: v }))} ariaLabel="Preço base por kg" />
-                </label>
-              </div>
-            )}
+        <div className="bw-box">
+          <div className="bw-bh">
+            <p className="bw-bt">Tamanhos</p>
+            <button type="button" className="bw-gerar-btn" onClick={() => { setGModo(porPeso ? "peso" : "pmg"); setGerarAberto(true); }}>Gerar automático</button>
           </div>
-
-          <div className="bw-box">
-            <div className="bw-bh">
-              <p className="bw-bt">Tamanhos</p>
-              <button type="button" className="bw-gerar-pill" onClick={() => { setGModo(porPeso ? "peso" : "pmg"); setGerarAberto(true); }}>⚡ Gerar automático</button>
-            </div>
-            <div className="bw-tabela">
-              <div className="bw-tam bw-tam--h" aria-hidden="true">
-                <span>Nome do tamanho</span><span>Peso</span><span>{porPeso ? "Preço calculado" : "Preço"}</span><span />
+          <p className="bw-hint bw-hint--sob">Digite cada tamanho abaixo, ou use o Gerar automático pra começar mais rápido.</p>
+          <div className="bw-t2">
+            <div className="bw-t2-row bw-t2-row--h" aria-hidden="true"><span>Nome do tamanho</span><span>Peso</span><span /></div>
+            {tams.map(x => (
+              <div className="bw-t2-row" key={x.id}>
+                <input className="bw-in bw-t2-nome" value={x.nome} placeholder="Ex: GG" onChange={e => setTam(x.id, { nome: e.target.value })} aria-label="Nome do tamanho" />
+                <label className="bw-in bw-suf"><input inputMode="decimal" defaultValue={x.peso_kg ? String(x.peso_kg).replace(".", ",") : ""} placeholder="Ex: 2,5"
+                  onChange={e => setTam(x.id, { peso_kg: numKg(e.target.value) || null })} aria-label="Peso em kg" /><em>kg</em></label>
+                <button type="button" className="bo-rm" onClick={() => setGt({ opcoes: tams.filter(y => y.id !== x.id) })} aria-label="Remover tamanho">{LIX}</button>
               </div>
-              {tams.map(t => (
-                <div className="bw-tam" key={t.id}>
-                  <input className="bw-in bw-in--nome" value={t.nome} placeholder={porPeso ? "Ex: 1 kg" : "Ex: P"} onChange={e => setTam(t.id, { nome: e.target.value })} aria-label="Nome do tamanho" />
-                  <label className="bw-in bw-suf"><input inputMode="decimal" defaultValue={t.peso_kg ? String(t.peso_kg).replace(".", ",") : ""} placeholder="Ex: 1,5"
-                    onChange={e => setTam(t.id, { peso_kg: numKg(e.target.value) || null })} aria-label="Peso em kg" /><em>kg</em></label>
-                  {porPeso ? (
-                    <span className={`bw-in bw-calc${precoBase > 0 && (t.peso_kg || 0) > 0 ? " ok" : ""}`}>{precoBase > 0 && (t.peso_kg || 0) > 0 ? brl(precoBase * (t.peso_kg || 0)) : "Preencha o peso"}</span>
-                  ) : (
-                    <label className={`bw-in bw-rs${t.preco > 0 ? " ok" : ""}`}><span className="bw-rs-p">R$</span>
-                      <MoneyInput value={t.preco} onChange={v => setTam(t.id, { preco: v })} ariaLabel={`Preço do tamanho ${t.nome || "novo"}`} />
-                    </label>
-                  )}
-                  <button type="button" className="bw-x" onClick={() => setGt({ opcoes: tams.filter(x => x.id !== t.id) })} aria-label="Remover tamanho">✕</button>
+            ))}
+          </div>
+          <button type="button" className="bw-link" onClick={() => setGt({ opcoes: [...tams, linhaVazia()] })}>+ Adicionar tamanho</button>
+
+          <button type="button" className={`bw-check2${mostrarRend ? " on" : ""}`} onClick={() => setMostrarRend(v => !v)} aria-pressed={mostrarRend}>
+            <i aria-hidden="true">{mostrarRend ? "✓" : ""}</i>
+            <span><b>Informar o rendimento dos tamanhos</b><small>O Doonly recomenda preencher: seu cardápio fica mais completo e organizado.</small></span>
+          </button>
+          {mostrarRend && (
+            <div className="bw-rend-body">
+              <div className="bw-rend-uni" role="radiogroup" aria-label="Contar em">
+                <span>Contar em</span>
+                <button type="button" role="radio" aria-checked={!fatias} className={!fatias ? "on" : ""} onClick={() => setGt({ rendimento_unidade: "pessoas" })}>Pessoas</button>
+                <button type="button" role="radio" aria-checked={fatias} className={fatias ? "on" : ""} onClick={() => setGt({ rendimento_unidade: "fatias" })}>Fatias</button>
+              </div>
+              {nomeados.length === 0 ? (
+                <p className="bw-hint">Cadastre os tamanhos acima pra informar o rendimento.</p>
+              ) : nomeados.map(x => (
+                <div className="bw-rend-row" key={x.id}>
+                  <span className="bw-rend-lb">Rendimento <b>{x.nome}</b>{x.peso_kg && kgTxt(x.peso_kg) !== x.nome ? <small> · {kgTxt(x.peso_kg)}</small> : null}</span>
+                  <label className="bw-in bw-suf bw-rend-in"><input inputMode="numeric" value={x.serve || ""} placeholder={`Ex: ${Math.max(5, Math.round((x.peso_kg || 1) * 10))}`}
+                    onChange={e => setTam(x.id, { serve: e.target.value.replace(/\D/g, "") })} aria-label={`Rendimento do tamanho ${x.nome}`} /><em>{fatias ? "fatias" : "pessoas"}</em></label>
                 </div>
               ))}
             </div>
-            <button type="button" className="bw-link" onClick={() => setGt({ opcoes: [...tams, linhaVazia()] })}>+ Adicionar tamanho</button>
-            <div className="bw-rendbox">
-              <button type="button" className={`bw-check${mostrarServe ? " on" : ""}`} onClick={() => setMostrarServe(v => !v)} aria-pressed={mostrarServe}>
-                <i aria-hidden="true">{mostrarServe ? "✓" : ""}</i>
-                <span>Informar o rendimento de cada tamanho</span>
-                <span className="prod-field-req prod-field-req--opt">opcional</span>
-              </button>
-              {mostrarServe && (
-                <div className="bw-rend-body">
-                  <div className="bw-rend-uni" role="radiogroup" aria-label="Rendimento em">
-                    <span>Contar em</span>
-                    <button type="button" role="radio" aria-checked={!fatias} className={!fatias ? "on" : ""} onClick={() => setGt({ rendimento_unidade: "pessoas" })}>Pessoas</button>
-                    <button type="button" role="radio" aria-checked={fatias} className={fatias ? "on" : ""} onClick={() => setGt({ rendimento_unidade: "fatias" })}>Fatias</button>
-                  </div>
-                  {tams.filter(x => x.nome.trim()).length === 0 ? (
-                    <p className="bw-hint">Cadastre os tamanhos acima pra informar o rendimento.</p>
-                  ) : tams.filter(x => x.nome.trim()).map(x => (
-                    <div className="bw-rend-row" key={x.id}>
-                      <span className="bw-rend-lb">Rendimento <b>{x.nome}</b>{x.peso_kg ? <small> · {kgTxt(x.peso_kg)}</small> : null}</span>
-                      <label className="bw-in bw-suf bw-rend-in"><input inputMode="numeric" value={x.serve || ""} placeholder={`Ex: ${Math.max(5, Math.round((x.peso_kg || 1) * 10))}`}
-                        onChange={e => setTam(x.id, { serve: e.target.value.replace(/\D/g, "") })} aria-label={`Rendimento do tamanho ${x.nome}`} /><em>{fatias ? "fatias" : "pessoas"}</em></label>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </>
+          )}
+        </div>
       )}
 
-      {/* ⚡ Gerar automático — abre por baixo */}
       {gerarAberto && createPortal(
         <div className="bw-sheet-bg" onClick={() => setGerarAberto(false)}>
           <div className="bw-sheet" onClick={e => e.stopPropagation()} role="dialog" aria-label="Gerar tamanhos">
             <div className="bw-grab" aria-hidden="true" />
-            <div className="bw-sheet-h"><b>⚡ Gerar tamanhos</b><button type="button" onClick={() => setGerarAberto(false)} aria-label="Fechar">✕</button></div>
+            <div className="bw-sheet-h"><b>Gerar tamanhos</b><button type="button" onClick={() => setGerarAberto(false)} aria-label="Fechar">✕</button></div>
             <p className="bw-hint bw-hint--top">Escolha um jeito rápido de começar. Depois dá pra editar tudo.</p>
             <button type="button" className={`bw-gopt${gModo === "pmg" ? " on" : ""}`} onClick={() => setGModo("pmg")}>
               <i aria-hidden="true" /><span><b>P, M e G</b><small>1 kg · 1,5 kg · 2 kg</small></span>
@@ -401,17 +358,125 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, primeiroN
                 </span>
               </span>
             </div>
-            {gerados.length > 0 && (
-              <div className="bw-prev">{gerados.map(g => <span key={g.id}>{g.nome}{porPeso && precoBase > 0 && g.peso_kg ? <b> {brl(precoBase * g.peso_kg)}</b> : null}</span>)}</div>
-            )}
+            {gerados.length > 0 && <div className="bw-prev">{gerados.map(g => <span key={g.id}>{g.nome}</span>)}</div>}
             {temNomes && <p className="bw-hint">Isso substitui os tamanhos que você já digitou.</p>}
-            <button type="button" className="bw-gerar-bt" disabled={!gerados.length}
-              onClick={() => { setGt({ opcoes: gerados }); setGerarAberto(false); }}>
+            <button type="button" className="bw-gerar-bt" disabled={!gerados.length} onClick={() => { setGt({ opcoes: gerados }); setGerarAberto(false); }}>
               Criar {gerados.length} {gerados.length === 1 ? "tamanho" : "tamanhos"}
             </button>
           </div>
         </div>, document.body)}
+      <style>{CSS}</style>
+    </div>
+  );
+}
 
+// ─────────── Etapa 4 · Preço ───────────
+export function BoloPrecoStep({ form, setForm, escolha, primeiroNome, edicao }: {
+  form: any; setForm: (fn: (f: any) => any) => void; escolha: BoloTam; primeiroNome?: string; edicao?: boolean;
+}) {
+  const { tams, setGt, setTam, porPeso } = useTamanhos(form, setForm);
+  const [infoBase, setInfoBase] = useState(false);
+  const nome = (form.nome || "").trim();
+  const precoBase = form.preco_normal || 0;
+  const exBase = precoBase > 0 ? precoBase : 80;
+  const suf = VENDA.find(x => x.v === form.forma_venda)?.suf || "unidade";
+  const nomeados = tams.filter(x => x.nome.trim());
+  const rotulo = (x: Tam) => <span className="bw-pr-lb"><b>{x.nome}</b>{x.peso_kg && kgTxt(x.peso_kg) !== x.nome ? <small> · {kgTxt(x.peso_kg)}</small> : null}</span>;
+
+  return (
+    <div className="bw">
+      <div className="bw-topo">
+        {!edicao && <p className="bw-eta">Etapa 4 de 5</p>}
+        <h2 className="bw-h">{escolha === "sim" ? "Qual o preço de cada tamanho?" : "Qual o preço do bolo?"}</h2>
+        {nome && !edicao && <p className="bw-produto">{nome}</p>}
+      </div>
+
+      {escolha === "nao" ? (
+        <div className="bw-box">
+          <p className="bw-bt">Como você vende esse bolo?</p>
+          <div className="bw-seg3" role="radiogroup">
+            {VENDA.map(x => (
+              <button key={x.v} type="button" role="radio" aria-checked={form.forma_venda === x.v} className={form.forma_venda === x.v ? "on" : ""}
+                onClick={() => setForm((f: any) => ({ ...f, forma_venda: x.v }))}>{x.t}</button>
+            ))}
+          </div>
+          <p className="bw-bt bw-bt--mt">Preço</p>
+          <label className="bw-money"><span>R$</span>
+            <MoneyInput value={form.preco_normal || 0} onChange={v => setForm((f: any) => ({ ...f, preco_normal: v }))} ariaLabel="Preço do bolo" />
+            <em>/ {suf}</em>
+          </label>
+          <p className="bw-hint">Digite só os números — a vírgula e o ponto aparecem sozinhos.</p>
+        </div>
+      ) : (
+        <>
+          <div className="bw-box">
+            <p className="bw-bt">Como é o preço?</p>
+            <div className="bw-modos bw-modos--col" role="radiogroup">
+              <button type="button" role="radio" aria-checked={!porPeso} className={!porPeso ? "on" : ""} onClick={() => setGt({ modo_preco_tamanho: "preco_fixo" })}>
+                <i aria-hidden="true" /><span><b>Cada tamanho tem seu preço</b><small>Você define o preço de cada tamanho</small></span>
+              </button>
+              <button type="button" role="radio" aria-checked={porPeso} className={porPeso ? "on" : ""} onClick={() => setGt({ modo_preco_tamanho: "por_peso" })}>
+                <i aria-hidden="true" /><span><b>Calcular pelo peso</b><small>Você informa o preço do kg e o Doonly faz a conta de cada tamanho</small></span>
+              </button>
+            </div>
+            {porPeso && (
+              <div className="bw-kg">
+                <span className="bw-kg-t">Preço base
+                  <button type="button" className="bw-i" onClick={() => setInfoBase(true)} aria-label="O que é o preço base?">i</button>
+                </span>
+                <label className="bw-money bw-money--sm"><span>R$</span>
+                  <MoneyInput value={precoBase} onChange={v => setForm((f: any) => ({ ...f, preco_normal: v }))} ariaLabel="Preço base por kg" />
+                  <em>/kg</em>
+                </label>
+              </div>
+            )}
+          </div>
+
+          <div className="bw-box">
+            <p className="bw-bt">{porPeso ? "Fica assim no cardápio" : "Preços"}</p>
+            {nomeados.length === 0 && <p className="bw-hint">Volte uma etapa e cadastre os tamanhos.</p>}
+            {nomeados.map(x => (
+              <div className="bw-pr" key={x.id}>
+                {rotulo(x)}
+                {porPeso ? (
+                  (x.peso_kg || 0) > 0
+                    ? <span className={`bw-in bw-pr-calc${precoBase > 0 ? " ok" : ""}`}>{precoBase > 0 ? brl(precoBase * (x.peso_kg || 0)) : "Informe o preço base"}</span>
+                    : <span className="bw-in bw-pr-calc">Sem peso — volte e preencha</span>
+                ) : (
+                  <label className={`bw-in bw-rs bw-pr-in${x.preco > 0 ? " ok" : ""}`}><span className="bw-rs-p">R$</span>
+                    <MoneyInput value={x.preco} onChange={v => setTam(x.id, { preco: v })} ariaLabel={`Preço do tamanho ${x.nome}`} />
+                  </label>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Promoção: só na edição (no cadastro fica de fora pra ser mais curto) */}
+      {edicao && escolha && (
+        <div className={`bw-box bw-promo2${form.promocao ? " on" : ""}`}>
+          <button type="button" className="bw-check2" onClick={() => setForm((f: any) => ({ ...f, promocao: !f.promocao,
+            tipo_promocao: escolha === "sim" ? "percentual" : "fixo", desconto_percentual: escolha === "sim" && !f.promocao ? (f.desconto_percentual || 10) : f.desconto_percentual }))} aria-pressed={!!form.promocao}>
+            <i aria-hidden="true">{form.promocao ? "✓" : ""}</i>
+            <span><b>Colocar em promoção</b><small>{escolha === "sim" ? "Um desconto em % vale pra todos os tamanhos" : "O cardápio mostra o preço antigo riscado"}</small></span>
+          </button>
+          {form.promocao && (escolha === "sim" ? (
+            <div className="bw-frase">Desconto de
+              <label className="bw-in bw-suf bw-in--curto"><input inputMode="numeric" value={form.tipo_promocao === "percentual" ? (form.desconto_percentual || "") : ""} placeholder="10"
+                onChange={e => setForm((f: any) => ({ ...f, tipo_promocao: "percentual", desconto_percentual: Math.min(90, parseInt(e.target.value.replace(/\D/g, "") || "0", 10)) }))} aria-label="Desconto em %" /><em>%</em></label>
+              em todos os tamanhos
+            </div>
+          ) : (
+            <div className="bw-frase">Sai por
+              <label className="bw-money bw-money--sm"><span>R$</span>
+                <MoneyInput value={form.preco_promocional || 0} onChange={v => setForm((f: any) => ({ ...f, tipo_promocao: "fixo", preco_promocional: v }))} ariaLabel="Preço promocional" />
+              </label>
+              {(form.preco_normal || 0) > 0 && <small className="bw-hint">no lugar de {brl(form.preco_normal)}</small>}
+            </div>
+          ))}
+        </div>
+      )}
       {infoBase && (
         <DooInfoModal open onClose={() => setInfoBase(false)} image="/Sistema/precifique.png" imageAlt="Preço base"
           ariaLabel="O que é o preço base" title={<>{primeiroNome ? `${primeiroNome}, entenda` : "Entenda"} o <span style={{ color: "#C33A6E" }}>preço base</span>.</>}>
@@ -672,4 +737,39 @@ const CSS = `
     .bo-li { padding-left: 12px; }
     .bo-vx { padding: 6px 10px; font-size: 12px; }
   }
+
+  /* Patch 30/09: tamanhos e preço separados */
+  .bw-hint--centro { text-align: center; margin-top: 14px; }
+  .bw-hint--sob { margin: -4px 0 12px; }
+  .bw-gerar-btn { border: 1px solid #F3D6E2; background: #FFF6F9; color: #C33A6E; border-radius: 6px; padding: 8px 12px; font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .bw-gerar-btn:hover { background: #FCE7F3; }
+  .bw-t2 { display: flex; flex-direction: column; gap: 8px; }
+  .bw-t2-row { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) 36px; gap: 10px; align-items: center; }
+  .bw-t2-row--h span { font-size: 11px; font-weight: 700; color: #9A8E94; text-transform: uppercase; letter-spacing: .05em; padding-left: 2px; white-space: nowrap; }
+  input.bw-t2-nome { text-align: left; padding: 0 12px; font-size: 14.5px; font-weight: 700; }
+  .bw-t2 .bw-in input { padding-left: 12px; }
+  .bw-check2 { display: flex; align-items: flex-start; gap: 12px; width: 100%; margin-top: 18px; border: none; background: none; padding: 0; font-family: inherit; text-align: left; cursor: pointer; color: #2C1219; }
+  .bw-check2 > i { width: 24px; height: 24px; border-radius: 5px; border: 2px solid #D6CBD0; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 13px; font-weight: 900; color: #fff; flex-shrink: 0; margin-top: 1px; }
+  .bw-check2.on > i { background: #E85A8C; border-color: #E85A8C; }
+  .bw-check2 > span { display: flex; flex-direction: column; min-width: 0; }
+  .bw-check2 b { font-size: 14px; font-weight: 700; white-space: nowrap; }
+  .bw-check2 small { font-size: 12.5px; color: #888780; line-height: 1.4; margin-top: 3px; }
+  .bw-modos--col { grid-template-columns: 1fr !important; }
+  .bw-pr { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 0; }
+  .bw-pr-lb { font-size: 14px; color: #4B3A42; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bw-pr-lb b { color: #2C1219; font-size: 14.5px; } .bw-pr-lb small { color: #9A8E94; font-size: 12.5px; }
+  .bw-pr-in { width: 160px; flex-shrink: 0; padding-left: 12px; }
+  .bw-pr-calc { width: 160px; flex-shrink: 0; display: flex; align-items: center; padding: 0 12px; background: #FAF7F8; border-color: #F0EBED; color: #B5AAB0; font-size: 12.5px; font-weight: 600; }
+  .bw-pr-calc.ok { background: #F0FDF4; border-color: #DCFCE7; color: #15803D; font-size: 15px; font-weight: 800; }
+  .bw-money--sm { width: 170px !important; }
+  .bw-money--sm em { font-size: 12.5px; }
+  @media (max-width: 767px) {
+    .bw-t2-row { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 32px; gap: 8px; }
+    .bw-pr-in, .bw-pr-calc { width: 140px; }
+    .bw-check2 b { font-size: 13.5px; }
+    .bw-money--sm { width: 160px !important; padding: 0 10px !important; gap: 4px !important; }
+    .bw-money--sm input { font-size: 15px !important; }
+    .bw-kg { padding: 10px 12px; }
+  }
+  .bw-kg-t { white-space: nowrap; flex-shrink: 0; }
 `;
