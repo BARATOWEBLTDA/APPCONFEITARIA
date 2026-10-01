@@ -6,6 +6,7 @@ import {
   Gear, PaintBrush, Crown,
   SquaresFour, UserPlus, Storefront,
   X, CaretRight,
+  Trophy,
 } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
@@ -55,6 +56,7 @@ const GROUPS: DrawerGroup[] = [
   {
     label: "Meu plano",
     items: [
+      { label: "Minhas conquistas", desc: "Suas medalhas",      path: "/conquistas", icon: <Trophy size={16} weight="bold" /> },
       { label: "Assinatura",    desc: "Gerencie seu PRO",         path: "/assinar",  icon: <Crown    size={16} weight="bold" /> },
       { label: "Indicar amigo", desc: "Ganhe indicando",          path: "/indicar",  icon: <UserPlus size={16} weight="bold" /> },
       { label: "Meus arquivos", desc: "PDFs e materiais",         path: "/arquivos", icon: <Files    size={16} weight="bold" /> },

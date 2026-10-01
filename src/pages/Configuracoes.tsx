@@ -592,6 +592,17 @@ export default function Configuracoes() {
             <div className="cfgd-quick-sub">Suporte, sugestões e indicações</div>
           </div>
           <div className="cfgd-quick-list">
+            <button className="cfgd-quick-item" onClick={() => navigate("/conquistas")}>
+              <span className="cfgd-quick-ico cfgd-quick-ico--pink">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>
+              </span>
+              <div className="cfgd-quick-info">
+                <div className="cfgd-quick-name">Minhas conquistas</div>
+                <div className="cfgd-quick-desc">Veja suas medalhas e as próximas a desbloquear</div>
+              </div>
+              <svg className="cfgd-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+
             <button className="cfgd-quick-item" onClick={() => navigate("/indicar")}>
               <span className="cfgd-quick-ico cfgd-quick-ico--pink">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
