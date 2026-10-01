@@ -179,7 +179,8 @@ export default function Agenda() {
   const [pedidos, setPedidos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [statusSelecionados, setStatusSelecionados] = useState<string[]>(STATUS_FILTRAVEIS);
+  // Cancelados ficam de fora por padrão (dá pra ligar no filtro), igual ao total do dia
+  const [statusSelecionados, setStatusSelecionados] = useState<string[]>(STATUS_FILTRAVEIS.filter(s => s !== "cancelado"));
   const [filtroDrawerOpen, setFiltroDrawerOpen] = useState(false);
 
   const [confirmModal, setConfirmModal] = useState<{ open: boolean; titulo: string; mensagem: string; onConfirm: () => void } | null>(null);
@@ -209,8 +210,11 @@ export default function Agenda() {
         .order("data_entrega", { ascending: true, nullsFirst: false })
         .order("horario_entrega", { ascending: true, nullsFirst: false });
 
+      // Status antigos viram os atuais (senão somem da lista do dia — igual à tela de Pedidos)
+      const ANTIGOS: Record<string, string> = { confirmado: "agendado", pronto: "finalizado", a_caminho: "em_entrega", concluido: "entregue", em_preparo: "em_producao" };
       const pedidosNormalizados = (data || []).map((p: any) => ({
         ...p,
+        status: ANTIGOS[p.status] || p.status,
         data_entrega: p.data_entrega || (p.created_at ? p.created_at.slice(0, 10) : null),
       }));
       setPedidos(pedidosNormalizados);
@@ -281,12 +285,13 @@ export default function Agenda() {
   const abrirEditar = (id: string) => navigate(`/pedidos/${id}`);
 
   const marcarComoPronto = async (id: string) => {
-    const { error } = await supabase.from("pedidos").update({ status: "pronto" }).eq("id", id);
+    // "finalizado" é o status atual de "pronto" (o antigo "pronto" sumia da lista)
+    const { error } = await supabase.from("pedidos").update({ status: "finalizado" }).eq("id", id);
     if (error) {
       setToast({ msg: "Erro ao atualizar status", tipo: "erro" });
       return;
     }
-    setPedidos(prev => prev.map(p => p.id === id ? { ...p, status: "pronto" } : p));
+    setPedidos(prev => prev.map(p => p.id === id ? { ...p, status: "finalizado" } : p));
     setToast({ msg: "Pedido marcado como pronto ✓", tipo: "sucesso" });
   };
 
@@ -658,7 +663,7 @@ function ResumoDoDia({ diaSel, pedidosDoDia, dayStats }: any) {
   const rel = relativoLabel(diaSel);
   const diaLabel = d.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "short" });
   const valorTotal = useMemo(
-    () => pedidosDoDia.reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0),
+    () => pedidosDoDia.filter((p: any) => p.status !== "cancelado").reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0),
     [pedidosDoDia]
   );
   const st = dayStats[diaSel] || { total: 0, agendado: 0, producao: 0, concluido: 0, atrasado: 0 };
@@ -676,14 +681,7 @@ function ResumoDoDia({ diaSel, pedidosDoDia, dayStats }: any) {
         <div className="ag-resumo-valor">{formatMoney(valorTotal)}</div>
       </div>
 
-      {st.total > 0 && (
-        <div className="ag-resumo-stats">
-          <StatMini num={st.agendado} label="Agendado" cor="roxo" />
-          <StatMini num={st.producao} label="Produção" cor="laranja" />
-          <StatMini num={st.concluido} label="Pronto" cor="verde" />
-          <StatMini num={st.atrasado} label="Atrasado" cor="vermelho" />
-        </div>
-      )}
+      {/* As 4 caixinhas por situação saíram (30/09): a lista abaixo já mostra a situação de cada pedido */}
     </div>
   );
 }
@@ -1467,12 +1465,14 @@ function AgendaStyles() {
         border-radius: 50%;
       }
 
+      /* Legenda das cores: uma linha discreta, sem caixa (30/09) */
       .ag-legenda {
         display: flex; flex-wrap: wrap; justify-content: center;
-        gap: var(--space-3);
-        margin-top: var(--space-3);
-        padding-top: var(--space-3);
-        border-top: 1px solid var(--border);
+        gap: 4px 14px;
+        margin-top: 10px;
+        padding: 0;
+        border: none;
+        background: none;
       }
       .ag-legenda-item {
         display: inline-flex; align-items: center; gap: 5px;
@@ -1480,7 +1480,8 @@ function AgendaStyles() {
         color: var(--text-secondary);
         font-weight: var(--fw-medium);
       }
-      .ag-legenda-dot { width: 8px; height: 8px; border-radius: 50%; }
+      .ag-legenda-dot { width: 7px; height: 7px; border-radius: 50%; }
+      .ag-legenda-item { font-size: 11px !important; color: var(--text-muted) !important; }
 
       /* ── Resumo do dia ── */
       .ag-resumo {
@@ -1735,7 +1736,7 @@ function AgendaStyles() {
         color: var(--text-muted);
         text-transform: uppercase;
         letter-spacing: var(--ls-wide);
-        margin: var(--space-2) 0 var(--space-2);
+        margin: 20px 0 8px; /* mesmo respiro acima (resumo) e abaixo (1º pedido) */
       }
       .ag-lista {
         display: flex; flex-direction: column;

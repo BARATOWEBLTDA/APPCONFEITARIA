@@ -22,8 +22,8 @@ export default function AssistenteVirtual() {
       <div className="av-wrap">
         <div className="av-hero">
           <img src="/Sistema/precifique.png" alt="" className="av-doo" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
-          <h1>O Doo é o seu assistente de confeitaria</h1>
-          <p>Uma inteligência artificial feita pra confeiteiras: ela cria, calcula e organiza, enquanto você foca no que faz de melhor.</p>
+          <h1>Sua confeitaria mais organizada, prática e lucrativa</h1>
+          <p>Tenha ao seu lado a ferramenta mais completa para confeiteiras e confeiteiros que querem organizar a confeitaria e ganhar tempo no dia a dia. Veja tudo o que o Doo pode fazer por você:</p>
         </div>
         <div className="av-grid">
           {BENEFICIOS.map(b => (

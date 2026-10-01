@@ -16,6 +16,7 @@ export default function RelatarProblema() {
   const [ok, setOk] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const pode = texto.trim().length >= 5 && !enviando;
+  const primeiroNome = String((profile as any)?.nome || "").trim().split(" ")[0];
 
   const enviar = async () => {
     if (!pode) return;
@@ -50,8 +51,8 @@ export default function RelatarProblema() {
         {ok ? (
           <div className="rp-card rp-ok">
             <div className="rp-ok-ic" aria-hidden="true">✓</div>
-            <h2>Recebemos, obrigado!</h2>
-            <p>Nossa equipe vai olhar o que aconteceu. Se precisar de mais detalhes, a gente fala com você.</p>
+            <h2>{primeiroNome ? `Obrigado, ${primeiroNome}! 💗` : "Obrigado! 💗"}</h2>
+            <p>Recebemos seu relato. A equipe Doonly já vai analisar e corrigir o mais rápido possível, e a gente te avisa assim que estiver resolvido.</p>
             <button type="button" className="rp-bt" onClick={() => navigate(-1)}>Voltar</button>
             <button type="button" className="rp-bt2" onClick={() => { setOk(false); setTexto(""); setParte(null); }}>Relatar outro problema</button>
           </div>
