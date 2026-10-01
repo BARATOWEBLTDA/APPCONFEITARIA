@@ -21,6 +21,9 @@ interface ItemVenda {
   imagem_url?: string
   forma_venda?: string
   observacoes: string
+  /** Tamanho ou kit escolhido (vai pro pedido como as escolhas do item) */
+  opcaoLabel?: string
+  personalizacoes?: any
 }
 
 interface Cliente {
@@ -42,6 +45,8 @@ interface Produto {
   forma_venda?: string
   imagem_url?: string
   categoria?: string
+  grupo_tamanhos?: any
+  kit_qtd?: any
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
@@ -178,7 +183,7 @@ export default function NovaVenda() {
       if (!user) { navigate('/login'); return }
       setUserId(user.id)
       const [{ data: prds }, { data: cls }] = await Promise.all([
-        supabase.from('produtos').select('id,nome,preco_normal,forma_venda,imagem_url,categoria').eq('user_id', user.id).order('nome'),
+        supabase.from('produtos').select('id,nome,preco_normal,forma_venda,imagem_url,categoria,grupo_tamanhos,kit_qtd').eq('user_id', user.id).order('nome'),
         supabase.from('clientes').select('id,nome,telefone,whatsapp,rua,numero,bairro,cidade,complemento').eq('user_id', user.id).order('nome'),
       ])
       setProdutos(prds || [])
@@ -242,6 +247,10 @@ export default function NovaVenda() {
       if (tipoEntrega === 'entrega' && !enderecoRua) return false
       return true
     }
+    // Pagamento parcial precisa do valor recebido (maior que zero e menor que o total)
+    if (etapaLabelAtual === 'Pagamento' && situacaoPag === 'parcial') {
+      return valorParcial > 0 && valorParcial < total
+    }
     return true
   }
 
@@ -254,12 +263,40 @@ export default function NovaVenda() {
   }
 
   // ── Adicionar produto ──────────────────────────────────────────────────
-  const addProduto = (p: Produto) => {
+  // Produto com tamanhos (P/M/G, pelo peso) ou kits: pergunta qual antes de adicionar (30/09).
+  // Antes entrava sempre com o menor preço, sem jeito de escolher.
+  const opcoesDoProduto = (p: Produto): { label: string; valor: number; pers: any }[] => {
+    const gt = p.grupo_tamanhos
+    if (gt?.ativo && Array.isArray(gt.opcoes)) {
+      const porPeso = gt.modo_preco_tamanho === 'por_peso'
+      const ops = gt.opcoes.filter((o: any) => o?.nome?.trim()).map((o: any) => {
+        const valor = porPeso ? Math.round((p.preco_normal || 0) * (o.peso_kg || 0) * 100) / 100 : Number(o.preco) || 0
+        return { label: o.nome, valor, pers: { tamanho: { nome: o.nome, preco: valor, peso_kg: o.peso_kg || null } } }
+      }).filter((o: any) => o.valor > 0)
+      if (ops.length) return ops
+    }
+    const kq = p.kit_qtd
+    if (kq?.ativo && Array.isArray(kq.kits) && kq.kits.length) {
+      return kq.kits.filter((k: any) => (k.qtd || 0) > 0 && (k.preco || 0) > 0).map((k: any) => ({
+        label: `${k.qtd} unidades`, valor: Number(k.preco), pers: { kit: { modo: 'fechado', total: k.qtd, sabores: [] } },
+      }))
+    }
+    return []
+  }
+  const [escolhaProduto, setEscolhaProduto] = useState<{ p: Produto; opcoes: { label: string; valor: number; pers: any }[] } | null>(null)
+  const addProduto = (p: Produto, escolha?: { label: string; valor: number; pers: any }) => {
+    if (!escolha) {
+      const ops = opcoesDoProduto(p)
+      if (ops.length > 1) { setEscolhaProduto({ p, opcoes: ops }); setModalProduto(false); return }
+      if (ops.length === 1) escolha = ops[0]
+    }
+    setEscolhaProduto(null)
     setItens([...itens, {
+      ...(escolha ? { opcaoLabel: escolha.label, personalizacoes: escolha.pers } : {}),
       produto_id: p.id,
       nome_produto: p.nome,
       quantidade: 1,
-      valor_unitario: p.preco_normal,
+      valor_unitario: escolha ? escolha.valor : p.preco_normal,
       imagem_url: p.imagem_url,
       forma_venda: p.forma_venda,
       observacoes: '',
@@ -340,7 +377,7 @@ export default function NovaVenda() {
       taxa_entrega: tipoEntrega === 'entrega' ? taxaEntrega : 0,
       forma_pagamento: formaPagamento,
       tipo_entrega: tipoEntrega,
-      data_entrega: tipo === 'encomenda' ? dataEntrega : new Date().toISOString().slice(0, 10),
+      data_entrega: tipo === 'encomenda' ? dataEntrega : (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` })(),
       horario_entrega: tipo === 'encomenda' ? horarioEntrega : null,
       endereco_rua: enderecoRua,
       endereco_numero: enderecoNumero,
@@ -371,7 +408,7 @@ export default function NovaVenda() {
       // ─── Snapshot Passo 0A ─────────────────────────────────────────
       // NovaVenda hoje não coleta massa/recheio/cobertura/sabor/tamanho
       // Salva estrutura vazia. Passo 1 (GRUPO_OPCOES) vai enriquecer.
-      personalizacoes: criarPersonalizacoesV1({}),
+      personalizacoes: it.personalizacoes ? { ...criarPersonalizacoesV1({}), ...it.personalizacoes } : criarPersonalizacoesV1({}),
       preco_breakdown: criarBreakdownV1({ final: it.valor_unitario }),
       snapshot_version: SNAPSHOT_VERSION_ATUAL,
     }))
@@ -646,7 +683,8 @@ export default function NovaVenda() {
             color: #fff;
             box-shadow: 0 2px 4px rgba(217,119,6,0.3);
           }
-        `}</style>
+        
+`}</style>
       </>
     )
   }
@@ -790,7 +828,7 @@ export default function NovaVenda() {
                         {it.imagem_url ? <img src={it.imagem_url} alt={it.nome_produto} /> : <span>🎂</span>}
                       </div>
                       <div className="nv-p-item-info">
-                        <div className="nv-p-item-nome">{toTitleCase(it.nome_produto)}</div>
+                        <div className="nv-p-item-nome">{toTitleCase(it.nome_produto)}{it.opcaoLabel ? <span className="nv-p-item-op"> · {it.opcaoLabel}</span> : null}</div>
                         <div className="nv-p-item-linha-preco">
                           <span className="nv-p-item-preco">{formatMoney(it.valor_unitario * it.quantidade)}</span>
                           <span className="nv-p-item-unit">{formatMoney(it.valor_unitario)}{it.forma_venda ? ` / ${it.forma_venda}` : ' un.'}</span>
@@ -1432,6 +1470,21 @@ export default function NovaVenda() {
     </div>
 
     {/* ═══ MODAL: escolher produto ═══ */}
+      {/* Escolha do tamanho / kit */}
+      {escolhaProduto && (
+        <div className="nv-op-ov" onClick={() => setEscolhaProduto(null)}>
+          <div className="nv-op" onClick={e => e.stopPropagation()} role="dialog" aria-label="Escolher opção">
+            <div className="nv-op-h"><b>{toTitleCase(escolhaProduto.p.nome)}</b><button type="button" onClick={() => setEscolhaProduto(null)} aria-label="Fechar">✕</button></div>
+            <p className="nv-op-sub">{escolhaProduto.p.kit_qtd?.ativo ? 'Qual kit o cliente levou?' : 'Qual tamanho?'}</p>
+            {escolhaProduto.opcoes.map(o => (
+              <button type="button" key={o.label} className="nv-op-item" onClick={() => addProduto(escolhaProduto.p, o)}>
+                <span>{o.label}{o.pers?.tamanho?.peso_kg && o.pers.tamanho.peso_kg + '' !== o.label ? <small> · {String(o.pers.tamanho.peso_kg).replace('.', ',')} kg</small> : null}</span>
+                <b>{formatMoney(o.valor)}</b>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     {modalProduto && (() => {
       const produtosFiltrados = produtos.filter(p => {
         const matchBusca = p.nome.toLowerCase().includes(buscaProduto.toLowerCase())
@@ -2685,7 +2738,17 @@ export default function NovaVenda() {
       }
       .nv-modal-item-sub { font-size: 11.5px; color: #6B5D64; margin-top: 2px; }
       .nv-modal-item-preco { font-size: 13px; font-weight: 700; color: #2D1F26; }
-    `}</style>
+            .nv-p-item-op { color: #C33A6E; font-weight: 700; }
+        .nv-op-ov { position: fixed; inset: 0; z-index: 1200; background: rgba(45,31,38,.55); display: flex; align-items: flex-end; justify-content: center; }
+        @media (min-width: 768px) { .nv-op-ov { align-items: center; } }
+        .nv-op { width: 100%; max-width: 440px; background: #fff; border-radius: 20px 20px 0 0; padding: 18px 16px calc(18px + env(safe-area-inset-bottom, 0px)); font-family: var(--font-base); }
+        @media (min-width: 768px) { .nv-op { border-radius: 18px; } }
+        .nv-op-h { display: flex; justify-content: space-between; align-items: center; } .nv-op-h b { font-size: 17px; color: #2C1219; }
+        .nv-op-h button { border: none; background: #F5F0F2; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: #6B5D64; }
+        .nv-op-sub { font-size: 13.5px; color: #6B5D64; margin: 4px 0 12px; }
+        .nv-op-item { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 14px; margin-top: 8px; border: 1.5px solid #EAE3E6; border-radius: 12px; background: #fff; font-family: inherit; font-size: 15px; color: #2C1219; cursor: pointer; }
+        .nv-op-item:hover { border-color: #E85A8C; background: #FFF6F9; } .nv-op-item small { color: #9A8E94; font-weight: 500; } .nv-op-item b { color: #15803D; }
+`}</style>
     </>
   )
 }
