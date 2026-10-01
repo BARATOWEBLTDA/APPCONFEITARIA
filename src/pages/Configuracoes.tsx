@@ -399,18 +399,18 @@ export default function Configuracoes() {
               <svg className="cfgp-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
 
-            <button className="cfgp-quick-item" onClick={() => setSugestaoOpen(true)}>
+            <button className="cfgp-quick-item" onClick={() => navigate("/solicitar-recurso")}>
               <span className="cfgp-quick-ico cfgp-quick-ico--amber">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
               </span>
               <div className="cfgp-quick-info">
-                <div className="cfgp-quick-name">Enviar uma sugestão</div>
+                <div className="cfgp-quick-name">Sugerir uma melhoria</div>
                 <div className="cfgp-quick-desc">Conte o que falta ou o que melhoraria</div>
               </div>
               <svg className="cfgp-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
 
-            <button className="cfgp-quick-item" onClick={() => alert("🚀 Em breve! Você poderá relatar problemas por aqui.")}>
+            <button className="cfgp-quick-item" onClick={() => navigate("/relatar-problema")}>
               <span className="cfgp-quick-ico cfgp-quick-ico--red">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="6" width="8" height="14" rx="4"/><path d="M19 7l-3 2"/><path d="M5 7l3 2"/><path d="M19 13h-3"/><path d="M8 13H5"/><path d="M19 19l-3-2"/><path d="M5 19l3-2"/><path d="M12 6V3"/><path d="M10 3h4"/></svg>
               </span>
@@ -603,18 +603,18 @@ export default function Configuracoes() {
               <svg className="cfgd-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
 
-            <button className="cfgd-quick-item" onClick={() => setSugestaoOpen(true)}>
+            <button className="cfgd-quick-item" onClick={() => navigate("/solicitar-recurso")}>
               <span className="cfgd-quick-ico cfgd-quick-ico--amber">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
               </span>
               <div className="cfgd-quick-info">
-                <div className="cfgd-quick-name">Enviar uma sugestão</div>
+                <div className="cfgd-quick-name">Sugerir uma melhoria</div>
                 <div className="cfgd-quick-desc">Conte o que falta ou o que melhoraria</div>
               </div>
               <svg className="cfgd-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
 
-            <button className="cfgd-quick-item" onClick={() => alert("🚀 Em breve! Você poderá relatar problemas por aqui.")}>
+            <button className="cfgd-quick-item" onClick={() => navigate("/relatar-problema")}>
               <span className="cfgd-quick-ico cfgd-quick-ico--red">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="6" width="8" height="14" rx="4"/><path d="M19 7l-3 2"/><path d="M5 7l3 2"/><path d="M19 13h-3"/><path d="M8 13H5"/><path d="M19 19l-3-2"/><path d="M5 19l3-2"/><path d="M12 6V3"/><path d="M10 3h4"/></svg>
               </span>

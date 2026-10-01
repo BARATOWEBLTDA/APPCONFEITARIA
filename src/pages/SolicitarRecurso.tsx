@@ -109,6 +109,8 @@ export default function SolicitarRecurso() {
         area,
         impacto,
         status: "recebida",
+        tipo: "sugestao",
+        tela_origem: window.location.pathname,
       });
       if (error) throw error;
       setEnviado(true);
@@ -128,7 +130,7 @@ export default function SolicitarRecurso() {
 
   return (
     <>
-      <AppPageHeader title="Solicitar recurso" subtitle="Sua opinião molda o Doonly" />
+      <AppPageHeader title="Sugerir uma melhoria" subtitle="Sua opinião molda o Doonly" />
 
       <div className="sr-root">
         <div className="sr-tabs" role="tablist">

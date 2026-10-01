@@ -1,4 +1,5 @@
 // v2: excluir pedido + modal 3 secoes + imagem_url
+import MenuContaItens from "@/components/MenuContaItens";
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate, useLocation } from 'react-router-dom'
@@ -3845,34 +3846,7 @@ export default function Pedidos() {
             <p className="ped-menu-novo-hdr-ver">Versão 1.0.0</p>
           </div>
           <div className="ped-menu-novo-body">
-            <button className="ped-menu-novo-item" onClick={() => { setMenuOpen(false); navigate("/notificacoes") }}>
-              <span className="ped-menu-novo-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
-              <span>Notificações</span>
-            </button>
-            <button className="ped-menu-novo-item" onClick={() => { setMenuOpen(false); alert("🚀 Em breve! Estamos preparando essa página.") }}>
-              <span className="ped-menu-novo-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span>
-              <span>Solicitar recursos</span>
-            </button>
-            <button className="ped-menu-novo-item" onClick={() => { setMenuOpen(false); navigate("/configuracoes") }}>
-              <span className="ped-menu-novo-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-              <span>Minha conta</span>
-            </button>
-            <button className="ped-menu-novo-item" onClick={() => { setMenuOpen(false); navigate("/cardapio") }}>
-              <span className="ped-menu-novo-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
-              <span>Minha loja</span>
-            </button>
-            <button className="ped-menu-novo-item" onClick={() => { setMenuOpen(false); alert("🤖 Assistente virtual em breve!") }}>
-              <span className="ped-menu-novo-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="9" cy="10" r="1.2" fill="currentColor"/><circle cx="15" cy="10" r="1.2" fill="currentColor"/><path d="M8 15c1 1.2 2.5 2 4 2s3-.8 4-2"/></svg></span>
-              <span>Assistente virtual</span>
-            </button>
-            <button className="ped-menu-novo-item" onClick={() => { setMenuOpen(false); alert("📝 Em breve você poderá relatar problemas por aqui!") }}>
-              <span className="ped-menu-novo-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
-              <span>Relatar um problema</span>
-            </button>
-            <button className="ped-menu-novo-item ped-menu-novo-sair" onClick={() => { setMenuOpen(false); setConfirmSair(true) }}>
-              <span className="ped-menu-novo-icon ped-menu-novo-icon--sair"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
-              <span>Sair</span>
-            </button>
+            <MenuContaItens prefix="ped" onClose={() => setMenuOpen(false)} onSair={() => setConfirmSair(true)} />
           </div>
         </div>
       </>,

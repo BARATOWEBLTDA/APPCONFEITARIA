@@ -43,6 +43,12 @@ export default function Layout() {
   } = useAvatarUpload();
   const [maisOpen, setMaisOpen] = useState(false);
   const [dooOpen, setDooOpen] = useState(false);
+  // Menu da foto → "Assistente virtual" abre o mesmo chat do menu de baixo
+  useEffect(() => {
+    const abrir = () => setDooOpen(true);
+    window.addEventListener("doonly:abrir-doo", abrir);
+    return () => window.removeEventListener("doonly:abrir-doo", abrir);
+  }, []);
   const location = useLocation();
   const isReceitas = location.pathname === "/receitas";
   const isAssinar = location.pathname === "/assinar";

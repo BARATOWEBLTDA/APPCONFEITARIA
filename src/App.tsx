@@ -27,6 +27,8 @@ import Receitas from "@/pages/Receitas";
 import ReceitasV2 from "@/pages/ReceitasV2";
 import Notificacoes from "@/pages/Notificacoes";
 import SolicitarRecurso from "@/pages/SolicitarRecurso";
+import RelatarProblema from "@/pages/RelatarProblema";
+import AssistenteVirtual from "@/pages/AssistenteVirtual";
 import AdminLogin from "@/pages/admin/AdminLogin";
 import AdminLayout from "@/pages/admin/AdminLayout";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
@@ -221,6 +223,8 @@ export default function App() {
           <Route path="/receitas-antigas" element={<Receitas />} />
           <Route path="/notificacoes" element={<Notificacoes />} />
           <Route path="/solicitar-recurso" element={<SolicitarRecurso />} />
+          <Route path="/relatar-problema" element={<RelatarProblema />} />
+          <Route path="/assistente-virtual" element={<AssistenteVirtual />} />
           <Route path="/produtos" element={<Produtos />} />
           <Route path="/produtos/categorias" element={<Produtos />} />
           <Route path="/categorias" element={<Categorias />} />
