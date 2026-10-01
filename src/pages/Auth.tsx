@@ -6,10 +6,10 @@ import { User, Storefront, Phone, Envelope, Eye, EyeSlash } from "@phosphor-icon
 // ───────────────────────────────────────────────────────────────
 // Links de download do app (desktop ≥1200px)
 // ───────────────────────────────────────────────────────────────
-const PLAY_STORE_URL = "https://google.com";
-const APP_STORE_URL = "https://google.com";
-const QR_TARGET = "https://google.com";
-const QR_IMG_SRC = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=0&bgcolor=ffffff&color=3d1a24&data=${encodeURIComponent(QR_TARGET)}`;
+// iPhone/iPad (inclui iPad que se apresenta como Mac): o login com Google abre no Safari,
+// fora do app instalado — por isso fica escondido nesses aparelhos (30/09)
+const IS_IOS = typeof navigator !== "undefined" &&
+  (/iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && (navigator as any).maxTouchPoints > 1));
 
 // ───────────────────────────────────────────────────────────────
 // Validadores puros — reutilizáveis, testáveis
@@ -503,6 +503,7 @@ export default function Auth() {
             {loading ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><span className="spinner" /> Entrando...</span> : "Entrar"}
           </button>
 
+          {!IS_IOS && (<>
           <div className="auth-divider"><span>ou</span></div>
 
           <button type="button" className="google-btn" onClick={async () => {
@@ -514,6 +515,7 @@ export default function Auth() {
             <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
             Entrar com Google
           </button>
+          </>)}
           <div className="cadastro-link-wrap">
             <span>Não tem conta? </span>
             <button type="button" className="cadastro-link" onClick={() => setShowCadastro(true)}>
@@ -744,6 +746,7 @@ export default function Auth() {
           <button type="submit" className="cad-btn" disabled={cadastroLoading}>
             {cadastroLoading ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><span className="spinner" /> Criando conta...</span> : "Cadastrar"}
           </button>
+          {!IS_IOS && (<>
           <div className="auth-divider"><span>ou</span></div>
           <button type="button" className="google-btn" onClick={async () => {
             await supabase.auth.signInWithOAuth({
@@ -754,6 +757,7 @@ export default function Auth() {
             <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
             Cadastrar com Google
           </button>
+          </>)}
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', lineHeight: '1.5', margin: '0' }}>
             Ao criar sua conta, você concorda com nossos{' '}
             <a href="/termos" target="_blank" style={{ color: 'var(--primary)', fontWeight: 600 }}>Termos de Uso</a>
