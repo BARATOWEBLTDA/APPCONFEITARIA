@@ -141,7 +141,14 @@ export default function Categorias() {
     if (!form.nome.trim()) return alert("Nome é obrigatório");
     setSaving(true);
     if (form.id) {
-      await supabase.from("categorias").update({ nome: form.nome, imagem_url: form.imagem_url || null, ordem: form.ordem }).eq("id", form.id);
+      const antigo = categorias.find(c => c.id === form.id)?.nome;
+      const novo = form.nome.trim();
+      await supabase.from("categorias").update({ nome: novo, imagem_url: form.imagem_url || null, ordem: form.ordem }).eq("id", form.id);
+      // Os produtos guardam o NOME da categoria: renomeou, eles acompanham (antes ficavam numa categoria que não existia mais)
+      if (antigo && antigo !== novo) {
+        await supabase.from("produtos").update({ categoria: novo }).eq("user_id", userId).eq("categoria", antigo);
+        await loadProdutos(userId);
+      }
     } else {
       await supabase.from("categorias").insert({ nome: form.nome, imagem_url: form.imagem_url || null, ordem: form.ordem, user_id: userId });
     }
@@ -151,6 +158,14 @@ export default function Categorias() {
   };
 
   const handleDelete = async (id: string) => {
+    // Com produtos dentro, não exclui (os produtos ficariam sem categoria e sumiriam do cardápio)
+    const cat = categorias.find(c => c.id === id);
+    const qtd = cat ? contarProdutos(cat.nome) : 0;
+    if (qtd > 0) {
+      alert(`A categoria "${cat!.nome}" tem ${qtd} ${qtd === 1 ? "produto" : "produtos"}. Mova ${qtd === 1 ? "ele" : "eles"} pra outra categoria antes de excluir.`);
+      setDeleteConfirm(null);
+      return;
+    }
     await supabase.from("categorias").delete().eq("id", id);
     setCategorias(c => c.filter(x => x.id !== id));
     setDeleteConfirm(null);
@@ -251,7 +266,7 @@ export default function Categorias() {
             return (
               <button
                 key={cat.id}
-                className="cat-grid-card"
+                className={`cat-grid-card${menuAberto === cat.id ? " cat-card--menu" : ""}`}
                 onClick={() => openEditar(cat)}
               >
                 {count > 0 && (
@@ -289,7 +304,7 @@ export default function Categorias() {
             const count = contarProdutos(cat.nome);
             const grad = getGradient(cat.nome, idx);
             return (
-              <div key={cat.id} className="cat-list-item" onClick={() => openEditar(cat)}>
+              <div key={cat.id} className={`cat-list-item${menuAberto === cat.id ? " cat-card--menu" : ""}`} onClick={() => openEditar(cat)}>
                 <div className="cat-list-icon" style={{ background: cat.imagem_url ? grad.bg : "#F5F1F3", borderStyle: cat.imagem_url ? "solid" : "dashed" }}>
                   {cat.imagem_url
                     ? <img src={cat.imagem_url} alt={cat.nome} />
@@ -406,7 +421,7 @@ export default function Categorias() {
         <div className="cat-modal-overlay" onClick={() => setDeleteConfirm(null)}>
           <div className="cat-confirm" onClick={e => e.stopPropagation()}>
             <p className="cat-confirm-title">Excluir categoria?</p>
-            <p className="cat-confirm-sub">Os produtos dessa categoria não serão excluídos, apenas a categoria.</p>
+            <p className="cat-confirm-sub">Só categorias sem produtos podem ser excluídas. Se tiver produtos, mova eles antes pra outra categoria.</p>
             <div className="cat-confirm-btns">
               <button onClick={() => setDeleteConfirm(null)}>Cancelar</button>
               <button onClick={() => handleDelete(deleteConfirm)} style={{ background: "var(--error)", color: "var(--text-inverse)" }}>Excluir</button>
@@ -649,7 +664,11 @@ export default function Categorias() {
         .cat-list-menu:hover { background: #F5F1F3; color: #2D1F26; }
 
         /* ── Menu drop (grid + lista) ───────────────────── */
+        /* O cartão com o menu aberto fica por cima dos outros (antes o toque no menu
+           "atravessava" e caía no cartão de baixo, e o Excluir/Editar não funcionava) */
+        .cat-card--menu { position: relative; z-index: 30 !important; }
         .cat-menu-drop {
+          z-index: 31;
           position: absolute;
           top: 36px; right: 4px;
           background: #fff;

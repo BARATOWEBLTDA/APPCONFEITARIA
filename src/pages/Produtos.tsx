@@ -4080,7 +4080,8 @@ export default function Produtos() {
     } else if (isPersonalizavel) {
       const grupos = [form.grupo_massas, form.grupo_recheios, form.grupo_coberturas, form.grupo_sabores, form.grupo_tamanhos];
       const algumAtivo = grupos.some(g => g?.ativo && (g.opcoes?.length || 0) > 0) || kitAtivo((form as any).kit_qtd);
-      if (!algumAtivo && !(tipoCadastro === "bolos" && !form.id)) return alert("Ative ao menos uma categoria de personalização com opções");
+      // Produto simples (sem opções) também pode ser publicado — só precisa do preço
+      if (!algumAtivo && !(form.preco_normal > 0) && !(tipoCadastro === "bolos" && !form.id)) return alert("Informe o preço do produto");
       // Se tem Tamanhos ativos, preço base vem do MENOR tamanho
       const gt = form.grupo_tamanhos;
       const gs = form.grupo_sabores;
@@ -5991,8 +5992,8 @@ export default function Produtos() {
                     const gm = form.grupo_massas, gr = form.grupo_recheios, gc = form.grupo_coberturas, gt = form.grupo_tamanhos;
                     // Mobile na etapa checklist: basta ter 1 grupo marcado (opcoes vem depois)
                     if (isMobileMain && !form.id && mobilePersonaStep === "checklist" && !kitTela) {
-                      const anyAtivo = [gm, gr, gc, gt, form.grupo_sabores].some(g => g?.ativo) || kitAtivo((form as any).kit_qtd);
-                      return anyAtivo;
+                      // Produto sem opções também pode seguir (vai direto pro preço)
+                      return true;
                     }
                     // Tela "Monte seu kit": precisa estar completo
                     if (kitTela) return !erroKit((form as any).kit_qtd);
@@ -6057,6 +6058,8 @@ export default function Produtos() {
                         const outros = [form.grupo_massas, form.grupo_recheios, form.grupo_coberturas, form.grupo_sabores, form.grupo_tamanhos].some(g => g?.ativo);
                         // Só o kit ligado: vai direto pra "Monte seu kit"
                         if (kitLigado && !outros) { setKitTela(true); return; }
+                        // Produto simples (nenhuma opção): pula direto pro preço
+                        if (!kitLigado && !outros) { setWizardStep(4); return; }
                         setMobilePersonaStep("fill");
                         return;
                       }
