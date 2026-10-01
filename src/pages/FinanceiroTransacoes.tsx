@@ -1,4 +1,5 @@
 // Financeiro V1 — resumo + entradas (pedidos pagos + avulsas) + saídas + gráfico
+import { valorRecebidoPedido } from "@/lib/financeiroPedido"
 import ReqTag from "@/components/ReqTag";
 import { useState, useEffect, useMemo } from "react"
 import { supabase } from "@/lib/supabase"
@@ -98,15 +99,13 @@ export default function FinanceiroTransacoes() {
     //    Buscamos junto os itens pra calcular CMV
     const { data: pedidos } = await supabase
       .from("pedidos")
-      .select("id, numero, cliente_nome, valor_total, data_entrega, status, status_pagamento, pedido_itens(nome_produto, quantidade, produtos(id))")
+      .select("id, numero, cliente_nome, valor_total, valor_recebido, data_entrega, status, status_pagamento, pedido_itens(nome_produto, quantidade, produtos(id))")
       .eq("user_id", uid)
       .gte("data_entrega", ini)
       .lte("data_entrega", fim)
 
-    const pedidosPagosRaw = (pedidos || []).filter((p: any) =>
-      (p.status_pagamento === "pago") ||
-      (p.status === "concluido" && p.status_pagamento !== "estornado")
-    )
+    // O que já entrou no caixa (inclui pedidos do cardápio entregues e o sinal dos parciais)
+    const pedidosPagosRaw = (pedidos || []).filter((p: any) => valorRecebidoPedido(p) > 0)
 
     // 2) Pré-carrega ficha técnica de todos os produtos envolvidos
     const produtoIds = Array.from(new Set(
@@ -156,7 +155,7 @@ export default function FinanceiroTransacoes() {
         if (custoUnit == null || custoUnit === 0) { semFicha = true; return }
         cmv += custoUnit * (Number(it.quantidade) || 0)
       })
-      const valor = Number(p.valor_total) || 0
+      const valor = valorRecebidoPedido(p)
       const margem = valor > 0 && cmv > 0 ? ((valor - cmv) / valor) * 100 : 0
       return {
         id: `pedido_${p.id}`,
@@ -206,7 +205,7 @@ export default function FinanceiroTransacoes() {
 
     const [{ data: pedidos }, { data: manuais }] = await Promise.all([
       supabase.from("pedidos")
-        .select("valor_total, data_entrega, status, status_pagamento")
+        .select("valor_total, valor_recebido, data_entrega, status, status_pagamento")
         .eq("user_id", uid)
         .gte("data_entrega", ini)
         .lte("data_entrega", fim),
@@ -225,10 +224,10 @@ export default function FinanceiroTransacoes() {
 
     ;(pedidos || []).forEach((p: any) => {
       if (!p.data_entrega) return
-      const pago = p.status_pagamento === "pago" || (p.status === "concluido" && p.status_pagamento !== "estornado")
-      if (!pago) return
+      const recebido = valorRecebidoPedido(p)
+      if (!recebido) return
       const k = p.data_entrega.slice(0, 7)
-      if (buckets[k]) buckets[k].entrada += Number(p.valor_total) || 0
+      if (buckets[k]) buckets[k].entrada += recebido
     })
     ;(manuais || []).forEach((m: any) => {
       const k = m.data.slice(0, 7)
