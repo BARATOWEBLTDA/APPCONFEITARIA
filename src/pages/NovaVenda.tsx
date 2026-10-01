@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
+import { usePlano } from '@/hooks/usePlano'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -95,6 +96,7 @@ const ETAPAS_PRONTA    = ['Venda', 'Cliente', 'Entrega', 'Pagamento', 'Revisar']
 // ─────────────────────────────────────────────────────────────────────────
 export default function NovaVenda() {
   const navigate = useNavigate()
+  const { isPro } = usePlano()
   const isMobile = useIsMobile()
 
   // ── State principal ─────────────────────────────────────────────────────
@@ -363,9 +365,20 @@ export default function NovaVenda() {
       valorRecebido = valorParcial
     }
 
+    // Cliente novo digitado aqui: cadastra em Clientes antes de salvar o pedido
+    let clienteIdFinal = clienteId
+    if (!semCliente && !clienteId && modoNovoCli && clienteNome.trim()) {
+      const end: any = tipoEntrega === 'entrega' ? { rua: enderecoRua || null, numero: enderecoNumero || null, bairro: enderecoBairro || null, cidade: enderecoCidade || null, complemento: enderecoComplemento || null } : {}
+      const { data: cliNovo, error: errCli } = await supabase.from('clientes')
+        .insert({ user_id: userId, nome: clienteNome.trim(), whatsapp: clienteTelefone.trim() || null, ...end })
+        .select('id').single()
+      if (!errCli && cliNovo?.id) clienteIdFinal = cliNovo.id
+      else console.error('Não deu pra cadastrar o cliente novo:', errCli)
+    }
+
     const { data: novoPedido, error } = await supabase.from('pedidos').insert({
       user_id: userId,
-      cliente_id: clienteId,
+      cliente_id: clienteIdFinal,
       cliente_nome: semCliente ? '' : clienteNome,
       cliente_telefone: semCliente ? '' : clienteTelefone,
       status,
@@ -441,6 +454,27 @@ export default function NovaVenda() {
     setSucessoAberto(true)
     setSalvando(false)
     tocarSom('pedido')
+  }
+
+  // Comprovante do pedido (o navegador oferece "Salvar como PDF")
+  const exportarPdf = () => {
+    if (!isPro) { navigate('/assinar'); return }
+    const pc = pedidoCriado
+    if (!pc) return
+    const esc = (x: any) => String(x ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' } as any)[c])
+    const linhas = (pc.itens || []).map((it: any) => `<tr><td>${it.quantidade}× ${esc(toTitleCase(it.nome_produto))}${it.opcaoLabel ? ` · ${esc(it.opcaoLabel)}` : ''}</td><td class="v">${formatMoney(it.valor_unitario * it.quantidade)}</td></tr>`).join('')
+    const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Pedido #${esc(pc.numero)}</title>
+<style>body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#2C1219;max-width:520px;margin:24px auto;padding:0 16px}h1{font-size:20px;margin:0}small{color:#6B5D64}
+table{width:100%;border-collapse:collapse;margin:16px 0}td{padding:8px 0;border-bottom:1px solid #eee;font-size:14px}.v{text-align:right;white-space:nowrap}
+.t{font-size:18px;font-weight:800;text-align:right}.b{margin-top:6px;font-size:14px}</style></head><body>
+<h1>Pedido #${esc(pc.numero)}</h1><small>${new Date().toLocaleDateString('pt-BR')}</small>
+${pc.clienteNome ? `<p class="b"><b>Cliente:</b> ${esc(pc.clienteNome)}${pc.clienteTelefone ? ` · ${esc(pc.clienteTelefone)}` : ''}</p>` : ''}
+${pc.tipo === 'encomenda' && pc.dataEntrega ? `<p class="b"><b>Entrega:</b> ${esc(formatDataBR(pc.dataEntrega))}${pc.horarioEntrega ? ` às ${esc(pc.horarioEntrega)}` : ''}</p>` : ''}
+<table>${linhas}</table><p class="t">Total: ${formatMoney(pc.total)}</p>
+<script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script></body></html>`
+    const w = window.open('', '_blank')
+    if (!w) { alert('Libere as janelas (pop-up) do navegador pra exportar o PDF.'); return }
+    w.document.open(); w.document.write(html); w.document.close()
   }
 
   // Reset completo pra nova venda
@@ -525,7 +559,7 @@ export default function NovaVenda() {
                 <span className="nv-suc-btn-em">📋</span>
                 Ver pedidos
               </button>
-              <button className="nv-suc-btn-ghost nv-suc-btn-ghost--pro" title="Recurso PRO">
+              <button className="nv-suc-btn-ghost nv-suc-btn-ghost--pro" title="Recurso PRO" onClick={exportarPdf}>
                 <span className="nv-suc-btn-em">📄</span>
                 Exportar PDF
                 <span className="nv-suc-badge nv-suc-badge--pro">✨ PRO</span>
