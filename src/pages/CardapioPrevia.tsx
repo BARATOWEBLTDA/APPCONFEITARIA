@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 
 type ViewMode = "mobile" | "desktop";
 
@@ -10,11 +11,15 @@ export default function CardapioPrevia() {
   const [copied, setCopied] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("desktop");
 
+  // Link oficial do cardápio (/c/código/slug). Antes copiava o endereço antigo (/cardapio/id).
+  const { profile } = useProfile();
   useEffect(() => {
+    const oficial = profile ? getCardapioUrl(profile) : "";
+    if (oficial) { setUrl(oficial); return; }
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) setUrl(`${window.location.origin}/cardapio/${user.id}`);
     });
-  }, []);
+  }, [profile?.id, (profile as any)?.codigo_publico]);
 
   const handleShare = async () => {
     if (!url) return;

@@ -2,6 +2,8 @@
 import ReqTag from "@/components/ReqTag";
 import { useState, useEffect, useRef } from "react"
 import { supabase } from "@/lib/supabase"
+import { useNavigate } from "react-router-dom"
+import AppPageHeader from "@/components/AppPageHeader"
 
 const PAGAMENTOS = [
   { key: 'pix',                label: 'Pix' },
@@ -47,7 +49,17 @@ const Toggle = ({ checked, onChange }: any) => (
   </label>
 )
 
+// Converte o que ela digita (10,50 · 1.250,00 · 10.5) em número
+const numBR = (v: string | number | null | undefined): number => {
+  if (typeof v === 'number') return v
+  const s = String(v ?? '').trim()
+  if (!s) return 0
+  const n = s.includes(',') ? parseFloat(s.replace(/\./g, '').replace(',', '.')) : parseFloat(s)
+  return Number.isFinite(n) ? n : 0
+}
+
 export default function CheckoutConfigPage() {
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
   const [autoSaved, setAutoSaved] = useState(false)
@@ -112,8 +124,8 @@ export default function CheckoutConfigPage() {
       await supabase.from('profiles').update({
         formas_pagamento: formasPagamento,
         formas_entrega: formasEntrega,
-        valor_entrega_propria: valorEntregaPropria ? parseFloat(valorEntregaPropria) : 0,
-        entrega_por_bairro: entregaPorBairro.filter(b => b.bairro.trim()).map(b => ({ bairro: b.bairro, valor: parseFloat(b.valor) || 0 })),
+        valor_entrega_propria: valorEntregaPropria ? numBR(valorEntregaPropria) : 0,
+        entrega_por_bairro: entregaPorBairro.filter(b => b.bairro.trim()).map(b => ({ bairro: b.bairro, valor: numBR(b.valor) })),
         endereco_retirada: enderecoRetirada,
         horario_retirada: horarioRetirada,
         exibir_campo_troco: exibirCampoTroco,
@@ -124,12 +136,12 @@ export default function CheckoutConfigPage() {
       const cuponsParaSalvar = cupons.filter(c => c.codigo.trim()).map(c => ({
           codigo: c.codigo,
           tipo: c.tipo,
-          valor: parseFloat(c.valor) || 0,
+          valor: numBR(c.valor),
           ativo: c.ativo,
           data_inicio: c.data_inicio || null,
           data_fim: c.data_fim || null,
           limite_uso: c.limite_uso ? parseInt(c.limite_uso) : null,
-          valor_minimo: c.valor_minimo ? parseFloat(c.valor_minimo) : null,
+          valor_minimo: c.valor_minimo ? numBR(c.valor_minimo) : null,
           usos: c.usos || 0,
         }))
       await supabase.from('loja_cupons').upsert({ user_id: userId, cupons: cuponsParaSalvar, updated_at: new Date().toISOString() })
@@ -191,19 +203,21 @@ export default function CheckoutConfigPage() {
     if (!userId) return
     if (timerRef.current) clearTimeout(timerRef.current)
     setSavingCupons(true)
-    await supabase.from('profiles').update({
-      cupons_desconto: cupons.filter(c => c.codigo.trim()).map(c => ({
+    await supabase.from('loja_cupons').upsert({ user_id: userId, updated_at: new Date().toISOString(),
+      cupons: cupons.filter(c => c.codigo.trim()).map(c => ({
         codigo: c.codigo,
         tipo: c.tipo,
-        valor: parseFloat(c.valor) || 0,
+        valor: numBR(c.valor),
         ativo: c.ativo,
         data_inicio: c.data_inicio || null,
         data_fim: c.data_fim || null,
         limite_uso: c.limite_uso ? parseInt(c.limite_uso) : null,
-        valor_minimo: c.valor_minimo ? parseFloat(c.valor_minimo) : null,
+        valor_minimo: c.valor_minimo ? numBR(c.valor_minimo) : null,
         usos: c.usos || 0,
       })),
-    }).eq('id', userId)
+    })
+    // Limpa a cópia antiga do perfil (o cardápio público consegue ler o perfil)
+    await supabase.from('profiles').update({ cupons_desconto: [] }).eq('id', userId)
     setSavingCupons(false)
     setCuponsSaved(true)
     setTimeout(() => setCuponsSaved(false), 2200)
@@ -224,14 +238,10 @@ export default function CheckoutConfigPage() {
 
   return (
     <>
+      {/* Cabeçalho do app com voltar (antes era só um título solto, sem voltar) */}
+      <AppPageHeader title="Entrega e pagamento" subtitle="Formas de pagar, entrega, retirada e cupons" onBack={() => navigate("/cardapio")} />
       <div className="chk-root">
-        <div className="chk-header">
-          <div>
-            <h1 className="chk-title">Configurações do Checkout</h1>
-            <p className="chk-sub">Configure pagamento, entrega e cupons do seu cardápio</p>
-          </div>
-          {autoSaved && <span className="chk-autosave">✓ Salvo automaticamente</span>}
-        </div>
+        {autoSaved && <div className="chk-header"><span className="chk-autosave">✓ Salvo automaticamente</span></div>}
 
         <div className="chk-grid">
 
@@ -325,7 +335,7 @@ export default function CheckoutConfigPage() {
 
               {aceitaAgendamento && (
                 <div className="chk-prazo-row">
-                  <span>Prazo mínimo de antecedência:</span>
+                  <span style={{ flexBasis: '100%' }}>Prazo mínimo de antecedência</span>
                   <input className="chk-input" style={{width:'64px',textAlign:'center'}} value={prazoMinimo} onChange={e => setPrazoMinimo(e.target.value.replace(/\D/g,''))} />
                   <span className="chk-muted">horas</span>
                 </div>
