@@ -321,7 +321,7 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido, onAcaoRapida, onMen
   isMobile: boolean
   onAbrirMapa: (endereco: string) => void
   onVerPedido: (p: Pedido) => void
-  onAcaoRapida?: (id: string, novoStatus: string) => void
+  onAcaoRapida?: (id: string, novoStatus: string, pagoDireto?: boolean) => void
   onMenuAcao?: (p: Pedido, acao: 'editar' | 'duplicar' | 'contatar' | 'compartilhar' | 'pdf' | 'excluir') => void
 }) {
   const navigate = useNavigate()
@@ -565,11 +565,13 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido, onAcaoRapida, onMen
 
   // Ação rápida por status — texto do CTA + próximo status
   const ACAO_POR_STATUS: Record<string, { label: string; proximo: string } | null> = {
-    aguardando_pagamento: { label: 'Marcar como pago',     proximo: 'aguardando_aceite' },
+    // Pago: pedido do cardápio ainda precisa ser aceito; pedido lançado por ela já fica agendado
+    aguardando_pagamento: { label: 'Marcar como pago',     proximo: p.origem === 'cardapio' ? 'aguardando_aceite' : 'agendado' },
     aguardando_aceite:    { label: 'Aceitar pedido',       proximo: 'agendado' },
     agendado:             { label: 'Iniciar produção',     proximo: 'em_producao' },
     em_producao:          { label: 'Finalizar produção',   proximo: 'finalizado' },
-    finalizado:           { label: p.tipo_entrega === 'retirada' ? 'Marcar como retirado' : 'Marcar como entregue', proximo: p.tipo_entrega === 'retirada' ? 'aguardando_retirada' : 'em_entrega' },
+    // "Marcar como retirado" levava pra "aguardando retirada" (o nome não batia com o que acontecia)
+    finalizado:           { label: p.tipo_entrega === 'retirada' ? 'Pronto pra retirada' : 'Saiu pra entrega', proximo: p.tipo_entrega === 'retirada' ? 'aguardando_retirada' : 'em_entrega' },
     aguardando_retirada:  { label: 'Confirmar retirada',   proximo: 'entregue' },
     em_entrega:           { label: 'Confirmar entrega',    proximo: 'entregue' },
     entregue:             null,
@@ -678,7 +680,7 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido, onAcaoRapida, onMen
         <button
           type="button"
           className="pnew-cta"
-          onClick={e => { e.stopPropagation(); onAcaoRapida(p.id, acao.proximo) }}
+          onClick={e => { e.stopPropagation(); onAcaoRapida(p.id, acao.proximo, statusGroup === 'aguardando_pagamento') }}
         >
           {acao.label}
         </button>
@@ -894,9 +896,22 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
                         <div className="mpd-produto-nome">{item.nome_produto}</div>
                         <div className="mpd-produto-qtd">
                           {formatItemQuantidade(item.quantidade, item.produtos?.forma_venda)}
-                          {(item.personalizacoes?.massa || item.personalizacoes?.recheio || item.personalizacoes?.cobertura) && (
-                            <> · {[item.personalizacoes?.massa, item.personalizacoes?.recheio, item.personalizacoes?.cobertura].filter(Boolean).join(', ')}</>
-                          )}
+                          {(() => {
+                            // Escolhas do item (tamanho, massa, recheios, cobertura, kit, adicionais) — igual ao celular.
+                            // Antes aparecia "[object Object]" porque as escolhas são guardadas como objetos.
+                            const pz = item.personalizacoes as any
+                            if (!pz) return null
+                            const nomeDe = (v: any) => !v ? null : (typeof v === 'string' ? v : (v.nome || null))
+                            const partes: string[] = []
+                            const tam = nomeDe(pz.tamanho); if (tam) partes.push(`Tamanho ${tam}`)
+                            const sab = nomeDe(pz.sabor); if (sab) partes.push(`Sabor ${sab}`)
+                            const mas = nomeDe(pz.massa); if (mas) partes.push(`Massa ${mas}`)
+                            const rec = Array.isArray(pz.recheios) ? pz.recheios.map((r: any) => r.nome).join(', ') : nomeDe(pz.recheio); if (rec) partes.push(`Recheio ${rec}`)
+                            const cob = nomeDe(pz.cobertura); if (cob) partes.push(`Cobertura ${cob}`)
+                            if (pz.kit?.sabores?.length) partes.push(`Kit ${pz.kit.total ?? ''} un: ${pz.kit.sabores.map((x: any) => `${x.nome} × ${x.qtd}`).join(', ')}`)
+                            if (Array.isArray(pz.extras) && pz.extras.length) partes.push(`Adicionais: ${pz.extras.map((x: any) => x.nome).join(', ')}`)
+                            return partes.length ? <> · {partes.join(' · ')}</> : null
+                          })()}
                         </div>
                         {item.observacoes && <div className="mpd-produto-obs">Obs: {item.observacoes}</div>}
                       </div>
@@ -1610,7 +1625,7 @@ function ModalPagouOuNao({ pedido, novoStatus, onConfirmar, onCancelar }: {
 
         <div className="mpag-opcoes">
           <label className={`mpag-opcao${opcao === 'total' ? ' mpag-opcao--ativa' : ''}`}>
-            <input type="radio" checked={opcao === 'total'} onChange={() => setOpcao('total')} />
+            <input type="radio" className="no-square-radio mpag-radio-oculto" checked={opcao === 'total'} onChange={() => setOpcao('total')} />
             <div className="mpag-opcao-dot" />
             <div className="mpag-opcao-info">
               <div className="mpag-opcao-lbl">✅ Sim, recebi o total</div>
@@ -1619,7 +1634,7 @@ function ModalPagouOuNao({ pedido, novoStatus, onConfirmar, onCancelar }: {
           </label>
 
           <label className={`mpag-opcao${opcao === 'parcial' ? ' mpag-opcao--ativa' : ''}`}>
-            <input type="radio" checked={opcao === 'parcial'} onChange={() => setOpcao('parcial')} />
+            <input type="radio" className="no-square-radio mpag-radio-oculto" checked={opcao === 'parcial'} onChange={() => setOpcao('parcial')} />
             <div className="mpag-opcao-dot" />
             <div className="mpag-opcao-info">
               <div className="mpag-opcao-lbl">💵 Recebi só parte</div>
@@ -1640,7 +1655,7 @@ function ModalPagouOuNao({ pedido, novoStatus, onConfirmar, onCancelar }: {
           </label>
 
           <label className={`mpag-opcao${opcao === 'nao' ? ' mpag-opcao--ativa' : ''}`}>
-            <input type="radio" checked={opcao === 'nao'} onChange={() => setOpcao('nao')} />
+            <input type="radio" className="no-square-radio mpag-radio-oculto" checked={opcao === 'nao'} onChange={() => setOpcao('nao')} />
             <div className="mpag-opcao-dot" />
             <div className="mpag-opcao-info">
               <div className="mpag-opcao-lbl">⏳ Ainda não recebi</div>
@@ -1746,7 +1761,7 @@ export default function Pedidos() {
     })
   }, [])
 
-  const updateStatus = async (id: string, status: string) => {
+  const updateStatus = async (id: string, status: string, pagoDireto = false) => {
     const pedido = pedidos.find(p => p.id === id)
     if (!pedido) return
     const statusAtual = getStatusGroup(pedido.status)
@@ -1757,6 +1772,14 @@ export default function Pedidos() {
         .update({ status, status_pagamento: 'pendente', valor_recebido: 0 })
         .eq('id', id)
       setPedidos(prev => prev.map(p => p.id === id ? { ...p, status, status_pagamento: 'pendente', valor_recebido: 0 } : p))
+      return
+    }
+
+    // Botão "Marcar como pago": já sabemos que pagou o total
+    if (statusAtual === 'aguardando_pagamento' && pagoDireto) {
+      const update: any = { status, status_pagamento: 'pago', valor_recebido: pedido.valor_total }
+      await supabase.from('pedidos').update(update).eq('id', id)
+      setPedidos(prev => prev.map(p => p.id === id ? { ...p, ...update } : p))
       return
     }
 
@@ -1858,7 +1881,7 @@ export default function Pedidos() {
   const aprovarPedido = async (id: string) => {
     const { error } = await supabase
       .from('pedidos')
-      .update({ status: 'confirmado' })
+      .update({ status: 'agendado' })
       .eq('id', id)
     if (error) { console.error('Erro ao aprovar pedido:', error); return }
     // Grava no histórico
@@ -1871,7 +1894,7 @@ export default function Pedidos() {
       })
     }
     // Atualiza estado local (sem refetch)
-    setPedidos(prev => prev.map(p => p.id === id ? { ...p, status: 'confirmado' } : p))
+    setPedidos(prev => prev.map(p => p.id === id ? { ...p, status: 'agendado' } : p))
     setModalPedido(prev => prev && prev.id === id ? { ...prev, status: 'confirmado' } : prev)
   }
 
@@ -1884,6 +1907,13 @@ export default function Pedidos() {
       .order('numero', { ascending: false })
     setPedidos(data || [])
     setLoading(false)
+    // Veio de outra tela pedindo um pedido específico (/pedidos?ver=ID): abre o detalhe dele
+    const ver = new URLSearchParams(window.location.search).get('ver')
+    if (ver) {
+      const alvo = (data || []).find((x: any) => x.id === ver)
+      if (alvo) setModalPedido(alvo as any)
+      navigate('/pedidos', { replace: true })
+    }
   }
 
   const pedidosFiltrados = pedidos.filter(p => {
@@ -2512,7 +2542,7 @@ export default function Pedidos() {
       )}
 
       {mapaAberto && <MapaModal endereco={mapaAberto} onClose={() => setMapaAberto(null)} />}
-      {modalPedido && <ModalPedido p={modalPedido} onClose={() => setModalPedido(null)} onEditar={() => { setModalPedido(null); navigate(`/pedidos/${modalPedido.id}`) }} onExcluir={() => excluirPedido(modalPedido.id)} onAprovar={() => aprovarPedido(modalPedido.id)} />}
+      {modalPedido && <ModalPedido p={modalPedido} onClose={() => setModalPedido(null)} onEditar={() => { setModalPedido(null); navigate(`/pedidos/${modalPedido.id}/editar`) }} onExcluir={() => excluirPedido(modalPedido.id)} onAprovar={() => aprovarPedido(modalPedido.id)} />}
 
       {/* ── Modal: precisa cadastrar produtos primeiro ── */}
       {modalSemProdutos && (

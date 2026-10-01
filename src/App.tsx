@@ -13,7 +13,8 @@ import Termos from "@/pages/Termos";
 import Privacidade from "@/pages/Privacidade";
 import Layout from "@/components/Layout";
 import Pedidos from "@/pages/Pedidos";
-import PedidoForm from "@/pages/PedidoForm";
+import { useParams } from "react-router-dom";
+function PedidoVerRedirect() { const { id } = useParams(); return <Navigate to={`/pedidos?ver=${id}`} replace />; }
 import EditarPedido from "@/pages/EditarPedido";
 import NovaVenda from "@/pages/NovaVenda";
 import Dashboard from "@/pages/Dashboard";
@@ -234,7 +235,8 @@ export default function App() {
           <Route path="/pedidos/novo" element={<Navigate to="/vendas/novo" replace />} />
           <Route path="/vendas/novo" element={<NovaVenda />} />
           <Route path="/pedidos/:id/editar" element={<EditarPedido />} />
-          <Route path="/pedidos/:id" element={<PedidoForm />} />
+          {/* O formulário antigo (PedidoForm) usava status antigos: /pedidos/:id agora abre o detalhe na lista */}
+          <Route path="/pedidos/:id" element={<PedidoVerRedirect />} />
           <Route path="/agenda" element={<Agenda />} />
           <Route path="/insumos" element={<Insumos />} />
           <Route path="/ficha-tecnica" element={<FichaTecnica />} />

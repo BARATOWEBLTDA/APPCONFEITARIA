@@ -2220,6 +2220,15 @@ export default function EditarPedido() {
           padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px));
           box-shadow: 0 -4px 12px rgba(0,0,0,0.04);
         }
+        /* Celular: a barra fica acima do menu de baixo (antes ficava atrás e não dava pra tocar em Salvar) */
+        @media (max-width: 767px) {
+          .ep-footer { bottom: calc(56px + env(safe-area-inset-bottom, 0px)); padding-bottom: 12px; }
+          .ep-wrap { padding-bottom: 210px !important; }
+        }
+        /* Computador: começa depois do menu lateral */
+        @media (min-width: 768px) {
+          .ep-footer { left: 220px; }
+        }
         .ep-footer-total {
           display: flex;
           align-items: center;

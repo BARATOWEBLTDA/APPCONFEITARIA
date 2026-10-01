@@ -282,7 +282,7 @@ export default function Agenda() {
   }, []);
 
   /* ── Ações ── */
-  const abrirEditar = (id: string) => navigate(`/pedidos/${id}`);
+  const abrirEditar = (id: string) => navigate(`/pedidos/${id}/editar`);
 
   const marcarComoPronto = async (id: string) => {
     // "finalizado" é o status atual de "pronto" (o antigo "pronto" sumia da lista)
