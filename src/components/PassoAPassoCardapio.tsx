@@ -67,8 +67,14 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
       const linkKey = `doonly_cardapio_compartilhado_${userId}`;
       const jaCompartilhou = localStorage.getItem(linkKey) === "1";
 
-      // Design escolhido: cardapio_modelo salvo explicitamente (não null)
-      const escolheuDesign = !!profileData?.cardapio_modelo;
+      // Design escolhido: marcado quando ela mexe na tela de Design (design_escolhido).
+      // cardapio_modelo não serve: o banco já cria a conta com 'padrao' preenchido.
+      const { data: designData, error: designErr } = await supabase
+        .from("profiles")
+        .select("design_escolhido")
+        .eq("id", userId)
+        .single();
+      const escolheuDesign = designErr ? false : !!(designData as any)?.design_escolhido;
 
       const list: Step[] = [
         {

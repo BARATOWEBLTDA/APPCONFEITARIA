@@ -7,12 +7,12 @@ import { useState } from "react";
 export type TipoProduto = "bolos" | "doces" | "salgados" | "sobremesas" | "kitfesta" | "outros";
 
 export const TIPOS: { id: TipoProduto; img?: string; emoji: string; titulo: string; sub: string; dica: string; bg: [string, string]; cor: string }[] = [
-  { id: "bolos", img: "/Sistema/bolocard.png", emoji: "🎂", titulo: "Bolos", sub: "Tamanhos, massas e recheios", dica: "a categoria Bolos já vem marcada e o cadastro sugere tamanhos, massas e recheios", bg: ["#FCE7F3", "#F9D1E0"], cor: "#9D174D" },
-  { id: "doces", img: "/Sistema/brigadeiro.jpeg", emoji: "🍬", titulo: "Doces", sub: "Docinhos em kit ou por unidade", dica: "o cadastro já abre o kit de docinhos (50 e 100 unidades, até 2 sabores). Se vender por unidade, é só desligar o kit", bg: ["#FEF3C7", "#FDE68A"], cor: "#92400E" },
-  { id: "salgados", img: "/Sistema/salgados.png", emoji: "🥟", titulo: "Salgados", sub: "Cento, kits e atacado", dica: "o cadastro já abre o kit de salgados (de 100 a 4.000, preço do cento)", bg: ["#FFEDD5", "#FED7AA"], cor: "#9A3412" },
-  { id: "sobremesas", img: "/Sistema/pudim.webp", emoji: "🍮", titulo: "Sobremesas", sub: "Potes, fatias, tortas", dica: "a categoria Sobremesas já vem marcada, pra um produto simples (pote, fatia, unidade)", bg: ["#E0E7FF", "#C7D2FE"], cor: "#3730A3" },
-  { id: "kitfesta", img: "/Sistema/kitfesta.webp", emoji: "🎉", titulo: "Kit festa", sub: "Combos: bolo + salgados + doces", dica: "o cadastro já vem com os tamanhos do combo (20, 40, 60 pessoas…), cada um com seu preço. Conte o que vem em cada um na descrição", bg: ["#DCFCE7", "#BBF7D0"], cor: "#166534" },
-  { id: "outros", emoji: "✏️", titulo: "Outros", sub: "Monte do seu jeito", dica: "o cadastro começa em branco, do seu jeito", bg: ["#F5F0F2", "#E9E1E5"], cor: "#4B3A42" },
+  { id: "bolos", img: "/Sistema/bolocard.png", emoji: "🎂", titulo: "Bolos", sub: "Aniversário, caseiros, naked cake — com tamanhos e recheios", dica: "a categoria Bolos já vem marcada e o cadastro sugere tamanhos, massas e recheios", bg: ["#FCE7F3", "#F9D1E0"], cor: "#9D174D" },
+  { id: "doces", img: "/Sistema/brigadeiro.jpeg", emoji: "🍬", titulo: "Doces", sub: "Brigadeiro, beijinho, bombom — em kit ou por unidade", dica: "o cadastro já abre o kit de docinhos (50 e 100 unidades, até 2 sabores). Se vender por unidade, é só desligar o kit", bg: ["#FEF3C7", "#FDE68A"], cor: "#92400E" },
+  { id: "salgados", img: "/Sistema/salgados.png", emoji: "🥟", titulo: "Salgados", sub: "Coxinha, risole, kibe — no cento ou no atacado", dica: "o cadastro já abre o kit de salgados (de 100 a 4.000, preço do cento)", bg: ["#FFEDD5", "#FED7AA"], cor: "#9A3412" },
+  { id: "sobremesas", img: "/Sistema/pudim.webp", emoji: "🍮", titulo: "Sobremesas", sub: "Pudim, mousse, torta, bolo no pote", dica: "a categoria Sobremesas já vem marcada, pra um produto simples (pote, fatia, unidade)", bg: ["#E0E7FF", "#C7D2FE"], cor: "#3730A3" },
+  { id: "kitfesta", img: "/Sistema/kitfesta.webp", emoji: "🎉", titulo: "Kit festa", sub: "Combos de festa com bolo, salgados e doces", dica: "o cadastro já vem com os tamanhos do combo (20, 40, 60 pessoas…), cada um com seu preço. Conte o que vem em cada um na descrição", bg: ["#DCFCE7", "#BBF7D0"], cor: "#166534" },
+  { id: "outros", emoji: "✏️", titulo: "Outros", sub: "Cestas, caixas de presente, cookies, cupcakes…", dica: "o cadastro começa em branco — bom pra cestas, caixas de presente, cookies, cupcakes, pães e o que mais você vender", bg: ["#F5F0F2", "#E9E1E5"], cor: "#4B3A42" },
 ];
 
 interface Props { onEscolher: (t: TipoProduto) => void; onFechar: () => void }
@@ -85,8 +85,10 @@ export default function TipoProdutoTela({ onEscolher, onFechar }: Props) {
         .tpp-dica { max-width: 760px; margin: 20px auto 0; background: #FAF7F8; border-radius: 14px; padding: 16px 20px; font-size: 16px; color: #4B3A42; line-height: 1.5; }
         .tpp-foot { display: flex; align-items: center; gap: 12px; padding: 14px 22px; border-top: 1px solid #F3ECEE; background: #fff; }
         .tpp-cancel { border: none; background: none; font-family: inherit; font-weight: 700; font-size: 14px; color: #2C1219; padding: 0 12px; cursor: pointer; }
-        .tpp-go { flex: 1; height: 48px; border: none; border-radius: 12px; background: #E85A8C; color: #fff; font-family: inherit; font-weight: 800; font-size: 14.5px; cursor: pointer; }
-        .tpp-go:disabled { background: #F6D4E1; cursor: default; }
+        /* Mesmo botão 3D do "Avançar" do cadastro */
+        .tpp-go { flex: 1; height: 48px; border: none; border-radius: 10px; background: #E85A8C; color: #fff; font-family: inherit; font-weight: 800; font-size: 14.5px; cursor: pointer; box-shadow: 0 3px 0 #C33A6E; transition: transform .08s, box-shadow .08s; }
+        .tpp-go:active:not(:disabled) { transform: translateY(2px) scale(0.99); box-shadow: 0 1px 0 #C33A6E; }
+        .tpp-go:disabled { background: #F6D4E1; box-shadow: 0 3px 0 #EBC3D3; cursor: default; }
         @media (max-width: 767px) {
           .tpp-top { padding: calc(env(safe-area-inset-top, 0px) + 14px) 14px 0; }
           .tpp-body { padding: 0 14px 16px; }
@@ -97,8 +99,9 @@ export default function TipoProdutoTela({ onEscolher, onFechar }: Props) {
           .tpp-img { width: auto; height: 90px; } .tpp-emo { font-size: 40px; }
           .tpp-tx { padding: 8px 10px 10px; justify-content: flex-start; } .tpp-tx b { font-size: 14px; } .tpp-tx small { font-size: 11px; }
           .tpp-foot { background: #3B1620; border-top: none; padding: 14px 14px calc(14px + env(safe-area-inset-bottom, 0px)); }
-          .tpp-cancel { color: #fff; } .tpp-go { flex: 0 0 auto; padding: 0 26px; background: #fff; color: #2C1219; }
-          .tpp-go:disabled { background: rgba(255,255,255,.35); color: #fff; }
+          .tpp-cancel { color: #fff; } .tpp-go { flex: 0 0 auto; padding: 0 26px; background: #fff; color: #2C1219; box-shadow: none; }
+          .tpp-go:active:not(:disabled) { transform: scale(0.98); box-shadow: none; }
+          .tpp-go:disabled { background: rgba(255,255,255,.16); color: rgba(255,255,255,.5); box-shadow: none; }
         }
       `}</style>
     </div>

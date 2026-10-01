@@ -85,6 +85,9 @@ function getEnderecoData(config: Configuracoes | null): { curto: string; complet
 export function CardapioModelo1({ design, config }: CardapioModeloProps) {
   const [modalEndereco, setModalEndereco] = useState(false)
   const accent = design.cor_borda || design.cor_botao || '#E85A8C'
+  // Cor da faixa quando não há foto de capa — igual à do layout Padrão
+  const ehBranco = (c?: string | null) => !c || ['#fff', '#ffffff', '#fefefe', 'white', 'transparent'].includes(c.trim().toLowerCase())
+  const corFaixa = !ehBranco(design.cor_navbar) ? design.cor_navbar! : (!ehBranco(design.cor_borda) ? design.cor_borda! : '#E85A8C')
   const status = getStatusLoja(config?.horario || null)
   const enderecoData = getEnderecoData(config)
   const avaliacao = config?.avaliacao_media ?? 0
@@ -107,9 +110,12 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
         {design.banner_topo_url ? (
           <div className="cm1-hero-img-wrap" style={{ backgroundImage: `url(${design.banner_topo_url})` }} />
         ) : (
-          <div className="cm1-hero-fallback" style={{ background: design.cor_background
-              ? `linear-gradient(135deg, ${design.cor_background} 0%, ${design.cor_background}dd 100%)`
-              : `linear-gradient(135deg, #FCE0E9 0%, #F5B8CD 60%, #E85A8C 100%)` }}>
+          /* Sem foto de capa: faixa na cor da loja (mesma regra da faixa do layout Padrão).
+             Antes usava cor_background, que em loja nova é branco/cinza e virava um bloco cinza vazio. */
+          <div className="cm1-hero-fallback" style={{
+            backgroundColor: corFaixa,
+            backgroundImage: 'linear-gradient(160deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.14) 100%)',
+          }}>
             <div className="cm1-hero-pattern" />
           </div>
         )}

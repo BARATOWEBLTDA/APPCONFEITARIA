@@ -6,6 +6,7 @@ import { useProfile } from "@/hooks/useProfile";
 import EmptyDoo from "@/components/EmptyDoo";
 import QuickAddInsumo, { InsumoQuick } from "@/components/QuickAddInsumo";
 import DooInfoModal from "@/components/DooInfoModal";
+import AppPageHeader from "@/components/AppPageHeader";
 
 // ── Famílias de unidades e conversão ──
 
@@ -442,6 +443,9 @@ export default function FichaTecnica() {
     const temFicha = ficha.length > 0;
 
     return (
+      <>
+      {/* Computador: cabeçalho padrão do app (no celular continua o "Voltar") */}
+      <div className="ft-so-desk"><AppPageHeader title={selected.nome} subtitle="Ficha técnica e precificação" onBack={fecharFicha} /></div>
       <div className="ft-root">
         <button className="ft-back" onClick={fecharFicha}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -1149,11 +1153,14 @@ export default function FichaTecnica() {
 
         <style>{detailStyles}</style>
       </div>
+      </>
     );
   }
 
   /* LIST VIEW */
   return (
+    <>
+    <div className="ft-so-desk"><AppPageHeader title="Precificação" subtitle={`Você já precificou ${totalComFicha} de ${produtos.length} produto${produtos.length !== 1 ? "s" : ""}`} /></div>
     <div className="ft-root">
       <div className="ft-list-header">
         <div className="ft-list-header-inner">
@@ -1225,10 +1232,23 @@ export default function FichaTecnica() {
 
       <style>{listStyles}</style>
     </div>
+    </>
   );
 }
 
 const listStyles = `
+  /* Cabeçalho do app só no computador */
+  .ft-so-desk { display: none; }
+  @media (min-width: 901px) {
+    .ft-so-desk { display: block; }
+    .ft-back, .ft-list-header { display: none !important; }
+  }
+
+  @media (min-width: 1100px) {
+    .ft-root { max-width: 1180px !important; margin-left: auto; margin-right: auto; }
+    .ft-list-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)) !important; gap: 1rem !important; }
+  }
+
   .ft-root {
     font-family: var(--font-base); max-width: 800px;
     display: flex; flex-direction: column;
@@ -1303,6 +1323,13 @@ const listStyles = `
 `;
 
 const detailStyles = `
+  /* Cabeçalho do app só no computador */
+  .ft-so-desk { display: none; }
+  @media (min-width: 901px) {
+    .ft-so-desk { display: block; }
+    .ft-back, .ft-list-header { display: none !important; }
+  }
+
   .ft-root {
     font-family: var(--font-base); max-width: 600px;
     display: flex; flex-direction: column;
