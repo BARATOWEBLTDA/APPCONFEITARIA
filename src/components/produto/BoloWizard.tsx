@@ -219,7 +219,10 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, primeiroN
   const porPeso = gt.modo_preco_tamanho === "por_peso";
   const fatias = gt.rendimento_unidade === "fatias";
   const [mostrarServe, setMostrarServe] = useState(() => tams.some(t => t.serve));
-  const setGt = (patch: any) => setForm((f: any) => ({ ...f, grupo_tamanhos: { ...GRUPO_VAZIO, modo_preco_tamanho: "preco_fixo", nome_exibicao: "Tamanhos e Pesos", ...(f.grupo_tamanhos || {}), ...patch } }));
+  const setGt = (patch: any) => setForm((f: any) => {
+    const g = { ...GRUPO_VAZIO, nome_exibicao: "Tamanhos e Pesos", ...(f.grupo_tamanhos || {}), ...patch };
+    return { ...f, grupo_tamanhos: { ...g, modo_preco_tamanho: g.modo_preco_tamanho || "preco_fixo" } };
+  });
   const setTam = (id: string, patch: Partial<Tam>) => setGt({ opcoes: tams.map(t => t.id === id ? { ...t, ...patch } : t) });
   const linhaVazia = (): Tam => ({ id: uid(), nome: "", preco: 0, peso_kg: null, serve: "" });
 
@@ -238,7 +241,7 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, primeiroN
     if (e === "sim") {
       setForm((f: any) => {
         const g = { ...GRUPO_VAZIO, modo_preco_tamanho: "preco_fixo", nome_exibicao: "Tamanhos e Pesos", ...(f.grupo_tamanhos || {}) };
-        return { ...f, forma_venda: "unidade", grupo_tamanhos: { ...g, ativo: true, min: 1, max: 1, opcoes: g.opcoes?.length ? g.opcoes : [linhaVazia()] } };
+        return { ...f, forma_venda: "unidade", grupo_tamanhos: { ...g, modo_preco_tamanho: g.modo_preco_tamanho || "preco_fixo", ativo: true, min: 1, max: 1, opcoes: g.opcoes?.length ? g.opcoes : [linhaVazia()] } };
       });
     } else {
       setForm((f: any) => ({ ...f, forma_venda: VENDA.some(x => x.v === f.forma_venda) ? f.forma_venda : "unidade", grupo_tamanhos: { ...GRUPO_VAZIO, ...(f.grupo_tamanhos || {}), ativo: false } }));

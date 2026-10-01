@@ -439,6 +439,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
         }
         if (g.tipo === 'sabor' && saborTemPrecoProprio && opSelecionada.preco > 0) selecPreco = formatCurrency(opSelecionada.preco)
         else if (g.tipo === 'tamanho' && opSelecionada.preco > 0) selecPreco = formatCurrency(opSelecionada.preco)
+        else if (g.tipo === 'tamanho' && (g as any).modo_preco_tamanho === 'por_peso' && opSelecionada.peso_kg && basePrice > 0) selecPreco = formatCurrency(Math.round(basePrice * opSelecionada.peso_kg * 100) / 100)
         else if ((opSelecionada.adicional || 0) > 0) selecPreco = `+${formatCurrency(opSelecionada.adicional)}`
       }
 
@@ -507,6 +508,8 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                 let precoLabel = ''
                 if (g.tipo === 'sabor' && saborTemPrecoProprio && op.preco > 0) precoLabel = formatCurrency(op.preco)
                 else if (g.tipo === 'tamanho' && op.preco > 0) precoLabel = formatCurrency(op.preco)
+                // Pelo peso: cada tamanho mostra o preço calculado (preço base × peso)
+                else if (g.tipo === 'tamanho' && (g as any).modo_preco_tamanho === 'por_peso' && op.peso_kg && basePrice > 0) precoLabel = formatCurrency(Math.round(basePrice * op.peso_kg * 100) / 100)
                 else if ((op.adicional || 0) > 0) precoLabel = `+${formatCurrency(op.adicional)}`
                 const emFatias = (product as any)?.grupo_tamanhos?.rendimento_unidade === 'fatias'
                 const serveTxt = op.serve ? `${String(op.serve).trim()}${/^\d+$/.test(String(op.serve).trim()) ? (emFatias ? ' fatias' : ' pessoas') : ''}`.trim() : ''
@@ -674,7 +677,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
               Sem foto
             </div>
           )}
-          <button onClick={onClose} style={{
+          <button onClick={onClose} aria-label="Fechar" style={{
             position: 'absolute', top: 12, right: 12,
             width: 36, height: 36, borderRadius: '50%',
             background: 'rgba(0,0,0,0.65)', color: '#fff',

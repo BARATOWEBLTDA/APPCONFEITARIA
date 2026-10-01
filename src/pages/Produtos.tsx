@@ -3496,8 +3496,16 @@ export default function Produtos() {
   // Auto-sync: se modo do tamanho é por_peso, forma_venda vira kg automaticamente.
   // E se ela trocar de volta pra "Preço fixo por opção", desfaz (antes o produto ficava "por kg" pra sempre)
   const modoTamanhoAnterior = useRef<string | undefined>(undefined);
+  const produtoCarregadoId = useRef<string | undefined>(undefined);
   useEffect(() => {
     const modo = form.grupo_tamanhos?.modo_preco_tamanho;
+    // Abrindo um produto já salvo pra editar: só registra o modo, não mexe na forma de venda
+    // (antes, abrir um bolo "pelo peso" e salvar sem mexer virava "vendido por kg")
+    if (form.id !== produtoCarregadoId.current) {
+      produtoCarregadoId.current = form.id;
+      modoTamanhoAnterior.current = modo;
+      if (form.id) return;
+    }
     // Bolo com tamanhos pelo peso continua "por unidade" (o cliente compra um bolo P/M/G, não quilos)
     if (modo === "por_peso" && form.forma_venda !== "kg" && !(tipoCadastro === "bolos" && !form.id)) {
       setForm(f => ({ ...f, forma_venda: "kg" }));
@@ -3505,7 +3513,7 @@ export default function Produtos() {
       setForm(f => ({ ...f, forma_venda: "unidade" }));
     }
     modoTamanhoAnterior.current = modo;
-  }, [form.grupo_tamanhos?.modo_preco_tamanho]);
+  }, [form.grupo_tamanhos?.modo_preco_tamanho, form.id]);
 
   const [showDraftBanner, setShowDraftBanner] = useState(false);
   const draftSaveTimer = useRef<any>(null);
@@ -3827,6 +3835,9 @@ export default function Produtos() {
     if (limparCopiaTag) {
       pMigrado.nome = pMigrado.nome.replace(/\s*\(cópia(?:\s*\d+)?\)\s*$/i, "").trim();
     }
+    // Tamanhos ligados sem modo salvo = preço fixo (senão a tela de edição "sugere" pelo peso e muda os preços)
+    const gtEd: any = (pMigrado as any).grupo_tamanhos;
+    if (gtEd?.ativo && !gtEd.modo_preco_tamanho) (pMigrado as any).grupo_tamanhos = { ...gtEd, modo_preco_tamanho: "preco_fixo" };
     setForm(migrarAdicionaisLegacy({ ...EMPTY, ...pMigrado }));
     setFichaTecnica([]);
     // Detecta tipo baseado nos dados salvos
@@ -4099,6 +4110,10 @@ export default function Produtos() {
     // ─── Limpar campos que NÃO pertencem à tabela produtos ───
     // (evita Supabase rejeitar silenciosamente o update inteiro)
     const { produto_insumos, created_at, ...formLimpo } = form as any;
+
+    // Tamanhos ligados sem modo definido: é preço fixo por tamanho
+    const gtSalvar: any = (form as any).grupo_tamanhos;
+    if (gtSalvar?.ativo && !gtSalvar.modo_preco_tamanho) (form as any).grupo_tamanhos = { ...gtSalvar, modo_preco_tamanho: "preco_fixo" };
 
     // Kit por quantidade: o preço base é o menor preço do kit
     if (kitAtivo((form as any).kit_qtd) && precoMinKit((form as any).kit_qtd) > 0) precoBase = precoMinKit((form as any).kit_qtd);
