@@ -269,11 +269,10 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, primeiroN
       <div className="bw-topo">
         <p className="bw-eta">Etapa 3 de 4</p>
         <h2 className="bw-h">Esse bolo tem mais de um tamanho ou peso?</h2>
-        <p className="bw-sub">Ex: P, M e G · aro 15, 20 e 25 · 1 kg, 2 kg e 3 kg</p>
       </div>
       <div className="bw-sn" role="radiogroup">
         <button type="button" role="radio" aria-checked={escolha === "sim"} className={escolha === "sim" ? "on" : ""} onClick={() => escolher("sim")}>
-          <b>Sim</b><small>P, M, G ou por kg</small>
+          <b>Sim</b><small>P, M e G · aro · por kg</small>
         </button>
         <button type="button" role="radio" aria-checked={escolha === "nao"} className={escolha === "nao" ? "on" : ""} onClick={() => escolher("nao")}>
           <b>Não</b><small>É um tamanho só</small>
