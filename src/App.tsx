@@ -29,6 +29,7 @@ import Notificacoes from "@/pages/Notificacoes";
 import SolicitarRecurso from "@/pages/SolicitarRecurso";
 import RelatarProblema from "@/pages/RelatarProblema";
 import AssistenteVirtual from "@/pages/AssistenteVirtual";
+import Conquistas from "@/pages/Conquistas";
 import AdminLogin from "@/pages/admin/AdminLogin";
 import AdminLayout from "@/pages/admin/AdminLayout";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
@@ -225,6 +226,7 @@ export default function App() {
           <Route path="/solicitar-recurso" element={<SolicitarRecurso />} />
           <Route path="/relatar-problema" element={<RelatarProblema />} />
           <Route path="/assistente-virtual" element={<AssistenteVirtual />} />
+          <Route path="/conquistas" element={<Conquistas />} />
           <Route path="/produtos" element={<Produtos />} />
           <Route path="/produtos/categorias" element={<Produtos />} />
           <Route path="/categorias" element={<Categorias />} />

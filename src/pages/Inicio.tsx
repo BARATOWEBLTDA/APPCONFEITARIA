@@ -1,4 +1,5 @@
 // Build marker: 2026-09-05T11:00 — mobile hero: fonte menor, PRO achatado, texto centralizado
+import ConquistasCard from "@/components/ConquistasCard";
 import MenuContaItens from "@/components/MenuContaItens";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
@@ -1124,6 +1125,7 @@ export default function Inicio() {
         <div className="ini-mobile-banner"><AdminBannerMobile /></div>
 
         {/* ── Últimas atualizações (mobile) — sempre visível ── */}
+        <div className="ini-mobile-updates"><ConquistasCard /></div>
         <div className="ini-mobile-updates"><MinhasAtualizacoes /></div>
         <div className="ini-mobile-updates"><UpdatesFeed /></div>
 

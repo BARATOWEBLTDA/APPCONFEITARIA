@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { useNavigate } from "react-router-dom";
+import { carregarNotificacoes, marcarLidas, excluirNotificacao, type Notif } from "@/lib/notificacoesUsuario";
 import { Bell, Clock } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 
@@ -32,80 +33,82 @@ function tempoRelativo(iso: string): string {
 }
 
 export default function Notificacoes() {
-  const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
+  const navigate = useNavigate();
+  const [notificacoes, setNotificacoes] = useState<Notif[]>([]);
   const [loading, setLoading] = useState(true);
-  const [lastSeen, setLastSeen] = useState<number>(() => {
-    const v = localStorage.getItem(LS_KEY);
-    return v ? parseInt(v, 10) : 0;
-  });
+  const recarregar = async () => { setNotificacoes(await carregarNotificacoes()); setLoading(false); };
+  useEffect(() => { recarregar(); }, []);
 
-  useEffect(() => {
-    (async () => {
-      const { data } = await supabase
-        .from("notificacoes")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(100);
-      setNotificacoes((data as Notificacao[]) || []);
-      setLoading(false);
-      const now = Date.now();
-      localStorage.setItem(LS_KEY, String(now));
-      setTimeout(() => setLastSeen(now), 3000);
-    })();
-  }, []);
+  const naoLidas = notificacoes.filter(n => !n.lida);
+  const ICONE: Record<string, string> = { pedido: "🛍️", pro: "👑", pro_vencendo: "⏰", pro_atrasado: "⚠️", conquista: "🏆", noticia: "📰" };
 
-  const naoLidasCount = notificacoes.filter(n => new Date(n.created_at).getTime() > lastSeen).length;
+  const abrir = async (n: Notif) => {
+    if (!n.lida) { setNotificacoes(l => l.map(x => x.id === n.id ? { ...x, lida: true } : x)); marcarLidas([n.id]); }
+    if (n.link) navigate(n.link);
+  };
+  const lida = (n: Notif) => { setNotificacoes(l => l.map(x => x.id === n.id ? { ...x, lida: true } : x)); marcarLidas([n.id]); };
+  const excluir = (n: Notif) => { setNotificacoes(l => l.filter(x => x.id !== n.id)); excluirNotificacao(n.id); };
+  const todas = () => { const ids = naoLidas.map(n => n.id); setNotificacoes(l => l.map(x => ({ ...x, lida: true }))); marcarLidas(ids); };
 
   return (
     <>
       <AppPageHeader
         title="Notificações"
-        subtitle={naoLidasCount > 0 ? `${naoLidasCount} nova${naoLidasCount > 1 ? "s" : ""}` : "Todas atualizadas"}
+        subtitle={naoLidas.length > 0 ? `${naoLidas.length} nova${naoLidas.length > 1 ? "s" : ""}` : "Todas lidas"}
         infoIcon="🔔"
-        infoContent="Aqui você vê todas as notificações enviadas pelo Doonly — dicas, novidades, atualizações e avisos importantes."
+        infoContent="Aqui ficam seus pedidos novos, avisos do seu plano, conquistas e as novidades do Doonly."
       />
 
       <div className="ntf-root">
+        {naoLidas.length > 0 && (
+          <div className="ntf-topo"><button type="button" className="ntf-todas" onClick={todas}>✓ Marcar todas como lidas</button></div>
+        )}
         {loading ? (
           <div className="ntf-loading"><span className="ntf-spinner" /></div>
         ) : notificacoes.length === 0 ? (
           <div className="ntf-empty">
             <div className="ntf-empty-ic"><Bell size={30} weight="regular" /></div>
             <p className="ntf-empty-t">Nenhuma notificação ainda</p>
-            <p className="ntf-empty-d">As novidades, avisos e atualizações do Doonly aparecerão aqui assim que forem enviadas.</p>
+            <p className="ntf-empty-d">Pedidos novos, avisos do seu plano, conquistas e novidades do Doonly aparecem aqui.</p>
           </div>
         ) : (
           <div className="ntf-list">
-            {notificacoes.map(n => {
-              const isNova = new Date(n.created_at).getTime() > lastSeen;
-              return (
-                <div key={n.id} className={`ntf-item ${isNova ? "ntf-item--nova" : ""}`}>
-                  <div className="ntf-img">
-                    {n.imagem_url ? (
-                      <img src={n.imagem_url} alt="" />
-                    ) : (
-                      <Bell size={22} weight="fill" />
-                    )}
+            {notificacoes.map(n => (
+              <div key={n.id} className={`ntf-item ${!n.lida ? "ntf-item--nova" : ""}${n.link ? " ntf-item--link" : ""}`} onClick={() => abrir(n)} role={n.link ? "button" : undefined}>
+                <div className="ntf-img">
+                  {n.imagem_url ? <img src={n.imagem_url} alt="" /> : (n.tipo && ICONE[n.tipo]) ? <span className="ntf-emo">{ICONE[n.tipo!]}</span> : <Bell size={22} weight="fill" />}
+                </div>
+                <div className="ntf-content">
+                  <div className="ntf-row">
+                    <p className="ntf-t">{n.titulo}</p>
+                    {!n.lida && <span className="ntf-badge">Novo</span>}
                   </div>
-                  <div className="ntf-content">
-                    <div className="ntf-row">
-                      <p className="ntf-t">{n.titulo}</p>
-                      {isNova && <span className="ntf-badge">Novo</span>}
-                    </div>
-                    {n.mensagem && <p className="ntf-msg">{n.mensagem}</p>}
-                    <div className="ntf-meta">
-                      {n.tag && <span className="ntf-tag">{n.tag}</span>}
-                      <span className="ntf-time"><Clock size={11} weight="regular" /> {tempoRelativo(n.created_at)}</span>
-                    </div>
+                  {n.mensagem && <p className="ntf-msg">{n.mensagem}</p>}
+                  <div className="ntf-meta">
+                    {n.tag && <span className="ntf-tag">{n.tag}</span>}
+                    <span className="ntf-time"><Clock size={11} weight="regular" /> {tempoRelativo(n.created_at)}</span>
+                    <span className="ntf-acoes" onClick={e => e.stopPropagation()}>
+                      {!n.lida && <button type="button" className="ntf-ac" onClick={() => lida(n)}>Marcar como lida</button>}
+                      <button type="button" className="ntf-ac ntf-ac--x" onClick={() => excluir(n)} aria-label="Excluir notificação">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /></svg>
+                      </button>
+                    </span>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
       </div>
 
       <style>{`
+        .ntf-topo { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+        .ntf-todas { border: 1px solid #EAE3E6; background: #fff; border-radius: 8px; padding: 8px 12px; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #4B3A42; cursor: pointer; }
+        .ntf-item--link { cursor: pointer; }
+        .ntf-emo { font-size: 22px; }
+        .ntf-acoes { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+        .ntf-ac { border: none; background: none; font-family: inherit; font-size: 11.5px; font-weight: 700; color: #C33A6E; cursor: pointer; padding: 4px 6px; border-radius: 6px; }
+        .ntf-ac--x { color: #B5AAB0; display: flex; align-items: center; } .ntf-ac--x:hover { color: #DC2626; background: #FEF2F2; }
         .ntf-root { font-family: 'Geist', sans-serif; padding: 16px 16px 100px; max-width: 800px; margin: 0 auto; }
         .ntf-list { display: flex; flex-direction: column; gap: 10px; }
         .ntf-item {

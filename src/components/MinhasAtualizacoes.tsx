@@ -209,7 +209,7 @@ export default function MinhasAtualizacoes() {
       const totalPed = totalPedidosRes.count || 0;
       const marcos = [1, 10, 50, 100, 250, 500, 1000, 2500, 5000];
       const marcoAtingido = marcos.find(m => totalPed === m);
-      if (marcoAtingido) {
+      if (marcoAtingido && false) { // agora fica no cartão "Suas conquistas"
         lista.push({
           key: `marco-${marcoAtingido}`,
           emoji: "🏆",

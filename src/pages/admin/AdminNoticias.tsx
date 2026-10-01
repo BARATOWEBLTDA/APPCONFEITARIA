@@ -206,6 +206,15 @@ export default function AdminNoticias() {
       const acao = editing ? "Atualizada" : "Criada";
 
       if (notif.enviar && podeNotificar && salvaId) {
+        // Também vira uma notificação na aba Notificações (uma vez só por notícia)
+        try {
+          const chave = `noticia-${salvaId}`;
+          const { data: ja } = await supabase.from("notificacoes").select("id").is("user_id", null).eq("chave", chave).maybeSingle();
+          if (!ja) await supabase.from("notificacoes").insert({
+            titulo: notifTituloFinal, mensagem: notifTextoFinal, imagem_url: notifImagemFinal || null,
+            tipo: "noticia", tag: "Novidade", link: salvaSlug ? `/noticias/${salvaSlug}` : "/noticias", chave,
+          });
+        } catch { /* não impede o push */ }
         try {
           const enviados = await enviarPushNoticia(salvaId, salvaSlug);
           showMsg(`${acao}! Notificação enviada para ${enviados} ${enviados === 1 ? "aparelho" : "aparelhos"}.`, "ok");
@@ -416,7 +425,7 @@ export default function AdminNoticias() {
                     disabled={!podeNotificar}
                     onChange={e => setNotif(n => ({ ...n, enviar: e.target.checked }))}
                   />
-                  <span>🔔 <b>{editing ? "Reenviar notificação no celular" : "Enviar notificação no celular"}</b> (todos com notificações ativas)</span>
+                  <span>🔔 <b>{editing ? "Avisar as confeiteiras de novo" : "Avisar as confeiteiras"}</b> (aparece na aba Notificações e no celular de quem ativou)</span>
                 </label>
                 {!podeNotificar && <p className="an-notif-hint">Ative a notícia pra poder notificar.</p>}
 

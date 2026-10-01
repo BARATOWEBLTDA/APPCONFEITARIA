@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { carregarNotificacoes, marcarLidas } from "@/lib/notificacoesUsuario";
 
 interface Notification {
   id: string;
@@ -30,23 +30,16 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const notifRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Conta as não lidas (guardado na conta, não só no aparelho) e atualiza quando algo muda
     const load = async () => {
-      const { data } = await supabase
-        .from("notificacoes")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(10);
-      if (!data) return;
-      setNotificacoes(data);
-      const lastSeen = localStorage.getItem("notif_last_seen");
-      if (!lastSeen) {
-        setNotifCount(data.length);
-      } else {
-        const unseen = data.filter((n: Notification) => new Date(n.created_at) > new Date(lastSeen));
-        setNotifCount(unseen.length);
-      }
+      const lista = await carregarNotificacoes(30);
+      setNotificacoes(lista.slice(0, 10) as any);
+      setNotifCount(lista.filter(n => !n.lida).length);
     };
     load();
+    window.addEventListener("doonly:notif-mudou", load);
+    const t = window.setInterval(load, 60000);
+    return () => { window.removeEventListener("doonly:notif-mudou", load); window.clearInterval(t); };
   }, []);
 
   useEffect(() => {
@@ -59,9 +52,10 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  // Abrir o sininho marca as que estão aparecendo como lidas
   const markAsSeen = () => {
-    localStorage.setItem("notif_last_seen", new Date().toISOString());
-    setNotifCount(0);
+    const ids = (notificacoes as any[]).filter(n => !n.lida).map(n => n.id);
+    if (ids.length) marcarLidas(ids);
   };
 
   const openNotif = () => { setNotifOpen(true); markAsSeen(); };
