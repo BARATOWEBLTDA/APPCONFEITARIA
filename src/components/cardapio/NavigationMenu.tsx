@@ -482,13 +482,28 @@ function CartContent({
                       <p style={{margin:0,fontSize:'14px',fontWeight:600,color:'#3e3e3e'}}>
                         {item.saleType === 'kg' ? '' : `${item.quantity}x `}{item.name}
                       </p>
-                      {(item.selectedMassa || item.selectedRecheio || item.selectedCobertura) && (
-                        <div style={{marginTop:'2px',display:'flex',flexDirection:'column',gap:'1px'}}>
-                          {item.selectedMassa && <span style={{fontSize:'12px',color:'#a0a0a0'}}>Massa: {item.selectedMassa}</span>}
-                          {item.selectedRecheio && <span style={{fontSize:'12px',color:'#a0a0a0'}}>Recheio: {item.selectedRecheio}</span>}
-                          {item.selectedCobertura && <span style={{fontSize:'12px',color:'#a0a0a0'}}>Cobertura: {item.selectedCobertura}</span>}
-                        </div>
-                      )}
+                      {(() => {
+                        // Escolhas do item na tela de "Pedido enviado": antes faltavam o tamanho e o kit
+                        const e: any = item.escolhas
+                        const ls: string[] = []
+                        if (e) {
+                          if (e.tamanho?.nome) ls.push(`Tamanho: ${e.tamanho.nome}`)
+                          if (e.sabor?.nome) ls.push(`Sabor: ${e.sabor.nome}`)
+                          if (e.massa?.nome) ls.push(`Massa: ${e.massa.nome}`)
+                          if (e.recheios?.length) ls.push(`Recheio: ${e.recheios.map((r: any) => r.nome).join(', ')}`)
+                          if (e.cobertura?.nome) ls.push(`Cobertura: ${e.cobertura.nome}`)
+                          if (e.kit?.sabores?.length) ls.push(`Kit ${e.kit.total} un: ${e.kit.sabores.map((x: any) => `${x.nome} × ${x.qtd}`).join(', ')}`)
+                        } else {
+                          if (item.selectedMassa) ls.push(`Massa: ${item.selectedMassa}`)
+                          if (item.selectedRecheio) ls.push(`Recheio: ${item.selectedRecheio}`)
+                          if (item.selectedCobertura) ls.push(`Cobertura: ${item.selectedCobertura}`)
+                        }
+                        return ls.length ? (
+                          <div style={{marginTop:'2px',display:'flex',flexDirection:'column',gap:'1px'}}>
+                            {ls.map((l, k) => <span key={k} style={{fontSize:'12px',color:'#a0a0a0'}}>{l}</span>)}
+                          </div>
+                        ) : null
+                      })()}
                       {item.observations && (
                         <p style={{margin:'2px 0 0',fontSize:'12px',color:'#a0a0a0',fontStyle:'italic'}}>Obs: {item.observations}</p>
                       )}
@@ -673,8 +688,16 @@ function CartContent({
             <div>
               <SectionHeader title="Forma de entrega" />
               <div style={{display:'flex',flexDirection:'column',gap:'6px'}}>
+                {/* Só as formas que a loja configurou no Checkout (antes eram sempre Retirada e Entrega) */}
+                {(config.formas_entrega?.length ? config.formas_entrega : ['retirada']).includes('retirada') && (
                 <OptionButton selected={formaEntrega==='retirada'} label="Retirar no local" detail="Grátis" accent={accent} onClick={() => { setFormaEntrega('retirada'); setBairroSelecionado('') }} />
+                )}
+                {(config.formas_entrega || []).includes('entrega_propria') && (
                 <OptionButton selected={formaEntrega==='entrega_propria'} label="Entrega" detail={config.valor_entrega_propria > 0 ? formatCurrency(config.valor_entrega_propria) : 'Grátis'} accent={accent} onClick={() => { setFormaEntrega('entrega_propria'); setBairroSelecionado('') }} />
+                )}
+                {(config.formas_entrega || []).filter((k: string) => ['motoboy', 'uber_flash', 'combinar'].includes(k)).map((k: string) => (
+                  <OptionButton key={k} selected={formaEntrega === k} label={LABEL_ENTREGA[k]?.label || k} detail="Valor a combinar" accent={accent} onClick={() => { setFormaEntrega(k); setBairroSelecionado('') }} />
+                ))}
               </div>
               {formaEntrega === 'entrega_propria' && config.entrega_por_bairro.length > 0 && (
                 <div style={{marginTop:'10px'}}>
@@ -789,10 +812,10 @@ function CartContent({
             <div>
               <SectionHeader title="Forma de pagamento" />
               <div style={{display:'flex',flexDirection:'column',gap:'6px'}}>
-                <OptionButton selected={formaPagamento==='pix'} label="PIX" accent={accent} onClick={() => setFormaPagamento('pix')} />
-                <OptionButton selected={formaPagamento==='dinheiro'} label="Dinheiro" accent={accent} onClick={() => setFormaPagamento('dinheiro')} />
-                <OptionButton selected={formaPagamento==='credito'} label="Cartão de Crédito" accent={accent} onClick={() => setFormaPagamento('credito')} />
-                <OptionButton selected={formaPagamento==='debito'} label="Cartão de Débito" accent={accent} onClick={() => setFormaPagamento('debito')} />
+                {/* Só as formas que a loja aceita (antes eram sempre Pix, Dinheiro, Crédito e Débito) */}
+                {(config.formas_pagamento?.length ? config.formas_pagamento : ['pix']).filter((k: string) => LABEL_PAGAMENTO[k]).map((k: string) => (
+                  <OptionButton key={k} selected={formaPagamento === k} label={k === 'pix' ? 'PIX' : LABEL_PAGAMENTO[k].label} accent={accent} onClick={() => setFormaPagamento(k)} />
+                ))}
               </div>
               {formaPagamento==='dinheiro' && config.exibir_campo_troco && (
                 <div style={{marginTop:'10px',display:'flex',alignItems:'center',gap:'8px'}}>
