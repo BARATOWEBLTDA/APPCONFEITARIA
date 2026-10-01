@@ -741,8 +741,10 @@ export default function Cardapio() {
 
         /* ── Badge "Ao vivo" + animação de +N incrementando ── */
         .ch-metric-card { position: relative; }
+        /* o selo "Ao vivo" ficava em cima do rótulo "Visitas": reserva espaço pra ele */
+        .ch-metric-card:has(.ch-live-badge) { padding-top: 26px !important; }
         .ch-live-badge {
-          position: absolute; top: 8px; right: 8px;
+          position: absolute; top: 6px; right: 6px;
           display: inline-flex; align-items: center; gap: 4px;
           padding: 2px 8px 2px 6px;
           background: #DCFCE7; color: #14532d;

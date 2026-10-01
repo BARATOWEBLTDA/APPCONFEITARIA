@@ -31,13 +31,15 @@ export function validarCardapio(profile: any): CardapioValidacao {
   if (!temLocalizacao) faltando.push("Localização (cidade ou endereço)");
 
   // Horário: verifica se tem pelo menos 1 dia + horário abre/fecha
-  const horario = profile?.horario || null;
-  const temHorario =
-    horario &&
-    Array.isArray(horario.dias) &&
-    horario.dias.length > 0 &&
-    (horario.abertura || "").trim() &&
-    (horario.fechamento || "").trim();
+  // A tela "Dados da loja" grava o horário como texto (JSON): lê dos dois jeitos.
+  // E quem abre só no fim de semana também conta (antes exigia dia útil).
+  let horario: any = profile?.horario || null;
+  if (typeof horario === "string") { try { horario = JSON.parse(horario); } catch { horario = null; } }
+  const temHorario = !!horario && (
+    (Array.isArray(horario.dias) && horario.dias.length > 0 && (horario.abertura || "").trim() && (horario.fechamento || "").trim()) ||
+    (horario.abre_sabado && (horario.sabado_abertura || "").trim()) ||
+    (horario.abre_domingo && (horario.domingo_abertura || "").trim())
+  );
   if (!temHorario) faltando.push("Horário de funcionamento");
 
   let mensagem = "";

@@ -319,7 +319,7 @@ export default function DadosLoja() {
           </div>
           <label className="dl-lbl">No cardápio, mostrar</label>
           <div className="dl-seg" role="radiogroup">
-            {([["completo", "Endereço completo"], ["cidade", "Só a cidade"], ["nada", "Nada"]] as const).map(([v, l]) => (
+            {([["completo", "Completo"], ["cidade", "Só a cidade"], ["nada", "Nada"]] as const).map(([v, l]) => (
               <button key={v} type="button" role="radio" aria-checked={mostrarLocal === v} className={mostrarLocal === v ? "on" : ""} onClick={() => setMostrarLocal(v)}>{l}</button>
             ))}
           </div>

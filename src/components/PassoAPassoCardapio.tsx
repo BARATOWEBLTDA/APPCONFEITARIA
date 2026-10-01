@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, WhatsappLogo, Copy, Storefront, PencilLine, ShoppingBag, Palette, ShareNetwork } from "@phosphor-icons/react";
+import { Eye, Check, WhatsappLogo, Copy, Storefront, PencilLine, ShoppingBag, Palette, ShareNetwork } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -233,7 +233,10 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
   };
 
   if (loading || !userId) return null;
-  if (!isMobile) return null; // Apenas mobile
+  // Antes aparecia só no celular: no computador não havia como copiar, divulgar ou abrir o link (30/09)
+  void isMobile;
+  const linkCurto = (linkCardapio || "").replace(/^https?:\/\//, "");
+  const verCardapio = () => { if (linkCardapio) window.open(linkCardapio, "_blank", "noopener,noreferrer"); };
 
   const shareStep = steps.find((s) => s.key === "share");
   const outrosFeitos = steps.filter((s) => s.key !== "share" && s.done).length;
@@ -259,7 +262,11 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           <button className="pap-done-btn pap-done-btn-copy" onClick={handleCopy}>
             <Copy size={15} weight="bold" /> {copied ? "Copiado!" : "Copiar link"}
           </button>
+          <button className="pap-done-btn pap-done-btn-copy" onClick={verCardapio}>
+            <Eye size={15} weight="bold" /> Ver
+          </button>
         </div>
+        {linkCurto && <p className="pap-link">{linkCurto}</p>}
         <style>{`
           .pap-done {
             position: relative;
@@ -294,9 +301,13 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           .pap-done-info { flex: 1; }
           .pap-done-t { font-size: 13.5px; font-weight: 800; margin: 0; }
           .pap-done-s { font-size: 11px; opacity: 0.9; margin: 1px 0 0; }
+          .pap-share-btn, .pap-done-btn { white-space: nowrap; }
+          @media (max-width: 400px) { .pap-share-actions, .pap-done-actions { gap: 6px !important; } .pap-share-btn, .pap-done-btn { font-size: 12px !important; padding-left: 8px !important; padding-right: 8px !important; } }
+          .pap-link { position: relative; margin: 10px 0 0; font-size: 12px; color: rgba(255,255,255,.75); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .pap-done-actions > button:last-child { flex: 0 0 auto !important; padding-left: 14px !important; padding-right: 14px !important; }
           .pap-done-actions {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr auto;
             gap: 8px;
             position: relative;
           }
@@ -348,8 +359,16 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           <button className="pap-share-btn pap-share-btn-copy" onClick={handleCopy}>
             <Copy size={15} weight="bold" /> {copied ? "Copiado!" : "Copiar link"}
           </button>
+          <button className="pap-share-btn pap-share-btn-copy pap-share-btn-ver" onClick={verCardapio} aria-label="Ver cardápio">
+            <Eye size={15} weight="bold" /> Ver
+          </button>
         </div>
+        {linkCurto && <p className="pap-link">{linkCurto}</p>}
         <style>{`
+          .pap-share-btn, .pap-done-btn { white-space: nowrap; }
+          @media (max-width: 400px) { .pap-share-actions, .pap-done-actions { gap: 6px !important; } .pap-share-btn, .pap-done-btn { font-size: 12px !important; padding-left: 8px !important; padding-right: 8px !important; } }
+          .pap-link { position: relative; margin: 10px 0 0; font-size: 12px; color: rgba(255,255,255,.7); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .pap-share-btn-ver { flex: 0 0 auto !important; padding-left: 14px !important; padding-right: 14px !important; }
           .pap-share {
             position: relative;
             background: linear-gradient(135deg, #2C1219, #4B3D46);
@@ -404,7 +423,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           }
           .pap-share-actions {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr auto;
             gap: 8px;
             position: relative;
           }
