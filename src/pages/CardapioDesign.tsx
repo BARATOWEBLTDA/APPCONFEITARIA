@@ -5,6 +5,7 @@ import { usePlano } from "@/hooks/usePlano";
 import { HexColorPicker } from "react-colorful";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import { useIsMobile } from "@/hooks/use-mobile";
+import AppPageHeader from "@/components/AppPageHeader";
 
 const SectionLabel = ({ children, sub }: any) => (
   <div className="cd-section-header">
@@ -132,6 +133,8 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       setLogoUrl(url);
       await supabase.from("profiles").update({ logo_url: url }).eq("id", userId); marcarDesignEscolhido(userId);
       showSuccess();
+    } else {
+      alert("Não foi possível enviar o logo. Confira a internet e tente de novo.");
     }
     setUploading(null);
   };
@@ -141,6 +144,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     setUploading(`banner${index}`);
     const suffix = index === 0 ? "" : `-${index}`;
     const url = await uploadImage(file, `banners/${userId}${suffix}`);
+    if (!url) alert("Não foi possível enviar a imagem. Confira a internet e tente de novo.");
     if (url) {
       const fields = [setBannerUrl, setBanner1Url, setBanner2Url, setBanner3Url];
       const keys = ["banner_url", "banner1_url", "banner2_url", "banner3_url"];
@@ -163,6 +167,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     const file = e.target.files?.[0]; if (!file || !userId) return;
     setUploading("banner-topo");
     const url = await uploadImage(file, `banners/${userId}-topo`);
+    if (!url) alert("Não foi possível enviar a imagem. Confira a internet e tente de novo.");
     if (url) {
       setBannerTopoUrl(url);
       await supabase.from("profiles").update({ banner_topo_url: url }).eq("id", userId); marcarDesignEscolhido(userId);
@@ -208,8 +213,11 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         onCropDone={handleLogoCropDone}
       />
     )}
+    {/* Aberta sozinha (/cardapio-design): precisa do cabeçalho com voltar (antes a tela ficava sem título) */}
+    {!identityCard && (
+      <AppPageHeader title="Aparência" subtitle="Cores, banners e modelo do cardápio" onBack={() => navigate("/cardapio")} />
+    )}
     <div className="cd-root">
-      {/* Header removido — a página pai (CardapioConfigPage) já mostra "Meu Cardápio" acima */}
 
       {/* Logo da loja (veio de Dados da loja em 29/09) */}
       <div className="cd-card" style={isMobile ? {} : { gridColumn: '1 / -1' }}>
@@ -267,7 +275,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       {/* Banners — ocupa largura total do grid */}
       <div className="cd-card" style={isMobile ? {} : { gridColumn: '1 / -1' }}>
         <SectionLabel
-          sub={isPro ? "Seus banners rodam em carrossel no cardápio. Use pra destacar promoções e novidades." : "Anuncie sua promoção do mês. Assine PRO pra ter até 4 banners rodando em carrossel."}
+          sub={(isPro ? "Seus banners rodam em carrossel no cardápio. Use pra destacar promoções e novidades." : "Anuncie sua promoção do mês. Assine PRO pra ter até 4 banners rodando em carrossel.") + " Tamanho ideal: 1200 × 675, na horizontal (use o mesmo tamanho em todos)."}
         >Banners Promocionais</SectionLabel>
 
         <div className="cd-banners-grid">
@@ -437,7 +445,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
           <div>
             <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_borda' ? null : 'cor_borda')}>
               <div className="cd-color-info">
-                <span className="cd-color-label">Cor da borda da logotipo</span>
+                <span className="cd-color-label">Cor da borda do logo</span>
                 <span className="cd-color-value">{corBorda}</span>
               </div>
               <div className="cd-color-swatch" style={{ background: corBorda }} />
@@ -533,8 +541,8 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
             <div>
               <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_navbar' ? null : 'cor_navbar')}>
                 <div className="cd-color-info">
-                  <span className="cd-color-label">Cor de background</span>
-                  <div className="cd-color-meta"><span className="cd-color-value">{corNavbar}</span><span className="cd-pro-badge"><img src="/coroa.png" alt="" className="cd-pro-badge-coroa" />PRO</span></div>
+                  <span className="cd-color-label">Cor do fundo</span>
+                  <div className="cd-color-meta"><span className="cd-color-value">{corNavbar}</span><span className="cd-pro-badge cd-pro-badge--inline"><img src="/coroa.png" alt="" className="cd-pro-badge-coroa" />PRO</span></div>
                 </div>
                 <div className="cd-color-swatch" style={{ background: corNavbar }} />
               </div>
@@ -556,7 +564,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
             <div className="cd-upgrade-box" style={{ marginTop: '4px' }}>
               <div className="cd-lock-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
               <div>
-                <p className="cd-upgrade-title">Cor de background</p>
+                <p className="cd-upgrade-title">Cor do fundo</p>
                 <p className="cd-upgrade-sub">Personalize o fundo atrás da logo/nome com o plano PRO</p>
               </div>
             </div>
@@ -855,6 +863,8 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         }
 
         /* ── Cantinho PRO no banner (padrão preto + coroa) ── */
+        /* etiqueta PRO dentro da linha da cor (antes flutuava no canto do cartão) */
+        .cd-pro-badge--inline { position: static !important; display: inline-flex !important; margin-left: 8px; vertical-align: middle; transform: none !important; }
         .cd-pro-corner {
           position:absolute; top:6px; left:6px; z-index:10;
           display:inline-flex; align-items:center; gap:4px;
