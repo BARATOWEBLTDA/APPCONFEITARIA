@@ -113,13 +113,17 @@ export default function ClientePerfil() {
 
       // Carrega pedidos deste cliente (busca por cliente_id OU por nome_cliente)
       if (cData) {
-        const { data: pData } = await supabase
-          .from("pedidos")
-          .select("*")
-          .eq("user_id", user.id)
-          .or(`cliente_id.eq.${id},nome_cliente.eq.${cData.nome}`)
-          .order("created_at", { ascending: false });
-        if (pData) setPedidos(pData);
+        // Antes: .or(...nome_cliente...) — esse campo não existe (é "cliente_nome"), o banco dava erro e o
+        // perfil ficava sem pedidos. Agora: pelo cadastro (cliente_id) + os antigos só com o nome, sem duplicar.
+        const [porId, porNome] = await Promise.all([
+          supabase.from("pedidos").select("*").eq("user_id", user.id).eq("cliente_id", id),
+          supabase.from("pedidos").select("*").eq("user_id", user.id).is("cliente_id", null).eq("cliente_nome", cData.nome),
+        ]);
+        const vistos = new Set<string>();
+        const todos = [...(porId.data || []), ...(porNome.data || [])]
+          .filter((p: any) => (vistos.has(p.id) ? false : (vistos.add(p.id), true)))
+          .sort((a: any, b: any) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
+        setPedidos(todos as any);
       }
 
       setLoading(false);
@@ -291,7 +295,7 @@ export default function ClientePerfil() {
         <div className="cp-card cp-card--highlight">
           <div className="cp-card-head">
             <div className="cp-card-t"><span>🛍️</span> Histórico de Compras</div>
-            <div className="cp-card-count">{pedidos.length} pedido{pedidos.length !== 1 ? "s" : ""}</div>
+            <div className="cp-card-count">{pedidosValidos.length} pedido{pedidosValidos.length !== 1 ? "s" : ""}</div>
           </div>
 
           {pedidos.length > 0 ? (

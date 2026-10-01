@@ -1846,7 +1846,7 @@ export default function Clientes() {
                                     <Avatar c={c} />
                                     <div>
                                       <div className="cd-nome"><b>{c.nome}</b>{tag && <span className={`cd-tag ${tag.cls}`}>{tag.txt}</span>}</div>
-                                      <small>{c.whatsapp || "sem WhatsApp"}</small>
+                                      <small>{formatPhone(c.whatsapp) || "sem WhatsApp"}</small>
                                     </div>
                                   </div>
                                 </td>
