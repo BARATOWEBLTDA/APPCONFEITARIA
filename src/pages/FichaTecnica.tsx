@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, ReactNode } from "react";
+import { parseNumBR } from "@/lib/numeroBR";
 import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -379,7 +380,13 @@ export default function FichaTecnica() {
         quantidade_base: toBase(f.quantidade, f.unidade_utilizada),
       }));
     if (itens.length > 0) {
-      await supabase.from("produto_insumos").insert(itens);
+      const { error: errIns } = await supabase.from("produto_insumos").insert(itens);
+      if (errIns) {
+        // Não deixa a ficha "sumir" calada: avisa e para (os ingredientes continuam na tela pra tentar de novo)
+        setSaving(false);
+        alert("Não foi possível salvar os ingredientes da ficha. Confira a internet e tente de novo.");
+        return;
+      }
     }
 
     // 2. Persiste campos extras no produto (respeitando os toggles ativos)
@@ -390,10 +397,10 @@ export default function FichaTecnica() {
       validade_tipo: infoAtivo ? extras.validade_tipo : "refrigerado",
       embalagem: infoAtivo ? extras.embalagem : "",
       observacoes_ficha: infoAtivo ? extras.observacoes_ficha : "",
-      cv_percentual: parseFloat(extras.cv_percentual) || 0,
+      cv_percentual: parseNumBR(extras.cv_percentual) || 0,
       tempo_preparo_min: moAtivo ? (parseInt(extras.tempo_preparo_min) || 0) : 0,
-      salario_desejado: moAtivo ? (parseFloat(extras.salario_desejado) || 0) : 0,
-      horas_semanais: moAtivo ? (parseFloat(extras.horas_semanais) || 40) : 40,
+      salario_desejado: moAtivo ? (parseNumBR(extras.salario_desejado) || 0) : 0,
+      horas_semanais: moAtivo ? (parseNumBR(extras.horas_semanais) || 40) : 40,
       updated_at: new Date().toISOString(),
     }).eq("id", selected.id);
 
@@ -427,12 +434,12 @@ export default function FichaTecnica() {
     const precoLive = (selected.promocao && selected.preco_promocional && selected.preco_promocional > 0) ? Number(selected.preco_promocional) : Number(selected.preco_normal) || 0;
 
     // Custos invisíveis
-    const cvPct = parseFloat(extras.cv_percentual) || 0;
+    const cvPct = parseNumBR(extras.cv_percentual) || 0;
     const cvLive = cmvLive * (cvPct / 100);
 
     // Mão de obra
-    const salario = parseFloat(extras.salario_desejado) || 0;
-    const horasSem = parseFloat(extras.horas_semanais) || 40;
+    const salario = parseNumBR(extras.salario_desejado) || 0;
+    const horasSem = parseNumBR(extras.horas_semanais) || 40;
     const tempoMin = parseInt(extras.tempo_preparo_min) || 0;
     const custoHora = horasSem > 0 ? salario / (horasSem * 4.33) : 0;
     const moLive = moAtivo ? custoHora * (tempoMin / 60) : 0;
@@ -964,8 +971,8 @@ export default function FichaTecnica() {
               <div><span>+ Mão de obra {tempoMin > 0 ? `(${tempoMin} min)` : ""}</span><span>R$ {fmt(moLive)}</span></div>
               <div className="t"><span>Custo total</span><span>R$ {fmt(custoTotalLive)}</span></div>
               <div className="pv"><span>Preço de venda</span><span>R$ {fmt(precoLive)}</span></div>
-              {(parseFloat(extras.rendimento_qtd) || 0) > 0 && (
-                <div><span>Custo por unidade ({extras.rendimento_qtd})</span><span>R$ {fmt(custoTotalLive / (parseFloat(extras.rendimento_qtd) || 1))}</span></div>
+              {(parseNumBR(extras.rendimento_qtd) || 0) > 0 && (
+                <div><span>Custo por unidade ({extras.rendimento_qtd})</span><span>R$ {fmt(custoTotalLive / (parseNumBR(extras.rendimento_qtd) || 1))}</span></div>
               )}
             </div>
             <button type="button" className="ft-sum-salvar" onClick={salvarFicha} disabled={saving}>

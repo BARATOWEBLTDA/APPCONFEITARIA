@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { parseNumBR } from "@/lib/numeroBR";
 import { supabase } from "@/lib/supabase";
 import ReqTag from "@/components/ReqTag";
 import { apiFetch } from "@/lib/apiFetch";
@@ -234,8 +235,8 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
 
   const handleSalvar = async () => {
     if (!userId || !form.nome.trim()) { alert("Informe o nome do insumo"); return; }
-    const valor = parseFloat(form.valor_compra.replace(",", ".")) || 0;
-    const qtdEmb = parseFloat(form.qtd_embalagem.replace(",", ".")) || 1;
+    const valor = parseNumBR(form.valor_compra);
+    const qtdEmb = parseNumBR(form.qtd_embalagem) || 1;
     if (valor <= 0) { alert("Informe quanto pagou"); return; }
     if (qtdEmb <= 0) { alert("Informe quanto veio na embalagem"); return; }
     const custoUnit = valor / qtdEmb;
@@ -281,8 +282,8 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
   };
 
   const previewCusto = (() => {
-    const v = parseFloat(form.valor_compra.replace(",", ".")) || 0;
-    const q = parseFloat(form.qtd_embalagem.replace(",", ".")) || 1;
+    const v = parseNumBR(form.valor_compra) || 0;
+    const q = parseNumBR(form.qtd_embalagem) || 1;
     return v > 0 ? v / q : 0;
   })();
 
