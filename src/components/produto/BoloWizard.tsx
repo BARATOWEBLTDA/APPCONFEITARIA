@@ -80,7 +80,8 @@ export function BoloOpcoesStep({ form, setForm }: { form: any; setForm: (fn: (f:
       <div className="bw-topo">
         <p className="bw-eta">Etapa 2 de 4</p>
         <h2 className="bw-h">O cliente escolhe alguma opção?</h2>
-        <p className="bw-sub">No <b>{nome}</b>. Marque só o que ele escolhe — se nada, é só avançar.</p>
+        <p className="bw-produto">{nome}</p>
+        <p className="bw-sub">Marque só o que o cliente escolhe. Se não tiver nada, é só avançar.</p>
       </div>
 
       {TIPOS_OPCAO.map(t => {
@@ -150,7 +151,6 @@ export function BoloOpcoesStep({ form, setForm }: { form: any; setForm: (fn: (f:
         );
       })}
 
-      <p className="bo-tip">💡 Toque em “+ valor extra” pra cobrar a mais por uma opção (ex: Nutella + R$ 10).</p>
 
       {/* "Quanto essa opção custa a mais?" — abre por baixo */}
       {extra && opExtra && createPortal(
@@ -627,6 +627,8 @@ const CSS = `
   .bw-topo .bw-h { margin: 6px auto 6px; max-width: 520px; }
   .bw-topo .bw-sub { margin: 0 auto; max-width: 440px; }
   .bw-topo .bw-sub b { color: #2C1219; }
+  .bw-topo .bw-h, .bw-topo .bw-sub { text-wrap: balance; }
+  .bw-produto { display: inline-block; max-width: 100%; margin: 2px 0 8px; padding: 4px 12px; border-radius: 999px; background: #FCE7F3; color: #9D174D; font-size: 12.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* Etapa 2 — cartões de opção (aprovado 30/09) */
   .bo-card { border: 1px solid #EDE5E8; border-radius: 12px; background: #fff; margin-bottom: 10px; transition: border-color .15s, box-shadow .15s; }
