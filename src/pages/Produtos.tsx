@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import KitQuantidadeEditor from "@/components/produto/KitQuantidadeEditor";
 import { kitAtivo, erroKit, precoMinKit, presetKit, type KitQtdConfig } from "@/lib/kitQuantidade";
 import TipoProdutoTela, { type TipoProduto as TipoCadastro } from "@/components/produto/TipoProdutoTela";
+import SucessoProdutoTela from "@/components/produto/SucessoProdutoTela";
+import { precoCardapio } from "@/lib/precoCardapio";
 import { BoloOpcoesStep, BoloTamanhosStep, BoloPrecoStep, boloOpcoesOk, boloTamanhosOk, boloPrecoOk, type BoloTam } from "@/components/produto/BoloWizard";
 import { supabase } from "@/lib/supabase";
 import { listarBiblioteca, salvarNaBiblioteca, type BibliotecaOpcao } from "@/lib/biblioteca";
@@ -3486,7 +3488,9 @@ export default function Produtos() {
   }, []);
   const [wizardTipo, setWizardTipo] = useState<"simples" | "variacoes" | "personalizavel">("simples");
   const [wizardSubtipo, setWizardSubtipo] = useState<"sabores_e_tamanhos" | "so_sabores" | "so_tamanhos" | null>(null);
-  const [editTab, setEditTab] = useState<"info" | "opcoes" | "preco" | "fotos">("info");
+  const [editTab, setEditTab] = useState<"info" | "opcoes" | "tamanhos" | "kit" | "preco" | "fotos">("info");
+  // Tela de sucesso depois de publicar um produto novo
+  const [sucesso, setSucesso] = useState<null | { id?: string; nome: string; categoria?: string; imagem?: string; preco: number; aPartir: boolean; primeiro: boolean; tipoLabel: string }>(null);
   const [confirmMudaSubtipo, setConfirmMudaSubtipo] = useState<{
     novoSubtipo: "sabores_e_tamanhos" | "so_sabores" | "so_tamanhos";
     quantidade: number;
@@ -3811,6 +3815,7 @@ export default function Produtos() {
   const isBolo = tipoCadastro === "bolos" && !form.id;
   // Edição de bolo nas telas novas: só quando o produto usa o que essas telas cobrem
   // (massa, recheio, cobertura e tamanhos por preço fixo ou pelo peso). Senão, abas antigas.
+  const isKitEdit = !!form.id && kitAtivo((form as any).kit_qtd);
   const isBoloEdit = !!form.id && /bolo/i.test(form.categoria || "") && !kitAtivo((form as any).kit_qtd)
     && !form.grupo_sabores?.ativo
     && (!form.grupo_tamanhos?.ativo || ["preco_fixo", "por_peso", undefined].includes(form.grupo_tamanhos?.modo_preco_tamanho as any));
@@ -3879,7 +3884,7 @@ export default function Produtos() {
       }
     }
   };
-  const fecharModal = () => { setTipoTela(false); setKitTela(false); setModal(false); setForm(EMPTY); setFichaTecnica([]); setFichaModalOpen(false); setShowQuickAdd(false); setBuscaInsumo(""); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setConfirmDiscardProd(false); };
+  const fecharModal = () => { setSucesso(null); setTipoTela(false); setKitTela(false); setModal(false); setForm(EMPTY); setFichaTecnica([]); setFichaModalOpen(false); setShowQuickAdd(false); setBuscaInsumo(""); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setConfirmDiscardProd(false); };
 
   // Guard: verifica se o produto tem dados preenchidos (pra decidir se avisa antes de fechar)
   const hasProdData = (): boolean => {
@@ -4057,6 +4062,7 @@ export default function Produtos() {
   };
 
   const handleSalvar = async () => {
+    const eraPrimeiro = !form.id && produtos.length === 0;
     if (!form.nome.trim()) return alert("Nome é obrigatório");
     if (!form.categoria.trim()) return alert("Categoria é obrigatória");
 
@@ -4178,8 +4184,31 @@ export default function Produtos() {
 
     await loadProdutos(userId);
     setSaving(false);
-    limparDraft();
-    fecharModal();
+    // Edição: aviso rápido e fecha
+    if (form.id) {
+      fecharModal();
+      showToast("success", "Alterações salvas", (payload as any).nome || form.nome);
+      return;
+    }
+    // Cadastro novo: tela de sucesso com os próximos passos
+    try { localStorage.removeItem(DRAFT_KEY); } catch {}
+    const pc = precoCardapio({ ...form, ...(payload as any) });
+    const kitOn = kitAtivo((form as any).kit_qtd);
+    const rotulos: Record<string, string> = { bolos: "Bolo", doces: "Doce", salgados: "Salgado", sobremesas: "Sobremesa", kitfesta: "Kit festa" };
+    setSucesso({
+      id: produtoId, nome: (payload as any).nome || form.nome, categoria: form.categoria,
+      imagem: (form.imagem_url || "").split(",").map(x => x.trim()).filter(Boolean)[0],
+      preco: pc.valor, aPartir: pc.aPartir, primeiro: eraPrimeiro,
+      tipoLabel: kitOn ? "Kit" : (tipoCadastro && rotulos[tipoCadastro]) || "Produto",
+    });
+  };
+  const verNoCardapio = async () => {
+    try {
+      const { data } = await supabase.from("profiles").select("codigo_publico").eq("id", userId).single();
+      const cod = (data as any)?.codigo_publico;
+      if (cod) window.open(`/c/${cod}`, "_blank");
+      else navigate("/cardapio");
+    } catch { navigate("/cardapio"); }
   };
 
   const handleDelete = async (id: string) => {
@@ -4610,9 +4639,15 @@ export default function Produtos() {
       )}
 
       {modal && (
-        <div className="prod-modal-overlay" onClick={handleTryClose}>
+        <div className="prod-modal-overlay" onClick={sucesso ? fecharModal : handleTryClose}>
           <div className="prod-modal prod-modal--novo" onClick={e => e.stopPropagation()}>
-            {tipoTela && !form.id ? (
+            {sucesso ? (
+              <SucessoProdutoTela {...sucesso}
+                onFechar={fecharModal}
+                onOutro={() => { setSucesso(null); openNovo(); }}
+                onCusto={() => { const id = sucesso.id; fecharModal(); navigate("/ficha-tecnica", { state: { produtoId: id } }); }}
+                onVerCardapio={verNoCardapio} />
+            ) : tipoTela && !form.id ? (
               <TipoProdutoTela onEscolher={aplicarTipoProduto} onFechar={handleTryClose} />
             ) : (<>
             {wizardStep >= 2 && (
@@ -4670,34 +4705,21 @@ export default function Produtos() {
             )}
 
             {/* ══════ Tabs do MODO EDIÇÃO (V3 — 4 tabs espelhando o wizard) ══════ */}
-            {form.id && (
-              <div className="prod-edit-tabs">
-                <button
-                  className={`prod-edit-tab ${editTab === "info" ? "prod-edit-tab--ativo" : ""}`}
-                  onClick={() => setEditTab("info")}
-                >
-                  Info
-                </button>
-                <button
-                  className={`prod-edit-tab ${editTab === "opcoes" ? "prod-edit-tab--ativo" : ""}`}
-                  onClick={() => setEditTab("opcoes")}
-                >
-                  Opções
-                </button>
-                <button
-                  className={`prod-edit-tab ${editTab === "preco" ? "prod-edit-tab--ativo" : ""}`}
-                  onClick={() => setEditTab("preco")}
-                >
-                  Preço
-                </button>
-                <button
-                  className={`prod-edit-tab ${editTab === "fotos" ? "prod-edit-tab--ativo" : ""}`}
-                  onClick={() => setEditTab("fotos")}
-                >
-                  Fotos
-                </button>
-              </div>
-            )}
+            {form.id && (() => {
+              // As abas espelham as etapas do cadastro de cada tipo
+              const abas: { id: typeof editTab; label: string }[] = isBoloEdit
+                ? [{ id: "info", label: "Info" }, { id: "opcoes", label: "Opções" }, { id: "tamanhos", label: "Tamanhos" }, { id: "preco", label: "Preço" }, { id: "fotos", label: "Fotos" }]
+                : isKitEdit
+                  ? [{ id: "info", label: "Info" }, { id: "kit", label: "Kit" }, { id: "fotos", label: "Fotos" }]
+                  : [{ id: "info", label: "Info" }, { id: "opcoes", label: "Opções" }, { id: "preco", label: "Preço" }, { id: "fotos", label: "Fotos" }];
+              return (
+                <div className="prod-edit-tabs">
+                  {abas.map(a => (
+                    <button key={a.id} className={`prod-edit-tab ${editTab === a.id ? "prod-edit-tab--ativo" : ""}`} onClick={() => setEditTab(a.id)}>{a.label}</button>
+                  ))}
+                </div>
+              );
+            })()}
 
             {/* ══════ WIZARD STEP 1 — Escolha do tipo (TELA CHEIA ROSA) ══════ */}
             {wizardStep === 1 && (
@@ -4986,6 +5008,11 @@ export default function Produtos() {
                 <BoloOpcoesStep form={form} setForm={setForm as any} />
               </div>
             )}
+            {form.id && editTab === "kit" && isKitEdit && (
+              <div className="prod-modal-body">
+                <KitQuantidadeEditor modo="completo" kit={(form as any).kit_qtd} onChange={onKitChange} nomeProduto={form.nome} />
+              </div>
+            )}
             {form.id && editTab === "opcoes" && isBoloEdit && (
               <div className="prod-modal-body">
                 <BoloOpcoesStep form={form} setForm={setForm as any} edicao />
@@ -5023,7 +5050,7 @@ export default function Produtos() {
 
             {/* ══════ WIZARD STEP 3 (SIMPLES) — VISUAL E PREÇO ══════ */}
             {/* Ou STEP 4 quando variações (visual + preço só de fotos) */}
-            {(((wizardStep === 4 || wizardStep === 5) && !form.id) || (form.id && (editTab === "fotos" || editTab === "preco"))) && (
+            {(((wizardStep === 4 || wizardStep === 5) && !form.id) || (form.id && (editTab === "fotos" || editTab === "preco" || editTab === "tamanhos"))) && (
             <div className="prod-modal-body">
 
               {/* Título e subtítulo (mesmo padrão dos steps 3 e 4) */}
@@ -5320,11 +5347,11 @@ export default function Produtos() {
                 : <BoloPrecoStep form={form} setForm={setForm as any} escolha={boloTam} primeiroNome={primeiroNome} />
               )}
               {/* Edição de bolo: tamanhos e preço juntos na aba Preço */}
+              {form.id && editTab === "tamanhos" && isBoloEdit && (
+                <BoloTamanhosStep form={form} setForm={setForm as any} escolha={boloTam} setEscolha={setBoloTam} edicao />
+              )}
               {form.id && editTab === "preco" && isBoloEdit && (
-                <>
-                  <BoloTamanhosStep form={form} setForm={setForm as any} escolha={boloTam} setEscolha={setBoloTam} edicao />
-                  <BoloPrecoStep form={form} setForm={setForm as any} escolha={boloTam} primeiroNome={primeiroNome} edicao />
-                </>
+                <BoloPrecoStep form={form} setForm={setForm as any} escolha={boloTam} primeiroNome={primeiroNome} edicao />
               )}
               {((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco" && !isBoloEdit)) && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && form.grupo_tamanhos.modo_preco_tamanho !== "sob_consulta" && form.grupo_tamanhos.modo_preco_tamanho !== "por_peso" && (
                 <div className="prod-section">
@@ -5963,7 +5990,7 @@ export default function Produtos() {
                   if (wizardStep === 3) {
                     const gm = form.grupo_massas, gr = form.grupo_recheios, gc = form.grupo_coberturas, gt = form.grupo_tamanhos;
                     // Mobile na etapa checklist: basta ter 1 grupo marcado (opcoes vem depois)
-                    if (isMobileMain && !form.id && mobilePersonaStep === "checklist") {
+                    if (isMobileMain && !form.id && mobilePersonaStep === "checklist" && !kitTela) {
                       const anyAtivo = [gm, gr, gc, gt, form.grupo_sabores].some(g => g?.ativo) || kitAtivo((form as any).kit_qtd);
                       return anyAtivo;
                     }
@@ -6026,7 +6053,7 @@ export default function Produtos() {
                       if (!canAdvance) return;
                       // Mobile: se está no checklist da personalização, primeiro avança pra fill (não pro próximo step)
                       const kitLigado = kitAtivo((form as any).kit_qtd);
-                      if (isMobileMain && !form.id && wizardStep === 3 && mobilePersonaStep === "checklist" && !isBolo) {
+                      if (isMobileMain && !form.id && wizardStep === 3 && mobilePersonaStep === "checklist" && !isBolo && !kitTela) {
                         const outros = [form.grupo_massas, form.grupo_recheios, form.grupo_coberturas, form.grupo_sabores, form.grupo_tamanhos].some(g => g?.ativo);
                         // Só o kit ligado: vai direto pra "Monte seu kit"
                         if (kitLigado && !outros) { setKitTela(true); return; }

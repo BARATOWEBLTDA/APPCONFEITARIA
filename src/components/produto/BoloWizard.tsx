@@ -79,8 +79,8 @@ export function BoloOpcoesStep({ form, setForm, edicao }: { form: any; setForm: 
     <div className="bw">
       <div className="bw-topo">
         <h2 className="bw-h">O cliente escolhe alguma opção?</h2>
-        <p className="bw-produto">{nome}</p>
-        <p className="bw-sub">Marque só o que o cliente escolhe. Se não tiver nada, é só avançar.</p>
+        {!edicao && <p className="bw-produto">{nome}</p>}
+        <p className="bw-sub">{edicao ? "Marque só o que o cliente escolhe." : "Marque só o que o cliente escolhe. Se não tiver nada, é só avançar."}</p>
       </div>
 
       {TIPOS_OPCAO.map(t => {
@@ -406,6 +406,9 @@ export function BoloPrecoStep({ form, setForm, escolha, primeiroNome, edicao }: 
   const exBase = precoBase > 0 ? precoBase : 80;
   const suf = VENDA.find(x => x.v === form.forma_venda)?.suf || "unidade";
   const nomeados = tams.filter(x => x.nome.trim());
+  // Promoção em %: mostra quanto cada preço fica
+  const pctOn = !!form.promocao && form.tipo_promocao === "percentual" && (form.desconto_percentual || 0) > 0;
+  const comDesc = (v: number) => Math.round(v * (1 - (form.desconto_percentual || 0) / 100) * 100) / 100;
   const emFatias = (form.grupo_tamanhos || {}).rendimento_unidade === "fatias";
   const rotulo = (x: Tam) => (
     <span className="bw-pr-lb"><b>{x.nome}</b>{x.peso_kg && kgTxt(x.peso_kg) !== x.nome ? <small> · {kgTxt(x.peso_kg)}</small> : null}
@@ -434,7 +437,9 @@ export function BoloPrecoStep({ form, setForm, escolha, primeiroNome, edicao }: 
             <MoneyInput value={form.preco_normal || 0} onChange={v => setForm((f: any) => ({ ...f, preco_normal: v }))} ariaLabel="Preço do bolo" />
             <em>/ {suf}</em>
           </label>
-          <p className="bw-hint">Digite só os números — a vírgula e o ponto aparecem sozinhos.</p>
+          {pctOn && (form.preco_normal || 0) > 0
+            ? <p className="bw-pr-por bw-pr-por--unico">De {brl(form.preco_normal)} por <b>{brl(comDesc(form.preco_normal))}</b></p>
+            : <p className="bw-hint">Digite só os números — a vírgula e o ponto aparecem sozinhos.</p>}
         </div>
       ) : (
         <>
@@ -470,12 +475,17 @@ export function BoloPrecoStep({ form, setForm, escolha, primeiroNome, edicao }: 
                 {rotulo(x)}
                 {porPeso ? (
                   (x.peso_kg || 0) > 0
-                    ? <span className={`bw-in bw-pr-calc${precoBase > 0 ? " ok" : ""}`}>{precoBase > 0 ? brl(precoBase * (x.peso_kg || 0)) : "Informe o preço base"}</span>
+                    ? (precoBase > 0 && pctOn
+                        ? <span className="bw-in bw-pr-calc ok bw-pr-calc--promo"><s>{brl(precoBase * (x.peso_kg || 0))}</s>{brl(comDesc(precoBase * (x.peso_kg || 0)))}</span>
+                        : <span className={`bw-in bw-pr-calc${precoBase > 0 ? " ok" : ""}`}>{precoBase > 0 ? brl(precoBase * (x.peso_kg || 0)) : "Informe o preço base"}</span>)
                     : <span className="bw-in bw-pr-calc">Sem peso — volte e preencha</span>
                 ) : (
-                  <label className={`bw-in bw-rs bw-pr-in${x.preco > 0 ? " ok" : ""}`}><span className="bw-rs-p">R$</span>
-                    <MoneyInput value={x.preco} onChange={v => setTam(x.id, { preco: v })} ariaLabel={`Preço do tamanho ${x.nome}`} />
-                  </label>
+                  <span className="bw-pr-col">
+                    <label className={`bw-in bw-rs bw-pr-in${x.preco > 0 ? " ok" : ""}`}><span className="bw-rs-p">R$</span>
+                      <MoneyInput value={x.preco} onChange={v => setTam(x.id, { preco: v })} ariaLabel={`Preço do tamanho ${x.nome}`} />
+                    </label>
+                    {pctOn && x.preco > 0 && <small className="bw-pr-por">por <b>{brl(comDesc(x.preco))}</b></small>}
+                  </span>
                 )}
               </div>
             ))}
@@ -858,4 +868,9 @@ const CSS = `
   .bw-promo-body { margin-top: 14px; display: flex; flex-direction: column; gap: 12px; }
   .bw-promo-body .bw-frase { margin-top: 0; }
   .bw-seg2 { grid-template-columns: 1fr 1fr !important; }
+
+  .bw-pr-col { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0; }
+  .bw-pr-por { font-size: 12px; color: #6B5D64; } .bw-pr-por b { color: #15803D; font-weight: 800; }
+  .bw-pr-por--unico { margin: 8px 0 0; font-size: 13px; }
+  .bw-pr-calc--promo { gap: 6px; } .bw-pr-calc--promo s { color: #9A8E94; font-weight: 600; font-size: 12px; }
 `;
