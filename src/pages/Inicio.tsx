@@ -14,6 +14,7 @@ import {
   Package, CookingPot, Users, ChartLineUp, ForkKnife, CaretRight,
   InstagramLogo, DotsThreeOutline, Clock, Heart,
   Cake, Percent, Receipt, SealPercent, BookOpen, Gear, ChartBar, Cube,
+  Calculator,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { enableNotifications, disableNotifications, getStoredNotifState } from "@/lib/notifications";
@@ -75,7 +76,7 @@ export default function Inicio() {
   const [resumoSemana, setResumoSemana] = useState({ vendas: 0, pedidos: 0 });
   const [resumoAnterior, setResumoAnterior] = useState({ vendas: 0, pedidos: 0 });
   const [chartData, setChartData] = useState<ChartPoint[]>([]);
-  const [proximasEntregas, setProximasEntregas] = useState<Array<{ id: string; cliente: string; data: string; valor: number }>>([]);
+  const [proximasEntregas, setProximasEntregas] = useState<Array<{ id: string; cliente: string; data: string; valor: number; hora?: string | null }>>([]);
   // Onboarding: se cliente novo, o card destaque muda pra empty state contextual
   const [onboarding, setOnboarding] = useState({
     produtosCount: 0,
@@ -485,7 +486,7 @@ export default function Inicio() {
         // Próximas entregas (a partir de hoje, ordenadas por data)
         supabase
           .from("pedidos")
-          .select("id, cliente_nome, data_entrega, valor_total")
+          .select("id, cliente_nome, data_entrega, valor_total, horario_entrega")
           .eq("user_id", userId)
           .gte("data_entrega", hojeISO)
           .in("status", STATUS_ATIVOS)
@@ -550,6 +551,7 @@ export default function Inicio() {
           cliente: p.cliente_nome || "Cliente",
           data: p.data_entrega,
           valor: Number(p.valor_total) || 0,
+          hora: p.horario_entrega || null,
         }))
       );
     } catch (err) {
@@ -850,6 +852,49 @@ export default function Inicio() {
         </div>
       </div>
 
+      {/* ══ Computador (≥1100px): topo rosa com o resumo do dia + números (30/09) ══ */}
+      {(() => {
+        const hojeISO = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; })();
+        const aReceberHoje = proximasEntregas.filter(e => e.data === hojeISO).reduce((s, e) => s + e.valor, 0);
+        const proxHora = proximasEntregas.find(e => e.data === hojeISO && e.hora)?.hora;
+        const partes: string[] = [];
+        if (counts.entregasHoje > 0) partes.push(`${counts.entregasHoje} ${counts.entregasHoje === 1 ? "entrega" : "entregas"} hoje`);
+        if (counts.pedidosAtrasados > 0) partes.push(`${counts.pedidosAtrasados} ${counts.pedidosAtrasados === 1 ? "pedido atrasado" : "pedidos atrasados"}`);
+        if (aReceberHoje > 0) partes.push(`${formatCurrency(aReceberHoje)} em entregas hoje`);
+        return (
+          <div className="ini-dk">
+            <div className="ini-dk-top">
+              <div className="ini-dk-txt">
+                <h1>Seu dia hoje</h1>
+                <p>{loading ? "Carregando…" : partes.length ? partes.join(" · ") : "Nenhuma entrega hoje · aproveite pra divulgar seu cardápio"}</p>
+              </div>
+              <div className="ini-dk-bts">
+                <button type="button" className="ini-dk-bt ini-dk-bt--1" onClick={() => navigate("/vendas/novo")}><Plus size={16} weight="bold" /> Nova venda</button>
+                <button type="button" className="ini-dk-bt ini-dk-bt--2" onClick={() => navigate("/agenda")}><CalendarDots size={16} weight="bold" /> Ver agenda</button>
+              </div>
+            </div>
+            <div className="ini-dk-kpis">
+              <div className="ini-dk-kpi ini-dk-kpi--dest">
+                <div className="ini-dk-kh"><span><CurrencyDollar size={17} weight="duotone" /></span>Faturamento do mês</div>
+                <b>{loading ? "—" : formatCurrency(counts.faturamentoMes)}</b><small>Acompanhe sua evolução</small>
+              </div>
+              <div className="ini-dk-kpi">
+                <div className="ini-dk-kh"><span><Receipt size={17} weight="duotone" /></span>Pedidos na semana</div>
+                <b>{loading ? "—" : resumoSemana.pedidos}</b><small>últimos 7 dias</small>
+              </div>
+              <div className="ini-dk-kpi">
+                <div className="ini-dk-kh"><span><CalendarDots size={17} weight="duotone" /></span>Entregas hoje</div>
+                <b>{loading ? "—" : counts.entregasHoje}</b><small>{proxHora ? `próxima às ${String(proxHora).slice(0, 5)}` : "para entregar"}</small>
+              </div>
+              <div className="ini-dk-kpi">
+                <div className="ini-dk-kh"><span><ChartLineUp size={17} weight="duotone" /></span>Ticket médio</div>
+                <b>{loading ? "—" : formatCurrency(resumoSemana.pedidos ? resumoSemana.vendas / resumoSemana.pedidos : 0)}</b><small>por pedido na semana</small>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       <div className={`ini-content ${checklistDone ? "ini-content--done" : ""}`}>
         {/* ── Coluna principal ── */}
         <div className="ini-main">
@@ -962,6 +1007,7 @@ export default function Inicio() {
             { icon: <Users          size={22} weight="bold" />, iconM: <Users         size={26} weight="fill" />, label: "Clientes",   sub: "Gerencie seus clientes.",                    subM: "Gerencie seus clientes.",                    path: "/clientes",      key: "clientes" },
             { icon: <CurrencyDollar size={22} weight="bold" />, iconM: <ChartBar      size={26} weight="fill" />, label: "Financeiro", sub: "Controle suas entradas, saídas e lucros.",   subM: "Controle suas entradas, saídas e lucros.",   path: "/financeiro",    key: "financeiro" },
             { icon: <Cake           size={22} weight="bold" />, iconM: <Cube          size={26} weight="fill" />, label: "Produtos",   sub: "Cadastre e edite seus produtos e receitas.", subM: "Cadastre e edite seus produtos e receitas.", path: "/produtos",      key: "produtos" },
+            { icon: <Calculator     size={22} weight="bold" />, iconM: <Calculator    size={26} weight="fill" />, label: "Ficha técnica", sub: "Calcule o custo real.",   subM: "Calcule o custo e o lucro de cada produto.", path: "/ficha-tecnica", key: "ficha" },
             { icon: <Gear           size={22} weight="bold" />, iconM: <Gear          size={26} weight="fill" />, label: "Ajustes",    sub: "Personalize o app e suas preferências.",     subM: "Personalize o app e suas preferências.",     path: "/configuracoes", key: "configuracoes" },
           ].map((item) => (
             <button key={item.path} className="ini-nav-card" data-nav={item.key} onClick={() => navigate(item.path)}>
@@ -1121,6 +1167,28 @@ export default function Inicio() {
         {/* ── Sidebar (desktop): DooIA sempre ── */}
         <aside className="ini-aside">
           <div className="ini-aside-desktop"><DooIAPanel /></div>
+          {/* Computador: conquistas, próximas entregas e atualizações (30/09) */}
+          <div className="ini-dk-side">
+            <ConquistasCard />
+            <div className="ini-dk-card">
+              <div className="ini-dk-ct"><span>Próximas entregas</span><button type="button" onClick={() => navigate("/agenda")}>Ver agenda ›</button></div>
+              {proximasEntregas.length === 0 ? (
+                <p className="ini-dk-vazio">Nenhuma entrega marcada. Os próximos pedidos aparecem aqui.</p>
+              ) : proximasEntregas.map(e => {
+                const d = new Date(e.data + "T12:00:00");
+                const mes = d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "").toUpperCase();
+                const quando = d.toLocaleDateString("pt-BR", { weekday: "long" });
+                return (
+                  <button type="button" key={e.id} className="ini-dk-en" onClick={() => navigate(`/pedidos/${e.id}`)}>
+                    <span className="ini-dk-dt"><b>{String(d.getDate()).padStart(2, "0")}</b><small>{mes}</small></span>
+                    <span className="ini-dk-ei"><b>{e.cliente}</b><small>{quando.charAt(0).toUpperCase() + quando.slice(1)}{e.hora ? ` às ${String(e.hora).slice(0, 5)}` : ""}</small></span>
+                    <span className="ini-dk-ev">{formatCurrency(e.valor)}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <MinhasAtualizacoes />
+          </div>
         </aside>
 
         {/* ── Banner promocional (admin configura) ── */}
@@ -2981,6 +3049,70 @@ export default function Inicio() {
             width: 12px; height: 12px;
             color: #5A3A46;
           }
+        }
+
+        /* ══════ Início no computador (≥1100px) — redesenho 30/09 ══════ */
+        .ini-dk, .ini-dk-side { display: none; }
+        @media (min-width: 1100px) {
+          .ini-dk { display: block; margin: 0 0 4px; }
+          .ini-dk-top { background: linear-gradient(120deg, #E85A8C 0%, #C33A6E 60%, #8E2350 100%); color: #fff; border-radius: 20px; padding: 26px 28px 74px; display: flex; align-items: center; justify-content: space-between; gap: 20px; position: relative; overflow: hidden; }
+          .ini-dk-top::after { content: ""; position: absolute; right: -70px; top: -80px; width: 260px; height: 260px; border-radius: 50%; background: rgba(255,255,255,.08); pointer-events: none; }
+          .ini-dk-txt h1 { font-size: 26px; font-weight: 900; margin: 0; color: #fff; }
+          .ini-dk-txt p { font-size: 14.5px; margin: 6px 0 0; color: rgba(255,255,255,.92); }
+          .ini-dk-bts { display: flex; gap: 10px; position: relative; z-index: 1; }
+          .ini-dk-bt { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 18px; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+          .ini-dk-bt--1 { border: none; background: #fff; color: #C33A6E; box-shadow: 0 4px 12px rgba(0,0,0,.12); }
+          .ini-dk-bt--2 { border: 1.5px solid rgba(255,255,255,.7); background: transparent; color: #fff; }
+          .ini-dk-bt:hover { transform: translateY(-1px); }
+          .ini-dk-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: -50px 20px 0; position: relative; z-index: 2; }
+          .ini-dk-kpi { background: #fff; border-radius: 16px; padding: 16px; box-shadow: 0 8px 22px rgba(60,20,35,.08); border: 1px solid #F3ECEF; }
+          .ini-dk-kpi--dest { background: linear-gradient(150deg, #3B1620, #6B2340); border-color: transparent; }
+          .ini-dk-kh { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; color: #6B5D64; }
+          .ini-dk-kh span { width: 30px; height: 30px; border-radius: 9px; background: #FCE7F3; color: #C33A6E; display: flex; align-items: center; justify-content: center; }
+          .ini-dk-kpi--dest .ini-dk-kh { color: rgba(255,255,255,.8); } .ini-dk-kpi--dest .ini-dk-kh span { background: rgba(255,255,255,.15); color: #fff; }
+          .ini-dk-kpi b { display: block; font-size: 26px; font-weight: 900; margin-top: 10px; color: #2C1219; }
+          .ini-dk-kpi--dest b { color: #fff; }
+          .ini-dk-kpi small { font-size: 12px; color: #9A8E94; } .ini-dk-kpi--dest small { color: rgba(255,255,255,.7); }
+          /* o bloco antigo de números sai (agora fica no topo) */
+          .ini-section--metrics { display: none !important; }
+          /* duas colunas: conteúdo + lateral */
+          .ini-content { grid-template-columns: minmax(0, 1fr) 340px !important; grid-template-areas: "main aside" !important; margin-top: 18px !important; }
+          .ini-aside { display: block !important; grid-area: aside; }
+          .ini-aside-desktop { display: none !important; }
+          .ini-dk-side { display: flex; flex-direction: column; gap: 16px; }
+          .ini-dk-side .cqc { margin-top: 0; }
+          .ini-dk-card { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 16px; }
+          .ini-dk-ct { display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 800; color: #2C1219; margin-bottom: 10px; }
+          .ini-dk-ct button { border: none; background: none; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #C33A6E; cursor: pointer; }
+          .ini-dk-vazio { font-size: 13px; color: #9A8E94; margin: 0; line-height: 1.45; }
+          .ini-dk-en { display: flex; align-items: center; gap: 12px; width: 100%; padding: 9px 0; border: none; border-top: 1px solid #F5F0F2; background: none; font-family: inherit; text-align: left; cursor: pointer; }
+          .ini-dk-ct + .ini-dk-en { border-top: none; padding-top: 0; }
+          .ini-dk-dt { width: 44px; height: 44px; border-radius: 10px; background: #FAF7F8; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+          .ini-dk-dt b { font-size: 16px; line-height: 1; color: #2C1219; } .ini-dk-dt small { font-size: 9.5px; font-weight: 800; color: #C33A6E; }
+          .ini-dk-ei { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+          .ini-dk-ei b { font-size: 13.5px; color: #2C1219; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ini-dk-ei small { font-size: 12px; color: #9A8E94; }
+          .ini-dk-ev { font-weight: 800; font-size: 13.5px; color: #15803D; white-space: nowrap; }
+          .ini-dk-side .mu-root { margin: 0; }
+          /* acesso rápido no estilo do celular: cartão branco, ícone rosa, nome + descrição, 4 por linha */
+          .ini-section--nav { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 18px; }
+          .ini-nav-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 10px !important; }
+          .ini-root .ini-section--nav .ini-nav-card { display: flex !important; flex-direction: row !important; align-items: center !important; gap: 10px !important; background: #fff !important; border: 1px solid #F0EBED !important; border-radius: 12px !important; padding: 12px !important; min-height: 0 !important; box-shadow: none !important; opacity: 1 !important; text-align: left !important; }
+          .ini-root .ini-section--nav .ini-nav-card:hover { border-color: #F3D6E2 !important; background: #FFFAFC !important; }
+          .ini-root .ini-section--nav .ini-nav-icon { width: 38px !important; position: static !important; height: 38px !important; border-radius: 10px !important; background: #FCE7F3 !important; color: #C33A6E !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0 !important; margin: 0 !important; }
+          .ini-root .ini-section--nav .ini-nav-meta { display: flex !important; padding: 0 !important; margin: 0 !important; justify-content: center !important; align-self: center !important; gap: 1px; flex-direction: column !important; min-width: 0; flex: 1; }
+          .ini-root .ini-section--nav .ini-nav-label { font-size: 13.5px !important; margin: 0 !important; padding: 0 !important; font-weight: 700 !important; color: #2C1219 !important; }
+          .ini-root .ini-section--nav .ini-nav-sub { display: block !important; font-size: 11.5px !important; color: #9A8E94 !important; line-height: 1.3 !important; }
+          .ini-root .ini-section--nav .ini-nav-arrow { display: block !important; position: static !important; color: #C4B8BE !important; margin-left: auto; flex-shrink: 0; }
+          /* textos numa linha (o cartão não cresce); seta só em telas bem largas */
+          .ini-root .ini-section--nav .ini-nav-label, .ini-root .ini-section--nav .ini-nav-sub { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+          .ini-root .ini-section--nav .ini-nav-card { min-height: 64px !important; height: auto !important; }
+          .ini-root .ini-section--nav .ini-nav-icon svg { width: 20px !important; height: 20px !important; }
+        }
+        @media (min-width: 1100px) and (max-width: 1499px) {
+          .ini-root .ini-section--nav .ini-nav-arrow { display: none !important; }
+          /* nessa largura a descrição não cabe: fica só o nome, sem cortar */
+          .ini-root .ini-section--nav .ini-nav-sub { display: none !important; }
+          .ini-root .ini-section--nav .ini-nav-label { white-space: normal !important; line-height: 1.2 !important; }
         }
       `}</style>
 
