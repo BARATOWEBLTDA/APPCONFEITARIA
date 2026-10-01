@@ -693,10 +693,10 @@ export default function FichaTecnica() {
 
           {/* Ações: adicionar existente / cadastrar novo */}
           <div className={`ft-add-actions${ficha.length === 0 ? " ft-add-actions--vazio" : ""}`}>
-            <button type="button" className="ft-add-existente" onClick={abrirPicker}>
+            {insumosCadastrados.length > 0 && <button type="button" className="ft-add-existente" onClick={abrirPicker}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
               Adicionar insumo
-            </button>
+            </button>}
             <button type="button" className="ft-add-novo" onClick={() => { setQuickAddName(""); setShowQuickAdd(true); }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
               Cadastrar novo insumo
@@ -806,7 +806,7 @@ export default function FichaTecnica() {
             <div className="ft-field" style={{ flex: 1 }}>
               <label>Percentual sobre o CMV</label>
               <div className="ft-input-suffix">
-                <input type="number" min="0" max="100" step="1" placeholder="25" value={extras.cv_percentual} onChange={e => setExtras(s => ({ ...s, cv_percentual: e.target.value }))} />
+                <input type="number" min="0" max="100" step="1" placeholder="Ex: 25" value={extras.cv_percentual} onChange={e => setExtras(s => ({ ...s, cv_percentual: e.target.value }))} />
                 <span>%</span>
               </div>
             </div>
@@ -814,7 +814,7 @@ export default function FichaTecnica() {
               <span className="ft-cv-result-label">= R$ {fmt(cvLive)}</span>
             </div>
           </div>
-          <p className="ft-cv-hint">Ideal: 25% — cobre gastos indiretos de produção</p>
+          <p className="ft-cv-hint">A maioria das confeiteiras usa entre 20% e 30% (o ideal é 25%) — cobre os gastos indiretos de produção.</p>
         </div>
 
         {/* Mão de obra */}
@@ -1237,11 +1237,10 @@ export default function FichaTecnica() {
 }
 
 const listStyles = `
-  /* Cabeçalho do app só no computador */
-  .ft-so-desk { display: none; }
+  /* Cabeçalho do app no celular e no computador (30/09) */
+  .ft-so-desk { display: block; }
+  .ft-back, .ft-list-header { display: none !important; }
   @media (min-width: 901px) {
-    .ft-so-desk { display: block; }
-    .ft-back, .ft-list-header { display: none !important; }
   }
 
   @media (min-width: 1100px) {
@@ -1323,11 +1322,10 @@ const listStyles = `
 `;
 
 const detailStyles = `
-  /* Cabeçalho do app só no computador */
-  .ft-so-desk { display: none; }
+  /* Cabeçalho do app no celular e no computador (30/09) */
+  .ft-so-desk { display: block; }
+  .ft-back, .ft-list-header { display: none !important; }
   @media (min-width: 901px) {
-    .ft-so-desk { display: block; }
-    .ft-back, .ft-list-header { display: none !important; }
   }
 
   .ft-root {

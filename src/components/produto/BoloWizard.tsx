@@ -406,9 +406,6 @@ export function BoloPrecoStep({ form, setForm, escolha, primeiroNome, edicao }: 
   const exBase = precoBase > 0 ? precoBase : 80;
   const suf = VENDA.find(x => x.v === form.forma_venda)?.suf || "unidade";
   const nomeados = tams.filter(x => x.nome.trim());
-  // Promoção em %: mostra quanto cada preço fica
-  const pctOn = !!form.promocao && form.tipo_promocao === "percentual" && (form.desconto_percentual || 0) > 0;
-  const comDesc = (v: number) => Math.round(v * (1 - (form.desconto_percentual || 0) / 100) * 100) / 100;
   const emFatias = (form.grupo_tamanhos || {}).rendimento_unidade === "fatias";
   const rotulo = (x: Tam) => (
     <span className="bw-pr-lb"><b>{x.nome}</b>{x.peso_kg && kgTxt(x.peso_kg) !== x.nome ? <small> · {kgTxt(x.peso_kg)}</small> : null}
@@ -437,9 +434,7 @@ export function BoloPrecoStep({ form, setForm, escolha, primeiroNome, edicao }: 
             <MoneyInput value={form.preco_normal || 0} onChange={v => setForm((f: any) => ({ ...f, preco_normal: v }))} ariaLabel="Preço do bolo" />
             <em>/ {suf}</em>
           </label>
-          {pctOn && (form.preco_normal || 0) > 0
-            ? <p className="bw-pr-por bw-pr-por--unico">De {brl(form.preco_normal)} por <b>{brl(comDesc(form.preco_normal))}</b></p>
-            : <p className="bw-hint">Digite só os números — a vírgula e o ponto aparecem sozinhos.</p>}
+          <p className="bw-hint">Digite só os números — a vírgula e o ponto aparecem sozinhos.</p>
         </div>
       ) : (
         <>
@@ -475,17 +470,12 @@ export function BoloPrecoStep({ form, setForm, escolha, primeiroNome, edicao }: 
                 {rotulo(x)}
                 {porPeso ? (
                   (x.peso_kg || 0) > 0
-                    ? (precoBase > 0 && pctOn
-                        ? <span className="bw-in bw-pr-calc ok bw-pr-calc--promo"><s>{brl(precoBase * (x.peso_kg || 0))}</s>{brl(comDesc(precoBase * (x.peso_kg || 0)))}</span>
-                        : <span className={`bw-in bw-pr-calc${precoBase > 0 ? " ok" : ""}`}>{precoBase > 0 ? brl(precoBase * (x.peso_kg || 0)) : "Informe o preço base"}</span>)
+                    ? <span className={`bw-in bw-pr-calc${precoBase > 0 ? " ok" : ""}`}>{precoBase > 0 ? brl(precoBase * (x.peso_kg || 0)) : "Informe o preço base"}</span>
                     : <span className="bw-in bw-pr-calc">Sem peso — volte e preencha</span>
                 ) : (
-                  <span className="bw-pr-col">
-                    <label className={`bw-in bw-rs bw-pr-in${x.preco > 0 ? " ok" : ""}`}><span className="bw-rs-p">R$</span>
-                      <MoneyInput value={x.preco} onChange={v => setTam(x.id, { preco: v })} ariaLabel={`Preço do tamanho ${x.nome}`} />
-                    </label>
-                    {pctOn && x.preco > 0 && <small className="bw-pr-por">por <b>{brl(comDesc(x.preco))}</b></small>}
-                  </span>
+                  <label className={`bw-in bw-rs bw-pr-in${x.preco > 0 ? " ok" : ""}`}><span className="bw-rs-p">R$</span>
+                    <MoneyInput value={x.preco} onChange={v => setTam(x.id, { preco: v })} ariaLabel={`Preço do tamanho ${x.nome}`} />
+                  </label>
                 )}
               </div>
             ))}
