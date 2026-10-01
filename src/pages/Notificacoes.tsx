@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { carregarNotificacoes, marcarLidas, excluirNotificacao, type Notif } from "@/lib/notificacoesUsuario";
+import { carregarNotificacoes, marcarLidas, type Notif } from "@/lib/notificacoesUsuario";
 import { Bell, Clock } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 
@@ -46,8 +46,6 @@ export default function Notificacoes() {
     if (!n.lida) { setNotificacoes(l => l.map(x => x.id === n.id ? { ...x, lida: true } : x)); marcarLidas([n.id]); }
     if (n.link) navigate(n.link);
   };
-  const lida = (n: Notif) => { setNotificacoes(l => l.map(x => x.id === n.id ? { ...x, lida: true } : x)); marcarLidas([n.id]); };
-  const excluir = (n: Notif) => { setNotificacoes(l => l.filter(x => x.id !== n.id)); excluirNotificacao(n.id); };
   const todas = () => { const ids = naoLidas.map(n => n.id); setNotificacoes(l => l.map(x => ({ ...x, lida: true }))); marcarLidas(ids); };
 
   return (
@@ -79,21 +77,9 @@ export default function Notificacoes() {
                   {n.imagem_url ? <img src={n.imagem_url} alt="" /> : (n.tipo && ICONE[n.tipo]) ? <span className="ntf-emo">{ICONE[n.tipo!]}</span> : <Bell size={22} weight="fill" />}
                 </div>
                 <div className="ntf-content">
-                  <div className="ntf-row">
-                    <p className="ntf-t">{n.titulo}</p>
-                    {!n.lida && <span className="ntf-badge">Novo</span>}
-                  </div>
+                  <p className="ntf-t">{!n.lida && <span className="ntf-dot" aria-label="Não lida" />}{n.titulo}</p>
                   {n.mensagem && <p className="ntf-msg">{n.mensagem}</p>}
-                  <div className="ntf-meta">
-                    {n.tag && <span className="ntf-tag">{n.tag}</span>}
-                    <span className="ntf-time"><Clock size={11} weight="regular" /> {tempoRelativo(n.created_at)}</span>
-                    <span className="ntf-acoes" onClick={e => e.stopPropagation()}>
-                      {!n.lida && <button type="button" className="ntf-ac" onClick={() => lida(n)}>Marcar como lida</button>}
-                      <button type="button" className="ntf-ac ntf-ac--x" onClick={() => excluir(n)} aria-label="Excluir notificação">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /></svg>
-                      </button>
-                    </span>
-                  </div>
+                  <span className="ntf-time"><Clock size={11} weight="regular" /> {tempoRelativo(n.created_at)}</span>
                 </div>
               </div>
             ))}
@@ -109,6 +95,12 @@ export default function Notificacoes() {
         .ntf-acoes { margin-left: auto; display: flex; align-items: center; gap: 4px; }
         .ntf-ac { border: none; background: none; font-family: inherit; font-size: 11.5px; font-weight: 700; color: #C33A6E; cursor: pointer; padding: 4px 6px; border-radius: 6px; }
         .ntf-ac--x { color: #B5AAB0; display: flex; align-items: center; } .ntf-ac--x:hover { color: #DC2626; background: #FEF2F2; }
+        .ntf-content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+        .ntf-t { display: flex !important; align-items: center; gap: 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px !important; margin: 0 !important; }
+        .ntf-t { display: block !important; }
+        .ntf-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #E85A8C; margin-right: 7px; vertical-align: 1px; }
+        .ntf-msg { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin: 0 !important; font-size: 13px !important; }
+        .ntf-time { margin-top: 2px; }
         .ntf-root { font-family: 'Geist', sans-serif; padding: 16px 16px 100px; max-width: 800px; margin: 0 auto; }
         .ntf-list { display: flex; flex-direction: column; gap: 10px; }
         .ntf-item {
