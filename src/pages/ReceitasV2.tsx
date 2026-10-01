@@ -235,7 +235,7 @@ export default function ReceitasV2() {
           <p className="rv-by">Receita Doonly</p>
           {infos.length > 0 && (
             <div className="rv-infos" style={{ gridTemplateColumns: `repeat(${colunas}, 1fr)` }}>
-              {infos.map((i, k) => <div key={k}><small>{i.rotulo}</small><b>{i.valor}</b></div>)}
+              {(infos || []).map((i, k) => <div key={k}><small>{i.rotulo}</small><b>{i.valor}</b></div>)}
             </div>
           )}
           <div className="rv-acoes">
@@ -250,7 +250,7 @@ export default function ReceitasV2() {
           {ing.map((g, k) => (
             <div key={k}>
               {g.etapa && <p className="rv-etapa">{g.etapa}</p>}
-              <ul className="rv-ing">{g.itens.map((i, j) => <li key={j}><Rico t={i} /></li>)}</ul>
+              <ul className="rv-ing">{(g.itens || []).map((i, j) => <li key={j}><Rico t={i} /></li>)}</ul>
             </div>
           ))}
 
@@ -260,7 +260,7 @@ export default function ReceitasV2() {
             return (
               <div key={k}>
                 {g.etapa && <p className="rv-etapa">{g.etapa}</p>}
-                {g.itens.map((i, j) => { n += 1; return (
+                {(g.itens || []).map((i, j) => { n += 1; return (
                   <div className="rv-passo" key={j}><span className="rv-num">{n}</span><p><Rico t={i} /></p></div>
                 ); })}
               </div>
