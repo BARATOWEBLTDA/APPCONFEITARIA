@@ -16,7 +16,8 @@ interface Update {
   prioridade: number; // maior = mais no topo
 }
 
-const STATUS_ATIVOS = ["aguardando", "confirmado", "em_preparo", "pronto"];
+// Status atuais (+ antigos). Antes eram nomes que o app não usa mais, e nada aparecia (30/09)
+const STATUS_ATIVOS = ["aguardando_pagamento", "aguardando_aceite", "novo", "pendente", "agendado", "confirmado", "em_producao", "em_preparo", "finalizado", "pronto", "aguardando_retirada", "aguardando_entrega", "em_entrega", "a_caminho"];
 const STATUS_ENTREGUE = ["entregue", "concluido"];
 const MAX_VISIVEIS = 4;
 
@@ -42,8 +43,8 @@ function calcularAniversariantesSemana(clientes: any[]): { total: number; primei
   let menorDias = Infinity;
 
   clientes.forEach((c) => {
-    if (!c.data_nasc) return;
-    const [, mes, dia] = String(c.data_nasc).slice(0, 10).split("-").map(Number);
+    if (!c.data_nascimento) return;
+    const [, mes, dia] = String(c.data_nascimento).slice(0, 10).split("-").map(Number);
     if (!mes || !dia) return;
     const aniv = new Date(hoje.getFullYear(), mes - 1, dia);
     if (aniv < hoje) aniv.setFullYear(aniv.getFullYear() + 1);
@@ -104,12 +105,12 @@ export default function MinhasAtualizacoes() {
           .gte("data_entrega", semana.inicio)
           .lte("data_entrega", semana.fim)
           .in("status", STATUS_ATIVOS),
-        // 3. Clientes com data_nasc pra aniversariantes
+        // 3. Clientes com data_nascimento pra aniversariantes
         supabase
           .from("clientes")
-          .select("nome, data_nasc")
+          .select("nome, data_nascimento")
           .eq("user_id", userId)
-          .not("data_nasc", "is", null),
+          .not("data_nascimento", "is", null),
         // 4. Produtos sem foto
         supabase
           .from("produtos")
@@ -121,15 +122,15 @@ export default function MinhasAtualizacoes() {
           .from("pedidos")
           .select("valor_total")
           .eq("user_id", userId)
-          .gte("data_pedido", inicioMes)
+          .gte("created_at", inicioMes)
           .in("status", STATUS_ENTREGUE),
         // 6. Faturamento mês anterior
         supabase
           .from("pedidos")
           .select("valor_total")
           .eq("user_id", userId)
-          .gte("data_pedido", inicioMesAnt)
-          .lte("data_pedido", fimMesAnt)
+          .gte("created_at", inicioMesAnt)
+          .lte("created_at", fimMesAnt)
           .in("status", STATUS_ENTREGUE),
         // 7. Total de pedidos (marco)
         supabase
@@ -142,7 +143,7 @@ export default function MinhasAtualizacoes() {
           .from("pedidos")
           .select("cliente_id")
           .eq("user_id", userId)
-          .gte("data_pedido", dataLimite60d.toISOString().slice(0, 10))
+          .gte("created_at", dataLimite60d.toISOString().slice(0, 10))
           .not("cliente_id", "is", null),
       ]);
 

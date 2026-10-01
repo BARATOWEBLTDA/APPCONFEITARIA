@@ -41,8 +41,10 @@ interface AlertaCard {
 
 interface ChartPoint { dia: string; valor: number; }
 
-const STATUS_PENDENTES = ["pendente", "novo"];
-const STATUS_ATIVOS = ["pendente", "novo", "confirmado", "em_producao", "pronto", "aguardando_retirada", "aguardando_entrega"];
+// Status atuais do app (+ os antigos, pra pedidos velhos). Antes faltavam "agendado", "aguardando_aceite",
+// "finalizado"… e os pedidos sumiam de "Entregas hoje", "Próximas entregas" e "Atrasados" (30/09)
+const STATUS_PENDENTES = ["aguardando_aceite", "aguardando_pagamento", "novo", "pendente"];
+const STATUS_ATIVOS = ["aguardando_pagamento", "aguardando_aceite", "novo", "pendente", "agendado", "confirmado", "em_producao", "em_preparo", "finalizado", "pronto", "aguardando_retirada", "aguardando_entrega", "em_entrega", "a_caminho"];
 
 /**
  * Página Início — Central de comando do dia (Entrega 3 da Proposta D).
@@ -499,12 +501,12 @@ export default function Inicio() {
         // Próxima entrega HOJE com horário (pra "próxima em Xh")
         supabase
           .from("pedidos")
-          .select("cliente_nome, hora_entrega, data_entrega")
+          .select("cliente_nome, horario_entrega, data_entrega")
           .eq("user_id", userId)
           .eq("data_entrega", hojeISO)
           .in("status", STATUS_ATIVOS)
-          .not("hora_entrega", "is", null)
-          .order("hora_entrega", { ascending: true })
+          .not("horario_entrega", "is", null)
+          .order("horario_entrega", { ascending: true })
           .limit(1),
       ]);
 
@@ -535,7 +537,7 @@ export default function Inicio() {
       const proxHoje = proximaEntregaHojeRes.data?.[0];
       setProximaEntregaHoje(proxHoje ? {
         cliente: proxHoje.cliente_nome || "Cliente",
-        hora: proxHoje.hora_entrega,
+        hora: proxHoje.horario_entrega,
         produto: null,
       } : null);
       setAniversariantesDetalhe(proxAniv);
