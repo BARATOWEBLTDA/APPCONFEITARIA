@@ -200,8 +200,24 @@ export default function Configuracoes() {
     setTimeout(() => { setSenhaMsg(""); setShowAlterarSenha(false); }, 3000);
   };
 
+  // Antes: só fazia logout (a conta e os dados ficavam). Agora registra o pedido de exclusão pra equipe
+  // processar (apagar a conta exige permissão de servidor) e avisa com clareza o que vai acontecer.
   const handleExcluirConta = async () => {
     if (excluirConfirm !== "EXCLUIR") return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error } = await supabase.from("sugestoes").insert({
+        user_id: user?.id || null, email: user?.email || userEmail || null, nome: form.nome || null,
+        tipo: "exclusao_conta", titulo: "Pedido de exclusão de conta",
+        descricao: `Excluir a conta e todos os dados de ${user?.email || userEmail || "(sem e-mail)"}.`,
+        status: "recebida", tela_origem: "/configuracoes",
+      });
+      if (error) throw error;
+      alert("Recebemos seu pedido. Sua conta e todos os seus dados serão excluídos em até 7 dias. Se mudar de ideia, é só entrar em contato com a equipe Doonly.");
+    } catch {
+      alert("Não foi possível registrar o pedido agora. Tente de novo ou fale com a equipe Doonly.");
+      return;
+    }
     await supabase.auth.signOut();
     navigate("/login");
   };
@@ -469,11 +485,11 @@ export default function Configuracoes() {
             </button>
           ) : (
             <div className="cfgp-delete-panel">
-              <p className="cfgp-delete-warn">⚠️ Esta ação é permanente. Digite <b>EXCLUIR</b> para confirmar.</p>
+              <p className="cfgp-delete-warn">⚠️ Sua conta, seu cardápio e todos os seus dados (produtos, pedidos, clientes) serão excluídos em até 7 dias, sem volta. Digite <b>EXCLUIR</b> para confirmar.</p>
               <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--error)" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>} placeholder="Digite EXCLUIR" value={excluirConfirm} onChange={(e: any) => setExcluirConfirm(e.target.value)} />
               <div className="cfgp-delete-actions">
                 <button className="cfgp-delete-cancel" onClick={() => { setShowExcluir(false); setExcluirConfirm(""); }}>Cancelar</button>
-                <button className="cfgp-delete-confirm" onClick={handleExcluirConta} disabled={excluirConfirm !== "EXCLUIR"}>Excluir permanentemente</button>
+                <button className="cfgp-delete-confirm" onClick={handleExcluirConta} disabled={excluirConfirm !== "EXCLUIR"}>Pedir exclusão da conta</button>
               </div>
             </div>
           )}
@@ -572,11 +588,11 @@ export default function Configuracoes() {
             </button>
           ) : (
             <div className="cfgd-delete-panel">
-              <p className="cfgd-delete-warn">⚠️ Esta ação é permanente. Digite <b>EXCLUIR</b> para confirmar.</p>
+              <p className="cfgd-delete-warn">⚠️ Sua conta, seu cardápio e todos os seus dados (produtos, pedidos, clientes) serão excluídos em até 7 dias, sem volta. Digite <b>EXCLUIR</b> para confirmar.</p>
               <input type="text" placeholder="Digite EXCLUIR" value={excluirConfirm} onChange={e => setExcluirConfirm(e.target.value)} className="cfgd-delete-input" />
               <div className="cfgd-delete-actions">
                 <button className="cfgd-delete-cancel" onClick={() => { setShowExcluir(false); setExcluirConfirm(""); }}>Cancelar</button>
-                <button className="cfgd-delete-confirm" onClick={handleExcluirConta} disabled={excluirConfirm !== "EXCLUIR"}>Excluir permanentemente</button>
+                <button className="cfgd-delete-confirm" onClick={handleExcluirConta} disabled={excluirConfirm !== "EXCLUIR"}>Pedir exclusão da conta</button>
               </div>
             </div>
           )}
@@ -1203,7 +1219,7 @@ export default function Configuracoes() {
         .cfgd-logout:hover { background: #FEE2E2; border-color: #FCA5A5; color: #DC2626; }
 
         /* Excluir conta */
-        .cfgd-delete-link { display: none; text-align: center; padding: 8px; }
+        .cfgd-delete-link { display: block; text-align: center; padding: 8px; } /* antes ficava escondido no computador */
         .cfgd-delete-link-btn {
           all: unset;
           cursor: pointer;

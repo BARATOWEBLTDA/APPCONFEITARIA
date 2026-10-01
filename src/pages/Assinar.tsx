@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePlano } from "@/hooks/usePlano";
+import { useProfile } from "@/hooks/useProfile";
 
 const beneficios = [
   "Clientes ilimitados",
@@ -25,6 +26,14 @@ export default function Assinar() {
   const { isPro, proExpiraEm } = usePlano();
   const [planoSel, setPlanoSel] = useState<"mensal" | "anual">("mensal");
 
+  const { profile } = useProfile();
+  const assinarPeloWhatsApp = () => {
+    const plano = planoSel === "anual" ? "Anual (R$ 197,00/ano)" : "Mensal (R$ 19,90/mês)";
+    const quem = [profile?.nome, (profile as any)?.nome_loja].filter(Boolean).join(" · ");
+    const email = (profile as any)?.email || "";
+    const msg = `Olá! Quero assinar o Doonly PRO.\nPlano: ${plano}${quem ? `\nNome: ${quem}` : ""}${email ? `\nE-mail da conta: ${email}` : ""}`;
+    window.open(`https://wa.me/5541998843669?text=${encodeURIComponent(msg)}`, "_blank");
+  };
   const diasRestantes = proExpiraEm
     ? Math.max(0, Math.ceil((proExpiraEm.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
     : 0;
@@ -83,7 +92,8 @@ export default function Assinar() {
             </div>
           ))}
         </div>
-        <button className="ass-btn-assinar" onClick={() => alert("Em breve! Entre em contato: 41 9 9884-3669")}>
+        {/* Sem pagamento no app ainda: abre o WhatsApp da equipe com a mensagem pronta (antes era só um aviso "Em breve") */}
+        <button className="ass-btn-assinar" onClick={assinarPeloWhatsApp}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           Assinar Agora
         </button>
