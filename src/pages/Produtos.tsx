@@ -4638,6 +4638,20 @@ export default function Produtos() {
                 </button>
               ) : <div style={{width: 36}} />}
               <div className="prod-modal-title-wrap">
+                {!form.id && (() => {
+                  // Um tracinho por tela do cadastro (a tela de tipos é a 1ª)
+                  const comKit = kitAtivo((form as any).kit_qtd);
+                  const total = isBolo || comKit ? 6 : 5;
+                  let atual = 2;
+                  if (wizardStep === 3) atual = comKit && kitTela ? 4 : 3;
+                  if (wizardStep === 4) atual = isBolo ? (boloPrecoTela ? 5 : 4) : (comKit ? 5 : 4);
+                  if (wizardStep === 5) atual = total;
+                  return (
+                    <div className="prod-wiz-dots" aria-label={`Etapa ${atual} de ${total}`}>
+                      {Array.from({ length: total }, (_, i) => <i key={i} className={i < atual ? "on" : ""} />)}
+                    </div>
+                  );
+                })()}
                 <div className="prod-modal-title-novo">
                   {form.id ? "Editar produto" : (() => {
                     if (wizardStep === 2) return "Informações do produto";
@@ -9327,6 +9341,9 @@ export default function Produtos() {
         }
 
         /* ═══ Header limpo com eyebrow ═══ */
+        .prod-wiz-dots { display: flex; gap: 6px; justify-content: center; margin-bottom: 6px; }
+        .prod-wiz-dots i { width: 24px; height: 4px; border-radius: 2px; background: #EDE5E8; }
+        .prod-wiz-dots i.on { background: #E85A8C; }
         .prod-modal-header-novo {
           display: flex;
           align-items: center;
@@ -9570,7 +9587,7 @@ export default function Produtos() {
           /* Descrição: altura suficiente pro exemplo do placeholder aparecer inteiro */
           .prod-modal--novo #prod-desc-input { min-height: 176px !important; }
           .prod-modal--novo .prod-modal-footer--novo {
-            background: #2C1219 !important;
+            background: var(--text-title) !important; /* mesma cor do menu de navegação do celular */
             border-top: none !important;
             padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)) !important;
           }

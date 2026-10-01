@@ -78,7 +78,6 @@ export function BoloOpcoesStep({ form, setForm, edicao }: { form: any; setForm: 
   return (
     <div className="bw">
       <div className="bw-topo">
-        {!edicao && <p className="bw-eta">Etapa 2 de 5</p>}
         <h2 className="bw-h">O cliente escolhe alguma opção?</h2>
         <p className="bw-produto">{nome}</p>
         <p className="bw-sub">Marque só o que o cliente escolhe. Se não tiver nada, é só avançar.</p>
@@ -238,6 +237,7 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, edicao }:
   const [gAte, setGAte] = useState("3");
   const [gPasso, setGPasso] = useState(0.5);
   const [mostrarRend, setMostrarRend] = useState(() => tams.some(x => x.serve));
+  const [editando, setEditando] = useState(false); // "Editar lista": mostra as lixeiras
   const linhaVazia = (): Tam => ({ id: uid(), nome: "", preco: 0, peso_kg: null, serve: "" });
 
   // Ao sair da etapa, tira as linhas que ficaram sem nome
@@ -278,7 +278,6 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, edicao }:
   return (
     <div className="bw">
       <div className="bw-topo">
-        {!edicao && <p className="bw-eta">Etapa 3 de 5</p>}
         <h2 className="bw-h">Esse bolo tem mais de um tamanho ou peso?</h2>
       </div>
       <div className="bw-sn" role="radiogroup">
@@ -293,23 +292,31 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, edicao }:
 
       {escolha === "sim" && (
         <div className="bw-box">
-          <div className="bw-bh">
-            <p className="bw-bt">Tamanhos</p>
+          <h3 className="bw-tt">Tamanhos</h3>
+          <p className="bw-tt-sub">Digite cada tamanho abaixo, ou use o Gerar automático pra começar mais rápido.</p>
+          <div className="bw-lt-bar">
             <button type="button" className="bw-gerar-btn" onClick={() => { setGModo(porPeso ? "peso" : "pmg"); setGerarAberto(true); }}>Gerar automático</button>
+            {tams.length > 0 && (
+              <button type="button" className={`bw-lt-edit${editando ? " on" : ""}`} onClick={() => setEditando(v => !v)}>{editando ? "Pronto" : "Editar lista"}</button>
+            )}
           </div>
-          <p className="bw-hint bw-hint--sob">Digite cada tamanho abaixo, ou use o Gerar automático pra começar mais rápido.</p>
-          <div className="bw-t2">
-            <div className="bw-t2-row bw-t2-row--h" aria-hidden="true"><span>Nome do tamanho</span><span>Peso</span><span /></div>
+
+          <div className={`bw-lt${editando ? " bw-lt--ed" : ""}`}>
+            <div className="bw-lt-h">
+              <span>Nome do tamanho</span><span>Peso</span>
+            </div>
             {tams.map(x => (
-              <div className="bw-t2-row" key={x.id}>
-                <input className="bw-in bw-t2-nome" value={x.nome} placeholder="Ex: GG" onChange={e => setTam(x.id, { nome: e.target.value })} aria-label="Nome do tamanho" />
-                <label className="bw-in bw-suf"><input inputMode="decimal" defaultValue={x.peso_kg ? String(x.peso_kg).replace(".", ",") : ""} placeholder="Ex: 2,5"
+              <div className="bw-lt-row" key={x.id}>
+                <input className="bw-lt-nome" value={x.nome} placeholder="Ex: P" onChange={e => setTam(x.id, { nome: e.target.value })} aria-label="Nome do tamanho" />
+                <label className="bw-lt-peso"><input inputMode="decimal" defaultValue={x.peso_kg ? String(x.peso_kg).replace(".", ",") : ""} placeholder="Ex: 1"
                   onChange={e => setTam(x.id, { peso_kg: numKg(e.target.value) || null })} aria-label="Peso em kg" /><em>kg</em></label>
-                <button type="button" className="bo-rm" onClick={() => setGt({ opcoes: tams.filter(y => y.id !== x.id) })} aria-label="Remover tamanho">{LIX}</button>
+                {editando && (
+                  <button type="button" className="bw-lt-rm" onClick={() => setGt({ opcoes: tams.filter(y => y.id !== x.id) })} aria-label={`Remover ${x.nome || "tamanho"}`}>{LIX}</button>
+                )}
               </div>
             ))}
+            <button type="button" className="bw-lt-add" onClick={() => { setGt({ opcoes: [...tams, linhaVazia()] }); setEditando(false); }}>+ Adicionar tamanho</button>
           </div>
-          <button type="button" className="bw-link" onClick={() => setGt({ opcoes: [...tams, linhaVazia()] })}>+ Adicionar tamanho</button>
 
           <button type="button" className={`bw-check2${mostrarRend ? " on" : ""}`} onClick={() => setMostrarRend(v => !v)} aria-pressed={mostrarRend}>
             <i aria-hidden="true">{mostrarRend ? "✓" : ""}</i>
@@ -386,7 +393,6 @@ export function BoloPrecoStep({ form, setForm, escolha, primeiroNome, edicao }: 
   return (
     <div className="bw">
       <div className="bw-topo">
-        {!edicao && <p className="bw-eta">Etapa 4 de 5</p>}
         <h2 className="bw-h">{escolha === "sim" ? "Qual o preço de cada tamanho?" : "Qual o preço do bolo?"}</h2>
         {nome && !edicao && <p className="bw-produto">{nome}</p>}
       </div>
@@ -772,4 +778,31 @@ const CSS = `
     .bw-kg { padding: 10px 12px; }
   }
   .bw-kg-t { white-space: nowrap; flex-shrink: 0; }
+
+  /* Patch: lista de tamanhos com divisórias + "Editar lista" */
+  .bw-tt { font-size: 17px; font-weight: 800; color: #2C1219; margin: 0; }
+  .bw-tt-sub { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 4px 0 12px; }
+  .bw-gerar-btn { display: inline-block; padding: 9px 14px; font-size: 13px; }
+  .bw-lt { margin-top: 12px; border: 1px solid #EDE5E8; border-radius: 10px; overflow: hidden; background: #fff; }
+  .bw-lt-h, .bw-lt-row { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: stretch; }
+  .bw-lt--ed .bw-lt-row { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) 44px; }
+  .bw-lt-h { position: relative; background: #FAF7F8; border-bottom: 1px solid #EDE5E8; }
+  .bw-lt-h span { font-size: 11px; font-weight: 700; color: #9A8E94; text-transform: uppercase; letter-spacing: .05em; padding: 10px 14px; white-space: nowrap; }
+  .bw-lt-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .bw-lt-edit { border: 1px solid #EAE3E6; background: #fff; border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 700; color: #4B3A42; cursor: pointer; padding: 9px 14px; white-space: nowrap; }
+  .bw-lt-edit.on { background: #2C1219; border-color: #2C1219; color: #fff; }
+  .bw-lt--ed .bw-lt-h { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) 44px; }
+  .bw-lt-row { border-top: 1px solid #F3ECEE; min-height: 52px; }
+  .bw-lt-h + .bw-lt-row { border-top: none; }
+  .bw-lt-nome { border: none; outline: none; background: none; padding: 0 14px; font-family: inherit; font-size: 15px; font-weight: 700; color: #2C1219; min-width: 0; }
+  .bw-lt-peso { display: flex; align-items: center; gap: 4px; border-left: 1px solid #F3ECEE; padding: 0 14px; min-width: 0; cursor: text; }
+  .bw-lt-peso input { flex: 1; min-width: 0; border: none; outline: none; background: none; font-family: inherit; font-size: 15px; font-weight: 700; color: #2C1219; padding: 0; }
+  .bw-lt-peso em { font-style: normal; font-size: 12.5px; color: #9A8E94; font-weight: 600; }
+  .bw-lt-nome::placeholder, .bw-lt-peso input::placeholder { color: #B5AAB0; font-weight: 500; }
+  .bw-lt-nome:focus, .bw-lt-peso:focus-within { background: #FFFAFC; }
+  .bw-lt-rm { border: none; border-left: 1px solid #F3ECEE; background: none; color: #DC2626; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .bw-lt-rm:hover { background: #FEF2F2; }
+  .bw-lt-add { display: block; width: 100%; text-align: left; border: none; border-top: 1px solid #F3ECEE; background: #FCFAFB; padding: 15px 14px; font-family: inherit; font-size: 14px; font-weight: 800; color: #C33A6E; cursor: pointer; }
+  .bw-lt-h + .bw-lt-add { border-top: none; }
+  .bw-check2 { margin-top: 20px; }
 `;
