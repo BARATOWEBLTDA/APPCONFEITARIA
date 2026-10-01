@@ -3055,7 +3055,8 @@ export default function Inicio() {
         .ini-dk, .ini-dk-side { display: none; }
         @media (min-width: 1100px) {
           .ini-dk { display: block; margin: 0 0 4px; }
-          .ini-dk-top { background: linear-gradient(120deg, #E85A8C 0%, #C33A6E 60%, #8E2350 100%); color: #fff; border-radius: 20px; padding: 26px 28px 74px; display: flex; align-items: center; justify-content: space-between; gap: 20px; position: relative; overflow: hidden; }
+          /* rosa encostado no topo e nas laterais da área do app (sem mexer nos cartões) */
+          .ini-dk-top { background: linear-gradient(120deg, #E85A8C 0%, #C33A6E 60%, #8E2350 100%); color: #fff; border-radius: 0; margin: -72px -112px 0 -68px; padding: 48px 140px 74px 96px; display: flex; align-items: center; justify-content: space-between; gap: 20px; position: relative; overflow: hidden; }
           .ini-dk-top::after { content: ""; position: absolute; right: -70px; top: -80px; width: 260px; height: 260px; border-radius: 50%; background: rgba(255,255,255,.08); pointer-events: none; }
           .ini-dk-txt h1 { font-size: 26px; font-weight: 900; margin: 0; color: #fff; }
           .ini-dk-txt p { font-size: 14.5px; margin: 6px 0 0; color: rgba(255,255,255,.92); }
