@@ -282,7 +282,8 @@ export default function FichaTecnica() {
     const pid = (location.state as any)?.produtoId;
     if (!loading && pid && !selected) {
       const p = produtos.find(x => x.id === pid);
-      if (p) abrirFicha(p);
+      // Veio de outra tela (ex.: sucesso do cadastro): abre no topo, com o cabeçalho visível
+      if (p) { abrirFicha(p); window.scrollTo(0, 0); }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, produtos, location.state]);

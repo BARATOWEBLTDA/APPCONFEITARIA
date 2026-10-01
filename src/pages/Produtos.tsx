@@ -4639,13 +4639,13 @@ export default function Produtos() {
       )}
 
       {modal && (
-        <div className="prod-modal-overlay" onClick={sucesso ? fecharModal : handleTryClose}>
+        <div className={`prod-modal-overlay${sucesso ? " prod-modal-overlay--sucesso" : ""}`} onClick={sucesso ? fecharModal : handleTryClose}>
           <div className="prod-modal prod-modal--novo" onClick={e => e.stopPropagation()}>
             {sucesso ? (
               <SucessoProdutoTela {...sucesso}
                 onFechar={fecharModal}
                 onOutro={() => { setSucesso(null); openNovo(); }}
-                onCusto={() => { const id = sucesso.id; fecharModal(); navigate("/ficha-tecnica", { state: { produtoId: id } }); }}
+                onCusto={() => { const id = sucesso.id; fecharModal(); navigate("/ficha-tecnica", { state: { produtoId: id } }); setTimeout(() => window.scrollTo(0, 0), 0); }}
                 onVerCardapio={verNoCardapio} />
             ) : tipoTela && !form.id ? (
               <TipoProdutoTela onEscolher={aplicarTipoProduto} onFechar={handleTryClose} />
@@ -7785,6 +7785,11 @@ export default function Produtos() {
         }
 
         /* ── Modal de Produto ── */
+        /* Tela de sucesso no celular: o menu de navegação continua visível embaixo */
+        @media (max-width: 767px) {
+          .prod-modal-overlay--sucesso { bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important; }
+          .prod-modal-overlay--sucesso .prod-modal--novo { height: 100% !important; max-height: 100% !important; border-radius: 0 !important; }
+        }
         .prod-modal-overlay {
           position: fixed; inset: 0; z-index: 500;
           background: rgba(45, 31, 38, 0.55);
