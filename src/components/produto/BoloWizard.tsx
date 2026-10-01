@@ -191,11 +191,20 @@ export type BoloTam = "sim" | "nao" | null;
 export function boloTamanhosOk(form: any, escolha: BoloTam): boolean {
   if (!escolha) return false;
   if (escolha === "nao") return true;
-  return (form.grupo_tamanhos?.opcoes || []).some((o: Tam) => o.nome?.trim());
+  const gt = form.grupo_tamanhos;
+  const nomeados = (gt?.opcoes || []).filter((o: Tam) => o.nome?.trim());
+  if (!nomeados.length) return false;
+  // Marcou "Informar o rendimento": precisa preencher em todos
+  if (gt?.mostra_rendimento && nomeados.some((o: Tam) => !String(o.serve || "").trim())) return false;
+  return true;
 }
 
 /** Etapa 4: preços preenchidos */
 export function boloPrecoOk(form: any, escolha: BoloTam): boolean {
+  if (form.promocao) {
+    if (form.tipo_promocao === "percentual") { if (!((form.desconto_percentual || 0) > 0)) return false; }
+    else if (!((form.preco_promocional || 0) > 0 && (form.preco_promocional || 0) < (form.preco_normal || 0))) return false;
+  }
   if (escolha === "nao") return (form.preco_normal || 0) > 0;
   const gt = form.grupo_tamanhos;
   const linhas: Tam[] = (gt?.opcoes || []).filter((o: Tam) => o.nome?.trim());
@@ -236,7 +245,13 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, edicao }:
   const [gDe, setGDe] = useState("1");
   const [gAte, setGAte] = useState("3");
   const [gPasso, setGPasso] = useState(0.5);
-  const [mostrarRend, setMostrarRend] = useState(() => tams.some(x => x.serve));
+  const { gt: gtAtual } = useTamanhos(form, setForm);
+  const mostrarRend = !!gtAtual.mostra_rendimento || tams.some(x => x.serve);
+  const setMostrarRend = (fn: (v: boolean) => boolean) => {
+    const v = fn(mostrarRend);
+    // Desmarcou: limpa os rendimentos (senão continuariam aparecendo no cardápio)
+    setGt(v ? { mostra_rendimento: true } : { mostra_rendimento: false, opcoes: tams.map(x => ({ ...x, serve: "" })) });
+  };
   const [editando, setEditando] = useState(false); // "Editar lista": mostra as lixeiras
   const linhaVazia = (): Tam => ({ id: uid(), nome: "", preco: 0, peso_kg: null, serve: "" });
 
@@ -329,6 +344,9 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, edicao }:
                 <button type="button" role="radio" aria-checked={!fatias} className={!fatias ? "on" : ""} onClick={() => setGt({ rendimento_unidade: "pessoas" })}>Pessoas</button>
                 <button type="button" role="radio" aria-checked={fatias} className={fatias ? "on" : ""} onClick={() => setGt({ rendimento_unidade: "fatias" })}>Fatias</button>
               </div>
+              {nomeados.some(x => !String(x.serve || "").trim()) && nomeados.length > 0 && (
+                <p className="bw-falta">Preencha o rendimento de todos os tamanhos (ou desmarque a opção).</p>
+              )}
               {nomeados.length === 0 ? (
                 <p className="bw-hint">Cadastre os tamanhos acima pra informar o rendimento.</p>
               ) : nomeados.map(x => (
@@ -388,7 +406,12 @@ export function BoloPrecoStep({ form, setForm, escolha, primeiroNome, edicao }: 
   const exBase = precoBase > 0 ? precoBase : 80;
   const suf = VENDA.find(x => x.v === form.forma_venda)?.suf || "unidade";
   const nomeados = tams.filter(x => x.nome.trim());
-  const rotulo = (x: Tam) => <span className="bw-pr-lb"><b>{x.nome}</b>{x.peso_kg && kgTxt(x.peso_kg) !== x.nome ? <small> · {kgTxt(x.peso_kg)}</small> : null}</span>;
+  const emFatias = (form.grupo_tamanhos || {}).rendimento_unidade === "fatias";
+  const rotulo = (x: Tam) => (
+    <span className="bw-pr-lb"><b>{x.nome}</b>{x.peso_kg && kgTxt(x.peso_kg) !== x.nome ? <small> · {kgTxt(x.peso_kg)}</small> : null}
+      {x.serve ? <small className="bw-pr-rend">{emFatias ? `${x.serve} fatias` : `serve ${x.serve} pessoas`}</small> : null}
+    </span>
+  );
 
   return (
     <div className="bw">
@@ -439,7 +462,8 @@ export function BoloPrecoStep({ form, setForm, escolha, primeiroNome, edicao }: 
           </div>
 
           <div className="bw-box">
-            <p className="bw-bt">{porPeso ? "Fica assim no cardápio" : "Preços"}</p>
+            <p className="bw-bt">{porPeso ? "Preço de cada tamanho" : "Preços"}</p>
+            {porPeso && <p className="bw-hint bw-hint--sob2">Calculado pelo preço base</p>}
             {nomeados.length === 0 && <p className="bw-hint">Volte uma etapa e cadastre os tamanhos.</p>}
             {nomeados.map(x => (
               <div className="bw-pr" key={x.id}>
@@ -459,30 +483,48 @@ export function BoloPrecoStep({ form, setForm, escolha, primeiroNome, edicao }: 
         </>
       )}
 
-      {/* Promoção: só na edição (no cadastro fica de fora pra ser mais curto) */}
-      {edicao && escolha && (
-        <div className={`bw-box bw-promo2${form.promocao ? " on" : ""}`}>
-          <button type="button" className="bw-check2" onClick={() => setForm((f: any) => ({ ...f, promocao: !f.promocao,
-            tipo_promocao: escolha === "sim" ? "percentual" : "fixo", desconto_percentual: escolha === "sim" && !f.promocao ? (f.desconto_percentual || 10) : f.desconto_percentual }))} aria-pressed={!!form.promocao}>
-            <i aria-hidden="true">{form.promocao ? "✓" : ""}</i>
-            <span><b>Colocar em promoção</b><small>{escolha === "sim" ? "Um desconto em % vale pra todos os tamanhos" : "O cardápio mostra o preço antigo riscado"}</small></span>
-          </button>
-          {form.promocao && (escolha === "sim" ? (
-            <div className="bw-frase">Desconto de
-              <label className="bw-in bw-suf bw-in--curto"><input inputMode="numeric" value={form.tipo_promocao === "percentual" ? (form.desconto_percentual || "") : ""} placeholder="10"
-                onChange={e => setForm((f: any) => ({ ...f, tipo_promocao: "percentual", desconto_percentual: Math.min(90, parseInt(e.target.value.replace(/\D/g, "") || "0", 10)) }))} aria-label="Desconto em %" /><em>%</em></label>
-              em todos os tamanhos
-            </div>
-          ) : (
-            <div className="bw-frase">Sai por
-              <label className="bw-money bw-money--sm"><span>R$</span>
-                <MoneyInput value={form.preco_promocional || 0} onChange={v => setForm((f: any) => ({ ...f, tipo_promocao: "fixo", preco_promocional: v }))} ariaLabel="Preço promocional" />
-              </label>
-              {(form.preco_normal || 0) > 0 && <small className="bw-hint">no lugar de {brl(form.preco_normal)}</small>}
-            </div>
-          ))}
-        </div>
-      )}
+      {/* Promoção (opcional) */}
+      {escolha && (() => {
+        const pct = form.tipo_promocao === "percentual";
+        const podeDePor = escolha === "nao"; // com tamanhos, só % (vale pra todos)
+        return (
+          <div className={`bw-box bw-promo2${form.promocao ? " on" : ""}`}>
+            <button type="button" className={`bw-check2${form.promocao ? " on" : ""}`} aria-pressed={!!form.promocao}
+              onClick={() => setForm((f: any) => ({ ...f, promocao: !f.promocao,
+                tipo_promocao: f.promocao ? f.tipo_promocao : (podeDePor ? (f.tipo_promocao || "fixo") : "percentual"),
+                desconto_percentual: !f.promocao && !podeDePor ? (f.desconto_percentual || 10) : f.desconto_percentual }))}>
+              <i aria-hidden="true">{form.promocao ? "✓" : ""}</i>
+              <span><b>Colocar em promoção</b><small>{podeDePor ? "O cardápio mostra o preço antigo riscado" : "Um desconto em % vale pra todos os tamanhos"}</small></span>
+            </button>
+            {form.promocao && (
+              <div className="bw-promo-body">
+                {podeDePor && (
+                  <div className="bw-seg3 bw-seg2" role="radiogroup">
+                    <button type="button" role="radio" aria-checked={!pct} className={!pct ? "on" : ""} onClick={() => setForm((f: any) => ({ ...f, tipo_promocao: "fixo" }))}>De / Por</button>
+                    <button type="button" role="radio" aria-checked={pct} className={pct ? "on" : ""} onClick={() => setForm((f: any) => ({ ...f, tipo_promocao: "percentual", desconto_percentual: f.desconto_percentual || 10 }))}>% de desconto</button>
+                  </div>
+                )}
+                {podeDePor && !pct ? (
+                  <div className="bw-frase">De <b>{brl(form.preco_normal || 0)}</b> por
+                    <label className="bw-money bw-money--sm"><span>R$</span>
+                      <MoneyInput value={form.preco_promocional || 0} onChange={v => setForm((f: any) => ({ ...f, tipo_promocao: "fixo", preco_promocional: v }))} ariaLabel="Preço promocional" />
+                    </label>
+                  </div>
+                ) : (
+                  <div className="bw-frase">Desconto de
+                    <label className="bw-in bw-suf bw-in--curto"><input inputMode="numeric" value={form.desconto_percentual || ""} placeholder="10"
+                      onChange={e => setForm((f: any) => ({ ...f, tipo_promocao: "percentual", desconto_percentual: Math.min(90, parseInt(e.target.value.replace(/\D/g, "") || "0", 10)) }))} aria-label="Desconto em %" /><em>%</em></label>
+                    {podeDePor ? (form.preco_normal > 0 && (form.desconto_percentual || 0) > 0 ? <small className="bw-hint">sai por {brl(form.preco_normal * (1 - (form.desconto_percentual || 0) / 100))}</small> : null) : <span>em todos os tamanhos</span>}
+                  </div>
+                )}
+                {podeDePor && !pct && (form.preco_promocional || 0) >= (form.preco_normal || 0) && (form.preco_promocional || 0) > 0 && (
+                  <p className="bw-falta">O preço da promoção tem que ser menor que o preço normal.</p>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })()}
       {infoBase && (
         <DooInfoModal open onClose={() => setInfoBase(false)} image="/Sistema/precifique.png" imageAlt="Preço base"
           ariaLabel="O que é o preço base" title={<>{primeiroNome ? `${primeiroNome}, entenda` : "Entenda"} o <span style={{ color: "#C33A6E" }}>preço base</span>.</>}>
@@ -805,4 +847,15 @@ const CSS = `
   .bw-lt-add { display: block; width: 100%; text-align: left; border: none; border-top: 1px solid #F3ECEE; background: #FCFAFB; padding: 15px 14px; font-family: inherit; font-size: 14px; font-weight: 800; color: #C33A6E; cursor: pointer; }
   .bw-lt-h + .bw-lt-add { border-top: none; }
   .bw-check2 { margin-top: 20px; }
+
+  /* Patch: títulos no cinza das etapas, rendimento obrigatório, promoção */
+  .bw-h { color: #4B5563 !important; }
+  .bw-falta { font-size: 12.5px; font-weight: 700; color: #B45309; margin: 0 0 10px; }
+  .bw-pr-rend { display: block; font-size: 12px !important; color: #9A8E94 !important; margin-top: 1px; }
+  .bw-pr-lb { white-space: normal; }
+  .bw-hint--sob2 { margin: -6px 0 10px; }
+  .bw-promo2 .bw-check2 { margin-top: 0; }
+  .bw-promo-body { margin-top: 14px; display: flex; flex-direction: column; gap: 12px; }
+  .bw-promo-body .bw-frase { margin-top: 0; }
+  .bw-seg2 { grid-template-columns: 1fr 1fr !important; }
 `;

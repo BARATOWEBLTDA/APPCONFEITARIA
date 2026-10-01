@@ -5079,11 +5079,6 @@ export default function Produtos() {
                             </>
                           ) : isLocked ? (
                             <>
-                              {/* Tag PRO padrão Doonly no canto */}
-                              <span className="prod-slot-pro-tag">
-                                <img src="/coroa.png" alt="" className="coroa-badge" />
-                                PRO
-                              </span>
                               {/* Conteúdo central: cadeado rosa + texto */}
                               <div className="prod-slot-locked-body">
                                 <div className="prod-slot-lock-circle">
@@ -5093,7 +5088,8 @@ export default function Produtos() {
                                   </svg>
                                 </div>
                                 <span className="prod-slot-lock-txt">
-                                  <span className="prod-slot-lock-txt-rgb">Exclusivo</span> PRO
+                                  <img src="/coroa.png" alt="" className="prod-slot-lock-coroa" />
+                                  <span className="prod-slot-lock-txt-rgb">Exclusivo PRO</span>
                                 </span>
                               </div>
                             </>
@@ -5115,8 +5111,8 @@ export default function Produtos() {
                 </div>
               </div>
 
-              {/* Fotos por opção (V3 unificado — PRO) */}
-              {(() => {
+              {/* Fotos por opção (V3 unificado — PRO) — ESCONDIDO por enquanto (30/09), volta depois */}
+              {false && (() => {
                 // Lista todos os grupos ativos com opções (pra oferecer o toggle)
                 const gruposAtivos: Array<{ key: string; label: string; grupo: any }> = [];
                 if (form.grupo_massas?.ativo && (form.grupo_massas.opcoes.length || 0) > 0) {
@@ -9384,6 +9380,7 @@ export default function Produtos() {
           text-transform: uppercase;
           margin-bottom: 2px;
         }
+        .prod-modal-title-novo { color: #4B5563 !important; } /* mesmo cinza do "Fotos e finalização" */
         .prod-modal-title-novo {
           font-size: 18px;
           font-weight: 800;
@@ -10445,6 +10442,7 @@ export default function Produtos() {
           font-family: var(--font-base);
           letter-spacing: 0.02em;
         }
+        .prod-slot-lock-coroa { width: 13px; height: 13px; object-fit: contain; display: inline-block; vertical-align: -2px; margin-right: 4px; }
         .prod-slot-lock-txt-rgb {
           background: linear-gradient(90deg, #F5B8CD, #C4B5FD, #93C5FD, #86EFAC, #FCD34D, #F5B8CD);
           background-size: 300% 100%;

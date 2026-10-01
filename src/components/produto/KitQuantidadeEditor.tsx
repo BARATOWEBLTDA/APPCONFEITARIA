@@ -204,7 +204,7 @@ const CSS = `
   .kq-tg.on { background: #E85A8C; } .kq-tg.on i { left: 20px; }
 
   .kq-tela { font-family: var(--font-base); color: #2C1219; padding-bottom: 8px; }
-  .kq-q { font-size: 21px; font-weight: 900; text-align: center; margin: 14px 0 4px; }
+  .kq-q { font-size: 21px; font-weight: 900; text-align: center; margin: 14px 0 4px; color: #4B5563; }
   .kq-qs { text-align: center; font-size: 13.5px; color: #6B5D64; margin: 0 0 16px; }
   .kq-modelos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
   .kq-mod { border: 1.5px solid #EAE3E6; border-radius: 16px; padding: 16px; background: #fff; display: flex; flex-direction: column; }

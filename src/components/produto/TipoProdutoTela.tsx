@@ -26,7 +26,7 @@ export default function TipoProdutoTela({ onEscolher, onFechar }: Props) {
     <div className="tpp">
       <div className="tpp-top">
         <span />
-        <div className="tpp-steps" aria-hidden="true"><i className="on" /><i /><i /><i /><i /></div>
+        <div className="tpp-steps" aria-hidden="true"><i className="on" /><i /><i /><i /><i /><i /></div>
         <button type="button" className="tpp-x" onClick={onFechar} aria-label="Fechar">✕</button>
       </div>
       <div className="tpp-body">
@@ -64,11 +64,11 @@ export default function TipoProdutoTela({ onEscolher, onFechar }: Props) {
         .tpp { display: flex; flex-direction: column; min-height: 0; height: 100%; font-family: var(--font-base); color: #2C1219; }
         .tpp-top { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px 0; }
         .tpp-top > span { width: 36px; }
-        .tpp-steps { display: flex; gap: 6px; } .tpp-steps i { width: 26px; height: 4px; border-radius: 2px; background: #EDE5E8; } .tpp-steps i.on { background: #E85A8C; }
+        .tpp-steps { display: flex; gap: 6px; } .tpp-steps i { width: 24px; height: 4px; border-radius: 2px; background: #EDE5E8; } .tpp-steps i.on { background: #E85A8C; }
         .tpp-x { width: 36px; height: 36px; border-radius: 50%; border: none; background: #F5F0F2; color: #6B5D64; font-size: 15px; cursor: pointer; }
         .tpp-body { flex: 1; overflow-y: auto; padding: 0 22px 16px; }
         .tpp-h { text-align: center; padding: 16px 0 6px; }
-        .tpp-h h1 { font-size: 23px; font-weight: 900; letter-spacing: -.01em; margin: 0; line-height: 1.2; }
+        .tpp-h h1 { font-size: 23px; font-weight: 900; letter-spacing: -.01em; margin: 0; line-height: 1.2; color: #4B5563; }
         .tpp-h p { font-size: 14px; color: #6B5D64; margin: 5px 0 0; }
         .tpp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding-top: 18px; max-width: 760px; margin: 0 auto; }
         .tpp-card { border: 1.5px solid #EDE5E8; border-radius: 18px; overflow: hidden; background: #fff; cursor: pointer; padding: 0; text-align: left; font-family: inherit; display: flex; flex-direction: row; align-items: stretch; min-height: 150px; transition: transform .15s, box-shadow .15s; }
@@ -98,7 +98,7 @@ export default function TipoProdutoTela({ onEscolher, onFechar }: Props) {
           .tpp-card { flex-direction: column; min-height: 0; }
           .tpp-img { width: auto; height: 90px; } .tpp-emo { font-size: 40px; }
           .tpp-tx { padding: 8px 10px 10px; justify-content: flex-start; } .tpp-tx b { font-size: 14px; } .tpp-tx small { font-size: 11px; }
-          .tpp-foot { background: #3B1620; border-top: none; padding: 14px 14px calc(14px + env(safe-area-inset-bottom, 0px)); }
+          .tpp-foot { background: var(--text-title); /* mesma cor do menu do celular */ border-top: none; padding: 14px 14px calc(14px + env(safe-area-inset-bottom, 0px)); }
           .tpp-cancel { color: #fff; } .tpp-go { flex: 0 0 auto; padding: 0 26px; background: #fff; color: #2C1219; box-shadow: none; }
           .tpp-go:active:not(:disabled) { transform: scale(0.98); box-shadow: none; }
           .tpp-go:disabled { background: rgba(255,255,255,.16); color: rgba(255,255,255,.5); box-shadow: none; }
