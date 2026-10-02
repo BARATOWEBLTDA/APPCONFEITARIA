@@ -1,16 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { usePlano } from "@/hooks/usePlano";
 import { useProfile } from "@/hooks/useProfile";
 
 /**
  * Página do PRO (aprovada 01/10): modo escuro, vantagens primeiro (em lista, ordenadas pelo que mais
- * pesa pra confeiteira) e o preço só no fim. Sem pagamento no app ainda: o botão abre o WhatsApp
- * da equipe com a mensagem pronta.
+ * pesa pra confeiteira) e o preço só no fim. O botão abre o checkout da Hotmart (02/10),
+ * com o e-mail e o nome da conta preenchidos.
  */
 const PRECO_CHEIO = "R$ 29,90";
 const PRECO_1O_MES = "R$ 8,97"; // 70% OFF no 1º mês (30% de R$ 29,90)
-const WHATSAPP_EQUIPE = "5541998843669";
 
 const BENEFICIOS: [string, string][] = [
   ["Preço certo em tudo que você vende", "Bolos, doces ou salgados: a precificação inteligente calcula custo, margem e lucro. Chega de vender no prejuízo."],
@@ -34,6 +34,9 @@ const Check = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12" /></svg>
 );
 
+
+/** Checkout do Doonly PRO na Hotmart (com o cupom do 1º mês) */
+const CHECKOUT_HOTMART = "https://pay.hotmart.com/M107866310B?checkoutMode=10";
 export default function Assinar() {
   const navigate = useNavigate();
   const { isPro, proExpiraEm } = usePlano();
@@ -55,11 +58,16 @@ export default function Assinar() {
     };
   }, []);
 
-  const assinarPeloWhatsApp = () => {
-    const quem = [profile?.nome, (profile as any)?.nome_loja].filter(Boolean).join(" · ");
-    const email = (profile as any)?.email || "";
-    const msg = `Olá! Quero assinar o Doonly PRO.\nPlano: PRO mensal (1º mês ${PRECO_1O_MES}, depois ${PRECO_CHEIO}/mês)${quem ? `\nNome: ${quem}` : ""}${email ? `\nE-mail da conta: ${email}` : ""}`;
-    window.open(`https://wa.me/${WHATSAPP_EQUIPE}?text=${encodeURIComponent(msg)}`, "_blank");
+  // Checkout da Hotmart (02/10). O e-mail e o nome da conta já vão preenchidos: o e-mail da compra
+  // precisa ser o mesmo da conta, porque é por ele que o webhook liga o PRO sozinho.
+  const [emailConta, setEmailConta] = useState("");
+  useEffect(() => { supabase.auth.getUser().then(({ data }) => setEmailConta(data.user?.email || "")).catch(() => {}); }, []);
+  const assinarNaHotmart = () => {
+    const u = new URL(CHECKOUT_HOTMART);
+    const email = emailConta || (profile as any)?.email || "";
+    if (email) u.searchParams.set("email", email);
+    if (profile?.nome) u.searchParams.set("name", String(profile.nome));
+    window.open(u.toString(), "_blank");
   };
 
   return (
@@ -100,7 +108,7 @@ export default function Assinar() {
               <p className="pro-of-t">Plano PRO mensal</p>
               <div className="pro-of-p"><s>{PRECO_CHEIO}</s><b>{PRECO_1O_MES}</b><small>no 1º mês</small></div>
               <p className="pro-of-s">Depois, <b>{PRECO_CHEIO}/mês</b> · sem fidelidade, cancele quando quiser</p>
-              <button type="button" className="pro-btn" onClick={assinarPeloWhatsApp}>Assinar o PRO</button>
+              <button type="button" className="pro-btn" onClick={assinarNaHotmart}>Assinar o PRO</button>
             </>
           )}
         </div>

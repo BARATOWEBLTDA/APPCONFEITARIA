@@ -103,7 +103,10 @@ function ensureRealtimeChannel() {
       schema: "public",
       table: "profiles",
     }, (payload) => {
-      notifyListeners(payload.new as Profile);
+      // Só o perfil de quem está logado (o canal não filtra pela conta)
+      const novo = payload.new as Profile;
+      if (globalProfile?.id && (novo as any)?.id !== globalProfile.id) return;
+      notifyListeners({ ...(globalProfile || {}), ...novo } as Profile);
     })
     .subscribe();
 
@@ -124,6 +127,11 @@ function ensureRealtimeChannel() {
         refreshProfile();
       }
     });
+    // Reserva (02/10): se o tempo real não estiver ligado no Supabase, o app ainda percebe
+    // a mudança de plano em até 1 minuto, e na hora ao voltar pra janela ou à internet.
+    window.addEventListener("focus", () => refreshProfile());
+    window.addEventListener("online", () => refreshProfile());
+    setInterval(() => { if (document.visibilityState === "visible") refreshProfile(); }, 60_000);
   }
 }
 
