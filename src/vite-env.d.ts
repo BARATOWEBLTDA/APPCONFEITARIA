@@ -1,6 +1,8 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
+  /** Client ID do Google (o mesmo do Supabase → Authentication → Providers → Google) */
+  readonly VITE_GOOGLE_CLIENT_ID?: string
   readonly VITE_SUPABASE_URL: string
   readonly VITE_SUPABASE_ANON_KEY: string
 }
