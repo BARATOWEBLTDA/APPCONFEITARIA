@@ -92,6 +92,10 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     ? profile.slug_personalizado
     : 'cardapio'
 
+  // Cores personalizadas são PRO (02/10): no grátis o cardápio usa o rosa do Doonly.
+  // As cores escolhidas ficam guardadas e voltam sozinhas se ela virar PRO.
+  const cores: any = isPro ? profile : {}
+
   const design: DesignSettings = {
     user_id: userId,
     nome_loja: profile.nome_loja || 'Minha Confeitaria',
@@ -102,15 +106,15 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     banner2_url: profile.banner2_url || '',
     banner3_url: profile.banner3_url || '',
     banner_topo_url: profile.banner_topo_url || '',
-    cor_borda: profile.cor_borda || '#ec4899',
-    cor_background: profile.cor_background || '#fef2f2',
-    cor_nome: profile.cor_nome || '#1f2937',
+    cor_borda: cores.cor_borda || '#ec4899',
+    cor_background: cores.cor_background || '#fef2f2',
+    cor_nome: cores.cor_nome || '#1f2937',
     banner_gradient: profile.banner_gradient || '',
     hide_stars: profile.hide_stars || false,
-    cor_botao: profile.cor_botao || '#ec4899',
-    cor_navbar: profile.cor_navbar || profile.cor_borda || '#ec4899',
-    cor_sacola: profile.cor_sacola || '#ec4899',
-    cor_rodape: profile.cor_rodape || '#ec4899',
+    cor_botao: cores.cor_botao || '#ec4899',
+    cor_navbar: cores.cor_navbar || cores.cor_borda || '#ec4899',
+    cor_sacola: cores.cor_sacola || '#ec4899',
+    cor_rodape: cores.cor_rodape || '#ec4899',
     ocultar_categorias: profile.ocultar_categorias || false,
   }
 

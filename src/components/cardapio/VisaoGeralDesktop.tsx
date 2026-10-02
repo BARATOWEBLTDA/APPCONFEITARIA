@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import QRCode from "qrcode";
 import { supabase } from "@/lib/supabase";
 import { isPro as ehPro } from "@/hooks/useProfile";
-import PassoAPassoCardapio from "@/components/PassoAPassoCardapio";
+import PrimeirosPassos from "@/components/PrimeirosPassos";
 
 /**
  * Visão geral do Cardápio digital — COMPUTADOR (aprovada 02/10).
@@ -140,7 +140,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
   return (
     <div className="vgd">
       {/* Enquanto não está pronto: passo a passo no lugar do cartão do link */}
-      <PassoAPassoCardapio userId={profile?.id} publicado={publicado} linkCardapio={linkCardapio} onShareClick={onShare} esconderQuandoCompleto onEstado={setCompleto} />
+      <PrimeirosPassos local="cardapio" onEstado={setCompleto} />
 
       {completo && (
         <div className="vgd-hero">

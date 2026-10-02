@@ -7,10 +7,11 @@ import { ImageCropper } from "@/components/ui/ImageCropper";
 import { useIsMobile } from "@/hooks/use-mobile";
 import AppPageHeader from "@/components/AppPageHeader";
 
-const SectionLabel = ({ children, sub }: any) => (
+const SectionLabel = ({ children, sub, icon, acao }: any) => (
   <div className="cd-section-header">
+    {icon && <span className="cd-section-icon" aria-hidden="true">{icon}</span>}
     <div style={{ flex: 1, minWidth: 0 }}>
-      <p className="cd-section-label">{children}</p>
+      <p className="cd-section-label">{children}{acao && <span className="cd-section-acao">{acao}</span>}</p>
       {sub && <p className="cd-section-sub">{sub}</p>}
     </div>
   </div>
@@ -33,6 +34,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
   }, []);
 
   const [fotoPerfil, setFotoPerfil] = useState(""); // sem logo, o cardápio usa a foto de perfil
+  const [verExemplo, setVerExemplo] = useState(false);
   const [logoUrl, setLogoUrl] = useState("");
   // Avaliação (veio de Dados da loja em 29/09)
   const [hideStars, setHideStars] = useState(false);
@@ -226,13 +228,20 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     )}
     {/* Aberta sozinha (/cardapio-design): precisa do cabeçalho com voltar (antes a tela ficava sem título) */}
     {!identityCard && (
-      <AppPageHeader title="Aparência" subtitle="Cores, banners e modelo do cardápio" onBack={() => navigate("/cardapio")} />
+      <AppPageHeader title="Aparência" subtitle="Logo, banners, modelo e cores" onBack={() => navigate("/cardapio")}
+        infoIcon="🎨"
+        infoContent={<>
+          <p>Aqui você deixa o <strong>cardápio com a cara da sua confeitaria</strong>: o logo, os banners de promoção e o modelo da página.</p>
+          <p>Tudo é salvo na hora e já aparece pros seus clientes. Use o <strong>"Ver meu cardápio"</strong> pra conferir como ficou.</p>
+        </>}
+        infoTip={<>As <strong>cores</strong> e o modelo <strong>"Padrão"</strong> são do plano PRO.</>}
+      />
     )}
     <div className="cd-root">
 
       {/* Logo da loja (veio de Dados da loja em 29/09) */}
       <div className="cd-card" style={isMobile ? {} : { gridColumn: '1 / -1' }}>
-        <SectionLabel sub="Aparece no topo do cardápio">Logo da loja</SectionLabel>
+        <SectionLabel icon="🧁" sub="Aparece no topo do cardápio">Logo da loja</SectionLabel>
         <input ref={logoRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleLogoUpload} />
         <div className="cd-logo-row">
           <button type="button" className="cd-logo-circ" onClick={() => logoRef.current?.click()} aria-label="Trocar logo">
@@ -256,6 +265,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       {modeloAtivo === "modelo1" && (
         <div className="cd-card" style={isMobile ? {} : { gridColumn: '1 / -1' }}>
           <SectionLabel
+            icon="🏞️"
             sub="Aparece no topo do seu cardápio como fundo — atrás da logo. Recomendado: fotos horizontais em alta qualidade (1200×400 ideal). Só no Modelo 1."
           >Banner do topo do app</SectionLabel>
           <div className="cd-banner-topo">
@@ -288,6 +298,8 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       {/* Banners — ocupa largura total do grid */}
       <div className="cd-card" style={isMobile ? {} : { gridColumn: '1 / -1' }}>
         <SectionLabel
+          icon="🖼️"
+          acao={<button type="button" className="cd-ex-btn" onClick={() => setVerExemplo(true)}>Ver exemplo</button>}
           sub={(isPro ? "Seus banners rodam em carrossel no cardápio. Use pra destacar promoções e novidades." : "Anuncie sua promoção do mês. Assine PRO pra ter até 4 banners rodando em carrossel.") + " Tamanho ideal: 1200 × 675, na horizontal (use o mesmo tamanho em todos)."}
         >Banners de promoção</SectionLabel>
 
@@ -424,36 +436,22 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         </div>
       </div>
 
-      {/* Card Avaliações (via prop) — fica lado a lado com Layout no grid 1fr 1fr */}
-      {avaliacoesCard ?? (
-        <div className="cd-card">
-          <div className="cd-aval-row">
-            <div>
-              <p className="cd-section-label" style={{ margin: 0 }}>Mostrar avaliação</p>
-              <p className="cd-section-sub" style={{ margin: "2px 0 0" }}>Estrelas ao lado do nome da loja</p>
-            </div>
-            <label className="cd-aval-toggle">
-              <input type="checkbox" checked={!hideStars} onChange={(e) => { const hide = !e.target.checked; setHideStars(hide); salvarAvaliacao({ hide_stars: hide }); }} aria-label="Mostrar avaliação" />
-              <span />
-            </label>
-          </div>
-          {!hideStars && (
-            <div className="cd-aval-notas">
-              {[5.0, 4.9, 4.8].map((n) => (
-                <button key={n} type="button" className={avaliacaoMedia === n ? "on" : ""} onClick={() => { setAvaliacaoMedia(n); salvarAvaliacao({ avaliacao_media: n }); }}>★ {n.toFixed(1)}</button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Cores */}
       <div className="cd-card" style={isMobile ? {} : { gridColumn: '1 / -1' }}>
         <SectionLabel
           variant="azul"
           icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 2a10 10 0 0 0 0 20 2 2 0 0 0 0-4 2 2 0 0 1 0-4h2.5a4.5 4.5 0 0 0 4.5-4.5A10 10 0 0 0 12 2z"/></svg>}
-          sub="Toque para personalizar e veja em tempo real"
-        >Cores</SectionLabel>
+          sub={isPro ? "Toque para personalizar e veja em tempo real" : "Botões, bordas e o nome da loja"}
+        acao={!isPro ? <span className="cd-layout-tag cd-layout-tag--pro"><img src="/coroa.png" alt="" /><span className="cd-pro-grad">PRO</span></span> : undefined}
+        >Cores do cardápio</SectionLabel>
+        {!isPro ? (
+          /* Cores são PRO (02/10): no grátis o cardápio usa o rosa do Doonly */
+          <div className="cd-cores-pro">
+            <div className="cd-cores-sw" aria-hidden="true">{["#7C3AED", "#0EA5E9", "#16A34A", "#F59E0B", "#2C1219"].map(c => <span key={c} style={{ background: c }} />)}</div>
+            <p>Deixe o cardápio com as cores da sua marca. No plano grátis, ele usa o rosa do Doonly.</p>
+            <button type="button" className="cd-cores-cta" onClick={() => navigate("/assinar")}>Conhecer o PRO</button>
+          </div>
+        ) : (
         <div className="cd-colors-list">
 
           {/* Cor da borda */}
@@ -587,8 +585,43 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
           )}
 
         </div>
+        )}
       </div>
 
+      {/* Card Avaliações (via prop) — fica lado a lado com Layout no grid 1fr 1fr */}
+      {avaliacoesCard ?? (
+        <div className="cd-card">
+          <div className="cd-aval-row">
+            <div>
+              <p className="cd-section-label" style={{ margin: 0 }}>Mostrar avaliação</p>
+              <p className="cd-section-sub" style={{ margin: "2px 0 0" }}>Estrelas ao lado do nome da loja</p>
+            </div>
+            <label className="cd-aval-toggle">
+              <input type="checkbox" checked={!hideStars} onChange={(e) => { const hide = !e.target.checked; setHideStars(hide); salvarAvaliacao({ hide_stars: hide }); }} aria-label="Mostrar avaliação" />
+              <span />
+            </label>
+          </div>
+          {!hideStars && (
+            <div className="cd-aval-notas">
+              {[5.0, 4.9, 4.8].map((n) => (
+                <button key={n} type="button" className={avaliacaoMedia === n ? "on" : ""} onClick={() => { setAvaliacaoMedia(n); salvarAvaliacao({ avaliacao_media: n }); }}>★ {n.toFixed(1)}</button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+
+
+      {verExemplo && (
+        <div className="cd-ex-ov" onClick={() => setVerExemplo(false)} role="dialog" aria-modal="true" aria-label="Exemplo de banner">
+          <div className="cd-ex-box" onClick={e => e.stopPropagation()}>
+            <img src="/exemplo-banner.jpg" alt="Exemplo de banner: Semana do Brigadeiro, 20% OFF em todos os kits" />
+            <p><b>Exemplo de banner</b> · 1200 × 675 · deixe o texto no meio da imagem</p>
+            <button type="button" onClick={() => setVerExemplo(false)}>Fechar</button>
+          </div>
+        </div>
+      )}
       <style>{`
         @keyframes cdspin { to { transform:rotate(360deg); } }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
@@ -1026,6 +1059,25 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         .cd-layout-tag--pro img { width: 13px; height: 13px; object-fit: contain; }
         .cd-pro-grad { background: linear-gradient(90deg, #F9A8D4, #C4B5FD, #93C5FD); -webkit-background-clip: text; background-clip: text; color: transparent; white-space: nowrap; }
         .cd-color-hint { display: block; font-size: 11.5px; color: #9A8E94; margin-top: 2px; }
+
+        /* ── Ajustes da Aparência (02/10) ── */
+        .cd-section-header { position: relative; }
+        .cd-section-acao { display: inline-flex; vertical-align: middle; margin-left: 8px; position: relative; top: -1px; }
+        .cd-ex-btn { border: 1px solid #F7C6D9; background: #FFF1F6; color: #C33A6E; font-family: inherit; font-size: 11.5px; font-weight: 800; padding: 5px 10px; border-radius: 7px; cursor: pointer; white-space: nowrap; }
+        .cd-ex-ov { position: fixed; inset: 0; z-index: 3000; background: rgba(45,31,38,.6); display: flex; align-items: center; justify-content: center; padding: 16px; }
+        .cd-ex-box { width: 100%; max-width: 560px; background: #fff; border-radius: 18px; padding: 12px; text-align: center; }
+        .cd-ex-box img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 12px; display: block; }
+        .cd-ex-box p { font-size: 12.5px; color: #6B5D64; margin: 10px 0 0; } .cd-ex-box b { color: #2C1219; }
+        .cd-ex-box button { margin-top: 8px; border: none; background: none; font-family: inherit; font-size: 13px; font-weight: 800; color: #9A8E94; padding: 8px 16px; cursor: pointer; }
+        .cd-logo-ok { border-radius: 6px !important; white-space: nowrap; }
+        .cd-layout-info { flex-direction: column; align-items: flex-start !important; justify-content: flex-start !important; gap: 5px; }
+        .cd-layout-tag:not(.cd-layout-tag--pro) { background: #DCFCE7 !important; color: #15803D !important; font-weight: 800 !important; border-radius: 6px !important; }
+        .cd-layout-tag.cd-layout-tag--pro { border-radius: 6px !important; }
+        .cd-cores-pro { text-align: left; }
+        .cd-cores-sw { display: flex; gap: 10px; margin-top: 4px; }
+        .cd-cores-sw span { width: 32px; height: 32px; border-radius: 50%; box-shadow: 0 0 0 3px #fff, 0 0 0 4px #EDE6E9; }
+        .cd-cores-pro p { font-size: 13px; color: #6B5D64; line-height: 1.45; margin: 12px 0 0; }
+        .cd-cores-cta { display: block; width: 100%; margin-top: 12px; border: none; border-radius: 12px; padding: 12px; font-family: inherit; font-size: 14px; font-weight: 800; color: #fff; background: #E85A8C; box-shadow: 0 3px 0 #C33A6E; cursor: pointer; }
 `}</style>
     </div>
     </>

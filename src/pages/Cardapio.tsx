@@ -1,4 +1,5 @@
 import { useState, useEffect, type ReactElement } from "react";
+import PrimeirosPassos from "@/components/PrimeirosPassos";
 import VisaoGeralDesktop from "@/components/cardapio/VisaoGeralDesktop";
 import { useNavigate } from "react-router-dom";
 import {
@@ -58,6 +59,7 @@ export default function Cardapio() {
   const [copiado, setCopiado] = useState(false);
   const [contadores, setContadores] = useState({ produtos: 0, produtosAtivos: 0, categorias: 0, promocoes: 0 });
   const [visitasPop, setVisitasPop] = useState<number | null>(null); // +N flutuante quando chega visita nova
+  const [passosOk, setPassosOk] = useState(false);
   // Computador (com o menu lateral do cardápio): Visão geral nova, sem as listas de atalhos (02/10)
   const [ehComputador, setEhComputador] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches);
   useEffect(() => {
@@ -331,13 +333,16 @@ export default function Cardapio() {
       <VisaoGeralDesktop profile={profile} linkCardapio={linkCardapio} publicado={publicado} onShare={handleShare} />
     ) : (
     <div className="cardapio-hub">
-      {/* Passo a passo pra configurar cardápio (some quando 100%) */}
-      <PassoAPassoCardapio
-        userId={profile?.id}
-        publicado={publicado}
-        linkCardapio={linkCardapio}
-        onShareClick={handleShare}
-      />
+      {/* Passo a passo único (02/10): o mesmo cartão do Início. Pronto → cartão do link */}
+      <PrimeirosPassos local="cardapio" onEstado={setPassosOk} />
+      {passosOk && (
+        <PassoAPassoCardapio
+          userId={profile?.id}
+          publicado={publicado}
+          linkCardapio={linkCardapio}
+          onShareClick={handleShare}
+        />
+      )}
       {/* Meu Catálogo — ações do dia-a-dia */}
       <div className="cd-card cd-quick">
         <div className="cd-quick-hdr">
