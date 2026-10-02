@@ -1,3 +1,7 @@
+import { AvisoAntecedencia } from "@/lib/entregaProduto";
+import KitPicker from '@/components/cardapio/KitPicker'
+import { precoCardapio } from '@/lib/precoCardapio'
+import { kitAtivo, calcularKit, selecaoInicial, type KitSelecao } from '@/lib/kitQuantidade'
 import { useState, useEffect, useMemo } from 'react'
 import { X, Plus, Minus, Camera, Ruler, ChevronRight, ChevronDown } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
@@ -18,7 +22,6 @@ import {
 interface ExtraBiblioteca {
   id: string
   nome: string
-  descricao?: string
   valor: number
   categorias: string[] // IDs dos produtos vinculados (vazio = todos)
 }
@@ -33,6 +36,10 @@ interface Props {
 export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }: Props) {
   const { addItem } = useCart()
   const [quantity, setQuantity] = useState(1)
+  // Kit por quantidade (docinhos/salgados): quantos de cada sabor
+  const [kitSel, setKitSel] = useState<KitSelecao>({ kitId: '', qtdLivre: 0, qtds: {} })
+  const kitCfg = kitAtivo((product as any)?.kit_qtd) ? (product as any).kit_qtd : null
+  const kitInfo = kitCfg ? calcularKit(kitCfg, kitSel) : null
   const [observations, setObservations] = useState('')
   const [showObs, setShowObs] = useState(false)
   const [imgIndex, setImgIndex] = useState(0)
@@ -65,7 +72,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
     if (!uid) return
     supabase
       .from('biblioteca_extras')
-      .select('id, nome, descricao, valor, categorias')
+      .select('id, nome, valor, categorias')
       .eq('user_id', uid)
       .then(({ data }) => {
         if (!data) { setExtrasBiblioteca([]); return }
@@ -102,6 +109,8 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
     document.body.style.top = `-${scrollY}px`
     document.body.style.width = '100%'
     return () => {
+      document.body.style.left = ''; document.body.style.right = ''
+
       document.body.style.overflow = prev.overflow
       document.body.style.position = prev.position
       document.body.style.top = prev.top
@@ -148,34 +157,18 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
   const gSabor = grupoAtivo('sabor')
   const gTamanho = grupoAtivo('tamanho')
 
-  // Reset ao abrir/trocar produto
+  // Reset ao abrir/trocar produto (inclusive reabrindo o MESMO produto)
   useEffect(() => {
-    if (product) {
+    if (product && isOpen) {
       setQuantity(1); setObservations(''); setShowObs(false); setImgIndex(0)
       setEscolhaMassa(null); setEscolhasRecheio([]); setEscolhaCobertura(null)
       setEscolhaSabor(null); setEscolhaTamanho(null)
+      if (kitAtivo((product as any).kit_qtd)) setKitSel(selecaoInicial((product as any).kit_qtd))
     }
-  }, [product])
+  }, [product, isOpen])
 
-  useEffect(() => {
-    if (isOpen) {
-      const scrollY = window.scrollY
-      document.body.style.position = 'fixed'
-      document.body.style.top = `-${scrollY}px`
-      document.body.style.left = '0'
-      document.body.style.right = '0'
-      document.body.style.overflow = 'hidden'
-      return () => {
-        document.body.style.position = ''
-        document.body.style.top = ''
-        document.body.style.left = ''
-        document.body.style.right = ''
-        document.body.style.overflow = ''
-        window.scrollTo(0, scrollY)
-      }
-    }
-    return () => { document.body.style.overflow = '' }
-  }, [isOpen])
+  // (02/10) Aqui havia uma SEGUNDA trava de rolagem igual à de cima. Ela rodava com a página já
+  // congelada (posição 0) e jogava o cardápio pro topo ao abrir e ao fechar o produto. Removida.
 
   // Autoplay removido — cliente controla clicando nas miniaturas
 
@@ -185,10 +178,9 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
   const inc = () => setQuantity(q => Math.min(q + step, 50))
   const dec = () => setQuantity(q => Math.max(q - step, minQtd))
 
-  // Preço base do produto (com promoção aplicada, se houver)
-  const basePrice = product
-    ? (product.promocao && product.preco_promocional ? product.preco_promocional : product.preco_normal)
-    : 0
+  // Preço base = preço CHEIO. A promoção entra uma vez só, pelo descPct lá embaixo
+  // (antes usava o preço promocional E aplicava o desconto de novo: 52,90 → 47,61 → 42,85)
+  const basePrice = product ? (product.preco_normal || 0) : 0
 
   const descPct = product
     ? ((product as any).tipo_promocao === 'percentual' && product.promocao
@@ -254,6 +246,9 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
       }
     }
 
+    // Kit por quantidade: o preço vem do kit escolhido
+    if (kitInfo) baseEfetivo = kitInfo.preco
+
     // Soma adicionais das opções escolhidas
     let adicionaisTotal = 0
     const ctx = {
@@ -297,7 +292,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
       desconto,
       final,
     }
-  }, [product, grupos, quantity, opMassa, opCobertura, opSabor, opTamanho, opsRecheios.length, basePrice, descPct, extrasMarcados, extrasBiblioteca])
+  }, [product, grupos, quantity, opMassa, opCobertura, opSabor, opTamanho, opsRecheios.length, basePrice, descPct, extrasMarcados, extrasBiblioteca, kitInfo?.preco])
 
   // ═══ Validação: obrigatórios preenchidos ═══════════════════════════
   const podeAdicionar = useMemo(() => {
@@ -306,8 +301,9 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
     if (gSabor && gSabor.min_selecionavel > 0 && !escolhaSabor) return false
     if (gTamanho && gTamanho.min_selecionavel > 0 && !escolhaTamanho) return false
     if (gRecheio && gRecheio.min_selecionavel > 0 && escolhasRecheio.length < gRecheio.min_selecionavel) return false
+    if (kitInfo && !kitInfo.completo) return false
     return true
-  }, [gMassa, gCobertura, gSabor, gTamanho, gRecheio, escolhaMassa, escolhaCobertura, escolhaSabor, escolhaTamanho, escolhasRecheio.length])
+  }, [gMassa, gCobertura, gSabor, gTamanho, gRecheio, escolhaMassa, escolhaCobertura, escolhaSabor, escolhaTamanho, escolhasRecheio.length, kitInfo?.completo])
 
   // ═══ Early return DEPOIS de todos os hooks (regra do React) ══════
   if (!isOpen || !product) return null
@@ -336,6 +332,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
       if (opTamanho.peso_kg) e.peso_kg = opTamanho.peso_kg
       escolhas.tamanho = e
     }
+    if (kitInfo) escolhas.kit = kitInfo.escolha
 
     // Extras da biblioteca (aba /complementos) — nome + valor de cada marcado
     const extrasEscolhidos = extrasBiblioteca
@@ -419,13 +416,15 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
       let selecPreco = ''
       if (opSelecionada) {
         selecTitulo = opSelecionada.nome
-        if (opSelecionada.peso_kg) selecTitulo += ` · ${opSelecionada.peso_kg} kg`
+        if (opSelecionada.peso_kg) selecTitulo += ` · ${String(opSelecionada.peso_kg).replace('.', ',')} kg`
         if (opSelecionada.serve) {
           const s = String(opSelecionada.serve).trim()
-          selecSub = `Serve ${s}${/^\d+$/.test(s) ? ' pessoas' : ''}`
+          const emFatias = (product as any)?.grupo_tamanhos?.rendimento_unidade === 'fatias'
+          selecSub = /^\d+$/.test(s) ? (emFatias ? `${s} fatias` : `Serve ${s} pessoas`) : `Serve ${s}`
         }
         if (g.tipo === 'sabor' && saborTemPrecoProprio && opSelecionada.preco > 0) selecPreco = formatCurrency(opSelecionada.preco)
         else if (g.tipo === 'tamanho' && opSelecionada.preco > 0) selecPreco = formatCurrency(opSelecionada.preco)
+        else if (g.tipo === 'tamanho' && (g as any).modo_preco_tamanho === 'por_peso' && opSelecionada.peso_kg && basePrice > 0) selecPreco = formatCurrency(Math.round(basePrice * opSelecionada.peso_kg * 100) / 100)
         else if ((opSelecionada.adicional || 0) > 0) selecPreco = `+${formatCurrency(opSelecionada.adicional)}`
       }
 
@@ -465,7 +464,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 13.5, fontWeight: 700, color: '#2C1219', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {opSelecionada ? selecTitulo : `Selecione o ${g.nome_exibicao.toLowerCase()}`}
+                {opSelecionada ? selecTitulo : `Selecione o ${g.tipo === 'tamanho' ? 'tamanho' : g.nome_exibicao.toLowerCase()}`}
               </div>
               <div style={{ fontSize: 11.5, color: '#6B7280', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {opSelecionada ? (selecSub || `${totalOpcoes} opções disponíveis`) : `${totalOpcoes} ${totalOpcoes === 1 ? 'opção disponível' : 'opções disponíveis'}`}
@@ -494,9 +493,12 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                 let precoLabel = ''
                 if (g.tipo === 'sabor' && saborTemPrecoProprio && op.preco > 0) precoLabel = formatCurrency(op.preco)
                 else if (g.tipo === 'tamanho' && op.preco > 0) precoLabel = formatCurrency(op.preco)
+                // Pelo peso: cada tamanho mostra o preço calculado (preço base × peso)
+                else if (g.tipo === 'tamanho' && (g as any).modo_preco_tamanho === 'por_peso' && op.peso_kg && basePrice > 0) precoLabel = formatCurrency(Math.round(basePrice * op.peso_kg * 100) / 100)
                 else if ((op.adicional || 0) > 0) precoLabel = `+${formatCurrency(op.adicional)}`
-                const serveTxt = op.serve ? `${String(op.serve).trim()}${/^\d+$/.test(String(op.serve).trim()) ? ' pessoas' : ''}`.trim() : ''
-                const pesoTxt = op.peso_kg ? `${op.peso_kg} kg` : ''
+                const emFatias = (product as any)?.grupo_tamanhos?.rendimento_unidade === 'fatias'
+                const serveTxt = op.serve ? `${String(op.serve).trim()}${/^\d+$/.test(String(op.serve).trim()) ? (emFatias ? ' fatias' : ' pessoas') : ''}`.trim() : ''
+                const pesoTxt = op.peso_kg ? `${String(op.peso_kg).replace('.', ',')} kg` : ''
                 const tituloOp = pesoTxt ? `${op.nome} · ${pesoTxt}` : op.nome
 
                 return (
@@ -660,7 +662,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
               Sem foto
             </div>
           )}
-          <button onClick={onClose} style={{
+          <button onClick={onClose} aria-label="Fechar" style={{
             position: 'absolute', top: 12, right: 12,
             width: 36, height: 36, borderRadius: '50%',
             background: 'rgba(0,0,0,0.65)', color: '#fff',
@@ -730,11 +732,26 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '10px 14px', background: '#FDF3F7', borderRadius: 10, border: '1px solid #FCE0E9',
           }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#6B5D64' }}>Preço unitário</span>
-            <span style={{ fontSize: 18, fontWeight: 800, color: corBotao }}>
-              {formatCurrency(calculo.final)} <span style={{ fontSize: 12, color: '#6B5D64', fontWeight: 700 }}>/{FORMA_LABEL[product.forma_venda] || 'un'}</span>
-            </span>
+            {(() => {
+              // Com tamanhos e nenhum escolhido ainda: mostra o menor preço ("A partir de")
+              const semTamanho = !!gTamanho && !opTamanho && !kitInfo
+              const valor = semTamanho ? Math.round(precoCardapio(product).valor * (1 - descPct) * 100) / 100 : calculo.final
+              return (
+                <>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#6B5D64' }}>{semTamanho ? 'A partir de' : 'Preço unitário'}</span>
+                  <span style={{ fontSize: 18, fontWeight: 800, color: corBotao }}>
+                    {formatCurrency(valor)} {!semTamanho && <span style={{ fontSize: 12, color: '#6B5D64', fontWeight: 700 }}>/{FORMA_LABEL[product.forma_venda] || 'un'}</span>}
+                  </span>
+                </>
+              )
+            })()}
           </div>
+
+          {/* Encomenda: avisa a antecedência (pronta entrega não precisa de aviso) */}
+          <AvisoAntecedencia produto={product} />
+
+          {/* Kit por quantidade: o cliente monta o kit */}
+          {kitCfg && <KitPicker kit={kitCfg} sel={kitSel} onChange={setKitSel} />}
 
           {/* Grupos V3 (renderiza os ativos) */}
           {gTamanho && (
@@ -794,12 +811,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                       )}
                     </div>
-                    <span style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ display: 'block', fontSize: 14, fontWeight: 600, color: '#2C1219' }}>{e.nome}</span>
-                      {e.descricao && (
-                        <span style={{ display: 'block', fontSize: 12, color: '#6B7280', marginTop: 2, lineHeight: 1.4 }}>{e.descricao}</span>
-                      )}
-                    </span>
+                    <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: '#2C1219' }}>{e.nome}</span>
                     <span style={{
                       fontSize: 12.5, fontWeight: 800,
                       color: isGratis ? '#16a34a' : '#C33A6E',
