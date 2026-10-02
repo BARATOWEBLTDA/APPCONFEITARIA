@@ -130,7 +130,7 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
             <div key={group.label} className="mais-card">
               <p className="mais-sec-lbl">{group.label}</p>
               {group.items.map((item) => (
-                <button key={item.path} className="mais-it" onClick={() => go(item.path)}>
+                <button key={item.path} className="mais-it" onClick={() => go(item.path === "/assinar" && isPro ? "/minha-assinatura" : item.path)}>
                   <span className="mais-it-ic">{item.icon}</span>
                   <div className="mais-it-txt">
                     <div className="mais-it-t">{item.label}</div>
