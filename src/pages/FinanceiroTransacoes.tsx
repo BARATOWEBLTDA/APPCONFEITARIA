@@ -1,4 +1,7 @@
 // Financeiro V1 — resumo + entradas (pedidos pagos + avulsas) + saídas + gráfico
+import * as pdf from "@/lib/pdfDoonly"
+import { useNavigate } from "react-router-dom"
+import { usePlano } from "@/hooks/usePlano"
 import { valorRecebidoPedido } from "@/lib/financeiroPedido"
 import ReqTag from "@/components/ReqTag";
 import { useState, useEffect, useMemo } from "react"
@@ -44,6 +47,8 @@ const monthLabel = (d: Date) =>
     .replace(/^./, c => c.toUpperCase())
 
 export default function FinanceiroTransacoes() {
+  const { isPro } = usePlano()
+  const navigate = useNavigate()
   const [userId, setUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [mes, setMes] = useState(new Date()) // mês ancorado no primeiro dia
@@ -401,110 +406,21 @@ export default function FinanceiroTransacoes() {
   }
 
   const exportarPDF = () => {
-    const win = window.open("", "_blank")
-    if (!win) { alert("Permita pop-ups para exportar PDF"); return }
-    const linhasHTML = todasMovs
-      .sort((a, b) => b.data.localeCompare(a.data))
-      .map(m => `
-        <tr>
-          <td>${fmtData(m.data)}</td>
-          <td><span class="tag tag-${m.tipo}">${m.tipo === "entrada" ? "Entrada" : "Saída"}</span></td>
-          <td>${m.categoria || "—"}</td>
-          <td>${m.descricao}</td>
-          <td class="val ${m.tipo}">${m.tipo === "entrada" ? "+" : "−"} ${fmtMoney(m.valor)}</td>
-        </tr>
-      `).join("")
-
-    const html = `<!DOCTYPE html>
-<html lang="pt-BR">
-<head><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<meta charset="UTF-8">
-<title>Financeiro — ${monthLabel(mes)}</title>
-<style>
-  * { box-sizing:border-box; }
-  body { font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color:#1F2937; padding:32px; margin:0; }
-  .header { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:3px solid #FF6FA9; padding-bottom:14px; margin-bottom:24px; }
-  .header h1 { margin:0 0 4px; color:#FF6FA9; font-size:24px; }
-  .header p { margin:0; color:#6B7280; font-size:13px; }
-  .period { text-align:right; font-size:13px; color:#6B7280; }
-  .cards { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
-  .card { border:1px solid #E5E7EB; border-radius: var(--radius-md); padding:14px; }
-  .card .label { font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:#6B7280; font-weight: var(--fw-semibold); margin:0 0 4px; }
-  .card .value { font-size:18px; font-weight: var(--fw-black); margin:0; }
-  .card.in .value { color:#16a34a; }
-  .card.out .value { color:#dc2626; }
-  .card.profit .value { color:${lucro >= 0 ? "#16a34a" : "#dc2626"}; }
-  .meta-box { border:1px solid #E5E7EB; border-radius: var(--radius-md); padding:14px; margin-bottom:24px; background:#FFF1F7; }
-  .meta-box .label { font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:#FF6FA9; font-weight: var(--fw-bold); margin:0 0 4px; }
-  .meta-bar { width:100%; height:14px; background:#fff; border-radius: var(--radius-full); overflow:hidden; margin-top:8px; }
-  .meta-bar > div { height:100%; background:linear-gradient(90deg, #FF6FA9, #F85A9A); border-radius: var(--radius-full); }
-  table { width:100%; border-collapse:collapse; font-size:12px; }
-  thead th { text-align:left; padding:10px 8px; background:#F7F7F8; border-bottom:2px solid #E5E7EB; font-size:11px; text-transform:uppercase; color:#6B7280; letter-spacing:0.05em; }
-  tbody td { padding:10px 8px; border-bottom:1px solid #F3F4F6; }
-  .val { text-align:right; font-weight: var(--fw-bold); font-variant-numeric:tabular-nums; white-space:nowrap; }
-  .val.entrada { color:#16a34a; }
-  .val.saida { color:#dc2626; }
-  .tag { padding:2px 8px; border-radius: var(--radius-full); font-size:10px; font-weight: var(--fw-bold); }
-  .tag-entrada { background:#dcfce7; color:#15803d; }
-  .tag-saida { background:#fee2e2; color:#b91c1c; }
-  .footer { margin-top:32px; padding-top:14px; border-top:1px solid #E5E7EB; font-size:11px; color:#9CA3AF; text-align:center; }
-  @media print {
-    body { padding:18px; }
-    .no-print { display:none; }
-  }
-  .print-btn { position:fixed; top:18px; right:18px; background:linear-gradient(135deg,#FF6FA9,#F85A9A); color:#fff; border:none; padding:10px 20px; border-radius: var(--radius-full); font-weight: var(--fw-bold); cursor:pointer; box-shadow:0 4px 14px rgba(255,111,169,0.4); font-family:inherit; }
-</style>
-</head>
-<body>
-  <button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
-
-  <div class="header">
-    <div>
-      <h1>Relatório Financeiro</h1>
-      <p>Doonly · Gestão da sua confeitaria</p>
-    </div>
-    <div class="period">
-      <strong>${monthLabel(mes)}</strong><br>
-      Gerado em ${new Date().toLocaleDateString("pt-BR")}
-    </div>
-  </div>
-
-  <div class="cards">
-    <div class="card in"><p class="label">Receita</p><p class="value">${fmtMoney(entradas)}</p></div>
-    <div class="card out"><p class="label">Despesas</p><p class="value">${fmtMoney(saidas)}</p></div>
-    <div class="card profit"><p class="label">Lucro líquido</p><p class="value">${fmtMoney(lucro)}</p></div>
-    <div class="card"><p class="label">Ticket médio</p><p class="value">${fmtMoney(ticketMedio)}</p></div>
-  </div>
-
-  ${metaMensal ? `
-  <div class="meta-box">
-    <p class="label">Meta mensal</p>
-    <strong>${fmtMoney(entradas)}</strong> de <strong>${fmtMoney(metaMensal)}</strong> · ${metaProgresso.toFixed(0)}%
-    ${metaProgresso >= 100 ? " · 🎉 META BATIDA!" : ` · faltam ${fmtMoney(metaFaltam)}`}
-    <div class="meta-bar"><div style="width:${metaProgresso}%"></div></div>
-  </div>` : ""}
-
-  <table>
-    <thead>
-      <tr>
-        <th>Data</th><th>Tipo</th><th>Categoria</th><th>Descrição</th><th style="text-align:right">Valor</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${linhasHTML || '<tr><td colspan="5" style="text-align:center;padding:24px;color:#9CA3AF">Nenhuma movimentação neste mês</td></tr>'}
-    </tbody>
-  </table>
-
-  <div class="footer">
-    Relatório gerado por Doonly · ${todasMovs.length} movimentação(ões)
-  </div>
-</body>
-</html>`
-    win.document.write(html)
-    win.document.close()
+    // Transações do mês no modelo padrão de PDF (recurso PRO)
     setShowExport(false)
-    // Dispara o print depois que renderiza
-    setTimeout(() => { try { win.focus(); win.print(); } catch {} }, 300)
+    if (!isPro) { navigate("/assinar"); return }
+    const mesNome = mes.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })
+    const fim = new Date(mes.getFullYear(), mes.getMonth() + 1, 0)
+    const linhas = [...todasMovs].sort((a, b) => a.data.localeCompare(b.data))
+      .map(m => `<tr><td>${pdf.esc(fmtData(m.data))}</td><td>${pdf.esc(m.descricao)}${m.categoria ? `<small>${pdf.esc(m.categoria)}</small>` : ""}</td><td>${pdf.pill(m.tipo === "entrada" ? "Entrada" : "Saída", m.tipo === "entrada" ? "ok" : "rd")}</td><td class="r ${m.tipo === "entrada" ? "pos" : "neg"}">${m.tipo === "entrada" ? "+" : "−"} ${pdf.brl(m.valor)}</td></tr>`).join("")
+    pdf.gerarDocumento(() => ({
+      titulo: `Transações · ${mesNome}`,
+      tipo: "Transações",
+      numero: mesNome.charAt(0).toUpperCase() + mesNome.slice(1),
+      sub: `01/${String(mes.getMonth() + 1).padStart(2, "0")} a ${String(fim.getDate()).padStart(2, "0")}/${String(mes.getMonth() + 1).padStart(2, "0")}`,
+      corpo: pdf.kpis([["Entradas", `<span class="pos">${pdf.brl(entradas)}</span>`], ["Saídas", `<span class="neg">${pdf.brl(saidas)}</span>`], ["Saldo", pdf.brl(entradas - saidas), true]])
+        + pdf.card("Lançamentos", linhas ? `<table class="tb"><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th class="r">Valor</th></tr>${linhas}</table>` : `<p class="vazio">Nenhum lançamento neste mês.</p>`),
+    }))
   }
 
   // ── Gráfico ─────────────────────────────────────────────────

@@ -6431,6 +6431,8 @@ export default function Produtos() {
                         className="prod-preview-menu-item"
                         onClick={async () => {
                           setPreviewMenu(false);
+                          // Ficha técnica em PDF é recurso PRO (relatórios em PDF)
+                          if (!isPro) { navigate("/assinar"); return; }
                           try {
                             await gerarFichaProduto(previewProduto, userId);
                           } catch (err) {

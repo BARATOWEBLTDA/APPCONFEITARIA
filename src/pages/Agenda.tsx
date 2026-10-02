@@ -1,4 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { gerarPedidoPDF } from "@/lib/gerarPedidoPDF";
+import * as pdf from "@/lib/pdfDoonly";
+import { usePlano } from "@/hooks/usePlano";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -152,6 +155,7 @@ const IconImage = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="no
 
 export default function Agenda() {
   const navigate = useNavigate();
+  const { isPro } = usePlano();
   const [userId, setUserId] = useState("");
 
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -205,7 +209,7 @@ export default function Agenda() {
     (async () => {
       setLoading(true);
       const { data } = await supabase.from("pedidos")
-        .select("*, pedido_itens(nome_produto, quantidade, valor_unitario, imagem_url, produtos(imagem_url)), clientes(foto_url)")
+        .select("*, pedido_itens(nome_produto, quantidade, valor_unitario, imagem_url, personalizacoes, produtos(imagem_url)), clientes(foto_url)")
         .eq("user_id", userId)
         .order("data_entrega", { ascending: true, nullsFirst: false })
         .order("horario_entrega", { ascending: true, nullsFirst: false });
@@ -342,6 +346,48 @@ export default function Agenda() {
     setPedidoIdReagendando(null);
   };
 
+  // ── Agenda do dia em PDF (modelo padrão · recurso PRO) ──
+  const imprimirAgendaDoDia = () => {
+    if (!isPro) { navigate("/assinar"); return; }
+    const lista = [...(pedidosDoDia as any[])].filter(p => p.status !== "cancelado")
+      .sort((a, b) => String(a.horario_entrega || "99").localeCompare(String(b.horario_entrega || "99")));
+    const dia = new Date(diaSel + "T12:00:00");
+    const diaTxt = dia.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "2-digit" });
+    const STATUS_PDF: Record<string, [string, "ok" | "am" | "rd" | "bl"]> = {
+      finalizado: ["Pronto", "ok"], pronto: ["Pronto", "ok"], aguardando_retirada: ["Pronto", "ok"], entregue: ["Entregue", "ok"], concluido: ["Entregue", "ok"],
+      em_producao: ["Em produção", "am"], em_preparo: ["Em produção", "am"], em_entrega: ["Saiu pra entrega", "am"], a_caminho: ["Saiu pra entrega", "am"],
+      aguardando_pagamento: ["Aguardando pagamento", "rd"], aguardando_aceite: ["Aguardando aceite", "rd"], novo: ["Aguardando aceite", "rd"],
+    };
+    const nomeOp = (v: any) => (!v ? "" : typeof v === "string" ? v : v.nome || "");
+    const produzir = new Map<string, { qtd: number; extra: Map<string, number> }>();
+    const linhas = lista.map(p => {
+      const itens = (p.pedido_itens || []).map((it: any) => {
+        const tam = nomeOp(it.personalizacoes?.tamanho);
+        const chave = [it.nome_produto, tam].filter(Boolean).join(" ");
+        const atual = produzir.get(chave) || { qtd: 0, extra: new Map() };
+        atual.qtd += Number(it.quantidade) || 1;
+        (it.personalizacoes?.kit?.sabores || []).forEach((x: any) => atual.extra.set(x.nome, (atual.extra.get(x.nome) || 0) + (Number(x.qtd) || 0) * (Number(it.quantidade) || 1)));
+        produzir.set(chave, atual);
+        return `${chave}${(Number(it.quantidade) || 1) > 1 ? ` × ${it.quantidade}` : ""}`;
+      }).join(" + ");
+      const [stTxt, stCor] = STATUS_PDF[p.status] || ["Agendado", "bl"];
+      const ent = p.tipo_entrega === "entrega";
+      const end = ent ? [[p.endereco_rua, p.endereco_numero].filter(Boolean).join(", "), p.endereco_bairro].filter(Boolean).join(" · ") : "";
+      return `<tr><td class="hr">${p.horario_entrega ? String(p.horario_entrega).slice(0, 5) : "—"}</td><td><b>${pdf.esc(p.cliente_nome || "Venda avulsa")}</b><small>${ent ? "Entrega" : "Retirada"}${end ? ` · ${pdf.esc(end)}` : ""}</small></td><td>${pdf.esc(itens)}</td><td>${pdf.pill(stTxt, stCor)}</td><td class="ck">☐</td></tr>`;
+    }).join("");
+    const prod = [...produzir.entries()].map(([nome, v]) => [nome, `${v.qtd}${v.extra.size ? ` (${[...v.extra.entries()].map(([n, q]) => `${n} ${q}`).join(" · ")})` : ""}`] as [string, string]);
+    const entregas = lista.filter(p => p.tipo_entrega === "entrega").length;
+    pdf.gerarDocumento(() => ({
+      titulo: `Agenda do dia · ${diaTxt}`,
+      tipo: "Agenda do dia",
+      numero: diaTxt.charAt(0).toUpperCase() + diaTxt.slice(1),
+      sub: `${lista.length} pedido${lista.length !== 1 ? "s" : ""}`,
+      corpo: pdf.kpis([["Pedidos", String(lista.length)], ["Entregas", String(entregas)], ["Retiradas", String(lista.length - entregas)]])
+        + pdf.card("Pedidos do dia", lista.length ? `<table class="tb"><tr><th>Hora</th><th>Cliente</th><th>Itens</th><th>Situação</th><th class="c">Feito</th></tr>${linhas}</table>` : `<p class="vazio">Nenhum pedido neste dia.</p>`)
+        + (prod.length ? pdf.card("Pra produzir hoje", pdf.kv(prod.map(([n, q]) => [n, pdf.esc(q)] as [string, string]))) : ""),
+    }));
+  };
+
   const acoes = {
     editar: abrirEditar,
     marcarPronto: marcarComoPronto,
@@ -349,7 +395,11 @@ export default function Agenda() {
     duplicar: duplicarPedido,
     reagendar: reagendarPedido,
     excluir: excluirPedido,
-    imprimir: () => setToast({ msg: "Exportar / imprimir: em breve", tipo: "info" }),
+    imprimir: async (id: string) => {
+      const janela = pdf.abrirJanela();
+      const { data } = await supabase.from("pedidos").select("*, pedido_itens(*)").eq("id", id).maybeSingle();
+      await gerarPedidoPDF((data || { id }) as any, janela);
+    },
   };
 
   /* ═══ Render ═══ */
@@ -411,7 +461,7 @@ export default function Agenda() {
       <ResumoDoDia diaSel={diaSel} pedidosDoDia={pedidosDoDia} dayStats={dayStats} />
 
       {/* Lista de pedidos do dia */}
-      <PedidosDoDia
+      <PedidosDoDia imprimirAgendaDoDia={imprimirAgendaDoDia} isPro={isPro}
         loading={loading}
         pedidosDoDia={pedidosDoDia}
         pedidosFiltrados={pedidosDiaFiltrados}
@@ -845,7 +895,7 @@ function FiltroDrawer({ statusSelecionados, setStatusSelecionados, countStatusDi
  * LISTA DE PEDIDOS DO DIA
  * ═══════════════════════════════════════════════════════════════════════════ */
 
-function PedidosDoDia({ loading, pedidosDoDia, pedidosFiltrados, acoes }: any) {
+function PedidosDoDia({ loading, pedidosDoDia, pedidosFiltrados, acoes, imprimirAgendaDoDia, isPro }: any) {
   if (loading) {
     return <div className="ag-loading">Carregando pedidos…</div>;
   }
@@ -858,7 +908,12 @@ function PedidosDoDia({ loading, pedidosDoDia, pedidosFiltrados, acoes }: any) {
 
   return (
     <div className="ag-lista">
-      <div className="ag-secao-lbl">Pedidos do dia</div>
+      <div className="ag-secao-row">
+        <div className="ag-secao-lbl">Pedidos do dia</div>
+        <button type="button" className="ag-print-dia" onClick={imprimirAgendaDoDia} aria-label="Imprimir a agenda do dia">
+          <IconPrint /> Imprimir o dia{!isPro && <span className="ag-print-pro">PRO</span>}
+        </button>
+      </div>
       {pedidosFiltrados.map((p: any) => (
         <PedidoCard key={p.id} p={p} acoes={acoes} />
       ))}
@@ -968,7 +1023,7 @@ function PedidoCard({ p, acoes }: any) {
               <button className="ag-pc-menu-item" onClick={() => { setMenuOpen(false); acoes.duplicar(p.id); }}>
                 <IconCopy /> Duplicar pedido
               </button>
-              <button className="ag-pc-menu-item" onClick={() => { setMenuOpen(false); acoes.imprimir(); }}>
+              <button className="ag-pc-menu-item" onClick={() => { setMenuOpen(false); acoes.imprimir(p.id); }}>
                 <IconPrint /> Exportar / Imprimir
               </button>
               <div className="ag-pc-menu-divider" />
@@ -2407,6 +2462,11 @@ function AgendaStyles() {
         outline: 2px solid var(--primary);
         outline-offset: 2px;
       }
-    `}</style>
+    
+        .ag-secao-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .ag-print-dia { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #F0E3E9; background: #fff; color: #C33A6E; border-radius: 999px; padding: 6px 12px; font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+        .ag-print-dia svg { width: 14px; height: 14px; }
+        .ag-print-pro { font-size: 9.5px; font-weight: 900; background: #2D1F26; color: #fff; padding: 2px 6px; border-radius: 6px; }
+`}</style>
   );
 }

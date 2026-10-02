@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
+import { gerarPedidoPDF } from '@/lib/gerarPedidoPDF'
+import { abrirJanela } from '@/lib/pdfDoonly'
 import { usePlano } from '@/hooks/usePlano'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
@@ -456,25 +458,13 @@ export default function NovaVenda() {
     tocarSom('pedido')
   }
 
-  // Comprovante do pedido (o navegador oferece "Salvar como PDF")
-  const exportarPdf = () => {
-    if (!isPro) { navigate('/assinar'); return }
+  // Comprovante da venda no modelo padrão de PDF (o mesmo do pedido). Grátis pra todos.
+  const exportarPdf = async () => {
     const pc = pedidoCriado
-    if (!pc) return
-    const esc = (x: any) => String(x ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' } as any)[c])
-    const linhas = (pc.itens || []).map((it: any) => `<tr><td>${it.quantidade}× ${esc(toTitleCase(it.nome_produto))}${it.opcaoLabel ? ` · ${esc(it.opcaoLabel)}` : ''}</td><td class="v">${formatMoney(it.valor_unitario * it.quantidade)}</td></tr>`).join('')
-    const html = `<!doctype html><html lang="pt-BR"><head><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap" rel="stylesheet"><meta charset="utf-8"><title>Pedido #${esc(pc.numero)}</title>
-<style>body{font-family:"Geist",-apple-system,Segoe UI,Roboto,sans-serif;color:#2C1219;max-width:520px;margin:24px auto;padding:0 16px}h1{font-size:20px;margin:0}small{color:#6B5D64}
-table{width:100%;border-collapse:collapse;margin:16px 0}td{padding:8px 0;border-bottom:1px solid #eee;font-size:14px}.v{text-align:right;white-space:nowrap}
-.t{font-size:18px;font-weight:800;text-align:right}.b{margin-top:6px;font-size:14px}</style></head><body>
-<h1>Pedido #${esc(pc.numero)}</h1><small>${new Date().toLocaleDateString('pt-BR')}</small>
-${pc.clienteNome ? `<p class="b"><b>Cliente:</b> ${esc(pc.clienteNome)}${pc.clienteTelefone ? ` · ${esc(pc.clienteTelefone)}` : ''}</p>` : ''}
-${pc.tipo === 'encomenda' && pc.dataEntrega ? `<p class="b"><b>Entrega:</b> ${esc(formatDataBR(pc.dataEntrega))}${pc.horarioEntrega ? ` às ${esc(pc.horarioEntrega)}` : ''}</p>` : ''}
-<table>${linhas}</table><p class="t">Total: ${formatMoney(pc.total)}</p>
-<script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script></body></html>`
-    const w = window.open('', '_blank')
-    if (!w) { alert('Libere as janelas (pop-up) do navegador pra exportar o PDF.'); return }
-    w.document.open(); w.document.write(html); w.document.close()
+    if (!pc?.id) return
+    const janela = abrirJanela()
+    const { data } = await supabase.from('pedidos').select('*, pedido_itens(*)').eq('id', pc.id).maybeSingle()
+    await gerarPedidoPDF((data || { id: pc.id, numero: pc.numero, valor_total: pc.total }) as any, janela)
   }
 
   // Reset completo pra nova venda
@@ -559,10 +549,9 @@ ${pc.tipo === 'encomenda' && pc.dataEntrega ? `<p class="b"><b>Entrega:</b> ${es
                 <span className="nv-suc-btn-em">📋</span>
                 Ver pedidos
               </button>
-              <button className="nv-suc-btn-ghost nv-suc-btn-ghost--pro" title="Recurso PRO" onClick={exportarPdf}>
+              <button className="nv-suc-btn-ghost" onClick={exportarPdf}>
                 <span className="nv-suc-btn-em">📄</span>
                 Exportar PDF
-                <span className="nv-suc-badge nv-suc-badge--pro">✨ PRO</span>
               </button>
             </div>
           </div>

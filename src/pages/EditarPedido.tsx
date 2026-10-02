@@ -579,6 +579,7 @@ export default function EditarPedido() {
       observacoes: pedido.observacoes,
       data_prevista_pagamento: situacaoPag === 'fiado' ? dataPrevistaPagamento : null,
       origem: pedido.origem,
+      cupom_codigo: (pedido as any).cupom_codigo,
       created_at: pedido.created_at,
       pedido_itens: itens,
     })

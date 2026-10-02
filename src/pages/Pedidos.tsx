@@ -6,6 +6,7 @@ import { createPortal } from 'react-dom'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { gerarPedidoPDF } from '@/lib/gerarPedidoPDF'
+import { abrirJanela } from '@/lib/pdfDoonly'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useProfile } from '@/hooks/useProfile'
 import { usePlano } from '@/hooks/usePlano'
@@ -775,7 +776,12 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                       Duplicar pedido
                     </button>
-                    <button className="mpd-menu-item" onClick={() => { setMenuAcoesOpen(false); alert('🚀 Em breve: exportar em PDF') }}>
+                    <button className="mpd-menu-item" onClick={async () => {
+                  setMenuAcoesOpen(false)
+                  const janela = abrirJanela()
+                  const { data } = await supabase.from('pedidos').select('*, pedido_itens(*)').eq('id', p.id).maybeSingle()
+                  await gerarPedidoPDF((data || p) as any, janela)
+                }}>
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                       Exportar em PDF
                     </button>
@@ -1859,16 +1865,10 @@ export default function Pedidos() {
     }
     if (acao === 'pdf') {
       // Se o pedido já tem itens no objeto local, usa direto; senão busca
-      let pedidoCompleto: any = p
-      if (!p.pedido_itens || p.pedido_itens.length === 0) {
-        const { data, error } = await supabase.from('pedidos').select('*, pedido_itens(*)').eq('id', p.id).single()
-        if (error || !data) {
-          alert('Não foi possível carregar os itens do pedido.')
-          return
-        }
-        pedidoCompleto = data
-      }
-      await gerarPedidoPDF(pedidoCompleto)
+      const janela = abrirJanela()
+      // Busca o pedido completo (com as escolhas de cada item) pra o comprovante sair inteiro
+      const { data } = await supabase.from('pedidos').select('*, pedido_itens(*)').eq('id', p.id).maybeSingle()
+      await gerarPedidoPDF((data || p) as any, janela)
       return
     }
     if (acao === 'excluir') {
