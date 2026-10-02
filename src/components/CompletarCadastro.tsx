@@ -59,7 +59,9 @@ export default function CompletarCadastro({ user, nomeInicial, onPronto }: { use
         <p className="ccad-dica">É o nome que aparece no seu cardápio.</p>
 
         <label className="ccad-l" htmlFor="cc-tel">WhatsApp que recebe os pedidos</label>
-        <div className="ccad-wrap ccad-wrap--tel"><span aria-hidden="true">🟢</span>
+        <div className="ccad-wrap ccad-wrap--tel"><span aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="#16a34a" aria-hidden="true" style={{ display: "block", flexShrink: 0 }}>
+    <path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-3.3-.8-2.8-1.2-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.3-.3.6-.3.8-.3h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l2 1c.3.1.5.2.5.3.1.2.1.8-.1 1.4z" />
+  </svg></span>
           <input id="cc-tel" className="ccad-in-f" value={tel} onChange={e => setTel(maskTel(e.target.value))} placeholder="(00) 9 0000-0000" inputMode="tel" autoComplete="tel" /></div>
 
         {erro && <p className="ccad-erro">{erro}</p>}
@@ -81,8 +83,8 @@ export default function CompletarCadastro({ user, nomeInicial, onPronto }: { use
         .ccad-in-f:focus { outline: none; border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
         .ccad-wrap { position: relative; }
         .ccad-wrap small { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 11px; font-weight: 700; color: #9A8E94; pointer-events: none; }
-        .ccad-wrap--tel span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 13px; }
-        .ccad-wrap--tel .ccad-in-f { padding-left: 38px; }
+        .ccad-wrap--tel span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); display: flex; } /* ícone do WhatsApp (o mesmo dos Dados da loja) */
+        .ccad-wrap--tel .ccad-in-f { padding-left: 42px; }
         .ccad-dica { font-size: 11.5px; color: #9A8E94; margin: 5px 0 0; }
         .ccad-erro { margin: 14px 0 0; font-size: 13px; color: #B91C1C; font-weight: 700; }
         .ccad-cta { display: block; width: 100%; margin-top: 22px; border: none; border-radius: 12px; padding: 15px; font-family: inherit; font-size: 15.5px; font-weight: 800; color: #fff; background: #E85A8C; box-shadow: 0 3px 0 #C33A6E; cursor: pointer; }
