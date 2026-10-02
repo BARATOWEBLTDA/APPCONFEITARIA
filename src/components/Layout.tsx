@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 // deploy: Proposta D - nova arquitetura de navegação (Entrega 1)
+import ParabensPro from "@/components/pro/ParabensPro";
 import DooIA from "@/components/DooIA";
 import MaisDrawer from "@/components/MaisDrawer";
 import { useState, useEffect, type ReactNode } from "react";
@@ -338,6 +339,7 @@ export default function Layout() {
       )}
 
       <DooIA forceOpen={dooOpen} onClose={() => setDooOpen(false)} />
+      <ParabensPro />
 
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }

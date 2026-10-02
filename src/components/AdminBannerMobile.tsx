@@ -42,7 +42,9 @@ export default function AdminBannerMobile() {
   if (loading || !row || !row.ativo || !row.imagem_url) return null;
 
   const handleClick = () => {
-    const dest = row.link_destino || "/assinar";
+    // Quem já é PRO vai pra "Minha assinatura" (e não pra página de vender o PRO)
+    let dest = row.link_destino || "/assinar";
+    if (isPro && dest === "/assinar") dest = "/minha-assinatura";
     if (dest.startsWith("http")) {
       window.open(dest, "_blank", "noopener,noreferrer");
     } else {

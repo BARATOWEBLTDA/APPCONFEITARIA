@@ -375,7 +375,7 @@ export default function Configuracoes() {
             </button>
           )}
           {plano === "pro" && (
-            <button className="cfgp-sub-cta cfgp-sub-cta--manage" onClick={() => navigate("/assinar")}>
+            <button className="cfgp-sub-cta cfgp-sub-cta--manage" onClick={() => navigate("/minha-assinatura")}>
               Gerenciar assinatura
             </button>
           )}
@@ -569,7 +569,7 @@ export default function Configuracoes() {
             </button>
           )}
           {plano === "pro" && (
-            <button className="cfgd-sub-cta cfgd-sub-cta--manage" onClick={() => navigate("/assinar")}>
+            <button className="cfgd-sub-cta cfgd-sub-cta--manage" onClick={() => navigate("/minha-assinatura")}>
               Gerenciar assinatura
             </button>
           )}

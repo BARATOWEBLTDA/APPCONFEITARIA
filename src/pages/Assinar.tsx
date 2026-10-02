@@ -77,7 +77,7 @@ export default function Assinar() {
               <p className="pro-of-t">Seu plano</p>
               <p className="pro-ja">Você já é PRO 👑</p>
               {proExpiraEm && <p className="pro-of-s">Renova em <b>{diasRestantes} dia{diasRestantes !== 1 ? "s" : ""}</b></p>}
-              <button type="button" className="pro-btn pro-btn--sec" onClick={assinarPeloWhatsApp}>Falar com a equipe</button>
+              <button type="button" className="pro-btn pro-btn--sec" onClick={() => navigate("/minha-assinatura")}>Ver minha assinatura</button>
             </>
           ) : (
             <>
