@@ -1,4 +1,5 @@
 import { useState, useEffect, type ReactElement } from "react";
+import VisaoGeralDesktop from "@/components/cardapio/VisaoGeralDesktop";
 import { useNavigate } from "react-router-dom";
 import {
   ChartBar, Eye, Storefront, Sliders, PaintBrush, Tag,
@@ -57,6 +58,14 @@ export default function Cardapio() {
   const [copiado, setCopiado] = useState(false);
   const [contadores, setContadores] = useState({ produtos: 0, produtosAtivos: 0, categorias: 0, promocoes: 0 });
   const [visitasPop, setVisitasPop] = useState<number | null>(null); // +N flutuante quando chega visita nova
+  // Computador (com o menu lateral do cardápio): Visão geral nova, sem as listas de atalhos (02/10)
+  const [ehComputador, setEhComputador] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const f = () => setEhComputador(mq.matches);
+    mq.addEventListener?.("change", f);
+    return () => mq.removeEventListener?.("change", f);
+  }, []);
 
   // Nova arquitetura: cardápio publicado quando profile.codigo_publico existe.
   // URL final: /c/[codigo]/[slug] — slug é "cardapio" (free) ou personalizado (PRO).
@@ -318,6 +327,9 @@ export default function Cardapio() {
       }
       infoTip={<>Copie o link do seu cardápio e coloque na <strong>bio do Instagram</strong> ou envie no WhatsApp.</>}
     />
+    {ehComputador ? (
+      <VisaoGeralDesktop profile={profile} linkCardapio={linkCardapio} publicado={publicado} onShare={handleShare} />
+    ) : (
     <div className="cardapio-hub">
       {/* Passo a passo pra configurar cardápio (some quando 100%) */}
       <PassoAPassoCardapio
@@ -1130,6 +1142,7 @@ export default function Cardapio() {
         }
       `}</style>
     </div>
+    )}
     </>
   );
 }

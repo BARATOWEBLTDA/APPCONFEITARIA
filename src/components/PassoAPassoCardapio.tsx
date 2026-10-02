@@ -19,6 +19,10 @@ interface Props {
   publicado: boolean;
   linkCardapio: string;
   onShareClick: () => void;
+  /** Visão geral do computador: quando tudo está pronto, não mostra o cartão "Cardápio configurado" (ela tem o próprio) */
+  esconderQuandoCompleto?: boolean;
+  /** Avisa se o passo a passo terminou (undefined enquanto carrega) */
+  onEstado?: (completo: boolean) => void;
 }
 
 /**
@@ -30,7 +34,7 @@ interface Props {
  * 2. Quase pronto (só falta compartilhar): card premium grafite com 2 CTAs
  * 3. 100%: banner verde "cardápio configurado"
  */
-export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, onShareClick }: Props) {
+export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, onShareClick, esconderQuandoCompleto, onEstado }: Props) {
   const isMobile = useIsMobile();
   const [steps, setSteps] = useState<Step[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,7 +108,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         {
           key: "design",
           label: "Escolher design do cardápio",
-          desc: "Padrão (grátis) ou Editorial (PRO com foto de fundo)",
+          desc: "Escolha o modelo, as cores e coloque o seu logo",
           icon: <Palette size={18} weight="fill" />,
           done: escolheuDesign,
           path: "/cardapio-design",
@@ -132,6 +136,8 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
 
   const feitos = steps.filter((s) => s.done).length;
   const total = steps.length;
+  const completo = total > 0 && feitos === total;
+  useEffect(() => { if (total > 0) onEstado?.(completo); }, [completo, total]); // eslint-disable-line react-hooks/exhaustive-deps
   const pct = total === 0 ? 0 : Math.round((feitos / total) * 100);
 
   const mostrarAviso = (txt: string, tipo: "ok" | "err" = "ok") => {
@@ -244,6 +250,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
   const soFaltaCompartilhar = outrosFeitos === outrosTotais && shareStep && !shareStep.done;
 
   // ─── Estado 100% concluído ───
+  if (feitos === total && esconderQuandoCompleto) return null;
   if (feitos === total) {
     return (
       <div className="pap-done">
