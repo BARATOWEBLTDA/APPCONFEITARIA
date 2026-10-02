@@ -243,7 +243,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
       </div>
 
       <style>{`
-        .vgd { display: flex; flex-direction: column; gap: 16px; font-family: var(--font-base); color: #2C1219; }
+        .vgd { display: flex; flex-direction: column; gap: 16px; font-family: var(--font-base); color: #2C1219; margin-top: 20px; }
         .vgd-card { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 18px 20px; }
         .vgd-ct { margin: 0; font-size: 15.5px; font-weight: 800; } .vgd-cs { margin: 2px 0 0; font-size: 12.5px; color: #9A8E94; }
         .vgd-rowh { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }

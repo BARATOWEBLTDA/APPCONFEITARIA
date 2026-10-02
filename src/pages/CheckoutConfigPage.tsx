@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { supabase } from "@/lib/supabase"
 import { useNavigate } from "react-router-dom"
 import AppPageHeader from "@/components/AppPageHeader"
+import { usePlano } from "@/hooks/usePlano"
 
 const PAGAMENTOS = [
   { key: 'pix',                label: 'Pix' },
@@ -60,6 +61,7 @@ const numBR = (v: string | number | null | undefined): number => {
 
 export default function CheckoutConfigPage() {
   const navigate = useNavigate()
+  const { isPro } = usePlano()
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
   const [autoSaved, setAutoSaved] = useState(false)
@@ -232,7 +234,8 @@ export default function CheckoutConfigPage() {
   if (loading) return (
     <div style={{display:'flex',alignItems:'center',justifyContent:'center',minHeight:'40vh'}}>
       <div className="chk-spinner" />
-      <style>{`@keyframes chkspin{to{transform:rotate(360deg)}} .chk-spinner{width:32px;height:32px;border:3px solid var(--primary-light);border-top-color:var(--primary);border-radius:50%;animation:chkspin 0.7s linear infinite}`}</style>
+      <style>{`@keyframes chkspin{to{transform:rotate(360deg)}} .chk-spinner{width:32px;height:32px;border:3px solid var(--primary-light);border-top-color:var(--primary);border-radius:50%;animation:chkspin 0.7s linear infinite}
+`}</style>
     </div>
   )
 
@@ -241,7 +244,8 @@ export default function CheckoutConfigPage() {
       {/* Cabeçalho do app com voltar (antes era só um título solto, sem voltar) */}
       <AppPageHeader title="Entrega e pagamento" subtitle="Formas de pagar, entrega, retirada e cupons" onBack={() => navigate("/cardapio")} />
       <div className="chk-root">
-        {autoSaved && <div className="chk-header"><span className="chk-autosave">✓ Salvo automaticamente</span></div>}
+        {/* Aviso flutuante: antes entrava no meio da página e empurrava o conteúdo pra baixo e pra cima */}
+        {autoSaved && <span className="chk-autosave chk-autosave--flutua" role="status">✓ Salvo automaticamente</span>}
 
         <div className="chk-grid">
 
@@ -342,8 +346,27 @@ export default function CheckoutConfigPage() {
               )}
             </div>
 
-            {/* ── CUPONS ── */}
-            <div className="chk-card">
+            {/* ── CUPONS ── (recurso PRO: no grátis fica travado com o convite pro PRO) */}
+            <div className={`chk-card${!isPro ? " chk-card--lock" : ""}`}>
+              {!isPro && (
+                <div className="chk-lock" role="note">
+                  <img src="/coroa.png" alt="" className="chk-lock-cr" />
+                  <b>Cupons de desconto são do PRO</b>
+                  <span>Crie cupons pra atrair novos clientes e fidelizar os antigos.</span>
+                  <button type="button" onClick={() => navigate("/assinar")}>Conhecer o PRO</button>
+                  <style>{`
+        /* Cupons travados no plano grátis */
+        .chk-card--lock { position: relative; overflow: hidden; }
+        .chk-card--lock > *:not(.chk-lock) { filter: blur(3px); opacity: .45; pointer-events: none; user-select: none; }
+        .chk-lock { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; padding: 16px;
+          background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.9)); }
+        .chk-lock-cr { width: 34px; height: 34px; object-fit: contain; }
+        .chk-lock b { font-size: 15px; color: #2C1219; }
+        .chk-lock span { font-size: 13px; color: #6B5D64; max-width: 280px; }
+        .chk-lock button { margin-top: 6px; border: none; border-radius: 10px; padding: 10px 16px; background: linear-gradient(90deg, #E85A8C, #C33A6E); color: #fff; font-family: inherit; font-weight: 800; font-size: 13.5px; cursor: pointer; }
+                  `}</style>
+                </div>
+              )}
               <div className="chk-row-between" style={{alignItems:'flex-start'}}>
                 <SectionLabel
                   icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>}
@@ -557,6 +580,8 @@ export default function CheckoutConfigPage() {
         .chk-header { display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; padding:0.5rem 0; }
         .chk-title { font-size: var(--font-page-title); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 0.3rem; letter-spacing:-0.02em; }
         .chk-sub { font-size: var(--font-button); color:var(--text-secondary); margin:0; }
+        .chk-autosave--flutua { position: fixed; z-index: 60; left: 50%; transform: translateX(-50%); bottom: calc(76px + env(safe-area-inset-bottom, 0px)); box-shadow: 0 8px 24px rgba(21,128,61,.18); }
+        @media (min-width: 768px) { .chk-autosave--flutua { left: auto; right: 28px; transform: none; bottom: 24px; } }
         .chk-autosave { display:inline-flex; align-items:center; gap:0.35rem; font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--success); background:#f0fdf4; padding:0.32rem 0.8rem; border-radius: var(--radius-full); border:1px solid #dcfce7; animation:chkFadeIn 0.3s ease; }
 
         /* ── Grid ── */
