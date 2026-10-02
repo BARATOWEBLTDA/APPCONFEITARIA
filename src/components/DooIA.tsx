@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { CaretLeft, Plus, X, Check, Copy, ImageSquare, ArrowRight, CurrencyCircleDollar, BookOpenText, InstagramLogo, CalendarCheck, Receipt, Package } from '@phosphor-icons/react'
 import { useNavigate as useNavigateDoo } from 'react-router-dom'
 import CartaoPedidoDoo from '@/components/doo/CartaoPedidoDoo'
 import { listarCatalogo, catalogoParaDoo, type RascunhoPedido, type ProdutoCat, type ClienteCat } from '@/lib/pedidosDoo'
@@ -36,8 +37,18 @@ const SUGGESTIONS = [
   'Registrar um pedido',
 ]
 
+/** Sugestões do começo da conversa (cartões com ícone de linha) */
+const SUGESTOES_CARTOES = [
+  { Ic: CurrencyCircleDollar, t: 'Calcular preço', s: 'de um bolo ou doce', p: 'Calcular o preço de um bolo' },
+  { Ic: BookOpenText, t: 'Criar receita', s: 'com o que você tem', p: 'Criar receita de bolo' },
+  { Ic: InstagramLogo, t: 'Legenda pro Instagram', s: 'pronta pra postar', p: 'Criar legenda para o Instagram' },
+  { Ic: CalendarCheck, t: 'Planejar a semana', s: 'produção e compras', p: 'Planejar produção da semana' },
+  { Ic: Receipt, t: 'Registrar pedido', s: 'direto pela conversa', p: 'Registrar um pedido' },
+  { Ic: Package, t: 'Cadastrar ingrediente', s: 'com preço e custo', p: 'Cadastrar um ingrediente' },
+]
+
 const PLACEHOLDERS = [
-  'Pergunte para a Doo...',
+  'Pergunte qualquer coisa pra Doo…',
   'Calcular preço de bolo...',
   'Criar legenda para Instagram...',
   'Planejar produção da semana...',
@@ -351,13 +362,17 @@ function getErrorMessage(errorType: string, status?: number): string {
 }
 
 function formatText(text: string): string {
-  return text
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/^- (.+)$/gm, '<li>$1</li>')
-    .replace(/(<li>.*<\/li>(\n)?)+/g, (match) => `<ul style="margin: 4px 0 4px 1rem; padding: 0; list-style: disc;">${match}</ul>`)
-    .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
-    .replace(/\n/g, '<br/>')
+  // Escapa o texto (a resposta vem da IA) e só então aplica negrito, itálico e listas.
+  let h = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+       .replace(/(^|[^*])\*(?!\s)([^*\n]+?)\*/g, '$1<em>$2</em>')
+  h = h.replace(/^\s*[-•] (.+)$/gm, '<li>$1</li>')
+       .replace(/^\s*\d+[.)] (.+)$/gm, '<li data-n>$1</li>')
+  // Antes as quebras de linha entre os itens viravam <br/> dentro da lista: espaço gigante (02/10)
+  h = h.replace(/(?:<li>.*<\/li>\n?)+/g, m => `<ul>${m.replace(/\n/g, '')}</ul>`)
+       .replace(/(?:<li data-n>.*<\/li>\n?)+/g, m => `<ol>${m.replace(/\n/g, '').replace(/ data-n/g, '')}</ol>`)
+  h = h.replace(/<\/(ul|ol)>\n+/g, '</$1>').replace(/\n+(<ul>|<ol>)/g, '$1').replace(/\n{3,}/g, '\n\n')
+  return h.replace(/\n/g, '<br/>')
 }
 
 export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onClose?: () => void }) {
@@ -715,132 +730,51 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         }} />
       )}
 
-      {/* ── Janela do chat ── */}
+      {/* ── Janela do chat (02/10): tela cheia no celular, painel alto do lado direito no computador ── */}
       {open && isPro && (
-        <div className="dooia-panel" style={{
-          background: 'white',
-          boxShadow: '0 8px 40px rgba(110,53,72,0.18), 0 2px 8px rgba(0,0,0,0.08)',
-          display: 'flex', flexDirection: 'column', overflow: 'hidden',
-          zIndex: 199, border: `1px solid rgba(110,53,72,0.12)`,
-        }}>
+        <div className="dooia-panel" role="dialog" aria-label="Doo IA">
 
-          {/* Header */}
-          <div style={{
-            background: `linear-gradient(135deg, ${VINHO}, var(--primary-dark))`,
-            padding: '0.85rem 1rem',
-            display: 'flex', alignItems: 'center', gap: '0.65rem', flexShrink: 0,
-          }}>
-            <div style={{
-              width: '38px', height: '38px', borderRadius: '35%',
-              background: VINHO, border: '2px solid white',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              overflow: 'hidden', flexShrink: 0,
-            }}>
-              <img src="/Sistema/doo.png" alt="Doo" style={{ width: '48px', height: '48px', objectFit: 'cover', objectPosition: 'top center', borderRadius: '35%' }} />
+          {/* Cabeçalho */}
+          <div className="dz-hd">
+            <button type="button" className="dz-hb dz-voltar" onClick={handleClose} aria-label="Fechar a Doo"><CaretLeft size={20} weight="bold" /></button>
+            <div className="dz-hav"><img src="/Sistema/doo.png" alt="" /><i aria-hidden="true" /></div>
+            <div className="dz-ht">
+              <b>Doo IA <em>PRO</em></b>
+              <small className={loading || generatingImage ? 'dz-esc' : ''}><i aria-hidden="true" />{loading ? 'Escrevendo…' : generatingImage ? 'Criando a imagem…' : 'Online · responde na hora'}</small>
             </div>
-            <div style={{ flex: 1 }}>
-              <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 700, color: 'white', fontFamily: 'Geist, sans-serif' }}>
-                Doo
-                <span style={{ fontWeight: 400, fontSize: '0.8rem', color: 'rgba(255,220,150,0.88)', marginLeft: '0.35rem' }}>— Assistente Doonly</span>
-              </p>
-            </div>
-            <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
-              {messages.length > 0 && (
-                <button
-                  onClick={clearConversation}
-                  title="Nova conversa"
-                  style={{
-                    background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: '8px',
-                    width: '28px', height: '28px', color: 'white', cursor: 'pointer',
-                    fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    transition: 'background 0.15s',
-                  }}
-                >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.53"/>
-                  </svg>
-                </button>
-              )}
-              <button
-                onClick={handleClose}
-                style={{
-                  background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '35%',
-                  width: '28px', height: '28px', color: 'white', cursor: 'pointer',
-                  fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}
-              >✕</button>
-            </div>
+            <button type="button" className="dz-hb" onClick={clearConversation} disabled={!messages.length} aria-label="Nova conversa" title="Nova conversa"><Plus size={20} weight="bold" /></button>
+            <button type="button" className="dz-hb dz-fechar" onClick={handleClose} aria-label="Fechar"><X size={18} weight="bold" /></button>
           </div>
 
           {/* Mensagens */}
-          <div style={{
-            flex: 1, overflowY: 'auto', padding: '0.85rem',
-            display: 'flex', flexDirection: 'column', gap: '0.65rem', background: '#fafafa',
-          }}>
-
-            {/* Estado vazio — boas-vindas + sugestões */}
+          <div className="dz-body">
             {showSuggestions && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', padding: '0.25rem 0' }}>
-                <div style={{
-                  background: 'white', borderRadius: '16px 16px 16px 4px',
-                  padding: '0.75rem 1rem', border: '1px solid #f0f0f0',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
-                  fontSize: '0.83rem', lineHeight: 1.5, color: '#1F2937',
-                  fontFamily: 'Geist, sans-serif',
-                }}>
-                  {nomeConfeiteira ? `Oi, ${nomeConfeiteira}! Sou a Doo, sua assistente do Doonly. Como posso te ajudar hoje?` : 'Oi! Sou a Doo, sua assistente do Doonly. Como posso te ajudar hoje?'}
+              <div className="dz-ini">
+                <div className="dz-hero">
+                  <div className="dz-hav2"><img src="/Sistema/doo.png" alt="" /></div>
+                  <b>{nomeConfeiteira ? `Oi, ${nomeConfeiteira}! Eu sou a Doo 💗` : 'Oi! Eu sou a Doo 💗'}</b>
+                  <p>Sua assistente de confeitaria. Calculo preços, crio receitas, registro pedidos e cadastro ingredientes pra você.</p>
                 </div>
-                <p style={{ margin: 0, fontSize: '0.72rem', color: '#9CA3AF', fontFamily: 'Geist, sans-serif', paddingLeft: '2px' }}>
-                  Sugestões
-                </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                  {SUGGESTIONS.map(s => (
-                    <button
-                      key={s}
-                      onClick={() => sendMessage(s)}
-                      style={{
-                        background: 'white', border: `1px solid rgba(110,53,72,0.2)`,
-                        borderRadius: '20px', padding: '0.35rem 0.75rem',
-                        fontSize: '0.75rem', color: VINHO, cursor: 'pointer',
-                        fontFamily: 'Geist, sans-serif', fontWeight: 500,
-                        transition: 'background 0.15s, border-color 0.15s',
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                      }}
-                    >{s}</button>
+                <p className="dz-sl">Comece por aqui</p>
+                <div className="dz-sg">
+                  {SUGESTOES_CARTOES.map(({ Ic, t, s, p }) => (
+                    <button type="button" key={t} className="dz-sc" onClick={() => sendMessage(p)}>
+                      <span className="dz-si"><Ic size={20} /></span><b>{t}</b><small>{s}</small>
+                    </button>
                   ))}
                 </div>
               </div>
             )}
 
+            {messages.length > 0 && <p className="dz-dia">Hoje</p>}
+
             {messages.map((msg, i) => (
-              <div key={i} style={{
-                display: 'flex',
-                flexDirection: msg.role === 'user' ? 'row-reverse' : 'row',
-                alignItems: 'flex-end', gap: '0.5rem',
-              }}>
-                {msg.role === 'assistant' && (
-                  <div style={{ width: '26px', height: '26px', borderRadius: '35%', border: `2px solid ${VINHO}`, overflow: 'hidden', flexShrink: 0 }}>
-                    <img src="/Sistema/doo.png" alt="Doo" style={{ width: '140%', height: '140%', objectFit: 'cover', objectPosition: 'top center' }} />
-                  </div>
-                )}
-                <div style={{ maxWidth: '78%', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <div style={{
-                    background: msg.role === 'user' ? VINHO : 'white',
-                    color: msg.role === 'user' ? 'white' : '#1F2937',
-                    padding: '0.6rem 0.85rem',
-                    borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                    fontSize: '0.83rem', lineHeight: 1.5, fontFamily: 'Geist, sans-serif',
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
-                    border: msg.role === 'assistant' ? '1px solid #f0f0f0' : 'none',
-                  }}>
-                    {msg.attachmentPreview && (
-                      <img src={msg.attachmentPreview} alt="Referência"
-                        style={{ width: '100%', borderRadius: '10px', marginBottom: '0.5rem', display: 'block', maxHeight: '160px', objectFit: 'cover' }} />
-                    )}
-                    {msg.imageUrl && (
-                      <img src={msg.imageUrl} alt="Imagem gerada"
-                        style={{ width: '100%', borderRadius: '10px', marginBottom: '0.5rem', display: 'block' }} />
-                    )}
+              <div key={i} className={`dz-m ${msg.role === 'user' ? 'dz-m--eu' : 'dz-m--doo'}`}>
+                {msg.role === 'assistant' && <img src="/Sistema/doo.png" alt="" className="dz-mav" />}
+                <div className="dz-mc">
+                  <div className="dz-bd">
+                    {msg.attachmentPreview && <img src={msg.attachmentPreview} alt="Referência" className="dz-anexo" />}
+                    {msg.imageUrl && <img src={msg.imageUrl} alt="Imagem gerada" className="dz-gerada" />}
                     <span dangerouslySetInnerHTML={{ __html: formatText(msg.content.replace(/\n\n\[(O app confirmou|A confeiteira cancelou)[^\]]*\]$/, '')) }} />
                   </div>
                   {msg.acao && uid && msg.acao.acao === 'pedido' && (
@@ -863,150 +797,50 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                       }} />
                   )}
                   {msg.role === 'assistant' && !msg.isImage && (
-                    <button
-                      onClick={() => copyMessage(msg.content, i)}
-                      style={{
-                        alignSelf: 'flex-start', background: 'none', border: 'none',
-                        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px',
-                        padding: '2px 6px', borderRadius: '6px', fontSize: '0.7rem',
-                        color: copiedId === i ? '#22C55E' : '#9CA3AF',
-                        fontFamily: 'Geist, sans-serif', transition: 'color 0.15s',
-                      }}
-                      title="Copiar resposta"
-                    >
-                      {copiedId === i ? (
-                        <><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>Copiado</>
-                      ) : (
-                        <><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copiar</>
-                      )}
-                    </button>
+                    <div className="dz-acs">
+                      <button type="button" onClick={() => copyMessage(msg.content.replace(/\n\n\[(O app confirmou|A confeiteira cancelou)[^\]]*\]$/, ''), i)} className={copiedId === i ? 'ok' : ''}>
+                        {copiedId === i ? <><Check size={13} weight="bold" />Copiado</> : <><Copy size={13} />Copiar</>}
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
             ))}
 
-            {/* Loading text */}
-            {loading && (
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.5rem' }}>
-                <div style={{ width: '26px', height: '26px', borderRadius: '35%', border: `2px solid ${VINHO}`, overflow: 'hidden', flexShrink: 0 }}>
-                  <img src="/Sistema/doo.png" alt="Doo" style={{ width: '140%', height: '140%', objectFit: 'cover', objectPosition: 'top center' }} />
-                </div>
-                <div style={{
-                  background: 'white', padding: '0.65rem 1rem', borderRadius: '16px 16px 16px 4px',
-                  border: '1px solid #f0f0f0', boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
-                  display: 'flex', gap: '4px', alignItems: 'center',
-                }}>
-                  {[0, 1, 2].map(i => (
-                    <span key={i} style={{
-                      width: '6px', height: '6px', borderRadius: '35%',
-                      background: VINHO, opacity: 0.6,
-                      animation: `dooTyping 1.2s ease-in-out ${i * 0.2}s infinite`,
-                    }} />
-                  ))}
+            {(loading || generatingImage) && (
+              <div className="dz-m dz-m--doo">
+                <img src="/Sistema/doo.png" alt="" className="dz-mav" />
+                <div className="dz-mc">
+                  <div className="dz-bd dz-dig">{generatingImage ? <><span className="dz-spin" />Criando sua imagem…</> : <><i /><i /><i /></>}</div>
+                  <p className="dz-digt">{generatingImage ? 'Leva uns segundinhos' : 'A Doo está escrevendo…'}</p>
                 </div>
               </div>
             )}
-
-            {/* Loading imagem — feedback diferenciado */}
-            {generatingImage && (
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.5rem' }}>
-                <div style={{ width: '26px', height: '26px', borderRadius: '35%', border: `2px solid ${VINHO}`, overflow: 'hidden', flexShrink: 0 }}>
-                  <img src="/Sistema/doo.png" alt="Doo" style={{ width: '140%', height: '140%', objectFit: 'cover', objectPosition: 'top center' }} />
-                </div>
-                <div style={{
-                  background: 'white', padding: '0.65rem 1rem', borderRadius: '16px 16px 16px 4px',
-                  border: '1px solid #f0f0f0', boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
-                  display: 'flex', alignItems: 'center', gap: '0.5rem',
-                }}>
-                  <span style={{ width: '14px', height: '14px', borderRadius: '35%', border: `2px solid ${VINHO}`, borderTopColor: 'transparent', animation: 'dooSpin 0.7s linear infinite', display: 'inline-block', flexShrink: 0 }} />
-                  <span style={{ fontSize: '0.8rem', color: '#6B7280', fontFamily: 'Geist, sans-serif' }}>Gerando sua imagem...</span>
-                </div>
-              </div>
-            )}
-
             <div ref={bottomRef} />
           </div>
 
-          {/* Preview imagem pendente */}
-          {pendingImage && (
-            <div style={{
-              padding: '0.5rem 0.75rem 0', background: 'white',
-              borderTop: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: '0.5rem',
-            }}>
-              <div style={{ position: 'relative', flexShrink: 0 }}>
-                <img src={pendingImage.preview} alt="Anexo"
-                  style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover', border: `1.5px solid ${VINHO}` }} />
-                <button onClick={removePendingImage} style={{
-                  position: 'absolute', top: '-6px', right: '-6px',
-                  width: '18px', height: '18px', borderRadius: '35%',
-                  background: VINHO, border: '2px solid white',
-                  color: 'white', fontSize: '0.6rem', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>✕</button>
+          {/* Campo de mensagem */}
+          <div className="dz-in">
+            {pendingImage && (
+              <div className="dz-pend">
+                <div className="dz-pend-img"><img src={pendingImage.preview} alt="Anexo" /><button type="button" onClick={removePendingImage} aria-label="Tirar a imagem"><X size={11} weight="bold" /></button></div>
+                <p>Imagem anexada. Escreva uma mensagem ou envie assim mesmo.</p>
               </div>
-              <p style={{ margin: 0, fontSize: '0.75rem', color: '#6B7280', fontFamily: 'Geist, sans-serif' }}>
-                Imagem anexada. Adicione uma mensagem ou envie diretamente.
-              </p>
+            )}
+            <div className="dz-inb">
+              <button type="button" className="dz-ib" onClick={() => fileRef.current?.click()} aria-label="Enviar uma foto" title="Enviar uma foto"><ImageSquare size={19} /></button>
+              <input
+                ref={inputRef}
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={handleKey}
+                placeholder={PLACEHOLDERS[placeholderIdx]}
+                disabled={loading || generatingImage}
+                autoComplete="off" autoCorrect="off" autoCapitalize="sentences" spellCheck={false}
+                className="dz-txt"
+              />
+              <button type="button" className="dz-snd" onClick={() => sendMessage()} disabled={loading || generatingImage || (!input.trim() && !pendingImage)} aria-label="Enviar"><ArrowRight size={19} weight="bold" /></button>
             </div>
-          )}
-
-          {/* Input */}
-          <div style={{
-            padding: '0.6rem 0.75rem', borderTop: '1px solid #f0f0f0',
-            display: 'flex', gap: '0.35rem', background: 'white',
-            flexShrink: 0, alignItems: 'center',
-            overflow: 'hidden', minWidth: 0,
-          }}>
-            <button onClick={() => fileRef.current?.click()} title="Enviar imagem da galeria"
-              style={{
-                width: '36px', height: '36px', borderRadius: '10px',
-                background: '#f5f5f5', border: '1px solid #E9E9EE',
-                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0, transition: 'background 0.15s',
-              }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={VINHO} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
-                <polyline points="21 15 16 10 5 21"/>
-              </svg>
-            </button>
-
-
-            <input
-              ref={inputRef}
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={handleKey}
-              placeholder={PLACEHOLDERS[placeholderIdx]}
-              disabled={loading || generatingImage}
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="off"
-              spellCheck={false}
-              style={{
-                flex: 1, minWidth: 0, border: `1.5px solid ${input || pendingImage ? VINHO : '#E9E9EE'}`,
-                borderRadius: '12px', padding: '0.55rem 0.75rem',
-                fontSize: '0.83rem', fontFamily: 'Geist, sans-serif',
-                outline: 'none', color: '#1F2937', background: '#fafafa',
-                transition: 'border-color 0.15s',
-              }}
-            />
-
-            <button
-              onClick={() => sendMessage()}
-              disabled={loading || generatingImage || (!input.trim() && !pendingImage)}
-              style={{
-                width: '36px', height: '36px', borderRadius: '12px',
-                background: (input.trim() || pendingImage) ? `linear-gradient(135deg, ${VINHO}, var(--primary-dark))` : '#E9E9EE',
-                border: 'none',
-                cursor: (input.trim() || pendingImage) ? 'pointer' : 'not-allowed',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0, transition: 'background 0.15s',
-              }}
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-              </svg>
-            </button>
           </div>
         </div>
       )}
@@ -1023,32 +857,85 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
           }
         }
 
-        /* Painel do chat — MOBILE: centralizado, quase tela cheia */
+        /* Painel do chat (02/10) — CELULAR: tela cheia (cobre o menu de baixo) */
         .dooia-panel {
-          position: fixed;
-          top: 50%; left: 50%;
-          transform: translate(-50%, -50%);
-          width: calc(100vw - 24px);
-          max-width: 420px;
-          height: calc(100dvh - 32px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
-          max-height: 720px;
-          border-radius: 20px;
-          animation: dooPanelIn 0.28s cubic-bezier(0.16,1,0.3,1);
+          position: fixed; left: 0; right: 0; top: 0; bottom: var(--teclado, 0px);
+          z-index: 1200; display: flex; flex-direction: column; overflow: hidden;
+          background: #FAF7F8; font-family: var(--font-base); color: #2C1219;
+          animation: dooSlideUp 0.25s cubic-bezier(0.16,1,0.3,1);
         }
-
-        /* DESKTOP: volta pro canto inferior direito */
+        /* COMPUTADOR: painel alto do lado direito */
         @media (min-width: 768px) {
           .dooia-panel {
-            top: auto; left: auto;
-            transform: none;
-            bottom: 1.5rem;
-            right: 1.25rem;
-            width: min(380px, calc(100vw - 2.5rem));
-            height: min(560px, calc(100vh - 5rem));
-            max-height: none;
-            animation: dooSlideUp 0.25s cubic-bezier(0.16,1,0.3,1);
+            top: 1rem; bottom: 1rem; right: 1rem; left: auto; width: min(440px, calc(100vw - 2rem));
+            border-radius: 22px; box-shadow: 0 18px 60px rgba(44,18,25,.28); border: 1px solid rgba(110,53,72,.12);
           }
         }
+        .dz-hd { flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: calc(12px + env(safe-area-inset-top, 0px)) 14px 14px; background: radial-gradient(130% 160% at 0 0, #6B2340, #2C1219 70%); color: #fff; }
+        .dz-hb { width: 36px; height: 36px; border-radius: 11px; border: none; background: rgba(255,255,255,.12); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+        .dz-hb:disabled { opacity: .35; cursor: default; }
+        .dz-fechar { display: none; }
+        @media (min-width: 768px) { .dz-voltar { display: none; } .dz-fechar { display: flex; } }
+        .dz-hav { position: relative; width: 44px; height: 44px; border-radius: 14px; background: #FCE7F3; border: 2px solid rgba(255,255,255,.35); flex-shrink: 0; }
+        .dz-hav img { width: 100%; height: 100%; object-fit: cover; object-position: top center; border-radius: 12px; display: block; }
+        .dz-hav i { position: absolute; right: -3px; bottom: -3px; width: 14px; height: 14px; border-radius: 50%; background: #22C55E; border: 2.5px solid #2C1219; }
+        .dz-ht { flex: 1; min-width: 0; }
+        .dz-ht b { display: flex; align-items: center; gap: 7px; font-size: 17px; font-weight: 900; }
+        .dz-ht em { font-style: normal; font-size: 10px; font-weight: 900; letter-spacing: .06em; padding: 3px 7px; border-radius: 6px; background: linear-gradient(90deg, #F9A8D4, #C4B5FD); color: #2C1219; }
+        .dz-ht small { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: #BBF7D0; margin-top: 2px; }
+        .dz-ht small i { width: 7px; height: 7px; border-radius: 50%; background: #22C55E; box-shadow: 0 0 0 3px rgba(34,197,94,.25); }
+        .dz-ht small.dz-esc { color: #FBCFE8; } .dz-ht small.dz-esc i { background: #F472B6; box-shadow: 0 0 0 3px rgba(244,114,182,.3); animation: dooTyping 1.2s infinite; }
+        .dz-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 16px 14px 8px; display: flex; flex-direction: column; gap: 12px; }
+        .dz-ini { display: flex; flex-direction: column; gap: 12px; }
+        .dz-hero { text-align: center; padding: 8px 6px 2px; }
+        .dz-hav2 { width: 84px; height: 84px; margin: 0 auto; border-radius: 26px; background: #FCE7F3; overflow: hidden; box-shadow: 0 10px 26px rgba(232,90,140,.28); }
+        .dz-hav2 img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+        .dz-hero b { display: block; font-size: 20px; font-weight: 900; margin-top: 12px; letter-spacing: -.01em; }
+        .dz-hero p { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 6px auto 0; max-width: 330px; }
+        .dz-sl { margin: 4px 0 0; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #9A8E94; }
+        .dz-sg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .dz-sc { text-align: left; background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 11px; font-family: inherit; color: inherit; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+        .dz-sc:hover { border-color: #F7C6D9; box-shadow: 0 4px 14px rgba(232,90,140,.1); }
+        .dz-si { width: 36px; height: 36px; border-radius: 10px; background: #FCE0E9; color: #993556; display: flex; align-items: center; justify-content: center; }
+        .dz-sc b { display: block; font-size: 13.5px; font-weight: 800; margin-top: 6px; line-height: 1.2; }
+        .dz-sc small { display: block; font-size: 11.5px; color: #888780; margin-top: 2px; line-height: 1.3; }
+        .dz-dia { align-self: center; margin: 0; font-size: 11px; font-weight: 700; color: #9A8E94; background: #F0EBED; padding: 3px 10px; border-radius: 99px; }
+        .dz-m { display: flex; gap: 8px; align-items: flex-end; }
+        .dz-m--eu { justify-content: flex-end; }
+        .dz-mav { width: 28px; height: 28px; border-radius: 9px; object-fit: cover; object-position: top center; background: #FCE7F3; flex-shrink: 0; }
+        .dz-mc { max-width: 84%; min-width: 0; display: flex; flex-direction: column; }
+        .dz-m--eu .dz-mc { max-width: 80%; align-items: flex-end; }
+        .dz-bd { padding: 10px 13px; font-size: 14.5px; line-height: 1.5; word-wrap: break-word; overflow-wrap: anywhere; }
+        .dz-m--doo .dz-bd { background: #fff; border: 1px solid #F0EBED; border-radius: 18px 18px 18px 4px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+        .dz-m--eu .dz-bd { background: #2C1219; color: #fff; border-radius: 18px 18px 4px 18px; }
+        .dz-bd ul, .dz-bd ol { margin: 6px 0; padding-left: 20px; }
+        .dz-bd ul { list-style: disc; } .dz-bd ol { list-style: decimal; }
+        .dz-bd li::marker { color: #E85A8C; }
+        .dz-bd li { margin: 3px 0; }
+        .dz-bd strong { font-weight: 800; }
+        .dz-anexo { width: 100%; max-height: 180px; object-fit: cover; border-radius: 12px; margin-bottom: 8px; display: block; }
+        .dz-gerada { width: 100%; border-radius: 12px; margin-bottom: 8px; display: block; }
+        .dz-acs { display: flex; gap: 6px; margin-top: 6px; }
+        .dz-acs button { display: inline-flex; align-items: center; gap: 4px; font-family: inherit; font-size: 12px; font-weight: 700; color: #9A8E94; background: none; border: none; padding: 4px 6px; border-radius: 8px; cursor: pointer; }
+        .dz-acs button.ok { color: #15803D; }
+        .dz-dig { display: flex; align-items: center; gap: 6px; padding: 14px 16px; font-size: 13px; color: #6B5D64; }
+        .dz-dig i { width: 7px; height: 7px; border-radius: 50%; background: #D9A5B9; animation: dooTyping 1.2s ease-in-out infinite; }
+        .dz-dig i:nth-child(2) { animation-delay: .2s; } .dz-dig i:nth-child(3) { animation-delay: .4s; }
+        .dz-spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #E85A8C; border-top-color: transparent; animation: dooSpin .7s linear infinite; }
+        .dz-digt { margin: 5px 0 0 2px; font-size: 12px; color: #9A8E94; }
+        .dz-in { flex-shrink: 0; padding: 8px 12px calc(12px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(180deg, rgba(250,247,248,0), #FAF7F8 30%); }
+        .dz-pend { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .dz-pend-img { position: relative; flex-shrink: 0; }
+        .dz-pend-img img { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; border: 1.5px solid #E85A8C; display: block; }
+        .dz-pend-img button { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #fff; background: #2C1219; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+        .dz-pend p { margin: 0; font-size: 12.5px; color: #6B5D64; }
+        .dz-inb { display: flex; align-items: center; gap: 8px; background: #fff; border: 1.5px solid #EDE6E9; border-radius: 999px; padding: 6px; box-shadow: 0 4px 14px rgba(44,18,25,.06); transition: border-color .15s; }
+        .dz-inb:focus-within { border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
+        .dz-ib { width: 36px; height: 36px; border-radius: 50%; border: none; background: #FCE0E9; color: #993556; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+        .dz-txt { flex: 1; min-width: 0; border: none; outline: none; background: none; font-family: inherit; font-size: 16px; color: #2C1219; padding: 6px 2px; }
+        .dz-txt::placeholder { color: #B5AAB0; }
+        .dz-snd { width: 40px; height: 40px; border-radius: 50%; border: none; background: #E85A8C; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: 0 4px 12px rgba(232,90,140,.35); transition: background .15s; }
+        .dz-snd:disabled { background: #F3D2DE; box-shadow: none; cursor: default; }
 
         @keyframes dooPanelIn {
           from { opacity: 0; transform: translate(-50%, -46%) scale(0.96); }
