@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
+import CartaoInsumoDoo from '@/components/doo/CartaoInsumoDoo'
+import { listarInsumosResumo, normalizarRascunho, type InsumoResumo, type RascunhoInsumo } from '@/lib/insumosDoo'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { usePlano } from '@/hooks/usePlano'
@@ -10,6 +12,9 @@ interface Message {
   imageUrl?: string
   isImage?: boolean
   attachmentPreview?: string
+  /** Rascunho de cadastro que a Doo preparou (só é salvo quando ela confirma no cartão) */
+  acao?: RascunhoInsumo
+  acaoEstado?: 'pendente' | 'salvo' | 'cancelado'
 }
 
 const VINHO = 'var(--primary-dark)'
@@ -22,6 +27,7 @@ const SUGGESTIONS = [
   'Planejar produção da semana',
   'Criar mensagem para cliente',
   'Sugerir promoção sazonal',
+  'Cadastrar um ingrediente',
 ]
 
 const PLACEHOLDERS = [
@@ -241,6 +247,40 @@ Não responde sobre: política, futebol, notícias gerais, programação, medici
 
 ${nome ? `A confeiteira se chama ${nome}. Chame-a pelo nome quando fizer sentido, de forma natural. Não repita o nome em toda resposta.` : ""}`
 
+/** Ação "cadastrar insumo" (02/10): a Doo prepara, o app mostra o cartão, a confeiteira confirma. */
+const regrasInsumo = (lista: InsumoResumo[]) => `
+
+# AÇÃO: CADASTRAR OU ATUALIZAR INSUMO (ingrediente, embalagem, decoração)
+Quando a confeiteira pedir pra cadastrar um insumo, ou contar que comprou algo com preço (ex.: "comprei 5 kg de chocolate por R$ 164,50"), você PREPARA o cadastro. Você NÃO salva nada: o app mostra um cartão pra ela conferir e confirmar.
+
+Você precisa de 3 informações: o NOME, a QUANTIDADE DA EMBALAGEM com a unidade (g, kg, ml, L ou un) e o VALOR PAGO.
+- Se faltar alguma, pergunte SÓ o que falta, numa frase curta (ex.: "Quantos quilos vieram nesse pacote?"). Não invente valores.
+- "Lata de 395 g" → 395 g. "2 litros" → 2 L. "Dúzia de ovos" → 12 un. "5 kg" → 5 kg (mantenha a unidade que ela falou).
+- Se o insumo JÁ EXISTE na lista abaixo (mesmo ingrediente, mesmo que escrito um pouco diferente), use o "id" dele em insumo_id: vira uma ATUALIZAÇÃO de preço, não um novo cadastro.
+
+Quando tiver as 3 informações, responda com UMA frase curta (ex.: "Confira e toque em Cadastrar insumo.") e, no FINAL da resposta, este bloco exatamente neste formato:
+\`\`\`acao-doonly
+{"acao":"insumo","insumo_id":null,"nome":"Leite condensado","marca":"","categoria":"Ingredientes","unidade":"g","embalagem_tipo":"Lata","qtd_embalagem":395,"valor_compra":6.79}
+\`\`\`
+Regras do bloco: números com ponto (6.79), sem texto depois do bloco, um bloco por resposta.
+- categoria: uma de Ingredientes, Embalagens, Decorações, Bebidas, Limpeza, Descartáveis, Outros.
+- embalagem_tipo: uma de Avulso, Pacote, Caixa, Lata, Pote, Garrafa, Frasco, Bandeja, Bisnaga, Sachê, Envelope, Balde, Rolo.
+- Nunca diga que "cadastrou" ou "salvou": quem salva é ela, no cartão.
+
+Insumos que ela já tem (id · nome · embalagem · valor pago):
+${lista.length ? lista.map(i => `- ${i.id} · ${i.nome} · ${String(i.qtd_embalagem).replace('.', ',')} ${i.unidade} · R$ ${i.valor_compra.toFixed(2).replace('.', ',')}`).join('\n') : '- (nenhum ainda)'}
+`
+
+/** Separa o bloco acao-doonly da resposta. */
+function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | null } {
+  const m = reply.match(/```acao-doonly\s*([\s\S]*?)```/)
+  if (!m) return { texto: reply, acao: null }
+  let acao: RascunhoInsumo | null = null
+  try { acao = normalizarRascunho(JSON.parse(m[1].trim())) } catch { acao = null }
+  const texto = reply.replace(m[0], '').trim() || 'Confira e toque em Cadastrar insumo.'
+  return { texto, acao }
+}
+
 function isImageRequest(text: string): boolean {
   const keywords = ['gerar imagem', 'criar imagem', 'gera imagem', 'cria imagem', 'gerar topo', 'criar topo', 'ilustração', 'desenha', 'desenhar', 'arte para']
   return keywords.some(k => text.toLowerCase().includes(k))
@@ -308,10 +348,19 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
     onClose?.()
   }
 
+  // Insumos dela (pra Doo saber o que já existe e atualizar em vez de duplicar)
+  const [uid, setUid] = useState<string | null>(null)
+  const [insumos, setInsumos] = useState<InsumoResumo[]>([])
+  useEffect(() => {
+    if (!open || !uid) return
+    listarInsumosResumo(uid).then(setInsumos).catch(() => {})
+  }, [open, uid])
+
   // Busca nome da confeiteira
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
+      setUid(user.id)
       supabase.from('profiles').select('nome').eq('id', user.id).single().then(({ data }) => {
         if (data?.nome) setNomeConfeiteira(data.nome.split(' ')[0])
       })
@@ -444,7 +493,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            system: buildSystemPrompt(nomeConfeiteira),
+            system: buildSystemPrompt(nomeConfeiteira) + regrasInsumo(insumos),
             messages: historyForApi.map(m => ({ role: m.role, content: buildContent(m) }))
           })
         })
@@ -453,7 +502,8 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         if (!res.ok) throw { type: data.error, status: res.status }
 
         const reply = data?.content?.[0]?.text || 'Não consegui responder agora. Tenta de novo!'
-        setMessages(prev => [...prev, { role: 'assistant', content: reply }])
+        const { texto, acao } = extrairAcao(reply)
+        setMessages(prev => [...prev, acao ? { role: 'assistant', content: texto, acao, acaoEstado: 'pendente' } : { role: 'assistant', content: texto }])
       }
     } catch (err: any) {
       setMessages(prev => [...prev, {
@@ -746,8 +796,18 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                       <img src={msg.imageUrl} alt="Imagem gerada"
                         style={{ width: '100%', borderRadius: '10px', marginBottom: '0.5rem', display: 'block' }} />
                     )}
-                    <span dangerouslySetInnerHTML={{ __html: formatText(msg.content) }} />
+                    <span dangerouslySetInnerHTML={{ __html: formatText(msg.content.replace(/\n\n\[(O app confirmou|A confeiteira cancelou)[^\]]*\]$/, '')) }} />
                   </div>
+                  {msg.acao && uid && (
+                    <CartaoInsumoDoo uid={uid} rascunho={msg.acao} estado={msg.acaoEstado || 'pendente'}
+                      existente={msg.acao.insumo_id ? insumos.find(x => x.id === msg.acao!.insumo_id) || null : null}
+                      onFeito={(estado, final) => {
+                        // O histórico enviado pra Doo fica sabendo do resultado (pra ela não oferecer de novo)
+                        const nota = estado === 'salvo' ? `\n\n[O app confirmou: ${final?.nome} foi ${msg.acao!.insumo_id ? 'atualizado' : 'cadastrado'}.]` : '\n\n[A confeiteira cancelou esse cadastro.]'
+                        setMessages(prev => prev.map((m, k) => k === i ? { ...m, acaoEstado: estado, content: m.content + nota } : m))
+                        if (estado === 'salvo') listarInsumosResumo(uid).then(setInsumos).catch(() => {})
+                      }} />
+                  )}
                   {msg.role === 'assistant' && !msg.isImage && (
                     <button
                       onClick={() => copyMessage(msg.content, i)}
