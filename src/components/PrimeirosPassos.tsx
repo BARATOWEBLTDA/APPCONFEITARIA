@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import { ImageCropper } from "@/components/ui/ImageCropper";
+import HorarioSheet from "@/components/HorarioSheet";
 import { lerPassos, marcarCompartilhado, passosCompletos, avisarPassos, type EstadoPassos } from "@/lib/primeirosPassos";
 
 /**
@@ -200,12 +201,12 @@ function FolhaLogo({ uid, perfil, onClose, onSalvo }: FolhaProps) {
     const { error } = await supabase.storage.from("products").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
     if (!error) {
       const { data } = supabase.storage.from("products").getPublicUrl(path);
-      await supabase.from("profiles").update({ logo_url: `${data.publicUrl}?t=${Date.now()}`, design_escolhido: true }).eq("id", uid);
+      await supabase.from("profiles").update({ logo_url: `${data.publicUrl}?t=${Date.now()}`, design_escolhido: true, logo_confirmado: true }).eq("id", uid);
       setEnviando(false); onSalvo(); return;
     }
     setEnviando(false); alert("Não foi possível enviar a imagem. Tente de novo.");
   };
-  const usarFoto = async () => { await supabase.from("profiles").update({ design_escolhido: true }).eq("id", uid); onSalvo(); };
+  const usarFoto = async () => { await supabase.from("profiles").update({ design_escolhido: true, logo_confirmado: true }).eq("id", uid); onSalvo(); };
   return (
     <>
       <Folha titulo="Colocar o logo da loja" sub="Aparece no topo do cardápio, junto do nome" onClose={onClose}>
@@ -215,7 +216,7 @@ function FolhaLogo({ uid, perfil, onClose, onSalvo }: FolhaProps) {
             {atual ? <img src={atual} alt="" /> : <span>{String(perfil?.nome_loja || "D").charAt(0).toUpperCase()}</span>}
             <i><Camera size={14} /></i>
           </button>
-          <div><b>Toque pra escolher o seu logo</b><small>Da galeria ou da câmera. Você ajusta o recorte antes de salvar.</small></div>
+          <div><b>Toque pra escolher o seu logo</b><small>{perfil?.logo_url ? "Da galeria ou da câmera. Você ajusta o recorte antes de salvar." : atual ? "Hoje o cardápio mostra a sua foto de perfil. Envie o logo da loja pra trocar." : "Da galeria ou da câmera. Você ajusta o recorte antes de salvar."}</small></div>
         </div>
         <button type="button" className="pp-btn" onClick={() => ref.current?.click()} disabled={enviando}>{enviando ? "Enviando…" : "Escolher foto"}</button>
         {!perfil?.logo_url && <button type="button" className="pp-lnk" onClick={usarFoto}>Usar minha foto de perfil por enquanto</button>}
@@ -283,10 +284,11 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo }: FolhaProps) {
     await supabase.from("profiles").update({ horario: JSON.stringify(h) }).eq("id", uid);
     setSalvando(false); onSalvo();
   };
+  const [campo, setCampo] = useState<null | { k: string; titulo: string }>(null);
   const bloco = (titulo: string, a: string, f: string) => (
     <div className="ppf-bl"><b>{titulo}</b><div className="ppf-row">
-      <label className="ppf-hr">Abre<input type="time" value={h[a]} onChange={e => setH((x: any) => ({ ...x, [a]: e.target.value }))} /></label>
-      <label className="ppf-hr">Fecha<input type="time" value={h[f]} onChange={e => setH((x: any) => ({ ...x, [f]: e.target.value }))} /></label>
+      <button type="button" className="ppf-hr" onClick={() => setCampo({ k: a, titulo: `${titulo} · abre às` })}><Clock size={18} /><span><small>Abre</small>{h[a] || "--:--"}</span></button>
+      <button type="button" className="ppf-hr" onClick={() => setCampo({ k: f, titulo: `${titulo} · fecha às` })}><Clock size={18} /><span><small>Fecha</small>{h[f] || "--:--"}</span></button>
     </div></div>
   );
   return (
@@ -298,6 +300,9 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo }: FolhaProps) {
       {h.abre_sabado && bloco("Sábado", "sabado_abertura", "sabado_fechamento")}
       {h.abre_domingo && bloco("Domingo", "domingo_abertura", "domingo_fechamento")}
       <button type="button" className="pp-btn" disabled={!temDia || salvando} onClick={salvar}>{salvando ? "Salvando…" : "Salvar e continuar"}</button>
+      {campo && (
+        <HorarioSheet titulo={campo.titulo} value={h[campo.k]} onChange={(v) => setH((x: any) => ({ ...x, [campo.k]: v }))} onClose={() => setCampo(null)} />
+      )}
     </Folha>
   );
 }
@@ -364,8 +369,9 @@ const CSS = `
   .ppf-dias button.on { background: #E85A8C; color: #fff; box-shadow: 0 3px 10px rgba(232,90,140,.3); }
   .ppf-bl { background: #FAF7F8; border-radius: 12px; padding: 12px; margin-top: 12px; }
   .ppf-bl b { display: block; font-size: 13.5px; margin-bottom: 8px; }
-  .ppf-hr { flex: 1; display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 600; color: #6B5D64; }
-  .ppf-hr input { min-height: 46px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 8px 12px; font-family: inherit; font-size: 16px; font-weight: 700; color: #2C1219; background: #fff; }
+  .ppf-hr { flex: 1; display: flex; align-items: center; gap: 10px; min-height: 50px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 8px 12px; background: #fff; font-family: inherit; color: #993556; text-align: left; cursor: pointer; }
+  .ppf-hr span { display: flex; flex-direction: column; color: #2C1219; font-size: 16px; font-weight: 800; line-height: 1.15; }
+  .ppf-hr small { font-size: 11px; font-weight: 700; color: #888780; }
   .ppf-lg { display: flex; gap: 14px; align-items: center; margin-top: 12px; }
   .ppf-lgc { position: relative; width: 76px; height: 76px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 6px 16px rgba(232,90,140,.3); background: linear-gradient(135deg, #F9A8D4, #E85A8C); padding: 0; cursor: pointer; flex-shrink: 0; overflow: visible; }
   .ppf-lgc img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }

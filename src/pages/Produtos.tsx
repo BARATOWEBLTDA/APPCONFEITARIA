@@ -3580,9 +3580,10 @@ export default function Produtos() {
   // Auto-abre cadastro quando vem de Pedidos
   useEffect(() => {
     if (!loading && (location.state as any)?.abrirCadastro) {
-      if (passouDoLimite()) { setLimiteAberto(true); window.history.replaceState({}, ""); return; }
-      setModal(true);
       window.history.replaceState({}, "");
+      // Abre igual ao botão "Novo produto" (a escolha com imagens: bolos, doces, salgados…).
+      // Antes abria a janela sem zerar e caía na tela antiga de tipo de cadastro.
+      openNovo();
     }
   }, [loading, location.state]);
 

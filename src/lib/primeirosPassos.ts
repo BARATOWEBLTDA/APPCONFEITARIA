@@ -2,7 +2,7 @@
  * Regra ÚNICA dos primeiros passos (02/10) — o mesmo cartão aparece no Início (celular) e no
  * Cardápio digital. Fazer o passo num lugar marca no outro. Tudo vem do banco.
  *   descricao ...... descrição da loja preenchida
- *   logo ........... enviou um logo OU escolheu "usar minha foto de perfil" (profiles.design_escolhido)
+ *   logo ........... enviou um logo OU escolheu "usar minha foto de perfil" (profiles.logo_confirmado)
  *   endereco ....... cidade + rua (ou CEP), igual aos Dados da loja
  *   horario ........ horário salvo com pelo menos um dia
  *   produto ........ tem pelo menos 1 produto disponível
@@ -22,7 +22,7 @@ const lerJson = (v: any) => { if (!v) return null; if (typeof v === "object") re
 
 export async function lerPassos(uid: string): Promise<EstadoPassos> {
   const [perfil, produtos] = await Promise.all([
-    supabase.from("profiles").select("nome_loja, descricao_loja, logo_url, foto_url, endereco, mostrar_localizacao, mostrar_apenas_cidade, horario, design_escolhido, cardapio_compartilhado").eq("id", uid).maybeSingle(),
+    supabase.from("profiles").select("nome_loja, descricao_loja, logo_url, foto_url, endereco, mostrar_localizacao, mostrar_apenas_cidade, horario, design_escolhido, cardapio_compartilhado, logo_confirmado").eq("id", uid).maybeSingle(),
     supabase.from("produtos").select("id, disponivel").eq("user_id", uid),
   ]);
   const p: any = perfil.error ? {} : (perfil.data || {});
@@ -35,7 +35,8 @@ export async function lerPassos(uid: string): Promise<EstadoPassos> {
   const hor = lerJson(p.horario);
   return {
     descricao: !!String(p.descricao_loja || "").trim(),
-    logo: !!p.logo_url || !!p.design_escolhido,
+    // Só conta com logo enviado OU "usar minha foto" escolhido (a foto do Google sozinha não conta)
+    logo: !!p.logo_url || !!p.logo_confirmado,
     endereco: !!(String(end.cidade || "").trim() && (String(end.rua || "").trim() || String(end.cep || "").trim())),
     horario: !!hor && ((hor.dias?.length || 0) > 0 || !!hor.abre_sabado || !!hor.abre_domingo),
     produto: ((produtos.data as any[]) || []).some((x) => x.disponivel !== false),
