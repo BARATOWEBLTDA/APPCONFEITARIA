@@ -1,4 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
+import { useNavigate as useNavigateDoo } from 'react-router-dom'
+import CartaoPedidoDoo from '@/components/doo/CartaoPedidoDoo'
+import { listarCatalogo, catalogoParaDoo, type RascunhoPedido, type ProdutoCat, type ClienteCat } from '@/lib/pedidosDoo'
 import CartaoInsumoDoo from '@/components/doo/CartaoInsumoDoo'
 import { listarInsumosResumo, normalizarRascunho, type InsumoResumo, type RascunhoInsumo } from '@/lib/insumosDoo'
 import { useNavigate } from 'react-router-dom'
@@ -13,8 +16,10 @@ interface Message {
   isImage?: boolean
   attachmentPreview?: string
   /** Rascunho de cadastro que a Doo preparou (só é salvo quando ela confirma no cartão) */
-  acao?: RascunhoInsumo
+  acao?: RascunhoInsumo | RascunhoPedido
   acaoEstado?: 'pendente' | 'salvo' | 'cancelado'
+  /** número do pedido registrado (pra mostrar no cartão) */
+  acaoNumero?: string | number
 }
 
 const VINHO = 'var(--primary-dark)'
@@ -28,6 +33,7 @@ const SUGGESTIONS = [
   'Criar mensagem para cliente',
   'Sugerir promoção sazonal',
   'Cadastrar um ingrediente',
+  'Registrar um pedido',
 ]
 
 const PLACEHOLDERS = [
@@ -271,13 +277,49 @@ Insumos que ela já tem (id · nome · embalagem · valor pago):
 ${lista.length ? lista.map(i => `- ${i.id} · ${i.nome} · ${String(i.qtd_embalagem).replace('.', ',')} ${i.unidade} · R$ ${i.valor_compra.toFixed(2).replace('.', ',')}`).join('\n') : '- (nenhum ainda)'}
 `
 
+/** Ação "registrar pedido" (02/10): segue as 5 etapas da Nova venda. Quem salva é a confeiteira, no cartão. */
+const regrasPedido = (catTxt: string) => {
+  const d = new Date()
+  const hoje = d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })
+  const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  return `
+
+# AÇÃO: REGISTRAR PEDIDO
+Hoje é ${hoje} (${iso}). Quando a confeiteira pedir pra registrar um pedido (ou mandar o print de uma conversa com cliente pedindo isso), você PREPARA o pedido seguindo as mesmas etapas da tela "Nova venda". Você NÃO salva nada: o app mostra um cartão pra ela conferir e confirmar.
+
+Etapas (pergunte SÓ o que falta, de forma curta, juntando no máximo 2 perguntas por mensagem):
+1. VENDA: é encomenda (tem data) ou pronta entrega (é agora)? Quais produtos e quantidades?
+   - Use SOMENTE produtos da lista abaixo, pelo id. Se ela citar um produto que não está na lista, diga que ele não está no cardápio e pergunte se é algum dos parecidos (cite os nomes).
+   - Se o produto tiver "opções" (tamanhos ou kits), pergunte qual opção e use o nome exato da opção em "opcao".
+   - Detalhes como recheio, massa, sabor, frase no bolo vão em "observacoes" do item.
+   - NUNCA invente preço: o app usa o preço do cardápio.
+2. CLIENTE: o nome. Se existir na lista, use o id. Se houver mais de uma com nome parecido, pergunte qual. Se for nova, use só nome (e telefone, se ela disser). Pode ser venda sem cliente se ela disser.
+3. ENTREGA: retirada ou entrega? Encomenda PRECISA de data (e horário, se ela souber). Datas como "sábado" e "amanhã" você converte pra AAAA-MM-DD a partir de hoje. Se for ENTREGA, precisa do endereço (rua e número; bairro e cidade se souber) e da taxa de entrega se ela disser (senão 0).
+4. PAGAMENTO: forma (PIX, Dinheiro, Cartão ou Boleto) e situação:
+   - "total" = já pagou tudo; "parcial" = deu um sinal (precisa do VALOR RECEBIDO); "fiado" = vai pagar depois (data prevista, se souber).
+   - Desconto só se ela falar.
+5. REVISAR: quando tiver tudo, responda com UMA frase curta (ex.: "Confira o pedido e toque em Registrar.") e, no FINAL, este bloco:
+\`\`\`acao-doonly
+{"acao":"pedido","tipo":"encomenda","itens":[{"produto_id":"ID","opcao":"M","quantidade":1,"observacoes":"recheio de morango"}],"cliente":{"id":"ID ou null","nome":"Ana","telefone":""},"tipo_entrega":"retirada","data_entrega":"2026-10-04","horario_entrega":"14:00","endereco":null,"taxa_entrega":0,"desconto":0,"forma_pagamento":"PIX","situacao":"parcial","valor_recebido":50,"data_prevista_pagamento":null,"observacoes":""}
+\`\`\`
+Regras do bloco: números com ponto, opcao null quando o produto não tem opções, endereco {"rua","numero","bairro","cidade","complemento"} só na entrega, nada depois do bloco. Nunca diga que "registrou": quem registra é ela.
+Num print de conversa: use só o que estiver claro no print; o resto você pergunta. Nunca invente.
+
+${catTxt}
+`
+}
+
 /** Separa o bloco acao-doonly da resposta. */
-function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | null } {
+function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | RascunhoPedido | null } {
   const m = reply.match(/```acao-doonly\s*([\s\S]*?)```/)
   if (!m) return { texto: reply, acao: null }
-  let acao: RascunhoInsumo | null = null
-  try { acao = normalizarRascunho(JSON.parse(m[1].trim())) } catch { acao = null }
-  const texto = reply.replace(m[0], '').trim() || 'Confira e toque em Cadastrar insumo.'
+  let acao: RascunhoInsumo | RascunhoPedido | null = null
+  try {
+    const j = JSON.parse(m[1].trim())
+    if (j?.acao === 'pedido' && Array.isArray(j.itens) && j.itens.length) acao = j as RascunhoPedido
+    else acao = normalizarRascunho(j)
+  } catch { acao = null }
+  const texto = reply.replace(m[0], '').trim() || 'Confira e toque no botão do cartão.'
   return { texto, acao }
 }
 
@@ -349,11 +391,14 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
   }
 
   // Insumos dela (pra Doo saber o que já existe e atualizar em vez de duplicar)
+  const navigateDoo = useNavigateDoo()
   const [uid, setUid] = useState<string | null>(null)
   const [insumos, setInsumos] = useState<InsumoResumo[]>([])
+  const [catalogo, setCatalogo] = useState<{ produtos: ProdutoCat[]; clientes: ClienteCat[] }>({ produtos: [], clientes: [] })
   useEffect(() => {
     if (!open || !uid) return
     listarInsumosResumo(uid).then(setInsumos).catch(() => {})
+    listarCatalogo(uid).then(c => setCatalogo({ produtos: c.produtos, clientes: c.clientes })).catch(() => {})
   }, [open, uid])
 
   // Busca nome da confeiteira
@@ -493,7 +538,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            system: buildSystemPrompt(nomeConfeiteira) + regrasInsumo(insumos),
+            system: buildSystemPrompt(nomeConfeiteira) + regrasInsumo(insumos) + regrasPedido(catalogoParaDoo(catalogo)),
             messages: historyForApi.map(m => ({ role: m.role, content: buildContent(m) }))
           })
         })
@@ -798,12 +843,21 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                     )}
                     <span dangerouslySetInnerHTML={{ __html: formatText(msg.content.replace(/\n\n\[(O app confirmou|A confeiteira cancelou)[^\]]*\]$/, '')) }} />
                   </div>
-                  {msg.acao && uid && (
-                    <CartaoInsumoDoo uid={uid} rascunho={msg.acao} estado={msg.acaoEstado || 'pendente'}
-                      existente={msg.acao.insumo_id ? insumos.find(x => x.id === msg.acao!.insumo_id) || null : null}
+                  {msg.acao && uid && msg.acao.acao === 'pedido' && (
+                    <CartaoPedidoDoo uid={uid} rascunho={msg.acao as RascunhoPedido} catalogo={catalogo} estado={msg.acaoEstado || 'pendente'} numero={msg.acaoNumero}
+                      onEditar={(dados) => { handleClose(); navigateDoo('/vendas/novo', { state: { rascunhoDoo: dados } }) }}
+                      onFeito={(estado, info) => {
+                        const nota = estado === 'salvo' ? `\n\n[O app confirmou: pedido${info?.numero ? ' #' + info.numero : ''} registrado (${info?.resumo}).]` : '\n\n[A confeiteira cancelou esse pedido.]'
+                        setMessages(prev => prev.map((m, k) => k === i ? { ...m, acaoEstado: estado, acaoNumero: info?.numero, content: m.content + nota } : m))
+                        if (estado === 'salvo') listarCatalogo(uid).then(c => setCatalogo({ produtos: c.produtos, clientes: c.clientes })).catch(() => {})
+                      }} />
+                  )}
+                  {msg.acao && uid && msg.acao.acao === 'insumo' && (
+                    <CartaoInsumoDoo uid={uid} rascunho={msg.acao as RascunhoInsumo} estado={msg.acaoEstado || 'pendente'}
+                      existente={(msg.acao as RascunhoInsumo).insumo_id ? insumos.find(x => x.id === (msg.acao as RascunhoInsumo).insumo_id) || null : null}
                       onFeito={(estado, final) => {
                         // O histórico enviado pra Doo fica sabendo do resultado (pra ela não oferecer de novo)
-                        const nota = estado === 'salvo' ? `\n\n[O app confirmou: ${final?.nome} foi ${msg.acao!.insumo_id ? 'atualizado' : 'cadastrado'}.]` : '\n\n[A confeiteira cancelou esse cadastro.]'
+                        const nota = estado === 'salvo' ? `\n\n[O app confirmou: ${final?.nome} foi ${(msg.acao as RascunhoInsumo).insumo_id ? 'atualizado' : 'cadastrado'}.]` : '\n\n[A confeiteira cancelou esse cadastro.]'
                         setMessages(prev => prev.map((m, k) => k === i ? { ...m, acaoEstado: estado, content: m.content + nota } : m))
                         if (estado === 'salvo') listarInsumosResumo(uid).then(setInsumos).catch(() => {})
                       }} />

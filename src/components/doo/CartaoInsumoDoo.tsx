@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { apiFetch } from "@/lib/apiFetch";
 import { Package, Check } from "@phosphor-icons/react";
 import CampoNumero from "@/components/ui/CampoNumero";
 import { custoLegivel, salvarInsumoDoo, UNIDADES_INSUMO, EMBALAGENS_INSUMO, type RascunhoInsumo, type InsumoResumo } from "@/lib/insumosDoo";
@@ -18,6 +19,20 @@ export default function CartaoInsumoDoo({ uid, rascunho, existente, estado, onFe
   const [editando, setEditando] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
+  // Foto: a mesma busca de imagem do cadastro manual, já feita ao abrir o cartão (insumo novo)
+  const [fotos, setFotos] = useState<string[]>([]);
+  const [buscando, setBuscando] = useState(false);
+  useEffect(() => {
+    if (estado !== "pendente" || rascunho.insumo_id || rascunho.nome.trim().length < 3) return;
+    let cancel = false;
+    setBuscando(true);
+    apiFetch(`/api/buscar-imagem?q=${encodeURIComponent(`${rascunho.nome} ${rascunho.marca || ""}`.trim())}`)
+      .then(r => r.json())
+      .then(d => { if (!cancel && Array.isArray(d?.images)) { const l = d.images.slice(0, 3); setFotos(l); if (l[0]) setR(x => ({ ...x, imagem_url: x.imagem_url || l[0] })); } })
+      .catch(() => {})
+      .finally(() => { if (!cancel) setBuscando(false); });
+    return () => { cancel = true; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const atualizar = !!r.insumo_id;
   const custo = custoLegivel(r.unidade, r.qtd_embalagem, r.valor_compra);
   const custoAntes = existente ? custoLegivel(existente.unidade, existente.qtd_embalagem, existente.valor_compra) : "";
@@ -69,6 +84,21 @@ export default function CartaoInsumoDoo({ uid, rascunho, existente, estado, onFe
         </div>
       )}
 
+      {(buscando || fotos.length > 0) && (
+        <div className="cid-fotos">
+          <p className="cid-fl">Foto do insumo</p>
+          <div className="cid-fg">
+            {buscando && !fotos.length ? [0, 1, 2].map(k => <span key={k} className="cid-f cid-f--load" />) : fotos.map(f => (
+              <button type="button" key={f} className={`cid-f${r.imagem_url === f ? " on" : ""}`} onClick={() => setR(x => ({ ...x, imagem_url: f }))} aria-label="Usar esta foto">
+                <img src={f} alt="" loading="lazy" onError={e => { (e.currentTarget.parentElement as HTMLElement).style.display = "none"; }} />
+                {r.imagem_url === f && <i><Check size={12} weight="bold" /></i>}
+              </button>
+            ))}
+            {fotos.length > 0 && <button type="button" className={`cid-f cid-f--sem${!r.imagem_url ? " on" : ""}`} onClick={() => setR(x => ({ ...x, imagem_url: "" }))}>Sem foto</button>}
+          </div>
+        </div>
+      )}
+
       {erro && <p className="cid-erro">{erro}</p>}
       <div className="cid-bts">
         <button type="button" className="cid-b2" onClick={() => setEditando(e => !e)}>{editando ? "Pronto" : "Editar"}</button>
@@ -98,6 +128,16 @@ const CSS = `
   .cid-in { display: block; width: 100%; box-sizing: border-box; margin-top: 5px; min-height: 44px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 10px 12px; font-family: inherit; font-size: 16px; color: #2C1219; background: #fff; }
   .cid-in:focus { outline: none; border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
   .cid-row { display: flex; gap: 8px; }
+  .cid-fotos { margin-top: 12px; }
+  .cid-fl { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: #4B3A42; }
+  .cid-fg { display: flex; gap: 8px; }
+  .cid-f { position: relative; width: 56px; height: 56px; border-radius: 12px; border: 2px solid #EDE6E9; background: #FAF7F8; padding: 0; overflow: hidden; cursor: pointer; flex-shrink: 0; }
+  .cid-f img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cid-f.on { border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.15); }
+  .cid-f i { position: absolute; right: 3px; bottom: 3px; width: 18px; height: 18px; border-radius: 50%; background: #E85A8C; color: #fff; display: flex; align-items: center; justify-content: center; }
+  .cid-f--sem { font-family: inherit; font-size: 11px; font-weight: 700; color: #9A8E94; }
+  .cid-f--load { background: linear-gradient(90deg, #F5F0F2, #FBF7F9, #F5F0F2); background-size: 200% 100%; animation: cidLoad 1.2s infinite; }
+  @keyframes cidLoad { to { background-position: -200% 0; } }
   .cid-erro { margin: 10px 0 0; font-size: 13px; color: #B91C1C; font-weight: 700; }
   .cid-bts { display: flex; gap: 8px; margin-top: 14px; }
   .cid-b1, .cid-b2 { flex: 1; border-radius: 12px; padding: 12px 10px; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer; white-space: nowrap; }

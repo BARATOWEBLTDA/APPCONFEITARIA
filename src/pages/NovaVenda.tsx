@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
+import { criarPedido, opcoesDoProduto as opcoesDoProdutoLib, type DadosPedido } from '@/lib/pedidosDoo'
 import { gerarPedidoPDF } from '@/lib/gerarPedidoPDF'
 import { abrirJanela } from '@/lib/pdfDoonly'
 import { usePlano } from '@/hooks/usePlano'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useIsMobile } from '@/hooks/use-mobile'
 import AppPageHeader from '@/components/AppPageHeader'
@@ -103,6 +104,9 @@ export default function NovaVenda() {
 
   // ── State principal ─────────────────────────────────────────────────────
   const [etapa, setEtapa] = useState(1)
+  const locNV = useLocation()
+  const [origemDoo, setOrigemDoo] = useState(false)
+  const preenchidaRef = useRef(false)
   const [userId, setUserId] = useState<string | null>(null)
 
   const [tipo, setTipo] = useState<TipoVenda>(null)
@@ -207,6 +211,8 @@ export default function NovaVenda() {
 
   // Ajusta tipoEntrega default quando muda o tipo de venda
   useEffect(() => {
+    // Veio preenchida da Doo IA: mantém a entrega que já veio (não volta pra "Retirada")
+    if (preenchidaRef.current) { preenchidaRef.current = false; return }
     setTipoEntrega('retirada')
   }, [tipo])
 
@@ -269,24 +275,7 @@ export default function NovaVenda() {
   // ── Adicionar produto ──────────────────────────────────────────────────
   // Produto com tamanhos (P/M/G, pelo peso) ou kits: pergunta qual antes de adicionar (30/09).
   // Antes entrava sempre com o menor preço, sem jeito de escolher.
-  const opcoesDoProduto = (p: Produto): { label: string; valor: number; pers: any }[] => {
-    const gt = p.grupo_tamanhos
-    if (gt?.ativo && Array.isArray(gt.opcoes)) {
-      const porPeso = gt.modo_preco_tamanho === 'por_peso'
-      const ops = gt.opcoes.filter((o: any) => o?.nome?.trim()).map((o: any) => {
-        const valor = porPeso ? Math.round((p.preco_normal || 0) * (o.peso_kg || 0) * 100) / 100 : Number(o.preco) || 0
-        return { label: o.nome, valor, pers: { tamanho: { nome: o.nome, preco: valor, peso_kg: o.peso_kg || null } } }
-      }).filter((o: any) => o.valor > 0)
-      if (ops.length) return ops
-    }
-    const kq = p.kit_qtd
-    if (kq?.ativo && Array.isArray(kq.kits) && kq.kits.length) {
-      return kq.kits.filter((k: any) => (k.qtd || 0) > 0 && (k.preco || 0) > 0).map((k: any) => ({
-        label: `${k.qtd} unidades`, valor: Number(k.preco), pers: { kit: { modo: 'fechado', total: k.qtd, sabores: [] } },
-      }))
-    }
-    return []
-  }
+  const opcoesDoProduto = (p: Produto) => opcoesDoProdutoLib(p) // mesma regra da Doo IA
   const [escolhaProduto, setEscolhaProduto] = useState<{ p: Produto; opcoes: { label: string; valor: number; pers: any }[] } | null>(null)
   const addProduto = (p: Produto, escolha?: { label: string; valor: number; pers: any }) => {
     if (!escolha) {
@@ -349,97 +338,22 @@ export default function NovaVenda() {
     if (!userId || salvando) return
     setSalvando(true)
 
-    // Status escolhido pela confeiteira
-    let status: string = statusPedido
-    let statusPag: string = 'pago'
-    let valorRecebido = total
-
-    // Se pronta entrega + já saiu, força entregue
-    if (tipo === 'pronta_entrega' && tipoEntrega === 'retirada') {
-      status = 'entregue'
-    }
-
-    if (situacaoPag === 'fiado') {
-      statusPag = 'pendente'
-      valorRecebido = 0
-    } else if (situacaoPag === 'parcial') {
-      statusPag = 'parcial'
-      valorRecebido = valorParcial
-    }
-
-    // Cliente novo digitado aqui: cadastra em Clientes antes de salvar o pedido
-    let clienteIdFinal = clienteId
-    if (!semCliente && !clienteId && modoNovoCli && clienteNome.trim()) {
-      const end: any = tipoEntrega === 'entrega' ? { rua: enderecoRua || null, numero: enderecoNumero || null, bairro: enderecoBairro || null, cidade: enderecoCidade || null, complemento: enderecoComplemento || null } : {}
-      const { data: cliNovo, error: errCli } = await supabase.from('clientes')
-        .insert({ user_id: userId, nome: clienteNome.trim(), whatsapp: clienteTelefone.trim() || null, ...end })
-        .select('id').single()
-      if (!errCli && cliNovo?.id) clienteIdFinal = cliNovo.id
-      else console.error('Não deu pra cadastrar o cliente novo:', errCli)
-    }
-
-    const { data: novoPedido, error } = await supabase.from('pedidos').insert({
-      user_id: userId,
-      cliente_id: clienteIdFinal,
-      cliente_nome: semCliente ? '' : clienteNome,
-      cliente_telefone: semCliente ? '' : clienteTelefone,
-      status,
-      status_pagamento: statusPag,
-      valor_recebido: valorRecebido,
-      valor_total: total,
-      valor_produtos: subtotalProdutos,
-      desconto,
-      taxa_entrega: tipoEntrega === 'entrega' ? taxaEntrega : 0,
-      forma_pagamento: formaPagamento,
-      tipo_entrega: tipoEntrega,
-      data_entrega: tipo === 'encomenda' ? dataEntrega : (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` })(),
-      horario_entrega: tipo === 'encomenda' ? horarioEntrega : null,
-      endereco_rua: enderecoRua,
-      endereco_numero: enderecoNumero,
-      endereco_bairro: enderecoBairro,
-      endereco_cidade: enderecoCidade,
-      endereco_complemento: enderecoComplemento,
-      origem: 'manual',
-      tipo_venda: tipo,
-      observacoes,
-      data_prevista_pagamento: situacaoPag === 'fiado' ? dataPrevistaPagamento : null,
-    }).select().single()
-
-    if (error || !novoPedido) {
-      alert('Erro ao salvar: ' + (error?.message || 'desconhecido'))
+    // Salvar: a mesma função usada pela Doo IA (lib/pedidosDoo) — pedido igual nos dois caminhos
+    const res = await criarPedido(userId, {
+      tipo: (tipo || 'encomenda') as any, itens, semCliente, clienteId, clienteNome, clienteTelefone,
+      clienteNovo: !semCliente && !clienteId && modoNovoCli && !!clienteNome.trim(),
+      tipoEntrega: tipoEntrega as any, dataEntrega, horarioEntrega,
+      endereco: { rua: enderecoRua, numero: enderecoNumero, bairro: enderecoBairro, cidade: enderecoCidade, complemento: enderecoComplemento },
+      taxaEntrega, desconto, acrescimo, formaPagamento, situacaoPag, valorParcial, dataPrevistaPagamento,
+      statusPedido, observacoes, origem: origemDoo ? 'doo' : 'manual',
+    })
+    if (res.ok === false) {
+      alert('Erro ao salvar: ' + res.erro)
       setSalvando(false)
       return
     }
-
-    // Inserir itens (com snapshot v1 — Passo 0A)
-    const itensInsert = itens.map(it => ({
-      pedido_id: novoPedido.id,
-      produto_id: it.produto_id,
-      nome_produto: it.nome_produto,
-      quantidade: it.quantidade,
-      valor_unitario: it.valor_unitario,
-      observacoes: it.observacoes || '',
-      imagem_url: it.imagem_url || null,
-      // ─── Snapshot Passo 0A ─────────────────────────────────────────
-      // NovaVenda hoje não coleta massa/recheio/cobertura/sabor/tamanho
-      // Salva estrutura vazia. Passo 1 (GRUPO_OPCOES) vai enriquecer.
-      personalizacoes: it.personalizacoes ? { ...criarPersonalizacoesV1({}), ...it.personalizacoes } : criarPersonalizacoesV1({}),
-      preco_breakdown: criarBreakdownV1({ final: it.valor_unitario }),
-      snapshot_version: SNAPSHOT_VERSION_ATUAL,
-    }))
-    const { error: errItens } = await supabase.from('pedido_itens').insert(itensInsert)
-    if (errItens) {
-      alert('Pedido salvo, mas os produtos falharam: ' + errItens.message)
-      console.error('Erro ao inserir itens:', errItens)
-    }
-
-    // Registra criação no histórico (silencioso — não falha se tabela não existir)
-    supabase.from('pedido_historico').insert({
-      pedido_id: novoPedido.id,
-      user_id: userId,
-      evento: 'Pedido criado',
-      descricao: `Pedido ${tipo === 'pronta_entrega' ? 'de pronta entrega' : 'de encomenda'} registrado manualmente`,
-    }).then(() => {}, () => {})
+    if (res.aviso) alert(res.aviso)
+    const novoPedido: any = res.pedido
 
     // Salva dados do pedido pra mostrar na tela de sucesso
     setPedidoCriado({
@@ -466,6 +380,23 @@ export default function NovaVenda() {
     const { data } = await supabase.from('pedidos').select('*, pedido_itens(*)').eq('id', pc.id).maybeSingle()
     await gerarPedidoPDF((data || { id: pc.id, numero: pc.numero, valor_total: pc.total }) as any, janela)
   }
+
+  // Veio do "Editar" do cartão da Doo IA: abre preenchida, direto no Revisar
+  useEffect(() => {
+    const d = (locNV.state as any)?.rascunhoDoo as DadosPedido | undefined
+    if (!d) return
+    window.history.replaceState({}, '')
+    setOrigemDoo(true)
+    preenchidaRef.current = true
+    setTipo(d.tipo as any); setItens(d.itens as any)
+    setSemCliente(d.semCliente); setClienteId(d.clienteId); setClienteNome(d.clienteNome); setClienteTelefone(d.clienteTelefone); setModoNovoCli(d.clienteNovo)
+    setTipoEntrega(d.tipoEntrega as any); setDataEntrega(d.dataEntrega); setHorarioEntrega(d.horarioEntrega)
+    setEnderecoRua(d.endereco.rua); setEnderecoNumero(d.endereco.numero); setEnderecoBairro(d.endereco.bairro); setEnderecoCidade(d.endereco.cidade); setEnderecoComplemento(d.endereco.complemento)
+    setTaxaEntrega(d.taxaEntrega); setDesconto(d.desconto); setAcrescimo(d.acrescimo)
+    setFormaPagamento(d.formaPagamento); setSituacaoPag(d.situacaoPag); setValorParcial(d.valorParcial); setDataPrevistaPagamento(d.dataPrevistaPagamento)
+    setStatusPedido((d.statusPedido || 'agendado') as any); setObservacoes(d.observacoes)
+    setEtapa(5)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset completo pra nova venda
   const resetVenda = () => {

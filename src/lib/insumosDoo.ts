@@ -19,6 +19,8 @@ export type RascunhoInsumo = {
   embalagem_tipo?: string;
   qtd_embalagem: number;
   valor_compra: number;
+  /** foto escolhida no cartão (a mesma busca de imagem do cadastro manual) */
+  imagem_url?: string;
 };
 
 export type InsumoResumo = { id: string; nome: string; unidade: string; qtd_embalagem: number; valor_compra: number; custo_unitario: number };
@@ -66,12 +68,13 @@ export async function salvarInsumoDoo(uid: string, r: RascunhoInsumo): Promise<{
     valor_compra: r.valor_compra, qtd_embalagem: r.qtd_embalagem,
     custo_unitario: r.valor_compra / r.qtd_embalagem,
     updated_at: new Date().toISOString(),
+    ...(r.imagem_url ? { imagem_url: r.imagem_url } : {}),
   };
   if (r.insumo_id) {
     const { error } = await supabase.from("insumos").update(payload).eq("id", r.insumo_id).eq("user_id", uid);
     return error ? { ok: false, erro: error.message } : { ok: true, id: r.insumo_id };
   }
   const { data, error } = await supabase.from("insumos")
-    .insert({ ...payload, user_id: uid, quantidade_estoque: 0, estoque_minimo: 0, imagem_url: "" }).select("id").single();
+    .insert({ imagem_url: "", ...payload, user_id: uid, quantidade_estoque: 0, estoque_minimo: 0 }).select("id").single();
   return error || !data ? { ok: false, erro: error?.message || "Não foi possível cadastrar." } : { ok: true, id: (data as any).id };
 }
