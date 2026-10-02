@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePlano } from "@/hooks/usePlano";
 import { useProfile } from "@/hooks/useProfile";
@@ -39,6 +40,21 @@ export default function Assinar() {
   const { profile } = useProfile();
   const diasRestantes = proExpiraEm ? Math.max(0, Math.ceil((proExpiraEm.getTime() - Date.now()) / 86400000)) : 0;
 
+  // Enquanto a página está aberta: o fundo de trás fica vinho (no iPhone, ao rolar, a barra do Safari
+  // encolhe e aparecia uma faixa branca embaixo do menu) e a página de trás não rola.
+  useEffect(() => {
+    const html = document.documentElement, body = document.body;
+    const antes = { hb: html.style.background, bb: body.style.background, ho: html.style.overflow, bo: body.style.overflow };
+    html.style.background = "#1A0B10"; body.style.background = "#1A0B10";
+    html.style.overflow = "hidden"; body.style.overflow = "hidden";
+    const meta = document.querySelector('meta[name="theme-color"]'); const corAntes = meta?.getAttribute("content") || null;
+    meta?.setAttribute("content", "#1A0B10");
+    return () => {
+      html.style.background = antes.hb; body.style.background = antes.bb; html.style.overflow = antes.ho; body.style.overflow = antes.bo;
+      if (meta && corAntes) meta.setAttribute("content", corAntes);
+    };
+  }, []);
+
   const assinarPeloWhatsApp = () => {
     const quem = [profile?.nome, (profile as any)?.nome_loja].filter(Boolean).join(" · ");
     const email = (profile as any)?.email || "";
@@ -55,7 +71,7 @@ export default function Assinar() {
         </button>
 
         <div className="pro-hero">
-          <div className="pro-crown"><img src="/coroa.png" alt="" /></div>
+          <img className="pro-boneca" src="/pro.png" alt="Confeiteira Doonly PRO" />
           <p className="pro-k">DOONLY PRO</p>
           <h1>Sua confeitaria <span>mais lucrativa</span> e organizada</h1>
           <p className="pro-sub">Ferramentas que vendem, calculam e organizam por você.</p>
@@ -107,6 +123,8 @@ export default function Assinar() {
         .pro-crown { width: 60px; height: 60px; border-radius: 18px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center;
           background: linear-gradient(135deg, rgba(249,168,212,.25), rgba(196,181,253,.2)); border: 1px solid rgba(249,168,212,.35); }
         .pro-crown img { width: 36px; height: 36px; object-fit: contain; }
+        /* Boneca confeiteira do PRO no topo (02/10) */
+        .pro-boneca { display: block; width: auto; height: 150px; max-width: 70%; margin: 0 auto 6px; object-fit: contain; filter: drop-shadow(0 12px 28px rgba(232,90,140,.35)); }
         .pro-k { font-size: 11px; font-weight: 900; letter-spacing: .18em; margin: 0; background: linear-gradient(90deg, #F9A8D4, #C4B5FD, #93C5FD); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .pro-hero h1 { font-size: 26px; font-weight: 900; line-height: 1.15; margin: 8px auto 0; max-width: 320px; text-wrap: balance; color: #fff; }
         .pro-hero h1 span { color: #F9A8D4; }

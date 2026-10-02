@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { STATUS_AINDA_NAO_PRONTO } from "@/lib/pedidoStatus";
 import { useNavigate } from "react-router-dom";
 import { Sparkle, CaretRight } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
@@ -90,13 +91,13 @@ export default function MinhasAtualizacoes() {
         totalPedidosRes,
         clientesComVendaRes,
       ] = await Promise.all([
-        // 1. Pedidos atrasados (entrega passou e não foi entregue)
+        // 1. Pedidos atrasados: data passou e ainda não ficou pronto (regra única em lib/pedidoStatus)
         supabase
           .from("pedidos")
           .select("id", { count: "exact", head: true })
           .eq("user_id", userId)
           .lt("data_entrega", hojeISO)
-          .in("status", STATUS_ATIVOS),
+          .in("status", STATUS_AINDA_NAO_PRONTO),
         // 2. Entregas essa semana
         supabase
           .from("pedidos")
@@ -161,8 +162,8 @@ export default function MinhasAtualizacoes() {
           descricao: nAtrasados === 1
             ? "Uma entrega passou da data — atualize o status."
             : `${nAtrasados} entregas passaram da data — atualize os status.`,
-          cta: "Ver pedidos",
-          path: "/pedidos",
+          cta: nAtrasados === 1 ? "Ver o pedido" : "Ver os pedidos",
+          path: "/pedidos?filtro=atrasados",
           prioridade: 100,
         });
       }

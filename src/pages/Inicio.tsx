@@ -1,4 +1,5 @@
 // Build marker: 2026-09-05T11:00 — mobile hero: fonte menor, PRO achatado, texto centralizado
+import { STATUS_AINDA_NAO_PRONTO } from "@/lib/pedidoStatus";
 import { VERSAO_APP } from "@/lib/versao";
 import ConquistasCard from "@/components/ConquistasCard";
 import MenuContaItens from "@/components/MenuContaItens";
@@ -493,13 +494,13 @@ export default function Inicio() {
           .in("status", STATUS_ATIVOS)
           .order("data_entrega", { ascending: true })
           .limit(4),
-        // Pedidos atrasados (data_entrega < hoje, ainda ativos)
+        // Pedidos atrasados: data passou e ainda não ficou pronto (regra única em lib/pedidoStatus)
         supabase
           .from("pedidos")
           .select("id", { count: "exact", head: true })
           .eq("user_id", userId)
           .lt("data_entrega", hojeISO)
-          .in("status", STATUS_ATIVOS),
+          .in("status", STATUS_AINDA_NAO_PRONTO),
         // Próxima entrega HOJE com horário (pra "próxima em Xh")
         supabase
           .from("pedidos")

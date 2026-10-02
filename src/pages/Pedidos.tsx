@@ -1,4 +1,6 @@
 // v2: excluir pedido + modal 3 secoes + imagem_url
+import { duplicarPedido } from '@/lib/duplicarPedido'
+import { pedidoAtrasado } from '@/lib/pedidoStatus'
 import { VERSAO_APP } from "@/lib/versao";
 import MenuContaItens from "@/components/MenuContaItens";
 import { useState, useEffect, useRef } from 'react'
@@ -692,7 +694,7 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido, onAcaoRapida, onMen
 }
 
 // ── Modal de detalhes do pedido ──────────────────────────────────────────────
-function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido; onClose: () => void; onEditar: () => void; onExcluir: () => void; onAprovar: () => void }) {
+function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar, onAvancar }: { p: Pedido; onClose: () => void; onEditar: () => void; onExcluir: () => void; onAprovar: () => void; onAvancar?: (novoStatus: string) => void }) {
   const isMobile = useIsMobile()
   const [confirmExcluir, setConfirmExcluir] = useState(false)
   const [menuAcoesOpen, setMenuAcoesOpen] = useState(false)
@@ -729,7 +731,7 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
   // ══════════════ MODAL DESKTOP — versão nova bonita ══════════════
   if (!isMobile) {
     const proximoStatus: Record<string, { key: string; label: string } | null> = {
-      aguardando_pagamento: { key: 'aguardando_aceite', label: 'Aguardando Aceite' },
+      aguardando_pagamento: p.origem === 'cardapio' ? { key: 'aguardando_aceite', label: 'Aguardando Aceite' } : { key: 'agendado', label: 'Agendado' },
       aguardando_aceite:    { key: 'agendado',          label: 'Agendado' },
       agendado:             { key: 'em_producao',       label: 'Em Produção' },
       em_producao:          { key: 'finalizado',        label: 'Finalizado' },
@@ -772,7 +774,12 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
                 <>
                   <div className="mpd-menu-overlay" onClick={() => setMenuAcoesOpen(false)} />
                   <div className="mpd-menu">
-                    <button className="mpd-menu-item" onClick={() => { setMenuAcoesOpen(false); alert('🚀 Em breve: duplicar pedido') }}>
+                    <button className="mpd-menu-item" onClick={async () => {
+                  setMenuAcoesOpen(false)
+                  const r = await duplicarPedido(p.id)
+                  if ('erro' in r) { alert(r.erro); return }
+                  window.location.href = `/pedidos/${r.id}/editar`
+                }}>
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                       Duplicar pedido
                     </button>
@@ -785,12 +792,23 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                       Exportar em PDF
                     </button>
-                    <button className="mpd-menu-item" onClick={() => { setMenuAcoesOpen(false); alert('🚀 Em breve: enviar pelo WhatsApp') }}>
+                    <button className="mpd-menu-item" onClick={() => {
+                      setMenuAcoesOpen(false)
+                      const tel = String((p as any).cliente_whatsapp || p.cliente_telefone || '').replace(/\D/g, '')
+                      if (!tel) { alert('Esse pedido não tem telefone do cliente.'); return }
+                      const num = tel.startsWith('55') ? tel : `55${tel}`
+                      const msg = `Olá, ${p.cliente_nome ? toTitleCase(p.cliente_nome).split(' ')[0] : ''}! Sobre o seu pedido #${p.numero || ''} 💗`
+                      window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank')
+                    }}>
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/></svg>
                       Enviar pelo WhatsApp
                     </button>
                     <div className="mpd-menu-sep" />
-                    <button className="mpd-menu-item mpd-menu-item--danger" onClick={() => { setMenuAcoesOpen(false); alert('🚀 Em breve: cancelar pedido') }}>
+                    <button className="mpd-menu-item mpd-menu-item--danger" onClick={() => {
+                      setMenuAcoesOpen(false)
+                      if (!confirm(`Cancelar o pedido #${p.numero || ''}? Ele sai da agenda e não conta no faturamento.`)) return
+                      onAvancar?.('cancelado'); onClose()
+                    }}>
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
                       Cancelar pedido
                     </button>
@@ -967,7 +985,7 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
               Editar
             </button>
             {prox && (
-              <button className="mpd-btn mpd-btn-avancar" onClick={() => alert(`🚀 Em breve: avançar pra "${prox.label}"`)}>
+              <button className="mpd-btn mpd-btn-avancar" onClick={() => { onAvancar?.(prox.key); onClose() }}>
                 Avançar para {prox.label}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
               </button>
@@ -1733,6 +1751,8 @@ export default function Pedidos() {
   // Filtro especial "aguardando aprovação" — ativado via ?filtro=aguardando (vindo do Início)
   const params = new URLSearchParams(location.search)
   const [filtroAguardando, setFiltroAguardando] = useState(params.get('filtro') === 'aguardando')
+  // Vem do aviso "pedido atrasado" (Início / Suas atualizações): mostra só os atrasados
+  const [filtroAtrasados, setFiltroAtrasados] = useState(params.get('filtro') === 'atrasados')
 
   const [busca, setBusca] = useState('')
   const [abaAtiva, setAbaAtiva] = useState<'encomenda' | 'pronta_entrega'>('encomenda')
@@ -1833,7 +1853,9 @@ export default function Pedidos() {
       return
     }
     if (acao === 'duplicar') {
-      navigate(`/vendas/novo?duplicar=${p.id}`)
+      const r = await duplicarPedido(p.id)
+      if ('erro' in r) { alert(r.erro); return }
+      navigate(`/pedidos/${r.id}/editar`)
       return
     }
     if (acao === 'contatar') {
@@ -1922,6 +1944,7 @@ export default function Pedidos() {
     if (filtroAguardando) {
       return p.origem === 'cardapio' && p.status === 'novo'
     }
+    if (filtroAtrasados) return pedidoAtrasado(p as any)
     // Filtro por aba (Encomendas / Pronta Entrega) — fallback: pedidos sem tipo_venda = encomenda
     const tipoVenda = p.tipo_venda || 'encomenda'
     if (tipoVenda !== abaAtiva) return false
@@ -2468,6 +2491,21 @@ export default function Pedidos() {
             </div>
           )}
 
+          {filtroAtrasados && (
+            <div className="ped-filtro-ativo-chip ped-filtro-ativo-chip--atraso">
+              <div className="ped-filtro-ativo-info">
+                <span className="ped-filtro-ativo-icon">⚠️</span>
+                <div>
+                  <p className="ped-filtro-ativo-title">Pedidos atrasados</p>
+                  <p className="ped-filtro-ativo-sub">A data de entrega passou e eles ainda não ficaram prontos</p>
+                </div>
+              </div>
+              <button className="ped-filtro-ativo-close" onClick={() => { setFiltroAtrasados(false); navigate('/pedidos', { replace: true }) }} aria-label="Ver todos os pedidos">
+                Ver todos
+              </button>
+            </div>
+          )}
+
           {/* Lista */}
           {loading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
@@ -2543,7 +2581,7 @@ export default function Pedidos() {
       )}
 
       {mapaAberto && <MapaModal endereco={mapaAberto} onClose={() => setMapaAberto(null)} />}
-      {modalPedido && <ModalPedido p={modalPedido} onClose={() => setModalPedido(null)} onEditar={() => { setModalPedido(null); navigate(`/pedidos/${modalPedido.id}/editar`) }} onExcluir={() => excluirPedido(modalPedido.id)} onAprovar={() => aprovarPedido(modalPedido.id)} />}
+      {modalPedido && <ModalPedido p={modalPedido} onClose={() => setModalPedido(null)} onEditar={() => { setModalPedido(null); navigate(`/pedidos/${modalPedido.id}/editar`) }} onExcluir={() => excluirPedido(modalPedido.id)} onAprovar={() => aprovarPedido(modalPedido.id)} onAvancar={(st) => updateStatus(modalPedido.id, st)} />}
 
       {/* ── Modal: precisa cadastrar produtos primeiro ── */}
       {modalSemProdutos && (

@@ -390,6 +390,11 @@ export default function EditarPedido() {
         valor_unitario: it.valor_unitario,
         observacoes: it.observacoes || '',
         imagem_url: it.imagem_url || null,
+        // As escolhas do item (tamanho, massa, recheios, kit, adicionais, foto de referência) vão junto:
+        // antes não eram carregadas, e salvar a edição apagava todas elas.
+        personalizacoes: (it as any).personalizacoes ?? null,
+        preco_breakdown: (it as any).preco_breakdown ?? null,
+        snapshot_version: (it as any).snapshot_version ?? null,
       })))
       // Carregar lista de clientes + produtos
       if (user?.user) {
@@ -701,9 +706,12 @@ export default function EditarPedido() {
           // ─── Snapshot Passo 0A ─────────────────────────────────────
           // EditarPedido preserva o snapshot original de cada item se existir,
           // e cria snapshot básico pra itens novos adicionados na edição
-          personalizacoes: criarPersonalizacoesV1((it as any).personalizacoes || {}),
+          // Mantém TUDO o que o item já tinha (kit, adicionais, foto de referência…); só completa o formato
+          personalizacoes: (it as any).personalizacoes && typeof (it as any).personalizacoes === 'object'
+            ? { ...criarPersonalizacoesV1((it as any).personalizacoes), ...(it as any).personalizacoes }
+            : criarPersonalizacoesV1({}),
           preco_breakdown: (it as any).preco_breakdown || criarBreakdownV1({ final: it.valor_unitario }),
-          snapshot_version: SNAPSHOT_VERSION_ATUAL,
+          snapshot_version: (it as any).snapshot_version || SNAPSHOT_VERSION_ATUAL,
         }))
         const { error: errIns } = await supabase.from('pedido_itens').insert(itensInsert)
         if (errIns) {

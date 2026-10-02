@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { pedidoAtrasado, STATUS_AINDA_NAO_PRONTO } from "@/lib/pedidoStatus";
+import { duplicarPedido as duplicarPedidoLib } from "@/lib/duplicarPedido";
 import { gerarPedidoPDF } from "@/lib/gerarPedidoPDF";
 import * as pdf from "@/lib/pdfDoonly";
 import { usePlano } from "@/hooks/usePlano";
@@ -111,11 +113,8 @@ const relativoLabel = (isoAlvo: string): string => {
   return "";
 };
 
-const isPedidoAtrasado = (p: any) => {
-  if (!p.data_entrega) return false;
-  if (p.status === "cancelado" || p.status === "concluido") return false;
-  return diffDias(p.data_entrega) < 0;
-};
+// Regra única (lib/pedidoStatus): antes contava até pedido Entregue como atrasado
+const isPedidoAtrasado = (p: any) => pedidoAtrasado(p);
 
 const normalizarTelefone = (tel: string) => (tel || "").replace(/\D/g, "");
 
@@ -310,8 +309,11 @@ export default function Agenda() {
     window.open(`https://wa.me/${numero}?text=${msg}`, "_blank");
   };
 
-  const duplicarPedido = (id: string) => {
-    navigate(`/vendas/novo?duplicar=${id}`);
+  const duplicarPedido = async (id: string) => {
+    const r = await duplicarPedidoLib(id);
+    if ("erro" in r) { setToast({ msg: r.erro, tipo: "erro" }); return; }
+    setToast({ msg: "Pedido duplicado ✓ Ajuste a data da cópia", tipo: "sucesso" });
+    navigate(`/pedidos/${r.id}/editar`);
   };
 
   const excluirPedido = (id: string) => {
@@ -677,7 +679,7 @@ function VistaCalendario({ refDate, setRefDate, diaSel, setDiaSel, dayStats, irP
                 (isHoje ? " ag-cal-day--hoje" : "") +
                 (atrasadoCnt > 0 && !isSel ? " ag-cal-day--atrasado" : "")
               }
-              onClick={() => setDiaSel(c.iso)}
+              data-day={c.iso} onClick={() => setDiaSel(c.iso)}
               aria-label={`${c.date.getDate()} de ${MESES_SHORT[c.date.getMonth()]}${st ? `, ${st.total} pedidos` : ""}`}
             >
               <span className="ag-cal-num">{c.date.getDate()}</span>
@@ -1012,7 +1014,7 @@ function PedidoCard({ p, acoes }: any) {
               <button className="ag-pc-menu-item" onClick={() => { setMenuOpen(false); acoes.editar(p.id); }}>
                 <IconEdit /> Editar pedido
               </button>
-              {p.status !== "pronto" && p.status !== "concluido" && (
+              {STATUS_AINDA_NAO_PRONTO.includes(p.status || "agendado") && (
                 <button className="ag-pc-menu-item" onClick={() => { setMenuOpen(false); acoes.marcarPronto(p.id); }}>
                   <IconCheck /> Marcar como pronto
                 </button>
@@ -1037,7 +1039,7 @@ function PedidoCard({ p, acoes }: any) {
 
       {/* Ações rápidas */}
       <div className="ag-pc-quick">
-        {p.status !== "pronto" && p.status !== "concluido" && (
+        {STATUS_AINDA_NAO_PRONTO.includes(p.status || "agendado") && (
           <button className="ag-pc-quick-btn ag-pc-quick-btn--pronto" onClick={() => acoes.marcarPronto(p.id)}>
             <IconCheck /> Marcar pronto
           </button>
