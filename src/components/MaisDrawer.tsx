@@ -78,10 +78,20 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
   const primeiroNome = profile?.nome ? profile.nome.trim().split(/\s+/)[0] : "";
   const inicial = (profile?.nome || "?").trim().charAt(0).toUpperCase();
 
+  // Menu aberto: o fundo não rola (no iPhone, só "overflow: hidden" no body não basta —
+  // prende a página na posição atual e devolve ao fechar)
   useEffect(() => {
-    if (open) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "";
-    return () => { document.body.style.overflow = ""; };
+    if (!open) return;
+    const y = window.scrollY;
+    const html = document.documentElement, body = document.body;
+    const antes = { h: html.style.overflow, b: body.style.overflow, p: body.style.position, t: body.style.top, w: body.style.width };
+    html.style.overflow = "hidden"; body.style.overflow = "hidden";
+    body.style.position = "fixed"; body.style.top = `-${y}px`; body.style.width = "100%";
+    return () => {
+      html.style.overflow = antes.h; body.style.overflow = antes.b;
+      body.style.position = antes.p; body.style.top = antes.t; body.style.width = antes.w;
+      window.scrollTo(0, y);
+    };
   }, [open]);
 
   useEffect(() => {
@@ -230,6 +240,7 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
 
         .mais-body {
           overflow-y: auto;
+          overscroll-behavior: contain; /* rolar o menu não arrasta a página de trás */
           padding: 8px 12px 24px;
         }
 
@@ -241,7 +252,7 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
           margin-bottom: 10px;
         }
         .mais-sec-lbl {
-          font-size: 10px; font-weight: 800;
+          font-size: 11px; font-weight: 800;
           letter-spacing: 0.1em; text-transform: uppercase;
           color: #9CA3AF;
           margin: 8px 10px 4px;
@@ -250,7 +261,7 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
         .mais-it {
           display: flex; align-items: center; gap: 12px;
           width: 100%;
-          padding: 11px 10px;
+          padding: 13px 10px;
           background: transparent;
           border: none;
           border-radius: 8px;
@@ -265,7 +276,7 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
         .mais-it:only-of-type { border-radius: 8px; }
         .mais-it:hover, .mais-it:active { background: #FAFAFA; }
         .mais-it-ic {
-          width: 32px; height: 32px;
+          width: 38px; height: 38px;
           background: #F5F0F2;
           border-radius: 8px;
           display: flex; align-items: center; justify-content: center;
@@ -274,15 +285,16 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
         }
         .mais-it-txt { flex: 1; min-width: 0; }
         .mais-it-t {
-          font-size: 13px; font-weight: 700;
+          font-size: 15px; font-weight: 700;
           color: #2C1219;
-          line-height: 1.2;
+          line-height: 1.25;
+          letter-spacing: -0.01em;
         }
         .mais-it-d {
-          font-size: 10.5px;
-          color: #9CA3AF;
-          margin-top: 1px;
-          line-height: 1.3;
+          font-size: 12.5px;
+          color: #7A6E74;
+          margin-top: 3px;
+          line-height: 1.35;
         }
         .mais-it-arr {
           color: #C0B3B8;

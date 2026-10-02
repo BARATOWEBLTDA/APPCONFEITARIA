@@ -16,21 +16,21 @@ interface Sugestao {
 }
 
 const AREAS = [
-  { id: "pedidos", label: "Pedidos" },
-  { id: "cardapio", label: "Cardápio online" },
-  { id: "produtos", label: "Produtos e receitas" },
-  { id: "insumos", label: "Insumos" },
-  { id: "financeiro", label: "Financeiro" },
-  { id: "clientes", label: "Clientes" },
-  { id: "app", label: "App em geral" },
-  { id: "outro", label: "Outro" },
+  { id: "pedidos", label: "Pedidos", emoji: "🧾" },
+  { id: "cardapio", label: "Cardápio online", emoji: "📱" },
+  { id: "produtos", label: "Produtos e receitas", emoji: "🧁" },
+  { id: "insumos", label: "Insumos", emoji: "🥚" },
+  { id: "financeiro", label: "Financeiro", emoji: "💰" },
+  { id: "clientes", label: "Clientes", emoji: "👥" },
+  { id: "app", label: "App em geral", emoji: "⚙️" },
+  { id: "outro", label: "Outro", emoji: "✨" },
 ];
 
 // Rótulos em linguagem de confeiteira — no banco continua baixo/medio/alto
-const IMPACTOS: { id: "baixo" | "medio" | "alto"; label: string }[] = [
-  { id: "baixo", label: "Seria legal" },
-  { id: "medio", label: "Faz falta" },
-  { id: "alto", label: "Muita falta" },
+const IMPACTOS: { id: "baixo" | "medio" | "alto"; label: string; emoji: string }[] = [
+  { id: "baixo", label: "Seria legal", emoji: "🙂" },
+  { id: "medio", label: "Faz falta", emoji: "😍" },
+  { id: "alto", label: "Muita falta", emoji: "🔥" },
 ];
 
 const STATUS: Record<string, { label: string; cls: string }> = {
@@ -154,7 +154,13 @@ export default function SolicitarRecurso() {
             </div>
           ) : (
             <>
-              <p className="sr-lead">Conte o que falta no seu dia a dia. A gente lê todas e responde pelo status.</p>
+              <div className="sr-hero">
+                <span className="sr-hero-ic" aria-hidden="true">💡</span>
+                <div>
+                  <b>Sua ideia pode virar recurso</b>
+                  <p>Conte o que falta no seu dia a dia. A gente lê todas e conta o andamento em "Minhas ideias".</p>
+                </div>
+              </div>
               <div className="sr-card">
                 <div className="sr-f">
                   <label className="sr-lbl" htmlFor="sr-tit">O que você gostaria? <small>obrigatório</small></label>
@@ -171,19 +177,24 @@ export default function SolicitarRecurso() {
                 </div>
                 <div className="sr-f">
                   <span className="sr-lbl">Qual área?</span>
-                  <div className="sr-chips">
+                  <div className="sr-areas">
                     {AREAS.map(a => (
-                      <button key={a.id} className={`sr-chip${area === a.id ? " on" : ""}`}
-                        onClick={() => setArea(area === a.id ? null : a.id)}>{a.label}</button>
+                      <button key={a.id} type="button" className={`sr-area${area === a.id ? " on" : ""}`}
+                        onClick={() => setArea(area === a.id ? null : a.id)}>
+                        <span className="sr-area-e" aria-hidden="true">{a.emoji}</span>{a.label}
+                      </button>
                     ))}
                   </div>
                 </div>
                 <div className="sr-f">
                   <span className="sr-lbl">Quanto isso faz falta? <small>opcional</small></span>
-                  <div className="sr-seg">
+                  <div className="sr-imps">
                     {IMPACTOS.map(i => (
-                      <button key={i.id} className={`sr-seg-opt${impacto === i.id ? " on" : ""}`}
-                        onClick={() => setImpacto(impacto === i.id ? null : i.id)}>{i.label}</button>
+                      <button key={i.id} type="button" className={`sr-imp${impacto === i.id ? " on" : ""}`}
+                        onClick={() => setImpacto(impacto === i.id ? null : i.id)}>
+                        <span className="sr-imp-e" aria-hidden="true">{i.emoji}</span>
+                        <span className="sr-imp-l">{i.label}</span>
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -340,7 +351,26 @@ export default function SolicitarRecurso() {
         }
         .sr-spin--dark { border-color: #FCE0E9; border-top-color: #E85A8C; width: 20px; height: 20px; border-width: 3px; }
         @keyframes srSpin { to { transform: rotate(360deg); } }
-      `}</style>
+      
+        /* Visual novo (01/10): topo ilustrado, áreas em grade com emoji e "quanto faz falta" em 3 quadrados */
+        .sr-hero { display: flex; gap: 12px; align-items: flex-start; margin: 14px 0; padding: 14px; border-radius: 16px;
+          background: linear-gradient(135deg, #FFF1F6, #FCE7F3 60%, #F5F3FF); border: 1px solid #F9D2E2; }
+        .sr-hero-ic { width: 44px; height: 44px; border-radius: 12px; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(232,90,140,.15); }
+        .sr-hero b { display: block; font-size: 15px; color: #2C1219; }
+        .sr-hero p { margin: 3px 0 0; font-size: 13px; color: #6B5D64; line-height: 1.45; }
+        .sr-areas { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .sr-area { display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 10px 12px; border-radius: 12px; border: 1.5px solid #EDE7EA; background: #fff;
+          font-family: inherit; font-size: 13.5px; font-weight: 600; color: #2C1219; text-align: left; cursor: pointer; transition: border-color .15s, background .15s; }
+        .sr-area-e { font-size: 18px; line-height: 1; flex-shrink: 0; }
+        .sr-area.on { border-color: #E85A8C; background: #FFF4F8; color: #9D174D; }
+        .sr-imps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .sr-imp { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; aspect-ratio: 1 / 0.9; border-radius: 14px; border: 1.5px solid #EDE7EA; background: #fff;
+          font-family: inherit; cursor: pointer; transition: transform .15s, border-color .15s, background .15s; }
+        .sr-imp-e { font-size: 30px; line-height: 1; }
+        .sr-imp-l { font-size: 13px; font-weight: 700; color: #4B3A42; }
+        .sr-imp.on { border-color: #E85A8C; background: #FFF4F8; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(232,90,140,.18); }
+        .sr-imp.on .sr-imp-l { color: #9D174D; }
+`}</style>
     </>
   );
 }

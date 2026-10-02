@@ -430,12 +430,12 @@ export default function FinanceiroVisaoGeral() {
 
     const html = `<!DOCTYPE html>
 <html lang="pt-BR">
-<head>
+<head><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <meta charset="UTF-8">
 <title>Financeiro — ${monthLabel(mes)}</title>
 <style>
   * { box-sizing:border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color:#1F2937; padding:32px; margin:0; }
+  body { font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color:#1F2937; padding:32px; margin:0; }
   .header { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:3px solid var(--primary); padding-bottom:14px; margin-bottom:24px; }
   .header h1 { margin:0 0 4px; color:var(--primary); font-size:24px; }
   .header p { margin:0; color:#6B7280; font-size:13px; }

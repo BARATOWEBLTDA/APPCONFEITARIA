@@ -134,8 +134,10 @@ export default function Assinar() {
         .pro-faq { margin: 18px 6px 0; display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: rgba(255,255,255,.72); }
         .pro-faq p { margin: 0; } .pro-faq b { color: #fff; }
         .pro-gar { text-align: center; font-size: 12px; color: rgba(255,255,255,.55); margin: 16px 0 0; }
+        /* Ocupa a área inteira do app, de ponta a ponta (antes sobravam bordas brancas do espaçamento da página) */
+        .pro-root { position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 45; overflow-y: auto; min-height: 0; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
         @media (min-width: 768px) {
-          .pro-root { margin: -3rem -2rem -2rem; min-height: calc(100vh); }
+          .pro-root { left: 220px; z-index: 5; }
           .pro-in { padding-top: 32px; padding-bottom: 48px; }
         }
       `}</style>

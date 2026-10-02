@@ -463,8 +463,8 @@ export default function NovaVenda() {
     if (!pc) return
     const esc = (x: any) => String(x ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' } as any)[c])
     const linhas = (pc.itens || []).map((it: any) => `<tr><td>${it.quantidade}× ${esc(toTitleCase(it.nome_produto))}${it.opcaoLabel ? ` · ${esc(it.opcaoLabel)}` : ''}</td><td class="v">${formatMoney(it.valor_unitario * it.quantidade)}</td></tr>`).join('')
-    const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Pedido #${esc(pc.numero)}</title>
-<style>body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#2C1219;max-width:520px;margin:24px auto;padding:0 16px}h1{font-size:20px;margin:0}small{color:#6B5D64}
+    const html = `<!doctype html><html lang="pt-BR"><head><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap" rel="stylesheet"><meta charset="utf-8"><title>Pedido #${esc(pc.numero)}</title>
+<style>body{font-family:"Geist",-apple-system,Segoe UI,Roboto,sans-serif;color:#2C1219;max-width:520px;margin:24px auto;padding:0 16px}h1{font-size:20px;margin:0}small{color:#6B5D64}
 table{width:100%;border-collapse:collapse;margin:16px 0}td{padding:8px 0;border-bottom:1px solid #eee;font-size:14px}.v{text-align:right;white-space:nowrap}
 .t{font-size:18px;font-weight:800;text-align:right}.b{margin-top:6px;font-size:14px}</style></head><body>
 <h1>Pedido #${esc(pc.numero)}</h1><small>${new Date().toLocaleDateString('pt-BR')}</small>

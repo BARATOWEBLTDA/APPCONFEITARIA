@@ -1,3 +1,4 @@
+import { VERSAO_APP } from "@/lib/versao";
 import { useState, ReactNode } from 'react'
 import MenuContaItens from "@/components/MenuContaItens";
 import { createPortal } from 'react-dom'
@@ -122,7 +123,7 @@ export default function AppPageHeader({
           <div className="app-menu-novo" role="dialog" aria-modal="true">
             <div className="app-menu-novo-hdr">
               <p className="app-menu-novo-hdr-name">Doonly Gestão Inteligente</p>
-              <p className="app-menu-novo-hdr-ver">Versão 1.0.0</p>
+              <p className="app-menu-novo-hdr-ver">Versão {VERSAO_APP}</p>
             </div>
             <div className="app-menu-novo-body">
               <MenuContaItens prefix="app" onClose={() => setMenuOpen(false)} onSair={() => setConfirmSair(true)} />

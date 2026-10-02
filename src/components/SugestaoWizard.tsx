@@ -10,6 +10,7 @@
  * Fallback silencioso se tabela não existir (permite deploy antes do SQL rodar).
  */
 
+import { VERSAO_APP } from "@/lib/versao";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "@/lib/supabase";
@@ -95,7 +96,7 @@ export default function SugestaoWizard({ open, onClose, perfil }: Props) {
         telefone: perfil?.telefone || null,
         email: perfil?.email || null,
         tela_origem: window.location.pathname,
-        versao_app: "1.0.0",
+        versao_app: VERSAO_APP,
       });
       if (error) throw error;
       setSucesso(true);
@@ -182,7 +183,7 @@ export default function SugestaoWizard({ open, onClose, perfil }: Props) {
             <>
               <p className="sug-help">Confira o que vai junto e envie.</p>
               <div className="sug-review">
-                Vão junto: a tela em que você está (<b>Configurações</b>) e a versão do app (<b>1.0.0</b>) — não precisa escrever isso.
+                Vão junto: a tela em que você está (<b>Configurações</b>) e a versão do app (<b>{VERSAO_APP}</b>) — não precisa escrever isso.
               </div>
 
               <div className="sug-review-block">

@@ -1,4 +1,5 @@
 // v2: excluir pedido + modal 3 secoes + imagem_url
+import { VERSAO_APP } from "@/lib/versao";
 import MenuContaItens from "@/components/MenuContaItens";
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
@@ -3873,7 +3874,7 @@ export default function Pedidos() {
         <div className="ped-menu-novo" role="dialog" aria-modal="true">
           <div className="ped-menu-novo-hdr">
             <p className="ped-menu-novo-hdr-name">Doonly Gestão Inteligente</p>
-            <p className="ped-menu-novo-hdr-ver">Versão 1.0.0</p>
+            <p className="ped-menu-novo-hdr-ver">Versão {VERSAO_APP}</p>
           </div>
           <div className="ped-menu-novo-body">
             <MenuContaItens prefix="ped" onClose={() => setMenuOpen(false)} onSair={() => setConfirmSair(true)} />

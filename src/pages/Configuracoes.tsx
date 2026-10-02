@@ -86,7 +86,8 @@ export default function Configuracoes() {
       const proExpira = data?.pro_expira_em ? new Date(data.pro_expira_em) : null;
       const isPROAtivo = data?.plano === "pro" && (!proExpira || proExpira > hoje);
       setDiasRestantes(restantes);
-      if (isPROAtivo) { setPlano("pro"); } else { setPlano(restantes > 0 ? "trial" : "expirado"); }
+      // O plano grátis não vence: é "grátis" (antes aparecia TRIAL e, depois de 14 dias, "expirado")
+      if (isPROAtivo) { setPlano("pro"); } else { setPlano("trial"); }
       if (data) {
         let addr: any = {};
         try { addr = data.endereco ? JSON.parse(data.endereco) : {}; } catch {}
@@ -345,7 +346,6 @@ export default function Configuracoes() {
                 {plano === "trial" && <span className="cfgp-sub-plan-name">Plano Grátis</span>}
                 {plano === "expirado" && <span className="cfgp-sub-plan-name">Plano expirado</span>}
                 {plano === "pro" && <span className="cfgp-sub-badge cfgp-sub-badge--pro">ATIVO</span>}
-                {plano === "trial" && <span className="cfgp-sub-badge cfgp-sub-badge--trial">TRIAL</span>}
                 {plano === "expirado" && <span className="cfgp-sub-badge cfgp-sub-badge--exp">EXPIRADO</span>}
               </div>
             </div>
@@ -354,7 +354,7 @@ export default function Configuracoes() {
 
           {plano === "trial" && (
             <div className="cfgp-sub-info">
-              Aproveite todas as funcionalidades no seu período grátis. Ative o PRO pra continuar sem interrupções.
+              Você já tem o essencial pra organizar sua confeitaria. No PRO, ganha precificação inteligente, relatórios de lucro, o assistente Doo IA e muito mais.
             </div>
           )}
           {plano === "expirado" && (
@@ -371,7 +371,7 @@ export default function Configuracoes() {
           {plano !== "pro" && (
             <button className="cfgp-sub-cta" onClick={() => navigate("/assinar")}>
               <img src="/coroa.png" alt="" />
-              <span>Ativar PRO por R$ 29,90/mês</span>
+              <span>Ativar PRO por apenas R$ 8,97 no 1º mês</span>
             </button>
           )}
           {plano === "pro" && (
@@ -539,7 +539,6 @@ export default function Configuracoes() {
                 {plano === "trial" && <span className="cfgd-sub-plan-name">Plano Grátis</span>}
                 {plano === "expirado" && <span className="cfgd-sub-plan-name">Plano expirado</span>}
                 {plano === "pro" && <span className="cfgd-sub-badge cfgd-sub-badge--pro">ATIVO</span>}
-                {plano === "trial" && <span className="cfgd-sub-badge cfgd-sub-badge--trial">TRIAL</span>}
                 {plano === "expirado" && <span className="cfgd-sub-badge cfgd-sub-badge--exp">EXPIRADO</span>}
               </div>
             </div>
@@ -548,7 +547,7 @@ export default function Configuracoes() {
 
           {plano === "trial" && (
             <div className="cfgd-sub-info">
-              Aproveite todas as funcionalidades no seu período grátis. Ative o PRO pra continuar sem interrupções.
+              Você já tem o essencial pra organizar sua confeitaria. No PRO, ganha precificação inteligente, relatórios de lucro, o assistente Doo IA e muito mais.
             </div>
           )}
           {plano === "expirado" && (
@@ -565,7 +564,7 @@ export default function Configuracoes() {
           {plano !== "pro" && (
             <button className="cfgd-sub-cta" onClick={() => navigate("/assinar")}>
               <img src="/coroa.png" alt="" />
-              <span>Ativar PRO por R$ 29,90/mês</span>
+              <span>Ativar PRO por apenas R$ 8,97 no 1º mês</span>
             </button>
           )}
           {plano === "pro" && (

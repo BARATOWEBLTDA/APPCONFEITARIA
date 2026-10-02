@@ -1,3 +1,4 @@
+import { VERSAO_APP } from "@/lib/versao";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -34,7 +35,7 @@ export default function RelatarProblema() {
         area: parte,
         status: "recebida",
         tela_origem: document.referrer ? new URL(document.referrer).pathname : window.location.pathname,
-        versao_app: "1.0.0",
+        versao_app: VERSAO_APP,
       });
       if (error) throw error;
       setOk(true);

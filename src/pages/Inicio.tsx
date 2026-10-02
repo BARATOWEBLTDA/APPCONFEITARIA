@@ -1,4 +1,5 @@
 // Build marker: 2026-09-05T11:00 — mobile hero: fonte menor, PRO achatado, texto centralizado
+import { VERSAO_APP } from "@/lib/versao";
 import ConquistasCard from "@/components/ConquistasCard";
 import MenuContaItens from "@/components/MenuContaItens";
 import { useState, useEffect, useRef } from "react";
@@ -805,7 +806,7 @@ export default function Inicio() {
                 {/* Header cinza */}
                 <div className="ini-menu-novo-hdr">
                   <p className="ini-menu-novo-hdr-name">Doonly Gestão Inteligente</p>
-                  <p className="ini-menu-novo-hdr-ver">Versão 1.0.0</p>
+                  <p className="ini-menu-novo-hdr-ver">Versão {VERSAO_APP}</p>
                 </div>
 
                 {/* Itens */}
