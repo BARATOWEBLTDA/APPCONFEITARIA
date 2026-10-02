@@ -1,4 +1,5 @@
 // ── EditarPedido.tsx ─────────────────────────────────────────────────────────
+import CampoNumero from "@/components/ui/CampoNumero"
 import ReqTag from "@/components/ReqTag";
 // Tela de edição de pedido — design novo estilo Dora
 // FASE 1: casca (header + tabs + footer)
@@ -1090,12 +1091,12 @@ export default function EditarPedido() {
                           >
                             −
                           </button>
-                          <input
-                            type="number"
+                          <CampoNumero
+                            inteiro
                             className="ep-qtd-input"
                             value={it.quantidade}
-                            min={1}
-                            onChange={e => setQtdManual(idx, Number(e.target.value))}
+                            onValor={n => setQtdManual(idx, n || 1)}
+                            aria-label="Quantidade"
                           />
                           <button type="button" className="ep-qtd-btn" onClick={() => updateQtd(idx, +1)} aria-label="Aumentar">
                             +
@@ -2232,6 +2233,8 @@ export default function EditarPedido() {
         /* Celular: a barra fica acima do menu de baixo (antes ficava atrás e não dava pra tocar em Salvar) */
         @media (max-width: 767px) {
           .ep-footer { bottom: calc(56px + env(safe-area-inset-bottom, 0px)); padding-bottom: 12px; }
+          /* iPhone com o teclado aberto: a barra fica logo acima do teclado (antes ficava escondida atrás) */
+          html.teclado-aberto .ep-footer { bottom: var(--teclado, 0px); }
           .ep-wrap { padding-bottom: 210px !important; }
         }
         /* Computador: começa depois do menu lateral */

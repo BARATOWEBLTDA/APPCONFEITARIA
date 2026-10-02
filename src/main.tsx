@@ -1,4 +1,6 @@
 import { StrictMode } from 'react'
+import { iniciarMedidaDoTeclado } from './lib/tecladoIphone'
+import { iniciarAutoAtualizacao } from './lib/autoAtualizar'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import './styles/themes.css'
@@ -27,3 +29,9 @@ createRoot(document.getElementById('root')!).render(
     </ThemeProvider>
   </StrictMode>,
 )
+
+// iPhone: barras de botões sobem junto com o teclado
+iniciarMedidaDoTeclado()
+
+// App instalado: atualiza sozinho quando sai versão nova (num momento seguro)
+iniciarAutoAtualizacao()

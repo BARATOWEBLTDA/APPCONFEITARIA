@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, ReactNode } from "react";
+import CampoNumero from "@/components/ui/CampoNumero";
 import { parseNumBR } from "@/lib/numeroBR";
 import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
@@ -582,8 +583,8 @@ export default function FichaTecnica() {
                         </td>
                         <td>
                           <div className="ft-dt-qtd">
-                            <input type="number" value={f.quantidade || ""} step="any" min="0" placeholder="0"
-                              onChange={e => setQtd(f.insumo_id, parseFloat(e.target.value) || 0)} aria-label={`Quantidade de ${ins.nome}`} />
+                            <CampoNumero value={f.quantidade} placeholder="0"
+                              onValor={n => setQtd(f.insumo_id, n)} aria-label={`Quantidade de ${ins.nome}`} />
                             {unidades.length > 1 ? (
                               <select value={f.unidade_utilizada} onChange={e => setUnidade(f.insumo_id, e.target.value)} aria-label="Unidade">
                                 {unidades.map(u => <option key={u} value={u}>{u}</option>)}
@@ -670,9 +671,9 @@ export default function FichaTecnica() {
 
                       <div className="ft-edit-item-row">
                         <div className="ft-edit-item-input-group">
-                          <input
-                            type="number" value={f.quantidade || ""} step="any" min="0" placeholder="0"
-                            onChange={e => setQtd(f.insumo_id, parseFloat(e.target.value) || 0)}
+                          <CampoNumero
+                            value={f.quantidade} placeholder="0"
+                            onValor={n => setQtd(f.insumo_id, n)}
                           />
                           {hasUnitChoice ? (
                             <select
@@ -814,7 +815,7 @@ export default function FichaTecnica() {
             <div className="ft-field" style={{ flex: 1 }}>
               <label>Percentual sobre o CMV</label>
               <div className="ft-input-suffix">
-                <input type="number" min="0" max="100" step="1" placeholder="Ex: 25" value={extras.cv_percentual} onChange={e => setExtras(s => ({ ...s, cv_percentual: e.target.value }))} />
+                <input type="text" inputMode="decimal" placeholder="Ex: 25" value={extras.cv_percentual} onChange={e => setExtras(s => ({ ...s, cv_percentual: e.target.value }))} />
                 <span>%</span>
               </div>
             </div>
@@ -849,14 +850,14 @@ export default function FichaTecnica() {
                 <div className="ft-field ft-field--half">
                   <label>Horas trabalhadas/semana</label>
                   <div className="ft-input-suffix">
-                    <input type="number" min="1" max="80" placeholder="40" value={extras.horas_semanais} onChange={e => setExtras(s => ({ ...s, horas_semanais: e.target.value }))} />
+                    <input type="text" inputMode="numeric" pattern="[0-9]*" placeholder="40" value={extras.horas_semanais} onChange={e => setExtras(s => ({ ...s, horas_semanais: e.target.value }))} />
                     <span>h</span>
                   </div>
                 </div>
                 <div className="ft-field ft-field--half">
                   <label>Tempo de preparo</label>
                   <div className="ft-input-suffix">
-                    <input type="number" min="0" placeholder="0" value={extras.tempo_preparo_min} onChange={e => setExtras(s => ({ ...s, tempo_preparo_min: e.target.value }))} />
+                    <input type="text" inputMode="numeric" pattern="[0-9]*" placeholder="0" value={extras.tempo_preparo_min} onChange={e => setExtras(s => ({ ...s, tempo_preparo_min: e.target.value }))} />
                     <span>min</span>
                   </div>
                 </div>
@@ -899,7 +900,7 @@ export default function FichaTecnica() {
               </div>
               <div className="ft-field ft-field--half">
                 <label>Validade após produção</label>
-                <input type="number" min="0" placeholder="Ex: 5 dias" value={extras.validade_dias} onChange={e => setExtras(s => ({ ...s, validade_dias: e.target.value }))} />
+                <input type="text" inputMode="numeric" pattern="[0-9]*" placeholder="Ex: 5 dias" value={extras.validade_dias} onChange={e => setExtras(s => ({ ...s, validade_dias: e.target.value }))} />
               </div>
               <div className="ft-field ft-field--half">
                 <label>Conservação</label>

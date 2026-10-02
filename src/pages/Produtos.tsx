@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import CampoNumero from "@/components/ui/CampoNumero";
 import { useLocation, useNavigate } from "react-router-dom";
 import KitQuantidadeEditor from "@/components/produto/KitQuantidadeEditor";
 import { kitAtivo, erroKit, precoMinKit, presetKit, type KitQtdConfig } from "@/lib/kitQuantidade";
@@ -4203,13 +4204,17 @@ export default function Produtos() {
       tipoLabel: kitOn ? "Kit" : (tipoCadastro && rotulos[tipoCadastro]) || "Produto",
     });
   };
+  // Abre a aba NA HORA do toque e só depois coloca o endereço: o Safari do iPhone bloqueia
+  // abas abertas depois de esperar o banco (o botão não fazia nada).
   const verNoCardapio = async () => {
+    const aba = window.open("", "_blank");
     try {
       const { data } = await supabase.from("profiles").select("codigo_publico").eq("id", userId).single();
       const cod = (data as any)?.codigo_publico;
-      if (cod) window.open(`/c/${cod}`, "_blank");
-      else navigate("/cardapio");
-    } catch { navigate("/cardapio"); }
+      if (cod && aba) { aba.location.href = `/c/${cod}`; return; }
+      if (cod) { window.location.href = `/c/${cod}`; return; }
+      aba?.close(); navigate("/cardapio");
+    } catch { aba?.close(); navigate("/cardapio"); }
   };
 
   const handleDelete = async (id: string) => {
@@ -6196,11 +6201,10 @@ export default function Produtos() {
                           <p className="ficha-modal-item-sub">R$ {(ins.custo_unitario || 0).toFixed(2)} / {ins.unidade}</p>
                           <div className="ficha-modal-item-bottom">
                             <div className="ficha-modal-item-qtd">
-                              <input
-                                type="number"
-                                value={f.quantidade || ""}
-                                onChange={e => atualizarQtdFicha(f.insumo_id, parseFloat(e.target.value) || 0)}
-                                step="any" min="0" placeholder="0"
+                              <CampoNumero
+                                value={f.quantidade}
+                                onValor={n => atualizarQtdFicha(f.insumo_id, n)}
+                                placeholder="0"
                               />
                               {hasUnitChoice ? (
                                 <select
@@ -7793,6 +7797,8 @@ export default function Produtos() {
         /* Tela de sucesso no celular: o menu de navegação continua visível embaixo */
         @media (max-width: 767px) {
           .prod-modal-overlay--sucesso { bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important; }
+        /* iPhone com o teclado aberto: a janela encolhe até o teclado, e o "Avançar" do rodapé continua visível */
+        html.teclado-aberto .prod-modal-overlay { bottom: var(--teclado, 0px); }
           .prod-modal-overlay--sucesso .prod-modal--novo { height: 100% !important; max-height: 100% !important; border-radius: 0 !important; }
         }
         .prod-modal-overlay {

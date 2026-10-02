@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { DeviceMobile, SpeakerHigh, CashRegister } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
+import { precisaInstalarNoIphone, ehIphone } from "@/lib/notifications";
 import {
   sonsHabilitados, setSonsHabilitados,
   somPedidoHabilitado, setSomPedidoHabilitado,
@@ -41,11 +42,29 @@ export default function NotificacoesSons() {
   let pushDescClass = "ns-desc";
   let pushToggle: ReactNode = null;
 
-  if (!isSupported) {
-    pushDesc = "Este navegador não recebe notificações. Use o Chrome ou instale o app.";
+  const instalarIphone = precisaInstalarNoIphone();
+  if (instalarIphone) {
+    // iPhone no Safari: só funciona com o app instalado (antes dizia "use o Chrome", que não serve no iPhone)
+    pushDesc = (
+      <>
+        No iPhone, as notificações só funcionam com o Doonly <b>instalado na tela de início</b>:
+        <ol className="ns-passos">
+          <li>No Safari, toque em <b>Compartilhar</b> (o quadrado com a seta pra cima)</li>
+          <li>Toque em <b>"Adicionar à Tela de Início"</b></li>
+          <li>Abra o Doonly pelo ícone novo e ative aqui</li>
+        </ol>
+      </>
+    );
+    pushDescClass = "ns-desc ns-desc--warn";
+  } else if (!isSupported) {
+    pushDesc = ehIphone()
+      ? "Este iPhone não recebe notificações. Atualize pro iOS 16.4 ou mais novo."
+      : "Este navegador não recebe notificações. Use o Chrome ou instale o app.";
     pushDescClass = "ns-desc ns-desc--warn";
   } else if (permission === "denied") {
-    pushDesc = "Notificações bloqueadas. Libere nas configurações do navegador.";
+    pushDesc = ehIphone()
+      ? "Notificações desligadas. Ligue em Ajustes → Notificações → Doonly."
+      : "Notificações bloqueadas. Libere nas configurações do navegador.";
     pushDescClass = "ns-desc ns-desc--warn";
   } else {
     pushDesc = loading
@@ -166,7 +185,10 @@ export default function NotificacoesSons() {
         .ns-toggle input:checked + .ns-toggle-s::before { transform: translateX(20px); }
         .ns-toggle input:disabled + .ns-toggle-s { opacity: 0.4; }
         .ns-toggle input:focus-visible + .ns-toggle-s { outline: 2px solid #E85A8C; outline-offset: 2px; }
-      `}</style>
+      
+        .ns-passos { margin: 8px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+        .ns-passos li { line-height: 1.4; }
+`}</style>
     </>
   );
 }
