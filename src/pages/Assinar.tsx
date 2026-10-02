@@ -24,7 +24,6 @@ const BENEFICIOS: [string, string][] = [
   ["Banners que vendem", "Até 4 banners em carrossel pra destacar promoções e lançamentos."],
   ["Selo de loja verificada", "Mais confiança na hora em que o cliente decide comprar."],
   ["Sem marca d'água", "Seu cardápio só com a sua marca, sem o \"Criado com Doonly\"."],
-  ["As melhores receitas da confeitaria", "Passo a passo, com quantidades e dicas testadas."],
   ["Produtos ilimitados", "Cadastre todo o seu cardápio, sem limite."],
   ["Clientes ilimitados", "Toda a sua clientela e o histórico de compras num lugar só."],
   ["Importe seus clientes em um toque", "Traga os contatos direto da agenda do celular."],

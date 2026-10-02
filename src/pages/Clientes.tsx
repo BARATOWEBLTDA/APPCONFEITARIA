@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import LimitePlano from "@/components/billing/LimitePlano";
+import { LIMITE_CLIENTES_GRATIS } from "@/lib/limitesPlano";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useProfile, isPro } from "@/hooks/useProfile";
@@ -181,6 +183,8 @@ export default function Clientes() {
   const { profile } = useProfile();
   const [searchParams, setSearchParams] = useSearchParams();
   const [clientes,      setClientes]      = useState<Cliente[]>([]);
+  // Plano grátis: até 50 clientes (quem já tinha mais continua com tudo; só não cria novos)
+  const [limiteAberto, setLimiteAberto] = useState(false);
   const [loading,       setLoading]       = useState(true);
   const [search,        setSearch]        = useState("");
   const [userId,        setUserId]        = useState<string | null>(null);
@@ -326,6 +330,7 @@ export default function Clientes() {
   // ── Form helpers ──────────────────────────────────────────────────────────
 
   const openNew = (_mode?: FormMode) => {
+    if (!usuarioEhPro && clientes.length >= LIMITE_CLIENTES_GRATIS) { setLimiteAberto(true); return; }
     setFormMode("completo");
     setEditando(null);
     setRapido(emptyRapido);
@@ -546,6 +551,7 @@ export default function Clientes() {
     if (!importSheet || !userId) return;
     const paraCadastrar = importSheet.filter(c => c.selecionado && !c.duplicado && c.nome && c.telefoneNormalizado.length >= 10);
     if (paraCadastrar.length === 0) return;
+    if (!usuarioEhPro && clientes.length + paraCadastrar.length > LIMITE_CLIENTES_GRATIS) { setLimiteAberto(true); return; }
 
     setImporting(true);
     const payloads = paraCadastrar.map(c => ({
@@ -1280,6 +1286,7 @@ export default function Clientes() {
 
   return (
     <>
+      {limiteAberto && <LimitePlano tipo="clientes" limite={LIMITE_CLIENTES_GRATIS} onClose={() => setLimiteAberto(false)} />}
     <AppPageHeader
       title="Meus Clientes"
       subtitle="Sua base de clientes"

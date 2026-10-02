@@ -59,7 +59,7 @@ const GROUPS: DrawerGroup[] = [
       { label: "Minhas conquistas", desc: "Suas medalhas",      path: "/conquistas", icon: <Trophy size={16} weight="bold" /> },
       { label: "Assinatura",    desc: "Gerencie seu PRO",         path: "/assinar",  icon: <Crown    size={16} weight="bold" /> },
       { label: "Indicar amigo", desc: "Ganhe indicando",          path: "/indicar",  icon: <UserPlus size={16} weight="bold" /> },
-      { label: "Meus arquivos", desc: "PDFs e materiais",         path: "/arquivos", icon: <Files    size={16} weight="bold" /> },
+      // "Meus arquivos" escondido até ficar pronto (02/10): { label: "Meus arquivos", desc: "PDFs e materiais",         path: "/arquivos", icon: <Files    size={16} weight="bold" /> },
     ],
   },
 ];

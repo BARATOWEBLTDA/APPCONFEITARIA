@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import LimitePlano from "@/components/billing/LimitePlano";
+import { LIMITE_PRODUTOS_GRATIS } from "@/lib/limitesPlano";
 import CampoNumero from "@/components/ui/CampoNumero";
 import { useLocation, useNavigate } from "react-router-dom";
 import KitQuantidadeEditor from "@/components/produto/KitQuantidadeEditor";
@@ -3419,6 +3421,8 @@ export default function Produtos() {
   const [userId, setUserId] = useState("");
   const [primeiroNome, setPrimeiroNome] = useState<string>("");
   const [produtos, setProdutos] = useState<Produto[]>([]);
+  // Plano grátis: até 10 produtos (quem já tinha mais continua com tudo; só não cria novos)
+  const [limiteAberto, setLimiteAberto] = useState(false);
   const [categorias, setCategorias] = useState<string[]>([]);
   // Toast Doonly (substitui alerts nativos)
   const [toast, setToast] = useState<{ tipo: "success" | "error" | "info"; titulo: string; sub?: string } | null>(null);
@@ -3576,6 +3580,7 @@ export default function Produtos() {
   // Auto-abre cadastro quando vem de Pedidos
   useEffect(() => {
     if (!loading && (location.state as any)?.abrirCadastro) {
+      if (passouDoLimite()) { setLimiteAberto(true); window.history.replaceState({}, ""); return; }
       setModal(true);
       window.history.replaceState({}, "");
     }
@@ -3781,7 +3786,9 @@ export default function Produtos() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form, wizardStep, wizardTipo, wizardSubtipo, wizardOpts, modal]);
 
+  const passouDoLimite = (novos = 1) => !isPro && produtos.length + novos > LIMITE_PRODUTOS_GRATIS;
   const openNovo = () => {
+    if (passouDoLimite()) { setLimiteAberto(true); return; }
     // Se tem rascunho, abre o modal vazio + mostra banner pra escolher
     if (hasDraft()) {
       setForm(EMPTY); setFichaTecnica([]); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setMobilePersonaStep("checklist"); setKitTela(false); setTipoCadastro(null); setBoloTam(null); setTipoTela(false); setModal(true);
@@ -4019,6 +4026,7 @@ export default function Produtos() {
 
   const handleBulkDuplicar = async () => {
     if (selecionados.length === 0 || !userId) return;
+    if (passouDoLimite(selecionados.length)) { setLimiteAberto(true); return; }
     setBulkLoading(true);
     let ok = 0, falhas = 0;
     for (const p of selecionados) {
@@ -4156,6 +4164,7 @@ export default function Produtos() {
         return;
       }
     } else {
+      if (passouDoLimite()) { setSaving(false); setLimiteAberto(true); return; }
       const { data: novo, error } = await supabase.from("produtos").insert({ ...payload, user_id: userId }).select("id").single();
       if (error) {
         console.error("Erro ao criar produto:", error);
@@ -4362,6 +4371,7 @@ export default function Produtos() {
 
   return (
     <>
+      {limiteAberto && <LimitePlano tipo="produtos" limite={LIMITE_PRODUTOS_GRATIS} onClose={() => setLimiteAberto(false)} />}
     <AppPageHeader
       title="Meus Produtos"
       subtitle="Gerencie o que você vende"
