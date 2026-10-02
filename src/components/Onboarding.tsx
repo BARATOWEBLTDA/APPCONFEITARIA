@@ -147,6 +147,13 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
     if (dx > 0) prev();
   };
 
+  // Última tela: o foguete sobe e depois entra no app
+  const [launching, setLaunching] = React.useState(false);
+  const lancar = () => {
+    if (launching) return;
+    setLaunching(true);
+    window.setTimeout(() => { finish(); }, 1200);
+  };
   const finish = () => {
     tocarSom('sucesso');
     vibrarLeve();
@@ -183,14 +190,18 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         {slideIdx === 1 && <SlideCardapio onReady={handleSlideReady} />}
         {slideIdx === 2 && <Slide2Pedidos onReady={handleSlideReady} />}
         {slideIdx === 3 && <Slide4Precificacao onReady={handleSlideReady} />}
-        {slideIdx === 4 && <SlideFinal onStart={finish} />}
+        {slideIdx === 4 && <SlideFinal launching={launching} />}
       </div>
 
-      {/* Navegação inferior — esconde os botões na última (CTA está na slide) */}
-      {slideIdx < TOTAL_SLIDES - 1 && slideReady && (
+      {/* Navegação inferior — a última tela usa o MESMO botão largo das outras ("Começar agora") */}
+      {slideReady && (
         <div className="ob-nav">
-          <button className="ob-nav-btn ob-nav-btn--next" onClick={next}>
-            {slideIdx === 0 ? "Começar" : "Próximo"}
+          <button
+            className="ob-nav-btn ob-nav-btn--next"
+            onClick={slideIdx === TOTAL_SLIDES - 1 ? lancar : next}
+            disabled={launching}
+          >
+            {slideIdx === 0 ? "Começar" : slideIdx === TOTAL_SLIDES - 1 ? "Começar agora" : "Próximo"}
             <CaretRight size={18} weight="bold" />
           </button>
         </div>
@@ -3489,27 +3500,13 @@ function Slide4Precificacao({ onReady }: { onReady: () => void }) {
 }
 
 /* ─── Slide Final ────────────────────────────────── */
-function SlideFinal({ onStart }: { onStart: () => void }) {
-  const [launching, setLaunching] = React.useState(false);
-  const handleLaunch = () => {
-    if (launching) return;
-    setLaunching(true);
-    // Espera o foguete sair da tela antes de sair pra o app
-    window.setTimeout(() => { onStart(); }, 1200);
-  };
+function SlideFinal({ launching }: { launching: boolean }) {
   return (
     <>
       <div className={`ob-final-sparkle ${launching ? "ob-final-sparkle--launching" : ""}`}>🚀</div>
       <p className="ob-slide-eyebrow" style={{ marginBottom: "0.35rem" }}>Tudo pronto para começar</p>
       <h2 className="ob-final-title">AGORA É A <span className="ob-fill">SUA VEZ</span></h2>
-      <p className="ob-final-sub">Vamos deixar o Doonly com a cara da sua confeitaria.</p>
-      <button
-        className={`ob-final-cta ${launching ? "ob-final-cta--launching" : ""}`}
-        onClick={handleLaunch}
-        disabled={launching}
-      >
-        Começar agora
-      </button>
+      <p className="ob-final-sub">Seu Doonly está pronto. Cadastre seu primeiro produto e monte seu cardápio.</p>
     </>
   );
 }

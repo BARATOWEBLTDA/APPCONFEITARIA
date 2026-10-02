@@ -261,12 +261,12 @@ export default function Indicar() {
           </div>
         ) : (
           <div className="ind-amigas">
-            {amigas.map(a => {
+            {amigas.map((a, idxA) => {
               const isPro = a.status === "pro" || a.status === "premio_resgatado";
               const dias = Math.floor((Date.now() - new Date(a.created_at).getTime()) / 86400000);
               const tempoTxt = dias === 0 ? "hoje" : dias === 1 ? "ontem" : `há ${dias} dias`;
               return (
-                <div key={a.id} className="ind-amiga">
+                <div key={a.id || `amiga-${idxA}`} className="ind-amiga">
                   <div className="ind-amiga-avatar">{(a.nome || "?").trim().charAt(0).toUpperCase()}</div>
                   <div className="ind-amiga-info">
                     <div className="ind-amiga-nome">{a.nome || "Colega"}</div>

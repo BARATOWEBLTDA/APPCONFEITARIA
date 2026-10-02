@@ -27,7 +27,6 @@ const BENEFICIOS: [string, string][] = [
   ["Clientes ilimitados", "Toda a sua clientela e o histórico de compras num lugar só."],
   ["Importe seus clientes em um toque", "Traga os contatos direto da agenda do celular."],
   ["Relatórios em PDF", "Pedidos e relatórios prontos pra mandar ou imprimir."],
-  ["Temas personalizados", "Deixe o app com o seu estilo."],
 ];
 
 const Check = () => (

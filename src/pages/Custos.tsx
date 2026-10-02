@@ -275,7 +275,7 @@ export default function Custos() {
             <SumCard
               icon={<Percent size={18} weight="duotone" />}
               label={`Variáveis (est. ${fmtMoney(VALOR_BASE_VARIAVEL)})`}
-              value={`~${fmtMoney(estimativaVariaveis)}`}
+              value={`≈ ${fmtMoney(estimativaVariaveis)}`}
             />
           </div>
         </div>
