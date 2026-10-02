@@ -1,191 +1,144 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePlano } from "@/hooks/usePlano";
 import { useProfile } from "@/hooks/useProfile";
 
-const beneficios = [
-  "Clientes ilimitados",
-  "Produtos ilimitados",
-  "Relatórios avançados",
-  "Cardápio digital profissional",
-  "Suporte prioritário",
-  "Temas personalizados",
-  "Acesso a mais de 10.000 receitas",
-  "Recursos exclusivos PRO",
+/**
+ * Página do PRO (aprovada 01/10): modo escuro, vantagens primeiro (em lista, ordenadas pelo que mais
+ * pesa pra confeiteira) e o preço só no fim. Sem pagamento no app ainda: o botão abre o WhatsApp
+ * da equipe com a mensagem pronta.
+ */
+const PRECO_CHEIO = "R$ 29,90";
+const PRECO_1O_MES = "R$ 8,97"; // 70% OFF no 1º mês (30% de R$ 29,90)
+const WHATSAPP_EQUIPE = "5541998843669";
+
+const BENEFICIOS: [string, string][] = [
+  ["Preço certo em tudo que você vende", "Bolos, doces ou salgados: a precificação inteligente calcula custo, margem e lucro. Chega de vender no prejuízo."],
+  ["Saiba quanto você lucra de verdade", "Relatórios de lucratividade por produto e por mês, pra decidir com segurança."],
+  ["Um assistente que trabalha por você", "O Doo IA calcula preços, sugere receitas e escreve legendas, respostas e a descrição dos seus produtos."],
+  ["Nunca mais perca um pedido", "O celular avisa na hora que chega um pedido, mesmo com o app fechado."],
+  ["Veja quem visita e quem compra", "Visitas, pedidos online e conversão do seu cardápio, de hoje e do mês."],
+  ["Cupons que trazem cliente de volta", "Crie cupons de desconto pra atrair novos clientes e fidelizar os antigos."],
+  ["Cardápio com a cara da sua marca", "Suas cores, até 3 fotos por produto e um link com o nome da sua loja."],
+  ["Banners que vendem", "Até 4 banners em carrossel pra destacar promoções e lançamentos."],
+  ["Selo de loja verificada", "Mais confiança na hora em que o cliente decide comprar."],
+  ["Sem marca d'água", "Seu cardápio só com a sua marca, sem o \"Criado com Doonly\"."],
+  ["As melhores receitas da confeitaria", "Passo a passo, com quantidades e dicas testadas."],
+  ["Produtos ilimitados", "Cadastre todo o seu cardápio, sem limite."],
+  ["Clientes ilimitados", "Toda a sua clientela e o histórico de compras num lugar só."],
+  ["Importe seus clientes em um toque", "Traga os contatos direto da agenda do celular."],
+  ["Relatórios em PDF", "Pedidos e relatórios prontos pra mandar ou imprimir."],
+  ["Temas personalizados", "Deixe o app com o seu estilo."],
 ];
 
-const politicas = [
-  "Cancele quando quiser",
-  "Sem taxas de cancelamento",
-  "Renovação automática até ser cancelada",
-  "Acesso imediato após assinatura",
-];
+const Check = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12" /></svg>
+);
 
 export default function Assinar() {
   const navigate = useNavigate();
   const { isPro, proExpiraEm } = usePlano();
-  const [planoSel, setPlanoSel] = useState<"mensal" | "anual">("mensal");
-
   const { profile } = useProfile();
+  const diasRestantes = proExpiraEm ? Math.max(0, Math.ceil((proExpiraEm.getTime() - Date.now()) / 86400000)) : 0;
+
   const assinarPeloWhatsApp = () => {
-    const plano = planoSel === "anual" ? "Anual (R$ 197,00/ano)" : "Mensal (R$ 19,90/mês)";
     const quem = [profile?.nome, (profile as any)?.nome_loja].filter(Boolean).join(" · ");
     const email = (profile as any)?.email || "";
-    const msg = `Olá! Quero assinar o Doonly PRO.\nPlano: ${plano}${quem ? `\nNome: ${quem}` : ""}${email ? `\nE-mail da conta: ${email}` : ""}`;
-    window.open(`https://wa.me/5541998843669?text=${encodeURIComponent(msg)}`, "_blank");
+    const msg = `Olá! Quero assinar o Doonly PRO.\nPlano: PRO mensal (1º mês ${PRECO_1O_MES}, depois ${PRECO_CHEIO}/mês)${quem ? `\nNome: ${quem}` : ""}${email ? `\nE-mail da conta: ${email}` : ""}`;
+    window.open(`https://wa.me/${WHATSAPP_EQUIPE}?text=${encodeURIComponent(msg)}`, "_blank");
   };
-  const diasRestantes = proExpiraEm
-    ? Math.max(0, Math.ceil((proExpiraEm.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
-    : 0;
 
   return (
-    <div className="ass-root">
-
-      {/* Hero */}
-      <div className="ass-hero">
-        <button className="ass-back" onClick={() => navigate(-1)}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <img src="/doonytexto.png" alt="Doonly PRO" className="ass-hero-logo" />
-        <p className="ass-hero-sub">Recursos premium pensados para aumentar suas vendas, organizar suas encomendas e destacar sua confeitaria.</p>
-        {isPro && proExpiraEm && (
-          <div className="ass-trial-badge">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Seu PRO acaba em {diasRestantes} dia{diasRestantes !== 1 ? "s" : ""}
-          </div>
-        )}
-      </div>
-
-      {/* Seletor de plano */}
-      <div className="ass-planos">
-        <button className={`ass-plano-btn${planoSel === "anual" ? " selected" : ""}`} onClick={() => setPlanoSel("anual")}>
-          <div className="ass-plano-radio">{planoSel === "anual" && <div className="ass-plano-radio-inner" />}</div>
-          <div className="ass-plano-info">
-            <div style={{display:"flex",alignItems:"center",gap:"0.5rem"}}>
-              <span className="ass-plano-label">Anual</span>
-              <span className="ass-economia-badge">Economize 17%</span>
-            </div>
-            <span className="ass-plano-price">R$ 197,00<span className="ass-plano-period">/ano</span></span>
-            <span className="ass-plano-equiv">Equivale a R$ 16,42/mês</span>
-          </div>
+    <div className="pro-root">
+      <div className="pro-glow" aria-hidden="true" />
+      <div className="pro-in">
+        <button type="button" className="pro-back" onClick={() => navigate(-1)} aria-label="Voltar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6" /></svg>
         </button>
 
-        <button className={`ass-plano-btn${planoSel === "mensal" ? " selected" : ""}`} onClick={() => setPlanoSel("mensal")}>
-          <div className="ass-plano-radio">{planoSel === "mensal" && <div className="ass-plano-radio-inner" />}</div>
-          <div className="ass-plano-info">
-            <span className="ass-plano-label">Mensal</span>
-            <span className="ass-plano-price">R$ 19,90<span className="ass-plano-period">/mês</span></span>
-          </div>
-        </button>
-      </div>
+        <div className="pro-hero">
+          <div className="pro-crown"><img src="/coroa.png" alt="" /></div>
+          <p className="pro-k">DOONLY PRO</p>
+          <h1>Sua confeitaria <span>mais lucrativa</span> e organizada</h1>
+          <p className="pro-sub">Ferramentas que vendem, calculam e organizam por você.</p>
+        </div>
 
-      {/* O que está incluso */}
-      <div className="ass-card">
-        <p className="ass-card-title">O que está incluso:</p>
-        <div className="ass-beneficios">
-          {beneficios.map((b, i) => (
-            <div key={i} className="ass-beneficio-item">
-              <div className="ass-check-rosa">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-              </div>
-              <span>{b}</span>
+        <div className="pro-lista">
+          {BENEFICIOS.map(([t, d]) => (
+            <div className="pro-li" key={t}>
+              <span className="pro-ic"><Check /></span>
+              <div><b>{t}</b><small>{d}</small></div>
             </div>
           ))}
         </div>
-        {/* Sem pagamento no app ainda: abre o WhatsApp da equipe com a mensagem pronta (antes era só um aviso "Em breve") */}
-        <button className="ass-btn-assinar" onClick={assinarPeloWhatsApp}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          Assinar Agora
-        </button>
-        <button className="ass-btn-voltar" onClick={() => navigate(-1)}>Continuar no plano grátis</button>
-      </div>
 
-      {/* Pagamento seguro */}
-      <div className="ass-card ass-card-info">
-        <div style={{display:"flex",alignItems:"flex-start",gap:"0.75rem"}}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2" style={{flexShrink:0,marginTop:"2px"}}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <div>
-            <p className="ass-info-title">Pagamento Seguro</p>
-            <p className="ass-info-text">Os pagamentos são processados de forma segura. Seus dados financeiros nunca são armazenados em nossos servidores.</p>
-          </div>
+        <div className="pro-of">
+          {isPro ? (
+            <>
+              <p className="pro-of-t">Seu plano</p>
+              <p className="pro-ja">Você já é PRO 👑</p>
+              {proExpiraEm && <p className="pro-of-s">Renova em <b>{diasRestantes} dia{diasRestantes !== 1 ? "s" : ""}</b></p>}
+              <button type="button" className="pro-btn pro-btn--sec" onClick={assinarPeloWhatsApp}>Falar com a equipe</button>
+            </>
+          ) : (
+            <>
+              <span className="pro-off">70% OFF no 1º mês</span>
+              <p className="pro-of-t">Plano PRO mensal</p>
+              <div className="pro-of-p"><s>{PRECO_CHEIO}</s><b>{PRECO_1O_MES}</b><small>no 1º mês</small></div>
+              <p className="pro-of-s">Depois, <b>{PRECO_CHEIO}/mês</b> · sem fidelidade, cancele quando quiser</p>
+              <button type="button" className="pro-btn" onClick={assinarPeloWhatsApp}>Assinar o PRO</button>
+            </>
+          )}
         </div>
-      </div>
 
-      {/* Política */}
-      <div className="ass-card">
-        <p className="ass-card-title">Política de Assinatura</p>
-        <div className="ass-politicas">
-          {politicas.map((p, i) => (
-            <div key={i} className="ass-politica-item">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-              <span>{p}</span>
-            </div>
-          ))}
+        <div className="pro-faq">
+          <p><b>Posso cancelar?</b> Sim, quando quiser, sem multa.</p>
+          <p><b>E meus dados?</b> Continuam salvos, mesmo se voltar pro grátis.</p>
         </div>
-      </div>
-
-      {/* Plano atual */}
-      <div className="ass-card ass-card-plano-atual">
-        <div style={{display:"flex",alignItems:"center",gap:"0.6rem",marginBottom:"0.25rem"}}>
-          <span style={{fontSize:"1.2rem"}}>🎁</span>
-          <p className="ass-plano-atual-label">Seu plano atual</p>
-        </div>
-        {isPro && proExpiraEm ? (
-          <p className="ass-plano-atual-valor">Período de Avaliação ({diasRestantes} dias)</p>
-        ) : isPro ? (
-          <p className="ass-plano-atual-valor" style={{color:"var(--success)"}}>PRO Ativo ✓</p>
-        ) : (
-          <p className="ass-plano-atual-valor">Plano Grátis</p>
-        )}
-        <p className="ass-plano-atual-desc">
-          {isPro && proExpiraEm
-            ? "Aproveite para testar todos os recursos. Assine para continuar após o período de avaliação."
-            : "Assine para desbloquear todos os recursos PRO."}
-        </p>
+        <p className="pro-gar">🔒 Pagamento seguro · seus dados continuam salvos</p>
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:ital@1&display=swap');
-        .ass-root { font-family:'Geist', sans-serif; max-width:480px; margin:0 auto; display:flex; flex-direction:column; gap:1rem; padding:0 0 2rem; }
-        .ass-back { display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius: var(--radius-md); background:var(--bg-card); border:1.5px solid var(--border); cursor:pointer; color:var(--text-primary); margin-bottom:0.25rem; }
-        .ass-hero { padding:0; }
-        .ass-hero-logo { max-height:160px; width:100%; object-fit:contain; display:block; margin:0 auto 0.75rem; }
-        .ass-hero-sub { font-size: var(--font-button); color:var(--text-secondary); margin:0 0 0.75rem; text-align:center; line-height:1.6; padding:0 1.5rem; }
-        .ass-trial-badge { display:flex; align-items:center; justify-content:center; gap:0.4rem; background:var(--primary-gradient); color:var(--text-inverse); font-size: var(--font-helper); font-weight: var(--fw-bold); padding:0.45rem 1rem; border-radius: var(--radius-xl); margin:0 auto; width:fit-content; }
-        .ass-planos { display:flex; flex-direction:column; gap:0.65rem; }
-        .ass-plano-btn { display:flex; align-items:center; gap:1rem; padding:1rem 1.15rem; background:var(--bg-card); border:2px solid var(--border); border-radius: var(--radius-lg); cursor:pointer; font-family:'Geist', sans-serif; text-align:left; transition:border-color 0.2s; box-shadow:var(--shadow-card, 0 2px 8px rgba(0,0,0,0.05)); }
-        .ass-plano-btn.selected { border-color:var(--primary); }
-        .ass-plano-radio { width:20px; height:20px; border-radius:50%; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:border-color 0.2s; }
-        .ass-plano-btn.selected .ass-plano-radio { border-color:var(--primary); }
-        .ass-plano-radio-inner { width:10px; height:10px; border-radius:50%; background:var(--primary); }
-        .ass-plano-info { display:flex; flex-direction:column; gap:0.1rem; flex:1; }
-        .ass-plano-label { font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--text-title); }
-        .ass-plano-price { font-size: var(--font-page-title); font-weight: var(--fw-black); color:var(--text-title); }
-        .ass-plano-period { font-size: var(--font-helper); font-weight: var(--fw-medium); color:var(--text-muted); }
-        .ass-plano-equiv { font-size: var(--font-caption); color:var(--text-muted); }
-        .ass-economia-badge { background:#dcfce7; color:#16a34a; font-size: var(--font-caption); font-weight: var(--fw-bold); padding:0.15rem 0.5rem; border-radius: var(--radius-xl); }
-        .ass-card { background:var(--bg-card); border-radius: var(--radius-lg); padding:1.25rem; box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); display:flex; flex-direction:column; gap:0.75rem; }
-        .ass-card-title { font-size: var(--font-button); font-weight: var(--fw-bold); color:var(--text-title); margin:0; }
-        .ass-card-info { background:var(--bg-subtle); border:1px solid rgba(255,111,169,0.2); box-shadow:none; }
-        .ass-beneficios { display:flex; flex-direction:column; gap:0.65rem; }
-        .ass-beneficio-item { display:flex; align-items:center; gap:0.75rem; }
-        .ass-check-rosa { width:20px; height:20px; border-radius:50%; background:var(--primary-gradient); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 2px 6px rgba(255,111,169,0.4); }
-        .ass-beneficio-item span { font-size: var(--font-button); color:var(--text-primary); font-weight: var(--fw-medium); }
-        .ass-btn-assinar { width:100%; padding:0.95rem; background:var(--primary-gradient); border:none; border-radius: var(--radius-full); color:var(--text-inverse); font-family:'Geist', sans-serif; font-size: var(--font-input); font-weight: var(--fw-bold); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.5rem; transition:opacity 0.2s,transform 0.1s; margin-top:0.5rem; }
-        .ass-btn-assinar:hover { opacity:0.9; }
-        .ass-btn-assinar:active { transform:scale(0.98); }
-        .ass-btn-voltar { background:none; border:none; color:var(--text-muted); font-family:'Geist', sans-serif; font-style:italic; font-size: var(--font-button); cursor:pointer; text-decoration:underline; padding:0.25rem; text-align:center; }
-        .ass-info-title { font-size: var(--font-button); font-weight: var(--fw-bold); color:var(--text-title); margin:0; }
-        .ass-info-text { font-size: var(--font-helper); color:var(--text-secondary); margin:0.25rem 0 0; line-height:1.5; }
-        .ass-politicas { display:flex; flex-direction:column; gap:0.6rem; }
-        .ass-politica-item { display:flex; align-items:center; gap:0.65rem; font-size: var(--font-button); color:var(--text-primary); font-weight: var(--fw-medium); }
-        .ass-card-plano-atual { background:var(--primary-light); border:1px solid rgba(255,111,169,0.15); box-shadow:none; }
-        .ass-plano-atual-label { font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--text-secondary); margin:0; }
-        .ass-plano-atual-valor { font-size: var(--font-modal-title); font-weight: var(--fw-black); color:var(--primary); margin:0; }
-        .ass-plano-atual-desc { font-size: var(--font-helper); color:var(--text-muted); margin:0; line-height:1.5; }
-        :root.dark .ass-economia-badge { background:rgba(34,197,94,0.15); color:#4ade80; }
-        :root.dark .ass-card-plano-atual { background:rgba(255,111,169,0.05); }
-        :root.dark .ass-card-info { background:rgba(255,111,169,0.05); }
+        .pro-root { position: relative; min-height: 100vh; overflow: hidden; color: #fff; font-family: var(--font-base);
+          background: radial-gradient(130% 40% at 50% 0%, #6B2340 0%, #2C1219 45%, #1A0B10 100%); }
+        .pro-glow { position: absolute; width: 280px; height: 280px; border-radius: 50%; top: -80px; right: -90px; pointer-events: none;
+          background: radial-gradient(circle, rgba(232,90,140,.35), transparent 70%); }
+        .pro-in { position: relative; max-width: 560px; margin: 0 auto; padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(110px + env(safe-area-inset-bottom, 0px)); }
+        .pro-back { width: 36px; height: 36px; border-radius: 50%; border: none; background: rgba(255,255,255,.12); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .pro-hero { text-align: center; padding: 6px 8px 4px; }
+        .pro-crown { width: 60px; height: 60px; border-radius: 18px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center;
+          background: linear-gradient(135deg, rgba(249,168,212,.25), rgba(196,181,253,.2)); border: 1px solid rgba(249,168,212,.35); }
+        .pro-crown img { width: 36px; height: 36px; object-fit: contain; }
+        .pro-k { font-size: 11px; font-weight: 900; letter-spacing: .18em; margin: 0; background: linear-gradient(90deg, #F9A8D4, #C4B5FD, #93C5FD); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .pro-hero h1 { font-size: 26px; font-weight: 900; line-height: 1.15; margin: 8px auto 0; max-width: 320px; text-wrap: balance; color: #fff; }
+        .pro-hero h1 span { color: #F9A8D4; }
+        .pro-sub { font-size: 14px; color: rgba(255,255,255,.72); margin: 10px auto 6px; max-width: 300px; line-height: 1.45; }
+        .pro-lista { margin-top: 14px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); border-radius: 18px; padding: 4px 14px; }
+        .pro-li { display: flex; gap: 12px; align-items: flex-start; padding: 11px 0; border-top: 1px solid rgba(255,255,255,.08); }
+        .pro-li:first-child { border-top: none; }
+        .pro-ic { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #F472B6, #C33A6E); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; box-shadow: 0 2px 8px rgba(232,90,140,.4); }
+        .pro-li b { display: block; font-size: 14.5px; color: #fff; }
+        .pro-li small { display: block; font-size: 12.5px; color: rgba(255,255,255,.65); margin-top: 2px; line-height: 1.35; }
+        .pro-of { position: relative; margin-top: 22px; background: rgba(255,255,255,.07); border: 1px solid rgba(249,168,212,.4); border-radius: 18px; padding: 20px 18px 18px; text-align: center; box-shadow: 0 10px 40px rgba(232,90,140,.15); }
+        .pro-off { position: absolute; top: -11px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: linear-gradient(90deg, #16A34A, #15803D); color: #fff; font-size: 11px; font-weight: 900; letter-spacing: .06em; padding: 4px 10px; border-radius: 999px; box-shadow: 0 4px 12px rgba(22,163,74,.35); }
+        .pro-of-t { font-size: 11px; font-weight: 800; letter-spacing: .08em; color: #F9A8D4; text-transform: uppercase; margin: 0; }
+        .pro-of-p { display: flex; align-items: baseline; justify-content: center; gap: 8px; margin-top: 6px; }
+        .pro-of-p s { color: rgba(255,255,255,.45); font-size: 14px; }
+        .pro-of-p b { font-size: 36px; font-weight: 900; color: #fff; }
+        .pro-of-p small { color: rgba(255,255,255,.7); }
+        .pro-of-s { font-size: 12.5px; color: rgba(255,255,255,.78); margin: 2px 0 0; }
+        .pro-of-s b { color: #fff; }
+        .pro-ja { font-size: 22px; font-weight: 900; margin: 6px 0 2px; }
+        .pro-btn { width: 100%; margin-top: 14px; border: none; border-radius: 12px; padding: 15px; font-family: inherit; font-size: 16px; font-weight: 800; color: #fff; cursor: pointer;
+          background: linear-gradient(90deg, #E85A8C, #C33A6E); box-shadow: 0 8px 24px rgba(232,90,140,.45); }
+        .pro-btn:active { transform: translateY(1px); }
+        .pro-btn--sec { background: rgba(255,255,255,.12); box-shadow: none; }
+        .pro-faq { margin: 18px 6px 0; display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: rgba(255,255,255,.72); }
+        .pro-faq p { margin: 0; } .pro-faq b { color: #fff; }
+        .pro-gar { text-align: center; font-size: 12px; color: rgba(255,255,255,.55); margin: 16px 0 0; }
+        @media (min-width: 768px) {
+          .pro-root { margin: -3rem -2rem -2rem; min-height: calc(100vh); }
+          .pro-in { padding-top: 32px; padding-bottom: 48px; }
+        }
       `}</style>
     </div>
   );
