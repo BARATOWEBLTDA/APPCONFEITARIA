@@ -32,6 +32,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const [fotoPerfil, setFotoPerfil] = useState(""); // sem logo, o cardápio usa a foto de perfil
   const [logoUrl, setLogoUrl] = useState("");
   // Avaliação (veio de Dados da loja em 29/09)
   const [hideStars, setHideStars] = useState(false);
@@ -80,9 +81,9 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("logo_url, nome_loja, banner_url, banner1_url, banner2_url, banner3_url, banner_topo_url, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo, hide_stars, avaliacao_media").eq("id", user.id).single();
+      const { data } = await supabase.from("profiles").select("logo_url, foto_url, nome_loja, banner_url, banner1_url, banner2_url, banner3_url, banner_topo_url, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo, hide_stars, avaliacao_media").eq("id", user.id).single();
       if (data) {
-        setLogoUrl(data.logo_url || "");
+        setLogoUrl(data.logo_url || ""); setFotoPerfil((data as any).foto_url || "");
         setHideStars(!!(data as any).hide_stars);
         setAvaliacaoMedia(Number((data as any).avaliacao_media) || 5.0);
         setNomeLoja(data.nome_loja || "");
@@ -235,16 +236,18 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         <input ref={logoRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleLogoUpload} />
         <div className="cd-logo-row">
           <button type="button" className="cd-logo-circ" onClick={() => logoRef.current?.click()} aria-label="Trocar logo">
-            {logoUrl
-              ? <img src={logoUrl} alt="Logo da loja" />
+            {(logoUrl || fotoPerfil)
+              ? <img src={logoUrl || fotoPerfil} alt="Logo da loja" />
               : <span>{(nomeLoja || "?").trim().charAt(0).toUpperCase()}</span>}
           </button>
+          {/* Sem logo próprio, o cardápio já usa a foto de perfil: a tela agora mostra isso (antes parecia vazia) */}
           <div className="cd-logo-txt">
-            <b>{logoUrl ? "Seu logo" : "Adicione seu logo"}</b>
-            <span>Imagem quadrada fica melhor</span>
+            <b>{logoUrl ? "Seu logo" : fotoPerfil ? "Usando a sua foto de perfil" : "Adicione seu logo"}</b>
+            <span>{logoUrl ? "É ele que aparece no topo do seu cardápio." : fotoPerfil ? "Se tiver um logo, envie aqui. Ele aparece no lugar da foto." : "Aparece no topo do seu cardápio, junto do nome da loja."}</span>
+            {!logoUrl && fotoPerfil && <em className="cd-logo-ok">✓ Já aparece no seu cardápio</em>}
           </div>
           <button type="button" className="cd-logo-btn" onClick={() => logoRef.current?.click()} disabled={uploading === "logo"}>
-            {uploading === "logo" ? "Enviando..." : logoUrl ? "Trocar" : "Enviar"}
+            {uploading === "logo" ? "Enviando..." : logoUrl ? "Trocar logo" : "Enviar logo"}
           </button>
         </div>
       </div>
@@ -286,7 +289,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       <div className="cd-card" style={isMobile ? {} : { gridColumn: '1 / -1' }}>
         <SectionLabel
           sub={(isPro ? "Seus banners rodam em carrossel no cardápio. Use pra destacar promoções e novidades." : "Anuncie sua promoção do mês. Assine PRO pra ter até 4 banners rodando em carrossel.") + " Tamanho ideal: 1200 × 675, na horizontal (use o mesmo tamanho em todos)."}
-        >Banners Promocionais</SectionLabel>
+        >Banners de promoção</SectionLabel>
 
         <div className="cd-banners-grid">
           {(isPro ? [0, 1, 2, 3] : [0]).map(i => (
@@ -798,7 +801,10 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         .cd-logo-circ span { font-size: 24px; font-weight: 800; color: #9CA3AF; }
         .cd-logo-txt { flex: 1; min-width: 0; }
         .cd-logo-txt b { display: block; font-size: 13.5px; color: #2C1219; }
-        .cd-logo-txt span { font-size: 11.5px; color: #888780; }
+        .cd-logo-txt span { display: block; font-size: 12px; color: #888780; line-height: 1.4; }
+        .cd-logo-ok { display: inline-block; margin-top: 5px; font-style: normal; font-size: 11px; font-weight: 800; color: #15803D; background: #DCFCE7; padding: 3px 8px; border-radius: 999px; }
+        /* Computador: o botão fica logo ao lado do texto (antes ia lá pra outra ponta) */
+        @media (min-width: 768px) { .cd-logo-txt { flex: 0 1 auto; max-width: 420px; } .cd-logo-btn { margin-left: 8px; } }
         .cd-logo-btn { padding: 8px 14px; border-radius: 9px; border: 1px solid #EAE3E6; background: #fff; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #2C1219; cursor: pointer; }
         .cd-logo-btn:disabled { opacity: .6; cursor: default; }
         /* ── Card Avaliação ── */

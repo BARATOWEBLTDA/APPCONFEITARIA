@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 // deploy: Proposta D - nova arquitetura de navegação (Entrega 1)
+import CardapioSubnav, { ROTAS_CARDAPIO } from "@/components/CardapioSubnav";
 import ParabensPro from "@/components/pro/ParabensPro";
 import DooIA from "@/components/DooIA";
 import MaisDrawer from "@/components/MaisDrawer";
@@ -53,6 +54,8 @@ export default function Layout() {
   const location = useLocation();
   const isReceitas = location.pathname === "/receitas";
   const isAssinar = location.pathname === "/assinar";
+  // Telas do Cardápio digital: no computador ganham o menu lateral pra trocar de tela sem voltar
+  const comCdnav = ROTAS_CARDAPIO.includes(location.pathname);
   const isPrevia = location.pathname === "/cardapio-preview";
   // Cadastros: expande automaticamente quando estiver em uma das rotas filhas
   const isInCadastros = ["/produtos", "/clientes", "/insumos", "/categorias"].some(p => location.pathname.startsWith(p));
@@ -94,7 +97,8 @@ export default function Layout() {
   }, [location.pathname]);
 
   return (
-    <div className="layout-root">
+    <div className={`layout-root${comCdnav ? " com-cdnav" : ""}`}>
+      {comCdnav && <CardapioSubnav />}
       {/* ── Sidebar Desktop ── */}
       <aside className="sidebar">
         <div className="sidebar-profile">
