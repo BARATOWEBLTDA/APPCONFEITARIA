@@ -1,4 +1,5 @@
 // Build marker: 2026-09-05T11:00 — mobile hero: fonte menor, PRO achatado, texto centralizado
+import PrimeirosPassos from "@/components/PrimeirosPassos";
 import { STATUS_AINDA_NAO_PRONTO } from "@/lib/pedidoStatus";
 import { VERSAO_APP } from "@/lib/versao";
 import ConquistasCard from "@/components/ConquistasCard";
@@ -900,6 +901,13 @@ export default function Inicio() {
       <div className={`ini-content ${checklistDone ? "ini-content--done" : ""}`}>
         {/* ── Coluna principal ── */}
         <div className="ini-main">
+
+      {/* ── Primeiros passos (02/10) — só no celular, some quando ela termina ── */}
+      {isMobile && (
+        <section className="ini-section ini-section--checklist-top ini-pp">
+          <PrimeirosPassos />
+        </section>
+      )}
 
       {/* ── WelcomeChecklist (temporariamente oculto — reservado pra futuro prêmio) ── */}
       {false && profile?.id && !checklistDone && (
@@ -2536,6 +2544,7 @@ export default function Inicio() {
         .ini-engaja         { order: 5; }
         /* Nível 2: seções dentro de .ini-main */
         .ini-section--checklist-top { order: 0; margin-top: var(--space-3); }
+        .ini-pp:empty { display: none; }
         .ini-section--alertas { order: 1; }
         .ini-section--nav     { order: 2; }
 

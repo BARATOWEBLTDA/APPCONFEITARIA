@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactElement } from "react";
+import { lerPassos, marcarCompartilhado as marcarCompartilhadoLib } from "@/lib/primeirosPassos";
 import { useNavigate } from "react-router-dom";
 import { Eye, Check, WhatsappLogo, Copy, Storefront, PencilLine, ShoppingBag, Palette, ShareNetwork } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
@@ -68,8 +69,8 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
       const produtosAtivos = (produtos || []).filter((p) => p.disponivel !== false);
       const temProduto = produtosAtivos.length > 0;
 
-      const linkKey = `doonly_cardapio_compartilhado_${userId}`;
-      const jaCompartilhou = localStorage.getItem(linkKey) === "1";
+      // Regra única com os Primeiros passos do Início (guardado no banco, vale em qualquer aparelho)
+      const jaCompartilhou = (await lerPassos(userId)).compartilhou;
 
       // Design escolhido: marcado quando ela mexe na tela de Design (design_escolhido).
       // cardapio_modelo não serve: o banco já cria a conta com 'padrao' preenchido.
@@ -98,20 +99,20 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           path: "/cardapio-config",
         },
         {
-          key: "produto",
-          label: "Cadastrar primeiro produto",
-          desc: "Adicione foto, nome e preço — fotos boas vendem 3x mais",
-          icon: <ShoppingBag size={18} weight="fill" />,
-          done: temProduto,
-          path: "/produtos",
-        },
-        {
           key: "design",
           label: "Escolher design do cardápio",
           desc: "Escolha o modelo, as cores e coloque o seu logo",
           icon: <Palette size={18} weight="fill" />,
           done: escolheuDesign,
           path: "/cardapio-design",
+        },
+        {
+          key: "produto",
+          label: "Cadastrar primeiro produto",
+          desc: "Adicione foto, nome e preço — fotos boas vendem 3x mais",
+          icon: <ShoppingBag size={18} weight="fill" />,
+          done: temProduto,
+          path: "/produtos",
         },
         {
           key: "share",
@@ -197,9 +198,8 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
     share: "Compartilhar link",
   };
 
-  const marcarCompartilhado = () => {
-    if (userId) localStorage.setItem(`doonly_cardapio_compartilhado_${userId}`, "1");
-  };
+  // Guarda no banco também (regra única com os Primeiros passos do Início)
+  const marcarCompartilhado = () => marcarCompartilhadoLib(userId);
 
   const handleClick = (step: Step) => {
     if (step.key === "share") {
