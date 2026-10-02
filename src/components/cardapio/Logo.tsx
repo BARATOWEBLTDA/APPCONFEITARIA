@@ -1,9 +1,12 @@
+import { SeloVerificado } from './SeloVerificado'
 import { useState } from 'react'
 
 interface LogoProps {
   logoUrl?: string
   borderColor?: string
   storeName?: string
+  /** Loja PRO: mostra o selo "Loja verificada" */
+  verificada?: boolean
   storeDescription?: string
   corNome?: string
   avaliacaoMedia?: number
@@ -68,7 +71,7 @@ function getStatusLoja(horarioJson: string | null) {
   } catch { return null }
 }
 
-export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNome, avaliacaoMedia = 4.9, hideStars = false, configuracoes }: LogoProps) {
+export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNome, avaliacaoMedia = 4.9, hideStars = false, configuracoes, verificada = false }: LogoProps) {
   const [modalEndereco, setModalEndereco] = useState(false)
   const status = getStatusLoja(configuracoes?.horario || null)
 
@@ -120,7 +123,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
       </div>
 
       <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: '18px', padding: '66px 16px 14px', margin: '0 14px', marginTop: '-70px', boxShadow: '0 8px 24px rgba(60,20,35,0.10)', zIndex: 20, position: 'relative', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-title)', margin: 0, letterSpacing: '-0.02em', lineHeight: 1.2 }}>{storeName}</h1>
+        <h1 style={{ fontSize: '22px', fontWeight: 800, color: corNome || '#000000', margin: 0, letterSpacing: '-0.02em', lineHeight: 1.2 }}>{storeName}{verificada && <SeloVerificado tamanho={20} />}</h1>
 
         {/* Status + nota numa linha só */}
         {(status || !hideStars) && (

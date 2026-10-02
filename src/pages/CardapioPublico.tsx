@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { SeloVerificado } from '@/components/cardapio/SeloVerificado'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { getCardapioByCodigo, getCardapioBySlug } from '@/services/cardapio'
 import { supabase } from '@/lib/supabase'
@@ -56,7 +57,14 @@ function NavLink({ label, icon, defaultActive, navBg, onClick }: any) {
 }
 
 /* ── Top Nav Bar ── */
-function DeskNav({ design, searchTerm, onSearchChange }: any) {
+// Cor do nome da loja (02/10): se a confeiteira não escolheu uma cor, o padrão muda conforme o fundo —
+// branco no computador (faixa rosa) e preto no celular (fundo branco).
+const COR_NOME_PADRAO = ["", "#1f2937", "#000000", "#000", "#111111"];
+const corNomeEscolhida = (c?: string | null) => (c && !COR_NOME_PADRAO.includes(c.trim().toLowerCase()) ? c : null);
+const corNomeComputador = (c?: string | null) => corNomeEscolhida(c) || "#ffffff";
+const corNomeCelular = (c?: string | null) => corNomeEscolhida(c) || "#000000";
+
+function DeskNav({ design, searchTerm, onSearchChange, isPro = false }: any) {
   const { items } = useCart()
   const count = items.reduce((a: number, i: any) => a + (i.saleType === 'kg' ? 1 : Math.floor(i.quantity)), 0)
   // Rejeita cores "brancas" (feio de cardápio) — usa cor_borda ou rosa como fallback
@@ -90,7 +98,7 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
               </div>
           }
           <div>
-            <p style={{ margin:0, fontWeight:800, fontSize:'18px', color: design.cor_nome || '#ffffff', lineHeight:1.2 }}>{design.nome_loja}</p>
+            <p style={{ margin:0, fontWeight:800, fontSize:'18px', color: corNomeComputador(design.cor_nome), lineHeight:1.2 }}>{design.nome_loja}{isPro && <SeloVerificado tamanho={18} />}</p>
             <p style={{ margin:'3px 0 0', fontSize:'13px', color:'rgba(255,255,255,0.75)', fontWeight:500 }}>{design.cidade_estado || 'Doces que encantam'}</p>
           </div>
         </div>
@@ -527,7 +535,7 @@ function CardapioContent() {
   const [config, setConfig] = useState<Configuracoes | null>(null)
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [isPro, setIsPro] = useState(false)
-  const [cardapioModelo, setCardapioModelo] = useState('padrao')
+  const [cardapioModelo, setCardapioModelo] = useState('modelo1')
   const [categoryImages, setCategoryImages] = useState<{[key:string]:string}>({})
   const [categoriasList, setCategoriasList] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
@@ -563,7 +571,7 @@ function CardapioContent() {
       }
 
       setDesign(design); setConfig(config); setProdutos(produtos)
-      setIsPro(isPro || false); setCardapioModelo(modelo || 'padrao'); setCategoryImages(categoryImages || {})
+      setIsPro(isPro || false); setCardapioModelo(modelo === 'padrao' && isPro ? 'padrao' : 'modelo1'); setCategoryImages(categoryImages || {})
       setCategoriasList(categoriasList || [])
       if (config?.telefone) localStorage.setItem('cardapio_whatsapp', config.telefone)
       if (design?.nome_loja) localStorage.setItem('cardapio_nome', design.nome_loja)
@@ -675,15 +683,15 @@ function CardapioContent() {
         <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#E85A8C'} />
 
         {cardapioModelo === 'modelo1' ? (
-          /* ── Layout PRO: CardapioModelo1 (hero editorial) ── */
+          /* ── Modelo 1: o padrão de todas as lojas (02/10) ── */
           <>
-            <CardapioModelo1 design={design} config={config} />
+            <CardapioModelo1 design={design} config={config} verificada={isPro} />
             <div style={{ marginTop:'16px' }}>
               <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
             </div>
           </>
         ) : (
-          /* ── Layout Padrão (Free ou PRO que não trocou) ── */
+          /* ── Layout 'Padrão': exclusivo PRO (02/10) ── */
           <>
             {/* Faixa na cor da loja: degradê + pontilhado sutil (mesmo detalhe do Modelo 1 sem foto) */}
             <div style={{ height: '150px', position: 'relative', overflow: 'hidden',
@@ -697,7 +705,7 @@ function CardapioContent() {
               const cbWhite = !cb || ['#fff','#ffffff','#fefefe','white','transparent'].includes((cb || '').trim().toLowerCase());
               return cbWhite ? '#E85A8C' : cb;
             })() }} />
-            <Logo logoUrl={design.logo_url} borderColor={design.cor_borda} storeName={design.nome_loja} storeDescription={design.descricao_loja} corNome={design.cor_nome} avaliacaoMedia={config?.avaliacao_media} configuracoes={config} hideStars={design.hide_stars} />
+            <Logo verificada={isPro} logoUrl={design.logo_url} borderColor={design.cor_borda} storeName={design.nome_loja} storeDescription={design.descricao_loja} corNome={corNomeCelular(design.cor_nome)} avaliacaoMedia={config?.avaliacao_media} configuracoes={config} hideStars={design.hide_stars} />
             <div style={{ marginTop:'16px' }}>
               <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
             </div>
@@ -734,7 +742,7 @@ function CardapioContent() {
   return (
     <div style={{ minHeight:'100vh', background:'var(--bg-body)', fontFamily:'Geist, system-ui, sans-serif', display:'flex', flexDirection:'column' }}>
       <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#E85A8C'} />
-      <DeskNav design={{...design, cidade_estado: (() => { try { const e = config?.endereco ? JSON.parse(config.endereco) : null; return e?.cidade ? `${e.cidade} - ${e.estado}` : '' } catch { return '' } })() }} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+      <DeskNav isPro={isPro} design={{...design, cidade_estado: (() => { try { const e = config?.endereco ? JSON.parse(config.endereco) : null; return e?.cidade ? `${e.cidade} - ${e.estado}` : '' } catch { return '' } })() }} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
       <div style={{ display:'flex', flexDirection:'column', gap:'16px', paddingBottom:'0', paddingTop:'24px', width:'100%', flex: 1 }}>
 
@@ -752,8 +760,14 @@ function CardapioContent() {
             />
           </div>
 
-          {/* CENTRO — Busca + Título + Produtos */}
+          {/* CENTRO — Banner + Busca + Título + Produtos */}
           <div>
+            {/* Banner promocional: antes só aparecia no celular */}
+            {(design.banner_url || (isPro && (design.banner1_url || design.banner2_url || design.banner3_url))) && (
+              <div className="desk-banner" style={{ marginBottom: '16px', marginLeft: '-16px', marginRight: '-16px' }}>
+                <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
+              </div>
+            )}
             {/* Busca */}
             <div style={{ position:'relative', marginBottom:'16px', display:'flex', alignItems:'stretch', borderRadius:'10px', overflow:'hidden', border:'1.5px solid var(--border)', background:'var(--bg-card)', transition:'border-color 0.2s' }}
               onFocusCapture={e => (e.currentTarget.style.borderColor = design.cor_navbar || design.cor_borda || '#E85A8C')}

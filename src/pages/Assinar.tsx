@@ -20,6 +20,7 @@ const BENEFICIOS: [string, string][] = [
   ["Veja quem visita e quem compra", "Visitas, pedidos online e conversão do seu cardápio, de hoje e do mês."],
   ["Cupons que trazem cliente de volta", "Crie cupons de desconto pra atrair novos clientes e fidelizar os antigos."],
   ["Cardápio com a cara da sua marca", "Suas cores, até 3 fotos por produto e um link com o nome da sua loja."],
+  ["Layout exclusivo de cardápio", "Um modelo de cardápio só de quem é PRO, com mais destaque pra sua marca e seus produtos."],
   ["Banners que vendem", "Até 4 banners em carrossel pra destacar promoções e lançamentos."],
   ["Selo de loja verificada", "Mais confiança na hora em que o cliente decide comprar."],
   ["Sem marca d'água", "Seu cardápio só com a sua marca, sem o \"Criado com Doonly\"."],

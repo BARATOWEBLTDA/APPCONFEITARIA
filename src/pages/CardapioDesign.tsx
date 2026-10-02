@@ -25,6 +25,13 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     if (!uid) return;
     supabase.from("profiles").update({ design_escolhido: true }).eq("id", uid).then(() => {}, () => {});
   };
+  // Abrir a Aparência já marca o passo "Escolher design" do passo a passo (01/10): quem gostou do
+  // modelo padrão e não mexeu em nada também conclui o passo.
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => { if (user) marcarDesignEscolhido(user.id); });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [logoUrl, setLogoUrl] = useState("");
   // Avaliação (veio de Dados da loja em 29/09)
   const [hideStars, setHideStars] = useState(false);
@@ -44,8 +51,10 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
   const [success, setSuccess] = useState(false);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const { isPro } = usePlano();
+  const modeloAtivoCalc = (m: string) => (m === "padrao" && isPro ? "padrao" : "modelo1");
   const isMobile = useIsMobile();
-  const [cardapioModelo, setCardapioModelo] = useState("padrao");
+  const [cardapioModelo, setCardapioModelo] = useState("modelo1");
+  // "Padrão" é exclusivo PRO: quem não é PRO usa o Modelo 1 (inclusive contas antigas que estavam no "Padrão")
   const [salvandoModelo, setSalvandoModelo] = useState(false);
 
   const [corBorda, setCorBorda] = useState("#FF6FA9");
@@ -89,7 +98,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         setCorNavbar(data.cor_navbar || "#FF6FA9");
         setCorSacola(data.cor_sacola || "#FF6FA9");
         setCorRodape(data.cor_rodape || "#FF6FA9");
-        setCardapioModelo(data.cardapio_modelo || "padrao");
+        setCardapioModelo(data.cardapio_modelo || "modelo1");
       }
       setLoading(false);
     };
@@ -202,6 +211,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     </div>
   );
 
+  const modeloAtivo = modeloAtivoCalc(cardapioModelo);
   return (
     <>
     {cropSrc && (
@@ -240,7 +250,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       </div>
 
       {/* Banner do topo — só pro Modelo 1 */}
-      {cardapioModelo === "modelo1" && (
+      {modeloAtivo === "modelo1" && (
         <div className="cd-card" style={isMobile ? {} : { gridColumn: '1 / -1' }}>
           <SectionLabel
             sub="Aparece no topo do seu cardápio como fundo — atrás da logo. Recomendado: fotos horizontais em alta qualidade (1200×400 ideal). Só no Modelo 1."
@@ -338,42 +348,9 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         >Layout do cardápio</SectionLabel>
 
         <div className="cd-layout-grid">
-          {/* Modelo Padrão (sempre disponível) */}
+          {/* Modelo 1 — o padrão de todas as lojas (02/10) */}
           <button
-            className={`cd-layout-card ${cardapioModelo === 'padrao' ? 'cd-layout-active' : ''}`}
-            onClick={async () => {
-              if (!userId) return;
-              setSalvandoModelo(true);
-              setCardapioModelo('padrao');
-              await supabase.from("profiles").update({ cardapio_modelo: 'padrao' }).eq("id", userId); marcarDesignEscolhido(userId);
-              setSalvandoModelo(false);
-              showSuccess();
-            }}
-            disabled={salvandoModelo}
-          >
-            <div className="cd-layout-preview cd-layout-preview-padrao">
-              <div className="cd-lp-header" style={{ background: '#C7CAD1' }} />
-              <div className="cd-lp-logo-circle" style={{ borderColor: '#C7CAD1' }}>
-                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: '#E5E7EB' }} />
-              </div>
-              <div className="cd-lp-lines">
-                <div style={{ width: '60%', height: 6, borderRadius: 3, background: '#e5e7eb' }} />
-                <div style={{ width: '40%', height: 4, borderRadius: 2, background: '#f3f4f6' }} />
-              </div>
-              <div className="cd-lp-products">
-                <div className="cd-lp-product" /><div className="cd-lp-product" /><div className="cd-lp-product" />
-              </div>
-            </div>
-            <div className="cd-layout-info">
-              <span className="cd-layout-name">Padrão</span>
-              <span className="cd-layout-tag">Grátis</span>
-            </div>
-            {cardapioModelo === 'padrao' && <div className="cd-layout-check">✓</div>}
-          </button>
-
-          {/* Modelo 1 — Hero Editorial (PRO) */}
-          <button
-            className={`cd-layout-card ${cardapioModelo === 'modelo1' ? 'cd-layout-active' : ''}`}
+            className={`cd-layout-card ${modeloAtivo === 'modelo1' ? 'cd-layout-active' : ''}`}
             onClick={async () => {
               if (!userId) return;
               setSalvandoModelo(true);
@@ -404,8 +381,43 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
               <span className="cd-layout-name">Modelo 1</span>
               <span className="cd-layout-tag">Grátis</span>
             </div>
-            {cardapioModelo === 'modelo1' && <div className="cd-layout-check">✓</div>}
+            {modeloAtivo === 'modelo1' && <div className="cd-layout-check">✓</div>}
           </button>
+
+          {/* Modelo "Padrão" — exclusivo PRO (02/10). No grátis, tocar leva pro PRO */}
+          <button
+            className={`cd-layout-card ${modeloAtivo === 'padrao' ? 'cd-layout-active' : ''}`}
+            onClick={async () => {
+              if (!isPro) { navigate("/assinar"); return; }
+              if (!userId) return;
+              setSalvandoModelo(true);
+              setCardapioModelo('padrao');
+              await supabase.from("profiles").update({ cardapio_modelo: 'padrao' }).eq("id", userId); marcarDesignEscolhido(userId);
+              setSalvandoModelo(false);
+              showSuccess();
+            }}
+            disabled={salvandoModelo}
+          >
+            <div className="cd-layout-preview cd-layout-preview-padrao">
+              <div className="cd-lp-header" style={{ background: '#C7CAD1' }} />
+              <div className="cd-lp-logo-circle" style={{ borderColor: '#C7CAD1' }}>
+                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: '#E5E7EB' }} />
+              </div>
+              <div className="cd-lp-lines">
+                <div style={{ width: '60%', height: 6, borderRadius: 3, background: '#e5e7eb' }} />
+                <div style={{ width: '40%', height: 4, borderRadius: 2, background: '#f3f4f6' }} />
+              </div>
+              <div className="cd-lp-products">
+                <div className="cd-lp-product" /><div className="cd-lp-product" /><div className="cd-lp-product" />
+              </div>
+            </div>
+            <div className="cd-layout-info">
+              <span className="cd-layout-name">Padrão</span>
+              <span className="cd-layout-tag cd-layout-tag--pro"><img src="/coroa.png" alt="" /><span className="cd-pro-grad">Exclusivo PRO</span></span>
+            </div>
+            {modeloAtivo === 'padrao' && <div className="cd-layout-check">✓</div>}
+          </button>
+
         </div>
       </div>
 
@@ -479,6 +491,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
             <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_nome' ? null : 'cor_nome')}>
               <div className="cd-color-info">
                 <span className="cd-color-label">Cor do nome da confeitaria</span>
+                <span className="cd-color-hint">Sem cor escolhida: branco no computador e preto no celular</span>
                 <span className="cd-color-value">{corNome}</span>
               </div>
               <div className="cd-color-swatch" style={{ background: corNome }} />
@@ -1001,7 +1014,13 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
           position: absolute; top: 50px; left: var(--space-3);
           width: 20px; height: 8px; border-radius: var(--radius-sm); background: var(--warning);
         }
-      `}</style>
+      
+        /* Etiqueta "Exclusivo PRO" (selo escuro + coroa + texto no degradê do Doonly) */
+        .cd-layout-tag.cd-layout-tag--pro { display: inline-flex; align-items: center; gap: 4px; background: #2D1F26 !important; color: #fff !important; padding: 3px 9px 3px 6px !important; border-radius: 999px; font-weight: 800; }
+        .cd-layout-tag--pro img { width: 13px; height: 13px; object-fit: contain; }
+        .cd-pro-grad { background: linear-gradient(90deg, #F9A8D4, #C4B5FD, #93C5FD); -webkit-background-clip: text; background-clip: text; color: transparent; white-space: nowrap; }
+        .cd-color-hint { display: block; font-size: 11.5px; color: #9A8E94; margin-top: 2px; }
+`}</style>
     </div>
     </>
   );

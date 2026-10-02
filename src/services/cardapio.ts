@@ -25,7 +25,7 @@ const EMPTY_RESULT: CardapioData = {
   categoriasList: [],
   slugCanonico: 'cardapio',
   codigoPublico: '',
-  cardapioModelo: 'padrao',
+  cardapioModelo: 'modelo1',
 }
 
 /**
@@ -131,7 +131,8 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     horario_retirada: profile.horario_retirada || '',
     exibir_campo_troco: profile.exibir_campo_troco !== false,
     cupons_desconto: [],
-    tem_cupom: temCupom === true || (Array.isArray(profile.cupons_desconto) && profile.cupons_desconto.some((c: any) => c?.ativo)),
+    // Cupons são recurso PRO: loja grátis não mostra o campo de cupom no cardápio
+    tem_cupom: isPro && (temCupom === true || (Array.isArray(profile.cupons_desconto) && profile.cupons_desconto.some((c: any) => c?.ativo))),
     aceita_agendamento: profile.aceita_agendamento !== false,
     prazo_minimo_horas: profile.prazo_minimo_horas ?? 24,
   }
@@ -145,6 +146,6 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     categoriasList,
     slugCanonico,
     codigoPublico: profile.codigo_publico || '',
-    cardapioModelo: profile.cardapio_modelo || 'padrao',
+    cardapioModelo: profile.cardapio_modelo || 'modelo1',
   }
 }

@@ -1,3 +1,4 @@
+import { SeloVerificado } from './SeloVerificado'
 import { useState } from 'react'
 import { Star, MapPin, Lightning, CalendarBlank, Truck } from '@phosphor-icons/react'
 import { DesignSettings, Configuracoes } from '@/types/database'
@@ -82,7 +83,7 @@ function getEnderecoData(config: Configuracoes | null): { curto: string; complet
   } catch { return null }
 }
 
-export function CardapioModelo1({ design, config }: CardapioModeloProps) {
+export function CardapioModelo1({ design, config, verificada = false }: CardapioModeloProps & { verificada?: boolean }) {
   const [modalEndereco, setModalEndereco] = useState(false)
   const accent = design.cor_borda || design.cor_botao || '#E85A8C'
   // Cor da faixa quando não há foto de capa — igual à do layout Padrão
@@ -101,7 +102,8 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
     return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6
   }
   const rawCorNome = design.cor_nome || '#1f2937'
-  const corNome = isColorLight(rawCorNome) ? '#1f2937' : rawCorNome
+  // Sem cor escolhida pela confeiteira: preto no celular (fundo claro)
+  const corNome = rawCorNome && !['#1f2937', '#000000', '#000', '#111111'].includes(String(rawCorNome).trim().toLowerCase()) && !isColorLight(rawCorNome) ? rawCorNome : '#000000' // cor clara some no fundo claro
 
   return (
     <div className="cm1-root">
@@ -146,7 +148,7 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
         {/* Nome + Estrelas inline */}
         <div className="cm1-nome-row">
           <h1 className="cm1-nome" style={{ color: corNome }}>
-            {design.nome_loja || 'Minha Confeitaria'}
+            {design.nome_loja || 'Minha Confeitaria'}{verificada && <SeloVerificado tamanho={20} />}
           </h1>
           {avaliacao > 0 && (
             <div className="cm1-rating-inline">
