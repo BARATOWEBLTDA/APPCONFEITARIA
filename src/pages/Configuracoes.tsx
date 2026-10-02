@@ -370,8 +370,7 @@ export default function Configuracoes() {
 
           {plano !== "pro" && (
             <button className="cfgp-sub-cta" onClick={() => navigate("/assinar")}>
-              <img src="/coroa.png" alt="" />
-              <span>Ativar PRO por apenas R$ 8,97 no 1º mês</span>
+              <span className="sub-cta-txt"><b><img src="/coroa.png" alt="" />Ativar o PRO</b><small>por apenas R$ 8,97 no 1º mês</small></span>
             </button>
           )}
           {plano === "pro" && (
@@ -563,8 +562,7 @@ export default function Configuracoes() {
 
           {plano !== "pro" && (
             <button className="cfgd-sub-cta" onClick={() => navigate("/assinar")}>
-              <img src="/coroa.png" alt="" />
-              <span>Ativar PRO por apenas R$ 8,97 no 1º mês</span>
+              <span className="sub-cta-txt"><b><img src="/coroa.png" alt="" />Ativar o PRO</b><small>por apenas R$ 8,97 no 1º mês</small></span>
             </button>
           )}
           {plano === "pro" && (
@@ -783,7 +781,7 @@ export default function Configuracoes() {
         .cfgp-hero-cam { position: absolute; bottom: -2px; right: -2px; width: 24px; height: 24px; border-radius: 50%; background: #993556; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; z-index: 2; }
         .cfgp-hero-info { flex: 1; min-width: 0; }
         .cfgp-hero-nome { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
-        .cfgp-hero-email { font-size: 13px; opacity: 0.9; margin-top: 4px; word-break: break-all; }
+        .cfgp-hero-email { font-size: 11.5px; opacity: 0.9; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
         .cfgp-hero-edit {
           all: unset;
           cursor: pointer;
@@ -1456,7 +1454,13 @@ export default function Configuracoes() {
           width: 100%;
         }
         .mob-resgatar-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-      `}</style>
+      
+        /* Botão "Ativar o PRO": as duas linhas centralizadas, com a coroa junto do título (equilibrado) */
+        .sub-cta-txt { display: flex; flex-direction: column; align-items: center; line-height: 1.2; text-align: center; width: 100%; }
+        .sub-cta-txt b { display: inline-flex; align-items: center; gap: 7px; font-size: 15px; font-weight: 800; white-space: nowrap; }
+        .sub-cta-txt b img { width: 18px; height: 18px; object-fit: contain; }
+        .sub-cta-txt small { font-size: 12px; font-weight: 600; opacity: .8; white-space: nowrap; margin-top: 3px; }
+`}</style>
 
       <SugestaoWizard
         open={sugestaoOpen}

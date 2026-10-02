@@ -259,7 +259,7 @@ export default function DadosLoja() {
 
         {/* Sua loja */}
         <div className="dl-card">
-          <p className="dl-h">Sua loja</p>
+          <div className="cfg-hd"><span className="cfg-ic" aria-hidden="true">🏪</span><div><p className="cfg-h">Sua loja</p><p className="cfg-s">Nome, WhatsApp e a descrição que aparecem no cardápio</p></div></div>
           <div id="dl-nome">
             <label className="dl-lbl" htmlFor="dl-in-nome">Nome da loja</label>
             <input id="dl-in-nome" className="dl-in" value={nome} maxLength={60} placeholder="Ex: Doce Formiga Confeitaria" onChange={(e) => setNome(e.target.value)} />
@@ -285,7 +285,7 @@ export default function DadosLoja() {
 
         {/* Endereço */}
         <div className="dl-card" id="dl-endereco">
-          <p className="dl-h">Endereço</p>
+          <div className="cfg-hd"><span className="cfg-ic" aria-hidden="true">📍</span><div><p className="cfg-h">Endereço</p><p className="cfg-s">Pra calcular a entrega e mostrar no mapa</p></div></div>
           <label className="dl-lbl" htmlFor="dl-in-cep">CEP</label>
           <div className="dl-in dl-in-ic">
             <input id="dl-in-cep" inputMode="numeric" value={end.cep} placeholder="00000-000"
@@ -327,8 +327,7 @@ export default function DadosLoja() {
 
         {/* Horário */}
         <div className="dl-card" id="dl-horario">
-          <p className="dl-h">Horário de funcionamento</p>
-          <p className="dl-hs">Aparece como "Aberto agora" no cardápio</p>
+          <div className="cfg-hd"><span className="cfg-ic" aria-hidden="true">🕐</span><div><p className="cfg-h">Horário de funcionamento</p><p className="cfg-s">Aparece como “Aberto agora” no cardápio</p></div></div>
           <div className="dl-days">
             {DIAS_UTEIS.map((d) => (
               <button key={d.nome} type="button" className={horario.dias.includes(d.nome) ? "on" : ""} aria-pressed={horario.dias.includes(d.nome)} aria-label={d.nome} onClick={() => toggleDiaUtil(d.nome)}>
@@ -377,13 +376,13 @@ export default function DadosLoja() {
         .dl-root { font-family: var(--font-base); max-width: 640px; margin: 0 auto; padding: 14px 4px 90px; color: #2C1219; }
         .dl-card { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 14px; margin-bottom: 12px; }
         .dl-st { padding: 12px 14px; }
-        .dl-st-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+        .dl-st-row { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; } /* título e "Faltam…" um embaixo do outro: no celular estreito ficavam espremidos */
         .dl-st-row b { font-size: 14px; font-weight: 800; }
-        .dl-st-row span { font-size: 11px; color: #B45309; font-weight: 700; text-align: right; }
+        .dl-st-row span { font-size: 12px; color: #B45309; font-weight: 700; }
         .dl-bar { height: 5px; background: #F5F0F2; border-radius: 3px; margin: 8px 0 10px; overflow: hidden; }
         .dl-bar i { display: block; height: 100%; border-radius: 3px; transition: width .3s; }
         .dl-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-        .dl-chip { display: inline-flex; align-items: center; gap: 5px; padding: 5px 9px; border: none; border-radius: 999px; font-family: inherit; font-size: 11.5px; font-weight: 700; background: #FEF3C7; color: #92400E; cursor: pointer; }
+        .dl-chip { display: inline-flex; align-items: center; gap: 5px; padding: 6px 10px; border: none; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 700; background: #FEF3C7; color: #92400E; cursor: pointer; }
         .dl-chip.ok { background: #F0FDF4; color: #15803D; }
         .dl-chip i { width: 14px; height: 14px; border-radius: 50%; background: #16a34a; display: flex; align-items: center; justify-content: center; }
         .dl-h { font-size: 15px; font-weight: 800; margin: 0; }
@@ -394,10 +393,11 @@ export default function DadosLoja() {
         .dl-in::placeholder, .dl-in input::placeholder { color: #A8A0A4; }
         .dl-in-ic { display: flex; align-items: center; gap: 8px; }
         .dl-in-ic input { flex: 1; min-width: 0; border: none; outline: none; background: none; font-family: inherit; font-size: 14px; color: #2C1219; padding: 0; }
-        .dl-ta { min-height: 76px; resize: none; line-height: 1.45; display: block; }
+        .dl-ta { min-height: 112px; resize: none; line-height: 1.45; display: block; }
         .dl-cnt { display: block; text-align: right; font-size: 10.5px; color: #9CA3AF; margin-top: 4px; }
-        .dl-lbl-row { display: flex; justify-content: space-between; align-items: center; }
-        .dl-ia { font-family: inherit; font-size: 11.5px; font-weight: 800; padding: 5px 10px; border: none; border-radius: 7px; background: #2C1219; color: #fff; margin-top: 6px; cursor: pointer; }
+        .dl-lbl-row { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; margin-bottom: 6px; } /* "Gerar com IA" com respiro: antes encostava no WhatsApp */
+        .dl-lbl-row .dl-lbl { margin: 0 !important; }
+        .dl-ia { font-family: inherit; font-size: 11.5px; font-weight: 800; padding: 6px 11px; border: none; border-radius: 8px; background: #2C1219; color: #fff; margin: 0; cursor: pointer; }
         .dl-ia:disabled { opacity: .6; cursor: default; }
         .dl-auto { margin-left: auto; font-size: 11px; color: #15803D; font-weight: 700; white-space: nowrap; }
         .dl-auto--busca { color: #9CA3AF; }
@@ -410,7 +410,9 @@ export default function DadosLoja() {
         .dl-days button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; border: none; background: none; padding: 0; font-family: inherit; cursor: pointer; font-size: 12px; font-weight: 800; color: #7C7A8E; }
         .dl-days button > small { font-size: 9.5px; font-weight: 600; color: #9CA3AF; }
         .dl-bola { width: 100%; max-width: 40px; aspect-ratio: 1; border-radius: 50%; background: #F5F0F2; color: #7C7A8E; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 800; transition: background .15s, color .15s; }
-        .dl-days button.on .dl-bola { background: #2C1219; color: #fff; }
+        /* Dias: rosinha do Doonly (antes eram bolinhas quase pretas) */
+        .dl-days button.on .dl-bola { background: #E85A8C; color: #fff; box-shadow: 0 3px 10px rgba(232,90,140,.3); }
+        .dl-days button:not(.on) .dl-bola { background: #FFF1F6; color: #D9A5B9; }
         .dl-vazio { font-size: 12px; color: #9CA3AF; margin: 10px 0 0; }
         .dl-hr { margin-top: 10px; background: #FAF7F8; border-radius: 10px; padding: 10px; }
         .dl-hr b { display: block; font-size: 12.5px; margin-bottom: 8px; }
@@ -428,7 +430,25 @@ export default function DadosLoja() {
         .dl-aviso { max-width: 640px; margin: 0 auto 8px; padding: 8px 12px; border-radius: 9px; font-size: 12.5px; font-weight: 800; }
         .dl-aviso--ok { background: #DCFCE7; color: #15803D; }
         .dl-aviso--err { background: #FEE2E2; color: #B91C1C; }
-      `}</style>
+      
+        /* ── Computador (02/10): duas colunas em vez de uma lista estreita ──
+           esquerda: Sua loja + Endereço · direita: Horário · status em cima, na largura toda */
+        @media (min-width: 1024px) {
+          .dl-root { max-width: 1120px; padding: 20px 0 32px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+          .dl-root > .dl-card { margin-bottom: 0; padding: 18px 20px; }
+          .dl-root > .dl-st { grid-column: 1 / -1; }
+          .dl-root > .dl-card:not(.dl-st):not(#dl-endereco):not(#dl-horario) { grid-column: 1; grid-row: 2; }
+          .dl-root > #dl-endereco { grid-column: 1; grid-row: 3; }
+          .dl-root > #dl-horario { grid-column: 2; grid-row: 2 / span 2; position: sticky; top: 20px; }
+          /* Salvar: botão de 280px no canto de baixo, à direita (antes era uma faixa larga tapando o conteúdo) */
+          .dl-savebar { left: calc(220px + 236px) !important; background: transparent !important; box-shadow: none !important; border: none !important;
+            pointer-events: none; display: flex; flex-direction: column; align-items: flex-end; padding: 0 28px 22px !important; }
+          .dl-savebar > * { pointer-events: auto; }
+          .dl-save { width: 280px !important; max-width: none !important; margin: 0 !important; box-shadow: 0 10px 28px rgba(232,90,140,.35); }
+          .dl-aviso { margin: 0 0 8px !important; max-width: none !important; }
+          .dl-root { padding-bottom: 96px; }
+        }
+`}</style>
     </>
   );
 }
