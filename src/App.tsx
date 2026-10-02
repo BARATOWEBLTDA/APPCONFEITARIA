@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import CompletarCadastro from "@/components/CompletarCadastro";
 import { useEffect, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "@/lib/supabase";
@@ -103,6 +104,9 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
     }
   });
 
+  // Entrou pelo Google e ainda falta o nome da confeitaria ou o WhatsApp: tela "Complete seu cadastro" (02/10)
+  const [completar, setCompletar] = useState<null | { nome: string }>(null);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => { setSession(session); });
@@ -119,10 +123,14 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
       try {
         const { data } = await supabase
           .from("profiles")
-          .select("tutorial_visto")
+          .select("tutorial_visto, nome, nome_loja, telefone")
           .eq("id", session.user.id)
           .single();
         if (cancelado) return;
+        const viaGoogle = session.user?.app_metadata?.provider === "google"
+          || (session.user?.identities || []).some((i: any) => i?.provider === "google");
+        const faltaDado = !String((data as any)?.nome_loja || "").trim() || String((data as any)?.telefone || "").replace(/\D/g, "").length < 10;
+        if (viaGoogle && faltaDado) setCompletar({ nome: String((data as any)?.nome || "") });
         if (data?.tutorial_visto) {
           // Banco diz que já viu — sincroniza localStorage e esconde
           try {
@@ -141,6 +149,10 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
   if (session === undefined) return null;
   if (!session) return <NavigateWithSearch to="/login" replace />;
+
+  if (completar) {
+    return <CompletarCadastro user={session.user} nomeInicial={completar.nome} onPronto={() => setCompletar(null)} />;
+  }
 
   if (showFirstTutorial) {
     return (
