@@ -103,7 +103,7 @@ export function DesktopProductCard({ product, isFavorite, onToggleFavorite, back
 
           {/* Preço (com tamanhos/kit: o menor, "a partir de") */}
           <div style={{ marginTop: 'auto' }}>
-            {precoCardapio(product).aPartir && <span style={{ display: 'block', fontSize: '11px', color: '#6B7280', marginBottom: '1px' }}>a partir de</span>}
+            {/* (o "a partir de" saiu em 02/10) */}
             {descRatio > 0 ? (
               <div style={{ marginBottom: '10px' }}>
                 <span style={{ fontSize: '12px', color: '#ef4444', textDecoration: 'line-through' }}>

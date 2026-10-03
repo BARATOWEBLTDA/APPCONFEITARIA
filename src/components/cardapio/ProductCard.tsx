@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { etiquetaVenda } from '@/lib/formaVenda'
 import { precoCardapio } from '@/lib/precoCardapio'
 import { formatCurrency as fmtBRL } from '@/utils/helpers'
 import { Heart } from 'lucide-react'
@@ -21,10 +22,7 @@ export function ProductCard({ product, isFavorite, onToggleFavorite, backgroundC
   const [showModal, setShowModal] = useState(false)
   const firstImage = product.imagem_url?.split(',')[0]?.trim() || null
 
-  const formatSale = (s: string) => {
-    const m: { [k: string]: string } = { 'tamanho-p': 'P', 'tamanho-m': 'M', 'tamanho-g': 'G', 'tamanho-xg': 'XG', 'kg': 'KG', 'cento': '100', 'sob-encomenda': 'Encomenda', 'outros': 'OUT' }
-    return m[s] || 'Unidade'
-  }
+  const formatSale = (s: string) => etiquetaVenda(s) // lista única (antes não tinha "caixa")
 
   // Calcula preço promocional considerando % ou fixo
   const p = product as any
@@ -64,7 +62,7 @@ export function ProductCard({ product, isFavorite, onToggleFavorite, backgroundC
           <h4 className="font-bold leading-tight line-clamp-2 mb-1" style={{ color: '#2C1219', fontSize: '13px' }}>{product.nome}</h4>
           <p className="text-gray-500 line-clamp-3 mb-2" style={{ fontSize: '11.5px', lineHeight: 1.4 }}>{product.descricao}</p>
           <div className="mt-auto flex items-baseline justify-center gap-1.5 flex-wrap">
-            {aPartir && <span className="text-gray-500" style={{ fontSize: '10.5px', width: '100%' }}>a partir de</span>}
+            {/* (o "a partir de" saiu em 02/10) */}
             {isPromo && precoPromocional > 0 ? (
               <>
                 <span className="text-red-500 line-through" style={{ fontSize: '11px' }}>{fmtBRL(precoBase)}</span>

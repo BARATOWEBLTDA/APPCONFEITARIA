@@ -1,8 +1,10 @@
 import { AvisoAntecedencia } from "@/lib/entregaProduto";
+import { sufixoVenda, rotuloPrecoVenda } from '@/lib/formaVenda'
 import KitPicker from '@/components/cardapio/KitPicker'
 import { precoCardapio } from '@/lib/precoCardapio'
 import { kitAtivo, calcularKit, selecaoInicial, type KitSelecao } from '@/lib/kitQuantidade'
 import { useState, useEffect, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { X, Plus, Minus, Camera, Ruler, ChevronRight, ChevronDown } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
 import { supabase } from '@/lib/supabase'
@@ -70,15 +72,22 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
     }
     const uid = (product as any).user_id
     if (!uid) return
-    supabase
-      .from('biblioteca_extras')
-      .select('id, nome, valor, categorias')
-      .eq('user_id', uid)
-      .then(({ data }) => {
+    // 02/10: pelo cardápio (cliente sem login) a tabela não pode ser lida direto — usa a função segura.
+    // Se a função ainda não existir no banco (SQL não rodado), tenta a leitura direta.
+    ;(async () => {
+      let data: any[] | null = null
+      const r = await supabase.rpc('cardapio_extras', { p_loja: uid })
+      if (!r.error && Array.isArray(r.data)) data = r.data
+      else {
+        const d = await supabase.from('biblioteca_extras').select('id, nome, valor, categorias').eq('user_id', uid)
+        data = (d.data as any[]) || null
+      }
+      return { data }
+    })().then(({ data }) => {
         if (!data) { setExtrasBiblioteca([]); return }
         // Filtra: sem categorias (aparece em todos) ou vinculado a esse produto
         const filtrados = (data as ExtraBiblioteca[]).filter(e => {
-          const cats = e.categorias || []
+          const cats: string[] = Array.isArray(e.categorias) ? e.categorias : []
           return cats.length === 0 || cats.includes(product.id)
         })
         setExtrasBiblioteca(filtrados)
@@ -109,6 +118,8 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
     document.body.style.top = `-${scrollY}px`
     document.body.style.width = '100%'
     return () => {
+      document.body.style.left = ''; document.body.style.right = ''
+
       document.body.style.overflow = prev.overflow
       document.body.style.position = prev.position
       document.body.style.top = prev.top
@@ -165,25 +176,8 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
     }
   }, [product, isOpen])
 
-  useEffect(() => {
-    if (isOpen) {
-      const scrollY = window.scrollY
-      document.body.style.position = 'fixed'
-      document.body.style.top = `-${scrollY}px`
-      document.body.style.left = '0'
-      document.body.style.right = '0'
-      document.body.style.overflow = 'hidden'
-      return () => {
-        document.body.style.position = ''
-        document.body.style.top = ''
-        document.body.style.left = ''
-        document.body.style.right = ''
-        document.body.style.overflow = ''
-        window.scrollTo(0, scrollY)
-      }
-    }
-    return () => { document.body.style.overflow = '' }
-  }, [isOpen])
+  // (02/10) Aqui havia uma SEGUNDA trava de rolagem igual à de cima. Ela rodava com a página já
+  // congelada (posição 0) e jogava o cardápio pro topo ao abrir e ao fechar o produto. Removida.
 
   // Autoplay removido — cliente controla clicando nas miniaturas
 
@@ -377,10 +371,6 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
   const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768
   const images = product.imagem_url?.split(',').map((s: string) => s.trim()).filter(Boolean) || []
 
-  const FORMA_LABEL: Record<string, string> = {
-    unidade: 'unidade', fatia: 'fatia', kg: 'kg', cento: 'cento',
-    'tamanho': 'unidade', 'kit-caixa': 'kit', 'kit-festa': 'kit', outros: 'un'
-  }
 
   // ═══ Render de grupo (radio / checkbox) ═══════════════════════════
   const RenderGrupo = ({ g, tipoEscolha, valorAtual, onChange, useDropdown }: {
@@ -493,15 +483,20 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
             </span>
           </button>
 
-          {/* Lista aberta */}
-          {isOpen && (
+          {/* Opções numa janela que sobe de baixo (02/10: antes abria uma lista embaixo do campo) */}
+          {isOpen && createPortal(
+            <div onClick={() => setShowTamanhoDropdown(false)} role="dialog" aria-modal="true" aria-label={`Escolha o ${g.tipo === 'tamanho' ? 'tamanho' : g.nome_exibicao.toLowerCase()}`}
+              style={{ position: 'fixed', inset: 0, zIndex: 10050, background: 'rgba(45,31,38,.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', animation: 'fadeIn .15s ease' }}>
+            <div onClick={e => e.stopPropagation()}
+              style={{ width: '100%', maxWidth: 480, background: '#fff', borderRadius: '22px 22px 0 0', padding: '10px 16px calc(18px + env(safe-area-inset-bottom, 0px))', maxHeight: '80vh', overflowY: 'auto', animation: 'sheetUp .22s ease-out', fontFamily: 'inherit' }}>
+              <span style={{ display: 'block', width: 40, height: 4, borderRadius: 9, background: '#E5DDE1', margin: '0 auto 12px' }} />
+              <b style={{ display: 'block', fontSize: 18, fontWeight: 900, color: '#2C1219' }}>Escolha o {g.tipo === 'tamanho' ? 'tamanho' : g.nome_exibicao.toLowerCase()}</b>
+              <small style={{ display: 'block', fontSize: 13, color: '#6B5D64', margin: '2px 0 12px' }}>{totalOpcoes} {totalOpcoes === 1 ? 'opção' : 'opções'}</small>
             <div style={{
-              marginTop: 8,
               background: '#fff',
               border: '1.5px solid #F0D8DE',
-              borderRadius: 10,
+              borderRadius: 12,
               overflow: 'hidden',
-              animation: 'dropIn 0.18s ease-out',
             }}>
               {g.opcoes.map((op: any, idx: number) => {
                 const ativo = op.id === idSel
@@ -553,9 +548,13 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                 )
               })}
             </div>
+            </div>
+            </div>,
+            document.body
           )}
 
           <style>{`
+            @keyframes sheetUp { from { transform: translateY(30px); opacity: 0; } to { transform: none; opacity: 1; } }
             @keyframes dropIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
             @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
             @keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
@@ -751,11 +750,18 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
               // Com tamanhos e nenhum escolhido ainda: mostra o menor preço ("A partir de")
               const semTamanho = !!gTamanho && !opTamanho && !kitInfo
               const valor = semTamanho ? Math.round(precoCardapio(product).valor * (1 - descPct) * 100) / 100 : calculo.final
+              // 02/10: sem o "A partir de" — antes de escolher, mostra a faixa de preço dos tamanhos
+              const precosTam = semTamanho ? (gTamanho!.opcoes || []).map((o: any) => {
+                const modo = (gTamanho as any)?.modo_preco_tamanho || 'preco_fixo'
+                const v = modo === 'por_peso' ? basePrice * (Number(o.peso_kg) || 0) : (Number(o.preco) || 0)
+                return Math.round(v * (1 - descPct) * 100) / 100
+              }).filter((v: number) => v > 0) : []
+              const pMin = precosTam.length ? Math.min(...precosTam) : valor, pMax = precosTam.length ? Math.max(...precosTam) : valor
               return (
                 <>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#6B5D64' }}>{semTamanho ? 'A partir de' : 'Preço unitário'}</span>
-                  <span style={{ fontSize: 18, fontWeight: 800, color: corBotao }}>
-                    {formatCurrency(valor)} {!semTamanho && <span style={{ fontSize: 12, color: '#6B5D64', fontWeight: 700 }}>/{FORMA_LABEL[product.forma_venda] || 'un'}</span>}
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#6B5D64' }}>{semTamanho ? 'Preço por tamanho' : rotuloPrecoVenda(product.forma_venda)}</span>
+                  <span style={{ fontSize: semTamanho && pMax > pMin ? 16 : 18, fontWeight: 800, color: corBotao, textAlign: 'right' }}>
+                    {semTamanho ? (pMax > pMin ? `${formatCurrency(pMin)} a ${formatCurrency(pMax)}` : formatCurrency(pMin)) : formatCurrency(valor)} {!semTamanho && <span style={{ fontSize: 12, color: '#6B5D64', fontWeight: 700 }}>/{sufixoVenda(product.forma_venda)}</span>}
                   </span>
                 </>
               )

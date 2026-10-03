@@ -109,7 +109,7 @@ export function CardapioModelo1({ design, config, verificada = false }: Cardapio
   return (
     <div className="cm1-root">
       {/* ── Hero ───────────────────────────────────────── */}
-      <div className="cm1-hero">
+      <div className={`cm1-hero${design.banner_topo_url ? '' : ' cm1-hero--sem-capa'}`}>
         {design.banner_topo_url ? (
           <div className="cm1-hero-img-wrap" style={{ backgroundImage: `url(${design.banner_topo_url})` }} />
         ) : (
@@ -288,6 +288,8 @@ export function CardapioModelo1({ design, config, verificada = false }: Cardapio
           height: 175px;
           position: relative;
         }
+        /* Sem foto de capa (02/10): faixa mais baixa. Com foto, continua 175px */
+        .cm1-hero--sem-capa, .cm1-hero--sem-capa .cm1-hero-fallback { height: 120px; }
         .cm1-hero-pattern {
           position: absolute;
           inset: 0;
@@ -385,7 +387,7 @@ export function CardapioModelo1({ design, config, verificada = false }: Cardapio
           margin-top: -24px;
           background: #f8f8f8;
           border-radius: 24px 24px 0 0;
-          padding: 22px 16px 14px;
+          padding: 22px 16px 6px; /* 02/10: era 14px embaixo — sobrava espaço até a busca */
         }
 
         /* ── Nome + Estrelas na mesma linha ────────────── */

@@ -691,13 +691,15 @@ function CardapioContent() {
   if (!isDesktop) {
     return (
       <div className="min-h-screen relative" style={{ backgroundColor: '#f8f8f8' }}>
+        {/* Caixa dos banners: some quando a loja não tem banner (antes deixava 16px sobrando) */}
+        <style>{`.cp-banner-wrap { margin-top: 16px; } .cp-banner-wrap:empty { display: none; }`}</style>
         <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#E85A8C'} />
 
         {cardapioModelo === 'modelo1' ? (
           /* ── Modelo 1: o padrão de todas as lojas (02/10) ── */
           <>
             <CardapioModelo1 design={design} config={config} verificada={isPro} />
-            <div style={{ marginTop:'16px' }}>
+            <div className="cp-banner-wrap">
               <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
             </div>
           </>
@@ -717,12 +719,12 @@ function CardapioContent() {
               return cbWhite ? '#E85A8C' : cb;
             })() }} />
             <Logo verificada={isPro} logoUrl={design.logo_url} borderColor={design.cor_borda} storeName={design.nome_loja} storeDescription={design.descricao_loja} corNome={corNomeCelular(design.cor_nome)} avaliacaoMedia={config?.avaliacao_media} configuracoes={config} hideStars={design.hide_stars} />
-            <div style={{ marginTop:'16px' }}>
+            <div className="cp-banner-wrap">
               <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
             </div>
           </>
         )}
-        <div className="container mx-auto py-4 pb-24" style={{ padding: '16px 10px 96px' }}>
+        <div className="container mx-auto py-4 pb-24" style={{ padding: `${cardapioModelo === 'modelo1' ? 8 : 16}px 10px 96px` }}>
           {filteredProdutos.length > 0 ? (
             <ProductList
               produtos={filteredProdutos}
