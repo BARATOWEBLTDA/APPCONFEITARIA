@@ -82,6 +82,8 @@ export default function DadosLoja() {
   const [descricao, setDescricao] = useState("");
   const [end, setEnd] = useState({ cep: "", rua: "", numero: "", bairro: "", cidade: "", estado: "" });
   const [mostrarLocal, setMostrarLocal] = useState<"completo" | "cidade" | "nada">("completo");
+  // 02/10: "Recebo pedidos nesse endereço" — vira o endereço de retirada da Finalizar encomenda
+  const [recebeAqui, setRecebeAqui] = useState(true);
   const [horario, setHorario] = useState<Horario>(HORARIO_PADRAO);
 
   useEffect(() => {
@@ -91,7 +93,7 @@ export default function DadosLoja() {
       setUserId(user.id);
       const { data } = await supabase
         .from("profiles")
-        .select("nome_loja, telefone, descricao_loja, endereco, mostrar_localizacao, mostrar_apenas_cidade, horario")
+        .select("nome_loja, telefone, descricao_loja, endereco, mostrar_localizacao, mostrar_apenas_cidade, horario, endereco_retirada, formas_entrega")
         .eq("id", user.id)
         .single();
       if (data) {
@@ -105,6 +107,7 @@ export default function DadosLoja() {
         // 02/10: sem endereço salvo ainda, já vem "Mostrar endereço completo"
         const jaTemEndereco = !!(addr.rua || addr.cep || addr.cidade);
         setMostrarLocal(!jaTemEndereco ? "completo" : data.mostrar_localizacao ? "completo" : data.mostrar_apenas_cidade ? "cidade" : "nada");
+        setRecebeAqui(!jaTemEndereco || !!(data as any).endereco_retirada || ((data as any).formas_entrega || ["retirada"]).includes("retirada"));
         if (data.horario) {
           try {
             const h = typeof data.horario === "string" ? JSON.parse(data.horario) : data.horario;
@@ -195,6 +198,9 @@ export default function DadosLoja() {
       endereco,
       mostrar_localizacao: mostrarLocal === "completo",
       mostrar_apenas_cidade: mostrarLocal === "cidade",
+      endereco_retirada: recebeAqui
+        ? [[end.rua, end.numero].filter(Boolean).join(", "), end.bairro, [end.cidade, end.estado].filter(Boolean).join("/")].filter(Boolean).join(" · ")
+        : "",
       horario: JSON.stringify(horario),
     }).eq("id", userId);
     setSalvando(false);
@@ -325,6 +331,10 @@ export default function DadosLoja() {
               <button key={v} type="button" role="radio" aria-checked={mostrarLocal === v} className={mostrarLocal === v ? "on" : ""} onClick={() => setMostrarLocal(v)}>{l}</button>
             ))}
           </div>
+          <label className="dl-recebe">
+            <input type="checkbox" checked={recebeAqui} onChange={(e) => setRecebeAqui(e.target.checked)} />
+            <span><b>Recebo pedidos nesse endereço</b><small>O cliente vê esse endereço pra retirar a encomenda.</small></span>
+          </label>
         </div>
 
         {/* Horário */}
@@ -450,6 +460,11 @@ export default function DadosLoja() {
           .dl-aviso { margin: 0 0 8px !important; max-width: none !important; }
           .dl-root { padding-bottom: 96px; }
         }
+
+          .dl-recebe { display: flex; align-items: flex-start; gap: 10px; margin-top: 14px; padding: 12px; border: 1.5px solid #EDE6E9; border-radius: 12px; cursor: pointer; background: #fff; }
+          .dl-recebe input { width: 20px; height: 20px; accent-color: #E85A8C; margin: 1px 0 0; flex-shrink: 0; cursor: pointer; }
+          .dl-recebe b { display: block; font-size: 14px; font-weight: 800; color: #2C1219; }
+          .dl-recebe small { display: block; font-size: 12.5px; color: #6B5D64; margin-top: 2px; line-height: 1.4; }
 `}</style>
     </>
   );

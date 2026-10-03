@@ -126,11 +126,7 @@ export default function CheckoutConfigPage() {
         formas_entrega: formasEntrega,
         valor_entrega_propria: valorEntregaPropria ? numBR(valorEntregaPropria) : 0,
         entrega_por_bairro: entregaPorBairro.filter(b => b.bairro.trim()).map(b => ({ bairro: b.bairro, valor: numBR(b.valor) })),
-        endereco_retirada: enderecoRetirada,
-        horario_retirada: horarioRetirada,
         exibir_campo_troco: exibirCampoTroco,
-        aceita_agendamento: aceitaAgendamento,
-        prazo_minimo_horas: Number.isFinite(parseInt(prazoMinimo)) ? parseInt(prazoMinimo) : 24,
       }).eq('id', userId)
       // Cupons: tabela privada (o visitante do cardápio não consegue ler)
       const cuponsParaSalvar = cupons.filter(c => c.codigo.trim()).map(c => ({
@@ -289,14 +285,6 @@ export default function CheckoutConfigPage() {
               ))}
             </div>
 
-            {formasEntrega.includes('retirada') && (
-              <>
-                <hr className="chk-divider" />
-                <p className="chk-sublabel">Endereço de retirada</p>
-                <input className="chk-input" value={enderecoRetirada} onChange={e => setEnderecoRetirada(e.target.value)} placeholder="Rua, número, bairro..." />
-                <input className="chk-input" value={horarioRetirada} onChange={e => setHorarioRetirada(e.target.value)} placeholder="Horário de retirada (ex: 08h às 18h)" />
-              </>
-            )}
           </div>
 
           {/* ── Card Taxa de Entrega (aparece só se "Entrega própria" estiver marcada) ── */}
@@ -320,29 +308,9 @@ export default function CheckoutConfigPage() {
 
           </div>{/* fim coluna 2 stack */}
 
-          {/* ── COLUNA 3: Agendamento + Cupons ── */}
+          {/* ── COLUNA 3: Cupons (o agendamento agora é por produto — 02/10) ── */}
           <div className="chk-stack">
 
-            {/* ── AGENDAMENTO ── */}
-            <div className="chk-card">
-              <SectionLabel
-                icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>}
-                sub="Cliente escolhe data e horário de entrega/retirada"
-              >Agendamento</SectionLabel>
-
-              <div className="chk-toggle-row">
-                <p className="chk-toggle-label">Aceitar agendamento</p>
-                <Toggle checked={aceitaAgendamento} onChange={(e: any) => setAceitaAgendamento(e.target.checked)} />
-              </div>
-
-              {aceitaAgendamento && (
-                <div className="chk-prazo-row">
-                  <span style={{ flexBasis: '100%' }}>Prazo mínimo de antecedência</span>
-                  <input className="chk-input" style={{width:'64px',textAlign:'center'}} value={prazoMinimo} onChange={e => setPrazoMinimo(e.target.value.replace(/\D/g,''))} />
-                  <span className="chk-muted">horas</span>
-                </div>
-              )}
-            </div>
 
             {/* ── CUPONS ── (recurso PRO: no grátis fica travado com o convite pro PRO) */}
             <div className={`chk-card${!isPro ? " chk-card--lock" : ""}`}>
@@ -574,7 +542,7 @@ export default function CheckoutConfigPage() {
         @keyframes chkspin { to { transform:rotate(360deg); } }
         @keyframes chkFadeIn { from{opacity:0} to{opacity:1} }
 
-        .chk-root { font-family:'Geist', sans-serif; width:100%; display:flex; flex-direction:column; gap:1.25rem; }
+        .chk-root { font-family:'Geist', sans-serif; width:100%; display:flex; flex-direction:column; gap:1.25rem; padding-top:20px; } /* 02/10: os cartões colavam no cabeçalho */
         .chk-header { display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; padding:0.5rem 0; }
         .chk-title { font-size: var(--font-page-title); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 0.3rem; letter-spacing:-0.02em; }
         .chk-sub { font-size: var(--font-button); color:var(--text-secondary); margin:0; }

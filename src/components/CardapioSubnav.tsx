@@ -50,9 +50,12 @@ export default function CardapioSubnav() {
       <style>{`
         .cdnav { display: none; }
         @media (min-width: 1024px) {
-          .cdnav { display: block; position: fixed; top: 0; bottom: 0; left: 220px; width: 236px; z-index: 9; overflow-y: auto;
-            background: #fff; border-right: 1px solid #F0EBED; padding: 22px 12px; font-family: var(--font-base); }
-          .layout-root.com-cdnav .layout-main { margin-left: calc(220px + 236px) !important; }
+          /* 02/10: o menu começa embaixo do cabeçalho rosa (que agora vai até o menu escuro) e tem o cinza da página */
+          .cdnav { display: block; position: fixed; top: 104px; bottom: 0; left: 220px; width: 236px; z-index: 9; overflow-y: auto;
+            background: #F6F3F4; border-right: none; padding: 20px 12px; font-family: var(--font-base); }
+          .layout-root.com-cdnav .layout-main { margin-left: calc(220px + 236px) !important; background: #F6F3F4; min-height: 100vh; }
+          .layout-root.com-cdnav .app-header-novo { margin-left: calc(-236px - 32px) !important; padding-left: calc(236px + 48px) !important; }
+          .cdnav-i:hover { background: #EFE9EC; }
         }
         .cdnav-t { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #9A8E94; padding: 8px 10px 6px; margin: 0; }
         .cdnav-i { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: none; border-radius: 10px; background: none;

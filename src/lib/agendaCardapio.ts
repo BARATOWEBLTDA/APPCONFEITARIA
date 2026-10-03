@@ -2,7 +2,7 @@
  * Regras do agendamento na "Finalizar encomenda" do cardápio (02/10).
  *  - Dias e horários: os de funcionamento da loja (Dados da loja → Horário), de hora em hora.
  *  - Antecedência: a MAIOR entre os produtos do pedido (24h, 48h, 3 dias…). Produto de pronta
- *    entrega não pede antecedência; produto sem nada marcado usa o prazo mínimo da loja.
+ *    entrega e produto sem antecedência marcada não pedem antecedência (definida no cadastro do produto).
  *  - Horário de corte: com produto de encomenda, pedido feito depois do fechamento de hoje não pega
  *    amanhã ("a produção de amanhã já fechou") — a primeira data vira o próximo dia de atendimento.
  *  - Pronta entrega com a loja aberta e antes do fechamento: já vem marcado hoje, no próximo horário.
@@ -54,7 +54,7 @@ export function antecedenciaHoras(itensIds: string[], info: Record<string, InfoE
     let h = 0;
     if (p?.ant && HORAS_ANT[p.ant]) h = HORAS_ANT[p.ant];
     else if (p?.pronta === true) h = 0;
-    else h = aceitaAgendamento ? Math.max(0, Number(prazoMinimoLoja) || 0) : 0;
+    else h = 0; // 02/10: o agendamento é definido no produto (o prazo geral da loja saiu de Entrega e pagamento)
     maior = Math.max(maior, h);
   }
   return maior;

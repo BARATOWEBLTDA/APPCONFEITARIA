@@ -1,3 +1,4 @@
+import { Heart } from '@phosphor-icons/react'
 import { formatCurrency } from '@/utils/helpers'
 import { KitQtdConfig, KitSelecao, calcularKit, kitsValidos, precoLivre } from '@/lib/kitQuantidade'
 
@@ -5,9 +6,11 @@ import { KitQtdConfig, KitSelecao, calcularKit, kitsValidos, precoLivre } from '
  * Cardápio: o cliente monta o kit escolhendo quantos de cada sabor.
  * Controlado de fora (ProductModal guarda a seleção e usa o cálculo pro preço e pro carrinho).
  */
-interface Props { kit: KitQtdConfig; sel: KitSelecao; onChange: (s: KitSelecao) => void }
+interface Props { kit: KitQtdConfig; sel: KitSelecao; onChange: (s: KitSelecao) => void   /** desconto da promoção (0 a 1) — mostra o preço com desconto nos botões (02/10) */
+  desconto?: number
+}
 
-export default function KitPicker({ kit, sel, onChange }: Props) {
+export default function KitPicker({ kit, sel, onChange, desconto = 0 }: Props) {
   const c = calcularKit(kit, sel)
   const passo = Math.max(1, kit.passo_sabor || 1)
   const kits = kitsValidos(kit)
@@ -23,7 +26,9 @@ export default function KitPicker({ kit, sel, onChange }: Props) {
           {kits.map(k => (
             <button key={k.id} type="button" role="radio" aria-checked={sel.kitId === k.id}
               className={sel.kitId === k.id ? 'on' : ''} onClick={() => onChange({ ...sel, kitId: k.id })}>
-              <b>{k.qtd} un</b><span>{formatCurrency(k.preco)}</span>
+              <b>{k.qtd} un</b>
+              <span>{formatCurrency(desconto > 0 ? parseFloat((k.preco - parseFloat((k.preco * desconto).toFixed(2))).toFixed(2)) : k.preco)}</span>
+              {desconto > 0 && <s className="kp-cheio">{formatCurrency(k.preco)}</s>}
             </button>
           ))}
         </div>
@@ -55,7 +60,7 @@ export default function KitPicker({ kit, sel, onChange }: Props) {
         const podeMais = c.soma + passo <= c.alvo && (q > 0 || c.usados < (kit.max_sabores || 1))
         return (
           <div className="kp-sabor" key={s.id}>
-            <span>{s.nome}</span>
+            <span className="kp-sab-nome"><Heart size={16} weight="duotone" aria-hidden="true" />{s.nome}</span>
             <div className="kp-stp">
               <button type="button" aria-label={`Menos ${s.nome}`} disabled={q <= 0} onClick={() => setQtd(s.id, q - passo)}>−</button>
               <b>{q}</b>
@@ -88,6 +93,10 @@ export default function KitPicker({ kit, sel, onChange }: Props) {
         .kp-barra i { display: block; height: 100%; background: #E85A8C; transition: width .15s; } .kp-barra i.ok { background: #16a34a; } .kp-barra i.erro { background: #DC2626; }
         .kp-sabor { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #F5F0F2; }
         .kp-sabor > span { font-size: 14px; font-weight: 700; color: #2C1219; }
+        .kp-sab-nome { display: inline-flex; align-items: center; gap: 8px; }
+        .kp-sab-nome svg { color: #E85A8C; flex-shrink: 0; }
+        .kp-kits .kp-cheio { font-size: 11px; font-weight: 600; color: #9A8E94; }
+        .kp-kits button.on .kp-cheio { color: rgba(255,255,255,.6); }
         .kp-stp { display: flex; align-items: center; border: 1px solid #EAE3E6; border-radius: 9px; overflow: hidden; background: #fff; }
         .kp-stp button { width: 34px; height: 34px; border: none; background: none; font-size: 18px; font-weight: 800; color: #C33A6E; cursor: pointer; }
         .kp-stp button:last-child { color: #16a34a; } .kp-stp button:disabled { color: #D6CBD0; cursor: default; }

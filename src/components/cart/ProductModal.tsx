@@ -61,6 +61,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
   // extras marcados pra esse produto (ou pra todos), aparecem aqui.
   const [extrasBiblioteca, setExtrasBiblioteca] = useState<ExtraBiblioteca[]>([])
   const [extrasMarcados, setExtrasMarcados] = useState<Set<string>>(new Set())
+  const [rolagem, setRolagem] = useState(0)
   const [fotoRef, setFotoRef] = useState<string | null>(null)
   const [fotoRefUploading, setFotoRefUploading] = useState(false)
 
@@ -68,6 +69,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
     if (!isOpen || !product) {
       setExtrasMarcados(new Set())
       setFotoRef(null)
+      setRolagem(0)
       return
     }
     const uid = (product as any).user_id
@@ -369,6 +371,9 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
   }
 
   const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768
+  const temOpcoes = grupos.length > 0 || !!kitCfg || extrasBiblioteca.length > 0
+  const fotoBase = temOpcoes ? 180 : 240
+  const alturaFoto = Math.max(110, Math.round(fotoBase - rolagem * 0.7))
   const images = product.imagem_url?.split(',').map((s: string) => s.trim()).filter(Boolean) || []
 
 
@@ -667,8 +672,8 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
       }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Header com foto — FIXO no topo */}
-        <div style={{ position: 'relative', height: '240px', minHeight: '240px', background: '#F5F3EF', overflow: 'hidden', flexShrink: 0 }}>
+        {/* Header com foto — FIXO no topo. 02/10: com opções começa mais baixa e encolhe ao rolar */}
+        <div style={{ position: 'relative', height: `${alturaFoto}px`, minHeight: `${alturaFoto}px`, background: '#F5F3EF', overflow: 'hidden', flexShrink: 0, transition: 'height .08s linear, min-height .08s linear' }}>
           {images[imgIndex] ? (
             <img src={images[imgIndex]} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
@@ -731,7 +736,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
         )}
 
         {/* Nome + descrição — corpo scrollável */}
-        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 14, flex: 1, overflowY: 'auto', minHeight: 0, overscrollBehavior: 'contain', touchAction: 'pan-y' }}>
+        <div onScroll={e => setRolagem((e.currentTarget as HTMLDivElement).scrollTop)} style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 14, flex: 1, overflowY: 'auto', minHeight: 0, overscrollBehavior: 'contain', touchAction: 'pan-y' }}>
           <div>
             <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#2C1219', margin: 0, textAlign: 'center', lineHeight: 1.15, letterSpacing: '-0.01em' }}>{product.nome}</h2>
             {product.descricao && (
@@ -759,9 +764,10 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
               const pMin = precosTam.length ? Math.min(...precosTam) : valor, pMax = precosTam.length ? Math.max(...precosTam) : valor
               return (
                 <>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#6B5D64' }}>{semTamanho ? 'Preço por tamanho' : rotuloPrecoVenda(product.forma_venda)}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#6B5D64' }}>{semTamanho ? 'Preço por tamanho' : kitCfg ? 'Preço do kit' : rotuloPrecoVenda(product.forma_venda)}</span>
                   <span style={{ fontSize: semTamanho && pMax > pMin ? 16 : 18, fontWeight: 800, color: corBotao, textAlign: 'right' }}>
-                    {semTamanho ? (pMax > pMin ? `${formatCurrency(pMin)} a ${formatCurrency(pMax)}` : formatCurrency(pMin)) : formatCurrency(valor)} {!semTamanho && <span style={{ fontSize: 12, color: '#6B5D64', fontWeight: 700 }}>/{sufixoVenda(product.forma_venda)}</span>}
+                    {!semTamanho && descPct > 0 && calculo.subtotal > valor && <s style={{ fontSize: 13, fontWeight: 600, color: '#9A8E94', marginRight: 6 }}>{formatCurrency(calculo.subtotal)}</s>}
+                    {semTamanho ? (pMax > pMin ? `${formatCurrency(pMin)} a ${formatCurrency(pMax)}` : formatCurrency(pMin)) : formatCurrency(valor)} {!semTamanho && <span style={{ fontSize: 12, color: '#6B5D64', fontWeight: 700 }}>/{kitCfg ? 'kit' : sufixoVenda(product.forma_venda)}</span>}
                   </span>
                 </>
               )
@@ -772,7 +778,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           <AvisoAntecedencia produto={product} />
 
           {/* Kit por quantidade: o cliente monta o kit */}
-          {kitCfg && <KitPicker kit={kitCfg} sel={kitSel} onChange={setKitSel} />}
+          {kitCfg && <KitPicker kit={kitCfg} sel={kitSel} onChange={setKitSel} desconto={descPct} />}
 
           {/* Grupos V3 (renderiza os ativos) */}
           {gTamanho && (
