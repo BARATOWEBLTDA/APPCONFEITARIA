@@ -332,6 +332,8 @@ function DeskProducts({ produtos, favorites, onToggleFavorite, design }: any) {
 
 /* ── Desktop Sacola Sidebar ── */
 function DeskSacola({ cartCount, cartTotal, design, items }: any) {
+  // Desconto da promoção (02/10): o preço do item já vem com desconto; aqui mostra quanto ela economiza
+  const economia = Math.round((items || []).reduce((s: number, it: any) => s + (Number(it?.precoBreakdown?.desconto) || 0) * (Number(it?.quantity) || 0), 0) * 100) / 100
   const [cupomAberto, setCupomAberto] = useState(false)
   const [cupomDigitado, setCupomDigitado] = useState('')
   const cor = design.cor_botao || design.cor_borda || '#E85A8C'
@@ -399,8 +401,14 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
           <div style={{ borderTop:'1px solid var(--border)', paddingTop:'12px', display:'flex', flexDirection:'column', gap:'4px', marginBottom:'14px' }}>
             <div style={{ display:'flex', justifyContent:'space-between' }}>
               <span style={{ fontSize:'13px', color:'var(--text-muted)' }}>Subtotal</span>
-              <span style={{ fontSize:'13px', color:'var(--text-muted)' }}>{formatCurrency(cartTotal)}</span>
+              <span style={{ fontSize:'13px', color:'var(--text-muted)' }}>{formatCurrency(cartTotal + economia)}</span>
             </div>
+            {economia > 0 && (
+              <div style={{ display:'flex', justifyContent:'space-between' }}>
+                <span style={{ fontSize:'13px', color:'#16a34a', fontWeight:700 }}>Promoção</span>
+                <span style={{ fontSize:'13px', color:'#16a34a', fontWeight:700 }}>− {formatCurrency(economia)}</span>
+              </div>
+            )}
             <div style={{ display:'flex', justifyContent:'space-between' }}>
               <span style={{ fontSize:'13px', color:'var(--text-muted)' }}>Taxa de entrega</span>
               <span style={{ fontSize:'13px', color:'var(--text-muted)' }}>A definir</span>
@@ -416,7 +424,7 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
             onClick={() => window.dispatchEvent(new Event('open-cart'))}
             style={{ width:'100%', padding:'13px', background:cor, color:'#fff', border:'none', borderRadius:'10px', fontSize:'14px', fontWeight:700, cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif', marginBottom:'0' }}
           >
-            Finalizar pedido
+            Finalizar encomenda
           </button>
         </div>
       )}

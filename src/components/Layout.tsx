@@ -155,8 +155,8 @@ export default function Layout() {
 
         <div className="sidebar-greeting">
           <p className="sidebar-greeting-name">
-            {profile?.nome
-              ? <>Olá, {profile.nome.split(" ")[0]}</>
+            {profile?.nome || (profile as any)?.nome_loja
+              ? <>Olá, {(profile as any)?.nome_loja?.trim() || profile?.nome?.split(" ")[0]}</>
               : <span className="sidebar-greeting-skel" aria-hidden="true" />}
           </p>
           <p className="sidebar-greeting-date">{new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }).replace(/^\w/, c => c.toUpperCase())}</p>

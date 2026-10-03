@@ -18,7 +18,15 @@ type Tam = { id: string; nome: string; preco: number; peso_kg?: number | null; s
 
 const uid = () => (typeof crypto !== "undefined" && (crypto as any).randomUUID ? (crypto as any).randomUUID() : `id_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`);
 const num = (v: string) => { const n = parseFloat(String(v).replace(/\./g, "").replace(",", ".")); return isNaN(n) ? 0 : n; };
-const numKg = (v: string) => { const n = parseFloat(String(v).replace(",", ".")); return isNaN(n) ? 0 : n; };
+/** Peso: entende "1,3", "1,3kg", "500g" e "500" (de 20 pra cima = gramas). Antes "500g" virava 500 kg (02/10). */
+const numKg = (v: string) => {
+  const s = String(v).toLowerCase().replace(/\s/g, "").replace(",", ".");
+  const n = parseFloat(s);
+  if (isNaN(n) || n <= 0) return 0;
+  if (/kg/.test(s)) return n;
+  if (/g$/.test(s)) return n / 1000;
+  return n >= 20 ? n / 1000 : n;
+};
 const moeda = (v: number) => v > 0 ? v.toFixed(2).replace(".", ",") : "";
 const brl = (v: number) => `R$ ${v.toFixed(2).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
 const GRUPO_VAZIO: Grupo = { ativo: false, min: 1, max: 1, distribuicao: "nenhuma", opcoes: [] };
@@ -219,7 +227,7 @@ const VENDA = [
   { v: "fatia", t: "Fatia", suf: "fatia" },
 ];
 const GT_PADRAO = { ...GRUPO_VAZIO, nome_exibicao: "Tamanhos e Pesos" };
-const kgTxt = (v: number) => `${String(Math.round(v * 100) / 100).replace(".", ",")} kg`;
+const kgTxt = (v: number) => v > 0 && v < 1 ? `${Math.round(v * 1000)} g` : `${String(Math.round(v * 100) / 100).replace(".", ",")} kg`;
 
 /** Atualiza grupo_tamanhos sempre com um modo de preço definido */
 function useTamanhos(form: any, setForm: (fn: (f: any) => any) => void) {
@@ -323,8 +331,8 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, edicao }:
             {tams.map(x => (
               <div className="bw-lt-row" key={x.id}>
                 <input className="bw-lt-nome" value={x.nome} placeholder="Ex: P" onChange={e => setTam(x.id, { nome: e.target.value })} aria-label="Nome do tamanho" />
-                <label className="bw-lt-peso"><input inputMode="decimal" defaultValue={x.peso_kg ? String(x.peso_kg).replace(".", ",") : ""} placeholder="Ex: 1"
-                  onChange={e => setTam(x.id, { peso_kg: numKg(e.target.value) || null })} aria-label="Peso em kg" /><em>kg</em></label>
+                <label className="bw-lt-peso"><input inputMode="text" defaultValue={x.peso_kg ? (x.peso_kg < 1 ? `${Math.round(x.peso_kg * 1000)}g` : String(x.peso_kg).replace(".", ",")) : ""} placeholder="Ex: 1 ou 500g"
+                  onChange={e => setTam(x.id, { peso_kg: numKg(e.target.value) || null })} aria-label="Peso (kg ou g)" /><em>{x.peso_kg && x.peso_kg < 1 ? `= ${kgTxt(x.peso_kg)}` : "kg"}</em></label>
                 {editando && (
                   <button type="button" className="bw-lt-rm" onClick={() => setGt({ opcoes: tams.filter(y => y.id !== x.id) })} aria-label={`Remover ${x.nome || "tamanho"}`}>{LIX}</button>
                 )}

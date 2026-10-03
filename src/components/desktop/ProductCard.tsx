@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { etiquetaCurtaVenda } from '@/lib/formaVenda'
 import { precoCardapio } from '@/lib/precoCardapio'
 import { formatCurrency as fmtBRL } from '@/utils/helpers'
 import { Heart } from 'lucide-react'
@@ -20,10 +21,16 @@ export function DesktopProductCard({ product, isFavorite, onToggleFavorite, back
   const [hover, setHover] = useState(false)
   const firstImage = product.imagem_url?.split(',')[0]?.trim() || null
 
-  const formatSale = (s: string) => {
-    const m: Record<string, string> = { 'tamanho-p':'P','tamanho-m':'M','tamanho-g':'G','tamanho-xg':'XG','kg':'KG','cento':'100','sob-encomenda':'Enc','outros':'OUT' }
-    return m[s] || 'UN'
-  }
+  const formatSale = (s: string) => etiquetaCurtaVenda(s) // lista única (antes não tinha "caixa")
+  // Promoção em % ou preço fixo (02/10: antes só o preço fixo mostrava o riscado no computador)
+  const p = product as any
+  const pc = precoCardapio(product)
+  const descRatio = product.promocao
+    ? (p.tipo_promocao === 'percentual' && p.desconto_percentual > 0
+        ? p.desconto_percentual / 100
+        : product.preco_promocional && product.preco_normal > 0 ? 1 - (product.preco_promocional / product.preco_normal) : 0)
+    : 0
+  const precoFinal = Math.round(pc.valor * (1 - descRatio) * 100) / 100
 
   return (
     <>
@@ -97,14 +104,14 @@ export function DesktopProductCard({ product, isFavorite, onToggleFavorite, back
           {/* Preço (com tamanhos/kit: o menor, "a partir de") */}
           <div style={{ marginTop: 'auto' }}>
             {precoCardapio(product).aPartir && <span style={{ display: 'block', fontSize: '11px', color: '#6B7280', marginBottom: '1px' }}>a partir de</span>}
-            {product.promocao && product.preco_promocional ? (
+            {descRatio > 0 ? (
               <div style={{ marginBottom: '10px' }}>
                 <span style={{ fontSize: '12px', color: '#ef4444', textDecoration: 'line-through' }}>
-                  {fmtBRL(product.preco_normal)}
+                  {fmtBRL(pc.valor)}
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
                   <span style={{ fontSize: '18px', fontWeight: 800, color: '#16a34a' }}>
-                    {fmtBRL(product.preco_promocional)}
+                    {fmtBRL(precoFinal)}
                   </span>
                   <span style={{
                     fontSize: '10px', fontWeight: 700, padding: '2px 6px',

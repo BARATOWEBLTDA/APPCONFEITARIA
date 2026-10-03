@@ -248,7 +248,7 @@ function FolhaLogo({ uid, perfil, onClose, onSalvo }: FolhaProps) {
 function FolhaEndereco({ uid, perfil, onClose, onSalvo }: FolhaProps) {
   const e0 = perfil?.endereco || {};
   const [end, setEnd] = useState({ cep: e0.cep || "", rua: e0.rua || "", numero: e0.numero || "", bairro: e0.bairro || "", cidade: e0.cidade || "", estado: e0.estado || "" });
-  const [mostrar, setMostrar] = useState<"completo" | "cidade" | "nada">(perfil?.mostrar_localizacao ? "completo" : perfil?.mostrar_apenas_cidade ? "cidade" : "cidade");
+  const [mostrar, setMostrar] = useState<"completo" | "cidade" | "nada">(perfil?.mostrar_apenas_cidade && !perfil?.mostrar_localizacao ? "cidade" : "completo"); // padrão: endereço completo (02/10)
   const [buscando, setBuscando] = useState(false);
   const [achou, setAchou] = useState(!!e0.cidade);
   const [salvando, setSalvando] = useState(false);

@@ -760,7 +760,8 @@ export default function Inicio() {
             <span>
               Olá,{" "}
               {profile ? (
-                (nome ? nome.split(" ")[0] : "!")
+                // 02/10: o nome da confeitaria (o pessoal só se a loja ainda não tiver nome)
+                ((profile as any).nome_loja?.trim() || (nome ? nome.split(" ")[0] : "!"))
               ) : (
                 <span className="ini-hero-name-skel" aria-hidden="true" />
               )}

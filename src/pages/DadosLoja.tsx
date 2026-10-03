@@ -81,7 +81,7 @@ export default function DadosLoja() {
   const [telefone, setTelefone] = useState("");
   const [descricao, setDescricao] = useState("");
   const [end, setEnd] = useState({ cep: "", rua: "", numero: "", bairro: "", cidade: "", estado: "" });
-  const [mostrarLocal, setMostrarLocal] = useState<"completo" | "cidade" | "nada">("nada");
+  const [mostrarLocal, setMostrarLocal] = useState<"completo" | "cidade" | "nada">("completo");
   const [horario, setHorario] = useState<Horario>(HORARIO_PADRAO);
 
   useEffect(() => {
@@ -102,7 +102,9 @@ export default function DadosLoja() {
         try { addr = data.endereco ? (typeof data.endereco === "string" ? JSON.parse(data.endereco) : data.endereco) : {}; } catch { /* ignora */ }
         setEnd({ cep: addr.cep || "", rua: addr.rua || "", numero: addr.numero || "", bairro: addr.bairro || "", cidade: addr.cidade || "", estado: addr.estado || "" });
         if (addr.cep) setCepOk(true);
-        setMostrarLocal(data.mostrar_localizacao ? "completo" : data.mostrar_apenas_cidade ? "cidade" : "nada");
+        // 02/10: sem endereço salvo ainda, já vem "Mostrar endereço completo"
+        const jaTemEndereco = !!(addr.rua || addr.cep || addr.cidade);
+        setMostrarLocal(!jaTemEndereco ? "completo" : data.mostrar_localizacao ? "completo" : data.mostrar_apenas_cidade ? "cidade" : "nada");
         if (data.horario) {
           try {
             const h = typeof data.horario === "string" ? JSON.parse(data.horario) : data.horario;
