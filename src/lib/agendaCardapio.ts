@@ -100,6 +100,18 @@ export function horariosDoDia(d: Date, horario: any, minimo: Date): string[] {
   return out;
 }
 
+/** "Outro horário": de 15 em 15 minutos, da abertura até o fechamento, a partir do mínimo. */
+export function horariosLivres(d: Date, horario: any, minimo: Date): string[] {
+  const ex = expediente(d, horario);
+  if (!ex) return [];
+  const dia = inicioDoDia(d).getTime();
+  const out: string[] = [];
+  for (let m = ex.abre; m <= ex.fecha; m += 15) {
+    if (new Date(dia + m * 60_000) >= minimo) out.push(hhmm(m));
+  }
+  return out;
+}
+
 export const diaDisponivel = (d: Date, horario: any, minimo: Date) => horariosDoDia(d, horario, minimo).length > 0;
 
 export function primeiraData(horario: any, minimo: Date, limiteDias = 90): Date | null {

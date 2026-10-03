@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { diaDisponivel, horariosDoDia, inicioDoDia, isoDia, deIso, somarDias } from "@/lib/agendaCardapio";
+import { diaDisponivel, horariosDoDia, horariosLivres, inicioDoDia, isoDia, deIso, somarDias } from "@/lib/agendaCardapio";
 
 /** Janelinha que sobe de baixo (no computador, fica centralizada). */
 function Folha({ titulo, sub, onClose, children }: { titulo: string; sub?: string; onClose: () => void; children: ReactNode }) {
@@ -69,20 +69,46 @@ export function CalendarioSheet({ titulo, horario, minimo, valor, onEscolher, on
   );
 }
 
-/** Horários do dia escolhido, de hora em hora. */
+/** Horários do dia escolhido, de hora em hora, e "Outro horário" (de 15 em 15 min, dentro do expediente). */
 export function HorariosSheet({ data, horario, minimo, valor, onEscolher, onClose }: {
   data: string; horario: any; minimo: Date; valor: string; onEscolher: (h: string) => void; onClose: () => void;
 }) {
   const lista = horariosDoDia(deIso(data), horario, minimo);
+  const livres = horariosLivres(deIso(data), horario, minimo); // de 15 em 15
+  const valorFora = !!valor && !lista.includes(valor);
+  const [outro, setOutro] = useState(valorFora);
+  const horas = [...new Set(livres.map(h => h.slice(0, 2)))];
+  const [hSel, setHSel] = useState(valorFora ? valor.slice(0, 2) : (horas[0] || ""));
+  const minutosDaHora = livres.filter(h => h.startsWith(hSel + ":")).map(h => h.slice(3));
+  const [mSel, setMSel] = useState(valorFora ? valor.slice(3, 5) : "");
+  const mOk = minutosDaHora.includes(mSel) ? mSel : (minutosDaHora[0] || "");
   const rot = deIso(data).toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "2-digit" });
   return (
     <Folha titulo="Horário" sub={rot.charAt(0).toUpperCase() + rot.slice(1)} onClose={onClose}>
       <div className="ags-hrs">
         {lista.map(h => (
-          <button type="button" key={h} className={valor === h ? "sel" : ""} onClick={() => { onEscolher(h); onClose(); }}>{h}</button>
+          <button type="button" key={h} className={valor === h && !outro ? "sel" : ""} onClick={() => { onEscolher(h); onClose(); }}>{h}</button>
         ))}
-        {!lista.length && <p className="ags-vazio">Nenhum horário nesse dia. Escolha outra data.</p>}
+        {livres.length > 0 && (
+          <button type="button" className={`ags-outro${outro ? " sel" : ""}`} onClick={() => setOutro(o => !o)}>Outro horário</button>
+        )}
+        {!lista.length && !livres.length && <p className="ags-vazio">Nenhum horário nesse dia. Escolha outra data.</p>}
       </div>
+      {outro && livres.length > 0 && (
+        <div className="ags-outro-box">
+          <p>Escolha um horário entre <b>{livres[0]}</b> e <b>{livres[livres.length - 1]}</b>:</p>
+          <div className="ags-outro-row">
+            <select value={hSel} onChange={e => setHSel(e.target.value)} aria-label="Hora">
+              {horas.map(h => <option key={h} value={h}>{h}h</option>)}
+            </select>
+            <span>:</span>
+            <select value={mOk} onChange={e => setMSel(e.target.value)} aria-label="Minutos">
+              {minutosDaHora.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </div>
+          <button type="button" className="ags-ok" onClick={() => { onEscolher(`${hSel}:${mOk}`); onClose(); }}>Confirmar {hSel}:{mOk}</button>
+        </div>
+      )}
     </Folha>
   );
 }
@@ -113,5 +139,10 @@ const CSS = `
   .ags-hrs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
   .ags-hrs button { height: 48px; border: 1.5px solid #EDE6E9; border-radius: 12px; background: #fff; font-family: inherit; font-size: 15.5px; font-weight: 800; color: #2C1219; cursor: pointer; }
   .ags-hrs button.sel { border-color: #E85A8C; background: #FFF1F6; color: #C33A6E; }
+  .ags-hrs .ags-outro { grid-column: 1 / -1; border-style: dashed; color: #C33A6E; font-size: 14.5px; }
+  .ags-outro-box { margin-top: 12px; padding: 14px; border-radius: 14px; background: #FAF7F8; }
+  .ags-outro-box p { margin: 0 0 10px; font-size: 13px; color: #6B5D64; }
+  .ags-outro-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; font-size: 20px; font-weight: 900; }
+  .ags-outro-row select { height: 48px; min-width: 96px; border: 1.5px solid #EDE6E9; border-radius: 12px; background: #fff; font-family: inherit; font-size: 18px; font-weight: 800; color: #2C1219; text-align: center; padding: 0 10px; }
   .ags-vazio { grid-column: 1 / -1; font-size: 13.5px; color: #6B5D64; text-align: center; padding: 10px 0; }
 `;
