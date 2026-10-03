@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, ShareNetwork, CaretRight, Camera, X } from "@phosphor-icons/react";
+import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, ShareNetwork, CaretRight, Camera, X, LockSimple } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import HorarioSheet from "@/components/HorarioSheet";
-import { lerPassos, marcarCompartilhado, passosCompletos, avisarPassos, type EstadoPassos } from "@/lib/primeirosPassos";
+import { lerPassos, marcarCompartilhado, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk, type EstadoPassos } from "@/lib/primeirosPassos";
 
 /**
  * "Primeiros passos" (aprovado 02/10) — o MESMO cartão no Início (celular) e no Cardápio digital.
@@ -101,6 +101,9 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   ];
   const feitos = passos.filter(p => p.feito).length;
   const atual = passos.findIndex(p => !p.feito);
+  // Compartilhar só libera com o cardápio pronto (02/10): antes dava pra divulgar a loja ainda incompleta
+  const ultimo = passos.length - 1;
+  const compartilharTravado = !passos[ultimo].feito && passos.slice(0, ultimo).some(p => !p.feito);
 
   return (
     <div className="pp">
@@ -117,11 +120,18 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
           <button type="button" className="pp-btn" onClick={p.abrir}>Fazer agora</button>
         </div>
       ) : (
+        (i === ultimo && compartilharTravado) ? (
+          <div key={p.t} className="pp-ps pp-ps--trava" aria-disabled="true">
+            <span className="pp-ic pp-ic--trava">{I(LockSimple)}</span>
+            <span className="pp-tx"><b>{p.t}</b><small>Libera quando os passos acima estiverem prontos</small></span>
+          </div>
+        ) : (
         <button type="button" key={p.t} className={`pp-ps${p.feito ? " pp-ps--ok" : ""}`} onClick={p.feito ? undefined : p.abrir} disabled={p.feito}>
           <span className={`pp-ic${p.feito ? " pp-ic--ok" : ""}`}>{p.feito ? I(Check) : p.ic}</span>
           <span className="pp-tx"><b>{p.t}</b><small>{p.s}</small></span>
           {!p.feito && <span className="pp-seta"><CaretRight size={16} /></span>}
         </button>
+        )
       ))}
 
       {folha === "descricao" && <FolhaDescricao uid={uid} perfil={estado.perfil} onClose={() => setFolha(null)} onSalvo={salvo} />}
@@ -159,6 +169,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo }: FolhaProps) {
   const [txt, setTxt] = useState(String(perfil?.descricao_loja || ""));
   const [gerando, setGerando] = useState(false);
   const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState("");
   const gerar = async () => {
     setGerando(true);
     try {
@@ -171,9 +182,11 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo }: FolhaProps) {
   };
   const salvar = async () => {
     if (!txt.trim()) return;
-    setSalvando(true);
-    await supabase.from("profiles").update({ descricao_loja: txt.trim() }).eq("id", uid);
-    setSalvando(false); onSalvo();
+    setSalvando(true); setErro("");
+    const e = await atualizarPerfil(uid, { descricao_loja: txt.trim() });
+    setSalvando(false);
+    if (e) { setErro("Não foi possível salvar agora. Confira a internet e tente de novo."); return; }
+    onSalvo();
   };
   return (
     <Folha titulo="Contar sobre a sua confeitaria" sub="Uma frase que aparece no topo do seu cardápio" onClose={onClose}>
@@ -181,6 +194,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo }: FolhaProps) {
         <button type="button" className="ppf-ia" onClick={gerar} disabled={gerando}>{gerando ? "Gerando…" : "✨ Gerar com IA"}</button></div>
       <textarea id="pp-desc" className="ppf-in ppf-ta" value={txt} maxLength={200} placeholder="Ex.: Bolos e doces feitos com carinho em Curitiba" onChange={e => setTxt(e.target.value)} />
       <p className="ppf-cnt">{txt.length}/200</p>
+      {erro && <p className="ppf-erro">{erro}</p>}
       <button type="button" className="pp-btn" disabled={!txt.trim() || salvando} onClick={salvar}>{salvando ? "Salvando…" : "Salvar e continuar"}</button>
     </Folha>
   );
@@ -201,12 +215,19 @@ function FolhaLogo({ uid, perfil, onClose, onSalvo }: FolhaProps) {
     const { error } = await supabase.storage.from("products").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
     if (!error) {
       const { data } = supabase.storage.from("products").getPublicUrl(path);
-      await supabase.from("profiles").update({ logo_url: `${data.publicUrl}?t=${Date.now()}`, design_escolhido: true, logo_confirmado: true }).eq("id", uid);
-      setEnviando(false); onSalvo(); return;
+      marcarLogoOk(uid);
+      const e = await atualizarPerfil(uid, { logo_url: `${data.publicUrl}?t=${Date.now()}`, design_escolhido: true, logo_confirmado: true }, ["design_escolhido", "logo_confirmado"]);
+      setEnviando(false);
+      if (e) { alert("Não foi possível salvar agora. Confira a internet e tente de novo."); return; }
+      onSalvo(); return;
     }
     setEnviando(false); alert("Não foi possível enviar a imagem. Tente de novo.");
   };
-  const usarFoto = async () => { await supabase.from("profiles").update({ design_escolhido: true, logo_confirmado: true }).eq("id", uid); onSalvo(); };
+  const usarFoto = async () => {
+    marcarLogoOk(uid);
+    await atualizarPerfil(uid, { design_escolhido: true, logo_confirmado: true }, ["design_escolhido", "logo_confirmado"]);
+    onSalvo();
+  };
   return (
     <>
       <Folha titulo="Colocar o logo da loja" sub="Aparece no topo do cardápio, junto do nome" onClose={onClose}>
@@ -233,6 +254,7 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo }: FolhaProps) {
   const [buscando, setBuscando] = useState(false);
   const [achou, setAchou] = useState(!!e0.cidade);
   const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState("");
   const mudarCep = async (v: string) => {
     const cep = maskCep(v); setEnd(e => ({ ...e, cep })); setAchou(false);
     const d = cep.replace(/\D/g, "");
@@ -247,9 +269,11 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo }: FolhaProps) {
   const pronto = !!end.cidade.trim() && !!(end.rua.trim() || end.cep.trim());
   const salvar = async () => {
     if (!pronto) return;
-    setSalvando(true);
-    await supabase.from("profiles").update({ endereco: JSON.stringify(end), mostrar_localizacao: mostrar === "completo", mostrar_apenas_cidade: mostrar === "cidade" }).eq("id", uid);
-    setSalvando(false); onSalvo();
+    setSalvando(true); setErro("");
+    const e = await atualizarPerfil(uid, { endereco: JSON.stringify(end), mostrar_localizacao: mostrar === "completo", mostrar_apenas_cidade: mostrar === "cidade" });
+    setSalvando(false);
+    if (e) { setErro("Não foi possível salvar agora. Confira a internet e tente de novo."); return; }
+    onSalvo();
   };
   const campo = (k: keyof typeof end, rotulo: string, ph = "", extra: any = {}) => (
     <div className="ppf-f"><label className="ppf-l" htmlFor={`pp-${k}`}>{rotulo}</label>
@@ -266,6 +290,7 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo }: FolhaProps) {
       <p className="ppf-l" style={{ marginTop: 14 }}>No cardápio, mostrar</p>
       <div className="ppf-seg">{([["completo", "Completo"], ["cidade", "Só a cidade"], ["nada", "Nada"]] as const).map(([v, l]) => (
         <button type="button" key={v} className={mostrar === v ? "on" : ""} onClick={() => setMostrar(v)}>{l}</button>))}</div>
+      {erro && <p className="ppf-erro">{erro}</p>}
       <button type="button" className="pp-btn" disabled={!pronto || salvando} onClick={salvar}>{salvando ? "Salvando…" : "Salvar e continuar"}</button>
     </Folha>
   );
@@ -274,15 +299,18 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo }: FolhaProps) {
 function FolhaHorario({ uid, perfil, onClose, onSalvo }: FolhaProps) {
   const [h, setH] = useState<any>({ ...HORARIO_PADRAO, ...(perfil?.horario || {}) });
   const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState("");
   const ligado = (d: string) => d === "Sábado" ? h.abre_sabado : d === "Domingo" ? h.abre_domingo : h.dias.includes(d);
   const trocar = (d: string) => setH((x: any) => d === "Sábado" ? { ...x, abre_sabado: !x.abre_sabado } : d === "Domingo" ? { ...x, abre_domingo: !x.abre_domingo }
     : { ...x, dias: x.dias.includes(d) ? x.dias.filter((y: string) => y !== d) : DIAS.slice(0, 5).map(z => z.nome).filter(n => n === d || x.dias.includes(n)) });
   const temDia = h.dias.length > 0 || h.abre_sabado || h.abre_domingo;
   const salvar = async () => {
     if (!temDia) return;
-    setSalvando(true);
-    await supabase.from("profiles").update({ horario: JSON.stringify(h) }).eq("id", uid);
-    setSalvando(false); onSalvo();
+    setSalvando(true); setErro("");
+    const e = await atualizarPerfil(uid, { horario: JSON.stringify(h) });
+    setSalvando(false);
+    if (e) { setErro("Não foi possível salvar agora. Confira a internet e tente de novo."); return; }
+    onSalvo();
   };
   const [campo, setCampo] = useState<null | { k: string; titulo: string }>(null);
   const bloco = (titulo: string, a: string, f: string) => (
@@ -299,6 +327,7 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo }: FolhaProps) {
       {h.dias.length > 0 && bloco("Segunda a sexta", "abertura", "fechamento")}
       {h.abre_sabado && bloco("Sábado", "sabado_abertura", "sabado_fechamento")}
       {h.abre_domingo && bloco("Domingo", "domingo_abertura", "domingo_fechamento")}
+      {erro && <p className="ppf-erro">{erro}</p>}
       <button type="button" className="pp-btn" disabled={!temDia || salvando} onClick={salvar}>{salvando ? "Salvando…" : "Salvar e continuar"}</button>
       {campo && (
         <HorarioSheet titulo={campo.titulo} value={h[campo.k]} onChange={(v) => setH((x: any) => ({ ...x, [campo.k]: v }))} onClose={() => setCampo(null)} />
@@ -325,6 +354,9 @@ const CSS = `
   .pp-tx small { display: block; font-size: 12px; color: #888780; margin-top: 3px; line-height: 1.35; }
   .pp-ps--ok .pp-tx b { color: #9A8E94; font-weight: 600; text-decoration: line-through; text-decoration-color: #D6CBD0; }
   .pp-ps--ok .pp-tx small { color: #B5AAB0; }
+  .pp-ps--trava { cursor: default; }
+  .pp-ic--trava { background: #F5F0F2; color: #B5AAB0; }
+  .pp-ps--trava .pp-tx b { color: #9A8E94; font-weight: 600; }
   .pp-seta { color: #B4B2A9; display: flex; }
   .pp-at { background: #FFF6F9; border: 1.5px solid #F7C6D9; border-radius: 14px; padding: 14px 12px 12px; margin: 6px 0; }
   .pp-at + .pp-ps { border-top: none; }
@@ -356,6 +388,7 @@ const CSS = `
   .ppf-in { width: 100%; box-sizing: border-box; min-height: 46px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 11px 14px; font-family: inherit; font-size: 16px; color: #2C1219; background: #fff; }
   .ppf-in:focus { outline: none; border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
   .ppf-ta { min-height: 112px; resize: none; line-height: 1.45; display: block; }
+  .ppf-erro { margin: 12px 0 0; font-size: 13px; font-weight: 700; color: #B91C1C; }
   .ppf-cnt { text-align: right; font-size: 11px; color: #B5AAB0; margin: 4px 0 0; }
   .ppf-f { flex: 1; min-width: 0; }
   .ppf-row { display: flex; gap: 10px; }
