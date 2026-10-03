@@ -408,6 +408,26 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
   // Insumos dela (pra Doo saber o que já existe e atualizar em vez de duplicar)
   const navigateDoo = useNavigateDoo()
   const [uid, setUid] = useState<string | null>(null)
+
+  // Conversa guardada no aparelho (02/10): antes sumia ao fechar a Doo ou trocar de tela.
+  // Guarda as últimas 60 mensagens; fotos anexadas não (o endereço delas só vale na hora).
+  const chaveConversa = uid ? `doonly_doo_conversa_${uid}` : ''
+  const [conversaCarregada, setConversaCarregada] = useState(false)
+  useEffect(() => {
+    if (!uid || conversaCarregada) return
+    try {
+      const salvo = JSON.parse(localStorage.getItem(`doonly_doo_conversa_${uid}`) || '[]')
+      if (Array.isArray(salvo) && salvo.length) setMessages(prev => prev.length ? prev : salvo)
+    } catch { /* conversa salva estragada: começa do zero */ }
+    setConversaCarregada(true)
+  }, [uid, conversaCarregada])
+  useEffect(() => {
+    if (!chaveConversa || !conversaCarregada) return
+    try {
+      const guardar = messages.slice(-60).map(m => ({ ...m, attachmentPreview: undefined }))
+      localStorage.setItem(chaveConversa, JSON.stringify(guardar))
+    } catch { /* aparelho sem espaço: segue sem guardar */ }
+  }, [messages, chaveConversa, conversaCarregada])
   const [insumos, setInsumos] = useState<InsumoResumo[]>([])
   const [catalogo, setCatalogo] = useState<{ produtos: ProdutoCat[]; clientes: ClienteCat[] }>({ produtos: [], clientes: [] })
   useEffect(() => {
@@ -742,7 +762,6 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
               <b>Doo IA <em>PRO</em></b>
               <small className={loading || generatingImage ? 'dz-esc' : ''}><i aria-hidden="true" />{loading ? 'Escrevendo…' : generatingImage ? 'Criando a imagem…' : 'Online · responde na hora'}</small>
             </div>
-            <button type="button" className="dz-hb" onClick={clearConversation} disabled={!messages.length} aria-label="Nova conversa" title="Nova conversa"><Plus size={20} weight="bold" /></button>
             <button type="button" className="dz-hb dz-fechar" onClick={handleClose} aria-label="Fechar"><X size={18} weight="bold" /></button>
           </div>
 
@@ -753,7 +772,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                 <div className="dz-hero">
                   <div className="dz-hav2"><img src="/Sistema/doo.png" alt="" /></div>
                   <b>{nomeConfeiteira ? `Oi, ${nomeConfeiteira}! Eu sou a Doo 💗` : 'Oi! Eu sou a Doo 💗'}</b>
-                  <p>Sua assistente de confeitaria. Calculo preços, crio receitas, registro pedidos e cadastro ingredientes pra você.</p>
+                  <p>Sua assistente de confeitaria: calculo preços, crio receitas, registro pedidos e cadastro ingredientes.</p>
                 </div>
                 <p className="dz-sl">Comece por aqui</p>
                 <div className="dz-sg">
@@ -891,7 +910,8 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dz-hav2 { width: 84px; height: 84px; margin: 0 auto; border-radius: 26px; background: #FCE7F3; overflow: hidden; box-shadow: 0 10px 26px rgba(232,90,140,.28); }
         .dz-hav2 img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
         .dz-hero b { display: block; font-size: 20px; font-weight: 900; margin-top: 12px; letter-spacing: -.01em; }
-        .dz-hero p { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 6px auto 0; max-width: 330px; }
+        .dz-hero p { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 6px auto 0; max-width: 320px; text-wrap: balance; }
+        .dz-hero b { text-wrap: balance; }
         .dz-sl { margin: 4px 0 0; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #9A8E94; }
         .dz-sg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .dz-sc { text-align: left; background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 11px; font-family: inherit; color: inherit; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
