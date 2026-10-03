@@ -5391,7 +5391,7 @@ export default function Produtos() {
                     Preço por {(form.grupo_tamanhos.nome_exibicao || "Tamanhos").toLowerCase().slice(0, -1)} <ReqTag />
                   </p>
                   <p style={{fontSize: 12, color: "#6B5D64", margin: "0 0 12px"}}>
-                    Defina o preço de cada opção. O menor vira o "a partir de" no cardápio.
+                    Defina o preço de cada opção. No cardápio aparece a faixa do menor ao maior.
                   </p>
                   <div style={{display: "flex", flexDirection: "column", gap: 8}}>
                     {form.grupo_tamanhos.opcoes.map((op) => (
@@ -5576,6 +5576,24 @@ export default function Produtos() {
                       value={form.forma_venda}
                       onChange={v => setForm(f => ({ ...f, forma_venda: v }))}
                       options={FORMAS_VENDA.map(fv => ({ value: fv.value, label: fv.label }))}
+                      title="Como esse produto é vendido?"
+                      big
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* 02/10: com tamanhos de preço próprio o bloco do preço base some — e o "Vendido por" sumia junto,
+                  deixando o produto sempre como "unidade" (ex.: caixa P/M/G aparecia como unidade no cardápio) */}
+              {((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco" && !isBoloEdit)) && !kitAtivo((form as any).kit_qtd)
+                && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && form.grupo_tamanhos?.modo_preco_tamanho !== "por_peso" && (
+                <div className="prod-section">
+                  <div className="prod-field">
+                    <label>Vendido por</label>
+                    <SelectDoonly
+                      value={form.forma_venda}
+                      onChange={v => setForm(f => ({ ...f, forma_venda: v }))}
+                      options={FORMAS_VENDA.filter(fv => !["kg", "tamanho"].includes(fv.value)).map(fv => ({ value: fv.value, label: fv.label }))}
                       title="Como esse produto é vendido?"
                       big
                     />
