@@ -3820,6 +3820,19 @@ export default function Produtos() {
       ...(tp === "salgados" ? { kit_qtd: presetKit("salgados") } : {}),
     } as any));
     setKitTela(false); setBoloPrecoTela(false); setTipoCadastro(tp); setTipoTela(false); setWizardStep(2);
+    // Conta sem uma categoria desse tipo (02/10): cria sozinha e já seleciona. Antes, numa conta nova,
+    // a categoria era obrigatória e não existia nenhuma: o "Avançar" travava no primeiro produto.
+    const NOVA_CATEGORIA: Record<string, { nome: string; icone: number }> = {
+      bolos: { nome: "Bolos", icone: 6 }, doces: { nome: "Doces", icone: 1 }, salgados: { nome: "Salgados", icone: 3 },
+      sobremesas: { nome: "Sobremesas", icone: 10 }, kitfesta: { nome: "Kit festa", icone: 28 },
+    };
+    const nova = NOVA_CATEGORIA[tp];
+    if (!cat && nova && userId && !categorias.some(c => norm(c) === norm(nova.nome))) {
+      setForm(f => ({ ...f, categoria: nova.nome }));
+      setCategorias(prev => (prev.includes(nova.nome) ? prev : [...prev, nova.nome].sort()));
+      supabase.from("categorias").insert({ nome: nova.nome, imagem_url: `/categoriaicones/icone (${nova.icone}).png`, ordem: categorias.length, user_id: userId })
+        .then(() => {}, () => {});
+    }
   };
   const isBolo = tipoCadastro === "bolos" && !form.id;
   // Edição de bolo nas telas novas: só quando o produto usa o que essas telas cobrem
