@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import DataNascimentoSheet, { rotuloNascimento } from "@/components/DataNascimentoSheet";
 import LimitePlano from "@/components/billing/LimitePlano";
 import { LIMITE_CLIENTES_GRATIS } from "@/lib/limitesPlano";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -219,6 +220,7 @@ export default function Clientes() {
   const [editando,      setEditando]      = useState<string | null>(null);
   const [rapido,        setRapido]        = useState(emptyRapido);
   const [completo,      setCompleto]      = useState(emptyCompleto);
+  const [niverAberto, setNiverAberto] = useState(false);
   const [preview,       setPreview]       = useState<string | null>(null);
   const [saving,        setSaving]        = useState(false);
   const [cepLoading,    setCepLoading]    = useState(false);
@@ -681,8 +683,12 @@ export default function Clientes() {
                 {/* Aniversário + Sexo */}
                 <div className="cli-row-2">
                   <div className="cli-field">
-                    <label>🎂 Aniversário <span className="cli-opt">opcional</span></label>
-                    <input type="date" value={completo.data_nascimento} onChange={e => setCompleto(f => ({...f, data_nascimento: e.target.value}))} />
+                    <label>Aniversário <span className="cli-opt">opcional</span></label>
+                    <button type="button" className="cli-data-btn" onClick={() => setNiverAberto(true)}>
+                      <span className={completo.data_nascimento ? "" : "cli-data-ph"}>{completo.data_nascimento ? rotuloNascimento(completo.data_nascimento) : "Escolher a data"}</span>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+                    </button>
+                    {niverAberto && <DataNascimentoSheet valor={completo.data_nascimento} onEscolher={v => setCompleto(f => ({ ...f, data_nascimento: v }))} onClose={() => setNiverAberto(false)} />}
                   </div>
                   <div className="cli-field">
                     <label>Sexo <span className="cli-opt">opcional</span></label>
@@ -919,9 +925,9 @@ export default function Clientes() {
           gap: var(--space-1);
         }
         .cli-field label {
-          font-size: var(--text-xs);
-          font-weight: var(--fw-bold);
-          color: var(--text-secondary);
+          font-size: 13px; /* padrão do cadastro (02/10): antes 12px */
+          font-weight: 600;
+          color: #4B3A42;
           display: flex; align-items: center;
           gap: 4px;
         }
@@ -930,9 +936,12 @@ export default function Clientes() {
           font-size: var(--text-xs);
           font-weight: var(--fw-black);
         }
+        .cli-data-btn { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 48px; box-sizing: border-box; padding: 0 14px; background: var(--bg-input); border: 1.5px solid var(--border); border-radius: 12px; font-family: inherit; font-size: 16px; color: #2C1219; cursor: pointer; text-align: left; }
+        .cli-data-btn svg { color: #9A8E94; flex-shrink: 0; }
+        .cli-data-ph { color: #B5AAB0; }
         .cli-opt {
           color: var(--text-muted);
-          font-size: 0.65rem;
+          font-size: 11.5px;
           font-weight: var(--fw-regular);
           margin-left: 4px;
         }
@@ -942,10 +951,11 @@ export default function Clientes() {
           background: var(--bg-input);
           border: 1.5px solid var(--border);
           border-radius: var(--radius-md);
-          padding: 14px 16px;
-          font-size: var(--text-sm);
-          font-weight: var(--fw-medium);
-          color: var(--text-title);
+          padding: 12px 14px; min-height: 48px;
+          font-size: 16px; /* antes 14px; 16px também evita o zoom do iPhone */
+          font-weight: 400;
+          color: #2C1219;
+          border-radius: 12px;
           outline: none;
           transition: border-color var(--dur-fast) var(--ease-out);
           width: 100%;
@@ -1344,10 +1354,9 @@ export default function Clientes() {
               </button>
             </div>
             <div className="cli-hero-tip">
-              <div className="cli-hero-tip-icon">💡</div>
               <div>
-                <p className="cli-hero-tip-t">Aniversariantes recebem alerta automático</p>
-                <p className="cli-hero-tip-d">Envie parabéns + cupom = venda garantida!</p>
+                <p className="cli-hero-tip-t">🎂 Aniversariantes ganham um lembrete</p>
+                <p className="cli-hero-tip-d">Mande os parabéns com um cupom e venda mais.</p>
               </div>
             </div>
           </div>
@@ -1490,11 +1499,12 @@ export default function Clientes() {
               background: var(--primary-light);
               padding: var(--space-3) var(--space-4);
               border-radius: var(--radius-md);
-              align-items: flex-start;
-              margin-top: var(--space-4);
-              text-align: left;
-              max-width: 480px;
+              align-items: center; justify-content: center;
+              margin: var(--space-4) auto 0;
+              text-align: center;
+              max-width: 420px;
             }
+            .cli-hero-tip p { text-wrap: balance; }
             .cli-hero-tip-icon { font-size: var(--text-xl); line-height: 1; flex-shrink: 0; }
             .cli-hero-tip-t {
               font-size: var(--text-sm); font-weight: var(--fw-black);
@@ -1818,7 +1828,7 @@ export default function Clientes() {
                     <div className="cd-tabela-wrap">
                       <table className="cd-tabela">
                         <thead><tr>
-                          <th>Cliente</th><th className="num">Pedidos</th><th className="num">Total gasto</th><th className="num">Ticket médio</th><th>Última compra</th><th>Aniversário</th><th />
+                          <th>Cliente</th><th>Cliente desde</th><th>Aniversário</th><th />
                         </tr></thead>
                         <tbody>
                           {filtered.map(c => {
@@ -1836,10 +1846,7 @@ export default function Clientes() {
                                     </div>
                                   </div>
                                 </td>
-                                <td className="num">{ped}</td>
-                                <td className="num"><b>{ped > 0 ? formatMoneyFull(c._totalGasto || 0) : "—"}</b></td>
-                                <td className="num cd-mut">{ped > 0 ? formatMoneyFull(c._ticketMedio || 0) : "—"}</td>
-                                <td className="cd-mut">{ped > 0 ? formatUltimaCompra(c._ultimaCompra) : "nunca comprou"}</td>
+                                <td className="cd-mut">{clienteDesde(c.created_at)}</td>
                                 <td className="cd-mut">{niverCurto(c.data_nascimento)}</td>
                                 <td>
                                   <div className="cd-acoes" onClick={e => e.stopPropagation()}>

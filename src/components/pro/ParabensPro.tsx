@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { usePlano } from "@/hooks/usePlano";
@@ -26,10 +27,23 @@ export default function ParabensPro() {
     if (loading || !chave) return;
     let celebrado = true;
     try { celebrado = !!localStorage.getItem(chave); } catch {}
-    if (isPro && !celebrado) setAberto(true);
-    // Voltou pro grátis: na próxima vez que virar PRO, comemora de novo
     if (!isPro && celebrado) { try { localStorage.removeItem(chave); } catch {} }
-  }, [isPro, loading, chave]);
+    if (!isPro || celebrado) return;
+    // 02/10: só abre depois de confirmar no banco que a conta LOGADA é PRO
+    // (numa conta nova, um "PRO" de passagem abria a tela e ela ficava aberta)
+    let vivo = true;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || user.id !== profile?.id) return;
+      const { data } = await supabase.from("profiles").select("plano, pro_expira_em").eq("id", user.id).maybeSingle();
+      const exp = data?.pro_expira_em ? new Date(data.pro_expira_em) : null;
+      const proDeVerdade = data?.plano === "pro" && (!exp || exp > new Date());
+      if (vivo && proDeVerdade) setAberto(true);
+    })().catch(() => {});
+    return () => { vivo = false; };
+  }, [isPro, loading, chave]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Deixou de ser PRO (ou trocou de conta) com a tela aberta: fecha
+  useEffect(() => { if (!isPro) setAberto(false); }, [isPro]);
 
   if (!aberto) return null;
   const fechar = () => { try { localStorage.setItem(chave, new Date().toISOString()); } catch {} setAberto(false); };

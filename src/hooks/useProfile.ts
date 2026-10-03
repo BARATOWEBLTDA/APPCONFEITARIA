@@ -30,6 +30,20 @@ export interface Profile {
 // enquanto o Supabase é consultado em background pra revalidar.
 const PROFILE_CACHE_KEY = "doonly_profile_cache_v1";
 
+/** Id da conta logada, lido da sessão guardada pelo Supabase (sem esperar a rede). */
+function usuarioLogadoNoAparelho(): string | null {
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i) || "";
+      if (/^sb-.*-auth-token$/.test(k)) {
+        const v = JSON.parse(localStorage.getItem(k) || "null");
+        return v?.user?.id || v?.currentSession?.user?.id || null;
+      }
+    }
+  } catch { /* sem acesso ao armazenamento */ }
+  return null;
+}
+
 function loadCachedProfile(): Profile | null {
   if (typeof window === "undefined") return null;
   try {
@@ -37,6 +51,10 @@ function loadCachedProfile(): Profile | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (!parsed || !parsed.id) return null;
+    // 02/10: só usa o perfil guardado se for da conta que está logada neste aparelho
+    // (senão, numa conta nova, aparecia por um instante o perfil da conta anterior — e o "Parabéns, PRO")
+    const logado = usuarioLogadoNoAparelho();
+    if (logado && parsed.id !== logado) { localStorage.removeItem(PROFILE_CACHE_KEY); return null; }
 
     // Invalida cache se detectar PRO com data expirada.
     // Motivo: user pode ter perdido o PRO (expiração) enquanto o app estava fechado.
@@ -84,6 +102,8 @@ function notifyListeners(profile: Profile | null) {
 export async function refreshProfile() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
+  if (globalProfile?.id && globalProfile.id !== user.id) notifyListeners(null); // trocou de conta
+  ligarTempoReal(user.id);
   const { data } = await supabase
     .from("profiles")
     .select("*")
@@ -92,29 +112,35 @@ export async function refreshProfile() {
   if (data) notifyListeners(data);
 }
 
-// Garante que o canal realtime seja criado uma única vez em toda a aplicação
+// Tempo real só do perfil da conta logada (filtro no servidor) — 02/10
+let canalUid: string | null = null;
+let canal: any = null;
+function ligarTempoReal(uid: string) {
+  if (canalUid === uid) return;
+  try { if (canal) supabase.removeChannel(canal); } catch { /* ignora */ }
+  canalUid = uid;
+  canal = supabase
+    .channel(`profile-${uid}`)
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles", filter: `id=eq.${uid}` }, (payload) => {
+      const novo = payload.new as Profile;
+      if ((novo as any)?.id !== uid) return;
+      notifyListeners({ ...(globalProfile?.id === uid ? globalProfile : {}), ...novo } as Profile);
+    })
+    .subscribe();
+}
+
+// Garante que os eventos (sair, voltar pro app) sejam ligados uma única vez em toda a aplicação
 function ensureRealtimeChannel() {
   if (channelStarted) return;
   channelStarted = true;
-  supabase
-    .channel("profile-changes")
-    .on("postgres_changes", {
-      event: "UPDATE",
-      schema: "public",
-      table: "profiles",
-    }, (payload) => {
-      // Só o perfil de quem está logado (o canal não filtra pela conta)
-      const novo = payload.new as Profile;
-      if (globalProfile?.id && (novo as any)?.id !== globalProfile.id) return;
-      notifyListeners({ ...(globalProfile || {}), ...novo } as Profile);
-    })
-    .subscribe();
 
   // Ao deslogar, limpa cache e reseta o profile global.
   // Sem isso, o próximo login abriria com dados da sessão anterior.
   supabase.auth.onAuthStateChange((event) => {
     if (event === "SIGNED_OUT") {
       notifyListeners(null);
+      try { if (canal) supabase.removeChannel(canal); } catch { /* ignora */ }
+      canal = null; canalUid = null;
     }
   });
 
