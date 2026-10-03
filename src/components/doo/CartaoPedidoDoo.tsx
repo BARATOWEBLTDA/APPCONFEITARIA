@@ -25,6 +25,7 @@ export default function CartaoPedidoDoo({ uid, rascunho, catalogo, estado, numer
   const end = [[dados.endereco.rua, dados.endereco.numero].filter(Boolean).join(", "), dados.endereco.bairro].filter(Boolean).join(" · ");
   const pag = dados.situacaoPag === "total" ? `Pago · ${dados.formaPagamento}`
     : dados.situacaoPag === "parcial" ? `Sinal de ${brl(dados.valorParcial)} · ${dados.formaPagamento}`
+    : dados.situacaoPag === "na_entrega" ? `Paga na ${dados.tipoEntrega === "entrega" ? "entrega" : "retirada"} · ${dados.formaPagamento}`
     : `A receber${dados.dataPrevistaPagamento ? ` até ${new Date(dados.dataPrevistaPagamento + "T12:00:00").toLocaleDateString("pt-BR")}` : ""}`;
 
   const registrar = async () => {

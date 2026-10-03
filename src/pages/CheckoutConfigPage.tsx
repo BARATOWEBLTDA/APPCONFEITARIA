@@ -11,9 +11,7 @@ const PAGAMENTOS = [
   { key: 'dinheiro',           label: 'Dinheiro' },
   { key: 'credito',            label: 'Cartão de Crédito' },
   { key: 'debito',             label: 'Cartão de Débito' },
-  { key: 'link_pagamento',     label: 'Link de Pagamento' },
-  { key: 'mercado_pago',       label: 'Mercado Pago' },
-  { key: 'pagamento_retirada', label: 'Pagamento na Retirada' },
+  // 02/10: só as 4 formas (as mesmas que o cliente vê na finalização). As antigas continuam salvas, mas não aparecem.
 ]
 
 const ENTREGAS = [

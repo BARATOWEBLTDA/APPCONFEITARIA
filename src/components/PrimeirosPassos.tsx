@@ -97,13 +97,11 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
     { feito: estado.endereco, ic: I(MapPin), t: "Endereço da loja", s: "Pra calcular a entrega e mostrar no mapa", abrir: () => setFolha("endereco") },
     { feito: estado.horario, ic: I(Clock), t: "Horário de funcionamento", s: "Aparece como \"Aberto agora\" no cardápio", abrir: () => setFolha("horario") },
     { feito: estado.produto, ic: I(Basket), t: "Cadastrar seu primeiro produto", s: "Com foto e preço, do jeito que o cliente vai ver", abrir: () => navigate("/produtos", { state: { abrirCadastro: true } }) },
-    { feito: estado.compartilhou, ic: I(ShareNetwork), t: "Compartilhar o link do cardápio", s: "No WhatsApp, no Instagram e na bio", abrir: compartilhar },
   ];
   const feitos = passos.filter(p => p.feito).length;
   const atual = passos.findIndex(p => !p.feito);
-  // Compartilhar só libera com o cardápio pronto (02/10): antes dava pra divulgar a loja ainda incompleta
-  const ultimo = passos.length - 1;
-  const compartilharTravado = !passos[ultimo].feito && passos.slice(0, ultimo).some(p => !p.feito);
+  const ultimo = -1; // (o passo "compartilhar" saiu em 02/10)
+  const compartilharTravado = false;
 
   return (
     <div className="pp">
@@ -366,8 +364,8 @@ const CSS = `
   .pp-lnk--cinza { color: #9A8E94; font-weight: 600; }
   .pp--fim { text-align: center; background: linear-gradient(180deg, #FFF1F6, #fff 70%); padding-bottom: 12px; }
   .pp-conf { font-size: 40px; line-height: 1; }
-  .pp-ft { display: block; font-size: 18px; font-weight: 900; margin-top: 6px; }
-  .pp-fs { font-size: 13.5px; color: #6B5D64; margin: 6px 6px 4px; line-height: 1.45; }
+  .pp-ft { display: block; font-size: 18px; font-weight: 900; margin: 6px auto 0; max-width: 260px; line-height: 1.25; text-wrap: balance; }
+  .pp-fs { font-size: 13.5px; color: #6B5D64; margin: 6px auto 4px; max-width: 290px; line-height: 1.45; text-wrap: balance; }
 
   .ppf-ov { position: fixed; inset: 0; z-index: 3500; background: rgba(45,31,38,.5); display: flex; align-items: flex-end; justify-content: center; bottom: var(--teclado, 0px); }
   @media (min-width: 768px) { .ppf-ov { align-items: center; } }

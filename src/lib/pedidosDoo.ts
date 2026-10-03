@@ -6,8 +6,8 @@
 import { supabase } from "@/lib/supabase";
 import { criarPersonalizacoesV1, criarBreakdownV1, SNAPSHOT_VERSION_ATUAL } from "@/lib/pedido-snapshot";
 
-export const FORMAS_PAGAMENTO = ["PIX", "Dinheiro", "Cartão", "Boleto"] as const;
-export type SituacaoPag = "total" | "parcial" | "fiado";
+export const FORMAS_PAGAMENTO = ["PIX", "Dinheiro", "Crédito", "Débito"] as const;
+export type SituacaoPag = "total" | "parcial" | "fiado" | "na_entrega";
 
 export type ItemPedido = {
   produto_id?: string; nome_produto: string; quantidade: number; valor_unitario: number;
@@ -86,7 +86,7 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
   let statusPag = "pago";
   let valorRecebido = total;
   if (d.tipo === "pronta_entrega" && d.tipoEntrega === "retirada") status = "entregue";
-  if (d.situacaoPag === "fiado") { statusPag = "pendente"; valorRecebido = 0; }
+  if (d.situacaoPag === "fiado" || d.situacaoPag === "na_entrega") { statusPag = "pendente"; valorRecebido = 0; }
   else if (d.situacaoPag === "parcial") { statusPag = "parcial"; valorRecebido = d.valorParcial; }
 
   let clienteIdFinal = d.clienteId;
@@ -123,7 +123,8 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
     origem: d.origem || "manual",
     tipo_venda: d.tipo,
     observacoes: d.observacoes,
-    data_prevista_pagamento: d.situacaoPag === "fiado" ? (d.dataPrevistaPagamento || null) : null,
+    data_prevista_pagamento: d.situacaoPag === "fiado" ? (d.dataPrevistaPagamento || null)
+      : d.situacaoPag === "na_entrega" ? (d.tipo === "encomenda" ? d.dataEntrega || null : hojeISO()) : null,
   }).select().single();
   if (error || !novoPedido) return { ok: false, erro: error?.message || "desconhecido" };
 
@@ -224,7 +225,7 @@ export function montarPedido(r: RascunhoPedido, cat: { produtos: ProdutoCat[]; c
     desconto: Math.max(0, Number(r.desconto) || 0),
     acrescimo: 0,
     formaPagamento: (FORMAS_PAGAMENTO as readonly string[]).includes(String(r.forma_pagamento)) ? String(r.forma_pagamento) : "PIX",
-    situacaoPag: r.situacao === "parcial" || r.situacao === "fiado" ? r.situacao : "total",
+    situacaoPag: r.situacao === "parcial" || r.situacao === "fiado" || r.situacao === "na_entrega" ? r.situacao : "total",
     valorParcial: Math.max(0, Number(r.valor_recebido) || 0),
     dataPrevistaPagamento: r.data_prevista_pagamento || "",
     statusPedido: "agendado",

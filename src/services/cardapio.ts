@@ -110,7 +110,8 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     cor_background: cores.cor_background || '#fef2f2',
     cor_nome: cores.cor_nome || '#1f2937',
     banner_gradient: profile.banner_gradient || '',
-    hide_stars: profile.hide_stars || false,
+    // Estrelas de avaliação removidas (02/10): ficavam deslocadas ao lado do selo de verificado
+    hide_stars: true,
     cor_botao: cores.cor_botao || '#ec4899',
     cor_navbar: cores.cor_navbar || cores.cor_borda || '#ec4899',
     cor_sacola: cores.cor_sacola || '#ec4899',

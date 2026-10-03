@@ -54,8 +54,9 @@ export async function lerPassos(uid: string): Promise<EstadoPassos> {
   };
 }
 
+// 02/10: o "compartilhar o link" saiu dos passos — com o cardápio pronto, vai direto pra comemoração
 export const passosCompletos = (e: EstadoPassos | null) =>
-  !!e && e.descricao && e.logo && e.endereco && e.horario && e.produto && e.compartilhou;
+  !!e && e.descricao && e.logo && e.endereco && e.horario && e.produto;
 
 export function marcarCompartilhado(uid: string | null | undefined) {
   if (!uid) return;

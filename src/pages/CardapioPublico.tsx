@@ -229,7 +229,7 @@ function DeskInfoRow({ design, config }: any) {
             {count === 0 ? (
               <>
                 <ShoppingBag size={28} color="#d4d4d4" style={{ marginBottom:'6px' }}/>
-                <p style={{ margin:0, fontWeight:700, fontSize:'13px', color:'var(--text-title)' }}>Sacola vazia</p>
+                <p style={{ margin:0, fontWeight:700, fontSize:'13px', color:'var(--text-title)' }}>Seu pedido está vazio</p>
                 <p style={{ margin:'2px 0 0', fontSize:'11px', color:'var(--text-muted)' }}>Adicione itens do cardápio e monte seu pedido.</p>
               </>
             ) : (
@@ -240,7 +240,7 @@ function DeskInfoRow({ design, config }: any) {
                 <button onClick={() => window.dispatchEvent(new Event('open-cart'))} style={{
                   padding:'8px 20px', borderRadius:'8px', border:'none', background:design.cor_botao||'#E85A8C',
                   color:'#fff', fontSize:'12px', fontWeight:700, cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif',
-                }}>Ver sacola</button>
+                }}>Ver seu pedido</button>
               </>
             )}
           </div>
@@ -358,14 +358,14 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
               <path d="M16 10a4 4 0 0 1-8 0"/>
             </svg>
           </div>
-          <p style={{ margin:0, fontWeight:700, fontSize:'14px', color:'var(--text-title)' }}>Sacola vazia</p>
+          <p style={{ margin:0, fontWeight:700, fontSize:'14px', color:'var(--text-title)' }}>Seu pedido está vazio</p>
           <p style={{ margin:0, fontSize:'12px', color:'var(--text-muted)', textAlign:'center', lineHeight:1.5 }}>Adicione itens do cardápio<br/>e monte seu pedido</p>
         </div>
       ) : (
         <div style={{ padding:'14px 16px' }}>
           {/* Header sacola */}
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'12px' }}>
-            <span style={{ fontWeight:700, fontSize:'14px', color:'var(--text-title)' }}>Sua sacola</span>
+            <span style={{ fontWeight:700, fontSize:'14px', color:'var(--text-title)' }}>Seu pedido</span>
             <button
               onClick={() => window.dispatchEvent(new Event('open-cart'))}
               style={{ background:'none', border:'none', fontSize:'12px', fontWeight:600, color:cor, cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif' }}
@@ -626,6 +626,9 @@ function CardapioContent() {
           tem_cupom: !!config.tem_cupom,
           aceita_agendamento: config.aceita_agendamento !== false,
           prazo_minimo_horas: config.prazo_minimo_horas ?? 24,
+          // Finalizar encomenda (02/10): horário da loja e antecedência de cada produto, pro agendamento
+          horario: (config as any).horario || null,
+          antecedencias: Object.fromEntries((produtos || []).map((p: any) => [p.id, { ant: p.antecedencia || null, pronta: p.pronta_entrega ?? null }])),
         }))
       }
       setLoading(false)

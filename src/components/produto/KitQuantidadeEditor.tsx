@@ -41,7 +41,7 @@ export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }
         <span className="kq-ico" aria-hidden="true">🧺</span>
         <div className="kq-head-t">
           <b>Kit por quantidade <em>NOVO</em></b>
-          <small>{k.ativo && modo === "compacto" ? "Ligado — você monta o kit na próxima tela" : "Docinhos e salgados: o cliente escolhe quantos de cada sabor"}</small>
+          <small>{k.ativo && modo === "compacto" ? "Na próxima tela você escolhe os sabores e os kits." : "O cliente escolhe quantos quer de cada sabor."}</small>
         </div>
         <button type="button" className={`kq-tg${k.ativo ? " on" : ""}`} role="switch" aria-checked={k.ativo}
           aria-label="Ligar kit por quantidade" onClick={() => set({ ativo: !k.ativo })}><i /></button>
@@ -54,23 +54,22 @@ export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }
   // ═══ Tela "Monte seu kit" ═══
   const precisaModelo = !k.modelo && k.sabores.length === 0;
   if (precisaModelo) {
-    const modelos: { id: "docinhos" | "salgados" | "livre"; e: string; t: string; d: string; itens: string[]; bt: string }[] = [
-      { id: "docinhos", e: "🍬", t: "Docinhos", d: "Brigadeiro, beijinho, cajuzinho…", itens: ["Kits de 50 e 100 unidades", "Até 2 sabores", "De 25 em 25 de cada"], bt: "Usar este modelo" },
-      { id: "salgados", e: "🥟", t: "Salgados", d: "Coxinha, risole, bolinha de queijo…", itens: ["Cliente escolhe a quantidade", "De 100 a 4.000, de 50 em 50", "Até 4 sabores, preço do cento"], bt: "Usar este modelo" },
-      { id: "livre", e: "✏️", t: "Do meu jeito", d: "Bombons, cupcakes, mini tortas… você define tudo.", itens: ["Começa em branco"], bt: "Montar do zero" },
+    // 02/10: nomes mais específicos e os desenhos das categorias (sem emoji); toque no cartão escolhe
+    const modelos: { id: "docinhos" | "salgados" | "livre"; img: string; t: string; d: string }[] = [
+      { id: "docinhos", img: "/categoriaicones/icone (1).png", t: "Brigadeiro", d: "Brigadeiro, beijinho e docinhos de festa" },
+      { id: "salgados", img: "/categoriaicones/icone (3).png", t: "Salgadinhos", d: "Coxinha, risole, kibe e outros de festa" },
+      { id: "livre", img: "/categoriaicones/icone (35).png", t: "Personalizado", d: "Você monta do zero, com os seus sabores e quantidades" },
     ];
     return (
       <div className="kq-tela">
-        <h2 className="kq-q">O que você vende nesse kit?</h2>
-        <p className="kq-qs">Escolha um modelo pronto — dá pra mudar tudo depois.</p>
+        <h2 className="kq-q">O que vai nesse kit?</h2>
+        <p className="kq-qs">Escolha o mais parecido. A gente já sugere os sabores e os tamanhos de kit.</p>
         <div className="kq-modelos">
           {modelos.map(m => (
-            <div key={m.id} className={`kq-mod${m.id === "livre" ? " kq-mod--cm" : ""}`}>
-              <div className="kq-mod-e" aria-hidden="true">{m.e}</div>
-              <b>{m.t}</b><p>{m.d}</p>
-              <ul>{m.itens.map(i => <li key={i}>{i}</li>)}</ul>
-              <button type="button" onClick={() => onChange(presetKit(m.id, k))}>{m.bt}</button>
-            </div>
+            <button type="button" key={m.id} className={`kq-mod${m.id === "livre" ? " kq-mod--wide" : ""}`} onClick={() => onChange(presetKit(m.id, k))}>
+              <span className="kq-mod-e" aria-hidden="true"><img src={m.img} alt="" /></span>
+              <b>{m.t}</b><small>{m.d}</small>
+            </button>
           ))}
         </div>
         <style>{CSS}</style>
@@ -78,7 +77,9 @@ export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }
     );
   }
 
-  const nomeModelo = k.modelo === "docinhos" ? "🍬 Docinhos" : k.modelo === "salgados" ? "🥟 Salgados" : "✏️ Do meu jeito";
+  const modeloInfo = k.modelo === "docinhos" ? { t: "Brigadeiro", img: "/categoriaicones/icone (1).png" }
+    : k.modelo === "salgados" ? { t: "Salgadinhos", img: "/categoriaicones/icone (3).png" }
+    : { t: "Personalizado", img: "/categoriaicones/icone (35).png" };
   const sabores = k.sabores.filter(s => s.nome.trim());
   const okSabores = sabores.length > 0;
   const okPreco = k.modo === "fechado" ? kitsValidos(k).length > 0 : k.livre.preco_cento > 0 && k.livre.min > 0 && k.livre.passo > 0 && k.livre.max >= k.livre.min;
@@ -90,20 +91,15 @@ export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }
 
   return (
     <div className="kq-tela">
-      <div className="kq-modelo-on">Modelo: <b>{nomeModelo}</b>
-        {k.sabores.length === 0 && <button type="button" className="kq-trocar" onClick={() => set({ modelo: undefined })}>Trocar modelo</button>}
-      </div>
-      <div className="kq-chk">
-        <span className={okSabores ? "ok" : ""}>{okSabores ? "✓" : "•"} Sabores</span>
-        <span className={okPreco ? "ok" : ""}>{okPreco ? "✓" : "•"} {k.modo === "fechado" ? "Preço dos kits" : "Quantidade e preço"}</span>
-        <span className={okRegras ? "ok" : ""}>{okRegras ? "✓" : "•"} Regras</span>
+      <div className="kq-modelo-on"><span>Modelo</span><b><img src={modeloInfo.img} alt="" />{modeloInfo.t}</b>
+        {k.sabores.length === 0 && <button type="button" className="kq-trocar" onClick={() => set({ modelo: undefined })}>Trocar</button>}
       </div>
 
       <div className="kq-grid2">
         <div>
           {/* 1 · Sabores */}
           <section className="kq-st">
-            <div className="kq-sth"><span className={`kq-n${okSabores ? " ok" : ""}`}>1</span><div><b>Quais sabores entram no kit?</b><small>Digite e aperte Enter</small></div></div>
+            <div className="kq-sth"><span className={`kq-n${okSabores ? " ok" : ""}`}>1</span><div><b>Quais sabores entram no kit?</b></div></div>
             {sabores.length > 0 && (
               <div className="kq-chips">
                 {k.sabores.map(s => s.nome.trim() && (
@@ -114,12 +110,15 @@ export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }
               </div>
             )}
             <div className="kq-addrow">
-              <input placeholder={k.modelo === "salgados" ? "Ex: Coxinha, Kibe…" : "Ex: Ninho, Paçoca…"} value={novoSabor}
+              <input placeholder={k.modelo === "salgados" ? "Ex: Coxinha de frango" : "Ex: Brigadeiro de Ninho"} value={novoSabor}
                 onChange={e => setNovoSabor(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addSabor(novoSabor); } }} />
-              <button type="button" onClick={() => addSabor(novoSabor)} disabled={!novoSabor.trim()}>+ Adicionar</button>
+              <button type="button" onClick={() => addSabor(novoSabor)} disabled={!novoSabor.trim()}>Adicionar</button>
             </div>
             {sugestoes.length > 0 && (
-              <p className="kq-sug">Sugestões: {sugestoes.slice(0, 6).map(n => <button type="button" key={n} onClick={() => addSabor(n)}>+ {n}</button>)}</p>
+              <>
+                <p className="kq-sug-l">Sugestões</p>
+                <div className="kq-sug">{sugestoes.slice(0, 8).map(n => <button type="button" key={n} onClick={() => addSabor(n)}>+ {n}</button>)}</div>
+              </>
             )}
           </section>
 
@@ -129,17 +128,17 @@ export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }
             <div className="kq-opts" role="radiogroup">
               <button type="button" role="radio" aria-checked={k.modo === "fechado"} className={`kq-op${k.modo === "fechado" ? " on" : ""}`}
                 onClick={() => set({ modo: "fechado", kits: k.kits.length ? k.kits : [{ id: novoId(), qtd: 50, preco: 0 }, { id: novoId(), qtd: 100, preco: 0 }] })}>
-                <b><i />Pacotes prontos</b><small>Kit de 50, kit de 100… cada um com seu preço</small></button>
+                <b><i />Pacotes prontos</b><small>Kit de 50, de 100… cada um com seu preço</small></button>
               <button type="button" role="radio" aria-checked={k.modo === "livre"} className={`kq-op${k.modo === "livre" ? " on" : ""}`} onClick={() => set({ modo: "livre" })}>
-                <b><i />Ele escolhe a quantidade</b><small>Atacado: mínimo, de quanto em quanto e preço do cento</small></button>
+                <b><i />Ele escolhe a quantidade</b><small>Mínimo, de quanto em quanto e preço do cento</small></button>
             </div>
             {k.modo === "fechado" ? (
               <>
                 {k.kits.map(x => (
-                  <div className="kq-frase" key={x.id}>
-                    Kit de <input className="kq-box" inputMode="numeric" value={x.qtd || ""} placeholder="50" aria-label="Unidades do kit"
+                  <div className="kq-frase kq-frase--kit" key={x.id}>
+                    <span className="kq-t">Kit de</span><input className="kq-box kq-box--qtd" inputMode="numeric" value={x.qtd || ""} placeholder="50" aria-label="Unidades do kit"
                       onChange={e => set({ kits: k.kits.map(y => y.id === x.id ? { ...y, qtd: Math.round(num(e.target.value)) } : y) })} />
-                    unidades por
+                    <span className="kq-t">un. por</span>
                     <span className={`kq-box kq-box--rs${x.preco > 0 ? " ok" : " falta"}`}>R$ <input inputMode="decimal" defaultValue={moeda(x.preco)} placeholder="0,00" aria-label="Preço do kit"
                       onChange={e => set({ kits: k.kits.map(y => y.id === x.id ? { ...y, preco: num(e.target.value) } : y) })} /></span>
                     <button type="button" className="kq-x" onClick={() => set({ kits: k.kits.filter(y => y.id !== x.id) })} aria-label="Remover kit">✕</button>
@@ -171,19 +170,6 @@ export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }
           </section>
         </div>
 
-        {/* Prévia */}
-        <aside className="kq-prev">
-          <h4>Assim o cliente vê</h4>
-          <div className="kq-ph">
-            <b className="kq-ph-t">{nomeProduto || "Seu produto"}</b>
-            {erroKit(k) && !(okSabores && okPreco) ? (
-              <p className="kq-ph-vazio">Preencha os sabores e o preço pra ver a prévia.</p>
-            ) : (
-              <KitPicker kit={k} sel={sel} onChange={setSel} />
-            )}
-          </div>
-          <p>A prévia muda na hora conforme você preenche — pode até testar o −/+.</p>
-        </aside>
       </div>
       <style>{CSS}</style>
     </div>
@@ -204,15 +190,21 @@ const CSS = `
   .kq-tg.on { background: #E85A8C; } .kq-tg.on i { left: 20px; }
 
   .kq-tela { font-family: var(--font-base); color: #2C1219; padding-bottom: 8px; }
-  .kq-q { font-size: 21px; font-weight: 900; text-align: center; margin: 14px 0 4px; color: #4B5563; }
-  .kq-qs { text-align: center; font-size: 13.5px; color: #6B5D64; margin: 0 0 16px; }
-  .kq-modelos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  .kq-mod { border: 1.5px solid #EAE3E6; border-radius: 16px; padding: 16px; background: #fff; display: flex; flex-direction: column; }
-  .kq-mod-e { font-size: 30px; } .kq-mod b { font-size: 16px; margin: 6px 0 3px; } .kq-mod p { font-size: 12.5px; color: #6B5D64; line-height: 1.45; margin: 0; }
+  .kq-q { font-size: 22px; font-weight: 900; text-align: left; margin: 18px 0 4px; color: #2C1219; letter-spacing: -.02em; text-wrap: balance; }
+  .kq-qs { text-align: left; font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 0 0 16px; text-wrap: balance; }
+  .kq-modelos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .kq-mod { border: 1.5px solid #EDE6E9; border-radius: 16px; padding: 16px 12px; background: #fff; display: flex; flex-direction: column; align-items: center; text-align: center; font-family: inherit; color: #2C1219; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+  .kq-mod:hover { border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
+  .kq-mod-e { width: 52px; height: 52px; border-radius: 15px; background: #FFF1F6; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+  .kq-mod-e img { width: 36px; height: 36px; object-fit: contain; }
+  .kq-mod b { font-size: 15px; font-weight: 800; } .kq-mod small { font-size: 12px; color: #888780; line-height: 1.35; margin-top: 3px; text-wrap: balance; }
+  .kq-mod--wide { grid-column: 1 / -1; display: grid; grid-template-columns: 52px 1fr; column-gap: 12px; text-align: left; align-items: center; }
+  .kq-mod--wide .kq-mod-e { grid-row: span 2; margin: 0; } .kq-mod--wide small { margin-top: 0; }
   .kq-mod ul { list-style: none; margin: 10px 0 0; padding: 0; flex: 1; } .kq-mod li { font-size: 12px; color: #4B3A42; padding: 3px 0; } .kq-mod li::before { content: "✓ "; color: #16a34a; font-weight: 800; }
   .kq-mod button { margin-top: 12px; height: 40px; border: none; border-radius: 10px; background: #2C1219; color: #fff; font-family: inherit; font-weight: 800; font-size: 13px; cursor: pointer; }
   .kq-mod--cm button { background: #F5F0F2; color: #2C1219; }
-  .kq-modelo-on { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #6B5D64; margin-top: 4px; } .kq-modelo-on b { color: #2C1219; }
+  .kq-modelo-on { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #888780; margin-top: 18px; padding: 10px 12px; background: #FAF7F8; border-radius: 12px; }
+  .kq-modelo-on b { display: inline-flex; align-items: center; gap: 5px; color: #2C1219; font-weight: 800; } .kq-modelo-on b img { width: 20px; height: 20px; object-fit: contain; }
   .kq-trocar { margin-left: auto; border: none; background: none; color: #C33A6E; font-family: inherit; font-weight: 800; font-size: 13px; cursor: pointer; }
   .kq-chk { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 4px; }
   .kq-chk span { font-size: 12px; font-weight: 800; padding: 5px 10px; border-radius: 999px; background: #FFF7ED; color: #B45309; } .kq-chk span.ok { background: #F0FDF4; color: #15803D; }
@@ -231,10 +223,13 @@ const CSS = `
   .kq-chip { display: inline-flex; align-items: center; gap: 6px; padding: 7px 8px 7px 12px; border-radius: 999px; background: #FCE7F3; color: #9D174D; font-weight: 800; font-size: 13px; }
   .kq-chip button { border: none; background: none; color: #C4789C; font-size: 11px; cursor: pointer; padding: 0 2px; }
   .kq-addrow { display: flex; gap: 8px; margin-top: 10px; }
-  .kq-addrow input { flex: 1; min-width: 0; border: 1px solid #EAE3E6; border-radius: 10px; padding: 10px 12px; font-family: inherit; font-size: 14px; color: #2C1219; }
+  .kq-addrow input { flex: 1; min-width: 0; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 11px 12px; font-family: inherit; font-size: 16px; color: #2C1219; }
+  .kq-addrow input:focus { outline: none; border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
   .kq-addrow button { border: none; border-radius: 10px; background: #2C1219; color: #fff; font-family: inherit; font-weight: 800; font-size: 13px; padding: 0 14px; cursor: pointer; white-space: nowrap; } .kq-addrow button:disabled { opacity: .35; cursor: default; }
-  .kq-sug { font-size: 12px; color: #888780; margin: 8px 0 0; line-height: 2; }
-  .kq-sug button { margin: 0 4px 0 0; padding: 3px 10px; border: 1px dashed #D6CBD0; border-radius: 999px; background: none; color: #6B5D64; font-family: inherit; font-weight: 700; font-size: 12px; cursor: pointer; }
+  .kq-sug-l { margin: 12px 0 6px; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #9A8E94; }
+  .kq-sug { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px; }
+  .kq-sug::-webkit-scrollbar { display: none; }
+  .kq-sug button { flex-shrink: 0; white-space: nowrap; padding: 6px 11px; border: 1.5px dashed #F3C9DA; border-radius: 999px; background: none; color: #C33A6E; font-family: inherit; font-weight: 700; font-size: 12.5px; cursor: pointer; }
   .kq-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
   .kq-op { border: 1.5px solid #EAE3E6; border-radius: 14px; padding: 11px; background: #fff; text-align: left; font-family: inherit; cursor: pointer; color: #2C1219; }
   .kq-op.on { border-color: #2C1219; background: #FAF7F8; }
@@ -256,5 +251,11 @@ const CSS = `
   .kq-ph { background: #fff; border-radius: 20px; box-shadow: 0 0 0 6px #1b1b1d, 0 12px 26px rgba(0,0,0,.16); padding: 14px 12px; margin: 6px; }
   .kq-ph-t { display: block; font-size: 15px; font-weight: 900; margin-bottom: 8px; }
   .kq-ph-vazio { font-size: 12.5px; color: #888780; margin: 6px 0; line-height: 1.45; }
-  @media (max-width: 767px) { .kq-modelos { grid-template-columns: 1fr; } .kq-opts { grid-template-columns: 1fr; } .kq-q { font-size: 19px; } }
+  /* Kit pronto numa linha: "Kit de [50] un. por [R$ 90,00] ×" */
+  .kq-frase--kit { flex-wrap: nowrap; gap: 6px; }
+  .kq-frase--kit .kq-t { white-space: nowrap; font-size: 14px; }
+  .kq-box--qtd { width: 54px; padding: 7px 4px; flex-shrink: 0; }
+  .kq-frase--kit .kq-box--rs { flex: 1; min-width: 0; max-width: 130px; }
+  .kq-frase--kit .kq-box--rs input { width: 100%; min-width: 0; }
+  @media (max-width: 767px) { .kq-opts { grid-template-columns: 1fr; } }
 `;

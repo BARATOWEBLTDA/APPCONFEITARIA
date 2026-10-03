@@ -4,7 +4,7 @@ import { LIMITE_PRODUTOS_GRATIS } from "@/lib/limitesPlano";
 import CampoNumero from "@/components/ui/CampoNumero";
 import { useLocation, useNavigate } from "react-router-dom";
 import KitQuantidadeEditor from "@/components/produto/KitQuantidadeEditor";
-import { kitAtivo, erroKit, precoMinKit, presetKit, type KitQtdConfig } from "@/lib/kitQuantidade";
+import { kitAtivo, erroKit, precoMinKit, presetKit, kitsValidos, type KitQtdConfig } from "@/lib/kitQuantidade";
 import TipoProdutoTela, { type TipoProduto as TipoCadastro } from "@/components/produto/TipoProdutoTela";
 import SucessoProdutoTela from "@/components/produto/SucessoProdutoTela";
 import { precoCardapio } from "@/lib/precoCardapio";
@@ -1103,6 +1103,7 @@ function PersonalizacaoStep({
       "tamanho": "",
       "caixa": "caixa",
       "kit-festa": "kit",
+      "kit": "kit",
       "sob-encomenda": "",
       "outros": "",
     };
@@ -3375,6 +3376,7 @@ const FORMAS_VENDA = [
   { value: "cento", label: "Por Cento" },
   { value: "tamanho", label: "Por Tamanho (P/M/G)" },
   { value: "caixa", label: "Por Caixa" },
+  { value: "kit", label: "Por Kit" },
   { value: "kit-festa", label: "Kit Festa" },
   { value: "outros", label: "Outros" },
 ];
@@ -3812,12 +3814,12 @@ export default function Produtos() {
       ...(!((f as any).kit_qtd?.sabores?.length) ? { kit_qtd: null } : {}),
       ...(cat ? { categoria: cat } : {}),
       ...(tp === "bolos" ? { forma_venda: "unidade" } : {}),
-      ...(tp === "doces" ? { kit_qtd: presetKit("docinhos") } : {}),
+      ...(tp === "doces" ? { kit_qtd: presetKit("docinhos"), forma_venda: "kit" } : {}),
       // Kit festa: tamanhos do combo (20, 40, 60 pessoas…) com preço fixo cada
       ...(tp === "kitfesta" ? {
         grupo_tamanhos: { ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO), ativo: true, min: 1, max: 1, modo_preco_tamanho: "preco_fixo", nome_exibicao: "Tamanhos do combo" },
       } : {}),
-      ...(tp === "salgados" ? { kit_qtd: presetKit("salgados") } : {}),
+      ...(tp === "salgados" ? { kit_qtd: presetKit("salgados"), forma_venda: "kit" } : {}),
     } as any));
     setKitTela(false); setBoloPrecoTela(false); setTipoCadastro(tp); setTipoTela(false); setWizardStep(2);
     // Conta sem uma categoria desse tipo (02/10): cria sozinha e já seleciona. Antes, numa conta nova,
@@ -3850,7 +3852,7 @@ export default function Produtos() {
       ...(ligando ? {
         grupo_tamanhos: { ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO), ativo: false },
         grupo_sabores: { ...(f.grupo_sabores || GRUPO_SABORES_VAZIO), ativo: false },
-        forma_venda: "unidade",
+        forma_venda: "kit",
       } : {}),
       ...(k.ativo && precoMinKit(k) > 0 ? { preco_normal: precoMinKit(k) } : {}),
     } as any;
@@ -5465,14 +5467,48 @@ export default function Produtos() {
                 <div className="prod-step-header">
                   <div className="prod-step-title">Preço e venda</div>
                   <div className="prod-step-sub">
-                    Define quanto seu produto vai custar. Preço cheio, promoção, extras. Simples e direto.
+                    {kitAtivo((form as any).kit_qtd)
+                      ? "Confira o preço de cada kit e, se quiser, coloque em promoção."
+                      : "Define quanto seu produto vai custar. Preço cheio, promoção, extras. Simples e direto."}
                   </div>
                 </div>
               )}
 
               {/* ══════ SEÇÃO 1: Preço base + Forma de venda ══════ */}
               {/* Aparece quando: (a) não tem tamanho, OU (b) modo é por_peso (precisa do R$/kg) */}
-              {((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco" && !isBoloEdit)) && (
+              {/* Kit (02/10): sem "preço base" — o preço vem dos kits montados. Fica só a promoção. */}
+              {((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco" && !isBoloEdit)) && kitAtivo((form as any).kit_qtd) && (() => {
+                const kq: any = (form as any).kit_qtd;
+                const kits = kitsValidos(kq);
+                const pct = Number(form.desconto_percentual) || 0;
+                const promoOn = !!form.promocao && form.tipo_promocao === "percentual";
+                return (
+                  <div className="prod-section">
+                    <p className="prod-section-label prod-section-label--novo">Preço do kit</p>
+                    <div className="kitp-row"><span>Vendido por</span><b className="kitp-tag">Kit</b></div>
+                    {kq?.modo === "livre" ? (
+                      <div className="kitp-row"><span>Cento ({kq.livre?.min || 0} a {kq.livre?.max || 0} un.)</span><b>R$ {formatPreco(kq.livre?.preco_cento || 0)}</b></div>
+                    ) : kits.map((x: any) => (
+                      <div className="kitp-row" key={x.id}><span>Kit de {x.qtd} un.</span><b>R$ {formatPreco(x.preco)}{promoOn && pct > 0 && <em> → R$ {formatPreco(x.preco * (1 - pct / 100))}</em>}</b></div>
+                    ))}
+                    <p className="kitp-dica">Pra mudar um preço, volte em "Monte seu kit".</p>
+                    <div style={{ marginTop: 12 }}>
+                      <Toggle label="Colocar em promoção" value={promoOn} colorClass="active-pink"
+                        onChange={(v: boolean) => setForm(f => ({ ...f, promocao: v, tipo_promocao: "percentual", desconto_percentual: v ? (f.desconto_percentual || 10) : 0, preco_promocional: 0 }))} />
+                      {promoOn && (
+                        <div className="kitp-pct">
+                          <span>Desconto de</span>
+                          <input inputMode="numeric" value={pct || ""} placeholder="10" aria-label="Desconto em porcentagem"
+                            onChange={e => { const n = Math.min(90, Math.max(0, parseInt(e.target.value.replace(/\D/g, "")) || 0)); setForm(f => ({ ...f, desconto_percentual: n })); }} />
+                          <span>% em todos os kits</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco" && !isBoloEdit)) && !kitAtivo((form as any).kit_qtd) && (
                 !(form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0) ||
                 form.grupo_tamanhos?.modo_preco_tamanho === "por_peso"
               ) && (
@@ -12464,7 +12500,16 @@ export default function Produtos() {
         .doonly-toast-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 0 #C33A6E; }
         .doonly-toast-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #C33A6E; }
 
-      `}</style>
+      
+        /* Preço do kit (02/10) */
+        .kitp-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #F5F0F2; font-size: 14px; }
+        .kitp-row span { color: #6B5D64; } .kitp-row b { font-weight: 800; color: #2C1219; text-align: right; }
+        .kitp-row em { font-style: normal; color: #16A34A; }
+        .kitp-tag { background: #FCE0E9; color: #993556 !important; padding: 3px 10px; border-radius: 7px; font-size: 12.5px; }
+        .kitp-dica { font-size: 12px; color: #9A8E94; margin: 8px 0 0; }
+        .kitp-pct { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 14px; color: #4B3A42; }
+        .kitp-pct input { width: 64px; border: 1.5px solid #EDE6E9; border-radius: 10px; padding: 8px; font-family: inherit; font-size: 16px; font-weight: 800; text-align: center; color: #2C1219; }
+`}</style>
 
       {/* ═══ Barra flutuante de ações em massa (Desktop) ═══ */}
       <div className={`bulk-bar ${selectedIds.size > 0 ? "bulk-bar--visible" : ""}`}>

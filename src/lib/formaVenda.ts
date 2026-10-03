@@ -6,18 +6,18 @@
 const SUFIXO: Record<string, string> = {
   unidade: "un", tamanho: "un", outros: "un",
   fatia: "fatia", kg: "kg", cento: "cento",
-  caixa: "caixa", "kit-caixa": "caixa", "kit-festa": "kit",
+  caixa: "caixa", "kit-caixa": "caixa", "kit-festa": "kit", kit: "kit",
 };
 const ETIQUETA: Record<string, string> = {
   unidade: "Unidade", tamanho: "Unidade", outros: "Unidade",
   fatia: "Fatia", kg: "KG", cento: "Cento",
-  caixa: "Caixa", "kit-caixa": "Caixa", "kit-festa": "Kit festa",
+  caixa: "Caixa", "kit-caixa": "Caixa", "kit-festa": "Kit festa", kit: "Kit",
   "sob-encomenda": "Encomenda", "tamanho-p": "P", "tamanho-m": "M", "tamanho-g": "G", "tamanho-xg": "XG",
 };
 const CURTA: Record<string, string> = {
   unidade: "UN", tamanho: "UN", outros: "UN",
   fatia: "FATIA", kg: "KG", cento: "100",
-  caixa: "CAIXA", "kit-caixa": "CAIXA", "kit-festa": "KIT",
+  caixa: "CAIXA", "kit-caixa": "CAIXA", "kit-festa": "KIT", kit: "KIT",
   "sob-encomenda": "Enc", "tamanho-p": "P", "tamanho-m": "M", "tamanho-g": "G", "tamanho-xg": "XG",
 };
 

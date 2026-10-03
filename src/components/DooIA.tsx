@@ -306,8 +306,8 @@ Etapas (pergunte SÓ o que falta, de forma curta, juntando no máximo 2 pergunta
    - NUNCA invente preço: o app usa o preço do cardápio.
 2. CLIENTE: o nome. Se existir na lista, use o id. Se houver mais de uma com nome parecido, pergunte qual. Se for nova, use só nome (e telefone, se ela disser). Pode ser venda sem cliente se ela disser.
 3. ENTREGA: retirada ou entrega? Encomenda PRECISA de data (e horário, se ela souber). Datas como "sábado" e "amanhã" você converte pra AAAA-MM-DD a partir de hoje. Se for ENTREGA, precisa do endereço (rua e número; bairro e cidade se souber) e da taxa de entrega se ela disser (senão 0).
-4. PAGAMENTO: forma (PIX, Dinheiro, Cartão ou Boleto) e situação:
-   - "total" = já pagou tudo; "parcial" = deu um sinal (precisa do VALOR RECEBIDO); "fiado" = vai pagar depois (data prevista, se souber).
+4. PAGAMENTO: forma (PIX, Dinheiro, Crédito ou Débito) e situação:
+   - "total" = já pagou tudo; "parcial" = deu um sinal (precisa do VALOR RECEBIDO); "na_entrega" = paga quando buscar ou receber o pedido; "fiado" = vai pagar depois, em outra data (data prevista, se souber).
    - Desconto só se ela falar.
 5. REVISAR: quando tiver tudo, responda com UMA frase curta (ex.: "Confira o pedido e toque em Registrar.") e, no FINAL, este bloco:
 \`\`\`acao-doonly

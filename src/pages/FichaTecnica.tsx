@@ -1169,13 +1169,13 @@ export default function FichaTecnica() {
   /* LIST VIEW */
   return (
     <>
-    <div className="ft-so-desk"><AppPageHeader title="Precificação" subtitle={`Você já precificou ${totalComFicha} de ${produtos.length} produto${produtos.length !== 1 ? "s" : ""}`} /></div>
+    <div className="ft-so-desk"><AppPageHeader title="Ficha técnica" subtitle="O custo e o preço de venda de cada produto" /></div>
     <div className="ft-root">
       <div className="ft-list-header">
         <div className="ft-list-header-inner">
-          <h1 className="ft-list-title">Precificação Inteligente</h1>
+          <h1 className="ft-list-title">Ficha técnica</h1>
           <p className="ft-list-sub">
-            Você já precificou {totalComFicha} de {produtos.length} produto{produtos.length !== 1 ? "s" : ""}. Continue para conhecer os custos e lucros de todo o seu catálogo.
+            O custo e o preço de venda de cada produto: veja quanto custa fazer e quanto você lucra.
           </p>
         </div>
       </div>
@@ -1187,14 +1187,7 @@ export default function FichaTecnica() {
         </div>
       </div>
 
-      {produtos.length > 0 && (
-        <div className="ft-progress-wrap">
-          <div className="ft-progress-bar">
-            <div className="ft-progress-fill" style={{ width: `${produtos.length > 0 ? (totalComFicha / produtos.length) * 100 : 0}%` }} />
-          </div>
-          <span className="ft-progress-label">{totalComFicha}/{produtos.length} precificados</span>
-        </div>
-      )}
+      {/* (a barra "0/1 precificados" saiu em 02/10) */}
 
       {filtrados.length === 0 ? (
         <EmptyDoo

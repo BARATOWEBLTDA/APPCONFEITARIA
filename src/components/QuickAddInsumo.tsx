@@ -138,6 +138,7 @@ function detectarInconsistencia(nome: string, unidade: string): string | null {
 export default function QuickAddInsumo({ userId, initialName, editing, onSaved, onCancel, onDelete }: Props) {
   const isEditing = !!editing;
 
+  const [faltaValor, setFaltaValor] = useState(false);
   const [form, setForm] = useState<Form>(() => {
     if (editing) {
       return {
@@ -237,7 +238,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
     if (!userId || !form.nome.trim()) { alert("Informe o nome do insumo"); return; }
     const valor = parseNumBR(form.valor_compra);
     const qtdEmb = parseNumBR(form.qtd_embalagem) || 1;
-    if (valor <= 0) { alert("Informe quanto pagou"); return; }
+    if (valor <= 0) { setFaltaValor(true); return; } // aviso embaixo do campo (antes era um alerta)
     if (qtdEmb <= 0) { alert("Informe quanto veio na embalagem"); return; }
     const custoUnit = valor / qtdEmb;
 
@@ -477,17 +478,18 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           </div>
         </div>
         <div className="qai-field">
-          <label>Quanto pagou <ReqTag /></label>
-          <div className="qai-input-prefix">
+          <label>Quanto pagou</label>
+          <div className="qai-input-prefix" style={faltaValor ? { borderColor: "#EF4444", boxShadow: "0 0 0 3px rgba(239,68,68,.12)" } : undefined}>
             <span>R$</span>
             <input
               type="text"
               inputMode="decimal"
               placeholder="0,00"
               value={form.valor_compra}
-              onChange={e => setForm(f => ({ ...f, valor_compra: e.target.value }))}
+              onChange={e => { setForm(f => ({ ...f, valor_compra: e.target.value })); setFaltaValor(false); }}
             />
           </div>
+          {faltaValor && <p style={{ margin: "6px 0 0", fontSize: 12.5, fontWeight: 800, color: "#DC2626" }}>Informe quanto você pagou</p>}
         </div>
       </div>
 

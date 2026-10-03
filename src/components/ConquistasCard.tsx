@@ -85,7 +85,7 @@ export default function ConquistasCard() {
 }
 
 export const CSS_CONQ = `
-  .cqc { margin: 16px 0 0; border-radius: 16px; padding: 14px; background: linear-gradient(150deg, #3B1620 0%, #5A1F36 55%, #7A2A4A 100%); position: relative; box-shadow: 0 10px 24px rgba(59,22,32,.28); font-family: var(--font-base); }
+  .cqc { margin: 0; border-radius: 16px; padding: 14px; background: linear-gradient(150deg, #3B1620 0%, #5A1F36 55%, #7A2A4A 100%); position: relative; font-family: var(--font-base); } /* sem a sombra (02/10): ela invadia o cartão de Notícias */
   .cqc::before { content: ""; position: absolute; inset: 0; border-radius: 16px; padding: 1.5px; background: linear-gradient(120deg, #F9A8D4, #C4B5FD, #93C5FD, #F9A8D4); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; opacity: .75; pointer-events: none; }
   .cqc-h { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 800; color: #fff; }
   .cqc-h button { border: none; background: none; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #F9A8D4; cursor: pointer; padding: 2px; }

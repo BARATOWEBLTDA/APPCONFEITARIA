@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
+import { CalendarioSheet, HorariosSheet } from '@/components/cardapio/AgendaSheets'
+import { antecedenciaHoras, calcularRegras, primeiraData, rotuloData } from '@/lib/agendaCardapio'
 import { supabase } from '@/lib/supabase'
 import { ShoppingBag, X, MessageCircle, Trash2, Home, Tag, ClipboardList, User, ChevronRight, Minus, Plus, MapPin } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
@@ -22,6 +24,9 @@ interface CheckoutConfig {
   tem_cupom?: boolean
   aceita_agendamento: boolean
   prazo_minimo_horas: number
+  /** Finalizar encomenda (02/10) */
+  horario?: any
+  antecedencias?: Record<string, { ant?: string | null; pronta?: boolean | null }>
 }
 
 const DEFAULT_CONFIG: CheckoutConfig = {
@@ -117,6 +122,44 @@ function CartContent({
   const [cepLoading, setCepLoading] = useState(false)
   const [pedidoConfirmado, setPedidoConfirmado] = useState<{numero: number; itens: any[]; whatsapp: string; storeName: string} | null>(null)
   const [cepErro, setCepErro] = useState('')
+
+  // ═══ Finalizar encomenda (02/10): tudo numa tela só ═══
+  const [feErro, setFeErro] = useState<'' | 'agenda' | 'endereco' | 'pagamento' | 'dados'>('')
+  const [calAberto, setCalAberto] = useState(false)
+  const [horaAberta, setHoraAberta] = useState(false)
+  const refAgenda = useRef<HTMLDivElement>(null), refEndereco = useRef<HTMLDivElement>(null)
+  const refPagamento = useRef<HTMLDivElement>(null), refDados = useRef<HTMLDivElement>(null)
+  const opsEntrega = useMemo(() => {
+    const f: string[] = config.formas_entrega || ['retirada']
+    return { ret: f.includes('retirada'), ent: ['entrega_propria', 'motoboy', 'uber_flash', 'combinar'].find(k => f.includes(k)) || '' }
+  }, [config.formas_entrega])
+  const metodosPag = useMemo(() => {
+    const m = (config.formas_pagamento || []).filter((k: string) => ['pix', 'dinheiro', 'credito', 'debito'].includes(k))
+    return m.length ? m : ['pix']
+  }, [config.formas_pagamento])
+  const horasAnt = useMemo(() => antecedenciaHoras(items.map((i: any) => i.id), config.antecedencias, config.prazo_minimo_horas, config.aceita_agendamento !== false),
+    [items, config.antecedencias, config.prazo_minimo_horas, config.aceita_agendamento])
+  const regras = useMemo(() => calcularRegras(new Date(), config.horario, horasAnt), [config.horario, horasAnt, step])
+  const primeiraDisp = useMemo(() => primeiraData(config.horario, regras.minimo), [config.horario, regras])
+  const ehEntrega = !!formaEntrega && formaEntrega !== 'retirada'
+  useEffect(() => {
+    if (step !== 'finalizar') return
+    if (!formaEntrega) setFormaEntrega(opsEntrega.ret ? 'retirada' : (opsEntrega.ent || 'retirada'))
+    // Pronta entrega com a loja aberta: já vem marcado hoje, no próximo horário (ela pode trocar)
+    if (!dataEntrega && regras.sugestao) { setDataEntrega(regras.sugestao.data); setHoraEntrega(regras.sugestao.hora) }
+    if (!formaPagamento && metodosPag.length === 1) setFormaPagamento(metodosPag[0])
+  }, [step]) // eslint-disable-line react-hooks/exhaustive-deps
+  const irPara = (r: any) => setTimeout(() => r.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50)
+  const enviarFinalizar = () => {
+    let falta: typeof feErro = ''
+    if (!dataEntrega || !horaEntrega) falta = 'agenda'
+    else if (ehEntrega && formaEntrega !== 'combinar' && (!rua.trim() || !numero.trim() || (config.entrega_por_bairro.length > 0 && !bairroSelecionado))) falta = 'endereco'
+    else if (!formaPagamento) falta = 'pagamento'
+    else if (!nome.trim() || telefone.replace(/\D/g, '').length < 10) falta = 'dados'
+    setFeErro(falta)
+    if (falta) { irPara({ agenda: refAgenda, endereco: refEndereco, pagamento: refPagamento, dados: refDados }[falta]); return }
+    enviarPedido()
+  }
 
   // Toca som de sucesso quando o pedido é confirmado
   useEffect(() => {
@@ -565,7 +608,7 @@ function CartContent({
                 <div style={{width:'72px',height:'72px',borderRadius:'50%',background:'#f5f5f5',margin:'0 auto 16px',display:'flex',alignItems:'center',justifyContent:'center'}}>
                   <ShoppingBag size={32} color="#d4d4d4" />
                 </div>
-                <p style={{margin:0,fontWeight:700,fontSize:'16px',color:'#3e3e3e'}}>Sua sacola está vazia</p>
+                <p style={{margin:0,fontWeight:700,fontSize:'16px',color:'#3e3e3e'}}>Seu pedido está vazio</p>
                 <p style={{margin:'8px 0 0',fontSize:'14px',color:'#a0a0a0'}}>Adicione itens para fazer seu pedido</p>
               </div>
             ) : (
@@ -582,7 +625,7 @@ function CartContent({
                 <span style={{fontSize:'20px',fontWeight: 700,color:'#3e3e3e'}}>{formatCurrency(totalPrice)}</span>
               </div>
               <button
-                onClick={() => setStep(clienteLogado ? 'entrega' : 'dados')}
+                onClick={() => setStep('finalizar')}
                 style={{
                   width:'100%',padding:'15px',background:accent,color:'white',
                   border:'none',borderRadius:'14px',fontWeight: 700,fontSize:'16px',
@@ -590,7 +633,7 @@ function CartContent({
                   boxShadow:`0 4px 16px ${accent}44`,fontFamily:'inherit',
                 }}
               >
-                Finalizar pedido <ChevronRight size={18} />
+                Finalizar encomenda <ChevronRight size={18} />
               </button>
               <div style={{display:'flex',gap:'8px'}}>
                 <button onClick={onClose} style={{flex:1,padding:'12px',background:'transparent',border:'1.5px solid #e8e8e8',borderRadius:'12px',fontWeight:600,fontSize:'14px',color:'#717171',cursor:'pointer',fontFamily:'inherit'}}>
@@ -602,6 +645,145 @@ function CartContent({
               </div>
             </div>
           )}
+        </>
+      )}
+
+      {/* ═══ FINALIZAR ENCOMENDA (02/10) — uma tela só ═══ */}
+      {step === 'finalizar' && (
+        <>
+          <div className="fe-body">
+            {/* Resumo do pedido */}
+            <section className="fe-card">
+              <p className="fe-tt">Resumo do pedido</p>
+              {items.map((it: any, k: number) => (
+                <div className="fe-rl" key={k}><span>{it.saleType === 'kg' ? `${it.quantity} kg` : `${it.quantity}×`} {it.name}{it.escolhas?.kit?.total ? ` · ${it.escolhas.kit.total} un.` : ''}{it.escolhas?.tamanho?.nome ? ` · ${it.escolhas.tamanho.nome}` : ''}</span><b>{formatCurrency(it.price * it.quantity)}</b></div>
+              ))}
+              {desconto > 0 && <div className="fe-rl fe-verde"><span>{cupomAplicado ? `Cupom ${cupomAplicado.codigo}` : 'Desconto'}</span><b>− {formatCurrency(desconto)}</b></div>}
+              {ehEntrega && <div className="fe-rl"><span>Taxa de entrega</span><b>{freteValor > 0 ? formatCurrency(freteValor) : formaEntrega === 'entrega_propria' ? 'Grátis' : 'A combinar'}</b></div>}
+              <div className="fe-rl fe-tot"><span>Total</span><b>{formatCurrency(totalFinal)}</b></div>
+              {(config.tem_cupom || config.cupons_desconto.length > 0) && !cupomAplicado && (
+                <div className="fe-cupom">
+                  <input value={cupomDigitado} onChange={e => { setCupomDigitado(e.target.value.toUpperCase()); setCupomErro('') }} placeholder="Tem cupom? Digite aqui" />
+                  <button type="button" onClick={aplicarCupom} disabled={!cupomDigitado.trim() || validandoCupom}>{validandoCupom ? '…' : 'Aplicar'}</button>
+                </div>
+              )}
+              {cupomAplicado && <button type="button" className="fe-link" onClick={removerCupom}>Tirar o cupom {cupomAplicado.codigo}</button>}
+              {cupomErro && <p className="fe-err">{cupomErro}</p>}
+            </section>
+
+            {/* Agendamento */}
+            <section className="fe-card" ref={refAgenda}>
+              <p className="fe-tt">Agendamento</p>
+              {opsEntrega.ret && opsEntrega.ent && (
+                <div className="fe-seg">
+                  <button type="button" className={formaEntrega === 'retirada' ? 'on' : ''} onClick={() => { setFormaEntrega('retirada'); setBairroSelecionado('') }}>Retirada</button>
+                  <button type="button" className={ehEntrega ? 'on' : ''} onClick={() => setFormaEntrega(opsEntrega.ent)}>Entrega</button>
+                </div>
+              )}
+              {formaEntrega === 'retirada' && config.endereco_retirada && <p className="fe-nota">Retirar em: <b>{config.endereco_retirada}</b></p>}
+              {regras.cortado && primeiraDisp && (
+                <div className="fe-aviso">
+                  <b>Pedido depois das {regras.fechamentoHoje}</b>
+                  <small>A produção de amanhã já fechou. A primeira data disponível é <strong>{primeiraDisp.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })}</strong>.</small>
+                </div>
+              )}
+
+              {/* Endereço (só na entrega) */}
+              {ehEntrega && formaEntrega !== 'combinar' && (
+                <div ref={refEndereco} className={`fe-end${feErro === 'endereco' ? ' fe-campo-err' : ''}`}>
+                  <p className="fe-lb">Endereço da entrega</p>
+                  <div className="fe-row">
+                    <input className="fe-in fe-f2" inputMode="numeric" placeholder="CEP" value={cep}
+                      onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 8); const m = v.length > 5 ? `${v.slice(0, 5)}-${v.slice(5)}` : v; setCep(m); buscarCep(v) }} />
+                    <input className="fe-in" inputMode="numeric" placeholder="Número" value={numero} onChange={e => setNumero(e.target.value)} />
+                  </div>
+                  {cepLoading && <p className="fe-nota">Procurando o CEP…</p>}
+                  {cepErro && <p className="fe-err">{cepErro}</p>}
+                  <input className="fe-in" placeholder="Rua" value={rua} onChange={e => setRua(e.target.value)} />
+                  {config.entrega_por_bairro.length > 0 ? (
+                    <>
+                      <p className="fe-lb">Bairro</p>
+                      <div className="fe-chips">
+                        {config.entrega_por_bairro.map((b: any) => (
+                          <button type="button" key={b.bairro} className={bairroSelecionado === b.bairro ? 'on' : ''} onClick={() => { setBairroSelecionado(b.bairro); setBairro(b.bairro) }}>
+                            {b.bairro} · {formatCurrency(b.valor)}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <input className="fe-in" placeholder="Bairro" value={bairro} onChange={e => setBairro(e.target.value)} />
+                  )}
+                  <input className="fe-in" placeholder="Complemento (apto, bloco…)" value={complemento} onChange={e => setComplemento(e.target.value)} />
+                  {feErro === 'endereco' && <p className="fe-err">Preencha a rua, o número{config.entrega_por_bairro.length > 0 ? ' e o bairro' : ''}.</p>}
+                </div>
+              )}
+
+              {/* Data e horário — a caixa obrigatória */}
+              <div className={`fe-agenda${dataEntrega && horaEntrega ? ' ok' : ''}${feErro === 'agenda' ? ' err' : ''}`}>
+                <span className="fe-leg">{dataEntrega && horaEntrega ? '✓ Agendado' : 'Obrigatório'}</span>
+                <p className="fe-lb">Data da {formaEntrega === 'retirada' ? 'retirada' : 'entrega'}</p>
+                <button type="button" className="fe-campo" onClick={() => setCalAberto(true)}>
+                  <span className="fe-ci"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>
+                  <span className={dataEntrega ? '' : 'fe-ph'}>{dataEntrega ? rotuloData(dataEntrega) : 'Escolher a data'}</span>
+                  <span className="fe-cd"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span>
+                </button>
+                <p className="fe-lb">Horário</p>
+                <button type="button" className="fe-campo" disabled={!dataEntrega} onClick={() => setHoraAberta(true)}>
+                  <span className="fe-ci"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+                  <span className={horaEntrega ? '' : 'fe-ph'}>{horaEntrega || (dataEntrega ? 'Escolher o horário' : 'Escolha a data primeiro')}</span>
+                  <span className="fe-cd"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span>
+                </button>
+                {regras.horas > 0 && <p className="fe-nota fe-nota--ag">Esse pedido precisa de {regras.horas >= 48 && regras.horas % 24 === 0 ? `${regras.horas / 24} dias` : `${regras.horas}h`} de antecedência.</p>}
+                {feErro === 'agenda' && <p className="fe-err">Escolha a data e o horário da {formaEntrega === 'retirada' ? 'retirada' : 'entrega'}</p>}
+              </div>
+            </section>
+
+            {/* Pagamento */}
+            <section className={`fe-card${feErro === 'pagamento' ? ' fe-card-err' : ''}`} ref={refPagamento}>
+              <p className="fe-tt">Pagamento</p>
+              <p className="fe-pg">Pagamento na {formaEntrega === 'retirada' ? 'retirada' : 'entrega'} do pedido</p>
+              <div className="fe-chips">
+                {metodosPag.map((k: string) => (
+                  <button type="button" key={k} className={formaPagamento === k ? 'on' : ''} onClick={() => { setFormaPagamento(k); setFeErro('') }}>
+                    {({ pix: 'Pix', dinheiro: 'Dinheiro', credito: 'Cartão de crédito', debito: 'Cartão de débito' } as any)[k]}
+                  </button>
+                ))}
+              </div>
+              {formaPagamento === 'dinheiro' && config.exibir_campo_troco && (
+                <input className="fe-in" inputMode="decimal" placeholder="Troco pra quanto? (opcional)" value={trocoParaStr} onChange={e => setTrocoParaStr(e.target.value)} />
+              )}
+              {feErro === 'pagamento' && <p className="fe-err">Escolha como vai pagar</p>}
+            </section>
+
+            {/* Seus dados */}
+            <section className={`fe-card${feErro === 'dados' ? ' fe-card-err' : ''}`} ref={refDados}>
+              <p className="fe-tt">Seus dados</p>
+              <p className="fe-lb">Nome completo</p>
+              <input className="fe-in" value={nome} onChange={e => setNome(e.target.value)} placeholder="Como você se chama?" autoComplete="name" />
+              <p className="fe-lb">WhatsApp / celular</p>
+              <input className="fe-in" value={telefone} inputMode="tel" autoComplete="tel" placeholder="(00) 9 0000-0000"
+                onChange={e => { const d = e.target.value.replace(/\D/g, '').slice(0, 11); setTelefone(d.length > 6 ? `(${d.slice(0, 2)}) ${d.slice(2, d.length - 4)}-${d.slice(-4)}` : d.length > 2 ? `(${d.slice(0, 2)}) ${d.slice(2)}` : d) }} />
+              <p className="fe-lb">Observação <em>(opcional)</em></p>
+              <textarea className="fe-in fe-ta" value={observacoes} onChange={e => setObservacoes(e.target.value)} placeholder="Algum recado pra confeitaria?" />
+              {feErro === 'dados' && <p className="fe-err">Preencha o seu nome e o WhatsApp</p>}
+            </section>
+          </div>
+
+          <div className="fe-foot">
+            <button type="button" className="fe-enviar" onClick={enviarFinalizar}>Enviar pedido · {formatCurrency(totalFinal)}</button>
+          </div>
+
+          {calAberto && (
+            <CalendarioSheet titulo={`Data da ${formaEntrega === 'retirada' ? 'retirada' : 'entrega'}`} horario={config.horario} minimo={regras.minimo} valor={dataEntrega}
+              onEscolher={(iso) => { setDataEntrega(iso); setHoraEntrega(''); setFeErro(''); setTimeout(() => setHoraAberta(true), 250) }}
+              onClose={() => setCalAberto(false)} />
+          )}
+          {horaAberta && dataEntrega && (
+            <HorariosSheet data={dataEntrega} horario={config.horario} minimo={regras.minimo} valor={horaEntrega}
+              onEscolher={(h) => { setHoraEntrega(h); setFeErro('') }} onClose={() => setHoraAberta(false)} />
+          )}
+          <style>{FE_CSS}</style>
         </>
       )}
 
@@ -899,11 +1081,58 @@ function CartContent({
   )
 }
 
+const FE_CSS = `
+  .fe-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #F4F1F2; padding: 16px 14px; display: flex; flex-direction: column; gap: 16px; }
+  .fe-card { background: #fff; border-radius: 16px; padding: 16px; }
+  .fe-card-err { box-shadow: 0 0 0 2px #FCA5A5; }
+  .fe-tt { margin: 0 0 10px; font-size: 15px; font-weight: 900; color: #2C1219; }
+  .fe-rl { display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px; color: #4B3A42; padding: 4px 0; }
+  .fe-rl span { min-width: 0; } .fe-rl b { font-weight: 800; white-space: nowrap; }
+  .fe-verde { color: #15803D; }
+  .fe-tot { border-top: 1px solid #F5F0F2; margin-top: 6px; padding-top: 10px; font-size: 15px; color: #2C1219; }
+  .fe-cupom { display: flex; gap: 8px; margin-top: 12px; }
+  .fe-cupom input { flex: 1; min-width: 0; border: 1.5px dashed #EDE6E9; border-radius: 12px; padding: 10px 12px; font-family: inherit; font-size: 15px; }
+  .fe-cupom button { border: none; border-radius: 12px; padding: 0 14px; background: #2C1219; color: #fff; font-family: inherit; font-weight: 800; font-size: 13px; cursor: pointer; }
+  .fe-cupom button:disabled { opacity: .4; }
+  .fe-link { border: none; background: none; padding: 8px 0 0; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #9A8E94; cursor: pointer; }
+  .fe-seg { display: flex; background: #F5F0F2; border-radius: 11px; padding: 3px; margin-bottom: 4px; }
+  .fe-seg button { flex: 1; border: none; background: none; padding: 10px; border-radius: 9px; font-family: inherit; font-size: 14px; font-weight: 800; color: #6B5D64; cursor: pointer; }
+  .fe-seg button.on { background: #fff; color: #2C1219; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .fe-nota { margin: 8px 0 0; font-size: 12.5px; color: #6B5D64; line-height: 1.4; }
+  .fe-aviso { margin-top: 12px; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 12px; padding: 10px 12px; }
+  .fe-aviso b { display: block; font-size: 13px; color: #92400E; } .fe-aviso small { display: block; font-size: 12.5px; color: #92400E; line-height: 1.4; margin-top: 2px; } .fe-aviso strong { font-weight: 800; }
+  .fe-lb { margin: 12px 0 6px; font-size: 12.5px; font-weight: 700; color: #4B3A42; } .fe-lb em { font-style: normal; font-weight: 500; color: #9A8E94; }
+  .fe-in { display: block; width: 100%; box-sizing: border-box; min-height: 46px; margin-top: 8px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 11px 12px; font-family: inherit; font-size: 16px; color: #2C1219; background: #fff; }
+  .fe-in:focus { outline: none; border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
+  .fe-lb + .fe-in { margin-top: 0; }
+  .fe-ta { min-height: 72px; resize: none; line-height: 1.4; }
+  .fe-row { display: flex; gap: 8px; } .fe-row .fe-in { flex: 1; min-width: 0; margin-top: 0; } .fe-row .fe-f2 { flex: 1.6; }
+  .fe-end { margin-top: 4px; } .fe-campo-err .fe-in { border-color: #FCA5A5; }
+  .fe-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .fe-chips button { border: 1.5px solid #EDE6E9; border-radius: 11px; background: #fff; padding: 9px 12px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #2C1219; cursor: pointer; }
+  .fe-chips button.on { border-color: #E85A8C; background: #FFF1F6; color: #C33A6E; }
+  .fe-pg { margin: 0 0 10px; font-size: 13px; font-weight: 700; color: #15803D; background: #F0FDF4; border-radius: 10px; padding: 9px 11px; }
+  .fe-agenda { position: relative; margin-top: 20px; border: 2px dashed #F59E0B; border-radius: 14px; padding: 16px 12px 12px; background: #FFFBF2; }
+  .fe-agenda.ok { border: 2px solid #86EFAC; background: #F7FEF9; }
+  .fe-agenda.err { border-color: #EF4444; background: #FEF2F2; }
+  .fe-leg { position: absolute; top: -11px; left: 12px; background: #F59E0B; color: #fff; font-size: 11px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; box-shadow: 0 0 0 3px #fff; }
+  .fe-agenda.ok .fe-leg { background: #16A34A; } .fe-agenda.err .fe-leg { background: #EF4444; }
+  .fe-agenda .fe-lb { margin-top: 4px; }
+  .fe-campo { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; margin-bottom: 10px; background: #fff; border: 1.5px solid #F3D9A8; border-radius: 12px; padding: 0 12px; font-family: inherit; font-size: 15px; font-weight: 700; color: #2C1219; text-align: left; cursor: pointer; }
+  .fe-campo:disabled { opacity: .5; cursor: default; }
+  .fe-agenda.ok .fe-campo { border-color: #BBF7D0; }
+  .fe-ci { display: flex; color: #C2410C; } .fe-agenda.ok .fe-ci { color: #15803D; } .fe-ph { color: #B08A55; font-weight: 600; } .fe-cd { margin-left: auto; color: #B5AAB0; display: flex; }
+  .fe-nota--ag { color: #92400E; margin-top: 0; }
+  .fe-err { margin: 8px 0 0; font-size: 12.5px; font-weight: 800; color: #DC2626; }
+  .fe-foot { border-top: 1px solid #F0EBED; background: #fff; padding: 12px 14px calc(14px + env(safe-area-inset-bottom, 0px)); }
+  .fe-enviar { width: 100%; border: none; border-radius: 14px; padding: 16px; background: #16A34A; color: #fff; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(22,163,74,.3); }
+`
+
 /* ─── Componente principal ─── */
 export function NavigationMenu({ corBotao }: { corBotao?: string }) {
   const { items, totalPrice, updateQuantity, updateObservations, removeItem, clearCart } = useCart()
   const [isOpen, setIsOpen] = useState(false)
-  const [step, setStep] = useState<'cart' | 'dados' | 'entrega' | 'checkout'>('cart')
+  const [step, setStep] = useState<'cart' | 'dados' | 'entrega' | 'checkout' | 'finalizar'>('cart')
   const [activeTab, setActiveTab] = useState('inicio')
   // Altura real do rodapé (menu + faixa "Meu pedido") — as abas Pedidos/Perfil param em cima dele
   const rodapeRef = useRef<HTMLDivElement>(null)
@@ -1012,7 +1241,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
                     <ShoppingBag size={18} color="white" />
                   </div>
                   <div>
-                    <span style={{color:'white',fontWeight:700,fontSize:'15px',display:'block',lineHeight:1.2}}>Meu pedido</span>
+                    <span style={{color:'white',fontWeight:700,fontSize:'15px',display:'block',lineHeight:1.2}}>Ver seu pedido</span>
                     <span style={{color:'rgba(255,255,255,0.85)',fontSize:'12px'}}>{count} {count === 1 ? 'item' : 'itens'}</span>
                   </div>
                 </div>
@@ -1095,7 +1324,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
                 </div>
                 <div style={{padding:'10px 20px 12px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
                   <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
-                    {(step === 'dados' || step === 'entrega' || step === 'checkout') && (
+                    {(step === 'dados' || step === 'entrega' || step === 'checkout' || step === 'finalizar') && (
                       <button onClick={() => step === 'checkout' ? setStep('entrega') : step === 'entrega' ? setStep('dados') : setStep('cart')} style={{background:'none',border:'none',cursor:'pointer',padding:'4px',display:'flex'}}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3e3e3e" strokeWidth="2.5"><path d="M15 18l-6-6 6-6"/></svg>
                       </button>
@@ -1105,10 +1334,10 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
                     </div>
                     <div>
                       <h3 style={{margin:0,fontWeight: 700,fontSize:'18px',color:'#3e3e3e'}}>
-                        {step === 'cart' ? 'Sacola' : step === 'dados' ? 'Seus dados' : step === 'entrega' ? 'Entrega' : 'Pagamento'}
+                        {step === 'finalizar' ? 'Finalizar encomenda' : step === 'cart' ? 'Seu pedido' : step === 'dados' ? 'Seus dados' : step === 'entrega' ? 'Entrega' : 'Pagamento'}
                       </h3>
                       <p style={{margin:0,fontSize:'13px',color:'#a0a0a0'}}>
-                        {step === 'cart' ? `${count} ${count===1?'item':'itens'}` : step === 'dados' ? 'Passo 1 de 3' : step === 'entrega' ? (clienteLogado ? 'Passo 1 de 2' : 'Passo 2 de 3') : (clienteLogado ? 'Passo 2 de 2' : 'Passo 3 de 3')}
+                        {step === 'finalizar' ? 'Revise e envie seu pedido' : step === 'cart' ? `${count} ${count===1?'item':'itens'}` : step === 'dados' ? 'Passo 1 de 3' : step === 'entrega' ? (clienteLogado ? 'Passo 1 de 2' : 'Passo 2 de 3') : (clienteLogado ? 'Passo 2 de 2' : 'Passo 3 de 3')}
                       </p>
                     </div>
                   </div>
@@ -1145,7 +1374,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
             {/* Header */}
             <div style={{padding:'16px 20px',display:'flex',alignItems:'center',justifyContent:'space-between',borderBottom:'1px solid #f0f0f0',flexShrink:0}}>
               <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
-                {(step === 'dados' || step === 'entrega' || step === 'checkout') && (
+                {(step === 'dados' || step === 'entrega' || step === 'checkout' || step === 'finalizar') && (
                   <button onClick={() => step === 'checkout' ? setStep('entrega') : step === 'entrega' ? setStep('dados') : setStep('cart')} style={{background:'none',border:'none',cursor:'pointer',padding:'4px',display:'flex'}}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3e3e3e" strokeWidth="2.5"><path d="M15 18l-6-6 6-6"/></svg>
                   </button>
@@ -1155,10 +1384,10 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
                 </div>
                 <div>
                   <h3 style={{margin:0,fontWeight: 700,fontSize:'17px',color:'#1f2937',fontFamily:'inherit'}}>
-                    {step === 'cart' ? 'Sacola' : step === 'dados' ? 'Seus dados' : step === 'entrega' ? 'Entrega' : 'Pagamento'}
+                    {step === 'finalizar' ? 'Finalizar encomenda' : step === 'cart' ? 'Seu pedido' : step === 'dados' ? 'Seus dados' : step === 'entrega' ? 'Entrega' : 'Pagamento'}
                   </h3>
                   <p style={{margin:0,fontSize:'12px',color:'#9ca3af'}}>
-                    {step === 'cart' ? `${count} ${count===1?'item':'itens'}` : step === 'dados' ? 'Passo 1 de 3' : step === 'entrega' ? (clienteLogado ? 'Passo 1 de 2' : 'Passo 2 de 3') : (clienteLogado ? 'Passo 2 de 2' : 'Passo 3 de 3')}
+                    {step === 'finalizar' ? 'Revise e envie seu pedido' : step === 'cart' ? `${count} ${count===1?'item':'itens'}` : step === 'dados' ? 'Passo 1 de 3' : step === 'entrega' ? (clienteLogado ? 'Passo 1 de 2' : 'Passo 2 de 3') : (clienteLogado ? 'Passo 2 de 2' : 'Passo 3 de 3')}
                   </p>
                 </div>
               </div>

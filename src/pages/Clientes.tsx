@@ -50,7 +50,7 @@ interface ImportContato {
 }
 
 const ORIGEM_OPTIONS = ["Instagram", "Indicação", "Google", "Facebook", "TikTok", "WhatsApp", "Loja física", "Outro"];
-const SEXO_OPTIONS   = ["Feminino", "Masculino", "Outro", "Prefiro não informar"];
+const SEXO_OPTIONS   = ["Feminino", "Masculino", "Prefiro não informar"];
 const UF_OPTIONS     = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 
 const emptyRapido = { nome: "", whatsapp: "", email: "", observacoes: "", data_nascimento: "" };
@@ -124,6 +124,15 @@ function formatSince(created_at: string): string {
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const yy = String(d.getFullYear()).slice(-2);
   return `Cliente desde ${dd}/${mm}/${yy}`;
+}
+
+/** "Cliente novo" (até 30 dias) ou "Cliente desde out/2026" (02/10) */
+function clienteDesde(created_at: string): string {
+  const d = new Date(created_at);
+  if (isNaN(d.getTime())) return "";
+  if ((Date.now() - d.getTime()) / 86400000 < 30) return "Cliente novo";
+  const mes = d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "");
+  return `Cliente desde ${mes}/${d.getFullYear()}`;
 }
 
 // "Cliente há X" — tempo relativo compacto
@@ -1657,42 +1666,12 @@ export default function Clientes() {
                     </div>
                     <div className="mob-info">
                       <p className="mob-nome">{c.nome}</p>
-                      <p className="mob-since">{formatClienteHa(c.created_at)}</p>
+                      <p className="mob-since">{clienteDesde(c.created_at)}</p>
                     </div>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" style={{flexShrink:0}}><polyline points="9 18 15 12 9 6"/></svg>
                   </div>
 
-                  {totalPed > 0 && (
-                    <>
-                      <div className="mob-card-divider" />
-                      <div className="mob-card-metricas">
-                        <div className="mob-metrica">
-                          <div className="mob-metrica-label">Pedidos</div>
-                          <div className="mob-metrica-valor">{totalPed}</div>
-                        </div>
-                        <div className="mob-metrica">
-                          <div className="mob-metrica-label">Total gasto</div>
-                          <div className="mob-metrica-valor">{formatMoneyCompacto(totalGasto)}</div>
-                        </div>
-                      </div>
-                      <div className="mob-card-inline">
-                        <span className="mob-inline-l">Ticket médio:</span>
-                        <strong>{formatMoneyFull(ticketMedio)}</strong>
-                      </div>
-                      {ultimaCompra && (
-                        <div className="mob-card-inline">
-                          <span className="mob-inline-l">⏱ Última compra:</span>
-                          <strong>{formatUltimaCompra(ultimaCompra)}</strong>
-                        </div>
-                      )}
-                    </>
-                  )}
-                  {totalPed === 0 && (
-                    <>
-                      <div className="mob-card-divider" />
-                      <div className="mob-card-empty">Nenhum pedido ainda</div>
-                    </>
-                  )}
+                  {/* Lista simples (02/10): só foto, nome e desde quando é cliente. Os números ficam no perfil. */}
                 </div>
               );
             })}

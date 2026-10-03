@@ -91,7 +91,8 @@ export function CardapioModelo1({ design, config, verificada = false }: Cardapio
   const corFaixa = !ehBranco(design.cor_navbar) ? design.cor_navbar! : (!ehBranco(design.cor_borda) ? design.cor_borda! : '#E85A8C')
   const status = getStatusLoja(config?.horario || null)
   const enderecoData = getEnderecoData(config)
-  const avaliacao = config?.avaliacao_media ?? 0
+  // Estrelas de avaliação removidas (02/10): ficavam deslocadas ao lado do selo de verificado
+  const avaliacao = 0
 
   const isColorLight = (hex: string): boolean => {
     const c = hex.replace('#', '')
@@ -144,7 +145,8 @@ export function CardapioModelo1({ design, config, verificada = false }: Cardapio
       </div>
 
       {/* ── Conteúdo com curva suave ───────────────────── */}
-      <div className="cm1-content" style={{ background: design.cor_background || '#f8f8f8' }}>
+      {/* Fundo num cinza só (02/10): o padrão #fef2f2 deixava a parte de cima mais clara que o resto */}
+      <div className="cm1-content" style={{ background: design.cor_background && design.cor_background.toLowerCase() !== '#fef2f2' ? design.cor_background : '#f8f8f8' }}>
         {/* Nome + Estrelas inline */}
         <div className="cm1-nome-row">
           <h1 className="cm1-nome" style={{ color: corNome }}>

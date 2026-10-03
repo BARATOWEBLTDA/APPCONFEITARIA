@@ -588,28 +588,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         )}
       </div>
 
-      {/* Card Avaliações (via prop) — fica lado a lado com Layout no grid 1fr 1fr */}
-      {avaliacoesCard ?? (
-        <div className="cd-card">
-          <div className="cd-aval-row">
-            <div>
-              <p className="cd-section-label" style={{ margin: 0 }}>Mostrar avaliação</p>
-              <p className="cd-section-sub" style={{ margin: "2px 0 0" }}>Estrelas ao lado do nome da loja</p>
-            </div>
-            <label className="cd-aval-toggle">
-              <input type="checkbox" checked={!hideStars} onChange={(e) => { const hide = !e.target.checked; setHideStars(hide); salvarAvaliacao({ hide_stars: hide }); }} aria-label="Mostrar avaliação" />
-              <span />
-            </label>
-          </div>
-          {!hideStars && (
-            <div className="cd-aval-notas">
-              {[5.0, 4.9, 4.8].map((n) => (
-                <button key={n} type="button" className={avaliacaoMedia === n ? "on" : ""} onClick={() => { setAvaliacaoMedia(n); salvarAvaliacao({ avaliacao_media: n }); }}>★ {n.toFixed(1)}</button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      {/* Avaliações (estrelas) removidas em 02/10 */}
 
 
 

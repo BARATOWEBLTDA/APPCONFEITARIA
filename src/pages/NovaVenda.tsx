@@ -15,7 +15,7 @@ import { criarBreakdownV1, criarPersonalizacoesV1, SNAPSHOT_VERSION_ATUAL } from
 // ── Tipos ─────────────────────────────────────────────────────────────────
 type TipoVenda = 'encomenda' | 'pronta_entrega' | null
 type TipoEntrega = 'retirada' | 'entrega'
-type SituacaoPag = 'total' | 'parcial' | 'fiado'
+type SituacaoPag = 'total' | 'parcial' | 'fiado' | 'na_entrega'
 
 interface ItemVenda {
   produto_id?: string
@@ -40,6 +40,7 @@ interface Cliente {
   bairro?: string
   cidade?: string
   complemento?: string
+  foto_url?: string
 }
 
 interface Produto {
@@ -192,7 +193,7 @@ export default function NovaVenda() {
       setUserId(user.id)
       const [{ data: prds }, { data: cls }] = await Promise.all([
         supabase.from('produtos').select('id,nome,preco_normal,forma_venda,imagem_url,categoria,grupo_tamanhos,kit_qtd').eq('user_id', user.id).order('nome'),
-        supabase.from('clientes').select('id,nome,telefone,whatsapp,rua,numero,bairro,cidade,complemento').eq('user_id', user.id).order('nome'),
+        supabase.from('clientes').select('id,nome,telefone,whatsapp,rua,numero,bairro,cidade,complemento,foto_url').eq('user_id', user.id).order('nome'),
       ])
       setProdutos(prds || [])
       setClientes(cls || [])
@@ -864,7 +865,7 @@ export default function NovaVenda() {
                 return (
                   <div className="nv-cli-card">
                     <div className="nv-cli-card-topo">
-                      <div className="nv-cli-avatar">{initialsOf(clienteNome)}</div>
+                      <div className="nv-cli-avatar">{(() => { const f = clientes.find(x => x.id === clienteId)?.foto_url; return f ? <img src={f} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit', display: 'block' }} /> : initialsOf(clienteNome) })()}</div>
                       <div className="nv-cli-nome-wrap">
                         <div className="nv-cli-card-nome">{toTitleCase(clienteNome)}</div>
                         <div className="nv-cli-card-badge">✓ Cliente cadastrado</div>
@@ -1126,8 +1127,8 @@ export default function NovaVenda() {
                 {[
                   { key: 'PIX', emoji: '💠' },
                   { key: 'Dinheiro', emoji: '💵' },
-                  { key: 'Cartão', emoji: '💳' },
-                  { key: 'Boleto', emoji: '📄' },
+                  { key: 'Crédito', emoji: '💳' },
+                  { key: 'Débito', emoji: '💳' },
                 ].map(f => (
                   <button
                     key={f.key}
@@ -1174,6 +1175,17 @@ export default function NovaVenda() {
                     value={formatMaskMoney(valorParcial)}
                     onChange={e => setValorParcial(parseMaskMoney(e.target.value))}
                   />
+                )}
+                {/* 02/10: paga quando receber (na retirada ou na entrega) */}
+                {tipo === 'encomenda' && (
+                  <label className={`nv-pag-sit-card ${situacaoPag === 'na_entrega' ? 'nv-pag-sit-card--ativo' : ''}`}>
+                    <input type="radio" checked={situacaoPag === 'na_entrega'} onChange={() => setSituacaoPag('na_entrega')} />
+                    <span className="nv-pag-sit-radio" />
+                    <div className="nv-pag-sit-info">
+                      <div className="nv-pag-sit-nome">{tipoEntrega === 'entrega' ? 'Paga na entrega' : 'Paga na retirada'}</div>
+                      <div className="nv-pag-sit-desc">O cliente paga quando {tipoEntrega === 'entrega' ? 'receber' : 'buscar'} o pedido</div>
+                    </div>
+                  </label>
                 )}
                 <label className={`nv-pag-sit-card ${situacaoPag === 'fiado' ? 'nv-pag-sit-card--ativo' : ''}`}>
                   <input type="radio" checked={situacaoPag === 'fiado'} onChange={() => setSituacaoPag('fiado')} />
@@ -1391,6 +1403,7 @@ export default function NovaVenda() {
                     {situacaoPag === 'total' && 'Pago total'}
                     {situacaoPag === 'parcial' && `Parcial (${formatMoney(valorParcial)})`}
                     {situacaoPag === 'fiado' && `Fiado${dataPrevistaPagamento ? ` até ${new Date(dataPrevistaPagamento + 'T00:00').toLocaleDateString('pt-BR')}` : ''}`}
+                    {situacaoPag === 'na_entrega' && (tipoEntrega === 'entrega' ? 'Paga na entrega' : 'Paga na retirada')}
                   </span>
                 </div>
               </div>
@@ -2305,8 +2318,9 @@ export default function NovaVenda() {
         border: 1.5px solid #F0EBED;
         background: #fff;
         border-radius: 8px;
-        font-size: 11.5px; font-weight: 700;
+        font-size: 12.5px; font-weight: 700;
         text-align: center;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; /* centralizado (02/10) */
         cursor: pointer;
         color: #4A3540;
         box-sizing: border-box;

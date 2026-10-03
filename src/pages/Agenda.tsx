@@ -2465,7 +2465,9 @@ function AgendaStyles() {
         outline-offset: 2px;
       }
     
-        .ag-secao-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        /* 02/10: o espaço fica na linha toda (antes só no título: o botão colava no cartão de cima) */
+        .ag-secao-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 20px 0 4px; padding: 0 var(--space-4); }
+        .ag-secao-row .ag-secao-lbl { margin: 0; text-align: left; }
         .ag-print-dia { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #F0E3E9; background: #fff; color: #C33A6E; border-radius: 999px; padding: 6px 12px; font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; }
         .ag-print-dia svg { width: 14px; height: 14px; }
         .ag-print-pro { font-size: 9.5px; font-weight: 900; background: #2D1F26; color: #fff; padding: 2px 6px; border-radius: 6px; }

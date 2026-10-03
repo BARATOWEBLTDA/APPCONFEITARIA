@@ -1,6 +1,25 @@
 import { Plus, Minus, X } from 'lucide-react'
+import { sufixoVenda } from '@/lib/formaVenda'
 import { CartItem } from '@/types/cart'
 import { formatCurrency } from '@/utils/helpers'
+
+
+/** "Brigadeiro" → "brigadeiros", "Beijinho de coco" → "beijinhos de coco", "Pão de mel" → "pães de mel" */
+function pluralSabor(nome: string, qtd: number): string {
+  const n = String(nome || '').trim()
+  if (!n) return ''
+  const [p1, ...resto] = n.split(' ')
+  let w = p1.charAt(0).toLowerCase() + p1.slice(1)
+  if (qtd > 1) {
+    if (/^pão$/i.test(w)) w = 'pães'
+    else if (/ão$/i.test(w)) w = w.replace(/ão$/i, 'ões')
+    else if (/[aeiouáéíóú]$/i.test(w)) w = w + 's'
+    else if (/[rzs]$/i.test(w)) w = /s$/i.test(w) ? w : w + 'es'
+    else if (/l$/i.test(w)) w = w.replace(/l$/i, 'is')
+    else if (/m$/i.test(w)) w = w.replace(/m$/i, 'ns')
+  }
+  return [w, ...resto].join(' ')
+}
 
 interface Props {
   item: CartItem
@@ -19,7 +38,7 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove }: Props) {
   }
   const inc = () => onUpdateQuantity(linha, item.quantity + (item.saleType === 'kg' ? 0.5 : 1))
   const qtyLabel = item.saleType === 'kg' ? `${item.quantity}kg` : `${item.quantity}`
-  const unitLabel = item.saleType === 'kg' ? '/kg' : '/un'
+  const unitLabel = '/' + sufixoVenda(item.saleType) // caixa, kg, fatia… (antes tudo virava /un)
 
   return (
     <div style={{
@@ -37,19 +56,7 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove }: Props) {
           ? <img src={item.imageUrl.split(',')[0]} alt={item.name} style={{width:'100%',height:'100%',objectFit:'cover'}} />
           : <div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'28px'}}>🧁</div>
         }
-        {/* Botão remover sobre a imagem */}
-        <button
-          onClick={() => onRemove(linha)}
-          style={{
-            position:'absolute', top:'4px', right:'4px',
-            width:'20px', height:'20px', borderRadius:'50%',
-            background:'rgba(0,0,0,0.5)', border:'none',
-            display:'flex', alignItems:'center', justifyContent:'center',
-            cursor:'pointer',
-          }}
-        >
-          <X size={10} color="var(--text-inverse)" />
-        </button>
+        {/* (o × em cima da foto saiu em 02/10: pra tirar, é só diminuir a quantidade até zero) */}
       </div>
 
       {/* Conteúdo */}
@@ -60,8 +67,16 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove }: Props) {
           whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis',
           lineHeight:'1.3',
         }}>
-          {item.name}
+          {item.name}{item.escolhas?.kit?.total ? ` · ${item.escolhas.kit.total} un.` : ''}
         </h4>
+        {/* Sabores do kit em lista: "25 brigadeiros / 25 beijinhos" (02/10) */}
+        {item.escolhas?.kit?.sabores?.length ? (
+          <ul style={{ listStyle: 'none', margin: '3px 0 0', padding: 0 }}>
+            {item.escolhas.kit.sabores.filter((x: any) => x.qtd > 0).map((x: any, i: number) => (
+              <li key={i} style={{ fontSize: '12.5px', color: '#6B5D64', lineHeight: 1.45 }}>{x.qtd} {pluralSabor(x.nome, x.qtd)}</li>
+            ))}
+          </ul>
+        ) : null}
 
         {/* Opcionais — V3 (escolhas ricas) ou legado (strings) */}
         {(() => {
@@ -83,7 +98,6 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove }: Props) {
               })
             }
             if (escolhas.cobertura?.nome) chips.push({ label: 'Cobertura', valor: escolhas.cobertura.nome })
-            if (escolhas.kit?.sabores?.length) chips.push({ label: `Kit ${escolhas.kit.total} un`, valor: escolhas.kit.sabores.map((s: any) => `${s.nome} × ${s.qtd}`).join(', ') })
           } else {
             // Legado — strings antigas
             if (item.selectedMassa) chips.push({ label: 'Massa', valor: item.selectedMassa })

@@ -1205,9 +1205,10 @@ export default function Inicio() {
         <div className="ini-mobile-banner"><AdminBannerMobile /></div>
 
         {/* ── Últimas atualizações (mobile) — sempre visível ── */}
-        <div className="ini-mobile-updates"><ConquistasCard /></div>
         <div className="ini-mobile-updates"><MinhasAtualizacoes /></div>
         <div className="ini-mobile-updates"><UpdatesFeed /></div>
+        {/* Conquistas por último (02/10) */}
+        <div className="ini-mobile-updates ini-mobile-conquistas"><ConquistasCard /></div>
 
         {/* ── Engajamento (Play Store + Instagram) — temporariamente removido ── */}
         {false && (
@@ -3126,7 +3127,15 @@ export default function Inicio() {
           .ini-root .ini-section--nav .ini-nav-sub { display: none !important; }
           .ini-root .ini-section--nav .ini-nav-label { white-space: normal !important; line-height: 1.2 !important; }
         }
-      `}</style>
+      
+        /* ── Espaço entre os cartões do Início no celular (02/10): eram 6–10px, agora 20px ── */
+        @media (max-width: 767px) {
+          .ini-content { gap: 24px !important; }
+          .ini-main { gap: 20px; }
+          .ini-main > .ini-section { margin-top: 0 !important; margin-bottom: 0 !important; }
+          .ini-mobile-conquistas { order: 5; }
+        }
+`}</style>
 
       {/* Modal de crop da foto de perfil (aberto pelo ícone de câmera) */}
       {cropSrc && (

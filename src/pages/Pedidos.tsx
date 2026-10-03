@@ -2084,10 +2084,9 @@ export default function Pedidos() {
           <div className="ped-hero-3cards">
             <div className="ped-hero-3cards-head">
               <span className="ped-hero-eyebrow">📋 SEUS PEDIDOS</span>
-              <h1 className="ped-hero-title">Comece a receber<br/>seus pedidos</h1>
+              <h1 className="ped-hero-title">Cadastre seu primeiro pedido</h1>
               <p className="ped-hero-desc">
-                Existem 2 formas de receber pedidos no Doonly.
-                Escolha por onde começar:
+                Os pedidos podem ser feitos manualmente ou pelo cardápio digital.
               </p>
             </div>
 
@@ -2095,7 +2094,7 @@ export default function Pedidos() {
               {/* Card 1: manual (primary rosa) */}
               <button className="ped-card ped-card--primary" onClick={handleNovoPedido}>
                 <div className="ped-card-icon">✍️</div>
-                <div className="ped-card-t">Cadastrar manualmente</div>
+                <div className="ped-card-t">Cadastrar um pedido</div>
                 <div className="ped-card-d">Cliente ligou ou mandou WhatsApp? Registre o pedido aqui em 30 segundos.</div>
                 <div className="ped-card-cta">Começar agora →</div>
               </button>
@@ -2103,18 +2102,11 @@ export default function Pedidos() {
               {/* Card 2: ir pra Meu Cardápio (onde é feito o compartilhamento) */}
               <button className="ped-card" onClick={() => navigate('/cardapio')}>
                 <div className="ped-card-icon">🛍️</div>
-                <div className="ped-card-t">Personalizar meu cardápio</div>
-                <div className="ped-card-d">Configure aparência, adicione produtos e compartilhe seu link digital pra receber pedidos.</div>
+                <div className="ped-card-t">Receber pelo cardápio</div>
+                <div className="ped-card-d">Compartilhe o link do seu cardápio digital: os pedidos dos clientes chegam aqui sozinhos.</div>
                 <div className="ped-card-cta ped-card-cta--pink">Abrir cardápio →</div>
               </button>
 
-              {/* Card 3: tutorial */}
-              <button className="ped-card" onClick={() => alert("🎬 Vídeo em produção! Em breve disponível.")}>
-                <div className="ped-card-icon">🎬</div>
-                <div className="ped-card-t">Ver tutorial</div>
-                <div className="ped-card-d">Aprenda em 2 minutos como o sistema de pedidos funciona de ponta a ponta.</div>
-                <div className="ped-card-cta ped-card-cta--pink">Assistir →</div>
-              </button>
             </div>
 
             <div className="ped-hero-tip ped-hero-tip--center">
@@ -2373,7 +2365,7 @@ export default function Pedidos() {
             .ped-hero-video-play svg { width: 28px; height: 28px; }
             .ped-hero-video-t { font-size: var(--text-sm); }
             /* 3 cards em grid horizontal no desktop */
-            .ped-cards-grid { grid-template-columns: repeat(3, 1fr); }
+            .ped-cards-grid { grid-template-columns: repeat(2, 1fr); }
             .ped-card-t { font-size: var(--text-lg); }
           }
         `}</style>
