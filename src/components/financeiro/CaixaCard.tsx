@@ -1,3 +1,4 @@
+import { useTravarRolagem } from "@/hooks/useTravarRolagem";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import { createPortal } from "react-dom";
@@ -27,17 +28,18 @@ export function useCaixa() {
 }
 
 /** O cartão escuro "Saldo em caixa" (ou o convite pra informar o saldo inicial). */
-export function SaldoCaixa({ cx, onAcertar }: { cx: EstadoCaixa | null; onAcertar: () => void }) {
+export function SaldoCaixa({ cx, onAcertar, onDepois, destaque }: { cx: EstadoCaixa | null; onAcertar: () => void; onDepois?: () => void; destaque?: boolean }) {
   if (!cx) return <div className="cxc cxc--carregando" aria-busy="true" />;
   if (cx.precisaSql) return (
     <div className="cxc-convite"><b>Saldo em caixa</b><p>Falta um ajuste no banco de dados pra ativar o caixa (o SQL do Passo 4).</p></div>
   );
   if (!cx.configurado) return (
-    <div className="cxc-convite">
+    <div className={`cxc-convite${destaque ? " cxc-convite--foco" : ""}`}>
       <span className="cxc-convite-ic"><Wallet size={26} weight="duotone" /></span>
       <b>Quanto você tem em caixa hoje?</b>
       <p>Conte o dinheiro da gaveta e o que está na conta da confeitaria. A partir daí, o app soma o que você recebe e tira o que você paga.</p>
       <button type="button" className="cxc-cta" onClick={onAcertar}>Informar meu saldo</button>
+      {onDepois && <button type="button" className="cxc-depois" onClick={onDepois}>Agora não</button>}
     </div>
   );
   return (
@@ -97,6 +99,7 @@ export function SaldoSheet({ atual, uid, onClose, onSalvo }: { atual: number | n
   const [txt, setTxt] = useState(atual != null ? (textoBRL(atual) || "0,00") : "");
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
+  useTravarRolagem(true)
   const v = Math.round((parseFloat(txt.replace(/\./g, "").replace(",", ".")) || 0) * 100) / 100;
   useEffect(() => { const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); }; window.addEventListener("keydown", esc); return () => window.removeEventListener("keydown", esc); }, [onClose]);
   const salvar = async () => {
@@ -139,6 +142,8 @@ const CSS = `
   .cxc-convite-ic { width: 52px; height: 52px; border-radius: 16px; background: #FFF1F6; color: #C33A6E; display: inline-flex; align-items: center; justify-content: center; }
   .cxc-convite b { display: block; font-size: 17px; font-weight: 900; color: #2C1219; margin-top: 8px; }
   .cxc-convite p { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 6px auto 0; max-width: 380px; text-wrap: balance; }
+  .cxc-convite--foco { border: 2px solid #F3A9C6; box-shadow: 0 0 0 6px rgba(232,90,140,.12), 0 14px 30px -10px rgba(195,58,110,.45) !important; position: relative; z-index: 2; }
+  .cxc-depois { display: block; margin: 8px auto 0; border: none; background: none; padding: 8px 12px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #9A8E94; cursor: pointer; }
   .cxc-cta { margin-top: 14px; border: none; border-radius: 12px; padding: 12px 18px; background: #E85A8C; color: #fff; font-family: inherit; font-size: 14.5px; font-weight: 800; cursor: pointer; box-shadow: 0 3px 0 #C33A6E; }
   .cxc-movs { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 12px 14px; font-family: var(--font-base); }
   .cxc-movs-t { margin: 0 0 4px; font-size: 14.5px; font-weight: 900; color: #2C1219; }

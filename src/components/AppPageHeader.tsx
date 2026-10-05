@@ -1,3 +1,4 @@
+import { useTravarRolagem } from "@/hooks/useTravarRolagem";
 import { VERSAO_APP } from "@/lib/versao";
 import { useState, ReactNode } from 'react'
 import MenuContaItens from "@/components/MenuContaItens";
@@ -34,6 +35,7 @@ export default function AppPageHeader({
   const [showInfo, setShowInfo] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [confirmSair, setConfirmSair] = useState(false)
+  useTravarRolagem(showInfo || menuOpen || confirmSair) // o fundo não rola com a janela aberta
   const { profile } = useProfile()
   const { fileInputRef, uploading: uploadingFoto, handleFileSelected } = useAvatarUpload()
 

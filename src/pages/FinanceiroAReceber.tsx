@@ -1,3 +1,4 @@
+import { useTravarRolagem } from "@/hooks/useTravarRolagem";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
@@ -130,6 +131,7 @@ export default function FinanceiroAReceber() {
 
 /** Janela "Quanto você recebeu agora?" — registra um pagamento (Passo 1). */
 function ReceberSheet({ item, onClose, onFeito }: { item: Item; onClose: () => void; onFeito: (msg: string) => void }) {
+  useTravarRolagem(true)
   const [valor, setValor] = useState(textoBRL(item.falta));
   const [forma, setForma] = useState(normalizarForma(item.forma_pagamento) || "pix");
   const [quandoRec, setQuandoRec] = useState<"hoje" | "ontem" | "outra">("hoje");

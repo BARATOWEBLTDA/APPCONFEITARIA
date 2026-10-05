@@ -1,3 +1,4 @@
+import { useTravarRolagem } from "@/hooks/useTravarRolagem";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
@@ -154,6 +155,7 @@ export default function FinanceiroAPagar() {
 }
 
 function Folha({ titulo, sub, onClose, children }: { titulo: string; sub?: string; onClose: () => void; children: React.ReactNode }) {
+  useTravarRolagem(true)
   useEffect(() => { const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); }; window.addEventListener("keydown", esc); return () => window.removeEventListener("keydown", esc); }, [onClose]);
   return createPortal(
     <div className="fap-ov" onClick={onClose} role="dialog" aria-modal="true" aria-label={titulo}>

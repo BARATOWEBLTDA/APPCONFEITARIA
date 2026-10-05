@@ -1,3 +1,4 @@
+import { useTravarRolagem } from "@/hooks/useTravarRolagem";
 import { useEffect, useState } from "react";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import { createPortal } from "react-dom";
@@ -22,6 +23,7 @@ export default function DespesaSheet({ onClose, onSalvo, onContaAPagar, tipo = "
   const [outra, setOutra] = useState(isoDia());
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
+  useTravarRolagem(true)
   useEffect(() => { const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); }; window.addEventListener("keydown", esc); return () => window.removeEventListener("keydown", esc); }, [onClose]);
 
   const salvar = async () => {

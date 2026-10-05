@@ -28,6 +28,12 @@ export default function Financeiro() {
   const [rec, setRec] = useState<{ total: number; qtd: number; semana: number } | null>(null);
   const [pag, setPag] = useState<{ total: number; qtd: number; proxima: string | null } | null | undefined>(undefined);
   const [versao, setVersao] = useState(0); // recarrega tudo depois de uma mudança
+  // Sem saldo informado: o resto do painel fica levemente apagado pra guiar o olho pro convite
+  // (continua tocável — os números do mês já valem sem o saldo). "Agora não" tira o efeito.
+  const chaveDepois = uid ? `doonly_saldo_depois_${uid}` : "";
+  const [depois, setDepois] = useState(false);
+  useEffect(() => { if (chaveDepois) { try { setDepois(!!localStorage.getItem(chaveDepois)); } catch { /* sem acesso */ } } }, [chaveDepois]);
+  const foco = !!cx && !cx.precisaSql && !cx.configurado && !depois;
 
   useEffect(() => { if (uid) { setDados(null); carregarMes(uid, mes.ano, mes.m).then(setDados); } }, [uid, mes, versao]);
   useEffect(() => {
@@ -68,9 +74,10 @@ export default function Financeiro() {
       />
       <EstiloFinanceiro />
       <CaixaEstilos />
-      <div className="fd">
+      <div className={`fd${foco ? " fd--foco" : ""}`}>
         <div className="fd-a-saldo">
-          <SaldoCaixa cx={cx} onAcertar={() => setDefinir(true)} />
+          <SaldoCaixa cx={cx} onAcertar={() => setDefinir(true)} destaque={foco}
+            onDepois={foco ? () => { setDepois(true); try { localStorage.setItem(chaveDepois, "1"); } catch { /* sem acesso */ } } : undefined} />
           <div className="fd-acoes">
             <button type="button" className="fd-bt e" onClick={() => navigate("/financeiro/a-receber")}><ArrowUp size={17} weight="bold" />Receber</button>
             <button type="button" className="fd-bt s" onClick={() => setDespesa(true)}><ArrowDown size={17} weight="bold" />Despesa</button>
@@ -190,6 +197,9 @@ const CSS = `
   .fd-hd-mes button:disabled { opacity: .35; cursor: default; }
   .fd-hd-bt { display: flex; align-items: center; gap: 6px; border: none; border-radius: 10px; padding: 9px 13px; font-family: var(--font-base); font-size: 13px; font-weight: 800; color: #fff; cursor: pointer; white-space: nowrap; }
   .fd-hd-bt.e { background: #16A34A; } .fd-hd-bt.s { background: #2C1219; }
+  /* foco no convite do saldo: o resto fica levemente apagado (sem bloquear) */
+  .fd > * { transition: opacity .3s ease, filter .3s ease; }
+  .fd--foco > *:not(.fd-a-saldo), .fd--foco .fd-acoes { opacity: .38; filter: saturate(.5); }
   .fd-acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .fd-bt { display: flex; align-items: center; justify-content: center; gap: 6px; border: none; border-radius: 12px; padding: 12px; font-family: inherit; font-size: 14px; font-weight: 800; color: #fff; cursor: pointer; }
   .fd-bt.e { background: #16A34A; } .fd-bt.s { background: #2C1219; }

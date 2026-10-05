@@ -1,3 +1,4 @@
+import { useTravarRolagem } from "@/hooks/useTravarRolagem";
 import { useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
@@ -6,6 +7,7 @@ import { createPortal } from "react-dom";
  * Reaproveitada nas telas refeitas (Custos, Transações, Lucratividade).
  */
 export default function Folha({ titulo, sub, onClose, children }: { titulo: string; sub?: string; onClose: () => void; children: ReactNode }) {
+  useTravarRolagem(true)
   useEffect(() => {
     const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", esc);
