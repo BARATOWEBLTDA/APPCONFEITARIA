@@ -1,4 +1,5 @@
 // ── EditarPedido.tsx ─────────────────────────────────────────────────────────
+import { ajustarRecebido } from '@/lib/pagamentos'
 import CampoNumero from "@/components/ui/CampoNumero"
 import ReqTag from "@/components/ReqTag";
 // Tela de edição de pedido — design novo estilo Dora
@@ -682,6 +683,12 @@ export default function EditarPedido() {
         alert('Não foi possível salvar as alterações do pedido: ' + errPedido.message)
         setSalvando(false)
         return
+      }
+
+      // Financeiro · Passo 1: ela mudou o pagamento → os registros de pagamento acompanham
+      // (subiu: registra a diferença; desceu: estorna os mais recentes — nada é apagado)
+      if (mexeuNoPagamento && valorRecebido !== undefined) {
+        await ajustarRecebido({ pedidoId: pedido!.id, alvo: valorRecebido, forma: formaPagamento })
       }
 
       // Registra mudança de status no histórico (silencioso — não falha se tabela não existir)

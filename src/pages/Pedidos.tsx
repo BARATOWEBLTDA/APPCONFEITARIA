@@ -1,4 +1,5 @@
 // v2: excluir pedido + modal 3 secoes + imagem_url
+import { registrarPagamento } from '@/lib/pagamentos'
 import { duplicarPedido } from '@/lib/duplicarPedido'
 import { pedidoAtrasado } from '@/lib/pedidoStatus'
 import { VERSAO_APP } from "@/lib/versao";
@@ -1827,11 +1828,15 @@ export default function Pedidos() {
       return
     }
 
-    // Botão "Marcar como pago": já sabemos que pagou o total
+    // Botão "Marcar como pago": entrou o que faltava (Passo 1: vira um pagamento registrado)
     if (statusAtual === 'aguardando_pagamento' && pagoDireto) {
-      const update: any = { status, status_pagamento: 'pago', valor_recebido: pedido.valor_total }
-      await supabase.from('pedidos').update(update).eq('id', id)
-      setPedidos(prev => prev.map(p => p.id === id ? { ...p, ...update } : p))
+      await supabase.from('pedidos').update({ status }).eq('id', id)
+      const falta = saldoPedido(pedido)
+      const r = falta > 0
+        ? await registrarPagamento({ pedidoId: id, valor: falta, forma: pedido.forma_pagamento, tipo: recebidoPedido(pedido) > 0 ? 'restante' : 'total' })
+        : null
+      const novo = r?.status_pagamento ? { valor_recebido: r.valor_recebido, status_pagamento: r.status_pagamento } : { valor_recebido: pedido.valor_total, status_pagamento: 'pago' }
+      setPedidos(prev => prev.map(p => p.id === id ? { ...p, status, ...novo } : p))
       return
     }
 
@@ -1857,19 +1862,24 @@ export default function Pedidos() {
   const confirmarPagamentoSaida = async (opcao: 'total' | 'parcial' | 'nao', valorParcial?: number) => {
     if (!pendingPag) return
     const { pedido, novoStatus } = pendingPag
-    let update: any = { status: novoStatus }
+    const update: any = { status: novoStatus }
     const jaRecebido = recebidoPedido(pedido)
-    if (opcao === 'total') {
-      update.status_pagamento = 'pago'
-      update.valor_recebido = pedido.valor_total
-    } else if (opcao === 'parcial') {
-      // Passo 0: o valor digitado é o que entrou AGORA — soma com o que já tinha (antes substituía)
-      const novo = Math.min(Number(pedido.valor_total) || 0, Math.round((jaRecebido + (valorParcial || 0)) * 100) / 100)
-      update.valor_recebido = novo
-      update.status_pagamento = novo >= (Number(pedido.valor_total) || 0) - 0.009 ? 'pago' : 'parcial'
-    }
-    // 'nao' → só muda status, pagamento fica pendente
+    // Passo 1: o que entrou AGORA vira um pagamento registrado; o banco soma com o que já tinha
+    const agora = opcao === 'total' ? saldoPedido(pedido) : opcao === 'parcial' ? (valorParcial || 0) : 0
     await supabase.from('pedidos').update(update).eq('id', pedido.id)
+    if (agora > 0) {
+      const r = await registrarPagamento({
+        pedidoId: pedido.id, valor: agora, forma: pedido.forma_pagamento,
+        tipo: opcao === 'total' ? (jaRecebido > 0 ? 'restante' : 'total') : 'parcial',
+      })
+      if (r.status_pagamento) { update.valor_recebido = r.valor_recebido; update.status_pagamento = r.status_pagamento }
+      else {
+        const novo = Math.min(Number(pedido.valor_total) || 0, Math.round((jaRecebido + agora) * 100) / 100)
+        update.valor_recebido = novo
+        update.status_pagamento = novo >= (Number(pedido.valor_total) || 0) - 0.009 ? 'pago' : 'parcial'
+      }
+    }
+    // 'nao' → só muda status, pagamento fica como está
     setPedidos(prev => prev.map(p => p.id === pedido.id ? { ...p, ...update } : p))
     setPendingPag(null)
   }

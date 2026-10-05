@@ -3,6 +3,7 @@
  * Assim um pedido feito pela Doo fica idêntico ao manual: mesma situação, mesmo cálculo de
  * pagamento, mesmo cadastro de cliente novo, mesmos itens (com tamanho/kit) e mesmo histórico.
  */
+import { registrarPagamento } from "@/lib/pagamentos";
 import { supabase } from "@/lib/supabase";
 import { criarPersonalizacoesV1, criarBreakdownV1, SNAPSHOT_VERSION_ATUAL } from "@/lib/pedido-snapshot";
 
@@ -148,6 +149,14 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
     descricao: `Pedido ${d.tipo === "pronta_entrega" ? "de pronta entrega" : "de encomenda"} registrado ${d.origem === "doo" ? "pela Doo IA" : "manualmente"}`,
   }).then(() => {}, () => {});
 
+  // Financeiro · Passo 1: o recebido do pedido vira uma linha em "pagamentos" (com forma e data).
+  // O pedido já nasceu com o valor certo, então sem a tabela (SQL não rodado) não grava nada a mais.
+  if (valorRecebido > 0) {
+    await registrarPagamento({
+      pedidoId: (novoPedido as any).id, userId, valor: valorRecebido, forma: d.formaPagamento,
+      tipo: statusPag === "pago" ? "total" : "sinal", origem: d.origem === "doo" ? "doo" : "app", pedidoJaTemOValor: true,
+    });
+  }
   return { ok: true, pedido: novoPedido, ...(errItens ? { aviso: "Pedido salvo, mas os produtos falharam: " + errItens.message } : {}) };
 }
 
