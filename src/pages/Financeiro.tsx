@@ -1,5 +1,7 @@
 // Financeiro — Hub-landing
 // Sub-páginas: A receber, Visão Geral, Transações, Custos
+import AppPageHeader from "@/components/AppPageHeader";
+import CaixaCard from "@/components/financeiro/CaixaCard";
 import { useNavigate } from "react-router-dom";
 import type { ReactElement } from "react";
 import {
@@ -44,11 +46,19 @@ export default function Financeiro() {
   ];
 
   return (
+    <>
+    <AppPageHeader
+      title="Financeiro"
+      subtitle="Seu dinheiro, sem mistério"
+      infoIcon="💰"
+      infoContent={<>
+        <p><strong>Saldo em caixa</strong> é o dinheiro que você tem agora: o saldo que você informou, mais o que recebeu, menos o que pagou.</p>
+        <p>Pedido criado ou entregue <strong>não entra no caixa sozinho</strong>: só quando você registra o recebimento.</p>
+      </>}
+    />
     <div className="fh-root">
-      <div className="fh-header">
-        <h1 className="fh-title">Financeiro</h1>
-        <p className="fh-sub">Controle de entradas e saídas financeiras</p>
-      </div>
+      {/* Financeiro · Passo 4: saldo em caixa e últimas movimentações */}
+      <CaixaCard />
 
       <div className="fh-block">
         <h2 className="fh-block-title">Operações</h2>
@@ -69,9 +79,9 @@ export default function Financeiro() {
       <style>{`
         .fh-root {
           font-family: var(--font-base);
-          padding: var(--space-5) var(--space-4) 6rem;
+          padding: 22px 0 6rem; /* respiro abaixo do cabeçalho */
           display: flex; flex-direction: column; gap: var(--space-4);
-          max-width: 980px; margin: 0 auto;
+          max-width: 760px; margin: 0 auto;
         }
         .fh-header { display: flex; flex-direction: column; gap: var(--space-1); }
         .fh-title {
@@ -139,5 +149,6 @@ export default function Financeiro() {
         .fh-tile-arrow { color: var(--text-muted); flex-shrink: 0; }
       `}</style>
     </div>
+    </>
   );
 }
