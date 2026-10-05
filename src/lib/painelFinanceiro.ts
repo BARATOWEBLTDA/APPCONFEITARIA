@@ -44,12 +44,14 @@ export async function carregarMes(uid: string, ano: number, mes0: number): Promi
   const ini = iso(new Date(ano, mes0, 1)), fim = iso(new Date(ano, mes0 + 1, 0)), hoje = iso(new Date());
   const ate = fim < hoje ? fim : hoje;
 
-  const [pag, fin, vend] = await Promise.all([
+  const [pag, fin0, vend] = await Promise.all([
     supabase.from("pagamentos").select("valor, recebido_em").eq("user_id", uid).is("estornado_em", null).gte("recebido_em", ini).lte("recebido_em", ate),
-    supabase.from("financeiro").select("tipo, categoria, valor, data").eq("user_id", uid).gte("data", ini).lte("data", ate),
+    supabase.from("financeiro").select("tipo, categoria, valor, data, estornado_em").eq("user_id", uid).gte("data", ini).lte("data", ate),
     supabase.from("pedidos").select("id, valor_total, status, data_entrega, pedido_itens(quantidade, produtos(id))")
       .eq("user_id", uid).eq("status", "entregue").gte("data_entrega", ini).lte("data_entrega", fim),
   ]);
+
+  const fin: any = fin0.error ? await supabase.from("financeiro").select("tipo, categoria, valor, data").eq("user_id", uid).gte("data", ini).lte("data", ate) : fin0;
 
   // ── Recebido ──
   let fonteRecebido: MesFinanceiro["fonteRecebido"] = "pagamentos";
@@ -62,7 +64,7 @@ export async function carregarMes(uid: string, ano: number, mes0: number): Promi
       .eq("user_id", uid).gte("data_entrega", ini).lte("data_entrega", ate);
     recebimentos = ((peds as any[]) || []).map(p => ({ valor: r2(valorRecebidoPedido(p)), data: p.data_entrega })).filter(x => x.valor > 0);
   }
-  const lanc = ((fin.data as any[]) || []);
+  const lanc = ((fin.data as any[]) || []).filter(l => !l.estornado_em); // estornado não conta
   const entradasAv = lanc.filter(l => l.tipo === "entrada");
   const saidas = lanc.filter(l => l.tipo !== "entrada");
   const recebidoPedidos = r2(recebimentos.reduce((s, x) => s + x.valor, 0));

@@ -34,16 +34,20 @@ export async function carregarCaixa(uid: string): Promise<EstadoCaixa> {
   const hoje = hojeISO();
   const saldoInicial = r2(p.caixa_saldo_inicial);
 
-  const [pag, fin] = await Promise.all([
+  const [pag, fin0] = await Promise.all([
     supabase.from("pagamentos").select("id, valor, forma, tipo, recebido_em, pedido_id, created_at")
       .eq("user_id", uid).is("estornado_em", null).gte("created_at", inicio).lte("recebido_em", hoje),
     // lançamento com data no futuro ainda não saiu do caixa
-    supabase.from("financeiro").select("id, tipo, categoria, descricao, valor, data, created_at")
+    supabase.from("financeiro").select("id, tipo, categoria, descricao, valor, data, created_at, estornado_em")
       .eq("user_id", uid).gte("created_at", inicio).lte("data", hoje),
   ]);
+  // sem a coluna de estorno (SQL não rodado), busca sem ela
+  const fin: any = fin0.error
+    ? await supabase.from("financeiro").select("id, tipo, categoria, descricao, valor, data, created_at").eq("user_id", uid).gte("created_at", inicio).lte("data", hoje)
+    : fin0;
   const semPagamentos = !!pag.error;
   const pagamentos: any[] = pag.error ? [] : (pag.data as any[]) || [];
-  const lancamentos: any[] = (fin.data as any[]) || [];
+  const lancamentos: any[] = ((fin.data as any[]) || []).filter(l => !l.estornado_em); // estornado não conta
 
   // nome do pedido em cada recebimento (número e cliente)
   const ids = [...new Set(pagamentos.map(g => g.pedido_id).filter(Boolean))];

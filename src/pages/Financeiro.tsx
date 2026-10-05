@@ -11,6 +11,8 @@ import { carregarMes, resumoAPagar, type MesFinanceiro } from "@/lib/painelFinan
 import { carregarAReceber, isoDia } from "@/lib/contasReceber";
 
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+// números do mês sem centavos (o valor exato fica nas telas de detalhe)
+const brlInt = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 const brlCurto = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
@@ -46,6 +48,17 @@ export default function Financeiro() {
         title="Financeiro"
         subtitle="Seu dinheiro, sem mistério"
         infoIcon="💰"
+        rightActions={
+          <div className="fd-hd">
+            <div className="fd-hd-mes">
+              <button type="button" onClick={() => mudarMes(-1)} aria-label="Mês anterior"><CaretLeft size={14} weight="bold" /></button>
+              <b>{MESES[mes.m]} de {mes.ano}</b>
+              <button type="button" onClick={() => mudarMes(1)} disabled={ehMesAtual} aria-label="Próximo mês"><CaretRight size={14} weight="bold" /></button>
+            </div>
+            <button type="button" className="fd-hd-bt e" onClick={() => navigate("/financeiro/a-receber")}><ArrowUp size={15} weight="bold" />Registrar recebimento</button>
+            <button type="button" className="fd-hd-bt s" onClick={() => setDespesa(true)}><ArrowDown size={15} weight="bold" />Nova despesa</button>
+          </div>
+        }
         infoContent={<>
           <p><strong>Saldo em caixa</strong>: o dinheiro que você tem agora (o saldo que você informou + o que recebeu − o que pagou).</p>
           <p><strong>Recebido</strong> é o dinheiro que entrou no mês. <strong>Vendido</strong> são os pedidos entregues no mês. <strong>Lucro</strong> é o vendido menos o custo dos ingredientes (ficha técnica) e as despesas do mês.</p>
@@ -69,20 +82,21 @@ export default function Financeiro() {
         </div>
 
         <div className="fd-a-kpis fd-kpis">
-          <div className="fd-k"><small>Recebido no mês</small><b className="e">{dados ? brl(dados.recebido) : "…"}</b><i>dinheiro que entrou</i></div>
-          <div className="fd-k"><small>Despesas pagas</small><b className="s">{dados ? brl(dados.despesasPagas) : "…"}</b><i>dinheiro que saiu</i></div>
-          <div className="fd-k"><small>Vendido no mês</small><b>{dados ? brl(dados.vendido) : "…"}</b><i>{dados ? `${dados.qtdVendidos} ${dados.qtdVendidos === 1 ? "pedido entregue" : "pedidos entregues"}` : ""}</i></div>
-          <div className="fd-k"><small>Lucro do mês</small><b className={dados && dados.lucro < 0 ? "s" : "l"}>{dados ? brl(dados.lucro) : "…"}</b>
-            <i>{dados ? (dados.vendido > 0 ? `margem de ${dados.margem}%` : "sem vendas entregues") : ""}{dados && dados.semFicha > 0 ? ` · ${dados.semFicha} sem ficha técnica` : ""}</i></div>
+          <div className="fd-k"><small>Recebido no mês</small><b className="e">{dados ? brlInt(dados.recebido) : "…"}</b><i>dinheiro que entrou</i></div>
+          <div className="fd-k"><small>Despesas pagas</small><b className="s">{dados ? brlInt(dados.despesasPagas) : "…"}</b><i>dinheiro que saiu</i></div>
+          <div className="fd-k fd-k--vendido"><small>Vendido no mês</small><b>{dados ? brlInt(dados.vendido) : "…"}</b><i>{dados ? `${dados.qtdVendidos} ${dados.qtdVendidos === 1 ? "pedido entregue" : "pedidos entregues"}` : ""}</i></div>
+          <div className="fd-k"><small>Lucro do mês</small><b className={dados && dados.lucro < 0 ? "s" : "l"}>{dados ? brlInt(dados.lucro) : "…"}</b>
+            <i className="fd-so-cel">{dados ? (dados.vendido > 0 ? `margem de ${dados.margem}%` : "sem vendas entregues") : ""}{dados && dados.semFicha > 0 ? ` · ${dados.semFicha} sem ficha` : ""}</i>
+            <i className="fd-so-desk">{dados ? `vendido ${brlInt(dados.vendido)}${dados.vendido > 0 ? ` · margem ${dados.margem}%` : ""}` : ""}{dados && dados.semFicha > 0 ? ` · ${dados.semFicha} sem ficha` : ""}</i></div>
         </div>
 
         <div className="fd-a-contas fd-contas">
           <button type="button" className="fd-k2 rec" onClick={() => navigate("/financeiro/a-receber")}>
-            <small>A receber</small><b>{rec ? brl(rec.total) : "…"}</b>
+            <small>A receber</small><b>{rec ? brlInt(rec.total) : "…"}</b>
             <i>{rec ? `${rec.qtd} ${rec.qtd === 1 ? "pedido" : "pedidos"}${rec.semana ? ` · ${rec.semana} nesta semana` : ""}` : ""}<CaretRight size={13} weight="bold" /></i>
           </button>
           <button type="button" className="fd-k2 pag" onClick={() => navigate("/financeiro/a-pagar")}>
-            <small>A pagar</small><b>{pag === undefined ? "…" : pag ? brl(pag.total) : "—"}</b>
+            <small>A pagar</small><b>{pag === undefined ? "…" : pag ? brlInt(pag.total) : "—"}</b>
             <i>{pag === null ? "falta o SQL do Passo 5" : pag ? `${pag.qtd} ${pag.qtd === 1 ? "conta" : "contas"}${pag.proxima ? ` · vence dia ${pag.proxima.slice(8, 10)}` : ""}` : ""}<CaretRight size={13} weight="bold" /></i>
           </button>
         </div>
@@ -153,9 +167,27 @@ const CSS = `
   .fd > * { min-width: 0; }
   .fd-a-saldo { grid-area: saldo; display: flex; flex-direction: column; gap: 10px; } .fd-a-mes { grid-area: mes; } .fd-a-kpis { grid-area: kpis; }
   .fd-a-contas { grid-area: contas; } .fd-a-prev { grid-area: prev; } .fd-a-fluxo { grid-area: fluxo; } .fd-a-movs { grid-area: movs; } .fd-a-mais { grid-area: mais; }
+  /* computador: mês e botões no cabeçalho (como no mockup) */
+  .fd-so-desk { display: none !important; }
+  @media (min-width: 768px) { .fd-a-mes, .fd-acoes { display: none !important; } }
   @media (min-width: 1024px) {
-    .fd { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "mes mes mes" "saldo kpis kpis" "contas contas prev" "fluxo fluxo movs" "mais mais mais"; gap: 16px; }
+    /* grade do mockup: 4 colunas */
+    .fd { grid-template-columns: minmax(0, 1.25fr) repeat(3, minmax(0, 1fr)); gap: 16px;
+      grid-template-areas: "saldo kpis kpis kpis" "contas contas prev prev" "fluxo fluxo movs movs" "mais mais mais mais"; }
+    .fd .fd-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .fd .fd-kpis .fd-k { display: flex; flex-direction: column; justify-content: center; }
+    .fd .fd-k--vendido { display: none !important; }
+    .fd .fd-so-cel { display: none !important; } .fd .fd-so-desk { display: flex !important; }
+    .fd .fd-a-saldo .cxc { height: 100%; box-sizing: border-box; }
+    .fd .fd-k2 { display: flex; flex-direction: column; justify-content: center; }
   }
+  .fd-hd { display: flex; align-items: center; gap: 8px; }
+  .fd-hd-mes { display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,.18); border-radius: 10px; padding: 4px; }
+  .fd-hd-mes b { font-size: 13px; font-weight: 800; color: #fff; padding: 0 6px; white-space: nowrap; }
+  .fd-hd-mes button { width: 26px; height: 26px; border: none; border-radius: 7px; background: rgba(255,255,255,.18); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .fd-hd-mes button:disabled { opacity: .35; cursor: default; }
+  .fd-hd-bt { display: flex; align-items: center; gap: 6px; border: none; border-radius: 10px; padding: 9px 13px; font-family: var(--font-base); font-size: 13px; font-weight: 800; color: #fff; cursor: pointer; white-space: nowrap; }
+  .fd-hd-bt.e { background: #16A34A; } .fd-hd-bt.s { background: #2C1219; }
   .fd-acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .fd-bt { display: flex; align-items: center; justify-content: center; gap: 6px; border: none; border-radius: 12px; padding: 12px; font-family: inherit; font-size: 14px; font-weight: 800; color: #fff; cursor: pointer; }
   .fd-bt.e { background: #16A34A; } .fd-bt.s { background: #2C1219; }

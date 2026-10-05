@@ -1,800 +1,293 @@
-// Custos — gestão de custos fixos, variáveis e mão de obra.
-// Reescrito sobre o design system /components/financeiro.
-import { useState, useEffect, useMemo } from "react";
+// Custos — refeita no padrão novo do financeiro (03/10). Mesma lógica de antes:
+// custos fixos (com dia de vencimento → viram conta em "A pagar"), custos variáveis
+// (% de cada venda ou R$ por pedido) e mão de obra (salário, horas e dias).
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Buildings, Percent, Clock, Plus, CaretRight, Receipt } from "@phosphor-icons/react";
+import AppPageHeader from "@/components/AppPageHeader";
+import Folha, { FOLHA_CSS } from "@/components/financeiro/Folha";
 import { supabase } from "@/lib/supabase";
-import {
-  PencilSimple, Trash, House,
-  Calculator, Percent, Clock, Buildings, Coin, Info,
-} from "@phosphor-icons/react";
-import {
-  FinTabs,
-  FinCard,
-  FinEmpty,
-  FinInputGlobalStyles,
-  type FinTab,
-} from "@/components/financeiro";
-import BtnNovo from "@/components/BtnNovo";
-import ModalCustoFixo, { type CustoFixoInput } from "./custos/ModalCustoFixo";
-import ModalCustoVariavel, { type CustoVariavelInput } from "./custos/ModalCustoVariavel";
-import ModalMaoObra, { type MaoObraInput } from "./custos/ModalMaoObra";
-import ConfirmDeleteCusto from "./custos/ConfirmDeleteCusto";
 
-type CustoFixo = {
-  id: string;
-  nome: string;
-  valor: number;
-  ativo: boolean;
-  dia_vencimento: number | null;
-};
+type CustoFixo = { id: string; nome: string; valor: number; ativo: boolean; dia_vencimento: number | null };
+type CustoVariavel = { id: string; nome: string; tipo: "percentual" | "fixo"; valor: number; ativo: boolean };
+type MaoObra = { salario_mensal: number; horas_dia: number; dias_semana_array: number[] };
 
-type CustoVariavel = {
-  id: string;
-  nome: string;
-  tipo: "percentual" | "fixo";
-  valor: number;
-  ativo: boolean;
-};
-
-type ConfigMaoObra = {
-  salario_mensal: number;
-  horas_dia: number;
-  dias_semana_array: number[];
-};
-
-type TabKey = "resumo" | "mao-obra" | "fixos" | "variaveis";
-
-const fmtMoney = (v: number) =>
-  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-
-const VALOR_BASE_VARIAVEL = 100;
-
-const TABS: FinTab<TabKey>[] = [
-  { key: "resumo", label: "Resumo", icon: <House size={18} weight="duotone" /> },
-  { key: "mao-obra", label: "Mão de obra", icon: <Clock size={18} weight="duotone" /> },
-  { key: "fixos", label: "Custos fixos", icon: <Buildings size={18} weight="duotone" /> },
-  { key: "variaveis", label: "Custos variáveis", icon: <Percent size={18} weight="duotone" /> },
-];
+const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const num = (s: string) => Math.round((parseFloat(String(s).replace(/\./g, "").replace(",", ".")) || 0) * 100) / 100;
+const txt = (v: number | null | undefined) => (v == null || v === 0 ? "" : String(v).replace(".", ","));
+const DIAS = [{ id: 1, l: "Seg" }, { id: 2, l: "Ter" }, { id: 3, l: "Qua" }, { id: 4, l: "Qui" }, { id: 5, l: "Sex" }, { id: 6, l: "Sáb" }, { id: 7, l: "Dom" }];
 
 export default function Custos() {
   const navigate = useNavigate();
-  const [userId, setUserId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<TabKey>("resumo");
-
+  const [uid, setUid] = useState<string | null>(null);
   const [fixos, setFixos] = useState<CustoFixo[]>([]);
   const [variaveis, setVariaveis] = useState<CustoVariavel[]>([]);
-  const [maoObra, setMaoObra] = useState<ConfigMaoObra>({
-    salario_mensal: 0,
-    horas_dia: 8,
-    dias_semana_array: [1, 2, 3, 4, 5],
-  });
+  const [mo, setMo] = useState<MaoObra>({ salario_mensal: 0, horas_dia: 8, dias_semana_array: [1, 2, 3, 4, 5] });
+  const [carregando, setCarregando] = useState(true);
+  const [editFixo, setEditFixo] = useState<CustoFixo | "novo" | null>(null);
+  const [editVar, setEditVar] = useState<CustoVariavel | "novo" | null>(null);
+  const [editMo, setEditMo] = useState(false);
 
-  // Modais
-  const [modalFixo, setModalFixo] = useState<CustoFixoInput | "novo" | null>(null);
-  const [modalVar, setModalVar] = useState<CustoVariavelInput | "novo" | null>(null);
-  const [modalMaoObra, setModalMaoObra] = useState(false);
-  const [deleteFixo, setDeleteFixo] = useState<CustoFixo | null>(null);
-  const [deleteVar, setDeleteVar] = useState<CustoVariavel | null>(null);
-
-  // Auth
-  useEffect(() => {
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) setUserId(user.id);
-    })();
-  }, []);
-
-  // Load
-  useEffect(() => {
-    if (!userId) return;
-    loadAll();
-  }, [userId]);
-
-  async function loadAll() {
-    if (!userId) return;
-    setLoading(true);
+  const carregar = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    setUid(user.id);
     const [f, v, m] = await Promise.all([
-      supabase
-        .from("custos_fixos")
-        .select("id, nome, valor, ativo, dia_vencimento")
-        .eq("user_id", userId)
-        .order("nome"),
-      supabase
-        .from("custos_variaveis")
-        .select("id, nome, tipo, valor, ativo")
-        .eq("user_id", userId)
-        .order("nome"),
-      supabase
-        .from("config_mao_obra")
-        .select("salario_mensal, horas_dia, dias_semana, dias_semana_array")
-        .eq("user_id", userId)
-        .maybeSingle(),
+      supabase.from("custos_fixos").select("id, nome, valor, ativo, dia_vencimento").eq("user_id", user.id).order("nome"),
+      supabase.from("custos_variaveis").select("id, nome, tipo, valor, ativo").eq("user_id", user.id).order("nome"),
+      supabase.from("config_mao_obra").select("salario_mensal, horas_dia, dias_semana, dias_semana_array").eq("user_id", user.id).maybeSingle(),
     ]);
-    if (f.data) setFixos(f.data as CustoFixo[]);
-    if (v.data) setVariaveis(v.data as CustoVariavel[]);
+    setFixos(((f.data as any[]) || []).map(x => ({ ...x, valor: Number(x.valor) || 0 })));
+    setVariaveis(((v.data as any[]) || []).map(x => ({ ...x, valor: Number(x.valor) || 0 })));
     if (m.data) {
-      // Migra: se ainda não houver array salvo, deriva do número antigo (1..N)
-      const arr: number[] = Array.isArray(m.data.dias_semana_array) && m.data.dias_semana_array.length > 0
-        ? (m.data.dias_semana_array as number[])
-        : Array.from({ length: Math.min(Math.max(Number(m.data.dias_semana) || 5, 1), 7) }, (_, i) => i + 1);
-      setMaoObra({
-        salario_mensal: Number(m.data.salario_mensal) || 0,
-        horas_dia: Number(m.data.horas_dia) || 8,
-        dias_semana_array: arr,
-      });
+      const d: any = m.data;
+      const arr: number[] = Array.isArray(d.dias_semana_array) && d.dias_semana_array.length > 0
+        ? d.dias_semana_array : Array.from({ length: Math.min(Math.max(Number(d.dias_semana) || 5, 1), 7) }, (_, i) => i + 1);
+      setMo({ salario_mensal: Number(d.salario_mensal) || 0, horas_dia: Number(d.horas_dia) || 8, dias_semana_array: arr });
     }
-    setLoading(false);
-  }
+    setCarregando(false);
+  }, []);
+  useEffect(() => { carregar(); }, [carregar]);
 
-  // ── Totais ──
-  const totalFixosMes = useMemo(
-    () => fixos.filter(f => f.ativo).reduce((s, f) => s + Number(f.valor), 0),
-    [fixos]
-  );
-
-  const horasSemana = maoObra.horas_dia * maoObra.dias_semana_array.length;
-  const horasMes = horasSemana * 4.345;
-
-  const custoPorHora = useMemo(() => {
-    if (horasMes === 0) return 0;
-    return (totalFixosMes + maoObra.salario_mensal) / horasMes;
-  }, [totalFixosMes, maoObra.salario_mensal, horasMes]);
-
-  const valorHora = useMemo(() => {
-    if (horasMes === 0) return 0;
-    return maoObra.salario_mensal / horasMes;
-  }, [maoObra.salario_mensal, horasMes]);
-
-  const valorDia = useMemo(
-    () => valorHora * maoObra.horas_dia,
-    [valorHora, maoObra.horas_dia]
-  );
-
-  const estimativaVariaveis = useMemo(() => {
-    return variaveis.filter(v => v.ativo).reduce((s, v) => {
-      if (v.tipo === "percentual") {
-        return s + (VALOR_BASE_VARIAVEL * Number(v.valor) / 100);
-      }
-      return s + Number(v.valor);
-    }, 0);
-  }, [variaveis]);
-
-  // ── CRUD: Custos Fixos ──
-  async function salvarFixo(data: CustoFixoInput) {
-    if (!userId) return;
-    const payload = {
-      nome: data.nome,
-      valor: data.valor,
-      ativo: data.ativo,
-      dia_vencimento: data.dia_vencimento,
-    };
-    if (data.id) {
-      await supabase.from("custos_fixos").update(payload).eq("id", data.id);
-    } else {
-      await supabase.from("custos_fixos").insert({ user_id: userId, ...payload });
-    }
-    setModalFixo(null);
-    loadAll();
-  }
-
-  async function excluirFixo() {
-    if (!deleteFixo) return;
-    await supabase.from("custos_fixos").delete().eq("id", deleteFixo.id);
-    setDeleteFixo(null);
-    loadAll();
-  }
-
-  // ── CRUD: Custos Variáveis ──
-  async function salvarVariavel(data: CustoVariavelInput) {
-    if (!userId) return;
-    const payload = {
-      nome: data.nome,
-      tipo: data.tipo,
-      valor: data.valor,
-      ativo: data.ativo,
-    };
-    if (data.id) {
-      await supabase.from("custos_variaveis").update(payload).eq("id", data.id);
-    } else {
-      await supabase.from("custos_variaveis").insert({ user_id: userId, ...payload });
-    }
-    setModalVar(null);
-    loadAll();
-  }
-
-  async function excluirVariavel() {
-    if (!deleteVar) return;
-    await supabase.from("custos_variaveis").delete().eq("id", deleteVar.id);
-    setDeleteVar(null);
-    loadAll();
-  }
-
-  // ── Mão de obra ──
-  async function salvarMaoObra(data: MaoObraInput) {
-    if (!userId) return;
-    await supabase.from("config_mao_obra").upsert({
-      user_id: userId,
-      salario_mensal: data.salario_mensal,
-      horas_dia: data.horas_dia,
-      // Mantém compatibilidade com a coluna antiga
-      dias_semana: data.dias_semana_array.length,
-      dias_semana_array: data.dias_semana_array,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: "user_id" });
-    setModalMaoObra(false);
-    loadAll();
-  }
-
-  return (
-    <div className="cu-root">
-      <FinInputGlobalStyles />
-
-      {/* Header */}
-      <div className="cu-page-header">
-        <button className="cu-back" onClick={() => navigate("/financeiro")}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          Voltar
-        </button>
-        <div className="cu-page-titles">
-          <h1 className="cu-title">Custos</h1>
-          <p className="cu-sub">Gerencie seus custos e mão de obra</p>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <FinTabs<TabKey> tabs={TABS} active={tab} onChange={setTab} ariaLabel="Seções de custos" />
-
-      {/* Resumo */}
-      {tab === "resumo" && (
-        <div className="cu-content">
-          <h2 className="cu-section-label">Resumo geral dos custos</h2>
-          <div className="cu-summary">
-            <SumCard
-              icon={<Buildings size={18} weight="duotone" />}
-              label="Custos fixos (mês)"
-              value={fmtMoney(totalFixosMes)}
-            />
-            <SumCard
-              icon={<Calculator size={18} weight="duotone" />}
-              label="Mão de obra (mês)"
-              value={fmtMoney(maoObra.salario_mensal)}
-            />
-            <SumCard
-              icon={<Clock size={18} weight="duotone" />}
-              label={
-                <>
-                  Custo por hora{" "}
-                  <span title="Soma de custos fixos + mão de obra dividido pelas horas trabalhadas no mês" style={{ display: "inline-flex", cursor: "help" }}>
-                    <Info size={12} weight="regular" />
-                  </span>
-                </>
-              }
-              value={fmtMoney(custoPorHora)}
-            />
-            <SumCard
-              icon={<Percent size={18} weight="duotone" />}
-              label={`Variáveis (est. ${fmtMoney(VALOR_BASE_VARIAVEL)})`}
-              value={`≈ ${fmtMoney(estimativaVariaveis)}`}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Mão de obra */}
-      {tab === "mao-obra" && (
-        <div className="cu-content">
-          <FinCard
-            icon={<Calculator size={20} weight="duotone" />}
-            title="Calculadora de mão de obra"
-            description="Calcule o valor da sua hora de trabalho com base no salário desejado e na carga horária. Esse valor será usado para precificar o tempo de produção de cada receita."
-          >
-            {maoObra.salario_mensal === 0 ? (
-              <FinEmpty
-                icon={<Calculator size={36} weight="duotone" />}
-                title="Vamos calcular o valor da sua hora?"
-                description="Em menos de 1 minuto você configura seu salário desejado e a carga horária."
-                actionLabel="Calcular minha hora"
-                onAction={() => setModalMaoObra(true)}
-              />
-            ) : (
-              <>
-                <div className="cu-mo-config">
-                  <div className="cu-mo-header">
-                    <Clock size={20} weight="duotone" />
-                    <div>
-                      <p className="cu-mo-title">Mão de obra configurada</p>
-                      <p className="cu-mo-sub">
-                        {maoObra.horas_dia}h/dia · {labelDiasArray(maoObra.dias_semana_array)}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="cu-mo-value">{fmtMoney(maoObra.salario_mensal)}</p>
-                  <div className="cu-mo-actions">
-                    <BtnNovo
-                      label="Editar configuração"
-                      icon={<PencilSimple size={14} weight="bold" />}
-                      onClick={() => setModalMaoObra(true)}
-                      responsive={false}
-                    />
-                  </div>
-                </div>
-
-                <h3 className="cu-section-label">Resumo dos cálculos</h3>
-                <div className="cu-mo-grid">
-                  <Stat label="Horas/semana" value={`${horasSemana}h`} />
-                  <Stat label="Horas/mês" value={`${horasMes.toFixed(0)}h`} />
-                  <Stat label="Valor/hora" value={fmtMoney(valorHora)} />
-                  <Stat label="Valor/dia" value={fmtMoney(valorDia)} />
-                </div>
-              </>
-            )}
-          </FinCard>
-        </div>
-      )}
-
-      {/* Custos Fixos */}
-      {tab === "fixos" && (
-        <div className="cu-content">
-          <FinCard
-            icon={<Buildings size={20} weight="duotone" />}
-            title="Gestão de custos fixos"
-            description="Custos fixos mensais (aluguel, internet, energia) e despesas recorrentes. Compõem o custo por hora da sua empresa."
-            headerAction={
-              fixos.length > 0 ? (
-                <BtnNovo label="Novo custo" onClick={() => setModalFixo("novo")} />
-              ) : null
-            }
-          >
-            {loading ? (
-              <p className="cu-empty-line">Carregando…</p>
-            ) : fixos.length === 0 ? (
-              <FinEmpty
-                icon={<Buildings size={36} weight="duotone" />}
-                title="Você ainda não cadastrou nenhum custo fixo"
-                description="Cadastre aluguel, energia, internet e outras despesas recorrentes para conhecer o custo real da sua produção."
-                actionLabel="Cadastrar primeiro custo"
-                onAction={() => setModalFixo("novo")}
-              />
-            ) : (
-              <>
-                <h3 className="cu-section-label">
-                  <Coin size={14} weight="duotone" /> {fixos.length} {fixos.length === 1 ? "custo cadastrado" : "custos cadastrados"}
-                </h3>
-                <div className="cu-list">
-                  {fixos.map(f => (
-                    <div key={f.id} className={`cu-item ${!f.ativo ? "inativo" : ""}`}>
-                      <div className="cu-item-info">
-                        <p className="cu-item-nome">{f.nome}</p>
-                        <div className="cu-item-meta">
-                          {f.dia_vencimento && (
-                            <span className="cu-badge">Vence dia {f.dia_vencimento}</span>
-                          )}
-                          {!f.ativo && <span className="cu-badge cu-badge--off">inativo</span>}
-                        </div>
-                      </div>
-                      <p className="cu-item-valor">{fmtMoney(Number(f.valor))}<span>/mês</span></p>
-                      <div className="cu-item-actions">
-                        <button className="cu-icon-btn" onClick={() => setModalFixo({
-                          id: f.id, nome: f.nome, valor: f.valor, ativo: f.ativo,
-                          dia_vencimento: f.dia_vencimento,
-                        })} aria-label="Editar">
-                          <PencilSimple size={14} weight="bold" />
-                        </button>
-                        <button className="cu-icon-btn cu-icon-btn--danger" onClick={() => setDeleteFixo(f)} aria-label="Excluir">
-                          <Trash size={14} weight="bold" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                  <div className="cu-list-footer">
-                    <span>Total mensal</span>
-                    <strong>{fmtMoney(totalFixosMes)}</strong>
-                  </div>
-                </div>
-              </>
-            )}
-          </FinCard>
-        </div>
-      )}
-
-      {/* Custos Variáveis */}
-      {tab === "variaveis" && (
-        <div className="cu-content">
-          <FinCard
-            icon={<Percent size={20} weight="duotone" />}
-            title="Custos variáveis da venda"
-            description="Despesas atreladas diretamente a cada venda: taxas de cartão, comissões, embalagens. Podem ser percentuais (%) ou valor fixo (R$)."
-            headerAction={
-              variaveis.length > 0 ? (
-                <BtnNovo label="Novo custo" onClick={() => setModalVar("novo")} />
-              ) : null
-            }
-          >
-            {loading ? (
-              <p className="cu-empty-line">Carregando…</p>
-            ) : variaveis.length === 0 ? (
-              <FinEmpty
-                icon={<Percent size={36} weight="duotone" />}
-                title="Você ainda não cadastrou custos variáveis"
-                description="Cadastre taxas de maquininha, comissões de iFood, embalagens e tudo que varia por venda."
-                actionLabel="Cadastrar primeiro custo"
-                onAction={() => setModalVar("novo")}
-              />
-            ) : (
-              <>
-                <h3 className="cu-section-label">
-                  <Coin size={14} weight="duotone" /> {variaveis.length} {variaveis.length === 1 ? "custo cadastrado" : "custos cadastrados"}
-                </h3>
-                <div className="cu-list">
-                  {variaveis.map(v => (
-                    <div key={v.id} className={`cu-item ${!v.ativo ? "inativo" : ""}`}>
-                      <div className="cu-item-info">
-                        <p className="cu-item-nome">{v.nome}</p>
-                        <div className="cu-item-meta">
-                          <span className="cu-badge cu-badge--tipo">
-                            {v.tipo === "percentual" ? "%" : "R$"}
-                          </span>
-                          {!v.ativo && <span className="cu-badge cu-badge--off">inativo</span>}
-                        </div>
-                      </div>
-                      <p className="cu-item-valor">
-                        {v.tipo === "percentual"
-                          ? `${Number(v.valor).toFixed(2)}%`
-                          : fmtMoney(Number(v.valor))}
-                      </p>
-                      <div className="cu-item-actions">
-                        <button className="cu-icon-btn" onClick={() => setModalVar({
-                          id: v.id, nome: v.nome, tipo: v.tipo, valor: v.valor, ativo: v.ativo,
-                        })} aria-label="Editar">
-                          <PencilSimple size={14} weight="bold" />
-                        </button>
-                        <button className="cu-icon-btn cu-icon-btn--danger" onClick={() => setDeleteVar(v)} aria-label="Excluir">
-                          <Trash size={14} weight="bold" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </FinCard>
-        </div>
-      )}
-
-      {/* Modais */}
-      {modalFixo && (
-        <ModalCustoFixo
-          item={modalFixo === "novo" ? null : modalFixo}
-          onClose={() => setModalFixo(null)}
-          onSave={salvarFixo}
-        />
-      )}
-      {modalVar && (
-        <ModalCustoVariavel
-          item={modalVar === "novo" ? null : modalVar}
-          onClose={() => setModalVar(null)}
-          onSave={salvarVariavel}
-        />
-      )}
-      {modalMaoObra && (
-        <ModalMaoObra
-          config={maoObra}
-          onClose={() => setModalMaoObra(false)}
-          onSave={salvarMaoObra}
-        />
-      )}
-      {deleteFixo && (
-        <ConfirmDeleteCusto
-          nome={deleteFixo.nome}
-          onClose={() => setDeleteFixo(null)}
-          onConfirm={excluirFixo}
-        />
-      )}
-      {deleteVar && (
-        <ConfirmDeleteCusto
-          nome={deleteVar.nome}
-          onClose={() => setDeleteVar(null)}
-          onConfirm={excluirVariavel}
-        />
-      )}
-
-      {/* Estilos exclusivos da página de Custos */}
-      <style>{`
-        .cu-root {
-          font-family: var(--font-base);
-          padding: var(--space-5) var(--space-4) 6rem;
-          display: flex; flex-direction: column; gap: var(--space-4);
-          max-width: 980px; margin: 0 auto;
-        }
-        .cu-page-header {
-          display: flex; flex-direction: column;
-          align-items: flex-start;
-          gap: var(--space-2);
-        }
-        .cu-back {
-          display: inline-flex; align-items: center; gap: 6px; padding: 0;
-          background: none; border: none; font-family: var(--font-base);
-          font-size: var(--font-button); font-weight: var(--fw-medium);
-          color: var(--text-secondary); cursor: pointer;
-          transition: color var(--dur-fast) var(--ease-out);
-        }
-        .cu-back:hover { color: var(--text-title); }
-        .cu-back:focus-visible {
-          outline: 2px solid var(--primary);
-          outline-offset: 4px;
-          border-radius: 4px;
-        }
-        .cu-page-titles { display: flex; flex-direction: column; gap: var(--space-1); }
-        .cu-title {
-          font-size: var(--font-page-title);
-          font-weight: var(--fw-black);
-          color: var(--text-title);
-          margin: 0;
-          letter-spacing: var(--ls-tight);
-        }
-        .cu-sub {
-          font-size: var(--font-page-subtitle);
-          color: var(--text-secondary);
-          margin: 0;
-        }
-        .cu-content { display: flex; flex-direction: column; gap: var(--space-3); }
-        .cu-section-label {
-          display: inline-flex; align-items: center; gap: var(--space-1);
-          font-size: var(--font-section-label);
-          font-weight: var(--fw-semibold);
-          color: var(--text-muted);
-          margin: 0;
-          text-transform: uppercase;
-          letter-spacing: var(--ls-wide);
-        }
-
-        /* Resumo cards */
-        .cu-summary {
-          display: flex; flex-direction: column;
-          gap: var(--space-3);
-        }
-        @media (min-width: 600px) {
-          .cu-summary { display: grid; grid-template-columns: repeat(2, 1fr); }
-        }
-
-        /* Mão de obra */
-        .cu-mo-config {
-          padding: var(--pad-card);
-          background: var(--bg-subtle);
-          border-radius: var(--radius-md);
-          display: flex; flex-direction: column; gap: var(--space-3);
-          align-items: center;
-          text-align: center;
-        }
-        .cu-mo-header {
-          display: flex; align-items: center; gap: var(--space-3);
-          color: var(--text-title);
-        }
-        .cu-mo-title {
-          font-size: var(--font-card-title);
-          font-weight: var(--fw-bold);
-          color: var(--text-title);
-          margin: 0;
-        }
-        .cu-mo-sub {
-          font-size: var(--font-helper);
-          color: var(--text-secondary);
-          margin: 2px 0 0;
-        }
-        .cu-mo-value {
-          font-size: var(--font-stat-value);
-          font-weight: var(--fw-black);
-          color: var(--text-title);
-          margin: 0;
-          letter-spacing: var(--ls-tight);
-        }
-        .cu-mo-actions {
-          display: flex; justify-content: center;
-        }
-        .cu-mo-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: var(--space-3);
-        }
-
-        /* Lista */
-        .cu-list {
-          display: flex; flex-direction: column;
-          border: 1px solid var(--border);
-          border-radius: var(--radius-md);
-          overflow: hidden;
-          background: var(--bg-card);
-        }
-        .cu-item {
-          display: flex; align-items: center; gap: var(--space-3);
-          padding: var(--space-3);
-          border-bottom: 1px solid var(--border);
-        }
-        .cu-item:last-of-type { border-bottom: none; }
-        .cu-item.inativo { opacity: 0.55; }
-        .cu-item-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
-        .cu-item-nome {
-          font-size: var(--font-button);
-          font-weight: var(--fw-semibold);
-          color: var(--text-title);
-          margin: 0;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-        .cu-item-meta {
-          display: flex; gap: var(--space-1); flex-wrap: wrap;
-        }
-        .cu-badge {
-          font-size: 11px;
-          font-weight: var(--fw-bold);
-          color: var(--text-title);
-          background: var(--primary-light);
-          padding: 2px 8px;
-          border-radius: var(--radius-full);
-          letter-spacing: 0.02em;
-        }
-        .cu-badge--off {
-          color: var(--text-muted);
-          background: var(--bg-subtle);
-          text-transform: uppercase;
-          letter-spacing: var(--ls-wide);
-        }
-        .cu-badge--tipo {
-          background: var(--text-title);
-          color: #fff;
-        }
-        .cu-item-valor {
-          font-size: var(--font-button);
-          font-weight: var(--fw-black);
-          color: var(--text-title);
-          margin: 0;
-          letter-spacing: var(--ls-tight);
-          white-space: nowrap;
-          font-variant-numeric: tabular-nums;
-        }
-        .cu-item-valor span {
-          font-size: var(--font-caption);
-          font-weight: var(--fw-medium);
-          color: var(--text-muted);
-          margin-left: 2px;
-        }
-        .cu-item-actions { display: flex; gap: var(--space-1); flex-shrink: 0; }
-        .cu-icon-btn {
-          width: 32px; height: 32px;
-          display: inline-flex; align-items: center; justify-content: center;
-          background: var(--bg-subtle);
-          border: none;
-          border-radius: var(--radius-sm);
-          color: var(--text-title);
-          cursor: pointer;
-          transition: background var(--dur-fast) var(--ease-out);
-        }
-        .cu-icon-btn:hover { background: var(--primary-light); }
-        .cu-icon-btn--danger:hover { background: rgba(239,68,68,0.15); color: var(--error); }
-        .cu-list-footer {
-          display: flex; justify-content: space-between; align-items: center;
-          padding: var(--space-3);
-          background: var(--bg-subtle);
-          font-size: var(--font-button);
-          color: var(--text-secondary);
-        }
-        .cu-list-footer strong {
-          font-weight: var(--fw-black);
-          color: var(--text-title);
-          letter-spacing: var(--ls-tight);
-          font-variant-numeric: tabular-nums;
-        }
-        .cu-empty-line {
-          padding: var(--space-4);
-          color: var(--text-muted);
-          text-align: center;
-          font-size: var(--font-button);
-          margin: 0;
-        }
-      `}</style>
-    </div>
-  );
-}
-
-/* ─── Subcomponentes internos ─── */
-
-function SumCard({ icon, label, value }: {
-  icon: React.ReactNode;
-  label: React.ReactNode;
-  value: string;
-}) {
-  return (
-    <div className="sum-card">
-      <div className="sum-card-icon">{icon}</div>
-      <div className="sum-card-body">
-        <p className="sum-card-label">{label}</p>
-        <p className="sum-card-value">{value}</p>
-      </div>
-      <style>{`
-        .sum-card {
-          display: flex; align-items: center; gap: var(--space-3);
-          padding: var(--pad-card);
-          background: var(--bg-card);
-          border: 1px solid var(--border);
-          border-radius: var(--radius-lg);
-        }
-        .sum-card-icon {
-          width: 38px; height: 38px;
-          border-radius: var(--radius-md);
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
-          background: var(--primary-light);
-          color: var(--text-title);
-        }
-        .sum-card-body { flex: 1; min-width: 0; }
-        .sum-card-label {
-          display: flex; align-items: center; gap: var(--space-1);
-          font-size: var(--font-caption);
-          font-weight: var(--fw-semibold);
-          color: var(--text-muted);
-          text-transform: uppercase;
-          letter-spacing: var(--ls-wide);
-          margin: 0 0 var(--space-1);
-        }
-        .sum-card-value {
-          font-size: var(--font-modal-title);
-          font-weight: var(--fw-black);
-          color: var(--text-title);
-          margin: 0;
-          line-height: var(--lh-tight);
-          letter-spacing: var(--ls-tight);
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          font-variant-numeric: tabular-nums;
-        }
-      `}</style>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="stat">
-      <p className="stat-label">{label}</p>
-      <p className="stat-value">{value}</p>
-      <style>{`
-        .stat {
-          padding: var(--space-3);
-          background: var(--bg-subtle);
-          border-radius: var(--radius-md);
-        }
-        .stat-label {
-          font-size: var(--font-caption);
-          font-weight: var(--fw-semibold);
-          color: var(--text-muted);
-          text-transform: uppercase;
-          letter-spacing: var(--ls-wide);
-          margin: 0 0 var(--space-1);
-        }
-        .stat-value {
-          font-size: var(--font-card-title);
-          font-weight: var(--fw-black);
-          color: var(--text-title);
-          margin: 0;
-          letter-spacing: var(--ls-tight);
-          font-variant-numeric: tabular-nums;
-        }
-      `}</style>
-    </div>
-  );
-}
-
-/* ─── Helpers ─── */
-
-function labelDiasArray(arr: number[]): string {
-  if (arr.length === 7) return "todos os dias";
-  if (arr.length === 5 && arr.join() === "1,2,3,4,5") return "seg–sex";
-  if (arr.length === 6 && arr.join() === "1,2,3,4,5,6") return "seg–sáb";
-  const map: Record<number, string> = {
-    1: "Seg", 2: "Ter", 3: "Qua", 4: "Qui", 5: "Sex", 6: "Sáb", 7: "Dom",
+  const totalFixos = useMemo(() => fixos.filter(f => f.ativo).reduce((s, f) => s + f.valor, 0), [fixos]);
+  const horasMes = mo.horas_dia * mo.dias_semana_array.length * 4.345;
+  const custoHora = horasMes > 0 ? (totalFixos + mo.salario_mensal) / horasMes : 0;
+  const valorHora = horasMes > 0 ? mo.salario_mensal / horasMes : 0;
+  const ativosVar = variaveis.filter(v => v.ativo);
+  const diasTxt = (arr: number[]) => {
+    const s = [...arr].sort((a, b) => a - b);
+    const seq = s.length > 1 && s.every((d, i) => i === 0 || d === s[i - 1] + 1);
+    return seq ? `${DIAS[s[0] - 1].l} a ${DIAS[s[s.length - 1] - 1].l}` : s.map(d => DIAS[d - 1]?.l).join(", ");
   };
-  return arr.map(d => map[d]).join(", ");
+
+  return (
+    <>
+      <AppPageHeader
+        title="Custos"
+        subtitle="O que a confeitaria gasta pra funcionar"
+        onBack={() => navigate("/financeiro")}
+        infoIcon="🧮"
+        infoContent={<>
+          <p><strong>Custos fixos</strong> são os que vêm todo mês (aluguel, internet…). Com o <strong>dia de vencimento</strong>, eles viram uma conta em <strong>A pagar</strong> sozinhos.</p>
+          <p><strong>Custos variáveis</strong> acompanham cada venda (taxa da maquininha, embalagem por pedido).</p>
+          <p>A <strong>mão de obra</strong> é o seu salário: com ele e os custos fixos, o app calcula quanto custa cada hora sua.</p>
+        </>}
+      />
+      <div className="cu">
+        <div className="cu-resumo">
+          <div className="cu-k"><small>Custos fixos por mês</small><b>{brl(totalFixos)}</b><i>{fixos.filter(f => f.ativo).length} ativos</i></div>
+          <div className="cu-k"><small>Seu salário</small><b>{brl(mo.salario_mensal)}</b><i>mão de obra</i></div>
+          <div className="cu-k destaque"><small>Custo da sua hora</small><b>{brl(custoHora)}</b><i>fixos + salário</i></div>
+          <div className="cu-k"><small>Custos variáveis</small><b>{ativosVar.length}</b><i>{ativosVar.length === 1 ? "ativo" : "ativos"}</i></div>
+        </div>
+
+        <div className="cu-grid">
+          <section className="cu-card cu-a-fixos">
+            <div className="cu-ct"><span className="cu-ic"><Buildings size={18} weight="duotone" /></span><div><b>Custos fixos</b><small>Todo mês, o mesmo valor</small></div></div>
+            {carregando ? <div className="cu-ph" /> : fixos.length === 0 ? (
+              <p className="cu-vazio">Nenhum custo fixo ainda. Aluguel, internet, gás, contador…</p>
+            ) : fixos.map(f => (
+              <button type="button" key={f.id} className={`cu-it ${f.ativo ? "" : "off"}`} onClick={() => setEditFixo(f)}>
+                <div className="cu-it-t"><b>{f.nome}</b>
+                  <small>{!f.ativo ? "Pausado" : f.dia_vencimento ? <><Receipt size={12} weight="bold" /> Vence dia {f.dia_vencimento} · vira conta em A pagar</> : "Sem dia de vencimento"}</small></div>
+                <span className="cu-it-v">{brl(f.valor)}</span><CaretRight size={14} weight="bold" className="cu-it-ar" />
+              </button>
+            ))}
+            <button type="button" className="cu-add" onClick={() => setEditFixo("novo")}><Plus size={15} weight="bold" />Novo custo fixo</button>
+          </section>
+
+          <section className="cu-card cu-a-mo">
+            <div className="cu-ct"><span className="cu-ic"><Clock size={18} weight="duotone" /></span><div><b>Mão de obra</b><small>O seu trabalho também tem preço</small></div></div>
+            <button type="button" className="cu-mo" onClick={() => setEditMo(true)}>
+              <div className="cu-mo-l"><span>Salário</span><b>{brl(mo.salario_mensal)}</b></div>
+              <div className="cu-mo-l"><span>Jornada</span><b>{mo.horas_dia}h por dia · {diasTxt(mo.dias_semana_array)}</b></div>
+              <div className="cu-mo-l"><span>Valor da sua hora</span><b className="rosa">{brl(valorHora)}</b></div>
+              <div className="cu-mo-l"><span>Valor do seu dia</span><b>{brl(valorHora * mo.horas_dia)}</b></div>
+              <i>Editar <CaretRight size={13} weight="bold" /></i>
+            </button>
+          </section>
+
+          <section className="cu-card cu-a-var">
+            <div className="cu-ct"><span className="cu-ic"><Percent size={18} weight="duotone" /></span><div><b>Custos variáveis</b><small>Acompanham cada venda</small></div></div>
+            {carregando ? <div className="cu-ph" /> : variaveis.length === 0 ? (
+              <p className="cu-vazio">Nenhum ainda. Ex.: taxa da maquininha (3,5% da venda), embalagem (R$ 4 por pedido).</p>
+            ) : variaveis.map(v => (
+              <button type="button" key={v.id} className={`cu-it ${v.ativo ? "" : "off"}`} onClick={() => setEditVar(v)}>
+                <div className="cu-it-t"><b>{v.nome}</b><small>{!v.ativo ? "Pausado" : v.tipo === "percentual" ? "% de cada venda" : "Valor por pedido"}</small></div>
+                <span className="cu-it-v">{v.tipo === "percentual" ? `${String(v.valor).replace(".", ",")}%` : brl(v.valor)}</span><CaretRight size={14} weight="bold" className="cu-it-ar" />
+              </button>
+            ))}
+            <button type="button" className="cu-add" onClick={() => setEditVar("novo")}><Plus size={15} weight="bold" />Novo custo variável</button>
+          </section>
+        </div>
+      </div>
+
+      {editFixo && uid && <FixoSheet uid={uid} item={editFixo === "novo" ? null : editFixo} onClose={() => setEditFixo(null)} onFeito={() => { setEditFixo(null); carregar(); }} />}
+      {editVar && uid && <VariavelSheet uid={uid} item={editVar === "novo" ? null : editVar} onClose={() => setEditVar(null)} onFeito={() => { setEditVar(null); carregar(); }} />}
+      {editMo && uid && <MaoObraSheet uid={uid} atual={mo} totalFixos={totalFixos} onClose={() => setEditMo(false)} onFeito={() => { setEditMo(false); carregar(); }} />}
+      <style>{CSS}{FOLHA_CSS}</style>
+    </>
+  );
 }
+
+function Switch({ ligado, onToggle, titulo, sub }: { ligado: boolean; onToggle: () => void; titulo: string; sub: string }) {
+  return <div className={`fo-sw ${ligado ? "on" : ""}`} role="switch" aria-checked={ligado} tabIndex={0} onClick={onToggle} onKeyDown={e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); onToggle(); } }}>
+    <div><b>{titulo}</b><small>{sub}</small></div><i aria-hidden="true" />
+  </div>;
+}
+
+function Excluir({ nome, onSim, onNao, ocupado }: { nome: string; onSim: () => void; onNao: () => void; ocupado: boolean }) {
+  return <div className="fo-dica" style={{ background: "#FEF2F2" }}>
+    <b>Excluir “{nome}”?</b> Isso não apaga contas e lançamentos que já existem. Se for só por um tempo, prefira pausar.
+    <div className="fo-row" style={{ marginTop: 10 }}>
+      <button type="button" className="fo-cta escuro" style={{ marginTop: 0, background: "#fff", color: "#2C1219", border: "1.5px solid #EDE6E9" }} onClick={onNao}>Voltar</button>
+      <button type="button" className="fo-cta vermelho" style={{ marginTop: 0 }} onClick={onSim} disabled={ocupado}>{ocupado ? "Excluindo…" : "Excluir"}</button>
+    </div>
+  </div>;
+}
+
+function FixoSheet({ uid, item, onClose, onFeito }: { uid: string; item: CustoFixo | null; onClose: () => void; onFeito: () => void }) {
+  const [nome, setNome] = useState(item?.nome || "");
+  const [valor, setValor] = useState(txt(item?.valor));
+  const [dia, setDia] = useState(item?.dia_vencimento ? String(item.dia_vencimento) : "");
+  const [ativo, setAtivo] = useState(item ? item.ativo : true);
+  const [excluir, setExcluir] = useState(false);
+  const [ocupado, setOcupado] = useState(false);
+  const [erro, setErro] = useState("");
+  const salvar = async () => {
+    const v = num(valor), d = dia ? Math.round(Number(dia)) : null;
+    if (!nome.trim()) { setErro("Dê um nome (ex.: Aluguel do ateliê)"); return; }
+    if (v <= 0) { setErro("Digite o valor por mês"); return; }
+    if (d !== null && (d < 1 || d > 31)) { setErro("O dia de vencimento vai de 1 a 31"); return; }
+    setOcupado(true);
+    const payload = { nome: nome.trim(), valor: v, ativo, dia_vencimento: d };
+    const { error } = item ? await supabase.from("custos_fixos").update(payload).eq("id", item.id) : await supabase.from("custos_fixos").insert({ user_id: uid, ...payload });
+    setOcupado(false);
+    if (error) { setErro("Não foi possível salvar agora."); return; }
+    onFeito();
+  };
+  const apagar = async () => { if (!item) return; setOcupado(true); await supabase.from("custos_fixos").delete().eq("id", item.id); setOcupado(false); onFeito(); };
+  return (
+    <Folha titulo={item ? "Editar custo fixo" : "Novo custo fixo"} sub="Um gasto que vem todo mês, no mesmo valor" onClose={onClose}>
+      <label className="fo-lb" htmlFor="cf-n">Nome</label>
+      <input id="cf-n" className="fo-txt" placeholder="Ex.: Aluguel do ateliê" value={nome} onChange={e => { setNome(e.target.value); setErro(""); }} />
+      <div className="fo-row">
+        <div><label className="fo-lb" htmlFor="cf-v">Valor por mês</label><div className="fo-in"><span>R$</span><input id="cf-v" inputMode="decimal" placeholder="0,00" value={valor} onChange={e => { setValor(e.target.value); setErro(""); }} /></div></div>
+        <div><label className="fo-lb" htmlFor="cf-d">Vence dia <em>(opcional)</em></label><div className="fo-in"><input id="cf-d" inputMode="numeric" placeholder="Ex.: 5" value={dia} onChange={e => { setDia(e.target.value.replace(/\D/g, "").slice(0, 2)); setErro(""); }} /></div></div>
+      </div>
+      <div className="fo-dica">{dia ? <>Todo mês, uma conta de <b>{brl(num(valor))}</b> vencendo no <b>dia {dia}</b> aparece em <b>A pagar</b>. Ela só sai do caixa quando você pagar.</> : <>Com o dia de vencimento, este custo vira uma conta em <b>A pagar</b> todo mês, sozinho.</>}</div>
+      <Switch ligado={ativo} onToggle={() => setAtivo(a => !a)} titulo={ativo ? "Ativo" : "Pausado"} sub={ativo ? "Entra no custo da sua hora e gera a conta do mês" : "Não conta nem gera conta enquanto estiver pausado"} />
+      {erro && <p className="fo-erro">{erro}</p>}
+      {excluir ? <Excluir nome={item?.nome || ""} ocupado={ocupado} onNao={() => setExcluir(false)} onSim={apagar} /> : (<>
+        <button type="button" className="fo-cta" onClick={salvar} disabled={ocupado}>{ocupado ? "Salvando…" : item ? "Salvar" : "Cadastrar custo fixo"}</button>
+        {item && <button type="button" className="fo-sec" onClick={() => setExcluir(true)}>Excluir este custo</button>}
+      </>)}
+    </Folha>
+  );
+}
+
+function VariavelSheet({ uid, item, onClose, onFeito }: { uid: string; item: CustoVariavel | null; onClose: () => void; onFeito: () => void }) {
+  const [nome, setNome] = useState(item?.nome || "");
+  const [tipo, setTipo] = useState<"percentual" | "fixo">(item?.tipo || "percentual");
+  const [valor, setValor] = useState(txt(item?.valor));
+  const [ativo, setAtivo] = useState(item ? item.ativo : true);
+  const [excluir, setExcluir] = useState(false);
+  const [ocupado, setOcupado] = useState(false);
+  const [erro, setErro] = useState("");
+  const v = num(valor);
+  const salvar = async () => {
+    if (!nome.trim()) { setErro("Dê um nome (ex.: Taxa da maquininha)"); return; }
+    if (v <= 0) { setErro("Digite o valor"); return; }
+    if (tipo === "percentual" && v > 100) { setErro("A porcentagem vai até 100%"); return; }
+    setOcupado(true);
+    const payload = { nome: nome.trim(), tipo, valor: v, ativo };
+    const { error } = item ? await supabase.from("custos_variaveis").update(payload).eq("id", item.id) : await supabase.from("custos_variaveis").insert({ user_id: uid, ...payload });
+    setOcupado(false);
+    if (error) { setErro("Não foi possível salvar agora."); return; }
+    onFeito();
+  };
+  const apagar = async () => { if (!item) return; setOcupado(true); await supabase.from("custos_variaveis").delete().eq("id", item.id); setOcupado(false); onFeito(); };
+  return (
+    <Folha titulo={item ? "Editar custo variável" : "Novo custo variável"} sub="Um gasto que acompanha cada venda" onClose={onClose}>
+      <label className="fo-lb" htmlFor="cv-n">Nome</label>
+      <input id="cv-n" className="fo-txt" placeholder="Ex.: Taxa da maquininha" value={nome} onChange={e => { setNome(e.target.value); setErro(""); }} />
+      <p className="fo-lb">Como é cobrado?</p>
+      <div className="fo-seg"><button type="button" className={tipo === "percentual" ? "on" : ""} onClick={() => setTipo("percentual")}>% da venda</button><button type="button" className={tipo === "fixo" ? "on" : ""} onClick={() => setTipo("fixo")}>R$ por pedido</button></div>
+      <label className="fo-lb" htmlFor="cv-v">{tipo === "percentual" ? "Porcentagem" : "Valor por pedido"}</label>
+      <div className="fo-in">{tipo === "fixo" && <span>R$</span>}<input id="cv-v" inputMode="decimal" placeholder={tipo === "percentual" ? "Ex.: 3,5" : "0,00"} value={valor} onChange={e => { setValor(e.target.value); setErro(""); }} />{tipo === "percentual" && <span>%</span>}</div>
+      {v > 0 && <div className="fo-dica">Numa venda de <b>R$ 100</b>, este custo é <b>{brl(tipo === "percentual" ? v : v)}</b>{tipo === "percentual" ? "" : " (por pedido, qualquer valor)"}.</div>}
+      <Switch ligado={ativo} onToggle={() => setAtivo(a => !a)} titulo={ativo ? "Ativo" : "Pausado"} sub={ativo ? "Entra no cálculo dos seus preços" : "Não entra no cálculo enquanto estiver pausado"} />
+      {erro && <p className="fo-erro">{erro}</p>}
+      {excluir ? <Excluir nome={item?.nome || ""} ocupado={ocupado} onNao={() => setExcluir(false)} onSim={apagar} /> : (<>
+        <button type="button" className="fo-cta" onClick={salvar} disabled={ocupado}>{ocupado ? "Salvando…" : item ? "Salvar" : "Cadastrar custo variável"}</button>
+        {item && <button type="button" className="fo-sec" onClick={() => setExcluir(true)}>Excluir este custo</button>}
+      </>)}
+    </Folha>
+  );
+}
+
+function MaoObraSheet({ uid, atual, totalFixos, onClose, onFeito }: { uid: string; atual: MaoObra; totalFixos: number; onClose: () => void; onFeito: () => void }) {
+  const [salario, setSalario] = useState(txt(atual.salario_mensal));
+  const [horas, setHoras] = useState(String(atual.horas_dia || 8));
+  const [dias, setDias] = useState<number[]>(atual.dias_semana_array);
+  const [ocupado, setOcupado] = useState(false);
+  const [erro, setErro] = useState("");
+  const s = num(salario), h = Number(horas.replace(",", ".")) || 0;
+  const hMes = h * dias.length * 4.345;
+  const salvar = async () => {
+    if (h <= 0 || h > 24) { setErro("As horas por dia vão de 1 a 24"); return; }
+    if (dias.length === 0) { setErro("Escolha pelo menos um dia"); return; }
+    setOcupado(true);
+    const { error } = await supabase.from("config_mao_obra").upsert({
+      user_id: uid, salario_mensal: s, horas_dia: h, dias_semana: dias.length, dias_semana_array: [...dias].sort((a, b) => a - b), updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id" });
+    setOcupado(false);
+    if (error) { setErro("Não foi possível salvar agora."); return; }
+    onFeito();
+  };
+  return (
+    <Folha titulo="Mão de obra" sub="Quanto você quer ganhar e quanto trabalha" onClose={onClose}>
+      <label className="fo-lb" htmlFor="mo-s">Salário que você quer tirar por mês</label>
+      <div className="fo-in"><span>R$</span><input id="mo-s" inputMode="decimal" placeholder="0,00" value={salario} onChange={e => { setSalario(e.target.value); setErro(""); }} /></div>
+      <label className="fo-lb" htmlFor="mo-h">Horas de trabalho por dia</label>
+      <div className="fo-in"><input id="mo-h" inputMode="decimal" value={horas} onChange={e => { setHoras(e.target.value); setErro(""); }} /><span>horas</span></div>
+      <p className="fo-lb">Dias em que você produz</p>
+      <div className="fo-chips">{DIAS.map(d => <button type="button" key={d.id} className={dias.includes(d.id) ? "on" : ""} onClick={() => setDias(x => x.includes(d.id) ? x.filter(y => y !== d.id) : [...x, d.id])}>{d.l}</button>)}</div>
+      {hMes > 0 && <div className="fo-dica">São <b>{Math.round(hMes)} horas por mês</b>. Valor da sua hora: <b>{brl(s / hMes)}</b> · custo total da hora (com os custos fixos): <b>{brl((s + totalFixos) / hMes)}</b>.</div>}
+      {erro && <p className="fo-erro">{erro}</p>}
+      <button type="button" className="fo-cta" onClick={salvar} disabled={ocupado}>{ocupado ? "Salvando…" : "Salvar"}</button>
+    </Folha>
+  );
+}
+
+const CSS = `
+  .cu { max-width: 1120px; margin: 0 auto; padding: 22px 0 96px; font-family: var(--font-base); color: #2C1219; display: flex; flex-direction: column; gap: 16px; }
+  .cu-resumo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (min-width: 900px) { .cu-resumo { grid-template-columns: repeat(4, 1fr); } }
+  .cu-k { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px; min-width: 0; }
+  .cu-k small { display: block; font-size: 11.5px; font-weight: 700; color: #9A8E94; }
+  .cu-k b { display: block; font-size: clamp(16px, 4.6vw, 21px); font-weight: 900; letter-spacing: -.02em; margin: 3px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cu-k i { font-style: normal; font-size: 11.5px; color: #888780; }
+  .cu-k.destaque { background: radial-gradient(130% 160% at 0 0, #6B2340, #2C1219 70%); border: none; color: #fff; }
+  .cu-k.destaque small, .cu-k.destaque i { color: rgba(255,255,255,.72); }
+  .cu-grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "fixos" "mo" "var"; }
+  @media (min-width: 900px) { .cu-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "fixos mo" "fixos var"; align-items: start; } }
+  .cu-a-fixos { grid-area: fixos; } .cu-a-mo { grid-area: mo; } .cu-a-var { grid-area: var; }
+  .cu-card { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 14px; }
+  .cu-ct { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .cu-ct b { display: block; font-size: 15.5px; font-weight: 900; } .cu-ct small { font-size: 12.5px; color: #888780; }
+  .cu-ic { width: 38px; height: 38px; border-radius: 11px; background: #FFF1F6; color: #C33A6E; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .cu-ph { height: 90px; background: #FAF7F8; border-radius: 10px; }
+  .cu-vazio { margin: 6px 0 4px; font-size: 13px; color: #888780; line-height: 1.45; }
+  .cu-it { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: none; border-top: 1px solid #F5F0F2; padding: 11px 2px; font-family: inherit; color: #2C1219; cursor: pointer; }
+  .cu-it:first-of-type { border-top: none; }
+  .cu-it-t { flex: 1; min-width: 0; } .cu-it-t b { display: block; font-size: 14px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cu-it-t small { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #888780; margin-top: 2px; }
+  .cu-it-v { font-size: 14px; font-weight: 900; white-space: nowrap; } .cu-it-ar { color: #C9BEC3; flex-shrink: 0; }
+  .cu-it.off { opacity: .55; }
+  .cu-add { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; margin-top: 8px; border: 1.5px dashed #F3C9DA; background: #FFF6F9; color: #C33A6E; border-radius: 12px; padding: 11px; font-family: inherit; font-size: 13.5px; font-weight: 800; cursor: pointer; }
+  .cu-mo { display: block; width: 100%; text-align: left; background: #FAF7F8; border: none; border-radius: 12px; padding: 4px 12px 10px; font-family: inherit; color: #2C1219; cursor: pointer; }
+  .cu-mo-l { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid #F0EBED; font-size: 13.5px; }
+  .cu-mo-l span { color: #6B5D64; } .cu-mo-l b { font-weight: 800; text-align: right; } .cu-mo-l b.rosa { color: #C33A6E; }
+  .cu-mo i { display: flex; justify-content: flex-end; align-items: center; gap: 3px; margin-top: 8px; font-style: normal; font-size: 12.5px; font-weight: 800; color: #C33A6E; }
+`;

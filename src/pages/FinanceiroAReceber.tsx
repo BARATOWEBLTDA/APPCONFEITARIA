@@ -15,6 +15,7 @@ import { registrarPagamento, normalizarForma } from "@/lib/pagamentos";
  */
 type Item = ItemReceber;
 
+const brlInt = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const isoHoje = () => isoDia(0);
 const isoMais = (n: number) => isoDia(n);
@@ -97,7 +98,7 @@ export default function FinanceiroAReceber() {
                       <span className={`far-tg ${it.dias !== null && it.dias < 0 ? "far-tg--atr" : ""}`}>{quando(it.dias)}</span>
                     </div>
                     <div className="far-it-v">
-                      <small>Total {brl(it.total)}{it.recebido > 0 ? ` · recebido ${brl(it.recebido)}` : ""}</small>
+                      <small>Total {brlInt(it.total)}{it.recebido > 0 ? ` · recebido ${brlInt(it.recebido)}` : ""}</small>
                       <b>falta {brl(it.falta)}</b>
                     </div>
                     <div className="far-bar" aria-hidden="true"><i style={{ width: `${Math.min(100, (it.recebido / (it.total || 1)) * 100)}%` }} /></div>
@@ -208,7 +209,7 @@ const CSS = `
   .far-tg { flex-shrink: 0; font-size: 11px; font-weight: 800; color: #92400E; background: #FEF3C7; padding: 3px 8px; border-radius: 7px; }
   .far-tg--atr { color: #991B1B; background: #FEE2E2; }
   .far-it-v { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 6px; }
-  .far-it-v small { font-size: 12.5px; color: #888780; }
+  .far-it-v small { font-size: 12.5px; color: #888780; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; } /* numa linha só */
   .far-it-v b { font-size: 15.5px; font-weight: 900; color: #B45309; white-space: nowrap; }
   .far-bar { height: 6px; border-radius: 9px; background: #F5F0F2; margin-top: 9px; overflow: hidden; }
   .far-bar i { display: block; height: 100%; background: #22C55E; border-radius: 9px; }

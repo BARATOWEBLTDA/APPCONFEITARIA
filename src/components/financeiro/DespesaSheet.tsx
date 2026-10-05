@@ -7,12 +7,15 @@ import { supabase } from "@/lib/supabase";
  * Conta pra pagar depois vai em "A pagar" (Passo 5), que só sai do caixa quando for paga.
  */
 const CATEGORIAS = ["Insumos", "Embalagens", "Aluguel", "Energia e água", "Internet", "Gás", "Transporte", "Marketing", "Equipamentos", "Outros"];
+const CATEGORIAS_ENTRADA = ["Venda fora do app", "Venda no balcão", "Aporte (dinheiro seu)", "Outros"];
 const isoDia = (n = 0) => { const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 const num = (s: string) => Math.round((parseFloat(String(s).replace(/\./g, "").replace(",", ".")) || 0) * 100) / 100;
 
-export default function DespesaSheet({ onClose, onSalvo, onContaAPagar }: { onClose: () => void; onSalvo: () => void; onContaAPagar: () => void }) {
+export default function DespesaSheet({ onClose, onSalvo, onContaAPagar, tipo = "saida" }: { onClose: () => void; onSalvo: () => void; onContaAPagar?: () => void; tipo?: "entrada" | "saida" }) {
+  const ehEntrada = tipo === "entrada";
+  const cats = ehEntrada ? CATEGORIAS_ENTRADA : CATEGORIAS;
   const [descricao, setDescricao] = useState("");
-  const [categoria, setCategoria] = useState("Insumos");
+  const [categoria, setCategoria] = useState(cats[0]);
   const [valor, setValor] = useState("");
   const [quando, setQuando] = useState<"hoje" | "ontem" | "outra">("hoje");
   const [outra, setOutra] = useState(isoDia());
@@ -22,35 +25,35 @@ export default function DespesaSheet({ onClose, onSalvo, onContaAPagar }: { onCl
 
   const salvar = async () => {
     const v = num(valor);
-    if (v <= 0) { setErro("Digite quanto você pagou"); return; }
+    if (v <= 0) { setErro(ehEntrada ? "Digite quanto entrou" : "Digite quanto você pagou"); return; }
     const data = quando === "hoje" ? isoDia() : quando === "ontem" ? isoDia(-1) : outra;
-    if (!data || data > isoDia()) { setErro("Escolha uma data até hoje (conta futura vai em A pagar)"); return; }
+    if (!data || data > isoDia()) { setErro(ehEntrada ? "Escolha uma data até hoje" : "Escolha uma data até hoje (conta futura vai em A pagar)"); return; }
     setSalvando(true); setErro("");
     const { data: { user } } = await supabase.auth.getUser();
-    const { error } = await supabase.from("financeiro").insert({ user_id: user?.id, tipo: "saida", categoria, descricao: descricao.trim() || categoria, valor: v, data });
+    const { error } = await supabase.from("financeiro").insert({ user_id: user?.id, tipo: ehEntrada ? "entrada" : "saida", categoria, descricao: descricao.trim() || categoria, valor: v, data });
     setSalvando(false);
     if (error) { setErro("Não foi possível salvar agora. Confira a internet e tente de novo."); return; }
     onSalvo();
   };
 
   return createPortal(
-    <div className="dsp-ov" onClick={onClose} role="dialog" aria-modal="true" aria-label="Nova despesa">
+    <div className="dsp-ov" onClick={onClose} role="dialog" aria-modal="true" aria-label={ehEntrada ? "Nova entrada" : "Nova despesa"}>
       <div className="dsp" onClick={e => e.stopPropagation()}>
         <span className="dsp-alca" aria-hidden="true" />
-        <b className="dsp-t">Nova despesa</b>
-        <small className="dsp-s">Algo que você já pagou. Sai do caixa na data escolhida.</small>
-        <label className="dsp-lb" htmlFor="dsp-v">Quanto pagou?</label>
+        <b className="dsp-t">{ehEntrada ? "Nova entrada" : "Nova despesa"}</b>
+        <small className="dsp-s">{ehEntrada ? "Dinheiro que entrou fora dos pedidos do app. Entra no caixa na data escolhida." : "Algo que você já pagou. Sai do caixa na data escolhida."}</small>
+        <label className="dsp-lb" htmlFor="dsp-v">{ehEntrada ? "Quanto entrou?" : "Quanto pagou?"}</label>
         <div className="dsp-in"><span>R$</span><input id="dsp-v" inputMode="decimal" placeholder="0,00" value={valor} onChange={e => { setValor(e.target.value); setErro(""); }} autoFocus /></div>
         <p className="dsp-lb">Categoria</p>
-        <div className="dsp-chips">{CATEGORIAS.map(c => <button type="button" key={c} className={categoria === c ? "on" : ""} onClick={() => setCategoria(c)}>{c}</button>)}</div>
+        <div className="dsp-chips">{cats.map(c => <button type="button" key={c} className={categoria === c ? "on" : ""} onClick={() => setCategoria(c)}>{c}</button>)}</div>
         <label className="dsp-lb" htmlFor="dsp-d">Descrição <em>(opcional)</em></label>
-        <input id="dsp-d" className="dsp-txt" placeholder="Ex.: Leite condensado e creme de leite" value={descricao} onChange={e => setDescricao(e.target.value)} />
-        <p className="dsp-lb">Quando pagou?</p>
+        <input id="dsp-d" className="dsp-txt" placeholder={ehEntrada ? "Ex.: 30 brigadeiros pra vizinha" : "Ex.: Leite condensado e creme de leite"} value={descricao} onChange={e => setDescricao(e.target.value)} />
+        <p className="dsp-lb">{ehEntrada ? "Quando entrou?" : "Quando pagou?"}</p>
         <div className="dsp-chips">{(["hoje", "ontem", "outra"] as const).map(q => <button type="button" key={q} className={quando === q ? "on" : ""} onClick={() => setQuando(q)}>{q === "hoje" ? "Hoje" : q === "ontem" ? "Ontem" : "Outra data"}</button>)}</div>
         {quando === "outra" && <input type="date" className="dsp-data" value={outra} max={isoDia()} onChange={e => setOutra(e.target.value)} />}
         {erro && <p className="dsp-erro">{erro}</p>}
-        <button type="button" className="dsp-cta" onClick={salvar} disabled={salvando}>{salvando ? "Salvando…" : "Lançar despesa"}</button>
-        <button type="button" className="dsp-link" onClick={onContaAPagar}>É uma conta pra pagar depois? Cadastre em A pagar</button>
+        <button type="button" className="dsp-cta" onClick={salvar} disabled={salvando}>{salvando ? "Salvando…" : ehEntrada ? "Lançar entrada" : "Lançar despesa"}</button>
+        {!ehEntrada && onContaAPagar && <button type="button" className="dsp-link" onClick={onContaAPagar}>É uma conta pra pagar depois? Cadastre em A pagar</button>}
       </div>
       <style>{`
         .dsp-ov { position: fixed; inset: 0; z-index: 1300; background: rgba(45,31,38,.5); display: flex; align-items: flex-end; justify-content: center; font-family: var(--font-base); }
@@ -69,7 +72,7 @@ export default function DespesaSheet({ onClose, onSalvo, onContaAPagar }: { onCl
         .dsp-chips button.on { border-color: #E85A8C; background: #FFF1F6; color: #C33A6E; }
         .dsp-data { margin-top: 8px; width: 100%; height: 46px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 0 10px; font-family: inherit; font-size: 15px; box-sizing: border-box; }
         .dsp-erro { margin: 10px 0 0; font-size: 13px; font-weight: 800; color: #DC2626; }
-        .dsp-cta { margin-top: 16px; width: 100%; border: none; border-radius: 14px; padding: 15px; background: #2C1219; color: #fff; font-family: inherit; font-size: 15.5px; font-weight: 800; cursor: pointer; }
+        .dsp-cta { margin-top: 16px; width: 100%; border: none; border-radius: 14px; padding: 15px; background: ${ehEntrada ? "#16A34A" : "#2C1219"}; color: #fff; font-family: inherit; font-size: 15.5px; font-weight: 800; cursor: pointer; }
         .dsp-cta:disabled { opacity: .6; cursor: default; }
         .dsp-link { display: block; width: 100%; margin-top: 8px; border: none; background: none; padding: 10px; font-family: inherit; font-size: 13px; font-weight: 700; color: #C33A6E; cursor: pointer; }
       `}</style>
