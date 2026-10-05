@@ -65,7 +65,6 @@ import DadosLoja from "@/pages/DadosLoja";
 import CardapioPublico from "@/pages/CardapioPublico";
 import Cardapio from "@/pages/Cardapio";
 import Financeiro from "@/pages/Financeiro";
-import FinanceiroVisaoGeral from "@/pages/FinanceiroVisaoGeral";
 import FinanceiroTransacoes from "@/pages/FinanceiroTransacoes";
 import FinanceiroAReceber from "@/pages/FinanceiroAReceber";
 import FinanceiroAPagar from "@/pages/FinanceiroAPagar";
@@ -273,7 +272,8 @@ export default function App() {
           <Route path="/complementos" element={<Complementos />} />
           <Route path="/clientes/:id" element={<ClientePerfil />} />
           <Route path="/financeiro" element={<Financeiro />} />
-          <Route path="/financeiro/visao-geral" element={<FinanceiroVisaoGeral />} />
+          {/* Passo 7: a Visão Geral virou o painel do Financeiro */}
+          <Route path="/financeiro/visao-geral" element={<Navigate to="/financeiro" replace />} />
           <Route path="/financeiro/transacoes" element={<FinanceiroTransacoes />} />
           <Route path="/financeiro/a-receber" element={<FinanceiroAReceber />} />
           <Route path="/financeiro/a-pagar" element={<FinanceiroAPagar />} />

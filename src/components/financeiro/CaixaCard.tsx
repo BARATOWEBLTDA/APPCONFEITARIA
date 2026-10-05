@@ -11,74 +11,88 @@ import { carregarCaixa, definirSaldoInicial, type EstadoCaixa } from "@/lib/caix
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const dataCurta = (iso: string) => { const [y, m, d] = iso.split("-").map(Number); return new Date(y, m - 1, d).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }); };
 
-export default function CaixaCard({ mostrarMovimentos = true, meio }: { mostrarMovimentos?: boolean; meio?: ReactNode }) {
+/** Carrega o caixa (Passo 4) e permite recarregar depois de uma mudança. */
+export function useCaixa() {
   const [uid, setUid] = useState<string | null>(null);
   const [cx, setCx] = useState<EstadoCaixa | null>(null);
-  const [definir, setDefinir] = useState(false);
-
-  const carregar = useCallback(async () => {
+  const recarregar = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     setUid(user.id);
     setCx(await carregarCaixa(user.id));
   }, []);
-  useEffect(() => { carregar(); }, [carregar]);
+  useEffect(() => { recarregar(); }, [recarregar]);
+  return { uid, cx, recarregar };
+}
 
+/** O cartão escuro "Saldo em caixa" (ou o convite pra informar o saldo inicial). */
+export function SaldoCaixa({ cx, onAcertar }: { cx: EstadoCaixa | null; onAcertar: () => void }) {
   if (!cx) return <div className="cxc cxc--carregando" aria-busy="true" />;
+  if (cx.precisaSql) return (
+    <div className="cxc-convite"><b>Saldo em caixa</b><p>Falta um ajuste no banco de dados pra ativar o caixa (o SQL do Passo 4).</p></div>
+  );
+  if (!cx.configurado) return (
+    <div className="cxc-convite">
+      <span className="cxc-convite-ic"><Wallet size={26} weight="duotone" /></span>
+      <b>Quanto você tem em caixa hoje?</b>
+      <p>Conte o dinheiro da gaveta e o que está na conta da confeitaria. A partir daí, o app soma o que você recebe e tira o que você paga.</p>
+      <button type="button" className="cxc-cta" onClick={onAcertar}>Informar meu saldo</button>
+    </div>
+  );
+  return (
+    <div className="cxc">
+      <div className="cxc-top">
+        <p>Saldo em caixa <i>agora</i></p>
+        <button type="button" className="cxc-acertar" onClick={onAcertar}><PencilSimple size={13} weight="bold" />Acertar</button>
+      </div>
+      <b className="cxc-v">{brl(cx.saldo)}</b>
+      <div className="cxc-hoje">
+        <span><ArrowUp size={14} weight="bold" />Entrou hoje <em>{brl(cx.entrouHoje)}</em></span>
+        <span><ArrowDown size={14} weight="bold" />Saiu hoje <em>{brl(cx.saiuHoje)}</em></span>
+      </div>
+      <small>Só conta o que já foi recebido ou pago{cx.semPagamentos ? " · os recebimentos de pedidos entram quando o SQL do Passo 1 for rodado" : ""}</small>
+    </div>
+  );
+}
 
+/** As últimas movimentações do caixa. */
+export function MovimentosCaixa({ cx, limite = 6 }: { cx: EstadoCaixa | null; limite?: number }) {
+  if (!cx || !cx.configurado) return null;
+  return (
+    <div className="cxc-movs">
+      <p className="cxc-movs-t">Últimas movimentações</p>
+      {cx.movimentos.length === 0 ? (
+        <p className="cxc-movs-vazio">Nenhuma movimentação desde que você informou o saldo. Quando receber um pedido ou lançar uma despesa, aparece aqui.</p>
+      ) : cx.movimentos.slice(0, limite).map(m => (
+        <div key={m.id} className="cxc-mv">
+          <span className={`cxc-mv-ic ${m.tipo === "entrada" ? "e" : "s"}`}>{m.tipo === "entrada" ? <ArrowUp size={15} weight="bold" /> : <ArrowDown size={15} weight="bold" />}</span>
+          <div className="cxc-mv-t"><b>{m.titulo}</b><small>{[m.detalhe, dataCurta(m.data)].filter(Boolean).join(" · ")}</small></div>
+          <span className={`cxc-mv-v ${m.tipo === "entrada" ? "e" : "s"}`}>{m.tipo === "entrada" ? "+" : "−"} {brl(m.valor)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Estilos do caixa (uma vez por tela). */
+export const CaixaEstilos = () => <style>{CSS}</style>;
+
+/** Composição simples: saldo, um conteúdo no meio e as movimentações. */
+export default function CaixaCard({ mostrarMovimentos = true, meio }: { mostrarMovimentos?: boolean; meio?: ReactNode }) {
+  const { uid, cx, recarregar } = useCaixa();
+  const [definir, setDefinir] = useState(false);
   return (
     <>
-      {cx.precisaSql ? (
-        <div className="cxc-convite">
-          <b>Saldo em caixa</b>
-          <p>Falta um ajuste no banco de dados pra ativar o caixa (o SQL do Passo 4).</p>
-        </div>
-      ) : !cx.configurado ? (
-        <div className="cxc-convite">
-          <span className="cxc-convite-ic"><Wallet size={26} weight="duotone" /></span>
-          <b>Quanto você tem em caixa hoje?</b>
-          <p>Conte o dinheiro da gaveta e o que está na conta da confeitaria. A partir daí, o app soma o que você recebe e tira o que você paga.</p>
-          <button type="button" className="cxc-cta" onClick={() => setDefinir(true)}>Informar meu saldo</button>
-        </div>
-      ) : (
-        <div className="cxc">
-          <div className="cxc-top">
-            <p>Saldo em caixa <i>agora</i></p>
-            <button type="button" className="cxc-acertar" onClick={() => setDefinir(true)}><PencilSimple size={13} weight="bold" />Acertar</button>
-          </div>
-          <b className="cxc-v">{brl(cx.saldo)}</b>
-          <div className="cxc-hoje">
-            <span><ArrowUp size={14} weight="bold" />Entrou hoje <em>{brl(cx.entrouHoje)}</em></span>
-            <span><ArrowDown size={14} weight="bold" />Saiu hoje <em>{brl(cx.saiuHoje)}</em></span>
-          </div>
-          <small>Só conta o que já foi recebido ou pago{cx.semPagamentos ? " · os recebimentos de pedidos entram quando o SQL do Passo 1 for rodado" : ""}</small>
-        </div>
-      )}
-
+      <SaldoCaixa cx={cx} onAcertar={() => setDefinir(true)} />
       {meio}
-
-      {mostrarMovimentos && cx.configurado && (
-        <div className="cxc-movs">
-          <p className="cxc-movs-t">Últimas movimentações</p>
-          {cx.movimentos.length === 0 ? (
-            <p className="cxc-movs-vazio">Nenhuma movimentação desde que você informou o saldo. Quando receber um pedido ou lançar uma despesa, aparece aqui.</p>
-          ) : cx.movimentos.slice(0, 6).map(m => (
-            <div key={m.id} className="cxc-mv">
-              <span className={`cxc-mv-ic ${m.tipo === "entrada" ? "e" : "s"}`}>{m.tipo === "entrada" ? <ArrowUp size={15} weight="bold" /> : <ArrowDown size={15} weight="bold" />}</span>
-              <div className="cxc-mv-t"><b>{m.titulo}</b><small>{[m.detalhe, dataCurta(m.data)].filter(Boolean).join(" · ")}</small></div>
-              <span className={`cxc-mv-v ${m.tipo === "entrada" ? "e" : "s"}`}>{m.tipo === "entrada" ? "+" : "−"} {brl(m.valor)}</span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {definir && uid && <SaldoSheet atual={cx.configurado ? cx.saldo : null} uid={uid} onClose={() => setDefinir(false)} onSalvo={async () => { setDefinir(false); await carregar(); }} />}
-      <style>{CSS}</style>
+      {mostrarMovimentos && <MovimentosCaixa cx={cx} />}
+      {definir && uid && cx && <SaldoSheet atual={cx.configurado ? cx.saldo : null} uid={uid} onClose={() => setDefinir(false)} onSalvo={async () => { setDefinir(false); await recarregar(); }} />}
+      <CaixaEstilos />
     </>
   );
 }
 
-function SaldoSheet({ atual, uid, onClose, onSalvo }: { atual: number | null; uid: string; onClose: () => void; onSalvo: () => void }) {
+export function SaldoSheet({ atual, uid, onClose, onSalvo }: { atual: number | null; uid: string; onClose: () => void; onSalvo: () => void }) {
   const [txt, setTxt] = useState(atual != null ? atual.toFixed(2).replace(".", ",") : "");
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");

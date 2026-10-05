@@ -150,7 +150,7 @@ export default function FinanceiroTransacoes() {
       })
     }
 
-    const pedidosPagos: Movimentacao[] = pedidosPagosRaw.map((p: any) => {
+    let pedidosPagos: Movimentacao[] = pedidosPagosRaw.map((p: any) => {
       let cmv = 0
       let semFicha = false
       ;(p.pedido_itens || []).forEach((it: any) => {
@@ -176,6 +176,29 @@ export default function FinanceiroTransacoes() {
         semFicha,
       }
     })
+
+    // Financeiro · Passo 7: com a tabela de pagamentos, cada recebimento entra NA DATA EM QUE FOI RECEBIDO
+    // (antes, o pedido inteiro caía no mês da entrega — um sinal de setembro aparecia em outubro).
+    const { data: pags, error: ePags } = await supabase.from("pagamentos")
+      .select("id, valor, forma, tipo, recebido_em, pedido_id").eq("user_id", uid).is("estornado_em", null)
+      .gte("recebido_em", ini).lte("recebido_em", fim)
+    if (!ePags) {
+      const ids = [...new Set(((pags as any[]) || []).map(g => g.pedido_id).filter(Boolean))]
+      const nomes: Record<string, any> = {}
+      if (ids.length) {
+        const { data: ps } = await supabase.from("pedidos").select("id, numero, cliente_nome").in("id", ids)
+        ;((ps as any[]) || []).forEach(x => { nomes[x.id] = x })
+      }
+      const TIPO: Record<string, string> = { sinal: "Sinal", parcial: "Parcial", restante: "Restante" }
+      pedidosPagos = ((pags as any[]) || []).map(g => {
+        const n = g.pedido_id ? nomes[g.pedido_id] : null
+        return {
+          id: `pag_${g.id}`, origem: "pedido", tipo: "entrada", data: g.recebido_em, valor: Number(g.valor) || 0,
+          descricao: `${TIPO[g.tipo] ? TIPO[g.tipo] + " · " : ""}${n ? `Pedido #${n.numero} — ${n.cliente_nome || "Cliente"}` : "Recebimento de pedido"}`,
+          pedido_numero: n?.numero, cliente_nome: n?.cliente_nome,
+        } as Movimentacao
+      })
+    }
 
     // 2) Movimentações manuais no mês
     const { data: manuais } = await supabase
@@ -384,7 +407,7 @@ export default function FinanceiroTransacoes() {
       "",
       `Receita;${entradas.toFixed(2).replace(".", ",")}`,
       `Despesas;${saidas.toFixed(2).replace(".", ",")}`,
-      `Lucro líquido;${lucro.toFixed(2).replace(".", ",")}`,
+      `Resultado (entradas − saídas);${lucro.toFixed(2).replace(".", ",")}`,
       `Ticket médio;${ticketMedio.toFixed(2).replace(".", ",")}`,
       ...(metaMensal ? [`Meta;${metaMensal.toFixed(2).replace(".", ",")}`, `Progresso da meta;${metaProgresso.toFixed(0)}%`] : []),
       "",
