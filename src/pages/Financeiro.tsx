@@ -1,9 +1,9 @@
 // Financeiro — Hub-landing
-// Sub-páginas: Visão Geral, Transações, Custos
+// Sub-páginas: A receber, Visão Geral, Transações, Custos
 import { useNavigate } from "react-router-dom";
 import type { ReactElement } from "react";
 import {
-  ChartLineUp, ArrowsLeftRight, Calculator, CaretRight,
+  ChartLineUp, ArrowsLeftRight, Calculator, CaretRight, HandCoins,
 } from "@phosphor-icons/react";
 
 interface Section {
@@ -17,6 +17,12 @@ export default function Financeiro() {
   const navigate = useNavigate();
 
   const sections: Section[] = [
+    {
+      label: "A receber",
+      desc: "Pedidos com valor a receber: sinal, restante e fiado",
+      icon: <HandCoins size={20} weight="duotone" />,
+      path: "/financeiro/a-receber",
+    },
     {
       label: "Visão Geral",
       desc: "Dashboard com resumo, gráficos e indicadores",

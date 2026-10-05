@@ -67,6 +67,7 @@ import Cardapio from "@/pages/Cardapio";
 import Financeiro from "@/pages/Financeiro";
 import FinanceiroVisaoGeral from "@/pages/FinanceiroVisaoGeral";
 import FinanceiroTransacoes from "@/pages/FinanceiroTransacoes";
+import FinanceiroAReceber from "@/pages/FinanceiroAReceber";
 import Custos from "@/pages/Custos";
 import Lucratividade from "@/pages/Lucratividade";
 import FichaTecnica from "@/pages/FichaTecnica";
@@ -106,6 +107,9 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
   // Entrou pelo Google e ainda falta o nome da confeitaria ou o WhatsApp: tela "Complete seu cadastro" (02/10)
   const [completar, setCompletar] = useState<null | { nome: string }>(null);
+  // Login pelo Google: só mostra o app depois de conferir se falta completar o cadastro
+  // (antes o Início aparecia por um instante e depois era trocado pela tela de cadastro)
+  const [perfilConferido, setPerfilConferido] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -119,6 +123,8 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!session?.user?.id) return;
     let cancelado = false;
+    // Internet muito lenta: depois de 4s abre o app mesmo assim (nunca fica numa tela vazia)
+    const limite = setTimeout(() => { if (!cancelado) setPerfilConferido(true); }, 4000);
     (async () => {
       try {
         const { data } = await supabase
@@ -131,6 +137,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
           || (session.user?.identities || []).some((i: any) => i?.provider === "google");
         const faltaDado = !String((data as any)?.nome_loja || "").trim() || String((data as any)?.telefone || "").replace(/\D/g, "").length < 10;
         if (viaGoogle && faltaDado) setCompletar({ nome: String((data as any)?.nome || "") });
+        setPerfilConferido(true);
         if (data?.tutorial_visto) {
           // Banco diz que já viu — sincroniza localStorage e esconde
           try {
@@ -142,13 +149,20 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
         // Se banco diz "não viu", respeita o estado local (que já foi calculado sync no init)
       } catch {
         // Coluna pode não existir ainda ou rede caiu — segue com localStorage
+        if (!cancelado) setPerfilConferido(true);
       }
     })();
-    return () => { cancelado = true; };
+    return () => { cancelado = true; clearTimeout(limite); };
   }, [session?.user?.id]);
 
   if (session === undefined) return null;
   if (!session) return <NavigateWithSearch to="/login" replace />;
+
+  const entrouPeloGoogle = session.user?.app_metadata?.provider === "google"
+    || (session.user?.identities || []).some((i: any) => i?.provider === "google");
+  if (entrouPeloGoogle && !perfilConferido) {
+    return <div style={{ position: "fixed", inset: 0, background: "linear-gradient(180deg, #FCE7F3 0, #FAF7F8 240px)" }} aria-busy="true" />;
+  }
 
   if (completar) {
     return <CompletarCadastro user={session.user} nomeInicial={completar.nome} onPronto={() => setCompletar(null)} />;
@@ -260,6 +274,7 @@ export default function App() {
           <Route path="/financeiro" element={<Financeiro />} />
           <Route path="/financeiro/visao-geral" element={<FinanceiroVisaoGeral />} />
           <Route path="/financeiro/transacoes" element={<FinanceiroTransacoes />} />
+          <Route path="/financeiro/a-receber" element={<FinanceiroAReceber />} />
           <Route path="/custos" element={<Custos />} />
           <Route path="/lucratividade" element={<Lucratividade />} />
           <Route path="/promocoes" element={<Promocoes />} />
