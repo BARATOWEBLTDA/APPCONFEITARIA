@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { ArrowUp, ArrowDown, Wallet, PencilSimple } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
@@ -11,7 +11,7 @@ import { carregarCaixa, definirSaldoInicial, type EstadoCaixa } from "@/lib/caix
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const dataCurta = (iso: string) => { const [y, m, d] = iso.split("-").map(Number); return new Date(y, m - 1, d).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }); };
 
-export default function CaixaCard({ mostrarMovimentos = true }: { mostrarMovimentos?: boolean }) {
+export default function CaixaCard({ mostrarMovimentos = true, meio }: { mostrarMovimentos?: boolean; meio?: ReactNode }) {
   const [uid, setUid] = useState<string | null>(null);
   const [cx, setCx] = useState<EstadoCaixa | null>(null);
   const [definir, setDefinir] = useState(false);
@@ -54,6 +54,8 @@ export default function CaixaCard({ mostrarMovimentos = true }: { mostrarMovimen
           <small>Só conta o que já foi recebido ou pago{cx.semPagamentos ? " · os recebimentos de pedidos entram quando o SQL do Passo 1 for rodado" : ""}</small>
         </div>
       )}
+
+      {meio}
 
       {mostrarMovimentos && cx.configurado && (
         <div className="cxc-movs">

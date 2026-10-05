@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { CalendarBlank, CheckCircle, ArrowSquareOut, Wallet } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { supabase } from "@/lib/supabase";
-import { valorRecebidoPedido } from "@/lib/financeiroPedido";
+import { carregarAReceber, isoDia, type ItemReceber } from "@/lib/contasReceber";
 import { registrarPagamento, normalizarForma } from "@/lib/pagamentos";
 
 /**
@@ -13,18 +13,11 @@ import { registrarPagamento, normalizarForma } from "@/lib/pagamentos";
  * o "Receber" registra um pagamento (Passo 1), e o banco atualiza o recebido do pedido.
  * A data usada pra agrupar é a combinada pro pagamento ou, sem ela, a da entrega.
  */
-type Pedido = {
-  id: string; numero: number | null; cliente_nome: string | null;
-  valor_total: number | null; valor_recebido: number | null;
-  status: string | null; status_pagamento: string | null; forma_pagamento: string | null;
-  data_entrega: string | null; horario_entrega: string | null; data_prevista_pagamento: string | null;
-};
-type Item = Pedido & { total: number; recebido: number; falta: number; dataRef: string | null; dias: number | null };
+type Item = ItemReceber;
 
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-const isoHoje = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
-const isoMais = (n: number) => { const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
-const diasAte = (iso: string) => { const [y, m, d] = iso.split("-").map(Number); const alvo = new Date(y, m - 1, d); const h = new Date(); const hoje = new Date(h.getFullYear(), h.getMonth(), h.getDate()); return Math.round((alvo.getTime() - hoje.getTime()) / 86400000); };
+const isoHoje = () => isoDia(0);
+const isoMais = (n: number) => isoDia(n);
 const dataCurta = (iso: string) => { const [y, m, d] = iso.split("-").map(Number); return new Date(y, m - 1, d).toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" }).replace(".", ""); };
 const quando = (dias: number | null) => dias === null ? "sem data" : dias === 0 ? "hoje" : dias === 1 ? "amanhã" : dias > 1 ? `em ${dias} dias` : dias === -1 ? "atrasado 1 dia" : `atrasado ${-dias} dias`;
 const FORMAS = [{ k: "pix", l: "Pix" }, { k: "dinheiro", l: "Dinheiro" }, { k: "credito", l: "Crédito" }, { k: "debito", l: "Débito" }];
@@ -39,19 +32,7 @@ export default function FinanceiroAReceber() {
   const carregar = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const { data } = await supabase.from("pedidos")
-      .select("id, numero, cliente_nome, valor_total, valor_recebido, status, status_pagamento, forma_pagamento, data_entrega, horario_entrega, data_prevista_pagamento")
-      .eq("user_id", user.id).neq("status", "cancelado");
-    const lista: Item[] = ((data as Pedido[]) || [])
-      .filter(p => p.status_pagamento !== "estornado")
-      .map(p => {
-        const total = Number(p.valor_total) || 0;
-        const recebido = valorRecebidoPedido(p);
-        const dataRef = p.data_prevista_pagamento || p.data_entrega || null;
-        return { ...p, total, recebido, falta: Math.round((total - recebido) * 100) / 100, dataRef, dias: dataRef ? diasAte(dataRef) : null };
-      })
-      .filter(p => p.falta > 0.009)
-      .sort((a, b) => (a.dataRef || "9999").localeCompare(b.dataRef || "9999"));
+    const lista = await carregarAReceber(user.id); // regra única (Passos 2 e 6)
     setItens(lista);
     setCarregando(false);
   }, []);

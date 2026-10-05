@@ -2,6 +2,7 @@
 // Sub-páginas: A receber, Visão Geral, Transações, Custos
 import AppPageHeader from "@/components/AppPageHeader";
 import CaixaCard from "@/components/financeiro/CaixaCard";
+import PrevistosCard from "@/components/financeiro/PrevistosCard";
 import { useNavigate } from "react-router-dom";
 import type { ReactElement } from "react";
 import {
@@ -63,8 +64,8 @@ export default function Financeiro() {
       </>}
     />
     <div className="fh-root">
-      {/* Financeiro · Passo 4: saldo em caixa e últimas movimentações */}
-      <CaixaCard />
+      {/* Financeiro · Passo 4: saldo em caixa · Passo 6: recebimentos previstos (não somam no caixa) */}
+      <CaixaCard meio={<PrevistosCard />} />
 
       <div className="fh-block">
         <h2 className="fh-block-title">Operações</h2>
