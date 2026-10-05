@@ -1,4 +1,5 @@
 // v2: excluir pedido + modal 3 secoes + imagem_url
+import FinalizarPedidoSheet from '@/components/pedidos/FinalizarPedidoSheet'
 import { registrarPagamento } from '@/lib/pagamentos'
 import { duplicarPedido } from '@/lib/duplicarPedido'
 import { pedidoAtrasado } from '@/lib/pedidoStatus'
@@ -1620,144 +1621,6 @@ function saldoPedido(p: any): number {
   return Math.max(0, Math.round(((Number(p?.valor_total) || 0) - recebidoPedido(p)) * 100) / 100)
 }
 
-// ── Modal: Cliente pagou ao sair de Aguardando Pagamento ────────────────────
-function ModalPagouOuNao({ pedido, novoStatus, onConfirmar, onCancelar }: {
-  pedido: Pedido
-  novoStatus: string
-  onConfirmar: (opcao: 'total' | 'parcial' | 'nao', valorParcial?: number) => void
-  onCancelar: () => void
-}) {
-  const [opcao, setOpcao] = useState<'total' | 'parcial' | 'nao'>('total')
-  const [valorParcial, setValorParcial] = useState('')
-  const novoStatusLabel = TODOS_STATUS.find(s => s.key === novoStatus)?.label || novoStatus
-  const jaRecebido = recebidoPedido(pedido)
-  const falta = saldoPedido(pedido)
-
-  const handleConfirmar = () => {
-    if (opcao === 'parcial') {
-      const v = parseFloat(valorParcial.replace(/\./g, '').replace(',', '.')) || 0
-      if (v <= 0 || v >= falta) {
-        alert(`Digite quanto você recebeu agora (menos que os ${formatMoney(falta)} que faltam)`)
-        return
-      }
-      onConfirmar('parcial', v)
-    } else {
-      onConfirmar(opcao)
-    }
-  }
-
-  return (
-    <div className="mpag-overlay" onClick={onCancelar}>
-      <div className="mpag-modal" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
-        <div className="mpag-header">
-          <div className="mpag-icon">💰</div>
-          <h3 className="mpag-title">Cliente pagou?</h3>
-          <p className="mpag-sub">
-            {getStatusGroup(pedido.status) === 'aguardando_pagamento'
-              ? <>Você está movendo o <b>Pedido #{pedido.numero}</b> para <b>{novoStatusLabel}</b>, mas ele está em <b>Aguardando Pagamento</b>.</>
-              : <>Você está marcando o <b>Pedido #{pedido.numero}</b> como <b>{novoStatusLabel}</b>, e ainda falta receber <b>{formatMoney(falta)}</b>.</>}
-          </p>
-        </div>
-
-        <div className="mpag-total">
-          <span className="mpag-total-lbl">Total do pedido</span>
-          <span className="mpag-total-val">{formatMoney(pedido.valor_total || 0)}</span>
-        </div>
-        {jaRecebido > 0 && (
-          <div className="mpag-resumo">
-            <span>Já recebido <b className="ok">{formatMoney(jaRecebido)}</b></span>
-            <span>Falta receber <b className="fa">{formatMoney(falta)}</b></span>
-          </div>
-        )}
-
-        <div className="mpag-opcoes">
-          <label className={`mpag-opcao${opcao === 'total' ? ' mpag-opcao--ativa' : ''}`}>
-            <input type="radio" className="no-square-radio mpag-radio-oculto" checked={opcao === 'total'} onChange={() => setOpcao('total')} />
-            <div className="mpag-opcao-dot" />
-            <div className="mpag-opcao-info">
-              <div className="mpag-opcao-lbl">✅ {jaRecebido > 0 ? 'Sim, recebi o restante' : 'Sim, recebi o total'}</div>
-              <div className="mpag-opcao-desc">{formatMoney(falta)} {jaRecebido > 0 ? 'entram agora' : 'vão pro faturamento'}</div>
-            </div>
-          </label>
-
-          <label className={`mpag-opcao${opcao === 'parcial' ? ' mpag-opcao--ativa' : ''}`}>
-            <input type="radio" className="no-square-radio mpag-radio-oculto" checked={opcao === 'parcial'} onChange={() => setOpcao('parcial')} />
-            <div className="mpag-opcao-dot" />
-            <div className="mpag-opcao-info">
-              <div className="mpag-opcao-lbl">💵 Recebi só parte</div>
-              <div className="mpag-opcao-desc">Quanto você recebeu agora? Soma com o que já foi pago</div>
-              {opcao === 'parcial' && (
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  className="mpag-parcial-input"
-                  placeholder="R$ 0,00"
-                  value={valorParcial}
-                  onChange={e => setValorParcial(e.target.value)}
-                  autoFocus
-                  onClick={e => e.stopPropagation()}
-                />
-              )}
-            </div>
-          </label>
-
-          <label className={`mpag-opcao${opcao === 'nao' ? ' mpag-opcao--ativa' : ''}`}>
-            <input type="radio" className="no-square-radio mpag-radio-oculto" checked={opcao === 'nao'} onChange={() => setOpcao('nao')} />
-            <div className="mpag-opcao-dot" />
-            <div className="mpag-opcao-info">
-              <div className="mpag-opcao-lbl">⏳ Ainda não recebi</div>
-              <div className="mpag-opcao-desc">{formatMoney(falta)} continuam a receber</div>
-            </div>
-          </label>
-        </div>
-
-        <div className="mpag-acoes">
-          <button className="mpag-btn mpag-btn-cancel" onClick={onCancelar}>Cancelar</button>
-          <button className="mpag-btn mpag-btn-ok" onClick={handleConfirmar}>Confirmar</button>
-        </div>
-
-        <style>{`
-          .mpag-overlay { position: fixed; inset: 0; background: rgba(45, 31, 38, 0.55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 10003; animation: mpagIn 0.18s ease-out; font-family: var(--font-base) !important; }
-          @keyframes mpagIn { from { opacity: 0; } to { opacity: 1; } }
-          .mpag-modal { background: #fff; border-radius: 16px; padding: 24px; max-width: 420px; width: 100%; box-shadow: 0 24px 60px rgba(0,0,0,0.35); animation: mpagModalIn 0.2s ease-out;
-            max-height: calc(100dvh - 32px); overflow-y: auto; -webkit-overflow-scrolling: touch; } /* rola se não couber (celular pequeno) */
-          .mpag-resumo { display: flex; justify-content: space-between; gap: 10px; margin: -4px 0 14px; padding: 0 4px; font-size: 13px; color: #6B5D64; }
-          .mpag-resumo b { display: block; font-size: 15px; font-weight: 800; }
-          .mpag-resumo span:last-child { text-align: right; }
-          .mpag-resumo .ok { color: #15803D; } .mpag-resumo .fa { color: #B45309; }
-          @keyframes mpagModalIn { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
-          .mpag-header { text-align: center; margin-bottom: 16px; }
-          .mpag-icon { font-size: 40px; margin-bottom: 6px; }
-          .mpag-title { font-size: 18px; font-weight: 800; color: #2D1F26; margin: 0 0 8px; letter-spacing: -0.01em; font-family: var(--font-base) !important; }
-          .mpag-sub { font-size: 12.5px; color: #6B5D64; line-height: 1.5; margin: 0; font-family: var(--font-base) !important; }
-          .mpag-sub b { color: #2D1F26; font-weight: 700; }
-          .mpag-total { display: flex; justify-content: space-between; align-items: center; background: #F1F5F9; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; }
-          .mpag-total-lbl { font-size: 11px; font-weight: 700; color: #9A8B93; text-transform: uppercase; letter-spacing: 0.06em; }
-          .mpag-total-val { font-size: 18px; font-weight: 800; color: #2D1F26; letter-spacing: -0.02em; font-family: var(--font-base) !important; }
-          .mpag-opcoes { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
-          .mpag-opcao { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border: 1.5px solid #F0EBED; border-radius: 10px; cursor: pointer; transition: border-color 0.12s, background 0.12s; }
-          .mpag-opcao:hover { border-color: #E5D8DE; background: #FDFAFB; }
-          .mpag-opcao input[type="radio"] { display: none; } /* só o rádio: antes escondia também o campo do valor parcial */
-          .mpag-opcao-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #D5CBCF; flex-shrink: 0; margin-top: 1px; transition: border-color 0.12s, background 0.12s; }
-          .mpag-opcao--ativa { border-color: #E85A8C; background: #FDF3F7; }
-          .mpag-opcao--ativa .mpag-opcao-dot { border-color: #E85A8C; background: #E85A8C; box-shadow: inset 0 0 0 3px #fff; }
-          .mpag-opcao-info { flex: 1; min-width: 0; }
-          .mpag-opcao-lbl { font-size: 13.5px; font-weight: 700; color: #2D1F26; font-family: var(--font-base) !important; }
-          .mpag-opcao-desc { font-size: 12px; color: #6B5D64; margin-top: 2px; font-family: var(--font-base) !important; }
-          .mpag-parcial-input { display: block; width: 100%; margin-top: 8px; padding: 8px 12px; border: 1.5px solid #E5D8DE; border-radius: 6px; font-size: 14px; font-weight: 700; font-family: var(--font-base) !important; color: #2D1F26; box-sizing: border-box; outline: none; transition: border-color 0.12s; }
-          .mpag-parcial-input:focus { border-color: #E85A8C; }
-          .mpag-acoes { display: flex; gap: 8px; }
-          .mpag-btn { all: unset; flex: 1; padding: 11px; border-radius: 8px; font-size: 13px; font-weight: 700; letter-spacing: 0.01em; cursor: pointer; text-align: center; box-sizing: border-box; font-family: var(--font-base) !important; transition: filter 0.12s; }
-          .mpag-btn-cancel { background: #F5F1F3; color: #6B5D64; }
-          .mpag-btn-cancel:hover { background: #EBE5E8; }
-          .mpag-btn-ok { background: #E85A8C; color: #fff; box-shadow: 0 3px 0 #C33A6E; }
-          .mpag-btn-ok:hover { filter: brightness(1.05); }
-        `}</style>
-      </div>
-    </div>
-  )
-}
-
 export default function Pedidos() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -1856,32 +1719,6 @@ export default function Pedidos() {
     // Padrão: só muda o status
     await supabase.from('pedidos').update({ status }).eq('id', id)
     setPedidos(prev => prev.map(p => p.id === id ? { ...p, status } : p))
-  }
-
-  // Confirmação do modal "Cliente pagou?"
-  const confirmarPagamentoSaida = async (opcao: 'total' | 'parcial' | 'nao', valorParcial?: number) => {
-    if (!pendingPag) return
-    const { pedido, novoStatus } = pendingPag
-    const update: any = { status: novoStatus }
-    const jaRecebido = recebidoPedido(pedido)
-    // Passo 1: o que entrou AGORA vira um pagamento registrado; o banco soma com o que já tinha
-    const agora = opcao === 'total' ? saldoPedido(pedido) : opcao === 'parcial' ? (valorParcial || 0) : 0
-    await supabase.from('pedidos').update(update).eq('id', pedido.id)
-    if (agora > 0) {
-      const r = await registrarPagamento({
-        pedidoId: pedido.id, valor: agora, forma: pedido.forma_pagamento,
-        tipo: opcao === 'total' ? (jaRecebido > 0 ? 'restante' : 'total') : 'parcial',
-      })
-      if (r.status_pagamento) { update.valor_recebido = r.valor_recebido; update.status_pagamento = r.status_pagamento }
-      else {
-        const novo = Math.min(Number(pedido.valor_total) || 0, Math.round((jaRecebido + agora) * 100) / 100)
-        update.valor_recebido = novo
-        update.status_pagamento = novo >= (Number(pedido.valor_total) || 0) - 0.009 ? 'pago' : 'parcial'
-      }
-    }
-    // 'nao' → só muda status, pagamento fica como está
-    setPedidos(prev => prev.map(p => p.id === pedido.id ? { ...p, ...update } : p))
-    setPendingPag(null)
   }
 
   const excluirPedido = async (id: string) => {
@@ -3981,15 +3818,16 @@ export default function Pedidos() {
       document.body
     )}
 
-    {/* ══════════════ MODAL: Cliente pagou? ══════════════ */}
-    {pendingPag && createPortal(
-      <ModalPagouOuNao
-        pedido={pendingPag.pedido}
+    {/* ══════════════ Finalizar pedido / Cliente pagou? (Financeiro · Passo 3) ══════════════ */}
+    {pendingPag && (
+      <FinalizarPedidoSheet
+        pedido={pendingPag.pedido as any}
         novoStatus={pendingPag.novoStatus}
-        onConfirmar={confirmarPagamentoSaida}
+        novoStatusLabel={TODOS_STATUS.find(s => s.key === pendingPag.novoStatus)?.label || pendingPag.novoStatus}
+        aguardandoPagamento={getStatusGroup(pendingPag.pedido.status) === 'aguardando_pagamento'}
         onCancelar={() => setPendingPag(null)}
-      />,
-      document.body
+        onConcluido={(r) => { setPedidos(prev => prev.map(p => p.id === pendingPag.pedido.id ? { ...p, ...r } : p)); setPendingPag(null) }}
+      />
     )}
 
     <style>{`
