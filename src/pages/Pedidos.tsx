@@ -1607,6 +1607,18 @@ function KanbanView({ pedidos, onVerPedido, onMoverStatus }: {
   )
 }
 
+// ── Quanto já entrou e quanto falta (Financeiro · Passo 0) ───────────────────
+function recebidoPedido(p: any): number {
+  const total = Number(p?.valor_total) || 0
+  if (p?.status_pagamento === 'pago') return total
+  if (p?.status_pagamento === 'parcial') return Math.min(total, Number(p?.valor_recebido) || 0)
+  return 0
+}
+function saldoPedido(p: any): number {
+  if (p?.status === 'cancelado' || p?.status_pagamento === 'estornado') return 0
+  return Math.max(0, Math.round(((Number(p?.valor_total) || 0) - recebidoPedido(p)) * 100) / 100)
+}
+
 // ── Modal: Cliente pagou ao sair de Aguardando Pagamento ────────────────────
 function ModalPagouOuNao({ pedido, novoStatus, onConfirmar, onCancelar }: {
   pedido: Pedido
@@ -1617,12 +1629,14 @@ function ModalPagouOuNao({ pedido, novoStatus, onConfirmar, onCancelar }: {
   const [opcao, setOpcao] = useState<'total' | 'parcial' | 'nao'>('total')
   const [valorParcial, setValorParcial] = useState('')
   const novoStatusLabel = TODOS_STATUS.find(s => s.key === novoStatus)?.label || novoStatus
+  const jaRecebido = recebidoPedido(pedido)
+  const falta = saldoPedido(pedido)
 
   const handleConfirmar = () => {
     if (opcao === 'parcial') {
-      const v = parseFloat(valorParcial.replace(',', '.')) || 0
-      if (v <= 0 || v >= pedido.valor_total) {
-        alert('Digite um valor parcial válido (menor que o total)')
+      const v = parseFloat(valorParcial.replace(/\./g, '').replace(',', '.')) || 0
+      if (v <= 0 || v >= falta) {
+        alert(`Digite quanto você recebeu agora (menos que os ${formatMoney(falta)} que faltam)`)
         return
       }
       onConfirmar('parcial', v)
@@ -1638,8 +1652,9 @@ function ModalPagouOuNao({ pedido, novoStatus, onConfirmar, onCancelar }: {
           <div className="mpag-icon">💰</div>
           <h3 className="mpag-title">Cliente pagou?</h3>
           <p className="mpag-sub">
-            Você está movendo o <b>Pedido #{pedido.numero}</b> para <b>{novoStatusLabel}</b>,
-            mas ele está em <b>Aguardando Pagamento</b>.
+            {getStatusGroup(pedido.status) === 'aguardando_pagamento'
+              ? <>Você está movendo o <b>Pedido #{pedido.numero}</b> para <b>{novoStatusLabel}</b>, mas ele está em <b>Aguardando Pagamento</b>.</>
+              : <>Você está marcando o <b>Pedido #{pedido.numero}</b> como <b>{novoStatusLabel}</b>, e ainda falta receber <b>{formatMoney(falta)}</b>.</>}
           </p>
         </div>
 
@@ -1647,14 +1662,20 @@ function ModalPagouOuNao({ pedido, novoStatus, onConfirmar, onCancelar }: {
           <span className="mpag-total-lbl">Total do pedido</span>
           <span className="mpag-total-val">{formatMoney(pedido.valor_total || 0)}</span>
         </div>
+        {jaRecebido > 0 && (
+          <div className="mpag-resumo">
+            <span>Já recebido <b className="ok">{formatMoney(jaRecebido)}</b></span>
+            <span>Falta receber <b className="fa">{formatMoney(falta)}</b></span>
+          </div>
+        )}
 
         <div className="mpag-opcoes">
           <label className={`mpag-opcao${opcao === 'total' ? ' mpag-opcao--ativa' : ''}`}>
             <input type="radio" className="no-square-radio mpag-radio-oculto" checked={opcao === 'total'} onChange={() => setOpcao('total')} />
             <div className="mpag-opcao-dot" />
             <div className="mpag-opcao-info">
-              <div className="mpag-opcao-lbl">✅ Sim, recebi o total</div>
-              <div className="mpag-opcao-desc">{formatMoney(pedido.valor_total || 0)} vai pro faturamento</div>
+              <div className="mpag-opcao-lbl">✅ {jaRecebido > 0 ? 'Sim, recebi o restante' : 'Sim, recebi o total'}</div>
+              <div className="mpag-opcao-desc">{formatMoney(falta)} {jaRecebido > 0 ? 'entram agora' : 'vão pro faturamento'}</div>
             </div>
           </label>
 
@@ -1663,7 +1684,7 @@ function ModalPagouOuNao({ pedido, novoStatus, onConfirmar, onCancelar }: {
             <div className="mpag-opcao-dot" />
             <div className="mpag-opcao-info">
               <div className="mpag-opcao-lbl">💵 Recebi só parte</div>
-              <div className="mpag-opcao-desc">Registrar valor parcial</div>
+              <div className="mpag-opcao-desc">Quanto você recebeu agora? Soma com o que já foi pago</div>
               {opcao === 'parcial' && (
                 <input
                   type="text"
@@ -1684,7 +1705,7 @@ function ModalPagouOuNao({ pedido, novoStatus, onConfirmar, onCancelar }: {
             <div className="mpag-opcao-dot" />
             <div className="mpag-opcao-info">
               <div className="mpag-opcao-lbl">⏳ Ainda não recebi</div>
-              <div className="mpag-opcao-desc">Fica como pagamento pendente</div>
+              <div className="mpag-opcao-desc">{formatMoney(falta)} continuam a receber</div>
             </div>
           </label>
         </div>
@@ -1697,7 +1718,12 @@ function ModalPagouOuNao({ pedido, novoStatus, onConfirmar, onCancelar }: {
         <style>{`
           .mpag-overlay { position: fixed; inset: 0; background: rgba(45, 31, 38, 0.55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 10003; animation: mpagIn 0.18s ease-out; font-family: var(--font-base) !important; }
           @keyframes mpagIn { from { opacity: 0; } to { opacity: 1; } }
-          .mpag-modal { background: #fff; border-radius: 16px; padding: 24px; max-width: 420px; width: 100%; box-shadow: 0 24px 60px rgba(0,0,0,0.35); animation: mpagModalIn 0.2s ease-out; }
+          .mpag-modal { background: #fff; border-radius: 16px; padding: 24px; max-width: 420px; width: 100%; box-shadow: 0 24px 60px rgba(0,0,0,0.35); animation: mpagModalIn 0.2s ease-out;
+            max-height: calc(100dvh - 32px); overflow-y: auto; -webkit-overflow-scrolling: touch; } /* rola se não couber (celular pequeno) */
+          .mpag-resumo { display: flex; justify-content: space-between; gap: 10px; margin: -4px 0 14px; padding: 0 4px; font-size: 13px; color: #6B5D64; }
+          .mpag-resumo b { display: block; font-size: 15px; font-weight: 800; }
+          .mpag-resumo span:last-child { text-align: right; }
+          .mpag-resumo .ok { color: #15803D; } .mpag-resumo .fa { color: #B45309; }
           @keyframes mpagModalIn { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
           .mpag-header { text-align: center; margin-bottom: 16px; }
           .mpag-icon { font-size: 40px; margin-bottom: 6px; }
@@ -1710,7 +1736,7 @@ function ModalPagouOuNao({ pedido, novoStatus, onConfirmar, onCancelar }: {
           .mpag-opcoes { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
           .mpag-opcao { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border: 1.5px solid #F0EBED; border-radius: 10px; cursor: pointer; transition: border-color 0.12s, background 0.12s; }
           .mpag-opcao:hover { border-color: #E5D8DE; background: #FDFAFB; }
-          .mpag-opcao input { display: none; }
+          .mpag-opcao input[type="radio"] { display: none; } /* só o rádio: antes escondia também o campo do valor parcial */
           .mpag-opcao-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #D5CBCF; flex-shrink: 0; margin-top: 1px; transition: border-color 0.12s, background 0.12s; }
           .mpag-opcao--ativa { border-color: #E85A8C; background: #FDF3F7; }
           .mpag-opcao--ativa .mpag-opcao-dot { border-color: #E85A8C; background: #E85A8C; box-shadow: inset 0 0 0 3px #fff; }
@@ -1793,12 +1819,11 @@ export default function Pedidos() {
     if (!pedido) return
     const statusAtual = getStatusGroup(pedido.status)
 
-    // Regra 1: entrando em Aguardando Pagamento → zera pagamento
+    // Regra 1 (Financeiro · Passo 0): entrar em Aguardando Pagamento só muda o status.
+    // Antes zerava o valor recebido — um sinal já pago sumia do financeiro.
     if (status === 'aguardando_pagamento' && statusAtual !== 'aguardando_pagamento') {
-      await supabase.from('pedidos')
-        .update({ status, status_pagamento: 'pendente', valor_recebido: 0 })
-        .eq('id', id)
-      setPedidos(prev => prev.map(p => p.id === id ? { ...p, status, status_pagamento: 'pendente', valor_recebido: 0 } : p))
+      await supabase.from('pedidos').update({ status }).eq('id', id)
+      setPedidos(prev => prev.map(p => p.id === id ? { ...p, status } : p))
       return
     }
 
@@ -1816,6 +1841,13 @@ export default function Pedidos() {
       return
     }
 
+    // Regra 3 (Passo 0): marcar como Entregue com saldo a receber → pergunta também,
+    // pra o restante não ficar esquecido (antes só mudava o status)
+    if (status === 'entregue' && statusAtual !== 'entregue' && saldoPedido(pedido) > 0.009) {
+      setPendingPag({ pedido, novoStatus: status })
+      return
+    }
+
     // Padrão: só muda o status
     await supabase.from('pedidos').update({ status }).eq('id', id)
     setPedidos(prev => prev.map(p => p.id === id ? { ...p, status } : p))
@@ -1826,12 +1858,15 @@ export default function Pedidos() {
     if (!pendingPag) return
     const { pedido, novoStatus } = pendingPag
     let update: any = { status: novoStatus }
+    const jaRecebido = recebidoPedido(pedido)
     if (opcao === 'total') {
       update.status_pagamento = 'pago'
       update.valor_recebido = pedido.valor_total
     } else if (opcao === 'parcial') {
-      update.status_pagamento = 'parcial'
-      update.valor_recebido = valorParcial || 0
+      // Passo 0: o valor digitado é o que entrou AGORA — soma com o que já tinha (antes substituía)
+      const novo = Math.min(Number(pedido.valor_total) || 0, Math.round((jaRecebido + (valorParcial || 0)) * 100) / 100)
+      update.valor_recebido = novo
+      update.status_pagamento = novo >= (Number(pedido.valor_total) || 0) - 0.009 ? 'pago' : 'parcial'
     }
     // 'nao' → só muda status, pagamento fica pendente
     await supabase.from('pedidos').update(update).eq('id', pedido.id)

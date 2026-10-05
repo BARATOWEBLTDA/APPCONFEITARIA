@@ -6,7 +6,7 @@ import ReqTag from "@/components/ReqTag";
 // FASE 2: tab Cliente completa
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
@@ -311,6 +311,8 @@ export default function EditarPedido() {
   // ── Pagamento (Fase 5) ────────────────────────────────────────────────
   const [formaPagamento, setFormaPagamento] = useState('PIX')
   const [situacaoPag, setSituacaoPag] = useState<SituacaoPag>('total')
+  // Como o pagamento estava ao abrir — se ela não mexer no pagamento, o recebido é preservado (Passo 0)
+  const pagInicialRef = useRef<{ situacao: SituacaoPag; parcial: number } | null>(null)
   const [valorParcial, setValorParcial] = useState(0)
   const [dataPrevistaPagamento, setDataPrevistaPagamento] = useState('')
 
@@ -371,16 +373,14 @@ export default function EditarPedido() {
       }
       // Popular pagamento (Fase 5)
       setFormaPagamento(p.forma_pagamento || 'PIX')
-      if (p.status_pagamento === 'pendente') {
-        setSituacaoPag('fiado')
-        setValorParcial(0)
-      } else if (p.status_pagamento === 'parcial') {
-        setSituacaoPag('parcial')
-        setValorParcial(p.valor_recebido || 0)
-      } else {
-        setSituacaoPag('total')
-        setValorParcial(0)
-      }
+      // Financeiro · Passo 0: pedido sem situação (antigo) ou estornado não abre mais como "pago"
+      let sitInicial: SituacaoPag = 'fiado', parcialInicial = 0
+      if (p.status_pagamento === 'pago') sitInicial = 'total'
+      else if (p.status_pagamento === 'parcial') { sitInicial = 'parcial'; parcialInicial = p.valor_recebido || 0 }
+      else if (!p.status_pagamento && p.status === 'entregue') sitInicial = 'total' // mesma regra do financeiro pra pedidos antigos
+      setSituacaoPag(sitInicial)
+      setValorParcial(parcialInicial)
+      pagInicialRef.current = { situacao: sitInicial, parcial: parcialInicial }
       setDataPrevistaPagamento(p.data_prevista_pagamento || '')
       // Popular itens editáveis
       setItens((p.pedido_itens || []).map(it => ({
@@ -609,19 +609,26 @@ export default function EditarPedido() {
         return
       }
 
-      // Derivar status_pagamento e valor_recebido a partir da situação escolhida
-      let statusPag: string
-      let valorRecebido: number
-      if (situacaoPag === 'fiado') {
-        statusPag = 'pendente'
-        valorRecebido = 0
-      } else if (situacaoPag === 'parcial') {
-        statusPag = 'parcial'
-        valorRecebido = Math.min(valorParcial, total)
-      } else {
-        statusPag = 'pago'
-        valorRecebido = total
-      }
+      // Derivar status_pagamento e valor_recebido.
+      // Financeiro · Passo 0: só regrava o pagamento se ela MEXEU no pagamento. Se mudou só itens, data,
+      // cliente…, preserva o que já foi recebido (antes, um pedido "pago" que aumentou de valor marcava
+      // a diferença como recebida, e pedidos antigos/estornados eram salvos como "pago").
+      const ini = pagInicialRef.current
+      const mexeuNoPagamento = !ini || ini.situacao !== situacaoPag || (situacaoPag === 'parcial' && ini.parcial !== valorParcial)
+      let statusPag: string | undefined
+      let valorRecebido: number | undefined
+      if (mexeuNoPagamento) {
+        if (situacaoPag === 'fiado') { statusPag = 'pendente'; valorRecebido = 0 }
+        else if (situacaoPag === 'parcial') { statusPag = 'parcial'; valorRecebido = Math.min(valorParcial, total) }
+        else { statusPag = 'pago'; valorRecebido = total }
+      } else if (pedido?.status_pagamento === 'pago' || pedido?.status_pagamento === 'parcial') {
+        const totalAntigo = Number(pedido?.valor_total) || 0
+        const jaRecebido = pedido.status_pagamento === 'pago' ? totalAntigo : (Number(pedido.valor_recebido) || 0)
+        valorRecebido = Math.min(jaRecebido, total)
+        statusPag = valorRecebido >= total - 0.009 ? 'pago' : valorRecebido > 0 ? 'parcial' : 'pendente'
+      } else if (pedido?.status_pagamento === 'pendente') {
+        statusPag = 'pendente'; valorRecebido = 0
+      } // sem situação (antigo) ou estornado: não toca no pagamento
 
       // Recalcular valor dos produtos (soma bruta dos itens)
       const valorProdutos = itens.reduce((acc, it) => acc + (it.valor_unitario || 0) * (it.quantidade || 1), 0)
@@ -636,8 +643,7 @@ export default function EditarPedido() {
         cliente_nome: clienteNome,
         cliente_telefone: clienteTelefone,
         status: statusPedido,
-        status_pagamento: statusPag,
-        valor_recebido: valorRecebido,
+        ...(statusPag !== undefined ? { status_pagamento: statusPag, valor_recebido: valorRecebido } : {}),
         valor_total: total,
         valor_produtos: valorProdutos,
         desconto: desconto,
@@ -652,7 +658,9 @@ export default function EditarPedido() {
         endereco_bairro: tipoEntrega === 'entrega' ? enderecoBairro : '',
         endereco_cidade: tipoEntrega === 'entrega' ? enderecoCidade : '',
         endereco_complemento: tipoEntrega === 'entrega' ? enderecoComplemento : '',
-        data_prevista_pagamento: situacaoPag === 'fiado' ? (dataPrevistaPagamento || null) : null,
+        data_prevista_pagamento: mexeuNoPagamento
+          ? (situacaoPag === 'fiado' ? (dataPrevistaPagamento || null) : null)
+          : ((pedido as any)?.data_prevista_pagamento ?? null),
       }
 
       // ── 1) UPDATE do pedido ─────────────────────────────────────────

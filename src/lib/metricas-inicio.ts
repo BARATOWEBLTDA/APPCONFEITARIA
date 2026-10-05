@@ -126,8 +126,8 @@ export async function fetchMetricaData(id: MetricaId, userId: string): Promise<M
     switch (id) {
       case "faturamento-mes": {
         const [{ data: atual }, { data: anterior }] = await Promise.all([
-          supabase.from("pedidos").select("valor_total").eq("user_id", userId).gte("created_at", inicioMes),
-          supabase.from("pedidos").select("valor_total").eq("user_id", userId).gte("created_at", inicioMesAnterior).lte("created_at", fimMesAnterior),
+          supabase.from("pedidos").select("valor_total").eq("user_id", userId).gte("created_at", inicioMes).neq("status", "cancelado"),
+          supabase.from("pedidos").select("valor_total").eq("user_id", userId).gte("created_at", inicioMesAnterior).lte("created_at", fimMesAnterior).neq("status", "cancelado"),
         ]);
         const totalAtual = (atual || []).reduce((s, p: any) => s + (Number(p.valor_total) || 0), 0);
         const totalAnterior = (anterior || []).reduce((s, p: any) => s + (Number(p.valor_total) || 0), 0);
@@ -140,7 +140,7 @@ export async function fetchMetricaData(id: MetricaId, userId: string): Promise<M
       }
 
       case "faturamento-hoje": {
-        const { data } = await supabase.from("pedidos").select("valor_total").eq("user_id", userId).gte("created_at", inicioHoje);
+        const { data } = await supabase.from("pedidos").select("valor_total").eq("user_id", userId).gte("created_at", inicioHoje).neq("status", "cancelado"); // Passo 0: sem cancelados
         const total = (data || []).reduce((s, p: any) => s + (Number(p.valor_total) || 0), 0);
         return { label: "Faturamento de hoje", valor: formatCurrency(total), sub: (data?.length || 0) + " pedido" + ((data?.length || 0) === 1 ? "" : "s") };
       }
