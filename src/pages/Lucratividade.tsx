@@ -1,6 +1,7 @@
 // Lucratividade — refeita no padrão novo (03/10), com a MESMA regra do painel do Financeiro:
 // lucro = vendido (pedidos entregues no mês) − custo dos ingredientes (ficha técnica) − despesas pagas
 // (sem as de insumos, que já estão no custo da ficha). Mais: ponto de equilíbrio e lucro por produto.
+import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CaretLeft, CaretRight, ChartLineUp, Warning } from "@phosphor-icons/react";
@@ -76,6 +77,7 @@ export default function Lucratividade() {
           <p>As despesas de <strong>insumos</strong> não entram de novo, porque o custo deles já está na ficha técnica de cada produto.</p>
         </>}
       />
+      <EstiloFinanceiro />
       <div className="lu">
         <div className="lu-mes">
           <button type="button" onClick={() => mudar(-1)} aria-label="Mês anterior"><CaretLeft size={16} weight="bold" /></button>

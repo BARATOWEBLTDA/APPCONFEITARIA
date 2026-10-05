@@ -44,7 +44,9 @@ export const FOLHA_CSS = `
   .fo-seg { display: flex; background: #F5F0F2; border-radius: 10px; padding: 3px; }
   .fo-seg button { flex: 1; border: none; background: none; border-radius: 8px; padding: 9px; font-family: inherit; font-size: 13.5px; font-weight: 800; color: #6B5D64; cursor: pointer; }
   .fo-seg button.on { background: #fff; color: #2C1219; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
-  .fo-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .fo-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+  .fo-row > * { min-width: 0; }
+  .fo input[type="date"] { min-width: 0; max-width: 100%; }
   .fo-sw { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 14px; padding: 12px; border: 1.5px solid #EDE6E9; border-radius: 12px; cursor: pointer; }
   .fo-sw b { display: block; font-size: 14px; } .fo-sw small { font-size: 12px; color: #6B5D64; }
   .fo-sw i { width: 42px; height: 24px; border-radius: 99px; background: #E5DDE1; position: relative; flex-shrink: 0; transition: background .15s; }

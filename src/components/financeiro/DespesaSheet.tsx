@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import { createPortal } from "react-dom";
 import { supabase } from "@/lib/supabase";
 
@@ -43,7 +44,7 @@ export default function DespesaSheet({ onClose, onSalvo, onContaAPagar, tipo = "
         <b className="dsp-t">{ehEntrada ? "Nova entrada" : "Nova despesa"}</b>
         <small className="dsp-s">{ehEntrada ? "Dinheiro que entrou fora dos pedidos do app. Entra no caixa na data escolhida." : "Algo que você já pagou. Sai do caixa na data escolhida."}</small>
         <label className="dsp-lb" htmlFor="dsp-v">{ehEntrada ? "Quanto entrou?" : "Quanto pagou?"}</label>
-        <div className="dsp-in"><span>R$</span><input id="dsp-v" inputMode="decimal" placeholder="0,00" value={valor} onChange={e => { setValor(e.target.value); setErro(""); }} autoFocus /></div>
+        <div className="dsp-in"><span>R$</span><input id="dsp-v" inputMode="numeric" placeholder="0,00" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro(""); }} autoFocus /></div>
         <p className="dsp-lb">Categoria</p>
         <div className="dsp-chips">{cats.map(c => <button type="button" key={c} className={categoria === c ? "on" : ""} onClick={() => setCategoria(c)}>{c}</button>)}</div>
         <label className="dsp-lb" htmlFor="dsp-d">Descrição <em>(opcional)</em></label>
@@ -70,7 +71,7 @@ export default function DespesaSheet({ onClose, onSalvo, onContaAPagar, tipo = "
         .dsp-chips { display: flex; gap: 6px; flex-wrap: wrap; }
         .dsp-chips button { border: 1.5px solid #EDE6E9; background: #fff; border-radius: 10px; padding: 8px 12px; font-family: inherit; font-size: 13px; font-weight: 700; color: #2C1219; cursor: pointer; }
         .dsp-chips button.on { border-color: #E85A8C; background: #FFF1F6; color: #C33A6E; }
-        .dsp-data { margin-top: 8px; width: 100%; height: 46px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 0 10px; font-family: inherit; font-size: 15px; box-sizing: border-box; }
+        .dsp-data { margin-top: 8px; width: 100%; min-width: 0; max-width: 100%; -webkit-appearance: none; appearance: none; background: #fff; height: 46px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 0 10px; font-family: inherit; font-size: 15px; box-sizing: border-box; }
         .dsp-erro { margin: 10px 0 0; font-size: 13px; font-weight: 800; color: #DC2626; }
         .dsp-cta { margin-top: 16px; width: 100%; border: none; border-radius: 14px; padding: 15px; background: ${ehEntrada ? "#16A34A" : "#2C1219"}; color: #fff; font-family: inherit; font-size: 15.5px; font-weight: 800; cursor: pointer; }
         .dsp-cta:disabled { opacity: .6; cursor: default; }

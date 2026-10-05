@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import { createPortal } from "react-dom";
 import { ArrowUp, ArrowDown, Wallet, PencilSimple } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
@@ -93,7 +94,7 @@ export default function CaixaCard({ mostrarMovimentos = true, meio }: { mostrarM
 }
 
 export function SaldoSheet({ atual, uid, onClose, onSalvo }: { atual: number | null; uid: string; onClose: () => void; onSalvo: () => void }) {
-  const [txt, setTxt] = useState(atual != null ? atual.toFixed(2).replace(".", ",") : "");
+  const [txt, setTxt] = useState(atual != null ? (textoBRL(atual) || "0,00") : "");
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
   const v = Math.round((parseFloat(txt.replace(/\./g, "").replace(",", ".")) || 0) * 100) / 100;
@@ -115,7 +116,7 @@ export function SaldoSheet({ atual, uid, onClose, onSalvo }: { atual: number | n
           ? "Some o dinheiro da gaveta e o que está na conta da confeitaria agora. Daqui pra frente, o app atualiza sozinho."
           : `O app calcula ${brl(atual)}. Se você contou e deu diferente, informe o valor certo: o caixa recomeça a partir de agora.`}</p>
         <label className="cxs-lb" htmlFor="cxs-v">Saldo agora</label>
-        <div className="cxs-in"><span>R$</span><input id="cxs-v" inputMode="decimal" placeholder="0,00" value={txt} onChange={e => { setTxt(e.target.value); setErro(""); }} autoFocus /></div>
+        <div className="cxs-in"><span>R$</span><input id="cxs-v" inputMode="numeric" placeholder="0,00" value={txt} onChange={e => { setTxt(mascaraBRL(e.target.value)); setErro(""); }} autoFocus /></div>
         {erro && <p className="cxs-erro">{erro}</p>}
         <button type="button" className="cxs-cta" onClick={salvar} disabled={salvando}>{salvando ? "Salvando…" : "Salvar saldo"}</button>
       </div>

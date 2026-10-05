@@ -1,8 +1,9 @@
 // Financeiro — painel (Passo 7, 03/10). Junta o que antes ficava na Visão Geral e no menu:
 // saldo em caixa, os números do mês, a receber, a pagar, previstos, fluxo e últimas movimentações.
+import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowUp, ArrowDown, CaretLeft, CaretRight, ArrowsLeftRight, Calculator, ChartPieSlice } from "@phosphor-icons/react";
+import { ArrowUp, ArrowDown, CaretLeft, CaretRight, ArrowsLeftRight, Calculator, ChartPieSlice, ShoppingBagOpen, TrendUp } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { useCaixa, SaldoCaixa, MovimentosCaixa, SaldoSheet, CaixaEstilos } from "@/components/financeiro/CaixaCard";
 import PrevistosCard from "@/components/financeiro/PrevistosCard";
@@ -65,6 +66,7 @@ export default function Financeiro() {
           <p>Pedido criado ou entregue <strong>não entra no caixa sozinho</strong>: só quando você registra o recebimento.</p>
         </>}
       />
+      <EstiloFinanceiro />
       <CaixaEstilos />
       <div className="fd">
         <div className="fd-a-saldo">
@@ -82,10 +84,10 @@ export default function Financeiro() {
         </div>
 
         <div className="fd-a-kpis fd-kpis">
-          <div className="fd-k"><small>Recebido no mês</small><b className="e">{dados ? brlInt(dados.recebido) : "…"}</b><i>dinheiro que entrou</i></div>
-          <div className="fd-k"><small>Despesas pagas</small><b className="s">{dados ? brlInt(dados.despesasPagas) : "…"}</b><i>dinheiro que saiu</i></div>
-          <div className="fd-k fd-k--vendido"><small>Vendido no mês</small><b>{dados ? brlInt(dados.vendido) : "…"}</b><i>{dados ? `${dados.qtdVendidos} ${dados.qtdVendidos === 1 ? "pedido entregue" : "pedidos entregues"}` : ""}</i></div>
-          <div className="fd-k"><small>Lucro do mês</small><b className={dados && dados.lucro < 0 ? "s" : "l"}>{dados ? brlInt(dados.lucro) : "…"}</b>
+          <div className="fd-k"><span className="fd-ki e" aria-hidden="true"><ArrowUp size={14} weight="bold" /></span><small>Recebido no mês</small><b className="e">{dados ? brlInt(dados.recebido) : "…"}</b><i>dinheiro que entrou</i></div>
+          <div className="fd-k"><span className="fd-ki s" aria-hidden="true"><ArrowDown size={14} weight="bold" /></span><small>Despesas pagas</small><b className="s">{dados ? brlInt(dados.despesasPagas) : "…"}</b><i>dinheiro que saiu</i></div>
+          <div className="fd-k fd-k--vendido"><span className="fd-ki n" aria-hidden="true"><ShoppingBagOpen size={14} weight="bold" /></span><small>Vendido no mês</small><b>{dados ? brlInt(dados.vendido) : "…"}</b><i>{dados ? `${dados.qtdVendidos} ${dados.qtdVendidos === 1 ? "pedido entregue" : "pedidos entregues"}` : ""}</i></div>
+          <div className="fd-k"><span className="fd-ki l" aria-hidden="true"><TrendUp size={14} weight="bold" /></span><small>Lucro do mês</small><b className={dados && dados.lucro < 0 ? "s" : "l"}>{dados ? brlInt(dados.lucro) : "…"}</b>
             <i className="fd-so-cel">{dados ? (dados.vendido > 0 ? `margem de ${dados.margem}%` : "sem vendas entregues") : ""}{dados && dados.semFicha > 0 ? ` · ${dados.semFicha} sem ficha` : ""}</i>
             <i className="fd-so-desk">{dados ? `vendido ${brlInt(dados.vendido)}${dados.vendido > 0 ? ` · margem ${dados.margem}%` : ""}` : ""}{dados && dados.semFicha > 0 ? ` · ${dados.semFicha} sem ficha` : ""}</i></div>
         </div>
@@ -197,6 +199,10 @@ const CSS = `
   .fd-mes button:disabled { opacity: .35; cursor: default; }
   .fd-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .fd-k, .fd-k2 { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px; min-width: 0; text-align: left; font-family: inherit; color: #2C1219; }
+  .fd-k { position: relative; }
+  .fd-ki { position: absolute; top: 10px; right: 10px; width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .fd-ki.e { background: #DCFCE7; color: #15803D; } .fd-ki.s { background: #FEE2E2; color: #DC2626; } .fd-ki.n { background: #F3EEF1; color: #6B5D64; } .fd-ki.l { background: #FCE7F3; color: #C33A6E; }
+  .fd-k small { padding-right: 30px; }
   .fd-k small, .fd-k2 small { display: block; font-size: 11.5px; font-weight: 700; color: #9A8E94; }
   .fd-k b, .fd-k2 b { display: block; font-size: clamp(15px, 4.6vw, 21px); font-weight: 900; letter-spacing: -.02em; margin: 3px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #2C1219; }
   .fd-k i, .fd-k2 i { display: flex; align-items: center; gap: 3px; font-style: normal; font-size: 11.5px; color: #888780; line-height: 1.35; }

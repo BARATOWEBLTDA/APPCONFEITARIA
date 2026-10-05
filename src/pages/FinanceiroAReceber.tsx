@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
+import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { CalendarBlank, CheckCircle, ArrowSquareOut, Wallet } from "@phosphor-icons/react";
@@ -65,6 +67,7 @@ export default function FinanceiroAReceber() {
           <p>Toque em <strong>Receber</strong> quando o cliente pagar. O valor entra no financeiro na data que você escolher, e o pedido sai daqui quando estiver quitado.</p>
         </>}
       />
+      <EstiloFinanceiro />
 
       <div className="far-wrap">
         {!carregando && itens.length > 0 && (
@@ -127,7 +130,7 @@ export default function FinanceiroAReceber() {
 
 /** Janela "Quanto você recebeu agora?" — registra um pagamento (Passo 1). */
 function ReceberSheet({ item, onClose, onFeito }: { item: Item; onClose: () => void; onFeito: (msg: string) => void }) {
-  const [valor, setValor] = useState(item.falta.toFixed(2).replace(".", ","));
+  const [valor, setValor] = useState(textoBRL(item.falta));
   const [forma, setForma] = useState(normalizarForma(item.forma_pagamento) || "pix");
   const [quandoRec, setQuandoRec] = useState<"hoje" | "ontem" | "outra">("hoje");
   const [outraData, setOutraData] = useState(isoHoje());
@@ -164,7 +167,7 @@ function ReceberSheet({ item, onClose, onFeito }: { item: Item; onClose: () => v
           <div className="tt"><span>Falta receber</span><b>{brl(item.falta)}</b></div>
         </div>
         <label className="far-lb" htmlFor="far-valor">Quanto você recebeu agora?</label>
-        <div className="far-in"><span>R$</span><input id="far-valor" inputMode="decimal" value={valor} onChange={e => { setValor(e.target.value); setErro(""); }} /></div>
+        <div className="far-in"><span>R$</span><input id="far-valor" inputMode="numeric" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro(""); }} /></div>
         <p className="far-lb">Forma de pagamento</p>
         <div className="far-chips">{FORMAS.map(f => <button type="button" key={f.k} className={forma === f.k ? "on" : ""} onClick={() => setForma(f.k)}>{f.l}</button>)}</div>
         <p className="far-lb">Quando recebeu?</p>
@@ -237,7 +240,7 @@ const CSS = `
   .far-chips { display: flex; gap: 6px; flex-wrap: wrap; }
   .far-chips button { border: 1.5px solid #EDE6E9; background: #fff; border-radius: 10px; padding: 9px 13px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #2C1219; cursor: pointer; }
   .far-chips button.on { border-color: #E85A8C; background: #FFF1F6; color: #C33A6E; }
-  .far-data { margin-top: 8px; width: 100%; height: 46px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 0 12px; font-family: inherit; font-size: 16px; }
+  .far-data { margin-top: 8px; width: 100%; min-width: 0; max-width: 100%; -webkit-appearance: none; appearance: none; background: #fff; height: 46px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 0 12px; font-family: inherit; font-size: 16px; }
   .far-prev { margin-top: 14px; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 12px; padding: 10px 12px; }
   .far-prev b { display: block; font-size: 13.5px; color: #92400E; } .far-prev small { font-size: 12px; color: #92400E; }
   .far-prev--ok { background: #F0FDF4; border-color: #BBF7D0; } .far-prev--ok b, .far-prev--ok small { color: #166534; }

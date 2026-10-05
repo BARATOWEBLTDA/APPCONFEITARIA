@@ -1,5 +1,6 @@
 // Transações — o extrato do financeiro, refeito no padrão novo (03/10).
 // Período (hoje, 7 dias, mês ou datas), filtros, busca, exportar e ESTORNO em vez de apagar.
+import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowUp, ArrowDown, MagnifyingGlass, DownloadSimple, ArrowSquareOut, ArrowCounterClockwise } from "@phosphor-icons/react";
@@ -83,6 +84,7 @@ export default function FinanceiroTransacoes() {
           <p>Lançou errado? Toque no item e use <strong>Estornar</strong>: ele sai das contas, mas continua no histórico, riscado.</p>
         </>}
       />
+      <EstiloFinanceiro />
       <div className="tx">
         <div className="tx-topo">
           <PeriodoFiltro valor={periodo} onChange={setPeriodo} />

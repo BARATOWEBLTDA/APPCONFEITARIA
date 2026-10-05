@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
+import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { CalendarBlank, CheckCircle, Plus, Receipt, X } from "@phosphor-icons/react";
@@ -82,6 +84,7 @@ export default function FinanceiroAPagar() {
           <p>Os <strong>custos fixos com dia de vencimento</strong> (aluguel, internet…) viram uma conta aqui todo mês, sozinhos.</p>
         </>}
       />
+      <EstiloFinanceiro />
 
       <div className="fap-wrap">
         {precisaSql ? (
@@ -163,7 +166,7 @@ function Folha({ titulo, sub, onClose, children }: { titulo: string; sub?: strin
 }
 
 function PagarSheet({ conta, onClose, onFeito }: { conta: Conta; onClose: () => void; onFeito: () => void }) {
-  const [valor, setValor] = useState(Number(conta.valor).toFixed(2).replace(".", ","));
+  const [valor, setValor] = useState(textoBRL(conta.valor));
   const [forma, setForma] = useState("pix");
   const [quandoPg, setQuandoPg] = useState<"hoje" | "ontem" | "outra">("hoje");
   const [outra, setOutra] = useState(isoDia());
@@ -183,7 +186,7 @@ function PagarSheet({ conta, onClose, onFeito }: { conta: Conta; onClose: () => 
   return (
     <Folha titulo={`Pagar · ${conta.descricao}`} sub={`Vence ${dataCurta(conta.vencimento)} · ${brl(conta.valor)}`} onClose={onClose}>
       <label className="fap-lb" htmlFor="fap-v">Quanto você pagou?</label>
-      <div className="fap-in"><span>R$</span><input id="fap-v" inputMode="decimal" value={valor} onChange={e => { setValor(e.target.value); setErro(""); }} /></div>
+      <div className="fap-in"><span>R$</span><input id="fap-v" inputMode="numeric" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro(""); }} /></div>
       <p className="fap-lb">Forma de pagamento</p>
       <div className="fap-chips">{FORMAS.map(f => <button type="button" key={f.k} className={forma === f.k ? "on" : ""} onClick={() => setForma(f.k)}>{f.l}</button>)}</div>
       <p className="fap-lb">Quando pagou?</p>
@@ -222,7 +225,7 @@ function NovaContaSheet({ onClose, onFeito }: { onClose: () => void; onFeito: ()
       <p className="fap-lb">Categoria</p>
       <div className="fap-chips">{CATEGORIAS.map(c => <button type="button" key={c} className={categoria === c ? "on" : ""} onClick={() => setCategoria(c)}>{c}</button>)}</div>
       <div className="fap-row">
-        <div><label className="fap-lb" htmlFor="fap-nv">Valor</label><div className="fap-in sm"><span>R$</span><input id="fap-nv" inputMode="decimal" placeholder="0,00" value={valor} onChange={e => { setValor(e.target.value); setErro(""); }} /></div></div>
+        <div><label className="fap-lb" htmlFor="fap-nv">Valor</label><div className="fap-in sm"><span>R$</span><input id="fap-nv" inputMode="numeric" placeholder="0,00" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro(""); }} /></div></div>
         <div><label className="fap-lb" htmlFor="fap-venc">Vencimento</label><input id="fap-venc" type="date" className="fap-data" style={{ marginTop: 0 }} value={vencimento} onChange={e => setVencimento(e.target.value)} /></div>
       </div>
       {erro && <p className="fap-erro">{erro}</p>}
@@ -281,8 +284,9 @@ const CSS = `
   .fap-chips { display: flex; gap: 6px; flex-wrap: wrap; }
   .fap-chips button { border: 1.5px solid #EDE6E9; background: #fff; border-radius: 10px; padding: 8px 12px; font-family: inherit; font-size: 13px; font-weight: 700; color: #2C1219; cursor: pointer; }
   .fap-chips button.on { border-color: #E85A8C; background: #FFF1F6; color: #C33A6E; }
-  .fap-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .fap-data { margin-top: 8px; width: 100%; height: 46px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 0 10px; font-family: inherit; font-size: 15px; box-sizing: border-box; }
+  .fap-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+  .fap-row > * { min-width: 0; } /* o campo de data vazava da janela (rolagem lateral) */
+  .fap-data { margin-top: 8px; width: 100%; min-width: 0; max-width: 100%; -webkit-appearance: none; appearance: none; background: #fff; color: #2C1219; height: 46px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 0 10px; font-family: inherit; font-size: 15px; box-sizing: border-box; }
   .fap-prev { margin-top: 14px; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 12px; padding: 10px 12px; }
   .fap-prev b { display: block; font-size: 13.5px; color: #991B1B; } .fap-prev small { font-size: 12px; color: #991B1B; }
   .fap-erro { margin: 10px 0 0; font-size: 13px; font-weight: 800; color: #DC2626; }

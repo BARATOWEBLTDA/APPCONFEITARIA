@@ -1,6 +1,8 @@
 // Custos — refeita no padrão novo do financeiro (03/10). Mesma lógica de antes:
 // custos fixos (com dia de vencimento → viram conta em "A pagar"), custos variáveis
 // (% de cada venda ou R$ por pedido) e mão de obra (salário, horas e dias).
+import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
+import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Buildings, Percent, Clock, Plus, CaretRight, Receipt } from "@phosphor-icons/react";
@@ -73,6 +75,7 @@ export default function Custos() {
           <p>A <strong>mão de obra</strong> é o seu salário: com ele e os custos fixos, o app calcula quanto custa cada hora sua.</p>
         </>}
       />
+      <EstiloFinanceiro />
       <div className="cu">
         <div className="cu-resumo">
           <div className="cu-k"><small>Custos fixos por mês</small><b>{brl(totalFixos)}</b><i>{fixos.filter(f => f.ativo).length} ativos</i></div>
@@ -148,7 +151,7 @@ function Excluir({ nome, onSim, onNao, ocupado }: { nome: string; onSim: () => v
 
 function FixoSheet({ uid, item, onClose, onFeito }: { uid: string; item: CustoFixo | null; onClose: () => void; onFeito: () => void }) {
   const [nome, setNome] = useState(item?.nome || "");
-  const [valor, setValor] = useState(txt(item?.valor));
+  const [valor, setValor] = useState(textoBRL(item?.valor));
   const [dia, setDia] = useState(item?.dia_vencimento ? String(item.dia_vencimento) : "");
   const [ativo, setAtivo] = useState(item ? item.ativo : true);
   const [excluir, setExcluir] = useState(false);
@@ -172,7 +175,7 @@ function FixoSheet({ uid, item, onClose, onFeito }: { uid: string; item: CustoFi
       <label className="fo-lb" htmlFor="cf-n">Nome</label>
       <input id="cf-n" className="fo-txt" placeholder="Ex.: Aluguel do ateliê" value={nome} onChange={e => { setNome(e.target.value); setErro(""); }} />
       <div className="fo-row">
-        <div><label className="fo-lb" htmlFor="cf-v">Valor por mês</label><div className="fo-in"><span>R$</span><input id="cf-v" inputMode="decimal" placeholder="0,00" value={valor} onChange={e => { setValor(e.target.value); setErro(""); }} /></div></div>
+        <div><label className="fo-lb" htmlFor="cf-v">Valor por mês</label><div className="fo-in"><span>R$</span><input id="cf-v" inputMode="numeric" placeholder="0,00" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro(""); }} /></div></div>
         <div><label className="fo-lb" htmlFor="cf-d">Vence dia <em>(opcional)</em></label><div className="fo-in"><input id="cf-d" inputMode="numeric" placeholder="Ex.: 5" value={dia} onChange={e => { setDia(e.target.value.replace(/\D/g, "").slice(0, 2)); setErro(""); }} /></div></div>
       </div>
       <div className="fo-dica">{dia ? <>Todo mês, uma conta de <b>{brl(num(valor))}</b> vencendo no <b>dia {dia}</b> aparece em <b>A pagar</b>. Ela só sai do caixa quando você pagar.</> : <>Com o dia de vencimento, este custo vira uma conta em <b>A pagar</b> todo mês, sozinho.</>}</div>
@@ -189,7 +192,7 @@ function FixoSheet({ uid, item, onClose, onFeito }: { uid: string; item: CustoFi
 function VariavelSheet({ uid, item, onClose, onFeito }: { uid: string; item: CustoVariavel | null; onClose: () => void; onFeito: () => void }) {
   const [nome, setNome] = useState(item?.nome || "");
   const [tipo, setTipo] = useState<"percentual" | "fixo">(item?.tipo || "percentual");
-  const [valor, setValor] = useState(txt(item?.valor));
+  const [valor, setValor] = useState(item?.tipo === "fixo" ? textoBRL(item?.valor) : txt(item?.valor));
   const [ativo, setAtivo] = useState(item ? item.ativo : true);
   const [excluir, setExcluir] = useState(false);
   const [ocupado, setOcupado] = useState(false);
@@ -212,9 +215,9 @@ function VariavelSheet({ uid, item, onClose, onFeito }: { uid: string; item: Cus
       <label className="fo-lb" htmlFor="cv-n">Nome</label>
       <input id="cv-n" className="fo-txt" placeholder="Ex.: Taxa da maquininha" value={nome} onChange={e => { setNome(e.target.value); setErro(""); }} />
       <p className="fo-lb">Como é cobrado?</p>
-      <div className="fo-seg"><button type="button" className={tipo === "percentual" ? "on" : ""} onClick={() => setTipo("percentual")}>% da venda</button><button type="button" className={tipo === "fixo" ? "on" : ""} onClick={() => setTipo("fixo")}>R$ por pedido</button></div>
+      <div className="fo-seg"><button type="button" className={tipo === "percentual" ? "on" : ""} onClick={() => { if (tipo !== "percentual") { setTipo("percentual"); setValor(""); } }}>% da venda</button><button type="button" className={tipo === "fixo" ? "on" : ""} onClick={() => { if (tipo !== "fixo") { setTipo("fixo"); setValor(""); } }}>R$ por pedido</button></div>
       <label className="fo-lb" htmlFor="cv-v">{tipo === "percentual" ? "Porcentagem" : "Valor por pedido"}</label>
-      <div className="fo-in">{tipo === "fixo" && <span>R$</span>}<input id="cv-v" inputMode="decimal" placeholder={tipo === "percentual" ? "Ex.: 3,5" : "0,00"} value={valor} onChange={e => { setValor(e.target.value); setErro(""); }} />{tipo === "percentual" && <span>%</span>}</div>
+      <div className="fo-in">{tipo === "fixo" && <span>R$</span>}<input id="cv-v" inputMode={tipo === "percentual" ? "decimal" : "numeric"} placeholder={tipo === "percentual" ? "Ex.: 3,5" : "0,00"} value={valor} onChange={e => { setValor(tipo === "fixo" ? mascaraBRL(e.target.value) : e.target.value); setErro(""); }} />{tipo === "percentual" && <span>%</span>}</div>
       {v > 0 && <div className="fo-dica">Numa venda de <b>R$ 100</b>, este custo é <b>{brl(tipo === "percentual" ? v : v)}</b>{tipo === "percentual" ? "" : " (por pedido, qualquer valor)"}.</div>}
       <Switch ligado={ativo} onToggle={() => setAtivo(a => !a)} titulo={ativo ? "Ativo" : "Pausado"} sub={ativo ? "Entra no cálculo dos seus preços" : "Não entra no cálculo enquanto estiver pausado"} />
       {erro && <p className="fo-erro">{erro}</p>}
@@ -227,7 +230,7 @@ function VariavelSheet({ uid, item, onClose, onFeito }: { uid: string; item: Cus
 }
 
 function MaoObraSheet({ uid, atual, totalFixos, onClose, onFeito }: { uid: string; atual: MaoObra; totalFixos: number; onClose: () => void; onFeito: () => void }) {
-  const [salario, setSalario] = useState(txt(atual.salario_mensal));
+  const [salario, setSalario] = useState(textoBRL(atual.salario_mensal));
   const [horas, setHoras] = useState(String(atual.horas_dia || 8));
   const [dias, setDias] = useState<number[]>(atual.dias_semana_array);
   const [ocupado, setOcupado] = useState(false);
@@ -248,7 +251,7 @@ function MaoObraSheet({ uid, atual, totalFixos, onClose, onFeito }: { uid: strin
   return (
     <Folha titulo="Mão de obra" sub="Quanto você quer ganhar e quanto trabalha" onClose={onClose}>
       <label className="fo-lb" htmlFor="mo-s">Salário que você quer tirar por mês</label>
-      <div className="fo-in"><span>R$</span><input id="mo-s" inputMode="decimal" placeholder="0,00" value={salario} onChange={e => { setSalario(e.target.value); setErro(""); }} /></div>
+      <div className="fo-in"><span>R$</span><input id="mo-s" inputMode="numeric" placeholder="0,00" value={salario} onChange={e => { setSalario(mascaraBRL(e.target.value)); setErro(""); }} /></div>
       <label className="fo-lb" htmlFor="mo-h">Horas de trabalho por dia</label>
       <div className="fo-in"><input id="mo-h" inputMode="decimal" value={horas} onChange={e => { setHoras(e.target.value); setErro(""); }} /><span>horas</span></div>
       <p className="fo-lb">Dias em que você produz</p>

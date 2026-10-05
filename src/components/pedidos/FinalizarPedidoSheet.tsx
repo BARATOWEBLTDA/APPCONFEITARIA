@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import { createPortal } from "react-dom";
 import { Wallet, PencilSimple, X } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
@@ -21,7 +22,7 @@ export type ResultadoFinalizar = { status: string; valor_total: number; valor_re
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const r2 = (v: number) => Math.round((Number(v) || 0) * 100) / 100;
 const num = (s: string) => r2(parseFloat(String(s).replace(/\./g, "").replace(",", ".")) || 0);
-const txt = (v: number) => r2(v).toFixed(2).replace(".", ",");
+const txt = (v: number) => textoBRL(r2(v)) || "0,00";
 const isoDia = (n = 0) => { const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 const FORMAS = [{ k: "pix", l: "Pix" }, { k: "dinheiro", l: "Dinheiro" }, { k: "credito", l: "Crédito" }, { k: "debito", l: "Débito" }];
 const MOTIVOS: Record<TipoAjuste, string[]> = {
@@ -129,7 +130,7 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
             <div className="fps-seg">
               {(["desconto", "acrescimo"] as TipoAjuste[]).map(t => <button type="button" key={t} className={tipoAjuste === t ? "on" : ""} onClick={() => setTipoAjuste(t)}>{t === "desconto" ? "Desconto" : "Acréscimo"}</button>)}
             </div>
-            <div className="fps-in sm"><span>R$</span><input inputMode="decimal" placeholder="0,00" value={valorAjusteTxt} onChange={e => setValorAjusteTxt(e.target.value)} aria-label="Valor do ajuste" /></div>
+            <div className="fps-in sm"><span>R$</span><input inputMode="numeric" placeholder="0,00" value={valorAjusteTxt} onChange={e => setValorAjusteTxt(mascaraBRL(e.target.value))} aria-label="Valor do ajuste" /></div>
             <p className="fps-lb">Motivo</p>
             <div className="fps-chips">{MOTIVOS[tipoAjuste].map(m => <button type="button" key={m} className={motivo === m ? "on" : ""} onClick={() => setMotivo(m)}>{m}</button>)}</div>
             <input className="fps-motivo" placeholder="Ou escreva o motivo" value={MOTIVOS[tipoAjuste].includes(motivo) ? "" : motivo} onChange={e => setMotivo(e.target.value)} />
@@ -138,7 +139,7 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
 
         {saldo > 0.009 && (<>
           <label className="fps-lb" htmlFor="fps-recebe">Quanto você recebeu agora?</label>
-          <div className="fps-in"><span>R$</span><input id="fps-recebe" inputMode="decimal" value={recebeTxt} onChange={e => { setRecebeTxt(e.target.value); setRecebeEditado(true); setErro(""); }} /></div>
+          <div className="fps-in"><span>R$</span><input id="fps-recebe" inputMode="numeric" value={recebeTxt} onChange={e => { setRecebeTxt(mascaraBRL(e.target.value)); setRecebeEditado(true); setErro(""); }} /></div>
           <p className="fps-lb">Forma de pagamento</p>
           <div className="fps-chips">{FORMAS.map(f => <button type="button" key={f.k} className={forma === f.k ? "on" : ""} onClick={() => setForma(f.k)}>{f.l}</button>)}</div>
           <p className="fps-lb">Data do recebimento</p>
@@ -194,7 +195,7 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
         .fps-chips button { border: 1.5px solid #EDE6E9; background: #fff; border-radius: 10px; padding: 8px 12px; font-family: inherit; font-size: 13px; font-weight: 700; color: #2C1219; cursor: pointer; }
         .fps-chips button.on { border-color: #E85A8C; background: #FFF1F6; color: #C33A6E; }
         .fps-motivo { margin-top: 8px; width: 100%; height: 42px; border: 1.5px solid #EDE6E9; border-radius: 10px; padding: 0 12px; font-family: inherit; font-size: 15px; box-sizing: border-box; }
-        .fps-data { margin-top: 8px; width: 100%; height: 46px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 0 12px; font-family: inherit; font-size: 16px; box-sizing: border-box; }
+        .fps-data { margin-top: 8px; width: 100%; min-width: 0; max-width: 100%; -webkit-appearance: none; appearance: none; background: #fff; height: 46px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 0 12px; font-family: inherit; font-size: 16px; box-sizing: border-box; }
         .fps-prev { margin-top: 14px; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 12px; padding: 10px 12px; }
         .fps-prev b { display: block; font-size: 13.5px; color: #92400E; } .fps-prev small { font-size: 12px; color: #92400E; }
         .fps-prev--ok { background: #F0FDF4; border-color: #BBF7D0; } .fps-prev--ok b, .fps-prev--ok small { color: #166534; }
