@@ -208,9 +208,9 @@ const CSS = `
   .far-root { font-family: var(--font-base); }
   .far-wrap { max-width: 760px; margin: 0 auto; padding: 22px 0 96px; display: flex; flex-direction: column; gap: 20px; }
   .far-resumo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .far-k { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px; min-width: 0; }
+  .far-k { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 10px; min-width: 0; }
   .far-k small { display: block; font-size: 11.5px; font-weight: 700; color: #9A8E94; }
-  .far-k b { display: block; font-size: 17px; font-weight: 900; color: #B45309; margin: 3px 0 1px; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .far-k b { display: block; font-size: clamp(13.5px, 3.9vw, 17px); letter-spacing: -.02em; font-weight: 900; color: #B45309; margin: 3px 0 1px; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .far-k i { font-style: normal; font-size: 11.5px; color: #888780; }
   .far-k--atr { border-color: #FECACA; background: #FFF7F7; } .far-k--atr b { color: #DC2626; }
   .far-carregando { text-align: center; color: #9A8E94; font-size: 14px; padding: 30px 0; }

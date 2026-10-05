@@ -5,7 +5,7 @@ import CaixaCard from "@/components/financeiro/CaixaCard";
 import { useNavigate } from "react-router-dom";
 import type { ReactElement } from "react";
 import {
-  ChartLineUp, ArrowsLeftRight, Calculator, CaretRight, HandCoins,
+  ChartLineUp, ArrowsLeftRight, Calculator, CaretRight, HandCoins, Receipt,
 } from "@phosphor-icons/react";
 
 interface Section {
@@ -24,6 +24,12 @@ export default function Financeiro() {
       desc: "Pedidos com valor a receber: sinal, restante e fiado",
       icon: <HandCoins size={20} weight="duotone" />,
       path: "/financeiro/a-receber",
+    },
+    {
+      label: "A pagar",
+      desc: "Contas com vencimento: só saem do caixa quando você paga",
+      icon: <Receipt size={20} weight="duotone" />,
+      path: "/financeiro/a-pagar",
     },
     {
       label: "Visão Geral",
