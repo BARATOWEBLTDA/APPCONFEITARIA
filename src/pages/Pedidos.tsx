@@ -625,8 +625,8 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido, onAcaoRapida, onMen
   const horaTxt = (() => {
     const h = p.horario_entrega ? (() => { const [hh, mm] = p.horario_entrega.slice(0, 5).split(':'); return `${Number(hh)}h${mm && mm !== '00' ? mm : ''}` })() : ''
     if (!p.data_entrega) return h || 'sem data'
-    if (dias === -1) return `ontem${h ? ' ' + h : ''}`
-    if (dias !== null && dias < -1) { const [, m, d] = p.data_entrega.split('-'); return `${d}/${m}${h ? ' ' + h : ''}` }
+    if (dias === -1) return `ontem${h ? ' às ' + h : ''}`
+    if (dias !== null && dias < -1) { const [, m, d] = p.data_entrega.split('-'); return `${d}/${m}${h ? ' às ' + h : ''}` }
     return h || 'sem horário'
   })()
   const CURTO: Record<string, string> = { 'Aguardando aprovação': 'Novo pedido', 'Aguardando Aceite': 'Novo pedido', 'Aguardando Retirada': 'Pronto', 'Em Produção': 'Em produção', 'Saiu pra Entrega': 'Saiu pra entrega', 'Aguardando Pagamento': 'Aguardando pagamento' }
@@ -648,16 +648,17 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido, onAcaoRapida, onMen
             : <><FotoG src={fotosG[0]} cls="p1" /><FotoG src={fotosG[1]} cls="p2" /><FotoG src={fotosG[2]} cls="p3" />{itensOrd.length > 3 && <em>+{itensOrd.length - 3}</em>}</>}
         </span>
         <div className="pc2-tx">
-          <div className="pc2-l1"><b>{nomeCurtoP || 'Cliente não informado'}</b><span className="pc2-num">#{p.numero || '—'}</span>
+          <div className="pc2-l1"><b>{p.cliente_nome ? toTitleCase(String(p.cliente_nome).trim()) : 'Cliente não informado'}</b>
             <span className="pc2-menu" onClick={e => e.stopPropagation()}><PedidoCardMenu p={p} onMenuAcao={onMenuAcao} onVerPedido={onVerPedido} /></span></div>
-          <div className="pc2-l2"><span className="pc2-rs">{resumoItens}</span><span className="pc2-hr"><Icone nome={iconeEntrega} />{horaTxt}</span></div>
+          <div className="pc2-l2"><span className="pc2-rs"><span className="pc2-num">#{p.numero || '—'}</span> · {resumoItens}</span></div>
         </div>
       </div>
       <div className="pc2-l3">
-        <span className="pc2-tg" style={{ background: statusTag.bg, color: statusTag.color }}>{statusCurto}</span>
-        {statusGroup !== 'cancelado' && (saldoP > 0.009
-          ? <span className="pc2-tg falta">Falta {valorSimples(saldoP)}</span>
-          : <span className="pc2-tg ok">Pago</span>)}
+        <div className="pc2-rows">
+          <p><span>Situação:</span> <b style={{ color: statusTag.color }}>{statusCurto}</b></p>
+          {statusGroup !== 'cancelado' && <p><span>Pagamento:</span> {saldoP > 0.009 ? <b className="falta">Falta {valorSimples(saldoP)}</b> : <b className="ok">Pago</b>}</p>}
+          <p><span>{labelEntrega}:</span> <b className={atrasado ? 'atr' : ''}>{horaTxt}</b></p>
+        </div>
         {acao && onAcaoRapida && (
           <button type="button" className="pc2-bt" onClick={e => { e.stopPropagation(); onAcaoRapida(p.id, acao.proximo, statusGroup === 'aguardando_pagamento') }}>{ACAO_CURTA[acao.label] || acao.label}</button>
         )}
@@ -1819,7 +1820,6 @@ export default function Pedidos() {
 
   // Tocar no pedido abre a tela do pedido (03/10 — antes abria uma janela)
   const abrirPedido = (p: any) => navigate(`/pedidos/${p.id}/editar`)
-  const [verConcluidos, setVerConcluidos] = useState(false)
   const pedidosFiltrados = pedidos.filter(p => {
     // Filtro rápido "Aguardando aprovação" — vem do alerta no Início
     if (filtroAguardando) {
@@ -2450,12 +2450,8 @@ export default function Pedidos() {
                 <div className="plist-container">
                   {gruposPorDia.map(g => (
                     <div key={g.chave}>
-                      {g.chave === 'concluidos' ? (
-                        <button type="button" className="pc2-conc" onClick={() => setVerConcluidos(v => !v)}><span>Concluídos <i style={{ fontStyle: 'normal', fontSize: 11, background: '#E9DFE4', borderRadius: 99, padding: '1px 7px', marginLeft: 4 }}>{g.itens.length}</i></span><span>{verConcluidos ? '▴' : '▾'}</span></button>
-                      ) : (
-                        <p className={`pc2-grupo ${g.chave === 'atrasado' ? 'atr' : ''}`}>{g.titulo} <i>{g.itens.length}</i></p>
-                      )}
-                      {(g.chave !== 'concluidos' || verConcluidos) && g.itens.map(p => (
+                      <p className={`pc2-grupo ${g.chave === 'atrasado' ? 'atr' : ''}`}>{g.titulo} <i>{g.itens.length}</i></p>
+                      {g.itens.map(p => (
                         <PedidoCard key={p.id} p={p} isMobile={true} onAbrirMapa={setMapaAberto} onVerPedido={abrirPedido} onAcaoRapida={updateStatus} onMenuAcao={handleMenuAcao} />
                       ))}
                     </div>
@@ -2686,14 +2682,17 @@ export default function Pedidos() {
         .pc2-fts.n3 .pc2-ft { width: 28px; height: 28px; border-radius: 8px; } .pc2-fts.n3 .p1 { left: 0; top: 0; } .pc2-fts.n3 .p2 { right: 0; top: 0; } .pc2-fts.n3 .p3 { left: 11px; bottom: 0; }
         .pc2-fts em { position: absolute; right: -6px; bottom: -4px; font-style: normal; font-size: 10.5px; font-weight: 800; color: #fff; background: #2C1219; border: 2px solid #fff; border-radius: 99px; padding: 0 5px; line-height: 1.5; }
         .pc2-l1 { display: flex; align-items: center; gap: 6px; min-width: 0; }
-        .pc2-l1 b { font-size: 15.5px; font-weight: 800; color: #2C1219; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+        .pc2-l1 b { flex: 1; font-size: 15.5px; font-weight: 800; color: #2C1219; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
         .pc2-num { font-size: 12px; font-weight: 700; color: #9A8E94; flex-shrink: 0; }
         .pc2-menu { margin-left: auto; flex-shrink: 0; display: flex; }
         .pc2-l2 { display: flex; align-items: center; gap: 8px; margin-top: 3px; min-width: 0; }
         .pc2-rs { flex: 1; min-width: 0; font-size: 13px; color: #5F5E5A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .pc2-hr { flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; font-size: 13.5px; font-weight: 800; color: #2C1219; white-space: nowrap; } .pc2-hr svg { color: #9A8E94; }
         .pc2.atr .pc2-hr { color: #DC2626; }
-        .pc2-l3 { display: flex; align-items: center; gap: 6px; margin-top: 12px; min-width: 0; }
+        .pc2-l3 { display: flex; align-items: flex-end; gap: 10px; margin-top: 12px; min-width: 0; }
+        .pc2-rows { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .pc2-rows p { margin: 0; font-size: 13px; line-height: 1.5; color: #5F5E5A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pc2-rows b { font-weight: 600; color: #2C2C2A; } .pc2-rows b.falta { color: #B45309; } .pc2-rows b.ok { color: #15803D; } .pc2-rows b.atr { color: #DC2626; }
         .pc2-tg { font-size: 11.5px; font-weight: 800; border-radius: 7px; padding: 4px 8px; white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
         .pc2-tg.ok { color: #15803D; background: #DCFCE7; } .pc2-tg.falta { color: #B45309; background: #FEF3C7; }
         .pc2-bt { margin-left: auto; flex-shrink: 0; border: none; background: #E85A8C; color: #fff; border-radius: 10px; padding: 7px 13px; font-family: inherit; font-size: 12.5px; font-weight: 800; white-space: nowrap; cursor: pointer; box-shadow: 0 2px 0 #C33A6E; }
