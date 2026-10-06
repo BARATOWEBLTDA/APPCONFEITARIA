@@ -2,6 +2,7 @@ import CalendarioSheet from '@/components/CalendarioSheet'
 import CampoData from '@/components/CampoData'
 import { DotsThree, Check, Heart, Plus, NotePencil, Trash, PencilSimple, ArrowUp, ArrowCounterClockwise, CalendarBlank, Image as ImageIcon, CaretRight, Phone, ArrowsDownUp, Cake } from '@phosphor-icons/react'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
+import DialogoApp, { type DialogoOpcoes, type IconeDialogo } from '@/components/DialogoApp'
 import { Paperclip, MagnifyingGlassPlus, Quotes, MapPin, MapTrifold, Copy, Money, Storefront, Tag } from '@phosphor-icons/react'
 import { CartProvider } from '@/context/CartContext'
 import { ProductModal } from '@/components/cart/ProductModal'
@@ -375,6 +376,12 @@ export default function EditarPedido() {
   const [devolverSinal, setDevolverSinal] = useState<boolean | null>(null)
   const [recadoEditando, setRecadoEditando] = useState<number | null>(null)
   const [aviso, setAviso] = useState('')
+  // janela do app (no lugar do alert/confirm do navegador)
+  const [dialogo, setDialogo] = useState<(DialogoOpcoes & { tipo: 'aviso' | 'confirmar' }) | null>(null)
+  const resolverDialogo = useRef<((ok: boolean) => void) | null>(null)
+  const avisarJanela = (titulo: string, texto?: string, icone: IconeDialogo = 'alerta') => setDialogo({ tipo: 'aviso', titulo, texto, icone })
+  const confirmarJanela = (o: DialogoOpcoes) => new Promise<boolean>(res => { resolverDialogo.current = res; setDialogo({ tipo: 'confirmar', ...o }) })
+  const fecharDialogo = (ok: boolean) => { setDialogo(null); resolverDialogo.current?.(ok); resolverDialogo.current = null }
   const snapshotRef = useRef<string | null>(null)
   useTravarRolagem(menuAberto || etapasAberto)
 
@@ -564,7 +571,7 @@ export default function EditarPedido() {
       ])
       if (cancelado) return
       if (error || !pedidoData) {
-        alert('Não foi possível carregar o pedido.')
+        avisarJanela('Não foi possível abrir o pedido', 'Confira a internet e tente de novo.', 'erro')
         navigate('/pedidos')
         return
       }
@@ -669,7 +676,7 @@ export default function EditarPedido() {
   // ── Handler de cancelar pedido (Fase 8) ───────────────────────────────
   const handleConfirmarCancelamento = async () => {
     if (!pedido || cancelando) return
-    if (recebidoAtual > 0.009 && pagamentosOk && devolverSinal === null) { alert('Escolha o que aconteceu com o valor que você já recebeu.'); return }
+    if (recebidoAtual > 0.009 && pagamentosOk && devolverSinal === null) { avisarJanela('Falta uma resposta', 'Escolha o que aconteceu com o valor que você já recebeu deste pedido.', 'alerta'); return }
     setCancelando(true)
     try {
       const motivoLimpo = motivoCancelamento.trim()
@@ -689,7 +696,7 @@ export default function EditarPedido() {
       }
 
       if (error) {
-        alert('Não foi possível cancelar o pedido: ' + error.message)
+        avisarJanela('Não foi possível cancelar', 'Confira a internet e tente de novo. (' + error.message + ')', 'erro')
         setCancelando(false)
         return
       }
@@ -708,7 +715,7 @@ export default function EditarPedido() {
       setCancelarAberto(false)
       navigate('/pedidos')
     } catch (err: any) {
-      alert('Erro ao cancelar: ' + (err?.message || 'desconhecido'))
+      avisarJanela('Não foi possível cancelar', 'Algo deu errado. Tente de novo em instantes.', 'erro')
       setCancelando(false)
     }
   }
@@ -825,12 +832,12 @@ export default function EditarPedido() {
     try {
       // Validação básica
       if (itens.length === 0) {
-        alert('Adicione pelo menos um item ao pedido antes de salvar.')
+        avisarJanela('O pedido está sem itens', 'Adicione pelo menos um item antes de salvar.', 'alerta')
         setSalvando(false)
         return
       }
       if (!dataEntrega) {
-        alert('Informe a data de entrega antes de salvar.')
+        avisarJanela('Falta a data', 'Escolha a data de entrega ou retirada antes de salvar.', 'alerta')
         setSalvando(false)
         return
       }
@@ -908,7 +915,7 @@ export default function EditarPedido() {
 
       if (errPedido) {
         console.error('Erro ao atualizar pedido:', errPedido)
-        alert('Não foi possível salvar as alterações do pedido: ' + errPedido.message)
+        avisarJanela('Não foi possível salvar', 'Confira a internet e tente de novo. (' + errPedido.message + ')', 'erro')
         setSalvando(false)
         return
       }
@@ -945,7 +952,7 @@ export default function EditarPedido() {
       const { error: errDel } = await supabase.from('pedido_itens').delete().eq('pedido_id', pedido!.id)
       if (errDel) {
         console.error('Erro ao remover itens antigos:', errDel)
-        alert('O pedido foi salvo, mas houve problema ao atualizar os itens: ' + errDel.message)
+        avisarJanela('Salvo pela metade', 'O pedido foi salvo, mas os itens não foram atualizados. Tente salvar de novo. (' + errDel.message + ')', 'erro')
         setSalvando(false)
         return
       }
@@ -972,7 +979,7 @@ export default function EditarPedido() {
         const { error: errIns } = await supabase.from('pedido_itens').insert(itensInsert)
         if (errIns) {
           console.error('Erro ao inserir itens:', errIns)
-          alert('O pedido foi salvo, mas houve problema ao gravar os itens: ' + errIns.message)
+          avisarJanela('Salvo pela metade', 'O pedido foi salvo, mas os itens não foram gravados. Tente salvar de novo. (' + errIns.message + ')', 'erro')
           setSalvando(false)
           return
         }
@@ -986,7 +993,7 @@ export default function EditarPedido() {
       }, 700)
     } catch (err: any) {
       console.error('Erro inesperado ao salvar:', err)
-      alert('Erro inesperado ao salvar: ' + (err?.message || 'desconhecido'))
+      avisarJanela('Não foi possível salvar', 'Algo deu errado. Tente de novo em instantes.', 'erro')
       setSalvando(false)
     }
   }
@@ -1086,19 +1093,20 @@ export default function EditarPedido() {
   // Mudar a etapa grava na hora (como na tela de Pedidos). Entregue com saldo → "Finalizar pedido".
   const irParaEtapa = async (novo: string) => {
     if (!pedido || novo === statusPedido) return
-    if (alteracoes > 0) { alert('Salve ou descarte as alterações antes de mudar a etapa do pedido.'); return }
+    if (alteracoes > 0) { avisarJanela('Salve antes de mudar a etapa', 'Você tem alterações não salvas. Salve ou descarte antes de mudar a etapa do pedido.', 'info'); return }
     if (novo === 'entregue' && faltaReceber > 0.009) { setFinalizarAberto(true); return }
     const { error } = await supabase.from('pedidos').update({ status: novo }).eq('id', pedido.id)
-    if (error) { alert('Não foi possível mudar a etapa agora.'); return }
+    if (error) { avisarJanela('Não foi possível mudar a etapa', 'Confira a internet e tente de novo.', 'erro'); return }
     const label = (STATUS_CONFIG[novo] || {}).label || novo
     supabase.from('pedido_historico').insert({ pedido_id: pedido.id, evento: label, descricao: `Status alterado para "${label}"` }).then(() => {}, () => {})
     setStatusPedido(novo); setPedido(p => p ? { ...p, status: novo } : p)
     avisar(`Pedido em "${label}".`)
   }
   const estornarPagamento = async (g: any) => {
-    if (!window.confirm(`Estornar o recebimento de ${formatMoney(Number(g.valor) || 0)}? O valor sai do caixa e volta a faltar no pedido.`)) return
+    const ok = await confirmarJanela({ titulo: `Estornar ${formatMoney(Number(g.valor) || 0)}?`, texto: 'Use quando o recebimento foi lançado errado. O valor sai do caixa e volta a faltar neste pedido. Ele continua no histórico, riscado.', icone: 'estorno', rotuloConfirmar: 'Estornar', perigo: true })
+    if (!ok) return
     const { error } = await supabase.from('pagamentos').update({ estornado_em: new Date().toISOString() }).eq('id', g.id)
-    if (error) { alert('Não foi possível estornar agora.'); return }
+    if (error) { avisarJanela('Não foi possível estornar', 'Confira a internet e tente de novo.', 'erro'); return }
     await recarregarDinheiro(); avisar('Recebimento estornado.')
   }
   const NOME_FORMA: Record<string, string> = { pix: 'Pix', dinheiro: 'Dinheiro', credito: 'Crédito', debito: 'Débito', boleto: 'Boleto' }
@@ -1166,7 +1174,7 @@ export default function EditarPedido() {
       {/* ══════════════ ABAS (só no celular) ══════════════ */}
       <div className="ep2-tabs">
         {([['itens', 'Itens', <Cake key="b" size={16} weight="bold" />], ['entrega', 'Entrega', <I.truck key="t" />], ['pagamento', 'Pagamento', <I.card key="c" />]] as [Tab, string, any][]).map(([k, l, ic]) => (
-          <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{ic}{l}{k === 'pagamento' && faltaReceber > 0.009 ? <em className="ep2-tab-dot" aria-label="falta receber" /> : null}</button>
+          <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{ic}{l}</button>
         ))}
       </div>
 
@@ -1347,15 +1355,17 @@ export default function EditarPedido() {
               const eKit = !!it.personalizacoes?.kit?.total
               const extras: any[] = Array.isArray(it.personalizacoes?.extras) ? it.personalizacoes.extras : []
               const origem: string[] = []
-              if (c.fecha) {
-                origem.push(`Produto ${formatMoney(c.base)}${q > 1 ? (eKit ? '/kit' : ' cada') : ''}`)
-                extras.filter(e => Number(e.valor) > 0).forEach(e => origem.push(`${e.nome} + ${formatMoney(Number(e.valor))}`))
-              } else if (q > 1) origem.push(`${formatMoney(it.valor_unitario || 0)} ${eKit ? 'por kit' : 'cada'}`)
+              if (!c.fecha && q > 1) origem.push(`${formatMoney(it.valor_unitario || 0)} ${eKit ? 'por kit' : 'cada'}`)
               return (
                 <div key={it.id || `v${idx}`} className="ep3-pv">
                   <div className="ep3-pv-h"><span><em>{q}x</em> {it.nome_produto}</span><b>{formatMoney((it.valor_unitario || 0) * q)}</b></div>
-                  {origem.length > 0 && <p>{origem.join(' · ')}</p>}
-                  {c.desconto > 0 && <p className="pr"><Tag size={13} weight="bold" />Promoção{c.pct ? ` ${c.pct}%` : ''} − {formatMoney(c.desconto * q)}</p>}
+                  {c.fecha ? (
+                    <div className="ep3-pv-d">
+                      <p><span>Produto{q > 1 ? ` · ${q} × ${formatMoney(c.base)}` : ''}</span><b>{formatMoney(c.base * q)}</b></p>
+                      {extras.filter(e => Number(e.valor) > 0).map((e, i) => <p key={i}><span>+ {e.nome}{q > 1 ? ` · ${q} × ${formatMoney(Number(e.valor))}` : ''}</span><b>{formatMoney(Number(e.valor) * q)}</b></p>)}
+                      {c.desconto > 0 && <p className="pr"><span><Tag size={13} weight="bold" />Promoção{c.pct ? ` ${c.pct}%` : ''}</span><b>− {formatMoney(c.desconto * q)}</b></p>}
+                    </div>
+                  ) : origem.length > 0 && <p className="ep3-pv-u">{origem.join(' · ')}</p>}
                 </div>
               )
             })}
@@ -1417,6 +1427,7 @@ export default function EditarPedido() {
         </div>
       )}
       {aviso && <div className="ep2-toast" role="status">{aviso}</div>}
+      {dialogo && <DialogoApp {...dialogo} onFechar={() => fecharDialogo(false)} onConfirmar={() => fecharDialogo(true)} />}
       {removido && (
         <div className="ep2-toast ep2-toast--desfazer" role="status"><span>{removido.item?.nome_produto || 'Item'} removido</span><button onClick={desfazerRemocao}>Desfazer</button></div>
       )}
@@ -3840,7 +3851,10 @@ const EP2_CSS = `
   .ep3-pv-h span { font-size: 14px; font-weight: 700; color: #2C1219; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ep3-pv-h em { font-style: normal; font-weight: 800; color: #C33A6E; }
   .ep3-pv-h b { font-size: 14.5px; font-weight: 700; white-space: nowrap; }
   .ep3-pv p { margin: 2px 0 0; font-size: 12.5px; color: #8A7E84; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ep3-pv p.pr { display: flex; align-items: center; gap: 4px; color: #15803D; }
+  .ep3-pv-d { margin-top: 4px; }
+  .ep3-pv-d p { display: flex; justify-content: space-between; gap: 10px; margin: 0; font-size: 12.5px; line-height: 1.65; color: #8A7E84; white-space: nowrap; }
+  .ep3-pv-d p span { min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px; } .ep3-pv-d p b { font-weight: 600; color: #6B5D64; flex-shrink: 0; }
+  .ep3-pv-d p.pr span, .ep3-pv-d p.pr b { color: #15803D; }
   .ep3-pv-itens { margin-top: 6px; }
   .ep3-tot { margin-top: 4px; padding-top: 10px; border-top: 1px solid #2C1219; } .ep3-tot > span { font-size: 12px; color: #9A8E94; }
   .ep3-tot > div { display: flex; justify-content: space-between; align-items: baseline; margin-top: 3px; } .ep3-tot > div span { font-size: 14.5px; font-weight: 700; } .ep3-tot > div b { font-size: 17px; font-weight: 700; }
@@ -3876,7 +3890,7 @@ const EP2_CSS = `
   .ep2-rm { display: inline-flex; align-items: center; gap: 5px; border: none; background: none; font-family: inherit; font-size: 13px; font-weight: 800; color: #DC2626; cursor: pointer; padding: 6px 2px; }
   .ep2-addi { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; border: 2px dashed #F3C9DA; border-radius: 12px; padding: 12px; background: #FFF6F9; color: #C33A6E; font-family: inherit; font-weight: 800; font-size: 14px; cursor: pointer; }
   .ep2-ajs { display: flex; flex-direction: column; gap: 3px; margin-top: 8px; font-size: 12px; color: #9A8E94; }
-  .ep2-aj { display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; border: none; background: none; padding: 4px 0; font-family: inherit; font-size: 13px; font-weight: 800; color: #C33A6E; cursor: pointer; }
+  .ep2-aj { display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; border: none; background: none; padding: 4px 0; font-family: inherit; font-size: 12.5px; font-weight: 600; color: #B0809A; cursor: pointer; } /* mais leve */
   .ep2-vazio { margin: 2px 0 6px; font-size: 13px; color: #888780; line-height: 1.45; }
   .ep2-pg { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid #F5F0F2; } .ep2-pg:first-of-type { border-top: none; }
   .ep2-pg-ic { width: 32px; height: 32px; border-radius: 10px; background: #DCFCE7; color: #15803D; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
