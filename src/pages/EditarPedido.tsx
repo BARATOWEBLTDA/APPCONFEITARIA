@@ -1,6 +1,6 @@
 import { DotsThree, Check, Heart, Plus, NotePencil, Trash, PencilSimple, ArrowUp, ArrowCounterClockwise, CalendarBlank, Image as ImageIcon, CaretRight, Phone, ArrowsDownUp, Cake } from '@phosphor-icons/react'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
-import { CaretDown } from '@phosphor-icons/react'
+import { Paperclip, MagnifyingGlassPlus, Quotes } from '@phosphor-icons/react'
 import { CartProvider } from '@/context/CartContext'
 import { ProductModal } from '@/components/cart/ProductModal'
 import { itemDoCarrinhoParaPedido } from '@/lib/itemDoCarrinho'
@@ -402,14 +402,15 @@ export default function EditarPedido() {
   const avisar = (m: string) => { setAviso(m); setTimeout(() => setAviso(''), 3500) }
 
   // ── Itens (03/10): fechados com resumo, abrem ao tocar; remover com "Desfazer"; adicionar com opções ──
-  const [itensAbertos, setItensAbertos] = useState<Set<number>>(new Set())
+  const [itemMenu, setItemMenu] = useState<number | null>(null) // ⋯ de um item
+  useTravarRolagem(itemMenu !== null)
+  const num2 = (v: number) => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   const [removido, setRemovido] = useState<{ item: any; idx: number } | null>(null)
   const removidoTimer = useRef<any>(null)
   const [produtoOpcoes, setProdutoOpcoes] = useState<any | null>(null)
   const removerComDesfazer = (idx: number) => {
     const item = itens[idx]
     setItens(prev => prev.filter((_, i) => i !== idx))
-    setItensAbertos(new Set())
     setRemovido({ item, idx })
     clearTimeout(removidoTimer.current)
     removidoTimer.current = setTimeout(() => setRemovido(null), 6000)
@@ -1123,79 +1124,55 @@ export default function EditarPedido() {
               </div>
             )}
 
-            <div className="ep2-card">
-              <div className="ep2-sec-h"><p className="ep2-ct">Itens do pedido</p><span>{itens.length} {itens.length === 1 ? 'item' : 'itens'} · <b>{formatMoney(subtotalItens)}</b></span></div>
+            <div className="ep2-cupom">
+              <div className="ep2-cup-h"><b>ITENS DO PEDIDO</b><span>#{pedido.numero || '—'}</span></div>
               {itens.map((it: any, idx) => {
                 const p = it.personalizacoes || {}
-                const linhas: [string, string][] = []
-                if (p.massa?.nome) linhas.push(['Massa', p.massa.nome])
-                if (p.sabor?.nome) linhas.push(['Sabor', p.sabor.nome])
-                if (Array.isArray(p.recheios) && p.recheios.length) linhas.push([p.recheios.length > 1 ? 'Recheios' : 'Recheio', p.recheios.map((r: any) => r.nome).join(', ')])
-                if (p.cobertura?.nome) linhas.push(['Cobertura', p.cobertura.nome])
                 const extras: any[] = Array.isArray(p.extras) ? p.extras : []
                 const sabores: any[] = p.kit?.sabores || []
-                const base = Number(it.preco_breakdown?.base_efetivo ?? it.preco_breakdown?.preco_base_original) || 0
-                const adic = Number(it.preco_breakdown?.adicionais_total) || 0
                 const eKit = !!p.kit?.total
-                // resumo do item fechado (até 2 linhas)
-                const partes: string[] = []
-                if (p.tamanho?.nome) partes.push(p.tamanho.nome)
-                if (Array.isArray(p.recheios) && p.recheios.length) partes.push(p.recheios.map((r: any) => r.nome).join(', '))
-                else if (p.sabor?.nome) partes.push(p.sabor.nome)
-                else if (p.massa?.nome) partes.push(p.massa.nome)
-                if (sabores.length) partes.push(sabores.map(s => `${s.nome} · ${s.qtd} un.`).join(' · '))
-                if (extras.length) partes.push(`+ ${extras[0].nome}${extras.length > 1 ? ` e mais ${extras.length - 1}` : ''}`)
-                if (!partes.length) partes.push(`${formatMoney(it.valor_unitario || 0)} cada`)
-                const marcas = [p.foto_referencia ? 'foto' : '', it.observacoes ? 'recado' : ''].filter(Boolean)
-                const foto = fotoDoItem(it)
-                const aberto = itensAbertos.has(idx)
+                const linhas: string[] = []
+                if (p.tamanho?.nome) linhas.push(`Tamanho ${p.tamanho.nome}${p.tamanho.peso_kg ? ` · ~${String(p.tamanho.peso_kg).replace('.', ',')} kg` : ''}`)
+                if (p.massa?.nome) linhas.push(`Massa: ${p.massa.nome}`)
+                if (p.sabor?.nome) linhas.push(`Sabor: ${p.sabor.nome}`)
+                if (Array.isArray(p.recheios) && p.recheios.length) linhas.push(`${p.recheios.length > 1 ? 'Recheios' : 'Recheio'}: ${p.recheios.map((r: any) => r.nome).join(', ')}`)
+                if (p.cobertura?.nome) linhas.push(`Cobertura: ${p.cobertura.nome}`)
+                const temAnexo = !!p.foto_referencia || !!(it.observacoes || '').trim()
                 return (
-                  <div key={it.id || `n${idx}`} className={`ep2-it ${aberto ? 'aberto' : ''}`}>
-                    <button className="ep2-it-h" onClick={() => setItensAbertos(prev => { const n = new Set(prev); n.has(idx) ? n.delete(idx) : n.add(idx); return n })} aria-expanded={aberto}>
-                      <span className="ep2-it-f"><I.box />{foto && <img src={foto} alt="" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />}</span>
-                      <span className="ep2-it-n">
-                        <b>{it.nome_produto}</b>
-                        <small className="ep2-it-res">{partes.join(' · ')}</small>
-                        {marcas.length > 0 && <em className="ep2-it-marcas">com {marcas.join(' e ')}</em>}
-                      </span>
-                      <span className="ep2-it-r"><b>{formatMoney((it.valor_unitario || 0) * (it.quantidade || 1))}</b><small>{eKit ? `${it.quantidade} ${it.quantidade > 1 ? 'kits' : 'kit'}` : `${it.quantidade} un.`}</small></span>
-                      <CaretDown size={15} weight="bold" className="ep2-it-chev" />
-                    </button>
-                    <div className="ep2-it-det">
-                      {p.tamanho?.nome && <span className="ep2-chip">Tamanho {p.tamanho.nome}{p.tamanho.peso_kg ? ` · ~${String(p.tamanho.peso_kg).replace('.', ',')} kg` : ''}</span>}
-                      {eKit && <span className="ep2-chip">Kit de {p.kit.total} un.</span>}
-                      {(linhas.length > 0 || sabores.length > 0) && (
-                        <div className="ep2-esc">
-                          {linhas.map(([l, v]) => <div key={l} className="ep2-ln"><span>{l}</span><b>{v}</b></div>)}
-                          {sabores.map((s: any) => <div key={s.nome} className="ep2-sab"><Heart size={13} weight="duotone" />{s.nome} · {s.qtd} un.</div>)}
-                        </div>
-                      )}
-                      {extras.map((e, i) => <div key={i} className="ep2-ad"><span><Plus size={12} weight="bold" />{e.nome}</span><b>{Number(e.valor) > 0 ? `+ ${formatMoney(Number(e.valor))}` : 'grátis'}</b></div>)}
-                      {p.foto_referencia && (
-                        <a className="ep2-foto" href={p.foto_referencia} target="_blank" rel="noreferrer"><span className="ep2-foto-i"><img src={p.foto_referencia} alt="" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} /><ImageIcon size={18} /></span><div><b>Foto de referência</b><small>Toque pra ampliar ou baixar</small></div></a>
-                      )}
-                      {recadoEditando === idx ? (
-                        <div className="ep2-recado-ed">
-                          <input autoFocus className="ep-input" placeholder="Ex.: escrever Parabéns, Lia!" value={it.observacoes || ''} onChange={e => setItens(prev => prev.map((x, i) => i === idx ? { ...x, observacoes: e.target.value } : x))} onKeyDown={e => { if (e.key === 'Enter') setRecadoEditando(null) }} />
-                          <button className="ep2-lk" onClick={() => setRecadoEditando(null)}>OK</button>
-                        </div>
-                      ) : it.observacoes ? (
-                        <button className="ep2-ob" onClick={() => setRecadoEditando(idx)}><NotePencil size={13} weight="bold" /><span>{it.observacoes}</span></button>
-                      ) : null}
-                      <div className="ep2-pr"><span>{adic > 0 && base > 0 ? `${formatMoney(base)} + ${formatMoney(adic)} adicionais` : eKit ? `${formatMoney(it.valor_unitario || 0)} por kit` : `${formatMoney(it.valor_unitario || 0)} cada`}</span></div>
-                      <div className="ep2-ac">
-                        <div className="ep2-qty">
-                          <button onClick={() => updateQtd(idx, -1)} aria-label="Diminuir" disabled={it.quantidade <= 1}>−</button>
-                          <input type="number" inputMode="numeric" value={it.quantidade} onChange={e => setQtdManual(idx, Number(e.target.value))} aria-label="Quantidade" />
-                          <button onClick={() => updateQtd(idx, 1)} aria-label="Aumentar">+</button>
-                        </div>
-                        {!it.observacoes && recadoEditando !== idx && <button className="ep2-lk" onClick={() => setRecadoEditando(idx)}><NotePencil size={13} weight="bold" /> Recado</button>}
-                        <button className="ep2-rm" onClick={() => removerComDesfazer(idx)}><Trash size={14} weight="bold" />Remover</button>
-                      </div>
+                  <div key={it.id || `n${idx}`} className="ep2-cup-it">
+                    <div className="ep2-cup-ih">
+                      <span className="ep2-cup-q">{it.quantidade}×</span>
+                      <b className="ep2-cup-n">{it.nome_produto}</b><i />
+                      <b className="ep2-cup-v">{num2((it.valor_unitario || 0) * (it.quantidade || 1))}</b>
+                      <button className="ep2-cup-mx" onClick={() => setItemMenu(idx)} aria-label={`Opções de ${it.nome_produto}`}><DotsThree size={18} weight="bold" /></button>
                     </div>
+                    {linhas.map(l => <div key={l} className="ep2-cup-l"><span>{l}</span></div>)}
+                    {sabores.map((s: any) => <div key={s.nome} className="ep2-cup-l"><span>{s.nome}</span><i /><b>{s.qtd} un.</b></div>)}
+                    {extras.map((e: any, i: number) => <div key={i} className="ep2-cup-l"><span>+ {e.nome}</span><i /><b>{Number(e.valor) > 0 ? num2(Number(e.valor)) : 'grátis'}</b></div>)}
+                    {(it.quantidade > 1 || eKit) && <div className="ep2-cup-l ep2-cup-un"><span>{num2(it.valor_unitario || 0)} {eKit ? 'por kit' : 'cada'}</span></div>}
+                    {temAnexo && (
+                      <div className="ep2-anexo">
+                        <span className="ep2-anexo-clip" aria-hidden="true"><Paperclip size={14} weight="bold" /></span>
+                        <p className="ep2-anexo-t">Personalização</p>
+                        {p.foto_referencia && (
+                          <a className="ep2-anexo-foto" href={p.foto_referencia} target="_blank" rel="noreferrer" aria-label="Ampliar a foto de referência">
+                            <ImageIcon size={26} className="ep2-anexo-ph" />
+                            <img src={p.foto_referencia} alt="Foto de referência" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />
+                            <span className="ep2-anexo-zm"><MagnifyingGlassPlus size={13} weight="bold" />Ampliar</span>
+                          </a>
+                        )}
+                        {(it.observacoes || '').trim() && (
+                          <div className="ep2-anexo-rec"><Quotes size={16} weight="fill" /><span>{it.observacoes}</span></div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )
               })}
+              <div className="ep2-cup-tot">
+                <span>{itens.length} {itens.length === 1 ? 'item' : 'itens'} · {itens.reduce((s, x) => s + (x.quantidade || 0), 0)} {itens.reduce((s, x) => s + (x.quantidade || 0), 0) === 1 ? 'unidade' : 'unidades'}</span>
+                <div><b>Subtotal dos itens</b><b>{formatMoney(subtotalItens)}</b></div>
+              </div>
               <button className="ep2-addi" onClick={() => setModalProduto(true)}><Plus size={14} weight="bold" />Adicionar item</button>
             </div>
           </div>
@@ -1380,6 +1357,28 @@ export default function EditarPedido() {
             }} />
         </CartProvider>
       )}
+
+      {/* ── ⋯ de um item: quantidade, recado e remover ── */}
+      {itemMenu !== null && itens[itemMenu] && createPortal(
+        <div className="ep2-ov" onClick={() => setItemMenu(null)}>
+          <div className="ep2-sh" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Opções do item">
+            <span className="ep2-alca" />
+            <b className="ep2-sh-t"><span className="ep2-cup-q">{itens[itemMenu].quantidade}×</span> {itens[itemMenu].nome_produto}</b>
+            <p className="ep2-im-lb">Quantidade</p>
+            <div className="ep2-qty">
+              <button onClick={() => updateQtd(itemMenu, -1)} aria-label="Diminuir" disabled={itens[itemMenu].quantidade <= 1}>−</button>
+              <input type="number" inputMode="numeric" value={itens[itemMenu].quantidade} onChange={e => setQtdManual(itemMenu, Number(e.target.value))} aria-label="Quantidade" />
+              <button onClick={() => updateQtd(itemMenu, 1)} aria-label="Aumentar">+</button>
+            </div>
+            <p className="ep2-im-lb">Recado do item <em>(opcional)</em></p>
+            <textarea className="ep2-im-rec" rows={2} placeholder="Ex.: escrever Parabéns, Lia! em rosa" value={itens[itemMenu].observacoes || ''}
+              onChange={e => { const v = e.target.value; setItens(prev => prev.map((x, i) => i === itemMenu ? { ...x, observacoes: v } : x)) }} />
+            <div className="ep2-im-bts">
+              <button className="ep2-rm" onClick={() => { const i = itemMenu; setItemMenu(null); removerComDesfazer(i) }}><Trash size={15} weight="bold" />Remover item</button>
+              <button className="ep2-b1" onClick={() => setItemMenu(null)}>Pronto</button>
+            </div>
+          </div>
+        </div>, document.body)}
 
       {/* ── menu ⋯ ── */}
       {menuAberto && createPortal(
@@ -3656,6 +3655,41 @@ const EP2_CSS = `
   @media (min-width: 1024px) { .ep2-it-det { display: block; } .ep2-it-chev, .ep2-it-marcas { display: none; } .ep2-it-h { cursor: default; } .ep2-it-res { display: none; } }
   .ep2-toast--desfazer { display: flex; align-items: center; gap: 14px; justify-content: space-between; min-width: 260px; }
   .ep2-toast--desfazer button { border: none; background: none; color: #F9A8D4; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer; padding: 2px 4px; }
+  /* ══ itens em estilo cupom (03/10): sempre abertos, valores em coluna, personalização como anexo grampeado ══ */
+  .ep2-cupom { position: relative; background: #FFFDF8; border-radius: 10px 10px 0 0; padding: 14px 14px 16px; margin-bottom: 10px; box-shadow: 0 10px 24px -12px rgba(44,18,25,.28); font-variant-numeric: tabular-nums; }
+  .ep2-cupom::after { content: ""; position: absolute; left: 0; right: 0; bottom: -8px; height: 8px; background: radial-gradient(circle at 7px 0, #FFFDF8 6.5px, transparent 7px) 0 0 / 14px 8px repeat-x; } /* borda serrilhada */
+  .ep2-cup-h { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1.5px dashed #D9CCD2; padding-bottom: 9px; margin-bottom: 2px; }
+  .ep2-cup-h b { font-size: 12px; font-weight: 900; letter-spacing: .12em; color: #2C1219; } .ep2-cup-h span { font-size: 12px; font-weight: 700; color: #9A8E94; }
+  .ep2-cup-it { padding: 10px 0 11px; border-bottom: 1.5px dashed #E6DADF; }
+  .ep2-cup-ih { display: flex; align-items: baseline; gap: 6px; }
+  .ep2-cup-q { font-size: 13.5px; font-weight: 900; color: #C33A6E; min-width: 26px; flex-shrink: 0; }
+  .ep2-cup-n { font-size: 15px; font-weight: 800; color: #2C1219; min-width: 0; }
+  .ep2-cup-ih i, .ep2-cup-l i { flex: 1; border-bottom: 1.5px dotted #D6C8CF; transform: translateY(-3px); min-width: 12px; }
+  .ep2-cup-v { font-size: 15px; font-weight: 700; color: #2C1219; white-space: nowrap; }
+  .ep2-cup-mx { align-self: center; border: none; background: #F5EEF1; color: #8C7B84; width: 30px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-left: 2px; }
+  .ep2-cup-l { display: flex; align-items: baseline; gap: 6px; font-size: 13px; color: #4B3A42; padding: 3px 0 0 32px; line-height: 1.35; }
+  .ep2-cup-l b { font-weight: 700; color: #2C1219; white-space: nowrap; }
+  .ep2-cup-un span { font-size: 12px; color: #9A8E94; }
+  .ep2-anexo { position: relative; margin: 14px 4px 4px 22px; background: #fff; border: 1.5px dashed #F3A9C6; border-radius: 12px; padding: 12px; transform: rotate(-.6deg); box-shadow: 0 6px 14px -8px rgba(195,58,110,.35); }
+  .ep2-anexo-clip { position: absolute; top: -12px; left: 16px; width: 26px; height: 26px; border-radius: 50%; background: #fff; color: #C33A6E; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 4px rgba(0,0,0,.18); }
+  .ep2-anexo-t { margin: 2px 0 8px; font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: #C33A6E; }
+  .ep2-anexo-foto { position: relative; display: block; width: 100%; height: 150px; border-radius: 10px; overflow: hidden; background: linear-gradient(135deg, #F7C6D9, #C9B4F5); }
+  .ep2-anexo-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .ep2-anexo-ph { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: #fff; }
+  .ep2-anexo-zm { position: absolute; right: 8px; bottom: 8px; display: inline-flex; align-items: center; gap: 4px; background: rgba(44,18,25,.78); color: #fff; font-size: 12px; font-weight: 800; border-radius: 8px; padding: 5px 9px; }
+  .ep2-anexo-rec { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; font-size: 14px; color: #2C1219; line-height: 1.4; font-style: italic; }
+  .ep2-anexo-rec svg { color: #E85A8C; flex-shrink: 0; margin-top: 2px; }
+  .ep2-anexo-foto + .ep2-anexo-rec { margin-top: 10px; } .ep2-anexo-t + .ep2-anexo-rec { margin-top: 0; }
+  .ep2-cup-tot { padding-top: 10px; } .ep2-cup-tot > span { font-size: 12px; color: #9A8E94; }
+  .ep2-cup-tot > div { display: flex; justify-content: space-between; align-items: baseline; border-top: 1.5px solid #2C1219; margin-top: 7px; padding-top: 8px; }
+  .ep2-cup-tot > div b:first-child { font-size: 15px; font-weight: 800; } .ep2-cup-tot > div b:last-child { font-size: 17px; font-weight: 700; }
+  .ep2-cupom .ep2-addi { margin-top: 12px; }
+  .ep2-im-lb { font-size: 13px; font-weight: 800; color: #4B3A42; margin: 12px 4px 6px; } .ep2-im-lb em { font-style: normal; font-weight: 500; color: #9A8E94; }
+  .ep2-sh .ep2-qty { align-self: flex-start; margin-left: 4px; }
+  .ep2-im-rec { width: 100%; box-sizing: border-box; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 10px 12px; font-family: inherit; font-size: 15px; color: #2C1219; resize: vertical; }
+  .ep2-im-rec:focus { outline: none; border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
+  .ep2-im-bts { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding: 0 4px; }
+  .ep2-im-bts .ep2-b1 { padding: 12px 26px; }
   .ep2-it { border: 1.5px solid #F0EBED; border-radius: 14px; padding: 12px; margin-bottom: 10px; background: #FEFCFD; }
   .ep2-it-top { display: flex; gap: 10px; align-items: center; }
   .ep2-it-f { width: 44px; height: 44px; border-radius: 12px; background: #FCE7F3; color: #C33A6E; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
