@@ -1,3 +1,10 @@
+import { DotsThree, Check, Heart, Plus, NotePencil, Trash, PencilSimple, ArrowUp, ArrowCounterClockwise, CalendarBlank, WhatsappLogo, Image as ImageIcon } from '@phosphor-icons/react'
+import FinalizarPedidoSheet from '@/components/pedidos/FinalizarPedidoSheet'
+import { ReceberSheet } from '@/pages/FinanceiroAReceber'
+import Folha, { FOLHA_CSS } from '@/components/financeiro/Folha'
+import { mascaraBRL, textoBRL, lerBRL } from '@/lib/moeda'
+import { valorRecebidoPedido } from '@/lib/financeiroPedido'
+import { useTravarRolagem } from '@/hooks/useTravarRolagem'
 // ── EditarPedido.tsx ─────────────────────────────────────────────────────────
 import { ajustarRecebido } from '@/lib/pagamentos'
 import CampoNumero from "@/components/ui/CampoNumero"
@@ -77,7 +84,7 @@ interface Produto {
   categoria?: string
 }
 
-type Tab = 'cliente' | 'itens' | 'valores' | 'pagar'
+type Tab = 'itens' | 'entrega' | 'pagamento'
 type SituacaoPag = 'total' | 'parcial' | 'fiado'
 
 interface HistoricoEvento {
@@ -276,7 +283,7 @@ export default function EditarPedido() {
   const [carregando, setCarregando] = useState(true)
   const [salvando, setSalvando] = useState(false)
   const [salvouOk, setSalvouOk] = useState(false)
-  const [tab, setTab] = useState<Tab>('cliente')
+  const [tab, setTab] = useState<Tab>('itens')
 
   // ── State editável (populated no load) ────────────────────────────────
   const [clienteId, setClienteId] = useState<string | null>(null)
@@ -334,6 +341,64 @@ export default function EditarPedido() {
   const [motivoCancelamento, setMotivoCancelamento] = useState('')
   const [mostrarMotivoCliente, setMostrarMotivoCliente] = useState(false)
   const [cancelando, setCancelando] = useState(false)
+
+  // ══════════════ Tela nova (03/10): etapas, pagamentos, ajustes e "alterações não salvas" ══════════════
+  const [pagamentos, setPagamentos] = useState<any[]>([])
+  const [pagamentosOk, setPagamentosOk] = useState(false) // a tabela de pagamentos existe (SQL do Passo 1)
+  const [ajustesHist, setAjustesHist] = useState<any[]>([])
+  const [ajustesPendentes, setAjustesPendentes] = useState<{ tipo: 'desconto' | 'acrescimo'; valor: number; motivo: string }[]>([])
+  const [menuAberto, setMenuAberto] = useState(false)
+  const [etapasAberto, setEtapasAberto] = useState(false)
+  const [receberAberto, setReceberAberto] = useState(false)
+  const [ajusteAberto, setAjusteAberto] = useState(false)
+  const [finalizarAberto, setFinalizarAberto] = useState(false)
+  const [devolverSinal, setDevolverSinal] = useState<boolean | null>(null)
+  const [recadoEditando, setRecadoEditando] = useState<number | null>(null)
+  const [aviso, setAviso] = useState('')
+  const snapshotRef = useRef<string | null>(null)
+  useTravarRolagem(menuAberto || etapasAberto)
+
+  const carregarPagamentos = async (pid: string) => {
+    const r = await supabase.from('pagamentos').select('id, valor, forma, tipo, recebido_em, estornado_em, created_at').eq('pedido_id', pid).order('created_at', { ascending: true })
+    if (r.error) { setPagamentosOk(false); setPagamentos([]) } else { setPagamentosOk(true); setPagamentos((r.data as any[]) || []) }
+    const a = await supabase.from('pedido_ajustes').select('tipo, valor, motivo, created_at').eq('pedido_id', pid).order('created_at', { ascending: true })
+    setAjustesHist(a.error ? [] : ((a.data as any[]) || []))
+  }
+  // Depois de receber, estornar ou finalizar: lê de novo o que o banco calculou (o recebido é do banco)
+  const recarregarDinheiro = async () => {
+    if (!pedido) return
+    const { data } = await supabase.from('pedidos').select('status, status_pagamento, valor_recebido, valor_total, desconto, acrescimo').eq('id', pedido.id).maybeSingle()
+    if (data) {
+      const d: any = data
+      setPedido(p => p ? { ...p, ...d } : p)
+      setStatusPedido(d.status || statusPedido)
+      // o ajuste feito no "Finalizar pedido" mexe no desconto/acréscimo: a tela acompanha (sem virar "alteração")
+      if (typeof d.desconto === 'number' || typeof d.acrescimo === 'number') {
+        const novoDesc = Number(d.desconto) || 0, novoAcr = Number(d.acrescimo) || 0
+        setDesconto(novoDesc); setAcrescimo(novoAcr)
+        if (snapshotRef.current) { const s = JSON.parse(snapshotRef.current); s.desconto = novoDesc; s.acrescimo = novoAcr; snapshotRef.current = JSON.stringify(s) }
+      }
+    }
+    await carregarPagamentos(pedido.id)
+  }
+  const avisar = (m: string) => { setAviso(m); setTimeout(() => setAviso(''), 3500) }
+
+  // O que dá pra editar e salvar — usado pra saber se há alterações não salvas
+  const estadoEditavel = () => ({
+    clienteId, clienteNome, clienteTelefone, tipoEntrega, dataEntrega, horarioEntrega: (horarioEntrega || '').slice(0, 5),
+    enderecoRua, enderecoNumero, enderecoBairro, enderecoCidade, enderecoComplemento,
+    taxaEntrega: tipoEntrega === 'entrega' ? taxaEntrega : 0, desconto, acrescimo, dataPrevistaPagamento: dataPrevistaPagamento || '',
+    itens: itens.map(it => [it.produto_id || it.nome_produto, it.quantidade, it.valor_unitario, it.observacoes || '']),
+  })
+  useEffect(() => { if (!carregando && pedido && snapshotRef.current === null) snapshotRef.current = JSON.stringify(estadoEditavel()) }) // eslint-disable-line react-hooks/exhaustive-deps
+  const alteracoes = (() => {
+    if (!snapshotRef.current) return 0
+    const antes = JSON.parse(snapshotRef.current), agora: any = estadoEditavel()
+    let n = Object.keys(agora).filter(k => JSON.stringify(antes[k]) !== JSON.stringify(agora[k])).length
+    if (ajustesPendentes.length) n = Math.max(n, ajustesPendentes.length)
+    return n
+  })()
+
 
   // ── Load do pedido + lista de clientes ────────────────────────────────
   useEffect(() => {
@@ -398,6 +463,7 @@ export default function EditarPedido() {
         preco_breakdown: (it as any).preco_breakdown ?? null,
         snapshot_version: (it as any).snapshot_version ?? null,
       })))
+      carregarPagamentos(p.id)
       // Carregar lista de clientes + produtos
       if (user?.user) {
         const [{ data: cls }, { data: prds }] = await Promise.all([
@@ -449,6 +515,7 @@ export default function EditarPedido() {
   // ── Handler de cancelar pedido (Fase 8) ───────────────────────────────
   const handleConfirmarCancelamento = async () => {
     if (!pedido || cancelando) return
+    if (recebidoAtual > 0.009 && pagamentosOk && devolverSinal === null) { alert('Escolha o que aconteceu com o valor que você já recebeu.'); return }
     setCancelando(true)
     try {
       const motivoLimpo = motivoCancelamento.trim()
@@ -474,6 +541,10 @@ export default function EditarPedido() {
       }
 
       // Registra no histórico (silencioso — não falha se tabela não existir)
+      // Devolveu o sinal? Os recebimentos são estornados (saem do caixa, ficam no histórico)
+      if (devolverSinal) {
+        await supabase.from('pagamentos').update({ estornado_em: new Date().toISOString() }).eq('pedido_id', pedido.id).is('estornado_em', null).then(() => {}, () => {})
+      }
       supabase.from('pedido_historico').insert({
         pedido_id: pedido.id,
         evento: 'Pedido cancelado',
@@ -630,6 +701,8 @@ export default function EditarPedido() {
       } else if (pedido?.status_pagamento === 'pendente') {
         statusPag = 'pendente'; valorRecebido = 0
       } // sem situação (antigo) ou estornado: não toca no pagamento
+      // Tela nova (03/10): com a tabela de pagamentos, o recebido é do banco (soma dos pagamentos) — o salvar não toca nele
+      if (pagamentosOk) { statusPag = undefined; valorRecebido = undefined }
 
       // Recalcular valor dos produtos (soma bruta dos itens)
       const valorProdutos = itens.reduce((acc, it) => acc + (it.valor_unitario || 0) * (it.quantidade || 1), 0)
@@ -683,6 +756,18 @@ export default function EditarPedido() {
         alert('Não foi possível salvar as alterações do pedido: ' + errPedido.message)
         setSalvando(false)
         return
+      }
+
+      // Ajustes de valor feitos nesta edição: ficam registrados com o motivo
+      if (ajustesPendentes.length) {
+        const { data: { user: u } } = await supabase.auth.getUser()
+        let corrente = total - ajustesPendentes.reduce((s, a) => s + (a.tipo === 'acrescimo' ? a.valor : -a.valor), 0)
+        for (const a of ajustesPendentes) {
+          const depois = corrente + (a.tipo === 'acrescimo' ? a.valor : -a.valor)
+          await supabase.from('pedido_ajustes').insert({ user_id: u?.id, pedido_id: pedido!.id, tipo: a.tipo, valor: a.valor, motivo: a.motivo || null, total_antes: Math.round(corrente * 100) / 100, total_depois: Math.round(depois * 100) / 100 }).then(() => {}, () => {})
+          supabase.from('pedido_historico').insert({ pedido_id: pedido!.id, evento: 'Valor ajustado', descricao: `${a.tipo === 'desconto' ? 'Desconto' : 'Acréscimo'} de ${formatMoney(a.valor)}${a.motivo ? ` (${a.motivo})` : ''}` }).then(() => {}, () => {})
+          corrente = depois
+        }
       }
 
       // Financeiro · Passo 1: ela mudou o pagamento → os registros de pagamento acompanham
@@ -797,6 +882,50 @@ export default function EditarPedido() {
     return Object.entries(map).map(([nome, count]) => ({ nome, count })).sort((a, b) => a.nome.localeCompare(b.nome))
   })()
 
+  // ── Dinheiro do pedido (tela nova) ─────────────────────────────────────
+  const r2 = (v: number) => Math.round((Number(v) || 0) * 100) / 100
+  const pagAtivos = pagamentos.filter(g => !g.estornado_em)
+  const recebidoAtual = pagamentosOk ? r2(pagAtivos.reduce((s, g) => s + (Number(g.valor) || 0), 0)) : (pedido ? valorRecebidoPedido(pedido as any) : 0)
+  const faltaReceber = Math.max(0, r2(total - recebidoAtual))
+  const adicionaisTotal = r2(itens.reduce((s, it: any) => s + (Number(it.preco_breakdown?.adicionais_total) || 0) * (it.quantidade || 1), 0))
+  const produtosTotal = r2(subtotalItens - adicionaisTotal)
+
+  // ── Etapas do pedido ───────────────────────────────────────────────────
+  const ETAPAS: string[] = ['Agendado', 'Em produção', tipoEntrega === 'retirada' ? 'Pronto pra retirar' : 'Pronto', 'Entregue']
+  const posEtapa = statusPedido === 'em_producao' ? 1 : ['finalizado', 'aguardando_retirada', 'em_entrega'].includes(statusPedido) ? 2 : statusPedido === 'entregue' ? 3 : 0
+  const proximaEtapa: { s: string; l: string } | null = (() => {
+    switch (statusPedido) {
+      case 'aguardando_pagamento': case 'aguardando_aceite': return { s: 'agendado', l: 'Aceitar pedido' }
+      case 'agendado': return { s: 'em_producao', l: 'Iniciar produção' }
+      case 'em_producao': return tipoEntrega === 'retirada' ? { s: 'aguardando_retirada', l: 'Pronto pra retirar' } : { s: 'finalizado', l: 'Marcar como pronto' }
+      case 'finalizado': return tipoEntrega === 'retirada' ? { s: 'aguardando_retirada', l: 'Pronto pra retirar' } : { s: 'em_entrega', l: 'Saiu pra entrega' }
+      case 'aguardando_retirada': return { s: 'entregue', l: 'Confirmar retirada' }
+      case 'em_entrega': return { s: 'entregue', l: 'Confirmar entrega' }
+      default: return null
+    }
+  })()
+  // Mudar a etapa grava na hora (como na tela de Pedidos). Entregue com saldo → "Finalizar pedido".
+  const irParaEtapa = async (novo: string) => {
+    if (!pedido || novo === statusPedido) return
+    if (alteracoes > 0) { alert('Salve ou descarte as alterações antes de mudar a etapa do pedido.'); return }
+    if (novo === 'entregue' && faltaReceber > 0.009) { setFinalizarAberto(true); return }
+    const { error } = await supabase.from('pedidos').update({ status: novo }).eq('id', pedido.id)
+    if (error) { alert('Não foi possível mudar a etapa agora.'); return }
+    const label = (STATUS_CONFIG[novo] || {}).label || novo
+    supabase.from('pedido_historico').insert({ pedido_id: pedido.id, evento: label, descricao: `Status alterado para "${label}"` }).then(() => {}, () => {})
+    setStatusPedido(novo); setPedido(p => p ? { ...p, status: novo } : p)
+    avisar(`Pedido em "${label}".`)
+  }
+  const estornarPagamento = async (g: any) => {
+    if (!window.confirm(`Estornar o recebimento de ${formatMoney(Number(g.valor) || 0)}? O valor sai do caixa e volta a faltar no pedido.`)) return
+    const { error } = await supabase.from('pagamentos').update({ estornado_em: new Date().toISOString() }).eq('id', g.id)
+    if (error) { alert('Não foi possível estornar agora.'); return }
+    await recarregarDinheiro(); avisar('Recebimento estornado.')
+  }
+  const NOME_FORMA: Record<string, string> = { pix: 'Pix', dinheiro: 'Dinheiro', credito: 'Crédito', debito: 'Débito', boleto: 'Boleto' }
+  const NOME_TIPO: Record<string, string> = { sinal: 'Sinal', parcial: 'Parcial', restante: 'Restante', total: 'Pagamento', pagamento: 'Pagamento', migracao: 'Pagamento' }
+  const dataCurtaBR = (iso?: string) => { if (!iso) return ''; const [y, m, d] = iso.slice(0, 10).split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }).replace('.', '') }
+
   // ── Loading state ────────────────────────────────────────────────────
   if (carregando || !pedido) {
     return (
@@ -813,152 +942,156 @@ export default function EditarPedido() {
   }
 
   return (
-    <div className="ep-wrap">
-      {/* ═══ HEADER STICKY ═══ */}
-      <div className="ep-header">
-        <div className="ep-header-top">
-          <button className="ep-back" onClick={() => navigate('/pedidos')} aria-label="Voltar">
-            <I.chevL />
-          </button>
-          <div className="ep-header-title-wrap">
-            <div className="ep-header-title">
-              <I.cal />
-              Editar Pedido <span className="ep-num">#{pedido.numero || '—'}</span>
-            </div>
-          </div>
-          <div className="ep-header-actions">
-            <button className="ep-icon-btn" onClick={() => setTimelineAberto(true)} aria-label="Timeline" title="Acompanhar pedido">
-              <I.clock />
-            </button>
-            <button className="ep-icon-btn" onClick={handleExportarPDF} aria-label="Exportar PDF" title="Exportar PDF">
-              <I.print />
-            </button>
-          </div>
+    <div className="ep-wrap ep2">
+      {/* ══════════════ CABEÇALHO (padrão rosa do app) ══════════════ */}
+      <div className="ep2-hd">
+        <button className="ep2-hd-bt" onClick={() => navigate('/pedidos')} aria-label="Voltar"><I.chevL /></button>
+        <div className="ep2-hd-t">
+          <b>Pedido #{pedido.numero || '—'}</b>
+          <small>{clienteNome ? toTitleCase(clienteNome) : 'Cliente não informado'} · {tipoEntrega === 'entrega' ? 'entrega' : 'retirada'} {formatDataHora(dataEntrega, horarioEntrega)}</small>
         </div>
-
-        <div className="ep-header-info">
-          <div className="ep-header-cliente">
-            {clienteNome ? toTitleCase(clienteNome) : <span className="ep-cliente-vazio">Cliente não informado</span>}
-          </div>
-          <div className="ep-header-meta">
-            <span className="ep-header-meta-item">
-              {tipoEntregaIcon()}
-              {formatDataHora(dataEntrega, horarioEntrega)}
-            </span>
-            <span className="ep-tag-origem">
-              {pedido.origem === 'cardapio' ? <I.menu /> : <I.hand />}
-              {origemLabel}
-            </span>
-          </div>
-        </div>
-
-        {/* ═══ TABS ═══ */}
-        <div className="ep-tabs">
-          <button className={`ep-tab ${tab === 'cliente' ? 'ep-tab--ativa' : ''}`} onClick={() => setTab('cliente')}>
-            <I.user />
-            <span>Cliente</span>
-          </button>
-          <button className={`ep-tab ${tab === 'itens' ? 'ep-tab--ativa' : ''}`} onClick={() => setTab('itens')}>
-            <I.box />
-            <span>Itens {totalItens > 0 && <span className="ep-tab-badge">({totalItens})</span>}</span>
-          </button>
-          <button className={`ep-tab ${tab === 'valores' ? 'ep-tab--ativa' : ''}`} onClick={() => setTab('valores')}>
-            <I.dollar />
-            <span>Valores</span>
-          </button>
-          <button className={`ep-tab ${tab === 'pagar' ? 'ep-tab--ativa' : ''}`} onClick={() => setTab('pagar')}>
-            <I.card />
-            <span>Pagar</span>
-          </button>
-        </div>
+        <span className="ep2-hd-orig">{origemLabel}</span>
+        <button className="ep2-hd-bt" onClick={() => setTimelineAberto(true)} aria-label="Acompanhar pedido" title="Acompanhar pedido"><I.clock /></button>
+        <button className="ep2-hd-bt ep2-so-desk" onClick={handleExportarPDF} aria-label="Imprimir" title="Imprimir / PDF"><I.print /></button>
+        <button className="ep2-hd-bt" onClick={() => setMenuAberto(true)} aria-label="Mais opções"><DotsThree size={22} weight="bold" /></button>
       </div>
 
-      {/* ═══ BODY ═══ */}
-      <div className="ep-body">
-        {tab === 'cliente' && (
-          <div className="ep-tab-content">
+      {/* ══════════════ ETAPAS ══════════════ */}
+      <div className="ep2-st">
+        {statusPedido === 'cancelado' ? (
+          <div className="ep2-st-cancel">Pedido cancelado</div>
+        ) : (<>
+          {(statusPedido === 'aguardando_pagamento' || statusPedido === 'aguardando_aceite') && <div className="ep2-st-chip">{(STATUS_CONFIG[statusPedido] || {}).label}</div>}
+          <div className="ep2-st-l">
+            {ETAPAS.map((n, i) => (
+              <span key={n} className={`ep2-st-p ${i < posEtapa || statusPedido === 'entregue' ? 'ok' : i === posEtapa && !['aguardando_pagamento', 'aguardando_aceite'].includes(statusPedido) ? 'atual' : ''}`}>
+                <i>{(i < posEtapa || statusPedido === 'entregue') ? <Check size={11} weight="bold" /> : null}</i>{n}
+              </span>
+            ))}
+          </div>
+          {proximaEtapa ? <button className="ep2-st-bt" onClick={() => irParaEtapa(proximaEtapa.s)}>{proximaEtapa.l} →</button>
+            : statusPedido === 'entregue' ? <div className="ep2-st-fim"><Check size={14} weight="bold" /> Pedido entregue</div> : null}
+        </>)}
+      </div>
 
-            {/* ─── SEÇÃO: Informações do Cliente ─── */}
-            <div className="ep-section">
-              <div className="ep-section-title">
-                <I.user />
-                Informações do Cliente
-              </div>
+      {/* ══════════════ ABAS (só no celular) ══════════════ */}
+      <div className="ep2-tabs">
+        {([['itens', 'Itens', <I.box key="b" />], ['entrega', 'Entrega', <I.truck key="t" />], ['pagamento', 'Pagamento', <I.card key="c" />]] as [Tab, string, any][]).map(([k, l, ic]) => (
+          <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{ic}{l}{k === 'pagamento' && faltaReceber > 0.009 ? <em className="ep2-tab-dot" aria-label="falta receber" /> : null}</button>
+        ))}
+      </div>
 
-              <label className="ep-label">Cliente <ReqTag /></label>
-              {clienteNome || clienteTelefone ? (
-                <div className="ep-cliente-card">
-                  <div className="ep-cliente-avatar">{initialsOf(clienteNome || '?')}</div>
-                  <div className="ep-cliente-info">
-                    <div className="ep-cliente-nome">{clienteNome ? toTitleCase(clienteNome) : 'Sem nome'}</div>
-                    {clienteTelefone && <div className="ep-cliente-tel">{clienteTelefone}</div>}
-                  </div>
-                  <button type="button" className="ep-cliente-trocar" onClick={() => setModalCliente(true)}>
-                    Trocar
-                  </button>
-                </div>
-              ) : (
-                <button type="button" className="ep-btn-selecionar" onClick={() => setModalCliente(true)}>
-                  <I.search />
-                  Selecionar cliente
-                </button>
-              )}
+      <div className="ep2-grid">
+        <div className="ep2-col">
+          {/* ── ITENS (com o cartão do cliente) ── */}
+          <div className={`ep2-sec ${tab === 'itens' ? 'ativa' : ''}`}>
+            <div className="ep2-cli">
+              <span className="ep2-av">{(clienteNome || '?').trim().split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase()}</span>
+              <div className="ep2-cli-t"><b>{clienteNome ? toTitleCase(clienteNome) : 'Sem cliente'}</b><small>{clienteTelefone ? clienteTelefone.replace(/\D/g, '').replace(/^(\d{2})(\d{4,5})(\d{4})$/, '($1) $2-$3') : 'sem telefone'}</small></div>
+              <button className="ep2-lk" onClick={() => setModalCliente(true)}>Trocar</button>
+              {clienteTelefone && <a className="ep2-wa" href={`https://wa.me/55${clienteTelefone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer"><WhatsappLogo size={14} weight="bold" />WhatsApp</a>}
             </div>
 
-            {/* ─── SEÇÃO: Status e Entrega ─── */}
-            <div className="ep-section">
-              <div className="ep-section-title">
-                <I.box />
-                Status e Entrega
+            <div className="ep2-card">
+              <p className="ep2-ct">Itens do pedido <em>({totalItens})</em></p>
+              {itens.map((it: any, idx) => {
+                const p = it.personalizacoes || {}
+                const linhas: [string, string][] = []
+                if (p.massa?.nome) linhas.push(['Massa', p.massa.nome])
+                if (p.sabor?.nome) linhas.push(['Sabor', p.sabor.nome])
+                if (Array.isArray(p.recheios) && p.recheios.length) linhas.push([p.recheios.length > 1 ? 'Recheios' : 'Recheio', p.recheios.map((r: any) => r.nome).join(', ')])
+                if (p.cobertura?.nome) linhas.push(['Cobertura', p.cobertura.nome])
+                const extras: any[] = Array.isArray(p.extras) ? p.extras : []
+                const base = Number(it.preco_breakdown?.base_efetivo ?? it.preco_breakdown?.preco_base_original) || 0
+                const adic = Number(it.preco_breakdown?.adicionais_total) || 0
+                return (
+                  <div key={it.id || idx} className="ep2-it">
+                    <div className="ep2-it-top">
+                      <span className="ep2-it-f">{it.imagem_url ? <img src={it.imagem_url} alt="" /> : <I.box />}</span>
+                      <div className="ep2-it-n"><b>{it.nome_produto}</b>
+                        {p.tamanho?.nome && <span className="ep2-chip">Tamanho {p.tamanho.nome}{p.tamanho.peso_kg ? ` · ~${String(p.tamanho.peso_kg).replace('.', ',')} kg` : ''}</span>}
+                        {p.kit?.total && <span className="ep2-chip">Kit de {p.kit.total} un.</span>}
+                      </div>
+                    </div>
+                    {(linhas.length > 0 || (p.kit?.sabores || []).length > 0) && (
+                      <div className="ep2-esc">
+                        {linhas.map(([l, v]) => <div key={l} className="ep2-ln"><span>{l}</span><b>{v}</b></div>)}
+                        {(p.kit?.sabores || []).map((s: any) => <div key={s.nome} className="ep2-sab"><Heart size={13} weight="duotone" />{s.qtd} {String(s.nome).toLowerCase()}</div>)}
+                      </div>
+                    )}
+                    {extras.map((e, i) => <div key={i} className="ep2-ad"><span><Plus size={12} weight="bold" />{e.nome}</span><b>{Number(e.valor) > 0 ? `+ ${formatMoney(Number(e.valor))}` : 'grátis'}</b></div>)}
+                    {p.foto_referencia && (
+                      <a className="ep2-foto" href={p.foto_referencia} target="_blank" rel="noreferrer"><span className="ep2-foto-i"><img src={p.foto_referencia} alt="" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} /><ImageIcon size={18} /></span><div><b>Foto de referência</b><small>Toque pra ampliar ou baixar</small></div></a>
+                    )}
+                    {recadoEditando === idx ? (
+                      <div className="ep2-recado-ed">
+                        <input autoFocus className="ep-input" placeholder="Ex.: escrever Parabéns, Lia!" value={it.observacoes || ''} onChange={e => setItens(prev => prev.map((x, i) => i === idx ? { ...x, observacoes: e.target.value } : x))} onKeyDown={e => { if (e.key === 'Enter') setRecadoEditando(null) }} />
+                        <button className="ep2-lk" onClick={() => setRecadoEditando(null)}>OK</button>
+                      </div>
+                    ) : it.observacoes ? (
+                      <button className="ep2-ob" onClick={() => setRecadoEditando(idx)}><NotePencil size={13} weight="bold" /><span>{it.observacoes}</span></button>
+                    ) : null}
+                    <div className="ep2-pr">
+                      <span>{adic > 0 && base > 0 ? `${formatMoney(base)} + ${formatMoney(adic)} adicionais` : it.quantidade > 1 ? `${formatMoney(it.valor_unitario)} cada` : ''}</span>
+                      <b>{formatMoney((it.valor_unitario || 0) * (it.quantidade || 1))}</b>
+                    </div>
+                    <div className="ep2-ac">
+                      <div className="ep2-qty">
+                        <button onClick={() => updateQtd(idx, -1)} aria-label="Diminuir" disabled={it.quantidade <= 1}>−</button>
+                        <input type="number" inputMode="numeric" value={it.quantidade} onChange={e => setQtdManual(idx, Number(e.target.value))} aria-label="Quantidade" />
+                        <button onClick={() => updateQtd(idx, 1)} aria-label="Aumentar">+</button>
+                      </div>
+                      {!it.observacoes && recadoEditando !== idx && <button className="ep2-lk" onClick={() => setRecadoEditando(idx)}>+ Recado</button>}
+                      <button className="ep2-rm" onClick={() => removerItem(idx)}><Trash size={14} weight="bold" />Remover</button>
+                    </div>
+                  </div>
+                )
+              })}
+              <button className="ep2-addi" onClick={() => setModalProduto(true)}><Plus size={14} weight="bold" />Adicionar item</button>
+            </div>
+          </div>
+
+          {/* ── ENTREGA ── */}
+          <div className={`ep2-sec ${tab === 'entrega' ? 'ativa' : ''}`}>
+            <div className="ep2-card">
+              <p className="ep2-ct">Data e horário</p>
+              <div className="ep-row-2">
+                <div>
+                  <label className="ep-label">Data <ReqTag /></label>
+                  <input
+                    type="date"
+                    className="ep-input"
+                    value={dataEntrega}
+                    onChange={e => setDataEntrega(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="ep-label">Hora</label>
+                  <button type="button" className="ep-input ep-input-btn" onClick={() => setHoraSheetAberto(true)}>
+                    {horarioEntrega ? horarioEntrega.slice(0, 5) : <span style={{ color: '#B4B2A9' }}>Escolher</span>}
+                  </button>
+                </div>
               </div>
 
-              <label className="ep-label">Status do pedido</label>
-              <div className="ep-status-wrap">
+              <div className="ep-quick-chips">
                 <button
                   type="button"
-                  className="ep-status-atual"
-                  onClick={e => { e.stopPropagation(); setStatusDropdownAberto(o => !o) }}
+                  className={`ep-chip ${dataEntrega === hojeISO() ? 'ep-chip--sel' : ''}`}
+                  onClick={() => setDataEntrega(hojeISO())}
                 >
-                  <span className="ep-status-icon" style={{ background: (STATUS_CONFIG[statusPedido] || STATUS_CONFIG.agendado).bg, color: (STATUS_CONFIG[statusPedido] || STATUS_CONFIG.agendado).color }}>
-                    <I.box />
-                  </span>
-                  <div className="ep-status-info">
-                    <div className="ep-status-label">{(STATUS_CONFIG[statusPedido] || STATUS_CONFIG.agendado).label}</div>
-                  </div>
-                  <span className="ep-status-alterar">
-                    Alterar <I.chevD />
-                  </span>
+                  Hoje
                 </button>
-                {statusDropdownAberto && (
-                  <div className="ep-status-drop" onClick={e => e.stopPropagation()}>
-                    {STATUS_OPCOES.map(s => {
-                      const cfg = STATUS_CONFIG[s]
-                      return (
-                        <button
-                          key={s}
-                          type="button"
-                          className={`ep-status-opt ${statusPedido === s ? 'ep-status-opt--sel' : ''}`}
-                          onClick={() => { setStatusPedido(s); setStatusDropdownAberto(false) }}
-                        >
-                          <span className="ep-status-dot" style={{ background: cfg.color }} />
-                          {cfg.label}
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
+                <button
+                  type="button"
+                  className={`ep-chip ${dataEntrega === amanhaISO() ? 'ep-chip--sel' : ''}`}
+                  onClick={() => setDataEntrega(amanhaISO())}
+                >
+                  Amanhã
+                </button>
               </div>
-
-              <button
-                type="button"
-                className="ep-cancelar-btn"
-                onClick={() => setCancelarAberto(true)}
-              >
-                <span className="ep-cancelar-ic"><I.ban /></span>
-                <span className="ep-cancelar-txt">Cancelar pedido</span>
-              </button>
-
-              <label className="ep-label ep-label--mt">Tipo de Entrega <ReqTag /></label>
+            </div>
+            <div className="ep2-card">
+              <p className="ep2-ct">Como o pedido sai</p>
               <div className="ep-toggle-2">
                 <button
                   type="button"
@@ -1022,408 +1155,118 @@ export default function EditarPedido() {
                 </div>
               )}
             </div>
-
-            {/* ─── SEÇÃO: Data e Hora ─── */}
-            <div className="ep-section">
-              <div className="ep-section-title">
-                <I.cal />
-                Data de Entrega
-              </div>
-
-              <div className="ep-row-2">
-                <div>
-                  <label className="ep-label">Data <ReqTag /></label>
-                  <input
-                    type="date"
-                    className="ep-input"
-                    value={dataEntrega}
-                    onChange={e => setDataEntrega(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="ep-label">Hora</label>
-                  <button type="button" className="ep-input ep-input-btn" onClick={() => setHoraSheetAberto(true)}>
-                    {horarioEntrega ? horarioEntrega.slice(0, 5) : <span style={{ color: '#B4B2A9' }}>Escolher</span>}
-                  </button>
-                </div>
-              </div>
-
-              <div className="ep-quick-chips">
-                <button
-                  type="button"
-                  className={`ep-chip ${dataEntrega === hojeISO() ? 'ep-chip--sel' : ''}`}
-                  onClick={() => setDataEntrega(hojeISO())}
-                >
-                  Hoje
-                </button>
-                <button
-                  type="button"
-                  className={`ep-chip ${dataEntrega === amanhaISO() ? 'ep-chip--sel' : ''}`}
-                  onClick={() => setDataEntrega(amanhaISO())}
-                >
-                  Amanhã
-                </button>
-              </div>
-            </div>
-
           </div>
-        )}
+        </div>
 
-        {tab === 'itens' && (
-          <div className="ep-tab-content">
-            <div className="ep-section">
-              <div className="ep-section-title">
-                <I.box />
-                Itens do Pedido {totalItens > 0 && <span className="ep-section-count">({totalItens})</span>}
+        {/* ── PAGAMENTO (no computador: coluna fixa à direita) ── */}
+        <div className={`ep2-col ep2-col-dir ep2-sec ${tab === 'pagamento' ? 'ativa' : ''}`}>
+          <div className="ep2-card">
+            <p className="ep2-ct">Resumo</p>
+            <div className="ep2-ln"><span>Produtos</span><b>{formatMoney(produtosTotal)}</b></div>
+            {adicionaisTotal > 0 && <div className="ep2-ln"><span>Adicionais</span><b>{formatMoney(adicionaisTotal)}</b></div>}
+            {tipoEntrega === 'entrega' && (
+              <div className="ep2-ln ep2-ln-in"><span>Taxa de entrega</span>
+                <span className="ep2-mini"><em>R$</em><input inputMode="numeric" value={textoBRL(taxaEntrega) || ''} placeholder="0,00" onChange={e => setTaxaEntrega(lerBRL(mascaraBRL(e.target.value)))} aria-label="Taxa de entrega" /></span></div>
+            )}
+            {desconto > 0 && <div className="ep2-ln neg"><span>Desconto</span><b>− {formatMoney(desconto)}</b></div>}
+            {acrescimo > 0 && <div className="ep2-ln"><span>Acréscimo</span><b>+ {formatMoney(acrescimo)}</b></div>}
+            <div className="ep2-ln tt"><span>Total do pedido</span><b>{formatMoney(total)}</b></div>
+            {[...ajustesHist, ...ajustesPendentes.map(a => ({ ...a, pendente: true }))].length > 0 && (
+              <div className="ep2-ajs">{[...ajustesHist, ...ajustesPendentes.map(a => ({ ...a, pendente: true }))].map((a: any, i) => (
+                <span key={i}>{a.tipo === 'desconto' ? 'Desconto' : 'Acréscimo'} de {formatMoney(Number(a.valor) || 0)}{a.motivo ? ` · ${a.motivo}` : ''}{a.pendente ? ' (ainda não salvo)' : ''}</span>
+              ))}</div>
+            )}
+            <button className="ep2-aj" onClick={() => setAjusteAberto(true)}><PencilSimple size={13} weight="bold" />Ajustar valor (desconto ou acréscimo)</button>
+          </div>
+
+          <div className="ep2-card">
+            <p className="ep2-ct">Pagamentos</p>
+            {pagamentosOk ? (pagamentos.length === 0 ? <p className="ep2-vazio">Nenhum recebimento ainda.</p> : pagamentos.map(g => (
+              <div key={g.id} className={`ep2-pg ${g.estornado_em ? 'est' : ''}`}>
+                <span className="ep2-pg-ic"><ArrowUp size={14} weight="bold" /></span>
+                <div><b>{NOME_TIPO[g.tipo] || 'Pagamento'} · {NOME_FORMA[g.forma] || g.forma || '—'}</b><small>{g.estornado_em ? 'Estornado · ' : ''}{dataCurtaBR(g.recebido_em)}</small></div>
+                <b className="v">{formatMoney(Number(g.valor) || 0)}</b>
+                {!g.estornado_em && <button className="ep2-pg-x" onClick={() => estornarPagamento(g)} aria-label="Estornar recebimento" title="Estornar (lançado errado)"><ArrowCounterClockwise size={15} weight="bold" /></button>}
               </div>
+            ))) : <p className="ep2-vazio">Recebido até agora: <b>{formatMoney(recebidoAtual)}</b>. (A lista de recebimentos aparece depois do SQL do Passo 1.)</p>}
+            {statusPedido !== 'cancelado' && (faltaReceber > 0.009 ? (<>
+              <div className="ep2-falta"><div><small>Falta receber</small><b>{formatMoney(faltaReceber)}</b></div>
+                <div className="ep2-bar"><i style={{ width: `${Math.min(100, (recebidoAtual / (total || 1)) * 100)}%` }} /></div></div>
+              <button className="ep2-rec" onClick={() => setReceberAberto(true)}><ArrowUp size={15} weight="bold" />Registrar recebimento</button>
+              <label className="ep2-prev"><CalendarBlank size={14} />Combinado pra pagar:
+                <input type="date" value={dataPrevistaPagamento || ''} onChange={e => setDataPrevistaPagamento(e.target.value)} aria-label="Data combinada pra pagar" />
+                {!dataPrevistaPagamento && <em>na entrega</em>}</label>
+            </>) : <div className="ep2-quitado"><Check size={14} weight="bold" /> Pedido quitado</div>)}
+          </div>
 
-              {itens.length === 0 ? (
-                <div className="ep-itens-vazio">
-                  <div className="ep-itens-vazio-ic"><I.box /></div>
-                  <p className="ep-itens-vazio-t">Nenhum item ainda</p>
-                  <p className="ep-itens-vazio-d">Adicione produtos ao pedido tocando no botão abaixo.</p>
-                </div>
-              ) : (
-                <div className="ep-itens-lista">
-                  {itens.map((it, idx) => (
-                    <div key={idx} className="ep-item-card">
-                      <div className="ep-item-foto">
-                        {it.imagem_url ? <img src={it.imagem_url} alt={it.nome_produto} /> : <span>🎂</span>}
-                      </div>
-                      <div className="ep-item-info">
-                        <div className="ep-item-nome">{toTitleCase(it.nome_produto)}</div>
-                        <div className="ep-item-preco">{formatMoney(it.valor_unitario)} <span className="ep-item-x">×</span> {it.quantidade}</div>
-                        <div className="ep-item-subtotal">{formatMoney((it.valor_unitario || 0) * (it.quantidade || 1))}</div>
-                      </div>
-                      <div className="ep-item-acoes">
-                        <div className="ep-qtd-wrap">
-                          <button
-                            type="button"
-                            className="ep-qtd-btn"
-                            onClick={() => updateQtd(idx, -1)}
-                            disabled={it.quantidade <= 1}
-                            aria-label="Diminuir"
-                          >
-                            −
-                          </button>
-                          <CampoNumero
-                            inteiro
-                            className="ep-qtd-input"
-                            value={it.quantidade}
-                            onValor={n => setQtdManual(idx, n || 1)}
-                            aria-label="Quantidade"
-                          />
-                          <button type="button" className="ep-qtd-btn" onClick={() => updateQtd(idx, +1)} aria-label="Aumentar">
-                            +
-                          </button>
-                        </div>
-                        <button type="button" className="ep-item-remover" onClick={() => removerItem(idx)} aria-label="Remover item">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
-                          Remover
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+          {/* salvar (computador) */}
+          <div className="ep2-save-desk">
+            {alteracoes > 0 ? (<>
+              <span className="ep2-mud">{alteracoes} {alteracoes === 1 ? 'alteração não salva' : 'alterações não salvas'}</span>
+              <button className={`ep2-b1 ${salvouOk ? 'ok' : ''}`} onClick={handleSalvar} disabled={salvando || salvouOk}>{salvouOk ? 'Salvo!' : salvando ? 'Salvando…' : 'Salvar alterações'}</button>
+              <button className="ep2-b2" onClick={() => window.location.reload()} disabled={salvando}>Descartar</button>
+            </>) : <span className="ep2-salvo"><Check size={14} weight="bold" /> Tudo salvo</span>}
+          </div>
+        </div>
+      </div>
 
-              <button type="button" className="ep-add-item" onClick={() => setModalProduto(true)}>
-                <span className="ep-add-item-ic">+</span>
-                Adicionar item
+      {/* salvar (celular): só aparece quando há algo pra salvar */}
+      {alteracoes > 0 && (
+        <div className="ep2-foot">
+          <span className="ep2-mud">{alteracoes} {alteracoes === 1 ? 'alteração não salva' : 'alterações não salvas'}</span>
+          <button className="ep2-b2" onClick={() => window.location.reload()} disabled={salvando}>Descartar</button>
+          <button className={`ep2-b1 ${salvouOk ? 'ok' : ''}`} onClick={handleSalvar} disabled={salvando || salvouOk}>{salvouOk ? 'Salvo!' : salvando ? 'Salvando…' : 'Salvar alterações'}</button>
+        </div>
+      )}
+      {aviso && <div className="ep2-toast" role="status">{aviso}</div>}
+
+      {/* ── menu ⋯ ── */}
+      {menuAberto && createPortal(
+        <div className="ep2-ov" onClick={() => setMenuAberto(false)}>
+          <div className="ep2-sh" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Mais opções">
+            <span className="ep2-alca" />
+            <button className="ep2-mi" onClick={() => { setMenuAberto(false); setTimelineAberto(true) }}><I.clock />Acompanhar pedido</button>
+            <button className="ep2-mi" onClick={() => { setMenuAberto(false); handleExportarPDF() }}><I.print />Imprimir / PDF</button>
+            {statusPedido !== 'cancelado' && <button className="ep2-mi" onClick={() => { setMenuAberto(false); setEtapasAberto(true) }}><I.box />Mudar a etapa</button>}
+            {statusPedido !== 'cancelado' && <button className="ep2-mi perigo" onClick={() => { setMenuAberto(false); setDevolverSinal(null); setCancelarAberto(true) }}><I.ban />Cancelar pedido</button>}
+          </div>
+        </div>, document.body)}
+
+      {/* ── mudar a etapa (qualquer uma, inclusive voltar) ── */}
+      {etapasAberto && createPortal(
+        <div className="ep2-ov" onClick={() => setEtapasAberto(false)}>
+          <div className="ep2-sh" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Mudar a etapa">
+            <span className="ep2-alca" />
+            <b className="ep2-sh-t">Mudar a etapa</b>
+            {Object.keys(STATUS_CONFIG).filter(s => s !== 'cancelado').map(s => (
+              <button key={s} className={`ep2-mi ${s === statusPedido ? 'sel' : ''}`} onClick={() => { setEtapasAberto(false); irParaEtapa(s) }}>
+                <span className="ep2-dot" style={{ background: STATUS_CONFIG[s].color }} />{STATUS_CONFIG[s].label}{s === statusPedido ? <em>atual</em> : null}
               </button>
-
-              {itens.length > 0 && (
-                <div className="ep-subtotal-row">
-                  <span>Subtotal dos itens</span>
-                  <span className="ep-subtotal-val">{formatMoney(subtotalItens)}</span>
-                </div>
-              )}
-            </div>
+            ))}
           </div>
-        )}
-        {tab === 'valores' && (
-          <div className="ep-tab-content">
-            <div className="ep-section">
-              <div className="ep-section-title">
-                <I.dollar />
-                Valores
-              </div>
+        </div>, document.body)}
 
-              {/* Subtotal — read-only vindo dos itens */}
-              <div className="ep-val-row ep-val-row--readonly">
-                <div className="ep-val-label">
-                  <span className="ep-val-label-t">Subtotal dos itens</span>
-                  <span className="ep-val-label-d">{totalItens} {totalItens === 1 ? 'item' : 'itens'} no pedido</span>
-                </div>
-                <span className="ep-val-num">{formatMoney(subtotalItens)}</span>
-              </div>
+      {/* ── ajustar valor (fica registrado com o motivo ao salvar) ── */}
+      {ajusteAberto && <AjusteSheet total={total} onClose={() => setAjusteAberto(false)} onAplicar={(a) => {
+        if (a.tipo === 'desconto') setDesconto(d => r2(d + a.valor)); else setAcrescimo(x => r2(x + a.valor))
+        setAjustesPendentes(l => [...l, a]); setAjusteAberto(false)
+      }} />}
 
-              {/* Taxa de entrega — só se for entrega */}
-              {tipoEntrega === 'entrega' && (
-                <div className="ep-val-row">
-                  <div className="ep-val-label">
-                    <span className="ep-val-label-t">Taxa de entrega</span>
-                    <span className="ep-val-label-d">Adicionado ao total</span>
-                  </div>
-                  <div className="ep-val-input-wrap">
-                    <span className="ep-val-input-prefix">R$</span>
-                    <input
-                      className="ep-val-input"
-                      inputMode="numeric"
-                      placeholder="0,00"
-                      value={formatMaskMoney(taxaEntrega)}
-                      onChange={e => setTaxaEntrega(parseMaskMoney(e.target.value))}
-                    />
-                  </div>
-                </div>
-              )}
+      {receberAberto && pedido && <ReceberSheet item={{
+        id: pedido.id, numero: pedido.numero ?? null, cliente_nome: clienteNome, valor_total: total, valor_recebido: recebidoAtual,
+        status: statusPedido, status_pagamento: (pedido as any).status_pagamento ?? null, forma_pagamento: pedido.forma_pagamento,
+        data_entrega: dataEntrega, horario_entrega: horarioEntrega, data_prevista_pagamento: dataPrevistaPagamento || null,
+        total, recebido: recebidoAtual, falta: faltaReceber, dataRef: null, dias: null,
+      } as any} onClose={() => setReceberAberto(false)} onFeito={async (msg) => { setReceberAberto(false); await recarregarDinheiro(); avisar(msg) }} />}
 
-              {/* Desconto */}
-              <div className="ep-val-row">
-                <div className="ep-val-label">
-                  <span className="ep-val-label-t">Desconto</span>
-                  <span className="ep-val-label-d">Subtraído do total</span>
-                </div>
-                <div className="ep-val-input-wrap ep-val-input-wrap--minus">
-                  <span className="ep-val-input-prefix">− R$</span>
-                  <input
-                    className="ep-val-input"
-                    inputMode="numeric"
-                    placeholder="0,00"
-                    value={formatMaskMoney(desconto)}
-                    onChange={e => setDesconto(parseMaskMoney(e.target.value))}
-                  />
-                </div>
-              </div>
+      {finalizarAberto && pedido && <FinalizarPedidoSheet
+        pedido={{ id: pedido.id, numero: pedido.numero ?? null, cliente_nome: clienteNome, status: statusPedido, valor_total: total, valor_recebido: recebidoAtual,
+          status_pagamento: (pedido as any).status_pagamento ?? null, forma_pagamento: pedido.forma_pagamento }}
+        novoStatus="entregue" novoStatusLabel="Entregue"
+        onCancelar={() => setFinalizarAberto(false)}
+        onConcluido={async () => { setFinalizarAberto(false); await recarregarDinheiro(); avisar('Pedido entregue.') }} />}
 
-              {/* Acréscimo */}
-              <div className="ep-val-row">
-                <div className="ep-val-label">
-                  <span className="ep-val-label-t">Acréscimo</span>
-                  <span className="ep-val-label-d">Adicionado ao total</span>
-                </div>
-                <div className="ep-val-input-wrap ep-val-input-wrap--plus">
-                  <span className="ep-val-input-prefix">+ R$</span>
-                  <input
-                    className="ep-val-input"
-                    inputMode="numeric"
-                    placeholder="0,00"
-                    value={formatMaskMoney(acrescimo)}
-                    onChange={e => setAcrescimo(parseMaskMoney(e.target.value))}
-                  />
-                </div>
-              </div>
-
-              {/* Resumo do cálculo */}
-              <div className="ep-val-resumo">
-                <div className="ep-val-resumo-row">
-                  <span>Subtotal</span>
-                  <span>{formatMoney(subtotalItens)}</span>
-                </div>
-                {tipoEntrega === 'entrega' && taxaEntrega > 0 && (
-                  <div className="ep-val-resumo-row">
-                    <span>Taxa de entrega</span>
-                    <span>+ {formatMoney(taxaEntrega)}</span>
-                  </div>
-                )}
-                {desconto > 0 && (
-                  <div className="ep-val-resumo-row ep-val-resumo-row--neg">
-                    <span>Desconto</span>
-                    <span>− {formatMoney(desconto)}</span>
-                  </div>
-                )}
-                {acrescimo > 0 && (
-                  <div className="ep-val-resumo-row">
-                    <span>Acréscimo</span>
-                    <span>+ {formatMoney(acrescimo)}</span>
-                  </div>
-                )}
-                <div className="ep-val-resumo-total">
-                  <span>Total</span>
-                  <span>{formatMoney(total)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-        {tab === 'pagar' && (
-          <div className="ep-tab-content">
-
-            {/* ─── SEÇÃO: Forma de Pagamento ─── */}
-            <div className="ep-section">
-              <div className="ep-section-title">
-                <I.card />
-                Forma de Pagamento
-              </div>
-
-              <div className="ep-pag-formas">
-                {[
-                  { key: 'PIX',      label: 'PIX',      svg: (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15c1 0 3 0 5-2s3-3 4-3 2 0 4 2 4 3 5 3"/><path d="M4 9c1 0 3 0 5 2s3 3 4 3 2 0 4-2 4-3 5-3"/></svg>) },
-                  { key: 'Dinheiro', label: 'Dinheiro', svg: (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 6v.01M18 18v.01"/></svg>) },
-                  { key: 'Cartão',   label: 'Cartão',   svg: (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>) },
-                  { key: 'Boleto',   label: 'Boleto',   svg: (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="1"/><line x1="8" y1="4" x2="8" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/><line x1="16" y1="4" x2="16" y2="20"/></svg>) },
-                ].map(f => (
-                  <button
-                    key={f.key}
-                    type="button"
-                    className={`ep-pag-forma ${formaPagamento === f.key ? 'ep-pag-forma--sel' : ''}`}
-                    onClick={() => setFormaPagamento(f.key)}
-                  >
-                    <span className="ep-pag-forma-ic">{f.svg}</span>
-                    {f.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* ─── SEÇÃO: Situação do Pagamento ─── */}
-            <div className="ep-section">
-              <div className="ep-section-title">
-                <I.dollar />
-                Situação do Pagamento
-              </div>
-
-              <div className="ep-pag-sits">
-                {/* PAGO */}
-                <button
-                  type="button"
-                  className={`ep-pag-sit ${situacaoPag === 'total' ? 'ep-pag-sit--sel ep-pag-sit--sel-total' : ''}`}
-                  onClick={() => setSituacaoPag('total')}
-                >
-                  <div className="ep-pag-sit-radio" />
-                  <div className="ep-pag-sit-info">
-                    <div className="ep-pag-sit-t">Pago total</div>
-                    <div className="ep-pag-sit-d">Cliente já pagou o valor completo</div>
-                  </div>
-                  <div className="ep-pag-sit-badge ep-pag-sit-badge--green">Pago</div>
-                </button>
-
-                {/* PARCIAL */}
-                <button
-                  type="button"
-                  className={`ep-pag-sit ${situacaoPag === 'parcial' ? 'ep-pag-sit--sel ep-pag-sit--sel-parcial' : ''}`}
-                  onClick={() => setSituacaoPag('parcial')}
-                >
-                  <div className="ep-pag-sit-radio" />
-                  <div className="ep-pag-sit-info">
-                    <div className="ep-pag-sit-t">Pago parcial</div>
-                    <div className="ep-pag-sit-d">Cliente pagou uma parte, resto fica pendente</div>
-                  </div>
-                  <div className="ep-pag-sit-badge ep-pag-sit-badge--amber">Parcial</div>
-                </button>
-
-                {situacaoPag === 'parcial' && (
-                  <div className="ep-pag-sit-extra">
-                    <label className="ep-label">Valor recebido</label>
-                    <div className="ep-val-input-wrap">
-                      <span className="ep-val-input-prefix">R$</span>
-                      <input
-                        className="ep-val-input"
-                        inputMode="numeric"
-                        placeholder="0,00"
-                        value={formatMaskMoney(valorParcial)}
-                        onChange={e => {
-                          const v = parseMaskMoney(e.target.value)
-                          // Não deixa valor recebido passar do total
-                          setValorParcial(Math.min(v, total))
-                        }}
-                      />
-                    </div>
-                    {valorParcial > 0 && (
-                      <div className="ep-pag-sit-info-row">
-                        <span>Valor pendente</span>
-                        <span className="ep-pag-sit-pendente">{formatMoney(Math.max(0, total - valorParcial))}</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* FIADO */}
-                <button
-                  type="button"
-                  className={`ep-pag-sit ${situacaoPag === 'fiado' ? 'ep-pag-sit--sel ep-pag-sit--sel-fiado' : ''}`}
-                  onClick={() => setSituacaoPag('fiado')}
-                >
-                  <div className="ep-pag-sit-radio" />
-                  <div className="ep-pag-sit-info">
-                    <div className="ep-pag-sit-t">Fiado</div>
-                    <div className="ep-pag-sit-d">Cliente vai pagar depois</div>
-                  </div>
-                  <div className="ep-pag-sit-badge ep-pag-sit-badge--red">Pendente</div>
-                </button>
-
-                {situacaoPag === 'fiado' && (
-                  <div className="ep-pag-sit-extra">
-                    <label className="ep-label">Data prevista de pagamento <span className="ep-label-opt">(opcional)</span></label>
-                    <input
-                      type="date"
-                      className="ep-input"
-                      value={dataPrevistaPagamento}
-                      onChange={e => setDataPrevistaPagamento(e.target.value)}
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* ─── SEÇÃO: Resumo ─── */}
-            <div className="ep-section">
-              <div className="ep-section-title">
-                <I.card />
-                Resumo do Pagamento
-              </div>
-              <div className="ep-pag-resumo">
-                <div className="ep-pag-resumo-row">
-                  <span>Forma</span>
-                  <span className="ep-pag-resumo-val">{formaPagamento}</span>
-                </div>
-                <div className="ep-pag-resumo-row">
-                  <span>Total do pedido</span>
-                  <span className="ep-pag-resumo-val">{formatMoney(total)}</span>
-                </div>
-                <div className="ep-pag-resumo-row">
-                  <span>Valor recebido</span>
-                  <span className="ep-pag-resumo-val ep-pag-resumo-val--green">
-                    {formatMoney(situacaoPag === 'total' ? total : situacaoPag === 'parcial' ? valorParcial : 0)}
-                  </span>
-                </div>
-                <div className="ep-pag-resumo-row ep-pag-resumo-row--big">
-                  <span>Valor pendente</span>
-                  <span className="ep-pag-resumo-val ep-pag-resumo-val--pendente">
-                    {formatMoney(situacaoPag === 'total' ? 0 : situacaoPag === 'parcial' ? Math.max(0, total - valorParcial) : total)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        )}
-      </div>
-
-      {/* ═══ FOOTER STICKY ═══ */}
-      <div className="ep-footer">
-        <div className="ep-footer-total">
-          <span className="ep-footer-total-label">Total:</span>
-          <span className="ep-footer-total-val">{formatMoney(total)}</span>
-        </div>
-        <div className="ep-footer-btns">
-          <button className="ep-btn ep-btn--ghost" onClick={() => navigate('/pedidos')} disabled={salvando || salvouOk}>
-            Cancelar
-          </button>
-          <button
-            className={`ep-btn ${salvouOk ? 'ep-btn--success' : 'ep-btn--primary'}`}
-            onClick={handleSalvar}
-            disabled={salvando || salvouOk}
-          >
-            {salvouOk ? (
-              <span className="ep-btn-ok">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                Salvo!
-              </span>
-            ) : salvando ? 'Salvando...' : 'Salvar Alterações'}
-          </button>
-        </div>
-      </div>
+      <style>{EP2_CSS}{FOLHA_CSS}</style>
 
       {/* ═══ MODAL CLIENTE ═══ */}
       {modalCliente && (
@@ -1556,7 +1399,7 @@ export default function EditarPedido() {
             'Pagamento não confirmado',
             'Cliente desistiu do pedido',
           ]
-          const valorRecebidoAtual = pedido?.valor_recebido || 0
+          const valorRecebidoAtual = recebidoAtual
           return (
             <div className="ep-cnc-overlay" onClick={() => !cancelando && setCancelarAberto(false)}>
               <div className="ep-cnc-sheet" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
@@ -1635,6 +1478,13 @@ export default function EditarPedido() {
                 </div>
 
                 {/* Botões */}
+                {valorRecebidoAtual > 0.009 && pagamentosOk && (
+                  <div className="ep2-devol">
+                    <b>Você já recebeu {formatMoney(valorRecebidoAtual)} deste pedido. O que aconteceu com esse dinheiro?</b>
+                    <label><input type="radio" name="devol" checked={devolverSinal === true} onChange={() => setDevolverSinal(true)} />Devolvi pra cliente (sai do caixa)</label>
+                    <label><input type="radio" name="devol" checked={devolverSinal === false} onChange={() => setDevolverSinal(false)} />Fiquei com ele (continua no caixa)</label>
+                  </div>
+                )}
                 <div className="ep-cnc-btns">
                   <button
                     className="ep-btn ep-btn--ghost"
@@ -3521,3 +3371,155 @@ function TabPlaceholder({ titulo, descricao }: { titulo: string; descricao: stri
     </div>
   )
 }
+
+// ══════════════ Ajustar valor do pedido (desconto ou acréscimo, com motivo) ══════════════
+function AjusteSheet({ total, onClose, onAplicar }: { total: number; onClose: () => void; onAplicar: (a: { tipo: 'desconto' | 'acrescimo'; valor: number; motivo: string }) => void }) {
+  const [tipo, setTipo] = useState<'desconto' | 'acrescimo'>('desconto')
+  const [valor, setValor] = useState('')
+  const [motivo, setMotivo] = useState('')
+  const [erro, setErro] = useState('')
+  const MOTIVOS = tipo === 'desconto' ? ['Combinado com a cliente', 'Atraso', 'Arredondamento', 'Cliente fiel'] : ['Taxa de entrega', 'Item a mais', 'Embalagem especial']
+  const v = lerBRL(valor)
+  const novo = Math.max(0, Math.round((total + (tipo === 'acrescimo' ? v : -v)) * 100) / 100)
+  const aplicar = () => {
+    if (v <= 0) { setErro('Digite o valor'); return }
+    if (tipo === 'desconto' && v > total) { setErro('O desconto passa do valor do pedido'); return }
+    onAplicar({ tipo, valor: v, motivo: motivo.trim() })
+  }
+  return (
+    <Folha titulo="Ajustar valor do pedido" sub="O ajuste fica registrado no histórico, com o motivo" onClose={onClose}>
+      <p className="fo-lb">O que é?</p>
+      <div className="fo-seg"><button type="button" className={tipo === 'desconto' ? 'on' : ''} onClick={() => { setTipo('desconto'); setMotivo('') }}>Desconto</button><button type="button" className={tipo === 'acrescimo' ? 'on' : ''} onClick={() => { setTipo('acrescimo'); setMotivo('') }}>Acréscimo</button></div>
+      <label className="fo-lb" htmlFor="aj-v">Valor</label>
+      <div className="fo-in"><span>R$</span><input id="aj-v" inputMode="numeric" placeholder="0,00" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro('') }} autoFocus /></div>
+      <p className="fo-lb">Motivo <em>(opcional)</em></p>
+      <div className="fo-chips">{MOTIVOS.map(m => <button type="button" key={m} className={motivo === m ? 'on' : ''} onClick={() => setMotivo(m)}>{m}</button>)}</div>
+      <input className="fo-txt" style={{ marginTop: 8 }} placeholder="Ou escreva o motivo" value={MOTIVOS.includes(motivo) ? '' : motivo} onChange={e => setMotivo(e.target.value)} />
+      {v > 0 && <div className="fo-dica">O total do pedido vai de <b>{total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</b> para <b>{novo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</b>. Vale quando você salvar.</div>}
+      {erro && <p className="fo-erro">{erro}</p>}
+      <button type="button" className="fo-cta" onClick={aplicar}>Aplicar ajuste</button>
+    </Folha>
+  )
+}
+
+// ══════════════ Estilo da tela nova (ep2-*) ══════════════
+const EP2_CSS = `
+  .ep2 { background: #F4EEF1 !important; padding-bottom: 150px !important;
+    /* encosta nas bordas como o cabeçalho padrão do app (cancela o espaço da página) */
+    margin-top: calc(-1 * (var(--pad-page-top, 1.5rem) + env(safe-area-inset-top, 0px))); margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw); }
+  @media (min-width: 768px) { .ep2 { margin: -3rem -2rem 0; } }
+  .ep2-qty { display: inline-flex; align-items: center; border: 1.5px solid #EDE6E9; border-radius: 10px; background: #fff; overflow: hidden; }
+  .ep2-qty button { width: 34px; height: 34px; border: none; background: none; color: #C33A6E; font-family: inherit; font-size: 18px; font-weight: 800; cursor: pointer; }
+  .ep2-qty button:disabled { color: #D6CBD0; cursor: default; }
+  .ep2-qty input { width: 38px; height: 34px; border: none; outline: none; text-align: center; font-family: inherit; font-size: 15px; font-weight: 800; color: #2C1219; background: none; -moz-appearance: textfield; }
+  .ep2-qty input::-webkit-outer-spin-button, .ep2-qty input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .ep2-hd { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 8px; background: #E85A8C; color: #fff; padding: calc(12px + env(safe-area-inset-top, 0px)) 12px 12px; }
+  .ep2-hd-t { flex: 1; min-width: 0; } .ep2-hd-t b { display: block; font-size: 19px; font-weight: 900; letter-spacing: -.01em; }
+  .ep2-hd-t small { display: block; font-size: 12.5px; opacity: .92; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ep2-hd-bt { width: 36px; height: 36px; border-radius: 11px; border: none; background: rgba(255,255,255,.18); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+  .ep2-hd-bt svg { width: 18px; height: 18px; }
+  .ep2-hd-orig { font-size: 11.5px; font-weight: 800; background: rgba(255,255,255,.2); border-radius: 8px; padding: 5px 9px; flex-shrink: 0; }
+  @media (max-width: 767px) { .ep2-hd-orig, .ep2-so-desk { display: none !important; } }
+  .ep2-st { background: #fff; border-bottom: 1px solid #F0EBED; padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 9px; }
+  .ep2-st-chip { align-self: flex-start; font-size: 11.5px; font-weight: 800; color: #854F0B; background: #FEF0DF; border-radius: 7px; padding: 3px 9px; }
+  .ep2-st-l { display: flex; justify-content: space-between; gap: 4px; position: relative; }
+  .ep2-st-p { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 700; color: #9A8E94; text-align: center; line-height: 1.2; }
+  .ep2-st-p i { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #E5DDE1; background: #fff; display: flex; align-items: center; justify-content: center; color: #fff; }
+  .ep2-st-p.ok { color: #2C1219; } .ep2-st-p.ok i { background: #16A34A; border-color: #16A34A; }
+  .ep2-st-p.atual { color: #C33A6E; } .ep2-st-p.atual i { border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.15); }
+  .ep2-st-bt { border: none; background: #2C1219; color: #fff; border-radius: 11px; padding: 11px; font-family: inherit; font-size: 13.5px; font-weight: 800; cursor: pointer; }
+  .ep2-st-fim, .ep2-quitado, .ep2-salvo { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 800; color: #15803D; background: #F0FDF4; border-radius: 10px; padding: 9px; }
+  .ep2-st-cancel { text-align: center; font-size: 13.5px; font-weight: 800; color: #991B1B; background: #FEF2F2; border-radius: 10px; padding: 10px; }
+  .ep2-tabs { display: flex; background: #fff; border-bottom: 1px solid #F0EBED; position: sticky; top: calc(60px + env(safe-area-inset-top, 0px)); z-index: 25; }
+  .ep2-tabs button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; background: none; padding: 12px 4px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #9A8E94; border-bottom: 2.5px solid transparent; cursor: pointer; position: relative; }
+  .ep2-tabs button svg { width: 16px; height: 16px; } .ep2-tabs button.on { color: #C33A6E; border-color: #E85A8C; }
+  .ep2-tab-dot { width: 7px; height: 7px; border-radius: 50%; background: #F59E0B; }
+  .ep2-grid { padding: 12px; display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+  .ep2-col { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .ep2-sec { display: none; flex-direction: column; gap: 12px; } .ep2-sec.ativa { display: flex; }
+  @media (min-width: 1024px) {
+    .ep2-tabs { display: none; }
+    .ep2-sec { display: flex !important; }
+    .ep2-grid { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 16px; padding: 18px 24px; max-width: 1200px; margin: 0 auto; align-items: start; }
+    .ep2-col-dir { position: sticky; top: 150px; }
+    .ep2-st { flex-direction: row; align-items: center; justify-content: space-between; padding: 12px 24px; } .ep2-st-l { flex: 1; max-width: 560px; }
+    .ep2-hd { padding: 16px 24px; } .ep2-foot { display: none !important; }
+  }
+  .ep2-card, .ep2-cli, .ep2-save-desk { background: #fff; border: 1px solid #EADFE4; border-radius: 16px; padding: 14px; box-shadow: 0 1px 2px rgba(44,18,25,.05), 0 8px 22px -6px rgba(44,18,25,.10); }
+  .ep2-ct { margin: 0 0 8px; font-size: 15px; font-weight: 900; color: #2C1219; } .ep2-ct em { font-style: normal; color: #9A8E94; font-weight: 700; }
+  .ep2-cli { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+  .ep2-av { width: 40px; height: 40px; border-radius: 50%; background: #FCE7F3; color: #C33A6E; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; flex-shrink: 0; }
+  .ep2-cli-t { flex: 1; min-width: 0; } .ep2-cli-t b { display: block; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ep2-cli-t small { font-size: 12px; color: #888780; }
+  .ep2-lk { border: none; background: none; padding: 4px 6px; font-family: inherit; font-size: 13px; font-weight: 800; color: #C33A6E; cursor: pointer; }
+  .ep2-wa { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 800; color: #15803D; background: #DCFCE7; border-radius: 8px; padding: 6px 9px; text-decoration: none; flex-shrink: 0; }
+  .ep2-it { border: 1.5px solid #F0EBED; border-radius: 14px; padding: 12px; margin-bottom: 10px; background: #FEFCFD; }
+  .ep2-it-top { display: flex; gap: 10px; align-items: center; }
+  .ep2-it-f { width: 44px; height: 44px; border-radius: 12px; background: #FCE7F3; color: #C33A6E; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+  .ep2-it-f img { width: 100%; height: 100%; object-fit: cover; } .ep2-it-f svg { width: 20px; height: 20px; }
+  .ep2-it-n { flex: 1; min-width: 0; } .ep2-it-n b { display: block; font-size: 15px; font-weight: 800; color: #2C1219; }
+  .ep2-chip { display: inline-block; margin: 4px 4px 0 0; font-size: 11.5px; font-weight: 800; color: #993556; background: #FCE0E9; border-radius: 7px; padding: 3px 8px; }
+  .ep2-esc { margin-top: 10px; border-top: 1px solid #F5F0F2; padding-top: 7px; }
+  .ep2-ln { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 13.5px; padding: 4px 0; color: #4B3A42; }
+  .ep2-ln span { color: #888780; } .ep2-ln b { font-weight: 700; color: #2C1219; text-align: right; } .ep2-ln.neg b { color: #DC2626; }
+  .ep2-card > .ep2-ln span { color: #4B3A42; }
+  .ep2-ln.tt { border-top: 1px solid #F0EBED; margin-top: 6px; padding-top: 10px; font-size: 15.5px; } .ep2-ln.tt span { color: #2C1219; font-weight: 800; } .ep2-ln.tt b { font-size: 18px; }
+  .ep2-ln-in { align-items: center; }
+  .ep2-mini { display: inline-flex; align-items: center; gap: 4px; border: 1.5px solid #EDE6E9; border-radius: 9px; padding: 4px 8px; width: 110px; background: #fff; }
+  .ep2-mini em { font-style: normal; font-size: 12px; color: #9A8E94; font-weight: 700; }
+  .ep2-mini input { width: 100%; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 14px; font-weight: 700; color: #2C1219; text-align: right; background: none; }
+  .ep2-sab { display: flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 700; color: #2C1219; padding: 3px 0; } .ep2-sab svg { color: #E85A8C; }
+  .ep2-ad { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 8px; background: #FFF6F9; border-radius: 10px; padding: 8px 10px; font-size: 13px; font-weight: 700; color: #2C1219; }
+  .ep2-ad span { display: flex; align-items: center; gap: 6px; } .ep2-ad b { color: #C33A6E; white-space: nowrap; }
+  .ep2-foto { display: flex; align-items: center; gap: 10px; margin-top: 8px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 7px; text-decoration: none; color: #2C1219; }
+  .ep2-foto-i { width: 46px; height: 46px; border-radius: 10px; background: linear-gradient(135deg, #F7C6D9, #C4B5FD); display: flex; align-items: center; justify-content: center; color: #fff; overflow: hidden; position: relative; flex-shrink: 0; }
+  .ep2-foto-i img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .ep2-foto b { display: block; font-size: 13px; } .ep2-foto small { font-size: 11.5px; color: #888780; }
+  .ep2-ob { display: flex; gap: 7px; align-items: flex-start; width: 100%; text-align: left; margin-top: 8px; background: #FFFBEB; border: none; border-radius: 10px; padding: 8px 10px; font-family: inherit; font-size: 12.5px; color: #92400E; line-height: 1.4; cursor: pointer; }
+  .ep2-ob svg { flex-shrink: 0; margin-top: 2px; }
+  .ep2-recado-ed { display: flex; gap: 6px; align-items: center; margin-top: 8px; } .ep2-recado-ed .ep-input { flex: 1; }
+  .ep2-pr { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 1px solid #F5F0F2; font-size: 12px; color: #6B5D64; }
+  .ep2-pr b { font-size: 16px; font-weight: 700; color: #2C1219; white-space: nowrap; }
+  .ep2-ac { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 10px; }
+  .ep2-rm { display: inline-flex; align-items: center; gap: 5px; border: none; background: none; font-family: inherit; font-size: 13px; font-weight: 800; color: #DC2626; cursor: pointer; padding: 6px 2px; }
+  .ep2-addi { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; border: 2px dashed #F3C9DA; border-radius: 12px; padding: 12px; background: #FFF6F9; color: #C33A6E; font-family: inherit; font-weight: 800; font-size: 14px; cursor: pointer; }
+  .ep2-ajs { display: flex; flex-direction: column; gap: 3px; margin-top: 8px; font-size: 12px; color: #9A8E94; }
+  .ep2-aj { display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; border: none; background: none; padding: 4px 0; font-family: inherit; font-size: 13px; font-weight: 800; color: #C33A6E; cursor: pointer; }
+  .ep2-vazio { margin: 2px 0 6px; font-size: 13px; color: #888780; line-height: 1.45; }
+  .ep2-pg { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid #F5F0F2; } .ep2-pg:first-of-type { border-top: none; }
+  .ep2-pg-ic { width: 32px; height: 32px; border-radius: 10px; background: #DCFCE7; color: #15803D; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .ep2-pg > div { flex: 1; min-width: 0; } .ep2-pg div b { display: block; font-size: 13.5px; color: #2C1219; } .ep2-pg small { font-size: 12px; color: #888780; }
+  .ep2-pg .v { font-size: 14px; font-weight: 700; color: #15803D; white-space: nowrap; }
+  .ep2-pg-x { width: 32px; height: 32px; border-radius: 9px; border: 1.5px solid #EDE6E9; background: #fff; color: #9A8E94; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+  .ep2-pg.est { opacity: .5; } .ep2-pg.est .v, .ep2-pg.est div b { text-decoration: line-through; }
+  .ep2-falta { margin-top: 10px; background: #FFFBEB; border-radius: 12px; padding: 10px 12px; }
+  .ep2-falta > div:first-child { display: flex; justify-content: space-between; align-items: baseline; } .ep2-falta small { font-size: 12.5px; font-weight: 700; color: #92400E; } .ep2-falta b { font-size: 18px; font-weight: 700; color: #B45309; }
+  .ep2-bar { height: 6px; border-radius: 9px; background: #FDE68A; margin-top: 7px; overflow: hidden; } .ep2-bar i { display: block; height: 100%; background: #22C55E; border-radius: 9px; }
+  .ep2-rec { margin-top: 10px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; border-radius: 12px; padding: 13px; background: #16A34A; color: #fff; font-family: inherit; font-weight: 800; font-size: 14.5px; cursor: pointer; box-shadow: 0 6px 14px -6px rgba(22,163,74,.6); }
+  .ep2-prev { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 10px; font-size: 12.5px; color: #6B5D64; }
+  .ep2-prev input { height: 34px; border: 1.5px solid #EDE6E9; border-radius: 9px; padding: 0 8px; font-family: inherit; font-size: 13.5px; color: #2C1219; background: #fff; min-width: 0; max-width: 100%; }
+  .ep2-prev em { font-style: normal; font-weight: 700; color: #2C1219; }
+  .ep2-save-desk { display: none; } @media (min-width: 1024px) { .ep2-save-desk { display: flex; flex-direction: column; gap: 8px; } }
+  .ep2-mud { font-size: 12.5px; font-weight: 800; color: #B45309; text-align: center; }
+  .ep2-b1, .ep2-b2 { border: none; border-radius: 12px; padding: 13px; font-family: inherit; font-size: 14.5px; font-weight: 800; cursor: pointer; }
+  .ep2-b1 { background: #E85A8C; color: #fff; box-shadow: 0 3px 0 #C33A6E; } .ep2-b1.ok { background: #16A34A; box-shadow: none; } .ep2-b2 { background: #F3EEF1; color: #4B3A42; }
+  .ep2-b1:disabled, .ep2-b2:disabled { opacity: .7; cursor: default; }
+  .ep2-foot { position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); z-index: 40; background: #fff; border-top: 1px solid #F0EBED; box-shadow: 0 -6px 16px rgba(44,18,25,.08); padding: 8px 12px 10px; display: grid; grid-template-columns: 1fr 1.6fr; gap: 8px; animation: ep2Sobe .2s ease; }
+  html.teclado-aberto .ep2-foot { bottom: var(--teclado, 0px); }
+  .ep2-foot .ep2-mud { grid-column: 1 / -1; }
+  @keyframes ep2Sobe { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .ep2-toast { position: fixed; left: 50%; bottom: calc(150px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 1400; background: #2C1219; color: #fff; padding: 12px 16px; border-radius: 12px; font-size: 13.5px; font-weight: 700; box-shadow: 0 10px 26px rgba(0,0,0,.25); max-width: calc(100vw - 32px); }
+  .ep2-ov { position: fixed; inset: 0; z-index: 1300; background: rgba(45,31,38,.5); display: flex; align-items: flex-end; justify-content: center; font-family: var(--font-base); }
+  @media (min-width: 768px) { .ep2-ov { align-items: center; } }
+  .ep2-sh { width: 100%; max-width: 440px; background: #fff; border-radius: 22px 22px 0 0; padding: 10px 14px calc(16px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 2px; max-height: 88dvh; overflow-y: auto; }
+  @media (min-width: 768px) { .ep2-sh { border-radius: 22px; } }
+  .ep2-alca { display: block; width: 40px; height: 4px; border-radius: 9px; background: #E5DDE1; margin: 0 auto 10px; }
+  .ep2-sh-t { font-size: 17px; font-weight: 900; color: #2C1219; padding: 2px 6px 8px; }
+  .ep2-mi { display: flex; align-items: center; gap: 12px; border: none; background: none; border-radius: 12px; padding: 13px 10px; font-family: inherit; font-size: 15px; font-weight: 700; color: #2C1219; cursor: pointer; text-align: left; }
+  .ep2-mi:hover { background: #FAF7F8; } .ep2-mi svg { width: 18px; height: 18px; color: #6B5D64; } .ep2-mi.perigo, .ep2-mi.perigo svg { color: #DC2626; }
+  .ep2-mi.sel { background: #FFF1F6; } .ep2-mi em { margin-left: auto; font-style: normal; font-size: 12px; font-weight: 800; color: #C33A6E; }
+  .ep2-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .ep2-devol { margin: 12px 0 4px; border: 1.5px solid #FDE68A; background: #FFFBEB; border-radius: 12px; padding: 10px 12px; }
+  .ep2-devol b { display: block; font-size: 13.5px; color: #92400E; margin-bottom: 8px; }
+  .ep2-devol label { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: #4B3A42; padding: 5px 0; cursor: pointer; line-height: 1.35; }
+  .ep2-devol input { margin-top: 2px; accent-color: #E85A8C; }
+`

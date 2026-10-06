@@ -130,7 +130,7 @@ export default function FinanceiroAReceber() {
 }
 
 /** Janela "Quanto você recebeu agora?" — registra um pagamento (Passo 1). */
-function ReceberSheet({ item, onClose, onFeito }: { item: Item; onClose: () => void; onFeito: (msg: string) => void }) {
+export function ReceberSheet({ item, onClose, onFeito }: { item: Item; onClose: () => void; onFeito: (msg: string) => void }) {
   useTravarRolagem(true)
   const [valor, setValor] = useState(textoBRL(item.falta));
   const [forma, setForma] = useState(normalizarForma(item.forma_pagamento) || "pix");
@@ -186,6 +186,7 @@ function ReceberSheet({ item, onClose, onFeito }: { item: Item; onClose: () => v
         {erro && <p className="far-erro">{erro}</p>}
         <button type="button" className="far-cta" onClick={confirmar} disabled={salvando}><Wallet size={18} weight="bold" />{salvando ? "Registrando…" : "Confirmar recebimento"}</button>
       </div>
+      <style>{CSS}</style>
     </div>,
     document.body
   );

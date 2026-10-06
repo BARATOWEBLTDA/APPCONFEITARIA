@@ -29,8 +29,16 @@ export async function ajustarValorPedido(opts: {
     total_antes: antes, total_depois: novoTotal,
   }).then(() => {}, () => {});
 
-  // 2) o novo total (o gatilho dos pagamentos recalcula se o pedido ficou pago ou parcial)
-  const { error } = await supabase.from("pedidos").update({ valor_total: novoTotal }).eq("id", opts.pedidoId);
+  // 2) o novo total, e o desconto/acréscimo do pedido junto — senão uma edição depois recalcularia
+  //    o total pelos campos e "desfaria" o ajuste (o gatilho dos pagamentos recalcula o pago/parcial)
+  const { data: atual } = await supabase.from("pedidos").select("desconto, acrescimo").eq("id", opts.pedidoId).maybeSingle();
+  const campo = opts.tipo === "desconto" ? "desconto" : "acrescimo";
+  const valorCampo = r2((Number((atual as any)?.[campo]) || 0) + valor);
+  let { error } = await supabase.from("pedidos").update({ valor_total: novoTotal, [campo]: valorCampo }).eq("id", opts.pedidoId);
+  if (error && /acrescimo/i.test(error.message || "")) {
+    // a coluna "acrescimo" não existe nessa conta: grava só o total
+    ({ error } = await supabase.from("pedidos").update({ valor_total: novoTotal }).eq("id", opts.pedidoId));
+  }
   if (error) return { ok: false, novoTotal: antes, erro: error.message };
 
   // 3) anota no histórico do pedido
