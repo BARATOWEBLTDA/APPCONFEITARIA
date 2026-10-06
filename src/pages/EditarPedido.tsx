@@ -3431,8 +3431,8 @@ const EP2_CSS = `
   .ep2-qty input { width: 38px; height: 34px; border: none; outline: none; text-align: center; font-family: inherit; font-size: 15px; font-weight: 800; color: #2C1219; background: none; -moz-appearance: textfield; }
   .ep2-qty input::-webkit-outer-spin-button, .ep2-qty input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .ep2-hd { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 8px; background: #E85A8C; color: #fff; padding: calc(12px + env(safe-area-inset-top, 0px)) 12px 12px; }
-  .ep2-hd-t { flex: 1; min-width: 0; } .ep2-hd-t b { display: block; font-size: 19px; font-weight: 900; letter-spacing: -.01em; }
-  .ep2-hd-sub { display: flex; align-items: center; gap: 4px; font-size: 12.5px; opacity: .95; white-space: nowrap; min-width: 0; margin-top: 1px; }
+  .ep2-hd-t { flex: 1; min-width: 0; } .ep2-hd-t b { display: block; font-size: 19px; font-weight: 900; letter-spacing: -.01em; line-height: 1.15; } /* título mais perto da linha de baixo */
+  .ep2-hd-sub { display: flex; align-items: center; gap: 4px; font-size: 12.5px; line-height: 1.3; opacity: .95; white-space: nowrap; min-width: 0; margin-top: 2px; }
   .ep2-hd-nome { min-width: 0; overflow: hidden; text-overflow: ellipsis; flex-shrink: 1; font-weight: 700; }
   .ep2-hd-quando { flex-shrink: 0; } .ep2-hd-virg { flex-shrink: 0; margin-left: -4px; font-weight: 700; }
 
