@@ -1060,6 +1060,9 @@ export default function EditarPedido() {
   }, { base: 0, adic: 0, desc: 0 })
   const adicionaisTotal = r2(somaContas.adic)
   const promocoesTotal = r2(somaContas.desc)
+  // o desconto do pedido pode juntar o cupom (do cardápio) e um desconto dado à parte
+  const descontoCupom = (pedido as any)?.cupom_codigo ? r2(Math.min(Number((pedido as any)?.cupom_desconto) || 0, desconto)) : 0
+  const descontoManual = r2(Math.max(0, desconto - descontoCupom))
   const produtosTotal = r2(subtotalItens - adicionaisTotal + promocoesTotal)
 
   // ── Etapas do pedido ───────────────────────────────────────────────────
@@ -1362,7 +1365,9 @@ export default function EditarPedido() {
               <div className="ep2-ln ep2-ln-in"><span>Taxa de entrega</span>
                 <span className="ep2-mini"><em>R$</em><input inputMode="numeric" value={textoBRL(taxaEntrega) || ''} placeholder="0,00" onChange={e => setTaxaEntrega(lerBRL(mascaraBRL(e.target.value)))} aria-label="Taxa de entrega" /></span></div>
             )}
-            {desconto > 0 && <div className="ep2-ln neg"><span>Desconto</span><b>− {formatMoney(desconto)}</b></div>}
+            {/* cupom do cardápio separado do desconto dado à parte (03/10) */}
+            {descontoCupom > 0 && <div className="ep2-ln promo"><span>Cupom {String((pedido as any)?.cupom_codigo || '').toUpperCase()}</span><b>− {formatMoney(descontoCupom)}</b></div>}
+            {descontoManual > 0 && <div className="ep2-ln neg"><span>Desconto</span><b>− {formatMoney(descontoManual)}</b></div>}
             {acrescimo > 0 && <div className="ep2-ln"><span>Acréscimo</span><b>+ {formatMoney(acrescimo)}</b></div>}
             <div className="ep2-ln tt"><span>Total do pedido</span><b>{formatMoney(total)}</b></div>
             {[...ajustesHist, ...ajustesPendentes.map(a => ({ ...a, pendente: true }))].length > 0 && (
