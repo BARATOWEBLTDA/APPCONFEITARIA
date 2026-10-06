@@ -2,7 +2,7 @@ import CalendarioSheet from '@/components/CalendarioSheet'
 import CampoData from '@/components/CampoData'
 import { DotsThree, Check, Heart, Plus, NotePencil, Trash, PencilSimple, ArrowUp, ArrowCounterClockwise, CalendarBlank, Image as ImageIcon, CaretRight, Phone, ArrowsDownUp, Cake } from '@phosphor-icons/react'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
-import { Paperclip, MagnifyingGlassPlus, Quotes, MapPin, MapTrifold, Copy, Money, Storefront } from '@phosphor-icons/react'
+import { Paperclip, MagnifyingGlassPlus, Quotes, MapPin, MapTrifold, Copy, Money, Storefront, Tag } from '@phosphor-icons/react'
 import { CartProvider } from '@/context/CartContext'
 import { ProductModal } from '@/components/cart/ProductModal'
 import { itemDoCarrinhoParaPedido } from '@/lib/itemDoCarrinho'
@@ -1214,7 +1214,7 @@ export default function EditarPedido() {
             )}
 
             <div className="ep3">
-              <div className="ep3-h"><b>Itens do pedido</b><span>{itens.length} {itens.length === 1 ? 'item' : 'itens'}</span></div>
+              <div className="ep3-h"><b>Itens do pedido</b><button className="ep3-add-h" onClick={() => setModalProduto(true)}><Plus size={14} weight="bold" />Adicionar</button></div>
               {itens.map((it: any, idx) => {
                 const p = it.personalizacoes || {}
                 const extras: any[] = Array.isArray(p.extras) ? p.extras : []
@@ -1229,17 +1229,16 @@ export default function EditarPedido() {
                 if (p.cobertura?.nome) campos.push(['Cobertura', p.cobertura.nome])
                 if (sabores.length) campos.push(['Sabores', sabores.map((s: any) => `${s.nome} (${s.qtd})`).join(', ')])
                 const obs = (it.observacoes || '').trim()
-                const unidade = q > 1 || eKit ? `${formatMoney(it.valor_unitario || 0)} ${eKit ? 'por kit' : 'cada'}` : ''
-                const conta = contaDoItem(it)
                 return (
                   <div key={it.id || `n${idx}`} className="ep3-it">
                     <span className="ep2-cup-f"><I.box />{fotoDoItem(it) && <img src={fotoDoItem(it)!} alt="" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />}</span>
                     <div className="ep3-c">
-                      <p className="ep3-nm"><em>{q}x</em> {it.nome_produto}</p>
+                      <div className="ep3-nmw"><p className="ep3-nm"><em>{q}x</em> {it.nome_produto}</p>
+                        <button className="ep2-cup-mx" onClick={() => setItemMenu(idx)} aria-label={`Opções de ${it.nome_produto}`}><DotsThree size={18} weight="bold" /></button></div>
                       {campos.map(([k, v]) => <p key={k} className="ep3-cp"><span>{k}:</span> {v}</p>)}
                       {extras.length > 0 && (
                         <div className="ep3-ads"><span>Adicionais:</span>
-                          {extras.map((e: any, i: number) => <span key={i} className="ep3-ad"><span>{e.nome}</span><b>{Number(e.valor) > 0 ? `+ ${formatMoney(Number(e.valor))}${q > 1 ? (eKit ? '/kit' : '/un.') : ''}` : 'grátis'}</b></span>)}
+                          {extras.map((e: any, i: number) => <span key={i} className="ep3-ad"><span>{e.nome}</span></span>)}
                         </div>
                       )}
                       {(p.foto_referencia || obs) && (
@@ -1254,23 +1253,11 @@ export default function EditarPedido() {
                           {obs && <p>“{obs}”</p>}
                         </div>
                       )}
-                      {conta.detalhar && (
-                        <div className="ep3-conta">
-                          {q > 1 && <small>por {eKit ? 'kit' : 'unidade'}</small>}
-                          <p><span>Preço do produto</span><b>{formatMoney(conta.base)}</b></p>
-                          {conta.adicionais > 0 && <p><span>Adicionais</span><b>+ {formatMoney(conta.adicionais)}</b></p>}
-                          {conta.desconto > 0 && <p className="promo"><span>Promoção{conta.pct ? ` (${conta.pct}%)` : ''}</span><b>− {formatMoney(conta.desconto)}</b></p>}
-                        </div>
-                      )}
-                      <div className="ep3-vl"><span>Valor</span>{unidade && <small>{unidade}</small>}<b>{formatMoney((it.valor_unitario || 0) * q)}</b>
-                        <button className="ep2-cup-mx" onClick={() => setItemMenu(idx)} aria-label={`Opções de ${it.nome_produto}`}><DotsThree size={18} weight="bold" /></button></div>
                     </div>
                   </div>
                 )
               })}
-              <div className="ep3-tot"><span>{itens.length} {itens.length === 1 ? 'item' : 'itens'} · {itens.reduce((s, x) => s + (x.quantidade || 0), 0)} {itens.reduce((s, x) => s + (x.quantidade || 0), 0) === 1 ? 'unidade' : 'unidades'}</span>
-                <div><span>Subtotal</span><b>{formatMoney(subtotalItens)}</b></div></div>
-              <button className="ep3-add" onClick={() => setModalProduto(true)}><Plus size={14} weight="bold" />Adicionar item</button>
+              <p className="ep3-cont">{itens.length} {itens.length === 1 ? 'item' : 'itens'} · {itens.reduce((s, x) => s + (x.quantidade || 0), 0)} {itens.reduce((s, x) => s + (x.quantidade || 0), 0) === 1 ? 'unidade' : 'unidades'}</p>
             </div>
           </div>
 
@@ -1341,10 +1328,6 @@ export default function EditarPedido() {
                 <p className="ep2-ct">Onde retirar</p>
                 {lojaInfo?.endereco ? (<>
                   <div className="ep2-addr"><Storefront size={19} weight="duotone" /><div><b>{lojaInfo.nome || 'Sua loja'}</b><small>{lojaInfo.endereco.linha1}</small>{lojaInfo.endereco.linha2 && <small>{lojaInfo.endereco.linha2}</small>}</div></div>
-                  <div className="ep2-acts dois">
-                    <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lojaInfo.endereco.completo)}`} target="_blank" rel="noreferrer"><MapTrifold size={15} weight="bold" />Mapa</a>
-                    <a className="wa" href={`https://wa.me/${telDigitos ? '55' + telDigitos : ''}?text=${encodeURIComponent(textoRetirada)}`} target="_blank" rel="noreferrer"><IconeWhatsApp size={16} />Mandar pra cliente</a>
-                  </div>
                   <p className="ep2-nota">O endereço vem dos <button className="ep2-lk" onClick={() => navigate('/cardapio-config')}>Dados da loja</button>.</p>
                 </>) : (
                   <p className="ep2-vazio">Cadastre o endereço da sua loja nos <button className="ep2-lk" onClick={() => navigate('/cardapio-config')}>Dados da loja</button> pra ele aparecer aqui e na mensagem pra cliente.</p>
@@ -1357,10 +1340,26 @@ export default function EditarPedido() {
         {/* ── PAGAMENTO (no computador: coluna fixa à direita) ── */}
         <div className={`ep2-col ep2-col-dir ep2-sec ${tab === 'pagamento' ? 'ativa' : ''}`}>
           <div className="ep2-card">
-            <p className="ep2-ct">Resumo</p>
-            <div className="ep2-ln"><span>Produtos</span><b>{formatMoney(produtosTotal)}</b></div>
-            {adicionaisTotal > 0 && <div className="ep2-ln"><span>Adicionais</span><b>{formatMoney(adicionaisTotal)}</b></div>}
-            {promocoesTotal > 0 && <div className="ep2-ln promo"><span>Promoções</span><b>− {formatMoney(promocoesTotal)}</b></div>}
+            <p className="ep2-ct">Valores</p>
+            {/* cada item com o seu valor e de onde ele vem (produto, adicionais, promoção) — a aba Itens não tem valores */}
+            {itens.map((it: any, idx) => {
+              const c = contaDoItem(it), q = it.quantidade || 1
+              const eKit = !!it.personalizacoes?.kit?.total
+              const extras: any[] = Array.isArray(it.personalizacoes?.extras) ? it.personalizacoes.extras : []
+              const origem: string[] = []
+              if (c.fecha) {
+                origem.push(`Produto ${formatMoney(c.base)}${q > 1 ? (eKit ? '/kit' : ' cada') : ''}`)
+                extras.filter(e => Number(e.valor) > 0).forEach(e => origem.push(`${e.nome} + ${formatMoney(Number(e.valor))}`))
+              } else if (q > 1) origem.push(`${formatMoney(it.valor_unitario || 0)} ${eKit ? 'por kit' : 'cada'}`)
+              return (
+                <div key={it.id || `v${idx}`} className="ep3-pv">
+                  <div className="ep3-pv-h"><span><em>{q}x</em> {it.nome_produto}</span><b>{formatMoney((it.valor_unitario || 0) * q)}</b></div>
+                  {origem.length > 0 && <p>{origem.join(' · ')}</p>}
+                  {c.desconto > 0 && <p className="pr"><Tag size={13} weight="bold" />Promoção{c.pct ? ` ${c.pct}%` : ''} − {formatMoney(c.desconto * q)}</p>}
+                </div>
+              )
+            })}
+            <div className="ep2-ln ep3-pv-itens"><span>Itens</span><b>{formatMoney(subtotalItens)}</b></div>
             {tipoEntrega === 'entrega' && (
               <div className="ep2-ln ep2-ln-in"><span>Taxa de entrega</span>
                 <span className="ep2-mini"><em>R$</em><input inputMode="numeric" value={textoBRL(taxaEntrega) || ''} placeholder="0,00" onChange={e => setTaxaEntrega(lerBRL(mascaraBRL(e.target.value)))} aria-label="Taxa de entrega" /></span></div>
@@ -3673,7 +3672,8 @@ const EP2_CSS = `
   .ep2-st-fim, .ep2-quitado, .ep2-salvo { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 800; color: #15803D; background: #F0FDF4; border-radius: 10px; padding: 9px; }
   .ep2-st-cancel { text-align: center; font-size: 13.5px; font-weight: 800; color: #991B1B; background: #FEF2F2; border-radius: 10px; padding: 10px; }
   .ep2-tabs { display: flex; background: #fff; border-bottom: 1px solid #F0EBED; position: sticky; top: calc(60px + env(safe-area-inset-top, 0px)); z-index: 25; }
-  .ep2-tabs button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; background: none; padding: 12px 4px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #9A8E94; border-bottom: 2.5px solid transparent; cursor: pointer; position: relative; }
+  .ep2-tabs { justify-content: center; gap: 2px; } /* abas juntas no centro */
+  .ep2-tabs button { flex: none; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; background: none; padding: 12px 12px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #9A8E94; border-bottom: 2.5px solid transparent; cursor: pointer; position: relative; }
   .ep2-tabs button svg { width: 16px; height: 16px; } .ep2-tabs button.on { color: #C33A6E; border-color: #E85A8C; }
   .ep2-tab-dot { width: 7px; height: 7px; border-radius: 50%; background: #F59E0B; }
   .ep2-grid { padding: 12px; display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
@@ -3808,10 +3808,13 @@ const EP2_CSS = `
   /* ══ itens do pedido (03/10): modelo aprovado — nome numa linha, campos com rótulo, adicionais em caixinhas
         (uma por linha), referência grande e centralizada, valor no fim. Nada quebra linha (só o recado). ══ */
   .ep3 { background: #fff; border-radius: 16px; padding: 14px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(44,18,25,.05), 0 8px 22px -6px rgba(44,18,25,.10); border: 1px solid #EADFE4; font-variant-numeric: tabular-nums; }
-  .ep3-h { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; } .ep3-h b { font-size: 15.5px; font-weight: 800; color: #2C1219; } .ep3-h span { font-size: 12.5px; font-weight: 600; color: #9A8E94; }
+  .ep3-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; } .ep3-h b { font-size: 15.5px; font-weight: 800; color: #2C1219; } .ep3-h span { font-size: 12.5px; font-weight: 600; color: #9A8E94; }
   .ep3-it { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 10px; padding: 13px 0; border-top: 1px solid #F2ECEF; }
   .ep3-h + .ep3-it { border-top: none; }
   .ep3-c { min-width: 0; }
+  .ep3-nmw { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; } .ep3-nmw .ep3-nm { flex: 1; min-width: 0; margin: 0; }
+  .ep3-add-h { display: inline-flex; align-items: center; gap: 4px; border: none; background: #FDF2F6; color: #C33A6E; border-radius: 10px; padding: 7px 11px; font-family: inherit; font-size: 13.5px; font-weight: 800; cursor: pointer; }
+  .ep3-cont { margin: 8px 0 0; padding-top: 10px; border-top: 1px solid #F2ECEF; font-size: 12.5px; color: #9A8E94; text-align: center; }
   .ep3-nm { margin: 0 0 4px; font-size: 15.5px; font-weight: 700; color: #2C1219; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ep3-nm em { font-style: normal; font-weight: 800; color: #C33A6E; }
   .ep3-cp { margin: 0; font-size: 13.5px; color: #2C1219; line-height: 1.55; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ep3-cp span { color: #8A7E84; }
@@ -3832,6 +3835,13 @@ const EP2_CSS = `
   .ep3-conta + .ep3-vl { margin-top: 4px; }
   .ep3-vl { display: flex; align-items: center; gap: 6px; margin-top: 9px; } .ep3-vl > span { font-size: 13.5px; color: #8A7E84; } .ep3-vl small { font-size: 12px; color: #A99CA2; white-space: nowrap; }
   .ep3-vl b { margin-left: auto; font-size: 16px; font-weight: 700; color: #2C1219; white-space: nowrap; }
+  .ep3-pv { padding: 9px 0; border-bottom: 1px solid #F2ECEF; } .ep2-ct + .ep3-pv { padding-top: 2px; }
+  .ep3-pv-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .ep3-pv-h span { font-size: 14px; font-weight: 700; color: #2C1219; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ep3-pv-h em { font-style: normal; font-weight: 800; color: #C33A6E; }
+  .ep3-pv-h b { font-size: 14.5px; font-weight: 700; white-space: nowrap; }
+  .ep3-pv p { margin: 2px 0 0; font-size: 12.5px; color: #8A7E84; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ep3-pv p.pr { display: flex; align-items: center; gap: 4px; color: #15803D; }
+  .ep3-pv-itens { margin-top: 6px; }
   .ep3-tot { margin-top: 4px; padding-top: 10px; border-top: 1px solid #2C1219; } .ep3-tot > span { font-size: 12px; color: #9A8E94; }
   .ep3-tot > div { display: flex; justify-content: space-between; align-items: baseline; margin-top: 3px; } .ep3-tot > div span { font-size: 14.5px; font-weight: 700; } .ep3-tot > div b { font-size: 17px; font-weight: 700; }
   .ep3-add { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; margin-top: 12px; border: none; border-radius: 12px; padding: 11px; background: #FDF2F6; color: #C33A6E; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
