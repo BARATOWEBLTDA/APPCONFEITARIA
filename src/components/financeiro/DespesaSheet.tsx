@@ -68,7 +68,7 @@ export default function DespesaSheet({ onClose, onSalvo, onContaAPagar, tipo = "
         .dsp-lb { display: block; font-size: 13px; font-weight: 700; color: #4B3A42; margin: 14px 0 6px; } .dsp-lb em { font-style: normal; font-weight: 500; color: #9A8E94; }
         .dsp-in { display: flex; align-items: center; gap: 6px; border: 1.5px solid #E85A8C; border-radius: 12px; padding: 0 12px; height: 52px; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
         .dsp-in span { font-size: 17px; color: #6B5D64; font-weight: 700; }
-        .dsp-in input { flex: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 21px; font-weight: 900; color: #2C1219; background: none; }
+        .dsp-in input { flex: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 21px; font-weight: 700; color: #2C1219; background: none; }
         .dsp-txt { width: 100%; box-sizing: border-box; height: 46px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 0 12px; font-family: inherit; font-size: 16px; }
         .dsp-chips { display: flex; gap: 6px; flex-wrap: wrap; }
         .dsp-chips button { border: 1.5px solid #EDE6E9; background: #fff; border-radius: 10px; padding: 8px 12px; font-family: inherit; font-size: 13px; font-weight: 700; color: #2C1219; cursor: pointer; }

@@ -37,7 +37,7 @@ export const FOLHA_CSS = `
   .fo-in { display: flex; align-items: center; gap: 6px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 0 12px; height: 48px; background: #fff; }
   .fo-in:focus-within { border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
   .fo-in span { font-size: 15px; color: #6B5D64; font-weight: 700; }
-  .fo-in input { flex: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 17px; font-weight: 800; color: #2C1219; background: none; }
+  .fo-in input { flex: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 17px; font-weight: 700; color: #2C1219; background: none; }
   .fo-txt { width: 100%; box-sizing: border-box; height: 48px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 0 12px; font-family: inherit; font-size: 16px; color: #2C1219; }
   .fo-txt:focus { outline: none; border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
   .fo-chips { display: flex; gap: 6px; flex-wrap: wrap; }

@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { carregarAReceber, calcularPrevistos, type Previstos } from "@/lib/contasReceber";
 
 /**
- * Financeiro · Passo 6 (03/10) — Recebimentos previstos (7, 15 e 30 dias, acumulado).
+ * Financeiro · Passo 6 (03/10) — Recebimentos previstos, em faixas: próximos 7 dias, 8 a 15 e 16 a 30.
  * Projeção a partir dos pedidos com saldo. NÃO soma no saldo em caixa.
  */
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -26,9 +26,9 @@ export default function PrevistosCard() {
     <button type="button" className="pvc" onClick={() => navigate("/financeiro/a-receber")} aria-label="Ver o que falta receber">
       <div className="pvc-h"><b>Recebimentos previstos</b><em>não somam no caixa</em></div>
       <div className="pvc-g">
-        <span><small>7 dias</small><b>{brl(p.d7)}</b></span>
-        <span><small>15 dias</small><b>{brl(p.d15)}</b></span>
-        <span><small>30 dias</small><b>{brl(p.d30)}</b></span>
+        <span><small>Próximos 7 dias</small><b>{brl(p.d7)}</b></span>
+        <span><small>8 a 15 dias</small><b>{brl(p.d15)}</b></span>
+        <span><small>16 a 30 dias</small><b>{brl(p.d30)}</b></span>
       </div>
       <div className="pvc-f">
         {p.atrasados > 0

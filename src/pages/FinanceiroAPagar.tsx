@@ -280,7 +280,7 @@ const CSS = `
   .fap-in { display: flex; align-items: center; gap: 6px; border: 1.5px solid #E85A8C; border-radius: 12px; padding: 0 12px; height: 52px; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
   .fap-in.sm { height: 46px; border-color: #EDE6E9; box-shadow: none; }
   .fap-in span { font-size: 17px; color: #6B5D64; font-weight: 700; }
-  .fap-in input { flex: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 21px; font-weight: 900; color: #2C1219; background: none; } .fap-in.sm input { font-size: 17px; }
+  .fap-in input { flex: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 21px; font-weight: 700; color: #2C1219; background: none; } .fap-in.sm input { font-size: 17px; }
   .fap-txt { width: 100%; box-sizing: border-box; height: 48px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 0 12px; font-family: inherit; font-size: 16px; color: #2C1219; }
   .fap-txt:focus { outline: none; border-color: #E85A8C; }
   .fap-chips { display: flex; gap: 6px; flex-wrap: wrap; }

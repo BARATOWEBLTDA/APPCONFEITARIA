@@ -165,7 +165,7 @@ const CSS = `
   .cxs-lb { display: block; font-size: 13px; font-weight: 700; color: #4B3A42; margin: 16px 0 6px; }
   .cxs-in { display: flex; align-items: center; gap: 6px; border: 1.5px solid #E85A8C; border-radius: 12px; padding: 0 12px; height: 54px; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
   .cxs-in span { font-size: 18px; color: #6B5D64; font-weight: 700; }
-  .cxs-in input { flex: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 23px; font-weight: 900; color: #2C1219; background: none; }
+  .cxs-in input { flex: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 23px; font-weight: 700; color: #2C1219; background: none; }
   .cxs-erro { margin: 10px 0 0; font-size: 13px; font-weight: 800; color: #DC2626; }
   .cxs-cta { margin-top: 16px; width: 100%; border: none; border-radius: 14px; padding: 15px; background: #E85A8C; color: #fff; font-family: inherit; font-size: 15.5px; font-weight: 800; cursor: pointer; box-shadow: 0 3px 0 #C33A6E; }
   .cxs-cta:disabled { opacity: .6; cursor: default; }

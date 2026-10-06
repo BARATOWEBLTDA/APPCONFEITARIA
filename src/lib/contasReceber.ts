@@ -36,15 +36,20 @@ export async function carregarAReceber(uid: string): Promise<ItemReceber[]> {
 
 export type Previstos = { d7: number; d15: number; d30: number; atrasados: number; semData: number; qtd30: number };
 
-/** Quanto deve entrar de hoje até 7, 15 e 30 dias (acumulado), mais o que já está atrasado. */
+/**
+ * Quanto deve entrar em FAIXAS que não se repetem (03/10): próximos 7 dias (hoje até o 7º dia),
+ * do 8º ao 15º e do 16º ao 30º. Cada pedido aparece numa faixa só (antes era acumulado e o mesmo
+ * pedido aparecia nos três números). Mais o que já está atrasado.
+ */
 export function calcularPrevistos(itens: ItemReceber[]): Previstos {
   const r = { d7: 0, d15: 0, d30: 0, atrasados: 0, semData: 0, qtd30: 0 };
   for (const it of itens) {
     if (it.dias === null) { r.semData += it.falta; continue; }
     if (it.dias < 0) { r.atrasados += it.falta; continue; }
     if (it.dias <= 6) r.d7 += it.falta;
-    if (it.dias <= 14) r.d15 += it.falta;
-    if (it.dias <= 29) { r.d30 += it.falta; r.qtd30++; }
+    else if (it.dias <= 14) r.d15 += it.falta;
+    else if (it.dias <= 29) r.d30 += it.falta;
+    if (it.dias <= 29) r.qtd30++;
   }
   const r2 = (v: number) => Math.round(v * 100) / 100;
   return { d7: r2(r.d7), d15: r2(r.d15), d30: r2(r.d30), atrasados: r2(r.atrasados), semData: r2(r.semData), qtd30: r.qtd30 };

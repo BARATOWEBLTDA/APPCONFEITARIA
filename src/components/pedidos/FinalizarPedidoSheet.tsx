@@ -176,7 +176,7 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
         .fps-x { width: 34px; height: 34px; border-radius: 50%; border: none; background: #F5F0F2; color: #6B5D64; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
         .fps-res { background: #FAF7F8; border-radius: 12px; padding: 8px 12px; }
         .fps-res div { display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px; padding: 4px 0; color: #4B3A42; }
-        .fps-res b { font-weight: 800; color: #2C1219; white-space: nowrap; } .fps-res s { color: #9A8E94; font-weight: 600; margin-right: 4px; }
+        .fps-res b { font-weight: 700; color: #2C1219; white-space: nowrap; } .fps-res s { color: #9A8E94; font-weight: 600; margin-right: 4px; }
         .fps-res .ok { color: #15803D; } .fps-res .aj span, .fps-res .aj b { color: #C33A6E; }
         .fps-res .tt { border-top: 1px solid #F0EBED; margin-top: 4px; padding-top: 8px; font-size: 15px; }
         .fps-aj-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; border: none; background: none; padding: 4px 0; font-family: inherit; font-size: 13.5px; font-weight: 800; color: #C33A6E; cursor: pointer; }
@@ -191,7 +191,7 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
         .fps-in { display: flex; align-items: center; gap: 6px; border: 1.5px solid #E85A8C; border-radius: 12px; padding: 0 12px; height: 52px; box-shadow: 0 0 0 3px rgba(232,90,140,.12); background: #fff; }
         .fps-in.sm { height: 46px; border-color: #EDE6E9; box-shadow: none; }
         .fps-in span { font-size: 17px; color: #6B5D64; font-weight: 700; }
-        .fps-in input { flex: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 21px; font-weight: 900; color: #2C1219; background: none; }
+        .fps-in input { flex: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 21px; font-weight: 700; color: #2C1219; background: none; }
         .fps-in.sm input { font-size: 17px; }
         .fps-chips { display: flex; gap: 6px; flex-wrap: wrap; }
         .fps-chips button { border: 1.5px solid #EDE6E9; background: #fff; border-radius: 10px; padding: 8px 12px; font-family: inherit; font-size: 13px; font-weight: 700; color: #2C1219; cursor: pointer; }
