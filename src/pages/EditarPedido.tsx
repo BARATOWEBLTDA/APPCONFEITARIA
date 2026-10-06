@@ -126,6 +126,17 @@ function formatDataHora(dataStr?: string | null, horaStr?: string | null): strin
   const hora = horaStr ? ` às ${horaStr.slice(0, 5)}` : ''
   return `${d}/${m}${hora}`
 }
+/** "Sábado 10/10/26 às 14h" (minutos só quando tem: "às 14h30"). Sem data: "sem data". */
+function quandoCabecalho(dataStr?: string | null, horaStr?: string | null): string {
+  if (!dataStr) return 'sem data'
+  const [y, m, d] = dataStr.slice(0, 10).split('-').map(Number)
+  const DIAS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
+  const dia = DIAS[new Date(y, m - 1, d).getDay()]
+  const data = `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${String(y).slice(-2)}`
+  if (!horaStr) return `${dia} ${data}`
+  const [hh, mm] = horaStr.slice(0, 5).split(':')
+  return `${dia} ${data} às ${Number(hh)}h${mm && mm !== '00' ? mm : ''}`
+}
 function initialsOf(nome: string): string {
   if (!nome) return '?'
   const partes = nome.trim().split(/\s+/)
@@ -948,10 +959,16 @@ export default function EditarPedido() {
         <button className="ep2-hd-bt" onClick={() => navigate('/pedidos')} aria-label="Voltar"><I.chevL /></button>
         <div className="ep2-hd-t">
           <b>Pedido #{pedido.numero || '—'}</b>
-          <small>{clienteNome ? toTitleCase(clienteNome) : 'Cliente não informado'} · {tipoEntrega === 'entrega' ? 'entrega' : 'retirada'} {formatDataHora(dataEntrega, horarioEntrega)}</small>
+          {/* Uma linha só: só o nome encolhe (com "…"); a data e a hora ficam sempre inteiras */}
+          {/* Uma linha só: "Bruno, Sábado 10/10/26 às 14h". Se faltar espaço, só o nome encolhe; a data fica inteira */}
+          <small className="ep2-hd-sub">
+            {clienteNome.trim() && <><span className="ep2-hd-nome">{toTitleCase(clienteNome.trim().split(/\s+/)[0])}</span><span className="ep2-hd-virg">,</span></>}
+            <span className="ep2-hd-quando">{quandoCabecalho(dataEntrega, horarioEntrega)}</span>
+          </small>
         </div>
         <span className="ep2-hd-orig">{origemLabel}</span>
-        <button className="ep2-hd-bt" onClick={() => setTimelineAberto(true)} aria-label="Acompanhar pedido" title="Acompanhar pedido"><I.clock /></button>
+        {/* no celular, "Acompanhar pedido" fica só no menu ⋯ (abre espaço pra linha de baixo) */}
+        <button className="ep2-hd-bt ep2-so-desk" onClick={() => setTimelineAberto(true)} aria-label="Acompanhar pedido" title="Acompanhar pedido"><I.clock /></button>
         <button className="ep2-hd-bt ep2-so-desk" onClick={handleExportarPDF} aria-label="Imprimir" title="Imprimir / PDF"><I.print /></button>
         <button className="ep2-hd-bt" onClick={() => setMenuAberto(true)} aria-label="Mais opções"><DotsThree size={22} weight="bold" /></button>
       </div>
@@ -3415,7 +3432,10 @@ const EP2_CSS = `
   .ep2-qty input::-webkit-outer-spin-button, .ep2-qty input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .ep2-hd { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 8px; background: #E85A8C; color: #fff; padding: calc(12px + env(safe-area-inset-top, 0px)) 12px 12px; }
   .ep2-hd-t { flex: 1; min-width: 0; } .ep2-hd-t b { display: block; font-size: 19px; font-weight: 900; letter-spacing: -.01em; }
-  .ep2-hd-t small { display: block; font-size: 12.5px; opacity: .92; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ep2-hd-sub { display: flex; align-items: center; gap: 4px; font-size: 12.5px; opacity: .95; white-space: nowrap; min-width: 0; margin-top: 1px; }
+  .ep2-hd-nome { min-width: 0; overflow: hidden; text-overflow: ellipsis; flex-shrink: 1; font-weight: 700; }
+  .ep2-hd-quando { flex-shrink: 0; } .ep2-hd-virg { flex-shrink: 0; margin-left: -4px; font-weight: 700; }
+
   .ep2-hd-bt { width: 36px; height: 36px; border-radius: 11px; border: none; background: rgba(255,255,255,.18); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
   .ep2-hd-bt svg { width: 18px; height: 18px; }
   .ep2-hd-orig { font-size: 11.5px; font-weight: 800; background: rgba(255,255,255,.2); border-radius: 8px; padding: 5px 9px; flex-shrink: 0; }
