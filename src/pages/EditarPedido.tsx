@@ -1,4 +1,5 @@
-import { DotsThree, Check, Heart, Plus, NotePencil, Trash, PencilSimple, ArrowUp, ArrowCounterClockwise, CalendarBlank, WhatsappLogo, Image as ImageIcon } from '@phosphor-icons/react'
+import { DotsThree, Check, Heart, Plus, NotePencil, Trash, PencilSimple, ArrowUp, ArrowCounterClockwise, CalendarBlank, Image as ImageIcon, CaretRight, Phone, ArrowsDownUp, Cake } from '@phosphor-icons/react'
+import IconeWhatsApp from '@/components/IconeWhatsApp'
 import FinalizarPedidoSheet from '@/components/pedidos/FinalizarPedidoSheet'
 import { ReceberSheet } from '@/pages/FinanceiroAReceber'
 import Folha, { FOLHA_CSS } from '@/components/financeiro/Folha'
@@ -393,6 +394,39 @@ export default function EditarPedido() {
     await carregarPagamentos(pedido.id)
   }
   const avisar = (m: string) => { setAviso(m); setTimeout(() => setAviso(''), 3500) }
+
+  // ── Cartão da cliente (03/10): foto, cliente desde, nº de pedidos, gasto, último pedido e aniversário ──
+  const [clienteInfo, setClienteInfo] = useState<{ foto: string | null; desde: string | null; nascimento: string | null; pedidos: number; gasto: number; ultimo: string | null } | null>(null)
+  useEffect(() => {
+    if (!clienteId) { setClienteInfo(null); return }
+    let vivo = true
+    ;(async () => {
+      const [c, ps] = await Promise.all([
+        supabase.from('clientes').select('foto_url, created_at, data_nascimento').eq('id', clienteId).maybeSingle(),
+        supabase.from('pedidos').select('id, valor_total, status, data_entrega, created_at').eq('cliente_id', clienteId).neq('status', 'cancelado'),
+      ])
+      if (!vivo) return
+      const outros = ((ps.data as any[]) || []).filter(x => x.id !== pedido?.id)
+      const datas = outros.map(x => (x.data_entrega || x.created_at || '').slice(0, 10)).filter(Boolean).sort()
+      setClienteInfo({
+        foto: (c.data as any)?.foto_url || null, desde: (c.data as any)?.created_at || null, nascimento: (c.data as any)?.data_nascimento || null,
+        pedidos: outros.length, gasto: outros.reduce((s, x) => s + (Number(x.valor_total) || 0), 0), ultimo: datas.length ? datas[datas.length - 1] : null,
+      })
+    })()
+    return () => { vivo = false }
+  }, [clienteId, pedido?.id])
+  // aniversário nos próximos 15 dias (contando hoje)
+  const aniversario = (() => {
+    const n = clienteInfo?.nascimento; if (!n) return null
+    const [, mm, dd] = n.slice(0, 10).split('-').map(Number); if (!mm || !dd) return null
+    const h = new Date(); const hoje = new Date(h.getFullYear(), h.getMonth(), h.getDate())
+    let prox = new Date(h.getFullYear(), mm - 1, dd); if (prox < hoje) prox = new Date(h.getFullYear() + 1, mm - 1, dd)
+    const dias = Math.round((prox.getTime() - hoje.getTime()) / 86400000)
+    return dias <= 15 ? { dias, data: `${String(dd).padStart(2, '0')}/${String(mm).padStart(2, '0')}` } : null
+  })()
+  const desdeTxt = clienteInfo?.desde ? new Date(clienteInfo.desde).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }).replace('. de ', '/').replace(' de ', '/').replace('.', '') : ''
+  const telDigitos = (clienteTelefone || '').replace(/\D/g, '')
+
 
   // O que dá pra editar e salvar — usado pra saber se há alterações não salvas
   const estadoEditavel = () => ({
@@ -1009,12 +1043,45 @@ export default function EditarPedido() {
         <div className="ep2-col">
           {/* ── ITENS (com o cartão do cliente) ── */}
           <div className={`ep2-sec ${tab === 'itens' ? 'ativa' : ''}`}>
-            <div className="ep2-cli">
-              <span className="ep2-av">{(clienteNome || '?').trim().split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase()}</span>
-              <div className="ep2-cli-t"><b>{clienteNome ? toTitleCase(clienteNome) : 'Sem cliente'}</b><small>{clienteTelefone ? clienteTelefone.replace(/\D/g, '').replace(/^(\d{2})(\d{4,5})(\d{4})$/, '($1) $2-$3') : 'sem telefone'}</small></div>
-              <button className="ep2-lk" onClick={() => setModalCliente(true)}>Trocar</button>
-              {clienteTelefone && <a className="ep2-wa" href={`https://wa.me/55${clienteTelefone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer"><WhatsappLogo size={14} weight="bold" />WhatsApp</a>}
-            </div>
+            {/* ── Cartão da cliente (opção A + estados especiais) ── */}
+            {!clienteNome.trim() ? (
+              <div className="ep2-cv">
+                <span className="ep2-av vz"><I.user /></span>
+                <div className="ep2-cli-t"><b>Sem cliente</b><small>Adicione pra saber de quem é</small></div>
+                <button className="ep2-add" onClick={() => setModalCliente(true)}><Plus size={14} weight="bold" />Adicionar</button>
+              </div>
+            ) : (
+              <div className="ep2-ca">
+                <button className="ep2-ca-top" onClick={() => clienteId ? navigate(`/clientes/${clienteId}`) : setModalCliente(true)} aria-label="Abrir o perfil da cliente">
+                  {clienteInfo?.foto ? <img className="ep2-av" src={clienteInfo.foto} alt="" /> : <span className="ep2-av">{clienteNome.trim().split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase()}</span>}
+                  <div className="ep2-cli-t">
+                    <b>{toTitleCase(clienteNome.trim())}</b>
+                    <small>{!clienteId ? (telDigitos ? clienteTelefone : 'Cliente sem cadastro') : clienteInfo === null ? ' ' : clienteInfo.pedidos === 0 ? 'Primeiro pedido' : `${desdeTxt ? `Cliente desde ${desdeTxt} · ` : ''}${clienteInfo.pedidos + 1} pedidos`}</small>
+                    {clienteId && clienteInfo?.pedidos === 0 && <span className="ep2-tag nova">Cliente nova</span>}
+                  </div>
+                  {clienteId && <CaretRight size={16} weight="bold" className="ep2-ca-chev" />}
+                </button>
+                {clienteId && clienteInfo && clienteInfo.pedidos > 0 && (
+                  <div className="ep2-ca-st">
+                    <span><b>{clienteInfo.pedidos + 1}</b><small>pedidos</small></span>
+                    <span><b>{formatMoney(clienteInfo.gasto + total)}</b><small>já gastou</small></span>
+                    <span><b>{clienteInfo.ultimo ? clienteInfo.ultimo.slice(8, 10) + '/' + clienteInfo.ultimo.slice(5, 7) : '—'}</b><small>último pedido</small></span>
+                  </div>
+                )}
+                {aniversario && (
+                  <div className="ep2-aniv"><Cake size={15} weight="bold" /><span><b>Aniversário {aniversario.dias === 0 ? 'hoje' : `dia ${aniversario.data}`}</b>{aniversario.dias === 0 ? '!' : ` · daqui a ${aniversario.dias} ${aniversario.dias === 1 ? 'dia' : 'dias'}.`} Que tal um mimo no pedido?</span></div>
+                )}
+                <div className="ep2-ca-bts">
+                  {telDigitos ? (<>
+                    <a className="ep2-cb wa" href={`https://wa.me/55${telDigitos}`} target="_blank" rel="noreferrer"><IconeWhatsApp size={15} />WhatsApp</a>
+                    <a className="ep2-cb" href={`tel:+55${telDigitos}`}><Phone size={15} weight="bold" />Ligar</a>
+                  </>) : (
+                    <button className="ep2-cb mute" onClick={() => clienteId ? navigate(`/clientes/${clienteId}`) : setModalCliente(true)}>Sem telefone · <u>adicionar</u></button>
+                  )}
+                  <button className="ep2-cb" onClick={() => setModalCliente(true)}><ArrowsDownUp size={15} weight="bold" />Trocar</button>
+                </div>
+              </div>
+            )}
 
             <div className="ep2-card">
               <p className="ep2-ct">Itens do pedido <em>({totalItens})</em></p>
@@ -3483,6 +3550,27 @@ const EP2_CSS = `
   .ep2-cli-t { flex: 1; min-width: 0; } .ep2-cli-t b { display: block; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ep2-cli-t small { font-size: 12px; color: #888780; }
   .ep2-lk { border: none; background: none; padding: 4px 6px; font-family: inherit; font-size: 13px; font-weight: 800; color: #C33A6E; cursor: pointer; }
   .ep2-wa { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 800; color: #15803D; background: #DCFCE7; border-radius: 8px; padding: 6px 9px; text-decoration: none; flex-shrink: 0; }
+  /* cartão da cliente (opção A) */
+  .ep2-ca, .ep2-cv { background: #fff; border: 1px solid #EADFE4; border-radius: 16px; padding: 12px; box-shadow: 0 1px 2px rgba(44,18,25,.05), 0 8px 22px -6px rgba(44,18,25,.10); }
+  .ep2-cv { display: flex; align-items: center; gap: 10px; border-style: dashed; border-color: #F3C9DA; box-shadow: none; background: #FFFAFC; }
+  .ep2-ca-top { display: flex; align-items: center; gap: 10px; width: 100%; border: none; background: none; padding: 0; font-family: inherit; text-align: left; color: #2C1219; cursor: pointer; }
+  .ep2-ca .ep2-av, .ep2-cv .ep2-av { width: 44px; height: 44px; background: #F1EDEF; color: #6B5D64; object-fit: cover; }
+  .ep2-av.vz { border: 2px dashed #DDD0D6; color: #A99BA2; } .ep2-av.vz svg { width: 18px; height: 18px; }
+  .ep2-ca .ep2-cli-t b { white-space: normal; overflow: visible; line-height: 1.25; }
+  .ep2-ca .ep2-cli-t small, .ep2-cv .ep2-cli-t small { display: block; line-height: 1.35; margin-top: 2px; }
+  .ep2-ca .ep2-tag { display: table; }
+  .ep2-ca-chev { color: #C9BEC3; flex-shrink: 0; }
+  .ep2-tag { display: inline-block; margin-top: 4px; font-size: 11px; font-weight: 800; border-radius: 6px; padding: 2px 8px; } .ep2-tag.nova { background: #E0F2FE; color: #075985; }
+  .ep2-ca-st { display: none; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; background: #FAF7F8; border-radius: 11px; padding: 8px; }
+  @media (min-width: 1024px) { .ep2-ca-st { display: grid; } }
+  .ep2-ca-st span { text-align: center; } .ep2-ca-st b { display: block; font-size: 14px; font-weight: 700; } .ep2-ca-st small { font-size: 11px; color: #888780; }
+  .ep2-aniv { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; background: #FFF1F6; border-radius: 10px; padding: 9px 10px; font-size: 12.5px; color: #9D174D; line-height: 1.4; }
+  .ep2-aniv svg { flex-shrink: 0; margin-top: 1px; }
+  .ep2-ca-bts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
+  .ep2-cb { display: flex; align-items: center; justify-content: center; gap: 5px; border: 1.5px solid #EDE6E9; background: #fff; border-radius: 11px; padding: 9px 4px; font-family: inherit; font-size: 13px; font-weight: 800; color: #4B3A42; text-decoration: none; cursor: pointer; }
+  .ep2-cb.wa { background: #16A34A; border-color: #16A34A; color: #fff; }
+  .ep2-cb.mute { grid-column: span 2; color: #9A8E94; font-weight: 600; border-style: dashed; } .ep2-cb.mute u { color: #C33A6E; font-weight: 800; }
+  .ep2-add { display: inline-flex; align-items: center; gap: 4px; border: none; background: #E85A8C; color: #fff; border-radius: 10px; padding: 9px 11px; font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer; flex-shrink: 0; }
   .ep2-it { border: 1.5px solid #F0EBED; border-radius: 14px; padding: 12px; margin-bottom: 10px; background: #FEFCFD; }
   .ep2-it-top { display: flex; gap: 10px; align-items: center; }
   .ep2-it-f { width: 44px; height: 44px; border-radius: 12px; background: #FCE7F3; color: #C33A6E; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
