@@ -383,6 +383,15 @@ export default function EditarPedido() {
   const avisarJanela = (titulo: string, texto?: string, icone: IconeDialogo = 'alerta') => setDialogo({ tipo: 'aviso', titulo, texto, icone })
   const confirmarJanela = (o: DialogoOpcoes) => new Promise<boolean>(res => { resolverDialogo.current = res; setDialogo({ tipo: 'confirmar', ...o }) })
   const fecharDialogo = (ok: boolean) => { setDialogo(null); resolverDialogo.current?.(ok); resolverDialogo.current = null }
+  // Excluir pedido (03/10): veio da janela da lista, que saiu; aqui fica longe do toque fácil
+  const excluirPedido = async () => {
+    const ok = await confirmarJanela({ titulo: `Excluir o pedido #${pedido?.numero ?? ''}?`, texto: 'Ele some da lista, da agenda e do financeiro. Não dá pra desfazer. Se a cliente só desistiu, prefira "Cancelar pedido".', icone: 'erro', rotuloConfirmar: 'Excluir', perigo: true })
+    if (!ok || !pedido) return
+    await supabase.from('pedido_itens').delete().eq('pedido_id', pedido.id)
+    const { error } = await supabase.from('pedidos').delete().eq('id', pedido.id)
+    if (error) { avisarJanela('Não foi possível excluir', 'Confira a internet e tente de novo. (' + error.message + ')', 'erro'); return }
+    navigate('/pedidos')
+  }
   const snapshotRef = useRef<string | null>(null)
   useTravarRolagem(menuAberto || etapasAberto)
 
@@ -1477,6 +1486,7 @@ export default function EditarPedido() {
             <button className="ep2-mi" onClick={() => { setMenuAberto(false); handleExportarPDF() }}><I.print />Imprimir / PDF</button>
             {statusPedido !== 'cancelado' && <button className="ep2-mi" onClick={() => { setMenuAberto(false); setEtapasAberto(true) }}><I.box />Mudar a etapa</button>}
             {statusPedido !== 'cancelado' && <button className="ep2-mi perigo" onClick={() => { setMenuAberto(false); setDevolverSinal(null); setCancelarAberto(true) }}><I.ban />Cancelar pedido</button>}
+            <button className="ep2-mi perigo" onClick={() => { setMenuAberto(false); excluirPedido() }}><Trash size={18} />Excluir pedido</button>
           </div>
         </div>, document.body)}
 

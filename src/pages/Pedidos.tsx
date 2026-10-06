@@ -332,6 +332,7 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido, onAcaoRapida, onMen
   onMenuAcao?: (p: Pedido, acao: 'editar' | 'duplicar' | 'contatar' | 'compartilhar' | 'pdf' | 'excluir') => void
 }) {
   const navigate = useNavigate()
+  const [aberto, setAberto] = useState(false) // setinha do cartão (celular)
   const atrasado = isAtrasado(p)
   const dias = diasParaEntrega(p.data_entrega)
   const horas = dias === 0 ? horasParaEntrega(p.data_entrega, p.horario_entrega) : null
@@ -592,6 +593,8 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido, onAcaoRapida, onMen
   const Icone = ({ nome }: { nome: string }) => {
     const c = 'currentColor'
     switch (nome) {
+      case 'phone':    return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" /></svg>
+      case 'pin':      return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12Z" /><circle cx="12" cy="10" r="2.5" /></svg>
       case 'clock':    return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       case 'calendar': return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       case 'chef':     return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z"/><line x1="6" y1="17" x2="18" y2="17"/></svg>
@@ -613,85 +616,77 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido, onAcaoRapida, onMen
   const itensExibir = itens.slice(0, 3)
   const itensRestantes = itens.length - itensExibir.length
 
+  // ══ Cartão do celular (03/10): fotos em grupo, só status/pagamento/botão em destaque, setinha que abre os detalhes ══
+  const itensOrd = [...itens].sort((a: any, b: any) => (b.valor_unitario || 0) * (b.quantidade || 1) - (a.valor_unitario || 0) * (a.quantidade || 1))
+  const fotoDe = (it: any): string | null => { const f = String(it?.imagem_url || it?.produtos?.imagem_url || ''); return f.split(/,(?=\s*https?:)/)[0].trim() || null }
+  const fotosG = itensOrd.slice(0, 3).map(fotoDe)
+  const nomeCurtoP = (() => { const t = toTitleCase(String(p.cliente_nome || '').trim()).split(/\s+/).filter(Boolean); return t.length > 2 ? `${t[0]} ${t[t.length - 1]}` : t.join(' ') })()
+  const resumoItens = itensOrd.length ? `${(itensOrd[0].quantidade || 1) > 1 ? `${itensOrd[0].quantidade}x ` : ''}${toTitleCase(itensOrd[0].nome_produto || '')}${itensOrd.length > 1 ? ` e mais ${itensOrd.length - 1}` : ''}` : 'Sem itens'
+  const horaTxt = (() => {
+    const h = p.horario_entrega ? (() => { const [hh, mm] = p.horario_entrega.slice(0, 5).split(':'); return `${Number(hh)}h${mm && mm !== '00' ? mm : ''}` })() : ''
+    if (!p.data_entrega) return h || 'sem data'
+    if (dias === -1) return `ontem${h ? ' ' + h : ''}`
+    if (dias !== null && dias < -1) { const [, m, d] = p.data_entrega.split('-'); return `${d}/${m}${h ? ' ' + h : ''}` }
+    return h || 'sem horário'
+  })()
+  const CURTO: Record<string, string> = { 'Aguardando aprovação': 'Novo pedido', 'Aguardando Aceite': 'Novo pedido', 'Aguardando Retirada': 'Pronto', 'Em Produção': 'Em produção', 'Saiu pra Entrega': 'Saiu pra entrega', 'Aguardando Pagamento': 'Aguardando pagamento' }
+  const statusCurto = CURTO[statusTag.label] || statusTag.label
+  const ACAO_CURTA: Record<string, string> = { 'Aceitar pedido': 'Aceitar', 'Iniciar produção': 'Produzir', 'Finalizar produção': 'Pronto', 'Confirmar retirada': 'Retirou', 'Confirmar entrega': 'Entregue', 'Marcar como pago': 'Pago', 'Pronto pra retirada': 'Pronto', 'Saiu pra entrega': 'Saiu' }
+  const saldoP = Math.max(0, (p.valor_total || 0) - recebidoPedido(p))
+  const valorSimples = (v: number) => Number.isInteger(Math.round(v * 100) / 100) ? `R$ ${Math.round(v).toLocaleString('pt-BR')}` : formatMoney(v)
+  const telFmt = (() => { const d = String(p.cliente_telefone || '').replace(/\D/g, ''); return d.length === 11 ? `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}` : d.length === 10 ? `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}` : (p.cliente_telefone || '') })()
+  const enderecoP = [[p.endereco_rua, p.endereco_numero].filter(Boolean).join(', '), p.endereco_bairro].filter(Boolean).join(' · ')
+  const FotoG = ({ src, cls }: { src: string | null; cls: string }) => (
+    <span className={`pc2-ft ${cls}`}><Icone nome="bag" />{src && <img src={src} alt="" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />}</span>
+  )
   return (
-    <div className="pnew-card" onClick={() => onVerPedido(p)}>
-      {/* Header: nome + #num + menu */}
-      <div className="pnew-header">
-        <div className="pnew-header-info">
-          <div className="pnew-cliente-row">
-            <span className="pnew-cliente">
-              {p.cliente_nome ? toTitleCase(p.cliente_nome) : <span className="pnew-cliente-vazio">Cliente não informado</span>}
-            </span>
-            <span className="pnew-num">#{p.numero || '—'}</span>
+    <div className={`pc2 ${atrasado ? 'atr' : ''}`} style={{ ['--st' as any]: statusTag.color }} onClick={() => onVerPedido(p)}>
+      <div className="pc2-top">
+        <span className={`pc2-fts n${Math.min(itensOrd.length, 3) || 1}`}>
+          {itensOrd.length <= 1 ? <FotoG src={fotosG[0] || null} cls="p1" />
+            : itensOrd.length === 2 ? <><FotoG src={fotosG[0]} cls="p1" /><FotoG src={fotosG[1]} cls="p2" /></>
+            : <><FotoG src={fotosG[0]} cls="p1" /><FotoG src={fotosG[1]} cls="p2" /><FotoG src={fotosG[2]} cls="p3" />{itensOrd.length > 3 && <em>+{itensOrd.length - 3}</em>}</>}
+        </span>
+        <div className="pc2-tx">
+          <div className="pc2-l1"><b>{nomeCurtoP || 'Cliente não informado'}</b><span className="pc2-num">#{p.numero || '—'}</span>
+            <span className="pc2-menu" onClick={e => e.stopPropagation()}><PedidoCardMenu p={p} onMenuAcao={onMenuAcao} onVerPedido={onVerPedido} /></span></div>
+          <div className="pc2-l2"><span className="pc2-rs">{resumoItens}</span><span className="pc2-hr"><Icone nome={iconeEntrega} />{horaTxt}</span></div>
+        </div>
+      </div>
+      <div className="pc2-l3">
+        <span className="pc2-tg" style={{ background: statusTag.bg, color: statusTag.color }}>{statusCurto}</span>
+        {statusGroup !== 'cancelado' && (saldoP > 0.009
+          ? <span className="pc2-tg falta">Falta {valorSimples(saldoP)}</span>
+          : <span className="pc2-tg ok">Pago</span>)}
+        {acao && onAcaoRapida && (
+          <button type="button" className="pc2-bt" onClick={e => { e.stopPropagation(); onAcaoRapida(p.id, acao.proximo, statusGroup === 'aguardando_pagamento') }}>{ACAO_CURTA[acao.label] || acao.label}</button>
+        )}
+      </div>
+      {aberto && (
+        <div className="pc2-det" onClick={e => e.stopPropagation()}>
+          <div className="pnew-datas">
+            <div className="pnew-data-row"><span className="pnew-data-ic"><Icone nome="calendar" /></span><span className="pnew-data-label">Pedido:</span><span className="pnew-data-val">{formatDataPedido(p.created_at)}{p.origem === 'cardapio' ? ' · pelo cardápio' : ''}</span></div>
+            <div className="pnew-data-row"><span className="pnew-data-ic"><Icone nome={iconeEntrega} /></span><span className="pnew-data-label">{labelEntrega}:</span><span className="pnew-data-val">{formatDataLonga(p.data_entrega, p.horario_entrega)}</span></div>
+            {p.tipo_entrega === 'entrega' && enderecoP && <div className="pnew-data-row"><span className="pnew-data-ic"><Icone nome="pin" /></span><span className="pnew-data-label">Endereço:</span><span className="pnew-data-val">{enderecoP}</span></div>}
+            {telFmt && <div className="pnew-data-row"><span className="pnew-data-ic"><Icone nome="phone" /></span><span className="pnew-data-label">Telefone:</span><span className="pnew-data-val">{telFmt}</span></div>}
           </div>
-          {p.cliente_telefone && <div className="pnew-telefone">{p.cliente_telefone}</div>}
-        </div>
-        <PedidoCardMenu p={p} onMenuAcao={onMenuAcao} onVerPedido={onVerPedido} />
-      </div>
-
-      {/* Tags: origem + status */}
-      <div className="pnew-tags">
-        <span className="pnew-tag pnew-tag--origem">
-          <Icone nome={p.origem === 'cardapio' ? 'menu' : 'hand'} />
-          {origemLabel}
-        </span>
-        <span className="pnew-tag" style={{ background: statusTag.bg, color: statusTag.color }}>
-          <Icone nome={statusTag.icon} />
-          {statusTag.label}
-        </span>
-      </div>
-
-      {/* Datas */}
-      <div className="pnew-datas">
-        <div className="pnew-data-row">
-          <span className="pnew-data-ic"><Icone nome="calendar" /></span>
-          <span className="pnew-data-label">Pedido:</span>
-          <span className="pnew-data-val">{formatDataPedido(p.created_at)}</span>
-        </div>
-        <div className="pnew-data-row">
-          <span className="pnew-data-ic"><Icone nome={iconeEntrega} /></span>
-          <span className="pnew-data-label">{labelEntrega}:</span>
-          <span className="pnew-data-val">{formatDataLonga(p.data_entrega, p.horario_entrega)}</span>
-        </div>
-      </div>
-
-      {/* Divisor */}
-      <div className="pnew-divisor" />
-
-      {/* Itens */}
-      {itensExibir.length > 0 && (
-        <div className="pnew-itens">
-          {itensExibir.map((it, i) => (
-            <div key={i} className="pnew-item-row">
-              <span className="pnew-item-nome">
-                <span className="pnew-item-qtd">{formatQtdCurta(it.quantidade, it.produtos?.forma_venda)}</span>
-                {toTitleCase(it.nome_produto)}
-              </span>
-              <span className="pnew-item-val">{formatMoney((it.valor_unitario || 0) * (it.quantidade || 1))}</span>
-            </div>
-          ))}
-          {itensRestantes > 0 && (
-            <div className="pnew-item-mais">+{itensRestantes} outro{itensRestantes > 1 ? 's' : ''} item{itensRestantes > 1 ? 's' : ''}</div>
-          )}
+          <div className="pnew-divisor" />
+          <div className="pnew-itens">
+            {itensOrd.map((it: any, i: number) => (
+              <div key={i} className="pnew-item-row">
+                <span className="pnew-item-nome"><span className="pnew-item-qtd">{formatQtdCurta(it.quantidade, it.produtos?.forma_venda)}</span>{toTitleCase(it.nome_produto)}</span>
+                <span className="pnew-item-val">{formatMoney((it.valor_unitario || 0) * (it.quantidade || 1))}</span>
+              </div>
+            ))}
+          </div>
+          <div className="pnew-total-row"><span>Total</span><span>{formatMoney(p.valor_total)}</span></div>
+          {recebidoPedido(p) > 0.009 && <div className="pc2-rec"><span>Recebido</span><span>{formatMoney(recebidoPedido(p))}</span></div>}
+          <button type="button" className="pc2-abrir" onClick={() => onVerPedido(p)}>Abrir pedido →</button>
         </div>
       )}
-
-      {/* Total */}
-      <div className="pnew-total-row">
-        <span>Total</span>
-        <span>{formatMoney(p.valor_total)}</span>
-      </div>
-
-      {/* CTA principal — cor primária, texto varia com status */}
-      {acao && onAcaoRapida && (
-        <button
-          type="button"
-          className="pnew-cta"
-          onClick={e => { e.stopPropagation(); onAcaoRapida(p.id, acao.proximo, statusGroup === 'aguardando_pagamento') }}
-        >
-          {acao.label}
-        </button>
-      )}
+      <button type="button" className="pc2-seta" aria-expanded={aberto} aria-label={aberto ? 'Fechar detalhes' : 'Ver detalhes'} onClick={e => { e.stopPropagation(); setAberto(v => !v) }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ transform: aberto ? 'rotate(180deg)' : undefined, transition: 'transform .2s' }}><path d="m6 9 6 6 6-6" /></svg>
+      </button>
     </div>
   )
 }
@@ -1822,6 +1817,9 @@ export default function Pedidos() {
     }
   }
 
+  // Tocar no pedido abre a tela do pedido (03/10 — antes abria uma janela)
+  const abrirPedido = (p: any) => navigate(`/pedidos/${p.id}/editar`)
+  const [verConcluidos, setVerConcluidos] = useState(false)
   const pedidosFiltrados = pedidos.filter(p => {
     // Filtro rápido "Aguardando aprovação" — vem do alerta no Início
     if (filtroAguardando) {
@@ -1857,6 +1855,28 @@ export default function Pedidos() {
 
     return matchStatus && matchBusca && matchPeriodo
   })
+
+  // Lista do celular agrupada por dia (03/10): Atrasado, Hoje, Amanhã, os próximos dias, Sem data e Concluídos (fechado)
+  const gruposPorDia = (() => {
+    const hojeD = new Date(); hojeD.setHours(0, 0, 0, 0)
+    const isoD = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    const hojeIso = isoD(hojeD), amanha = new Date(hojeD); amanha.setDate(amanha.getDate() + 1); const amanhaIso = isoD(amanha)
+    const DIAS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado']
+    const rot = (iso: string) => { const [y, m, d] = iso.split('-').map(Number); const dt = new Date(y, m - 1, d); return `${DIAS[dt.getDay()]}, ${d}/${m}` }
+    const fim = (p: any) => ['entregue', 'cancelado'].includes(getStatusGroup(p.status))
+    const porHora = (a: any, b: any) => String(a.data_entrega || '').localeCompare(String(b.data_entrega || '')) || String(a.horario_entrega || '').localeCompare(String(b.horario_entrega || ''))
+    const ativos = pedidosFiltrados.filter(p => !fim(p)).sort(porHora)
+    const grupos: { chave: string; titulo: string; itens: any[] }[] = []
+    const add = (chave: string, titulo: string, itens: any[]) => { if (itens.length) grupos.push({ chave, titulo, itens }) }
+    add('atrasado', 'Atrasado', ativos.filter(p => p.data_entrega && p.data_entrega < hojeIso))
+    add('hoje', `Hoje · ${rot(hojeIso)}`, ativos.filter(p => p.data_entrega === hojeIso))
+    add('amanha', `Amanhã · ${rot(amanhaIso)}`, ativos.filter(p => p.data_entrega === amanhaIso))
+    const futuros = ativos.filter(p => p.data_entrega && p.data_entrega > amanhaIso)
+    ;[...new Set(futuros.map(p => p.data_entrega))].forEach(d => add('d' + d, rot(d).charAt(0).toUpperCase() + rot(d).slice(1), futuros.filter(p => p.data_entrega === d)))
+    add('semdata', 'Sem data', ativos.filter(p => !p.data_entrega))
+    add('concluidos', 'Concluídos', pedidosFiltrados.filter(fim).sort((a: any, b: any) => -porHora(a, b)))
+    return grupos
+  })()
 
   const filtrosAtivos =
     statusSelecionados.length !== STATUS_PADRAO.length ||
@@ -2307,11 +2327,11 @@ export default function Pedidos() {
           {/* Busca + Filtro (+ Novo no desktop) */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', paddingTop: '0.75rem', maxWidth: !isMobile ? 780 : 'none' }}>
             {/* Barra de busca */}
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 12, padding: '0.75rem 1rem' }}>
+            <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 12, padding: '0.75rem 1rem' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input
-                style={{ flex: 1, border: 'none', outline: 'none', fontSize: '0.9rem', fontFamily: 'var(--font-base)', color: 'var(--text-primary)', background: 'transparent' }}
-                placeholder="Buscar por cliente ou número..."
+                style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', fontSize: '0.9rem', fontFamily: 'var(--font-base)', color: 'var(--text-primary)', background: 'transparent' }}
+                placeholder={isMobile ? 'Buscar cliente ou nº' : 'Buscar por cliente ou número...'}
                 value={busca}
                 onChange={e => setBusca(e.target.value)}
               />
@@ -2331,16 +2351,10 @@ export default function Pedidos() {
               {filtrosAtivos && <span style={{ position: 'absolute', top: -4, right: -4, width: 10, height: 10, borderRadius: '50%', background: 'var(--primary)', border: '2px solid white' }} />}
             </button>
 
-            {/* Novo pedido — só desktop aqui */}
-            {!isMobile && <BtnNovo label="Registrar pedido" onClick={handleNovoPedido} />}
+            {/* Novo pedido: no celular, compacto ao lado do filtro */}
+            {!isMobile ? <BtnNovo label="Registrar pedido" onClick={handleNovoPedido} /> : <button type="button" className="pc2-novo" onClick={handleNovoPedido}>+ Novo</button>}
           </div>
 
-          {/* Botão Registrar pedido — linha separada largura total no mobile */}
-          {isMobile && (
-            <div style={{ marginTop: '0.75rem' }}>
-              <BtnNovo label="Registrar pedido" onClick={handleNovoPedido} responsive={false} style={{ width: '100%', justifyContent: 'center', padding: '0.85rem 1rem' }} />
-            </div>
-          )}
 
           {/* Chip de filtro ativo "Aguardando aprovação" — vindo do alerta do Início */}
           {filtroAguardando && (
@@ -2408,7 +2422,7 @@ export default function Pedidos() {
               {!isMobile && viewMode === 'kanban' ? (
                 <KanbanView
                   pedidos={pedidosFiltrados}
-                  onVerPedido={setModalPedido}
+                  onVerPedido={abrirPedido}
                   onMoverStatus={updateStatus}
                 />
               ) : (
@@ -2428,14 +2442,23 @@ export default function Pedidos() {
                       </thead>
                       <tbody>
                         {pedidosFiltrados.map(p => (
-                          <PedidoCard key={p.id} p={p} isMobile={false} onAbrirMapa={setMapaAberto} onVerPedido={setModalPedido} />
+                          <PedidoCard key={p.id} p={p} isMobile={false} onAbrirMapa={setMapaAberto} onVerPedido={abrirPedido} />
                         ))}
                       </tbody>
                     </table>
                   ) : (
                 <div className="plist-container">
-                  {pedidosFiltrados.map(p => (
-                    <PedidoCard key={p.id} p={p} isMobile={true} onAbrirMapa={setMapaAberto} onVerPedido={setModalPedido} onAcaoRapida={updateStatus} onMenuAcao={handleMenuAcao} />
+                  {gruposPorDia.map(g => (
+                    <div key={g.chave}>
+                      {g.chave === 'concluidos' ? (
+                        <button type="button" className="pc2-conc" onClick={() => setVerConcluidos(v => !v)}><span>Concluídos <i style={{ fontStyle: 'normal', fontSize: 11, background: '#E9DFE4', borderRadius: 99, padding: '1px 7px', marginLeft: 4 }}>{g.itens.length}</i></span><span>{verConcluidos ? '▴' : '▾'}</span></button>
+                      ) : (
+                        <p className={`pc2-grupo ${g.chave === 'atrasado' ? 'atr' : ''}`}>{g.titulo} <i>{g.itens.length}</i></p>
+                      )}
+                      {(g.chave !== 'concluidos' || verConcluidos) && g.itens.map(p => (
+                        <PedidoCard key={p.id} p={p} isMobile={true} onAbrirMapa={setMapaAberto} onVerPedido={abrirPedido} onAcaoRapida={updateStatus} onMenuAcao={handleMenuAcao} />
+                      ))}
+                    </div>
                   ))}
                 </div>
               )}
@@ -2650,6 +2673,40 @@ export default function Pedidos() {
         }
 
         /* ═══ Card pedido novo — design limpo estilo Dora ═══ */
+        /* ══ cartão do celular (03/10) ══ */
+        .pc2 { position: relative; background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 14px 14px 2px 17px; margin-bottom: 10px; cursor: pointer; overflow: hidden; box-shadow: 0 4px 14px -8px rgba(44,18,25,.2); font-family: var(--font-base) !important; }
+        .pc2::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--st); }
+        .pc2.atr { border-color: #FCA5A5; }
+        .pc2-top { display: flex; gap: 12px; align-items: center; } .pc2-tx { flex: 1; min-width: 0; }
+        .pc2-fts { position: relative; width: 50px; height: 50px; flex-shrink: 0; }
+        .pc2-ft { position: absolute; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #F4F0F2; color: #C2B6BC; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(44,18,25,.18); }
+        .pc2-ft img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .pc2-fts.n1 .pc2-ft { inset: 0; width: 50px; height: 50px; border-radius: 12px; }
+        .pc2-fts.n2 .pc2-ft { width: 34px; height: 34px; border-radius: 10px; } .pc2-fts.n2 .p1 { left: 0; top: 0; } .pc2-fts.n2 .p2 { right: 0; bottom: 0; }
+        .pc2-fts.n3 .pc2-ft { width: 28px; height: 28px; border-radius: 8px; } .pc2-fts.n3 .p1 { left: 0; top: 0; } .pc2-fts.n3 .p2 { right: 0; top: 0; } .pc2-fts.n3 .p3 { left: 11px; bottom: 0; }
+        .pc2-fts em { position: absolute; right: -6px; bottom: -4px; font-style: normal; font-size: 10.5px; font-weight: 800; color: #fff; background: #2C1219; border: 2px solid #fff; border-radius: 99px; padding: 0 5px; line-height: 1.5; }
+        .pc2-l1 { display: flex; align-items: center; gap: 6px; min-width: 0; }
+        .pc2-l1 b { font-size: 15.5px; font-weight: 800; color: #2C1219; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+        .pc2-num { font-size: 12px; font-weight: 700; color: #9A8E94; flex-shrink: 0; }
+        .pc2-menu { margin-left: auto; flex-shrink: 0; display: flex; }
+        .pc2-l2 { display: flex; align-items: center; gap: 8px; margin-top: 3px; min-width: 0; }
+        .pc2-rs { flex: 1; min-width: 0; font-size: 13px; color: #5F5E5A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pc2-hr { flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; font-size: 13.5px; font-weight: 800; color: #2C1219; white-space: nowrap; } .pc2-hr svg { color: #9A8E94; }
+        .pc2.atr .pc2-hr { color: #DC2626; }
+        .pc2-l3 { display: flex; align-items: center; gap: 6px; margin-top: 12px; min-width: 0; }
+        .pc2-tg { font-size: 11.5px; font-weight: 800; border-radius: 7px; padding: 4px 8px; white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+        .pc2-tg.ok { color: #15803D; background: #DCFCE7; } .pc2-tg.falta { color: #B45309; background: #FEF3C7; }
+        .pc2-bt { margin-left: auto; flex-shrink: 0; border: none; background: #E85A8C; color: #fff; border-radius: 10px; padding: 7px 13px; font-family: inherit; font-size: 12.5px; font-weight: 800; white-space: nowrap; cursor: pointer; box-shadow: 0 2px 0 #C33A6E; }
+        .pc2-seta { display: flex; justify-content: center; width: 100%; border: none; background: none; color: #C2B6BC; padding: 6px 0 4px; cursor: pointer; }
+        .pc2-det { margin-top: 14px; padding-top: 14px; border-top: 1px solid #E8E5DC; cursor: default; }
+        .pc2-det .pnew-data-row { white-space: nowrap; overflow: hidden; } .pc2-det .pnew-data-val { overflow: hidden; text-overflow: ellipsis; }
+        .pc2-rec { display: flex; justify-content: space-between; font-size: 12.5px; color: #888780; margin-top: 3px; }
+        .pc2-abrir { display: block; width: 100%; margin-top: 14px; border: none; background: #FDF2F6; color: #C33A6E; border-radius: 10px; padding: 10px; font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer; }
+        .pc2-grupo { display: flex; align-items: center; gap: 6px; margin: 16px 2px 8px; font-size: 12.5px; font-weight: 800; color: #6B5D64; }
+        .pc2-grupo i { font-style: normal; font-size: 11px; background: #E9DFE4; border-radius: 99px; padding: 1px 7px; }
+        .pc2-grupo.atr { color: #DC2626; } .pc2-grupo.atr i { background: #FEE2E2; }
+        .pc2-conc { display: flex; justify-content: space-between; align-items: center; width: 100%; margin: 16px 0 8px; border: 1px solid #EADFE4; background: #fff; border-radius: 12px; padding: 12px 14px; font-family: inherit; font-size: 13px; font-weight: 800; color: #6B5D64; cursor: pointer; }
+        .pc2-novo { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; height: 44px; border: none; background: #E85A8C; color: #fff; border-radius: 10px; padding: 0 14px; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 0 #C33A6E; }
         .pnew-card {
           background: #fff;
           border: 1px solid #F0EBED;
