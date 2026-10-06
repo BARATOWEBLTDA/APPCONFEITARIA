@@ -1041,8 +1041,26 @@ export default function EditarPedido() {
   const pagAtivos = pagamentos.filter(g => !g.estornado_em)
   const recebidoAtual = pagamentosOk ? r2(pagAtivos.reduce((s, g) => s + (Number(g.valor) || 0), 0)) : (pedido ? valorRecebidoPedido(pedido as any) : 0)
   const faltaReceber = Math.max(0, r2(total - recebidoAtual))
-  const adicionaisTotal = r2(itens.reduce((s, it: any) => s + (Number(it.preco_breakdown?.adicionais_total) || 0) * (it.quantidade || 1), 0))
-  const produtosTotal = r2(subtotalItens - adicionaisTotal)
+  // Conta de cada item (03/10): preço do produto + adicionais − promoção = valor do item.
+  // Vem do preco_breakdown gravado; se não fechar com o valor (item antigo ou editado), mostra só o valor.
+  function contaDoItem(it: any) {
+    const bd = it.preco_breakdown || {}
+    const base = Number(bd.base_efetivo ?? bd.preco_base_original) || 0
+    const adicionais = Number(bd.adicionais_total) || 0
+    const desconto = Number(bd.desconto) || 0
+    const valor = Number(it.valor_unitario) || 0
+    const fecha = base > 0 && Math.abs(base + adicionais - desconto - valor) < 0.02
+    const sub = base + adicionais
+    return { detalhar: fecha && (adicionais > 0 || desconto > 0), base, adicionais, desconto, pct: fecha && desconto > 0 && sub > 0 ? Math.round((desconto / sub) * 100) : 0, fecha }
+  }
+  const somaContas = itens.reduce((acc, it: any) => {
+    const c = contaDoItem(it), q = it.quantidade || 1
+    if (c.fecha) { acc.base += c.base * q; acc.adic += c.adicionais * q; acc.desc += c.desconto * q } else acc.base += (Number(it.valor_unitario) || 0) * q
+    return acc
+  }, { base: 0, adic: 0, desc: 0 })
+  const adicionaisTotal = r2(somaContas.adic)
+  const promocoesTotal = r2(somaContas.desc)
+  const produtosTotal = r2(subtotalItens - adicionaisTotal + promocoesTotal)
 
   // ── Etapas do pedido ───────────────────────────────────────────────────
   // Etapas dinâmicas (03/10): mudam com o tipo (entrega/retirada) e com o status
@@ -1209,6 +1227,7 @@ export default function EditarPedido() {
                 if (sabores.length) campos.push(['Sabores', sabores.map((s: any) => `${s.nome} (${s.qtd})`).join(', ')])
                 const obs = (it.observacoes || '').trim()
                 const unidade = q > 1 || eKit ? `${formatMoney(it.valor_unitario || 0)} ${eKit ? 'por kit' : 'cada'}` : ''
+                const conta = contaDoItem(it)
                 return (
                   <div key={it.id || `n${idx}`} className="ep3-it">
                     <span className="ep2-cup-f"><I.box />{fotoDoItem(it) && <img src={fotoDoItem(it)!} alt="" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />}</span>
@@ -1230,6 +1249,14 @@ export default function EditarPedido() {
                             </a></div>
                           )}
                           {obs && <p>“{obs}”</p>}
+                        </div>
+                      )}
+                      {conta.detalhar && (
+                        <div className="ep3-conta">
+                          {q > 1 && <small>por {eKit ? 'kit' : 'unidade'}</small>}
+                          <p><span>Preço do produto</span><b>{formatMoney(conta.base)}</b></p>
+                          {conta.adicionais > 0 && <p><span>Adicionais</span><b>+ {formatMoney(conta.adicionais)}</b></p>}
+                          {conta.desconto > 0 && <p className="promo"><span>Promoção{conta.pct ? ` (${conta.pct}%)` : ''}</span><b>− {formatMoney(conta.desconto)}</b></p>}
                         </div>
                       )}
                       <div className="ep3-vl"><span>Valor</span>{unidade && <small>{unidade}</small>}<b>{formatMoney((it.valor_unitario || 0) * q)}</b>
@@ -1330,6 +1357,7 @@ export default function EditarPedido() {
             <p className="ep2-ct">Resumo</p>
             <div className="ep2-ln"><span>Produtos</span><b>{formatMoney(produtosTotal)}</b></div>
             {adicionaisTotal > 0 && <div className="ep2-ln"><span>Adicionais</span><b>{formatMoney(adicionaisTotal)}</b></div>}
+            {promocoesTotal > 0 && <div className="ep2-ln promo"><span>Promoções</span><b>− {formatMoney(promocoesTotal)}</b></div>}
             {tipoEntrega === 'entrega' && (
               <div className="ep2-ln ep2-ln-in"><span>Taxa de entrega</span>
                 <span className="ep2-mini"><em>R$</em><input inputMode="numeric" value={textoBRL(taxaEntrega) || ''} placeholder="0,00" onChange={e => setTaxaEntrega(lerBRL(mascaraBRL(e.target.value)))} aria-label="Taxa de entrega" /></span></div>
@@ -3791,6 +3819,12 @@ const EP2_CSS = `
   .ep3-ref a { position: relative; display: block; width: 100%; max-width: 260px; height: 180px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #F7C6D9, #C9B4F5); box-shadow: 0 6px 16px -8px rgba(44,18,25,.35); }
   .ep3-ref img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .ep3-obs p { margin: 6px 0 0; font-size: 13.5px; font-style: italic; color: #2C1219; line-height: 1.45; }
+  .ep3-conta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed #EDE4E8; }
+  .ep3-conta small { display: block; font-size: 11.5px; color: #A99CA2; margin-bottom: 2px; }
+  .ep3-conta p { display: flex; justify-content: space-between; gap: 10px; margin: 0; font-size: 13px; line-height: 1.6; white-space: nowrap; }
+  .ep3-conta p span { color: #8A7E84; overflow: hidden; text-overflow: ellipsis; } .ep3-conta p b { font-weight: 600; color: #2C1219; }
+  .ep3-conta p.promo span, .ep3-conta p.promo b { color: #15803D; }
+  .ep3-conta + .ep3-vl { margin-top: 4px; }
   .ep3-vl { display: flex; align-items: center; gap: 6px; margin-top: 9px; } .ep3-vl > span { font-size: 13.5px; color: #8A7E84; } .ep3-vl small { font-size: 12px; color: #A99CA2; white-space: nowrap; }
   .ep3-vl b { margin-left: auto; font-size: 16px; font-weight: 700; color: #2C1219; white-space: nowrap; }
   .ep3-tot { margin-top: 4px; padding-top: 10px; border-top: 1px solid #2C1219; } .ep3-tot > span { font-size: 12px; color: #9A8E94; }
@@ -3804,7 +3838,7 @@ const EP2_CSS = `
   .ep2-chip { display: inline-block; margin: 4px 4px 0 0; font-size: 11.5px; font-weight: 800; color: #993556; background: #FCE0E9; border-radius: 7px; padding: 3px 8px; }
   .ep2-esc { margin-top: 10px; border-top: 1px solid #F5F0F2; padding-top: 7px; }
   .ep2-ln { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 13.5px; padding: 4px 0; color: #4B3A42; }
-  .ep2-ln span { color: #888780; } .ep2-ln b { font-weight: 700; color: #2C1219; text-align: right; } .ep2-ln.neg b { color: #DC2626; }
+  .ep2-ln span { color: #888780; } .ep2-ln b { font-weight: 700; color: #2C1219; text-align: right; } .ep2-ln.neg b { color: #DC2626; } .ep2-card > .ep2-ln.promo span, .ep2-ln.promo b { color: #15803D; }
   .ep2-card > .ep2-ln span { color: #4B3A42; }
   .ep2-ln.tt { border-top: 1px solid #F0EBED; margin-top: 6px; padding-top: 10px; font-size: 15.5px; } .ep2-ln.tt span { color: #2C1219; font-weight: 800; } .ep2-ln.tt b { font-size: 18px; }
   .ep2-ln-in { align-items: center; }
