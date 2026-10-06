@@ -902,7 +902,10 @@ export default function EditarPedido() {
   const produtosTotal = r2(subtotalItens - adicionaisTotal)
 
   // ── Etapas do pedido ───────────────────────────────────────────────────
-  const ETAPAS: string[] = ['Agendado', 'Em produção', tipoEntrega === 'retirada' ? 'Pronto pra retirar' : 'Pronto', 'Entregue']
+  // Etapas dinâmicas (03/10): mudam com o tipo (entrega/retirada) e com o status
+  const ETAPAS: string[] = tipoEntrega === 'retirada'
+    ? ['Agendado', 'Em produção', 'Pronto pra retirar', statusPedido === 'entregue' ? 'Retirado' : 'Retirada']
+    : ['Agendado', 'Em produção', statusPedido === 'em_entrega' ? 'Saiu pra entrega' : 'Pronto', 'Entregue']
   const posEtapa = statusPedido === 'em_producao' ? 1 : ['finalizado', 'aguardando_retirada', 'em_entrega'].includes(statusPedido) ? 2 : statusPedido === 'entregue' ? 3 : 0
   const proximaEtapa: { s: string; l: string } | null = (() => {
     switch (statusPedido) {
@@ -979,15 +982,19 @@ export default function EditarPedido() {
           <div className="ep2-st-cancel">Pedido cancelado</div>
         ) : (<>
           {(statusPedido === 'aguardando_pagamento' || statusPedido === 'aguardando_aceite') && <div className="ep2-st-chip">{(STATUS_CONFIG[statusPedido] || {}).label}</div>}
-          <div className="ep2-st-l">
-            {ETAPAS.map((n, i) => (
-              <span key={n} className={`ep2-st-p ${i < posEtapa || statusPedido === 'entregue' ? 'ok' : i === posEtapa && !['aguardando_pagamento', 'aguardando_aceite'].includes(statusPedido) ? 'atual' : ''}`}>
-                <i>{(i < posEtapa || statusPedido === 'entregue') ? <Check size={11} weight="bold" /> : null}</i>{n}
-              </span>
-            ))}
+          <div className="ep2-st-l" style={{ ['--prog' as any]: String(statusPedido === 'entregue' ? 1 : posEtapa / (ETAPAS.length - 1)) }}>
+            {ETAPAS.map((n, i) => {
+              const feita = i < posEtapa || statusPedido === 'entregue'
+              const atual = !feita && i === posEtapa && !['aguardando_pagamento', 'aguardando_aceite'].includes(statusPedido)
+              return (
+                <span key={i} className={`ep2-st-p ${feita ? 'ok' : atual ? 'atual' : ''}`}>
+                  <i>{feita ? <Check size={12} weight="bold" /> : i + 1}</i>{n}
+                </span>
+              )
+            })}
           </div>
           {proximaEtapa ? <button className="ep2-st-bt" onClick={() => irParaEtapa(proximaEtapa.s)}>{proximaEtapa.l} →</button>
-            : statusPedido === 'entregue' ? <div className="ep2-st-fim"><Check size={14} weight="bold" /> Pedido entregue</div> : null}
+            : statusPedido === 'entregue' ? <div className="ep2-st-fim"><Check size={14} weight="bold" /> {tipoEntrega === 'retirada' ? 'Pedido retirado' : 'Pedido entregue'}</div> : null}
         </>)}
       </div>
 
@@ -3440,13 +3447,17 @@ const EP2_CSS = `
   .ep2-hd-bt svg { width: 18px; height: 18px; }
   .ep2-hd-orig { font-size: 11.5px; font-weight: 800; background: rgba(255,255,255,.2); border-radius: 8px; padding: 5px 9px; flex-shrink: 0; }
   @media (max-width: 767px) { .ep2-hd-orig, .ep2-so-desk { display: none !important; } }
-  .ep2-st { background: #fff; border-bottom: 1px solid #F0EBED; padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 9px; }
+  .ep2-st { background: #fff; border-bottom: 1px solid #F0EBED; padding: 16px 14px 14px; display: flex; flex-direction: column; gap: 12px; } /* mais espaço até o cabeçalho rosa */
   .ep2-st-chip { align-self: flex-start; font-size: 11.5px; font-weight: 800; color: #854F0B; background: #FEF0DF; border-radius: 7px; padding: 3px 9px; }
+  /* etapas: número em vez de círculo vazio, e uma linha de progresso ligando as etapas */
   .ep2-st-l { display: flex; justify-content: space-between; gap: 4px; position: relative; }
-  .ep2-st-p { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 700; color: #9A8E94; text-align: center; line-height: 1.2; }
-  .ep2-st-p i { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #E5DDE1; background: #fff; display: flex; align-items: center; justify-content: center; color: #fff; }
-  .ep2-st-p.ok { color: #2C1219; } .ep2-st-p.ok i { background: #16A34A; border-color: #16A34A; }
-  .ep2-st-p.atual { color: #C33A6E; } .ep2-st-p.atual i { border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.15); }
+  .ep2-st-l::before, .ep2-st-l::after { content: ""; position: absolute; top: 12px; left: 12.5%; height: 3px; border-radius: 3px; }
+  .ep2-st-l::before { right: 12.5%; background: #EFE7EB; }
+  .ep2-st-l::after { width: calc(75% * var(--prog, 0)); background: #16A34A; transition: width .3s ease; }
+  .ep2-st-p { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: #9A8E94; text-align: center; line-height: 1.2; position: relative; z-index: 1; }
+  .ep2-st-p i { width: 26px; height: 26px; border-radius: 50%; background: #F1EAEE; color: #A99BA2; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 12px; font-weight: 800; box-shadow: 0 0 0 3px #fff; }
+  .ep2-st-p.ok { color: #2C1219; } .ep2-st-p.ok i { background: #16A34A; color: #fff; }
+  .ep2-st-p.atual { color: #C33A6E; } .ep2-st-p.atual i { background: #E85A8C; color: #fff; box-shadow: 0 0 0 3px #fff, 0 0 0 6px rgba(232,90,140,.22); }
   .ep2-st-bt { border: none; background: #2C1219; color: #fff; border-radius: 11px; padding: 11px; font-family: inherit; font-size: 13.5px; font-weight: 800; cursor: pointer; }
   .ep2-st-fim, .ep2-quitado, .ep2-salvo { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 800; color: #15803D; background: #F0FDF4; border-radius: 10px; padding: 9px; }
   .ep2-st-cancel { text-align: center; font-size: 13.5px; font-weight: 800; color: #991B1B; background: #FEF2F2; border-radius: 10px; padding: 10px; }
