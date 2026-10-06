@@ -305,7 +305,8 @@ export default function EditarPedido() {
   const [salvando, setSalvando] = useState(false)
   const [salvouOk, setSalvouOk] = useState(false)
   const [recarga, setRecarga] = useState(0) // recarrega o pedido depois de salvar
-  const [tab, setTab] = useState<Tab>('itens')
+  // abre na aba pedida pela lista ("Ver endereço" → ?aba=entrega)
+  const [tab, setTab] = useState<Tab>(() => { const a = new URLSearchParams(window.location.search).get('aba'); return a === 'entrega' || a === 'pagamento' ? a : 'itens' })
 
   // ── State editável (populated no load) ────────────────────────────────
   const [clienteId, setClienteId] = useState<string | null>(null)
