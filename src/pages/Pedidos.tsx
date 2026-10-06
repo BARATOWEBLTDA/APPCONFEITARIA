@@ -622,14 +622,16 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido, onAcaoRapida, onMen
   const fotosG = itensOrd.slice(0, 3).map(fotoDe)
   const nomeCurtoP = (() => { const t = toTitleCase(String(p.cliente_nome || '').trim()).split(/\s+/).filter(Boolean); return t.length > 2 ? `${t[0]} ${t[t.length - 1]}` : t.join(' ') })()
   const resumoItens = itensOrd.length ? `${(itensOrd[0].quantidade || 1) > 1 ? `${itensOrd[0].quantidade}x ` : ''}${toTitleCase(itensOrd[0].nome_produto || '')}${itensOrd.length > 1 ? ` e mais ${itensOrd.length - 1}` : ''}` : 'Sem itens'
-  const horaTxt = (() => {
-    const h = p.horario_entrega ? (() => { const [hh, mm] = p.horario_entrega.slice(0, 5).split(':'); return `${Number(hh)}h${mm && mm !== '00' ? mm : ''}` })() : ''
-    if (!p.data_entrega) return h ? `sem data, às ${h}` : 'sem data'
-    const [y, m, d] = p.data_entrega.split('-').map(Number)
-    const SEM = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
-    const dia = dias === 0 ? 'hoje' : dias === 1 ? 'amanhã' : dias === -1 ? 'ontem' : `${SEM[new Date(y, m - 1, d).getDay()]}, ${d}/${m}`
-    return `${dia}${h ? ` às ${h}` : ''}`
-  })()
+  const MESES_P = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
+  const SEMANA_P = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
+  // "10 de outubro às 10:00 (Sábado)" — o mesmo formato no cartão fechado e no aberto
+  const dataLonga = (data?: string | null, hora?: string | null) => {
+    if (!data) return 'sem data'
+    const [y, m, d] = data.slice(0, 10).split('-').map(Number)
+    return `${d} de ${MESES_P[m - 1]}${hora ? ` às ${hora.slice(0, 5)}` : ''} (${SEMANA_P[new Date(y, m - 1, d).getDay()]})`
+  }
+  const horaTxt = dataLonga(p.data_entrega, p.horario_entrega)
+  const criadoTxt = (() => { if (!p.created_at) return ''; const c = new Date(p.created_at); const iso = `${c.getFullYear()}-${String(c.getMonth() + 1).padStart(2, '0')}-${String(c.getDate()).padStart(2, '0')}`; return dataLonga(iso, `${String(c.getHours()).padStart(2, '0')}:${String(c.getMinutes()).padStart(2, '0')}`) })()
   const CURTO: Record<string, string> = { 'Aguardando aprovação': 'Novo pedido', 'Aguardando Aceite': 'Novo pedido', 'Aguardando Retirada': 'Pronto', 'Em Produção': 'Em produção', 'Saiu pra Entrega': 'Saiu pra entrega', 'Aguardando Pagamento': 'Aguardando pagamento' }
   const statusCurto = CURTO[statusTag.label] || statusTag.label
   const ACAO_CURTA: Record<string, string> = { 'Aceitar pedido': 'Aceitar', 'Iniciar produção': 'Produzir', 'Finalizar produção': 'Pronto', 'Confirmar retirada': 'Retirou', 'Confirmar entrega': 'Entregue', 'Marcar como pago': 'Pago', 'Pronto pra retirada': 'Pronto', 'Saiu pra entrega': 'Saiu' }
@@ -662,14 +664,14 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido, onAcaoRapida, onMen
           )}
         </div>
         {statusGroup !== 'cancelado' && <p><span>Pagamento:</span> {saldoP > 0.009 ? <b className="falta">Falta {valorSimples(saldoP)}</b> : <b className="ok">Pago</b>}</p>}
-        <p><span>{labelEntrega}:</span> <b className={atrasado ? 'atr' : ''}>{horaTxt}</b>
-          {p.tipo_entrega === 'entrega' && <> · <button type="button" className="pc2-end" onClick={e => { e.stopPropagation(); navigate(`/pedidos/${p.id}/editar?aba=entrega`) }}>Ver endereço</button></>}</p>
+        <p><span>{labelEntrega}:</span> <b className={atrasado ? 'atr' : ''}>{horaTxt}</b></p>
+        {p.tipo_entrega === 'entrega' && <p><button type="button" className="pc2-end" onClick={e => { e.stopPropagation(); navigate(`/pedidos/${p.id}/editar?aba=entrega`) }}>Ver endereço</button></p>}
       </div>
       {aberto && (
         <div className="pc2-det" onClick={e => e.stopPropagation()}>
           <div className="pnew-datas">
-            <div className="pnew-data-row"><span className="pnew-data-ic"><Icone nome="calendar" /></span><span className="pnew-data-label">Pedido:</span><span className="pnew-data-val">{formatDataPedido(p.created_at)}{p.origem === 'cardapio' ? ' · pelo cardápio' : ''}</span></div>
-            <div className="pnew-data-row"><span className="pnew-data-ic"><Icone nome={iconeEntrega} /></span><span className="pnew-data-label">{labelEntrega}:</span><span className="pnew-data-val">{formatDataLonga(p.data_entrega, p.horario_entrega)}</span></div>
+            <div className="pnew-data-row"><span className="pnew-data-ic"><Icone nome="calendar" /></span><span className="pnew-data-label">Pedido:</span><span className="pnew-data-val">{criadoTxt}</span></div>
+            <div className="pnew-data-row"><span className="pnew-data-ic"><Icone nome={p.origem === 'cardapio' ? 'menu' : 'hand'} /></span><span className="pnew-data-label">Origem:</span><span className="pnew-data-val">{p.origem === 'cardapio' ? 'Cardápio digital' : 'Lançado por você'}</span></div>
             {p.tipo_entrega === 'entrega' && enderecoP && <div className="pnew-data-row"><span className="pnew-data-ic"><Icone nome="pin" /></span><span className="pnew-data-label">Endereço:</span><span className="pnew-data-val">{enderecoP}</span></div>}
             {telFmt && <div className="pnew-data-row"><span className="pnew-data-ic"><Icone nome="phone" /></span><span className="pnew-data-label">Telefone:</span><span className="pnew-data-val">{telFmt}</span></div>}
           </div>
