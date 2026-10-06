@@ -3658,7 +3658,7 @@ const EP2_CSS = `
   /* ══ itens em estilo cupom (03/10): sempre abertos, valores em coluna, personalização como anexo grampeado ══ */
   .ep2-cupom { position: relative; background: #FFFDF8; border-radius: 10px 10px 0 0; padding: 14px 14px 16px; margin-bottom: 10px; box-shadow: 0 10px 24px -12px rgba(44,18,25,.28); font-variant-numeric: tabular-nums; }
   .ep2-cupom::after { content: ""; position: absolute; left: 0; right: 0; bottom: -8px; height: 8px; background: radial-gradient(circle at 7px 0, #FFFDF8 6.5px, transparent 7px) 0 0 / 14px 8px repeat-x; } /* borda serrilhada */
-  .ep2-cup-h { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1.5px dashed #D9CCD2; padding-bottom: 9px; margin-bottom: 2px; }
+  .ep2-cup-h { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 4px; } /* sem a linha tracejada embaixo do título */
   .ep2-cup-h b { font-size: 12px; font-weight: 900; letter-spacing: .12em; color: #2C1219; } .ep2-cup-h span { font-size: 12px; font-weight: 700; color: #9A8E94; }
   .ep2-cup-it { padding: 10px 0 11px; border-bottom: 1.5px dashed #E6DADF; }
   .ep2-cup-ih { display: flex; align-items: baseline; gap: 6px; }
