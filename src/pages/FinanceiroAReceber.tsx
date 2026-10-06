@@ -1,3 +1,4 @@
+import CampoData from '@/components/CampoData'
 import { useTravarRolagem } from "@/hooks/useTravarRolagem";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
@@ -176,7 +177,7 @@ export function ReceberSheet({ item, onClose, onFeito }: { item: Item; onClose: 
         <div className="far-chips">
           {(["hoje", "ontem", "outra"] as const).map(q => <button type="button" key={q} className={quandoRec === q ? "on" : ""} onClick={() => setQuandoRec(q)}>{q === "hoje" ? "Hoje" : q === "ontem" ? "Ontem" : "Outra data"}</button>)}
         </div>
-        {quandoRec === "outra" && <input type="date" className="far-data" value={outraData} max={isoHoje()} onChange={e => setOutraData(e.target.value)} />}
+        {quandoRec === "outra" && <div style={{ marginTop: 8 }}><CampoData valor={outraData} onChange={setOutraData} max={isoHoje()} titulo="Data do recebimento" /></div>}
         {v > 0 && v <= item.falta + 0.009 && (
           <div className={`far-prev ${resta > 0 ? "" : "far-prev--ok"}`}>
             {resta > 0 ? <><b>Ainda vai faltar: {brl(resta)}</b><small>Continua em "A receber" até você registrar o restante.</small></>

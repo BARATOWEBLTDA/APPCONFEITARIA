@@ -1,4 +1,5 @@
 // Checkout config — UI reestilizada no padrão Doonly (v2)
+import CampoData from '@/components/CampoData'
 import ReqTag from "@/components/ReqTag";
 import { useState, useEffect, useRef } from "react"
 import { supabase } from "@/lib/supabase"
@@ -462,21 +463,11 @@ export default function CheckoutConfigPage() {
                   <div className="chk-form-row">
                     <div className="chk-form-field" style={{flex:1}}>
                       <label className="chk-form-label">Válido de</label>
-                      <input
-                        type="date"
-                        className="chk-input"
-                        value={cupomForm.data_inicio}
-                        onChange={e => setCupomForm({ ...cupomForm, data_inicio: e.target.value })}
-                      />
+                      <CampoData valor={cupomForm.data_inicio} onChange={d => setCupomForm({ ...cupomForm, data_inicio: d })} max={cupomForm.data_fim || undefined} titulo="Cupom válido de" placeholder="Sem início" curto />
                     </div>
                     <div className="chk-form-field" style={{flex:1}}>
                       <label className="chk-form-label">Válido até</label>
-                      <input
-                        type="date"
-                        className="chk-input"
-                        value={cupomForm.data_fim}
-                        onChange={e => setCupomForm({ ...cupomForm, data_fim: e.target.value })}
-                      />
+                      <CampoData valor={cupomForm.data_fim} onChange={d => setCupomForm({ ...cupomForm, data_fim: d })} min={cupomForm.data_inicio || undefined} titulo="Cupom válido até" placeholder="Sem fim" curto />
                     </div>
                   </div>
 

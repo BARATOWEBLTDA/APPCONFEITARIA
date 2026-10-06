@@ -1,3 +1,4 @@
+import CampoData from '@/components/CampoData'
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { pedidoAtrasado, STATUS_AINDA_NAO_PRONTO } from "@/lib/pedidoStatus";
 import { duplicarPedido as duplicarPedidoLib } from "@/lib/duplicarPedido";
@@ -1168,13 +1169,7 @@ function ReagendarModal({ onConfirm, onCancel }: any) {
         <div className="ag-modal-icon ag-modal-icon--info"><IconTruck /></div>
         <h3 className="ag-modal-title">Reagendar entrega</h3>
         <p className="ag-modal-msg">Escolha a nova data de entrega:</p>
-        <input
-          type="date"
-          value={novaData}
-          onChange={e => setNovaData(e.target.value)}
-          className="ag-modal-input"
-          min={isoDate(new Date())}
-        />
+        <CampoData valor={novaData} onChange={setNovaData} min={isoDate(new Date())} titulo="Nova data de entrega" />
         <div className="ag-modal-acoes">
           <button className="ag-modal-btn ag-modal-btn--cancel" onClick={onCancel}>Cancelar</button>
           <button className="ag-modal-btn ag-modal-btn--primary" onClick={() => onConfirm(novaData)}>Reagendar</button>

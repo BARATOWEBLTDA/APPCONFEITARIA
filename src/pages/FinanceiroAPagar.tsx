@@ -1,3 +1,4 @@
+import CampoData from '@/components/CampoData'
 import { useTravarRolagem } from "@/hooks/useTravarRolagem";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
@@ -193,7 +194,7 @@ function PagarSheet({ conta, onClose, onFeito }: { conta: Conta; onClose: () => 
       <div className="fap-chips">{FORMAS.map(f => <button type="button" key={f.k} className={forma === f.k ? "on" : ""} onClick={() => setForma(f.k)}>{f.l}</button>)}</div>
       <p className="fap-lb">Quando pagou?</p>
       <div className="fap-chips">{(["hoje", "ontem", "outra"] as const).map(q => <button type="button" key={q} className={quandoPg === q ? "on" : ""} onClick={() => setQuandoPg(q)}>{q === "hoje" ? "Hoje" : q === "ontem" ? "Ontem" : "Outra data"}</button>)}</div>
-      {quandoPg === "outra" && <input type="date" className="fap-data" value={outra} max={isoDia()} onChange={e => setOutra(e.target.value)} />}
+      {quandoPg === "outra" && <div style={{ marginTop: 8 }}><CampoData valor={outra} onChange={setOutra} max={isoDia()} titulo="Data do pagamento" /></div>}
       <div className="fap-prev"><b>Sai do caixa: {brl(num(valor))}</b><small>A saída entra no financeiro na data do pagamento.</small></div>
       {erro && <p className="fap-erro">{erro}</p>}
       <button type="button" className="fap-cta" onClick={confirmar} disabled={salvando}>{salvando ? "Registrando…" : "Confirmar pagamento"}</button>
@@ -228,7 +229,7 @@ function NovaContaSheet({ onClose, onFeito }: { onClose: () => void; onFeito: ()
       <div className="fap-chips">{CATEGORIAS.map(c => <button type="button" key={c} className={categoria === c ? "on" : ""} onClick={() => setCategoria(c)}>{c}</button>)}</div>
       <div className="fap-row">
         <div><label className="fap-lb" htmlFor="fap-nv">Valor</label><div className="fap-in sm"><span>R$</span><input id="fap-nv" inputMode="numeric" placeholder="0,00" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro(""); }} /></div></div>
-        <div><label className="fap-lb" htmlFor="fap-venc">Vencimento</label><input id="fap-venc" type="date" className="fap-data" style={{ marginTop: 0 }} value={vencimento} onChange={e => setVencimento(e.target.value)} /></div>
+        <div><label className="fap-lb" htmlFor="fap-venc">Vencimento</label><CampoData id="fap-venc" valor={vencimento} onChange={setVencimento} titulo="Vencimento" curto /></div>
       </div>
       {erro && <p className="fap-erro">{erro}</p>}
       <button type="button" className="fap-cta fap-cta--rosa" onClick={salvar} disabled={salvando}>{salvando ? "Salvando…" : "Cadastrar conta"}</button>

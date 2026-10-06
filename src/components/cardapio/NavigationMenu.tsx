@@ -1,3 +1,4 @@
+import CalendarioApp from '@/components/CalendarioSheet'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { CalendarioSheet, HorariosSheet } from '@/components/cardapio/AgendaSheets'
 import { antecedenciaHoras, calcularRegras, primeiraData, rotuloData } from '@/lib/agendaCardapio'
@@ -105,6 +106,7 @@ function CartContent({
   const [dataEntrega, setDataEntrega] = useState('')
   const [horaEntrega, setHoraEntrega] = useState('')
   const [horaSheetAberto, setHoraSheetAberto] = useState(false)
+  const [calCardapio, setCalCardapio] = useState(false) // calendário do app
   const [observacoes, setObservacoes] = useState('')
   const [cupomDigitado, setCupomDigitado] = useState('')
   const [cupomAplicado, setCupomAplicado] = useState<{ codigo: string; tipo: string; valor: number } | null>(null)
@@ -802,11 +804,10 @@ function CartContent({
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
                   <div>
                     <label style={{fontSize:'12px',fontWeight:600,color:'#717171',display:'block',marginBottom:'6px'}}>Data</label>
-                    <label style={{position:'relative',display:'flex',alignItems:'center',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color: dataEntrega ? '#3e3e3e' : '#a0a0a0',background:'#fff',cursor:'pointer',boxSizing:'border-box',fontFamily:'inherit'}}>
+                    <button type="button" onClick={() => setCalCardapio(true)} style={{position:'relative',display:'flex',alignItems:'center',width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color: dataEntrega ? '#3e3e3e' : '#a0a0a0',background:'#fff',cursor:'pointer',boxSizing:'border-box',fontFamily:'inherit',textAlign:'left'}}>
                       {dataEntrega ? new Date(dataEntrega + 'T12:00:00').toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'}) : 'Definir data'}
-                      <input type="date" value={dataEntrega} min={minDate} onChange={e => setDataEntrega(e.target.value)}
-                        style={{position:'absolute',opacity:0,inset:0,width:'100%',height:'100%',cursor:'pointer',fontSize:'16px'}} />
-                    </label>
+                    </button>
+                    {calCardapio && <CalendarioApp valor={dataEntrega} min={minDate} cor={accent} titulo="Data da entrega" onClose={() => setCalCardapio(false)} onConfirmar={d => { setDataEntrega(d); setCalCardapio(false) }} />}
                   </div>
                   <div>
                     <label style={{fontSize:'12px',fontWeight:600,color:'#717171',display:'block',marginBottom:'6px'}}>Horário</label>

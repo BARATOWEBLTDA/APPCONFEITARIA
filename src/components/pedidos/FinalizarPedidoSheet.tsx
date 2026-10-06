@@ -1,3 +1,4 @@
+import CampoData from '@/components/CampoData'
 import { useTravarRolagem } from "@/hooks/useTravarRolagem";
 import { useEffect, useState } from "react";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
@@ -146,7 +147,7 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
           <div className="fps-chips">{FORMAS.map(f => <button type="button" key={f.k} className={forma === f.k ? "on" : ""} onClick={() => setForma(f.k)}>{f.l}</button>)}</div>
           <p className="fps-lb">Data do recebimento</p>
           <div className="fps-chips">{(["hoje", "ontem", "outra"] as const).map(q => <button type="button" key={q} className={quando === q ? "on" : ""} onClick={() => setQuando(q)}>{q === "hoje" ? "Hoje" : q === "ontem" ? "Ontem" : "Outra data"}</button>)}</div>
-          {quando === "outra" && <input type="date" className="fps-data" value={outraData} max={isoDia()} onChange={e => setOutraData(e.target.value)} />}
+          {quando === "outra" && <div className="fps-data-w"><CampoData valor={outraData} onChange={setOutraData} max={isoDia()} titulo="Data do recebimento" /></div>}
         </>)}
 
         {saldo > 0.009 && recebe <= saldo + 0.009 && (

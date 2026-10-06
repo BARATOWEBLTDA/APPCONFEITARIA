@@ -1,3 +1,5 @@
+import CalendarioSheet from '@/components/CalendarioSheet'
+import CampoData from '@/components/CampoData'
 import { DotsThree, Check, Heart, Plus, NotePencil, Trash, PencilSimple, ArrowUp, ArrowCounterClockwise, CalendarBlank, Image as ImageIcon, CaretRight, Phone, ArrowsDownUp, Cake } from '@phosphor-icons/react'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { Paperclip, MagnifyingGlassPlus, Quotes, MapPin, MapTrifold, Copy, Money, Storefront } from '@phosphor-icons/react'
@@ -1362,7 +1364,7 @@ export default function EditarPedido() {
                 <div className="ep2-bar"><i style={{ width: `${Math.min(100, (recebidoAtual / (total || 1)) * 100)}%` }} /></div></div>
               <button className="ep2-rec" onClick={() => setReceberAberto(true)}><ArrowUp size={15} weight="bold" />Registrar recebimento</button>
               <label className="ep2-prev"><CalendarBlank size={14} />Combinado pra pagar:
-                <input type="date" value={dataPrevistaPagamento || ''} onChange={e => setDataPrevistaPagamento(e.target.value)} aria-label="Data combinada pra pagar" />
+                <span className="ep2-prev-d"><CampoData valor={dataPrevistaPagamento || ''} onChange={setDataPrevistaPagamento} titulo="Combinado pra pagar" placeholder="Escolher" curto /></span>
                 {!dataPrevistaPagamento && <em>na entrega</em>}</label>
             </>) : <div className="ep2-quitado"><Check size={14} weight="bold" /> Pedido quitado</div>)}
           </div>
@@ -1400,7 +1402,7 @@ export default function EditarPedido() {
         </CartProvider>
       )}
 
-      {dataSheet && <DataHoraSheet data={dataEntrega} titulo={tipoEntrega === 'entrega' ? 'Data da entrega' : 'Data da retirada'}
+      {dataSheet && <CalendarioSheet valor={dataEntrega} titulo={tipoEntrega === 'entrega' ? 'Data da entrega' : 'Data da retirada'}
         onClose={() => setDataSheet(false)} onConfirmar={(d) => { setDataEntrega(d); setDataSheet(false) }} />}
       {/* ── ⋯ de um item: quantidade, recado e remover ── */}
       {itemMenu !== null && itens[itemMenu] && createPortal(
@@ -3818,7 +3820,7 @@ const EP2_CSS = `
   .ep2-bar { height: 6px; border-radius: 9px; background: #FDE68A; margin-top: 7px; overflow: hidden; } .ep2-bar i { display: block; height: 100%; background: #22C55E; border-radius: 9px; }
   .ep2-rec { margin-top: 10px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; border-radius: 12px; padding: 13px; background: #16A34A; color: #fff; font-family: inherit; font-weight: 800; font-size: 14.5px; cursor: pointer; box-shadow: 0 6px 14px -6px rgba(22,163,74,.6); }
   .ep2-prev { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 10px; font-size: 12.5px; color: #6B5D64; }
-  .ep2-prev input { height: 34px; border: 1.5px solid #EDE6E9; border-radius: 9px; padding: 0 8px; font-family: inherit; font-size: 13.5px; color: #2C1219; background: #fff; min-width: 0; max-width: 100%; }
+  .ep2-prev-d { width: 150px; } .ep2-prev-d .cdata { height: 36px; font-size: 13.5px; padding: 0 10px; }
   .ep2-prev em { font-style: normal; font-weight: 700; color: #2C1219; }
   .ep2-save-desk { display: none; } @media (min-width: 1024px) { .ep2-save-desk { display: flex; flex-direction: column; gap: 8px; } }
   .ep2-mud { font-size: 12.5px; font-weight: 800; color: #B45309; text-align: center; }
@@ -3846,32 +3848,3 @@ const EP2_CSS = `
   .ep2-devol input { margin-top: 2px; accent-color: #E85A8C; }
 `
 
-// ══════════════ Data e horário da entrega/retirada (calendário do app) ══════════════
-function DataHoraSheet({ data, titulo, onClose, onConfirmar }: { data: string; titulo: string; onClose: () => void; onConfirmar: (d: string) => void }) {
-  const hoje = new Date(); const isoHoje = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`
-  const base = data ? new Date(Number(data.slice(0, 4)), Number(data.slice(5, 7)) - 1, 1) : new Date(hoje.getFullYear(), hoje.getMonth(), 1)
-  const [mes, setMes] = useState({ a: base.getFullYear(), m: base.getMonth() })
-  const [dia, setDia] = useState(data || isoHoje)
-  const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
-  const DIAS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
-  const vazios = new Date(mes.a, mes.m, 1).getDay(), totalDias = new Date(mes.a, mes.m + 1, 0).getDate()
-  const iso = (d: number) => `${mes.a}-${String(mes.m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-  const [y, mm, dd] = dia.split('-').map(Number)
-  const resumo = `${DIAS[new Date(y, mm - 1, dd).getDay()].slice(0, 3)}, ${String(dd).padStart(2, '0')}/${String(mm).padStart(2, '0')}`
-  const mudar = (n: number) => setMes(x => { const d = new Date(x.a, x.m + n, 1); return { a: d.getFullYear(), m: d.getMonth() } })
-  return createPortal(
-    <div className="ep2-ov" onClick={onClose}>
-      <div className="ep2-sh" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={titulo}>
-        <span className="ep2-alca" />
-        <b className="ep2-sh-t">{titulo}</b>
-        <div className="ep2-cal-h"><button onClick={() => mudar(-1)} aria-label="Mês anterior">‹</button><b>{MESES[mes.m]} {mes.a}</b><button onClick={() => mudar(1)} aria-label="Próximo mês">›</button></div>
-        <div className="ep2-cal">
-          {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((x, i) => <i key={i}>{x}</i>)}
-          {Array.from({ length: vazios }, (_, i) => <span key={'v' + i} />)}
-          {Array.from({ length: totalDias }, (_, i) => { const d = i + 1, s = iso(d); return (
-            <button key={d} className={`${s === dia ? 'sel' : ''} ${s === isoHoje ? 'hj' : ''}`} onClick={() => setDia(s)} aria-label={s}>{d}</button>) })}
-        </div>
-        <button className="ep2-b1 ep2-cal-ok" onClick={() => onConfirmar(dia)}>Confirmar · {resumo}</button>
-      </div>
-    </div>, document.body)
-}

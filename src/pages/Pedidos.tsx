@@ -1,4 +1,5 @@
 // v2: excluir pedido + modal 3 secoes + imagem_url
+import CampoData from '@/components/CampoData'
 import FinalizarPedidoSheet from '@/components/pedidos/FinalizarPedidoSheet'
 import { registrarPagamento } from '@/lib/pagamentos'
 import { duplicarPedido } from '@/lib/duplicarPedido'
@@ -1426,11 +1427,11 @@ function FiltroDrawer({ statusSelecionados, setStatusSelecionados, periodoFiltro
               <div className="fd-datas">
                 <div className="fd-data-field">
                   <label className="fd-data-label">De</label>
-                  <input type="date" className="fd-data-input" value={localInicio} onChange={e => setLocalInicio(e.target.value)} />
+                  <CampoData valor={localInicio} onChange={setLocalInicio} max={localFim || undefined} titulo="Início do período" curto />
                 </div>
                 <div className="fd-data-field">
                   <label className="fd-data-label">Até</label>
-                  <input type="date" className="fd-data-input" value={localFim} onChange={e => setLocalFim(e.target.value)} />
+                  <CampoData valor={localFim} onChange={setLocalFim} min={localInicio || undefined} titulo="Fim do período" curto />
                 </div>
               </div>
             )}

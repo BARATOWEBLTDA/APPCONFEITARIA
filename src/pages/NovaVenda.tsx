@@ -1,3 +1,4 @@
+import CalendarioSheet from '@/components/CalendarioSheet'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { criarPedido, opcoesDoProduto as opcoesDoProdutoLib, type DadosPedido } from '@/lib/pedidosDoo'
 import { gerarPedidoPDF } from '@/lib/gerarPedidoPDF'
@@ -157,8 +158,7 @@ export default function NovaVenda() {
   const [producaoExpandida, setProducaoExpandida] = useState(false)
   const [resumoAberto, setResumoAberto] = useState(false)
   const [horaSheetAberto, setHoraSheetAberto] = useState(false)
-  const dataRef = useRef<HTMLInputElement>(null)
-  const dataPrevRef = useRef<HTMLInputElement>(null)
+  const [calNv, setCalNv] = useState<'entrega' | 'pagamento' | null>(null) // calendário do app
   const [enderecoCep, setEnderecoCep] = useState('')
   const [cepLoading, setCepLoading] = useState(false)
 
@@ -1025,11 +1025,10 @@ export default function NovaVenda() {
                 <div className="nv-grid-agend">
                   <div>
                     <label className="nv-label">Data</label>
-                    <button type="button" className="nv-input nv-input-btn" onClick={() => { const el = dataRef.current; if (el?.showPicker) el.showPicker(); else el?.click() }}>
+                    <button type="button" className="nv-input nv-input-btn" onClick={() => setCalNv('entrega')}>
                       {dataEntrega ? formatDataBR(dataEntrega) : <span className="nv-input-btn-ph">Definir data</span>}
                       <svg className="nv-input-btn-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     </button>
-                    <input ref={dataRef} type="date" value={dataEntrega} onChange={e => setDataEntrega(e.target.value)} className="nv-hidden-date" />
                   </div>
                   <div>
                     <label className="nv-label">Hora</label>
@@ -1198,11 +1197,10 @@ export default function NovaVenda() {
                 {situacaoPag === 'fiado' && (
                   <div style={{ marginTop: 4 }}>
                     <label className="nv-label">Data prevista pagamento</label>
-                    <button type="button" className="nv-input nv-input-btn" onClick={() => { const el = dataPrevRef.current; if (el?.showPicker) el.showPicker(); else el?.click() }}>
+                    <button type="button" className="nv-input nv-input-btn" onClick={() => setCalNv('pagamento')}>
                       {dataPrevistaPagamento ? formatDataBR(dataPrevistaPagamento) : <span className="nv-input-btn-ph">Definir data</span>}
                       <svg className="nv-input-btn-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     </button>
-                    <input ref={dataPrevRef} type="date" value={dataPrevistaPagamento} onChange={e => setDataPrevistaPagamento(e.target.value)} className="nv-hidden-date" />
                   </div>
                 )}
               </div>
@@ -1544,6 +1542,9 @@ export default function NovaVenda() {
       </div>
     )}
 
+    {/* calendário do app (03/10) */}
+    {calNv && <CalendarioSheet valor={calNv === 'entrega' ? dataEntrega : dataPrevistaPagamento} titulo={calNv === 'entrega' ? 'Data da entrega' : 'Pagamento combinado pra'}
+      onClose={() => setCalNv(null)} onConfirmar={d => { if (calNv === 'entrega') setDataEntrega(d); else setDataPrevistaPagamento(d); setCalNv(null) }} />}
     {/* ═══ Bottom sheet horário ═══ */}
     {horaSheetAberto && (
       <HorarioSheet

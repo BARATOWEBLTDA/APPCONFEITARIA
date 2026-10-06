@@ -1,3 +1,4 @@
+import CampoData from '@/components/CampoData'
 import { useTravarRolagem } from "@/hooks/useTravarRolagem";
 import { useEffect, useState } from "react";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
@@ -53,7 +54,7 @@ export default function DespesaSheet({ onClose, onSalvo, onContaAPagar, tipo = "
         <input id="dsp-d" className="dsp-txt" placeholder={ehEntrada ? "Ex.: 30 brigadeiros pra vizinha" : "Ex.: Leite condensado e creme de leite"} value={descricao} onChange={e => setDescricao(e.target.value)} />
         <p className="dsp-lb">{ehEntrada ? "Quando entrou?" : "Quando pagou?"}</p>
         <div className="dsp-chips">{(["hoje", "ontem", "outra"] as const).map(q => <button type="button" key={q} className={quando === q ? "on" : ""} onClick={() => setQuando(q)}>{q === "hoje" ? "Hoje" : q === "ontem" ? "Ontem" : "Outra data"}</button>)}</div>
-        {quando === "outra" && <input type="date" className="dsp-data" value={outra} max={isoDia()} onChange={e => setOutra(e.target.value)} />}
+        {quando === "outra" && <div style={{ marginTop: 8 }}><CampoData valor={outra} onChange={setOutra} max={isoDia()} titulo={ehEntrada ? "Data da entrada" : "Data do pagamento"} /></div>}
         {erro && <p className="dsp-erro">{erro}</p>}
         <button type="button" className="dsp-cta" onClick={salvar} disabled={salvando}>{salvando ? "Salvando…" : ehEntrada ? "Lançar entrada" : "Lançar despesa"}</button>
         {!ehEntrada && onContaAPagar && <button type="button" className="dsp-link" onClick={onContaAPagar}>É uma conta pra pagar depois? Cadastre em A pagar</button>}

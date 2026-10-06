@@ -1,3 +1,4 @@
+import CampoData from '@/components/CampoData'
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 
 /**
@@ -48,8 +49,8 @@ export default function PeriodoFiltro({ valor, onChange }: { valor: Periodo; onC
       )}
       {valor.tipo === "personalizado" && (
         <div className="pf-datas">
-          <label>De<input type="date" value={valor.ini} max={valor.fim} onChange={e => e.target.value && onChange({ ...valor, ini: e.target.value })} /></label>
-          <label>Até<input type="date" value={valor.fim} min={valor.ini} max={dia()} onChange={e => e.target.value && onChange({ ...valor, fim: e.target.value })} /></label>
+          <div className="pf-d"><span>De</span><CampoData valor={valor.ini} max={valor.fim} titulo="Início do período" curto onChange={d => onChange({ ...valor, ini: d })} /></div>
+          <div className="pf-d"><span>Até</span><CampoData valor={valor.fim} min={valor.ini} max={dia()} titulo="Fim do período" curto onChange={d => onChange({ ...valor, fim: d })} /></div>
         </div>
       )}
       <style>{`
@@ -62,7 +63,7 @@ export default function PeriodoFiltro({ valor, onChange }: { valor: Periodo; onC
         .pf-mes button { width: 32px; height: 32px; border-radius: 9px; border: none; background: #FFF1F6; color: #C33A6E; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .pf-mes button:disabled { opacity: .35; cursor: default; }
         .pf-datas { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .pf-datas label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; color: #6B5D64; }
+        .pf-d { display: flex; flex-direction: column; gap: 4px; min-width: 0; } .pf-d > span { font-size: 12px; font-weight: 700; color: #6B5D64; }
         .pf-datas input { height: 42px; border: 1.5px solid #EDE6E9; border-radius: 10px; padding: 0 10px; font-family: inherit; font-size: 15px; color: #2C1219; background: #fff; box-sizing: border-box; width: 100%; }
       `}</style>
     </div>
