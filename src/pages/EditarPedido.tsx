@@ -1,6 +1,6 @@
 import { DotsThree, Check, Heart, Plus, NotePencil, Trash, PencilSimple, ArrowUp, ArrowCounterClockwise, CalendarBlank, Image as ImageIcon, CaretRight, Phone, ArrowsDownUp, Cake } from '@phosphor-icons/react'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
-import { Paperclip, MagnifyingGlassPlus, Quotes } from '@phosphor-icons/react'
+import { Paperclip, MagnifyingGlassPlus, Quotes, MapPin, MapTrifold, Copy, PaperPlaneTilt, Money, Storefront } from '@phosphor-icons/react'
 import { CartProvider } from '@/context/CartContext'
 import { ProductModal } from '@/components/cart/ProductModal'
 import { itemDoCarrinhoParaPedido } from '@/lib/itemDoCarrinho'
@@ -468,11 +468,63 @@ export default function EditarPedido() {
   const desdeTxt = clienteInfo?.desde ? new Date(clienteInfo.desde).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }).replace('. de ', '/').replace(' de ', '/').replace('.', '') : ''
   const telDigitos = (clienteTelefone || '').replace(/\D/g, '')
 
+  // ── Aba Entrega (03/10) ──────────────────────────────────────────────
+  const [editandoEndereco, setEditandoEndereco] = useState(false)
+  const [cepAchado, setCepAchado] = useState(false)
+  const [dataSheet, setDataSheet] = useState(false)
+  const [lojaInfo, setLojaInfo] = useState<{ nome: string; endereco: { linha1: string; linha2: string; completo: string } | null } | null>(null)
+  const [enderecoDaCliente, setEnderecoDaCliente] = useState<{ rua: string; numero: string; bairro: string; cidade: string; complemento: string; cep: string } | null>(null)
+  const enderecoAntes = useRef<any>(null)
+  useTravarRolagem(dataSheet)
+  const enderecoTemAlgo = !!(enderecoRua || enderecoNumero || enderecoBairro) // só a cidade (sugerida pela loja) não conta como endereço
+  const enderecoCompleto = [[enderecoRua, enderecoNumero].filter(Boolean).join(', '), enderecoComplemento, enderecoBairro, enderecoCidade, enderecoCep ? `CEP ${enderecoCep}` : ''].filter(Boolean).join(' - ')
+  const isoMaisDias = (n: number) => { const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }
+  const DIAS_SEMANA = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
+  const diaPorExtenso = (iso: string) => { const [y, m, d] = iso.split('-').map(Number); return `${DIAS_SEMANA[new Date(y, m - 1, d).getDay()]}, ${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}` }
+  const diaCurto = (iso: string) => { const [y, m, d] = iso.split('-').map(Number); return `${DIAS_SEMANA[new Date(y, m - 1, d).getDay()].slice(0, 3)} ${d}` }
+  const horaCurta = (h: string) => { const [hh, mm] = h.slice(0, 5).split(':'); return `${Number(hh)}h${mm && mm !== '00' ? mm : ''}` }
+  const quandoTexto = `${dataEntrega ? diaPorExtenso(dataEntrega) : 'data a combinar'}${horarioEntrega ? ` às ${horaCurta(horarioEntrega)}` : ''}`
+  const primeiroNome = clienteNome.trim() ? toTitleCase(clienteNome.trim().split(/\s+/)[0]) : ''
+  const textoEntregador = `Entrega do pedido #${pedido?.numero ?? ''}${primeiroNome ? ` · ${toTitleCase(clienteNome.trim())}` : ''}\n${quandoTexto}\n${enderecoCompleto}${clienteTelefone ? `\nTelefone: ${clienteTelefone}` : ''}`
+  const textoRetirada = `Oi${primeiroNome ? `, ${primeiroNome}` : ''}! Seu pedido #${pedido?.numero ?? ''} pode ser retirado ${quandoTexto.charAt(0).toLowerCase() + quandoTexto.slice(1)}, em: ${lojaInfo?.endereco?.completo || ''}`
+  const copiarEndereco = async () => { try { await navigator.clipboard.writeText(enderecoCompleto); avisar('Endereço copiado.') } catch { avisar('Não foi possível copiar.') } }
+  const abrirEdicaoEndereco = () => { enderecoAntes.current = { enderecoCep, enderecoRua, enderecoNumero, enderecoBairro, enderecoCidade, enderecoComplemento }; setCepAchado(false); setEditandoEndereco(true) }
+  const cancelarEdicaoEndereco = () => {
+    const a = enderecoAntes.current
+    if (a) { setEnderecoCep(a.enderecoCep); setEnderecoRua(a.enderecoRua); setEnderecoNumero(a.enderecoNumero); setEnderecoBairro(a.enderecoBairro); setEnderecoCidade(a.enderecoCidade); setEnderecoComplemento(a.enderecoComplemento) }
+    setEditandoEndereco(false)
+  }
+  const usarEnderecoDaCliente = () => {
+    const c = enderecoDaCliente; if (!c) return
+    setEnderecoRua(c.rua); setEnderecoNumero(c.numero); setEnderecoBairro(c.bairro); setEnderecoCidade(c.cidade); setEnderecoComplemento(c.complemento)
+    if (c.cep) { const d = c.cep.replace(/\D/g, ''); setEnderecoCep(d.length === 8 ? `${d.slice(0, 5)}-${d.slice(5)}` : c.cep) }
+    setEditandoEndereco(false); avisar('Endereço da cliente aplicado.')
+  }
+  // endereço da loja (pra retirada) e o do cadastro da cliente
+  useEffect(() => {
+    ;(async () => {
+      const { data: { user } } = await supabase.auth.getUser(); if (!user) return
+      const { data } = await supabase.from('profiles').select('nome_loja, endereco').eq('id', user.id).maybeSingle()
+      let a: any = {}; try { a = (data as any)?.endereco ? (typeof (data as any).endereco === 'string' ? JSON.parse((data as any).endereco) : (data as any).endereco) : {} } catch { a = {} }
+      const l1 = [a.rua, a.numero].filter(Boolean).join(', '), l2 = [a.bairro, a.cidade].filter(Boolean).join(' · ')
+      setLojaInfo({ nome: (data as any)?.nome_loja || '', endereco: (l1 || l2) ? { linha1: l1 || l2, linha2: l1 ? l2 : '', completo: [l1, a.bairro, a.cidade].filter(Boolean).join(' - ') } : null })
+    })()
+  }, [])
+  useEffect(() => {
+    if (!clienteId) { setEnderecoDaCliente(null); return }
+    ;(async () => {
+      const { data } = await supabase.from('clientes').select('rua, numero, bairro, cidade, complemento, cep').eq('id', clienteId).maybeSingle()
+      const c: any = data || {}
+      setEnderecoDaCliente(c.rua || c.bairro || c.cidade ? { rua: c.rua || '', numero: c.numero || '', bairro: c.bairro || '', cidade: c.cidade || '', complemento: c.complemento || '', cep: c.cep || '' } : null)
+    })()
+  }, [clienteId])
+
+
 
   // O que dá pra editar e salvar — usado pra saber se há alterações não salvas
   const estadoEditavel = () => ({
     clienteId, clienteNome, clienteTelefone, tipoEntrega, dataEntrega, horarioEntrega: (horarioEntrega || '').slice(0, 5),
-    enderecoRua, enderecoNumero, enderecoBairro, enderecoCidade, enderecoComplemento,
+    enderecoCep, enderecoRua, enderecoNumero, enderecoBairro, enderecoCidade, enderecoComplemento,
     taxaEntrega: tipoEntrega === 'entrega' ? taxaEntrega : 0, desconto, acrescimo, dataPrevistaPagamento: dataPrevistaPagamento || '',
     itens: itens.map(it => [it.produto_id || it.nome_produto, it.quantidade, it.valor_unitario, it.observacoes || '']),
   })
@@ -516,6 +568,7 @@ export default function EditarPedido() {
       setEnderecoBairro(p.endereco_bairro || '')
       setEnderecoCidade(p.endereco_cidade || 'Curitiba')
       setEnderecoComplemento(p.endereco_complemento || '')
+      { const d = String((p as any).endereco_cep || '').replace(/\D/g, ''); setEnderecoCep(d.length === 8 ? `${d.slice(0, 5)}-${d.slice(5)}` : d) } // CEP: antes não era lido
       // Popular valores (Fase 4)
       setDesconto(p.desconto || 0)
       setTaxaEntrega(p.taxa_entrega || 0)
@@ -818,6 +871,7 @@ export default function EditarPedido() {
         endereco_bairro: tipoEntrega === 'entrega' ? enderecoBairro : '',
         endereco_cidade: tipoEntrega === 'entrega' ? enderecoCidade : '',
         endereco_complemento: tipoEntrega === 'entrega' ? enderecoComplemento : '',
+        endereco_cep: tipoEntrega === 'entrega' ? (enderecoCep.replace(/\D/g, '') || null) : null, // antes o CEP se perdia ao salvar
         data_prevista_pagamento: mexeuNoPagamento
           ? (situacaoPag === 'fiado' ? (dataPrevistaPagamento || null) : null)
           : ((pedido as any)?.data_prevista_pagamento ?? null),
@@ -1177,110 +1231,88 @@ export default function EditarPedido() {
             </div>
           </div>
 
-          {/* ── ENTREGA ── */}
+          {/* ── ENTREGA (03/10): como sai primeiro, data em português, endereço pronto pra ler ── */}
           <div className={`ep2-sec ${tab === 'entrega' ? 'ativa' : ''}`}>
-            <div className="ep2-card">
-              <p className="ep2-ct">Data e horário</p>
-              <div className="ep-row-2">
-                <div>
-                  <label className="ep-label">Data <ReqTag /></label>
-                  <input
-                    type="date"
-                    className="ep-input"
-                    value={dataEntrega}
-                    onChange={e => setDataEntrega(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="ep-label">Hora</label>
-                  <button type="button" className="ep-input ep-input-btn" onClick={() => setHoraSheetAberto(true)}>
-                    {horarioEntrega ? horarioEntrega.slice(0, 5) : <span style={{ color: '#B4B2A9' }}>Escolher</span>}
-                  </button>
-                </div>
-              </div>
+            <div className="ep2-seg2" role="tablist" aria-label="Como o pedido sai">
+              <button role="tab" aria-selected={tipoEntrega === 'entrega'} className={tipoEntrega === 'entrega' ? 'on' : ''} onClick={() => setTipoEntrega('entrega')}><I.truck />Entrega</button>
+              <button role="tab" aria-selected={tipoEntrega === 'retirada'} className={tipoEntrega === 'retirada' ? 'on' : ''} onClick={() => setTipoEntrega('retirada')}><I.home />Retirada</button>
+            </div>
 
-              <div className="ep-quick-chips">
-                <button
-                  type="button"
-                  className={`ep-chip ${dataEntrega === hojeISO() ? 'ep-chip--sel' : ''}`}
-                  onClick={() => setDataEntrega(hojeISO())}
-                >
-                  Hoje
-                </button>
-                <button
-                  type="button"
-                  className={`ep-chip ${dataEntrega === amanhaISO() ? 'ep-chip--sel' : ''}`}
-                  onClick={() => setDataEntrega(amanhaISO())}
-                >
-                  Amanhã
-                </button>
+            <div className="ep2-card">
+              <p className="ep2-ct">{tipoEntrega === 'entrega' ? 'Quando entregar' : 'Quando retirar'}</p>
+              <div className="ep2-when">
+                <button onClick={() => setDataSheet(true)}><CalendarBlank size={16} weight="bold" /><b>{dataEntrega ? diaPorExtenso(dataEntrega) : 'Escolher a data'}</b></button>
+                <button onClick={() => setDataSheet(true)}><I.clock /><b>{horarioEntrega ? horaCurta(horarioEntrega) : 'Horário'}</b></button>
+              </div>
+              <div className="ep2-chips">
+                {[0, 1].map(n => { const d = isoMaisDias(n); return <button key={n} className={dataEntrega === d ? 'on' : ''} onClick={() => setDataEntrega(d)}>{n === 0 ? 'Hoje' : 'Amanhã'}</button> })}
+                {dataEntrega && dataEntrega !== isoMaisDias(0) && dataEntrega !== isoMaisDias(1) && <button className="on">{diaCurto(dataEntrega)}</button>}
+                <button onClick={() => setDataSheet(true)}><CalendarBlank size={13} weight="bold" />Outro dia</button>
               </div>
             </div>
-            <div className="ep2-card">
-              <p className="ep2-ct">Como o pedido sai</p>
-              <div className="ep-toggle-2">
-                <button
-                  type="button"
-                  className={`ep-toggle-opt ${tipoEntrega === 'entrega' ? 'ep-toggle-opt--sel' : ''}`}
-                  onClick={() => setTipoEntrega('entrega')}
-                >
-                  <I.truck />
-                  Entrega
-                </button>
-                <button
-                  type="button"
-                  className={`ep-toggle-opt ${tipoEntrega === 'retirada' ? 'ep-toggle-opt--sel' : ''}`}
-                  onClick={() => setTipoEntrega('retirada')}
-                >
-                  <I.home />
-                  Retirada
-                </button>
-              </div>
 
-              {tipoEntrega === 'entrega' && (
-                <div className="ep-endereco">
-                  <div className="ep-row-2">
-                    <div>
-                      <label className="ep-label">CEP</label>
-                      <input
-                        className="ep-input"
-                        placeholder="00000-000"
-                        inputMode="numeric"
-                        value={enderecoCep}
-                        onChange={e => {
-                          const f = formatCep(e.target.value)
-                          setEnderecoCep(f)
-                          if (f.replace(/\D/g, '').length === 8) fetchCep(f)
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <label className="ep-label">Cidade</label>
-                      <input
-                        className="ep-input"
-                        value={enderecoCidade}
-                        onChange={e => setEnderecoCidade(e.target.value)}
-                        disabled={cepLoading}
-                      />
-                    </div>
+            {tipoEntrega === 'entrega' ? (
+              <div className="ep2-card">
+                <p className="ep2-ct">Endereço de entrega</p>
+                {!editandoEndereco && enderecoTemAlgo ? (<>
+                  <div className="ep2-addr">
+                    <MapPin size={19} weight="duotone" />
+                    <div><b>{[enderecoRua, enderecoNumero].filter(Boolean).join(', ') || 'Endereço sem rua'}</b>
+                      {enderecoComplemento && <small>{enderecoComplemento}</small>}
+                      <small>{[enderecoBairro, enderecoCidade].filter(Boolean).join(' · ')}{enderecoCep ? ` · CEP ${enderecoCep}` : ''}</small></div>
+                    <button className="ep2-lk" onClick={abrirEdicaoEndereco}><PencilSimple size={13} weight="bold" /> Editar</button>
                   </div>
-                  <label className="ep-label">Rua</label>
-                  <input className="ep-input" value={enderecoRua} onChange={e => setEnderecoRua(e.target.value)} placeholder="Rua ou avenida" disabled={cepLoading} />
-                  <div className="ep-row-2">
-                    <div>
-                      <label className="ep-label">Número</label>
-                      <input className="ep-input" value={enderecoNumero} onChange={e => setEnderecoNumero(e.target.value)} placeholder="Nº" inputMode="numeric" />
-                    </div>
-                    <div>
-                      <label className="ep-label">Bairro</label>
-                      <input className="ep-input" value={enderecoBairro} onChange={e => setEnderecoBairro(e.target.value)} disabled={cepLoading} />
-                    </div>
+                  <div className="ep2-acts">
+                    <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoCompleto)}`} target="_blank" rel="noreferrer"><MapTrifold size={15} weight="bold" />Mapa</a>
+                    <button onClick={copiarEndereco}><Copy size={15} weight="bold" />Copiar</button>
+                    <a className="wa" href={`https://wa.me/?text=${encodeURIComponent(textoEntregador)}`} target="_blank" rel="noreferrer"><PaperPlaneTilt size={15} weight="bold" />Entregador</a>
                   </div>
-                  <label className="ep-label">Complemento</label>
-                  <input className="ep-input" value={enderecoComplemento} onChange={e => setEnderecoComplemento(e.target.value)} placeholder="Apto, casa, referência..." />
-                </div>
-              )}
-            </div>
+                </>) : (<>
+                  {enderecoDaCliente && (
+                    <button className="ep2-usar" onClick={usarEnderecoDaCliente}>Usar o endereço {clienteNome.trim() ? `de ${toTitleCase(clienteNome.trim().split(/\s+/)[0])}` : 'da cliente'}
+                      <span>{[enderecoDaCliente.rua, enderecoDaCliente.numero].filter(Boolean).join(', ')}{enderecoDaCliente.bairro ? ` · ${enderecoDaCliente.bairro}` : ''}</span></button>
+                  )}
+                  <label className="ep2-lb" htmlFor="ep2-cep">CEP</label>
+                  <div className={`ep2-in ${cepAchado ? 'ok' : ''}`}>
+                    <input id="ep2-cep" inputMode="numeric" placeholder="00000-000" value={enderecoCep}
+                      onChange={e => { const d = e.target.value.replace(/\D/g, '').slice(0, 8); setEnderecoCep(d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d); setCepAchado(false); if (d.length === 8) fetchCep(d).then(() => setCepAchado(true)) }} />
+                    {cepLoading ? <em>buscando…</em> : cepAchado ? <em className="ok">✓ endereço achado</em> : null}
+                  </div>
+                  <div className="ep2-row-rn">
+                    <div><label className="ep2-lb" htmlFor="ep2-rua">Rua</label><input id="ep2-rua" className="ep2-in" value={enderecoRua} onChange={e => setEnderecoRua(e.target.value)} /></div>
+                    <div><label className="ep2-lb" htmlFor="ep2-num">Número</label><input id="ep2-num" className="ep2-in" inputMode="numeric" value={enderecoNumero} onChange={e => setEnderecoNumero(e.target.value)} /></div>
+                  </div>
+                  <label className="ep2-lb" htmlFor="ep2-comp">Complemento</label>
+                  <input id="ep2-comp" className="ep2-in" placeholder="Apto, bloco, referência…" value={enderecoComplemento} onChange={e => setEnderecoComplemento(e.target.value)} />
+                  <div className="ep2-row-bc">
+                    <div><label className="ep2-lb" htmlFor="ep2-bai">Bairro</label><input id="ep2-bai" className="ep2-in" value={enderecoBairro} onChange={e => setEnderecoBairro(e.target.value)} /></div>
+                    <div><label className="ep2-lb" htmlFor="ep2-cid">Cidade</label><input id="ep2-cid" className="ep2-in" value={enderecoCidade} onChange={e => setEnderecoCidade(e.target.value)} /></div>
+                  </div>
+                  {enderecoTemAlgo && (
+                    <div className="ep2-end-fim">
+                      <button className="ep2-lk cinza" onClick={cancelarEdicaoEndereco}>Cancelar</button>
+                      <button className="ep2-b1" onClick={() => setEditandoEndereco(false)}>Usar este endereço</button>
+                    </div>
+                  )}
+                </>)}
+                <div className="ep2-taxa"><Money size={16} /><span>Taxa de entrega</span>
+                  <span className="ep2-mini"><em>R$</em><input inputMode="numeric" value={textoBRL(taxaEntrega) || ''} placeholder="0,00" onChange={e => setTaxaEntrega(lerBRL(mascaraBRL(e.target.value)))} aria-label="Taxa de entrega" /></span></div>
+              </div>
+            ) : (
+              <div className="ep2-card">
+                <p className="ep2-ct">Onde retirar</p>
+                {lojaInfo?.endereco ? (<>
+                  <div className="ep2-addr"><Storefront size={19} weight="duotone" /><div><b>{lojaInfo.nome || 'Sua loja'}</b><small>{lojaInfo.endereco.linha1}</small>{lojaInfo.endereco.linha2 && <small>{lojaInfo.endereco.linha2}</small>}</div></div>
+                  <div className="ep2-acts dois">
+                    <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lojaInfo.endereco.completo)}`} target="_blank" rel="noreferrer"><MapTrifold size={15} weight="bold" />Mapa</a>
+                    <a className="wa" href={`https://wa.me/${telDigitos ? '55' + telDigitos : ''}?text=${encodeURIComponent(textoRetirada)}`} target="_blank" rel="noreferrer"><PaperPlaneTilt size={15} weight="bold" />Mandar pra cliente</a>
+                  </div>
+                  <p className="ep2-nota">O endereço vem dos <button className="ep2-lk" onClick={() => navigate('/cardapio-config')}>Dados da loja</button>.</p>
+                </>) : (
+                  <p className="ep2-vazio">Cadastre o endereço da sua loja nos <button className="ep2-lk" onClick={() => navigate('/cardapio-config')}>Dados da loja</button> pra ele aparecer aqui e na mensagem pra cliente.</p>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -1358,6 +1390,8 @@ export default function EditarPedido() {
         </CartProvider>
       )}
 
+      {dataSheet && <DataHoraSheet data={dataEntrega} hora={horarioEntrega} titulo={tipoEntrega === 'entrega' ? 'Data da entrega' : 'Data da retirada'}
+        onClose={() => setDataSheet(false)} onConfirmar={(d, h) => { setDataEntrega(d); if (h) setHorarioEntrega(h); setDataSheet(false) }} />}
       {/* ── ⋯ de um item: quantidade, recado e remover ── */}
       {itemMenu !== null && itens[itemMenu] && createPortal(
         <div className="ep2-ov" onClick={() => setItemMenu(null)}>
@@ -3690,6 +3724,43 @@ const EP2_CSS = `
   .ep2-im-rec:focus { outline: none; border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
   .ep2-im-bts { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding: 0 4px; }
   .ep2-im-bts .ep2-b1 { padding: 12px 26px; }
+  /* ══ aba Entrega (03/10) ══ */
+  .ep2-seg2 { display: flex; background: #E9DFE4; border-radius: 13px; padding: 3px; }
+  .ep2-seg2 button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; border: none; background: none; border-radius: 11px; padding: 11px; font-family: inherit; font-size: 14.5px; font-weight: 800; color: #6B5D64; cursor: pointer; }
+  .ep2-seg2 button svg { width: 17px; height: 17px; } .ep2-seg2 button.on { background: #fff; color: #C33A6E; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .ep2-when { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 8px; }
+  .ep2-when button { display: flex; align-items: center; gap: 8px; border: 1.5px solid #EDE6E9; background: #fff; border-radius: 12px; padding: 11px 12px; font-family: inherit; font-size: 14.5px; color: #2C1219; cursor: pointer; text-align: left; min-width: 0; }
+  .ep2-when button svg { color: #C33A6E; flex-shrink: 0; width: 16px; height: 16px; } .ep2-when b { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ep2-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 9px; }
+  .ep2-chips button { display: inline-flex; align-items: center; gap: 4px; border: 1.5px solid #EDE6E9; background: #fff; border-radius: 99px; padding: 7px 12px; font-family: inherit; font-size: 13px; font-weight: 700; color: #4B3A42; cursor: pointer; }
+  .ep2-chips button.on { border-color: #E85A8C; background: #FFF1F6; color: #C33A6E; }
+  .ep2-addr { display: flex; gap: 10px; align-items: flex-start; background: #FAF7F8; border-radius: 12px; padding: 11px; }
+  .ep2-addr > svg { color: #C33A6E; flex-shrink: 0; margin-top: 1px; } .ep2-addr > div { flex: 1; min-width: 0; }
+  .ep2-addr b { display: block; font-size: 15px; font-weight: 700; color: #2C1219; } .ep2-addr small { display: block; font-size: 13px; color: #6B5D64; margin-top: 2px; line-height: 1.35; }
+  .ep2-addr .ep2-lk { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .ep2-acts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 9px; } .ep2-acts.dois { grid-template-columns: 1fr 1.6fr; }
+  .ep2-acts > * { display: flex; align-items: center; justify-content: center; gap: 5px; border: 1.5px solid #EDE6E9; background: #fff; border-radius: 11px; padding: 10px 4px; font-family: inherit; font-size: 13px; font-weight: 800; color: #4B3A42; text-decoration: none; cursor: pointer; }
+  .ep2-acts > .wa { background: #16A34A; border-color: #16A34A; color: #fff; }
+  .ep2-usar { display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left; background: #FFF1F6; border: 1.5px dashed #F3A9C6; border-radius: 12px; padding: 10px 12px; font-family: inherit; font-size: 13.5px; font-weight: 800; color: #C33A6E; cursor: pointer; margin-bottom: 4px; }
+  .ep2-usar span { font-weight: 600; color: #6B5D64; font-size: 12.5px; }
+  .ep2-lb { display: block; font-size: 12.5px; font-weight: 800; color: #4B3A42; margin: 10px 0 5px; }
+  .ep2-in { width: 100%; box-sizing: border-box; height: 46px; border: 1.5px solid #EDE6E9; border-radius: 11px; padding: 0 12px; font-family: inherit; font-size: 15px; color: #2C1219; background: #fff; min-width: 0; }
+  div.ep2-in { display: flex; align-items: center; gap: 8px; } div.ep2-in input { flex: 1; min-width: 0; border: none; outline: none; font: inherit; color: inherit; background: none; height: 100%; }
+  div.ep2-in em { font-style: normal; font-size: 12px; font-weight: 700; color: #9A8E94; white-space: nowrap; } div.ep2-in em.ok { color: #15803D; } div.ep2-in.ok { border-color: #86EFAC; }
+  input.ep2-in:focus, div.ep2-in:focus-within { outline: none; border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
+  .ep2-row-rn { display: grid; grid-template-columns: minmax(0, 1fr) 92px; gap: 8px; } .ep2-row-bc { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+  .ep2-end-fim { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; } .ep2-end-fim .ep2-b1 { padding: 11px 18px; font-size: 14px; }
+  .ep2-lk.cinza { color: #9A8E94; }
+  .ep2-taxa { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding-top: 11px; border-top: 1px solid #F3EEF1; font-size: 13.5px; color: #4B3A42; }
+  .ep2-taxa > svg { color: #9A8E94; } .ep2-taxa .ep2-mini { margin-left: auto; }
+  .ep2-nota { margin: 9px 0 0; font-size: 12px; color: #9A8E94; } .ep2-nota .ep2-lk, .ep2-vazio .ep2-lk { padding: 0; font-size: inherit; text-decoration: underline; }
+  .ep2-cal-h { display: flex; justify-content: space-between; align-items: center; margin: 10px 4px 6px; } .ep2-cal-h b { font-size: 15px; }
+  .ep2-cal-h button { width: 32px; height: 32px; border-radius: 9px; border: none; background: #FFF1F6; color: #C33A6E; font-size: 18px; font-weight: 800; cursor: pointer; }
+  .ep2-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center; padding: 0 2px; }
+  .ep2-cal i { font-style: normal; font-size: 11px; font-weight: 800; color: #9A8E94; padding: 4px 0; }
+  .ep2-cal button { border: none; background: none; border-radius: 9px; padding: 8px 0; font-family: inherit; font-size: 14px; color: #2C1219; cursor: pointer; }
+  .ep2-cal button.hj { box-shadow: inset 0 0 0 1.5px #E85A8C; } .ep2-cal button.sel { background: #E85A8C; color: #fff; font-weight: 800; }
+  .ep2-cal-ok { width: 100%; margin-top: 14px; }
   .ep2-it { border: 1.5px solid #F0EBED; border-radius: 14px; padding: 12px; margin-bottom: 10px; background: #FEFCFD; }
   .ep2-it-top { display: flex; gap: 10px; align-items: center; }
   .ep2-it-f { width: 44px; height: 44px; border-radius: 12px; background: #FCE7F3; color: #C33A6E; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
@@ -3761,3 +3832,44 @@ const EP2_CSS = `
   .ep2-devol label { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: #4B3A42; padding: 5px 0; cursor: pointer; line-height: 1.35; }
   .ep2-devol input { margin-top: 2px; accent-color: #E85A8C; }
 `
+
+// ══════════════ Data e horário da entrega/retirada (calendário do app) ══════════════
+function DataHoraSheet({ data, hora, titulo, onClose, onConfirmar }: { data: string; hora: string; titulo: string; onClose: () => void; onConfirmar: (d: string, h: string) => void }) {
+  const hoje = new Date(); const isoHoje = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`
+  const base = data ? new Date(Number(data.slice(0, 4)), Number(data.slice(5, 7)) - 1, 1) : new Date(hoje.getFullYear(), hoje.getMonth(), 1)
+  const [mes, setMes] = useState({ a: base.getFullYear(), m: base.getMonth() })
+  const [dia, setDia] = useState(data || isoHoje)
+  const [h, setH] = useState((hora || '').slice(0, 5))
+  const [outroH, setOutroH] = useState(false)
+  const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
+  const DIAS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
+  const vazios = new Date(mes.a, mes.m, 1).getDay(), totalDias = new Date(mes.a, mes.m + 1, 0).getDate()
+  const iso = (d: number) => `${mes.a}-${String(mes.m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+  const HORAS = ['09:00', '12:00', '15:00', '18:00']
+  const horas = h && !HORAS.includes(h) ? [...HORAS, h].sort() : HORAS
+  const rotHora = (x: string) => { const [a, b] = x.split(':'); return `${Number(a)}h${b !== '00' ? b : ''}` }
+  const [y, mm, dd] = dia.split('-').map(Number)
+  const resumo = `${DIAS[new Date(y, mm - 1, dd).getDay()].slice(0, 3)}, ${String(dd).padStart(2, '0')}/${String(mm).padStart(2, '0')}${h ? ` às ${rotHora(h)}` : ''}`
+  const mudar = (n: number) => setMes(x => { const d = new Date(x.a, x.m + n, 1); return { a: d.getFullYear(), m: d.getMonth() } })
+  return createPortal(
+    <div className="ep2-ov" onClick={onClose}>
+      <div className="ep2-sh" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={titulo}>
+        <span className="ep2-alca" />
+        <b className="ep2-sh-t">{titulo}</b>
+        <div className="ep2-cal-h"><button onClick={() => mudar(-1)} aria-label="Mês anterior">‹</button><b>{MESES[mes.m]} {mes.a}</b><button onClick={() => mudar(1)} aria-label="Próximo mês">›</button></div>
+        <div className="ep2-cal">
+          {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((x, i) => <i key={i}>{x}</i>)}
+          {Array.from({ length: vazios }, (_, i) => <span key={'v' + i} />)}
+          {Array.from({ length: totalDias }, (_, i) => { const d = i + 1, s = iso(d); return (
+            <button key={d} className={`${s === dia ? 'sel' : ''} ${s === isoHoje ? 'hj' : ''}`} onClick={() => setDia(s)} aria-label={s}>{d}</button>) })}
+        </div>
+        <p className="ep2-im-lb">Horário</p>
+        <div className="ep2-chips">
+          {horas.map(x => <button key={x} className={h === x && !outroH ? 'on' : ''} onClick={() => { setH(x); setOutroH(false) }}>{rotHora(x)}</button>)}
+          <button className={outroH ? 'on' : ''} onClick={() => setOutroH(true)}>Outro</button>
+        </div>
+        {outroH && <input type="time" className="ep2-in" style={{ marginTop: 8 }} value={h} onChange={e => setH(e.target.value)} aria-label="Outro horário" />}
+        <button className="ep2-b1 ep2-cal-ok" onClick={() => onConfirmar(dia, h)}>Confirmar · {resumo}</button>
+      </div>
+    </div>, document.body)
+}
