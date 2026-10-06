@@ -304,6 +304,7 @@ export default function EditarPedido() {
   const [carregando, setCarregando] = useState(true)
   const [salvando, setSalvando] = useState(false)
   const [salvouOk, setSalvouOk] = useState(false)
+  const [recarga, setRecarga] = useState(0) // recarrega o pedido depois de salvar
   const [tab, setTab] = useState<Tab>('itens')
 
   // ── State editável (populated no load) ────────────────────────────────
@@ -636,10 +637,11 @@ export default function EditarPedido() {
           setProdutos(prds || [])
         }
       }
+      snapshotRef.current = null // tira a "foto" de novo: depois de salvar, nada fica pendente
       setCarregando(false)
     })()
     return () => { cancelado = true }
-  }, [id])
+  }, [id, recarga])
 
   // ── Fecha dropdown de status ao clicar fora ───────────────────────────
   useEffect(() => {
@@ -985,12 +987,13 @@ export default function EditarPedido() {
         }
       }
 
-      // Sucesso
+      setAjustesPendentes([])
+      // Sucesso: continua no pedido (03/10 — antes voltava pra lista), já com tudo recarregado
       setSalvouOk(true)
-      // Volta pra listagem depois de mostrar o feedback
-      setTimeout(() => {
-        navigate('/pedidos')
-      }, 700)
+      setSalvando(false)
+      setRecarga(x => x + 1)
+      avisar('Alterações salvas.')
+      setTimeout(() => setSalvouOk(false), 1800)
     } catch (err: any) {
       console.error('Erro inesperado ao salvar:', err)
       avisarJanela('Não foi possível salvar', 'Algo deu errado. Tente de novo em instantes.', 'erro')
@@ -1530,7 +1533,6 @@ export default function EditarPedido() {
                 placeholder="Nome ou telefone..."
                 value={buscaCliente}
                 onChange={e => setBuscaCliente(e.target.value)}
-                autoFocus
               />
             </div>
             <div className="ep-modal-lista">
@@ -1578,7 +1580,6 @@ export default function EditarPedido() {
                   placeholder="Buscar produto..."
                   value={buscaProduto}
                   onChange={e => setBuscaProduto(e.target.value)}
-                  autoFocus
                 />
               </div>
 
@@ -3740,7 +3741,8 @@ const EP2_CSS = `
   .ep2-it-det > .ep2-chip { margin-top: 8px; }
   @media (min-width: 1024px) { .ep2-it-det { display: block; } .ep2-it-chev, .ep2-it-marcas { display: none; } .ep2-it-h { cursor: default; } .ep2-it-res { display: none; } }
   .ep2-toast--desfazer { display: flex; align-items: center; gap: 14px; justify-content: space-between; min-width: 260px; }
-  .ep2-toast--desfazer button { border: none; background: none; color: #F9A8D4; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer; padding: 2px 4px; }
+  .ep2-toast--desfazer::before { content: none; }
+  .ep2-toast--desfazer button { border: none; background: none; color: #C33A6E; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer; padding: 2px 4px; }
   /* ══ itens em estilo cupom (03/10): sempre abertos, valores em coluna, personalização como anexo grampeado ══ */
   .ep2-cupom { position: relative; background: #FFFDF8; border-radius: 10px 10px 0 0; padding: 14px 14px 16px; margin-bottom: 10px; box-shadow: 0 10px 24px -12px rgba(44,18,25,.28); font-variant-numeric: tabular-nums; }
   .ep2-cupom::after { content: ""; position: absolute; left: 0; right: 0; bottom: -8px; height: 8px; background: radial-gradient(circle at 7px 0, #FFFDF8 6.5px, transparent 7px) 0 0 / 14px 8px repeat-x; } /* borda serrilhada */
@@ -3914,7 +3916,9 @@ const EP2_CSS = `
   html.teclado-aberto .ep2-foot { bottom: var(--teclado, 0px); }
   .ep2-foot .ep2-mud { grid-column: 1 / -1; }
   @keyframes ep2Sobe { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
-  .ep2-toast { position: fixed; left: 50%; bottom: calc(150px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 1400; background: #2C1219; color: #fff; padding: 12px 16px; border-radius: 12px; font-size: 13.5px; font-weight: 700; box-shadow: 0 10px 26px rgba(0,0,0,.25); max-width: calc(100vw - 32px); }
+  .ep2-toast { position: fixed; left: 50%; bottom: calc(150px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 1400; display: inline-flex; align-items: center; gap: 8px; background: #fff; color: #2C1219; padding: 9px 15px 9px 11px; border-radius: 99px; border: 1px solid #EDE4E8; font-size: 13px; font-weight: 600; box-shadow: 0 6px 18px -6px rgba(44,18,25,.25); max-width: calc(100vw - 32px); white-space: nowrap; animation: ep2ToastIn .2s ease; }
+  .ep2-toast::before { content: "✓"; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: #DCFCE7; color: #15803D; font-size: 11px; font-weight: 900; flex-shrink: 0; }
+  @keyframes ep2ToastIn { from { opacity: 0; transform: translate(-50%, 6px); } to { opacity: 1; transform: translate(-50%, 0); } }
   .ep2-ov { position: fixed; inset: 0; z-index: 1300; background: rgba(45,31,38,.5); display: flex; align-items: flex-end; justify-content: center; font-family: var(--font-base); }
   @media (min-width: 768px) { .ep2-ov { align-items: center; } }
   .ep2-sh { width: 100%; max-width: 440px; background: #fff; border-radius: 22px 22px 0 0; padding: 10px 14px calc(16px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 2px; max-height: 88dvh; overflow-y: auto; }
