@@ -1192,59 +1192,55 @@ export default function EditarPedido() {
               </div>
             )}
 
-            <div className="ep2-cupom">
-              <div className="ep2-cup-h"><b>ITENS DO PEDIDO</b><span>#{pedido.numero || '—'}</span></div>
+            <div className="ep3">
+              <div className="ep3-h"><b>Itens do pedido</b><span>{itens.length} {itens.length === 1 ? 'item' : 'itens'}</span></div>
               {itens.map((it: any, idx) => {
                 const p = it.personalizacoes || {}
                 const extras: any[] = Array.isArray(p.extras) ? p.extras : []
                 const sabores: any[] = p.kit?.sabores || []
                 const eKit = !!p.kit?.total
-                const linhas: string[] = []
-                if (p.tamanho?.nome) linhas.push(`Tamanho ${p.tamanho.nome}${p.tamanho.peso_kg ? ` · ~${String(p.tamanho.peso_kg).replace('.', ',')} kg` : ''}`)
-                if (p.massa?.nome) linhas.push(`Massa: ${p.massa.nome}`)
-                if (p.sabor?.nome) linhas.push(`Sabor: ${p.sabor.nome}`)
-                if (Array.isArray(p.recheios) && p.recheios.length) linhas.push(`${p.recheios.length > 1 ? 'Recheios' : 'Recheio'}: ${p.recheios.map((r: any) => r.nome).join(', ')}`)
-                if (p.cobertura?.nome) linhas.push(`Cobertura: ${p.cobertura.nome}`)
-                const temAnexo = !!p.foto_referencia || !!(it.observacoes || '').trim()
+                const q = it.quantidade || 1
+                const campos: [string, string][] = []
+                if (p.tamanho?.nome) campos.push(['Tamanho', `${p.tamanho.nome}${p.tamanho.peso_kg ? ` (${String(p.tamanho.peso_kg).replace('.', ',')} kg)` : ''}`])
+                if (p.massa?.nome) campos.push(['Massa', p.massa.nome])
+                if (p.sabor?.nome) campos.push(['Sabor', p.sabor.nome])
+                if (Array.isArray(p.recheios) && p.recheios.length) campos.push([p.recheios.length > 1 ? 'Recheios' : 'Recheio', p.recheios.map((r: any) => r.nome).join(', ')])
+                if (p.cobertura?.nome) campos.push(['Cobertura', p.cobertura.nome])
+                if (sabores.length) campos.push(['Sabores', sabores.map((s: any) => `${s.nome} (${s.qtd})`).join(', ')])
+                const obs = (it.observacoes || '').trim()
+                const unidade = q > 1 || eKit ? `${formatMoney(it.valor_unitario || 0)} ${eKit ? 'por kit' : 'cada'}` : ''
                 return (
-                  <div key={it.id || `n${idx}`} className="ep2-cup-it">
+                  <div key={it.id || `n${idx}`} className="ep3-it">
                     <span className="ep2-cup-f"><I.box />{fotoDoItem(it) && <img src={fotoDoItem(it)!} alt="" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />}</span>
-                    <div className="ep2-cup-c">
-                    <div className="ep2-cup-ih">
-                      <span className="ep2-cup-q">{it.quantidade}×</span>
-                      <b className="ep2-cup-n">{it.nome_produto}</b><i />
-                      <b className="ep2-cup-v">{num2((it.valor_unitario || 0) * (it.quantidade || 1))}</b>
-                      <button className="ep2-cup-mx" onClick={() => setItemMenu(idx)} aria-label={`Opções de ${it.nome_produto}`}><DotsThree size={18} weight="bold" /></button>
-                    </div>
-                    {linhas.map(l => <div key={l} className="ep2-cup-l"><span>{l}</span></div>)}
-                    {sabores.map((s: any) => <div key={s.nome} className="ep2-cup-l"><span>{s.nome}</span><i /><b>{s.qtd} un.</b></div>)}
-                    {extras.map((e: any, i: number) => <div key={i} className="ep2-cup-l"><span>+ {e.nome}</span><i /><b>{Number(e.valor) > 0 ? num2(Number(e.valor)) : 'grátis'}</b></div>)}
-                    {(it.quantidade > 1 || eKit) && <div className="ep2-cup-l ep2-cup-un"><span>{num2(it.valor_unitario || 0)} {eKit ? 'por kit' : 'cada'}</span></div>}
-                    {temAnexo && (
-                      <div className="ep2-anexo">
-                        <span className="ep2-anexo-clip" aria-hidden="true"><Paperclip size={14} weight="bold" /></span>
-                        <p className="ep2-anexo-t">Personalização</p>
-                        {p.foto_referencia && (
-                          <a className="ep2-anexo-foto" href={p.foto_referencia} target="_blank" rel="noreferrer" aria-label="Ampliar a foto de referência">
-                            <ImageIcon size={26} className="ep2-anexo-ph" />
-                            <img src={p.foto_referencia} alt="Foto de referência" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />
-                            <span className="ep2-anexo-zm"><MagnifyingGlassPlus size={13} weight="bold" />Ampliar</span>
-                          </a>
-                        )}
-                        {(it.observacoes || '').trim() && (
-                          <div className="ep2-anexo-rec"><Quotes size={16} weight="fill" /><span>{it.observacoes}</span></div>
-                        )}
-                      </div>
-                    )}
+                    <div className="ep3-c">
+                      <p className="ep3-nm"><em>{q}x</em> {it.nome_produto}</p>
+                      {campos.map(([k, v]) => <p key={k} className="ep3-cp"><span>{k}:</span> {v}</p>)}
+                      {extras.length > 0 && (
+                        <div className="ep3-ads"><span>Adicionais:</span>
+                          {extras.map((e: any, i: number) => <span key={i} className="ep3-ad"><span>{e.nome}</span><b>{Number(e.valor) > 0 ? `+ ${formatMoney(Number(e.valor))}${q > 1 ? (eKit ? '/kit' : '/un.') : ''}` : 'grátis'}</b></span>)}
+                        </div>
+                      )}
+                      {(p.foto_referencia || obs) && (
+                        <div className="ep3-obs"><small>Observação do cliente</small>
+                          {p.foto_referencia && (
+                            <div className="ep3-ref"><a href={p.foto_referencia} target="_blank" rel="noreferrer" aria-label="Ampliar a foto de referência">
+                              <ImageIcon size={28} className="ep2-anexo-ph" />
+                              <img src={p.foto_referencia} alt="Foto de referência" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />
+                              <span className="ep2-anexo-zm"><MagnifyingGlassPlus size={13} weight="bold" />Ampliar</span>
+                            </a></div>
+                          )}
+                          {obs && <p>“{obs}”</p>}
+                        </div>
+                      )}
+                      <div className="ep3-vl"><span>Valor</span>{unidade && <small>{unidade}</small>}<b>{formatMoney((it.valor_unitario || 0) * q)}</b>
+                        <button className="ep2-cup-mx" onClick={() => setItemMenu(idx)} aria-label={`Opções de ${it.nome_produto}`}><DotsThree size={18} weight="bold" /></button></div>
                     </div>
                   </div>
                 )
               })}
-              <div className="ep2-cup-tot">
-                <span>{itens.length} {itens.length === 1 ? 'item' : 'itens'} · {itens.reduce((s, x) => s + (x.quantidade || 0), 0)} {itens.reduce((s, x) => s + (x.quantidade || 0), 0) === 1 ? 'unidade' : 'unidades'}</span>
-                <div><b>Subtotal dos itens</b><b>{formatMoney(subtotalItens)}</b></div>
-              </div>
-              <button className="ep2-addi" onClick={() => setModalProduto(true)}><Plus size={14} weight="bold" />Adicionar item</button>
+              <div className="ep3-tot"><span>{itens.length} {itens.length === 1 ? 'item' : 'itens'} · {itens.reduce((s, x) => s + (x.quantidade || 0), 0)} {itens.reduce((s, x) => s + (x.quantidade || 0), 0) === 1 ? 'unidade' : 'unidades'}</span>
+                <div><span>Subtotal</span><b>{formatMoney(subtotalItens)}</b></div></div>
+              <button className="ep3-add" onClick={() => setModalProduto(true)}><Plus size={14} weight="bold" />Adicionar item</button>
             </div>
           </div>
 
@@ -3776,6 +3772,30 @@ const EP2_CSS = `
   .ep2-cal button { border: none; background: none; border-radius: 9px; padding: 8px 0; font-family: inherit; font-size: 14px; color: #2C1219; cursor: pointer; }
   .ep2-cal button.hj { box-shadow: inset 0 0 0 1.5px #E85A8C; } .ep2-cal button.sel { background: #E85A8C; color: #fff; font-weight: 800; }
   .ep2-cal-ok { width: 100%; margin-top: 14px; }
+  /* ══ itens do pedido (03/10): modelo aprovado — nome numa linha, campos com rótulo, adicionais em caixinhas
+        (uma por linha), referência grande e centralizada, valor no fim. Nada quebra linha (só o recado). ══ */
+  .ep3 { background: #fff; border-radius: 16px; padding: 14px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(44,18,25,.05), 0 8px 22px -6px rgba(44,18,25,.10); border: 1px solid #EADFE4; font-variant-numeric: tabular-nums; }
+  .ep3-h { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; } .ep3-h b { font-size: 15.5px; font-weight: 800; color: #2C1219; } .ep3-h span { font-size: 12.5px; font-weight: 600; color: #9A8E94; }
+  .ep3-it { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 10px; padding: 13px 0; border-top: 1px solid #F2ECEF; }
+  .ep3-h + .ep3-it { border-top: none; }
+  .ep3-c { min-width: 0; }
+  .ep3-nm { margin: 0 0 4px; font-size: 15.5px; font-weight: 700; color: #2C1219; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ep3-nm em { font-style: normal; font-weight: 800; color: #C33A6E; }
+  .ep3-cp { margin: 0; font-size: 13.5px; color: #2C1219; line-height: 1.55; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ep3-cp span { color: #8A7E84; }
+  .ep3-ads { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; margin-top: 3px; min-width: 0; } .ep3-ads > span:first-child { font-size: 13.5px; color: #8A7E84; }
+  .ep3-ad { display: inline-flex; gap: 5px; max-width: 100%; box-sizing: border-box; white-space: nowrap; font-size: 12.5px; font-weight: 600; color: #2C1219; border: 1.5px solid #E8DDE2; border-radius: 8px; padding: 3px 9px; background: #fff; }
+  .ep3-ad > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; } /* só o nome encolhe */
+  .ep3-ad b { flex-shrink: 0; font-weight: 700; color: #C33A6E; } /* o valor fica sempre visível */
+  .ep3-obs { margin-top: 10px; } .ep3-obs small { display: block; font-size: 12px; font-weight: 700; color: #8A7E84; }
+  .ep3-ref { display: flex; justify-content: center; margin: 7px 0 2px -54px; } /* centralizada no item inteiro */
+  .ep3-ref a { position: relative; display: block; width: 100%; max-width: 260px; height: 180px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #F7C6D9, #C9B4F5); box-shadow: 0 6px 16px -8px rgba(44,18,25,.35); }
+  .ep3-ref img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .ep3-obs p { margin: 6px 0 0; font-size: 13.5px; font-style: italic; color: #2C1219; line-height: 1.45; }
+  .ep3-vl { display: flex; align-items: center; gap: 6px; margin-top: 9px; } .ep3-vl > span { font-size: 13.5px; color: #8A7E84; } .ep3-vl small { font-size: 12px; color: #A99CA2; white-space: nowrap; }
+  .ep3-vl b { margin-left: auto; font-size: 16px; font-weight: 700; color: #2C1219; white-space: nowrap; }
+  .ep3-tot { margin-top: 4px; padding-top: 10px; border-top: 1px solid #2C1219; } .ep3-tot > span { font-size: 12px; color: #9A8E94; }
+  .ep3-tot > div { display: flex; justify-content: space-between; align-items: baseline; margin-top: 3px; } .ep3-tot > div span { font-size: 14.5px; font-weight: 700; } .ep3-tot > div b { font-size: 17px; font-weight: 700; }
+  .ep3-add { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; margin-top: 12px; border: none; border-radius: 12px; padding: 11px; background: #FDF2F6; color: #C33A6E; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
   .ep2-it { border: 1.5px solid #F0EBED; border-radius: 14px; padding: 12px; margin-bottom: 10px; background: #FEFCFD; }
   .ep2-it-top { display: flex; gap: 10px; align-items: center; }
   .ep2-it-f { width: 44px; height: 44px; border-radius: 12px; background: #FCE7F3; color: #C33A6E; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
