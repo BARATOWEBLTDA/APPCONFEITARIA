@@ -1,6 +1,6 @@
 import { DotsThree, Check, Heart, Plus, NotePencil, Trash, PencilSimple, ArrowUp, ArrowCounterClockwise, CalendarBlank, Image as ImageIcon, CaretRight, Phone, ArrowsDownUp, Cake } from '@phosphor-icons/react'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
-import { Paperclip, MagnifyingGlassPlus, Quotes, MapPin, MapTrifold, Copy, PaperPlaneTilt, Money, Storefront } from '@phosphor-icons/react'
+import { Paperclip, MagnifyingGlassPlus, Quotes, MapPin, MapTrifold, Copy, Money, Storefront } from '@phosphor-icons/react'
 import { CartProvider } from '@/context/CartContext'
 import { ProductModal } from '@/components/cart/ProductModal'
 import { itemDoCarrinhoParaPedido } from '@/lib/itemDoCarrinho'
@@ -421,9 +421,21 @@ export default function EditarPedido() {
     setRemovido(null); clearTimeout(removidoTimer.current)
   }
   // foto do item: a do próprio item ou a do cadastro do produto
+  // fotos dos produtos do próprio pedido (mesmo inativos ou fora da lista de adicionar)
+  const [fotosProdutos, setFotosProdutos] = useState<Record<string, string>>({})
+  const idsProdutosItens = [...new Set(itens.map((x: any) => x.produto_id).filter(Boolean))].sort().join(',')
+  useEffect(() => {
+    if (!idsProdutosItens) return
+    ;(async () => {
+      const { data } = await supabase.from('produtos').select('id, imagem_url').in('id', idsProdutosItens.split(','))
+      const m: Record<string, string> = {}
+      for (const p of (data as any[]) || []) if (p.imagem_url) m[p.id] = p.imagem_url
+      setFotosProdutos(m)
+    })()
+  }, [idsProdutosItens])
   const fotoDoItem = (it: any): string | null => {
-    const f = it.imagem_url || produtos.find(x => x.id === it.produto_id)?.imagem_url || ''
-    return String(f).split(',').map(s => s.trim()).filter(Boolean)[0] || null
+    const f = it.imagem_url || fotosProdutos[it.produto_id] || produtos.find(x => x.id === it.produto_id)?.imagem_url || ''
+    return String(f).split(/,(?=\s*https?:)/).map(s => s.trim()).filter(Boolean)[0] || null // várias fotos separadas por vírgula: pega a primeira
   }
   // produto com opções (tamanho, recheios, kit…) abre a janela do cardápio; simples entra direto
   const escolherProduto = async (p: Produto) => {
@@ -1194,6 +1206,8 @@ export default function EditarPedido() {
                 const temAnexo = !!p.foto_referencia || !!(it.observacoes || '').trim()
                 return (
                   <div key={it.id || `n${idx}`} className="ep2-cup-it">
+                    <span className="ep2-cup-f"><I.box />{fotoDoItem(it) && <img src={fotoDoItem(it)!} alt="" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />}</span>
+                    <div className="ep2-cup-c">
                     <div className="ep2-cup-ih">
                       <span className="ep2-cup-q">{it.quantidade}×</span>
                       <b className="ep2-cup-n">{it.nome_produto}</b><i />
@@ -1220,6 +1234,7 @@ export default function EditarPedido() {
                         )}
                       </div>
                     )}
+                    </div>
                   </div>
                 )
               })}
@@ -1242,12 +1257,7 @@ export default function EditarPedido() {
               <p className="ep2-ct">{tipoEntrega === 'entrega' ? 'Quando entregar' : 'Quando retirar'}</p>
               <div className="ep2-when">
                 <button onClick={() => setDataSheet(true)}><CalendarBlank size={16} weight="bold" /><b>{dataEntrega ? diaPorExtenso(dataEntrega) : 'Escolher a data'}</b></button>
-                <button onClick={() => setDataSheet(true)}><I.clock /><b>{horarioEntrega ? horaCurta(horarioEntrega) : 'Horário'}</b></button>
-              </div>
-              <div className="ep2-chips">
-                {[0, 1].map(n => { const d = isoMaisDias(n); return <button key={n} className={dataEntrega === d ? 'on' : ''} onClick={() => setDataEntrega(d)}>{n === 0 ? 'Hoje' : 'Amanhã'}</button> })}
-                {dataEntrega && dataEntrega !== isoMaisDias(0) && dataEntrega !== isoMaisDias(1) && <button className="on">{diaCurto(dataEntrega)}</button>}
-                <button onClick={() => setDataSheet(true)}><CalendarBlank size={13} weight="bold" />Outro dia</button>
+                <button onClick={() => setHoraSheetAberto(true)}><I.clock /><b>{horarioEntrega ? horaCurta(horarioEntrega) : 'Horário'}</b></button>
               </div>
             </div>
 
@@ -1265,7 +1275,7 @@ export default function EditarPedido() {
                   <div className="ep2-acts">
                     <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoCompleto)}`} target="_blank" rel="noreferrer"><MapTrifold size={15} weight="bold" />Mapa</a>
                     <button onClick={copiarEndereco}><Copy size={15} weight="bold" />Copiar</button>
-                    <a className="wa" href={`https://wa.me/?text=${encodeURIComponent(textoEntregador)}`} target="_blank" rel="noreferrer"><PaperPlaneTilt size={15} weight="bold" />Entregador</a>
+                    <a className="wa" href={`https://wa.me/?text=${encodeURIComponent(textoEntregador)}`} target="_blank" rel="noreferrer"><IconeWhatsApp size={16} />Entregador</a>
                   </div>
                 </>) : (<>
                   {enderecoDaCliente && (
@@ -1305,7 +1315,7 @@ export default function EditarPedido() {
                   <div className="ep2-addr"><Storefront size={19} weight="duotone" /><div><b>{lojaInfo.nome || 'Sua loja'}</b><small>{lojaInfo.endereco.linha1}</small>{lojaInfo.endereco.linha2 && <small>{lojaInfo.endereco.linha2}</small>}</div></div>
                   <div className="ep2-acts dois">
                     <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lojaInfo.endereco.completo)}`} target="_blank" rel="noreferrer"><MapTrifold size={15} weight="bold" />Mapa</a>
-                    <a className="wa" href={`https://wa.me/${telDigitos ? '55' + telDigitos : ''}?text=${encodeURIComponent(textoRetirada)}`} target="_blank" rel="noreferrer"><PaperPlaneTilt size={15} weight="bold" />Mandar pra cliente</a>
+                    <a className="wa" href={`https://wa.me/${telDigitos ? '55' + telDigitos : ''}?text=${encodeURIComponent(textoRetirada)}`} target="_blank" rel="noreferrer"><IconeWhatsApp size={16} />Mandar pra cliente</a>
                   </div>
                   <p className="ep2-nota">O endereço vem dos <button className="ep2-lk" onClick={() => navigate('/cardapio-config')}>Dados da loja</button>.</p>
                 </>) : (
@@ -1390,8 +1400,8 @@ export default function EditarPedido() {
         </CartProvider>
       )}
 
-      {dataSheet && <DataHoraSheet data={dataEntrega} hora={horarioEntrega} titulo={tipoEntrega === 'entrega' ? 'Data da entrega' : 'Data da retirada'}
-        onClose={() => setDataSheet(false)} onConfirmar={(d, h) => { setDataEntrega(d); if (h) setHorarioEntrega(h); setDataSheet(false) }} />}
+      {dataSheet && <DataHoraSheet data={dataEntrega} titulo={tipoEntrega === 'entrega' ? 'Data da entrega' : 'Data da retirada'}
+        onClose={() => setDataSheet(false)} onConfirmar={(d) => { setDataEntrega(d); setDataSheet(false) }} />}
       {/* ── ⋯ de um item: quantidade, recado e remover ── */}
       {itemMenu !== null && itens[itemMenu] && createPortal(
         <div className="ep2-ov" onClick={() => setItemMenu(null)}>
@@ -1562,7 +1572,7 @@ export default function EditarPedido() {
                 {produtosFiltrados.map(p => (
                   <button key={p.id} type="button" className="ep-prod-item" onClick={() => escolherProduto(p)}>
                     <div className="ep-prod-item-img">
-                      {p.imagem_url ? <img src={String(p.imagem_url).split(',')[0].trim()} alt={p.nome} /> : <I.box />}
+                      {p.imagem_url ? <img src={String(p.imagem_url).split(/,(?=\s*https?:)/)[0].trim()} alt={p.nome} /> : <I.box />}
                     </div>
                     <div className="ep-prod-item-info">
                       <div className="ep-prod-item-nome">{toTitleCase(p.nome)}</div>
@@ -1823,7 +1833,7 @@ export default function EditarPedido() {
           value={horarioEntrega}
           onChange={setHorarioEntrega}
           onClose={() => setHoraSheetAberto(false)}
-          titulo="Horário de entrega"
+          titulo={tipoEntrega === 'retirada' ? 'Horário da retirada' : 'Horário da entrega'}
         />
       )}
 
@@ -3694,17 +3704,20 @@ const EP2_CSS = `
   .ep2-cupom::after { content: ""; position: absolute; left: 0; right: 0; bottom: -8px; height: 8px; background: radial-gradient(circle at 7px 0, #FFFDF8 6.5px, transparent 7px) 0 0 / 14px 8px repeat-x; } /* borda serrilhada */
   .ep2-cup-h { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 4px; } /* sem a linha tracejada embaixo do título */
   .ep2-cup-h b { font-size: 12px; font-weight: 900; letter-spacing: .12em; color: #2C1219; } .ep2-cup-h span { font-size: 12px; font-weight: 700; color: #9A8E94; }
-  .ep2-cup-it { padding: 10px 0 11px; border-bottom: 1.5px dashed #E6DADF; }
+  .ep2-cup-it { padding: 10px 0 11px; border-bottom: 1.5px dashed #E6DADF; display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 10px; align-items: start; }
+  .ep2-cup-f { position: relative; width: 44px; height: 44px; border-radius: 11px; background: #F3EEF1; color: #B5A6AD; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-top: 1px; }
+  .ep2-cup-f svg { width: 20px; height: 20px; } .ep2-cup-f img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .ep2-cup-c { min-width: 0; }
   .ep2-cup-ih { display: flex; align-items: baseline; gap: 6px; }
   .ep2-cup-q { font-size: 13.5px; font-weight: 900; color: #C33A6E; min-width: 26px; flex-shrink: 0; }
   .ep2-cup-n { font-size: 15px; font-weight: 800; color: #2C1219; min-width: 0; }
   .ep2-cup-ih i, .ep2-cup-l i { flex: 1; border-bottom: 1.5px dotted #D6C8CF; transform: translateY(-3px); min-width: 12px; }
   .ep2-cup-v { font-size: 15px; font-weight: 700; color: #2C1219; white-space: nowrap; }
   .ep2-cup-mx { align-self: center; border: none; background: #F5EEF1; color: #8C7B84; width: 30px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-left: 2px; }
-  .ep2-cup-l { display: flex; align-items: baseline; gap: 6px; font-size: 13px; color: #4B3A42; padding: 3px 0 0 32px; line-height: 1.35; }
+  .ep2-cup-l { display: flex; align-items: baseline; gap: 6px; font-size: 13px; color: #4B3A42; padding: 3px 0 0 0; line-height: 1.35; }
   .ep2-cup-l b { font-weight: 700; color: #2C1219; white-space: nowrap; }
   .ep2-cup-un span { font-size: 12px; color: #9A8E94; }
-  .ep2-anexo { position: relative; margin: 14px 4px 4px 22px; background: #fff; border: 1.5px dashed #F3A9C6; border-radius: 12px; padding: 12px; transform: rotate(-.6deg); box-shadow: 0 6px 14px -8px rgba(195,58,110,.35); }
+  .ep2-anexo { position: relative; margin: 14px 4px 4px 0; background: #fff; border: 1.5px dashed #F3A9C6; border-radius: 12px; padding: 12px; transform: rotate(-.6deg); box-shadow: 0 6px 14px -8px rgba(195,58,110,.35); }
   .ep2-anexo-clip { position: absolute; top: -12px; left: 16px; width: 26px; height: 26px; border-radius: 50%; background: #fff; color: #C33A6E; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 4px rgba(0,0,0,.18); }
   .ep2-anexo-t { margin: 2px 0 8px; font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: #C33A6E; }
   .ep2-anexo-foto { position: relative; display: block; width: 100%; height: 150px; border-radius: 10px; overflow: hidden; background: linear-gradient(135deg, #F7C6D9, #C9B4F5); }
@@ -3834,22 +3847,17 @@ const EP2_CSS = `
 `
 
 // ══════════════ Data e horário da entrega/retirada (calendário do app) ══════════════
-function DataHoraSheet({ data, hora, titulo, onClose, onConfirmar }: { data: string; hora: string; titulo: string; onClose: () => void; onConfirmar: (d: string, h: string) => void }) {
+function DataHoraSheet({ data, titulo, onClose, onConfirmar }: { data: string; titulo: string; onClose: () => void; onConfirmar: (d: string) => void }) {
   const hoje = new Date(); const isoHoje = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`
   const base = data ? new Date(Number(data.slice(0, 4)), Number(data.slice(5, 7)) - 1, 1) : new Date(hoje.getFullYear(), hoje.getMonth(), 1)
   const [mes, setMes] = useState({ a: base.getFullYear(), m: base.getMonth() })
   const [dia, setDia] = useState(data || isoHoje)
-  const [h, setH] = useState((hora || '').slice(0, 5))
-  const [outroH, setOutroH] = useState(false)
   const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
   const DIAS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
   const vazios = new Date(mes.a, mes.m, 1).getDay(), totalDias = new Date(mes.a, mes.m + 1, 0).getDate()
   const iso = (d: number) => `${mes.a}-${String(mes.m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-  const HORAS = ['09:00', '12:00', '15:00', '18:00']
-  const horas = h && !HORAS.includes(h) ? [...HORAS, h].sort() : HORAS
-  const rotHora = (x: string) => { const [a, b] = x.split(':'); return `${Number(a)}h${b !== '00' ? b : ''}` }
   const [y, mm, dd] = dia.split('-').map(Number)
-  const resumo = `${DIAS[new Date(y, mm - 1, dd).getDay()].slice(0, 3)}, ${String(dd).padStart(2, '0')}/${String(mm).padStart(2, '0')}${h ? ` às ${rotHora(h)}` : ''}`
+  const resumo = `${DIAS[new Date(y, mm - 1, dd).getDay()].slice(0, 3)}, ${String(dd).padStart(2, '0')}/${String(mm).padStart(2, '0')}`
   const mudar = (n: number) => setMes(x => { const d = new Date(x.a, x.m + n, 1); return { a: d.getFullYear(), m: d.getMonth() } })
   return createPortal(
     <div className="ep2-ov" onClick={onClose}>
@@ -3863,13 +3871,7 @@ function DataHoraSheet({ data, hora, titulo, onClose, onConfirmar }: { data: str
           {Array.from({ length: totalDias }, (_, i) => { const d = i + 1, s = iso(d); return (
             <button key={d} className={`${s === dia ? 'sel' : ''} ${s === isoHoje ? 'hj' : ''}`} onClick={() => setDia(s)} aria-label={s}>{d}</button>) })}
         </div>
-        <p className="ep2-im-lb">Horário</p>
-        <div className="ep2-chips">
-          {horas.map(x => <button key={x} className={h === x && !outroH ? 'on' : ''} onClick={() => { setH(x); setOutroH(false) }}>{rotHora(x)}</button>)}
-          <button className={outroH ? 'on' : ''} onClick={() => setOutroH(true)}>Outro</button>
-        </div>
-        {outroH && <input type="time" className="ep2-in" style={{ marginTop: 8 }} value={h} onChange={e => setH(e.target.value)} aria-label="Outro horário" />}
-        <button className="ep2-b1 ep2-cal-ok" onClick={() => onConfirmar(dia, h)}>Confirmar · {resumo}</button>
+        <button className="ep2-b1 ep2-cal-ok" onClick={() => onConfirmar(dia)}>Confirmar · {resumo}</button>
       </div>
     </div>, document.body)
 }
