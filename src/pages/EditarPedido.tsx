@@ -481,6 +481,7 @@ export default function EditarPedido() {
   })()
   const desdeTxt = clienteInfo?.desde ? new Date(clienteInfo.desde).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }).replace('. de ', '/').replace(' de ', '/').replace('.', '') : ''
   const telDigitos = (clienteTelefone || '').replace(/\D/g, '')
+  const nomeCurto = (n: string) => { const p = toTitleCase(n.trim()).split(/\s+/).filter(Boolean); return p.length > 2 ? `${p[0]} ${p[p.length - 1]}` : p.join(' ') }
 
   // ── Aba Entrega (03/10) ──────────────────────────────────────────────
   const [editandoEndereco, setEditandoEndereco] = useState(false)
@@ -1164,7 +1165,7 @@ export default function EditarPedido() {
 
       {/* ══════════════ ABAS (só no celular) ══════════════ */}
       <div className="ep2-tabs">
-        {([['itens', 'Itens', <I.box key="b" />], ['entrega', 'Entrega', <I.truck key="t" />], ['pagamento', 'Pagamento', <I.card key="c" />]] as [Tab, string, any][]).map(([k, l, ic]) => (
+        {([['itens', 'Itens', <Cake key="b" size={16} weight="bold" />], ['entrega', 'Entrega', <I.truck key="t" />], ['pagamento', 'Pagamento', <I.card key="c" />]] as [Tab, string, any][]).map(([k, l, ic]) => (
           <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{ic}{l}{k === 'pagamento' && faltaReceber > 0.009 ? <em className="ep2-tab-dot" aria-label="falta receber" /> : null}</button>
         ))}
       </div>
@@ -1183,11 +1184,10 @@ export default function EditarPedido() {
             ) : (
               <div className="ep2-ca">
                 <button className="ep2-ca-top" onClick={() => clienteId ? navigate(`/clientes/${clienteId}`) : setModalCliente(true)} aria-label="Abrir o perfil da cliente">
-                  {clienteInfo?.foto ? <img className="ep2-av" src={clienteInfo.foto} alt="" /> : <span className="ep2-av">{clienteNome.trim().split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase()}</span>}
+                  {clienteInfo?.foto ? <img className="ep2-av" src={clienteInfo.foto} alt="" /> : <span className="ep2-av">{nomeCurto(clienteNome).split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase()}</span>}
                   <div className="ep2-cli-t">
-                    <b>{toTitleCase(clienteNome.trim())}</b>
-                    <small>{!clienteId ? (telDigitos ? clienteTelefone : 'Cliente sem cadastro') : clienteInfo === null ? ' ' : clienteInfo.pedidos === 0 ? 'Primeiro pedido' : `${desdeTxt ? `Cliente desde ${desdeTxt} · ` : ''}${clienteInfo.pedidos + 1} pedidos`}</small>
-                    {clienteId && clienteInfo?.pedidos === 0 && <span className="ep2-tag nova">Cliente nova</span>}
+                    <b><span className="ep2-cli-rot">Cliente:</span> {nomeCurto(clienteNome)}</b>
+                    <small>{!clienteId ? (telDigitos ? clienteTelefone : 'Cliente sem cadastro') : clienteInfo === null ? ' ' : clienteInfo.pedidos === 0 ? 'Primeiro pedido, cliente novo.' : `Cliente recorrente · ${clienteInfo.pedidos + 1} pedidos`}</small>
                   </div>
                   {clienteId && <CaretRight size={16} weight="bold" className="ep2-ca-chev" />}
                 </button>
@@ -3658,7 +3658,7 @@ const EP2_CSS = `
   .ep2-hd-bt svg { width: 18px; height: 18px; }
   .ep2-hd-orig { font-size: 11.5px; font-weight: 800; background: rgba(255,255,255,.2); border-radius: 8px; padding: 5px 9px; flex-shrink: 0; }
   @media (max-width: 767px) { .ep2-hd-orig, .ep2-so-desk { display: none !important; } }
-  .ep2-st { background: #fff; border-bottom: 1px solid #F0EBED; padding: 16px 14px 14px; display: flex; flex-direction: column; gap: 12px; } /* mais espaço até o cabeçalho rosa */
+  .ep2-st { background: #fff; padding: 16px 14px 14px; display: flex; flex-direction: column; gap: 12px; } /* mais espaço até o cabeçalho rosa */
   .ep2-st-chip { align-self: flex-start; font-size: 11.5px; font-weight: 800; color: #854F0B; background: #FEF0DF; border-radius: 7px; padding: 3px 9px; }
   /* etapas: número em vez de círculo vazio, e uma linha de progresso ligando as etapas */
   .ep2-st-l { display: flex; justify-content: space-between; gap: 4px; position: relative; }
@@ -3700,7 +3700,7 @@ const EP2_CSS = `
   .ep2-ca-top { display: flex; align-items: center; gap: 10px; width: 100%; border: none; background: none; padding: 0; font-family: inherit; text-align: left; color: #2C1219; cursor: pointer; }
   .ep2-ca .ep2-av, .ep2-cv .ep2-av { width: 44px; height: 44px; background: #F1EDEF; color: #6B5D64; object-fit: cover; }
   .ep2-av.vz { border: 2px dashed #DDD0D6; color: #A99BA2; } .ep2-av.vz svg { width: 18px; height: 18px; }
-  .ep2-ca .ep2-cli-t b { white-space: normal; overflow: visible; line-height: 1.25; }
+  .ep2-ca .ep2-cli-t b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; } .ep2-cli-rot { font-weight: 600; color: #8A7E84; }
   .ep2-ca .ep2-cli-t small, .ep2-cv .ep2-cli-t small { display: block; line-height: 1.35; margin-top: 2px; }
   .ep2-ca .ep2-tag { display: table; }
   .ep2-ca-chev { color: #C9BEC3; flex-shrink: 0; }
