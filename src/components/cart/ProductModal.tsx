@@ -33,9 +33,12 @@ interface Props {
   onClose: () => void
   product: Produto | null
   corBotao?: string
+  /** Editar pedido (03/10): recebe o item escolhido em vez de colocar no carrinho */
+  onAdicionar?: (item: any) => void
+  rotuloAdicionar?: string
 }
 
-export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }: Props) {
+export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', onAdicionar, rotuloAdicionar }: Props) {
   const { addItem } = useCart()
   const [quantity, setQuantity] = useState(1)
   // Kit por quantidade (docinhos/salgados): quantos de cada sabor
@@ -350,7 +353,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
       .filter(e => extrasMarcados.has(e.id))
       .map(e => ({ id: e.id, nome: e.nome, valor: Number(e.valor) || 0 }))
 
-    addItem({
+    ;(onAdicionar || addItem)({
       id: product.id, name: product.nome, description: product.descricao || '',
       price: calculo.final,
       imageUrl: product.imagem_url,
@@ -911,7 +914,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
             }}
           >
             <span>
-              {podeAdicionar ? 'Adicionar ao carrinho' : 'Escolha as opções obrigatórias'}
+              {podeAdicionar ? (rotuloAdicionar || 'Adicionar ao carrinho') : 'Escolha as opções obrigatórias'}
             </span>
             {podeAdicionar && <span>{formatCurrency(totalDisplay)}</span>}
           </button>

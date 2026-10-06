@@ -10,7 +10,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { PerfilTab } from './PerfilTab'
 import { PedidosTab } from './PedidosTab'
 import HorarioSheet from '@/components/HorarioSheet'
-import { criarBreakdownV1, criarPersonalizacoesV1, SNAPSHOT_VERSION_ATUAL } from '@/lib/pedido-snapshot'
+import { itemDoCarrinhoParaPedido } from '@/lib/itemDoCarrinho'
 
 interface CheckoutConfig {
   formas_pagamento: string[]
@@ -424,48 +424,11 @@ function CartContent({
           if (typeof num === 'number') numeroPedido = num
           if (items.length > 0) {
             await supabase.from('pedido_itens').insert(
-              items.map((item: any) => {
-                // ─── Snapshot v1 RICO (Cardápio V3) ─────────────────
-                // Prioriza item.escolhas (V3) — se ausente, cai no legado
-                const escolhas = item.escolhas || {}
-                const personalizacoes = escolhas.massa || escolhas.recheios || escolhas.cobertura || escolhas.sabor || escolhas.tamanho || escolhas.kit
-                  ? {
-                      massa: escolhas.massa || null,
-                      recheios: escolhas.recheios || undefined,
-                      cobertura: escolhas.cobertura || null,
-                      sabor: escolhas.sabor || null,
-                      tamanho: escolhas.tamanho || null,
-                      ...(escolhas.kit ? { kit: escolhas.kit } : {}),
-                    }
-                  : criarPersonalizacoesV1({
-                      massa: item.selectedMassa || null,
-                      recheio: item.selectedRecheio || null,
-                      cobertura: item.selectedCobertura || null,
-                    })
-
-                const breakdown = item.precoBreakdown
-                  ? item.precoBreakdown
-                  : criarBreakdownV1({ final: item.price })
-
-                // Adicionais (topo, vela...) e foto de referência também vão pro pedido
-                const temExtras = Array.isArray(item.extrasBiblioteca) && item.extrasBiblioteca.length > 0
-                const personalizacoesFinal = (temExtras || item.fotoReferencia)
-                  ? {
-                      ...(personalizacoes || {}),
-                      ...(temExtras ? { extras: item.extrasBiblioteca.map((x: any) => ({ nome: x.nome, valor: Number(x.valor) || 0 })) } : {}),
-                      ...(item.fotoReferencia ? { foto_referencia: item.fotoReferencia } : {}),
-                    }
-                  : personalizacoes
-
-                return {
-                  pedido_id: pedidoSalvo.id, user_id: confeteiraUserId, produto_id: item.id,
-                  nome_produto: item.name, quantidade: item.quantity, valor_unitario: item.price,
-                  desconto: 0, observacoes: item.observations || null,
-                  personalizacoes: personalizacoesFinal,
-                  preco_breakdown: breakdown,
-                  snapshot_version: SNAPSHOT_VERSION_ATUAL,
-                }
-              })
+              items.map((item: any) => ({
+                // Tudo o que o cliente escolheu vai pro pedido (regra única em lib/itemDoCarrinho)
+                pedido_id: pedidoSalvo.id, user_id: confeteiraUserId, desconto: 0,
+                ...itemDoCarrinhoParaPedido(item),
+              }))
             )
             await supabase.from('pedido_historico').insert({
               pedido_id: pedidoSalvo.id, user_id: confeteiraUserId,

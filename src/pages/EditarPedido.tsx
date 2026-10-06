@@ -1,5 +1,11 @@
 import { DotsThree, Check, Heart, Plus, NotePencil, Trash, PencilSimple, ArrowUp, ArrowCounterClockwise, CalendarBlank, Image as ImageIcon, CaretRight, Phone, ArrowsDownUp, Cake } from '@phosphor-icons/react'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
+import { CaretDown } from '@phosphor-icons/react'
+import { CartProvider } from '@/context/CartContext'
+import { ProductModal } from '@/components/cart/ProductModal'
+import { itemDoCarrinhoParaPedido } from '@/lib/itemDoCarrinho'
+import { carregarGruposDoBanco } from '@/lib/produto-grupos'
+import { kitAtivo } from '@/lib/kitQuantidade'
 import FinalizarPedidoSheet from '@/components/pedidos/FinalizarPedidoSheet'
 import { ReceberSheet } from '@/pages/FinanceiroAReceber'
 import Folha, { FOLHA_CSS } from '@/components/financeiro/Folha'
@@ -394,6 +400,40 @@ export default function EditarPedido() {
     await carregarPagamentos(pedido.id)
   }
   const avisar = (m: string) => { setAviso(m); setTimeout(() => setAviso(''), 3500) }
+
+  // ── Itens (03/10): fechados com resumo, abrem ao tocar; remover com "Desfazer"; adicionar com opções ──
+  const [itensAbertos, setItensAbertos] = useState<Set<number>>(new Set())
+  const [removido, setRemovido] = useState<{ item: any; idx: number } | null>(null)
+  const removidoTimer = useRef<any>(null)
+  const [produtoOpcoes, setProdutoOpcoes] = useState<any | null>(null)
+  const removerComDesfazer = (idx: number) => {
+    const item = itens[idx]
+    setItens(prev => prev.filter((_, i) => i !== idx))
+    setItensAbertos(new Set())
+    setRemovido({ item, idx })
+    clearTimeout(removidoTimer.current)
+    removidoTimer.current = setTimeout(() => setRemovido(null), 6000)
+  }
+  const desfazerRemocao = () => {
+    if (!removido) return
+    setItens(prev => { const n = [...prev]; n.splice(Math.min(removido.idx, n.length), 0, removido.item); return n })
+    setRemovido(null); clearTimeout(removidoTimer.current)
+  }
+  // foto do item: a do próprio item ou a do cadastro do produto
+  const fotoDoItem = (it: any): string | null => {
+    const f = it.imagem_url || produtos.find(x => x.id === it.produto_id)?.imagem_url || ''
+    return String(f).split(',').map(s => s.trim()).filter(Boolean)[0] || null
+  }
+  // produto com opções (tamanho, recheios, kit…) abre a janela do cardápio; simples entra direto
+  const escolherProduto = async (p: Produto) => {
+    const { data } = await supabase.from('produtos').select('*').eq('id', p.id).maybeSingle()
+    const completo: any = data || p
+    const temOpcoes = carregarGruposDoBanco(completo).some(g => g.ativo && g.opcoes.length > 0) || kitAtivo(completo.kit_qtd)
+    if (temOpcoes) { setModalProduto(false); setBuscaProduto(''); setCatDropdownAberto(false); setProdutoOpcoes(completo); return }
+    addItem(p)
+    avisar(`${p.nome} adicionado.`)
+  }
+
 
   // ── Cartão da cliente (03/10): foto, cliente desde, nº de pedidos, gasto, último pedido e aniversário ──
   const [clienteInfo, setClienteInfo] = useState<{ foto: string | null; desde: string | null; nascimento: string | null; pedidos: number; gasto: number; ultimo: string | null } | null>(null)
@@ -1084,7 +1124,7 @@ export default function EditarPedido() {
             )}
 
             <div className="ep2-card">
-              <p className="ep2-ct">Itens do pedido <em>({totalItens})</em></p>
+              <div className="ep2-sec-h"><p className="ep2-ct">Itens do pedido</p><span>{itens.length} {itens.length === 1 ? 'item' : 'itens'} · <b>{formatMoney(subtotalItens)}</b></span></div>
               {itens.map((it: any, idx) => {
                 const p = it.personalizacoes || {}
                 const linhas: [string, string][] = []
@@ -1093,47 +1133,65 @@ export default function EditarPedido() {
                 if (Array.isArray(p.recheios) && p.recheios.length) linhas.push([p.recheios.length > 1 ? 'Recheios' : 'Recheio', p.recheios.map((r: any) => r.nome).join(', ')])
                 if (p.cobertura?.nome) linhas.push(['Cobertura', p.cobertura.nome])
                 const extras: any[] = Array.isArray(p.extras) ? p.extras : []
+                const sabores: any[] = p.kit?.sabores || []
                 const base = Number(it.preco_breakdown?.base_efetivo ?? it.preco_breakdown?.preco_base_original) || 0
                 const adic = Number(it.preco_breakdown?.adicionais_total) || 0
+                const eKit = !!p.kit?.total
+                // resumo do item fechado (até 2 linhas)
+                const partes: string[] = []
+                if (p.tamanho?.nome) partes.push(p.tamanho.nome)
+                if (Array.isArray(p.recheios) && p.recheios.length) partes.push(p.recheios.map((r: any) => r.nome).join(', '))
+                else if (p.sabor?.nome) partes.push(p.sabor.nome)
+                else if (p.massa?.nome) partes.push(p.massa.nome)
+                if (sabores.length) partes.push(sabores.map(s => `${s.nome} · ${s.qtd} un.`).join(' · '))
+                if (extras.length) partes.push(`+ ${extras[0].nome}${extras.length > 1 ? ` e mais ${extras.length - 1}` : ''}`)
+                if (!partes.length) partes.push(`${formatMoney(it.valor_unitario || 0)} cada`)
+                const marcas = [p.foto_referencia ? 'foto' : '', it.observacoes ? 'recado' : ''].filter(Boolean)
+                const foto = fotoDoItem(it)
+                const aberto = itensAbertos.has(idx)
                 return (
-                  <div key={it.id || idx} className="ep2-it">
-                    <div className="ep2-it-top">
-                      <span className="ep2-it-f">{it.imagem_url ? <img src={it.imagem_url} alt="" /> : <I.box />}</span>
-                      <div className="ep2-it-n"><b>{it.nome_produto}</b>
-                        {p.tamanho?.nome && <span className="ep2-chip">Tamanho {p.tamanho.nome}{p.tamanho.peso_kg ? ` · ~${String(p.tamanho.peso_kg).replace('.', ',')} kg` : ''}</span>}
-                        {p.kit?.total && <span className="ep2-chip">Kit de {p.kit.total} un.</span>}
+                  <div key={it.id || `n${idx}`} className={`ep2-it ${aberto ? 'aberto' : ''}`}>
+                    <button className="ep2-it-h" onClick={() => setItensAbertos(prev => { const n = new Set(prev); n.has(idx) ? n.delete(idx) : n.add(idx); return n })} aria-expanded={aberto}>
+                      <span className="ep2-it-f"><I.box />{foto && <img src={foto} alt="" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />}</span>
+                      <span className="ep2-it-n">
+                        <b>{it.nome_produto}</b>
+                        <small className="ep2-it-res">{partes.join(' · ')}</small>
+                        {marcas.length > 0 && <em className="ep2-it-marcas">com {marcas.join(' e ')}</em>}
+                      </span>
+                      <span className="ep2-it-r"><b>{formatMoney((it.valor_unitario || 0) * (it.quantidade || 1))}</b><small>{eKit ? `${it.quantidade} ${it.quantidade > 1 ? 'kits' : 'kit'}` : `${it.quantidade} un.`}</small></span>
+                      <CaretDown size={15} weight="bold" className="ep2-it-chev" />
+                    </button>
+                    <div className="ep2-it-det">
+                      {p.tamanho?.nome && <span className="ep2-chip">Tamanho {p.tamanho.nome}{p.tamanho.peso_kg ? ` · ~${String(p.tamanho.peso_kg).replace('.', ',')} kg` : ''}</span>}
+                      {eKit && <span className="ep2-chip">Kit de {p.kit.total} un.</span>}
+                      {(linhas.length > 0 || sabores.length > 0) && (
+                        <div className="ep2-esc">
+                          {linhas.map(([l, v]) => <div key={l} className="ep2-ln"><span>{l}</span><b>{v}</b></div>)}
+                          {sabores.map((s: any) => <div key={s.nome} className="ep2-sab"><Heart size={13} weight="duotone" />{s.nome} · {s.qtd} un.</div>)}
+                        </div>
+                      )}
+                      {extras.map((e, i) => <div key={i} className="ep2-ad"><span><Plus size={12} weight="bold" />{e.nome}</span><b>{Number(e.valor) > 0 ? `+ ${formatMoney(Number(e.valor))}` : 'grátis'}</b></div>)}
+                      {p.foto_referencia && (
+                        <a className="ep2-foto" href={p.foto_referencia} target="_blank" rel="noreferrer"><span className="ep2-foto-i"><img src={p.foto_referencia} alt="" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} /><ImageIcon size={18} /></span><div><b>Foto de referência</b><small>Toque pra ampliar ou baixar</small></div></a>
+                      )}
+                      {recadoEditando === idx ? (
+                        <div className="ep2-recado-ed">
+                          <input autoFocus className="ep-input" placeholder="Ex.: escrever Parabéns, Lia!" value={it.observacoes || ''} onChange={e => setItens(prev => prev.map((x, i) => i === idx ? { ...x, observacoes: e.target.value } : x))} onKeyDown={e => { if (e.key === 'Enter') setRecadoEditando(null) }} />
+                          <button className="ep2-lk" onClick={() => setRecadoEditando(null)}>OK</button>
+                        </div>
+                      ) : it.observacoes ? (
+                        <button className="ep2-ob" onClick={() => setRecadoEditando(idx)}><NotePencil size={13} weight="bold" /><span>{it.observacoes}</span></button>
+                      ) : null}
+                      <div className="ep2-pr"><span>{adic > 0 && base > 0 ? `${formatMoney(base)} + ${formatMoney(adic)} adicionais` : eKit ? `${formatMoney(it.valor_unitario || 0)} por kit` : `${formatMoney(it.valor_unitario || 0)} cada`}</span></div>
+                      <div className="ep2-ac">
+                        <div className="ep2-qty">
+                          <button onClick={() => updateQtd(idx, -1)} aria-label="Diminuir" disabled={it.quantidade <= 1}>−</button>
+                          <input type="number" inputMode="numeric" value={it.quantidade} onChange={e => setQtdManual(idx, Number(e.target.value))} aria-label="Quantidade" />
+                          <button onClick={() => updateQtd(idx, 1)} aria-label="Aumentar">+</button>
+                        </div>
+                        {!it.observacoes && recadoEditando !== idx && <button className="ep2-lk" onClick={() => setRecadoEditando(idx)}><NotePencil size={13} weight="bold" /> Recado</button>}
+                        <button className="ep2-rm" onClick={() => removerComDesfazer(idx)}><Trash size={14} weight="bold" />Remover</button>
                       </div>
-                    </div>
-                    {(linhas.length > 0 || (p.kit?.sabores || []).length > 0) && (
-                      <div className="ep2-esc">
-                        {linhas.map(([l, v]) => <div key={l} className="ep2-ln"><span>{l}</span><b>{v}</b></div>)}
-                        {(p.kit?.sabores || []).map((s: any) => <div key={s.nome} className="ep2-sab"><Heart size={13} weight="duotone" />{s.qtd} {String(s.nome).toLowerCase()}</div>)}
-                      </div>
-                    )}
-                    {extras.map((e, i) => <div key={i} className="ep2-ad"><span><Plus size={12} weight="bold" />{e.nome}</span><b>{Number(e.valor) > 0 ? `+ ${formatMoney(Number(e.valor))}` : 'grátis'}</b></div>)}
-                    {p.foto_referencia && (
-                      <a className="ep2-foto" href={p.foto_referencia} target="_blank" rel="noreferrer"><span className="ep2-foto-i"><img src={p.foto_referencia} alt="" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} /><ImageIcon size={18} /></span><div><b>Foto de referência</b><small>Toque pra ampliar ou baixar</small></div></a>
-                    )}
-                    {recadoEditando === idx ? (
-                      <div className="ep2-recado-ed">
-                        <input autoFocus className="ep-input" placeholder="Ex.: escrever Parabéns, Lia!" value={it.observacoes || ''} onChange={e => setItens(prev => prev.map((x, i) => i === idx ? { ...x, observacoes: e.target.value } : x))} onKeyDown={e => { if (e.key === 'Enter') setRecadoEditando(null) }} />
-                        <button className="ep2-lk" onClick={() => setRecadoEditando(null)}>OK</button>
-                      </div>
-                    ) : it.observacoes ? (
-                      <button className="ep2-ob" onClick={() => setRecadoEditando(idx)}><NotePencil size={13} weight="bold" /><span>{it.observacoes}</span></button>
-                    ) : null}
-                    <div className="ep2-pr">
-                      <span>{adic > 0 && base > 0 ? `${formatMoney(base)} + ${formatMoney(adic)} adicionais` : it.quantidade > 1 ? `${formatMoney(it.valor_unitario)} cada` : ''}</span>
-                      <b>{formatMoney((it.valor_unitario || 0) * (it.quantidade || 1))}</b>
-                    </div>
-                    <div className="ep2-ac">
-                      <div className="ep2-qty">
-                        <button onClick={() => updateQtd(idx, -1)} aria-label="Diminuir" disabled={it.quantidade <= 1}>−</button>
-                        <input type="number" inputMode="numeric" value={it.quantidade} onChange={e => setQtdManual(idx, Number(e.target.value))} aria-label="Quantidade" />
-                        <button onClick={() => updateQtd(idx, 1)} aria-label="Aumentar">+</button>
-                      </div>
-                      {!it.observacoes && recadoEditando !== idx && <button className="ep2-lk" onClick={() => setRecadoEditando(idx)}>+ Recado</button>}
-                      <button className="ep2-rm" onClick={() => removerItem(idx)}><Trash size={14} weight="bold" />Remover</button>
                     </div>
                   </div>
                 )
@@ -1310,6 +1368,18 @@ export default function EditarPedido() {
         </div>
       )}
       {aviso && <div className="ep2-toast" role="status">{aviso}</div>}
+      {removido && (
+        <div className="ep2-toast ep2-toast--desfazer" role="status"><span>{removido.item?.nome_produto || 'Item'} removido</span><button onClick={desfazerRemocao}>Desfazer</button></div>
+      )}
+      {produtoOpcoes && (
+        <CartProvider>
+          <ProductModal isOpen product={produtoOpcoes} onClose={() => setProdutoOpcoes(null)} corBotao="#E85A8C" rotuloAdicionar="Adicionar ao pedido"
+            onAdicionar={(item: any) => {
+              setItens(prev => [...prev, { ...itemDoCarrinhoParaPedido(item), observacoes: item.observations || '', imagem_url: produtoOpcoes.imagem_url || null } as any])
+              setProdutoOpcoes(null); avisar(`${produtoOpcoes.nome} adicionado.`)
+            }} />
+        </CartProvider>
+      )}
 
       {/* ── menu ⋯ ── */}
       {menuAberto && createPortal(
@@ -1457,9 +1527,9 @@ export default function EditarPedido() {
 
               <div className="ep-modal-lista">
                 {produtosFiltrados.map(p => (
-                  <button key={p.id} type="button" className="ep-prod-item" onClick={() => addItem(p)}>
+                  <button key={p.id} type="button" className="ep-prod-item" onClick={() => escolherProduto(p)}>
                     <div className="ep-prod-item-img">
-                      {p.imagem_url ? <img src={p.imagem_url} alt={p.nome} /> : <span>🎂</span>}
+                      {p.imagem_url ? <img src={String(p.imagem_url).split(',')[0].trim()} alt={p.nome} /> : <I.box />}
                     </div>
                     <div className="ep-prod-item-info">
                       <div className="ep-prod-item-nome">{toTitleCase(p.nome)}</div>
@@ -3571,10 +3641,25 @@ const EP2_CSS = `
   .ep2-cb.wa { background: #16A34A; border-color: #16A34A; color: #fff; }
   .ep2-cb.mute { grid-column: span 2; color: #9A8E94; font-weight: 600; border-style: dashed; } .ep2-cb.mute u { color: #C33A6E; font-weight: 800; }
   .ep2-add { display: inline-flex; align-items: center; gap: 4px; border: none; background: #E85A8C; color: #fff; border-radius: 10px; padding: 9px 11px; font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer; flex-shrink: 0; }
+  /* itens (03/10): fechados com resumo no celular, abrem ao tocar; no computador ficam abertos */
+  .ep2-sec-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+  .ep2-sec-h .ep2-ct { margin: 0; } .ep2-sec-h span { font-size: 12.5px; color: #6B5D64; white-space: nowrap; } .ep2-sec-h span b { color: #2C1219; font-weight: 700; }
+  .ep2-it { padding: 0 !important; overflow: hidden; }
+  .ep2-it-h { display: flex; align-items: center; gap: 10px; width: 100%; border: none; background: none; padding: 10px; font-family: inherit; text-align: left; color: #2C1219; cursor: pointer; }
+  .ep2-it-h .ep2-it-n { flex: 1; min-width: 0; } .ep2-it-h .ep2-it-n b { font-size: 14.5px; }
+  .ep2-it-res { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 12px; color: #888780; line-height: 1.35; margin-top: 2px; }
+  .ep2-it-marcas { display: block; font-style: normal; font-size: 11px; font-weight: 700; color: #B08A9A; margin-top: 2px; }
+  .ep2-it-r { flex-shrink: 0; text-align: right; } .ep2-it-r b { display: block; font-size: 14.5px; font-weight: 700; } .ep2-it-r small { font-size: 11.5px; color: #888780; }
+  .ep2-it-chev { color: #C9BEC3; flex-shrink: 0; transition: transform .2s ease; } .ep2-it.aberto .ep2-it-chev { transform: rotate(180deg); }
+  .ep2-it-det { display: none; border-top: 1px solid #F5F0F2; padding: 4px 12px 12px; } .ep2-it.aberto .ep2-it-det { display: block; }
+  .ep2-it-det > .ep2-chip { margin-top: 8px; }
+  @media (min-width: 1024px) { .ep2-it-det { display: block; } .ep2-it-chev, .ep2-it-marcas { display: none; } .ep2-it-h { cursor: default; } .ep2-it-res { display: none; } }
+  .ep2-toast--desfazer { display: flex; align-items: center; gap: 14px; justify-content: space-between; min-width: 260px; }
+  .ep2-toast--desfazer button { border: none; background: none; color: #F9A8D4; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer; padding: 2px 4px; }
   .ep2-it { border: 1.5px solid #F0EBED; border-radius: 14px; padding: 12px; margin-bottom: 10px; background: #FEFCFD; }
   .ep2-it-top { display: flex; gap: 10px; align-items: center; }
   .ep2-it-f { width: 44px; height: 44px; border-radius: 12px; background: #FCE7F3; color: #C33A6E; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
-  .ep2-it-f img { width: 100%; height: 100%; object-fit: cover; } .ep2-it-f svg { width: 20px; height: 20px; }
+  .ep2-it-f { position: relative; } .ep2-it-f img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; } /* se a foto não carregar, aparece o ícone por baixo */ .ep2-it-f svg { width: 20px; height: 20px; }
   .ep2-it-n { flex: 1; min-width: 0; } .ep2-it-n b { display: block; font-size: 15px; font-weight: 800; color: #2C1219; }
   .ep2-chip { display: inline-block; margin: 4px 4px 0 0; font-size: 11.5px; font-weight: 800; color: #993556; background: #FCE0E9; border-radius: 7px; padding: 3px 8px; }
   .ep2-esc { margin-top: 10px; border-top: 1px solid #F5F0F2; padding-top: 7px; }
