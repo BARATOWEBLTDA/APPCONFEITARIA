@@ -52,7 +52,7 @@
   --focus-ring:       0 0 0 3px rgba(232,90,140,0.22);
 
   /* ── Sidebar / Nav (grafite escuro) ── */
-  --sidebar-bg:           #2D1F26;
+  --sidebar-bg:           var(--vinho-escuro); /* guia A1: o grafite #2D1F26 saiu */
   --sidebar-text:         #F0E8EB;
   --sidebar-text-muted:   rgba(240,232,235,0.55);
   --sidebar-hover-bg:     rgba(232,90,140,0.08);

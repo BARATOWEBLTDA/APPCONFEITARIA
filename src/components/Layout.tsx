@@ -6,11 +6,12 @@ import DooIA from "@/components/DooIA";
 import MaisDrawer from "@/components/MaisDrawer";
 import { useState, useEffect, type ReactNode } from "react";
 import {
-  House, CalendarDots, ShoppingBag, ClipboardText, Users, BookOpen,
-  Package, CurrencyDollar, Gear, CaretDown, ForkKnife, List,
-  User, SquaresFour, Camera, Cake, Clipboard, Plus,
+  House, CalendarDots, ShoppingBag, Users, BookOpen,
+  Package, CurrencyDollar, Gear, CaretDown,
+  SquaresFour, Camera, Cake, FolderSimple, PuzzlePiece, Plus,
   Receipt, Sparkle,
 } from "@phosphor-icons/react";
+import type { Icon } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
@@ -30,6 +31,33 @@ function SidebarGroup({ label, icon, paths, location, children }: { label: strin
       </button>
       {open && <div className="nav-subitems">{children}</div>}
     </div>
+  );
+}
+
+/**
+ * Item do menu lateral (07/10 · 2.95, guia A14): ícone de 20px, em traço grosso;
+ * quando é a tela atual, o ícone fica cheio e rosa. "ativoSe" marca o item também em telas "filhas".
+ */
+function ItemMenu({ to, icone: Icone, children, ativoSe, tour }: { to: string; icone: Icon; children: ReactNode; ativoSe?: (caminho: string) => boolean; tour?: string }) {
+  const { pathname } = useLocation();
+  const extra = !!ativoSe?.(pathname);
+  return (
+    <NavLink to={to} data-tour={tour} className={({ isActive }) => `nav-item ${(isActive || extra) ? "active" : ""}`}>
+      {({ isActive }) => (<>
+        <span className="nav-icon"><Icone size={20} weight={(isActive || extra) ? "fill" : "bold"} /></span>
+        <span className="nav-rotulo">{children}</span>
+      </>)}
+    </NavLink>
+  );
+}
+function SubitemMenu({ to, icone: Icone, children, end }: { to: string; icone: Icon; children: ReactNode; end?: boolean }) {
+  return (
+    <NavLink to={to} end={end} className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>
+      {({ isActive }) => (<>
+        <span className="nav-subicon" aria-hidden="true"><Icone size={16} weight={isActive ? "fill" : "bold"} /></span>
+        {children}
+      </>)}
+    </NavLink>
   );
 }
 
@@ -162,78 +190,37 @@ export default function Layout() {
           <p className="sidebar-greeting-date">{new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }).replace(/^\w/, c => c.toUpperCase())}</p>
         </div>
 
-        <nav className="sidebar-nav">
-          <NavLink to="/inicio" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-icon"><House size={18} weight="duotone" /></span>Início
-          </NavLink>
+        <nav className="sidebar-nav" aria-label="Menu principal">
+          <ItemMenu to="/inicio" icone={House}>Início</ItemMenu>
+          <ItemMenu to="/vendas/novo" icone={Plus}>Nova Venda</ItemMenu>
 
-          <NavLink to="/vendas/novo" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-icon"><Plus size={18} weight="bold" /></span>Nova Venda
-          </NavLink>
-
-          {/* ═══ CADASTROS (accordion) ═══ */}
+          {/* ═══ CADASTROS (abre e fecha) ═══ */}
           <button
             type="button"
             className={`nav-item nav-item--group ${isInCadastros ? "active-parent" : ""}`}
             onClick={() => setCadastrosOpen(o => !o)}
             aria-expanded={cadastrosOpen}
           >
-            <span className="nav-icon"><Clipboard size={18} weight="duotone" /></span>
-            <span style={{ flex: 1, textAlign: "left" }}>Cadastros</span>
-            <CaretDown size={14} weight="bold" style={{ transform: cadastrosOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }} />
+            <span className="nav-icon"><FolderSimple size={20} weight={isInCadastros ? "fill" : "bold"} /></span>
+            <span className="nav-rotulo">Cadastros</span>
+            <CaretDown size={16} weight="bold" className="nav-seta" style={{ transform: cadastrosOpen ? "rotate(180deg)" : "rotate(0)" }} />
           </button>
           {cadastrosOpen && (
             <div className="nav-group-body">
-              <NavLink to="/produtos" end className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>
-                <span className="nav-subicon" aria-hidden="true"><Cake size={14} weight="duotone" /></span>
-                Produtos
-              </NavLink>
-              <NavLink to="/categorias" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>
-                <span className="nav-subicon" aria-hidden="true">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-                </span>
-                Categorias
-              </NavLink>
-              <NavLink to="/insumos" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>
-                <span className="nav-subicon" aria-hidden="true"><Package size={14} weight="duotone" /></span>
-                Ingredientes
-              </NavLink>
-              <NavLink to="/complementos" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>
-                <span className="nav-subicon" aria-hidden="true">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L20 7v10l-8 5-8-5V7z"/><path d="M12 22V12"/><path d="M20 7l-8 5-8-5"/></svg>
-                </span>
-                Personalização
-              </NavLink>
-              <NavLink to="/clientes" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>
-                <span className="nav-subicon" aria-hidden="true"><Users size={14} weight="duotone" /></span>
-                Clientes
-              </NavLink>
+              <SubitemMenu to="/produtos" end icone={Cake}>Produtos</SubitemMenu>
+              <SubitemMenu to="/categorias" icone={SquaresFour}>Categorias</SubitemMenu>
+              <SubitemMenu to="/insumos" icone={Package}>Ingredientes</SubitemMenu>
+              <SubitemMenu to="/complementos" icone={PuzzlePiece}>Personalização</SubitemMenu>
+              <SubitemMenu to="/clientes" icone={Users}>Clientes</SubitemMenu>
             </div>
           )}
 
-          <NavLink to="/cardapio" data-tour="cardapio" className={({ isActive }) => `nav-item ${(isActive || location.pathname.startsWith("/cardapio")) ? "active" : ""}`}>
-            <span className="nav-icon"><ShoppingBag size={18} weight="duotone" /></span>Cardápio Digital
-          </NavLink>
-
-          <NavLink to="/pedidos" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-icon"><ClipboardText size={18} weight="duotone" /></span>Pedidos
-          </NavLink>
-
-          <NavLink to="/agenda" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-icon"><CalendarDots size={18} weight="duotone" /></span>Agenda
-          </NavLink>
-
-          <NavLink to="/receitas" className={({ isActive }) => `nav-item ${(isActive || location.pathname.startsWith("/comunidade")) ? "active" : ""}`}>
-            <span className="nav-icon"><BookOpen size={18} weight="duotone" /></span>Receitas
-          </NavLink>
-
-          <NavLink to="/financeiro" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-icon"><CurrencyDollar size={18} weight="duotone" /></span>Financeiro
-          </NavLink>
-
-          <NavLink to="/configuracoes" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-icon"><Gear size={18} weight="duotone" /></span>Minha conta
-          </NavLink>
+          <ItemMenu to="/cardapio" icone={ShoppingBag} tour="cardapio" ativoSe={c => c.startsWith("/cardapio")}>Cardápio Digital</ItemMenu>
+          <ItemMenu to="/pedidos" icone={Receipt}>Pedidos</ItemMenu>
+          <ItemMenu to="/agenda" icone={CalendarDots}>Agenda</ItemMenu>
+          <ItemMenu to="/receitas" icone={BookOpen} ativoSe={c => c.startsWith("/comunidade")}>Receitas</ItemMenu>
+          <ItemMenu to="/financeiro" icone={CurrencyDollar}>Financeiro</ItemMenu>
+          <ItemMenu to="/configuracoes" icone={Gear}>Minha conta</ItemMenu>
         </nav>
       </aside>
 
@@ -299,43 +286,47 @@ export default function Layout() {
 
       {/* ── Bottom nav Mobile ── */}
       {!isReceitas && !isPrevia && (
-        <nav className="bottom-nav">
+        <nav className="bottom-nav" aria-label="Menu principal">
           <div className="bottom-nav-pill">
-            {[
-              { to: "/inicio",   icon: <House          size={20} weight="regular" />, label: "Início",   tour: undefined },
-              { to: "/cardapio", icon: <BookOpen       size={20} weight="regular" />, label: "Cardápio", tour: "cardapio" },
-              { to: "/pedidos",  icon: <Receipt        size={20} weight="regular" />, label: "Pedidos",  tour: undefined },
-            ].map((item) => {
+            {([
+              { to: "/inicio",   Icone: House,       label: "Início",   tour: undefined },
+              { to: "/cardapio", Icone: ShoppingBag, label: "Cardápio", tour: "cardapio" },
+              { to: "/pedidos",  Icone: Receipt,     label: "Pedidos",  tour: undefined },
+            ] as { to: string; Icone: Icon; label: string; tour?: string }[]).map((item) => {
               const isActive =
                 location.pathname === item.to ||
                 location.pathname.startsWith(item.to + "/");
               return (
-                <button
+                <NavLink
                   key={item.to}
+                  to={item.to}
                   className={`bn-item${isActive ? " bn-item--active" : ""}`}
                   data-tour={item.tour}
-                  onClick={() => navigate(item.to)}
+                  aria-current={isActive ? "page" : undefined}
                 >
-                  <span className="bn-icon">{item.icon}</span>
+                  <span className="bn-icon"><item.Icone size={24} weight={isActive ? "fill" : "bold"} /></span>
                   <span className="bn-label">{item.label}</span>
-                </button>
+                </NavLink>
               );
             })}
             <button
+              type="button"
               className={`bn-item${maisOpen ? " bn-item--active" : ""}`}
               onClick={() => setMaisOpen(!maisOpen)}
-              aria-label="Mais"
+              aria-expanded={maisOpen}
+              aria-haspopup="dialog"
             >
-              <span className="bn-icon"><SquaresFour size={20} weight="regular" /></span>
+              <span className="bn-icon"><SquaresFour size={24} weight={maisOpen ? "fill" : "bold"} /></span>
               <span className="bn-label">Mais</span>
             </button>
             <button
+              type="button"
               className={`bn-item${dooOpen ? " bn-item--active" : ""}`}
               data-tour="doo"
               onClick={() => setDooOpen(true)}
-              aria-label="Abrir Doo IA"
+              aria-haspopup="dialog"
             >
-              <span className="bn-icon"><Sparkle size={20} weight="regular" /></span>
+              <span className="bn-icon"><Sparkle size={24} weight={dooOpen ? "fill" : "bold"} /></span>
               <span className="bn-label">Doo IA</span>
             </button>
           </div>
@@ -483,45 +474,34 @@ export default function Layout() {
         }
         .sidebar-greeting-date { margin: 3px 0 0; font-size: var(--font-caption); color: var(--sidebar-text-muted); line-height: 1.3; }
 
-        .sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; overflow-y: auto; }
-        .nav-icon { display: flex; align-items: center; flex-shrink: 0; opacity: 0.7; }
+        /* (07/10 · 2.95) Menu lateral no padrão do guia: itens de 44px, ícone de 20px (cheio e rosa na tela atual),
+           foco visível pelo teclado e fundo vinho (o grafite antigo saiu). */
+        .sidebar-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; min-height: 0; overflow-y: auto; margin-right: -8px; padding-right: 8px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.22) transparent; }
+        .nav-icon { display: flex; align-items: center; flex-shrink: 0; }
+        .nav-rotulo { flex: 1; min-width: 0; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .nav-seta { flex-shrink: 0; opacity: 0.6; transition: transform var(--dur-normal) var(--ease-out); }
 
-        .nav-item { padding: 0.7rem 1rem; border-radius: var(--radius-md); font-size: var(--font-button); font-weight: var(--fw-medium); color: var(--sidebar-text); text-decoration: none; transition: background var(--dur-fast), color 0.15s; outline: none; display: flex; align-items: center; gap: 0.6rem; }
-
-        /* Grupo accordion (Cadastros) */
-        .nav-item--group {
-          all: unset;
-          padding: 0.7rem 1rem;
-          border-radius: var(--radius-md);
-          font-size: var(--font-button);
-          font-weight: var(--fw-medium);
-          color: var(--sidebar-text);
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          gap: 0.6rem;
-          box-sizing: border-box;
-          font-family: var(--font-base);
-          transition: background var(--dur-fast), color 0.15s;
+        .nav-item, .nav-item--group {
+          all: unset; box-sizing: border-box;
+          display: flex; align-items: center; gap: 10px;
+          min-height: 44px; padding: 0 12px; border-radius: 12px;
+          font-family: var(--font-base); font-size: 14.5px; font-weight: var(--fw-semibold); line-height: 1.2;
+          color: rgba(255,255,255,0.82); text-decoration: none; cursor: pointer;
+          transition: background-color var(--dur-fast) linear, color var(--dur-fast) linear;
+          -webkit-tap-highlight-color: transparent;
         }
-        .nav-item--group:hover { background: var(--sidebar-hover-bg); color: var(--sidebar-text); }
-        .nav-item--group.active-parent { color: var(--sidebar-active-text); font-weight: var(--fw-semibold); }
-        .nav-group-body { display: flex; flex-direction: column; gap: 2px; padding: 4px 0 6px; }
-        .nav-item:hover { background: var(--sidebar-hover-bg); color: var(--sidebar-text); }
-        .nav-item:hover .nav-icon { opacity: 1; }
-        .nav-item:focus { background: var(--sidebar-hover-bg); color: var(--sidebar-text); outline: none; }
-        .nav-item.active { background: var(--sidebar-active-bg); color: var(--sidebar-active-text); font-weight: var(--fw-semibold); }        .nav-item.active .nav-icon { opacity: 1; }
+        .nav-item:hover, .nav-item--group:hover { background: rgba(255,255,255,0.07); color: #fff; }
+        .nav-item:focus-visible, .nav-item--group:focus-visible, .nav-subitem:focus-visible { outline: 3px solid rgba(255,255,255,0.7); outline-offset: -3px; }
+        .nav-item.active { background: rgba(var(--primary-rgb), 0.22); color: #fff; font-weight: var(--fw-bold); }
+        .nav-item.active .nav-icon, .nav-item--group.active-parent .nav-icon { color: #FF9DC4; }
+        .nav-item--group.active-parent { color: #fff; font-weight: var(--fw-bold); }
 
-        .nav-group-btn { width: 100%; text-align: left; cursor: pointer; background: none; border: none; font-family: var(--font-base); padding: 0.7rem 1rem; border-radius: var(--radius-md); font-size: var(--font-button); font-weight: var(--fw-medium); color: var(--sidebar-text); transition: background var(--dur-fast), color 0.15s; display: flex; align-items: center; gap: 0.6rem; box-sizing: border-box; margin: 0; }
-        .nav-group-btn:hover { background: var(--sidebar-hover-bg); color: var(--sidebar-text); }
-        .nav-group-btn.active { color: var(--primary); }
-
-        .nav-subitems { display: flex; flex-direction: column; padding: 0 0 0.25rem 0; }
-        .nav-subitem { display: flex; align-items: center; gap: 0.5rem; padding: 0.45rem 0.85rem 0.45rem 2.1rem; border-radius: var(--radius-sm); font-size: 12.5px; color: rgba(255,255,255,0.85); text-decoration: none; transition: all var(--dur-fast); }
-        .nav-subitem .nav-subicon { display: inline-flex; align-items: center; justify-content: center; width: 16px; opacity: 0.85; }
-        .nav-subitem:hover { color: #fff; background: var(--sidebar-hover-bg); }
-        .nav-subitem.active { color: var(--sidebar-active-text); background: var(--sidebar-active-bg); font-weight: var(--fw-semibold); }
-        .nav-subitem.active .nav-subicon { opacity: 1; }
+        .nav-group-body { display: flex; flex-direction: column; gap: 2px; margin: 2px 0 6px 21px; padding-left: 9px; border-left: 1px solid rgba(255,255,255,0.14); }
+        .nav-subitem { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 10px; border-radius: 10px; font-size: 13.5px; font-weight: var(--fw-medium); color: rgba(255,255,255,0.78); text-decoration: none; transition: background-color var(--dur-fast) linear, color var(--dur-fast) linear; }
+        .nav-subitem .nav-subicon { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .nav-subitem:hover { color: #fff; background: rgba(255,255,255,0.07); }
+        .nav-subitem.active { color: #fff; background: rgba(var(--primary-rgb), 0.22); font-weight: var(--fw-bold); }
+        .nav-subitem.active .nav-subicon { color: #FF9DC4; }
 
         .sidebar-cad-complete {
           display: flex;
@@ -678,92 +658,76 @@ export default function Layout() {
           }
           .layout-main--no-header { background: var(--bg-body); }
 
-          /* ── Bottom Nav Mobile ── */
+          /* ── Menu de baixo (07/10 · 2.95, guia A14) ──
+             Ícone de 24px (cheio e rosa na tela atual), a barra pinta também a faixa de baixo do iPhone
+             e o risquinho da tela atual voltou a aparecer (antes ficava cortado). Altura: os mesmos 56px. */
           .bottom-nav {
-            display: flex !important;
+            display: block !important;
             position: fixed;
             bottom: 0; left: 0; right: 0;
             z-index: 50;
-            padding: 0;
-            padding-bottom: env(safe-area-inset-bottom, 0px);
-            background: transparent;
-            pointer-events: none;
+            padding: 0 0 env(safe-area-inset-bottom, 0px);
+            background: var(--vinho-escuro);
+            box-shadow: 0 -2px 16px rgba(44, 18, 25, 0.25);
           }
           .bottom-nav-pill {
             display: flex;
             align-items: stretch;
-            justify-content: space-between;
             width: 100%;
-            background: var(--text-title);
-            border-radius: 0;
-            padding: 6px 6px;
+            max-width: 600px;
             height: 56px;
-            box-shadow: 0 -2px 16px rgba(61, 26, 36, 0.25);
-            pointer-events: all;
-            margin-bottom: 0;
-            overflow: hidden;
+            margin: 0 auto;
+            padding: 0 4px;
           }
           .bn-item {
+            position: relative;
             flex: 1;
+            min-width: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 3px;
-            padding: 7px 8px;
+            padding: 0;
             border: none;
             background: none;
             cursor: pointer;
-            border-radius: 0;
             font-family: var(--font-base);
             text-decoration: none;
-            transition: color var(--dur-fast), transform 0.1s;
-            min-width: 56px;
-            color: rgba(255,255,255,0.65);
-            position: relative;
+            color: rgba(255, 255, 255, 0.72);
+            transition: color var(--dur-fast) linear;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
           }
-          .bn-item:hover {
-            color: #ffffff;
-          }
-          .bn-item--active {
-            color: #FF9BC0;
-          }
-          .bn-item--active:hover {
-            color: #FF9BC0;
-          }
+          @media (hover: hover) { .bn-item:hover { color: #fff; } .bn-item--active:hover { color: #FF9DC4; } }
+          .bn-item--active { color: #FF9DC4; }
           .bn-item--active::before {
             content: "";
             position: absolute;
-            top: -8px;
-            left: 25%;
-            right: 25%;
-            height: 3px;
-            background: #FF9BC0;
+            top: 0; left: 50%;
+            width: 28px; height: 3px; margin-left: -14px;
+            background: currentColor;
             border-radius: 0 0 3px 3px;
           }
+          .bn-item:focus-visible { outline: 3px solid rgba(255, 255, 255, 0.7); outline-offset: -4px; border-radius: 12px; }
           .bn-icon {
             display: flex;
             align-items: center;
             justify-content: center;
             color: inherit;
+            transition: transform var(--dur-fast) var(--ease-out);
           }
+          .bn-item:active .bn-icon { transform: scale(0.9); }
           .bn-label {
-            font-size: var(--font-caption);
-            font-weight: var(--fw-medium);
+            font-size: 12px;
+            font-weight: var(--fw-semibold);
             color: inherit;
             white-space: nowrap;
             letter-spacing: 0.01em;
             line-height: 1;
           }
-          .bn-item--active .bn-label {
-            font-weight: var(--fw-bold);
-          }
-          .bn-item:active {
-            transform: scale(0.94);
-          }
+          .bn-item--active .bn-label { font-weight: 800; }
 
-          .bottom-nav { animation: fadeInUp 0.2s ease; }
-          @keyframes fadeInUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
           /* ── Gestão Drawer ── */
           .gestao-overlay { position: fixed; inset: 0; z-index: 100; background: var(--drawer-overlay); backdrop-filter: blur(6px); }
