@@ -5,7 +5,7 @@ import {
   CurrencyDollar, ChartLineUp,
   Package, BookOpen, ClipboardText,
   Gear, PaintBrush, Crown,
-  SquaresFour, UserPlus, Storefront,
+  SquaresFour, UserPlus, CreditCard,
   X, CaretRight,
   Trophy,
 } from "@phosphor-icons/react";
@@ -53,7 +53,7 @@ const GRUPOS: Grupo[] = [
     label: "Configuração",
     items: [
       { label: "Cardápio Design", desc: "Personalize o cardápio", path: "/cardapio-design", Icone: PaintBrush },
-      { label: "Checkout",        desc: "Configure o pagamento",  path: "/checkout-config", Icone: Storefront },
+      { label: "Checkout",        desc: "Configure o pagamento",  path: "/checkout-config", Icone: CreditCard },
       { label: "Configurações",   desc: "Ajustes gerais do app",  path: "/configuracoes",   Icone: Gear },
     ],
   },

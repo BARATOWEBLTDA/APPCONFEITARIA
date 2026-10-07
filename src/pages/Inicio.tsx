@@ -1,11 +1,9 @@
 // Build marker: 2026-09-05T11:00 — mobile hero: fonte menor, PRO achatado, texto centralizado
 import PrimeirosPassos from "@/components/PrimeirosPassos";
 import { STATUS_AINDA_NAO_PRONTO } from "@/lib/pedidoStatus";
-import { VERSAO_APP } from "@/lib/versao";
 import ConquistasCard from "@/components/ConquistasCard";
-import MenuContaItens from "@/components/MenuContaItens";
+import MenuConta from "@/components/MenuConta";
 import { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -89,7 +87,7 @@ export default function Inicio() {
   const [checklistDone, setChecklistDone] = useState(false);
   const [copiado, setCopiado] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [confirmSair, setConfirmSair] = useState(false);
+  const fotoRef = useRef<HTMLButtonElement>(null); // o menu da conta abre embaixo da foto
   const [email, setEmail] = useState("");
 
   // Upload rápido de foto de perfil pelo ícone de câmera no header.
@@ -201,32 +199,6 @@ export default function Inicio() {
     });
   }, []);
 
-  // Menu do sino: fecha ao clicar no overlay escuro (que está renderizado via portal).
-  // Não precisa mais de click-outside via ref porque o overlay cobre tudo.
-
-  // Trava o scroll do body quando o menu do sino está aberto
-  useEffect(() => {
-    if (!menuOpen) return;
-    const scrollY = window.scrollY;
-    const prevBodyOverflow = document.body.style.overflow;
-    const prevBodyPosition = document.body.style.position;
-    const prevBodyTop = document.body.style.top;
-    const prevBodyWidth = document.body.style.width;
-    const prevHtmlOverflow = document.documentElement.style.overflow;
-    document.body.style.overflow = "hidden";
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = "100%";
-    document.documentElement.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prevBodyOverflow;
-      document.body.style.position = prevBodyPosition;
-      document.body.style.top = prevBodyTop;
-      document.body.style.width = prevBodyWidth;
-      document.documentElement.style.overflow = prevHtmlOverflow;
-      window.scrollTo(0, scrollY);
-    };
-  }, [menuOpen]);
 
   const nome = profile?.nome || "";
   const slug = profile?.slug || "";
@@ -706,6 +678,7 @@ export default function Inicio() {
         {/* Foto da confeiteira — no mobile abre menu, no desktop abre seletor de foto */}
         <div className="ini-profile-wrapper" data-has-photo={profile?.foto_url ? "true" : "false"}>
           <button
+            ref={fotoRef}
             className="ini-profile-btn"
             onClick={() => {
               if (window.innerWidth < 768) {
@@ -799,60 +772,8 @@ export default function Inicio() {
           })()}
         </div>
 
-        {/* Menu (conta + loja + ativar notif + sair) — abre pelo avatar */}
-        <div>
-          {menuOpen && createPortal(
-            <>
-              <div className="ini-menu-overlay" onClick={() => setMenuOpen(false)} aria-hidden="true" />
-              <div className="ini-menu-novo" role="dialog" aria-modal="true">
-                {/* Header cinza */}
-                <div className="ini-menu-novo-hdr">
-                  <p className="ini-menu-novo-hdr-name">Doonly Gestão Inteligente</p>
-                  <p className="ini-menu-novo-hdr-ver">Versão {VERSAO_APP}</p>
-                </div>
-
-                {/* Itens */}
-                <div className="ini-menu-novo-body">
-                  <MenuContaItens prefix="ini" onClose={() => setMenuOpen(false)} onSair={() => setConfirmSair(true)} />
-                </div>
-              </div>
-            </>,
-            document.body
-          )}
-
-          {/* Modal de confirmação — sair do app */}
-          {confirmSair && createPortal(
-            <div className="ini-sair-overlay" onClick={() => setConfirmSair(false)}>
-              <div className="ini-sair-modal" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
-                <div className="ini-sair-icon">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                    <polyline points="16 17 21 12 16 7"/>
-                    <line x1="21" y1="12" x2="9" y2="12"/>
-                  </svg>
-                </div>
-                <h3 className="ini-sair-title">Sair do Doonly?</h3>
-                <p className="ini-sair-sub">Você precisará entrar novamente na próxima vez. Até já! 👋</p>
-                <div className="ini-sair-actions">
-                  <button className="ini-sair-btn-cancel" onClick={() => setConfirmSair(false)}>
-                    Cancelar
-                  </button>
-                  <button
-                    className="ini-sair-btn-ok"
-                    onClick={async () => {
-                      setConfirmSair(false);
-                      await supabase.auth.signOut();
-                      navigate("/login");
-                    }}
-                  >
-                    Sim, sair
-                  </button>
-                </div>
-              </div>
-            </div>,
-            document.body
-          )}
-        </div>
+        {/* Menu da foto: o mesmo de todas as telas (07/10 · 2.98) */}
+        <MenuConta aberto={menuOpen} aoFechar={() => setMenuOpen(false)} ancora={fotoRef} />
       </div>
 
       {/* ══ Computador (≥1100px): topo rosa com o resumo do dia + números (30/09) ══ */}
@@ -1354,211 +1275,6 @@ export default function Inicio() {
           object-fit: contain;
         }
 
-        /* ═══════════════════════════════════════════════════════════
-           MENU PERFIL NOVO — zero bordas, Geist, header cinza
-           ═══════════════════════════════════════════════════════════ */
-        .ini-menu-novo {
-          position: fixed;
-          top: calc(72px + env(safe-area-inset-top, 0px));
-          right: 12px;
-          background: #fff;
-          border-radius: 12px;
-          overflow: hidden;
-          box-shadow: 0 12px 40px rgba(0,0,0,0.28);
-          max-width: 260px;
-          width: calc(100vw - 32px);
-          z-index: 10000;
-          font-family: var(--font-base) !important;
-          animation: menuNovoIn 0.16s ease-out;
-          transform-origin: top right;
-        }
-        @keyframes menuNovoIn {
-          from { opacity: 0; transform: translateY(-8px) scale(0.96); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        /* Desktop médio: menu maior, ao lado do sino */
-        @media (min-width: 768px) {
-          .ini-menu-novo {
-            top: 72px;
-            right: 24px;
-          }
-        }
-
-        .ini-menu-novo-hdr {
-          background: #F5F1F3;
-          padding: 12px 16px 10px;
-        }
-        .ini-menu-novo-hdr-name {
-          font-size: 13px;
-          font-weight: 900;
-          color: #2D1F26;
-          letter-spacing: -0.01em;
-          line-height: 1.2;
-          margin: 0;
-          font-family: var(--font-base) !important;
-        }
-        .ini-menu-novo-hdr-ver {
-          font-size: 10.5px;
-          color: #9A8B93;
-          font-weight: 500;
-          margin: 2px 0 0;
-          letter-spacing: 0.03em;
-          font-family: var(--font-base) !important;
-        }
-
-        .ini-menu-novo-body {
-          padding: 4px 0;
-          background: #fff;
-        }
-
-        /* Reset TOTAL de botão + estilo */
-        .ini-menu-novo-body .ini-menu-novo-item {
-          all: unset;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          padding: 8px 16px;
-          cursor: pointer;
-          font-size: 13.5px;
-          color: #2D1F26;
-          font-weight: 600;
-          width: 100%;
-          box-sizing: border-box;
-          transition: background 0.12s;
-          font-family: var(--font-base) !important;
-          border: 0 !important;
-          outline: 0 !important;
-          box-shadow: none !important;
-          background: transparent;
-        }
-        .ini-menu-novo-body .ini-menu-novo-item:hover,
-        .ini-menu-novo-body .ini-menu-novo-item:focus-visible {
-          background: #FDFAFB;
-          outline: 0 !important;
-        }
-        .ini-menu-novo-icon {
-          width: 26px; height: 26px;
-          border-radius: 7px;
-          background: #F5EEF0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #E85A8C;
-          flex-shrink: 0;
-        }
-        /* Sair — texto vermelho, ícone vermelho, com linha sutil acima */
-        .ini-menu-novo-body .ini-menu-novo-sair {
-          color: #DC2626 !important;
-          font-weight: 700 !important;
-          border-top: 1px solid #F0EBED !important;
-          margin-top: 4px !important;
-          padding-top: 10px !important;
-        }
-        .ini-menu-novo-body .ini-menu-novo-sair:hover {
-          background: #FEF2F2 !important;
-        }
-        .ini-menu-novo-icon--sair {
-          background: #FEE2E2 !important;
-          color: #DC2626 !important;
-        }
-
-        /* Overlay leve por trás — só pra capturar clique fora */
-        .ini-menu-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(45, 31, 38, 0.15);
-          z-index: 9999;
-          animation: menuOverlayIn 0.16s ease-out;
-        }
-        @keyframes menuOverlayIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-
-        /* ═══ MODAL CONFIRMAÇÃO SAIR ═══ */
-        .ini-sair-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(45, 31, 38, 0.55);
-          backdrop-filter: blur(4px);
-          -webkit-backdrop-filter: blur(4px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 20px;
-          z-index: 10001;
-          animation: menuOverlayIn 0.18s ease-out;
-          font-family: var(--font-base) !important;
-        }
-        .ini-sair-modal {
-          background: #fff;
-          border-radius: 16px;
-          padding: 28px 24px 20px;
-          max-width: 340px;
-          width: 100%;
-          text-align: center;
-          box-shadow: 0 24px 60px rgba(0,0,0,0.35);
-          animation: menuNovoIn 0.2s ease-out;
-        }
-        .ini-sair-icon {
-          width: 64px;
-          height: 64px;
-          border-radius: 50%;
-          background: #FEE2E2;
-          color: #DC2626;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin: 0 auto 14px;
-        }
-        .ini-sair-title {
-          font-size: 18px;
-          font-weight: 900;
-          color: #2D1F26;
-          margin: 0 0 6px;
-          letter-spacing: -0.01em;
-          font-family: var(--font-base) !important;
-        }
-        .ini-sair-sub {
-          font-size: 13px;
-          color: #6B5D64;
-          line-height: 1.5;
-          margin: 0 0 20px;
-          font-family: var(--font-base) !important;
-        }
-        .ini-sair-actions {
-          display: flex;
-          gap: 8px;
-        }
-        .ini-sair-btn-cancel,
-        .ini-sair-btn-ok {
-          all: unset;
-          flex: 1;
-          padding: 12px;
-          border-radius: 10px;
-          font-family: var(--font-base) !important;
-          font-size: 13.5px;
-          font-weight: 800;
-          cursor: pointer;
-          text-align: center;
-          transition: filter 0.12s, transform 0.08s;
-          box-sizing: border-box;
-        }
-        .ini-sair-btn-cancel {
-          background: #F5F1F3;
-          color: #6B5D64;
-        }
-        .ini-sair-btn-cancel:hover { background: #EBE5E8; }
-        .ini-sair-btn-ok {
-          background: #DC2626;
-          color: #fff;
-          box-shadow: 0 3px 0 #991B1B;
-        }
-        .ini-sair-btn-ok:hover { filter: brightness(1.05); }
-        .ini-sair-btn-ok:active {
-          transform: translateY(3px);
-          box-shadow: 0 0 0 #991B1B;
-        }
 
 
         .ini-hero-data-mobile {
@@ -1781,18 +1497,6 @@ export default function Inicio() {
           overflow: hidden;
           animation: iniMenuIn var(--dur-fast) var(--ease-out);
         }
-        /* Overlay escuro com blur — cobre a tela inteira quando o menu abre */
-        .ini-menu-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(45, 31, 38, 0.55);
-          backdrop-filter: blur(6px);
-          -webkit-backdrop-filter: blur(6px);
-          z-index: 9998;
-          animation: iniMenuOverlayIn 0.2s ease-out;
-          touch-action: none;
-        }
-        @keyframes iniMenuOverlayIn { from { opacity: 0; } to { opacity: 1; } }
 
         /* Variante à direita — quando o menu abre a partir do sino.
            Usa position:fixed pra escapar do stacking context do hero,
