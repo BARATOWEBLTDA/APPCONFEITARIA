@@ -1,65 +1,69 @@
-import { useEffect, type ReactElement } from "react";
-import { useNavigate } from "react-router-dom";
+import { useId, useRef } from "react";
+import { createPortal } from "react-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   CurrencyDollar, ChartLineUp,
-  Package, BookOpen, Files, ClipboardText,
+  Package, BookOpen, ClipboardText,
   Gear, PaintBrush, Crown,
   SquaresFour, UserPlus, Storefront,
   X, CaretRight,
   Trophy,
 } from "@phosphor-icons/react";
+import type { Icon } from "@phosphor-icons/react";
+import { BotaoIcone } from "@/components/base";
+import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
+import "./maisDrawer.css";
 
+/**
+ * Gaveta "Mais" — abre pelo menu de baixo e reúne as telas que não cabem nele.
+ * (07/10 · 2.96) Refeita em cima da janela padrão do guia: sobe de baixo no celular e aparece no centro
+ * a partir de 768px. Fecha no X, tocando fora, no Esc e no "voltar" do Android; o foco fica preso nela
+ * e a tela de trás não rola. Os itens, os nomes e os destinos são os mesmos de antes.
+ * Antes ela ficava escondida de 768px pra cima, mas o menu de baixo vai até 900px: no tablet em pé e no
+ * celular deitado, tocar em "Mais" não abria nada e ainda travava a rolagem da tela.
+ */
 interface MaisDrawerProps {
   open: boolean;
   onClose: () => void;
 }
 
-interface DrawerItem {
-  label: string;
-  desc: string;
-  path: string;
-  icon: ReactElement;
-}
+interface Item { label: string; desc: string; path: string; Icone: Icon }
+interface Grupo { label: string; items: Item[] }
 
-interface DrawerGroup {
-  label: string;
-  items: DrawerItem[];
-}
-
-const GROUPS: DrawerGroup[] = [
+const GRUPOS: Grupo[] = [
   {
     label: "Cadastros",
     items: [
-      { label: "Categorias",    desc: "Organize seus produtos",   path: "/categorias",    icon: <SquaresFour   size={16} weight="bold" /> },
-      { label: "Ingredientes",  desc: "Insumos e custos",         path: "/insumos",       icon: <Package       size={16} weight="bold" /> },
-      { label: "Receitas",      desc: "Suas receitas",            path: "/receitas",      icon: <BookOpen      size={16} weight="bold" /> },
-      { label: "Ficha técnica", desc: "Calcule o custo real",     path: "/ficha-tecnica", icon: <ClipboardText size={16} weight="bold" /> },
+      { label: "Categorias",    desc: "Organize seus produtos", path: "/categorias",    Icone: SquaresFour },
+      { label: "Ingredientes",  desc: "Insumos e custos",       path: "/insumos",       Icone: Package },
+      { label: "Receitas",      desc: "Suas receitas",          path: "/receitas",      Icone: BookOpen },
+      { label: "Ficha técnica", desc: "Calcule o custo real",   path: "/ficha-tecnica", Icone: ClipboardText },
     ],
   },
   {
     label: "Análises",
     items: [
-      { label: "Lucratividade", desc: "Análise de margem",       path: "/lucratividade",         icon: <ChartLineUp    size={16} weight="bold" /> },
-      { label: "Transações",    desc: "Histórico detalhado",     path: "/financeiro/transacoes", icon: <CurrencyDollar size={16} weight="bold" /> },
+      { label: "Lucratividade", desc: "Análise de margem",   path: "/lucratividade",         Icone: ChartLineUp },
+      { label: "Transações",    desc: "Histórico detalhado", path: "/financeiro/transacoes", Icone: CurrencyDollar },
     ],
   },
   {
     label: "Configuração",
     items: [
-      { label: "Cardápio Design", desc: "Personalize o cardápio", path: "/cardapio-design", icon: <PaintBrush size={16} weight="bold" /> },
-      { label: "Checkout",        desc: "Configure o pagamento",   path: "/checkout-config", icon: <Storefront size={16} weight="bold" /> },
-      { label: "Configurações",   desc: "Ajustes gerais do app",   path: "/configuracoes",   icon: <Gear       size={16} weight="bold" /> },
+      { label: "Cardápio Design", desc: "Personalize o cardápio", path: "/cardapio-design", Icone: PaintBrush },
+      { label: "Checkout",        desc: "Configure o pagamento",  path: "/checkout-config", Icone: Storefront },
+      { label: "Configurações",   desc: "Ajustes gerais do app",  path: "/configuracoes",   Icone: Gear },
     ],
   },
   {
     label: "Meu plano",
     items: [
-      { label: "Minhas conquistas", desc: "Suas medalhas",      path: "/conquistas", icon: <Trophy size={16} weight="bold" /> },
-      { label: "Assinatura",    desc: "Gerencie seu PRO",         path: "/assinar",  icon: <Crown    size={16} weight="bold" /> },
-      { label: "Indicar amigo", desc: "Ganhe indicando",          path: "/indicar",  icon: <UserPlus size={16} weight="bold" /> },
-      // "Meus arquivos" escondido até ficar pronto (02/10): { label: "Meus arquivos", desc: "PDFs e materiais",         path: "/arquivos", icon: <Files    size={16} weight="bold" /> },
+      { label: "Minhas conquistas", desc: "Suas medalhas",     path: "/conquistas", Icone: Trophy },
+      { label: "Assinatura",        desc: "Gerencie seu PRO",  path: "/assinar",    Icone: Crown },
+      { label: "Indicar amigo",     desc: "Ganhe indicando",   path: "/indicar",    Icone: UserPlus },
+      // "Meus arquivos" escondido até ficar pronto (02/10): { label: "Meus arquivos", desc: "PDFs e materiais", path: "/arquivos", Icone: Files },
     ],
   },
 ];
@@ -75,236 +79,74 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const { isPro } = usePlano();
+  const caixa = useRef<HTMLDivElement>(null);
+  const idTitulo = useId();
+  const fase = useFase(open);
+  useSobreposicao(open, onClose, caixa);
+
+  if (!open && fase === "fechada") return null;
+
   const primeiroNome = profile?.nome ? profile.nome.trim().split(/\s+/)[0] : "";
   const inicial = (profile?.nome || "?").trim().charAt(0).toUpperCase();
 
-  // Menu aberto: o fundo não rola (no iPhone, só "overflow: hidden" no body não basta —
-  // prende a página na posição atual e devolve ao fechar)
-  useEffect(() => {
-    if (!open) return;
-    const y = window.scrollY;
-    const html = document.documentElement, body = document.body;
-    const antes = { h: html.style.overflow, b: body.style.overflow, p: body.style.position, t: body.style.top, w: body.style.width };
-    html.style.overflow = "hidden"; body.style.overflow = "hidden";
-    body.style.position = "fixed"; body.style.top = `-${y}px`; body.style.width = "100%";
-    return () => {
-      html.style.overflow = antes.h; body.style.overflow = antes.b;
-      body.style.position = antes.p; body.style.top = antes.t; body.style.width = antes.w;
-      window.scrollTo(0, y);
-    };
-  }, [open]);
+  const ir = (path: string) => {
+    // A gaveta guarda uma entrada no histórico pro "voltar" do Android. Ao escolher um item, a tela nova
+    // entra no lugar dessa entrada: assim o voltar da tela nova cai direto de onde a pessoa veio.
+    const substituir = !!(window.history.state as { uiJanela?: boolean } | null)?.uiJanela;
+    navigate(path, { replace: substituir });
+    onClose();
+  };
 
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [open, onClose]);
+  return createPortal(
+    <div className={`ui-veu ui-veu--centro${open ? "" : " ui-veu--saindo"}`} onClick={onClose}>
+      <div
+        ref={caixa} tabIndex={-1} className="ui-janela ui-janela--conteudo mais"
+        role="dialog" aria-modal="true" aria-labelledby={idTitulo}
+        onClick={e => e.stopPropagation()}
+      >
+        <span className="ui-janela-alca" aria-hidden="true" />
 
-  const go = (path: string) => { navigate(path); onClose(); };
-
-  return (
-    <>
-      <div className={`mais-overlay ${open ? "open" : ""}`} onClick={onClose} aria-hidden="true" />
-
-      <aside className={`mais-drawer ${open ? "open" : ""}`} role="dialog" aria-label="Menu" aria-modal="true">
-        <div className="mais-handle" />
-
-        <div className="mais-head">
-          <div className="mais-greeting">
-            {profile?.foto_url ? (
-              <div className="mais-avt"><img src={profile.foto_url} alt="" /></div>
-            ) : (
-              <div className="mais-avt mais-avt--letter">{inicial}</div>
-            )}
-            <div className="mais-greeting-text">
-              <p className="mais-greeting-line1">
-                {saudacao()}{primeiroNome ? `, ${primeiroNome}` : ""}
-                {isPro && (
-                  <span className="mais-pro">
-                    <img src="/coroa.png" alt="" />
-                    PRO
-                  </span>
-                )}
-              </p>
-              <p className="mais-greeting-line2">O que quer fazer hoje?</p>
-            </div>
+        <div className="mais-cab">
+          <span className={`mais-foto${profile?.foto_url ? "" : " mais-foto--letra"}`} aria-hidden="true">
+            {profile?.foto_url ? <img src={profile.foto_url} alt="" /> : inicial}
+          </span>
+          <div className="mais-ola">
+            <h2 className="mais-ola-t" id={idTitulo}>
+              <span>{saudacao()}{primeiroNome ? `, ${primeiroNome}` : ""}</span>
+              {isPro && <span className="mais-pro"><img src="/coroa.png" alt="" />PRO</span>}
+            </h2>
+            <p className="mais-ola-s">O que quer fazer hoje?</p>
           </div>
-          <button className="mais-close" onClick={onClose} aria-label="Fechar">
-            <X size={18} weight="bold" />
-          </button>
+          <BotaoIcone rotulo="Fechar" variante="limpo" onClick={onClose}><X size={20} weight="bold" /></BotaoIcone>
         </div>
 
-        <div className="mais-body">
-          {GROUPS.map((group) => (
-            <div key={group.label} className="mais-card">
-              <p className="mais-sec-lbl">{group.label}</p>
-              {group.items.map((item) => (
-                <button key={item.path} className="mais-it" onClick={() => go(item.path === "/assinar" && isPro ? "/minha-assinatura" : item.path)}>
-                  <span className="mais-it-ic">{item.icon}</span>
-                  <div className="mais-it-txt">
-                    <div className="mais-it-t">{item.label}</div>
-                    <div className="mais-it-d">{item.desc}</div>
-                  </div>
-                  <CaretRight size={14} weight="bold" className="mais-it-arr" />
-                </button>
-              ))}
-            </div>
+        <div className="mais-corpo">
+          {GRUPOS.map(grupo => (
+            <section key={grupo.label} className="mais-grupo" aria-label={grupo.label}>
+              <p className="mais-grupo-t">{grupo.label}</p>
+              <div className="mais-lista">
+                {grupo.items.map(item => {
+                  const destino = item.path === "/assinar" && isPro ? "/minha-assinatura" : item.path;
+                  return (
+                    <NavLink
+                      key={item.path} to={destino} end
+                      className={({ isActive }) => `mais-it${isActive ? " mais-it--atual" : ""}`}
+                      onClick={e => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; e.preventDefault(); ir(destino); }}
+                    >
+                      {({ isActive }) => (<>
+                        <span className="mais-it-ic" aria-hidden="true"><item.Icone size={20} weight={isActive ? "fill" : "bold"} /></span>
+                        <span className="mais-it-txt"><b>{item.label}</b><small>{item.desc}</small></span>
+                        <CaretRight size={16} weight="bold" className="mais-it-seta" aria-hidden="true" />
+                      </>)}
+                    </NavLink>
+                  );
+                })}
+              </div>
+            </section>
           ))}
         </div>
-      </aside>
-
-      <style>{`
-        .mais-overlay {
-          position: fixed; inset: 0;
-          background: rgba(0,0,0,0);
-          z-index: 1000;
-          pointer-events: none;
-          transition: background 0.3s;
-        }
-        .mais-overlay.open { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); pointer-events: all; }
-
-        .mais-drawer {
-          position: fixed;
-          left: 0; right: 0; bottom: 0;
-          z-index: 1001;
-          background: #F8F5F6;
-          border-radius: 20px 20px 0 0;
-          max-height: 88vh;
-          display: flex; flex-direction: column;
-          transform: translateY(100%);
-          transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-          box-shadow: 0 -8px 32px rgba(0,0,0,0.18);
-          font-family: 'Geist', sans-serif;
-          overflow: hidden;
-        }
-        .mais-drawer.open { transform: translateY(0); }
-
-        .mais-handle { width: 36px; height: 4px; background: #E9E9EE; border-radius: 2px; margin: 8px auto 4px; }
-
-        .mais-head {
-          padding: 8px 18px 14px;
-          display: flex; align-items: center; gap: 10px;
-          background: linear-gradient(180deg, #FFF5F9 0%, #F8F5F6 100%);
-        }
-        .mais-greeting { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
-        .mais-avt {
-          width: 44px; height: 44px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #FCE0E9, #E85A8C);
-          display: flex; align-items: center; justify-content: center;
-          overflow: hidden;
-          flex-shrink: 0;
-        }
-        .mais-avt img { width: 100%; height: 100%; object-fit: cover; }
-        .mais-avt--letter { color: #fff; font-weight: 900; font-size: 16px; }
-        .mais-greeting-text { flex: 1; min-width: 0; }
-        .mais-greeting-line1 {
-          font-size: 15px; font-weight: 900;
-          color: #2C1219;
-          margin: 0;
-          display: flex; align-items: center; gap: 6px;
-          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .mais-greeting-line2 {
-          font-size: 11.5px;
-          color: #6B7280;
-          margin: 2px 0 0;
-        }
-        .mais-pro {
-          background: #2D1F26;
-          color: #fff;
-          font-size: 10px;
-          font-weight: 700;
-          padding: 4px 8px;
-          border-radius: 6px;
-          letter-spacing: 0.04em;
-          text-transform: uppercase;
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          line-height: 1;
-          flex-shrink: 0;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-        }
-        .mais-pro img { width: 10px; height: 10px; object-fit: contain; display: block; flex-shrink: 0; }
-        .mais-close {
-          width: 34px; height: 34px;
-          border: none; border-radius: 8px;
-          background: #F4F4F6; color: #6B7280;
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer;
-          flex-shrink: 0;
-        }
-        .mais-close:hover { background: #E9E9EE; }
-
-        .mais-body {
-          overflow-y: auto;
-          overscroll-behavior: contain; /* rolar o menu não arrasta a página de trás */
-          padding: 8px 12px 24px;
-        }
-
-        .mais-card {
-          background: #fff;
-          border-radius: 12px;
-          border: 1px solid #F0EBED;
-          padding: 4px;
-          margin-bottom: 10px;
-        }
-        .mais-sec-lbl {
-          font-size: 11px; font-weight: 800;
-          letter-spacing: 0.1em; text-transform: uppercase;
-          color: #9CA3AF;
-          margin: 8px 10px 4px;
-          padding-top: 4px;
-        }
-        .mais-it {
-          display: flex; align-items: center; gap: 12px;
-          width: 100%;
-          padding: 13px 10px;
-          background: transparent;
-          border: none;
-          border-radius: 8px;
-          cursor: pointer;
-          font-family: inherit;
-          text-align: left;
-          transition: background 0.15s;
-        }
-        .mais-it + .mais-it { border-top: 1px solid #F5F0F2; border-radius: 0; }
-        .mais-it:first-of-type { border-radius: 8px 8px 0 0; }
-        .mais-it:last-of-type { border-radius: 0 0 8px 8px; }
-        .mais-it:only-of-type { border-radius: 8px; }
-        .mais-it:hover, .mais-it:active { background: #FAFAFA; }
-        .mais-it-ic {
-          width: 38px; height: 38px;
-          background: #F5F0F2;
-          border-radius: 8px;
-          display: flex; align-items: center; justify-content: center;
-          color: #2C1219;
-          flex-shrink: 0;
-        }
-        .mais-it-txt { flex: 1; min-width: 0; }
-        .mais-it-t {
-          font-size: 15px; font-weight: 700;
-          color: #2C1219;
-          line-height: 1.25;
-          letter-spacing: -0.01em;
-        }
-        .mais-it-d {
-          font-size: 12.5px;
-          color: #7A6E74;
-          margin-top: 3px;
-          line-height: 1.35;
-        }
-        .mais-it-arr {
-          color: #C0B3B8;
-          flex-shrink: 0;
-        }
-
-        @media (min-width: 768px) {
-          .mais-drawer, .mais-overlay { display: none; }
-        }
-      `}</style>
-    </>
+      </div>
+    </div>,
+    document.body,
   );
 }

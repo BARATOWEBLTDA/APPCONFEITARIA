@@ -1,0 +1,34 @@
+/* Gaveta "Mais" (07/10 · 2.96) — usa a janela padrão (.ui-veu + .ui-janela, do base.css) e só desenha o miolo.
+   Medidas do guia: título de janela 18/900 · texto 15 · pequeno 12.5 · espaços de 4, 8, 12, 16 e 24px · cartão com 16px de canto. */
+.mais { overflow: hidden; }
+/* o topo (alça + cabeçalho) é um bloco branco só, com os cantos da janela; o cinza começa no corpo */
+.mais-cab { display: flex; align-items: center; gap: 12px; flex: none; padding: 8px 10px 12px 16px; border-bottom: 1px solid var(--ui-borda); }
+.mais-foto { flex: none; width: 44px; height: 44px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--ui-rosa-claro); }
+.mais-foto img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.mais-foto--letra { background: var(--ui-vinho); color: var(--ui-branco); font-size: 18px; font-weight: 900; }
+.mais-ola { flex: 1; min-width: 0; }
+.mais-ola-t { display: flex; align-items: center; gap: 8px; margin: 0; font-family: var(--font-base); font-size: 18px; font-weight: 900; line-height: 1.25; color: var(--ui-texto); }
+.mais-ola-t > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mais-ola-s { margin: 2px 0 0; font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
+.mais-pro { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 8px; background: var(--ui-vinho); color: var(--ui-branco); font-size: 12.5px; font-weight: 800; letter-spacing: .04em; line-height: 1; }
+.mais-pro img { display: block; width: 12px; height: 12px; object-fit: contain; }
+
+.mais-corpo { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 24px; background: var(--ui-fundo); }
+.mais-grupo-t { margin: 0 0 8px 4px; font-size: 12.5px; font-weight: 800; letter-spacing: .06em; line-height: 1.3; text-transform: uppercase; color: var(--ui-texto-2); }
+.mais-lista { overflow: hidden; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); }
+.mais-it { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 12px 16px; color: var(--ui-texto); text-decoration: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: background-color var(--dur-fast) linear; }
+.mais-it + .mais-it { border-top: 1px solid var(--ui-linha); }
+@media (hover: hover) { .mais-it:hover { background: var(--ui-linha); } }
+.mais-it:active { background: var(--ui-cinza); }
+.mais-it:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; border-radius: var(--ui-raio-cartao); }
+.mais-it-ic { flex: none; width: 40px; height: 40px; border-radius: var(--ui-raio); display: flex; align-items: center; justify-content: center; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.mais-it-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.mais-it-txt b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 700; line-height: 1.3; }
+.mais-it-txt small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
+.mais-it-seta { flex: none; color: var(--ui-texto-3); }
+/* a tela em que a pessoa já está */
+.mais-it--atual { background: var(--ui-rosa-claro); }
+.mais-it--atual .mais-it-ic { background: var(--ui-rosa); color: var(--ui-branco); }
+.mais-it--atual .mais-it-txt b { color: var(--ui-rosa-escuro); }
+
+@media (min-width: 768px) { .mais-cab { padding-top: 12px; } .mais-corpo { padding-bottom: 16px; } }
