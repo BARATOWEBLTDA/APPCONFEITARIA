@@ -1,8 +1,9 @@
+import { Mascote, NomeDoonly } from '@/components/marca/Mascote';
 import { useState, useEffect, useRef } from "react";
 import BotaoGoogle from "@/components/BotaoGoogle";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { User, Storefront, Phone, Envelope, Eye, EyeSlash } from "@phosphor-icons/react";
+import { User, Storefront, Phone, Envelope, Eye, EyeSlash, Check } from "@phosphor-icons/react";
 
 // ───────────────────────────────────────────────────────────────
 // Links de download do app (desktop ≥1200px)
@@ -446,15 +447,27 @@ export default function Auth() {
 
       <div className="auth-layout">
 
+      {/* Lado da marca: só no computador e no tablet deitado (03/10) */}
+      <div className="auth-marca" aria-hidden="true">
+        <Mascote pose={showCadastro ? 'comemorando' : 'acenando'} className="auth-marca-masc" />
+        <NomeDoonly cor="branco" className="auth-marca-nome" />
+        <p className="auth-marca-frase">Sua confeitaria organizada.</p>
+        <ul className="auth-marca-lista">
+          {['Pedidos e agenda num lugar só', 'Cardápio digital com seu link', 'Financeiro sem planilha'].map(x => (
+            <li key={x}><span><Check size={14} weight="bold" /></span>{x}</li>
+          ))}
+        </ul>
+      </div>
+
       {!showCadastro ? (
       <div className="auth-card">
-        <div className="auth-logo-wrap">
-          <img src="/cadastro.png" alt="Doonly" className="auth-logo-img" />
-        </div>
+        {/* celular: o mascote sai do cartão, o nome vai dentro */}
+        <Mascote pose="acenando" className="auth-masc" />
+        <NomeDoonly className="auth-nome" />
 
         <div className="auth-text-hdr">
-          <h2 className="auth-h2">Entrar no Doonly</h2>
-          <p className="auth-p">Sua confeitaria organizada.</p>
+          <h2 className="auth-h2"><span className="so-cel">Que bom te ver de volta!</span><span className="so-pc">Entrar no Doonly</span></h2>
+          <p className="auth-p"><span className="so-cel">Entre pra ver seus pedidos de hoje.</span><span className="so-pc">Que bom te ver de volta.</span></p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form" noValidate>
@@ -527,13 +540,11 @@ export default function Auth() {
       </div>
       ) : (
       <div className="auth-card">
-        {/* Logo — mesma classe/tamanho do login */}
-        <div className="auth-logo-wrap">
-          <img src="/cadastro.png" alt="Doonly" className="auth-logo-img" />
-        </div>
+        <Mascote pose="comemorando" className="auth-masc" />
+        <NomeDoonly className="auth-nome" />
 
         <div className="auth-text-hdr">
-          <h2 className="auth-h2">Criar sua conta</h2>
+          <h2 className="auth-h2"><span className="so-cel">Vamos começar!</span><span className="so-pc">Criar sua conta</span></h2>
           <p className="auth-p">Leva menos de 1 minuto.</p>
         </div>
 
@@ -783,14 +794,13 @@ export default function Auth() {
         html, body { height: 100%; overflow: hidden; }
         #root { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .auth-root {
-          min-height: 100vh;
-          min-height: 100dvh;
-          display: flex; flex-direction: column; align-items: center; justify-content: center;
-          position: relative; font-family: inherit;
-          padding: max(1.5rem, env(safe-area-inset-top)) 1.5rem max(1.5rem, env(safe-area-inset-bottom));
-          overflow: visible;
+          /* a tela toda é a área de rolagem (03/10): em telas baixas o cartão aparece inteiro e a página rola */
+          position: fixed; inset: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+          display: flex; flex-direction: column; align-items: center;
+          font-family: inherit;
+          padding: max(1.5rem, env(safe-area-inset-top)) 1.25rem max(1.5rem, env(safe-area-inset-bottom));
         }
-        .auth-layout { position: relative; z-index: 2; width: 100%; max-width: 440px; display: flex; flex-direction: column; }
+        .auth-layout { position: relative; z-index: 2; width: 100%; max-width: 440px; display: flex; flex-direction: column; margin: auto 0; } /* margin auto: centraliza quando cabe, rola quando não */
         .auth-side { display: none; }
 
         /* ── Botão "Fazer login" flutuante no topo (só desktop) ── */
@@ -832,17 +842,14 @@ export default function Auth() {
         }
         .mouse-glow { position: fixed; z-index: 1; width: 350px; height: 350px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%); transform: translate(-50%, -50%); pointer-events: none; will-change: transform; }
         .auth-card {
-          position: relative; z-index: 2;
-          background: var(--bg-card); border-radius: var(--radius-lg);
-          padding: 1.5rem 1.75rem 2rem;
-          width: 100%; max-width: 440px;
-          box-shadow: 0 8px 40px rgba(0,0,0,0.12);
-          animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-          margin: 1rem auto;
-          overflow-y: auto;
-          max-height: calc(100vh - 2rem);
-          max-height: calc(100dvh - 2rem);
+          position: relative; z-index: 2; background: var(--bg-card); border-radius: 22px; padding: 56px 1.5rem 1.6rem;
+          width: 100%; max-width: 440px; box-shadow: 0 14px 40px -12px rgba(60,10,30,.45);
+          animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; margin: 84px auto 0; /* espaço pro mascote saindo do cartão */
         }
+        .auth-masc { position: absolute; left: 50%; top: -96px; transform: translateX(-50%); width: 136px; height: auto; z-index: 3; filter: drop-shadow(0 8px 10px rgba(80,10,40,.28)); pointer-events: none; }
+        .auth-nome { display: block; width: 128px; height: auto; margin: 0 auto 6px; }
+        .so-pc { display: none; }
+        .auth-marca { display: none; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes promoFadeIn { from { opacity: 0; } to { opacity: 1; } }
         .auth-logo-wrap { display: flex; justify-content: center; margin-bottom: 0.75rem; }
@@ -1118,17 +1125,21 @@ export default function Auth() {
         .auth-promo { display: none !important; }
 
         @media (min-width: 900px) {
+          .auth-layout { max-width: 1040px !important; display: grid !important; grid-template-columns: 1fr 420px !important; gap: 64px !important; align-items: center; }
+          .auth-marca { display: block; color: #fff; }
+          .auth-marca-masc { display: block; width: 160px; height: auto; filter: drop-shadow(0 10px 14px rgba(80,10,40,.35)); }
+          .auth-marca-nome { display: block; width: 280px; height: auto; margin-top: 12px; }
+          .auth-marca-frase { font-size: 24px; font-weight: 800; margin: 10px 0 18px; letter-spacing: -0.01em; }
+          .auth-marca-lista { list-style: none; display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; }
+          .auth-marca-lista li { display: flex; align-items: center; gap: 10px; font-size: 16.5px; font-weight: 600; }
+          .auth-marca-lista li span { width: 24px; height: 24px; border-radius: 50%; background: #fff; color: #15803D; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+          .auth-card { margin: 0 !important; padding: 2rem 1.75rem 1.6rem !important; }
+          .auth-masc, .auth-nome { display: none !important; }
+          .so-cel { display: none; } .so-pc { display: inline; }
           /* Grid layouts:
              - Desktop/tablet: form centralizado
              - Mobile: só o form */
-          .auth-layout {
-            max-width: 440px;
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 2rem;
-            align-items: center;
-            justify-content: center;
-          }
+          /* (grid antigo de 1 coluna removido: agora são 2 colunas, acima) */
           /* Esconde coluna esquerda antiga (mascote lado) */
           .auth-side { display: none !important; }
           .auth-card { margin: 0; }
