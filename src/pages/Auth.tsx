@@ -62,6 +62,8 @@ export default function Auth() {
   const [form, setForm] = useState({ email: "", senha: "" });
   const [fading, setFading] = useState(false);
   const [showCadastro, setShowCadastro] = useState(false);
+  // ao trocar entre login e cadastro, volta pro topo (senão o cadastro abre rolado, com o mascote cortado)
+  useEffect(() => { document.querySelector('.auth-root')?.scrollTo(0, 0) }, [showCadastro]);
   const [isDesktop, setIsDesktop] = useState(() =>
     typeof window !== "undefined" ? window.matchMedia("(min-width: 900px)").matches : false
   );
@@ -449,7 +451,6 @@ export default function Auth() {
 
       {/* Lado da marca: só no computador e no tablet deitado (03/10) */}
       <div className="auth-marca" aria-hidden="true">
-        <Mascote pose={showCadastro ? 'comemorando' : 'acenando'} className="auth-marca-masc" />
         <NomeDoonly cor="branco" className="auth-marca-nome" />
         <p className="auth-marca-frase">Sua confeitaria organizada.</p>
         <ul className="auth-marca-lista">
@@ -798,7 +799,7 @@ export default function Auth() {
           position: fixed; inset: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
           display: flex; flex-direction: column; align-items: center;
           font-family: inherit;
-          padding: max(1.5rem, env(safe-area-inset-top)) 1.25rem max(1.5rem, env(safe-area-inset-bottom));
+          padding: calc(env(safe-area-inset-top, 0px) + 24px) 1.25rem calc(env(safe-area-inset-bottom, 0px) + 24px); /* a folga SOMA com a barra do celular */
         }
         .auth-layout { position: relative; z-index: 2; width: 100%; max-width: 440px; display: flex; flex-direction: column; margin: auto 0; } /* margin auto: centraliza quando cabe, rola quando não */
         .auth-side { display: none; }
@@ -844,7 +845,7 @@ export default function Auth() {
         .auth-card {
           position: relative; z-index: 2; background: var(--bg-card); border-radius: 22px; padding: 56px 1.5rem 1.6rem;
           width: 100%; max-width: 440px; box-shadow: 0 14px 40px -12px rgba(60,10,30,.45);
-          animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; margin: 84px auto 0; /* espaço pro mascote saindo do cartão */
+          animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; margin: 108px auto 0; /* espaço pro mascote saindo do cartão (ele sobe 96px) + folga */
         }
         .auth-masc { position: absolute; left: 50%; top: -96px; transform: translateX(-50%); width: 136px; height: auto; z-index: 3; filter: drop-shadow(0 8px 10px rgba(80,10,40,.28)); pointer-events: none; }
         .auth-nome { display: block; width: 128px; height: auto; margin: 0 auto 6px; }
@@ -1128,14 +1129,14 @@ export default function Auth() {
           .auth-layout { max-width: 1040px !important; display: grid !important; grid-template-columns: 1fr 420px !important; gap: 64px !important; align-items: center; }
           .auth-marca { display: block; color: #fff; }
           .auth-marca-masc { display: block; width: 160px; height: auto; filter: drop-shadow(0 10px 14px rgba(80,10,40,.35)); }
-          .auth-marca-nome { display: block; width: 280px; height: auto; margin-top: 12px; }
-          .auth-marca-frase { font-size: 24px; font-weight: 800; margin: 10px 0 18px; letter-spacing: -0.01em; }
+          .auth-marca-nome { display: block; width: 340px; max-width: 100%; height: auto; }
+          .auth-marca-frase { font-size: 26px; font-weight: 800; margin: 14px 0 22px; letter-spacing: -0.01em; }
           .auth-marca-lista { list-style: none; display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; }
           .auth-marca-lista li { display: flex; align-items: center; gap: 10px; font-size: 16.5px; font-weight: 600; }
           .auth-marca-lista li span { width: 24px; height: 24px; border-radius: 50%; background: #fff; color: #15803D; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
-          .auth-card { margin: 0 !important; padding: 2rem 1.75rem 1.6rem !important; }
-          .auth-masc, .auth-nome { display: none !important; }
-          .so-cel { display: none; } .so-pc { display: inline; }
+          .auth-card { margin: 128px 0 0 !important; padding: 64px 1.75rem 1.6rem !important; } /* o mascote sobe 104px + folga */
+          .auth-masc { width: 150px; top: -104px; }
+          .auth-nome { display: none !important; }
           /* Grid layouts:
              - Desktop/tablet: form centralizado
              - Mobile: só o form */
