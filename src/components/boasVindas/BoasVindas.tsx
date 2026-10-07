@@ -205,46 +205,34 @@ function DemoMarca({ comNome = false }: { comNome?: boolean }) {
 
 /* ───────── 2 · cardápio: print real rolando sozinho dentro do celular ───────── */
 function DemoCardapio() {
-  const rolo = useRef<HTMLDivElement>(null)
+  const janela = useRef<HTMLDivElement>(null)
+  const print = useRef<HTMLImageElement>(null)
 
+  // O print sobe e desce sozinho, devagar. Quem move é o próprio navegador (animação de CSS), por isso não engasga.
+  // (07/10 · 2.93) Saiu a rolagem com o dedo ou com a rodinha do mouse dentro do celular: ela brigava com a rolagem automática.
   useEffect(() => {
-    const el = rolo.current
-    if (!el) return
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
-
+    const caixa = janela.current, img = print.current
+    if (!caixa || !img) return
     const VELOCIDADE = 38 // px por segundo
-    let dir = 1, pos = 0
-    let pausadoAte = performance.now() + 1200 // espera o celular entrar na tela
-    let ultimo = performance.now()
-    let raf = 0
-    const passo = (agora: number) => {
-      const dt = Math.min((agora - ultimo) / 1000, 0.1)
-      ultimo = agora
-      if (agora > pausadoAte) {
-        const max = el.scrollHeight - el.clientHeight
-        pos += dir * VELOCIDADE * dt
-        if (pos >= max) { pos = max; dir = -1; pausadoAte = agora + 1200 }
-        if (pos <= 0) { pos = 0; dir = 1; pausadoAte = agora + 1200 }
-        el.scrollTop = pos
-      } else {
-        pos = el.scrollTop // continua de onde a pessoa deixou
-      }
-      raf = requestAnimationFrame(passo)
+    const medir = () => {
+      const distancia = Math.max(0, img.offsetHeight - caixa.clientHeight)
+      img.style.setProperty('--bv-distancia', `${-distancia}px`)
+      // 12% do tempo fica parado nas pontas (6% em cada), o resto anda na velocidade certa
+      img.style.setProperty('--bv-tempo', `${Math.max(4, distancia / VELOCIDADE / 0.88).toFixed(2)}s`)
     }
-    raf = requestAnimationFrame(passo)
-    // se a pessoa arrastar dentro do celular, ela assume; 3s depois a rolagem volta
-    const pausar = () => { pausadoAte = performance.now() + 3000 }
-    const eventos = ['touchstart', 'touchmove', 'pointerdown', 'wheel'] as const
-    eventos.forEach(ev => el.addEventListener(ev, pausar, { passive: true }))
-    return () => { cancelAnimationFrame(raf); eventos.forEach(ev => el.removeEventListener(ev, pausar)) }
+    medir()
+    img.addEventListener('load', medir)
+    const obs = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(medir) : null
+    obs?.observe(caixa)
+    return () => { img.removeEventListener('load', medir); obs?.disconnect() }
   }, [])
 
   return (
     <div className="bv-cel">
       <div className="bv-cel-entalhe" />
       <div className="bv-cel-tela">
-        <div className="bv-cel-rolo" ref={rolo}>
-          <img className="bv-cel-print" src="/tutorial/cardapio-exemplo.jpg" alt="Cardápio online de uma confeitaria feito no Doonly" />
+        <div className="bv-cel-rolo" ref={janela}>
+          <img ref={print} className="bv-cel-print" src="/tutorial/cardapio-exemplo.jpg" alt="Cardápio online de uma confeitaria feito no Doonly" />
         </div>
         <img className="bv-cel-menu" src="/tutorial/cardapio-exemplo-nav.jpg" alt="" aria-hidden="true" />
       </div>

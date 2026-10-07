@@ -51,12 +51,16 @@
 .bv-marca-nome { display: block; width: 150px; height: auto; margin-top: 6px; }
 
 /* ── 2 · cardápio dentro do celular ── */
-.bv-cel { position: relative; width: 275px; max-width: 78vw; padding: 8px; border-radius: 34px; background: #0E0509; box-shadow: 0 24px 60px rgba(0, 0, 0, .55), 0 0 0 2px rgba(255, 255, 255, .06) inset; }
-.bv-cel-entalhe { position: absolute; top: 14px; left: 50%; z-index: 2; width: 82px; height: 22px; transform: translateX(-50%); border-radius: 14px; background: #000; }
-.bv-cel-tela { position: relative; height: clamp(220px, calc(100dvh - 290px), 470px); padding-top: 26px; border-radius: 26px; overflow: hidden; background: #3A1A25; }
-.bv-cel-rolo { height: 100%; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; scrollbar-width: none; touch-action: pan-y; }
-.bv-cel-rolo::-webkit-scrollbar { display: none; }
-.bv-cel-print { display: block; width: 100%; height: auto; pointer-events: none; user-select: none; -webkit-user-drag: none; }
+/* (07/10 · 2.93) celular branco: no fundo vinho ele aparece muito mais que o preto */
+.bv-cel { position: relative; width: 275px; max-width: 78vw; padding: 7px; border-radius: 36px; background: linear-gradient(150deg, #FFFFFF 0%, #F1ECEF 100%); box-shadow: 0 24px 60px rgba(0, 0, 0, .5), 0 0 0 1px rgba(255, 255, 255, .5), inset 0 0 0 1px #D9D0D5; }
+.bv-cel::before, .bv-cel::after { content: ""; position: absolute; width: 3px; border-radius: 2px; background: #E4DDE1; }
+.bv-cel::before { left: -3px; top: 96px; height: 58px; box-shadow: 0 -40px 0 0 #E4DDE1; clip-path: inset(-40px 0 0 0); } /* volume */
+.bv-cel::after { right: -3px; top: 118px; height: 64px; } /* liga e desliga */
+.bv-cel-entalhe { position: absolute; top: 15px; left: 50%; z-index: 2; width: 82px; height: 22px; transform: translateX(-50%); border-radius: 14px; background: #000; }
+.bv-cel-tela { position: relative; height: clamp(220px, calc(100dvh - 290px), 470px); padding-top: 26px; border: 3px solid #0E0509; border-radius: 30px; overflow: hidden; background: #3A1A25; }
+.bv-cel-rolo { height: 100%; overflow: hidden; pointer-events: none; }
+.bv-cel-print { display: block; width: 100%; height: auto; pointer-events: none; user-select: none; -webkit-user-drag: none; will-change: transform; animation: bvRola var(--bv-tempo, 10s) linear 1.2s infinite alternate; }
+@keyframes bvRola { 0%, 6% { transform: translateY(0); } 94%, 100% { transform: translateY(var(--bv-distancia, 0px)); } }
 .bv-cel-menu { position: absolute; left: 0; right: 0; bottom: 0; display: block; width: 100%; pointer-events: none; }
 
 /* ── 3 · pedidos ── */
@@ -188,6 +192,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .bv-texto, .bv-demo, .bv-ped-cartao, .bv-luc-res, .bv-luc-campo--ruim { animation-duration: 1ms !important; animation-delay: 0s !important; }
+  .bv-cel-print { animation: none; }
   .bv-ped-aviso { animation: none; opacity: 1; transform: translate(-50%, 0); }
   .bv-luc-linha, .bv-luc-pergunta { transition: none; }
   .bv-root { transition: none; }
