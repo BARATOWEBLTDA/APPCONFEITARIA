@@ -6,6 +6,8 @@
  *   · se algo travar, some sozinha em LIMITE ms (nunca prende a pessoa)
  */
 const MINIMO = 1500 // 1,5 s (07/10, pedido do Bruno: testar)
+/** Páginas de leitura abertas direto pelo link (Termos, Privacidade): saem assim que carregam, sem o tempo mínimo */
+const SEM_MINIMO = /^\/(termos|privacidade)\/?$/
 const LIMITE = 8000
 let fechando = false
 
@@ -35,7 +37,7 @@ export function iniciarAbertura() {
   const tentar = () => {
     if (fechando) return
     if (!telaPronta()) return
-    const falta = MINIMO - performance.now()
+    const falta = (SEM_MINIMO.test(window.location.pathname) ? 0 : MINIMO) - performance.now()
     if (falta > 0) window.setTimeout(fechar, falta)
     else fechar()
     observador.disconnect()

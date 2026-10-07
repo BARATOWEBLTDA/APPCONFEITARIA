@@ -1,6 +1,7 @@
 import { Mascote, NomeDoonly } from '@/components/marca/Mascote';
 import { useState, useEffect, useRef } from "react";
 import BotaoGoogle from "@/components/BotaoGoogle";
+import TermosModal from "@/components/TermosModal";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { User, Storefront, Phone, Envelope, Eye, EyeSlash, Check } from "@phosphor-icons/react";
@@ -62,6 +63,13 @@ export default function Auth() {
   const [form, setForm] = useState({ email: "", senha: "" });
   const [fading, setFading] = useState(false);
   const [showCadastro, setShowCadastro] = useState(false);
+  // Termos e Privacidade abrem numa janela por cima (07/10): não recarrega o app nem perde o que foi digitado
+  const [docLegal, setDocLegal] = useState<null | "termos" | "privacidade">(null);
+  const abrirDoc = (doc: "termos" | "privacidade") => (e: React.MouseEvent) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; // Ctrl+clique continua abrindo a página em outra aba
+    e.preventDefault();
+    setDocLegal(doc);
+  };
   // ao trocar entre login e cadastro, volta pro topo (senão o cadastro abre rolado, com o mascote cortado)
   useEffect(() => { document.querySelector('.auth-root')?.scrollTo(0, 0) }, [showCadastro]);
   const [isDesktop, setIsDesktop] = useState(() =>
@@ -788,9 +796,9 @@ export default function Auth() {
           </>)}
           <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', textAlign: 'center', lineHeight: '1.5', margin: '0' }}>
             Ao criar sua conta, você concorda com nossos{' '}
-            <a href="/termos" target="_blank" rel="noopener" style={{ color: '#C33A6E', fontWeight: 700, whiteSpace: 'nowrap' }}>Termos de Uso</a>
+            <a href="/termos" onClick={abrirDoc("termos")} style={{ color: '#C33A6E', fontWeight: 700, whiteSpace: 'nowrap' }}>Termos de Uso</a>
             {' '}e{' '}
-            <a href="/privacidade" target="_blank" rel="noopener" style={{ color: '#C33A6E', fontWeight: 700, whiteSpace: 'nowrap' }}>Política de Privacidade</a>
+            <a href="/privacidade" onClick={abrirDoc("privacidade")} style={{ color: '#C33A6E', fontWeight: 700, whiteSpace: 'nowrap' }}>Política de Privacidade</a>
           </p>
           <div className="cad-mobile-login-link">
             <span>Já tem conta? </span>
@@ -804,9 +812,11 @@ export default function Auth() {
 
       {/* Rodapé (03/10): links das políticas, como no Dora */}
       <footer className="auth-rodape">
-        <div><a href="/privacidade">Política de Privacidade</a><span aria-hidden="true">·</span><a href="/termos">Termos de Uso</a></div>
+        <div><a href="/privacidade" onClick={abrirDoc("privacidade")}>Política de Privacidade</a><span aria-hidden="true">·</span><a href="/termos" onClick={abrirDoc("termos")}>Termos de Uso</a></div>
         <em>© {new Date().getFullYear()} Doonly</em>
       </footer>
+
+      <TermosModal open={!!docLegal} initialTab={docLegal || "termos"} onClose={() => setDocLegal(null)} />
 
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
