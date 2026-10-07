@@ -25,3 +25,6 @@ dist-ssr
 .env 
 APPCONFEITARIA/ 
 .env 
+
+# atalho local de envio (cada um tem o seu)
+enviar.bat

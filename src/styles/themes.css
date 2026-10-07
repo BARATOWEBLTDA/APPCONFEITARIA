@@ -146,7 +146,7 @@
   /* Status (semânticos — aliases dos gamificados) */
   --success:          var(--gam-success);
   --warning:          #E8A05A;
-  --error:            #D14848;
+  --error:            #DC2626; /* guia: um vermelho só (era #D14848) */
   --info:             var(--gam-info);
 
   /* Sombras */

@@ -86,7 +86,7 @@
   transition: border-color var(--dur-fast) linear, box-shadow var(--dur-fast) linear;
   cursor: text;
 }
-.ui-campo-c:focus-within { border-color: var(--ui-rosa); box-shadow: 0 0 0 3px rgba(var(--ui-rosa-rgb), .14); }
+.ui-campo-c:focus-within { border-color: var(--ui-rosa); } /* foco discreto: só a borda rosa, sem brilho */
 .ui-campo-c input, .ui-campo-c textarea {
   flex: 1; min-width: 0; width: 100%; margin: 0; padding: 0; border: 0; outline: 0; border-radius: 0;
   background: transparent; box-shadow: none;
@@ -106,7 +106,7 @@
 .ui-campo-msg { display: flex; align-items: flex-start; gap: 5px; margin: 0; font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
 .ui-campo-msg svg { flex: none; margin-top: 2px; }
 .ui-campo--erro .ui-campo-c { border-color: var(--ui-vermelho); }
-.ui-campo--erro .ui-campo-c:focus-within { box-shadow: 0 0 0 3px rgba(220, 38, 38, .14); }
+.ui-campo--erro .ui-campo-c:focus-within { border-color: var(--ui-vermelho); }
 .ui-campo--erro .ui-campo-msg { color: var(--ui-vermelho); font-weight: 600; }
 .ui-campo--off .ui-campo-c { background: var(--ui-cinza); border-color: var(--ui-cinza); cursor: not-allowed; }
 .ui-campo--off input, .ui-campo--off textarea { color: var(--ui-texto-3); -webkit-text-fill-color: var(--ui-texto-3); cursor: not-allowed; }
