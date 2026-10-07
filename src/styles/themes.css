@@ -14,15 +14,22 @@
   --primary-gradient: linear-gradient(135deg, #E85A8C, #C33A6E);
   --primary-rgb:      232, 90, 140;
 
-  /* Secundária — Grafite (accent pra PRO, valores, ênfases) */
-  --accent:            #2D1F26;
-  --accent-dark:       #1A0F14;
+  /* Vinho — a segunda cor da marca (03/10) */
+  --vinho:            #4B1528;
+  --vinho-escuro:     #2C1219;
+  --vinho-claro:      #72243E;
+  --vinho-rgb:        75, 21, 40;
+  --vinho-fundo:      radial-gradient(1000px 640px at 50% 38%, #4B1528 0%, #2C1219 72%); /* fundo de marca (login) */
+
+  /* Secundária — Vinho (03/10: a marca tem duas famílias, rosa e vinho) — PRO, valores, ênfases */
+  --accent:            #4B1528;
+  --accent-dark:       #2C1219;
   --accent-light:      #E8DEE3;
   --accent-bg:         #F5EEF0;
   --accent-text:       #FFFFFF;
 
   /* Tipografia (cinzas com toque rosé) */
-  --text-title:       #2D1F26;
+  --text-title:       #2C1219; /* guia: um preto só (é um vinho bem escuro) */
   --text-primary:     #4B3D46;
   --text-secondary:   #6B5D64;
   --text-muted:       #9A8B93;

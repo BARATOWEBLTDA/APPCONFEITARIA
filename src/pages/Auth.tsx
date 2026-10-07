@@ -849,7 +849,7 @@ export default function Auth() {
         .fade-overlay.fade-in { opacity: 1; pointer-events: all; }
         .auth-bg {
           position: fixed; inset: 0; z-index: 0;
-          background: radial-gradient(1000px 640px at 50% 38%, #4B1528 0%, #2C1219 72%); /* vinho escuro (03/10) */
+          background: var(--vinho-fundo, radial-gradient(1000px 640px at 50% 38%, #4B1528 0%, #2C1219 72%)); /* vinho escuro (themes.css) */
         }
         .auth-rodape { position: relative; z-index: 3; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding-top: 18px; color: rgba(255,255,255,.72); font-size: 12.5px; white-space: nowrap; }
         .auth-rodape div { display: flex; gap: 8px; align-items: center; }
