@@ -5,9 +5,10 @@ import { useEffect, useState } from 'react'
  *   <Mascote pose="acenando" />  → /marca/leve/acenando.webp (versão leve) ou /marca/acenando.png (original)
  *   <NomeDoonly cor="branco" />  → /marca/leve/texto.webp (pintado de branco pelo CSS)
  * Pose nova = colocar o arquivo .png na pasta com o nome da pose. Se ainda não existir, mostra a "acenando".
+ * Poses que já têm desenho: acenando · senha (em dúvida, com interrogações: telas de recuperar a senha).
  * (07/10) Versões leves em public/marca/leve: os originais têm quase 1 MB cada; as leves, menos de 50 KB.
  */
-export type PoseMascote = 'acenando' | 'comemorando' | 'chave' | 'preocupado' | 'lupa' | 'joinha'
+export type PoseMascote = 'acenando' | 'senha' | 'comemorando' | 'chave' | 'preocupado' | 'lupa' | 'joinha'
 
 const leve = (nome: string) => `/marca/leve/${nome}.webp`
 const original = (nome: string) => `/marca/${nome}.png`

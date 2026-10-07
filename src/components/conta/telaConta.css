@@ -1,0 +1,52 @@
+/* Telas de conta fora do app (07/10): Esqueci a senha e Criar nova senha.
+   O mesmo desenho do login: fundo vinho, mascote saindo do cartão e, no computador, o cartão dividido. */
+.tc-root { position: fixed; inset: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; align-items: center; font-family: var(--font-base); color: var(--ui-texto); padding: calc(env(safe-area-inset-top, 0px) + 24px) 20px calc(env(safe-area-inset-bottom, 0px) + 24px); }
+.tc-fundo { position: fixed; inset: 0; z-index: 0; background: var(--vinho-fundo, radial-gradient(1000px 640px at 50% 38%, #4B1528 0%, #2C1219 72%)); }
+.tc-layout { position: relative; z-index: 2; width: 100%; max-width: 440px; margin: auto 0; flex-shrink: 0; display: flex; flex-direction: column; }
+.tc-marca { display: none; }
+.tc-cartao { position: relative; margin-top: 108px; padding: 56px 24px 26px; background: var(--ui-branco); border-radius: 22px; box-shadow: 0 14px 40px -12px rgba(60, 10, 30, .45); text-align: center; }
+.tc-masc { position: absolute; left: 50%; top: -96px; transform: translateX(-50%); width: 136px; height: auto; z-index: 3; pointer-events: none; filter: drop-shadow(0 0 16px rgba(255, 157, 196, .55)) drop-shadow(0 8px 10px rgba(0, 0, 0, .35)); }
+.tc-nome { display: block; width: 128px; height: auto; margin: 0 auto 6px; }
+.tc-h { margin: 0; font-family: var(--font-base); font-size: 22px; font-weight: 900; letter-spacing: -.01em; line-height: 1.25; color: var(--ui-texto); text-wrap: balance; }
+.tc-p { max-width: 340px; margin: 6px auto 0; font-size: 14px; font-weight: 500; line-height: 1.5; color: var(--ui-texto-2); text-wrap: balance; }
+.tc-p--2 { margin-top: 2px; }
+.tc-bl { display: inline-block; } /* a frase quebra na vírgula, não no meio */
+.tc-p b { color: var(--ui-texto); font-weight: 700; overflow-wrap: anywhere; }
+.tc-form { display: flex; flex-direction: column; gap: 16px; margin-top: 22px; text-align: left; }
+.tc-erro { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 10px 12px; border-radius: var(--ui-raio); background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); font-size: 13.5px; font-weight: 600; line-height: 1.45; }
+.tc-erro svg { flex: none; margin-top: 2px; }
+.tc-acoes { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 22px; }
+.tc-form .tc-acoes { margin-top: 4px; }
+.tc-ic { display: inline-flex; align-items: center; justify-content: center; width: 68px; height: 68px; margin: 4px 0 12px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.tc-ic--verde { background: var(--ui-verde-fundo); color: var(--ui-verde); }
+.tc-ic--laranja { background: var(--ui-laranja-fundo); color: var(--ui-laranja); }
+.tc-dica { margin: 14px auto 0; padding: 10px 12px; max-width: 340px; text-wrap: balance; border-radius: var(--ui-raio); background: var(--ui-cinza); color: var(--ui-cinza-texto); font-size: 13px; font-weight: 500; line-height: 1.45; }
+.tc-conta { display: flex; align-items: center; min-height: 44px; margin: 0; font-size: 13.5px; font-weight: 500; color: var(--ui-texto-2); font-variant-numeric: tabular-nums; }
+.tc-espera { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 18px 0 10px; color: var(--ui-rosa); }
+.tc-espera .ui-gira { width: 34px; height: 34px; border-width: 3.5px; }
+.tc-req { list-style: none; display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 0; font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
+.tc-req li { display: flex; align-items: center; gap: 6px; }
+.tc-req li svg { flex: none; color: #C9BCC3; }
+.tc-req li.ok { color: var(--ui-verde); font-weight: 600; }
+.tc-req li.ok svg { color: var(--ui-verde); }
+.tc-rodape { position: relative; z-index: 3; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding-top: 18px; color: rgba(255, 255, 255, .72); font-size: 12.5px; white-space: nowrap; }
+.tc-rodape div { display: flex; gap: 8px; align-items: center; }
+.tc-rodape a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 2px; color: inherit; font-weight: 600; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+.tc-rodape a:focus-visible { outline: 3px solid rgba(255, 255, 255, .6); outline-offset: 1px; border-radius: 6px; }
+@media (hover: hover) { .tc-rodape a:hover { color: #fff; text-decoration: underline; } }
+.tc-rodape em { font-style: normal; font-size: 12px; opacity: .8; }
+@media (max-width: 380px) { .tc-root { padding-inline: 12px; } .tc-cartao { padding-inline: 18px; } }
+@media (max-width: 340px) { .tc-h { font-size: 20px; } }
+@media (min-width: 900px) {
+  /* mesma altura do cartão do login (602px), pra tela não "pular" ao ir e voltar */
+  .tc-layout { max-width: 960px; min-height: min(602px, calc(100dvh - 130px)); display: grid; grid-template-columns: 1fr 1fr; align-items: stretch; background: var(--ui-branco); border-radius: 28px; box-shadow: 0 30px 70px -30px rgba(80, 20, 45, .45); }
+  .tc-marca { display: block; position: relative; padding: 0 40px; border-radius: 28px 0 0 28px; background: linear-gradient(160deg, #FF9DC4 0%, #E85A8C 55%, #C33A6E 100%); color: #fff; text-align: center; }
+  .tc-marca-in { position: sticky; top: 0; height: min(100%, calc(100dvh - 48px)); min-height: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .tc-marca-masc { display: block; width: 170px; height: auto; filter: drop-shadow(0 12px 16px rgba(80, 10, 40, .3)); }
+  .tc-marca .nome-doonly { display: block; width: 210px; max-width: 100%; height: auto; margin-top: 14px; }
+  .tc-marca-frase { margin: 22px 0 6px; font-size: 24px; font-weight: 900; letter-spacing: -.01em; line-height: 1.2; text-wrap: balance; }
+  .tc-marca-sub { margin: 0; font-size: 15px; line-height: 1.45; opacity: .92; text-wrap: balance; }
+  .tc-cartao { margin: 0; padding: 48px 64px; border-radius: 0 28px 28px 0; box-shadow: none; display: flex; flex-direction: column; justify-content: center; }
+  .tc-masc, .tc-nome { display: none; }
+  .tc-rodape { flex-direction: row; gap: 8px; } .tc-rodape em::before { content: '·'; margin-right: 8px; }
+}

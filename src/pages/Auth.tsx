@@ -2,7 +2,7 @@ import { Mascote, NomeDoonly } from '@/components/marca/Mascote';
 import { useState, useEffect, useRef } from "react";
 import BotaoGoogle from "@/components/BotaoGoogle";
 import TermosModal from "@/components/TermosModal";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { User, Storefront, Phone, Envelope, Eye, EyeSlash, Check } from "@phosphor-icons/react";
 
@@ -60,7 +60,9 @@ export default function Auth() {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [keepConnected, setKeepConnected] = useState(true); // marcado = continua conectada; desmarcado = sai ao fechar o app
-  const [form, setForm] = useState({ email: "", senha: "" });
+  const location = useLocation();
+  // quem volta do "Esqueci a senha" traz o e-mail que estava digitando
+  const [form, setForm] = useState(() => ({ email: String((location.state as { email?: string } | null)?.email || ""), senha: "" }));
   const [fading, setFading] = useState(false);
   const [showCadastro, setShowCadastro] = useState(false);
   // Termos e Privacidade abrem numa janela por cima (07/10): não recarrega o app nem perde o que foi digitado
@@ -533,7 +535,7 @@ export default function Auth() {
               <input type="checkbox" id="keep" checked={keepConnected} onChange={e => setKeepConnected(e.target.checked)} />
               <label htmlFor="keep">Lembrar de mim</label>
             </div>
-            <a href="/esqueci-senha" className="forgot-link">Esqueceu a senha?</a>
+            <a href="/esqueci-senha" className="forgot-link" onClick={e => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; e.preventDefault(); navigate("/esqueci-senha", { state: { email: form.email.trim() } }); }}>Esqueceu a senha?</a>
           </div>
           {error && <p className="auth-error" role="alert">{error}</p>}
           <button type="submit" className="auth-btn" disabled={loading || fading}>
