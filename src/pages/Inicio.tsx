@@ -356,7 +356,7 @@ export default function Inicio() {
 
   const hojeFormatado = () => {
     const d = new Date();
-    const s = d.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" });
+    const s = d.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
     return s.charAt(0).toUpperCase() + s.slice(1);
   };
 
@@ -687,12 +687,12 @@ export default function Inicio() {
                 fileInputRef.current?.click();
               }
             }}
-            aria-label={window.innerWidth < 768 ? "Abrir menu" : (profile?.foto_url ? "Trocar foto de perfil" : "Adicionar foto de perfil")}
-            title={window.innerWidth < 768 ? "Menu" : (profile?.foto_url ? "Trocar foto" : "Adicionar foto")}
+            aria-label={window.innerWidth < 768 ? "Abrir o menu da conta" : (profile?.foto_url ? "Trocar a foto" : "Colocar uma foto")}
+            title={window.innerWidth < 768 ? "Menu da conta" : (profile?.foto_url ? "Trocar a foto" : "Colocar uma foto")}
             disabled={uploadingFoto}
           >
             {profile?.foto_url
-              ? <img src={profile.foto_url} alt="Perfil" className="ini-profile-img" />
+              ? <img src={profile.foto_url} alt="" className="ini-profile-img" />
               : <div className="ini-profile-placeholder"><span className="ini-profile-inicial">{(nome || "?").trim().charAt(0).toUpperCase()}</span></div>
             }
           </button>
@@ -706,14 +706,14 @@ export default function Inicio() {
               e.stopPropagation();
               if (!uploadingFoto) fileInputRef.current?.click();
             }}
-            aria-label="Adicionar foto de perfil"
-            title="Adicionar foto"
+            aria-label="Colocar uma foto"
+            title="Colocar uma foto"
             disabled={uploadingFoto}
             tabIndex={-1}
           >
             {uploadingFoto
               ? <span className="ini-profile-cam-spinner" />
-              : <Camera size={14} weight="fill" color="#fff" />}
+              : <Camera size={16} weight="bold" />}
           </button>
           )}
 
@@ -749,10 +749,10 @@ export default function Inicio() {
                   type="button"
                   className="ini-plan-tag ini-plan-tag--upgrade"
                   onClick={() => navigate("/assinar")}
-                  aria-label="Fazer upgrade para PRO"
+                  aria-label="Assinar o plano PRO"
                 >
                   <img src="/coroa.png" alt="" />
-                  <span>Upgrade</span>
+                  <span>Seja PRO</span>
                 </button>
               )
             )}
@@ -2623,15 +2623,26 @@ export default function Inicio() {
            Só < 768px. Desktop não é afetado.
            ═══════════════════════════════════════════════════════════ */
         .ini-hero-bg, .ini-hero-cta-bag, .ini-hero-cta-plus { display: none; }
-        @media (max-width: 767.98px) {
-          /* Header */
+        /* (07/10 · 3.00) de 768 a 900px a página ainda tem a margem do celular: a faixa vai de ponta a ponta e não corta em cima */
+        @media (min-width: 768px) and (max-width: 900px) {
           .ini-root .ini-hero {
-            background: #3B1620 !important;
-            border-radius: 0 0 26px 26px;
-            padding: max(calc(env(safe-area-inset-top, 0px) + 4px), 14px) 15px 8px 18px;
-            gap: 0;
+            width: 100vw;
+            margin: calc(-1 * (var(--pad-page-top) + env(safe-area-inset-top, 0px))) calc(50% - 50vw) 0;
+            padding: calc(1.5rem + env(safe-area-inset-top, 0px)) max(24px, env(safe-area-inset-right, 0px)) 1.5rem max(24px, env(safe-area-inset-left, 0px));
           }
-          .ini-root .ini-profile-wrapper { margin-left: 12px; }
+        }
+        @media (max-width: 767.98px) {
+          /* Topo (07/10 · 3.00, guia A1/A2/A14): vinho pelo nome do themes.css, nome da loja inteiro (até 2 linhas),
+             etiqueta e câmera com área de toque de 44px, título 22px peso 900 */
+          .ini-root .ini-hero {
+            background: var(--vinho-escuro) !important;
+            border-radius: 0 0 24px 24px;
+            padding: calc(max(env(safe-area-inset-top, 0px), 12px) + 4px) max(16px, env(safe-area-inset-right, 0px)) 12px max(16px, env(safe-area-inset-left, 0px));
+            gap: 8px;
+            min-height: calc(88px + max(env(safe-area-inset-top, 0px), 12px) - 12px);
+            box-sizing: border-box;
+          }
+          .ini-root .ini-profile-wrapper { margin-left: 0; }
           .ini-root .ini-hero-bg {
             display: block;
             position: absolute; inset: 0;
@@ -2641,36 +2652,59 @@ export default function Inicio() {
             z-index: 0;
           }
           .ini-root .ini-hero-waves { display: block; width: 100%; height: 100%; }
+          .ini-root .ini-hero-waves path { fill: var(--vinho); }
+          .ini-root .ini-hero-waves path:first-child { opacity: .55; }
           .ini-root .ini-hero-sparkles { display: none; }
           .ini-root .ini-hero-greeting h1 {
-            font-size: 21px; font-weight: 800;
-            letter-spacing: -0.3px;
-            gap: 10px;
+            flex-wrap: wrap; /* se o nome e a etiqueta não cabem lado a lado, a etiqueta desce: o nome não é cortado */
+            gap: 4px 8px;
+            font-size: 22px; font-weight: 900;
+            letter-spacing: -.02em; line-height: 1.2;
+            min-height: 26px;
+          }
+          .ini-root .ini-hero-greeting h1 > span:first-child {
+            display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+            white-space: normal; overflow-wrap: anywhere; text-wrap: balance;
           }
           .ini-root .ini-hero-data-mobile {
-            font-size: 12.5px; font-weight: 400;
-            color: #F4E9EC;
+            font-size: 12.5px; font-weight: 500;
+            color: rgba(255, 255, 255, .85);
             margin-top: 4px;
             letter-spacing: 0;
           }
-          .ini-root .ini-plan-tag--pro {
-            height: 21px;
-            padding: 0 9px 0 7px;
+          .ini-root .ini-plan-tag {
+            position: relative;
+            height: 24px;
+            padding: 0 8px 0 6px;
             margin-left: 0;
-            border-radius: 11px;
-            background: #3F101A;
-            border: 1px solid #C84473;
+            border-radius: 12px;
             box-shadow: none;
-            font-size: 11.5px; font-weight: 800;
-            letter-spacing: 0.02em;
+            font-size: 12.5px; font-weight: 800;
+            letter-spacing: 0;
+            gap: 4px;
+            color: var(--ui-branco);
           }
-          .ini-root .ini-plan-tag--pro img { width: 13px; height: 13px; }
+          .ini-root .ini-plan-tag img { width: 14px; height: 14px; }
+          .ini-root .ini-plan-tag--pro { background: rgba(var(--primary-rgb), .16); border: 1px solid rgba(var(--primary-rgb), .7); }
+          .ini-root .ini-plan-tag--upgrade { background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .3); -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: background-color var(--dur-fast) linear, transform var(--dur-fast) var(--ease-out); }
+          .ini-root .ini-plan-tag--upgrade::after { content: ""; position: absolute; inset: -10px -6px; } /* área de toque de 44px */
+          .ini-root .ini-plan-tag--upgrade:hover { transform: none; background: rgba(255, 255, 255, .18); box-shadow: none; }
+          .ini-root .ini-plan-tag--upgrade:active { transform: scale(.96); background: rgba(255, 255, 255, .2); }
+          .ini-root .ini-plan-tag--upgrade:focus-visible, .ini-root .ini-profile-btn:focus-visible, .ini-root .ini-profile-cam:focus-visible { outline: 3px solid rgba(255, 255, 255, .75); outline-offset: 2px; }
           .ini-root .ini-profile-btn {
-            width: 70px; height: 70px;
-            border: 2px solid #FFF5F0;
+            width: 64px; height: 64px;
+            border: 2px solid rgba(255, 255, 255, .9);
             box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            -webkit-tap-highlight-color: transparent; touch-action: manipulation;
           }
+          .ini-root .ini-profile-wrapper[data-has-photo="false"] .ini-profile-btn { background: var(--vinho-claro); }
+          .ini-root .ini-profile-inicial { font-size: 24px; color: var(--ui-rosa-claro); }
           .ini-root .ini-profile-btn:hover { transform: none; box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
+          .ini-root .ini-profile-btn:active { transform: scale(.96); }
+          .ini-root .ini-profile-cam { width: 24px; height: 24px; border: 0; background: var(--ui-branco); color: var(--ui-rosa-escuro); box-shadow: 0 1px 3px rgba(44, 18, 25, .35); -webkit-tap-highlight-color: transparent; }
+          .ini-root .ini-profile-cam::after { content: ""; position: absolute; inset: -10px; } /* área de toque de 44px */
+          .ini-root .ini-profile-cam:hover:not(:disabled) { transform: none; background: var(--ui-branco); }
+          @media (max-width: 389px) { .ini-root .ini-profile-btn { width: 56px; height: 56px; } .ini-root .ini-profile-inicial { font-size: 22px; } }
 
           /* Espaçamentos gerais */
           .ini-root { padding-left: 5px; padding-right: 5px; }

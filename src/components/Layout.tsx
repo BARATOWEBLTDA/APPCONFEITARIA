@@ -133,10 +133,10 @@ export default function Layout() {
               type="button"
               className="sidebar-badge sidebar-badge--upgrade"
               onClick={() => navigate("/assinar")}
-              aria-label="Fazer upgrade para PRO"
+              aria-label="Assinar o plano PRO"
             >
               <img src="/coroa.png" alt="" className="sidebar-badge-coroa" />
-              Upgrade
+              Seja PRO
             </button>
           )}
           </div>
