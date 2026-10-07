@@ -1,6 +1,6 @@
 // Build marker: 2026-09-05T11:00 — mobile hero: fonte menor, PRO achatado, texto centralizado
 import PrimeirosPassos from "@/components/PrimeirosPassos";
-import { STATUS_AINDA_NAO_PRONTO } from "@/lib/pedidoStatus";
+import { STATUS_AINDA_NAO_PRONTO, dataISO } from "@/lib/pedidoStatus";
 import ConquistasCard from "@/components/ConquistasCard";
 import MenuConta from "@/components/MenuConta";
 import { useState, useEffect, useRef } from "react";
@@ -390,7 +390,8 @@ export default function Inicio() {
     try {
       const userId = profile!.id;
       const hoje = new Date();
-      const hojeISO = hoje.toISOString().slice(0, 10);
+      // (07/10 · 3.02) "hoje" no horário do Brasil: antes vinha no horário de Londres e, depois das 21h, já era amanhã
+      const hojeISO = dataISO(hoje);
 
       const inicio7d = new Date(hoje); inicio7d.setDate(hoje.getDate() - 7);
       const inicio14d = new Date(hoje); inicio14d.setDate(hoje.getDate() - 14);
@@ -557,14 +558,14 @@ export default function Inicio() {
     const mapa: Record<string, number> = {};
     pedidos.forEach((p: any) => {
       if (!p.created_at) return;
-      const dia = p.created_at.slice(0, 10);
+      const dia = dataISO(new Date(p.created_at)); // o dia em que o pedido entrou, no horário do Brasil
       mapa[dia] = (mapa[dia] || 0) + (Number(p.valor_total) || 0);
     });
     const result: ChartPoint[] = [];
     for (let i = 29; i >= 0; i--) {
       const d = new Date(hoje);
       d.setDate(hoje.getDate() - i);
-      const iso = d.toISOString().slice(0, 10);
+      const iso = dataISO(d);
       result.push({
         dia: d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
         valor: mapa[iso] || 0,
@@ -778,7 +779,7 @@ export default function Inicio() {
 
       {/* ══ Computador (≥1100px): topo rosa com o resumo do dia + números (30/09) ══ */}
       {(() => {
-        const hojeISO = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; })();
+        const hojeISO = dataISO(new Date());
         const aReceberHoje = proximasEntregas.filter(e => e.data === hojeISO).reduce((s, e) => s + e.valor, 0);
         const proxHora = proximasEntregas.find(e => e.data === hojeISO && e.hora)?.hora;
         const partes: string[] = [];

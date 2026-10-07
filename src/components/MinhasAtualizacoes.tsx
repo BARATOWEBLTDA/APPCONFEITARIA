@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { STATUS_AINDA_NAO_PRONTO } from "@/lib/pedidoStatus";
+import { STATUS_AINDA_NAO_PRONTO, dataISO } from "@/lib/pedidoStatus";
 import { useNavigate } from "react-router-dom";
 import { Sparkle, CaretRight } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
@@ -32,7 +32,7 @@ function inicioFimSemana() {
   const fim = new Date(inicio);
   fim.setDate(inicio.getDate() + 6);
   fim.setHours(23, 59, 59, 999);
-  return { inicio: inicio.toISOString().slice(0, 10), fim: fim.toISOString().slice(0, 10) };
+  return { inicio: dataISO(inicio), fim: dataISO(fim) };
 }
 
 // Aniversariantes nos próximos 7 dias
@@ -74,11 +74,11 @@ export default function MinhasAtualizacoes() {
       setLoading(true);
       const userId = profile.id;
       const hoje = new Date();
-      const hojeISO = hoje.toISOString().slice(0, 10);
+      // (07/10 · 3.02) datas no horário do Brasil: antes, depois das 21h, "hoje" já era amanhã e a semana ganhava um dia
+      const hojeISO = dataISO(hoje);
       const semana = inicioFimSemana();
-      const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0, 10);
-      const inicioMesAnt = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1).toISOString().slice(0, 10);
-      const fimMesAnt = new Date(hoje.getFullYear(), hoje.getMonth(), 0).toISOString().slice(0, 10);
+      const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString(); // o instante exato em que o mês começou aqui
+      const inicioMesAnt = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1).toISOString();
       const dataLimite60d = new Date(hoje); dataLimite60d.setDate(hoje.getDate() - 60);
 
       const [
@@ -131,7 +131,7 @@ export default function MinhasAtualizacoes() {
           .select("valor_total")
           .eq("user_id", userId)
           .gte("created_at", inicioMesAnt)
-          .lte("created_at", fimMesAnt)
+          .lt("created_at", inicioMes) // até o fim do mês passado (antes o último dia ficava de fora)
           .in("status", STATUS_ENTREGUE),
         // 7. Total de pedidos (marco)
         supabase
