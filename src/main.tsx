@@ -1,8 +1,10 @@
+import './lib/sessaoTemporaria' // 1º de tudo: "Lembrar de mim" desmarcado apaga a sessão ao reabrir o app
 import { StrictMode } from 'react'
 import { iniciarMedidaDoTeclado } from './lib/tecladoIphone'
 import { iniciarAutoAtualizacao } from './lib/autoAtualizar'
 import { createRoot } from 'react-dom/client'
 import './index.css'
+import './styles/cartoesConfig.css'
 import './styles/themes.css'
 import './styles/typography.css'
 import { ThemeProvider } from './context/ThemeContext'

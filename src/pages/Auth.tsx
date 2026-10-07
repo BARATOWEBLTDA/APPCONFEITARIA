@@ -57,7 +57,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [keepConnected, setKeepConnected] = useState(false);
+  const [keepConnected, setKeepConnected] = useState(true); // marcado = continua conectada; desmarcado = sai ao fechar o app
   const [form, setForm] = useState({ email: "", senha: "" });
   const [fading, setFading] = useState(false);
   const [showCadastro, setShowCadastro] = useState(false);
@@ -203,6 +203,11 @@ export default function Auth() {
         password: form.senha,
       });
       if (error) throw error;
+      // "Lembrar de mim" desmarcado: a sessão vale só enquanto o app estiver aberto (ver main.tsx)
+      try {
+        if (keepConnected) localStorage.removeItem("doonly_sessao_temporaria");
+        else { localStorage.setItem("doonly_sessao_temporaria", "1"); sessionStorage.setItem("doonly_sessao_viva", "1"); }
+      } catch { /* sem armazenamento: segue conectada */ }
       const userId = signInData.user?.id;
       const { data: prof } = await supabase.from("profiles").select("is_admin").eq("id", userId).single();
       const dest = prof?.is_admin === true ? "/admin" : "/inicio";
@@ -211,10 +216,16 @@ export default function Auth() {
     } catch (err: any) {
       // Se email não foi confirmado, oferece ação de reenviar
       const msg = err?.message || "";
-      if (/email not confirmed|email_not_confirmed/i.test(msg)) {
-        setError("Você ainda não confirmou seu e-mail. Verifique sua caixa de entrada ou clique em cadastrar para reenviar.");
+      // cada erro com a sua mensagem (antes, até "sem internet" virava "senha incorreta")
+      const status = Number(err?.status) || 0;
+      if (!navigator.onLine || /failed to fetch|networkerror|network request failed|load failed/i.test(msg)) {
+        setError("Sem conexão. Confira a internet e tente de novo.");
+      } else if (/invalid login credentials|invalid_credentials|invalid grant/i.test(msg) || status === 400) {
+        setError("E-mail ou senha incorretos. Confira e tente de novo.");
+      } else if (/email not confirmed|email_not_confirmed/i.test(msg)) {
+        setError("Falta confirmar seu e-mail. Abra o link que enviamos pra você.");
       } else {
-        setError("E-mail ou senha incorretos. Tente novamente.");
+        setError("Não conseguimos entrar agora. Tente de novo em instantes.");
       }
       setLoading(false);
     }
@@ -429,7 +440,7 @@ export default function Auth() {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 18 9 12 15 6" />
           </svg>
-          <span>Já tem conta? <b>Fazer login</b></span>
+          <span>Já tem conta? <b>Entrar</b></span>
         </button>
       )}
 
@@ -442,8 +453,8 @@ export default function Auth() {
         </div>
 
         <div className="auth-text-hdr">
-          <h2 className="auth-h2">Faça seu login</h2>
-          <p className="auth-p">Entre na sua conta e continue organizando<br/>sua confeitaria de forma profissional.</p>
+          <h2 className="auth-h2">Entrar no Doonly</h2>
+          <p className="auth-p">Sua confeitaria organizada.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form" noValidate>
@@ -465,10 +476,7 @@ export default function Auth() {
               spellCheck={false}
               enterKeyHint="next"
               aria-invalid={!!loginEmailError}
-              style={{
-                backgroundColor: form.email ? "var(--primary-light)" : "var(--bg-card)",
-                borderColor: loginEmailError ? "var(--error)" : (form.email ? "var(--primary-light)" : "var(--border)")
-              }}
+              style={{ backgroundColor: "#fff", borderColor: loginEmailError ? "var(--error)" : "var(--border)" }}
             />
             {loginEmailError && <span className="field-error">{loginEmailError}</span>}
           </div>
@@ -485,7 +493,7 @@ export default function Auth() {
                 required
                 autoComplete="current-password"
                 enterKeyHint="done"
-                style={{ backgroundColor: form.senha ? "var(--primary-light)" : "var(--bg-card)", borderColor: form.senha ? "var(--primary-light)" : "var(--border)" }}
+                style={{ backgroundColor: "#fff", borderColor: "var(--border)" }}
               />
               <button type="button" className="eye-btn" onClick={() => setShowPassword(!showPassword)} tabIndex={-1} aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}>
                 {showPassword ? <EyeSlash size={18} weight="regular" /> : <Eye size={18} weight="regular" />}
@@ -497,7 +505,7 @@ export default function Auth() {
               <input type="checkbox" id="keep" checked={keepConnected} onChange={e => setKeepConnected(e.target.checked)} />
               <label htmlFor="keep">Lembrar de mim</label>
             </div>
-            <a href="/esqueci-senha" className="forgot-link">Esqueceu sua senha?</a>
+            <a href="/esqueci-senha" className="forgot-link">Esqueceu a senha?</a>
           </div>
           {error && <p className="auth-error">{error}</p>}
           <button type="submit" className="auth-btn" disabled={loading || fading}>
@@ -512,7 +520,7 @@ export default function Auth() {
           <div className="cadastro-link-wrap">
             <span>Não tem conta? </span>
             <button type="button" className="cadastro-link" onClick={() => setShowCadastro(true)}>
-              Cadastre-se grátis
+              Criar conta grátis
             </button>
           </div>
         </form>
@@ -522,6 +530,11 @@ export default function Auth() {
         {/* Logo — mesma classe/tamanho do login */}
         <div className="auth-logo-wrap">
           <img src="/cadastro.png" alt="Doonly" className="auth-logo-img" />
+        </div>
+
+        <div className="auth-text-hdr">
+          <h2 className="auth-h2">Criar sua conta</h2>
+          <p className="auth-p">Leva menos de 1 minuto.</p>
         </div>
 
         <form onSubmit={handleCadastro} className="cadastro-form" noValidate>
@@ -535,7 +548,7 @@ export default function Auth() {
               </div>
               <div className="ref-banner-info">
                 <div className="ref-banner-title">
-                  🎉 <b>{indicadorNome.split(" ")[0]}</b> indicou você para o Doonly!
+                  <b>{indicadorNome.split(" ")[0]}</b> indicou você para o Doonly!
                 </div>
                 <div className="ref-banner-desc">
                   Comece de graça em segundos
@@ -546,10 +559,11 @@ export default function Auth() {
 
           {/* Nome */}
           <div className="cad-field-wrap">
+            <span className="cad-lb">Seu nome</span>
             <div className={`cad-field ${cadastroTouched.nome && cadastroErrors.nome ? "has-error" : ""}`}>
               <input
                 type="text"
-                placeholder="Nome"
+                placeholder="Ex.: Juliana Souza"
                 value={cadastroForm.nome}
                 onChange={e => handleCadastroChange("nome", e.target.value)}
                 onBlur={() => handleCadastroBlur("nome")}
@@ -559,7 +573,7 @@ export default function Auth() {
                 enterKeyHint="next"
                 aria-invalid={!!(cadastroTouched.nome && cadastroErrors.nome)}
               />
-              <User className="cad-icon" size={20} weight="regular" />
+              
             </div>
             {cadastroTouched.nome && cadastroErrors.nome && (
               <span className="cad-error">{cadastroErrors.nome}</span>
@@ -568,26 +582,28 @@ export default function Auth() {
 
           {/* Nome da confeitaria */}
           <div className="cad-field-wrap">
+            <span className="cad-lb">Nome da confeitaria</span>
             <div className="cad-field">
               <input
                 type="text"
-                placeholder="Nome da confeitaria"
+                placeholder="Ex.: Doces da Ju"
                 value={cadastroForm.nomeLoja}
                 onChange={e => handleCadastroChange("nomeLoja", e.target.value)}
                 autoComplete="organization"
                 autoCapitalize="words"
                 enterKeyHint="next"
               />
-              <Storefront className="cad-icon" size={20} weight="regular" />
+              
             </div>
           </div>
 
           {/* Telefone */}
           <div className="cad-field-wrap">
+            <span className="cad-lb">WhatsApp</span>
             <div className={`cad-field ${cadastroTouched.telefone && cadastroErrors.telefone ? "has-error" : ""}`}>
               <input
                 type="tel"
-                placeholder="Telefone"
+                placeholder="(41) 99999-0000"
                 value={cadastroForm.telefone}
                 onChange={e => handleCadastroChange("telefone", e.target.value)}
                 onBlur={() => handleCadastroBlur("telefone")}
@@ -596,7 +612,7 @@ export default function Auth() {
                 enterKeyHint="next"
                 aria-invalid={!!(cadastroTouched.telefone && cadastroErrors.telefone)}
               />
-              <Phone className="cad-icon" size={20} weight="regular" />
+              
             </div>
             {cadastroTouched.telefone && cadastroErrors.telefone && (
               <span className="cad-error">{cadastroErrors.telefone}</span>
@@ -605,10 +621,11 @@ export default function Auth() {
 
           {/* E-mail */}
           <div className="cad-field-wrap">
+            <span className="cad-lb">E-mail</span>
             <div className={`cad-field ${cadastroTouched.email && cadastroErrors.email ? "has-error" : ""}`}>
               <input
                 type="email"
-                placeholder="E-mail"
+                placeholder="seu@email.com"
                 value={cadastroForm.email}
                 onChange={e => handleCadastroChange("email", e.target.value)}
                 onBlur={() => handleCadastroBlur("email")}
@@ -621,7 +638,7 @@ export default function Auth() {
                 enterKeyHint="next"
                 aria-invalid={!!(cadastroTouched.email && cadastroErrors.email)}
               />
-              <Envelope className="cad-icon" size={20} weight="regular" />
+              
             </div>
             {cadastroTouched.email && cadastroErrors.email && (
               <span className="cad-error">{cadastroErrors.email}</span>
@@ -630,10 +647,11 @@ export default function Auth() {
 
           {/* Senha */}
           <div className="cad-field-wrap">
+            <span className="cad-lb">Senha</span>
             <div className={`cad-field ${cadastroTouched.senha && cadastroErrors.senha ? "has-error" : ""}`}>
               <input
                 type={showCadastroSenha ? "text" : "password"}
-                placeholder="Senha"
+                placeholder="Mínimo 6 caracteres"
                 value={cadastroForm.senha}
                 onChange={e => handleCadastroChange("senha", e.target.value)}
                 onBlur={() => handleCadastroBlur("senha")}
@@ -681,10 +699,11 @@ export default function Auth() {
 
           {/* Confirmar Senha */}
           <div className="cad-field-wrap">
+            <span className="cad-lb">Confirmar a senha</span>
             <div className={`cad-field ${cadastroTouched.confirmarSenha && cadastroErrors.confirmarSenha ? "has-error" : ""}`}>
               <input
                 type={showConfirmarSenha ? "text" : "password"}
-                placeholder="Confirmar Senha"
+                placeholder="Repita a senha"
                 value={cadastroForm.confirmarSenha}
                 onChange={e => handleCadastroChange("confirmarSenha", e.target.value)}
                 onBlur={() => handleCadastroBlur("confirmarSenha")}
@@ -728,7 +747,7 @@ export default function Auth() {
                       setShowCadastro(false);
                     }}
                   >
-                    Fazer login →
+                    Entrar →
                   </button>
                 </div>
               </div>
@@ -737,11 +756,11 @@ export default function Auth() {
             )
           )}
           <button type="submit" className="cad-btn" disabled={cadastroLoading}>
-            {cadastroLoading ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><span className="spinner" /> Criando conta...</span> : "Cadastrar"}
+            {cadastroLoading ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><span className="spinner" /> Criando conta...</span> : "Criar conta"}
           </button>
           {!IS_IOS && (<>
           <div className="auth-divider"><span>ou</span></div>
-          <BotaoGoogle modo="signup_with" textoReserva="Cadastrar com Google" />
+          <BotaoGoogle modo="signup_with" textoReserva="Criar conta com Google" />
           </>)}
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', lineHeight: '1.5', margin: '0' }}>
             Ao criar sua conta, você concorda com nossos{' '}
@@ -751,7 +770,7 @@ export default function Auth() {
           </p>
           <div className="cad-mobile-login-link">
             <span>Já tem conta? </span>
-            <button type="button" className="cadastro-link" onClick={() => setShowCadastro(false)}>Fazer login</button>
+            <button type="button" className="cadastro-link" onClick={() => setShowCadastro(false)}>Entrar</button>
           </div>
         </form>
       </div>
@@ -827,29 +846,17 @@ export default function Auth() {
         @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes promoFadeIn { from { opacity: 0; } to { opacity: 1; } }
         .auth-logo-wrap { display: flex; justify-content: center; margin-bottom: 0.75rem; }
-        .auth-logo-img { height: 120px; object-fit: contain; }
+        .auth-logo-img { height: 84px; max-width: 100%; object-fit: contain; }
         .auth-text-hdr {
           text-align: center;
           margin-bottom: 1rem;
-          display: none; /* mobile: só o mascote (sem título "Faça seu login") */
+          display: block; /* título também no celular (03/10) */
         }
         @media (min-width: 900px) {
           .auth-text-hdr { display: block; }
         }
-        .auth-h2 {
-          font-size: 1.35rem;
-          font-weight: var(--fw-black, 900);
-          color: var(--text-title);
-          margin: 0 0 0.4rem;
-          letter-spacing: 0.02em;
-          text-transform: uppercase;
-        }
-        .auth-p {
-          font-size: 0.85rem;
-          color: var(--text-secondary);
-          line-height: 1.5;
-          margin: 0;
-        }
+        .auth-h2 { font-size: 20px; font-weight: 900; color: #2C1219; margin: 0 0 2px; letter-spacing: -0.01em; }
+        .auth-p { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .auth-form { display: flex; flex-direction: column; gap: 1rem; }
         .field { display: flex; flex-direction: column; gap: 0.35rem; }
         .field label { font-size: var(--font-button); font-weight: var(--fw-medium); color: var(--text-primary); }
@@ -878,7 +885,7 @@ export default function Auth() {
         .keep-connected { display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
         .keep-connected input[type="checkbox"] { accent-color: var(--primary); width: 15px; height: 15px; cursor: pointer; }
         .keep-connected label { font-size: var(--font-helper); color: var(--text-primary); cursor: pointer; white-space: nowrap; }
-        .forgot-link { font-size: var(--font-helper); color: var(--primary); text-decoration: none; white-space: nowrap; font-weight: var(--fw-medium); -webkit-tap-highlight-color: transparent; }
+        .forgot-link { font-size: 14px; color: #C33A6E; text-decoration: none; white-space: nowrap; font-weight: 700; padding: 10px 0; -webkit-tap-highlight-color: transparent; }
         .forgot-link:hover { text-decoration: underline; }
         .auth-error { background: #fff1f2; border: 1px solid #fecdd3; color: var(--error); border-radius: var(--radius-sm); padding: 0.6rem 0.9rem; font-size: var(--font-button); }
         .auth-btn { padding: 0.85rem; background: var(--primary-gradient); color: var(--text-inverse); border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-semibold); cursor: pointer; transition: opacity 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; min-height: 48px; -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; }
@@ -886,7 +893,7 @@ export default function Auth() {
         .auth-btn:disabled { opacity: 0.7; cursor: not-allowed; }
         .auth-btn:active:not(:disabled) { transform: scale(0.98); }
         .cadastro-link-wrap { text-align: center; font-size: var(--font-button); color: var(--text-secondary); }
-        .cadastro-link { background: none; border: none; color: var(--primary); font-weight: var(--fw-semibold); cursor: pointer; font-family: inherit; font-size: var(--font-button); text-decoration: underline; -webkit-tap-highlight-color: transparent; }
+        .cadastro-link { background: none; border: none; color: var(--primary); font-weight: var(--fw-semibold); cursor: pointer; font-family: inherit; font-size: var(--font-button); text-decoration: underline; -webkit-tap-highlight-color: transparent;  padding: 10px 4px; font-weight: 800; color: #C33A6E; }
         .spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .auth-divider { display: flex; align-items: center; gap: 0.75rem; color: var(--border); font-size: var(--font-helper); }
@@ -949,13 +956,14 @@ export default function Auth() {
         }
         .ref-banner-desc b { font-weight: 800; }
         .cad-field-wrap { display: flex; flex-direction: column; gap: 0.3rem; }
-        .cad-field { position: relative; display: flex; align-items: center; border: 1.5px solid var(--border); border-radius: var(--radius-full); overflow: hidden; background: var(--bg-card); transition: border-color 0.2s; }
+        .cad-field { position: relative; display: flex; align-items: center; height: 48px; border: 1.5px solid var(--border); border-radius: 12px; overflow: hidden; background: #fff; transition: border-color 0.2s; }
+        .cad-lb { display: block; font-size: 13px; font-weight: 700; color: #4B3A42; margin: 0 0 5px 2px; }
         .cad-field:focus-within { border-color: var(--border-focus); }
         .cad-field.has-error { border-color: var(--error); }
         .cad-field.has-error:focus-within { border-color: var(--error); }
         .cad-field input {
           flex: 1; min-width: 0;
-          padding: 0.8rem 0.5rem 0.8rem 1.25rem;
+          padding: 0 0.5rem 0 0.85rem;
           border: none; outline: none;
           font-family: inherit;
           font-size: 16px; /* Evita zoom no iOS */
@@ -984,10 +992,10 @@ export default function Auth() {
           transition: background-color 5000s ease-in-out 0s;
         }
         .cad-icon { margin-right: 1.5rem; flex-shrink: 0; color: var(--text-muted); }
-        .cad-eye { background: none; border: none; cursor: pointer; padding: 0.5rem 1.5rem 0.5rem 0.25rem; display: flex; align-items: center; color: var(--text-muted); flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
+        .cad-eye { background: none; border: none; cursor: pointer; padding: 0 0.85rem; height: 46px; min-width: 44px; justify-content: center; display: flex; align-items: center; color: var(--text-muted); flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
         .cad-eye:hover { color: var(--primary); }
-        .cad-error { font-size: 0.75rem; color: var(--error); padding-left: 1.25rem; }
-        .cad-btn { margin-top: 0.5rem; padding: 0.9rem; background: var(--primary-gradient); color: var(--text-inverse); border: none; border-radius: var(--radius-full); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-bold); cursor: pointer; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; min-height: 52px; letter-spacing: 0.5px; }
+        .cad-error { font-size: 12.5px; color: var(--error); padding-left: 2px; font-weight: 600; }
+        .cad-btn { margin-top: 0.5rem; padding: 0.9rem; background: var(--primary-gradient); color: var(--text-inverse); border: none; border-radius: 13px; font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-bold); cursor: pointer; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; min-height: 52px; letter-spacing: 0.5px; }
         .cad-btn:hover:not(:disabled) { opacity: 0.9; }
         .cad-btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
