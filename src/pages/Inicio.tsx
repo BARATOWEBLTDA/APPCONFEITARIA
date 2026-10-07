@@ -25,7 +25,6 @@ import { useProfile } from "@/hooks/useProfile";
 import { useIsMobile } from "@/hooks/use-mobile";
 import AppPageHeader from "@/components/AppPageHeader";
 
-import TourInicio from "@/components/TourInicio";
 import WelcomeChecklist from "@/components/WelcomeChecklist";
 import UpdatesFeed from "@/components/UpdatesFeed";
 import MinhasAtualizacoes from "@/components/MinhasAtualizacoes";
@@ -903,12 +902,11 @@ export default function Inicio() {
         {/* ── Coluna principal ── */}
         <div className="ini-main">
 
-      {/* ── Primeiros passos (02/10) — só no celular, some quando ela termina ── */}
-      {isMobile && (
-        <section className="ini-section ini-section--checklist-top ini-pp">
-          <PrimeirosPassos />
-        </section>
-      )}
+      {/* ── Primeiros passos (02/10) — some quando ela termina.
+             (07/10 · 2.94) Passou a aparecer em todos os aparelhos: é o único guia depois das boas-vindas (o tour saiu). ── */}
+      <section className="ini-section ini-section--checklist-top ini-pp">
+        <PrimeirosPassos />
+      </section>
 
       {/* ── WelcomeChecklist (temporariamente oculto — reservado pra futuro prêmio) ── */}
       {false && profile?.id && !checklistDone && (
@@ -3116,7 +3114,8 @@ export default function Inicio() {
           .ini-root .ini-section--nav .ini-nav-meta { display: flex !important; padding: 0 !important; margin: 0 !important; justify-content: center !important; align-self: center !important; gap: 1px; flex-direction: column !important; min-width: 0; flex: 1; }
           .ini-root .ini-section--nav .ini-nav-label { font-size: 13.5px !important; margin: 0 !important; padding: 0 !important; font-weight: 700 !important; color: #2C1219 !important; }
           .ini-root .ini-section--nav .ini-nav-sub { display: block !important; font-size: 11.5px !important; color: #9A8E94 !important; line-height: 1.3 !important; }
-          .ini-root .ini-section--nav .ini-nav-arrow { display: block !important; position: static !important; color: #C4B8BE !important; margin-left: auto; flex-shrink: 0; }
+          .ini-root .ini-section--nav .ini-nav-arrow { display: block !important; position: static !important; color: #C4B8BE !important; margin-left: auto; flex-shrink: 0; }
+
           /* textos numa linha (o cartão não cresce); seta só em telas bem largas */
           .ini-root .ini-section--nav .ini-nav-label, .ini-root .ini-section--nav .ini-nav-sub { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
           .ini-root .ini-section--nav .ini-nav-card { min-height: 64px !important; height: auto !important; }
@@ -3148,9 +3147,6 @@ export default function Inicio() {
           onCropDone={handleCropDone}
         />
       )}
-
-      {/* Tour de boas-vindas — auto-abre no primeiro login (1s de delay) */}
-      <TourInicio />
 
     </div>
     </>

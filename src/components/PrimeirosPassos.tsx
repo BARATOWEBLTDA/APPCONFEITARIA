@@ -6,6 +6,7 @@ import { apiFetch } from "@/lib/apiFetch";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import HorarioSheet from "@/components/HorarioSheet";
+import { Mascote } from "@/components/marca/Mascote";
 import { lerPassos, marcarCompartilhado, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk, type EstadoPassos } from "@/lib/primeirosPassos";
 
 /**
@@ -79,9 +80,10 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   if (completo) {
     return (
       <div className="pp pp--fim">
-        <div className="pp-conf" aria-hidden="true">🎉</div>
+        {/* (07/10 · 2.94) o mascote no lugar dos emojis */}
+        <Mascote pose="acenando" className="pp-masc" />
         <b className="pp-ft">Sua confeitaria está pronta pra vender!</b>
-        <p className="pp-fs">Você concluiu os primeiros passos. Agora é só esperar os pedidos chegarem 💗</p>
+        <p className="pp-fs">Você concluiu os primeiros passos. Agora é só esperar os pedidos chegarem.</p>
         <a className="pp-btn" href={link} target="_blank" rel="noopener noreferrer">Ver meu cardápio</a>
         <button type="button" className="pp-lnk pp-lnk--cinza" onClick={fechar}>Fechar</button>
         <style>{CSS}</style>
@@ -104,7 +106,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   const compartilharTravado = false;
 
   return (
-    <div className="pp">
+    <div className={`pp pp--${local}`}>
       <p className="pp-k">PRIMEIROS PASSOS</p>
       <b className="pp-t">Comece a vender</b>
       <p className="pp-sub">Tudo o que o seu cardápio precisa, sem sair desta tela.</p>
@@ -363,9 +365,22 @@ const CSS = `
   .pp-lnk { display: block; width: 100%; margin-top: 8px; padding: 10px; border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #C33A6E; cursor: pointer; }
   .pp-lnk--cinza { color: #9A8E94; font-weight: 600; }
   .pp--fim { text-align: center; background: linear-gradient(180deg, #FFF1F6, #fff 70%); padding-bottom: 12px; }
-  .pp-conf { font-size: 40px; line-height: 1; }
+  .pp-masc { display: block; width: 120px; height: auto; margin: 0 auto; }
   .pp-ft { display: block; font-size: 18px; font-weight: 900; margin: 6px auto 0; max-width: 260px; line-height: 1.25; text-wrap: balance; }
   .pp-fs { font-size: 13.5px; color: #6B5D64; margin: 6px auto 4px; max-width: 290px; line-height: 1.45; text-wrap: balance; }
+
+  /* (07/10 · 2.94) No Início, em tela larga (tablet e computador), os passos viram blocos lado a lado:
+     o cartão fica com metade da altura e não empurra o resto da tela pra baixo. */
+  @media (min-width: 768px) {
+    .pp--inicio { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 12px; padding: 20px 20px 20px; }
+    .pp--inicio > .pp-k, .pp--inicio > .pp-t, .pp--inicio > .pp-sub, .pp--inicio > .pp-bar { grid-column: 1 / -1; }
+    .pp--inicio > .pp-bar { margin-bottom: 4px; }
+    .pp--inicio > .pp-ps, .pp--inicio > .pp-at { margin: 10px 0 0; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px; }
+    .pp--inicio > .pp-at { display: flex; flex-direction: column; justify-content: space-between; border: 1.5px solid #F7C6D9; padding: 14px 12px 12px; }
+    .pp--inicio > .pp-ps--ok { background: #FAF7F8; }
+  }
+  @media (min-width: 1600px) { .pp--inicio { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (min-width: 768px) { .pp--fim .pp-btn { max-width: 340px; margin-left: auto; margin-right: auto; } }
 
   .ppf-ov { position: fixed; inset: 0; z-index: 3500; background: rgba(45,31,38,.5); display: flex; align-items: flex-end; justify-content: center; bottom: var(--teclado, 0px); }
   @media (min-width: 768px) { .ppf-ov { align-items: center; } }
