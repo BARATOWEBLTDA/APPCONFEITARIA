@@ -1,6 +1,7 @@
 import { Mascote, NomeDoonly } from '@/components/marca/Mascote';
 import { useState, useEffect, useRef } from "react";
 import BotaoGoogle from "@/components/BotaoGoogle";
+import { Botao } from "@/components/base";
 import TermosModal from "@/components/TermosModal";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -538,9 +539,8 @@ export default function Auth() {
             <a href="/esqueci-senha" className="forgot-link" onClick={e => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; e.preventDefault(); navigate("/esqueci-senha", { state: { email: form.email.trim() } }); }}>Esqueceu a senha?</a>
           </div>
           {error && <p className="auth-error" role="alert">{error}</p>}
-          <button type="submit" className="auth-btn" disabled={loading || fading}>
-            {loading ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><span className="spinner" /> Entrando...</span> : "Entrar"}
-          </button>
+          {/* (07/10 · 2.91) botão padrão do guia, o mesmo do "Esqueci a senha" */}
+          <Botao type="submit" cheio className="auth-btn" carregando={loading} disabled={fading}>{loading ? "Entrando…" : "Entrar"}</Botao>
 
           {!IS_IOS && (<>
           <div className="auth-divider"><span>ou</span></div>
@@ -789,9 +789,7 @@ export default function Auth() {
               <p className="auth-error" role="alert">{cadastroError}</p>
             )
           )}
-          <button type="submit" className="cad-btn" disabled={cadastroLoading}>
-            {cadastroLoading ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><span className="spinner" /> Criando conta...</span> : "Criar conta"}
-          </button>
+          <Botao type="submit" cheio className="cad-btn" carregando={cadastroLoading}>{cadastroLoading ? "Criando conta…" : "Criar conta"}</Botao>
           {!IS_IOS && (<>
           <div className="auth-divider"><span>ou</span></div>
           <BotaoGoogle modo="signup_with" textoReserva="Criar conta com Google" desativado={cadastroLoading} />
@@ -942,10 +940,6 @@ export default function Auth() {
         .forgot-link { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: #C33A6E; text-decoration: none; white-space: nowrap; font-weight: 700; padding: 0; -webkit-tap-highlight-color: transparent; }
         .forgot-link:hover { text-decoration: underline; }
         .auth-error { background: #fff1f2; border: 1px solid #fecdd3; color: var(--error); border-radius: var(--radius-sm); padding: 0.6rem 0.9rem; font-size: var(--font-button); }
-        .auth-btn { padding: 0.85rem; background: var(--primary-gradient); color: var(--text-inverse); border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-semibold); cursor: pointer; transition: opacity 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; min-height: 48px; -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; }
-        .auth-btn:hover:not(:disabled) { opacity: 0.92; transform: translateY(-1px); }
-        .auth-btn:disabled { opacity: 0.7; cursor: not-allowed; }
-        .auth-btn:active:not(:disabled) { transform: scale(0.98); }
         .cadastro-link-wrap { text-align: center; font-size: var(--font-button); color: var(--text-secondary); }
         .cadastro-link { background: none; border: none; color: var(--primary); font-weight: var(--fw-semibold); cursor: pointer; font-family: inherit; font-size: var(--font-button); text-decoration: underline; -webkit-tap-highlight-color: transparent;  padding: 0 4px; min-height: 44px; font-weight: 800; color: #C33A6E; }
         .spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
@@ -1049,9 +1043,7 @@ export default function Auth() {
         .cad-eye { background: none; border: none; cursor: pointer; padding: 0 0.85rem; height: 46px; min-width: 44px; justify-content: center; display: flex; align-items: center; color: var(--text-muted); flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
         .cad-eye:hover { color: var(--primary); }
         .cad-error { font-size: 12.5px; color: var(--error); padding-left: 2px; font-weight: 600; }
-        .cad-btn { margin-top: 0.5rem; padding: 0.9rem; background: var(--primary-gradient); color: var(--text-inverse); border: none; border-radius: 13px; font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-bold); cursor: pointer; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; min-height: 52px; letter-spacing: 0.5px; }
-        .cad-btn:hover:not(:disabled) { opacity: 0.9; }
-        .cad-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+        .cad-btn { margin-top: 0.5rem; }
 
         .cad-header {
           text-align: center;
