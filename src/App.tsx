@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "@/lib/supabase";
 import { NotificationProvider } from "@/context/NotificationContext";
-import Onboarding from "@/components/Onboarding";
+import BoasVindas from "@/components/boasVindas/BoasVindas";
 import Auth from "@/pages/Auth";
 import EsqueciSenha from "@/pages/EsqueciSenha";
 import ResetPassword from "@/pages/ResetPassword";
@@ -90,10 +90,9 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<any>(undefined);
 
   // Decidido SÍNCRONO no primeiro render — evita o "app pisca antes do tutorial".
-  // Se o usuário nunca viu o tutorial e nunca teve auto-abertura, mostramos o
-  // Onboarding tela cheia — SÓ MOBILE. Desktop nunca abre.
+  // Se o usuário nunca viu as boas-vindas, elas abrem em tela cheia.
+  // (07/10) Passou a abrir também no computador e no tablet deitado: a tela nova tem desenho pra tela larga.
   const [showFirstTutorial, setShowFirstTutorial] = useState<boolean>(() => {
-    if (typeof window !== "undefined" && window.matchMedia("(min-width: 900px)").matches) return false;
     try {
       const visto = localStorage.getItem("doonly_tutorial_visto");
       const autoAberto = localStorage.getItem("doonly_tutorial_auto_aberto");
@@ -168,8 +167,9 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
   if (showFirstTutorial) {
     return (
-      <Onboarding
+      <BoasVindas
         isOpen={true}
+        nome={String(session.user?.user_metadata?.nome || session.user?.user_metadata?.full_name || session.user?.user_metadata?.name || "").trim().split(/\s+/)[0]}
         onClose={() => {
           // Terminou ou tocou em "Pular": nos dois casos o guia não volta mais
           try {
