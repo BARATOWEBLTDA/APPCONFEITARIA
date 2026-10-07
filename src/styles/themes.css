@@ -17,6 +17,7 @@
   /* Vinho — a segunda cor da marca (03/10) */
   --vinho:            #4B1528;
   --vinho-escuro:     #2C1219;
+  --vinho-profundo:   #1A090E; /* menu lateral do computador: mais fechado, porque lá ocupa a altura toda de uma tela grande (07/10) */
   --vinho-claro:      #72243E;
   --vinho-rgb:        75, 21, 40;
   --vinho-fundo:      radial-gradient(1000px 640px at 50% 38%, #4B1528 0%, #2C1219 72%); /* fundo de marca (login) */
@@ -52,7 +53,7 @@
   --focus-ring:       0 0 0 3px rgba(232,90,140,0.22);
 
   /* ── Sidebar / Nav (grafite escuro) ── */
-  --sidebar-bg:           var(--vinho-escuro); /* guia A1: o grafite #2D1F26 saiu */
+  --sidebar-bg:           var(--vinho-profundo); /* guia A1: o grafite #2D1F26 saiu; 07/10: vinho mais fechado no computador */
   --sidebar-text:         #F0E8EB;
   --sidebar-text-muted:   rgba(240,232,235,0.55);
   --sidebar-hover-bg:     rgba(232,90,140,0.08);
