@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import { CaretRight, X } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
 import { verificarAvisosPro } from "@/lib/notificacoesUsuario";
@@ -49,12 +50,12 @@ export default function ConquistasCard() {
   return (
     <>
       <div className="cqc">
-        <div className="cqc-h"><span>🏆 Suas conquistas</span><button type="button" onClick={() => navigate("/conquistas")}>Ver todas ›</button></div>
+        <div className="cqc-h"><span>Suas conquistas</span><button type="button" onClick={() => navigate("/conquistas")}>Ver todas <CaretRight size={16} weight="bold" aria-hidden="true" /></button></div>
         {nova && (
           <div className="cqc-nova">
             <div className="cqc-medal" aria-hidden="true">{nova.emoji}</div>
-            <div className="cqc-tx"><small>NOVA CONQUISTA</small><b>{nova.nome}!</b><p>{nova.descricao}</p></div>
-            <button type="button" className="cqc-x" onClick={fecharNova} aria-label="Fechar">✕</button>
+            <div className="cqc-tx"><small>Nova conquista</small><b>{nova.nome}!</b><p>{nova.descricao}</p></div>
+            <button type="button" className="cqc-x" onClick={fecharNova} aria-label="Fechar" title="Fechar"><X size={16} weight="bold" aria-hidden="true" /></button>
           </div>
         )}
         {prox && (
@@ -71,7 +72,7 @@ export default function ConquistasCard() {
             <div className="cqc-conf" aria-hidden="true">{[[10, 20, "#E85A8C", 20], [25, 6, "#FCD34D", -30], [42, 30, "#86EFAC", 45], [60, 8, "#93C5FD", -15], [78, 26, "#F5B8CD", 60], [90, 10, "#C4B5FD", -40]].map(([l, t, cor, rot], i) =>
               <i key={i} style={{ left: `${l}%`, top: Number(t), background: String(cor), transform: `rotate(${rot}deg)` }} />)}</div>
             <div className="cqc-medal cqc-medal--big" aria-hidden="true">{qCel.emoji}</div>
-            <small className="cqc-pk">NOVA CONQUISTA</small>
+            <small className="cqc-pk">Nova conquista</small>
             <h3>{qCel.nome}!</h3>
             <p>{nome ? `Parabéns, ${nome}! ` : "Parabéns! "}{qCel.descricao}</p>
             <button type="button" className="cqc-b1" onClick={() => { fecharCel(); navigate("/conquistas"); }}>Ver minhas conquistas</button>
@@ -87,14 +88,14 @@ export default function ConquistasCard() {
 export const CSS_CONQ = `
   .cqc { margin: 0; border-radius: 16px; padding: 14px; background: linear-gradient(150deg, #3B1620 0%, #5A1F36 55%, #7A2A4A 100%); position: relative; font-family: var(--font-base); } /* sem a sombra (02/10): ela invadia o cartão de Notícias */
   .cqc::before { content: ""; position: absolute; inset: 0; border-radius: 16px; padding: 1.5px; background: linear-gradient(120deg, #F9A8D4, #C4B5FD, #93C5FD, #F9A8D4); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; opacity: .75; pointer-events: none; }
-  .cqc-h { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 800; color: #fff; }
-  .cqc-h button { border: none; background: none; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #F9A8D4; cursor: pointer; padding: 2px; }
+  .cqc-h { display: flex; justify-content: space-between; align-items: center; font-size: 16px; font-weight: 800; line-height: 1.3; color: #fff; }
+  .cqc-h button { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin: -12px -8px -12px 0; padding: 0 8px; border: none; border-radius: 12px; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #F9A8D4; cursor: pointer; position: relative; z-index: 1; }
   .cqc-nova { display: flex; gap: 12px; align-items: center; background: #fff; border-radius: 12px; padding: 12px 30px 12px 12px; margin-top: 10px; position: relative; }
   .cqc-medal { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; background: radial-gradient(circle at 30% 30%, #FFF1F6, #F5B8CD 55%, #E85A8C); box-shadow: 0 0 0 3px #FCE7F3, 0 4px 12px rgba(195,58,110,.35); }
   .cqc-medal--big { width: 84px; height: 84px; font-size: 40px; margin: 6px auto 10px; }
-  .cqc-tx small, .cqc-pk { font-size: 10px; font-weight: 800; letter-spacing: .08em; background: linear-gradient(90deg, #E85A8C, #8B5CF6, #3B82F6); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .cqc-tx small, .cqc-pk { font-size: 12.5px; font-weight: 800; letter-spacing: 0; background: linear-gradient(90deg, #E85A8C, #8B5CF6, #3B82F6); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .cqc-tx b { display: block; font-size: 15px; color: #2C1219; } .cqc-tx p { font-size: 12.5px; color: #6B5D64; margin: 2px 0 0; line-height: 1.4; }
-  .cqc-x { position: absolute; top: 6px; right: 6px; border: none; background: none; color: #C4B8BE; font-size: 12px; cursor: pointer; padding: 4px; }
+  .cqc-x { position: absolute; top: 2px; right: 2px; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: none; border-radius: 8px; background: none; color: #9A8E94; cursor: pointer; padding: 0; } .cqc-x::after { content: ""; position: absolute; inset: -8px; }
   .cqc-prox { margin-top: 12px; }
   .cqc-pl { display: flex; justify-content: space-between; font-size: 12.5px; color: rgba(255,255,255,.85); } .cqc-pl b { color: #fff; }
   .cqc-bar { height: 7px; border-radius: 4px; background: rgba(255,255,255,.15); margin-top: 6px; overflow: hidden; }

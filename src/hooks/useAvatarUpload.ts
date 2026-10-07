@@ -12,6 +12,7 @@
 import { useRef, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
+import { informar } from "@/components/base";
 
 interface Options {
   /** Chamado após upload bem-sucedido (útil pra fechar menus, mostrar toast, etc). */
@@ -36,11 +37,11 @@ export function useAvatarUpload(options: Options = {}) {
     e.target.value = ""; // reseta pra permitir escolher o MESMO arquivo depois
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      alert("Escolha um arquivo de imagem.");
+      informar({ titulo: "Esse arquivo não é uma foto", texto: "Escolha uma imagem em JPG ou PNG.", icone: "alerta" });
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      alert("A imagem precisa ter no máximo 10MB.");
+      informar({ titulo: "Foto grande demais", texto: "Escolha uma foto de até 10 MB.", icone: "alerta" });
       return;
     }
     // Converte pra data URL e abre o cropper
@@ -78,7 +79,7 @@ export function useAvatarUpload(options: Options = {}) {
       options.onSuccess?.();
     } catch (err: any) {
       console.error("[useAvatarUpload] erro no upload:", err);
-      alert("Não foi possível trocar a foto. Tente novamente.");
+      informar({ titulo: "Não deu pra trocar a foto", texto: "Confira a internet e tente de novo.", icone: "erro" });
     } finally {
       setUploading(false);
     }

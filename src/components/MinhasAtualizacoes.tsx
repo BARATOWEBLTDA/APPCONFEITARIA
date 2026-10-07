@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { STATUS_AINDA_NAO_PRONTO, dataISO } from "@/lib/pedidoStatus";
 import { useNavigate } from "react-router-dom";
-import { Sparkle, CaretRight } from "@phosphor-icons/react";
+import { CaretRight, WarningCircle, Clock, Cake, Trophy, TrendUp, TrendDown, Camera, Moon } from "@phosphor-icons/react";
+import type { Icon } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
 
 interface Update {
   key: string;
-  emoji: string;
+  /** ícone desenhado (guia A14): sem emoji */
+  Icone: Icon;
   categoria: string;
   categoriaCor: "verde" | "rosa" | "vermelho" | "amarelo" | "azul" | "roxo";
   titulo: string;
@@ -155,7 +157,7 @@ export default function MinhasAtualizacoes() {
       if (nAtrasados > 0) {
         lista.push({
           key: "atrasados",
-          emoji: "⚠️",
+          Icone: WarningCircle,
           categoria: "Urgente",
           categoriaCor: "vermelho",
           titulo: `${nAtrasados} ${nAtrasados === 1 ? "pedido atrasado" : "pedidos atrasados"}`,
@@ -173,7 +175,7 @@ export default function MinhasAtualizacoes() {
       if (nEntregas > 0) {
         lista.push({
           key: "entregas-semana",
-          emoji: "⏰",
+          Icone: Clock,
           categoria: "Esta semana",
           categoriaCor: "azul",
           titulo: `${nEntregas} ${nEntregas === 1 ? "entrega essa semana" : "entregas essa semana"}`,
@@ -192,7 +194,7 @@ export default function MinhasAtualizacoes() {
         const primeiroNome = aniv.primeiro?.split(" ")[0] || "";
         lista.push({
           key: "aniversarios",
-          emoji: "🎂",
+          Icone: Cake,
           categoria: "Oportunidade",
           categoriaCor: "rosa",
           titulo: aniv.total === 1
@@ -214,7 +216,7 @@ export default function MinhasAtualizacoes() {
       if (marcoAtingido && false) { // agora fica no cartão "Suas conquistas"
         lista.push({
           key: `marco-${marcoAtingido}`,
-          emoji: "🏆",
+          Icone: Trophy,
           categoria: "Conquista",
           categoriaCor: "amarelo",
           titulo: marcoAtingido === 1
@@ -237,7 +239,7 @@ export default function MinhasAtualizacoes() {
         if (diff >= 20) {
           lista.push({
             key: "faturamento-up",
-            emoji: "📈",
+            Icone: TrendUp,
             categoria: "Conquista",
             categoriaCor: "verde",
             titulo: `Faturamento subiu ${diff.toFixed(0)}%!`,
@@ -249,7 +251,7 @@ export default function MinhasAtualizacoes() {
         } else if (diff <= -20) {
           lista.push({
             key: "faturamento-down",
-            emoji: "📉",
+            Icone: TrendDown,
             categoria: "Atenção",
             categoriaCor: "amarelo",
             titulo: `Faturamento caiu ${Math.abs(diff).toFixed(0)}%`,
@@ -266,7 +268,7 @@ export default function MinhasAtualizacoes() {
       if (nSemFoto > 0) {
         lista.push({
           key: "produtos-sem-foto",
-          emoji: "📸",
+          Icone: Camera,
           categoria: "Dica",
           categoriaCor: "roxo",
           titulo: nSemFoto === 1
@@ -288,7 +290,7 @@ export default function MinhasAtualizacoes() {
         if (sumidos >= 3) {
           lista.push({
             key: "clientes-sumidos",
-            emoji: "💤",
+            Icone: Moon,
             categoria: "Oportunidade",
             categoriaCor: "rosa",
             titulo: `${sumidos} clientes sumidos`,
@@ -312,110 +314,47 @@ export default function MinhasAtualizacoes() {
 
   return (
     <div className="mu-root">
+      {/* (07/10 · 3.05) no padrão do guia: ícone desenhado no lugar do emoji, rótulo em texto no lugar da etiqueta em maiúsculas,
+          letras de 12,5px pra cima e cores pelo themes.css */}
       <div className="mu-header">
-        <Sparkle size={18} weight="fill" />
         <h2>Suas atualizações</h2>
       </div>
       <div className="mu-list">
         {updates.map((u) => (
-          <button key={u.key} className="mu-item" onClick={() => navigate(u.path)}>
-            <span className="mu-emoji">{u.emoji}</span>
+          <button key={u.key} type="button" className={`mu-item mu-item--${u.categoriaCor}`} onClick={() => navigate(u.path)}>
+            <span className="mu-ic" aria-hidden="true"><u.Icone size={20} weight="bold" /></span>
             <div className="mu-body">
-              <span className={`mu-cat mu-cat--${u.categoriaCor}`}>{u.categoria}</span>
+              <span className="mu-cat">{u.categoria}</span>
               <p className="mu-title">{u.titulo}</p>
               <p className="mu-desc">{u.descricao}</p>
-              <span className="mu-cta">{u.cta} <CaretRight size={11} weight="bold" /></span>
+              <span className="mu-cta">{u.cta} <CaretRight size={16} weight="bold" aria-hidden="true" /></span>
             </div>
           </button>
         ))}
       </div>
 
       <style>{`
-        .mu-root {
-          background: var(--bg-card);
-          border: 1px solid var(--border);
-          border-radius: 6px;
-          overflow: hidden;
-          box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-        }
-        .mu-header {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 1.15rem 1.25rem;
-          color: var(--text-title);
-        }
-        .mu-header h2 {
-          margin: 0;
-          font-size: 0.95rem;
-          font-weight: var(--fw-bold);
-        }
+        .mu-root { overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); font-family: var(--font-base); }
+        .mu-header { padding: 16px 16px 12px; color: var(--ui-texto); }
+        .mu-header h2 { margin: 0; font-family: var(--font-base); font-size: 16px; font-weight: 800; line-height: 1.3; }
         .mu-list { display: flex; flex-direction: column; }
-        .mu-item {
-          display: flex;
-          gap: 0.75rem;
-          padding: 0.9rem 1.25rem;
-          background: transparent;
-          border: none;
-          border-top: 1px solid var(--border);
-          font-family: inherit;
-          text-align: left;
-          cursor: pointer;
-          transition: background var(--dur-fast);
-          width: 100%;
-        }
-        .mu-item:hover { background: var(--bg-body); }
-        .mu-item:active { background: #F5F0F2; }
-        .mu-emoji {
-          width: 36px;
-          height: 36px;
-          border-radius: var(--radius-md);
-          background: #FFF5F9;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-          font-size: 20px;
-        }
+        .mu-item { display: flex; align-items: flex-start; gap: 12px; box-sizing: border-box; width: 100%; min-height: 64px; margin: 0; padding: 12px 16px; background: transparent; border: 0; border-top: 1px solid var(--ui-linha); color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: background-color var(--dur-fast) linear; }
+        @media (hover: hover) { .mu-item:hover { background: var(--ui-linha); } }
+        .mu-item:active { background: var(--ui-cinza); }
+        .mu-item:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
+        .mu-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
         .mu-body { flex: 1; min-width: 0; }
-        .mu-cat {
-          display: inline-block;
-          font-size: 9.5px;
-          font-weight: 800;
-          padding: 2px 6px;
-          border-radius: 4px;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          margin-bottom: 4px;
-        }
-        .mu-cat--verde     { background: #DCFCE7; color: #15803D; }
-        .mu-cat--rosa      { background: #FCE7F3; color: #C33A6E; }
-        .mu-cat--vermelho  { background: #FEE2E2; color: #B91C1C; }
-        .mu-cat--amarelo   { background: #FEF3C7; color: #B45309; }
-        .mu-cat--azul      { background: #DBEAFE; color: #1D4ED8; }
-        .mu-cat--roxo      { background: #EDE9FE; color: #6D28D9; }
-        .mu-title {
-          margin: 0;
-          font-size: 0.85rem;
-          font-weight: var(--fw-semibold);
-          color: var(--text-title);
-          line-height: 1.3;
-        }
-        .mu-desc {
-          margin: 3px 0 0;
-          font-size: 0.78rem;
-          color: var(--text-secondary);
-          line-height: 1.45;
-        }
-        .mu-cta {
-          display: inline-flex;
-          align-items: center;
-          gap: 2px;
-          margin-top: 6px;
-          font-size: 11px;
-          font-weight: 800;
-          color: #C33A6E;
-        }
+        .mu-cat { display: block; font-size: 12.5px; font-weight: 700; line-height: 1.3; color: var(--ui-rosa-escuro); }
+        .mu-title { margin: 2px 0 0; font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); }
+        .mu-desc { margin: 2px 0 0; font-size: 13.5px; font-weight: 500; line-height: 1.45; color: var(--ui-texto-2); }
+        .mu-cta { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); }
+        /* a cor diz a situação: vermelho = atrasado, laranja = atenção, verde = deu certo; o resto fica no rosa */
+        .mu-item--vermelho .mu-ic { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); }
+        .mu-item--vermelho .mu-cat { color: var(--ui-vermelho); }
+        .mu-item--amarelo .mu-ic { background: var(--ui-laranja-fundo); color: var(--ui-laranja); }
+        .mu-item--amarelo .mu-cat { color: var(--ui-laranja); }
+        .mu-item--verde .mu-ic { background: var(--ui-verde-fundo); color: var(--ui-verde); }
+        .mu-item--verde .mu-cat { color: var(--ui-verde); }
       `}</style>
     </div>
   );

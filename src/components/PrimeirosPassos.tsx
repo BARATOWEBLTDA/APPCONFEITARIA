@@ -338,7 +338,7 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo }: FolhaProps) {
 
 const CSS = `
   .pp { background: #fff; border: 1px solid #F0EBED; border-radius: 18px; padding: 18px 16px 8px; box-shadow: 0 10px 26px rgba(44,18,25,.10); font-family: var(--font-base); color: #2C1219; }
-  .pp-k { margin: 0; font-size: 11px; font-weight: 900; letter-spacing: .12em; color: #E85A8C; }
+  .pp-k { margin: 0; font-size: 12.5px; font-weight: 800; letter-spacing: .08em; color: #C33A6E; }
   .pp-t { display: block; font-size: 22px; font-weight: 900; margin-top: 3px; letter-spacing: -.02em; line-height: 1.15; }
   .pp-sub { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 4px 0 0; }
   .pp-bar { height: 7px; border-radius: 99px; background: #F5F0F2; margin: 14px 0 6px; overflow: hidden; }
@@ -350,8 +350,8 @@ const CSS = `
   .pp-ic--ok { background: #DCFCE7; color: #15803D; }
   .pp-ic--at { background: #E85A8C; color: #fff; }
   .pp-tx { flex: 1; min-width: 0; }
-  .pp-tx b { display: block; font-size: 14px; font-weight: 700; letter-spacing: -.01em; line-height: 1.2; color: #2C2C2A; }
-  .pp-tx small { display: block; font-size: 12px; color: #888780; margin-top: 3px; line-height: 1.35; }
+  .pp-tx b { display: block; font-size: 15px; font-weight: 700; letter-spacing: -.01em; line-height: 1.2; color: #2C2C2A; }
+  .pp-tx small { display: block; font-size: 12.5px; color: #6B5D64; margin-top: 3px; line-height: 1.35; }
   .pp-ps--ok .pp-tx b { color: #9A8E94; font-weight: 600; text-decoration: line-through; text-decoration-color: #D6CBD0; }
   .pp-ps--ok .pp-tx small { color: #B5AAB0; }
   .pp-ps--trava { cursor: default; }

@@ -7,6 +7,7 @@ import {
 import type { Icon } from '@phosphor-icons/react'
 import { Botao, BotaoIcone, Janela } from '@/components/base'
 import MenuConta from '@/components/MenuConta'
+import { ImageCropper } from '@/components/ui/ImageCropper'
 import { useProfile } from '@/hooks/useProfile'
 import { useAvatarUpload } from '@/hooks/useAvatarUpload'
 import './appPageHeader.css'
@@ -56,7 +57,7 @@ export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, in
   const [mostrarInfo, setMostrarInfo] = useState(false)
   const [menuAberto, setMenuAberto] = useState(false)
   const { profile } = useProfile()
-  const { fileInputRef, uploading: enviandoFoto, handleFileSelected } = useAvatarUpload()
+  const { fileInputRef, uploading: enviandoFoto, handleFileSelected, cropSrc, cancelCrop, handleCropDone } = useAvatarUpload()
   const foto = useRef<HTMLButtonElement>(null)
   const celular = useCelular()
   const IconeInfo = (infoIcon && ICONE_DO_EMOJI[infoIcon]) || Info
@@ -112,6 +113,9 @@ export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, in
       )}
 
       <MenuConta aberto={menuAberto} aoFechar={() => setMenuAberto(false)} ancora={foto} />
+
+      {/* (07/10 · 3.05) faltava a janela de recortar: no tablet, escolher a foto pelo cabeçalho não fazia nada */}
+      {cropSrc && <ImageCropper imageSrc={cropSrc} aspect={1} cropShape="round" onCancel={cancelCrop} onCropDone={handleCropDone} />}
     </>
   )
 }
