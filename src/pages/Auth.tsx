@@ -454,8 +454,8 @@ export default function Auth() {
         <div className="auth-marca-in">
         <Mascote pose={showCadastro ? 'comemorando' : 'acenando'} className="auth-marca-masc" />
         <NomeDoonly cor="branco" className="auth-marca-nome" />
-        <p className="auth-marca-frase">{showCadastro ? 'Vamos começar!' : 'Que bom te ver de volta!'}</p>
-        <p className="auth-marca-sub">{showCadastro ? 'Organize sua confeitaria em poucos minutos.' : 'Entre pra ver seus pedidos de hoje.'}</p>
+        <p className="auth-marca-frase">{showCadastro ? 'Vamos começar!' : 'Seus pedidos te esperam'}</p>
+        <p className="auth-marca-sub">{showCadastro ? 'Leva menos de 1 minuto.' : 'Pedidos, agenda e financeiro num só lugar.'}</p>
         <ul className="auth-marca-lista">
           {['Pedidos e agenda num lugar só', 'Cardápio digital com seu link', 'Financeiro sem planilha'].map(x => (
             <li key={x}><span><Check size={14} weight="bold" /></span>{x}</li>
@@ -471,8 +471,8 @@ export default function Auth() {
         <NomeDoonly className="auth-nome" />
 
         <div className="auth-text-hdr">
-          <h2 className="auth-h2"><span className="so-cel">Que bom te ver de volta!</span><span className="so-pc">Entrar na sua conta</span></h2>
-          <p className="auth-p"><span className="so-cel">Entre pra ver seus pedidos de hoje.</span><span className="so-pc">Use seu e-mail e senha.</span></p>
+          <h2 className="auth-h2"><span className="so-cel">Seus pedidos te esperam</span><span className="so-pc">Entrar na conta</span></h2>
+          <p className="auth-p so-cel-bloco">Entre na sua conta pra continuar.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form" noValidate>
@@ -549,8 +549,8 @@ export default function Auth() {
         <NomeDoonly className="auth-nome" />
 
         <div className="auth-text-hdr">
-          <h2 className="auth-h2"><span className="so-cel">Vamos começar!</span><span className="so-pc">Criar sua conta</span></h2>
-          <p className="auth-p">Leva menos de 1 minuto.</p>
+          <h2 className="auth-h2"><span className="so-cel">Vamos começar!</span><span className="so-pc">Criar conta</span></h2>
+          <p className="auth-p so-cel-bloco">Leva menos de 1 minuto.</p>
         </div>
 
         <form onSubmit={handleCadastro} className="cadastro-form" noValidate>
@@ -851,6 +851,12 @@ export default function Auth() {
           width: 100%; max-width: 440px; box-shadow: 0 14px 40px -12px rgba(60,10,30,.45);
           animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; margin: 108px auto 0; /* espaço pro mascote saindo do cartão (ele sobe 96px) + folga */
         }
+        /* celular estreito (até 380px): um pouco menos de margem pra o título de 22px caber inteiro */
+        @media (max-width: 380px) {
+          .auth-root { padding-left: 12px !important; padding-right: 12px !important; }
+          .auth-card { padding-left: 18px !important; padding-right: 18px !important; }
+        }
+        @media (max-width: 340px) { .auth-root .auth-card .auth-h2 { font-size: 20px; } } /* exceção: celulares bem antigos (320px) */
         .auth-masc { position: absolute; left: 50%; top: -96px; transform: translateX(-50%); width: 136px; height: auto; z-index: 3; filter: drop-shadow(0 8px 10px rgba(80,10,40,.28)); pointer-events: none; }
         .auth-nome { display: block; width: 128px; height: auto; margin: 0 auto 6px; }
         .so-pc { display: none; }
@@ -867,7 +873,7 @@ export default function Auth() {
         @media (min-width: 900px) {
           .auth-text-hdr { display: block; }
         }
-        .auth-h2 { font-size: 20px; font-weight: 900; color: #2C1219; margin: 0 0 2px; letter-spacing: -0.01em; }
+        .auth-h2 { font-size: 22px; font-weight: 900; color: #2C1219; margin: 0 0 2px; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* guia: título da tela 22px */
         .auth-p { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .auth-form { display: flex; flex-direction: column; gap: 1rem; }
         .field { display: flex; flex-direction: column; gap: 0.35rem; }
@@ -1140,13 +1146,14 @@ export default function Auth() {
           .auth-marca-in { position: sticky; top: 0; height: min(100%, calc(100vh - 48px)); height: min(100%, calc(100dvh - 48px)); display: flex; flex-direction: column; align-items: center; justify-content: center; }
           .auth-marca-masc { display: block; width: 170px; height: auto; filter: drop-shadow(0 12px 16px rgba(80,10,40,.3)); }
           .auth-marca-nome { display: block; width: 210px; max-width: 100%; height: auto; margin-top: 14px; }
-          .auth-marca-frase { font-size: 26px; font-weight: 900; margin: 22px 0 6px; letter-spacing: -0.01em; }
+          .auth-marca-frase { font-size: 24px; font-weight: 900; margin: 22px 0 6px; letter-spacing: -0.01em; } /* guia: 24px, o maior da escala */
           .auth-marca-sub { font-size: 15px; opacity: .92; margin: 0; }
           .auth-marca-lista { display: none; }
           .auth-card { margin: 0 !important; padding: 48px 44px !important; box-shadow: none !important; border-radius: 0 28px 28px 0 !important; display: flex; flex-direction: column; justify-content: center; animation: none; }
           .auth-masc, .auth-nome { display: none !important; }
           .so-cel { display: none; } .so-pc { display: inline; }
-          .auth-card .auth-h2 { font-size: 24px; } .auth-card .auth-p { font-size: 14.5px; }
+          .so-cel-bloco { display: none !important; } /* computador: o cartão tem só o título */
+          .auth-card .auth-text-hdr { margin-bottom: 1.25rem; }
           .auth-topbar-login { display: none !important; } /* o cartão já tem "Já tem conta? Entrar" no fim */
           /* Grid layouts:
              - Desktop/tablet: form centralizado
