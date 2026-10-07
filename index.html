@@ -7,7 +7,8 @@
     <link rel="shortcut icon" href="/Sistema/favicon-32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/Sistema/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#3d1a24" />
+    <meta name="theme-color" content="#2C1219" />
+    <link rel="preload" as="image" href="/marca/leve/acenando.webp" type="image/webp" />
     <meta name="description" content="Gestão inteligente para confeitarias" />
     <!-- PWA no iOS (instalação na tela inicial como app nativo) -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -19,7 +20,7 @@
   </head>
   <body>
     <script>
-      // Se é rota de cardápio público (/c/xxx), NÃO mostra o splash Doonly rosa
+      // Se é rota de cardápio público (/c/xxx), NÃO mostra a abertura do Doonly
       // — cliente da confeitaria não deve ver a marca Doonly na abertura.
       (function () {
         var p = window.location.pathname || '';
@@ -28,16 +29,34 @@
         }
       })();
     </script>
-    <div id="root">
-      <div id="html-splash" style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;background:linear-gradient(135deg,#FF9AC1 0%,#E85A8C 50%,#A8235A 100%);">
-        <img src="/logoapp.png" alt="Doonly" style="width:150px;object-fit:contain;filter:drop-shadow(0 12px 32px rgba(60,15,40,0.35)) drop-shadow(0 0 20px rgba(255,220,235,0.4));animation:sp 1.8s ease-in-out infinite;" />
-        <p style="position:absolute;bottom:2.5rem;font-family:sans-serif;font-size:0.82rem;font-weight:500;color:rgba(255,255,255,0.82);letter-spacing:0.14em;text-transform:uppercase;margin:0;text-shadow:0 1px 4px rgba(0,0,0,0.15);">Gestão para Confeitarias</p>
+    <!-- Abertura (07/10): a mesma tela do começo ao fim, no fundo vinho do login. Fica FORA do #root: o app carrega por baixo
+         e a abertura some quando ele está pronto (src/lib/abertura.ts), sem trocar de imagem nem pular de lugar. -->
+    <div id="abertura" role="status" aria-label="Carregando o Doonly">
+      <div class="ab-meio">
+        <img class="ab-masc" src="/marca/leve/acenando.webp" alt="" width="512" height="598" />
+        <img class="ab-nome" src="/marca/leve/texto.webp" alt="Doonly" width="640" height="256" />
+        <div class="ab-pontos" aria-hidden="true"><i></i><i></i><i></i></div>
       </div>
+      <p class="ab-frase">Sua confeitaria organizada, do pedido ao lucro</p>
     </div>
+    <div id="root"></div>
     <style>
-      #html-splash img{animation:sp 1.6s ease-in-out infinite}
-      @keyframes sp{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-      html[data-no-splash] #html-splash{display:none !important}
+      html{background:#2C1219}
+      #abertura{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:radial-gradient(1000px 640px at 50% 38%,#4B1528 0%,#2C1219 72%);transition:opacity .25s ease-out}
+      #abertura.saindo{opacity:0;pointer-events:none}
+      html[data-no-splash] #abertura{display:none !important}
+      html[data-no-splash]{background:#fff}
+      .ab-meio{display:flex;flex-direction:column;align-items:center;transform:translateY(-4%)}
+      .ab-masc{display:block;width:136px;height:auto;filter:drop-shadow(0 0 16px rgba(255,157,196,.55)) drop-shadow(0 8px 10px rgba(0,0,0,.35))}
+      .ab-nome{display:block;width:128px;height:auto;margin-top:12px;filter:brightness(0) invert(1)}
+      .ab-pontos{display:flex;gap:8px;margin-top:28px}
+      .ab-pontos i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.85);animation:abPonto 1.1s ease-in-out infinite}
+      .ab-pontos i:nth-child(2){animation-delay:.15s}.ab-pontos i:nth-child(3){animation-delay:.3s}
+      @keyframes abPonto{0%,80%,100%{transform:scale(.6);opacity:.5}40%{transform:scale(1);opacity:1}}
+      .ab-frase{position:absolute;left:0;right:0;bottom:calc(28px + env(safe-area-inset-bottom,0px));margin:0;padding:0 16px;text-align:center;text-wrap:balance;line-height:1.4;font-family:Geist,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:13px;font-weight:500;color:rgba(255,255,255,.72)}
+      @media (min-width:768px){.ab-masc{width:170px}.ab-nome{width:210px;margin-top:14px}.ab-pontos{margin-top:32px}}
+      @media (max-height:500px){.ab-masc{width:96px}.ab-nome{width:104px;margin-top:8px}.ab-pontos{margin-top:16px}.ab-frase{bottom:calc(12px + env(safe-area-inset-bottom,0px))}}
+      @media (prefers-reduced-motion:reduce){.ab-pontos i{animation:none;opacity:.85;transform:none}#abertura{transition:none}}
     </style>
     <script type="module" src="/src/main.tsx"></script>
     <script>

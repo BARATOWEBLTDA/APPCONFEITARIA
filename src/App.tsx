@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "@/lib/supabase";
 import { NotificationProvider } from "@/context/NotificationContext";
-import { SplashScreen } from "@/components/SplashScreen";
 import Onboarding from "@/components/Onboarding";
 import Auth from "@/pages/Auth";
 import EsqueciSenha from "@/pages/EsqueciSenha";
@@ -197,34 +196,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  const [showSplash, setShowSplash] = useState(() => {
-    try {
-      // Rotas públicas de cardápio nunca mostram splash — 
-      // o visitante está indo direto pro cardápio da confeiteira, não pro app.
-      const path = window.location.pathname;
-      if (path.startsWith('/c/') || path.startsWith('/cardapio/')) return false;
-      return !sessionStorage.getItem('doonly_splash_shown');
-    } catch {
-      return true;
-    }
-  });
-
-  useEffect(() => {
-    if (!showSplash) return;
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-      try { sessionStorage.setItem('doonly_splash_shown', '1'); } catch {}
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, [showSplash]);
-
-  if (showSplash) {
-    return <SplashScreen onDone={() => {
-      setShowSplash(false);
-      try { sessionStorage.setItem('doonly_splash_shown', '1'); } catch {}
-    }} />;
-  }
-
+  // (07/10) a abertura agora é uma tela só, no index.html; quem tira ela do ar é o src/lib/abertura.ts
   return (
     <NotificationProvider>
     <BrowserRouter>

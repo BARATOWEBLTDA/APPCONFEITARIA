@@ -2,6 +2,7 @@ import './lib/sessaoTemporaria' // 1º de tudo: "Lembrar de mim" desmarcado apag
 import { StrictMode } from 'react'
 import { iniciarMedidaDoTeclado } from './lib/tecladoIphone'
 import { iniciarAutoAtualizacao } from './lib/autoAtualizar'
+import { iniciarAbertura } from './lib/abertura'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import './styles/cartoesConfig.css'
@@ -31,6 +32,9 @@ createRoot(document.getElementById('root')!).render(
     </ThemeProvider>
   </StrictMode>,
 )
+
+// Abertura: some quando a primeira tela está pronta (sem espera fixa)
+iniciarAbertura()
 
 // iPhone: barras de botões sobem junto com o teclado
 iniciarMedidaDoTeclado()
