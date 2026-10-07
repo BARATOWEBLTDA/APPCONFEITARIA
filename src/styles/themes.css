@@ -569,3 +569,59 @@ h1, h2, h3, h4, h5, h6, .balance-text {
   height: 12px;
   flex-shrink: 0;
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Componentes prontos (07/10 · guia v2) — src/components/base
+   Os valores do Guia de UI/UX, com nome. São nomes NOVOS: nenhuma tela
+   antiga muda por causa deles. Tela nova usa o nome, nunca a cor na mão.
+   ══════════════════════════════════════════════════════════════════════ */
+:root {
+  /* marca: rosa é ação, vinho é marca e peso */
+  --ui-rosa:            var(--primary);
+  --ui-rosa-escuro:     var(--primary-dark);
+  --ui-rosa-claro:      #FDF2F6;
+  --ui-rosa-rgb:        var(--primary-rgb);
+  --ui-vinho:           var(--vinho);
+  --ui-vinho-escuro:    var(--vinho-escuro);
+  --ui-vinho-claro:     var(--vinho-claro);
+
+  /* texto e superfícies */
+  --ui-texto:           var(--text-title);
+  --ui-texto-2:         #6B5D64;
+  --ui-texto-3:         #9A8E94;
+  --ui-branco:          #FFFFFF;
+  --ui-fundo:           #F4EEF1;
+  --ui-cinza:           #F3EEF1;
+  --ui-cinza-texto:     #4B3A42;
+  --ui-borda:           #EADFE4;
+  --ui-borda-campo:     #EDE6E9;
+  --ui-linha:           #F5F0F2;
+  --ui-veu:             rgba(44, 18, 25, .5);
+
+  /* situação (nunca enfeite) */
+  --ui-verde:           #15803D;
+  --ui-verde-fundo:     #DCFCE7;
+  --ui-laranja:         #B45309;
+  --ui-laranja-fundo:   #FEF3C7;
+  --ui-vermelho:        #DC2626;
+  --ui-vermelho-escuro: #991B1B;
+  --ui-vermelho-fundo:  #FEE2E2;
+  --ui-azul:            #185FA5;
+
+  /* cantos e sombras */
+  --ui-raio-p:          10px;
+  --ui-raio:            12px;
+  --ui-raio-botao:      13px;
+  --ui-raio-cartao:     16px;
+  --ui-raio-janela:     24px;
+  --ui-sombra-cartao:   0 4px 14px -8px rgba(44, 18, 25, .2);
+  --ui-sombra-janela:   0 24px 60px -20px rgba(44, 18, 25, .45);
+  --ui-sombra-aviso:    0 6px 18px -6px rgba(44, 18, 25, .25);
+
+  /* movimento: 120ms toque · 200ms abrir/fechar · 280ms janela e gaveta entrando */
+  --dur-entrada:        280ms;
+
+  /* de onde o aviso rápido sobe (a tela pode mudar: barra de salvar, menu de baixo…) */
+  --ui-aviso-base:      88px;
+}
+@media (min-width: 900px) { :root { --ui-aviso-base: 28px; } }
