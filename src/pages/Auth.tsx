@@ -794,6 +794,12 @@ export default function Auth() {
 
       </div>
 
+      {/* Rodapé (03/10): links das políticas, como no Dora */}
+      <footer className="auth-rodape">
+        <div><a href="/privacidade">Política de Privacidade</a><span aria-hidden="true">·</span><a href="/termos">Termos de Uso</a></div>
+        <em>© {new Date().getFullYear()} Doonly</em>
+      </footer>
+
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { height: 100%; overflow: hidden; }
@@ -843,8 +849,13 @@ export default function Auth() {
         .fade-overlay.fade-in { opacity: 1; pointer-events: all; }
         .auth-bg {
           position: fixed; inset: 0; z-index: 0;
-          background: linear-gradient(135deg, #FF9AC1 0%, #E85A8C 50%, #A8235A 100%);
+          background: radial-gradient(1000px 640px at 50% 38%, #4B1528 0%, #2C1219 72%); /* vinho escuro (03/10) */
         }
+        .auth-rodape { position: relative; z-index: 3; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding-top: 18px; color: rgba(255,255,255,.72); font-size: 12.5px; white-space: nowrap; }
+        .auth-rodape div { display: flex; gap: 8px; align-items: center; }
+        .auth-rodape a { color: inherit; font-weight: 600; text-decoration: none; padding: 10px 2px; -webkit-tap-highlight-color: transparent; }
+        .auth-rodape a:hover { color: #fff; text-decoration: underline; }
+        .auth-rodape em { font-style: normal; font-size: 12px; opacity: .8; }
         .mouse-glow { position: fixed; z-index: 1; width: 350px; height: 350px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%); transform: translate(-50%, -50%); pointer-events: none; will-change: transform; }
         .auth-card {
           position: relative; z-index: 2; background: var(--bg-card); border-radius: 22px; padding: 56px 1.5rem 1.6rem;
@@ -857,7 +868,7 @@ export default function Auth() {
           .auth-card { padding-left: 18px !important; padding-right: 18px !important; }
         }
         @media (max-width: 340px) { .auth-root .auth-card .auth-h2 { font-size: 20px; } } /* exceção: celulares bem antigos (320px) */
-        .auth-masc { position: absolute; left: 50%; top: -96px; transform: translateX(-50%); width: 136px; height: auto; z-index: 3; filter: drop-shadow(0 8px 10px rgba(80,10,40,.28)); pointer-events: none; }
+        .auth-masc { position: absolute; left: 50%; top: -96px; transform: translateX(-50%); width: 136px; height: auto; z-index: 3; filter: drop-shadow(0 0 16px rgba(255,157,196,.55)) drop-shadow(0 8px 10px rgba(0,0,0,.35)); /* brilho rosa: o contorno escuro não some no vinho */ pointer-events: none; }
         .auth-nome { display: block; width: 128px; height: auto; margin: 0 auto 6px; }
         .so-pc { display: none; }
         .auth-marca { display: none; }
@@ -1137,7 +1148,7 @@ export default function Auth() {
 
         @media (min-width: 900px) {
           /* um cartão só, dividido: marca (rosa) | formulário (branco) — 03/10 */
-          .auth-bg, .mouse-glow { background: #F4EEF1 !important; }
+          .auth-rodape { flex-direction: row; gap: 8px; } .auth-rodape em::before { content: '·'; margin-right: 8px; }
           .auth-layout { max-width: 960px !important; display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 0 !important; align-items: stretch;
             background: #fff; border-radius: 28px; box-shadow: 0 30px 70px -30px rgba(80,20,45,.45); }
           .auth-marca { display: block; text-align: center; color: #fff; padding: 0 40px; border-radius: 28px 0 0 28px;
