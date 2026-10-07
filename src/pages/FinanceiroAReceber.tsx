@@ -20,6 +20,8 @@ import { registrarPagamento, normalizarForma } from "@/lib/pagamentos";
 type Item = ItemReceber;
 
 const brlInt = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+/** Sem centavos só quando o valor é redondo (R$ 100); com centavos, mostra (R$ 244,80) — nunca arredonda */
+const brlExato = (v: number) => { const n = Math.round((Number(v) || 0) * 100) / 100; return Number.isInteger(n) ? brlInt(n) : n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) };
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const isoHoje = () => isoDia(0);
 const isoMais = (n: number) => isoDia(n);
@@ -103,7 +105,7 @@ export default function FinanceiroAReceber() {
                       <span className={`far-tg ${it.dias !== null && it.dias < 0 ? "far-tg--atr" : ""}`}>{quando(it.dias)}</span>
                     </div>
                     <div className="far-it-v">
-                      <small>Total {brlInt(it.total)}{it.recebido > 0 ? ` · recebido ${brlInt(it.recebido)}` : ""}</small>
+                      <small>Total {brlExato(it.total)}{it.recebido > 0 ? ` · recebido ${brlExato(it.recebido)}` : ""}</small>
                       <b>falta {brl(it.falta)}</b>
                     </div>
                     <div className="far-bar" aria-hidden="true"><i style={{ width: `${Math.min(100, (it.recebido / (it.total || 1)) * 100)}%` }} /></div>
@@ -151,7 +153,7 @@ export function ReceberSheet({ item, onClose, onFeito }: { item: Item; onClose: 
     setSalvando(true); setErro("");
     const r = await registrarPagamento({
       pedidoId: item.id, valor: v, forma, recebidoEm: data,
-      tipo: v >= item.falta - 0.009 ? (item.recebido > 0 ? "restante" : "total") : "parcial",
+      tipo: v >= item.falta - 0.009 ? (item.recebido > 0 ? "restante" : "total") : (item.recebido > 0 ? "parcial" : "sinal"), // o 1º valor antes de quitar é o sinal
     });
     setSalvando(false);
     if (!r.ok) { setErro("Não foi possível registrar agora. Confira a internet e tente de novo."); return; }
