@@ -16,7 +16,6 @@ import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 import { ImageCropper } from "@/components/ui/ImageCropper";
-import { useNotifications } from "@/context/NotificationContext";
 import { supabase } from "@/lib/supabase";
 
 function SidebarGroup({ label, icon, paths, location, children }: { label: string; icon?: ReactNode; paths: string[]; location: any; children: ReactNode }) {
@@ -65,7 +64,6 @@ export default function Layout() {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const { isPro, loading: loadingPlano } = usePlano();
-  const { notifCount, notifOpen, notificacoes, notifRef, toggleNotif, closeNotif } = useNotifications();
   const {
     fileInputRef, uploading: uploadingFoto, cropSrc,
     openPicker: abrirSeletorFoto,
@@ -89,35 +87,6 @@ export default function Layout() {
   const isInCadastros = ["/produtos", "/clientes", "/insumos", "/categorias"].some(p => location.pathname.startsWith(p));
   const [cadastrosOpen, setCadastrosOpen] = useState(isInCadastros);
   useEffect(() => { if (isInCadastros) setCadastrosOpen(true); }, [isInCadastros]);
-
-  // Bloqueia scroll do body/html quando o dropdown de notificações está aberto.
-  // No iOS Safari, só body.overflow=hidden não segura — precisa travar html também
-  // e preservar a posição de scroll (senão a página "salta" pro topo).
-  useEffect(() => {
-    if (notifOpen) {
-      const scrollY = window.scrollY;
-      const prevBodyOverflow = document.body.style.overflow;
-      const prevBodyPosition = document.body.style.position;
-      const prevBodyTop = document.body.style.top;
-      const prevBodyWidth = document.body.style.width;
-      const prevHtmlOverflow = document.documentElement.style.overflow;
-
-      document.body.style.overflow = "hidden";
-      document.body.style.position = "fixed";
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = "100%";
-      document.documentElement.style.overflow = "hidden";
-
-      return () => {
-        document.body.style.overflow = prevBodyOverflow;
-        document.body.style.position = prevBodyPosition;
-        document.body.style.top = prevBodyTop;
-        document.body.style.width = prevBodyWidth;
-        document.documentElement.style.overflow = prevHtmlOverflow;
-        window.scrollTo(0, scrollY);
-      };
-    }
-  }, [notifOpen]);
 
   // Scroll pro topo ao mudar de rota (fix: antes ficava na posição anterior)
   useEffect(() => {
@@ -225,48 +194,8 @@ export default function Layout() {
       </aside>
 
       <main className={`layout-main${isAssinar ? " layout-main--no-header" : ""}`}>
-        {/* Topbar desktop */}
-        <div className="desk-topbar">
-          <button className="topbar-btn" onClick={() => navigate("/assinar")}>
-            <img src="/Sistema/premium.png" alt="Premium" style={{ width: "20px", height: "20px", objectFit: "contain" }} />
-          </button>
-          <div style={{ position: "relative" }} ref={notifRef}>
-            <button className="topbar-btn" onClick={toggleNotif}>
-              <img src="/Sistema/sino.png" alt="Notificações" style={{ width: "20px", height: "20px", objectFit: "contain" }} />
-              {notifCount > 0 && <span className="topbar-badge">{notifCount > 9 ? "9+" : notifCount}</span>}
-            </button>
-          </div>
-        </div>
-
-
-
-        {/* Dropdown de notificações — fixo, funciona em mobile e desktop */}
-        {notifOpen && (
-          <div className="notif-overlay" onClick={closeNotif}>
-            <div className="notif-dropdown" ref={notifRef} onClick={e => e.stopPropagation()}>
-              <div className="notif-header">
-                <span>Notificações</span>
-                <button onClick={closeNotif}>✕</button>
-              </div>
-              <div className="notif-body">
-                {notificacoes.length === 0
-                  ? <p className="notif-empty">Nenhuma notificação</p>
-                  : notificacoes.map((n: any) => (
-                    <div key={n.id} className="notif-item">
-                      {n.imagem_url && <img src={n.imagem_url} alt="" style={{ width: "40px", height: "40px", borderRadius: "8px", objectFit: "cover", flexShrink: 0 }} />}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p className="notif-title">{n.titulo || n.title}</p>
-                        <p className="notif-msg">{n.mensagem || n.body}</p>
-                        <p className="notif-time">{new Date(n.created_at).toLocaleDateString("pt-BR")}</p>
-                      </div>
-                    </div>
-                  ))
-                }
-              </div>
-            </div>
-          </div>
-        )}
-
+        {/* (07/10 · 2.99) O sininho e a janelinha de avisos saíram: o botão ficava escondido em todos os tamanhos de tela.
+            As notificações continuam na tela "Notificações", pelo menu da foto. */}
         <Outlet />
       </main>
 
@@ -553,98 +482,9 @@ export default function Layout() {
         /* Desktop: margem lateral (esquerda vem do sidebar 220px) + respiro no topo.
            Aplica em TODAS as páginas: Início, Agenda, Pedidos, Clientes, Cardápio, etc. */
         .layout-main { margin-left: 220px; flex: 1; padding: 3rem 2rem 2rem; min-height: 100vh; min-width: 0; }
-        .desk-topbar { display: none; }
-
-        @media (min-width: 900px) {
-          .desk-topbar { display: none; }
-        }
-
-
-
-        .topbar-btn { width: 34px; height: 34px; border-radius: 50%; background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.07); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: background var(--dur-normal); position: relative; flex-shrink: 0; }
-        .topbar-btn:hover { background: rgba(0,0,0,0.08); }
-        .topbar-badge { position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--primary); color: var(--text-inverse); font-size: var(--font-caption); font-weight: var(--fw-bold); display: flex; align-items: center; justify-content: center; }
-
-        /* ── Overlay + Dropdown de notificações (global, funciona em todas as páginas) ── */
-        .notif-overlay {
-          position: fixed; inset: 0;
-          background: rgba(45, 31, 38, 0.55);
-          backdrop-filter: blur(6px);
-          -webkit-backdrop-filter: blur(6px);
-          z-index: 9998;
-          animation: notifOverlayIn 0.2s ease-out;
-          touch-action: none;
-        }
-        @keyframes notifOverlayIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .notif-dropdown {
-          position: fixed;
-          top: calc(env(safe-area-inset-top, 0px) + 12px);
-          right: 12px;
-          left: 12px;
-          max-width: 420px;
-          margin-left: auto;
-          max-height: calc(100vh - env(safe-area-inset-top, 0px) - 24px);
-          background: var(--bg-card);
-          border-radius: var(--radius-lg);
-          box-shadow: 0 20px 60px rgba(45,31,38,0.35);
-          border: 1px solid var(--border);
-          overflow: hidden;
-          z-index: 9999;
-          display: flex; flex-direction: column;
-          animation: notifDropIn 0.22s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-        @keyframes notifDropIn {
-          from { opacity: 0; transform: translateY(-10px) scale(0.98); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .notif-header {
-          padding: 14px 16px;
-          border-bottom: 1px solid var(--border);
-          display: flex; justify-content: space-between; align-items: center;
-          font-weight: var(--fw-black); font-size: 15px;
-          color: var(--text-title);
-          flex-shrink: 0;
-        }
-        .notif-header button {
-          width: 30px; height: 30px;
-          border-radius: 50%;
-          background: var(--bg-subtle);
-          border: none;
-          cursor: pointer;
-          color: var(--text-secondary);
-          font-size: 14px;
-          font-weight: var(--fw-bold);
-          padding: 0;
-          display: flex; align-items: center; justify-content: center;
-          transition: background var(--dur-fast), color var(--dur-fast);
-        }
-        .notif-header button:hover { background: var(--primary-light); color: var(--primary); }
-        .notif-body {
-          flex: 1; min-height: 0;
-          overflow-y: auto;
-          -webkit-overflow-scrolling: touch;
-          overscroll-behavior: contain;
-        }
-        .notif-empty { padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: 13px; margin: 0; }
-        .notif-item { padding: 12px 14px; border-bottom: 1px solid var(--border); display: flex; gap: 10px; align-items: flex-start; }
-        .notif-item:last-child { border-bottom: none; }
-        .notif-title { font-size: 13px; font-weight: var(--fw-bold); color: var(--text-title); margin: 0 0 2px; line-height: 1.3; }
-        .notif-msg { font-size: 12px; color: var(--text-secondary); margin: 0; line-height: 1.4; }
-        .notif-time { font-size: 10px; color: var(--text-muted); margin: 4px 0 0; }
-
         /* ── Mobile ── */
         @media (max-width: 900px) {
           .sidebar { display: none; }
-
-          .mob-notif-badge {
-            position: absolute; top: -4px; right: -4px;
-            background: var(--error); color: var(--text-inverse);
-            font-size: var(--font-caption); font-weight: var(--fw-bold);
-            width: 16px; height: 16px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            border: 2px solid var(--primary-dark); line-height: 1;
-          }
 
           .layout-main {
             margin-left: 0;
