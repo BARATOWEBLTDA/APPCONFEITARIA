@@ -816,7 +816,7 @@ export default function Auth() {
         <em>© {new Date().getFullYear()} Doonly</em>
       </footer>
 
-      <TermosModal open={!!docLegal} initialTab={docLegal || "termos"} onClose={() => setDocLegal(null)} />
+      <TermosModal open={!!docLegal} initialTab={docLegal || "termos"} onClose={() => setDocLegal(null)} paginaNoComputador />
 
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
