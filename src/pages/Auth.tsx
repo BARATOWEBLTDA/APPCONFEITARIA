@@ -451,13 +451,17 @@ export default function Auth() {
 
       {/* Lado da marca: só no computador e no tablet deitado (03/10) */}
       <div className="auth-marca" aria-hidden="true">
+        <div className="auth-marca-in">
+        <Mascote pose={showCadastro ? 'comemorando' : 'acenando'} className="auth-marca-masc" />
         <NomeDoonly cor="branco" className="auth-marca-nome" />
-        <p className="auth-marca-frase">Sua confeitaria organizada.</p>
+        <p className="auth-marca-frase">{showCadastro ? 'Vamos começar!' : 'Que bom te ver de volta!'}</p>
+        <p className="auth-marca-sub">{showCadastro ? 'Organize sua confeitaria em poucos minutos.' : 'Entre pra ver seus pedidos de hoje.'}</p>
         <ul className="auth-marca-lista">
           {['Pedidos e agenda num lugar só', 'Cardápio digital com seu link', 'Financeiro sem planilha'].map(x => (
             <li key={x}><span><Check size={14} weight="bold" /></span>{x}</li>
           ))}
         </ul>
+        </div>
       </div>
 
       {!showCadastro ? (
@@ -467,8 +471,8 @@ export default function Auth() {
         <NomeDoonly className="auth-nome" />
 
         <div className="auth-text-hdr">
-          <h2 className="auth-h2"><span className="so-cel">Que bom te ver de volta!</span><span className="so-pc">Entrar no Doonly</span></h2>
-          <p className="auth-p"><span className="so-cel">Entre pra ver seus pedidos de hoje.</span><span className="so-pc">Que bom te ver de volta.</span></p>
+          <h2 className="auth-h2"><span className="so-cel">Que bom te ver de volta!</span><span className="so-pc">Entrar na sua conta</span></h2>
+          <p className="auth-p"><span className="so-cel">Entre pra ver seus pedidos de hoje.</span><span className="so-pc">Use seu e-mail e senha.</span></p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form" noValidate>
@@ -801,7 +805,7 @@ export default function Auth() {
           font-family: inherit;
           padding: calc(env(safe-area-inset-top, 0px) + 24px) 1.25rem calc(env(safe-area-inset-bottom, 0px) + 24px); /* a folga SOMA com a barra do celular */
         }
-        .auth-layout { position: relative; z-index: 2; width: 100%; max-width: 440px; display: flex; flex-direction: column; margin: auto 0; } /* margin auto: centraliza quando cabe, rola quando não */
+        .auth-layout { position: relative; z-index: 2; width: 100%; max-width: 440px; display: flex; flex-direction: column; margin: auto 0; flex-shrink: 0; } /* não encolhe: em tela baixa a página rola */ /* margin auto: centraliza quando cabe, rola quando não */
         .auth-side { display: none; }
 
         /* ── Botão "Fazer login" flutuante no topo (só desktop) ── */
@@ -1126,17 +1130,24 @@ export default function Auth() {
         .auth-promo { display: none !important; }
 
         @media (min-width: 900px) {
-          .auth-layout { max-width: 1040px !important; display: grid !important; grid-template-columns: 1fr 420px !important; gap: 64px !important; align-items: center; }
-          .auth-marca { display: block; color: #fff; }
-          .auth-marca-masc { display: block; width: 160px; height: auto; filter: drop-shadow(0 10px 14px rgba(80,10,40,.35)); }
-          .auth-marca-nome { display: block; width: 340px; max-width: 100%; height: auto; }
-          .auth-marca-frase { font-size: 26px; font-weight: 800; margin: 14px 0 22px; letter-spacing: -0.01em; }
-          .auth-marca-lista { list-style: none; display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; }
-          .auth-marca-lista li { display: flex; align-items: center; gap: 10px; font-size: 16.5px; font-weight: 600; }
-          .auth-marca-lista li span { width: 24px; height: 24px; border-radius: 50%; background: #fff; color: #15803D; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
-          .auth-card { margin: 128px 0 0 !important; padding: 64px 1.75rem 1.6rem !important; } /* o mascote sobe 104px + folga */
-          .auth-masc { width: 150px; top: -104px; }
-          .auth-nome { display: none !important; }
+          /* um cartão só, dividido: marca (rosa) | formulário (branco) — 03/10 */
+          .auth-bg, .mouse-glow { background: #F4EEF1 !important; }
+          .auth-layout { max-width: 960px !important; display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 0 !important; align-items: stretch;
+            background: #fff; border-radius: 28px; box-shadow: 0 30px 70px -30px rgba(80,20,45,.45); }
+          .auth-marca { display: block; text-align: center; color: #fff; padding: 0 40px; border-radius: 28px 0 0 28px;
+            background: linear-gradient(160deg, #FF9DC4 0%, #E85A8C 55%, #C33A6E 100%); position: relative; }
+          /* o conteúdo fica no centro da parte VISÍVEL do painel (no cadastro o cartão é mais alto que a tela) */
+          .auth-marca-in { position: sticky; top: 0; height: min(100%, calc(100vh - 48px)); height: min(100%, calc(100dvh - 48px)); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+          .auth-marca-masc { display: block; width: 170px; height: auto; filter: drop-shadow(0 12px 16px rgba(80,10,40,.3)); }
+          .auth-marca-nome { display: block; width: 210px; max-width: 100%; height: auto; margin-top: 14px; }
+          .auth-marca-frase { font-size: 26px; font-weight: 900; margin: 22px 0 6px; letter-spacing: -0.01em; }
+          .auth-marca-sub { font-size: 15px; opacity: .92; margin: 0; }
+          .auth-marca-lista { display: none; }
+          .auth-card { margin: 0 !important; padding: 48px 44px !important; box-shadow: none !important; border-radius: 0 28px 28px 0 !important; display: flex; flex-direction: column; justify-content: center; animation: none; }
+          .auth-masc, .auth-nome { display: none !important; }
+          .so-cel { display: none; } .so-pc { display: inline; }
+          .auth-card .auth-h2 { font-size: 24px; } .auth-card .auth-p { font-size: 14.5px; }
+          .auth-topbar-login { display: none !important; } /* o cartão já tem "Já tem conta? Entrar" no fim */
           /* Grid layouts:
              - Desktop/tablet: form centralizado
              - Mobile: só o form */
@@ -1147,7 +1158,7 @@ export default function Auth() {
           /* No desktop, esconde o link do mobile (já tem topbar) */
           .cad-mobile-login-link { display: none; }
           /* Restaura o topbar no desktop */
-          .auth-topbar-login { display: inline-flex !important; }
+          /* (botão flutuante "Já tem conta?" desligado no computador: o cartão já tem o link) */
         }
       `}</style>
     </div>
