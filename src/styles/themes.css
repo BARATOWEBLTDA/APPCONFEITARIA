@@ -557,13 +557,14 @@ h1, h2, h3, h4, h5, h6, .balance-text {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: #E85A8C;
-  font-size: 11px;
-  font-weight: 700;
+  color: var(--ui-rosa-escuro, #C33A6E);
+  font-size: 12px;
+  font-weight: 600;
   font-family: 'Geist', sans-serif;
   vertical-align: middle;
-  margin-left: 4px;
-  letter-spacing: 0.02em;
+  margin-left: 6px;
+  letter-spacing: 0;
+  text-transform: none;
 }
 .req-tag svg {
   width: 12px;

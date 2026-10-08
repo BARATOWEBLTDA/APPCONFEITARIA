@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Basket, X } from "@phosphor-icons/react";
 import KitPicker from "@/components/cardapio/KitPicker";
 import {
   KIT_VAZIO, KitQtdConfig, KitSelecao, SUGESTOES_SABORES, erroKit, kitsValidos, novoId, presetKit, selecaoInicial,
@@ -38,9 +39,9 @@ export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }
   const cabecalho = (
     <div className={`kq-card${k.ativo ? " kq-card--on" : ""}`}>
       <div className="kq-head">
-        <span className="kq-ico" aria-hidden="true">🧺</span>
+        <span className="kq-ico" aria-hidden="true"><Basket size={20} weight="bold" /></span>
         <div className="kq-head-t">
-          <b>Kit por quantidade <em>NOVO</em></b>
+          <b>Kit por quantidade <em>Novo</em></b>
           <small>{k.ativo && modo === "compacto" ? "Na próxima tela você escolhe os sabores e os kits." : "O cliente escolhe quantos quer de cada sabor."}</small>
         </div>
         <button type="button" className={`kq-tg${k.ativo ? " on" : ""}`} role="switch" aria-checked={k.ativo}
@@ -104,7 +105,7 @@ export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }
               <div className="kq-chips">
                 {k.sabores.map(s => s.nome.trim() && (
                   <span className="kq-chip" key={s.id}>{s.nome}
-                    <button type="button" onClick={() => set({ sabores: k.sabores.filter(x => x.id !== s.id) })} aria-label={`Tirar ${s.nome}`}>✕</button>
+                    <button type="button" onClick={() => set({ sabores: k.sabores.filter(x => x.id !== s.id) })} aria-label={`Tirar ${s.nome}`}><X size={14} weight="bold" /></button>
                   </span>
                 ))}
               </div>
@@ -141,7 +142,7 @@ export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }
                     <span className="kq-t">un. por</span>
                     <span className={`kq-box kq-box--rs${x.preco > 0 ? " ok" : " falta"}`}>R$ <input inputMode="decimal" defaultValue={moeda(x.preco)} placeholder="0,00" aria-label="Preço do kit"
                       onChange={e => set({ kits: k.kits.map(y => y.id === x.id ? { ...y, preco: num(e.target.value) } : y) })} /></span>
-                    <button type="button" className="kq-x" onClick={() => set({ kits: k.kits.filter(y => y.id !== x.id) })} aria-label="Remover kit">✕</button>
+                    <button type="button" className="kq-x" onClick={() => set({ kits: k.kits.filter(y => y.id !== x.id) })} aria-label="Remover kit"><X size={16} weight="bold" /></button>
                   </div>
                 ))}
                 <button type="button" className="kq-link" onClick={() => set({ kits: [...k.kits, { id: novoId(), qtd: 0, preco: 0 }] })}>+ Outro tamanho de kit</button>

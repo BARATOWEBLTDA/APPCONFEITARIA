@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { Cake, Check, Drop, Sparkle, X } from "@phosphor-icons/react";
 import { createPortal } from "react-dom";
 import DooInfoModal from "@/components/DooInfoModal";
 
@@ -43,7 +44,7 @@ export function boloOpcoesOk(form: any): boolean {
   return TIPOS_OPCAO.every(t => { const g = form[t.key] as Grupo | undefined; return !g?.ativo || (g.opcoes?.length || 0) > 0; });
 }
 
-const ICONE: Record<string, string> = { grupo_massas: "🍰", grupo_recheios: "🍫", grupo_coberturas: "🧁" };
+const ICONE: Record<string, ReactNode> = { grupo_massas: <Cake size={20} weight="bold" />, grupo_recheios: <Drop size={20} weight="bold" />, grupo_coberturas: <Sparkle size={20} weight="bold" /> };
 const EXEMPLO: Record<string, string> = {
   grupo_massas: "Branca, chocolate, red velvet…",
   grupo_recheios: "Ninho, brigadeiro, doce de leite…",
@@ -88,7 +89,7 @@ export function BoloOpcoesStep({ form, setForm, edicao }: { form: any; setForm: 
       <div className="bw-topo">
         <h2 className="bw-h">O cliente escolhe alguma opção?</h2>
         {!edicao && <p className="bw-produto">{nome}</p>}
-        <p className="bw-sub">{edicao ? "Marque só o que o cliente escolhe." : "Marque só o que o cliente escolhe. Se não tiver nada, é só avançar."}</p>
+        <p className="bw-sub">{edicao ? "Marque só o que o cliente escolhe." : "Marque só o que o cliente escolhe. Se não tiver nada, é só continuar."}</p>
       </div>
 
       {TIPOS_OPCAO.map(t => {
@@ -119,7 +120,7 @@ export function BoloOpcoesStep({ form, setForm, edicao }: { form: any; setForm: 
                 <button type="button" className="bo-editar" onClick={() => setAberto(t.key)}>Editar</button>
               ) : (
                 <button type="button" className={`bo-ck${g.ativo ? " on" : ""}`} onClick={() => alternar(t.key)} aria-pressed={g.ativo} aria-label={g.ativo ? `Desmarcar ${t.titulo}` : `Marcar ${t.titulo}`}>
-                  {g.ativo ? "✓" : ""}
+                  {g.ativo ? <Check size={16} weight="bold" /> : null}
                 </button>
               )}
             </div>
@@ -164,7 +165,7 @@ export function BoloOpcoesStep({ form, setForm, edicao }: { form: any; setForm: 
         <div className="bw-sheet-bg" onClick={() => setExtra(null)}>
           <div className="bw-sheet" onClick={e => e.stopPropagation()} role="dialog" aria-label={`Valor extra de ${opExtra.nome}`}>
             <div className="bw-grab" aria-hidden="true" />
-            <div className="bw-sheet-h"><b>{opExtra.nome}</b><button type="button" onClick={() => setExtra(null)} aria-label="Fechar">✕</button></div>
+            <div className="bw-sheet-h"><b>{opExtra.nome}</b><button type="button" onClick={() => setExtra(null)} aria-label="Fechar"><X size={20} weight="bold" /></button></div>
             <p className="bw-hint bw-hint--top">Quanto essa opção custa a mais?</p>
             <label className="bw-money"><span>+ R$</span>
               <MoneyInput autoFocus value={extra.valor} onChange={v => setExtra(x => x ? { ...x, valor: v } : x)} ariaLabel={`Valor extra de ${opExtra.nome}`} />
@@ -301,7 +302,7 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, edicao }:
   return (
     <div className="bw">
       <div className="bw-topo">
-        <h2 className="bw-h">Esse bolo tem mais de um tamanho ou peso?</h2>
+        <h2 className="bw-h">Esse bolo tem mais de um tamanho?</h2>
       </div>
       <div className="bw-sn" role="radiogroup">
         <button type="button" role="radio" aria-checked={escolha === "sim"} className={escolha === "sim" ? "on" : ""} onClick={() => escolher("sim")}>
@@ -342,7 +343,7 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, edicao }:
           </div>
 
           <button type="button" className={`bw-check2${mostrarRend ? " on" : ""}`} onClick={() => setMostrarRend(v => !v)} aria-pressed={mostrarRend}>
-            <i aria-hidden="true">{mostrarRend ? "✓" : ""}</i>
+            <i aria-hidden="true">{mostrarRend ? <Check size={14} weight="bold" /> : null}</i>
             <span><b>Informar o rendimento dos tamanhos</b><small>O Doonly recomenda preencher: seu cardápio fica mais completo e organizado.</small></span>
           </button>
           {mostrarRend && (
@@ -373,7 +374,7 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, edicao }:
         <div className="bw-sheet-bg" onClick={() => setGerarAberto(false)}>
           <div className="bw-sheet" onClick={e => e.stopPropagation()} role="dialog" aria-label="Gerar tamanhos">
             <div className="bw-grab" aria-hidden="true" />
-            <div className="bw-sheet-h"><b>Gerar tamanhos</b><button type="button" onClick={() => setGerarAberto(false)} aria-label="Fechar">✕</button></div>
+            <div className="bw-sheet-h"><b>Gerar tamanhos</b><button type="button" onClick={() => setGerarAberto(false)} aria-label="Fechar"><X size={20} weight="bold" /></button></div>
             <p className="bw-hint bw-hint--top">Escolha um jeito rápido de começar. Depois dá pra editar tudo.</p>
             <button type="button" className={`bw-gopt${gModo === "pmg" ? " on" : ""}`} onClick={() => setGModo("pmg")}>
               <i aria-hidden="true" /><span><b>P, M e G</b><small>1 kg · 1,5 kg · 2 kg</small></span>
@@ -424,7 +425,7 @@ export function BoloPrecoStep({ form, setForm, escolha, primeiroNome, edicao }: 
   return (
     <div className="bw">
       <div className="bw-topo">
-        <h2 className="bw-h">{escolha === "sim" ? "Qual o preço de cada tamanho?" : "Qual o preço do bolo?"}</h2>
+        <h2 className="bw-h">{escolha === "sim" ? "Qual o preço de cada tamanho?" : "Qual o preço?"}</h2>
         {nome && !edicao && <p className="bw-produto">{nome}</p>}
       </div>
 
@@ -501,7 +502,7 @@ export function BoloPrecoStep({ form, setForm, escolha, primeiroNome, edicao }: 
               onClick={() => setForm((f: any) => ({ ...f, promocao: !f.promocao,
                 tipo_promocao: f.promocao ? f.tipo_promocao : (podeDePor ? (f.tipo_promocao || "fixo") : "percentual"),
                 desconto_percentual: !f.promocao && !podeDePor ? (f.desconto_percentual || 10) : f.desconto_percentual }))}>
-              <i aria-hidden="true">{form.promocao ? "✓" : ""}</i>
+              <i aria-hidden="true">{form.promocao ? <Check size={14} weight="bold" /> : null}</i>
               <span><b>Colocar em promoção</b><small>{podeDePor ? "O cardápio mostra o preço antigo riscado" : "Um desconto em % vale pra todos os tamanhos"}</small></span>
             </button>
             {form.promocao && (
@@ -539,7 +540,7 @@ export function BoloPrecoStep({ form, setForm, escolha, primeiroNome, edicao }: 
           <p style={{ margin: "0 0 12px" }}>O preço base é <strong>quanto você cobra por 1 kg</strong> desse bolo.</p>
           <p style={{ margin: "0 0 12px" }}>O app usa esse valor pra calcular o preço de cada tamanho sozinho:</p>
           <p style={{ margin: "0 0 12px" }}><strong>1 kg</strong> = {brl(exBase)} · <strong>1,5 kg</strong> = {brl(exBase * 1.5)} · <strong>2 kg</strong> = {brl(exBase * 2)}</p>
-          <p style={{ margin: 0 }}>💡 Se você mudar o preço base, <strong>todos os tamanhos se atualizam juntos</strong>. Não precisa mexer um por um.</p>
+          <p style={{ margin: 0 }}>Se você mudar o preço base, <strong>todos os tamanhos se atualizam juntos</strong>. Não precisa mexer um por um.</p>
         </DooInfoModal>
       )}
       <style>{CSS}</style>

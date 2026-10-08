@@ -28,10 +28,11 @@ import BtnNovo from "@/components/BtnNovo";
 import Categorias from "@/pages/Categorias";
 import QuickAddInsumo from "@/components/QuickAddInsumo";
 import AppPageHeader from "@/components/AppPageHeader";
-import { Camera, CaretDown, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, SortAscending, WarningCircle, X as XIc, DotsThreeVertical } from "@phosphor-icons/react";
+import { ArrowLeft as ArrowLeftIc, Camera, CaretDown, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, SortAscending, WarningCircle, X as XIc, DotsThreeVertical } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Linha as LinhaUi, Titulo as TituloUi } from "@/components/base";
 import { sufixoVenda } from "@/lib/formaVenda";
 import "./produtosLista.css";
+import "@/components/produto/cadastroProduto.css";
 
 /** "por kg", "o cento", "a caixa", "a unidade" — junto do preço na lista (08/10 · 3.21) */
 const unidadeDoPreco = (fv?: string | null) => {
@@ -427,7 +428,7 @@ function SaboresTamanhosStep({ subtipo, onSubtipoChange, sabores, onSaboresChang
       {mostraGrid && (
         <div className="st-secao">
           <div className="st-precos-header">
-            <div className="st-secao-title" style={{marginBottom: 0}}>💰 Preços por combinação</div>
+            <div className="st-secao-title" style={{marginBottom: 0}}>Preços por combinação</div>
             <div className="st-precos-toggle">
               <button
                 type="button"
@@ -456,7 +457,7 @@ function SaboresTamanhosStep({ subtipo, onSubtipoChange, sabores, onSaboresChang
             </div>
           </div>
           {sabores.length * tamanhos.length > 12 && !listaMode && (
-            <div className="st-precos-tip">💡 Muitas combinações — modo lista é mais fácil de preencher</div>
+            <div className="st-precos-tip">Muitas combinações: o modo lista é mais fácil de preencher.</div>
           )}
 
           {listaMode ? (
@@ -534,7 +535,7 @@ function SaboresTamanhosStep({ subtipo, onSubtipoChange, sabores, onSaboresChang
       {/* Só sabores com lista de preços */}
       {mostraListaSabores && (
         <div className="st-secao">
-          <div className="st-secao-title" style={{marginBottom: 10}}>💰 Preço de cada sabor</div>
+          <div className="st-secao-title" style={{marginBottom: 10}}>Preço de cada sabor</div>
           {sabores.map((s, i) => {
             const key = `${s}|`;
             return (
@@ -553,7 +554,7 @@ function SaboresTamanhosStep({ subtipo, onSubtipoChange, sabores, onSaboresChang
       {/* Só tamanhos com lista de preços */}
       {mostraListaTamanhos && (
         <div className="st-secao">
-          <div className="st-secao-title" style={{marginBottom: 10}}>💰 Preço de cada tamanho</div>
+          <div className="st-secao-title" style={{marginBottom: 10}}>Preço de cada tamanho</div>
           {tamanhos.map((t, i) => {
             const key = `|${t.label}`;
             return (
@@ -1480,13 +1481,13 @@ function PersonalizacaoStep({
   return (
     <div className="pv3-root">
       <div className="pv3-header">
-        <div className="pv3-title">Vamos montar as opções</div>
+        <div className="pv3-title">O cliente escolhe alguma opção?</div>
         <div className="pv3-subtitle">
-          Marque o que seu produto tem. Sabores, tamanhos, coberturas. Depois é só preencher.
+          Marque o que o produto tem. Depois é só preencher. Se não tiver nada, é só continuar.
         </div>
         {algumGrupoAtivo && faixa.max > faixa.min && (
           <div className="pv3-faixa-info">
-            💰 Faixa de adicionais: <b>R$ {formatPreco(faixa.min - precoBase)} – R$ {formatPreco(faixa.max - precoBase)}</b> além do preço base
+            Faixa de adicionais: <b>R$ {formatPreco(faixa.min - precoBase)} – R$ {formatPreco(faixa.max - precoBase)}</b> além do preço base
           </div>
         )}
       </div>
@@ -4393,6 +4394,24 @@ export default function Produtos() {
     </div>
   );
 
+  // Voltar um passo no cadastro (o mesmo do botão do topo e do "Voltar" do rodapé · 08/10 · 3.22)
+  const voltarPassoCadastro = () => {
+                  if (wizardStep === 2) { setTipoTela(true); return; }
+                  if (wizardStep === 4 && isBolo && boloPrecoTela) { setBoloPrecoTela(false); return; }
+                  if (wizardStep === 3 && kitTela) {
+                    setKitTela(false);
+                    const outros = [form.grupo_massas, form.grupo_recheios, form.grupo_coberturas, form.grupo_sabores, form.grupo_tamanhos].some(g => g?.ativo);
+                    if (isMobileMain && !outros) setMobilePersonaStep("checklist");
+                    return;
+                  }
+                  // Mobile: se está preenchendo personalização, volta pro checklist ao invés do step anterior
+                  if (isMobileMain && !form.id && wizardStep === 3 && mobilePersonaStep === "fill") {
+                    setMobilePersonaStep("checklist");
+                    return;
+                  }
+                  setWizardStep(s => Math.max(2, s - 1) as 1 | 2 | 3 | 4 | 5);
+                };
+
   if (loading) return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "40vh" }}><span className="prod-spinner" /></div>;
 
   return (
@@ -4663,25 +4682,10 @@ export default function Produtos() {
             {wizardStep >= 2 && (
             <div className="prod-modal-header-novo">
               {wizardStep >= 2 && !form.id ? (
-                <button className="prod-modal-back-novo" onClick={() => {
-                  if (wizardStep === 2) { setTipoTela(true); return; }
-                  if (wizardStep === 4 && isBolo && boloPrecoTela) { setBoloPrecoTela(false); return; }
-                  if (wizardStep === 3 && kitTela) {
-                    setKitTela(false);
-                    const outros = [form.grupo_massas, form.grupo_recheios, form.grupo_coberturas, form.grupo_sabores, form.grupo_tamanhos].some(g => g?.ativo);
-                    if (isMobileMain && !outros) setMobilePersonaStep("checklist");
-                    return;
-                  }
-                  // Mobile: se está preenchendo personalização, volta pro checklist ao invés do step anterior
-                  if (isMobileMain && !form.id && wizardStep === 3 && mobilePersonaStep === "fill") {
-                    setMobilePersonaStep("checklist");
-                    return;
-                  }
-                  setWizardStep(s => Math.max(2, s - 1) as 1 | 2 | 3 | 4 | 5);
-                }} aria-label="Voltar">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                <button className="prod-modal-back-novo" onClick={voltarPassoCadastro} aria-label="Voltar">
+                  <ArrowLeftIc size={20} weight="bold" aria-hidden="true" />
                 </button>
-              ) : <div style={{width: 36}} />}
+              ) : <div style={{width: 44, flex: "none"}} />}
               <div className="prod-modal-title-wrap">
                 {!form.id && (() => {
                   // Um tracinho por tela do cadastro (a tela de tipos é a 1ª)
@@ -4691,26 +4695,25 @@ export default function Produtos() {
                   if (wizardStep === 3) atual = comKit && kitTela ? 4 : 3;
                   if (wizardStep === 4) atual = isBolo ? (boloPrecoTela ? 5 : 4) : (comKit ? 5 : 4);
                   if (wizardStep === 5) atual = total;
+                  const nomes = isBolo ? ["Tipo", "Sobre o produto", "Opções", "Tamanhos", "Preço", "Fotos e entrega"]
+                    : comKit ? ["Tipo", "Sobre o produto", "Opções", "Kit", "Preço", "Fotos e entrega"]
+                    : ["Tipo", "Sobre o produto", "Opções", "Preço", "Fotos e entrega"];
                   return (
-                    <div className="prod-wiz-dots" aria-label={`Etapa ${atual} de ${total}`}>
-                      {Array.from({ length: total }, (_, i) => <i key={i} className={i < atual ? "on" : ""} />)}
-                    </div>
+                    <>
+                      <div className="prod-modal-title-novo">Novo produto</div>
+                      <div className="prod-wiz-passo">Passo {atual} de {total} · {nomes[atual - 1]}</div>
+                      <div className="prod-wiz-dots" aria-hidden="true">
+                        {Array.from({ length: total }, (_, i) => <i key={i} className={i < atual ? "on" : ""} />)}
+                      </div>
+                    </>
                   );
                 })()}
-                <div className="prod-modal-title-novo">
-                  {form.id ? "Editar produto" : (() => {
-                    if (wizardStep === 2) return "Informações do produto";
-                    if (wizardStep === 3) return kitTela ? "Monte seu kit" : "";
-                    if (wizardStep === 4) return "";
-                    if (wizardStep === 5) return "";
-                    return "";
-                  })()}
-                </div>
+                {form.id && <div className="prod-modal-title-novo">Editar produto</div>}
                 {form.id && form.nome && (
                   <div className="prod-modal-edit-nome">{form.nome}</div>
                 )}
               </div>
-              <button className="prod-modal-close-novo" onClick={handleTryClose} aria-label="Fechar">✕</button>
+              <button className="prod-modal-close-novo" onClick={handleTryClose} aria-label="Fechar"><XIc size={20} weight="bold" aria-hidden="true" /></button>
             </div>
             )}
 
@@ -4872,6 +4875,7 @@ export default function Produtos() {
                   </div>
                 </div>
               )}
+              {!form.id && <h2 className="cad-h2">Sobre o produto</h2>}
               <div className="prod-section">
                 {/* 1. Nome */}
                 <div className="prod-field">
@@ -4900,7 +4904,7 @@ export default function Produtos() {
                     />
                   ) : (
                     <div className="prod-cat-nova-form">
-                      <p className="prod-cat-nova-hint">✨ Criar nova categoria</p>
+                      <p className="prod-cat-nova-hint">Criar nova categoria</p>
                       <input
                         type="text"
                         placeholder="Ex: Bolos, Doces, Salgados..."
@@ -5010,6 +5014,7 @@ export default function Produtos() {
             {/* ══════ WIZARD STEP 3 (UNIFICADO — PERSONALIZAÇÃO V3) ══════ */}
             {wizardStep === 3 && !form.id && kitTela && (
               <div className="prod-modal-body">
+                <h2 className="cad-h2">Monte seu kit</h2>
                 <KitQuantidadeEditor modo="completo" kit={(form as any).kit_qtd} onChange={onKitChange} nomeProduto={form.nome} />
               </div>
             )}
@@ -5066,9 +5071,9 @@ export default function Produtos() {
               {/* Título e subtítulo (mesmo padrão dos steps 3 e 4) */}
               {wizardStep === 5 && !form.id && (
                 <div className="prod-step-header">
-                  <div className="prod-step-title">Fotos e finalização</div>
+                  <div className="prod-step-title">Fotos e entrega</div>
                   <div className="prod-step-sub">
-                    Adicione fotos que valorizam seu produto. Define modo de entrega e pronto. Já vai pro cardápio.
+                    Produto com foto vende mais. A primeira é a que aparece no cardápio.
                   </div>
                 </div>
               )}
@@ -5077,8 +5082,8 @@ export default function Produtos() {
               {((wizardStep === 5 && !form.id) || (form.id && editTab === "fotos")) && (
               <>
               <div className="prod-section">
-                <p className="prod-section-label prod-section-label--novo">Fotos do Produto</p>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
+                <p className="prod-section-label prod-section-label--novo">Fotos do produto</p>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "8px" }}>
                   {[0, 1, 2].map(slot => {
                     const imgs = (form.imagem_url || "").split(",").map(s => s.trim()).filter(Boolean);
                     const imgUrl = imgs[slot];
@@ -5089,8 +5094,8 @@ export default function Produtos() {
                     const borderExtra = "2px dashed #D8D1D5";
                     return (
                       <div key={slot} style={{ position: "relative" }}>
-                        {slot > 0 && <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 700, display: "block", marginBottom: "6px", textAlign: "center" }}>Foto {slot + 1}</span>}
-                        {slot === 0 && <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 700, display: "block", marginBottom: "6px", textAlign: "center" }}>Principal</span>}
+                        {slot > 0 && <span style={{ fontSize: "12.5px", color: "var(--ui-texto-2)", fontWeight: 700, display: "block", marginBottom: "6px", textAlign: "center" }}>Foto {slot + 1}</span>}
+                        {slot === 0 && <span style={{ fontSize: "12.5px", color: "var(--ui-texto-2)", fontWeight: 700, display: "block", marginBottom: "6px", textAlign: "center" }}>Principal</span>}
                         <div
                           className={`prod-img-upload ${isLocked ? "prod-img-upload--locked" : ""}`}
                           onClick={() => {
@@ -5104,15 +5109,14 @@ export default function Produtos() {
                             cursor: "pointer",
                             position: "relative",
                             overflow: "hidden",
-                            background: isLocked ? "linear-gradient(135deg, #2C1219 0%, #4A1F2D 100%)" : (slot > 0 ? bgExtra : undefined),
-                            border: isLocked ? "none" : (slot > 0 ? borderExtra : undefined),
-                            boxShadow: isLocked ? "0 4px 16px rgba(44,18,25,0.25)" : undefined,
+                            background: isLocked ? "var(--ui-cinza)" : (slot > 0 ? bgExtra : undefined),
+                            border: isLocked ? "1px solid var(--ui-borda)" : (slot > 0 ? borderExtra : undefined),
                           }}
                         >
                           {imgUrl ? (
                             <>
                               <img src={imgUrl} alt={`foto ${slot + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                              {!isLocked && <button className="prod-img-remove" onClick={e => { e.stopPropagation(); removeImage(slot); }}>✕</button>}
+                              {!isLocked && <button className="prod-img-remove" aria-label="Tirar a foto" onClick={e => { e.stopPropagation(); removeImage(slot); }}><XIc size={16} weight="bold" aria-hidden="true" /></button>}
                             </>
                           ) : isLocked ? (
                             <>
@@ -5125,8 +5129,8 @@ export default function Produtos() {
                                   </svg>
                                 </div>
                                 <span className="prod-slot-lock-txt">
-                                  <img src="/coroa.png" alt="" className="prod-slot-lock-coroa" />
-                                  <span className="prod-slot-lock-txt-rgb">Exclusivo PRO</span>
+                                  <b>Foto {slot + 1}</b>
+                                  <span className="prod-slot-lock-txt-rgb">No PRO</span>
                                 </span>
                               </div>
                             </>
@@ -5134,8 +5138,8 @@ export default function Produtos() {
                             <div className="prod-img-placeholder">
                               {uploading ? <span className="prod-spinner" /> : (
                                 <>
-                                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={slot === 0 ? "#818cf8" : "#9A8B93"} strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                                  {slot === 0 && <span className="prod-img-cta">Selecionar</span>}
+                                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={slot === 0 ? "#C33A6E" : "#9A8B93"} strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                  {slot === 0 && <span className="prod-img-cta">Escolher foto</span>}
                                 </>
                               )}
                             </div>
@@ -5235,7 +5239,7 @@ export default function Produtos() {
                               {!isPro && <span className="prod-pro-tag"><img src="/coroa.png" alt="" />PRO</span>}
                             </div>
                             <div className="pv3-sub-toggle-desc">
-                              {grupo.foto_por_opcao ? "✓ Ativo — adicione as fotos abaixo" : `${grupo.opcoes.length} opções cadastradas`}
+                              {grupo.foto_por_opcao ? "Ligado. Adicione as fotos abaixo" : `${grupo.opcoes.length} opções cadastradas`}
                             </div>
                           </div>
                           <div className={`pv3-mini-switch ${grupo.foto_por_opcao ? "pv3-mini-switch--on" : ""}`}>
@@ -5443,11 +5447,11 @@ export default function Produtos() {
               {/* Título e subtítulo (mesmo estilo do step 3) */}
               {wizardStep === 4 && !form.id && !isBolo && (
                 <div className="prod-step-header">
-                  <div className="prod-step-title">Preço e venda</div>
+                  <div className="prod-step-title">Qual o preço?</div>
                   <div className="prod-step-sub">
                     {kitAtivo((form as any).kit_qtd)
                       ? "Confira o preço de cada kit e, se quiser, coloque em promoção."
-                      : "Define quanto seu produto vai custar. Preço cheio, promoção, extras. Simples e direto."}
+                      : "Quanto o cliente paga. Se quiser, coloque em promoção."}
                   </div>
                 </div>
               )}
@@ -5812,7 +5816,7 @@ export default function Produtos() {
                     {/* Sugestões da biblioteca */}
                     {sugestoesBiblioteca.length > 0 && (
                       <div className="prod-sugestoes">
-                        <p className="prod-sugestoes-lbl">💡 Da sua biblioteca:</p>
+                        <p className="prod-sugestoes-lbl">Da sua biblioteca:</p>
                         <div className="prod-sugestoes-chips">
                           {sugestoesBiblioteca.map(b => (
                             <button
@@ -5841,7 +5845,7 @@ export default function Produtos() {
                             <div className="prod-adic-item-info">
                               <span className="prod-adic-nome">{a.nome}</span>
                               <span className="prod-adic-valor">+ R$ {formatPreco(a.valor)}</span>
-                              {a.from_biblioteca && <span className="prod-adic-tag">📚</span>}
+                              {a.from_biblioteca && <span className="prod-adic-tag">Biblioteca</span>}
                             </div>
                             <button
                               type="button"
@@ -5914,7 +5918,7 @@ export default function Produtos() {
                         onClick={() => setForm(f => ({ ...f, tipo_promocao: 'fixo' }))}
                         style={{ flex: 1, padding: "8px", borderRadius: "10px", border: `2px solid ${form.tipo_promocao !== 'percentual' ? 'var(--primary)' : 'var(--border)'}`, background: form.tipo_promocao !== 'percentual' ? 'var(--primary-light)' : 'var(--bg-card)', fontFamily: "inherit", fontSize: "0.82rem", fontWeight: 700, color: form.tipo_promocao !== 'percentual' ? 'var(--primary)' : 'var(--text-secondary)', cursor: "pointer" }}
                       >
-                        💰 Preço fixo
+                        Preço fixo
                       </button>
                       <button
                         onClick={() => setForm(f => ({ ...f, tipo_promocao: 'percentual' }))}
@@ -5982,7 +5986,7 @@ export default function Produtos() {
               {/* Status — só em step 5 (Fotos) ou tab Fotos na edição */}
               {((wizardStep === 5 && !form.id) || (form.id && editTab === "fotos")) && (
               <div className="prod-section">
-                <p className="prod-section-label">Modo de entrega</p>
+                <p className="prod-section-label">Como o cliente recebe</p>
                 <div className="prod-toggles prod-toggles--clean" style={{ flexDirection: "column", gap: "0.25rem" }}>
                   <Toggle
                     label="Pronta entrega"
@@ -5991,7 +5995,7 @@ export default function Produtos() {
                     colorClass="active-green"
                   />
                   <Toggle
-                    label="Necessário agendar com antecedência"
+                    label="Precisa encomendar antes"
                     value={!!(form as any).antecedencia}
                     onChange={(v: boolean) => setForm(f => ({ ...(f as any), antecedencia: v ? "48h" : undefined, pronta_entrega: v ? false : (f as any).pronta_entrega }))}
                     colorClass="active-pink"
@@ -6037,7 +6041,9 @@ export default function Produtos() {
             {/* ══════ RODAPÉ (steps 2, 3, 4) ══════ */}
             {wizardStep >= 2 && (
             <div className="prod-modal-footer prod-modal-footer--novo">
-              <button className="prod-btn-cancelar-novo" onClick={handleTryClose}>Cancelar</button>
+              {wizardStep >= 2 && !form.id
+                ? <button className="prod-btn-cancelar-novo" onClick={voltarPassoCadastro}>Voltar</button>
+                : <button className="prod-btn-cancelar-novo" onClick={handleTryClose}>Cancelar</button>}
               {(() => {
                 // Validações por passo
                 const canAdvance = (() => {
@@ -6099,7 +6105,7 @@ export default function Produtos() {
                     <button className="prod-btn-avancar-novo" onClick={handleSalvar} disabled={saving}>
                       {saving ? <span className="prod-spinner-sm" /> : (
                         <>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" style={{marginRight: 6}}><polyline points="20 6 9 17 4 12"/></svg>
+                          <CheckIc size={20} weight="bold" aria-hidden="true" />
                           Publicar produto
                         </>
                       )}
@@ -6131,8 +6137,7 @@ export default function Produtos() {
                       setWizardStep(s => (s + 1) as 1 | 2 | 3 | 4 | 5);
                     }}
                   >
-                    Avançar
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" style={{marginLeft: 6}}><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    Continuar
                   </button>
                 );
               })()}

@@ -1,8 +1,12 @@
 import { useState } from "react";
+import { Cake, Check, Confetti, Cookie, ForkKnife, IceCream, Info, PencilSimple, X } from "@phosphor-icons/react";
+import type { Icon } from "@phosphor-icons/react";
+import { Botao, BotaoIcone } from "@/components/base";
 
 /**
  * Primeira tela do cadastro novo: "Que tipo de produto você quer cadastrar?"
  * Cada tipo já prepara o cadastro (categoria, opções sugeridas, kit pronto).
+ * (08/10 · 3.22) No padrão do guia: topo "Novo produto · Passo 1", ícones no lugar dos emojis, rodapé claro igual nos dois tamanhos.
  */
 export type TipoProduto = "bolos" | "doces" | "salgados" | "sobremesas" | "kitfesta" | "outros";
 
@@ -15,93 +19,90 @@ export const TIPOS: { id: TipoProduto; img?: string; emoji: string; titulo: stri
   { id: "outros", emoji: "✏️", titulo: "Outros", sub: "Cestas, caixas de presente, cookies, cupcakes…", dica: "o cadastro começa em branco — bom pra cestas, caixas de presente, cookies, cupcakes, pães e o que mais você vender", bg: ["#F5F0F2", "#E9E1E5"], cor: "#4B3A42" },
 ];
 
+/** Ícone de quando a foto do tipo não carrega (no lugar do emoji) */
+const ICONE_TIPO: Record<TipoProduto, Icon> = { bolos: Cake, doces: Cookie, salgados: ForkKnife, sobremesas: IceCream, kitfesta: Confetti, outros: PencilSimple };
+
 interface Props { onEscolher: (t: TipoProduto) => void; onFechar: () => void }
 
 export default function TipoProdutoTela({ onEscolher, onFechar }: Props) {
   const [sel, setSel] = useState<TipoProduto | null>(null);
-  // Se a foto não carregar, o cartão volta pro desenho
+  // Se a foto não carregar, o cartão mostra o ícone
   const [fotoFalhou, setFotoFalhou] = useState<Record<string, boolean>>({});
   const tipo = TIPOS.find(t => t.id === sel);
   return (
     <div className="tpp">
       <div className="tpp-top">
-        <span />
-        <div className="tpp-steps" aria-hidden="true"><i className="on" /><i /><i /><i /><i /><i /></div>
-        <button type="button" className="tpp-x" onClick={onFechar} aria-label="Fechar">✕</button>
+        <span className="tpp-vz" />
+        <div className="tpp-tt"><b>Novo produto</b><small>Passo 1 · Tipo</small></div>
+        <BotaoIcone rotulo="Fechar" variante="limpo" onClick={onFechar}><X size={20} weight="bold" /></BotaoIcone>
       </div>
+      <div className="tpp-barra" aria-hidden="true"><i className="on" /><i /><i /><i /><i /></div>
       <div className="tpp-body">
         <div className="tpp-h">
-          <h1>Que tipo de produto você quer cadastrar?</h1>
+          <h1>Que tipo de produto é?</h1>
           <p>A gente já prepara o cadastro certinho pra ele.</p>
         </div>
         <div className="tpp-grid" role="radiogroup" aria-label="Tipo de produto">
-          {TIPOS.map(t => (
-            <button key={t.id} type="button" role="radio" aria-checked={sel === t.id}
-              className={`tpp-card${sel === t.id ? " sel" : ""}`}
-              onClick={() => setSel(t.id)} onDoubleClick={() => onEscolher(t.id)}>
-              <span className="tpp-img" style={{ background: `linear-gradient(135deg, ${t.bg[0]}, ${t.bg[1]})` }}>
-                {t.img && !fotoFalhou[t.id]
-                  ? <img src={t.img} alt="" className="tpp-foto" onError={() => setFotoFalhou(f => ({ ...f, [t.id]: true }))} />
-                  : <span className="tpp-emo" aria-hidden="true">{t.emoji}</span>}
-                {sel === t.id && <i className="tpp-ck" aria-hidden="true">✓</i>}
-              </span>
-              <span className="tpp-tx">
-                <b style={sel === t.id ? { color: t.cor } : undefined}>{t.titulo}</b>
-                <small>{t.sub}</small>
-              </span>
-            </button>
-          ))}
+          {TIPOS.map(t => {
+            const Ic = ICONE_TIPO[t.id];
+            return (
+              <button key={t.id} type="button" role="radio" aria-checked={sel === t.id}
+                className={`tpp-card${sel === t.id ? " sel" : ""}`}
+                onClick={() => setSel(t.id)} onDoubleClick={() => onEscolher(t.id)}>
+                <span className="tpp-img">
+                  {t.img && !fotoFalhou[t.id]
+                    ? <img src={t.img} alt="" className="tpp-foto" onError={() => setFotoFalhou(f => ({ ...f, [t.id]: true }))} />
+                    : <span className="tpp-emo" aria-hidden="true"><Ic size={32} weight="bold" /></span>}
+                  {sel === t.id && <i className="tpp-ck" aria-hidden="true"><Check size={16} weight="bold" /></i>}
+                </span>
+                <span className="tpp-tx">
+                  <b>{t.titulo}</b>
+                  <small>{t.sub}</small>
+                </span>
+              </button>
+            );
+          })}
         </div>
-        {tipo && <p className="tpp-dica">💡 Escolhendo <b>{tipo.titulo}</b>, {tipo.dica}. Dá pra mudar tudo depois.</p>}
+        {tipo && <p className="tpp-dica"><Info size={20} weight="bold" aria-hidden="true" /><span>Com <b>{tipo.titulo}</b>, {tipo.dica}. Dá pra mudar tudo depois.</span></p>}
       </div>
       <div className="tpp-foot">
-        <button type="button" className="tpp-cancel" onClick={onFechar}>Cancelar</button>
-        <button type="button" className="tpp-go" disabled={!sel} onClick={() => sel && onEscolher(sel)}>
-          {tipo ? `Continuar com ${tipo.titulo}` : "Escolha um tipo"} →
-        </button>
+        <Botao variante="secundario" onClick={onFechar}>Cancelar</Botao>
+        <Botao disabled={!sel} onClick={() => sel && onEscolher(sel)}>{tipo ? `Continuar com ${tipo.titulo}` : "Escolha um tipo"}</Botao>
       </div>
       <style>{`
-        .tpp { display: flex; flex-direction: column; min-height: 0; height: 100%; font-family: var(--font-base); color: #2C1219; }
-        .tpp-top { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px 0; }
-        .tpp-top > span { width: 36px; }
-        .tpp-steps { display: flex; gap: 6px; } .tpp-steps i { width: 24px; height: 4px; border-radius: 2px; background: #EDE5E8; } .tpp-steps i.on { background: #E85A8C; }
-        .tpp-x { width: 36px; height: 36px; border-radius: 50%; border: none; background: #F5F0F2; color: #6B5D64; font-size: 15px; cursor: pointer; }
-        .tpp-body { flex: 1; overflow-y: auto; padding: 0 22px 16px; }
-        .tpp-h { text-align: center; padding: 16px 0 6px; }
-        .tpp-h h1 { font-size: 23px; font-weight: 900; letter-spacing: -.01em; margin: 0; line-height: 1.2; color: #4B5563; }
-        .tpp-h p { font-size: 14px; color: #6B5D64; margin: 5px 0 0; }
-        .tpp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding-top: 18px; max-width: 760px; margin: 0 auto; }
-        .tpp-card { border: 1.5px solid #EDE5E8; border-radius: 18px; overflow: hidden; background: #fff; cursor: pointer; padding: 0; text-align: left; font-family: inherit; display: flex; flex-direction: row; align-items: stretch; min-height: 150px; transition: transform .15s, box-shadow .15s; }
-        .tpp-card:hover { border-color: #E5C7D3; }
-        .tpp-card.sel { border-color: #E85A8C; box-shadow: 0 10px 26px rgba(232,90,140,.2); transform: translateY(-2px); }
-        .tpp-img { width: 150px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+        .tpp { display: flex; flex-direction: column; min-height: 0; height: 100%; font-family: var(--font-base); color: var(--ui-texto); }
+        .tpp-top { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px; }
+        .tpp-vz { width: 44px; flex: none; }
+        .tpp-tt { flex: 1; min-width: 0; text-align: center; }
+        .tpp-tt b { display: block; font-size: 16px; font-weight: 800; }
+        .tpp-tt small { display: block; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
+        .tpp-barra { display: flex; gap: 4px; padding: 0 16px 12px; border-bottom: 1px solid var(--ui-linha); }
+        .tpp-barra i { flex: 1; height: 6px; border-radius: 3px; background: var(--ui-borda); }
+        .tpp-barra i.on { background: var(--ui-rosa); }
+        .tpp-body { flex: 1; overflow-y: auto; padding: 20px 16px 16px; }
+        .tpp-h { padding: 0 0 16px; }
+        .tpp-h h1 { margin: 0; font-size: 22px; font-weight: 800; line-height: 1.25; color: var(--ui-texto); }
+        .tpp-h p { margin: 4px 0 0; font-size: 15px; line-height: 1.45; color: var(--ui-texto-2); }
+        .tpp-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        .tpp-card { display: flex; flex-direction: column; align-items: stretch; margin: 0; padding: 0; overflow: hidden; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); font-family: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .tpp-card.sel { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); box-shadow: inset 0 0 0 1px var(--ui-rosa); }
+        .tpp-card:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
+        .tpp-img { position: relative; display: flex; align-items: center; justify-content: center; aspect-ratio: 16 / 9; overflow: hidden; background: var(--ui-cinza); color: var(--ui-texto-2); }
         .tpp-foto { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-        .tpp-ck { z-index: 1; }
-        .tpp-emo { font-size: 66px; filter: drop-shadow(0 6px 10px rgba(0,0,0,.12)); }
-        .tpp-ck { position: absolute; top: 10px; right: 10px; width: 26px; height: 26px; border-radius: 50%; background: #E85A8C; color: #fff; font-style: normal; font-weight: 900; font-size: 14px; display: flex; align-items: center; justify-content: center; }
-        .tpp-tx { padding: 14px 16px; display: flex; flex-direction: column; justify-content: center; }
-        .tpp-tx b { font-size: 18px; font-weight: 900; color: #2C1219; }
-        .tpp-tx small { font-size: 13px; color: #888780; margin-top: 3px; line-height: 1.4; }
-        .tpp-dica { max-width: 760px; margin: 20px auto 0; background: #FAF7F8; border-radius: 14px; padding: 16px 20px; font-size: 16px; color: #4B3A42; line-height: 1.5; }
-        .tpp-foot { display: flex; align-items: center; gap: 12px; padding: 14px 22px; border-top: 1px solid #F3ECEE; background: #fff; }
-        .tpp-cancel { border: none; background: none; font-family: inherit; font-weight: 700; font-size: 14px; color: #2C1219; padding: 0 12px; cursor: pointer; }
-        /* Mesmo botão 3D do "Avançar" do cadastro */
-        .tpp-go { flex: 1; height: 48px; border: none; border-radius: 10px; background: #E85A8C; color: #fff; font-family: inherit; font-weight: 800; font-size: 14.5px; cursor: pointer; box-shadow: 0 3px 0 #C33A6E; transition: transform .08s, box-shadow .08s; }
-        .tpp-go:active:not(:disabled) { transform: translateY(2px) scale(0.99); box-shadow: 0 1px 0 #C33A6E; }
-        .tpp-go:disabled { background: #F6D4E1; box-shadow: 0 3px 0 #EBC3D3; cursor: default; }
-        @media (max-width: 767px) {
-          .tpp-top { padding: calc(env(safe-area-inset-top, 0px) + 14px) 14px 0; }
-          .tpp-body { padding: 0 14px 16px; }
-          .tpp-h h1 { font-size: 20px; } .tpp-h p { font-size: 12.5px; }
-          .tpp-dica { margin-top: 16px; padding: 10px 14px; font-size: 13px; line-height: 1.45; border-radius: 12px; }
-          .tpp-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-          .tpp-card { flex-direction: column; min-height: 0; }
-          .tpp-img { width: auto; height: 90px; } .tpp-emo { font-size: 40px; }
-          .tpp-tx { padding: 8px 10px 10px; justify-content: flex-start; } .tpp-tx b { font-size: 14px; } .tpp-tx small { font-size: 11px; }
-          .tpp-foot { background: var(--text-title); /* mesma cor do menu do celular */ border-top: none; padding: 14px 14px calc(14px + env(safe-area-inset-bottom, 0px)); }
-          .tpp-cancel { color: #fff; } .tpp-go { flex: 0 0 auto; padding: 0 26px; background: #fff; color: #2C1219; box-shadow: none; }
-          .tpp-go:active:not(:disabled) { transform: scale(0.98); box-shadow: none; }
-          .tpp-go:disabled { background: rgba(255,255,255,.16); color: rgba(255,255,255,.5); box-shadow: none; }
+        .tpp-emo { display: flex; }
+        .tpp-ck { position: absolute; top: 8px; right: 8px; z-index: 1; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: var(--ui-rosa); color: #fff; }
+        .tpp-tx { display: flex; flex-direction: column; padding: 10px 12px 12px; }
+        .tpp-tx b { font-size: 15px; font-weight: 800; color: var(--ui-texto); }
+        .tpp-card.sel .tpp-tx b { color: var(--ui-rosa-escuro); }
+        .tpp-tx small { margin-top: 2px; font-size: 13px; line-height: 1.35; color: var(--ui-texto-2); }
+        .tpp-dica { display: flex; gap: 8px; margin: 16px 0 0; padding: 12px; border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 13.5px; line-height: 1.45; color: var(--ui-texto); }
+        .tpp-dica svg { flex: none; color: var(--ui-texto-2); }
+        .tpp-foot { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.8fr); gap: 8px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--ui-borda); background: var(--ui-branco); }
+        @media (max-width: 640px) { .tpp-top { padding-top: calc(env(safe-area-inset-top, 0px) + 8px); } }
+        @media (min-width: 768px) {
+          .tpp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+          .tpp-body { padding: 24px; }
+          .tpp-foot { padding: 12px 24px 16px; }
         }
       `}</style>
     </div>
