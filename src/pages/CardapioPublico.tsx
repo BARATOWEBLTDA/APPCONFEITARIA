@@ -7,6 +7,7 @@ import { useDeviceDetection } from '@/hooks/useDeviceDetection'
 import { BannerAd } from '@/components/cardapio/BannerAd'
 import { Logo } from '@/components/cardapio/Logo'
 import { ProductList } from '@/components/cardapio/ProductList'
+import { contarItens, qtdItem } from '@/lib/itemSacola'
 import { NavigationMenu } from '@/components/cardapio/NavigationMenu'
 import { EmptyState } from '@/components/cardapio/EmptyState'
 import { Footer } from '@/components/cardapio/Footer'
@@ -193,7 +194,7 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
           return (
             <div key={item.id} className="cp-it">
               {img ? <img src={img} alt="" /> : <span className="cp-it-sem"><ShoppingBag size={20} /></span>}
-              <span><b>{item.saleType === 'kg' ? `${item.quantity} kg` : `${Math.floor(item.quantity)}×`} {item.name}</b><small>{formatCurrency(item.price * item.quantity)}</small></span>
+              <span><b>{qtdItem(item)} {item.name}</b><small>{formatCurrency(item.price * item.quantity)}</small></span>
             </div>
           )
         })}
@@ -256,7 +257,7 @@ function CardapioContent() {
   const [favorites, setFavorites] = useState<string[]>([])
   const device = useDeviceDetection()
   const { items: cartItems, totalPrice: cartTotal } = useCart()
-  const cartCount = cartItems.reduce((a: number, i: any) => a + (i.saleType === 'kg' ? 1 : Math.floor(i.quantity)), 0)
+  const cartCount = contarItens(cartItems)
 
   useEffect(() => {
     // Chave de busca: código na rota nova, slug (UUID legado) na antiga
