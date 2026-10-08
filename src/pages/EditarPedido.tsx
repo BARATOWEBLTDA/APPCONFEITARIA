@@ -5,7 +5,7 @@ import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { type DialogoOpcoes, type IconeDialogo } from '@/components/DialogoApp'
 import AppPageHeader from '@/components/AppPageHeader'
 import { Botao, BotaoIcone, CampoArea, Janela, Linha, Titulo, avisar as avisarBase, confirmar, informar } from '@/components/base'
-import { ArrowsLeftRight, Clock, CreditCard, DotsThreeVertical, Package, Truck, WhatsappLogo } from '@phosphor-icons/react'
+import { ArrowsLeftRight, Clock, CreditCard, DotsThreeVertical, MagnifyingGlass, Package, Truck, WhatsappLogo } from '@phosphor-icons/react'
 import { SITUACOES, avisoDaMudanca, dataLonga, grupoDoStatus, nomeDaSituacao, nomeDeProduto } from '@/components/pedidos/pedidoTexto'
 import { tocarSom } from '@/hooks/useSom'
 import '@/components/pedidos/telaPedido.css'
@@ -1520,358 +1520,145 @@ export default function EditarPedido() {
 
       <style>{EP2_CSS}{FOLHA_CSS}</style>
 
-      {/* ═══ MODAL CLIENTE ═══ */}
-      {modalCliente && (
-        <div className="ep-modal-overlay" onClick={() => setModalCliente(false)}>
-          <div className="ep-modal" onClick={e => e.stopPropagation()}>
-            <div className="ep-modal-header">
-              <h3 className="ep-modal-title">Buscar cliente</h3>
-              <button className="ep-modal-close" onClick={() => setModalCliente(false)} aria-label="Fechar">
-                <I.x />
-              </button>
+      {/* ═══ ESCOLHER CLIENTE (08/10 · 3.16: janela padrão) ═══ */}
+      {(() => {
+        const q = buscaCliente.trim().toLowerCase()
+        const lista = clientes.filter(c => (c.nome || '').toLowerCase().includes(q) || (c.telefone || '').includes(buscaCliente.trim()))
+        return (
+          <Janela aberta={modalCliente} aoFechar={() => setModalCliente(false)} tipo="conteudo" titulo="Escolher cliente">
+            <div className="ui-campo-c tpj-busca">
+              <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
+              <input type="search" inputMode="search" autoComplete="off" aria-label="Buscar cliente por nome ou telefone" placeholder="Nome ou telefone" value={buscaCliente} onChange={e => setBuscaCliente(e.target.value)} />
             </div>
-            <div className="ep-modal-search">
-              <I.search />
-              <input
-                className="ep-modal-search-input"
-                placeholder="Nome ou telefone..."
-                value={buscaCliente}
-                onChange={e => setBuscaCliente(e.target.value)}
-              />
-            </div>
-            <div className="ep-modal-lista">
-              {clientes.filter(c => c.nome.toLowerCase().includes(buscaCliente.toLowerCase()) || (c.telefone || '').includes(buscaCliente)).map(c => (
-                <button key={c.id} type="button" className="ep-modal-item" onClick={() => selecionarCliente(c)}>
-                  <div className="ep-modal-item-avatar">{initialsOf(c.nome)}</div>
-                  <div className="ep-modal-item-info">
-                    <div className="ep-modal-item-nome">{toTitleCase(c.nome)}</div>
-                    {(c.telefone || c.whatsapp) && <div className="ep-modal-item-sub">{formatTelefone(c.telefone || c.whatsapp || '')}</div>}
-                  </div>
+            <div className="tpj-lista">
+              {lista.map(c => (
+                <button key={c.id} type="button" className="tpj-it" onClick={() => selecionarCliente(c)}>
+                  <span className="tpj-ini" aria-hidden="true">{initialsOf(c.nome || '?')}</span>
+                  <span className="tpj-tx"><b>{toTitleCase(c.nome || 'Sem nome')}</b>{(c.telefone || c.whatsapp) && <small>{formatTelefone(c.telefone || c.whatsapp || '')}</small>}</span>
                 </button>
               ))}
-              {clientes.length === 0 && <p className="ep-modal-empty">Nenhum cliente cadastrado ainda</p>}
-              {clientes.length > 0 && clientes.filter(c => c.nome.toLowerCase().includes(buscaCliente.toLowerCase()) || (c.telefone || '').includes(buscaCliente)).length === 0 && (
-                <p className="ep-modal-empty">Nenhum cliente encontrado com "{buscaCliente}"</p>
-              )}
+              {clientes.length === 0 && <p className="tpj-vz">Nenhuma cliente cadastrada ainda.</p>}
+              {clientes.length > 0 && lista.length === 0 && <p className="tpj-vz">Nenhuma cliente com “{buscaCliente.trim()}”.</p>}
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* ═══ MODAL PRODUTO ═══ */}
-      {modalProduto && (() => {
-        const produtosFiltrados = produtos.filter(p => {
-          const matchBusca = p.nome.toLowerCase().includes(buscaProduto.toLowerCase())
-          const matchCat = !filtroCategoria || (p.categoria || '').trim() === filtroCategoria
-          return matchBusca && matchCat
-        })
-        const labelFiltro = filtroCategoria || 'Todas'
-        const temCategorias = categoriasComContagem.length > 0
-        return (
-          <div className="ep-modal-overlay" onClick={() => { setModalProduto(false); setCatDropdownAberto(false) }}>
-            <div className="ep-modal" onClick={e => e.stopPropagation()}>
-              <div className="ep-modal-header">
-                <h3 className="ep-modal-title">Escolher produto</h3>
-                <button className="ep-modal-close" onClick={() => setModalProduto(false)} aria-label="Fechar">
-                  <I.x />
-                </button>
-              </div>
-
-              <div className="ep-modal-search">
-                <I.search />
-                <input
-                  className="ep-modal-search-input"
-                  placeholder="Buscar produto..."
-                  value={buscaProduto}
-                  onChange={e => setBuscaProduto(e.target.value)}
-                />
-              </div>
-
-              {temCategorias && (
-                <div className="ep-cat-dropdown-wrap">
-                  <button
-                    type="button"
-                    className={`ep-cat-dropdown-btn ${filtroCategoria ? 'ep-cat-dropdown-btn--ativo' : ''}`}
-                    onClick={() => setCatDropdownAberto(o => !o)}
-                  >
-                    <span>{labelFiltro}</span>
-                    <I.chevD />
-                  </button>
-                  {catDropdownAberto && (
-                    <div className="ep-cat-dropdown-menu">
-                      <button type="button" className={`ep-cat-dropdown-item ${!filtroCategoria ? 'ep-cat-dropdown-item--sel' : ''}`} onClick={() => { setFiltroCategoria(null); setCatDropdownAberto(false) }}>
-                        <span>Todas</span>
-                        <span className="ep-cat-dropdown-count">{produtos.length}</span>
-                      </button>
-                      {categoriasComContagem.map(c => (
-                        <button key={c.nome} type="button" className={`ep-cat-dropdown-item ${filtroCategoria === c.nome ? 'ep-cat-dropdown-item--sel' : ''}`} onClick={() => { setFiltroCategoria(c.nome); setCatDropdownAberto(false) }}>
-                          <span>{c.nome}</span>
-                          <span className="ep-cat-dropdown-count">{c.count}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="ep-modal-lista">
-                {produtosFiltrados.map(p => (
-                  <button key={p.id} type="button" className="ep-prod-item" onClick={() => escolherProduto(p)}>
-                    <div className="ep-prod-item-img">
-                      {p.imagem_url ? <img src={String(p.imagem_url).split(/,(?=\s*https?:)/)[0].trim()} alt={p.nome} /> : <I.box />}
-                    </div>
-                    <div className="ep-prod-item-info">
-                      <div className="ep-prod-item-nome">{toTitleCase(p.nome)}</div>
-                      {p.categoria && <div className="ep-prod-item-cat">{p.categoria}</div>}
-                    </div>
-                    <div className="ep-prod-item-preco">{formatMoney(p.preco_normal)}</div>
-                  </button>
-                ))}
-                {produtos.length === 0 && (
-                  <p className="ep-modal-empty">Nenhum produto cadastrado. <a href="/produtos" style={{ color: '#E85A8C', fontWeight: 700 }}>Cadastrar produto</a></p>
-                )}
-                {produtos.length > 0 && produtosFiltrados.length === 0 && (
-                  <p className="ep-modal-empty">Nenhum produto encontrado{buscaProduto ? ` com "${buscaProduto}"` : ''}</p>
-                )}
-              </div>
-            </div>
-          </div>
+          </Janela>
         )
       })()}
 
-      {/* ═══ CANCELAR PEDIDO SHEET (Fase 8) ═══ */}
-      {cancelarAberto && createPortal(
-        (() => {
-          const motivosPreset = [
-            'Sem ingredientes para produzir',
-            'Não conseguimos entregar na data',
-            'Fora da área de entrega',
-            'Pagamento não confirmado',
-            'Cliente desistiu do pedido',
-          ]
-          const valorRecebidoAtual = recebidoAtual
-          return (
-            <div className="ep-cnc-overlay" onClick={() => !cancelando && setCancelarAberto(false)}>
-              <div className="ep-cnc-sheet" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
-                <div className="ep-tl-handle" />
-
-                <div className="ep-cnc-header">
-                  <div className="ep-cnc-title-wrap">
-                    <div className="ep-cnc-title-ic">
-                      <I.ban />
-                    </div>
-                    <h3 className="ep-cnc-title">Cancelar Pedido</h3>
-                  </div>
-                </div>
-
-                <p className="ep-cnc-aviso">
-                  Esta ação não pode ser desfeita. Deseja realmente cancelar este pedido?
-                </p>
-
-                {/* Card do pedido */}
-                <div className="ep-cnc-card">
-                  <div className="ep-cnc-card-ic">
-                    <I.card />
-                  </div>
-                  <div>
-                    <div className="ep-cnc-card-num">Pedido #{pedido?.numero || '—'}</div>
-                    <div className="ep-cnc-card-sub">
-                      {valorRecebidoAtual > 0
-                        ? `${formatMoney(valorRecebidoAtual)} já recebido`
-                        : 'Nenhum pagamento registrado'}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Chips de motivo */}
-                <div className="ep-cnc-section">
-                  <div className="ep-cnc-section-header">
-                    <span className="ep-cnc-section-title">Motivo do cancelamento</span>
-                    <span className="ep-cnc-section-opt">opcional</span>
-                  </div>
-                  <div className="ep-cnc-chips">
-                    {motivosPreset.map(m => (
-                      <button
-                        key={m}
-                        type="button"
-                        className={`ep-cnc-chip ${motivoCancelamento === m ? 'ep-cnc-chip--sel' : ''}`}
-                        onClick={() => setMotivoCancelamento(motivoCancelamento === m ? '' : m)}
-                      >
-                        {m}
-                      </button>
-                    ))}
-                  </div>
-                  <textarea
-                    className="ep-cnc-textarea"
-                    placeholder="Escreva o motivo ou escolha um acima"
-                    value={motivoCancelamento}
-                    onChange={e => setMotivoCancelamento(e.target.value)}
-                    rows={3}
-                  />
-
-                  {/* Toggle mostrar ao cliente */}
-                  <div className="ep-cnc-toggle-row">
-                    <div className="ep-cnc-toggle-info">
-                      <div className="ep-cnc-toggle-t">Mostrar ao cliente</div>
-                      <div className="ep-cnc-toggle-d">Escreva um motivo acima para poder mostrá-lo ao cliente.</div>
-                    </div>
-                    <button
-                      type="button"
-                      className={`ep-cnc-switch ${mostrarMotivoCliente ? 'ep-cnc-switch--on' : ''}`}
-                      onClick={() => motivoCancelamento.trim() && setMostrarMotivoCliente(v => !v)}
-                      disabled={!motivoCancelamento.trim()}
-                      aria-label="Mostrar motivo ao cliente"
-                    >
-                      <span className="ep-cnc-switch-dot" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Botões */}
-                {valorRecebidoAtual > 0.009 && pagamentosOk && (
-                  <div className="ep2-devol">
-                    <b>Você já recebeu {formatMoney(valorRecebidoAtual)} deste pedido. O que aconteceu com esse dinheiro?</b>
-                    <label><input type="radio" name="devol" checked={devolverSinal === true} onChange={() => setDevolverSinal(true)} />Devolvi pra cliente (sai do caixa)</label>
-                    <label><input type="radio" name="devol" checked={devolverSinal === false} onChange={() => setDevolverSinal(false)} />Fiquei com ele (continua no caixa)</label>
-                  </div>
-                )}
-                <div className="ep-cnc-btns">
-                  <button
-                    className="ep-btn ep-btn--ghost"
-                    onClick={() => setCancelarAberto(false)}
-                    disabled={cancelando}
-                  >
-                    Voltar
-                  </button>
-                  <button
-                    className="ep-btn ep-cnc-btn-danger"
-                    onClick={handleConfirmarCancelamento}
-                    disabled={cancelando}
-                  >
-                    {cancelando ? 'Cancelando...' : 'Cancelar pedido'}
-                  </button>
-                </div>
-              </div>
+      {/* ═══ ADICIONAR ITEM (3.16: janela padrão; categorias em botões, sem a lista suspensa) ═══ */}
+      {(() => {
+        const q = buscaProduto.trim().toLowerCase()
+        const lista = produtos.filter(p => (p.nome || '').toLowerCase().includes(q) && (!filtroCategoria || (p.categoria || '').trim() === filtroCategoria))
+        const fechar = () => { setModalProduto(false); setCatDropdownAberto(false) }
+        return (
+          <Janela aberta={modalProduto} aoFechar={fechar} tipo="conteudo" titulo="Adicionar item">
+            <div className="ui-campo-c tpj-busca">
+              <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
+              <input type="search" inputMode="search" autoComplete="off" aria-label="Buscar produto" placeholder="Buscar produto" value={buscaProduto} onChange={e => setBuscaProduto(e.target.value)} />
             </div>
-          )
-        })(),
-        document.body
-      )}
-
-      {/* ═══ TIMELINE SHEET (Fase 7) ═══ */}
-      {timelineAberto && createPortal(
-        (() => {
-          const seq = tipoEntrega === 'entrega' ? PASSOS_ENTREGA : PASSOS_RETIRADA
-          const posAtual = posicaoStatus(statusPedido, seq)
-          // Map de status → data do evento (do histórico)
-          const dataDoPasso: Record<string, string> = {}
-          historico.forEach(h => {
-            // Procura qual passo esse evento representa
-            for (const [passo, aliases] of Object.entries(EVENTO_MAP)) {
-              if (aliases.some(a => (h.evento || '').toLowerCase().includes(a.toLowerCase()))) {
-                if (!dataDoPasso[passo]) dataDoPasso[passo] = h.created_at
-              }
-            }
-          })
-          // Se não tem "criado" no histórico, usa created_at do pedido
-          if (!dataDoPasso.criado && pedido?.created_at) dataDoPasso.criado = pedido.created_at
-
-          const atrasado = pedidoAtrasado(dataEntrega, horarioEntrega, statusPedido)
-
-          return (
-            <div className="ep-tl-overlay" onClick={() => setTimelineAberto(false)}>
-              <div className="ep-tl-sheet" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
-                <div className="ep-tl-handle" />
-
-                <div className="ep-tl-header">
-                  <div className="ep-tl-title-wrap">
-                    <I.clock />
-                    <h3 className="ep-tl-title">Acompanhar Pedido</h3>
-                  </div>
-                  <button className="ep-tl-close" onClick={() => setTimelineAberto(false)} aria-label="Fechar">
-                    <I.x />
-                  </button>
-                </div>
-
-                {/* Card do pedido */}
-                <div className="ep-tl-card">
-                  <div className="ep-tl-card-ic">
-                    <I.card />
-                  </div>
-                  <div>
-                    <div className="ep-tl-card-num">Pedido #{pedido?.numero || '—'}</div>
-                    {clienteNome && (
-                      <div className="ep-tl-card-cli">
-                        <I.user />
-                        {toTitleCase(clienteNome)}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Status atual + previsão */}
-                <div className="ep-tl-info-grid">
-                  <div>
-                    <div className="ep-tl-info-label">Status atual</div>
-                    <div className="ep-tl-info-val">{(STATUS_CONFIG[statusPedido] || STATUS_CONFIG.agendado).label}</div>
-                    {dataDoPasso[seq[posAtual] || 'criado'] && (
-                      <div className="ep-tl-info-sub">{tempoRelativo(dataDoPasso[seq[posAtual] || 'criado'])}</div>
-                    )}
-                  </div>
-                  <div>
-                    <div className="ep-tl-info-label">{tipoEntrega === 'entrega' ? 'Entrega prevista' : 'Retirada prevista'}</div>
-                    <div className="ep-tl-info-val">{formatDataHora(dataEntrega, horarioEntrega)}</div>
-                    {atrasado && (
-                      <div className="ep-tl-info-alerta">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12" y2="16"/></svg>
-                        Atrasado
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Steps */}
-                {historicoCarregando ? (
-                  <div className="ep-tl-loading">
-                    <div className="ep-spinner" />
-                    <p>Carregando eventos...</p>
-                  </div>
-                ) : (
-                  <div className="ep-tl-steps">
-                    {seq.map((passo, i) => {
-                      const feito = i <= posAtual
-                      const atual = i === posAtual
-                      const dataPasso = dataDoPasso[passo]
-                      return (
-                        <div key={passo} className={`ep-tl-step ${feito ? 'ep-tl-step--feito' : 'ep-tl-step--pendente'} ${atual ? 'ep-tl-step--atual' : ''}`}>
-                          <div className="ep-tl-step-col">
-                            <div className="ep-tl-step-dot">
-                              {feito ? (
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                              ) : null}
-                            </div>
-                            {i < seq.length - 1 && <div className="ep-tl-step-linha" />}
-                          </div>
-                          <div className="ep-tl-step-info">
-                            <div className="ep-tl-step-row">
-                              <div className="ep-tl-step-label">{LABEL_PASSO[passo]}</div>
-                              {dataPasso && <div className="ep-tl-step-data">{formatDataCompleta(dataPasso)}</div>}
-                            </div>
-                            {atual && !dataPasso && (
-                              <div className="ep-tl-step-sub">Status atual</div>
-                            )}
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
+            {categoriasComContagem.length > 0 && (
+              <div className="tpj-cats" role="group" aria-label="Ver por categoria">
+                <button type="button" className="tpj-cat" aria-pressed={!filtroCategoria} onClick={() => setFiltroCategoria(null)}>Todas</button>
+                {categoriasComContagem.map(c => <button key={c.nome} type="button" className="tpj-cat" aria-pressed={filtroCategoria === c.nome} onClick={() => setFiltroCategoria(c.nome)}>{c.nome}</button>)}
               </div>
+            )}
+            <div className="tpj-lista">
+              {lista.map(p => {
+                const foto = p.imagem_url ? String(p.imagem_url).split(/,(?=\s*https?:)/)[0].trim() : ''
+                return (
+                  <button key={p.id} type="button" className="tpj-it" onClick={() => escolherProduto(p)}>
+                    <span className="tpj-ft" aria-hidden="true"><Package size={20} weight="bold" />{foto && <img src={foto} alt="" onError={e => { e.currentTarget.style.display = 'none' }} />}</span>
+                    <span className="tpj-tx"><b>{nomeDeProduto(p.nome || 'Produto sem nome')}</b>{p.categoria && <small>{p.categoria}</small>}</span>
+                    <span className="tpj-preco">{formatMoney(p.preco_normal)}</span>
+                  </button>
+                )
+              })}
+              {produtos.length === 0 && (
+                <div className="tpj-vz"><p>Você ainda não tem produtos cadastrados.</p><Botao variante="suave" tamanho="m" onClick={() => { fechar(); navigate('/produtos', { state: { abrirCadastro: true } }) }}>Cadastrar produto</Botao></div>
+              )}
+              {produtos.length > 0 && lista.length === 0 && <p className="tpj-vz">Nenhum produto{q ? ` com “${buscaProduto.trim()}”` : ' nessa categoria'}.</p>}
             </div>
-          )
-        })(),
-        document.body
-      )}
+          </Janela>
+        )
+      })()}
+
+      {/* ═══ CANCELAR PEDIDO (3.16: janela padrão) ═══ */}
+      {(() => {
+        const motivos = ['Sem ingredientes pra produzir', 'Não deu pra entregar na data', 'Fora da área de entrega', 'Pagamento não confirmado', 'A cliente desistiu']
+        const temMotivo = !!motivoCancelamento.trim()
+        return (
+          <Janela
+            aberta={cancelarAberto} aoFechar={() => { if (!cancelando) setCancelarAberto(false) }} travada={cancelando} tipo="conteudo"
+            titulo={`Cancelar o pedido #${pedido?.numero || ''}?`}
+            acoes={<>
+              <Botao variante="secundario" onClick={() => setCancelarAberto(false)} disabled={cancelando}>Voltar</Botao>
+              <Botao variante="perigo" onClick={handleConfirmarCancelamento} carregando={cancelando}>Cancelar pedido</Botao>
+            </>}
+          >
+            <p className="tpj-txt">Ele sai da agenda e não conta no faturamento. {recebidoAtual > 0.009 ? `Você já recebeu ${formatMoney(recebidoAtual)} deste pedido.` : 'Nenhum pagamento foi registrado.'}</p>
+            <div className="ui-campo tpj-bloco">
+              <span className="ui-campo-r"><span>Motivo</span><small>opcional</small></span>
+              <div className="tpj-cats tpj-motivos" role="group" aria-label="Motivos mais comuns">
+                {motivos.map(m => <button key={m} type="button" className="tpj-cat" aria-pressed={motivoCancelamento === m} onClick={() => setMotivoCancelamento(motivoCancelamento === m ? '' : m)}>{m}</button>)}
+              </div>
+              <div className="ui-campo-c"><textarea rows={2} aria-label="Motivo do cancelamento" placeholder="Escreva o motivo ou escolha um acima" value={motivoCancelamento} onChange={e => setMotivoCancelamento(e.target.value)} /></div>
+            </div>
+            <label className={`tpj-chave${temMotivo ? '' : ' off'}`}>
+              <span><b>Mostrar o motivo pra cliente</b><small>{temMotivo ? 'Ela vê o motivo no acompanhamento do pedido.' : 'Escreva ou escolha um motivo pra ligar.'}</small></span>
+              <input type="checkbox" role="switch" checked={mostrarMotivoCliente && temMotivo} disabled={!temMotivo} onChange={e => setMostrarMotivoCliente(e.target.checked)} className="tpj-esc" /><i className="tpj-sw" aria-hidden="true" />
+            </label>
+            {recebidoAtual > 0.009 && pagamentosOk && (
+              <div className="ui-campo tpj-bloco" role="radiogroup" aria-label="O que aconteceu com o dinheiro">
+                <span className="ui-campo-r"><span>O que aconteceu com os {formatMoney(recebidoAtual)}?</span></span>
+                <label className="tpj-op"><input type="radio" name="devol" checked={devolverSinal === true} onChange={() => setDevolverSinal(true)} className="tpj-esc" /><i className="tpj-rd" aria-hidden="true" /><span><b>Devolvi pra cliente</b><small>O valor sai do caixa.</small></span></label>
+                <label className="tpj-op"><input type="radio" name="devol" checked={devolverSinal === false} onChange={() => setDevolverSinal(false)} className="tpj-esc" /><i className="tpj-rd" aria-hidden="true" /><span><b>Fiquei com ele</b><small>O valor continua no caixa.</small></span></label>
+              </div>
+            )}
+          </Janela>
+        )
+      })()}
+
+      {/* ═══ ACOMPANHAR PEDIDO (3.16: janela padrão, palavras do guia e datas por extenso) ═══ */}
+      {(() => {
+        if (!timelineAberto && !pedido) return null
+        const seq = tipoEntrega === 'entrega' ? PASSOS_ENTREGA : PASSOS_RETIRADA
+        const posAtual = posicaoStatus(statusPedido, seq)
+        const dataDoPasso: Record<string, string> = {}
+        historico.forEach(h => {
+          for (const [passo, aliases] of Object.entries(EVENTO_MAP)) {
+            if (aliases.some(a => (h.evento || '').toLowerCase().includes(a.toLowerCase())) && !dataDoPasso[passo]) dataDoPasso[passo] = h.created_at
+          }
+        })
+        if (!dataDoPasso.criado && pedido?.created_at) dataDoPasso.criado = pedido.created_at
+        const NOME_PASSO: Record<string, string> = { criado: 'Pedido feito', aguardando_aceite: 'Novo pedido', agendado: 'Agendado', em_producao: 'Em produção', finalizado: 'Pronto', aguardando_retirada: 'Pronto pra retirar', em_entrega: 'Saiu pra entrega', entregue: tipoEntrega === 'retirada' ? 'Retirado' : 'Entregue' }
+        const quando = (iso: string) => { const d = new Date(iso); return dataLonga(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`, `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`) }
+        return (
+          <Janela aberta={timelineAberto} aoFechar={() => setTimelineAberto(false)} tipo="conteudo" titulo="Acompanhar pedido">
+            <div className="tpj-resumo">
+              <Linha rotulo="Pedido">#{pedido?.numero || '—'}{clienteNome ? ` · ${toTitleCase(clienteNome.trim())}` : ''}</Linha>
+              <Linha rotulo="Situação" tom={situacao.tom}>{situacao.nome}</Linha>
+              <Linha rotulo={tipoEntrega === 'entrega' ? 'Entrega' : 'Retirada'} tom={atrasadoHoje ? 'vermelho' : undefined}>{dataLonga(dataEntrega, horarioEntrega)}</Linha>
+              {atrasadoHoje && <p className="tpd-aviso atr">A data de entrega já passou.</p>}
+            </div>
+            {historicoCarregando ? (
+              <p className="tpd-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando o histórico…</p>
+            ) : statusPedido === 'cancelado' ? (
+              <p className="tpj-txt">Este pedido foi cancelado.</p>
+            ) : (
+              <ol className="tpj-tl">
+                {seq.map((passo, i) => {
+                  const feito = i <= posAtual, atual = i === posAtual, d = dataDoPasso[passo]
+                  return (
+                    <li key={passo} className={`${feito ? 'feito' : ''}${atual ? ' atual' : ''}`} aria-current={atual ? 'step' : undefined}>
+                      <i aria-hidden="true">{feito && <Check size={14} weight="bold" />}</i>
+                      <span><b>{NOME_PASSO[passo] || passo}</b>{d ? <small>{quando(d)}</small> : atual ? <small>Situação de agora</small> : null}</span>
+                    </li>
+                  )
+                })}
+              </ol>
+            )}
+          </Janela>
+        )
+      })()}
 
       {/* ═══ HORARIO SHEET ═══ */}
       {horaSheetAberto && (
