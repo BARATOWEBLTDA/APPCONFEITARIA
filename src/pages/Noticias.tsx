@@ -1,12 +1,20 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
-import { MagnifyingGlass } from "@phosphor-icons/react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { MagnifyingGlass, Newspaper, PushPin, WarningCircle, X } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
+import { Botao, BotaoIcone, TelaVazia } from "@/components/base";
+import { supabase } from "@/lib/supabase";
+import { linhaDeTempo, semAcento } from "@/lib/noticias";
+import "./noticias.css";
 
+/**
+ * Notícias — a lista (07/10 · 3.10, no padrão do guia).
+ * Busca no campo padrão (48px, letra de 16px, botão de limpar), filtros de categoria com 44px de toque,
+ * cartão branco igual aos do Início, categoria e "Fixada" em texto (sem etiqueta e sem emoji).
+ * Estados: carregando (só aparece se demorar), vazio, busca sem resultado e erro com "Tentar de novo".
+ */
 interface Noticia {
   id: string;
-  emoji: string;
   titulo: string;
   descricao: string;
   imagem_capa: string | null;
@@ -18,46 +26,50 @@ interface Noticia {
   fixada: boolean;
 }
 
-function tempoRelativo(iso: string): string {
-  const d = new Date(iso);
-  const diffDias = Math.floor((Date.now() - d.getTime()) / 86400000);
-  if (diffDias === 0) return "hoje";
-  if (diffDias === 1) return "ontem";
-  if (diffDias < 7) return `há ${diffDias} dias`;
-  const semanas = Math.floor(diffDias / 7);
-  if (semanas < 4) return `há ${semanas} sem`;
-  const meses = Math.floor(diffDias / 30);
-  if (meses < 12) return `há ${meses} ${meses === 1 ? "mês" : "meses"}`;
-  return `há ${Math.floor(diffDias / 365)} anos`;
-}
-
 export default function Noticias() {
-  const navigate = useNavigate();
   const [noticias, setNoticias] = useState<Noticia[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [categoria, setCategoria] = useState<string>("todas");
+  const [estado, setEstado] = useState<"carregando" | "erro" | "pronto">("carregando");
+  const [demorou, setDemorou] = useState(false);
+  const [categoria, setCategoria] = useState("todas");
   const [busca, setBusca] = useState("");
 
-  useEffect(() => {
-    (async () => {
-      const { data } = await supabase
+  const carregar = useCallback(async () => {
+    setEstado("carregando");
+    try {
+      const { data, error } = await supabase
         .from("admin_noticias")
-        .select("id, emoji, titulo, descricao, imagem_capa, icone_url, slug, categoria, tempo_leitura, publicado_em, fixada")
+        .select("id, titulo, descricao, imagem_capa, icone_url, slug, categoria, tempo_leitura, publicado_em, fixada")
         .eq("ativo", true)
         .order("fixada", { ascending: false })
         .order("publicado_em", { ascending: false });
-      if (data) setNoticias(data as Noticia[]);
-      setLoading(false);
-    })();
+      if (error) throw error;
+      setNoticias((data || []) as Noticia[]);
+      setEstado("pronto");
+    } catch {
+      setEstado("erro");
+    }
   }, []);
 
-  const categorias = ["todas", ...Array.from(new Set(noticias.map(n => n.categoria).filter(Boolean))) as string[]];
+  useEffect(() => { carregar(); }, [carregar]);
 
-  const filtradas = noticias.filter(n => {
-    const okCat = categoria === "todas" || n.categoria === categoria;
-    const okBusca = !busca.trim() || n.titulo.toLowerCase().includes(busca.toLowerCase().trim()) || (n.descricao || "").toLowerCase().includes(busca.toLowerCase().trim());
-    return okCat && okBusca;
-  });
+  // o "carregando" só aparece se passar de 300ms (não pisca em carga rápida)
+  useEffect(() => {
+    if (estado !== "carregando") { setDemorou(false); return; }
+    const t = window.setTimeout(() => setDemorou(true), 300);
+    return () => window.clearTimeout(t);
+  }, [estado]);
+
+  const categorias = useMemo(() => Array.from(new Set(noticias.map(n => n.categoria).filter(Boolean))) as string[], [noticias]);
+
+  const filtradas = useMemo(() => {
+    const q = semAcento(busca);
+    return noticias.filter(n =>
+      (categoria === "todas" || n.categoria === categoria) &&
+      (!q || semAcento(n.titulo).includes(q) || semAcento(n.descricao).includes(q)));
+  }, [noticias, categoria, busca]);
+
+  const limpar = () => { setBusca(""); setCategoria("todas"); };
+  const filtrando = !!busca.trim() || categoria !== "todas";
 
   return (
     <>
@@ -67,290 +79,94 @@ export default function Noticias() {
         infoIcon="📰"
         infoContent={
           <>
-            <p>Aqui você encontra <strong>todas as notícias</strong> do Doonly: dicas pra vender mais, novidades do sistema, tutoriais passo a passo e avisos importantes.</p>
-            <p>Notícias <strong>fixadas</strong> aparecem sempre no topo, mesmo quando publicarmos novidades. As demais rolam pelo mais recente.</p>
+            <p>Aqui ficam <strong>todas as notícias</strong> do Doonly: dicas pra vender mais, novidades do app, tutoriais passo a passo e avisos importantes.</p>
+            <p>A notícia <strong>fixada</strong> fica sempre no topo. As outras aparecem da mais nova pra mais antiga.</p>
           </>
         }
-        infoTip={<>Use as <strong>abas de categoria</strong> pra filtrar entre Dicas, Novidades, Tutoriais e mais.</>}
+        infoTip={<>Toque numa <strong>categoria</strong> pra ver só as dicas, as novidades ou os tutoriais.</>}
       />
-      <div className="nl-root">
+      <div className="nl">
+        {estado === "pronto" && noticias.length > 0 && (
+          <div className="nl-topo">
+            <div className="ui-campo-c nl-busca" onClick={e => { if (e.target === e.currentTarget) e.currentTarget.querySelector("input")?.focus(); }}>
+              <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
+              <input
+                type="search" inputMode="search" enterKeyHint="search" autoComplete="off"
+                aria-label="Buscar notícia" placeholder="Buscar notícia"
+                value={busca} onChange={e => setBusca(e.target.value)}
+              />
+              {busca && (
+                <BotaoIcone className="nl-busca-x" variante="limpo" tamanho="p" rotulo="Limpar a busca" onClick={() => setBusca("")}>
+                  <X size={20} weight="bold" />
+                </BotaoIcone>
+              )}
+            </div>
 
-      <div className="nl-toolbar">
-        <div className="nl-search">
-          <MagnifyingGlass size={16} weight="bold" />
-          <input
-            type="text"
-            placeholder="Buscar notícia..."
-            value={busca}
-            onChange={e => setBusca(e.target.value)}
-          />
-        </div>
-
-        {categorias.length > 1 && (
-          <div className="nl-tabs">
-            {categorias.map(c => (
-              <button
-                key={c}
-                className={`nl-tab ${categoria === c ? "on" : ""}`}
-                onClick={() => setCategoria(c)}
-              >
-                {c === "todas" ? "Todas" : c}
-              </button>
-            ))}
+            {categorias.length > 0 && (
+              <div className="nl-filtros" role="group" aria-label="Ver por categoria">
+                {["todas", ...categorias].map(c => (
+                  <button key={c} type="button" className="nl-filtro" aria-pressed={categoria === c} onClick={() => setCategoria(c)}>
+                    {c === "todas" ? "Todas" : c}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
+
+        {estado === "carregando" ? (
+          demorou ? <p className="nl-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando as notícias…</p> : null
+        ) : estado === "erro" ? (
+          <TelaVazia
+            icone={<WarningCircle size={30} />}
+            titulo="Não deu pra carregar as notícias"
+            texto="Confira a internet e tente de novo."
+            acao={<Botao variante="suave" tamanho="m" onClick={carregar}>Tentar de novo</Botao>}
+          />
+        ) : noticias.length === 0 ? (
+          <TelaVazia
+            icone={<Newspaper size={30} />}
+            titulo="Nenhuma notícia por enquanto"
+            texto="As dicas e novidades do Doonly aparecem aqui."
+          />
+        ) : filtradas.length === 0 ? (
+          <TelaVazia
+            icone={<MagnifyingGlass size={30} />}
+            titulo="Nenhuma notícia encontrada"
+            texto={busca.trim() ? `Não achamos nada com “${busca.trim()}”.` : "Não tem notícia nessa categoria."}
+            acao={filtrando ? <Botao variante="suave" tamanho="m" onClick={limpar}>Ver todas as notícias</Botao> : undefined}
+          />
+        ) : (
+          <ul className="nl-lista">
+            {filtradas.map(n => {
+              const capa = n.icone_url || n.imagem_capa;
+              const tempo = linhaDeTempo(n.publicado_em, n.tempo_leitura);
+              return (
+                <li key={n.id}>
+                  <Link to={`/noticias/${n.slug}`} className="nl-item">
+                    <span className="nl-capa" aria-hidden="true">
+                      <Newspaper size={24} weight="bold" />
+                      {capa && <img src={capa} alt="" loading="lazy" onError={e => { e.currentTarget.style.display = "none"; }} />}
+                    </span>
+                    <span className="nl-corpo">
+                      {(n.fixada || n.categoria) && (
+                        <span className="nl-cat">
+                          {n.fixada && <span className="nl-fixa"><PushPin size={16} weight="bold" aria-hidden="true" />Fixada</span>}
+                          {n.fixada && n.categoria && <span aria-hidden="true">·</span>}
+                          {n.categoria && <span>{n.categoria}</span>}
+                        </span>
+                      )}
+                      <span className="nl-t">{n.titulo}</span>
+                      {n.descricao && <span className="nl-d">{n.descricao}</span>}
+                      {tempo && <span className="nl-q">{tempo}</span>}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
-
-      {loading ? (
-        <div className="nl-empty">Carregando...</div>
-      ) : filtradas.length === 0 ? (
-        <div className="nl-empty">
-          {busca ? "Nenhuma notícia encontrada" : "Nenhuma notícia por aqui ainda"}
-        </div>
-      ) : (
-        <div className="nl-list">
-          {filtradas.map((n) => (
-            <button key={n.id} className={`nl-item ${n.fixada ? "nl-item--fix" : ""}`} onClick={() => navigate(`/noticias/${n.slug}`)}>
-              <div className="nl-capa" style={n.icone_url ? { backgroundImage: `url(${n.icone_url})` } : (n.imagem_capa ? { backgroundImage: `url(${n.imagem_capa})` } : undefined)}>
-                {!n.icone_url && !n.imagem_capa && <span className="nl-capa-emoji">{n.emoji}</span>}
-              </div>
-              <div className="nl-body">
-                {n.categoria && (
-                  <div className="nl-tags">
-                    <span className="nl-cat">{n.categoria}</span>
-                  </div>
-                )}
-                <p className="nl-t">{n.titulo}</p>
-                {n.descricao && <p className="nl-d">{n.descricao}</p>}
-                <p className="nl-meta">
-                  {tempoRelativo(n.publicado_em)}
-                  {n.tempo_leitura && ` · ${n.tempo_leitura} min`}
-                </p>
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
-
-      <style>{`
-        .nl-root {
-          font-family: 'Geist', sans-serif;
-          max-width: 720px;
-          margin: 0 auto;
-          padding: 16px 16px 100px;
-        }
-
-        .nl-toolbar {
-          margin-bottom: 14px;
-        }
-        .nl-search {
-          display: flex; align-items: center; gap: 8px;
-          padding: 10px 14px;
-          background: #F5F0F2;
-          border-radius: 10px;
-          margin-bottom: 10px;
-          color: #6B7280;
-        }
-        .nl-search input {
-          flex: 1;
-          border: none;
-          background: transparent;
-          outline: none;
-          font-size: 13px;
-          font-family: inherit;
-          color: #2C1219;
-        }
-        .nl-search input::placeholder { color: #9CA3AF; }
-
-        .nl-tabs {
-          display: flex; gap: 6px;
-          overflow-x: auto;
-          padding-bottom: 4px;
-          scrollbar-width: none;
-        }
-        .nl-tabs::-webkit-scrollbar { display: none; }
-        .nl-tab {
-          padding: 8px 14px;
-          background: #F5F0F2;
-          border: none;
-          border-radius: 0;
-          font-size: 12px; font-weight: 700;
-          color: #6B7280;
-          cursor: pointer;
-          white-space: nowrap;
-          font-family: inherit;
-          text-transform: capitalize;
-        }
-        .nl-tab.on {
-          background: #2C1219;
-          color: #fff;
-        }
-
-        .nl-empty {
-          text-align: center;
-          padding: 60px 20px;
-          color: #6B7280;
-          font-size: 13px;
-        }
-
-        .nl-list {
-          display: flex; flex-direction: column; gap: 10px;
-        }
-        .nl-item {
-          display: flex; gap: 12px;
-          padding: 12px;
-          background: #fff;
-          border: 1px solid #F0EBED;
-          border-radius: 12px;
-          cursor: pointer;
-          font-family: inherit;
-          text-align: left;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-          transition: transform 0.15s, box-shadow 0.15s;
-        }
-        .nl-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .nl-item:active { transform: scale(0.99); }
-        .nl-item--fix {
-          background: linear-gradient(to right, #FEF9E7, #fff 60%);
-          border-color: #FDE68A;
-        }
-        .nl-tags { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; align-self: flex-start; }
-        .nl-fix-tag {
-          font-size: 9.5px; font-weight: 800;
-          padding: 2px 6px;
-          background: #FEF3C7; color: #B45309;
-          border-radius: 4px;
-          text-transform: uppercase; letter-spacing: 0.06em;
-        }
-        .nl-capa {
-          width: 90px; height: 90px;
-          flex-shrink: 0;
-          background: linear-gradient(135deg, #FCE0E9, #E85A8C);
-          background-size: cover;
-          background-position: center;
-          border-radius: 8px;
-          display: flex; align-items: center; justify-content: center;
-        }
-        .nl-capa-emoji { font-size: 32px; }
-        .nl-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
-        .nl-cat {
-          font-size: 10px; font-weight: 700;
-          padding: 3px 8px;
-          background: #F5F0F2; color: #4B5563;
-          border-radius: 2px;
-          letter-spacing: 0.02em;
-          align-self: flex-start;
-        }
-        .nl-t {
-          font-size: 13.5px; font-weight: 800;
-          color: #2C1219;
-          margin: 0;
-          line-height: 1.25;
-          overflow: hidden; text-overflow: ellipsis;
-          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-        }
-        .nl-d {
-          font-size: 11.5px;
-          color: #6B7280;
-          margin: 0;
-          line-height: 1.4;
-          overflow: hidden; text-overflow: ellipsis;
-          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-        }
-        .nl-meta {
-          font-size: 10.5px;
-          color: #9CA3AF;
-          margin: auto 0 0;
-        }
-
-        /* ════════════════ DESKTOP ════════════════ */
-        @media (min-width: 900px) {
-          .nl-root {
-            max-width: 1200px;
-            padding: 24px 32px 80px;
-          }
-
-          .nl-toolbar {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            padding: 16px 20px;
-            background: #fff;
-            border: 1px solid #F0EBED;
-            border-radius: 12px;
-            margin-bottom: 24px;
-          }
-          .nl-search {
-            flex: 0 0 320px;
-            margin-bottom: 0;
-            padding: 10px 14px;
-          }
-          .nl-tabs {
-            flex: 1;
-            padding-bottom: 0;
-            flex-wrap: wrap;
-          }
-
-          .nl-list {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-          }
-          .nl-item {
-            display: flex;
-            flex-direction: column;
-            padding: 0;
-            overflow: hidden;
-            gap: 0;
-            transition: transform 0.2s, box-shadow 0.2s;
-          }
-          .nl-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-          }
-          .nl-item--fix {
-            background: linear-gradient(to bottom, #FEF9E7, #fff 40%);
-            border-color: #FDE68A;
-          }
-          .nl-capa {
-            width: 100%;
-            height: auto;
-            aspect-ratio: 16/9;
-            border-radius: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          }
-          .nl-capa-emoji { font-size: 48px; }
-          .nl-body {
-            padding: 16px 18px 18px;
-            gap: 8px;
-            flex: 1;
-          }
-          .nl-tags { align-self: flex-start; }
-          .nl-t {
-            font-size: 15px;
-            -webkit-line-clamp: 2;
-            letter-spacing: -0.01em;
-          }
-          .nl-d {
-            font-size: 12.5px;
-            -webkit-line-clamp: 3;
-            line-height: 1.5;
-          }
-          .nl-meta {
-            font-size: 11px;
-            padding-top: 4px;
-          }
-        }
-
-        @media (min-width: 900px) and (max-width: 1200px) {
-          .nl-list {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
-      `}</style>
-    </div>
     </>
   );
 }
