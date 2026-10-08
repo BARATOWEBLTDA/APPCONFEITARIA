@@ -75,6 +75,25 @@ export function acaoDe(p: Pedido): { rotulo: string; proximo: string; pago?: boo
   }
 }
 
+/** Pedido que chegou e ainda precisa ser aceito (fica no topo da lista, em destaque) */
+export const precisaAceitar = (p: Pedido) => grupoDoStatus(p.status) === 'aguardando_aceite'
+
+/** Aviso curto, no passado, de quando o pedido muda de situação (3.14) */
+export function avisoDaMudanca(p: Pedido, status: string, pago = false): string {
+  const n = `#${p.numero || ''}`
+  if (pago) return `Pagamento do pedido ${n} registrado.`
+  switch (status) {
+    case 'agendado': return `Pedido ${n} aceito.`
+    case 'em_producao': return `Pedido ${n} em produção.`
+    case 'finalizado': return `Pedido ${n} pronto.`
+    case 'aguardando_retirada': return `Pedido ${n} pronto pra retirar.`
+    case 'em_entrega': return `Pedido ${n} saiu pra entrega.`
+    case 'entregue': return `Pedido ${n} entregue.`
+    case 'cancelado': return `Pedido ${n} cancelado.`
+    default: return `Pedido ${n}: ${nomeDaSituacao(status)}.`
+  }
+}
+
 export const terminou = (p: Pedido) => ['entregue', 'cancelado'].includes(grupoDoStatus(p.status))
 
 export function dataISO(d: Date): string {

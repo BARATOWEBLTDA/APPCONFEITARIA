@@ -3,14 +3,15 @@ import type { KeyboardEvent, MouseEvent } from 'react'
 import { ArrowRight, Bag, CaretDown, DotsThreeVertical } from '@phosphor-icons/react'
 import { Botao, BotaoIcone, Linha } from '@/components/base'
 import type { Pedido } from './pedidoTexto'
-import { acaoDe, atrasado, criadoEm, dataLonga, enderecoCurto, fotoDoPedido, horaCurta, itensOrdenados, nomeCliente, nomeDeProduto, qtdCurta, recebidoPedido, resumoItens, rs, saldoPedido, situacaoDe, telefoneBonito, grupoDoStatus } from './pedidoTexto'
+import { acaoDe, atrasado, precisaAceitar, criadoEm, dataLonga, enderecoCurto, fotoDoPedido, horaCurta, itensOrdenados, nomeCliente, nomeDeProduto, qtdCurta, recebidoPedido, resumoItens, rs, saldoPedido, situacaoDe, telefoneBonito, grupoDoStatus } from './pedidoTexto'
 
 /**
  * Pedido na lista (08/10 · 3.11, no padrão do guia).
  *   CartaoPedido: celular e tablet. Rótulo + texto, botão do próximo passo, setinha que abre os detalhes.
  *   LinhaPedido: computador. Uma linha por pedido, com as mesmas palavras do cartão.
  * O cartão inteiro abre a tela do pedido; os botões de dentro fazem só o que dizem.
- * (08/10 · 3.12) O botão do próximo passo voltou a ser rosa forte: o rosa clarinho parecia etiqueta.
+ * (08/10 · 3.14) O botão do próximo passo é cinza chumbo (parece botão e não disputa com o "Novo", rosa).
+ * Pedido pra aceitar fica em destaque: borda laranja e o "Aceitar" em rosa.
  */
 type Props = {
   p: Pedido
@@ -42,6 +43,7 @@ export function CartaoPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudand
   const sit = situacaoDe(p)
   const acao = acaoDe(p)
   const atr = atrasado(p)
+  const aceitar = precisaAceitar(p)
   const falta = saldoPedido(p)
   const recebido = recebidoPedido(p)
   const entrega = p.tipo_entrega === 'entrega'
@@ -49,7 +51,7 @@ export function CartaoPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudand
   const tel = telefoneBonito(p.cliente_telefone)
   const end = enderecoCurto(p)
   return (
-    <article className={`pdc${atr ? ' atr' : ''}`} tabIndex={0} aria-label={`Pedido #${p.numero || ''} de ${nomeCliente(p)}`} onClick={() => aoAbrir(p)} onKeyDown={teclaAbre(() => aoAbrir(p))}>
+    <article className={`pdc${atr ? ' atr' : ''}${aceitar ? ' aceitar' : ''}`} tabIndex={0} aria-label={`Pedido #${p.numero || ''} de ${nomeCliente(p)}`} onClick={() => aoAbrir(p)} onKeyDown={teclaAbre(() => aoAbrir(p))}>
       <div className="pdc-topo">
         <Foto p={p} />
         <div className="pdc-quem">
@@ -61,7 +63,7 @@ export function CartaoPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudand
       <div className="pdc-linhas">
         <div className="pdc-l1">
           <Linha rotulo="Situação" tom={sit.tom}>{sit.nome}</Linha>
-          {acao && <Botao tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{acao.rotulo}</Botao>}
+          {acao && <Botao className={aceitar ? undefined : 'pd-passo'} tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{acao.rotulo}</Botao>}
         </div>
         {!cancelado && (falta > 0.009 ? <Linha rotulo="Pagamento" tom="laranja">Falta {rs(falta, true)}</Linha> : <Linha rotulo="Pagamento" tom="verde">Pago</Linha>)}
         <Linha rotulo={entrega ? 'Entrega' : 'Retirada'} tom={atr ? 'vermelho' : undefined}>{dataLonga(p.data_entrega, p.horario_entrega)}</Linha>
@@ -97,13 +99,14 @@ export function LinhaPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudando
   const sit = situacaoDe(p)
   const acao = acaoDe(p)
   const atr = atrasado(p)
+  const aceitar = precisaAceitar(p)
   const falta = saldoPedido(p)
   const entrega = p.tipo_entrega === 'entrega'
   const cancelado = grupoDoStatus(p.status) === 'cancelado'
   // dentro do grupo do dia, basta a hora; atrasado e concluído mostram a data
   const quando = atr || comDia ? dataLonga(p.data_entrega, p.horario_entrega).replace(/ \(.*\)$/, '') : (horaCurta(p.horario_entrega) || 'Sem hora')
   return (
-    <div className="pdl" role="row" tabIndex={0} aria-label={`Pedido #${p.numero || ''} de ${nomeCliente(p)}`} onClick={() => aoAbrir(p)} onKeyDown={teclaAbre(() => aoAbrir(p))}>
+    <div className={`pdl${aceitar ? ' aceitar' : ''}`} role="row" tabIndex={0} aria-label={`Pedido #${p.numero || ''} de ${nomeCliente(p)}`} onClick={() => aoAbrir(p)} onKeyDown={teclaAbre(() => aoAbrir(p))}>
       <div className="pdl-quem" role="cell">
         <Foto p={p} />
         <div className="pdc-quem">
@@ -121,7 +124,7 @@ export function LinhaPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudando
         <small>{entrega ? 'Entrega' : 'Retirada'}{entrega && <> · <button type="button" className="pdl-end" onClick={parar(() => aoEndereco(p))}>ver endereço</button></>}</small>
       </p>
       <div className="pdl-acao" role="cell">
-        {acao && <Botao tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{acao.rotulo}</Botao>}
+        {acao && <Botao className={aceitar ? undefined : 'pd-passo'} tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{acao.rotulo}</Botao>}
       </div>
       <div role="cell">
         <BotaoIcone rotulo="Mais ações" variante="limpo" tamanho="p" onClick={parar(() => aoMenu(p))}><DotsThreeVertical size={20} weight="bold" /></BotaoIcone>

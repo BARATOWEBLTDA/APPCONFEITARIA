@@ -10,7 +10,7 @@ import MenuPedido from '@/components/pedidos/MenuPedido'
 import type { AcaoMenu } from '@/components/pedidos/MenuPedido'
 import QuadroPedidos from '@/components/pedidos/QuadroPedidos'
 import type { Pedido } from '@/components/pedidos/pedidoTexto'
-import { acaoDe, dataISO, grupoDoStatus, nomeCliente, nomeDaSituacao, nomeDeProduto, recebidoPedido, rs, saldoPedido, terminou } from '@/components/pedidos/pedidoTexto'
+import { acaoDe, avisoDaMudanca, precisaAceitar, dataISO, grupoDoStatus, nomeCliente, nomeDaSituacao, nomeDeProduto, recebidoPedido, rs, saldoPedido, terminou } from '@/components/pedidos/pedidoTexto'
 import { registrarPagamento } from '@/lib/pagamentos'
 import { duplicarPedido } from '@/lib/duplicarPedido'
 import { pedidoAtrasado } from '@/lib/pedidoStatus'
@@ -18,6 +18,7 @@ import { gerarPedidoPDF } from '@/lib/gerarPedidoPDF'
 import { abrirJanela } from '@/lib/pdfDoonly'
 import { supabase } from '@/lib/supabase'
 import { semAcento } from '@/lib/noticias'
+import { tocarSom } from '@/hooks/useSom'
 import '@/components/pedidos/pedidos.css'
 
 /**
@@ -26,6 +27,7 @@ import '@/components/pedidos/pedidos.css'
  *   Computador (901px+): uma linha por pedido, nos mesmos grupos. Do tablet em pé pra cima ainda tem o Quadro (uma coluna por situação).
  *   Palavras do dicionário (Novo pedido, Pronto, Saiu pra entrega), botões de 44px, janelas e telas vazias padrão.
  * As regras de pagamento e de mudança de situação são as mesmas de antes (Financeiro · Passos 0 a 3).
+ * (3.14) Pedidos pra aceitar ficam no topo, em destaque. Toda mudança de situação mostra um aviso curto; entregue também toca um som.
  */
 const MEDIDA_COMPUTADOR = '(min-width: 901px)'
 const MEDIDA_TABLET = '(min-width: 768px)'
@@ -106,6 +108,12 @@ export default function Pedidos() {
   /** Navega a partir de uma janela aberta: a tela nova entra no lugar da entrada que a janela guardou pro "voltar" */
   const irDaJanela = (para: string) => navigate(para, { replace: !!(window.history.state as { uiJanela?: boolean } | null)?.uiJanela })
 
+  /** Confirmação de que deu certo (3.14): aviso curto sempre; som quando o pedido termina (respeita o som ligado/desligado em Notificações) */
+  const confirmarMudanca = (p: Pedido, status: string, pago = false) => {
+    avisar(avisoDaMudanca(p, status, pago))
+    if (status === 'entregue') tocarSom('sucesso')
+  }
+
   const updateStatus = async (id: string, status: string, pagoDireto = false) => {
     const pedido = pedidos.find(p => p.id === id)
     if (!pedido) return
@@ -117,6 +125,7 @@ export default function Pedidos() {
       const { error } = await supabase.from('pedidos').update({ status }).eq('id', id)
       if (error) { falhou(); return }
       setPedidos(prev => prev.map(p => p.id === id ? { ...p, status } : p))
+      confirmarMudanca(pedido, status)
       return
     }
 
@@ -130,6 +139,7 @@ export default function Pedidos() {
         : null
       const novo = r?.status_pagamento ? { valor_recebido: r.valor_recebido, status_pagamento: r.status_pagamento } : { valor_recebido: pedido.valor_total, status_pagamento: 'pago' }
       setPedidos(prev => prev.map(p => p.id === id ? { ...p, status, ...novo } : p))
+      confirmarMudanca(pedido, status, true)
       return
     }
 
@@ -149,6 +159,7 @@ export default function Pedidos() {
     const { error } = await supabase.from('pedidos').update({ status }).eq('id', id)
     if (error) { falhou(); return }
     setPedidos(prev => prev.map(p => p.id === id ? { ...p, status } : p))
+    confirmarMudanca(pedido, status)
   }
 
   const avancar = async (p: Pedido) => {
@@ -240,9 +251,11 @@ export default function Pedidos() {
     const DIAS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado']
     const rot = (iso: string) => { const [y, m, d] = iso.split('-').map(Number); return `${DIAS[new Date(y, m - 1, d).getDay()]}, ${d}/${m}` }
     const porHora = (a: Pedido, b: Pedido) => String(a.data_entrega || '').localeCompare(String(b.data_entrega || '')) || String(a.horario_entrega || '').localeCompare(String(b.horario_entrega || ''))
-    const ativos = pedidosFiltrados.filter(p => !terminou(p)).sort(porHora)
     const g: { chave: string; titulo: string; itens: Pedido[] }[] = []
     const add = (chave: string, titulo: string, itens: Pedido[]) => { if (itens.length) g.push({ chave, titulo, itens }) }
+    // pedidos pra aceitar vêm primeiro, em destaque (3.14); os outros seguem agrupados por dia
+    add('aceitar', 'Pra aceitar', pedidosFiltrados.filter(p => !terminou(p) && precisaAceitar(p)).sort(porHora))
+    const ativos = pedidosFiltrados.filter(p => !terminou(p) && !precisaAceitar(p)).sort(porHora)
     add('atrasado', 'Atrasado', ativos.filter(p => p.data_entrega && p.data_entrega < hojeIso))
     add('hoje', `Hoje · ${rot(hojeIso)}`, ativos.filter(p => p.data_entrega === hojeIso))
     add('amanha', `Amanhã · ${rot(amanhaIso)}`, ativos.filter(p => p.data_entrega === amanhaIso))
@@ -343,7 +356,7 @@ export default function Pedidos() {
                 {computador && <div className="pdl-cab" aria-hidden="true"><span>Cliente e pedido</span><span>Situação</span><span>Pagamento</span><span>Entrega</span><span /><span /></div>}
                 {grupos.map(g => (
                   <section key={g.chave} className="pd-grupo" aria-label={g.titulo}>
-                    <Titulo contagem={g.itens.length} tom={g.chave === 'atrasado' ? 'vermelho' : undefined}>{g.titulo}</Titulo>
+                    <Titulo contagem={g.itens.length} tom={g.chave === 'atrasado' ? 'vermelho' : undefined} apoio={g.chave === 'aceitar' ? 'Chegaram pelo cardápio. Aceite pra entrar na sua agenda.' : undefined}>{g.titulo}</Titulo>
                     {computador
                       ? <div className="pdl-tabela" role="table">{g.itens.map(p => <LinhaPedido key={p.id} {...props(p)} comDia={g.chave === 'concluidos' || g.chave === 'semdata'} />)}</div>
                       : <div className="pdc-lista">{g.itens.map(p => <CartaoPedido key={p.id} {...props(p)} />)}</div>}
@@ -385,7 +398,7 @@ export default function Pedidos() {
           novoStatusLabel={nomeDaSituacao(pendingPag.novoStatus)}
           aguardandoPagamento={grupoDoStatus(pendingPag.pedido.status) === 'aguardando_pagamento'}
           onCancelar={() => setPendingPag(null)}
-          onConcluido={(r) => { setPedidos(prev => prev.map(p => p.id === pendingPag.pedido.id ? { ...p, ...r } : p)); setPendingPag(null) }}
+          onConcluido={(r) => { setPedidos(prev => prev.map(p => p.id === pendingPag.pedido.id ? { ...p, ...r } : p)); confirmarMudanca(pendingPag.pedido, pendingPag.novoStatus); setPendingPag(null) }}
         />
       )}
     </>

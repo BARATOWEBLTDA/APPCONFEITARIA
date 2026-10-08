@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { DragEvent } from 'react'
 import { Botao, Linha, Titulo } from '@/components/base'
 import type { Pedido } from './pedidoTexto'
-import { SITUACOES, acaoDe, atrasado, dataCurta, grupoDoStatus, nomeCliente, resumoItens, rs, saldoPedido } from './pedidoTexto'
+import { SITUACOES, acaoDe, precisaAceitar, atrasado, dataCurta, grupoDoStatus, nomeCliente, resumoItens, rs, saldoPedido } from './pedidoTexto'
 
 /**
  * Quadro (08/10 · 3.11 — antes "Kanban"): uma coluna por situação, só no tablet e no computador.
@@ -42,7 +42,7 @@ export default function QuadroPedidos({ pedidos, aoAbrir, aoAvancar, aoMover, mu
               const cancelado = col.chave === 'cancelado'
               return (
                 <article
-                  key={p.id} className={`pdq-cartao${atr ? ' atr' : ''}${arrastando === p.id ? ' arrastando' : ''}`} tabIndex={0}
+                  key={p.id} className={`pdq-cartao${atr ? ' atr' : ''}${precisaAceitar(p) ? ' aceitar' : ''}${arrastando === p.id ? ' arrastando' : ''}`} tabIndex={0}
                   draggable onDragStart={e => { setArrastando(p.id); e.dataTransfer.effectAllowed = 'move' }} onDragEnd={() => { setArrastando(null); setSobre(null) }}
                   onClick={() => aoAbrir(p)} onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); aoAbrir(p) } }}
                 >
@@ -52,7 +52,7 @@ export default function QuadroPedidos({ pedidos, aoAbrir, aoAvancar, aoMover, mu
                     <Linha rotulo={p.tipo_entrega === 'entrega' ? 'Entrega' : 'Retirada'} tom={atr ? 'vermelho' : undefined}>{dataCurta(p.data_entrega, p.horario_entrega)}</Linha>
                     {!cancelado && (falta > 0.009 ? <Linha rotulo="Pagamento" tom="laranja">Falta {rs(falta, true)}</Linha> : <Linha rotulo="Pagamento" tom="verde">Pago</Linha>)}
                   </div>
-                  {acao && <Botao tamanho="p" cheio carregando={mudando === p.id} onClick={e => { e.stopPropagation(); aoAvancar(p) }}>{acao.rotulo}</Botao>}
+                  {acao && <Botao className={precisaAceitar(p) ? undefined : 'pd-passo'} tamanho="p" cheio carregando={mudando === p.id} onClick={e => { e.stopPropagation(); aoAvancar(p) }}>{acao.rotulo}</Botao>}
                 </article>
               )
             })}
