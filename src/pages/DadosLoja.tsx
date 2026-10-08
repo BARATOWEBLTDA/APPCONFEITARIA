@@ -2,14 +2,19 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
+import { Check, Clock, MapPin, Sparkle, Storefront, WhatsappLogo } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import HorarioSheet from "@/components/HorarioSheet";
+import { Botao, Campo, CampoArea, Titulo, avisar } from "@/components/base";
+import "./dadosLoja.css";
 
 /**
  * Dados da loja — página única (aprovada 29/09).
  * Nome, WhatsApp, descrição, endereço e horário. Logo e avaliação ficam em Aparência;
  * pagamento/entrega em "Entrega e pagamento". Sem "Ver cardápio"/"Copiar link" aqui.
  * Mesmo formato de dados de antes (profiles.telefone formatado, endereco e horario em JSON).
+ * (08/10 · 3.24) No padrão do guia: campos do app, ícones no lugar dos emojis, letras legíveis,
+ * toques de 44px e o aviso de salvo no balão do app. O que salva continua igual.
  */
 
 const DIAS_UTEIS = [
@@ -50,28 +55,11 @@ function formatPhone(v: string) {
   return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
 }
 
-const IconeWhats = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="#16a34a" aria-hidden="true" style={{ display: "block", flexShrink: 0 }}>
-    <path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-3.3-.8-2.8-1.2-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.3-.3.6-.3.8-.3h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l2 1c.3.1.5.2.5.3.1.2.1.8-.1 1.4z" />
-  </svg>
-);
-const IconeRelogio = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B5D64" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true" style={{ display: "block", flexShrink: 0 }}>
-    <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
-  </svg>
-);
-const IconeOk = () => (
-  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ display: "block" }}>
-    <polyline points="20 6 9 17 4 12" />
-  </svg>
-);
-
 export default function DadosLoja() {
   const navigate = useNavigate();
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
-  const [aviso, setAviso] = useState<{ txt: string; tipo: "ok" | "err" } | null>(null);
   const [gerando, setGerando] = useState(false);
   const [buscandoCep, setBuscandoCep] = useState(false);
   const [cepOk, setCepOk] = useState(false);
@@ -141,10 +129,7 @@ export default function DadosLoja() {
     window.setTimeout(() => input?.focus(), 350);
   };
 
-  const mostrarAviso = (txt: string, tipo: "ok" | "err" = "ok") => {
-    setAviso({ txt, tipo });
-    window.setTimeout(() => setAviso(null), 3000);
-  };
+  const mostrarAviso = (txt: string, tipo: "ok" | "err" = "ok") => avisar(txt, { tipo: tipo === "ok" ? "ok" : "erro" });
 
   const buscarCep = async (cep: string) => {
     const limpo = cep.replace(/\D/g, "");
@@ -212,7 +197,7 @@ export default function DadosLoja() {
   const ordem = DIAS_UTEIS.map((d) => d.nome);
   const diasMarcados = ordem.filter((d) => horario.dias.includes(d));
   const rotuloDiasUteis = diasMarcados.length === 5
-    ? "Seg a Sex"
+    ? "Segunda a sexta"
     : diasMarcados.map((d) => DIAS_UTEIS.find((x) => x.nome === d)!.curto).join(", ");
 
   const tituloSheet: Record<CampoHora, string> = {
@@ -221,26 +206,33 @@ export default function DadosLoja() {
     domingo_abertura: "Domingo · abre às", domingo_fechamento: "Domingo · fecha às",
   };
 
+
   const BotoesHora = ({ abre, fecha }: { abre: CampoHora; fecha: CampoHora }) => (
     <div className="dl-tbtns">
-      <button type="button" className="dl-tb" onClick={() => setSheet(abre)}>
-        <IconeRelogio /><span><small>Abre</small>{horario[abre] || "--:--"}</span>
+      <button type="button" className="dl-tb" onClick={() => setSheet(abre)} aria-label={`${tituloSheet[abre]} ${horario[abre] || ""}`}>
+        <Clock size={20} weight="bold" aria-hidden="true" /><span><small>Abre</small>{horario[abre] || "--:--"}</span>
       </button>
-      <button type="button" className="dl-tb" onClick={() => setSheet(fecha)}>
-        <IconeRelogio /><span><small>Fecha</small>{horario[fecha] || "--:--"}</span>
+      <button type="button" className="dl-tb" onClick={() => setSheet(fecha)} aria-label={`${tituloSheet[fecha]} ${horario[fecha] || ""}`}>
+        <Clock size={20} weight="bold" aria-hidden="true" /><span><small>Fecha</small>{horario[fecha] || "--:--"}</span>
       </button>
     </div>
+  );
+
+  const Cabeca = ({ Ic, titulo, apoio }: { Ic: typeof Storefront; titulo: string; apoio: string }) => (
+    <div className="dl-cab"><span className="dl-cab-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span><Titulo apoio={apoio}>{titulo}</Titulo></div>
   );
 
   if (loading) {
     return (
       <>
         <AppPageHeader title="Dados da loja" subtitle="O que o cliente vê sobre sua confeitaria" onBack={() => navigate("/cardapio")} />
-        <div style={{ display: "flex", justifyContent: "center", padding: 60 }}><span className="dl-spin" /></div>
-        <style>{`.dl-spin{width:28px;height:28px;border-radius:50%;border:3px solid #FCE0E9;border-top-color:#E85A8C;animation:dlspin .7s linear infinite;display:inline-block}@keyframes dlspin{to{transform:rotate(360deg)}}`}</style>
+        <div className="dl-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
       </>
     );
   }
+
+  const tudo = feitos === itens.length;
+  const statusCep = buscandoCep ? <span className="dl-cep">Buscando…</span> : cepOk ? <span className="dl-cep ok"><Check size={16} weight="bold" />Encontrado</span> : null;
 
   return (
     <>
@@ -248,109 +240,91 @@ export default function DadosLoja() {
 
       <div className="dl-root">
         {/* Resumo */}
-        <div className="dl-card dl-st">
+        <section className="dl-card dl-st">
           <div className="dl-st-row">
-            <b>{feitos === itens.length ? "Tudo preenchido ✓" : `${feitos} de ${itens.length} preenchidos`}</b>
+            <b>{tudo ? "Tudo preenchido" : `${feitos} de ${itens.length} preenchidos`}</b>
             {faltando.length > 0 && (
               <span>Falta{faltando.length > 1 ? "m" : ""} {faltando.length > 1 ? faltando.slice(0, -1).join(", ") + " e " + faltando[faltando.length - 1] : faltando[0]}</span>
             )}
           </div>
-          <div className="dl-bar"><i style={{ width: `${Math.round((feitos / itens.length) * 100)}%`, background: feitos === itens.length ? "#16a34a" : "#F59E0B" }} /></div>
+          <div className="dl-bar" aria-hidden="true"><i className={tudo ? "ok" : ""} style={{ width: `${Math.round((feitos / itens.length) * 100)}%` }} /></div>
           <div className="dl-chips">
             {itens.map((i) => (
               <button key={i.nome} type="button" className={`dl-chip${i.ok ? " ok" : ""}`} onClick={() => irPara(i.alvo)}>
-                {i.ok && <i><IconeOk /></i>}{i.nome}
+                {i.ok && <Check size={14} weight="bold" aria-hidden="true" />}{i.nome}
               </button>
             ))}
           </div>
-        </div>
+        </section>
 
         {/* Sua loja */}
-        <div className="dl-card">
-          <div className="cfg-hd"><span className="cfg-ic" aria-hidden="true">🏪</span><div><p className="cfg-h">Sua loja</p><p className="cfg-s">Nome, WhatsApp e a descrição que aparecem no cardápio</p></div></div>
+        <section className="dl-card dl-loja">
+          <Cabeca Ic={Storefront} titulo="Sua loja" apoio="Nome, WhatsApp e a frase que aparecem no cardápio" />
           <div id="dl-nome">
-            <label className="dl-lbl" htmlFor="dl-in-nome">Nome da loja</label>
-            <input id="dl-in-nome" className="dl-in" value={nome} maxLength={60} placeholder="Ex: Doce Formiga Confeitaria" onChange={(e) => setNome(e.target.value)} />
+            <Campo id="dl-in-nome" rotulo="Nome da loja" value={nome} maxLength={60} placeholder="Ex.: Doce Formiga Confeitaria" onChange={(e) => setNome(e.target.value)} />
           </div>
           <div id="dl-whats">
-            <label className="dl-lbl" htmlFor="dl-in-whats">WhatsApp que recebe os pedidos</label>
-            <div className="dl-in dl-in-ic">
-              <IconeWhats />
-              <input id="dl-in-whats" inputMode="tel" value={telefone} placeholder="(41) 99999-8888" onChange={(e) => setTelefone(formatPhone(e.target.value))} />
-            </div>
+            <Campo id="dl-in-whats" rotulo="WhatsApp que recebe os pedidos" inputMode="tel" value={telefone} placeholder="(41) 99999-8888"
+              icone={<WhatsappLogo size={20} weight="bold" className="dl-zap" />} onChange={(e) => setTelefone(formatPhone(e.target.value))} />
           </div>
-          <div id="dl-desc">
-            <div className="dl-lbl-row">
-              <label className="dl-lbl" htmlFor="dl-in-desc">Descrição</label>
-              <button type="button" className="dl-ia" onClick={gerarDescricao} disabled={gerando}>{gerando ? "Gerando..." : "✨ Gerar com IA"}</button>
-            </div>
-            <textarea id="dl-in-desc" className="dl-in dl-ta" value={descricao} maxLength={200}
+          <div id="dl-desc" className="dl-desc">
+            <CampoArea id="dl-in-desc" rotulo="Descrição" value={descricao} maxLength={200} rows={4}
               placeholder="Conte em uma frase o que sua confeitaria tem de especial"
-              onChange={(e) => setDescricao(e.target.value)} />
-            <span className="dl-cnt">{descricao.length}/200</span>
+              dica={`${descricao.length} de 200 letras`} onChange={(e) => setDescricao(e.target.value)} />
+            <Botao variante="suave" tamanho="p" className="dl-ia" icone={<Sparkle size={16} weight="bold" />} carregando={gerando} onClick={gerarDescricao}>
+              {gerando ? "Escrevendo…" : "Escrever com IA"}
+            </Botao>
           </div>
-        </div>
+        </section>
 
         {/* Endereço */}
-        <div className="dl-card" id="dl-endereco">
-          <div className="cfg-hd"><span className="cfg-ic" aria-hidden="true">📍</span><div><p className="cfg-h">Endereço</p><p className="cfg-s">Pra calcular a entrega e mostrar no mapa</p></div></div>
-          <label className="dl-lbl" htmlFor="dl-in-cep">CEP</label>
-          <div className="dl-in dl-in-ic">
-            <input id="dl-in-cep" inputMode="numeric" value={end.cep} placeholder="00000-000"
-              onChange={(e) => {
-                const d = e.target.value.replace(/\D/g, "").slice(0, 8);
-                const v = d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d;
-                setEnd((x) => ({ ...x, cep: v }));
-                if (d.length === 8) buscarCep(d); else setCepOk(false);
-              }} />
-            {buscandoCep ? <span className="dl-auto dl-auto--busca">buscando...</span> : cepOk ? <span className="dl-auto">✓ endereço encontrado</span> : null}
-          </div>
+        <section className="dl-card" id="dl-endereco">
+          <Cabeca Ic={MapPin} titulo="Endereço" apoio="Pra calcular a entrega e mostrar no mapa" />
+          <Campo id="dl-in-cep" rotulo="CEP" inputMode="numeric" value={end.cep} placeholder="00000-000" depois={statusCep}
+            onChange={(e) => {
+              const d = e.target.value.replace(/\D/g, "").slice(0, 8);
+              const v = d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d;
+              setEnd((x) => ({ ...x, cep: v }));
+              if (d.length === 8) buscarCep(d); else setCepOk(false);
+            }} />
           <div className="dl-g2n">
-            <div>
-              <label className="dl-lbl" htmlFor="dl-in-rua">Rua</label>
-              <input id="dl-in-rua" className="dl-in" value={end.rua} onChange={(e) => setEnd((x) => ({ ...x, rua: e.target.value }))} />
-            </div>
-            <div>
-              <label className="dl-lbl" htmlFor="dl-in-num">Nº</label>
-              <input id="dl-in-num" className="dl-in" value={end.numero} onChange={(e) => setEnd((x) => ({ ...x, numero: e.target.value }))} />
-            </div>
+            <Campo id="dl-in-rua" rotulo="Rua" value={end.rua} onChange={(e) => setEnd((x) => ({ ...x, rua: e.target.value }))} />
+            <Campo id="dl-in-num" rotulo="Número" inputMode="numeric" value={end.numero} onChange={(e) => setEnd((x) => ({ ...x, numero: e.target.value }))} />
           </div>
           <div className="dl-g2">
-            <div>
-              <label className="dl-lbl" htmlFor="dl-in-bairro">Bairro</label>
-              <input id="dl-in-bairro" className="dl-in" value={end.bairro} onChange={(e) => setEnd((x) => ({ ...x, bairro: e.target.value }))} />
-            </div>
-            <div>
-              <label className="dl-lbl" htmlFor="dl-in-cidade">Cidade</label>
-              <input id="dl-in-cidade" className="dl-in" value={end.cidade} onChange={(e) => setEnd((x) => ({ ...x, cidade: e.target.value }))} />
-            </div>
+            <Campo id="dl-in-bairro" rotulo="Bairro" value={end.bairro} onChange={(e) => setEnd((x) => ({ ...x, bairro: e.target.value }))} />
+            <Campo id="dl-in-cidade" rotulo="Cidade" value={end.cidade} onChange={(e) => setEnd((x) => ({ ...x, cidade: e.target.value }))} />
           </div>
-          <label className="dl-lbl">No cardápio, mostrar</label>
-          <div className="dl-seg" role="radiogroup">
-            {([["completo", "Completo"], ["cidade", "Só a cidade"], ["nada", "Nada"]] as const).map(([v, l]) => (
-              <button key={v} type="button" role="radio" aria-checked={mostrarLocal === v} className={mostrarLocal === v ? "on" : ""} onClick={() => setMostrarLocal(v)}>{l}</button>
-            ))}
+          <div className="ui-campo">
+            <span className="ui-campo-r" id="dl-mostrar"><span>No cardápio, mostrar</span></span>
+            <div className="dl-seg" role="radiogroup" aria-labelledby="dl-mostrar">
+              {([["completo", "Completo"], ["cidade", "Só a cidade"], ["nada", "Não mostrar"]] as const).map(([v, l]) => (
+                <button key={v} type="button" role="radio" aria-checked={mostrarLocal === v} onClick={() => setMostrarLocal(v)}>{l}</button>
+              ))}
+            </div>
           </div>
           <label className="dl-recebe">
             <input type="checkbox" checked={recebeAqui} onChange={(e) => setRecebeAqui(e.target.checked)} />
+            <span className="dl-cx" aria-hidden="true">{recebeAqui && <Check size={16} weight="bold" />}</span>
             <span><b>Recebo pedidos nesse endereço</b><small>O cliente vê esse endereço pra retirar a encomenda.</small></span>
           </label>
-        </div>
+        </section>
 
         {/* Horário */}
-        <div className="dl-card" id="dl-horario">
-          <div className="cfg-hd"><span className="cfg-ic" aria-hidden="true">🕐</span><div><p className="cfg-h">Horário de funcionamento</p><p className="cfg-s">Aparece como “Aberto agora” no cardápio</p></div></div>
+        <section className="dl-card" id="dl-horario">
+          <Cabeca Ic={Clock} titulo="Horário de funcionamento" apoio="Aparece como “Aberto agora” no cardápio" />
+          <p className="dl-dias-t">Dias em que a loja abre</p>
           <div className="dl-days">
             {DIAS_UTEIS.map((d) => (
               <button key={d.nome} type="button" className={horario.dias.includes(d.nome) ? "on" : ""} aria-pressed={horario.dias.includes(d.nome)} aria-label={d.nome} onClick={() => toggleDiaUtil(d.nome)}>
-                <span className="dl-bola">{d.letra}</span><small>{d.curto}</small>
+                <span className="dl-bola">{d.curto}</span>
               </button>
             ))}
             <button type="button" className={horario.abre_sabado ? "on" : ""} aria-pressed={horario.abre_sabado} aria-label="Sábado" onClick={() => setHorario((h) => ({ ...h, abre_sabado: !h.abre_sabado }))}>
-              <span className="dl-bola">S</span><small>Sáb</small>
+              <span className="dl-bola">Sáb</span>
             </button>
             <button type="button" className={horario.abre_domingo ? "on" : ""} aria-pressed={horario.abre_domingo} aria-label="Domingo" onClick={() => setHorario((h) => ({ ...h, abre_domingo: !h.abre_domingo }))}>
-              <span className="dl-bola">D</span><small>Dom</small>
+              <span className="dl-bola">Dom</span>
             </button>
           </div>
 
@@ -366,13 +340,12 @@ export default function DadosLoja() {
           {diasMarcados.length === 0 && !horario.abre_sabado && !horario.abre_domingo && (
             <p className="dl-vazio">Toque nos dias em que a loja abre.</p>
           )}
-        </div>
+        </section>
       </div>
 
       {/* Salvar fixo */}
       <div className="dl-savebar">
-        {aviso && <p className={`dl-aviso dl-aviso--${aviso.tipo}`}>{aviso.txt}</p>}
-        <button type="button" className="dl-save" onClick={salvar} disabled={salvando}>{salvando ? "Salvando..." : "Salvar alterações"}</button>
+        <Botao cheio className="dl-save" carregando={salvando} onClick={salvar}>{salvando ? "Salvando…" : "Salvar alterações"}</Botao>
       </div>
 
       {sheet && (
@@ -383,89 +356,6 @@ export default function DadosLoja() {
           onClose={() => setSheet(null)}
         />
       )}
-
-      <style>{`
-        .dl-root { font-family: var(--font-base); max-width: 640px; margin: 0 auto; padding: 14px 4px 90px; color: #2C1219; }
-        .dl-card { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 14px; margin-bottom: 12px; }
-        .dl-st { padding: 12px 14px; }
-        .dl-st-row { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; } /* título e "Faltam…" um embaixo do outro: no celular estreito ficavam espremidos */
-        .dl-st-row b { font-size: 14px; font-weight: 800; }
-        .dl-st-row span { font-size: 12px; color: #B45309; font-weight: 700; }
-        .dl-bar { height: 5px; background: #F5F0F2; border-radius: 3px; margin: 8px 0 10px; overflow: hidden; }
-        .dl-bar i { display: block; height: 100%; border-radius: 3px; transition: width .3s; }
-        .dl-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-        .dl-chip { display: inline-flex; align-items: center; gap: 5px; padding: 6px 10px; border: none; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 700; background: #FEF3C7; color: #92400E; cursor: pointer; }
-        .dl-chip.ok { background: #F0FDF4; color: #15803D; }
-        .dl-chip i { width: 14px; height: 14px; border-radius: 50%; background: #16a34a; display: flex; align-items: center; justify-content: center; }
-        .dl-h { font-size: 15px; font-weight: 800; margin: 0; }
-        .dl-hs { font-size: 11.5px; color: #888780; margin: 2px 0 8px; }
-        .dl-lbl { display: block; font-size: 12px; font-weight: 700; color: #4B3A42; margin: 11px 0 5px; }
-        .dl-in { width: 100%; box-sizing: border-box; border: 1px solid #EAE3E6; border-radius: 10px; padding: 11px 12px; font-family: inherit; font-size: 14px; color: #2C1219; background: #fff; }
-        .dl-in:focus, .dl-in-ic:focus-within { outline: none; border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,0.12); }
-        .dl-in::placeholder, .dl-in input::placeholder { color: #A8A0A4; }
-        .dl-in-ic { display: flex; align-items: center; gap: 8px; }
-        .dl-in-ic input { flex: 1; min-width: 0; border: none; outline: none; background: none; font-family: inherit; font-size: 14px; color: #2C1219; padding: 0; }
-        .dl-ta { min-height: 112px; resize: none; line-height: 1.45; display: block; }
-        .dl-cnt { display: block; text-align: right; font-size: 10.5px; color: #9CA3AF; margin-top: 4px; }
-        .dl-lbl-row { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; margin-bottom: 6px; } /* "Gerar com IA" com respiro: antes encostava no WhatsApp */
-        .dl-lbl-row .dl-lbl { margin: 0 !important; }
-        .dl-ia { font-family: inherit; font-size: 11.5px; font-weight: 800; padding: 6px 11px; border: none; border-radius: 8px; background: #2C1219; color: #fff; margin: 0; cursor: pointer; }
-        .dl-ia:disabled { opacity: .6; cursor: default; }
-        .dl-auto { margin-left: auto; font-size: 11px; color: #15803D; font-weight: 700; white-space: nowrap; }
-        .dl-auto--busca { color: #9CA3AF; }
-        .dl-g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .dl-g2n { display: grid; grid-template-columns: 1fr 78px; gap: 8px; }
-        .dl-seg { display: flex; gap: 4px; padding: 4px; background: #F5F0F2; border-radius: 10px; }
-        .dl-seg button { flex: 1; padding: 8px 2px; border: none; border-radius: 7px; background: none; font-family: inherit; font-size: 11.5px; font-weight: 700; color: #7C7A8E; cursor: pointer; }
-        .dl-seg button.on { background: #fff; color: #2C1219; box-shadow: 0 1px 3px rgba(44,18,25,0.08); }
-        .dl-days { display: flex; gap: 5px; margin-top: 4px; }
-        .dl-days button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; border: none; background: none; padding: 0; font-family: inherit; cursor: pointer; font-size: 12px; font-weight: 800; color: #7C7A8E; }
-        .dl-days button > small { font-size: 9.5px; font-weight: 600; color: #9CA3AF; }
-        .dl-bola { width: 100%; max-width: 40px; aspect-ratio: 1; border-radius: 50%; background: #F5F0F2; color: #7C7A8E; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 800; transition: background .15s, color .15s; }
-        /* Dias: rosinha do Doonly (antes eram bolinhas quase pretas) */
-        .dl-days button.on .dl-bola { background: #E85A8C; color: #fff; box-shadow: 0 3px 10px rgba(232,90,140,.3); }
-        .dl-days button:not(.on) .dl-bola { background: #FFF1F6; color: #D9A5B9; }
-        .dl-vazio { font-size: 12px; color: #9CA3AF; margin: 10px 0 0; }
-        .dl-hr { margin-top: 10px; background: #FAF7F8; border-radius: 10px; padding: 10px; }
-        .dl-hr b { display: block; font-size: 12.5px; margin-bottom: 8px; }
-        .dl-tbtns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .dl-tb { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #EAE3E6; border-radius: 10px; padding: 8px 10px; text-align: left; font-family: inherit; font-size: 15px; font-weight: 800; color: #2C1219; cursor: pointer; }
-        .dl-tb small { display: block; font-size: 10px; font-weight: 700; color: #888780; }
-        .dl-tb:active { transform: scale(0.98); }
-        /* Barra de salvar fixa (acima do menu inferior no celular; ao lado da sidebar no computador) */
-        .dl-savebar { position: fixed; left: 220px; right: 0; bottom: 0; z-index: 40; padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px)); background: rgba(255,255,255,0.97); backdrop-filter: blur(6px); border-top: 1px solid #F0EBED; }
-        @media (max-width: 900px) {
-          .dl-savebar { left: 0; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); padding-bottom: 10px; }
-        }
-        .dl-save { display: block; width: 100%; max-width: 640px; margin: 0 auto; height: 46px; border: none; border-radius: 12px; background: #E85A8C; color: #fff; font-family: inherit; font-size: 14.5px; font-weight: 800; cursor: pointer; }
-        .dl-save:disabled { opacity: .6; cursor: default; }
-        .dl-aviso { max-width: 640px; margin: 0 auto 8px; padding: 8px 12px; border-radius: 9px; font-size: 12.5px; font-weight: 800; }
-        .dl-aviso--ok { background: #DCFCE7; color: #15803D; }
-        .dl-aviso--err { background: #FEE2E2; color: #B91C1C; }
-      
-        /* ── Computador (02/10): duas colunas em vez de uma lista estreita ──
-           esquerda: Sua loja + Endereço · direita: Horário · status em cima, na largura toda */
-        @media (min-width: 1024px) {
-          .dl-root { max-width: 1120px; padding: 20px 0 32px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
-          .dl-root > .dl-card { margin-bottom: 0; padding: 18px 20px; }
-          .dl-root > .dl-st { grid-column: 1 / -1; }
-          .dl-root > .dl-card:not(.dl-st):not(#dl-endereco):not(#dl-horario) { grid-column: 1; grid-row: 2; }
-          .dl-root > #dl-endereco { grid-column: 1; grid-row: 3; }
-          .dl-root > #dl-horario { grid-column: 2; grid-row: 2 / span 2; position: sticky; top: 20px; }
-          /* Salvar: botão de 280px no canto de baixo, à direita (antes era uma faixa larga tapando o conteúdo) */
-          .dl-savebar { left: calc(220px + 236px) !important; background: transparent !important; box-shadow: none !important; border: none !important;
-            pointer-events: none; display: flex; flex-direction: column; align-items: flex-end; padding: 0 28px 22px !important; }
-          .dl-savebar > * { pointer-events: auto; }
-          .dl-save { width: 280px !important; max-width: none !important; margin: 0 !important; box-shadow: 0 10px 28px rgba(232,90,140,.35); }
-          .dl-aviso { margin: 0 0 8px !important; max-width: none !important; }
-          .dl-root { padding-bottom: 96px; }
-        }
-
-          .dl-recebe { display: flex; align-items: flex-start; gap: 10px; margin-top: 14px; padding: 12px; border: 1.5px solid #EDE6E9; border-radius: 12px; cursor: pointer; background: #fff; }
-          .dl-recebe input { width: 20px; height: 20px; accent-color: #E85A8C; margin: 1px 0 0; flex-shrink: 0; cursor: pointer; }
-          .dl-recebe b { display: block; font-size: 14px; font-weight: 800; color: #2C1219; }
-          .dl-recebe small { display: block; font-size: 12.5px; color: #6B5D64; margin-top: 2px; line-height: 1.4; }
-`}</style>
     </>
   );
 }
