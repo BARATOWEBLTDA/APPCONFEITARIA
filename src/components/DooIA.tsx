@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { CaretLeft, Plus, X, Check, Copy, ImageSquare, ArrowRight, CurrencyCircleDollar, BookOpenText, InstagramLogo, CalendarCheck, Receipt, Package } from '@phosphor-icons/react'
+import { CaretLeft, X, Check, Copy, ImageSquare, ArrowRight, CurrencyCircleDollar, BookOpenText, InstagramLogo, CalendarCheck, Receipt, Package } from '@phosphor-icons/react'
 import { useNavigate as useNavigateDoo } from 'react-router-dom'
 import CartaoPedidoDoo from '@/components/doo/CartaoPedidoDoo'
 import { listarCatalogo, catalogoParaDoo, type RascunhoPedido, type ProdutoCat, type ClienteCat } from '@/lib/pedidosDoo'
@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { usePlano } from '@/hooks/usePlano'
 import { apiFetch } from "@/lib/apiFetch";
+import { Botao, Janela } from '@/components/base'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -23,7 +24,6 @@ interface Message {
   acaoNumero?: string | number
 }
 
-const VINHO = 'var(--primary-dark)'
 const MAX_HISTORY = 12
 
 const SUGGESTIONS = [
@@ -377,13 +377,12 @@ function formatText(text: string): string {
 
 export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onClose?: () => void }) {
   const navigate = useNavigate()
-  const { isPro, loading: planoLoading } = usePlano()
+  const { isPro } = usePlano()
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [generatingImage, setGeneratingImage] = useState(false)
-  const [pulse] = useState(false)
   const [pendingImage, setPendingImage] = useState<{ base64: string; mediaType: string; preview: string } | null>(null)
   const [nomeConfeiteira, setNomeConfeiteira] = useState('')
   const [copiedId, setCopiedId] = useState<number | null>(null)
@@ -611,133 +610,22 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); e.target.value = '' }} />
 
 
-      {/* ── Botão flutuante ── */}
-      <button
-        onClick={() => {
-          if (planoLoading) return
-          if (!isPro) { setOpen(true); return }
-          setOpen(o => !o)
-        }}
-        style={{
-          position: 'fixed', bottom: 'var(--doo-btn-bottom, 7rem)', right: 'var(--doo-btn-right, 1.25rem)',
-          width: '62px', height: '62px', borderRadius: '35%',
-          border: 'none', background: 'transparent', cursor: 'pointer',
-          zIndex: 200, padding: 0,
-          display: 'none',
-          alignItems: 'center', justifyContent: 'center',
-        }}
-        data-tour="doo"
-        aria-label="Abrir assistente Doo"
-      >
-        <div style={{
-          width: '58px', height: '58px', borderRadius: '35%', background: VINHO,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 4px 16px rgba(110,53,72,0.3)',
-          transition: 'transform 0.2s, box-shadow 0.2s',
-        }}>
-          <div style={{
-            width: '51px', height: '51px', borderRadius: '35%', background: 'white',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
-          }}>
-            <img src="/Sistema/doo.png" alt="Doo" style={{ width: '70px', height: '70px', borderRadius: '35%', objectFit: 'cover', objectPosition: 'top center' }} />
-          </div>
+      {/* ── Quem não é PRO: a janela padrão do app apresentando a Doo (08/10 · 3.19) ── */}
+      <Janela aberta={open && !isPro} aoFechar={handleClose} tipo="conteudo" titulo="Conheça a Doo"
+        acoes={<>
+          <Botao variante="secundario" onClick={handleClose}>Agora não</Botao>
+          <Botao onClick={() => { handleClose(); navigate('/assinar') }}>Conhecer o PRO</Botao>
+        </>}>
+        <div className="dz-pw">
+          <img src="/Sistema/doo.png" alt="" className="dz-pw-ft" />
+          <p>Sua assistente de confeitaria. Ela calcula preços, cria receitas, registra pedidos e planeja a produção. Faz parte do <b>plano PRO</b>.</p>
+          <ul>
+            {['Receitas com as quantidades certas', 'Preço com a margem ideal', 'Legendas prontas pro Instagram', 'Produção da semana planejada'].map(t => (
+              <li key={t}><Check size={16} weight="bold" aria-hidden="true" />{t}</li>
+            ))}
+          </ul>
         </div>
-        {pulse && <span style={{ position: 'absolute', inset: 0, borderRadius: '35%', border: `2px solid ${VINHO}`, animation: 'dooPulse 1.5s ease-out infinite' }} />}
-      </button>
-
-      {/* ── Modal de upgrade para FREE ── */}
-      {open && !isPro && (
-        <>
-          <div onClick={handleClose} style={{
-            position: 'fixed', inset: 0,
-            backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
-            background: 'rgba(0,0,0,0.45)', zIndex: 9998,
-            animation: 'dooFadeIn 0.2s ease',
-          }} />
-          <div style={{
-            position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-            width: 'min(380px, calc(100vw - 2rem))',
-            background: 'white', borderRadius: '20px',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
-            zIndex: 9999, padding: '1.75rem 1.5rem 1.5rem',
-            fontFamily: 'inherit', animation: 'dooFadeIn 0.25s ease',
-            textAlign: 'center',
-          }}>
-            <button onClick={handleClose} style={{
-              position: 'absolute', top: 12, right: 12, width: 32, height: 32,
-              background: 'transparent', border: 'none', cursor: 'pointer',
-              color: 'var(--text-muted,var(--text-muted))', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              borderRadius: 8,
-            }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-
-            <div style={{
-              width: 80, height: 80, borderRadius: '28%', background: VINHO,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              margin: '0 auto 1rem', boxShadow: '0 8px 24px rgba(110,53,72,0.25)',
-            }}>
-              <div style={{ width: 68, height: 68, borderRadius: '28%', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                <img src="/Sistema/doo.png" alt="Doo" style={{ width: 90, height: 90, objectFit: 'cover', objectPosition: 'top center' }} />
-              </div>
-            </div>
-
-            <h3 style={{
-              fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-title,var(--text-title))',
-              margin: '0 0 6px', letterSpacing: '-0.02em',
-            }}>
-              Conheça a Doo
-            </h3>
-
-            <p style={{
-              fontSize: '0.88rem', color: 'var(--text-secondary,var(--primary-dark))',
-              margin: '0 0 1.25rem', lineHeight: 1.5,
-            }}>
-              Sua consultora de confeitaria exclusiva. Calcule preços, crie receitas, planeje produção e muito mais — disponível apenas no <strong style={{ color: VINHO }}>plano PRO</strong>.
-            </p>
-
-            <div style={{
-              background: 'var(--bg-subtle,var(--bg-subtle))', borderRadius: 12, padding: '0.85rem 1rem',
-              marginBottom: '1.25rem', textAlign: 'left',
-            }}>
-              {[
-                'Receitas personalizadas e profissionais',
-                'Cálculo de preço com margem ideal',
-                'Legendas prontas para o Instagram',
-                'Planejamento de produção semanal',
-              ].map((feat, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.82rem', color: 'var(--text-title,var(--text-title))', padding: '4px 0' }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={VINHO} strokeWidth="3" strokeLinecap="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
-                  {feat}
-                </div>
-              ))}
-            </div>
-
-            <button
-              onClick={() => { handleClose(); navigate('/assinar') }}
-              style={{
-                width: '100%', background: VINHO, color: 'white', border: 'none',
-                borderRadius: 12, padding: '0.85rem', fontSize: '0.95rem', fontWeight: 700,
-                cursor: 'pointer', fontFamily: 'inherit',
-                boxShadow: '0 4px 12px rgba(110,53,72,0.25)',
-                marginBottom: 8,
-              }}
-            >
-              Conhecer o plano PRO
-            </button>
-            <button
-              onClick={handleClose}
-              style={{
-                width: '100%', background: 'transparent', color: 'var(--text-muted,var(--text-muted))',
-                border: 'none', padding: '0.5rem', fontSize: '0.82rem', fontWeight: 500,
-                cursor: 'pointer', fontFamily: 'inherit',
-              }}
-            >
-              Agora não
-            </button>
-          </div>
-        </>
-      )}
+      </Janela>
 
       {/* ── Overlay blur ── */}
       {open && isPro && (
@@ -762,7 +650,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
               <b>Doo IA <em>PRO</em></b>
               <small className={loading || generatingImage ? 'dz-esc' : ''}><i aria-hidden="true" />{loading ? 'Escrevendo…' : generatingImage ? 'Criando a imagem…' : 'Online · responde na hora'}</small>
             </div>
-            <button type="button" className="dz-hb dz-fechar" onClick={handleClose} aria-label="Fechar"><X size={18} weight="bold" /></button>
+            <button type="button" className="dz-hb dz-fechar" onClick={handleClose} aria-label="Fechar"><X size={20} weight="bold" /></button>
           </div>
 
           {/* Mensagens */}
@@ -771,7 +659,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
               <div className="dz-ini">
                 <div className="dz-hero">
                   <div className="dz-hav2"><img src="/Sistema/doo.png" alt="" /></div>
-                  <b>{nomeConfeiteira ? `Oi, ${nomeConfeiteira}! Eu sou a Doo 💗` : 'Oi! Eu sou a Doo 💗'}</b>
+                  <b>{nomeConfeiteira ? `Oi, ${nomeConfeiteira}! Eu sou a Doo` : 'Oi! Eu sou a Doo'}</b>
                   <p>Sua assistente de confeitaria: calculo preços, crio receitas, registro pedidos e cadastro ingredientes.</p>
                 </div>
                 <p className="dz-sl">Comece por aqui</p>
@@ -818,7 +706,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                   {msg.role === 'assistant' && !msg.isImage && (
                     <div className="dz-acs">
                       <button type="button" onClick={() => copyMessage(msg.content.replace(/\n\n\[(O app confirmou|A confeiteira cancelou)[^\]]*\]$/, ''), i)} className={copiedId === i ? 'ok' : ''}>
-                        {copiedId === i ? <><Check size={13} weight="bold" />Copiado</> : <><Copy size={13} />Copiar</>}
+                        {copiedId === i ? <><Check size={16} weight="bold" />Copiado</> : <><Copy size={16} weight="bold" />Copiar</>}
                       </button>
                     </div>
                   )}
@@ -842,12 +730,12 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
           <div className="dz-in">
             {pendingImage && (
               <div className="dz-pend">
-                <div className="dz-pend-img"><img src={pendingImage.preview} alt="Anexo" /><button type="button" onClick={removePendingImage} aria-label="Tirar a imagem"><X size={11} weight="bold" /></button></div>
+                <div className="dz-pend-img"><img src={pendingImage.preview} alt="Anexo" /><button type="button" onClick={removePendingImage} aria-label="Tirar a imagem"><X size={14} weight="bold" /></button></div>
                 <p>Imagem anexada. Escreva uma mensagem ou envie assim mesmo.</p>
               </div>
             )}
             <div className="dz-inb">
-              <button type="button" className="dz-ib" onClick={() => fileRef.current?.click()} aria-label="Enviar uma foto" title="Enviar uma foto"><ImageSquare size={19} /></button>
+              <button type="button" className="dz-ib" onClick={() => fileRef.current?.click()} aria-label="Enviar uma foto" title="Enviar uma foto"><ImageSquare size={20} weight="bold" /></button>
               <input
                 ref={inputRef}
                 value={input}
@@ -858,24 +746,13 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                 autoComplete="off" autoCorrect="off" autoCapitalize="sentences" spellCheck={false}
                 className="dz-txt"
               />
-              <button type="button" className="dz-snd" onClick={() => sendMessage()} disabled={loading || generatingImage || (!input.trim() && !pendingImage)} aria-label="Enviar"><ArrowRight size={19} weight="bold" /></button>
+              <button type="button" className="dz-snd" onClick={() => sendMessage()} disabled={loading || generatingImage || (!input.trim() && !pendingImage)} aria-label="Enviar"><ArrowRight size={20} weight="bold" /></button>
             </div>
           </div>
         </div>
       )}
 
       <style>{`
-        :root {
-          --doo-btn-bottom: 7rem;
-          --doo-btn-right: 1.25rem;
-        }
-        @media (min-width: 768px) {
-          :root {
-            --doo-btn-bottom: 2rem;
-            --doo-btn-right: 2.25rem;
-          }
-        }
-
         /* Painel do chat (02/10) — CELULAR: tela cheia (cobre o menu de baixo) */
         .dooia-panel {
           position: fixed; left: 0; right: 0; top: 0; bottom: var(--teclado, 0px);
@@ -891,7 +768,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
           }
         }
         .dz-hd { flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: calc(12px + env(safe-area-inset-top, 0px)) 14px 14px; background: radial-gradient(130% 160% at 0 0, #6B2340, #2C1219 70%); color: #fff; }
-        .dz-hb { width: 36px; height: 36px; border-radius: 11px; border: none; background: rgba(255,255,255,.12); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+        .dz-hb { width: 44px; height: 44px; border-radius: 12px; border: none; background: rgba(255,255,255,.12); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
         .dz-hb:disabled { opacity: .35; cursor: default; }
         .dz-fechar { display: none; }
         @media (min-width: 768px) { .dz-voltar { display: none; } .dz-fechar { display: flex; } }
@@ -900,7 +777,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dz-hav i { position: absolute; right: -3px; bottom: -3px; width: 14px; height: 14px; border-radius: 50%; background: #22C55E; border: 2.5px solid #2C1219; }
         .dz-ht { flex: 1; min-width: 0; }
         .dz-ht b { display: flex; align-items: center; gap: 7px; font-size: 17px; font-weight: 900; }
-        .dz-ht em { font-style: normal; font-size: 10px; font-weight: 900; letter-spacing: .06em; padding: 3px 7px; border-radius: 6px; background: linear-gradient(90deg, #F9A8D4, #C4B5FD); color: #2C1219; }
+        .dz-ht em { font-style: normal; font-size: 12px; font-weight: 900; padding: 2px 7px; border-radius: 6px; background: linear-gradient(90deg, #F9A8D4, #C4B5FD); color: #2C1219; }
         .dz-ht small { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: #BBF7D0; margin-top: 2px; }
         .dz-ht small i { width: 7px; height: 7px; border-radius: 50%; background: #22C55E; box-shadow: 0 0 0 3px rgba(34,197,94,.25); }
         .dz-ht small.dz-esc { color: #FBCFE8; } .dz-ht small.dz-esc i { background: #F472B6; box-shadow: 0 0 0 3px rgba(244,114,182,.3); animation: dooTyping 1.2s infinite; }
@@ -912,14 +789,14 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dz-hero b { display: block; font-size: 20px; font-weight: 900; margin-top: 12px; letter-spacing: -.01em; }
         .dz-hero p { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 6px auto 0; max-width: 320px; text-wrap: balance; }
         .dz-hero b { text-wrap: balance; }
-        .dz-sl { margin: 4px 0 0; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #9A8E94; }
+        .dz-sl { margin: 4px 0 0; font-size: 13.5px; font-weight: 800; color: var(--ui-texto-2, #6B5D64); }
         .dz-sg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .dz-sc { text-align: left; background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 11px; font-family: inherit; color: inherit; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+        .dz-sc { min-height: 112px; text-align: left; background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 11px; font-family: inherit; color: inherit; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
         .dz-sc:hover { border-color: #F7C6D9; box-shadow: 0 4px 14px rgba(232,90,140,.1); }
         .dz-si { width: 36px; height: 36px; border-radius: 10px; background: #FCE0E9; color: #993556; display: flex; align-items: center; justify-content: center; }
         .dz-sc b { display: block; font-size: 13.5px; font-weight: 800; margin-top: 6px; line-height: 1.2; }
-        .dz-sc small { display: block; font-size: 11.5px; color: #888780; margin-top: 2px; line-height: 1.3; }
-        .dz-dia { align-self: center; margin: 0; font-size: 11px; font-weight: 700; color: #9A8E94; background: #F0EBED; padding: 3px 10px; border-radius: 99px; }
+        .dz-sc small { display: block; font-size: 12.5px; color: var(--ui-texto-2, #6B5D64); margin-top: 2px; line-height: 1.3; }
+        .dz-dia { align-self: center; margin: 0; font-size: 12.5px; font-weight: 700; color: #9A8E94; background: #F0EBED; padding: 3px 10px; border-radius: 99px; }
         .dz-m { display: flex; gap: 8px; align-items: flex-end; }
         .dz-m--eu { justify-content: flex-end; }
         .dz-mav { width: 28px; height: 28px; border-radius: 9px; object-fit: cover; object-position: top center; background: #FCE7F3; flex-shrink: 0; }
@@ -936,35 +813,37 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dz-anexo { width: 100%; max-height: 180px; object-fit: cover; border-radius: 12px; margin-bottom: 8px; display: block; }
         .dz-gerada { width: 100%; border-radius: 12px; margin-bottom: 8px; display: block; }
         .dz-acs { display: flex; gap: 6px; margin-top: 6px; }
-        .dz-acs button { display: inline-flex; align-items: center; gap: 4px; font-family: inherit; font-size: 12px; font-weight: 700; color: #9A8E94; background: none; border: none; padding: 4px 6px; border-radius: 8px; cursor: pointer; }
+        .dz-acs button { position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--ui-texto-2, #6B5D64); background: none; border: none; padding: 0 8px; margin-left: -8px; border-radius: 10px; cursor: pointer; }
+        .dz-acs button::after { content: ""; position: absolute; inset: -4px 0; }
+        @media (hover: hover) { .dz-acs button:hover { background: #F3EEF1; } }
         .dz-acs button.ok { color: #15803D; }
         .dz-dig { display: flex; align-items: center; gap: 6px; padding: 14px 16px; font-size: 13px; color: #6B5D64; }
         .dz-dig i { width: 7px; height: 7px; border-radius: 50%; background: #D9A5B9; animation: dooTyping 1.2s ease-in-out infinite; }
         .dz-dig i:nth-child(2) { animation-delay: .2s; } .dz-dig i:nth-child(3) { animation-delay: .4s; }
         .dz-spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #E85A8C; border-top-color: transparent; animation: dooSpin .7s linear infinite; }
-        .dz-digt { margin: 5px 0 0 2px; font-size: 12px; color: #9A8E94; }
+        .dz-digt { margin: 5px 0 0 2px; font-size: 12.5px; color: #9A8E94; }
         .dz-in { flex-shrink: 0; padding: 8px 12px calc(12px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(180deg, rgba(250,247,248,0), #FAF7F8 30%); }
         .dz-pend { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
         .dz-pend-img { position: relative; flex-shrink: 0; }
         .dz-pend-img img { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; border: 1.5px solid #E85A8C; display: block; }
-        .dz-pend-img button { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #fff; background: #2C1219; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+        .dz-pend-img button { position: absolute; top: -10px; right: -10px; width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; background: #2C1219; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
         .dz-pend p { margin: 0; font-size: 12.5px; color: #6B5D64; }
-        .dz-inb { display: flex; align-items: center; gap: 8px; background: #fff; border: 1.5px solid #EDE6E9; border-radius: 999px; padding: 6px; box-shadow: 0 4px 14px rgba(44,18,25,.06); transition: border-color .15s; }
+        .dz-inb { display: flex; align-items: center; gap: 8px; background: #fff; border: 1.5px solid #EDE6E9; border-radius: 999px; padding: 4px; box-shadow: 0 4px 14px rgba(44,18,25,.06); transition: border-color .15s; }
         .dz-inb:focus-within { border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
-        .dz-ib { width: 36px; height: 36px; border-radius: 50%; border: none; background: #FCE0E9; color: #993556; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
-        .dz-txt { flex: 1; min-width: 0; border: none; outline: none; background: none; font-family: inherit; font-size: 16px; color: #2C1219; padding: 6px 2px; }
+        .dz-ib { width: 44px; height: 44px; border-radius: 50%; border: none; background: #FCE0E9; color: #993556; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+        .dz-txt { flex: 1; min-width: 0; height: 44px; border: none; outline: none; background: none; font-family: inherit; font-size: 16px; color: #2C1219; padding: 0 2px; }
         .dz-txt::placeholder { color: #B5AAB0; }
-        .dz-snd { width: 40px; height: 40px; border-radius: 50%; border: none; background: #E85A8C; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: 0 4px 12px rgba(232,90,140,.35); transition: background .15s; }
+        .dz-snd { width: 44px; height: 44px; border-radius: 50%; border: none; background: #E85A8C; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: 0 4px 12px rgba(232,90,140,.35); transition: background .15s; }
         .dz-snd:disabled { background: #F3D2DE; box-shadow: none; cursor: default; }
 
-        @keyframes dooPanelIn {
-          from { opacity: 0; transform: translate(-50%, -46%) scale(0.96); }
-          to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-        }
-        @keyframes dooPulse {
-          0% { transform: scale(1); opacity: 0.8; }
-          100% { transform: scale(1.7); opacity: 0; }
-        }
+        /* janela de quem não é PRO */
+        .dz-pw { text-align: center; }
+        .dz-pw-ft { display: block; width: 88px; height: 88px; margin: 0 auto 12px; border-radius: 24px; background: #FCE7F3; object-fit: cover; object-position: top center; box-shadow: 0 10px 26px rgba(232,90,140,.25); }
+        .dz-pw p { margin: 0 0 16px; font-size: 15px; line-height: 1.5; color: var(--ui-texto-2, #6B5D64); }
+        .dz-pw p b { color: var(--ui-texto, #2C1219); }
+        .dz-pw ul { margin: 0; padding: 12px 16px; list-style: none; border-radius: var(--ui-raio, 12px); background: var(--ui-rosa-claro, #FDF0F5); text-align: left; }
+        .dz-pw li { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 13.5px; font-weight: 600; color: var(--ui-texto, #2C1219); }
+        .dz-pw li svg { flex: none; color: var(--ui-rosa-escuro, #C33A6E); }
         @keyframes dooSlideUp {
           from { opacity: 0; transform: translateY(16px) scale(0.97); }
           to   { opacity: 1; transform: translateY(0) scale(1); }
