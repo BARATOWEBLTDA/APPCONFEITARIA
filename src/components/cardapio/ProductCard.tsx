@@ -1,12 +1,18 @@
 import { useState } from 'react'
-import { etiquetaVenda } from '@/lib/formaVenda'
+import { unidadeCliente } from '@/lib/formaVenda'
 import { precoCardapio } from '@/lib/precoCardapio'
 import { formatCurrency as fmtBRL } from '@/utils/helpers'
-import { Heart } from 'lucide-react'
+import { Cake } from '@phosphor-icons/react'
 import { Produto } from '@/types/database'
 import { ProductModal } from '@/components/cart/ProductModal'
 import { SeloEntregaFoto } from "@/lib/entregaProduto";
+import './cardapioLista.css'
 
+/**
+ * Cartão do produto no cardápio (08/10 · 3.28) — o mesmo no celular e no computador.
+ * Preço em escuro com a unidade ("por kg", "o cento"…), etiqueta "Promoção" reta,
+ * ícone no lugar do emoji quando não tem foto. No computador ganha o botão "Adicionar".
+ */
 interface Props {
   product: Produto
   isFavorite: boolean
@@ -14,66 +20,49 @@ interface Props {
   backgroundColor: string
   borderColor?: string
   corBotao?: string
+  comBotao?: boolean
 }
 
-const catIcons: { [k: string]: string } = { 'Bolos': '🎂', 'Cupcakes': '🧁', 'Doces': '🍮', 'Salgados': '🥐' }
-
-export function ProductCard({ product, isFavorite, onToggleFavorite, backgroundColor, borderColor = '#E85A8C', corBotao = '#E85A8C' }: Props) {
-  const [showModal, setShowModal] = useState(false)
-  const firstImage = product.imagem_url?.split(',')[0]?.trim() || null
-
-  const formatSale = (s: string) => etiquetaVenda(s) // lista única (antes não tinha "caixa")
-
-  // Calcula preço promocional considerando % ou fixo
+export function precoDoCartao(product: Produto) {
   const p = product as any
-  const isPromo = product.promocao
-  const isPct = p.tipo_promocao === 'percentual' && p.desconto_percentual > 0
-  const descRatio = isPromo
-    ? isPct
-      ? p.desconto_percentual / 100
-      : product.preco_promocional && product.preco_normal > 0
-        ? 1 - (product.preco_promocional / product.preco_normal)
-        : 0
+  const pc = precoCardapio(product)
+  const descRatio = product.promocao
+    ? (p.tipo_promocao === 'percentual' && p.desconto_percentual > 0
+        ? p.desconto_percentual / 100
+        : product.preco_promocional && product.preco_normal > 0 ? 1 - (product.preco_promocional / product.preco_normal) : 0)
     : 0
-  // Preço mostrado: com tamanhos/kit é o menor ("a partir de")
-  const { valor: precoBase, aPartir } = precoCardapio(product)
-  const precoPromocional = isPromo && descRatio > 0
-    ? parseFloat((precoBase * (1 - descRatio)).toFixed(2))
-    : (product.preco_promocional || 0)
+  const final = descRatio > 0 ? Math.round(pc.valor * (1 - descRatio) * 100) / 100 : pc.valor
+  // Com tamanhos ou kit o preço é o do menor; aí a unidade não vale (não é "por kg")
+  const unidade = pc.aPartir || p?.grupo_tamanhos?.ativo ? '' : unidadeCliente(product.forma_venda)
+  return { de: descRatio > 0 ? pc.valor : 0, final, unidade }
+}
+
+export function ProductCard({ product, corBotao = '#E85A8C', comBotao = false }: Props) {
+  const [showModal, setShowModal] = useState(false)
+  const foto = product.imagem_url?.split(',')[0]?.trim() || null
+  const { de, final, unidade } = precoDoCartao(product)
 
   return (
     <>
-      <div
-        onClick={() => setShowModal(true)}
-        className="bg-white rounded-xl overflow-hidden shadow-sm h-full flex flex-col border border-gray-100 cursor-pointer transition-shadow hover:shadow-md"
-      >
-        <div className="w-full aspect-square bg-gray-50 flex items-center justify-center overflow-hidden relative">
-          {firstImage ? (
-            <img src={firstImage} alt={product.nome} className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-4xl">{catIcons[product.categoria] || '🧁'}</span>
-          )}
-          {product.promocao && (
-            <div className="absolute top-3 -right-10 bg-red-500 text-white font-bold px-4 py-1 transform rotate-45 shadow-md z-10" style={{ width: '130px', textAlign: 'center', fontSize: '0.6rem' }}>PROMOÇÃO</div>
-          )}
+      <article className={`cl-pr${comBotao ? ' cl-pr--pc' : ''}`} role="button" tabIndex={0} aria-label={product.nome}
+        onClick={() => setShowModal(true)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowModal(true) } }}>
+        <div className="cl-pr-ft">
+          {foto ? <img src={foto} alt="" loading="lazy" /> : <span className="cl-pr-sem"><Cake size={32} aria-hidden="true" /></span>}
+          {product.promocao && <span className="cl-promo">Promoção</span>}
           <SeloEntregaFoto produto={product} />
         </div>
-        <div className="p-3 flex-1 flex flex-col items-center text-center">
-          <h4 className="font-bold leading-tight line-clamp-2 mb-1" style={{ color: '#2C1219', fontSize: '13px' }}>{product.nome}</h4>
-          <p className="text-gray-500 line-clamp-3 mb-2" style={{ fontSize: '11.5px', lineHeight: 1.4 }}>{product.descricao}</p>
-          <div className="mt-auto flex items-baseline justify-center gap-1.5 flex-wrap">
-            {/* (o "a partir de" saiu em 02/10) */}
-            {isPromo && precoPromocional > 0 ? (
-              <>
-                <span className="text-red-500 line-through" style={{ fontSize: '11px' }}>{fmtBRL(precoBase)}</span>
-                <span className="font-bold text-green-600" style={{ fontSize: '14.5px' }}>{fmtBRL(precoPromocional)}</span>
-              </>
-            ) : (
-              <span className="font-bold text-green-600" style={{ fontSize: '14.5px' }}>{fmtBRL(precoBase)}</span>
-            )}
-          </div>
+        <div className="cl-pr-tx">
+          <b>{product.nome}</b>
+          {product.descricao && <small>{product.descricao}</small>}
+          <span className="cl-preco">
+            {de > 0 && <s>{fmtBRL(de)}</s>}
+            <strong>{fmtBRL(final)}</strong>{unidade && <em>{unidade}</em>}
+          </span>
+          {comBotao && (
+            <button type="button" className="cl-add" style={{ background: corBotao }} onClick={e => { e.stopPropagation(); setShowModal(true) }}>Adicionar</button>
+          )}
         </div>
-      </div>
+      </article>
       <ProductModal isOpen={showModal} onClose={() => setShowModal(false)} product={product} corBotao={corBotao} />
     </>
   )

@@ -1,0 +1,53 @@
+/* Lista de produtos do cardápio (08/10 · 3.28) — celular e computador */
+.cl { font-family: var(--font-base); color: #2C1219; text-align: left; }
+
+/* busca na largura toda */
+.cl-busca { display: flex; align-items: center; gap: 8px; min-height: 48px; margin: 16px 6px 0; padding: 0 6px 0 14px; background: #fff; border: 1px solid #E5DDE1; border-radius: 12px; color: #9A8E94; }
+.cl-busca:focus-within { border-color: #2C1219; }
+.cl-busca input { flex: 1; min-width: 0; height: 46px; border: 0; outline: 0; background: none; color: #2C1219; font-family: inherit; font-size: 16px; }
+.cl-busca input::placeholder { color: #9A8E94; }
+.cl-busca input::-webkit-search-cancel-button { -webkit-appearance: none; }
+.cl-busca button { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; margin: 0; border: 0; border-radius: 10px; background: none; color: #6B5D64; cursor: pointer; }
+
+/* categorias (como antes: botão com a lista que abre) */
+.cl-cat { position: relative; margin: 8px 6px 0; }
+.cl-cat-bt { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; min-height: 44px; margin: 0; padding: 0 14px; border: 1px solid #E5DDE1; border-radius: 12px; background: #fff; color: #2C1219; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+.cl-cat-bt span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cl-cat-bt svg { flex: none; transition: transform .15s; }
+.cl-cat-bt.on { color: #fff; }
+.cl-cat-menu { position: absolute; z-index: 30; top: calc(100% + 6px); left: 0; width: min(320px, calc(100vw - 32px)); max-height: 360px; overflow-y: auto; padding: 6px; background: #fff; border: 1px solid #EDE6E9; border-radius: 16px; box-shadow: 0 12px 32px rgba(44,18,25,.16); }
+.cl-cat-menu button { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 48px; margin: 0; padding: 0 12px; border: 0; border-radius: 12px; background: none; color: #2C1219; font-family: inherit; font-size: 15px; font-weight: 600; text-align: left; cursor: pointer; }
+.cl-cat-menu button span { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.cl-cat-menu button[aria-checked="true"] { font-weight: 800; }
+.cl-cat-menu small { flex: none; min-width: 28px; padding: 2px 8px; border-radius: 999px; background: #F3EEF0; color: #6B5D64; font-size: 12.5px; font-weight: 700; text-align: center; }
+
+/* títulos */
+.cl-h2 { margin: 20px 6px 12px; font-size: 18px; font-weight: 800; line-height: 1.3; }
+
+/* grade */
+.cl-grade { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0 6px; }
+@media (min-width: 600px) { .cl-grade { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 900px) { .cl-grade { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+/* cartão do produto */
+.cl-pr { display: flex; flex-direction: column; height: 100%; overflow: hidden; background: #fff; border: 1px solid #EDE6E9; border-radius: 16px; cursor: pointer; transition: box-shadow .2s; }
+@media (hover: hover) { .cl-pr:hover { box-shadow: 0 8px 24px rgba(44,18,25,.10); } }
+.cl-pr-ft { position: relative; aspect-ratio: 1; background: #F3EEF0; }
+.cl-pr--pc .cl-pr-ft { aspect-ratio: 4 / 3; }
+.cl-pr-ft img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cl-pr-sem { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: #B4A9AE; }
+.cl-promo { position: absolute; top: 8px; left: 8px; padding: 2px 8px; border-radius: 8px; background: #DC2626; color: #fff; font-size: 12px; font-weight: 800; }
+.cl-pr-tx { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 10px 12px 12px; }
+.cl-pr-tx b { font-size: 15px; font-weight: 800; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cl-pr-tx small { font-size: 13px; line-height: 1.4; color: #6B5D64; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cl-preco { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 6px; margin-top: auto; padding-top: 4px; }
+.cl-preco s { width: 100%; font-size: 13px; color: #9A8E94; }
+.cl-preco strong { font-size: 16px; font-weight: 800; color: #2C1219; }
+.cl-preco em { font-style: normal; font-size: 13px; color: #6B5D64; }
+.cl-add { width: 100%; min-height: 44px; margin: 8px 0 0; border: 0; border-radius: 12px; color: #fff; font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer; }
+.cl-add:hover { filter: brightness(.96); }
+
+/* nada encontrado */
+.cl-vazio { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 40px 16px; text-align: center; color: #B4A9AE; }
+.cl-vazio b { margin-top: 4px; font-size: 16px; color: #2C1219; }
+.cl-vazio span { font-size: 14px; color: #6B5D64; }

@@ -32,3 +32,6 @@ export const rotuloPrecoVenda = (fv?: string | null) => {
   const s = sufixoVenda(fv);
   return s === "caixa" ? "Preço da caixa" : s === "kg" ? "Preço do quilo" : s === "fatia" ? "Preço da fatia" : s === "cento" ? "Preço do cento" : s === "kit" ? "Preço do kit" : "Preço unitário";
 };
+
+/** Unidade do preço pro cliente (08/10): "por kg", "o cento", "a caixa", "a unidade"… */
+export const unidadeCliente = (fv?: string | null) => ({ un: "a unidade", fatia: "a fatia", kg: "por kg", cento: "o cento", caixa: "a caixa", kit: "o kit" } as Record<string, string>)[sufixoVenda(fv)] || "a unidade";

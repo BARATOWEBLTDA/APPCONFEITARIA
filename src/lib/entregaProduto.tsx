@@ -45,16 +45,16 @@ export function SeloEntregaFoto({ produto }: { produto: any }) {
   return (
     <span
       style={{
-        position: "absolute", left: 6, bottom: 6, zIndex: 5,
+        position: "absolute", left: 8, bottom: 8, zIndex: 5,
         display: "inline-flex", alignItems: "center", gap: 4,
-        padding: "4px 8px", borderRadius: 999,
-        background: "#fff", boxShadow: "0 2px 6px rgba(0,0,0,0.18)",
-        fontSize: 10, fontWeight: 800, lineHeight: 1.1, whiteSpace: "nowrap",
+        padding: "3px 8px", borderRadius: 999,
+        background: "rgba(255,255,255,0.96)", boxShadow: "0 2px 6px rgba(0,0,0,0.14)",
+        fontSize: 12, fontWeight: 700, lineHeight: 1.2, whiteSpace: "nowrap",
         color: pronta ? "#15803D" : "#2C1219",
         maxWidth: "calc(100% - 12px)", overflow: "hidden", textOverflow: "ellipsis",
       }}
     >
-      {pronta ? <IconeRaio /> : <IconeCalendario />}
+      {pronta ? <IconeRaio size={13} /> : <IconeCalendario size={13} />}
       {pronta ? "Pronta entrega" : `Pedir ${s.prazo} antes`}
     </span>
   );

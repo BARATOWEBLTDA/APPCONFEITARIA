@@ -1182,6 +1182,20 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
         @keyframes successPop { 0%{opacity:0;transform:scale(0.8)} 100%{opacity:1;transform:scale(1)} }
         @keyframes checkPop { 0%{transform:scale(0)} 70%{transform:scale(1.15)} 100%{transform:scale(1)} }
+        /* 08/10 · 3.28: menu de baixo (vinho, igual ao do app) e o botão do pedido na cor da loja */
+        .cpn-pe { pointer-events: none; }
+        .cpn-pe > * { pointer-events: auto; }
+        .cpn-pedido { display: flex; align-items: center; gap: 12px; width: calc(100% - 16px); min-height: 56px; margin: 0 8px 8px; padding: 8px 12px; border: 0; border-radius: 16px; color: #fff; font-family: inherit; text-align: left; box-shadow: 0 8px 24px rgba(44,18,25,.22); cursor: pointer; }
+        .cpn-pedido-ic { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,.2); flex: none; }
+        .cpn-pedido-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        .cpn-pedido-tx b { font-size: 15px; font-weight: 800; line-height: 1.25; }
+        .cpn-pedido-tx small { font-size: 13px; opacity: .9; }
+        .cpn-pedido strong { font-size: 16px; font-weight: 800; }
+        .cpn-menu { display: flex; padding-bottom: env(safe-area-inset-bottom, 0px); background: #2C1219; box-shadow: 0 -2px 12px rgba(0,0,0,.12); }
+        .cpn-menu button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 60px; margin: 0; border: 0; background: none; color: rgba(255,255,255,.62); font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+        .cpn-ic { display: flex; align-items: center; justify-content: center; width: 52px; height: 30px; border-radius: 12px; }
+        .cpn-menu button[aria-current="page"] { color: #fff; font-weight: 800; }
+        .cpn-menu button[aria-current="page"] .cpn-ic { background: rgba(255,255,255,.16); }
         .ck-progress-bar { transition: width 0.4s cubic-bezier(0.4,0,0.2,1); animation: progressPulse 2s ease-in-out infinite; }
         .ck-scroll::-webkit-scrollbar { width:4px; }
         .ck-scroll::-webkit-scrollbar-thumb { background:#e5e7eb; border-radius: var(--radius-sm); }
@@ -1190,60 +1204,27 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
       {/* ═══ MOBILE: tab bar + cart vindo de baixo ═══ */}
       {isMobile && (
         <>
-          <div ref={rodapeRef} className="fixed bottom-0 left-0 right-0 z-30" style={{paddingBottom:'env(safe-area-inset-bottom)', boxShadow:'0 -2px 12px rgba(0,0,0,0.15)'}}>
+          <div ref={rodapeRef} className="cpn-pe fixed bottom-0 left-0 right-0 z-30">
             {count > 0 && (
-              <div
-                onClick={() => setIsOpen(true)}
-                style={{
-                  background:'#16a34a', padding:'10px 18px',
-                  display:'flex', alignItems:'center', justifyContent:'space-between',
-                  cursor:'pointer',
-                }}
-              >
-                <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
-                  <div style={{background:'rgba(255,255,255,0.2)',borderRadius:'10px',width:'36px',height:'36px',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                    <ShoppingBag size={18} color="white" />
-                  </div>
-                  <div>
-                    <span style={{color:'white',fontWeight:700,fontSize:'15px',display:'block',lineHeight:1.2}}>Ver seu pedido</span>
-                    <span style={{color:'rgba(255,255,255,0.85)',fontSize:'12px'}}>{count} {count === 1 ? 'item' : 'itens'}</span>
-                  </div>
-                </div>
-                <div style={{display:'flex',alignItems:'center',gap:'4px'}}>
-                  <span style={{color:'white',fontWeight: 700,fontSize:'16px'}}>{formatCurrency(totalPrice)}</span>
-                  <ChevronRight size={18} color="rgba(255,255,255,0.7)" />
-                </div>
-              </div>
+              <button type="button" className="cpn-pedido" style={{ background: accent }} onClick={() => setIsOpen(true)}>
+                <span className="cpn-pedido-ic"><ShoppingBag size={20} color="white" /></span>
+                <span className="cpn-pedido-tx"><b>Ver seu pedido</b><small>{count} {count === 1 ? 'item' : 'itens'}</small></span>
+                <strong>{formatCurrency(totalPrice)}</strong>
+                <ChevronRight size={18} color="rgba(255,255,255,0.8)" />
+              </button>
             )}
 
-            <div style={{background: '#3E2A32'}}>
-              <div style={{display:'flex', alignItems:'center', justifyContent:'space-around', padding:'6px 8px 7px'}}>
+            <nav className="cpn-menu" aria-label="Menu do cardápio">
               {[
-                { id: 'inicio',   label: 'Início',  icon: <Home size={19} /> },
-                { id: 'pedidos',  label: 'Pedidos', icon: <ClipboardList size={19} /> },
-                { id: 'perfil',   label: 'Perfil',  icon: <User size={19} /> },
-              ].map(({ id, label, icon }) => {
-                const active = activeTab === id
-                return (
-                  <button
-                    key={id}
-                    onClick={() => setActiveTab(id)}
-                    style={{
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px',
-                      border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-                      padding: '5px 24px', borderRadius: '8px',
-                      background: active ? 'rgba(255,255,255,0.15)' : 'transparent',
-                      color: active ? '#fff' : 'rgba(255,255,255,0.6)',
-                      transition: 'background 0.15s, color 0.15s',
-                    }}
-                  >
-                    {icon}
-                    <span style={{ fontSize: '10.5px', fontWeight: active ? 700 : 500, lineHeight: 1 }}>{label}</span>
-                  </button>
-                )
-              })}
-              </div>
-            </div>
+                { id: 'inicio',   label: 'Início',  icon: <Home size={24} /> },
+                { id: 'pedidos',  label: 'Pedidos', icon: <ClipboardList size={24} /> },
+                { id: 'perfil',   label: 'Perfil',  icon: <User size={24} /> },
+              ].map(({ id, label, icon }) => (
+                <button key={id} type="button" aria-current={activeTab === id ? 'page' : undefined} onClick={() => setActiveTab(id)}>
+                  <span className="cpn-ic">{icon}</span>{label}
+                </button>
+              ))}
+            </nav>
           </div>
 
           {/* Painel Perfil */}

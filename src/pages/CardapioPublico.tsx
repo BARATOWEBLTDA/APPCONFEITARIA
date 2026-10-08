@@ -6,521 +6,224 @@ import { supabase } from '@/lib/supabase'
 import { useDeviceDetection } from '@/hooks/useDeviceDetection'
 import { BannerAd } from '@/components/cardapio/BannerAd'
 import { Logo } from '@/components/cardapio/Logo'
-import { CategoryFilter } from '@/components/cardapio/CategoryFilter'
 import { ProductList } from '@/components/cardapio/ProductList'
 import { NavigationMenu } from '@/components/cardapio/NavigationMenu'
 import { EmptyState } from '@/components/cardapio/EmptyState'
 import { Footer } from '@/components/cardapio/Footer'
-import { CardapioModelo1 } from '@/components/cardapio/CardapioModelo1'
+import { CardapioModelo1, getStatusLoja, getEnderecoData } from '@/components/cardapio/CardapioModelo1'
 import { DesktopProductCard } from '@/components/desktop/ProductCard'
-import { DesktopFooter } from '@/components/desktop/Footer'
 import { CartProvider } from '@/context/CartContext'
 import { DesignSettings, Configuracoes, Produto } from '@/types/database'
 import { PerfilTab } from '@/components/cardapio/PerfilTab'
 import { PedidosTab } from '@/components/cardapio/PedidosTab'
-import { Star, MapPin, MagnifyingGlass, ShoppingBag, House, Tag, Info, User } from '@phosphor-icons/react'
+import { ClockCountdown, House, MagnifyingGlass, MapPin, ShoppingBag, Storefront, Truck, User, WhatsappLogo, X } from '@phosphor-icons/react'
+import { Janela } from '@/components/base'
 import { useCart } from '@/hooks/useCart'
 import { formatCurrency } from '@/utils/helpers'
+import './cardapioPublico.css'
 
 /* ══════════════════════════════════════════════ */
-/*     DESKTOP COMPONENTS — Layout profissional   */
+/*     COMPUTADOR (08/10 · 3.28, no padrão do guia) */
+/*     Topo: Início · Sobre nós · Minha conta.       */
+/*     Saíram "Promoções" (não fazia nada), "Calcular */
+/*     taxa" e o cupom de mentira da sacola.          */
 /* ══════════════════════════════════════════════ */
 
-/* ── Nav Link com hover/active ── */
-function NavLink({ label, icon, defaultActive, navBg, onClick }: any) {
-  const [hovered, setHovered] = useState(false)
-  const [active, setActive] = useState(false)
-
-  const isActive = defaultActive || active
-  const bg = isActive ? '#ffffff' : hovered ? 'rgba(255,255,255,0.15)' : 'transparent'
-  const color = isActive ? (navBg || '#E85A8C') : '#ffffff'
-
-  return (
-    <button
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => { setHovered(false); setActive(false) }}
-      onMouseDown={() => setActive(true)}
-      onMouseUp={() => setActive(false)}
-      onClick={onClick}
-      style={{
-        padding: '10px 22px', border: 'none', borderRadius: '8px',
-        background: bg, color: color, fontSize: '18px', fontWeight: 700,
-        cursor: 'pointer', fontFamily: 'inherit',
-        transition: 'background 0.15s, color 0.15s', whiteSpace: 'nowrap',
-        display: 'flex', alignItems: 'center', gap: '8px',
-      }}
-    >
-      {icon}
-      {label}
-    </button>
-  )
-}
-
-/* ── Top Nav Bar ── */
-// Cor do nome da loja (02/10): se a confeiteira não escolheu uma cor, o padrão muda conforme o fundo —
-// branco no computador (faixa rosa) e preto no celular (fundo branco).
+// Cor do nome da loja (02/10): sem cor escolhida, branco no computador (faixa) e escuro no celular.
 const COR_NOME_PADRAO = ["", "#1f2937", "#000000", "#000", "#111111"];
 const corNomeEscolhida = (c?: string | null) => (c && !COR_NOME_PADRAO.includes(c.trim().toLowerCase()) ? c : null);
 const corNomeComputador = (c?: string | null) => corNomeEscolhida(c) || "#ffffff";
 const corNomeCelular = (c?: string | null) => corNomeEscolhida(c) || "#000000";
+const corValida = (c: string | undefined | null): boolean => {
+  if (!c) return false
+  const norm = c.trim().toLowerCase().replace(/\s/g, '')
+  return !['', '#fff', '#ffffff', '#fefefe', 'white', 'transparent', 'rgb(255,255,255)', 'rgba(255,255,255,1)'].includes(norm)
+}
+const corDoTopo = (design: DesignSettings) => corValida(design.cor_navbar) ? design.cor_navbar! : (corValida(design.cor_borda) ? design.cor_borda! : '#E85A8C')
 
-function DeskNav({ design, searchTerm, onSearchChange, isPro = false }: any) {
-  const { items } = useCart()
-  const count = items.reduce((a: number, i: any) => a + (i.saleType === 'kg' ? 1 : Math.floor(i.quantity)), 0)
-  // Rejeita cores "brancas" (feio de cardápio) — usa cor_borda ou rosa como fallback
-  const corValida = (c: string | undefined | null): boolean => {
-    if (!c) return false
-    const norm = c.trim().toLowerCase().replace(/\s/g, '')
-    return norm !== '' && norm !== '#fff' && norm !== '#ffffff' && norm !== '#fefefe' && norm !== 'white' && norm !== 'transparent' && norm !== 'rgb(255,255,255)' && norm !== 'rgba(255,255,255,1)'
-  }
-  const navBg = corValida(design.cor_navbar) ? design.cor_navbar! : (corValida(design.cor_borda) ? design.cor_borda! : '#E85A8C')
+/* Horário em texto: "Segunda a sexta · 08:00 às 18:00" */
+const ORDEM = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta']
+function linhasHorario(horario: any): string[] {
+  try {
+    const h = typeof horario === 'string' ? JSON.parse(horario) : horario
+    if (!h) return []
+    const out: string[] = []
+    const dias = ORDEM.filter(d => (h.dias || []).includes(d))
+    if (dias.length) {
+      const nome = dias.length === 5 ? 'Segunda a sexta' : dias.map(d => d.slice(0, 3)).join(', ')
+      out.push(`${nome} · ${h.abertura || '08:00'} às ${h.fechamento || '18:00'}`)
+    }
+    if (h.abre_sabado) out.push(`Sábado · ${h.sabado_abertura || '09:00'} às ${h.sabado_fechamento || '14:00'}`)
+    if (h.abre_domingo) out.push(`Domingo · ${h.domingo_abertura || '09:00'} às ${h.domingo_fechamento || '14:00'}`)
+    return out
+  } catch { return [] }
+}
+function comoReceber(config: any): string {
+  const f: string[] = config?.formas_entrega || []
+  const entrega = f.some(x => x === 'entrega_propria' || x === 'motoboy' || x === 'uber_flash')
+  const retira = f.includes('retirada')
+  if (retira && entrega) return 'Retirada na loja ou entrega'
+  if (entrega) return 'Entrega'
+  if (retira) return 'Retirada na loja'
+  return f.includes('combinar') ? 'Combinado pelo WhatsApp' : ''
+}
+
+/* ── Sobre a loja (Sobre nós no computador) ── */
+function SobreLoja({ aberta, fechar, design, config }: { aberta: boolean; fechar: () => void; design: DesignSettings; config: Configuracoes | null }) {
+  const end = getEnderecoData(config)
+  const horas = linhasHorario((config as any)?.horario)
+  const receber = comoReceber(config)
+  const fone = String(config?.telefone || '').replace(/\D/g, '')
+  const zap = fone ? `https://wa.me/${fone.startsWith('55') ? fone : '55' + fone}` : ''
+  return (
+    <Janela aberta={aberta} aoFechar={fechar} tipo="conteudo" titulo={`Sobre a ${design.nome_loja || 'loja'}`} umaAcao={!!zap}
+      acoes={zap ? <a className="cp-zap" href={zap} target="_blank" rel="noopener noreferrer"><WhatsappLogo size={20} weight="bold" />Chamar no WhatsApp</a> : undefined}>
+      <div className="cp-sobre">
+        {design.descricao_loja && <p>{design.descricao_loja}</p>}
+        {end && (
+          <div className="cp-sobre-l"><MapPin size={20} weight="bold" /><span><b>{end.completo}</b>
+            <span className="cp-sobre-mapa">
+              <a href={`https://maps.google.com/?q=${encodeURIComponent(end.completo)}`} target="_blank" rel="noopener noreferrer">Abrir no Google Maps</a>
+              <a href={`https://waze.com/ul?q=${encodeURIComponent(end.completo)}`} target="_blank" rel="noopener noreferrer">Abrir no Waze</a>
+            </span></span></div>
+        )}
+        {horas.length > 0 && <div className="cp-sobre-l"><ClockCountdown size={20} weight="bold" /><span><b>Horário</b>{horas.map(h => <small key={h}>{h}</small>)}</span></div>}
+        {receber && <div className="cp-sobre-l"><Truck size={20} weight="bold" /><span><b>Como receber</b><small>{receber}</small></span></div>}
+      </div>
+    </Janela>
+  )
+}
+
+/* ── Topo do computador ── */
+function DeskNav({ design, config, isPro = false }: { design: DesignSettings; config: Configuracoes | null; isPro?: boolean }) {
+  const navBg = corDoTopo(design)
   const corBorda = design.cor_borda || '#E85A8C'
-  const [showConta, setShowConta] = useState(false)
-  const [contaAba, setContaAba] = useState<'pedidos'|'perfil'>('pedidos')
+  const [aba, setAba] = useState<'inicio' | 'sobre' | 'conta'>('inicio')
+  const [contaAba, setContaAba] = useState<'pedidos' | 'perfil'>('pedidos')
   const confeteiraUserId = localStorage.getItem('cardapio_user_id') || ''
   const accent = design.cor_botao || design.cor_borda || '#E85A8C'
+  const status = getStatusLoja((config as any)?.horario || null)
+  let cidade = ''
+  try { const e = config?.endereco ? (typeof config.endereco === 'string' ? JSON.parse(config.endereco) : config.endereco) : null; if (e?.cidade && ((config as any)?.mostrar_localizacao || (config as any)?.mostrar_apenas_cidade)) cidade = [e.cidade, e.estado].filter(Boolean).join(' - ') } catch {}
+  const sub = [status?.msg, cidade].filter(Boolean).join(' · ')
 
   return (
     <>
-    <div style={{ background: navBg, position:'sticky', top:0, zIndex:40, boxShadow:'0 2px 12px rgba(0,0,0,0.15)' }}>
-      <div style={{ width:'100%', padding:'0 40px', boxSizing:'border-box', display:'grid', gridTemplateColumns:'1fr auto 1fr', alignItems:'center', height:'92px', gap:'24px' }}>
-
-        {/* ESQUERDA — Logo */}
-        <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
-          {design.logo_url
-            ? <div style={{ width:'72px', height:'72px', borderRadius:'50%', border:`3px solid ${corBorda}`, padding:'3px', backgroundColor:'white', overflow:'hidden', flexShrink:0 }}>
-                <div style={{ width:'100%', height:'100%', borderRadius:'50%', border:'3px solid white', overflow:'hidden' }}>
-                  <img src={design.logo_url} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', borderRadius:'50%' }}/>
-                </div>
-              </div>
-            : <div style={{ width:'72px', height:'72px', borderRadius:'50%', border:`3px solid ${corBorda}`, padding:'3px', backgroundColor:'white', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
-                <div style={{ width:'100%', height:'100%', borderRadius:'50%', background:corBorda, display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize:'28px', fontWeight:800 }}>{design.nome_loja?.charAt(0)}</div>
-              </div>
-          }
-          <div>
-            <p style={{ margin:0, fontWeight:800, fontSize:'18px', color: corNomeComputador(design.cor_nome), lineHeight:1.2 }}>{design.nome_loja}{isPro && <SeloVerificado tamanho={18} />}</p>
-            <p style={{ margin:'3px 0 0', fontSize:'13px', color:'rgba(255,255,255,0.75)', fontWeight:500 }}>{design.cidade_estado || 'Doces que encantam'}</p>
-          </div>
-        </div>
-
-        {/* CENTRO — Links grandes */}
-        <nav style={{ display:'flex', gap:'4px' }}>
-          {[
-            { label: 'Início',      icon: <House size={20} weight="duotone" />, defaultActive: true,  onClick: undefined },
-            { label: 'Promoções',   icon: <Tag   size={20} weight="duotone" />, defaultActive: false, onClick: undefined },
-            { label: 'Sobre nós',   icon: <Info  size={20} weight="duotone" />, defaultActive: false, onClick: undefined },
-            { label: 'Minha conta', icon: <User  size={20} weight="duotone" />, defaultActive: false, onClick: () => setShowConta(true) },
-          ].map(({ label, icon, defaultActive, onClick }) => (
-            <NavLink key={label} label={label} icon={icon} defaultActive={defaultActive} navBg={navBg} onClick={onClick} />
-          ))}
-        </nav>
-
-        {/* DIREITA */}
-        <div />
-      </div>
-    </div>
-
-    {/* Modal Minha Conta — centralizado */}
-    {showConta && (
-      <>
-        <div onClick={() => setShowConta(false)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',zIndex:200}} />
-        <div style={{position:'fixed',top:'50%',left:'50%',transform:'translate(-50%,-50%)',width:'600px',maxWidth:'95vw',height:'75vh',background:'#fff',zIndex:201,display:'flex',flexDirection:'column',boxShadow:'0 24px 64px rgba(0,0,0,0.2)',borderRadius:'20px',overflow:'hidden',animation:'fadeScaleIn var(--dur-normal) var(--ease-out)'}}>
-          {/* Header */}
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'20px 24px',borderBottom:'1px solid #f0f0f0',flexShrink:0,background:'#fafafa'}}>
-            <div style={{display:'flex',gap:'8px'}}>
-              {(['pedidos','perfil'] as const).map(a => (
-                <button key={a} onClick={() => setContaAba(a)}
-                  style={{padding:'8px 20px',borderRadius:'20px',border:'none',cursor:'pointer',fontFamily:'inherit',fontSize:'14px',fontWeight:contaAba===a?700:500,background:contaAba===a?accent:'#efefef',color:contaAba===a?'#fff':'#717171',transition:'all 0.15s'}}>
-                  {a === 'pedidos' ? 'Meus Pedidos' : 'Perfil'}
-                </button>
-              ))}
+      <header className="cp-topo" style={{ background: navBg }}>
+        <div className="cp-topo-in">
+          <div className="cp-topo-loja">
+            <span className="cp-topo-logo" style={{ borderColor: corBorda }}>
+              {design.logo_url ? <img src={design.logo_url} alt="" /> : <b style={{ background: corBorda }}>{design.nome_loja?.charAt(0)}</b>}
+            </span>
+            <div>
+              <p className="cp-topo-nome" style={{ color: corNomeComputador(design.cor_nome) }}>{design.nome_loja}{isPro && <SeloVerificado tamanho={20} />}</p>
+              {sub && <p className="cp-topo-sub">{status && <i className={status.aberto ? 'aberto' : ''} aria-hidden="true" />}{sub}</p>}
             </div>
-            <button onClick={() => setShowConta(false)} style={{width:'32px',height:'32px',borderRadius:'50%',background:'#f0f0f0',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'#717171'}}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
           </div>
-          {/* Conteúdo */}
-          <div style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column'}}>
-            {contaAba === 'pedidos'
-              ? <PedidosTab accent={accent} confeteiraUserId={confeteiraUserId} onIrParaPerfil={() => setContaAba('perfil')} />
-              : <PerfilTab accent={accent} confeteiraUserId={confeteiraUserId} />
-            }
-          </div>
+          <nav className="cp-topo-nav" aria-label="Menu da loja">
+            <button type="button" aria-current={aba === 'inicio' ? 'page' : undefined} style={aba === 'inicio' ? { color: navBg } : undefined} onClick={() => setAba('inicio')}><House size={20} weight="bold" />Início</button>
+            <button type="button" aria-current={aba === 'sobre' ? 'page' : undefined} style={aba === 'sobre' ? { color: navBg } : undefined} onClick={() => setAba('sobre')}><Storefront size={20} weight="bold" />Sobre nós</button>
+            <button type="button" aria-current={aba === 'conta' ? 'page' : undefined} style={aba === 'conta' ? { color: navBg } : undefined} onClick={() => setAba('conta')}><User size={20} weight="bold" />Minha conta</button>
+          </nav>
         </div>
-      </>
-    )}
+      </header>
+
+      <SobreLoja aberta={aba === 'sobre'} fechar={() => setAba('inicio')} design={design} config={config} />
+
+      {/* Minha conta (pedidos e perfil da cliente — revisão na 8.4) */}
+      {aba === 'conta' && (
+        <>
+          <div onClick={() => setAba('inicio')} style={{ position: 'fixed', inset: 0, background: 'rgba(44,18,25,0.5)', zIndex: 200 }} />
+          <div className="cp-conta" role="dialog" aria-modal="true" aria-label="Minha conta">
+            <div className="cp-conta-topo">
+              <div className="cp-conta-abas">
+                {(['pedidos', 'perfil'] as const).map(a => (
+                  <button key={a} type="button" aria-pressed={contaAba === a} style={contaAba === a ? { background: accent, color: '#fff' } : undefined} onClick={() => setContaAba(a)}>
+                    {a === 'pedidos' ? 'Meus pedidos' : 'Perfil'}
+                  </button>
+                ))}
+              </div>
+              <button type="button" className="cp-conta-x" aria-label="Fechar" onClick={() => setAba('inicio')}><X size={20} weight="bold" /></button>
+            </div>
+            <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+              {contaAba === 'pedidos'
+                ? <PedidosTab accent={accent} confeteiraUserId={confeteiraUserId} onIrParaPerfil={() => setContaAba('perfil')} />
+                : <PerfilTab accent={accent} confeteiraUserId={confeteiraUserId} />}
+            </div>
+          </div>
+        </>
+      )}
     </>
   )
 }
 
-/* ── Hero Banner ── */
-function DeskHero({ design }: any) {
-  const banners = [design.banner_url, design.banner1_url, design.banner2_url, design.banner3_url].filter(Boolean)
-  if (!banners.length) return null
-
-  return (
-    <div style={{ width:'100%', padding:'16px 24px 0', boxSizing:'border-box' }}>
-      <div style={{ width:'100%', height:'300px', borderRadius:'16px', overflow:'hidden', background:'#1a1a1a' }}>
-        <img src={banners[0]!} alt="Banner" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}/>
-      </div>
-    </div>
-  )
-}
-
-/* ── Trust Bar (diferenciais) ── */
-function DeskTrustBar() {
-  const items = [
-    { icon: '🧁', title: 'Ingredientes selecionados', sub: 'Qualidade e sabor em cada detalhe' },
-    { icon: '👩‍🍳', title: 'Produção artesanal', sub: 'Feito com carinho e dedicação' },
-    { icon: '🚚', title: 'Entrega rápida e segura', sub: 'Receba com todo cuidado' },
-    { icon: '🔒', title: 'Pagamento seguro', sub: 'Ambiente 100% seguro' },
-  ]
-  return (
-    <div style={{ width:'100%', padding:'0 24px', boxSizing:'border-box' }}>
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'0', background:'var(--bg-card)', borderRadius:'12px', border:'1px solid var(--border)', overflow:'hidden', width:'100%' }}>
-        {items.map((item, i) => (
-          <div key={i} style={{ padding:'24px 28px', display:'flex', alignItems:'center', gap:'14px', borderRight: i < 3 ? '1px solid var(--border)' : 'none' }}>
-            <span style={{ fontSize:'32px', flexShrink:0 }}>{item.icon}</span>
-            <div>
-              <p style={{ margin:0, fontWeight:700, fontSize:'14px', color:'var(--text-title)' }}>{item.title}</p>
-              <p style={{ margin:'3px 0 0', fontSize:'12px', color:'var(--text-muted)' }}>{item.sub}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-/* ── Store Info Row ── */
-function DeskInfoRow({ design, config }: any) {
-  const { items, totalPrice } = useCart()
-  const count = items.reduce((a: number, i: any) => a + (i.saleType === 'kg' ? 1 : Math.floor(i.quantity)), 0)
-
-  let statusText = '', isOpen = false, locationText = ''
-  try {
-    const h = config?.horario ? JSON.parse(config.horario) : null
-    if (h?.abertura && h?.fechamento) {
-      const now = new Date()
-      const c = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`
-      isOpen = c >= h.abertura && c <= h.fechamento
-      statusText = isOpen ? `Aberto até ${h.fechamento}` : `Abre às ${h.abertura}`
-    }
-  } catch {}
-  try {
-    const e = config?.endereco ? JSON.parse(config.endereco) : null
-    if (e?.cidade) locationText = `${e.bairro ? e.bairro+', ' : ''}${e.cidade} - ${e.estado}`
-  } catch {}
-
-  const renderStars = (r: number) => Array.from({length:5},(_,i) => <Star key={i} size={14} weight={i<Math.floor(r)?"fill":"regular"} color={i<Math.floor(r)?"#fbbf24":"#d1d5db"}/>)
-
-  return (
-    <div style={{ width:'100%', padding:'0 24px', boxSizing:'border-box' }}>
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 280px', gap:'16px', width:'100%', alignItems:'start' }}>
-
-        {/* Coluna esquerda vazia — produtos vêm logo abaixo */}
-        <div />
-
-        {/* Coluna direita: Sacola + Fidelidade + Entrega empilhados */}
-        <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
-
-          {/* Sacola */}
-          <div style={{ background:'var(--bg-card)', borderRadius:'12px', border:'1px solid var(--border)', padding:'24px', textAlign:'center', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
-            {count === 0 ? (
-              <>
-                <ShoppingBag size={28} color="#d4d4d4" style={{ marginBottom:'6px' }}/>
-                <p style={{ margin:0, fontWeight:700, fontSize:'13px', color:'var(--text-title)' }}>Seu pedido está vazio</p>
-                <p style={{ margin:'2px 0 0', fontSize:'11px', color:'var(--text-muted)' }}>Adicione itens do cardápio e monte seu pedido.</p>
-              </>
-            ) : (
-              <>
-                <ShoppingBag size={24} color={design.cor_borda||'#E85A8C'} style={{ marginBottom:'4px' }}/>
-                <p style={{ margin:0, fontWeight:700, fontSize:'14px', color:'var(--text-title)' }}>{count} {count===1?'item':'itens'}</p>
-                <p style={{ margin:'2px 0 6px', fontWeight:800, fontSize:'16px', color:'var(--success)' }}>{formatCurrency(totalPrice)}</p>
-                <button onClick={() => window.dispatchEvent(new Event('open-cart'))} style={{
-                  padding:'8px 20px', borderRadius:'8px', border:'none', background:design.cor_botao||'#E85A8C',
-                  color:'#fff', fontSize:'12px', fontWeight:700, cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif',
-                }}>Ver seu pedido</button>
-              </>
-            )}
-          </div>
-
-        </div>
-      </div>
-    </div>
-  )
-}
-
-/* ── Category Dropdown ── */
-function DeskCategoryDropdown({ categories, selectedCategory, onSelectCategory, corBotao, navBg }: any) {
+/* ── Categorias (coluna da esquerda) ── */
+function DeskCategorias({ categories, counts, total, selectedCategory, onSelectCategory, cor }: any) {
   const cats = categories.filter((c: any) => c.name !== 'Todos')
-  const activeBg = navBg || corBotao || '#E85A8C'
-
-  return (
-    <div style={{ background:'var(--bg-card)', borderRadius:'12px', border:'1px solid var(--border)', overflow:'hidden' }}>
-      <div style={{ padding:'12px 14px', borderBottom:'1px solid var(--border)' }}>
-        <span style={{ fontSize:'12px', fontWeight:700, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.05em' }}>Categorias</span>
-      </div>
-
-      {/* Todos */}
-      <button
-        onClick={() => onSelectCategory(null)}
-        style={{
-          width:'100%', padding:'11px 14px', textAlign:'left', border:'none',
-          background: !selectedCategory ? activeBg : '#fff',
-          color: !selectedCategory ? '#ffffff' : '#374151',
-          fontSize:'13px', fontWeight: !selectedCategory ? 700 : 500,
-          cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif',
-          display:'flex', alignItems:'center',
-          borderBottom:'1px solid var(--border)',
-          transition:'background 0.15s, color 0.15s',
-        }}
-        onMouseOver={e => { if (selectedCategory) { (e.currentTarget as HTMLElement).style.background='var(--bg-body)' } }}
-        onMouseOut={e => { if (selectedCategory) { (e.currentTarget as HTMLElement).style.background='var(--bg-card)' } }}
-      >
-        Todos os produtos
+  const item = (nome: string | null, rotulo: string, n: number) => {
+    const sel = selectedCategory === nome
+    return (
+      <button key={rotulo} type="button" aria-current={sel ? 'true' : undefined} style={sel ? { color: cor, background: `${cor}14` } : undefined} onClick={() => onSelectCategory(nome)}>
+        <span>{rotulo}</span><small>{n}</small>
       </button>
-
-      {cats.map((c: any) => (
-        <button
-          key={c.name}
-          onClick={() => onSelectCategory(c.name)}
-          style={{
-            width:'100%', padding:'11px 14px', textAlign:'left', border:'none',
-            background: selectedCategory === c.name ? activeBg : '#fff',
-            color: selectedCategory === c.name ? '#ffffff' : '#374151',
-            fontSize:'13px', fontWeight: selectedCategory === c.name ? 700 : 500,
-            cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif',
-            display:'flex', alignItems:'center',
-            borderBottom:'1px solid var(--border)',
-            transition:'background 0.15s, color 0.15s',
-          }}
-          onMouseOver={e => { if (selectedCategory !== c.name) { (e.currentTarget as HTMLElement).style.background='var(--bg-body)' } }}
-          onMouseOut={e => { if (selectedCategory !== c.name) { (e.currentTarget as HTMLElement).style.background='var(--bg-card)' } }}
-        >
-          {c.name}
-        </button>
-      ))}
-    </div>
-  )
-}
-
-/* ── Products Section ── */
-function DeskProducts({ produtos, favorites, onToggleFavorite, design }: any) {
-  const cor = design.cor_borda || '#E85A8C'
-
+    )
+  }
   return (
-    <div style={{ width:'100%', boxSizing:'border-box' }}>
-
-      {/* Grid */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(240px, 1fr))', gap:'16px', width:'100%' }}>
-        {produtos.map((p: Produto) => (
-          <DesktopProductCard key={p.id} product={p} isFavorite={favorites.includes(p.id)} onToggleFavorite={onToggleFavorite}
-            backgroundColor={design.cor_background||'#fff'} borderColor={cor} corBotao={design.cor_botao||'#1f2937'} />
-        ))}
-      </div>
-
-      {produtos.length === 0 && (
-        <div style={{ textAlign:'center', padding:'48px', color:'var(--text-muted)' }}>
-          <MagnifyingGlass size={40} style={{ margin:'0 auto 12px', display:'block', opacity:0.3 }}/>
-          <p style={{ fontWeight:700, fontSize:'16px', color:'var(--text-secondary)' }}>Nenhum produto encontrado</p>
-        </div>
-      )}
-    </div>
+    <nav className="cp-cats" aria-label="Categorias">
+      <p>Categorias</p>
+      {item(null, 'Todos os produtos', total)}
+      {cats.map((c: any) => item(c.name, c.name, counts[c.name] || 0))}
+    </nav>
   )
 }
 
-/* ── Desktop Sacola Sidebar ── */
+/* ── Seu pedido (coluna da direita) ── */
 function DeskSacola({ cartCount, cartTotal, design, items }: any) {
   // Desconto da promoção (02/10): o preço do item já vem com desconto; aqui mostra quanto ela economiza
   const economia = Math.round((items || []).reduce((s: number, it: any) => s + (Number(it?.precoBreakdown?.desconto) || 0) * (Number(it?.quantity) || 0), 0) * 100) / 100
-  const [cupomAberto, setCupomAberto] = useState(false)
-  const [cupomDigitado, setCupomDigitado] = useState('')
   const cor = design.cor_botao || design.cor_borda || '#E85A8C'
-
   return (
-    <div style={{ background:'var(--bg-card)', borderRadius:'12px', border:'1px solid var(--border)', overflow:'hidden' }}>
-
-      {/* Calcular taxa */}
-      <div style={{ padding:'14px 16px', borderBottom:'1px solid var(--border)', display:'flex', alignItems:'center', gap:'10px', cursor:'pointer' }}
-        onMouseOver={e => (e.currentTarget as HTMLElement).style.background='#fafafa'}
-        onMouseOut={e => (e.currentTarget as HTMLElement).style.background='var(--bg-card)'}
-      >
-        <MapPin size={18} color="var(--primary-dark)" weight="duotone" style={{ flexShrink:0 }}/>
-        <span style={{ flex:1, fontSize:'13px', fontWeight:600, color:'var(--text-title)' }}>Calcular taxa de entrega</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={cor} strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
-
-      {/* Sacola vazia ou com itens */}
+    <section className="cp-box">
+      <h3>Seu pedido</h3>
       {cartCount === 0 ? (
-        <div style={{ padding:'32px 16px', display:'flex', flexDirection:'column', alignItems:'center', gap:'8px' }}>
-          <div style={{ width:'64px', height:'64px', display:'flex', alignItems:'center', justifyContent:'center' }}>
-            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#d4d4d4" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
-              <path d="M16 10a4 4 0 0 1-8 0"/>
-            </svg>
-          </div>
-          <p style={{ margin:0, fontWeight:700, fontSize:'14px', color:'var(--text-title)' }}>Seu pedido está vazio</p>
-          <p style={{ margin:0, fontSize:'12px', color:'var(--text-muted)', textAlign:'center', lineHeight:1.5 }}>Adicione itens do cardápio<br/>e monte seu pedido</p>
-        </div>
-      ) : (
-        <div style={{ padding:'14px 16px' }}>
-          {/* Header sacola */}
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'12px' }}>
-            <span style={{ fontWeight:700, fontSize:'14px', color:'var(--text-title)' }}>Seu pedido</span>
-            <button
-              onClick={() => window.dispatchEvent(new Event('open-cart'))}
-              style={{ background:'none', border:'none', fontSize:'12px', fontWeight:600, color:cor, cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif' }}
-            >LIMPAR</button>
-          </div>
-
-          {/* Itens resumidos */}
-          <div style={{ display:'flex', flexDirection:'column', gap:'10px', marginBottom:'14px' }}>
-            {items.slice(0,4).map((item: any) => {
-              const img = item.imageUrl?.split(',')[0]?.trim()
-              return (
-                <div key={item.id} style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-                  <div style={{ width:'48px', height:'48px', borderRadius:'8px', overflow:'hidden', flexShrink:0, background:'var(--bg-body)' }}>
-                    {img ? <img src={img} alt={item.name} style={{ width:'100%', height:'100%', objectFit:'cover' }}/> : <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'20px' }}>🧁</div>}
-                  </div>
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <p style={{ margin:0, fontSize:'13px', fontWeight:600, color:'var(--text-title)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                      {item.saleType === 'kg' ? `${item.quantity}kg` : `${Math.floor(item.quantity)}x`} {item.name}
-                    </p>
-                    <p style={{ margin:'2px 0 0', fontSize:'12px', color:'var(--text-muted)' }}>{formatCurrency(item.price * item.quantity)}</p>
-                  </div>
-                </div>
-              )
-            })}
-            {items.length > 4 && (
-              <p style={{ margin:0, fontSize:'12px', color:'var(--text-muted)' }}>+{items.length - 4} item(ns) a mais</p>
-            )}
-          </div>
-
-          {/* Subtotal / Total */}
-          <div style={{ borderTop:'1px solid var(--border)', paddingTop:'12px', display:'flex', flexDirection:'column', gap:'4px', marginBottom:'14px' }}>
-            <div style={{ display:'flex', justifyContent:'space-between' }}>
-              <span style={{ fontSize:'13px', color:'var(--text-muted)' }}>Subtotal</span>
-              <span style={{ fontSize:'13px', color:'var(--text-muted)' }}>{formatCurrency(cartTotal + economia)}</span>
+        <div className="cp-vazio"><ShoppingBag size={32} aria-hidden="true" /><b>Seu pedido está vazio</b><small>Escolha um produto pra começar.</small></div>
+      ) : (<>
+        {items.slice(0, 4).map((item: any) => {
+          const img = item.imageUrl?.split(',')[0]?.trim()
+          return (
+            <div key={item.id} className="cp-it">
+              {img ? <img src={img} alt="" /> : <span className="cp-it-sem"><ShoppingBag size={20} /></span>}
+              <span><b>{item.saleType === 'kg' ? `${item.quantity} kg` : `${Math.floor(item.quantity)}×`} {item.name}</b><small>{formatCurrency(item.price * item.quantity)}</small></span>
             </div>
-            {economia > 0 && (
-              <div style={{ display:'flex', justifyContent:'space-between' }}>
-                <span style={{ fontSize:'13px', color:'#16a34a', fontWeight:700 }}>Promoção</span>
-                <span style={{ fontSize:'13px', color:'#16a34a', fontWeight:700 }}>− {formatCurrency(economia)}</span>
-              </div>
-            )}
-            <div style={{ display:'flex', justifyContent:'space-between' }}>
-              <span style={{ fontSize:'13px', color:'var(--text-muted)' }}>Taxa de entrega</span>
-              <span style={{ fontSize:'13px', color:'var(--text-muted)' }}>A definir</span>
-            </div>
-            <div style={{ display:'flex', justifyContent:'space-between', marginTop:'4px' }}>
-              <span style={{ fontSize:'15px', fontWeight:800, color:'var(--text-title)' }}>Total</span>
-              <span style={{ fontSize:'15px', fontWeight:800, color:'var(--text-title)' }}>{formatCurrency(cartTotal)}</span>
-            </div>
-          </div>
-
-          {/* Botão finalizar */}
-          <button
-            onClick={() => window.dispatchEvent(new Event('open-cart'))}
-            style={{ width:'100%', padding:'13px', background:cor, color:'#fff', border:'none', borderRadius:'10px', fontSize:'14px', fontWeight:700, cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif', marginBottom:'0' }}
-          >
-            Finalizar encomenda
-          </button>
+          )
+        })}
+        {items.length > 4 && <p className="cp-mais">+ {items.length - 4} {items.length - 4 === 1 ? 'item' : 'itens'}</p>}
+        <div className="cp-contas">
+          <span>Subtotal<b>{formatCurrency(cartTotal + economia)}</b></span>
+          {economia > 0 && <span className="ok">Promoção<b>− {formatCurrency(economia)}</b></span>}
+          <span>Entrega<b>Calculada ao finalizar</b></span>
+          <span className="t">Total<b>{formatCurrency(cartTotal)}</b></span>
         </div>
-      )}
-
-      {/* Cupom */}
-      <div style={{ borderTop:'1px solid var(--border)' }}>
-        <div
-          onClick={() => setCupomAberto(o => !o)}
-          style={{ padding:'14px 16px', display:'flex', alignItems:'center', gap:'10px', cursor:'pointer' }}
-          onMouseOver={e => (e.currentTarget as HTMLElement).style.background='#fafafa'}
-          onMouseOut={e => (e.currentTarget as HTMLElement).style.background='var(--bg-card)'}
-        >
-          <div style={{ width:'32px', height:'32px', borderRadius:'8px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-            <img src="/desconto.png" alt="" style={{ width:'20px', height:'20px', objectFit:'contain' }} />
-          </div>
-          <div style={{ flex:1 }}>
-            <p style={{ margin:0, fontSize:'13px', fontWeight:600, color:'var(--text-title)' }}>Tem um cupom de desconto?</p>
-            <p style={{ margin:0, fontSize:'12px', color:'var(--text-muted)' }}>Clique e insira o código</p>
-          </div>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2.5"
-            style={{ transform: cupomAberto ? 'rotate(90deg)' : 'rotate(0deg)', transition:'transform 0.2s' }}>
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
-        </div>
-
-        {cupomAberto && (
-          <div style={{ padding:'0 16px 14px', display:'flex', gap:'8px' }}>
-            <input
-              value={cupomDigitado}
-              onChange={e => setCupomDigitado(e.target.value.toUpperCase())}
-              placeholder="Digite o código"
-              style={{ flex:1, padding:'10px 12px', border:'1.5px solid var(--border)', borderRadius:'8px', fontSize:'13px', color:'var(--text-title)', outline:'none', fontFamily:'Geist, system-ui, sans-serif', textTransform:'uppercase' }}
-              onFocus={e => (e.target.style.borderColor = cor)}
-              onBlur={e => (e.target.style.borderColor = 'var(--border)')}
-            />
-            <button style={{ padding:'10px 14px', background:cor, color:'#fff', border:'none', borderRadius:'8px', fontSize:'13px', fontWeight:700, cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif', whiteSpace:'nowrap' }}>
-              Aplicar
-            </button>
-          </div>
-        )}
-      </div>
-
-    </div>
+        <button type="button" className="cp-finalizar" style={{ background: cor }} onClick={() => window.dispatchEvent(new Event('open-cart'))}>Finalizar pedido</button>
+      </>)}
+    </section>
   )
 }
 
-/* ── Desktop Footer ── */
+/* ── Rodapé do computador ── */
 function DeskFooterBar({ design, config, isPro }: any) {
   const nome = design?.nome_loja || 'Confeitaria'
   const ano = new Date().getFullYear()
-
   let cnpj = ''
-  let telefone = ''
-  try {
-    const end = config?.endereco ? JSON.parse(config.endereco) : null
-    if (end?.cnpj) cnpj = end.cnpj
-  } catch {}
-  if (config?.telefone) telefone = config.telefone
-
+  try { const end = config?.endereco ? JSON.parse(config.endereco) : null; if (end?.cnpj) cnpj = end.cnpj } catch {}
   const extras: string[] = []
   if (cnpj) extras.push(`CNPJ: ${cnpj}`)
-  if (isPro && telefone) extras.push(telefone)
-
+  if (isPro && config?.telefone) extras.push(config.telefone)
   return (
-    <div style={{
-      background: '#FAFAFA',
-      padding: '18px 32px',
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      flexWrap: 'wrap', gap: '12px',
-      fontSize: '12px',
-    }}>
-      <div style={{ color: '#6B7280' }}>
-        © {ano} <span style={{ color: '#2C1219', fontWeight: 700 }}>{nome}</span>
-        <span style={{ margin: '0 6px', color: '#D1D5DB' }}>·</span>
-        Todos os direitos reservados
-        {extras.length > 0 && (
-          <>
-            <span style={{ margin: '0 6px', color: '#D1D5DB' }}>·</span>
-            {extras.join(' · ')}
-          </>
-        )}
-      </div>
-      {!isPro && (
-        <div style={{ color: '#9CA3AF' }}>
-          Criado com{' '}
-          <a
-            href="https://doonly.com.br"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: '#6B7280', textDecoration: 'none', fontWeight: 700 }}
-          >
-            Doonly
-          </a>
-        </div>
-      )}
-    </div>
+    <footer className="cp-rod">
+      <span>© {ano} <b>{nome}</b> · Todos os direitos reservados{extras.length > 0 && <> · {extras.join(' · ')}</>}</span>
+      {!isPro && <span>Feito com <a href="https://doonly.com.br" target="_blank" rel="noopener noreferrer">Doonly</a></span>}
+    </footer>
   )
 }
 
@@ -686,19 +389,20 @@ function CardapioContent() {
   )
 
   const isDesktop = device === 'desktop'
+  const categorias = getCategories()
+  const contagem = categorias.reduce((acc: Record<string, number>, c: any) => { acc[c.name] = produtos.filter(p => p.categoria === c.name).length; return acc }, {} as Record<string, number>)
 
-  /* ═══ MOBILE ═══ */
+  /* ═══ CELULAR ═══ */
   if (!isDesktop) {
     return (
-      <div className="min-h-screen relative" style={{ backgroundColor: '#f8f8f8' }}>
-        {/* Caixa dos banners: some quando a loja não tem banner (antes deixava 16px sobrando) */}
+      <div className="min-h-screen relative" style={{ backgroundColor: '#F7F4F5' }}>
+        {/* Caixa dos banners: some quando a loja não tem banner */}
         <style>{`.cp-banner-wrap { margin-top: 16px; } .cp-banner-wrap:empty { display: none; }`}</style>
         <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#E85A8C'} />
 
         {cardapioModelo === 'modelo1' ? (
-          /* ── Modelo 1: o padrão de todas as lojas (02/10) ── */
           <>
-            <CardapioModelo1 design={design} config={config} verificada={isPro} />
+            <CardapioModelo1 design={design} config={config} verificada={isPro} produtos={produtos} />
             <div className="cp-banner-wrap">
               <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
             </div>
@@ -706,43 +410,31 @@ function CardapioContent() {
         ) : (
           /* ── Layout 'Padrão': exclusivo PRO (02/10) ── */
           <>
-            {/* Faixa na cor da loja: degradê + pontilhado sutil (mesmo detalhe do Modelo 1 sem foto) */}
             <div style={{ height: '150px', position: 'relative', overflow: 'hidden',
               backgroundImage: 'linear-gradient(160deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.14) 100%), radial-gradient(circle at 20% 50%, rgba(255,255,255,0.16) 1.2px, transparent 1.3px), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.16) 1.2px, transparent 1.3px), radial-gradient(circle at 50% 80%, rgba(255,255,255,0.16) 1.8px, transparent 1.9px)',
               backgroundSize: '100% 100%, 60px 60px, 80px 80px, 40px 40px',
-              backgroundColor: (() => {
-              const c = design.cor_navbar;
-              const isWhite = !c || ['#fff','#ffffff','#fefefe','white','transparent'].includes((c || '').trim().toLowerCase());
-              if (!isWhite) return c;
-              const cb = design.cor_borda;
-              const cbWhite = !cb || ['#fff','#ffffff','#fefefe','white','transparent'].includes((cb || '').trim().toLowerCase());
-              return cbWhite ? '#E85A8C' : cb;
-            })() }} />
+              backgroundColor: corDoTopo(design) }} />
             <Logo verificada={isPro} logoUrl={design.logo_url} borderColor={design.cor_borda} storeName={design.nome_loja} storeDescription={design.descricao_loja} corNome={corNomeCelular(design.cor_nome)} avaliacaoMedia={config?.avaliacao_media} configuracoes={config} hideStars={design.hide_stars} />
             <div className="cp-banner-wrap">
               <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
             </div>
           </>
         )}
-        <div className="container mx-auto py-4 pb-24" style={{ padding: `${cardapioModelo === 'modelo1' ? 8 : 16}px 10px 96px` }}>
-          {filteredProdutos.length > 0 ? (
+        <div style={{ padding: '0 10px 112px' }}>
+          {produtos.length > 0 ? (
             <ProductList
               produtos={filteredProdutos}
               favorites={favorites}
               onToggleFavorite={toggleFavorite}
-              backgroundColor={design.cor_background||'#fff'}
-              borderColor={design.cor_borda||'#E85A8C'}
-              corBotao={design.cor_botao||'#E85A8C'}
+              backgroundColor={design.cor_background || '#fff'}
+              borderColor={design.cor_borda || '#E85A8C'}
+              corBotao={design.cor_botao || '#E85A8C'}
               selectedCategory={selectedCategory}
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
-              categories={!design.ocultar_categorias ? getCategories().map((c: any) => typeof c === 'string' ? c : c.name) : []}
+              categories={!design.ocultar_categorias ? categorias.map((c: any) => c.name) : []}
               onCategorySelect={!design.ocultar_categorias ? setSelectedCategory : undefined}
-              categoryCounts={getCategories().reduce((acc: Record<string, number>, c: any) => {
-                const nome = typeof c === 'string' ? c : c.name
-                acc[nome] = produtos.filter(p => p.categoria === nome).length
-                return acc
-              }, {} as Record<string, number>)}
+              categoryCounts={contagem}
             />
           ) : <EmptyState />}
         </div>
@@ -751,93 +443,56 @@ function CardapioContent() {
     )
   }
 
-  /* ═══ DESKTOP ═══ */
+  /* ═══ COMPUTADOR ═══ */
+  const temBanner = !!(design.banner_url || (isPro && (design.banner1_url || design.banner2_url || design.banner3_url)))
+  const cor = design.cor_botao || design.cor_borda || '#E85A8C'
   return (
-    <div style={{ minHeight:'100vh', background:'var(--bg-body)', fontFamily:'Geist, system-ui, sans-serif', display:'flex', flexDirection:'column' }}>
-      <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#E85A8C'} />
-      <DeskNav isPro={isPro} design={{...design, cidade_estado: (() => { try { const e = config?.endereco ? JSON.parse(config.endereco) : null; return e?.cidade ? `${e.cidade} - ${e.estado}` : '' } catch { return '' } })() }} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+    <div className="cp-pc">
+      <NavigationMenu corBotao={cor} />
+      <DeskNav isPro={isPro} design={design} config={config} />
 
-      <div style={{ display:'flex', flexDirection:'column', gap:'16px', paddingBottom:'0', paddingTop:'24px', width:'100%', flex: 1 }}>
+      <div className="cp-corpo">
+        {!design.ocultar_categorias && categorias.length > 1 && (
+          <aside className="cp-esq">
+            <DeskCategorias categories={categorias} counts={contagem} total={produtos.length} selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory} cor={corDoTopo(design)} />
+          </aside>
+        )}
 
-        {/* Layout 3 colunas */}
-        <div style={{ display:'grid', gridTemplateColumns:'200px 1fr 340px', gap:'16px', padding:'0 24px', boxSizing:'border-box', width:'100%', alignItems:'start' }}>
-
-          {/* ESQUERDA — Categorias */}
-          <div style={{ position:'sticky', top:'100px' }}>
-            <DeskCategoryDropdown
-              categories={getCategories()}
-              selectedCategory={selectedCategory}
-              onSelectCategory={setSelectedCategory}
-              corBotao={design.cor_botao || '#E85A8C'}
-              navBg={design.cor_navbar || design.cor_borda || '#E85A8C'}
-            />
-          </div>
-
-          {/* CENTRO — Banner + Busca + Título + Produtos */}
-          <div>
-            {/* Banner promocional: antes só aparecia no celular */}
-            {(design.banner_url || (isPro && (design.banner1_url || design.banner2_url || design.banner3_url))) && (
-              <div className="desk-banner" style={{ marginBottom: '16px', marginLeft: '-16px', marginRight: '-16px' }}>
-                <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
-              </div>
-            )}
-            {/* Busca */}
-            <div style={{ position:'relative', marginBottom:'16px', display:'flex', alignItems:'stretch', borderRadius:'10px', overflow:'hidden', border:'1.5px solid var(--border)', background:'var(--bg-card)', transition:'border-color 0.2s' }}
-              onFocusCapture={e => (e.currentTarget.style.borderColor = design.cor_navbar || design.cor_borda || '#E85A8C')}
-              onBlurCapture={e => (e.currentTarget.style.borderColor = 'var(--border)')}
-            >
-              {/* Fundo colorido com ícone na esquerda */}
-              <div style={{ width:'46px', background: design.cor_navbar || design.cor_borda || '#E85A8C', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                <MagnifyingGlass size={20} weight="bold" color="#ffffff" />
-              </div>
-              <input
-                value={searchTerm}
-                onChange={(e: any) => setSearchTerm(e.target.value)}
-                placeholder="Busque por um produto..."
-                style={{
-                  flex:1, padding:'13px 14px', border:'none', outline:'none',
-                  fontSize:'14px', color:'var(--text-primary)',
-                  fontFamily:'inherit', background:'var(--bg-card)',
-                }}
-              />
-              {searchTerm && (
-                <button onClick={() => setSearchTerm('')} style={{ padding:'0 14px', background:'none', border:'none', cursor:'pointer', color:'var(--text-muted)', fontSize:'16px', lineHeight:1 }}>✕</button>
-              )}
+        <main className="cp-meio">
+          {temBanner && (
+            <div className="desk-banner cp-banner">
+              <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
             </div>
-
-            {/* Título */}
-            <div style={{ display:'flex', alignItems:'center', marginBottom:'16px', marginTop:'24px' }}>
-              <h2 style={{ margin:0, fontSize:'20px', fontWeight:800, color:'var(--text-title)' }}>Nosso Cardápio</h2>
+          )}
+          <div className="cp-busca">
+            <MagnifyingGlass size={20} weight="bold" aria-hidden="true" />
+            <input type="search" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Buscar no cardápio" aria-label="Buscar no cardápio" />
+            {searchTerm && <button type="button" aria-label="Limpar a busca" onClick={() => setSearchTerm('')}><X size={18} weight="bold" /></button>}
+          </div>
+          <h2 className="cp-h2">{selectedCategory || 'Cardápio'}<small>{filteredProdutos.length} {filteredProdutos.length === 1 ? 'produto' : 'produtos'}</small></h2>
+          {filteredProdutos.length > 0 ? (
+            <div className="cp-grade">
+              {filteredProdutos.map((p: Produto) => (
+                <DesktopProductCard key={p.id} product={p} isFavorite={favorites.includes(p.id)} onToggleFavorite={toggleFavorite}
+                  backgroundColor={design.cor_background || '#fff'} borderColor={design.cor_borda || '#E85A8C'} corBotao={cor} />
+              ))}
             </div>
+          ) : (
+            <div className="cp-nada"><MagnifyingGlass size={32} aria-hidden="true" /><b>Nenhum produto encontrado</b><span>{searchTerm ? 'Tente buscar com outra palavra.' : 'Escolha outra categoria.'}</span></div>
+          )}
+        </main>
 
-            {/* Produtos */}
-            <DeskProducts
-              produtos={filteredProdutos} favorites={favorites} onToggleFavorite={toggleFavorite}
-              design={design}
-            />
-          </div>
-
-          {/* DIREITA — Sacola + Fidelidade */}
-          <div style={{ position:'sticky', top:'100px', display:'flex', flexDirection:'column', gap:'12px' }}>
-            <DeskSacola cartCount={cartCount} cartTotal={cartTotal} design={design} items={cartItems} />
-            {(config as any).programa_fidelidade_ativo !== false && (
-              <div style={{ background:'var(--bg-card)', borderRadius:'12px', border:'1px solid var(--border)', padding:'16px' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px' }}>
-                  <div style={{ width:'28px', height:'28px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                    <img src="/cashback.svg" alt="" style={{ width:'24px', height:'24px', objectFit:'contain' }} />
-                  </div>
-                  <span style={{ fontWeight:600, fontSize:'13px', color:'var(--text-title)' }}>Programa de Fidelidade</span>
-                </div>
-                <p style={{ margin:0, fontSize:'11px', color:'var(--text-secondary)', lineHeight:1.5 }}>A cada <strong>R$ 50,00</strong> em compras, você acumula <strong>5% de cashback</strong> para descontar no seu próximo pedido.</p>
-              </div>
-            )}
-          </div>
-
-        </div>
-
+        <aside className="cp-dir">
+          <DeskSacola cartCount={cartCount} cartTotal={cartTotal} design={design} items={cartItems} />
+          {(config as any).programa_fidelidade_ativo !== false && (
+            <section className="cp-box cp-fid">
+              <b>Programa de fidelidade</b>
+              <small>A cada R$ 50,00 em compras, você acumula 5% de cashback pra usar no próximo pedido.</small>
+            </section>
+          )}
+        </aside>
       </div>
 
-      <div style={{ flex: 1 }} />
       <DeskFooterBar design={design} config={config} isPro={isPro} />
     </div>
   )
