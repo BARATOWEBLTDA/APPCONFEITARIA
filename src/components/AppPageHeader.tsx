@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   Bell, Cake, CalendarDots, Calculator, Camera, CaretLeft, ChartLineUp, CurrencyDollar, Info, Invoice, Lightbulb,
@@ -20,6 +20,7 @@ import './appPageHeader.css'
  *   · alinhado com a página no tablet em pé e no celular deitado (antes passava 24px de cada lado)
  *   · a janela do (i) é a janela padrão, com ícone desenhado no lugar do emoji
  *   · o menu da foto é o MenuConta, o mesmo do Início e de Pedidos
+ *   · a foto sempre abre esse menu; a câmera (quando não tem foto) abre a escolha da foto
  */
 interface AppPageHeaderProps {
   title: string
@@ -40,26 +41,12 @@ const ICONE_DO_EMOJI: Record<string, Icon> = {
   '📑': ListDashes, '📦': Package, '📰': Newspaper, '🔔': Bell, '🛍️': ShoppingBag, '🛒': ShoppingCart, '🧮': Calculator, '🧾': Invoice, '📋': Receipt,
 }
 
-/** celular (até 767px): a foto abre o menu da conta; de 768px pra cima ela troca a foto */
-function useCelular() {
-  const [celular, setCelular] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches)
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 767px)')
-    const ouvir = () => setCelular(mq.matches)
-    ouvir()
-    mq.addEventListener('change', ouvir)
-    return () => mq.removeEventListener('change', ouvir)
-  }, [])
-  return celular
-}
-
 export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, infoContent, infoTip, rightActions, onBack }: AppPageHeaderProps) {
   const [mostrarInfo, setMostrarInfo] = useState(false)
   const [menuAberto, setMenuAberto] = useState(false)
   const { profile } = useProfile()
   const { fileInputRef, uploading: enviandoFoto, handleFileSelected, cropSrc, cancelCrop, handleCropDone } = useAvatarUpload()
   const foto = useRef<HTMLButtonElement>(null)
-  const celular = useCelular()
   const IconeInfo = (infoIcon && ICONE_DO_EMOJI[infoIcon]) || Info
 
   return (
@@ -81,17 +68,22 @@ export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, in
         </div>
         {rightActions && <div className="cab-acoes">{rightActions}</div>}
         <div className="cab-foto-area">
+          {/* (07/10 · 3.07) a foto abre o menu da conta em todo lugar onde aparece (celular e tablet, até 900px).
+              Antes, de 768px pra cima, ela trocava a foto, e no tablet em pé não havia caminho pra "Sair". */}
           <button
-            ref={foto} type="button" className="cab-foto" disabled={enviandoFoto}
-            onClick={() => { if (celular) setMenuAberto(a => !a); else if (!enviandoFoto) fileInputRef.current?.click() }}
-            aria-label={celular ? 'Abrir o menu da conta' : (profile?.foto_url ? 'Trocar a foto' : 'Colocar uma foto')}
-            aria-haspopup={celular ? 'dialog' : undefined} aria-expanded={celular ? menuAberto : undefined}
+            ref={foto} type="button" className="cab-foto" onClick={() => setMenuAberto(a => !a)}
+            aria-label="Abrir o menu da conta" aria-haspopup="dialog" aria-expanded={menuAberto}
           >
             {profile?.foto_url
               ? <img src={profile.foto_url} alt="" className="cab-foto-img" />
               : <User size={24} weight="bold" aria-hidden="true" />}
           </button>
-          {!profile?.foto_url && <span className="cab-foto-cam" aria-hidden="true"><Camera size={16} weight="bold" /></span>}
+          {/* sem foto: a câmera é o atalho pra colocar uma (agora é um botão de verdade; antes era só enfeite) */}
+          {!profile?.foto_url && (
+            <button type="button" className="cab-foto-cam" disabled={enviandoFoto} onClick={() => fileInputRef.current?.click()} aria-label="Colocar uma foto" title="Colocar uma foto">
+              <Camera size={16} weight="bold" aria-hidden="true" />
+            </button>
+          )}
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelected} style={{ display: 'none' }} tabIndex={-1} aria-hidden="true" />
         </div>
       </header>

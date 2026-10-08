@@ -57,7 +57,7 @@ export default function MenuConta({ aberto, aoFechar, ancora }: Props) {
 
   const itens: { nome: string; Icone: Icon; acao: () => void }[] = [
     { nome: "Notificações", Icone: Bell, acao: () => ir("/notificacoes") },
-    { nome: "Minha conta", Icone: Gear, acao: () => ir("/configuracoes") },
+    { nome: "Configurações", Icone: Gear, acao: () => ir("/configuracoes") },
     { nome: "Minha loja", Icone: Storefront, acao: () => ir("/cardapio-config") },
     { nome: "Assistente virtual", Icone: Sparkle, acao: () => { if (isPro) { aoFechar(); abrirDooIA(); } else ir("/assistente-virtual"); } },
     { nome: "Sugerir uma melhoria", Icone: Lightbulb, acao: () => ir("/solicitar-recurso") },
@@ -77,7 +77,7 @@ export default function MenuConta({ aberto, aoFechar, ancora }: Props) {
         <div className={`mc-veu${aberto ? "" : " mc-veu--saindo"}`} onClick={aoFechar}>
           <div
             ref={caixa} tabIndex={-1} className="mc" role="dialog" aria-modal="true" aria-label="Menu da conta"
-            style={{ top: lugar.topo, right: lugar.direita }} onClick={e => e.stopPropagation()}
+            style={{ top: lugar.topo, right: lugar.direita, maxHeight: `calc(100dvh - ${lugar.topo + 12}px)` }} onClick={e => e.stopPropagation()}
           >
             <div className="mc-cab">
               <p className="mc-cab-n">Doonly Gestão Inteligente</p>

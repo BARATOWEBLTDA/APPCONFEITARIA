@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { STATUS_AINDA_NAO_PRONTO, dataISO } from "@/lib/pedidoStatus";
+import { dataISO } from "@/lib/pedidoStatus";
 import { useNavigate } from "react-router-dom";
-import { CaretRight, WarningCircle, Clock, Cake, Trophy, TrendUp, TrendDown, Camera, Moon } from "@phosphor-icons/react";
+import { CaretRight, Clock, Cake, Trophy, TrendUp, TrendDown, Camera, Moon } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
@@ -76,15 +76,13 @@ export default function MinhasAtualizacoes() {
       setLoading(true);
       const userId = profile.id;
       const hoje = new Date();
-      // (07/10 · 3.02) datas no horário do Brasil: antes, depois das 21h, "hoje" já era amanhã e a semana ganhava um dia
-      const hojeISO = dataISO(hoje);
+      // (07/10 · 3.02) datas no horário do Brasil: antes, depois das 21h, a semana ganhava um dia
       const semana = inicioFimSemana();
       const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString(); // o instante exato em que o mês começou aqui
       const inicioMesAnt = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1).toISOString();
       const dataLimite60d = new Date(hoje); dataLimite60d.setDate(hoje.getDate() - 60);
 
       const [
-        pedidosAtrasadosRes,
         entregasSemanaRes,
         clientesRes,
         produtosSemFotoRes,
@@ -93,13 +91,6 @@ export default function MinhasAtualizacoes() {
         totalPedidosRes,
         clientesComVendaRes,
       ] = await Promise.all([
-        // 1. Pedidos atrasados: data passou e ainda não ficou pronto (regra única em lib/pedidoStatus)
-        supabase
-          .from("pedidos")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", userId)
-          .lt("data_entrega", hojeISO)
-          .in("status", STATUS_AINDA_NAO_PRONTO),
         // 2. Entregas essa semana
         supabase
           .from("pedidos")
@@ -152,23 +143,7 @@ export default function MinhasAtualizacoes() {
 
       const lista: Update[] = [];
 
-      // 1️⃣ Pedidos atrasados (prioridade máxima)
-      const nAtrasados = pedidosAtrasadosRes.count || 0;
-      if (nAtrasados > 0) {
-        lista.push({
-          key: "atrasados",
-          Icone: WarningCircle,
-          categoria: "Urgente",
-          categoriaCor: "vermelho",
-          titulo: `${nAtrasados} ${nAtrasados === 1 ? "pedido atrasado" : "pedidos atrasados"}`,
-          descricao: nAtrasados === 1
-            ? "Uma entrega passou da data — atualize o status."
-            : `${nAtrasados} entregas passaram da data — atualize os status.`,
-          cta: nAtrasados === 1 ? "Ver o pedido" : "Ver os pedidos",
-          path: "/pedidos?filtro=atrasados",
-          prioridade: 100,
-        });
-      }
+      // (07/10 · 3.07) Os pedidos atrasados saíram daqui: já aparecem no "Seu dia", no topo do Início, e estavam repetidos.
 
       // 2️⃣ Entregas essa semana
       const nEntregas = entregasSemanaRes.count || 0;

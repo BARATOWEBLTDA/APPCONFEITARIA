@@ -535,20 +535,14 @@ export default function Inicio() {
           </g>
         </svg>
 
-        {/* Foto da confeiteira — no mobile abre menu, no desktop abre seletor de foto */}
+        {/* Foto da confeiteira — abre o menu da conta (celular e tablet). A câmera, quando não tem foto, abre a escolha da foto. */}
         <div className="ini-profile-wrapper" data-has-photo={profile?.foto_url ? "true" : "false"}>
           <button
             ref={fotoRef}
             className="ini-profile-btn"
-            onClick={() => {
-              if (window.innerWidth < 768) {
-                setMenuOpen(o => !o);
-              } else if (!uploadingFoto) {
-                fileInputRef.current?.click();
-              }
-            }}
-            aria-label={window.innerWidth < 768 ? "Abrir o menu da conta" : (profile?.foto_url ? "Trocar a foto" : "Colocar uma foto")}
-            title={window.innerWidth < 768 ? "Menu da conta" : (profile?.foto_url ? "Trocar a foto" : "Colocar uma foto")}
+            onClick={() => setMenuOpen(o => !o)}
+            aria-label="Abrir o menu da conta" aria-haspopup="dialog" aria-expanded={menuOpen}
+            title="Menu da conta"
             disabled={uploadingFoto}
           >
             {profile?.foto_url
@@ -643,14 +637,25 @@ export default function Inicio() {
         const proxHora = proximasEntregas.find(e => e.data === hojeISO && e.hora)?.hora;
         const partes: string[] = [];
         if (counts.entregasHoje > 0) partes.push(`${counts.entregasHoje} ${counts.entregasHoje === 1 ? "entrega" : "entregas"} hoje`);
-        if (counts.pedidosAtrasados > 0) partes.push(`${counts.pedidosAtrasados} ${counts.pedidosAtrasados === 1 ? "pedido atrasado" : "pedidos atrasados"}`);
+        const txtAtrasados = counts.pedidosAtrasados > 0 ? `${counts.pedidosAtrasados} ${counts.pedidosAtrasados === 1 ? "pedido atrasado" : "pedidos atrasados"}` : "";
+        if (txtAtrasados) partes.push(txtAtrasados);
         if (aReceberHoje > 0) partes.push(`${formatCurrency(aReceberHoje)} em entregas hoje`);
         return (
           <div className="ini-dk">
             <div className="ini-dk-top">
               <div className="ini-dk-txt">
                 <h1>Seu dia hoje</h1>
-                <p>{loading ? "Carregando…" : partes.length ? partes.join(" · ") : "Nenhuma entrega hoje · aproveite pra divulgar seu cardápio"}</p>
+                <p>
+                  {loading ? "Carregando…" : erroCarga ? "Não deu pra carregar o seu dia. Confira a internet e atualize a página." : !partes.length ? "Nenhuma entrega hoje · aproveite pra divulgar seu cardápio"
+                    : partes.map((t, i) => (
+                      <span key={t}>
+                        {i > 0 && " · "}
+                        {t === txtAtrasados
+                          ? <button type="button" className="ini-dk-atr" onClick={() => navigate("/pedidos?filtro=atrasados")}>{t}</button>
+                          : t}
+                      </span>
+                    ))}
+                </p>
               </div>
               <div className="ini-dk-bts">
                 <button type="button" className="ini-dk-bt ini-dk-bt--1" onClick={() => navigate("/vendas/novo")}><Plus size={16} weight="bold" /> Nova venda</button>
@@ -728,7 +733,7 @@ export default function Inicio() {
             { Icone: CurrencyDollar, label: "Financeiro",    sub: "Entradas e saídas",     path: "/financeiro",    key: "financeiro" },
             { Icone: Cake,           label: "Produtos",      sub: "O que você vende",      path: "/produtos",      key: "produtos" },
             { Icone: ClipboardText,  label: "Ficha técnica", sub: "Custo e lucro",         path: "/ficha-tecnica", key: "ficha" },
-            { Icone: Gear,           label: "Ajustes",       sub: "Conta e preferências",  path: "/configuracoes", key: "configuracoes" },
+            { Icone: Gear,           label: "Configurações", sub: "Conta e preferências",  path: "/configuracoes", key: "configuracoes" },
           ].map((item) => (
             <button key={item.path} className="ini-nav-card" data-nav={item.key} onClick={() => navigate(item.path)}>
               <div className="ini-nav-icon"><item.Icone size={isMobile ? 24 : 20} weight="bold" /></div>
@@ -997,8 +1002,8 @@ export default function Inicio() {
           display: none !important;
           visibility: hidden !important;
         }
-        /* Câmera some no desktop mesmo sem foto (avatar é grande, não precisa) */
-        @media (min-width: 768px) {
+        /* A câmera aparece onde este topo aparece (até 900px); no computador a foto fica no menu lateral */
+        @media (min-width: 901px) {
           .ini-profile-cam {
             display: none !important;
             visibility: hidden !important;
@@ -1631,7 +1636,9 @@ export default function Inicio() {
             background: #FFEEF3 !important;
             color: #C2416D !important;
           }
-          .ini-root .ini-nav-icon svg { width: 26px; height: 26px; }
+          .ini-root .ini-nav-icon svg { width: 24px; height: 24px; }
+          /* celular pequeno: sem a setinha, pra "Configurações" caber inteiro */
+          @media (max-width: 389px) { .ini-root .ini-nav-card, .ini-root .ini-nav-card[data-nav] { padding-right: 8px; } .ini-root .ini-nav-arrow { display: none; } }
           .ini-root .ini-nav-meta { margin-left: 10px; gap: 0; }
           .ini-root .ini-nav-card .ini-nav-label {
             margin-top: 0;
@@ -1661,6 +1668,9 @@ export default function Inicio() {
           .ini-dk-top::after { content: ""; position: absolute; right: -70px; top: -80px; width: 260px; height: 260px; border-radius: 50%; background: rgba(255,255,255,.08); pointer-events: none; }
           .ini-dk-txt h1 { font-size: 22px; font-weight: 900; letter-spacing: -.02em; margin: 0; color: #fff; }
           .ini-dk-txt p { font-size: 14.5px; margin: 6px 0 0; color: rgba(255,255,255,.92); }
+          .ini-dk-atr { position: relative; z-index: 1; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+          .ini-dk-atr::after { content: ""; position: absolute; inset: -12px -4px; } /* área de toque de 44px */
+          .ini-dk-atr:focus-visible { outline: 3px solid rgba(255, 255, 255, .75); outline-offset: 2px; border-radius: 4px; }
           .ini-dk-bts { display: flex; gap: 10px; position: relative; z-index: 1; }
           .ini-dk-bt { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: 12px; font-family: inherit; font-size: 14.5px; font-weight: 800; cursor: pointer; white-space: nowrap; }
           .ini-dk-bt--1 { border: none; background: #fff; color: #C33A6E; box-shadow: 0 4px 12px rgba(0,0,0,.12); }

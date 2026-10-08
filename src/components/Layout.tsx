@@ -189,7 +189,7 @@ export default function Layout() {
           <ItemMenu to="/agenda" icone={CalendarDots}>Agenda</ItemMenu>
           <ItemMenu to="/receitas" icone={BookOpen} ativoSe={c => c.startsWith("/comunidade")}>Receitas</ItemMenu>
           <ItemMenu to="/financeiro" icone={CurrencyDollar}>Financeiro</ItemMenu>
-          <ItemMenu to="/configuracoes" icone={Gear}>Minha conta</ItemMenu>
+          <ItemMenu to="/configuracoes" icone={Gear}>Configurações</ItemMenu>
         </nav>
       </aside>
 
