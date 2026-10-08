@@ -52,7 +52,7 @@ export default function QuadroPedidos({ pedidos, aoAbrir, aoAvancar, aoMover, mu
                     <Linha rotulo={p.tipo_entrega === 'entrega' ? 'Entrega' : 'Retirada'} tom={atr ? 'vermelho' : undefined}>{dataCurta(p.data_entrega, p.horario_entrega)}</Linha>
                     {!cancelado && (falta > 0.009 ? <Linha rotulo="Pagamento" tom="laranja">Falta {rs(falta, true)}</Linha> : <Linha rotulo="Pagamento" tom="verde">Pago</Linha>)}
                   </div>
-                  {acao && <Botao variante="suave" tamanho="p" cheio carregando={mudando === p.id} onClick={e => { e.stopPropagation(); aoAvancar(p) }}>{acao.rotulo}</Botao>}
+                  {acao && <Botao tamanho="p" cheio carregando={mudando === p.id} onClick={e => { e.stopPropagation(); aoAvancar(p) }}>{acao.rotulo}</Botao>}
                 </article>
               )
             })}

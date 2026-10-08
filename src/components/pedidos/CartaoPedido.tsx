@@ -10,6 +10,7 @@ import { acaoDe, atrasado, criadoEm, dataLonga, enderecoCurto, fotoDoPedido, hor
  *   CartaoPedido: celular e tablet. Rótulo + texto, botão do próximo passo, setinha que abre os detalhes.
  *   LinhaPedido: computador. Uma linha por pedido, com as mesmas palavras do cartão.
  * O cartão inteiro abre a tela do pedido; os botões de dentro fazem só o que dizem.
+ * (08/10 · 3.12) O botão do próximo passo voltou a ser rosa forte: o rosa clarinho parecia etiqueta.
  */
 type Props = {
   p: Pedido
@@ -60,7 +61,7 @@ export function CartaoPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudand
       <div className="pdc-linhas">
         <div className="pdc-l1">
           <Linha rotulo="Situação" tom={sit.tom}>{sit.nome}</Linha>
-          {acao && <Botao variante="suave" tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{acao.rotulo}</Botao>}
+          {acao && <Botao tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{acao.rotulo}</Botao>}
         </div>
         {!cancelado && (falta > 0.009 ? <Linha rotulo="Pagamento" tom="laranja">Falta {rs(falta, true)}</Linha> : <Linha rotulo="Pagamento" tom="verde">Pago</Linha>)}
         <Linha rotulo={entrega ? 'Entrega' : 'Retirada'} tom={atr ? 'vermelho' : undefined}>{dataLonga(p.data_entrega, p.horario_entrega)}</Linha>
@@ -120,7 +121,7 @@ export function LinhaPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudando
         <small>{entrega ? 'Entrega' : 'Retirada'}{entrega && <> · <button type="button" className="pdl-end" onClick={parar(() => aoEndereco(p))}>ver endereço</button></>}</small>
       </p>
       <div className="pdl-acao" role="cell">
-        {acao && <Botao variante="suave" tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{acao.rotulo}</Botao>}
+        {acao && <Botao tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{acao.rotulo}</Botao>}
       </div>
       <div role="cell">
         <BotaoIcone rotulo="Mais ações" variante="limpo" tamanho="p" onClick={parar(() => aoMenu(p))}><DotsThreeVertical size={20} weight="bold" /></BotaoIcone>
