@@ -1,5 +1,16 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import Cropper from 'react-easy-crop'
+import { MagnifyingGlassMinus, MagnifyingGlassPlus, X } from '@phosphor-icons/react'
+import { Botao, BotaoIcone, avisar } from '@/components/base'
+import { useSobreposicao } from '@/components/base/useSobreposicao'
+import './imageCropper.css'
+
+/**
+ * Recortar foto (08/10 · 3.20, no padrão do guia). Usada na foto do perfil, na logo da loja e na foto do produto.
+ * Título e dica, foto maior com moldura branca, zoom com botões de 44px dos lados, "Cancelar" e "Usar esta foto".
+ * No celular sobe de baixo (como as janelas do app); no tablet e no computador fica no centro.
+ * Esc e o "voltar" do Android fecham sem salvar. O recorte e a qualidade da foto salva são os mesmos de antes.
+ */
 
 interface Props {
   imageSrc: string
@@ -33,32 +44,41 @@ export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCanc
   const [zoom, setZoom] = useState(1)
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null)
   const [loading, setLoading] = useState(false)
+  const caixa = useRef<HTMLDivElement>(null)
+  const cancelar = () => { if (!loading) onCancel() }
+  useSobreposicao(true, cancelar, caixa)
 
   const onCropComplete = useCallback((_: any, pixels: any) => {
     setCroppedAreaPixels(pixels)
   }, [])
 
+  const mudarZoom = (d: number) => setZoom(z => Math.min(3, Math.max(1, Math.round((z + d) * 100) / 100)))
+
   const handleDone = async () => {
+    if (!croppedAreaPixels || loading) return
     setLoading(true)
     try {
       const blob = await getCroppedImg(imageSrc, croppedAreaPixels)
       onCropDone(blob)
     } catch (e) {
       console.error(e)
+      avisar('Não deu pra usar essa foto. Tente outra.', { tipo: 'erro' })
     }
     setLoading(false)
   }
 
   return (
-    <div className="ic-overlay">
-      <div className="ic-modal">
-        {/* Header: só o X */}
-        <div className="ic-hdr">
-          <button className="ic-close" onClick={onCancel} aria-label="Fechar">✕</button>
+    <div className="rf-veu" onClick={e => { if (e.target === e.currentTarget) cancelar() }}>
+      <div className="rf" ref={caixa} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="rf-titulo">
+        <div className="rf-topo">
+          <div>
+            <h2 id="rf-titulo">{cropShape === 'round' ? 'Ajustar a foto' : 'Ajustar a foto do produto'}</h2>
+            <p>Arraste pra posicionar. Aproxime com os dedos ou com a barra.</p>
+          </div>
+          <BotaoIcone rotulo="Fechar sem salvar" variante="limpo" onClick={cancelar} disabled={loading}><X size={20} weight="bold" /></BotaoIcone>
         </div>
 
-        {/* Área do crop */}
-        <div className="ic-crop-area">
+        <div className="rf-area">
           <Cropper
             image={imageSrc}
             crop={crop}
@@ -70,209 +90,28 @@ export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCanc
             onCropComplete={onCropComplete}
             onZoomChange={setZoom}
             style={{
-              containerStyle: { background: '#1a1a1a' },
-              cropAreaStyle: {
-                border: `2px solid #ec4899`,
-                boxShadow: '0 0 0 9999px rgba(0,0,0,0.55)',
-              },
+              containerStyle: { background: '#2C1219' },
+              cropAreaStyle: { border: '2px solid #fff', boxShadow: '0 0 0 9999px rgba(44, 18, 25, .6)' },
             }}
           />
         </div>
 
-        {/* Slider (limpo, sem ícones) + texto embaixo */}
-        <div className="ic-slider-wrap">
-          <div className="ic-slider-track-wrap">
-            <input
-              type="range"
-              min={1}
-              max={3}
-              step={0.05}
-              value={zoom}
-              onChange={e => setZoom(Number(e.target.value))}
-              className="ic-slider"
-              aria-label="Zoom"
-              style={{ ['--fill' as any]: `${((zoom - 1) / 2 * 100).toFixed(1)}%` }}
-            />
-          </div>
-          <p className="ic-hint">Ajuste a melhor posição para sua foto</p>
+        <div className="rf-zoom">
+          <BotaoIcone rotulo="Afastar" onClick={() => mudarZoom(-0.2)} disabled={zoom <= 1}><MagnifyingGlassMinus size={20} weight="bold" /></BotaoIcone>
+          <input
+            type="range" min={1} max={3} step={0.05} value={zoom}
+            onChange={e => setZoom(Number(e.target.value))}
+            aria-label="Aproximar a foto"
+            style={{ ['--fill' as any]: `${((zoom - 1) / 2 * 100).toFixed(1)}%` }}
+          />
+          <BotaoIcone rotulo="Aproximar" onClick={() => mudarZoom(0.2)} disabled={zoom >= 3}><MagnifyingGlassPlus size={20} weight="bold" /></BotaoIcone>
         </div>
 
-        {/* Botão confirmar 3D rosa */}
-        <div className="ic-footer">
-          <button className="ic-btn-confirm" onClick={handleDone} disabled={loading}>
-            {loading ? "..." : (
-              <>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: 6}}><polyline points="20 6 9 17 4 12"/></svg>
-                Confirmar
-              </>
-            )}
-          </button>
+        <div className="rf-pe">
+          <Botao variante="secundario" onClick={cancelar} disabled={loading}>Cancelar</Botao>
+          <Botao onClick={handleDone} carregando={loading}>Usar esta foto</Botao>
         </div>
       </div>
-
-      <style>{`
-        .ic-overlay {
-          position: fixed; inset: 0; z-index: 9999;
-          background: rgba(45, 31, 38, 0.7);
-          backdrop-filter: blur(6px);
-          display: flex; align-items: center; justify-content: center;
-          padding: 16px;
-          font-family: var(--font-base) !important;
-          animation: icOvIn 0.2s ease;
-        }
-        @keyframes icOvIn { from { opacity: 0; } to { opacity: 1; } }
-        .ic-modal {
-          background: #fff;
-          border-radius: 20px;
-          width: 100%;
-          max-width: 440px;
-          overflow: hidden;
-          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-          display: flex; flex-direction: column;
-          animation: icModalIn 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-        @keyframes icModalIn {
-          from { opacity: 0; transform: scale(0.94); }
-          to   { opacity: 1; transform: scale(1); }
-        }
-        .ic-modal, .ic-modal * { font-family: var(--font-base) !important; }
-
-        /* Header discreto — só X */
-        .ic-hdr {
-          display: flex; justify-content: flex-end;
-          padding: 12px 12px 0;
-        }
-        .ic-close {
-          width: 34px; height: 34px;
-          border-radius: 50%;
-          background: #F5EEF0;
-          color: #6B5D64;
-          border: none;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 16px;
-          font-weight: 900;
-          cursor: pointer;
-          transition: all 0.15s ease;
-          font-family: var(--font-base) !important;
-        }
-        .ic-close:hover {
-          background: #2D1F26;
-          color: #fff;
-        }
-
-        /* Área do crop */
-        .ic-crop-area {
-          position: relative;
-          width: calc(100% - 40px);
-          margin: 12px 20px 0;
-          height: 300px;
-          background: #1a1a1a;
-          border-radius: 10px;
-          overflow: hidden;
-        }
-
-        /* Slider */
-        .ic-slider-wrap {
-          padding: 20px 20px 8px;
-          display: flex; flex-direction: column;
-          align-items: center;
-          gap: 10px;
-        }
-        .ic-slider-track-wrap {
-          width: 60%;
-        }
-        .ic-slider {
-          width: 100%;
-          height: 8px;
-          background: #F0EBED;
-          border-radius: 999px;
-          -webkit-appearance: none;
-          appearance: none;
-          cursor: pointer;
-          outline: none;
-        }
-        /* Preenchimento gradient rosa (Chrome/Safari) */
-        .ic-slider::-webkit-slider-runnable-track {
-          height: 8px;
-          border-radius: 999px;
-          background: linear-gradient(90deg, #E85A8C 0%, #E85A8C var(--fill, 45%), #F0EBED var(--fill, 45%), #F0EBED 100%);
-        }
-        .ic-slider::-moz-range-track {
-          height: 8px;
-          border-radius: 999px;
-          background: #F0EBED;
-        }
-        .ic-slider::-moz-range-progress {
-          height: 8px;
-          border-radius: 999px;
-          background: linear-gradient(90deg, #E85A8C, #C33A6E);
-        }
-        /* Thumb branco com borda rosa */
-        .ic-slider::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 20px; height: 20px;
-          background: #fff;
-          border: 3px solid #E85A8C;
-          border-radius: 50%;
-          box-shadow: 0 3px 10px rgba(232, 90, 140, 0.4);
-          cursor: pointer;
-          margin-top: -6px;
-          transition: transform 0.12s ease;
-        }
-        .ic-slider::-webkit-slider-thumb:hover {
-          transform: scale(1.15);
-        }
-        .ic-slider::-moz-range-thumb {
-          width: 20px; height: 20px;
-          background: #fff;
-          border: 3px solid #E85A8C;
-          border-radius: 50%;
-          box-shadow: 0 3px 10px rgba(232, 90, 140, 0.4);
-          cursor: pointer;
-        }
-        .ic-hint {
-          font-size: 12px;
-          color: #6B5D64;
-          font-weight: 500;
-          font-style: italic;
-          margin: 0;
-          text-align: center;
-        }
-
-        /* Footer com botão confirmar 3D */
-        .ic-footer {
-          display: flex;
-          padding: 12px 20px 20px;
-          padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-        }
-        .ic-btn-confirm {
-          flex: 1;
-          padding: 14px;
-          background: #E85A8C;
-          color: #fff;
-          border: none;
-          border-radius: 12px;
-          font-size: 14px;
-          font-weight: 900;
-          text-transform: uppercase;
-          letter-spacing: 0.03em;
-          box-shadow: 0 4px 0 #C33A6E;
-          cursor: pointer;
-          display: flex; align-items: center; justify-content: center;
-          font-family: var(--font-base) !important;
-          transition: transform 0.08s ease, box-shadow 0.08s ease;
-        }
-        .ic-btn-confirm:hover:not(:disabled) { filter: brightness(1.05); }
-        .ic-btn-confirm:active:not(:disabled) {
-          transform: translateY(4px);
-          box-shadow: 0 0 0 #C33A6E;
-        }
-        .ic-btn-confirm:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-      `}</style>
     </div>
   )
 }
