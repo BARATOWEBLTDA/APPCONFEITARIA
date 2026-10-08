@@ -2,7 +2,13 @@ import CalendarioSheet from '@/components/CalendarioSheet'
 import CampoData from '@/components/CampoData'
 import { DotsThree, Check, Heart, Plus, NotePencil, Trash, PencilSimple, ArrowUp, ArrowCounterClockwise, CalendarBlank, Image as ImageIcon, CaretRight, Phone, ArrowsDownUp, Cake } from '@phosphor-icons/react'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
-import DialogoApp, { type DialogoOpcoes, type IconeDialogo } from '@/components/DialogoApp'
+import { type DialogoOpcoes, type IconeDialogo } from '@/components/DialogoApp'
+import AppPageHeader from '@/components/AppPageHeader'
+import { Botao, BotaoIcone, CampoArea, Janela, Linha, Titulo, avisar as avisarBase, confirmar, informar } from '@/components/base'
+import { ArrowsLeftRight, Clock, CreditCard, DotsThreeVertical, Package, Truck, WhatsappLogo } from '@phosphor-icons/react'
+import { SITUACOES, avisoDaMudanca, dataLonga, grupoDoStatus, nomeDaSituacao, nomeDeProduto } from '@/components/pedidos/pedidoTexto'
+import { tocarSom } from '@/hooks/useSom'
+import '@/components/pedidos/telaPedido.css'
 import { Paperclip, MagnifyingGlassPlus, Quotes, MapPin, MapTrifold, Copy, Money, Storefront, Tag } from '@phosphor-icons/react'
 import { CartProvider } from '@/context/CartContext'
 import { ProductModal } from '@/components/cart/ProductModal'
@@ -377,13 +383,10 @@ export default function EditarPedido() {
   const [finalizarAberto, setFinalizarAberto] = useState(false)
   const [devolverSinal, setDevolverSinal] = useState<boolean | null>(null)
   const [recadoEditando, setRecadoEditando] = useState<number | null>(null)
-  const [aviso, setAviso] = useState('')
   // janela do app (no lugar do alert/confirm do navegador)
-  const [dialogo, setDialogo] = useState<(DialogoOpcoes & { tipo: 'aviso' | 'confirmar' }) | null>(null)
-  const resolverDialogo = useRef<((ok: boolean) => void) | null>(null)
-  const avisarJanela = (titulo: string, texto?: string, icone: IconeDialogo = 'alerta') => setDialogo({ tipo: 'aviso', titulo, texto, icone })
-  const confirmarJanela = (o: DialogoOpcoes) => new Promise<boolean>(res => { resolverDialogo.current = res; setDialogo({ tipo: 'confirmar', ...o }) })
-  const fecharDialogo = (ok: boolean) => { setDialogo(null); resolverDialogo.current?.(ok); resolverDialogo.current = null }
+  // janelas do app (08/10 · 3.15): a de aviso e a de confirmar são as peças padrão
+  const avisarJanela = (titulo: string, texto?: string, icone: IconeDialogo = 'alerta') => { informar({ titulo, texto, icone }) }
+  const confirmarJanela = (o: DialogoOpcoes) => confirmar({ titulo: o.titulo, texto: o.texto, icone: o.icone, rotulo: o.rotuloConfirmar, perigo: o.perigo })
   // Excluir pedido (03/10): veio da janela da lista, que saiu; aqui fica longe do toque fácil
   const excluirPedido = async () => {
     const ok = await confirmarJanela({ titulo: `Excluir o pedido #${pedido?.numero ?? ''}?`, texto: 'Ele some da lista, da agenda e do financeiro. Não dá pra desfazer. Se a cliente só desistiu, prefira "Cancelar pedido".', icone: 'erro', rotuloConfirmar: 'Excluir', perigo: true })
@@ -394,7 +397,6 @@ export default function EditarPedido() {
     navigate('/pedidos')
   }
   const snapshotRef = useRef<string | null>(null)
-  useTravarRolagem(menuAberto || etapasAberto)
 
   const carregarPagamentos = async (pid: string) => {
     const r = await supabase.from('pagamentos').select('id, valor, forma, tipo, recebido_em, estornado_em, created_at').eq('pedido_id', pid).order('created_at', { ascending: true })
@@ -419,11 +421,10 @@ export default function EditarPedido() {
     }
     await carregarPagamentos(pedido.id)
   }
-  const avisar = (m: string) => { setAviso(m); setTimeout(() => setAviso(''), 3500) }
+  const avisar = (m: string) => avisarBase(m)
 
   // ── Itens (03/10): fechados com resumo, abrem ao tocar; remover com "Desfazer"; adicionar com opções ──
   const [itemMenu, setItemMenu] = useState<number | null>(null) // ⋯ de um item
-  useTravarRolagem(itemMenu !== null)
   const num2 = (v: number) => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   const [removido, setRemovido] = useState<{ item: any; idx: number } | null>(null)
   const removidoTimer = useRef<any>(null)
@@ -1113,7 +1114,8 @@ export default function EditarPedido() {
     const label = (STATUS_CONFIG[novo] || {}).label || novo
     supabase.from('pedido_historico').insert({ pedido_id: pedido.id, evento: label, descricao: `Status alterado para "${label}"` }).then(() => {}, () => {})
     setStatusPedido(novo); setPedido(p => p ? { ...p, status: novo } : p)
-    avisar(`Pedido em "${label}".`)
+    avisar(avisoDaMudanca({ numero: pedido.numero } as any, novo))
+    if (novo === 'entregue') tocarSom('sucesso')
   }
   const estornarPagamento = async (g: any) => {
     const ok = await confirmarJanela({ titulo: `Estornar ${formatMoney(Number(g.valor) || 0)}?`, texto: 'Use quando o recebimento foi lançado errado. O valor sai do caixa e volta a faltar neste pedido. Ele continua no histórico, riscado.', icone: 'estorno', rotuloConfirmar: 'Estornar', perigo: true })
@@ -1129,65 +1131,52 @@ export default function EditarPedido() {
   // ── Loading state ────────────────────────────────────────────────────
   if (carregando || !pedido) {
     return (
-      <div className="ep-loading">
-        <div className="ep-spinner" />
-        <p>Carregando pedido...</p>
-        <style>{`
-          .ep-loading { min-height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: #888780; font-family: var(--font-base) !important; }
-          .ep-spinner { width: 32px; height: 32px; border: 3px solid #F1EFE8; border-top-color: #E85A8C; border-radius: 50%; animation: epspin 0.8s linear infinite; }
-          @keyframes epspin { to { transform: rotate(360deg); } }
-        `}</style>
-      </div>
+      <>
+        <AppPageHeader title="Pedido" subtitle="Abrindo o pedido…" onBack={() => navigate('/pedidos')} />
+        <p className="tpd-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando o pedido…</p>
+      </>
     )
   }
 
-  return (
-    <div className="ep-wrap ep2">
-      {/* ══════════════ CABEÇALHO (padrão rosa do app) ══════════════ */}
-      <div className="ep2-hd">
-        <button className="ep2-hd-bt" onClick={() => navigate('/pedidos')} aria-label="Voltar"><I.chevL /></button>
-        <div className="ep2-hd-t">
-          <b>Pedido #{pedido.numero || '—'}</b>
-          {/* Uma linha só: só o nome encolhe (com "…"); a data e a hora ficam sempre inteiras */}
-          {/* Uma linha só: "Bruno, Sábado 10/10/26 às 14h". Se faltar espaço, só o nome encolhe; a data fica inteira */}
-          <small className="ep2-hd-sub">
-            {clienteNome.trim() && <><span className="ep2-hd-nome">{toTitleCase(clienteNome.trim().split(/\s+/)[0])}</span><span className="ep2-hd-virg">,</span></>}
-            <span className="ep2-hd-quando">{quandoCabecalho(dataEntrega, horarioEntrega)}</span>
-          </small>
-        </div>
-        <span className="ep2-hd-orig">{origemLabel}</span>
-        {/* no celular, "Acompanhar pedido" fica só no menu ⋯ (abre espaço pra linha de baixo) */}
-        <button className="ep2-hd-bt ep2-so-desk" onClick={() => setTimelineAberto(true)} aria-label="Acompanhar pedido" title="Acompanhar pedido"><I.clock /></button>
-        <button className="ep2-hd-bt ep2-so-desk" onClick={handleExportarPDF} aria-label="Imprimir" title="Imprimir / PDF"><I.print /></button>
-        <button className="ep2-hd-bt" onClick={() => setMenuAberto(true)} aria-label="Mais opções"><DotsThree size={22} weight="bold" /></button>
-      </div>
+  // ── Topo da tela (08/10 · 3.15): situação, entrega, aviso e o próximo passo num cartão só ──
+  const grupoAtual = grupoDoStatus(statusPedido)
+  const situacao = { nome: nomeDaSituacao(grupoAtual), tom: SITUACOES.find(x => x.chave === grupoAtual)?.tom }
+  const atrasadoHoje = !!dataEntrega && dataEntrega.slice(0, 10) < hojeISO() && !['entregue', 'cancelado'].includes(grupoAtual)
+  const novoPedido = grupoAtual === 'aguardando_aceite'
+  const origemTexto = pedido.origem === 'cardapio' ? 'Pedido feito pelo cardápio digital' : 'Pedido lançado por você'
+  const subtituloTopo = `${primeiroNome ? `${primeiroNome} · ` : ''}${dataLonga(dataEntrega, horarioEntrega)}`
 
-      {/* ══════════════ ETAPAS ══════════════ */}
-      <div className="ep2-st">
-        {statusPedido === 'cancelado' ? (
-          <div className="ep2-st-cancel">Pedido cancelado</div>
-        ) : (<>
-          {(statusPedido === 'aguardando_pagamento' || statusPedido === 'aguardando_aceite') && <div className="ep2-st-chip">{(STATUS_CONFIG[statusPedido] || {}).label}</div>}
-          <div className="ep2-st-l" style={{ ['--prog' as any]: String(statusPedido === 'entregue' ? 1 : posEtapa / (ETAPAS.length - 1)) }}>
+  return (
+    <>
+    <AppPageHeader title={`Pedido #${pedido.numero || '—'}`} subtitle={subtituloTopo} onBack={() => navigate('/pedidos')} />
+    <div className="ep-wrap ep2 tpd">
+      <section className={`tpd-sit${novoPedido ? ' aceitar' : ''}${atrasadoHoje ? ' atr' : ''}`} aria-label="Situação do pedido">
+        <div className="tpd-sit-l">
+          <div className="tpd-sit-tx">
+            <Linha rotulo="Situação" tom={situacao.tom}>{situacao.nome}</Linha>
+            <Linha rotulo={tipoEntrega === 'entrega' ? 'Entrega' : 'Retirada'} tom={atrasadoHoje ? 'vermelho' : undefined}>{dataLonga(dataEntrega, horarioEntrega)}</Linha>
+            {atrasadoHoje && <p className="tpd-aviso atr">A data de entrega já passou.</p>}
+            {novoPedido && <p className="tpd-aviso">{pedido.origem === 'cardapio' ? 'Chegou pelo cardápio. Aceite pra entrar na sua agenda.' : 'Aceite pra entrar na sua agenda.'}</p>}
+          </div>
+          <BotaoIcone rotulo="Mais ações" variante="limpo" className="tpd-mais" onClick={() => setMenuAberto(true)}><DotsThreeVertical size={24} weight="bold" /></BotaoIcone>
+        </div>
+        {statusPedido !== 'cancelado' && (
+          <ol className="tpd-passos" aria-label="Etapas do pedido">
             {ETAPAS.map((n, i) => {
               const feita = i < posEtapa || statusPedido === 'entregue'
               const atual = !feita && i === posEtapa && !['aguardando_pagamento', 'aguardando_aceite'].includes(statusPedido)
-              return (
-                <span key={i} className={`ep2-st-p ${feita ? 'ok' : atual ? 'atual' : ''}`}>
-                  <i>{feita ? <Check size={12} weight="bold" /> : i + 1}</i>{n}
-                </span>
-              )
+              return <li key={i} className={feita ? 'feita' : atual ? 'atual' : ''} aria-current={atual ? 'step' : undefined}><i>{feita ? <Check size={14} weight="bold" /> : i + 1}</i><span>{n}</span></li>
             })}
-          </div>
-          {proximaEtapa ? <button className="ep2-st-bt" onClick={() => irParaEtapa(proximaEtapa.s)}>{proximaEtapa.l} →</button>
-            : statusPedido === 'entregue' ? <div className="ep2-st-fim"><Check size={14} weight="bold" /> {tipoEntrega === 'retirada' ? 'Pedido retirado' : 'Pedido entregue'}</div> : null}
-        </>)}
-      </div>
+          </ol>
+        )}
+        {proximaEtapa ? <Botao className="tpd-acao" cheio onClick={() => irParaEtapa(proximaEtapa.s)}>{proximaEtapa.l}</Botao>
+          : statusPedido === 'entregue' ? <p className="tpd-fim"><Check size={16} weight="bold" /> {tipoEntrega === 'retirada' ? 'Pedido retirado' : 'Pedido entregue'}</p> : null}
+      </section>
 
-      {/* ══════════════ ABAS (só no celular) ══════════════ */}
-      <div className="ep2-tabs">
-        {([['itens', 'Itens', <Cake key="b" size={16} weight="bold" />], ['entrega', 'Entrega', <I.truck key="t" />], ['pagamento', 'Pagamento', <I.card key="c" />]] as [Tab, string, any][]).map(([k, l, ic]) => (
-          <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{ic}{l}</button>
+      {/* abas: só no celular */}
+      <div className="tpd-abas" role="tablist" aria-label="Partes do pedido">
+        {([['itens', 'Itens', Cake], ['entrega', tipoEntrega === 'entrega' ? 'Entrega' : 'Retirada', tipoEntrega === 'entrega' ? Truck : Storefront], ['pagamento', 'Pagamento', CreditCard]] as [Tab, string, any][]).map(([k, l, Ic]) => (
+          <button key={k} type="button" role="tab" aria-selected={tab === k} className="tpd-aba" onClick={() => setTab(k)}><Ic size={20} weight={tab === k ? 'fill' : 'bold'} aria-hidden="true" /><span>{l}</span></button>
         ))}
       </div>
 
@@ -1196,123 +1185,130 @@ export default function EditarPedido() {
           {/* ── ITENS (com o cartão do cliente) ── */}
           <div className={`ep2-sec ${tab === 'itens' ? 'ativa' : ''}`}>
             {/* ── Cartão da cliente (opção A + estados especiais) ── */}
-            {!clienteNome.trim() ? (
-              <div className="ep2-cv">
-                <span className="ep2-av vz"><I.user /></span>
-                <div className="ep2-cli-t"><b>Sem cliente</b><small>Adicione pra saber de quem é</small></div>
-                <button className="ep2-add" onClick={() => setModalCliente(true)}><Plus size={14} weight="bold" />Adicionar</button>
-              </div>
-            ) : (
-              <div className="ep2-ca">
-                <button className="ep2-ca-top" onClick={() => clienteId ? navigate(`/clientes/${clienteId}`) : setModalCliente(true)} aria-label="Abrir o perfil da cliente">
-                  {clienteInfo?.foto ? <img className="ep2-av" src={clienteInfo.foto} alt="" /> : <span className="ep2-av">{nomeCurto(clienteNome).split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase()}</span>}
-                  <div className="ep2-cli-t">
-                    <b><span className="ep2-cli-rot">Cliente:</span> {nomeCurto(clienteNome)}</b>
-                    <small>{!clienteId ? (telDigitos ? clienteTelefone : 'Cliente sem cadastro') : clienteInfo === null ? ' ' : clienteInfo.pedidos === 0 ? 'Primeiro pedido, cliente novo.' : `Cliente recorrente · ${clienteInfo.pedidos + 1} pedidos`}</small>
-                  </div>
-                  {clienteId && <CaretRight size={16} weight="bold" className="ep2-ca-chev" />}
+            <section className="ep2-card tpd-card">
+              <Titulo acao={clienteNome.trim() ? <Botao variante="link" icone={<ArrowsLeftRight size={16} weight="bold" />} onClick={() => setModalCliente(true)}>Trocar</Botao> : undefined}>Cliente</Titulo>
+              {!clienteNome.trim() ? (
+                <div className="tpd-cli-vz">
+                  <p>Este pedido ainda não tem cliente.</p>
+                  <Botao variante="suave" tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => setModalCliente(true)}>Escolher cliente</Botao>
+                </div>
+              ) : (<>
+                <button type="button" className="tpd-cli" onClick={() => clienteId ? navigate(`/clientes/${clienteId}`) : setModalCliente(true)} aria-label={clienteId ? 'Abrir o perfil da cliente' : 'Escolher a cliente'}>
+                  {clienteInfo?.foto ? <img className="tpd-ini" src={clienteInfo.foto} alt="" /> : <span className="tpd-ini" aria-hidden="true">{initialsOf(toTitleCase(clienteNome.trim()))}</span>}
+                  <span className="tpd-cli-tx">
+                    <b>{toTitleCase(clienteNome.trim())}</b>
+                    <span>{telDigitos ? formatTelefone(clienteTelefone) : 'Sem telefone'}</span>
+                    <small>{origemTexto}</small>
+                  </span>
+                  {clienteId && <CaretRight size={20} weight="bold" className="tpd-cli-seta" aria-hidden="true" />}
                 </button>
                 {clienteId && clienteInfo && clienteInfo.pedidos > 0 && (
-                  <div className="ep2-ca-st">
+                  <div className="tpd-cli-st">
                     <span><b>{clienteInfo.pedidos + 1}</b><small>pedidos</small></span>
                     <span><b>{formatMoney(clienteInfo.gasto + total)}</b><small>já gastou</small></span>
                     <span><b>{clienteInfo.ultimo ? clienteInfo.ultimo.slice(8, 10) + '/' + clienteInfo.ultimo.slice(5, 7) : '—'}</b><small>último pedido</small></span>
                   </div>
                 )}
                 {aniversario && (
-                  <div className="ep2-aniv"><Cake size={15} weight="bold" /><span><b>Aniversário {aniversario.dias === 0 ? 'hoje' : `dia ${aniversario.data}`}</b>{aniversario.dias === 0 ? '!' : ` · daqui a ${aniversario.dias} ${aniversario.dias === 1 ? 'dia' : 'dias'}.`} Que tal um mimo no pedido?</span></div>
+                  <p className="tpd-aniv"><Cake size={20} weight="bold" aria-hidden="true" /><span><b>Aniversário {aniversario.dias === 0 ? 'hoje' : `dia ${aniversario.data}`}</b>{aniversario.dias === 0 ? '!' : ` · daqui a ${aniversario.dias} ${aniversario.dias === 1 ? 'dia' : 'dias'}.`} Que tal um mimo no pedido?</span></p>
                 )}
-                <div className="ep2-ca-bts">
-                  {telDigitos ? (<>
-                    <a className="ep2-cb wa" href={`https://wa.me/55${telDigitos}`} target="_blank" rel="noreferrer"><IconeWhatsApp size={15} />WhatsApp</a>
-                    <a className="ep2-cb" href={`tel:+55${telDigitos}`}><Phone size={15} weight="bold" />Ligar</a>
-                  </>) : (
-                    <button className="ep2-cb mute" onClick={() => clienteId ? navigate(`/clientes/${clienteId}`) : setModalCliente(true)}>Sem telefone · <u>adicionar</u></button>
-                  )}
-                  <button className="ep2-cb" onClick={() => setModalCliente(true)}><ArrowsDownUp size={15} weight="bold" />Trocar</button>
-                </div>
-              </div>
-            )}
-
-            <div className="ep3">
-              <div className="ep3-h"><b>Itens do pedido</b><button className="ep3-add-h" onClick={() => setModalProduto(true)}><Plus size={14} weight="bold" />Adicionar</button></div>
-              {itens.map((it: any, idx) => {
-                const p = it.personalizacoes || {}
-                const extras: any[] = Array.isArray(p.extras) ? p.extras : []
-                const sabores: any[] = p.kit?.sabores || []
-                const eKit = !!p.kit?.total
-                const q = it.quantidade || 1
-                const campos: [string, string][] = []
-                if (p.tamanho?.nome) campos.push(['Tamanho', `${p.tamanho.nome}${p.tamanho.peso_kg ? ` (${String(p.tamanho.peso_kg).replace('.', ',')} kg)` : ''}`])
-                if (p.massa?.nome) campos.push(['Massa', p.massa.nome])
-                if (p.sabor?.nome) campos.push(['Sabor', p.sabor.nome])
-                if (Array.isArray(p.recheios) && p.recheios.length) campos.push([p.recheios.length > 1 ? 'Recheios' : 'Recheio', p.recheios.map((r: any) => r.nome).join(', ')])
-                if (p.cobertura?.nome) campos.push(['Cobertura', p.cobertura.nome])
-                if (sabores.length) campos.push(['Sabores', sabores.map((s: any) => `${s.nome} (${s.qtd})`).join(', ')])
-                const obs = (it.observacoes || '').trim()
-                return (
-                  <div key={it.id || `n${idx}`} className="ep3-it">
-                    <span className="ep2-cup-f"><I.box />{fotoDoItem(it) && <img src={fotoDoItem(it)!} alt="" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />}</span>
-                    <div className="ep3-c">
-                      <div className="ep3-nmw"><p className="ep3-nm"><em>{q}x</em> {it.nome_produto}</p>
-                        <button className="ep2-cup-mx" onClick={() => setItemMenu(idx)} aria-label={`Opções de ${it.nome_produto}`}><DotsThree size={18} weight="bold" /></button></div>
-                      {campos.map(([k, v]) => <p key={k} className="ep3-cp"><span>{k}:</span> {v}</p>)}
-                      {extras.length > 0 && (
-                        <div className="ep3-ads"><span>Adicionais:</span>
-                          {extras.map((e: any, i: number) => <span key={i} className="ep3-ad"><span>{e.nome}</span></span>)}
-                        </div>
-                      )}
-                      {(p.foto_referencia || obs) && (
-                        <div className="ep3-obs"><small>Observação do cliente</small>
-                          {p.foto_referencia && (
-                            <div className="ep3-ref"><a href={p.foto_referencia} target="_blank" rel="noreferrer" aria-label="Ampliar a foto de referência">
-                              <ImageIcon size={28} className="ep2-anexo-ph" />
-                              <img src={p.foto_referencia} alt="Foto de referência" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />
-                              <span className="ep2-anexo-zm"><MagnifyingGlassPlus size={13} weight="bold" />Ampliar</span>
-                            </a></div>
-                          )}
-                          {obs && <p>“{obs}”</p>}
-                        </div>
-                      )}
-                    </div>
+                {telDigitos ? (
+                  <div className="tpd-dois">
+                    <a className="ui-bt ui-bt--secundario ui-bt--m" href={`https://wa.me/55${telDigitos}`} target="_blank" rel="noreferrer"><span className="ui-bt-ic" aria-hidden="true"><WhatsappLogo size={20} weight="bold" className="tpd-zap" /></span><span className="ui-bt-t">WhatsApp</span></a>
+                    <a className="ui-bt ui-bt--secundario ui-bt--m" href={`tel:+55${telDigitos}`}><span className="ui-bt-ic" aria-hidden="true"><Phone size={20} weight="bold" /></span><span className="ui-bt-t">Ligar</span></a>
                   </div>
-                )
-              })}
-              <p className="ep3-cont">{itens.length} {itens.length === 1 ? 'item' : 'itens'} · {itens.reduce((s, x) => s + (x.quantidade || 0), 0)} {itens.reduce((s, x) => s + (x.quantidade || 0), 0) === 1 ? 'unidade' : 'unidades'}</p>
-            </div>
+                ) : (
+                  <Botao className="tpd-mt" variante="suave" tamanho="m" cheio icone={<Plus size={20} weight="bold" />} onClick={() => clienteId ? navigate(`/clientes/${clienteId}`) : setModalCliente(true)}>Adicionar telefone</Botao>
+                )}
+              </>)}
+            </section>
+
+            <section className="ep2-card tpd-card">
+              <Titulo contagem={itens.length} acao={<Botao variante="link" icone={<Plus size={16} weight="bold" />} onClick={() => setModalProduto(true)}><span className="tpd-add-g">Adicionar item</span><span className="tpd-add-c">Adicionar</span></Botao>}>Itens do pedido</Titulo>
+              {itens.length === 0 ? <p className="tpd-vz">Nenhum item. Toque em Adicionar item.</p> : (
+                <ul className="tpd-itens">
+                  {itens.map((it: any, idx) => {
+                    const p = it.personalizacoes || {}
+                    const extras: any[] = Array.isArray(p.extras) ? p.extras : []
+                    const sabores: any[] = p.kit?.sabores || []
+                    const eKit = !!p.kit?.total
+                    const q = it.quantidade || 1
+                    const campos: [string, string][] = []
+                    if (p.tamanho?.nome) campos.push(['Tamanho', `${p.tamanho.nome}${p.tamanho.peso_kg && !/kg/i.test(p.tamanho.nome) ? ` (${String(p.tamanho.peso_kg).replace('.', ',')} kg)` : ''}`])
+                    if (p.massa?.nome) campos.push(['Massa', p.massa.nome])
+                    if (p.sabor?.nome) campos.push(['Sabor', p.sabor.nome])
+                    if (Array.isArray(p.recheios) && p.recheios.length) campos.push([p.recheios.length > 1 ? 'Recheios' : 'Recheio', p.recheios.map((r: any) => r.nome).join(', ')])
+                    if (p.cobertura?.nome) campos.push(['Cobertura', p.cobertura.nome])
+                    if (sabores.length) campos.push(['Sabores', sabores.map((x: any) => `${x.qtd} de ${String(x.nome).toLowerCase()}`).join(', ')])
+                    if (extras.length) campos.push(['Adicionais', extras.map((e: any) => e.nome).join(', ')])
+                    const obs = (it.observacoes || '').trim()
+                    const foto = fotoDoItem(it)
+                    return (
+                      <li key={it.id || `n${idx}`}>
+                        <div className="tpd-it-topo">
+                          <span className="tpd-ft" aria-hidden="true"><Package size={20} weight="bold" />{foto && <img src={foto} alt="" onError={e => { e.currentTarget.style.display = 'none' }} />}</span>
+                          <div className="tpd-it-tx">
+                            <b><em>{q}x</em> {nomeDeProduto(it.nome_produto)}</b>
+                            <span>{formatMoney((it.valor_unitario || 0) * q)}{q > 1 ? ` · ${formatMoney(it.valor_unitario || 0)} ${eKit ? 'por kit' : 'cada'}` : ''}</span>
+                          </div>
+                          <BotaoIcone rotulo={`Opções de ${it.nome_produto}`} variante="limpo" tamanho="p" onClick={() => setItemMenu(idx)}><DotsThree size={20} weight="bold" /></BotaoIcone>
+                        </div>
+                        {campos.length > 0 && <div className="tpd-it-esc">{campos.map(([k, v]) => <Linha key={k} rotulo={k}>{v}</Linha>)}</div>}
+                        {(p.foto_referencia || obs) && (
+                          <div className="tpd-recado">
+                            {p.foto_referencia && (
+                              <a className="tpd-ref" href={p.foto_referencia} target="_blank" rel="noreferrer" aria-label="Ampliar a foto de referência">
+                                <ImageIcon size={24} aria-hidden="true" /><img src={p.foto_referencia} alt="" onError={e => { e.currentTarget.style.display = 'none' }} />
+                              </a>
+                            )}
+                            <div>
+                              <small>Recado do item</small>
+                              {obs ? <p>“{obs}”</p> : <p>Foto de referência</p>}
+                              {p.foto_referencia && <span>Toque na foto pra ampliar</span>}
+                            </div>
+                          </div>
+                        )}
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </section>
           </div>
 
           {/* ── ENTREGA (03/10): como sai primeiro, data em português, endereço pronto pra ler ── */}
           <div className={`ep2-sec ${tab === 'entrega' ? 'ativa' : ''}`}>
-            <div className="ep2-seg2" role="tablist" aria-label="Como o pedido sai">
-              <button role="tab" aria-selected={tipoEntrega === 'entrega'} className={tipoEntrega === 'entrega' ? 'on' : ''} onClick={() => setTipoEntrega('entrega')}><I.truck />Entrega</button>
-              <button role="tab" aria-selected={tipoEntrega === 'retirada'} className={tipoEntrega === 'retirada' ? 'on' : ''} onClick={() => setTipoEntrega('retirada')}><I.home />Retirada</button>
-            </div>
-
-            <div className="ep2-card">
-              <p className="ep2-ct">{tipoEntrega === 'entrega' ? 'Quando entregar' : 'Quando retirar'}</p>
-              <div className="ep2-when">
-                <button onClick={() => setDataSheet(true)}><CalendarBlank size={16} weight="bold" /><b>{dataEntrega ? diaPorExtenso(dataEntrega) : 'Escolher a data'}</b></button>
-                <button onClick={() => setHoraSheetAberto(true)}><I.clock /><b>{horarioEntrega ? horaCurta(horarioEntrega) : 'Horário'}</b></button>
+            <section className="ep2-card tpd-card">
+              <div className="tpd-seg" role="group" aria-label="Como o pedido sai">
+                <button type="button" aria-pressed={tipoEntrega === 'entrega'} onClick={() => setTipoEntrega('entrega')}><Truck size={20} weight={tipoEntrega === 'entrega' ? 'fill' : 'bold'} aria-hidden="true" />Entrega</button>
+                <button type="button" aria-pressed={tipoEntrega === 'retirada'} onClick={() => setTipoEntrega('retirada')}><Storefront size={20} weight={tipoEntrega === 'retirada' ? 'fill' : 'bold'} aria-hidden="true" />Retirada</button>
               </div>
-            </div>
+              <div className="tpd-quando">
+                <div className="ui-campo">
+                  <span className="ui-campo-r"><span>{tipoEntrega === 'entrega' ? 'Data da entrega' : 'Data da retirada'}</span></span>
+                  <button type="button" className="ui-campo-c tpd-fal" onClick={() => setDataSheet(true)}><span className="ui-campo-ic" aria-hidden="true"><CalendarBlank size={20} weight="bold" /></span><span className={dataEntrega ? '' : 'tpd-ph'}>{dataEntrega ? diaPorExtenso(dataEntrega) : 'Escolher'}</span></button>
+                </div>
+                <div className="ui-campo">
+                  <span className="ui-campo-r"><span>Horário</span></span>
+                  <button type="button" className="ui-campo-c tpd-fal" onClick={() => setHoraSheetAberto(true)}><span className="ui-campo-ic" aria-hidden="true"><Clock size={20} weight="bold" /></span><span className={horarioEntrega ? '' : 'tpd-ph'}>{horarioEntrega ? horarioEntrega.slice(0, 5) : 'Escolher'}</span></button>
+                </div>
+              </div>
+            </section>
 
             {tipoEntrega === 'entrega' ? (
               <div className="ep2-card">
-                <p className="ep2-ct">Endereço de entrega</p>
+                <Titulo acao={!editandoEndereco && enderecoTemAlgo ? <Botao variante="link" icone={<PencilSimple size={16} weight="bold" />} onClick={abrirEdicaoEndereco}>Editar</Botao> : undefined}>Endereço de entrega</Titulo>
                 {!editandoEndereco && enderecoTemAlgo ? (<>
-                  <div className="ep2-addr">
-                    <MapPin size={19} weight="duotone" />
+                  <div className="ep2-addr tpd-end">
                     <div><b>{[enderecoRua, enderecoNumero].filter(Boolean).join(', ') || 'Endereço sem rua'}</b>
                       {enderecoComplemento && <small>{enderecoComplemento}</small>}
                       <small>{[enderecoBairro, enderecoCidade].filter(Boolean).join(' · ')}{enderecoCep ? ` · CEP ${enderecoCep}` : ''}</small></div>
-                    <button className="ep2-lk" onClick={abrirEdicaoEndereco}><PencilSimple size={13} weight="bold" /> Editar</button>
                   </div>
-                  <div className="ep2-acts">
-                    <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoCompleto)}`} target="_blank" rel="noreferrer"><MapTrifold size={15} weight="bold" />Mapa</a>
-                    <button onClick={copiarEndereco}><Copy size={15} weight="bold" />Copiar</button>
-                    <a className="wa" href={`https://wa.me/?text=${encodeURIComponent(textoEntregador)}`} target="_blank" rel="noreferrer"><IconeWhatsApp size={16} />Entregador</a>
+                  <div className="tpd-dois">
+                    <a className="ui-bt ui-bt--secundario ui-bt--m" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoCompleto)}`} target="_blank" rel="noreferrer"><span className="ui-bt-ic" aria-hidden="true"><MapTrifold size={20} weight="bold" /></span><span className="ui-bt-t">Ver no mapa</span></a>
+                    <Botao variante="secundario" tamanho="m" icone={<Copy size={20} weight="bold" />} onClick={copiarEndereco}>Copiar</Botao>
                   </div>
+                  <a className="ui-bt ui-bt--secundario ui-bt--m ui-bt--cheio tpd-entregador" href={`https://wa.me/?text=${encodeURIComponent(textoEntregador)}`} target="_blank" rel="noreferrer"><span className="ui-bt-ic" aria-hidden="true"><WhatsappLogo size={20} weight="bold" className="tpd-zap" /></span><span className="ui-bt-t">Mandar pro entregador</span></a>
                 </>) : (<>
                   {enderecoDaCliente && (
                     <button className="ep2-usar" onClick={usarEnderecoDaCliente}>Usar o endereço {clienteNome.trim() ? `de ${toTitleCase(clienteNome.trim().split(/\s+/)[0])}` : 'da cliente'}
@@ -1341,14 +1337,14 @@ export default function EditarPedido() {
                     </div>
                   )}
                 </>)}
-                <div className="ep2-taxa"><Money size={16} /><span>Taxa de entrega</span>
+                <div className="ep2-taxa"><span>Taxa de entrega</span>
                   <span className="ep2-mini"><em>R$</em><input inputMode="numeric" value={textoBRL(taxaEntrega) || ''} placeholder="0,00" onChange={e => setTaxaEntrega(lerBRL(mascaraBRL(e.target.value)))} aria-label="Taxa de entrega" /></span></div>
               </div>
             ) : (
               <div className="ep2-card">
-                <p className="ep2-ct">Onde retirar</p>
+                <Titulo>Onde retirar</Titulo>
                 {lojaInfo?.endereco ? (<>
-                  <div className="ep2-addr"><Storefront size={19} weight="duotone" /><div><b>{lojaInfo.nome || 'Sua loja'}</b><small>{lojaInfo.endereco.linha1}</small>{lojaInfo.endereco.linha2 && <small>{lojaInfo.endereco.linha2}</small>}</div></div>
+                  <div className="ep2-addr tpd-end"><div><b>{lojaInfo.nome || 'Sua loja'}</b><small>{lojaInfo.endereco.linha1}</small>{lojaInfo.endereco.linha2 && <small>{lojaInfo.endereco.linha2}</small>}</div></div>
                   <p className="ep2-nota">O endereço vem dos <button className="ep2-lk" onClick={() => navigate('/cardapio-config')}>Dados da loja</button>.</p>
                 </>) : (
                   <p className="ep2-vazio">Cadastre o endereço da sua loja nos <button className="ep2-lk" onClick={() => navigate('/cardapio-config')}>Dados da loja</button> pra ele aparecer aqui e na mensagem pra cliente.</p>
@@ -1361,7 +1357,7 @@ export default function EditarPedido() {
         {/* ── PAGAMENTO (no computador: coluna fixa à direita) ── */}
         <div className={`ep2-col ep2-col-dir ep2-sec ${tab === 'pagamento' ? 'ativa' : ''}`}>
           <div className="ep2-card">
-            <p className="ep2-ct">Valores</p>
+            <Titulo>Valores</Titulo>
             {/* cada item com o seu valor e de onde ele vem (produto, adicionais, promoção) — a aba Itens não tem valores */}
             {itens.map((it: any, idx) => {
               const c = contaDoItem(it), q = it.quantidade || 1
@@ -1383,10 +1379,7 @@ export default function EditarPedido() {
               )
             })}
             <div className="ep2-ln ep3-pv-itens"><span>Itens</span><b>{formatMoney(subtotalItens)}</b></div>
-            {tipoEntrega === 'entrega' && (
-              <div className="ep2-ln ep2-ln-in"><span>Taxa de entrega</span>
-                <span className="ep2-mini"><em>R$</em><input inputMode="numeric" value={textoBRL(taxaEntrega) || ''} placeholder="0,00" onChange={e => setTaxaEntrega(lerBRL(mascaraBRL(e.target.value)))} aria-label="Taxa de entrega" /></span></div>
-            )}
+            {tipoEntrega === 'entrega' && <div className="ep2-ln"><span>Taxa de entrega</span><b>{formatMoney(taxaEntrega)}</b></div>}
             {/* cupom do cardápio separado do desconto dado à parte (03/10) */}
             {descontoCupom > 0 && <div className="ep2-ln promo"><span>Cupom {String((pedido as any)?.cupom_codigo || '').toUpperCase()}</span><b>− {formatMoney(descontoCupom)}</b></div>}
             {descontoManual > 0 && <div className="ep2-ln neg"><span>Desconto</span><b>− {formatMoney(descontoManual)}</b></div>}
@@ -1397,36 +1390,40 @@ export default function EditarPedido() {
                 <span key={i}>{a.tipo === 'desconto' ? 'Desconto' : 'Acréscimo'} de {formatMoney(Number(a.valor) || 0)}{a.motivo ? ` · ${a.motivo}` : ''}{a.pendente ? ' (ainda não salvo)' : ''}</span>
               ))}</div>
             )}
-            <button className="ep2-aj" onClick={() => setAjusteAberto(true)}><PencilSimple size={13} weight="bold" />Ajustar valor (desconto ou acréscimo)</button>
+            <Botao className="tpd-aj" variante="link" icone={<PencilSimple size={16} weight="bold" />} onClick={() => setAjusteAberto(true)}>Dar desconto ou acrescentar valor</Botao>
           </div>
 
           <div className="ep2-card">
-            <p className="ep2-ct">Pagamentos</p>
+            <Titulo>Pagamentos</Titulo>
             {pagamentosOk ? (pagamentos.length === 0 ? <p className="ep2-vazio">Nenhum recebimento ainda.</p> : pagamentos.map(g => (
               <div key={g.id} className={`ep2-pg ${g.estornado_em ? 'est' : ''}`}>
-                <span className="ep2-pg-ic"><ArrowUp size={14} weight="bold" /></span>
+                <span className="ep2-pg-ic" aria-hidden="true"><ArrowUp size={20} weight="bold" /></span>
                 <div><b>{NOME_TIPO[g.tipo] || 'Pagamento'} · {NOME_FORMA[g.forma] || g.forma || '—'}</b><small>{g.estornado_em ? 'Estornado · ' : ''}{dataCurtaBR(g.recebido_em)}</small></div>
                 <b className="v">{formatMoney(Number(g.valor) || 0)}</b>
-                {!g.estornado_em && <button className="ep2-pg-x" onClick={() => estornarPagamento(g)} aria-label="Estornar recebimento" title="Estornar (lançado errado)"><ArrowCounterClockwise size={15} weight="bold" /></button>}
+                {!g.estornado_em && <BotaoIcone rotulo="Estornar este recebimento" variante="limpo" tamanho="p" onClick={() => estornarPagamento(g)}><ArrowCounterClockwise size={20} weight="bold" /></BotaoIcone>}
               </div>
             ))) : <p className="ep2-vazio">Recebido até agora: <b>{formatMoney(recebidoAtual)}</b>. (A lista de recebimentos aparece depois do SQL do Passo 1.)</p>}
             {statusPedido !== 'cancelado' && (faltaReceber > 0.009 ? (<>
-              <div className="ep2-falta"><div><small>Falta receber</small><b>{formatMoney(faltaReceber)}</b></div>
-                <div className="ep2-bar"><i style={{ width: `${Math.min(100, (recebidoAtual / (total || 1)) * 100)}%` }} /></div></div>
-              <button className="ep2-rec" onClick={() => setReceberAberto(true)}><ArrowUp size={15} weight="bold" />Registrar recebimento</button>
-              <label className="ep2-prev"><CalendarBlank size={14} />Combinado pra pagar:
-                <span className="ep2-prev-d"><CampoData valor={dataPrevistaPagamento || ''} onChange={setDataPrevistaPagamento} titulo="Combinado pra pagar" placeholder="Escolher" curto /></span>
-                {!dataPrevistaPagamento && <em>na entrega</em>}</label>
-            </>) : <div className="ep2-quitado"><Check size={14} weight="bold" /> Pedido quitado</div>)}
+              <div className="tpd-falta">
+                <Linha rotulo="Recebido">{formatMoney(recebidoAtual)}</Linha>
+                <Linha rotulo="Falta receber" tom="laranja">{formatMoney(faltaReceber)}</Linha>
+                <div className="tpd-barra" role="progressbar" aria-label="Quanto já foi recebido" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(100, (recebidoAtual / (total || 1)) * 100))}><i style={{ width: `${Math.min(100, (recebidoAtual / (total || 1)) * 100)}%` }} /></div>
+              </div>
+              <Botao className="tpd-receber" cheio icone={<ArrowUp size={20} weight="bold" />} onClick={() => setReceberAberto(true)}>Registrar recebimento</Botao>
+              <div className="tpd-comb">
+                <span className="ui-campo-r"><span>Combinado pra pagar o resto</span><small>opcional</small></span>
+                <CampoData valor={dataPrevistaPagamento || ''} onChange={setDataPrevistaPagamento} titulo="Combinado pra pagar" placeholder="Na entrega" />
+              </div>
+            </>) : <p className="tpd-quitado"><Check size={16} weight="bold" /> Pedido pago</p>)}
           </div>
 
           {/* salvar (computador) */}
           <div className="ep2-save-desk">
             {alteracoes > 0 ? (<>
               <span className="ep2-mud">{alteracoes} {alteracoes === 1 ? 'alteração não salva' : 'alterações não salvas'}</span>
-              <button className={`ep2-b1 ${salvouOk ? 'ok' : ''}`} onClick={handleSalvar} disabled={salvando || salvouOk}>{salvouOk ? 'Salvo!' : salvando ? 'Salvando…' : 'Salvar alterações'}</button>
-              <button className="ep2-b2" onClick={() => window.location.reload()} disabled={salvando}>Descartar</button>
-            </>) : <span className="ep2-salvo"><Check size={14} weight="bold" /> Tudo salvo</span>}
+              <Botao cheio onClick={handleSalvar} carregando={salvando} disabled={salvouOk}>{salvouOk ? 'Salvo' : 'Salvar alterações'}</Botao>
+              <Botao variante="secundario" cheio onClick={() => window.location.reload()} disabled={salvando}>Descartar</Botao>
+            </>) : <span className="ep2-salvo"><Check size={16} weight="bold" /> Tudo salvo</span>}
           </div>
         </div>
       </div>
@@ -1435,12 +1432,10 @@ export default function EditarPedido() {
       {alteracoes > 0 && (
         <div className="ep2-foot">
           <span className="ep2-mud">{alteracoes} {alteracoes === 1 ? 'alteração não salva' : 'alterações não salvas'}</span>
-          <button className="ep2-b2" onClick={() => window.location.reload()} disabled={salvando}>Descartar</button>
-          <button className={`ep2-b1 ${salvouOk ? 'ok' : ''}`} onClick={handleSalvar} disabled={salvando || salvouOk}>{salvouOk ? 'Salvo!' : salvando ? 'Salvando…' : 'Salvar alterações'}</button>
+          <Botao variante="secundario" tamanho="m" onClick={() => window.location.reload()} disabled={salvando}>Descartar</Botao>
+          <Botao tamanho="m" onClick={handleSalvar} carregando={salvando} disabled={salvouOk}>{salvouOk ? 'Salvo' : 'Salvar alterações'}</Botao>
         </div>
       )}
-      {aviso && <div className="ep2-toast" role="status">{aviso}</div>}
-      {dialogo && <DialogoApp {...dialogo} onFechar={() => fecharDialogo(false)} onConfirmar={() => fecharDialogo(true)} />}
       {removido && (
         <div className="ep2-toast ep2-toast--desfazer" role="status"><span>{removido.item?.nome_produto || 'Item'} removido</span><button onClick={desfazerRemocao}>Desfazer</button></div>
       )}
@@ -1457,53 +1452,51 @@ export default function EditarPedido() {
       {dataSheet && <CalendarioSheet valor={dataEntrega} titulo={tipoEntrega === 'entrega' ? 'Data da entrega' : 'Data da retirada'}
         onClose={() => setDataSheet(false)} onConfirmar={(d) => { setDataEntrega(d); setDataSheet(false) }} />}
       {/* ── ⋯ de um item: quantidade, recado e remover ── */}
-      {itemMenu !== null && itens[itemMenu] && createPortal(
-        <div className="ep2-ov" onClick={() => setItemMenu(null)}>
-          <div className="ep2-sh" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Opções do item">
-            <span className="ep2-alca" />
-            <b className="ep2-sh-t"><span className="ep2-cup-q">{itens[itemMenu].quantidade}×</span> {itens[itemMenu].nome_produto}</b>
-            <p className="ep2-im-lb">Quantidade</p>
-            <div className="ep2-qty">
-              <button onClick={() => updateQtd(itemMenu, -1)} aria-label="Diminuir" disabled={itens[itemMenu].quantidade <= 1}>−</button>
-              <input type="number" inputMode="numeric" value={itens[itemMenu].quantidade} onChange={e => setQtdManual(itemMenu, Number(e.target.value))} aria-label="Quantidade" />
-              <button onClick={() => updateQtd(itemMenu, 1)} aria-label="Aumentar">+</button>
+      <Janela
+        aberta={itemMenu !== null && !!itens[itemMenu]} aoFechar={() => setItemMenu(null)} tipo="conteudo"
+        titulo={itemMenu !== null && itens[itemMenu] ? `${itens[itemMenu].quantidade}x ${nomeDeProduto(itens[itemMenu].nome_produto)}` : 'Item'}
+        acoes={itemMenu !== null && itens[itemMenu] ? <>
+          <Botao variante="secundario" icone={<Trash size={20} weight="bold" />} onClick={() => { const i = itemMenu; setItemMenu(null); removerComDesfazer(i) }}>Remover item</Botao>
+          <Botao onClick={() => setItemMenu(null)}>Pronto</Botao>
+        </> : undefined}
+      >
+        {itemMenu !== null && itens[itemMenu] && (
+          <div className="tpd-im">
+            <div className="ui-campo">
+              <span className="ui-campo-r"><span>Quantidade</span></span>
+              <div className="tpd-qtd">
+                <BotaoIcone rotulo="Diminuir" disabled={itens[itemMenu].quantidade <= 1} onClick={() => updateQtd(itemMenu, -1)}><span aria-hidden="true">−</span></BotaoIcone>
+                <input type="number" inputMode="numeric" value={itens[itemMenu].quantidade} onChange={e => setQtdManual(itemMenu, Number(e.target.value))} aria-label="Quantidade" />
+                <BotaoIcone rotulo="Aumentar" onClick={() => updateQtd(itemMenu, 1)}><Plus size={20} weight="bold" /></BotaoIcone>
+              </div>
             </div>
-            <p className="ep2-im-lb">Recado do item <em>(opcional)</em></p>
-            <textarea className="ep2-im-rec" rows={2} placeholder="Ex.: escrever Parabéns, Lia! em rosa" value={itens[itemMenu].observacoes || ''}
+            <CampoArea rotulo="Recado do item" opcional rows={2} placeholder="Ex.: escrever Parabéns, Lia! em rosa" value={itens[itemMenu].observacoes || ''}
               onChange={e => { const v = e.target.value; setItens(prev => prev.map((x, i) => i === itemMenu ? { ...x, observacoes: v } : x)) }} />
-            <div className="ep2-im-bts">
-              <button className="ep2-rm" onClick={() => { const i = itemMenu; setItemMenu(null); removerComDesfazer(i) }}><Trash size={15} weight="bold" />Remover item</button>
-              <button className="ep2-b1" onClick={() => setItemMenu(null)}>Pronto</button>
-            </div>
           </div>
-        </div>, document.body)}
+        )}
+      </Janela>
 
-      {/* ── menu ⋯ ── */}
-      {menuAberto && createPortal(
-        <div className="ep2-ov" onClick={() => setMenuAberto(false)}>
-          <div className="ep2-sh" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Mais opções">
-            <span className="ep2-alca" />
-            <button className="ep2-mi" onClick={() => { setMenuAberto(false); setTimelineAberto(true) }}><I.clock />Acompanhar pedido</button>
-            <button className="ep2-mi" onClick={() => { setMenuAberto(false); handleExportarPDF() }}><I.print />Imprimir / PDF</button>
-            {statusPedido !== 'cancelado' && <button className="ep2-mi" onClick={() => { setMenuAberto(false); setEtapasAberto(true) }}><I.box />Mudar a etapa</button>}
-            {statusPedido !== 'cancelado' && <button className="ep2-mi perigo" onClick={() => { setMenuAberto(false); setDevolverSinal(null); setCancelarAberto(true) }}><I.ban />Cancelar pedido</button>}
-            <button className="ep2-mi perigo" onClick={() => { setMenuAberto(false); excluirPedido() }}><Trash size={18} />Excluir pedido</button>
-          </div>
-        </div>, document.body)}
+      {/* ── mais ações do pedido: a mesma janela da lista ── */}
+      <Janela aberta={menuAberto} aoFechar={() => setMenuAberto(false)} tipo="conteudo" titulo={`Pedido #${pedido.numero || ''}`}>
+        <div className="tpd-menu">
+          <button type="button" className="tpd-mi" onClick={() => { setMenuAberto(false); setTimelineAberto(true) }}><span className="tpd-mi-ic" aria-hidden="true"><Clock size={20} weight="bold" /></span>Acompanhar pedido</button>
+          <button type="button" className="tpd-mi" onClick={() => { setMenuAberto(false); handleExportarPDF() }}><span className="tpd-mi-ic" aria-hidden="true"><I.print /></span>Imprimir ou baixar PDF</button>
+          {statusPedido !== 'cancelado' && <button type="button" className="tpd-mi" onClick={() => { setMenuAberto(false); setEtapasAberto(true) }}><span className="tpd-mi-ic" aria-hidden="true"><Package size={20} weight="bold" /></span>Mudar a etapa</button>}
+          {statusPedido !== 'cancelado' && <button type="button" className="tpd-mi perigo sep" onClick={() => { setMenuAberto(false); setDevolverSinal(null); setCancelarAberto(true) }}><span className="tpd-mi-ic" aria-hidden="true"><I.ban /></span>Cancelar pedido</button>}
+          <button type="button" className={`tpd-mi perigo${statusPedido === 'cancelado' ? ' sep' : ''}`} onClick={() => { setMenuAberto(false); excluirPedido() }}><span className="tpd-mi-ic" aria-hidden="true"><Trash size={20} weight="bold" /></span>Excluir pedido</button>
+        </div>
+      </Janela>
 
       {/* ── mudar a etapa (qualquer uma, inclusive voltar) ── */}
-      {etapasAberto && createPortal(
-        <div className="ep2-ov" onClick={() => setEtapasAberto(false)}>
-          <div className="ep2-sh" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Mudar a etapa">
-            <span className="ep2-alca" />
-            <b className="ep2-sh-t">Mudar a etapa</b>
-            {Object.keys(STATUS_CONFIG).filter(s => s !== 'cancelado').map(s => (
-              <button key={s} className={`ep2-mi ${s === statusPedido ? 'sel' : ''}`} onClick={() => { setEtapasAberto(false); irParaEtapa(s) }}>
-                <span className="ep2-dot" style={{ background: STATUS_CONFIG[s].color }} />{STATUS_CONFIG[s].label}{s === statusPedido ? <em>atual</em> : null}
-              </button>
-            ))}
-          </div>
-        </div>, document.body)}
+      <Janela aberta={etapasAberto} aoFechar={() => setEtapasAberto(false)} tipo="conteudo" titulo="Mudar a etapa">
+        <div className="tpd-menu">
+          {SITUACOES.filter(x => x.chave !== 'cancelado').map(x => (
+            <button key={x.chave} type="button" className={`tpd-mi${x.chave === grupoAtual ? ' sel' : ''}`} aria-current={x.chave === grupoAtual ? 'true' : undefined} onClick={() => { setEtapasAberto(false); irParaEtapa(x.chave) }}>
+              <span className={`tpd-pt t-${x.tom || 'cinza'}`} aria-hidden="true" />{x.nome}{x.chave === grupoAtual && <em>atual</em>}
+            </button>
+          ))}
+        </div>
+      </Janela>
 
       {/* ── ajustar valor (fica registrado com o motivo ao salvar) ── */}
       {ajusteAberto && <AjusteSheet total={total} onClose={() => setAjusteAberto(false)} onAplicar={(a) => {
@@ -1523,7 +1516,7 @@ export default function EditarPedido() {
           status_pagamento: (pedido as any).status_pagamento ?? null, forma_pagamento: pedido.forma_pagamento }}
         novoStatus="entregue" novoStatusLabel="Entregue"
         onCancelar={() => setFinalizarAberto(false)}
-        onConcluido={async () => { setFinalizarAberto(false); await recarregarDinheiro(); avisar('Pedido entregue.') }} />}
+        onConcluido={async () => { setFinalizarAberto(false); await recarregarDinheiro(); avisar(`Pedido #${pedido.numero ?? ''} entregue.`); tocarSom('sucesso') }} />}
 
       <style>{EP2_CSS}{FOLHA_CSS}</style>
 
@@ -3614,6 +3607,7 @@ export default function EditarPedido() {
         }
       `}</style>
     </div>
+    </>
   )
 }
 
