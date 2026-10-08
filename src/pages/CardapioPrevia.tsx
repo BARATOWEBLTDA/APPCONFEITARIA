@@ -1,17 +1,24 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ArrowLeft, ArrowSquareOut, Copy, Desktop, DeviceMobile, ShareNetwork } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
+import { Botao, BotaoIcone, avisar } from "@/components/base";
+import "./cardapioPrevia.css";
 
+/**
+ * Prévia do cardápio (08/10 · 3.27, no padrão do guia).
+ * Mostra o cardápio de verdade (o link oficial) num celular ou na tela toda.
+ * No celular, a prévia ocupa a tela e o topo traz Voltar e Compartilhar.
+ */
 type ViewMode = "mobile" | "desktop";
 
 export default function CardapioPrevia() {
   const navigate = useNavigate();
   const [url, setUrl] = useState("");
-  const [copied, setCopied] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>("desktop");
+  const [viewMode, setViewMode] = useState<ViewMode>("mobile");
 
-  // Link oficial do cardápio (/c/código/slug). Antes copiava o endereço antigo (/cardapio/id).
+  // Link oficial do cardápio (/c/código/slug). Sem ele, o endereço antigo (/cardapio/id).
   const { profile } = useProfile();
   useEffect(() => {
     const oficial = profile ? getCardapioUrl(profile) : "";
@@ -21,12 +28,10 @@ export default function CardapioPrevia() {
     });
   }, [profile?.id, (profile as any)?.codigo_publico]);
 
-  const handleShare = async () => {
+  const copiar = async () => {
     if (!url) return;
     try {
       await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
     } catch {
       const el = document.createElement("input");
       el.value = url;
@@ -34,320 +39,52 @@ export default function CardapioPrevia() {
       el.select();
       document.execCommand("copy");
       document.body.removeChild(el);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
     }
+    avisar("Link copiado", { tipo: "ok" });
   };
 
-  const openInTab = () => {
-    if (url) window.open(url, "_blank");
-  };
+  const abrir = () => { if (url) window.open(url, "_blank"); };
 
-  const handleNativeShare = async () => {
+  const compartilhar = async () => {
     if (!url) return;
     if (navigator.share) {
-      try { await navigator.share({ title: "Meu Cardápio", url }); } catch {}
+      try { await navigator.share({ title: "Meu cardápio", url }); } catch { /* fechou */ }
     } else {
-      await handleShare();
+      await copiar();
     }
   };
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0, left: 0, right: 0, bottom: 0,
-        zIndex: 9999,
-        display: "flex",
-        flexDirection: "column",
-        background: "#0f0f10",
-        fontFamily: "inherit",
-      }}
-    >
-      {/* ── Barra topo ── */}
-      <div
-        style={{
-          height: "54px",
-          minHeight: "54px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "0 1rem",
-          background: "#1a1a1e",
-          borderBottom: "1px solid rgba(255,255,255,0.07)",
-          flexShrink: 0,
-          gap: "12px",
-        }}
-      >
-        {/* Voltar */}
-        <button
-          onClick={() => navigate("/cardapio")}
-          style={{
-            background: "rgba(255,255,255,0.08)",
-            border: "none",
-            borderRadius: "8px",
-            padding: "0.45rem 0.9rem",
-            color: "rgba(255,255,255,0.85)",
-            fontSize: "0.82rem",
-            fontWeight: 600,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "0.4rem",
-            transition: "background 0.15s",
-            flexShrink: 0,
-          }}
-          onMouseOver={e => (e.currentTarget.style.background = "rgba(255,255,255,0.14)")}
-          onMouseOut={e => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}
-        >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-          Voltar
-        </button>
+    <div className="pv">
+      <header className="pv-topo">
+        <BotaoIcone rotulo="Voltar" variante="limpo" onClick={() => navigate("/cardapio")}><ArrowLeft size={20} weight="bold" /></BotaoIcone>
+        <div className="pv-t"><b>Prévia do cardápio</b><small>É assim que o cliente vê</small></div>
 
-        {window.innerWidth < 768 && (
-          <button
-            onClick={handleNativeShare}
-            style={{ background: "rgba(255,255,255,0.08)", border: "none", borderRadius: "8px", padding: "0.45rem 0.75rem", color: "rgba(255,255,255,0.85)", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", fontSize: "0.82rem", fontWeight: 600, fontFamily: "inherit" }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-            </svg>
-            Compartilhar
-          </button>
-        )}
-
-        {/* Título + Toggle */}
-        <div style={{ display: window.innerWidth < 768 ? "none" : "flex", alignItems: "center", gap: "12px", flex: 1, justifyContent: "center" }}>
-          <span style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.8rem", fontWeight: 500 }}>
-            Você está vendo uma Prévia do seu Cardápio
-          </span>
-
-          <div
-            style={{
-              display: "flex",
-              background: "rgba(255,255,255,0.06)",
-              borderRadius: "8px",
-              padding: "3px",
-              gap: "2px",
-            }}
-          >
-            <button
-              onClick={() => setViewMode("mobile")}
-              title="Visão mobile"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-                padding: "5px 12px",
-                borderRadius: "6px",
-                border: "none",
-                background: viewMode === "mobile" ? "rgba(255,255,255,0.15)" : "transparent",
-                color: viewMode === "mobile" ? "#fff" : "rgba(255,255,255,0.45)",
-                fontSize: "12px",
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "all 0.15s",
-                fontFamily: "inherit",
-              }}
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
-                <line x1="12" y1="18" x2="12.01" y2="18" strokeLinecap="round" strokeWidth="3" />
-              </svg>
-              Celular
-            </button>
-
-            <button
-              onClick={() => setViewMode("desktop")}
-              title="Visão desktop"
-              style={{
-                display: window.innerWidth < 768 ? "none" : "flex",
-                alignItems: "center",
-                gap: "5px",
-                padding: "5px 12px",
-                borderRadius: "6px",
-                border: "none",
-                background: viewMode === "desktop" ? "rgba(255,255,255,0.15)" : "transparent",
-                color: viewMode === "desktop" ? "#fff" : "rgba(255,255,255,0.45)",
-                fontSize: "12px",
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "all 0.15s",
-                fontFamily: "inherit",
-              }}
-            >
-              <svg width="14" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-                <line x1="8" y1="21" x2="16" y2="21" />
-                <line x1="12" y1="17" x2="12" y2="21" />
-              </svg>
-              Computador
-            </button>
-          </div>
+        <div className="pv-modo" role="radiogroup" aria-label="Ver como">
+          <button type="button" role="radio" aria-checked={viewMode === "mobile"} onClick={() => setViewMode("mobile")}><DeviceMobile size={20} weight="bold" />Celular</button>
+          <button type="button" role="radio" aria-checked={viewMode === "desktop"} onClick={() => setViewMode("desktop")}><Desktop size={20} weight="bold" />Computador</button>
         </div>
 
-        {/* Ações direita */}
-        <div style={{ display: window.innerWidth < 768 ? "none" : "flex", gap: "6px", flexShrink: 0 }}>
-          <button
-            onClick={openInTab}
-            title="Abrir em nova aba"
-            style={{
-              background: "rgba(255,255,255,0.08)",
-              border: "none",
-              borderRadius: "8px",
-              padding: "0.45rem 0.75rem",
-              color: "rgba(255,255,255,0.7)",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "5px",
-              fontSize: "0.82rem",
-              fontWeight: 600,
-              transition: "background 0.15s",
-              fontFamily: "inherit",
-            }}
-            onMouseOver={e => (e.currentTarget.style.background = "rgba(255,255,255,0.14)")}
-            onMouseOut={e => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-              <polyline points="15 3 21 3 21 9" />
-              <line x1="10" y1="14" x2="21" y2="3" />
-            </svg>
-            Abrir
-          </button>
-
-          <button
-            onClick={handleShare}
-            style={{
-              background: copied ? "rgba(34,197,94,0.18)" : "rgba(255,255,255,0.08)",
-              border: "none",
-              borderRadius: "8px",
-              padding: "0.45rem 0.9rem",
-              color: copied ? "var(--success)" : "rgba(255,255,255,0.85)",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "5px",
-              fontSize: "0.82rem",
-              fontWeight: 600,
-              transition: "all 0.2s",
-              fontFamily: "inherit",
-            }}
-          >
-            {copied ? (
-              <>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                Copiado!
-              </>
-            ) : (
-              <>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                  <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
-                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                </svg>
-                Copiar link
-              </>
-            )}
-          </button>
+        <div className="pv-acoes">
+          <Botao variante="secundario" tamanho="m" icone={<ArrowSquareOut size={20} weight="bold" />} onClick={abrir} disabled={!url}>Abrir</Botao>
+          <Botao tamanho="m" icone={<Copy size={20} weight="bold" />} onClick={copiar} disabled={!url}>Copiar link</Botao>
         </div>
-      </div>
+        <BotaoIcone rotulo="Compartilhar o cardápio" variante="limpo" className="pv-share" onClick={compartilhar} disabled={!url}><ShareNetwork size={20} weight="bold" /></BotaoIcone>
+      </header>
 
-      {/* ── Área do iframe ── */}
-      {url && (
-        <div
-          style={{
-            flex: 1,
-            overflow: "auto",
-            display: "flex",
-            alignItems: viewMode === "mobile" ? "flex-start" : "stretch",
-            justifyContent: "center",
-            background: viewMode === "mobile" ? "#0f0f10" : "transparent",
-            padding: viewMode === "mobile" ? "24px 16px 24px" : "0",
-          }}
-        >
+      {url ? (
+        <div className={`pv-area pv-area--${viewMode}`}>
           {viewMode === "mobile" ? (
-            <div
-              style={{
-                position: "relative",
-                width: "390px",
-                flexShrink: 0,
-                borderRadius: "44px",
-                background: "#1c1c1e",
-                padding: "12px 10px",
-                boxShadow:
-                  "0 0 0 1.5px rgba(255,255,255,0.12), 0 24px 80px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(255,255,255,0.04)",
-              }}
-            >
-              {/* Notch */}
-              <div
-                style={{
-                  width: "110px",
-                  height: "28px",
-                  background: "#1c1c1e",
-                  borderRadius: "0 0 20px 20px",
-                  margin: "0 auto 8px",
-                  position: "relative",
-                  zIndex: 2,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "8px",
-                }}
-              >
-                <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#2a2a2e", border: "1.5px solid #333" }} />
-                <div style={{ width: "50px", height: "5px", borderRadius: "4px", background: "#2a2a2e" }} />
-              </div>
-
-              {/* Tela */}
-              <div
-                style={{
-                  width: "100%",
-                  height: "780px",
-                  borderRadius: "30px",
-                  overflow: "hidden",
-                  background: "var(--bg-card)",
-                  position: "relative",
-                }}
-              >
-                <iframe
-                  src={url}
-                  style={{ width: "100%", height: "100%", border: "none" }}
-                  title="Prévia mobile"
-                />
-              </div>
-
-              {/* Home indicator */}
-              <div style={{ display: "flex", justifyContent: "center", marginTop: "10px" }}>
-                <div style={{ width: "120px", height: "4px", borderRadius: "4px", background: "rgba(255,255,255,0.2)" }} />
-              </div>
+            <div className="pv-cel">
+              <div className="pv-cel-tela"><iframe src={url} title="Prévia do cardápio no celular" /></div>
             </div>
           ) : (
-            <iframe
-              src={url}
-              style={{ width: "100%", height: "100%", border: "none", background: "var(--bg-card)" }}
-              title="Prévia desktop"
-            />
+            <iframe className="pv-pc" src={url} title="Prévia do cardápio no computador" />
           )}
         </div>
+      ) : (
+        <div className="pv-carregando"><span className="ui-gira" aria-hidden="true" /><p>Carregando a prévia…</p></div>
       )}
-
-      {!url && (
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ width: "36px", height: "36px", border: "3px solid rgba(255,255,255,0.1)", borderTopColor: "rgba(255,255,255,0.5)", borderRadius: "50%", animation: "spin 0.7s linear infinite", margin: "0 auto 12px" }} />
-            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "13px", margin: 0 }}>Carregando prévia...</p>
-          </div>
-        </div>
-      )}
-
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
