@@ -107,9 +107,8 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
 
   return (
     <div className={`pp pp--${local}`}>
-      <p className="pp-k">PRIMEIROS PASSOS</p>
-      <b className="pp-t">Comece a vender</b>
-      <p className="pp-sub">Tudo o que o seu cardápio precisa, sem sair desta tela.</p>
+      <b className="pp-t">Primeiros passos</b>
+      <p className="pp-sub">{passos.length - feitos === 1 ? "Falta 1 coisa pra começar a vender pelo cardápio." : `Faltam ${passos.length - feitos} coisas pra começar a vender pelo cardápio.`}</p>
       <div className="pp-bar" aria-label={`${feitos} de ${passos.length} passos feitos`}><i style={{ width: `${(feitos / passos.length) * 100}%` }} /></div>
       {passos.map((p, i) => i === atual ? (
         <div key={p.t} className="pp-at">
@@ -128,8 +127,8 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
         ) : (
         <button type="button" key={p.t} className={`pp-ps${p.feito ? " pp-ps--ok" : ""}`} onClick={p.feito ? undefined : p.abrir} disabled={p.feito}>
           <span className={`pp-ic${p.feito ? " pp-ic--ok" : ""}`}>{p.feito ? I(Check) : p.ic}</span>
-          <span className="pp-tx"><b>{p.t}</b><small>{p.s}</small></span>
-          {!p.feito && <span className="pp-seta"><CaretRight size={16} /></span>}
+          <span className="pp-tx"><b>{p.t}</b><small>{p.feito ? "Feito" : p.s}</small></span>
+          {!p.feito && <span className="pp-seta"><CaretRight size={16} weight="bold" /></span>}
         </button>
         )
       ))}
@@ -337,13 +336,12 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo }: FolhaProps) {
 }
 
 const CSS = `
-  .pp { background: #fff; border: 1px solid #F0EBED; border-radius: 18px; padding: 18px 16px 8px; box-shadow: 0 10px 26px rgba(44,18,25,.10); font-family: var(--font-base); color: #2C1219; }
-  .pp-k { margin: 0; font-size: 12.5px; font-weight: 800; letter-spacing: .08em; color: #C33A6E; }
-  .pp-t { display: block; font-size: 22px; font-weight: 900; margin-top: 3px; letter-spacing: -.02em; line-height: 1.15; }
+  .pp { background: #fff; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); padding: 16px 16px 8px; box-shadow: var(--ui-sombra-cartao); font-family: var(--font-base); color: #2C1219; }
+  .pp-t { display: block; font-size: 18px; font-weight: 800; line-height: 1.3; }
   .pp-sub { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 4px 0 0; }
-  .pp-bar { height: 7px; border-radius: 99px; background: #F5F0F2; margin: 14px 0 6px; overflow: hidden; }
-  .pp-bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #F472B6, #E85A8C); transition: width .5s ease; }
-  .pp-ps { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 2px; border: none; border-top: 1px solid #F5F0F2; background: none; font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
+  .pp-bar { height: 8px; border-radius: 4px; background: var(--ui-linha); margin: 12px 0 8px; overflow: hidden; }
+  .pp-bar i { display: block; height: 100%; border-radius: 99px; background: var(--ui-rosa); transition: width .5s ease; }
+  .pp-ps { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 8px 2px; border: none; border-top: 1px solid #F5F0F2; background: none; font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
   .pp-ps:disabled { cursor: default; }
   .pp-ps--sem { border-top: none; padding: 0; cursor: default; }
   .pp-ic { width: 40px; height: 40px; border-radius: 10px; background: #FCE0E9; color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -351,18 +349,18 @@ const CSS = `
   .pp-ic--at { background: #E85A8C; color: #fff; }
   .pp-tx { flex: 1; min-width: 0; }
   .pp-tx b { display: block; font-size: 15px; font-weight: 700; letter-spacing: -.01em; line-height: 1.2; color: #2C2C2A; }
-  .pp-tx small { display: block; font-size: 12.5px; color: #6B5D64; margin-top: 3px; line-height: 1.35; }
-  .pp-ps--ok .pp-tx b { color: #9A8E94; font-weight: 600; text-decoration: line-through; text-decoration-color: #D6CBD0; }
-  .pp-ps--ok .pp-tx small { color: #B5AAB0; }
+  .pp-tx small { display: block; font-size: 13px; color: #6B5D64; margin-top: 2px; line-height: 1.4; }
+  .pp-ps--ok .pp-tx b { color: var(--ui-texto-2); font-weight: 600; }
+  .pp-ps--ok .pp-tx small { color: var(--ui-verde); font-weight: 700; }
   .pp-ps--trava { cursor: default; }
   .pp-ic--trava { background: #F5F0F2; color: #B5AAB0; }
   .pp-ps--trava .pp-tx b { color: #9A8E94; font-weight: 600; }
   .pp-seta { color: #B4B2A9; display: flex; }
-  .pp-at { background: #FFF6F9; border: 1.5px solid #F7C6D9; border-radius: 14px; padding: 14px 12px 12px; margin: 6px 0; }
+  .pp-at { background: var(--ui-rosa-claro); border: 0; border-radius: var(--ui-raio); padding: 12px; margin: 4px 0 8px; }
   .pp-at + .pp-ps { border-top: none; }
-  .pp-btn { display: block; width: 100%; margin-top: 12px; border: none; border-radius: 12px; padding: 13px; font-family: inherit; font-size: 15px; font-weight: 800; color: #fff; background: #E85A8C; box-shadow: 0 3px 0 #C33A6E; cursor: pointer; text-align: center; text-decoration: none; }
+  .pp-btn { display: block; width: 100%; min-height: 48px; margin-top: 12px; border: none; border-radius: var(--ui-raio-botao); padding: 13px; font-family: inherit; font-size: 15px; font-weight: 800; color: #fff; background: #E85A8C; box-shadow: 0 3px 0 #C33A6E; cursor: pointer; text-align: center; text-decoration: none; }
   .pp-btn:disabled { background: #F3B6CB; box-shadow: none; cursor: default; }
-  .pp-lnk { display: block; width: 100%; margin-top: 8px; padding: 10px; border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #C33A6E; cursor: pointer; }
+  .pp-lnk { display: block; width: 100%; min-height: 44px; margin-top: 8px; padding: 10px; border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #C33A6E; cursor: pointer; }
   .pp-lnk--cinza { color: #9A8E94; font-weight: 600; }
   .pp--fim { text-align: center; background: linear-gradient(180deg, #FFF1F6, #fff 70%); padding-bottom: 12px; }
   .pp-masc { display: block; width: 120px; height: auto; margin: 0 auto; }
@@ -373,10 +371,10 @@ const CSS = `
      o cartão fica com metade da altura e não empurra o resto da tela pra baixo. */
   @media (min-width: 768px) {
     .pp--inicio { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 12px; padding: 20px 20px 20px; }
-    .pp--inicio > .pp-k, .pp--inicio > .pp-t, .pp--inicio > .pp-sub, .pp--inicio > .pp-bar { grid-column: 1 / -1; }
+    .pp--inicio > .pp-t, .pp--inicio > .pp-sub, .pp--inicio > .pp-bar { grid-column: 1 / -1; }
     .pp--inicio > .pp-bar { margin-bottom: 4px; }
     .pp--inicio > .pp-ps, .pp--inicio > .pp-at { margin: 10px 0 0; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px; }
-    .pp--inicio > .pp-at { display: flex; flex-direction: column; justify-content: space-between; border: 1.5px solid #F7C6D9; padding: 14px 12px 12px; }
+    .pp--inicio > .pp-at { display: flex; flex-direction: column; justify-content: space-between; border: 0; padding: 12px; }
     .pp--inicio > .pp-ps--ok { background: #FAF7F8; }
   }
   @media (min-width: 1600px) { .pp--inicio { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
@@ -391,33 +389,33 @@ const CSS = `
   .ppf-hd { display: flex; align-items: flex-start; gap: 10px; padding: 12px 18px 12px; border-bottom: 1px solid #F5F0F2; flex-shrink: 0; }
   .ppf-hd > div { flex: 1; } .ppf-hd b { display: block; font-size: 18px; font-weight: 900; letter-spacing: -.01em; }
   .ppf-hd small { display: block; font-size: 13.5px; color: #6B5D64; margin-top: 2px; line-height: 1.4; }
-  .ppf-x { width: 34px; height: 34px; border-radius: 10px; border: none; background: #F5F0F2; color: #6B5D64; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+  .ppf-x { width: 44px; height: 44px; border-radius: 10px; border: none; background: #F5F0F2; color: #6B5D64; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
   .ppf-corpo { padding: 4px 18px calc(18px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; }
   .ppf-l { display: block; font-size: 13px; font-weight: 600; color: #4B3A42; margin: 14px 0 6px; }
   .ppf-lrow { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; margin-bottom: 6px; }
   .ppf-lrow .ppf-l { margin: 0; }
-  .ppf-ia { border: none; border-radius: 8px; background: #2C1219; color: #fff; font-family: inherit; font-size: 12px; font-weight: 800; padding: 6px 11px; cursor: pointer; }
+  .ppf-ia { min-height: 36px; border: none; border-radius: 10px; background: #2C1219; color: #fff; font-family: inherit; font-size: 13px; font-weight: 800; padding: 0 12px; cursor: pointer; }
   .ppf-ia:disabled { opacity: .6; }
   .ppf-in { width: 100%; box-sizing: border-box; min-height: 46px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 11px 14px; font-family: inherit; font-size: 16px; color: #2C1219; background: #fff; }
   .ppf-in:focus { outline: none; border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
   .ppf-ta { min-height: 112px; resize: none; line-height: 1.45; display: block; }
   .ppf-erro { margin: 12px 0 0; font-size: 13px; font-weight: 700; color: #B91C1C; }
-  .ppf-cnt { text-align: right; font-size: 11px; color: #B5AAB0; margin: 4px 0 0; }
+  .ppf-cnt { text-align: right; font-size: 12.5px; color: var(--ui-texto-3); margin: 4px 0 0; }
   .ppf-f { flex: 1; min-width: 0; }
   .ppf-row { display: flex; gap: 10px; }
   .ppf-wrap { position: relative; }
-  .ppf-cep { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 11.5px; font-weight: 700; color: #15803D; }
+  .ppf-cep { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 12.5px; font-weight: 700; color: #15803D; }
   .ppf-seg { display: flex; background: #F5F0F2; border-radius: 10px; padding: 3px; }
-  .ppf-seg button { flex: 1; border: none; background: none; padding: 9px 4px; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 700; color: #6B5D64; cursor: pointer; }
+  .ppf-seg button { flex: 1; min-height: 44px; border: none; background: none; padding: 0 4px; border-radius: 8px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #6B5D64; cursor: pointer; }
   .ppf-seg button.on { background: #fff; color: #2C1219; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
   .ppf-dias { display: flex; gap: 6px; }
-  .ppf-dias button { flex: 1; aspect-ratio: 1; max-width: 46px; border: none; border-radius: 50%; font-family: inherit; font-size: 14px; font-weight: 800; background: #FFF1F6; color: #D9A5B9; cursor: pointer; }
+  .ppf-dias button { flex: 1; aspect-ratio: 1; min-height: 40px; max-width: 46px; border: none; border-radius: 50%; font-family: inherit; font-size: 14px; font-weight: 800; background: #FFF1F6; color: #D9A5B9; cursor: pointer; }
   .ppf-dias button.on { background: #E85A8C; color: #fff; box-shadow: 0 3px 10px rgba(232,90,140,.3); }
   .ppf-bl { background: #FAF7F8; border-radius: 12px; padding: 12px; margin-top: 12px; }
   .ppf-bl b { display: block; font-size: 13.5px; margin-bottom: 8px; }
   .ppf-hr { flex: 1; display: flex; align-items: center; gap: 10px; min-height: 50px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 8px 12px; background: #fff; font-family: inherit; color: #993556; text-align: left; cursor: pointer; }
   .ppf-hr span { display: flex; flex-direction: column; color: #2C1219; font-size: 16px; font-weight: 800; line-height: 1.15; }
-  .ppf-hr small { font-size: 11px; font-weight: 700; color: #888780; }
+  .ppf-hr small { font-size: 12.5px; font-weight: 700; color: var(--ui-texto-2); }
   .ppf-lg { display: flex; gap: 14px; align-items: center; margin-top: 12px; }
   .ppf-lgc { position: relative; width: 76px; height: 76px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 6px 16px rgba(232,90,140,.3); background: linear-gradient(135deg, #F9A8D4, #E85A8C); padding: 0; cursor: pointer; flex-shrink: 0; overflow: visible; }
   .ppf-lgc img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }

@@ -1,24 +1,28 @@
 import { useNavigate, useLocation } from "react-router-dom";
+import { ArrowSquareOut, ChartBar, Package, Palette, SquaresFour, Stack, Storefront, Truck } from "@phosphor-icons/react";
+import type { Icon } from "@phosphor-icons/react";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 
 /**
  * Menu lateral do Cardápio digital — SÓ NO COMPUTADOR (02/10).
  * Fica ao lado do menu do app em todas as telas do cardápio, pra trocar de tela sem voltar.
  * No celular ele não aparece (lá continua o voltar de cada tela).
+ * (08/10 · 3.21) Ícones do app no lugar dos emojis, títulos sem caixa alta, itens de 44px
+ * e o Catálogo antes da Configuração da loja (é o que se usa mais).
  */
 export const ROTAS_CARDAPIO = ["/cardapio", "/cardapio-config", "/cardapio-design", "/checkout-config", "/produtos", "/produtos/categorias", "/categorias", "/complementos"];
 
-const GRUPOS: { titulo: string; itens: { label: string; ico: string; path: string; tambem?: string[] }[] }[] = [
-  { titulo: "Cardápio digital", itens: [{ label: "Visão geral", ico: "📊", path: "/cardapio" }] },
-  { titulo: "Configuração da loja", itens: [
-    { label: "Dados da loja", ico: "🏪", path: "/cardapio-config" },
-    { label: "Aparência", ico: "🎨", path: "/cardapio-design" },
-    { label: "Entrega e pagamento", ico: "🚚", path: "/checkout-config" },
-  ] },
+const GRUPOS: { titulo: string; itens: { label: string; Ic: Icon; path: string; tambem?: string[] }[] }[] = [
+  { titulo: "Cardápio digital", itens: [{ label: "Visão geral", Ic: ChartBar, path: "/cardapio" }] },
   { titulo: "Catálogo", itens: [
-    { label: "Produtos", ico: "🧁", path: "/produtos" },
-    { label: "Categorias", ico: "🗂️", path: "/categorias", tambem: ["/produtos/categorias"] },
-    { label: "Personalização", ico: "✨", path: "/complementos" },
+    { label: "Produtos", Ic: Package, path: "/produtos" },
+    { label: "Categorias", Ic: SquaresFour, path: "/categorias", tambem: ["/produtos/categorias"] },
+    { label: "Personalização", Ic: Stack, path: "/complementos" },
+  ] },
+  { titulo: "Configuração da loja", itens: [
+    { label: "Dados da loja", Ic: Storefront, path: "/cardapio-config" },
+    { label: "Aparência", Ic: Palette, path: "/cardapio-design" },
+    { label: "Entrega e pagamento", Ic: Truck, path: "/checkout-config" },
   ] },
 ];
 
@@ -30,44 +34,45 @@ export default function CardapioSubnav() {
 
   return (
     <aside className="cdnav" aria-label="Telas do cardápio digital">
-      {GRUPOS.map((g, gi) => (
-        <div key={g.titulo}>
-          {gi > 0 && <div className="cdnav-sep" />}
+      {GRUPOS.map(g => (
+        <div key={g.titulo} className="cdnav-g">
           <p className="cdnav-t">{g.titulo}</p>
-          {g.itens.map(it => {
-            const ativo = pathname === it.path || (it.tambem || []).includes(pathname);
+          {g.itens.map(({ label, Ic, path, tambem }) => {
+            const ativo = pathname === path || (tambem || []).includes(pathname);
             return (
-              <button key={it.path} type="button" className={`cdnav-i${ativo ? " on" : ""}`} onClick={() => navigate(it.path)} aria-current={ativo ? "page" : undefined}>
-                <i aria-hidden="true">{it.ico}</i>{it.label}
+              <button key={path} type="button" className={`cdnav-i${ativo ? " on" : ""}`} onClick={() => navigate(path)} aria-current={ativo ? "page" : undefined}>
+                <Ic size={20} weight={ativo ? "fill" : "bold"} aria-hidden="true" />{label}
               </button>
             );
           })}
         </div>
       ))}
       {link && (
-        <a className="cdnav-ver" href={link} target="_blank" rel="noopener noreferrer">👁️ Ver meu cardápio ↗</a>
+        <a className="cdnav-ver" href={link} target="_blank" rel="noopener noreferrer">
+          <ArrowSquareOut size={20} weight="bold" aria-hidden="true" />Ver meu cardápio
+        </a>
       )}
       <style>{`
         .cdnav { display: none; }
         @media (min-width: 1024px) {
           /* 02/10: o menu começa embaixo do cabeçalho rosa (que agora vai até o menu escuro) e tem o cinza da página */
           .cdnav { display: block; position: fixed; top: 96px; bottom: 0; left: 220px; width: 236px; z-index: 9; overflow-y: auto;
-            background: #F6F3F4; border-right: none; padding: 20px 12px; font-family: var(--font-base); }
+            background: #F6F3F4; border-right: none; padding: 16px 12px; font-family: var(--font-base); }
           .layout-root.com-cdnav .layout-main { margin-left: calc(220px + 236px) !important; background: #F6F3F4; min-height: 100vh; }
           .layout-root.com-cdnav .cab { margin-left: calc(-236px - 2rem) !important; padding-left: calc(236px + 2rem) !important; }
-          .cdnav-i:hover { background: #EFE9EC; }
         }
-        .cdnav-t { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #9A8E94; padding: 8px 10px 6px; margin: 0; }
-        .cdnav-i { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: none; border-radius: 10px; background: none;
-          font-family: inherit; font-size: 13.5px; font-weight: 600; color: #4B3A42; cursor: pointer; text-align: left; transition: background .15s; }
-        .cdnav-i:hover { background: #FAF5F7; }
-        .cdnav-i i { width: 30px; height: 30px; border-radius: 9px; background: #F5F0F2; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 15px; flex-shrink: 0; }
-        .cdnav-i.on { background: #FFF1F6; color: #C33A6E; font-weight: 800; }
-        .cdnav-i.on i { background: #FCE7F3; }
-        .cdnav-sep { height: 1px; background: #F3ECEF; margin: 8px 4px; }
-        .cdnav-ver { display: flex; justify-content: center; gap: 6px; margin-top: 12px; padding: 10px; border-radius: 10px; border: 1.5px dashed #F3C9DA;
-          color: #C33A6E; font-size: 13px; font-weight: 700; text-decoration: none; }
-        .cdnav-ver:hover { background: #FFF6F9; }
+        .cdnav-g + .cdnav-g { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--ui-borda); }
+        .cdnav-t { margin: 0; padding: 4px 12px 6px; font-size: 12.5px; font-weight: 800; color: var(--ui-texto-3); }
+        .cdnav-i { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 44px; margin: 0; padding: 0 12px; border: 0; border-radius: var(--ui-raio);
+          background: none; color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 600; text-align: left; cursor: pointer; transition: background-color var(--dur-fast) linear; }
+        .cdnav-i svg { flex: none; color: var(--ui-texto-2); }
+        .cdnav-i:hover { background: #EFE9EC; }
+        .cdnav-i:focus-visible, .cdnav-ver:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
+        .cdnav-i.on { background: var(--ui-branco); color: var(--ui-rosa-escuro); font-weight: 800; box-shadow: var(--ui-sombra-cartao); }
+        .cdnav-i.on svg { color: var(--ui-rosa-escuro); }
+        .cdnav-ver { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; margin-top: 16px; border-radius: var(--ui-raio);
+          background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 15px; font-weight: 800; text-decoration: none; }
+        .cdnav-ver:hover { filter: brightness(.97); }
       `}</style>
     </aside>
   );

@@ -28,6 +28,16 @@ import BtnNovo from "@/components/BtnNovo";
 import Categorias from "@/pages/Categorias";
 import QuickAddInsumo from "@/components/QuickAddInsumo";
 import AppPageHeader from "@/components/AppPageHeader";
+import { Camera, CaretDown, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, SortAscending, WarningCircle, X as XIc, DotsThreeVertical } from "@phosphor-icons/react";
+import { Botao, BotaoIcone, Linha as LinhaUi, Titulo as TituloUi } from "@/components/base";
+import { sufixoVenda } from "@/lib/formaVenda";
+import "./produtosLista.css";
+
+/** "por kg", "o cento", "a caixa", "a unidade" — junto do preço na lista (08/10 · 3.21) */
+const unidadeDoPreco = (fv?: string | null) => {
+  const s = sufixoVenda(fv);
+  return s === "kg" ? "por kg" : s === "cento" ? "o cento" : s === "caixa" ? "a caixa" : s === "fatia" ? "a fatia" : s === "kit" ? "o kit" : "a unidade";
+};
 import ReqTag from "@/components/ReqTag";
 import { apiFetch } from "@/lib/apiFetch";
 
@@ -4389,8 +4399,8 @@ export default function Produtos() {
     <>
       {limiteAberto && <LimitePlano tipo="produtos" limite={LIMITE_PRODUTOS_GRATIS} onClose={() => setLimiteAberto(false)} />}
     <AppPageHeader
-      title="Meus Produtos"
-      subtitle="Gerencie o que você vende"
+      title="Produtos"
+      subtitle="O que aparece no seu cardápio"
       infoIcon="🎂"
       infoContent={
         <>
@@ -4398,7 +4408,7 @@ export default function Produtos() {
           <p>Cada produto pode ter foto, preço, descrição, sabores e variações. Você organiza por <strong>categorias</strong> pra ficar fácil de encontrar e mostrar no seu cardápio digital.</p>
         </>
       }
-      infoTip={<>Clique em <strong>"+ Novo Produto"</strong> pra cadastrar. Depois é só compartilhar seu cardápio com os clientes.</>}
+      infoTip={<>Toque em <strong>"Novo produto"</strong> pra cadastrar. Depois é só compartilhar seu cardápio com os clientes.</>}
     />
     {cropSrc && (
       <ImageCropper
@@ -4415,14 +4425,8 @@ export default function Produtos() {
       {/* ── Tabs — só quando tem produtos ── */}
       {produtos.length > 0 && (
       <div className="prod-tabs-novo">
-        <button className={`prod-tab-novo${activeTab==="produtos"?" active":""}`} onClick={()=>setActiveTab("produtos")}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-          Produtos
-        </button>
-        <button className={`prod-tab-novo${activeTab==="categorias"?" active":""}`} onClick={()=>setActiveTab("categorias")}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-          Categorias
-        </button>
+        <button type="button" className={`prod-tab-novo${activeTab==="produtos"?" active":""}`} aria-pressed={activeTab==="produtos"} onClick={()=>setActiveTab("produtos")}>Produtos</button>
+        <button type="button" className={`prod-tab-novo${activeTab==="categorias"?" active":""}`} aria-pressed={activeTab==="categorias"} onClick={()=>setActiveTab("categorias")}>Categorias</button>
       </div>
       )}
 
@@ -4433,20 +4437,14 @@ export default function Produtos() {
       {/* Header + Busca + Ordenar — só quando tem produtos */}
       {produtos.length > 0 && (
       <>
-      {/* Botão Novo Produto à direita */}
-      <div className="prod-header-novo" style={{ justifyContent: 'flex-end' }}>
-        <BtnNovo label="Novo produto" onClick={openNovo} />
-      </div>
-
-      {/* Barra de pesquisa */}
-      <div className="prod-busca-novo">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input
-          type="text"
-          placeholder="Buscar produto..."
-          value={buscaTexto}
-          onChange={e => setBuscaTexto(e.target.value)}
-        />
+      {/* Busca + Novo produto (08/10 · 3.21: campo de 48px e o botão do lado) */}
+      <div className="pl-topo">
+        <div className="ui-campo-c pl-busca" onClick={e => { if (e.target === e.currentTarget) (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.focus(); }}>
+          <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
+          <input type="search" inputMode="search" enterKeyHint="search" autoComplete="off" aria-label="Buscar produto" placeholder="Buscar produto" value={buscaTexto} onChange={e => setBuscaTexto(e.target.value)} />
+          {buscaTexto && <BotaoIcone variante="limpo" tamanho="p" rotulo="Limpar a busca" onClick={() => setBuscaTexto("")}><XIc size={20} weight="bold" /></BotaoIcone>}
+        </div>
+        <Botao icone={<PlusIc size={20} weight="bold" />} onClick={openNovo} className="pl-novo"><span className="pl-novo-g">Novo produto</span><span className="pl-novo-c">Novo</span></Botao>
       </div>
 
       {/* Aviso de produtos sem categoria válida */}
@@ -4454,37 +4452,27 @@ export default function Produtos() {
         const orfaos = produtos.filter(p => p.categoria && !categorias.includes(p.categoria));
         if (orfaos.length === 0) return null;
         return (
-          <div style={{ background: "#fffbeb", border: "1.5px solid #fcd34d", borderRadius: "14px", padding: "0.85rem 1rem", display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{ fontSize: "1.2rem", flexShrink: 0 }}>⚠️</span>
-            <div style={{ flex: 1 }}>
-              <p style={{ fontSize: "0.85rem", fontWeight: 700, color: "#92400e", margin: "0 0 2px" }}>
-                {orfaos.length} produto{orfaos.length !== 1 ? "s" : ""} com categoria inexistente
-              </p>
-              <p style={{ fontSize: "0.75rem", color: "#b45309", margin: 0 }}>
-                Esses produtos aparecem apenas em "Todos" no cardápio. Edite-os e selecione uma categoria válida.
-              </p>
-            </div>
-            <button onClick={() => setFiltroOrfaos(true)} style={{ padding: "5px 12px", background: "var(--warning)", color: "white", border: "none", borderRadius: "8px", fontFamily: "inherit", fontSize: "0.75rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
-              Ver {orfaos.length}
-            </button>
+          <div className="pl-aviso" role="status">
+            <WarningCircle size={20} weight="bold" aria-hidden="true" />
+            {filtroOrfaos
+              ? <p>Mostrando só os <b>{orfaos.length} sem categoria.</b> Abra cada um e escolha uma categoria.</p>
+              : <p><b>{orfaos.length} produto{orfaos.length !== 1 ? "s" : ""} sem categoria.</b> No cardápio {orfaos.length !== 1 ? "eles" : "ele"} só aparece{orfaos.length !== 1 ? "m" : ""} em "Todos".</p>}
+            <Botao variante="link" onClick={() => setFiltroOrfaos(v => !v)}>{filtroOrfaos ? "Ver todos" : "Arrumar"}</Botao>
           </div>
         );
       })()}
 
-      {/* Ordenar por */}
-      <div style={{ position: "relative" }}>
-        <button
-          onClick={() => setShowOrdenar(!showOrdenar)}
-          style={{ display: "flex", alignItems: "center", gap: "6px", padding: "0.4rem 0.75rem", border: "1.5px solid var(--border)", borderRadius: "var(--radius-sm)", background: "var(--bg-card)", fontFamily: "var(--font-base)", fontSize: "var(--font-helper)", fontWeight: "var(--fw-medium)", color: "var(--text-secondary)", cursor: "pointer" }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 6h18M6 12h12M9 18h6"/></svg>
-          {{ recentes: "Mais recentes", alfabetica: "Alfabética", categoria: "Categoria", preco: "Preço" }[ordenarPor]}
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
+      {/* Seus produtos + ordenar */}
+      <div className="pl-ord">
+        <TituloUi contagem={filtroOrfaos ? produtos.filter(p => p.categoria && !categorias.includes(p.categoria)).length : produtosFiltrados.length} acao={
+          <Botao variante="link" icone={<SortAscending size={16} weight="bold" />} iconeDepois={<CaretDown size={14} weight="bold" />} aria-expanded={showOrdenar} onClick={() => setShowOrdenar(!showOrdenar)}>
+            {{ recentes: "Mais recentes", alfabetica: "Alfabética", categoria: "Categoria", preco: "Preço" }[ordenarPor]}
+          </Botao>
+        }>Seus produtos</TituloUi>
         {showOrdenar && (
           <>
             <div onClick={() => setShowOrdenar(false)} style={{ position: "fixed", inset: 0, zIndex: 99 }} />
-            <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, background: "var(--bg-card)", border: "1.5px solid var(--border)", borderRadius: "var(--radius-md)", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 100, minWidth: "180px", overflow: "hidden" }}>
+            <div className="pl-ord-menu" role="menu">
               {([
                 { value: "recentes", label: "Mais recentes" },
                 { value: "alfabetica", label: "Alfabética" },
@@ -4493,16 +4481,14 @@ export default function Produtos() {
               ] as const).map(opt => (
                 <button
                   key={opt.value}
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={ordenarPor === opt.value}
+                  className={`pl-ord-it${ordenarPor === opt.value ? " on" : ""}`}
                   onClick={() => { setOrdenarPor(opt.value); setShowOrdenar(false); setFiltroOrfaos(false); }}
-                  style={{
-                    display: "flex", alignItems: "center", gap: "8px", width: "100%", padding: "0.6rem 0.85rem",
-                    border: "none", background: ordenarPor === opt.value ? "var(--primary-light)" : "transparent",
-                    fontFamily: "var(--font-base)", fontSize: "0.85rem", fontWeight: ordenarPor === opt.value ? 700 : 500,
-                    color: ordenarPor === opt.value ? "var(--primary)" : "var(--text-primary)", cursor: "pointer", textAlign: "left",
-                  }}
                 >
                   {opt.label}
-                  {ordenarPor === opt.value && <svg style={{ marginLeft: "auto" }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                  {ordenarPor === opt.value && <CheckIc size={16} weight="bold" aria-hidden="true" />}
                 </button>
               ))}
             </div>
@@ -4576,7 +4562,7 @@ export default function Produtos() {
             <div
               key={p.id}
               className={`prod-card ${p.id && isSelected(p.id) ? "prod-card--selected" : ""}`}
-              style={{ outline: catInvalida ? "2px solid #fcd34d" : "none", cursor: "pointer", position: "relative" }}
+              style={{ cursor: "pointer", position: "relative" }}
               onClick={() => {
                 // Se tem produtos selecionados, o clique adiciona/remove; senão, abre preview
                 if (selectedIds.size > 0 && p.id) {
@@ -4606,15 +4592,14 @@ export default function Produtos() {
                   <img src={p.imagem_url.split(",")[0]} alt={p.nome} />
                 ) : (
                   <div className="prod-card-sem-foto">
-                    <div className="prod-card-sem-foto-icon">📸</div>
-                    <div className="prod-card-sem-foto-title">Foto vende mais</div>
-                    <div className="prod-card-sem-foto-cta">toque pra adicionar</div>
+                    <Camera size={24} weight="bold" aria-hidden="true" />
+                    <div className="prod-card-sem-foto-title">Adicionar foto</div>
                   </div>
                 )}
-                {!p.disponivel && <div className="prod-card-indisponivel">Despublicado</div>}
+                {!p.disponivel && <div className="prod-card-indisponivel">Fora do cardápio</div>}
                 {/* Etiquetas empilhadas (antes ficavam uma em cima da outra no mesmo canto) */}
                 <div className="prod-card-tags prod-card-tags--dir">
-                  {p.promocao && <div className="prod-card-promo">🔥 Promoção</div>}
+                  {p.promocao && <div className="prod-card-promo">Promoção</div>}
                   {/* Mesma regra do cardápio: só é encomenda quando tem antecedência marcada
                       (antes aparecia "Encomenda" em produto sem nada marcado) */}
                   {!!(p as any).antecedencia && <div className="prod-card-encomenda">Encomenda</div>}
@@ -4623,35 +4608,28 @@ export default function Produtos() {
                   {catInvalida && <div className="prod-card-semcat">Sem categoria</div>}
                   {(p.tamanhos_disponiveis && p.tamanhos_disponiveis.length > 0) && (
                     <div className="prod-card-badge-var">
-                      📏 {p.tamanhos_disponiveis.length === 1 ? p.tamanhos_disponiveis[0].label : `${p.tamanhos_disponiveis.length} opções`}
+                      {p.tamanhos_disponiveis.length === 1 ? p.tamanhos_disponiveis[0].label : `${p.tamanhos_disponiveis.length} opções`}
                     </div>
                   )}
                 </div>
               </div>
               <div className="prod-card-info">
-                <p className="prod-card-cat" style={{ color: catInvalida ? "var(--warning)" : undefined }}>{catInvalida ? p.categoria : p.categoria}</p>
+                <p className="prod-card-cat">{catInvalida ? "Sem categoria" : p.categoria}</p>
                 <p className="prod-card-nome">{p.nome}</p>
                 {p.promocao && p.preco_promocional && p.preco_promocional > 0 ? (
                   <p className="prod-card-preco" style={{ display: "flex", alignItems: "center", gap: "4px", flexWrap: "nowrap" }}>
-                    <span style={{ textDecoration: "line-through", color: "var(--text-muted)", fontWeight: "var(--fw-medium)" as any, fontSize: "0.75rem" }}>R$ {formatPreco(p.preco_normal)}</span>
-                    <span>R$ {formatPreco(p.preco_promocional)}</span>
+                    <span className="prod-card-de">R$ {formatPreco(p.preco_normal)}</span>
+                    <span>R$ {formatPreco(p.preco_promocional)}</span> <small>{unidadeDoPreco(p.forma_venda)}</small>
                   </p>
                 ) : (
-                  <p className="prod-card-preco">R$ {formatPreco(p.preco_normal)}</p>
+                  <p className="prod-card-preco">R$ {formatPreco(p.preco_normal)} <small>{unidadeDoPreco(p.forma_venda)}</small></p>
                 )}
                 <div className="prod-card-bottom">
                 {(() => {
                   const { lucro, margem, temFicha } = calcularLucro(p);
                   if (!temFicha) {
                     return (
-                      <button
-                        type="button"
-                        className="prod-card-sem-ficha"
-                        onClick={(e) => { e.stopPropagation(); navigate("/ficha-tecnica", { state: { produtoId: p.id } }); }}
-                        title="Adicione insumos para ver o lucro por venda"
-                      >
-                        Configure a<br/>Ficha Técnica
-                      </button>
+                      <span className="pl-sem-ficha"><ListChecks size={16} weight="bold" aria-hidden="true" />Sem ficha técnica</span>
                     );
                   }
                   const tier = margem >= 50 ? "alto" : margem >= 25 ? "medio" : "baixo";
@@ -6367,7 +6345,7 @@ export default function Produtos() {
       {previewProduto && (
         <div className="prod-preview-overlay" onClick={() => setPreviewProduto(null)}>
           <div className="prod-preview-modal" onClick={e => e.stopPropagation()}>
-            <button className="prod-preview-close" onClick={() => setPreviewProduto(null)} aria-label="Fechar">✕</button>
+            <BotaoIcone className="prod-preview-close" variante="limpo" rotulo="Fechar" onClick={() => setPreviewProduto(null)}><XIc size={20} weight="bold" /></BotaoIcone>
 
             {/* Foto hero (com carousel dots se tiver mais) */}
             {(() => {
@@ -6384,98 +6362,55 @@ export default function Produtos() {
                   )}
                 </div>
               ) : (
-                <div className="prod-preview-img prod-preview-img--placeholder">Sem imagem</div>
+                <div className="prod-preview-img prod-preview-img--placeholder"><Camera size={30} weight="bold" aria-hidden="true" /><span>Sem foto</span></div>
               );
             })()}
 
             <div className="prod-preview-body">
-              {/* Categoria + Status */}
-              <div className="prod-preview-eyebrow">
-                {previewProduto.categoria && <span>{previewProduto.categoria}</span>}
-                <span className="prod-preview-eyebrow-dot">·</span>
-                <span className={previewProduto.disponivel !== false ? "prod-preview-status-on" : "prod-preview-status-off"}>
-                  {previewProduto.disponivel !== false ? "Ativo" : "Inativo"}
-                </span>
-                {previewProduto.promocao && <>
-                  <span className="prod-preview-eyebrow-dot">·</span>
-                  <span className="prod-preview-status-promo">Promoção</span>
-                </>}
-              </div>
-
-              {/* Nome grande */}
+              {/* 08/10 · 3.21: rótulo + texto (antes "PREÇO", "OPÇÕES" e "CADASTRADO" em caixa alta) */}
               <h3 className="prod-preview-nome">{previewProduto.nome}</h3>
-
-              {/* Descrição */}
               {previewProduto.descricao && (
                 <p className="prod-preview-desc">{previewProduto.descricao}</p>
               )}
-
-              {/* Card destaque preço + vendas */}
-              <div className="prod-preview-destaque">
-                <div className="prod-preview-destaque-preco">
-                  <div className="prod-preview-destaque-label">Preço</div>
-                  {previewProduto.promocao && previewProduto.preco_promocional && previewProduto.preco_promocional > 0 ? (
-                    <>
-                      <div className="prod-preview-destaque-valor">R$ {formatPreco(previewProduto.preco_promocional)}</div>
-                      <div className="prod-preview-destaque-sub" style={{textDecoration: "line-through"}}>R$ {formatPreco(previewProduto.preco_normal)}</div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="prod-preview-destaque-valor">R$ {formatPreco(previewProduto.preco_normal)}</div>
-                      <div className="prod-preview-destaque-sub">
-                        {(() => {
-                          const label = FORMAS_VENDA.find(f => f.value === previewProduto.forma_venda)?.label;
-                          const temVariacoes = (previewProduto.tamanhos_disponiveis || []).length > 0 || (previewProduto.recheios_disponiveis || []).length > 0;
-                          return `${label || "Por unidade"}${temVariacoes ? " · a partir de" : ""}`;
-                        })()}
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Grid 2 colunas: variações + cadastrado */}
-              <div className="prod-preview-info-grid">
-                <div className="prod-preview-info-box">
-                  <div className="prod-preview-info-label">OPÇÕES</div>
-                  <div className="prod-preview-info-valor">
-                    {(() => {
-                      // V3: lê dos grupos ativos
-                      const partes: string[] = [];
-                      const contar = (grupo: any, label: string, labelPlural: string) => {
-                        if (grupo?.ativo && (grupo.opcoes?.length || 0) > 0) {
-                          const n = grupo.opcoes.length;
-                          partes.push(`${n} ${n === 1 ? label : labelPlural}`);
-                        }
-                      };
-                      contar(previewProduto.grupo_massas, "massa", "massas");
-                      contar(previewProduto.grupo_recheios, "recheio", "recheios");
-                      contar(previewProduto.grupo_coberturas, "cobertura", "coberturas");
-                      contar(previewProduto.grupo_sabores, "sabor", "sabores");
-                      contar((previewProduto as any).grupo_tamanhos, "tamanho", "tamanhos");
-                      if (partes.length === 0) return "Nenhuma";
-                      if (partes.length === 1) return partes[0];
-                      if (partes.length === 2) return partes.join(" + ");
-                      return `${partes.length} categorias`;
-                    })()}
-                  </div>
-                </div>
-                <div className="prod-preview-info-box">
-                  <div className="prod-preview-info-label">CADASTRADO</div>
-                  <div className="prod-preview-info-valor">
-                    {(() => {
-                      if (!previewProduto.created_at) return "—";
-                      const dias = Math.floor((Date.now() - new Date(previewProduto.created_at).getTime()) / (86400000));
-                      if (dias === 0) return "Hoje";
-                      if (dias === 1) return "Ontem";
-                      if (dias < 30) return `Há ${dias} dias`;
-                      const meses = Math.floor(dias / 30);
-                      if (meses < 12) return `Há ${meses} ${meses === 1 ? "mês" : "meses"}`;
-                      return new Date(previewProduto.created_at).toLocaleDateString("pt-BR");
-                    })()}
-                  </div>
-                </div>
-              </div>
+              {(() => {
+                const pv = previewProduto;
+                const catOk = !!pv.categoria && categorias.includes(pv.categoria);
+                const temVariacoes = (pv.tamanhos_disponiveis || []).length > 0 || (pv.recheios_disponiveis || []).length > 0;
+                const promo = !!(pv.promocao && pv.preco_promocional && pv.preco_promocional > 0);
+                const partes: string[] = [];
+                const contar = (grupo: any, label: string, labelPlural: string) => {
+                  if (grupo?.ativo && (grupo.opcoes?.length || 0) > 0) { const n = grupo.opcoes.length; partes.push(`${n} ${n === 1 ? label : labelPlural}`); }
+                };
+                contar(pv.grupo_massas, "massa", "massas");
+                contar(pv.grupo_recheios, "recheio", "recheios");
+                contar(pv.grupo_coberturas, "cobertura", "coberturas");
+                contar(pv.grupo_sabores, "sabor", "sabores");
+                contar((pv as any).grupo_tamanhos, "tamanho", "tamanhos");
+                const opcoes = partes.length === 0 ? "Nenhuma" : partes.length <= 2 ? partes.join(" e ") : `${partes.slice(0, -1).join(", ")} e ${partes[partes.length - 1]}`;
+                const { temFicha, lucro, margem } = calcularLucro(pv);
+                const MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+                const cad = pv.created_at ? new Date(pv.created_at) : null;
+                return (
+                  <>
+                    <div className="prod-preview-linhas">
+                      <LinhaUi rotulo="Situação" tom={pv.disponivel !== false ? "verde" : "laranja"}>{pv.disponivel !== false ? "No cardápio" : "Fora do cardápio"}{promo ? " · em promoção" : ""}</LinhaUi>
+                      <LinhaUi rotulo="Categoria" tom={catOk ? undefined : "laranja"}>{catOk ? pv.categoria : "Sem categoria"}</LinhaUi>
+                      <LinhaUi rotulo="Preço">
+                        {promo ? <><s className="prod-preview-de">R$ {formatPreco(pv.preco_normal)}</s> R$ {formatPreco(pv.preco_promocional)}</> : <>{temVariacoes ? "a partir de " : ""}R$ {formatPreco(pv.preco_normal)}</>} {unidadeDoPreco(pv.forma_venda)}
+                      </LinhaUi>
+                      <LinhaUi rotulo="Opções">{opcoes}</LinhaUi>
+                      <LinhaUi rotulo="Ficha técnica" tom={temFicha ? "verde" : "laranja"}>{temFicha ? `Lucro de R$ ${formatPreco(lucro)} por venda (${margem.toFixed(0)}%)` : "Ainda não montada"}</LinhaUi>
+                    </div>
+                    {!temFicha && pv.id && (
+                      <Botao variante="suave" cheio icone={<ListChecks size={20} weight="bold" />} className="prod-preview-ficha"
+                        onClick={() => { const id = pv.id; setPreviewProduto(null); navigate("/ficha-tecnica", { state: { produtoId: id } }); }}>
+                        Montar a ficha técnica
+                      </Botao>
+                    )}
+                    {cad && <p className="prod-preview-cad">Cadastrado em {cad.getDate()} de {MESES[cad.getMonth()]}{cad.getFullYear() !== new Date().getFullYear() ? ` de ${cad.getFullYear()}` : ""}</p>}
+                  </>
+                );
+              })()}
 
               {/* Ações */}
               <div className="prod-preview-actions">
@@ -6487,14 +6422,14 @@ export default function Produtos() {
                   {previewProduto.disponivel !== false ? (
                     // Publicado → ícone lápis
                     <>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{marginRight: 6}}><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                      Editar
+                      <PencilSimple size={20} weight="bold" aria-hidden="true" />
+                      Editar produto
                     </>
                   ) : (
                     // Despublicado → ícone olho + call-to-action pra publicar
                     <>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: 6}}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                      Revisar e Publicar
+                      Revisar e publicar
                     </>
                   )}
                 </button>
@@ -6502,10 +6437,10 @@ export default function Produtos() {
                   <button
                     className="prod-preview-btn-icon"
                     onClick={e => { e.stopPropagation(); setPreviewMenu(v => !v); }}
-                    title="Mais ações"
-                    aria-label="Mais ações"
+                    aria-label="Mais ações do produto"
+                    aria-expanded={previewMenu}
                   >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+                    <DotsThreeVertical size={20} weight="bold" aria-hidden="true" />Mais
                   </button>
                   {previewMenu && (
                     <div className="prod-preview-menu" onClick={e => e.stopPropagation()}>

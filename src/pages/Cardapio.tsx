@@ -6,8 +6,9 @@ import {
   ChartBar, Eye, Storefront, Sliders, PaintBrush, Tag,
   Share, Percent, ForkKnife, Copy, CheckCircle, Warning, Lightbulb,
   TrendUp, TrendDown, ShoppingBag, Users as UsersIcon, CurrencyDollar,
-  CaretRight, SquaresFour, Stack,
+  CaretRight, SquaresFour, Stack, Crown, Package,
 } from "@phosphor-icons/react";
+import { Botao } from "@/components/base";
 import { useProfile, getCardapioUrl, isPro } from "@/hooks/useProfile";
 import { validarCardapio } from "@/lib/cardapio-validacao";
 import { supabase } from "@/lib/supabase";
@@ -318,8 +319,8 @@ export default function Cardapio() {
   return (
     <>
     <AppPageHeader
-      title="Meu Cardápio"
-      subtitle="Personalize sua loja online"
+      title="Cardápio digital"
+      subtitle="A loja online da sua confeitaria"
       infoIcon="🛍️"
       infoContent={
         <>
@@ -346,26 +347,25 @@ export default function Cardapio() {
       {/* Meu Catálogo — ações do dia-a-dia */}
       <div className="cd-card cd-quick">
         <div className="cd-quick-hdr">
-          <div className="cd-quick-title">Meu Catálogo</div>
-          <div className="cd-quick-sub">O que aparece pros seus clientes</div>
+          <div className="cd-quick-title">Catálogo</div>
         </div>
         <div className="cd-quick-list">
           <button className="cd-quick-item" onClick={() => navigate("/produtos")}>
             <span className="cd-quick-ico cd-quick-ico--pink">
-              <Storefront size={20} weight="regular" />
+              <Storefront size={20} weight="bold" />
             </span>
             <div className="cd-quick-info">
               <div className="cd-quick-name">Produtos</div>
               <div className="cd-quick-desc">
-                {contadores.produtosAtivos} ativo{contadores.produtosAtivos === 1 ? "" : "s"}
-                {contadores.produtos !== contadores.produtosAtivos && ` · ${contadores.produtos} no total`}
+                {contadores.produtos === 0 ? "Nenhum produto ainda"
+                  : `${contadores.produtosAtivos} no cardápio${contadores.produtos !== contadores.produtosAtivos ? ` · ${contadores.produtos} cadastrado${contadores.produtos === 1 ? "" : "s"}` : ""}`}
               </div>
             </div>
-            <CaretRight size={14} weight="bold" className="cd-quick-arrow" />
+            <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
           </button>
           <button className="cd-quick-item" onClick={() => navigate("/categorias")}>
-            <span className="cd-quick-ico cd-quick-ico--amber">
-              <SquaresFour size={20} weight="regular" />
+            <span className="cd-quick-ico cd-quick-ico--pink">
+              <SquaresFour size={20} weight="bold" />
             </span>
             <div className="cd-quick-info">
               <div className="cd-quick-name">Categorias</div>
@@ -375,17 +375,17 @@ export default function Cardapio() {
                   : `${contadores.categorias} categoria${contadores.categorias === 1 ? "" : "s"} cadastrada${contadores.categorias === 1 ? "" : "s"}`}
               </div>
             </div>
-            <CaretRight size={14} weight="bold" className="cd-quick-arrow" />
+            <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
           </button>
           <button className="cd-quick-item" onClick={() => navigate("/complementos")}>
-            <span className="cd-quick-ico cd-quick-ico--red">
-              <Stack size={20} weight="regular" />
+            <span className="cd-quick-ico cd-quick-ico--pink">
+              <Stack size={20} weight="bold" />
             </span>
             <div className="cd-quick-info">
               <div className="cd-quick-name">Personalização</div>
-              <div className="cd-quick-desc">Sabores, recheios e escolhas por produto</div>
+              <div className="cd-quick-desc">Sabores, recheios e adicionais</div>
             </div>
-            <CaretRight size={14} weight="bold" className="cd-quick-arrow" />
+            <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
           </button>
         </div>
       </div>
@@ -394,38 +394,37 @@ export default function Cardapio() {
       <div className="cd-card cd-quick">
         <div className="cd-quick-hdr">
           <div className="cd-quick-title">Configuração da loja</div>
-          <div className="cd-quick-sub">Aparência, dados e regras de pedido</div>
         </div>
         <div className="cd-quick-list">
           <button className="cd-quick-item" onClick={() => navigate("/cardapio-config")}>
-            <span className="cd-quick-ico cd-quick-ico--blue">
-              <Sliders size={20} weight="regular" />
+            <span className="cd-quick-ico cd-quick-ico--pink">
+              <Sliders size={20} weight="bold" />
             </span>
             <div className="cd-quick-info">
               <div className="cd-quick-name">Dados da loja</div>
-              <div className="cd-quick-desc">Nome, foto, descrição, endereço e horários</div>
+              <div className="cd-quick-desc">Nome, WhatsApp, endereço e horário</div>
             </div>
-            <CaretRight size={14} weight="bold" className="cd-quick-arrow" />
+            <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
           </button>
           <button className="cd-quick-item" onClick={() => navigate("/cardapio-design")}>
             <span className="cd-quick-ico cd-quick-ico--pink">
-              <PaintBrush size={20} weight="regular" />
+              <PaintBrush size={20} weight="bold" />
             </span>
             <div className="cd-quick-info">
               <div className="cd-quick-name">Aparência</div>
-              <div className="cd-quick-desc">Cores, banners e modelo do cardápio</div>
+              <div className="cd-quick-desc">Logo, banners e modelo do cardápio</div>
             </div>
-            <CaretRight size={14} weight="bold" className="cd-quick-arrow" />
+            <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
           </button>
           <button className="cd-quick-item" onClick={() => navigate("/checkout-config")}>
-            <span className="cd-quick-ico cd-quick-ico--gray">
-              <Tag size={20} weight="regular" />
+            <span className="cd-quick-ico cd-quick-ico--pink">
+              <Tag size={20} weight="bold" />
             </span>
             <div className="cd-quick-info">
               <div className="cd-quick-name">Entrega e pagamento</div>
-              <div className="cd-quick-desc">Formas de pagar, taxa, área e pedido mínimo</div>
+              <div className="cd-quick-desc">Formas de pagar, entrega e cupons</div>
             </div>
-            <CaretRight size={14} weight="bold" className="cd-quick-arrow" />
+            <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
           </button>
         </div>
       </div>
@@ -538,7 +537,7 @@ export default function Cardapio() {
               <div key={p.nome} className="ch-top-item">
                 <span className="ch-top-rank">#{idx + 1}</span>
                 <div className="ch-top-img">
-                  {p.imagem ? <img src={p.imagem} alt={p.nome} /> : <span>🍰</span>}
+                  {p.imagem ? <img src={p.imagem} alt={p.nome} /> : <Package size={20} weight="bold" />}
                 </div>
                 <div className="ch-top-info">
                   <p className="ch-top-nome">{p.nome}</p>
@@ -551,30 +550,12 @@ export default function Cardapio() {
       )}
       </>
       ) : (
-      <div className="cd-metricas-locked" onClick={() => navigate("/assinar")}>
-        <div className="cd-metricas-locked-glow" />
-        <div className="cd-metricas-locked-top">
-          <div className="cd-metricas-locked-icon"><ChartBar size={20} weight="bold" /></div>
-          <span className="cd-metricas-locked-tag">PRO</span>
-        </div>
-        <p className="cd-metricas-locked-t">Métricas do cardápio</p>
-        <p className="cd-metricas-locked-s">Visitas, pedidos, receita e produtos mais vendidos.</p>
-        <div className="cd-metricas-locked-preview">
-          <div className="cd-metricas-locked-item">
-            <div className="cd-metricas-locked-lbl">Visitas</div>
-            <div className="cd-metricas-locked-val">—</div>
-          </div>
-          <div className="cd-metricas-locked-item">
-            <div className="cd-metricas-locked-lbl">Pedidos</div>
-            <div className="cd-metricas-locked-val">—</div>
-          </div>
-          <div className="cd-metricas-locked-item">
-            <div className="cd-metricas-locked-lbl">Receita</div>
-            <div className="cd-metricas-locked-val">—</div>
-          </div>
-        </div>
-        <button className="cd-metricas-locked-cta">Assinar PRO</button>
-      </div>
+      <section className="cd-pro">
+        <span className="cd-pro-ic" aria-hidden="true"><ChartBar size={24} weight="bold" /></span>
+        <h3>Métricas do cardápio</h3>
+        <p>Veja quem visitou, quantos pedidos chegaram pelo link e os produtos mais vendidos.</p>
+        <Botao cheio icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>
+      </section>
       )}
 
       {/* Alertas */}
@@ -590,7 +571,7 @@ export default function Cardapio() {
                     : <Lightbulb size={16} weight="fill" />}
                 </span>
                 <span className="ch-alerta-texto">{a.texto}</span>
-                <span className="ch-alerta-cta">{a.cta} ›</span>
+                <span className="ch-alerta-cta">{a.cta}<CaretRight size={14} weight="bold" /></span>
               </button>
             ))}
           </div>
@@ -1138,6 +1119,29 @@ export default function Cardapio() {
           overflow: hidden;
           text-overflow: ellipsis;
         }
+
+        /* ── 08/10 · 3.21: no padrão do guia (lista de 56px, títulos sem caixa alta, PRO em rosa) ── */
+        .cardapio-hub { padding: 16px 8px 112px; gap: 12px; }
+        .cardapio-hub .cd-card.cd-quick { padding: 16px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); background: var(--ui-branco); }
+        .cardapio-hub .cd-quick-hdr { margin: 0 0 8px; padding: 0; border: 0; }
+        .cardapio-hub .cd-quick-title { font-size: 16px; font-weight: 800; color: var(--ui-texto); }
+        .cardapio-hub .cd-quick-list { margin: 0 -8px; padding: 0; }
+        .cardapio-hub .cd-quick-item { min-height: 56px; padding: 8px; border-radius: 0; gap: 12px; }
+        .cardapio-hub .cd-quick-item + .cd-quick-item { border-top: 1px solid var(--ui-linha); }
+        .cardapio-hub .cd-quick-ico { width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro) !important; color: var(--ui-rosa-escuro) !important; }
+        .cardapio-hub .cd-quick-name { font-size: 15px; font-weight: 700; color: var(--ui-texto); }
+        .cardapio-hub .cd-quick-desc { font-size: 13px; color: var(--ui-texto-2); margin-top: 2px; }
+        .cardapio-hub .cd-quick-arrow { color: var(--ui-texto-3); }
+        .cd-pro { padding: 16px; border-radius: var(--ui-raio-cartao); background: linear-gradient(150deg, #3B1620, #6B2340); color: #fff; box-shadow: var(--ui-sombra-cartao); }
+        .cd-pro-ic { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-bottom: 12px; border-radius: var(--ui-raio); background: rgba(255,255,255,.14); }
+        .cd-pro h3 { margin: 0; font-size: 18px; font-weight: 800; color: #fff; }
+        .cd-pro p { margin: 4px 0 16px; font-size: 13.5px; line-height: 1.5; color: rgba(255,255,255,.82); }
+        .ch-metric-label { font-size: 12.5px !important; text-transform: none !important; letter-spacing: 0 !important; }
+        .ch-live-badge, .ch-metric-pop { font-size: 12px !important; text-transform: none !important; letter-spacing: 0 !important; }
+        .ch-periodo-tab { min-height: 44px; }
+        .ch-alerta { min-height: 56px; }
+        .ch-alerta-cta { display: inline-flex; align-items: center; gap: 2px; }
+        .ch-top-img { color: var(--ui-rosa-escuro); }
 
         .ch-loading {
           text-align: center;

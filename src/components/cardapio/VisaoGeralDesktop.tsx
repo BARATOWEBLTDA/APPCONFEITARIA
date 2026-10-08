@@ -4,12 +4,17 @@ import QRCode from "qrcode";
 import { supabase } from "@/lib/supabase";
 import { isPro as ehPro } from "@/hooks/useProfile";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
+import { ArrowSquareOut, Camera, CaretRight, ChartBar, Crown, ImageSquare, LinkSimple, Package, TextAlignLeft, Ticket } from "@phosphor-icons/react";
+import type { Icon } from "@phosphor-icons/react";
+import { Botao } from "@/components/base";
 
 /**
  * Visão geral do Cardápio digital — COMPUTADOR (aprovada 02/10).
  * Sem as listas de atalhos (agora estão no menu lateral). Quatro blocos:
  * cartão do link (situação da loja + compartilhar + QR Code), desempenho,
  * últimos pedidos do cardápio e "Pra vender mais".
+ * (08/10 · 3.21) Ícones do app no lugar dos emojis, situação com as cores da lista de Pedidos,
+ * número do pedido aparecendo, botões de 44px e o PRO no cartão vinho.
  */
 type Periodo = "hoje" | "7d" | "30d" | "tudo";
 const DIAS_MAP: Record<string, number> = { "Segunda": 1, "Terça": 2, "Quarta": 3, "Quinta": 4, "Sexta": 5, "Sábado": 6, "Domingo": 0 };
@@ -47,9 +52,9 @@ function inicioPeriodo(p: Periodo): Date | null {
 }
 
 const STATUS: Record<string, [string, string]> = {
-  novo: ["Aguardando aceite", "rd"], aguardando_aceite: ["Aguardando aceite", "rd"], aguardando_pagamento: ["Aguardando pagamento", "rd"],
-  agendado: ["Agendado", "bl"], confirmado: ["Agendado", "bl"], em_producao: ["Em produção", "am"], finalizado: ["Pronto", "ok"],
-  aguardando_retirada: ["Pronto", "ok"], em_entrega: ["Saiu pra entrega", "am"], entregue: ["Entregue", "ok"], concluido: ["Entregue", "ok"], cancelado: ["Cancelado", "cz"],
+  novo: ["Novo pedido", "am"], aguardando_aceite: ["Novo pedido", "am"], aguardando_pagamento: ["Aguardando pagamento", "am"],
+  agendado: ["Agendado", "bl"], confirmado: ["Agendado", "bl"], em_producao: ["Em produção", "rs"], finalizado: ["Pronto", "ok"],
+  aguardando_retirada: ["Pronto", "ok"], em_entrega: ["Saiu pra entrega", "bl"], entregue: ["Entregue", "ok"], concluido: ["Entregue", "ok"], cancelado: ["Cancelado", "cz"],
 };
 
 export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, onShare }: { profile: any; linkCardapio: string; publicado: boolean; onShare: () => void }) {
@@ -118,12 +123,12 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
     const semFoto = dados.produtos.filter(p => !String(p.imagem_url || "").trim()).length;
     const semDesc = dados.produtos.filter(p => !String(p.descricao || "").trim()).length;
     const temBanner = !!(profile?.banner_url || profile?.banner1_url);
-    const l: { e: string; t: string; s: string; cta: string; go: string }[] = [];
-    if (semFoto) l.push({ e: "📸", t: `${semFoto} produto${semFoto > 1 ? "s" : ""} sem foto`, s: "Produto com foto vende muito mais.", cta: "Adicionar fotos", go: "/produtos" });
-    if (semDesc) l.push({ e: "📝", t: `${semDesc} produto${semDesc > 1 ? "s" : ""} sem descrição`, s: "Conte o sabor, o tamanho e quantas pessoas serve.", cta: "Escrever", go: "/produtos" });
-    if (!temBanner) l.push({ e: "🖼️", t: "Nenhum banner de promoção", s: "Anuncie a promoção da semana antes dos produtos.", cta: "Criar banner", go: "/cardapio-design" });
-    if (pro && !dados.temCupom) l.push({ e: "🎟️", t: "Crie um cupom de boas-vindas", s: "Ex.: 10% de desconto no primeiro pedido.", cta: "Criar cupom", go: "/checkout-config" });
-    if (!dados.produtos.length) l.unshift({ e: "🧁", t: "Nenhum produto no cardápio", s: "Cadastre o primeiro pra começar a vender.", cta: "Cadastrar", go: "/produtos" });
+    const l: { e: Icon; t: string; s: string; cta: string; go: string }[] = [];
+    if (semFoto) l.push({ e: Camera, t: `${semFoto} produto${semFoto > 1 ? "s" : ""} sem foto`, s: "Produto com foto vende muito mais.", cta: "Adicionar fotos", go: "/produtos" });
+    if (semDesc) l.push({ e: TextAlignLeft, t: `${semDesc} produto${semDesc > 1 ? "s" : ""} sem descrição`, s: "Conte o sabor, o tamanho e quantas pessoas serve.", cta: "Escrever", go: "/produtos" });
+    if (!temBanner) l.push({ e: ImageSquare, t: "Nenhum banner de promoção", s: "Anuncie a promoção da semana antes dos produtos.", cta: "Criar banner", go: "/cardapio-design" });
+    if (pro && !dados.temCupom) l.push({ e: Ticket, t: "Crie um cupom de boas-vindas", s: "Ex.: 10% de desconto no primeiro pedido.", cta: "Criar cupom", go: "/checkout-config" });
+    if (!dados.produtos.length) l.unshift({ e: Package, t: "Nenhum produto no cardápio", s: "Cadastre o primeiro pra começar a vender.", cta: "Cadastrar", go: "/produtos" });
     return l;
   }, [dados, profile, pro]);
 
@@ -146,12 +151,12 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         <div className="vgd-hero">
           <div>
             {situacao && <span className={`vgd-st${situacao.aberto ? "" : " off"}`}><i />{situacao.txt}</span>}
-            <h2>Seu cardápio está no ar 🎉</h2>
-            <div className="vgd-lk">🔗 <span>{linkCardapio.replace(/^https?:\/\//, "")}</span></div>
+            <h2>Seu cardápio está no ar</h2>
+            <div className="vgd-lk"><LinkSimple size={20} weight="bold" aria-hidden="true" /><span>{linkCardapio.replace(/^https?:\/\//, "")}</span></div>
             <div className="vgd-btns">
               <button type="button" className="vgd-b vgd-bw" onClick={onShare}>Enviar no WhatsApp</button>
-              <button type="button" className="vgd-b vgd-bl" onClick={copiar}>{copiado ? "Link copiado ✓" : "Copiar link"}</button>
-              <a className="vgd-b vgd-bg" href={linkCardapio} target="_blank" rel="noopener noreferrer">Ver como cliente ↗</a>
+              <button type="button" className="vgd-b vgd-bl" onClick={copiar}>{copiado ? "Link copiado" : "Copiar link"}</button>
+              <a className="vgd-b vgd-bg" href={linkCardapio} target="_blank" rel="noopener noreferrer">Ver como cliente<ArrowSquareOut size={16} weight="bold" aria-hidden="true" /></a>
             </div>
           </div>
           {qr && (
@@ -176,9 +181,9 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         </div>
         {!pro ? (
           <div className="vgd-lock">
-            <img src="/coroa.png" alt="" />
-            <div><b>Veja quem visita e quem compra</b><small>Visitas, pedidos online, receita e conversão do seu cardápio ficam liberados no PRO.</small></div>
-            <button type="button" onClick={() => navigate("/assinar")}>Conhecer o PRO</button>
+            <span className="vgd-lock-ic" aria-hidden="true"><ChartBar size={24} weight="bold" /></span>
+            <div><b>Veja quem visita e quem compra</b><small>Visitas, pedidos pelo link, receita e conversão ficam liberados no PRO.</small></div>
+            <Botao icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>
           </div>
         ) : metr && (
           <>
@@ -208,10 +213,10 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         <div className="vgd-card">
           <div className="vgd-rowh">
             <div><p className="vgd-ct">Últimos pedidos do cardápio</p><p className="vgd-cs">Os que chegaram pelo seu link</p></div>
-            {ultimos.length > 0 && <button type="button" className="vgd-vt" onClick={() => navigate("/pedidos")}>Ver todos ›</button>}
+            {ultimos.length > 0 && <Botao variante="link" iconeDepois={<CaretRight size={16} weight="bold" />} onClick={() => navigate("/pedidos")}>Ver todos</Botao>}
           </div>
           {!dados ? <p className="vgd-vazio">Carregando…</p> : ultimos.length === 0 ? (
-            <p className="vgd-vazio">Nenhum pedido pelo cardápio ainda. Compartilhe o link pra receber o primeiro! 💗</p>
+            <p className="vgd-vazio">Nenhum pedido pelo cardápio ainda. Compartilhe o link pra receber o primeiro.</p>
           ) : ultimos.map(p => {
             const [st, cor] = STATUS[p.status] || ["Agendado", "bl"];
             const itens = (p.pedido_itens || []).map((i: any) => `${i.nome_produto}${Number(i.quantidade) > 1 ? ` × ${i.quantidade}` : ""}`).join(" + ");
@@ -220,9 +225,8 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
             return (
               <button type="button" className="vgd-pe" key={p.id} onClick={() => navigate(`/pedidos/${p.id}/editar`)}>
                 <span className="vgd-pa">{String(p.cliente_nome || "C").trim().charAt(0).toUpperCase()}</span>
-                <span className="vgd-pt"><b>{p.cliente_nome || "Cliente"}</b><small>{itens || `Pedido #${p.numero || ""}`}</small></span>
-                <span className={`vgd-pill ${cor}`}>{st}</span>
-                <span className="vgd-pv"><b>{brl(Number(p.valor_total) || 0)}</b><small>{q}</small></span>
+                <span className="vgd-pt"><b>{p.cliente_nome || "Cliente"}</b><small>{[p.numero ? `#${p.numero}` : "", itens].filter(Boolean).join(" · ") || "Pedido"} · {q}</small></span>
+                <span className="vgd-pv"><b>{brl(Number(p.valor_total) || 0)}</b><small className={`vgd-sit ${cor}`}>{st}</small></span>
               </button>
             );
           })}
@@ -231,12 +235,12 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         <div className="vgd-card">
           <div><p className="vgd-ct">Pra vender mais</p><p className="vgd-cs">O que ainda dá pra melhorar no seu cardápio</p></div>
           {!dados ? <p className="vgd-vazio">Carregando…</p> : dicas.length === 0 ? (
-            <p className="vgd-vazio">Seu cardápio está caprichado! ✨ Todos os produtos têm foto e descrição.</p>
+            <p className="vgd-vazio">Seu cardápio está caprichado. Todos os produtos têm foto e descrição.</p>
           ) : dicas.map(d => (
             <button type="button" className="vgd-di" key={d.t} onClick={() => navigate(d.go)}>
-              <span className="vgd-de">{d.e}</span>
+              <span className="vgd-de" aria-hidden="true"><d.e size={20} weight="bold" /></span>
               <span className="vgd-dt"><b>{d.t}</b><small>{d.s}</small></span>
-              <span className="vgd-db">{d.cta} ›</span>
+              <span className="vgd-db">{d.cta}<CaretRight size={14} weight="bold" aria-hidden="true" /></span>
             </button>
           ))}
         </div>
@@ -295,6 +299,28 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         .vgd-db { font-size: 12.5px; font-weight: 800; color: #C33A6E; white-space: nowrap; }
         .vgd-vazio { margin: 14px 0 4px; font-size: 13px; color: #9A8E94; }
         .vgd-pe:hover b, .vgd-di:hover .vgd-db { color: #C33A6E; }
+        /* 08/10 · 3.21: no padrão do guia */
+        .vgd-card { border-color: var(--ui-borda); box-shadow: var(--ui-sombra-cartao); padding: 16px 20px; }
+        .vgd-ct { font-size: 16px; } .vgd-cs { font-size: 13px; color: var(--ui-texto-2); }
+        .vgd-lk svg { flex: none; }
+        .vgd-b { min-height: 44px; gap: 6px; font-size: 13.5px; }
+        .vgd-qr button { min-height: 36px; font-size: 13px; }
+        .vgd-tabs button { min-height: 40px; font-size: 13.5px; }
+        .vgd-k small { font-size: 12.5px; letter-spacing: 0; text-transform: none; color: var(--ui-texto-2); }
+        .vgd-k em { font-size: 12.5px; }
+        .vgd-bar span, .vgd-bar em { font-size: 12px; }
+        .vgd-lock { border: 0; background: linear-gradient(150deg, #3B1620, #6B2340); color: #fff; }
+        .vgd-lock-ic { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex: none; border-radius: var(--ui-raio); background: rgba(255,255,255,.14); }
+        .vgd-lock b { color: #fff; font-size: 16px; } .vgd-lock small { display: block; margin-top: 2px; font-size: 13.5px; color: rgba(255,255,255,.82); }
+        .vgd-pe, .vgd-di { min-height: 56px; padding: 8px 0; }
+        .vgd-pa { width: 40px; height: 40px; }
+        .vgd-pt b, .vgd-dt b { font-size: 15px; }
+        .vgd-pt small, .vgd-dt small { font-size: 13px; color: var(--ui-texto-2); }
+        .vgd-pv b { font-size: 15px; } .vgd-pv small { font-size: 13px; font-weight: 700; }
+        .vgd-sit.ok { color: var(--ui-verde); } .vgd-sit.am { color: var(--ui-laranja); } .vgd-sit.bl { color: var(--ui-azul); } .vgd-sit.rs { color: var(--ui-rosa-escuro); } .vgd-sit.cz { color: var(--ui-texto-3); } .vgd-sit.rd { color: var(--ui-vermelho); }
+        .vgd-de { width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+        .vgd-db { display: inline-flex; align-items: center; gap: 2px; font-size: 13.5px; color: var(--ui-rosa-escuro); }
+        .vgd-vazio { font-size: 13.5px; color: var(--ui-texto-2); }
       `}</style>
     </div>
   );
