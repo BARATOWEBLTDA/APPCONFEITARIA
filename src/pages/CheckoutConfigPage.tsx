@@ -1,6 +1,10 @@
-// Checkout config — UI reestilizada no padrão Doonly (v2)
+// Entrega e pagamento (08/10 · 3.26, no padrão do guia).
+// O que salva continua igual (salva sozinho 2s depois de mexer; cupons na tabela loja_cupons).
+// Mudou o visual: campos e botões do app, cupom novo/editar numa janela, convite pro PRO sem borrão.
 import CampoData from '@/components/CampoData'
-import ReqTag from "@/components/ReqTag";
+import { CalendarBlank, CaretRight, Check, Crown, CurrencyCircleDollar, Plus, Tag, Ticket, Truck, Users, Wallet } from "@phosphor-icons/react"
+import { Botao, Campo, Janela, Titulo, avisar, confirmar } from "@/components/base"
+import "./entregaPagamento.css"
 import { useState, useEffect, useRef } from "react"
 import { supabase } from "@/lib/supabase"
 import { useNavigate } from "react-router-dom"
@@ -10,8 +14,8 @@ import { usePlano } from "@/hooks/usePlano"
 const PAGAMENTOS = [
   { key: 'pix',                label: 'Pix' },
   { key: 'dinheiro',           label: 'Dinheiro' },
-  { key: 'credito',            label: 'Cartão de Crédito' },
-  { key: 'debito',             label: 'Cartão de Débito' },
+  { key: 'credito',            label: 'Cartão de crédito' },
+  { key: 'debito',             label: 'Cartão de débito' },
   // 02/10: só as 4 formas (as mesmas que o cliente vê na finalização). As antigas continuam salvas, mas não aparecem.
 ]
 
@@ -22,32 +26,6 @@ const ENTREGAS = [
   { key: 'uber_flash',      label: 'Uber Flash' },
   { key: 'combinar',        label: 'Combinar pelo WhatsApp' },
 ]
-
-const SectionLabel = ({ children, icon, sub }: any) => (
-  <div className="chk-section-header">
-    {icon && <div className="chk-section-icon">{icon}</div>}
-    <div style={{ flex: 1, minWidth: 0 }}>
-      <p className="chk-section-label">{children}</p>
-      {sub && <p className="chk-section-sub">{sub}</p>}
-    </div>
-  </div>
-)
-
-const Check = ({ active, label, onClick }: any) => (
-  <div className={`chk-check${active ? ' chk-check--active' : ''}`} onClick={onClick}>
-    <span className="chk-check-label">{label}</span>
-    <div className="chk-checkbox">
-      {active && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
-    </div>
-  </div>
-)
-
-const Toggle = ({ checked, onChange }: any) => (
-  <label className="chk-toggle">
-    <input type="checkbox" checked={checked} onChange={onChange} />
-    <span className="chk-toggle-slider" />
-  </label>
-)
 
 // Converte o que ela digita (10,50 · 1.250,00 · 10.5) em número
 const numBR = (v: string | number | null | undefined): number => {
@@ -63,9 +41,7 @@ export default function CheckoutConfigPage() {
   const { isPro } = usePlano()
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
-  const [autoSaved, setAutoSaved] = useState(false)
   const [savingCupons, setSavingCupons] = useState(false)
-  const [cuponsSaved, setCuponsSaved] = useState(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const [formasPagamento, setFormasPagamento] = useState<string[]>(['pix'])
@@ -142,8 +118,7 @@ export default function CheckoutConfigPage() {
           usos: c.usos || 0,
         }))
       await supabase.from('loja_cupons').upsert({ user_id: userId, cupons: cuponsParaSalvar, updated_at: new Date().toISOString() })
-      setAutoSaved(true)
-      setTimeout(() => setAutoSaved(false), 2000)
+      avisar('Salvo', { tipo: 'ok' })
     }, 2000)
     return () => { if (timerRef.current) clearTimeout(timerRef.current) }
   }, [formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, enderecoRetirada, horarioRetirada, exibirCampoTroco, cupons, aceitaAgendamento, prazoMinimo])
@@ -176,10 +151,10 @@ export default function CheckoutConfigPage() {
     setCupomForm(cupomVazio)
   }
   const salvarCupomForm = () => {
-    if (!cupomForm.codigo.trim()) return alert('Informe o código do cupom')
-    if (!cupomForm.valor || parseFloat(cupomForm.valor) <= 0) return alert('Informe um valor de desconto válido')
+    if (!cupomForm.codigo.trim()) return avisar('Escreva o código do cupom', { tipo: 'erro' })
+    if (!cupomForm.valor || numBR(cupomForm.valor) <= 0) return avisar('Escreva quanto é o desconto', { tipo: 'erro' })
     if (cupomForm.data_inicio && cupomForm.data_fim && cupomForm.data_fim < cupomForm.data_inicio) {
-      return alert('A data final deve ser depois da data inicial')
+      return avisar('A data do fim tem que ser depois da do começo', { tipo: 'erro' })
     }
     setCupons(prev => {
       if (editandoIndex === -1) return [...prev, { ...cupomForm, usos: 0 }]
@@ -188,9 +163,10 @@ export default function CheckoutConfigPage() {
     setEditandoIndex(null)
     setCupomForm(cupomVazio)
   }
-  const excluirCupomEditando = () => {
+  const excluirCupomEditando = async () => {
     if (editandoIndex === null || editandoIndex < 0) return
-    if (!confirm('Tem certeza que deseja excluir este cupom?')) return
+    const ok = await confirmar({ titulo: `Excluir o cupom ${cupons[editandoIndex]?.codigo || ''}?`, texto: 'Ele para de funcionar no cardápio. Não dá pra desfazer.', rotulo: 'Excluir', rotuloVoltar: 'Cancelar', perigo: true })
+    if (!ok) return
     setCupons(prev => prev.filter((_, idx) => idx !== editandoIndex))
     setEditandoIndex(null)
     setCupomForm(cupomVazio)
@@ -216,8 +192,7 @@ export default function CheckoutConfigPage() {
     // Limpa a cópia antiga do perfil (o cardápio público consegue ler o perfil)
     await supabase.from('profiles').update({ cupons_desconto: [] }).eq('id', userId)
     setSavingCupons(false)
-    setCuponsSaved(true)
-    setTimeout(() => setCuponsSaved(false), 2200)
+    avisar('Cupons salvos', { tipo: 'ok' })
   }
 
   const formatDate = (iso: string) => {
@@ -226,701 +201,147 @@ export default function CheckoutConfigPage() {
     return `${d}/${m}/${y.slice(2)}`
   }
 
-  if (loading) return (
-    <div style={{display:'flex',alignItems:'center',justifyContent:'center',minHeight:'40vh'}}>
-      <div className="chk-spinner" />
-      <style>{`@keyframes chkspin{to{transform:rotate(360deg)}} .chk-spinner{width:32px;height:32px;border:3px solid var(--primary-light);border-top-color:var(--primary);border-radius:50%;animation:chkspin 0.7s linear infinite}
-`}</style>
-    </div>
+  const Cabeca = ({ Ic, titulo, apoio, acao }: { Ic: typeof Wallet; titulo: string; apoio?: string; acao?: React.ReactNode }) => (
+    <div className="ep-cab"><span className="ep-cab-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span><Titulo apoio={apoio} acao={acao}>{titulo}</Titulo></div>
   )
+  const Marcar = ({ on, rotulo, aoTocar }: { on: boolean; rotulo: string; aoTocar: () => void }) => (
+    <button type="button" role="checkbox" aria-checked={on} className="ep-op" onClick={aoTocar}>
+      <span>{rotulo}</span><span className="ep-cx" aria-hidden="true">{on && <Check size={16} weight="bold" />}</span>
+    </button>
+  )
+  const Chave = ({ on, rotulo, apoio, aoMudar }: { on: boolean; rotulo: string; apoio?: string; aoMudar: (v: boolean) => void }) => (
+    <button type="button" role="switch" aria-checked={on} className="ep-sw-l" onClick={() => aoMudar(!on)}>
+      <span className="ep-sw-tx"><b>{rotulo}</b>{apoio && <small>{apoio}</small>}</span><span className="ep-sw" aria-hidden="true" />
+    </button>
+  )
+  const descontoDe = (c: { tipo: string; valor: string }) => c.tipo === 'percentual' ? `${c.valor}% de desconto` : `R$ ${c.valor} de desconto`
+  const dinheiroBR = (v: string) => { const n = numBR(v); return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
+
+  if (loading) return (
+    <>
+      <AppPageHeader title="Entrega e pagamento" subtitle="Formas de pagar, entrega e cupons" onBack={() => navigate("/cardapio")} />
+      <div className="ep-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
+    </>
+  )
+
+  const formAberto = editandoIndex !== null
 
   return (
     <>
-      {/* Cabeçalho do app com voltar (antes era só um título solto, sem voltar) */}
-      <AppPageHeader title="Entrega e pagamento" subtitle="Formas de pagar, entrega, retirada e cupons" onBack={() => navigate("/cardapio")} />
-      <div className="chk-root">
-        {/* Aviso flutuante: antes entrava no meio da página e empurrava o conteúdo pra baixo e pra cima */}
-        {autoSaved && <span className="chk-autosave chk-autosave--flutua" role="status">✓ Salvo automaticamente</span>}
+      <AppPageHeader title="Entrega e pagamento" subtitle="Formas de pagar, entrega e cupons" onBack={() => navigate("/cardapio")} />
+      <div className="ep">
+        <p className="ep-salva"><Check size={16} weight="bold" aria-hidden="true" />Tudo aqui salva sozinho.</p>
 
-        <div className="chk-grid">
-
-          {/* ── COLUNA 1: Formas de Pagamento ── */}
-          <div className="chk-card">
-            <SectionLabel
-              icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/></svg>}
-              sub="Marque apenas as que você aceita"
-            >Formas de pagamento</SectionLabel>
-
-            <div className="chk-list">
-              {PAGAMENTOS.map(p => (
-                <Check key={p.key} active={formasPagamento.includes(p.key)} label={p.label} onClick={() => togglePagamento(p.key)} />
-              ))}
-            </div>
-
-            {formasPagamento.includes('dinheiro') && (
-              <>
-                <hr className="chk-divider" />
-                <div className="chk-toggle-row">
-                  <div>
-                    <p className="chk-toggle-label">Exibir campo "Troco para"</p>
-                    <p className="chk-toggle-sub">Quando o cliente pagar em dinheiro</p>
-                  </div>
-                  <Toggle checked={exibirCampoTroco} onChange={(e: any) => setExibirCampoTroco(e.target.checked)} />
-                </div>
-              </>
-            )}
+        {/* Pagamento */}
+        <section className="ep-card">
+          <Cabeca Ic={Wallet} titulo="Formas de pagamento" apoio="Marque só as que você aceita" />
+          <div className="ep-ops">
+            {PAGAMENTOS.map(p => <Marcar key={p.key} on={formasPagamento.includes(p.key)} rotulo={p.label} aoTocar={() => togglePagamento(p.key)} />)}
           </div>
+          {formasPagamento.includes('dinheiro') && (
+            <Chave on={exibirCampoTroco} rotulo='Perguntar "Troco pra quanto?"' apoio="Quando o cliente pagar em dinheiro" aoMudar={setExibirCampoTroco} />
+          )}
+        </section>
 
-          {/* ── COLUNA 2: Formas de Entrega + Taxa ── */}
-          <div className="chk-stack">
-
-          <div className="chk-card">
-            <SectionLabel
-              icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="6" width="15" height="12" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>}
-              sub="Marque as opções disponíveis"
-            >Formas de entrega</SectionLabel>
-
-            <div className="chk-list">
-              {ENTREGAS.map(e => (
-                <Check key={e.key} active={formasEntrega.includes(e.key)} label={e.label} onClick={() => toggleEntrega(e.key)} />
-              ))}
-            </div>
-
+        {/* Entrega */}
+        <section className="ep-card">
+          <Cabeca Ic={Truck} titulo="Formas de entrega" apoio="Marque as que o cliente pode escolher" />
+          <div className="ep-ops">
+            {ENTREGAS.map(e => <Marcar key={e.key} on={formasEntrega.includes(e.key)} rotulo={e.label} aoTocar={() => toggleEntrega(e.key)} />)}
           </div>
-
-          {/* ── Card Taxa de Entrega (aparece só se "Entrega própria" estiver marcada) ── */}
           {formasEntrega.includes('entrega_propria') && (
-            <div className="chk-card">
-              <SectionLabel
-                icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>}
-                sub="Defina o valor da sua entrega própria"
-              >Taxa de entrega</SectionLabel>
-
-              <div className="chk-form-field">
-                <label className="chk-form-label">Valor fixo da entrega</label>
-                <div className="chk-money-row">
-                  <span className="chk-prefix">R$</span>
-                  <input className="chk-input" style={{width:'140px'}} value={valorEntregaPropria} onChange={e => setValorEntregaPropria(e.target.value.replace(/[^0-9.,]/g,''))} placeholder="0,00" />
-                </div>
-                <p className="chk-toggle-sub" style={{marginTop:'2px'}}>Cobrado em todo pedido com entrega própria</p>
-              </div>
+            <div className="ep-taxa">
+              <Campo rotulo="Taxa da entrega própria" prefixo="R$" inputMode="decimal" placeholder="0,00" value={valorEntregaPropria}
+                dica="Cobrada em todo pedido com entrega própria"
+                onChange={e => setValorEntregaPropria(e.target.value.replace(/[^0-9.,]/g, ''))} />
             </div>
           )}
+        </section>
 
-          </div>{/* fim coluna 2 stack */}
-
-          {/* ── COLUNA 3: Cupons (o agendamento agora é por produto — 02/10) ── */}
-          <div className="chk-stack">
-
-
-            {/* ── CUPONS ── (recurso PRO: no grátis fica travado com o convite pro PRO) */}
-            <div className={`chk-card${!isPro ? " chk-card--lock" : ""}`}>
-              {!isPro && (
-                <div className="chk-lock" role="note">
-                  <img src="/coroa.png" alt="" className="chk-lock-cr" />
-                  <b>Cupons de desconto são do PRO</b>
-                  <span>Crie cupons pra atrair novos clientes e fidelizar os antigos.</span>
-                  <button type="button" onClick={() => navigate("/assinar")}>Conhecer o PRO</button>
-                  <style>{`
-        /* Cupons travados no plano grátis */
-        .chk-card--lock { position: relative; overflow: hidden; }
-        .chk-card--lock > *:not(.chk-lock) { filter: blur(3px); opacity: .45; pointer-events: none; user-select: none; }
-        .chk-lock { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; padding: 16px;
-          background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.9)); }
-        .chk-lock-cr { width: 34px; height: 34px; object-fit: contain; }
-        .chk-lock b { font-size: 15px; color: #2C1219; }
-        .chk-lock span { font-size: 13px; color: #6B5D64; max-width: 280px; }
-        .chk-lock button { margin-top: 6px; border: none; border-radius: 10px; padding: 10px 16px; background: linear-gradient(90deg, #E85A8C, #C33A6E); color: #fff; font-family: inherit; font-weight: 800; font-size: 13.5px; cursor: pointer; }
-                  `}</style>
-                </div>
-              )}
-              <div className="chk-row-between" style={{alignItems:'flex-start'}}>
-                <SectionLabel
-                  icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>}
-                  sub={editandoIndex === null ? "Crie códigos promocionais" : (editandoIndex === -1 ? "Novo cupom" : "Editando cupom")}
-                >Cupons</SectionLabel>
-                {editandoIndex === null && (
-                  <button onClick={abrirNovoCupom} className="chk-btn-add" style={{marginTop:'4px'}}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    Novo cupom
-                  </button>
-                )}
-              </div>
-
-              {/* ─── MODO LISTA ─── */}
-              {editandoIndex === null && (
-                <>
-                  {cupons.length === 0 ? (
-                    <div className="chk-cupons-empty">
-                      <div className="chk-cupons-empty-icon">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
-                      </div>
-                      <p className="chk-cupons-empty-text">Nenhum cupom ainda. Toque em <strong>+ Novo cupom</strong> para criar.</p>
-                    </div>
-                  ) : (
-                    <>
-                      {cupons.map((c, i) => (
-                        <div key={i} className={`chk-cupom-item${c.ativo ? '' : ' chk-cupom-item--inactive'}`} onClick={() => abrirEditarCupom(i)}>
-                          <div className="chk-cupom-item-left">
-                            <div className="chk-cupom-item-codigo">
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                              <span>{c.codigo}</span>
-                            </div>
-                            <div className="chk-cupom-item-meta">
-                              <span className="chk-cupom-item-desconto">
-                                {c.tipo === 'percentual' ? `${c.valor}% OFF` : `R$ ${c.valor} OFF`}
-                              </span>
-                              {(c.data_inicio || c.data_fim) && (
-                                <span className="chk-cupom-item-tag">
-                                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                                  {c.data_inicio && c.data_fim ? `${formatDate(c.data_inicio)} – ${formatDate(c.data_fim)}` : (c.data_fim ? `Até ${formatDate(c.data_fim)}` : `A partir de ${formatDate(c.data_inicio!)}`)}
-                                </span>
-                              )}
-                              {c.limite_uso && (
-                                <span className="chk-cupom-item-tag">
-                                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
-                                  {c.usos || 0}/{c.limite_uso} usos
-                                </span>
-                              )}
-                              {c.valor_minimo && (
-                                <span className="chk-cupom-item-tag">
-                                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
-                                  mín. R$ {c.valor_minimo}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className={`chk-cupom-item-status ${c.ativo ? 'chk-cupom-item-status--on' : 'chk-cupom-item-status--off'}`}>
-                            {c.ativo ? 'Ativo' : 'Inativo'}
-                          </div>
-                          <svg className="chk-cupom-item-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-                        </div>
-                      ))}
-
-                      <button
-                        type="button"
-                        onClick={handleSalvarCupons}
-                        disabled={savingCupons}
-                        className={`chk-cupons-save${cuponsSaved ? ' chk-cupons-save--ok' : ''}`}
-                      >
-                        {savingCupons ? (
-                          <><span className="chk-spinner-btn" /> Salvando...</>
-                        ) : cuponsSaved ? (
-                          <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Cupons salvos!</>
-                        ) : (
-                          <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar cupons</>
-                        )}
-                      </button>
-                    </>
-                  )}
-                </>
-              )}
-
-              {/* ─── MODO FORMULÁRIO ─── */}
-              {editandoIndex !== null && (
-                <div className="chk-cupom-form">
-
-                  <div className="chk-form-field">
-                    <label className="chk-form-label">Código do cupom <ReqTag /></label>
-                    <input
-                      className="chk-cupom-codigo"
-                      value={cupomForm.codigo}
-                      onChange={e => setCupomForm({ ...cupomForm, codigo: e.target.value.toUpperCase() })}
-                      placeholder="EX: PROMO10"
-                      autoFocus
-                    />
-                  </div>
-
-                  <div className="chk-form-row">
-                    <div className="chk-form-field" style={{flex:1}}>
-                      <label className="chk-form-label">Tipo de desconto <ReqTag /></label>
-                      <select
-                        className="chk-input"
-                        value={cupomForm.tipo}
-                        onChange={e => setCupomForm({ ...cupomForm, tipo: e.target.value })}
-                      >
-                        <option value="percentual">% Percentual</option>
-                        <option value="fixo">R$ Fixo</option>
-                      </select>
-                    </div>
-                    <div className="chk-form-field" style={{flex:1}}>
-                      <label className="chk-form-label">Valor <ReqTag /></label>
-                      <div className="chk-money-row">
-                        <span className="chk-prefix">{cupomForm.tipo === 'percentual' ? '%' : 'R$'}</span>
-                        <input
-                          className="chk-input"
-                          style={{textAlign:'center'}}
-                          value={cupomForm.valor}
-                          onChange={e => setCupomForm({ ...cupomForm, valor: e.target.value.replace(/[^0-9.,]/g,'') })}
-                          placeholder="0"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="chk-form-divider"><span>Opcional</span></div>
-
-                  <div className="chk-form-row">
-                    <div className="chk-form-field" style={{flex:1}}>
-                      <label className="chk-form-label">Válido de</label>
-                      <CampoData valor={cupomForm.data_inicio} onChange={d => setCupomForm({ ...cupomForm, data_inicio: d })} max={cupomForm.data_fim || undefined} titulo="Cupom válido de" placeholder="Sem início" curto />
-                    </div>
-                    <div className="chk-form-field" style={{flex:1}}>
-                      <label className="chk-form-label">Válido até</label>
-                      <CampoData valor={cupomForm.data_fim} onChange={d => setCupomForm({ ...cupomForm, data_fim: d })} min={cupomForm.data_inicio || undefined} titulo="Cupom válido até" placeholder="Sem fim" curto />
-                    </div>
-                  </div>
-
-                  <div className="chk-form-row">
-                    <div className="chk-form-field" style={{flex:1}}>
-                      <label className="chk-form-label">Limite de usos</label>
-                      <input
-                        className="chk-input"
-                        value={cupomForm.limite_uso}
-                        onChange={e => setCupomForm({ ...cupomForm, limite_uso: e.target.value.replace(/\D/g,'') })}
-                        placeholder="Sem limite"
-                      />
-                    </div>
-                    <div className="chk-form-field" style={{flex:1}}>
-                      <label className="chk-form-label">Valor mínimo do pedido</label>
-                      <div className="chk-money-row">
-                        <span className="chk-prefix">R$</span>
-                        <input
-                          className="chk-input"
-                          value={cupomForm.valor_minimo}
-                          onChange={e => setCupomForm({ ...cupomForm, valor_minimo: e.target.value.replace(/[^0-9.,]/g,'') })}
-                          placeholder="0,00"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="chk-toggle-row" style={{marginTop:'0.25rem'}}>
-                    <div>
-                      <p className="chk-toggle-label">Cupom ativo</p>
-                      <p className="chk-toggle-sub">Clientes podem usar este cupom no checkout</p>
-                    </div>
-                    <Toggle
-                      checked={cupomForm.ativo}
-                      onChange={(e: any) => setCupomForm({ ...cupomForm, ativo: e.target.checked })}
-                    />
-                  </div>
-
-                  <div className="chk-form-actions">
-                    {editandoIndex >= 0 && (
-                      <button type="button" onClick={excluirCupomEditando} className="chk-form-btn-delete">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-                        Excluir
-                      </button>
-                    )}
-                    <div style={{flex:1}} />
-                    <button type="button" onClick={cancelarEdicao} className="chk-form-btn-cancel">Cancelar</button>
-                    <button type="button" onClick={salvarCupomForm} className="chk-form-btn-save">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                      {editandoIndex === -1 ? 'Criar cupom' : 'Salvar alterações'}
-                    </button>
-                  </div>
-                </div>
-              )}
+        {/* Cupons */}
+        <section className="ep-card ep-largo">
+          <Cabeca Ic={Ticket} titulo="Cupons de desconto" apoio={isPro ? "Códigos que o cliente usa ao finalizar o pedido" : undefined}
+ />
+          {!isPro ? (
+            <div className="ep-pro">
+              <p>Crie cupons pra atrair clientes novos e trazer de volta quem já comprou.</p>
+              <Botao variante="vinho" icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>
             </div>
-
-          </div>{/* fim chk-stack */}
-
-        </div>{/* fim chk-grid */}
+          ) : cupons.length === 0 ? (
+            <div className="ep-vazio">
+              <p>Nenhum cupom ainda.</p>
+              <Botao icone={<Plus size={20} weight="bold" />} onClick={abrirNovoCupom}>Criar cupom</Botao>
+            </div>
+          ) : (
+            <>
+              <div className="ep-cupons">
+                {cupons.map((c, i) => (
+                  <button key={i} type="button" className={`ep-cupom${c.ativo ? '' : ' off'}`} onClick={() => abrirEditarCupom(i)}>
+                    <span className="ep-cupom-ic" aria-hidden="true"><Tag size={20} weight="bold" /></span>
+                    <span className="ep-cupom-tx">
+                      <b>{c.codigo}</b>
+                      <span className="ep-cupom-d">{descontoDe(c)}</span>
+                      {(c.data_inicio || c.data_fim || c.limite_uso || c.valor_minimo) && (
+                        <span className="ep-cupom-tags">
+                          {(c.data_inicio || c.data_fim) && <small><CalendarBlank size={14} weight="bold" />{c.data_inicio && c.data_fim ? `${formatDate(c.data_inicio)} a ${formatDate(c.data_fim)}` : c.data_fim ? `Até ${formatDate(c.data_fim)}` : `A partir de ${formatDate(c.data_inicio!)}`}</small>}
+                          {c.limite_uso && <small><Users size={14} weight="bold" />{c.usos || 0} de {c.limite_uso} usos</small>}
+                          {c.valor_minimo && <small><CurrencyCircleDollar size={14} weight="bold" />Mínimo R$ {dinheiroBR(c.valor_minimo)}</small>}
+                        </span>
+                      )}
+                    </span>
+                    <span className={`ep-cupom-sit ${c.ativo ? 'on' : ''}`}>{c.ativo ? 'Ativo' : 'Pausado'}</span>
+                    <CaretRight size={16} weight="bold" className="ep-seta" aria-hidden="true" />
+                  </button>
+                ))}
+              </div>
+              <div className="ep-cupons-pe">
+                <Botao variante="suave" icone={<Plus size={20} weight="bold" />} onClick={abrirNovoCupom}>Novo cupom</Botao>
+                <Botao variante="secundario" carregando={savingCupons} onClick={handleSalvarCupons}>{savingCupons ? 'Salvando…' : 'Salvar cupons'}</Botao>
+              </div>
+            </>
+          )}
+        </section>
       </div>
 
-      <style>{`
-        @keyframes chkspin { to { transform:rotate(360deg); } }
-        @keyframes chkFadeIn { from{opacity:0} to{opacity:1} }
+      {/* Novo / editar cupom */}
+      <Janela aberta={formAberto} aoFechar={cancelarEdicao} tipo="conteudo" travada titulo={editandoIndex === -1 ? 'Novo cupom' : 'Editar cupom'}
+        acoes={<><Botao variante="secundario" onClick={cancelarEdicao}>Cancelar</Botao><Botao onClick={salvarCupomForm}>{editandoIndex === -1 ? 'Criar cupom' : 'Salvar'}</Botao></>}>
+        {formAberto && (
+          <div className="ep-form">
+            <Campo rotulo="Código do cupom" obrigatorio placeholder="Ex.: PROMO10" value={cupomForm.codigo} className="ep-codigo"
+              dica="O cliente digita esse código ao finalizar o pedido"
+              onChange={e => setCupomForm({ ...cupomForm, codigo: e.target.value.toUpperCase().replace(/\s/g, '') })} />
+            <div className="ui-campo">
+              <span className="ui-campo-r" id="ep-tipo"><span>Tipo de desconto</span></span>
+              <div className="ep-seg" role="radiogroup" aria-labelledby="ep-tipo">
+                <button type="button" role="radio" aria-checked={cupomForm.tipo === 'percentual'} onClick={() => setCupomForm({ ...cupomForm, tipo: 'percentual' })}>Porcentagem (%)</button>
+                <button type="button" role="radio" aria-checked={cupomForm.tipo !== 'percentual'} onClick={() => setCupomForm({ ...cupomForm, tipo: 'fixo' })}>Valor (R$)</button>
+              </div>
+            </div>
+            <Campo rotulo="Desconto" obrigatorio inputMode="decimal" placeholder="0" value={cupomForm.valor}
+              prefixo={cupomForm.tipo === 'percentual' ? undefined : 'R$'} depois={cupomForm.tipo === 'percentual' ? <span className="ep-depois">%</span> : undefined}
+              onChange={e => setCupomForm({ ...cupomForm, valor: e.target.value.replace(/[^0-9.,]/g, '') })} />
 
-        .chk-root { font-family:'Geist', sans-serif; width:100%; display:flex; flex-direction:column; gap:1.25rem; padding-top:20px; } /* 02/10: os cartões colavam no cabeçalho */
-        .chk-header { display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; padding:0.5rem 0; }
-        .chk-title { font-size: var(--font-page-title); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 0.3rem; letter-spacing:-0.02em; }
-        .chk-sub { font-size: var(--font-button); color:var(--text-secondary); margin:0; }
-        .chk-autosave--flutua { position: fixed; z-index: 60; left: 50%; transform: translateX(-50%); bottom: calc(76px + env(safe-area-inset-bottom, 0px)); box-shadow: 0 8px 24px rgba(21,128,61,.18); }
-        @media (min-width: 768px) { .chk-autosave--flutua { left: auto; right: 28px; transform: none; bottom: 24px; } }
-        .chk-autosave { display:inline-flex; align-items:center; gap:0.35rem; font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--success); background:#f0fdf4; padding:0.32rem 0.8rem; border-radius: var(--radius-full); border:1px solid #dcfce7; animation:chkFadeIn 0.3s ease; }
-
-        /* ── Grid ── */
-        .chk-grid { display:flex; flex-direction:column; gap:1.25rem; }
-        .chk-stack { display:flex; flex-direction:column; gap:1.25rem; }
-        @media (min-width:900px) {
-          .chk-grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:1.25rem; align-items:start; }
-        }
-
-        /* ── Card ── */
-        .chk-card {
-          background:var(--bg-card); border-radius: var(--radius-xl); padding:1.4rem;
-          box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.05));
-          border:1px solid var(--border);
-          display:flex; flex-direction:column; gap:0.85rem;
-          width:100%; box-sizing:border-box;
-          position:relative; overflow:hidden;
-          transition: box-shadow var(--dur-normal) var(--ease-out), border-color 0.2s ease;
-        }
-        .chk-card::before {
-          content:""; position:absolute; top:-60px; right:-60px;
-          width:140px; height:140px;
-          background:radial-gradient(circle, var(--primary-light) 0%, transparent 70%);
-          pointer-events:none; opacity:0.7;
-        }
-        .chk-card:hover {
-          box-shadow:0 4px 24px rgba(255,111,169,0.08), 0 1px 2px rgba(16,24,40,0.04);
-          border-color:rgba(255,111,169,0.18);
-        }
-        .chk-card > * { position:relative; z-index:1; }
-
-        /* ── Section header ── */
-        .chk-section-header { display:flex; align-items:center; gap:0.7rem; padding-bottom:1rem; border-bottom:1px solid var(--border); }
-        .chk-section-icon {
-          width:36px; height:36px; flex-shrink:0; border-radius: var(--radius-md);
-          background:var(--primary-light); color:var(--primary);
-          display:flex; align-items:center; justify-content:center;
-        }
-        .chk-section-label { font-size: var(--font-input); font-weight: var(--fw-bold); color:var(--text-title); margin:0; letter-spacing:-0.01em; }
-        .chk-section-sub { font-size: var(--font-helper); color:var(--text-muted); margin:0.1rem 0 0; line-height:1.3; }
-
-        .chk-sublabel { margin:0; font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--text-primary); }
-        .chk-muted { font-size: var(--font-helper); color:var(--text-muted); }
-        .chk-divider { border:none; border-top:1px solid var(--border); margin:0.25rem 0; }
-        .chk-row-between { display:flex; align-items:center; justify-content:space-between; gap:0.5rem; }
-
-        /* ── Checklist (Check component) ── */
-        .chk-list { display:flex; flex-direction:column; gap:0.45rem; }
-        .chk-check {
-          display:flex; align-items:center; gap:0.75rem;
-          padding:0.72rem 0.9rem; border-radius: var(--radius-md);
-          border:1.5px solid var(--border);
-          background:var(--bg-card);
-          cursor:pointer; transition:all 0.18s;
-        }
-        .chk-check:hover {
-          border-color:rgba(255,111,169,0.45);
-          background:var(--primary-light);
-          transform:translateY(-1px);
-        }
-        .chk-check--active {
-          border-color:var(--primary);
-          background:var(--primary-light);
-          box-shadow:0 2px 8px rgba(255,111,169,0.12);
-        }
-        .chk-check-label {
-          flex:1; font-size: var(--font-button); font-weight: var(--fw-medium);
-          color:var(--text-primary);
-        }
-        .chk-check--active .chk-check-label {
-          font-weight: var(--fw-bold); color:var(--primary-dark);
-        }
-        .chk-checkbox {
-          width:22px; height:22px; border-radius: var(--radius-sm);
-          border:2px solid var(--border);
-          background:transparent;
-          display:flex; align-items:center; justify-content:center;
-          transition:all 0.18s; flex-shrink:0;
-        }
-        .chk-check--active .chk-checkbox {
-          border-color:transparent;
-          background:var(--primary-gradient);
-          box-shadow:0 2px 6px rgba(255,111,169,0.32);
-        }
-
-        /* ── Input ── */
-        .chk-input {
-          width:100%; padding:0.65rem 0.95rem;
-          border:1.5px solid var(--border); border-radius: var(--radius-md);
-          font-family:'Geist', sans-serif; font-size: var(--font-button);
-          color:var(--text-title); outline:none;
-          box-sizing:border-box; background:var(--bg-input);
-          transition:border-color 0.15s, box-shadow 0.15s;
-        }
-        .chk-input:hover { border-color:var(--text-muted); }
-        .chk-input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(255,111,169,0.12); }
-
-        .chk-money-row { display:flex; align-items:center; gap:0.4rem; }
-        .chk-prefix { font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--text-secondary); flex-shrink:0; }
-
-        /* ── Bairro row ── */
-        .chk-bairro-row { display:flex; gap:0.5rem; align-items:center; }
-        .chk-btn-remove {
-          padding:0.5rem; background:#fff5f5;
-          border:1.5px solid #fee2e2; border-radius: var(--radius-md);
-          cursor:pointer; display:flex; align-items:center; justify-content:center;
-          color:var(--error); transition:all 0.15s; flex-shrink:0;
-        }
-        .chk-btn-remove:hover { background:#fee2e2; border-color:#fca5a5; }
-
-        /* ── Botão add ── */
-        .chk-btn-add {
-          display:inline-flex; align-items:center; gap:5px;
-          padding:0.45rem 0.95rem;
-          background:var(--primary-gradient);
-          color:#fff; border:none; border-radius: var(--radius-full);
-          font-family:'Geist', sans-serif; font-size: var(--font-helper); font-weight: var(--fw-bold);
-          cursor:pointer; white-space:nowrap;
-          box-shadow:0 2px 8px rgba(255,111,169,0.3);
-          transition:transform 0.15s, box-shadow 0.15s;
-        }
-        .chk-btn-add:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(255,111,169,0.4); }
-
-        /* ── Toggle ── */
-        .chk-toggle-row { display:flex; justify-content:space-between; align-items:center; gap:1rem; }
-        .chk-toggle-label { margin:0; font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--text-primary); }
-        .chk-toggle-sub { margin:0.1rem 0 0; font-size: var(--font-caption); color:var(--text-muted); }
-        .chk-toggle { position:relative; display:inline-block; width:44px; height:24px; flex-shrink:0; }
-        .chk-toggle input { opacity:0; width:0; height:0; }
-        .chk-toggle-slider {
-          position:absolute; cursor:pointer; inset:0;
-          background:var(--border); border-radius: var(--radius-xl); transition:0.25s;
-        }
-        .chk-toggle-slider:before {
-          content:""; position:absolute; height:18px; width:18px;
-          left:3px; bottom:3px; background:var(--bg-card);
-          border-radius:50%; transition:0.25s;
-          box-shadow:0 1px 3px rgba(0,0,0,0.2);
-        }
-        .chk-toggle input:checked + .chk-toggle-slider {
-          background:var(--primary-gradient);
-        }
-        .chk-toggle input:checked + .chk-toggle-slider:before { transform:translateX(20px); }
-
-        /* ── Prazo agendamento ── */
-        .chk-prazo-row {
-          display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;
-          font-size: var(--font-button); font-weight: var(--fw-medium); color:var(--text-primary);
-          padding:0.7rem 0.85rem; background:var(--primary-light);
-          border-radius: var(--radius-md); border:1px dashed rgba(255,111,169,0.35);
-        }
-
-        /* ── Cupons empty ── */
-        .chk-cupons-empty {
-          display:flex; flex-direction:column; align-items:center; gap:0.6rem;
-          padding:1.5rem 1rem; text-align:center;
-          background:var(--bg-body);
-          border-radius: var(--radius-lg); border:1.5px dashed var(--border);
-        }
-        .chk-cupons-empty-icon {
-          width:46px; height:46px; border-radius:50%;
-          background:var(--primary-light);
-          color:var(--primary);
-          display:flex; align-items:center; justify-content:center;
-        }
-        .chk-cupons-empty-text {
-          margin:0; font-size: var(--font-helper); color:var(--text-secondary);
-          max-width:240px; line-height:1.4;
-        }
-        .chk-cupons-empty-text strong { color:var(--primary-dark); font-weight: var(--fw-bold); }
-
-        /* ── Cupom card ── */
-        .chk-cupom-card {
-          padding:0.9rem; background:var(--bg-card);
-          border:1.5px solid var(--border); border-radius: var(--radius-lg);
-          display:flex; flex-direction:column; gap:0.65rem;
-          transition:all 0.18s; position:relative; overflow:hidden;
-        }
-        .chk-cupom-card::before {
-          content:""; position:absolute; left:0; top:0; bottom:0; width:4px;
-          background:var(--primary-gradient);
-        }
-        .chk-cupom-card--inactive { opacity:0.6; }
-        .chk-cupom-card--inactive::before { background:var(--text-muted); }
-
-        .chk-cupom-top { display:flex; align-items:center; gap:0.5rem; padding-left:0.35rem; }
-        .chk-cupom-tag {
-          width:28px; height:28px; border-radius: var(--radius-sm);
-          background:var(--primary-light);
-          color:var(--primary);
-          display:flex; align-items:center; justify-content:center;
-          flex-shrink:0;
-        }
-        .chk-cupom-codigo {
-          flex:1; padding:0.5rem 0.65rem; background:transparent;
-          border:1.5px dashed var(--border);
-          border-radius: var(--radius-sm); outline:none;
-          font-family:'Geist Mono', ui-monospace, monospace;
-          font-size: var(--font-input); font-weight: var(--fw-black); letter-spacing:0.08em;
-          color:var(--primary-dark); text-transform:uppercase;
-        }
-        .chk-cupom-codigo:focus { border-color:var(--primary); border-style:solid; background:var(--primary-light); }
-        .chk-cupom-codigo::placeholder { color:var(--text-muted); letter-spacing:0.05em; }
-
-        .chk-cupom-row { display:flex; gap:0.5rem; padding-left:0.35rem; }
-        .chk-cupom-select { width:auto; padding-right:1.8rem; cursor:pointer; }
-
-        .chk-cupom-footer {
-          display:flex; justify-content:space-between; align-items:center;
-          padding-top:0.55rem; padding-left:0.35rem;
-          border-top:1px dashed var(--border);
-        }
-        .chk-cupom-ativo {
-          display:flex; align-items:center; gap:0.5rem;
-          font-size: var(--font-helper); font-weight: var(--fw-semibold);
-          color:var(--text-primary); cursor:pointer;
-        }
-        .chk-cupom-remove {
-          display:inline-flex; align-items:center; gap:4px;
-          background:none; border:none; padding:4px 8px; border-radius: var(--radius-sm);
-          font-size: var(--font-helper); font-weight: var(--fw-semibold);
-          color:var(--error); cursor:pointer;
-          transition:background 0.15s;
-        }
-        .chk-cupom-remove:hover { background:#fee2e2; }
-
-        /* ── Item de cupom (lista) ── */
-        .chk-cupom-item {
-          display:flex; align-items:center; gap:0.85rem;
-          padding:0.85rem 0.95rem;
-          background:var(--bg-card);
-          border:1.5px solid var(--border);
-          border-radius: var(--radius-lg); cursor:pointer;
-          transition:all 0.18s; position:relative; overflow:hidden;
-        }
-        .chk-cupom-item::before {
-          content:""; position:absolute; left:0; top:0; bottom:0; width:4px;
-          background:var(--primary-gradient);
-        }
-        .chk-cupom-item:hover {
-          border-color:var(--primary);
-          background:var(--primary-light);
-          transform:translateY(-1px);
-          box-shadow:0 4px 14px rgba(255,111,169,0.14);
-        }
-        .chk-cupom-item--inactive { opacity:0.65; }
-        .chk-cupom-item--inactive::before { background:var(--text-muted); }
-
-        .chk-cupom-item-left { flex:1; min-width:0; display:flex; flex-direction:column; gap:0.3rem; padding-left:0.4rem; }
-        .chk-cupom-item-codigo {
-          display:flex; align-items:center; gap:0.4rem;
-          color:var(--primary-dark);
-          font-family:'Geist Mono', ui-monospace, monospace;
-          font-size: var(--font-input); font-weight: var(--fw-black); letter-spacing:0.06em;
-        }
-        .chk-cupom-item-meta {
-          display:flex; flex-wrap:wrap; gap:0.35rem; align-items:center;
-        }
-        .chk-cupom-item-desconto {
-          font-size: var(--font-helper); font-weight: var(--fw-bold);
-          color:var(--primary);
-          background:var(--primary-light);
-          padding:2px 8px; border-radius: var(--radius-full);
-        }
-        .chk-cupom-item-tag {
-          display:inline-flex; align-items:center; gap:3px;
-          font-size: var(--font-caption); color:var(--text-secondary);
-          background:var(--bg-body);
-          padding:2px 7px; border-radius: var(--radius-full);
-          border:1px solid var(--border);
-        }
-        .chk-cupom-item-status {
-          font-size: var(--font-caption); font-weight: var(--fw-bold);
-          padding:3px 9px; border-radius: var(--radius-full);
-          letter-spacing:0.04em; flex-shrink:0;
-        }
-        .chk-cupom-item-status--on {
-          color:var(--success); background:#f0fdf4; border:1px solid #bbf7d0;
-        }
-        .chk-cupom-item-status--off {
-          color:var(--text-muted); background:var(--bg-body); border:1px solid var(--border);
-        }
-        .chk-cupom-item-chevron {
-          color:var(--text-muted); flex-shrink:0;
-          transition:transform 0.15s;
-        }
-        .chk-cupom-item:hover .chk-cupom-item-chevron { color:var(--primary); transform:translateX(2px); }
-
-        /* ── Formulário de cupom ── */
-        .chk-cupom-form {
-          display:flex; flex-direction:column; gap:0.85rem;
-          padding:1rem;
-          background:var(--bg-body);
-          border-radius: var(--radius-lg);
-          border:1.5px solid var(--border);
-          animation:chkFadeIn 0.2s ease;
-        }
-        .chk-form-field { display:flex; flex-direction:column; gap:0.35rem; }
-        .chk-form-label {
-          font-size: var(--font-helper); font-weight: var(--fw-bold);
-          color:var(--text-primary);
-          margin:0; letter-spacing:0.01em;
-        }
-        .chk-form-row { display:flex; gap:0.6rem; }
-        @media (max-width:520px) { .chk-form-row { flex-direction:column; } }
-
-        .chk-form-divider {
-          display:flex; align-items:center; gap:0.5rem;
-          margin:0.4rem 0 0;
-          font-size: var(--font-caption); font-weight: var(--fw-bold);
-          color:var(--text-muted);
-          text-transform:uppercase; letter-spacing:0.1em;
-        }
-        .chk-form-divider::before, .chk-form-divider::after {
-          content:""; flex:1; height:1px;
-          background:var(--border);
-        }
-
-        .chk-form-actions {
-          display:flex; align-items:center; gap:0.5rem;
-          margin-top:0.4rem; padding-top:0.85rem;
-          border-top:1px dashed var(--border);
-          flex-wrap:wrap;
-        }
-        .chk-form-btn-cancel {
-          padding:0.55rem 1.1rem;
-          background:var(--bg-card);
-          border:1.5px solid var(--border);
-          border-radius: var(--radius-full);
-          font-family:'Geist', sans-serif; font-size: var(--font-helper); font-weight: var(--fw-semibold);
-          color:var(--text-secondary);
-          cursor:pointer; transition:all 0.15s;
-        }
-        .chk-form-btn-cancel:hover { border-color:var(--text-muted); color:var(--text-primary); }
-        .chk-form-btn-save {
-          display:inline-flex; align-items:center; gap:5px;
-          padding:0.6rem 1.2rem;
-          background:var(--primary-gradient);
-          color:#fff; border:none; border-radius: var(--radius-full);
-          font-family:'Geist', sans-serif; font-size: var(--font-button); font-weight: var(--fw-bold);
-          cursor:pointer;
-          box-shadow:0 3px 10px rgba(255,111,169,0.3);
-          transition:transform 0.15s, box-shadow 0.15s;
-        }
-        .chk-form-btn-save:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(255,111,169,0.4); }
-        .chk-form-btn-delete {
-          display:inline-flex; align-items:center; gap:5px;
-          padding:0.55rem 1rem;
-          background:#fff5f5; color:var(--error);
-          border:1.5px solid #fee2e2; border-radius: var(--radius-full);
-          font-family:'Geist', sans-serif; font-size: var(--font-helper); font-weight: var(--fw-bold);
-          cursor:pointer; transition:all 0.15s;
-        }
-        .chk-form-btn-delete:hover { background:#fee2e2; border-color:#fca5a5; }
-
-        /* ── Botão Salvar cupons ── */
-        .chk-cupons-save {
-          margin-top:0.35rem;
-          display:inline-flex; align-items:center; justify-content:center; gap:6px;
-          padding:0.7rem 1rem;
-          background:var(--primary-gradient);
-          color:#fff; border:none; border-radius: var(--radius-full);
-          font-family:'Geist', sans-serif; font-size: var(--font-button); font-weight: var(--fw-bold);
-          cursor:pointer; box-shadow:0 3px 10px rgba(255,111,169,0.3);
-          transition:transform 0.15s, box-shadow 0.15s, background 0.2s;
-        }
-        .chk-cupons-save:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 6px 16px rgba(255,111,169,0.4); }
-        .chk-cupons-save:disabled { opacity:0.7; cursor:wait; transform:none; }
-        .chk-cupons-save--ok {
-          background:#22C55E; box-shadow:0 3px 10px rgba(34,197,94,0.3);
-          animation:chkFadeIn 0.25s ease;
-        }
-        .chk-cupons-save--ok:hover:not(:disabled) { box-shadow:0 6px 16px rgba(34,197,94,0.4); }
-        .chk-spinner-btn {
-          width:14px; height:14px;
-          border:2px solid rgba(255,255,255,0.4); border-top-color:#fff;
-          border-radius:50%; animation:chkspin 0.7s linear infinite;
-          display:inline-block;
-        }
-
-        .chk-spinner { width:32px; height:32px; border:3px solid var(--primary-light); border-top-color:var(--primary); border-radius:50%; animation:chkspin 0.7s linear infinite; display:inline-block; }
-      `}</style>
+            <p className="ep-sep">Se quiser, limite o cupom</p>
+            <div className="ep-g2">
+              <div className="ui-campo"><span className="ui-campo-r"><span>Vale a partir de</span><small>opcional</small></span>
+                <CampoData valor={cupomForm.data_inicio} onChange={d => setCupomForm({ ...cupomForm, data_inicio: d })} max={cupomForm.data_fim || undefined} titulo="Cupom vale a partir de" placeholder="Sem começo" curto /></div>
+              <div className="ui-campo"><span className="ui-campo-r"><span>Vale até</span><small>opcional</small></span>
+                <CampoData valor={cupomForm.data_fim} onChange={d => setCupomForm({ ...cupomForm, data_fim: d })} min={cupomForm.data_inicio || undefined} titulo="Cupom vale até" placeholder="Sem fim" curto /></div>
+            </div>
+            <div className="ep-g2">
+              <Campo rotulo="Limite de usos" opcional inputMode="numeric" placeholder="Sem limite" value={cupomForm.limite_uso}
+                onChange={e => setCupomForm({ ...cupomForm, limite_uso: e.target.value.replace(/\D/g, '') })} />
+              <Campo rotulo="Pedido mínimo" opcional prefixo="R$" inputMode="decimal" placeholder="0,00" value={cupomForm.valor_minimo}
+                onChange={e => setCupomForm({ ...cupomForm, valor_minimo: e.target.value.replace(/[^0-9.,]/g, '') })} />
+            </div>
+            <Chave on={cupomForm.ativo} rotulo="Cupom ativo" apoio="Desligado, o cliente não consegue usar" aoMudar={v => setCupomForm({ ...cupomForm, ativo: v })} />
+            {editandoIndex !== null && editandoIndex >= 0 && (
+              <Botao variante="link" className="ep-excluir" onClick={excluirCupomEditando}>Excluir cupom</Botao>
+            )}
+          </div>
+        )}
+      </Janela>
     </>
   )
 }
