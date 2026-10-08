@@ -1,11 +1,13 @@
-import { AvisoAntecedencia } from "@/lib/entregaProduto";
-import { sufixoVenda, rotuloPrecoVenda } from '@/lib/formaVenda'
+import { seloEntrega } from "@/lib/entregaProduto";
+import { unidadeCliente } from '@/lib/formaVenda'
 import KitPicker from '@/components/cardapio/KitPicker'
 import { precoCardapio } from '@/lib/precoCardapio'
 import { kitAtivo, calcularKit, selecaoInicial, type KitSelecao } from '@/lib/kitQuantidade'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { X, Plus, Minus, Camera, Ruler, ChevronRight, ChevronDown } from 'lucide-react'
+import { ArrowLeft, CalendarBlank, Camera, Check, Minus, Plus, X } from '@phosphor-icons/react'
+import { useSobreposicao } from '@/components/base/useSobreposicao'
+import './productModal.css'
 import { useCart } from '@/hooks/useCart'
 import { supabase } from '@/lib/supabase'
 import { Produto } from '@/types/database'
@@ -106,32 +108,6 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
       return next
     })
   }
-
-  // Bloqueia scroll do body enquanto o modal está aberto (evita "fundo scrollando").
-  // Guarda scrollY antes e restaura ao fechar, pra não ter salto de posição (iOS).
-  useEffect(() => {
-    if (!isOpen) return
-    const scrollY = window.scrollY
-    const prev = {
-      overflow: document.body.style.overflow,
-      position: document.body.style.position,
-      top: document.body.style.top,
-      width: document.body.style.width,
-    }
-    document.body.style.overflow = 'hidden'
-    document.body.style.position = 'fixed'
-    document.body.style.top = `-${scrollY}px`
-    document.body.style.width = '100%'
-    return () => {
-      document.body.style.left = ''; document.body.style.right = ''
-
-      document.body.style.overflow = prev.overflow
-      document.body.style.position = prev.position
-      document.body.style.top = prev.top
-      document.body.style.width = prev.width
-      window.scrollTo(0, scrollY)
-    }
-  }, [isOpen])
 
   // Upload da foto de referência (opcional). Cliente escolhe uma imagem
   // pra ilustrar o que quer (ex: "queria um bolo assim").
@@ -319,6 +295,45 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
     return true
   }, [gMassa, gCobertura, gSabor, gTamanho, gRecheio, escolhaMassa, escolhaCobertura, escolhaSabor, escolhaTamanho, escolhasRecheio.length, kitInfo?.completo])
 
+  // ═══ 08/10 · 3.29 — tela no estilo iFood ═══════════════════════════
+  const caixaRef = useRef<HTMLDivElement>(null)
+  const roloRef = useRef<HTMLDivElement>(null)
+  const trilhoRef = useRef<HTMLDivElement>(null)
+  const secoes = useRef<Record<string, HTMLElement | null>>({})
+  const [faltou, setFaltou] = useState<string | null>(null)
+  const [barra, setBarra] = useState(false)
+  const pausaAte = useRef(0)
+  useSobreposicao(isOpen && !!product, onClose, caixaRef)
+  useEffect(() => { if (isOpen) { setFaltou(null); setBarra(false) } }, [isOpen, product?.id])
+  // O que falta escolher (na ordem da tela)
+  const pendente = useMemo(() => {
+    if (kitInfo && !kitInfo.completo) return 'kit'
+    if (gTamanho && gTamanho.min_selecionavel > 0 && !escolhaTamanho) return 'tamanho'
+    if (gSabor && gSabor.min_selecionavel > 0 && !escolhaSabor) return 'sabor'
+    if (gMassa && gMassa.min_selecionavel > 0 && !escolhaMassa) return 'massa'
+    if (gRecheio && gRecheio.min_selecionavel > 0 && escolhasRecheio.length < gRecheio.min_selecionavel) return 'recheio'
+    if (gCobertura && gCobertura.min_selecionavel > 0 && !escolhaCobertura) return 'cobertura'
+    return null
+  }, [kitInfo?.completo, gTamanho, gSabor, gMassa, gRecheio, gCobertura, escolhaTamanho, escolhaSabor, escolhaMassa, escolhasRecheio.length, escolhaCobertura])
+  useEffect(() => { if (faltou && faltou !== pendente) setFaltou(null) }, [pendente, faltou])
+
+  // Fotos: trocam sozinhas a cada 4 s, bem suave (para quando a cliente mexe; não roda com "reduzir movimento")
+  const imagensMemo = useMemo(() => product?.imagem_url?.split(',').map((x: string) => x.trim()).filter(Boolean) || [], [product?.imagem_url])
+  useEffect(() => {
+    if (!isOpen || imagensMemo.length < 2) return
+    if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+    const t = window.setInterval(() => {
+      if (Date.now() < pausaAte.current) return
+      setImgIndex(i => {
+        const prox = (i + 1) % imagensMemo.length
+        const tr = trilhoRef.current
+        if (tr && tr.offsetParent !== null) tr.scrollTo({ left: prox * tr.clientWidth, behavior: 'smooth' })
+        return prox
+      })
+    }, 4000)
+    return () => window.clearInterval(t)
+  }, [isOpen, imagensMemo.length])
+
   // ═══ Early return DEPOIS de todos os hooks (regra do React) ══════
   if (!isOpen || !product) return null
 
@@ -373,553 +388,249 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
     onClose()
   }
 
-  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768
-  const temOpcoes = grupos.length > 0 || !!kitCfg || extrasBiblioteca.length > 0
-  const fotoBase = temOpcoes ? 180 : 240
-  const alturaFoto = Math.max(110, Math.round(fotoBase - rolagem * 0.7))
-  const images = product.imagem_url?.split(',').map((s: string) => s.trim()).filter(Boolean) || []
+  // Tocou em "Adicionar" faltando escolha: rola até o grupo e marca em vermelho
+  const tentarAdicionar = () => {
+    if (pendente) {
+      setFaltou(pendente)
+      const el = secoes.current[pendente]
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      return
+    }
+    handleAdd()
+  }
 
+  // Quantidade: produto por kg (sem tamanho) anda de 0,5 kg; o resto, de 1 em 1.
+  // Por kg COM tamanho a quantidade fica 1 (o tamanho já define o peso).
+  const kgLivre = isKg && !gTamanho && !kitCfg
+  const semQuantidade = isKg && !kgLivre
+  const passo = kgLivre ? 0.5 : 1
+  const minimo = kgLivre ? 0.5 : 1
+  const qtdTexto = kgLivre ? `${String(quantity).replace('.', ',')} kg` : String(quantity)
 
-  // ═══ Render de grupo (radio / checkbox) ═══════════════════════════
-  const RenderGrupo = ({ g, tipoEscolha, valorAtual, onChange, useDropdown }: {
-    g: GrupoOpcoes
-    tipoEscolha: 'single' | 'multi'
-    valorAtual: string | string[] | null
-    onChange: (v: any) => void
-    useDropdown?: boolean
-  }) => {
-    const eh = (id: string) => tipoEscolha === 'multi'
-      ? Array.isArray(valorAtual) && valorAtual.includes(id)
-      : valorAtual === id
+  const images = imagensMemo
+  const nome = product.nome
+  const selo = seloEntrega(product)
 
+  // Preço do topo: com tamanhos e nada escolhido, a faixa de preços; senão o preço calculado
+  const semTamanho = !!gTamanho && !opTamanho && !kitInfo
+  const precosTam = semTamanho ? (gTamanho!.opcoes || []).map((o: any) => {
+    const modo = (gTamanho as any)?.modo_preco_tamanho || 'preco_fixo'
+    const v = modo === 'por_peso' ? basePrice * (Number(o.peso_kg) || 0) : (Number(o.preco) || 0)
+    return Math.round(v * (1 - descPct) * 100) / 100
+  }).filter((v: number) => v > 0) : []
+  const valorTopo = semTamanho ? Math.round(precoCardapio(product).valor * (1 - descPct) * 100) / 100 : calculo.final
+  const pMin = precosTam.length ? Math.min(...precosTam) : valorTopo
+  const pMax = precosTam.length ? Math.max(...precosTam) : valorTopo
+
+  // ═══ Um grupo de opções (faixa cinza + lista) ═════════════════════
+  const Grupo = ({ chave, g, multi, valor, aoMudar }: { chave: string; g: GrupoOpcoes; multi: boolean; valor: string | string[] | null; aoMudar: (v: any) => void }) => {
+    const marcado = (id: string) => multi ? Array.isArray(valor) && valor.includes(id) : valor === id
+    const qtdMarcada = multi ? (Array.isArray(valor) ? valor.length : 0) : (valor ? 1 : 0)
+    const max = multi ? (g.max_selecionavel || 1) : 1
+    const obrig = g.min_selecionavel > 0
+    const ok = obrig && qtdMarcada >= g.min_selecionavel
     const gs = grupos.find(x => x.tipo === g.tipo) as any
     const saborTemPrecoProprio = g.tipo === 'sabor' && !!gs?.sabor_tem_preco_proprio
-
-    const toggle = (id: string) => {
-      if (tipoEscolha === 'multi') {
-        const arr = Array.isArray(valorAtual) ? [...valorAtual] : []
-        const idx = arr.indexOf(id)
-        if (idx >= 0) {
-          arr.splice(idx, 1)
-        } else if (arr.length < (g.max_selecionavel || 1)) {
-          arr.push(id)
-        }
-        onChange(arr)
+    const titulo = g.tipo === 'tamanho' ? 'Escolha o tamanho' : g.nome_exibicao
+    const regra = !multi
+      ? (obrig ? 'Escolha 1 opção' : 'Escolha até 1 opção')
+      : g.min_selecionavel > 0 && g.min_selecionavel === max ? `Escolha ${max} ${max === 1 ? 'opção' : 'opções'}`
+      : g.min_selecionavel > 0 ? `Escolha de ${g.min_selecionavel} a ${max} opções`
+      : `Escolha até ${max} ${max === 1 ? 'opção' : 'opções'}`
+    const falta = faltou === chave
+    const tocar = (id: string) => {
+      if (multi) {
+        const arr = Array.isArray(valor) ? [...valor] : []
+        const i = arr.indexOf(id)
+        if (i >= 0) arr.splice(i, 1)
+        else if (arr.length < max) arr.push(id)
+        else if (max === 1) { arr.splice(0, 1, id) }
+        aoMudar(arr)
       } else {
-        onChange(valorAtual === id ? null : id)
+        aoMudar(valor === id ? (obrig ? id : null) : id)
       }
     }
-
-    const hintObrigatoriedade = g.min_selecionavel > 0
-      ? (g.min_selecionavel === g.max_selecionavel
-          ? `Escolha ${g.min_selecionavel}`
-          : `Escolha ${g.min_selecionavel} a ${g.max_selecionavel}`)
-      : 'Opcional'
-
-    // ═══ Modo lista vertical compacta (pra tamanhos) ═══
-    if (useDropdown && tipoEscolha === 'single') {
-      const idSel = typeof valorAtual === 'string' ? valorAtual : null
-      const opSelecionada = idSel ? g.opcoes.find((o: any) => o.id === idSel) : null
-      const isOpen = showTamanhoDropdown
-      const totalOpcoes = g.opcoes.length
-
-      // Constrói texto e preço da opção selecionada
-      let selecTitulo = ''
-      let selecSub = ''
-      let selecPreco = ''
-      if (opSelecionada) {
-        selecTitulo = opSelecionada.nome
-        if (opSelecionada.peso_kg) selecTitulo += ` · ${String(opSelecionada.peso_kg).replace('.', ',')} kg`
-        if (opSelecionada.serve) {
-          const s = String(opSelecionada.serve).trim()
-          const emFatias = (product as any)?.grupo_tamanhos?.rendimento_unidade === 'fatias'
-          selecSub = /^\d+$/.test(s) ? (emFatias ? `${s} fatias` : `Serve ${s} pessoas`) : `Serve ${s}`
-        }
-        if (g.tipo === 'sabor' && saborTemPrecoProprio && opSelecionada.preco > 0) selecPreco = formatCurrency(opSelecionada.preco)
-        else if (g.tipo === 'tamanho' && opSelecionada.preco > 0) selecPreco = formatCurrency(opSelecionada.preco)
-        else if (g.tipo === 'tamanho' && (g as any).modo_preco_tamanho === 'por_peso' && opSelecionada.peso_kg && basePrice > 0) selecPreco = formatCurrency(Math.round(basePrice * opSelecionada.peso_kg * 100) / 100)
-        else if ((opSelecionada.adicional || 0) > 0) selecPreco = `+${formatCurrency(opSelecionada.adicional)}`
-      }
-
-      return (
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#2C1219' }}>{g.nome_exibicao}</span>
-            {g.min_selecionavel > 0 && (
-              <span style={{ display: 'inline-block', padding: '2px 6px', background: '#FCE0E9', color: '#C33A6E', fontSize: 9.5, fontWeight: 800, borderRadius: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Obrigatório
-              </span>
-            )}
-          </div>
-
-          {/* Caixa fechada */}
-          <button
-            type="button"
-            onClick={() => setShowTamanhoDropdown(v => !v)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 12,
-              padding: '14px 16px',
-              background: opSelecionada ? '#F0FDF4' : '#fff',
-              border: `1.5px solid ${opSelecionada ? '#16a34a' : (isOpen ? corBotao : '#F0D8DE')}`,
-              borderRadius: 10, cursor: 'pointer',
-              fontFamily: 'inherit', textAlign: 'left', width: '100%',
-              transition: 'all 0.15s',
-            }}
-          >
-            <div style={{
-              width: 36, height: 36, borderRadius: 8,
-              background: opSelecionada ? '#16a34a' : '#FCE0E9',
-              color: opSelecionada ? '#fff' : '#C33A6E',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              transition: 'all 0.15s',
-            }}>
-              <Ruler size={18} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: '#2C1219', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {opSelecionada ? selecTitulo : `Selecione o ${g.tipo === 'tamanho' ? 'tamanho' : g.nome_exibicao.toLowerCase()}`}
-              </div>
-              <div style={{ fontSize: 11.5, color: '#6B7280', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {opSelecionada ? (selecSub || `${totalOpcoes} opções disponíveis`) : `${totalOpcoes} ${totalOpcoes === 1 ? 'opção disponível' : 'opções disponíveis'}`}
-              </div>
-            </div>
-            {opSelecionada && selecPreco ? (
-              <span style={{ fontSize: 13.5, fontWeight: 800, color: '#C33A6E', flexShrink: 0 }}>{selecPreco}</span>
-            ) : null}
-            <span style={{ color: opSelecionada ? '#16a34a' : '#C33A6E', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-              {isOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-            </span>
-          </button>
-
-          {/* Opções numa janela que sobe de baixo (02/10: antes abria uma lista embaixo do campo) */}
-          {isOpen && createPortal(
-            <div onClick={() => setShowTamanhoDropdown(false)} role="dialog" aria-modal="true" aria-label={`Escolha o ${g.tipo === 'tamanho' ? 'tamanho' : g.nome_exibicao.toLowerCase()}`}
-              style={{ position: 'fixed', inset: 0, zIndex: 10050, background: 'rgba(45,31,38,.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', animation: 'fadeIn .15s ease' }}>
-            <div onClick={e => e.stopPropagation()}
-              style={{ width: '100%', maxWidth: 480, background: '#fff', borderRadius: '22px 22px 0 0', padding: '10px 16px calc(18px + env(safe-area-inset-bottom, 0px))', maxHeight: '80vh', overflowY: 'auto', animation: 'sheetUp .22s ease-out', fontFamily: 'inherit' }}>
-              <span style={{ display: 'block', width: 40, height: 4, borderRadius: 9, background: '#E5DDE1', margin: '0 auto 12px' }} />
-              <b style={{ display: 'block', fontSize: 18, fontWeight: 900, color: '#2C1219' }}>Escolha o {g.tipo === 'tamanho' ? 'tamanho' : g.nome_exibicao.toLowerCase()}</b>
-              <small style={{ display: 'block', fontSize: 13, color: '#6B5D64', margin: '2px 0 12px' }}>{totalOpcoes} {totalOpcoes === 1 ? 'opção' : 'opções'}</small>
-            <div style={{
-              background: '#fff',
-              border: '1.5px solid #F0D8DE',
-              borderRadius: 12,
-              overflow: 'hidden',
-            }}>
-              {g.opcoes.map((op: any, idx: number) => {
-                const ativo = op.id === idSel
-                let precoLabel = ''
-                if (g.tipo === 'sabor' && saborTemPrecoProprio && op.preco > 0) precoLabel = formatCurrency(op.preco)
-                else if (g.tipo === 'tamanho' && op.preco > 0) precoLabel = formatCurrency(op.preco)
-                // Pelo peso: cada tamanho mostra o preço calculado (preço base × peso)
-                else if (g.tipo === 'tamanho' && (g as any).modo_preco_tamanho === 'por_peso' && op.peso_kg && basePrice > 0) precoLabel = formatCurrency(Math.round(basePrice * op.peso_kg * 100) / 100)
-                else if ((op.adicional || 0) > 0) precoLabel = `+${formatCurrency(op.adicional)}`
-                const emFatias = (product as any)?.grupo_tamanhos?.rendimento_unidade === 'fatias'
-                const serveTxt = op.serve ? `${String(op.serve).trim()}${/^\d+$/.test(String(op.serve).trim()) ? (emFatias ? ' fatias' : ' pessoas') : ''}`.trim() : ''
-                const pesoTxt = op.peso_kg ? `${String(op.peso_kg).replace('.', ',')} kg` : ''
-                const tituloOp = pesoTxt ? `${op.nome} · ${pesoTxt}` : op.nome
-
-                return (
-                  <button
-                    type="button"
-                    key={op.id}
-                    onClick={() => { toggle(op.id); setShowTamanhoDropdown(false) }}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 12,
-                      padding: '14px 16px',
-                      background: ativo ? '#F0FDF4' : '#fff',
-                      border: 'none',
-                      borderTop: idx > 0 ? '1px solid #F5F0F2' : 'none',
-                      cursor: 'pointer', transition: 'background 0.12s',
-                      width: '100%', textAlign: 'left',
-                      fontFamily: 'inherit',
-                    }}
-                  >
-                    <span style={{
-                      width: 18, height: 18, borderRadius: '50%',
-                      border: `2px solid ${ativo ? '#16a34a' : '#C0C0C0'}`,
-                      background: ativo ? '#16a34a' : '#fff',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      flexShrink: 0,
-                      boxShadow: ativo ? `inset 0 0 0 3px #fff` : 'none',
-                    }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13.5, fontWeight: 700, color: '#2C1219', lineHeight: 1.2 }}>{tituloOp}</div>
-                      {serveTxt && (
-                        <div style={{ fontSize: 11, color: '#6B7280', marginTop: 2 }}>Serve {serveTxt}</div>
-                      )}
-                    </div>
-                    {precoLabel && (
-                      <span style={{ fontSize: 13.5, fontWeight: 800, color: '#C33A6E', flexShrink: 0 }}>{precoLabel}</span>
-                    )}
-                  </button>
-                )
-              })}
-            </div>
-            </div>
-            </div>,
-            document.body
-          )}
-
-          <style>{`
-            @keyframes sheetUp { from { transform: translateY(30px); opacity: 0; } to { transform: none; opacity: 1; } }
-            @keyframes dropIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
-            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-            @keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-          `}</style>
-        </div>
-      )
-    }
-
+    const emFatias = (product as any)?.grupo_tamanhos?.rendimento_unidade === 'fatias'
     return (
-      <div style={{ borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-          <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-title)' }}>
-            {g.nome_exibicao}
+      <section ref={el => { secoes.current[chave] = el }} className={`pm-g${falta ? ' falta' : ''}`}>
+        <header className="pm-g-cab">
+          <span><b>{titulo}</b><small>{falta ? `${regra} pra continuar` : regra}</small></span>
+          <span className="pm-g-dir">
+            {multi && max > 1 && <em>{qtdMarcada}/{max}</em>}
+            {obrig && (ok ? <i className="pm-ok" aria-label="Escolhido"><Check size={14} weight="bold" /></i> : <i className="pm-obr">Obrigatório</i>)}
           </span>
-          <span style={{
-            fontSize: '11px', color: g.min_selecionavel > 0 ? '#831843' : 'var(--text-muted)',
-            background: g.min_selecionavel > 0 ? '#FCE0E9' : 'var(--border)',
-            padding: '2px 8px', borderRadius: '50px', fontWeight: 700,
-          }}>
-            {hintObrigatoriedade}
-          </span>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        </header>
+        <div role={multi ? 'group' : 'radiogroup'} aria-label={titulo}>
           {g.opcoes.map((op: any) => {
-            const ativo = eh(op.id)
-            // Rótulo de preço/adicional na direita
-            let precoLabel = ''
-            if (g.tipo === 'sabor' && saborTemPrecoProprio && op.preco > 0) {
-              precoLabel = formatCurrency(op.preco)
-            } else if (g.tipo === 'tamanho' && op.preco > 0) {
-              precoLabel = formatCurrency(op.preco)
-            } else if ((op.adicional || 0) > 0) {
-              precoLabel = `+${formatCurrency(op.adicional)}`
-            }
-            const pesoLabel = (g.tipo === 'tamanho' && op.peso_kg) ? ` (~${op.peso_kg.toString().replace('.', ',')} kg)` : ''
-
+            const on = marcado(op.id)
+            let preco = ''
+            if (g.tipo === 'sabor' && saborTemPrecoProprio && op.preco > 0) preco = formatCurrency(op.preco)
+            else if (g.tipo === 'tamanho' && op.preco > 0) preco = formatCurrency(op.preco)
+            else if (g.tipo === 'tamanho' && (g as any).modo_preco_tamanho === 'por_peso' && op.peso_kg && basePrice > 0) preco = formatCurrency(Math.round(basePrice * op.peso_kg * 100) / 100)
+            else if ((op.adicional || 0) > 0) preco = `+ ${formatCurrency(op.adicional)}`
+            const peso = op.peso_kg ? `${String(op.peso_kg).replace('.', ',')} kg` : ''
+            const serve = op.serve ? (/^\d+$/.test(String(op.serve).trim()) ? (emFatias ? `${String(op.serve).trim()} fatias` : `Serve ${String(op.serve).trim()} pessoas`) : `Serve ${op.serve}`) : ''
+            const bloqueado = multi && !on && max > 1 && qtdMarcada >= max
             return (
-              <button
-                key={op.id}
-                onClick={() => toggle(op.id)}
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '10px 14px', borderRadius: '10px',
-                  border: `2px solid ${ativo ? corBotao : 'var(--border)'}`,
-                  background: ativo ? `${corBotao}15` : 'var(--bg-card)',
-                  cursor: 'pointer', transition: 'all 0.15s',
-                }}
-              >
-                <span style={{ fontSize: '14px', color: 'var(--text-primary)', fontWeight: 500, textAlign: 'left' }}>
-                  {op.nome}{pesoLabel}
+              <button key={op.id} type="button" className="pm-op" role={multi ? 'checkbox' : 'radio'} aria-checked={on} disabled={bloqueado} onClick={() => tocar(op.id)}>
+                <span className="pm-op-tx"><b>{peso && g.tipo === 'tamanho' ? `${op.nome} · ${peso}` : op.nome}</b>{serve && <small>{serve}</small>}</span>
+                {preco && <span className="pm-op-p">{preco}</span>}
+                <span className={`pm-ctl${multi ? ' cx' : ''}`} style={on ? { borderColor: corBotao, background: multi ? corBotao : '#fff' } : undefined} aria-hidden="true">
+                  {on && (multi ? <Check size={14} weight="bold" color="#fff" /> : <i style={{ background: corBotao }} />)}
                 </span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  {precoLabel && (
-                    <span style={{ fontSize: 13, fontWeight: 700, color: ativo ? corBotao : 'var(--text-secondary)' }}>
-                      {precoLabel}
-                    </span>
-                  )}
-                  <div style={{
-                    width: '18px', height: '18px',
-                    borderRadius: tipoEscolha === 'multi' ? '4px' : '50%',
-                    border: `2px solid ${ativo ? corBotao : '#d1d5db'}`,
-                    background: ativo ? corBotao : 'var(--bg-card)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-                  }}>
-                    {ativo && tipoEscolha === 'single' && (
-                      <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'white' }} />
-                    )}
-                    {ativo && tipoEscolha === 'multi' && (
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    )}
-                  </div>
-                </div>
               </button>
             )
           })}
         </div>
-      </div>
+      </section>
     )
   }
 
-  return (
-    <div style={{
-      position: 'fixed',
-      top: 0, left: 0, right: 0, bottom: 0,
-      zIndex: 9999,
-      background: 'rgba(45, 31, 38, 0.55)',
-      backdropFilter: 'blur(4px)',
-      WebkitBackdropFilter: 'blur(4px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: isDesktop ? '24px' : '16px',
-      paddingBottom: isDesktop ? '24px' : 'calc(16px + env(safe-area-inset-bottom, 0px))',
-      paddingTop: isDesktop ? '24px' : 'calc(16px + env(safe-area-inset-top, 0px))',
-      touchAction: 'none',
-      overscrollBehavior: 'contain',
-      animation: 'fadeIn 0.2s ease-out',
-    }}
-      onClick={onClose}
-    >
-      <div style={{
-        background: 'var(--bg-card)', width: '100%', maxWidth: '500px',
-        maxHeight: '100%',
-        height: 'auto',
-        borderRadius: '20px',
-        display: 'flex', flexDirection: 'column',
-        overflow: 'hidden',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-        animation: 'modalIn 0.25s cubic-bezier(0.32, 0.72, 0, 1)',
-      }}
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Header com foto — FIXO no topo. 02/10: com opções começa mais baixa e encolhe ao rolar */}
-        <div style={{ position: 'relative', height: `${alturaFoto}px`, minHeight: `${alturaFoto}px`, background: '#F5F3EF', overflow: 'hidden', flexShrink: 0, transition: 'height .08s linear, min-height .08s linear' }}>
-          {images[imgIndex] ? (
-            <img src={images[imgIndex]} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          ) : (
-            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#B4A9AE' }}>
-              Sem foto
-            </div>
-          )}
-          <button onClick={onClose} aria-label="Fechar" style={{
-            position: 'absolute', top: 12, right: 12,
-            width: 36, height: 36, borderRadius: '50%',
-            background: 'rgba(0,0,0,0.65)', color: '#fff',
-            border: 'none', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <X size={20} />
-          </button>
-          {/* Contador discreto quando tem múltiplas fotos */}
-          {images.length > 1 && (
-            <div style={{
-              position: 'absolute', bottom: 12, right: 12,
-              background: 'rgba(0,0,0,0.65)', color: '#fff',
-              padding: '4px 10px', borderRadius: 20,
-              fontSize: 11, fontWeight: 700,
-              backdropFilter: 'blur(8px)',
-            }}>
-              {imgIndex + 1} / {images.length}
-            </div>
-          )}
+  const corpo = (
+    <>
+      <div className="pm-info">
+        <h2>{nome}</h2>
+        {product.descricao && <p>{product.descricao}</p>}
+        <div className="pm-preco">
+          {!semTamanho && descPct > 0 && calculo.subtotal > valorTopo && <s>{formatCurrency(calculo.subtotal)}</s>}
+          <strong>{semTamanho && pMax > pMin ? `${formatCurrency(pMin)} a ${formatCurrency(pMax)}` : formatCurrency(semTamanho ? pMin : valorTopo)}</strong>
+          <em>{semTamanho ? 'conforme o tamanho' : kitCfg ? 'o kit' : gTamanho ? '' : unidadeCliente(product.forma_venda)}</em>
+        </div>
+        {selo?.tipo === 'encomenda' && (
+          <div className="pm-aviso"><CalendarBlank size={20} weight="bold" aria-hidden="true" /><span><b>Encomende com {selo.prazo} de antecedência</b><small>Você escolhe o dia ao finalizar o pedido.</small></span></div>
+        )}
+      </div>
+
+      {kitCfg && (
+        <section ref={el => { secoes.current['kit'] = el }} className={`pm-g${faltou === 'kit' ? ' falta' : ''}`}>
+          <header className="pm-g-cab"><span><b>Monte o seu kit</b><small>{faltou === 'kit' ? 'Complete o kit pra continuar' : 'Escolha quantos de cada sabor'}</small></span>
+            <span className="pm-g-dir">{kitInfo?.completo ? <i className="pm-ok"><Check size={14} weight="bold" /></i> : <i className="pm-obr">Obrigatório</i>}</span></header>
+          <div className="pm-kit"><KitPicker kit={kitCfg} sel={kitSel} onChange={setKitSel} desconto={descPct} /></div>
+        </section>
+      )}
+      {gTamanho && <Grupo chave="tamanho" g={gTamanho} multi={false} valor={escolhaTamanho} aoMudar={setEscolhaTamanho} />}
+      {gSabor && <Grupo chave="sabor" g={gSabor} multi={false} valor={escolhaSabor} aoMudar={setEscolhaSabor} />}
+      {gMassa && <Grupo chave="massa" g={gMassa} multi={false} valor={escolhaMassa} aoMudar={setEscolhaMassa} />}
+      {gRecheio && (
+        <Grupo chave="recheio" g={gRecheio} multi={gRecheio.max_selecionavel > 1}
+          valor={gRecheio.max_selecionavel > 1 ? escolhasRecheio : (escolhasRecheio[0] || null)}
+          aoMudar={(v: any) => setEscolhasRecheio(Array.isArray(v) ? v : (v ? [v] : []))} />
+      )}
+      {gCobertura && <Grupo chave="cobertura" g={gCobertura} multi={false} valor={escolhaCobertura} aoMudar={setEscolhaCobertura} />}
+
+      {extrasBiblioteca.length > 0 && (
+        <section className="pm-g">
+          <header className="pm-g-cab"><span><b>Adicionais</b><small>Escolha quantos quiser</small></span></header>
+          {extrasBiblioteca.map(e => {
+            const on = extrasMarcados.has(e.id)
+            const gratis = !e.valor || Number(e.valor) === 0
+            return (
+              <button key={e.id} type="button" className="pm-op" role="checkbox" aria-checked={on} onClick={() => toggleExtra(e.id)}>
+                <span className="pm-op-tx"><b>{e.nome}</b></span>
+                <span className={`pm-op-p${gratis ? ' gratis' : ''}`}>{gratis ? 'Grátis' : `+ ${formatCurrency(Number(e.valor))}`}</span>
+                <span className="pm-ctl cx" style={on ? { borderColor: corBotao, background: corBotao } : undefined} aria-hidden="true">{on && <Check size={14} weight="bold" color="#fff" />}</span>
+              </button>
+            )
+          })}
+        </section>
+      )}
+
+      {!onAdicionar && (
+        <section className="pm-g">
+          <header className="pm-g-cab"><span><b>Foto de referência</b><small>Mostre uma ideia do que você quer</small></span></header>
+          <label className="pm-foto">
+            {fotoRef ? <img src={fotoRef} alt="Foto de referência" /> : <span className="pm-foto-ic"><Camera size={20} weight="bold" /></span>}
+            <span className="pm-foto-tx"><b>{fotoRefUploading ? 'Carregando…' : fotoRef ? 'Foto anexada' : 'Enviar uma foto'}</b><small>{fotoRef ? 'Toque pra trocar' : 'Opcional'}</small></span>
+            {fotoRef && <button type="button" className="pm-foto-x" aria-label="Tirar a foto" onClick={ev => { ev.preventDefault(); ev.stopPropagation(); setFotoRef(null) }}><X size={18} weight="bold" /></button>}
+            <input type="file" accept="image/*" onChange={handleFotoRef} hidden />
+          </label>
+        </section>
+      )}
+
+      <section className="pm-g">
+        <header className="pm-g-cab"><span><b>Alguma observação?</b></span><span className="pm-g-dir"><em>{observations.length}/140</em></span></header>
+        <div className="pm-obs">
+          <textarea value={observations} maxLength={140} rows={3} aria-label="Alguma observação?"
+            placeholder={gTamanho || gMassa || gRecheio ? 'Ex.: escrever "Parabéns, Lia!" no bolo' : 'Ex.: deixar sem açúcar por cima'}
+            onChange={e => setObservations(e.target.value.slice(0, 140))} />
+        </div>
+      </section>
+    </>
+  )
+
+  const pe = (
+    <footer className="pm-pe">
+      {!semQuantidade && (
+        <div className="pm-qtd">
+          <button type="button" aria-label="Diminuir" disabled={quantity <= minimo} onClick={() => setQuantity(q => Math.max(minimo, Math.round((q - passo) * 10) / 10))}><Minus size={20} weight="bold" /></button>
+          <b aria-live="polite">{qtdTexto}</b>
+          <button type="button" aria-label="Aumentar" style={{ color: corBotao }} disabled={quantity >= 50} onClick={() => setQuantity(q => Math.min(50, Math.round((q + passo) * 10) / 10))}><Plus size={20} weight="bold" /></button>
+        </div>
+      )}
+      <button type="button" className={`pm-add${faltou ? ' treme' : ''}`} style={{ background: corBotao }} onClick={tentarAdicionar}>
+        <span>{rotuloAdicionar || 'Adicionar'}</span><strong>{formatCurrency(totalDisplay)}</strong>
+      </button>
+    </footer>
+  )
+
+  const aoRolar = (e: React.UIEvent<HTMLDivElement>) => {
+    const alto = (e.currentTarget.querySelector('.pm-ft') as HTMLElement | null)?.offsetHeight || 0
+    setBarra(e.currentTarget.scrollTop > Math.max(0, alto - 64))
+  }
+  const aoArrastarFoto = (e: React.UIEvent<HTMLDivElement>) => {
+    const tr = e.currentTarget
+    const i = Math.round(tr.scrollLeft / Math.max(1, tr.clientWidth))
+    if (i !== imgIndex) setImgIndex(i)
+  }
+  const pausar = () => { pausaAte.current = Date.now() + 8000 }
+
+  return createPortal(
+    <div className="pm-veu" onClick={onClose}>
+      <div ref={caixaRef} tabIndex={-1} className={`pm${images.length ? '' : ' pm--sem-foto'}`} role="dialog" aria-modal="true" aria-label={nome} onClick={e => e.stopPropagation()}>
+        {/* celular: barra que aparece ao rolar · computador: topo com o nome */}
+        <div className={`pm-barra${barra ? ' on' : ''}`}>
+          <button type="button" className="pm-bt" aria-label="Voltar" onClick={onClose}><ArrowLeft size={22} weight="bold" /></button>
+          <b>{nome}</b>
+          <button type="button" className="pm-bt pm-bt-x" aria-label="Fechar" onClick={onClose}><X size={22} weight="bold" /></button>
         </div>
 
-        {/* Miniaturas — só aparece se tem mais de 1 foto (PRO) */}
-        {images.length > 1 && (
-          <div style={{
-            display: 'flex', gap: 6, padding: '10px 16px 0',
-            overflowX: 'auto', scrollbarWidth: 'none',
-          }}>
-            {images.map((img, i) => (
-              <button
-                key={i}
-                onClick={() => setImgIndex(i)}
-                style={{
-                  width: 56, height: 56, borderRadius: 8,
-                  flexShrink: 0, overflow: 'hidden',
-                  border: `2px solid ${i === imgIndex ? corBotao : 'transparent'}`,
-                  background: '#F5F3EF', padding: 0, cursor: 'pointer',
-                  opacity: i === imgIndex ? 1 : 0.65,
-                  transition: 'opacity 0.15s, border-color 0.15s',
-                }}
-                onMouseEnter={e => { if (i !== imgIndex) e.currentTarget.style.opacity = '1' }}
-                onMouseLeave={e => { if (i !== imgIndex) e.currentTarget.style.opacity = '0.65' }}
-              >
-                <img
-                  src={img}
-                  alt={`${product.nome} — foto ${i + 1}`}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
-              </button>
-            ))}
+        {images.length > 0 && (
+          <div className="pm-lado">
+            <div className="pm-ft-pc">
+              {images.map((src, i) => <img key={src + i} src={src} alt={i === imgIndex ? nome : ''} className={i === imgIndex ? 'on' : ''} />)}
+            </div>
+            {images.length > 1 && (
+              <div className="pm-mini">
+                {images.map((src, i) => (
+                  <button key={src + i} type="button" aria-label={`Foto ${i + 1}`} aria-pressed={i === imgIndex} style={i === imgIndex ? { borderColor: corBotao } : undefined}
+                    onClick={() => { pausar(); setImgIndex(i) }}><img src={src} alt="" /></button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
-        {/* Nome + descrição — corpo scrollável */}
-        <div onScroll={e => setRolagem((e.currentTarget as HTMLDivElement).scrollTop)} style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 14, flex: 1, overflowY: 'auto', minHeight: 0, overscrollBehavior: 'contain', touchAction: 'pan-y' }}>
-          <div>
-            <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#2C1219', margin: 0, textAlign: 'center', lineHeight: 1.15, letterSpacing: '-0.01em' }}>{product.nome}</h2>
-            {product.descricao && (
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '6px 0 0', lineHeight: 1.4 }}>
-                {product.descricao}
-              </p>
-            )}
-          </div>
-
-          {/* Preço em destaque */}
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '10px 14px', background: '#FDF3F7', borderRadius: 10, border: '1px solid #FCE0E9',
-          }}>
-            {(() => {
-              // Com tamanhos e nenhum escolhido ainda: mostra o menor preço ("A partir de")
-              const semTamanho = !!gTamanho && !opTamanho && !kitInfo
-              const valor = semTamanho ? Math.round(precoCardapio(product).valor * (1 - descPct) * 100) / 100 : calculo.final
-              // 02/10: sem o "A partir de" — antes de escolher, mostra a faixa de preço dos tamanhos
-              const precosTam = semTamanho ? (gTamanho!.opcoes || []).map((o: any) => {
-                const modo = (gTamanho as any)?.modo_preco_tamanho || 'preco_fixo'
-                const v = modo === 'por_peso' ? basePrice * (Number(o.peso_kg) || 0) : (Number(o.preco) || 0)
-                return Math.round(v * (1 - descPct) * 100) / 100
-              }).filter((v: number) => v > 0) : []
-              const pMin = precosTam.length ? Math.min(...precosTam) : valor, pMax = precosTam.length ? Math.max(...precosTam) : valor
-              return (
-                <>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#6B5D64' }}>{semTamanho ? 'Preço por tamanho' : kitCfg ? 'Preço do kit' : rotuloPrecoVenda(product.forma_venda)}</span>
-                  <span style={{ fontSize: semTamanho && pMax > pMin ? 16 : 18, fontWeight: 800, color: corBotao, textAlign: 'right' }}>
-                    {!semTamanho && descPct > 0 && calculo.subtotal > valor && <s style={{ fontSize: 13, fontWeight: 600, color: '#9A8E94', marginRight: 6 }}>{formatCurrency(calculo.subtotal)}</s>}
-                    {semTamanho ? (pMax > pMin ? `${formatCurrency(pMin)} a ${formatCurrency(pMax)}` : formatCurrency(pMin)) : formatCurrency(valor)} {!semTamanho && <span style={{ fontSize: 12, color: '#6B5D64', fontWeight: 700 }}>/{kitCfg ? 'kit' : sufixoVenda(product.forma_venda)}</span>}
-                  </span>
-                </>
-              )
-            })()}
-          </div>
-
-          {/* Encomenda: avisa a antecedência (pronta entrega não precisa de aviso) */}
-          <AvisoAntecedencia produto={product} />
-
-          {/* Kit por quantidade: o cliente monta o kit */}
-          {kitCfg && <KitPicker kit={kitCfg} sel={kitSel} onChange={setKitSel} desconto={descPct} />}
-
-          {/* Grupos V3 (renderiza os ativos) */}
-          {gTamanho && (
-            <RenderGrupo g={gTamanho} tipoEscolha="single" valorAtual={escolhaTamanho} onChange={setEscolhaTamanho} useDropdown />
-          )}
-          {gSabor && (
-            <RenderGrupo g={gSabor} tipoEscolha="single" valorAtual={escolhaSabor} onChange={setEscolhaSabor} />
-          )}
-          {gMassa && (
-            <RenderGrupo g={gMassa} tipoEscolha="single" valorAtual={escolhaMassa} onChange={setEscolhaMassa} />
-          )}
-          {gRecheio && (
-            <RenderGrupo
-              g={gRecheio}
-              tipoEscolha={gRecheio.max_selecionavel > 1 ? 'multi' : 'single'}
-              valorAtual={gRecheio.max_selecionavel > 1 ? escolhasRecheio : (escolhasRecheio[0] || null)}
-              onChange={(v: any) => {
-                if (Array.isArray(v)) setEscolhasRecheio(v)
-                else setEscolhasRecheio(v ? [v] : [])
-              }}
-            />
-          )}
-          {gCobertura && (
-            <RenderGrupo g={gCobertura} tipoEscolha="single" valorAtual={escolhaCobertura} onChange={setEscolhaCobertura} />
-          )}
-
-          {/* ═══ Personalizações da biblioteca (aba /complementos) ═══ */}
-          {extrasBiblioteca.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: '#2C1219', letterSpacing: '-0.01em' }}>
-                Adicionais
-              </div>
-              {extrasBiblioteca.map(e => {
-                const marcado = extrasMarcados.has(e.id)
-                const isGratis = !e.valor || e.valor === 0
-                return (
-                  <button
-                    type="button"
-                    key={e.id}
-                    onClick={() => toggleExtra(e.id)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 12,
-                      padding: '12px 14px',
-                      background: marcado ? '#FFF5F9' : '#fff',
-                      border: `1.5px solid ${marcado ? corBotao : '#F0EBED'}`,
-                      borderRadius: 10, cursor: 'pointer',
-                      fontFamily: 'inherit', textAlign: 'left', width: '100%',
-                    }}
-                  >
-                    <div style={{
-                      width: 22, height: 22, borderRadius: 5,
-                      border: `2px solid ${marcado ? corBotao : '#D1D5DB'}`,
-                      background: marcado ? corBotao : '#fff',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                    }}>
-                      {marcado && (
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                      )}
-                    </div>
-                    <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: '#2C1219' }}>{e.nome}</span>
-                    <span style={{
-                      fontSize: 12.5, fontWeight: 800,
-                      color: isGratis ? '#16a34a' : '#C33A6E',
-                    }}>
-                      {isGratis ? 'Grátis' : `+ ${formatCurrency(e.valor)}`}
-                    </span>
-                  </button>
-                )
-              })}
-
-              {/* Upload de foto de referência (opcional) */}
-              <label style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                padding: '12px 14px',
-                background: fotoRef ? '#FFF5F9' : '#FEFCFD',
-                border: `1.5px dashed ${fotoRef ? corBotao : '#F0D8DE'}`,
-                borderRadius: 10, cursor: 'pointer',
-              }}>
-                {fotoRef ? (
-                  <img src={fotoRef} alt="Referência" style={{ width: 44, height: 44, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
-                ) : (
-                  <div style={{
-                    width: 36, height: 36, borderRadius: 6,
-                    background: '#FCE0E9', color: '#C33A6E',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                  }}>
-                    <Camera size={20} />
-                  </div>
-                )}
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#2C1219' }}>
-                    {fotoRefUploading ? 'Carregando...' : fotoRef ? 'Foto anexada' : 'Enviar foto de referência'}
-                  </div>
-                  <div style={{ fontSize: 11, color: '#6B7280', marginTop: 2 }}>
-                    {fotoRef ? 'Toque pra trocar' : 'Opcional — envie uma imagem pra inspirar'}
-                  </div>
+        <div className="pm-dir">
+          <div ref={roloRef} className="pm-rolo" onScroll={aoRolar}>
+            {images.length > 0 && (
+              <div className="pm-ft">
+                <div ref={trilhoRef} className="pm-ft-trilho" onScroll={aoArrastarFoto} onTouchStart={pausar} onPointerDown={pausar}>
+                  {images.map((src, i) => <img key={src + i} src={src} alt={i === 0 ? nome : ''} />)}
                 </div>
-                {fotoRef && (
-                  <button
-                    type="button"
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setFotoRef(null); }}
-                    style={{
-                      width: 26, height: 26, borderRadius: '50%', border: 'none',
-                      background: '#F5F0F2', color: '#6B7280', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                    }}
-                    aria-label="Remover foto"
-                  >
-                    <X size={14} />
-                  </button>
-                )}
-                <input type="file" accept="image/*" onChange={handleFotoRef} style={{ display: 'none' }} />
-              </label>
-            </div>
-          )}
-        </div>{/* fim body scrollável */}
-
-        {/* Footer fixo — Botão adicionar sempre visível */}
-        <div style={{ padding: '12px 16px 16px', background: 'var(--bg-card)', flexShrink: 0 }}>
-          <button
-            onClick={handleAdd}
-            disabled={!podeAdicionar}
-            style={{
-              width: '100%',
-              padding: '14px', borderRadius: 10, border: 'none', cursor: podeAdicionar ? 'pointer' : 'not-allowed',
-              background: podeAdicionar ? '#2C1219' : '#E5D8DE', color: '#fff',
-              fontSize: 14, fontWeight: 700, fontFamily: 'inherit',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              transition: 'background 0.15s',
-            }}
-          >
-            <span>
-              {podeAdicionar ? (rotuloAdicionar || 'Adicionar ao carrinho') : 'Escolha as opções obrigatórias'}
-            </span>
-            {podeAdicionar && <span>{formatCurrency(totalDisplay)}</span>}
-          </button>
+                <button type="button" className="pm-voltar" aria-label="Voltar" onClick={onClose}><ArrowLeft size={22} weight="bold" /></button>
+                {images.length > 1 && (<>
+                  <span className="pm-ft-n">{imgIndex + 1}/{images.length}</span>
+                  <span className="pm-ft-pts" aria-hidden="true">{images.map((_, i) => <i key={i} className={i === imgIndex ? 'on' : ''} />)}</span>
+                </>)}
+              </div>
+            )}
+            {!images.length && <div className="pm-espaco" />}
+            {corpo}
+          </div>
+          {pe}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
