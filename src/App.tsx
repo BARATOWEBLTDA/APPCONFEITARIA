@@ -14,7 +14,7 @@ import Privacidade from "@/pages/Privacidade";
 import Layout from "@/components/Layout";
 import Pedidos from "@/pages/Pedidos";
 import { useParams } from "react-router-dom";
-function PedidoVerRedirect() { const { id } = useParams(); return <Navigate to={`/pedidos?ver=${id}`} replace />; }
+function PedidoVerRedirect() { const { id } = useParams(); return <Navigate to={`/pedidos/${id}/editar`} replace />; }
 import EditarPedido from "@/pages/EditarPedido";
 import NovaVenda from "@/pages/NovaVenda";
 import Inicio from "@/pages/Inicio";

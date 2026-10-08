@@ -218,7 +218,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
             const quando = new Date(p.created_at); const hoje = new Date();
             const q = quando.toDateString() === hoje.toDateString() ? `hoje ${quando.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}` : quando.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
             return (
-              <button type="button" className="vgd-pe" key={p.id} onClick={() => navigate(`/pedidos?ver=${p.id}`)}>
+              <button type="button" className="vgd-pe" key={p.id} onClick={() => navigate(`/pedidos/${p.id}/editar`)}>
                 <span className="vgd-pa">{String(p.cliente_nome || "C").trim().charAt(0).toUpperCase()}</span>
                 <span className="vgd-pt"><b>{p.cliente_nome || "Cliente"}</b><small>{itens || `Pedido #${p.numero || ""}`}</small></span>
                 <span className={`vgd-pill ${cor}`}>{st}</span>
