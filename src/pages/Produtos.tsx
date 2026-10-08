@@ -3429,7 +3429,7 @@ export default function Produtos() {
   // activeTab segue a URL: /produtos/categorias → "categorias", senão "produtos"
   const activeTab: "produtos" | "categorias" = location.pathname.startsWith("/produtos/categorias") ? "categorias" : "produtos";
   const setActiveTab = (tab: "produtos" | "categorias") => {
-    navigate(tab === "categorias" ? "/produtos/categorias" : "/produtos");
+    navigate(tab === "categorias" ? "/categorias" : "/produtos"); // 3.23: Categorias é uma tela só
   };
   const [userId, setUserId] = useState("");
   const [primeiroNome, setPrimeiroNome] = useState<string>("");

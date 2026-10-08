@@ -229,7 +229,7 @@ export default function App() {
           <Route path="/conquistas" element={<Conquistas />} />
           <Route path="/minha-assinatura" element={<MinhaAssinatura />} />
           <Route path="/produtos" element={<Produtos />} />
-          <Route path="/produtos/categorias" element={<Produtos />} />
+          <Route path="/produtos/categorias" element={<Navigate to="/categorias" replace />} />
           <Route path="/categorias" element={<Categorias />} />
           <Route path="/pedidos" element={<Pedidos />} />
           <Route path="/pedidos/novo" element={<Navigate to="/vendas/novo" replace />} />

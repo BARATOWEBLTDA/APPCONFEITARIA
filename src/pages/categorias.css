@@ -1,0 +1,55 @@
+/* Categorias (08/10 · 3.23, no padrão do guia) */
+.ct { max-width: 760px; margin: 0 auto; padding: 16px 8px 112px; font-family: var(--font-base); color: var(--ui-texto); text-align: left; }
+.ct > .ui-tit { margin-bottom: 12px; }
+.ct-g { display: none; }
+@media (min-width: 768px) { .ct-g { display: inline; } .ct-c { display: none; } }
+
+/* abas Produtos | Categorias (celular e tablet; no computador quem troca é o menu do lado) */
+.ct-abas { display: flex; gap: 4px; margin-bottom: 16px; padding: 4px; border-radius: var(--ui-raio-cartao); background: var(--ui-cinza); }
+.ct-abas button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; margin: 0; padding: 0 8px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto-2); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+.ct-abas button[aria-selected="true"] { background: var(--ui-branco); color: var(--ui-rosa-escuro); font-weight: 800; box-shadow: var(--ui-sombra-cartao); }
+@media (min-width: 900px) { .ct > .ct-abas { display: none; } }
+.ct-abas--janela { margin-bottom: 12px; }
+
+.ct-carregando { display: flex; justify-content: center; padding: 48px 0; color: var(--ui-rosa); }
+.ct-carregando .ui-gira { width: 28px; height: 28px; }
+
+/* lista */
+.ct-card { padding: 4px 4px 4px 8px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
+.ct-row { display: flex; align-items: center; gap: 4px; }
+.ct-row + .ct-row { border-top: 1px solid var(--ui-linha); }
+.ct-row-b { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 64px; margin: 0; padding: 8px 4px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; }
+@media (hover: hover) { .ct-row-b:hover { background: var(--ui-linha); } }
+.ct-row-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ct-row-tx b { font-size: 15px; font-weight: 700; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ct-row-tx small { font-size: 13px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
+.ct-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); overflow: hidden; }
+.ct-ic img { width: 38px; height: 38px; object-fit: contain; }
+.ct-ic.g { width: 72px; height: 72px; border-radius: var(--ui-raio-cartao); }
+.ct-ic.g img { width: 56px; height: 56px; }
+.ct-dica { display: flex; align-items: flex-start; gap: 8px; margin: 12px 4px 0; font-size: 13.5px; line-height: 1.45; color: var(--ui-texto-2); }
+.ct-dica svg { flex: none; color: var(--ui-texto-3); }
+
+/* menu da categoria */
+.ct-menu { display: flex; flex-direction: column; margin: 0 -8px; }
+.ct-menu button { display: flex; align-items: center; gap: 12px; min-height: 52px; margin: 0; padding: 0 12px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 600; text-align: left; cursor: pointer; }
+.ct-menu button svg { color: var(--ui-texto-2); }
+@media (hover: hover) { .ct-menu button:not(:disabled):hover { background: var(--ui-linha); } }
+.ct-menu button:disabled, .ct-menu button:disabled svg { color: var(--ui-texto-3); cursor: default; }
+.ct-menu button.perigo, .ct-menu button.perigo svg { color: var(--ui-vermelho); }
+.ct-menu button + button { border-top: 1px solid var(--ui-linha); border-radius: 0; }
+
+/* nova / editar */
+.ct-form { display: flex; flex-direction: column; gap: 16px; }
+.ct-aviso-nome { margin: -8px 0 0; font-size: 13px; color: var(--ui-texto-2); }
+.ct-esc { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.ct-esc b { display: block; font-size: 15px; font-weight: 700; }
+.ct-esc small { display: block; font-size: 13px; color: var(--ui-texto-2); }
+.ct-esc .ui-bt { margin: -6px 0; padding: 0; min-height: 44px; color: var(--ui-vermelho); }
+.ct-up { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 100%; min-height: 120px; margin: 0; border: 1.5px dashed var(--ui-borda-campo); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); color: var(--ui-rosa-escuro); font-family: inherit; cursor: pointer; }
+.ct-up b { font-size: 15px; font-weight: 800; }
+.ct-up small { font-size: 13px; color: var(--ui-texto-2); }
+.ct-gal { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 8px; max-height: 248px; overflow-y: auto; padding: 2px; }
+.ct-gal button { display: flex; align-items: center; justify-content: center; aspect-ratio: 1; min-height: 52px; margin: 0; padding: 6px; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); cursor: pointer; }
+.ct-gal button[aria-pressed="true"] { border: 2px solid var(--ui-rosa); background: var(--ui-rosa-claro); }
+.ct-gal img { width: 100%; height: 100%; object-fit: contain; }
