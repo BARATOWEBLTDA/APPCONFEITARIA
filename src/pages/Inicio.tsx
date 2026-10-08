@@ -1,6 +1,7 @@
 // Build marker: 2026-09-05T11:00 — mobile hero: fonte menor, PRO achatado, texto centralizado
 import PrimeirosPassos from "@/components/PrimeirosPassos";
 import { STATUS_AINDA_NAO_PRONTO, dataISO } from "@/lib/pedidoStatus";
+import { entradasNoPeriodo } from "@/lib/painelFinanceiro";
 import ConquistasCard from "@/components/ConquistasCard";
 import SeuDia from "@/components/inicio/SeuDia";
 import { TelaVazia, informar } from "@/components/base";
@@ -41,7 +42,7 @@ const STATUS_ATIVOS = ["aguardando_pagamento", "aguardando_aceite", "novo", "pen
  *  - Ações rápidas (compartilhar cardápio, novo pedido)
  *  - Atenção hoje (4 alertas acionáveis)
  *  - Resumo da semana (vendas, pedidos, variação %)
- *  - Gráfico de faturamento real dos últimos 30 dias
+ *  - Gráfico do que entrou no caixa nos últimos 30 dias
  */
 export default function Inicio() {
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ export default function Inicio() {
     pedidosPendentes: 0,
     entregasHoje: 0,
     aniversariantes: 0,
-    faturamentoMes: 0,
+    recebidoMes: 0,
     pedidosAtrasados: 0,
   });
   const [proximaEntregaHoje, setProximaEntregaHoje] = useState<{ cliente: string; hora: string; produto: string | null } | null>(null);
@@ -332,8 +333,7 @@ export default function Inicio() {
         clientesRes,
         pedidosSemanaRes,
         pedidosSemanaAntRes,
-        pedidos30dRes,
-        pedidosMesRes,
+        entradasRes,
         proximasEntregasRes,
         pedidosAtrasadosRes,
         proximaEntregaHojeRes,
@@ -372,20 +372,9 @@ export default function Inicio() {
           .gte("created_at", inicio14d.toISOString())
           .lt("created_at", inicio7d.toISOString())
           .neq("status", "cancelado"),
-        // Pedidos dos últimos 30 dias — pro gráfico
-        supabase
-          .from("pedidos")
-          .select("created_at, valor_total")
-          .eq("user_id", userId)
-          .gte("created_at", inicio30d.toISOString())
-          .neq("status", "cancelado"),
-        // Faturamento do mês atual
-        supabase
-          .from("pedidos")
-          .select("valor_total")
-          .eq("user_id", userId)
-          .gte("created_at", inicioMes.toISOString())
-          .neq("status", "cancelado"),
+        // O que entrou no caixa (07/10 · 3.08): a mesma regra do "Recebido no mês" do Financeiro. Uma busca só serve
+        // o número do mês e o gráfico de 30 dias; por isso começa no dia mais antigo dos dois.
+        entradasNoPeriodo(userId, dataISO(inicio30d < inicioMes ? inicio30d : inicioMes), hojeISO),
         // Próximas entregas (a partir de hoje, ordenadas por data)
         supabase
           .from("pedidos")
@@ -424,18 +413,18 @@ export default function Inicio() {
       const vendasAnt = (pedidosSemanaAntRes.data || [])
         .reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0);
 
-      // Gráfico 30 dias — agrupado por dia
-      const chart = construirChart30d(pedidos30dRes.data || []);
+      // Gráfico 30 dias — o que entrou em cada dia
+      const chart = construirChart30d(entradasRes.itens);
 
-      // Faturamento do mês atual
-      const faturamentoMes = (pedidosMesRes.data || [])
-        .reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0);
+      // Recebido no mês: do dia 1 até hoje (igual ao Financeiro)
+      const inicioMesISO = dataISO(inicioMes);
+      const recebidoMes = Math.round(entradasRes.itens.filter(e => e.data >= inicioMesISO).reduce((s, e) => s + e.valor, 0) * 100) / 100;
 
       setCounts({
         pedidosPendentes: pedidosPendentesRes.count || 0,
         entregasHoje: entregasHojeRes.count || 0,
         aniversariantes: aniversariantes.length,
-        faturamentoMes,
+        recebidoMes,
         pedidosAtrasados: pedidosAtrasadosRes.count || 0,
       });
       const proxHoje = proximaEntregaHojeRes.data?.[0];
@@ -458,7 +447,7 @@ export default function Inicio() {
         }))
       );
       // o Supabase não lança erro: ele devolve. Sem isso a tela ficava zerada, como se não houvesse pedido nenhum
-      if (entregasHojeRes.error || proximasEntregasRes.error || pedidosAtrasadosRes.error) setErroCarga(true);
+      if (entregasHojeRes.error || proximasEntregasRes.error || pedidosAtrasadosRes.error || entradasRes.erro) setErroCarga(true);
     } catch (err) {
       console.error("Erro ao carregar dados do início:", err);
       setErroCarga(true);
@@ -483,15 +472,11 @@ export default function Inicio() {
       .sort((a, b) => a.dias - b.dias);
   };
 
-  /** Constrói série diária dos últimos 30 dias somando valor_total dos pedidos. */
-  const construirChart30d = (pedidos: any[]): ChartPoint[] => {
+  /** Série diária dos últimos 30 dias: quanto entrou no caixa em cada dia. */
+  const construirChart30d = (entradas: { valor: number; data: string }[]): ChartPoint[] => {
     const hoje = new Date();
     const mapa: Record<string, number> = {};
-    pedidos.forEach((p: any) => {
-      if (!p.created_at) return;
-      const dia = dataISO(new Date(p.created_at)); // o dia em que o pedido entrou, no horário do Brasil
-      mapa[dia] = (mapa[dia] || 0) + (Number(p.valor_total) || 0);
-    });
+    entradas.forEach(e => { mapa[e.data] = (mapa[e.data] || 0) + e.valor; });
     const result: ChartPoint[] = [];
     for (let i = 29; i >= 0; i--) {
       const d = new Date(hoje);
@@ -664,8 +649,9 @@ export default function Inicio() {
             </div>
             <div className="ini-dk-kpis">
               <div className="ini-dk-kpi ini-dk-kpi--dest">
-                <div className="ini-dk-kh"><span><CurrencyDollar size={20} weight="bold" /></span>Faturamento do mês</div>
-                <b>{loading ? "—" : formatCurrency(counts.faturamentoMes)}</b><small>Acompanhe sua evolução</small>
+                <div className="ini-dk-kh"><span><CurrencyDollar size={20} weight="bold" /></span>Recebido no mês</div>
+                {/* sem centavos, igual ao Financeiro mostra: os dois lugares têm que exibir o mesmo número */}
+                <b>{loading ? "—" : counts.recebidoMes.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}</b><small>dinheiro que entrou</small>
               </div>
               <div className="ini-dk-kpi">
                 <div className="ini-dk-kh"><span><Receipt size={20} weight="bold" /></span>Pedidos na semana</div>
@@ -747,10 +733,10 @@ export default function Inicio() {
         </div>
       </section>
 
-      {/* ── Faturamento 30 dias (dados REAIS) ── */}
+      {/* ── Recebido nos últimos 30 dias (o que entrou no caixa, igual ao Financeiro) ── */}
       <section className="ini-section ini-section--chart">
         <div className="ini-chart-header">
-          <h2 className="ini-section-title">Faturamento (30 dias)</h2>
+          <h2 className="ini-section-title">Recebido (30 dias)</h2>
         </div>
         <div className="ini-chart-card">
           {(() => {
@@ -764,14 +750,14 @@ export default function Inicio() {
                     <YAxis width={72} tick={{ fontSize: 12.5, fill: "var(--ui-texto-2)" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `R$ ${Number(v).toLocaleString("pt-BR")}`} />
                     <Tooltip
                       contentStyle={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 12, fontSize: 13.5, fontFamily: "Geist,sans-serif" }}
-                      formatter={(v: any) => [formatCurrency(Number(v)), "Faturamento"]}
+                      formatter={(v: any) => [formatCurrency(Number(v)), "Recebido"]}
                     />
                     <Line type="monotone" dataKey="valor" stroke="var(--text-title)" strokeWidth={2.5} dot={false} activeDot={{ r: 4, fill: "var(--text-title)" }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
             ) : (
-              <TelaVazia compacta icone={<ChartLineUp size={30} />} titulo="Sem faturamento ainda" texto="O gráfico aparece aqui quando sair o primeiro pedido." />
+              <TelaVazia compacta icone={<ChartLineUp size={30} />} titulo="Nada recebido ainda" texto="O gráfico aparece aqui quando entrar o primeiro pagamento." />
             );
           })()}
         </div>

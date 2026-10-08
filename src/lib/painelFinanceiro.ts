@@ -23,6 +23,36 @@ const r2 = (v: number) => Math.round((Number(v) || 0) * 100) / 100;
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 export const ehInsumo = (cat?: string | null) => /insumo|ingrediente|mat[eé]ria/i.test(cat || "");
 
+/**
+ * O que entrou no caixa entre dois dias (AAAA-MM-DD), com a MESMA regra do "Recebido no mês" do painel (carregarMes, logo abaixo):
+ * pagamentos pela data do recebimento (sem os estornados) + entradas avulsas do financeiro (sem as estornadas).
+ * Devolve cada entrada com o seu dia, pra somar um total ou montar um gráfico por dia.
+ * (07/10 · 3.08) Feita pro Início: lá o "Faturamento do mês" somava os pedidos CRIADOS no mês e não batia com o Financeiro.
+ * Se mudar a regra do recebido em carregarMes, mude aqui também.
+ */
+export async function entradasNoPeriodo(uid: string, ini: string, ate: string): Promise<{ itens: { valor: number; data: string }[]; erro: boolean }> {
+  const [pag, fin0] = await Promise.all([
+    supabase.from("pagamentos").select("valor, recebido_em").eq("user_id", uid).is("estornado_em", null).gte("recebido_em", ini).lte("recebido_em", ate),
+    supabase.from("financeiro").select("tipo, valor, data, estornado_em").eq("user_id", uid).gte("data", ini).lte("data", ate),
+  ]);
+  const fin: any = fin0.error ? await supabase.from("financeiro").select("tipo, valor, data").eq("user_id", uid).gte("data", ini).lte("data", ate) : fin0;
+  let itens: { valor: number; data: string }[] = [];
+  let erro = false;
+  if (!pag.error) {
+    itens = ((pag.data as any[]) || []).map(g => ({ valor: r2(g.valor), data: String(g.recebido_em).slice(0, 10) }));
+  } else {
+    // sem a tabela de pagamentos: regra antiga, pelo dia da entrega (igual ao painel)
+    const { data: peds, error } = await supabase.from("pedidos").select("valor_total, valor_recebido, status, status_pagamento, data_entrega")
+      .eq("user_id", uid).gte("data_entrega", ini).lte("data_entrega", ate);
+    if (error) erro = true;
+    itens = ((peds as any[]) || []).map(p => ({ valor: r2(valorRecebidoPedido(p)), data: String(p.data_entrega).slice(0, 10) })).filter(x => x.valor > 0);
+  }
+  if (fin.error) erro = true;
+  const avulsas = ((fin.data as any[]) || []).filter(l => !l.estornado_em && l.tipo === "entrada")
+    .map(l => ({ valor: r2(l.valor), data: String(l.data).slice(0, 10) }));
+  return { itens: [...itens, ...avulsas], erro };
+}
+
 /** Custo dos ingredientes de 1 unidade de cada produto, pela ficha técnica (com conversão de unidades). */
 export async function custoPorProduto(produtoIds: string[]): Promise<Record<string, number>> {
   const out: Record<string, number> = {};
