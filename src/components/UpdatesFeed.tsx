@@ -53,30 +53,28 @@ export default function UpdatesFeed() {
 
   if (loading) return null;
 
-  const header = (
-    <div className="uf-header">
-      <h2>Notícias</h2>
-      <button type="button" className="uf-ver-todas" onClick={() => navigate("/noticias")}>
-        Ver todas <CaretRight size={16} weight="bold" aria-hidden="true" />
-      </button>
-    </div>
-  );
+  // (07/10 · 3.09) Sem notícia, o cartão fica numa frase só (antes era um bloco grande vazio) e some o "Ver todas".
+  // Notícia sem imagem mostra um ícone desenhado, não o emoji.
+  const vazio = noticias.length === 0;
 
   return (
-    <div className="uf-root">
-      {header}
-      {noticias.length === 0 ? (
-        <div className="uf-empty">
-          <div className="uf-empty-ic"><Newspaper size={30} weight="regular" /></div>
-          <p className="uf-empty-t">Sem notícias por aqui ainda</p>
-          <p className="uf-empty-d">Em breve traremos dicas, novidades e tutoriais pra te ajudar a vender mais.</p>
-        </div>
+    <div className={`uf-root${vazio ? " uf-root--vazio" : ""}`}>
+      <div className="uf-header">
+        <h2>Notícias</h2>
+        {!vazio && (
+          <button type="button" className="uf-ver-todas" onClick={() => navigate("/noticias")}>
+            Ver todas <CaretRight size={16} weight="bold" aria-hidden="true" />
+          </button>
+        )}
+      </div>
+      {vazio ? (
+        <p className="uf-nada">Nenhuma notícia por enquanto. As dicas e novidades do Doonly aparecem aqui.</p>
       ) : (
         <div className="uf-list">
           {noticias.map((n) => (
             <button key={n.id} type="button" className="uf-item" onClick={() => navigate(`/noticias/${n.slug}`)}>
-              <div className="uf-capa" style={n.icone_url ? { backgroundImage: `url(${n.icone_url})` } : undefined}>
-                {!n.icone_url && <span className="uf-capa-emoji">{n.emoji}</span>}
+              <div className="uf-capa" style={n.icone_url ? { backgroundImage: `url(${n.icone_url})` } : undefined} aria-hidden="true">
+                {!n.icone_url && <Newspaper size={24} weight="bold" />}
               </div>
               <div className="uf-body">
                 {n.categoria && <span className="uf-cat">{n.categoria}</span>}
@@ -91,26 +89,23 @@ export default function UpdatesFeed() {
       <style>{`
         /* (07/10 · 3.05) no padrão do guia: letras de 12,5px pra cima, "Ver todas" com toque de 44px, cores pelo themes.css */
         .uf-root { overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); font-family: var(--font-base); }
-        .uf-header { display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 16px; border-bottom: 1px solid var(--ui-linha); }
+        .uf-header { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 6px 8px 2px 16px; }
+        .uf-root--vazio { padding-bottom: 16px; }
+        .uf-nada { margin: 0; padding: 0 16px; font-size: 15px; font-weight: 500; line-height: 1.45; color: var(--ui-texto-2); }
         .uf-header h2 { flex: 1; margin: 0; font-family: var(--font-base); font-size: 16px; font-weight: 800; line-height: 1.3; color: var(--ui-texto); }
         .uf-ver-todas { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin: 0; padding: 0 8px; background: none; border: 0; border-radius: var(--ui-raio); font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; -webkit-tap-highlight-color: transparent; }
         .uf-ver-todas:active { background: var(--ui-rosa-claro); }
         .uf-list { display: flex; flex-direction: column; }
         .uf-item { display: flex; align-items: center; gap: 12px; box-sizing: border-box; width: 100%; min-height: 64px; margin: 0; padding: 12px 16px; background: transparent; border: 0; color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-        .uf-item + .uf-item { border-top: 1px solid var(--ui-linha); }
+        .uf-item { border-top: 1px solid var(--ui-linha); }
         .uf-item:active { background: var(--ui-linha); }
         .uf-ver-todas:focus-visible, .uf-item:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
-        .uf-capa { flex: none; display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro) center / cover no-repeat; }
-        .uf-capa-emoji { font-size: 24px; }
+        .uf-capa { flex: none; display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro) center / cover no-repeat; color: var(--ui-rosa-escuro); }
         .uf-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
         .uf-cat { font-size: 12.5px; font-weight: 700; line-height: 1.3; color: var(--ui-rosa-escuro); }
         .uf-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin: 2px 0 0; font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); }
         .uf-desc { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin: 2px 0 0; font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
         .uf-arr { flex: none; color: var(--ui-texto-3); }
-        .uf-empty { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 24px 24px 28px; }
-        .uf-empty-ic { display: flex; align-items: center; justify-content: center; width: 68px; height: 68px; margin-bottom: 12px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
-        .uf-empty-t { margin: 0 0 4px; font-size: 16px; font-weight: 800; line-height: 1.3; color: var(--ui-texto); }
-        .uf-empty-d { max-width: 280px; margin: 0; font-size: 13.5px; font-weight: 500; line-height: 1.45; color: var(--ui-texto-2); text-wrap: balance; }
       `}</style>
     </div>
   );

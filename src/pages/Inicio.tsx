@@ -47,6 +47,15 @@ const STATUS_ATIVOS = ["aguardando_pagamento", "aguardando_aceite", "novo", "pen
 export default function Inicio() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  // de 901px pra cima é o layout de computador (o mesmo corte do menu lateral)
+  const [computador, setComputador] = useState(() => window.matchMedia("(min-width: 901px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 901px)");
+    const ouvir = () => setComputador(mq.matches);
+    ouvir();
+    mq.addEventListener("change", ouvir);
+    return () => mq.removeEventListener("change", ouvir);
+  }, []);
   const { profile, refetch: refetchProfile } = useProfile();
 
   const [loading, setLoading] = useState(true);
@@ -764,7 +773,10 @@ export default function Inicio() {
       </section>
         </div>
 
-        {/* ── Lateral (computador) ── */}
+        {/* ── Lateral (computador) ──
+            (07/10 · 3.09) Conquistas e Suas atualizações eram montadas duas vezes (uma pro computador, outra pro celular) e só
+            uma aparecia. As duas buscavam os dados, e o aviso de conquista nova abria dobrado. Agora monta só a do aparelho. */}
+        {computador && (
         <aside className="ini-aside">
           {/* Computador: conquistas, próximas entregas e atualizações (30/09) */}
           <div className="ini-dk-side">
@@ -789,15 +801,20 @@ export default function Inicio() {
             <MinhasAtualizacoes />
           </div>
         </aside>
+        )}
 
-        {/* ── Banner promocional (admin configura) ── */}
-        <div className="ini-mobile-banner"><AdminBannerMobile /></div>
+        {!computador && (
+          <>
+            {/* ── Banner promocional (admin configura) ── */}
+            <div className="ini-mobile-banner"><AdminBannerMobile /></div>
 
-        {/* ── Últimas atualizações (mobile) — sempre visível ── */}
-        <div className="ini-mobile-updates"><MinhasAtualizacoes /></div>
-        <div className="ini-mobile-updates"><UpdatesFeed /></div>
-        {/* Conquistas por último (02/10) */}
-        <div className="ini-mobile-updates ini-mobile-conquistas"><ConquistasCard /></div>
+            {/* ── Suas atualizações e Notícias (celular e tablet) ── */}
+            <div className="ini-mobile-updates"><MinhasAtualizacoes /></div>
+            <div className="ini-mobile-updates"><UpdatesFeed /></div>
+            {/* Conquistas por último (02/10) */}
+            <div className="ini-mobile-updates ini-mobile-conquistas"><ConquistasCard /></div>
+          </>
+        )}
 
       </div>
 

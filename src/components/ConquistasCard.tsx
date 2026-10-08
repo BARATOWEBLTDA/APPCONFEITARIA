@@ -1,19 +1,26 @@
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CaretRight, X } from "@phosphor-icons/react";
+import { CaretRight, Medal, Trophy, X } from "@phosphor-icons/react";
+import { Botao, BotaoIcone, Janela } from "@/components/base";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
 import { verificarAvisosPro } from "@/lib/notificacoesUsuario";
 import { CONQUISTAS, marcarConquista, proximaConquista, sincronizarConquistas, type ResultadoConquistas } from "@/lib/conquistas";
+import "./conquistasCard.css";
 
-/** Cartão "🏆 Suas conquistas" do Início + comemoração da conquista nova (aprovado 30/09, vinho) */
+/**
+ * Cartão "Suas conquistas" do Início + o aviso da conquista nova.
+ * (07/10 · 3.09) Refeito no padrão do guia: cartão branco como os outros do Início, cores do themes.css (saíram o degradê,
+ * a borda colorida, o lilás e o azul), ícone desenhado no lugar do emoji, e o aviso da conquista nova usa a janela do app.
+ * A lógica (o que conta, quando comemora, o que marca como visto) é a mesma.
+ */
 export default function ConquistasCard() {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const { isPro } = usePlano();
   const [r, setR] = useState<ResultadoConquistas | null>(null);
   const [celebrar, setCelebrar] = useState<string | null>(null);
+  const ultimaCel = useRef<(typeof CONQUISTAS)[number] | null>(null);
 
   useEffect(() => {
     if (!profile) return;
@@ -47,64 +54,44 @@ export default function ConquistasCard() {
     setCelebrar(null);
   };
 
+  // guarda a última conquista comemorada pra janela não ficar vazia enquanto fecha
+  if (qCel) ultimaCel.current = qCel;
+  const c = ultimaCel.current;
+  const feito = prox ? Math.min(r.valores[prox.metrica], prox.alvo) : 0;
+
   return (
     <>
       <div className="cqc">
-        <div className="cqc-h"><span>Suas conquistas</span><button type="button" onClick={() => navigate("/conquistas")}>Ver todas <CaretRight size={16} weight="bold" aria-hidden="true" /></button></div>
+        <div className="cqc-h">
+          <h2>Suas conquistas</h2>
+          <button type="button" className="cqc-link" onClick={() => navigate("/conquistas")}>Ver todas <CaretRight size={16} weight="bold" aria-hidden="true" /></button>
+        </div>
         {nova && (
           <div className="cqc-nova">
-            <div className="cqc-medal" aria-hidden="true">{nova.emoji}</div>
-            <div className="cqc-tx"><small>Nova conquista</small><b>{nova.nome}!</b><p>{nova.descricao}</p></div>
-            <button type="button" className="cqc-x" onClick={fecharNova} aria-label="Fechar" title="Fechar"><X size={16} weight="bold" aria-hidden="true" /></button>
+            <span className="cqc-ic" aria-hidden="true"><Medal size={24} weight="bold" /></span>
+            <div className="cqc-tx"><small>Nova conquista</small><b>{nova.nome}</b><p>{nova.descricao}</p></div>
+            <BotaoIcone rotulo="Fechar" variante="limpo" tamanho="p" onClick={fecharNova}><X size={16} weight="bold" /></BotaoIcone>
           </div>
         )}
         {prox && (
           <div className="cqc-prox">
-            <div className="cqc-pl"><span>Próxima: <b>{prox.nome}</b></span><span>{Math.min(r.valores[prox.metrica], prox.alvo)} de {prox.alvo}</span></div>
-            <div className="cqc-bar"><i style={{ width: `${Math.min(100, (r.valores[prox.metrica] / prox.alvo) * 100)}%` }} /></div>
+            <div className="cqc-pl"><span>Próxima: <b>{prox.nome}</b></span><span>{feito} de {prox.alvo}</span></div>
+            <div className="cqc-bar" role="progressbar" aria-label={`Próxima conquista: ${prox.nome}`} aria-valuemin={0} aria-valuemax={prox.alvo} aria-valuenow={feito}>
+              <i style={{ width: `${Math.min(100, (r.valores[prox.metrica] / prox.alvo) * 100)}%` }} />
+            </div>
           </div>
         )}
       </div>
 
-      {qCel && createPortal(
-        <div className="cqc-ov" onClick={fecharCel}>
-          <div className="cqc-pop" onClick={e => e.stopPropagation()} role="dialog" aria-label="Nova conquista">
-            <div className="cqc-conf" aria-hidden="true">{[[10, 20, "#E85A8C", 20], [25, 6, "#FCD34D", -30], [42, 30, "#86EFAC", 45], [60, 8, "#93C5FD", -15], [78, 26, "#F5B8CD", 60], [90, 10, "#C4B5FD", -40]].map(([l, t, cor, rot], i) =>
-              <i key={i} style={{ left: `${l}%`, top: Number(t), background: String(cor), transform: `rotate(${rot}deg)` }} />)}</div>
-            <div className="cqc-medal cqc-medal--big" aria-hidden="true">{qCel.emoji}</div>
-            <small className="cqc-pk">Nova conquista</small>
-            <h3>{qCel.nome}!</h3>
-            <p>{nome ? `Parabéns, ${nome}! ` : "Parabéns! "}{qCel.descricao}</p>
-            <button type="button" className="cqc-b1" onClick={() => { fecharCel(); navigate("/conquistas"); }}>Ver minhas conquistas</button>
-            <button type="button" className="cqc-b2" onClick={fecharCel}>Fechar</button>
-          </div>
-        </div>, document.body)}
-
-      <style>{CSS_CONQ}</style>
+      <Janela
+        aberta={!!qCel} aoFechar={fecharCel}
+        titulo={c ? `Nova conquista: ${c.nome}` : ""} texto={c ? `${nome ? `Parabéns, ${nome}! ` : "Parabéns! "}${c.descricao}` : ""}
+        icone={<Trophy size={32} />}
+        acoes={<>
+          <Botao variante="secundario" onClick={fecharCel}>Fechar</Botao>
+          <Botao onClick={() => { fecharCel(); navigate("/conquistas"); }} data-foco-inicial>Ver conquistas</Botao>
+        </>}
+      />
     </>
   );
 }
-
-export const CSS_CONQ = `
-  .cqc { margin: 0; border-radius: 16px; padding: 14px; background: linear-gradient(150deg, #3B1620 0%, #5A1F36 55%, #7A2A4A 100%); position: relative; font-family: var(--font-base); } /* sem a sombra (02/10): ela invadia o cartão de Notícias */
-  .cqc::before { content: ""; position: absolute; inset: 0; border-radius: 16px; padding: 1.5px; background: linear-gradient(120deg, #F9A8D4, #C4B5FD, #93C5FD, #F9A8D4); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; opacity: .75; pointer-events: none; }
-  .cqc-h { display: flex; justify-content: space-between; align-items: center; font-size: 16px; font-weight: 800; line-height: 1.3; color: #fff; }
-  .cqc-h button { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin: -12px -8px -12px 0; padding: 0 8px; border: none; border-radius: 12px; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #F9A8D4; cursor: pointer; position: relative; z-index: 1; }
-  .cqc-nova { display: flex; gap: 12px; align-items: center; background: #fff; border-radius: 12px; padding: 12px 30px 12px 12px; margin-top: 10px; position: relative; }
-  .cqc-medal { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; background: radial-gradient(circle at 30% 30%, #FFF1F6, #F5B8CD 55%, #E85A8C); box-shadow: 0 0 0 3px #FCE7F3, 0 4px 12px rgba(195,58,110,.35); }
-  .cqc-medal--big { width: 84px; height: 84px; font-size: 40px; margin: 6px auto 10px; }
-  .cqc-tx small, .cqc-pk { font-size: 12.5px; font-weight: 800; letter-spacing: 0; background: linear-gradient(90deg, #E85A8C, #8B5CF6, #3B82F6); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .cqc-tx b { display: block; font-size: 15px; color: #2C1219; } .cqc-tx p { font-size: 12.5px; color: #6B5D64; margin: 2px 0 0; line-height: 1.4; }
-  .cqc-x { position: absolute; top: 2px; right: 2px; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: none; border-radius: 8px; background: none; color: #9A8E94; cursor: pointer; padding: 0; } .cqc-x::after { content: ""; position: absolute; inset: -8px; }
-  .cqc-prox { margin-top: 12px; }
-  .cqc-pl { display: flex; justify-content: space-between; font-size: 12.5px; color: rgba(255,255,255,.85); } .cqc-pl b { color: #fff; }
-  .cqc-bar { height: 7px; border-radius: 4px; background: rgba(255,255,255,.15); margin-top: 6px; overflow: hidden; }
-  .cqc-bar i { display: block; height: 100%; background: linear-gradient(90deg, #E85A8C, #C4B5FD); border-radius: 4px; }
-  .cqc-ov { position: fixed; inset: 0; z-index: 900; background: rgba(45,31,38,.55); display: flex; align-items: center; justify-content: center; padding: 20px; font-family: var(--font-base); }
-  .cqc-pop { width: 100%; max-width: 340px; background: linear-gradient(180deg, #FFF6F9, #fff 45%); border-radius: 22px; padding: 22px 20px 14px; text-align: center; position: relative; overflow: hidden; animation: cqcPop .4s cubic-bezier(.2,1.4,.4,1) both; }
-  @keyframes cqcPop { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  .cqc-conf { position: absolute; left: 0; right: 0; top: 0; height: 60px; } .cqc-conf i { position: absolute; width: 7px; height: 12px; border-radius: 2px; }
-  .cqc-pop h3 { font-size: 21px; font-weight: 900; margin: 4px 0 6px; color: #2C1219; } .cqc-pop p { font-size: 13.5px; color: #6B5D64; line-height: 1.5; margin: 0; }
-  .cqc-b1 { width: 100%; margin-top: 16px; border: none; background: #E85A8C; color: #fff; font-family: inherit; font-size: 14.5px; font-weight: 800; border-radius: 10px; padding: 13px; box-shadow: 0 3px 0 #C33A6E; cursor: pointer; }
-  .cqc-b2 { width: 100%; margin-top: 4px; border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #6B5D64; padding: 10px; cursor: pointer; }
-`;
