@@ -1,13 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { CSSProperties, ReactNode, TouchEvent } from 'react'
-import { ArrowLeft, Bell, CaretRight, Egg, Lightning, MagnifyingGlass, Timer, Wallet } from '@phosphor-icons/react'
+import type { CSSProperties, TouchEvent } from 'react'
+import { ArrowLeft, Bell, CalendarBlank, CaretRight } from '@phosphor-icons/react'
 import { Botao, BotaoIcone } from '@/components/base'
 import { Mascote, NomeDoonly } from '@/components/marca/Mascote'
+import { CartaoPedido } from '@/components/pedidos/CartaoPedido'
+import type { Pedido } from '@/components/pedidos/pedidoTexto'
+import '@/components/pedidos/pedidos.css'
 import { tocarSom } from '@/hooks/useSom'
 import './boasVindas.css'
 
 /**
  * Boas-vindas (refeita em 07/10 no desenho do login) — a apresentação que aparece logo depois de criar a conta.
+ * (09/10 · 3.68) As demonstrações de pedidos, dinheiro e custos copiam as telas reais do app.
  * 6 telas: Boas-vindas · Cardápio · Pedidos · Dinheiro · Custos · Primeiro passo.
  * (09/10 · 3.67) Textos refeitos pelo guia de marketing do onboarding: benefício concreto em cada tela, sem culpar,
  * tela nova do dinheiro (quem pagou e quem falta pagar) e o botão final leva aos Primeiros passos do Início.
@@ -35,7 +39,6 @@ const vibrarLeve = () => {
 // As fotos pequenas (clientes e produtos) têm versão leve em public/tutorial/leve.
 const IMAGENS = [
   '/tutorial/cardapio-exemplo.jpg', '/tutorial/cardapio-exemplo-nav.jpg',
-  '/tutorial/leve/cliente1.webp', '/tutorial/leve/cliente2.webp',
   '/tutorial/leve/doisamores.webp', '/tutorial/leve/caixa4.webp', '/tutorial/leve/salgadinhos.webp',
 ]
 
@@ -250,158 +253,120 @@ function DemoCardapio() {
   )
 }
 
-/* ───────── 3 · pedidos: três cartões caindo, cada um numa situação ───────── */
-const PEDIDOS = [
-  { id: 5, cliente: 'Ana Cristina Vieira', foto: '/tutorial/leve/cliente1.webp', iniciais: '', quando: 'hoje, 11h', item: '1x Bolo Dois Amores', img: '/tutorial/leve/doisamores.webp', total: 'R$ 40,00', situacao: 'Novo pedido', tom: 'laranja' },
-  { id: 6, cliente: 'Marina Silva', foto: '/tutorial/leve/cliente2.webp', iniciais: '', quando: 'hoje, 14h', item: '1x Caixa de Brigadeiro', img: '/tutorial/leve/caixa4.webp', total: 'R$ 150,00', situacao: 'Em produção', tom: 'rosa' },
-  { id: 7, cliente: 'Juliana Souza', foto: '', iniciais: 'JS', quando: 'amanhã, 9h', item: '100x Salgadinhos', img: '/tutorial/leve/salgadinhos.webp', total: 'R$ 95,00', situacao: 'Pronto', tom: 'verde' },
-]
+/* As demonstrações 3, 4 e 5 copiam as telas reais (09/10 · 3.68): o cartão de Pedidos, o "A receber" do
+   Financeiro e o resumo da Ficha técnica. Quem abre o app depois reconhece o que viu aqui. */
+const isoDia = (soma: number) => { const d = new Date(); d.setDate(d.getDate() + soma); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }
+const item = (nome: string, img: string, qtd = 1, valor = 0) => ({ nome_produto: nome, quantidade: qtd, valor_unitario: valor, imagem_url: img })
+const pedidoExemplo = (x: Partial<Pedido> & { pedido_itens: any[] }): Pedido => ({
+  id: String(x.numero), numero: 0, cliente_nome: '', cliente_telefone: '', status: 'agendado', status_pagamento: 'pendente', prioridade: '',
+  data_entrega: isoDia(0), horario_entrega: '', valor_total: 0, valor_recebido: 0, tipo_entrega: 'retirada', forma_pagamento: 'pix',
+  etiquetas: [], origem: 'manual', created_at: new Date().toISOString(), ...x,
+} as Pedido)
+const nada = () => {}
 
+/* ───────── 3 · pedidos: os cartões de verdade da tela Pedidos, caindo um por um ───────── */
 function DemoPedidos() {
+  const pedidos = [
+    pedidoExemplo({ numero: 1049, cliente_nome: 'Renata Dias', status: 'aguardando_aceite', origem: 'cardapio', horario_entrega: '14:00', valor_total: 320,
+      pedido_itens: [item('Bolo de aniversário 2 kg', '/tutorial/leve/doisamores.webp', 1, 280), item('Velas', '', 1, 40)] }),
+    pedidoExemplo({ numero: 1046, cliente_nome: 'Marina Silva', status: 'em_producao', horario_entrega: '16:30', valor_total: 150, status_pagamento: 'pago',
+      pedido_itens: [item('Caixa de Brigadeiro', '/tutorial/leve/caixa4.webp', 1, 150)] }),
+    pedidoExemplo({ numero: 1047, cliente_nome: 'Juliana Souza', status: 'agendado', data_entrega: isoDia(1), horario_entrega: '09:00', valor_total: 95, status_pagamento: 'parcial', valor_recebido: 50,
+      pedido_itens: [item('Salgadinhos', '/tutorial/leve/salgadinhos.webp', 100, 0.95)] }),
+  ]
   return (
-    <div className="bv-ped">
-      <div className="bv-ped-aviso"><Bell size={14} weight="fill" aria-hidden="true" /><span><b>Novo pedido</b> pelo cardápio</span></div>
-      {PEDIDOS.map((p, i) => (
-        <div key={p.id} className="bv-ped-cartao" style={{ '--i': i } as CSSProperties}>
-          <div className="bv-ped-topo">
-            {p.foto ? <img className="bv-ped-foto" src={p.foto} alt="" /> : <span className="bv-ped-foto bv-ped-foto--ini">{p.iniciais}</span>}
-            <div className="bv-ped-quem">
-              <b>{p.cliente}</b>
-              <span className="bv-ped-sit"><span>Situação</span><strong className={`bv-tom--${p.tom}`}>{p.situacao}</strong></span>
-            </div>
-            <span className="bv-ped-meta">#{p.id} · {p.quando}</span>
+    <div className="bv-ped" aria-hidden="true">
+      <div className="bv-aviso"><Bell size={14} weight="fill" /><span><b>Novo pedido</b> pelo cardápio</span></div>
+      <div className="bv-ped-lista" inert>
+        {pedidos.map((p, i) => (
+          <div key={p.id} className="bv-cai" style={{ '--i': i } as CSSProperties}>
+            <CartaoPedido p={p} aoAbrir={nada} aoAvancar={nada} aoMenu={nada} aoEndereco={nada} />
           </div>
-          <div className="bv-ped-item">
-            <img src={p.img} alt="" />
-            <span>{p.item}</span>
-            <b>{p.total}</b>
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   )
 }
 
-/* ───────── 4 · dinheiro: quanto cada cliente já pagou ───────── */
+/* ───────── 4 · dinheiro: o "A receber" do Financeiro ───────── */
 const RECEBER = [
-  { id: 5, cliente: 'Ana Cristina Vieira', foto: '/tutorial/leve/cliente1.webp', iniciais: '', item: 'Bolo Dois Amores', total: 140, pago: 140, situacao: 'Pago', tom: 'verde' },
-  { id: 6, cliente: 'Marina Silva', foto: '/tutorial/leve/cliente2.webp', iniciais: '', item: 'Caixa de Brigadeiro', total: 150, pago: 80, situacao: 'Sinal pago', tom: 'laranja' },
-  { id: 7, cliente: 'Juliana Souza', foto: '', iniciais: 'JS', item: '100x Salgadinhos', total: 95, pago: 0, situacao: 'Falta pagar', tom: 'vermelho' },
+  { numero: 1049, cliente: 'Renata Dias', quando: 'hoje', total: 320, recebido: 0, entrega: 0 },
+  { numero: 1047, cliente: 'Juliana Souza', quando: 'amanhã', total: 95, recebido: 50, entrega: 1 },
+  { numero: 1050, cliente: 'Carla Menezes', quando: 'em 3 dias', total: 180.5, recebido: 90, entrega: 3 },
 ]
-const A_RECEBER = RECEBER.reduce((s, p) => s + p.total - p.pago, 0)
+const reais = (n: number) => n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+const SEMANA_CURTA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
+const diaCurto = (soma: number) => { const d = new Date(); d.setDate(d.getDate() + soma); return `${SEMANA_CURTA[d.getDay()]}, ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}` }
 
 function DemoDinheiro() {
+  const falta = RECEBER.reduce((s, r) => s + r.total - r.recebido, 0)
   return (
-    <div className="bv-ped bv-din">
-      <div className="bv-ped-aviso bv-din-aviso"><Wallet size={14} weight="fill" aria-hidden="true" /><span>A receber: <b>R$ {reais(A_RECEBER)}</b></span></div>
-      {RECEBER.map((p, i) => {
-        const falta = p.total - p.pago
-        return (
-          <div key={p.id} className="bv-ped-cartao" style={{ '--i': i } as CSSProperties}>
-            <div className="bv-ped-topo">
-              {p.foto ? <img className="bv-ped-foto" src={p.foto} alt="" /> : <span className="bv-ped-foto bv-ped-foto--ini">{p.iniciais}</span>}
-              <div className="bv-ped-quem">
-                <b>{p.cliente}</b>
-                <span className="bv-ped-sit"><span>#{p.id} · {p.item}</span></span>
-              </div>
-              <span className="bv-din-total">R$ {reais(p.total)}</span>
-            </div>
-            <div className="bv-din-barra" aria-hidden="true"><i className={`bv-din-barra--${p.tom}`} style={{ '--p': `${(p.pago / p.total) * 100}%` } as CSSProperties} /></div>
-            <div className="bv-din-sit">
-              <strong className={`bv-tom--${p.tom}`}>{p.situacao}</strong>
-              <span>{falta > 0 ? <>Falta <b>R$ {reais(falta)}</b></> : <>Recebido <b>R$ {reais(p.pago)}</b></>}</span>
-            </div>
-          </div>
-        )
-      })}
+    <div className="bv-din" aria-hidden="true">
+      <div className="bv-din-k bv-cai" style={{ '--i': 0 } as CSSProperties}>
+        <div><small>Atrasados</small><b>R$ 0,00</b><i>0 pedidos</i></div>
+        <div><small>Em 7 dias</small><b>R$ {reais(falta)}</b><i>{RECEBER.length} pedidos</i></div>
+      </div>
+      {RECEBER.map((r, i) => (
+        <div key={r.numero} className="bv-din-it bv-cai" style={{ '--i': i + 1 } as CSSProperties}>
+          <div className="bv-din-h"><b>Pedido #{r.numero} · {r.cliente}</b><span>{r.quando}</span></div>
+          <div className="bv-din-v"><small>Total R$ {reais(r.total)}{r.recebido > 0 ? ` · recebido R$ ${reais(r.recebido)}` : ''}</small><b>falta R$ {reais(r.total - r.recebido)}</b></div>
+          <div className="bv-din-bar"><i style={{ '--p': `${(r.recebido / r.total) * 100}%` } as CSSProperties} /></div>
+          <div className="bv-din-a"><span><CalendarBlank size={15} />entrega {diaCurto(r.entrega)}</span><span className="bv-din-rec">Receber</span></div>
+        </div>
+      ))}
     </div>
   )
 }
 
-/* ───────── 5 · preço e lucro: soma os custos, testa dois preços e mostra a margem ───────── */
-const CUSTOS: { rotulo: string; valor: number; icone: ReactNode }[] = [
-  { rotulo: 'Ingredientes', valor: 34.48, icone: <Egg size={16} weight="bold" /> },
-  { rotulo: 'Mão de obra', valor: 15.0, icone: <Timer size={16} weight="bold" /> },
-  { rotulo: 'Custos fixos', valor: 3.5, icone: <Lightning size={16} weight="bold" /> },
-  { rotulo: 'Custos invisíveis (25%)', valor: 13.25, icone: <MagnifyingGlass size={16} weight="bold" /> },
+/* ───────── 5 · custos: o resumo da Ficha técnica, montando a conta linha por linha ───────── */
+const CONTA = [
+  { rotulo: 'Ingredientes', valor: 3.45, cor: 'var(--ui-rosa)' },
+  { rotulo: 'Custos invisíveis (25%)', valor: 0.86, cor: '#F59E0B' },
+  { rotulo: 'Mão de obra (15 min)', valor: 2.1, cor: 'var(--ui-vinho)' },
 ]
-const CUSTO_TOTAL = 66.23 // 40 brigadeiros, com os custos invisíveis
-const CUSTO_POR_CAIXA = 6.62 // caixa com 4
-const PRECOS = ['8,00', '15,00']
-const reais = (n: number) => n.toFixed(2).replace('.', ',')
+const PRECO = 15
+const CUSTO = CONTA.reduce((s, c) => s + c.valor, 0)
+const LUCRO = PRECO - CUSTO
 
 function DemoLucro() {
-  const [digitado, setDigitado] = useState('')
-  const [rodada, setRodada] = useState(-1) // -1 = ainda somando os custos · 0 = R$ 8 · 1 = R$ 15
-  const [resultado, setResultado] = useState(false)
-  const [cursor, setCursor] = useState(false)
   const [linhas, setLinhas] = useState(0)
-  const [total, setTotal] = useState(false)
-
-  // os custos aparecem linha por linha, depois o total, depois começa o teste de preço
+  const [pronto, setPronto] = useState(false)
+  const [lucro, setLucro] = useState(0)
   useEffect(() => {
     const ts: number[] = []
-    CUSTOS.forEach((_, i) => ts.push(window.setTimeout(() => setLinhas(i + 1), 800 + i * 600)))
-    ts.push(window.setTimeout(() => setTotal(true), 800 + CUSTOS.length * 600 + 400))
-    ts.push(window.setTimeout(() => setRodada(0), 800 + CUSTOS.length * 600 + 1200))
+    for (let i = 1; i <= CONTA.length + 2; i++) ts.push(window.setTimeout(() => setLinhas(i), 500 + i * 450))
+    const fim = 500 + (CONTA.length + 2) * 450 + 300
+    ts.push(window.setTimeout(() => setPronto(true), fim))
+    // o lucro sobe contando, como quem faz a conta
+    for (let k = 1; k <= 20; k++) ts.push(window.setTimeout(() => setLucro(LUCRO * k / 20), fim + k * 35))
     return () => ts.forEach(t => clearTimeout(t))
   }, [])
-
-  // cada rodada: digita o preço, mostra o resultado e passa pra próxima
-  useEffect(() => {
-    if (rodada < 0) return
-    const ts: number[] = []
-    const preco = PRECOS[rodada]
-    setDigitado(''); setResultado(false); setCursor(true)
-    preco.split('').forEach((_, i) => ts.push(window.setTimeout(() => setDigitado(preco.slice(0, i + 1)), 400 + 120 * (i + 1))))
-    const fim = 400 + 120 * preco.length + 400
-    ts.push(window.setTimeout(() => { setCursor(false); setResultado(true) }, fim))
-    if (rodada === 0) ts.push(window.setTimeout(() => setRodada(1), fim + 3800))
-    return () => ts.forEach(t => clearTimeout(t))
-  }, [rodada])
-
-  const preco = parseFloat(digitado.replace(',', '.')) || 0
-  const lucro = preco - CUSTO_POR_CAIXA
-  const margem = preco > 0 ? (lucro / preco) * 100 : 0
-  const apertada = margem < 30
-
+  const pc = (v: number) => `${(v / PRECO) * 100}%`
+  const margem = pronto ? (lucro / PRECO) * 100 : 0
   return (
-    <div className="bv-luc">
-      <div className="bv-luc-produto">
-        <img src="/tutorial/leve/caixa4.webp" alt="" />
-        <div><b>Caixa de Brigadeiro</b><span>4 unidades · gourmet</span></div>
-      </div>
-
-      <p className="bv-luc-grupo">Custos da produção (40 un)</p>
-      {CUSTOS.map((c, i) => (
-        <div key={c.rotulo} className={`bv-luc-linha${i < linhas ? ' bv-luc-linha--v' : ''}`}>
-          <span className="bv-luc-rot"><i aria-hidden="true">{c.icone}</i>{c.rotulo}</span>
-          <span className="bv-luc-val"><small>R$</small>{reais(c.valor)}</span>
-        </div>
-      ))}
-      <div className={`bv-luc-linha bv-luc-linha--total${total ? ' bv-luc-linha--v' : ''}`}>
-        <span className="bv-luc-rot">Total</span>
-        <span className="bv-luc-val"><small>R$</small>{reais(CUSTO_TOTAL)}</span>
-      </div>
-      <div className={`bv-luc-linha bv-luc-linha--caixa${total ? ' bv-luc-linha--v' : ''}`}>
-        <span className="bv-luc-rot">Custo por caixa</span>
-        <span className="bv-luc-val"><small>R$</small>{reais(CUSTO_POR_CAIXA)}</span>
-      </div>
-
-      {/* o espaço da pergunta e do resultado já fica reservado: o cartão não cresce nem empurra a tela */}
-      <div className={`bv-luc-pergunta${rodada >= 0 ? ' bv-luc-pergunta--v' : ''}`}>
-        <span className="bv-luc-per">Por quanto vende a caixa?</span>
-        <div className={`bv-luc-campo${resultado ? (apertada ? ' bv-luc-campo--ruim' : ' bv-luc-campo--bom') : ''}`}>
-          <small>R$</small><span>{digitado}</span>{cursor && <i className="bv-luc-cursor" />}
+    <div className="bv-luc" aria-hidden="true">
+      <div className="bv-luc-topo">
+        <span className="bv-luc-foto"><img src="/tutorial/leve/caixa4.webp" alt="" /></span>
+        <div className="bv-luc-lucro">
+          <small>Seu lucro</small>
+          <b>R$ {reais(lucro)}</b>
+          <span>{margem.toFixed(0)}% de margem</span>
         </div>
       </div>
-      <div className="bv-luc-vaga" aria-live="polite">
-        {resultado && (
-          <div className={`bv-luc-res ${apertada ? 'bv-luc-res--ruim' : 'bv-luc-res--bom'}`} key={rodada}>
-            <span className="bv-luc-res-rot">{apertada ? 'Margem apertada' : 'Lucro por caixa'}</span>
-            <div className="bv-luc-res-num"><b>R$ {reais(lucro)}</b><i /><span>{margem.toFixed(0)}% de margem</span></div>
-          </div>
-        )}
+      <div className="bv-luc-barra">
+        {CONTA.map((c, i) => <i key={c.rotulo} style={{ width: linhas > i ? pc(c.valor) : 0, background: c.cor }} />)}
+        <i style={{ width: pronto ? pc(LUCRO) : 0, background: 'var(--ui-verde)' }} />
+      </div>
+      <div className="bv-luc-leg">
+        <span style={{ '--c': 'var(--ui-rosa)' } as CSSProperties}>Ingredientes</span>
+        <span style={{ '--c': '#F59E0B' } as CSSProperties}>Invisíveis</span>
+        <span style={{ '--c': 'var(--ui-vinho)' } as CSSProperties}>Mão de obra</span>
+        <span style={{ '--c': 'var(--ui-verde)' } as CSSProperties}>Lucro</span>
+      </div>
+      <div className="bv-luc-conta">
+        {CONTA.map((c, i) => <div key={c.rotulo} className={linhas > i ? 'v' : ''}><span>{c.rotulo}</span><span>R$ {reais(c.valor)}</span></div>)}
+        <div className={`bv-luc-t${linhas > CONTA.length ? ' v' : ''}`}><span>Custo total</span><span>R$ {reais(CUSTO)}</span></div>
+        <div className={`bv-luc-pv${linhas > CONTA.length + 1 ? ' v' : ''}`}><span>Preço de venda</span><span>R$ {reais(PRECO)}</span></div>
       </div>
     </div>
   )
