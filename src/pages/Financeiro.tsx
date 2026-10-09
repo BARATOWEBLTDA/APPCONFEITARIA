@@ -199,7 +199,6 @@ const CSS = `
   .fd-hd-bt.e { background: #16A34A; } .fd-hd-bt.s { background: #2C1219; }
   /* foco no convite do saldo: o resto fica levemente apagado (sem bloquear) */
   .fd > * { transition: opacity .3s ease, filter .3s ease; }
-  .fd--foco > *:not(.fd-a-saldo), .fd--foco .fd-acoes { opacity: .38; filter: saturate(.5); }
   .fd-acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .fd-bt { display: flex; align-items: center; justify-content: center; gap: 6px; border: none; border-radius: 12px; padding: 12px; font-family: inherit; font-size: 14px; font-weight: 800; color: #fff; cursor: pointer; }
   .fd-bt.e { background: #16A34A; } .fd-bt.s { background: #2C1219; }

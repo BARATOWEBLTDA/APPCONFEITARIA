@@ -261,7 +261,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
           <p>Aqui você deixa o <strong>cardápio com a cara da sua confeitaria</strong>: a logo, os banners de promoção e o modelo da página.</p>
           <p>Tudo é salvo na hora e já aparece pros seus clientes. Use o <strong>"Ver meu cardápio"</strong> pra conferir como ficou.</p>
         </>}
-        infoTip={<>As <strong>cores</strong> e o modelo <strong>"Padrão"</strong> são do plano PRO.</>}
+        infoTip={<>As <strong>cores</strong> e o modelo <strong>Premium</strong> são do plano PRO.</>}
       />
     )}
     <div className="ap">
@@ -352,7 +352,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
               <div className="cd-lp-lines" style={{ marginTop: 18 }}><i style={{ width: "55%" }} /><i style={{ width: "80%" }} /></div>
               <div className="cd-lp-products"><div className="cd-lp-product" /><div className="cd-lp-product" /><div className="cd-lp-product" /></div>
             </div>
-            <span className="ap-modelo-pe"><b>Modelo 1</b><small>Grátis</small></span>
+            <span className="ap-modelo-pe"><b>Clássico</b><small>Grátis</small></span>
             {modeloAtivo === "modelo1" && <span className="ap-modelo-ok" aria-hidden="true"><Check size={14} weight="bold" /></span>}
           </button>
           <button type="button" role="radio" aria-checked={modeloAtivo === "padrao"} className="ap-modelo" onClick={() => escolherModelo("padrao")} disabled={salvandoModelo}>
@@ -362,7 +362,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
               <div className="cd-lp-lines"><i style={{ width: "60%" }} /><i style={{ width: "40%" }} /></div>
               <div className="cd-lp-products"><div className="cd-lp-product" /><div className="cd-lp-product" /><div className="cd-lp-product" /></div>
             </div>
-            <span className="ap-modelo-pe"><b>Padrão</b>{isPro ? <small>PRO</small> : <small className="pro"><Crown size={14} weight="fill" />No PRO</small>}</span>
+            <span className="ap-modelo-pe"><b>Premium</b>{isPro ? <small>PRO</small> : <small className="pro"><Crown size={14} weight="fill" />No PRO</small>}</span>
             {modeloAtivo === "padrao" && <span className="ap-modelo-ok" aria-hidden="true"><Check size={14} weight="bold" /></span>}
           </button>
         </div>

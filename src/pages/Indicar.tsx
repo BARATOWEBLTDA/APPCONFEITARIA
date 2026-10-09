@@ -85,7 +85,6 @@ export default function Indicar() {
   const mensagemWpp = encodeURIComponent(
     `Oi! Tô usando o Doonly pra organizar minha confeitaria — recomendo demais! 💖\n\n` +
     `Se você entrar pelo meu link ganha:\n` +
-    `🎁 Kit grátis de precificação\n` +
     `💰 70% OFF no 1º mês do PRO\n\n` +
     link
   );
