@@ -72,7 +72,7 @@
 @keyframes bvAviso { 0% { opacity: 0; transform: translate(-50%, 6px); } 12%, 100% { opacity: 1; transform: translate(-50%, 0); } }
 
 /* 3 · Pedidos: o CartaoPedido de verdade e, depois de aceito, os itens como na tela do pedido (telaPedido.css) */
-.bv-ped { position: relative; width: 100%; max-width: 380px; min-height: 600px; /* o espaço do pedido aberto já fica reservado: o título não pula */ padding-top: 36px; text-align: left; }
+.bv-ped { position: relative; width: 100%; max-width: 380px; min-height: 610px; /* o espaço do pedido aberto já fica reservado: o título não pula */ padding-top: 48px; text-align: left; }
 .bv-ped .pdc { padding-bottom: 14px; box-shadow: 0 10px 24px rgba(0, 0, 0, .3); cursor: default; }
 .bv-ped .pdc-seta, .bv-ped .pdc-mais { display: none; }
 .bv-ped--f1 .pdc.aceitar .ui-bt { animation: bvChama 1.1s ease-in-out .9s infinite; }

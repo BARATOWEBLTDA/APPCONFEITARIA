@@ -4,7 +4,7 @@ import { ArrowLeft, Bell, CalendarBlank, CaretRight } from '@phosphor-icons/reac
 import { Botao, BotaoIcone, Linha } from '@/components/base'
 import { Mascote, NomeDoonly } from '@/components/marca/Mascote'
 import { CartaoPedido } from '@/components/pedidos/CartaoPedido'
-import type { Pedido } from '@/components/pedidos/pedidoTexto'
+import { acaoDe, type Pedido } from '@/components/pedidos/pedidoTexto'
 import '@/components/pedidos/pedidos.css'
 import '@/components/pedidos/telaPedido.css'
 import { tocarSom } from '@/hooks/useSom'
@@ -283,24 +283,32 @@ const PEDIDO_DEMO = pedidoExemplo({ numero: 1049, cliente_nome: 'Renata Dias', c
   pedido_itens: [item('Bolo de aniversário 2 kg', '/tutorial/leve/doisamores.webp', 1, 320)] })
 
 function DemoPedidos() {
-  const [fase, setFase] = useState(0) // 0 = esperando · 1 = chegou · 2 = aceito
+  const [fase, setFase] = useState(0) // 0 = esperando · 1 = chegou · 2 = aceito (e daí o botão segue o fluxo do app)
+  const [status, setStatus] = useState(PEDIDO_DEMO.status)
   useEffect(() => {
     const t = window.setTimeout(() => { tocarSom('pedido'); vibrarLeve(); setFase(1) }, 700)
     return () => clearTimeout(t)
   }, [])
   useEffect(() => {
     if (fase !== 1) return
-    const t = window.setTimeout(() => setFase(2), 3600)
+    const t = window.setTimeout(() => { setStatus('agendado'); setFase(2) }, 3600)
     return () => clearTimeout(t)
   }, [fase])
-  const aceitar = () => { if (fase === 1) { tocarSom('click'); vibrarLeve(); setFase(2) } }
-  const p = fase === 2 ? { ...PEDIDO_DEMO, status: 'agendado' } : PEDIDO_DEMO
+  const p = { ...PEDIDO_DEMO, status }
+  // o botão do cartão faz o mesmo que no app: Aceitar → Produzir → Pronto → Pronto pra retirar → Entregue
+  const avancar = () => {
+    const prox = acaoDe(p)?.proximo
+    if (!prox) return
+    tocarSom(prox === 'entregue' ? 'sucesso' : 'click'); vibrarLeve()
+    setStatus(prox)
+    if (fase === 1) setFase(2)
+  }
   return (
     <div className={`bv-ped bv-ped--f${fase}`}>
       {fase > 0 && <div className="bv-aviso"><Bell size={14} weight="fill" aria-hidden="true" /><span><b>Novo pedido</b> pelo cardápio</span></div>}
       {fase > 0 && (
         <div className="bv-cai">
-          <CartaoPedido p={p} aoAbrir={nada} aoAvancar={aceitar} aoMenu={nada} aoEndereco={nada} abertoFixo={fase === 2} extra={
+          <CartaoPedido p={p} aoAbrir={nada} aoAvancar={avancar} aoMenu={nada} aoEndereco={nada} abertoFixo={fase === 2} extra={
             <div className="bv-ped-extra">
               <Linha rotulo="Adicionais">Topo de bolo personalizado</Linha>
               <div className="tpd-recado">
