@@ -1,548 +1,121 @@
-import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
-
-const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  novo:        { label: 'Novo',        color: '#534AB7', bg: '#EEEDFE' },
-  confirmado:  { label: 'Confirmado',  color: '#534AB7', bg: '#EEEDFE' },
-  em_producao: { label: 'Em Produção', color: '#9a3412', bg: '#ffedd5' },
-  pronto:      { label: 'Pronto',      color: '#14532d', bg: '#dcfce7' },
-  a_caminho:   { label: 'A Caminho',   color: '#0369a1', bg: '#e0f2fe' },
-  concluido:   { label: 'Concluído',   color: '#374151', bg: '#f3f4f6' },
-  entregue:    { label: 'Entregue',    color: '#374151', bg: '#f3f4f6' },
-  cancelado:   { label: 'Cancelado',   color: '#991b1b', bg: '#fee2e2' },
-}
-
-function formatMoney(v: number) {
-  return (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-}
+/* Perfil da cliente (08/10 · 3.31): dados, endereços e sair. Os pedidos ficam só na aba Pedidos. */
+import { useEffect, useState } from 'react'
+import { MapPin, Plus, SignOut, Trash } from '@phosphor-icons/react'
+import { Campo, Janela, avisar, confirmar } from '@/components/base'
+import { JanelaEntrar, SemConta, guardarCliente, lerCliente, mascaraTel, type Cliente } from './contaCliente'
 
 export type EnderecoSalvo = {
   rua: string; numero: string; complemento: string; bairro: string; cidade: string; cep: string
 }
 
-type Cliente = { id: string; nome: string; telefone: string }
-type Pedido = {
-  id: string; numero: number; status: string; created_at: string; valor_total: number
-  forma_pagamento: string; status_pagamento: string; tipo_entrega: string
-  data_entrega?: string; horario_entrega?: string
-  endereco_rua?: string; endereco_numero?: string; endereco_complemento?: string
-  endereco_bairro?: string; endereco_cidade?: string; endereco_cep?: string
-  pedido_itens?: { nome_produto: string; quantidade: number; valor_unitario: number; produtos?: { imagem_url?: string } }[]
-}
+const VAZIO: EnderecoSalvo = { rua: '', numero: '', complemento: '', bairro: '', cidade: '', cep: '' }
 
 export function PerfilTab({ accent, confeteiraUserId }: { accent: string; confeteiraUserId: string }) {
-  const [cliente, setCliente] = useState<Cliente | null>(null)
-  const [pedidos, setPedidos] = useState<Pedido[]>([])
-  const [aba, setAba] = useState<'pedidos' | 'dados'>('pedidos')
-  const [loading, setLoading] = useState(false)
-  const [showLogin, setShowLogin] = useState(false)
-  const [showCadastro, setShowCadastro] = useState(false)
-  const [showAddEndereco, setShowAddEndereco] = useState(false)
-  const [loginTel, setLoginTel] = useState('')
-  const [cadNome, setCadNome] = useState('')
-  const [cadTel, setCadTel] = useState('')
-  const [erro, setErro] = useState('')
+  const [cliente, setCliente] = useState<Cliente | null>(() => lerCliente(confeteiraUserId))
+  const [entrar, setEntrar] = useState(false)
   const [enderecos, setEnderecos] = useState<EnderecoSalvo[]>([])
+  const [novoAberto, setNovoAberto] = useState(false)
+  const [novo, setNovo] = useState<EnderecoSalvo>(VAZIO)
+  const [falta, setFalta] = useState(false)
+  const [cepBuscando, setCepBuscando] = useState(false)
 
-  // Form novo endereço
-  const [novoCep, setNovoCep] = useState('')
-  const [novoRua, setNovoRua] = useState('')
-  const [novoNumero, setNovoNumero] = useState('')
-  const [novoComplemento, setNovoComplemento] = useState('')
-  const [novoBairro, setNovoBairro] = useState('')
-  const [novoCidade, setNovoCidade] = useState('')
-  const [cepLoading, setCepLoading] = useState(false)
-
-  const maskTel = (v: string) => {
-    const n = v.replace(/\D/g,'').slice(0,11)
-    if (n.length > 10) return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`
-    if (n.length > 6) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`
-    if (n.length > 2) return `(${n.slice(0,2)}) ${n.slice(2)}`
-    return n.length ? `(${n}` : n
-  }
-
-  const buscarCepNovo = async (v: string) => {
-    const c = v.replace(/\D/g,'')
-    if (c.length !== 8) return
-    setCepLoading(true)
-    try {
-      const res = await fetch(`https://viacep.com.br/ws/${c}/json/`)
-      const d = await res.json()
-      if (!d.erro) { setNovoRua(d.logradouro||''); setNovoBairro(d.bairro||''); setNovoCidade(d.localidade||'') }
-    } catch {}
-    setCepLoading(false)
-  }
-
-  const carregarEnderecos = (tel: string) => {
-    try {
-      const key = `enderecos_${confeteiraUserId}_${tel.replace(/\D/g,'')}`
-      const saved = localStorage.getItem(key)
-      if (saved) setEnderecos(JSON.parse(saved))
-    } catch {}
-  }
-
-  const salvarEnderecos = (tel: string, list: EnderecoSalvo[]) => {
-    const key = `enderecos_${confeteiraUserId}_${tel.replace(/\D/g,'')}`
-    localStorage.setItem(key, JSON.stringify(list))
-    setEnderecos(list)
-  }
-
+  // Os endereços ficam no aparelho, por loja e telefone (a sacola usa a mesma lista)
+  const chaveEnd = (tel: string) => `enderecos_${confeteiraUserId}_${tel.replace(/\D/g, '')}`
   useEffect(() => {
+    if (!cliente) { setEnderecos([]); return }
+    try { const l = JSON.parse(localStorage.getItem(chaveEnd(cliente.telefone)) || '[]'); setEnderecos(Array.isArray(l) ? l : []) } catch { setEnderecos([]) }
+  }, [cliente?.telefone]) // eslint-disable-line react-hooks/exhaustive-deps
+  const salvarLista = (l: EnderecoSalvo[]) => {
+    if (!cliente) return
+    try { localStorage.setItem(chaveEnd(cliente.telefone), JSON.stringify(l)) } catch { /* sem localStorage */ }
+    setEnderecos(l)
+  }
+
+  const buscarCep = async (v: string) => {
+    const c = v.replace(/\D/g, '')
+    if (c.length !== 8) return
+    setCepBuscando(true)
     try {
-      const saved = localStorage.getItem(`cardapio_cliente_${confeteiraUserId}`)
-      if (saved) {
-        const c = JSON.parse(saved)
-        setCliente(c)
-        buscarPedidos(c.telefone)
-        carregarEnderecos(c.telefone)
-      }
-    } catch {}
-  }, [confeteiraUserId])
-
-  const buscarPedidos = async (telefone: string) => {
-    if (!telefone || !confeteiraUserId) return
-    setLoading(true)
-    try {
-      // Função segura no banco: só pedidos desse telefone exato, nessa loja
-      const { data, error } = await supabase.rpc('cardapio_pedidos_do_cliente', {
-        p_loja: confeteiraUserId, p_telefone: telefone,
-      })
-      if (error) console.error('Erro ao buscar pedidos:', error)
-      setPedidos(Array.isArray(data) ? data : [])
-    } catch (err) {
-      console.error('Erro ao buscar pedidos:', err)
-    }
-    setLoading(false)
+      const d = await (await fetch(`https://viacep.com.br/ws/${c}/json/`)).json()
+      if (!d.erro) setNovo(n => ({ ...n, rua: d.logradouro || n.rua, bairro: d.bairro || n.bairro, cidade: d.localidade || n.cidade }))
+    } catch { /* segue sem o CEP */ }
+    setCepBuscando(false)
   }
 
-  const handleLogin = async () => {
-    setErro('')
-    const tel = loginTel.replace(/\D/g,'')
-    if (tel.length < 10) { setErro('Digite um telefone válido'); return }
-    setLoading(true)
-    try {
-      // Função segura no banco: procura o cliente pelo telefone exato
-      const { data: lista } = await supabase.rpc('cardapio_cliente', { p_loja: confeteiraUserId, p_telefone: tel })
-      const data = Array.isArray(lista) ? lista[0] : null
-      if (data) {
-        const c = { id: data.id, nome: data.nome, telefone: data.telefone }
-        setCliente(c)
-        localStorage.setItem(`cardapio_cliente_${confeteiraUserId}`, JSON.stringify(c))
-        buscarPedidos(data.telefone)
-        carregarEnderecos(data.telefone)
-        setShowLogin(false); setLoginTel('')
-      } else { setErro('Telefone não encontrado. Faça seu cadastro!') }
-    } catch { setErro('Erro ao buscar conta') }
-    setLoading(false)
+  const salvarNovo = () => {
+    if (!novo.rua.trim() || !novo.numero.trim()) { setFalta(true); return }
+    const e = { ...novo, rua: novo.rua.trim(), numero: novo.numero.trim() }
+    salvarLista([e, ...enderecos.filter(x => x.rua !== e.rua || x.numero !== e.numero)].slice(0, 5))
+    setNovoAberto(false); avisar('Endereço salvo', { tipo: 'ok' })
   }
 
-  const handleCadastro = async () => {
-    setErro('')
-    if (!cadNome.trim()) { setErro('Digite seu nome'); return }
-    const tel = cadTel.replace(/\D/g,'')
-    if (tel.length < 10) { setErro('Digite um telefone válido'); return }
-    setLoading(true)
-    try {
-      // Função segura no banco: devolve o cliente existente ou cria um novo
-      const { data: lista } = await supabase.rpc('cardapio_cliente', {
-        p_loja: confeteiraUserId, p_telefone: cadTel, p_nome: cadNome.trim(),
-      })
-      const r = Array.isArray(lista) ? lista[0] : null
-      const c = r ? { id: r.id, nome: r.nome, telefone: r.telefone } : null
-      if (c) {
-        setCliente(c); localStorage.setItem(`cardapio_cliente_${confeteiraUserId}`, JSON.stringify(c))
-        buscarPedidos(c.telefone); carregarEnderecos(c.telefone); setShowCadastro(false)
-      }
-    } catch { setErro('Erro ao criar conta') }
-    setLoading(false)
+  const tirar = async (i: number) => {
+    const e = enderecos[i]
+    const ok = await confirmar({ titulo: 'Tirar esse endereço?', texto: `${e.rua}, ${e.numero}`, rotulo: 'Tirar', perigo: true })
+    if (ok) salvarLista(enderecos.filter((_, j) => j !== i))
   }
 
-  const handleSair = () => {
-    localStorage.removeItem(`cardapio_cliente_${confeteiraUserId}`)
-    setCliente(null); setPedidos([]); setEnderecos([])
+  const sair = async () => {
+    const ok = await confirmar({ titulo: 'Sair da conta?', texto: 'Seus pedidos continuam salvos. É só entrar de novo com o WhatsApp.', rotulo: 'Sair', icone: 'alerta' })
+    if (!ok) return
+    guardarCliente(confeteiraUserId, null); setCliente(null)
   }
-
-  const handleSalvarEndereco = () => {
-    if (!novoRua.trim() || !novoNumero.trim()) { alert('Preencha rua e número'); return }
-    const novo: EnderecoSalvo = { rua: novoRua, numero: novoNumero, complemento: novoComplemento, bairro: novoBairro, cidade: novoCidade, cep: novoCep }
-    const lista = [novo, ...enderecos.filter(e => e.rua !== novoRua || e.numero !== novoNumero)].slice(0, 5)
-    salvarEnderecos(cliente!.telefone, lista)
-    setShowAddEndereco(false); setNovoCep(''); setNovoRua(''); setNovoNumero(''); setNovoComplemento(''); setNovoBairro(''); setNovoCidade('')
-  }
-
-  const inp = (placeholder: string, value: string, onChange: (v:string)=>void, tel?: boolean) => (
-    <div style={{display:'flex',alignItems:'center',gap:'10px',padding:'14px',border:'1.5px solid #f0f0f0',borderRadius:'12px',background:'#fafafa'}}>
-      <input value={value} onChange={e => onChange(tel ? maskTel(e.target.value) : e.target.value)}
-        placeholder={placeholder} inputMode={tel ? 'numeric' : 'text'}
-        style={{flex:1,border:'none',background:'transparent',fontSize:'14px',color:'#3e3e3e',outline:'none',fontFamily:'inherit'}} />
-    </div>
-  )
-
-  const inpField = (placeholder: string, value: string, onChange: (v:string)=>void, opts?: { numeric?: boolean; half?: boolean }) => (
-    <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-      inputMode={opts?.numeric ? 'numeric' : 'text'}
-      style={{width: opts?.half ? 'calc(50% - 4px)' : '100%', padding:'12px',border:'1.5px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box' as const,fontFamily:'inherit',background:'#fafafa'}} />
-  )
-
-  // ── Não logado ──────────────────────────────────────────────────────────────
-  if (!cliente) return (
-    <div style={{flex:1,display:'flex',flexDirection:'column',overflowY:'auto'}}>
-      {/* ── Empty state padrão (inspirado no EmptyDoo, tons rosa/accent) ── */}
-      <div className="pt-empty-root">
-        <div className="pt-empty-card">
-          {/* Avatar circular com ícone */}
-          <div className="pt-empty-avatar" style={{ background: `${accent}18` }}>
-            <div className="pt-empty-avatar-inner" style={{ background: `${accent}12` }}>
-              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-              </svg>
-            </div>
-          </div>
-
-          <p className="pt-empty-title">Acompanhe seus pedidos</p>
-          <p className="pt-empty-desc">
-            Faça login ou crie uma conta para acompanhar pedidos, salvar endereços e agilizar suas próximas compras.
-          </p>
-
-          <button
-            onClick={() => { setShowLogin(true); setErro('') }}
-            className="pt-empty-btn"
-            style={{ background: accent }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-              <polyline points="10 17 15 12 10 7"/>
-              <line x1="15" y1="12" x2="3" y2="12"/>
-            </svg>
-            Entrar ou Cadastrar
-          </button>
-        </div>
-      </div>
-
-      <style>{`
-        .pt-empty-root {
-          flex: 1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 32px 20px;
-        }
-        .pt-empty-card {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          padding: 2.5rem 1.5rem;
-          background: #fff;
-          border: 1.5px dashed #f0e0e6;
-          border-radius: 20px;
-          width: 100%;
-          max-width: 400px;
-        }
-        .pt-empty-avatar {
-          width: 96px;
-          height: 96px;
-          border-radius: 28%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 1.25rem;
-        }
-        .pt-empty-avatar-inner {
-          width: 82px;
-          height: 82px;
-          border-radius: 28%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .pt-empty-title {
-          font-size: 18px;
-          font-weight: 800;
-          color: #3e3e3e;
-          margin: 0 0 8px;
-          letter-spacing: -0.02em;
-          line-height: 1.3;
-        }
-        .pt-empty-desc {
-          font-size: 13px;
-          color: #8b8b8b;
-          margin: 0 0 1.5rem;
-          line-height: 1.55;
-          max-width: 300px;
-          text-wrap: balance;
-        }
-        .pt-empty-btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.5rem;
-          color: #fff;
-          border: none;
-          border-radius: 12px;
-          padding: 14px 32px;
-          font-family: inherit;
-          font-size: 15px;
-          font-weight: 700;
-          cursor: pointer;
-          width: 100%;
-          max-width: 280px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-          transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-        .pt-empty-btn:active {
-          transform: translateY(1px);
-          box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-        }
-      `}</style>
-
-      {showLogin && (<>
-        <div onClick={() => setShowLogin(false)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',zIndex:300}} />
-        <div style={{position:'fixed',bottom:0,left:0,right:0,zIndex:301,background:'#fff',borderRadius:'24px 24px 0 0',padding:'24px 20px 32px',maxWidth:'480px',margin:'0 auto'}}>
-          <div style={{width:'36px',height:'4px',background:'#e5e7eb',borderRadius:'4px',margin:'0 auto 20px'}} />
-          <button onClick={() => setShowLogin(false)} style={{position:'absolute',top:'16px',right:'16px',background:'none',border:'none',cursor:'pointer',color:'#a0a0a0',fontSize:'20px'}}>✕</button>
-          <p style={{margin:'0 0 4px',fontWeight:800,fontSize:'20px',color:'#3e3e3e',textAlign:'center'}}>Acesse sua conta</p>
-          <p style={{margin:'0 0 20px',fontSize:'13px',color:'#a0a0a0',textAlign:'center',lineHeight:'1.5'}}>Informe seu telefone para continuar.</p>
-          <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-            {inp('Telefone (obrigatório)', loginTel, v => setLoginTel(maskTel(v)), true)}
-          </div>
-          {erro && <p style={{margin:'8px 0 0',fontSize:'12px',color:'#ef4444',textAlign:'center'}}>{erro}</p>}
-          <button onClick={handleLogin} disabled={loading}
-            style={{marginTop:'16px',width:'100%',padding:'15px',background:accent,color:'white',border:'none',borderRadius:'12px',fontWeight:800,fontSize:'16px',cursor:'pointer',fontFamily:'inherit'}}>
-            {loading ? 'Buscando...' : 'Continuar'}
-          </button>
-          <p style={{margin:'16px 0 0',textAlign:'center',fontSize:'13px',color:'#a0a0a0'}}>
-            Não tem conta?{' '}
-            <button onClick={() => { setShowLogin(false); setShowCadastro(true); setErro('') }}
-              style={{background:'none',border:'none',color:accent,fontWeight:700,cursor:'pointer',fontSize:'13px',fontFamily:'inherit'}}>Criar cadastro</button>
-          </p>
-        </div>
-      </>)}
-
-      {showCadastro && (<>
-        <div onClick={() => setShowCadastro(false)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',zIndex:300}} />
-        <div style={{position:'fixed',bottom:0,left:0,right:0,zIndex:301,background:'#fff',borderRadius:'24px 24px 0 0',padding:'24px 20px 32px',maxWidth:'480px',margin:'0 auto'}}>
-          <div style={{width:'36px',height:'4px',background:'#e5e7eb',borderRadius:'4px',margin:'0 auto 20px'}} />
-          <button onClick={() => setShowCadastro(false)} style={{position:'absolute',top:'16px',right:'16px',background:'none',border:'none',cursor:'pointer',color:'#a0a0a0',fontSize:'20px'}}>✕</button>
-          <p style={{margin:'0 0 4px',fontWeight:800,fontSize:'20px',color:'#3e3e3e',textAlign:'center'}}>Crie sua conta</p>
-          <p style={{margin:'0 0 20px',fontSize:'13px',color:'#a0a0a0',textAlign:'center',lineHeight:'1.5'}}>Preencha seus dados para criar uma conta.</p>
-          <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-            {inp('Nome completo', cadNome, setCadNome)}
-            {inp('Telefone', cadTel, v => setCadTel(maskTel(v)), true)}
-          </div>
-          {erro && <p style={{margin:'8px 0 0',fontSize:'12px',color:'#ef4444',textAlign:'center'}}>{erro}</p>}
-          <button onClick={handleCadastro} disabled={loading}
-            style={{marginTop:'16px',width:'100%',padding:'15px',background:accent,color:'white',border:'none',borderRadius:'12px',fontWeight:800,fontSize:'16px',cursor:'pointer',fontFamily:'inherit'}}>
-            {loading ? 'Criando...' : 'Finalizar Cadastro'}
-          </button>
-          <p style={{margin:'16px 0 0',textAlign:'center',fontSize:'13px',color:'#a0a0a0'}}>
-            Já tem conta?{' '}
-            <button onClick={() => { setShowCadastro(false); setShowLogin(true); setErro('') }}
-              style={{background:'none',border:'none',color:accent,fontWeight:700,cursor:'pointer',fontSize:'13px',fontFamily:'inherit'}}>Fazer login</button>
-          </p>
-        </div>
-      </>)}
-    </div>
-  )
-
-  // ── Logado ──────────────────────────────────────────────────────────────────
-  const pedidosAndamento = pedidos.filter(p => !['concluido','entregue','cancelado'].includes(p.status))
-  const pedidosAnteriores = pedidos.filter(p => ['concluido','entregue','cancelado'].includes(p.status))
 
   return (
-    <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
-      <div style={{display:'flex',alignItems:'center',gap:'12px',padding:'20px 20px 16px',borderBottom:'1px solid #f0f0f0',flexShrink:0}}>
-        <div style={{width:'44px',height:'44px',borderRadius:'50%',background:'#f5f5f5',display:'flex',alignItems:'center',justifyContent:'center'}}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a0a0a0" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        </div>
-        <div>
-          <p style={{margin:0,fontWeight:700,fontSize:'16px',color:'#3e3e3e'}}>Meu Perfil</p>
-          <p style={{margin:0,fontSize:'12px',color:'#a0a0a0'}}>Pedidos e dados da sua conta</p>
-        </div>
-      </div>
+    <div className="cc">
+      <div className="cc-topo"><span><h2>Perfil</h2></span></div>
 
-      <div style={{display:'flex',borderBottom:'1px solid #f0f0f0',flexShrink:0}}>
-        {(['pedidos','dados'] as const).map(a => (
-          <button key={a} onClick={() => setAba(a)} style={{flex:1,padding:'12px',background:'none',border:'none',cursor:'pointer',fontSize:'14px',fontWeight:aba===a?700:500,color:aba===a?accent:'#a0a0a0',borderBottom:aba===a?`2px solid ${accent}`:'2px solid transparent',fontFamily:'inherit',transition:'all 0.15s'}}>
-            {a === 'pedidos' ? `Meus Pedidos${pedidos.length > 0 ? ` ${pedidos.length}` : ''}` : 'Dados Pessoais'}
-          </button>
-        ))}
-      </div>
-
-      <div style={{flex:1,overflowY:'auto',padding:'16px 16px 80px'}}>
-        {aba === 'pedidos' && (<>
-          {loading && <div style={{textAlign:'center',padding:'40px',color:'#a0a0a0'}}>Carregando...</div>}
-          {!loading && pedidos.length === 0 && (
-            <div style={{textAlign:'center',padding:'48px 20px'}}>
-              <div style={{width:'64px',height:'64px',borderRadius:'50%',background:'#f5f5f5',margin:'0 auto 16px',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#d4d4d4" strokeWidth="1.5"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-              </div>
-              <p style={{margin:'0 0 4px',fontWeight:700,fontSize:'16px',color:'#3e3e3e'}}>Nenhum pedido encontrado</p>
-              <p style={{margin:0,fontSize:'13px',color:'#a0a0a0'}}>Seus pedidos aparecerão aqui.</p>
-            </div>
-          )}
-          {pedidosAndamento.length > 0 && (<div style={{marginBottom:'16px'}}>
-            <p style={{margin:'0 0 10px',fontSize:'11px',fontWeight:700,color:'#a0a0a0',textTransform:'uppercase' as const,letterSpacing:'0.06em'}}>Em Andamento</p>
-            {pedidosAndamento.map(p => <PedidoCard key={p.id} p={p} accent={accent} />)}
-          </div>)}
-          {pedidosAnteriores.length > 0 && (<div>
-            <p style={{margin:'0 0 10px',fontSize:'11px',fontWeight:700,color:'#a0a0a0',textTransform:'uppercase' as const,letterSpacing:'0.06em'}}>Anteriores</p>
-            {pedidosAnteriores.map(p => <PedidoCard key={p.id} p={p} accent={accent} />)}
-          </div>)}
-        </>)}
-
-        {aba === 'dados' && (
-          <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
-            {/* Info cliente */}
-            <div style={{display:'flex',alignItems:'center',gap:'12px',padding:'16px',background:'#f9fafb',borderRadius:'12px'}}>
-              <div style={{width:'42px',height:'42px',borderRadius:'50%',background:'#e5e7eb',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              </div>
-              <div>
-                <p style={{margin:0,fontWeight:700,fontSize:'15px',color:'#3e3e3e'}}>{cliente.nome}</p>
-                <p style={{margin:0,fontSize:'13px',color:'#a0a0a0'}}>{cliente.telefone}</p>
-              </div>
+      <div className="cc-rolo">
+        {!cliente ? (
+          <SemConta cor={accent} titulo="Entre na sua conta" texto="Com o seu WhatsApp, você acompanha os pedidos e salva endereços pra pedir mais rápido." aoEntrar={() => setEntrar(true)} />
+        ) : (
+          <>
+            <div className="cc-eu">
+              <span className="cc-av" style={{ background: accent }}>{(cliente.nome || '?').trim().charAt(0).toUpperCase()}</span>
+              <span><b>{cliente.nome}</b><small>{mascaraTel(cliente.telefone || '')}</small></span>
             </div>
 
-            {/* Endereços */}
-            <div style={{background:'#f9fafb',borderRadius:'12px',padding:'16px'}}>
-              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'12px'}}>
-                <p style={{margin:0,fontWeight:700,fontSize:'14px',color:'#3e3e3e'}}>Endereços de Entrega</p>
-                <button onClick={() => setShowAddEndereco(true)}
-                  style={{display:'flex',alignItems:'center',gap:'4px',background:'none',border:'none',color:accent,fontWeight:600,fontSize:'13px',cursor:'pointer',fontFamily:'inherit'}}>
-                  + Novo Endereço
-                </button>
+            <h3 className="cc-sec">Endereços de entrega</h3>
+            {enderecos.length === 0 && <p className="cc-nada">Nenhum endereço salvo. Os endereços dos seus pedidos com entrega aparecem aqui.</p>}
+            {enderecos.map((e, i) => (
+              <div key={i} className="cc-end">
+                <MapPin size={22} weight="bold" />
+                <span><b>{e.rua}{e.numero ? `, ${e.numero}` : ''}</b><small>{[e.complemento, e.bairro, e.cidade].filter(Boolean).join(' · ')}</small></span>
+                <button type="button" className="cc-bt-ic" aria-label={`Tirar o endereço ${e.rua}, ${e.numero}`} onClick={() => tirar(i)}><Trash size={20} weight="bold" /></button>
               </div>
-              {enderecos.length === 0 ? (
-                <div style={{textAlign:'center',padding:'20px 0'}}>
-                  <p style={{margin:'0 0 4px',fontSize:'13px',color:'#a0a0a0'}}>Nenhum endereço cadastrado</p>
-                  <button onClick={() => setShowAddEndereco(true)}
-                    style={{marginTop:'8px',padding:'10px 20px',background:accent,color:'white',border:'none',borderRadius:'10px',fontWeight:600,fontSize:'13px',cursor:'pointer',fontFamily:'inherit'}}>
-                    + Adicionar endereço
-                  </button>
-                </div>
-              ) : (
-                <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
-                  {enderecos.map((e, i) => (
-                    <div key={i} style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',padding:'12px',background:'#fff',borderRadius:'10px',border:'1.5px solid #f0f0f0'}}>
-                      <div style={{display:'flex',gap:'10px',flex:1,minWidth:0}}>
-                        <div style={{width:'32px',height:'32px',borderRadius:'8px',background:`${accent}15`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                        </div>
-                        <div style={{minWidth:0}}>
-                          <p style={{margin:0,fontSize:'13px',fontWeight:600,color:'#3e3e3e'}}>{e.rua}, {e.numero}{e.complemento ? ` - ${e.complemento}` : ''}</p>
-                          <p style={{margin:'2px 0 0',fontSize:'12px',color:'#a0a0a0'}}>{e.bairro}{e.cidade ? ` · ${e.cidade}` : ''}{e.cep ? ` · ${e.cep}` : ''}</p>
-                        </div>
-                      </div>
-                      <button onClick={() => { const l = enderecos.filter((_,j) => j !== i); salvarEnderecos(cliente.telefone, l) }}
-                        style={{background:'none',border:'none',cursor:'pointer',color:'#d1d5db',padding:'4px',flexShrink:0}}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            ))}
+            {enderecos.length < 5 && (
+              <button type="button" className="cc-add" style={{ color: accent }} onClick={() => { setNovo(VAZIO); setFalta(false); setNovoAberto(true) }}>
+                <Plus size={20} weight="bold" />Adicionar endereço
+              </button>
+            )}
 
-            <button onClick={handleSair}
-              style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',padding:'14px',background:'none',border:'1.5px solid #fee2e2',borderRadius:'12px',color:'#dc2626',fontWeight:600,fontSize:'14px',cursor:'pointer',fontFamily:'inherit'}}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-              Sair da Conta
-            </button>
-          </div>
+            <button type="button" className="cc-sair" onClick={sair}><SignOut size={20} weight="bold" />Sair da conta</button>
+          </>
         )}
       </div>
 
-      {/* Modal adicionar endereço */}
-      {showAddEndereco && (<>
-        <div onClick={() => setShowAddEndereco(false)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',zIndex:300}} />
-        <div style={{position:'fixed',bottom:0,left:0,right:0,zIndex:301,background:'#fff',borderRadius:'24px 24px 0 0',padding:'24px 20px 32px',maxWidth:'480px',margin:'0 auto',maxHeight:'90vh',overflowY:'auto'}}>
-          <div style={{width:'36px',height:'4px',background:'#e5e7eb',borderRadius:'4px',margin:'0 auto 20px'}} />
-          <button onClick={() => setShowAddEndereco(false)} style={{position:'absolute',top:'16px',right:'16px',background:'none',border:'none',cursor:'pointer',color:'#a0a0a0',fontSize:'20px'}}>✕</button>
-          <p style={{margin:'0 0 4px',fontWeight:800,fontSize:'20px',color:'#3e3e3e'}}>Adicionar endereço</p>
-          <p style={{margin:'0 0 20px',fontSize:'13px',color:'#a0a0a0'}}>Preencha o endereço para entregas. Você pode buscar pelo CEP.</p>
-          <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-            <div style={{position:'relative'}}>
-              <input value={novoCep} placeholder="CEP (00000-000)" inputMode="numeric"
-                onChange={e => {
-                  let v = e.target.value.replace(/\D/g,'').slice(0,8)
-                  if (v.length > 5) v = v.slice(0,5)+'-'+v.slice(5)
-                  setNovoCep(v)
-                  if (v.replace(/\D/g,'').length === 8) buscarCepNovo(v)
-                }}
-                style={{width:'100%',padding:'12px 40px 12px 12px',border:'1.5px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box' as const,fontFamily:'inherit',background:'#fafafa'}} />
-              {cepLoading && <div style={{position:'absolute',right:'12px',top:'50%',transform:'translateY(-50%)',width:'16px',height:'16px',border:'2px solid #f0f0f0',borderTopColor:accent,borderRadius:'50%',animation:'spin 0.6s linear infinite'}} />}
-            </div>
-            <div style={{display:'flex',gap:'8px'}}>
-              {inpField('Rua / Avenida', novoRua, setNovoRua)}
-            </div>
-            <div style={{display:'flex',gap:'8px'}}>
-              <input value={novoNumero} onChange={e=>setNovoNumero(e.target.value)} placeholder="Número"
-                style={{width:'30%',padding:'12px',border:'1.5px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box' as const,fontFamily:'inherit',background:'#fafafa'}} />
-              <input value={novoComplemento} onChange={e=>setNovoComplemento(e.target.value)} placeholder="Complemento"
-                style={{flex:1,padding:'12px',border:'1.5px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box' as const,fontFamily:'inherit',background:'#fafafa'}} />
-            </div>
-            {inpField('Bairro', novoBairro, setNovoBairro)}
-            {inpField('Cidade', novoCidade, setNovoCidade)}
-          </div>
-          <div style={{display:'flex',gap:'10px',marginTop:'16px'}}>
-            <button onClick={() => setShowAddEndereco(false)}
-              style={{flex:1,padding:'14px',background:'#f5f5f5',border:'none',borderRadius:'12px',fontWeight:600,fontSize:'14px',color:'#717171',cursor:'pointer',fontFamily:'inherit'}}>
-              Cancelar
-            </button>
-            <button onClick={handleSalvarEndereco}
-              style={{flex:2,padding:'14px',background:accent,color:'white',border:'none',borderRadius:'12px',fontWeight:700,fontSize:'14px',cursor:'pointer',fontFamily:'inherit'}}>
-              Salvar endereço
-            </button>
-          </div>
-        </div>
-      </>)}
-    </div>
-  )
-}
+      <JanelaEntrar aberta={entrar} aoFechar={() => setEntrar(false)} loja={confeteiraUserId} cor={accent} aoEntrar={setCliente} />
 
-function PedidoCard({ p, accent }: { p: Pedido; accent: string }) {
-  const sc = STATUS_CONFIG[p.status] || STATUS_CONFIG['novo']
-  const data = p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' }) : ''
-  const hora = p.created_at ? new Date(p.created_at).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : ''
-
-  return (
-    <div style={{background:'#fff',border:'1.5px solid #f0f0f0',borderRadius:'14px',marginBottom:'10px',overflow:'hidden'}}>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 14px',borderBottom:'1px solid #f5f5f5'}}>
-        <div>
-          <span style={{fontWeight:700,fontSize:'14px',color:'#3e3e3e'}}>#{p.numero}</span>
-          <span style={{fontSize:'12px',color:'#a0a0a0',marginLeft:'8px'}}>{data}{hora ? `, ${hora}` : ''}</span>
-        </div>
-        <span style={{fontSize:'11px',fontWeight:700,padding:'4px 10px',borderRadius:'20px',color:sc.color,background:sc.bg}}>{sc.label}</span>
-      </div>
-      <div style={{padding:'12px 14px',display:'flex',flexDirection:'column',gap:'8px'}}>
-        {(p.pedido_itens || []).map((item, i) => (
-          <div key={i} style={{display:'flex',alignItems:'center',gap:'10px'}}>
-            <div style={{width:'36px',height:'36px',borderRadius:'8px',background:'#f5f5f5',overflow:'hidden',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'1rem'}}>
-              {item.produtos?.imagem_url ? <img src={item.produtos.imagem_url} alt={item.nome_produto} style={{width:'100%',height:'100%',objectFit:'cover'}} /> : '🎂'}
-            </div>
-            <div style={{flex:1,minWidth:0}}>
-              <p style={{margin:0,fontSize:'13px',fontWeight:600,color:'#3e3e3e',whiteSpace:'nowrap' as const,overflow:'hidden',textOverflow:'ellipsis'}}>{item.nome_produto}</p>
-              <p style={{margin:0,fontSize:'12px',color:'#a0a0a0'}}>Qtd {item.quantidade} · {formatMoney(item.valor_unitario)}</p>
-            </div>
-            <p style={{margin:0,fontSize:'13px',fontWeight:700,color:'#3e3e3e',flexShrink:0}}>{formatMoney(item.quantidade * item.valor_unitario)}</p>
+      <Janela aberta={novoAberto} aoFechar={() => setNovoAberto(false)} tipo="conteudo" titulo="Novo endereço" umaAcao
+        acoes={<button type="button" className="cc-bt" style={{ background: accent }} onClick={salvarNovo}>Salvar endereço</button>}>
+        <div className="cc-form">
+          <div className="cc-form-2">
+            <Campo rotulo="CEP" inputMode="numeric" autoComplete="postal-code" placeholder="00000-000" value={novo.cep}
+              dica={cepBuscando ? 'Procurando…' : undefined}
+              onChange={ev => { const v = ev.target.value.replace(/\D/g, '').slice(0, 8); setNovo(n => ({ ...n, cep: v.length > 5 ? `${v.slice(0, 5)}-${v.slice(5)}` : v })); buscarCep(v) }} />
+            <Campo rotulo="Número" inputMode="numeric" value={novo.numero} onChange={ev => setNovo(n => ({ ...n, numero: ev.target.value }))}
+              erro={falta && !novo.numero.trim() ? 'Falta o número' : undefined} />
           </div>
-        ))}
-      </div>
-      <div style={{padding:'10px 14px',background:'#fafafa',borderTop:'1px solid #f5f5f5',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-        <div style={{fontSize:'12px',color:'#a0a0a0'}}>
-          {p.tipo_entrega === 'retirada' ? '🏪 Retirada' : '🚗 Entrega'}
-          {p.data_entrega && ` · ${new Date(p.data_entrega+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}`}
-          {p.horario_entrega && ` ${p.horario_entrega.slice(0,5)}`}
+          <Campo rotulo="Rua" autoComplete="address-line1" value={novo.rua} onChange={ev => setNovo(n => ({ ...n, rua: ev.target.value }))}
+            erro={falta && !novo.rua.trim() ? 'Falta a rua' : undefined} />
+          <Campo rotulo="Complemento" opcional placeholder="Apto, bloco…" value={novo.complemento} onChange={ev => setNovo(n => ({ ...n, complemento: ev.target.value }))} />
+          <div className="cc-form-2">
+            <Campo rotulo="Bairro" value={novo.bairro} onChange={ev => setNovo(n => ({ ...n, bairro: ev.target.value }))} />
+            <Campo rotulo="Cidade" value={novo.cidade} onChange={ev => setNovo(n => ({ ...n, cidade: ev.target.value }))} />
+          </div>
         </div>
-        <div style={{textAlign:'right' as const}}>
-          <p style={{margin:0,fontSize:'14px',fontWeight:800,color:'#3e3e3e'}}>{formatMoney(p.valor_total)}</p>
-          <p style={{margin:0,fontSize:'11px',color:p.status_pagamento==='pago'?'#16a34a':'#f59e0b',fontWeight:600}}>
-            {p.status_pagamento === 'pago' ? 'Pago' : 'Pendente'}
-          </p>
-        </div>
-      </div>
+      </Janela>
     </div>
   )
 }

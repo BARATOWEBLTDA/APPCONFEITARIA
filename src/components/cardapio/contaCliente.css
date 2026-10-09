@@ -1,0 +1,73 @@
+/* Pedidos e Perfil da cliente (08/10 · 3.31) */
+.cc { flex: 1; min-height: 0; display: flex; flex-direction: column; background: #F7F4F5; font-family: var(--font-base); color: #2C1219; }
+.cc button { font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.cc button:focus { outline: none; }
+.cc-topo { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 64px; padding: 12px 8px 12px 16px; background: #fff; border-bottom: 1px solid #F3EEF0; }
+.cc-topo h2 { margin: 0; font-size: 22px; font-weight: 800; line-height: 1.2; }
+.cc-topo small { display: block; font-size: 13px; color: #6B5D64; }
+.cc-rolo { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 8px 16px 24px; }
+.cc-sec { margin: 16px 0 8px; font-size: 15px; font-weight: 800; color: #2C1219; }
+.cc-bt-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: 0; border: 0; border-radius: 12px; background: none; color: #6B5D64; }
+.cc-bt-ic:hover { background: #F3EEF0; }
+.cc-bt-ic:disabled { cursor: default; }
+.cc-bt-ic.gira svg { animation: ccGira .8s linear infinite; }
+@keyframes ccGira { to { transform: rotate(360deg); } }
+.cc-bt { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 52px; margin: 0; padding: 0 24px; border: 0; border-radius: 12px; color: #fff; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; }
+.cc-bt:disabled { opacity: .6; cursor: default; }
+
+/* sem conta / vazio */
+.cc-sem { display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 360px; margin: 0 auto; padding: 56px 8px 24px; text-align: center; }
+.cc-sem-ic { display: flex; align-items: center; justify-content: center; width: 80px; height: 80px; margin-bottom: 8px; border-radius: 50%; background: #F3EEF0; color: #B5AAB0; }
+.cc-sem b { font-size: 18px; font-weight: 800; }
+.cc-sem p { margin: 0 0 12px; font-size: 15px; line-height: 1.5; color: #6B5D64; }
+.cc-sem .cc-bt { max-width: 300px; }
+.cc-entrar { display: flex; flex-direction: column; gap: 12px; }
+.cc-entrar p { margin: 0; font-size: 15px; line-height: 1.5; color: #6B5D64; }
+
+/* cartão do pedido */
+.cc-ped { display: block; margin-bottom: 12px; padding: 16px; border-radius: 16px; background: #fff; box-shadow: 0 1px 2px rgba(44,18,25,.05); }
+.cc-ped.off { opacity: .75; }
+.cc-ped--esq { height: 180px; background: linear-gradient(90deg, #fff 0%, #F7F4F5 50%, #fff 100%); background-size: 200% 100%; animation: ccEsq 1.2s ease-in-out infinite; }
+@keyframes ccEsq { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+.cc-ped-cab { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.cc-ped-cab b { display: block; font-size: 16px; font-weight: 800; }
+.cc-ped-cab small { display: block; font-size: 13px; color: #6B5D64; }
+.cc-ped-cab strong { flex: none; font-size: 16px; font-weight: 800; }
+.cc-sit { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; font-size: 15px; font-weight: 800; }
+.cc-sit--ok { color: #15803D; }
+.cc-sit--off { color: #B91C1C; }
+.cc-sit-pt { flex: none; width: 10px; height: 10px; border-radius: 50%; background: #B91C1C; }
+.cc-sit--and .cc-sit-pt { animation: ccPulso 1.6s ease-in-out infinite; }
+@keyframes ccPulso { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+.cc-sit-ok { flex: none; display: flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: #16a34a; color: #fff; }
+.cc-passos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 8px; }
+.cc-passos i { height: 4px; border-radius: 2px; background: #EDE6E9; }
+.cc-itens { margin: 12px 0 0; padding: 12px 0 0; list-style: none; border-top: 1px solid #F3EEF0; }
+.cc-itens li { font-size: 14px; line-height: 1.6; color: #2C1219; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cc-itens li b { font-weight: 800; }
+.cc-itens .cc-mais { color: #6B5D64; }
+.cc-ped-pe { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; }
+.cc-ped-pe span { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #6B5D64; }
+.cc-ped-pe svg { flex: none; color: #9A8E94; }
+.cc-ped-pe .ok { font-style: normal; font-weight: 700; color: #15803D; }
+.cc-zap { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; margin-top: 12px; border: 1.5px solid #BBF7D0; border-radius: 12px; background: #F0FDF4; color: #15803D; font-size: 15px; font-weight: 800; text-decoration: none; }
+.cc-zap:hover { background: #DCFCE7; }
+
+/* perfil */
+.cc-eu { display: flex; align-items: center; gap: 12px; margin-top: 8px; padding: 16px; border-radius: 16px; background: #fff; }
+.cc-av { flex: none; display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%; color: #fff; font-size: 22px; font-weight: 800; }
+.cc-eu > span:last-child { min-width: 0; }
+.cc-eu b { display: block; font-size: 17px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cc-eu small { display: block; font-size: 14px; color: #6B5D64; }
+.cc-nada { margin: 0 0 8px; font-size: 14px; line-height: 1.5; color: #6B5D64; }
+.cc-end { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; padding: 8px 4px 8px 16px; border-radius: 16px; background: #fff; }
+.cc-end > svg { flex: none; color: #9A8E94; }
+.cc-end > span { flex: 1; min-width: 0; }
+.cc-end b { display: block; font-size: 15px; font-weight: 800; }
+.cc-end small { display: block; font-size: 13px; color: #6B5D64; }
+.cc-add { display: flex; align-items: center; gap: 8px; min-height: 48px; margin: 0; padding: 0 4px; border: 0; background: none; font-size: 15px; font-weight: 800; }
+.cc-sair { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 52px; margin-top: 32px; border: 0; border-radius: 12px; background: #fff; color: #B91C1C; font-size: 15px; font-weight: 800; }
+.cc-sair:hover { background: #FEF2F2; }
+.cc-form { display: flex; flex-direction: column; gap: 12px; }
+.cc-form-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+@media (prefers-reduced-motion: reduce) { .cc-sit--and .cc-sit-pt, .cc-ped--esq, .cc-bt-ic.gira svg { animation: none; } }

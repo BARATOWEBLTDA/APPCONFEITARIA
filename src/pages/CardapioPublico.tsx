@@ -140,7 +140,7 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
               <div className="cp-conta-abas">
                 {(['pedidos', 'perfil'] as const).map(a => (
                   <button key={a} type="button" aria-pressed={contaAba === a} style={contaAba === a ? { background: accent, color: '#fff' } : undefined} onClick={() => setContaAba(a)}>
-                    {a === 'pedidos' ? 'Meus pedidos' : 'Perfil'}
+                    {a === 'pedidos' ? 'Pedidos' : 'Perfil'}
                   </button>
                 ))}
               </div>

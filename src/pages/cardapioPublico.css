@@ -92,3 +92,5 @@
 .cp-conta-abas button { min-height: 44px; margin: 0; padding: 0 18px; border: 0; border-radius: 999px; background: #F3EEF0; color: #6B5D64; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
 .cp-conta-x { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: 0; border: 0; border-radius: 12px; background: none; color: #2C1219; cursor: pointer; }
 .cp-conta-x:hover { background: #F3EEF0; }
+.cp-conta .cc-topo { display: none; }
+.cp-conta .cc-rolo { padding: 8px 24px 24px; }
