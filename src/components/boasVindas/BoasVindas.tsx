@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode, TouchEvent } from 'react'
 import { ArrowLeft, Bell, BookOpen, CalendarBlank, CalendarDots, CaretRight, CurrencyDollar, FolderSimple, Gear, House, Plus, Receipt, ShoppingBag } from '@phosphor-icons/react'
-import { Botao, BotaoIcone, Linha } from '@/components/base'
+import { Botao, BotaoIcone } from '@/components/base'
 import { Mascote, NomeDoonly } from '@/components/marca/Mascote'
 import { CartaoPedido, LinhaPedido } from '@/components/pedidos/CartaoPedido'
-import { acaoDe, situacaoDe, type Pedido } from '@/components/pedidos/pedidoTexto'
+import { acaoDe, type Pedido } from '@/components/pedidos/pedidoTexto'
 import '@/components/pedidos/pedidos.css'
-import '@/components/pedidos/telaPedido.css'
 import { tocarSom } from '@/hooks/useSom'
 import { nomeApresentavel } from '@/lib/nomeApresentavel'
 import './boasVindas.css'
@@ -281,49 +280,26 @@ const pedidoExemplo = (x: Partial<Pedido> & { pedido_itens: any[] }): Pedido => 
 } as Pedido)
 const nada = () => {}
 
-/* ───────── 3 · pedidos (09/10 · 3.74): os pedidos vão chegando pelo cardápio, cada um com o som de pedido,
-   e o mais novo entra em cima (como na lista de Pedidos). Ao tocar em Aceitar, o cartão se abre e mostra o pedido
-   completo (o do bolo traz o topo de bolo como adicional e o recado com a foto de referência). O botão segue o
-   fluxo do app. Se ninguém tocar, o último que chegou se aceita sozinho, pra ninguém ficar sem ver o pedido aberto.
-   As datas andam com o dia de hoje (entregas daqui a 3 a 5 dias) e o telefone é o do suporte do Doonly. ───────── */
+/* ───────── 3 · pedidos (09/10 · 3.80): os pedidos vão chegando pelo cardápio, cada um com o som de pedido,
+   e o mais novo entra em cima (como na lista de Pedidos). Os cartões só aparecem, não se abrem; o botão de cada um
+   segue o fluxo do app. As datas andam com o dia de hoje (entregas daqui a 3 a 5 dias). ───────── */
 const TEL_SUPORTE = '11978414991'
-const RECADO_BOLO = (
-  <div className="bv-ped-extra">
-    <Linha rotulo="Adicionais">Topo de bolo personalizado</Linha>
-    <div className="tpd-recado">
-      <span className="tpd-ref"><img src="/tutorial/leve/doisamores.webp" alt="" /></span>
-      <div>
-        <small>Recado do item</small>
-        <p>“Tema jardim, com o nome Alice e 5 anos”</p>
-        <span>Toque na foto pra ampliar</span>
-      </div>
-    </div>
-  </div>
-)
 // na ordem em que chegam: o último é o do bolo, que fica em cima
-const CHEGADAS: { p: Pedido; extra?: ReactNode }[] = [
+const CHEGADAS: { p: Pedido }[] = [
   { p: pedidoExemplo({ numero: 1049, cliente_nome: 'Marina Silva', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', origem: 'cardapio', data_entrega: isoDia(5), horario_entrega: '16:30', valor_total: 150,
       pedido_itens: [item('Caixa de Brigadeiro', '/tutorial/leve/caixa4.webp', 1, 150)] }) },
   { p: pedidoExemplo({ numero: 1050, cliente_nome: 'Juliana Souza', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', origem: 'cardapio', data_entrega: isoDia(4), horario_entrega: '09:00', valor_total: 95,
       pedido_itens: [item('Salgadinhos', '/tutorial/leve/salgadinhos.webp', 100, 0.95)] }) },
   { p: pedidoExemplo({ numero: 1051, cliente_nome: 'Camila Rocha', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', origem: 'cardapio', data_entrega: isoDia(3), horario_entrega: '14:00', valor_total: 320,
-      pedido_itens: [item('Bolo de aniversário 2 kg', '/tutorial/leve/doisamores.webp', 1, 320)] }), extra: RECADO_BOLO },
+      pedido_itens: [item('Bolo de aniversário 2 kg', '/tutorial/leve/doisamores.webp', 1, 320)] }) },
 ]
 const INTERVALO_CHEGADA = 1500
 
 function DemoPedidos() {
   const [chegaram, setChegaram] = useState(0)
   const [status, setStatus] = useState<Record<string, string>>({})
-  const [abertos, setAbertos] = useState<Record<string, boolean>>({})
-  const mexeu = useRef(false)
   useEffect(() => {
     const ts = CHEGADAS.map((_, i) => window.setTimeout(() => { tocarSom('pedido'); vibrarLeve(); setChegaram(i + 1) }, 700 + i * INTERVALO_CHEGADA))
-    // ninguém tocou: o último que chegou (o do bolo) se aceita sozinho
-    const ultimo = CHEGADAS[CHEGADAS.length - 1].p
-    ts.push(window.setTimeout(() => {
-      if (mexeu.current) return
-      setStatus(s => ({ ...s, [ultimo.id]: 'agendado' })); setAbertos(a => ({ ...a, [ultimo.id]: true }))
-    }, 700 + (CHEGADAS.length - 1) * INTERVALO_CHEGADA + 3800))
     return () => ts.forEach(t => clearTimeout(t))
   }, [])
   const comStatus = (p: Pedido) => ({ ...p, status: status[p.id] || p.status })
@@ -331,25 +307,22 @@ function DemoPedidos() {
   const avancar = (p: Pedido) => {
     const prox = acaoDe(p)?.proximo
     if (!prox) return
-    mexeu.current = true
     tocarSom(prox === 'entregue' ? 'sucesso' : 'click'); vibrarLeve()
     setStatus(s => ({ ...s, [p.id]: prox }))
-    if (p.status === 'aguardando_aceite') setAbertos(a => ({ ...a, [p.id]: true }))
   }
   const lista = CHEGADAS.slice(0, chegaram).reverse() // o mais novo em cima
-  const aberto = lista.find(({ p }) => abertos[p.id])
   return (
     <>
       {/* celular e tablet: os cartões da lista de Pedidos */}
       <div className="bv-ped">
         {chegaram > 0 && <div className="bv-aviso" key={`a${chegaram}`}><Bell size={14} weight="fill" aria-hidden="true" /><span><b>Novo pedido</b> pelo cardápio</span></div>}
         <div className="bv-ped-lista">
-          {lista.map(({ p, extra }) => {
+          {lista.map(({ p }) => {
             const atual = comStatus(p)
             return (
               <div key={p.id} className={`bv-ped-entra${atual.status === 'aguardando_aceite' ? ' bv-ped--novo' : ''}`}>
                 <div>
-                  <CartaoPedido p={atual} aoAbrir={nada} aoAvancar={avancar} aoMenu={nada} aoEndereco={nada} abertoFixo={!!abertos[p.id]} extra={extra} />
+                  <CartaoPedido p={atual} aoAbrir={nada} aoAvancar={avancar} aoMenu={nada} aoEndereco={nada} />
                 </div>
               </div>
             )
@@ -367,7 +340,7 @@ function DemoPedidos() {
           <div className="bv-app-main">
             <header className="bv-app-topo"><b>Meus pedidos</b><small>Acompanhe suas encomendas e produção</small></header>
             <div className="bv-app-corpo">
-              {chegaram > 0 && !aberto && <div className="bv-aviso bv-aviso--pc" key={`b${chegaram}`}><Bell size={14} weight="fill" aria-hidden="true" /><span><b>Novo pedido</b> pelo cardápio</span></div>}
+              {chegaram > 0 && <div className="bv-aviso bv-aviso--pc" key={`b${chegaram}`}><Bell size={14} weight="fill" aria-hidden="true" /><span><b>Novo pedido</b> pelo cardápio</span></div>}
               <div className="pdl-cab" aria-hidden="true"><span>Cliente e pedido</span><span>Situação</span><span>Pagamento</span><span>Entrega</span><span /><span /></div>
               <p className="bv-app-grupo">Esta semana{chegaram > 0 && <i>{chegaram}</i>}</p>
               {lista.length > 0 && (
@@ -380,22 +353,6 @@ function DemoPedidos() {
               )}
             </div>
           </div>
-          {aberto && (
-            <div className="bv-app-painel" key={aberto.p.id}>
-              <p className="bv-app-painel-t"><b>Pedido #{aberto.p.numero}</b><small>{aberto.p.cliente_nome}</small></p>
-              <Linha rotulo="Situação" tom={situacaoDe(comStatus(aberto.p)).tom}>{situacaoDe(comStatus(aberto.p)).nome}</Linha>
-              <Linha rotulo="Telefone">(11) 97841-4991</Linha>
-              <ul className="tpd-itens">
-                <li>
-                  <div className="tpd-it-topo">
-                    <span className="tpd-ft"><img src={aberto.p.pedido_itens?.[0]?.imagem_url || ''} alt="" /></span>
-                    <div className="tpd-it-tx"><b><em>{aberto.p.pedido_itens?.[0]?.quantidade}x</em> {aberto.p.pedido_itens?.[0]?.nome_produto}</b><span>R$ {reais(aberto.p.valor_total)}</span></div>
-                  </div>
-                  {aberto.extra}
-                </li>
-              </ul>
-            </div>
-          )}
         </div>
       </Notebook>
     </>
