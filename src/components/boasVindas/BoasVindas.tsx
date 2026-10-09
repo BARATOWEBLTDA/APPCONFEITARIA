@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { CSSProperties, TouchEvent } from 'react'
+import type { CSSProperties, ReactNode, TouchEvent } from 'react'
 import { ArrowLeft, Bell, CalendarBlank, CaretRight } from '@phosphor-icons/react'
 import { Botao, BotaoIcone, Linha } from '@/components/base'
 import { Mascote, NomeDoonly } from '@/components/marca/Mascote'
@@ -276,62 +276,87 @@ const pedidoExemplo = (x: Partial<Pedido> & { pedido_itens: any[] }): Pedido => 
 } as Pedido)
 const nada = () => {}
 
-/* ───────── 3 · pedidos (09/10 · 3.70): toca o som de pedido, chega um pedido pelo cardápio e, ao aceitar,
-   o próprio cartão se abre (como na lista de Pedidos) com o adicional e o recado com a foto de referência. Se a pessoa não tocar
-   em Aceitar, ele se aperta sozinho, pra ninguém ficar sem ver o pedido completo. ───────── */
-const PEDIDO_DEMO = pedidoExemplo({ numero: 1049, cliente_nome: 'Renata Dias', cliente_telefone: '41999990000', status: 'aguardando_aceite', origem: 'cardapio', horario_entrega: '14:00', valor_total: 320,
-  pedido_itens: [item('Bolo de aniversário 2 kg', '/tutorial/leve/doisamores.webp', 1, 320)] })
+/* ───────── 3 · pedidos (09/10 · 3.74): os pedidos vão chegando pelo cardápio, cada um com o som de pedido,
+   e o mais novo entra em cima (como na lista de Pedidos). Ao tocar em Aceitar, o cartão se abre e mostra o pedido
+   completo (o do bolo traz o topo de bolo como adicional e o recado com a foto de referência). O botão segue o
+   fluxo do app. Se ninguém tocar, o último que chegou se aceita sozinho, pra ninguém ficar sem ver o pedido aberto.
+   As datas andam com o dia de hoje (entregas daqui a 3 a 5 dias) e o telefone é o do suporte do Doonly. ───────── */
+const TEL_SUPORTE = '11978414991'
+const RECADO_BOLO = (
+  <div className="bv-ped-extra">
+    <Linha rotulo="Adicionais">Topo de bolo personalizado</Linha>
+    <div className="tpd-recado">
+      <span className="tpd-ref"><img src="/tutorial/leve/doisamores.webp" alt="" /></span>
+      <div>
+        <small>Recado do item</small>
+        <p>“Tema jardim, com o nome Alice e 5 anos”</p>
+        <span>Toque na foto pra ampliar</span>
+      </div>
+    </div>
+  </div>
+)
+// na ordem em que chegam: o último é o do bolo, que fica em cima
+const CHEGADAS: { p: Pedido; extra?: ReactNode }[] = [
+  { p: pedidoExemplo({ numero: 1049, cliente_nome: 'Marina Silva', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', origem: 'cardapio', data_entrega: isoDia(5), horario_entrega: '16:30', valor_total: 150,
+      pedido_itens: [item('Caixa de Brigadeiro', '/tutorial/leve/caixa4.webp', 1, 150)] }) },
+  { p: pedidoExemplo({ numero: 1050, cliente_nome: 'Juliana Souza', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', origem: 'cardapio', data_entrega: isoDia(4), horario_entrega: '09:00', valor_total: 95,
+      pedido_itens: [item('Salgadinhos', '/tutorial/leve/salgadinhos.webp', 100, 0.95)] }) },
+  { p: pedidoExemplo({ numero: 1051, cliente_nome: 'Camila Rocha', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', origem: 'cardapio', data_entrega: isoDia(3), horario_entrega: '14:00', valor_total: 320,
+      pedido_itens: [item('Bolo de aniversário 2 kg', '/tutorial/leve/doisamores.webp', 1, 320)] }), extra: RECADO_BOLO },
+]
+const INTERVALO_CHEGADA = 1500
 
 function DemoPedidos() {
-  const [fase, setFase] = useState(0) // 0 = esperando · 1 = chegou · 2 = aceito (e daí o botão segue o fluxo do app)
-  const [status, setStatus] = useState(PEDIDO_DEMO.status)
+  const [chegaram, setChegaram] = useState(0)
+  const [status, setStatus] = useState<Record<string, string>>({})
+  const [abertos, setAbertos] = useState<Record<string, boolean>>({})
+  const mexeu = useRef(false)
   useEffect(() => {
-    const t = window.setTimeout(() => { tocarSom('pedido'); vibrarLeve(); setFase(1) }, 700)
-    return () => clearTimeout(t)
+    const ts = CHEGADAS.map((_, i) => window.setTimeout(() => { tocarSom('pedido'); vibrarLeve(); setChegaram(i + 1) }, 700 + i * INTERVALO_CHEGADA))
+    // ninguém tocou: o último que chegou (o do bolo) se aceita sozinho
+    const ultimo = CHEGADAS[CHEGADAS.length - 1].p
+    ts.push(window.setTimeout(() => {
+      if (mexeu.current) return
+      setStatus(s => ({ ...s, [ultimo.id]: 'agendado' })); setAbertos(a => ({ ...a, [ultimo.id]: true }))
+    }, 700 + (CHEGADAS.length - 1) * INTERVALO_CHEGADA + 3800))
+    return () => ts.forEach(t => clearTimeout(t))
   }, [])
-  useEffect(() => {
-    if (fase !== 1) return
-    const t = window.setTimeout(() => { setStatus('agendado'); setFase(2) }, 3600)
-    return () => clearTimeout(t)
-  }, [fase])
-  const p = { ...PEDIDO_DEMO, status }
+  const comStatus = (p: Pedido) => ({ ...p, status: status[p.id] || p.status })
   // o botão do cartão faz o mesmo que no app: Aceitar → Produzir → Pronto → Pronto pra retirar → Entregue
-  const avancar = () => {
+  const avancar = (p: Pedido) => {
     const prox = acaoDe(p)?.proximo
     if (!prox) return
+    mexeu.current = true
     tocarSom(prox === 'entregue' ? 'sucesso' : 'click'); vibrarLeve()
-    setStatus(prox)
-    if (fase === 1) setFase(2)
+    setStatus(s => ({ ...s, [p.id]: prox }))
+    if (p.status === 'aguardando_aceite') setAbertos(a => ({ ...a, [p.id]: true }))
   }
+  const lista = CHEGADAS.slice(0, chegaram).reverse() // o mais novo em cima
   return (
-    <div className={`bv-ped bv-ped--f${fase}`}>
-      {fase > 0 && <div className="bv-aviso"><Bell size={14} weight="fill" aria-hidden="true" /><span><b>Novo pedido</b> pelo cardápio</span></div>}
-      {fase > 0 && (
-        <div className="bv-cai">
-          <CartaoPedido p={p} aoAbrir={nada} aoAvancar={avancar} aoMenu={nada} aoEndereco={nada} abertoFixo={fase === 2} extra={
-            <div className="bv-ped-extra">
-              <Linha rotulo="Adicionais">Topo de bolo personalizado</Linha>
-              <div className="tpd-recado">
-                <span className="tpd-ref"><img src="/tutorial/leve/doisamores.webp" alt="" /></span>
-                <div>
-                  <small>Recado do item</small>
-                  <p>“Tema jardim, com o nome Alice e 5 anos”</p>
-                  <span>Toque na foto pra ampliar</span>
-                </div>
+    <div className="bv-ped">
+      {chegaram > 0 && <div className="bv-aviso" key={`a${chegaram}`}><Bell size={14} weight="fill" aria-hidden="true" /><span><b>Novo pedido</b> pelo cardápio</span></div>}
+      <div className="bv-ped-lista">
+        {lista.map(({ p, extra }) => {
+          const atual = comStatus(p)
+          return (
+            <div key={p.id} className={`bv-ped-entra${atual.status === 'aguardando_aceite' ? ' bv-ped--novo' : ''}`}>
+              <div>
+                <CartaoPedido p={atual} aoAbrir={nada} aoAvancar={avancar} aoMenu={nada} aoEndereco={nada} abertoFixo={!!abertos[p.id]} extra={extra} />
               </div>
             </div>
-          } />
-        </div>
-      )}
+          )
+        })}
+      </div>
     </div>
   )
 }
 
 /* ───────── 4 · dinheiro: o "A receber" do Financeiro ───────── */
+// os mesmos pedidos da tela anterior, com as mesmas datas (daqui a 3, 4 e 5 dias)
 const RECEBER = [
-  { numero: 1049, cliente: 'Renata Dias', quando: 'hoje', total: 320, recebido: 0, entrega: 0 },
-  { numero: 1047, cliente: 'Juliana Souza', quando: 'amanhã', total: 95, recebido: 50, entrega: 1 },
-  { numero: 1050, cliente: 'Carla Menezes', quando: 'em 3 dias', total: 180.5, recebido: 90, entrega: 3 },
+  { numero: 1051, cliente: 'Camila Rocha', quando: 'em 3 dias', total: 320, recebido: 0, entrega: 3 },
+  { numero: 1050, cliente: 'Juliana Souza', quando: 'em 4 dias', total: 95, recebido: 50, entrega: 4 },
+  { numero: 1049, cliente: 'Marina Silva', quando: 'em 5 dias', total: 150, recebido: 80, entrega: 5 },
 ]
 const reais = (n: number) => n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const SEMANA_CURTA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
