@@ -198,6 +198,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Auth />} />
+        <Route path="/cadastro" element={<Auth />} />
         <Route path="/termos" element={<Termos />} />
         <Route path="/privacidade" element={<Privacidade />} />
         {/* Rota pública do cardápio — nova estrutura: /c/[codigo]/[slug?] */}

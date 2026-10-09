@@ -8,7 +8,7 @@
  *     pra nunca perder o que ela está digitando. Se não for seguro, espera e tenta de novo.
  */
 const TELAS_DE_PREENCHER = [/^\/vendas\/novo/, /^\/pedidos\/[^/]+\/editar/, /^\/ficha-tecnica/, /^\/cardapio-config/, /^\/checkout-config/,
-  /^\/solicitar-recurso/, /^\/relatar-problema/, /^\/reset-password/, /^\/login/];
+  /^\/solicitar-recurso/, /^\/relatar-problema/, /^\/reset-password/, /^\/login/, /^\/cadastro/];
 
 let temVersaoNova = false;
 

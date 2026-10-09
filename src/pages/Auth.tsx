@@ -65,7 +65,12 @@ export default function Auth() {
   // quem volta do "Esqueci a senha" traz o e-mail que estava digitando
   const [form, setForm] = useState(() => ({ email: String((location.state as { email?: string } | null)?.email || ""), senha: "" }));
   const [fading, setFading] = useState(false);
-  const [showCadastro, setShowCadastro] = useState(false);
+  // Criar conta tem endereço próprio (/cadastro); o voltar do navegador volta pro login (09/10 · 3.66)
+  const showCadastro = location.pathname.startsWith("/cadastro");
+  const setShowCadastro = (abrir: boolean) => {
+    if (abrir === showCadastro) return;
+    navigate(abrir ? `/cadastro${location.search}` : "/login", { replace: false });
+  };
   // Termos e Privacidade abrem numa janela por cima (07/10): não recarrega o app nem perde o que foi digitado
   const [docLegal, setDocLegal] = useState<null | "termos" | "privacidade">(null);
   const abrirDoc = (doc: "termos" | "privacidade") => (e: React.MouseEvent) => {
