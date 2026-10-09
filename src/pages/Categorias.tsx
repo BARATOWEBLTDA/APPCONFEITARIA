@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useRecorte } from "@/components/ui/useRecorte";
 import { useNavigate } from "react-router-dom";
 import { ArrowDown, ArrowUp, DotsThreeVertical, Image as ImageIcon, Info, PencilSimple, Plus, SquaresFour, Trash, UploadSimple } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
@@ -74,8 +75,7 @@ export default function Categorias() {
   const openEditar = (c: Categoria) => { setForm({ ...c }); setShowGaleria(false); setModal(true); };
   const fecharModal = () => { setModal(false); setShowGaleria(false); setForm({ nome: "", imagem_url: "", ordem: 0 }); };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleImageUpload = async (file: File) => {
     if (!file || !userId) return;
     setUploading("img");
     const ext = file.name.split(".").pop();
@@ -88,6 +88,7 @@ export default function Categorias() {
     if (imgRef.current) imgRef.current.value = "";
     setUploading(null);
   };
+  const recorte = useRecorte(f => { void handleImageUpload(f); }, { forma: "rect" });
 
   const handleSalvar = async () => {
     if (!form.nome.trim()) return avisar("Escreva o nome da categoria", { tipo: "erro" });
@@ -221,7 +222,8 @@ export default function Categorias() {
                 {uploading ? <span className="ui-gira" aria-label="Enviando" /> : <><UploadSimple size={24} weight="bold" /><b>Escolher imagem</b><small>PNG com fundo transparente fica melhor</small></>}
               </button>
             )}
-            <input ref={imgRef} type="file" accept="image/*" hidden onChange={handleImageUpload} />
+            <input ref={imgRef} type="file" accept="image/*" hidden onChange={recorte.escolher} />
+      {recorte.janela}
           </div>
         </div>
       </Janela>

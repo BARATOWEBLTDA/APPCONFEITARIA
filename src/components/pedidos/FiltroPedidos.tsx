@@ -112,7 +112,7 @@ export default function FiltroLateral({ statusSelecionados, setStatusSelecionado
         .fl-ln.rd.on span { font-weight: 700; color: #C33A6E; }
         .fl-per { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; padding: 10px 12px 12px; background: #FCF8F9; border-top: 1px solid #F5F0F2; }
         .fl-per small { display: block; font-size: 12px; font-weight: 700; color: #8A7E84; margin-bottom: 4px; }
-        .fl-per .cdata { height: 42px; padding: 0 9px; font-size: 13px; gap: 6px; } /* De/Até lado a lado, sem quebrar */
+        .fl-per .cdata { padding: 0 10px; font-size: 14px; gap: 6px; } /* De/Até lado a lado, sem quebrar */
         .fl-f { display: flex; align-items: center; gap: 10px; padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid #F3EEF1; }
         .fl-limpar { border: none; background: none; padding: 10px 6px; font-family: inherit; font-size: 14.5px; font-weight: 700; color: #9A8E94; cursor: pointer; }
         .fl-ver { flex: 1; border: none; border-radius: 13px; padding: 14px; background: #E85A8C; color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 0 #C33A6E; }

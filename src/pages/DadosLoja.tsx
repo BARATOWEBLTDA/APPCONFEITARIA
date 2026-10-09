@@ -119,6 +119,9 @@ export default function DadosLoja() {
     ];
   }, [nome, telefone, descricao, end, horario]);
   const feitos = itens.filter((i) => i.ok).length;
+  // 09/10: se já abriu tudo preenchido, o resumo não aparece (só aparece pra quem ainda tem o que preencher)
+  const [resumoVisivel, setResumoVisivel] = useState<boolean | null>(null);
+  useEffect(() => { if (!loading && resumoVisivel === null) setResumoVisivel(feitos < itens.length); }, [loading, feitos, itens.length, resumoVisivel]);
   const faltando = itens.filter((i) => !i.ok).map((i) => i.nome);
 
   const irPara = (id: string) => {
@@ -240,7 +243,7 @@ export default function DadosLoja() {
 
       <div className="dl-root">
         {/* Resumo */}
-        <section className="dl-card dl-st">
+        {resumoVisivel !== false && <section className="dl-card dl-st">
           <div className="dl-st-row">
             <b>{tudo ? "Tudo preenchido" : `${feitos} de ${itens.length} preenchidos`}</b>
             {faltando.length > 0 && (
@@ -255,7 +258,7 @@ export default function DadosLoja() {
               </button>
             ))}
           </div>
-        </section>
+        </section>}
 
         {/* Sua loja */}
         <section className="dl-card dl-loja">

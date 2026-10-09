@@ -54,7 +54,6 @@ import Categorias from "@/pages/Categorias";
 import Clientes from "@/pages/Clientes";
 import Complementos from "@/pages/Complementos";
 import ClientePerfil from "@/pages/ClientePerfil";
-import CardapioConfigPage from "@/pages/CardapioConfigPage";
 import CardapioDesign from "@/pages/CardapioDesign";
 import CheckoutConfigPage from "@/pages/CheckoutConfigPage";
 import DadosLoja from "@/pages/DadosLoja";

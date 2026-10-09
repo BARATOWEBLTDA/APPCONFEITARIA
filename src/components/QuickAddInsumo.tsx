@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useRecorte } from "@/components/ui/useRecorte";
 import { Camera, Image as ImagemIc, MagnifyingGlass, Trash, WarningCircle, X } from "@phosphor-icons/react";
 import { parseNumBR } from "@/lib/numeroBR";
 import { supabase } from "@/lib/supabase";
@@ -270,8 +271,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
     setBuscandoImg(false);
   };
 
-  const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleUploadFile = async (file: File) => {
     if (!file || !userId) return;
     setUploadingImg(true);
     const ext = file.name.split(".").pop() || "jpg";
@@ -287,8 +287,8 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       setFotoAberta(false);
     }
     setUploadingImg(false);
-    e.target.value = ""; // reseta input pra permitir mesmo arquivo de novo
   };
+  const recorte = useRecorte(f => { void handleUploadFile(f); }, { forma: "rect" });
 
   const valorNum = parseNumBR(form.valor_compra);
   const qtdNum = parseNumBR(form.qtd_embalagem) || 1;
@@ -368,7 +368,8 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
   const corpo = (
     <div className="cl9-f ig-f">
       {/* Foto (opcional) */}
-      <input ref={galleryRef} type="file" accept="image/*" hidden onChange={handleUploadFile} />
+      <input ref={galleryRef} type="file" accept="image/*" hidden onChange={recorte.escolher} />
+      {recorte.janela}
       <button type="button" className="cl9-f-foto" onClick={() => setFotoAberta(a => !a)} aria-expanded={fotoAberta}>
         <span className="cl9-f-av ig-f-av">{form.imagem_url ? <img src={form.imagem_url} alt="" /> : <Camera size={24} weight="bold" />}</span>
         <span>

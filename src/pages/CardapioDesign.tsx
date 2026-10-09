@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
 import { HexColorPicker } from "react-colorful";
 import { ImageCropper } from "@/components/ui/ImageCropper";
+import { useRecorte } from "@/components/ui/useRecorte";
 import { ArrowCounterClockwise, ArrowsClockwise, Check, Crown, Image as ImageIcon, Images, Layout, Lock, Palette, Storefront, UploadSimple, X } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, BotaoIcone, Janela, Titulo, avisar } from "@/components/base";
@@ -146,8 +147,8 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     setUploading(null);
   };
 
-  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    const file = e.target.files?.[0]; if (!file || !userId) return;
+  const handleBannerUpload = async (file: File, index: number) => {
+    if (!userId) return;
     setUploading(`banner${index}`);
     const suffix = index === 0 ? "" : `-${index}`;
     const url = await uploadImage(file, `banners/${userId}${suffix}`);
@@ -170,8 +171,8 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     await supabase.from("profiles").update({ [keys[index]]: null }).eq("id", userId);
   };
 
-  const handleBannerTopoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]; if (!file || !userId) return;
+  const handleBannerTopoUpload = async (file: File) => {
+    if (!userId) return;
     setUploading("banner-topo");
     const url = await uploadImage(file, `banners/${userId}-topo`);
     if (!url) avisar("Não deu pra enviar a imagem. Confira a internet e tente de novo.", { tipo: "erro" });
@@ -182,6 +183,10 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     }
     setUploading(null);
   };
+  // 09/10: banners e foto do topo passam pelo recorte, já no formato em que aparecem no cardápio
+  const recorteTopo = useRecorte(f => { void handleBannerTopoUpload(f); }, { aspect: 3, forma: "rect" });
+  const bannerIdx = useRef(0);
+  const recorteBanner = useRecorte(f => { void handleBannerUpload(f, bannerIdx.current); }, { aspect: 16 / 9, forma: "rect" });
   const handleRemoveBannerTopo = async () => {
     if (!userId) return;
     setBannerTopoUrl("");
@@ -303,7 +308,8 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
               {uploading === "banner-topo" ? <span className="ui-gira" aria-label="Enviando" /> : <><UploadSimple size={24} weight="bold" /><b>Escolher foto do topo</b><small>Deitada, 1200 × 400</small></>}
             </button>
           )}
-          <input ref={bannerTopoRef} type="file" accept="image/*" hidden onChange={handleBannerTopoUpload} />
+          <input ref={bannerTopoRef} type="file" accept="image/*" hidden onChange={recorteTopo.escolher} />
+          {recorteTopo.janela}{recorteBanner.janela}
         </section>
       )}
 
@@ -329,7 +335,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
                   {uploading === `banner${i}` ? <span className="ui-gira" aria-label="Enviando" /> : <><UploadSimple size={20} weight="bold" /><b>Adicionar</b></>}
                 </button>
               )}
-              <input ref={bannerRefs[i]} type="file" accept="image/*" hidden onChange={e => handleBannerUpload(e, i)} />
+              <input ref={bannerRefs[i]} type="file" accept="image/*" hidden onChange={e => { bannerIdx.current = i; recorteBanner.escolher(e); }} />
             </div>
           ))}
           {!isPro && [2, 3, 4].map(n => (

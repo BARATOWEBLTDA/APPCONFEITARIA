@@ -3734,7 +3734,7 @@ const EP2_CSS = `
   .ep2-bar { height: 6px; border-radius: 9px; background: #FDE68A; margin-top: 7px; overflow: hidden; } .ep2-bar i { display: block; height: 100%; background: #22C55E; border-radius: 9px; }
   .ep2-rec { margin-top: 10px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; border-radius: 12px; padding: 13px; background: #16A34A; color: #fff; font-family: inherit; font-weight: 700; font-size: 14.5px; cursor: pointer; box-shadow: 0 6px 14px -6px rgba(22,163,74,.6); }
   .ep2-prev { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 10px; font-size: 12.5px; color: #6B5D64; }
-  .ep2-prev-d { width: 150px; } .ep2-prev-d .cdata { height: 36px; font-size: 13.5px; padding: 0 10px; }
+  .ep2-prev-d { width: 150px; } .ep2-prev-d .cdata { font-size: 14px; padding: 0 10px; }
   .ep2-prev em { font-style: normal; font-weight: 700; color: #2C1219; }
   .ep2-save-desk { display: none; } @media (min-width: 1024px) { .ep2-save-desk { display: flex; flex-direction: column; gap: 8px; } }
   .ep2-mud { font-size: 12.5px; font-weight: 700; color: #B45309; text-align: center; }

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useRecorte } from "@/components/ui/useRecorte";
 import DataNascimentoSheet, { rotuloNascimento } from "@/components/DataNascimentoSheet";
 import LimitePlano from "@/components/billing/LimitePlano";
 import { LIMITE_CLIENTES_GRATIS } from "@/lib/limitesPlano";
@@ -343,8 +344,7 @@ export default function Clientes() {
     setShowForm(true);
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleFileChange = async (file: File) => {
     if (!file || !userId) return;
     setPreview(URL.createObjectURL(file));
     const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
@@ -355,6 +355,7 @@ export default function Clientes() {
       setCompleto(f => ({ ...f, foto_url: data.publicUrl }));
     }
   };
+  const recorte = useRecorte(f => { void handleFileChange(f); }, { forma: "round" });
 
   const fetchCep = async (cep: string) => {
     const digits = cep.replace(/\D/g, "");
@@ -624,7 +625,8 @@ export default function Clientes() {
         <Botao carregando={saving} onClick={salvarComAviso}>{editando ? "Salvar" : "Cadastrar cliente"}</Botao>
       </>}>
       <div className="cl9-f">
-        <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} hidden />
+        <input ref={fileRef} type="file" accept="image/*" onChange={recorte.escolher} hidden />
+      {recorte.janela}
         <button type="button" className="cl9-f-foto" onClick={() => fileRef.current?.click()}>
           <span className="cl9-f-av">{preview ? <img src={preview} alt="" /> : <Camera size={26} weight="bold" />}</span>
           <span><b>{preview ? "Trocar a foto" : "Colocar uma foto"}</b><small>Opcional · ajuda a lembrar quem é</small></span>

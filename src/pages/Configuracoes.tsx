@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useRecorte } from "@/components/ui/useRecorte";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -113,8 +114,7 @@ export default function Configuracoes() {
     load();
   }, []);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleFileChange = async (file: File) => {
     if (!file || !userId) return;
     setUploading(true);
     setPreview(URL.createObjectURL(file));
@@ -131,6 +131,7 @@ export default function Configuracoes() {
     }
     setUploading(false);
   };
+  const recorte = useRecorte(f => { void handleFileChange(f); }, { forma: "round" });
 
   const formatPhone = (value: string) => {
     const d = value.replace(/\D/g, "").slice(0, 11);
@@ -502,7 +503,8 @@ export default function Configuracoes() {
 
       {/* ─────────────── DESKTOP ─────────────── */}
       <div className="cfgd-desktop">
-        <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{display:"none"}} />
+        <input ref={fileRef} type="file" accept="image/*" onChange={recorte.escolher} style={{display:"none"}} />
+      {recorte.janela}
 
         <div className="cfgd-grid">
 

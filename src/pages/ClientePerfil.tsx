@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useRecorte } from "@/components/ui/useRecorte";
 import { useNavigate, useParams } from "react-router-dom";
 import { Cake, Camera, CaretRight, Envelope, IdentificationCard, MapPin, MegaphoneSimple, NotePencil, PencilSimple, Plus, Receipt, UserCircle, WhatsappLogo } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
@@ -119,8 +120,7 @@ export default function ClientePerfil() {
     load();
   }, [id]);
 
-  const handleFotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleFotoUpload = async (file: File) => {
     if (!file || !cliente) return;
     setUploadingFoto(true);
     const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
@@ -137,6 +137,7 @@ export default function ClientePerfil() {
     setUploadingFoto(false);
     avisar("Foto trocada", { tipo: "ok" });
   };
+  const recorte = useRecorte(f => { void handleFotoUpload(f); }, { forma: "round" });
 
   if (loading) return (
     <>
@@ -186,7 +187,8 @@ export default function ClientePerfil() {
               {cliente.foto_url ? <img src={cliente.foto_url} alt="" /> : <span className="cp9-ini">{iniciaisDe(cliente.nome)}</span>}
               <i>{uploadingFoto ? <span className="cp9-gira" /> : <Camera size={16} weight="bold" />}</i>
             </button>
-            <input ref={fileRef} type="file" accept="image/*" onChange={handleFotoUpload} hidden />
+            <input ref={fileRef} type="file" accept="image/*" onChange={recorte.escolher} hidden />
+      {recorte.janela}
             <div className="cp9-eu-tx">
               <b>{cliente.nome}</b>
               <small>{formatPhone(cliente.whatsapp) || "Sem WhatsApp"}</small>

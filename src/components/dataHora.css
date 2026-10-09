@@ -1,0 +1,50 @@
+/* Calendário, horário e campo de data do app (09/10 · 3.53). Tudo em --ui-*. */
+
+/* ── Calendário ── */
+.dh-cal { --dh-cor: var(--ui-rosa); font-family: var(--font-base); }
+.dh-mes { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: -4px -6px 8px; }
+.dh-mes b { flex: 1; text-align: center; font-size: 16px; font-weight: 700; color: var(--ui-texto); }
+.dh-mes .ui-bti:disabled { opacity: .3; cursor: default; }
+.dh-grade { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; text-align: center; }
+.dh-grade i { padding: 6px 0; font-style: normal; font-size: 12px; font-weight: 700; color: var(--ui-texto-3); }
+.dh-grade button {
+  min-width: 0; height: 44px; margin: 0; padding: 0; border: 0; border-radius: var(--ui-raio);
+  background: none; color: var(--ui-texto); font-family: inherit; font-size: 16px; font-weight: 500; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.dh-grade button:hover:not(:disabled):not(.sel) { background: var(--ui-cinza); }
+.dh-grade button.hj { box-shadow: inset 0 0 0 1.5px var(--dh-cor); font-weight: 700; }
+.dh-grade button.sel { background: var(--dh-cor); color: #fff; font-weight: 700; box-shadow: none; }
+.dh-grade button:disabled { color: var(--ui-texto-3); opacity: .45; cursor: default; box-shadow: none; }
+.dh-grade button:focus-visible { outline: 2px solid var(--dh-cor); outline-offset: 1px; }
+
+/* ── Horário ── */
+.dh-horas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; max-height: min(44dvh, 340px); overflow-y: auto; padding: 2px; font-family: var(--font-base); }
+.dh-horas button {
+  min-width: 0; height: 44px; margin: 0; padding: 0; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio);
+  background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 500; font-variant-numeric: tabular-nums; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.dh-horas button:hover:not(.sel) { border-color: var(--ui-rosa); }
+.dh-horas button.sel { border-color: var(--ui-rosa); background: var(--ui-rosa); color: #fff; font-weight: 700; }
+.dh-outro { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--ui-linha); }
+.dh-outro > .ui-bt { margin-top: 23px; }
+
+/* ── Campo de data (o que abre o calendário) ── */
+.cdata {
+  display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; min-height: 48px; box-sizing: border-box; margin: 0; padding: 0 12px;
+  border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco);
+  font-family: var(--font-base); font-size: 16px; font-weight: 500; color: var(--ui-texto); text-align: left; cursor: pointer;
+}
+.cdata svg { flex: none; color: var(--ui-rosa-escuro); }
+.cdata span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cdata .ph { color: var(--ui-texto-3); }
+.cdata:focus-visible { outline: none; border-color: var(--ui-rosa); }
+
+/* Aniversário: mês e ano em listas */
+.dh-apoio { margin: -8px 0 12px; font-size: 14px; font-weight: 500; color: var(--ui-texto-2); }
+.dh-mes--sel { margin: 0 0 8px; }
+.dh-mes--sel select {
+  flex: 1; min-width: 0; height: 44px; padding: 0 10px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio);
+  background: var(--ui-branco); font-family: inherit; font-size: 16px; font-weight: 500; color: var(--ui-texto);
+}
