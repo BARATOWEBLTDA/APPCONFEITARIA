@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties, TouchEvent } from 'react'
 import { ArrowLeft, Bell, CalendarBlank, CaretRight } from '@phosphor-icons/react'
-import { Botao, BotaoIcone } from '@/components/base'
+import { Botao, BotaoIcone, Linha } from '@/components/base'
 import { Mascote, NomeDoonly } from '@/components/marca/Mascote'
 import { CartaoPedido } from '@/components/pedidos/CartaoPedido'
 import type { Pedido } from '@/components/pedidos/pedidoTexto'
 import '@/components/pedidos/pedidos.css'
+import '@/components/pedidos/telaPedido.css'
 import { tocarSom } from '@/hooks/useSom'
 import './boasVindas.css'
 
@@ -152,7 +153,7 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
   const textoBotao = tela === 0 ? 'Ver como funciona' : ultima ? 'Configurar minha confeitaria' : 'Próximo'
 
   return (
-    <div className={`bv-root${saindo ? ' bv-root--saindo' : ''}`} role="dialog" aria-modal="true" aria-label="Boas-vindas ao Doonly" onTouchStart={aoTocar} onTouchEnd={aoSoltar}>
+    <div className={`bv-root bv-tela-${tela}${saindo ? ' bv-root--saindo' : ''}`} role="dialog" aria-modal="true" aria-label="Boas-vindas ao Doonly" onTouchStart={aoTocar} onTouchEnd={aoSoltar}>
       <header className="bv-topo">
         <div className="bv-topo-lado">
           {tela > 0 && <BotaoIcone rotulo="Voltar" variante="claro" onClick={voltar}><ArrowLeft size={20} weight="bold" /></BotaoIcone>}
@@ -275,26 +276,56 @@ const pedidoExemplo = (x: Partial<Pedido> & { pedido_itens: any[] }): Pedido => 
 } as Pedido)
 const nada = () => {}
 
-/* ───────── 3 · pedidos: os cartões de verdade da tela Pedidos, caindo um por um ───────── */
+/* ───────── 3 · pedidos (09/10 · 3.70): toca o som de pedido, chega um pedido pelo cardápio e, ao aceitar,
+   ele abre como na tela do pedido, com as escolhas da cliente e a foto de referência. Se a pessoa não tocar
+   em Aceitar, ele se aperta sozinho, pra ninguém ficar sem ver o pedido completo. ───────── */
+const PEDIDO_DEMO = pedidoExemplo({ numero: 1049, cliente_nome: 'Renata Dias', status: 'aguardando_aceite', origem: 'cardapio', horario_entrega: '14:00', valor_total: 320,
+  pedido_itens: [item('Bolo de aniversário', '/tutorial/leve/doisamores.webp', 1, 320)] })
+const ESCOLHAS: [string, string][] = [['Tamanho', '2 kg'], ['Massa', 'Chocolate'], ['Recheio', 'Brigadeiro com morango'], ['Topo de bolo', 'Sim']]
+
 function DemoPedidos() {
-  const pedidos = [
-    pedidoExemplo({ numero: 1049, cliente_nome: 'Renata Dias', status: 'aguardando_aceite', origem: 'cardapio', horario_entrega: '14:00', valor_total: 320,
-      pedido_itens: [item('Bolo de aniversário 2 kg', '/tutorial/leve/doisamores.webp', 1, 280), item('Velas', '', 1, 40)] }),
-    pedidoExemplo({ numero: 1046, cliente_nome: 'Marina Silva', status: 'em_producao', horario_entrega: '16:30', valor_total: 150, status_pagamento: 'pago',
-      pedido_itens: [item('Caixa de Brigadeiro', '/tutorial/leve/caixa4.webp', 1, 150)] }),
-    pedidoExemplo({ numero: 1047, cliente_nome: 'Juliana Souza', status: 'agendado', data_entrega: isoDia(1), horario_entrega: '09:00', valor_total: 95, status_pagamento: 'parcial', valor_recebido: 50,
-      pedido_itens: [item('Salgadinhos', '/tutorial/leve/salgadinhos.webp', 100, 0.95)] }),
-  ]
+  const [fase, setFase] = useState(0) // 0 = esperando · 1 = chegou · 2 = aceito
+  useEffect(() => {
+    const t = window.setTimeout(() => { tocarSom('pedido'); vibrarLeve(); setFase(1) }, 700)
+    return () => clearTimeout(t)
+  }, [])
+  useEffect(() => {
+    if (fase !== 1) return
+    const t = window.setTimeout(() => setFase(2), 3600)
+    return () => clearTimeout(t)
+  }, [fase])
+  const aceitar = () => { if (fase === 1) { tocarSom('click'); vibrarLeve(); setFase(2) } }
+  const p = fase === 2 ? { ...PEDIDO_DEMO, status: 'agendado' } : PEDIDO_DEMO
   return (
-    <div className="bv-ped" aria-hidden="true">
-      <div className="bv-aviso"><Bell size={14} weight="fill" /><span><b>Novo pedido</b> pelo cardápio</span></div>
-      <div className="bv-ped-lista" inert>
-        {pedidos.map((p, i) => (
-          <div key={p.id} className="bv-cai" style={{ '--i': i } as CSSProperties}>
-            <CartaoPedido p={p} aoAbrir={nada} aoAvancar={nada} aoMenu={nada} aoEndereco={nada} />
-          </div>
-        ))}
-      </div>
+    <div className={`bv-ped bv-ped--f${fase}`}>
+      {fase > 0 && <div className="bv-aviso"><Bell size={14} weight="fill" aria-hidden="true" /><span><b>Novo pedido</b> pelo cardápio</span></div>}
+      {fase > 0 && (
+        <div className="bv-cai">
+          <CartaoPedido p={p} aoAbrir={nada} aoAvancar={aceitar} aoMenu={nada} aoEndereco={nada} />
+        </div>
+      )}
+      {fase === 2 && (
+        <div className="bv-ped-det" aria-hidden="true">
+          <b className="bv-ped-det-t">Itens do pedido</b>
+          <ul className="tpd-itens">
+            <li>
+              <div className="tpd-it-topo">
+                <span className="tpd-ft"><img src="/tutorial/leve/doisamores.webp" alt="" /></span>
+                <div className="tpd-it-tx"><b><em>1x</em> Bolo de aniversário</b><span>R$ 320,00</span></div>
+              </div>
+              <div className="tpd-it-esc">{ESCOLHAS.map(([k, v]) => <Linha key={k} rotulo={k}>{v}</Linha>)}</div>
+              <div className="tpd-recado">
+                <span className="tpd-ref"><img src="/tutorial/leve/doisamores.webp" alt="" /></span>
+                <div>
+                  <small>Recado do item</small>
+                  <p>“Tema jardim, com o nome Alice e 5 anos”</p>
+                  <span>Foto de referência da cliente</span>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      )}
     </div>
   )
 }

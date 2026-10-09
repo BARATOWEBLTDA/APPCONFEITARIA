@@ -71,11 +71,20 @@
 .bv-aviso b { font-weight: 700; }
 @keyframes bvAviso { 0% { opacity: 0; transform: translate(-50%, 6px); } 12%, 100% { opacity: 1; transform: translate(-50%, 0); } }
 
-/* 3 · Pedidos: o CartaoPedido de verdade, sem a setinha de abrir (aqui não abre nada) */
-.bv-ped { position: relative; width: 100%; max-width: 380px; padding-top: 36px; text-align: left; }
-.bv-ped-lista { display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-.bv-ped .pdc { padding-bottom: 14px; box-shadow: 0 10px 24px rgba(0, 0, 0, .3); }
+/* 3 · Pedidos: o CartaoPedido de verdade e, depois de aceito, os itens como na tela do pedido (telaPedido.css) */
+.bv-ped { position: relative; width: 100%; max-width: 380px; min-height: 525px; /* o espaço do pedido aberto já fica reservado: o título não pula */ padding-top: 36px; text-align: left; }
+.bv-ped .pdc { padding-bottom: 14px; box-shadow: 0 10px 24px rgba(0, 0, 0, .3); cursor: default; }
 .bv-ped .pdc-seta, .bv-ped .pdc-mais { display: none; }
+.bv-ped--f1 .pdc.aceitar .ui-bt { animation: bvChama 1.1s ease-in-out .9s infinite; }
+@keyframes bvChama { 0%, 100% { box-shadow: 0 3px 0 var(--ui-rosa-escuro), 0 0 0 0 rgba(232, 90, 140, .55); } 50% { box-shadow: 0 3px 0 var(--ui-rosa-escuro), 0 0 0 8px rgba(232, 90, 140, 0); } }
+.bv-ped-det { margin-top: 10px; padding: 14px 16px; border-radius: var(--ui-raio-cartao); background: #fff; color: var(--ui-texto); box-shadow: 0 10px 24px rgba(0, 0, 0, .3); animation: bvAbre .5s cubic-bezier(.22, 1, .36, 1) both; }
+@keyframes bvAbre { from { opacity: 0; transform: translateY(-12px) scale(.98); } to { opacity: 1; transform: none; } }
+.bv-ped-det-t { display: block; margin-bottom: 10px; font-size: 15px; font-weight: 800; }
+.bv-ped-det .tpd-it-esc, .bv-ped-det .tpd-recado { margin-left: 0; }
+.bv-ped-det .tpd-it-esc .ui-linha { margin: 0; line-height: 1.5; }
+.bv-ped-det .tpd-ref { width: 84px; height: 84px; cursor: default; }
+.bv-ped-det .tpd-recado { align-items: center; }
+.bv-ped .bv-aviso { animation-delay: .15s; }
 
 /* 4 · A receber (as mesmas medidas do FinanceiroAReceber) */
 .bv-din { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 10px; text-align: left; color: var(--ui-texto); }
@@ -122,12 +131,14 @@
   .bv-h { font-size: 23px; }
   .bv-demo { margin-top: 14px; }
   .bv-marca-masc { width: 124px; } .bv-marca-nome { width: 128px; }
-  .bv-ped-lista > :nth-child(3), .bv-din-it:nth-child(4), .bv-din-k { display: none; }
+  .bv-din-it:nth-child(4), .bv-din-k { display: none; }
+  .bv-tela-2 .bv-p, .bv-ped .pdc-linhas > :last-child { display: none; }
+  .bv-ped { min-height: 380px; } .bv-ped-det .tpd-it-topo, .bv-ped-det .tpd-it-esc .ui-linha:not(:last-child) { display: none; } .bv-ped-det .tpd-it-esc { margin-top: 0; } .bv-ped-det .tpd-ref { width: 64px; height: 64px; }
   .bv-luc { gap: 10px; padding: 12px 14px; } .bv-luc-foto { width: 56px; height: 56px; } .bv-luc-leg { display: none; } .bv-luc-conta > div { padding: 4px 0; }
 }
 @media (max-height: 620px) {
   .bv-p { display: none; }
-  .bv-ped .pdc-linhas > :last-child { display: none; }
+  .bv-ped .pdc-linhas > :last-child, .bv-ped-det-t { display: none; } .bv-ped { min-height: 330px; }
   .bv-din-it:nth-child(3) .bv-din-a { display: none; }
 }
 @media (max-width: 340px) { .bv-corpo { padding-inline: 14px; } .bv-base { margin-inline: -14px; padding-inline: 14px; } .bv-h { font-size: 22px; } }
@@ -176,7 +187,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bv-texto, .bv-demo, .bv-cai, .bv-din-bar i { animation-duration: 1ms !important; animation-delay: 0s !important; }
+  .bv-texto, .bv-demo, .bv-cai, .bv-din-bar i, .bv-ped-det, .bv-ped .ui-bt { animation-duration: 1ms !important; animation-delay: 0s !important; }
   .bv-cel-print { animation: none; }
   .bv-aviso { animation: none; opacity: 1; transform: translate(-50%, 0); }
   .bv-luc-barra i, .bv-luc-conta > div { transition: none; }
