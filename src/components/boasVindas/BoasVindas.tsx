@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode, TouchEvent } from 'react'
-import { ArrowLeft, Bell, CaretRight, Egg, Lightning, MagnifyingGlass, Timer } from '@phosphor-icons/react'
+import { ArrowLeft, Bell, CaretRight, Egg, Lightning, MagnifyingGlass, Timer, Wallet } from '@phosphor-icons/react'
 import { Botao, BotaoIcone } from '@/components/base'
 import { Mascote, NomeDoonly } from '@/components/marca/Mascote'
 import { tocarSom } from '@/hooks/useSom'
@@ -8,7 +8,9 @@ import './boasVindas.css'
 
 /**
  * Boas-vindas (refeita em 07/10 no desenho do login) — a apresentação que aparece logo depois de criar a conta.
- * 5 telas: Boas-vindas · Cardápio · Pedidos · Preço e lucro · Pronto.
+ * 6 telas: Boas-vindas · Cardápio · Pedidos · Dinheiro · Custos · Primeiro passo.
+ * (09/10 · 3.67) Textos refeitos pelo guia de marketing do onboarding: benefício concreto em cada tela, sem culpar,
+ * tela nova do dinheiro (quem pagou e quem falta pagar) e o botão final leva aos Primeiros passos do Início.
  * Quem controla é o App (isOpen + onClose). O que foi mantido da versão antiga: as 3 demonstrações
  * (cardápio rolando, pedidos caindo, conta do lucro), o arrastar pro lado, o som e a vibração.
  * O que mudou: fundo vinho, mascote novo, títulos sem caixa alta, ícones no lugar de emoji, botão sempre
@@ -17,13 +19,13 @@ import './boasVindas.css'
 
 type Props = {
   isOpen: boolean
-  /** recebe o número da tela em que a pessoa estava (0 a 4) */
-  onClose: (telaAlcancada: number) => void
+  /** recebe o número da tela em que a pessoa estava (0 a 5) e se tocou em "Configurar minha confeitaria" */
+  onClose: (telaAlcancada: number, configurar: boolean) => void
   /** primeiro nome de quem acabou de criar a conta (opcional) */
   nome?: string
 }
 
-const TOTAL = 5
+const TOTAL = 6
 
 const vibrarLeve = () => {
   try { if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(15) } catch { /* sem vibração: segue */ }
@@ -52,7 +54,7 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
     IMAGENS.forEach(src => { const img = new Image(); img.src = src })
   }, [isOpen])
 
-  const terminar = useCallback(() => {
+  const terminar = useCallback((configurar = false) => {
     tocarSom('sucesso')
     vibrarLeve()
     const alcancada = telaRef.current
@@ -61,7 +63,7 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
     saindoRef.current = false
     setTela(0)
     setSaindo(false)
-    onClose(alcancada)
+    onClose(alcancada, configurar)
   }, [onClose])
 
   const voltar = useCallback(() => {
@@ -81,7 +83,7 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
     if (saindoRef.current) return
     saindoRef.current = true
     setSaindo(true)
-    window.setTimeout(terminar, 200)
+    window.setTimeout(() => terminar(true), 200)
   }, [terminar])
 
   // Setas do teclado (computador)
@@ -133,7 +135,7 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
 
   const ultima = tela === TOTAL - 1
   const marca = tela === 0 || ultima // telas sem demonstração: o mascote fica em cima do texto
-  const textoBotao = tela === 0 ? 'Ver como funciona' : ultima ? 'Começar a usar' : 'Próximo'
+  const textoBotao = tela === 0 ? 'Ver como funciona' : ultima ? 'Configurar minha confeitaria' : 'Próximo'
 
   return (
     <div className={`bv-root${saindo ? ' bv-root--saindo' : ''}`} role="dialog" aria-modal="true" aria-label="Boas-vindas ao Doonly" onTouchStart={aoTocar} onTouchEnd={aoSoltar}>
@@ -145,7 +147,7 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
           {Array.from({ length: TOTAL }).map((_, i) => <span key={i} className={i === tela ? 'bv-passo bv-passo--atual' : i < tela ? 'bv-passo bv-passo--feito' : 'bv-passo'} />)}
         </div>
         <div className="bv-topo-lado bv-topo-lado--fim">
-          {!ultima && <button type="button" className="bv-pular" onClick={terminar}>Pular</button>}
+          {!ultima && <button type="button" className="bv-pular" onClick={() => terminar(false)}>Pular</button>}
         </div>
       </header>
 
@@ -154,25 +156,32 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
           <div className="bv-texto" key={`t${tela}`} aria-live="polite">
             {tela === 0 && (<>
               <h1 className="bv-h">{nome ? <>Que bom ter você aqui, <em>{nome}</em></> : <>Que bom ter <em>você aqui</em></>}</h1>
-              <p className="bv-p">Sua confeitaria organizada, do pedido ao lucro. Veja em 1 minuto como funciona.</p>
+              <p className="bv-p">Pedidos, cardápio e dinheiro da sua confeitaria num só lugar. Veja em 1 minuto como funciona.</p>
             </>)}
             {tela === 1 && (<>
-              <p className="bv-sobre">Sua vitrine online</p>
-              <h1 className="bv-h">Um cardápio bonito e <em>pronto pra vender</em></h1>
+              <p className="bv-sobre">Seus produtos em destaque</p>
+              <h1 className="bv-h">Seu cliente escolhe, <em>você recebe o pedido</em></h1>
+              <p className="bv-p">Monte seu cardápio com sabores e adicionais e mande o link no WhatsApp.</p>
             </>)}
             {tela === 2 && (<>
-              <p className="bv-sobre">Sua rotina mais leve</p>
-              <h1 className="bv-h">Todos os pedidos no <em>lugar certo</em></h1>
-              <p className="bv-p">Acompanhe cada encomenda sem depender de papel ou planilha.</p>
+              <p className="bv-sobre">Chega de informação espalhada</p>
+              <h1 className="bv-h">Cada encomenda <em>no seu lugar</em></h1>
+              <p className="bv-p">Veja o que entregar hoje, amanhã e na semana, com todos os detalhes.</p>
             </>)}
             {tela === 3 && (<>
-              <p className="bv-sobre">Dos ingredientes ao lucro</p>
-              <h1 className="bv-h">Pare de vender sem saber se <em>lucrou</em></h1>
+              <p className="bv-sobre">Seu dinheiro sob controle</p>
+              <h1 className="bv-h">Saiba quem pagou e <em>quem falta pagar</em></h1>
+              <p className="bv-p">Sinais, parcelas e pagamentos pendentes de cada pedido, sem conta no caderno.</p>
             </>)}
             {tela === 4 && (<>
-              <p className="bv-sobre">Tudo pronto pra começar</p>
-              <h1 className="bv-h">Agora é a <em>sua vez</em></h1>
-              <p className="bv-p">Seu Doonly está pronto. Cadastre seu primeiro produto e monte seu cardápio.</p>
+              <p className="bv-sobre">Dos ingredientes ao lucro</p>
+              <h1 className="bv-h">Descubra quanto custa <em>produzir</em></h1>
+              <p className="bv-p">Monte a ficha técnica e veja quanto sobra em cada venda.</p>
+            </>)}
+            {tela === 5 && (<>
+              <p className="bv-sobre">Agora é com você</p>
+              <h1 className="bv-h">Sua confeitaria <em>começa aqui</em></h1>
+              <p className="bv-p">Em poucos passos seu cardápio fica no ar, pronto pra mandar pros seus clientes.</p>
             </>)}
           </div>
           <div className="bv-base">
@@ -184,8 +193,9 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
           {tela === 0 && <DemoMarca comNome />}
           {tela === 1 && <DemoCardapio />}
           {tela === 2 && <DemoPedidos />}
-          {tela === 3 && <DemoLucro />}
-          {tela === 4 && <DemoMarca />}
+          {tela === 3 && <DemoDinheiro />}
+          {tela === 4 && <DemoLucro />}
+          {tela === 5 && <DemoMarca pose="comemorando" />}
         </div>
         <span className="bv-esp" aria-hidden="true" />
       </div>
@@ -193,11 +203,11 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
   )
 }
 
-/* ───────── 1 e 5 · o mascote ───────── */
-function DemoMarca({ comNome = false }: { comNome?: boolean }) {
+/* ───────── 1 e 6 · o mascote (acenando na chegada, comemorando no fim) ───────── */
+function DemoMarca({ comNome = false, pose = 'acenando' }: { comNome?: boolean; pose?: 'acenando' | 'comemorando' }) {
   return (
     <div className="bv-marca">
-      <Mascote pose="acenando" className="bv-marca-masc" />
+      <Mascote pose={pose} className="bv-marca-masc" />
       {comNome && <NomeDoonly cor="branco" className="bv-marca-nome" />}
     </div>
   )
@@ -272,7 +282,43 @@ function DemoPedidos() {
   )
 }
 
-/* ───────── 4 · preço e lucro: soma os custos, testa dois preços e mostra a margem ───────── */
+/* ───────── 4 · dinheiro: quanto cada cliente já pagou ───────── */
+const RECEBER = [
+  { id: 5, cliente: 'Ana Cristina Vieira', foto: '/tutorial/leve/cliente1.webp', iniciais: '', item: 'Bolo Dois Amores', total: 140, pago: 140, situacao: 'Pago', tom: 'verde' },
+  { id: 6, cliente: 'Marina Silva', foto: '/tutorial/leve/cliente2.webp', iniciais: '', item: 'Caixa de Brigadeiro', total: 150, pago: 80, situacao: 'Sinal pago', tom: 'laranja' },
+  { id: 7, cliente: 'Juliana Souza', foto: '', iniciais: 'JS', item: '100x Salgadinhos', total: 95, pago: 0, situacao: 'Falta pagar', tom: 'vermelho' },
+]
+const A_RECEBER = RECEBER.reduce((s, p) => s + p.total - p.pago, 0)
+
+function DemoDinheiro() {
+  return (
+    <div className="bv-ped bv-din">
+      <div className="bv-ped-aviso bv-din-aviso"><Wallet size={14} weight="fill" aria-hidden="true" /><span>A receber: <b>R$ {reais(A_RECEBER)}</b></span></div>
+      {RECEBER.map((p, i) => {
+        const falta = p.total - p.pago
+        return (
+          <div key={p.id} className="bv-ped-cartao" style={{ '--i': i } as CSSProperties}>
+            <div className="bv-ped-topo">
+              {p.foto ? <img className="bv-ped-foto" src={p.foto} alt="" /> : <span className="bv-ped-foto bv-ped-foto--ini">{p.iniciais}</span>}
+              <div className="bv-ped-quem">
+                <b>{p.cliente}</b>
+                <span className="bv-ped-sit"><span>#{p.id} · {p.item}</span></span>
+              </div>
+              <span className="bv-din-total">R$ {reais(p.total)}</span>
+            </div>
+            <div className="bv-din-barra" aria-hidden="true"><i className={`bv-din-barra--${p.tom}`} style={{ '--p': `${(p.pago / p.total) * 100}%` } as CSSProperties} /></div>
+            <div className="bv-din-sit">
+              <strong className={`bv-tom--${p.tom}`}>{p.situacao}</strong>
+              <span>{falta > 0 ? <>Falta <b>R$ {reais(falta)}</b></> : <>Recebido <b>R$ {reais(p.pago)}</b></>}</span>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+/* ───────── 5 · preço e lucro: soma os custos, testa dois preços e mostra a margem ───────── */
 const CUSTOS: { rotulo: string; valor: number; icone: ReactNode }[] = [
   { rotulo: 'Ingredientes', valor: 34.48, icone: <Egg size={16} weight="bold" /> },
   { rotulo: 'Mão de obra', valor: 15.0, icone: <Timer size={16} weight="bold" /> },

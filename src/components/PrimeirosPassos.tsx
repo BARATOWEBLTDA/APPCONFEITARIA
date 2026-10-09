@@ -42,6 +42,19 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   const kFechado = uid ? `doonly_pp_fechado_${uid}` : "";
   const kIncompleto = uid ? `doonly_pp_incompleto_${uid}` : "";
 
+  // Quem vem do "Configurar minha confeitaria" das boas-vindas: rola até aqui e destaca o passo da vez (09/10 · 3.67)
+  const raiz = useRef<HTMLDivElement>(null);
+  const [destaque, setDestaque] = useState(false);
+  useEffect(() => {
+    if (local !== "inicio" || !estado || !raiz.current) return;
+    let pedir = false;
+    try { pedir = sessionStorage.getItem("doonly_pp_destacar") === "1"; if (pedir) sessionStorage.removeItem("doonly_pp_destacar"); } catch { /* nada */ }
+    if (!pedir) return;
+    const t1 = window.setTimeout(() => { raiz.current?.scrollIntoView({ behavior: "smooth", block: "center" }); setDestaque(true); }, 350);
+    const t2 = window.setTimeout(() => setDestaque(false), 2600);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [local, estado]);
+
   const atualizar = useCallback(() => { if (uid) lerPassos(uid).then(setEstado).catch(() => {}); }, [uid]);
 
   useEffect(() => {
@@ -108,7 +121,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   const compartilharTravado = false;
 
   return (
-    <div className={`pp pp--${local}`}>
+    <div ref={raiz} className={`pp pp--${local}${destaque ? " pp--destaque" : ""}`}>
       <b className="pp-t">Primeiros passos</b>
       <p className="pp-sub">{passos.length - feitos === 1 ? "Falta 1 coisa pra começar a vender pelo cardápio." : `Faltam ${passos.length - feitos} coisas pra começar a vender pelo cardápio.`}</p>
       <div className="pp-bar" aria-label={`${feitos} de ${passos.length} passos feitos`}><i style={{ width: `${(feitos / passos.length) * 100}%` }} /></div>
@@ -341,6 +354,9 @@ const CSS = `
   .pp-seta { color: #B4B2A9; display: flex; }
   .pp-at { background: var(--ui-rosa-claro); border: 0; border-radius: var(--ui-raio); padding: 12px; margin: 4px 0 8px; }
   .pp-at + .pp-ps { border-top: none; }
+  .pp--destaque .pp-at { animation: ppDestaque 1.1s ease-in-out 2; }
+  @keyframes ppDestaque { 0%, 100% { box-shadow: 0 0 0 0 rgba(232, 90, 140, 0); } 50% { box-shadow: 0 0 0 4px rgba(232, 90, 140, .45); } }
+  @media (prefers-reduced-motion: reduce) { .pp--destaque .pp-at { animation: none; box-shadow: 0 0 0 3px rgba(232, 90, 140, .45); } }
   .pp-btn { display: block; width: 100%; min-height: 48px; margin-top: 12px; border: none; border-radius: var(--ui-raio-botao); padding: 13px; font-family: inherit; font-size: 15px; font-weight: 700; color: #fff; background: #E85A8C; box-shadow: 0 3px 0 #C33A6E; cursor: pointer; text-align: center; text-decoration: none; }
   .pp-btn:disabled { background: #F3B6CB; box-shadow: none; cursor: default; }
   .pp-lnk { display: block; width: 100%; min-height: 44px; margin-top: 8px; padding: 10px; border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #C33A6E; cursor: pointer; }

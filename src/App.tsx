@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import CompletarCadastro from "@/components/CompletarCadastro";
 import { useEffect, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
@@ -84,6 +84,8 @@ function NavigateWithSearch({ to, replace }: { to: string; replace?: boolean }) 
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<any>(undefined);
+  const navegar = useNavigate();
+  const local = useLocation();
 
   // Decidido SÍNCRONO no primeiro render — evita o "app pisca antes do tutorial".
   // Se o usuário nunca viu as boas-vindas, elas abrem em tela cheia.
@@ -166,7 +168,18 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
       <BoasVindas
         isOpen={true}
         nome={String(session.user?.user_metadata?.nome || session.user?.user_metadata?.full_name || session.user?.user_metadata?.name || "").trim().split(/\s+/)[0]}
-        onClose={() => {
+        onClose={(_tela, configurar) => {
+          // "Configurar minha confeitaria": vai pro Início e os Primeiros passos aparecem em destaque (09/10 · 3.67)
+          if (configurar) {
+            try { sessionStorage.setItem("doonly_pp_destacar", "1"); } catch { /* sem storage: só não destaca */ }
+            if (local.pathname !== "/inicio") {
+              // as boas-vindas acabaram de pedir um "voltar" pra tirar a entrada delas do histórico: espera ele terminar
+              let foi = false;
+              const ir = () => { if (!foi) { foi = true; navegar("/inicio"); } };
+              if (window.history.state?.bvTela) { window.addEventListener("popstate", () => setTimeout(ir, 0), { once: true }); setTimeout(ir, 600); }
+              else ir();
+            }
+          }
           // Terminou ou tocou em "Pular": nos dois casos o guia não volta mais
           try {
             localStorage.setItem("doonly_tutorial_auto_aberto", "1");
