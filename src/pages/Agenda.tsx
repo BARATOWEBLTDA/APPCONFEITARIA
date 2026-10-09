@@ -508,7 +508,7 @@ function CartaoAgenda({ p, aoAbrir, aoMenu, aoPronto, aoWhats }: any) {
           </span>
           <span className="ag3-pc-quem">
             <b>{nome} <small>#{p.numero ?? "—"}</small></b>
-            {p.created_at && <span>Pedido feito em {criadoEmTexto(p.created_at)}</span>}
+            {p.created_at && <span>Feito em {criadoEmTexto(p.created_at)}</span>}
           </span>
         </button>
         <BotaoIcone rotulo={`Mais ações do pedido #${p.numero || ""}`} variante="limpo" onClick={aoMenu}>
@@ -525,7 +525,7 @@ function CartaoAgenda({ p, aoAbrir, aoMenu, aoPronto, aoWhats }: any) {
       {itens.length > 0 && (
         <div className="ag3-pc-itens">
           {itens.map((it: any, i: number) => (
-            <p key={i}><span><b>{Number(it.quantidade) || 1}x</b> {nomeDeProduto(it.nome_produto || "")}</span><span>{rs((Number(it.valor_unitario) || 0) * (Number(it.quantidade) || 0))}</span></p>
+            <p key={i}><span><b>{String(Number(it.quantidade) || 1).replace('.', ',')}x</b> {nomeDeProduto(it.nome_produto || "")}</span><span>{rs((Number(it.valor_unitario) || 0) * (Number(it.quantidade) || 0))}</span></p>
           ))}
           {desconto > 0 && <p className="dim"><span>Desconto</span><span>− {rs(desconto)}</span></p>}
           <p className="tot"><span>Total</span><span>{rs(total)}</span></p>

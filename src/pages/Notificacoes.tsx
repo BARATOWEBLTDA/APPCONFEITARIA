@@ -52,7 +52,7 @@ export default function Notificacoes() {
     <>
       <AppPageHeader
         title="Notificações"
-        subtitle={naoLidas.length > 0 ? `${naoLidas.length} nova${naoLidas.length > 1 ? "s" : ""}` : "Todas lidas"}
+        subtitle={naoLidas.length > 0 ? `${naoLidas.length} nova${naoLidas.length > 1 ? "s" : ""}` : (notificacoes.length ? "Todas lidas" : "Avisos do Doonly")}
         infoIcon="🔔"
         infoContent="Aqui ficam seus pedidos novos, avisos do seu plano, conquistas e as novidades do Doonly."
       />
@@ -133,8 +133,7 @@ export default function Notificacoes() {
         .ntf-badge {
           background: #E85A8C; color: #fff;
           font-size: 12px; font-weight: 900; letter-spacing: 0.05em;
-          padding: 2px 7px; border-radius: 4px;
-          text-transform: uppercase; flex-shrink: 0;
+          padding: 2px 7px; border-radius: 4px; flex-shrink: 0;
         }
         .ntf-msg { font-size: 12.5px; color: #6B7280; margin: 0 0 6px; line-height: 1.45; }
         .ntf-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }

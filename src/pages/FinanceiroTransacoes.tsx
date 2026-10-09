@@ -199,7 +199,7 @@ const CSS = `
   .tx-ph { height: 220px; background: #FAF7F8; border-radius: 16px; }
   .tx-vazio { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 26px 18px; text-align: center; }
   .tx-vazio b { display: block; font-size: 15.5px; font-weight: 900; } .tx-vazio p { margin: 6px auto 0; font-size: 13.5px; color: #6B5D64; max-width: 360px; line-height: 1.45; }
-  .tx-dia-t { margin: 0 0 6px; font-size: 13px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: #9A8E94; } .tx-dia-t span { color: #6B5D64; }
+  .tx-dia-t { margin: 0 0 6px; font-size: 13px; font-weight: 800; letter-spacing: .05em; color: #9A8E94; } .tx-dia-t span { color: #6B5D64; }
   .tx-lista { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 2px 14px; }
   .tx-it { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: none; border-top: 1px solid #F5F0F2; padding: 11px 0; font-family: inherit; color: #2C1219; cursor: pointer; }
   .tx-it:first-child { border-top: none; }

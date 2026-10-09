@@ -47,7 +47,6 @@ import AdminRelatorios from "@/pages/admin/AdminRelatorios";
 import Configuracoes from "@/pages/Configuracoes";
 import NotificacoesSons from "@/pages/NotificacoesSons";
 import Indicar from "@/pages/Indicar";
-import Personalizacao from "@/pages/Personalizacao";
 import CardapioPrevia from "@/pages/CardapioPrevia";
 import CardapioResumo from "@/pages/CardapioResumo";
 import Produtos from "@/pages/Produtos";
@@ -259,7 +258,7 @@ export default function App() {
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/configuracoes/notificacoes" element={<NotificacoesSons />} />
           <Route path="/indicar" element={<Indicar />} />
-          <Route path="/personalizacao" element={<Personalizacao />} />
+          <Route path="/personalizacao" element={<Navigate to="/complementos" replace />} />
         </Route>
 
         <Route path="/admin/login" element={<AdminLogin />} />

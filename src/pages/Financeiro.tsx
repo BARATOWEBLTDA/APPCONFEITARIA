@@ -182,7 +182,7 @@ const CSS = `
   @media (min-width: 1024px) {
     /* grade do mockup: 4 colunas */
     .fd { grid-template-columns: minmax(0, 1.25fr) repeat(3, minmax(0, 1fr)); gap: 16px;
-      grid-template-areas: "saldo kpis kpis kpis" "contas contas prev prev" "fluxo fluxo movs movs" "mais mais mais mais"; }
+      grid-template-areas: "saldo kpis kpis kpis" "contas contas prev prev" "fluxo fluxo movs movs" "mais mais mais mais"; align-items: start; }
     .fd .fd-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .fd .fd-kpis .fd-k { display: flex; flex-direction: column; justify-content: center; }
     .fd .fd-k--vendido { display: none !important; }
@@ -228,7 +228,7 @@ const CSS = `
   .fd-fl-res { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 4px; font-size: 12.5px; color: #6B5D64; }
   .fd-fl-res b { font-weight: 800; color: #2C1219; } .fd-fl-res b.e { color: #15803D; } .fd-fl-res b.s { color: #DC2626; }
   .fd-nota { margin: 8px 0 0; font-size: 12px; color: #9A8E94; line-height: 1.4; }
-  .fd-mais-t { margin: 4px 0 8px; font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #9A8E94; }
+  .fd-mais-t { margin: 4px 0 8px; font-size: 13px; font-weight: 800; letter-spacing: .06em; color: #9A8E94; }
   .fd-mais-g { display: grid; grid-template-columns: 1fr; gap: 8px; }
   @media (min-width: 640px) { .fd-mais-g { grid-template-columns: repeat(3, 1fr); } }
   .fd-mais-g button { display: grid; grid-template-columns: 38px 1fr; column-gap: 10px; align-items: center; text-align: left; background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px; font-family: inherit; color: #2C1219; cursor: pointer; }

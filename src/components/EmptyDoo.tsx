@@ -134,7 +134,6 @@ export default function EmptyDoo({
           font-size: 14px;
           font-weight: var(--fw-black, 900);
           letter-spacing: 0.02em;
-          text-transform: uppercase;
           cursor: pointer;
           box-shadow: 0 4px 0 var(--primary-dark, #C33A6E);
           transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.15s ease;

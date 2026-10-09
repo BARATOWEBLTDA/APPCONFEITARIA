@@ -12,7 +12,7 @@ export type DocLegalDados = { titulo: string; curto: string; atualizado: string;
 
 export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
   termos: {
-    titulo: 'Termos de Uso',
+    titulo: 'Termos de uso',
     curto: 'Termos de Uso',
     atualizado: 'Última atualização: junho de 2026',
     intro: (
@@ -22,7 +22,7 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
     ),
     secoes: [
       {
-        titulo: 'Sobre o Serviço',
+        titulo: 'Sobre o serviço',
         corpo: (
           <>
         <p>O Doonly é uma plataforma de gestão para confeitarias que permite cadastrar produtos, criar cardápios digitais, gerenciar pedidos e configurar informações da loja. O serviço é fornecido pela <strong>Doonly Tecnologia Ltda</strong>.</p>
@@ -30,7 +30,7 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         ),
       },
       {
-        titulo: 'Cadastro e Conta',
+        titulo: 'Cadastro e conta',
         corpo: (
           <>
         <p>Para usar o Doonly, você deve criar uma conta com informações verdadeiras e atualizadas. Você é responsável por manter a segurança de sua senha e por todas as atividades realizadas em sua conta.</p>
@@ -38,7 +38,7 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         ),
       },
       {
-        titulo: 'Uso Permitido',
+        titulo: 'Uso permitido',
         corpo: (
           <>
         <p>Você pode usar o Doonly para fins legítimos relacionados à gestão de seu negócio de confeitaria. É proibido usar a plataforma para:</p>
@@ -52,7 +52,7 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         ),
       },
       {
-        titulo: 'Planos e Pagamentos',
+        titulo: 'Planos e pagamentos',
         corpo: (
           <>
         <p>O Doonly oferece planos gratuitos e pagos (PRO). Os recursos disponíveis em cada plano estão descritos na plataforma. Pagamentos são processados de forma segura e não reembolsáveis, salvo disposição contrária na legislação aplicável.</p>
@@ -60,7 +60,7 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         ),
       },
       {
-        titulo: 'Conteúdo do Usuário',
+        titulo: 'Conteúdo do usuário',
         corpo: (
           <>
         <p>Você mantém a propriedade do conteúdo que publica (fotos, descrições, informações de produtos). Ao enviar conteúdo, você concede ao Doonly uma licença limitada para exibi-lo e armazená-lo exclusivamente para o funcionamento do serviço.</p>
@@ -68,7 +68,7 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         ),
       },
       {
-        titulo: 'Disponibilidade do Serviço',
+        titulo: 'Disponibilidade do serviço',
         corpo: (
           <>
         <p>Nos esforçamos para manter o Doonly disponível 24 horas por dia, mas não garantimos disponibilidade ininterrupta. Podemos realizar manutenções programadas com aviso prévio sempre que possível.</p>
@@ -76,7 +76,7 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         ),
       },
       {
-        titulo: 'Encerramento de Conta',
+        titulo: 'Encerramento de conta',
         corpo: (
           <>
         <p>Você pode encerrar sua conta a qualquer momento. Nos reservamos o direito de suspender ou encerrar contas que violem estes termos.</p>
@@ -84,7 +84,7 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         ),
       },
       {
-        titulo: 'Limitação de Responsabilidade',
+        titulo: 'Limitação de responsabilidade',
         corpo: (
           <>
         <p>O Doonly não se responsabiliza por perdas de negócio, lucros cessantes ou danos indiretos decorrentes do uso ou impossibilidade de uso da plataforma.</p>
@@ -92,7 +92,7 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         ),
       },
       {
-        titulo: 'Alterações nos Termos',
+        titulo: 'Alterações nos termos',
         corpo: (
           <>
         <p>Podemos atualizar estes termos periodicamente. Notificaremos sobre mudanças significativas por e-mail ou dentro da plataforma. O uso continuado após as alterações implica aceitação dos novos termos.</p>
@@ -110,7 +110,7 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
     ],
   },
   privacidade: {
-    titulo: 'Política de Privacidade',
+    titulo: 'Política de privacidade',
     curto: 'Privacidade',
     atualizado: 'Última atualização: junho de 2026',
     intro: (
@@ -120,7 +120,7 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
     ),
     secoes: [
       {
-        titulo: 'Dados que Coletamos',
+        titulo: 'Dados que coletamos',
         corpo: (
           <>
         <p><strong>Dados de cadastro:</strong> nome, e-mail e senha ao criar sua conta.</p>
@@ -130,7 +130,7 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         ),
       },
       {
-        titulo: 'Como Usamos seus Dados',
+        titulo: 'Como usamos seus dados',
         corpo: (
           <>
         <ul>
@@ -144,7 +144,7 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         ),
       },
       {
-        titulo: 'Compartilhamento de Dados',
+        titulo: 'Compartilhamento de dados',
         corpo: (
           <>
         <p>Não vendemos seus dados pessoais. Podemos compartilhá-los apenas com:</p>
@@ -156,7 +156,7 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         ),
       },
       {
-        titulo: 'Cardápio Público',
+        titulo: 'Cardápio público',
         corpo: (
           <>
         <p>As informações que você cadastra no cardápio (nome da loja, produtos, fotos, descrições) são exibidas publicamente para seus clientes através do link do seu cardápio. Você tem controle total sobre essas informações.</p>
@@ -172,7 +172,7 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         ),
       },
       {
-        titulo: 'Seus Direitos (LGPD)',
+        titulo: 'Seus direitos (LGPD)',
         corpo: (
           <>
         <p>De acordo com a Lei Geral de Proteção de Dados (LGPD), você tem direito a:</p>
@@ -195,7 +195,7 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         ),
       },
       {
-        titulo: 'Retenção de Dados',
+        titulo: 'Retenção de dados',
         corpo: (
           <>
         <p>Mantemos seus dados enquanto sua conta estiver ativa. Após o encerramento da conta, os dados são removidos em até 90 dias, exceto quando a retenção for exigida por lei.</p>
@@ -203,7 +203,7 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         ),
       },
       {
-        titulo: 'Menores de Idade',
+        titulo: 'Menores de idade',
         corpo: (
           <>
         <p>O Doonly não é destinado a menores de 18 anos. Não coletamos intencionalmente dados de menores.</p>
@@ -211,7 +211,7 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         ),
       },
       {
-        titulo: 'Alterações nesta Política',
+        titulo: 'Alterações nesta política',
         corpo: (
           <>
         <p>Podemos atualizar esta política periodicamente. Notificaremos sobre mudanças significativas por e-mail ou dentro da plataforma.</p>

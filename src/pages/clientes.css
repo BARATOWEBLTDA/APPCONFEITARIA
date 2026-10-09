@@ -207,7 +207,7 @@
 @media (min-width: 600px) {
   .cp9-acoes { grid-template-columns: 1fr 1fr 1.3fr; }
   .cp9-acoes > :last-child { grid-column: auto; }
-  .cp9-nums { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+  .cp9-nums { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (min-width: 1000px) {
   .cp9 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); align-items: start; gap: 16px; }

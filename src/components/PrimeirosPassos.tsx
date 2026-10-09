@@ -286,7 +286,7 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo }: FolhaProps) {
           {(buscando || achou) && <small className="ppf-cep">{buscando ? "Procurando…" : "endereço encontrado"}</small>}</div></div>
       {campo("rua", "Rua", "Nome da rua")}
       <div className="ppf-row">{campo("numero", "Número", "Ex.: 500", { inputMode: "numeric" })}{campo("bairro", "Bairro")}</div>
-      <div className="ppf-row">{campo("cidade", "Cidade")}{campo("estado", "UF", "PR", { maxLength: 2, style: { textTransform: "uppercase" } })}</div>
+      <div className="ppf-row">{campo("cidade", "Cidade")}{campo("estado", "UF", "PR", { maxLength: 2, style: { } })}</div>
       <p className="ppf-l" style={{ marginTop: 14 }}>No cardápio, mostrar</p>
       <div className="ppf-seg">{([["completo", "Completo"], ["cidade", "Só a cidade"], ["nada", "Nada"]] as const).map(([v, l]) => (
         <button type="button" key={v} className={mostrar === v ? "on" : ""} onClick={() => setMostrar(v)}>{l}</button>))}</div>

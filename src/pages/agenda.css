@@ -71,7 +71,7 @@ i.atr { background: var(--ui-vermelho); }
 .ag3-pc-quem { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .ag3-pc-quem b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 800; line-height: 1.3; }
 .ag3-pc-quem b small { font-size: 13px; font-weight: 600; color: var(--ui-texto-3); }
-.ag3-pc-quem > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
+.ag3-pc-quem > span { font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
 .ag3-pc-info { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--ui-linha); }
 .ag3-pc-info .ui-linha > b { white-space: normal; }
 .ag3-pc-itens { margin-top: 8px; padding: 8px 12px; border-radius: var(--ui-raio); background: var(--ui-linha); }

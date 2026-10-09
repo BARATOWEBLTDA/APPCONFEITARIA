@@ -706,8 +706,7 @@ export default function Cardapio() {
         .ch-metric-body { min-width: 0; flex: 1; }
         .ch-metric-label {
           font-size: 12px; font-weight: var(--fw-bold);
-          color: var(--text-muted);
-          text-transform: uppercase; letter-spacing: 0.04em;
+          color: var(--text-muted); letter-spacing: 0.04em;
           margin: 0 0 var(--space-1);
           white-space: nowrap;
           overflow: hidden;
@@ -749,7 +748,7 @@ export default function Cardapio() {
           border-radius: 999px;
           font-family: inherit;
           font-size: 12px; font-weight: var(--fw-black);
-          letter-spacing: 0.05em; text-transform: uppercase;
+          letter-spacing: 0.05em;
           line-height: 1;
         }
         .ch-live-dot {
@@ -936,7 +935,6 @@ export default function Cardapio() {
           font-weight: 900;
           letter-spacing: 0.08em;
           color: #FFC947;
-          text-transform: uppercase;
         }
         .cd-metricas-locked-t {
           font-size: 15px;
@@ -969,7 +967,6 @@ export default function Cardapio() {
         }
         .cd-metricas-locked-lbl {
           font-size: 12px;
-          text-transform: uppercase;
           letter-spacing: 0.06em;
           opacity: 0.7;
           font-weight: 700;
@@ -991,7 +988,6 @@ export default function Cardapio() {
           cursor: pointer;
           font-family: inherit;
           letter-spacing: 0.04em;
-          text-transform: uppercase;
           box-shadow: 0 2px 0 rgba(0,0,0,0.22);
           position: relative;
           transition: transform 0.15s;

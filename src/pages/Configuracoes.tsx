@@ -606,9 +606,19 @@ export default function Configuracoes() {
         <div className="cfgd-card cfgd-quick">
           <div className="cfgd-quick-hdr">
             <div className="cfgd-quick-title">Ações rápidas</div>
-            <div className="cfgd-quick-sub">Suporte, sugestões e indicações</div>
+            <div className="cfgd-quick-sub">Preferências, suporte e indicações</div>
           </div>
           <div className="cfgd-quick-list">
+            <button className="cfgd-quick-item" onClick={() => navigate("/configuracoes/notificacoes")}>
+              <span className="cfgd-quick-ico cfgd-quick-ico--gray">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              </span>
+              <div className="cfgd-quick-info">
+                <div className="cfgd-quick-name">Notificações e sons</div>
+                <div className="cfgd-quick-desc">Avisos e sons do app neste aparelho</div>
+              </div>
+              <svg className="cfgd-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
             <button className="cfgd-quick-item" onClick={() => navigate("/conquistas")}>
               <span className="cfgd-quick-ico cfgd-quick-ico--pink">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>
@@ -803,7 +813,7 @@ export default function Configuracoes() {
         /* Card assinatura */
         .cfgp-sub { padding: 16px 18px; }
         .cfgp-sub-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 12px; }
-        .cfgp-sub-label { font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: #888780; text-transform: uppercase; }
+        .cfgp-sub-label { font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: #888780; }
         .cfgp-sub-plan { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
         .cfgp-sub-plan-name { font-size: 20px; font-weight: 900; color: #2C2C2A; letter-spacing: -0.02em; }
         .cfgp-sub-badge { font-size: 12px; font-weight: 800; padding: 3px 8px; border-radius: 999px; letter-spacing: 0.04em; }
@@ -843,8 +853,8 @@ export default function Configuracoes() {
         .cfgp-sub-cta--manage:hover { background: #FCE0E9; box-shadow: 0 4px 10px rgba(232, 90, 140, 0.18); }
 
         /* Blocos */
-        .cfgp-block-hdr { padding: 12px 18px 6px; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: #888780; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
-        .cfgp-edit-btn { all: unset; cursor: pointer; font-size: 12px; font-weight: 700; color: #E85A8C; letter-spacing: 0.04em; text-transform: uppercase; font-family: var(--font-base) !important; transition: color 0.15s ease; }
+        .cfgp-block-hdr { padding: 12px 18px 6px; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: #888780; display: flex; justify-content: space-between; align-items: center; }
+        .cfgp-edit-btn { all: unset; cursor: pointer; font-size: 12px; font-weight: 700; color: #E85A8C; letter-spacing: 0.04em; font-family: var(--font-base) !important; transition: color 0.15s ease; }
         .cfgp-edit-btn:hover { color: #C33A6E; }
 
         .cfgp-rows { padding: 0 0 8px; }
@@ -1018,7 +1028,7 @@ export default function Configuracoes() {
         .cfg-accordion { background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); overflow: hidden; }
         .cfg-accordion-header { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 1rem 1.15rem; background: none; border: none; cursor: pointer; font-family: 'Geist', sans-serif; text-align: left; }
         .cfg-accordion-icon { color: var(--text-muted); display: flex; align-items: center; }
-        .cfg-accordion-title { flex: 1; font-size: var(--font-button); font-weight: var(--fw-bold); color: var(--primary); text-transform: uppercase; letter-spacing: 0.07em; }
+        .cfg-accordion-title { flex: 1; font-size: var(--font-button); font-weight: var(--fw-bold); color: var(--primary); letter-spacing: 0.07em; }
         .cfg-accordion-chevron { color: var(--text-muted); transition: transform 0.2s; flex-shrink: 0; }
         .cfg-accordion-chevron.open { transform: rotate(180deg); }
         .cfg-accordion-body { padding: 0 1.15rem 1.15rem; display: flex; flex-direction: column; gap: 0.7rem; border-top: 1px solid var(--border); padding-top: 1rem; }
@@ -1101,7 +1111,7 @@ export default function Configuracoes() {
 
         /* Assinatura */
         .cfgd-sub-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; gap: 12px; }
-        .cfgd-sub-label { font-size: 12px; font-weight: 800; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; }
+        .cfgd-sub-label { font-size: 12px; font-weight: 800; color: #6B7280; letter-spacing: 0.05em; }
         .cfgd-sub-plan { display: flex; align-items: center; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
         .cfgd-sub-plan-name { font-size: 19px; font-weight: 800; color: #2C1219; }
         .cfgd-sub-badge { padding: 3px 8px; border-radius: 5px; font-size: 12px; font-weight: 800; letter-spacing: 0.05em; }
@@ -1275,7 +1285,7 @@ export default function Configuracoes() {
 
         @media (min-width: 900px) {
           .cfg-mobile { display: none; }
-          .cfgd-desktop { display: block; max-width: 1100px; margin: 0 auto; padding: 8px 24px 40px; }
+          .cfgd-desktop { display: block; max-width: 1100px; margin: 0 auto; padding: 24px 24px 40px; }
           .cfgd-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -1422,7 +1432,6 @@ export default function Configuracoes() {
           font-size: var(--font-caption);
           font-weight: var(--fw-bold);
           color: var(--text-muted);
-          text-transform: uppercase;
           letter-spacing: 0.06em;
           margin: 0 0 2px;
         }

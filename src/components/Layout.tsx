@@ -78,13 +78,12 @@ export default function Layout() {
     return () => window.removeEventListener("doonly:abrir-doo", abrir);
   }, []);
   const location = useLocation();
-  const isReceitas = location.pathname === "/receitas";
   const isAssinar = location.pathname === "/assinar";
   // Telas do Cardápio digital: no computador ganham o menu lateral pra trocar de tela sem voltar
   const comCdnav = ROTAS_CARDAPIO.includes(location.pathname);
   const isPrevia = location.pathname === "/cardapio-preview";
   // Cadastros: expande automaticamente quando estiver em uma das rotas filhas
-  const isInCadastros = ["/produtos", "/clientes", "/insumos", "/categorias"].some(p => location.pathname.startsWith(p));
+  const isInCadastros = ["/produtos", "/clientes", "/insumos", "/categorias", "/complementos"].some(p => location.pathname.startsWith(p));
   const [cadastrosOpen, setCadastrosOpen] = useState(isInCadastros);
   useEffect(() => { if (isInCadastros) setCadastrosOpen(true); }, [isInCadastros]);
 
@@ -184,11 +183,11 @@ export default function Layout() {
             </div>
           )}
 
-          <ItemMenu to="/cardapio" icone={ShoppingBag} tour="cardapio" ativoSe={c => c.startsWith("/cardapio")}>Cardápio Digital</ItemMenu>
+          <ItemMenu to="/cardapio" icone={ShoppingBag} tour="cardapio" ativoSe={c => c.startsWith("/cardapio") || c.startsWith("/checkout-config")}>Cardápio Digital</ItemMenu>
           <ItemMenu to="/pedidos" icone={Receipt}>Pedidos</ItemMenu>
           <ItemMenu to="/agenda" icone={CalendarDots}>Agenda</ItemMenu>
           <ItemMenu to="/receitas" icone={BookOpen} ativoSe={c => c.startsWith("/comunidade")}>Receitas</ItemMenu>
-          <ItemMenu to="/financeiro" icone={CurrencyDollar}>Financeiro</ItemMenu>
+          <ItemMenu to="/financeiro" icone={CurrencyDollar} ativoSe={c => c === "/custos" || c === "/lucratividade"}>Financeiro</ItemMenu>
           <ItemMenu to="/configuracoes" icone={Gear}>Configurações</ItemMenu>
         </nav>
       </aside>
@@ -214,7 +213,7 @@ export default function Layout() {
       )}
 
       {/* ── Bottom nav Mobile ── */}
-      {!isReceitas && !isPrevia && (
+      {!isPrevia && (
         <nav className="bottom-nav" aria-label="Menu principal">
           <div className="bottom-nav-pill">
             {([
@@ -316,7 +315,7 @@ export default function Layout() {
         .sidebar-avatar:has(.sidebar-avatar-placeholder) { background: #993556; }
         .sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .sidebar-avatar-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-        .sidebar-avatar-inicial { font-family: var(--font-base); font-size: 40px; font-weight: 900; color: #FCE0E9; letter-spacing: -0.02em; line-height: 1; text-transform: uppercase; }
+        .sidebar-avatar-inicial { font-family: var(--font-base); font-size: 40px; font-weight: 900; color: #FCE0E9; letter-spacing: -0.02em; line-height: 1; }
 
         .sidebar-avatar-container {
           position: relative;
@@ -330,7 +329,6 @@ export default function Layout() {
           padding: 4px 8px;
           white-space: nowrap;
           letter-spacing: 0.04em;
-          text-transform: uppercase;
           color: #fff;
           background: #2D1F26;
           border-radius: 6px;

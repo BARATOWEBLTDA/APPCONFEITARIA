@@ -1,0 +1,35 @@
+/* Sugerir melhoria e Relatar problema (09/10): mesmo padrão nas duas telas irmãs. Base em clientes.css (cl9-*). */
+.aj { max-width: 680px; }
+.aj .cl9-card { display: flex; flex-direction: column; gap: 16px; padding: 16px; }
+.aj .cl9-card + .cl9-card, .aj .aj-seg + .cl9-card, .aj .cl9-card + .aj-hist { margin-top: 12px; }
+.aj-intro { display: flex; align-items: flex-start; gap: 12px; }
+.aj-intro-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.aj-intro b { display: block; font-size: 16px; font-weight: 800; }
+.aj-intro p { margin: 2px 0 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
+.aj-rot { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
+.aj-rot small { margin-left: 6px; font-size: 13px; font-weight: 500; color: var(--ui-texto-3); }
+.aj-cont { margin: -10px 0 0; text-align: right; font-size: 13px; color: var(--ui-texto-3); }
+.aj-erro { margin: 0; font-size: 14px; font-weight: 700; color: var(--ui-vermelho-escuro); }
+.aj-dica { margin: 0; text-align: center; font-size: 13px; line-height: 1.5; color: var(--ui-texto-2); }
+.aj-seg { display: flex; gap: 4px; padding: 4px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
+.aj-seg button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; margin: 0; border: 0; border-radius: 10px; background: none; color: var(--ui-texto-2); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+.aj-seg button[aria-selected="true"] { background: #fff; color: var(--ui-texto); font-weight: 800; box-shadow: var(--ui-sombra-cartao); }
+.aj-seg i { font-style: normal; min-width: 22px; padding: 0 6px; border-radius: 999px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 12px; font-weight: 800; }
+.aj-ok { align-items: center; text-align: center; padding: 28px 20px !important; }
+.aj-ok-ic { display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 50%; background: var(--ui-verde-fundo); color: var(--ui-verde); }
+.aj-ok h2 { margin: 0; font-size: 20px; font-weight: 800; }
+.aj-ok p { margin: -8px 0 4px; font-size: 15px; line-height: 1.5; color: var(--ui-texto-2); }
+.aj-ok .ui-bt { width: 100%; }
+.aj-fluxo { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 12px; font-size: 13px; color: var(--ui-texto-3); }
+.aj-st { display: inline-flex; align-items: center; gap: 4px; min-height: 26px; padding: 0 10px; border-radius: 999px; font-size: 13px; font-weight: 700; }
+.aj-st--rec { background: var(--ui-cinza); color: var(--ui-texto-2); }
+.aj-st--analise { background: var(--ui-laranja-fundo); color: #92400E; }
+.aj-st--ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
+.aj-st--no { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); }
+.aj-hist { display: flex; flex-direction: column; gap: 10px; }
+.aj-h { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); }
+.aj-h-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.aj-h-top small { font-size: 13px; color: var(--ui-texto-3); }
+.aj-h b { font-size: 15px; font-weight: 800; }
+.aj-h p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
+.aj-h em { align-self: flex-start; font-style: normal; font-size: 13px; color: var(--ui-texto-2); }

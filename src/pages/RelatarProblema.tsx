@@ -2,11 +2,14 @@ import { VERSAO_APP } from "@/lib/versao";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
-import { Check } from "@phosphor-icons/react";
+import { Bug, Check } from "@phosphor-icons/react";
+import { Botao, CampoArea } from "@/components/base";
+import "./clientes.css";
+import "./ajuda.css";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
 
-/** "Relatar um problema" — tela simples, no estilo do "Enviar sugestão" (30/09) */
+/** "Relatar um problema" (09/10): mesmo padrão do "Sugerir uma melhoria", com os componentes do app */
 const PARTES = ["Pedidos", "Cardápio", "Produtos", "Ficha técnica", "Clientes", "Financeiro", "Agenda", "Outro"];
 
 export default function RelatarProblema() {
@@ -47,53 +50,38 @@ export default function RelatarProblema() {
   };
 
   return (
-    <div className="rp-root">
-      <AppPageHeader title="Relatar um problema" subtitle="Conta pra gente o que não funcionou" onBack={() => navigate(-1)} />
-      <div className="rp-wrap">
+    <>
+      <AppPageHeader title="Relatar um problema" subtitle="Conte pra gente o que não funcionou" onBack={() => navigate(-1)} />
+      <div className="cl9 aj">
         {ok ? (
-          <div className="rp-card rp-ok">
-            <div className="rp-ok-ic" aria-hidden="true"><Check size={30} weight="bold" /></div>
+          <section className="cl9-card aj-ok">
+            <span className="aj-ok-ic" aria-hidden="true"><Check size={30} weight="bold" /></span>
             <h2>{primeiroNome ? `Obrigado, ${primeiroNome}!` : "Obrigado!"}</h2>
-            <p>Recebemos seu relato. A equipe Doonly já vai analisar e corrigir o mais rápido possível, e a gente te avisa assim que estiver resolvido.</p>
-            <button type="button" className="rp-bt" onClick={() => navigate(-1)}>Voltar</button>
-            <button type="button" className="rp-bt2" onClick={() => { setOk(false); setTexto(""); setParte(null); }}>Relatar outro problema</button>
-          </div>
+            <p>Recebemos o seu relato. A equipe vai analisar e corrigir o mais rápido possível, e a gente te avisa quando estiver resolvido.</p>
+            <Botao onClick={() => navigate(-1)}>Voltar</Botao>
+            <Botao variante="link" onClick={() => { setOk(false); setTexto(""); setParte(null); }}>Relatar outro problema</Botao>
+          </section>
         ) : (
-          <div className="rp-card">
-            <label className="rp-lb" htmlFor="rp-txt">O que aconteceu?</label>
-            <textarea id="rp-txt" className="rp-ta" maxLength={800} value={texto} onChange={e => setTexto(e.target.value)}
-              placeholder="Ex: cliquei em Salvar no produto e apareceu uma mensagem de erro…" />
-            <p className="rp-cont">{texto.length}/800</p>
-            <p className="rp-lb">Em que parte do app? <span>opcional</span></p>
-            <div className="rp-chips">
-              {PARTES.map(p => <button type="button" key={p} className={`rp-chip${parte === p ? " on" : ""}`} onClick={() => setParte(parte === p ? null : p)}>{p}</button>)}
+          <section className="cl9-card">
+            <div className="aj-intro">
+              <span className="aj-intro-ic" aria-hidden="true"><Bug size={24} weight="duotone" /></span>
+              <div><b>Algo deu errado?</b><p>Conte o que aconteceu. A gente lê todos os relatos e corrige o mais rápido possível.</p></div>
             </div>
-            {erro && <p className="rp-erro">{erro}</p>}
-            <button type="button" className="rp-bt" disabled={!pode} onClick={enviar}>{enviando ? "Enviando…" : "Enviar"}</button>
-            <p className="rp-dica">Quanto mais detalhes (o que você clicou, o que esperava acontecer), mais rápido a gente resolve.</p>
-          </div>
+            <CampoArea rotulo="O que aconteceu?" obrigatorio rows={5} maxLength={800} value={texto} onChange={e => setTexto(e.target.value)}
+              placeholder="Ex.: toquei em Salvar no produto e apareceu uma mensagem de erro" />
+            <p className="aj-cont">{texto.length} / 800</p>
+            <div>
+              <p className="aj-rot">Em que parte do app?<small>opcional</small></p>
+              <div className="cl9-f-chips">
+                {PARTES.map(p => <button type="button" key={p} aria-pressed={parte === p} onClick={() => setParte(parte === p ? null : p)}>{p}</button>)}
+              </div>
+            </div>
+            {erro && <p className="aj-erro" role="alert">{erro}</p>}
+            <Botao cheio carregando={enviando} disabled={texto.trim().length < 5} onClick={enviar}>Enviar</Botao>
+            <p className="aj-dica">Quanto mais detalhes (o que você tocou e o que esperava acontecer), mais rápido a gente resolve.</p>
+          </section>
         )}
       </div>
-      <style>{`
-        .rp-root { font-family: var(--font-base); color: #2C1219; min-height: 100%; }
-        .rp-wrap { max-width: 640px; margin: 0 auto; padding: 16px 16px 40px; }
-        .rp-card { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 18px; }
-        .rp-lb { display: block; font-size: 14px; font-weight: 700; margin: 0 0 8px; } .rp-lb span { font-size: 12px; font-weight: 600; color: #9A8E94; background: #F5F0F2; padding: 2px 7px; border-radius: 999px; margin-left: 4px; }
-        .rp-ta { width: 100%; min-height: 130px; border: 1.5px solid #EAE3E6; border-radius: 10px; padding: 12px; font-family: inherit; font-size: 15px; color: #2C1219; resize: vertical; }
-        .rp-ta:focus { outline: none; border-color: #2C1219; } .rp-ta::placeholder { color: #B5AAB0; }
-        .rp-cont { text-align: right; font-size: 13px; color: #B5AAB0; margin: 4px 0 14px; }
-        .rp-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
-        .rp-chip { min-height: 44px; border: 1.5px solid #EAE3E6; background: #fff; border-radius: 999px; padding: 7px 14px; font-family: inherit; font-size: 13px; font-weight: 600; color: #4B3A42; cursor: pointer; }
-        .rp-chip.on { background: #2C1219; border-color: #2C1219; color: #fff; }
-        .rp-bt { width: 100%; height: 48px; border: none; border-radius: 10px; background: #E85A8C; color: #fff; font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 3px 0 #C33A6E; }
-        .rp-bt:disabled { background: #F6D4E1; box-shadow: 0 3px 0 #EBC3D3; cursor: default; }
-        .rp-bt2 { width: 100%; margin-top: 8px; border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #6B5D64; padding: 10px; cursor: pointer; }
-        .rp-dica { font-size: 12.5px; color: #9A8E94; margin: 12px 0 0; line-height: 1.45; text-align: center; }
-        .rp-erro { font-size: 13px; color: #B91C1C; font-weight: 600; margin: 0 0 12px; }
-        .rp-ok { text-align: center; padding: 28px 20px; }
-        .rp-ok-ic { width: 64px; height: 64px; border-radius: 50%; background: #DCFCE7; color: #15803D; font-size: 30px; font-weight: 900; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; box-shadow: 0 0 0 8px #F0FDF4; }
-        .rp-ok h2 { font-size: 20px; font-weight: 900; margin: 0 0 6px; } .rp-ok p { font-size: 14px; color: #6B5D64; line-height: 1.5; margin: 0 0 18px; }
-      `}</style>
-    </div>
+    </>
   );
 }

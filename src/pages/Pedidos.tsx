@@ -198,7 +198,7 @@ export default function Pedidos() {
     }
     if (acao === 'compartilhar') {
       const itens = p.pedido_itens || []
-      const linhasItens = itens.map(it => `• ${it.quantidade}x ${nomeDeProduto(it.nome_produto)}`).join('\n')
+      const linhasItens = itens.map(it => `• ${String(it.quantidade).replace('.', ',')}x ${nomeDeProduto(it.nome_produto)}`).join('\n')
       const [y, m, d] = (p.data_entrega || '').split('-')
       const dataEnt = p.data_entrega ? `${d}/${m}/${y}` : '—'
       const hora = p.horario_entrega ? ` às ${p.horario_entrega.slice(0, 5)}` : ''

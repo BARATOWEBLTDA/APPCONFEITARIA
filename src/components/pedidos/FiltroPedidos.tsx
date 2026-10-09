@@ -97,7 +97,7 @@ export default function FiltroLateral({ statusSelecionados, setStatusSelecionado
         .fl-x { width: 36px; height: 36px; border-radius: 10px; border: none; background: #F5F0F2; color: #4B3A42; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .fl-b { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 4px 16px 14px; }
         .fl-sec { display: flex; justify-content: space-between; align-items: baseline; margin: 16px 2px 7px; }
-        .fl-sec b { font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #9A8E94; }
+        .fl-sec b { font-size: 12px; font-weight: 800; letter-spacing: .06em; color: #9A8E94; }
         .fl-lk { border: none; background: none; padding: 0; font-family: inherit; font-size: 12.5px; font-weight: 800; color: #C33A6E; cursor: pointer; }
         .fl-grp { border: 1px solid #F0EBED; border-radius: 14px; overflow: hidden; }
         .fl-ln { display: flex; align-items: center; gap: 10px; width: 100%; border: none; border-top: 1px solid #F5F0F2; background: #fff; padding: 12px; font-family: inherit; font-size: 14.5px; color: #2C1219; text-align: left; cursor: pointer; }

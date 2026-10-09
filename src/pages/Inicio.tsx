@@ -981,7 +981,6 @@ export default function Inicio() {
           color: #FCE0E9;
           letter-spacing: -0.02em;
           line-height: 1;
-          text-transform: uppercase;
         }
 
         /* Badge de câmera — atalho pra trocar/adicionar foto */
@@ -1024,7 +1023,6 @@ export default function Inicio() {
           font-size: 12.5px;
           font-weight: 900;
           letter-spacing: 0.05em;
-          text-transform: uppercase;
           margin-left: 4px;
           vertical-align: middle;
           white-space: nowrap;

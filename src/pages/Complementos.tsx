@@ -737,7 +737,7 @@ const styles = `
   .cpl-field input:focus { border-color: #E85A8C; }
   .cpl-desc-input { padding: 10px 14px; border: 1.5px solid #E5E7EB; border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; resize: vertical; min-height: 60px; transition: border 0.15s; width: 100%; box-sizing: border-box; }
   .cpl-desc-input:focus { border-color: #E85A8C; }
-  .cpl-req-opt { display: inline-block; margin-left: 8px; padding: 2px 7px; background: #F3F4F6; color: #6B7280; font-size: 12px; font-weight: 700; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.04em; vertical-align: middle; }
+  .cpl-req-opt { display: inline-block; margin-left: 8px; padding: 2px 7px; background: #F3F4F6; color: #6B7280; font-size: 12px; font-weight: 700; border-radius: 4px; letter-spacing: 0.04em; vertical-align: middle; }
 
   /* Segmented control Cobrar / Grátis */
   .cpl-seg {
@@ -835,7 +835,7 @@ const styles = `
     display: inline-flex; align-items: center;
     padding: 3px 8px; background: #F5F3EF; color: #6B7280;
     font-size: 12px; font-weight: 800; border-radius: 6px;
-    letter-spacing: 0.03em; text-transform: uppercase;
+    letter-spacing: 0.03em;
     margin-left: auto; flex-shrink: 0;
   }
 
@@ -844,7 +844,7 @@ const styles = `
     display: inline-block; margin-left: 6px;
     padding: 2px 7px; background: #F5F3EF; color: #9CA3AF;
     font-size: 12px; font-weight: 800; border-radius: 5px;
-    letter-spacing: 0.04em; text-transform: uppercase;
+    letter-spacing: 0.04em;
     vertical-align: middle;
   }
 

@@ -146,7 +146,7 @@ export default function Assinar() {
         .pro-li small { display: block; font-size: 12.5px; color: rgba(255,255,255,.65); margin-top: 2px; line-height: 1.35; }
         .pro-of { position: relative; margin-top: 22px; background: rgba(255,255,255,.07); border: 1px solid rgba(249,168,212,.4); border-radius: 18px; padding: 20px 18px 18px; text-align: center; box-shadow: 0 10px 40px rgba(232,90,140,.15); }
         .pro-off { position: absolute; top: -11px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: linear-gradient(90deg, #16A34A, #15803D); color: #fff; font-size: 12px; font-weight: 900; letter-spacing: .06em; padding: 4px 10px; border-radius: 999px; box-shadow: 0 4px 12px rgba(22,163,74,.35); }
-        .pro-of-t { font-size: 12px; font-weight: 800; letter-spacing: .08em; color: #F9A8D4; text-transform: uppercase; margin: 0; }
+        .pro-of-t { font-size: 12px; font-weight: 800; letter-spacing: .08em; color: #F9A8D4; margin: 0; }
         .pro-of-p { display: flex; align-items: baseline; justify-content: center; gap: 8px; margin-top: 6px; }
         .pro-of-p s { color: rgba(255,255,255,.45); font-size: 14px; }
         .pro-of-p b { font-size: 36px; font-weight: 900; color: #fff; }

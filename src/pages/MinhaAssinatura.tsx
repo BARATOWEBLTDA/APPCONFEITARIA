@@ -70,7 +70,7 @@ export default function MinhaAssinatura() {
         .mas-g { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
         .mas-g div { background: rgba(255,255,255,.07); border-radius: 12px; padding: 10px; }
         .mas-g small { display: block; font-size: 12px; color: rgba(255,255,255,.6); } .mas-g b { font-size: 14px; }
-        .mas-sec { margin: 18px 4px 8px; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #9A8E94; }
+        .mas-sec { margin: 18px 4px 8px; font-size: 12px; font-weight: 800; letter-spacing: .06em; color: #9A8E94; }
         .mas-op { width: 100%; display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 14px; font-family: inherit; font-size: 14px; font-weight: 700; color: #2C1219; cursor: pointer; }
         .mas-op i { font-style: normal; color: #C4B8BE; font-size: 18px; }
         .mas-cancel { text-align: center; font-size: 12px; color: #B5AAB0; margin: 20px 0 0; }

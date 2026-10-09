@@ -778,7 +778,7 @@ export default function NovaVenda() {
             <div className="nv3-contas">
               {itens.map((it, idx) => (
                 <div key={idx}>
-                  <p><span>{it.quantidade}x {nomeDeProduto(it.nome_produto)}{it.opcaoLabel ? ` · ${it.opcaoLabel}` : ''}</span><span>{rs(it.valor_unitario * it.quantidade)}</span></p>
+                  <p><span>{String(it.quantidade).replace('.', ',')}x {nomeDeProduto(it.nome_produto)}{it.opcaoLabel ? ` · ${it.opcaoLabel}` : ''}</span><span>{rs(it.valor_unitario * it.quantidade)}</span></p>
                   {it.observacoes && <p className="rec"><span>Recado: {it.observacoes}</span></p>}
                 </div>
               ))}

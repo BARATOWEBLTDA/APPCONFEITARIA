@@ -149,7 +149,7 @@ export default function NotificacoesSons() {
       <style>{`
         .ns-root { font-family: var(--font-base); padding: 16px 4px 100px; max-width: 640px; margin: 0 auto; }
         .ns-sec {
-          font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+          font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
           color: #888780; margin: 6px 6px 8px;
         }
         .ns-card {

@@ -313,7 +313,7 @@ export default function Indicar() {
           font-family: var(--font-base) !important;
           background: #F5F3EF;
           min-height: 100vh;
-          padding: 12px;
+          padding: 16px 12px 12px;
           box-sizing: border-box;
           padding-top: calc(12px + env(safe-area-inset-top, 0px));
           padding-bottom: calc(12px + 6.5rem);
@@ -352,7 +352,6 @@ export default function Indicar() {
           font-weight: 800;
           letter-spacing: 0.08em;
           color: #888780;
-          text-transform: uppercase;
           margin-bottom: 12px;
           display: flex;
           justify-content: space-between;
@@ -449,7 +448,6 @@ export default function Indicar() {
           font-weight: 700;
           color: #993556;
           letter-spacing: 0.05em;
-          text-transform: uppercase;
         }
         .ind-contador-num {
           font-size: 48px;
@@ -499,7 +497,6 @@ export default function Indicar() {
           font-weight: 800;
           letter-spacing: 0.08em;
           color: #888780;
-          text-transform: uppercase;
           margin: 0 4px 10px;
         }
         .ind-premios { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
@@ -562,7 +559,6 @@ export default function Indicar() {
           padding: 4px 10px;
           border-radius: 999px;
           letter-spacing: 0.03em;
-          text-transform: uppercase;
         }
         .ind-pcard-meta--next { color: #993556; }
         .ind-pcard-meta--won { color: #166534; }

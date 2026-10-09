@@ -793,7 +793,7 @@ export default function Clientes() {
               <div className={`cl9-barra${suportaContatos ? " cl9-barra--imp" : ""}`}>
                 <label className="cl9-busca">
                   <MagnifyingGlass size={20} weight="bold" />
-                  <input type="search" placeholder="Buscar por nome ou telefone" value={search} onChange={e => setSearch(e.target.value)} aria-label="Buscar cliente" autoComplete="off" />
+                  <input type="search" placeholder="Buscar cliente" value={search} onChange={e => setSearch(e.target.value)} aria-label="Buscar cliente" autoComplete="off" />
                   {search && <button type="button" aria-label="Limpar a busca" onClick={() => setSearch("")}><X size={18} weight="bold" /></button>}
                 </label>
                 <div className="cl9-acoes">

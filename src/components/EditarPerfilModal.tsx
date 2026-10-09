@@ -328,7 +328,6 @@ export default function EditarPerfilModal({
           font-size: 12px;
           font-weight: 700;
           color: #888780;
-          text-transform: uppercase;
           letter-spacing: 0.05em;
           padding-left: 2px;
         }

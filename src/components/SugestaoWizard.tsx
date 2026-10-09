@@ -418,7 +418,6 @@ export default function SugestaoWizard({ open, onClose, perfil }: Props) {
           font-size: 12px;
           color: #888780;
           font-weight: 700;
-          text-transform: uppercase;
           letter-spacing: 0.05em;
           margin-bottom: 4px;
         }

@@ -1248,7 +1248,7 @@ export default function EditarPedido() {
                         <div className="tpd-it-topo">
                           <span className="tpd-ft" aria-hidden="true"><Package size={20} weight="bold" />{foto && <img src={foto} alt="" onError={e => { e.currentTarget.style.display = 'none' }} />}</span>
                           <div className="tpd-it-tx">
-                            <b><em>{q}x</em> {nomeDeProduto(it.nome_produto)}</b>
+                            <b><em>{String(q).replace('.', ',')}x</em> {nomeDeProduto(it.nome_produto)}</b>
                             <span>{formatMoney((it.valor_unitario || 0) * q)}{q > 1 ? ` · ${formatMoney(it.valor_unitario || 0)} ${eKit ? 'por kit' : 'cada'}` : ''}</span>
                           </div>
                           <BotaoIcone rotulo={`Opções de ${it.nome_produto}`} variante="limpo" tamanho="p" onClick={() => setItemMenu(idx)}><DotsThree size={20} weight="bold" /></BotaoIcone>
@@ -1367,7 +1367,7 @@ export default function EditarPedido() {
               if (!c.fecha && q > 1) origem.push(`${formatMoney(it.valor_unitario || 0)} ${eKit ? 'por kit' : 'cada'}`)
               return (
                 <div key={it.id || `v${idx}`} className="ep3-pv">
-                  <div className="ep3-pv-h"><span><em>{q}x</em> {it.nome_produto}</span><b>{formatMoney((it.valor_unitario || 0) * q)}</b></div>
+                  <div className="ep3-pv-h"><span><em>{String(q).replace('.', ',')}x</em> {it.nome_produto}</span><b>{formatMoney((it.valor_unitario || 0) * q)}</b></div>
                   {c.fecha ? (
                     <div className="ep3-pv-d">
                       <p><span>Produto{q > 1 ? ` · ${q} × ${formatMoney(c.base)}` : ''}</span><b>{formatMoney(c.base * q)}</b></p>
@@ -1454,7 +1454,7 @@ export default function EditarPedido() {
       {/* ── ⋯ de um item: quantidade, recado e remover ── */}
       <Janela
         aberta={itemMenu !== null && !!itens[itemMenu]} aoFechar={() => setItemMenu(null)} tipo="conteudo"
-        titulo={itemMenu !== null && itens[itemMenu] ? `${itens[itemMenu].quantidade}x ${nomeDeProduto(itens[itemMenu].nome_produto)}` : 'Item'}
+        titulo={itemMenu !== null && itens[itemMenu] ? `${String(itens[itemMenu].quantidade).replace('.', ',')}x ${nomeDeProduto(itens[itemMenu].nome_produto)}` : 'Item'}
         acoes={itemMenu !== null && itens[itemMenu] ? <>
           <Botao variante="secundario" icone={<Trash size={20} weight="bold" />} onClick={() => { const i = itemMenu; setItemMenu(null); removerComDesfazer(i) }}>Remover item</Botao>
           <Botao onClick={() => setItemMenu(null)}>Pronto</Botao>
@@ -2903,7 +2903,6 @@ export default function EditarPedido() {
           border-radius: 999px;
           font-size: 13px;
           font-weight: 700;
-          text-transform: uppercase;
           letter-spacing: 0.02em;
           flex-shrink: 0;
         }
@@ -3555,7 +3554,7 @@ const EP2_CSS = `
   .ep2-cup-un span { font-size: 12px; color: #9A8E94; }
   .ep2-anexo { position: relative; margin: 14px 4px 4px 0; background: #fff; border: 1.5px dashed #F3A9C6; border-radius: 12px; padding: 12px; transform: rotate(-.6deg); box-shadow: 0 6px 14px -8px rgba(195,58,110,.35); }
   .ep2-anexo-clip { position: absolute; top: -12px; left: 16px; width: 26px; height: 26px; border-radius: 50%; background: #fff; color: #C33A6E; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 4px rgba(0,0,0,.18); }
-  .ep2-anexo-t { margin: 2px 0 8px; font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: #C33A6E; }
+  .ep2-anexo-t { margin: 2px 0 8px; font-size: 12px; font-weight: 900; letter-spacing: .08em; color: #C33A6E; }
   .ep2-anexo-foto { position: relative; display: block; width: 100%; height: 150px; border-radius: 10px; overflow: hidden; background: linear-gradient(135deg, #F7C6D9, #C9B4F5); }
   .ep2-anexo-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .ep2-anexo-ph { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: #fff; }

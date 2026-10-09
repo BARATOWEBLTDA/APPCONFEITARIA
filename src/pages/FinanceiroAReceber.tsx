@@ -77,7 +77,7 @@ export default function FinanceiroAReceber() {
         {!carregando && itens.length > 0 && (
           <div className="far-resumo">
             <div className={`far-k ${soma(grupos.atrasados) > 0 ? "far-k--atr" : ""}`}><small>Atrasados</small><b>{brl(soma(grupos.atrasados))}</b><i>{grupos.atrasados.length} {grupos.atrasados.length === 1 ? "pedido" : "pedidos"}</i></div>
-            <div className="far-k"><small>Próximos 7 dias</small><b>{brl(soma(grupos.semana))}</b><i>{grupos.semana.length} {grupos.semana.length === 1 ? "pedido" : "pedidos"}</i></div>
+            <div className="far-k"><small>Em 7 dias</small><b>{brl(soma(grupos.semana))}</b><i>{grupos.semana.length} {grupos.semana.length === 1 ? "pedido" : "pedidos"}</i></div>
             <div className="far-k"><small>Depois</small><b>{brl(soma(grupos.depois) + soma(grupos.semData))}</b><i>{grupos.depois.length + grupos.semData.length} {grupos.depois.length + grupos.semData.length === 1 ? "pedido" : "pedidos"}</i></div>
           </div>
         )}
@@ -208,7 +208,7 @@ const CSS = `
   .far-vazio-ic { width: 64px; height: 64px; border-radius: 20px; background: #F0FDF4; color: #16A34A; display: inline-flex; align-items: center; justify-content: center; }
   .far-vazio b { display: block; font-size: 17px; font-weight: 900; margin-top: 12px; color: #2C1219; }
   .far-vazio p { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 6px auto 0; max-width: 360px; text-wrap: balance; }
-  .far-gt { margin: 0 0 8px; font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #9A8E94; }
+  .far-gt { margin: 0 0 8px; font-size: 13px; font-weight: 800; letter-spacing: .06em; color: #9A8E94; }
   .far-gt span { color: #6B5D64; }
   .far-lista { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
   .far-it { min-width: 0; background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 14px; }

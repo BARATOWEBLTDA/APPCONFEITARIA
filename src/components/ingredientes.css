@@ -56,3 +56,5 @@
 /* Dentro da janela da ficha técnica / produto */
 .ig-emb { display: flex; flex-direction: column; gap: 16px; font-family: var(--font-base); }
 .ig-emb-cab { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+/* 09/10: no celular a linha da compra quebra em vez de cortar ("pacote de 1 …") */
+.ig-l-tx small { white-space: normal; }

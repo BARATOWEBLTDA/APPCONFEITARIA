@@ -34,3 +34,5 @@
   .fl-cel { display: none !important; }
   .fl-lucro { text-align: left; }
 }
+/* 09/10: no celular a segunda linha quebra em vez de cortar ("margem -0,4…") */
+.fl-tx small { white-space: normal; }

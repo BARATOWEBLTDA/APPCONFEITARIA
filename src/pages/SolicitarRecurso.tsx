@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import AppPageHeader from "@/components/AppPageHeader";
 import { useProfile } from "@/hooks/useProfile";
-import { PaperPlaneTilt, CheckCircle, Lightbulb } from "@phosphor-icons/react";
+import { PaperPlaneTilt, CheckCircle, Lightbulb, CaretRight } from "@phosphor-icons/react";
+import { Botao, Campo, CampoArea, TelaVazia } from "@/components/base";
+import "./clientes.css";
+import "./ajuda.css";
 
 interface Sugestao {
   id: string;
@@ -34,10 +37,10 @@ const IMPACTOS: { id: "baixo" | "medio" | "alto"; label: string }[] = [
 ];
 
 const STATUS: Record<string, { label: string; cls: string }> = {
-  recebida:     { label: "Recebida",       cls: "sr-st--rec" },
-  em_analise:   { label: "Em análise",     cls: "sr-st--analise" },
-  implementada: { label: "Implementada", cls: "sr-st--ok" },
-  recusada:     { label: "Recusada",       cls: "sr-st--no" },
+  recebida:     { label: "Recebida",       cls: "aj-st--rec" },
+  em_analise:   { label: "Em análise",     cls: "aj-st--analise" },
+  implementada: { label: "Implementada", cls: "aj-st--ok" },
+  recusada:     { label: "Recusada",       cls: "aj-st--no" },
 };
 
 function tempoRelativo(iso: string): string {
@@ -60,6 +63,7 @@ function tituloDe(s: Sugestao): string {
 }
 
 export default function SolicitarRecurso() {
+  const navigate = useNavigate();
   const { profile } = useProfile();
   // ?aba=minhas abre direto no histórico (usado pela notificação "Sua ideia virou realidade")
   const [searchParams] = useSearchParams();
@@ -130,247 +134,92 @@ export default function SolicitarRecurso() {
 
   return (
     <>
-      <AppPageHeader title="Sugerir uma melhoria" subtitle="Sua opinião molda o Doonly" />
+      <AppPageHeader title="Sugerir uma melhoria" subtitle="Sua opinião molda o Doonly" onBack={() => navigate(-1)} />
 
-      <div className="sr-root">
-        <div className="sr-tabs" role="tablist">
-          <button role="tab" aria-selected={aba === "nova"} className={`sr-tab${aba === "nova" ? " on" : ""}`} onClick={() => setAba("nova")}>
-            Nova ideia
-          </button>
-          <button role="tab" aria-selected={aba === "minhas"} className={`sr-tab${aba === "minhas" ? " on" : ""}`} onClick={() => setAba("minhas")}>
-            Minhas ideias
-            {historico.length > 0 && <span className="sr-cnt">{historico.length}</span>}
+      <div className="cl9 aj">
+        <div className="aj-seg" role="tablist" aria-label="Ideias">
+          <button role="tab" type="button" aria-selected={aba === "nova"} onClick={() => setAba("nova")}>Nova ideia</button>
+          <button role="tab" type="button" aria-selected={aba === "minhas"} onClick={() => setAba("minhas")}>
+            Minhas ideias{historico.length > 0 && <i>{historico.length}</i>}
           </button>
         </div>
 
         {aba === "nova" && (
           enviado ? (
-            <div className="sr-card sr-ok">
-              <div className="sr-ok-ic"><CheckCircle size={30} weight="fill" /></div>
-              <p className="sr-ok-t">Ideia recebida!</p>
-              <p className="sr-ok-d">Obrigada! Acompanhe o andamento em "Minhas ideias".</p>
-              <button className="sr-cta" onClick={novaIdeia}>Enviar outra ideia</button>
-              <button className="sr-ghost" onClick={() => setAba("minhas")}>Ver minhas ideias</button>
-            </div>
+            <section className="cl9-card aj-ok">
+              <span className="aj-ok-ic" aria-hidden="true"><CheckCircle size={32} weight="fill" /></span>
+              <h2>Ideia recebida!</h2>
+              <p>Obrigada! Acompanhe o andamento em "Minhas ideias".</p>
+              <Botao onClick={novaIdeia}>Enviar outra ideia</Botao>
+              <Botao variante="link" onClick={() => setAba("minhas")}>Ver minhas ideias</Botao>
+            </section>
           ) : (
-            <>
-              <div className="sr-hero">
-                <span className="sr-hero-ic" aria-hidden="true"><Lightbulb size={26} weight="duotone" /></span>
-                <div>
-                  <b>Sua ideia pode virar recurso</b>
-                  <p>Conte o que falta no seu dia a dia. A gente lê todas e conta o andamento em "Minhas ideias".</p>
+            <section className="cl9-card">
+              <div className="aj-intro">
+                <span className="aj-intro-ic" aria-hidden="true"><Lightbulb size={24} weight="duotone" /></span>
+                <div><b>Sua ideia pode virar recurso</b><p>Conte o que falta no seu dia a dia. A gente lê todas e conta o andamento em "Minhas ideias".</p></div>
+              </div>
+              <Campo rotulo="O que você gostaria?" obrigatorio maxLength={60} placeholder="Ex.: colocar promoção nos produtos"
+                value={titulo} onChange={e => setTitulo(e.target.value)} />
+              <CampoArea rotulo="Como isso te ajudaria?" opcional rows={4} maxLength={500}
+                placeholder="Conte uma situação real: quando acontece e o que você faz hoje"
+                value={descricao} onChange={e => setDescricao(e.target.value)} />
+              <p className="aj-cont">{descricao.length} / 500</p>
+              <div>
+                <p className="aj-rot">Qual área?<small>opcional</small></p>
+                <div className="cl9-f-chips">
+                  {AREAS.map(a => (
+                    <button key={a.id} type="button" aria-pressed={area === a.id} onClick={() => setArea(area === a.id ? null : a.id)}>{a.label}</button>
+                  ))}
                 </div>
               </div>
-              <div className="sr-card">
-                <div className="sr-f">
-                  <label className="sr-lbl" htmlFor="sr-tit">O que você gostaria? <small>obrigatório</small></label>
-                  <input id="sr-tit" className="sr-in" maxLength={60}
-                    placeholder="Ex: Colocar promoção nos produtos"
-                    value={titulo} onChange={e => setTitulo(e.target.value)} />
-                </div>
-                <div className="sr-f">
-                  <label className="sr-lbl" htmlFor="sr-desc">Como isso te ajudaria? <small>opcional</small></label>
-                  <textarea id="sr-desc" className="sr-ta" maxLength={500}
-                    placeholder="Conte uma situação real: quando acontece, o que você faz hoje..."
-                    value={descricao} onChange={e => setDescricao(e.target.value)} />
-                  <div className="sr-count">{descricao.length} / 500</div>
-                </div>
-                <div className="sr-f">
-                  <span className="sr-lbl">Qual área?</span>
-                  <div className="sr-areas">
-                    {AREAS.map(a => (
-                      <button key={a.id} type="button" className={`sr-area${area === a.id ? " on" : ""}`}
-                        onClick={() => setArea(area === a.id ? null : a.id)}>
-                        {a.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="sr-f">
-                  <span className="sr-lbl">Quanto isso faz falta? <small>opcional</small></span>
-                  <div className="sr-imps">
-                    {IMPACTOS.map(i => (
-                      <button key={i.id} type="button" className={`sr-imp${impacto === i.id ? " on" : ""}`}
-                        onClick={() => setImpacto(impacto === i.id ? null : i.id)}>
-                        
-                        <span className="sr-imp-l">{i.label}</span>
-                      </button>
-                    ))}
-                  </div>
+              <div>
+                <p className="aj-rot">Quanto isso faz falta?<small>opcional</small></p>
+                <div className="cl9-f-chips">
+                  {IMPACTOS.map(i => (
+                    <button key={i.id} type="button" aria-pressed={impacto === i.id} onClick={() => setImpacto(impacto === i.id ? null : i.id)}>{i.label}</button>
+                  ))}
                 </div>
               </div>
-
-              {erro && <p className="sr-err">{erro}</p>}
-              <button className="sr-cta" onClick={enviar} disabled={!podeEnviar}>
-                {enviando
-                  ? <><span className="sr-spin" /> Enviando...</>
-                  : <><PaperPlaneTilt size={17} weight="fill" /> Enviar ideia</>}
-              </button>
-              {titulo.trim().length < 3 && <p className="sr-req">Escreva o que você gostaria pra enviar</p>}
-            </>
+              {erro && <p className="aj-erro" role="alert">{erro}</p>}
+              <Botao cheio carregando={enviando} disabled={!podeEnviar} icone={<PaperPlaneTilt size={20} weight="fill" />} onClick={enviar}>Enviar ideia</Botao>
+              {titulo.trim().length < 3 && <p className="aj-dica">Escreva o que você gostaria pra poder enviar.</p>}
+            </section>
           )
         )}
 
         {aba === "minhas" && (
           loadingHist ? (
-            <div className="sr-loading"><span className="sr-spin sr-spin--dark" /></div>
+            <div className="cl9-esq" aria-label="Carregando">{[0, 1, 2].map(k => <span key={k} />)}</div>
           ) : historico.length === 0 ? (
-            <div className="sr-empty">
-              <p className="sr-empty-t">Nenhuma ideia enviada ainda</p>
-              <p className="sr-empty-d">Quando você enviar uma ideia, o andamento dela aparece aqui.</p>
-              <button className="sr-ghost" onClick={() => setAba("nova")}>Enviar minha primeira ideia</button>
-            </div>
+            <section className="cl9-card">
+              <TelaVazia compacta icone={<Lightbulb size={28} />} titulo="Nenhuma ideia enviada ainda" texto="Quando você enviar uma ideia, o andamento dela aparece aqui."
+                acao={<Botao tamanho="m" onClick={() => setAba("nova")}>Enviar minha primeira ideia</Botao>} />
+            </section>
           ) : (
-            <>
-              <div className="sr-flow">
-                <span className="sr-st sr-st--rec">Recebida</span>→
-                <span className="sr-st sr-st--analise">Em análise</span>→
-                <span className="sr-st sr-st--ok"><CheckCircle size={14} weight="fill" /> Implementada</span>
-              </div>
+            <div className="aj-hist">
+              <p className="aj-fluxo" style={{ marginTop: 12 }}>
+                <span className="aj-st aj-st--rec">Recebida</span><CaretRight size={14} weight="bold" />
+                <span className="aj-st aj-st--analise">Em análise</span><CaretRight size={14} weight="bold" />
+                <span className="aj-st aj-st--ok"><CheckCircle size={14} weight="fill" />Implementada</span>
+              </p>
               {historico.map(s => {
                 const st = STATUS[s.status || "recebida"] || STATUS.recebida;
                 const al = areaLabel(s.area);
                 const mostrarDesc = s.titulo?.trim() && s.descricao.trim() !== s.titulo.trim();
                 return (
-                  <article key={s.id} className="sr-h">
-                    <div className="sr-h-top">
-                      <span className={`sr-st ${st.cls}`}>{st.label}</span>
-                      <span className="sr-h-date">{tempoRelativo(s.created_at)}</span>
-                    </div>
-                    <p className="sr-h-t">{tituloDe(s)}</p>
-                    {mostrarDesc && <p className="sr-h-d">{s.descricao}</p>}
-                    {al && <span className="sr-h-area">{al}</span>}
+                  <article key={s.id} className="aj-h">
+                    <div className="aj-h-top"><span className={`aj-st ${st.cls}`}>{st.label}</span><small>{tempoRelativo(s.created_at)}</small></div>
+                    <b>{tituloDe(s)}</b>
+                    {mostrarDesc && <p>{s.descricao}</p>}
+                    {al && <em>{al}</em>}
                   </article>
                 );
               })}
-            </>
+            </div>
           )
         )}
       </div>
-
-      <style>{`
-        .sr-root { font-family: var(--font-base); padding: 14px 4px 100px; max-width: 640px; margin: 0 auto; color: #2C1219; }
-
-        .sr-tabs { display: flex; gap: 4px; padding: 4px; background: #F5F0F2; border-radius: 10px; }
-        .sr-tab { min-height: 44px;
-          flex: 1; padding: 9px 8px; border: none; border-radius: 7px; background: none; cursor: pointer;
-          font-family: inherit; font-size: 13px; font-weight: 700; color: #7C7A8E;
-          display: flex; align-items: center; justify-content: center; gap: 6px;
-        }
-        .sr-tab.on { background: #fff; color: #2C1219; box-shadow: 0 1px 3px rgba(44,18,25,0.08); }
-        .sr-cnt {
-          min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
-          background: #2C1219; color: #fff; font-size: 12px; font-weight: 800;
-          display: inline-flex; align-items: center; justify-content: center;
-        }
-
-        .sr-lead { font-size: 13px; color: #7C7A8E; line-height: 1.45; margin: 14px 4px; }
-        .sr-card {
-          background: #fff; border-radius: 14px; padding: 16px;
-          box-shadow: 0 1px 2px rgba(60,20,35,0.04), 0 4px 14px rgba(60,20,35,0.05);
-        }
-        .sr-f + .sr-f { margin-top: 18px; }
-        .sr-lbl {
-          display: flex; justify-content: space-between; align-items: baseline;
-          font-size: 12.5px; font-weight: 800; color: #2C1219; margin-bottom: 8px;
-        }
-        .sr-lbl small { font-size: 12px; font-weight: 500; color: #9CA3AF; }
-        .sr-in, .sr-ta {
-          width: 100%; box-sizing: border-box; border: none; background: #F5F0F2; border-radius: 10px;
-          padding: 12px 13px; font-family: inherit; font-size: 14px; color: #2C1219;
-        }
-        .sr-in:focus, .sr-ta:focus { outline: 2px solid #E85A8C; outline-offset: 0; background: #fff; }
-        .sr-in::placeholder, .sr-ta::placeholder { color: #A8A0A4; }
-        .sr-ta { min-height: 110px; resize: vertical; line-height: 1.45; }
-        .sr-count { text-align: right; font-size: 12px; color: #9CA3AF; margin-top: 5px; }
-
-        .sr-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-        .sr-chip {
-          padding: 7px 12px; border: none; border-radius: 6px; background: #F5F0F2; cursor: pointer;
-          font-family: inherit; font-size: 12.5px; font-weight: 600; color: #4B3A42;
-        }
-        .sr-chip.on { background: #2C1219; color: #fff; }
-        .sr-seg { display: flex; gap: 4px; padding: 4px; background: #F5F0F2; border-radius: 10px; }
-        .sr-seg-opt {
-          flex: 1; padding: 8px 6px; border: none; border-radius: 7px; background: none; cursor: pointer;
-          font-family: inherit; font-size: 12.5px; font-weight: 600; color: #4B3A42;
-        }
-        .sr-seg-opt.on { background: #fff; color: #2C1219; box-shadow: 0 1px 3px rgba(44,18,25,0.1); }
-
-        .sr-cta {
-          width: 100%; height: 50px; margin-top: 14px; border: none; border-radius: 12px; cursor: pointer;
-          background: #E85A8C; color: #fff; font-family: inherit; font-size: 15px; font-weight: 800;
-          display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
-        .sr-cta:disabled { opacity: 0.45; cursor: not-allowed; }
-        .sr-cta:not(:disabled):active { transform: scale(0.99); }
-        .sr-req { font-size: 13px; color: #9CA3AF; text-align: center; margin: 8px 0 0; }
-        .sr-err { font-size: 12.5px; font-weight: 600; color: #B91C1C; background: #FEE2E2; border-radius: 8px; padding: 10px 12px; margin: 12px 0 0; }
-        .sr-ghost {
-          width: 100%; height: 44px; margin-top: 8px; border: none; background: none; cursor: pointer;
-          font-family: inherit; font-size: 13.5px; font-weight: 700; color: #C33A6E; border-radius: 12px;
-        }
-
-        .sr-ok { text-align: center; padding: 28px 18px 18px; margin-top: 14px; }
-        .sr-ok-ic { width: 56px; height: 56px; border-radius: 50%; background: #DCFCE7; color: #16a34a; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; }
-        .sr-ok-t { font-size: 17px; font-weight: 800; margin: 0; }
-        .sr-ok-d { font-size: 13px; color: #7C7A8E; margin: 6px auto 18px; max-width: 270px; line-height: 1.45; }
-        .sr-ok .sr-cta { margin-top: 0; }
-
-        .sr-flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 13px; color: #7C7A8E; margin: 14px 4px 12px; }
-        .sr-st { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 5px; font-size: 12px; font-weight: 800; }
-        .sr-flow .sr-st { font-size: 12px; }
-        .sr-st--rec { background: #F3F4F6; color: #4B5563; }
-        .sr-st--analise { background: #FEF3C7; color: #B45309; }
-        .sr-st--ok { background: #DCFCE7; color: #15803D; }
-        .sr-st--no { background: #F3F4F6; color: #6B7280; }
-
-        .sr-h {
-          background: #fff; border-radius: 14px; padding: 14px 16px;
-          box-shadow: 0 1px 2px rgba(60,20,35,0.04), 0 4px 14px rgba(60,20,35,0.05);
-        }
-        .sr-h + .sr-h { margin-top: 8px; }
-        .sr-h-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .sr-h-date { font-size: 12px; color: #9CA3AF; }
-        .sr-h-t { font-size: 14px; font-weight: 800; line-height: 1.3; margin: 0; }
-        .sr-h-d {
-          font-size: 12.5px; color: #7C7A8E; line-height: 1.45; margin: 4px 0 0;
-          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-        }
-        .sr-h-area { display: inline-block; margin-top: 10px; font-size: 12px; font-weight: 600; color: #6E5A66; background: #F5F0F2; padding: 3px 8px; border-radius: 5px; }
-
-        .sr-empty { text-align: center; padding: 40px 20px; }
-        .sr-empty-t { font-size: 14px; font-weight: 800; margin: 0 0 4px; }
-        .sr-empty-d { font-size: 12.5px; color: #7C7A8E; margin: 0 0 10px; line-height: 1.45; }
-        .sr-loading { display: flex; justify-content: center; padding: 40px; }
-
-        .sr-spin {
-          width: 16px; height: 16px; border-radius: 50%;
-          border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff;
-          animation: srSpin 0.7s linear infinite; display: inline-block;
-        }
-        .sr-spin--dark { border-color: #FCE0E9; border-top-color: #E85A8C; width: 20px; height: 20px; border-width: 3px; }
-        @keyframes srSpin { to { transform: rotate(360deg); } }
-      
-        /* Visual novo (01/10): topo ilustrado, áreas em grade com emoji e "quanto faz falta" em 3 quadrados */
-        .sr-hero { display: flex; gap: 12px; align-items: flex-start; margin: 14px 0; padding: 14px; border-radius: 16px;
-          background: linear-gradient(135deg, #FFF1F6, #FCE7F3 60%, #F5F3FF); border: 1px solid #F9D2E2; }
-        .sr-hero-ic { width: 44px; height: 44px; border-radius: 12px; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(232,90,140,.15); }
-        .sr-hero b { display: block; font-size: 15px; color: #2C1219; }
-        .sr-hero p { margin: 3px 0 0; font-size: 13px; color: #6B5D64; line-height: 1.45; }
-        .sr-areas { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .sr-area { display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 10px 12px; border-radius: 12px; border: 1.5px solid #EDE7EA; background: #fff;
-          font-family: inherit; font-size: 13.5px; font-weight: 600; color: #2C1219; text-align: left; cursor: pointer; transition: border-color .15s, background .15s; }
-        .sr-area-e { font-size: 18px; line-height: 1; flex-shrink: 0; }
-        .sr-area.on { border-color: #E85A8C; background: #FFF4F8; color: #9D174D; }
-        .sr-imps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-        .sr-imp { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; aspect-ratio: 1 / 0.9; border-radius: 14px; border: 1.5px solid #EDE7EA; background: #fff;
-          font-family: inherit; cursor: pointer; transition: transform .15s, border-color .15s, background .15s; }
-        .sr-imp-e { font-size: 30px; line-height: 1; }
-        .sr-imp-l { font-size: 13px; font-weight: 700; color: #4B3A42; }
-        .sr-imp.on { border-color: #E85A8C; background: #FFF4F8; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(232,90,140,.18); }
-        .sr-imp.on .sr-imp-l { color: #9D174D; }
-`}</style>
     </>
   );
 }

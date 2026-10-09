@@ -44,7 +44,7 @@ export default function UpdatesFeed() {
         .limit(limiteRecentes);
 
       const recentes = (recentesData || []) as Noticia[];
-      const lista = fixada ? [fixada, ...recentes] : recentes;
+      const lista = fixada ? [fixada, ...recentes.filter(r => r.id !== fixada.id)] : recentes;
 
       setNoticias(lista);
       setLoading(false);

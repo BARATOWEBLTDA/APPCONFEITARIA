@@ -943,7 +943,7 @@ export default function FichaTecnica() {
                   <span className="fl-tx">
                     <b>{p.nome}</b>
                     <small className="fl-cel">
-                      {c.temFicha ? `R$ ${fmt(c.preco)} · margem ${fmtPct(c.margemLucro)}%` : `Sem ficha · R$ ${fmt(c.preco)}`}
+                      {c.temFicha ? `R$\u00a0${fmt(c.preco)} · margem ${fmtPct(c.margemLucro)}%` : `Sem ficha · R$\u00a0${fmt(c.preco)}`}
                     </small>
                   </span>
                   <span className="fl-pc fl-col">R$ {fmt(c.preco)}{emPromo && <small>em promoção</small>}</span>

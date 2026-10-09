@@ -227,7 +227,7 @@ const CSS = `
   .kq-addrow input { flex: 1; min-width: 0; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 11px 12px; font-family: inherit; font-size: 16px; color: #2C1219; }
   .kq-addrow input:focus { outline: none; border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
   .kq-addrow button { border: none; border-radius: 10px; background: #2C1219; color: #fff; font-family: inherit; font-weight: 800; font-size: 13px; padding: 0 14px; cursor: pointer; white-space: nowrap; } .kq-addrow button:disabled { opacity: .35; cursor: default; }
-  .kq-sug-l { margin: 12px 0 6px; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #9A8E94; }
+  .kq-sug-l { margin: 12px 0 6px; font-size: 12px; font-weight: 800; letter-spacing: .06em; color: #9A8E94; }
   .kq-sug { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px; }
   .kq-sug::-webkit-scrollbar { display: none; }
   .kq-sug button { flex-shrink: 0; white-space: nowrap; padding: 6px 11px; border: 1.5px dashed #F3C9DA; border-radius: 999px; background: none; color: #C33A6E; font-family: inherit; font-weight: 700; font-size: 12.5px; cursor: pointer; }
@@ -247,7 +247,7 @@ const CSS = `
   .kq-link { border: none; background: none; color: #C33A6E; font-family: inherit; font-size: 13px; font-weight: 800; padding: 8px 0 0; cursor: pointer; }
   .kq-ex { font-size: 12px; color: #888780; margin: 8px 0 0; } .kq-ex b { color: #4B3A42; }
   .kq-prev { border-radius: 18px; background: #FAF7F8; padding: 14px; }
-  .kq-prev h4 { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: #888780; margin: 0 0 10px; }
+  .kq-prev h4 { font-size: 13px; letter-spacing: .06em; color: #888780; margin: 0 0 10px; }
   .kq-prev > p { font-size: 12px; color: #6B5D64; line-height: 1.45; margin: 10px 2px 0; }
   .kq-ph { background: #fff; border-radius: 20px; box-shadow: 0 0 0 6px #1b1b1d, 0 12px 26px rgba(0,0,0,.16); padding: 14px 12px; margin: 6px; }
   .kq-ph-t { display: block; font-size: 15px; font-weight: 900; margin-bottom: 8px; }

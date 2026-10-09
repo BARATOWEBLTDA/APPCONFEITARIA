@@ -118,7 +118,7 @@ export default function Lucratividade() {
 
             <section className="lu-card lu-a-prod">
               <p className="lu-ct">Lucro por produto <small>antes das despesas, taxas e descontos do pedido</small></p>
-              {!produtos ? <div className="lu-ph" style={{ height: 120 }} /> : produtos.map(p => (
+              {!produtos ? <div className="lu-ph" style={{ height: 120 }} /> : produtos.length === 0 ? <p className="lu-vz">Quando você entregar pedidos neste mês, aqui aparece quanto cada produto deu de lucro.</p> : produtos.map(p => (
                 <div key={p.chave} className="lu-p">
                   <div className="lu-p-h"><b>{p.nome}</b><span className={p.lucro < 0 ? "ruim" : ""}>{brl(p.lucro)}</span></div>
                   <div className="lu-p-bar"><i className={p.lucro < 0 ? "ruim" : ""} style={{ width: `${Math.max(2, (Math.abs(p.lucro) / maxLucro) * 100)}%` }} /></div>
@@ -148,10 +148,11 @@ const CSS = `
   .lu-vazio p { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 6px auto 0; max-width: 400px; text-wrap: balance; }
   .lu-cta { margin-top: 14px; border: none; border-radius: 12px; padding: 12px 18px; background: #2C1219; color: #fff; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
   .lu-grid { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "conta" "eq" "prod"; }
-  @media (min-width: 900px) { .lu-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "conta eq" "prod prod"; } }
+  @media (min-width: 900px) { .lu-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "conta eq" "prod prod"; align-items: start; } }
   .lu-a-conta { grid-area: conta; } .lu-a-eq { grid-area: eq; } .lu-a-prod { grid-area: prod; }
   .lu-card { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 14px 16px; }
-  .lu-ct { margin: 0 0 8px; font-size: 15px; font-weight: 900; } .lu-ct small { font-size: 12px; font-weight: 600; color: #9A8E94; margin-left: 4px; }
+  .lu-ct { margin: 0 0 8px; font-size: 15px; font-weight: 900; } .lu-ct small { display: block; margin-top: 2px; font-size: 13px; font-weight: 500; color: #9A8E94; }
+  .lu-vz { margin: 4px 0 0; font-size: 14px; line-height: 1.5; color: #6B5D64; }
   .lu-l { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 9px 0; border-bottom: 1px solid #F5F0F2; font-size: 14px; }
   .lu-l span { color: #4B3A42; } .lu-l small { display: block; font-size: 13px; color: #9A8E94; margin-top: 1px; }
   .lu-l b { font-weight: 800; white-space: nowrap; } .lu-l.neg b { color: #DC2626; }

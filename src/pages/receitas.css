@@ -33,7 +33,7 @@
 .rv-rk-img img { width: 100%; height: 100%; object-fit: cover; }
 .rv-rk-t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .rv-rk-t b { margin: 1px 0 2px; font-size: 15px; font-weight: 800; line-height: 1.25; }
-.rv-tema { font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--ui-rosa-escuro); }
+.rv-tema { font-size: 12px; font-weight: 800; letter-spacing: .04em; color: var(--ui-rosa-escuro); }
 .rv-lk { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
 .rv-lk svg { color: var(--ui-rosa); }
 .rv-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }

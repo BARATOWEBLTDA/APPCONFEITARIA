@@ -132,7 +132,7 @@ export default function Insumos() {
             <div className="cl9-barra">
               <label className="cl9-busca">
                 <MagnifyingGlass size={20} weight="bold" />
-                <input type="search" placeholder="Buscar por nome ou marca" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar ingrediente" autoComplete="off" />
+                <input type="search" placeholder="Buscar ingrediente" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar ingrediente" autoComplete="off" />
                 {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={18} weight="bold" /></button>}
               </label>
               <div className="cl9-acoes">
@@ -155,7 +155,7 @@ export default function Insumos() {
             ) : (<>
               <div className="ig-tab-cab" aria-hidden="true"><span>Ingrediente</span><span>Compra</span><span>Custo na receita</span><span /></div>
               {filtrados.map(i => {
-                const preco = `R$ ${(i.valor_compra || 0).toFixed(2).replace(".", ",")}`;
+                const preco = `R$\u00a0${(i.valor_compra || 0).toFixed(2).replace(".", ",")}`;
                 const compra = descreverCompra(i.embalagem_tipo, i.qtd_embalagem || 1, i.unidade);
                 const c = custoNaReceita(i.custo_unitario || 0, i.unidade, i.qtd_embalagem || 1);
                 return (

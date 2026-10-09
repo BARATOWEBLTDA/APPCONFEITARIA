@@ -35,7 +35,7 @@
 .tpd-passos li.atual i { background: var(--ui-rosa); color: #fff; box-shadow: 0 0 0 4px var(--ui-rosa-claro); }
 .tpd-passos li.feita { color: var(--ui-texto); }
 .tpd-passos li.atual { font-weight: 800; color: var(--ui-rosa-escuro); }
-.tpd-passos span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tpd-passos span { max-width: 100%; text-align: center; }
 .tpd-fim { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 0; padding: 12px; border-radius: var(--ui-raio); background: var(--ui-verde-fundo); font-size: 15px; font-weight: 700; color: var(--ui-verde); }
 
 /* abas (só celular) */

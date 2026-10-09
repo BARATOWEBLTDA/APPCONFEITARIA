@@ -409,7 +409,6 @@ export default function CardapioConfigPage() {
           font-size: var(--text-sm);
           font-weight: var(--fw-black);
           color: var(--primary);
-          text-transform: uppercase;
           letter-spacing: 0.1em;
           line-height: 1;
         }
@@ -447,7 +446,6 @@ export default function CardapioConfigPage() {
           cursor: pointer;
           font-family: var(--font-base) !important;
           letter-spacing: 0.03em;
-          text-transform: uppercase;
           box-shadow: 0 4px 0 var(--primary-dark);
           transition: transform 0.08s ease, box-shadow 0.08s ease;
         }
@@ -1408,7 +1406,6 @@ export default function CardapioConfigPage() {
           cursor: pointer;
           transition: all 0.15s;
           min-width: 52px;
-          text-transform: uppercase;
           letter-spacing: 0.06em;
         }
         .ccc-dia-btn:hover {

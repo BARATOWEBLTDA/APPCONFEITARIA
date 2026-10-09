@@ -433,7 +433,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: '#2C1219' }}>{g.nome_exibicao}</span>
             {g.min_selecionavel > 0 && (
-              <span style={{ display: 'inline-block', padding: '2px 6px', background: '#FCE0E9', color: '#C33A6E', fontSize: 12, fontWeight: 800, borderRadius: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <span style={{ display: 'inline-block', padding: '2px 6px', background: '#FCE0E9', color: '#C33A6E', fontSize: 12, fontWeight: 800, borderRadius: 3, letterSpacing: '0.04em' }}>
                 Obrigatório
               </span>
             )}

@@ -1059,7 +1059,6 @@ export default function Auth() {
           color: var(--text-title);
           letter-spacing: -0.01em;
           line-height: 1.1;
-          text-transform: uppercase;
           margin: 0;
         }
         .cad-subtitle {

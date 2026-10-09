@@ -550,7 +550,7 @@ export function BoloPrecoStep({ form, setForm, escolha, primeiroNome, edicao }: 
 
 const CSS = `
   .bw { font-family: var(--font-base); color: #2C1219; padding: 4px 2px 12px; }
-  .bw-eta { font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #C33A6E; margin: 0; }
+  .bw-eta { font-size: 12px; font-weight: 800; letter-spacing: .08em; color: #C33A6E; margin: 0; }
   .bw-h { font-size: 22px; font-weight: 800; line-height: 1.25; letter-spacing: -.01em; margin: 6px 0 6px; color: #2C1219; }
   .bw-h span { color: #C33A6E; }
   .bw-sub { font-size: 14px; color: #6B5D64; line-height: 1.5; margin: 0 0 18px; }
@@ -617,7 +617,7 @@ const CSS = `
   .bw-hint--top { margin: 2px 0 12px; }
   .bw-gerar-pill { border: 1px solid #F9D1E0; background: #FFF1F6; color: #C33A6E; border-radius: 999px; padding: 7px 13px; font-family: inherit; font-size: 12.5px; font-weight: 800; cursor: pointer; white-space: nowrap; }
   .bw-gerar-pill:hover { background: #FCE7F3; }
-  .bw-col-sel { border: none; background: none; padding: 0 0 0 4px; font-family: inherit; font-size: 12px; font-weight: 800; color: #C33A6E; text-transform: uppercase; letter-spacing: .04em; cursor: pointer; text-align: left; }
+  .bw-col-sel { border: none; background: none; padding: 0 0 0 4px; font-family: inherit; font-size: 12px; font-weight: 800; color: #C33A6E; letter-spacing: .04em; cursor: pointer; text-align: left; }
   .bw-link--sec { display: block; color: #6B5D64; font-weight: 600; font-size: 12.5px; padding-top: 2px; }
   .bw-link--sec small { color: #B5AAB0; font-weight: 500; }
   .bw-tabela .bw-tam { grid-template-columns: 76px 1fr 1.3fr 24px; }
@@ -675,7 +675,7 @@ const CSS = `
   .bw-pmg b { font-size: 15px; } .bw-pmg small { font-size: 12.5px; color: #888780; }
   .bw-tams { display: flex; flex-direction: column; gap: 8px; }
   .bw-tam { display: grid; grid-template-columns: 64px 1fr 1.2fr 1.2fr 24px; gap: 8px; align-items: center; }
-  .bw-tam--h span { font-size: 12px; font-weight: 700; color: #9A8E94; text-transform: uppercase; letter-spacing: .04em; padding-left: 4px; }
+  .bw-tam--h span { font-size: 12px; font-weight: 700; color: #9A8E94; letter-spacing: .04em; padding-left: 4px; }
   .bw-in, .bw-rs { height: 44px; border: 1.5px solid #EAE3E6; border-radius: 12px; background: #fff; display: flex; align-items: center; min-width: 0; transition: border-color .15s; }
   .bw-in:focus-within, .bw-rs:focus-within, input.bw-in:focus { border-color: #2C1219; outline: none; }
   input.bw-in { padding: 0 10px; font-family: inherit; font-size: 16px; font-weight: 800; color: #2C1219; text-align: center; width: 100%; }
@@ -713,7 +713,7 @@ const CSS = `
   .bw-seg3 { border-radius: 10px; } .bw-seg3 button { border-radius: 7px; }
   .bw-tabela .bw-tam, .bw-tabela.bw-tam--serve .bw-tam { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.2fr) 28px; gap: 10px; margin-top: 8px; }
   .bw-tabela .bw-tam--h { margin-top: 0; }
-  .bw-tabela .bw-tam--h span { font-size: 12px; font-weight: 700; color: #9A8E94; text-transform: uppercase; letter-spacing: .05em; padding-left: 2px; }
+  .bw-tabela .bw-tam--h span { font-size: 12px; font-weight: 700; color: #9A8E94; letter-spacing: .05em; padding-left: 2px; }
   .bw-tabela input.bw-in { text-align: left; padding: 0 12px; font-size: 16px; font-weight: 700; }
   .bw-tabela .bw-in input { padding-left: 12px; }
   .bw-tabela .bw-rs { padding-left: 12px; }
@@ -802,7 +802,7 @@ const CSS = `
   .bw-gerar-btn:hover { background: #FCE7F3; }
   .bw-t2 { display: flex; flex-direction: column; gap: 8px; }
   .bw-t2-row { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) 36px; gap: 10px; align-items: center; }
-  .bw-t2-row--h span { font-size: 12px; font-weight: 700; color: #9A8E94; text-transform: uppercase; letter-spacing: .05em; padding-left: 2px; white-space: nowrap; }
+  .bw-t2-row--h span { font-size: 12px; font-weight: 700; color: #9A8E94; letter-spacing: .05em; padding-left: 2px; white-space: nowrap; }
   input.bw-t2-nome { text-align: left; padding: 0 12px; font-size: 16px; font-weight: 700; }
   .bw-t2 .bw-in input { padding-left: 12px; }
   .bw-check2 { display: flex; align-items: flex-start; gap: 12px; width: 100%; margin-top: 18px; border: none; background: none; padding: 0; font-family: inherit; text-align: left; cursor: pointer; color: #2C1219; }
@@ -838,7 +838,7 @@ const CSS = `
   .bw-lt-h, .bw-lt-row { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: stretch; }
   .bw-lt--ed .bw-lt-row { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) 44px; }
   .bw-lt-h { position: relative; background: #FAF7F8; border-bottom: 1px solid #EDE5E8; }
-  .bw-lt-h span { font-size: 12px; font-weight: 700; color: #9A8E94; text-transform: uppercase; letter-spacing: .05em; padding: 10px 14px; white-space: nowrap; }
+  .bw-lt-h span { font-size: 12px; font-weight: 700; color: #9A8E94; letter-spacing: .05em; padding: 10px 14px; white-space: nowrap; }
   .bw-lt-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .bw-lt-edit { border: 1px solid #EAE3E6; background: #fff; border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 700; color: #4B3A42; cursor: pointer; padding: 9px 14px; white-space: nowrap; }
   .bw-lt-edit.on { background: #2C1219; border-color: #2C1219; color: #fff; }

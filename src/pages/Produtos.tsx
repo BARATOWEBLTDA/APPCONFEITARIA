@@ -1765,7 +1765,7 @@ function PersonalizacaoStep({
                   <>
                     {/* Fase 3: Modo de preço */}
                     <div style={{marginBottom: 16, marginTop: 4}}>
-                      <div style={{fontSize: 12, fontWeight: 700, color: "#6B5D64", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.03em"}}>
+                      <div style={{fontSize: 12, fontWeight: 700, color: "#6B5D64", marginBottom: 10, letterSpacing: "0.03em"}}>
                         Como calcular o preço?
                       </div>
                       <div style={{display: "flex", flexDirection: "column", gap: 10}}>
@@ -2214,8 +2214,7 @@ function PersonalizacaoStep({
         .pv3-root { display: flex; flex-direction: column; gap: 12px; }
         .pv3-header { margin-top: 24px; margin-bottom: 20px; text-align: center; }
         .pv3-eyebrow {
-          font-size: 12px; color: #E85A8C; font-weight: 800;
-          text-transform: uppercase; letter-spacing: 0.08em;
+          font-size: 12px; color: #E85A8C; font-weight: 800; letter-spacing: 0.08em;
         }
         .pv3-title {
           font-size: 20px;
@@ -2223,7 +2222,6 @@ function PersonalizacaoStep({
           color: #4B5563;
           margin-top: 4px;
           line-height: 1.2;
-          text-transform: uppercase;
           letter-spacing: 0.02em;
         }
         .pv3-subtitle { font-size: 13px; color: #6B5D64; margin-top: 6px; line-height: 1.5; max-width: 480px; margin-left: auto; margin-right: auto; text-wrap: balance; }
@@ -2502,8 +2500,7 @@ function PersonalizacaoStep({
           background: #FAF8F5; border-radius: 8px; padding: 12px; margin-bottom: 12px;
         }
         .pv3-regras-label {
-          font-size: 12px; color: #6B5D64; font-weight: 700;
-          text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px;
+          font-size: 12px; color: #6B5D64; font-weight: 700; letter-spacing: 0.04em; margin-bottom: 6px;
         }
         .pv3-regras-row {
           display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
@@ -2875,7 +2872,7 @@ function PersonalizacaoStep({
         .pv3-gerar-sub { font-size: 12px; color: #6B7280; margin: 0 0 16px; line-height: 1.45; }
         .pv3-gerar-row { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 14px; }
         .pv3-gerar-field { flex: 1; min-width: 0; }
-        .pv3-gerar-lbl { font-size: 12px; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+        .pv3-gerar-lbl { font-size: 12px; font-weight: 700; color: #6B7280; letter-spacing: 0.05em; margin-bottom: 6px; }
         .pv3-gerar-input { display: flex; align-items: center; background: #fff; border: 1.5px solid #F0EBED; border-radius: 8px; overflow: hidden; }
         .pv3-gerar-input input { flex: 1; padding: 10px 8px; border: none; outline: none; font-size: 16px; font-weight: 700; color: #2C1219; font-family: inherit; min-width: 0; width: 100%; }
         .pv3-gerar-input span { padding: 10px 10px; background: #F5F0F2; font-size: 12px; font-weight: 700; color: #C33A6E; flex-shrink: 0; }
@@ -2933,7 +2930,6 @@ function PersonalizacaoStep({
           font-size: 12px;
           font-weight: 800;
           color: #C33A6E;
-          text-transform: uppercase;
           letter-spacing: 0.04em;
         }
         .pv3-serve-input {
@@ -3075,7 +3071,6 @@ function PersonalizacaoStep({
           border-radius: 4px;
           font-size: 12px;
           font-weight: 900;
-          text-transform: uppercase;
           letter-spacing: 0.05em;
           box-shadow: 0 2px 6px rgba(245,158,11,0.35);
           white-space: nowrap;
@@ -5609,7 +5604,7 @@ export default function Produtos() {
 
                     {gruposComOpcoes.map(({ key, label, grupo }) => (
                       <div key={key} style={{marginBottom: 16}}>
-                        <div style={{fontSize: 12, fontWeight: 700, color: "#831843", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8}}>{label}</div>
+                        <div style={{fontSize: 12, fontWeight: 700, color: "#831843", letterSpacing: "0.05em", marginBottom: 8}}>{label}</div>
                         <div style={{display: "flex", flexDirection: "column", gap: 6}}>
                           {grupo!.opcoes.map(op => (
                             <div key={op.id} style={{display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "#FAF8F5", border: "1px solid #F0EBED", borderRadius: 10}}>
@@ -5646,7 +5641,6 @@ export default function Produtos() {
                                     padding: "4px 8px",
                                     borderRadius: 6,
                                     letterSpacing: "0.02em",
-                                    textTransform: "uppercase",
                                     whiteSpace: "nowrap",
                                   }}
                                 >
@@ -5698,7 +5692,7 @@ export default function Produtos() {
                           <line x1="12" y1="9" x2="12" y2="13"/>
                           <line x1="12" y1="17" x2="12.01" y2="17"/>
                         </svg>
-                        <div style={{fontSize: 12, fontWeight: 700, color: "#92400E", textTransform: "uppercase", letterSpacing: "0.05em"}}>
+                        <div style={{fontSize: 12, fontWeight: 700, color: "#92400E", letterSpacing: "0.05em"}}>
                           Conflito de preço detectado
                         </div>
                       </div>
@@ -6824,7 +6818,6 @@ export default function Produtos() {
           font-size: 12px;
           font-weight: var(--fw-black, 800);
           letter-spacing: 0.05em;
-          text-transform: uppercase;
           box-shadow: 0 2px 6px rgba(0,0,0,0.25);
           line-height: 1;
           flex-shrink: 0;
@@ -6878,7 +6871,6 @@ export default function Produtos() {
           letter-spacing: 0.02em;
           box-shadow: 0 4px 0 var(--primary-dark, #C33A6E);
           transition: transform 0.08s ease, box-shadow 0.08s ease;
-          text-transform: uppercase;
           font-family: var(--font-base) !important;
         }
         .prod-btn-3d:hover {
@@ -6986,7 +6978,6 @@ export default function Produtos() {
           font-size: var(--text-sm);
           font-weight: var(--fw-black);
           color: var(--primary);
-          text-transform: uppercase;
           letter-spacing: 0.1em;
           line-height: 1;
         }
@@ -7024,7 +7015,6 @@ export default function Produtos() {
           cursor: pointer;
           font-family: var(--font-base) !important;
           letter-spacing: 0.03em;
-          text-transform: uppercase;
           box-shadow: 0 4px 0 var(--primary-dark);
           transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
         }
@@ -7362,7 +7352,6 @@ export default function Produtos() {
           color: var(--text-secondary);
           font-size: 0.75rem;
           font-weight: var(--fw-black);
-          text-transform: uppercase;
           letter-spacing: 0.08em;
         }
         .prod-card-promo {
@@ -7375,7 +7364,6 @@ export default function Produtos() {
           padding: 3px 8px;
           border-radius: 999px;
           box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-          text-transform: uppercase;
           letter-spacing: 0.04em;
         }
         .prod-card-badge-var {
@@ -7423,7 +7411,7 @@ export default function Produtos() {
           line-height: 1.1;
         }
         /* Tag PRO padrão do app (igual à do menu Mais: coroa + "PRO") */
-        .prod-pro-tag { background: #2D1F26; color: #fff; font-size: 12px; font-weight: 700; padding: 4px 8px; border-radius: 6px; letter-spacing: .04em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 4px; line-height: 1; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,.2); margin-left: 8px; vertical-align: middle; font-family: var(--font-base); }
+        .prod-pro-tag { background: #2D1F26; color: #fff; font-size: 12px; font-weight: 700; padding: 4px 8px; border-radius: 6px; letter-spacing: .04em; display: inline-flex; align-items: center; gap: 4px; line-height: 1; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,.2); margin-left: 8px; vertical-align: middle; font-family: var(--font-base); }
         .prod-pro-tag img { width: 10px; height: 10px; object-fit: contain; display: block; flex-shrink: 0; }
         .prod-card-tags { position: absolute; top: 8px; display: flex; flex-direction: column; gap: 4px; z-index: 1; pointer-events: none; }
         .prod-card-tags--dir { right: 8px; align-items: flex-end; }
@@ -7433,7 +7421,7 @@ export default function Produtos() {
         .prod-card-encomenda { position:absolute; top:0.4rem; right:0.4rem; background:var(--warning); color:var(--text-inverse); font-size: var(--font-caption); font-weight: var(--fw-bold); padding:0.15rem 0.45rem; border-radius: var(--radius-xl); }
         .prod-card-info { padding:0.65rem 0.75rem; flex:1; display:flex; flex-direction:column; }
         .prod-card-bottom { margin-top:auto; }
-        .prod-card-cat { font-size: 0.75rem; color:var(--text-muted); font-weight: var(--fw-medium); text-transform:uppercase; letter-spacing:0.04em; margin:0 0 0.15rem; }
+        .prod-card-cat { font-size: 0.75rem; color:var(--text-muted); font-weight: var(--fw-medium); letter-spacing:0.04em; margin:0 0 0.15rem; }
         .prod-card-nome { font-size: var(--font-button); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 0.25rem; line-height:1.3; }
         .prod-card-preco { font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--success); margin:0; }
 
@@ -7451,7 +7439,6 @@ export default function Produtos() {
         .prod-card-lucro-label {
           font-size: var(--font-caption);
           font-weight: var(--fw-semibold);
-          text-transform: uppercase;
           letter-spacing: 0.04em;
           opacity: 0.75;
         }
@@ -7597,7 +7584,6 @@ export default function Produtos() {
         .prod-preview-eyebrow {
           font-size: 12px;
           font-weight: 700;
-          text-transform: uppercase;
           letter-spacing: 0.05em;
           color: #E85A8C;
           margin-bottom: 6px;
@@ -7642,7 +7628,6 @@ export default function Produtos() {
           font-size: 12px;
           color: #6B5D64;
           font-weight: 700;
-          text-transform: uppercase;
           letter-spacing: 0.05em;
         }
         .prod-preview-destaque-valor {
@@ -7946,7 +7931,6 @@ export default function Produtos() {
             color: #fff;
             font-size: 12px;
             font-weight: var(--fw-bold);
-            text-transform: uppercase;
             letter-spacing: 0.05em;
             opacity: 0.9;
           }
@@ -8149,7 +8133,6 @@ export default function Produtos() {
           font-size: 12px !important;
           font-weight: 700 !important;
           color: #6366F1 !important;
-          text-transform: uppercase;
           letter-spacing: 0.05em;
           margin-top: 4px;
         }
@@ -8170,7 +8153,7 @@ export default function Produtos() {
           background: var(--bg-card);
         }
         .prod-section { display: flex; flex-direction: column; gap: var(--gap-stack); }
-        .prod-section-label { font-size: var(--font-section-label); font-weight: var(--fw-bold); line-height: var(--lh-normal); letter-spacing: var(--ls-wide); text-transform: uppercase; color: var(--primary); margin: 0; }
+        .prod-section-label { font-size: var(--font-section-label); font-weight: var(--fw-bold); line-height: var(--lh-normal); letter-spacing: var(--ls-wide); color: var(--primary); margin: 0; }
         .prod-img-upload { width: 120px; height: 120px; border-radius: var(--radius-lg); border: 2px dashed var(--primary-light); background: var(--primary-light); cursor: pointer; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; transition: border-color var(--dur-fast) var(--ease-out); }
         .prod-img-placeholder { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-3); text-align: center; }
         .prod-img-placeholder p { font-size: var(--font-helper); font-weight: var(--fw-semibold); line-height: var(--lh-normal); color: var(--text-primary); margin: 0; }
@@ -8242,7 +8225,6 @@ export default function Produtos() {
           line-height: var(--lh-normal);
           color: #FFFFFF;
           cursor: pointer;
-          text-transform: uppercase;
           letter-spacing: 0.02em;
           box-shadow: 0 4px 0 #4A3E44;
           transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.08s;
@@ -8264,7 +8246,6 @@ export default function Produtos() {
           line-height: var(--lh-normal);
           cursor: pointer;
           display: flex; align-items: center; justify-content: center;
-          text-transform: uppercase;
           letter-spacing: 0.02em;
           box-shadow: 0 4px 0 var(--primary-dark);
           transition: transform 0.08s ease, box-shadow 0.08s ease;
@@ -8282,7 +8263,7 @@ export default function Produtos() {
         /* ── Wizard ── */
         .wiz-subtitle { font-size: var(--font-button); color: var(--text-secondary); margin: 0; line-height: var(--lh-relaxed); }
         .wiz-reassurance { font-size: var(--font-helper); color: var(--text-muted); margin: var(--space-1) 0 0; font-style: italic; }
-        .wiz-step-label { font-size: var(--font-caption); font-weight: var(--fw-semibold); color: var(--text-muted); margin: 0 0 var(--space-1); text-transform: uppercase; letter-spacing: var(--ls-wide); }
+        .wiz-step-label { font-size: var(--font-caption); font-weight: var(--fw-semibold); color: var(--text-muted); margin: 0 0 var(--space-1); letter-spacing: var(--ls-wide); }
         .wiz-progress { display: flex; gap: var(--space-2); }
         .wiz-progress-bar { flex: 1; height: 4px; border-radius: 2px; background: var(--border); }
         .wiz-progress-bar--active { background: var(--primary); }
@@ -8323,7 +8304,6 @@ export default function Produtos() {
           background: #F0EBED;
           padding: 2px 6px;
           border-radius: 999px;
-          text-transform: uppercase;
           letter-spacing: 0.05em;
         }
         /* ═══ Tags marketing (Aumente Lucro / Opcional) ═══ */
@@ -8340,7 +8320,6 @@ export default function Produtos() {
           font-weight: var(--fw-black);
           padding: 3px 7px;
           border-radius: 999px;
-          text-transform: uppercase;
           letter-spacing: 0.05em;
           line-height: 1;
           white-space: nowrap;
@@ -8378,7 +8357,6 @@ export default function Produtos() {
           border-radius: 999px;
           font-size: 12px;
           font-weight: var(--fw-black);
-          text-transform: uppercase;
           letter-spacing: 0.03em;
           line-height: 1;
         }
@@ -8413,7 +8391,6 @@ export default function Produtos() {
           font-weight: 800;
           color: #4B5563;
           line-height: 1.2;
-          text-transform: uppercase;
           letter-spacing: 0.02em;
         }
         .prod-step-sub {
@@ -8462,7 +8439,6 @@ export default function Produtos() {
           font-size: 12px;
           font-weight: 700;
           color: #F5B8CD;
-          text-transform: uppercase;
           letter-spacing: 0.08em;
           margin-bottom: 10px;
         }
@@ -8656,7 +8632,6 @@ export default function Produtos() {
           font-weight: var(--fw-black);
           color: var(--primary);
           margin: 0 0 8px;
-          text-transform: uppercase;
           letter-spacing: 0.05em;
         }
         .wiz-cat-nova-input {
@@ -9202,7 +9177,6 @@ export default function Produtos() {
           font-weight: 700;
           color: #6B5D64;
           letter-spacing: 0.06em;
-          text-transform: uppercase;
           margin: 22px 0 12px;
         }
         .wiz-step1-sub-star {
@@ -9438,7 +9412,6 @@ export default function Produtos() {
           font-weight: 700;
           color: #9A8B93;
           letter-spacing: 0.06em;
-          text-transform: uppercase;
           margin-bottom: 2px;
         }
         .prod-modal-title-novo { color: #4B5563 !important; } /* mesmo cinza do "Fotos e finalização" */
@@ -9850,7 +9823,6 @@ export default function Produtos() {
           font-size: 12px;
           font-weight: 800;
           color: #E85A8C;
-          text-transform: uppercase;
           letter-spacing: 0.1em;
           margin-bottom: 4px;
           display: inline-flex;
@@ -10471,7 +10443,6 @@ export default function Produtos() {
           z-index: 2;
           letter-spacing: 0.1em;
           line-height: 1;
-          text-transform: uppercase;
         }
         .prod-slot-pro-tag .coroa-badge {
           width: 10px;
@@ -10541,7 +10512,6 @@ export default function Produtos() {
           font-weight: 700;
           font-family: var(--font-base);
           letter-spacing: 0.02em;
-          text-transform: uppercase;
         }
 
         /* ═══ Sub-toggle "Foto por opção" (global — usado no step 4) ═══ */
@@ -10934,7 +10904,6 @@ export default function Produtos() {
           font-weight: 800;
           color: #E85A8C;
           margin: 0 0 8px;
-          text-transform: uppercase;
           letter-spacing: 0.05em;
         }
         .prod-cat-nova-form input {
@@ -11136,7 +11105,6 @@ export default function Produtos() {
           font-size: var(--text-sm);
           font-weight: var(--fw-black);
           cursor: pointer;
-          text-transform: uppercase;
           letter-spacing: 0.02em;
           font-family: var(--font-base) !important;
           transition: transform 0.08s ease, box-shadow 0.08s ease;
@@ -11480,7 +11448,6 @@ export default function Produtos() {
           font-weight: var(--fw-bold) !important;
           color: var(--text-title) !important;
           margin: 6px 0 0 !important;
-          text-transform: uppercase;
           letter-spacing: 0.05em;
           display: flex;
           align-items: center;
@@ -12003,7 +11970,7 @@ export default function Produtos() {
         }
         .ficha-modal-hero-info { flex: 1; min-width: 0; }
         .ficha-modal-hero-label {
-          margin: 0; font-size: var(--font-caption); text-transform: uppercase;
+          margin: 0; font-size: var(--font-caption);
           letter-spacing: var(--ls-wide); color: var(--text-muted); font-weight: var(--fw-bold);
         }
         .ficha-modal-hero-nome {
@@ -12019,7 +11986,7 @@ export default function Produtos() {
           border-radius: var(--radius-md); min-width: 0;
         }
         .ficha-modal-metric span {
-          display: block; font-size: var(--font-stat-label); text-transform: uppercase;
+          display: block; font-size: var(--font-stat-label);
           letter-spacing: var(--ls-wide); color: var(--text-muted); font-weight: var(--fw-bold);
         }
         .ficha-modal-metric strong {
@@ -12136,8 +12103,7 @@ export default function Produtos() {
         }
         .ficha-modal-add-label {
           font-size: var(--font-section-label); font-weight: var(--fw-bold); line-height: var(--lh-normal);
-          color: var(--text-secondary);
-          text-transform: uppercase; letter-spacing: var(--ls-wide);
+          color: var(--text-secondary); letter-spacing: var(--ls-wide);
           margin-bottom: var(--space-2);
         }
         .ficha-modal-add-input {
