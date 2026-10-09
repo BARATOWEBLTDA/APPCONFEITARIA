@@ -97,16 +97,15 @@ export default function Cardapio() {
     if (!profile?.id) return;
     (async () => {
       const uid = profile.id;
-      const [prod, cat, promo] = await Promise.all([
+      const [prod, cat] = await Promise.all([
         supabase.from("produtos").select("id, disponivel", { count: "exact" }).eq("user_id", uid),
         supabase.from("categorias").select("id", { count: "exact", head: true }).eq("user_id", uid),
-        supabase.from("promocoes").select("id", { count: "exact", head: true }).eq("user_id", uid).eq("ativo", true),
       ]);
       setContadores({
         produtos: prod.count ?? 0,
         produtosAtivos: (prod.data || []).filter((p: any) => p.disponivel !== false).length,
         categorias: cat.count ?? 0,
-        promocoes: promo.count ?? 0,
+        promocoes: 0,
       });
     })();
   }, [profile?.id]);
@@ -306,14 +305,6 @@ export default function Cardapio() {
     ? Math.min((metricas.pedidosCardapio / metricas.visitas) * 100, 100)
     : 0;
 
-  const sections: Array<{ label: string; icon: ReactElement; path: string }> = [
-    { label: "Produtos",     icon: <Storefront size={18} weight="duotone" />, path: "/produtos" },
-    { label: "Categorias",   icon: <ForkKnife  size={18} weight="duotone" />, path: "/categorias" },
-    { label: "Promoções",    icon: <Percent    size={18} weight="duotone" />, path: "/promocoes" },
-    { label: "Aparência",    icon: <PaintBrush size={18} weight="duotone" />, path: "/cardapio-design" },
-    { label: "Configurações",icon: <Sliders    size={18} weight="duotone" />, path: "/cardapio-config" },
-    { label: "Entrega/Pgto", icon: <Tag        size={18} weight="duotone" />, path: "/checkout-config" },
-  ];
 
   // ─── Render ───
   return (

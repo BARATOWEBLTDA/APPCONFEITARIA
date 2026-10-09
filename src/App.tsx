@@ -246,7 +246,7 @@ export default function App() {
           <Route path="/financeiro/a-pagar" element={<FinanceiroAPagar />} />
           <Route path="/custos" element={<Custos />} />
           <Route path="/lucratividade" element={<Lucratividade />} />
-          <Route path="/promocoes" element={<EmBreve tela="promocoes" />} />
+          <Route path="/promocoes" element={<Navigate to="/cardapio" replace />} />
           <Route path="/cardapio" element={<Cardapio />} />
           <Route path="/cardapio-config" element={<DadosLoja />} />
           <Route path="/cardapio-resumo" element={<CardapioResumo />} />
@@ -254,7 +254,7 @@ export default function App() {
           <Route path="/cardapio-design" element={<CardapioDesign />} />
           <Route path="/checkout-config" element={<CheckoutConfigPage />} />
           <Route path="/estoque" element={<EmBreve tela="estoque" />} />
-          <Route path="/arquivos" element={<EmBreve tela="arquivos" />} />
+          <Route path="/arquivos" element={<Navigate to="/" replace />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/configuracoes/notificacoes" element={<NotificacoesSons />} />
           <Route path="/configuracoes/mensagens" element={<MensagensWhatsApp />} />
