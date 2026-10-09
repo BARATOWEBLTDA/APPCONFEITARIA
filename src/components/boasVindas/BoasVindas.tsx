@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties, TouchEvent } from 'react'
-import { ArrowLeft, Bell, CalendarBlank, CaretRight, DotsThree, Plus } from '@phosphor-icons/react'
-import { Botao, BotaoIcone, Linha, Titulo } from '@/components/base'
+import { ArrowLeft, Bell, CalendarBlank, CaretRight } from '@phosphor-icons/react'
+import { Botao, BotaoIcone, Linha } from '@/components/base'
 import { Mascote, NomeDoonly } from '@/components/marca/Mascote'
 import { CartaoPedido } from '@/components/pedidos/CartaoPedido'
 import type { Pedido } from '@/components/pedidos/pedidoTexto'
@@ -277,12 +277,10 @@ const pedidoExemplo = (x: Partial<Pedido> & { pedido_itens: any[] }): Pedido => 
 const nada = () => {}
 
 /* ───────── 3 · pedidos (09/10 · 3.70): toca o som de pedido, chega um pedido pelo cardápio e, ao aceitar,
-   ele abre como na tela do pedido, com as escolhas da cliente e a foto de referência. Se a pessoa não tocar
+   o próprio cartão se abre (como na lista de Pedidos) com o adicional e o recado com a foto de referência. Se a pessoa não tocar
    em Aceitar, ele se aperta sozinho, pra ninguém ficar sem ver o pedido completo. ───────── */
-const PEDIDO_DEMO = pedidoExemplo({ numero: 1049, cliente_nome: 'Renata Dias', status: 'aguardando_aceite', origem: 'cardapio', horario_entrega: '14:00', valor_total: 320,
+const PEDIDO_DEMO = pedidoExemplo({ numero: 1049, cliente_nome: 'Renata Dias', cliente_telefone: '41999990000', status: 'aguardando_aceite', origem: 'cardapio', horario_entrega: '14:00', valor_total: 320,
   pedido_itens: [item('Bolo de aniversário 2 kg', '/tutorial/leve/doisamores.webp', 1, 320)] })
-// as mesmas linhas da tela do pedido (EditarPedido): o topo de bolo é um adicional
-const ESCOLHAS: [string, string][] = [['Tamanho', '2 kg'], ['Massa', 'Chocolate'], ['Recheios', 'Brigadeiro, Ninho com morango'], ['Cobertura', 'Chantilly'], ['Adicionais', 'Topo de bolo personalizado']]
 
 function DemoPedidos() {
   const [fase, setFase] = useState(0) // 0 = esperando · 1 = chegou · 2 = aceito
@@ -302,20 +300,9 @@ function DemoPedidos() {
       {fase > 0 && <div className="bv-aviso"><Bell size={14} weight="fill" aria-hidden="true" /><span><b>Novo pedido</b> pelo cardápio</span></div>}
       {fase > 0 && (
         <div className="bv-cai">
-          <CartaoPedido p={p} aoAbrir={nada} aoAvancar={aceitar} aoMenu={nada} aoEndereco={nada} />
-        </div>
-      )}
-      {fase === 2 && (
-        <section className="bv-ped-det" aria-hidden="true">
-          <Titulo contagem={1} acao={<span className="bv-ped-add"><Plus size={16} weight="bold" />Adicionar item</span>}>Itens do pedido</Titulo>
-          <ul className="tpd-itens">
-            <li>
-              <div className="tpd-it-topo">
-                <span className="tpd-ft"><img src="/tutorial/leve/doisamores.webp" alt="" /></span>
-                <div className="tpd-it-tx"><b><em>1x</em> Bolo de aniversário 2 kg</b><span>R$ 320,00</span></div>
-                <span className="bv-ped-tres"><DotsThree size={20} weight="bold" /></span>
-              </div>
-              <div className="tpd-it-esc">{ESCOLHAS.map(([k, v]) => <Linha key={k} rotulo={k}>{v}</Linha>)}</div>
+          <CartaoPedido p={p} aoAbrir={nada} aoAvancar={aceitar} aoMenu={nada} aoEndereco={nada} abertoFixo={fase === 2} extra={
+            <div className="bv-ped-extra">
+              <Linha rotulo="Adicionais">Topo de bolo personalizado</Linha>
               <div className="tpd-recado">
                 <span className="tpd-ref"><img src="/tutorial/leve/doisamores.webp" alt="" /></span>
                 <div>
@@ -324,9 +311,9 @@ function DemoPedidos() {
                   <span>Toque na foto pra ampliar</span>
                 </div>
               </div>
-            </li>
-          </ul>
-        </section>
+            </div>
+          } />
+        </div>
       )}
     </div>
   )

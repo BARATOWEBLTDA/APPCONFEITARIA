@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { KeyboardEvent, MouseEvent } from 'react'
+import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { ArrowRight, Bag, CaretDown, DotsThreeVertical } from '@phosphor-icons/react'
 import { Botao, BotaoIcone, Linha } from '@/components/base'
 import type { Pedido } from './pedidoTexto'
@@ -20,6 +20,9 @@ type Props = {
   aoMenu: (p: Pedido) => void
   aoEndereco: (p: Pedido) => void
   mudando?: boolean
+  /** (09/10 · 3.72) as boas-vindas abrem o cartão sozinhas e mostram o recado do item dentro dele */
+  abertoFixo?: boolean
+  extra?: ReactNode
 }
 
 const parar = (fn: () => void) => (e: MouseEvent) => { e.stopPropagation(); fn() }
@@ -38,8 +41,9 @@ function Foto({ p }: { p: Pedido }) {
   )
 }
 
-export function CartaoPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudando }: Props) {
-  const [aberto, setAberto] = useState(false)
+export function CartaoPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudando, abertoFixo, extra }: Props) {
+  const [abertoAqui, setAberto] = useState(false)
+  const aberto = abertoFixo ?? abertoAqui
   const sit = situacaoDe(p)
   const acao = acaoDe(p)
   const atr = atrasado(p)
@@ -82,6 +86,7 @@ export function CartaoPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudand
               ))}
             </div>
           )}
+          {extra}
           <p className="pdc-total"><span>Total</span><span>{rs(p.valor_total)}</span></p>
           {recebido > 0.009 && <p className="pdc-rec"><span>Recebido</span><span>{rs(recebido)}</span></p>}
           {!cancelado && falta > 0.009 && <p className="pdc-rec falta"><span>Falta</span><span>{rs(falta)}</span></p>}
