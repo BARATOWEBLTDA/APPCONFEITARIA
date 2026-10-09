@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode, TouchEvent } from 'react'
-import { ArrowLeft, Bell, BookOpen, CalendarBlank, CalendarDots, CaretRight, CurrencyDollar, FolderSimple, Gear, House, Plus, Receipt, ShoppingBag } from '@phosphor-icons/react'
+import { ArrowLeft, Bell, BookOpen, CalendarDots, Check, CaretRight, CurrencyDollar, FolderSimple, Gear, House, Plus, Receipt, ShoppingBag } from '@phosphor-icons/react'
 import { Botao, BotaoIcone } from '@/components/base'
 import { Mascote, NomeDoonly } from '@/components/marca/Mascote'
 import { CartaoPedido, LinhaPedido } from '@/components/pedidos/CartaoPedido'
@@ -409,33 +409,61 @@ function Notebook({ children }: { children: ReactNode }) {
   )
 }
 
-/* ───────── 4 · dinheiro: o "A receber" do Financeiro ───────── */
-// pedidos de outras clientes, que ainda têm valor pra receber (os da tela anterior já chegaram pagos no Pix)
+/* ───────── 4 · dinheiro (09/10 · 3.83): quem pagou e quem falta pagar, num cartão só e sem conta pra fazer.
+   Em cima, quanto falta receber na semana; embaixo, cada cliente com o que já pagou e o que falta.
+   "Recebi" marca como pago (com o som de sucesso) e o total desce. Se ninguém tocar, a Carla paga sozinha. ───────── */
 const RECEBER = [
-  { numero: 1046, cliente: 'Carla Menezes', quando: 'em 3 dias', total: 180.5, recebido: 90, entrega: 3 },
-  { numero: 1045, cliente: 'Fernanda Lima', quando: 'em 4 dias', total: 260, recebido: 130, entrega: 4 },
-  { numero: 1044, cliente: 'Paula Ribeiro', quando: 'em 6 dias', total: 95, recebido: 0, entrega: 6 },
+  { id: 'camila', cliente: 'Camila Rocha', total: 320, recebido: 320, conta: 'Pagou tudo no Pix' },
+  { id: 'carla', cliente: 'Carla Menezes', total: 180.5, recebido: 90, conta: 'Pagou o sinal' },
+  { id: 'fernanda', cliente: 'Fernanda Lima', total: 260, recebido: 130, conta: 'Pagou metade' },
+  { id: 'paula', cliente: 'Paula Ribeiro', total: 95, recebido: 0, conta: 'Ainda não pagou' },
 ]
 const reais = (n: number) => n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-const SEMANA_CURTA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
-const diaCurto = (soma: number) => { const d = new Date(); d.setDate(d.getDate() + soma); return `${SEMANA_CURTA[d.getDay()]}, ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}` }
+const iniciais = (nome: string) => nome.split(' ').map(p => p[0]).slice(0, 2).join('')
 
 function DemoDinheiro() {
-  const falta = RECEBER.reduce((s, r) => s + r.total - r.recebido, 0)
+  const [pagos, setPagos] = useState<Record<string, boolean>>({})
+  const mexeu = useRef(false)
+  const receber = (id: string, sozinho = false) => {
+    if (!sozinho) mexeu.current = true
+    tocarSom('sucesso'); vibrarLeve()
+    setPagos(p => ({ ...p, [id]: true }))
+  }
+  useEffect(() => {
+    const t = window.setTimeout(() => { if (!mexeu.current) receber('carla', true) }, 3200)
+    return () => clearTimeout(t)
+  }, [])
+  const pago = (r: typeof RECEBER[number]) => r.recebido >= r.total || !!pagos[r.id]
+  const falta = RECEBER.reduce((s, r) => s + (pago(r) ? 0 : r.total - r.recebido), 0)
+  const faltam = RECEBER.filter(r => !pago(r)).length
   return (
-    <div className="bv-din" aria-hidden="true">
-      <div className="bv-din-k bv-cai" style={{ '--i': 0 } as CSSProperties}>
-        <div><small>Atrasados</small><b>R$ 0,00</b><i>0 pedidos</i></div>
-        <div><small>Em 7 dias</small><b>R$ {reais(falta)}</b><i>{RECEBER.length} pedidos</i></div>
+    <div className="bv-din bv-cai">
+      <div className="bv-din-topo">
+        <small>Falta receber esta semana</small>
+        <b key={falta}>R$ {reais(falta)}</b>
+        <span>{faltam === 1 ? '1 cliente' : `${faltam} clientes`}</span>
       </div>
-      {RECEBER.map((r, i) => (
-        <div key={r.numero} className="bv-din-it bv-cai" style={{ '--i': i + 1 } as CSSProperties}>
-          <div className="bv-din-h"><b>Pedido #{r.numero} · {r.cliente}</b><span>{r.quando}</span></div>
-          <div className="bv-din-v"><small>Total R$ {reais(r.total)}{r.recebido > 0 ? ` · recebido R$ ${reais(r.recebido)}` : ''}</small><b>falta R$ {reais(r.total - r.recebido)}</b></div>
-          <div className="bv-din-bar"><i style={{ '--p': `${(r.recebido / r.total) * 100}%` } as CSSProperties} /></div>
-          <div className="bv-din-a"><span><CalendarBlank size={15} />entrega {diaCurto(r.entrega)}</span><span className="bv-din-rec">Receber</span></div>
-        </div>
-      ))}
+      <ul className="bv-din-lista">
+        {RECEBER.map(r => {
+          const ok = pago(r)
+          return (
+            <li key={r.id} className={ok ? 'ok' : ''}>
+              <span className="bv-din-av">{iniciais(r.cliente)}</span>
+              <div className="bv-din-tx">
+                <b>{r.cliente}</b>
+                <small>{ok && pagos[r.id] ? 'Pagou o restante' : r.conta}</small>
+                {/* quem acabou de pagar mantém o espaço da linha (o cartão não encolhe e o título não pula) */}
+                {r.recebido < r.total && <em className={ok ? 'some' : ''}>Falta R$ {reais(r.total - r.recebido)}</em>}
+              </div>
+              {ok ? (
+                <span className="bv-din-ok"><Check size={14} weight="bold" />Pago</span>
+              ) : (
+                <button type="button" className="bv-din-rec" onClick={() => receber(r.id)}>Recebi</button>
+              )}
+            </li>
+          )
+        })}
+      </ul>
     </div>
   )
 }
