@@ -7,7 +7,7 @@ import { usePlano } from "@/hooks/usePlano";
 import { useProfile } from "@/hooks/useProfile";
 
 /** "Minha assinatura" (aprovado 01/10): pra quem já é PRO. Quem não é PRO vai pra página de assinar. */
-const WHATSAPP_EQUIPE = "5541998843669";
+const WHATSAPP_EQUIPE = "5511978414991";
 const VALOR = "R$ 29,90/mês";
 const dataBR = (d?: Date | null) => (d ? d.toLocaleDateString("pt-BR") : "—");
 

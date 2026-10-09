@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { montarMensagem, dadosDoPedido } from '@/lib/mensagens'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Cake, CalendarDots, Funnel, Kanban, Lightning, ListBullets, MagnifyingGlass, Plus, Receipt, WarningCircle, X } from '@phosphor-icons/react'
 import AppPageHeader from '@/components/AppPageHeader'
@@ -195,7 +196,7 @@ export default function Pedidos() {
       if (!tel) return
       const num = tel.startsWith('55') ? tel : `55${tel}`
       const nome = p.cliente_nome ? nomeCliente(p).split(' ')[0] : ''
-      window.open(`https://wa.me/${num}?text=${encodeURIComponent(`Olá${nome ? ' ' + nome : ''}! Sobre o seu pedido #${p.numero || ''}, tudo certo?`)}`, '_blank')
+      window.open(`https://wa.me/${num}?text=${encodeURIComponent(montarMensagem('sobre_pedido', dadosDoPedido(p, nome)))}`, '_blank')
       fechar(); return
     }
     if (acao === 'compartilhar') {

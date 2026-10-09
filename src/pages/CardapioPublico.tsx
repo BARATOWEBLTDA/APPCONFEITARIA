@@ -338,6 +338,7 @@ function CardapioContent() {
           tem_cupom: !!config.tem_cupom,
           aceita_agendamento: config.aceita_agendamento !== false,
           prazo_minimo_horas: config.prazo_minimo_horas ?? 24,
+          msg_pedido: (config as any).msg_pedido || null,
           // Finalizar encomenda (02/10): horário da loja e antecedência de cada produto, pro agendamento
           horario: (config as any).horario || null,
           antecedencias: Object.fromEntries((produtos || []).map((p: any) => [p.id, { ant: p.antecedencia || null, pronta: p.pronta_entrega ?? null }])),

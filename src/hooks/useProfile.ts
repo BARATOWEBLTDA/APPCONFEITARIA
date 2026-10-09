@@ -23,6 +23,8 @@ export interface Profile {
   slug?: string;
   plano?: string | null;
   pro_expira_em?: string | null;
+  /** Mensagens do WhatsApp personalizadas (09/10 · 3.59). Chave → texto. Vazio = padrão. */
+  mensagens_whatsapp?: Record<string, string> | null;
 }
 
 // ─── Cache localStorage ────────────────────────────────────────────
@@ -187,6 +189,11 @@ export function useProfile() {
   }, []);
 
   return { profile, loading, refetch: refreshProfile };
+}
+
+/** O perfil já carregado (sem esperar a rede). Pra funções fora de componentes. */
+export function perfilAtual(): Profile | null {
+  return globalProfile;
 }
 
 /** Limpa o cache do perfil — usar no logout. */

@@ -46,6 +46,7 @@ import AdminAutores from "@/pages/admin/AdminAutores";
 import AdminRelatorios from "@/pages/admin/AdminRelatorios";
 import Configuracoes from "@/pages/Configuracoes";
 import NotificacoesSons from "@/pages/NotificacoesSons";
+import MensagensWhatsApp from "@/pages/MensagensWhatsApp";
 import Indicar from "@/pages/Indicar";
 import CardapioPrevia from "@/pages/CardapioPrevia";
 import CardapioResumo from "@/pages/CardapioResumo";
@@ -256,6 +257,7 @@ export default function App() {
           <Route path="/arquivos" element={<EmBreve tela="arquivos" />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/configuracoes/notificacoes" element={<NotificacoesSons />} />
+          <Route path="/configuracoes/mensagens" element={<MensagensWhatsApp />} />
           <Route path="/indicar" element={<Indicar />} />
           <Route path="/personalizacao" element={<Navigate to="/complementos" replace />} />
         </Route>

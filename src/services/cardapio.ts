@@ -140,6 +140,7 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     tem_cupom: isPro && (temCupom === true || (Array.isArray(profile.cupons_desconto) && profile.cupons_desconto.some((c: any) => c?.ativo))),
     aceita_agendamento: profile.aceita_agendamento !== false,
     prazo_minimo_horas: profile.prazo_minimo_horas ?? 24,
+    msg_pedido: profile.mensagens_whatsapp?.pedido_cardapio || null,
   }
 
   return {

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { montarMensagem, dadosDoPedido } from "@/lib/mensagens";
 import { useNavigate } from "react-router-dom";
 import { CalendarBlank, CaretLeft, CaretRight, Check, Copy, FilePdf, Funnel, MagnifyingGlass, Package, PencilSimple, Plus, Printer, Trash, WarningCircle, WhatsappLogo, X } from "@phosphor-icons/react";
 import { pedidoAtrasado, STATUS_AINDA_NAO_PRONTO } from "@/lib/pedidoStatus";
@@ -205,7 +206,7 @@ export default function Agenda() {
     if (!tel) { avisar("Essa cliente não tem telefone cadastrado.", { tipo: "erro" }); return; }
     const numero = tel.startsWith("55") ? tel : `55${tel}`;
     const nome = p.cliente_nome ? nomeDeGente(p.cliente_nome).split(" ")[0] : "";
-    const msg = encodeURIComponent(`Olá${nome ? " " + nome : ""}! Sobre o seu pedido #${p.numero || ""}, tudo certo?`);
+    const msg = encodeURIComponent(montarMensagem("sobre_pedido", dadosDoPedido(p, nome)));
     window.open(`https://wa.me/${numero}?text=${msg}`, "_blank");
   };
 

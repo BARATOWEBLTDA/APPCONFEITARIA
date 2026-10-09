@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
+import { montarMensagem } from "@/lib/mensagens";
 import { useRecorte } from "@/components/ui/useRecorte";
 import DataNascimentoSheet, { rotuloNascimento } from "@/components/DataNascimentoSheet";
 import LimitePlano from "@/components/billing/LimitePlano";
 import { LIMITE_CLIENTES_GRATIS } from "@/lib/limitesPlano";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { useProfile, isPro } from "@/hooks/useProfile";
+import { useProfile, isPro, perfilAtual } from "@/hooks/useProfile";
 import AppPageHeader from "@/components/AppPageHeader";
 import ReqTag from "@/components/ReqTag";
 import { Botao, Campo, CampoArea, Janela, TelaVazia, avisar, confirmar } from "@/components/base";
@@ -855,7 +856,7 @@ export default function Clientes() {
               <p className="cl9-j-apoio">Nos próximos 30 dias. Uma mensagem de parabéns costuma virar pedido de bolo.</p>
               {aniversariantes.map(c => {
                 const d = getDaysUntil(c.data_nascimento!);
-                const wa = linkWhats(c, `Feliz aniversário, ${primeiroNome(c.nome)}! Que o seu dia seja muito doce.`);
+                const wa = linkWhats(c, montarMensagem("aniversario", { nome: primeiroNome(c.nome), loja: perfilAtual()?.nome_loja || "" }));
                 return (
                   <div key={c.id} className="cl9-j-l">
                     <button type="button" className="cl9-j-quem" onClick={() => { setShowNiver(false); navigate(`/clientes/${c.id}`); }}>

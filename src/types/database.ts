@@ -46,6 +46,7 @@ export interface DesignSettings {
 }
 
 export interface Configuracoes {
+  msg_pedido?: string | null
   id?: string
   user_id?: string
   telefone?: string

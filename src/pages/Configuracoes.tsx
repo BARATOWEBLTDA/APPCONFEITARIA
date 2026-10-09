@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Camera, CaretRight, Crown, FileText, Gift, Headset, Lightbulb, PencilSimple, Question, SignOut, Bug } from "@phosphor-icons/react";
+import { Bell, Camera, ChatCircleText, CaretRight, Crown, FileText, Gift, Headset, Lightbulb, PencilSimple, Question, SignOut, Bug } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, Campo, Janela, avisar, informar } from "@/components/base";
@@ -215,6 +215,7 @@ export default function Configuracoes() {
           <section className="cf9-card cf9-lista" aria-label="App e ajuda">
             <h2 className="cf9-sec">App</h2>
             <ItemConfig icone={<Bell size={20} weight="bold" />} nome="Notificações e sons" apoio="Avisos no celular e sons do app" onClick={() => navigate("/configuracoes/notificacoes")} />
+            <ItemConfig icone={<ChatCircleText size={20} weight="bold" />} tom="rosa" nome="Mensagens do WhatsApp" apoio="Troque o texto das mensagens prontas" onClick={() => navigate("/configuracoes/mensagens")} />
             <AtualizarAppItem />
             <ItemConfig icone={<Gift size={20} weight="bold" />} tom="rosa" nome="Indique e ganhe" apoio="Ganhe prêmios por cada assinante indicada" onClick={() => navigate("/indicar")} />
             <h2 className="cf9-sec">Ajuda</h2>

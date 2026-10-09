@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
+import { montarMensagem as montarMensagemModelo } from '@/lib/mensagens'
 import { CalendarioSheet, HorariosSheet } from '@/components/cardapio/AgendaSheets'
 import { antecedenciaHoras, calcularRegras, primeiraData, rotuloData } from '@/lib/agendaCardapio'
 import { supabase } from '@/lib/supabase'
@@ -17,6 +18,8 @@ import { useSobreposicao } from '@/components/base/useSobreposicao'
 import '@/components/cart/sacola.css'
 
 interface CheckoutConfig {
+  /** texto da loja pra mensagem do pedido (Mensagens do WhatsApp) */
+  msg_pedido?: string | null
   formas_pagamento: string[]
   formas_entrega: string[]
   valor_entrega_propria: number
@@ -293,7 +296,8 @@ function CartContent({
       }
       if (horaEntrega) quando += quando ? ` às ${horaEntrega}` : `às ${horaEntrega}`
 
-      let m = `Oi, *${storeName}*! Acabei de fazer um pedido pelo cardápio 🧁\n\n`
+      // 09/10 (3.59): a abertura vem do texto da loja (Mensagens do WhatsApp); aqui só o bloco do pedido
+      let m = ''
       if (numPedido) m += `*PEDIDO #${numPedido}*\n\n`
 
       items.forEach((item: any) => {
@@ -355,7 +359,7 @@ function CartContent({
 
       if (observacoes.trim()) m += `\n*Observação:* ${observacoes.trim()}\n`
       m += `\n*Cliente:* ${nome.trim()} · ${telefone.trim()}`
-      return m
+      return montarMensagemModelo('pedido_cardapio', { pedido: m, loja: storeName, nome: nome.trim().split(' ')[0], numero: numPedido || '' }, config.msg_pedido ?? null)
     }
 
     const num = whatsapp.replace(/\D/g, '')

@@ -32,8 +32,13 @@ export async function carregarExtrato(uid: string, ini: string, fim: string): Pr
   const ids = [...new Set(pagamentos.map(g => g.pedido_id).filter(Boolean))];
   const nomes: Record<string, { numero: any; cliente: string }> = {};
   if (ids.length) {
-    const { data } = await supabase.from("pedidos").select("id, numero, cliente_nome").in("id", ids);
-    for (const x of (data as any[]) || []) nomes[x.id] = { numero: x.numero, cliente: x.cliente_nome || "" };
+    // 09/10: o nome vem também do cadastro da cliente (pedido feito só com a cliente escolhida não tinha cliente_nome)
+    const r1: any = await supabase.from("pedidos").select("id, numero, cliente_nome, clientes(nome)").in("id", ids);
+    const data: any[] = (r1.error ? (await supabase.from("pedidos").select("id, numero, cliente_nome").in("id", ids)).data : r1.data) || [];
+    for (const x of data) {
+      const cad = Array.isArray(x.clientes) ? x.clientes[0]?.nome : x.clientes?.nome;
+      nomes[x.id] = { numero: x.numero, cliente: String(x.cliente_nome || cad || "").trim() };
+    }
   }
   const itens: MovExtrato[] = [];
   for (const g of pagamentos) {
