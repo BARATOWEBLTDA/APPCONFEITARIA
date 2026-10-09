@@ -2,13 +2,16 @@ import { useState, useEffect, useMemo, ReactNode } from "react";
 import CampoNumero from "@/components/ui/CampoNumero";
 import { parseNumBR } from "@/lib/numeroBR";
 import { createPortal } from "react-dom";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
-import EmptyDoo from "@/components/EmptyDoo";
 import QuickAddInsumo, { InsumoQuick } from "@/components/QuickAddInsumo";
 import DooInfoModal from "@/components/DooInfoModal";
 import AppPageHeader from "@/components/AppPageHeader";
+import { Botao, TelaVazia } from "@/components/base";
+import { Cake, CaretRight, MagnifyingGlass, Plus, Receipt, TrendDown, X } from "@phosphor-icons/react";
+import "./clientes.css";
+import "./fichaLista.css";
 
 // ── Famílias de unidades e conversão ──
 
@@ -173,6 +176,11 @@ const MODAL_TITLE_VARIANTS: ((nome: string) => ReactNode)[] = [
   (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, veja cada etapa do cálculo.</>,
 ];
 
+/**
+ * Custo e lucro de um produto (lista).
+ * Usa a MESMA conta da tela da ficha: ingredientes + custos invisíveis + mão de obra.
+ * (Antes a lista só tirava os ingredientes e mostrava um lucro maior que o real.)
+ */
 function calcular(p: Produto) {
   const itens = p.produto_insumos || [];
   const cmv = itens.reduce((s, pi) => {
@@ -180,23 +188,35 @@ function calcular(p: Produto) {
     const unidadeUtilizada = pi.unidade_utilizada || pi.insumos?.unidade || "";
     return s + calcCusto(qtd, unidadeUtilizada, pi.insumos as Insumo);
   }, 0);
+  // Custos invisíveis: % sobre os ingredientes (25% quando nunca foi mudado, igual à tela da ficha)
+  const cvPct = p.cv_percentual != null ? parseNumBR(p.cv_percentual) : 25;
+  const cv = cmv * (cvPct / 100);
+  // Mão de obra: liga quando a ficha tem salário ou tempo salvos (igual à tela da ficha)
+  const moAtivo = !!(p.salario_desejado || p.tempo_preparo_min);
+  const salario = parseNumBR(p.salario_desejado) || 0;
+  const horasSem = parseNumBR(p.horas_semanais) || 40;
+  const tempoMin = parseInt(String(p.tempo_preparo_min || 0)) || 0;
+  const custoHora = horasSem > 0 ? salario / (horasSem * 4.33) : 0;
+  const mo = moAtivo ? custoHora * (tempoMin / 60) : 0;
+  const custoTotal = cmv + cv + mo;
   const preco = (p.promocao && p.preco_promocional && p.preco_promocional > 0) ? Number(p.preco_promocional) : Number(p.preco_normal) || 0;
-  const lucro = preco - cmv;
+  const lucro = preco - custoTotal;
   const margemCmv = preco > 0 ? (cmv / preco) * 100 : 0;
   const margemLucro = preco > 0 ? (lucro / preco) * 100 : 0;
-  return { cmv, lucro, preco, margemCmv, margemLucro, temFicha: itens.length > 0 };
+  return { cmv, custoTotal, lucro, preco, margemCmv, margemLucro, temFicha: itens.length > 0 };
 }
 
 export default function FichaTecnica() {
   const { profile } = useProfile();
   const primeiroNome = (profile?.nome || "").split(" ")[0] || "Confeiteira";
   const location = useLocation();
+  const navigate = useNavigate();
   const [userId, setUserId] = useState("");
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Produto | null>(null);
   const [busca, setBusca] = useState("");
-  const [filtro, setFiltro] = useState<"todos" | "com" | "sem">("todos");
+  const [filtro, setFiltro] = useState<"todos" | "com" | "sem" | "prejuizo">("todos");
 
   // Edicao da ficha
   const [insumosCadastrados, setInsumosCadastrados] = useState<Insumo[]>([]);
@@ -423,11 +443,12 @@ export default function FichaTecnica() {
     if (busca.trim() && !p.nome.toLowerCase().includes(busca.toLowerCase())) return false;
     if (filtro === "com") return (p.produto_insumos || []).length > 0;
     if (filtro === "sem") return (p.produto_insumos || []).length === 0;
+    if (filtro === "prejuizo") { const c = calcular(p); return c.temFicha && c.lucro < 0; }
     return true;
   });
   const totalComFicha = produtos.filter(p => (p.produto_insumos || []).length > 0).length;
 
-  if (loading) return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "40vh" }}><span className="ft-spinner" /><style>{`.ft-spinner{width:32px;height:32px;border:3px solid var(--primary-light);border-top-color:var(--primary);border-radius:50%;animation:ftspin .7s linear infinite}@keyframes ftspin{to{transform:rotate(360deg)}}`}</style></div>;
+  if (loading) return <><AppPageHeader title="Ficha técnica" subtitle="O custo e o lucro de cada produto" /><div className="cl9"><div className="cl9-esq" aria-label="Carregando">{[0, 1, 2, 3].map(k => <span key={k} />)}</div></div></>;
 
   /* DETAIL / EDIT VIEW */
   if (selected) {
@@ -1166,162 +1187,100 @@ export default function FichaTecnica() {
     );
   }
 
-  /* LIST VIEW */
+  /* LIST VIEW (10.2: lista no padrão do app, com o lucro certo) */
+  const nPrejuizo = produtos.filter(p => { const c = calcular(p); return c.temFicha && c.lucro < 0; }).length;
+  const reais = (v: number) => v < 0 ? `−R$ ${fmt(-v)}` : `R$ ${fmt(v)}`;
+  const tomMargem = (m: number) => m >= 30 ? "ok" : m >= 0 ? "atencao" : "neg";
+  const chipsFiltro = ([
+    ["todos", "Todos", produtos.length],
+    ["com", "Com ficha", totalComFicha],
+    ["sem", "Sem ficha", produtos.length - totalComFicha],
+    ["prejuizo", "Dando prejuízo", nPrejuizo],
+  ] as const).filter(([k, , n]) => k === "todos" || n > 0 || filtro === k);
   return (
     <>
-    <div className="ft-so-desk"><AppPageHeader title="Ficha técnica" subtitle="O custo e o preço de venda de cada produto" /></div>
-    <div className="ft-root">
-      <div className="ft-list-header">
-        <div className="ft-list-header-inner">
-          <h1 className="ft-list-title">Ficha técnica</h1>
-          <p className="ft-list-sub">
-            O custo e o preço de venda de cada produto: veja quanto custa fazer e quanto você lucra.
-          </p>
-        </div>
-      </div>
-
-      <div className="ft-list-toolbar">
-        <div className="ft-list-busca">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" placeholder="Buscar produto..." value={busca} onChange={e => setBusca(e.target.value)} />
-        </div>
-      </div>
-
-      {/* (a barra "0/1 precificados" saiu em 02/10) */}
-
-      {filtrados.length === 0 ? (
-        <EmptyDoo
-          image="produtos.png"
-          title="Nenhum produto encontrado"
-          description={filtro === "sem" ? "Todos os produtos já foram precificados." : "Cadastre produtos para precificar."}
-          actionLabel={filtro !== "todos" ? "Ver todos" : undefined}
-          onAction={filtro !== "todos" ? () => { setFiltro("todos"); setBusca(""); } : undefined}
-        />
-      ) : (
-        <div className="ft-list-grid">
-          {filtrados.map(p => {
-            const { cmv, lucro, margemLucro, temFicha } = calcular(p);
-            return (
-              <div key={p.id} className="ft-list-card" onClick={() => abrirFicha(p)}>
-                <div className="ft-list-card-img">
-                  {p.imagem_url
-                    ? <img src={p.imagem_url.split(",")[0]} alt={p.nome} />
-                    : <span className="ft-list-card-noimg">Sem foto</span>
-                  }
-                  {temFicha && (
-                    <div className={`ft-list-card-badge ft-list-card-badge--${margemLucro >= 50 ? "alto" : margemLucro >= 25 ? "medio" : "baixo"}`}>
-                      {fmtPct(margemLucro)}%
-                    </div>
-                  )}
-                </div>
-                <div className="ft-list-card-info">
-                  <p className="ft-list-card-nome">{p.nome}</p>
-                  <p className="ft-list-card-preco">R$ {fmt(p.preco_normal)}</p>
-                  {temFicha ? (
-                    <div className="ft-list-card-cmv">
-                      <span>CMV R$ {fmt(cmv)}</span>
-                      <span className="ft-list-card-lucro-val">Lucro R$ {fmt(lucro)}</span>
-                    </div>
-                  ) : (
-                    <span className="ft-list-card-sem">Sem preço técnica</span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      <style>{listStyles}</style>
+    <AppPageHeader
+      title="Ficha técnica"
+      subtitle={produtos.length === 0 ? "O custo e o lucro de cada produto" : `${totalComFicha} de ${produtos.length} com ficha técnica`}
+      infoContent={
+        <>
+          <p>A ficha técnica mostra quanto custa fazer cada produto e quanto sobra de lucro no preço que você cobra.</p>
+          <p>O custo soma os ingredientes, os custos invisíveis (gás, luz, água) e a sua mão de obra, quando você coloca.</p>
+        </>
+      }
+      infoTip={<>Toque num produto pra montar ou ajustar a ficha.</>}
+    />
+    <div className="cl9 fl">
+      {produtos.length === 0 ? (
+        <TelaVazia caixa icone={<Receipt size={30} />} titulo="Nenhum produto ainda"
+          texto="Cadastre seus produtos primeiro. Depois, aqui você monta a ficha técnica de cada um e vê quanto lucra."
+          acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => navigate("/produtos")}>Cadastrar produto</Botao>} />
+      ) : (<>
+        {nPrejuizo > 0 && filtro !== "prejuizo" && (
+          <button type="button" className="fl-alerta" onClick={() => setFiltro("prejuizo")}>
+            <span className="fl-alerta-ic"><TrendDown size={24} weight="bold" /></span>
+            <span>
+              <b>{nPrejuizo === 1 ? "1 produto está" : `${nPrejuizo} produtos estão`} dando prejuízo</b>
+              <small>O preço de venda não cobre o custo. Veja qual e ajuste.</small>
+            </span>
+            <CaretRight size={20} weight="bold" />
+          </button>
+        )}
+        <section className="cl9-card">
+          <div className="cl9-barra">
+            <label className="cl9-busca">
+              <MagnifyingGlass size={20} weight="bold" />
+              <input type="search" placeholder="Buscar produto" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar produto" autoComplete="off" />
+              {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={18} weight="bold" /></button>}
+            </label>
+          </div>
+          {chipsFiltro.length > 1 && (
+            <div className="cl9-chips" role="tablist" aria-label="Filtrar produtos">
+              {chipsFiltro.map(([k, t, n]) => (
+                <button key={k} type="button" role="tab" aria-selected={filtro === k} onClick={() => setFiltro(k)}>{t}<i>{n}</i></button>
+              ))}
+            </div>
+          )}
+          {filtrados.length === 0 ? (
+            <p className="cl9-semres">{busca.trim() ? "Nenhum produto com esse nome. Confira a busca." : "Nenhum produto nesse filtro."}</p>
+          ) : (<>
+            <div className="fl-cab" aria-hidden="true"><span>Produto</span><span>Preço de venda</span><span>Custo</span><span>Lucro</span><span>Margem</span><span /></div>
+            {filtrados.map(p => {
+              const c = calcular(p);
+              const foto = (p.imagem_url || "").split(",")[0];
+              const emPromo = !!(p.promocao && p.preco_promocional && p.preco_promocional > 0);
+              return (
+                <button key={p.id} type="button" className={`fl-l${c.temFicha ? "" : " fl-l--sem"}`} onClick={() => abrirFicha(p)}>
+                  <span className="fl-th">{foto ? <img src={foto} alt="" /> : <Cake size={22} weight="duotone" />}</span>
+                  <span className="fl-tx">
+                    <b>{p.nome}</b>
+                    <small className="fl-cel">
+                      {c.temFicha ? `R$ ${fmt(c.preco)} · margem ${fmtPct(c.margemLucro)}%` : `Sem ficha · R$ ${fmt(c.preco)}`}
+                    </small>
+                  </span>
+                  <span className="fl-pc fl-col">R$ {fmt(c.preco)}{emPromo && <small>em promoção</small>}</span>
+                  <span className="fl-pc fl-col">{c.temFicha ? reais(c.custoTotal) : "—"}</span>
+                  {c.temFicha ? (<>
+                    <span className={`fl-lucro fl-lucro--${tomMargem(c.margemLucro)}`}>
+                      <b><span className="fl-cel">R$ {fmt(Math.abs(c.lucro))}</span><span className="fl-pci">{reais(c.lucro)}</span></b>
+                      <small className="fl-cel">{c.lucro < 0 ? "de prejuízo" : "de lucro"}</small>
+                    </span>
+                    <span className="fl-pc"><i className={`fl-pill fl-pill--${tomMargem(c.margemLucro)}`}>{fmtPct(c.margemLucro)}%</i></span>
+                  </>) : (<>
+                    <span className="fl-montar">Montar ficha</span>
+                    <span className="fl-pc" />
+                  </>)}
+                  <CaretRight size={18} weight="bold" />
+                </button>
+              );
+            })}
+          </>)}
+        </section>
+      </>)}
     </div>
     </>
   );
 }
-
-const listStyles = `
-  /* Cabeçalho do app no celular e no computador (30/09) */
-  .ft-so-desk { display: block; }
-  .ft-back, .ft-list-header { display: none !important; }
-  @media (min-width: 901px) {
-  }
-
-  @media (min-width: 1100px) {
-    .ft-root { max-width: 1180px !important; margin-left: auto; margin-right: auto; }
-    .ft-list-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)) !important; gap: 1rem !important; }
-  }
-
-  .ft-root {
-    font-family: var(--font-base); max-width: 800px;
-    display: flex; flex-direction: column;
-    gap: var(--space-5);
-    padding-top: var(--space-7); padding-bottom: var(--space-7);
-  }
-
-  .ft-list-header { display: flex; align-items: center; justify-content: center; text-align: center; }
-  .ft-list-header-inner { display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 560px; }
-  .ft-list-title { font-size: var(--font-page-title); font-weight: var(--fw-bold); color: var(--text-title); margin: 0; text-align: center; }
-  .ft-list-sub { font-size: var(--font-helper); color: var(--text-muted); margin: 0; text-align: center; line-height: 1.4; }
-
-  .ft-list-toolbar { display: flex; flex-direction: column; gap: 0.5rem; }
-  .ft-list-busca {
-    display: flex; align-items: center; gap: 8px; padding: 0.55rem 0.75rem;
-    background: var(--bg-card); border: 1.5px solid var(--border); border-radius: var(--radius-md);
-    color: var(--text-muted);
-  }
-  .ft-list-busca input {
-    flex: 1; border: none; outline: none; background: transparent;
-    font-family: var(--font-base); font-size: var(--font-body); color: var(--text-primary);
-  }
-  .ft-list-filtros { display: flex; gap: 0.3rem; }
-  .ft-filtro-btn {
-    padding: 0.3rem 0.65rem; border: 1.5px solid var(--border); border-radius: var(--radius-md);
-    background: var(--bg-card); font-family: var(--font-base); font-size: var(--font-caption);
-    font-weight: var(--fw-medium); color: var(--text-secondary); cursor: pointer;
-  }
-  .ft-filtro-btn.active {
-    border-color: var(--primary); color: var(--primary); background: var(--primary-light); font-weight: var(--fw-bold);
-  }
-
-  .ft-progress-wrap { display: flex; align-items: center; gap: 0.6rem; }
-  .ft-progress-bar { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
-  .ft-progress-fill { height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.4s ease; }
-  .ft-progress-label { font-size: var(--font-caption); color: var(--text-muted); white-space: nowrap; }
-
-  .ft-list-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.75rem; }
-
-  .ft-list-card {
-    background: var(--bg-card); border-radius: var(--radius-lg); overflow: hidden;
-    box-shadow: var(--shadow-card, 0 2px 8px rgba(0,0,0,0.06)); cursor: pointer;
-    transition: transform 0.15s ease;
-  }
-  .ft-list-card:active { transform: scale(0.98); }
-
-  .ft-list-card-img {
-    aspect-ratio: 1; background: var(--bg-subtle); display: flex;
-    align-items: center; justify-content: center; position: relative; overflow: hidden;
-  }
-  .ft-list-card-img img { width: 100%; height: 100%; object-fit: cover; }
-  .ft-list-card-noimg { font-size: var(--font-caption); color: var(--text-muted); }
-  .ft-list-card-badge {
-    position: absolute; top: 0.4rem; right: 0.4rem;
-    padding: 2px 7px; border-radius: var(--radius-full);
-    font-size: var(--font-caption); font-weight: var(--fw-bold); color: white;
-  }
-  .ft-list-card-badge--alto { background: var(--success); }
-  .ft-list-card-badge--medio { background: var(--warning); }
-  .ft-list-card-badge--baixo { background: var(--error); }
-
-  .ft-list-card-info { padding: 0.6rem 0.7rem; }
-  .ft-list-card-nome {
-    font-size: var(--font-button); font-weight: var(--fw-bold); color: var(--text-title);
-    margin: 0 0 2px; line-height: 1.3;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  .ft-list-card-preco { font-size: var(--font-caption); font-weight: var(--fw-semibold); color: var(--success); margin: 0 0 4px; }
-  .ft-list-card-cmv { display: flex; flex-direction: column; gap: 1px; font-size: var(--font-caption); color: var(--text-muted); }
-  .ft-list-card-lucro-val { color: var(--success); font-weight: var(--fw-semibold); }
-  .ft-list-card-sem { font-size: var(--font-caption); color: var(--text-muted); font-style: italic; }
-`;
 
 const detailStyles = `
   /* Cabeçalho do app no celular e no computador (30/09) */
