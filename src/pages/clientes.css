@@ -220,3 +220,22 @@
 .cp9-av:disabled { cursor: default; }
 .cp9-gira { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: cp9Gira .7s linear infinite; }
 @keyframes cp9Gira { to { transform: rotate(360deg); } }
+
+/* 9.4 · importar contatos (3.35) */
+.cl9-imp { display: flex; flex-direction: column; padding-bottom: 8px; font-family: var(--font-base); color: var(--ui-texto); }
+.cl9-imp button { font-family: inherit; cursor: pointer; }
+.cl9-imp-resumo { margin: 0 0 8px; font-size: 15px; color: var(--ui-texto-2); }
+.cl9-imp-resumo b { color: var(--ui-verde); }
+.cl9-imp-todos { display: flex; align-items: center; gap: 12px; min-height: 48px; margin: 0; padding: 0; border: 0; border-bottom: 1px solid var(--ui-borda); background: none; font-size: 15px; font-weight: 800; color: var(--ui-texto); }
+.cl9-imp-l { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; margin: 0; padding: 8px 0; border: 0; border-bottom: 1px solid var(--ui-linha); background: none; text-align: left; color: var(--ui-texto); }
+.cl9-imp-l:last-child { border-bottom: 0; }
+.cl9-imp-l > span { flex: 1; min-width: 0; }
+.cl9-imp-l b { display: block; font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cl9-imp-l small { display: block; font-size: 13px; color: var(--ui-texto-2); }
+.cl9-imp-l.off { cursor: default; }
+.cl9-imp-l.off b { color: var(--ui-texto-3); }
+.cl9-imp-cx { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid #CFC3C9; border-radius: 7px; background: #fff; color: #fff; font-style: normal; }
+.cl9-imp-cx.on { border-color: var(--ui-vinho); background: var(--ui-vinho); }
+.cl9-imp-l.off .cl9-imp-cx { border-color: var(--ui-linha); background: var(--ui-cinza); }
+.cl9-imp-tag { flex: none; padding: 2px 8px; border-radius: 6px; background: var(--ui-cinza); color: var(--ui-cinza-texto); font-size: 12px; font-style: normal; font-weight: 800; }
+.cl9-imp-tag--falta { background: var(--ui-laranja-fundo); color: var(--ui-laranja); }

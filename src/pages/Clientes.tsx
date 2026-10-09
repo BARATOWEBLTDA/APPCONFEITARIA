@@ -8,7 +8,7 @@ import { useProfile, isPro } from "@/hooks/useProfile";
 import AppPageHeader from "@/components/AppPageHeader";
 import ReqTag from "@/components/ReqTag";
 import { Botao, Campo, CampoArea, Janela, TelaVazia, avisar, confirmar } from "@/components/base";
-import { AddressBook, Cake, CalendarBlank, Camera, CaretDown, CaretRight, MagnifyingGlass, Plus, Trash, UsersThree, WarningCircle, WhatsappLogo, X } from "@phosphor-icons/react";
+import { AddressBook, Cake, CalendarBlank, Camera, CaretDown, Check, CaretRight, MagnifyingGlass, Plus, Trash, UsersThree, WarningCircle, WhatsappLogo, X } from "@phosphor-icons/react";
 import "./clientes.css";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -201,20 +201,16 @@ export default function Clientes() {
   const [loading,       setLoading]       = useState(true);
   const [search,        setSearch]        = useState("");
   const [userId,        setUserId]        = useState<string | null>(null);
-  const [toast,         setToast]         = useState<{ nome: string; id: string } | null>(null);
-  const [toastImport,   setToastImport]   = useState<{ importados: number; duplicados: number } | null>(null);
   const [filtroChip,    setFiltroChip]    = useState<"todos" | "aniversariantes" | "recentes" | "sumidas">("todos");
 
   // Importação de contatos
   const [importSheet,   setImportSheet]   = useState<ImportContato[] | null>(null);
   const [importing,     setImporting]     = useState(false);
-  const [importError,   setImportError]   = useState<string | null>(null);
 
   const usuarioEhPro = isPro(profile);
   const suportaContatos = typeof navigator !== "undefined" && "contacts" in navigator && "ContactsManager" in window;
 
   // Guard "descartar cadastro?" ao clicar fora
-  const [confirmDiscard, setConfirmDiscard] = useState<"form" | "import" | null>(null);
 
   // Form state
   const [showForm,      setShowForm]      = useState(false);
@@ -231,7 +227,6 @@ export default function Clientes() {
 
   // Modais
   const [showNiver,     setShowNiver]     = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const fileRef = useRef<HTMLInputElement>(null);
   // Editar aberto pela página da cliente: ao fechar ou salvar, volta pra ela (08/10 · 3.34)
@@ -263,39 +258,6 @@ export default function Clientes() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientes, searchParams]);
-
-  // Auto-hide do toast
-  useEffect(() => {
-    if (!toast) return;
-    const t = setTimeout(() => setToast(null), 4000);
-    return () => clearTimeout(t);
-  }, [toast]);
-
-  useEffect(() => {
-    if (!toastImport) return;
-    const t = setTimeout(() => setToastImport(null), 5000);
-    return () => clearTimeout(t);
-  }, [toastImport]);
-
-  useEffect(() => {
-    const isOpen = !!confirmDelete;
-    if (isOpen) {
-      const scrollY = window.scrollY;
-      document.body.style.position = "fixed";
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.left = "0";
-      document.body.style.right = "0";
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.position = "";
-        document.body.style.top = "";
-        document.body.style.left = "";
-        document.body.style.right = "";
-        document.body.style.overflow = "";
-        window.scrollTo(0, scrollY);
-      };
-    }
-  }, [confirmDelete]);
 
   // ── Data ──────────────────────────────────────────────────────────────────
 
@@ -469,7 +431,8 @@ export default function Clientes() {
 
     // Cliente NOVO → toast com botão "Ver perfil" (não navega automaticamente)
     if (!wasEditing && savedId) {
-      setToast({ nome: completo.nome.trim(), id: savedId });
+      const idNovo = savedId;
+      avisar(`${completo.nome.trim()} cadastrada`, { tipo: "ok", acao: { rotulo: "Ver", aoTocar: () => navigate(`/clientes/${idNovo}`) } });
     }
   };
 
@@ -477,7 +440,6 @@ export default function Clientes() {
     if (!userId) return;
     await supabase.from("clientes").delete().eq("id", id);
     await fetchClientes(userId);
-    setConfirmDelete(null);
   };
 
   // ═══ IMPORTAÇÃO DE CONTATOS (PRO) ═══
@@ -528,20 +490,11 @@ export default function Clientes() {
     ? clientes.find(c => c.id !== editando && (c.whatsapp || "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "") === digitosForm) || null
     : null;
 
-  const tryCloseImport = () => {
-    if (importSheet && importSheet.some(c => c.selecionado)) setConfirmDiscard("import");
-    else setImportSheet(null);
-  };
-
-  const confirmDiscardYes = () => {
-    if (confirmDiscard === "form") {
-      setShowForm(false);
-      setEditando(null);
-      setTimeout(() => setCompleto(emptyCompleto), 200);
-    } else if (confirmDiscard === "import") {
-      setImportSheet(null);
-    }
-    setConfirmDiscard(null);
+  const tryCloseImport = async () => {
+    if (importing) return;
+    if (!importSheet?.some(c => c.selecionado)) { setImportSheet(null); return; }
+    const ok = await confirmar({ titulo: "Sair sem importar?", texto: "Os contatos que você marcou não vão ser cadastrados.", rotulo: "Sair sem importar", rotuloVoltar: "Continuar", perigo: true, icone: "alerta" });
+    if (ok) setImportSheet(null);
   };
 
   const handleAbrirImportarContatos = async () => {
@@ -554,7 +507,6 @@ export default function Clientes() {
       return;
     }
 
-    setImportError(null);
     try {
       // @ts-ignore - Contacts API não tem types nativos
       const contatosAndroid = await navigator.contacts.select(["name", "tel"], { multiple: true });
@@ -585,11 +537,9 @@ export default function Clientes() {
       setImportSheet(importados);
     } catch (err: any) {
       console.error("Erro ao selecionar contatos:", err);
-      if (err.name === "SecurityError") {
-        setImportError("Permissão negada pra acessar contatos.");
-      } else {
-        setImportError(err.message || "Erro ao acessar contatos");
-      }
+      // Fechar a lista de contatos do Android sem escolher não é erro
+      if (err?.name === "AbortError") return;
+      avisar(err?.name === "SecurityError" ? "O celular não deixou abrir os contatos. Libere o acesso e tente de novo." : "Não deu pra abrir os contatos. Tente de novo.", { tipo: "erro" });
     }
   };
 
@@ -629,7 +579,7 @@ export default function Clientes() {
 
     await fetchClientes(userId);
     setImportSheet(null);
-    setToastImport({ importados: importadosCount, duplicados: duplicadosCount });
+    avisar(`${importadosCount} ${importadosCount === 1 ? "cliente importado" : "clientes importados"}${duplicadosCount ? ` · ${duplicadosCount} já ${duplicadosCount === 1 ? "existia" : "existiam"}` : ""}`, { tipo: "ok" });
   };
 
   // ── Derived ───────────────────────────────────────────────────────────────
@@ -851,7 +801,6 @@ export default function Clientes() {
                   <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => openNew()}><span className="cl9-g">Novo cliente</span><span className="cl9-c">Novo</span></Botao>
                 </div>
               </div>
-              {importError && <p className="cl9-erro" role="alert">{importError}</p>}
 
               <div className="cl9-chips" role="tablist" aria-label="Filtrar clientes">
                 {([["todos", "Todos"], ["aniversariantes", "Aniversário"], ["recentes", "Novos cadastros"], ["sumidas", "Sem comprar há 60 dias"]] as const).map(([k, t]) => (
@@ -920,183 +869,51 @@ export default function Clientes() {
         );
       })()}
 
-      {/* ═══════════════════════ MODAIS COMPARTILHADOS ═══════════════════════ */}
-
-      {/* ═══ Modal "Descartar cadastro?" (guard) ═══ */}
-      {confirmDiscard && (
-        <div className="cli-discard-ov" onClick={() => setConfirmDiscard(null)}>
-          <div className="cli-discard-box" onClick={e => e.stopPropagation()}>
-            <div className="cli-discard-icon">⚠️</div>
-            <h3 className="cli-discard-title">
-              {confirmDiscard === "form"
-                ? (editando ? "Descartar alterações?" : "Descartar cadastro?")
-                : "Descartar seleção?"
-              }
-            </h3>
-            <p className="cli-discard-desc">
-              {confirmDiscard === "form"
-                ? "Você preencheu dados que serão perdidos."
-                : "Os contatos selecionados serão descartados."
-              }
-            </p>
-            <div className="cli-discard-actions">
-              <button className="cli-discard-btn cli-discard-btn--stay" onClick={() => setConfirmDiscard(null)}>
-                Continuar preenchendo
-              </button>
-              <button className="cli-discard-btn cli-discard-btn--go" onClick={confirmDiscardYes}>
-                Descartar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {confirmDelete && (
-        <div className="modal-overlay" onClick={() => setConfirmDelete(null)}>
-          <div className="modal-box" onClick={e => e.stopPropagation()}>
-            <h3>Excluir cliente?</h3>
-            <p>Esta ação não pode ser desfeita.</p>
-            <div className="modal-actions">
-              <button className="modal-btn cancel" onClick={() => setConfirmDelete(null)}>Cancelar</button>
-              <button className="modal-btn confirm" onClick={() => handleDelete(confirmDelete)}>Excluir</button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {formJSX}
 
-      {/* ═══════════════════════ MODAL IMPORTAÇÃO CONTATOS ═══════════════════════ */}
-      {importSheet && (() => {
-        const totalNovos = importSheet.filter(c => !c.duplicado).length;
-        const totalDuplicados = importSheet.filter(c => c.duplicado).length;
-        const totalSelecionados = importSheet.filter(c => c.selecionado && !c.duplicado).length;
-        const marcarTodos = () => setImportSheet(prev => prev?.map(c => ({ ...c, selecionado: !c.duplicado && !!c.nome && c.telefoneNormalizado.length >= 10 })) || null);
-        const desmarcarTodos = () => setImportSheet(prev => prev?.map(c => ({ ...c, selecionado: false })) || null);
-        const toggleItem = (idx: number) => setImportSheet(prev => prev?.map((c, i) => i === idx ? { ...c, selecionado: !c.selecionado } : c) || null);
+      {/* ═══ Importar contatos (Android, PRO): revisar antes de cadastrar ═══ */}
+      {(() => {
+        const lista = importSheet || [];
+        const podeMarcar = (c: ImportContato) => !c.duplicado && !!c.nome && c.telefoneNormalizado.length >= 10;
+        const marcaveis = lista.filter(podeMarcar);
+        const marcados = lista.filter(c => c.selecionado && podeMarcar(c)).length;
+        const repetidos = lista.filter(c => c.duplicado).length;
+        const todosMarcados = marcaveis.length > 0 && marcados === marcaveis.length;
+        const marcarTodos = (on: boolean) => setImportSheet(prev => prev?.map(c => ({ ...c, selecionado: on && podeMarcar(c) })) || null);
+        const alternar = (idx: number) => setImportSheet(prev => prev?.map((c, i) => i === idx ? { ...c, selecionado: !c.selecionado } : c) || null);
         return (
-          <div className="cli-imp-ov" onClick={() => !importing && tryCloseImport()}>
-            <div className="cli-imp-modal" onClick={e => e.stopPropagation()}>
-              <div className="cli-imp-hdr">
-                <div className="cli-imp-icon">📱</div>
-                <div className="cli-imp-hdr-t">
-                  <h2 className="cli-imp-title">Importar {importSheet.length} contato{importSheet.length !== 1 ? "s" : ""}</h2>
-                  <p className="cli-imp-sub">Revise antes de cadastrar</p>
-                </div>
-                <button className="cli-imp-close" onClick={tryCloseImport} disabled={importing}>✕</button>
-              </div>
-
-              <div className="cli-imp-stats">
-                <div className="cli-imp-stat">
-                  <div className="cli-imp-stat-v cli-imp-stat-v--green">{totalNovos}</div>
-                  <div className="cli-imp-stat-l">Novos</div>
-                </div>
-                <div className="cli-imp-stat">
-                  <div className="cli-imp-stat-v cli-imp-stat-v--gray">{totalDuplicados}</div>
-                  <div className="cli-imp-stat-l">Já existem</div>
-                </div>
-                <div className="cli-imp-stat">
-                  <div className="cli-imp-stat-v">{totalSelecionados}</div>
-                  <div className="cli-imp-stat-l">Selecionados</div>
-                </div>
-              </div>
-
-              <div className="cli-imp-list">
-                {importSheet.map((c, idx) => {
-                  const semTel = c.telefoneNormalizado.length < 10;
-                  const inputInvalido = c.duplicado || semTel || !c.nome;
-                  const iniciais = c.nome ? c.nome.split(/\s+/).slice(0, 2).map(s => s[0]?.toUpperCase() || "").join("") : "?";
-                  return (
-                    <div key={idx} className={`cli-imp-item${c.selecionado ? " cli-imp-item--sel" : ""}${c.duplicado ? " cli-imp-item--dup" : ""}${semTel ? " cli-imp-item--warn" : ""}`}>
-                      <button
-                        className={`cli-imp-check${c.selecionado ? " cli-imp-check--on" : ""}${inputInvalido ? " cli-imp-check--disabled" : ""}`}
-                        onClick={() => !inputInvalido && toggleItem(idx)}
-                        disabled={inputInvalido}
-                        aria-label={c.selecionado ? "Desmarcar" : "Marcar"}
-                      >
-                        {c.duplicado ? "🚫" : semTel ? "!" : c.selecionado ? "✓" : ""}
-                      </button>
-                      <div className={`cli-imp-avatar${c.duplicado ? " cli-imp-avatar--gray" : ""}`}>{iniciais}</div>
-                      <div className="cli-imp-info">
-                        <div className="cli-imp-nome">{c.nome || "(sem nome)"}</div>
-                        <div className="cli-imp-tel">{c.telefone || "(sem telefone)"}</div>
-                      </div>
-                      {c.duplicado ? (
-                        <span className="cli-imp-tag cli-imp-tag--dup">Já existe</span>
-                      ) : semTel ? (
-                        <span className="cli-imp-tag cli-imp-tag--warn">Sem telefone</span>
-                      ) : (
-                        <span className="cli-imp-tag cli-imp-tag--new">Novo</span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="cli-imp-toolbar">
-                <button className="cli-imp-toolbar-btn" onClick={marcarTodos}>✓ Marcar todos</button>
-                <button className="cli-imp-toolbar-btn" onClick={desmarcarTodos}>✕ Desmarcar todos</button>
-              </div>
-
-              <div className="cli-imp-footer">
-                <button className="cli-imp-btn-cancel" onClick={tryCloseImport} disabled={importing}>Cancelar</button>
-                <button
-                  className="cli-imp-btn-import"
-                  onClick={handleConfirmImport}
-                  disabled={importing || totalSelecionados === 0}
-                >
-                  {importing ? <span className="spinner-sm" /> : `✓ IMPORTAR ${totalSelecionados} CLIENTE${totalSelecionados !== 1 ? "S" : ""}`}
+          <Janela aberta={!!importSheet} aoFechar={tryCloseImport} tipo="conteudo" titulo={`Importar ${lista.length} ${lista.length === 1 ? "contato" : "contatos"}`}
+            acoes={<>
+              <Botao variante="secundario" onClick={tryCloseImport} disabled={importing}>Cancelar</Botao>
+              <Botao carregando={importing} disabled={marcados === 0} onClick={handleConfirmImport}>{marcados === 0 ? "Marque alguém" : `Importar ${marcados}`}</Botao>
+            </>}>
+            <div className="cl9-imp">
+              <p className="cl9-imp-resumo">
+                <b>{marcaveis.length} {marcaveis.length === 1 ? "novo" : "novos"}</b>
+                {repetidos > 0 && <> · {repetidos} já {repetidos === 1 ? "cadastrado" : "cadastrados"}</>}
+                {lista.length - marcaveis.length - repetidos > 0 && <> · {lista.length - marcaveis.length - repetidos} sem número</>}
+              </p>
+              {marcaveis.length > 0 && (
+                <button type="button" className="cl9-imp-todos" onClick={() => marcarTodos(!todosMarcados)}>
+                  <i className={`cl9-imp-cx${todosMarcados ? " on" : ""}`}>{todosMarcados && <Check size={14} weight="bold" />}</i>
+                  {todosMarcados ? "Desmarcar todos" : "Marcar todos"}
                 </button>
-              </div>
+              )}
+              {lista.map((c, idx) => {
+                const ok = podeMarcar(c);
+                const on = ok && c.selecionado;
+                return (
+                  <button key={idx} type="button" className={`cl9-imp-l${ok ? "" : " off"}`} disabled={!ok || importing} aria-pressed={on} onClick={() => alternar(idx)}>
+                    <i className={`cl9-imp-cx${on ? " on" : ""}`}>{on && <Check size={14} weight="bold" />}</i>
+                    <span><b>{c.nome || "Sem nome"}</b><small>{c.telefone || "Sem número"}</small></span>
+                    {c.duplicado ? <em className="cl9-imp-tag">Já cadastrado</em> : !ok ? <em className="cl9-imp-tag cl9-imp-tag--falta">{c.nome ? "Sem número" : "Sem nome"}</em> : null}
+                  </button>
+                );
+              })}
             </div>
-          </div>
+          </Janela>
         );
       })()}
-
-      {/* Erro de importação */}
-      {importError && (
-        <div className="cli-toast" role="status" style={{background: "linear-gradient(135deg, #DC2626, #B91C1C)", boxShadow: "0 10px 30px rgba(220,38,38,0.35)"}}>
-          <div className="cli-toast-icon">⚠️</div>
-          <div className="cli-toast-body">
-            <div className="cli-toast-t">Erro ao importar</div>
-            <div className="cli-toast-d">{importError}</div>
-          </div>
-          <button className="cli-toast-close" onClick={() => setImportError(null)} aria-label="Fechar">✕</button>
-        </div>
-      )}
-
-      {/* Toast de sucesso importação */}
-      {toastImport && (
-        <div className="cli-toast" role="status">
-          <div className="cli-toast-icon">
-            <span style={{fontSize: 18}}>🎉</span>
-          </div>
-          <div className="cli-toast-body">
-            <div className="cli-toast-t">{toastImport.importados} cliente{toastImport.importados !== 1 ? "s" : ""} importado{toastImport.importados !== 1 ? "s" : ""}!</div>
-            {toastImport.duplicados > 0 && (
-              <div className="cli-toast-d">{toastImport.duplicados} já {toastImport.duplicados === 1 ? "existia" : "existiam"} e {toastImport.duplicados === 1 ? "foi ignorada" : "foram ignorados"}</div>
-            )}
-          </div>
-          <button className="cli-toast-close" onClick={() => setToastImport(null)} aria-label="Fechar">✕</button>
-        </div>
-      )}
-
-      {/* ═══════════════════════ TOAST ═══════════════════════ */}
-      {toast && (
-        <div className="cli-toast" role="status">
-          <div className="cli-toast-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
-          <div className="cli-toast-body">
-            <div className="cli-toast-t">{toast.nome} cadastrada!</div>
-            <div className="cli-toast-d">Cliente adicionada com sucesso</div>
-          </div>
-          <button className="cli-toast-btn" onClick={() => { navigate(`/clientes/${toast.id}`); setToast(null); }}>
-            Ver perfil
-          </button>
-          <button className="cli-toast-close" onClick={() => setToast(null)} aria-label="Fechar">✕</button>
-        </div>
-      )}
 
       {/* ═══════════════════════ STYLES ═══════════════════════ */}
       <style>{`
@@ -1106,475 +923,6 @@ export default function Clientes() {
           .cli-root { padding-top: 40px; }
         }
 
-        /* ── Formulário (Modal de Cliente — 100% tokenizado) ─────── */
-        .modal-overlay  { position: fixed; inset: 0; z-index: 200; background: var(--bg-overlay); backdrop-filter: blur(4px); display: flex; align-items: flex-end; justify-content: center; touch-action: none; }
-        @media (min-width: 768px) { .modal-overlay { align-items: center; padding: var(--space-4); } }
-
-        .form-drawer    { background: var(--bg-card); border-radius: var(--radius-xl) 24px 0 0; width: 100%; max-height: 92vh; display: flex; flex-direction: column; animation: slideUp var(--dur-slow) cubic-bezier(0.16,1,0.3,1); }
-        @media (min-width: 768px) { .form-drawer { border-radius: var(--radius-xl); max-width: 560px; max-height: 88vh; animation: fadeScale var(--dur-normal) var(--ease-out); } }
-        @keyframes slideUp   { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        @keyframes fadeScale { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
-
-        .form-handle    { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: var(--space-3) auto 0; flex-shrink: 0; }
-        .form-header    { display: flex; justify-content: space-between; align-items: center; padding: var(--space-4) var(--space-5) var(--space-2); flex-shrink: 0; }
-        .form-header h2 { font-size: var(--font-modal-title); font-weight: var(--fw-bold); line-height: var(--lh-tight); color: var(--text-title); margin: 0; }
-        .form-close     { background: var(--bg-body); border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: var(--font-caption); display: flex; align-items: center; justify-content: center; transition: background var(--dur-fast) var(--ease-out); }
-
-        .form-tabs      { display: flex; gap: var(--gap-tight); padding: 0 var(--space-5) var(--space-3); flex-shrink: 0; }
-        .form-tab       { flex: 1; padding: var(--space-2); border-radius: var(--radius-md); border: 1.5px solid var(--border); background: var(--bg-body); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-semibold); line-height: var(--lh-normal); color: var(--text-secondary); cursor: pointer; transition: all var(--dur-fast) var(--ease-out); }
-        .form-tab--active { background: var(--text-title); color: var(--text-inverse); border-color: var(--text-title); }
-
-        .form-scroll    { flex: 1; overflow-y: auto; padding: 0 var(--space-5) var(--space-2); }
-
-        .form-section-title { font-size: var(--font-section-label); font-weight: var(--fw-bold); line-height: var(--lh-normal); letter-spacing: var(--ls-wide); text-transform: uppercase; color: var(--text-muted); margin: var(--space-5) 0 var(--space-3); }
-
-        .form-fields    { display: flex; flex-direction: column; gap: var(--gap-stack); }
-        .form-row       { display: flex; gap: var(--gap-stack); }
-        .form-row .form-field { flex: 1; }
-
-        .form-field     { display: flex; flex-direction: column; gap: var(--space-1); }
-        .form-field label { font-size: var(--font-field-label); font-weight: var(--fw-semibold); line-height: var(--lh-normal); color: var(--text-secondary); }
-        .form-field input, .form-field select, .form-field textarea { padding: var(--pad-input); border: 1.5px solid var(--border); border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-medium); line-height: var(--lh-normal); color: var(--text-title); outline: none; transition: border-color var(--dur-fast) var(--ease-out); background: var(--bg-input); resize: none; width: 100%; }
-        .form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color: var(--text-title); }
-
-        .req { color: var(--text-muted); font-size: var(--font-caption); font-weight: var(--fw-regular); font-style: italic; }
-        .opt { color: var(--text-muted); font-size: var(--font-caption); font-weight: var(--fw-regular); font-style: italic; }
-
-        .form-avatar-wrap    { display: flex; flex-direction: column; align-items: center; margin: var(--space-3) 0 var(--space-2); gap: var(--space-1); }
-        .form-avatar         { width: 80px; height: 80px; border-radius: 50%; border: 2px dashed var(--border); background: var(--bg-body); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; transition: border-color var(--dur-fast) var(--ease-out); }
-        .form-avatar img     { width: 100%; height: 100%; object-fit: cover; }
-        .form-avatar-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: var(--text-md); opacity: 0; transition: opacity var(--dur-fast) var(--ease-out); }
-        .form-avatar:hover .form-avatar-overlay { opacity: 1; }
-        .form-avatar-hint    { font-size: var(--font-caption); font-weight: var(--fw-regular); line-height: var(--lh-normal); color: var(--text-muted); }
-
-        .form-footer    { display: flex; gap: var(--gap-stack); padding: var(--space-3) var(--space-5) var(--space-5); border-top: 1px solid var(--border); flex-shrink: 0; }
-        .form-btn       { flex: 1; padding: var(--space-3); border-radius: var(--radius-md); border: none; font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-bold); line-height: var(--lh-normal); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity var(--dur-fast) var(--ease-out); }
-        .form-btn.cancel    { background: var(--bg-body); color: var(--text-secondary); }
-        .form-btn.save      { background: var(--text-title); color: var(--text-inverse); }
-        .form-btn.save:disabled { opacity: 0.5; cursor: not-allowed; }
-        .form-btn.delete-btn { background: #fff1f2; color: var(--error); flex: 0 0 auto; padding: var(--space-3) var(--space-4); }
-
-        /* ── Modal confirmação ──────────────── */
-        .modal-box      { background: var(--bg-card); border-radius: var(--radius-lg); padding: var(--space-6); width: 90%; max-width: 360px; text-align: center; }
-        .modal-box h3   { font-size: var(--font-modal-title); font-weight: var(--fw-bold); line-height: var(--lh-tight); color: var(--text-title); margin-bottom: var(--space-2); }
-        .modal-box p    { font-size: var(--font-helper); font-weight: var(--fw-regular); line-height: var(--lh-normal); color: var(--text-muted); margin-bottom: var(--space-5); }
-        .modal-actions  { display: flex; gap: var(--gap-stack); }
-        .modal-btn      { flex: 1; padding: var(--space-3); border-radius: var(--radius-md); border: none; font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-bold); line-height: var(--lh-normal); cursor: pointer; transition: opacity var(--dur-fast) var(--ease-out); }
-        .modal-btn.cancel  { background: var(--bg-body); color: var(--text-secondary); }
-        .modal-btn.confirm { background: var(--error); color: var(--text-inverse); }
-
-        /* ── Spinners ───────────────────────── */
-        .spinner         { width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--text-title); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
-        .spinner-sm      { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
-        .spinner-sm-dark { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--text-title); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
-        @keyframes spin  { to { transform: rotate(360deg); } }
-
-        /* ═══ MODAL "DESCARTAR?" (guard) ═══ */
-        .cli-discard-ov {
-          position: fixed; inset: 0; z-index: 1200;
-          background: rgba(45, 31, 38, 0.75);
-          backdrop-filter: blur(8px);
-          display: flex; align-items: center; justify-content: center;
-          padding: var(--space-4);
-          animation: cliDiscOvIn 0.2s ease;
-          font-family: var(--font-base);
-        }
-        @keyframes cliDiscOvIn { from { opacity: 0; } to { opacity: 1; } }
-        .cli-discard-box {
-          background: var(--bg-card);
-          border-radius: var(--radius-xl);
-          padding: var(--space-5) var(--space-4);
-          max-width: 360px; width: 100%;
-          text-align: center;
-          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-          animation: cliDiscBoxIn 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-        @keyframes cliDiscBoxIn {
-          from { opacity: 0; transform: scale(0.9); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        .cli-discard-box, .cli-discard-box * { font-family: var(--font-base) !important; }
-
-        .cli-discard-icon {
-          font-size: 32px;
-          margin-bottom: var(--space-2);
-          filter: drop-shadow(0 2px 8px rgba(232,90,140,0.3));
-        }
-        .cli-discard-title {
-          font-size: var(--text-lg);
-          font-weight: var(--fw-black);
-          color: var(--text-title);
-          margin: 0 0 var(--space-2);
-          letter-spacing: -0.01em;
-        }
-        .cli-discard-desc {
-          font-size: var(--text-sm);
-          color: var(--text-secondary);
-          margin: 0 0 var(--space-4);
-          line-height: 1.5;
-        }
-        .cli-discard-actions {
-          display: flex; flex-direction: column;
-          gap: var(--space-2);
-        }
-        .cli-discard-btn {
-          padding: 12px;
-          border: none;
-          border-radius: var(--radius-md);
-          font-size: var(--text-sm);
-          font-weight: var(--fw-black);
-          cursor: pointer;
-          text-transform: uppercase;
-          letter-spacing: 0.02em;
-          font-family: var(--font-base) !important;
-          transition: transform 0.08s ease, box-shadow 0.08s ease;
-        }
-        .cli-discard-btn--stay {
-          background: var(--primary);
-          color: var(--text-inverse);
-          box-shadow: 0 4px 0 var(--primary-dark);
-        }
-        .cli-discard-btn--stay:hover { filter: brightness(1.05); }
-        .cli-discard-btn--stay:active {
-          transform: translateY(4px);
-          box-shadow: 0 0 0 var(--primary-dark);
-        }
-        .cli-discard-btn--go {
-          background: transparent;
-          color: #DC2626;
-          border: 1.5px solid #FEE2E2;
-        }
-        .cli-discard-btn--go:hover {
-          background: #FEE2E2;
-          border-color: #DC2626;
-        }
-        .cli-imp-ov {
-          position: fixed; inset: 0; z-index: 1100;
-          background: rgba(45, 31, 38, 0.6);
-          backdrop-filter: blur(6px);
-          display: flex; align-items: flex-end; justify-content: center;
-          padding: 0;
-          animation: cliImpOvIn 0.2s ease;
-          font-family: var(--font-base);
-        }
-        @keyframes cliImpOvIn { from { opacity: 0; } to { opacity: 1; } }
-        .cli-imp-modal {
-          background: var(--bg-card);
-          border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-          width: 100%;
-          max-width: 100%;
-          max-height: 92vh;
-          display: flex; flex-direction: column;
-          overflow: hidden;
-          animation: cliImpModalIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-        @keyframes cliImpModalIn {
-          from { transform: translateY(100%); }
-          to   { transform: translateY(0); }
-        }
-        .cli-imp-modal, .cli-imp-modal * { font-family: var(--font-base) !important; }
-
-        .cli-imp-hdr {
-          background: linear-gradient(180deg, var(--accent-bg, #F5EEF0), var(--bg-card));
-          padding: var(--space-4);
-          display: flex; align-items: center;
-          gap: var(--space-3);
-          border-bottom: 1px solid var(--border);
-          flex-shrink: 0;
-        }
-        .cli-imp-icon {
-          width: 44px; height: 44px; border-radius: 50%;
-          background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-          color: var(--text-inverse);
-          display: flex; align-items: center; justify-content: center;
-          font-size: var(--text-xl);
-          flex-shrink: 0;
-        }
-        .cli-imp-hdr-t { flex: 1; min-width: 0; }
-        .cli-imp-title {
-          font-size: var(--text-md);
-          font-weight: var(--fw-black);
-          color: var(--text-title);
-          letter-spacing: -0.01em;
-          margin: 0;
-        }
-        .cli-imp-sub {
-          font-size: var(--text-xs);
-          color: var(--text-secondary);
-          margin: 2px 0 0;
-        }
-        .cli-imp-close {
-          width: 32px; height: 32px;
-          border: none; background: transparent;
-          color: var(--text-muted);
-          font-size: var(--text-lg);
-          cursor: pointer;
-          border-radius: var(--radius-full);
-        }
-        .cli-imp-close:hover:not(:disabled) { background: var(--bg-subtle); }
-        .cli-imp-close:disabled { opacity: 0.4; cursor: not-allowed; }
-
-        /* Stats */
-        .cli-imp-stats {
-          display: flex; gap: var(--space-2);
-          padding: var(--space-3) var(--space-4);
-          background: var(--accent-bg, #F5EEF0);
-          border-bottom: 1px solid var(--border);
-        }
-        .cli-imp-stat {
-          flex: 1;
-          background: var(--bg-card);
-          border-radius: var(--radius-sm);
-          padding: 8px 10px;
-          text-align: center;
-          border: 1.5px solid var(--border);
-        }
-        .cli-imp-stat-v {
-          font-size: var(--text-lg);
-          font-weight: var(--fw-black);
-          color: var(--primary);
-          line-height: 1;
-        }
-        .cli-imp-stat-v--gray { color: var(--text-muted); }
-        .cli-imp-stat-v--green { color: #16A34A; }
-        .cli-imp-stat-l {
-          font-size: 0.6rem;
-          color: var(--text-secondary);
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          font-weight: var(--fw-bold);
-          margin-top: 4px;
-        }
-
-        /* List */
-        .cli-imp-list {
-          flex: 1;
-          padding: var(--space-2) var(--space-3);
-          overflow-y: auto;
-          -webkit-overflow-scrolling: touch;
-        }
-        .cli-imp-item {
-          display: flex; align-items: center;
-          gap: var(--space-3);
-          padding: 10px 8px;
-          border-radius: var(--radius-md);
-          border: 1.5px solid transparent;
-          margin-bottom: 4px;
-          transition: background var(--dur-fast);
-        }
-        .cli-imp-item--sel { background: var(--primary-light); border-color: rgba(232,90,140,0.2); }
-        .cli-imp-item--dup { opacity: 0.6; background: #FEF3C7; }
-        .cli-imp-item--warn { background: #FEF3C7; }
-        .cli-imp-check {
-          width: 22px; height: 22px;
-          border-radius: 6px;
-          border: 2px solid var(--border);
-          background: var(--bg-card);
-          flex-shrink: 0;
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer;
-          font-size: var(--text-xs);
-          font-weight: var(--fw-black);
-          color: var(--text-muted);
-        }
-        .cli-imp-check--on {
-          background: var(--primary);
-          border-color: var(--primary);
-          color: var(--text-inverse);
-        }
-        .cli-imp-check--disabled {
-          background: var(--bg-subtle);
-          border-color: var(--border);
-          cursor: not-allowed;
-        }
-        .cli-imp-avatar {
-          width: 36px; height: 36px; border-radius: 50%;
-          background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-          color: var(--text-inverse);
-          display: flex; align-items: center; justify-content: center;
-          font-size: var(--text-xs);
-          font-weight: var(--fw-black);
-          flex-shrink: 0;
-        }
-        .cli-imp-avatar--gray { background: var(--bg-subtle); color: var(--text-muted); }
-        .cli-imp-info { flex: 1; min-width: 0; }
-        .cli-imp-nome {
-          font-size: var(--text-sm);
-          font-weight: var(--fw-bold);
-          color: var(--text-title);
-          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .cli-imp-tel {
-          font-size: var(--text-xs);
-          color: var(--text-secondary);
-          margin-top: 1px;
-        }
-        .cli-imp-tag {
-          padding: 3px 8px;
-          border-radius: var(--radius-full);
-          font-size: 0.6rem;
-          font-weight: var(--fw-black);
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          flex-shrink: 0;
-        }
-        .cli-imp-tag--new { background: #DCFCE7; color: #14532D; }
-        .cli-imp-tag--dup { background: #FEF3C7; color: #92400E; }
-        .cli-imp-tag--warn { background: #FEE2E2; color: #991B1B; }
-
-        /* Toolbar */
-        .cli-imp-toolbar {
-          display: flex; justify-content: space-between;
-          padding: 8px var(--space-4);
-          background: var(--accent-bg, #F5EEF0);
-          border-top: 1px solid var(--border);
-        }
-        .cli-imp-toolbar-btn {
-          background: transparent;
-          border: none;
-          color: var(--primary);
-          font-size: var(--text-xs);
-          font-weight: var(--fw-black);
-          cursor: pointer;
-          padding: 4px 8px;
-          font-family: var(--font-base) !important;
-        }
-        .cli-imp-toolbar-btn:hover { text-decoration: underline; }
-
-        /* Footer */
-        .cli-imp-footer {
-          padding: var(--space-3) var(--space-4);
-          padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom));
-          display: flex; gap: var(--space-2);
-          background: var(--bg-card);
-          border-top: 1px solid var(--border);
-        }
-        .cli-imp-btn-cancel {
-          flex: 1;
-          padding: 12px;
-          background: var(--accent-bg, #F5EEF0);
-          border: none;
-          border-radius: var(--radius-md);
-          font-size: var(--text-sm);
-          font-weight: var(--fw-bold);
-          color: var(--text-secondary);
-          cursor: pointer;
-          font-family: var(--font-base) !important;
-        }
-        .cli-imp-btn-import {
-          flex: 2;
-          padding: 12px;
-          background: var(--primary);
-          color: var(--text-inverse);
-          border: none;
-          border-radius: var(--radius-md);
-          font-size: var(--text-sm);
-          font-weight: var(--fw-black);
-          text-transform: uppercase;
-          cursor: pointer;
-          box-shadow: 0 4px 0 var(--primary-dark);
-          font-family: var(--font-base) !important;
-          transition: transform 0.08s ease, box-shadow 0.08s ease;
-        }
-        .cli-imp-btn-import:hover:not(:disabled) { filter: brightness(1.05); }
-        .cli-imp-btn-import:active:not(:disabled) {
-          transform: translateY(4px);
-          box-shadow: 0 0 0 var(--primary-dark);
-        }
-        .cli-imp-btn-import:disabled {
-          background: var(--text-disabled);
-          box-shadow: 0 4px 0 #A8A0A4;
-          cursor: not-allowed;
-        }
-
-        /* Desktop modal */
-        @media (min-width: 900px) {
-          .cli-imp-ov {
-            align-items: center;
-            padding: var(--space-6);
-          }
-          .cli-imp-modal {
-            border-radius: var(--radius-xl);
-            max-width: 560px;
-            max-height: 85vh;
-          }
-        }
-
-        /* ═══ TOAST ═══ */
-        .cli-toast {
-          position: fixed;
-          top: var(--space-4);
-          left: 50%;
-          transform: translateX(-50%);
-          background: linear-gradient(135deg, #16A34A, #15803D);
-          color: var(--text-inverse);
-          padding: 12px 14px 12px 16px;
-          border-radius: var(--radius-md);
-          display: flex; align-items: center; gap: 12px;
-          box-shadow: 0 10px 30px rgba(22,163,74,0.35);
-          z-index: 2000;
-          animation: cliToastIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-          font-family: var(--font-base) !important;
-          width: calc(100% - 32px);
-          max-width: 420px;
-        }
-        @keyframes cliToastIn {
-          from { transform: translate(-50%, -100%); opacity: 0; }
-          to   { transform: translate(-50%, 0); opacity: 1; }
-        }
-        .cli-toast-icon {
-          background: rgba(255,255,255,0.25);
-          width: 32px; height: 32px; border-radius: 50%;
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
-        }
-        .cli-toast-body { flex: 1; min-width: 0; }
-        .cli-toast-t {
-          font-size: var(--text-sm);
-          font-weight: var(--fw-black);
-          line-height: 1.2;
-        }
-        .cli-toast-d {
-          font-size: var(--text-xs);
-          opacity: 0.9;
-          margin-top: 2px;
-        }
-        .cli-toast-btn {
-          background: rgba(255,255,255,0.25);
-          color: var(--text-inverse);
-          border: none;
-          padding: 6px 12px;
-          border-radius: var(--radius-sm);
-          font-size: var(--text-xs);
-          font-weight: var(--fw-bold);
-          cursor: pointer;
-          font-family: var(--font-base) !important;
-          transition: background var(--dur-fast);
-          flex-shrink: 0;
-        }
-        .cli-toast-btn:hover { background: rgba(255,255,255,0.35); }
-        .cli-toast-close {
-          background: transparent;
-          border: none;
-          color: rgba(255,255,255,0.7);
-          padding: 4px;
-          cursor: pointer;
-          font-size: var(--text-md);
-          flex-shrink: 0;
-        }
-        .cli-toast-close:hover { color: var(--text-inverse); }
-
-        @media (min-width: 900px) {
-          .cli-toast {
-            left: auto;
-            right: var(--space-5);
-            transform: none;
-          }
-          @keyframes cliToastIn {
-            from { transform: translateY(-100%); opacity: 0; }
-            to   { transform: translateY(0); opacity: 1; }
-          }
-        }
       `}</style>
       </>
       )}
