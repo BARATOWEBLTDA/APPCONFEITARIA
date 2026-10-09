@@ -280,17 +280,17 @@ const pedidoExemplo = (x: Partial<Pedido> & { pedido_itens: any[] }): Pedido => 
 } as Pedido)
 const nada = () => {}
 
-/* ───────── 3 · pedidos (09/10 · 3.80): os pedidos vão chegando pelo cardápio, cada um com o som de pedido,
+/* ───────── 3 · pedidos (09/10 · 3.80): os pedidos vão chegando pelo cardápio, já pagos no Pix, cada um com o som de pedido,
    e o mais novo entra em cima (como na lista de Pedidos). Os cartões só aparecem, não se abrem; o botão de cada um
    segue o fluxo do app. As datas andam com o dia de hoje (entregas daqui a 3 a 5 dias). ───────── */
 const TEL_SUPORTE = '11978414991'
 // na ordem em que chegam: o último é o do bolo, que fica em cima
 const CHEGADAS: { p: Pedido }[] = [
-  { p: pedidoExemplo({ numero: 1049, cliente_nome: 'Marina Silva', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', origem: 'cardapio', data_entrega: isoDia(5), horario_entrega: '16:30', valor_total: 150,
+  { p: pedidoExemplo({ numero: 1049, cliente_nome: 'Marina Silva', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', status_pagamento: 'pago', forma_pagamento: 'pix', origem: 'cardapio', data_entrega: isoDia(5), horario_entrega: '16:30', valor_total: 150,
       pedido_itens: [item('Caixa de Brigadeiro', '/tutorial/leve/caixa4.webp', 1, 150)] }) },
-  { p: pedidoExemplo({ numero: 1050, cliente_nome: 'Juliana Souza', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', origem: 'cardapio', data_entrega: isoDia(4), horario_entrega: '09:00', valor_total: 95,
+  { p: pedidoExemplo({ numero: 1050, cliente_nome: 'Juliana Souza', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', status_pagamento: 'pago', forma_pagamento: 'pix', origem: 'cardapio', data_entrega: isoDia(4), horario_entrega: '09:00', valor_total: 95,
       pedido_itens: [item('Salgadinhos', '/tutorial/leve/salgadinhos.webp', 100, 0.95)] }) },
-  { p: pedidoExemplo({ numero: 1051, cliente_nome: 'Camila Rocha', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', origem: 'cardapio', data_entrega: isoDia(3), horario_entrega: '14:00', valor_total: 320,
+  { p: pedidoExemplo({ numero: 1051, cliente_nome: 'Camila Rocha', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', status_pagamento: 'pago', forma_pagamento: 'pix', origem: 'cardapio', data_entrega: isoDia(3), horario_entrega: '14:00', valor_total: 320,
       pedido_itens: [item('Bolo de aniversário 2 kg', '/tutorial/leve/doisamores.webp', 1, 320)] }) },
 ]
 const INTERVALO_CHEGADA = 1500
@@ -410,11 +410,11 @@ function Notebook({ children }: { children: ReactNode }) {
 }
 
 /* ───────── 4 · dinheiro: o "A receber" do Financeiro ───────── */
-// os mesmos pedidos da tela anterior, com as mesmas datas (daqui a 3, 4 e 5 dias)
+// pedidos de outras clientes, que ainda têm valor pra receber (os da tela anterior já chegaram pagos no Pix)
 const RECEBER = [
-  { numero: 1051, cliente: 'Camila Rocha', quando: 'em 3 dias', total: 320, recebido: 0, entrega: 3 },
-  { numero: 1050, cliente: 'Juliana Souza', quando: 'em 4 dias', total: 95, recebido: 50, entrega: 4 },
-  { numero: 1049, cliente: 'Marina Silva', quando: 'em 5 dias', total: 150, recebido: 80, entrega: 5 },
+  { numero: 1046, cliente: 'Carla Menezes', quando: 'em 3 dias', total: 180.5, recebido: 90, entrega: 3 },
+  { numero: 1045, cliente: 'Fernanda Lima', quando: 'em 4 dias', total: 260, recebido: 130, entrega: 4 },
+  { numero: 1044, cliente: 'Paula Ribeiro', quando: 'em 6 dias', total: 95, recebido: 0, entrega: 6 },
 ]
 const reais = (n: number) => n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const SEMANA_CURTA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
