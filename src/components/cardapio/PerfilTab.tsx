@@ -63,7 +63,7 @@ export function PerfilTab({ accent, confeteiraUserId }: { accent: string; confet
 
   return (
     <div className="cc">
-      <div className="cc-topo"><span><h2>Perfil</h2></span></div>
+      <div className="cc-topo"><span><h2>Minha conta</h2></span></div>
 
       <div className="cc-rolo">
         {!cliente ? (

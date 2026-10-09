@@ -838,7 +838,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
               {[
                 { id: 'inicio',   label: 'Início',  icon: <Home size={24} /> },
                 { id: 'pedidos',  label: 'Pedidos', icon: <ClipboardList size={24} /> },
-                { id: 'perfil',   label: 'Perfil',  icon: <User size={24} /> },
+                { id: 'perfil',   label: 'Minha conta',  icon: <User size={24} /> },
               ].map(({ id, label, icon }) => (
                 <button key={id} type="button" aria-current={activeTab === id ? 'page' : undefined} onClick={() => setActiveTab(id)}>
                   <span className="cpn-ic">{icon}</span>{label}
