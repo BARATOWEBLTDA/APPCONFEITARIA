@@ -7,6 +7,9 @@ import { supabase } from "@/lib/supabase";
 import { useProfile, isPro } from "@/hooks/useProfile";
 import AppPageHeader from "@/components/AppPageHeader";
 import ReqTag from "@/components/ReqTag";
+import { Botao, Janela, TelaVazia, avisar, confirmar } from "@/components/base";
+import { AddressBook, Cake, CaretRight, MagnifyingGlass, Plus, UsersThree, WhatsappLogo, X } from "@phosphor-icons/react";
+import "./clientes.css";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -161,7 +164,7 @@ function formatUltimaCompra(isoStr?: string | null): string {
   const d = new Date(isoStr);
   const diffMs = Date.now() - d.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return "hoje";
+  if (diffDays <= 0) return "hoje";
   if (diffDays === 1) return "ontem";
   if (diffDays < 7) return `há ${diffDays} dias`;
   if (diffDays < 30) {
@@ -200,8 +203,7 @@ export default function Clientes() {
   const [userId,        setUserId]        = useState<string | null>(null);
   const [toast,         setToast]         = useState<{ nome: string; id: string } | null>(null);
   const [toastImport,   setToastImport]   = useState<{ importados: number; duplicados: number } | null>(null);
-  const [filtroChip,    setFiltroChip]    = useState<"todos" | "aniversariantes" | "recentes">("todos");
-  const [filterOpen,    setFilterOpen]    = useState(false);
+  const [filtroChip,    setFiltroChip]    = useState<"todos" | "aniversariantes" | "recentes" | "sumidas">("todos");
 
   // Importação de contatos
   const [importSheet,   setImportSheet]   = useState<ImportContato[] | null>(null);
@@ -270,7 +272,7 @@ export default function Clientes() {
   }, [toastImport]);
 
   useEffect(() => {
-    const isOpen = showForm || !!confirmDelete || showNiver;
+    const isOpen = showForm || !!confirmDelete;
     if (isOpen) {
       const scrollY = window.scrollY;
       document.body.style.position = "fixed";
@@ -287,7 +289,7 @@ export default function Clientes() {
         window.scrollTo(0, scrollY);
       };
     }
-  }, [showForm, confirmDelete, showNiver]);
+  }, [showForm, confirmDelete]);
 
   // ── Data ──────────────────────────────────────────────────────────────────
 
@@ -311,8 +313,9 @@ export default function Clientes() {
         const agg = map.get(p.cliente_id) || { total: 0, totalValor: 0, ultima: null };
         agg.total += 1;
         agg.totalValor += Number(p.valor_total) || 0;
-        // Última compra = data_entrega mais recente (ou created_at se não tiver)
-        const dataRef = p.data_entrega || p.created_at;
+        // Última compra = quando o pedido foi feito (08/10: antes usava a data de entrega,
+        // e um pedido marcado pra semana que vem aparecia como "há -5 dias")
+        const dataRef = p.created_at || p.data_entrega;
         if (dataRef && (!agg.ultima || dataRef > agg.ultima)) {
           agg.ultima = dataRef;
         }
@@ -435,14 +438,14 @@ export default function Clientes() {
     if (editando) {
       const { error } = await supabase.from("clientes").update(payload).eq("id", editando);
       if (error) {
-        alert("Erro ao atualizar: " + error.message);
+        avisar("Não deu pra salvar agora. Confira a internet e tente de novo.", { tipo: "erro" });
         setSaving(false);
         return;
       }
     } else {
       const { data: inserted, error } = await supabase.from("clientes").insert(payload).select("id").single();
       if (error) {
-        alert("Erro ao cadastrar: " + error.message);
+        avisar("Não deu pra cadastrar agora. Confira a internet e tente de novo.", { tipo: "erro" });
         setSaving(false);
         return;
       }
@@ -515,7 +518,7 @@ export default function Clientes() {
 
     // Não suporta → alerta (não deveria acontecer, botão só aparece se suporta)
     if (!suportaContatos) {
-      alert("Essa funcionalidade só funciona no Chrome do Android. Use um celular Android pra importar contatos.");
+      avisar("Importar contatos só funciona no Chrome do Android.", { tipo: "info" });
       return;
     }
 
@@ -558,6 +561,16 @@ export default function Clientes() {
     }
   };
 
+  // Importar (PRO): quem é do grátis vê o convite do PRO em vez de um botão apagado
+  const importarContatos = async () => {
+    if (!usuarioEhPro) {
+      const ok = await confirmar({ titulo: "Importar contatos é do PRO", texto: "No PRO você traz os clientes direto da agenda do celular, sem digitar um por um.", rotulo: "Conhecer o PRO", icone: "info" });
+      if (ok) navigate("/assinar");
+      return;
+    }
+    handleAbrirImportarContatos();
+  };
+
   const handleConfirmImport = async () => {
     if (!importSheet || !userId) return;
     const paraCadastrar = importSheet.filter(c => c.selecionado && !c.duplicado && c.nome && c.telefoneNormalizado.length >= 10);
@@ -575,7 +588,7 @@ export default function Clientes() {
     setImporting(false);
 
     if (error) {
-      alert("Erro ao importar: " + error.message);
+      avisar("Não deu pra importar agora. Confira a internet e tente de novo.", { tipo: "erro" });
       return;
     }
 
@@ -595,18 +608,22 @@ export default function Clientes() {
       .map(c => c.id)
   );
 
+  const diasDesde = (iso?: string | null) => iso ? Math.floor((Date.now() - new Date(iso).getTime()) / 86400000) : Infinity;
+  // Novos cadastros: últimos 30 dias · Sem comprar: já comprou, mas não nos últimos 60 dias
+  const recentesIds = new Set(clientes.filter(c => diasDesde(c.created_at) <= 30).map(c => c.id));
+  const sumidasIds = new Set(clientes.filter(c => (c._totalPedidos || 0) > 0 && diasDesde(c._ultimaCompra) > 60).map(c => c.id));
+
+  const termo = search.trim().toLowerCase();
+  const termoDigitos = termo.replace(/\D/g, "");
   const filtered = clientes.filter(c => {
-    // Filtro de chip
     if (filtroChip === "aniversariantes" && !aniversarianteIds.has(c.id)) return false;
-    if (filtroChip === "recentes") {
-      const d = new Date(c.created_at);
-      const dias = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
-      if (dias > 30) return false;
-    }
-    // Filtro de busca
-    return c.nome.toLowerCase().includes(search.toLowerCase()) ||
-      c.whatsapp?.includes(search) ||
-      c.email?.toLowerCase().includes(search.toLowerCase());
+    if (filtroChip === "recentes" && !recentesIds.has(c.id)) return false;
+    if (filtroChip === "sumidas" && !sumidasIds.has(c.id)) return false;
+    if (!termo) return true;
+    // Busca pelo nome, pelo e-mail ou pelos números do telefone (com ou sem parênteses e traço)
+    return c.nome.toLowerCase().includes(termo) ||
+      (!!termoDigitos && (c.whatsapp || "").replace(/\D/g, "").includes(termoDigitos)) ||
+      !!c.email?.toLowerCase().includes(termo);
   });
 
   const aniversariantes = clientes
@@ -1307,601 +1324,178 @@ export default function Clientes() {
     <>
       {limiteAberto && <LimitePlano tipo="clientes" limite={LIMITE_CLIENTES_GRATIS} onClose={() => setLimiteAberto(false)} />}
     <AppPageHeader
-      title="Meus Clientes"
-      subtitle="Sua base de clientes"
-      infoIcon="👥"
+      title="Clientes"
+      subtitle={loading ? "Quem compra de você" : clientes.length === 0 ? "Quem compra de você" : `${clientes.length} ${clientes.length === 1 ? "cliente" : "clientes"}`}
       infoContent={
         <>
-          <p>Aqui fica sua <strong>base de clientes</strong> cadastrados. Nome, telefone, endereço, aniversário e histórico completo de pedidos.</p>
-          <p>Um bom cadastro te ajuda a <strong>fidelizar clientes</strong>, lembrar de aniversários, oferecer promoções e vender mais com o passar do tempo.</p>
+          <p>Aqui ficam as pessoas que compram de você: nome, WhatsApp, endereço, aniversário e o histórico de pedidos.</p>
+          <p>Quem pede pelo cardápio entra aqui sozinho. Quem compra pelo WhatsApp ou no balcão, você cadastra.</p>
         </>
       }
-      infoTip={<>Clique em qualquer cliente pra ver o <strong>histórico de pedidos</strong> e o valor total já gasto.</>}
+      infoTip={<>Toque numa cliente pra ver os <strong>pedidos</strong> e quanto ela já gastou.</>}
     />
     <div className="cli-root">
 
-      {/* ═══════════════════════ LOADING (evita piscar) ═══════════════════════ */}
+      {/* ═══ Carregando (evita piscar) ═══ */}
       {loading ? (
-        <div className="cli-loading-full">
-          <span className="cli-spinner-lg" />
-          <style>{`
-            .cli-loading-full { min-height: calc(100vh - 5rem); display: flex; align-items: center; justify-content: center; }
-            .cli-spinner-lg { width: 32px; height: 32px; border: 3px solid var(--primary-light); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
-          `}</style>
-        </div>
+        <div className="cl9"><div className="cl9-esq" aria-label="Carregando clientes">{[0, 1, 2, 3, 4].map(i => <span key={i} />)}</div></div>
       ) : (
       <>
 
-      {/* ═══════════════════════ EMPTY STATE (sem clientes) ═══════════════════════ */}
+      {/* ═══ Sem clientes ═══ */}
       {clientes.length === 0 ? (
-        <div className="cli-hero-split">
-          <div className="cli-hero-left">
-            <span className="cli-hero-eyebrow">💰 VENDA MAIS PRO MESMO CLIENTE</span>
-            <h1 className="cli-hero-title">Sua base de<br/>clientes fiéis</h1>
-            <p className="cli-hero-desc">
-              <b>70% da sua renda vem de quem já comprou antes.</b>
-              {" "}Salve WhatsApp, aniversário e receba lembretes pra reconquistar
-              clientes e fechar mais encomendas.
-            </p>
-            <div className="cli-hero-actions">
-              <button className="cli-hero-btn-primary" onClick={() => openNew()}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
-                CADASTRAR CLIENTE
-              </button>
-              <button className="cli-hero-btn-ghost" onClick={() => alert("🎬 Vídeo em produção! Em breve disponível.")}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                Ver tutorial
-              </button>
-            </div>
-            <div className="cli-hero-tip">
-              <div>
-                <p className="cli-hero-tip-t">🎂 Aniversariantes ganham um lembrete</p>
-                <p className="cli-hero-tip-d">Mande os parabéns com um cupom e venda mais.</p>
-              </div>
-            </div>
-          </div>
-
-          <aside className="cli-hero-right" aria-label="Vídeo tutorial">
-            <div className="cli-hero-video-thumb">
-              <button
-                type="button"
-                className="cli-hero-video-play"
-                onClick={() => alert("🎬 Vídeo em produção! Em breve disponível.")}
-                aria-label="Assistir tutorial"
-              >
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8 5v14l11-7z"/>
-                </svg>
-              </button>
-            </div>
-            <div className="cli-hero-video-footer">
-              <span className="cli-hero-video-t">🎬 Como usar</span>
-              <span className="cli-hero-video-badge">EM BREVE</span>
-            </div>
-          </aside>
-
-          <style>{`
-            .cli-hero-split {
-              min-height: calc(100vh - 5rem);
-              display: flex;
-              flex-direction: column;
-              gap: var(--space-4);
-              padding: var(--space-4);
-              font-family: var(--font-base);
-              align-items: center;
-              justify-content: center;
-            }
-            .cli-hero-split, .cli-hero-split * { font-family: var(--font-base); }
-
-            .cli-hero-left {
-              display: flex; flex-direction: column;
-              gap: var(--space-3);
-              order: 2;
-              text-align: center;
-              align-items: center;
-              max-width: 480px;
-            }
-            .cli-hero-right {
-              display: flex; flex-direction: column;
-              background: linear-gradient(135deg, var(--accent), #4A3038);
-              border-radius: var(--radius-lg);
-              padding: var(--space-2);
-              box-shadow: 0 10px 30px rgba(45, 31, 38, 0.2);
-              order: 1;
-              width: 100%;
-              max-width: 460px;
-            }
-            .cli-hero-video-thumb {
-              aspect-ratio: 16/10;
-          max-height: 200px;
-              background: linear-gradient(135deg, var(--primary) 0%, #7C3AED 100%);
-              border-radius: var(--radius-md);
-              display: flex; align-items: center; justify-content: center;
-              position: relative; overflow: hidden;
-            }
-            .cli-hero-video-thumb::before {
-              content: ""; position: absolute; inset: 0;
-              background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.2) 100%);
-            }
-            .cli-hero-video-play {
-              width: 50px; height: 50px;
-              border-radius: var(--radius-full);
-              background: rgba(255,255,255,0.95); border: none;
-              display: flex; align-items: center; justify-content: center;
-              color: var(--primary); cursor: pointer;
-              box-shadow: 0 6px 24px rgba(0,0,0,0.35);
-              transition: transform var(--dur-fast) var(--ease-out);
-              position: relative; z-index: 2;
-            }
-            .cli-hero-video-play:hover { transform: scale(1.08); }
-            .cli-hero-video-play svg { margin-left: 3px; }
-            .cli-hero-video-footer {
-              display: flex; justify-content: space-between; align-items: center;
-              padding: var(--space-3) var(--space-2) var(--space-1);
-              color: var(--text-inverse);
-            }
-            .cli-hero-video-t { font-size: var(--text-sm); font-weight: var(--fw-bold); }
-            .cli-hero-video-badge {
-              background: var(--primary); color: var(--text-inverse);
-              padding: var(--space-1) var(--space-2);
-              border-radius: var(--radius-full);
-              font-size: 0.625rem; font-weight: var(--fw-black);
-              letter-spacing: 0.08em;
-            }
-            .cli-hero-eyebrow {
-              font-size: var(--text-sm); font-weight: var(--fw-black);
-              color: var(--primary);
-              text-transform: uppercase; letter-spacing: 0.1em;
-              line-height: 1;
-            }
-            .cli-hero-title {
-              font-size: 2rem;
-              font-weight: var(--fw-black);
-              letter-spacing: -0.03em; line-height: 1.15;
-              color: var(--text-title);
-              margin: var(--space-1) 0 0;
-            }
-            .cli-hero-desc {
-              font-size: var(--text-md);
-              color: var(--text-secondary);
-              line-height: 1.55;
-              margin: var(--space-2) 0 0;
-              max-width: 480px;
-            }
-            .cli-hero-desc b { color: var(--text-title); }
-            .cli-hero-actions {
-              display: flex; gap: var(--space-2); flex-wrap: wrap;
-              margin-top: var(--space-3);
-              justify-content: center;
-            }
-            .cli-hero-btn-primary {
-              display: inline-flex; align-items: center;
-              gap: var(--space-2);
-              background: var(--primary); color: var(--text-inverse);
-              border: none;
-              padding: var(--space-4) var(--space-6);
-              border-radius: var(--radius-md);
-              font-size: var(--text-md); font-weight: var(--fw-black);
-              cursor: pointer;
-              font-family: var(--font-base) !important;
-              letter-spacing: 0.03em; text-transform: uppercase;
-              box-shadow: 0 4px 0 var(--primary-dark);
-              transition: transform 0.08s ease, box-shadow 0.08s ease;
-            }
-            .cli-hero-btn-primary:hover { filter: brightness(1.05); }
-            .cli-hero-btn-primary:active {
-              transform: translateY(4px);
-              box-shadow: 0 0 0 var(--primary-dark);
-            }
-            .cli-hero-btn-ghost { display: none; }
-            .cli-hero-tip {
-              display: flex; gap: var(--space-3);
-              background: var(--primary-light);
-              padding: var(--space-3) var(--space-4);
-              border-radius: var(--radius-md);
-              align-items: center; justify-content: center;
-              margin: var(--space-4) auto 0;
-              text-align: center;
-              max-width: 420px;
-            }
-            .cli-hero-tip p { text-wrap: balance; }
-            .cli-hero-tip-icon { font-size: var(--text-xl); line-height: 1; flex-shrink: 0; }
-            .cli-hero-tip-t {
-              font-size: var(--text-sm); font-weight: var(--fw-black);
-              color: var(--text-title); margin: 0 0 var(--space-1);
-            }
-            .cli-hero-tip-d {
-              font-size: var(--text-sm); color: var(--text-secondary);
-              line-height: 1.5; margin: 0;
-            }
-
-            /* Desktop */
-            @media (min-width: 900px) {
-              .cli-hero-split {
-                flex-direction: row;
-                gap: var(--space-6);
-                max-width: 1000px;
-                margin: 0 auto;
-              }
-              .cli-hero-left {
-                order: 1;
-                gap: var(--space-4);
-                flex: 1.3 1 440px;
-                max-width: 560px; min-width: 0;
-                text-align: left; align-items: flex-start;
-              }
-              .cli-hero-right {
-                order: 2;
-                padding: var(--space-2);
-                flex: 1 1 340px;
-                max-width: 460px; min-width: 0;
-              }
-              .cli-hero-eyebrow { font-size: var(--text-sm); }
-              .cli-hero-title { font-size: 2.5rem; line-height: 1.05; }
-              .cli-hero-desc { font-size: var(--text-lg); }
-              .cli-hero-tip-t { font-size: var(--text-sm); }
-              .cli-hero-tip-d { font-size: var(--text-sm); }
-              .cli-hero-btn-primary { padding: var(--space-4) var(--space-6); font-size: var(--text-md); }
-              .cli-hero-actions { justify-content: flex-start; }
-              .cli-hero-btn-ghost {
-                display: inline-flex; align-items: center;
-                gap: var(--space-2);
-                background: var(--bg-subtle); color: var(--text-secondary);
-                border: none;
-                padding: var(--space-4) var(--space-6);
-                border-radius: var(--radius-md);
-                font-size: var(--text-md); font-weight: var(--fw-bold);
-                cursor: pointer;
-                font-family: var(--font-base) !important;
-                transition: background var(--dur-fast) var(--ease-out);
-              }
-              .cli-hero-btn-ghost:hover { background: var(--accent-light); }
-              .cli-hero-video-play { width: 60px; height: 60px; }
-              .cli-hero-video-play svg { width: 28px; height: 28px; }
-              .cli-hero-video-t { font-size: var(--text-sm); }
-            }
-          `}</style>
-
-          {formJSX}
+        <div className="cl9">
+          <TelaVazia caixa icone={<UsersThree size={30} />} titulo="Nenhum cliente ainda"
+            texto="Quem pede pelo cardápio entra aqui sozinho. Você também pode cadastrar quem compra pelo WhatsApp ou no balcão."
+            acao={<div className="cl9-vz-acoes">
+              <Botao icone={<Plus size={20} weight="bold" />} onClick={() => openNew()}>Cadastrar cliente</Botao>
+              {suportaContatos && <Botao variante="secundario" icone={<AddressBook size={20} weight="bold" />} onClick={importarContatos}>Importar dos contatos<i className="cl9-pro">PRO</i></Botao>}
+            </div>} />
         </div>
-      ) : (
-      <>
-      {/* ═══════════════════════ MOBILE ═══════════════════════ */}
-      <div className="cli-mobile">
+      ) : (() => {
+        // ── Números do topo (calculados dos pedidos que já vêm com cada cliente) ──
+        const agora = Date.now();
+        const dias = (iso?: string | null) => iso ? Math.floor((agora - new Date(iso).getTime()) / 86400000) : Infinity;
+        const inicioMes = new Date(); inicioMes.setDate(1); inicioMes.setHours(0, 0, 0, 0);
+        const novosMes = clientes.filter(c => c.created_at && new Date(c.created_at) >= inicioMes).length;
+        const compraram30 = clientes.filter(c => dias(c._ultimaCompra) <= 30).length;
+        const somaPed = clientes.reduce((s, c) => s + (c._totalPedidos || 0), 0);
+        const somaGasto = clientes.reduce((s, c) => s + (c._totalGasto || 0), 0);
+        const ticketGeral = somaPed > 0 ? somaGasto / somaPed : 0;
+        const parte = clientes.length ? compraram30 / clientes.length : 0;
+        const parteTxt = compraram30 === 0 ? "ninguém ainda" : parte >= 0.99 ? "todos os clientes" : parte >= 0.45 && parte <= 0.55 ? "metade dos clientes" : `${Math.round(parte * 100)}% dos clientes`;
+        const prox = aniversariantes[0] ? getDaysUntil(aniversariantes[0].data_nascimento!) : null;
+        const quandoNiver = (d: number) => d === 0 ? "hoje" : d === 1 ? "amanhã" : `em ${d} dias`;
+        const qtdFiltro = { todos: clientes.length, aniversariantes: aniversariantes.length, recentes: recentesIds.size, sumidas: sumidasIds.size };
+        const linkWhats = (c: Cliente, texto?: string) => {
+          let d = (c.whatsapp || "").replace(/\D/g, "");
+          if (!d) return null;
+          if (!d.startsWith("55")) d = "55" + d;
+          return `https://wa.me/${d}${texto ? `?text=${encodeURIComponent(texto)}` : ""}`;
+        };
+        const primeiroNome = (n: string) => (n || "").trim().split(/\s+/)[0] || "";
+        const niverCurto = (data?: string | null) => {
+          if (!data) return "—";
+          const d = dataLocal(data);
+          return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+        };
+        const iniciaisDe = (n: string) => (n || "?").trim().split(/\s+/).slice(0, 2).map(x => x[0]?.toUpperCase() || "").join("");
+        const Avatar = ({ c }: { c: Cliente }) => <span className="cl9-av">{c.foto_url ? <img src={c.foto_url} alt="" /> : iniciaisDe(c.nome)}</span>;
+        const Etiqueta = ({ c }: { c: Cliente }) => {
+          if (c.data_nascimento) { const d = getDaysUntil(c.data_nascimento); if (d <= 7) return <i className="cl9-tag cl9-tag--niver"><Cake size={14} weight="bold" />Aniversário {quandoNiver(d)}</i>; }
+          if (recentesIds.has(c.id) && (c._totalPedidos || 0) <= 1) return <i className="cl9-tag cl9-tag--novo">Novo cadastro</i>;
+          return null;
+        };
+        const ultimaTxt = (c: Cliente) => { const t = formatUltimaCompra(c._ultimaCompra); return t ? t.charAt(0).toUpperCase() + t.slice(1) : "—"; };
+        const linha2 = (c: Cliente) => {
+          const n = c._totalPedidos || 0;
+          return n ? `${n} ${n === 1 ? "pedido" : "pedidos"} · comprou ${formatUltimaCompra(c._ultimaCompra)}` : "Ainda não comprou";
+        };
+        const BotaoZap = ({ c }: { c: Cliente }) => {
+          const wa = linkWhats(c);
+          return wa ? <a className="cl9-zap" href={wa} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp de ${c.nome}`} onClick={e => e.stopPropagation()}><WhatsappLogo size={22} weight="bold" /></a> : null;
+        };
 
-        {/* Header */}
-        <div className="mob-header">
-          <h1 className="mob-title">Clientes</h1>
-          <p className="mob-subtitle">{clientes.length} {clientes.length === 1 ? "cliente cadastrado" : "clientes cadastrados"}</p>
-        </div>
-
-        {/* Botões de ação */}
-        <div className="mob-actions">
-          <button className="mob-btn-primary" onClick={() => openNew()}>
-            + Cadastrar cliente
-          </button>
-          <button
-            className={`cli-btn-pro cli-btn-pro--compact${!usuarioEhPro ? " cli-btn-pro--off" : ""}`}
-            onClick={handleAbrirImportarContatos}
-            disabled={!usuarioEhPro}
-          >
-            <span style={{fontSize: "0.95rem"}}>📱</span>
-            Importar
-            <span className="cli-btn-pro-badge">PRO</span>
-          </button>
-        </div>
-
-        {/* Banner de aniversariantes destaque (se tem no mês) */}
-        {aniversariantes.length > 0 && (
-          <button className="cli-aniv-banner" onClick={() => setShowNiver(true)}>
-            <div className="cli-aniv-banner-icon">🎂</div>
-            <div className="cli-aniv-banner-body">
-              <div className="cli-aniv-banner-t">
-                {aniversariantes.length} cliente{aniversariantes.length !== 1 ? "s" : ""} fazem aniversário nos próximos 30 dias
-              </div>
-              <div className="cli-aniv-banner-d">
-                {aniversariantes.slice(0, 2).map(c => c.nome).join(", ")}
-                {aniversariantes.length > 2 && ` e mais ${aniversariantes.length - 2}`}
-              </div>
+        return (
+          <div className="cl9">
+            <div className="cl9-nums" role="list">
+              <div role="listitem"><small>Clientes</small><b>{clientes.length}</b><em className={novosMes > 0 ? "ok" : ""}>{novosMes > 0 ? `+${novosMes} este mês` : "nenhum novo este mês"}</em></div>
+              <div role="listitem"><small>Compraram em 30 dias</small><b>{compraram30}</b><em>{parteTxt}</em></div>
+              <div role="listitem"><small>Aniversários em 30 dias</small><b>{aniversariantes.length}</b><em className={prox !== null ? "rosa" : ""}>{prox === null ? "nenhum por agora" : `o próximo é ${quandoNiver(prox)}`}</em></div>
+              <div role="listitem"><small>Ticket médio</small><b>{formatMoneyFull(ticketGeral)}</b><em>por pedido</em></div>
             </div>
-            <div className="cli-aniv-banner-arrow">→</div>
-          </button>
-        )}
 
-        {/* Busca + Filtro dropdown na mesma linha */}
-        <div className="cli-search-row">
-          <div className="mob-search-wrap">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input
-              type="text" placeholder="Buscar por nome, telefone ou e-mail..."
-              value={search} onChange={e => setSearch(e.target.value)}
-              className="mob-search" autoComplete="off"
-            />
-            {search && (
-              <button onClick={() => setSearch("")} style={{background:"none",border:"none",cursor:"pointer",color:"var(--text-muted)",padding:0,lineHeight:1}}>✕</button>
+            {aniversariantes.length > 0 && (
+              <button type="button" className="cl9-niver" onClick={() => setShowNiver(true)}>
+                <span className="cl9-niver-ic"><Cake size={24} weight="bold" /></span>
+                <span>
+                  <b>{aniversariantes.length === 1 ? "1 aniversário" : `${aniversariantes.length} aniversários`} nos próximos 30 dias</b>
+                  <small>{aniversariantes.slice(0, 3).map(c => primeiroNome(c.nome)).join(", ")}{aniversariantes.length > 3 ? ` e mais ${aniversariantes.length - 3}` : ""} · mande os parabéns</small>
+                </span>
+                <CaretRight size={20} weight="bold" />
+              </button>
             )}
-          </div>
-          <div style={{position:"relative"}}>
-            <button className="cli-filter-btn" onClick={() => setFilterOpen(o => !o)} title="Filtrar" aria-label="Filtrar">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-              {filtroChip !== "todos" && <span className="cli-filter-dot" />}
-            </button>
-            {filterOpen && (
-              <>
-                <div className="cli-filter-backdrop" onClick={() => setFilterOpen(false)} />
-                <div className="cli-filter-panel">
-                  <div className="cli-filter-title">Filtrar clientes</div>
-                  <button className={`cli-filter-opt${filtroChip === "todos" ? " cli-filter-opt--active" : ""}`} onClick={() => { setFiltroChip("todos"); setFilterOpen(false); }}>
-                    <div className="cli-filter-radio" />
-                    <span>Todos</span>
-                    <span className="cli-filter-count">{clientes.length}</span>
-                  </button>
-                  {aniversariantes.length > 0 && (
-                    <button className={`cli-filter-opt${filtroChip === "aniversariantes" ? " cli-filter-opt--active" : ""}`} onClick={() => { setFiltroChip("aniversariantes"); setFilterOpen(false); }}>
-                      <div className="cli-filter-radio" />
-                      <span>Aniversariantes</span>
-                      <span className="cli-filter-count">{aniversariantes.length}</span>
-                    </button>
-                  )}
-                  <button className={`cli-filter-opt${filtroChip === "recentes" ? " cli-filter-opt--active" : ""}`} onClick={() => { setFiltroChip("recentes"); setFilterOpen(false); }}>
-                    <div className="cli-filter-radio" />
-                    <span>Recentes (30 dias)</span>
-                  </button>
+
+            <section className="cl9-card">
+              <div className={`cl9-barra${suportaContatos ? " cl9-barra--imp" : ""}`}>
+                <label className="cl9-busca">
+                  <MagnifyingGlass size={20} weight="bold" />
+                  <input type="search" placeholder="Buscar por nome ou telefone" value={search} onChange={e => setSearch(e.target.value)} aria-label="Buscar cliente" autoComplete="off" />
+                  {search && <button type="button" aria-label="Limpar a busca" onClick={() => setSearch("")}><X size={18} weight="bold" /></button>}
+                </label>
+                <div className="cl9-acoes">
+                  {suportaContatos && <Botao variante="secundario" tamanho="m" icone={<AddressBook size={20} weight="bold" />} onClick={importarContatos}>Importar<i className="cl9-pro">PRO</i></Botao>}
+                  <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => openNew()}><span className="cl9-g">Novo cliente</span><span className="cl9-c">Novo</span></Botao>
                 </div>
-              </>
-            )}
-          </div>
-        </div>
+              </div>
+              {importError && <p className="cl9-erro" role="alert">{importError}</p>}
 
-        {/* Lista */}
-        {loading ? (
-          <div style={{textAlign:"center",padding:"3rem"}}><span className="spinner" /></div>
-        ) : filtered.length === 0 ? (
-          <div className="mob-empty">
-            <p>{search ? "Nenhum cliente encontrado" : "Nenhum cliente cadastrado ainda"}</p>
-            {!search && <p style={{fontSize:"0.8rem",marginTop:"0.25rem"}}>Use o botão acima para cadastrar</p>}
-          </div>
-        ) : (
-          <div className="mob-list">
-            {filtered.map(c => {
-              const totalPed = c._totalPedidos || 0;
-              const totalGasto = c._totalGasto || 0;
-              const ticketMedio = c._ticketMedio || 0;
-              const ultimaCompra = c._ultimaCompra;
-              return (
-                <div key={c.id} className="mob-card" onClick={() => navigate(`/clientes/${c.id}`)}>
-                  <div className="mob-card-header">
-                    <div className="mob-avatar">
-                      {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0).toUpperCase()}</span>}
-                    </div>
-                    <div className="mob-info">
-                      <p className="mob-nome">{c.nome}</p>
-                      <p className="mob-since">{clienteDesde(c.created_at)}</p>
-                    </div>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" style={{flexShrink:0}}><polyline points="9 18 15 12 9 6"/></svg>
-                  </div>
+              <div className="cl9-chips" role="tablist" aria-label="Filtrar clientes">
+                {([["todos", "Todos"], ["aniversariantes", "Aniversário"], ["recentes", "Novos cadastros"], ["sumidas", "Sem comprar há 60 dias"]] as const).map(([k, t]) => (
+                  (k === "todos" || qtdFiltro[k] > 0 || filtroChip === k) && (
+                    <button key={k} type="button" role="tab" aria-selected={filtroChip === k} onClick={() => setFiltroChip(k)}>{t}<i>{qtdFiltro[k]}</i></button>
+                  )
+                ))}
+              </div>
 
-                  {/* Lista simples (02/10): só foto, nome e desde quando é cliente. Os números ficam no perfil. */}
+              {filtered.length === 0 ? (
+                <p className="cl9-semres">{search ? "Ninguém com esse nome ou telefone. Confira a busca." : "Ninguém nesse filtro por enquanto."}</p>
+              ) : (<>
+                {/* computador: tabela */}
+                <div className="cl9-tab" role="table" aria-label="Clientes">
+                  <div className="cl9-tab-cab" role="row"><span role="columnheader">Cliente</span><span role="columnheader">Pedidos</span><span role="columnheader">Total gasto</span><span role="columnheader">Última compra</span><span role="columnheader">Aniversário</span><span /></div>
+                  {filtered.map(c => {
+                    const ped = c._totalPedidos || 0;
+                    return (
+                      <div key={c.id} className="cl9-tab-l" role="row" onClick={() => navigate(`/clientes/${c.id}`)}>
+                        <span role="cell" className="cl9-tab-quem"><Avatar c={c} /><span><b>{c.nome}</b><small>{formatPhone(c.whatsapp) || "Sem WhatsApp"}</small><Etiqueta c={c} /></span></span>
+                        <span role="cell">{ped || "—"}</span>
+                        <span role="cell">{ped ? formatMoneyFull(c._totalGasto) : "—"}</span>
+                        <span role="cell">{ped ? ultimaTxt(c) : <em className="cl9-nada">Ainda não comprou</em>}</span>
+                        <span role="cell">{niverCurto(c.data_nascimento)}</span>
+                        <span role="cell" className="cl9-tab-bt">
+                          <BotaoZap c={c} />
+                          <button type="button" className="cl9-abrir" aria-label={`Abrir ${c.nome}`} onClick={e => { e.stopPropagation(); navigate(`/clientes/${c.id}`); }}><CaretRight size={20} weight="bold" /></button>
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
-          </div>
-        )}
 
-        {/* Modal aniversariantes */}
-        {showNiver && (
-          <div className="modal-overlay" onClick={() => setShowNiver(false)}>
-            <div className="mob-modal" onClick={e => e.stopPropagation()}>
-              <div className="form-handle" />
-              <div className="form-header">
-                <h2>🎂 Aniversariantes</h2>
-                <button className="form-close" onClick={() => setShowNiver(false)}>✕</button>
-              </div>
-              <div style={{padding:"0 1.25rem 1.5rem",overflowY:"auto",maxHeight:"60vh"}}>
-                {aniversariantes.length === 0 ? (
-                  <p style={{color:"var(--text-muted)",textAlign:"center",padding:"2rem"}}>Nenhum nos próximos 30 dias</p>
-                ) : aniversariantes.map(c => {
-                  const nasc = dataLocal(c.data_nascimento!);
-                  const diff = getDaysUntil(c.data_nascimento!);
-                  const hours = getHoursUntil(c.data_nascimento!);
-                  return (
-                    <div key={c.id} className="cli-aniv-item" style={{marginBottom:"0.5rem", cursor: "pointer"}} onClick={() => { setShowNiver(false); navigate(`/clientes/${c.id}`); }}>
-                      <div className="cli-aniv-avatar">
-                        {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0)}</span>}
-                      </div>
-                      <div className="cli-aniv-info">
-                        <p className="cli-aniv-nome">{c.nome}</p>
-                        <p className="cli-aniv-data">
-                          Faz aniversário dia {nasc.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}
-                        </p>
-                      </div>
-                      <span className={`cli-aniv-badge${diff <= 7 ? " soon" : ""}`}>
-                        {diff === 0 ? "🎉 Hoje!" : hours <= 24 ? `${hours}h` : `${diff} dias`}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* ═══════════════════════ DESKTOP ═══════════════════════ */}
-      <div className="cli-desktop">
-        {(() => {
-          // ── Resumo (calculado dos pedidos que já vêm com cada cliente) ──
-          const agora = Date.now();
-          const dias = (iso?: string | null) => iso ? Math.floor((agora - new Date(iso).getTime()) / 86400000) : Infinity;
-          const inicioMes = new Date(); inicioMes.setDate(1); inicioMes.setHours(0, 0, 0, 0);
-          const novosMes = clientes.filter(c => c.created_at && new Date(c.created_at) >= inicioMes).length;
-          const compraram30 = clientes.filter(c => dias(c._ultimaCompra) <= 30).length;
-          const somaPed = clientes.reduce((s, c) => s + (c._totalPedidos || 0), 0);
-          const somaGasto = clientes.reduce((s, c) => s + (c._totalGasto || 0), 0);
-          const ticketGeral = somaPed > 0 ? somaGasto / somaPed : 0;
-          const semPedir = clientes
-            .filter(c => (c._totalPedidos || 0) > 0 && dias(c._ultimaCompra) > 60)
-            .sort((x, y) => dias(y._ultimaCompra) - dias(x._ultimaCompra));
-
-          const etiqueta = (c: Cliente): { txt: string; cls: string } | null => {
-            const ped = c._totalPedidos || 0;
-            if (ped > 0 && dias(c._ultimaCompra) > 60) return { txt: "Inativa", cls: "cd-tag--inativa" };
-            if (ped >= 5) return { txt: "Fiel", cls: "cd-tag--fiel" };
-            if (dias(c.created_at) <= 30 && ped <= 1) return { txt: "Nova", cls: "cd-tag--nova" };
-            return null;
-          };
-          const iniciaisDe = (n: string) => (n || "?").trim().split(/\s+/).slice(0, 2).map(x => x[0]?.toUpperCase() || "").join("");
-          const linkWhats = (c: Cliente, texto?: string) => {
-            let d = (c.whatsapp || (c as any).telefone || "").replace(/\D/g, "");
-            if (!d) return null;
-            if (!d.startsWith("55")) d = "55" + d;
-            return `https://wa.me/${d}${texto ? `?text=${encodeURIComponent(texto)}` : ""}`;
-          };
-          const primeiroNome = (n: string) => (n || "").trim().split(/\s+/)[0] || "";
-          const niverCurto = (data?: string | null) => {
-            if (!data) return "—";
-            const d = dataLocal(data);
-            return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
-          };
-          const rotuloFiltro = filtroChip === "aniversariantes" ? "Aniversariantes" : filtroChip === "recentes" ? "Recentes" : "Todos";
-          const IcWhats = () => (
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="#16a34a" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-3.3-.8-2.8-1.2-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.3-.3.6-.3.8-.3h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l2 1c.3.1.5.2.5.3.1.2.1.8-.1 1.4z"/></svg>
-          );
-          const Avatar = ({ c }: { c: Cliente }) => (
-            <span className="cd-av">{c.foto_url ? <img src={c.foto_url} alt="" /> : iniciaisDe(c.nome)}</span>
-          );
-
-          return (
-            <div className="cd-wrap">
-              {/* Resumo */}
-              <div className="cd-stats">
-                <div className="cd-stat"><small>Clientes</small><b>{clientes.length}</b><span className="cd-stat-ok">{novosMes > 0 ? `+${novosMes} este mês` : "nenhuma nova este mês"}</span></div>
-                <div className="cd-stat"><small>Compraram nos últimos 30 dias</small><b>{compraram30}</b><span>{clientes.length > 0 ? `${Math.round((compraram30 / clientes.length) * 100)}% da base` : "—"}</span></div>
-                <div className="cd-stat"><small>Aniversários (30 dias)</small><b>{aniversariantes.length}</b><span className="cd-stat-rosa">{aniversariantes[0] ? (getDaysUntil(aniversariantes[0].data_nascimento!) === 0 ? "hoje tem aniversário!" : `próximo em ${getDaysUntil(aniversariantes[0].data_nascimento!)} dias`) : "nenhum próximo"}</span></div>
-                <div className="cd-stat"><small>Ticket médio</small><b>{formatMoneyFull(ticketGeral)}</b><span>por pedido</span></div>
-              </div>
-
-              <div className="cd-grid">
-                {/* Lista */}
-                <div className="cd-card">
-                  <div className="cd-tool">
-                    <div className="cd-search">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                      <input type="text" placeholder="Buscar por nome, telefone ou e-mail..." value={search} onChange={e => setSearch(e.target.value)} autoComplete="off" />
-                    </div>
-                    {/* Filtro em menu que desce */}
-                    <div style={{ position: "relative" }}>
-                      <button className={`cd-filtro${filtroChip !== "todos" ? " cd-filtro--on" : ""}`} onClick={() => setFilterOpen(o => !o)} aria-expanded={filterOpen}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                        {rotuloFiltro}
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" style={{ transform: filterOpen ? "rotate(180deg)" : "none", transition: "transform .15s" }}><polyline points="6 9 12 15 18 9"/></svg>
+                {/* celular: lista */}
+                <div className="cl9-lista">
+                  {filtered.map(c => (
+                    <div key={c.id} className="cl9-l">
+                      <button type="button" className="cl9-l-b" onClick={() => navigate(`/clientes/${c.id}`)}>
+                        <Avatar c={c} />
+                        <span className="cl9-l-tx"><b>{c.nome}</b><small>{linha2(c)}</small><Etiqueta c={c} /></span>
                       </button>
-                      {filterOpen && (
-                        <>
-                          <div className="cli-filter-backdrop" onClick={() => setFilterOpen(false)} />
-                          <div className="cd-drop">
-                            {([
-                              ["todos", "Todos", clientes.length],
-                              ["aniversariantes", "Aniversariantes (30 dias)", aniversariantes.length],
-                              ["recentes", "Cadastrados nos últimos 30 dias", null],
-                            ] as const).map(([k, l, n]) => (
-                              <button key={k} className={`cd-drop-opt${filtroChip === k ? " cd-drop-opt--on" : ""}`} onClick={() => { setFiltroChip(k as any); setFilterOpen(false); }}>
-                                <span>{l}</span>{n != null && <em>{n}</em>}
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      )}
+                      <BotaoZap c={c} />
                     </div>
-                    <button className={`cd-btn cd-btn--claro${!usuarioEhPro ? " cd-btn--off" : ""}`} onClick={handleAbrirImportarContatos} disabled={!usuarioEhPro}
-                      title={usuarioEhPro ? "Importar contatos do celular" : "Feature PRO — assine para desbloquear"}>
-                      Importar <span className="cd-pro">PRO</span>
+                  ))}
+                </div>
+              </>)}
+            </section>
+
+            <Janela aberta={showNiver} aoFechar={() => setShowNiver(false)} tipo="conteudo" titulo="Aniversários">
+              <p className="cl9-j-apoio">Nos próximos 30 dias. Uma mensagem de parabéns costuma virar pedido de bolo.</p>
+              {aniversariantes.map(c => {
+                const d = getDaysUntil(c.data_nascimento!);
+                const wa = linkWhats(c, `Feliz aniversário, ${primeiroNome(c.nome)}! Que o seu dia seja muito doce.`);
+                return (
+                  <div key={c.id} className="cl9-j-l">
+                    <button type="button" className="cl9-j-quem" onClick={() => { setShowNiver(false); navigate(`/clientes/${c.id}`); }}>
+                      <Avatar c={c} />
+                      <span><b>{c.nome}</b><small>{niverCurto(c.data_nascimento)} · {quandoNiver(d)}</small></span>
                     </button>
-                    <button className="cd-btn cd-btn--escuro" onClick={() => openNew()}>+ Novo cliente</button>
+                    {wa && <a className="cl9-parabens" href={wa} target="_blank" rel="noopener noreferrer"><WhatsappLogo size={18} weight="bold" />Parabéns</a>}
                   </div>
-
-                  {loading ? (
-                    <div className="cli-loading"><span className="spinner" /></div>
-                  ) : filtered.length === 0 ? (
-                    <div className="cd-vazio">{clientes.length === 0 ? "Nenhum cliente cadastrado ainda." : "Nenhum cliente encontrado."}</div>
-                  ) : (
-                    <div className="cd-tabela-wrap">
-                      <table className="cd-tabela">
-                        <thead><tr>
-                          <th>Cliente</th><th>Cliente desde</th><th>Aniversário</th><th />
-                        </tr></thead>
-                        <tbody>
-                          {filtered.map(c => {
-                            const ped = c._totalPedidos || 0;
-                            const tag = etiqueta(c);
-                            const wa = linkWhats(c);
-                            return (
-                              <tr key={c.id} onClick={() => navigate(`/clientes/${c.id}`)}>
-                                <td>
-                                  <div className="cd-cli">
-                                    <Avatar c={c} />
-                                    <div>
-                                      <div className="cd-nome"><b>{c.nome}</b>{tag && <span className={`cd-tag ${tag.cls}`}>{tag.txt}</span>}</div>
-                                      <small>{formatPhone(c.whatsapp) || "sem WhatsApp"}</small>
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="cd-mut">{clienteDesde(c.created_at)}</td>
-                                <td className="cd-mut">{niverCurto(c.data_nascimento)}</td>
-                                <td>
-                                  <div className="cd-acoes" onClick={e => e.stopPropagation()}>
-                                    {wa && <a className="cd-acao" href={wa} target="_blank" rel="noopener noreferrer" title="Abrir WhatsApp" aria-label="Abrir WhatsApp"><IcWhats /></a>}
-                                    <button className="cd-acao" onClick={() => navigate(`/clientes/${c.id}`)} title="Ver perfil" aria-label="Ver perfil"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B5D64" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
-                                  </div>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-
-                {/* Coluna da direita */}
-                <div className="cd-lado">
-                  <div className="cd-painel">
-                    <p className="cd-painel-t">🎂 Aniversários próximos</p>
-                    {aniversariantes.length === 0 ? (
-                      <p className="cd-painel-vazio">Nenhum aniversário nos próximos 30 dias.</p>
-                    ) : aniversariantes.slice(0, 6).map(c => {
-                      const dd = getDaysUntil(c.data_nascimento!);
-                      const wa = linkWhats(c, `Feliz aniversário, ${primeiroNome(c.nome)}! 🎂 Que seu dia seja muito doce!`);
-                      return (
-                        <div key={c.id} className="cd-item" onClick={() => navigate(`/clientes/${c.id}`)}>
-                          <Avatar c={c} />
-                          <div className="cd-item-t"><b>{c.nome}</b><span>🎂 {niverCurto(c.data_nascimento)} · {dd === 0 ? "hoje!" : dd === 1 ? "amanhã" : `em ${dd} dias`}</span></div>
-                          {wa && <a className="cd-mini" href={wa} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}><IcWhats /> Parabéns</a>}
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="cd-painel">
-                    <p className="cd-painel-t">Sem pedir há mais de 60 dias</p>
-                    {semPedir.length === 0 ? (
-                      <p className="cd-painel-vazio">Todas as clientes com pedido compraram nos últimos 60 dias.</p>
-                    ) : semPedir.slice(0, 5).map(c => {
-                      const wa = linkWhats(c, `Oi, ${primeiroNome(c.nome)}! Sentimos sua falta por aqui 🧁 Que tal um docinho essa semana?`);
-                      return (
-                        <div key={c.id} className="cd-item" onClick={() => navigate(`/clientes/${c.id}`)}>
-                          <Avatar c={c} />
-                          <div className="cd-item-t"><b>{c.nome}</b><span>última compra {formatUltimaCompra(c._ultimaCompra)}</span></div>
-                          {wa && <a className="cd-mini" href={wa} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}><IcWhats /> Chamar</a>}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })()}
-      </div>
+                );
+              })}
+            </Janela>
+          </div>
+        );
+      })()}
 
       {/* ═══════════════════════ MODAIS COMPARTILHADOS ═══════════════════════ */}
 
@@ -2089,161 +1683,6 @@ export default function Clientes() {
           .cli-root { padding-top: 40px; }
         }
 
-        /* ═══ Clientes no computador (aprovado 29/09): resumo + tabela + coluna lateral ═══ */
-        .cd-wrap { font-family: var(--font-base); color: #2C1219; }
-        .cd-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px; }
-        .cd-stat { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 16px; }
-        .cd-stat small { font-size: 11px; font-weight: 700; color: #888780; letter-spacing: .04em; text-transform: uppercase; }
-        .cd-stat b { display: block; font-size: 24px; font-weight: 800; margin-top: 4px; color: #2C1219; }
-        .cd-stat span { font-size: 11.5px; font-weight: 700; color: #6B5D64; }
-        .cd-stat .cd-stat-ok { color: #15803D; } .cd-stat .cd-stat-rosa { color: #BE185D; }
-        .cd-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; align-items: start; }
-        .cd-card { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; overflow: visible; }
-        .cd-tool { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid #F3ECEE; }
-        .cd-search { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; border: 1px solid #EAE3E6; border-radius: 10px; padding: 0 12px; height: 40px; background: #fff; }
-        .cd-search:focus-within { border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
-        .cd-search input { flex: 1; min-width: 0; border: none; outline: none; background: none; font-family: inherit; font-size: 13.5px; color: #2C1219; }
-        .cd-filtro { display: inline-flex; align-items: center; gap: 7px; height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid #EAE3E6; background: #fff; font-family: inherit; font-size: 13px; font-weight: 700; color: #4B3A42; cursor: pointer; white-space: nowrap; }
-        .cd-filtro--on { background: #2C1219; border-color: #2C1219; color: #fff; }
-        .cd-drop { position: absolute; top: calc(100% + 6px); right: 0; z-index: 50; min-width: 260px; background: #fff; border: 1px solid #F0EBED; border-radius: 12px; box-shadow: 0 12px 32px rgba(44,18,25,.14); padding: 6px; }
-        .cd-drop-opt { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: none; border-radius: 8px; background: none; font-family: inherit; font-size: 13px; font-weight: 600; color: #2C1219; cursor: pointer; text-align: left; }
-        .cd-drop-opt:hover { background: #FAF7F8; }
-        .cd-drop-opt--on { background: #F5F0F2; font-weight: 800; }
-        .cd-drop-opt em { font-style: normal; font-size: 11.5px; font-weight: 800; color: #888780; background: #F5F0F2; padding: 2px 8px; border-radius: 999px; }
-        .cd-btn { height: 40px; padding: 0 14px; border-radius: 10px; border: none; font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
-        .cd-btn--claro { background: #F5F0F2; color: #2C1219; } .cd-btn--escuro { background: #2C1219; color: #fff; }
-        .cd-btn--off { opacity: .55; cursor: not-allowed; }
-        .cd-pro { font-size: 9px; font-weight: 800; background: #F59E0B; color: #fff; padding: 2px 5px; border-radius: 4px; }
-        .cd-tabela-wrap { overflow-x: auto; }
-        .cd-tabela { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .cd-tabela th { white-space: nowrap; text-align: left; font-size: 10.5px; font-weight: 700; color: #888780; letter-spacing: .04em; text-transform: uppercase; padding: 10px 9px; background: #FAF7F8; border-bottom: 1px solid #F3ECEE; }
-        .cd-tabela td { white-space: nowrap; padding: 10px 9px; border-bottom: 1px solid #F7F2F4; vertical-align: middle; }
-        .cd-tabela tbody tr { cursor: pointer; } .cd-tabela tbody tr:hover td { background: #FFFBFC; }
-        .cd-tabela .num { text-align: right; } .cd-mut { color: #6B5D64; }
-        .cd-cli { display: flex; align-items: center; gap: 10px; }
-        .cd-cli small { display: block; font-size: 11.5px; color: #888780; margin-top: 1px; }
-        .cd-nome { display: flex; align-items: center; gap: 6px; } .cd-nome b { font-size: 13.5px; }
-        .cd-av { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; overflow: hidden; background: #F5F0F2; color: #6B5D64; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; }
-        .cd-av img { width: 100%; height: 100%; object-fit: cover; }
-        .cd-tag { font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
-        .cd-tag--fiel { background: #FCE7F3; color: #BE185D; } .cd-tag--nova { background: #DCFCE7; color: #15803D; } .cd-tag--inativa { background: #F3F4F6; color: #6B7280; }
-        .cd-acoes { display: flex; gap: 6px; justify-content: flex-end; }
-        .cd-acao { height: 30px; min-width: 30px; padding: 0 10px; border-radius: 8px; border: none; background: #F5F0F2; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; text-decoration: none; }
-        .cd-acao--txt { font-family: inherit; font-size: 12px; font-weight: 700; color: #2C1219; }
-        .cd-vazio { padding: 40px 16px; text-align: center; font-size: 13.5px; color: #888780; }
-        .cd-lado { display: flex; flex-direction: column; gap: 14px; }
-        .cd-painel { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 14px; }
-        .cd-painel-t { font-size: 14px; font-weight: 800; margin: 0 0 8px; }
-        .cd-painel-vazio { font-size: 12.5px; color: #888780; margin: 0; line-height: 1.45; }
-        .cd-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid #F7F2F4; cursor: pointer; }
-        .cd-item:first-of-type { border-top: none; }
-        .cd-item-t { flex: 1; min-width: 0; } .cd-item-t b { display: block; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .cd-item-t span { font-size: 11.5px; color: #6B5D64; }
-        .cd-mini { display: inline-flex; align-items: center; gap: 4px; padding: 6px 9px; border-radius: 8px; background: #F0FDF4; color: #15803D; font-size: 11.5px; font-weight: 800; text-decoration: none; white-space: nowrap; }
-        .cd-tabela th:first-child, .cd-tabela td:first-child { padding-left: 16px; }
-        .cd-tabela th:last-child, .cd-tabela td:last-child { padding-right: 16px; }
-        /* Telas menores: a coluna lateral desce pra baixo da tabela (lado a lado) */
-        @media (max-width: 1400px) { .cd-grid { grid-template-columns: 1fr; } .cd-lado { display: grid; grid-template-columns: 1fr 1fr; } }
-        @media (max-width: 1000px) { .cd-stats { grid-template-columns: repeat(2, 1fr); } .cd-lado { grid-template-columns: 1fr; } }
-
-        .cli-mobile  { display: flex; flex-direction: column; gap: 0.75rem; }
-        .cli-desktop { display: none; }
-        @media (min-width: 768px) { .cli-mobile { display: none; } .cli-desktop { display: block; } }
-
-        /* ── Mobile ────────────────────────── */
-        .mob-header  { display: flex; flex-direction: column; gap: 0.1rem; padding: 0.5rem 0.25rem 0.25rem; }
-        .mob-title   { font-size: var(--font-page-title); font-weight: var(--fw-bold); color: var(--text-title); margin: 0; }
-        .mob-subtitle { font-size: var(--font-helper); color: var(--text-muted); margin: 0; }
-
-        .mob-actions { display: flex; gap: 0.6rem; }
-        .mob-btn-primary   { flex: 1; padding: 0.7rem 0.5rem; background: var(--text-title); color: white; border: none; border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; white-space: nowrap; transition: opacity 0.15s; }
-        .mob-btn-primary:active { opacity: 0.85; }
-        .mob-btn-secondary { flex: 1; padding: 0.7rem 0.5rem; background: var(--bg-card); color: var(--text-title); border: 1.5px solid var(--border); border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; white-space: nowrap; transition: border-color 0.15s; }
-        .mob-btn-secondary:active { border-color: var(--text-title); }
-
-        .mob-search-wrap { display: flex; align-items: center; gap: 0.5rem; background: var(--bg-card); border: 1.5px solid var(--border); border-radius: var(--radius-md); padding: 0.7rem 1rem; }
-        .mob-search  { border: none; outline: none; flex: 1; font-family: inherit; font-size: var(--font-button); color: var(--text-title); background: transparent; }
-        .mob-search::placeholder { color: var(--text-muted); }
-
-        .mob-empty   { text-align: center; padding: 3rem 1rem; color: var(--text-muted); font-size: var(--font-button); }
-        .mob-list    { display: flex; flex-direction: column; gap: 0.6rem; padding-bottom: 7rem; }
-
-        .mob-card    { display: flex; flex-direction: column; background: var(--bg-card); border-radius: var(--radius-lg); padding: 0.85rem 1rem; border: 1px solid var(--border); cursor: pointer; transition: box-shadow 0.15s, border-color 0.15s; }
-        .mob-card:active { background: var(--bg-body); }
-        .mob-card:hover { border-color: var(--primary-light); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-        .mob-card-header { display: flex; align-items: center; gap: 0.85rem; }
-        .mob-avatar  { width: 44px; height: 44px; border-radius: var(--radius-md); flex-shrink: 0; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: var(--font-modal-title); font-weight: var(--fw-bold); color: var(--primary); overflow: hidden; }
-        .mob-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .mob-info    { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.2rem; }
-        .mob-nome    { font-size: var(--font-button); font-weight: var(--fw-semibold); color: var(--text-title); margin: 0; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        .mob-card-divider { height: 1px; background: var(--border); margin: 0.7rem 0; }
-        .mob-card-metricas { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem; }
-        .mob-metrica { background: var(--bg-body); border-radius: 10px; padding: 0.55rem 0.7rem; }
-        .mob-metrica-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
-        .mob-metrica-valor { font-size: 1.05rem; font-weight: 800; color: var(--text-title); letter-spacing: -0.01em; margin-top: 2px; font-variant-numeric: tabular-nums; }
-        .mob-card-inline { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-secondary); padding: 0.15rem 0; }
-        .mob-card-inline strong { color: var(--text-title); font-weight: 700; font-variant-numeric: tabular-nums; }
-        .mob-inline-l { color: var(--text-muted); font-weight: 500; }
-        .mob-card-empty { font-size: 0.82rem; color: var(--text-muted); text-align: center; padding: 0.5rem 0; font-style: italic; }
-        .mob-whatsapp { display: inline-flex; align-items: center; gap: 0.3rem; font-size: var(--font-helper); color: #25D366; font-weight: var(--fw-medium); text-decoration: none; }
-        .mob-email   { font-size: var(--font-helper); color: var(--text-muted); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .mob-sem-tel { font-size: var(--font-helper); color: var(--text-muted); margin: 0; }
-
-        .mob-modal   { background: var(--bg-card); border-radius: var(--radius-xl) 24px 0 0; width: 100%; max-height: 85vh; display: flex; flex-direction: column; position: fixed; bottom: 0; left: 0; right: 0; animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1); }
-
-        /* ── Desktop ────────────────────────── */
-        .cli-layout  { display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem; align-items: start; }
-        .cli-main    { min-width: 0; }
-        .cli-sidebar { display: flex; flex-direction: column; gap: 1rem; padding-top: 7rem; }
-        .cli-topbar  { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
-
-        .cli-btn-new     { padding: 12px 20px; background: var(--primary); color: var(--text-inverse); border: none; border-radius: var(--radius-md); font-family: var(--font-base) !important; font-size: var(--text-sm); font-weight: var(--fw-black); cursor: pointer; white-space: nowrap; flex-shrink: 0; box-shadow: 0 4px 0 var(--primary-dark); letter-spacing: 0.02em; text-transform: uppercase; display: inline-flex; align-items: center; transition: transform 0.08s ease, box-shadow 0.08s ease; }
-        .cli-btn-new:hover { filter: brightness(1.05); }
-        .cli-btn-new:active { transform: translateY(4px); box-shadow: 0 0 0 var(--primary-dark); }
-        .cli-btn-completo{ display: none; }
-
-        .cli-search-wrap { display: flex; align-items: center; gap: 0.5rem; background: var(--bg-card); border: 1.5px solid var(--border); border-radius: var(--radius-md); padding: 0.75rem 1rem; flex: 1; min-width: 200px; }
-        .cli-search      { border: none; outline: none; flex: 1; font-family: inherit; font-size: var(--font-button); color: var(--text-title); background: transparent; }
-        .cli-search::placeholder { color: var(--text-muted); }
-
-        .cli-loading { display: flex; justify-content: center; padding: 3rem; }
-        .cli-empty   { text-align: center; padding: 3rem; color: var(--text-muted); }
-        .cli-list    { display: flex; flex-direction: column; gap: 0.6rem; }
-
-        .cli-card    { display: flex; flex-direction: column; background: var(--bg-card); border-radius: var(--radius-lg); padding: 0.85rem 1rem; border: 1px solid var(--border); transition: box-shadow 0.2s, border-color 0.15s; }
-        .cli-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-color: var(--primary-light); }
-        .cli-card-header { display: flex; align-items: center; gap: 0.9rem; }
-        .cli-avatar  { width: 48px; height: 48px; border-radius: var(--radius-md); flex-shrink: 0; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: var(--font-modal-title); font-weight: var(--fw-bold); color: var(--primary); overflow: hidden; }
-        .cli-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .cli-info    { flex: 1; min-width: 0; }
-        .cli-nome    { font-size: var(--font-input); font-weight: var(--fw-semibold); color: var(--text-title); margin: 0; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        .cli-card-divider { height: 1px; background: var(--border); margin: 0.75rem 0; }
-        .cli-card-metricas { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; margin-bottom: 0.5rem; }
-        .cli-metrica { background: var(--bg-body); border-radius: 10px; padding: 0.55rem 0.75rem; }
-        .cli-metrica-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
-        .cli-metrica-valor { font-size: 1.1rem; font-weight: 800; color: var(--text-title); letter-spacing: -0.01em; margin-top: 2px; font-variant-numeric: tabular-nums; }
-        .cli-card-inline { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-secondary); padding: 0.15rem 0; }
-        .cli-card-inline strong { color: var(--text-title); font-weight: 700; font-variant-numeric: tabular-nums; }
-        .cli-inline-l { color: var(--text-muted); font-weight: 500; }
-        .cli-card-empty { font-size: 0.82rem; color: var(--text-muted); text-align: center; padding: 0.5rem 0; font-style: italic; }
-        .cli-whatsapp-link { display: inline-flex; align-items: center; gap: 0.3rem; font-size: var(--font-helper); color: #25D366; font-weight: var(--fw-medium); text-decoration: none; }
-        .cli-whatsapp-link:hover { text-decoration: underline; }
-
-        .cli-panel   { background: var(--bg-card); border-radius: var(--radius-lg); padding: 1rem 1.1rem; border: 1px solid var(--border); }
-        .cli-panel-title { font-size: var(--font-button); font-weight: var(--fw-bold); color: var(--text-title); margin: 0 0 0.75rem; }
-
-        .cli-aniv-item   { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; margin-bottom: 0.5rem; border-radius: var(--radius-md); background: linear-gradient(135deg,#1a1a2e,#16213e); overflow: hidden; }
-        .cli-aniv-item:last-child { margin-bottom: 0; }
-        .cli-aniv-avatar { width: 36px; height: 36px; border-radius: var(--radius-md); flex-shrink: 0; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: var(--font-button); font-weight: var(--fw-bold); color: #ffd700; overflow: hidden; }
-        .cli-aniv-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .cli-aniv-info   { flex: 1; min-width: 0; }
-        .cli-aniv-nome   { font-size: var(--font-helper); font-weight: var(--fw-semibold); color: #fff; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cli-aniv-data   { font-size: var(--font-caption); color: rgba(255,215,0,0.7); margin: 0; }
-        .cli-aniv-badge  { font-size: var(--font-caption); font-weight: var(--fw-bold); color: #1a1a2e; background: linear-gradient(135deg,#ffd700,#ffa500); padding: 0.25rem 0.6rem; border-radius: var(--radius-xl); white-space: nowrap; flex-shrink: 0; }
-        .cli-aniv-badge.soon { background: var(--primary-gradient); color: #fff; }
-
         /* ── Formulário (Modal de Cliente — 100% tokenizado) ─────── */
         .modal-overlay  { position: fixed; inset: 0; z-index: 200; background: var(--bg-overlay); backdrop-filter: blur(4px); display: flex; align-items: flex-end; justify-content: center; touch-action: none; }
         @media (min-width: 768px) { .modal-overlay { align-items: center; padding: var(--space-4); } }
@@ -2306,191 +1745,6 @@ export default function Clientes() {
         .spinner-sm      { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
         .spinner-sm-dark { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--text-title); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
         @keyframes spin  { to { transform: rotate(360deg); } }
-
-        /* ═══ BOTÃO PRO (Importar contatos) ═══ */
-        .cli-btn-pro {
-          display: inline-flex; align-items: center;
-          gap: 6px;
-          background: linear-gradient(135deg, #FBBF24, #F59E0B);
-          color: #78350F;
-          border: none;
-          padding: 10px 14px;
-          border-radius: var(--radius-md);
-          font-size: var(--text-xs);
-          font-weight: var(--fw-black);
-          cursor: pointer;
-          font-family: var(--font-base) !important;
-          box-shadow: 0 3px 0 #B45309;
-          text-transform: uppercase;
-          letter-spacing: 0.02em;
-          white-space: nowrap;
-          transition: transform 0.08s ease, box-shadow 0.08s ease;
-        }
-        .cli-btn-pro:hover:not(:disabled) { filter: brightness(1.05); }
-        .cli-btn-pro:active:not(:disabled) {
-          transform: translateY(3px);
-          box-shadow: 0 0 0 #B45309;
-        }
-        .cli-btn-pro-badge {
-          background: #000;
-          color: #FBBF24;
-          padding: 2px 6px;
-          border-radius: var(--radius-sm);
-          font-size: 0.55rem;
-          font-weight: var(--fw-black);
-          letter-spacing: 0.06em;
-          line-height: 1;
-        }
-        .cli-btn-pro--compact {
-          flex: 1;
-          padding: 12px 8px;
-          justify-content: center;
-        }
-        /* Estado desabilitado (não é PRO) */
-        .cli-btn-pro--off {
-          background: linear-gradient(135deg, #F0EBED, #E8DEE3) !important;
-          color: #9A8B93 !important;
-          box-shadow: 0 3px 0 #D1CACD !important;
-          opacity: 0.7;
-          cursor: not-allowed !important;
-          filter: none !important;
-        }
-        .cli-btn-pro--off .cli-btn-pro-badge {
-          background: #9A8B93;
-          color: #fff;
-        }
-        .cli-btn-pro--off:active { transform: none !important; }
-
-        /* ═══ HEADER DESKTOP ═══ */
-        .cli-page-hdr {
-          display: flex; justify-content: space-between; align-items: center;
-          margin-bottom: var(--space-4);
-          padding: 0;
-        }
-        .cli-page-title {
-          font-size: var(--text-2xl);
-          font-weight: var(--fw-black);
-          color: var(--text-title);
-          letter-spacing: -0.02em;
-          margin: 0;
-        }
-        .cli-page-sub {
-          font-size: var(--text-sm);
-          color: var(--text-secondary);
-          margin: 4px 0 0;
-        }
-        .cli-page-actions { display: flex; gap: var(--space-2); align-items: center; }
-
-        /* ═══ Busca + Filtro linha ═══ */
-        .cli-search-row {
-          display: flex; gap: var(--space-2);
-          align-items: center;
-          margin-bottom: var(--space-3);
-          position: relative;
-        }
-        .cli-search-row > .mob-search-wrap,
-        .cli-search-row > .cli-search-wrap { flex: 1; margin-bottom: 0; }
-
-        /* Botão de filtro */
-        .cli-filter-btn {
-          width: 40px; height: 40px;
-          border: 1.5px solid var(--border);
-          background: var(--bg-card);
-          border-radius: var(--radius-md);
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer;
-          color: var(--text-secondary);
-          position: relative;
-          transition: all var(--dur-fast);
-          flex-shrink: 0;
-        }
-        .cli-filter-btn:hover { border-color: var(--primary); color: var(--primary); }
-        .cli-filter-dot {
-          position: absolute;
-          top: -3px; right: -3px;
-          width: 10px; height: 10px;
-          background: var(--primary);
-          border: 2px solid var(--bg-card);
-          border-radius: 50%;
-        }
-
-        /* Painel filtro */
-        .cli-filter-backdrop {
-          position: fixed; inset: 0; z-index: 40;
-        }
-        .cli-filter-panel {
-          position: absolute;
-          top: calc(100% + 8px);
-          right: 0;
-          background: var(--bg-card);
-          border-radius: var(--radius-md);
-          padding: var(--space-3);
-          box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-          width: 240px;
-          z-index: 50;
-          border: 1px solid var(--border);
-        }
-        .cli-filter-title {
-          font-size: var(--text-xs);
-          font-weight: var(--fw-black);
-          color: var(--text-secondary);
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-          margin-bottom: var(--space-2);
-          padding-bottom: var(--space-2);
-          border-bottom: 1px solid var(--border);
-        }
-        .cli-filter-opt {
-          display: flex; align-items: center;
-          gap: var(--space-2);
-          padding: 8px 10px;
-          border-radius: var(--radius-sm);
-          font-size: var(--text-sm);
-          cursor: pointer;
-          margin-bottom: 2px;
-          background: transparent;
-          border: none;
-          width: 100%;
-          text-align: left;
-          font-family: var(--font-base) !important;
-          color: var(--text-title);
-          transition: background var(--dur-fast);
-        }
-        .cli-filter-opt:hover { background: var(--accent-bg, #F5EEF0); }
-        .cli-filter-opt--active {
-          background: var(--primary-light);
-          color: var(--primary);
-          font-weight: var(--fw-black);
-        }
-        .cli-filter-radio {
-          width: 14px; height: 14px; border-radius: 50%;
-          border: 2px solid var(--border);
-          flex-shrink: 0;
-        }
-        .cli-filter-opt--active .cli-filter-radio {
-          border-color: var(--primary);
-          background: var(--primary);
-          box-shadow: inset 0 0 0 2px var(--bg-card);
-        }
-        .cli-filter-count {
-          margin-left: auto;
-          color: var(--text-muted);
-          font-size: var(--text-xs);
-          font-weight: var(--fw-medium);
-        }
-        .cli-filter-opt--active .cli-filter-count {
-          color: var(--primary);
-          font-weight: var(--fw-black);
-        }
-
-        /* ═══ Cliente desde X (mais colado no nome) ═══ */
-        .mob-since, .cli-since {
-          font-size: var(--text-xs);
-          color: var(--text-muted);
-          margin: 1px 0 0;
-          font-weight: var(--fw-medium);
-          line-height: 1.3;
-        }
 
         /* ═══ MODAL "DESCARTAR?" (guard) ═══ */
         .cli-discard-ov {
@@ -2823,83 +2077,6 @@ export default function Clientes() {
           }
         }
 
-        /* ═══ CHIPS DE FILTRO ═══ */
-        .cli-chips {
-          display: flex; gap: var(--space-2);
-          overflow-x: auto;
-          -webkit-overflow-scrolling: touch;
-          padding: 0 var(--space-1);
-          margin: 0 -4px;
-        }
-        .cli-chips::-webkit-scrollbar { display: none; }
-        .cli-chip {
-          background: var(--bg-card);
-          border: 1.5px solid var(--border);
-          padding: 8px 14px;
-          border-radius: var(--radius-full);
-          font-size: var(--text-xs);
-          font-weight: var(--fw-bold);
-          color: var(--text-secondary);
-          cursor: pointer;
-          font-family: var(--font-base) !important;
-          white-space: nowrap;
-          display: inline-flex; align-items: center; gap: 4px;
-          transition: all var(--dur-fast);
-          flex-shrink: 0;
-        }
-        .cli-chip:hover { border-color: var(--primary); }
-        .cli-chip--active {
-          background: var(--primary);
-          border-color: var(--primary);
-          color: var(--text-inverse);
-        }
-        .cli-chip-count {
-          background: rgba(0,0,0,0.1);
-          padding: 1px 6px;
-          border-radius: var(--radius-full);
-          font-size: 0.65rem;
-          font-weight: var(--fw-black);
-        }
-        .cli-chip--active .cli-chip-count {
-          background: rgba(255,255,255,0.25);
-        }
-
-        /* ═══ BANNER ANIVERSARIANTES ═══ */
-        .cli-aniv-banner {
-          background: linear-gradient(135deg, #FEF3C7, #FDE68A);
-          border: 1.5px solid #FCD34D;
-          padding: 12px 14px;
-          border-radius: var(--radius-md);
-          display: flex; align-items: center; gap: 12px;
-          cursor: pointer;
-          font-family: var(--font-base) !important;
-          text-align: left;
-          transition: transform var(--dur-fast) var(--ease-out);
-          width: 100%;
-        }
-        .cli-aniv-banner:hover { transform: translateY(-2px); }
-        .cli-aniv-banner-icon { font-size: 22px; flex-shrink: 0; }
-        .cli-aniv-banner-body { flex: 1; min-width: 0; }
-        .cli-aniv-banner-t {
-          font-size: var(--text-sm);
-          font-weight: var(--fw-black);
-          color: #92400E;
-          line-height: 1.2;
-        }
-        .cli-aniv-banner-d {
-          font-size: var(--text-xs);
-          color: #92400E;
-          margin-top: 2px;
-          opacity: 0.85;
-          overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-        }
-        .cli-aniv-banner-arrow {
-          font-size: var(--text-lg);
-          color: #92400E;
-          font-weight: var(--fw-black);
-          flex-shrink: 0;
-        }
-
         /* ═══ TOAST ═══ */
         .cli-toast {
           position: fixed;
@@ -2976,8 +2153,6 @@ export default function Clientes() {
           }
         }
       `}</style>
-      </>
-      )}
       </>
       )}
     </div>
