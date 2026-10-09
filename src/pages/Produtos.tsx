@@ -28,8 +28,8 @@ import BtnNovo from "@/components/BtnNovo";
 import Categorias from "@/pages/Categorias";
 import QuickAddInsumo from "@/components/QuickAddInsumo";
 import AppPageHeader from "@/components/AppPageHeader";
-import { ArrowLeft as ArrowLeftIc, Camera, CaretDown, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, SortAscending, WarningCircle, X as XIc, DotsThreeVertical, Lightbulb, Cake, BookOpen, Egg } from "@phosphor-icons/react";
-import { Botao, BotaoIcone, Linha as LinhaUi, Titulo as TituloUi, avisar, confirmar } from "@/components/base";
+import { ArrowLeft as ArrowLeftIc, Camera, CaretDown, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, SortAscending, WarningCircle, Trash, X as XIc, DotsThreeVertical, Lightbulb, Cake, BookOpen, Egg } from "@phosphor-icons/react";
+import { Botao, BotaoIcone, Janela, Linha as LinhaUi, Titulo as TituloUi, avisar, confirmar } from "@/components/base";
 import { sufixoVenda } from "@/lib/formaVenda";
 import "./produtosLista.css";
 import "@/components/produto/cadastroProduto.css";
@@ -4993,7 +4993,7 @@ export default function Produtos() {
                         <button
                           type="button"
                           className="prod-cta-pro-ia-info"
-                          onClick={() => setShowProIaModal(true)}
+                          onClick={() => avisar("Gerar a descrição com IA é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } })}
                           aria-label="Saiba mais"
                         >
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
@@ -5094,7 +5094,7 @@ export default function Produtos() {
                         <div
                           className={`prod-img-upload ${isLocked ? "prod-img-upload--locked" : ""}`}
                           onClick={() => {
-                            if (isLocked) { setShowProFotosModal(true); return; }
+                            if (isLocked) { avisar("Mais fotos por produto é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } }); return; }
                             if (!uploading) ref.current?.click();
                           }}
                           style={{
@@ -5170,7 +5170,7 @@ export default function Produtos() {
 
                 const toggleFotoPorOpcao = (grupoKey: string, atual: any) => {
                   if (!isPro) {
-                    setShowProFotosModal(true);
+                    avisar("Foto por opção é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } });
                     return;
                   }
                   const key = `grupo_${grupoKey}` as keyof Produto;
@@ -6189,156 +6189,6 @@ export default function Produtos() {
         </div>
       )}
 
-      {/* ── Modal dedicado da Ficha Técnica (overlay duplo, fica por cima do modal do produto) ── */}
-      {modal && fichaModalOpen && (
-        <div className="ficha-modal-overlay" onClick={() => setFichaModalOpen(false)}>
-          <div className="ficha-modal" onClick={e => e.stopPropagation()}>
-            <button className="ficha-modal-close-x" onClick={() => setFichaModalOpen(false)} aria-label="Fechar">✕</button>
-            {/* Header com imagem do produto + métricas */}
-            <div className="ficha-modal-header">
-              <div className="ficha-modal-header-inner">
-                <button className="ficha-modal-back" onClick={() => setFichaModalOpen(false)} aria-label="Voltar">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                  <span>Voltar</span>
-                </button>
-                <div className="ficha-modal-hero">
-                  {form.imagem_url
-                    ? <img src={form.imagem_url} alt={form.nome} className="ficha-modal-hero-img" />
-                    : <div className="ficha-modal-hero-img ficha-modal-hero-img--placeholder"><Cake size={28} weight="duotone" /></div>}
-                  <div className="ficha-modal-hero-info">
-                    <p className="ficha-modal-hero-label">Ficha técnica de</p>
-                    <h2 className="ficha-modal-hero-nome">{form.nome || "Novo produto"}</h2>
-                    <div className="ficha-modal-hero-metricas">
-                      <div className="ficha-modal-metric">
-                        <span>CMV</span>
-                        <strong>R$ {cmvProduto.toFixed(2)}</strong>
-                      </div>
-                      <div className="ficha-modal-metric">
-                        <span>Lucro</span>
-                        <strong>R$ {(form.preco_normal - cmvProduto).toFixed(2)}</strong>
-                      </div>
-                      <div className={`ficha-modal-metric ficha-modal-metric--margem ficha-modal-metric--${margemProduto >= 50 ? "alto" : margemProduto >= 25 ? "medio" : "baixo"}`}>
-                        <span>Margem</span>
-                        <strong>{margemProduto.toFixed(0)}%</strong>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                {margemProduto < 25 && form.preco_normal > 0 && fichaTecnica.length > 0 && (
-                  <p className="ficha-modal-alerta">Margem baixa. Considere reajustar o preço ou revisar a ficha.</p>
-                )}
-              </div>
-            </div>
-
-            {/* Corpo: lista de ingredientes + adicionar */}
-            <div className="ficha-modal-body">
-              {fichaTecnica.length === 0 ? (
-                <div className="ficha-modal-empty">
-                  <div className="ficha-modal-empty-icon"><Egg size={28} weight="duotone" /></div>
-                  <p className="ficha-modal-empty-title">Nenhum ingrediente ainda</p>
-                  <p className="ficha-modal-empty-sub">Adicione abaixo os insumos usados pra fazer <strong>1 unidade</strong> deste produto.</p>
-                </div>
-              ) : (
-                <div className="ficha-modal-list">
-                  {fichaTecnica.map(f => {
-                    const ins = f.insumo;
-                    if (!ins) return null;
-                    const custoLinha = calcCustoProd(f.quantidade, f.unidade_utilizada, ins.unidade, ins.custo_unitario || 0);
-                    const compatibleUnits = getCompatibleUnitsProd(ins.unidade);
-                    const hasUnitChoice = compatibleUnits.length > 1;
-                    return (
-                      <div key={f.insumo_id} className="ficha-modal-item">
-                        {ins.imagem_url
-                          ? <img src={ins.imagem_url} alt={ins.nome} className="ficha-modal-item-img" />
-                          : <div className="ficha-modal-item-img ficha-modal-item-img--placeholder"><Egg size={20} weight="duotone" /></div>}
-                        <div className="ficha-modal-item-info">
-                          <p className="ficha-modal-item-nome">{ins.nome}</p>
-                          <p className="ficha-modal-item-sub">R$ {(ins.custo_unitario || 0).toFixed(2)} / {ins.unidade}</p>
-                          <div className="ficha-modal-item-bottom">
-                            <div className="ficha-modal-item-qtd">
-                              <CampoNumero
-                                value={f.quantidade}
-                                onValor={n => atualizarQtdFicha(f.insumo_id, n)}
-                                placeholder="0"
-                              />
-                              {hasUnitChoice ? (
-                                <select
-                                  className="ficha-modal-unit-select"
-                                  value={f.unidade_utilizada}
-                                  onChange={e => atualizarUnidadeFicha(f.insumo_id, e.target.value)}
-                                >
-                                  {compatibleUnits.map(u => <option key={u} value={u}>{u}</option>)}
-                                </select>
-                              ) : (
-                                <span>{f.unidade_utilizada}</span>
-                              )}
-                            </div>
-                            <div className="ficha-modal-item-custo">R$ {custoLinha.toFixed(2)}</div>
-                          </div>
-                        </div>
-                        <button className="ficha-modal-item-del" onClick={() => removerInsumoFicha(f.insumo_id)} aria-label="Remover">✕</button>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Adicionar ingrediente (combobox + quick-add) */}
-              {!showQuickAdd ? (
-                <div className="ficha-modal-add">
-                  <div className="ficha-modal-add-label">Adicionar ingrediente</div>
-                  <input
-                    type="text"
-                    className="ficha-modal-add-input"
-                    placeholder="Buscar ingrediente cadastrado"
-                    value={buscaInsumo}
-                    onChange={e => setBuscaInsumo(e.target.value)}
-                  />
-                  {buscaInsumo.trim() && (
-                    <div className="ficha-modal-add-results">
-                      {insumosCadastrados
-                        .filter(i => !fichaTecnica.some(f => f.insumo_id === i.id))
-                        .filter(i => i.nome.toLowerCase().includes(buscaInsumo.toLowerCase()))
-                        .slice(0, 6)
-                        .map(i => (
-                          <button key={i.id} type="button" className="ficha-modal-add-result" onClick={() => adicionarInsumoFicha(i)}>
-                            {i.imagem_url
-                              ? <img src={i.imagem_url} alt={i.nome} className="ficha-modal-add-result-img" />
-                              : <div className="ficha-modal-add-result-img ficha-modal-add-result-img--placeholder"><Egg size={18} weight="duotone" /></div>}
-                            <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
-                              <p className="ficha-modal-item-nome">{i.nome}</p>
-                              <p className="ficha-modal-item-sub">R$ {(i.custo_unitario || 0).toFixed(2)} / {i.unidade}</p>
-                            </div>
-                          </button>
-                        ))}
-                      <button type="button" className="ficha-modal-add-novo" onClick={() => abrirQuickAdd(buscaInsumo)}>
-                        Cadastrar "{buscaInsumo}" como ingrediente novo
-                      </button>
-                    </div>
-                  )}
-                  {!buscaInsumo.trim() && (
-                    <button type="button" className="ficha-modal-add-novo ficha-modal-add-novo--solo" onClick={() => abrirQuickAdd("")}>
-                      Cadastrar ingrediente novo
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <QuickAddInsumo
-                  userId={userId}
-                  initialName={quickAddInitialName}
-                  onSaved={handleInsumoSalvoRapido}
-                  onCancel={fecharQuickAdd}
-                />
-              )}
-            </div>
-
-            {/* Rodapé */}
-            <div className="ficha-modal-footer">
-              <button className="ficha-modal-concluir" onClick={() => setFichaModalOpen(false)}>Concluir</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Preview Modal */}
       {previewProduto && (
@@ -6589,145 +6439,11 @@ export default function Produtos() {
         </div>
       )}
 
-      {/* ═══ Modal empty-state PRO (IA descrições) ═══ */}
-      {showProIaModal && (
-        <div className="prod-pro-modal-ov" onClick={() => setShowProIaModal(false)}>
-          <div className="prod-pro-modal" onClick={e => e.stopPropagation()}>
-            <button className="prod-pro-modal-close" onClick={() => setShowProIaModal(false)} aria-label="Fechar">✕</button>
-            <img src="/log.png" alt="Doonly" className="prod-pro-modal-logo" />
-            <div className="prod-pro-modal-eyebrow">
-              <img src="/coroa.png" alt="" style={{width: 14, height: 14, objectFit: "contain"}} />
-              Doonly PRO
-            </div>
-            <div className="prod-pro-modal-title">Descrições que vendem, feitas em 1 clique</div>
-            <p className="prod-pro-modal-sub">
-              A IA do Doonly cria descrições profissionais pros seus produtos automaticamente, no tom certo pra confeitaria.
-            </p>
-            <div className="prod-pro-modal-beneficios">
-              <div className="prod-pro-modal-item">
-                <span className="prod-pro-modal-item-check">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                </span>
-                <div className="prod-pro-modal-item-txt">
-                  <b>Descrições instantâneas</b> — digita o nome, IA gera o resto
-                </div>
-              </div>
-              <div className="prod-pro-modal-item">
-                <span className="prod-pro-modal-item-check">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                </span>
-                <div className="prod-pro-modal-item-txt">
-                  <b>Fotos ilimitadas</b> por produto e por variação
-                </div>
-              </div>
-              <div className="prod-pro-modal-item">
-                <span className="prod-pro-modal-item-check">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                </span>
-                <div className="prod-pro-modal-item-txt">
-                  <b>Ficha técnica em PDF</b> com custo, margem e ingredientes
-                </div>
-              </div>
-              <div className="prod-pro-modal-item">
-                <span className="prod-pro-modal-item-check">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                </span>
-                <div className="prod-pro-modal-item-txt">
-                  <b>Cardápio ilimitado</b> e recursos avançados
-                </div>
-              </div>
-            </div>
-            <button
-              className="prod-pro-modal-cta"
-              onClick={() => { setShowProIaModal(false); navigate("/configuracoes"); }}
-            >
-              <img src="/coroa.png" alt="" style={{width: 16, height: 16, objectFit: "contain"}} />
-              Quero conhecer o PRO
-            </button>
-            <button className="prod-pro-modal-later" onClick={() => setShowProIaModal(false)}>
-              Agora não
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ═══ Modal empty-state PRO (Fotos por opção) ═══ */}
-      {showProFotosModal && (
-        <div className="prod-pro-modal-ov" onClick={() => setShowProFotosModal(false)}>
-          <div className="prod-pro-modal" onClick={e => e.stopPropagation()}>
-            <button className="prod-pro-modal-close" onClick={() => setShowProFotosModal(false)} aria-label="Fechar">✕</button>
-            <img src="/log.png" alt="Doonly" className="prod-pro-modal-logo" />
-            <div className="prod-pro-modal-eyebrow">
-              <img src="/coroa.png" alt="" style={{width: 14, height: 14, objectFit: "contain"}} />
-              Doonly PRO
-            </div>
-            <div className="prod-pro-modal-title">Encante o cliente com fotos profissionais</div>
-            <p className="prod-pro-modal-sub">
-              No Doonly PRO, cada opção do seu produto pode ter foto própria. Cliente vê exatamente o que vai receber.
-            </p>
-            <div className="prod-pro-modal-beneficios">
-              <div className="prod-pro-modal-item">
-                <span className="prod-pro-modal-item-check">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                </span>
-                <div className="prod-pro-modal-item-txt">
-                  <b>Foto por opção</b> — cada massa, sabor ou tamanho com foto própria
-                </div>
-              </div>
-              <div className="prod-pro-modal-item">
-                <span className="prod-pro-modal-item-check">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                </span>
-                <div className="prod-pro-modal-item-txt">
-                  <b>Fotos ilimitadas</b> por produto e por variação
-                </div>
-              </div>
-              <div className="prod-pro-modal-item">
-                <span className="prod-pro-modal-item-check">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                </span>
-                <div className="prod-pro-modal-item-txt">
-                  <b>Galeria de fotos</b> — até 5 fotos principais por produto
-                </div>
-              </div>
-              <div className="prod-pro-modal-item">
-                <span className="prod-pro-modal-item-check">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                </span>
-                <div className="prod-pro-modal-item-txt">
-                  <b>Vitrine profissional</b> no cardápio digital
-                </div>
-              </div>
-            </div>
-            <button
-              className="prod-pro-modal-cta"
-              onClick={() => { setShowProFotosModal(false); navigate("/configuracoes"); }}
-            >
-              <img src="/coroa.png" alt="" style={{width: 16, height: 16, objectFit: "contain"}} />
-              Quero conhecer o PRO
-            </button>
-            <button className="prod-pro-modal-later" onClick={() => setShowProFotosModal(false)}>
-              Agora não
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* ═══ Modal aviso troca de subtipo (perde dados) ═══ */}
-      {confirmMudaSubtipo && (
-        <div className="st-confirm-overlay" onClick={() => setConfirmMudaSubtipo(null)}>
-          <div className="st-confirm-modal" onClick={e => e.stopPropagation()}>
-            <h3 className="st-confirm-title">
-              <span className="st-confirm-icon"><WarningCircle size={24} weight="bold" /></span>
-              Confirmar alteração
-            </h3>
-            <p className="st-confirm-body">
-              Ao mudar para <strong>{confirmMudaSubtipo.novoSubtipo === "so_sabores" ? "Só sabores" : confirmMudaSubtipo.novoSubtipo === "so_tamanhos" ? "Só tamanhos" : "Sabores e tamanhos"}</strong>, <strong>{confirmMudaSubtipo.quantidade} {confirmMudaSubtipo.oQuePerde}{confirmMudaSubtipo.quantidade !== 1 ? "s" : ""}</strong> {confirmMudaSubtipo.quantidade !== 1 ? "serão removidos" : "será removido"} ao salvar, incluindo os preços associados.
-            </p>
-            <p className="st-confirm-warning">Esta ação não pode ser desfeita após salvar.</p>
-            <div className="st-confirm-btns">
-              <button className="st-confirm-btn-cancel" onClick={() => setConfirmMudaSubtipo(null)}>Cancelar</button>
-              <button className="st-confirm-btn-ok" onClick={() => {
+      <Janela aberta={!!confirmMudaSubtipo} aoFechar={() => setConfirmMudaSubtipo(null)} icone={<WarningCircle size={32} />} tom="laranja"
+        titulo="Trocar o tipo de opções?"
+        texto={confirmMudaSubtipo ? `Ao mudar para ${confirmMudaSubtipo.novoSubtipo === "so_sabores" ? "Só sabores" : confirmMudaSubtipo.novoSubtipo === "so_tamanhos" ? "Só tamanhos" : "Sabores e tamanhos"}, ${confirmMudaSubtipo.quantidade} ${confirmMudaSubtipo.oQuePerde}${confirmMudaSubtipo.quantidade !== 1 ? "s" : ""} ${confirmMudaSubtipo.quantidade !== 1 ? "saem" : "sai"} quando você salvar, com os preços. Não dá pra desfazer depois de salvar.` : ""}
+        acoes={<><Botao variante="secundario" onClick={() => setConfirmMudaSubtipo(null)}>Cancelar</Botao><Botao onClick={() => {
                 const novo = confirmMudaSubtipo.novoSubtipo;
                 // Limpa dados do lado que vai ser oculto
                 if (novo === "so_sabores") {
@@ -6747,43 +6463,16 @@ export default function Produtos() {
                 });
                 setWizardSubtipo(novo);
                 setConfirmMudaSubtipo(null);
-              }}>Continuar</button>
-            </div>
-          </div>
-        </div>
-      )}
+              }}>Trocar</Botao></>} />
 
       {/* ═══ Modal "Descartar cadastro?" ═══ */}
-      {confirmDiscardProd && (
-        <div className="prod-discard-ov" onClick={() => setConfirmDiscardProd(false)}>
-          <div className="prod-discard-box" onClick={e => e.stopPropagation()}>
-            <div className="prod-discard-icon"><WarningCircle size={30} weight="bold" /></div>
-            <h3 className="prod-discard-title">{form.id ? "Descartar alterações?" : "Descartar cadastro?"}</h3>
-            <p className="prod-discard-desc">Você preencheu dados que serão perdidos.</p>
-            <div className="prod-discard-actions">
-              <button className="prod-discard-btn prod-discard-btn--stay" onClick={() => setConfirmDiscardProd(false)}>
-                Continuar preenchendo
-              </button>
-              <button className="prod-discard-btn prod-discard-btn--go" onClick={() => { limparDraft(); setConfirmDiscardProd(false); fecharModal(); }}>
-                Descartar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Janela aberta={confirmDiscardProd} aoFechar={() => setConfirmDiscardProd(false)} icone={<WarningCircle size={32} />} tom="laranja"
+        titulo={form.id ? "Descartar as alterações?" : "Descartar o cadastro?"} texto="O que você preencheu vai se perder."
+        acoes={<><Botao variante="secundario" onClick={() => setConfirmDiscardProd(false)}>Continuar</Botao><Botao variante="perigo" onClick={() => { limparDraft(); setConfirmDiscardProd(false); fecharModal(); }}>Descartar</Botao></>} />
 
-      {deleteConfirm && (
-        <div className="prod-modal-overlay" onClick={() => setDeleteConfirm(null)}>
-          <div className="prod-confirm" onClick={e => e.stopPropagation()}>
-            <p className="prod-confirm-title">Excluir produto?</p>
-            <p className="prod-confirm-sub">Esta ação não pode ser desfeita.</p>
-            <div className="prod-confirm-btns">
-              <button onClick={() => setDeleteConfirm(null)}>Cancelar</button>
-              <button onClick={() => handleDelete(deleteConfirm)} style={{ background: "var(--error)", color: "var(--text-inverse)" }}>Excluir</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Janela aberta={!!deleteConfirm} aoFechar={() => setDeleteConfirm(null)} icone={<Trash size={32} />} tom="vermelho"
+        titulo="Excluir o produto?" texto="Ele sai do cardápio e da sua lista. Pedidos antigos não mudam."
+        acoes={<><Botao variante="secundario" onClick={() => setDeleteConfirm(null)}>Cancelar</Botao><Botao variante="perigo" onClick={() => deleteConfirm && handleDelete(deleteConfirm)}>Excluir</Botao></>} />
 
       </>
       }
