@@ -1,0 +1,40 @@
+/* Personalização (09/10 · 3.54). A lista usa categorias.css (ct-*); aqui só o que é daqui. */
+.pz-preco { flex: none; font-size: 15px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; }
+.pz-preco.g { color: var(--ui-verde); }
+
+.pz-busca { display: flex; align-items: center; gap: 8px; min-height: 48px; margin-bottom: 12px; padding: 0 12px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto-3); }
+.pz-busca:focus-within { border-color: var(--ui-rosa); }
+.pz-busca input { flex: 1; min-width: 0; height: 45px; margin: 0; padding: 0; border: 0; outline: 0; background: none; font-family: inherit; font-size: 16px; font-weight: 500; color: var(--ui-texto); -webkit-appearance: none; appearance: none; }
+.pz-busca input::-webkit-search-cancel-button { -webkit-appearance: none; }
+.pz-busca button { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: 0 -10px 0 0; border: 0; background: none; color: var(--ui-texto-2); cursor: pointer; }
+.pz-semres { margin: 8px 4px; font-size: 14px; color: var(--ui-texto-2); }
+
+/* exemplo da tela vazia */
+.pz-ex { margin-top: 12px; padding: 16px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); }
+.pz-ex-t { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
+.pz-ex-l { display: flex; align-items: center; gap: 12px; min-height: 48px; font-size: 15px; font-weight: 500; }
+.pz-ex-l + .pz-ex-l { border-top: 1px solid var(--ui-linha); }
+.pz-ex-l i { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border: 1.5px solid var(--ui-borda-campo); border-radius: 6px; color: #fff; }
+.pz-ex-l.on i { border-color: var(--ui-rosa); background: var(--ui-rosa); }
+.pz-ex-l span { flex: 1; min-width: 0; }
+.pz-ex-l b { font-weight: 700; color: var(--ui-rosa-escuro); }
+.pz-ex-l b.g { color: var(--ui-verde); }
+
+/* formulário */
+.pz-form { display: flex; flex-direction: column; gap: 16px; }
+.pz-seg { display: flex; gap: 4px; padding: 4px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
+.pz-seg button { flex: 1; min-width: 0; min-height: 44px; margin: 0; padding: 0 8px; border: 0; border-radius: 10px; background: none; color: var(--ui-texto-2); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+.pz-seg button[aria-checked="true"] { background: var(--ui-branco); color: var(--ui-texto); box-shadow: var(--ui-sombra-cartao); }
+.pz-prods { margin-top: -6px; }
+.pz-prods-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
+.pz-prods-l { display: flex; flex-direction: column; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); overflow: hidden; }
+.pz-prod { display: flex; align-items: center; gap: 12px; min-height: 56px; margin: 0; padding: 6px 12px; border: 0; background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; }
+.pz-prod + .pz-prod { border-top: 1px solid var(--ui-linha); }
+.pz-prod[aria-checked="true"] { background: var(--ui-rosa-claro); }
+.pz-chk { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border: 1.5px solid var(--ui-borda-campo); border-radius: 6px; background: var(--ui-branco); color: #fff; }
+.pz-prod[aria-checked="true"] .pz-chk { border-color: var(--ui-rosa); background: var(--ui-rosa); }
+.pz-prod-f { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; overflow: hidden; border-radius: 10px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.pz-prod-f img { width: 100%; height: 100%; object-fit: cover; }
+.pz-prod-n { flex: 1; min-width: 0; font-size: 15px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pz-prods-l .pz-semres { margin: 12px; }
+.pz-erro { margin-top: 6px; color: var(--ui-vermelho); }
