@@ -155,7 +155,7 @@ export default function Indicar() {
                       <span className="in9-tag"><Lock size={14} weight="bold" />{p.meta} assinantes</span>
                     )}
                     {ganhou && (
-                      <a href="https://wa.me/554199999999?text=Oi! Quero resgatar meu pr%C3%AAmio de indica%C3%A7%C3%A3o do Doonly." target="_blank" rel="noopener" className="in9-resgatar">
+                      <a href="https://wa.me/5511978414991?text=Oi! Quero resgatar meu pr%C3%AAmio de indica%C3%A7%C3%A3o do Doonly." target="_blank" rel="noopener" className="in9-resgatar">
                         <WhatsappLogo size={18} weight="fill" />Resgatar pelo WhatsApp
                       </a>
                     )}
