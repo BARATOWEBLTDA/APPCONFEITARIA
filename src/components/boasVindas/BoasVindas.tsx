@@ -31,6 +31,17 @@ type Props = {
 
 const TOTAL = 6
 
+/**
+ * Pra navegar logo depois que as boas-vindas fecham: elas acabaram de pedir um "voltar" pra tirar a entrada
+ * delas do histórico, e esse voltar desfaria a navegação. Espera ele terminar (ou 600ms) e só então segue.
+ */
+export function depoisDoVoltar(fn: () => void) {
+  let foi = false
+  const ir = () => { if (!foi) { foi = true; fn() } }
+  if (window.history.state?.bvTela) { window.addEventListener('popstate', () => setTimeout(ir, 0), { once: true }); setTimeout(ir, 600) }
+  else ir()
+}
+
 const vibrarLeve = () => {
   try { if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(15) } catch { /* sem vibração: segue */ }
 }

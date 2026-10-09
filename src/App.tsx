@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "@/lib/supabase";
 import { NotificationProvider } from "@/context/NotificationContext";
-import BoasVindas from "@/components/boasVindas/BoasVindas";
+import BoasVindas, { depoisDoVoltar } from "@/components/boasVindas/BoasVindas";
 import Auth from "@/pages/Auth";
 import EsqueciSenha from "@/pages/EsqueciSenha";
 import ResetPassword from "@/pages/ResetPassword";
@@ -172,13 +172,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
           // "Configurar minha confeitaria": vai pro Início e os Primeiros passos aparecem em destaque (09/10 · 3.67)
           if (configurar) {
             try { sessionStorage.setItem("doonly_pp_destacar", "1"); } catch { /* sem storage: só não destaca */ }
-            if (local.pathname !== "/inicio") {
-              // as boas-vindas acabaram de pedir um "voltar" pra tirar a entrada delas do histórico: espera ele terminar
-              let foi = false;
-              const ir = () => { if (!foi) { foi = true; navegar("/inicio"); } };
-              if (window.history.state?.bvTela) { window.addEventListener("popstate", () => setTimeout(ir, 0), { once: true }); setTimeout(ir, 600); }
-              else ir();
-            }
+            if (local.pathname !== "/inicio") depoisDoVoltar(() => navegar("/inicio"));
           }
           // Terminou ou tocou em "Pular": nos dois casos o guia não volta mais
           try {

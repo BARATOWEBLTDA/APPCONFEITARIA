@@ -1,10 +1,25 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { Users, Cake, Hourglass, CheckCircle, FilePdf, Medal } from "@phosphor-icons/react";
+import { useNavigate } from "react-router-dom";
+import { Users, Cake, Hourglass, CheckCircle, FilePdf, Medal, Play } from "@phosphor-icons/react";
+import { Botao } from "@/components/base";
+import BoasVindas, { depoisDoVoltar } from "@/components/boasVindas/BoasVindas";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({ usuarios: 0, receitasComunidade: 0, receitasPendentes: 0, receitasAprovadas: 0, pdfs: 0, receitasDoonly: 0 });
   const [loading, setLoading] = useState(true);
+  // Testar as boas-vindas sem criar conta (09/10 · 3.69): abre a mesma apresentação de quem acabou de se cadastrar
+  const navigate = useNavigate();
+  const [boasVindas, setBoasVindas] = useState(false);
+  const [nome, setNome] = useState("");
+  const abrirBoasVindas = async () => {
+    try {
+      const { data } = await supabase.auth.getUser();
+      const md: any = data.user?.user_metadata || {};
+      setNome(String(md.nome || md.full_name || md.name || "").trim().split(/\s+/)[0]);
+    } catch { /* sem nome: a primeira tela fala só "você" */ }
+    setBoasVindas(true);
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -61,7 +76,31 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      <h2 className="ad-h2">Testes</h2>
+      <div className="ad-teste">
+        <span className="ad-ic ad-ic--rosa" aria-hidden="true"><Play size={22} weight="bold" /></span>
+        <div className="ad-tx">
+          <b className="ad-teste-t">Boas-vindas</b>
+          <small>A apresentação que aparece depois de criar a conta. No fim, "Configurar minha confeitaria" leva ao Início, como pra quem acabou de entrar.</small>
+        </div>
+        <Botao onClick={abrirBoasVindas}>Ver as boas-vindas</Botao>
+      </div>
+
+      <BoasVindas isOpen={boasVindas} nome={nome} onClose={(_tela, configurar) => {
+        setBoasVindas(false);
+        if (configurar) {
+          try { sessionStorage.setItem("doonly_pp_destacar", "1"); } catch { /* sem storage: só não destaca */ }
+          depoisDoVoltar(() => navigate("/inicio"));
+        }
+      }} />
+
       <style>{`
+        .ad-h2 { margin: 28px 0 12px; font-size: 17px; font-weight: 800; color: var(--ui-texto); }
+        .ad-teste { display: flex; align-items: center; gap: 14px; padding: 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
+        .ad-teste .ad-tx { flex: 1; }
+        .ad-teste .ad-teste-t { font-size: 15px; }
+        .ad-teste small { line-height: 1.45; }
+        @media (max-width: 599px) { .ad-teste { flex-wrap: wrap; } .ad-teste .ui-bt { width: 100%; } }
         .ad-root { font-family: var(--font-base); color: var(--ui-texto); max-width: 1000px; }
         .ad-h1 { font-size: 22px; font-weight: 800; color: var(--ui-texto); margin: 0; }
         .ad-sub { font-size: 15px; font-weight: 500; color: var(--ui-texto-2); margin: 4px 0 20px; }
