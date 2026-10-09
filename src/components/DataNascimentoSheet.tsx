@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { useSobreposicao } from "@/components/base/useSobreposicao";
 
 /**
  * Calendário do aniversário (02/10) — o mesmo visual do agendamento do cardápio,
@@ -22,11 +23,9 @@ export default function DataNascimentoSheet({ valor, onEscolher, onClose }: { va
   const [ano, setAno] = useState(base.getFullYear());
   const [mes, setMes] = useState(base.getMonth());
   const [sel, setSel] = useState(valor);
-  useEffect(() => {
-    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", esc);
-    return () => window.removeEventListener("keydown", esc);
-  }, [onClose]);
+  // Esc e o voltar do Android fecham só o calendário (antes fechavam também a janela de baixo)
+  const caixa = useRef<HTMLDivElement>(null);
+  useSobreposicao(true, onClose, caixa);
   const anos = useMemo(() => { const a: number[] = []; for (let y = hoje.getFullYear(); y >= hoje.getFullYear() - 100; y--) a.push(y); return a; }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const celulas = useMemo(() => {
     const primeiro = new Date(ano, mes, 1);
@@ -40,7 +39,7 @@ export default function DataNascimentoSheet({ valor, onEscolher, onClose }: { va
   const podeAvancar = new Date(ano, mes + 1, 1) <= hoje;
   return (
     <div className="dns-ov" onClick={onClose} role="dialog" aria-modal="true" aria-label="Data de aniversário">
-      <div className="dns" onClick={e => e.stopPropagation()}>
+      <div className="dns" ref={caixa} tabIndex={-1} onClick={e => e.stopPropagation()}>
         <span className="dns-alca" aria-hidden="true" />
         <div className="dns-hd"><b>Aniversário</b><small>Escolha o mês e o ano, depois o dia</small></div>
         <div className="dns-mes">
@@ -69,7 +68,7 @@ export default function DataNascimentoSheet({ valor, onEscolher, onClose }: { va
         </div>
       </div>
       <style>{`
-        .dns-ov { position: fixed; inset: 0; z-index: 1400; background: rgba(45,31,38,.5); display: flex; align-items: flex-end; justify-content: center; font-family: var(--font-base, inherit); }
+        .dns-ov { position: fixed; inset: 0; z-index: 10085; background: rgba(45,31,38,.5); display: flex; align-items: flex-end; justify-content: center; font-family: var(--font-base, inherit); }
         @media (min-width: 768px) { .dns-ov { align-items: center; } }
         .dns { width: 100%; max-width: 440px; background: #fff; border-radius: 22px 22px 0 0; padding: 10px 16px calc(18px + env(safe-area-inset-bottom, 0px)); color: #2C1219; animation: dnsSobe .25s ease; }
         @media (min-width: 768px) { .dns { border-radius: 22px; } }

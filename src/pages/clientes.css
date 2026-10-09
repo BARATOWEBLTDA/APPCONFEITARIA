@@ -121,3 +121,34 @@
 }
 @media (prefers-reduced-motion: reduce) { .cl9-esq span { animation: none; } }
 @media (min-width: 900px) { .cli-root { padding-top: 0 !important; } }
+
+/* 9.2 · cadastrar e editar (3.33) */
+.cl9-f { display: flex; flex-direction: column; gap: 16px; padding-bottom: 8px; font-family: var(--font-base); color: var(--ui-texto); }
+.cl9-f button { font-family: inherit; cursor: pointer; }
+.cl9-f-foto { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin: 0; padding: 0; border: 0; background: none; text-align: left; }
+.cl9-f-av { flex: none; display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; overflow: hidden; border: 2px dashed var(--ui-borda); border-radius: 50%; background: var(--ui-cinza); color: var(--ui-texto-2); }
+.cl9-f-av img { width: 100%; height: 100%; object-fit: cover; }
+.cl9-f-foto b { display: block; font-size: 15px; font-weight: 800; color: var(--ui-rosa-escuro); }
+.cl9-f-foto small { display: block; font-size: 13px; color: var(--ui-texto-2); }
+.cl9-f-dup { display: flex; align-items: center; gap: 12px; margin-top: -4px; padding: 12px; border-radius: var(--ui-raio); background: var(--ui-laranja-fundo); color: var(--ui-laranja); }
+.cl9-f-dup > span { flex: 1; min-width: 0; }
+.cl9-f-dup b { display: block; font-size: 14px; font-weight: 800; }
+.cl9-f-dup small { display: block; font-size: 13px; color: #92400E; }
+.cl9-f-dup button { flex: none; min-height: 44px; margin: 0; padding: 0 14px; border: 0; border-radius: var(--ui-raio); background: #fff; color: #92400E; font-size: 14px; font-weight: 800; }
+.cl9-f-mais { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin: 0; padding: 10px 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); text-align: left; color: var(--ui-texto); }
+.cl9-f-mais > span { flex: 1; min-width: 0; }
+.cl9-f-mais b { display: block; font-size: 15px; font-weight: 800; }
+.cl9-f-mais small { display: block; font-size: 13px; color: var(--ui-texto-2); }
+.cl9-f-mais svg { flex: none; color: var(--ui-texto-2); transition: transform .2s; }
+.cl9-f-mais.on svg { transform: rotate(180deg); }
+.cl9-f-extra { display: flex; flex-direction: column; gap: 14px; }
+.cl9-f-sec { margin: 8px 0 -4px; font-size: 15px; font-weight: 800; }
+.cl9-f-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.cl9-f-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.cl9-f-chips button { min-height: 44px; margin: 0; padding: 0 14px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto-2); font-size: 14px; font-weight: 700; }
+.cl9-f-chips button[aria-pressed="true"] { border-color: var(--ui-vinho); background: var(--ui-vinho); color: #fff; }
+.cl9-f-excluir { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; margin: 8px 0 0; border: 0; border-radius: var(--ui-raio); background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); font-size: 15px; font-weight: 800; }
+.cl9-f-data { position: relative; }
+.cl9-f-data input { cursor: pointer; }
+.cl9-f-limpar { position: absolute; top: 27px; right: 4px; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; margin: 0; border: 0; border-radius: 10px; background: none; color: var(--ui-texto-2); }
+.cl9-f-uf { padding: 0 12px 0 4px; font-size: 15px; font-weight: 700; color: var(--ui-texto-2); }

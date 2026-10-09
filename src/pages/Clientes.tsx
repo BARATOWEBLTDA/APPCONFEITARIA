@@ -7,8 +7,8 @@ import { supabase } from "@/lib/supabase";
 import { useProfile, isPro } from "@/hooks/useProfile";
 import AppPageHeader from "@/components/AppPageHeader";
 import ReqTag from "@/components/ReqTag";
-import { Botao, Janela, TelaVazia, avisar, confirmar } from "@/components/base";
-import { AddressBook, Cake, CaretRight, MagnifyingGlass, Plus, UsersThree, WhatsappLogo, X } from "@phosphor-icons/react";
+import { Botao, Campo, CampoArea, Janela, TelaVazia, avisar, confirmar } from "@/components/base";
+import { AddressBook, Cake, CalendarBlank, Camera, CaretDown, CaretRight, MagnifyingGlass, Plus, Trash, UsersThree, WarningCircle, WhatsappLogo, X } from "@phosphor-icons/react";
 import "./clientes.css";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -227,6 +227,7 @@ export default function Clientes() {
   const [saving,        setSaving]        = useState(false);
   const [cepLoading,    setCepLoading]    = useState(false);
   const [avancadoOpen,  setAvancadoOpen]  = useState(false);
+  const [tentouSalvar,  setTentouSalvar]  = useState(false); // mostra o que falta só depois de tocar em salvar
 
   // Modais
   const [showNiver,     setShowNiver]     = useState(false);
@@ -272,7 +273,7 @@ export default function Clientes() {
   }, [toastImport]);
 
   useEffect(() => {
-    const isOpen = showForm || !!confirmDelete;
+    const isOpen = !!confirmDelete;
     if (isOpen) {
       const scrollY = window.scrollY;
       document.body.style.position = "fixed";
@@ -289,7 +290,7 @@ export default function Clientes() {
         window.scrollTo(0, scrollY);
       };
     }
-  }, [showForm, confirmDelete]);
+  }, [confirmDelete]);
 
   // ── Data ──────────────────────────────────────────────────────────────────
 
@@ -351,6 +352,7 @@ export default function Clientes() {
     setCompleto(emptyCompleto);
     setPreview(null);
     setAvancadoOpen(false);
+    setTentouSalvar(false);
     setShowForm(true);
   };
 
@@ -360,7 +362,7 @@ export default function Clientes() {
     setRapido({ nome: c.nome, whatsapp: c.whatsapp || "", email: c.email || "", observacoes: c.observacoes || "", data_nascimento: c.data_nascimento || "" });
     setCompleto({
       nome: c.nome || "", nome_contato: c.nome_contato || "", email: c.email || "",
-      whatsapp: c.whatsapp || "", cpf_cnpj: c.cpf_cnpj || "", data_nascimento: c.data_nascimento || "",
+      whatsapp: maskPhone((c.whatsapp || "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "")), cpf_cnpj: c.cpf_cnpj || "", data_nascimento: c.data_nascimento || "",
       sexo: c.sexo || "", observacoes: c.observacoes || "", foto_url: c.foto_url || "",
       cep: c.cep || "", rua: c.rua || "", numero: c.numero || "", complemento: c.complemento || "",
       bairro: c.bairro || "", cidade: c.cidade || "", estado: c.estado || "", pais: c.pais || "Brasil",
@@ -370,6 +372,7 @@ export default function Clientes() {
     // Se cliente tem dados extras, abre avançado automaticamente
     const temExtras = !!(c.foto_url || c.data_nascimento || c.sexo || c.email || c.cpf_cnpj || c.cep || c.rua || c.bairro || c.observacoes || c.origem || c.como_conheceu);
     setAvancadoOpen(temExtras);
+    setTentouSalvar(false);
     setShowForm(true);
   };
 
@@ -491,10 +494,32 @@ export default function Clientes() {
     );
   };
 
-  const tryCloseForm = () => {
-    if (hasFormData()) setConfirmDiscard("form");
-    else setShowForm(false);
+  const fecharForm = () => { setShowForm(false); setEditando(null); setTimeout(() => setCompleto(emptyCompleto), 250); };
+  const tryCloseForm = async () => {
+    if (!hasFormData()) { setShowForm(false); return; }
+    const ok = await confirmar({ titulo: editando ? "Sair sem salvar?" : "Descartar o cadastro?", texto: editando ? "As mudanças que você fez nesta cliente vão se perder." : "O que você preencheu vai se perder.", rotulo: editando ? "Sair sem salvar" : "Descartar", rotuloVoltar: "Continuar editando", perigo: true, icone: "alerta" });
+    if (ok) fecharForm();
   };
+  // Cadastrar/Salvar: mostra embaixo de cada campo o que falta (antes o botão ficava apagado sem dizer por quê)
+  const salvarComAviso = () => {
+    setTentouSalvar(true);
+    if (!completo.nome.trim() || (completo.whatsapp || "").replace(/\D/g, "").length < 10) return;
+    handleSave();
+  };
+  const excluirDoForm = async () => {
+    if (!editando) return;
+    const id = editando;
+    const ok = await confirmar({ titulo: "Excluir esta cliente?", texto: "O cadastro some da lista. Os pedidos dela continuam salvos.", rotulo: "Excluir", perigo: true, icone: "erro" });
+    if (!ok) return;
+    fecharForm();
+    await handleDelete(id);
+    avisar("Cliente excluída", { tipo: "ok" });
+  };
+  // Número que já é de outra cliente (pra não cadastrar a mesma pessoa duas vezes)
+  const digitosForm = (completo.whatsapp || "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
+  const clienteRepetido = digitosForm.length >= 10
+    ? clientes.find(c => c.id !== editando && (c.whatsapp || "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "") === digitosForm) || null
+    : null;
 
   const tryCloseImport = () => {
     if (importSheet && importSheet.some(c => c.selecionado)) setConfirmDiscard("import");
@@ -635,688 +660,79 @@ export default function Clientes() {
   // Iniciais pra avatar preview
   const iniciais = (completo.nome || "").trim().split(/\s+/).slice(0,2).map(s => s[0]?.toUpperCase() || "").join("") || "?";
 
-  const formJSX = showForm ? (
-    <div className="cli-modal-overlay" onClick={tryCloseForm}>
-      <div className="cli-modal" onClick={e => e.stopPropagation()}>
-        {/* Header */}
-        <div className="cli-modal-hdr">
-          <div className="cli-modal-hdr-t">
-            <h2 className="cli-modal-title">{editando ? "Editar cliente" : "Novo cliente"}</h2>
-            <p className="cli-modal-sub">{editando ? "Atualize os dados" : "Cadastre rápido, complete depois se quiser"}</p>
-          </div>
-          <button className="cli-modal-close" onClick={tryCloseForm} aria-label="Fechar">✕</button>
-        </div>
+  const formJSX = (
+    <Janela aberta={showForm} aoFechar={tryCloseForm} tipo="conteudo" titulo={editando ? "Editar cliente" : "Novo cliente"}
+      acoes={<>
+        <Botao variante="secundario" onClick={tryCloseForm}>Cancelar</Botao>
+        <Botao carregando={saving} onClick={salvarComAviso}>{editando ? "Salvar" : "Cadastrar cliente"}</Botao>
+      </>}>
+      <div className="cl9-f">
+        <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} hidden />
+        <button type="button" className="cl9-f-foto" onClick={() => fileRef.current?.click()}>
+          <span className="cl9-f-av">{preview ? <img src={preview} alt="" /> : <Camera size={26} weight="bold" />}</span>
+          <span><b>{preview ? "Trocar a foto" : "Colocar uma foto"}</b><small>Opcional · ajuda a lembrar quem é</small></span>
+        </button>
 
-        <div className="cli-modal-split">
-          {/* ── Form (esquerda) ── */}
-          <div className="cli-modal-body">
-            {/* ═══ ESSENCIAL ═══ */}
-            <div className="cli-section-lbl">Essencial</div>
-            <div className="cli-field">
-              <label>Nome <ReqTag /></label>
-              <input type="text" placeholder="Ex: Ana Beatriz" value={completo.nome} onChange={e => setCompleto(f => ({...f, nome: e.target.value}))} autoComplete="off" />
-            </div>
-            <div className="cli-field">
-              <label>WhatsApp <ReqTag /></label>
-              <input type="tel" placeholder="(00) 9 0000-0000" value={completo.whatsapp} onChange={e => setCompleto(f => ({...f, whatsapp: maskPhone(e.target.value)}))} autoComplete="off" maxLength={16} />
-            </div>
-
-            {/* ═══ + AVANÇADO (toggle) ═══ */}
-            {!avancadoOpen ? (
-              <button type="button" className="cli-adv-toggle" onClick={() => setAvancadoOpen(true)}>
-                <div className="cli-adv-toggle-info">
-                  <div className="cli-adv-toggle-t">
-                    <span>⚙️</span>
-                    <span className="cli-adv-toggle-lbl">+ Avançado</span>
-                  </div>
-                  <p className="cli-adv-toggle-desc">Foto, aniversário, endereço, observações...</p>
-                </div>
-                <div className="cli-adv-toggle-arrow">+</div>
-              </button>
-            ) : (
-              <div className="cli-adv-open">
-                <div className="cli-adv-hdr">
-                  <span className="cli-adv-hdr-t">⚙️ Avançado</span>
-                  <button type="button" className="cli-adv-collapse" onClick={() => setAvancadoOpen(false)}>− Fechar</button>
-                </div>
-
-                {/* Foto */}
-                <div className="cli-field">
-                  <label>Foto do cliente <span className="cli-opt">opcional</span></label>
-                  <div className="cli-foto-row">
-                    <div className="cli-foto-picker" onClick={() => fileRef.current?.click()}>
-                      {preview
-                        ? <img src={preview} alt="foto" />
-                        : <span>📷</span>
-                      }
-                    </div>
-                    <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{display:"none"}} />
-                    <button type="button" className="cli-foto-btn" onClick={() => fileRef.current?.click()}>
-                      {preview ? "Trocar foto" : "Escolher foto..."}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Aniversário + Sexo */}
-                <div className="cli-row-2">
-                  <div className="cli-field">
-                    <label>Aniversário <span className="cli-opt">opcional</span></label>
-                    <button type="button" className="cli-data-btn" onClick={() => setNiverAberto(true)}>
-                      <span className={completo.data_nascimento ? "" : "cli-data-ph"}>{completo.data_nascimento ? rotuloNascimento(completo.data_nascimento) : "Escolher a data"}</span>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
-                    </button>
-                    {niverAberto && <DataNascimentoSheet valor={completo.data_nascimento} onEscolher={v => setCompleto(f => ({ ...f, data_nascimento: v }))} onClose={() => setNiverAberto(false)} />}
-                  </div>
-                  <div className="cli-field">
-                    <label>Sexo <span className="cli-opt">opcional</span></label>
-                    <select value={completo.sexo} onChange={e => setCompleto(f => ({...f, sexo: e.target.value}))}>
-                      <option value="">Selecione...</option>
-                      {SEXO_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Email + CPF */}
-                <div className="cli-row-2">
-                  <div className="cli-field">
-                    <label>E-mail <span className="cli-opt">opcional</span></label>
-                    <input type="email" placeholder="email@exemplo.com" value={completo.email} onChange={e => setCompleto(f => ({...f, email: e.target.value}))} autoComplete="off" />
-                  </div>
-                  <div className="cli-field">
-                    <label>CPF/CNPJ <span className="cli-opt">opcional</span></label>
-                    <input type="text" placeholder="000.000.000-00" value={completo.cpf_cnpj} onChange={e => setCompleto(f => ({...f, cpf_cnpj: e.target.value}))} autoComplete="off" />
-                  </div>
-                </div>
-
-                {/* Endereço */}
-                <div className="cli-sub-lbl">📍 Endereço</div>
-                <div className="cli-field">
-                  <label>CEP</label>
-                  <div style={{position:"relative"}}>
-                    <input type="text" placeholder="00000-000" value={completo.cep}
-                      onChange={e => { setCompleto(f => ({...f, cep: e.target.value})); fetchCep(e.target.value); }}
-                      autoComplete="off" style={{width:"100%"}} />
-                    {cepLoading && <span style={{position:"absolute",right:"14px",top:"50%",transform:"translateY(-50%)"}} className="spinner-sm-dark" />}
-                  </div>
-                </div>
-                <div className="cli-field">
-                  <label>Rua</label>
-                  <input type="text" placeholder="Logradouro" value={completo.rua} onChange={e => setCompleto(f => ({...f, rua: e.target.value}))} autoComplete="off" />
-                </div>
-                <div className="cli-row-2">
-                  <div className="cli-field">
-                    <label>Número</label>
-                    <input type="text" placeholder="Nº" value={completo.numero} onChange={e => setCompleto(f => ({...f, numero: e.target.value}))} autoComplete="off" />
-                  </div>
-                  <div className="cli-field">
-                    <label>Complemento</label>
-                    <input type="text" placeholder="Apto, bloco" value={completo.complemento} onChange={e => setCompleto(f => ({...f, complemento: e.target.value}))} autoComplete="off" />
-                  </div>
-                </div>
-                <div className="cli-row-2">
-                  <div className="cli-field">
-                    <label>Bairro</label>
-                    <input type="text" placeholder="Bairro" value={completo.bairro} onChange={e => setCompleto(f => ({...f, bairro: e.target.value}))} autoComplete="off" />
-                  </div>
-                  <div className="cli-field">
-                    <label>Cidade</label>
-                    <input type="text" placeholder="Cidade" value={completo.cidade} onChange={e => setCompleto(f => ({...f, cidade: e.target.value}))} autoComplete="off" />
-                  </div>
-                </div>
-                <div className="cli-field">
-                  <label>UF</label>
-                  <select value={completo.estado} onChange={e => setCompleto(f => ({...f, estado: e.target.value}))}>
-                    <option value="">-</option>
-                    {UF_OPTIONS.map(uf => <option key={uf} value={uf}>{uf}</option>)}
-                  </select>
-                </div>
-
-                {/* Origem + Obs */}
-                <div className="cli-sub-lbl">💬 Mais informações</div>
-                <div className="cli-field">
-                  <label>Como conheceu <span className="cli-opt">opcional</span></label>
-                  <select value={completo.origem} onChange={e => setCompleto(f => ({...f, origem: e.target.value}))}>
-                    <option value="">Selecione...</option>
-                    {ORIGEM_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
-                  </select>
-                </div>
-                <div className="cli-field">
-                  <label>📝 Observações <span className="cli-opt">opcional</span></label>
-                  <textarea placeholder="Alergias, preferências, anotações..." value={completo.observacoes} onChange={e => setCompleto(f => ({...f, observacoes: e.target.value}))} rows={3} />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Preview lateral removido — formulário centralizado */}
-        </div>
-
-        {/* Footer */}
-        <div className="cli-modal-footer">
-          <button className="cli-btn-cancel" onClick={tryCloseForm}>Cancelar</button>
-          <button
-            className="cli-btn-save"
-            onClick={handleSave}
-            disabled={saving || !completo.nome.trim() || !completo.whatsapp?.trim()}
-          >
-            {saving ? <span className="spinner-sm" /> : (editando ? "Salvar" : "✓ Cadastrar cliente")}
-          </button>
-        </div>
-
-        {/* Link excluir cliente (só em edição, discreto) */}
-        {editando && (
-          <div className="cli-modal-danger">
-            <button className="cli-danger-link" onClick={() => { setShowForm(false); setConfirmDelete(editando); }}>
-              🗑️ Excluir este cliente
-            </button>
+        <Campo rotulo="Nome" obrigatorio placeholder="Ex.: Ana Beatriz" autoComplete="off" value={completo.nome}
+          onChange={e => setCompleto(f => ({ ...f, nome: e.target.value }))}
+          erro={tentouSalvar && !completo.nome.trim() ? "Falta o nome" : undefined} />
+        <Campo rotulo="WhatsApp" obrigatorio type="tel" inputMode="tel" placeholder="(00) 9 0000-0000" autoComplete="off" maxLength={16} value={completo.whatsapp}
+          onChange={e => setCompleto(f => ({ ...f, whatsapp: maskPhone(e.target.value) }))}
+          erro={tentouSalvar && (completo.whatsapp || "").replace(/\D/g, "").length < 10 ? "Coloque o número com DDD" : undefined} />
+        {clienteRepetido && (
+          <div className="cl9-f-dup" role="status">
+            <WarningCircle size={22} weight="bold" />
+            <span><b>Esse número já é de {clienteRepetido.nome}</b><small>Pra não ficar repetido, abra o cadastro.</small></span>
+            <button type="button" onClick={() => { setShowForm(false); setEditando(null); navigate(`/clientes/${clienteRepetido.id}`); }}>Abrir</button>
           </div>
         )}
+        <div className="cl9-f-data">
+          <Campo rotulo="Aniversário" opcional readOnly placeholder="Escolher a data" value={completo.data_nascimento ? rotuloNascimento(completo.data_nascimento) : ""}
+            icone={<CalendarBlank size={20} weight="bold" />} onClick={() => setNiverAberto(true)}
+            dica="A gente avisa uns dias antes, pra você mandar os parabéns." />
+          {completo.data_nascimento && <button type="button" className="cl9-f-limpar" aria-label="Tirar o aniversário" onClick={() => setCompleto(f => ({ ...f, data_nascimento: "" }))}><X size={18} weight="bold" /></button>}
+        </div>
+        {niverAberto && <DataNascimentoSheet valor={completo.data_nascimento || ""} onEscolher={v => setCompleto(f => ({ ...f, data_nascimento: v }))} onClose={() => setNiverAberto(false)} />}
+
+        <button type="button" className={`cl9-f-mais${avancadoOpen ? " on" : ""}`} aria-expanded={avancadoOpen} onClick={() => setAvancadoOpen(o => !o)}>
+          <span><b>Mais detalhes</b><small>Endereço, e-mail, CPF, como conheceu e observações</small></span>
+          <CaretDown size={20} weight="bold" />
+        </button>
+        {avancadoOpen && (
+          <div className="cl9-f-extra">
+            <p className="cl9-f-sec">Endereço</p>
+            <div className="cl9-f-2">
+              <Campo rotulo="CEP" inputMode="numeric" placeholder="00000-000" autoComplete="off" value={completo.cep}
+                dica={cepLoading ? "Procurando…" : "Preenche a rua sozinho"}
+                onChange={e => { const v = e.target.value.replace(/\D/g, "").slice(0, 8); setCompleto(f => ({ ...f, cep: v.length > 5 ? `${v.slice(0, 5)}-${v.slice(5)}` : v })); fetchCep(v); }} />
+              <Campo rotulo="Número" autoComplete="off" value={completo.numero} onChange={e => setCompleto(f => ({ ...f, numero: e.target.value }))} />
+            </div>
+            <Campo rotulo="Rua" autoComplete="off" value={completo.rua} onChange={e => setCompleto(f => ({ ...f, rua: e.target.value }))} />
+            <Campo rotulo="Complemento" opcional placeholder="Apto, bloco…" autoComplete="off" value={completo.complemento} onChange={e => setCompleto(f => ({ ...f, complemento: e.target.value }))} />
+            <div className="cl9-f-2">
+              <Campo rotulo="Bairro" autoComplete="off" value={completo.bairro} onChange={e => setCompleto(f => ({ ...f, bairro: e.target.value }))} />
+              <Campo rotulo="Cidade" autoComplete="off" value={completo.cidade} onChange={e => setCompleto(f => ({ ...f, cidade: e.target.value }))}
+                depois={completo.estado ? <span className="cl9-f-uf">{completo.estado}</span> : undefined} />
+            </div>
+
+            <p className="cl9-f-sec">Contato e documento</p>
+            <Campo rotulo="E-mail" opcional type="email" inputMode="email" placeholder="nome@email.com" autoComplete="off" value={completo.email} onChange={e => setCompleto(f => ({ ...f, email: e.target.value }))} />
+            <Campo rotulo="CPF ou CNPJ" opcional inputMode="numeric" placeholder="Pra nota ou recibo" autoComplete="off" value={completo.cpf_cnpj} onChange={e => setCompleto(f => ({ ...f, cpf_cnpj: e.target.value }))} />
+
+            <p className="cl9-f-sec">Como conheceu a sua loja</p>
+            <div className="cl9-f-chips">
+              {ORIGEM_OPTIONS.map(o => (
+                <button key={o} type="button" aria-pressed={completo.origem === o} onClick={() => setCompleto(f => ({ ...f, origem: f.origem === o ? "" : o }))}>{o}</button>
+              ))}
+            </div>
+            <CampoArea rotulo="Observações" opcional rows={3} placeholder="Alergias, do que mais gosta, como prefere receber…" value={completo.observacoes} onChange={e => setCompleto(f => ({ ...f, observacoes: e.target.value }))} />
+
+          </div>
+        )}
+        {editando && <button type="button" className="cl9-f-excluir" onClick={excluirDoForm}><Trash size={20} weight="bold" />Excluir cliente</button>}
       </div>
-
-      <style>{`
-        /* ═══ MODAL CLIENTE (Doonly patterns) ═══ */
-        .cli-modal-overlay {
-          position: fixed; inset: 0; z-index: 1000;
-          background: rgba(45, 31, 38, 0.6);
-          backdrop-filter: blur(6px);
-          -webkit-backdrop-filter: blur(6px);
-          display: flex; align-items: flex-end; justify-content: center;
-          padding: 0;
-          font-family: var(--font-base);
-          animation: cliOverlayIn 0.2s ease;
-        }
-        @keyframes cliOverlayIn { from { opacity: 0; } to { opacity: 1; } }
-        .cli-modal {
-          background: var(--bg-card);
-          border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-          width: 100%;
-          max-width: 100%;
-          max-height: 92vh;
-          display: flex; flex-direction: column;
-          overflow: hidden;
-          animation: cliModalIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-          font-family: var(--font-base);
-        }
-        @keyframes cliModalIn {
-          from { transform: translateY(100%); }
-          to   { transform: translateY(0); }
-        }
-        .cli-modal, .cli-modal * {
-          font-family: var(--font-base) !important;
-        }
-        .cli-modal button, .cli-modal input, .cli-modal select, .cli-modal textarea {
-          font-family: var(--font-base) !important;
-        }
-
-        /* Header */
-        .cli-modal-hdr {
-          background: linear-gradient(180deg, var(--accent-bg, #F5EEF0), var(--bg-card));
-          padding: var(--space-4) var(--space-4) var(--space-3);
-          display: flex; align-items: center;
-          gap: var(--space-3);
-          flex-shrink: 0;
-        }
-        .cli-modal-avatar {
-          width: 48px; height: 48px; border-radius: 50%;
-          display: flex; align-items: center; justify-content: center;
-          font-size: var(--text-lg); font-weight: var(--fw-black);
-          flex-shrink: 0;
-          color: var(--text-inverse);
-        }
-        .cli-modal-avatar--empty {
-          background: var(--bg-subtle);
-          color: var(--text-muted);
-          border: 2px dashed var(--text-disabled);
-        }
-        .cli-modal-avatar--iniciais {
-          background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        }
-        .cli-modal-avatar--img {
-          object-fit: cover;
-        }
-        .cli-modal-hdr-t { flex: 1; min-width: 0; }
-        .cli-modal-title {
-          font-size: var(--text-lg);
-          font-weight: var(--fw-black);
-          color: var(--text-title);
-          letter-spacing: -0.01em;
-          margin: 0;
-        }
-        .cli-modal-sub {
-          font-size: var(--text-xs);
-          color: var(--text-secondary);
-          margin: 2px 0 0;
-        }
-        .cli-modal-close {
-          width: 32px; height: 32px;
-          border: none; background: transparent;
-          color: var(--text-muted);
-          font-size: var(--text-lg);
-          cursor: pointer;
-          border-radius: var(--radius-full);
-          transition: background var(--dur-fast);
-        }
-        .cli-modal-close:hover { background: var(--bg-subtle); color: var(--text-title); }
-
-        /* Body */
-        .cli-modal-split {
-          flex: 1;
-          overflow-y: auto;
-          -webkit-overflow-scrolling: touch;
-          display: flex; flex-direction: column;
-        }
-        .cli-modal-body {
-          padding: var(--space-4);
-          display: flex; flex-direction: column;
-          gap: var(--space-3);
-        }
-        .cli-modal-preview { display: none; }
-
-        /* Section labels */
-        .cli-section-lbl {
-          font-size: var(--text-xs);
-          font-weight: var(--fw-black);
-          color: var(--primary);
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-          display: flex; align-items: center;
-          gap: var(--space-2);
-          margin: 0 0 var(--space-1);
-        }
-        .cli-section-lbl::before {
-          content: "";
-          width: 3px; height: 14px;
-          background: var(--primary);
-          border-radius: 2px;
-        }
-        .cli-sub-lbl {
-          font-size: var(--text-xs);
-          font-weight: var(--fw-bold);
-          color: var(--text-title);
-          margin: var(--space-2) 0 0;
-        }
-
-        /* Field */
-        .cli-field {
-          display: flex; flex-direction: column;
-          gap: var(--space-1);
-        }
-        .cli-field label {
-          font-size: 13px; /* padrão do cadastro (02/10): antes 12px */
-          font-weight: 600;
-          color: #4B3A42;
-          display: flex; align-items: center;
-          gap: 4px;
-        }
-        .cli-req {
-          color: var(--primary);
-          font-size: var(--text-xs);
-          font-weight: var(--fw-black);
-        }
-        .cli-data-btn { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 48px; box-sizing: border-box; padding: 0 14px; background: var(--bg-input); border: 1.5px solid var(--border); border-radius: 12px; font-family: inherit; font-size: 16px; color: #2C1219; cursor: pointer; text-align: left; }
-        .cli-data-btn svg { color: #9A8E94; flex-shrink: 0; }
-        .cli-data-ph { color: #B5AAB0; }
-        .cli-opt {
-          color: var(--text-muted);
-          font-size: 11.5px;
-          font-weight: var(--fw-regular);
-          margin-left: 4px;
-        }
-        .cli-field input,
-        .cli-field select,
-        .cli-field textarea {
-          background: var(--bg-input);
-          border: 1.5px solid var(--border);
-          border-radius: var(--radius-md);
-          padding: 12px 14px; min-height: 48px;
-          font-size: 16px; /* antes 14px; 16px também evita o zoom do iPhone */
-          font-weight: 400;
-          color: #2C1219;
-          border-radius: 12px;
-          outline: none;
-          transition: border-color var(--dur-fast) var(--ease-out);
-          width: 100%;
-          box-sizing: border-box;
-        }
-        .cli-field input:focus,
-        .cli-field select:focus,
-        .cli-field textarea:focus {
-          border-color: var(--primary);
-        }
-        .cli-field textarea { resize: none; min-height: 60px; }
-        .cli-row-2 {
-          display: grid; grid-template-columns: 1fr;
-          gap: var(--space-2);
-        }
-        @media (min-width: 900px) {
-          .cli-row-2 { grid-template-columns: 1fr 1fr; }
-        }
-
-        /* Foto */
-        .cli-foto-row {
-          display: flex; align-items: center; gap: var(--space-3);
-        }
-        .cli-foto-picker {
-          width: 56px; height: 56px;
-          border-radius: 50%;
-          background: var(--accent-bg, #F5EEF0);
-          border: 2px dashed var(--text-disabled);
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer;
-          overflow: hidden;
-          flex-shrink: 0;
-          font-size: var(--text-lg);
-          color: var(--text-muted);
-          transition: border-color var(--dur-fast);
-        }
-        .cli-foto-picker:hover { border-color: var(--primary); }
-        .cli-foto-picker img { width: 100%; height: 100%; object-fit: cover; }
-        .cli-foto-btn {
-          flex: 1;
-          background: var(--bg-input);
-          border: 1.5px solid var(--border);
-          border-radius: var(--radius-md);
-          padding: 12px 14px;
-          font-size: var(--text-sm);
-          font-weight: var(--fw-medium);
-          color: var(--text-secondary);
-          cursor: pointer;
-          text-align: left;
-          transition: border-color var(--dur-fast);
-        }
-        .cli-foto-btn:hover { border-color: var(--primary); }
-
-        /* + Avançado (fechado) */
-        .cli-adv-toggle {
-          display: flex; align-items: center; justify-content: space-between;
-          background: var(--accent-bg, #F5EEF0);
-          border: 1.5px dashed var(--text-disabled);
-          border-radius: var(--radius-md);
-          padding: 14px 16px;
-          cursor: pointer;
-          transition: all var(--dur-fast) var(--ease-out);
-          width: 100%;
-          text-align: left;
-          margin-top: var(--space-2);
-        }
-        .cli-adv-toggle:hover {
-          border-color: var(--primary);
-          background: var(--bg-card);
-        }
-        .cli-adv-toggle-info { flex: 1; }
-        .cli-adv-toggle-t {
-          display: flex; align-items: center;
-          gap: var(--space-2);
-        }
-        .cli-adv-toggle-lbl {
-          font-size: var(--text-sm);
-          font-weight: var(--fw-black);
-          color: var(--text-title);
-        }
-        .cli-adv-toggle-desc {
-          font-size: var(--text-xs);
-          color: var(--text-secondary);
-          margin: 4px 0 0;
-        }
-        .cli-adv-toggle-arrow {
-          font-size: var(--text-lg);
-          color: var(--primary);
-          font-weight: var(--fw-black);
-        }
-
-        /* Avançado (aberto) */
-        .cli-adv-open {
-          background: var(--accent-bg, #F5EEF0);
-          border: 1.5px solid var(--border);
-          border-radius: var(--radius-md);
-          padding: var(--space-4);
-          display: flex; flex-direction: column;
-          gap: var(--space-3);
-          margin-top: var(--space-2);
-        }
-        .cli-adv-hdr {
-          display: flex; align-items: center; justify-content: space-between;
-          padding-bottom: var(--space-2);
-          border-bottom: 1px solid var(--border);
-        }
-        .cli-adv-hdr-t {
-          font-size: var(--text-xs);
-          font-weight: var(--fw-black);
-          color: var(--text-secondary);
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-        }
-        .cli-adv-collapse {
-          background: transparent;
-          border: none;
-          font-size: var(--text-xs);
-          font-weight: var(--fw-bold);
-          color: var(--text-secondary);
-          cursor: pointer;
-          padding: 4px 8px;
-          border-radius: var(--radius-sm);
-        }
-        .cli-adv-collapse:hover { background: var(--bg-card); color: var(--text-title); }
-        .cli-adv-open .cli-field input,
-        .cli-adv-open .cli-field select,
-        .cli-adv-open .cli-field textarea {
-          background: var(--bg-card);
-        }
-
-        /* Footer */
-        .cli-modal-footer {
-          padding: var(--space-3) var(--space-4);
-          padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom));
-          display: flex; gap: var(--space-2);
-          background: var(--bg-card);
-          flex-shrink: 0;
-          border-top: 1px solid var(--border);
-        }
-        .cli-btn-delete {
-          background: transparent;
-          border: 1.5px solid var(--border);
-          border-radius: var(--radius-md);
-          width: 44px; height: 44px;
-          font-size: var(--text-md);
-          cursor: pointer;
-          flex-shrink: 0;
-          transition: background var(--dur-fast);
-        }
-        .cli-btn-delete:hover { background: var(--bg-subtle); }
-        .cli-btn-cancel {
-          flex: 1;
-          padding: 12px;
-          background: var(--accent-bg, #F5EEF0);
-          border: none;
-          border-radius: var(--radius-md);
-          font-size: var(--text-sm);
-          font-weight: var(--fw-bold);
-          color: var(--text-secondary);
-          cursor: pointer;
-        }
-        .cli-btn-save {
-          flex: 2;
-          padding: 12px;
-          background: var(--primary);
-          color: var(--text-inverse);
-          border: none;
-          border-radius: var(--radius-md);
-          font-size: var(--text-sm);
-          font-weight: var(--fw-black);
-          letter-spacing: 0.03em;
-          text-transform: uppercase;
-          cursor: pointer;
-          box-shadow: 0 4px 0 var(--primary-dark);
-          transition: transform 0.08s ease, box-shadow 0.08s ease;
-        }
-        .cli-btn-save:hover:not(:disabled) { filter: brightness(1.05); }
-        .cli-btn-save:active:not(:disabled) {
-          transform: translateY(4px);
-          box-shadow: 0 0 0 var(--primary-dark);
-        }
-        .cli-btn-save:disabled {
-          background: var(--text-disabled);
-          box-shadow: 0 4px 0 #A8A0A4;
-          cursor: not-allowed;
-        }
-
-        /* Link excluir cliente (discreto no rodapé do modal) */
-        .cli-modal-danger {
-          padding: 0 var(--space-4) var(--space-3);
-          padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom));
-          text-align: center;
-          background: var(--bg-card);
-          margin-top: -8px;
-        }
-        .cli-danger-link {
-          background: transparent;
-          border: none;
-          color: #DC2626;
-          font-size: var(--text-xs);
-          font-weight: var(--fw-bold);
-          cursor: pointer;
-          padding: 8px 12px;
-          font-family: var(--font-base) !important;
-          opacity: 0.7;
-          transition: opacity var(--dur-fast);
-        }
-        .cli-danger-link:hover { opacity: 1; text-decoration: underline; }
-
-        /* ═══ DESKTOP ═══ */
-        @media (min-width: 900px) {
-          .cli-modal-overlay {
-            align-items: center;
-            padding: var(--space-6);
-          }
-          .cli-modal {
-            border-radius: var(--radius-xl);
-            max-width: 880px;
-            max-height: 90vh;
-          }
-          .cli-modal-split {
-            display: grid;
-            grid-template-columns: 1fr;
-            overflow: hidden;
-            padding: var(--space-4);
-          }
-          .cli-modal-body {
-            padding: var(--space-4);
-            overflow-y: auto;
-            max-height: calc(90vh - 180px);
-            max-width: 560px;
-            margin: 0 auto;
-            width: 100%;
-          }
-          .cli-modal-preview { display: none !important; }
-          .cli-preview-lbl {
-            font-size: 0.65rem;
-            font-weight: var(--fw-black);
-            color: var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin-bottom: var(--space-1);
-          }
-          .cli-preview-wa {
-            background: var(--bg-card);
-            padding: var(--space-3);
-            border-radius: var(--radius-md);
-            width: 100%; max-width: 240px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-            display: flex; gap: var(--space-3);
-            align-items: center;
-          }
-          .cli-preview-avatar {
-            width: 40px; height: 40px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: var(--text-inverse);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: var(--fw-black);
-            font-size: var(--text-sm);
-            flex-shrink: 0;
-          }
-          .cli-preview-avatar--img { object-fit: cover; }
-          .cli-preview-wa-info { flex: 1; min-width: 0; }
-          .cli-preview-wa-name {
-            font-size: var(--text-sm);
-            font-weight: var(--fw-black);
-            color: var(--text-title);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          }
-          .cli-preview-wa-msg {
-            font-size: var(--text-xs);
-            color: #16A34A;
-            font-weight: var(--fw-medium);
-          }
-          .cli-preview-list {
-            background: var(--bg-card);
-            padding: var(--space-3);
-            border-radius: var(--radius-md);
-            width: 100%; max-width: 240px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            display: flex; gap: var(--space-3);
-            align-items: center;
-          }
-          .cli-preview-list-avatar {
-            width: 36px; height: 36px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: var(--text-inverse);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: var(--fw-black);
-            font-size: var(--text-xs);
-            flex-shrink: 0;
-          }
-          .cli-preview-list-avatar--img { object-fit: cover; }
-          .cli-preview-list-info { flex: 1; min-width: 0; }
-          .cli-preview-list-name {
-            font-size: var(--text-xs);
-            font-weight: var(--fw-black);
-            color: var(--text-title);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          }
-          .cli-preview-list-phone {
-            font-size: 0.65rem;
-            color: var(--text-secondary);
-          }
-          .cli-preview-list-tag {
-            background: #FEF3C7;
-            color: #92400E;
-            padding: 2px 6px;
-            border-radius: var(--radius-full);
-            font-size: 0.65rem;
-            font-weight: var(--fw-black);
-            flex-shrink: 0;
-          }
-          .cli-preview-alert {
-            padding: var(--space-2) var(--space-3);
-            border-radius: var(--radius-sm);
-            font-size: var(--text-xs);
-            font-weight: var(--fw-bold);
-            text-align: center;
-            display: flex; align-items: center; justify-content: center;
-            gap: var(--space-1);
-          }
-          .cli-preview-alert--success {
-            background: #F0FDF4;
-            color: #14532D;
-          }
-          .cli-preview-hint {
-            font-size: var(--text-xs);
-            color: var(--text-secondary);
-            text-align: center;
-            background: var(--bg-card);
-            padding: var(--space-2) var(--space-3);
-            border-radius: var(--radius-sm);
-            line-height: 1.5;
-          }
-          .cli-preview-hint b { color: var(--text-title); }
-        }
-      `}</style>
-    </div>
-  ) : null;
+    </Janela>
+  );
 
   // ── Render ────────────────────────────────────────────────────────────────
 
