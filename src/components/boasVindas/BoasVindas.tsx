@@ -53,7 +53,6 @@ const vibrarLeve = () => {
 // public/tutorial/boas-vindas (quadrado, 264 x 264, .webp). Cliente sem foto mostra as iniciais.
 const PRODUTO = {
   bolo: '/tutorial/boas-vindas/produtos/bolo-aniversario.webp',
-  caixa: '/tutorial/boas-vindas/produtos/caixa-brigadeiro.webp',
   kit: '/tutorial/boas-vindas/produtos/kit-festa.webp',
   salgados: '/tutorial/boas-vindas/produtos/salgados-mistos.webp',
 }
@@ -298,8 +297,8 @@ const CHEGADAS: { p: Pedido }[] = [
       pedido_itens: [item('Kit festa 30 pessoas', PRODUTO.kit, 1, 650)] }) },
   { p: pedidoExemplo({ numero: 1050, cliente_nome: 'Juliana Souza', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', status_pagamento: 'pago', forma_pagamento: 'pix', origem: 'cardapio', data_entrega: isoDia(4), horario_entrega: '09:00', valor_total: 90,
       pedido_itens: [item('1 cento de salgados mistos', PRODUTO.salgados, 1, 90)] }) },
-  { p: pedidoExemplo({ numero: 1051, cliente_nome: 'Camila Rocha', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', status_pagamento: 'pago', forma_pagamento: 'pix', origem: 'cardapio', data_entrega: isoDia(3), horario_entrega: '14:00', valor_total: 320,
-      pedido_itens: [item('Bolo de aniversário 2 kg', PRODUTO.bolo, 1, 320)] }) },
+  { p: pedidoExemplo({ numero: 1051, cliente_nome: 'Camila Rocha', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', status_pagamento: 'pago', forma_pagamento: 'pix', origem: 'cardapio', data_entrega: isoDia(3), horario_entrega: '14:00', valor_total: 150,
+      pedido_itens: [item('Bolo de aniversário 2 kg', PRODUTO.bolo, 1, 150)] }) },
 ]
 const INTERVALO_CHEGADA = 1500
 
@@ -420,7 +419,7 @@ function Notebook({ children }: { children: ReactNode }) {
 /* ───────── 4 · dinheiro (09/10 · 3.85): quem pagou e quem falta pagar, num cartão só e sem conta pra fazer.
    Em cima, quanto falta receber na semana; embaixo, cada cliente com o que já pagou e o que falta. Só pra ver (sem toque). ───────── */
 const RECEBER: { id: string; cliente: string; total: number; recebido: number; conta: string; alerta?: boolean }[] = [
-  { id: 'camila', cliente: 'Camila Rocha', total: 320, recebido: 320, conta: 'Pagou tudo no Pix' },
+  { id: 'camila', cliente: 'Camila Rocha', total: 150, recebido: 150, conta: 'Pagou tudo no Pix' },
   { id: 'carla', cliente: 'Carla Menezes', total: 180.5, recebido: 90, conta: 'Pagou o sinal' },
   { id: 'fernanda', cliente: 'Fernanda Lima', total: 260, recebido: 130, conta: 'Pagou metade' },
   { id: 'paula', cliente: 'Paula Ribeiro', total: 95, recebido: 0, conta: 'Não pagou · entrega amanhã', alerta: true },
@@ -460,12 +459,13 @@ function DemoDinheiro() {
 }
 
 /* ───────── 5 · custos: o resumo da Ficha técnica, montando a conta linha por linha ───────── */
+// o mesmo bolo da Camila, da tela das encomendas (2 kg a R$ 75 o quilo)
 const CONTA = [
-  { rotulo: 'Ingredientes', valor: 3.45, cor: 'var(--ui-rosa)' },
-  { rotulo: 'Custos invisíveis (25%)', valor: 0.86, cor: '#F59E0B' },
-  { rotulo: 'Mão de obra (15 min)', valor: 2.1, cor: 'var(--ui-vinho)' },
+  { rotulo: 'Ingredientes', valor: 52, cor: 'var(--ui-rosa)' },
+  { rotulo: 'Custos invisíveis (25%)', valor: 13, cor: '#F59E0B' },
+  { rotulo: 'Mão de obra (2h30)', valor: 25, cor: 'var(--ui-vinho)' },
 ]
-const PRECO = 15
+const PRECO = 150
 const CUSTO = CONTA.reduce((s, c) => s + c.valor, 0)
 const LUCRO = PRECO - CUSTO
 
@@ -487,11 +487,12 @@ function DemoLucro() {
   return (
     <div className="bv-luc" aria-hidden="true">
       <div className="bv-luc-topo">
-        <span className="bv-luc-foto"><img src={PRODUTO.caixa} alt="" /></span>
+        <span className="bv-luc-foto"><img src={PRODUTO.bolo} alt="" /></span>
         <div className="bv-luc-lucro">
+          <p className="bv-luc-nome">Bolo de aniversário 2 kg</p>
+          {/* o lucro só aparece quando a conta fecha (antes mostrava "R$ 0,00 · 0%" enquanto montava) */}
           <small>Seu lucro</small>
-          <b>R$ {reais(lucro)}</b>
-          <span>{margem.toFixed(0)}% de margem</span>
+          {pronto ? <><b>R$ {reais(lucro)}</b><span>{margem.toFixed(0)}% de margem</span></> : <><b className="bv-luc-espera">R$ …</b><span className="bv-luc-espera">calculando</span></>}
         </div>
       </div>
       <div className="bv-luc-barra">
