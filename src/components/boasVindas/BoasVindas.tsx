@@ -178,8 +178,8 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
             </>)}
             {tela === 1 && (<>
               <p className="bv-sobre">Seus produtos em destaque</p>
-              <h1 className="bv-h">Seu cliente escolhe, <em>você recebe o pedido</em></h1>
-              <p className="bv-p">Monte seu cardápio com sabores e adicionais e mande o link no WhatsApp.</p>
+              <h1 className="bv-h">Um cardápio lindo que <em>já vende sozinho</em></h1>
+              <p className="bv-p">Monte com sabores e adicionais e mande o link no WhatsApp.</p>
             </>)}
             {tela === 2 && (<>
               <p className="bv-sobre">Chega de informação espalhada</p>
