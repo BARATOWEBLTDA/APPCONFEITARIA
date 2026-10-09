@@ -417,7 +417,7 @@ export default function Layout() {
         }
         .nav-item:hover, .nav-item--group:hover { background: rgba(255,255,255,0.07); color: #fff; }
         .nav-item:focus-visible, .nav-item--group:focus-visible, .nav-subitem:focus-visible { outline: 3px solid rgba(255,255,255,0.7); outline-offset: -3px; }
-        .nav-item.active { background: rgba(var(--primary-rgb), 0.22); color: #fff; font-weight: var(--fw-bold); }
+        .nav-item.active { background: rgba(255,255,255,0.10); color: #fff; font-weight: var(--fw-bold); }
         .nav-item.active .nav-icon, .nav-item--group.active-parent .nav-icon { color: #FF9DC4; }
         .nav-item--group.active-parent { color: #fff; font-weight: var(--fw-bold); }
 
@@ -425,7 +425,7 @@ export default function Layout() {
         .nav-subitem { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 10px; border-radius: 10px; font-size: 13.5px; font-weight: var(--fw-medium); color: rgba(255,255,255,0.78); text-decoration: none; transition: background-color var(--dur-fast) linear, color var(--dur-fast) linear; }
         .nav-subitem .nav-subicon { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .nav-subitem:hover { color: #fff; background: rgba(255,255,255,0.07); }
-        .nav-subitem.active { color: #fff; background: rgba(var(--primary-rgb), 0.22); font-weight: var(--fw-bold); }
+        .nav-subitem.active { color: #fff; background: rgba(255,255,255,0.10); font-weight: var(--fw-bold); }
         .nav-subitem.active .nav-subicon { color: #FF9DC4; }
 
         .sidebar-cad-complete {
