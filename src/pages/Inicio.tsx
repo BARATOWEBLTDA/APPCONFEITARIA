@@ -1117,7 +1117,7 @@ export default function Inicio() {
         /* ── Engajamento (mobile, rodapé) ── */
 
         .ini-section-title {
-          font-size: var(--font-button); font-weight: var(--fw-bold);
+          font-size: 16px; font-weight: 800;
           color: var(--text-title);
           margin: 0;
         }
@@ -1681,7 +1681,7 @@ export default function Inicio() {
           .ini-dk-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: -50px 20px 0; position: relative; z-index: 2; }
           .ini-dk-kpi { background: #fff; border-radius: 16px; padding: 16px; box-shadow: 0 8px 22px rgba(60,20,35,.08); border: 1px solid #F3ECEF; }
           .ini-dk-kpi--dest { background: linear-gradient(150deg, #3B1620, #6B2340); border-color: transparent; }
-          .ini-dk-kh { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; color: #6B5D64; }
+          .ini-dk-kh { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
           .ini-dk-kh span { width: 30px; height: 30px; border-radius: 9px; background: #FCE7F3; color: #C33A6E; display: flex; align-items: center; justify-content: center; }
           .ini-dk-kpi--dest .ini-dk-kh { color: rgba(255,255,255,.8); } .ini-dk-kpi--dest .ini-dk-kh span { background: rgba(255,255,255,.15); color: #fff; }
           .ini-dk-kpi b { display: block; font-size: 26px; font-weight: 700; margin-top: 10px; color: #2C1219; }

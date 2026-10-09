@@ -190,7 +190,7 @@ const CSS = `
   .far-wrap { max-width: 760px; margin: 0 auto; padding: 22px 0 96px; display: flex; flex-direction: column; gap: 20px; }
   .far-resumo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .far-k { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 10px; min-width: 0; }
-  .far-k small { display: block; font-size: 13px; font-weight: 700; color: #9A8E94; }
+  .far-k small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
   .far-k b { display: block; font-size: clamp(13.5px, 3.9vw, 17px); letter-spacing: -.02em; font-weight: 800; color: #B45309; margin: 3px 0 1px; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .far-k i { font-style: normal; font-size: 13px; color: #888780; }
   .far-k--atr { border-color: #FECACA; background: #FFF7F7; } .far-k--atr b { color: #DC2626; }

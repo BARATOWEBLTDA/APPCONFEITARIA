@@ -268,7 +268,7 @@ const CSS = `
   .cu-resumo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   @media (min-width: 900px) { .cu-resumo { grid-template-columns: repeat(4, 1fr); } }
   .cu-k { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px; min-width: 0; }
-  .cu-k small { display: block; font-size: 13px; font-weight: 700; color: #9A8E94; }
+  .cu-k small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
   .cu-k b { display: block; font-size: clamp(16px, 4.6vw, 21px); font-weight: 800; letter-spacing: -.02em; margin: 3px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cu-k i { font-style: normal; font-size: 13px; color: #888780; }
   .cu-k.destaque { background: radial-gradient(130% 160% at 0 0, #6B2340, #2C1219 70%); border: none; color: #fff; }

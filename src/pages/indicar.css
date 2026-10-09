@@ -32,7 +32,7 @@
 
 /* andamento */
 .in9-and { gap: 4px; }
-.in9-and > small { font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
+.in9-and > small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
 .in9-num { font-size: 40px; font-weight: 800; line-height: 1.1; color: var(--ui-rosa-escuro); }
 .in9-and p { margin: 4px 0 8px; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
 .in9-and p b { color: var(--ui-texto); }

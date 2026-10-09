@@ -3,7 +3,7 @@
 @media (min-width: 900px) { .ep { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; padding-top: 16px; } .ep-largo, .ep-salva { grid-column: 1 / -1; } }
 .ep-carregando { display: flex; justify-content: center; padding: 60px 0; color: var(--ui-rosa); }
 .ep-carregando .ui-gira { width: 28px; height: 28px; }
-.ep-salva { display: flex; align-items: center; gap: 6px; margin: 0 4px; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
+.ep-salva { display: flex; align-items: center; gap: 6px; margin: 0 4px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
 .ep-salva svg { color: var(--ui-verde); }
 .ep-card { display: flex; flex-direction: column; gap: 16px; min-width: 0; padding: 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
 @media (min-width: 900px) { .ep-card { padding: 20px; } }

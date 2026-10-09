@@ -7,7 +7,7 @@
 .cl9-nums { display: flex; gap: 8px; margin: 0 -12px 12px; padding: 0 12px 4px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
 .cl9-nums::-webkit-scrollbar { display: none; }
 .cl9-nums > div { flex: none; display: flex; flex-direction: column; gap: 2px; width: 156px; padding: 12px 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); scroll-snap-align: start; }
-.cl9-nums small { font-size: 13px; font-weight: 600; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cl9-nums small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cl9-nums b { font-size: 22px; font-weight: 700; line-height: 1.2; white-space: nowrap; }
 .cl9-nums em { font-style: normal; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; }
 .cl9-nums em.ok { color: var(--ui-verde); font-weight: 700; }
@@ -176,7 +176,7 @@
 .cp9 .ui-tit + .cp9-dado { border-top: 0; padding-top: 4px; }
 .cp9-dado > svg, .cp9-obs > svg { flex: none; margin-top: 2px; color: var(--ui-texto-3); }
 .cp9-dado > span, .cp9-obs > span { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.cp9-dado small, .cp9-obs small { font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
+.cp9-dado small, .cp9-obs small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
 .cp9-dado b, .cp9-obs b { font-size: 15px; font-weight: 700; overflow-wrap: anywhere; }
 .cp9-dado em { font-style: normal; font-size: 14px; color: var(--ui-texto-2); }
 .cp9-obs { margin-top: 4px; padding: 12px; border: 0; border-radius: var(--ui-raio); background: var(--ui-laranja-fundo); }
@@ -186,7 +186,7 @@
 .cp9-falta button { display: block; min-height: 44px; margin: 4px 0 0; padding: 0; border: 0; background: none; font-size: 15px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
 .cp9-nums { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 12px; }
 .cp9-nums > div { display: flex; flex-direction: column; min-width: 0; }
-.cp9-nums small { font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
+.cp9-nums small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
 .cp9-nums b { font-size: 20px; font-weight: 700; line-height: 1.25; }
 .cp9-ped { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "a v" "s c"; align-items: center; gap: 4px 12px; width: 100%; min-height: 64px; margin: 0; padding: 10px 0; border: 0; border-top: 1px solid var(--ui-linha); background: none; text-align: left; color: var(--ui-texto); cursor: pointer; }
 .cp9 .ui-tit + .cp9-ped { border-top: 0; }

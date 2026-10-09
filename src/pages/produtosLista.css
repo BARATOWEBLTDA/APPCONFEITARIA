@@ -38,7 +38,7 @@ body .prod-card-indisponivel { top: 8px; left: 8px; right: auto; bottom: auto; p
 body .prod-card-promo, body .prod-card-encomenda, body .prod-card-badge-var, body .prod-card-semcat { font-size: 12px; font-weight: 700; text-transform: none; letter-spacing: 0; padding: 3px 8px; border-radius: 8px; }
 body .prod-card-semcat { display: none; }
 body .prod-card-info { padding: 10px 12px 12px; }
-body .prod-card-cat { margin: 0 0 2px; font-size: 12.5px; font-weight: 600; color: var(--ui-texto-2); text-transform: none; letter-spacing: 0; }
+body .prod-card-cat { margin: 0 0 2px; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); text-transform: none; letter-spacing: 0; }
 body .prod-card-nome { margin: 0 0 2px; font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); }
 body .prod-card-preco { margin: 0; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
 body .prod-card-preco small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }

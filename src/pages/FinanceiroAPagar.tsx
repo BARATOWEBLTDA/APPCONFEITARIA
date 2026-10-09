@@ -229,7 +229,7 @@ const CSS = `
   .fap-nova { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; border: 1.5px dashed #F3C9DA; background: #FFF6F9; color: #C33A6E; border-radius: 12px; padding: 11px 14px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
   .fap-resumo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .fap-k { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 10px; min-width: 0; }
-  .fap-k small { display: block; font-size: 13px; font-weight: 700; color: #9A8E94; }
+  .fap-k small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
   .fap-k b { display: block; font-size: clamp(13.5px, 3.9vw, 17px); letter-spacing: -.02em; font-weight: 800; color: #2C1219; margin: 3px 0 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .fap-k i { font-style: normal; font-size: 13px; color: #888780; }
   .fap-k--atr { border-color: #FECACA; background: #FFF7F7; } .fap-k--atr b { color: #DC2626; }

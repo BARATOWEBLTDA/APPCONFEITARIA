@@ -319,7 +319,7 @@ export default function MinhasAtualizacoes() {
         .mu-item:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
         .mu-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
         .mu-body { flex: 1; min-width: 0; }
-        .mu-cat { display: block; font-size: 12.5px; font-weight: 700; line-height: 1.3; color: var(--ui-rosa-escuro); }
+        .mu-cat { display: block; font-size: 13px; font-weight: 500; line-height: 1.3; color: var(--ui-rosa-escuro); }
         .mu-title { margin: 2px 0 0; font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); }
         .mu-desc { margin: 2px 0 0; font-size: 13.5px; font-weight: 500; line-height: 1.45; color: var(--ui-texto-2); }
         .mu-cta { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); }

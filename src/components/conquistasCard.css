@@ -8,7 +8,7 @@
 .cqc-nova { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding: 12px 4px 12px 12px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); }
 .cqc-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--ui-branco); color: var(--ui-rosa-escuro); }
 .cqc-tx { flex: 1; min-width: 0; }
-.cqc-tx small { display: block; font-size: 12.5px; font-weight: 700; line-height: 1.3; color: var(--ui-rosa-escuro); }
+.cqc-tx small { display: block; font-size: 13px; font-weight: 500; line-height: 1.3; color: var(--ui-rosa-escuro); }
 .cqc-tx b { display: block; font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); }
 .cqc-tx p { margin: 2px 0 0; font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
 .cqc-nova .ui-bti { align-self: flex-start; }

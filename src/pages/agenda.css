@@ -40,7 +40,7 @@ i.pro { background: var(--ui-rosa); }
 i.ok { background: var(--ui-verde); }
 i.atr { background: var(--ui-vermelho); }
 .ag3-leg { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--ui-linha); }
-.ag3-leg span { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--ui-texto-2); }
+.ag3-leg span { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
 .ag3-leg i { width: 8px; height: 8px; }
 
 /* resumo do dia */
