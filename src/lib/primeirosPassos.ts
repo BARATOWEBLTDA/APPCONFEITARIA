@@ -2,13 +2,16 @@
  * Regra ÚNICA dos primeiros passos (02/10) — o mesmo cartão aparece no Início (celular) e no
  * Cardápio digital. Fazer o passo num lugar marca no outro. Tudo vem do banco.
  *   descricao ...... descrição da loja preenchida
- *   logo ........... enviou um logo OU escolheu "usar minha foto de perfil" (profiles.logo_confirmado)
+ *   logo ........... enviou um logo, escolheu "usar minha foto de perfil" ou enviou uma foto de perfil
  *   endereco ....... cidade + rua (ou CEP), igual aos Dados da loja
  *   horario ........ horário salvo com pelo menos um dia
  *   produto ........ tem pelo menos 1 produto disponível
  *   compartilhou ... enviou ou copiou o link (profiles.cardapio_compartilhado)
  */
 import { supabase } from "@/lib/supabase";
+
+/** Foto de perfil enviada pela própria confeiteira (não a que vem do login com Google). */
+const fotoPropria = (url?: string | null) => !!url && !/googleusercontent\.com|gravatar\.com|graph\.facebook/i.test(url);
 
 const chaveLocal = (uid: string) => `doonly_cardapio_compartilhado_${uid}`;
 
@@ -44,8 +47,9 @@ export async function lerPassos(uid: string): Promise<EstadoPassos> {
   const hor = lerJson(p.horario);
   return {
     descricao: !!String(p.descricao_loja || "").trim(),
-    // Só conta com logo enviado OU "usar minha foto" escolhido (a foto do Google sozinha não conta)
-    logo: !!p.logo_url || !!p.logo_confirmado || logoLocal,
+    // Conta com logo enviado, "usar minha foto" escolhido, ou uma foto de perfil que ela mesma enviou
+    // (09/10: antes pedia o logo mesmo com foto colocada). A foto que vem do Google sozinha não conta.
+    logo: !!p.logo_url || !!p.logo_confirmado || logoLocal || fotoPropria(p.foto_url),
     endereco: !!(String(end.cidade || "").trim() && (String(end.rua || "").trim() || String(end.cep || "").trim())),
     horario: !!hor && ((hor.dias?.length || 0) > 0 || !!hor.abre_sabado || !!hor.abre_domingo),
     produto: ((produtos.data as any[]) || []).some((x) => x.disponivel !== false),
