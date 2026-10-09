@@ -1,17 +1,17 @@
 import { useState, useEffect, useMemo, ReactNode } from "react";
 import CampoNumero from "@/components/ui/CampoNumero";
 import { parseNumBR } from "@/lib/numeroBR";
-import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
 import QuickAddInsumo, { InsumoQuick } from "@/components/QuickAddInsumo";
 import DooInfoModal from "@/components/DooInfoModal";
 import AppPageHeader from "@/components/AppPageHeader";
-import { Botao, TelaVazia } from "@/components/base";
-import { Cake, CaretRight, MagnifyingGlass, Plus, Receipt, TrendDown, X } from "@phosphor-icons/react";
+import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar } from "@/components/base";
+import { Cake, CaretRight, Check, Egg, Info, MagnifyingGlass, Plus, Receipt, TrendDown, X } from "@phosphor-icons/react";
 import "./clientes.css";
 import "./fichaLista.css";
+import "./fichaDetalhe.css";
 
 // ── Famílias de unidades e conversão ──
 
@@ -224,7 +224,6 @@ export default function FichaTecnica() {
   const [buscaInsumo, setBuscaInsumo] = useState("");
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [quickAddName, setQuickAddName] = useState("");
-  const [fichaView, setFichaView] = useState<"grid" | "lista">("grid");
   const [moAtivo, setMoAtivo] = useState(false);
   const [infoAtivo, setInfoAtivo] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
@@ -273,7 +272,6 @@ export default function FichaTecnica() {
   }, [showQuickAdd]);
   const [extras, setExtras] = useState({ rendimento_qtd: "", rendimento_peso: "", validade_dias: "", validade_tipo: "refrigerado", embalagem: "", observacoes_ficha: "", cv_percentual: "25", tempo_preparo_min: "", salario_desejado: "", horas_semanais: "40" });
   const [saving, setSaving] = useState(false);
-  const [savedToast, setSavedToast] = useState(false);
 
   const loadProdutos = async (uid: string) => {
     const { data } = await supabase
@@ -405,7 +403,7 @@ export default function FichaTecnica() {
       if (errIns) {
         // Não deixa a ficha "sumir" calada: avisa e para (os ingredientes continuam na tela pra tentar de novo)
         setSaving(false);
-        alert("Não foi possível salvar os ingredientes da ficha. Confira a internet e tente de novo.");
+        avisar("Não deu pra salvar os ingredientes. Confira a internet e tente de novo.", { tipo: "erro" });
         return;
       }
     }
@@ -435,8 +433,7 @@ export default function FichaTecnica() {
     if (data) setSelected(data as Produto);
 
     setSaving(false);
-    setSavedToast(true);
-    setTimeout(() => setSavedToast(false), 2500);
+    avisar("Ficha técnica salva", { tipo: "ok" });
   };
 
   const filtrados = produtos.filter(p => {
@@ -472,539 +469,233 @@ export default function FichaTecnica() {
     const margemLucroLive = precoLive > 0 ? (lucroLive / precoLive) * 100 : 0;
     const temFicha = ficha.length > 0;
 
+    const foto = (selected.imagem_url || "").split(",")[0];
+        const tom = margemLucroLive >= 30 ? "ok" : margemLucroLive >= 0 ? "atencao" : "neg";
+    const rendeUn = parseNumBR(extras.rendimento_qtd) || 0;
+    const disponiveis = insumosCadastrados.filter(i => !ficha.some(f => f.insumo_id === i.id));
+    const pickerLista = disponiveis.filter(i => i.nome.toLowerCase().includes(pickerBusca.trim().toLowerCase()));
+    const abrirCadastro = () => { setQuickAddName(""); setShowQuickAdd(true); };
+
+    // Conta do lucro (a mesma no resumo do celular e na coluna do computador)
+    const Conta = () => (
+      <div className="fd-conta">
+        <div><span>Ingredientes</span><span>R$ {fmt(cmvLive)}</span></div>
+        <div><span>Custos invisíveis ({fmtPct(cvPct)}%)</span><span>R$ {fmt(cvLive)}</span></div>
+        <div><span>Mão de obra{tempoMin > 0 && moAtivo ? ` (${tempoMin} min)` : ""}</span><span>R$ {fmt(moLive)}</span></div>
+        <div className="fd-t"><span>Custo total</span><span>R$ {fmt(custoTotalLive)}</span></div>
+        <div className="fd-pv"><span>Preço de venda</span><span>R$ {fmt(precoLive)}</span></div>
+        {infoAtivo && rendeUn > 0 && <div><span>Custo de cada unidade (rende {extras.rendimento_qtd})</span><span>R$ {fmt(custoTotalLive / rendeUn)}</span></div>}
+      </div>
+    );
+    const Barra = () => precoLive > 0 ? (() => {
+      const pc = (v: number) => `${Math.max(0, Math.min(100, (v / precoLive) * 100))}%`;
+      return (
+        <>
+          <div className="fd-barra" aria-hidden="true">
+            <i style={{ width: pc(cmvLive), background: "var(--ui-rosa)" }} />
+            <i style={{ width: pc(cvLive), background: "#F59E0B" }} />
+            {moLive > 0 && <i style={{ width: pc(moLive), background: "var(--ui-vinho)" }} />}
+            <i style={{ width: pc(Math.max(0, lucroLive)), background: "var(--ui-verde)" }} />
+          </div>
+          <div className="fd-leg">
+            <span style={{ ["--c" as any]: "var(--ui-rosa)" }}>Ingredientes</span>
+            <span style={{ ["--c" as any]: "#F59E0B" }}>Invisíveis</span>
+            {moLive > 0 && <span style={{ ["--c" as any]: "var(--ui-vinho)" }}>Mão de obra</span>}
+            <span style={{ ["--c" as any]: "var(--ui-verde)" }}>Lucro</span>
+          </div>
+        </>
+      );
+    })() : null;
+    const Chave = ({ ligado, aoMudar, rotulo }: { ligado: boolean; aoMudar: (v: boolean) => void; rotulo: string }) => (
+      <button type="button" role="switch" aria-checked={ligado} aria-label={rotulo} className="fd-chave" onClick={() => aoMudar(!ligado)}><span /></button>
+    );
+
     return (
       <>
-      {/* Computador: cabeçalho padrão do app (no celular continua o "Voltar") */}
-      <div className="ft-so-desk"><AppPageHeader title={selected.nome} subtitle="Ficha técnica e precificação" onBack={fecharFicha} /></div>
-      <div className="ft-root">
-        <button className="ft-back" onClick={fecharFicha}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          Voltar
-        </button>
+      <AppPageHeader title={selected.nome} subtitle="Ficha técnica" onBack={fecharFicha} />
+      <div className="cl9 fd">
+        <div className="fd-grade">
+        <div className="fd-principal">
 
-        {/* ═══ Computador: 2 colunas (o celular ignora esses wrappers — display: contents) ═══ */}
-        <div className="ft-desk-grid"><div className="ft-desk-main">
-
-        {/* Cabeçalho do produto: foto à esquerda, título + lucro à direita */}
-        <div className="ft-tree ft-so-cel">
-          <div className="ft-tree-foto">
-            {selected.imagem_url
-              ? <img src={selected.imagem_url.split(",")[0]} alt={selected.nome} />
-              : <div className="ft-tree-foto-placeholder">Sem imagem</div>
-            }
-          </div>
-          <div className="ft-tree-info">
-            <h1 className="ft-tree-nome">{selected.nome}</h1>
-            <div className="ft-tree-lucro">
-              <span className="ft-lucro-hero-label">Seu lucro</span>
-              <strong className={`ft-lucro-hero-value ${lucroLive >= 0 ? "" : "ft-lucro-hero-value--neg"}`}>R$ {fmt(lucroLive)}</strong>
-              <span className={`ft-lucro-hero-margin ${margemLucroLive >= 30 ? "ft-lucro-hero-margin--ok" : margemLucroLive >= 0 ? "ft-lucro-hero-margin--warn" : "ft-lucro-hero-margin--neg"}`}>{fmtPct(margemLucroLive)}% de margem</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Breakdown de precificação */}
-        <div className="ft-pricing-card ft-so-cel">
-          <div className="ft-pricing-row">
-            <span className="ft-pricing-label">CMV (ingredientes)</span>
-            <span className="ft-pricing-value">R$ {fmt(cmvLive)}</span>
-          </div>
-          <div className="ft-pricing-row">
-            <span className="ft-pricing-label">+ Custos invisíveis ({fmtPct(cvPct)}%)</span>
-            <span className="ft-pricing-value">R$ {fmt(cvLive)}</span>
-          </div>
-          <div className="ft-pricing-row">
-            <span className="ft-pricing-label">+ Mão de obra {tempoMin > 0 ? `(${tempoMin} min)` : ""}</span>
-            <span className="ft-pricing-value">R$ {fmt(moLive)}</span>
-          </div>
-          <div className="ft-pricing-divider" />
-          <div className="ft-pricing-row ft-pricing-row--total">
-            <span className="ft-pricing-label">Custo total</span>
-            <span className="ft-pricing-value">R$ {fmt(custoTotalLive)}</span>
-          </div>
-          <div className="ft-pricing-row">
-            <span className="ft-pricing-label">Preço de venda</span>
-            <strong className="ft-pricing-value ft-pricing-value--preco">R$ {fmt(precoLive)}</strong>
-          </div>
-        </div>
-
-        {/* Editor da Composicao */}
-        <div className="ft-edit-card">
-          <div className="ft-card-head">
-            <h2 className="ft-card-title">Ingredientes e custos</h2>
-            {temFicha && (
-              <div className="ft-view-toggle" role="group" aria-label="Visualização">
-                <button
-                  type="button"
-                  className={`ft-view-btn${fichaView === "grid" ? " active" : ""}`}
-                  onClick={() => setFichaView("grid")}
-                  aria-label="Visualização com imagens"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-                </button>
-                <button
-                  type="button"
-                  className={`ft-view-btn${fichaView === "lista" ? " active" : ""}`}
-                  onClick={() => setFichaView("lista")}
-                  aria-label="Visualização em lista"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-                </button>
+          {/* Resumo do lucro (celular e tablet) */}
+          <section className="cl9-card fd-resumo fd-so-cel">
+            <div className="fd-topo">
+              <span className="fd-foto">{foto ? <img src={foto} alt="" /> : <Cake size={26} weight="duotone" />}</span>
+              <div className={`fd-lucro fd-lucro--${tom}`}>
+                <small>{lucroLive < 0 ? "Prejuízo" : "Seu lucro"}</small>
+                <b>R$ {fmt(Math.abs(lucroLive))}</b>
+                <span>{fmtPct(margemLucroLive)}% de margem</span>
               </div>
-            )}
-          </div>
-
-          {/* Computador: estados vazios */}
-          {ficha.length === 0 && (
-            <div className="ft-desk-vazio">
-              {insumosCadastrados.length === 0 ? (
-                <>
-                  <div className="ft-desk-vazio-ic" aria-hidden="true">🧂</div>
-                  <b>Cadastre seus ingredientes pra calcular o custo</b>
-                  <p>A ficha técnica soma o custo de cada ingrediente que vai no produto. Comece pelo que você mais usa — leite condensado, farinha, ovos, chocolate…</p>
-                  <button type="button" className="ft-desk-vazio-bt" onClick={() => { setQuickAddName(""); setShowQuickAdd(true); }}>+ Cadastrar primeiro ingrediente</button>
-                  <div className="ft-desk-passos">
-                    <div><b>1. Cadastre</b>nome, embalagem e quanto pagou</div>
-                    <div><b>2. Adicione</b>à ficha com a quantidade usada</div>
-                    <div><b>3. Veja</b>o custo e o lucro na hora</div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <b>Nenhum ingrediente nesta ficha ainda</b>
-                  <p>Adicione o que vai no {selected.nome} pra saber quanto ele custa.</p>
-                  <div className="ft-desk-vazio-acoes">
-                    <button type="button" className="ft-desk-vazio-bt" onClick={abrirPicker}>+ Adicionar ingrediente</button>
-                    <button type="button" className="ft-desk-vazio-bt ft-desk-vazio-bt--claro" onClick={() => { setQuickAddName(""); setShowQuickAdd(true); }}>+ Cadastrar novo ingrediente</button>
-                  </div>
-                </>
-              )}
             </div>
-          )}
+            <Barra />
+            <Conta />
+          </section>
 
-          {/* Computador: ingredientes em tabela (mesmas ações do celular) */}
-          {ficha.length > 0 && (
-            <div className="ft-desk-tabela">
-              <table>
-                <thead><tr><th>Ingrediente</th><th>Quantidade usada</th><th className="num">Custo</th><th aria-label="Remover" /></tr></thead>
-                <tbody>
-                  {ficha.map(f => {
-                    const ins = f.insumo;
-                    const custoLinha = calcCusto(f.quantidade, f.unidade_utilizada, ins);
-                    const unidades = getCompatibleUnits(ins);
-                    return (
-                      <tr key={f.insumo_id}>
-                        <td>
-                          <div className="ft-dt-ins">
-                            {ins.imagem_url
-                              ? <img src={ins.imagem_url} alt="" className="ft-dt-img" />
-                              : <span className="ft-dt-img ft-dt-img--ph">{ins.nome.charAt(0).toUpperCase()}</span>}
-                            <b>{ins.nome}</b>
-                          </div>
-                        </td>
-                        <td>
-                          <div className="ft-dt-qtd">
-                            <CampoNumero value={f.quantidade} placeholder="0"
-                              onValor={n => setQtd(f.insumo_id, n)} aria-label={`Quantidade de ${ins.nome}`} />
-                            {unidades.length > 1 ? (
-                              <select value={f.unidade_utilizada} onChange={e => setUnidade(f.insumo_id, e.target.value)} aria-label="Unidade">
-                                {unidades.map(u => <option key={u} value={u}>{u}</option>)}
-                              </select>
-                            ) : <span className="ft-dt-un">{f.unidade_utilizada}</span>}
-                          </div>
-                        </td>
-                        <td className="num">
-                          <b>R$ {fmt(custoLinha)}</b>
-                          <button type="button" className={`ft-dt-info${infoCustoAberto === f.insumo_id ? " on" : ""}`}
-                            onClick={() => setInfoCustoAberto(prev => prev === f.insumo_id ? null : f.insumo_id)}
-                            aria-label="Como esse valor é calculado" title="Como esse valor é calculado">i</button>
-                        </td>
-                        <td className="ft-dt-x">
-                          <button type="button" onClick={() => removeInsumo(f.insumo_id)} aria-label="Remover" title="Remover">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {ficha.length === 0 ? (
-            <div className="ft-edit-empty">
-              <p className="ft-edit-empty-title">Nenhum ingrediente ainda</p>
-              <p className="ft-edit-empty-sub">Adicione abaixo os insumos usados para fazer 1 unidade deste produto.</p>
-            </div>
-          ) : fichaView === "lista" ? (
-            <div className="ft-list-mode">
+          {/* Ingredientes */}
+          <section className="cl9-card">
+            <Titulo contagem={ficha.length || undefined}>Ingredientes</Titulo>
+            {ficha.length === 0 ? (
+              <TelaVazia compacta icone={<Egg size={28} />}
+                titulo={insumosCadastrados.length === 0 ? "Cadastre seus ingredientes" : "Nenhum ingrediente nesta ficha"}
+                texto={insumosCadastrados.length === 0
+                  ? "A ficha soma o custo de cada ingrediente que vai no produto. Comece pelo que você mais usa: leite condensado, farinha, ovos…"
+                  : `Adicione o que vai no ${selected.nome} pra saber quanto ele custa.`}
+                acao={insumosCadastrados.length === 0
+                  ? <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={abrirCadastro}>Cadastrar ingrediente</Botao>
+                  : <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={abrirPicker}>Adicionar ingrediente</Botao>} />
+            ) : (<>
+              <div className="fd-ing-cab" aria-hidden="true"><span>Ingrediente</span><span>Quanto vai</span><span>Custo</span><span /></div>
               {ficha.map(f => {
                 const ins = f.insumo;
                 const custoLinha = calcCusto(f.quantidade, f.unidade_utilizada, ins);
+                const unidades = getCompatibleUnits(ins);
+                const semQtd = !(f.quantidade > 0);
                 return (
-                  <div key={f.insumo_id} className="ft-list-row">
-                    <span className="ft-list-row-nome">{ins.nome}</span>
-                    <span className="ft-list-row-qtd">{f.quantidade || 0} {f.unidade_utilizada}</span>
-                    <span className="ft-list-row-custo">R$ {fmt(custoLinha)}</span>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="ft-edit-list">
-              {ficha.map(f => {
-                const ins = f.insumo;
-                const custoLinha = calcCusto(f.quantidade, f.unidade_utilizada, ins);
-                const compatibleUnits = getCompatibleUnits(ins);
-                const hasUnitChoice = compatibleUnits.length > 1;
-
-                return (
-                  <div key={f.insumo_id} className="ft-edit-item">
-                    <div className="ft-edit-item-media">
-                      {ins.imagem_url
-                        ? <img src={ins.imagem_url} alt={ins.nome} className="ft-edit-item-img" />
-                        : <div className="ft-edit-item-img ft-edit-item-img--ph">{ins.nome.charAt(0).toUpperCase()}</div>}
-                    </div>
-
-                    <div className="ft-edit-item-body">
-                      <p className="ft-edit-item-nome">{ins.nome}</p>
-
-                      <p className="ft-edit-item-sub">
-                        <span className="ft-edit-item-sub-label">Custo:</span>{" "}
-                        <span className="ft-edit-item-sub-value">
-                          R$ {fmt(custoLinha)}
-                          <button
-                            type="button"
-                            className="ft-edit-item-info"
-                            onClick={() => setInfoCustoAberto(prev => prev === f.insumo_id ? null : f.insumo_id)}
-                            aria-label="Como esse valor é calculado"
-                            title="Como esse valor é calculado"
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <circle cx="12" cy="12" r="10"/>
-                              <line x1="12" y1="16" x2="12" y2="12"/>
-                              <line x1="12" y1="8" x2="12.01" y2="8"/>
-                            </svg>
-                          </button>
-                        </span>
-                      </p>
-
-                      <div className="ft-edit-item-row">
-                        <div className="ft-edit-item-input-group">
-                          <CampoNumero
-                            value={f.quantidade} placeholder="0"
-                            onValor={n => setQtd(f.insumo_id, n)}
-                          />
-                          {hasUnitChoice ? (
-                            <select
-                              value={f.unidade_utilizada}
-                              onChange={e => setUnidade(f.insumo_id, e.target.value)}
-                            >
-                              {compatibleUnits.map(u => (
-                                <option key={u} value={u}>{u}</option>
-                              ))}
-                            </select>
-                          ) : (
-                            <span className="ft-edit-item-unit-fixed">{f.unidade_utilizada}</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <button className="ft-edit-item-del" onClick={() => removeInsumo(f.insumo_id)} aria-label="Remover" title="Remover">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                  <div key={f.insumo_id} className="fd-ing">
+                    <span className="fd-ing-th">{ins.imagem_url ? <img src={ins.imagem_url} alt="" /> : ins.nome.charAt(0).toUpperCase()}</span>
+                    <span className="fd-ing-nome"><b>{ins.nome}</b>{semQtd && <small>Falta a quantidade</small>}</span>
+                    <span className="fd-ing-qtd">
+                      <CampoNumero value={f.quantidade} placeholder="0" onValor={n => setQtd(f.insumo_id, n)} aria-label={`Quanto vai de ${ins.nome}`} />
+                      {unidades.length > 1 ? (
+                        <select value={f.unidade_utilizada} onChange={e => setUnidade(f.insumo_id, e.target.value)} aria-label={`Medida de ${ins.nome}`}>
+                          {unidades.map(u => <option key={u} value={u}>{u}</option>)}
+                        </select>
+                      ) : <i>{f.unidade_utilizada}</i>}
+                    </span>
+                    <button type="button" className="fd-ing-custo" onClick={() => setInfoCustoAberto(f.insumo_id)} aria-label={`Custo de ${ins.nome}: R$ ${fmt(custoLinha)}. Ver a conta`}>
+                      R$ {fmt(custoLinha)}<Info size={16} weight="bold" />
                     </button>
+                    <BotaoIcone rotulo={`Tirar ${ins.nome} da ficha`} variante="limpo" onClick={() => removeInsumo(f.insumo_id)}><X size={18} weight="bold" /></BotaoIcone>
                   </div>
                 );
               })}
-            </div>
-          )}
-
-          {/* Ações: adicionar existente / cadastrar novo */}
-          <div className={`ft-add-actions${ficha.length === 0 ? " ft-add-actions--vazio" : ""}`}>
-            {insumosCadastrados.length > 0 && <button type="button" className="ft-add-existente" onClick={abrirPicker}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-              Adicionar insumo
-            </button>}
-            <button type="button" className="ft-add-novo" onClick={() => { setQuickAddName(""); setShowQuickAdd(true); }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
-              Cadastrar novo insumo
-            </button>
-          </div>
-        </div>
-
-        {/* Modal: selecionar insumos cadastrados (em lote) */}
-        {showPicker && createPortal(
-          <div
-            className="ft-modal-overlay"
-            onClick={fecharPicker}
-            style={{
-              position: "fixed", inset: 0, zIndex: 9999,
-              background: "rgba(0,0,0,0.6)",
-              backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              padding: "1rem",
-            }}
-          >
-            <div className="ft-picker" onClick={e => e.stopPropagation()}>
-              <div className="ft-picker-head">
-                <h3 className="ft-picker-title">Adicionar insumo</h3>
-                <button className="ft-picker-close" onClick={fecharPicker} aria-label="Fechar">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                </button>
+              <div className="fd-ing-acoes">
+                {insumosCadastrados.length > 0 && <Botao variante="secundario" tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={abrirPicker}>Adicionar ingrediente</Botao>}
+                <Botao variante="link" tamanho="m" onClick={abrirCadastro}>Cadastrar novo</Botao>
               </div>
+            </>)}
+          </section>
 
-              <div className="ft-picker-busca">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" placeholder="Buscar insumo..." value={pickerBusca} onChange={e => setPickerBusca(e.target.value)} />
+          <div className="fd-par">
+            {/* Custos invisíveis */}
+            <section className="cl9-card fd-sec">
+              <Titulo>Custos invisíveis</Titulo>
+              <p className="fd-dica">Gás, luz, água, plástico filme e outros gastos difíceis de medir em cada receita.</p>
+              <div className="fd-cv">
+                <Campo rotulo="% sobre os ingredientes" inputMode="decimal" placeholder="25" value={extras.cv_percentual}
+                  onChange={e => setExtras(s => ({ ...s, cv_percentual: e.target.value }))} depois={<span className="cl9-f-uf">%</span>} />
+                <span className="fd-cv-res">= R$ {fmt(cvLive)}</span>
               </div>
+              <p className="fd-dica">A maioria das confeiteiras usa entre 20% e 30%. Se não souber, deixe 25%.</p>
+            </section>
 
-              <div className="ft-picker-grid">
-                {insumosCadastrados
-                  .filter(i => !ficha.some(f => f.insumo_id === i.id))
-                  .filter(i => i.nome.toLowerCase().includes(pickerBusca.toLowerCase()))
-                  .map(i => {
-                    const sel = pickerSel.includes(i.id);
-                    return (
-                      <button key={i.id} type="button" className={`ft-picker-card${sel ? " selected" : ""}`} onClick={() => togglePickerSel(i.id)}>
-                        <div className="ft-picker-card-img">
-                          {i.imagem_url
-                            ? <img src={i.imagem_url} alt={i.nome} />
-                            : <div className="ft-picker-card-ph">{i.nome.charAt(0).toUpperCase()}</div>}
-                          {sel && <span className="ft-picker-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>}
-                        </div>
-                        <span className="ft-picker-card-nome">{i.nome}</span>
-                      </button>
-                    );
-                  })}
-                {insumosCadastrados.filter(i => !ficha.some(f => f.insumo_id === i.id) && i.nome.toLowerCase().includes(pickerBusca.toLowerCase())).length === 0 && (
-                  <p className="ft-picker-vazio">Nenhum insumo disponível. Cadastre um novo insumo.</p>
-                )}
+            {/* Mão de obra */}
+            <section className="cl9-card fd-sec">
+              <div className="fd-sec-cab">
+                <Titulo>Mão de obra</Titulo>
+                <Chave ligado={moAtivo} aoMudar={setMoAtivo} rotulo="Somar a mão de obra" />
               </div>
-
-              <button className="ft-picker-confirm" onClick={confirmarPicker} disabled={pickerSel.length === 0}>
-                {pickerSel.length === 0 ? "Selecione os insumos" : `Adicionar ${pickerSel.length} insumo${pickerSel.length > 1 ? "s" : ""}`}
-              </button>
-            </div>
-          </div>,
-          document.body
-        )}
-
-        {/* Modal de cadastro de insumo */}
-        {showQuickAdd && createPortal(
-          <div
-            className="ft-modal-overlay"
-            onClick={() => { setShowQuickAdd(false); setQuickAddName(""); }}
-            style={{
-              position: "fixed", inset: 0, zIndex: 9999,
-              background: "rgba(0,0,0,0.6)",
-              backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              padding: "1rem",
-            }}
-          >
-            <div
-              className="ft-modal-card"
-              onClick={e => e.stopPropagation()}
-              style={{
-                background: "var(--bg-card)", borderRadius: "var(--radius-lg)",
-                padding: "1.25rem", width: "100%", maxWidth: "420px",
-                maxHeight: "88vh", overflowY: "auto",
-                boxShadow: "0 12px 48px rgba(0,0,0,0.3)",
-              }}
-            >
-              <QuickAddInsumo
-                userId={userId}
-                initialName={quickAddName}
-                onSaved={handleInsumoSalvo}
-                onCancel={() => { setShowQuickAdd(false); setQuickAddName(""); }}
-              />
-            </div>
-          </div>,
-          document.body
-        )}
-
-        <div className="ft-desk-par">
-        {/* Custos invisíveis */}
-        <div className="ft-edit-card">
-          <div className="ft-card-head">
-            <h2 className="ft-card-title">Custos invisíveis</h2>
+              {!moAtivo ? (
+                <p className="fd-dica">Ligue pra colocar o valor do seu tempo no custo do produto.</p>
+              ) : (<>
+                <div className="cl9-f-2">
+                  <Campo rotulo="Quer ganhar por mês" inputMode="decimal" prefixo="R$" placeholder="3.000" value={extras.salario_desejado}
+                    onChange={e => setExtras(s => ({ ...s, salario_desejado: e.target.value }))} />
+                  <Campo rotulo="Horas por semana" inputMode="numeric" placeholder="40" value={extras.horas_semanais}
+                    onChange={e => setExtras(s => ({ ...s, horas_semanais: e.target.value }))} depois={<span className="cl9-f-uf">h</span>} />
+                </div>
+                <Campo rotulo="Tempo pra fazer esta receita" inputMode="numeric" placeholder="0" value={extras.tempo_preparo_min}
+                  onChange={e => setExtras(s => ({ ...s, tempo_preparo_min: e.target.value }))} depois={<span className="cl9-f-uf">min</span>} />
+                <p className="fd-mo">Sua hora vale <b>R$ {fmt(custoHora)}</b>{moLive > 0 && <> · nesta receita: <b>R$ {fmt(moLive)}</b></>}</p>
+              </>)}
+            </section>
           </div>
-          <p className="ft-edit-empty-sub" style={{ margin: 0 }}>Água, luz, gás, corantes, plástico filme e outros itens difíceis de mensurar individualmente.</p>
-          <div className="ft-cv-row">
-            <div className="ft-field" style={{ flex: 1 }}>
-              <label>Percentual sobre o CMV</label>
-              <div className="ft-input-suffix">
-                <input type="text" inputMode="decimal" placeholder="Ex: 25" value={extras.cv_percentual} onChange={e => setExtras(s => ({ ...s, cv_percentual: e.target.value }))} />
-                <span>%</span>
+
+          {/* Informações do produto */}
+          <section className="cl9-card fd-sec">
+            <div className="fd-sec-cab">
+              <Titulo>Informações do produto</Titulo>
+              <Chave ligado={infoAtivo} aoMudar={setInfoAtivo} rotulo="Mostrar informações do produto" />
+            </div>
+            {!infoAtivo ? (
+              <p className="fd-dica">Ligue pra anotar rendimento, validade, embalagem e observações.</p>
+            ) : (<>
+              <div className="cl9-f-2">
+                <Campo rotulo="Rende" opcional placeholder="Ex.: 20 brigadeiros" value={extras.rendimento_qtd} onChange={e => setExtras(s => ({ ...s, rendimento_qtd: e.target.value }))} />
+                <Campo rotulo="Peso total" opcional placeholder="Ex.: 1,2 kg" value={extras.rendimento_peso} onChange={e => setExtras(s => ({ ...s, rendimento_peso: e.target.value }))} />
+                <Campo rotulo="Validade" opcional inputMode="numeric" placeholder="5" value={extras.validade_dias} onChange={e => setExtras(s => ({ ...s, validade_dias: e.target.value }))} depois={<span className="cl9-f-uf">dias</span>} />
               </div>
-            </div>
-            <div className="ft-cv-result">
-              <span className="ft-cv-result-label">= R$ {fmt(cvLive)}</span>
-            </div>
-          </div>
-          <p className="ft-cv-hint">A maioria das confeiteiras usa entre 20% e 30% (o ideal é 25%) — cobre os gastos indiretos de produção.</p>
-        </div>
-
-        {/* Mão de obra */}
-        <div className="ft-edit-card">
-          <div className="ft-card-head">
-            <h2 className="ft-card-title">Mão de obra</h2>
-            <label className="ft-switch">
-              <input type="checkbox" checked={moAtivo} onChange={e => setMoAtivo(e.target.checked)} />
-              <span className="ft-switch-track"><span className="ft-switch-thumb" /></span>
-            </label>
-          </div>
-          {!moAtivo ? (
-            <p className="ft-card-off-hint">Ative para incluir o custo do seu tempo de trabalho no preço final.</p>
-          ) : (
-            <>
-              <div className="ft-extras-edit" style={{ boxShadow: "none", padding: 0 }}>
-                <div className="ft-field ft-field--half">
-                  <label>Quanto deseja ganhar por mês?</label>
-                  <div className="ft-input-prefix">
-                    <span>R$</span>
-                    <input type="text" inputMode="decimal" placeholder="3.000" value={extras.salario_desejado} onChange={e => setExtras(s => ({ ...s, salario_desejado: e.target.value }))} />
+              <div>
+                  <p className="fd-rot">Guardar</p>
+                  <div className="cl9-f-chips">
+                    {([["ambiente", "Ambiente"], ["refrigerado", "Geladeira"], ["congelado", "Freezer"]] as const).map(([v, t]) => (
+                      <button key={v} type="button" aria-pressed={extras.validade_tipo === v} onClick={() => setExtras(s => ({ ...s, validade_tipo: v }))}>{t}</button>
+                    ))}
                   </div>
                 </div>
-                <div className="ft-field ft-field--half">
-                  <label>Horas trabalhadas/semana</label>
-                  <div className="ft-input-suffix">
-                    <input type="text" inputMode="numeric" pattern="[0-9]*" placeholder="40" value={extras.horas_semanais} onChange={e => setExtras(s => ({ ...s, horas_semanais: e.target.value }))} />
-                    <span>h</span>
-                  </div>
-                </div>
-                <div className="ft-field ft-field--half">
-                  <label>Tempo de preparo</label>
-                  <div className="ft-input-suffix">
-                    <input type="text" inputMode="numeric" pattern="[0-9]*" placeholder="0" value={extras.tempo_preparo_min} onChange={e => setExtras(s => ({ ...s, tempo_preparo_min: e.target.value }))} />
-                    <span>min</span>
-                  </div>
-                </div>
-                <div className="ft-field ft-field--half">
-                  <label>Custo/hora</label>
-                  <div className="ft-mo-result">R$ {fmt(custoHora)}/h</div>
-                </div>
-              </div>
-              {moLive > 0 && (
-                <div className="ft-cv-result" style={{ alignSelf: "flex-start" }}>
-                  <span className="ft-cv-result-label">Mão de obra nesta receita: R$ {fmt(moLive)}</span>
-                </div>
-              )}
-            </>
-          )}
+              <Campo rotulo="Embalagem" opcional placeholder="Ex.: Caixa kraft 20x20" value={extras.embalagem} onChange={e => setExtras(s => ({ ...s, embalagem: e.target.value }))} />
+              <CampoArea rotulo="Observações" opcional rows={2} placeholder="Produção, armazenamento ou venda" value={extras.observacoes_ficha} onChange={e => setExtras(s => ({ ...s, observacoes_ficha: e.target.value }))} />
+            </>)}
+          </section>
         </div>
-
-        {/* Detalhes extras */}
-        </div>{/* fim ft-desk-par */}
-
-        <div className="ft-edit-card ft-info-card">
-          <div className="ft-card-head">
-            <h2 className="ft-card-title">Informações do produto</h2>
-            <label className="ft-switch">
-              <input type="checkbox" checked={infoAtivo} onChange={e => setInfoAtivo(e.target.checked)} />
-              <span className="ft-switch-track"><span className="ft-switch-thumb" /></span>
-            </label>
-          </div>
-          {!infoAtivo ? (
-            <p className="ft-card-off-hint">Ative para registrar rendimento, validade, embalagem e observações.</p>
-          ) : (
-            <div className="ft-extras-edit" style={{ boxShadow: "none", padding: 0 }}>
-              <div className="ft-field ft-field--half">
-                <label>Rende (unidades)</label>
-                <input type="text" placeholder="Ex: 20 brigadeiros" value={extras.rendimento_qtd} onChange={e => setExtras(s => ({ ...s, rendimento_qtd: e.target.value }))} />
-              </div>
-              <div className="ft-field ft-field--half">
-                <label>Peso total produzido</label>
-                <input type="text" placeholder="Ex: 1,2 kg" value={extras.rendimento_peso} onChange={e => setExtras(s => ({ ...s, rendimento_peso: e.target.value }))} />
-              </div>
-              <div className="ft-field ft-field--half">
-                <label>Validade após produção</label>
-                <input type="text" inputMode="numeric" pattern="[0-9]*" placeholder="Ex: 5 dias" value={extras.validade_dias} onChange={e => setExtras(s => ({ ...s, validade_dias: e.target.value }))} />
-              </div>
-              <div className="ft-field ft-field--half">
-                <label>Conservação</label>
-                <select value={extras.validade_tipo} onChange={e => setExtras(s => ({ ...s, validade_tipo: e.target.value }))}>
-                  <option value="ambiente">Ambiente</option>
-                  <option value="refrigerado">Refrigerado</option>
-                  <option value="congelado">Congelado</option>
-                </select>
-              </div>
-              <div className="ft-field">
-                <label>Embalagem</label>
-                <input type="text" placeholder="Ex: Caixa kraft 20x20" value={extras.embalagem} onChange={e => setExtras(s => ({ ...s, embalagem: e.target.value }))} />
-              </div>
-              <div className="ft-field">
-                <label>Observações</label>
-                <textarea rows={2} placeholder="Informações sobre produção, armazenamento ou venda" value={extras.observacoes_ficha} onChange={e => setExtras(s => ({ ...s, observacoes_ficha: e.target.value }))} />
-              </div>
-            </div>
-          )}
-        </div>
-
-        
-
-        <button className="ft-btn-salvar ft-so-cel" onClick={salvarFicha} disabled={saving}>
-          {saving ? "Salvando..." : "Salvar precificação"}
-        </button>
-
-        </div>{/* fim ft-desk-main */}
 
         {/* Computador: resumo fixo ao lado */}
-        <aside className="ft-desk-side">
-          <div className="ft-sum">
-            <div className="ft-sum-top">
-              {/* Mesma foto (e o mesmo "Sem imagem") do topo da ficha no celular */}
-              <div className="ft-tree-foto ft-sum-foto">
-                {selected.imagem_url
-                  ? <img src={selected.imagem_url.split(",")[0]} alt={selected.nome} />
-                  : <div className="ft-tree-foto-placeholder">Sem imagem</div>}
+        <aside className="fd-lado">
+          <section className="cl9-card fd-resumo">
+            <div className="fd-topo">
+              <span className="fd-foto">{foto ? <img src={foto} alt="" /> : <Cake size={26} weight="duotone" />}</span>
+              <div className={`fd-lucro fd-lucro--${tom}`}>
+                <small>{lucroLive < 0 ? "Prejuízo" : "Seu lucro"}</small>
+                <b>R$ {fmt(Math.abs(lucroLive))}</b>
+                <span>{fmtPct(margemLucroLive)}% de margem</span>
               </div>
-              <div><b>{selected.nome}</b><span>Preço de venda R$ {fmt(precoLive)}</span></div>
             </div>
-            <div className={`ft-sum-lucro${lucroLive < 0 ? " neg" : ""}`}>
-              <small>Seu lucro</small>
-              <b>R$ {fmt(lucroLive)}</b>
-              <span>{fmtPct(margemLucroLive)}% de margem</span>
-              {precoLive > 0 && (() => {
-                const pc = (v: number) => `${Math.max(0, Math.min(100, (v / precoLive) * 100))}%`;
-                return (
-                  <>
-                    <div className="ft-sum-barra" aria-hidden="true">
-                      <i style={{ width: pc(cmvLive), background: "#C33A6E" }} />
-                      <i style={{ width: pc(cvLive), background: "#F59E0B" }} />
-                      {moLive > 0 && <i style={{ width: pc(moLive), background: "#6366F1" }} />}
-                      <i style={{ width: pc(Math.max(0, lucroLive)), background: "#16a34a" }} />
-                    </div>
-                    <div className="ft-sum-leg">
-                      <span style={{ ["--c" as any]: "#C33A6E" }}>Ingredientes</span>
-                      <span style={{ ["--c" as any]: "#F59E0B" }}>Invisíveis</span>
-                      {moLive > 0 && <span style={{ ["--c" as any]: "#6366F1" }}>Mão de obra</span>}
-                      <span style={{ ["--c" as any]: "#16a34a" }}>Lucro</span>
-                    </div>
-                  </>
-                );
-              })()}
-            </div>
-            <div className="ft-sum-linhas">
-              <div><span>CMV (ingredientes)</span><span>R$ {fmt(cmvLive)}</span></div>
-              <div><span>+ Custos invisíveis ({fmtPct(cvPct)}%)</span><span>R$ {fmt(cvLive)}</span></div>
-              <div><span>+ Mão de obra {tempoMin > 0 ? `(${tempoMin} min)` : ""}</span><span>R$ {fmt(moLive)}</span></div>
-              <div className="t"><span>Custo total</span><span>R$ {fmt(custoTotalLive)}</span></div>
-              <div className="pv"><span>Preço de venda</span><span>R$ {fmt(precoLive)}</span></div>
-              {(parseNumBR(extras.rendimento_qtd) || 0) > 0 && (
-                <div><span>Custo por unidade ({extras.rendimento_qtd})</span><span>R$ {fmt(custoTotalLive / (parseNumBR(extras.rendimento_qtd) || 1))}</span></div>
-              )}
-            </div>
-            <button type="button" className="ft-sum-salvar" onClick={salvarFicha} disabled={saving}>
-              {saving ? "Salvando..." : "Salvar precificação"}
-            </button>
-          </div>
+            <Barra />
+            <Conta />
+            <Botao cheio carregando={saving} onClick={salvarFicha}>Salvar ficha</Botao>
+          </section>
         </aside>
-        </div>{/* fim ft-desk-grid */}
+        </div>
+      </div>
 
-        {savedToast && <div className="ft-toast">Ficha técnica salva!</div>}
+      {/* Celular: lucro fixo embaixo com o salvar */}
+      <div className="fd-fixo">
+        <div className={`fd-fixo-lucro fd-lucro--${tom}`}>
+          <small>{lucroLive < 0 ? "Prejuízo" : "Lucro"} · {fmtPct(margemLucroLive)}%</small>
+          <b>R$ {fmt(Math.abs(lucroLive))}</b>
+        </div>
+        <Botao carregando={saving} onClick={salvarFicha}>Salvar ficha</Botao>
+      </div>
+
+      {/* Escolher ingredientes já cadastrados (vários de uma vez) */}
+      <Janela aberta={showPicker} aoFechar={fecharPicker} tipo="conteudo" titulo="Adicionar ingrediente"
+        acoes={<><Botao variante="secundario" onClick={fecharPicker}>Cancelar</Botao><Botao disabled={pickerSel.length === 0} onClick={confirmarPicker}>{pickerSel.length > 1 ? `Adicionar ${pickerSel.length}` : "Adicionar"}</Botao></>}>
+        <div className="fd-pick">
+          <label className="cl9-busca">
+            <MagnifyingGlass size={20} weight="bold" />
+            <input type="search" placeholder="Buscar ingrediente" value={pickerBusca} onChange={e => setPickerBusca(e.target.value)} aria-label="Buscar ingrediente" autoComplete="off" />
+          </label>
+          {pickerLista.length === 0 ? (
+            <p className="cl9-semres">{disponiveis.length === 0 ? "Todos os seus ingredientes já estão nesta ficha." : "Nenhum ingrediente com esse nome."}</p>
+          ) : pickerLista.map(i => {
+            const sel = pickerSel.includes(i.id);
+            return (
+              <button key={i.id} type="button" className="fd-pick-l" aria-pressed={sel} onClick={() => togglePickerSel(i.id)}>
+                <span className="fd-ing-th">{i.imagem_url ? <img src={i.imagem_url} alt="" /> : i.nome.charAt(0).toUpperCase()}</span>
+                <b>{i.nome}</b>
+                <span className="fd-pick-v">{sel && <Check size={16} weight="bold" />}</span>
+              </button>
+            );
+          })}
+          <button type="button" className="fd-pick-novo" onClick={() => { fecharPicker(); abrirCadastro(); }}><Plus size={18} weight="bold" />Cadastrar ingrediente novo</button>
+        </div>
+      </Janela>
+
+      {/* Cadastro de ingrediente novo (o mesmo da tela Ingredientes) */}
+      {showQuickAdd && (
+        <QuickAddInsumo janela aberta userId={userId} initialName={quickAddName} onSaved={handleInsumoSalvo}
+          onCancel={() => { setShowQuickAdd(false); setQuickAddName(""); }} />
+      )}
 
         {/* Modal explicativo do custo na receita (mascote Doo) */}
         {(() => {
@@ -1061,18 +752,18 @@ export default function FichaTecnica() {
                 <>
                   {temValorCompra && temEmbalagem ? (
                     <p style={{ margin: "0 0 12px" }}>
-                      Você cadastrou em <strong>Insumos</strong> que paga{" "}
+                      Você cadastrou em <strong>Ingredientes</strong> que paga{" "}
                       <strong>R$ {fmt(valorPago)}</strong> {naNo} {tipoEmbBaixo} de{" "}
                       <strong>{fmtQty(qtdEmb)} {fmtUnidade(ins.unidade, qtdEmb)}</strong> de {ins.nome}.
                     </p>
                   ) : temValorCompra ? (
                     <p style={{ margin: "0 0 12px" }}>
-                      Você cadastrou em <strong>Insumos</strong> que paga{" "}
+                      Você cadastrou em <strong>Ingredientes</strong> que paga{" "}
                       <strong>R$ {fmt(valorPago)}</strong> por {fmtUnidade(ins.unidade, 1)} de {ins.nome}.
                     </p>
                   ) : (
                     <p style={{ margin: "0 0 12px" }}>
-                      Você cadastrou {ins.nome} em <strong>Insumos</strong>.
+                      Você cadastrou {ins.nome} em <strong>Ingredientes</strong>.
                     </p>
                   )}
                   <p style={{ margin: "0 0 14px" }}>
@@ -1088,7 +779,7 @@ export default function FichaTecnica() {
                 <>
                   <p style={{ margin: "0 0 10px" }}>
                     Você paga <strong>R$ {fmt(valorPago)}</strong> {naNo} {tipoEmbBaixo} de{" "}
-                    <strong>{fmtQty(qtdEmb)} {fmtUnidade(ins.unidade, qtdEmb)}</strong> de {ins.nome} (cadastrado em <strong>Insumos</strong>).
+                    <strong>{fmtQty(qtdEmb)} {fmtUnidade(ins.unidade, qtdEmb)}</strong> de {ins.nome} (cadastrado em <strong>Ingredientes</strong>).
                   </p>
                   <p style={{ margin: "0 0 10px" }}>
                     Cada {ins.nome} sai por cerca de{" "}
@@ -1107,7 +798,7 @@ export default function FichaTecnica() {
                 /* Caso 2B: item contável avulso (sem embalagem) */
                 <>
                   <p style={{ margin: "0 0 10px" }}>
-                    Você paga <strong>R$ {fmt(valorPago)}</strong> por {fmtUnidade(ins.unidade, 1)} de {ins.nome} (cadastrado em <strong>Insumos</strong>).
+                    Você paga <strong>R$ {fmt(valorPago)}</strong> por {fmtUnidade(ins.unidade, 1)} de {ins.nome} (cadastrado em <strong>Ingredientes</strong>).
                   </p>
                   <p style={{ margin: "0 0 10px" }}>
                     Sua receita usa <strong>{fmtQty(qtdUsada)} {fmtUnidade(f.unidade_utilizada, qtdUsada)}</strong>.
@@ -1128,7 +819,7 @@ export default function FichaTecnica() {
                 <>
                   <p style={{ margin: "0 0 12px" }}>
                     Você pagou <strong>R$ {fmt(valorPago)}</strong> por {umaUm} {tipoEmbBaixo} de{" "}
-                    <strong>{fmtQty(qtdEmb)} {fmtUnidade(ins.unidade, qtdEmb)}</strong> de {ins.nome} (cadastrado em <strong>Insumos</strong>).
+                    <strong>{fmtQty(qtdEmb)} {fmtUnidade(ins.unidade, qtdEmb)}</strong> de {ins.nome} (cadastrado em <strong>Ingredientes</strong>).
                   </p>
 
                   {ehFracao ? (
@@ -1173,16 +864,13 @@ export default function FichaTecnica() {
                     <strong style={{ color: "var(--text-title)" }}>R$ {fmt(custoLinha)}</strong>.
                   </p>
                   <p style={{ margin: 0, padding: "10px 12px", background: "rgba(61,26,36,0.06)", borderRadius: 10, fontSize: "0.85rem" }}>
-                    <strong>Dica:</strong> abra esse insumo em <strong>Insumos</strong> e refaça o cadastro pra que a explicação aqui fique completa.
+                    <strong>Dica:</strong> abra esse ingrediente em <strong>Ingredientes</strong> e refaça o cadastro pra que a explicação aqui fique completa.
                   </p>
                 </>
               )}
             </DooInfoModal>
           );
         })()}
-
-        <style>{detailStyles}</style>
-      </div>
       </>
     );
   }
@@ -1282,576 +970,4 @@ export default function FichaTecnica() {
   );
 }
 
-const detailStyles = `
-  /* Cabeçalho do app no celular e no computador (30/09) */
-  .ft-so-desk { display: block; }
-  .ft-back, .ft-list-header { display: none !important; }
-  @media (min-width: 901px) {
-  }
 
-  .ft-root {
-    font-family: var(--font-base); max-width: 600px;
-    display: flex; flex-direction: column;
-    gap: var(--space-4);
-    padding-top: var(--space-7); padding-bottom: var(--space-7);
-    --ft-line: var(--border);
-  }
-
-  .ft-back {
-    display: inline-flex; align-items: center; gap: 6px; padding: 0;
-    background: none; border: none; font-family: var(--font-base);
-    font-size: var(--font-body); font-weight: var(--fw-medium);
-    color: var(--text-secondary); cursor: pointer;
-  }
-
-  .ft-tree {
-    display: flex; flex-direction: row; align-items: center; gap: 1rem;
-    background: var(--bg-card); border-radius: var(--radius-lg);
-    padding: 1rem;
-    box-shadow: var(--shadow-card, 0 2px 8px rgba(0,0,0,0.06));
-  }
-  .ft-tree-foto {
-    width: 110px; height: 110px; border-radius: var(--radius-lg); overflow: hidden;
-    background: var(--bg-subtle); flex-shrink: 0;
-    border: 3px solid var(--bg-card);
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16), 0 4px 10px rgba(0, 0, 0, 0.08);
-  }
-  .ft-tree-foto img { width: 100%; height: 100%; object-fit: cover; }
-  .ft-tree-foto-placeholder {
-    width: 100%; height: 100%; display: flex; align-items: center;
-    justify-content: center; font-size: var(--font-caption); color: var(--text-muted);
-    text-align: center;
-  }
-  .ft-tree-info {
-    flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.5rem;
-  }
-  .ft-tree-nome {
-    font-size: var(--font-section-title); font-weight: var(--fw-bold);
-    color: var(--text-title); margin: 0; line-height: 1.25;
-  }
-  .ft-tree-lucro {
-    display: flex; flex-direction: column; gap: 1px;
-  }
-  .ft-tree-sub {
-    font-size: var(--font-caption); color: var(--text-muted); margin: 4px 0 0;
-  }
-
-  /* Lucro (dentro do cabeçalho) */
-  .ft-lucro-hero-label { font-size: var(--font-caption); color: var(--text-muted); text-transform: uppercase; letter-spacing: var(--ls-wide); font-weight: var(--fw-semibold); }
-  .ft-lucro-hero-value { font-size: var(--font-stat-value); font-weight: var(--fw-bold); color: var(--success); line-height: 1.15; }
-  .ft-lucro-hero-value--neg { color: var(--error); }
-  .ft-lucro-hero-margin { font-size: var(--font-button); font-weight: var(--fw-semibold); margin-top: 2px; }
-  .ft-lucro-hero-margin--ok { color: var(--success); }
-  .ft-lucro-hero-margin--warn { color: var(--warning); }
-  .ft-lucro-hero-margin--neg { color: var(--error); }
-
-  /* Pricing breakdown card */
-  .ft-pricing-card {
-    background: var(--bg-card); border-radius: var(--radius-lg);
-    padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.45rem;
-    box-shadow: var(--shadow-card, 0 2px 8px rgba(0,0,0,0.06));
-  }
-  .ft-pricing-row { display: flex; justify-content: space-between; align-items: center; }
-  .ft-pricing-label { font-size: var(--font-button); color: var(--text-muted); }
-  .ft-pricing-value { font-size: var(--font-button); font-weight: var(--fw-semibold); color: var(--text-title); }
-  .ft-pricing-row--total .ft-pricing-label { font-weight: var(--fw-bold); color: var(--text-title); font-size: var(--font-body); }
-  .ft-pricing-row--total .ft-pricing-value { font-weight: var(--fw-bold); font-size: var(--font-body); }
-  .ft-pricing-divider { height: 1px; background: var(--border); margin: 0.2rem 0; }
-  .ft-pricing-spacer { height: 0.35rem; }
-  .ft-pricing-value--preco { color: var(--primary); }
-  .ft-pricing-value--lucro { color: var(--success); }
-  .ft-pricing-value--warn { color: var(--warning); }
-  .ft-pricing-value--neg { color: var(--error); }
-
-  /* CV / MO helpers */
-  .ft-cv-row { display: flex; align-items: flex-end; gap: 0.75rem; }
-  .ft-cv-result {
-    padding: 0.45rem 0.7rem; background: var(--primary-light);
-    border-radius: var(--radius-md); white-space: nowrap;
-  }
-  .ft-cv-result-label { font-size: var(--font-caption); font-weight: var(--fw-bold); color: var(--primary); }
-  .ft-cv-hint { font-size: var(--font-helper); color: var(--text-muted); font-style: italic; margin: 0; }
-
-  .ft-input-suffix {
-    display: flex; align-items: center;
-    border: 1.5px solid var(--border); border-radius: var(--radius-md);
-    overflow: hidden; background: var(--bg-card);
-    transition: border-color var(--dur-fast) var(--ease-out);
-  }
-  .ft-input-suffix:focus-within { border-color: var(--primary); }
-  .ft-input-suffix input {
-    flex: 1; min-width: 0; border: none; outline: none; background: transparent;
-    padding: var(--pad-input); font-family: var(--font-base);
-    font-size: var(--font-input); color: var(--text-primary);
-  }
-  .ft-input-suffix input::-webkit-outer-spin-button,
-  .ft-input-suffix input::-webkit-inner-spin-button { -webkit-appearance: none; }
-  .ft-input-suffix input[type=number] { -moz-appearance: textfield; }
-  .ft-input-suffix span {
-    padding: 0.75rem 0.85rem; font-size: var(--font-button); font-weight: var(--fw-semibold);
-    color: var(--text-muted);
-  }
-
-  .ft-input-prefix {
-    display: flex; align-items: center;
-    border: 1.5px solid var(--border); border-radius: var(--radius-md);
-    overflow: hidden; background: var(--bg-card);
-    transition: border-color var(--dur-fast) var(--ease-out);
-  }
-  .ft-input-prefix:focus-within { border-color: var(--primary); }
-  .ft-input-prefix span {
-    padding: 0.75rem 0 0.75rem 0.85rem; font-size: var(--font-button); font-weight: var(--fw-semibold);
-    color: var(--text-muted);
-  }
-  .ft-input-prefix input {
-    flex: 1; min-width: 0; border: none; outline: none; background: transparent;
-    padding: var(--pad-input); padding-left: var(--space-2); font-family: var(--font-base);
-    font-size: var(--font-input); color: var(--text-primary);
-  }
-
-  .ft-mo-result {
-    padding: var(--pad-input); background: var(--primary-dark);
-    border: none; border-radius: var(--radius-md);
-    font-size: var(--font-input); font-weight: var(--fw-bold); color: var(--text-inverse);
-  }
-
-  /* Cabeçalho dentro do card */
-  .ft-card-head {
-    display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
-  }
-  .ft-card-title {
-    font-size: var(--font-section-label); font-weight: var(--fw-bold);
-    color: var(--text-title); margin: 0;
-    text-transform: uppercase; letter-spacing: var(--ls-wide);
-  }
-  .ft-card-off-hint {
-    font-size: var(--font-caption); color: var(--text-muted); margin: 0; line-height: 1.4;
-  }
-
-  /* Switch (ativar seção) */
-  .ft-switch { display: inline-flex; align-items: center; cursor: pointer; flex-shrink: 0; }
-  .ft-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
-  .ft-switch-track {
-    position: relative; width: 40px; height: 22px;
-    background: var(--border); border-radius: var(--radius-full);
-    transition: background var(--dur-fast, 0.15s) var(--ease-out, ease);
-  }
-  .ft-switch-thumb {
-    position: absolute; top: 2px; left: 2px;
-    width: 18px; height: 18px; background: var(--bg-card);
-    border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.25);
-    transition: transform var(--dur-fast, 0.15s) var(--ease-out, ease);
-  }
-  .ft-switch input:checked + .ft-switch-track { background: var(--primary); }
-  .ft-switch input:checked + .ft-switch-track .ft-switch-thumb { transform: translateX(18px); }
-  /* Toggle de visualização (grid / lista) */
-  .ft-view-toggle {
-    display: flex; gap: 2px; padding: 2px;
-    background: var(--bg-subtle); border-radius: var(--radius-md);
-  }
-  .ft-view-btn {
-    display: flex; align-items: center; justify-content: center;
-    width: 30px; height: 28px; border: none; background: transparent;
-    border-radius: var(--radius-sm); color: var(--text-muted); cursor: pointer;
-    transition: background var(--dur-fast, 0.15s) var(--ease-out, ease), color var(--dur-fast, 0.15s) var(--ease-out, ease);
-  }
-  .ft-view-btn.active {
-    background: var(--bg-card); color: var(--primary);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  }
-
-  /* Modo lista (somente leitura, estilo receita/planilha) */
-  .ft-list-mode {
-    display: flex; flex-direction: column;
-    border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden;
-  }
-  .ft-list-row {
-    display: flex; align-items: center; gap: 0.75rem;
-    padding: 0.6rem 0.7rem; border-bottom: 1px solid var(--border);
-  }
-  .ft-list-row:nth-child(even) { background: var(--bg-subtle); }
-  .ft-list-row:last-child { border-bottom: none; }
-  .ft-list-row-nome {
-    flex: 1; min-width: 0; font-size: var(--font-body); font-weight: var(--fw-semibold);
-    color: var(--text-title); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  .ft-list-row-qtd {
-    flex-shrink: 0; font-size: var(--font-caption); font-weight: var(--fw-semibold);
-    color: var(--text-secondary); white-space: nowrap; text-align: right; min-width: 64px;
-  }
-  .ft-list-row-custo {
-    flex-shrink: 0; font-size: var(--font-body); font-weight: var(--fw-bold);
-    color: var(--text-title); white-space: nowrap; text-align: right; min-width: 72px;
-  }
-
-  .ft-edit-card {
-    background: var(--bg-card); border-radius: var(--radius-lg);
-    padding: var(--pad-card); box-shadow: var(--shadow-card);
-    display: flex; flex-direction: column; gap: var(--gap-stack);
-  }
-  .ft-edit-empty { text-align: center; padding: 1rem 0.5rem; }
-  .ft-edit-empty-title { font-size: var(--font-body); font-weight: var(--fw-bold); color: var(--text-title); margin: 0 0 2px; }
-  .ft-edit-empty-sub { font-size: var(--font-caption); color: var(--text-muted); margin: 0; line-height: 1.4; }
-
-  .ft-edit-list { display: flex; flex-direction: column; gap: 0.6rem; }
-  .ft-edit-item {
-    position: relative;
-    display: flex; flex-direction: row; align-items: center; gap: var(--space-3);
-    padding: var(--pad-card);
-    padding-left: 0;
-    background: #F4F4F5; border-radius: var(--radius-lg);
-    overflow: hidden;
-  }
-
-  .ft-edit-item-media {
-    flex-shrink: 0;
-  }
-  .ft-edit-item-img {
-    width: 76px; height: 76px;
-    object-fit: cover;
-    background: transparent;
-    mix-blend-mode: multiply;
-    display: block;
-  }
-  .ft-edit-item-img--ph {
-    display: flex; align-items: center; justify-content: center;
-    background: var(--primary-light); color: var(--primary);
-    font-weight: var(--fw-bold); font-size: var(--text-3xl);
-    mix-blend-mode: normal;
-  }
-  .ft-edit-item-del {
-    position: absolute;
-    top: var(--space-2); right: var(--space-2);
-    width: 28px; height: 28px;
-    display: inline-flex; align-items: center; justify-content: center;
-    background: transparent;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all var(--dur-fast) var(--ease-out);
-  }
-  .ft-edit-item-del:hover {
-    border-color: var(--error); color: var(--error); background: var(--bg-card);
-  }
-
-  .ft-edit-item-body {
-    flex: 1; min-width: 0; display: flex; flex-direction: column;
-    gap: 2px;
-    padding-right: calc(28px + var(--space-2));
-  }
-  .ft-edit-item-nome {
-    font-size: var(--font-body); font-weight: var(--fw-bold); color: var(--text-title);
-    margin: 0;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  .ft-edit-item-sub {
-    font-size: var(--font-body); color: var(--text-title); margin: 0;
-    font-weight: var(--fw-semibold);
-    line-height: 1.4;
-  }
-  .ft-edit-item-sub-label { color: var(--text-secondary); font-weight: var(--fw-medium); }
-  .ft-edit-item-sub-value { white-space: nowrap; font-weight: var(--fw-bold); color: var(--text-title); }
-
-  .ft-edit-item-info {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 16px; height: 16px;
-    margin-left: 4px;
-    padding: 0; background: transparent; border: none;
-    color: var(--primary-dark); cursor: pointer; vertical-align: -3px;
-    transition: color var(--dur-fast) var(--ease-out);
-  }
-  .ft-edit-item-info:hover { color: var(--primary); }
-
-  .ft-edit-item-info-pop {
-    display: flex; flex-direction: column; gap: 2px;
-    margin-top: var(--space-2);
-    padding: var(--space-2) var(--space-3);
-    background: var(--bg-card);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-md);
-  }
-  .ft-edit-item-info-pop-title {
-    font-size: var(--font-caption); font-weight: var(--fw-bold);
-    color: var(--text-title); margin-bottom: 2px;
-  }
-  .ft-edit-item-info-pop-line {
-    font-size: var(--font-caption); color: var(--text-muted);
-    font-weight: var(--fw-medium);
-  }
-  .ft-edit-item-info-pop-result {
-    font-size: var(--font-caption); font-weight: var(--fw-bold);
-    color: var(--primary); margin-top: 4px;
-    padding-top: 4px; border-top: 1px solid var(--border);
-  }
-
-  .ft-edit-item-row { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-2); }
-  .ft-edit-item-input-group {
-    flex: 1; width: 100%; display: flex; align-items: stretch;
-    border: 1.5px solid var(--border); border-radius: var(--radius-md);
-    overflow: hidden; background: var(--bg-card);
-    transition: border-color 0.15s ease;
-  }
-  .ft-edit-item-input-group:focus-within { border-color: var(--primary-dark); }
-  .ft-edit-item-input-group input {
-    flex: 1; min-width: 0; border: none; outline: none; background: transparent;
-    padding: 0.5rem 0.6rem; font-family: var(--font-base);
-    font-size: var(--font-body); font-weight: var(--fw-semibold);
-    color: var(--text-primary); text-align: left;
-  }
-  .ft-edit-item-input-group input::-webkit-outer-spin-button,
-  .ft-edit-item-input-group input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-  .ft-edit-item-input-group input[type=number] { -moz-appearance: textfield; }
-  .ft-edit-item-input-group select {
-    border: none; outline: none;
-    padding: 0 0.7rem; font-family: var(--font-base);
-    font-size: var(--font-caption); font-weight: var(--fw-semibold);
-    color: var(--text-secondary); background: var(--bg-subtle, #EAEAEC);
-    border-left: 1px solid var(--border);
-    cursor: pointer; -webkit-appearance: none; appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2371717A' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat; background-position: right 8px center;
-    padding-right: 1.6rem;
-  }
-  .ft-edit-item-unit-fixed {
-    padding: 0 0.7rem; font-size: var(--font-caption); font-weight: var(--fw-semibold);
-    color: var(--text-secondary); background: var(--bg-subtle, #EAEAEC);
-    border-left: 1px solid var(--border);
-    white-space: nowrap; display: flex; align-items: center;
-  }
-  .ft-edit-item-custo { display: flex; align-items: center; gap: 4px; flex-shrink: 0; min-width: 90px; justify-content: flex-end; }
-  .ft-edit-item-custo-eq { font-size: var(--font-caption); color: var(--text-muted); }
-  .ft-edit-item-custo-val { font-size: var(--font-body); font-weight: var(--fw-bold); color: var(--text-title); white-space: nowrap; text-align: right; }
-
-  .ft-add-novo {
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-    padding: 0.85rem 0.75rem; background: var(--primary); border: none;
-    border-radius: var(--radius-md); color: var(--text-inverse); font-family: var(--font-base);
-    font-size: var(--font-body); font-weight: var(--fw-bold); cursor: pointer; text-align: center;
-    box-shadow: 0 2px 8px rgba(var(--primary-rgb, 61, 26, 36), 0.25);
-    transition: filter var(--dur-fast, 0.15s) var(--ease-out, ease);
-  }
-  .ft-add-novo:hover { filter: brightness(1.08); }
-  .ft-add-novo svg { stroke: var(--text-inverse); flex-shrink: 0; }
-  .ft-add-novo--solo { background: var(--primary); }
-
-  /* Linha de ações: adicionar existente + cadastrar novo */
-  .ft-add-actions { display: flex; flex-direction: column; gap: 0.5rem; }
-  .ft-add-existente {
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-    padding: 0.85rem 0.75rem; background: var(--bg-card); border: 1.5px solid var(--primary);
-    border-radius: var(--radius-md); color: var(--primary); font-family: var(--font-base);
-    font-size: var(--font-body); font-weight: var(--fw-bold); cursor: pointer; text-align: center;
-    transition: background var(--dur-fast, 0.15s) var(--ease-out, ease);
-  }
-  .ft-add-existente:hover { background: var(--primary-light); }
-  .ft-add-existente svg { stroke: var(--primary); flex-shrink: 0; }
-
-  /* Modal picker de insumos */
-  .ft-picker {
-    background: var(--bg-card); border-radius: var(--radius-lg);
-    width: 100%; max-width: 560px; max-height: 85vh;
-    display: flex; flex-direction: column;
-    box-shadow: 0 12px 48px rgba(0,0,0,0.3);
-  }
-  .ft-picker-head {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 1rem 1.1rem 0.75rem; flex-shrink: 0;
-  }
-  .ft-picker-title {
-    font-size: var(--font-section-title); font-weight: var(--fw-bold); color: var(--text-title); margin: 0;
-  }
-  .ft-picker-close {
-    display: flex; align-items: center; justify-content: center;
-    width: 32px; height: 32px; flex-shrink: 0;
-    background: var(--bg-subtle); border: none; border-radius: var(--radius-full);
-    cursor: pointer; color: var(--text-muted);
-  }
-  .ft-picker-close:hover { background: var(--border); color: var(--text-secondary); }
-  .ft-picker-busca {
-    display: flex; align-items: center; gap: 8px; margin: 0 1.1rem 0.75rem;
-    padding: 0.55rem 0.75rem; background: var(--bg-subtle); border: 1.5px solid var(--border);
-    border-radius: var(--radius-md); color: var(--text-muted); flex-shrink: 0;
-  }
-  .ft-picker-busca input {
-    flex: 1; border: none; outline: none; background: transparent;
-    font-family: var(--font-base); font-size: var(--font-body); color: var(--text-primary);
-  }
-  .ft-picker-grid {
-    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem;
-    align-content: start;
-    padding: 0 1.1rem 1rem; overflow-y: auto; flex: 1;
-  }
-  .ft-picker-card {
-    display: flex; flex-direction: column; gap: 5px; padding: 0;
-    background: transparent; border: none; cursor: pointer;
-  }
-  .ft-picker-card-img {
-    position: relative; aspect-ratio: 1; width: 100%;
-    border-radius: var(--radius-md); overflow: hidden;
-    background: var(--bg-subtle);
-    border: 2px solid var(--border);
-    transition: border-color var(--dur-fast, 0.15s) var(--ease-out, ease);
-  }
-  .ft-picker-card.selected .ft-picker-card-img {
-    border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light);
-  }
-  .ft-picker-card-img img { width: 100%; height: 100%; object-fit: cover; }
-  .ft-picker-card-ph {
-    width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
-    background: var(--primary-light); color: var(--primary); font-weight: var(--fw-bold); font-size: var(--font-section-title);
-  }
-  .ft-picker-check {
-    position: absolute; top: 5px; right: 5px;
-    width: 24px; height: 24px; background: var(--primary);
-    border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-  }
-  .ft-picker-card-nome {
-    font-size: var(--font-caption); font-weight: var(--fw-semibold); color: var(--text-title);
-    text-align: center; line-height: 1.25;
-    overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
-    -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-  }
-  .ft-picker-vazio {
-    grid-column: 1 / -1; text-align: center; padding: 2rem 1rem;
-    font-size: var(--font-caption); color: var(--text-muted);
-  }
-  .ft-picker-confirm {
-    margin: 0 1.1rem 1.1rem; padding: 0.85rem; flex-shrink: 0;
-    background: var(--primary); color: var(--text-inverse); border: none;
-    border-radius: var(--radius-md); font-family: var(--font-base);
-    font-size: var(--font-button); font-weight: var(--fw-bold); cursor: pointer;
-  }
-  .ft-picker-confirm:disabled { opacity: 0.5; cursor: default; }
-
-  .ft-extras-edit {
-    background: var(--bg-card); border-radius: var(--radius-md); padding: 0.85rem;
-    box-shadow: var(--shadow-card, 0 2px 8px rgba(0,0,0,0.06));
-    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.65rem;
-  }
-  .ft-field { display: flex; flex-direction: column; gap: var(--space-1); grid-column: 1 / -1; min-width: 0; justify-content: flex-end; }
-  .ft-field--half { grid-column: span 1; }
-  .ft-field label { font-size: var(--font-field-label); color: var(--text-secondary); font-weight: var(--fw-semibold); }
-
-  /* ═══ Ficha técnica no computador (aprovado 30/09) — celular intocado ═══ */
-  .ft-desk-grid, .ft-desk-main, .ft-desk-par { display: contents; }
-  .ft-desk-side, .ft-desk-tabela, .ft-desk-vazio { display: none; }
-  @media (min-width: 1100px) {
-    .ft-root { max-width: 1180px !important; margin-left: auto; margin-right: auto; }
-    .ft-list-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1rem; }
-    .ft-desk-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
-    .ft-desk-main { display: block; min-width: 0; }
-    .ft-desk-par { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
-    .ft-desk-par > .ft-edit-card { margin-top: 0; margin-bottom: 0; }
-    .ft-desk-par { margin: 16px 0; }
-    .ft-desk-main > .ft-edit-card { margin-top: 0; margin-bottom: 0; }
-    .ft-add-actions { flex-direction: row !important; }
-    .ft-add-actions > button { flex: 1; }
-    .ft-so-cel, .ft-view-toggle, .ft-edit-list, .ft-list-mode, .ft-edit-empty, .ft-add-actions--vazio { display: none !important; }
-    .ft-info-card, .ft-info-card * { font-family: var(--font-base) !important; }
-    .ft-info-card .ft-extras-edit { display: grid !important; grid-template-columns: repeat(3, 1fr); gap: 10px 14px; }
-    .ft-info-card .ft-extras-edit .ft-field { width: auto !important; min-width: 0; }
-    .ft-info-card .ft-extras-edit .ft-field:not(.ft-field--half) { grid-column: 1 / -1; }
-
-    .ft-desk-tabela { display: block; overflow-x: auto; }
-    .ft-desk-tabela table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-    .ft-desk-tabela th { text-align: left; font-size: 10.5px; font-weight: 700; color: #888780; letter-spacing: .04em; text-transform: uppercase; padding: 8px 10px; background: #FAF7F8; white-space: nowrap; }
-    .ft-desk-tabela th.num, .ft-desk-tabela td.num { text-align: right; white-space: nowrap; }
-    .ft-desk-tabela td { padding: 8px 10px; border-bottom: 1px solid #F5F0F2; vertical-align: middle; }
-    .ft-dt-ins { display: flex; align-items: center; gap: 10px; }
-    .ft-dt-ins b { font-size: 13.5px; color: var(--text-title); }
-    .ft-dt-img { width: 32px; height: 32px; border-radius: 7px; object-fit: cover; flex-shrink: 0; }
-    .ft-dt-img--ph { display: flex; align-items: center; justify-content: center; background: #FCE7F3; color: #C33A6E; font-weight: 800; font-size: 13px; }
-    .ft-dt-qtd { display: inline-flex; align-items: stretch; border: 1px solid #EAE3E6; border-radius: 8px; overflow: hidden; background: #fff; }
-    .ft-dt-qtd:focus-within { border-color: #2C1219; }
-    .ft-dt-qtd input { width: 84px; border: none; outline: none; padding: 7px 10px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--text-title); background: none; }
-    .ft-dt-qtd select, .ft-dt-un { border: none; outline: none; background: #F5F0F2; padding: 0 8px; font-family: inherit; font-size: 12px; color: #6B5D64; display: flex; align-items: center; }
-    .ft-dt-info { display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; margin-left: 6px; border-radius: 50%; border: 1.5px solid #C33A6E; background: none; color: #C33A6E; font-family: inherit; font-size: 10px; font-weight: 800; cursor: pointer; vertical-align: 1px; padding: 0; }
-    .ft-dt-info.on { background: #C33A6E; color: #fff; }
-    .ft-dt-x { width: 34px; text-align: center; }
-    .ft-dt-x button { border: none; background: none; color: #C4B8BE; cursor: pointer; padding: 4px; }
-    .ft-dt-x button:hover { color: #DC2626; }
-
-    .ft-desk-vazio { display: block; text-align: center; padding: 26px 16px; }
-    .ft-desk-vazio-ic { width: 64px; height: 64px; border-radius: 16px; background: #FCE7F3; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-size: 30px; }
-    .ft-desk-vazio b { display: block; font-size: 17px; font-weight: 800; color: var(--text-title); }
-    .ft-desk-vazio p { font-size: 13px; color: #6B5D64; line-height: 1.5; max-width: 440px; margin: 6px auto 16px; }
-    .ft-desk-vazio-acoes { display: flex; gap: 8px; justify-content: center; }
-    .ft-desk-vazio-bt { height: 42px; padding: 0 18px; border: none; border-radius: 10px; background: #2C1219; color: #fff; font-family: inherit; font-size: 13.5px; font-weight: 800; cursor: pointer; }
-    .ft-desk-vazio-bt--claro { background: #F5F0F2; color: #2C1219; }
-    .ft-desk-passos { display: flex; gap: 10px; justify-content: center; margin-top: 18px; }
-    .ft-desk-passos div { width: 160px; background: #FAF7F8; border-radius: 10px; padding: 10px; font-size: 11.5px; color: #4B3A42; line-height: 1.4; text-align: left; }
-    .ft-desk-passos b { font-size: 12px; margin-bottom: 2px; }
-
-    .ft-desk-side { display: block; position: sticky; top: 20px; }
-    .ft-sum { background: var(--bg-card); border: 1px solid #F0EBED; border-radius: 14px; overflow: hidden; }
-    .ft-sum-top { display: flex; gap: 12px; align-items: center; padding: 14px; border-bottom: 1px solid #F3ECEE; }
-    .ft-sum-foto { width: 84px !important; height: 84px !important; border: none !important; }
-    .ft-sum-top b { display: block; font-size: 15px; color: var(--text-title); }
-    .ft-sum-top span { font-size: 12px; color: #888780; }
-    .ft-sum-lucro { padding: 14px; background: #F0FDF4; color: #15803D; }
-    .ft-sum-lucro.neg { background: #FEF2F2; color: #B91C1C; }
-    .ft-sum-lucro small { font-size: 10.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
-    .ft-sum-lucro b { display: block; font-size: 28px; font-weight: 800; line-height: 1.15; }
-    .ft-sum-lucro > span { font-size: 12.5px; font-weight: 700; }
-    .ft-sum-barra { height: 8px; border-radius: 4px; background: #E5DDE0; margin: 10px 0 5px; display: flex; overflow: hidden; }
-    .ft-sum-barra i { display: block; height: 100%; }
-    .ft-sum-leg { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 10.5px; color: #6B5D64; }
-    .ft-sum-leg span::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; background: var(--c); }
-    .ft-sum-linhas { padding: 12px 14px; }
-    .ft-sum-linhas > div { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; padding: 5px 0; color: #4B3A42; }
-    .ft-sum-linhas > div.t { border-top: 1px solid #F0EBED; margin-top: 4px; padding-top: 9px; font-weight: 800; color: var(--text-title); }
-    .ft-sum-linhas > div.pv { font-weight: 800; color: #C33A6E; }
-    .ft-sum-salvar { display: block; width: calc(100% - 28px); margin: 0 14px 14px; height: 46px; border: none; border-radius: 12px; background: var(--primary); color: #fff; font-family: inherit; font-size: 14.5px; font-weight: 800; cursor: pointer; }
-    .ft-sum-salvar:disabled { opacity: .6; cursor: default; }
-  }
-  .ft-field input, .ft-field select, .ft-field textarea {
-    width: 100%; box-sizing: border-box; min-width: 0; max-width: 100%;
-    padding: var(--pad-input); border: 1.5px solid var(--border); border-radius: var(--radius-md);
-    font-family: var(--font-base); font-size: var(--font-input); background: var(--bg-card);
-    color: var(--text-primary); outline: none; resize: none;
-  }
-  .ft-field input:focus, .ft-field select:focus, .ft-field textarea:focus { border-color: var(--primary); }
-  .ft-field .ft-input-suffix input,
-  .ft-field .ft-input-prefix input {
-    border: none; border-radius: 0; padding: var(--pad-input);
-    width: auto;
-  }
-
-  .ft-disclaimer { font-size: var(--font-helper); color: var(--text-muted); text-align: center; margin: 0; font-style: italic; }
-
-  .ft-btn-salvar {
-    width: 100%; padding: 0.8rem; background: var(--primary);
-    color: var(--text-inverse); border: none; border-radius: var(--radius-md);
-    font-family: var(--font-base); font-size: var(--font-button);
-    font-weight: var(--fw-bold); cursor: pointer;
-  }
-  .ft-btn-salvar:disabled { opacity: 0.6; cursor: default; }
-
-  .ft-modal-overlay {
-    position: fixed; inset: 0; z-index: 9999;
-    background: var(--bg-overlay); display: flex;
-    align-items: center; justify-content: center;
-    padding: var(--pad-page);
-    animation: ftFadeIn var(--dur-slow) var(--ease-out);
-  }
-  .ft-modal-card {
-    background: var(--bg-card); border-radius: var(--radius-lg);
-    padding: var(--pad-modal); width: 100%; max-width: 420px;
-    max-height: 85vh; overflow-y: auto;
-    box-shadow: var(--shadow-lg);
-    animation: ftSlideUp var(--dur-slow) var(--ease-out);
-  }
-  @keyframes ftFadeIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes ftSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-  .ft-toast {
-    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
-    background: var(--success); color: white; padding: 0.6rem 1.2rem;
-    border-radius: var(--radius-full); font-size: var(--font-caption); font-weight: var(--fw-bold);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.2); z-index: 999;
-  }
-
-  body.modal-open .bottom-nav { display: none !important; }
-`;
