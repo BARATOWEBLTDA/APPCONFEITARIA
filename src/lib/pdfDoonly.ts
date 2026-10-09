@@ -8,6 +8,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { supabase } from "@/lib/supabase";
 
+import { avisar } from "@/components/base";
 export type Loja = { nome: string; contato: string; logo: string | null; inicial: string; isPro: boolean };
 
 export const esc = (s: any): string =>
@@ -45,7 +46,7 @@ export async function buscarLoja(): Promise<Loja> {
 export function abrirJanela(): Window | null {
   const w = window.open("", "_blank");
   if (w) { try { w.document.write('<p style="font-family:sans-serif;color:#9A8E94;padding:40px;text-align:center">Preparando o documento…</p>'); } catch {} }
-  else alert("Libere as janelas (pop-up) do navegador pra gerar o PDF.");
+  else avisar("Libere as janelas (pop-up) do navegador pra gerar o PDF.", { tipo: "erro" });
   return w;
 }
 

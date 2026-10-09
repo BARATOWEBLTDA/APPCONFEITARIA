@@ -9,6 +9,7 @@ import { TextStyle } from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import { useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { avisar } from "@/components/base";
 import {
   TextB, TextItalic, TextUnderline, TextStrikethrough,
   TextHOne, TextHTwo, TextHThree, ListBullets, ListNumbers,
@@ -107,7 +108,7 @@ export default function RichEditor({ content, onChange }: Props) {
       const { data } = supabase.storage.from("noticias-anexos").getPublicUrl(fileName);
       return data.publicUrl;
     } catch (err: any) {
-      alert("Erro no upload: " + err.message);
+      avisar("Erro no upload: " + err.message, { tipo: "erro" });
       return null;
     } finally {
       setUploading(null);
@@ -288,7 +289,7 @@ export default function RichEditor({ content, onChange }: Props) {
           border: none;
           background: #F5F0F2;
           border-radius: 4px;
-          font-size: 11px;
+          font-size: 12px;
           cursor: pointer;
           font-weight: 700;
         }

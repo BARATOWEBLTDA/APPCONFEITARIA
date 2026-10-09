@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import AppPageHeader from "@/components/AppPageHeader";
-import { avisar } from "@/components/base";
+import { avisar, informar } from "@/components/base";
 import { refreshProfile } from "@/hooks/useProfile";
 import SugestaoWizard from "@/components/SugestaoWizard";
 import TermosModal from "@/components/TermosModal";
@@ -216,9 +216,9 @@ export default function Configuracoes() {
         status: "recebida", tela_origem: "/configuracoes",
       });
       if (error) throw error;
-      alert("Recebemos seu pedido. Sua conta e todos os seus dados serão excluídos em até 7 dias. Se mudar de ideia, é só entrar em contato com a equipe Doonly.");
+      await informar({ titulo: "Pedido recebido", texto: "Sua conta e todos os seus dados serão excluídos em até 7 dias. Se mudar de ideia, é só falar com a equipe Doonly.", icone: "ok" });
     } catch {
-      alert("Não foi possível registrar o pedido agora. Tente de novo ou fale com a equipe Doonly.");
+      avisar("Não foi possível registrar o pedido agora. Tente de novo ou fale com a equipe Doonly.", { tipo: "erro" });
       return;
     }
     await supabase.auth.signOut();

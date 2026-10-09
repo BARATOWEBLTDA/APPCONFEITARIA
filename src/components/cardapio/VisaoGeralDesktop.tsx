@@ -269,15 +269,15 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         .vgd-tabs button.on { background: #fff; color: #2C1219; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
         .vgd-kp { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 14px; }
         .vgd-k { border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 14px; }
-        .vgd-k small { display: block; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #9A8E94; }
+        .vgd-k small { display: block; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #9A8E94; }
         .vgd-k b { display: block; font-size: 22px; font-weight: 900; margin-top: 2px; }
-        .vgd-k em { font-style: normal; font-size: 11.5px; font-weight: 700; color: #15803D; } .vgd-k em.down { color: #B91C1C; } .vgd-k em.n { color: #9A8E94; font-weight: 600; }
+        .vgd-k em { font-style: normal; font-size: 13px; font-weight: 700; color: #15803D; } .vgd-k em.down { color: #B91C1C; } .vgd-k em.n { color: #9A8E94; font-weight: 600; }
         .vgd-bars { display: flex; align-items: flex-end; gap: 12px; height: 120px; margin-top: 16px; }
         .vgd-bars--30 { gap: 3px; }
         .vgd-bar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 5px; min-width: 0; }
         .vgd-bar i { width: 100%; border-radius: 7px 7px 3px 3px; background: linear-gradient(180deg, #F472B6, #C33A6E); }
         .vgd-bars--30 .vgd-bar i { border-radius: 3px 3px 1px 1px; }
-        .vgd-bar span { font-size: 11px; color: #9A8E94; height: 14px; } .vgd-bar em { font-style: normal; font-size: 10.5px; font-weight: 700; color: #6B5D64; }
+        .vgd-bar span { font-size: 12px; color: #9A8E94; height: 14px; } .vgd-bar em { font-style: normal; font-size: 12px; font-weight: 700; color: #6B5D64; }
         .vgd-lock { display: flex; align-items: center; gap: 14px; margin-top: 14px; padding: 16px; border-radius: 14px; background: #FFF6F9; border: 1px dashed #F3C9DA; }
         .vgd-lock img { width: 34px; height: 34px; object-fit: contain; }
         .vgd-lock div { flex: 1; } .vgd-lock b { display: block; font-size: 14.5px; } .vgd-lock small { font-size: 12.5px; color: #6B5D64; }
@@ -290,8 +290,8 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         .vgd-pt b, .vgd-dt b { display: block; font-size: 13.5px; }
         .vgd-pt small, .vgd-dt small { display: block; font-size: 12px; color: #9A8E94; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .vgd-dt small { white-space: normal; }
-        .vgd-pv { text-align: right; flex-shrink: 0; } .vgd-pv b { display: block; font-size: 13.5px; } .vgd-pv small { font-size: 11.5px; color: #9A8E94; }
-        .vgd-pill { font-size: 10.5px; font-weight: 800; padding: 3px 9px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
+        .vgd-pv { text-align: right; flex-shrink: 0; } .vgd-pv b { display: block; font-size: 13.5px; } .vgd-pv small { font-size: 13px; color: #9A8E94; }
+        .vgd-pill { font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
         .vgd-pill.ok { background: #DCFCE7; color: #15803D; } .vgd-pill.rd { background: #FEE2E2; color: #B91C1C; } .vgd-pill.bl { background: #DBEAFE; color: #1D4ED8; }
         .vgd-pill.am { background: #FEF3C7; color: #B45309; } .vgd-pill.cz { background: #F3F4F6; color: #6B7280; }
         .vgd-vt { border: none; background: none; font: 800 12.5px var(--font-base); color: #C33A6E; cursor: pointer; }

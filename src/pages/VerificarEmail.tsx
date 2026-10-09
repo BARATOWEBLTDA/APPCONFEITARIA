@@ -135,7 +135,7 @@ export default function VerificarEmail() {
             <div className="ve-icon-wrap ve-icon-success" aria-hidden="true">
               <CheckCircle size={72} weight="fill" />
             </div>
-            <h1 className="ve-title">E-mail confirmado! 🎉</h1>
+            <h1 className="ve-title">E-mail confirmado!</h1>
             <p className="ve-text">Sua conta está pronta. Estamos te levando para o Doonly...</p>
             <button
               type="button"

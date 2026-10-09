@@ -53,13 +53,13 @@ export default function Conquistas() {
         .cqp-sum { display: flex; gap: 14px; align-items: center; background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 14px; }
         .cqp-ring { width: 68px; height: 68px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .cqp-ring > div { width: 54px; height: 54px; border-radius: 50%; background: #fff; display: flex; align-items: baseline; justify-content: center; padding-top: 14px; }
-        .cqp-ring b { font-size: 20px; font-weight: 900; color: #3B1620; } .cqp-ring small { font-size: 11px; color: #C33A6E; font-weight: 700; }
+        .cqp-ring b { font-size: 20px; font-weight: 900; color: #3B1620; } .cqp-ring small { font-size: 12px; color: #C33A6E; font-weight: 700; }
         .cqp-sum > div:last-child b { font-size: 14.5px; } .cqp-sum p { font-size: 12.5px; color: #6B5D64; margin: 2px 0 0; line-height: 1.4; }
-        .cqp-sec { margin: 18px 2px 8px; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #9A8E94; }
+        .cqp-sec { margin: 18px 2px 8px; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #9A8E94; }
         .cqp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         @media (min-width: 700px) { .cqp-grid { grid-template-columns: repeat(5, 1fr); } }
         .cqp-bd { background: #fff; border: 1px solid #F0EBED; border-radius: 12px; padding: 12px 6px 10px; text-align: center; display: flex; flex-direction: column; align-items: center; }
-        .cqp-bd b { font-size: 12px; margin-top: 8px; line-height: 1.2; } .cqp-bd small { font-size: 10.5px; color: #9A8E94; margin-top: 3px; }
+        .cqp-bd b { font-size: 12px; margin-top: 8px; line-height: 1.2; } .cqp-bd small { font-size: 12px; color: #9A8E94; margin-top: 3px; }
         .cqp-bd.off b { color: #9A8E94; }
         .cqp-medal { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; background: radial-gradient(circle at 30% 30%, #FFF1F6, #F5B8CD 55%, #E85A8C); box-shadow: 0 0 0 3px #FCE7F3, 0 4px 12px rgba(195,58,110,.3); }
         .cqp-medal.off { background: #EFEAEC; filter: grayscale(1); opacity: .55; box-shadow: 0 0 0 3px #F5F0F2; }

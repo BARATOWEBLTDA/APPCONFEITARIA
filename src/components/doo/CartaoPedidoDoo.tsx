@@ -95,9 +95,9 @@ const CSS = `
   .cpd { margin-top: 10px; background: #fff; border: 1.5px solid #F7C6D9; border-radius: 16px; padding: 14px; font-family: var(--font-base); color: #2C1219; max-width: 340px; }
   .cpd-hd { display: flex; gap: 11px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #F5F0F2; }
   .cpd-ic { width: 40px; height: 40px; border-radius: 10px; background: #FCE0E9; color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .cpd-k { margin: 0; font-size: 10.5px; font-weight: 900; letter-spacing: .08em; color: #E85A8C; }
+  .cpd-k { margin: 0; font-size: 12px; font-weight: 900; letter-spacing: .08em; color: #E85A8C; }
   .cpd-hd b { display: flex; align-items: center; gap: 6px; font-size: 16px; font-weight: 800; margin-top: 1px; flex-wrap: wrap; }
-  .cpd-tag { font-size: 10.5px; font-weight: 800; color: #1D4ED8; background: #DBEAFE; padding: 2px 7px; border-radius: 6px; }
+  .cpd-tag { font-size: 12px; font-weight: 800; color: #1D4ED8; background: #DBEAFE; padding: 2px 7px; border-radius: 6px; }
   .cpd-itens { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
   .cpd-it { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; }
   .cpd-q { font-weight: 800; color: #C33A6E; min-width: 22px; }
@@ -111,7 +111,7 @@ const CSS = `
   .cpd-tot div { display: flex; justify-content: space-between; align-items: baseline; }
   .cpd-tot span { font-size: 13px; opacity: .8; } .cpd-tot b { font-size: 18px; font-weight: 900; }
   .cpd-falta b { font-size: 14px; color: #F9A8D4; }
-  .cpd-tot small { display: block; font-size: 11.5px; opacity: .7; margin-top: 2px; }
+  .cpd-tot small { display: block; font-size: 13px; opacity: .7; margin-top: 2px; }
   .cpd-prob { margin-top: 10px; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 10px; padding: 8px 10px; }
   .cpd-prob p { margin: 0; display: flex; gap: 6px; align-items: flex-start; font-size: 12.5px; font-weight: 700; color: #B91C1C; line-height: 1.35; }
   .cpd-prob p + p { margin-top: 4px; }

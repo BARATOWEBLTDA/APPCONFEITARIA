@@ -16,21 +16,21 @@ interface Sugestao {
 }
 
 const AREAS = [
-  { id: "pedidos", label: "Pedidos", emoji: "🧾" },
-  { id: "cardapio", label: "Cardápio online", emoji: "📱" },
-  { id: "produtos", label: "Produtos e receitas", emoji: "🧁" },
-  { id: "insumos", label: "Ingredientes", emoji: "" },
-  { id: "financeiro", label: "Financeiro", emoji: "💰" },
-  { id: "clientes", label: "Clientes", emoji: "👥" },
-  { id: "app", label: "App em geral", emoji: "⚙️" },
-  { id: "outro", label: "Outro", emoji: "✨" },
+  { id: "pedidos", label: "Pedidos" },
+  { id: "cardapio", label: "Cardápio online" },
+  { id: "produtos", label: "Produtos e receitas" },
+  { id: "insumos", label: "Ingredientes" },
+  { id: "financeiro", label: "Financeiro" },
+  { id: "clientes", label: "Clientes" },
+  { id: "app", label: "App em geral" },
+  { id: "outro", label: "Outro" },
 ];
 
 // Rótulos em linguagem de confeiteira — no banco continua baixo/medio/alto
-const IMPACTOS: { id: "baixo" | "medio" | "alto"; label: string; emoji: string }[] = [
-  { id: "baixo", label: "Seria legal", emoji: "🙂" },
-  { id: "medio", label: "Faz falta", emoji: "😍" },
-  { id: "alto", label: "Muita falta", emoji: "🔥" },
+const IMPACTOS: { id: "baixo" | "medio" | "alto"; label: string }[] = [
+  { id: "baixo", label: "Seria legal" },
+  { id: "medio", label: "Faz falta" },
+  { id: "alto", label: "Muita falta" },
 ];
 
 const STATUS: Record<string, { label: string; cls: string }> = {

@@ -26,7 +26,7 @@ const AREAS = [
   { id: "pedidos", label: "Pedidos e encomendas" },
   { id: "cardapio", label: "Cardápio online" },
   { id: "produtos", label: "Produtos e receitas" },
-  { id: "insumos", label: "Insumos e estoque" },
+  { id: "insumos", label: "Ingredientes e estoque" },
   { id: "financeiro", label: "Financeiro" },
   { id: "clientes", label: "Clientes" },
   { id: "app", label: "Aplicativo em geral" },
@@ -314,7 +314,7 @@ export default function SugestaoWizard({ open, onClose, perfil }: Props) {
           transition: all 0.2s ease;
         }
         .sug-step--active .sug-step-dot { background: #E85A8C; color: #fff; }
-        .sug-step-label { font-size: 11px; font-weight: 700; color: #2C2C2A; letter-spacing: -0.01em; }
+        .sug-step-label { font-size: 12px; font-weight: 700; color: #2C2C2A; letter-spacing: -0.01em; }
         .sug-step-line {
           width: 32px; height: 2px;
           background: #E8E5DC;
@@ -353,7 +353,7 @@ export default function SugestaoWizard({ open, onClose, perfil }: Props) {
         .sug-textarea::placeholder { color: #B4B2A9; }
         .sug-chars {
           text-align: right;
-          font-size: 11px;
+          font-size: 12px;
           color: #B4B2A9;
           margin-top: 4px;
         }
@@ -415,7 +415,7 @@ export default function SugestaoWizard({ open, onClose, perfil }: Props) {
         }
         .sug-review-field label {
           display: block;
-          font-size: 11px;
+          font-size: 12px;
           color: #888780;
           font-weight: 700;
           text-transform: uppercase;

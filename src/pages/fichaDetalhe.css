@@ -36,7 +36,7 @@
 .fd-ing-nome small { display: block; font-size: 13px; font-weight: 700; color: var(--ui-laranja); }
 .fd-ing-qtd { grid-area: qtd; display: flex; align-items: stretch; min-width: 0; max-width: 220px; height: 44px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: #fff; overflow: hidden; }
 .fd-ing-qtd input { flex: 1; min-width: 0; padding: 0 12px; border: 0; outline: none; background: none; font-family: inherit; font-size: 16px; font-weight: 700; color: var(--ui-texto); }
-.fd-ing-qtd select, .fd-ing-qtd i { flex: none; min-width: 56px; padding: 0 10px; border: 0; border-left: 1px solid var(--ui-borda); background: var(--ui-cinza); font-family: inherit; font-size: 15px; font-style: normal; font-weight: 700; color: var(--ui-texto-2); display: flex; align-items: center; justify-content: center; }
+.fd-ing-qtd select, .fd-ing-qtd i { flex: none; min-width: 56px; padding: 0 10px; border: 0; border-left: 1px solid var(--ui-borda); background: var(--ui-cinza); font-family: inherit; font-size: 16px; font-style: normal; font-weight: 700; color: var(--ui-texto-2); display: flex; align-items: center; justify-content: center; }
 .fd-ing-custo { grid-area: custo; display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin: 0; padding: 0 2px; border: 0; background: none; font-family: inherit; font-size: 15px; font-weight: 800; color: var(--ui-texto); white-space: nowrap; cursor: pointer; }
 .fd-ing-custo svg { display: none; color: var(--ui-texto-3); }
 .fd-ing > .ui-bti, .fd-ing > button:last-child { grid-area: x; align-self: start; }

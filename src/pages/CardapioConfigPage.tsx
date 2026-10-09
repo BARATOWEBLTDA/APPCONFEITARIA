@@ -8,6 +8,8 @@ import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import AppPageHeader from "@/components/AppPageHeader";
 import { apiFetch } from "@/lib/apiFetch";
 
+import { avisar } from "@/components/base";
+import { Lightbulb, Star, LinkSimple } from "@phosphor-icons/react";
 const SectionLabel = ({ children, sub }: any) => (
   <div className="ccc-section-header">
     <div style={{ flex: 1, minWidth: 0 }}>
@@ -202,7 +204,7 @@ export default function CardapioConfigPage() {
   };
 
   const gerarDescricaoLoja = async () => {
-    if (!form.nome_loja.trim()) return alert("Digite o nome da loja primeiro.");
+    if (!form.nome_loja.trim()) return avisar("Digite o nome da loja primeiro.", { tipo: "erro" });
     setGerandoDescricao(true);
     try {
       const response = await apiFetch("/api/gerar-descricao", {
@@ -215,7 +217,7 @@ export default function CardapioConfigPage() {
       const data = await response.json();
       const desc = data.content?.[0]?.text?.trim();
       if (desc) setForm(f => ({ ...f, descricao_loja: desc }));
-    } catch { alert("Erro ao gerar descrição."); }
+    } catch { avisar("Erro ao gerar descrição.", { tipo: "erro" }); }
     setGerandoDescricao(false);
   };
 
@@ -263,7 +265,7 @@ export default function CardapioConfigPage() {
         <div className="ccc-hero-left">
           {semProdutos ? (
             <>
-              <span className="ccc-hero-eyebrow">⚠️ CADASTRE PRIMEIRO</span>
+              <span className="ccc-hero-eyebrow">Cadastre primeiro</span>
               <h1 className="ccc-hero-title">Antes precisamos<br/>de produtos</h1>
               <p className="ccc-hero-desc">
                 Seu cardápio digital mostra os produtos que você cadastrou.
@@ -276,7 +278,7 @@ export default function CardapioConfigPage() {
                 </button>
               </div>
               <div className="ccc-hero-tip">
-                <div className="ccc-hero-tip-icon">💡</div>
+                <div className="ccc-hero-tip-icon"><Lightbulb size={22} weight="duotone" /></div>
                 <div>
                   <p className="ccc-hero-tip-t">Dica: comece pelos mais vendidos</p>
                   <p className="ccc-hero-tip-d">Cadastre 3-5 produtos principais primeiro. Depois volta aqui pra personalizar o cardápio.</p>
@@ -285,7 +287,7 @@ export default function CardapioConfigPage() {
             </>
           ) : (
             <>
-              <span className="ccc-hero-eyebrow">✨ SUA VITRINE ONLINE</span>
+              <span className="ccc-hero-eyebrow">Sua vitrine online</span>
               <h1 className="ccc-hero-title">Compartilhe seu<br/>cardápio digital</h1>
               <p className="ccc-hero-desc">
                 Personalize cores, logo e endereço. Envie o link no WhatsApp
@@ -296,13 +298,13 @@ export default function CardapioConfigPage() {
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0L19.2 12l-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>
                   PERSONALIZAR AGORA
                 </button>
-                <button className="ccc-hero-btn-ghost" onClick={() => alert("🎬 Vídeo em produção! Em breve disponível.")}>
+                <button className="ccc-hero-btn-ghost" onClick={() => avisar("O vídeo de explicação chega em breve.", { tipo: "info" })}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                   Ver tutorial
                 </button>
               </div>
               <div className="ccc-hero-tip">
-                <div className="ccc-hero-tip-icon">💡</div>
+                <div className="ccc-hero-tip-icon"><Lightbulb size={22} weight="duotone" /></div>
                 <div>
                   <p className="ccc-hero-tip-t">Um cardápio bem configurado vende 60% mais</p>
                   <p className="ccc-hero-tip-d">Personalize cor, logo, telefone e endereço pra parecer profissional.</p>
@@ -317,7 +319,7 @@ export default function CardapioConfigPage() {
             <button
               type="button"
               className="ccc-hero-video-play"
-              onClick={() => alert("🎬 Vídeo em produção! Em breve disponível.")}
+              onClick={() => avisar("O vídeo de explicação chega em breve.", { tipo: "info" })}
               aria-label="Assistir tutorial"
             >
               <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
@@ -326,7 +328,7 @@ export default function CardapioConfigPage() {
             </button>
           </div>
           <div className="ccc-hero-video-footer">
-            <span className="ccc-hero-video-t">🎬 Como funciona</span>
+            <span className="ccc-hero-video-t">Como funciona</span>
             <span className="ccc-hero-video-badge">EM BREVE</span>
           </div>
         </aside>
@@ -399,7 +401,7 @@ export default function CardapioConfigPage() {
           color: var(--text-inverse);
           padding: var(--space-1) var(--space-2);
           border-radius: var(--radius-full);
-          font-size: 0.625rem;
+          font-size: 0.75rem;
           font-weight: var(--fw-black);
           letter-spacing: 0.08em;
         }
@@ -727,7 +729,7 @@ export default function CardapioConfigPage() {
               <div className="ccc-notas-grid">
                 {[5.0, 4.9, 4.8].map(nota => (
                   <button key={nota} className={`ccc-nota-btn${form.avaliacao_media === nota ? " active" : ""}`} onClick={() => setForm({...form, avaliacao_media: nota})}>
-                    <span style={{fontSize:"1.1rem"}}>⭐</span>
+                    <Star size={18} weight="fill" />
                     <span>{nota.toFixed(1)}</span>
                   </button>
                 ))}
@@ -869,7 +871,7 @@ export default function CardapioConfigPage() {
       }
 
       {/* ══════ Tab DESIGN: cards de aparência (identidade, avaliações) — vêm depois do <CardapioDesign /> ══════ */}
-      {success && <div className="ccc-toast">✓ Salvo com sucesso!</div>}
+      {success && <div className="ccc-toast">Alterações salvas</div>}
       </div>{/* fim .ccc-geral-main */}
 
       {/* ── Preview do cardápio (só desktop, só aba Design) ── */}
@@ -905,7 +907,7 @@ export default function CardapioConfigPage() {
               />
             ) : (
               <div className="ccc-iphone-empty">
-                <span>🔗</span>
+                <LinkSimple size={18} weight="bold" />
                 <p>Publique seu cardápio pra ver a prévia</p>
               </div>
             )}
@@ -1152,7 +1154,7 @@ export default function CardapioConfigPage() {
           .ccc-preview-refresh:hover { background: var(--primary-light); color: var(--primary); }
           .ccc-preview-refresh:active { transform: rotate(-90deg); }
           .ccc-preview-open {
-            font-size: 10px;
+            font-size: 12px;
             color: var(--primary);
             font-weight: var(--fw-bold);
             text-decoration: none;

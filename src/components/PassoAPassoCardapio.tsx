@@ -157,7 +157,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
     setSalvando(false);
     if (error) return mostrarAviso("Não foi possível salvar. Tente de novo.", "err");
     concluirPasso("nome_loja");
-    mostrarAviso("✓ Nome da loja salvo");
+    mostrarAviso("Nome da loja salvo");
   };
 
   const salvarDescricao = async () => {
@@ -168,7 +168,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
     setSalvando(false);
     if (error) return mostrarAviso("Não foi possível salvar. Tente de novo.", "err");
     concluirPasso("descricao");
-    mostrarAviso("✓ Descrição salva");
+    mostrarAviso("Descrição salva");
   };
 
   const gerarDescricao = async () => {
@@ -307,7 +307,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           }
           .pap-done-info { flex: 1; }
           .pap-done-t { font-size: 13.5px; font-weight: 800; margin: 0; }
-          .pap-done-s { font-size: 11px; opacity: 0.9; margin: 1px 0 0; }
+          .pap-done-s { font-size: 12px; opacity: 0.9; margin: 1px 0 0; }
           .pap-share-btn, .pap-done-btn { white-space: nowrap; }
           @media (max-width: 400px) { .pap-share-actions, .pap-done-actions { gap: 6px !important; } .pap-share-btn, .pap-done-btn { font-size: 12px !important; padding-left: 8px !important; padding-right: 8px !important; } }
           .pap-link { position: relative; margin: 10px 0 0; font-size: 12px; color: rgba(255,255,255,.75); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -320,7 +320,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           }
           .pap-done-btn {
             padding: 10px;
-            font-size: 11.5px;
+            font-size: 13px;
             font-weight: 800;
             border-radius: 4px;
             border: none;
@@ -410,7 +410,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
             flex-shrink: 0;
           }
           .pap-share-tag {
-            font-size: 10px;
+            font-size: 12px;
             font-weight: 800;
             color: #86EFAC;
             letter-spacing: 0.06em;
@@ -423,7 +423,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
             position: relative;
           }
           .pap-share-s {
-            font-size: 11.5px;
+            font-size: 13px;
             opacity: 0.75;
             margin: 0 0 14px;
             position: relative;
@@ -436,7 +436,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           }
           .pap-share-btn {
             padding: 10px;
-            font-size: 11.5px;
+            font-size: 13px;
             font-weight: 800;
             border-radius: 4px;
             border: none;
@@ -472,7 +472,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
     <div className="pap">
       <div className="pap-header">
         <p className="pap-title">Configurar cardápio</p>
-        <p className="pap-sub">Vamos montar juntos 💪</p>
+        <p className="pap-sub">Vamos montar juntos</p>
       </div>
 
       <div className="pap-progress">
@@ -527,7 +527,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
                 </div>
                 <div className="pap-row">
                   <button className="pap-btn-ia" onClick={gerarDescricao} disabled={gerando || salvando || !nomeLoja.trim()}>
-                    {gerando ? "Gerando..." : "✨ Gerar com IA"}
+                    {gerando ? "Gerando..." : "Gerar com IA"}
                   </button>
                   <button className="pap-btn-save" onClick={salvarDescricao} disabled={salvando || gerando || !descDraft.trim()}>
                     {salvando ? "Salvando..." : "Salvar"}
@@ -594,7 +594,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           background: #F0FDF4;
           border-radius: 10px;
           margin-bottom: 14px;
-          font-size: 11.5px;
+          font-size: 13px;
           font-weight: 800;
           color: #16a34a;
         }
@@ -640,7 +640,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           z-index: 2;
         }
         .pap-hero-eyebrow {
-          font-size: 9.5px;
+          font-size: 12px;
           font-weight: 800;
           letter-spacing: 0.14em;
           text-transform: uppercase;
@@ -684,7 +684,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         .pap-in:focus, .pap-ta:focus { outline: 2px solid #F9A8C9; outline-offset: 0; }
         .pap-in::placeholder, .pap-ta::placeholder { color: #A8A0A4; }
         .pap-ta-wrap { position: relative; }
-        .pap-ta-count { position: absolute; right: 10px; bottom: 7px; font-size: 10.5px; color: #9CA3AF; }
+        .pap-ta-count { position: absolute; right: 10px; bottom: 7px; font-size: 12px; color: #9CA3AF; }
         .pap-row { display: flex; gap: 8px; margin-top: 10px; }
         .pap-btn-ia, .pap-btn-save {
           flex: 1; height: 42px; border-radius: 10px; cursor: pointer;
@@ -699,7 +699,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
 
         /* Lista compacta */
         .pap-list-title {
-          font-size: 10px;
+          font-size: 12px;
           font-weight: 800;
           color: #6B7280;
           text-transform: uppercase;
@@ -745,7 +745,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           width: 22px; height: 22px;
           border-radius: 50%;
           display: flex; align-items: center; justify-content: center;
-          font-size: 10px; font-weight: 800;
+          font-size: 12px; font-weight: 800;
           flex-shrink: 0;
           background: #F5F0F2;
           color: #6B7280;
@@ -765,7 +765,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           line-height: 1.3;
         }
         .pap-item-tag {
-          font-size: 9px;
+          font-size: 12px;
           font-weight: 800;
           color: #2C1219;
           letter-spacing: 0.06em;

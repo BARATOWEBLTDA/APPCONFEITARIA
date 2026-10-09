@@ -126,12 +126,12 @@ const CSS = `
   .ags-mes button { width: 36px; height: 36px; border-radius: 11px; border: none; background: #F5F0F2; font-size: 20px; color: #2C1219; cursor: pointer; font-family: inherit; }
   .ags-mes button:disabled { opacity: .35; cursor: default; }
   .ags-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
-  .ags-wd { height: 22px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #9A8E94; }
+  .ags-wd { height: 22px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #9A8E94; }
   .ags-d { height: 40px; border: none; border-radius: 11px; background: none; font-family: inherit; font-size: 14.5px; font-weight: 700; color: #2C1219; cursor: pointer; }
   .ags-d:disabled { color: #D6CBD0; text-decoration: line-through; font-weight: 500; cursor: default; }
   .ags-d.hoje { box-shadow: inset 0 0 0 1.5px #EDE6E9; }
   .ags-d.sel { background: #E85A8C; color: #fff; box-shadow: 0 4px 10px rgba(232,90,140,.35); }
-  .ags-leg { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11.5px; color: #6B5D64; margin: 10px 0 12px; }
+  .ags-leg { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: #6B5D64; margin: 10px 0 12px; }
   .ags-leg i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
   .ags-leg .l1 { background: #2C1219; } .ags-leg .l2 { background: #E5DDE1; }
   .ags-ok { display: block; width: 100%; border: none; border-radius: 12px; padding: 14px; background: #E85A8C; color: #fff; font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 3px 0 #C33A6E; }

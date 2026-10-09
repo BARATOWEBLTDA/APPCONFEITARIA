@@ -550,7 +550,7 @@ export function BoloPrecoStep({ form, setForm, escolha, primeiroNome, edicao }: 
 
 const CSS = `
   .bw { font-family: var(--font-base); color: #2C1219; padding: 4px 2px 12px; }
-  .bw-eta { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #C33A6E; margin: 0; }
+  .bw-eta { font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #C33A6E; margin: 0; }
   .bw-h { font-size: 22px; font-weight: 800; line-height: 1.25; letter-spacing: -.01em; margin: 6px 0 6px; color: #2C1219; }
   .bw-h span { color: #C33A6E; }
   .bw-sub { font-size: 14px; color: #6B5D64; line-height: 1.5; margin: 0 0 18px; }
@@ -568,12 +568,12 @@ const CSS = `
   .bw-chip { display: inline-flex; align-items: center; background: #FCE7F3; border-radius: 999px; border: 1.5px solid transparent; }
   .bw-chip.ed { border-color: #C33A6E; }
   .bw-chip-n { border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #9D174D; padding: 7px 4px 7px 13px; cursor: pointer; }
-  .bw-chip-n small { font-size: 11.5px; font-weight: 700; color: #C33A6E; }
-  .bw-chip-x { border: none; background: none; color: #C4789C; font-size: 11px; padding: 7px 11px 7px 5px; cursor: pointer; }
+  .bw-chip-n small { font-size: 13px; font-weight: 700; color: #C33A6E; }
+  .bw-chip-x { border: none; background: none; color: #C4789C; font-size: 12px; padding: 7px 11px 7px 5px; cursor: pointer; }
   .bw-extra { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: #fff; border: 1px solid #F3D6E2; border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; font-size: 13.5px; color: #4B3A42; }
   .bw-extra > button { margin-left: auto; border: none; background: #2C1219; color: #fff; font-family: inherit; font-size: 12.5px; font-weight: 700; border-radius: 9px; padding: 8px 14px; cursor: pointer; }
   .bw-add { display: flex; gap: 8px; }
-  .bw-add input { flex: 1; min-width: 0; height: 44px; border: 1.5px solid #EAE3E6; border-radius: 12px; padding: 0 14px; font-family: inherit; font-size: 14.5px; color: #2C1219; background: #fff; transition: border-color .15s; }
+  .bw-add input { flex: 1; min-width: 0; height: 44px; border: 1.5px solid #EAE3E6; border-radius: 12px; padding: 0 14px; font-family: inherit; font-size: 16px; color: #2C1219; background: #fff; transition: border-color .15s; }
   .bw-add input::placeholder, .bw-in input::placeholder, .bw-rs input::placeholder, input.bw-in::placeholder { color: #B5AAB0; }
   .bw-add input:focus { outline: none; border-color: #2C1219; }
   .bw-add button { height: 44px; border: none; border-radius: 12px; background: #2C1219; color: #fff; font-family: inherit; font-size: 13.5px; font-weight: 700; padding: 0 18px; cursor: pointer; }
@@ -617,7 +617,7 @@ const CSS = `
   .bw-hint--top { margin: 2px 0 12px; }
   .bw-gerar-pill { border: 1px solid #F9D1E0; background: #FFF1F6; color: #C33A6E; border-radius: 999px; padding: 7px 13px; font-family: inherit; font-size: 12.5px; font-weight: 800; cursor: pointer; white-space: nowrap; }
   .bw-gerar-pill:hover { background: #FCE7F3; }
-  .bw-col-sel { border: none; background: none; padding: 0 0 0 4px; font-family: inherit; font-size: 11px; font-weight: 800; color: #C33A6E; text-transform: uppercase; letter-spacing: .04em; cursor: pointer; text-align: left; }
+  .bw-col-sel { border: none; background: none; padding: 0 0 0 4px; font-family: inherit; font-size: 12px; font-weight: 800; color: #C33A6E; text-transform: uppercase; letter-spacing: .04em; cursor: pointer; text-align: left; }
   .bw-link--sec { display: block; color: #6B5D64; font-weight: 600; font-size: 12.5px; padding-top: 2px; }
   .bw-link--sec small { color: #B5AAB0; font-weight: 500; }
   .bw-tabela .bw-tam { grid-template-columns: 76px 1fr 1.3fr 24px; }
@@ -644,7 +644,7 @@ const CSS = `
     .bw-tabela .bw-tam, .bw-tabela.bw-tam--serve .bw-tam { grid-template-areas: none; }
     .bw-tabela .bw-tam { grid-template-columns: 68px 1fr 1.3fr 20px; }
     .bw-tabela.bw-tam--serve .bw-tam { grid-template-columns: 62px 1fr 1fr 1.2fr 18px; }
-    .bw-tabela input.bw-in { font-size: 13.5px; padding: 0 6px; }
+    .bw-tabela input.bw-in { font-size: 16px; padding: 0 6px; }
     .bw-tabela .bw-tam > * { grid-area: auto !important; }
     .bw-tabela .bw-tam--h { display: grid; }
     .bw-tabela .bw-tam { border-bottom: none; padding-bottom: 0; }
@@ -652,7 +652,7 @@ const CSS = `
   }
   .bw-kg-t { display: inline-flex; align-items: center; gap: 8px; }
   .bw-kg-t small { font-size: 12px; font-weight: 600; color: #9A8E94; }
-  .bw-i { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #C33A6E; background: #fff; color: #C33A6E; font-family: inherit; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+  .bw-i { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #C33A6E; background: #fff; color: #C33A6E; font-family: inherit; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
   .bw-tams-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 22px; margin-bottom: 8px; }
   .bw-tams-h .bw-lb { margin: 0; }
   .bw-rend { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #9A8E94; font-weight: 600; }
@@ -675,11 +675,11 @@ const CSS = `
   .bw-pmg b { font-size: 15px; } .bw-pmg small { font-size: 12.5px; color: #888780; }
   .bw-tams { display: flex; flex-direction: column; gap: 8px; }
   .bw-tam { display: grid; grid-template-columns: 64px 1fr 1.2fr 1.2fr 24px; gap: 8px; align-items: center; }
-  .bw-tam--h span { font-size: 11px; font-weight: 700; color: #9A8E94; text-transform: uppercase; letter-spacing: .04em; padding-left: 4px; }
+  .bw-tam--h span { font-size: 12px; font-weight: 700; color: #9A8E94; text-transform: uppercase; letter-spacing: .04em; padding-left: 4px; }
   .bw-in, .bw-rs { height: 44px; border: 1.5px solid #EAE3E6; border-radius: 12px; background: #fff; display: flex; align-items: center; min-width: 0; transition: border-color .15s; }
   .bw-in:focus-within, .bw-rs:focus-within, input.bw-in:focus { border-color: #2C1219; outline: none; }
-  input.bw-in { padding: 0 10px; font-family: inherit; font-size: 15px; font-weight: 800; color: #2C1219; text-align: center; width: 100%; }
-  .bw-in input, .bw-rs input { flex: 1; min-width: 0; width: 100%; border: none; outline: none; background: none; font-family: inherit; font-size: 14.5px; font-weight: 700; color: #2C1219; padding: 0 0 0 10px; }
+  input.bw-in { padding: 0 10px; font-family: inherit; font-size: 16px; font-weight: 800; color: #2C1219; text-align: center; width: 100%; }
+  .bw-in input, .bw-rs input { flex: 1; min-width: 0; width: 100%; border: none; outline: none; background: none; font-family: inherit; font-size: 16px; font-weight: 700; color: #2C1219; padding: 0 0 0 10px; }
   .bw-suf em { font-style: normal; font-size: 12px; color: #9A8E94; padding: 0 10px 0 4px; white-space: nowrap; }
   .bw-rs { padding-left: 10px; font-size: 12.5px; font-weight: 700; color: #9A8E94; gap: 2px; }
   .bw-rs input { padding-left: 4px; } .bw-rs.ok input { color: #15803D; }
@@ -713,8 +713,8 @@ const CSS = `
   .bw-seg3 { border-radius: 10px; } .bw-seg3 button { border-radius: 7px; }
   .bw-tabela .bw-tam, .bw-tabela.bw-tam--serve .bw-tam { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.2fr) 28px; gap: 10px; margin-top: 8px; }
   .bw-tabela .bw-tam--h { margin-top: 0; }
-  .bw-tabela .bw-tam--h span { font-size: 11px; font-weight: 700; color: #9A8E94; text-transform: uppercase; letter-spacing: .05em; padding-left: 2px; }
-  .bw-tabela input.bw-in { text-align: left; padding: 0 12px; font-size: 14.5px; font-weight: 700; }
+  .bw-tabela .bw-tam--h span { font-size: 12px; font-weight: 700; color: #9A8E94; text-transform: uppercase; letter-spacing: .05em; padding-left: 2px; }
+  .bw-tabela input.bw-in { text-align: left; padding: 0 12px; font-size: 16px; font-weight: 700; }
   .bw-tabela .bw-in input { padding-left: 12px; }
   .bw-tabela .bw-rs { padding-left: 12px; }
   .bw-rs-p { font-size: 13px; font-weight: 700; color: #9A8E94; }
@@ -736,8 +736,8 @@ const CSS = `
   .bw-rend-in em { padding-right: 12px; }
   @media (max-width: 767px) {
     .bw-tabela .bw-tam, .bw-tabela.bw-tam--serve .bw-tam { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.25fr) 20px; gap: 6px; }
-    .bw-tabela .bw-tam--h span { font-size: 10px; letter-spacing: .03em; }
-    .bw-tabela input.bw-in, .bw-tabela .bw-in input { font-size: 14px; }
+    .bw-tabela .bw-tam--h span { font-size: 12px; letter-spacing: .03em; }
+    .bw-tabela input.bw-in, .bw-tabela .bw-in input { font-size: 16px; }
     .bw-tabela input.bw-in { padding: 0 8px; } .bw-tabela .bw-in input { padding-left: 8px; } .bw-tabela .bw-rs { padding-left: 8px; }
     .bw-tabela .bw-calc { padding: 0 8px; font-size: 12px; } .bw-tabela .bw-calc.ok { font-size: 13.5px; }
     .bw-rend-in { width: 140px; }
@@ -779,7 +779,7 @@ const CSS = `
   .bo-rm { width: 36px; height: 36px; border: none; background: none; border-radius: 8px; color: #B5AAB0; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-left: 2px; }
   .bo-rm:hover { color: #DC2626; background: #FEF2F2; }
   .bo-li--add { background: #FCFAFB; padding-right: 10px; }
-  .bo-li--add input { flex: 1; min-width: 0; height: 48px; border: none; outline: none; background: none; font-family: inherit; font-size: 14.5px; color: #2C1219; }
+  .bo-li--add input { flex: 1; min-width: 0; height: 48px; border: none; outline: none; background: none; font-family: inherit; font-size: 16px; color: #2C1219; }
   .bo-li--add input::placeholder { color: #B5AAB0; }
   .bo-li--add button { border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 800; color: #C33A6E; cursor: pointer; padding: 8px 4px; white-space: nowrap; }
   .bo-li--add button:disabled { color: #D6CBD0; cursor: default; }
@@ -802,8 +802,8 @@ const CSS = `
   .bw-gerar-btn:hover { background: #FCE7F3; }
   .bw-t2 { display: flex; flex-direction: column; gap: 8px; }
   .bw-t2-row { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) 36px; gap: 10px; align-items: center; }
-  .bw-t2-row--h span { font-size: 11px; font-weight: 700; color: #9A8E94; text-transform: uppercase; letter-spacing: .05em; padding-left: 2px; white-space: nowrap; }
-  input.bw-t2-nome { text-align: left; padding: 0 12px; font-size: 14.5px; font-weight: 700; }
+  .bw-t2-row--h span { font-size: 12px; font-weight: 700; color: #9A8E94; text-transform: uppercase; letter-spacing: .05em; padding-left: 2px; white-space: nowrap; }
+  input.bw-t2-nome { text-align: left; padding: 0 12px; font-size: 16px; font-weight: 700; }
   .bw-t2 .bw-in input { padding-left: 12px; }
   .bw-check2 { display: flex; align-items: flex-start; gap: 12px; width: 100%; margin-top: 18px; border: none; background: none; padding: 0; font-family: inherit; text-align: left; cursor: pointer; color: #2C1219; }
   .bw-check2 > i { width: 24px; height: 24px; border-radius: 5px; border: 2px solid #D6CBD0; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 13px; font-weight: 900; color: #fff; flex-shrink: 0; margin-top: 1px; }
@@ -825,7 +825,7 @@ const CSS = `
     .bw-pr-in, .bw-pr-calc { width: 140px; }
     .bw-check2 b { font-size: 13.5px; }
     .bw-money--sm { width: 160px !important; padding: 0 10px !important; gap: 4px !important; }
-    .bw-money--sm input { font-size: 15px !important; }
+    .bw-money--sm input { font-size: 16px !important; }
     .bw-kg { padding: 10px 12px; }
   }
   .bw-kg-t { white-space: nowrap; flex-shrink: 0; }
@@ -838,7 +838,7 @@ const CSS = `
   .bw-lt-h, .bw-lt-row { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: stretch; }
   .bw-lt--ed .bw-lt-row { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) 44px; }
   .bw-lt-h { position: relative; background: #FAF7F8; border-bottom: 1px solid #EDE5E8; }
-  .bw-lt-h span { font-size: 11px; font-weight: 700; color: #9A8E94; text-transform: uppercase; letter-spacing: .05em; padding: 10px 14px; white-space: nowrap; }
+  .bw-lt-h span { font-size: 12px; font-weight: 700; color: #9A8E94; text-transform: uppercase; letter-spacing: .05em; padding: 10px 14px; white-space: nowrap; }
   .bw-lt-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .bw-lt-edit { border: 1px solid #EAE3E6; background: #fff; border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 700; color: #4B3A42; cursor: pointer; padding: 9px 14px; white-space: nowrap; }
   .bw-lt-edit.on { background: #2C1219; border-color: #2C1219; color: #fff; }
@@ -847,7 +847,7 @@ const CSS = `
   .bw-lt-h + .bw-lt-row { border-top: none; }
   .bw-lt-nome { border: none; outline: none; background: none; padding: 0 14px; font-family: inherit; font-size: 15px; font-weight: 700; color: #2C1219; min-width: 0; }
   .bw-lt-peso { display: flex; align-items: center; gap: 4px; border-left: 1px solid #F3ECEE; padding: 0 14px; min-width: 0; cursor: text; }
-  .bw-lt-peso input { flex: 1; min-width: 0; border: none; outline: none; background: none; font-family: inherit; font-size: 15px; font-weight: 700; color: #2C1219; padding: 0; }
+  .bw-lt-peso input { flex: 1; min-width: 0; border: none; outline: none; background: none; font-family: inherit; font-size: 16px; font-weight: 700; color: #2C1219; padding: 0; }
   .bw-lt-peso em { font-style: normal; font-size: 12.5px; color: #9A8E94; font-weight: 600; }
   .bw-lt-nome::placeholder, .bw-lt-peso input::placeholder { color: #B5AAB0; font-weight: 500; }
   .bw-lt-nome:focus, .bw-lt-peso:focus-within { background: #FFFAFC; }

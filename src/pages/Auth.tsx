@@ -997,7 +997,7 @@ export default function Auth() {
         }
         .ref-banner-title b { font-weight: 800; color: #72243E; }
         .ref-banner-desc {
-          font-size: 11.5px;
+          font-size: 13px;
           color: #993556;
           margin-top: 2px;
           line-height: 1.35;
@@ -1098,7 +1098,7 @@ export default function Auth() {
           width: 22px; height: 22px; border-radius: 50%;
           border: 2px solid #FEF4E7;
           display: flex; align-items: center; justify-content: center;
-          font-size: 10px; font-weight: var(--fw-black); color: #fff;
+          font-size: 12px; font-weight: var(--fw-black); color: #fff;
           margin-left: -7px;
         }
         .cad-proof-av:first-child { margin-left: 0; }

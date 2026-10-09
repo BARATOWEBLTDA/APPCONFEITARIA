@@ -123,7 +123,7 @@ function formatSince(created_at: string): string {
   const d = new Date(created_at);
   const now = new Date();
   const diffDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return "🎉 Nova cliente hoje!";
+  if (diffDays === 0) return "Nova cliente hoje";
   const dd = String(d.getDate()).padStart(2, "0");
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const yy = String(d.getFullYear()).slice(-2);

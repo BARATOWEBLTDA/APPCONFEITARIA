@@ -151,7 +151,7 @@ export default function EditarPerfilModal({
             </div>
 
             {saveError && <div className="epm-msg epm-msg--error">{saveError}</div>}
-            {saveSuccess && <div className="epm-msg epm-msg--success">✓ Alterações salvas!</div>}
+            {saveSuccess && <div className="epm-msg epm-msg--success">Alterações salvas</div>}
 
             <button className="epm-btn-primary" onClick={onSave} disabled={saving || uploading}>
               {saving ? <span className="epm-spin epm-spin--btn" /> : "Salvar alterações"}
@@ -325,7 +325,7 @@ export default function EditarPerfilModal({
         .epm-fields { display: flex; flex-direction: column; gap: 12px; }
         .epm-field { display: flex; flex-direction: column; gap: 5px; }
         .epm-label {
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 700;
           color: #888780;
           text-transform: uppercase;
@@ -348,7 +348,7 @@ export default function EditarPerfilModal({
         .epm-input::placeholder { color: #B4B2A9; }
         .epm-input--disabled { background: #F0EBED; color: #888780; cursor: not-allowed; }
         .epm-hint {
-          font-size: 11px;
+          font-size: 12px;
           color: #888780;
           margin: 4px 0 0;
           font-style: italic;

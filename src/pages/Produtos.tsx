@@ -28,8 +28,8 @@ import BtnNovo from "@/components/BtnNovo";
 import Categorias from "@/pages/Categorias";
 import QuickAddInsumo from "@/components/QuickAddInsumo";
 import AppPageHeader from "@/components/AppPageHeader";
-import { ArrowLeft as ArrowLeftIc, Camera, CaretDown, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, SortAscending, WarningCircle, X as XIc, DotsThreeVertical } from "@phosphor-icons/react";
-import { Botao, BotaoIcone, Linha as LinhaUi, Titulo as TituloUi } from "@/components/base";
+import { ArrowLeft as ArrowLeftIc, Camera, CaretDown, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, SortAscending, WarningCircle, X as XIc, DotsThreeVertical, Lightbulb, Cake, BookOpen, Egg } from "@phosphor-icons/react";
+import { Botao, BotaoIcone, Linha as LinhaUi, Titulo as TituloUi, avisar, confirmar } from "@/components/base";
 import { sufixoVenda } from "@/lib/formaVenda";
 import "./produtosLista.css";
 import "@/components/produto/cadastroProduto.css";
@@ -974,7 +974,7 @@ function SelectDoonly({
           flex-direction: column;
         }
         .sd-item-hint {
-          font-size: 11.5px;
+          font-size: 13px;
           color: #9A8B93;
           font-weight: 500;
           margin-top: 2px;
@@ -1303,10 +1303,10 @@ function PersonalizacaoStep({
   const jaTemServe = grupoTamanhos.opcoes.some(o => (o.serve || "").trim().length > 0);
   const modoSalvo = (grupoTamanhos as any).modo_avancado;
   const modoAvancadoTam = typeof modoSalvo === "boolean" ? modoSalvo : jaTemServe;
-  const toggleModoAvancado = () => {
+  const toggleModoAvancado = async () => {
     const proximo = !modoAvancadoTam;
     if (!proximo && jaTemServe) {
-      const ok = confirm("Desligar o modo avançado vai apagar as informações de 'Serve X' já preenchidas. Continuar?");
+      const ok = await confirmar({ titulo: "Desligar o modo avançado?", texto: "As informações de \"Serve X\" que você preencheu vão ser apagadas.", rotulo: "Desligar", rotuloVoltar: "Voltar", perigo: true, icone: "alerta" });
       if (!ok) return;
       onChange({ grupo_tamanhos: { ...grupoTamanhos, modo_avancado: proximo, opcoes: grupoTamanhos.opcoes.map(o => ({ ...o, serve: "" })) } } as any);
       return;
@@ -2214,7 +2214,7 @@ function PersonalizacaoStep({
         .pv3-root { display: flex; flex-direction: column; gap: 12px; }
         .pv3-header { margin-top: 24px; margin-bottom: 20px; text-align: center; }
         .pv3-eyebrow {
-          font-size: 11px; color: #E85A8C; font-weight: 800;
+          font-size: 12px; color: #E85A8C; font-weight: 800;
           text-transform: uppercase; letter-spacing: 0.08em;
         }
         .pv3-title {
@@ -2466,7 +2466,7 @@ function PersonalizacaoStep({
           background: #F0FDF4;
           color: #059669;
           border: 1px solid #BBF7D0;
-          font-size: 10.5px;
+          font-size: 12px;
           font-weight: 700;
           padding: 3px 8px;
           border-radius: 999px;
@@ -2502,7 +2502,7 @@ function PersonalizacaoStep({
           background: #FAF8F5; border-radius: 8px; padding: 12px; margin-bottom: 12px;
         }
         .pv3-regras-label {
-          font-size: 11px; color: #6B5D64; font-weight: 700;
+          font-size: 12px; color: #6B5D64; font-weight: 700;
           text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px;
         }
         .pv3-regras-row {
@@ -2511,7 +2511,7 @@ function PersonalizacaoStep({
         .pv3-regras-row label { font-size: 12.5px; color: #2D1F26; font-weight: 700; }
         .pv3-regras-row input {
           width: 60px; padding: 6px 8px; border: 1.5px solid #E5D8DE;
-          border-radius: 6px; font-size: 13px; font-family: inherit; text-align: center;
+          border-radius: 6px; font-size: 16px; font-family: inherit; text-align: center;
         }
 
         /* Distribuição */
@@ -2557,7 +2557,7 @@ function PersonalizacaoStep({
           box-shadow: 0 0 0 2px rgba(232, 90, 140, 0.1);
         }
         .pv3-opcao-preco-prefix {
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 700;
           color: #6B5D64;
         }
@@ -2711,17 +2711,17 @@ function PersonalizacaoStep({
           all: unset;
           width: 40px;
           min-width: 0;
-          font-size: 13px; font-weight: 700;
+          font-size: 16px; font-weight: 700;
           color: #2D1F26;
           text-align: right;
         }
-        .pv3-opcao-serve-suf { font-size: 11px; color: #6B7280; white-space: nowrap; font-weight: 600; }
+        .pv3-opcao-serve-suf { font-size: 12px; color: #6B7280; white-space: nowrap; font-weight: 600; }
         .pv3-opcao-preco:focus-within { border-color: #E85A8C; }
-        .pv3-opcao-preco-prefix { font-size: 11.5px; font-weight: 800; color: #E85A8C; white-space: nowrap; }
+        .pv3-opcao-preco-prefix { font-size: 13px; font-weight: 800; color: #E85A8C; white-space: nowrap; }
         .pv3-opcao-preco input {
           all: unset;
           width: 62px;
-          font-size: 13.5px; font-weight: 700;
+          font-size: 16px; font-weight: 700;
           color: #2D1F26;
           text-align: right;
           font-family: inherit;
@@ -2770,7 +2770,7 @@ function PersonalizacaoStep({
           margin-bottom: 4px;
         }
         .pv3-empty-sub {
-          font-size: 11.5px;
+          font-size: 13px;
           color: #6B5D64;
           margin-top: 2px;
           font-weight: 500;
@@ -2793,7 +2793,7 @@ function PersonalizacaoStep({
           padding: 10px 12px;
           border: 1px solid #F0EBED;
           border-radius: 8px;
-          font-size: 13px;
+          font-size: 16px;
           background: #fff;
           font-family: inherit;
           outline: none;
@@ -2875,9 +2875,9 @@ function PersonalizacaoStep({
         .pv3-gerar-sub { font-size: 12px; color: #6B7280; margin: 0 0 16px; line-height: 1.45; }
         .pv3-gerar-row { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 14px; }
         .pv3-gerar-field { flex: 1; min-width: 0; }
-        .pv3-gerar-lbl { font-size: 11px; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+        .pv3-gerar-lbl { font-size: 12px; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
         .pv3-gerar-input { display: flex; align-items: center; background: #fff; border: 1.5px solid #F0EBED; border-radius: 8px; overflow: hidden; }
-        .pv3-gerar-input input { flex: 1; padding: 10px 8px; border: none; outline: none; font-size: 14px; font-weight: 700; color: #2C1219; font-family: inherit; min-width: 0; width: 100%; }
+        .pv3-gerar-input input { flex: 1; padding: 10px 8px; border: none; outline: none; font-size: 16px; font-weight: 700; color: #2C1219; font-family: inherit; min-width: 0; width: 100%; }
         .pv3-gerar-input span { padding: 10px 10px; background: #F5F0F2; font-size: 12px; font-weight: 700; color: #C33A6E; flex-shrink: 0; }
         .pv3-gerar-arr { color: #6B7280; font-size: 16px; flex-shrink: 0; margin-bottom: 10px; }
         .pv3-gerar-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
@@ -2894,12 +2894,12 @@ function PersonalizacaoStep({
 
         /* ═══ Chips de unidade no cadastro manual ═══ */
         .pv3-unid-chips { display: inline-flex; padding: 3px; background: #F5F0F2; border-radius: 8px; gap: 2px; }
-        .pv3-unid-chip { all: unset; cursor: pointer; padding: 6px 10px; font-size: 11.5px; font-weight: 700; color: #6B7280; border-radius: 6px; font-family: inherit; transition: all 0.12s; }
+        .pv3-unid-chip { all: unset; cursor: pointer; padding: 6px 10px; font-size: 13px; font-weight: 700; color: #6B7280; border-radius: 6px; font-family: inherit; transition: all 0.12s; }
         .pv3-unid-chip--on { background: #fff; color: #E85A8C; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
 
         /* ═══ Chips de unidade no campo Serve ═══ */
         .pv3-serve-chips { display: inline-flex; padding: 2px; background: #F5F0F2; border-radius: 6px; gap: 2px; margin-left: 6px; }
-        .pv3-serve-chip { all: unset; cursor: pointer; padding: 4px 8px; font-size: 10.5px; font-weight: 700; color: #6B7280; border-radius: 4px; font-family: inherit; transition: all 0.12s; }
+        .pv3-serve-chip { all: unset; cursor: pointer; padding: 4px 8px; font-size: 12px; font-weight: 700; color: #6B7280; border-radius: 4px; font-family: inherit; transition: all 0.12s; }
         .pv3-serve-chip--on { background: #fff; color: #E85A8C; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
 
         /* ═══ Botões de ação dos tamanhos em linha ═══ */
@@ -2930,7 +2930,7 @@ function PersonalizacaoStep({
           border-radius: 8px;
         }
         .pv3-serve-label {
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 800;
           color: #C33A6E;
           text-transform: uppercase;
@@ -2950,7 +2950,7 @@ function PersonalizacaoStep({
           all: unset;
           width: 46px;
           padding: 6px 4px 6px 10px;
-          font-size: 14px;
+          font-size: 16px;
           font-weight: 800;
           color: #2C1219;
           text-align: center;
@@ -2981,13 +2981,13 @@ function PersonalizacaoStep({
           flex: 1;
           min-width: 0;
           padding: 8px 10px;
-          font-size: 13px;
+          font-size: 16px;
           font-weight: 800;
           color: #C33A6E;
           text-align: left;
         }
         .pv3-serve-d input::placeholder {
-          font-size: 11.5px;
+          font-size: 13px;
           font-weight: 600;
           color: #C0B3B8;
           text-align: left;
@@ -2996,7 +2996,7 @@ function PersonalizacaoStep({
         .pv3-serve-d select {
           all: unset;
           padding: 8px 26px 8px 10px;
-          font-size: 12px;
+          font-size: 16px;
           font-weight: 700;
           color: #C33A6E;
           background: #FFF5F9;
@@ -3042,7 +3042,7 @@ function PersonalizacaoStep({
         .pv3-modo-adv-txt { min-width: 0; flex: 1; }
         .pv3-modo-adv-t { font-size: 12.5px; font-weight: 700; color: #4B5563; }
         .pv3-modo-adv--on .pv3-modo-adv-t { color: #16a34a; }
-        .pv3-modo-adv-s { font-size: 11px; color: #9CA3AF; margin-top: 1px; line-height: 1.4; }
+        .pv3-modo-adv-s { font-size: 12px; color: #9CA3AF; margin-top: 1px; line-height: 1.4; }
         .pv3-modo-adv-switch {
           width: 36px; height: 20px;
           background: #E5E7EB;
@@ -3073,7 +3073,7 @@ function PersonalizacaoStep({
           background: linear-gradient(135deg, #F59E0B, #D97706);
           color: #fff;
           border-radius: 4px;
-          font-size: 9.5px;
+          font-size: 12px;
           font-weight: 900;
           text-transform: uppercase;
           letter-spacing: 0.05em;
@@ -3150,7 +3150,7 @@ function PersonalizacaoStep({
           width: 14px; height: 14px; object-fit: contain;
         }
         .pv3-sub-toggle-desc {
-          font-size: 11.5px;
+          font-size: 13px;
           color: #6B5D64;
           margin-top: 2px;
         }
@@ -3202,7 +3202,7 @@ function PersonalizacaoStep({
           color: #fff;
           padding: 2px 8px;
           border-radius: 4px;
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 800;
           min-width: 22px;
           text-align: center;
@@ -3261,7 +3261,7 @@ function PersonalizacaoStep({
         }
         .pv3-bib-sub {
           margin: 2px 0 0;
-          font-size: 11.5px;
+          font-size: 13px;
           color: #6B7280;
           font-weight: 500;
         }
@@ -4099,8 +4099,8 @@ export default function Produtos() {
 
   const handleSalvar = async () => {
     const eraPrimeiro = !form.id && produtos.length === 0;
-    if (!form.nome.trim()) return alert("Nome é obrigatório");
-    if (!form.categoria.trim()) return alert("Categoria é obrigatória");
+    if (!form.nome.trim()) return avisar("Nome é obrigatório", { tipo: "erro" });
+    if (!form.categoria.trim()) return avisar("Categoria é obrigatória", { tipo: "erro" });
 
     // Validação específica pra variações
     const isVariacoes = wizardTipo === "variacoes" && !form.id;
@@ -4110,36 +4110,36 @@ export default function Produtos() {
     if (isVariacoes) {
       const precos = form.precos_variacoes || {};
       const valores = Object.values(precos).filter(v => v > 0);
-      if (valores.length === 0) return alert("Adicione ao menos 1 preço nas variações");
+      if (valores.length === 0) return avisar("Adicione ao menos 1 preço nas variações", { tipo: "erro" });
       // preco_normal vira o MENOR preço (pra aparecer no cardápio como "a partir de")
       precoBase = Math.min(...valores);
     } else if (isPersonalizavel) {
       const grupos = [form.grupo_massas, form.grupo_recheios, form.grupo_coberturas, form.grupo_sabores, form.grupo_tamanhos];
       const algumAtivo = grupos.some(g => g?.ativo && (g.opcoes?.length || 0) > 0) || kitAtivo((form as any).kit_qtd);
       // Produto simples (sem opções) também pode ser publicado — só precisa do preço
-      if (!algumAtivo && !(form.preco_normal > 0) && !(tipoCadastro === "bolos" && !form.id)) return alert("Informe o preço do produto");
+      if (!algumAtivo && !(form.preco_normal > 0) && !(tipoCadastro === "bolos" && !form.id)) return avisar("Informe o preço do produto", { tipo: "erro" });
       // Se tem Tamanhos ativos, preço base vem do MENOR tamanho
       const gt = form.grupo_tamanhos;
       const gs = form.grupo_sabores;
       if (gt?.ativo && gt.opcoes.length > 0) {
         // Modo por_peso: preço vem do preco_normal (R$/kg), não dos tamanhos individuais
         if (gt.modo_preco_tamanho === "por_peso") {
-          if (!form.preco_normal || form.preco_normal <= 0) return alert("Defina o preço por kg");
+          if (!form.preco_normal || form.preco_normal <= 0) return avisar("Defina o preço por kg", { tipo: "erro" });
           precoBase = form.preco_normal;
         } else {
           const precosT = gt.opcoes.map(o => o.preco).filter(p => p > 0);
-          if (precosT.length === 0) return alert("Adicione ao menos 1 preço nos tamanhos");
+          if (precosT.length === 0) return avisar("Adicione ao menos 1 preço nos tamanhos", { tipo: "erro" });
           precoBase = Math.min(...precosT);
         }
       } else if (gs?.ativo && gs.opcoes.length > 0 && gs.sabor_tem_preco_proprio) {
         const precosS = gs.opcoes.map((o: any) => o.preco || 0).filter((p: number) => p > 0);
-        if (precosS.length === 0) return alert("Adicione ao menos 1 preço nos sabores");
+        if (precosS.length === 0) return avisar("Adicione ao menos 1 preço nos sabores", { tipo: "erro" });
         precoBase = Math.min(...precosS);
       } else {
-        if (!form.preco_normal || form.preco_normal <= 0) return alert("Preço base deve ser maior que zero");
+        if (!form.preco_normal || form.preco_normal <= 0) return avisar("Preço base deve ser maior que zero", { tipo: "erro" });
       }
     } else {
-      if (!form.preco_normal || form.preco_normal <= 0) return alert("Preço deve ser maior que zero");
+      if (!form.preco_normal || form.preco_normal <= 0) return avisar("Preço deve ser maior que zero", { tipo: "erro" });
     }
 
     // Define tipo_produto
@@ -4266,7 +4266,7 @@ export default function Produtos() {
     // Proteção: não deixa salvar nomes suspeitos (usuário deve ter colado o alerta)
     const nomeLower = nome.toLowerCase();
     if (nomeLower.includes("selecione") || nomeLower.includes("ícone") || nomeLower.includes("icone")) {
-      return alert("Nome inválido. Digite o nome da sua categoria (ex: Pudins, Bolos, Doces)");
+      return avisar("Nome inválido. Digite o nome da sua categoria (ex: Pudins, Bolos, Doces)", { tipo: "erro" });
     }
     setSavingCat(true);
     await supabase.from("categorias").insert({
@@ -4295,7 +4295,7 @@ export default function Produtos() {
   // ── Ficha técnica ─────────────────────────────────────────
   const adicionarInsumoFicha = (ins: Insumo) => {
     if (fichaTecnica.some(f => f.insumo_id === ins.id)) {
-      alert("Esse insumo já está na ficha técnica");
+      avisar("Esse ingrediente já está na ficha técnica", { tipo: "erro" });
       return;
     }
     setFichaTecnica(prev => [...prev, { insumo_id: ins.id, quantidade: 0, unidade_utilizada: getDefaultRecipeUnitProd(ins.unidade), insumo: ins }]);
@@ -4525,7 +4525,7 @@ export default function Produtos() {
         <div className="prod-hero-split">
           {/* ── Lado esquerdo: texto + CTAs + dica ── */}
           <div className="prod-hero-left">
-            <span className="prod-hero-eyebrow">✨ VAMOS COMEÇAR</span>
+            <span className="prod-hero-eyebrow">Vamos começar</span>
             <h1 className="prod-hero-title">Cadastre seu<br/>primeiro produto</h1>
             <p className="prod-hero-desc">
               Seu catálogo é a vitrine da sua confeitaria. Quanto mais completo,
@@ -4536,13 +4536,13 @@ export default function Produtos() {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
                 CADASTRAR PRODUTO
               </button>
-              <button className="prod-hero-btn-ghost" onClick={() => alert("🎬 Vídeo em produção! Em breve disponível.")}>
+              <button className="prod-hero-btn-ghost" onClick={() => avisar("O vídeo de explicação chega em breve.", { tipo: "info" })}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                 Ver tutorial
               </button>
             </div>
             <div className="prod-hero-tip">
-              <div className="prod-hero-tip-icon">💡</div>
+              <div className="prod-hero-tip-icon"><Lightbulb size={22} weight="duotone" /></div>
               <div>
                 <p className="prod-hero-tip-t">Dica: fotos boas vendem 3x mais</p>
                 <p className="prod-hero-tip-d">Use luz natural, fundo branco, e mostre o produto de ângulos diferentes.</p>
@@ -4556,7 +4556,7 @@ export default function Produtos() {
               <button
                 type="button"
                 className="prod-hero-video-play"
-                onClick={() => alert("🎬 Vídeo em produção! Em breve disponível.")}
+                onClick={() => avisar("O vídeo de explicação chega em breve.", { tipo: "info" })}
                 aria-label="Assistir tutorial"
               >
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
@@ -4565,7 +4565,7 @@ export default function Produtos() {
               </button>
             </div>
             <div className="prod-hero-video-footer">
-              <span className="prod-hero-video-t">🎬 Tutorial completo</span>
+              <span className="prod-hero-video-t">Tutorial completo</span>
               <span className="prod-hero-video-badge">EM BREVE</span>
             </div>
           </aside>
@@ -4779,10 +4779,10 @@ export default function Produtos() {
                     className={`wiz-step1-card ${wizardTipo === "personalizavel" ? "wiz-step1-card--ativo" : ""}`}
                     onClick={() => setWizardTipo("personalizavel")}
                   >
-                    <div className="wiz-step1-card-icon" style={{fontSize: 40, lineHeight: 1}}>🎂</div>
+                    <div className="wiz-step1-card-icon"><Cake size={40} weight="duotone" /></div>
                     <div className="wiz-step1-card-title">
                       Personalizável
-                      <span style={{background: "#E85A8C", color: "#fff", fontSize: 9, padding: "2px 6px", borderRadius: 4, marginLeft: 6, letterSpacing: "0.03em", fontWeight: 700}}>NOVO</span>
+                      <span style={{background: "#E85A8C", color: "#fff", fontSize: 12, padding: "2px 6px", borderRadius: 4, marginLeft: 6, letterSpacing: "0.03em", fontWeight: 700}}>NOVO</span>
                     </div>
                     <div className="wiz-step1-card-desc">Cliente monta<br/>o produto</div>
                   </button>
@@ -5190,7 +5190,7 @@ export default function Produtos() {
                   const ext = file.name.split(".").pop();
                   const path = `${userData.user.id}/produto-opcao-${opcaoId}-${Date.now()}.${ext}`;
                   const { error: upErr } = await supabase.storage.from("produtos").upload(path, file, { upsert: true });
-                  if (upErr) { alert("Erro ao enviar foto: " + upErr.message); return; }
+                  if (upErr) { avisar("Erro ao enviar foto: " + upErr.message, { tipo: "erro" }); return; }
                   const { data: pub } = supabase.storage.from("produtos").getPublicUrl(path);
                   const campo = `grupo_${grupoKey}` as keyof Produto;
                   setForm(f => ({
@@ -5309,7 +5309,7 @@ export default function Produtos() {
                 return (
                   <div className="prod-section">
                     <p className="prod-section-label prod-section-label--novo">
-                      Fotos das variações <span style={{fontSize: 11, fontWeight: 500, color: "#6B5D64", marginLeft: 6}}>(opcional)</span>
+                      Fotos das variações <span style={{fontSize: 12, fontWeight: 500, color: "#6B5D64", marginLeft: 6}}>(opcional)</span>
                     </p>
                     <p style={{fontSize: 12, color: "#6B5D64", margin: "0 0 12px"}}>
                       Adicione uma foto pra cada variação (mostrada no cardápio quando o cliente escolher).
@@ -5639,7 +5639,7 @@ export default function Produtos() {
                                 <span
                                   title="Tipo de cobrança: soma uma vez no pedido"
                                   style={{
-                                    fontSize: 10.5,
+                                    fontSize: 12,
                                     fontWeight: 700,
                                     color: "#6B5D64",
                                     background: "#F0EBED",
@@ -5952,7 +5952,7 @@ export default function Produtos() {
                             {(form.tamanhos_disponiveis || []).length > 0 && (
                               <div style={{ marginTop: "4px", display: "flex", flexDirection: "column", gap: "2px" }}>
                                 {(form.tamanhos_disponiveis || []).map((t, i) => (
-                                  <p key={i} style={{ fontSize: "0.72rem", color: "var(--success)", margin: 0 }}>
+                                  <p key={i} style={{ fontSize: "0.75rem", color: "var(--success)", margin: 0 }}>
                                     {t.label}: R$ {formatPreco(t.preco)} → R$ {formatPreco(t.preco * (1 - (form.desconto_percentual || 0) / 100))}
                                   </p>
                                 ))}
@@ -6028,7 +6028,7 @@ export default function Produtos() {
                         );
                       })}
                     </div>
-                    <p style={{margin:"8px 0 0", fontSize:11.5, color:"#6B5D64"}}>No cardápio aparece "Pedir X antes" na foto do produto, e um aviso quando o cliente abre o produto.</p>
+                    <p style={{margin:"8px 0 0", fontSize:13, color:"#6B5D64"}}>No cardápio aparece "Pedir X antes" na foto do produto, e um aviso quando o cliente abre o produto.</p>
                   </div>
                 )}
               </div>
@@ -6153,7 +6153,7 @@ export default function Produtos() {
       {salvarBibliotecaAsk && (
         <div className="prod-lib-overlay" onClick={() => setSalvarBibliotecaAsk(null)}>
           <div className="prod-lib-modal" onClick={e => e.stopPropagation()}>
-            <div className="prod-lib-icon">📚</div>
+            <div className="prod-lib-icon"><BookOpen size={28} weight="duotone" /></div>
             <h3 className="prod-lib-title">Salvar na sua biblioteca?</h3>
             <p className="prod-lib-desc">
               Você adicionou <b>"{salvarBibliotecaAsk.nome}"</b> {salvarBibliotecaAsk.valor > 0 && <>por <b>R$ {formatPreco(salvarBibliotecaAsk.valor)}</b> </>}
@@ -6210,7 +6210,7 @@ export default function Produtos() {
                 <div className="ficha-modal-hero">
                   {form.imagem_url
                     ? <img src={form.imagem_url} alt={form.nome} className="ficha-modal-hero-img" />
-                    : <div className="ficha-modal-hero-img ficha-modal-hero-img--placeholder">🧁</div>}
+                    : <div className="ficha-modal-hero-img ficha-modal-hero-img--placeholder"><Cake size={28} weight="duotone" /></div>}
                   <div className="ficha-modal-hero-info">
                     <p className="ficha-modal-hero-label">Ficha técnica de</p>
                     <h2 className="ficha-modal-hero-nome">{form.nome || "Novo produto"}</h2>
@@ -6231,7 +6231,7 @@ export default function Produtos() {
                   </div>
                 </div>
                 {margemProduto < 25 && form.preco_normal > 0 && fichaTecnica.length > 0 && (
-                  <p className="ficha-modal-alerta">⚠️ Margem baixa. Considere reajustar o preço ou revisar a ficha.</p>
+                  <p className="ficha-modal-alerta">Margem baixa. Considere reajustar o preço ou revisar a ficha.</p>
                 )}
               </div>
             </div>
@@ -6240,7 +6240,7 @@ export default function Produtos() {
             <div className="ficha-modal-body">
               {fichaTecnica.length === 0 ? (
                 <div className="ficha-modal-empty">
-                  <div className="ficha-modal-empty-icon">🥣</div>
+                  <div className="ficha-modal-empty-icon"><Egg size={28} weight="duotone" /></div>
                   <p className="ficha-modal-empty-title">Nenhum ingrediente ainda</p>
                   <p className="ficha-modal-empty-sub">Adicione abaixo os insumos usados pra fazer <strong>1 unidade</strong> deste produto.</p>
                 </div>
@@ -6256,7 +6256,7 @@ export default function Produtos() {
                       <div key={f.insumo_id} className="ficha-modal-item">
                         {ins.imagem_url
                           ? <img src={ins.imagem_url} alt={ins.nome} className="ficha-modal-item-img" />
-                          : <div className="ficha-modal-item-img ficha-modal-item-img--placeholder">🥣</div>}
+                          : <div className="ficha-modal-item-img ficha-modal-item-img--placeholder"><Egg size={20} weight="duotone" /></div>}
                         <div className="ficha-modal-item-info">
                           <p className="ficha-modal-item-nome">{ins.nome}</p>
                           <p className="ficha-modal-item-sub">R$ {(ins.custo_unitario || 0).toFixed(2)} / {ins.unidade}</p>
@@ -6296,7 +6296,7 @@ export default function Produtos() {
                   <input
                     type="text"
                     className="ficha-modal-add-input"
-                    placeholder="🔍 Buscar insumo cadastrado..."
+                    placeholder="Buscar ingrediente cadastrado"
                     value={buscaInsumo}
                     onChange={e => setBuscaInsumo(e.target.value)}
                   />
@@ -6310,7 +6310,7 @@ export default function Produtos() {
                           <button key={i.id} type="button" className="ficha-modal-add-result" onClick={() => adicionarInsumoFicha(i)}>
                             {i.imagem_url
                               ? <img src={i.imagem_url} alt={i.nome} className="ficha-modal-add-result-img" />
-                              : <div className="ficha-modal-add-result-img ficha-modal-add-result-img--placeholder">🥣</div>}
+                              : <div className="ficha-modal-add-result-img ficha-modal-add-result-img--placeholder"><Egg size={18} weight="duotone" /></div>}
                             <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
                               <p className="ficha-modal-item-nome">{i.nome}</p>
                               <p className="ficha-modal-item-sub">R$ {(i.custo_unitario || 0).toFixed(2)} / {i.unidade}</p>
@@ -6318,13 +6318,13 @@ export default function Produtos() {
                           </button>
                         ))}
                       <button type="button" className="ficha-modal-add-novo" onClick={() => abrirQuickAdd(buscaInsumo)}>
-                        ➕ Cadastrar <strong>"{buscaInsumo}"</strong> como novo insumo
+                        Cadastrar "{buscaInsumo}" como ingrediente novo
                       </button>
                     </div>
                   )}
                   {!buscaInsumo.trim() && (
                     <button type="button" className="ficha-modal-add-novo ficha-modal-add-novo--solo" onClick={() => abrirQuickAdd("")}>
-                      ➕ Cadastrar novo insumo
+                      Cadastrar ingrediente novo
                     </button>
                   )}
                 </div>
@@ -6459,7 +6459,7 @@ export default function Produtos() {
                             await gerarFichaProduto(previewProduto, userId);
                           } catch (err) {
                             console.error("Erro ao gerar PDF:", err);
-                            alert("Não foi possível gerar o PDF. Tente novamente.");
+                            avisar("Não foi possível gerar o PDF. Tente novamente.", { tipo: "erro" });
                           }
                         }}
                       >
@@ -6525,8 +6525,8 @@ export default function Produtos() {
                         onClick={async () => {
                           setPreviewMenu(false);
                           const url = `${window.location.origin}/c/${userId}`;
-                          try { await navigator.clipboard.writeText(url); alert("Link do cardápio copiado!"); }
-                          catch { alert(url); }
+                          try { await navigator.clipboard.writeText(url); avisar("Link do cardápio copiado!", { tipo: "ok" }); }
+                          catch { avisar(url, { tipo: "info" }); }
                         }}
                       >
                         <span className="prod-preview-menu-ico" style={{color: "#059669"}}>
@@ -6724,7 +6724,7 @@ export default function Produtos() {
         <div className="st-confirm-overlay" onClick={() => setConfirmMudaSubtipo(null)}>
           <div className="st-confirm-modal" onClick={e => e.stopPropagation()}>
             <h3 className="st-confirm-title">
-              <span className="st-confirm-icon">⚠</span>
+              <span className="st-confirm-icon"><WarningCircle size={24} weight="bold" /></span>
               Confirmar alteração
             </h3>
             <p className="st-confirm-body">
@@ -6763,7 +6763,7 @@ export default function Produtos() {
       {confirmDiscardProd && (
         <div className="prod-discard-ov" onClick={() => setConfirmDiscardProd(false)}>
           <div className="prod-discard-box" onClick={e => e.stopPropagation()}>
-            <div className="prod-discard-icon">⚠️</div>
+            <div className="prod-discard-icon"><WarningCircle size={30} weight="bold" /></div>
             <h3 className="prod-discard-title">{form.id ? "Descartar alterações?" : "Descartar cadastro?"}</h3>
             <p className="prod-discard-desc">Você preencheu dados que serão perdidos.</p>
             <div className="prod-discard-actions">
@@ -6821,7 +6821,7 @@ export default function Produtos() {
           color: #fff;
           padding: 3px 9px;
           border-radius: 6px;
-          font-size: 10px;
+          font-size: 12px;
           font-weight: var(--fw-black, 800);
           letter-spacing: 0.05em;
           text-transform: uppercase;
@@ -6834,7 +6834,7 @@ export default function Produtos() {
           object-fit: contain;
         }
         .prod-pro-badge--inline {
-          font-size: 9px;
+          font-size: 12px;
           padding: 2px 6px;
         }
         .prod-pro-badge--inline img { width: 10px; height: 10px; }
@@ -6847,7 +6847,7 @@ export default function Produtos() {
           padding: 5px 12px;
           border: none;
           border-radius: 999px;
-          font-size: 11px;
+          font-size: 12px;
           font-weight: var(--fw-bold);
           cursor: pointer;
           white-space: nowrap;
@@ -6977,7 +6977,7 @@ export default function Produtos() {
           color: var(--text-inverse);
           padding: var(--space-1) var(--space-2);
           border-radius: var(--radius-full);
-          font-size: 0.625rem;
+          font-size: 0.75rem;
           font-weight: var(--fw-black);
           letter-spacing: 0.08em;
         }
@@ -7127,7 +7127,7 @@ export default function Produtos() {
           padding: 12px 14px;
         }
         .prod-sugestoes-lbl {
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 700;
           color: #92400E;
           margin: 0 0 8px;
@@ -7360,7 +7360,7 @@ export default function Produtos() {
           backdrop-filter: blur(1px);
           display: flex; align-items: center; justify-content: center;
           color: var(--text-secondary);
-          font-size: 0.7rem;
+          font-size: 0.75rem;
           font-weight: var(--fw-black);
           text-transform: uppercase;
           letter-spacing: 0.08em;
@@ -7370,7 +7370,7 @@ export default function Produtos() {
           top: 8px; right: 8px;
           background: linear-gradient(135deg, #F59E0B, #D97706);
           color: var(--text-inverse);
-          font-size: 0.6rem;
+          font-size: 0.75rem;
           font-weight: var(--fw-black);
           padding: 3px 8px;
           border-radius: 999px;
@@ -7383,7 +7383,7 @@ export default function Produtos() {
           top: 8px; left: 8px;
           background: rgba(255,255,255,0.95);
           color: #1E40AF;
-          font-size: 0.6rem;
+          font-size: 0.75rem;
           font-weight: var(--fw-black);
           padding: 3px 7px;
           border-radius: 6px;
@@ -7410,30 +7410,30 @@ export default function Produtos() {
           filter: drop-shadow(0 2px 4px rgba(0,0,0,0.08));
         }
         .prod-card-sem-foto-title {
-          font-size: 0.72rem;
+          font-size: 0.75rem;
           font-weight: var(--fw-black);
           color: var(--primary-dark);
           line-height: 1.1;
           letter-spacing: -0.01em;
         }
         .prod-card-sem-foto-cta {
-          font-size: 0.6rem;
+          font-size: 0.75rem;
           color: #92400E;
           font-weight: var(--fw-medium);
           line-height: 1.1;
         }
         /* Tag PRO padrão do app (igual à do menu Mais: coroa + "PRO") */
-        .prod-pro-tag { background: #2D1F26; color: #fff; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 6px; letter-spacing: .04em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 4px; line-height: 1; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,.2); margin-left: 8px; vertical-align: middle; font-family: var(--font-base); }
+        .prod-pro-tag { background: #2D1F26; color: #fff; font-size: 12px; font-weight: 700; padding: 4px 8px; border-radius: 6px; letter-spacing: .04em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 4px; line-height: 1; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,.2); margin-left: 8px; vertical-align: middle; font-family: var(--font-base); }
         .prod-pro-tag img { width: 10px; height: 10px; object-fit: contain; display: block; flex-shrink: 0; }
         .prod-card-tags { position: absolute; top: 8px; display: flex; flex-direction: column; gap: 4px; z-index: 1; pointer-events: none; }
         .prod-card-tags--dir { right: 8px; align-items: flex-end; }
         .prod-card-tags--esq { left: 8px; align-items: flex-start; }
         .prod-card-tags > * { position: static !important; top: auto !important; left: auto !important; right: auto !important; }
-        .prod-card-semcat { background: var(--warning); color: var(--text-inverse); font-size: 0.6rem; font-weight: 700; padding: 2px 6px; border-radius: 6px; }
+        .prod-card-semcat { background: var(--warning); color: var(--text-inverse); font-size: 0.75rem; font-weight: 700; padding: 2px 6px; border-radius: 6px; }
         .prod-card-encomenda { position:absolute; top:0.4rem; right:0.4rem; background:var(--warning); color:var(--text-inverse); font-size: var(--font-caption); font-weight: var(--fw-bold); padding:0.15rem 0.45rem; border-radius: var(--radius-xl); }
         .prod-card-info { padding:0.65rem 0.75rem; flex:1; display:flex; flex-direction:column; }
         .prod-card-bottom { margin-top:auto; }
-        .prod-card-cat { font-size: 0.6rem; color:var(--text-muted); font-weight: var(--fw-medium); text-transform:uppercase; letter-spacing:0.04em; margin:0 0 0.15rem; }
+        .prod-card-cat { font-size: 0.75rem; color:var(--text-muted); font-weight: var(--fw-medium); text-transform:uppercase; letter-spacing:0.04em; margin:0 0 0.15rem; }
         .prod-card-nome { font-size: var(--font-button); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 0.25rem; line-height:1.3; }
         .prod-card-preco { font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--success); margin:0; }
 
@@ -7595,7 +7595,7 @@ export default function Produtos() {
 
         /* Eyebrow (categoria · status · promo) */
         .prod-preview-eyebrow {
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.05em;
@@ -7639,7 +7639,7 @@ export default function Produtos() {
           margin-bottom: 12px;
         }
         .prod-preview-destaque-label {
-          font-size: 10.5px;
+          font-size: 12px;
           color: #6B5D64;
           font-weight: 700;
           text-transform: uppercase;
@@ -7654,7 +7654,7 @@ export default function Produtos() {
           line-height: 1.1;
         }
         .prod-preview-destaque-sub {
-          font-size: 10.5px;
+          font-size: 12px;
           color: #9A8B93;
           margin-top: 2px;
         }
@@ -7799,7 +7799,7 @@ export default function Produtos() {
           line-height: 1.2;
         }
         .prod-preview-menu-sub {
-          font-size: 11.5px;
+          font-size: 13px;
           color: #6B5D64;
           font-family: inherit;
           margin-top: 3px;
@@ -7917,7 +7917,7 @@ export default function Produtos() {
         }
         .prod-modal-header-sub {
           margin: 0;
-          font-size: 11px;
+          font-size: 12px;
           color: var(--text-secondary);
           line-height: 1.35;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -7944,7 +7944,7 @@ export default function Produtos() {
           .prod-desk-preview-label {
             display: flex; align-items: center; gap: 6px;
             color: #fff;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: var(--fw-bold);
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -7982,7 +7982,7 @@ export default function Produtos() {
             letter-spacing: -0.01em;
           }
           .prod-desk-preview-desc {
-            font-size: 10px;
+            font-size: 12px;
             color: var(--text-secondary);
             line-height: 1.4;
             display: -webkit-box;
@@ -8000,7 +8000,7 @@ export default function Produtos() {
             color: var(--primary);
           }
           .prod-desk-preview-preco-old {
-            font-size: 10px;
+            font-size: 12px;
             color: var(--text-muted);
             text-decoration: line-through;
           }
@@ -8009,13 +8009,13 @@ export default function Produtos() {
             color: #fff;
             text-align: center;
             padding: 8px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: var(--fw-black);
             letter-spacing: 0.03em;
           }
           .prod-desk-preview-hint {
             margin: 0;
-            font-size: 10px;
+            font-size: 12px;
             color: rgba(255,255,255,0.65);
             text-align: center;
             font-style: italic;
@@ -8115,7 +8115,7 @@ export default function Produtos() {
           gap: 6px;
         }
         .prod-field label em {
-          font-size: 11px !important;
+          font-size: 12px !important;
           font-style: normal;
           color: var(--text-muted);
           font-weight: 500 !important;
@@ -8125,12 +8125,12 @@ export default function Produtos() {
         .prod-field select,
         .prod-field textarea {
           padding: 14px 16px !important;
-          font-size: 14px !important;
+          font-size: 16px !important;
           border-radius: 12px !important;
         }
         .prod-preco-input { border-radius: 12px !important; }
         .prod-preco-input span { font-size: 14px !important; }
-        .prod-preco-input input { padding: 14px 8px 14px 0 !important; font-size: 14px !important; }
+        .prod-preco-input input { padding: 14px 8px 14px 0 !important; font-size: 16px !important; }
         /* Fotos maiores */
         .prod-img-upload {
           width: 100% !important;
@@ -8144,9 +8144,9 @@ export default function Produtos() {
           gap: 10px !important;
         }
         .prod-img-placeholder p { font-size: 12px !important; font-weight: 700 !important; }
-        .prod-img-placeholder span { font-size: 10px !important; }
+        .prod-img-placeholder span { font-size: 12px !important; }
         .prod-img-cta {
-          font-size: 11px !important;
+          font-size: 12px !important;
           font-weight: 700 !important;
           color: #6366F1 !important;
           text-transform: uppercase;
@@ -8309,7 +8309,7 @@ export default function Produtos() {
           line-height: 1.15;
         }
         .wiz-hero-sub {
-          font-size: 11px;
+          font-size: 12px;
           color: var(--text-secondary);
           margin: 0;
           line-height: 1.4;
@@ -8317,7 +8317,7 @@ export default function Produtos() {
         .wiz-optional {
           display: inline-block;
           margin-left: 6px;
-          font-size: 9px;
+          font-size: 12px;
           font-weight: var(--fw-bold);
           color: #6B5D64;
           background: #F0EBED;
@@ -8336,7 +8336,7 @@ export default function Produtos() {
         }
         .wiz-opt-tag {
           display: inline-block;
-          font-size: 9px;
+          font-size: 12px;
           font-weight: var(--fw-black);
           padding: 3px 7px;
           border-radius: 999px;
@@ -8376,7 +8376,7 @@ export default function Produtos() {
           align-items: center;
           padding: 4px 10px;
           border-radius: 999px;
-          font-size: 11px;
+          font-size: 12px;
           font-weight: var(--fw-black);
           text-transform: uppercase;
           letter-spacing: 0.03em;
@@ -8445,7 +8445,7 @@ export default function Produtos() {
           color: #F5B8CD !important;
         }
         .prod-field-hint {
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 500;
           color: #9CA3AF;
           margin-left: 4px;
@@ -8459,7 +8459,7 @@ export default function Produtos() {
         }
         .prod-promo-preview-label {
           display: block;
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 700;
           color: #F5B8CD;
           text-transform: uppercase;
@@ -8765,11 +8765,11 @@ export default function Produtos() {
           display: inline-flex; align-items: center;
           background: #2D1F26; color: #fff;
           padding: 2px 7px; border-radius: 6px;
-          font-size: 9px; font-weight: 800;
+          font-size: 12px; font-weight: 800;
           letter-spacing: 0.05em;
         }
         .prod-var-toggle-desc {
-          font-size: 11px; color: #6B5D64;
+          font-size: 12px; color: #6B5D64;
           margin-top: 2px; line-height: 1.35;
         }
         /* Switch iOS */
@@ -8789,7 +8789,7 @@ export default function Produtos() {
           content: "🔒";
           position: absolute;
           top: -3px; right: -6px;
-          font-size: 11px;
+          font-size: 12px;
         }
         .prod-var-switch-thumb {
           position: absolute;
@@ -8823,7 +8823,7 @@ export default function Produtos() {
           font-size: 20px; font-weight: 800; line-height: 1;
         }
         .prod-var-tag-un {
-          font-size: 8px; font-weight: 800;
+          font-size: 12px; font-weight: 800;
           margin-top: 3px; letter-spacing: 0.08em; opacity: 0.95;
           text-align: center;
         }
@@ -8839,7 +8839,7 @@ export default function Produtos() {
           line-height: 1.1;
         }
         .prod-var-preco-un-mini {
-          font-size: 10px; color: #6B5D64; font-weight: 700;
+          font-size: 12px; color: #6B5D64; font-weight: 700;
           margin-top: 2px;
         }
 
@@ -8872,7 +8872,7 @@ export default function Produtos() {
           bottom: -4px; right: -4px;
           background: #E85A8C; color: #fff;
           width: 20px; height: 20px; border-radius: 50%;
-          font-size: 9px;
+          font-size: 12px;
           display: flex; align-items: center; justify-content: center;
           border: 2px solid #fff;
         }
@@ -8882,7 +8882,7 @@ export default function Produtos() {
           background: rgba(0,0,0,0.65); color: #fff;
           border: none; width: 18px; height: 18px;
           border-radius: 50%;
-          font-size: 10px; font-weight: 800;
+          font-size: 12px; font-weight: 800;
           display: flex; align-items: center; justify-content: center;
           cursor: pointer;
           font-family: var(--font-base);
@@ -8900,7 +8900,7 @@ export default function Produtos() {
         .prod-var-tag-inline {
           display: inline-block;
           background: #F5EEF0; color: #E85A8C;
-          font-size: 9px; font-weight: 800;
+          font-size: 12px; font-weight: 800;
           padding: 2px 7px; border-radius: 999px;
           letter-spacing: 0.05em;
         }
@@ -8912,7 +8912,7 @@ export default function Produtos() {
           font-size: 14px; font-weight: 800; color: #16A34A;
         }
         .prod-var-preco-un {
-          font-size: 10px; color: #6B5D64; font-weight: 600;
+          font-size: 12px; color: #6B5D64; font-weight: 600;
         }
 
         /* Botões editar/excluir */
@@ -8976,7 +8976,7 @@ export default function Produtos() {
         .prod-var-input-tag {
           background: #F5EEF0;
           color: #E85A8C;
-          font-size: 10px;
+          font-size: 12px;
           font-weight: 800;
           padding: 0 12px;
           display: flex; align-items: center;
@@ -9000,7 +9000,7 @@ export default function Produtos() {
         .prod-var-preco-input input {
           flex: 1; padding: 12px 12px 12px 0; border: none; outline: none;
           font-family: var(--font-base) !important;
-          font-size: 15px; font-weight: 700;
+          font-size: 16px; font-weight: 700;
           background: transparent; min-width: 0; color: #2D1F26;
         }
         .prod-var-preco-input input::placeholder {
@@ -9198,7 +9198,7 @@ export default function Produtos() {
         /* ─── Label subtipo ─── */
         .wiz-step1-sub-label {
           text-align: center;
-          font-size: 11.5px;
+          font-size: 13px;
           font-weight: 700;
           color: #6B5D64;
           letter-spacing: 0.06em;
@@ -9270,7 +9270,7 @@ export default function Produtos() {
           line-height: 1.25;
         }
         .wiz-step1-subcard-desc {
-          font-size: 10.5px;
+          font-size: 12px;
           color: #6B5D64;
           line-height: 1.3;
           font-weight: 500;
@@ -9369,10 +9369,10 @@ export default function Produtos() {
             flex-shrink: 0;
           }
           .wiz-step1-card[data-tipo="personalizavel"] .wiz-step1-card-title { font-size: 14px; }
-          .wiz-step1-card[data-tipo="personalizavel"] .wiz-step1-card-desc { font-size: 11.5px; margin-top: 2px; }
+          .wiz-step1-card[data-tipo="personalizavel"] .wiz-step1-card-desc { font-size: 13px; margin-top: 2px; }
           .wiz-step1-card-icon { width: 48px; height: 48px; }
           .wiz-step1-card-title { font-size: 13.5px; }
-          .wiz-step1-card-desc { font-size: 11.5px; }
+          .wiz-step1-card-desc { font-size: 13px; }
         }
 
 
@@ -9434,7 +9434,7 @@ export default function Produtos() {
           font-family: var(--font-base);
         }
         .prod-modal-eyebrow {
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 700;
           color: #9A8B93;
           letter-spacing: 0.06em;
@@ -9699,7 +9699,7 @@ export default function Produtos() {
           margin-left: 6px;
           color: #E85A8C;
           background: #FCE0E9;
-          font-size: 10px;
+          font-size: 12px;
           font-weight: 700;
           padding: 2px 7px;
           border-radius: 6px;
@@ -9733,7 +9733,7 @@ export default function Produtos() {
           background: #1A1A1A;
           color: #fff;
           font-family: var(--font-base) !important;
-          font-size: 11.5px;
+          font-size: 13px;
           font-weight: 700;
           border-radius: 8px;
           cursor: pointer;
@@ -9761,7 +9761,7 @@ export default function Produtos() {
           filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
         }
         .prod-desc-ia-hint {
-          font-size: 11px;
+          font-size: 12px;
           color: #9A8B93;
           margin: 6px 0 0;
           font-style: italic;
@@ -9847,7 +9847,7 @@ export default function Produtos() {
           filter: drop-shadow(0 4px 12px rgba(232,90,140,0.25));
         }
         .prod-pro-modal-eyebrow {
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 800;
           color: #E85A8C;
           text-transform: uppercase;
@@ -9997,8 +9997,8 @@ export default function Produtos() {
           background: #FCE0E9;
           color: #E85A8C;
         }
-        .st-subcard-title { font-size: 11.5px; font-weight: 700; color: #2D1F26; line-height: 1.2; }
-        .st-subcard-desc { font-size: 10px; color: #6B5D64; line-height: 1.3; }
+        .st-subcard-title { font-size: 13px; font-weight: 700; color: #2D1F26; line-height: 1.2; }
+        .st-subcard-desc { font-size: 12px; color: #6B5D64; line-height: 1.3; }
 
         /* Seções (Sabores / Tamanhos) */
         .st-secao {
@@ -10031,7 +10031,7 @@ export default function Produtos() {
         .st-secao-dot--rosa { background: #E85A8C; }
         .st-secao-dot--azul { background: #3B82F6; }
         .st-secao-count {
-          font-size: 10.5px;
+          font-size: 12px;
           font-weight: 700;
           color: #E85A8C;
           background: #FCE0E9;
@@ -10109,7 +10109,7 @@ export default function Produtos() {
           border-radius: 50%;
           background: #FCE0E9;
           color: #E85A8C;
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 700;
           display: flex;
           align-items: center;
@@ -10138,7 +10138,7 @@ export default function Produtos() {
         .st-item-remove:hover { background: #FEE2E2; color: #DC2626; }
 
         .st-hint {
-          font-size: 10.5px;
+          font-size: 12px;
           color: #9A8B93;
           margin: 8px 0 0;
           font-style: italic;
@@ -10158,7 +10158,7 @@ export default function Produtos() {
         .st-grid thead th {
           background: #FAF8F5;
           padding: 10px 8px;
-          font-size: 11.5px;
+          font-size: 13px;
           font-weight: 700;
           color: #2D1F26;
           text-align: center;
@@ -10193,7 +10193,7 @@ export default function Produtos() {
         }
         .st-grid-cell:focus-within { border-color: #E85A8C; }
         .st-grid-rs {
-          font-size: 10.5px;
+          font-size: 12px;
           font-weight: 700;
           color: #059669;
         }
@@ -10296,7 +10296,7 @@ export default function Produtos() {
           box-shadow: 0 1px 4px rgba(0,0,0,0.08);
         }
         .st-precos-tip {
-          font-size: 11px;
+          font-size: 12px;
           color: #78350F;
           background: #FEF9C3;
           border: 1px solid #FEF08A;
@@ -10440,7 +10440,7 @@ export default function Produtos() {
           background: #1A1A1A;
           color: #fff;
           font-family: var(--font-base);
-          font-size: 9px;
+          font-size: 12px;
           font-weight: 700;
           border-radius: 4px;
           box-shadow: 0 1px 3px rgba(0,0,0,0.2);
@@ -10464,7 +10464,7 @@ export default function Produtos() {
           background: #2D1F26;
           color: #fff;
           font-family: var(--font-base);
-          font-size: 10px;
+          font-size: 12px;
           font-weight: 800;
           border-radius: 6px;
           box-shadow: 0 2px 6px rgba(0,0,0,0.3);
@@ -10497,7 +10497,7 @@ export default function Produtos() {
           justify-content: center;
         }
         .prod-slot-lock-txt {
-          font-size: 10.5px;
+          font-size: 12px;
           color: #F5B8CD;
           font-weight: 600;
           font-family: var(--font-base);
@@ -10536,7 +10536,7 @@ export default function Produtos() {
         }
         .prod-slot-lock-icon svg { width: 12px; height: 12px; }
         .prod-slot-locked-txt {
-          font-size: 10px;
+          font-size: 12px;
           color: #6B5D64;
           font-weight: 700;
           font-family: var(--font-base);
@@ -10592,7 +10592,7 @@ export default function Produtos() {
           flex-shrink: 0;
         }
         .pv3-sub-toggle-desc {
-          font-size: 11.5px;
+          font-size: 13px;
           color: #6B5D64;
           margin-top: 2px;
         }
@@ -10655,7 +10655,7 @@ export default function Produtos() {
           border: none;
           border-radius: 50%;
           cursor: pointer;
-          font-size: 9px;
+          font-size: 12px;
           font-weight: 700;
           display: flex; align-items: center; justify-content: center;
         }
@@ -10783,7 +10783,7 @@ export default function Produtos() {
           width: 18px;
           height: 18px;
           border-radius: 50%;
-          font-size: 10px;
+          font-size: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -10804,7 +10804,7 @@ export default function Produtos() {
           background: #1A1A1A;
           color: #fff;
           font-family: var(--font-base);
-          font-size: 11.5px;
+          font-size: 13px;
           font-weight: 700;
           border-radius: 6px;
           cursor: pointer;
@@ -10819,7 +10819,7 @@ export default function Produtos() {
           font-weight: 700 !important;
         }
         .prod-field-obrig {
-          font-size: 11px !important;
+          font-size: 12px !important;
           font-style: normal !important;
           color: #9A8B93 !important;
           font-weight: 500 !important;
@@ -10855,7 +10855,7 @@ export default function Produtos() {
           font-weight: 800;
         }
         .prod-desc-empty-hint {
-          font-size: 10px;
+          font-size: 12px;
           color: #9A8B93;
           margin-top: 8px;
           font-style: italic;
@@ -10867,7 +10867,7 @@ export default function Produtos() {
           color: #6B5D64;
           border-radius: 8px;
           font-family: var(--font-base) !important;
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 700;
           cursor: pointer;
           transition: all 0.12s;
@@ -10883,7 +10883,7 @@ export default function Produtos() {
           border: none;
           border-radius: 8px;
           font-family: var(--font-base) !important;
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 800;
           cursor: pointer;
           display: inline-flex;
@@ -10930,7 +10930,7 @@ export default function Produtos() {
           border-radius: 10px;
         }
         .prod-cat-nova-hint {
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 800;
           color: #E85A8C;
           margin: 0 0 8px;
@@ -10943,7 +10943,7 @@ export default function Produtos() {
           border: 1.5px solid #E5DFE1;
           border-radius: 8px;
           font-family: var(--font-base) !important;
-          font-size: 14px;
+          font-size: 16px;
           outline: none;
           background: #fff;
           box-sizing: border-box;
@@ -10986,7 +10986,7 @@ export default function Produtos() {
         .prod-preco-input-tag {
           background: #F5EEF0;
           color: #E85A8C;
-          font-size: 10px;
+          font-size: 12px;
           font-weight: 800;
           padding: 0 12px;
           display: flex; align-items: center;
@@ -11025,7 +11025,7 @@ export default function Produtos() {
           line-height: 1.25;
         }
         .prod-pacote-toggle-desc {
-          font-size: 11px; color: #6B5D64;
+          font-size: 12px; color: #6B5D64;
           margin-top: 2px; line-height: 1.35;
         }
         .prod-pacote-switch {
@@ -11050,7 +11050,7 @@ export default function Produtos() {
         .prod-var-eco {
           display: inline-flex; align-items: center;
           background: #DCFCE7; color: #14532D;
-          font-size: 10px; font-weight: 800;
+          font-size: 12px; font-weight: 800;
           padding: 2px 8px; border-radius: 999px;
           letter-spacing: 0.02em;
           white-space: nowrap;
@@ -11063,7 +11063,7 @@ export default function Produtos() {
           margin-top: 2px;
         }
         .prod-var-preco-tachado {
-          font-size: 10px; color: #9A8B93;
+          font-size: 12px; color: #9A8B93;
           text-decoration: line-through;
           font-weight: 600;
         }
@@ -11079,7 +11079,7 @@ export default function Produtos() {
           }
           .prod-preco-input-tag {
             padding: 0 10px;
-            font-size: 9px;
+            font-size: 12px;
           }
         }
 
@@ -11235,7 +11235,7 @@ export default function Produtos() {
         }
         .prod-mchk-item-sub {
           margin: 0;
-          font-size: 11.5px;
+          font-size: 13px;
           color: #6B7280;
           line-height: 1.3;
           overflow: hidden;
@@ -11316,7 +11316,7 @@ export default function Produtos() {
         }
         .prod-draft-banner-sub {
           margin: 2px 0 0;
-          font-size: 11.5px;
+          font-size: 13px;
           font-weight: 500;
           color: #92400E;
           line-height: 1.3;
@@ -11488,7 +11488,7 @@ export default function Produtos() {
         .wiz-step-label {
           color: var(--primary) !important;
           font-weight: var(--fw-black) !important;
-          font-size: 10px !important;
+          font-size: 12px !important;
         }
         .wiz-progress-bar { height: 3px !important; border-radius: 999px !important; background: #F0EBED !important; }
         .wiz-progress-bar--active { background: linear-gradient(90deg, var(--primary), var(--primary-dark)) !important; }

@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import AppPageHeader from "@/components/AppPageHeader";
 import EmptyDoo from "@/components/EmptyDoo";
-import { Package, Plus, PencilSimple, Trash, MagnifyingGlass, X, CheckCircle, DotsThree } from "@phosphor-icons/react";
+import { Package, Plus, PencilSimple, Trash, MagnifyingGlass, X, CheckCircle, DotsThree, Cake } from "@phosphor-icons/react";
 import ReqTag from "@/components/ReqTag";
 
+import { avisar } from "@/components/base";
 type Complemento = {
   id: string;
   nome: string;
@@ -137,8 +138,8 @@ export default function Complementos() {
 
   const salvar = async () => {
     const nomeLimpo = form.nome.trim();
-    if (!nomeLimpo) return alert("Digite o nome da personalização");
-    if (modoPreco === "cobrar" && form.valor <= 0) return alert("Digite um valor válido ou escolha \"Grátis\"");
+    if (!nomeLimpo) return avisar("Digite o nome da personalização", { tipo: "erro" });
+    if (modoPreco === "cobrar" && form.valor <= 0) return avisar("Digite um valor válido ou escolha \"Grátis\"", { tipo: "erro" });
     const valorFinal = modoPreco === "gratis" ? 0 : form.valor;
     setSaving(true);
     try {
@@ -157,7 +158,7 @@ export default function Complementos() {
       }
       fechar();
     } catch (err: any) {
-      alert("Erro ao salvar: " + (err.message || "tente novamente"));
+      avisar("Erro ao salvar: " + (err.message || "tente novamente"), { tipo: "erro" });
     } finally {
       setSaving(false);
     }
@@ -370,7 +371,7 @@ export default function Complementos() {
                           {p.imagem_url ? (
                             <img src={p.imagem_url} alt={p.nome} />
                           ) : (
-                            <span>🎂</span>
+                            <Cake size={20} weight="duotone" />
                           )}
                         </div>
                       ))}
@@ -490,7 +491,7 @@ export default function Complementos() {
                               {p.imagem_url ? (
                                 <img src={p.imagem_url} alt={p.nome} />
                               ) : (
-                                <span>🎂</span>
+                                <Cake size={20} weight="duotone" />
                               )}
                             </div>
                             <span className="cpl-prod-nome">{formatNomeProduto(p.nome)}</span>
@@ -510,7 +511,7 @@ export default function Complementos() {
                   <button
                     className="cpl-modal-btn cpl-modal-btn--pri"
                     onClick={() => {
-                      if (!form.nome.trim()) return alert("Digite o nome da personalização");
+                      if (!form.nome.trim()) return avisar("Digite o nome da personalização", { tipo: "erro" });
                       setModalStep(2);
                     }}
                   >
@@ -592,7 +593,7 @@ const styles = `
 
   .cpl-topbar { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; justify-content: flex-end; }
   .cpl-search { flex: 1 1 200px; min-width: 0; position: relative; display: flex; align-items: center; gap: 8px; background: #fff; border: 1.5px solid #F0EBED; border-radius: 10px; padding: 10px 12px; color: #6B7280; }
-  .cpl-search input { flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-size: 13.5px; color: #1F1F23; font-family: inherit; }
+  .cpl-search input { flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-size: 16px; color: #1F1F23; font-family: inherit; }
   .cpl-search-clear { background: #F3F4F6; border: none; width: 20px; height: 20px; border-radius: 50%; color: #6B7280; cursor: pointer; display: flex; align-items: center; justify-content: center; }
   .cpl-btn-novo { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 14px; background: #E85A8C; color: #fff; border: none; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer; font-family: inherit; box-shadow: 0 4px 12px rgba(232,90,140,0.35); white-space: nowrap; flex-shrink: 0; }
   .cpl-btn-novo:hover { background: #d54a7a; }
@@ -623,7 +624,7 @@ const styles = `
   .cpl-empty-preview-info { flex: 1; min-width: 0; }
   .cpl-empty-preview-nome { font-size: 15px; font-weight: 800; color: #2C1219; line-height: 1.2; letter-spacing: -0.01em; }
   .cpl-empty-preview-preco { font-size: 14px; color: #C33A6E; font-weight: 700; margin-top: 3px; }
-  .cpl-empty-preview-un { font-size: 11px; font-weight: 600; color: #6B7280; margin-left: 2px; }
+  .cpl-empty-preview-un { font-size: 12px; font-weight: 600; color: #6B7280; margin-left: 2px; }
 
   .cpl-empty-preview-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #F0D8DE; }
   .cpl-empty-preview-item:last-of-type { border-bottom: none; }
@@ -637,7 +638,7 @@ const styles = `
   .cpl-empty-preview-upload-ico { width: 36px; height: 36px; border-radius: 6px; background: #FCE0E9; color: #C33A6E; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .cpl-empty-preview-upload-info { flex: 1; }
   .cpl-empty-preview-upload-tit { font-size: 13px; font-weight: 700; color: #2C1219; line-height: 1.2; }
-  .cpl-empty-preview-upload-sub { font-size: 11px; color: #6B7280; margin-top: 2px; }
+  .cpl-empty-preview-upload-sub { font-size: 12px; color: #6B7280; margin-top: 2px; }
 
   .cpl-empty-desc { max-width: 320px; margin: 0 auto 20px; font-size: 13px; color: #6B7280; line-height: 1.55; }
   .cpl-noresult { text-align: center; color: #9CA3AF; font-size: 13px; padding: 40px 20px; margin: 0; }
@@ -655,7 +656,7 @@ const styles = `
     background: linear-gradient(135deg, #22C55E, #16a34a);
     color: #fff;
     border-radius: 4px;
-    font-size: 10.5px;
+    font-size: 12px;
     font-weight: 800;
     box-shadow: 0 1px 3px rgba(22, 163, 74, 0.3);
     white-space: nowrap;
@@ -705,7 +706,7 @@ const styles = `
   .cpl-card-fotos { display: flex; align-items: center; gap: 6px; padding-top: 10px; border-top: 1px solid #F5F0F2; }
   .cpl-card-foto { width: 28px; height: 28px; border-radius: 5px; background: linear-gradient(135deg, #FCE0E9, #F0D8DE); display: flex; align-items: center; justify-content: center; font-size: 14px; overflow: hidden; flex-shrink: 0; }
   .cpl-card-foto img { width: 100%; height: 100%; object-fit: cover; }
-  .cpl-card-fotos-txt { font-size: 11.5px; color: #6B7280; font-weight: 600; margin-left: 4px; }
+  .cpl-card-fotos-txt { font-size: 13px; color: #6B7280; font-weight: 600; margin-left: 4px; }
   .cpl-card-todos { display: flex; align-items: center; gap: 6px; padding-top: 10px; border-top: 1px solid #F5F0F2; font-size: 12px; color: #C33A6E; font-weight: 700; }
 
   .cpl-modal-ov { position: fixed; inset: 0; z-index: 10000; background: rgba(45, 31, 38, 0.55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: flex; align-items: flex-end; justify-content: center; animation: cplfade 0.2s; overscroll-behavior: contain; touch-action: none; }
@@ -732,11 +733,11 @@ const styles = `
   .cpl-field { display: flex; flex-direction: column; gap: 6px; }
   .cpl-field > label { font-size: 12px; font-weight: 700; color: #1F1F23; }
   .cpl-field-hint { font-weight: 500; color: #9CA3AF; }
-  .cpl-field input[type="text"] { padding: 12px 14px; border: 1.5px solid #E5E7EB; border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; transition: border 0.15s; }
+  .cpl-field input[type="text"] { padding: 12px 14px; border: 1.5px solid #E5E7EB; border-radius: 10px; font-size: 16px; font-family: inherit; outline: none; transition: border 0.15s; }
   .cpl-field input:focus { border-color: #E85A8C; }
   .cpl-desc-input { padding: 10px 14px; border: 1.5px solid #E5E7EB; border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; resize: vertical; min-height: 60px; transition: border 0.15s; width: 100%; box-sizing: border-box; }
   .cpl-desc-input:focus { border-color: #E85A8C; }
-  .cpl-req-opt { display: inline-block; margin-left: 8px; padding: 2px 7px; background: #F3F4F6; color: #6B7280; font-size: 10px; font-weight: 700; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.04em; vertical-align: middle; }
+  .cpl-req-opt { display: inline-block; margin-left: 8px; padding: 2px 7px; background: #F3F4F6; color: #6B7280; font-size: 12px; font-weight: 700; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.04em; vertical-align: middle; }
 
   /* Segmented control Cobrar / Grátis */
   .cpl-seg {
@@ -785,7 +786,7 @@ const styles = `
   .cpl-field-input-wrap input[type="text"] { width: 100%; box-sizing: border-box; padding-left: 14px; transition: padding-left 0.15s; }
   .cpl-field-input-wrap--filled input[type="text"] { padding-left: 40px !important; }
 
-  .cpl-prods-hint { font-size: 11px; color: #6B7280; margin: 2px 0 8px; font-weight: 500; }
+  .cpl-prods-hint { font-size: 12px; color: #6B7280; margin: 2px 0 8px; font-weight: 500; }
   .cpl-prods-list {
     display: flex; flex-direction: column; gap: 6px;
     max-height: 320px; overflow-y: auto;
@@ -833,7 +834,7 @@ const styles = `
   .cpl-step-badge {
     display: inline-flex; align-items: center;
     padding: 3px 8px; background: #F5F3EF; color: #6B7280;
-    font-size: 10.5px; font-weight: 800; border-radius: 6px;
+    font-size: 12px; font-weight: 800; border-radius: 6px;
     letter-spacing: 0.03em; text-transform: uppercase;
     margin-left: auto; flex-shrink: 0;
   }
@@ -842,14 +843,14 @@ const styles = `
   .cpl-req-tag {
     display: inline-block; margin-left: 6px;
     padding: 2px 7px; background: #F5F3EF; color: #9CA3AF;
-    font-size: 9.5px; font-weight: 800; border-radius: 5px;
+    font-size: 12px; font-weight: 800; border-radius: 5px;
     letter-spacing: 0.04em; text-transform: uppercase;
     vertical-align: middle;
   }
 
   /* Explicação sob o campo */
   .cpl-field-explain {
-    margin: 6px 0 0; font-size: 11.5px; color: #9CA3AF; font-weight: 500;
+    margin: 6px 0 0; font-size: 13px; color: #9CA3AF; font-weight: 500;
   }
 
   /* Modal info personalizado */

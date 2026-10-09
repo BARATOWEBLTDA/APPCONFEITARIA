@@ -433,7 +433,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: '#2C1219' }}>{g.nome_exibicao}</span>
             {g.min_selecionavel > 0 && (
-              <span style={{ display: 'inline-block', padding: '2px 6px', background: '#FCE0E9', color: '#C33A6E', fontSize: 9.5, fontWeight: 800, borderRadius: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <span style={{ display: 'inline-block', padding: '2px 6px', background: '#FCE0E9', color: '#C33A6E', fontSize: 12, fontWeight: 800, borderRadius: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 Obrigatório
               </span>
             )}
@@ -466,7 +466,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
               <div style={{ fontSize: 13.5, fontWeight: 700, color: '#2C1219', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {opSelecionada ? selecTitulo : `Selecione o ${g.tipo === 'tamanho' ? 'tamanho' : g.nome_exibicao.toLowerCase()}`}
               </div>
-              <div style={{ fontSize: 11.5, color: '#6B7280', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: 13, color: '#6B7280', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {opSelecionada ? (selecSub || `${totalOpcoes} opções disponíveis`) : `${totalOpcoes} ${totalOpcoes === 1 ? 'opção disponível' : 'opções disponíveis'}`}
               </div>
             </div>
@@ -528,7 +528,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13.5, fontWeight: 700, color: '#2C1219', lineHeight: 1.2 }}>{tituloOp}</div>
                       {serveTxt && (
-                        <div style={{ fontSize: 11, color: '#6B7280', marginTop: 2 }}>Serve {serveTxt}</div>
+                        <div style={{ fontSize: 12, color: '#6B7280', marginTop: 2 }}>Serve {serveTxt}</div>
                       )}
                     </div>
                     {precoLabel && (
@@ -677,7 +677,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
               position: 'absolute', bottom: 12, right: 12,
               background: 'rgba(0,0,0,0.65)', color: '#fff',
               padding: '4px 10px', borderRadius: 20,
-              fontSize: 11, fontWeight: 700,
+              fontSize: 12, fontWeight: 700,
               backdropFilter: 'blur(8px)',
             }}>
               {imgIndex + 1} / {images.length}
@@ -845,7 +845,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                   <div style={{ fontSize: 13, fontWeight: 700, color: '#2C1219' }}>
                     {fotoRefUploading ? 'Carregando...' : fotoRef ? 'Foto anexada' : 'Enviar foto de referência'}
                   </div>
-                  <div style={{ fontSize: 11, color: '#6B7280', marginTop: 2 }}>
+                  <div style={{ fontSize: 12, color: '#6B7280', marginTop: 2 }}>
                     {fotoRef ? 'Toque pra trocar' : 'Opcional — envie uma imagem pra inspirar'}
                   </div>
                 </div>

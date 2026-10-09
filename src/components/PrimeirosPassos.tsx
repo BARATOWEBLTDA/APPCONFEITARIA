@@ -9,6 +9,7 @@ import HorarioSheet from "@/components/HorarioSheet";
 import { Mascote } from "@/components/marca/Mascote";
 import { lerPassos, marcarCompartilhado, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk, type EstadoPassos } from "@/lib/primeirosPassos";
 
+import { avisar } from "@/components/base";
 /**
  * "Primeiros passos" (aprovado 02/10) — o MESMO cartão no Início (celular) e no Cardápio digital.
  * 7 passos; os que dá pra preencher abrem numa janelinha que sobe de baixo, sem sair da tela:
@@ -190,7 +191,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo }: FolhaProps) {
   return (
     <Folha titulo="Contar sobre a sua confeitaria" sub="Uma frase que aparece no topo do seu cardápio" onClose={onClose}>
       <div className="ppf-lrow"><label className="ppf-l" htmlFor="pp-desc">Descrição</label>
-        <button type="button" className="ppf-ia" onClick={gerar} disabled={gerando}>{gerando ? "Gerando…" : "✨ Gerar com IA"}</button></div>
+        <button type="button" className="ppf-ia" onClick={gerar} disabled={gerando}>{gerando ? "Gerando…" : "Gerar com IA"}</button></div>
       <textarea id="pp-desc" className="ppf-in ppf-ta" value={txt} maxLength={200} placeholder="Ex.: Bolos e doces feitos com carinho em Curitiba" onChange={e => setTxt(e.target.value)} />
       <p className="ppf-cnt">{txt.length}/200</p>
       {erro && <p className="ppf-erro">{erro}</p>}
@@ -217,10 +218,10 @@ function FolhaLogo({ uid, perfil, onClose, onSalvo }: FolhaProps) {
       marcarLogoOk(uid);
       const e = await atualizarPerfil(uid, { logo_url: `${data.publicUrl}?t=${Date.now()}`, design_escolhido: true, logo_confirmado: true }, ["design_escolhido", "logo_confirmado"]);
       setEnviando(false);
-      if (e) { alert("Não foi possível salvar agora. Confira a internet e tente de novo."); return; }
+      if (e) { avisar("Não foi possível salvar agora. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
       onSalvo(); return;
     }
-    setEnviando(false); alert("Não foi possível enviar a imagem. Tente de novo.");
+    setEnviando(false); avisar("Não foi possível enviar a imagem. Tente de novo.", { tipo: "erro" });
   };
   const usarFoto = async () => {
     marcarLogoOk(uid);
@@ -282,7 +283,7 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo }: FolhaProps) {
     <Folha titulo="Endereço da loja" sub="Pra calcular a entrega e mostrar no mapa" onClose={onClose}>
       <div className="ppf-f"><label className="ppf-l" htmlFor="pp-cep">CEP</label>
         <div className="ppf-wrap"><input id="pp-cep" className="ppf-in" inputMode="numeric" value={end.cep} placeholder="00000-000" onChange={e => mudarCep(e.target.value)} />
-          {(buscando || achou) && <small className="ppf-cep">{buscando ? "Procurando…" : "✓ encontrado"}</small>}</div></div>
+          {(buscando || achou) && <small className="ppf-cep">{buscando ? "Procurando…" : "endereço encontrado"}</small>}</div></div>
       {campo("rua", "Rua", "Nome da rua")}
       <div className="ppf-row">{campo("numero", "Número", "Ex.: 500", { inputMode: "numeric" })}{campo("bairro", "Bairro")}</div>
       <div className="ppf-row">{campo("cidade", "Cidade")}{campo("estado", "UF", "PR", { maxLength: 2, style: { textTransform: "uppercase" } })}</div>

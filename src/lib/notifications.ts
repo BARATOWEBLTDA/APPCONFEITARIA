@@ -1,3 +1,5 @@
+import { avisar, informar } from "@/components/base";
+
 /**
  * lib/notifications.ts
  * ────────────────────────────────────────────────────────────────
@@ -73,22 +75,19 @@ export async function ensureServiceWorker(): Promise<ServiceWorkerRegistration |
  * - Se aceitou → registra SW, salva localStorage, volta true
  */
 export async function enableNotifications(): Promise<boolean> {
-  if (precisaInstalarNoIphone()) { alert(PASSOS_INSTALAR_IPHONE); return false; }
+  if (precisaInstalarNoIphone()) { informar({ titulo: "Instale o Doonly no iPhone", texto: "No iPhone, as notificações só funcionam com o app na tela de início. No Safari, toque em Compartilhar, depois em \"Adicionar à Tela de Início\", abra o Doonly pelo ícone novo e ative de novo.", icone: "info" }); return false; }
   if (!isNotifSupported()) {
-    alert(ehIphone()
+    informar({ titulo: "Notificações indisponíveis", icone: "info", texto: ehIphone()
       ? "Este iPhone não recebe notificações do Doonly. Atualize o iPhone (iOS 16.4 ou mais novo) e instale o app na tela de início."
-      : "Seu navegador não suporta notificações. Tente pelo Chrome, Edge ou Firefox.");
+      : "Seu navegador não suporta notificações. Tente pelo Chrome, Edge ou Firefox." });
     return false;
   }
 
   // Se já foi negada permanentemente, orienta o usuário
   if (Notification.permission === "denied") {
-    alert(ehIphone()
-      ? "As notificações do Doonly estão desligadas neste iPhone.\n\nPara ligar: abra Ajustes → Notificações → Doonly → Permitir Notificações."
-      : "As notificações estão bloqueadas para este site.\n\n" +
-        "Para ativar: toque no cadeado (🔒) ao lado do endereço, " +
-        "vá em Notificações e altere para “Permitir”."
-    );
+    informar({ titulo: "Notificações bloqueadas", icone: "alerta", texto: ehIphone()
+      ? "Para ligar: abra Ajustes, depois Notificações, Doonly e Permitir Notificações."
+      : "Para ativar: toque no cadeado ao lado do endereço do site, vá em Notificações e escolha “Permitir”." });
     return false;
   }
 
@@ -104,7 +103,7 @@ export async function enableNotifications(): Promise<boolean> {
   // Garante o service worker registrado
   const reg = await ensureServiceWorker();
   if (!reg) {
-    alert("Não foi possível preparar as notificações neste dispositivo.");
+    avisar("Não foi possível preparar as notificações neste dispositivo.", { tipo: "erro" });
     return false;
   }
 

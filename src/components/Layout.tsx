@@ -325,7 +325,7 @@ export default function Layout() {
 
         .sidebar-badge {
           position: absolute; bottom: -7px; left: 50%; transform: translateX(-50%);
-          font-size: 10px;
+          font-size: 12px;
           font-weight: var(--fw-bold);
           padding: 4px 8px;
           white-space: nowrap;
@@ -446,7 +446,7 @@ export default function Layout() {
           text-decoration: none;
           text-align: center;
           font-family: var(--font-base);
-          font-size: 0.68rem;
+          font-size: 0.75rem;
           font-weight: var(--fw-black);
           letter-spacing: 0.03em;
           box-shadow: 0 6px 18px rgba(var(--primary-rgb), 0.35);

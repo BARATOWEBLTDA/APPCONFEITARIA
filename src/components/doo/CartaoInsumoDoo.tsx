@@ -116,7 +116,7 @@ const CSS = `
   .cid { margin-top: 10px; background: #fff; border: 1.5px solid #F7C6D9; border-radius: 16px; padding: 14px; font-family: var(--font-base); color: #2C1219; max-width: 340px; }
   .cid-hd { display: flex; gap: 11px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #F5F0F2; }
   .cid-ic { width: 40px; height: 40px; border-radius: 10px; background: #FCE0E9; color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .cid-k { margin: 0; font-size: 10.5px; font-weight: 900; letter-spacing: .1em; color: #E85A8C; }
+  .cid-k { margin: 0; font-size: 12px; font-weight: 900; letter-spacing: .1em; color: #E85A8C; }
   .cid-hd b { display: block; font-size: 16px; font-weight: 800; margin-top: 1px; }
   .cid-kv { display: grid; grid-template-columns: 96px 1fr; gap: 7px 10px; margin: 12px 0 0; font-size: 14px; }
   .cid-kv dt { color: #888780; font-weight: 600; } .cid-kv dd { margin: 0; font-weight: 700; }
@@ -135,7 +135,7 @@ const CSS = `
   .cid-f img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .cid-f.on { border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.15); }
   .cid-f i { position: absolute; right: 3px; bottom: 3px; width: 18px; height: 18px; border-radius: 50%; background: #E85A8C; color: #fff; display: flex; align-items: center; justify-content: center; }
-  .cid-f--sem { font-family: inherit; font-size: 11px; font-weight: 700; color: #9A8E94; }
+  .cid-f--sem { font-family: inherit; font-size: 12px; font-weight: 700; color: #9A8E94; }
   .cid-f--load { background: linear-gradient(90deg, #F5F0F2, #FBF7F9, #F5F0F2); background-size: 200% 100%; animation: cidLoad 1.2s infinite; }
   @keyframes cidLoad { to { background-position: -200% 0; } }
   .cid-erro { margin: 10px 0 0; font-size: 13px; color: #B91C1C; font-weight: 700; }

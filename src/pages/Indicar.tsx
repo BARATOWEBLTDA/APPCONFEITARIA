@@ -17,6 +17,7 @@ import { supabase } from "@/lib/supabase";
 import { ShareNetwork, Copy, WhatsappLogo, Check, Trophy, Lock, Gift, UsersThree } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 
+import { avisar } from "@/components/base";
 interface Amiga {
   id: string;
   nome: string | null;
@@ -95,7 +96,7 @@ export default function Indicar() {
       setCopiado(true);
       setTimeout(() => setCopiado(false), 2000);
     } catch {
-      alert("Não foi possível copiar. Copie manualmente: " + link);
+      avisar("Não foi possível copiar. Copie manualmente: " + link, { tipo: "erro" });
     }
   };
 

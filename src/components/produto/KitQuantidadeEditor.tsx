@@ -184,7 +184,7 @@ const CSS = `
   .kq-ico { width: 36px; height: 36px; border-radius: 10px; background: #FCE7F3; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
   .kq-head-t { flex: 1; min-width: 0; }
   .kq-head-t b { display: block; font-size: 14px; color: var(--text-title); }
-  .kq-head-t em { font-style: normal; font-size: 9px; background: #E85A8C; color: #fff; padding: 1px 5px; border-radius: 4px; margin-left: 4px; vertical-align: 2px; }
+  .kq-head-t em { font-style: normal; font-size: 12px; background: #E85A8C; color: #fff; padding: 1px 5px; border-radius: 4px; margin-left: 4px; vertical-align: 2px; }
   .kq-head-t small { font-size: 12px; color: #888780; line-height: 1.35; display: block; }
   .kq-tg { width: 40px; height: 23px; border-radius: 12px; border: none; background: #E5DDE0; position: relative; cursor: pointer; flex-shrink: 0; padding: 0; }
   .kq-tg i { position: absolute; top: 3px; left: 3px; width: 17px; height: 17px; border-radius: 50%; background: #fff; transition: left .15s; }
@@ -222,12 +222,12 @@ const CSS = `
   .kq-sth b { font-size: 15px; display: block; } .kq-sth small { font-size: 12px; color: #888780; }
   .kq-chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .kq-chip { display: inline-flex; align-items: center; gap: 6px; padding: 7px 8px 7px 12px; border-radius: 999px; background: #FCE7F3; color: #9D174D; font-weight: 800; font-size: 13px; }
-  .kq-chip button { border: none; background: none; color: #C4789C; font-size: 11px; cursor: pointer; padding: 0 2px; }
+  .kq-chip button { border: none; background: none; color: #C4789C; font-size: 12px; cursor: pointer; padding: 0 2px; }
   .kq-addrow { display: flex; gap: 8px; margin-top: 10px; }
   .kq-addrow input { flex: 1; min-width: 0; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 11px 12px; font-family: inherit; font-size: 16px; color: #2C1219; }
   .kq-addrow input:focus { outline: none; border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
   .kq-addrow button { border: none; border-radius: 10px; background: #2C1219; color: #fff; font-family: inherit; font-weight: 800; font-size: 13px; padding: 0 14px; cursor: pointer; white-space: nowrap; } .kq-addrow button:disabled { opacity: .35; cursor: default; }
-  .kq-sug-l { margin: 12px 0 6px; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #9A8E94; }
+  .kq-sug-l { margin: 12px 0 6px; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #9A8E94; }
   .kq-sug { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px; }
   .kq-sug::-webkit-scrollbar { display: none; }
   .kq-sug button { flex-shrink: 0; white-space: nowrap; padding: 6px 11px; border: 1.5px dashed #F3C9DA; border-radius: 999px; background: none; color: #C33A6E; font-family: inherit; font-weight: 700; font-size: 12.5px; cursor: pointer; }
@@ -236,18 +236,18 @@ const CSS = `
   .kq-op.on { border-color: #2C1219; background: #FAF7F8; }
   .kq-op b { font-size: 13.5px; display: flex; align-items: center; gap: 8px; }
   .kq-op b i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #C4B8BE; display: inline-block; flex-shrink: 0; } .kq-op.on b i { border: 5px solid #2C1219; }
-  .kq-op small { display: block; font-size: 11.5px; color: #6B5D64; margin-top: 3px; line-height: 1.4; }
+  .kq-op small { display: block; font-size: 13px; color: #6B5D64; margin-top: 3px; line-height: 1.4; }
   .kq-frase { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 14.5px; padding: 9px 0; border-bottom: 1px solid #F5F0F2; }
   .kq-box { width: 72px; border: 1.5px solid #EAE3E6; border-radius: 10px; padding: 7px 8px; font-family: inherit; font-weight: 900; font-size: 14.5px; text-align: center; color: #2C1219; background: #fff; }
   .kq-box:focus, .kq-box--rs:focus-within { outline: none; border-color: #2C1219; }
   .kq-box--rs { width: auto; display: inline-flex; align-items: center; gap: 4px; padding: 0 8px; font-size: 13px; color: #6B5D64; }
-  .kq-box--rs input { width: 70px; border: none; outline: none; padding: 7px 0; font-family: inherit; font-weight: 900; font-size: 14.5px; color: #2C1219; background: none; }
+  .kq-box--rs input { width: 70px; border: none; outline: none; padding: 7px 0; font-family: inherit; font-weight: 900; font-size: 16px; color: #2C1219; background: none; }
   .kq-box--rs.ok input { color: #16a34a; } .kq-box--rs.falta { border-color: #FDBA74; background: #FFF7ED; }
   .kq-x { margin-left: auto; border: none; background: none; color: #C4B8BE; font-size: 12px; cursor: pointer; padding: 4px; }
   .kq-link { border: none; background: none; color: #C33A6E; font-family: inherit; font-size: 13px; font-weight: 800; padding: 8px 0 0; cursor: pointer; }
   .kq-ex { font-size: 12px; color: #888780; margin: 8px 0 0; } .kq-ex b { color: #4B3A42; }
   .kq-prev { border-radius: 18px; background: #FAF7F8; padding: 14px; }
-  .kq-prev h4 { font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: #888780; margin: 0 0 10px; }
+  .kq-prev h4 { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: #888780; margin: 0 0 10px; }
   .kq-prev > p { font-size: 12px; color: #6B5D64; line-height: 1.45; margin: 10px 2px 0; }
   .kq-ph { background: #fff; border-radius: 20px; box-shadow: 0 0 0 6px #1b1b1d, 0 12px 26px rgba(0,0,0,.16); padding: 14px 12px; margin: 6px; }
   .kq-ph-t { display: block; font-size: 15px; font-weight: 900; margin-bottom: 8px; }

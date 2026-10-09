@@ -57,7 +57,7 @@ export default function ParabensPro() {
         </div>
         <div className="ppr-cr"><img src="/coroa.png" alt="" /></div>
         <p className="ppr-k">BEM-VINDA AO DOONLY PRO</p>
-        <h2>{nome ? `Parabéns, ${nome}!` : "Parabéns!"} 🎉<br />Agora você é <span>PRO</span></h2>
+        <h2>{nome ? `Parabéns, ${nome}!` : "Parabéns!"}<br />Agora você é <span>PRO</span></h2>
         <p className="ppr-s">Todos os recursos PRO já estão liberados.</p>
         <button type="button" className="ppr-ia" onClick={() => { fechar(); abrirDooIA(); }}>
           <img src="/ia.png" alt="" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
@@ -78,7 +78,7 @@ export default function ParabensPro() {
           background: linear-gradient(135deg, rgba(249,168,212,.28), rgba(196,181,253,.22)); border: 1px solid rgba(249,168,212,.4); box-shadow: 0 0 40px rgba(232,90,140,.45); }
         .ppr-cr img { width: 46px; height: 46px; object-fit: contain; }
         .ppr-k, .ppr h2 span { background: linear-gradient(90deg, #F9A8D4, #C4B5FD, #93C5FD); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .ppr-k { position: relative; font-size: 10.5px; font-weight: 900; letter-spacing: .16em; margin: 0; }
+        .ppr-k { position: relative; font-size: 12px; font-weight: 900; letter-spacing: .16em; margin: 0; }
         .ppr h2 { position: relative; font-size: 23px; font-weight: 900; line-height: 1.2; margin: 6px 0 0; color: #fff; }
         .ppr-s { position: relative; font-size: 13.5px; color: rgba(255,255,255,.75); margin: 8px auto 0; max-width: 290px; text-wrap: balance; }
         .ppr h2 { text-wrap: balance; }

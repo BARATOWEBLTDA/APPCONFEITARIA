@@ -64,7 +64,7 @@ export default function PeriodoFiltro({ valor, onChange }: { valor: Periodo; onC
         .pf-mes button:disabled { opacity: .35; cursor: default; }
         .pf-datas { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .pf-d { display: flex; flex-direction: column; gap: 4px; min-width: 0; } .pf-d > span { font-size: 12px; font-weight: 700; color: #6B5D64; }
-        .pf-datas input { height: 42px; border: 1.5px solid #EDE6E9; border-radius: 10px; padding: 0 10px; font-family: inherit; font-size: 15px; color: #2C1219; background: #fff; box-sizing: border-box; width: 100%; }
+        .pf-datas input { height: 42px; border: 1.5px solid #EDE6E9; border-radius: 10px; padding: 0 10px; font-family: inherit; font-size: 16px; color: #2C1219; background: #fff; box-sizing: border-box; width: 100%; }
       `}</style>
     </div>
   );

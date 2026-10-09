@@ -65,7 +65,7 @@ export default function CalendarioSheet({ valor, titulo = 'Escolha a data', min,
         .cal2-h button { width: 34px; height: 34px; border-radius: 10px; border: none; background: #FFF1F6; color: var(--cal2); font-size: 19px; font-weight: 800; cursor: pointer; }
         .cal2-h button:disabled { opacity: .3; cursor: default; }
         .cal2-g { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center; }
-        .cal2-g i { font-style: normal; font-size: 11px; font-weight: 800; color: #9A8E94; padding: 4px 0; }
+        .cal2-g i { font-style: normal; font-size: 12px; font-weight: 800; color: #9A8E94; padding: 4px 0; }
         .cal2-g button { border: none; background: none; border-radius: 10px; padding: 9px 0; font-family: inherit; font-size: 15px; color: #2C1219; cursor: pointer; }
         .cal2-g button.hj { box-shadow: inset 0 0 0 1.5px var(--cal2); }
         .cal2-g button.sel { background: var(--cal2); color: #fff; font-weight: 800; }

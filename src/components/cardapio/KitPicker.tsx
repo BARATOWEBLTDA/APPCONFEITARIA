@@ -95,7 +95,7 @@ export default function KitPicker({ kit, sel, onChange, desconto = 0 }: Props) {
         .kp-sabor > span { font-size: 14px; font-weight: 700; color: #2C1219; }
         .kp-sab-nome { display: inline-flex; align-items: center; gap: 8px; }
         .kp-sab-nome svg { color: #E85A8C; flex-shrink: 0; }
-        .kp-kits .kp-cheio { font-size: 11px; font-weight: 600; color: #9A8E94; }
+        .kp-kits .kp-cheio { font-size: 12px; font-weight: 600; color: #9A8E94; }
         .kp-kits button.on .kp-cheio { color: rgba(255,255,255,.6); }
         .kp-stp { display: flex; align-items: center; border: 1px solid #EAE3E6; border-radius: 9px; overflow: hidden; background: #fff; }
         .kp-stp button { width: 34px; height: 34px; border: none; background: none; font-size: 18px; font-weight: 800; color: #C33A6E; cursor: pointer; }

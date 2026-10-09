@@ -705,7 +705,7 @@ export default function Cardapio() {
         }
         .ch-metric-body { min-width: 0; flex: 1; }
         .ch-metric-label {
-          font-size: 10px; font-weight: var(--fw-bold);
+          font-size: 12px; font-weight: var(--fw-bold);
           color: var(--text-muted);
           text-transform: uppercase; letter-spacing: 0.04em;
           margin: 0 0 var(--space-1);
@@ -748,7 +748,7 @@ export default function Cardapio() {
           background: #DCFCE7; color: #14532d;
           border-radius: 999px;
           font-family: inherit;
-          font-size: 9px; font-weight: var(--fw-black);
+          font-size: 12px; font-weight: var(--fw-black);
           letter-spacing: 0.05em; text-transform: uppercase;
           line-height: 1;
         }
@@ -768,7 +768,7 @@ export default function Cardapio() {
           background: #22c55e; color: #fff;
           padding: 1px 7px; border-radius: 999px;
           font-family: inherit;
-          font-size: 9px; font-weight: var(--fw-black);
+          font-size: 12px; font-weight: var(--fw-black);
           line-height: 1.4;
           pointer-events: none;
           animation: chPopIn 1.2s ease-out forwards;
@@ -932,7 +932,7 @@ export default function Cardapio() {
           flex-shrink: 0;
         }
         .cd-metricas-locked-tag {
-          font-size: 10px;
+          font-size: 12px;
           font-weight: 900;
           letter-spacing: 0.08em;
           color: #FFC947;
@@ -945,7 +945,7 @@ export default function Cardapio() {
           position: relative;
         }
         .cd-metricas-locked-s {
-          font-size: 11.5px;
+          font-size: 13px;
           opacity: 0.75;
           margin: 0 0 14px;
           position: relative;
@@ -968,7 +968,7 @@ export default function Cardapio() {
           text-align: center;
         }
         .cd-metricas-locked-lbl {
-          font-size: 9.5px;
+          font-size: 12px;
           text-transform: uppercase;
           letter-spacing: 0.06em;
           opacity: 0.7;
