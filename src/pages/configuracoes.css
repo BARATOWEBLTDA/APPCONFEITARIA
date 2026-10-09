@@ -1,0 +1,64 @@
+/* Configurações (09/10 · 3.55). Um layout só, do celular ao computador. */
+.cf9 { display: flex; flex-direction: column; gap: 12px; max-width: 720px; margin: 0 auto; padding: 16px 8px 112px; font-family: var(--font-base); color: var(--ui-texto); text-align: left; }
+.cf9-g { display: none; }
+@media (min-width: 600px) { .cf9-g { display: inline; } .cf9-c { display: none; } }
+.cf9-card { padding: 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
+
+/* perfil */
+.cf9-perfil { display: flex; align-items: center; gap: 14px; }
+.cf9-av { position: relative; flex: none; margin: 0; padding: 0; border: 0; background: none; cursor: pointer; }
+.cf9-av > span { display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; overflow: hidden; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.cf9-av img { width: 100%; height: 100%; object-fit: cover; }
+.cf9-av b { font-size: 24px; font-weight: 700; }
+.cf9-av i { position: absolute; right: -4px; bottom: -4px; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 2px solid #fff; border-radius: 50%; background: var(--ui-rosa); color: #fff; }
+.cf9-av i .ui-gira { width: 12px; height: 12px; }
+.cf9-perfil-tx { flex: 1; min-width: 0; }
+.cf9-perfil-tx b { display: block; font-size: 17px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cf9-perfil-tx small { display: block; font-size: 14px; color: var(--ui-texto-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* assinatura */
+.cf9-plano { display: flex; flex-direction: column; gap: 12px; }
+.cf9-plano-cab { display: flex; align-items: center; gap: 12px; }
+.cf9-plano-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--ui-raio); background: #FEF3C7; color: #B45309; }
+.cf9-plano-cab small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
+.cf9-plano-cab b { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 800; }
+.cf9-plano-cab em { padding: 2px 8px; border-radius: 99px; background: var(--ui-verde-fundo); color: var(--ui-verde); font-size: 12px; font-style: normal; font-weight: 700; }
+.cf9-plano p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
+
+/* lista */
+.cf9-lista { padding: 4px 8px 8px; }
+.cf9-sec { margin: 12px 8px 4px; font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
+.cf9-item { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin: 0; padding: 8px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; }
+.cf9-item + .cf9-item { box-shadow: 0 -1px 0 var(--ui-linha); }
+@media (hover: hover) { .cf9-item:hover { background: var(--ui-linha); } }
+.cf9-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-cinza); color: var(--ui-texto-2); }
+.cf9-ic--rosa { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.cf9-ic--amarelo { background: #FEF3C7; color: #B45309; }
+.cf9-ic--vermelho { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); }
+.cf9-ic--azul { background: #E6F0FA; color: var(--ui-azul); }
+.cf9-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.cf9-tx b { font-size: 15px; font-weight: 700; line-height: 1.3; }
+.cf9-tx small { font-size: 13px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
+.cf9-tx small.on { color: var(--ui-rosa-escuro); font-weight: 700; }
+.cf9-seta { flex: none; color: var(--ui-texto-3); }
+.cf9-ponto { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--ui-rosa); }
+.atz-girando { animation: atzGira .8s linear infinite; }
+@keyframes atzGira { to { transform: rotate(360deg); } }
+
+.cf9-excluir { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 2px 6px; margin: 4px 0 0; font-size: 14px; color: var(--ui-texto-2); }
+.cf9-excluir .ui-bt { color: var(--ui-vermelho); }
+.cf9-exc { display: flex; flex-direction: column; gap: 16px; }
+.cf9-exc p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
+
+/* Instalar o app (InstalarAppCard) */
+.ia-card { padding: 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); font-family: var(--font-base); }
+.ia-top { display: flex; align-items: center; gap: 12px; }
+.ia-top img { flex: none; width: 48px; height: 48px; border-radius: 12px; }
+.ia-t { margin: 0; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
+.ia-d { margin: 2px 0 0; font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
+.ia-btn { width: 100%; min-height: 48px; margin-top: 14px; border: 0; border-radius: var(--ui-raio-botao); background: var(--ui-cinza); color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+.ia-steps { display: flex; flex-direction: column; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+.ia-steps li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 14px; line-height: 1.4; color: var(--ui-cinza-texto); }
+.ia-steps li svg { display: inline-block; vertical-align: -3px; margin: 0 2px; }
+.ia-steps i { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--ui-vinho, #2C1219); color: #fff; font-size: 12px; font-style: normal; font-weight: 700; }
+.ia-warn { margin: 14px 0 0; padding: 10px 12px; border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 14px; line-height: 1.45; color: var(--ui-cinza-texto); }

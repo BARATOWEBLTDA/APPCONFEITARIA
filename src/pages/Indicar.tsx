@@ -1,23 +1,15 @@
 /**
- * Indicar — Página de indicação/afiliação.
- *
- * Estrutura:
- *  1. Hero (placeholder até ter banner)
- *  2. Card "Seu link único" + botões de compartilhar
- *  3. Card contador de conversões (destaque)
- *  4. Roadmap dos 4 prêmios (3/10/25/50)
- *  5. Lista de amigas que entraram
- *  6. Como funciona (3 passos)
- *
- * Padrão visual: rosa Doonly, fonte Geist, botões 3D.
+ * Indique e ganhe (09/10 · 3.55, no padrão do guia).
+ *  1. Banner  2. Seu link + compartilhar  3. Quantas assinantes e o próximo prêmio
+ *  4. Os 4 prêmios (3/10/25/50)  5. Quem entrou pelo link  6. Como funciona
  */
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { ShareNetwork, Copy, WhatsappLogo, Check, Trophy, Lock, Gift, UsersThree } from "@phosphor-icons/react";
+import { ShareNetwork, Copy, WhatsappLogo, Check, Trophy, Lock, UsersThree } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
-
-import { avisar } from "@/components/base";
+import { Botao, avisar } from "@/components/base";
+import "./indicar.css";
 interface Amiga {
   id: string;
   nome: string | null;
@@ -27,10 +19,10 @@ interface Amiga {
 }
 
 const PREMIOS = [
-  { meta: 3, emoji: "👑", imagem: "/Sistema/brinde1.png", titulo: "1 mês grátis no Doonly", desc: "Uma mensalidade completa por sua conta" },
-  { meta: 10, emoji: "🎁", imagem: "/Sistema/brinde2.png", titulo: "3 meses grátis + camiseta", desc: "Camiseta personalizada com a marca da sua confeitaria" },
-  { meta: 25, emoji: "👕", imagem: "/Sistema/brinde3.png", titulo: "Kit Exclusivo + 6 meses grátis", desc: "Avental + faixa + Confeiteira Destaque" },
-  { meta: 50, emoji: "🎂", imagem: "/Sistema/brinde4.png", titulo: "Batedeira Planetária + 1 ano grátis", desc: "O grande prêmio Doonly" },
+  { meta: 3, imagem: "/Sistema/brinde1.png", titulo: "1 mês grátis no Doonly", desc: "Uma mensalidade completa por sua conta" },
+  { meta: 10, imagem: "/Sistema/brinde2.png", titulo: "3 meses grátis + camiseta", desc: "Camiseta personalizada com a marca da sua confeitaria" },
+  { meta: 25, imagem: "/Sistema/brinde3.png", titulo: "Kit Exclusivo + 6 meses grátis", desc: "Avental + faixa + Confeiteira Destaque" },
+  { meta: 50, imagem: "/Sistema/brinde4.png", titulo: "Batedeira Planetária + 1 ano grátis", desc: "O grande prêmio Doonly" },
 ];
 
 export default function Indicar() {
@@ -83,9 +75,9 @@ export default function Indicar() {
 
   const link = codigo ? `https://doonly.com.br/?ref=${codigo}` : "https://doonly.com.br";
   const mensagemWpp = encodeURIComponent(
-    `Oi! Tô usando o Doonly pra organizar minha confeitaria — recomendo demais! 💖\n\n` +
+    `Oi! Tô usando o Doonly pra organizar minha confeitaria e recomendo demais.\n\n` +
     `Se você entrar pelo meu link ganha:\n` +
-    `💰 70% OFF no 1º mês do PRO\n\n` +
+    `70% de desconto no 1º mês do PRO\n\n` +
     link
   );
 
@@ -95,7 +87,7 @@ export default function Indicar() {
       setCopiado(true);
       setTimeout(() => setCopiado(false), 2000);
     } catch {
-      avisar("Não foi possível copiar. Copie manualmente: " + link, { tipo: "erro" });
+      avisar("Não deu pra copiar. Segure o link pra copiar.", { tipo: "erro" });
     }
   };
 
@@ -119,624 +111,114 @@ export default function Indicar() {
 
   // Próximo prêmio (o primeiro com meta > conversoes)
   const proximoIdx = PREMIOS.findIndex(p => p.meta > conversoes);
+  const proximo = proximoIdx >= 0 ? PREMIOS[proximoIdx] : null;
+  const anterior = proximoIdx > 0 ? PREMIOS[proximoIdx - 1].meta : 0;
 
   return (
     <>
     <AppPageHeader title="Indique e ganhe" subtitle="Prêmios por cada assinante que você indicar" />
-    <div className="ind-root">
-      <div className="ind-grid">
+    <div className="in9">
+      <div className="in9-col">
+        <img className="in9-banner" src="/Sistema/bannerindica.png" alt="Suas indicações viram recompensas. Convide pro Doonly e ganhe prêmios exclusivos." />
 
-      <div className="ind-col-left">
-      {/* ── HERO — Banner dentro de card ─────────────── */}
-      <div className="ind-banner-card">
-        <img
-          src="/Sistema/bannerindica.png"
-          alt="Convide para o Doonly e ganhe prêmios exclusivos"
-          className="ind-banner-img"
-        />
-      </div>
-
-      {/* ── SEU LINK ────────────────────────────────── */}
-      <div className="ind-card">
-        <div className="ind-hdr">Seu link único</div>
-
-        {loading ? (
-          <div className="ind-skeleton" />
-        ) : (
-          <>
-            <div className="ind-link-row">
-              <div className="ind-link-input">
-                doonly.com.br/?ref=<b>{codigo || "..."}</b>
-              </div>
-              <button className="ind-copy-btn" onClick={copiarLink}>
-                {copiado ? <Check size={14} weight="bold" /> : <Copy size={14} weight="bold" />}
-                {copiado ? "Copiado!" : "Copiar"}
-              </button>
+        {/* Seu link */}
+        <section className="in9-card">
+          <h2 className="in9-t">Seu link</h2>
+          {loading ? <div className="in9-esq" /> : (<>
+            <div className="in9-link">
+              <span className="in9-link-tx">doonly.com.br/?ref=<b>{codigo || "…"}</b></span>
+              <Botao variante="secundario" tamanho="m" icone={copiado ? <Check size={18} weight="bold" /> : <Copy size={18} weight="bold" />} onClick={copiarLink}>{copiado ? "Copiado" : "Copiar"}</Botao>
             </div>
+            <Botao cheio className="in9-zap" icone={<WhatsappLogo size={20} weight="fill" />} onClick={abrirWhatsApp}>Mandar no WhatsApp</Botao>
+            <Botao variante="link" cheio icone={<ShareNetwork size={18} weight="bold" />} onClick={compartilharNativo}>Outras formas de mandar</Botao>
+          </>)}
+        </section>
 
-            <button className="ind-wpp-btn" onClick={abrirWhatsApp}>
-              <WhatsappLogo size={18} weight="fill" />
-              Compartilhar no WhatsApp
-            </button>
-
-            <button className="ind-share-btn" onClick={compartilharNativo}>
-              <ShareNetwork size={16} weight="bold" />
-              Mais opções de compartilhamento
-            </button>
-          </>
-        )}
-      </div>
-
-      {/* ── ROADMAP DE PRÊMIOS (cards grandes com foto) ── */}
-      <div className="ind-premios-hdr">Seus prêmios</div>
-      <div className="ind-premios">
-        {PREMIOS.map((p, idx) => {
-          const desbloqueado = conversoes >= p.meta;
-          const eProximo = idx === proximoIdx;
-
-          return (
-            <div key={p.meta} className={`ind-pcard ${eProximo ? "ind-pcard--next" : ""} ${desbloqueado ? "ind-pcard--won" : ""} ${!eProximo && !desbloqueado ? "ind-pcard--lock" : ""}`}>
-              {/* Foto do prêmio (topo do card) */}
-              <div className="ind-pcard-foto">
-                {p.imagem
-                  ? <img src={p.imagem} alt={p.titulo} />
-                  : <span className="ind-pcard-emoji">{p.emoji}</span>}
-
-                {/* Tags flutuantes sobre a foto */}
-                {eProximo && <span className="ind-pcard-flag ind-pcard-flag--next">PRÓXIMO</span>}
-                {desbloqueado && <span className="ind-pcard-flag ind-pcard-flag--won"><Trophy size={11} weight="fill" /> CONQUISTADO</span>}
-                <span className={`ind-pcard-meta ${eProximo ? "ind-pcard-meta--next" : desbloqueado ? "ind-pcard-meta--won" : ""}`}>
-                  {p.meta} {p.meta === 1 ? "assinante" : "assinantes"}
-                </span>
-              </div>
-
-              {/* Info embaixo */}
-              <div className="ind-pcard-body">
-                <div className="ind-pcard-title">{p.titulo}</div>
-                <div className="ind-pcard-desc">{p.desc}</div>
-
-                {eProximo && (
-                  <div className="ind-pcard-prog">
-                    <div className="ind-pcard-prog-labels">
-                      <span>{conversoes} / {p.meta}</span>
-                      <span className="ind-pcard-prog-faltam">Faltam {p.meta - conversoes}</span>
-                    </div>
-                    <div className="ind-pcard-prog-bar">
-                      <div className="ind-pcard-prog-fill" style={{ width: `${Math.min(100, (conversoes / p.meta) * 100)}%` }} />
-                    </div>
-                  </div>
-                )}
-
-                {!eProximo && !desbloqueado && (
-                  <div className="ind-pcard-faltam">
-                    <Lock size={11} weight="bold" /> Faltam <b>{p.meta - conversoes}</b> assinantes PRO
-                  </div>
-                )}
-
-                {desbloqueado && (
-                  <a href="https://wa.me/554199999999?text=Oi! Quero resgatar meu pr%C3%AAmio de indica%C3%A7%C3%A3o do Doonly." target="_blank" rel="noopener" className="ind-pcard-resgatar">
-                    <WhatsappLogo size={14} weight="fill" />
-                    Resgatar pelo WhatsApp
-                  </a>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      </div>{/* fim col-left */}
-
-      <div className="ind-col-right">
-      {/* ── CONTADOR DESTAQUE (dinâmico) ────────────── */}
-      {conversoes === 0 ? (
-        <div className="ind-contador ind-contador--zero">
-          <div className="ind-contador-emoji"><Gift size={30} weight="duotone" /></div>
-          <div className="ind-contador-title-zero">Comece agora sua jornada!</div>
-          <div className="ind-contador-desc-zero">
-            Compartilhe seu link e ganhe seu 1º prêmio:<br/>
-            <b>1 mês PRO grátis</b> com apenas 3 assinantes.
-          </div>
-        </div>
-      ) : (
-        <div className="ind-contador">
-          <div className="ind-contador-label">Você já tem</div>
-          <div className="ind-contador-num">{conversoes}</div>
-          <div className="ind-contador-desc">
-            {proximoIdx !== -1
-              ? `assinantes. Faltam ${PREMIOS[proximoIdx].meta - conversoes} para o próximo prêmio!`
-              : "assinantes. Você conquistou todos os prêmios!"}
-          </div>
-        </div>
-      )}
-
-      {/* ── QUEM ENTROU PELO SEU LINK (sempre visível) ── */}
-      <div className="ind-card">
-        <div className="ind-hdr">
-          Quem entrou pelo seu link
-          {amigas.length > 0 && <span className="ind-hdr-count">({amigas.length})</span>}
-        </div>
-
-        {amigas.length === 0 ? (
-          <div className="ind-empty">
-            <div className="ind-empty-emoji"><UsersThree size={30} weight="duotone" /></div>
-            <div className="ind-empty-title">Ninguém ainda</div>
-            <div className="ind-empty-desc">Compartilhe seu link e acompanhe por aqui quem entra no Doonly através dele.</div>
-          </div>
-        ) : (
-          <div className="ind-amigas">
-            {amigas.map((a, idxA) => {
-              const isPro = a.status === "pro" || a.status === "premio_resgatado";
-              const dias = Math.floor((Date.now() - new Date(a.created_at).getTime()) / 86400000);
-              const tempoTxt = dias === 0 ? "hoje" : dias === 1 ? "ontem" : `há ${dias} dias`;
+        {/* Prêmios */}
+        <section className="in9-card">
+          <h2 className="in9-t">Seus prêmios</h2>
+          <div className="in9-premios">
+            {PREMIOS.map((p, idx) => {
+              const ganhou = conversoes >= p.meta;
+              const eProximo = idx === proximoIdx;
               return (
-                <div key={a.id || `amiga-${idxA}`} className="ind-amiga">
-                  <div className="ind-amiga-avatar">{(a.nome || "?").trim().charAt(0).toUpperCase()}</div>
-                  <div className="ind-amiga-info">
-                    <div className="ind-amiga-nome">{a.nome || "Colega"}</div>
-                    <div className="ind-amiga-tempo">{tempoTxt}</div>
+                <div key={p.meta} className={`in9-pr${eProximo ? " prox" : ""}${ganhou ? " ok" : ""}`}>
+                  <span className="in9-pr-f"><img src={p.imagem} alt="" /></span>
+                  <div className="in9-pr-tx">
+                    <b>{p.titulo}</b>
+                    <small>{p.desc}</small>
+                    {ganhou ? (
+                      <span className="in9-tag ok"><Trophy size={14} weight="fill" />Conquistado</span>
+                    ) : eProximo ? (
+                      <span className="in9-tag prox">Próximo · {p.meta} assinantes</span>
+                    ) : (
+                      <span className="in9-tag"><Lock size={14} weight="bold" />{p.meta} assinantes</span>
+                    )}
+                    {ganhou && (
+                      <a href="https://wa.me/554199999999?text=Oi! Quero resgatar meu pr%C3%AAmio de indica%C3%A7%C3%A3o do Doonly." target="_blank" rel="noopener" className="in9-resgatar">
+                        <WhatsappLogo size={18} weight="fill" />Resgatar pelo WhatsApp
+                      </a>
+                    )}
                   </div>
-                  {isPro
-                    ? <span className="ind-amiga-badge ind-amiga-badge--pro">PRO</span>
-                    : <span className="ind-amiga-badge ind-amiga-badge--trial">TRIAL</span>}
                 </div>
               );
             })}
           </div>
-        )}
+        </section>
       </div>
 
-      {/* ── COMO FUNCIONA ─────────────────────────────── */}
-      <div className="ind-card">
-        <div className="ind-hdr">Como funciona</div>
-        <div className="ind-passos">
-          <div className="ind-passo">
-            <div className="ind-passo-num">1</div>
-            <div className="ind-passo-txt">Compartilhe seu link com quem trabalha com confeitaria.</div>
-          </div>
-          <div className="ind-passo">
-            <div className="ind-passo-num">2</div>
-            <div className="ind-passo-txt">Quem se cadastrar pelo seu link ganha 70% OFF no 1º mês do PRO.</div>
-          </div>
-          <div className="ind-passo">
-            <div className="ind-passo-num">3</div>
-            <div className="ind-passo-txt">Assim que a pessoa assinar o PRO, você soma 1 indicação válida. Alcance as metas e desbloqueie seus prêmios!</div>
-          </div>
-        </div>
+      <div className="in9-col">
+        {/* Andamento */}
+        <section className="in9-card in9-and">
+          <small>Assinantes pelo seu link</small>
+          <b className="in9-num">{conversoes}</b>
+          {proximo ? (<>
+            <p>{conversoes === 0
+              ? <>Com <b>{proximo.meta} assinantes</b> você ganha: {proximo.titulo.charAt(0).toLowerCase() + proximo.titulo.slice(1)}.</>
+              : <>Faltam <b>{proximo.meta - conversoes}</b> pro próximo prêmio: {proximo.titulo.charAt(0).toLowerCase() + proximo.titulo.slice(1)}.</>}</p>
+            <div className="in9-barra" role="progressbar" aria-valuemin={anterior} aria-valuemax={proximo.meta} aria-valuenow={conversoes} aria-label="Andamento até o próximo prêmio">
+              <i style={{ width: `${Math.min(100, ((conversoes - anterior) / (proximo.meta - anterior)) * 100)}%` }} />
+            </div>
+          </>) : <p>Você conquistou todos os prêmios. Obrigada!</p>}
+        </section>
+
+        {/* Quem entrou */}
+        <section className="in9-card">
+          <h2 className="in9-t">Quem entrou pelo seu link{amigas.length > 0 && <i>{amigas.length}</i>}</h2>
+          {amigas.length === 0 ? (
+            <div className="in9-vazio">
+              <UsersThree size={28} weight="duotone" />
+              <b>Ninguém ainda</b>
+              <small>Mande seu link e acompanhe aqui quem entra no Doonly por ele.</small>
+            </div>
+          ) : (
+            <div className="in9-amigas">
+              {amigas.map((a, idxA) => {
+                const isPro = a.status === "pro" || a.status === "premio_resgatado";
+                const dias = Math.floor((Date.now() - new Date(a.created_at).getTime()) / 86400000);
+                const tempoTxt = dias <= 0 ? "Entrou hoje" : dias === 1 ? "Entrou ontem" : `Entrou há ${dias} dias`;
+                return (
+                  <div key={a.id || `amiga-${idxA}`} className="in9-am">
+                    <span className="in9-am-av" aria-hidden="true">{(a.nome || "?").trim().charAt(0).toUpperCase()}</span>
+                    <span className="in9-am-tx"><b>{a.nome || "Colega"}</b><small>{tempoTxt}</small></span>
+                    <span className={`in9-tag${isPro ? " ok" : ""}`}>{isPro ? "PRO" : "Grátis"}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* Como funciona */}
+        <section className="in9-card">
+          <h2 className="in9-t">Como funciona</h2>
+          <ol className="in9-passos">
+            <li><i>1</i><span>Mande seu link pra quem trabalha com confeitaria.</span></li>
+            <li><i>2</i><span>Quem se cadastra pelo seu link ganha 70% de desconto no 1º mês do PRO.</span></li>
+            <li><i>3</i><span>Quando a pessoa assina o PRO, conta 1 indicação. Chegou na meta, o prêmio é seu.</span></li>
+          </ol>
+        </section>
       </div>
-      </div>{/* fim col-right */}
-
-      </div>{/* fim ind-grid */}
-
-      <style>{`
-        .ind-root {
-          font-family: var(--font-base) !important;
-          background: #F5F3EF;
-          min-height: 100vh;
-          padding: 16px 12px 12px;
-          box-sizing: border-box;
-          padding-top: calc(12px + env(safe-area-inset-top, 0px));
-          padding-bottom: calc(12px + 6.5rem);
-          margin: calc(-1 * var(--space-2, 8px));
-          margin-top: calc(-1 * (var(--pad-page-top, 1rem) + env(safe-area-inset-top, 0px)));
-          margin-bottom: -6.5rem;
-        }
-        .ind-root * { font-family: var(--font-base) !important; }
-
-        /* Banner — dentro de card com bordas arredondadas */
-        .ind-banner-card {
-          border-radius: 14px;
-          overflow: hidden;
-          margin-bottom: 12px;
-          line-height: 0;
-          background: #fff;
-          border: 1px solid #F0EBED;
-        }
-        .ind-banner-img {
-          display: block;
-          width: 100%;
-          height: auto;
-          object-fit: cover;
-        }
-
-        /* Card genérico */
-        .ind-card {
-          background: #fff;
-          border: 1px solid #F0EBED;
-          border-radius: 14px;
-          padding: 16px 18px;
-          margin-bottom: 12px;
-        }
-        .ind-hdr {
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          color: #888780;
-          margin-bottom: 12px;
-          display: flex;
-          justify-content: space-between;
-          align-items: baseline;
-        }
-        .ind-hdr-count { font-weight: 700; color: #B4B2A9; letter-spacing: 0; font-size: 12px; text-transform: none; }
-        .ind-skeleton { height: 40px; background: #F0EBED; border-radius: 10px; animation: indShine 1.4s ease infinite; }
-        @keyframes indShine { 0%, 100% { opacity: 0.7; } 50% { opacity: 0.4; } }
-
-        /* Link */
-        .ind-link-row { display: flex; gap: 6px; margin-bottom: 10px; }
-        .ind-link-input {
-          flex: 1;
-          padding: 10px 12px;
-          background: #FAF8F5;
-          border: 1.5px solid #E8E5DC;
-          border-radius: 10px;
-          font-size: 12px;
-          color: #5F5E5A;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          font-family: monospace !important;
-          user-select: none;
-          -webkit-user-select: none;
-          -moz-user-select: none;
-          -ms-user-select: none;
-          -webkit-touch-callout: none;
-          pointer-events: none;
-        }
-        .ind-link-input b { color: #993556; }
-        .ind-copy-btn {
-          all: unset;
-          box-sizing: border-box;
-          display: flex; align-items: center; gap: 4px;
-          padding: 10px 14px;
-          background: #FCE0E9;
-          color: #993556;
-          border-radius: 10px;
-          font-size: 12px;
-          font-weight: 700;
-          cursor: pointer;
-          flex-shrink: 0;
-          transition: background 0.15s ease;
-        }
-        .ind-copy-btn:hover { background: #F4C0D1; }
-
-        .ind-wpp-btn {
-          all: unset;
-          box-sizing: border-box;
-          display: flex; align-items: center; justify-content: center; gap: 8px;
-          width: 100%;
-          padding: 13px;
-          background: #25D366;
-          color: #fff;
-          border-radius: 12px;
-          font-size: 14px;
-          font-weight: 700;
-          cursor: pointer;
-          margin-bottom: 8px;
-          box-shadow: 0 4px 14px rgba(37, 211, 102, 0.28), inset 0 -2px 0 rgba(0,0,0,0.08);
-          transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease;
-        }
-        .ind-wpp-btn:hover { background: #1FBB58; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(37, 211, 102, 0.35); }
-        .ind-wpp-btn:active { transform: translateY(1px); box-shadow: 0 2px 6px rgba(37, 211, 102, 0.25); }
-
-        .ind-share-btn {
-          all: unset;
-          box-sizing: border-box;
-          display: flex; align-items: center; justify-content: center; gap: 6px;
-          width: 100%;
-          padding: 11px;
-          background: transparent;
-          color: #5F5E5A;
-          border: 1.5px solid #E8E5DC;
-          border-radius: 10px;
-          font-size: 13px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: background 0.15s ease;
-        }
-        .ind-share-btn:hover { background: #FAF8F5; }
-
-        /* Contador destaque */
-        .ind-contador {
-          background: linear-gradient(135deg, #FCE0E9 0%, #F4C0D1 100%);
-          border-radius: 14px;
-          padding: 18px;
-          text-align: center;
-          margin-bottom: 12px;
-        }
-        .ind-contador-label {
-          font-size: 12px;
-          font-weight: 700;
-          color: #993556;
-          letter-spacing: 0.05em;
-        }
-        .ind-contador-num {
-          font-size: 48px;
-          font-weight: 800;
-          color: #993556;
-          letter-spacing: -0.03em;
-          line-height: 1.1;
-          margin: 2px 0;
-        }
-        .ind-contador-desc {
-          font-size: 13px;
-          font-weight: 600;
-          color: #993556;
-          line-height: 1.4;
-        }
-
-        /* Estado zero — motivacional, sem número gigante */
-        .ind-contador--zero {
-          padding: 22px 20px;
-        }
-        .ind-contador-emoji {
-          font-size: 44px;
-          line-height: 1;
-          margin-bottom: 8px;
-        }
-        .ind-contador-title-zero {
-          font-size: 19px;
-          font-weight: 800;
-          color: #993556;
-          letter-spacing: -0.02em;
-          margin-bottom: 6px;
-          line-height: 1.2;
-        }
-        .ind-contador-desc-zero {
-          font-size: 13px;
-          font-weight: 500;
-          color: #993556;
-          line-height: 1.5;
-        }
-        .ind-contador-desc-zero b {
-          font-weight: 700;
-        }
-
-        /* Roadmap — Opção B (cards grandes com foto) */
-        .ind-premios-hdr {
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          color: #888780;
-          margin: 0 4px 10px;
-        }
-        .ind-premios { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
-
-        .ind-pcard {
-          background: #fff;
-          border: 1px solid #F0EBED;
-          border-radius: 14px;
-          overflow: hidden;
-        }
-        .ind-pcard--next { border: 2px solid #E85A8C; box-shadow: 0 4px 14px rgba(232, 90, 140, 0.12); }
-        .ind-pcard--won { border: 2px solid #166534; }
-        .ind-pcard--lock { opacity: 0.85; }
-
-        /* Foto do prêmio (topo do card) */
-        .ind-pcard-foto {
-          position: relative;
-          width: 100%;
-          height: 160px;
-          background: #FAF8F5;
-          display: flex; align-items: center; justify-content: center;
-          overflow: hidden;
-        }
-        .ind-pcard-foto img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-        }
-        .ind-pcard--lock .ind-pcard-foto img { filter: grayscale(0.3) opacity(0.8); }
-        .ind-pcard-emoji { font-size: 72px; }
-
-        /* Flags flutuantes sobre a foto */
-        .ind-pcard-flag {
-          position: absolute;
-          top: 10px;
-          left: 10px;
-          font-size: 12px;
-          font-weight: 700;
-          padding: 4px 9px;
-          border-radius: 999px;
-          letter-spacing: 0.04em;
-          display: inline-flex;
-          align-items: center;
-          gap: 3px;
-        }
-        .ind-pcard-flag--next { background: #E85A8C; color: #fff; }
-        .ind-pcard-flag--won { background: #166534; color: #fff; }
-
-        .ind-pcard-meta {
-          position: absolute;
-          top: 10px;
-          right: 10px;
-          background: rgba(255, 255, 255, 0.95);
-          backdrop-filter: blur(6px);
-          -webkit-backdrop-filter: blur(6px);
-          color: #5F5E5A;
-          font-size: 12px;
-          font-weight: 700;
-          padding: 4px 10px;
-          border-radius: 999px;
-          letter-spacing: 0.03em;
-        }
-        .ind-pcard-meta--next { color: #993556; }
-        .ind-pcard-meta--won { color: #166534; }
-
-        /* Body abaixo da foto */
-        .ind-pcard-body { padding: 12px 16px 14px; }
-        .ind-pcard-title {
-          font-size: 15px;
-          font-weight: 800;
-          color: #2C2C2A;
-          letter-spacing: -0.01em;
-          line-height: 1.25;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-        .ind-pcard-desc {
-          font-size: 13px;
-          color: #888780;
-          margin-top: 3px;
-          line-height: 1.4;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-          min-height: calc(1.4em * 2);
-        }
-
-        /* Barra de progresso — só no PRÓXIMO */
-        .ind-pcard-prog { margin-top: 10px; }
-        .ind-pcard-prog-labels {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 5px;
-          font-size: 12px;
-          font-weight: 700;
-          color: #888780;
-        }
-        .ind-pcard-prog-faltam { color: #993556; font-weight: 700; }
-        .ind-pcard-prog-bar { height: 7px; background: #F0EBED; border-radius: 999px; overflow: hidden; }
-        .ind-pcard-prog-fill { height: 100%; background: linear-gradient(90deg, #E85A8C 0%, #C33A6E 100%); border-radius: 999px; transition: width 0.4s ease; }
-
-        /* Info faltam (bloqueado) */
-        .ind-pcard-faltam {
-          margin-top: 10px;
-          display: flex; align-items: center; gap: 5px;
-          font-size: 12px;
-          color: #888780;
-          font-weight: 600;
-        }
-        .ind-pcard-faltam b { color: #5F5E5A; }
-
-        /* Resgatar (conquistado) */
-        .ind-pcard-resgatar {
-          margin-top: 12px;
-          display: inline-flex; align-items: center; gap: 6px;
-          padding: 9px 14px;
-          background: #166534;
-          color: #fff;
-          border-radius: 8px;
-          font-size: 12px;
-          font-weight: 700;
-          text-decoration: none;
-          transition: background 0.15s ease;
-        }
-        .ind-pcard-resgatar:hover { background: #14532D; }
-
-        /* Amigas */
-        .ind-empty {
-          text-align: center;
-          padding: 20px 12px 8px;
-        }
-        .ind-empty-emoji {
-          font-size: 40px;
-          margin-bottom: 8px;
-          filter: grayscale(0.3);
-          opacity: 0.85;
-        }
-        .ind-empty-title {
-          font-size: 14px;
-          font-weight: 800;
-          color: #5F5E5A;
-          margin-bottom: 4px;
-        }
-        .ind-empty-desc {
-          font-size: 12px;
-          color: #888780;
-          line-height: 1.45;
-          max-width: 260px;
-          margin: 0 auto;
-        }
-        .ind-amigas { display: flex; flex-direction: column; gap: 8px; }
-        .ind-amiga { display: flex; align-items: center; gap: 12px; padding: 4px 0; }
-        .ind-amiga-avatar {
-          width: 34px; height: 34px;
-          border-radius: 50%;
-          background: #993556;
-          color: #FCE0E9;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 14px; font-weight: 700;
-          flex-shrink: 0;
-        }
-        .ind-amiga-info { flex: 1; min-width: 0; }
-        .ind-amiga-nome { font-size: 13.5px; font-weight: 700; color: #2C2C2A; }
-        .ind-amiga-tempo { font-size: 13px; color: #888780; }
-        .ind-amiga-badge { font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
-        .ind-amiga-badge--pro { background: #DCFCE7; color: #166534; }
-        .ind-amiga-badge--trial { background: #FEF0DF; color: #854F0B; }
-
-        /* Passos */
-        .ind-passos { display: flex; flex-direction: column; gap: 12px; }
-        .ind-passo { display: flex; gap: 12px; align-items: flex-start; }
-        .ind-passo-num {
-          width: 24px; height: 24px;
-          border-radius: 50%;
-          background: #FCE0E9;
-          color: #993556;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 12px; font-weight: 800;
-          flex-shrink: 0;
-        }
-        .ind-passo-txt { font-size: 12.5px; color: #5F5E5A; line-height: 1.5; }
-
-        /* ═══════════════════════════════════════════════════ */
-        /* ═══  DESKTOP — 2 colunas com sidebar sticky      ═══ */
-        /* ═══════════════════════════════════════════════════ */
-
-        /* Mobile: grid vira coluna única normal */
-        .ind-grid { display: flex; flex-direction: column; }
-        .ind-col-left, .ind-col-right { display: contents; }
-
-        @media (min-width: 900px) {
-          .ind-root {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 8px 24px 40px;
-            background: transparent;
-            min-height: 0;
-          }
-
-          .ind-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-            align-items: start;
-          }
-          .ind-col-left {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            min-width: 0;
-          }
-          .ind-col-right {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            position: sticky;
-            top: 20px;
-            min-width: 0;
-          }
-
-          /* Zerar margins mobile-only nos cards das colunas */
-          .ind-col-left > *, .ind-col-right > * { margin-bottom: 0 !important; }
-
-          /* Banner mais controlado no desktop */
-          .ind-card { padding: 20px 22px; }
-
-          /* Roadmap de prêmios em grid 2 colunas dentro da col-left */
-          .ind-premios {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-          }
-          .ind-premios-hdr { margin-top: 4px; }
-
-          /* Contador central com respiro */
-          .ind-contador { padding: 24px 20px; }
-        }
-      `}</style>
     </div>
     </>
   );

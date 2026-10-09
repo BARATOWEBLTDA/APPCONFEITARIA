@@ -1,0 +1,57 @@
+/* Indique e ganhe (09/10 · 3.55) */
+.in9 { display: flex; flex-direction: column; gap: 12px; max-width: 1080px; margin: 0 auto; padding: 16px 8px 112px; font-family: var(--font-base); color: var(--ui-texto); text-align: left; }
+.in9-col { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+@media (min-width: 1000px) { .in9 { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: start; } }
+.in9-banner { display: block; width: 100%; height: auto; border-radius: var(--ui-raio-cartao); }
+.in9-card { display: flex; flex-direction: column; gap: 12px; padding: 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
+.in9-t { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 17px; font-weight: 800; }
+.in9-t i { padding: 1px 8px; border-radius: 99px; background: var(--ui-cinza); font-size: 13px; font-style: normal; font-weight: 700; color: var(--ui-texto-2); }
+.in9-esq { height: 48px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
+
+/* link */
+.in9-link { display: flex; align-items: center; gap: 8px; }
+.in9-link-tx { flex: 1; min-width: 0; display: flex; align-items: center; min-height: 48px; padding: 0 12px; overflow: hidden; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 15px; color: var(--ui-texto-2); white-space: nowrap; text-overflow: ellipsis; }
+.in9-link-tx b { color: var(--ui-texto); font-weight: 700; }
+.ui-bt.in9-zap { background: #1FA855; box-shadow: 0 3px 0 #15803D; color: #fff; }
+.ui-bt.in9-zap:hover { background: #1B984C; }
+
+/* prêmios */
+.in9-premios { display: flex; flex-direction: column; }
+.in9-pr { display: flex; gap: 12px; padding: 12px 0; }
+.in9-pr + .in9-pr { border-top: 1px solid var(--ui-linha); }
+.in9-pr-f { flex: none; width: 88px; height: 88px; overflow: hidden; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); }
+.in9-pr-f img { width: 100%; height: 100%; object-fit: cover; }
+.in9-pr:not(.prox):not(.ok) .in9-pr-f img { opacity: .55; filter: grayscale(.4); }
+.in9-pr-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.in9-pr-tx b { font-size: 15px; font-weight: 700; line-height: 1.3; }
+.in9-pr-tx small { font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
+.in9-tag { display: inline-flex; align-items: center; gap: 4px; margin-top: 2px; padding: 3px 10px; border-radius: 99px; background: var(--ui-cinza); font-size: 12px; font-weight: 700; color: var(--ui-texto-2); white-space: nowrap; }
+.in9-tag.prox { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.in9-tag.ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
+.in9-resgatar { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-size: 14px; font-weight: 700; color: #15803D; text-decoration: none; }
+
+/* andamento */
+.in9-and { gap: 4px; }
+.in9-and > small { font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
+.in9-num { font-size: 40px; font-weight: 800; line-height: 1.1; color: var(--ui-rosa-escuro); }
+.in9-and p { margin: 4px 0 8px; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
+.in9-and p b { color: var(--ui-texto); }
+.in9-barra { height: 8px; overflow: hidden; border-radius: 99px; background: var(--ui-cinza); }
+.in9-barra i { display: block; height: 100%; min-width: 8px; border-radius: 99px; background: var(--ui-rosa); }
+
+/* quem entrou */
+.in9-vazio { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 8px; text-align: center; color: var(--ui-texto-3); }
+.in9-vazio b { font-size: 15px; font-weight: 700; color: var(--ui-texto); }
+.in9-vazio small { max-width: 300px; font-size: 14px; line-height: 1.45; color: var(--ui-texto-2); }
+.in9-amigas { display: flex; flex-direction: column; }
+.in9-am { display: flex; align-items: center; gap: 12px; min-height: 56px; }
+.in9-am + .in9-am { border-top: 1px solid var(--ui-linha); }
+.in9-am-av { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 16px; font-weight: 700; }
+.in9-am-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.in9-am-tx b { font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.in9-am-tx small { font-size: 13px; color: var(--ui-texto-2); }
+
+/* como funciona */
+.in9-passos { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.in9-passos li { display: flex; align-items: flex-start; gap: 12px; font-size: 14px; line-height: 1.5; color: var(--ui-cinza-texto); }
+.in9-passos i { flex: none; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 14px; font-style: normal; font-weight: 700; }

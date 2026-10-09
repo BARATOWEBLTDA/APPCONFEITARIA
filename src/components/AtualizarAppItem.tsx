@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ArrowsClockwise, CaretRight } from "@phosphor-icons/react";
 import { VERSAO_APP } from "@/lib/versao";
 
 /**
@@ -33,31 +34,17 @@ export default function AtualizarAppItem() {
   };
 
   return (
-    <button className="cfgp-quick-item" onClick={atualizar} disabled={atualizando}>
-      <span className="cfgp-quick-ico cfgp-quick-ico--gray">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={atualizando ? "atz-girando" : undefined}>
-          <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
-          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-        </svg>
+    <button type="button" className="cf9-item" onClick={atualizar} disabled={atualizando}>
+      <span className="cf9-ic cf9-ic--cinza" aria-hidden="true"><ArrowsClockwise size={20} weight="bold" className={atualizando ? "atz-girando" : undefined} /></span>
+      <span className="cf9-tx">
+        <b>Atualizar app</b>
+        <small className={temNova ? "on" : ""}>
+          {atualizando ? "Atualizando…" : temNova ? "Nova versão disponível"
+            : (dataVersao(__BUILD_ID__) ? `Versão ${VERSAO_APP} · de ${dataVersao(__BUILD_ID__)}` : `Versão ${VERSAO_APP}`)}
+        </small>
       </span>
-      <div className="cfgp-quick-info">
-        <div className="cfgp-quick-name">Atualizar app</div>
-        <div className={`cfgp-quick-desc${temNova ? " atz-nova" : ""}`}>
-          {atualizando
-            ? "Atualizando..."
-            : temNova
-              ? "Nova versão disponível"
-              : (dataVersao(__BUILD_ID__) ? `Versão ${VERSAO_APP} · de ${dataVersao(__BUILD_ID__)}` : `Versão ${VERSAO_APP}`)}
-        </div>
-      </div>
-      {temNova && !atualizando && <span className="atz-dot" aria-hidden="true" />}
-      <svg className="cfgp-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
-      <style>{`
-        .atz-nova { color: #C33A6E !important; font-weight: 600; }
-        .atz-dot { width: 8px; height: 8px; border-radius: 50%; background: #E85A8C; flex-shrink: 0; }
-        .atz-girando { animation: atzGira 0.8s linear infinite; }
-        @keyframes atzGira { to { transform: rotate(360deg); } }
-      `}</style>
+      {temNova && !atualizando && <span className="cf9-ponto" aria-hidden="true" />}
+      <CaretRight size={18} weight="bold" className="cf9-seta" aria-hidden="true" />
     </button>
   );
 }
