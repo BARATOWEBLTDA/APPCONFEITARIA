@@ -412,11 +412,11 @@ function Notebook({ children }: { children: ReactNode }) {
 /* ───────── 4 · dinheiro (09/10 · 3.83): quem pagou e quem falta pagar, num cartão só e sem conta pra fazer.
    Em cima, quanto falta receber na semana; embaixo, cada cliente com o que já pagou e o que falta.
    "Recebi" marca como pago (com o som de sucesso) e o total desce. Se ninguém tocar, a Carla paga sozinha. ───────── */
-const RECEBER = [
+const RECEBER: { id: string; cliente: string; total: number; recebido: number; conta: string; alerta?: boolean }[] = [
   { id: 'camila', cliente: 'Camila Rocha', total: 320, recebido: 320, conta: 'Pagou tudo no Pix' },
   { id: 'carla', cliente: 'Carla Menezes', total: 180.5, recebido: 90, conta: 'Pagou o sinal' },
   { id: 'fernanda', cliente: 'Fernanda Lima', total: 260, recebido: 130, conta: 'Pagou metade' },
-  { id: 'paula', cliente: 'Paula Ribeiro', total: 95, recebido: 0, conta: 'Ainda não pagou' },
+  { id: 'paula', cliente: 'Paula Ribeiro', total: 95, recebido: 0, conta: 'Não pagou · entrega amanhã', alerta: true },
 ]
 const reais = (n: number) => n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const iniciais = (nome: string) => nome.split(' ').map(p => p[0]).slice(0, 2).join('')
@@ -447,7 +447,7 @@ function DemoDinheiro() {
         {RECEBER.map(r => {
           const ok = pago(r)
           return (
-            <li key={r.id} className={ok ? 'ok' : ''}>
+            <li key={r.id} className={ok ? 'ok' : r.alerta ? 'alerta' : ''}>
               <span className="bv-din-av">{iniciais(r.cliente)}</span>
               <div className="bv-din-tx">
                 <b>{r.cliente}</b>

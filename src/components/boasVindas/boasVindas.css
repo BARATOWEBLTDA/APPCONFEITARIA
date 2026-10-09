@@ -153,6 +153,10 @@
 .bv-din-tx { flex: 1; min-width: 0; }
 .bv-din-tx > b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14.5px; font-weight: 700; }
 .bv-din-tx em.some { visibility: hidden; }
+/* quem não pagou nada e entrega amanhã: tudo em vermelho */
+.bv-din-lista li.alerta .bv-din-av { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); }
+.bv-din-lista li.alerta .bv-din-tx small { font-weight: 700; color: var(--ui-vermelho); }
+.bv-din-lista li.alerta .bv-din-tx em { color: var(--ui-vermelho); }
 .bv-din-tx em { display: block; font-size: 13px; font-style: normal; font-weight: 700; color: var(--ui-laranja); font-variant-numeric: tabular-nums; }
 .bv-din-tx small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
 .bv-din-rec { flex: none; min-height: 40px; padding: 0 14px; border: 1.5px solid var(--ui-verde); border-radius: 10px; background: #fff; color: var(--ui-verde); font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; }
