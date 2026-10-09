@@ -66,13 +66,11 @@ import FinanceiroTransacoes from "@/pages/FinanceiroTransacoes";
 import FinanceiroAReceber from "@/pages/FinanceiroAReceber";
 import FinanceiroAPagar from "@/pages/FinanceiroAPagar";
 import Custos from "@/pages/Custos";
+import EmBreve from "@/pages/EmBreve";
 import Lucratividade from "@/pages/Lucratividade";
 import FichaTecnica from "@/pages/FichaTecnica";
 
 
-const Promocoes = () => <div style={{padding:"2rem"}}><h2>🏷️ Promoções</h2><p style={{color:"var(--text-muted)",marginTop:"0.5rem"}}>Em breve...</p></div>;
-const Estoque = () => <div style={{padding:"2rem"}}><h2>📦 Estoque</h2><p style={{color:"var(--text-muted)",marginTop:"0.5rem"}}>Em breve...</p></div>;
-const Arquivos = () => <div style={{padding:"2rem"}}><h2>🗂️ Arquivos</h2><p style={{color:"var(--text-muted)",marginTop:"0.5rem"}}>Em breve...</p></div>;
 
 /**
  * NavigateWithSearch — Wrapper de Navigate que PRESERVA a query string.
@@ -249,15 +247,15 @@ export default function App() {
           <Route path="/financeiro/a-pagar" element={<FinanceiroAPagar />} />
           <Route path="/custos" element={<Custos />} />
           <Route path="/lucratividade" element={<Lucratividade />} />
-          <Route path="/promocoes" element={<Promocoes />} />
+          <Route path="/promocoes" element={<EmBreve tela="promocoes" />} />
           <Route path="/cardapio" element={<Cardapio />} />
           <Route path="/cardapio-config" element={<DadosLoja />} />
           <Route path="/cardapio-resumo" element={<CardapioResumo />} />
           <Route path="/cardapio-preview" element={<CardapioPrevia />} />
           <Route path="/cardapio-design" element={<CardapioDesign />} />
           <Route path="/checkout-config" element={<CheckoutConfigPage />} />
-          <Route path="/estoque" element={<Estoque />} />
-          <Route path="/arquivos" element={<Arquivos />} />
+          <Route path="/estoque" element={<EmBreve tela="estoque" />} />
+          <Route path="/arquivos" element={<EmBreve tela="arquivos" />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/configuracoes/notificacoes" element={<NotificacoesSons />} />
           <Route path="/indicar" element={<Indicar />} />
