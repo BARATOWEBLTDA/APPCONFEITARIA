@@ -234,6 +234,10 @@ export default function Clientes() {
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const fileRef = useRef<HTMLInputElement>(null);
+  // Editar aberto pela página da cliente: ao fechar ou salvar, volta pra ela (08/10 · 3.34)
+  const voltarPerfil = useRef<string | null>(null);
+  // (espera a janela fechar: ao fechar, ela tira do histórico a entrada que colocou pro voltar do Android)
+  const talvezVoltar = () => { const v = voltarPerfil.current; voltarPerfil.current = null; if (v) setTimeout(() => navigate(`/clientes/${v}`, { replace: true }), 350); };
 
   // ── Init ──────────────────────────────────────────────────────────────────
 
@@ -251,6 +255,7 @@ export default function Clientes() {
     if (editId && clientes.length > 0) {
       const cliente = clientes.find(c => c.id === editId);
       if (cliente) {
+        voltarPerfil.current = searchParams.get("volta") === "1" ? cliente.id : null;
         openEdit(cliente);
         // Remove params depois de abrir
         setSearchParams({}, { replace: true });
@@ -458,6 +463,7 @@ export default function Clientes() {
     await fetchClientes(userId);
     setShowForm(false);
     const wasEditing = !!editando;
+    if (wasEditing && voltarPerfil.current) { talvezVoltar(); setEditando(null); setSaving(false); avisar("Salvo", { tipo: "ok" }); return; }
     setEditando(null);
     setSaving(false);
 
@@ -494,9 +500,9 @@ export default function Clientes() {
     );
   };
 
-  const fecharForm = () => { setShowForm(false); setEditando(null); setTimeout(() => setCompleto(emptyCompleto), 250); };
+  const fecharForm = () => { setShowForm(false); setEditando(null); setTimeout(() => setCompleto(emptyCompleto), 250); talvezVoltar(); };
   const tryCloseForm = async () => {
-    if (!hasFormData()) { setShowForm(false); return; }
+    if (!hasFormData()) { setShowForm(false); talvezVoltar(); return; }
     const ok = await confirmar({ titulo: editando ? "Sair sem salvar?" : "Descartar o cadastro?", texto: editando ? "As mudanças que você fez nesta cliente vão se perder." : "O que você preencheu vai se perder.", rotulo: editando ? "Sair sem salvar" : "Descartar", rotuloVoltar: "Continuar editando", perigo: true, icone: "alerta" });
     if (ok) fecharForm();
   };
@@ -511,6 +517,7 @@ export default function Clientes() {
     const id = editando;
     const ok = await confirmar({ titulo: "Excluir esta cliente?", texto: "O cadastro some da lista. Os pedidos dela continuam salvos.", rotulo: "Excluir", perigo: true, icone: "erro" });
     if (!ok) return;
+    voltarPerfil.current = null; // a cliente foi excluída: fica na lista
     fecharForm();
     await handleDelete(id);
     avisar("Cliente excluída", { tipo: "ok" });

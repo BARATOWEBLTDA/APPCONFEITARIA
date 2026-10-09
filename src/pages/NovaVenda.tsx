@@ -200,6 +200,10 @@ export default function NovaVenda() {
       setProdutos(prds || [])
       setClientes(cls || [])
       setProdutosLoaded(true)
+      // Veio da página da cliente ("Novo pedido"): já começa com ela escolhida (08/10 · 3.34)
+      const doLink = new URLSearchParams(window.location.search).get('cliente')
+      const escolhida = doLink ? (cls || []).find((c: any) => c.id === doLink) : null
+      if (escolhida) selecionarCliente(escolhida as any)
     })
   }, [])
 
