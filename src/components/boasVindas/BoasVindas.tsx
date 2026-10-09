@@ -174,7 +174,7 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
             {tela === 0 && (<>
               {/* o nome e o título são uma frase só: "Juliana, que bom ter você aqui" */}
               {nomeOk ? <><p className="bv-oi">{nomeOk},</p><h1 className="bv-h">que bom ter <em>você aqui</em></h1></> : <h1 className="bv-h">Que bom ter <em>você aqui</em></h1>}
-              <p className="bv-p">Pedidos, cardápio e dinheiro da sua confeitaria num só lugar. Veja em 1 minuto como funciona.</p>
+              <p className="bv-p">A partir de agora, seus pedidos, seu cardápio e seu dinheiro ficam num lugar só. Vem ver como funciona, leva 1 minuto.</p>
             </>)}
             {tela === 1 && (<>
               <p className="bv-sobre">Seus produtos em destaque</p>
