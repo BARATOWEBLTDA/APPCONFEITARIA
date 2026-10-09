@@ -1,8 +1,8 @@
 import CampoData from '@/components/CampoData'
-import { useTravarRolagem } from "@/hooks/useTravarRolagem";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
-import { createPortal } from "react-dom";
+import Folha from "@/components/financeiro/Folha";
+import { Botao } from "@/components/base";
 import { supabase } from "@/lib/supabase";
 
 /**
@@ -24,8 +24,6 @@ export default function DespesaSheet({ onClose, onSalvo, onContaAPagar, tipo = "
   const [outra, setOutra] = useState(isoDia());
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
-  useTravarRolagem(true)
-  useEffect(() => { const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); }; window.addEventListener("keydown", esc); return () => window.removeEventListener("keydown", esc); }, [onClose]);
 
   const salvar = async () => {
     const v = num(valor);
@@ -40,47 +38,21 @@ export default function DespesaSheet({ onClose, onSalvo, onContaAPagar, tipo = "
     onSalvo();
   };
 
-  return createPortal(
-    <div className="dsp-ov" onClick={onClose} role="dialog" aria-modal="true" aria-label={ehEntrada ? "Nova entrada" : "Nova despesa"}>
-      <div className="dsp" onClick={e => e.stopPropagation()}>
-        <span className="dsp-alca" aria-hidden="true" />
-        <b className="dsp-t">{ehEntrada ? "Nova entrada" : "Nova despesa"}</b>
-        <small className="dsp-s">{ehEntrada ? "Dinheiro que entrou fora dos pedidos do app. Entra no caixa na data escolhida." : "Algo que você já pagou. Sai do caixa na data escolhida."}</small>
-        <label className="dsp-lb" htmlFor="dsp-v">{ehEntrada ? "Quanto entrou?" : "Quanto pagou?"}</label>
-        <div className="dsp-in"><span>R$</span><input id="dsp-v" inputMode="numeric" placeholder="0,00" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro(""); }} autoFocus /></div>
-        <p className="dsp-lb">Categoria</p>
-        <div className="dsp-chips">{cats.map(c => <button type="button" key={c} className={categoria === c ? "on" : ""} onClick={() => setCategoria(c)}>{c === "Insumos" ? "Ingredientes" : c}</button>)}</div>
-        <label className="dsp-lb" htmlFor="dsp-d">Descrição <em>(opcional)</em></label>
-        <input id="dsp-d" className="dsp-txt" placeholder={ehEntrada ? "Ex.: 30 brigadeiros pra vizinha" : "Ex.: Leite condensado e creme de leite"} value={descricao} onChange={e => setDescricao(e.target.value)} />
-        <p className="dsp-lb">{ehEntrada ? "Quando entrou?" : "Quando pagou?"}</p>
-        <div className="dsp-chips">{(["hoje", "ontem", "outra"] as const).map(q => <button type="button" key={q} className={quando === q ? "on" : ""} onClick={() => setQuando(q)}>{q === "hoje" ? "Hoje" : q === "ontem" ? "Ontem" : "Outra data"}</button>)}</div>
-        {quando === "outra" && <div style={{ marginTop: 8 }}><CampoData valor={outra} onChange={setOutra} max={isoDia()} titulo={ehEntrada ? "Data da entrada" : "Data do pagamento"} /></div>}
-        {erro && <p className="dsp-erro">{erro}</p>}
-        <button type="button" className="dsp-cta" onClick={salvar} disabled={salvando}>{salvando ? "Salvando…" : ehEntrada ? "Lançar entrada" : "Lançar despesa"}</button>
-        {!ehEntrada && onContaAPagar && <button type="button" className="dsp-link" onClick={onContaAPagar}>É uma conta pra pagar depois? Cadastre em A pagar</button>}
-      </div>
-      <style>{`
-        .dsp-ov { position: fixed; inset: 0; z-index: 1300; background: rgba(45,31,38,.5); display: flex; align-items: flex-end; justify-content: center; font-family: var(--font-base); }
-        @media (min-width: 768px) { .dsp-ov { align-items: center; } }
-        .dsp { width: 100%; max-width: 460px; background: #fff; border-radius: 22px 22px 0 0; padding: 10px 18px calc(18px + env(safe-area-inset-bottom, 0px)); max-height: 92dvh; overflow-y: auto; color: #2C1219; }
-        @media (min-width: 768px) { .dsp { border-radius: 22px; } }
-        .dsp-alca { display: block; width: 40px; height: 4px; border-radius: 9px; background: #E5DDE1; margin: 0 auto 12px; }
-        .dsp-t { display: block; font-size: 19px; font-weight: 800; } .dsp-s { display: block; font-size: 13px; color: #6B5D64; margin-top: 2px; }
-        .dsp-lb { display: block; font-size: 13px; font-weight: 700; color: #4B3A42; margin: 14px 0 6px; } .dsp-lb em { font-style: normal; font-weight: 500; color: #9A8E94; }
-        .dsp-in { display: flex; align-items: center; gap: 6px; border: 1.5px solid #E85A8C; border-radius: 12px; padding: 0 12px; height: 52px; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
-        .dsp-in span { font-size: 17px; color: #6B5D64; font-weight: 700; }
-        .dsp-in input { flex: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 21px; font-weight: 700; color: #2C1219; background: none; }
-        .dsp-txt { width: 100%; box-sizing: border-box; height: 46px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 0 12px; font-family: inherit; font-size: 16px; }
-        .dsp-chips { display: flex; gap: 6px; flex-wrap: wrap; }
-        .dsp-chips button { border: 1.5px solid #EDE6E9; background: #fff; border-radius: 10px; padding: 8px 12px; font-family: inherit; font-size: 13px; font-weight: 700; color: #2C1219; cursor: pointer; }
-        .dsp-chips button.on { border-color: #E85A8C; background: #FFF1F6; color: #C33A6E; }
-        .dsp-data { margin-top: 8px; width: 100%; min-width: 0; max-width: 100%; -webkit-appearance: none; appearance: none; background: #fff; height: 46px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 0 10px; font-family: inherit; font-size: 15px; box-sizing: border-box; }
-        .dsp-erro { margin: 10px 0 0; font-size: 13px; font-weight: 700; color: #DC2626; }
-        .dsp-cta { margin-top: 16px; width: 100%; border: none; border-radius: 14px; padding: 15px; background: ${ehEntrada ? "#16A34A" : "#2C1219"}; color: #fff; font-family: inherit; font-size: 15.5px; font-weight: 800; cursor: pointer; }
-        .dsp-cta:disabled { opacity: .6; cursor: default; }
-        .dsp-link { display: block; width: 100%; margin-top: 8px; border: none; background: none; padding: 10px; font-family: inherit; font-size: 13px; font-weight: 700; color: #C33A6E; cursor: pointer; }
-      `}</style>
-    </div>,
-    document.body
+  return (
+    <Folha titulo={ehEntrada ? "Nova entrada" : "Nova despesa"} onClose={onClose} umaAcao
+      sub={ehEntrada ? "Dinheiro que entrou fora dos pedidos do app. Entra no caixa na data escolhida." : "Algo que você já pagou. Sai do caixa na data escolhida."}
+      acoes={<Botao cheio carregando={salvando} onClick={salvar}>{ehEntrada ? "Lançar entrada" : "Lançar despesa"}</Botao>}>
+      <label className="fo-lb" htmlFor="dsp-v">{ehEntrada ? "Quanto entrou?" : "Quanto pagou?"}</label>
+      <div className="fo-in"><span>R$</span><input id="dsp-v" inputMode="numeric" placeholder="0,00" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro(""); }} /></div>
+      <p className="fo-lb">Categoria</p>
+      <div className="fo-chips">{cats.map(c => <button type="button" key={c} className={categoria === c ? "on" : ""} onClick={() => setCategoria(c)}>{c === "Insumos" ? "Ingredientes" : c}</button>)}</div>
+      <label className="fo-lb" htmlFor="dsp-d">Descrição <em>(opcional)</em></label>
+      <input id="dsp-d" className="fo-txt" placeholder={ehEntrada ? "Ex.: 30 brigadeiros pra vizinha" : "Ex.: Leite condensado e creme de leite"} value={descricao} onChange={e => setDescricao(e.target.value)} />
+      <p className="fo-lb">{ehEntrada ? "Quando entrou?" : "Quando pagou?"}</p>
+      <div className="fo-chips">{(["hoje", "ontem", "outra"] as const).map(q => <button type="button" key={q} className={quando === q ? "on" : ""} onClick={() => setQuando(q)}>{q === "hoje" ? "Hoje" : q === "ontem" ? "Ontem" : "Outra data"}</button>)}</div>
+      {quando === "outra" && <div style={{ marginTop: 8 }}><CampoData valor={outra} onChange={setOutra} max={isoDia()} titulo={ehEntrada ? "Data da entrada" : "Data do pagamento"} /></div>}
+      {erro && <p className="fo-erro">{erro}</p>}
+      {!ehEntrada && onContaAPagar && <button type="button" className="fo-sec neutro" onClick={onContaAPagar}>É uma conta pra pagar depois? Cadastre em A pagar</button>}
+    </Folha>
   );
 }

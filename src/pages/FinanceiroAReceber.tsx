@@ -3,11 +3,11 @@ import { useTravarRolagem } from "@/hooks/useTravarRolagem";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
-import { createPortal } from "react-dom";
+import Folha from "@/components/financeiro/Folha";
 import { useNavigate } from "react-router-dom";
 import { CalendarBlank, CheckCircle, ArrowSquareOut, Wallet } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
-import { avisar as avisarBase } from "@/components/base";
+import { Botao, avisar as avisarBase } from "@/components/base";
 import { supabase } from "@/lib/supabase";
 import { carregarAReceber, isoDia, type ItemReceber } from "@/lib/contasReceber";
 import { registrarPagamento, normalizarForma } from "@/lib/pagamentos";
@@ -133,7 +133,6 @@ export default function FinanceiroAReceber() {
 
 /** Janela "Quanto você recebeu agora?" — registra um pagamento (Passo 1). */
 export function ReceberSheet({ item, onClose, onFeito }: { item: Item; onClose: () => void; onFeito: (msg: string) => void }) {
-  useTravarRolagem(true)
   const [valor, setValor] = useState(textoBRL(item.falta));
   const [forma, setForma] = useState(normalizarForma(item.forma_pagamento) || "pix");
   const [quandoRec, setQuandoRec] = useState<"hoje" | "ontem" | "outra">("hoje");
@@ -142,8 +141,6 @@ export function ReceberSheet({ item, onClose, onFeito }: { item: Item; onClose: 
   const [erro, setErro] = useState("");
   const v = Math.round((parseFloat(valor.replace(/\./g, "").replace(",", ".")) || 0) * 100) / 100;
   const resta = Math.max(0, Math.round((item.falta - v) * 100) / 100);
-  useEffect(() => { const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); }; window.addEventListener("keydown", esc); return () => window.removeEventListener("keydown", esc); }, [onClose]);
-
   const confirmar = async () => {
     if (v <= 0) { setErro("Digite quanto você recebeu"); return; }
     if (v > item.falta + 0.009) { setErro(`O valor passa do que falta (${brl(item.falta)})`); return; }
@@ -159,38 +156,32 @@ export function ReceberSheet({ item, onClose, onFeito }: { item: Item; onClose: 
     onFeito(resta > 0 ? `Recebido ${brl(v)}. Ainda faltam ${brl(resta)}.` : item.numero ? `Pedido #${item.numero} quitado.` : "Pedido quitado.");
   };
 
-  return createPortal(
-    <div className="far-ov" onClick={onClose} role="dialog" aria-modal="true" aria-label="Registrar recebimento">
-      <div className="far-sh" onClick={e => e.stopPropagation()}>
-        <span className="far-alca" aria-hidden="true" />
-        <b className="far-sh-t">Receber{item.numero ? ` · Pedido #${item.numero}` : ` · ${item.cliente_nome || "Cliente"}`}</b>
-        <small className="far-sh-s">{item.cliente_nome || "Cliente"}</small>
-        <div className="far-res">
-          <div><span>Total do pedido</span><b>{brl(item.total)}</b></div>
-          {item.recebido > 0 && <div><span>Já recebido</span><b className="ok">{brl(item.recebido)}</b></div>}
-          <div className="tt"><span>Falta receber</span><b>{brl(item.falta)}</b></div>
-        </div>
-        <label className="far-lb" htmlFor="far-valor">Quanto você recebeu agora?</label>
-        <div className="far-in"><span>R$</span><input id="far-valor" inputMode="numeric" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro(""); }} /></div>
-        <p className="far-lb">Forma de pagamento</p>
-        <div className="far-chips">{FORMAS.map(f => <button type="button" key={f.k} className={forma === f.k ? "on" : ""} onClick={() => setForma(f.k)}>{f.l}</button>)}</div>
-        <p className="far-lb">Quando recebeu?</p>
-        <div className="far-chips">
-          {(["hoje", "ontem", "outra"] as const).map(q => <button type="button" key={q} className={quandoRec === q ? "on" : ""} onClick={() => setQuandoRec(q)}>{q === "hoje" ? "Hoje" : q === "ontem" ? "Ontem" : "Outra data"}</button>)}
-        </div>
-        {quandoRec === "outra" && <div style={{ marginTop: 8 }}><CampoData valor={outraData} onChange={setOutraData} max={isoHoje()} titulo="Data do recebimento" /></div>}
-        {v > 0 && v <= item.falta + 0.009 && (
-          <div className={`far-prev ${resta > 0 ? "" : "far-prev--ok"}`}>
-            {resta > 0 ? <><b>Ainda vai faltar: {brl(resta)}</b><small>Continua em "A receber" até você registrar o restante.</small></>
-                       : <><b>O pedido fica quitado</b><small>{brl(v)} entram no financeiro.</small></>}
-          </div>
-        )}
-        {erro && <p className="far-erro">{erro}</p>}
-        <button type="button" className="far-cta" onClick={confirmar} disabled={salvando}><Wallet size={18} weight="bold" />{salvando ? "Registrando…" : "Confirmar recebimento"}</button>
+  return (
+    <Folha titulo={`Receber${item.numero ? ` · Pedido #${item.numero}` : ""}`} sub={item.cliente_nome || "Cliente"} onClose={onClose} umaAcao
+      acoes={<Botao cheio icone={<Wallet size={20} weight="bold" />} carregando={salvando} onClick={confirmar}>Confirmar recebimento</Botao>}>
+      <div className="far-res">
+        <div><span>Total do pedido</span><b>{brl(item.total)}</b></div>
+        {item.recebido > 0 && <div><span>Já recebido</span><b className="ok">{brl(item.recebido)}</b></div>}
+        <div className="tt"><span>Falta receber</span><b>{brl(item.falta)}</b></div>
       </div>
+      <label className="fo-lb" htmlFor="far-valor">Quanto você recebeu agora?</label>
+      <div className="fo-in"><span>R$</span><input id="far-valor" inputMode="numeric" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro(""); }} /></div>
+      <p className="fo-lb">Forma de pagamento</p>
+      <div className="fo-chips">{FORMAS.map(f => <button type="button" key={f.k} className={forma === f.k ? "on" : ""} onClick={() => setForma(f.k)}>{f.l}</button>)}</div>
+      <p className="fo-lb">Quando recebeu?</p>
+      <div className="fo-chips">
+        {(["hoje", "ontem", "outra"] as const).map(q => <button type="button" key={q} className={quandoRec === q ? "on" : ""} onClick={() => setQuandoRec(q)}>{q === "hoje" ? "Hoje" : q === "ontem" ? "Ontem" : "Outra data"}</button>)}
+      </div>
+      {quandoRec === "outra" && <div style={{ marginTop: 8 }}><CampoData valor={outraData} onChange={setOutraData} max={isoHoje()} titulo="Data do recebimento" /></div>}
+      {v > 0 && v <= item.falta + 0.009 && (
+        <div className={`far-prev ${resta > 0 ? "" : "far-prev--ok"}`}>
+          {resta > 0 ? <><b>Ainda vai faltar: {brl(resta)}</b><small>Continua em "A receber" até você registrar o restante.</small></>
+                     : <><b>O pedido fica quitado</b><small>{brl(v)} entram no financeiro.</small></>}
+        </div>
+      )}
+      {erro && <p className="fo-erro">{erro}</p>}
       <style>{CSS}</style>
-    </div>,
-    document.body
+    </Folha>
   );
 }
 
@@ -235,7 +226,7 @@ const CSS = `
   .far-sh-t { display: block; font-size: 19px; font-weight: 800; }
   .far-sh-s { display: block; font-size: 13px; color: #6B5D64; margin: 2px 0 12px; }
   .far-res { background: #FAF7F8; border-radius: 12px; padding: 8px 12px; }
-  .far-res div { display: flex; justify-content: space-between; font-size: 13.5px; padding: 4px 0; color: #4B3A42; }
+  .far-res div { display: flex; justify-content: space-between; font-size: 14px; padding: 4px 0; color: #4B3A42; }
   .far-res b { font-weight: 700; color: #2C1219; } .far-res b.ok { color: #15803D; }
   .far-res .tt { border-top: 1px solid #F0EBED; margin-top: 4px; padding-top: 8px; font-size: 15px; }
   .far-lb { display: block; font-size: 13px; font-weight: 700; color: #4B3A42; margin: 14px 0 6px; }
@@ -247,7 +238,7 @@ const CSS = `
   .far-chips button.on { border-color: #E85A8C; background: #FFF1F6; color: #C33A6E; }
   .far-data { margin-top: 8px; width: 100%; min-width: 0; max-width: 100%; -webkit-appearance: none; appearance: none; background: #fff; height: 46px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 0 12px; font-family: inherit; font-size: 16px; }
   .far-prev { margin-top: 14px; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 12px; padding: 10px 12px; }
-  .far-prev b { display: block; font-size: 13.5px; color: #92400E; } .far-prev small { font-size: 12px; color: #92400E; }
+  .far-prev b { display: block; font-size: 14px; color: #92400E; } .far-prev small { font-size: 13px; color: #92400E; }
   .far-prev--ok { background: #F0FDF4; border-color: #BBF7D0; } .far-prev--ok b, .far-prev--ok small { color: #166534; }
   .far-erro { margin: 10px 0 0; font-size: 13px; font-weight: 700; color: #DC2626; }
   .far-cta { margin-top: 16px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 14px; padding: 15px; background: #16A34A; color: #fff; font-family: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(22,163,74,.3); }

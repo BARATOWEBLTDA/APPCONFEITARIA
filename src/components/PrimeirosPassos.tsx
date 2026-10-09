@@ -6,10 +6,11 @@ import { apiFetch } from "@/lib/apiFetch";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import HorarioSheet from "@/components/HorarioSheet";
+import Janelinha from "@/components/financeiro/Folha";
 import { Mascote } from "@/components/marca/Mascote";
 import { lerPassos, marcarCompartilhado, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk, type EstadoPassos } from "@/lib/primeirosPassos";
 
-import { avisar } from "@/components/base";
+import { Botao, avisar } from "@/components/base";
 /**
  * "Primeiros passos" (aprovado 02/10) — o MESMO cartão no Início (celular) e no Cardápio digital.
  * 7 passos; os que dá pra preencher abrem numa janelinha que sobe de baixo, sem sair da tela:
@@ -143,26 +144,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   );
 }
 
-/* ── Janelinha que sobe de baixo ───────────────────────────────────────── */
-function Folha({ titulo, sub, onClose, children }: { titulo: string; sub: string; onClose: () => void; children: ReactNode }) {
-  useEffect(() => {
-    const y = window.scrollY; const b = document.body.style;
-    const antes = { position: b.position, top: b.top, width: b.width, overflow: b.overflow };
-    b.position = "fixed"; b.top = `-${y}px`; b.width = "100%"; b.overflow = "hidden";
-    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", esc);
-    return () => { Object.assign(b, antes); window.scrollTo(0, y); window.removeEventListener("keydown", esc); };
-  }, [onClose]);
-  return (
-    <div className="ppf-ov" onClick={onClose} role="dialog" aria-modal="true" aria-label={titulo}>
-      <div className="ppf" onClick={e => e.stopPropagation()}>
-        <span className="ppf-alca" aria-hidden="true" />
-        <div className="ppf-hd"><div><b>{titulo}</b><small>{sub}</small></div><button type="button" className="ppf-x" onClick={onClose} aria-label="Fechar"><X size={18} /></button></div>
-        <div className="ppf-corpo">{children}</div>
-      </div>
-    </div>
-  );
-}
+/* ── Janelinha: a Janela de formulário do app (components/financeiro/Folha) ── */
 type FolhaProps = { uid: string; perfil: any; onClose: () => void; onSalvo: () => void };
 
 function FolhaDescricao({ uid, perfil, onClose, onSalvo }: FolhaProps) {
@@ -189,14 +171,14 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo }: FolhaProps) {
     onSalvo();
   };
   return (
-    <Folha titulo="Contar sobre a sua confeitaria" sub="Uma frase que aparece no topo do seu cardápio" onClose={onClose}>
+    <Janelinha umaAcao titulo="Contar sobre a sua confeitaria" sub="Uma frase que aparece no topo do seu cardápio" onClose={onClose}
+      acoes={<Botao cheio disabled={!txt.trim()} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao>}>
       <div className="ppf-lrow"><label className="ppf-l" htmlFor="pp-desc">Descrição</label>
         <button type="button" className="ppf-ia" onClick={gerar} disabled={gerando}>{gerando ? "Gerando…" : "Gerar com IA"}</button></div>
       <textarea id="pp-desc" className="ppf-in ppf-ta" value={txt} maxLength={200} placeholder="Ex.: Bolos e doces feitos com carinho em Curitiba" onChange={e => setTxt(e.target.value)} />
       <p className="ppf-cnt">{txt.length}/200</p>
       {erro && <p className="ppf-erro">{erro}</p>}
-      <button type="button" className="pp-btn" disabled={!txt.trim() || salvando} onClick={salvar}>{salvando ? "Salvando…" : "Salvar e continuar"}</button>
-    </Folha>
+    </Janelinha>
   );
 }
 
@@ -230,7 +212,8 @@ function FolhaLogo({ uid, perfil, onClose, onSalvo }: FolhaProps) {
   };
   return (
     <>
-      <Folha titulo="Colocar o logo da loja" sub="Aparece no topo do cardápio, junto do nome" onClose={onClose}>
+      <Janelinha umaAcao titulo="Colocar o logo da loja" sub="Aparece no topo do cardápio, junto do nome" onClose={onClose}
+        acoes={<Botao cheio carregando={enviando} onClick={() => ref.current?.click()}>Escolher foto</Botao>}>
         <input ref={ref} type="file" accept="image/*" hidden onChange={escolher} />
         <div className="ppf-lg">
           <button type="button" className="ppf-lgc" onClick={() => ref.current?.click()} aria-label="Escolher foto">
@@ -239,9 +222,8 @@ function FolhaLogo({ uid, perfil, onClose, onSalvo }: FolhaProps) {
           </button>
           <div><b>Toque pra escolher o seu logo</b><small>{perfil?.logo_url ? "Da galeria ou da câmera. Você ajusta o recorte antes de salvar." : atual ? "Hoje o cardápio mostra a sua foto de perfil. Envie o logo da loja pra trocar." : "Da galeria ou da câmera. Você ajusta o recorte antes de salvar."}</small></div>
         </div>
-        <button type="button" className="pp-btn" onClick={() => ref.current?.click()} disabled={enviando}>{enviando ? "Enviando…" : "Escolher foto"}</button>
         {!perfil?.logo_url && <button type="button" className="pp-lnk" onClick={usarFoto}>Usar minha foto de perfil por enquanto</button>}
-      </Folha>
+      </Janelinha>
       {crop && <ImageCropper imageSrc={crop} cropShape="round" aspect={1} onCancel={() => setCrop(null)} onCropDone={enviar} />}
     </>
   );
@@ -280,7 +262,8 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo }: FolhaProps) {
       <input id={`pp-${k}`} className="ppf-in" value={end[k]} placeholder={ph} onChange={e => setEnd(x => ({ ...x, [k]: e.target.value }))} {...extra} /></div>
   );
   return (
-    <Folha titulo="Endereço da loja" sub="Pra calcular a entrega e mostrar no mapa" onClose={onClose}>
+    <Janelinha umaAcao titulo="Endereço da loja" sub="Pra calcular a entrega e mostrar no mapa" onClose={onClose}
+      acoes={<Botao cheio disabled={!pronto} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao>}>
       <div className="ppf-f"><label className="ppf-l" htmlFor="pp-cep">CEP</label>
         <div className="ppf-wrap"><input id="pp-cep" className="ppf-in" inputMode="numeric" value={end.cep} placeholder="00000-000" onChange={e => mudarCep(e.target.value)} />
           {(buscando || achou) && <small className="ppf-cep">{buscando ? "Procurando…" : "endereço encontrado"}</small>}</div></div>
@@ -291,8 +274,7 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo }: FolhaProps) {
       <div className="ppf-seg">{([["completo", "Completo"], ["cidade", "Só a cidade"], ["nada", "Nada"]] as const).map(([v, l]) => (
         <button type="button" key={v} className={mostrar === v ? "on" : ""} onClick={() => setMostrar(v)}>{l}</button>))}</div>
       {erro && <p className="ppf-erro">{erro}</p>}
-      <button type="button" className="pp-btn" disabled={!pronto || salvando} onClick={salvar}>{salvando ? "Salvando…" : "Salvar e continuar"}</button>
-    </Folha>
+    </Janelinha>
   );
 }
 
@@ -320,7 +302,8 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo }: FolhaProps) {
     </div></div>
   );
   return (
-    <Folha titulo="Horário de funcionamento" sub="Aparece como &quot;Aberto agora&quot; no cardápio" onClose={onClose}>
+    <Janelinha umaAcao titulo="Horário de funcionamento" sub="Aparece como &quot;Aberto agora&quot; no cardápio" onClose={onClose}
+      acoes={<Botao cheio disabled={!temDia} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao>}>
       <p className="ppf-l">Dias que você atende</p>
       <div className="ppf-dias">{DIAS.map(d => (
         <button type="button" key={d.nome} className={ligado(d.nome) ? "on" : ""} onClick={() => trocar(d.nome)} aria-pressed={ligado(d.nome)} aria-label={d.nome}>{d.letra}</button>))}</div>
@@ -328,11 +311,10 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo }: FolhaProps) {
       {h.abre_sabado && bloco("Sábado", "sabado_abertura", "sabado_fechamento")}
       {h.abre_domingo && bloco("Domingo", "domingo_abertura", "domingo_fechamento")}
       {erro && <p className="ppf-erro">{erro}</p>}
-      <button type="button" className="pp-btn" disabled={!temDia || salvando} onClick={salvar}>{salvando ? "Salvando…" : "Salvar e continuar"}</button>
       {campo && (
         <HorarioSheet titulo={campo.titulo} value={h[campo.k]} onChange={(v) => setH((x: any) => ({ ...x, [campo.k]: v }))} onClose={() => setCampo(null)} />
       )}
-    </Folha>
+    </Janelinha>
   );
 }
 
@@ -381,47 +363,36 @@ const CSS = `
   @media (min-width: 1600px) { .pp--inicio { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
   @media (min-width: 768px) { .pp--fim .pp-btn { max-width: 340px; margin-left: auto; margin-right: auto; } }
 
-  .ppf-ov { position: fixed; inset: 0; z-index: 3500; background: rgba(45,31,38,.5); display: flex; align-items: flex-end; justify-content: center; bottom: var(--teclado, 0px); }
-  @media (min-width: 768px) { .ppf-ov { align-items: center; } }
-  .ppf { width: 100%; max-width: 480px; max-height: 88vh; max-height: 88dvh; display: flex; flex-direction: column; background: #fff; border-radius: 22px 22px 0 0; font-family: var(--font-base); color: #2C1219; animation: ppfSobe .25s ease; }
-  @media (min-width: 768px) { .ppf { border-radius: 22px; } }
-  @keyframes ppfSobe { from { transform: translateY(30px); opacity: 0; } to { transform: none; opacity: 1; } }
-  .ppf-alca { width: 40px; height: 4px; border-radius: 99px; background: #E5DDE1; margin: 10px auto 0; flex-shrink: 0; }
-  .ppf-hd { display: flex; align-items: flex-start; gap: 10px; padding: 12px 18px 12px; border-bottom: 1px solid #F5F0F2; flex-shrink: 0; }
-  .ppf-hd > div { flex: 1; } .ppf-hd b { display: block; font-size: 18px; font-weight: 700; letter-spacing: -.01em; }
-  .ppf-hd small { display: block; font-size: 13.5px; color: #6B5D64; margin-top: 2px; line-height: 1.4; }
-  .ppf-x { width: 44px; height: 44px; border-radius: 10px; border: none; background: #F5F0F2; color: #6B5D64; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
-  .ppf-corpo { padding: 4px 18px calc(18px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; }
-  .ppf-l { display: block; font-size: 13px; font-weight: 600; color: #4B3A42; margin: 14px 0 6px; }
+  .ppf-l { display: block; font-size: 13px; font-weight: 700; color: var(--ui-cinza-texto); margin: 16px 0 6px; }
   .ppf-lrow { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; margin-bottom: 6px; }
   .ppf-lrow .ppf-l { margin: 0; }
-  .ppf-ia { min-height: 36px; border: none; border-radius: 10px; background: #2C1219; color: #fff; font-family: inherit; font-size: 13px; font-weight: 700; padding: 0 12px; cursor: pointer; }
+  .ppf-ia { min-height: 44px; border: none; border-radius: var(--ui-raio); background: var(--ui-vinho, #2C1219); color: #fff; font-family: inherit; font-size: 14px; font-weight: 700; padding: 0 14px; cursor: pointer; }
   .ppf-ia:disabled { opacity: .6; }
-  .ppf-in { width: 100%; box-sizing: border-box; min-height: 46px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 11px 14px; font-family: inherit; font-size: 16px; color: #2C1219; background: #fff; }
-  .ppf-in:focus { outline: none; border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
-  .ppf-ta { min-height: 112px; resize: none; line-height: 1.45; display: block; }
+  .ppf-in { width: 100%; box-sizing: border-box; min-height: 48px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); padding: 0 12px; font-family: inherit; font-size: 16px; font-weight: 500; color: var(--ui-texto); background: var(--ui-branco); }
+  .ppf-in:focus { outline: none; border-color: var(--ui-rosa); }
+  .ppf-ta { min-height: 112px; padding: 12px; resize: none; line-height: 1.45; display: block; }
   .ppf-erro { margin: 12px 0 0; font-size: 13px; font-weight: 700; color: #B91C1C; }
   .ppf-cnt { text-align: right; font-size: 12.5px; color: var(--ui-texto-3); margin: 4px 0 0; }
   .ppf-f { flex: 1; min-width: 0; }
   .ppf-row { display: flex; gap: 10px; }
   .ppf-wrap { position: relative; }
   .ppf-cep { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 12.5px; font-weight: 700; color: #15803D; }
-  .ppf-seg { display: flex; background: #F5F0F2; border-radius: 10px; padding: 3px; }
-  .ppf-seg button { flex: 1; min-height: 44px; border: none; background: none; padding: 0 4px; border-radius: 8px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #6B5D64; cursor: pointer; }
-  .ppf-seg button.on { background: #fff; color: #2C1219; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .ppf-seg { display: flex; gap: 4px; background: var(--ui-cinza); border-radius: var(--ui-raio); padding: 4px; }
+  .ppf-seg button { flex: 1; min-height: 44px; border: none; background: none; padding: 0 4px; border-radius: 10px; font-family: inherit; font-size: 15px; font-weight: 700; color: var(--ui-texto-2); cursor: pointer; }
+  .ppf-seg button.on { background: var(--ui-branco); color: var(--ui-texto); box-shadow: var(--ui-sombra-cartao); }
   .ppf-dias { display: flex; gap: 6px; }
-  .ppf-dias button { flex: 1; aspect-ratio: 1; min-height: 40px; max-width: 46px; border: none; border-radius: 50%; font-family: inherit; font-size: 14px; font-weight: 700; background: #FFF1F6; color: #D9A5B9; cursor: pointer; }
-  .ppf-dias button.on { background: #E85A8C; color: #fff; box-shadow: 0 3px 10px rgba(232,90,140,.3); }
-  .ppf-bl { background: #FAF7F8; border-radius: 12px; padding: 12px; margin-top: 12px; }
+  .ppf-dias button { flex: 1; aspect-ratio: 1; min-height: 44px; max-width: 48px; border: none; border-radius: 50%; font-family: inherit; font-size: 15px; font-weight: 700; background: var(--ui-cinza); color: var(--ui-texto-2); cursor: pointer; }
+  .ppf-dias button.on { background: var(--ui-rosa); color: #fff; }
+  .ppf-bl { background: var(--ui-cinza); border-radius: var(--ui-raio); padding: 12px; margin-top: 12px; }
   .ppf-bl b { display: block; font-size: 13.5px; margin-bottom: 8px; }
-  .ppf-hr { flex: 1; display: flex; align-items: center; gap: 10px; min-height: 50px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 8px 12px; background: #fff; font-family: inherit; color: #993556; text-align: left; cursor: pointer; }
+  .ppf-hr { flex: 1; display: flex; align-items: center; gap: 10px; min-height: 52px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); padding: 6px 12px; background: var(--ui-branco); font-family: inherit; color: var(--ui-rosa-escuro); text-align: left; cursor: pointer; }
   .ppf-hr span { display: flex; flex-direction: column; color: #2C1219; font-size: 16px; font-weight: 700; line-height: 1.15; }
   .ppf-hr small { font-size: 12.5px; font-weight: 700; color: var(--ui-texto-2); }
   .ppf-lg { display: flex; gap: 14px; align-items: center; margin-top: 12px; }
-  .ppf-lgc { position: relative; width: 76px; height: 76px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 6px 16px rgba(232,90,140,.3); background: linear-gradient(135deg, #F9A8D4, #E85A8C); padding: 0; cursor: pointer; flex-shrink: 0; overflow: visible; }
+  .ppf-lgc { position: relative; width: 76px; height: 76px; border-radius: 50%; border: 0; background: var(--ui-rosa-claro); padding: 0; cursor: pointer; flex-shrink: 0; overflow: visible; }
   .ppf-lgc img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
-  .ppf-lgc span { color: #fff; font-weight: 700; font-size: 28px; }
-  .ppf-lgc i { position: absolute; right: -4px; bottom: -4px; width: 26px; height: 26px; border-radius: 50%; background: #fff; color: #993556; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,.12); }
+  .ppf-lgc span { color: var(--ui-rosa-escuro); font-weight: 700; font-size: 28px; }
+  .ppf-lgc i { position: absolute; right: -4px; bottom: -4px; width: 28px; height: 28px; border: 2px solid #fff; border-radius: 50%; background: var(--ui-rosa); color: #fff; display: flex; align-items: center; justify-content: center; }
   .ppf-lg b { display: block; font-size: 14.5px; font-weight: 700; }
-  .ppf-lg small { display: block; font-size: 12.5px; color: #6B5D64; margin-top: 3px; line-height: 1.4; }
+  .ppf-lg small { display: block; font-size: 13px; color: var(--ui-texto-2); margin-top: 3px; line-height: 1.4; }
 `;

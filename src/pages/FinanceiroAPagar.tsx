@@ -3,12 +3,12 @@ import { useTravarRolagem } from "@/hooks/useTravarRolagem";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
-import { createPortal } from "react-dom";
+import Folha from "@/components/financeiro/Folha";
 import { useNavigate } from "react-router-dom";
 import { CalendarBlank, CheckCircle, Plus, Receipt, X } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { supabase } from "@/lib/supabase";
-import { confirmar, avisar as avisarBase } from "@/components/base";
+import { Botao, confirmar, avisar as avisarBase } from "@/components/base";
 
 /**
  * Financeiro · Passo 5 (03/10) — Contas a pagar.
@@ -154,19 +154,6 @@ export default function FinanceiroAPagar() {
   );
 }
 
-function Folha({ titulo, sub, onClose, children }: { titulo: string; sub?: string; onClose: () => void; children: React.ReactNode }) {
-  useTravarRolagem(true)
-  useEffect(() => { const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); }; window.addEventListener("keydown", esc); return () => window.removeEventListener("keydown", esc); }, [onClose]);
-  return createPortal(
-    <div className="fap-ov" onClick={onClose} role="dialog" aria-modal="true" aria-label={titulo}>
-      <div className="fap-sh" onClick={e => e.stopPropagation()}>
-        <span className="fap-alca" aria-hidden="true" />
-        <b className="fap-sh-t">{titulo}</b>{sub && <small className="fap-sh-s">{sub}</small>}
-        {children}
-      </div>
-    </div>, document.body);
-}
-
 function PagarSheet({ conta, onClose, onFeito }: { conta: Conta; onClose: () => void; onFeito: () => void }) {
   const [valor, setValor] = useState(textoBRL(conta.valor));
   const [forma, setForma] = useState("pix");
@@ -186,17 +173,17 @@ function PagarSheet({ conta, onClose, onFeito }: { conta: Conta; onClose: () => 
     onFeito();
   };
   return (
-    <Folha titulo={`Pagar · ${conta.descricao}`} sub={`Vence ${dataCurta(conta.vencimento)} · ${brl(conta.valor)}`} onClose={onClose}>
-      <label className="fap-lb" htmlFor="fap-v">Quanto você pagou?</label>
-      <div className="fap-in"><span>R$</span><input id="fap-v" inputMode="numeric" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro(""); }} /></div>
-      <p className="fap-lb">Forma de pagamento</p>
-      <div className="fap-chips">{FORMAS.map(f => <button type="button" key={f.k} className={forma === f.k ? "on" : ""} onClick={() => setForma(f.k)}>{f.l}</button>)}</div>
-      <p className="fap-lb">Quando pagou?</p>
-      <div className="fap-chips">{(["hoje", "ontem", "outra"] as const).map(q => <button type="button" key={q} className={quandoPg === q ? "on" : ""} onClick={() => setQuandoPg(q)}>{q === "hoje" ? "Hoje" : q === "ontem" ? "Ontem" : "Outra data"}</button>)}</div>
+    <Folha titulo={`Pagar · ${conta.descricao}`} sub={`Vence ${dataCurta(conta.vencimento)} · ${brl(conta.valor)}`} onClose={onClose} umaAcao
+      acoes={<Botao cheio carregando={salvando} onClick={confirmar}>Confirmar pagamento</Botao>}>
+      <label className="fo-lb" htmlFor="fap-v">Quanto você pagou?</label>
+      <div className="fo-in"><span>R$</span><input id="fap-v" inputMode="numeric" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro(""); }} /></div>
+      <p className="fo-lb">Forma de pagamento</p>
+      <div className="fo-chips">{FORMAS.map(f => <button type="button" key={f.k} className={forma === f.k ? "on" : ""} onClick={() => setForma(f.k)}>{f.l}</button>)}</div>
+      <p className="fo-lb">Quando pagou?</p>
+      <div className="fo-chips">{(["hoje", "ontem", "outra"] as const).map(q => <button type="button" key={q} className={quandoPg === q ? "on" : ""} onClick={() => setQuandoPg(q)}>{q === "hoje" ? "Hoje" : q === "ontem" ? "Ontem" : "Outra data"}</button>)}</div>
       {quandoPg === "outra" && <div style={{ marginTop: 8 }}><CampoData valor={outra} onChange={setOutra} max={isoDia()} titulo="Data do pagamento" /></div>}
       <div className="fap-prev"><b>Sai do caixa: {brl(num(valor))}</b><small>A saída entra no financeiro na data do pagamento.</small></div>
-      {erro && <p className="fap-erro">{erro}</p>}
-      <button type="button" className="fap-cta" onClick={confirmar} disabled={salvando}>{salvando ? "Registrando…" : "Confirmar pagamento"}</button>
+      {erro && <p className="fo-erro">{erro}</p>}
     </Folha>
   );
 }
@@ -221,17 +208,17 @@ function NovaContaSheet({ onClose, onFeito }: { onClose: () => void; onFeito: ()
     onFeito();
   };
   return (
-    <Folha titulo="Nova conta a pagar" sub="Ela só sai do caixa quando você pagar" onClose={onClose}>
-      <label className="fap-lb" htmlFor="fap-d">Conta</label>
-      <input id="fap-d" className="fap-txt" placeholder="Ex.: Fornecedor de chocolate" value={descricao} onChange={e => { setDescricao(e.target.value); setErro(""); }} />
-      <p className="fap-lb">Categoria</p>
-      <div className="fap-chips">{CATEGORIAS.map(c => <button type="button" key={c} className={categoria === c ? "on" : ""} onClick={() => setCategoria(c)}>{c === "Insumos" ? "Ingredientes" : c}</button>)}</div>
-      <div className="fap-row">
-        <div><label className="fap-lb" htmlFor="fap-nv">Valor</label><div className="fap-in sm"><span>R$</span><input id="fap-nv" inputMode="numeric" placeholder="0,00" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro(""); }} /></div></div>
-        <div><label className="fap-lb" htmlFor="fap-venc">Vencimento</label><CampoData id="fap-venc" valor={vencimento} onChange={setVencimento} titulo="Vencimento" curto /></div>
+    <Folha titulo="Nova conta a pagar" sub="Ela só sai do caixa quando você pagar" onClose={onClose} umaAcao
+      acoes={<Botao cheio carregando={salvando} onClick={salvar}>Cadastrar conta</Botao>}>
+      <label className="fo-lb" htmlFor="fap-d">Conta</label>
+      <input id="fap-d" className="fo-txt" placeholder="Ex.: Fornecedor de chocolate" value={descricao} onChange={e => { setDescricao(e.target.value); setErro(""); }} />
+      <p className="fo-lb">Categoria</p>
+      <div className="fo-chips">{CATEGORIAS.map(c => <button type="button" key={c} className={categoria === c ? "on" : ""} onClick={() => setCategoria(c)}>{c === "Insumos" ? "Ingredientes" : c}</button>)}</div>
+      <div className="fo-row">
+        <div><label className="fo-lb" htmlFor="fap-nv">Valor</label><div className="fo-in sm"><span>R$</span><input id="fap-nv" inputMode="numeric" placeholder="0,00" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro(""); }} /></div></div>
+        <div><label className="fo-lb" htmlFor="fap-venc">Vencimento</label><CampoData id="fap-venc" valor={vencimento} onChange={setVencimento} titulo="Vencimento" curto /></div>
       </div>
-      {erro && <p className="fap-erro">{erro}</p>}
-      <button type="button" className="fap-cta fap-cta--rosa" onClick={salvar} disabled={salvando}>{salvando ? "Salvando…" : "Cadastrar conta"}</button>
+      {erro && <p className="fo-erro">{erro}</p>}
     </Folha>
   );
 }
@@ -290,7 +277,7 @@ const CSS = `
   .fap-row > * { min-width: 0; } /* o campo de data vazava da janela (rolagem lateral) */
   .fap-data { margin-top: 8px; width: 100%; min-width: 0; max-width: 100%; -webkit-appearance: none; appearance: none; background: #fff; color: #2C1219; height: 46px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 0 10px; font-family: inherit; font-size: 15px; box-sizing: border-box; }
   .fap-prev { margin-top: 14px; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 12px; padding: 10px 12px; }
-  .fap-prev b { display: block; font-size: 13.5px; color: #991B1B; } .fap-prev small { font-size: 12px; color: #991B1B; }
+  .fap-prev b { display: block; font-size: 14px; color: #991B1B; } .fap-prev small { font-size: 13px; color: #991B1B; }
   .fap-erro { margin: 10px 0 0; font-size: 13px; font-weight: 700; color: #DC2626; }
   .fap-cta { margin-top: 16px; width: 100%; border: none; border-radius: 14px; padding: 15px; background: #2C1219; color: #fff; font-family: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer; }
   .fap-cta--rosa { background: #E85A8C; box-shadow: 0 3px 0 #C33A6E; }
