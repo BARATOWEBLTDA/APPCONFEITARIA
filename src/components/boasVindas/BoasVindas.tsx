@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode, TouchEvent } from 'react'
-import { ArrowLeft, Bell, CalendarBlank, CaretRight } from '@phosphor-icons/react'
+import { ArrowLeft, Bell, BookOpen, CalendarBlank, CalendarDots, CaretRight, CurrencyDollar, FolderSimple, Gear, House, Plus, Receipt, ShoppingBag } from '@phosphor-icons/react'
 import { Botao, BotaoIcone, Linha } from '@/components/base'
 import { Mascote, NomeDoonly } from '@/components/marca/Mascote'
-import { CartaoPedido } from '@/components/pedidos/CartaoPedido'
-import { acaoDe, type Pedido } from '@/components/pedidos/pedidoTexto'
+import { CartaoPedido, LinhaPedido } from '@/components/pedidos/CartaoPedido'
+import { acaoDe, situacaoDe, type Pedido } from '@/components/pedidos/pedidoTexto'
 import '@/components/pedidos/pedidos.css'
 import '@/components/pedidos/telaPedido.css'
 import { tocarSom } from '@/hooks/useSom'
@@ -332,21 +332,95 @@ function DemoPedidos() {
     if (p.status === 'aguardando_aceite') setAbertos(a => ({ ...a, [p.id]: true }))
   }
   const lista = CHEGADAS.slice(0, chegaram).reverse() // o mais novo em cima
+  const aberto = lista.find(({ p }) => abertos[p.id])
   return (
-    <div className="bv-ped">
-      {chegaram > 0 && <div className="bv-aviso" key={`a${chegaram}`}><Bell size={14} weight="fill" aria-hidden="true" /><span><b>Novo pedido</b> pelo cardápio</span></div>}
-      <div className="bv-ped-lista">
-        {lista.map(({ p, extra }) => {
-          const atual = comStatus(p)
-          return (
-            <div key={p.id} className={`bv-ped-entra${atual.status === 'aguardando_aceite' ? ' bv-ped--novo' : ''}`}>
-              <div>
-                <CartaoPedido p={atual} aoAbrir={nada} aoAvancar={avancar} aoMenu={nada} aoEndereco={nada} abertoFixo={!!abertos[p.id]} extra={extra} />
+    <>
+      {/* celular e tablet: os cartões da lista de Pedidos */}
+      <div className="bv-ped">
+        {chegaram > 0 && <div className="bv-aviso" key={`a${chegaram}`}><Bell size={14} weight="fill" aria-hidden="true" /><span><b>Novo pedido</b> pelo cardápio</span></div>}
+        <div className="bv-ped-lista">
+          {lista.map(({ p, extra }) => {
+            const atual = comStatus(p)
+            return (
+              <div key={p.id} className={`bv-ped-entra${atual.status === 'aguardando_aceite' ? ' bv-ped--novo' : ''}`}>
+                <div>
+                  <CartaoPedido p={atual} aoAbrir={nada} aoAvancar={avancar} aoMenu={nada} aoEndereco={nada} abertoFixo={!!abertos[p.id]} extra={extra} />
+                </div>
               </div>
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
       </div>
+
+      {/* computador: a tela de Pedidos do computador dentro de um notebook (09/10 · 3.75) */}
+      <Notebook>
+        <div className="bv-app">
+          <aside className="bv-app-menu" aria-hidden="true">
+            <div className="bv-app-perfil"><span>D</span><b>Olá, Doces da Ju</b></div>
+            {MENU_PC.map(([Icone, nome]) => <p key={nome} className={nome === 'Pedidos' ? 'on' : ''}><Icone size={18} />{nome}</p>)}
+          </aside>
+          <div className="bv-app-main">
+            <header className="bv-app-topo"><b>Meus pedidos</b><small>Acompanhe suas encomendas e produção</small></header>
+            <div className="bv-app-corpo">
+              {chegaram > 0 && !aberto && <div className="bv-aviso bv-aviso--pc" key={`b${chegaram}`}><Bell size={14} weight="fill" aria-hidden="true" /><span><b>Novo pedido</b> pelo cardápio</span></div>}
+              <div className="pdl-cab" aria-hidden="true"><span>Cliente e pedido</span><span>Situação</span><span>Pagamento</span><span>Entrega</span><span /><span /></div>
+              <p className="bv-app-grupo">Esta semana{chegaram > 0 && <i>{chegaram}</i>}</p>
+              {lista.length > 0 && (
+                <div className="pdl-tabela">
+                  {lista.map(({ p }) => {
+                    const atual = comStatus(p)
+                    return <div key={p.id} className={`bv-ped-entra${atual.status === 'aguardando_aceite' ? ' bv-ped--novo' : ''}`}><div><LinhaPedido p={atual} aoAbrir={nada} aoAvancar={avancar} aoMenu={nada} aoEndereco={nada} comDia /></div></div>
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+          {aberto && (
+            <div className="bv-app-painel" key={aberto.p.id}>
+              <p className="bv-app-painel-t"><b>Pedido #{aberto.p.numero}</b><small>{aberto.p.cliente_nome}</small></p>
+              <Linha rotulo="Situação" tom={situacaoDe(comStatus(aberto.p)).tom}>{situacaoDe(comStatus(aberto.p)).nome}</Linha>
+              <Linha rotulo="Telefone">(11) 97841-4991</Linha>
+              <ul className="tpd-itens">
+                <li>
+                  <div className="tpd-it-topo">
+                    <span className="tpd-ft"><img src={aberto.p.pedido_itens?.[0]?.imagem_url || ''} alt="" /></span>
+                    <div className="tpd-it-tx"><b><em>{aberto.p.pedido_itens?.[0]?.quantidade}x</em> {aberto.p.pedido_itens?.[0]?.nome_produto}</b><span>R$ {reais(aberto.p.valor_total)}</span></div>
+                  </div>
+                  {aberto.extra}
+                </li>
+              </ul>
+            </div>
+          )}
+        </div>
+      </Notebook>
+    </>
+  )
+}
+
+const MENU_PC: [typeof House, string][] = [[House, 'Início'], [Plus, 'Nova Venda'], [FolderSimple, 'Cadastros'], [ShoppingBag, 'Cardápio Digital'], [Receipt, 'Pedidos'], [CalendarDots, 'Agenda'], [BookOpen, 'Receitas'], [CurrencyDollar, 'Financeiro'], [Gear, 'Configurações']]
+
+/** Moldura de notebook: a tela do app é desenhada em 1040 x 650 e encolhe pra caber */
+function Notebook({ children }: { children: ReactNode }) {
+  const tela = useRef<HTMLDivElement>(null)
+  const [escala, setEscala] = useState(.6)
+  useEffect(() => {
+    const el = tela.current
+    if (!el) return
+    const medir = () => { if (el.clientWidth) setEscala(el.clientWidth / 1040) }
+    medir()
+    const obs = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(medir) : null
+    obs?.observe(el)
+    return () => obs?.disconnect()
+  }, [])
+  return (
+    <div className="bv-nb">
+      <div className="bv-nb-tampa">
+        <span className="bv-nb-cam" aria-hidden="true" />
+        <div className="bv-nb-tela" ref={tela}>
+          <div className="bv-nb-app" style={{ transform: `scale(${escala})` }}>{children}</div>
+        </div>
+      </div>
+      <div className="bv-nb-base" aria-hidden="true"><i /></div>
     </div>
   )
 }
