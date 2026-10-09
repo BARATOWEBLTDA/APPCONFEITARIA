@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import AppPageHeader from "@/components/AppPageHeader";
+import { TelaVazia, avisar } from "@/components/base";
+import { BookmarkSimple, BookOpen, CaretRight, Lightbulb, MagnifyingGlass, ShareNetwork, Trophy, X } from "@phosphor-icons/react";
+import "./clientes.css";
+import "./receitas.css";
 
 /**
  * Receitas (tela nova, aprovada 29/09 — opção A "cor do doce + desenho").
@@ -64,12 +68,8 @@ const IcCoracao = ({ cheio = true, size = 13 }: { cheio?: boolean; size?: number
     <path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.3 3 4.5 6.7 4.5c2 0 3.5 1.1 4.3 2.4.8-1.3 2.3-2.4 4.3-2.4 3.7 0 5.8 3.8 4.3 7.3C19.5 16.4 12 21 12 21z" />
   </svg>
 );
-const IcSalvar = ({ cheio }: { cheio: boolean }) => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill={cheio ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" /></svg>
-);
-const IcCompartilhar = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" /></svg>
-);
+const IcSalvar = ({ cheio, size = 20 }: { cheio: boolean; size?: number }) => <BookmarkSimple size={size} weight={cheio ? "fill" : "bold"} aria-hidden="true" />;
+const IcCompartilhar = () => <ShareNetwork size={20} weight="bold" aria-hidden="true" />;
 
 // "**3 caixas** de leite" → negrito
 const Rico = ({ t }: { t: string }) => (
@@ -104,7 +104,6 @@ export default function ReceitasV2() {
   const [curti, setCurti] = useState<Set<string>>(new Set());
   const [salvas, setSalvas] = useState<Set<string>>(new Set());
   const [aberta, setAberta] = useState<Receita | null>(null);
-  const [aviso, setAviso] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -124,7 +123,7 @@ export default function ReceitasV2() {
     })();
   }, []);
 
-  const mostrarAviso = (t: string) => { setAviso(t); window.setTimeout(() => setAviso(""), 2200); };
+  const mostrarAviso = (t: string, erro = false) => avisar(t, { tipo: erro ? "erro" : "ok" });
 
   // Mais curtida primeiro; empate → mais nova
   const ordenadas = useMemo(() => [...receitas].sort((a, b) =>
@@ -173,7 +172,7 @@ export default function ReceitasV2() {
       setCurti(curti);
       const volta = (x: Receita) => x.id === r.id ? { ...x, curtidas: Math.max(0, (x.curtidas || 0) - delta) } : x;
       setReceitas(l => l.map(volta)); setAberta(a => a && a.id === r.id ? volta(a) : a);
-      mostrarAviso("Não foi possível curtir agora");
+      mostrarAviso("Não deu pra curtir agora. Tente de novo.", true);
     }
   };
   const alternarSalva = async (r: Receita) => {
@@ -183,8 +182,8 @@ export default function ReceitasV2() {
     const { error } = ja
       ? await supabase.from("receitas_doonly_salvas").delete().eq("receita_id", r.id).eq("user_id", userId)
       : await supabase.from("receitas_doonly_salvas").insert({ receita_id: r.id, user_id: userId });
-    if (error) { setSalvas(salvas); mostrarAviso("Não foi possível salvar agora"); }
-    else mostrarAviso(ja ? "Removida das salvas" : "Salva em Receitas Salvas");
+    if (error) { setSalvas(salvas); mostrarAviso("Não deu pra salvar agora. Tente de novo.", true); }
+    else mostrarAviso(ja ? "Tirada das salvas" : "Guardada em Receitas salvas");
   };
   const compartilhar = async (r: Receita) => {
     const linhas = [`*${r.nome}*`, "", "*Ingredientes*"];
@@ -224,12 +223,12 @@ export default function ReceitasV2() {
     let n = 0;
     return (
       <>
-        <div className="rv-hero rv-sangra" style={{ background: r.foto_url ? "#000" : bg, color: fg }}>
-          {r.foto_url ? <img src={r.foto_url} alt="" /> : <Icone tema={r.categoria} size={62} />}
-          <button type="button" className="rv-voltar" onClick={() => setAberta(null)} aria-label="Voltar">‹</button>
-        </div>
+      <AppPageHeader title="Receita" subtitle={r.categoria || "Receita Doonly"} onBack={() => setAberta(null)} />
       <div className="rv-root">
         <div className="rv-det">
+          <div className="rv-hero" style={{ background: r.foto_url ? "#000" : bg, color: fg }}>
+            {r.foto_url ? <img src={r.foto_url} alt="" /> : <Icone tema={r.categoria} size={62} />}
+          </div>
           <span className="rv-tema">{r.categoria || "Receita"}</span>
           <h1>{r.nome}</h1>
           <p className="rv-by">Receita Doonly</p>
@@ -242,7 +241,7 @@ export default function ReceitasV2() {
             <button type="button" className={`rv-like${curti.has(r.id) ? " on" : ""}`} onClick={() => alternarCurtida(r)} aria-pressed={curti.has(r.id)}>
               <IcCoracao cheio={curti.has(r.id)} size={16} /> {fmtCurtidas(r.curtidas)}
             </button>
-            <button type="button" className={`rv-ic${salvas.has(r.id) ? " on" : ""}`} onClick={() => alternarSalva(r)} aria-label="Salvar"><IcSalvar cheio={salvas.has(r.id)} /></button>
+            <button type="button" className={`rv-ic${salvas.has(r.id) ? " on" : ""}`} onClick={() => alternarSalva(r)} aria-label={salvas.has(r.id) ? "Tirar das salvas" : "Guardar nas salvas"} aria-pressed={salvas.has(r.id)}><IcSalvar cheio={salvas.has(r.id)} /></button>
             <button type="button" className="rv-ic" onClick={() => compartilhar(r)} aria-label="Compartilhar"><IcCompartilhar /></button>
           </div>
 
@@ -268,11 +267,9 @@ export default function ReceitasV2() {
           })}
 
           {(r.dicas || []).length > 0 && (
-            <div className="rv-dica"><b>💡 {r.dicas!.length > 1 ? "Dicas" : "Dica"}</b>{r.dicas!.map((d, k) => <p key={k}><Rico t={d} /></p>)}</div>
+            <div className="rv-dica"><b><Lightbulb size={20} weight="bold" />{r.dicas!.length > 1 ? "Dicas" : "Dica"}</b>{r.dicas!.map((d, k) => <p key={k}><Rico t={d} /></p>)}</div>
           )}
         </div>
-        {aviso && <div className="rv-aviso">{aviso}</div>}
-        <style>{CSS}</style>
       </div>
       </>
     );
@@ -280,41 +277,35 @@ export default function ReceitasV2() {
 
   // ═══════════ Listas ═══════════
   const grade = () => filtradas.length === 0 ? (
-    <div className="rv-vazio">{vista.tipo === "salvas" && !q ? "Você ainda não salvou nenhuma receita. Toque no marcador dentro de uma receita pra guardar aqui." : "Nenhuma receita encontrada."}</div>
+    vista.tipo === "salvas" && !q
+      ? <TelaVazia compacta icone={<BookmarkSimple size={28} />} titulo="Nenhuma receita salva" texto="Toque no marcador dentro de uma receita pra guardar aqui." />
+      : <p className="cl9-semres">Nenhuma receita com esse nome ou ingrediente. Confira a busca.</p>
   ) : <div className="rv-grid">{filtradas.map(r => <Card key={r.id} r={r} />)}</div>;
 
   // Função (não componente) pra o campo não perder o foco a cada letra digitada
   const campoBusca = (ph: string) => (
-    <div className="rv-busca">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A8A0A4" strokeWidth="2.2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-      <input value={busca} onChange={e => setBusca(e.target.value)} placeholder={ph} />
-      {busca && <button type="button" className="rv-limpa" onClick={() => setBusca("")} aria-label="Limpar busca">×</button>}
-    </div>
+    <label className="cl9-busca rv-busca">
+      <MagnifyingGlass size={20} weight="bold" />
+      <input type="search" value={busca} onChange={e => setBusca(e.target.value)} placeholder={ph} aria-label={ph} autoComplete="off" />
+      {busca && <button type="button" onClick={() => setBusca("")} aria-label="Limpar a busca"><X size={18} weight="bold" /></button>}
+    </label>
   );
 
   // Dentro de uma categoria ou das salvas
   if (vista.tipo !== "home") {
     const nome = vista.tipo === "categoria" ? vista.nome : "Receitas salvas";
     const info = vista.tipo === "categoria" ? catInfo(vista.nome) : undefined;
-    const [bg, fg] = vista.tipo === "salvas" ? ["#F5F0F2", "#2C1219"] : (CORES[info?.cor || ""] || CORES[COR_TEMA[vista.nome] || ""] || CORES.creme);
     const total = vista.tipo === "categoria" ? (info?.qtd || 0) : salvas.size;
     return (
       <>
-      <div className={`rv-cat-h rv-sangra${info?.imagem_url ? " com-foto" : ""}`} style={{ background: info?.imagem_url ? "#000" : bg, color: fg }}>
-          {info?.imagem_url ? <><img src={info.imagem_url} alt="" /><span className="rv-cat-grad" /></>
-            : vista.tipo === "salvas" ? <span className="rv-cat-ic"><IcSalvar cheio /></span>
-            : <span className="rv-cat-ic"><Icone tema={vista.nome} size={60} /></span>}
-          <button type="button" className="rv-voltar" onClick={() => irPara({ tipo: "home" })} aria-label="Voltar">‹</button>
-          <div className="rv-cat-t"><b>{nome}</b><span>{total} receita{total === 1 ? "" : "s"}</span></div>
-      </div>
+      <AppPageHeader title={nome} subtitle={`${total} receita${total === 1 ? "" : "s"}`} onBack={() => irPara({ tipo: "home" })} />
+      {info?.imagem_url && <div className="rv-root"><div className="rv-cat-h"><img src={info.imagem_url} alt="" /></div></div>}
       <div className="rv-root">
         <div className="rv-pad">
-          {campoBusca(vista.tipo === "salvas" ? "Buscar nas salvas..." : `Buscar em ${nome}...`)}
+          {campoBusca(vista.tipo === "salvas" ? "Buscar nas salvas" : `Buscar em ${nome}`)}
           <p className="rv-sub">{q ? `${filtradas.length} receita${filtradas.length === 1 ? "" : "s"}` : "Mais curtidas primeiro"}</p>
           {grade()}
         </div>
-        {aviso && <div className="rv-aviso">{aviso}</div>}
-        <style>{CSS}</style>
       </div>
       </>
     );
@@ -323,11 +314,11 @@ export default function ReceitasV2() {
   // Tela inicial: categorias
   return (
     <>
-      <AppPageHeader title="Receitas" subtitle="Escolha uma categoria" />
+      <AppPageHeader title="Receitas" subtitle="Receitas prontas pra confeitaria" />
       <div className="rv-root">
-        <div style={{ marginTop: 12 }}>{campoBusca("Buscar em todas as receitas...")}</div>
+        {campoBusca("Buscar receita ou ingrediente")}
         {loading ? (
-          <div className="rv-vazio">Carregando receitas...</div>
+          <div className="cl9-esq" aria-label="Carregando receitas">{[0, 1, 2, 3].map(k => <span key={k} />)}</div>
         ) : q ? (
           <>
             <p className="rv-sub">{filtradas.length} receita{filtradas.length === 1 ? "" : "s"} encontrada{filtradas.length === 1 ? "" : "s"}</p>
@@ -336,10 +327,10 @@ export default function ReceitasV2() {
         ) : (
           <>
             <button type="button" className="rv-salvas" onClick={() => irPara({ tipo: "salvas" })}>
-              <IcSalvar cheio={salvas.size > 0} /><b>Receitas salvas</b>{salvas.size > 0 && <em>{salvas.size}</em>}<span>›</span>
+              <span className="rv-salvas-ic"><IcSalvar cheio={salvas.size > 0} /></span><b>Receitas salvas</b>{salvas.size > 0 && <em>{salvas.size}</em>}<CaretRight size={20} weight="bold" />
             </button>
             {categorias.length === 0 ? (
-              <div className="rv-vazio">Nenhuma receita por aqui ainda.</div>
+              <TelaVazia caixa icone={<BookOpen size={30} />} titulo="Nenhuma receita ainda" texto="As receitas do Doonly aparecem aqui assim que forem publicadas." />
             ) : (
               <div className="rv-tiles">
                 {categorias.map(c => {
@@ -356,7 +347,7 @@ export default function ReceitasV2() {
             )}
             {top.length > 0 && (
               <>
-                <p className="rv-sec">🏆 Mais curtidas</p>
+                <p className="rv-sec"><Trophy size={20} weight="bold" />Mais curtidas</p>
                 <div className="rv-rank">
                   {top.map((r, i) => { const [bg, fg] = corDe(r); return (
                     <button type="button" key={r.id} className="rv-rk" onClick={() => { setAberta(r); window.scrollTo(0, 0); }}>
@@ -371,100 +362,6 @@ export default function ReceitasV2() {
           </>
         )}
       </div>
-      {aviso && <div className="rv-aviso">{aviso}</div>}
-      <style>{CSS}</style>
     </>
   );
 }
-
-const CSS = `
-  .rv-root { font-family: var(--font-base); color: #2C1219; max-width: 1100px; margin: 0 auto; padding: 0 2px 24px; }
-  .rv-busca { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; border: 1px solid #E5DDE0; border-radius: 6px; padding: 0 11px; height: 42px; background: #fff; }
-  .rv-busca:focus-within { border-color: #2C1219; }
-  .rv-busca input { flex: 1; min-width: 0; border: none; outline: none; background: none; font-family: inherit; font-size: 14px; color: #2C1219; }
-  .rv-sec { font-size: 15px; font-weight: 800; margin: 18px 0 9px; }
-  .rv-sub { font-size: 11.5px; font-weight: 700; color: #888780; margin: 12px 2px 8px; }
-  .rv-pad { padding: 12px 14px 0; }
-  .rv-limpa { border: none; background: none; font-size: 20px; color: #A8A0A4; cursor: pointer; line-height: 1; padding: 0 2px; }
-  .rv-salvas { width: 100%; display: flex; align-items: center; gap: 9px; margin-top: 10px; padding: 11px 12px; border: 1px solid #F0EBED; border-radius: 6px; background: #fff; font-family: inherit; font-size: 13.5px; color: #2C1219; cursor: pointer; text-align: left; }
-  .rv-salvas b { flex: 1; font-weight: 800; } .rv-salvas em { font-style: normal; font-size: 11px; font-weight: 800; background: #F5F0F2; padding: 1px 7px; border-radius: 4px; }
-  .rv-salvas span { color: #C4B8BE; font-size: 18px; }
-  .rv-tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 12px; }
-  @media (min-width: 700px) { .rv-tiles { grid-template-columns: repeat(3, 1fr); } }
-  @media (min-width: 1000px) { .rv-tiles { grid-template-columns: repeat(4, 1fr); } }
-  .rv-tile { position: relative; height: 120px; border: 1px solid #F0EBED; border-radius: 6px; overflow: hidden; padding: 0; font-family: inherit; cursor: pointer; text-align: left; }
-  .rv-tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  .rv-tile-grad { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(20,8,12,.72)); }
-  .rv-tile-ic { position: absolute; top: 12px; right: 12px; }
-  .rv-tile-t { position: absolute; left: 11px; bottom: 9px; display: flex; flex-direction: column; }
-  .rv-tile-t b { font-size: 15px; font-weight: 900; } .rv-tile-t small { font-size: 11px; font-weight: 700; opacity: .8; }
-  .rv-tile.com-foto .rv-tile-t { color: #fff; }
-  .rv-cat-h { position: relative; height: calc(180px + env(safe-area-inset-top, 0px)); overflow: hidden; }
-  @media (min-width: 768px) { .rv-cat-h { height: 220px; } }
-  .rv-cat-h img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  .rv-cat-grad { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.05) 30%, rgba(20,8,12,.7)); }
-  .rv-cat-ic { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
-  .rv-cat-ic svg { width: 60px; height: 60px; }
-  .rv-cat-t { position: absolute; left: 16px; bottom: 12px; display: flex; flex-direction: column; }
-  .rv-cat-t b { font-size: 23px; font-weight: 900; } .rv-cat-t span { font-size: 12px; font-weight: 700; opacity: .75; }
-  .rv-cat-h.com-foto .rv-cat-t { color: #fff; }
-  .rv-rank { border: 1px solid #F0EBED; border-radius: 6px; background: #fff; }
-  .rv-rk { width: 100%; display: flex; align-items: center; gap: 10px; padding: 9px 10px; border: none; border-top: 1px solid #F3ECEE; background: none; font-family: inherit; text-align: left; cursor: pointer; }
-  .rv-rk:first-child { border-top: none; }
-  .rv-pos { width: 18px; text-align: center; font-size: 17px; font-weight: 900; color: #C33A6E; }
-  .rv-rk-img { width: 58px; height: 50px; border-radius: 4px; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-  .rv-rk-img img { width: 100%; height: 100%; object-fit: cover; }
-  .rv-rk-t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .rv-rk-t b { font-size: 13.5px; font-weight: 800; line-height: 1.25; margin: 1px 0 2px; color: #2C1219; }
-  .rv-tema { font-size: 9.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #C33A6E; }
-  .rv-lk { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; color: #6B5D64; }
-  .rv-lk svg { color: #E85A8C; }
-  .rv-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  @media (min-width: 700px) { .rv-grid { grid-template-columns: repeat(3, 1fr); } }
-  @media (min-width: 1000px) { .rv-grid { grid-template-columns: repeat(4, 1fr); } }
-  .rv-card { display: flex; flex-direction: column; border: 1px solid #F0EBED; border-radius: 6px; overflow: hidden; background: #fff; padding: 0; font-family: inherit; text-align: left; cursor: pointer; }
-  .rv-card-top { height: 104px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 8px; text-align: center; }
-  .rv-card-top img { width: 100%; height: 100%; object-fit: cover; }
-  .rv-card-top:has(img) { padding: 0; }
-  .rv-card-top b { font-size: 13px; font-weight: 800; line-height: 1.2; }
-  .rv-card-b { display: flex; justify-content: space-between; align-items: center; padding: 7px 9px; }
-  .rv-card-nome { font-size: 12.5px; font-weight: 800; padding: 0 9px 9px; color: #2C1219; }
-  .rv-vazio { padding: 34px 12px; text-align: center; font-size: 13.5px; color: #888780; line-height: 1.5; }
-  /* Faixa de cima (receita e categoria) ocupando 100% da largura, colada no topo */
-  .rv-sangra {
-    margin-top: calc(-1 * (var(--pad-page-top, 1.5rem) + env(safe-area-inset-top, 0px)));
-    margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw);
-    width: 100vw; box-sizing: border-box;
-  }
-  @media (min-width: 768px) {
-    .rv-sangra { margin-top: -3rem; margin-left: -2rem; margin-right: -2rem; width: auto; }
-  }
-  /* Receita aberta */
-  .rv-hero { position: relative; height: calc(230px + env(safe-area-inset-top, 0px)); display: flex; align-items: center; justify-content: center; overflow: hidden; }
-  @media (min-width: 768px) { .rv-hero { height: 300px; } }
-  .rv-hero img { width: 100%; height: 100%; object-fit: cover; }
-  .rv-voltar { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 12px); left: 12px; width: 36px; height: 36px; border-radius: 6px; border: none; background: rgba(255,255,255,.94); font-size: 24px; font-weight: 700; color: #2C1219; cursor: pointer; line-height: 1; }
-  .rv-det { max-width: 760px; margin: 0 auto; padding: 14px 16px 30px; }
-  .rv-det h1 { font-size: 23px; font-weight: 900; line-height: 1.2; margin: 3px 0 2px; }
-  .rv-by { font-size: 12px; color: #888780; margin: 0; }
-  .rv-infos { display: grid; border-top: 1px solid #F0EBED; border-bottom: 1px solid #F0EBED; margin: 12px 0; }
-  .rv-infos div { padding: 9px 6px; text-align: center; border-left: 1px solid #F0EBED; }
-  .rv-infos div:first-child { border-left: none; }
-  .rv-infos small { font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: #888780; }
-  .rv-infos b { display: block; font-size: 13.5px; font-weight: 800; margin-top: 1px; }
-  .rv-acoes { display: flex; gap: 8px; }
-  .rv-acoes button { height: 42px; border: none; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-family: inherit; font-size: 13.5px; font-weight: 800; cursor: pointer; }
-  .rv-like { flex: 1; background: #FDECF3; color: #C33A6E; } .rv-like.on { background: #E85A8C; color: #fff; }
-  .rv-ic { width: 46px; background: #F5F0F2; color: #2C1219; } .rv-ic.on { background: #2C1219; color: #fff; }
-  .rv-det h2 { font-size: 18px; font-weight: 900; margin: 22px 0 4px; padding-bottom: 6px; border-bottom: 2px solid #2C1219; }
-  .rv-etapa { font-size: 13px; font-weight: 800; color: #C33A6E; margin: 12px 0 3px; }
-  .rv-ing { list-style: none; margin: 0; padding: 0; }
-  .rv-ing li { font-size: 14px; padding: 7px 0 7px 16px; border-bottom: 1px solid #F7F2F4; position: relative; line-height: 1.4; }
-  .rv-ing li::before { content: ""; position: absolute; left: 2px; top: 14px; width: 5px; height: 5px; border-radius: 50%; background: #C33A6E; }
-  .rv-passo { display: flex; gap: 12px; padding: 8px 0; }
-  .rv-passo .rv-num { font-size: 19px; font-weight: 900; min-width: 20px; line-height: 1.2; flex-shrink: 0; }
-  .rv-passo p { margin: 0; font-size: 14px; line-height: 1.55; color: #3B2A31; }
-  .rv-dica { background: #FEF6E7; border-radius: 6px; padding: 12px 14px; margin-top: 16px; }
-  .rv-dica b { font-size: 13.5px; } .rv-dica p { font-size: 13.5px; line-height: 1.5; margin: 5px 0 0; color: #5B4A1E; }
-  .rv-aviso { position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 60; background: #2C1219; color: #fff; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; box-shadow: 0 8px 24px rgba(0,0,0,.2); }
-`;
