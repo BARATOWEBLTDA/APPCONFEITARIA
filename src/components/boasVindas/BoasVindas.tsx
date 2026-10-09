@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode, TouchEvent } from 'react'
 import { ArrowLeft, Bell, BookOpen, CalendarBlank, CalendarDots, CaretRight, CurrencyDollar, FolderSimple, Gear, House, Plus, Receipt, ShoppingBag } from '@phosphor-icons/react'
 import { Botao, BotaoIcone } from '@/components/base'
@@ -311,12 +311,33 @@ function DemoPedidos() {
     setStatus(s => ({ ...s, [p.id]: prox }))
   }
   const lista = CHEGADAS.slice(0, chegaram).reverse() // o mais novo em cima
+
+  // Celular: os 3 cartões precisam caber inteiros entre o título e o botão. Mede o primeiro cartão que chegou,
+  // calcula a altura dos 3 juntos e encolhe a lista (só o necessário) pra caber na tela de qualquer aparelho.
+  const caixa = useRef<HTMLDivElement>(null)
+  const [encaixe, setEncaixe] = useState<{ escala: number; altura: number } | null>(null)
+  useLayoutEffect(() => {
+    const medir = () => {
+      const el = caixa.current
+      const cartao = el?.querySelector('.pdc') as HTMLElement | null
+      if (!el || !cartao || !el.offsetParent) return // no computador a lista do celular fica escondida
+      const alturaFinal = (cartao.offsetHeight + 10) * CHEGADAS.length
+      const base = (document.querySelector('.bv-base') as HTMLElement | null)?.offsetHeight || 96
+      const sobra = window.innerHeight - el.getBoundingClientRect().top - base + 6
+      const escala = Math.max(.6, Math.min(1, sobra / alturaFinal))
+      setEncaixe({ escala, altura: alturaFinal * escala })
+    }
+    medir()
+    window.addEventListener('resize', medir)
+    return () => window.removeEventListener('resize', medir)
+  }, [chegaram > 0])
   return (
     <>
       {/* celular e tablet: os cartões da lista de Pedidos */}
       <div className="bv-ped">
         {chegaram > 0 && <div className="bv-aviso" key={`a${chegaram}`}><Bell size={14} weight="fill" aria-hidden="true" /><span><b>Novo pedido</b> pelo cardápio</span></div>}
-        <div className="bv-ped-lista">
+        <div className="bv-ped-lista" ref={caixa} style={encaixe ? { height: encaixe.altura } : undefined}>
+          <div className="bv-ped-escala" style={encaixe && encaixe.escala < 1 ? { transform: `scale(${encaixe.escala})` } : undefined}>
           {lista.map(({ p }) => {
             const atual = comStatus(p)
             return (
@@ -327,6 +348,7 @@ function DemoPedidos() {
               </div>
             )
           })}
+          </div>
         </div>
       </div>
 
