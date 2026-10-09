@@ -1,0 +1,29 @@
+/* Admin · Biblioteca de PDFs (09/10 · guia v2) */
+.apd { max-width: 1180px; margin: 0 auto; font-family: var(--font-base); color: var(--ui-texto); text-align: left; }
+.apd button { font-family: inherit; cursor: pointer; }
+.apd-carregando { margin: 24px 0; font-size: 15px; font-weight: 500; color: var(--ui-texto-2); }
+.apd-vazia { margin-top: 16px; }
+.apd .apd-apagar { color: var(--ui-vermelho); }
+
+/* cartões */
+.apd-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 12px; margin-top: 16px; }
+.apd-card { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); }
+.apd-capa { display: flex; align-items: center; justify-content: center; height: 140px; overflow: hidden; background: var(--ui-rosa-claro); color: var(--ui-rosa); }
+.apd-capa img { width: 100%; height: 100%; object-fit: cover; }
+.apd-corpo { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px 8px; min-width: 0; }
+.apd-cat { align-self: flex-start; margin-bottom: 4px; padding: 2px 8px; border-radius: 6px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 12px; font-style: normal; font-weight: 700; }
+.apd-corpo b { font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apd-corpo small { font-size: 13px; font-weight: 500; line-height: 1.45; color: var(--ui-texto-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.apd-acoes { display: flex; align-items: center; gap: 8px; margin-top: auto; padding: 4px 14px 14px; }
+.apd-ver { flex: 1; min-width: 0; text-decoration: none; }
+.apd-acoes .ui-bti:first-child { margin-left: auto; }
+
+/* formulário */
+.apd-form { display: flex; flex-direction: column; gap: 14px; }
+.apd-form-capa { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100%; height: 140px; margin: 0; padding: 0; overflow: hidden; border: 1.5px dashed var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-cinza); color: var(--ui-texto-2); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.apd-form-capa img { width: 100%; height: 100%; object-fit: cover; }
+.apd-arquivo { display: flex; flex-direction: column; gap: 6px; }
+.apd-arquivo-r { font-size: 13px; font-weight: 700; color: var(--ui-cinza-texto); }
+.apd-arquivo-bt { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 48px; margin: 0; padding: 0 12px; border: 1.5px dashed var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-cinza); color: var(--ui-texto-2); font-family: inherit; font-size: 15px; font-weight: 700; text-align: left; cursor: pointer; }
+.apd-arquivo-bt span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apd-arquivo-bt.ok { border-style: solid; border-color: var(--ui-verde-fundo); background: var(--ui-verde-fundo); color: var(--ui-verde); }

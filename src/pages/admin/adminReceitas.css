@@ -1,0 +1,43 @@
+/* Admin · Receitas da comunidade (09/10 · guia v2) */
+.arc { max-width: 1180px; margin: 0 auto; font-family: var(--font-base); color: var(--ui-texto); text-align: left; }
+.arc button { font-family: inherit; cursor: pointer; }
+.arc-carregando { margin: 24px 0; font-size: 15px; font-weight: 500; color: var(--ui-texto-2); }
+
+/* filtros: chips de 44px que rolam no celular */
+.arc-chips { display: flex; gap: 8px; margin: 16px 0 12px; overflow-x: auto; scrollbar-width: none; }
+.arc-chips::-webkit-scrollbar { display: none; }
+.arc-chips button { flex: none; display: flex; align-items: center; gap: 6px; min-height: 44px; margin: 0; padding: 0 16px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto-2); font-size: 14px; font-weight: 700; }
+.arc-chips button i { font-style: normal; font-size: 13px; font-weight: 700; color: var(--ui-texto-3); }
+.arc-chips button[aria-selected="true"] { border-color: var(--ui-vinho); background: var(--ui-vinho); color: var(--ui-branco); }
+.arc-chips button[aria-selected="true"] i { color: rgba(255, 255, 255, .75); }
+
+/* busca */
+.arc-busca { display: flex; align-items: center; gap: 8px; max-width: 420px; height: 48px; margin-bottom: 16px; padding: 0 4px 0 12px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto-3); }
+.arc-busca:focus-within { border-color: var(--ui-rosa); }
+.arc-busca input { flex: 1; min-width: 0; height: 100%; border: 0; outline: none; background: none; font-family: inherit; font-size: 16px; font-weight: 500; color: var(--ui-texto); }
+.arc-busca input::placeholder { color: var(--ui-texto-3); }
+.arc-busca button { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 0; border-radius: 10px; background: none; color: var(--ui-texto-2); }
+
+/* cartões */
+.arc-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 12px; }
+.arc-card { position: relative; display: flex; flex-direction: column; margin: 0; padding: 0; overflow: hidden; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); text-align: left; color: var(--ui-texto); }
+.arc-card:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
+.arc-foto { display: flex; align-items: center; justify-content: center; height: 140px; overflow: hidden; background: var(--ui-rosa-claro); color: var(--ui-rosa); }
+.arc-foto img { width: 100%; height: 100%; object-fit: cover; }
+.arc-corpo { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px 14px; min-width: 0; }
+.arc-corpo b { font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.arc-corpo small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.arc-card > .arc-tag { position: absolute; top: 10px; right: 10px; }
+.arc-tag { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-style: normal; font-weight: 700; white-space: nowrap; }
+.arc-tag--pendente { background: var(--ui-laranja-fundo); color: var(--ui-laranja); }
+.arc-tag--aprovada { background: var(--ui-verde-fundo); color: var(--ui-verde); }
+.arc-tag--rejeitada { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); }
+
+/* janela de detalhe */
+.arc-det { font-size: 15px; font-weight: 500; line-height: 1.55; color: var(--ui-texto-2); }
+.arc-det-foto { display: block; width: 100%; height: 200px; margin-bottom: 12px; object-fit: cover; border-radius: var(--ui-raio); }
+.arc-det-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 4px; font-size: 13px; }
+.arc-det h3 { margin: 16px 0 4px; font-size: 14px; font-weight: 700; color: var(--ui-texto); }
+.arc-det p { margin: 0; white-space: pre-line; overflow-wrap: anywhere; }
+.arc-det-excluir { margin-top: 16px; }
+.arc-det-excluir .ui-bt--link { --bt-cor: var(--ui-vermelho); }

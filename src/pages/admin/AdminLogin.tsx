@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { ArrowLeft, WarningCircle } from "@phosphor-icons/react";
+import { Botao, Campo } from "@/components/base";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -33,55 +35,52 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="adl-root">
-      <div className="adl-card">
-        <div className="adl-logo">
-          <img src="/logoapp.png" alt="Doonly" style={{ height: "80px", objectFit: "contain" }} />
-          <span className="adl-badge">Admin</span>
+    <div className="al-root">
+      <div className="al-card">
+        <div className="al-logo">
+          <img src="/logoapp.png" alt="Doonly" />
+          <span className="al-badge">Admin</span>
         </div>
-        <h1 className="adl-title">Painel Administrativo</h1>
-        <p className="adl-sub">Acesso restrito</p>
+        <h1 className="al-h1">Painel administrativo</h1>
+        <p className="al-sub">Acesso restrito à equipe Doonly.</p>
 
-        <form onSubmit={handleSubmit} className="adl-form">
-          <div className="adl-field">
-            <label>E-mail</label>
-            <input type="email" placeholder="admin@doonly.com" value={email} onChange={e => setEmail(e.target.value)} required />
-          </div>
-          <div className="adl-field">
-            <label>Senha</label>
-            <input type="password" placeholder="••••••••" value={senha} onChange={e => setSenha(e.target.value)} required />
-          </div>
-          {error && <p className="adl-error">{error}</p>}
-          <button type="submit" className="adl-btn" disabled={loading}>
-            {loading ? <span className="adl-spinner" /> : "Entrar no painel"}
-          </button>
+        <form onSubmit={handleSubmit} className="al-form">
+          <Campo
+            rotulo="E-mail" type="email" autoComplete="email" inputMode="email"
+            placeholder="admin@doonly.com" value={email} onChange={e => setEmail(e.target.value)} required
+          />
+          <Campo
+            rotulo="Senha" type="password" autoComplete="current-password"
+            placeholder="Sua senha" value={senha} onChange={e => setSenha(e.target.value)} required
+          />
+          {error && (
+            <p className="al-erro" role="alert">
+              <WarningCircle size={18} weight="bold" aria-hidden="true" />
+              <span>{error}</span>
+            </p>
+          )}
+          <Botao type="submit" cheio carregando={loading}>{loading ? "Entrando…" : "Entrar no painel"}</Botao>
         </form>
 
-        <a href="/login" className="adl-back">← Voltar ao app</a>
+        <a href="/login" className="al-voltar">
+          <ArrowLeft size={16} weight="bold" aria-hidden="true" /> Voltar ao app
+        </a>
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        .adl-root { min-height:100vh; display:flex; align-items:center; justify-content:center; background:#0f0f13; font-family:'Geist', sans-serif; padding:1rem; }
-        .adl-card { background:#1a1a2e; border-radius: var(--radius-xl); padding:2.5rem 2rem; width:100%; max-width:400px; box-shadow:0 20px 60px rgba(0,0,0,0.4); border:1px solid rgba(249,0,122,0.15); }
-        .adl-logo { display:flex; flex-direction:column; align-items:center; gap:0.5rem; margin-bottom:1.25rem; }
-        .adl-badge { background:linear-gradient(135deg,#f9007a,#d4006a); color:white; font-size: var(--font-caption); font-weight: var(--fw-bold); padding:0.2rem 0.8rem; border-radius: var(--radius-xl); letter-spacing:1px; }
-        .adl-title { font-size: var(--font-modal-title); font-weight: var(--fw-bold); color:white; margin:0 0 0.25rem; text-align:center; }
-        .adl-sub { font-size: var(--font-helper); color:rgba(255,255,255,0.4); margin:0 0 1.75rem; text-align:center; }
-        .adl-form { display:flex; flex-direction:column; gap:1rem; }
-        .adl-field { display:flex; flex-direction:column; gap:0.35rem; }
-        .adl-field label { font-size: var(--font-helper); font-weight: var(--fw-medium); color:rgba(255,255,255,0.6); }
-        .adl-field input { padding:0.75rem 1rem; background:rgba(255,255,255,0.06); border:1.5px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); font-family:'Geist', sans-serif; font-size: var(--font-button); color:white; outline:none; transition:border-color 0.2s; }
-        .adl-field input:focus { border-color:#f9007a; }
-        .adl-field input::placeholder { color:rgba(255,255,255,0.25); }
-        .adl-error { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); color:#fca5a5; border-radius: var(--radius-sm); padding:0.6rem 0.9rem; font-size: var(--font-helper); }
-        .adl-btn { padding:0.9rem; background:linear-gradient(135deg,#f9007a,#d4006a); color:white; border:none; border-radius: var(--radius-md); font-family:'Geist', sans-serif; font-size: var(--font-input); font-weight: var(--fw-bold); cursor:pointer; display:flex; align-items:center; justify-content:center; min-height:48px; transition:opacity 0.2s; }
-        .adl-btn:hover:not(:disabled) { opacity:0.9; }
-        .adl-btn:disabled { opacity:0.6; cursor:not-allowed; }
-        .adl-spinner { width:20px; height:20px; border:2px solid rgba(255,255,255,0.3); border-top-color:white; border-radius:50%; animation:spin 0.7s linear infinite; }
-        @keyframes spin { to { transform:rotate(360deg); } }
-        .adl-back { display:block; text-align:center; margin-top:1.25rem; font-size: var(--font-helper); color:rgba(255,255,255,0.35); text-decoration:none; transition:color 0.2s; }
-        .adl-back:hover { color:rgba(255,255,255,0.6); }
+        .al-root { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 16px; background: var(--ui-vinho-escuro, #2C1219); font-family: var(--font-base); }
+        .al-card { width: 100%; max-width: 400px; padding: 32px 20px 20px; background: var(--ui-branco); border-radius: var(--ui-raio-janela, 24px); box-shadow: var(--ui-sombra-janela); color: var(--ui-texto); }
+        .al-logo { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 16px; }
+        .al-logo img { height: 72px; max-width: 100%; object-fit: contain; }
+        .al-badge { padding: 2px 10px; border-radius: 999px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 13px; font-weight: 700; }
+        .al-h1 { margin: 0; text-align: center; font-size: 22px; font-weight: 800; color: var(--ui-texto); }
+        .al-sub { margin: 4px 0 24px; text-align: center; font-size: 15px; font-weight: 500; color: var(--ui-texto-2); }
+        .al-form { display: flex; flex-direction: column; gap: 16px; }
+        .al-erro { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 12px; border-radius: var(--ui-raio); background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); font-size: 14px; font-weight: 500; line-height: 1.4; }
+        .al-erro svg { flex: none; margin-top: 1px; }
+        .al-voltar { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; margin-top: 12px; border-radius: var(--ui-raio); font-size: 14px; font-weight: 700; color: var(--ui-texto-2); text-decoration: none; }
+        .al-voltar:hover { color: var(--ui-texto); background: var(--ui-cinza); }
+        @media (min-width: 600px) { .al-card { padding: 40px 32px 24px; } }
       `}</style>
     </div>
   );

@@ -1,0 +1,29 @@
+/* Admin · Banner do celular (09/10 · guia v2) */
+.ab-root { max-width: 1100px; margin: 0 auto; padding: 16px 12px 48px; font-family: var(--font-base); color: var(--ui-texto); text-align: left; }
+.ab-root > .ui-tit { margin-bottom: 16px; }
+.ab-root > .ui-tit .ui-tit-a { white-space: normal; }
+.ab-carregando { display: flex; justify-content: center; padding: 48px 0; color: var(--ui-rosa); }
+.ab-carregando .ui-gira { width: 28px; height: 28px; }
+
+.ab-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+@media (min-width: 900px) { .ab-root { padding: 24px 24px 48px; } .ab-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; } }
+
+.ab-card { display: flex; flex-direction: column; gap: 14px; min-width: 0; padding: 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
+.ab-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.ab-head-tx { min-width: 0; }
+.ab-title { margin: 0 0 2px; font-size: 16px; font-weight: 800; color: var(--ui-texto); }
+.ab-desc { margin: 0; font-size: 13px; font-weight: 500; line-height: 1.45; color: var(--ui-texto-2); }
+
+.ab-toggle { flex: none; display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 14px; font-weight: 700; color: var(--ui-texto); cursor: pointer; user-select: none; }
+.ab-toggle input { width: 20px; height: 20px; margin: 0; accent-color: var(--ui-rosa); cursor: pointer; }
+.ab-toggle--off { opacity: .55; cursor: not-allowed; }
+.ab-toggle--off input { cursor: not-allowed; }
+
+.ab-preview { display: flex; align-items: center; justify-content: center; aspect-ratio: 3/1; overflow: hidden; border-radius: var(--ui-raio); background: var(--ui-cinza); }
+.ab-preview img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ab-empty { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-3); }
+
+.ab-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.ab-tip { margin: 0; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-3); }
+.ab-warn { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 12px; border-radius: var(--ui-raio); background: var(--ui-laranja-fundo); color: var(--ui-laranja); font-size: 13px; font-weight: 500; line-height: 1.45; }
+.ab-warn svg { flex: none; margin-top: 1px; }

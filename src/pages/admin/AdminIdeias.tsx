@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { MagnifyingGlass, WhatsappLogo, EnvelopeSimple, CheckCircle } from "@phosphor-icons/react";
+import { MagnifyingGlass, WhatsappLogo, EnvelopeSimple, Lightbulb, X } from "@phosphor-icons/react";
+import { BotaoIcone, TelaVazia, avisar } from "@/components/base";
 
 /**
  * Admin → Ideias: tudo que chega em public.sugestoes
@@ -82,7 +83,6 @@ export default function AdminIdeias() {
   const [busca, setBusca] = useState("");
   const [area, setArea] = useState("");
   const [salvando, setSalvando] = useState<string | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
 
   const carregar = async () => {
     setLoading(true);
@@ -113,19 +113,16 @@ export default function AdminIdeias() {
 
   useEffect(() => { carregar(); }, []);
 
-  const mostrarToast = (m: string) => {
-    setToast(m);
-    setTimeout(() => setToast(null), 3500);
-  };
+  const mostrarToast = (m: string, tipo: "ok" | "erro" = "ok") => avisar(m, { tipo });
 
   const mudarStatus = async (ideia: Ideia, novo: Status) => {
     if (novo === statusDe(ideia)) return;
     setSalvando(ideia.id);
     const { data, error } = await supabase.from("sugestoes").update({ status: novo }).eq("id", ideia.id).select("id");
     setSalvando(null);
-    if (error) { mostrarToast("Erro ao salvar: " + error.message); return; }
+    if (error) { mostrarToast("Não deu pra salvar: " + error.message, "erro"); return; }
     // RLS bloqueando não dá erro, só não atualiza nada
-    if (!data || data.length === 0) { mostrarToast("Sem permissão pra alterar. Rode o SQL de permissões do admin."); return; }
+    if (!data || data.length === 0) { mostrarToast("Sem permissão pra alterar. Rode o SQL de permissões do admin.", "erro"); return; }
     setIdeias(prev => prev.map(i => (i.id === ideia.id ? { ...i, status: novo } : i)));
     const quem = (ideia.nome || "A confeiteira").split(" ")[0];
     mostrarToast(novo === "implementada"
@@ -151,175 +148,189 @@ export default function AdminIdeias() {
   }, [ideias, filtro, busca, area]);
 
   const STATS: { id: Filtro; label: string; cor: string; n: number }[] = [
-    { id: "recebida", label: "Novas", cor: "#9CA3AF", n: contagem.recebida },
-    { id: "em_analise", label: "Em análise", cor: "#F59E0B", n: contagem.em_analise },
-    { id: "implementada", label: "Implementadas", cor: "#16a34a", n: contagem.implementada },
-    { id: "todas", label: "Todas", cor: "#2C1219", n: ideias.length },
+    { id: "recebida", label: "Novas", cor: "var(--ui-texto-3)", n: contagem.recebida },
+    { id: "em_analise", label: "Em análise", cor: "var(--ui-laranja)", n: contagem.em_analise },
+    { id: "implementada", label: "Implementadas", cor: "var(--ui-verde)", n: contagem.implementada },
+    { id: "todas", label: "Todas", cor: "var(--ui-vinho)", n: ideias.length },
   ];
 
   return (
     <div className="ai-root">
       <h1 className="ai-h1">Ideias das confeiteiras</h1>
       <p className="ai-sub">
-        Tudo que chega por "Solicitar recurso" e "Enviar uma sugestão". Marcar como implementada avisa a confeiteira no celular.
+        Chegam por "Solicitar recurso" e "Enviar uma sugestão". Marcar como implementada avisa a confeiteira no celular.
       </p>
 
-      <div className="ai-stats">
+      <div className="ai-stats" role="tablist" aria-label="Filtrar por status">
         {STATS.map(s => (
-          <button key={s.id} className={`ai-stat${filtro === s.id ? " on" : ""}`} onClick={() => setFiltro(s.id)}>
+          <button key={s.id} type="button" role="tab" aria-selected={filtro === s.id} className={`ai-stat${filtro === s.id ? " on" : ""}`} onClick={() => setFiltro(s.id)}>
             <small><i style={{ background: s.cor }} />{s.label}</small>
             <b>{s.n}</b>
           </button>
         ))}
       </div>
 
-      <div className="ai-tools">
-        <label className="ai-search">
-          <MagnifyingGlass size={15} weight="bold" />
-          <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar ideia (ex: promoção, iFood...)" />
-        </label>
-        <select className="ai-sel" value={area} onChange={e => setArea(e.target.value)} aria-label="Área">
-          <option value="">Todas as áreas</option>
-          {Object.entries(AREAS).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
-        </select>
+      <div className="ai-cartao">
+        <div className="ai-tools">
+          <label className="ai-search">
+            <MagnifyingGlass size={20} weight="bold" aria-hidden="true" />
+            <input type="search" value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar ideia" aria-label="Buscar ideia" />
+            {busca && (
+              <BotaoIcone rotulo="Limpar busca" variante="limpo" tamanho="p" onClick={() => setBusca("")}>
+                <X size={18} weight="bold" />
+              </BotaoIcone>
+            )}
+          </label>
+          <select className="ai-sel" value={area} onChange={e => setArea(e.target.value)} aria-label="Área">
+            <option value="">Todas as áreas</option>
+            {Object.entries(AREAS).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+          </select>
+        </div>
+
+        {erro && <p className="ai-erro" role="alert">Não deu pra carregar: {erro}</p>}
+
+        {loading ? (
+          <div className="ai-esq" aria-busy="true"><span /><span /><span /></div>
+        ) : visiveis.length === 0 ? (
+          <TelaVazia compacta icone={<Lightbulb size={30} />} titulo="Nenhuma ideia nesse filtro." texto="Troque o filtro ou a busca pra ver outras." />
+        ) : (
+          <div className="ai-list">
+            {visiveis.map(i => {
+              const st = statusDe(i);
+              const perfil = i.user_id ? perfis[i.user_id] : undefined;
+              const loja = perfil?.nome_loja;
+              const wa = soDigitos(perfil?.telefone || i.telefone);
+              const imp = i.impacto ? IMPACTO[i.impacto] : null;
+              const temTitulo = !!i.titulo?.trim() && i.titulo.trim() !== i.descricao.trim();
+              const origem = i.tela_origem ? "Configurações" : "Solicitar recurso";
+              return (
+                <article key={i.id} className={`ai-card ai-card--${st}`}>
+                  <div className="ai-main">
+                    {(i.area || imp) && (
+                      <div className="ai-tags">
+                        {i.area && <span className="ai-tag">{AREAS[i.area] || i.area}</span>}
+                        {imp && <span className={`ai-tag ${imp.cls}`}>{imp.label}</span>}
+                      </div>
+                    )}
+                    <p className="ai-t">{temTitulo ? i.titulo : i.descricao}</p>
+                    {temTitulo && <p className="ai-d">{i.descricao}</p>}
+                    <p className="ai-meta">
+                      <b>{i.nome || "Sem nome"}{loja ? ` · ${loja}` : ""}</b> · {quando(i.created_at)} · via {origem}
+                    </p>
+                  </div>
+                  <div className="ai-side">
+                    <select
+                      className={`ai-st ai-st--${st}`}
+                      value={st}
+                      disabled={salvando === i.id}
+                      onChange={e => mudarStatus(i, e.target.value as Status)}
+                      aria-label="Status da ideia"
+                    >
+                      {STATUS_OPTS.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+                    </select>
+                    {wa ? (
+                      <a className="ai-act ai-act--wa" href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer">
+                        <WhatsappLogo size={18} weight="fill" aria-hidden="true" /> WhatsApp
+                      </a>
+                    ) : i.email ? (
+                      <a className="ai-act" href={`mailto:${i.email}`}>
+                        <EnvelopeSimple size={18} weight="bold" aria-hidden="true" /> E-mail
+                      </a>
+                    ) : null}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {erro && <p className="ai-erro">Não foi possível carregar: {erro}</p>}
-
-      {loading ? (
-        <p className="ai-empty">Carregando...</p>
-      ) : visiveis.length === 0 ? (
-        <p className="ai-empty">Nenhuma ideia nesse filtro.</p>
-      ) : (
-        <div className="ai-list">
-          {visiveis.map(i => {
-            const st = statusDe(i);
-            const perfil = i.user_id ? perfis[i.user_id] : undefined;
-            const loja = perfil?.nome_loja;
-            const wa = soDigitos(perfil?.telefone || i.telefone);
-            const imp = i.impacto ? IMPACTO[i.impacto] : null;
-            const temTitulo = !!i.titulo?.trim() && i.titulo.trim() !== i.descricao.trim();
-            const origem = i.tela_origem ? "Configurações" : "Solicitar recurso";
-            return (
-              <article key={i.id} className={`ai-card ai-card--${st}`}>
-                <div className="ai-main">
-                  <div className="ai-tags">
-                    {i.area && <span className="ai-tag">{AREAS[i.area] || i.area}</span>}
-                    {imp && <span className={`ai-tag ${imp.cls}`}>{imp.label}</span>}
-                  </div>
-                  <p className="ai-t">{temTitulo ? i.titulo : i.descricao}</p>
-                  {temTitulo && <p className="ai-d">{i.descricao}</p>}
-                  <p className="ai-meta">
-                    <b>{i.nome || "Sem nome"}{loja ? ` · ${loja}` : ""}</b> · {quando(i.created_at)} · via {origem}
-                  </p>
-                </div>
-                <div className="ai-side">
-                  <select
-                    className={`ai-st ai-st--${st}`}
-                    value={st}
-                    disabled={salvando === i.id}
-                    onChange={e => mudarStatus(i, e.target.value as Status)}
-                    aria-label="Status da ideia"
-                  >
-                    {STATUS_OPTS.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-                  </select>
-                  {wa ? (
-                    <a className="ai-act ai-act--wa" href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer">
-                      <WhatsappLogo size={14} weight="fill" /> WhatsApp
-                    </a>
-                  ) : i.email ? (
-                    <a className="ai-act" href={`mailto:${i.email}`}>
-                      <EnvelopeSimple size={14} weight="bold" /> E-mail
-                    </a>
-                  ) : null}
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      )}
-
-      {toast && (
-        <div className="ai-toast" role="status">
-          <CheckCircle size={16} weight="fill" /> {toast}
-        </div>
-      )}
-
       <style>{`
-        .ai-root { font-family: var(--font-base); padding: 24px; max-width: 1000px; margin: 0 auto; color: #2C1219; }
-        .ai-h1 { font-size: 24px; font-weight: 900; letter-spacing: -0.02em; margin: 0; }
-        .ai-sub { font-size: 13px; color: #6B7280; margin: 6px 0 0; }
+        .ai-root { font-family: var(--font-base); max-width: 1000px; margin: 0 auto; color: var(--ui-texto); }
+        .ai-root button, .ai-root select { font-family: inherit; }
+        .ai-h1 { font-size: 22px; font-weight: 800; margin: 0; color: var(--ui-texto); }
+        .ai-sub { font-size: 15px; font-weight: 500; line-height: 1.5; color: var(--ui-texto-2); margin: 4px 0 0; }
 
-        .ai-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 22px 0 16px; }
+        .ai-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0 12px; }
         .ai-stat {
-          background: #fff; border: 1px solid #F0EBED; border-radius: 12px; padding: 14px 16px;
-          text-align: left; cursor: pointer; font-family: inherit; color: inherit;
+          display: flex; flex-direction: column; gap: 2px; min-height: 72px; margin: 0; padding: 12px 14px;
+          background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao);
+          text-align: left; cursor: pointer; color: var(--ui-texto);
         }
-        .ai-stat.on { border-color: #2C1219; box-shadow: inset 0 0 0 1px #2C1219; }
-        .ai-stat small { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #6B7280; }
-        .ai-stat small i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-        .ai-stat b { display: block; font-size: 26px; font-weight: 900; margin-top: 4px; letter-spacing: -0.02em; }
+        .ai-stat:hover { border-color: var(--ui-texto-3); }
+        .ai-stat.on { border-color: var(--ui-vinho); box-shadow: inset 0 0 0 1px var(--ui-vinho); }
+        .ai-stat small { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ai-stat small i { flex: none; width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .ai-stat b { display: block; font-size: 24px; font-weight: 700; line-height: 1.2; }
 
-        .ai-tools { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+        .ai-cartao { padding: 12px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
+        .ai-tools { display: flex; gap: 8px; flex-wrap: wrap; }
         .ai-search {
-          flex: 1; min-width: 220px; display: flex; align-items: center; gap: 8px;
-          background: #fff; border: 1px solid #F0EBED; border-radius: 10px; padding: 0 12px; color: #9CA3AF;
+          flex: 1 1 240px; min-width: 0; display: flex; align-items: center; gap: 8px; height: 48px; padding: 0 4px 0 12px;
+          background: var(--ui-branco); border: 1px solid var(--ui-borda-campo); border-radius: var(--ui-raio); color: var(--ui-texto-3);
         }
-        .ai-search input { flex: 1; border: 0; background: none; padding: 11px 0; font-family: inherit; font-size: 13.5px; color: #2C1219; }
-        .ai-search input:focus { outline: none; }
-        .ai-search:focus-within { border-color: #E85A8C; }
-        .ai-sel { background: #fff; border: 1px solid #F0EBED; border-radius: 10px; padding: 0 12px; height: 42px; font-family: inherit; font-size: 13px; font-weight: 600; color: #2C1219; }
+        .ai-search input { flex: 1; min-width: 0; height: 100%; border: 0; background: none; outline: none; font-family: inherit; font-size: 16px; color: var(--ui-texto); }
+        .ai-search input::placeholder { color: var(--ui-texto-3); }
+        .ai-search input::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
+        .ai-search:focus-within { border-color: var(--ui-rosa); }
+        .ai-sel {
+          flex: 0 1 220px; min-width: 0; height: 48px; padding: 0 36px 0 12px; appearance: none; -webkit-appearance: none;
+          background: var(--ui-branco) no-repeat right 12px center / 12px;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236B5D64' stroke-width='1.6' fill='none'/%3E%3C/svg%3E");
+          border: 1px solid var(--ui-borda-campo); border-radius: var(--ui-raio);
+          font-size: 16px; font-weight: 500; color: var(--ui-texto); cursor: pointer;
+        }
+        .ai-sel:focus { outline: none; border-color: var(--ui-rosa); }
 
-        .ai-erro { font-size: 13px; font-weight: 600; color: #B91C1C; background: #FEE2E2; border-radius: 8px; padding: 10px 12px; }
-        .ai-empty { text-align: center; padding: 40px; color: #6B7280; font-size: 13px; }
+        .ai-erro { margin: 12px 0 0; padding: 12px; border-radius: var(--ui-raio); background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); font-size: 14px; font-weight: 500; }
 
-        .ai-list { display: flex; flex-direction: column; gap: 8px; }
-        .ai-card { display: flex; gap: 16px; background: #fff; border: 1px solid #F0EBED; border-radius: 12px; padding: 16px 18px; }
-        .ai-card--implementada, .ai-card--recusada { background: #FCFBFB; }
+        .ai-esq { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+        .ai-esq span { height: 96px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
+
+        .ai-list { display: flex; flex-direction: column; margin-top: 4px; }
+        .ai-card { display: flex; gap: 16px; padding: 16px 4px; border-top: 1px solid var(--ui-linha); }
+        .ai-card:first-child { border-top: 0; }
         .ai-main { flex: 1; min-width: 0; }
         .ai-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
-        .ai-tag { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 5px; background: #F5F0F2; color: #4B3A42; }
-        .ai-tag--alto { background: #FEE2E2; color: #B91C1C; }
-        .ai-tag--medio { background: #FEF3C7; color: #B45309; }
-        .ai-tag--baixo { background: #F3F4F6; color: #4B5563; }
-        .ai-t { font-size: 15px; font-weight: 800; line-height: 1.35; margin: 0; overflow-wrap: anywhere; }
-        .ai-d { font-size: 13px; color: #4B5563; line-height: 1.5; margin: 4px 0 0; overflow-wrap: anywhere; }
-        .ai-meta { font-size: 12px; color: #9CA3AF; margin: 10px 0 0; }
-        .ai-meta b { color: #4B3A42; font-weight: 700; }
+        .ai-tag { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: var(--ui-cinza); color: var(--ui-cinza-texto); }
+        .ai-tag--alto { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); }
+        .ai-tag--medio { background: var(--ui-laranja-fundo); color: var(--ui-laranja); }
+        .ai-tag--baixo { background: var(--ui-cinza); color: var(--ui-texto-2); }
+        .ai-t { font-size: 15px; font-weight: 700; line-height: 1.4; margin: 0; overflow-wrap: anywhere; }
+        .ai-d { font-size: 14px; font-weight: 500; color: var(--ui-texto-2); line-height: 1.5; margin: 4px 0 0; overflow-wrap: anywhere; }
+        .ai-meta { font-size: 13px; font-weight: 500; color: var(--ui-texto-3); margin: 8px 0 0; overflow-wrap: anywhere; }
+        .ai-meta b { color: var(--ui-cinza-texto); font-weight: 700; }
+        .ai-card--implementada .ai-t, .ai-card--recusada .ai-t { color: var(--ui-texto-2); }
 
-        .ai-side { display: flex; flex-direction: column; gap: 8px; width: 160px; flex-shrink: 0; }
+        .ai-side { display: flex; flex-direction: column; gap: 8px; width: 176px; flex-shrink: 0; }
         .ai-st {
-          appearance: none; -webkit-appearance: none; border: 0; border-radius: 8px;
-          padding: 9px 30px 9px 12px; font-family: inherit; font-size: 12.5px; font-weight: 800; cursor: pointer;
-          background-repeat: no-repeat; background-position: right 10px center; background-size: 10px;
+          appearance: none; -webkit-appearance: none; width: 100%; min-height: 44px; border: 0; border-radius: var(--ui-raio);
+          padding: 0 32px 0 12px; font-size: 14px; font-weight: 700; cursor: pointer;
+          background-repeat: no-repeat; background-position: right 12px center; background-size: 10px;
           background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555' stroke-width='1.6' fill='none'/%3E%3C/svg%3E");
         }
+        .ai-st:focus-visible { outline: 2px solid var(--ui-rosa); outline-offset: 2px; }
         .ai-st:disabled { opacity: 0.6; cursor: wait; }
-        .ai-st--recebida { background-color: #F3F4F6; color: #374151; }
-        .ai-st--em_analise { background-color: #FEF3C7; color: #92400E; }
-        .ai-st--implementada { background-color: #DCFCE7; color: #166534; }
-        .ai-st--recusada { background-color: #F3F4F6; color: #9CA3AF; }
+        .ai-st--recebida { background-color: var(--ui-cinza); color: var(--ui-cinza-texto); }
+        .ai-st--em_analise { background-color: var(--ui-laranja-fundo); color: var(--ui-laranja); }
+        .ai-st--implementada { background-color: var(--ui-verde-fundo); color: var(--ui-verde); }
+        .ai-st--recusada { background-color: var(--ui-cinza); color: var(--ui-texto-3); }
         .ai-act {
-          display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 10px;
-          border-radius: 8px; border: 1px solid #F0EBED; background: #fff; text-decoration: none;
-          font-size: 12.5px; font-weight: 700; color: #4B3A42;
+          display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 12px;
+          border-radius: var(--ui-raio); border: 1px solid var(--ui-borda); background: var(--ui-branco); text-decoration: none;
+          font-size: 14px; font-weight: 700; color: var(--ui-cinza-texto);
         }
-        .ai-act:hover { background: #FAF7F8; }
-        .ai-act--wa { color: #15803D; }
-
-        .ai-toast {
-          position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 1000;
-          background: #2C1219; color: #fff; padding: 12px 16px; border-radius: 10px;
-          font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; max-width: 90vw;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-        }
-        .ai-toast svg { color: #4ADE80; flex-shrink: 0; }
+        .ai-act:hover { background: var(--ui-cinza); }
+        .ai-act--wa { color: var(--ui-verde); }
 
         @media (max-width: 900px) {
-          .ai-stats { grid-template-columns: repeat(2, 1fr); }
-          .ai-card { flex-direction: column; }
+          .ai-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+          .ai-card { flex-direction: column; gap: 12px; }
           .ai-side { width: auto; flex-direction: row; }
-          .ai-side > * { flex: 1; }
+          .ai-side > * { flex: 1; min-width: 0; }
+        }
+        @media (max-width: 480px) {
+          .ai-sel { flex: 1 1 100%; }
         }
       `}</style>
     </div>

@@ -1,31 +1,45 @@
+import { ChartBar, Users, Heart, BookmarkSimple, FilePdf, TrendUp } from "@phosphor-icons/react";
+
+const PLANOS = [
+  { icone: <Users size={20} weight="bold" />, texto: "Novos usuários por período" },
+  { icone: <Heart size={20} weight="bold" />, texto: "Receitas mais curtidas" },
+  { icone: <BookmarkSimple size={20} weight="bold" />, texto: "Receitas mais salvas" },
+  { icone: <FilePdf size={20} weight="bold" />, texto: "PDFs mais acessados" },
+  { icone: <TrendUp size={20} weight="bold" />, texto: "Crescimento da plataforma" },
+];
+
 export default function AdminRelatorios() {
   return (
-    <div>
-      <h1 className="adm-page-title">📈 Relatórios</h1>
-      <p className="adm-page-sub">Dados e métricas da plataforma</p>
+    <div className="ar-root">
+      <h1 className="ar-h1">Relatórios</h1>
+      <p className="ar-sub">Dados e métricas da plataforma.</p>
 
-      <div className="adm-coming-soon">
-        <div className="adm-cs-icon">📊</div>
-        <h2>Em breve</h2>
-        <p>Os relatórios detalhados estarão disponíveis em breve.</p>
-        <div className="adm-cs-features">
-          <div className="adm-cs-item">👥 Novos usuários por período</div>
-          <div className="adm-cs-item">❤️ Receitas mais curtidas</div>
-          <div className="adm-cs-item">⭐ Receitas mais salvas</div>
-          <div className="adm-cs-item">📄 PDFs mais acessados</div>
-          <div className="adm-cs-item">📈 Crescimento da plataforma</div>
-        </div>
-      </div>
+      <section className="ar-card">
+        <span className="ar-ic" aria-hidden="true"><ChartBar size={30} /></span>
+        <h2 className="ar-t">Em breve</h2>
+        <p className="ar-x">Os relatórios detalhados vão aparecer aqui.</p>
+        <ul className="ar-lista">
+          {PLANOS.map(p => (
+            <li key={p.texto}>
+              <span className="ar-li-ic" aria-hidden="true">{p.icone}</span>
+              <span>{p.texto}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <style>{`
-        .adm-page-title { font-size: var(--text-xl); font-weight: var(--fw-bold); color:#1f2937; margin:0 0 0.25rem; }
-        .adm-page-sub { font-size: var(--font-button); color:#9ca3af; margin:0 0 1.5rem; }
-        .adm-coming-soon { background:white; border-radius: var(--radius-lg); padding:3rem 2rem; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.06); max-width:500px; }
-        .adm-cs-icon { font-size:3rem; margin-bottom:1rem; }
-        .adm-coming-soon h2 { font-size: var(--font-modal-title); font-weight: var(--fw-bold); color:#1f2937; margin:0 0 0.5rem; }
-        .adm-coming-soon p { font-size: var(--font-button); color:#6b7280; margin:0 0 1.5rem; line-height:1.6; }
-        .adm-cs-features { display:flex; flex-direction:column; gap:0.5rem; text-align:left; }
-        .adm-cs-item { background:#f9fafb; border-radius: var(--radius-sm); padding:0.65rem 1rem; font-size: var(--font-button); color:#374151; font-family:'Geist', sans-serif; }
+        .ar-root { font-family: var(--font-base); color: var(--ui-texto); max-width: 1000px; }
+        .ar-h1 { font-size: 22px; font-weight: 800; margin: 0; color: var(--ui-texto); }
+        .ar-sub { font-size: 15px; font-weight: 500; color: var(--ui-texto-2); margin: 4px 0 20px; }
+        .ar-card { max-width: 520px; padding: 24px 16px 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); text-align: center; }
+        .ar-ic { display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); margin-bottom: 12px; }
+        .ar-t { font-size: 18px; font-weight: 800; margin: 0 0 4px; color: var(--ui-texto); }
+        .ar-x { font-size: 15px; font-weight: 500; line-height: 1.5; color: var(--ui-texto-2); margin: 0 0 16px; }
+        .ar-lista { list-style: none; margin: 0; padding: 0; text-align: left; }
+        .ar-lista li { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 6px 4px; border-top: 1px solid var(--ui-linha); font-size: 15px; font-weight: 500; color: var(--ui-texto); }
+        .ar-li-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-cinza); color: var(--ui-cinza-texto); }
+        @media (min-width: 600px) { .ar-card { padding: 32px 24px 20px; } }
       `}</style>
     </div>
   );

@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
-import { Plus, PencilSimple, Trash, ArrowUp, ArrowDown, Eye, EyeSlash, X, Image as ImageIcon, CaretDown } from "@phosphor-icons/react";
+import { Plus, PencilSimple, Trash, ArrowUp, ArrowDown, Eye, EyeSlash, Image as ImageIcon, CaretDown, PushPin, Bell, WarningCircle, Newspaper, DotsThree } from "@phosphor-icons/react";
 import RichEditor from "@/components/RichEditor";
+import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
+import "./admin-noticias.css";
 
 interface Noticia {
   id: string;
@@ -51,11 +53,11 @@ export default function AdminNoticias() {
   const [editing, setEditing] = useState<Noticia | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploadingCapa, setUploadingCapa] = useState(false);
-  const [msg, setMsg] = useState<{ text: string; kind: "ok" | "err" } | null>(null);
   const capaRef = useRef<HTMLInputElement>(null);
   const iconeRef = useRef<HTMLInputElement>(null);
   const [uploadingIcone, setUploadingIcone] = useState(false);
   const [autoresList, setAutoresList] = useState<AutorOpt[]>([]);
+  const [menuDe, setMenuDe] = useState<Noticia | null>(null);
 
   // ── Notificação push ao salvar ──
   // Campos vazios = usa os dados da notícia. imagemModo: capa da notícia, outra imagem ou sem imagem.
@@ -70,7 +72,7 @@ export default function AdminNoticias() {
   const load = async () => {
     setLoading(true);
     const { data, error } = await supabase.from("admin_noticias").select("*").order("fixada", { ascending: false }).order("ordem", { ascending: false }).order("publicado_em", { ascending: false });
-    if (error) setMsg({ text: "Erro: " + error.message, kind: "err" });
+    if (error) avisar("Erro: " + error.message, { tipo: "erro" });
     else setRows(data as Noticia[]);
     setLoading(false);
   };
@@ -80,7 +82,7 @@ export default function AdminNoticias() {
     setAutoresList((data as AutorOpt[]) || []);
   };
 
-  const showMsg = (text: string, kind: "ok" | "err") => { setMsg({ text, kind }); setTimeout(() => setMsg(null), 3500); };
+  const showMsg = (text: string, kind: "ok" | "err") => { avisar(text, { tipo: kind === "err" ? "erro" : "ok" }); };
 
   const abrirNovo = () => {
     setEditing(null);
@@ -169,7 +171,7 @@ export default function AdminNoticias() {
   };
 
   const salvar = async () => {
-    if (!form.titulo.trim()) { alert("Preencha o título"); return; }
+    if (!form.titulo.trim()) { avisar("Preencha o título.", { tipo: "erro" }); return; }
     setSaving(true);
     try {
       const payload = {
@@ -231,7 +233,7 @@ export default function AdminNoticias() {
   };
 
   const excluir = async (n: Noticia) => {
-    if (!confirm(`Excluir "${n.titulo}"?`)) return;
+    if (!(await confirmar({ titulo: `Excluir "${n.titulo}"?`, texto: "Ela some da Home e de /noticias.", rotulo: "Excluir", perigo: true }))) return;
     const { error } = await supabase.from("admin_noticias").delete().eq("id", n.id);
     if (error) showMsg("Erro: " + error.message, "err"); else { showMsg("Excluída!", "ok"); await load(); }
   };
@@ -252,327 +254,258 @@ export default function AdminNoticias() {
     await load();
   };
 
-  if (loading) return <div className="an-loading">Carregando...</div>;
+  const fecharModal = () => { if (!saving) setModalOpen(false); };
+  const idxMenu = menuDe ? rows.findIndex(r => r.id === menuDe.id) : -1;
+
+  if (loading) return <div className="an-carregando"><span className="ui-gira" aria-label="Carregando" /></div>;
+
+  const botaoNovo = (
+    <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={abrirNovo}>
+      <span className="an-g">Nova notícia</span><span className="an-c">Nova</span>
+    </Botao>
+  );
 
   return (
     <div className="an-root">
-      <div className="an-header">
-        <div>
-          <h1 className="an-title">Notícias da Home</h1>
-          <p className="an-sub">Aparecem na Home e em /noticias</p>
-        </div>
-        <button className="an-btn-new" onClick={abrirNovo}><Plus size={16} weight="bold" /> Nova notícia</button>
-      </div>
-
-      {msg && <div className={`an-msg an-msg--${msg.kind}`}>{msg.text}</div>}
+      <Titulo nivel="tela" contagem={rows.length || undefined} apoio="Aparecem na Home e em /noticias." acao={rows.length > 0 ? botaoNovo : undefined}>
+        Notícias da Home
+      </Titulo>
 
       {rows.length === 0 ? (
-        <div className="an-empty"><p>Nenhuma notícia ainda.</p><button className="an-btn-new" onClick={abrirNovo}><Plus size={16} weight="bold" /> Criar primeira</button></div>
+        <TelaVazia caixa className="an-vazia" icone={<Newspaper size={30} />} titulo="Nenhuma notícia ainda"
+          texto="Crie a primeira pra ela aparecer na Home."
+          acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={abrirNovo}>Criar notícia</Botao>} />
       ) : (
         <div className="an-list">
           {rows.map((n, idx) => (
-            <div key={n.id} className={`an-card ${!n.ativo ? "an-card--off" : ""}`}>
-              <div className="an-card-capa">{n.imagem_capa ? <img src={n.imagem_capa} alt="" /> : <span>{n.emoji}</span>}</div>
-              <div className="an-card-body">
-                <div className="an-card-tags">
-                  {n.fixada && <span className="an-tag an-tag--fix">📌 Fixada</span>}
-                  {n.categoria && <span className="an-tag">{n.categoria}</span>}
-                  {!n.ativo && <span className="an-tag an-tag--off">Desativada</span>}
-                  {n.views > 0 && <span className="an-views">{n.views} views</span>}
-                  <span className="an-ordem">ordem: {n.ordem}</span>
+            <div key={n.id} className={`an-card${!n.ativo ? " an-card--off" : ""}`}>
+              <div className="an-card-main">
+                <div className="an-card-capa">{n.imagem_capa ? <img src={n.imagem_capa} alt="" /> : <span>{n.emoji}</span>}</div>
+                <div className="an-card-body">
+                  <div className="an-card-tags">
+                    {n.fixada && <span className="an-tag an-tag--fix"><PushPin size={12} weight="fill" />Fixada</span>}
+                    {n.categoria && <span className="an-tag">{n.categoria}</span>}
+                    {!n.ativo && <span className="an-tag an-tag--off"><EyeSlash size={12} weight="bold" />Desativada</span>}
+                  </div>
+                  <p className="an-card-t">{n.titulo}</p>
+                  <p className="an-card-d">{n.descricao || "Sem descrição"}</p>
+                  <p className="an-card-meta">
+                    <span className="an-card-slug">/{n.slug}</span>
+                    {n.views > 0 && <span><Eye size={12} weight="bold" />{n.views} {n.views === 1 ? "visualização" : "visualizações"}</span>}
+                    <span>Ordem {n.ordem}</span>
+                  </p>
                 </div>
-                <p className="an-card-t">{n.titulo}</p>
-                <p className="an-card-d">{n.descricao || "(sem descrição)"}</p>
-                <p className="an-card-slug">/{n.slug}</p>
+                <BotaoIcone className="an-mais" rotulo={`Opções de ${n.titulo}`} variante="limpo" onClick={() => setMenuDe(n)}><DotsThree size={22} weight="bold" /></BotaoIcone>
               </div>
               <div className="an-card-actions">
-                <button className="an-icbtn" onClick={() => mover(n, "up")} disabled={idx === 0} title="Subir"><ArrowUp size={14} weight="bold" /></button>
-                <button className="an-icbtn" onClick={() => mover(n, "down")} disabled={idx === rows.length - 1} title="Descer"><ArrowDown size={14} weight="bold" /></button>
-                <button className="an-icbtn" onClick={() => toggleAtivo(n)} title={n.ativo ? "Desativar" : "Ativar"}>{n.ativo ? <Eye size={14} weight="bold" /> : <EyeSlash size={14} weight="bold" />}</button>
-                <button className="an-icbtn" onClick={() => abrirEditar(n)} title="Editar"><PencilSimple size={14} weight="bold" /></button>
-                <button className="an-icbtn an-icbtn--danger" onClick={() => excluir(n)} title="Excluir"><Trash size={14} weight="bold" /></button>
+                <BotaoIcone rotulo="Subir" variante="limpo" onClick={() => mover(n, "up")} disabled={idx === 0}><ArrowUp size={20} weight="bold" /></BotaoIcone>
+                <BotaoIcone rotulo="Descer" variante="limpo" onClick={() => mover(n, "down")} disabled={idx === rows.length - 1}><ArrowDown size={20} weight="bold" /></BotaoIcone>
+                <BotaoIcone rotulo={n.ativo ? "Desativar" : "Ativar"} variante="limpo" onClick={() => toggleAtivo(n)}>{n.ativo ? <Eye size={20} weight="bold" /> : <EyeSlash size={20} weight="bold" />}</BotaoIcone>
+                <BotaoIcone rotulo="Editar" variante="limpo" onClick={() => abrirEditar(n)}><PencilSimple size={20} weight="bold" /></BotaoIcone>
+                <BotaoIcone rotulo="Excluir" variante="limpo" className="an-perigo" onClick={() => excluir(n)}><Trash size={20} weight="bold" /></BotaoIcone>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {modalOpen && (
-        <div className="an-modal-overlay" onClick={() => !saving && setModalOpen(false)}>
-          <div className="an-modal" onClick={e => e.stopPropagation()}>
-            <div className="an-modal-head">
-              <h2>{editing ? "Editar notícia" : "Nova notícia"}</h2>
-              <button className="an-icbtn" onClick={() => !saving && setModalOpen(false)}><X size={16} weight="bold" /></button>
-            </div>
-            <div className="an-modal-body">
-              <div className="an-field">
-                <label>Emoji</label>
-                <div className="an-emoji-row">
-                  <input type="text" value={form.emoji} onChange={e => setForm(f => ({ ...f, emoji: e.target.value }))} maxLength={4} className="an-emoji-input" />
-                  <div className="an-emoji-chips">{EMOJIS_SUGERIDOS.map(e => <button key={e} className="an-emoji-chip" onClick={() => setForm(f => ({ ...f, emoji: e }))}>{e}</button>)}</div>
-                </div>
-              </div>
-              <div className="an-field">
-                <label>Título</label>
-                <input type="text" value={form.titulo} onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))} placeholder="Ex: Como fotografar seus bolos" maxLength={120} />
-              </div>
-              <div className="an-field">
-                <label>Imagem de capa</label>
-                {form.imagem_capa ? (
-                  <div className="an-capa-preview">
-                    <img src={form.imagem_capa} alt="" />
-                    <button className="an-capa-remove" onClick={() => setForm(f => ({ ...f, imagem_capa: "" }))}>✕ Remover</button>
-                  </div>
-                ) : (
-                  <div className="an-capa-upload" onClick={() => !uploadingCapa && capaRef.current?.click()}>
-                    {uploadingCapa ? <span>Enviando...</span> : (<><ImageIcon size={24} weight="regular" /><span>Enviar imagem de capa</span><span className="an-capa-hint">Formato 16:9 · até 2MB</span></>)}
-                  </div>
-                )}
-                <input ref={capaRef} type="file" accept="image/*" style={{ display: "none" }} onChange={uploadCapa} />
-              </div>
+      {/* menu da notícia (celular) */}
+      <Janela aberta={!!menuDe} aoFechar={() => setMenuDe(null)} tipo="conteudo" titulo={menuDe?.titulo || ""}>
+        {menuDe && (
+          <div className="an-menu">
+            <button type="button" onClick={() => { const n = menuDe; setMenuDe(null); abrirEditar(n); }}><PencilSimple size={20} weight="bold" />Editar</button>
+            <button type="button" onClick={() => { const n = menuDe; setMenuDe(null); toggleAtivo(n); }}>
+              {menuDe.ativo ? <><EyeSlash size={20} weight="bold" />Desativar</> : <><Eye size={20} weight="bold" />Ativar</>}
+            </button>
+            <button type="button" disabled={idxMenu <= 0} onClick={() => { const n = menuDe; setMenuDe(null); mover(n, "up"); }}><ArrowUp size={20} weight="bold" />Subir na ordem</button>
+            <button type="button" disabled={idxMenu < 0 || idxMenu >= rows.length - 1} onClick={() => { const n = menuDe; setMenuDe(null); mover(n, "down"); }}><ArrowDown size={20} weight="bold" />Descer na ordem</button>
+            <button type="button" className="perigo" onClick={() => { const n = menuDe; setMenuDe(null); excluir(n); }}><Trash size={20} weight="bold" />Excluir</button>
+          </div>
+        )}
+      </Janela>
 
-              <div className="an-field">
-                <label>Ícone pequeno (imagem quadrada) — aparece no card da Home</label>
-                {form.icone_url ? (
-                  <div className="an-icone-preview">
-                    <img src={form.icone_url} alt="" />
-                    <button className="an-capa-remove" onClick={() => setForm(f => ({ ...f, icone_url: "" }))}>✕ Remover</button>
-                  </div>
-                ) : (
-                  <div className="an-icone-upload" onClick={() => !uploadingIcone && iconeRef.current?.click()}>
-                    {uploadingIcone ? <span>Enviando...</span> : (<><ImageIcon size={22} weight="regular" /><span>Enviar ícone quadrado</span><span className="an-capa-hint">1:1 · até 500KB · Se vazio, usa o emoji</span></>)}
-                  </div>
-                )}
-                <input ref={iconeRef} type="file" accept="image/*" style={{ display: "none" }} onChange={uploadIcone} />
+      {/* nova / editar */}
+      <Janela aberta={modalOpen} aoFechar={fecharModal} tipo="conteudo" travada titulo={editing ? "Editar notícia" : "Nova notícia"}
+        acoes={<><Botao variante="secundario" onClick={fecharModal} disabled={saving}>Cancelar</Botao><Botao onClick={salvar} carregando={saving}>{editing ? "Salvar" : "Criar notícia"}</Botao></>}>
+        <div className="an-form">
+          <div className="ui-campo">
+            <span className="ui-campo-r"><span>Emoji</span></span>
+            <div className="an-emoji-row">
+              <div className="ui-campo-c an-emoji-input">
+                <input type="text" aria-label="Emoji" value={form.emoji} onChange={e => setForm(f => ({ ...f, emoji: e.target.value }))} maxLength={4} />
               </div>
-              <div className="an-row">
-                <div className="an-field">
-                  <label>Categoria</label>
-                  <select value={form.categoria} onChange={e => setForm(f => ({ ...f, categoria: e.target.value }))}>
-                    <option value="">Nenhuma</option>
-                    {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div className="an-field">
-                  <label>Autor</label>
-                  {autoresList.length > 0 ? (
-                    <select value={form.autor_id} onChange={e => {
-                      const id = e.target.value;
-                      const a = autoresList.find(x => x.id === id);
-                      setForm(f => ({ ...f, autor_id: id, autor: a ? a.nome : f.autor }));
-                    }}>
-                      <option value="">— Usar texto livre —</option>
-                      {autoresList.map(a => <option key={a.id} value={a.id}>{a.nome}</option>)}
-                    </select>
-                  ) : (
-                    <input type="text" value={form.autor} onChange={e => setForm(f => ({ ...f, autor: e.target.value }))} placeholder="Ex: Equipe Doonly" />
-                  )}
-                  {autoresList.length > 0 && !form.autor_id && (
-                    <input type="text" value={form.autor} onChange={e => setForm(f => ({ ...f, autor: e.target.value }))} placeholder="Ou digite um nome livre" style={{ marginTop: 6 }} />
-                  )}
-                  {autoresList.length === 0 && (
-                    <span className="an-hint" style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4, display: "block" }}>Cadastre autores em /admin/autores pra selecionar aqui.</span>
-                  )}
-                </div>
-              </div>
-              <div className="an-field">
-                <label>Likes iniciais (opcional) — soma aos likes reais</label>
-                <input type="number" min={0} value={form.likes_base} onChange={e => setForm(f => ({ ...f, likes_base: Math.max(0, parseInt(e.target.value) || 0) }))} placeholder="Ex: 42 (evita começar do zero)" />
-              </div>
-              <div className="an-field">
-                <label>Descrição curta (aparece no card da Home)</label>
-                <textarea value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} rows={2} maxLength={200} />
-              </div>
-              <div className="an-field">
-                <label>Conteúdo completo</label>
-                <RichEditor content={form.conteudo} onChange={(json) => setForm(f => ({ ...f, conteudo: json }))} />
-              </div>
-              <div className="an-row">
-                <div className="an-field">
-                  <label>Texto do botão CTA (opcional)</label>
-                  <input type="text" value={form.cta_texto} onChange={e => setForm(f => ({ ...f, cta_texto: e.target.value }))} />
-                </div>
-                <div className="an-field">
-                  <label>Link do botão</label>
-                  <input type="text" value={form.cta_url} onChange={e => setForm(f => ({ ...f, cta_url: e.target.value }))} />
-                </div>
-              </div>
-              <div className="an-field">
-                <label className="an-toggle-lbl">
-                  <input type="checkbox" checked={form.ativo} onChange={e => setForm(f => ({ ...f, ativo: e.target.checked }))} />
-                  <span>Ativa (aparece pra usuários)</span>
-                </label>
-              </div>
-
-              <div className="an-field">
-                <label className="an-toggle-lbl">
-                  <input type="checkbox" checked={form.fixada} onChange={e => setForm(f => ({ ...f, fixada: e.target.checked }))} />
-                  <span>📌 <b>Fixar no topo</b> (sempre visível na Home)</span>
-                </label>
-                {form.fixada && (
-                  <p className="an-fix-hint">
-                    ⚠️ Só pode ter <b>1 notícia fixada</b>. Se já existir outra, ela vai ser desafixada automaticamente ao salvar.
-                  </p>
-                )}
-              </div>
-
-              {/* ── Notificação no celular ── */}
-              <div className={`an-notif${!podeNotificar ? " an-notif--off" : ""}`}>
-                <label className="an-toggle-lbl">
-                  <input
-                    type="checkbox"
-                    checked={notif.enviar && podeNotificar}
-                    disabled={!podeNotificar}
-                    onChange={e => setNotif(n => ({ ...n, enviar: e.target.checked }))}
-                  />
-                  <span>🔔 <b>{editing ? "Avisar as confeiteiras de novo" : "Avisar as confeiteiras"}</b> (aparece na aba Notificações e no celular de quem ativou)</span>
-                </label>
-                {!podeNotificar && <p className="an-notif-hint">Ative a notícia pra poder notificar.</p>}
-
-                {notif.enviar && podeNotificar && (
-                  <>
-                    <button type="button" className="an-notif-toggle" onClick={() => setNotif(n => ({ ...n, aberta: !n.aberta }))}>
-                      Personalizar notificação
-                      <CaretDown size={12} weight="bold" style={{ transform: notif.aberta ? "rotate(180deg)" : "none", transition: "transform .15s" }} />
-                    </button>
-
-                    {notif.aberta && (
-                      <div className="an-notif-body">
-                        <div className="an-field">
-                          <label>Título da notificação <span className="an-notif-count">{notifTituloFinal.length}/40</span></label>
-                          <input type="text" value={notif.titulo} maxLength={80}
-                            onChange={e => setNotif(n => ({ ...n, titulo: e.target.value }))}
-                            placeholder={form.titulo || "Vazio = usa o título da notícia"} />
-                        </div>
-                        <div className="an-field">
-                          <label>Texto <span className="an-notif-count">{notifTextoFinal.length}/100</span></label>
-                          <textarea value={notif.texto} rows={2} maxLength={200}
-                            onChange={e => setNotif(n => ({ ...n, texto: e.target.value }))}
-                            placeholder={form.descricao || "Vazio = usa a descrição da notícia"} />
-                        </div>
-                        <div className="an-field">
-                          <label>Imagem (só aparece no Android)</label>
-                          <div className="an-notif-img-opts">
-                            <button type="button" className={notif.imagemModo === "capa" ? "on" : ""} onClick={() => setNotif(n => ({ ...n, imagemModo: "capa" }))}>Capa da notícia</button>
-                            <button type="button" className={notif.imagemModo === "custom" ? "on" : ""} onClick={() => notif.imagemUrl ? setNotif(n => ({ ...n, imagemModo: "custom" })) : notifImgRef.current?.click()}>
-                              {uploadingNotifImg ? "Enviando..." : "Outra imagem"}
-                            </button>
-                            <button type="button" className={notif.imagemModo === "nenhuma" ? "on" : ""} onClick={() => setNotif(n => ({ ...n, imagemModo: "nenhuma" }))}>Sem imagem</button>
-                          </div>
-                          {notif.imagemModo === "custom" && notif.imagemUrl && (
-                            <button type="button" className="an-notif-trocar" onClick={() => notifImgRef.current?.click()}>Trocar imagem</button>
-                          )}
-                          <input ref={notifImgRef} type="file" accept="image/*" style={{ display: "none" }} onChange={uploadNotifImg} />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Prévia (estilo Android) */}
-                    <div className="an-notif-prev">
-                      <div className="an-notif-prev-top">
-                        <img src="/Sistema/icon-192.png" alt="" />
-                        <span>Doonly · agora</span>
-                      </div>
-                      <p className="an-notif-prev-t">{notifTituloFinal || "Título da notificação"}</p>
-                      <p className="an-notif-prev-d">{notifTextoFinal || "Texto da notificação"}</p>
-                      {notifImagemFinal && <img className="an-notif-prev-img" src={notifImagemFinal} alt="" />}
-                      <p className="an-notif-prev-link">Ao tocar, abre esta notícia</p>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-            <div className="an-modal-foot">
-              <button className="an-btn-cancel" onClick={() => !saving && setModalOpen(false)}>Cancelar</button>
-              <button className="an-btn-save" onClick={salvar} disabled={saving}>{saving ? "Salvando..." : (editing ? "Salvar" : "Criar")}</button>
+              <div className="an-emoji-chips">{EMOJIS_SUGERIDOS.map(e => <button type="button" key={e} className="an-emoji-chip" aria-pressed={form.emoji === e} onClick={() => setForm(f => ({ ...f, emoji: e }))}>{e}</button>)}</div>
             </div>
           </div>
-        </div>
-      )}
 
-      <style>{`
-        .an-root { padding: 24px; max-width: 900px; margin: 0 auto; font-family: 'Geist', sans-serif; }
-        .an-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
-        .an-title { font-size: 22px; font-weight: 900; margin: 0 0 4px; color: #2C1219; }
-        .an-sub { font-size: 13px; color: #6B7280; margin: 0; }
-        .an-loading { padding: 40px; text-align: center; color: #6B7280; }
-        .an-btn-new { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; background: linear-gradient(135deg, #E85A8C, #C33A6E); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 0 #7A1B47; font-family: inherit; }
-        .an-msg { padding: 10px 14px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; }
-        .an-msg--ok { background: #F0FDF4; color: #15803D; border: 1px solid #BBF7D0; }
-        .an-msg--err { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
-        .an-empty { text-align: center; padding: 60px 20px; color: #6B7280; }
-        .an-list { display: flex; flex-direction: column; gap: 10px; }
-        .an-card { display: flex; gap: 14px; padding: 14px 16px; background: #fff; border: 1px solid #F0EBED; border-radius: 10px; }
-        .an-card--off { opacity: 0.55; }
-        .an-card-capa { width: 60px; height: 60px; border-radius: 8px; background: #F5F0F2; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
-        .an-card-capa img { width: 100%; height: 100%; object-fit: cover; }
-        .an-card-capa span { font-size: 28px; }
-        .an-card-body { flex: 1; min-width: 0; }
-        .an-card-tags { display: flex; gap: 6px; align-items: center; margin-bottom: 4px; flex-wrap: wrap; }
-        .an-tag { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 2px; background: #F5F0F2; color: #4B5563; letter-spacing: 0.02em; }
-        .an-tag--off { background: #F5F0F2; color: #6B7280; }
-        .an-tag--fix { background: #FEF3C7; color: #B45309; font-weight: 800; }
-        .an-notif { margin-bottom: 16px; padding: 12px; border-radius: 10px; background: #FAF7F8; }
-        .an-notif--off { opacity: 0.6; }
-        .an-notif-hint { margin: 6px 0 0 26px; font-size: 11px; color: #6B7280; }
-        .an-notif-toggle { display: flex; align-items: center; gap: 6px; margin: 10px 0 0 26px; padding: 0; background: none; border: none; font-family: inherit; font-size: 12px; font-weight: 700; color: #C33A6E; cursor: pointer; }
-        .an-notif-body { margin: 12px 0 0; }
-        .an-notif-count { float: right; font-weight: 500; color: #9CA3AF; }
-        .an-notif-img-opts { display: flex; gap: 6px; flex-wrap: wrap; }
-        .an-notif-img-opts button { padding: 7px 12px; border-radius: 6px; border: 1.5px solid #F0EBED; background: #fff; font-family: inherit; font-size: 12px; font-weight: 600; color: #4B5563; cursor: pointer; }
-        .an-notif-img-opts button.on { border-color: #E85A8C; color: #C33A6E; background: #FFF5F9; }
-        .an-notif-trocar { margin-top: 6px; padding: 0; background: none; border: none; font-family: inherit; font-size: 11.5px; font-weight: 600; color: #6B7280; text-decoration: underline; cursor: pointer; }
-        .an-notif-prev { margin-top: 12px; background: #fff; border-radius: 14px; padding: 12px 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); max-width: 360px; }
-        .an-notif-prev-top { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #6B7280; margin-bottom: 6px; }
-        .an-notif-prev-top img { width: 16px; height: 16px; border-radius: 4px; }
-        .an-notif-prev-t { margin: 0; font-size: 13.5px; font-weight: 700; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .an-notif-prev-d { margin: 2px 0 0; font-size: 12.5px; color: #4B5563; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .an-notif-prev-img { display: block; width: 100%; aspect-ratio: 2/1; object-fit: cover; border-radius: 8px; margin-top: 8px; }
-        .an-notif-prev-link { margin: 8px 0 0; font-size: 10.5px; color: #9CA3AF; }
-        .an-fix-hint { margin: 6px 0 0; font-size: 11px; color: #B45309; background: #FEF3C7; padding: 8px 10px; border-radius: 6px; }
-        .an-views { font-size: 10px; color: #6B7280; }
-        .an-ordem { font-size: 10px; color: #9CA3AF; margin-left: auto; }
-        .an-card-t { font-size: 14px; font-weight: 800; margin: 0 0 3px; color: #2C1219; }
-        .an-card-d { font-size: 12.5px; color: #6B7280; margin: 0 0 3px; line-height: 1.4; }
-        .an-card-slug { font-size: 10.5px; color: #9CA3AF; margin: 0; font-family: monospace; }
-        .an-card-actions { display: flex; gap: 4px; flex-shrink: 0; align-items: flex-start; }
-        .an-icbtn { width: 30px; height: 30px; background: #F5F0F2; border: none; border-radius: 6px; color: #6B7280; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .an-icbtn:hover:not(:disabled) { background: #E5DDE0; color: #2C1219; }
-        .an-icbtn:disabled { opacity: 0.3; cursor: not-allowed; }
-        .an-icbtn--danger:hover { background: #FEF2F2; color: #B91C1C; }
-        .an-modal-overlay { position: fixed; inset: 0; background: rgba(44,18,25,0.5); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
-        .an-modal { background: #fff; border-radius: 14px; width: 100%; max-width: 720px; max-height: 92vh; overflow: hidden; display: flex; flex-direction: column; }
-        .an-modal-head { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #F0EBED; }
-        .an-modal-head h2 { margin: 0; font-size: 17px; font-weight: 800; color: #2C1219; }
-        .an-modal-body { padding: 20px; overflow-y: auto; flex: 1; }
-        .an-modal-foot { padding: 14px 20px; border-top: 1px solid #F0EBED; display: flex; gap: 8px; justify-content: flex-end; }
-        .an-btn-cancel { padding: 10px 16px; background: transparent; color: #6B7280; border: 1px solid #F0EBED; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
-        .an-btn-save { padding: 10px 20px; background: linear-gradient(135deg, #E85A8C, #C33A6E); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 3px 0 #7A1B47; font-family: inherit; }
-        .an-btn-save:disabled { opacity: 0.5; cursor: wait; }
-        .an-field { margin-bottom: 16px; }
-        .an-field label { display: block; font-size: 12px; font-weight: 700; color: #2C1219; margin-bottom: 6px; }
-        .an-field input[type="text"], .an-field textarea, .an-field select { width: 100%; padding: 10px 12px; border: 1.5px solid #F0EBED; border-radius: 8px; font-size: 13.5px; font-family: inherit; resize: vertical; }
-        .an-field input:focus, .an-field textarea:focus, .an-field select:focus { outline: none; border-color: #E85A8C; }
-        .an-row { display: flex; gap: 10px; }
-        .an-row .an-field { flex: 1; }
-        .an-emoji-row { display: flex; gap: 8px; align-items: center; }
-        .an-emoji-input { width: 60px !important; text-align: center; font-size: 20px !important; }
-        .an-emoji-chips { display: flex; gap: 4px; flex-wrap: wrap; }
-        .an-emoji-chip { width: 32px; height: 32px; background: #F5F0F2; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
-        .an-emoji-chip:hover { background: #E5DDE0; }
-        .an-toggle-lbl { display: flex !important; align-items: center; gap: 8px; cursor: pointer; }
-        .an-toggle-lbl input { width: 18px; height: 18px; margin: 0; }
-        .an-capa-upload { width: 100%; aspect-ratio: 16/9; background: #FAFAFA; border: 2px dashed #E5DDE0; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #6B7280; gap: 6px; cursor: pointer; font-size: 12px; font-weight: 600; }
-        .an-capa-upload:hover { background: #F5F0F2; border-color: #E85A8C; color: #C33A6E; }
-        .an-capa-hint { font-size: 10px; color: #9CA3AF; }
-        .an-capa-preview { position: relative; width: 100%; aspect-ratio: 16/9; border-radius: 10px; overflow: hidden; }
-        .an-capa-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .an-capa-remove { position: absolute; top: 8px; right: 8px; padding: 6px 10px; background: rgba(0,0,0,0.65); color: #fff; border: none; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; backdrop-filter: blur(6px); }
-        .an-icone-upload { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #FAFAFA; border: 2px dashed #E5DDE0; border-radius: 10px; color: #6B7280; cursor: pointer; font-size: 12px; font-weight: 600; }
-        .an-icone-upload:hover { background: #F5F0F2; border-color: #E85A8C; color: #C33A6E; }
-        .an-icone-preview { position: relative; display: inline-block; }
-        .an-icone-preview img { width: 84px; height: 84px; object-fit: cover; border-radius: 10px; display: block; border: 1px solid #F0EBED; }
-      `}</style>
+          <Campo rotulo="Título" obrigatorio value={form.titulo} onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))} placeholder="Ex.: Como fotografar seus bolos" maxLength={120} />
+
+          <div className="ui-campo">
+            <span className="ui-campo-r"><span>Imagem de capa</span><small>opcional</small></span>
+            {form.imagem_capa ? (
+              <div className="an-capa-preview">
+                <img src={form.imagem_capa} alt="" />
+                <Botao className="an-remover" variante="secundario" tamanho="p" icone={<Trash size={16} weight="bold" />} onClick={() => setForm(f => ({ ...f, imagem_capa: "" }))}>Remover</Botao>
+              </div>
+            ) : (
+              <button type="button" className="an-capa-upload" disabled={uploadingCapa} onClick={() => !uploadingCapa && capaRef.current?.click()}>
+                {uploadingCapa ? <span className="ui-gira" aria-label="Enviando" /> : (<><ImageIcon size={24} weight="bold" /><b>Enviar imagem de capa</b><small>Formato 16:9, até 2 MB</small></>)}
+              </button>
+            )}
+            <input ref={capaRef} type="file" accept="image/*" hidden onChange={uploadCapa} />
+          </div>
+
+          <div className="ui-campo">
+            <span className="ui-campo-r"><span>Ícone pequeno</span><small>opcional</small></span>
+            {form.icone_url ? (
+              <div className="an-icone-preview">
+                <img src={form.icone_url} alt="" />
+                <Botao variante="link" tamanho="p" onClick={() => setForm(f => ({ ...f, icone_url: "" }))}>Remover ícone</Botao>
+              </div>
+            ) : (
+              <button type="button" className="an-icone-upload" disabled={uploadingIcone} onClick={() => !uploadingIcone && iconeRef.current?.click()}>
+                {uploadingIcone ? <span className="ui-gira" aria-label="Enviando" /> : (<><ImageIcon size={22} weight="bold" /><span><b>Enviar ícone quadrado</b><small>1:1, até 500 KB. Sem ícone, usa o emoji.</small></span></>)}
+              </button>
+            )}
+            <p className="ui-campo-msg">Aparece no cartão da Home.</p>
+            <input ref={iconeRef} type="file" accept="image/*" hidden onChange={uploadIcone} />
+          </div>
+
+          <div className="an-row">
+            <div className="ui-campo">
+              <label className="ui-campo-r" htmlFor="an-categoria"><span>Categoria</span></label>
+              <div className="ui-campo-c an-sel">
+                <select id="an-categoria" value={form.categoria} onChange={e => setForm(f => ({ ...f, categoria: e.target.value }))}>
+                  <option value="">Nenhuma</option>
+                  {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <CaretDown size={16} weight="bold" aria-hidden="true" />
+              </div>
+            </div>
+            {autoresList.length > 0 ? (
+              <div className="ui-campo">
+                <label className="ui-campo-r" htmlFor="an-autor"><span>Autor</span></label>
+                <div className="ui-campo-c an-sel">
+                  <select id="an-autor" value={form.autor_id} onChange={e => {
+                    const id = e.target.value;
+                    const a = autoresList.find(x => x.id === id);
+                    setForm(f => ({ ...f, autor_id: id, autor: a ? a.nome : f.autor }));
+                  }}>
+                    <option value="">Digitar um nome</option>
+                    {autoresList.map(a => <option key={a.id} value={a.id}>{a.nome}</option>)}
+                  </select>
+                  <CaretDown size={16} weight="bold" aria-hidden="true" />
+                </div>
+              </div>
+            ) : (
+              <Campo rotulo="Autor" value={form.autor} onChange={e => setForm(f => ({ ...f, autor: e.target.value }))} placeholder="Ex.: Equipe Doonly"
+                dica="Cadastre autores em /admin/autores pra escolher aqui." />
+            )}
+          </div>
+          {autoresList.length > 0 && !form.autor_id && (
+            <Campo rotulo="Nome do autor" value={form.autor} onChange={e => setForm(f => ({ ...f, autor: e.target.value }))} placeholder="Ex.: Equipe Doonly" />
+          )}
+
+          <Campo rotulo="Curtidas iniciais" opcional type="number" inputMode="numeric" min={0} value={form.likes_base}
+            onChange={e => setForm(f => ({ ...f, likes_base: Math.max(0, parseInt(e.target.value) || 0) }))}
+            placeholder="Ex.: 42" dica="Somam às curtidas reais, pra não começar do zero." />
+
+          <CampoArea rotulo="Descrição curta" value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} rows={2} maxLength={200}
+            dica="Aparece no cartão da Home." />
+
+          <div className="ui-campo">
+            <span className="ui-campo-r"><span>Conteúdo completo</span></span>
+            <div className="an-editor">
+              <RichEditor content={form.conteudo} onChange={(json) => setForm(f => ({ ...f, conteudo: json }))} />
+            </div>
+          </div>
+
+          <div className="an-row">
+            <Campo rotulo="Texto do botão" opcional value={form.cta_texto} onChange={e => setForm(f => ({ ...f, cta_texto: e.target.value }))} placeholder="Ex.: Ver agora" />
+            <Campo rotulo="Link do botão" opcional value={form.cta_url} onChange={e => setForm(f => ({ ...f, cta_url: e.target.value }))} placeholder="Ex.: /assinar" />
+          </div>
+
+          <div className="an-checks">
+            <label className="an-check">
+              <input type="checkbox" checked={form.ativo} onChange={e => setForm(f => ({ ...f, ativo: e.target.checked }))} />
+              <span><b>Ativa</b><small>Aparece pras confeiteiras.</small></span>
+            </label>
+            <label className="an-check">
+              <input type="checkbox" checked={form.fixada} onChange={e => setForm(f => ({ ...f, fixada: e.target.checked }))} />
+              <span><b><PushPin size={16} weight="bold" aria-hidden="true" />Fixar no topo</b><small>Sempre visível na Home.</small></span>
+            </label>
+            {form.fixada && (
+              <p className="an-fix-hint">
+                <WarningCircle size={18} weight="bold" aria-hidden="true" />
+                <span>Só uma notícia pode ficar fixada. Se já tiver outra, ela sai do topo ao salvar.</span>
+              </p>
+            )}
+          </div>
+
+          {/* ── Notificação no celular ── */}
+          <div className={`an-notif${!podeNotificar ? " an-notif--off" : ""}`}>
+            <label className="an-check">
+              <input
+                type="checkbox"
+                checked={notif.enviar && podeNotificar}
+                disabled={!podeNotificar}
+                onChange={e => setNotif(n => ({ ...n, enviar: e.target.checked }))}
+              />
+              <span>
+                <b><Bell size={16} weight="bold" aria-hidden="true" />{editing ? "Avisar as confeiteiras de novo" : "Avisar as confeiteiras"}</b>
+                <small>Aparece na aba Notificações e no celular de quem ativou.</small>
+              </span>
+            </label>
+            {!podeNotificar && <p className="an-notif-hint">Ative a notícia pra poder avisar.</p>}
+
+            {notif.enviar && podeNotificar && (
+              <>
+                <button type="button" className="an-notif-toggle" aria-expanded={notif.aberta} onClick={() => setNotif(n => ({ ...n, aberta: !n.aberta }))}>
+                  Personalizar notificação
+                  <CaretDown size={16} weight="bold" style={{ transform: notif.aberta ? "rotate(180deg)" : "none", transition: "transform .15s" }} />
+                </button>
+
+                {notif.aberta && (
+                  <div className="an-notif-body">
+                    <Campo rotulo={`Título da notificação · ${notifTituloFinal.length}/40`} value={notif.titulo} maxLength={80}
+                      onChange={e => setNotif(n => ({ ...n, titulo: e.target.value }))}
+                      placeholder={form.titulo || "Vazio usa o título da notícia"} />
+                    <CampoArea rotulo={`Texto · ${notifTextoFinal.length}/100`} value={notif.texto} rows={2} maxLength={200}
+                      onChange={e => setNotif(n => ({ ...n, texto: e.target.value }))}
+                      placeholder={form.descricao || "Vazio usa a descrição da notícia"} />
+                    <div className="ui-campo">
+                      <span className="ui-campo-r"><span>Imagem</span><small>só no Android</small></span>
+                      <div className="an-notif-img-opts" role="group" aria-label="Imagem da notificação">
+                        <button type="button" aria-pressed={notif.imagemModo === "capa"} onClick={() => setNotif(n => ({ ...n, imagemModo: "capa" }))}>Capa da notícia</button>
+                        <button type="button" aria-pressed={notif.imagemModo === "custom"} onClick={() => notif.imagemUrl ? setNotif(n => ({ ...n, imagemModo: "custom" })) : notifImgRef.current?.click()}>
+                          {uploadingNotifImg ? "Enviando..." : "Outra imagem"}
+                        </button>
+                        <button type="button" aria-pressed={notif.imagemModo === "nenhuma"} onClick={() => setNotif(n => ({ ...n, imagemModo: "nenhuma" }))}>Sem imagem</button>
+                      </div>
+                      {notif.imagemModo === "custom" && notif.imagemUrl && (
+                        <Botao variante="link" tamanho="p" onClick={() => notifImgRef.current?.click()}>Trocar imagem</Botao>
+                      )}
+                      <input ref={notifImgRef} type="file" accept="image/*" hidden onChange={uploadNotifImg} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Prévia (estilo Android) */}
+                <div className="an-notif-prev" aria-label="Prévia da notificação">
+                  <div className="an-notif-prev-top">
+                    <img src="/Sistema/icon-192.png" alt="" />
+                    <span>Doonly · agora</span>
+                  </div>
+                  <p className="an-notif-prev-t">{notifTituloFinal || "Título da notificação"}</p>
+                  <p className="an-notif-prev-d">{notifTextoFinal || "Texto da notificação"}</p>
+                  {notifImagemFinal && <img className="an-notif-prev-img" src={notifImagemFinal} alt="" />}
+                  <p className="an-notif-prev-link">Ao tocar, abre esta notícia</p>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </Janela>
     </div>
   );
 }

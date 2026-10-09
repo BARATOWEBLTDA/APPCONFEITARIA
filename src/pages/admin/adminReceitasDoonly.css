@@ -1,0 +1,38 @@
+/* Admin · Receitas Doonly (09/10 · guia v2) */
+.ard { max-width: 1180px; margin: 0 auto; font-family: var(--font-base); color: var(--ui-texto); text-align: left; }
+.ard button { font-family: inherit; cursor: pointer; }
+.ard-carregando { margin: 24px 0; font-size: 15px; font-weight: 500; color: var(--ui-texto-2); }
+.ard .ard-apagar { color: var(--ui-vermelho); }
+
+/* categorias */
+.ard-cat { margin: 16px 0 20px; padding: 16px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); }
+.ard-cat-add { display: flex; gap: 8px; margin: 12px 0 4px; }
+.ard-cat-add input { flex: 1; min-width: 0; height: 48px; padding: 0 12px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); outline: none; font-family: inherit; font-size: 16px; font-weight: 500; color: var(--ui-texto); }
+.ard-cat-add input:focus { border-color: var(--ui-rosa); }
+.ard-cat-add input::placeholder { color: var(--ui-texto-3); }
+.ard-cat-lista { display: flex; flex-direction: column; }
+.ard-cat-l { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-height: 64px; padding: 8px 0; border-top: 1px solid var(--ui-linha); }
+.ard-cat-l:first-child { border-top: 0; }
+.ard-cat-foto { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 72px; height: 52px; margin: 0; padding: 0; overflow: hidden; border: 1px dashed var(--ui-borda); border-radius: 10px; background: var(--ui-cinza); color: var(--ui-texto-2); font-size: 12px; font-weight: 700; }
+.ard-cat-foto img { width: 100%; height: 100%; object-fit: cover; }
+.ard-cat-foto:has(img) { border-style: solid; }
+.ard-cat-tx { flex: 1 1 140px; min-width: 0; display: flex; flex-direction: column; }
+.ard-cat-tx b { font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ard-cat-tx small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
+.ard-cat-acoes { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+
+/* cartões das receitas */
+.ard-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 12px; }
+.ard-card { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); }
+.ard-foto { position: relative; display: flex; align-items: center; justify-content: center; height: 140px; overflow: hidden; background: var(--ui-rosa-claro); color: var(--ui-rosa); }
+.ard-foto img { width: 100%; height: 100%; object-fit: cover; }
+.ard-selo { position: absolute; top: 10px; left: 10px; display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; background: var(--ui-branco); color: var(--ui-rosa-escuro); font-size: 12px; font-weight: 700; }
+.ard-corpo { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px 8px; min-width: 0; }
+.ard-corpo b { font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ard-corpo small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
+.ard-card-acoes { display: flex; align-items: center; gap: 8px; margin-top: auto; padding: 4px 14px 14px; }
+
+/* formulário */
+.ard-form { display: flex; flex-direction: column; gap: 14px; }
+.ard-form-foto { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100%; height: 140px; margin: 0; padding: 0; overflow: hidden; border: 1.5px dashed var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-cinza); color: var(--ui-texto-2); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.ard-form-foto img { width: 100%; height: 100%; object-fit: cover; }

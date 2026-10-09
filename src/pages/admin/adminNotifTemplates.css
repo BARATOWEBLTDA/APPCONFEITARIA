@@ -1,0 +1,42 @@
+/* Admin · Notificações automáticas (09/10 · guia v2) */
+.ant { max-width: 680px; margin: 0 auto; font-family: var(--font-base); color: var(--ui-texto); text-align: left; }
+.ant button { font-family: inherit; cursor: pointer; }
+.ant-carregando { margin: 24px 0; font-size: 15px; font-weight: 500; color: var(--ui-texto-2); }
+
+.ant-card { margin-top: 16px; padding: 16px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); }
+.ant-cab { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.ant-cab-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ant-cab-tx b { font-size: 16px; font-weight: 700; }
+.ant-cab-tx small { font-size: 13px; font-weight: 500; line-height: 1.45; color: var(--ui-texto-2); }
+.ant-selo { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; margin-bottom: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-style: normal; font-weight: 700; }
+.ant-selo--rosa { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.ant-selo--verde { background: var(--ui-verde-fundo); color: var(--ui-verde); }
+
+/* chave liga/desliga (área de toque de 44px) */
+.ant-chave { flex: none; display: flex; align-items: center; gap: 8px; min-height: 44px; margin: -6px -6px 0 0; padding: 0 6px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto-3); font-size: 13px; font-weight: 700; }
+.ant-chave i { position: relative; display: block; width: 44px; height: 26px; border-radius: 999px; background: var(--ui-borda); transition: background-color var(--dur-fast, .15s) linear; }
+.ant-chave em { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--ui-branco); box-shadow: 0 1px 3px rgba(44, 18, 25, .25); transition: transform var(--dur-fast, .15s) ease-out; }
+.ant-chave.on { color: var(--ui-verde); }
+.ant-chave.on i { background: var(--ui-verde); }
+.ant-chave.on em { transform: translateX(18px); }
+.ant-chave:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
+
+.ant-campos { display: flex; flex-direction: column; gap: 14px; }
+.ant-som { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
+.ant-som > .ui-bt { flex: 1 1 160px; }
+.ant-som-c { flex: 1 1 200px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ant-som-c span { font-size: 13px; font-weight: 700; color: var(--ui-cinza-texto); }
+.ant-som-c select { width: 100%; height: 48px; padding: 0 12px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); outline: none; font-family: inherit; font-size: 16px; font-weight: 500; color: var(--ui-texto); cursor: pointer; }
+.ant-som-c select:focus { border-color: var(--ui-rosa); }
+
+/* como vai aparecer */
+.ant-prev { margin-top: 16px; padding: 12px; border: 1px dashed var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-fundo); }
+.ant-prev-r { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
+.ant-prev-l { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); }
+.ant-prev-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: var(--ui-rosa); color: var(--ui-branco); font-size: 14px; font-weight: 800; }
+.ant-prev-tx { flex: 1; min-width: 0; }
+.ant-prev-tx b { display: block; font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
+.ant-prev-tx p { margin: 2px 0 0; font-size: 13px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); overflow-wrap: anywhere; }
+.ant-prev-tx small { display: block; margin-top: 4px; font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
+
+.ant-pe { display: flex; justify-content: flex-end; margin-top: 16px; }

@@ -21,37 +21,37 @@ interface MenuSection {
 const menuSections: MenuSection[] = [
   {
     items: [
-      { path: "/admin", label: "Dashboard", icon: <ChartLine size={16} weight="fill" /> },
-      { path: "/admin/usuarios", label: "Usuários", icon: <UsersThree size={16} weight="bold" /> },
+      { path: "/admin", label: "Dashboard", icon: <ChartLine size={20} weight="bold" /> },
+      { path: "/admin/usuarios", label: "Usuários", icon: <UsersThree size={20} weight="bold" /> },
     ],
   },
   {
     title: "Conteúdo",
     items: [
-      { path: "/admin/noticias", label: "Notícias", icon: <Newspaper size={16} weight="bold" /> },
-      { path: "/admin/autores", label: "Autores", icon: <PenNib size={16} weight="bold" /> },
-      { path: "/admin/banner", label: "Banner mobile", icon: <ImageIcon size={16} weight="bold" /> },
+      { path: "/admin/noticias", label: "Notícias", icon: <Newspaper size={20} weight="bold" /> },
+      { path: "/admin/autores", label: "Autores", icon: <PenNib size={20} weight="bold" /> },
+      { path: "/admin/banner", label: "Banner do celular", icon: <ImageIcon size={20} weight="bold" /> },
     ],
   },
   {
     title: "Biblioteca",
     items: [
-      { path: "/admin/receitas", label: "Receitas Comunidade", icon: <Cake size={16} weight="bold" /> },
-      { path: "/admin/receitas-doonly", label: "Receitas Doonly", icon: <Medal size={16} weight="bold" /> },
-      { path: "/admin/pdfs", label: "Biblioteca PDF", icon: <FilePdf size={16} weight="bold" /> },
+      { path: "/admin/receitas", label: "Receitas da comunidade", icon: <Cake size={20} weight="bold" /> },
+      { path: "/admin/receitas-doonly", label: "Receitas Doonly", icon: <Medal size={20} weight="bold" /> },
+      { path: "/admin/pdfs", label: "Biblioteca de PDFs", icon: <FilePdf size={20} weight="bold" /> },
     ],
   },
   {
     title: "Comunicação",
     items: [
-      { path: "/admin/notificacoes", label: "Notificações", icon: <Bell size={16} weight="bold" /> },
-      { path: "/admin/ideias", label: "Ideias", icon: <Lightbulb size={16} weight="bold" /> },
+      { path: "/admin/notificacoes", label: "Notificações", icon: <Bell size={20} weight="bold" /> },
+      { path: "/admin/ideias", label: "Ideias", icon: <Lightbulb size={20} weight="bold" /> },
     ],
   },
   {
     title: "Análise",
     items: [
-      { path: "/admin/relatorios", label: "Relatórios", icon: <ChartBar size={16} weight="bold" /> },
+      { path: "/admin/relatorios", label: "Relatórios", icon: <ChartBar size={20} weight="bold" /> },
     ],
   },
 ];
@@ -154,11 +154,11 @@ export default function AdminLayout() {
         </div>
       </div>
       <button className="adm-side-btn" onClick={() => navigate("/inicio")}>
-        <ArrowLeft size={14} weight="bold" />
+        <ArrowLeft size={20} weight="bold" />
         <span>Voltar ao app</span>
       </button>
       <button className="adm-side-btn danger" onClick={handleLogout}>
-        <SignOut size={14} weight="bold" />
+        <SignOut size={20} weight="bold" />
         <span>Sair</span>
       </button>
     </div>
@@ -174,7 +174,7 @@ export default function AdminLayout() {
           </div>
           <div className="adm-brand">
             <span className="adm-brand-name">Doonly</span>
-            <span className="adm-brand-role">Painel Admin</span>
+            <span className="adm-brand-role">Painel administrativo</span>
           </div>
         </div>
         {renderNav()}
@@ -241,8 +241,8 @@ export default function AdminLayout() {
             ))}
             <div className="adm-sheet-sep" />
             <div className="adm-sheet-foot">
-              <button onClick={() => navigate("/inicio")}><ArrowLeft size={14} weight="bold" /> Voltar ao app</button>
-              <button className="danger" onClick={handleLogout}><SignOut size={14} weight="bold" /> Sair</button>
+              <button onClick={() => navigate("/inicio")}><ArrowLeft size={20} weight="bold" /> Voltar ao app</button>
+              <button className="danger" onClick={handleLogout}><SignOut size={20} weight="bold" /> Sair</button>
             </div>
           </div>
         </div>
@@ -254,224 +254,77 @@ export default function AdminLayout() {
       </main>
 
       <style>{`
-        * { box-sizing: border-box; }
-        .adm-root { display: flex; min-height: 100vh; font-family: 'Geist', sans-serif; background: #F8F5F6; }
+        /* Painel admin (09/10 · 3.62): mesmas cores e medidas do app (menu vinho escuro, tokens --ui-*) */
+        .adm-root, .adm-root * { box-sizing: border-box; }
+        .adm-root { display: flex; min-height: 100vh; font-family: var(--font-base); background: var(--ui-fundo); color: var(--ui-texto); }
 
-        /* ═══════════ Sidebar desktop ═══════════ */
-        .adm-sidebar {
-          width: 260px;
-          min-height: 100vh;
-          background: #1A1418;
-          display: flex; flex-direction: column;
-          position: fixed;
-          left: 0; top: 0; bottom: 0;
-          z-index: 30;
-        }
-        .adm-sidebar-top {
-          padding: 20px;
-          border-bottom: 1px solid rgba(255,255,255,0.08);
-          display: flex; align-items: center; gap: 12px;
-        }
-        .adm-logo-square {
-          width: 40px; height: 40px;
-          border-radius: 10px;
-          background: linear-gradient(135deg, #E85A8C, #C33A6E);
-          display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 4px 12px rgba(232,90,140,0.25);
-          overflow: hidden;
-          flex-shrink: 0;
-        }
+        /* Menu do computador */
+        .adm-sidebar { position: fixed; top: 0; bottom: 0; left: 0; z-index: 30; display: flex; flex-direction: column; width: 260px; background: #1F0711; }
+        .adm-sidebar-top { display: flex; align-items: center; gap: 12px; padding: 20px; border-bottom: 1px solid rgba(255,255,255,.08); }
+        .adm-logo-square { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; overflow: hidden; border-radius: 12px; background: var(--ui-rosa); }
         .adm-logo-square img { width: 26px; height: 26px; object-fit: contain; filter: brightness(0) invert(1); }
-        .adm-logo-square--sm { width: 34px; height: 34px; }
+        .adm-logo-square--sm { width: 36px; height: 36px; }
         .adm-logo-square--sm img { width: 22px; height: 22px; }
-
         .adm-brand { display: flex; flex-direction: column; min-width: 0; }
-        .adm-brand-name { font-size: 15px; font-weight: 900; color: #fff; line-height: 1.1; }
-        .adm-brand-role { font-size: 10px; color: #9CA3AF; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; }
-
-        .adm-nav {
-          flex: 1;
-          padding: 12px 12px 20px;
-          overflow-y: auto;
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255,255,255,0.15) transparent;
-        }
-        .adm-nav::-webkit-scrollbar { width: 4px; }
-        .adm-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
-
+        .adm-brand-name { font-size: 16px; font-weight: 800; line-height: 1.15; color: #fff; }
+        .adm-brand-role { font-size: 12px; font-weight: 500; color: rgba(255,255,255,.6); }
+        .adm-nav { flex: 1; padding: 8px 12px 20px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.15) transparent; }
         .adm-nav-section { margin-bottom: 4px; }
-        .adm-nav-sec-title {
-          font-size: 10px;
-          font-weight: 800;
-          color: #6B7280;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          padding: 14px 12px 6px;
-          margin: 0;
-        }
-
-        .adm-nav-item {
-          display: flex; align-items: center; gap: 10px;
-          width: 100%;
-          padding: 9px 12px;
-          border-radius: 8px;
-          border: none;
-          background: transparent;
-          color: #C9B4BB;
-          cursor: pointer;
-          font-family: inherit;
-          font-size: 13px;
-          font-weight: 600;
-          text-align: left;
-          transition: all 0.15s;
-          margin-bottom: 2px;
-        }
-        .adm-nav-icon { display: flex; align-items: center; justify-content: center; width: 18px; }
-        .adm-nav-item:hover {
-          background: rgba(255,255,255,0.06);
-          color: #fff;
-        }
-        .adm-nav-item.on {
-          background: linear-gradient(135deg, #E85A8C, #C33A6E);
-          color: #fff;
-          font-weight: 700;
-          box-shadow: 0 4px 12px rgba(232,90,140,0.25);
-        }
+        .adm-nav-sec-title { margin: 0; padding: 16px 12px 6px; font-size: 12px; font-weight: 700; color: rgba(255,255,255,.5); }
+        .adm-nav-item { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 44px; margin-bottom: 2px; padding: 0 12px; border: 0; border-radius: var(--ui-raio); background: none; color: rgba(255,255,255,.75); font-family: inherit; font-size: 14px; font-weight: 500; text-align: left; cursor: pointer; transition: background .15s, color .15s; }
+        .adm-nav-icon { display: flex; align-items: center; justify-content: center; width: 20px; }
+        .adm-nav-icon svg { width: 20px; height: 20px; }
+        .adm-nav-item:hover { background: rgba(255,255,255,.07); color: #fff; }
+        .adm-nav-item.on { background: rgba(255,255,255,.12); color: #fff; font-weight: 700; }
+        .adm-nav-item.on .adm-nav-icon { color: #F28AB0; }
         .adm-nav-label { flex: 1; }
-        .adm-nav-badge {
-          min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px;
-          background: #fff; color: #C33A6E; font-size: 11px; font-weight: 900;
-          display: inline-flex; align-items: center; justify-content: center;
-        }
+        .adm-nav-badge { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 99px; background: var(--ui-rosa); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+        .adm-sidebar-bottom { padding: 12px; border-top: 1px solid rgba(255,255,255,.08); }
+        .adm-user { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; padding: 10px; border-radius: var(--ui-raio); background: rgba(255,255,255,.06); }
+        .adm-user-avt { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: var(--ui-rosa); color: #fff; font-size: 15px; font-weight: 700; }
+        .adm-user-info { min-width: 0; flex: 1; }
+        .adm-user-name { font-size: 14px; font-weight: 700; color: #fff; text-transform: capitalize; }
+        .adm-user-mail { font-size: 12px; color: rgba(255,255,255,.6); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .adm-side-btn { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 0 12px; border: 0; border-radius: var(--ui-raio); background: none; color: rgba(255,255,255,.75); font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .adm-side-btn:hover { background: rgba(255,255,255,.07); color: #fff; }
+        .adm-side-btn.danger { color: #FCA5A5; }
 
-        /* Bottom sidebar */
-        .adm-sidebar-bottom {
-          padding: 12px;
-          border-top: 1px solid rgba(255,255,255,0.08);
-        }
-        .adm-user {
-          display: flex; align-items: center; gap: 10px;
-          padding: 10px 12px;
-          border-radius: 8px;
-          background: rgba(255,255,255,0.04);
-          margin-bottom: 8px;
-        }
-        .adm-user-avt {
-          width: 32px; height: 32px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #FCE0E9, #E85A8C);
-          display: flex; align-items: center; justify-content: center;
-          color: #fff;
-          font-size: 13px;
-          font-weight: 900;
-          flex-shrink: 0;
-        }
-        .adm-user-info { flex: 1; min-width: 0; }
-        .adm-user-name { font-size: 12px; font-weight: 800; color: #fff; text-transform: capitalize; }
-        .adm-user-mail { font-size: 10px; color: #9CA3AF; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-        .adm-side-btn {
-          display: flex; align-items: center; gap: 8px;
-          width: 100%;
-          padding: 8px 12px;
-          border-radius: 6px;
-          border: none;
-          background: transparent;
-          color: #9CA3AF;
-          font-size: 12px;
-          font-weight: 600;
-          font-family: inherit;
-          cursor: pointer;
-          text-align: left;
-          margin-top: 2px;
-          transition: all 0.15s;
-        }
-        .adm-side-btn:hover { background: rgba(255,255,255,0.06); color: #fff; }
-        .adm-side-btn.danger { color: #F87171; }
-        .adm-side-btn.danger:hover { background: rgba(248,113,113,0.1); color: #FCA5A5; }
-
-        /* ═══════════ Main ═══════════ */
-        .adm-main {
-          margin-left: 260px;
-          flex: 1;
-          min-width: 0;
-          min-height: 100vh;
-          padding: 28px 32px 48px;
-        }
-        /* Páginas que já tinham padding próprio passam a usar o do layout */
+        /* Conteúdo */
+        .adm-main { flex: 1; min-width: 0; min-height: 100vh; margin-left: 260px; padding: 28px 32px 48px; }
+        .adm-main > * { max-width: 1200px; }
         .adm-main .an-root, .adm-main .ab-root, .adm-main .aa-root, .adm-main .ai-root { padding: 0; }
 
-        /* ═══════════ Mobile ═══════════ */
-        .adm-mobile-header {
-          display: none;
-          position: fixed; top: 0; left: 0; right: 0;
-          z-index: 30;
-          background: #1A1418;
-          padding: 12px 16px;
-          align-items: center;
-          gap: 12px;
-          border-bottom: 1px solid rgba(255,255,255,0.08);
-        }
-        /* Barra inferior + folha "Mais" (só mobile) */
+        /* Celular: topo, barra de baixo e folha "Mais" */
+        .adm-mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 30; align-items: center; gap: 12px; padding: 12px 16px; background: #1F0711; }
         .adm-bnav { display: none; }
-        .adm-bnav-it {
-          flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
-          background: none; border: none; cursor: pointer; padding: 0;
-          font-family: inherit; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.62);
-        }
-        .adm-bnav-it.on { color: #F28AB0; font-weight: 800; }
+        .adm-bnav-it { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 56px; padding: 0; border: 0; background: none; color: rgba(255,255,255,.62); font-family: inherit; font-size: 12px; font-weight: 500; cursor: pointer; }
+        .adm-bnav-it.on { color: #fff; font-weight: 700; }
+        .adm-bnav-it.on .adm-bnav-ic { color: #F28AB0; }
         .adm-bnav-ic { position: relative; display: flex; }
-        .adm-bnav-badge {
-          position: absolute; top: -5px; right: -10px;
-          min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px;
-          background: #E85A8C; color: #fff; font-size: 10px; font-weight: 900;
-          display: flex; align-items: center; justify-content: center; border: 2px solid #1A1418;
-        }
-        .adm-sheet-ov { position: fixed; top: 0; left: 0; right: 0; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); z-index: 40; background: rgba(20,10,15,0.45); }
-        .adm-sheet {
-          position: fixed; left: 0; right: 0;
-          bottom: calc(64px + env(safe-area-inset-bottom, 0px));
-          max-height: 75vh; overflow-y: auto;
-          background: #fff; border-radius: 20px 20px 0 0; padding: 10px 12px 12px;
-          animation: admSheetIn 0.2s ease-out;
-        }
+        .adm-bnav-badge { position: absolute; top: -6px; right: -12px; min-width: 20px; height: 20px; padding: 0 5px; border: 2px solid #1F0711; border-radius: 99px; background: var(--ui-rosa); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+        .adm-sheet-ov { position: fixed; top: 0; left: 0; right: 0; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); z-index: 40; background: var(--ui-veu); }
+        .adm-sheet { position: fixed; left: 0; right: 0; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); max-height: 75vh; overflow-y: auto; padding: 10px 12px 12px; border-radius: 24px 24px 0 0; background: var(--ui-branco); animation: admSheetIn .2s ease-out; }
         @keyframes admSheetIn { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
-        .adm-sheet-grab { width: 38px; height: 4px; border-radius: 2px; background: #E5DDE0; margin: 0 auto 10px; }
+        .adm-sheet-grab { width: 40px; height: 4px; margin: 0 auto 10px; border-radius: 9px; background: #E5DDE1; }
         .adm-sheet-hdr { display: flex; align-items: center; justify-content: space-between; padding: 0 6px 8px; }
-        .adm-sheet-hdr b { font-size: 16px; font-weight: 800; color: #2C1219; }
-        .adm-sheet-x { width: 32px; height: 32px; border-radius: 8px; border: none; background: #F5F0F2; color: #2C1219; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .adm-sheet-it {
-          display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 8px;
-          border: none; border-radius: 10px; background: none; cursor: pointer; text-align: left;
-          font-family: inherit; color: #9CA3AF;
-        }
-        .adm-sheet-it:active, .adm-sheet-it.on { background: #FAF7F8; }
-        .adm-sheet-ic { width: 36px; height: 36px; border-radius: 10px; background: #F5F0F2; color: #2C1219; display: flex; align-items: center; justify-content: center; }
-        .adm-sheet-it.on .adm-sheet-ic { background: #FCE0E9; color: #C33A6E; }
-        .adm-sheet-l { flex: 1; font-size: 14px; font-weight: 700; color: #2C1219; }
-        .adm-sheet-sep { height: 1px; background: #F3ECEE; margin: 8px 6px; }
+        .adm-sheet-hdr b { font-size: 18px; font-weight: 800; }
+        .adm-sheet-x { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto-2); cursor: pointer; }
+        .adm-sheet-x svg { width: 20px; height: 20px; }
+        .adm-sheet-it { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 8px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto-3); font-family: inherit; text-align: left; cursor: pointer; }
+        .adm-sheet-it:active, .adm-sheet-it.on { background: var(--ui-linha); }
+        .adm-sheet-ic { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-cinza); color: var(--ui-texto-2); }
+        .adm-sheet-it.on .adm-sheet-ic { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+        .adm-sheet-l { flex: 1; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
+        .adm-sheet-sep { height: 1px; margin: 8px 6px; background: var(--ui-linha); }
         .adm-sheet-foot { display: flex; gap: 8px; padding: 4px 6px 2px; }
-        .adm-sheet-foot button {
-          flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; height: 42px;
-          border: none; border-radius: 10px; background: #F5F0F2; color: #2C1219; cursor: pointer;
-          font-family: inherit; font-size: 13px; font-weight: 700;
-        }
-        .adm-sheet-foot button.danger { color: #DC2626; background: #FEF2F2; }
+        .adm-sheet-foot button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; border: 0; border-radius: var(--ui-raio-botao); background: var(--ui-cinza); color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+        .adm-sheet-foot button.danger { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); }
 
         @media (max-width: 768px) {
           .adm-sidebar { display: none; }
           .adm-mobile-header { display: flex; padding-top: calc(12px + env(safe-area-inset-top, 0px)); }
-          .adm-main {
-            margin-left: 0;
-            padding: calc(62px + 20px + env(safe-area-inset-top, 0px)) 16px calc(64px + 24px + env(safe-area-inset-bottom, 0px));
-          }
-          .adm-bnav {
-            display: flex; justify-content: space-around; align-items: flex-start;
-            position: fixed; left: 0; right: 0; bottom: 0; z-index: 35;
-            height: calc(64px + env(safe-area-inset-bottom, 0px));
-            padding: 9px 4px env(safe-area-inset-bottom, 0px);
-            background: #1A1418;
-          }
+          .adm-main { margin-left: 0; padding: calc(60px + 20px + env(safe-area-inset-top, 0px)) 16px calc(60px + 24px + env(safe-area-inset-bottom, 0px)); }
+          .adm-bnav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 35; display: flex; justify-content: space-around; align-items: stretch; height: calc(60px + env(safe-area-inset-bottom, 0px)); padding: 2px 4px env(safe-area-inset-bottom, 0px); background: #1F0711; }
         }
       `}</style>
     </div>

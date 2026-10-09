@@ -1,7 +1,20 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { Botao, Janela, TelaVazia, Titulo, confirmar } from "@/components/base";
+import { Cake, CheckCircle, MagnifyingGlass, Trash, X, XCircle } from "@phosphor-icons/react";
+import "./adminReceitas.css";
 
 type Status = "pendente" | "aprovada" | "rejeitada";
+
+const FILTROS: [Status | "todas", string][] = [
+  ["pendente", "Pendentes"],
+  ["aprovada", "Aprovadas"],
+  ["rejeitada", "Recusadas"],
+  ["todas", "Todas"],
+];
+
+const NOME_STATUS: Record<Status, string> = { pendente: "Pendente", aprovada: "Aprovada", rejeitada: "Recusada" };
+const VAZIO_STATUS: Record<Status, string> = { pendente: "pendente", aprovada: "aprovada", rejeitada: "recusada" };
 
 export default function AdminReceitas() {
   const [receitas, setReceitas] = useState<any[]>([]);
@@ -9,6 +22,7 @@ export default function AdminReceitas() {
   const [filtro, setFiltro] = useState<Status | "todas">("pendente");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<any | null>(null);
+  const [aberta, setAberta] = useState(false);
 
   useEffect(() => { load(); }, []);
 
@@ -19,15 +33,19 @@ export default function AdminReceitas() {
     setLoading(false);
   };
 
+  const abrir = (r: any) => { setSelected(r); setAberta(true); };
+  const fechar = () => setAberta(false);
+
   const handleStatus = async (id: string, status: Status) => {
     await supabase.from("receitas_comunidade").update({ status }).eq("id", id);
-    setSelected(null);
+    fechar();
     load();
   };
 
   const handleDelete = async (id: string) => {
+    if (!(await confirmar({ titulo: "Excluir esta receita?", texto: "Ela some do app e não dá pra desfazer.", rotulo: "Excluir", perigo: true }))) return;
     await supabase.from("receitas_comunidade").delete().eq("id", id);
-    setSelected(null);
+    fechar();
     load();
   };
 
@@ -43,108 +61,85 @@ export default function AdminReceitas() {
     rejeitada: receitas.filter(r => r.status === "rejeitada").length,
   };
 
-  return (
-    <div>
-      <h1 className="adm-page-title">👩‍🍳 Receitas da Comunidade</h1>
-      <p className="adm-page-sub">Modere as receitas enviadas pelos usuários</p>
+  const podeAprovar = selected && selected.status !== "aprovada";
+  const podeRecusar = selected && selected.status !== "rejeitada";
 
-      {/* Filtros */}
-      <div className="adm-filter-tabs">
-        {([["pendente","⏳","Pendentes"], ["aprovada","✅","Aprovadas"], ["rejeitada","❌","Rejeitadas"], ["todas","📋","Todas"]] as any[]).map(([val, ic, lb]) => (
-          <button key={val} className={`adm-filter-tab ${filtro === val ? "active" : ""}`} onClick={() => setFiltro(val)}>
-            {ic} {lb} {val !== "todas" && <span className="adm-filter-count">{counts[val as Status]}</span>}
+  return (
+    <div className="arc">
+      <Titulo nivel="tela" apoio="Aprove ou recuse as receitas que as confeiteiras enviam.">Receitas da comunidade</Titulo>
+
+      <div className="arc-chips" role="tablist" aria-label="Filtrar por situação">
+        {FILTROS.map(([val, lb]) => (
+          <button key={val} type="button" role="tab" aria-selected={filtro === val} onClick={() => setFiltro(val)}>
+            {lb}
+            {val !== "todas" && <i>{counts[val as Status]}</i>}
           </button>
         ))}
       </div>
 
-      <div className="adm-search-wrap">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input placeholder="Buscar receita..." value={search} onChange={e => setSearch(e.target.value)} className="adm-search" />
-      </div>
+      <label className="arc-busca">
+        <MagnifyingGlass size={20} weight="bold" aria-hidden="true" />
+        <input placeholder="Buscar receita" value={search} onChange={e => setSearch(e.target.value)} aria-label="Buscar receita" />
+        {search && (
+          <button type="button" aria-label="Limpar busca" onClick={() => setSearch("")}><X size={18} weight="bold" /></button>
+        )}
+      </label>
 
-      {loading ? <div className="adm-loading">Carregando...</div> : (
-        <div className="adm-receitas-grid">
-          {filtered.length === 0 ? (
-            <p className="adm-empty">Nenhuma receita {filtro !== "todas" ? filtro : ""} encontrada.</p>
-          ) : filtered.map(r => (
-            <div key={r.id} className="adm-receita-card" onClick={() => setSelected(r)}>
-              <div className="adm-receita-img">
-                {r.foto_url ? <img src={r.foto_url} alt={r.nome} /> : <span>🍰</span>}
-              </div>
-              <div className="adm-receita-body">
-                <p className="adm-receita-nome">{r.nome}</p>
-                <p className="adm-receita-autor">{r.profiles?.nome || "Anônimo"} · {r.categoria}</p>
-                <p className="adm-receita-data">{new Date(r.created_at).toLocaleDateString("pt-BR")}</p>
-              </div>
-              <span className={`adm-status-badge ${r.status}`}>{r.status}</span>
-            </div>
+      {loading ? <p className="arc-carregando">Carregando…</p> : filtered.length === 0 ? (
+        <TelaVazia
+          caixa
+          icone={<Cake size={30} />}
+          titulo={search ? "Nenhuma receita encontrada" : filtro === "todas" ? "Nenhuma receita ainda" : `Nenhuma receita ${VAZIO_STATUS[filtro]}`}
+          texto={search ? "Confira o nome ou limpe a busca." : "Quando chegar uma receita, ela aparece aqui."}
+        />
+      ) : (
+        <div className="arc-grade">
+          {filtered.map(r => (
+            <button key={r.id} type="button" className="arc-card" onClick={() => abrir(r)}>
+              <span className="arc-foto">
+                {r.foto_url ? <img src={r.foto_url} alt="" /> : <Cake size={36} />}
+              </span>
+              <span className="arc-corpo">
+                <b>{r.nome}</b>
+                <small>{r.profiles?.nome || "Anônimo"}{r.categoria ? ` · ${r.categoria}` : ""}</small>
+                <small>{new Date(r.created_at).toLocaleDateString("pt-BR")}</small>
+              </span>
+              <i className={`arc-tag arc-tag--${r.status}`}>{NOME_STATUS[r.status as Status] || r.status}</i>
+            </button>
           ))}
         </div>
       )}
 
-      {/* Modal detalhe */}
-      {selected && (
-        <div className="adm-modal-overlay" onClick={() => setSelected(null)}>
-          <div className="adm-detail-modal" onClick={e => e.stopPropagation()}>
-            <button className="adm-modal-close" onClick={() => setSelected(null)}>✕</button>
-            {selected.foto_url && <img src={selected.foto_url} alt={selected.nome} className="adm-detail-img" />}
-            <h2 className="adm-detail-title">{selected.nome}</h2>
-            <p className="adm-detail-meta">Por {selected.profiles?.nome || "Anônimo"} · {selected.categoria}</p>
-            <div className="adm-detail-content">
-              <p><strong>Ingredientes:</strong></p>
-              <p>{selected.ingredientes}</p>
-              <p style={{marginTop:"0.75rem"}}><strong>Modo de preparo:</strong></p>
-              <p>{selected.modo_preparo}</p>
-            </div>
-            <div className="adm-detail-actions">
-              {selected.status !== "aprovada" && (
-                <button className="adm-btn-approve" onClick={() => handleStatus(selected.id, "aprovada")}>✅ Aprovar</button>
-              )}
-              {selected.status !== "rejeitada" && (
-                <button className="adm-btn-reject" onClick={() => handleStatus(selected.id, "rejeitada")}>❌ Rejeitar</button>
-              )}
-              <button className="adm-btn-delete" onClick={() => handleDelete(selected.id)}>🗑️ Excluir</button>
+      <Janela
+        aberta={aberta}
+        aoFechar={fechar}
+        tipo="conteudo"
+        titulo={selected?.nome || "Receita"}
+        umaAcao={!(podeAprovar && podeRecusar)}
+        acoes={selected ? (
+          <>
+            {podeRecusar && <Botao variante="secundario" icone={<XCircle size={20} weight="bold" />} onClick={() => handleStatus(selected.id, "rejeitada")}>Recusar</Botao>}
+            {podeAprovar && <Botao icone={<CheckCircle size={20} weight="bold" />} onClick={() => handleStatus(selected.id, "aprovada")}>Aprovar</Botao>}
+          </>
+        ) : undefined}
+      >
+        {selected && (
+          <div className="arc-det">
+            {selected.foto_url && <img src={selected.foto_url} alt="" className="arc-det-foto" />}
+            <p className="arc-det-meta">
+              Por {selected.profiles?.nome || "Anônimo"}{selected.categoria ? ` · ${selected.categoria}` : ""}
+              <i className={`arc-tag arc-tag--${selected.status}`}>{NOME_STATUS[selected.status as Status] || selected.status}</i>
+            </p>
+            <h3>Ingredientes</h3>
+            <p>{selected.ingredientes}</p>
+            <h3>Modo de preparo</h3>
+            <p>{selected.modo_preparo}</p>
+            <div className="arc-det-excluir">
+              <Botao variante="link" icone={<Trash size={18} weight="bold" />} onClick={() => handleDelete(selected.id)}>Excluir receita</Botao>
             </div>
           </div>
-        </div>
-      )}
-
-      <style>{`
-        .adm-page-title { font-size: var(--text-xl); font-weight: var(--fw-bold); color: #1f2937; margin: 0 0 0.25rem; }
-        .adm-page-sub { font-size: var(--font-button); color: #9ca3af; margin: 0 0 1.25rem; }
-        .adm-loading { color: #9ca3af; padding: 2rem; }
-        .adm-empty { color: #9ca3af; padding: 2rem; text-align: center; }
-        .adm-filter-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
-        .adm-filter-tab { padding: 0.5rem 1rem; border-radius: var(--radius-xl); border: 1.5px solid #e5e7eb; background: white; font-family: 'Geist', sans-serif; font-size: var(--font-helper); font-weight: var(--fw-medium); cursor: pointer; display: flex; align-items: center; gap: 0.4rem; transition: all 0.15s; color: #6b7280; }
-        .adm-filter-tab.active { background: #f9007a; color: white; border-color: #f9007a; }
-        .adm-filter-count { background: rgba(0,0,0,0.15); border-radius: var(--radius-xl); padding: 0.05rem 0.4rem; font-size: var(--font-caption); }
-        .adm-search-wrap { display: flex; align-items: center; gap: 0.5rem; background: white; border: 1.5px solid #e5e7eb; border-radius: var(--radius-md); padding: 0.75rem 1rem; margin-bottom: 1rem; max-width: 400px; }
-        .adm-search { border: none; outline: none; flex: 1; font-family: 'Geist', sans-serif; font-size: var(--font-button); color: #1f2937; }
-        .adm-receitas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
-        .adm-receita-card { background: white; border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; position: relative; }
-        .adm-receita-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
-        .adm-receita-img { height: 140px; background: #f9fafb; display: flex; align-items: center; justify-content: center; font-size: 3rem; overflow: hidden; }
-        .adm-receita-img img { width: 100%; height: 100%; object-fit: cover; }
-        .adm-receita-body { padding: 0.9rem; }
-        .adm-receita-nome { font-size: var(--font-button); font-weight: var(--fw-semibold); color: #1f2937; margin: 0 0 0.2rem; }
-        .adm-receita-autor { font-size: var(--font-helper); color: #9ca3af; margin: 0 0 0.15rem; }
-        .adm-receita-data { font-size: var(--font-caption); color: #d1d5db; margin: 0; }
-        .adm-status-badge { position: absolute; top: 0.6rem; right: 0.6rem; font-size: var(--font-caption); font-weight: var(--fw-bold); padding: 0.2rem 0.6rem; border-radius: var(--radius-xl); text-transform: capitalize; }
-        .adm-status-badge.pendente { background: #fff7ed; color: #f59e0b; }
-        .adm-status-badge.aprovada { background: #dcfce7; color: #16a34a; }
-        .adm-status-badge.rejeitada { background: #fff1f2; color: #ef4444; }
-        .adm-modal-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1rem; }
-        .adm-detail-modal { background: white; border-radius: var(--radius-xl); width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; }
-        .adm-modal-close { position: absolute; top: 1rem; right: 1rem; background: #f3f4f6; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: var(--font-helper); z-index: 1; }
-        .adm-detail-img { width: 100%; height: 200px; object-fit: cover; border-radius: var(--radius-xl) 20px 0 0; }
-        .adm-detail-title { font-size: var(--font-modal-title); font-weight: var(--fw-bold); color: #1f2937; margin: 1rem 1.25rem 0.25rem; }
-        .adm-detail-meta { font-size: var(--font-helper); color: #9ca3af; margin: 0 1.25rem 0.75rem; }
-        .adm-detail-content { padding: 0 1.25rem; font-size: var(--font-button); color: #374151; line-height: 1.6; }
-        .adm-detail-actions { display: flex; gap: 0.5rem; padding: 1rem 1.25rem 1.25rem; flex-wrap: wrap; }
-        .adm-btn-approve { flex: 1; padding: 0.7rem; background: #dcfce7; color: #16a34a; border: none; border-radius: var(--radius-md); font-family: 'Geist', sans-serif; font-weight: var(--fw-semibold); cursor: pointer; font-size: var(--font-button); }
-        .adm-btn-reject { flex: 1; padding: 0.7rem; background: #fff7ed; color: #f59e0b; border: none; border-radius: var(--radius-md); font-family: 'Geist', sans-serif; font-weight: var(--fw-semibold); cursor: pointer; font-size: var(--font-button); }
-        .adm-btn-delete { padding: 0.7rem 1rem; background: #fff1f2; color: #ef4444; border: none; border-radius: var(--radius-md); font-family: 'Geist', sans-serif; font-weight: var(--fw-semibold); cursor: pointer; font-size: var(--font-button); }
-      `}</style>
+        )}
+      </Janela>
     </div>
   );
 }
