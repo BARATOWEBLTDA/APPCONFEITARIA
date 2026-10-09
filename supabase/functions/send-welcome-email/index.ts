@@ -109,7 +109,7 @@ function buildWelcomeEmailHTML(nome: string): string {
           <tr>
             <td style="padding:0;line-height:0;font-size:0;">
               <a href="${APP_URL}" target="_blank" style="text-decoration:none;">
-                <img src="https://raw.githubusercontent.com/BARATOWEBLTDA/APPCONFEITARIA/main/public/emails/banner.png" width="600" alt="Doonly: sua confeitaria acaba de ganhar uma ajudinha"
+                <img src="https://doonly.com.br/emails/banner.png" width="600" alt="Doonly: sua confeitaria acaba de ganhar uma ajudinha"
                      style="display:block;width:100%;max-width:600px;height:auto;border:0;outline:none;">
               </a>
             </td>
