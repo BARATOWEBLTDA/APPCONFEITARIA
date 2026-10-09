@@ -49,10 +49,17 @@ const vibrarLeve = () => {
 
 // Só as imagens que as telas usam (antes baixava 16, mais de 4 MB, várias de telas que já saíram).
 // As fotos pequenas (clientes e produtos) têm versão leve em public/tutorial/leve.
-const IMAGENS = [
-  '/tutorial/cardapio-exemplo.jpg', '/tutorial/cardapio-exemplo-nav.jpg',
-  '/tutorial/leve/doisamores.webp', '/tutorial/leve/caixa4.webp', '/tutorial/leve/salgadinhos.webp',
-]
+// Fotos das demonstrações (09/10 · 3.85): trocar a imagem é só substituir o arquivo com o mesmo nome em
+// public/tutorial/boas-vindas (quadrado, 264 x 264, .webp). Cliente sem foto mostra as iniciais.
+const PRODUTO = {
+  bolo: '/tutorial/boas-vindas/produtos/bolo-aniversario.webp',
+  caixa: '/tutorial/boas-vindas/produtos/caixa-brigadeiro.webp',
+  salgadinhos: '/tutorial/boas-vindas/produtos/salgadinhos.webp',
+}
+const fotoCliente = (id: string) => `/tutorial/boas-vindas/clientes/${id}.webp`
+
+// Só as imagens que as telas usam
+const IMAGENS = ['/tutorial/cardapio-exemplo.jpg', '/tutorial/cardapio-exemplo-nav.jpg', ...Object.values(PRODUTO)]
 
 export default function BoasVindas({ isOpen, onClose, nome }: Props) {
   const [tela, setTela] = useState(0)
@@ -287,11 +294,11 @@ const TEL_SUPORTE = '11978414991'
 // na ordem em que chegam: o último é o do bolo, que fica em cima
 const CHEGADAS: { p: Pedido }[] = [
   { p: pedidoExemplo({ numero: 1049, cliente_nome: 'Marina Silva', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', status_pagamento: 'pago', forma_pagamento: 'pix', origem: 'cardapio', data_entrega: isoDia(5), horario_entrega: '16:30', valor_total: 150,
-      pedido_itens: [item('Caixa de Brigadeiro', '/tutorial/leve/caixa4.webp', 1, 150)] }) },
+      pedido_itens: [item('Caixa de Brigadeiro', PRODUTO.caixa, 1, 150)] }) },
   { p: pedidoExemplo({ numero: 1050, cliente_nome: 'Juliana Souza', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', status_pagamento: 'pago', forma_pagamento: 'pix', origem: 'cardapio', data_entrega: isoDia(4), horario_entrega: '09:00', valor_total: 95,
-      pedido_itens: [item('Salgadinhos', '/tutorial/leve/salgadinhos.webp', 100, 0.95)] }) },
+      pedido_itens: [item('Salgadinhos', PRODUTO.salgadinhos, 100, 0.95)] }) },
   { p: pedidoExemplo({ numero: 1051, cliente_nome: 'Camila Rocha', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', status_pagamento: 'pago', forma_pagamento: 'pix', origem: 'cardapio', data_entrega: isoDia(3), horario_entrega: '14:00', valor_total: 320,
-      pedido_itens: [item('Bolo de aniversário 2 kg', '/tutorial/leve/doisamores.webp', 1, 320)] }) },
+      pedido_itens: [item('Bolo de aniversário 2 kg', PRODUTO.bolo, 1, 320)] }) },
 ]
 const INTERVALO_CHEGADA = 1500
 
@@ -409,9 +416,8 @@ function Notebook({ children }: { children: ReactNode }) {
   )
 }
 
-/* ───────── 4 · dinheiro (09/10 · 3.83): quem pagou e quem falta pagar, num cartão só e sem conta pra fazer.
-   Em cima, quanto falta receber na semana; embaixo, cada cliente com o que já pagou e o que falta.
-   "Recebi" marca como pago (com o som de sucesso) e o total desce. Se ninguém tocar, a Carla paga sozinha. ───────── */
+/* ───────── 4 · dinheiro (09/10 · 3.85): quem pagou e quem falta pagar, num cartão só e sem conta pra fazer.
+   Em cima, quanto falta receber na semana; embaixo, cada cliente com o que já pagou e o que falta. Só pra ver (sem toque). ───────── */
 const RECEBER: { id: string; cliente: string; total: number; recebido: number; conta: string; alerta?: boolean }[] = [
   { id: 'camila', cliente: 'Camila Rocha', total: 320, recebido: 320, conta: 'Pagou tudo no Pix' },
   { id: 'carla', cliente: 'Carla Menezes', total: 180.5, recebido: 90, conta: 'Pagou o sinal' },
@@ -422,44 +428,28 @@ const reais = (n: number) => n.toLocaleString('pt-BR', { minimumFractionDigits: 
 const iniciais = (nome: string) => nome.split(' ').map(p => p[0]).slice(0, 2).join('')
 
 function DemoDinheiro() {
-  const [pagos, setPagos] = useState<Record<string, boolean>>({})
-  const mexeu = useRef(false)
-  const receber = (id: string, sozinho = false) => {
-    if (!sozinho) mexeu.current = true
-    tocarSom('sucesso'); vibrarLeve()
-    setPagos(p => ({ ...p, [id]: true }))
-  }
-  useEffect(() => {
-    const t = window.setTimeout(() => { if (!mexeu.current) receber('carla', true) }, 3200)
-    return () => clearTimeout(t)
-  }, [])
-  const pago = (r: typeof RECEBER[number]) => r.recebido >= r.total || !!pagos[r.id]
-  const falta = RECEBER.reduce((s, r) => s + (pago(r) ? 0 : r.total - r.recebido), 0)
-  const faltam = RECEBER.filter(r => !pago(r)).length
+  const falta = RECEBER.reduce((s, r) => s + r.total - r.recebido, 0)
+  const faltam = RECEBER.filter(r => r.recebido < r.total).length
   return (
-    <div className="bv-din bv-cai">
+    <div className="bv-din bv-cai" aria-hidden="true">
       <div className="bv-din-topo">
         <small>Falta receber esta semana</small>
-        <b key={falta}>R$ {reais(falta)}</b>
-        <span>{faltam === 1 ? '1 cliente' : `${faltam} clientes`}</span>
+        <b>R$ {reais(falta)}</b>
+        <span>{faltam} clientes</span>
       </div>
       <ul className="bv-din-lista">
         {RECEBER.map(r => {
-          const ok = pago(r)
+          const ok = r.recebido >= r.total
           return (
             <li key={r.id} className={ok ? 'ok' : r.alerta ? 'alerta' : ''}>
-              <span className="bv-din-av">{iniciais(r.cliente)}</span>
+              <span className="bv-din-av">{iniciais(r.cliente)}<img src={fotoCliente(r.id)} alt="" onError={e => { e.currentTarget.style.display = 'none' }} /></span>
               <div className="bv-din-tx">
                 <b>{r.cliente}</b>
-                <small>{ok && pagos[r.id] ? 'Pagou o restante' : r.conta}</small>
-                {/* quem acabou de pagar mantém o espaço da linha (o cartão não encolhe e o título não pula) */}
-                {r.recebido < r.total && <em className={ok ? 'some' : ''}>Falta R$ {reais(r.total - r.recebido)}</em>}
+                <small>{r.conta}</small>
               </div>
-              {ok ? (
-                <span className="bv-din-ok"><Check size={14} weight="bold" />Pago</span>
-              ) : (
-                <button type="button" className="bv-din-rec" onClick={() => receber(r.id)}>Recebi</button>
-              )}
+              {ok
+                ? <span className="bv-din-ok"><Check size={14} weight="bold" />Pago</span>
+                : <span className="bv-din-falta">falta<b>R$ {reais(r.total - r.recebido)}</b></span>}
             </li>
           )
         })}
@@ -496,7 +486,7 @@ function DemoLucro() {
   return (
     <div className="bv-luc" aria-hidden="true">
       <div className="bv-luc-topo">
-        <span className="bv-luc-foto"><img src="/tutorial/leve/caixa4.webp" alt="" /></span>
+        <span className="bv-luc-foto"><img src={PRODUTO.caixa} alt="" /></span>
         <div className="bv-luc-lucro">
           <small>Seu lucro</small>
           <b>R$ {reais(lucro)}</b>
