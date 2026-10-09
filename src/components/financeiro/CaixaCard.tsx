@@ -132,18 +132,18 @@ const CSS = `
   .cxc { background: radial-gradient(130% 160% at 0 0, #6B2340, #2C1219 70%); color: #fff; border-radius: 18px; padding: 16px 18px; font-family: var(--font-base); }
   .cxc--carregando { height: 132px; background: #EFE9EC; border-radius: 18px; }
   .cxc-top { display: flex; justify-content: space-between; align-items: center; }
-  .cxc-top p { margin: 0; font-size: 12.5px; opacity: .82; } .cxc-top i { font-style: normal; background: rgba(255,255,255,.15); border-radius: 6px; padding: 1px 6px; margin-left: 4px; font-size: 11px; }
+  .cxc-top p { margin: 0; font-size: 12.5px; opacity: .82; } .cxc-top i { font-style: normal; background: rgba(255,255,255,.15); border-radius: 6px; padding: 1px 6px; margin-left: 4px; font-size: 12px; }
   .cxc-acertar { display: inline-flex; align-items: center; gap: 4px; border: none; background: rgba(255,255,255,.14); color: #fff; border-radius: 8px; padding: 5px 9px; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
   .cxc-v { display: block; font-size: 31px; font-weight: 900; letter-spacing: -.02em; margin: 4px 0 10px; }
   .cxc-hoje { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; opacity: .92; }
   .cxc-hoje span { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; } .cxc-hoje em { font-style: normal; font-weight: 800; }
-  .cxc small { display: block; font-size: 11.5px; opacity: .6; margin-top: 9px; line-height: 1.4; }
+  .cxc small { display: block; font-size: 13px; opacity: .6; margin-top: 9px; line-height: 1.4; }
   .cxc-convite { background: #fff; border: 1.5px dashed #F3C9DA; border-radius: 18px; padding: 18px; text-align: center; font-family: var(--font-base); }
   .cxc-convite-ic { width: 52px; height: 52px; border-radius: 16px; background: #FFF1F6; color: #C33A6E; display: inline-flex; align-items: center; justify-content: center; }
   .cxc-convite b { display: block; font-size: 17px; font-weight: 900; color: #2C1219; margin-top: 8px; }
   .cxc-convite p { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 6px auto 0; max-width: 380px; text-wrap: balance; }
   .cxc-convite--foco { border: 2px solid #F3A9C6; box-shadow: 0 0 0 6px rgba(232,90,140,.12), 0 14px 30px -10px rgba(195,58,110,.45) !important; position: relative; z-index: 2; }
-  .cxc-depois { display: block; margin: 8px auto 0; border: none; background: none; padding: 8px 12px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #9A8E94; cursor: pointer; }
+  .cxc-depois { display: block; min-height: 44px; margin: 4px auto 0; border: none; background: none; padding: 8px 16px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #9A8E94; cursor: pointer; }
   .cxc-cta { margin-top: 14px; border: none; border-radius: 12px; padding: 12px 18px; background: #E85A8C; color: #fff; font-family: inherit; font-size: 14.5px; font-weight: 800; cursor: pointer; box-shadow: 0 3px 0 #C33A6E; }
   .cxc-movs { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 12px 14px; font-family: var(--font-base); }
   .cxc-movs-t { margin: 0 0 4px; font-size: 14.5px; font-weight: 900; color: #2C1219; }

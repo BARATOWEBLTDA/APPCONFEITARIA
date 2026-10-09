@@ -205,7 +205,7 @@ const CSS = `
   .fd-bt.e { background: #16A34A; } .fd-bt.s { background: #2C1219; }
   .fd-mes { display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #F0EBED; border-radius: 12px; padding: 6px; }
   .fd-mes b { font-size: 14.5px; font-weight: 800; color: #2C1219; }
-  .fd-mes button { width: 34px; height: 34px; border-radius: 10px; border: none; background: #FFF1F6; color: #C33A6E; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .fd-mes button { width: 44px; height: 44px; border-radius: 10px; border: none; background: #FFF1F6; color: #C33A6E; display: flex; align-items: center; justify-content: center; cursor: pointer; }
   .fd-mes button:disabled { opacity: .35; cursor: default; }
   .fd-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .fd-k, .fd-k2 { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px; min-width: 0; text-align: left; font-family: inherit; color: #2C1219; }
@@ -213,22 +213,22 @@ const CSS = `
   .fd-ki { position: absolute; top: 10px; right: 10px; width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
   .fd-ki.e { background: #DCFCE7; color: #15803D; } .fd-ki.s { background: #FEE2E2; color: #DC2626; } .fd-ki.n { background: #F3EEF1; color: #6B5D64; } .fd-ki.l { background: #FCE7F3; color: #C33A6E; }
   .fd-k small { padding-right: 30px; }
-  .fd-k small, .fd-k2 small { display: block; font-size: 11.5px; font-weight: 700; color: #9A8E94; }
+  .fd-k small, .fd-k2 small { display: block; font-size: 13px; font-weight: 700; color: #9A8E94; }
   .fd-k b, .fd-k2 b { display: block; font-size: clamp(15px, 4.6vw, 21px); font-weight: 900; letter-spacing: -.02em; margin: 3px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #2C1219; }
-  .fd-k i, .fd-k2 i { display: flex; align-items: center; gap: 3px; font-style: normal; font-size: 11.5px; color: #888780; line-height: 1.35; }
+  .fd-k i, .fd-k2 i { display: flex; align-items: center; gap: 3px; font-style: normal; font-size: 13px; color: #888780; line-height: 1.35; }
   .fd-k b.e { color: #15803D; } .fd-k b.s { color: #DC2626; } .fd-k b.l { color: #C33A6E; }
   .fd-contas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .fd-k2 { cursor: pointer; } .fd-k2.rec { border-left: 4px solid #F59E0B; } .fd-k2.pag { border-left: 4px solid #EF4444; }
   .fd-card { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 14px; }
   .fd-ct { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
   .fd-ct b { font-size: 14.5px; font-weight: 900; color: #2C1219; }
-  .fd-lg { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: #9A8E94; }
+  .fd-lg { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; color: #9A8E94; }
   .fd-lg i { display: inline-block; width: 8px; height: 8px; border-radius: 3px; } .fd-lg i.e { background: #22C55E; } .fd-lg i.s { background: #F87171; } .fd-lg i.l { background: #2C1219; border-radius: 50%; }
   .fd-ph { height: 150px; background: #FAF7F8; border-radius: 10px; }
   .fd-fl-res { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 4px; font-size: 12.5px; color: #6B5D64; }
   .fd-fl-res b { font-weight: 800; color: #2C1219; } .fd-fl-res b.e { color: #15803D; } .fd-fl-res b.s { color: #DC2626; }
   .fd-nota { margin: 8px 0 0; font-size: 12px; color: #9A8E94; line-height: 1.4; }
-  .fd-mais-t { margin: 4px 0 8px; font-size: 11.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #9A8E94; }
+  .fd-mais-t { margin: 4px 0 8px; font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #9A8E94; }
   .fd-mais-g { display: grid; grid-template-columns: 1fr; gap: 8px; }
   @media (min-width: 640px) { .fd-mais-g { grid-template-columns: repeat(3, 1fr); } }
   .fd-mais-g button { display: grid; grid-template-columns: 38px 1fr; column-gap: 10px; align-items: center; text-align: left; background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px; font-family: inherit; color: #2C1219; cursor: pointer; }

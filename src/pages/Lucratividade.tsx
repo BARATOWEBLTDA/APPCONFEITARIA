@@ -74,7 +74,7 @@ export default function Lucratividade() {
         infoIcon="📈"
         infoContent={<>
           <p>O lucro aqui é <strong>o mesmo do painel do Financeiro</strong>: o que você vendeu (pedidos entregues) menos o custo dos ingredientes (ficha técnica) e as despesas pagas do mês.</p>
-          <p>As despesas de <strong>insumos</strong> não entram de novo, porque o custo deles já está na ficha técnica de cada produto.</p>
+          <p>As despesas de <strong>ingredientes</strong> não entram de novo, porque o custo deles já está na ficha técnica de cada produto.</p>
         </>}
       />
       <EstiloFinanceiro />
@@ -98,7 +98,7 @@ export default function Lucratividade() {
               <p className="lu-ct">A conta do mês</p>
               <div className="lu-l"><span>Vendido <small>{dados.qtdVendidos} {dados.qtdVendidos === 1 ? "pedido entregue" : "pedidos entregues"}</small></span><b>{brl(dados.vendido)}</b></div>
               <div className="lu-l neg"><span>Custo dos ingredientes <small>pela ficha técnica</small></span><b>− {brl(dados.cmv)}</b></div>
-              <div className="lu-l neg"><span>Despesas pagas <small>sem insumos ({brl(dados.despesasInsumos)} já estão na ficha)</small></span><b>− {brl(despesasSemInsumos)}</b></div>
+              <div className="lu-l neg"><span>Despesas pagas <small>sem ingredientes ({brl(dados.despesasInsumos)} já estão na ficha)</small></span><b>− {brl(despesasSemInsumos)}</b></div>
               <div className={`lu-l tt ${dados.lucro < 0 ? "ruim" : ""}`}><span>Lucro do mês</span><b>{brl(dados.lucro)}</b></div>
               <div className="lu-margem"><div className="lu-bar"><i style={{ width: `${Math.max(0, Math.min(100, dados.margem))}%` }} /></div><span>Margem de <b>{dados.margem}%</b></span></div>
             </section>
@@ -139,7 +139,7 @@ const CSS = `
   .lu { max-width: 1060px; margin: 0 auto; padding: 22px 0 96px; font-family: var(--font-base); color: #2C1219; display: flex; flex-direction: column; gap: 14px; }
   .lu-mes { display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #F0EBED; border-radius: 12px; padding: 6px; max-width: 420px; width: 100%; align-self: center; box-sizing: border-box; }
   .lu-mes b { font-size: 14.5px; font-weight: 800; }
-  .lu-mes button { width: 34px; height: 34px; border-radius: 10px; border: none; background: #FFF1F6; color: #C33A6E; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .lu-mes button { width: 44px; height: 44px; border-radius: 10px; border: none; background: #FFF1F6; color: #C33A6E; display: flex; align-items: center; justify-content: center; cursor: pointer; }
   .lu-mes button:disabled { opacity: .35; cursor: default; }
   .lu-ph { height: 260px; background: #FAF7F8; border-radius: 16px; }
   .lu-vazio { background: #fff; border: 1px solid #F0EBED; border-radius: 18px; padding: 30px 20px; text-align: center; }
@@ -153,7 +153,7 @@ const CSS = `
   .lu-card { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 14px 16px; }
   .lu-ct { margin: 0 0 8px; font-size: 15px; font-weight: 900; } .lu-ct small { font-size: 12px; font-weight: 600; color: #9A8E94; margin-left: 4px; }
   .lu-l { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 9px 0; border-bottom: 1px solid #F5F0F2; font-size: 14px; }
-  .lu-l span { color: #4B3A42; } .lu-l small { display: block; font-size: 11.5px; color: #9A8E94; margin-top: 1px; }
+  .lu-l span { color: #4B3A42; } .lu-l small { display: block; font-size: 13px; color: #9A8E94; margin-top: 1px; }
   .lu-l b { font-weight: 800; white-space: nowrap; } .lu-l.neg b { color: #DC2626; }
   .lu-l.tt { border-bottom: none; padding-top: 12px; font-size: 16px; } .lu-l.tt span { font-weight: 800; color: #2C1219; } .lu-l.tt b { font-size: 21px; font-weight: 900; color: #C33A6E; }
   .lu-l.tt.ruim b { color: #DC2626; }

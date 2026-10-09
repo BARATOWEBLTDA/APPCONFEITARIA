@@ -7,6 +7,7 @@ import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { CalendarBlank, CheckCircle, ArrowSquareOut, Wallet } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
+import { avisar as avisarBase } from "@/components/base";
 import { supabase } from "@/lib/supabase";
 import { carregarAReceber, isoDia, type ItemReceber } from "@/lib/contasReceber";
 import { registrarPagamento, normalizarForma } from "@/lib/pagamentos";
@@ -34,7 +35,6 @@ export default function FinanceiroAReceber() {
   const [itens, setItens] = useState<Item[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [receber, setReceber] = useState<Item | null>(null);
-  const [aviso, setAviso] = useState("");
 
   const carregar = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -101,7 +101,7 @@ export default function FinanceiroAReceber() {
                 {lista.map(it => (
                   <div key={it.id} className="far-it">
                     <div className="far-it-h">
-                      <b>Pedido #{it.numero ?? "—"} · {it.cliente_nome || "Cliente"}</b>
+                      <b>{it.numero ? `Pedido #${it.numero} · ` : ""}{it.cliente_nome || "Cliente"}</b>
                       <span className={`far-tg ${it.dias !== null && it.dias < 0 ? "far-tg--atr" : ""}`}>{quando(it.dias)}</span>
                     </div>
                     <div className="far-it-v">
@@ -124,8 +124,7 @@ export default function FinanceiroAReceber() {
       </div>
 
       {receber && <ReceberSheet item={receber} onClose={() => setReceber(null)}
-        onFeito={async (msg) => { setReceber(null); setAviso(msg); await carregar(); setTimeout(() => setAviso(""), 3500); }} />}
-      {aviso && <div className="far-toast" role="status">{aviso}</div>}
+        onFeito={async (msg) => { setReceber(null); avisarBase(msg, { tipo: "ok" }); await carregar(); }} />}
 
       <style>{CSS}</style>
     </div>
@@ -157,14 +156,14 @@ export function ReceberSheet({ item, onClose, onFeito }: { item: Item; onClose: 
     });
     setSalvando(false);
     if (!r.ok) { setErro("Não foi possível registrar agora. Confira a internet e tente de novo."); return; }
-    onFeito(resta > 0 ? `Recebido ${brl(v)}. Ainda faltam ${brl(resta)}.` : `Pedido #${item.numero ?? ""} quitado.`);
+    onFeito(resta > 0 ? `Recebido ${brl(v)}. Ainda faltam ${brl(resta)}.` : item.numero ? `Pedido #${item.numero} quitado.` : "Pedido quitado.");
   };
 
   return createPortal(
     <div className="far-ov" onClick={onClose} role="dialog" aria-modal="true" aria-label="Registrar recebimento">
       <div className="far-sh" onClick={e => e.stopPropagation()}>
         <span className="far-alca" aria-hidden="true" />
-        <b className="far-sh-t">Receber · Pedido #{item.numero ?? "—"}</b>
+        <b className="far-sh-t">Receber{item.numero ? ` · Pedido #${item.numero}` : ` · ${item.cliente_nome || "Cliente"}`}</b>
         <small className="far-sh-s">{item.cliente_nome || "Cliente"}</small>
         <div className="far-res">
           <div><span>Total do pedido</span><b>{brl(item.total)}</b></div>
@@ -200,22 +199,22 @@ const CSS = `
   .far-wrap { max-width: 760px; margin: 0 auto; padding: 22px 0 96px; display: flex; flex-direction: column; gap: 20px; }
   .far-resumo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .far-k { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 10px; min-width: 0; }
-  .far-k small { display: block; font-size: 11.5px; font-weight: 700; color: #9A8E94; }
+  .far-k small { display: block; font-size: 13px; font-weight: 700; color: #9A8E94; }
   .far-k b { display: block; font-size: clamp(13.5px, 3.9vw, 17px); letter-spacing: -.02em; font-weight: 900; color: #B45309; margin: 3px 0 1px; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .far-k i { font-style: normal; font-size: 11.5px; color: #888780; }
+  .far-k i { font-style: normal; font-size: 13px; color: #888780; }
   .far-k--atr { border-color: #FECACA; background: #FFF7F7; } .far-k--atr b { color: #DC2626; }
   .far-carregando { text-align: center; color: #9A8E94; font-size: 14px; padding: 30px 0; }
   .far-vazio { background: #fff; border-radius: 16px; padding: 30px 20px; text-align: center; border: 1px solid #F0EBED; }
   .far-vazio-ic { width: 64px; height: 64px; border-radius: 20px; background: #F0FDF4; color: #16A34A; display: inline-flex; align-items: center; justify-content: center; }
   .far-vazio b { display: block; font-size: 17px; font-weight: 900; margin-top: 12px; color: #2C1219; }
   .far-vazio p { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 6px auto 0; max-width: 360px; text-wrap: balance; }
-  .far-gt { margin: 0 0 8px; font-size: 11.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #9A8E94; }
+  .far-gt { margin: 0 0 8px; font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #9A8E94; }
   .far-gt span { color: #6B5D64; }
-  .far-lista { display: grid; grid-template-columns: 1fr; gap: 10px; }
-  .far-it { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 14px; }
+  .far-lista { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .far-it { min-width: 0; background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 14px; }
   .far-it-h { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .far-it-h b { font-size: 14.5px; font-weight: 800; color: #2C1219; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .far-tg { flex-shrink: 0; font-size: 11px; font-weight: 800; color: #92400E; background: #FEF3C7; padding: 3px 8px; border-radius: 7px; }
+  .far-tg { flex-shrink: 0; font-size: 12px; font-weight: 800; color: #92400E; background: #FEF3C7; padding: 3px 8px; border-radius: 7px; }
   .far-tg--atr { color: #991B1B; background: #FEE2E2; }
   .far-it-v { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 6px; }
   .far-it-v small { font-size: 12.5px; color: #888780; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; } /* numa linha só */
@@ -225,8 +224,8 @@ const CSS = `
   .far-it-a { display: flex; justify-content: space-between; align-items: center; margin-top: 11px; gap: 8px; }
   .far-it-a > span { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: #6B5D64; }
   .far-bts { display: flex; gap: 6px; }
-  .far-ver { width: 36px; height: 36px; border-radius: 10px; border: 1.5px solid #EDE6E9; background: #fff; color: #6B5D64; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-  .far-rec { border: none; border-radius: 10px; padding: 0 16px; height: 36px; background: #16A34A; color: #fff; font-family: inherit; font-weight: 800; font-size: 13.5px; cursor: pointer; }
+  .far-ver { width: 44px; height: 44px; flex-shrink: 0; border-radius: 10px; border: 1.5px solid #EDE6E9; background: #fff; color: #6B5D64; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .far-rec { border: none; border-radius: 10px; padding: 0 16px; height: 44px; background: #16A34A; color: #fff; font-family: inherit; font-weight: 800; font-size: 13.5px; cursor: pointer; }
   .far-ov { position: fixed; inset: 0; z-index: 1300; background: rgba(45,31,38,.5); display: flex; align-items: flex-end; justify-content: center; font-family: var(--font-base); }
   @media (min-width: 768px) { .far-ov { align-items: center; } }
   .far-sh { width: 100%; max-width: 460px; background: #fff; border-radius: 22px 22px 0 0; padding: 10px 18px calc(20px + env(safe-area-inset-bottom, 0px)); max-height: 92dvh; overflow-y: auto; color: #2C1219; animation: farSobe .22s ease; }

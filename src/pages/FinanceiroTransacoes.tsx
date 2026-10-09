@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowUp, ArrowDown, MagnifyingGlass, DownloadSimple, ArrowSquareOut, ArrowCounterClockwise } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
+import { avisar as avisarBase } from "@/components/base";
 import PeriodoFiltro, { periodoInicial, rotuloPeriodo, type Periodo } from "@/components/financeiro/PeriodoFiltro";
 import DespesaSheet from "@/components/financeiro/DespesaSheet";
 import Folha, { FOLHA_CSS } from "@/components/financeiro/Folha";
@@ -34,7 +35,6 @@ export default function FinanceiroTransacoes() {
   const [verEstornados, setVerEstornados] = useState(false);
   const [aberto, setAberto] = useState<MovExtrato | null>(null);
   const [nova, setNova] = useState<"entrada" | "saida" | null>(null);
-  const [aviso, setAviso] = useState("");
 
   const carregar = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -63,7 +63,7 @@ export default function FinanceiroTransacoes() {
     return g;
   }, [lista]);
 
-  const avisar = (m: string) => { setAviso(m); setTimeout(() => setAviso(""), 3500); };
+  const avisar = (m: string) => avisarBase(m, { tipo: /^Não /.test(m) ? "erro" : "ok" });
   const exportar = () => {
     const linhas = [`Extrato ${rotuloPeriodo(periodo)}`, "", `Entradas;${entradas.toFixed(2).replace(".", ",")}`, `Saídas;${saidas.toFixed(2).replace(".", ",")}`, `Resultado (entradas − saídas);${(entradas - saidas).toFixed(2).replace(".", ",")}`, "",
       "Data;Tipo;Descrição;Detalhe;Valor;Situação",
@@ -104,7 +104,7 @@ export default function FinanceiroTransacoes() {
         <div className="tx-filtros">
           <div className="tx-seg">{([["todas", "Todas"], ["entrada", "Entradas"], ["saida", "Saídas"]] as const).map(([k, l]) =>
             <button type="button" key={k} className={tipo === k ? "on" : ""} onClick={() => { setTipo(k); if (k === "saida") setForma(null); }}>{l}</button>)}</div>
-          <label className="tx-busca"><MagnifyingGlass size={16} /><input placeholder="Buscar cliente, pedido ou despesa" value={busca} onChange={e => setBusca(e.target.value)} /></label>
+          <label className="tx-busca"><MagnifyingGlass size={16} /><input type="search" aria-label="Buscar nas transações" placeholder="Buscar cliente, pedido ou despesa" value={busca} onChange={e => setBusca(e.target.value)} /></label>
           {tipo !== "saida" && <div className="tx-chips">{FORMAS.map(f => <button type="button" key={f.k} className={forma === f.k ? "on" : ""} onClick={() => setForma(x => x === f.k ? null : f.k)}>{f.l}</button>)}</div>}
         </div>
 
@@ -132,7 +132,6 @@ export default function FinanceiroTransacoes() {
       {aberto && <DetalheSheet m={aberto} semEstorno={semEstorno} onClose={() => setAberto(null)} onAbrirPedido={id => navigate(`/pedidos/${id}/editar`)}
         onEstornado={msg => { setAberto(null); avisar(msg); carregar(); }} />}
       {nova && uid && <DespesaSheet tipo={nova} onClose={() => setNova(null)} onSalvo={() => { setNova(null); avisar(nova === "entrada" ? "Entrada lançada." : "Despesa lançada."); carregar(); }} onContaAPagar={() => navigate("/financeiro/a-pagar")} />}
-      {aviso && <div className="tx-toast" role="status">{aviso}</div>}
       <style>{CSS}{FOLHA_CSS}</style>
     </>
   );
@@ -184,23 +183,23 @@ const CSS = `
   @media (max-width: 420px) { .tx-bt.n span { display: none; } }
   .tx-res { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .tx-k { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 10px; min-width: 0; }
-  .tx-k small { display: block; font-size: 11.5px; font-weight: 700; color: #9A8E94; }
+  .tx-k small { display: block; font-size: 13px; font-weight: 700; color: #9A8E94; }
   .tx-k b { display: block; font-size: clamp(13.5px, 3.9vw, 19px); font-weight: 900; letter-spacing: -.02em; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tx-k b.e { color: #15803D; } .tx-k b.s { color: #DC2626; }
   .tx-filtros { display: flex; flex-direction: column; gap: 8px; }
   @media (min-width: 900px) { .tx-filtros { flex-direction: row; align-items: center; flex-wrap: wrap; } .tx-busca { flex: 1; min-width: 240px; } }
   .tx-seg { display: flex; background: #EFE9EC; border-radius: 12px; padding: 3px; }
-  .tx-seg button { flex: 1; border: none; background: none; border-radius: 10px; padding: 8px 12px; font-family: inherit; font-size: 13px; font-weight: 800; color: #6B5D64; cursor: pointer; }
+  .tx-seg button { flex: 1; min-height: 44px; border: none; background: none; border-radius: 10px; padding: 8px 12px; font-family: inherit; font-size: 13px; font-weight: 800; color: #6B5D64; cursor: pointer; }
   .tx-seg button.on { background: #fff; color: #2C1219; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
-  .tx-busca { display: flex; align-items: center; gap: 8px; height: 42px; background: #fff; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 0 12px; color: #9A8E94; }
-  .tx-busca input { flex: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 15px; color: #2C1219; background: none; }
+  .tx-busca { display: flex; align-items: center; gap: 8px; height: 48px; background: #fff; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 0 12px; color: #9A8E94; }
+  .tx-busca input { flex: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 16px; color: #2C1219; background: none; }
   .tx-chips { display: flex; gap: 6px; overflow-x: auto; }
-  .tx-chips button { flex-shrink: 0; border: 1.5px solid #EDE6E9; background: #fff; border-radius: 99px; padding: 7px 13px; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #4B3A42; cursor: pointer; }
+  .tx-chips button { flex-shrink: 0; min-height: 44px; border: 1.5px solid #EDE6E9; background: #fff; border-radius: 99px; padding: 7px 14px; font-family: inherit; font-size: 14px; font-weight: 700; color: #4B3A42; cursor: pointer; }
   .tx-chips button.on { border-color: #E85A8C; background: #FFF1F6; color: #C33A6E; }
   .tx-ph { height: 220px; background: #FAF7F8; border-radius: 16px; }
   .tx-vazio { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 26px 18px; text-align: center; }
   .tx-vazio b { display: block; font-size: 15.5px; font-weight: 900; } .tx-vazio p { margin: 6px auto 0; font-size: 13.5px; color: #6B5D64; max-width: 360px; line-height: 1.45; }
-  .tx-dia-t { margin: 0 0 6px; font-size: 11.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: #9A8E94; } .tx-dia-t span { color: #6B5D64; }
+  .tx-dia-t { margin: 0 0 6px; font-size: 13px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: #9A8E94; } .tx-dia-t span { color: #6B5D64; }
   .tx-lista { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 2px 14px; }
   .tx-it { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: none; border-top: 1px solid #F5F0F2; padding: 11px 0; font-family: inherit; color: #2C1219; cursor: pointer; }
   .tx-it:first-child { border-top: none; }
@@ -213,7 +212,7 @@ const CSS = `
   @media (min-width: 900px) { .tx-it-c { display: block; } }
   .tx-it-v { font-size: 14px; font-weight: 900; white-space: nowrap; text-align: right; } .tx-it-v.e { color: #15803D; } .tx-it-v.s { color: #DC2626; }
   .tx-it.est { opacity: .5; } .tx-it.est .tx-it-v, .tx-it.est .tx-it-t b { text-decoration: line-through; }
-  .tx-ver-est { align-self: center; border: none; background: none; font-family: inherit; font-size: 13px; font-weight: 800; color: #9A8E94; cursor: pointer; padding: 8px; }
+  .tx-ver-est { align-self: center; border: none; background: none; font-family: inherit; font-size: 13px; font-weight: 800; color: #9A8E94; cursor: pointer; padding: 8px;  min-height: 44px; }
   .tx-dl { display: flex; justify-content: space-between; gap: 10px; padding: 5px 0; font-size: 13.5px; } .tx-dl span { color: #6B5D64; } .tx-dl b { text-align: right; }
   .tx-dl b.e { color: #15803D; } .tx-dl b.s { color: #DC2626; }
   .tx-toast { position: fixed; left: 50%; bottom: calc(90px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 1400; background: #2C1219; color: #fff; padding: 12px 16px; border-radius: 12px; font-size: 13.5px; font-weight: 700; box-shadow: 0 10px 26px rgba(0,0,0,.25); max-width: calc(100vw - 32px); }

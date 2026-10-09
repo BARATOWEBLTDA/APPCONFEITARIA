@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { CalendarBlank, CheckCircle, Plus, Receipt, X } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { supabase } from "@/lib/supabase";
+import { confirmar, avisar as avisarBase } from "@/components/base";
 
 /**
  * Financeiro · Passo 5 (03/10) — Contas a pagar.
@@ -38,7 +39,6 @@ export default function FinanceiroAPagar() {
   const [precisaSql, setPrecisaSql] = useState(false);
   const [pagar, setPagar] = useState<Conta | null>(null);
   const [nova, setNova] = useState(false);
-  const [aviso, setAviso] = useState("");
 
   const carregar = useCallback(async () => {
     // contas do mês (e do próximo) a partir dos custos fixos — não duplica
@@ -65,10 +65,10 @@ export default function FinanceiroAPagar() {
   }, [contas]);
   const soma = (l: Conta[]) => l.reduce((s, c) => s + (Number(c.valor) || 0), 0);
   const total = soma(contas);
-  const avisar = (m: string) => { setAviso(m); setTimeout(() => setAviso(""), 3500); };
+  const avisar = (m: string) => avisarBase(m, { tipo: /^Não /.test(m) ? "erro" : "ok" });
 
   const cancelar = async (c: Conta) => {
-    if (!window.confirm(`Cancelar a conta "${c.descricao}"? Ela sai da lista e não entra no financeiro.`)) return;
+    if (!(await confirmar({ titulo: `Cancelar a conta "${c.descricao}"?`, texto: "Ela sai da lista e não entra no financeiro.", rotulo: "Cancelar a conta", rotuloVoltar: "Voltar", perigo: true, icone: "alerta" }))) return;
     const { error } = await supabase.from("contas_pagar").update({ status: "cancelada" }).eq("id", c.id);
     if (error) { avisar("Não foi possível cancelar agora."); return; }
     avisar("Conta cancelada."); carregar();
@@ -120,7 +120,7 @@ export default function FinanceiroAPagar() {
                   {lista.map(c => { const d = diasAte(c.vencimento); return (
                     <div key={c.id} className="fap-it">
                       <div className="fap-it-h"><b>{c.descricao}</b><span className={`fap-tg ${d < 0 ? "fap-tg--atr" : ""}`}>{quando(d)}</span></div>
-                      <div className="fap-it-v"><small>{c.custo_fixo_id ? "Custo fixo · todo mês" : (c.categoria || "Conta")}</small><b>{brl(c.valor)}</b></div>
+                      <div className="fap-it-v"><small>{c.custo_fixo_id ? "Custo fixo · todo mês" : (c.categoria === "Insumos" ? "Ingredientes" : (c.categoria || "Conta"))}</small><b>{brl(c.valor)}</b></div>
                       <div className="fap-it-a">
                         <span><CalendarBlank size={15} />vence {dataCurta(c.vencimento)}</span>
                         <div className="fap-bts">
@@ -149,7 +149,6 @@ export default function FinanceiroAPagar() {
 
       {pagar && <PagarSheet conta={pagar} onClose={() => setPagar(null)} onFeito={() => { setPagar(null); avisar("Conta paga. A saída entrou no financeiro."); carregar(); }} />}
       {nova && <NovaContaSheet onClose={() => setNova(false)} onFeito={() => { setNova(false); avisar("Conta cadastrada."); carregar(); }} />}
-      {aviso && <div className="fap-toast" role="status">{aviso}</div>}
       <style>{CSS}</style>
     </div>
   );
@@ -226,7 +225,7 @@ function NovaContaSheet({ onClose, onFeito }: { onClose: () => void; onFeito: ()
       <label className="fap-lb" htmlFor="fap-d">Conta</label>
       <input id="fap-d" className="fap-txt" placeholder="Ex.: Fornecedor de chocolate" value={descricao} onChange={e => { setDescricao(e.target.value); setErro(""); }} />
       <p className="fap-lb">Categoria</p>
-      <div className="fap-chips">{CATEGORIAS.map(c => <button type="button" key={c} className={categoria === c ? "on" : ""} onClick={() => setCategoria(c)}>{c}</button>)}</div>
+      <div className="fap-chips">{CATEGORIAS.map(c => <button type="button" key={c} className={categoria === c ? "on" : ""} onClick={() => setCategoria(c)}>{c === "Insumos" ? "Ingredientes" : c}</button>)}</div>
       <div className="fap-row">
         <div><label className="fap-lb" htmlFor="fap-nv">Valor</label><div className="fap-in sm"><span>R$</span><input id="fap-nv" inputMode="numeric" placeholder="0,00" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro(""); }} /></div></div>
         <div><label className="fap-lb" htmlFor="fap-venc">Vencimento</label><CampoData id="fap-venc" valor={vencimento} onChange={setVencimento} titulo="Vencimento" curto /></div>
@@ -243,9 +242,9 @@ const CSS = `
   .fap-nova { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; border: 1.5px dashed #F3C9DA; background: #FFF6F9; color: #C33A6E; border-radius: 12px; padding: 11px 14px; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
   .fap-resumo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .fap-k { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 10px; min-width: 0; }
-  .fap-k small { display: block; font-size: 11.5px; font-weight: 700; color: #9A8E94; }
+  .fap-k small { display: block; font-size: 13px; font-weight: 700; color: #9A8E94; }
   .fap-k b { display: block; font-size: clamp(13.5px, 3.9vw, 17px); letter-spacing: -.02em; font-weight: 900; color: #2C1219; margin: 3px 0 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .fap-k i { font-style: normal; font-size: 11.5px; color: #888780; }
+  .fap-k i { font-style: normal; font-size: 13px; color: #888780; }
   .fap-k--atr { border-color: #FECACA; background: #FFF7F7; } .fap-k--atr b { color: #DC2626; }
   .fap-carregando { text-align: center; color: #9A8E94; font-size: 14px; padding: 30px 0; }
   .fap-vazio { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 28px 20px; text-align: center; }
@@ -253,20 +252,20 @@ const CSS = `
   .fap-vazio b { display: block; font-size: 17px; font-weight: 900; color: #2C1219; margin-top: 12px; }
   .fap-vazio p { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 6px auto 0; max-width: 380px; text-wrap: balance; }
   .fap-link { border: none; background: none; padding: 0; font: inherit; color: #C33A6E; font-weight: 800; cursor: pointer; text-decoration: underline; }
-  .fap-gt { margin: 0 0 8px; font-size: 11.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #9A8E94; } .fap-gt span { color: #6B5D64; }
-  .fap-lista { display: flex; flex-direction: column; gap: 10px; }
+  .fap-gt { margin: 0 0 8px; font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #9A8E94; } .fap-gt span { color: #6B5D64; }
+  .fap-lista { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
   .fap-it { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 14px; }
   .fap-it-h { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .fap-it-h b { font-size: 14.5px; font-weight: 800; color: #2C1219; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .fap-tg { flex-shrink: 0; font-size: 11px; font-weight: 800; color: #92400E; background: #FEF3C7; padding: 3px 8px; border-radius: 7px; }
+  .fap-tg { flex-shrink: 0; font-size: 12px; font-weight: 800; color: #92400E; background: #FEF3C7; padding: 3px 8px; border-radius: 7px; }
   .fap-tg--atr { color: #991B1B; background: #FEE2E2; }
   .fap-it-v { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 6px; }
   .fap-it-v small { font-size: 12.5px; color: #888780; } .fap-it-v b { font-size: 15.5px; font-weight: 900; color: #DC2626; white-space: nowrap; }
   .fap-it-a { display: flex; justify-content: space-between; align-items: center; margin-top: 11px; gap: 8px; }
   .fap-it-a > span { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: #6B5D64; }
   .fap-bts { display: flex; gap: 6px; }
-  .fap-canc { width: 36px; height: 36px; border-radius: 10px; border: 1.5px solid #EDE6E9; background: #fff; color: #9A8E94; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-  .fap-pag { border: none; border-radius: 10px; padding: 0 16px; height: 36px; background: #2C1219; color: #fff; font-family: inherit; font-weight: 800; font-size: 13.5px; cursor: pointer; }
+  .fap-canc { width: 44px; height: 44px; flex-shrink: 0; border-radius: 10px; border: 1.5px solid #EDE6E9; background: #fff; color: #9A8E94; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .fap-pag { border: none; border-radius: 10px; padding: 0 16px; height: 44px; background: #2C1219; color: #fff; font-family: inherit; font-weight: 800; font-size: 13.5px; cursor: pointer; }
   .fap-pagas { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 4px 14px; }
   .fap-pg { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-top: 1px solid #F5F0F2; font-size: 13.5px; color: #4B3A42; }
   .fap-pg:first-child { border-top: none; } .fap-pg svg { color: #15803D; flex-shrink: 0; }

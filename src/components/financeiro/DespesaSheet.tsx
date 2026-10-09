@@ -49,7 +49,7 @@ export default function DespesaSheet({ onClose, onSalvo, onContaAPagar, tipo = "
         <label className="dsp-lb" htmlFor="dsp-v">{ehEntrada ? "Quanto entrou?" : "Quanto pagou?"}</label>
         <div className="dsp-in"><span>R$</span><input id="dsp-v" inputMode="numeric" placeholder="0,00" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro(""); }} autoFocus /></div>
         <p className="dsp-lb">Categoria</p>
-        <div className="dsp-chips">{cats.map(c => <button type="button" key={c} className={categoria === c ? "on" : ""} onClick={() => setCategoria(c)}>{c}</button>)}</div>
+        <div className="dsp-chips">{cats.map(c => <button type="button" key={c} className={categoria === c ? "on" : ""} onClick={() => setCategoria(c)}>{c === "Insumos" ? "Ingredientes" : c}</button>)}</div>
         <label className="dsp-lb" htmlFor="dsp-d">Descrição <em>(opcional)</em></label>
         <input id="dsp-d" className="dsp-txt" placeholder={ehEntrada ? "Ex.: 30 brigadeiros pra vizinha" : "Ex.: Leite condensado e creme de leite"} value={descricao} onChange={e => setDescricao(e.target.value)} />
         <p className="dsp-lb">{ehEntrada ? "Quando entrou?" : "Quando pagou?"}</p>
