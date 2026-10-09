@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { CaretRight, Cookie, Drop, Egg, Gift, MagnifyingGlass, Package, Plus, X } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
-import EmptyDoo from "@/components/EmptyDoo";
-import BtnNovo from "@/components/BtnNovo";
-import QuickAddInsumo, { InsumoQuick } from "@/components/QuickAddInsumo";
+import QuickAddInsumo, { InsumoQuick, custoNaReceita, descreverCompra, formatarCusto } from "@/components/QuickAddInsumo";
 import AppPageHeader from "@/components/AppPageHeader";
+import { Botao, TelaVazia, avisar, confirmar } from "@/components/base";
+import "./clientes.css";
+import "@/components/ingredientes.css";
 
 interface Insumo {
   id: string;
@@ -18,619 +20,186 @@ interface Insumo {
   imagem_url: string;
 }
 
-const CATEGORIAS_DEFAULT = ["Ingredientes", "Embalagens", "Decorações", "Bebidas", "Limpeza", "Descartáveis", "Outros"];
+/** Ícone de cada categoria (quando o ingrediente não tem foto) */
+const ICONE_CAT: Record<string, typeof Egg> = { Ingredientes: Egg, Embalagens: Package, Decorações: Cookie, Bebidas: Drop, Descartáveis: Package };
+const Miniatura = ({ i }: { i: Insumo }) => {
+  if (i.imagem_url) return <span className="ig-th"><img src={i.imagem_url} alt="" /></span>;
+  const Ic = ICONE_CAT[i.categoria] || Gift;
+  return <span className="ig-th"><Ic size={22} weight="duotone" /></span>;
+};
 
 export default function Insumos() {
   const [userId, setUserId] = useState<string | null>(null);
   const [insumos, setInsumos] = useState<Insumo[]>([]);
   const [loading, setLoading] = useState(true);
   const [busca, setBusca] = useState("");
-  const [filtroCategoria, setFiltroCategoria] = useState("Todas");
-  const [categorias, setCategorias] = useState<string[]>(CATEGORIAS_DEFAULT);
-  const [showCatDropdown, setShowCatDropdown] = useState(false);
+  const [filtroCategoria, setFiltroCategoria] = useState("Todos");
 
-  const [showQuickAdd, setShowQuickAdd] = useState(false);
-  const [editingInsumo, setEditingInsumo] = useState<Insumo | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<Insumo | null>(null);
+  // Janela de cadastro/edição: "form" fica montado durante a animação de saída
+  const [form, setForm] = useState<{ editando: Insumo | null; chave: number } | null>(null);
+  const [formAberto, setFormAberto] = useState(false);
+  const tempoFechar = useRef<number | undefined>(undefined);
 
-  // ── Carrega usuário, insumos e categorias ──
+  // ── Carrega usuário e ingredientes ──
   useEffect(() => {
     let cancel = false;
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      if (cancel) return;
+      if (!user || cancel) return;
       setUserId(user.id);
       await loadInsumos(user.id);
-      const { data: cats } = await supabase.from("insumo_categorias").select("nome").or(`is_default.eq.true,user_id.eq.${user.id}`).order("nome");
-      if (!cancel && cats && cats.length > 0) {
-        setCategorias([...new Set([...CATEGORIAS_DEFAULT, ...cats.map((c: any) => c.nome)])]);
-      }
     })();
-    return () => { cancel = true; };
+    return () => { cancel = true; window.clearTimeout(tempoFechar.current); };
   }, []);
 
   const loadInsumos = async (uid: string) => {
-    setLoading(true);
     const { data } = await supabase.from("insumos").select("*").eq("user_id", uid).order("nome");
     setInsumos((data as Insumo[]) || []);
     setLoading(false);
   };
 
-  // ── Filtros aplicados ──
+  // ── Filtros ──
+  const termo = busca.trim().toLowerCase();
   const filtrados = insumos.filter(i => {
-    const matchBusca = !busca.trim() || (
-      i.nome.toLowerCase().includes(busca.toLowerCase()) ||
-      (i.marca || "").toLowerCase().includes(busca.toLowerCase())
-    );
-    const matchCat = filtroCategoria === "Todas" || i.categoria === filtroCategoria;
+    const matchBusca = !termo || i.nome.toLowerCase().includes(termo) || (i.marca || "").toLowerCase().includes(termo);
+    const matchCat = filtroCategoria === "Todos" || i.categoria === filtroCategoria;
     return matchBusca && matchCat;
   });
+  // Chips só das categorias que têm ingrediente (na ordem de quantidade)
+  const contagem = insumos.reduce<Record<string, number>>((m, i) => { const c = i.categoria || "Outros"; m[c] = (m[c] || 0) + 1; return m; }, {});
+  const chips = Object.entries(contagem).sort((a, b) => b[1] - a[1]).map(([c]) => c);
 
-  // ── Handlers ──
-  const abrirNovo = () => {
-    setEditingInsumo(null);
-    setShowQuickAdd(true);
-  };
-  const abrirEditar = (insumo: Insumo) => {
-    setEditingInsumo(insumo);
-    setShowQuickAdd(true);
+  // ── Janela ──
+  const abrirForm = (editando: Insumo | null) => {
+    window.clearTimeout(tempoFechar.current);
+    setForm({ editando, chave: Date.now() });
+    setFormAberto(true);
   };
   const fecharForm = () => {
-    setShowQuickAdd(false);
-    setEditingInsumo(null);
+    setFormAberto(false);
+    tempoFechar.current = window.setTimeout(() => setForm(null), 320);
   };
   const onInsumoSalvo = async (_insumo: InsumoQuick) => {
-    if (userId) await loadInsumos(userId);
+    const editou = !!form?.editando;
     fecharForm();
+    avisar(editou ? "Ingrediente salvo" : "Ingrediente cadastrado", { tipo: "ok" });
+    if (userId) await loadInsumos(userId);
   };
-  const confirmarDelete = async () => {
-    if (!deleteConfirm || !userId) return;
-    await supabase.from("insumos").delete().eq("id", deleteConfirm.id);
-    setDeleteConfirm(null);
-    await loadInsumos(userId);
-  };
-
-  const formatCurrency = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
-  const formatCustoUnit = (v: number) => {
-    // 2 casas no caso comum; mais precisão só quando o valor é muito pequeno
-    // (insumos a granel onde custo/unidade fica abaixo de 1 centavo)
-    const casas = v >= 0.1 ? 2 : v >= 0.01 ? 3 : 4;
-    return `R$ ${v.toFixed(casas).replace(".", ",")}`;
-  };
-  /**
-   * Calcula o valor de exibição numa escala que se adapta ao tamanho da embalagem,
-   * para evitar números muito pequenos (R$ 0,005 por g).
-   *
-   *  Peso:    kg/g  → escala em g  (100g se total ≥ 1kg, 10g se ≥ 100g, 1g se < 100g)
-   *  Volume:  L/ml  → escala em ml (mesma lógica)
-   *  Outros:  un, etc. → sempre 1 unidade
-   */
-  const custoExibicao = (
-    custo_unitario: number,
-    unidade: string,
-    qtd_embalagem: number
-  ): { quantidade: number; valor: number; unidade: string } => {
-    // Normaliza pra unidade base (g, ml ou própria)
-    let custoBase = custo_unitario;
-    let unidadeBase = unidade;
-    let totalBase = qtd_embalagem || 1;
-
-    if (unidade === "kg") {
-      custoBase = custo_unitario / 1000;
-      unidadeBase = "g";
-      totalBase = (qtd_embalagem || 1) * 1000;
-    } else if (unidade === "L") {
-      custoBase = custo_unitario / 1000;
-      unidadeBase = "ml";
-      totalBase = (qtd_embalagem || 1) * 1000;
-    }
-
-    // Pra un, pct, cx, Lata etc. não tem escala
-    if (unidadeBase !== "g" && unidadeBase !== "ml") {
-      return { quantidade: 1, valor: custoBase, unidade: unidadeBase };
-    }
-
-    // Escala adaptativa em potências de 10
-    let escala = 1;
-    if (totalBase >= 1000) escala = 100;
-    else if (totalBase >= 100) escala = 10;
-
-    return { quantidade: escala, valor: custoBase * escala, unidade: unidadeBase };
+  const excluir = async (i: Insumo) => {
+    const { data: usos } = await supabase.from("produto_insumos").select("produto_id").eq("insumo_id", i.id);
+    const n = new Set((usos || []).map((r: any) => r.produto_id)).size;
+    const ok = await confirmar({
+      titulo: `Excluir ${i.nome}?`,
+      texto: n > 0
+        ? `Ele está em ${n} ${n === 1 ? "ficha técnica" : "fichas técnicas"}. O custo dessas fichas vai mudar.`
+        : "Ele sai da sua lista de ingredientes.",
+      rotulo: "Excluir", perigo: true, icone: "erro",
+    });
+    if (!ok) return;
+    const { error } = await supabase.from("insumos").delete().eq("id", i.id);
+    if (error) { console.error(error); avisar("Não deu pra excluir. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
+    fecharForm();
+    avisar("Ingrediente excluído", { tipo: "ok" });
+    if (userId) await loadInsumos(userId);
   };
 
-  // ── Empty state ──
-  if (!loading && insumos.length === 0) {
-    return (
-      <>
-      <AppPageHeader
-        title="Meus Insumos"
-        subtitle="Ingredientes, embalagens e materiais"
-        infoIcon="📦"
-        infoContent={
-          <>
-            <p>Cadastre <strong>tudo que você usa</strong> pra produzir: ingredientes, embalagens, decorações, descartáveis.</p>
-            <p>Com os insumos cadastrados, você calcula o <strong>custo real dos seus produtos</strong> e sabe quanto está lucrando de verdade.</p>
-          </>
-        }
-        infoTip={<>Registre a marca e o valor da embalagem — o Doonly calcula o custo por unidade automaticamente.</>}
-      />
-      <div className="ins-root">
-        <div className="ins-header">
-          <div className="ins-header-text">
-            <h1 className="ins-title">Insumos</h1>
-            <p className="ins-sub">0 insumos cadastrados</p>
-          </div>
-        </div>
-
-        <EmptyDoo
-          image="ingredientes.png"
-          title="Vamos cadastrar seu primeiro insumo?"
-          description="Cadastre ingredientes, embalagens e tudo mais que você usa pra produzir. Vamos calcular o custo automaticamente."
-          actionLabel="Cadastrar insumo"
-          onAction={abrirNovo}
-        />
-
-        {showQuickAdd && userId && (
-          <div className="ins-overlay" onClick={fecharForm}>
-            <div className="ins-form-modal" onClick={e => e.stopPropagation()}>
-              <QuickAddInsumo
-                userId={userId}
-                onSaved={onInsumoSalvo}
-                onCancel={fecharForm}
-              />
-            </div>
-          </div>
-        )}
-
-        <Styles />
-      </div>
-      </>
-    );
-  }
+  const cabecalho = (
+    <AppPageHeader
+      title="Ingredientes"
+      subtitle={loading || insumos.length === 0 ? "O que você compra pra produzir" : `${insumos.length} ${insumos.length === 1 ? "cadastrado" : "cadastrados"}`}
+      infoContent={
+        <>
+          <p>Aqui fica tudo o que você compra pra produzir: ingredientes, embalagens, decorações e descartáveis.</p>
+          <p>Com o preço de cada um, a ficha técnica calcula quanto custa cada produto e quanto você lucra de verdade.</p>
+        </>
+      }
+      infoTip={<>Coloque <strong>quanto vem</strong> e <strong>quanto pagou</strong>: o Doonly calcula o custo de cada grama.</>}
+    />
+  );
 
   return (
     <>
-    <AppPageHeader
-      title="Meus Insumos"
-      subtitle="Ingredientes, embalagens e materiais"
-      infoIcon="📦"
-      infoContent={
-        <>
-          <p>Cadastre <strong>tudo que você usa</strong> pra produzir: ingredientes, embalagens, decorações, descartáveis.</p>
-          <p>Com os insumos cadastrados, você calcula o <strong>custo real dos seus produtos</strong> e sabe quanto está lucrando de verdade.</p>
-        </>
-      }
-      infoTip={<>Registre a marca e o valor da embalagem — o Doonly calcula o custo por unidade automaticamente.</>}
-    />
-    <div className="ins-root">
-      {/* Header */}
-      <div className="ins-header">
-        <div className="ins-header-text">
-          <h1 className="ins-title">Insumos</h1>
-          <p className="ins-sub">{insumos.length} {insumos.length === 1 ? "insumo cadastrado" : "insumos cadastrados"}</p>
-        </div>
-        <BtnNovo label="Cadastrar insumo" onClick={abrirNovo} responsive={false} />
-      </div>
-
-      {/* Busca */}
-      <div className="ins-toolbar">
-        <div className="ins-search">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <input
-            type="text"
-            placeholder="Buscar por nome ou marca..."
-            value={busca}
-            onChange={e => setBusca(e.target.value)}
-          />
-        </div>
-      </div>
-
-      {/* Filtros por categoria — chips no desktop, dropdown no mobile */}
-      <div className="ins-filtros ins-filtros--desktop">
-        {["Todas", ...categorias].map(cat => (
-          <button key={cat} className={"ins-filtro-btn" + (filtroCategoria === cat ? " active" : "")} onClick={() => setFiltroCategoria(cat)}>{cat}</button>
-        ))}
-      </div>
-
-      <div className="ins-cat-dropdown">
-        <button
-          className="ins-cat-dropdown-trigger"
-          onClick={() => setShowCatDropdown(s => !s)}
-          aria-expanded={showCatDropdown}
-        >
-          <span className="ins-cat-dropdown-label">Categoria:</span>
-          <span className="ins-cat-dropdown-value">{filtroCategoria}</span>
-          <svg
-            width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-            style={{ transform: showCatDropdown ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}
-          >
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
-        </button>
-        {showCatDropdown && (
-          <>
-            <div className="ins-cat-dropdown-backdrop" onClick={() => setShowCatDropdown(false)} />
-            <div className="ins-cat-dropdown-list" role="listbox">
-              {["Todas", ...categorias].map(cat => (
-                <button
-                  key={cat}
-                  className={"ins-cat-dropdown-item" + (filtroCategoria === cat ? " is-active" : "")}
-                  onClick={() => { setFiltroCategoria(cat); setShowCatDropdown(false); }}
-                >
-                  {cat}
-                  {filtroCategoria === cat && (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  )}
-                </button>
-              ))}
+      {cabecalho}
+      <div className="cl9">
+        {loading ? (
+          <div className="cl9-esq" aria-label="Carregando ingredientes">{[0, 1, 2, 3, 4].map(k => <span key={k} />)}</div>
+        ) : insumos.length === 0 ? (
+          <TelaVazia caixa icone={<Egg size={30} />} titulo="Nenhum ingrediente ainda"
+            texto="Cadastre o que você compra (leite condensado, chocolate, caixas…) com o preço pago. A ficha técnica usa isso pra calcular o custo de cada produto."
+            acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => abrirForm(null)}>Cadastrar ingrediente</Botao>} />
+        ) : (
+          <section className="cl9-card">
+            <div className="cl9-barra">
+              <label className="cl9-busca">
+                <MagnifyingGlass size={20} weight="bold" />
+                <input type="search" placeholder="Buscar por nome ou marca" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar ingrediente" autoComplete="off" />
+                {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={18} weight="bold" /></button>}
+              </label>
+              <div className="cl9-acoes">
+                <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => abrirForm(null)}><span className="cl9-g">Novo ingrediente</span><span className="cl9-c">Novo</span></Botao>
+              </div>
             </div>
-          </>
+
+            {chips.length > 1 && (
+              <div className="cl9-chips" role="tablist" aria-label="Filtrar por categoria">
+                {["Todos", ...chips].map(c => (
+                  <button key={c} type="button" role="tab" aria-selected={filtroCategoria === c} onClick={() => setFiltroCategoria(c)}>
+                    {c}<i>{c === "Todos" ? insumos.length : contagem[c]}</i>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {filtrados.length === 0 ? (
+              <p className="cl9-semres">{termo ? "Nenhum ingrediente com esse nome ou marca. Confira a busca." : "Nenhum ingrediente nessa categoria."}</p>
+            ) : (<>
+              <div className="ig-tab-cab" aria-hidden="true"><span>Ingrediente</span><span>Compra</span><span>Custo na receita</span><span /></div>
+              {filtrados.map(i => {
+                const preco = `R$ ${(i.valor_compra || 0).toFixed(2).replace(".", ",")}`;
+                const compra = descreverCompra(i.embalagem_tipo, i.qtd_embalagem || 1, i.unidade);
+                const c = custoNaReceita(i.custo_unitario || 0, i.unidade, i.qtd_embalagem || 1);
+                return (
+                  <button key={i.id} type="button" className="ig-l" onClick={() => abrirForm(i)} aria-label={`${i.nome}, ${formatarCusto(c.valor)} ${c.por}. Editar`}>
+                    <Miniatura i={i} />
+                    <span className="ig-l-tx">
+                      <b>{i.nome}</b>
+                      <small className="ig-pc">{[i.marca, i.categoria].filter(Boolean).join(" · ")}</small>
+                      <small className="ig-cel">{preco} · {compra}</small>
+                    </span>
+                    <span className="ig-l-compra"><b>{preco}</b><small>{compra}</small></span>
+                    <span className="ig-l-custo"><b>{formatarCusto(c.valor)}</b><small>{c.por}</small></span>
+                    <CaretRight size={18} weight="bold" />
+                  </button>
+                );
+              })}
+            </>)}
+          </section>
         )}
       </div>
 
-      {/* Lista */}
-      {loading ? (
-        <div className="ins-loading">
-          <div className="ins-spinner" />
-        </div>
-      ) : filtrados.length === 0 ? (
-        <div className="ins-no-results">
-          <p>Nenhum insumo encontrado.</p>
-          {(busca || filtroCategoria !== "Todas") && (
-            <button onClick={() => { setBusca(""); setFiltroCategoria("Todas"); }}>Limpar filtros</button>
-          )}
-        </div>
-      ) : (
-        <div className="ins-list">
-          {filtrados.map(i => {
-            const exib = custoExibicao(i.custo_unitario || 0, i.unidade, i.qtd_embalagem || 1);
-            const labelQtd = exib.quantidade === 1 ? exib.unidade : `${exib.quantidade}${exib.unidade}`;
-            return (
-            <div key={i.id} className="ins-item">
-              <div className="ins-item-media">
-                {i.imagem_url
-                  ? <img src={i.imagem_url} alt={i.nome} className="ins-item-img" />
-                  : <div className="ins-item-img ins-item-img--placeholder">🥣</div>}
-              </div>
-
-              <div className="ins-item-info">
-                <p className="ins-item-nome">{i.nome}</p>
-                <p className="ins-item-line">Marca: {i.marca || "Não informada"}</p>
-                <p className="ins-item-line">
-                  Preço médio: {formatCurrency(i.valor_compra || 0)} / {i.qtd_embalagem || 1} {i.unidade}{i.embalagem_tipo && i.embalagem_tipo !== "Avulso" ? ` (${i.embalagem_tipo})` : ""}
-                </p>
-                <p className="ins-item-custo">Valor por {labelQtd}: {formatCustoUnit(exib.valor)}</p>
-              </div>
-
-              <button className="ins-item-edit" onClick={() => abrirEditar(i)} aria-label="Editar" title="Editar">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              </button>
-            </div>
-            );
-          })}
-        </div>
+      {form && userId && (
+        <QuickAddInsumo
+          key={form.chave}
+          janela
+          aberta={formAberto}
+          userId={userId}
+          editing={form.editando ? {
+            id: form.editando.id,
+            nome: form.editando.nome,
+            marca: form.editando.marca,
+            categoria: form.editando.categoria,
+            unidade: form.editando.unidade,
+            embalagem_tipo: form.editando.embalagem_tipo,
+            custo_unitario: form.editando.custo_unitario,
+            imagem_url: form.editando.imagem_url,
+            valor_compra: form.editando.valor_compra,
+            qtd_embalagem: form.editando.qtd_embalagem,
+          } : undefined}
+          onSaved={onInsumoSalvo}
+          onCancel={fecharForm}
+          onDelete={form.editando ? () => excluir(form.editando!) : undefined}
+        />
       )}
-
-      {/* Modal do form (criar/editar) */}
-      {showQuickAdd && userId && (
-        <div className="ins-overlay" onClick={fecharForm}>
-          <div className="ins-form-modal" onClick={e => e.stopPropagation()}>
-            <QuickAddInsumo
-              userId={userId}
-              editing={editingInsumo ? {
-                id: editingInsumo.id,
-                nome: editingInsumo.nome,
-                marca: editingInsumo.marca,
-                categoria: editingInsumo.categoria,
-                unidade: editingInsumo.unidade,
-                embalagem_tipo: editingInsumo.embalagem_tipo,
-                custo_unitario: editingInsumo.custo_unitario,
-                imagem_url: editingInsumo.imagem_url,
-                valor_compra: editingInsumo.valor_compra,
-                qtd_embalagem: editingInsumo.qtd_embalagem,
-              } : undefined}
-              onSaved={onInsumoSalvo}
-              onCancel={fecharForm}
-              onDelete={editingInsumo ? () => {
-                fecharForm();
-                setDeleteConfirm(editingInsumo);
-              } : undefined}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Modal de confirmação de delete */}
-      {deleteConfirm && (
-        <div className="ins-overlay" onClick={() => setDeleteConfirm(null)}>
-          <div className="ins-confirm" onClick={e => e.stopPropagation()}>
-            <p className="ins-confirm-title">Excluir insumo?</p>
-            <p className="ins-confirm-sub">"{deleteConfirm.nome}" será removido permanentemente. Esta ação não pode ser desfeita.</p>
-            <div className="ins-confirm-btns">
-              <button className="ins-btn-cancel" onClick={() => setDeleteConfirm(null)}>Cancelar</button>
-              <button className="ins-btn-del-confirm" onClick={confirmarDelete}>Excluir</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <Styles />
-    </div>
     </>
-  );
-}
-
-function Styles() {
-  return (
-    <style>{`
-      .ins-root {
-        font-family: var(--font-base);
-        display: flex; flex-direction: column;
-        gap: var(--space-5);
-        padding-top: var(--space-7); padding-bottom: var(--space-7);
-      }
-      .ins-header {
-        display: flex; align-items: center; justify-content: space-between;
-        gap: var(--space-4);
-      }
-      .ins-header-text { min-width: 0; flex: 1; }
-      .ins-title {
-        font-size: var(--text-2xl); font-weight: var(--fw-black);
-        color: var(--text-title);
-        margin: 0;
-      }
-      .ins-sub {
-        font-size: var(--font-helper); color: var(--text-muted);
-        margin: var(--space-1) 0 0;
-      }
-
-      .ins-toolbar { display: flex; gap: var(--space-2); }
-      .ins-search {
-        flex: 1; position: relative;
-        display: flex; align-items: center; gap: var(--space-2);
-        padding: 0 var(--space-3);
-        background: var(--bg-card);
-        border: 1.5px solid var(--border);
-        border-radius: var(--radius-md);
-        color: var(--text-muted);
-        transition: border-color var(--dur-fast) var(--ease-out);
-      }
-      .ins-search input {
-        flex: 1; padding: var(--space-3) 0;
-        border: none; background: transparent; outline: none;
-        font-family: inherit; font-size: var(--font-button);
-        color: var(--text-title);
-      }
-      .ins-search:focus-within { border-color: var(--primary); }
-
-      .ins-filtros { display: flex; gap: var(--space-2); flex-wrap: wrap; }
-      .ins-filtro-btn {
-        padding: var(--space-2) var(--space-4);
-        border: 1.5px solid var(--border);
-        border-radius: var(--radius-full);
-        background: var(--bg-card);
-        font-family: var(--font-base);
-        font-size: var(--font-helper); font-weight: var(--fw-medium);
-        color: var(--text-secondary);
-        cursor: pointer; white-space: nowrap;
-        transition: all var(--dur-fast) var(--ease-out);
-      }
-      .ins-filtro-btn.active {
-        border-color: var(--primary);
-        color: var(--primary);
-        background: var(--primary-light);
-        font-weight: var(--fw-bold);
-      }
-
-      .ins-cat-dropdown { display: none; position: relative; }
-      .ins-cat-dropdown-trigger {
-        display: inline-flex; align-items: center;
-        gap: var(--space-1);
-        padding: var(--space-1) 0;
-        background: transparent;
-        border: none;
-        font-family: var(--font-base);
-        color: var(--text-secondary);
-        cursor: pointer;
-        transition: color var(--dur-fast) var(--ease-out);
-      }
-      .ins-cat-dropdown-trigger:hover { color: var(--primary); }
-      .ins-cat-dropdown-label {
-        font-size: var(--font-button);
-        font-weight: var(--fw-medium);
-        color: var(--text-muted);
-      }
-      .ins-cat-dropdown-value {
-        font-size: var(--font-button);
-        font-weight: var(--fw-bold);
-        color: var(--text-title);
-      }
-      .ins-cat-dropdown-backdrop { position: fixed; inset: 0; z-index: 90; background: transparent; }
-      .ins-cat-dropdown-list {
-        position: absolute; top: calc(100% + 6px); left: 0; z-index: 91;
-        min-width: 200px;
-        background: var(--bg-card);
-        border: 1.5px solid var(--border);
-        border-radius: var(--radius-md);
-        box-shadow: var(--shadow-md);
-        max-height: 300px; overflow-y: auto;
-        padding: var(--space-1);
-      }
-      .ins-cat-dropdown-item {
-        width: 100%; display: flex; align-items: center; justify-content: space-between;
-        padding: var(--space-2) var(--space-3);
-        background: transparent; border: none; cursor: pointer;
-        font-family: var(--font-base); font-size: var(--font-button); font-weight: var(--fw-medium);
-        color: var(--text-title);
-        border-radius: var(--radius-sm); text-align: left;
-        transition: background var(--dur-fast) var(--ease-out);
-      }
-      .ins-cat-dropdown-item:hover { background: var(--bg-body); }
-      .ins-cat-dropdown-item.is-active {
-        background: var(--primary-light);
-        color: var(--primary); font-weight: var(--fw-bold);
-      }
-
-      /* Lista */
-      .ins-list { display: flex; flex-direction: column; gap: var(--space-2); }
-      .ins-item {
-        position: relative;
-        display: flex; gap: var(--space-4); align-items: stretch;
-        padding: var(--pad-card);
-        background: var(--bg-card);
-        border: 1.5px solid var(--border);
-        border-radius: var(--radius-md);
-        transition: border-color var(--dur-fast) var(--ease-out);
-      }
-      .ins-item:hover { border-color: var(--primary); }
-      .ins-item-media {
-        flex-shrink: 0;
-      }
-      .ins-item-img {
-        width: 110px; height: 110px;
-        border-radius: var(--radius-md); object-fit: cover;
-        background: transparent;
-        mix-blend-mode: multiply;
-      }
-      .ins-item-img--placeholder {
-        display: flex; align-items: center; justify-content: center;
-        font-size: var(--text-3xl);
-        background: var(--bg-subtle);
-        mix-blend-mode: normal;
-      }
-      .ins-item-edit {
-        position: absolute;
-        top: var(--space-2); right: var(--space-2);
-        width: 32px; height: 32px;
-        display: inline-flex; align-items: center; justify-content: center;
-        background: transparent;
-        border: 1.5px solid var(--border);
-        border-radius: var(--radius-sm);
-        color: var(--text-secondary);
-        cursor: pointer;
-        transition: all var(--dur-fast) var(--ease-out);
-      }
-      .ins-item-edit:hover {
-        border-color: var(--primary); color: var(--primary); background: var(--primary-light);
-      }
-      .ins-item-info {
-        flex: 1; min-width: 0;
-        display: flex; flex-direction: column; gap: 2px;
-        padding-top: var(--space-1);
-      }
-      .ins-item-nome {
-        margin: 0; font-size: var(--font-body); font-weight: var(--fw-bold);
-        color: var(--text-title);
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        padding-right: calc(32px + var(--space-2));
-      }
-      .ins-item-line {
-        margin: 0;
-        font-size: var(--font-caption); font-weight: var(--fw-medium);
-        font-family: var(--font-base);
-        color: var(--text-muted);
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      }
-      /* Marca (1ª linha) também fica na altura do botão editar */
-      .ins-item-line:first-of-type {
-        padding-right: calc(32px + var(--space-2));
-      }
-      .ins-item-custo {
-        margin: var(--space-1) 0 0;
-        font-size: var(--font-helper); font-weight: var(--fw-bold);
-        color: var(--primary);
-      }
-
-      .ins-loading {
-        display: flex; justify-content: center; padding: var(--space-9) 0;
-      }
-      .ins-spinner {
-        width: 32px; height: 32px;
-        border: 3px solid var(--border);
-        border-top-color: var(--primary);
-        border-radius: var(--radius-full);
-        animation: insSpin 0.7s linear infinite;
-      }
-      @keyframes insSpin { to { transform: rotate(360deg); } }
-
-      .ins-no-results {
-        text-align: center; padding: var(--space-7) var(--space-4);
-        color: var(--text-muted);
-      }
-      .ins-no-results p { margin: 0 0 var(--space-3); font-size: var(--font-button); }
-      .ins-no-results button {
-        background: var(--primary); color: var(--text-inverse);
-        border: none; border-radius: var(--radius-sm);
-        padding: var(--space-2) var(--space-4);
-        font-family: var(--font-base);
-        font-size: var(--font-helper); font-weight: var(--fw-semibold);
-        cursor: pointer;
-        transition: filter var(--dur-fast) var(--ease-out);
-      }
-      .ins-no-results button:hover { filter: brightness(1.08); }
-
-      /* Overlays */
-      .ins-overlay {
-        position: fixed; inset: 0; z-index: 200;
-        background: var(--bg-overlay);
-        backdrop-filter: blur(3px);
-        display: flex; align-items: center; justify-content: center;
-        padding: var(--space-4);
-      }
-      .ins-form-modal {
-        background: var(--bg-card);
-        border-radius: var(--radius-lg); padding: var(--pad-modal);
-        width: 100%; max-width: 520px;
-        max-height: 92vh; overflow-y: auto;
-        box-shadow: var(--shadow-lg);
-      }
-      .ins-confirm {
-        background: var(--bg-card);
-        border-radius: var(--radius-lg); padding: var(--space-6);
-        width: 100%; max-width: 360px;
-        text-align: center;
-        box-shadow: var(--shadow-lg);
-      }
-      .ins-confirm-title {
-        margin: 0 0 var(--space-2);
-        font-size: var(--font-modal-title); font-weight: var(--fw-black);
-        color: var(--text-title);
-      }
-      .ins-confirm-sub {
-        margin: 0 0 var(--space-5);
-        font-size: var(--font-button);
-        color: var(--text-secondary);
-        line-height: var(--lh-normal);
-      }
-      .ins-confirm-btns { display: flex; gap: var(--space-2); }
-      .ins-btn-cancel, .ins-btn-del-confirm {
-        flex: 1; padding: var(--space-3);
-        border-radius: var(--radius-md);
-        font-family: var(--font-base);
-        font-size: var(--font-button); font-weight: var(--fw-bold);
-        cursor: pointer;
-        border: none;
-        transition: filter var(--dur-fast) var(--ease-out);
-      }
-      .ins-btn-cancel {
-        background: var(--bg-body);
-        color: var(--text-title);
-      }
-      .ins-btn-del-confirm {
-        background: var(--error); color: var(--text-inverse);
-      }
-      .ins-btn-cancel:hover, .ins-btn-del-confirm:hover { filter: brightness(0.95); }
-
-      @media (max-width: 640px) {
-        .ins-root { padding-bottom: 6rem; gap: var(--space-4); }
-        .ins-title { font-size: var(--font-page-title); }
-        .ins-filtros--desktop { display: none; }
-        .ins-cat-dropdown { display: block; }
-        .ins-item-img { width: 88px; height: 88px; }
-        .ins-item-nome { font-size: var(--font-button); }
-      }
-    `}</style>
   );
 }

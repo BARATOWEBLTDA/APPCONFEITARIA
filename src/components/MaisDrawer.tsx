@@ -37,7 +37,7 @@ const GRUPOS: Grupo[] = [
     label: "Cadastros",
     items: [
       { label: "Categorias",    desc: "Organize seus produtos", path: "/categorias",    Icone: SquaresFour },
-      { label: "Ingredientes",  desc: "Insumos e custos",       path: "/insumos",       Icone: Package },
+      { label: "Ingredientes",  desc: "O que você compra",      path: "/insumos",       Icone: Package },
       { label: "Receitas",      desc: "Suas receitas",          path: "/receitas",      Icone: BookOpen },
       { label: "Ficha técnica", desc: "Calcule o custo real",   path: "/ficha-tecnica", Icone: ClipboardText },
     ],

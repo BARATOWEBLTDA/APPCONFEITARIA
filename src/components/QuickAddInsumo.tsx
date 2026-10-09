@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef } from "react";
+import { Camera, Image as ImagemIc, MagnifyingGlass, Trash, WarningCircle, X } from "@phosphor-icons/react";
 import { parseNumBR } from "@/lib/numeroBR";
 import { supabase } from "@/lib/supabase";
-import ReqTag from "@/components/ReqTag";
 import { apiFetch } from "@/lib/apiFetch";
+import { Botao, BotaoIcone, Campo, Janela, Titulo, avisar, confirmar } from "@/components/base";
+import "@/pages/clientes.css";
+import "./ingredientes.css";
 
 export type InsumoQuick = {
   id: string;
@@ -26,6 +29,10 @@ interface Props {
   onCancel: () => void;
   /** Quando passado e em modo edição, exibe botão de excluir. */
   onDelete?: () => void;
+  /** true: abre numa Janela própria (tela Ingredientes). Sem isso, aparece dentro da janela de quem chamou (ficha técnica, produtos). */
+  janela?: boolean;
+  /** só com janela: aberta ou fechando (pra animação de saída) */
+  aberta?: boolean;
 }
 
 type Form = {
@@ -41,31 +48,19 @@ type Form = {
 
 const CATEGORIAS_DEFAULT = ["Ingredientes", "Embalagens", "Decorações", "Bebidas", "Limpeza", "Descartáveis", "Outros"];
 
-const UNIDADES_MEDIDA = [
-  { sigla: "un", nome: "Unidade" },
-  { sigla: "kg", nome: "Quilograma" },
-  { sigla: "g", nome: "Grama" },
-  { sigla: "L", nome: "Litro" },
-  { sigla: "ml", nome: "Mililitro" },
+/** Medidas (mesmos valores de antes: un, kg, g, L, ml) */
+const MEDIDAS = [
+  { sigla: "g", nome: "g" },
+  { sigla: "kg", nome: "kg" },
+  { sigla: "ml", nome: "ml" },
+  { sigla: "L", nome: "L" },
+  { sigla: "un", nome: "unidade" },
 ];
 
-/** Lista enxuta — só embalagens realmente usadas no dia a dia da confeitaria.
- *  Ordem: Avulso primeiro, depois por frequência de uso. */
-const EMBALAGENS = [
-  { sigla: "Avulso",   nome: "Avulso (sem embalagem)" },
-  { sigla: "Pacote",   nome: "Pacote" },
-  { sigla: "Caixa",    nome: "Caixa" },
-  { sigla: "Lata",     nome: "Lata" },
-  { sigla: "Pote",     nome: "Pote" },
-  { sigla: "Garrafa",  nome: "Garrafa" },
-  { sigla: "Frasco",   nome: "Frasco" },
-  { sigla: "Bandeja",  nome: "Bandeja" },
-  { sigla: "Bisnaga",  nome: "Bisnaga" },
-  { sigla: "Sachê",    nome: "Sachê" },
-  { sigla: "Envelope", nome: "Envelope" },
-  { sigla: "Balde",    nome: "Balde" },
-  { sigla: "Rolo",     nome: "Rolo" },
-];
+/** Embalagens (mesmos valores salvos de antes). As mais usadas aparecem direto; o resto fica em "Outra". */
+const EMB_PRINCIPAIS = ["Avulso", "Pacote", "Caixa", "Lata", "Pote", "Garrafa", "Bandeja"];
+const EMB_OUTRAS = ["Frasco", "Bisnaga", "Sachê", "Envelope", "Balde", "Rolo"];
+const EMB_FEMININAS = ["Caixa", "Lata", "Garrafa", "Bandeja", "Bisnaga"];
 
 /** Heurística pra sugerir unidade de medida com base no nome + embalagem.
  *  Nível 2 (nome) tem prioridade sobre Nível 1 (embalagem) porque o nome
@@ -131,14 +126,52 @@ function detectarInconsistencia(nome: string, unidade: string): string | null {
   return null;
 }
 
+/* ───────── Ajudantes de exibição (também usados na lista de Ingredientes) ───────── */
+
+const numBR = (v: number) => (Math.round(v * 1000) / 1000).toString().replace(".", ",");
+
+/** "R$ 0,19" com mais casas só quando o valor é muito pequeno (a granel) */
+export function formatarCusto(v: number) {
+  const casas = v >= 0.1 ? 2 : v >= 0.01 ? 3 : 4;
+  return `R$ ${v.toFixed(casas).replace(".", ",")}`;
+}
+
 /**
- * Cadastro rápido e edição de insumo.
- * Reutilizado em /insumos e na ficha técnica.
+ * Custo na receita numa escala que se adapta ao tamanho da embalagem,
+ * pra não mostrar R$ 0,005 por g.
+ *   Peso/volume: em g ou ml, a cada 100 (embalagem ≥ 1 kg/L), 10 (≥ 100) ou 1.
+ *   Unidade: cada.
  */
-export default function QuickAddInsumo({ userId, initialName, editing, onSaved, onCancel, onDelete }: Props) {
+export function custoNaReceita(custo_unitario: number, unidade: string, qtd_embalagem: number): { valor: number; por: string } {
+  let custoBase = custo_unitario || 0;
+  let unidadeBase = unidade;
+  let totalBase = qtd_embalagem || 1;
+  if (unidade === "kg" || unidade === "L") {
+    custoBase = custoBase / 1000;
+    unidadeBase = unidade === "kg" ? "g" : "ml";
+    totalBase = totalBase * 1000;
+  }
+  if (unidadeBase !== "g" && unidadeBase !== "ml") return { valor: custoBase, por: "cada" };
+  const escala = totalBase >= 1000 ? 100 : totalBase >= 100 ? 10 : 1;
+  return { valor: custoBase * escala, por: escala === 1 ? `por ${unidadeBase}` : `a cada ${escala} ${unidadeBase}` };
+}
+
+/** "lata de 395 g" · "bandeja com 30 un" · "1 kg" (avulso) */
+export function descreverCompra(embalagem: string, qtd: number, unidade: string) {
+  let n = qtd || 1, u = unidade;
+  if ((u === "g" || u === "ml") && n >= 1000) { n = n / 1000; u = u === "g" ? "kg" : "L"; } // 1000 g → 1 kg
+  const q = `${numBR(n)} ${u}`;
+  if (!embalagem || embalagem === "Avulso") return q;
+  return `${embalagem.toLowerCase()} ${unidade === "un" ? "com" : "de"} ${q}`;
+}
+
+/**
+ * Cadastro e edição de ingrediente.
+ * Reutilizado em /insumos (numa Janela) e dentro da ficha técnica e do cadastro de produto.
+ */
+export default function QuickAddInsumo({ userId, initialName, editing, onSaved, onCancel, onDelete, janela = false, aberta = true }: Props) {
   const isEditing = !!editing;
 
-  const [faltaValor, setFaltaValor] = useState(false);
   const [form, setForm] = useState<Form>(() => {
     if (editing) {
       return {
@@ -159,10 +192,12 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       unidade: "g",
       embalagem_tipo: "Avulso",
       valor_compra: "",
-      qtd_embalagem: "1",
+      qtd_embalagem: "",
       imagem_url: "",
     };
   });
+  const inicial = useRef(form);
+  const mudou = JSON.stringify(form) !== JSON.stringify(inicial.current);
 
   // Marca se o usuário já tocou manualmente na unidade — quando true,
   // paramos de sobrescrever a escolha dele com sugestões automáticas.
@@ -181,12 +216,17 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
 
   // Mensagem de alerta caso a combinação esteja incoerente
   const alertaIncoerencia = detectarInconsistencia(form.nome, form.unidade);
+  const [alertaDispensado, setAlertaDispensado] = useState<string | null>(null);
 
   const [imagens, setImagens] = useState<string[]>([]);
   const [buscandoImg, setBuscandoImg] = useState(false);
   const [uploadingImg, setUploadingImg] = useState(false);
+  const [fotoAberta, setFotoAberta] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [tentouSalvar, setTentouSalvar] = useState(false);
   const [categorias, setCategorias] = useState<string[]>(CATEGORIAS_DEFAULT);
+  const [verOutras, setVerOutras] = useState(() => EMB_OUTRAS.includes(form.embalagem_tipo));
+  const [usadoEm, setUsadoEm] = useState(0);
 
   const galleryRef = useRef<HTMLInputElement>(null);
 
@@ -202,16 +242,31 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
     return () => { cancel = true; };
   }, [userId]);
 
+  // Em quantas fichas técnicas o ingrediente está (só na edição, pra mostrar no resumo do custo)
+  useEffect(() => {
+    if (!editing?.id) return;
+    let cancel = false;
+    (async () => {
+      const { data } = await supabase.from("produto_insumos").select("produto_id").eq("insumo_id", editing.id);
+      if (!cancel && data) setUsadoEm(new Set(data.map((r: any) => r.produto_id)).size);
+    })();
+    return () => { cancel = true; };
+  }, [editing?.id]);
+
   const handleBuscarImagem = async () => {
     const termo = `${form.nome} ${form.marca}`.trim();
-    if (form.nome.trim().length < 3) { alert("Digite o nome do insumo primeiro"); return; }
+    if (form.nome.trim().length < 3) { avisar("Escreva o nome primeiro pra buscar a foto", { tipo: "info" }); return; }
     setBuscandoImg(true);
     setImagens([]);
     try {
       const res = await apiFetch(`/api/buscar-imagem?q=${encodeURIComponent(termo)}`);
       const data = await res.json();
-      if (data.images) setImagens(data.images.slice(0, 3));
-    } catch (e) { console.error(e); }
+      if (data.images?.length) setImagens(data.images.slice(0, 3));
+      else avisar("Não achamos foto pra esse nome. Tente escolher do celular.", { tipo: "info" });
+    } catch (e) {
+      console.error(e);
+      avisar("Não deu pra buscar agora. Confira a internet e tente de novo.", { tipo: "erro" });
+    }
     setBuscandoImg(false);
   };
 
@@ -223,23 +278,30 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
     const path = `insumos/${userId}/${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("profiles").upload(path, file, { upsert: true });
     if (error) {
-      alert("Erro ao enviar imagem");
+      avisar("Não deu pra enviar a foto. Tente de novo.", { tipo: "erro" });
       console.error(error);
     } else {
       const { data } = supabase.storage.from("profiles").getPublicUrl(path);
       setForm(f => ({ ...f, imagem_url: data.publicUrl }));
       setImagens([]); // limpa resultados de busca se havia
+      setFotoAberta(false);
     }
     setUploadingImg(false);
     e.target.value = ""; // reseta input pra permitir mesmo arquivo de novo
   };
 
+  const valorNum = parseNumBR(form.valor_compra);
+  const qtdNum = parseNumBR(form.qtd_embalagem) || 1;
+  const erroNome = tentouSalvar && !form.nome.trim() ? "Falta o nome" : undefined;
+  const erroValor = tentouSalvar && valorNum <= 0 ? "Falta o preço" : undefined;
+  const erroQtd = tentouSalvar && qtdNum <= 0 ? "Falta quanto vem" : undefined;
+
   const handleSalvar = async () => {
-    if (!userId || !form.nome.trim()) { alert("Informe o nome do insumo"); return; }
-    const valor = parseNumBR(form.valor_compra);
-    const qtdEmb = parseNumBR(form.qtd_embalagem) || 1;
-    if (valor <= 0) { setFaltaValor(true); return; } // aviso embaixo do campo (antes era um alerta)
-    if (qtdEmb <= 0) { alert("Informe quanto veio na embalagem"); return; }
+    setTentouSalvar(true);
+    if (!userId || !form.nome.trim()) return;
+    const valor = valorNum;
+    const qtdEmb = qtdNum;
+    if (valor <= 0 || qtdEmb <= 0) return; // o que falta aparece embaixo de cada campo
     const custoUnit = valor / qtdEmb;
 
     setSaving(true);
@@ -267,7 +329,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
     }
     setSaving(false);
 
-    if (error || !data) { alert("Erro ao salvar insumo"); console.error(error); return; }
+    if (error || !data) { avisar("Não deu pra salvar. Confira a internet e tente de novo.", { tipo: "erro" }); console.error(error); return; }
     onSaved({
       id: data.id,
       nome: data.nome,
@@ -282,654 +344,167 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
     });
   };
 
-  const previewCusto = (() => {
-    const v = parseNumBR(form.valor_compra) || 0;
-    const q = parseNumBR(form.qtd_embalagem) || 1;
-    return v > 0 ? v / q : 0;
-  })();
+  // Fechar sem salvar: pergunta antes se a pessoa já mexeu em algo
+  const pedirFechar = async () => {
+    if (saving) return;
+    if (mudou) {
+      const ok = await confirmar({
+        titulo: isEditing ? "Sair sem salvar?" : "Descartar o cadastro?",
+        texto: isEditing ? "As mudanças que você fez neste ingrediente vão se perder." : "O que você preencheu vai se perder.",
+        rotulo: isEditing ? "Sair sem salvar" : "Descartar", rotuloVoltar: "Voltar", perigo: true, icone: "alerta",
+      });
+      if (!ok) return;
+    }
+    onCancel();
+  };
 
-  return (
-    <div className="qai-root">
-      <div className="qai-head">
-        <span>{isEditing ? "Editar insumo" : "Cadastrar insumo"}</span>
-        <button type="button" className="qai-cancel" onClick={onCancel} aria-label="Fechar">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-        </button>
-      </div>
+  const custo = valorNum > 0 ? custoNaReceita(valorNum / qtdNum, form.unidade, qtdNum) : null;
+  const medidaTxt = form.unidade === "un" ? "un" : form.unidade;
+  const emb = form.embalagem_tipo;
+  const rotuloQtd = emb === "Avulso" ? "Quanto vem" : `Quanto vem ${EMB_FEMININAS.includes(emb) ? "na" : "no"} ${emb.toLowerCase()}`;
+  const mostraAlerta = alertaIncoerencia && alertaDispensado !== alertaIncoerencia;
+  const sugerida = !unidadeTocadaManualmente && form.nome.trim().length >= 3;
 
-      <div className="qai-field">
-        <label>Nome do insumo <ReqTag /></label>
-        <input
-          type="text"
-          className="qai-input"
-          placeholder="ex: Leite condensado"
-          value={form.nome}
-          onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
-        />
-      </div>
-
-      <div className="qai-row-2">
-        <div className="qai-field">
-          <label>Marca</label>
-          <input
-            type="text"
-            className="qai-input"
-            placeholder="ex: Moça"
-            value={form.marca}
-            onChange={e => setForm(f => ({ ...f, marca: e.target.value }))}
-          />
-        </div>
-        <div className="qai-field">
-          <label>Categoria <ReqTag /></label>
-          <select
-            className="qai-input"
-            value={form.categoria}
-            onChange={e => setForm(f => ({ ...f, categoria: e.target.value }))}
-          >
-            {categorias.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </div>
-      </div>
-
-      <div className="qai-imgs">
-        <div className="qai-imgs-label">Imagem do produto</div>
-
-        <input ref={galleryRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleUploadFile} />
-
-        {/* Área da imagem (3 slots, resultado da busca, upload, ou mensagem do Doo) */}
-        <div className="qai-imgs-area">
-          {buscandoImg && (
-            <div className="qai-imgs-doo">
-              <div className="qai-imgs-doo-spinner" />
-              <p><strong>Doo</strong> está procurando<span className="qai-dots"><span>.</span><span>.</span><span>.</span></span></p>
-            </div>
-          )}
-
-          {uploadingImg && (
-            <div className="qai-imgs-doo">
-              <div className="qai-imgs-doo-spinner" />
-              <p><strong>Doo</strong> está enviando<span className="qai-dots"><span>.</span><span>.</span><span>.</span></span></p>
-            </div>
-          )}
-
-          {/* Imagem única do upload */}
-          {!buscandoImg && !uploadingImg && form.imagem_url && imagens.length === 0 && (
-            <div className="qai-imgs-selected">
-              <img src={form.imagem_url} alt="Imagem selecionada" />
-              <button type="button" className="qai-img-remove" onClick={() => setForm(f => ({ ...f, imagem_url: "" }))}>
-                Remover
-              </button>
-            </div>
-          )}
-
-          {/* 3 resultados da busca */}
-          {!buscandoImg && !uploadingImg && imagens.length > 0 && (
-            <div className="qai-imgs-grid">
+  const corpo = (
+    <div className="cl9-f ig-f">
+      {/* Foto (opcional) */}
+      <input ref={galleryRef} type="file" accept="image/*" hidden onChange={handleUploadFile} />
+      <button type="button" className="cl9-f-foto" onClick={() => setFotoAberta(a => !a)} aria-expanded={fotoAberta}>
+        <span className="cl9-f-av ig-f-av">{form.imagem_url ? <img src={form.imagem_url} alt="" /> : <Camera size={24} weight="bold" />}</span>
+        <span>
+          <b>{form.imagem_url ? "Trocar a foto" : "Colocar uma foto"}</b>
+          <small>{form.imagem_url ? "Buscar outra, escolher do celular ou tirar" : "Opcional · buscar na internet ou do celular"}</small>
+        </span>
+      </button>
+      {fotoAberta && (
+        <div className="ig-foto">
+          <div className="ig-foto-acoes">
+            <Botao variante="secundario" tamanho="m" icone={<MagnifyingGlass size={20} weight="bold" />} carregando={buscandoImg} disabled={uploadingImg} onClick={handleBuscarImagem}>Na internet</Botao>
+            <Botao variante="secundario" tamanho="m" icone={<ImagemIc size={20} weight="bold" />} carregando={uploadingImg} disabled={buscandoImg} onClick={() => galleryRef.current?.click()}>Do celular</Botao>
+          </div>
+          {imagens.length > 0 && (
+            <div className="ig-foto-grade">
               {imagens.map((url, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  className={`qai-img-big ${form.imagem_url === url ? "qai-img-big--selected" : ""}`}
-                  onClick={() => setForm(f => ({ ...f, imagem_url: f.imagem_url === url ? "" : url }))}
-                >
+                <button key={idx} type="button" aria-pressed={form.imagem_url === url} aria-label={`Usar a foto ${idx + 1}`}
+                  onClick={() => setForm(f => ({ ...f, imagem_url: f.imagem_url === url ? "" : url }))}>
                   <img src={url} alt="" />
-                  {form.imagem_url === url && <span className="qai-img-check" />}
                 </button>
               ))}
             </div>
           )}
-
-          {/* Estado inicial: 1 placeholder grande */}
-          {!buscandoImg && !uploadingImg && !form.imagem_url && imagens.length === 0 && (
-            <div className="qai-imgs-selected qai-imgs-selected--empty">
-              <span className="qai-placeholder-text">Sem imagem</span>
-            </div>
+          {form.imagem_url && (
+            <button type="button" className="ig-foto-tirar" onClick={() => { setForm(f => ({ ...f, imagem_url: "" })); setImagens([]); }}>
+              <X size={16} weight="bold" />Tirar a foto
+            </button>
           )}
         </div>
+      )}
 
-        {/* 2 botões embaixo */}
-        <div className="qai-imgs-actions">
-          <button type="button" className="qai-img-action qai-img-action--primary" onClick={handleBuscarImagem} disabled={buscandoImg || uploadingImg || form.nome.trim().length < 3}>
-            Buscar imagem
-          </button>
-          <button type="button" className="qai-img-action" onClick={() => galleryRef.current?.click()} disabled={uploadingImg || buscandoImg}>
-            Upload manual
-          </button>
+      <Campo rotulo="Nome" obrigatorio placeholder="Ex.: Leite condensado" value={form.nome} erro={erroNome}
+        onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
+      <Campo rotulo="Marca" opcional placeholder="Ex.: Moça" value={form.marca}
+        onChange={e => setForm(f => ({ ...f, marca: e.target.value }))} />
+      <div>
+        <p className="ig-rot">Categoria</p>
+        <div className="cl9-f-chips">
+          {categorias.map(c => (
+            <button key={c} type="button" aria-pressed={form.categoria === c} onClick={() => setForm(f => ({ ...f, categoria: c }))}>{c}</button>
+          ))}
         </div>
       </div>
 
-      <div className="qai-section-label">Como você compra esse produto</div>
-
-      <div className="qai-field">
-        <label>Tipo de embalagem <ReqTag /></label>
-        <select
-          className="qai-input"
-          value={form.embalagem_tipo}
-          onChange={e => setForm(f => ({ ...f, embalagem_tipo: e.target.value }))}
-        >
-          {EMBALAGENS.map(e => <option key={e.sigla} value={e.sigla}>{e.nome}</option>)}
-        </select>
+      <p className="cl9-f-sec">Como você compra</p>
+      <div>
+        <p className="ig-rot">Vem em</p>
+        <div className="cl9-f-chips">
+          {EMB_PRINCIPAIS.map(o => (
+            <button key={o} type="button" aria-pressed={emb === o} onClick={() => { setVerOutras(false); setForm(f => ({ ...f, embalagem_tipo: o })); }}>{o}</button>
+          ))}
+          <button type="button" aria-pressed={EMB_OUTRAS.includes(emb)} aria-expanded={verOutras || EMB_OUTRAS.includes(emb)} onClick={() => setVerOutras(v => !v)}>Outra</button>
+        </div>
+        {(verOutras || EMB_OUTRAS.includes(emb)) && (
+          <div className="cl9-f-chips ig-outras">
+            {EMB_OUTRAS.map(o => (
+              <button key={o} type="button" aria-pressed={emb === o} onClick={() => setForm(f => ({ ...f, embalagem_tipo: o }))}>{o}</button>
+            ))}
+          </div>
+        )}
+      </div>
+      <div>
+        <p className="ig-rot">Medida</p>
+        <div className="ig-seg" role="radiogroup" aria-label="Medida">
+          {MEDIDAS.map(u => (
+            <button key={u.sigla} type="button" role="radio" aria-checked={form.unidade === u.sigla}
+              onClick={() => { setUnidadeTocadaManualmente(true); setForm(f => ({ ...f, unidade: u.sigla })); }}>{u.nome}</button>
+          ))}
+        </div>
+        {sugerida && <p className="ig-sug">Escolhida pelo nome. Toque em outra se for diferente.</p>}
       </div>
 
-      <div className="qai-section-label">Como você usa na receita</div>
-
-      <div className="qai-field">
-        <label>
-          Unidade de medida *
-          {!unidadeTocadaManualmente && form.nome.trim().length >= 3 && (
-            <span className="qai-suggest-badge">sugerido</span>
-          )}
-        </label>
-        <select
-          className="qai-input"
-          value={form.unidade}
-          onChange={e => {
-            setUnidadeTocadaManualmente(true);
-            setForm(f => ({ ...f, unidade: e.target.value }));
-          }}
-        >
-          {UNIDADES_MEDIDA.map(u => <option key={u.sigla} value={u.sigla}>{u.nome} ({u.sigla})</option>)}
-        </select>
-      </div>
-
-      {alertaIncoerencia && (
-        <div className="qai-alert">
-          <div className="qai-alert-icon">!</div>
-          <div className="qai-alert-body">
+      {mostraAlerta && (
+        <div className="ig-alerta" role="status">
+          <WarningCircle size={22} weight="bold" />
+          <div>
             <p>{alertaIncoerencia}</p>
-            <div className="qai-alert-actions">
-              <button
-                type="button"
-                className="qai-alert-btn qai-alert-btn--primary"
-                onClick={() => {
-                  setUnidadeTocadaManualmente(false);
-                  const sugestao = sugerirUnidade(form.nome, form.embalagem_tipo);
-                  setForm(f => ({ ...f, unidade: sugestao }));
-                }}
-              >
-                Trocar para o sugerido
-              </button>
-              <button
-                type="button"
-                className="qai-alert-btn"
-                onClick={() => setUnidadeTocadaManualmente(true)}
-              >
-                Manter como está
-              </button>
+            <div className="ig-alerta-bts">
+              <button type="button" className="on" onClick={() => {
+                setUnidadeTocadaManualmente(false);
+                const sugestao = sugerirUnidade(form.nome, form.embalagem_tipo);
+                setForm(f => ({ ...f, unidade: sugestao }));
+              }}>Trocar</button>
+              <button type="button" onClick={() => { setUnidadeTocadaManualmente(true); setAlertaDispensado(alertaIncoerencia); }}>Deixar assim</button>
             </div>
           </div>
         </div>
       )}
 
-      <div className="qai-row-2">
-        <div className="qai-field">
-          <label>
-            Quanto vem {form.embalagem_tipo === "Avulso" ? "" : `em 1 ${form.embalagem_tipo.toLowerCase()}`} *
-          </label>
-          <div className="qai-input-suffix">
-            <input
-              type="text"
-              inputMode="decimal"
-              placeholder="1"
-              value={form.qtd_embalagem}
-              onChange={e => setForm(f => ({ ...f, qtd_embalagem: e.target.value }))}
-            />
-            <span>{form.unidade}</span>
-          </div>
-        </div>
-        <div className="qai-field">
-          <label>Quanto pagou</label>
-          <div className="qai-input-prefix" style={faltaValor ? { borderColor: "#EF4444", boxShadow: "0 0 0 3px rgba(239,68,68,.12)" } : undefined}>
-            <span>R$</span>
-            <input
-              type="text"
-              inputMode="decimal"
-              placeholder="0,00"
-              value={form.valor_compra}
-              onChange={e => { setForm(f => ({ ...f, valor_compra: e.target.value })); setFaltaValor(false); }}
-            />
-          </div>
-          {faltaValor && <p style={{ margin: "6px 0 0", fontSize: 12.5, fontWeight: 800, color: "#DC2626" }}>Informe quanto você pagou</p>}
-        </div>
+      <div className="cl9-f-2">
+        <Campo rotulo={rotuloQtd} inputMode="decimal" placeholder="1" value={form.qtd_embalagem} erro={erroQtd}
+          onChange={e => setForm(f => ({ ...f, qtd_embalagem: e.target.value }))}
+          depois={<span className="cl9-f-uf">{medidaTxt}</span>} />
+        <Campo rotulo="Quanto pagou" inputMode="decimal" prefixo="R$" placeholder="0,00" value={form.valor_compra} erro={erroValor}
+          onChange={e => setForm(f => ({ ...f, valor_compra: e.target.value }))} />
       </div>
 
-      {previewCusto > 0 && (
-        <div className="qai-preview">
-          Custo unitário: <strong>R$ {previewCusto.toFixed(2).replace(".", ",")} / {form.unidade}</strong>
-          {form.embalagem_tipo !== "Avulso" && (
-            <span style={{ display: "block", marginTop: 2, fontSize: "0.75rem", opacity: 0.75 }}>
-              Comprado em {form.embalagem_tipo.toLowerCase()} com {form.qtd_embalagem} {form.unidade}
-            </span>
-          )}
+      {custo ? (
+        <div className="ig-custo" aria-live="polite">
+          <span>Custo na receita</span>
+          <b>{formatarCusto(custo.valor)} {custo.por}</b>
+          <small>
+            R$ {valorNum.toFixed(2).replace(".", ",")} ÷ {numBR(qtdNum)} {medidaTxt}
+            {usadoEm > 0 ? ` · usado em ${usadoEm} ${usadoEm === 1 ? "ficha técnica" : "fichas técnicas"}` : ""}
+          </small>
         </div>
+      ) : (
+        <p className="ig-dica">Coloque quanto vem e quanto pagou: o Doonly calcula o custo de cada {form.unidade === "un" ? "unidade" : "grama"} pra ficha técnica.</p>
       )}
-
-      <button type="button" className="qai-save" onClick={handleSalvar} disabled={saving}>
-        {saving ? "Salvando..." : isEditing ? "Salvar alterações" : "Cadastrar insumo"}
-      </button>
 
       {isEditing && onDelete && (
-        <button type="button" className="qai-delete" onClick={onDelete} disabled={saving}>
-          Excluir insumo
-        </button>
+        <button type="button" className="cl9-f-excluir" onClick={onDelete} disabled={saving}><Trash size={20} weight="bold" />Excluir ingrediente</button>
       )}
+    </div>
+  );
 
-      <style>{`
-        /* ─────────────────────────────────────────
-           QuickAddInsumo — Modal de cadastro/edição
-           100% via design tokens (themes.css):
-           Tipografia · Spacing · Radius · Motion
-           Esse componente NÃO define valores próprios.
-           ───────────────────────────────────────── */
+  const rotuloSalvar = isEditing ? "Salvar" : "Cadastrar";
 
-        .qai-root {
-          background: var(--bg-card, #fff);
-          border-radius: var(--radius-lg);
-          display: flex; flex-direction: column;
-          gap: var(--gap-stack);
-        }
+  if (janela) {
+    return (
+      <Janela aberta={aberta} aoFechar={pedirFechar} tipo="conteudo" titulo={isEditing ? "Editar ingrediente" : "Novo ingrediente"} travada={mudou}
+        acoes={<><Botao variante="secundario" onClick={pedirFechar}>Cancelar</Botao><Botao carregando={saving} onClick={handleSalvar}>{rotuloSalvar}</Botao></>}>
+        {corpo}
+      </Janela>
+    );
+  }
 
-        /* Header do modal */
-        .qai-head {
-          display: flex; justify-content: space-between; align-items: center;
-          font-size: var(--font-modal-title);
-          font-weight: var(--fw-bold);
-          line-height: var(--lh-tight);
-          color: var(--primary);
-        }
-        .qai-cancel {
-          display: flex; align-items: center; justify-content: center;
-          width: 32px; height: 32px; flex-shrink: 0;
-          background: var(--bg-subtle); border: none; border-radius: var(--radius-full);
-          cursor: pointer; color: var(--text-muted);
-          transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
-        }
-        .qai-cancel:hover { background: var(--border); color: var(--text-secondary); }
-
-        /* Campos */
-        .qai-field { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
-        .qai-field label {
-          font-size: var(--font-field-label);
-          font-weight: var(--fw-semibold);
-          line-height: var(--lh-normal);
-          color: var(--text-secondary);
-        }
-        .qai-input {
-          width: 100%;
-          padding: var(--pad-input);
-          border: 1.5px solid var(--border);
-          border-radius: var(--radius-md);
-          font-size: var(--font-input);
-          font-weight: var(--fw-medium);
-          line-height: var(--lh-normal);
-          color: var(--text-title);
-          outline: none;
-          background: var(--bg-input);
-          font-family: inherit;
-          box-sizing: border-box;
-          transition: border-color var(--dur-fast) var(--ease-out);
-        }
-        .qai-input:focus { border-color: var(--primary); }
-        .qai-input-prefix {
-          display: flex; align-items: center;
-          width: 100%; min-width: 0; box-sizing: border-box;
-          border: 1.5px solid var(--border); border-radius: var(--radius-md);
-          background: var(--bg-input); overflow: hidden;
-          transition: border-color var(--dur-fast) var(--ease-out);
-        }
-        .qai-input-prefix:focus-within { border-color: var(--primary); }
-        .qai-input-prefix span {
-          padding: 0 0 0 0.6rem;
-          font-size: var(--font-input); font-weight: var(--fw-semibold);
-          color: var(--text-muted); white-space: nowrap; user-select: none;
-        }
-        .qai-input-prefix input {
-          flex: 1; min-width: 0; width: 100%; border: none; outline: none; background: transparent;
-          padding: var(--pad-input); padding-left: 0.3rem;
-          font-size: var(--font-input); font-weight: var(--fw-medium);
-          color: var(--text-title); font-family: inherit; box-sizing: border-box;
-        }
-        select.qai-input { cursor: pointer; }
-
-        /* Suffix input (espelho do prefix) — usado pra mostrar a unidade
-           ao lado do campo "Quanto vem em 1 X" */
-        .qai-input-suffix {
-          display: flex; align-items: center;
-          width: 100%; min-width: 0; box-sizing: border-box;
-          border: 1.5px solid var(--border); border-radius: var(--radius-md);
-          background: var(--bg-input); overflow: hidden;
-          transition: border-color var(--dur-fast) var(--ease-out);
-        }
-        .qai-input-suffix:focus-within { border-color: var(--primary); }
-        .qai-input-suffix input {
-          flex: 1; min-width: 0; border: none; outline: none; background: transparent;
-          padding: var(--pad-input);
-          font-size: var(--font-input); font-weight: var(--fw-medium);
-          color: var(--text-title); font-family: inherit; box-sizing: border-box;
-        }
-        .qai-input-suffix span {
-          padding: 0 0.6rem;
-          font-size: var(--font-input); font-weight: var(--fw-semibold);
-          color: var(--text-muted); white-space: nowrap; user-select: none;
-        }
-
-        /* Section labels — agrupa visualmente "como compra" vs "como usa" */
-        .qai-section-label {
-          font-size: var(--font-caption);
-          font-weight: var(--fw-bold);
-          color: var(--text-muted);
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-          margin-top: 0.4rem;
-          margin-bottom: -0.2rem;
-        }
-
-        /* Badge "sugerido" no rótulo da unidade */
-        .qai-suggest-badge {
-          display: inline-block;
-          margin-left: 0.5rem;
-          padding: 1px 8px;
-          background: rgba(61, 26, 36, 0.08);
-          color: var(--primary-dark);
-          border-radius: 999px;
-          font-size: 0.7rem;
-          font-weight: var(--fw-semibold);
-          text-transform: lowercase;
-          letter-spacing: 0;
-          vertical-align: middle;
-        }
-
-        /* Alerta de inconsistência (ex: farinha cadastrada como unidade) */
-        .qai-alert {
-          display: flex;
-          gap: 0.6rem;
-          padding: 0.8rem 0.9rem;
-          background: #FFF8E1;
-          border: 1px solid #FFE082;
-          border-radius: var(--radius-md);
-          align-items: flex-start;
-        }
-        .qai-alert-icon {
-          flex-shrink: 0;
-          width: 22px; height: 22px;
-          border-radius: 50%;
-          background: #F59E0B;
-          color: white;
-          font-weight: 800;
-          font-size: 0.85rem;
-          display: flex; align-items: center; justify-content: center;
-          margin-top: 1px;
-        }
-        .qai-alert-body { flex: 1; min-width: 0; }
-        .qai-alert-body p {
-          margin: 0 0 0.6rem 0;
-          font-size: 0.85rem;
-          line-height: 1.4;
-          color: #7C5410;
-        }
-        .qai-alert-actions {
-          display: flex;
-          gap: 0.5rem;
-          flex-wrap: wrap;
-        }
-        .qai-alert-btn {
-          padding: 0.4rem 0.8rem;
-          background: transparent;
-          border: 1.5px solid #FFB74D;
-          border-radius: var(--radius-sm);
-          font-size: 0.8rem;
-          font-weight: var(--fw-semibold);
-          color: #7C5410;
-          cursor: pointer;
-          font-family: inherit;
-        }
-        .qai-alert-btn--primary {
-          background: var(--primary-dark);
-          border-color: var(--primary-dark);
-          color: white;
-        }
-
-        .qai-row-2 {
-          display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-          gap: var(--gap-tight);
-        }
-        .qai-row-3 {
-          display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-          gap: var(--gap-tight);
-        }
-
-
-        /* Bloco de imagens */
-        .qai-imgs {
-          display: flex; flex-direction: column;
-          gap: var(--gap-tight);
-        }
-        .qai-imgs-label {
-          font-size: var(--font-field-label);
-          font-weight: var(--fw-semibold);
-          line-height: var(--lh-normal);
-          color: var(--text-secondary);
-        }
-
-        .qai-imgs-area {
-          min-height: 110px;
-          display: flex; flex-direction: column;
-        }
-
-        /* Mensagem do Doo (procurando / enviando) */
-        .qai-imgs-doo {
-          flex: 1; min-height: 110px;
-          display: flex; flex-direction: column; align-items: center; justify-content: center;
-          gap: var(--space-2);
-          background: var(--primary-light);
-          border: 1.5px dashed var(--primary);
-          border-radius: var(--radius-md);
-          padding: var(--space-4);
-        }
-        .qai-imgs-doo p {
-          margin: 0;
-          font-size: var(--font-body);
-          font-weight: var(--fw-semibold);
-          line-height: var(--lh-normal);
-          color: var(--primary);
-        }
-        .qai-imgs-doo strong { font-weight: var(--fw-black); }
-        .qai-imgs-doo-spinner {
-          width: 28px; height: 28px;
-          border: 3px solid rgba(var(--primary-rgb), 0.25);
-          border-top-color: var(--primary);
-          border-radius: 50%;
-          animation: qaiSpin 0.7s linear infinite;
-        }
-        @keyframes qaiSpin { to { transform: rotate(360deg); } }
-        .qai-dots span {
-          display: inline-block; opacity: 0;
-          animation: qaiDots 1.2s infinite;
-        }
-        .qai-dots span:nth-child(1) { animation-delay: 0s; }
-        .qai-dots span:nth-child(2) { animation-delay: 0.2s; }
-        .qai-dots span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes qaiDots {
-          0%, 60%, 100% { opacity: 0; }
-          30% { opacity: 1; }
-        }
-
-        .qai-imgs-grid {
-          display: grid; grid-template-columns: repeat(3, 1fr);
-          gap: var(--gap-tight);
-          flex: 1;
-        }
-        .qai-img-big {
-          position: relative;
-          aspect-ratio: 1;
-          border: 2px solid var(--border);
-          border-radius: var(--radius-md);
-          padding: 0; overflow: hidden;
-          background: var(--bg-card);
-          cursor: pointer;
-          transition: all var(--dur-fast) var(--ease-out);
-        }
-        .qai-img-big img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .qai-img-big:hover { border-color: var(--primary); }
-        .qai-img-big--selected {
-          border-color: var(--primary);
-          box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.25);
-        }
-        .qai-img-check {
-          position: absolute; top: 6px; right: 6px;
-          width: 24px; height: 24px;
-          background: var(--primary); color: var(--text-inverse);
-          border-radius: 50%;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-        }
-        .qai-img-check::after {
-          content: ""; position: absolute;
-          left: 8px; top: 4px;
-          width: 5px; height: 10px;
-          border: solid var(--text-inverse);
-          border-width: 0 2.5px 2.5px 0;
-          transform: rotate(45deg);
-        }
-        .qai-img-big--placeholder {
-          border-style: dashed; cursor: default;
-          background: var(--bg-body);
-          display: flex; align-items: center; justify-content: center;
-        }
-        .qai-img-big--placeholder span {
-          font-size: 1.8rem; opacity: 0.35;
-        }
-        .qai-img-big--placeholder:hover { border-color: var(--border); }
-
-        .qai-imgs-selected {
-          position: relative;
-          width: 100%; max-width: 240px;
-          margin: 0 auto;
-          aspect-ratio: 1;
-          border: 2px solid var(--primary);
-          border-radius: var(--radius-lg);
-          overflow: hidden;
-          box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.2);
-        }
-        .qai-imgs-selected img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .qai-imgs-selected--empty {
-          border-style: dashed; border-color: var(--border);
-          box-shadow: none; background: var(--bg-body);
-          display: flex; align-items: center; justify-content: center;
-        }
-        .qai-placeholder-text {
-          font-size: var(--font-caption); color: var(--text-muted);
-          font-weight: var(--fw-medium);
-        }
-        .qai-img-remove {
-          position: absolute; bottom: 8px; right: 8px;
-          padding: var(--space-1) var(--space-2);
-          background: rgba(0,0,0,0.7); color: #fff;
-          border: none;
-          border-radius: var(--radius-sm);
-          font-family: inherit;
-          font-size: var(--font-caption);
-          font-weight: var(--fw-semibold);
-          line-height: var(--lh-normal);
-          cursor: pointer;
-          transition: background var(--dur-fast) var(--ease-out);
-        }
-        .qai-img-remove:hover { background: rgba(0,0,0,0.85); }
-
-        /* Botões de ação embaixo da imagem (Buscar / Upload) */
-        .qai-imgs-actions {
-          display: grid; grid-template-columns: 1fr 1fr;
-          gap: var(--gap-tight);
-          margin-top: var(--space-2);
-        }
-        .qai-img-action {
-          display: flex; align-items: center; justify-content: center; gap: 6px;
-          padding: var(--space-3);
-          background: var(--bg-body);
-          border: 1.5px solid var(--border);
-          border-radius: var(--radius-md);
-          font-family: inherit;
-          font-size: var(--font-button);
-          font-weight: var(--fw-bold);
-          line-height: var(--lh-normal);
-          color: var(--text-title);
-          cursor: pointer;
-          transition: all var(--dur-fast) var(--ease-out);
-          white-space: normal; text-align: center;
-        }
-        .qai-img-action svg { flex-shrink: 0; }
-        .qai-img-action:hover:not(:disabled) {
-          border-color: var(--primary);
-          background: var(--primary-light);
-          color: var(--primary);
-        }
-        .qai-img-action:disabled { opacity: 0.45; cursor: not-allowed; }
-        /* Busca automática em destaque (ação primária) */
-        .qai-img-action--primary {
-          background: var(--primary);
-          border-color: var(--primary);
-          color: var(--text-inverse);
-        }
-        .qai-img-action--primary:hover:not(:disabled) {
-          background: var(--primary-hover, var(--primary));
-          border-color: var(--primary-hover, var(--primary));
-          color: var(--text-inverse);
-          filter: brightness(0.95);
-        }
-        .qai-img-action--primary:disabled { opacity: 0.45; }
-
-        /* Preview de custo unitário */
-        .qai-preview {
-          padding: var(--pad-input);
-          background: var(--primary-light);
-          border-radius: var(--radius-md);
-          font-size: var(--font-helper);
-          font-weight: var(--fw-regular);
-          line-height: var(--lh-normal);
-          color: var(--text-secondary);
-        }
-        .qai-preview strong {
-          color: var(--primary);
-          font-weight: var(--fw-black);
-        }
-
-        /* Botão salvar (CTA principal) */
-        .qai-save {
-          padding: var(--space-3);
-          background: var(--primary);
-          color: var(--text-inverse);
-          border: none;
-          border-radius: var(--radius-md);
-          font-family: inherit;
-          font-size: var(--font-button);
-          font-weight: var(--fw-bold);
-          line-height: var(--lh-normal);
-          cursor: pointer;
-          transition: opacity var(--dur-fast) var(--ease-out);
-        }
-        .qai-save:hover:not(:disabled) { opacity: 0.9; }
-        .qai-save:disabled { opacity: 0.6; cursor: not-allowed; }
-
-        /* Botão excluir (ação destrutiva, secundária visualmente) */
-        .qai-delete {
-          padding: var(--space-2) var(--space-3);
-          background: transparent;
-          color: var(--error);
-          border: none;
-          border-radius: var(--radius-md);
-          font-family: inherit;
-          font-size: var(--font-button);
-          font-weight: var(--fw-semibold);
-          line-height: var(--lh-normal);
-          cursor: pointer;
-          transition: background var(--dur-fast) var(--ease-out);
-        }
-        .qai-delete:hover:not(:disabled) { background: var(--primary-light); }
-        .qai-delete:disabled { opacity: 0.6; cursor: not-allowed; }
-
-        @media (max-width: 480px) {
-          .qai-row-3 { grid-template-columns: 1fr 1fr; }
-        }
-      `}</style>
+  // Dentro da janela de quem chamou (ficha técnica / produto)
+  return (
+    <div className="ig-emb">
+      <div className="ig-emb-cab">
+        <Titulo nivel="janela">{isEditing ? "Editar ingrediente" : "Novo ingrediente"}</Titulo>
+        <BotaoIcone rotulo="Fechar" variante="limpo" onClick={pedirFechar}><X size={20} weight="bold" /></BotaoIcone>
+      </div>
+      {corpo}
+      <Botao cheio carregando={saving} onClick={handleSalvar}>{isEditing ? "Salvar" : "Cadastrar ingrediente"}</Botao>
     </div>
   );
 }
