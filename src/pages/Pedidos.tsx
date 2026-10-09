@@ -17,6 +17,7 @@ import { pedidoAtrasado } from '@/lib/pedidoStatus'
 import { gerarPedidoPDF } from '@/lib/gerarPedidoPDF'
 import { abrirJanela } from '@/lib/pdfDoonly'
 import { supabase } from '@/lib/supabase'
+import { registrarEtapa } from "@/lib/historicoPedido";
 import { semAcento } from '@/lib/noticias'
 import { tocarSom } from '@/hooks/useSom'
 import '@/components/pedidos/pedidos.css'
@@ -110,6 +111,7 @@ export default function Pedidos() {
 
   /** Confirmação de que deu certo (3.14): aviso curto sempre; som quando o pedido termina (respeita o som ligado/desligado em Notificações) */
   const confirmarMudanca = (p: Pedido, status: string, pago = false) => {
+    registrarEtapa(p.id, status)
     avisar(avisoDaMudanca(p, status, pago))
     if (status === 'entregue') tocarSom('sucesso')
   }

@@ -15,6 +15,7 @@ type PedidoItemPDF = {
 export type PedidoPDF = {
   id: string;
   numero?: number | null;
+  retirado_por?: string | null;
   cliente_nome?: string | null;
   cliente_telefone?: string | null;
   status?: string | null;
@@ -86,7 +87,7 @@ export async function gerarPedidoPDF(pedido: PedidoPDF, janelaAberta?: Window | 
     const quando = [pedido.data_entrega ? new Date(pedido.data_entrega + "T12:00:00").toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" }) : "", pedido.horario_entrega ? String(pedido.horario_entrega).slice(0, 5) : ""].filter(Boolean).join(" · ");
     const blocoEntrega = card(prontaEntrega ? "Pagamento" : "Entrega", prontaEntrega
       ? kv([["Forma", esc(PAGAMENTO[pedido.forma_pagamento || ""] || pedido.forma_pagamento || "")], ["Situação", situacao]])
-      : kv([["Quando", esc(quando)], ["Como", entrega ? "Entrega" : "Retirada"], ["Endereço", entrega ? endereco : ""]]));
+      : kv([["Quando", esc(quando)], ["Como", entrega ? "Entrega" : "Retirada"], ["Endereço", entrega ? endereco : ""], ["Retirado por", !entrega && pedido.retirado_por ? esc(pedido.retirado_por) : ""]]));
 
     const linhas = itens.length
       ? itens.map(it => {

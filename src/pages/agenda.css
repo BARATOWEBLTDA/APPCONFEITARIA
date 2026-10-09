@@ -53,7 +53,7 @@ i.atr { background: var(--ui-vermelho); }
 .ag3-dia-v b { font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums; }
 
 .ag3-tit { margin-top: 4px; }
-.ag3-pro { margin-left: 6px; padding: 2px 6px; border-radius: 6px; background: var(--vinho-escuro, #2C1219); color: #fff; font-size: 12px; font-weight: 800; text-decoration: none; }
+.ag3-pro { display: inline-flex; align-items: center; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 12px; font-weight: 800; line-height: 18px; text-decoration: none; vertical-align: middle; }
 .ag3-lista { display: flex; flex-direction: column; gap: 12px; }
 .ag3-carregando { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0; padding: 32px 16px; font-size: 13.5px; font-weight: 500; color: var(--ui-texto-2); }
 .ag3-carregando .ui-gira { color: var(--ui-rosa); }

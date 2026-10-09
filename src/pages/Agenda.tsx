@@ -7,6 +7,7 @@ import { gerarPedidoPDF } from "@/lib/gerarPedidoPDF";
 import * as pdf from "@/lib/pdfDoonly";
 import { usePlano } from "@/hooks/usePlano";
 import { supabase } from "@/lib/supabase";
+import { registrarEtapa } from "@/lib/historicoPedido";
 import AppPageHeader from "@/components/AppPageHeader";
 import CalendarioSheet from "@/components/CalendarioSheet";
 import { Botao, BotaoIcone, Janela, Linha, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
@@ -194,6 +195,7 @@ export default function Agenda() {
     // "finalizado" é o status atual de "pronto" (o antigo "pronto" sumia da lista)
     const { error } = await supabase.from("pedidos").update({ status: "finalizado" }).eq("id", p.id);
     if (error) { avisar("Não deu pra mudar a situação. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
+    registrarEtapa(p.id, "finalizado");
     setPedidos(prev => prev.map(x => x.id === p.id ? { ...x, status: "finalizado" } : x));
     avisar(`Pedido #${p.numero || ""} está pronto.`);
   };

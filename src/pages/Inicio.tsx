@@ -1232,6 +1232,7 @@ export default function Inicio() {
 
         /* Nível 2: seções dentro de .ini-main */
         .ini-section--dia { order: -1; }
+        .ini-root .ini-section.ini-section--dia { margin-top: 16px !important; }
         @media (min-width: 901px) { .ini-section--dia { display: none; } }
         .ini-section--checklist-top { order: 0; margin-top: var(--space-3); }
         .ini-pp:empty { display: none; }
@@ -1521,9 +1522,10 @@ export default function Inicio() {
             letter-spacing: -.02em; line-height: 1.2;
             min-height: 26px;
           }
+          /* 09/10: o nome não ocupa mais a linha toda — se o nome e o "Seja PRO" cabem, ficam na mesma linha; se não, a etiqueta desce */
           .ini-root .ini-hero-greeting h1 > span:first-child {
-            display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
-            white-space: normal; overflow-wrap: anywhere; text-wrap: balance;
+            display: inline; flex: 0 1 auto; min-width: 0;
+            white-space: normal; overflow-wrap: anywhere;
           }
           .ini-root .ini-hero-data-mobile {
             font-size: 12.5px; font-weight: 500;

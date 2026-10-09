@@ -24,9 +24,9 @@
 .fl-pill--atencao { background: var(--ui-laranja-fundo); color: #92400E; }
 .fl-pill--neg { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); }
 @media (min-width: 1000px) {
-  .fl-cab { display: grid; grid-template-columns: 48px minmax(0, 2fr) repeat(3, minmax(0, 1fr)) 90px 24px; gap: 12px; margin-top: 8px; padding: 10px 12px; border-radius: 10px; background: var(--ui-cinza); font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
+  .fl-cab { display: grid; grid-template-columns: 48px minmax(0, 2fr) repeat(2, minmax(0, 1fr)) 90px 24px; gap: 12px; margin-top: 8px; padding: 10px 12px; border-radius: 10px; background: var(--ui-cinza); font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
   .fl-cab span:first-child { grid-column: 1 / 3; }
-  .fl-l { grid-template-columns: 48px minmax(0, 2fr) repeat(3, minmax(0, 1fr)) 90px 24px; grid-template-areas: none; padding: 10px 12px; }
+  .fl-l { grid-template-columns: 48px minmax(0, 2fr) repeat(2, minmax(0, 1fr)) 90px 24px; grid-template-areas: none; padding: 10px 12px; }
   .fl-l > * { grid-area: auto !important; }
   .fl-l:hover { background: #FCFAFB; }
   .fl-pc { display: block; font-size: 15px; font-weight: 700; }

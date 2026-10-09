@@ -4,7 +4,7 @@ import { DotsThree, Check, Heart, Plus, NotePencil, Trash, PencilSimple, ArrowUp
 import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { type DialogoOpcoes, type IconeDialogo } from '@/components/DialogoApp'
 import AppPageHeader from '@/components/AppPageHeader'
-import { Botao, BotaoIcone, CampoArea, Janela, Linha, Titulo, avisar as avisarBase, confirmar, informar } from '@/components/base'
+import { Botao, BotaoIcone, Campo, CampoArea, Janela, Linha, Titulo, avisar as avisarBase, confirmar, informar } from '@/components/base'
 import { ArrowsLeftRight, Clock, CreditCard, DotsThreeVertical, MagnifyingGlass, Package, Truck, WhatsappLogo } from '@phosphor-icons/react'
 import { SITUACOES, avisoDaMudanca, dataLonga, grupoDoStatus, nomeDaSituacao, nomeDeProduto } from '@/components/pedidos/pedidoTexto'
 import { tocarSom } from '@/hooks/useSom'
@@ -307,6 +307,10 @@ export default function EditarPedido() {
   const navigate = useNavigate()
 
   const [pedido, setPedido] = useState<Pedido | null>(null)
+  // Quem retirou (09/10): pergunta ao marcar uma retirada como entregue; aparece na tela, no histórico e no PDF
+  const [retiradaAberta, setRetiradaAberta] = useState(false)
+  const [quemRetirou, setQuemRetirou] = useState('')
+  const [depoisRetirada, setDepoisRetirada] = useState<'etapa' | 'editar'>('etapa')
   const [carregando, setCarregando] = useState(true)
   const [salvando, setSalvando] = useState(false)
   const [salvouOk, setSalvouOk] = useState(false)
@@ -808,6 +812,7 @@ export default function EditarPedido() {
     await gerarPedidoPDF({
       id: pedido.id,
       numero: pedido.numero,
+      retirado_por: (pedido as any).retirado_por || null,
       cliente_nome: clienteNome,
       cliente_telefone: clienteTelefone,
       status: statusPedido,
@@ -1104,11 +1109,29 @@ export default function EditarPedido() {
       default: return null
     }
   })()
+  const salvarQuemRetirou = async (nome: string) => {
+    if (!pedido) return
+    const limpo = nome.trim()
+    const { error } = await supabase.from('pedidos').update({ retirado_por: limpo || null }).eq('id', pedido.id)
+    if (error) { console.warn('retirado_por ainda não existe no banco (rode o SQL)', error.message); return }
+    setPedido(p => p ? ({ ...p, retirado_por: limpo || null } as any) : p)
+    if (limpo) supabase.from('pedido_historico').insert({ pedido_id: pedido.id, evento: 'Retirado por', descricao: limpo }).then(() => {}, () => {})
+  }
+  const confirmarRetirada = async (nomeForcado?: string) => {
+    const nome = nomeForcado ?? quemRetirou
+    setRetiradaAberta(false)
+    await salvarQuemRetirou(nome)
+    if (depoisRetirada === 'etapa') {
+      // segue a mudança de etapa normal, sem perguntar de novo
+      await irParaEtapa('entregue', true)
+    } else avisar('Quem retirou foi salvo')
+  }
   // Mudar a etapa grava na hora (como na tela de Pedidos). Entregue com saldo → "Finalizar pedido".
-  const irParaEtapa = async (novo: string) => {
+  const irParaEtapa = async (novo: string, pularRetirada = false) => {
     if (!pedido || novo === statusPedido) return
     if (alteracoes > 0) { avisarJanela('Salve antes de mudar a etapa', 'Você tem alterações não salvas. Salve ou descarte antes de mudar a etapa do pedido.', 'info'); return }
     if (novo === 'entregue' && faltaReceber > 0.009) { setFinalizarAberto(true); return }
+    if (novo === 'entregue' && tipoEntrega === 'retirada' && !pularRetirada) { setQuemRetirou((pedido as any).retirado_por || ''); setDepoisRetirada('etapa'); setRetiradaAberta(true); return }
     const { error } = await supabase.from('pedidos').update({ status: novo }).eq('id', pedido.id)
     if (error) { avisarJanela('Não foi possível mudar a etapa', 'Confira a internet e tente de novo.', 'erro'); return }
     const label = (STATUS_CONFIG[novo] || {}).label || novo
@@ -1155,6 +1178,12 @@ export default function EditarPedido() {
           <div className="tpd-sit-tx">
             <Linha rotulo="Situação" tom={situacao.tom}>{situacao.nome}</Linha>
             <Linha rotulo={tipoEntrega === 'entrega' ? 'Entrega' : 'Retirada'} tom={atrasadoHoje ? 'vermelho' : undefined}>{dataLonga(dataEntrega, horarioEntrega)}</Linha>
+            {tipoEntrega === 'retirada' && statusPedido === 'entregue' && (
+              <Linha rotulo="Retirado por">
+                {(pedido as any).retirado_por || 'Não informado'}{' '}
+                <button type="button" className="tpd-ret-bt" onClick={() => { setQuemRetirou((pedido as any).retirado_por || ''); setDepoisRetirada('editar'); setRetiradaAberta(true) }}>{(pedido as any).retirado_por ? 'Mudar' : 'Informar'}</button>
+              </Linha>
+            )}
             {atrasadoHoje && <p className="tpd-aviso atr">A data de entrega já passou.</p>}
             {novoPedido && <p className="tpd-aviso">{pedido.origem === 'cardapio' ? 'Chegou pelo cardápio. Aceite pra entrar na sua agenda.' : 'Aceite pra entrar na sua agenda.'}</p>}
           </div>
@@ -1511,12 +1540,19 @@ export default function EditarPedido() {
         total, recebido: recebidoAtual, falta: faltaReceber, dataRef: null, dias: null,
       } as any} onClose={() => setReceberAberto(false)} onFeito={async (msg) => { setReceberAberto(false); await recarregarDinheiro(); avisar(msg) }} />}
 
+      <Janela aberta={retiradaAberta} aoFechar={() => setRetiradaAberta(false)} tipo="conteudo" titulo="Quem retirou?"
+        acoes={<><Botao variante="secundario" onClick={() => { if (depoisRetirada === 'etapa') confirmarRetirada(''); else setRetiradaAberta(false) }}>{depoisRetirada === 'etapa' ? 'Pular' : 'Agora não'}</Botao><Botao onClick={() => confirmarRetirada()}>{depoisRetirada === 'etapa' ? 'Marcar como retirado' : 'Salvar'}</Botao></>}>
+        <div className="tpj-ret">
+          <Campo rotulo="Nome de quem retirou" opcional placeholder="Ex.: a própria cliente, Maria (irmã)" value={quemRetirou} onChange={e => setQuemRetirou(e.target.value)} autoFocus />
+          <p>Fica salvo no pedido, no histórico e no PDF.</p>
+        </div>
+      </Janela>
       {finalizarAberto && pedido && <FinalizarPedidoSheet
         pedido={{ id: pedido.id, numero: pedido.numero ?? null, cliente_nome: clienteNome, status: statusPedido, valor_total: total, valor_recebido: recebidoAtual,
           status_pagamento: (pedido as any).status_pagamento ?? null, forma_pagamento: pedido.forma_pagamento }}
         novoStatus="entregue" novoStatusLabel="Entregue"
         onCancelar={() => setFinalizarAberto(false)}
-        onConcluido={async () => { setFinalizarAberto(false); await recarregarDinheiro(); avisar(`Pedido #${pedido.numero ?? ''} entregue.`); tocarSom('sucesso') }} />}
+        onConcluido={async () => { setFinalizarAberto(false); await recarregarDinheiro(); avisar(`Pedido #${pedido.numero ?? ''} entregue.`); tocarSom('sucesso'); if (tipoEntrega === 'retirada') { setQuemRetirou(''); setDepoisRetirada('editar'); setRetiradaAberta(true) } }} />}
 
       <style>{EP2_CSS}{FOLHA_CSS}</style>
 
@@ -1629,6 +1665,8 @@ export default function EditarPedido() {
           }
         })
         if (!dataDoPasso.criado && pedido?.created_at) dataDoPasso.criado = pedido.created_at
+        // Pedido que já nasceu agendado (feito pela confeiteira) ou chegou pelo cardápio: a etapa começa na criação
+        if (pedido?.created_at) { for (const k of ['aguardando_aceite', 'agendado']) if (!dataDoPasso[k] && seq.includes(k) && seq.indexOf(k) <= posAtual) dataDoPasso[k] = pedido.created_at }
         const NOME_PASSO: Record<string, string> = { criado: 'Pedido feito', aguardando_aceite: 'Novo pedido', agendado: 'Agendado', em_producao: 'Em produção', finalizado: 'Pronto', aguardando_retirada: 'Pronto pra retirar', em_entrega: 'Saiu pra entrega', entregue: tipoEntrega === 'retirada' ? 'Retirado' : 'Entregue' }
         const quando = (iso: string) => { const d = new Date(iso); return dataLonga(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`, `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`) }
         return (
@@ -1650,7 +1688,7 @@ export default function EditarPedido() {
                   return (
                     <li key={passo} className={`${feito ? 'feito' : ''}${atual ? ' atual' : ''}`} aria-current={atual ? 'step' : undefined}>
                       <i aria-hidden="true">{feito && <Check size={14} weight="bold" />}</i>
-                      <span><b>{NOME_PASSO[passo] || passo}</b>{d ? <small>{quando(d)}</small> : atual ? <small>Situação de agora</small> : null}</span>
+                      <span><b>{NOME_PASSO[passo] || passo}</b>{d ? <small>{quando(d)}</small> : atual ? <small>Situação de agora</small> : feito ? <small>Sem horário registrado</small> : null}{passo === 'entregue' && tipoEntrega === 'retirada' && (pedido as any)?.retirado_por && <small>Retirado por {(pedido as any).retirado_por}</small>}</span>
                     </li>
                   )
                 })}

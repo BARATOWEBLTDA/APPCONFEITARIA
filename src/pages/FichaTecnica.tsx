@@ -184,7 +184,7 @@ const MODAL_TITLE_VARIANTS: ((nome: string) => ReactNode)[] = [
 /** Mão de obra salva na conta (Custos → Mão de obra): vale pra todos os produtos (09/10) */
 type MaoConta = { salario: number; horasSemana: number; diasSemana: number } | null;
 
-function calcular(p: Produto, conta: MaoConta = null) {
+function calcular(p: Produto, conta: MaoConta = null, cvConta: number | null = null) {
   const itens = p.produto_insumos || [];
   const cmv = itens.reduce((s, pi) => {
     const qtd = Number(pi.quantidade) || 0;
@@ -192,7 +192,7 @@ function calcular(p: Produto, conta: MaoConta = null) {
     return s + calcCusto(qtd, unidadeUtilizada, pi.insumos as Insumo);
   }, 0);
   // Custos invisíveis: % sobre os ingredientes (25% quando nunca foi mudado, igual à tela da ficha)
-  const cvPct = p.cv_percentual != null ? parseNumBR(p.cv_percentual) : 25;
+  const cvPct = cvConta != null ? cvConta : (p.cv_percentual != null ? parseNumBR(p.cv_percentual) : 25);
   const cv = cmv * (cvPct / 100);
   // Mão de obra: liga quando a ficha tem salário ou tempo salvos (igual à tela da ficha)
   const moAtivo = !!(p.salario_desejado || p.tempo_preparo_min);
@@ -279,6 +279,26 @@ export default function FichaTecnica() {
   const [maoConta, setMaoConta] = useState<MaoConta>(null);
   const [editarMao, setEditarMao] = useState(false);
   const [salvandoMao, setSalvandoMao] = useState(false);
+  const [cvConta, setCvConta] = useState<number | null>(null);
+  const [editarCv, setEditarCv] = useState(false);
+  const [salvandoCv, setSalvandoCv] = useState(false);
+  // Custos invisíveis salvos na conta (09/10): coluna nova, lida à parte pra não quebrar se o SQL ainda não rodou
+  const loadCvConta = async (uid: string) => {
+    const { data, error } = await supabase.from("profiles").select("custos_invisiveis_pct").eq("id", uid).maybeSingle();
+    const v = (data as any)?.custos_invisiveis_pct;
+    setCvConta(!error && v != null ? Number(v) : null);
+  };
+  const salvarCvConta = async () => {
+    if (!userId) return;
+    const v = parseNumBR(extras.cv_percentual);
+    if (!(v >= 0)) return;
+    setSalvandoCv(true);
+    const { error } = await supabase.from("profiles").update({ custos_invisiveis_pct: v }).eq("id", userId);
+    setSalvandoCv(false);
+    if (error) { avisar("Não deu pra salvar agora. Tente de novo.", { tipo: "erro" }); console.error(error); return; }
+    setCvConta(v); setEditarCv(false);
+    avisar("Salvo na sua conta: vale pra todos os produtos", { tipo: "ok" });
+  };
   const loadMaoConta = async (uid: string) => {
     const { data } = await supabase.from("config_mao_obra").select("salario_mensal, horas_dia, dias_semana").eq("user_id", uid).maybeSingle();
     const sal = Number((data as any)?.salario_mensal) || 0;
@@ -299,7 +319,7 @@ export default function FichaTecnica() {
     setSalvandoMao(false);
     if (error) { avisar("Não deu pra salvar agora. Tente de novo.", { tipo: "erro" }); return; }
     setMaoConta({ salario: sal, horasSemana: hs, diasSemana: dias });
-    setEditarMao(false);
+    setEditarMao(false); setEditarCv(false);
     avisar("Salvo na sua conta: vale pra todos os produtos", { tipo: "ok" });
   };
   const loadProdutos = async (uid: string) => {
@@ -321,7 +341,7 @@ export default function FichaTecnica() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      await Promise.all([loadProdutos(user.id), loadInsumos(user.id), loadMaoConta(user.id)]);
+      await Promise.all([loadProdutos(user.id), loadInsumos(user.id), loadMaoConta(user.id), loadCvConta(user.id)]);
       setLoading(false);
     })();
   }, []);
@@ -355,7 +375,7 @@ export default function FichaTecnica() {
       validade_tipo: p.validade_tipo || "refrigerado",
       embalagem: p.embalagem || "",
       observacoes_ficha: p.observacoes_ficha || "",
-      cv_percentual: p.cv_percentual != null ? String(p.cv_percentual) : "25",
+      cv_percentual: cvConta != null ? String(cvConta) : (p.cv_percentual != null ? String(p.cv_percentual) : "25"),
       tempo_preparo_min: p.tempo_preparo_min ? String(p.tempo_preparo_min) : "",
       salario_desejado: maoConta ? String(maoConta.salario) : (p.salario_desejado ? String(p.salario_desejado) : ""),
       horas_semanais: maoConta ? String(maoConta.horasSemana) : (p.horas_semanais ? String(p.horas_semanais) : "40"),
@@ -470,7 +490,7 @@ export default function FichaTecnica() {
     if (busca.trim() && !p.nome.toLowerCase().includes(busca.toLowerCase())) return false;
     if (filtro === "com") return (p.produto_insumos || []).length > 0;
     if (filtro === "sem") return (p.produto_insumos || []).length === 0;
-    if (filtro === "prejuizo") { const c = calcular(p, maoConta); return c.temFicha && c.lucro < 0; }
+    if (filtro === "prejuizo") { const c = calcular(p, maoConta, cvConta); return c.temFicha && c.lucro < 0; }
     return true;
   });
   const totalComFicha = produtos.filter(p => (p.produto_insumos || []).length > 0).length;
@@ -611,8 +631,19 @@ export default function FichaTecnica() {
             <section className="cl9-card fd-sec">
               <Titulo>Custos invisíveis</Titulo>
               <p className="fd-dica">Gás, luz, água, plástico filme e outros gastos difíceis de medir em cada receita.</p>
-              <Campo rotulo="% sobre os ingredientes" inputMode="decimal" placeholder="25" value={extras.cv_percentual}
-                onChange={e => setExtras(s => ({ ...s, cv_percentual: e.target.value }))} depois={<span className="cl9-f-uf">%</span>} />
+              {cvConta != null && !editarCv ? (
+                <div className="fd-mo-conta">
+                  <span><small>Salvo na sua conta</small><b>{fmtPct(cvConta)}% sobre os ingredientes</b></span>
+                  <Botao variante="link" tamanho="m" onClick={() => setEditarCv(true)}>Alterar</Botao>
+                </div>
+              ) : (<>
+                <Campo rotulo="% sobre os ingredientes" inputMode="decimal" placeholder="25" value={extras.cv_percentual}
+                  onChange={e => setExtras(s => ({ ...s, cv_percentual: e.target.value }))} depois={<span className="cl9-f-uf">%</span>} />
+                <div className="fd-mo-acoes">
+                  <Botao variante="secundario" tamanho="m" carregando={salvandoCv} onClick={salvarCvConta}>Salvar pra todos os produtos</Botao>
+                  {cvConta != null && <Botao variante="link" tamanho="m" onClick={() => { setEditarCv(false); setExtras(s => ({ ...s, cv_percentual: String(cvConta) })); }}>Cancelar</Botao>}
+                </div>
+              </>)}
               <p className="fd-mo">Nesta receita: <b>R$ {fmt(cvLive)}</b></p>
               <p className="fd-dica">A maioria das confeiteiras usa entre 20% e 30%. Se não souber, deixe 25%.</p>
             </section>
@@ -916,7 +947,7 @@ export default function FichaTecnica() {
   }
 
   /* LIST VIEW (10.2: lista no padrão do app, com o lucro certo) */
-  const nPrejuizo = produtos.filter(p => { const c = calcular(p, maoConta); return c.temFicha && c.lucro < 0; }).length;
+  const nPrejuizo = produtos.filter(p => { const c = calcular(p, maoConta, cvConta); return c.temFicha && c.lucro < 0; }).length;
   const reais = (v: number) => v < 0 ? `−R$ ${fmt(-v)}` : `R$ ${fmt(v)}`;
   const tomMargem = (m: number) => m >= 30 ? "ok" : m >= 0 ? "atencao" : "neg";
   const chipsFiltro = ([
@@ -972,21 +1003,19 @@ export default function FichaTecnica() {
           {filtrados.length === 0 ? (
             <p className="cl9-semres">{busca.trim() ? "Nenhum produto com esse nome. Confira a busca." : "Nenhum produto nesse filtro."}</p>
           ) : (<>
-            <div className="fl-cab" aria-hidden="true"><span>Produto</span><span>Preço de venda</span><span>Custo</span><span>Lucro</span><span>Margem</span><span /></div>
+            <div className="fl-cab" aria-hidden="true"><span>Produto</span><span>Custo</span><span>Lucro</span><span>Margem</span><span /></div>
             {filtrados.map(p => {
-              const c = calcular(p, maoConta);
+              const c = calcular(p, maoConta, cvConta);
               const foto = (p.imagem_url || "").split(",")[0];
-              const emPromo = !!(p.promocao && p.preco_promocional && p.preco_promocional > 0);
               return (
                 <button key={p.id} type="button" className={`fl-l${c.temFicha ? "" : " fl-l--sem"}`} onClick={() => abrirFicha(p)}>
                   <span className="fl-th">{foto ? <img src={foto} alt="" /> : <Cake size={22} weight="duotone" />}</span>
                   <span className="fl-tx">
                     <b>{p.nome}</b>
                     <small className="fl-cel">
-                      {c.temFicha ? `R$\u00a0${fmt(c.preco)} · margem ${fmtPct(c.margemLucro)}%` : `Sem ficha · R$\u00a0${fmt(c.preco)}`}
+                      {c.temFicha ? `Margem de ${fmtPct(c.margemLucro)}%` : "Sem ficha técnica"}
                     </small>
                   </span>
-                  <span className="fl-pc fl-col">R$ {fmt(c.preco)}{emPromo && <small>em promoção</small>}</span>
                   <span className="fl-pc fl-col">{c.temFicha ? reais(c.custoTotal) : "—"}</span>
                   {c.temFicha ? (<>
                     <span className={`fl-lucro fl-lucro--${tomMargem(c.margemLucro)}`}>

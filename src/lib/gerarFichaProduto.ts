@@ -34,9 +34,19 @@ export async function gerarFichaProduto(produto: any, _userId?: string): Promise
       return { nome: x.insumos.nome, qtd: `${String(q).replace(".", ",")} ${un}`, custo: custoLinha(q, un, x.insumos) };
     });
     const cmv = linhas.reduce((s: number, l: any) => s + l.custo, 0);
-    const cvPct = p.cv_percentual != null ? (Number(p.cv_percentual) || 0) : 25; // igual à tela da ficha: 25% quando nunca foi mudado
+    // Mesma conta da tela da ficha: custos invisíveis e mão de obra salvos na conta valem pra todos os produtos (09/10)
+    const uid = p.user_id || _userId;
+    const [{ data: perfilCv }, { data: mao }] = uid ? await Promise.all([
+      supabase.from("profiles").select("custos_invisiveis_pct").eq("id", uid).maybeSingle().then(r => r, () => ({ data: null } as any)),
+      supabase.from("config_mao_obra").select("salario_mensal, horas_dia, dias_semana").eq("user_id", uid).maybeSingle().then(r => r, () => ({ data: null } as any)),
+    ]) : [{ data: null }, { data: null }] as any;
+    const cvConta = (perfilCv as any)?.custos_invisiveis_pct;
+    const cvPct = cvConta != null ? Number(cvConta) : (p.cv_percentual != null ? (Number(p.cv_percentual) || 0) : 25);
     const cv = cmv * (cvPct / 100);
-    const sal = Number(p.salario_desejado) || 0, horas = Number(p.horas_semanais) || 40, min = Number(p.tempo_preparo_min) || 0;
+    const salConta = Number((mao as any)?.salario_mensal) || 0;
+    const sal = salConta > 0 ? salConta : (Number(p.salario_desejado) || 0);
+    const horas = salConta > 0 ? (Number((mao as any).horas_dia) || 8) * (Number((mao as any).dias_semana) || 5) : (Number(p.horas_semanais) || 40);
+    const min = Number(p.tempo_preparo_min) || 0;
     const mo = sal > 0 && min > 0 ? (sal / (horas * 4.33)) * (min / 60) : 0;
     const custo = cmv + cv + mo;
     const preco = p.promocao && Number(p.preco_promocional) > 0 ? Number(p.preco_promocional) : Number(p.preco_normal) || 0;

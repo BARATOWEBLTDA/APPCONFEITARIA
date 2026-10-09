@@ -5,6 +5,7 @@ import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import { createPortal } from "react-dom";
 import { Wallet, PencilSimple, X } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
+import { registrarEtapa } from "@/lib/historicoPedido";
 import { registrarPagamento, normalizarForma } from "@/lib/pagamentos";
 import { ajustarValorPedido, type TipoAjuste } from "@/lib/ajustesPedido";
 
@@ -88,6 +89,7 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
     // 2) status
     const { error } = await supabase.from("pedidos").update({ status: novoStatus }).eq("id", pedido.id);
     if (error) { setSalvando(false); setErro("Não foi possível salvar agora. Confira a internet e tente de novo."); return; }
+    if (novoStatus !== pedido.status) registrarEtapa(pedido.id, novoStatus);
     // 3) o que entrou agora vira pagamento
     let recebido = jaRecebido;
     let statusPag = pedido.status_pagamento || (recebido > 0 ? "parcial" : "pendente");
