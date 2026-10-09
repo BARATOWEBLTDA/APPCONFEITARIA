@@ -84,7 +84,7 @@ export default function KitPicker({ kit, sel, onChange, desconto = 0 }: Props) {
         .kp-kits button b { font-size: 14px; } .kp-kits button span { font-size: 12px; color: #6B5D64; font-weight: 700; }
         .kp-kits button.on { border-color: #2C1219; background: #2C1219; color: #fff; } .kp-kits button.on span { color: #fff; }
         .kp-livre { display: flex; align-items: center; gap: 10px; }
-        .kp-livre > span { font-size: 13px; font-weight: 700; color: #6B5D64; } .kp-livre em { font-style: normal; margin-left: auto; font-weight: 800; color: #2C1219; }
+        .kp-livre > span { font-size: 13px; font-weight: 700; color: #6B5D64; } .kp-livre em { font-style: normal; margin-left: auto; font-weight: 700; color: #2C1219; }
         .kp-regra { background: #FFF5F9; border: 1px solid #F9D1E0; border-radius: 10px; padding: 9px 11px; font-size: 12.5px; color: #4B3A42; line-height: 1.4; }
         .kp-tot { display: flex; justify-content: space-between; align-items: baseline; font-size: 12.5px; font-weight: 700; color: #6B5D64; margin-top: 2px; }
         .kp-tot b { font-size: 22px; color: #2C1219; } .kp-tot b small { font-size: 12px; color: #6B5D64; }
@@ -98,10 +98,10 @@ export default function KitPicker({ kit, sel, onChange, desconto = 0 }: Props) {
         .kp-kits .kp-cheio { font-size: 12px; font-weight: 600; color: #9A8E94; }
         .kp-kits button.on .kp-cheio { color: rgba(255,255,255,.6); }
         .kp-stp { display: flex; align-items: center; border: 1px solid #EAE3E6; border-radius: 9px; overflow: hidden; background: #fff; }
-        .kp-stp button { width: 34px; height: 34px; border: none; background: none; font-size: 18px; font-weight: 800; color: #C33A6E; cursor: pointer; }
+        .kp-stp button { width: 34px; height: 34px; border: none; background: none; font-size: 18px; font-weight: 700; color: #C33A6E; cursor: pointer; }
         .kp-stp button:last-child { color: #16a34a; } .kp-stp button:disabled { color: #D6CBD0; cursor: default; }
         .kp-stp b { min-width: 40px; text-align: center; font-size: 14px; }
-        .kp-status { font-size: 12.5px; font-weight: 800; color: #B45309; margin: 2px 0 0; } .kp-status.ok { color: #16a34a; } .kp-status.erro { color: #DC2626; }
+        .kp-status { font-size: 12.5px; font-weight: 700; color: #B45309; margin: 2px 0 0; } .kp-status.ok { color: #16a34a; } .kp-status.erro { color: #DC2626; }
       `}</style>
     </div>
   )

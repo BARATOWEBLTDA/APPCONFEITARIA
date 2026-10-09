@@ -932,7 +932,7 @@ export default function Cardapio() {
         }
         .cd-metricas-locked-tag {
           font-size: 12px;
-          font-weight: 900;
+          font-weight: 700;
           letter-spacing: 0.08em;
           color: #FFC947;
         }
@@ -973,7 +973,7 @@ export default function Cardapio() {
         }
         .cd-metricas-locked-val {
           font-size: 18px;
-          font-weight: 800;
+          font-weight: 700;
           margin-top: 3px;
         }
         .cd-metricas-locked-cta {
@@ -982,7 +982,7 @@ export default function Cardapio() {
           background: linear-gradient(135deg, #FFC947, #DDAA00);
           color: #2C1219;
           font-size: 12.5px;
-          font-weight: 900;
+          font-weight: 700;
           border-radius: 6px;
           border: none;
           cursor: pointer;

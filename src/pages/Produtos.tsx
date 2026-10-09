@@ -2214,7 +2214,7 @@ function PersonalizacaoStep({
         .pv3-root { display: flex; flex-direction: column; gap: 12px; }
         .pv3-header { margin-top: 24px; margin-bottom: 20px; text-align: center; }
         .pv3-eyebrow {
-          font-size: 12px; color: #E85A8C; font-weight: 800; letter-spacing: 0.08em;
+          font-size: 12px; color: #E85A8C; font-weight: 700; letter-spacing: 0.08em;
         }
         .pv3-title {
           font-size: 20px;
@@ -2272,7 +2272,7 @@ function PersonalizacaoStep({
           padding: 11px 28px;
           border-radius: 10px;
           font-size: 13.5px;
-          font-weight: 800;
+          font-weight: 700;
           cursor: pointer;
           font-family: inherit;
           box-shadow: 0 4px 12px rgba(232,90,140,0.35);
@@ -2714,7 +2714,7 @@ function PersonalizacaoStep({
         }
         .pv3-opcao-serve-suf { font-size: 12px; color: #6B7280; white-space: nowrap; font-weight: 600; }
         .pv3-opcao-preco:focus-within { border-color: #E85A8C; }
-        .pv3-opcao-preco-prefix { font-size: 13px; font-weight: 800; color: #E85A8C; white-space: nowrap; }
+        .pv3-opcao-preco-prefix { font-size: 13px; font-weight: 700; color: #E85A8C; white-space: nowrap; }
         .pv3-opcao-preco input {
           all: unset;
           width: 62px;
@@ -2761,7 +2761,7 @@ function PersonalizacaoStep({
           box-sizing: border-box;
         }
         .pv3-empty-txt {
-          font-weight: 800;
+          font-weight: 700;
           font-size: 14px;
           color: #E85A8C;
           margin-bottom: 4px;
@@ -2882,7 +2882,7 @@ function PersonalizacaoStep({
         .pv3-gerar-chip--on { background: #E85A8C; color: #fff; border-color: #E85A8C; }
         .pv3-gerar-preview { background: #FFF5F9; border: 1px solid #F0D8DE; border-radius: 8px; padding: 10px 12px; font-size: 12px; color: #4B5563; line-height: 1.5; margin-bottom: 16px; }
         .pv3-gerar-actions { display: flex; gap: 8px; }
-        .pv3-gerar-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer; transition: all 0.12s ease; }
+        .pv3-gerar-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.12s ease; }
         .pv3-gerar-btn--sec { background: #F3F4F6; color: #4B5563; box-shadow: 0 3px 0 #D1D5DB; }
         .pv3-gerar-btn--sec:active { transform: translateY(2px); box-shadow: 0 1px 0 #D1D5DB; }
         .pv3-gerar-btn--pri { background: linear-gradient(135deg, #E85A8C, #C33A6E); color: #fff; box-shadow: 0 3px 0 #993556, 0 6px 14px rgba(232,90,140,0.3); flex: 2; }
@@ -2928,7 +2928,7 @@ function PersonalizacaoStep({
         }
         .pv3-serve-label {
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 700;
           color: #C33A6E;
           letter-spacing: 0.04em;
         }
@@ -2947,7 +2947,7 @@ function PersonalizacaoStep({
           width: 46px;
           padding: 6px 4px 6px 10px;
           font-size: 16px;
-          font-weight: 800;
+          font-weight: 700;
           color: #2C1219;
           text-align: center;
         }
@@ -2978,7 +2978,7 @@ function PersonalizacaoStep({
           min-width: 0;
           padding: 8px 10px;
           font-size: 16px;
-          font-weight: 800;
+          font-weight: 700;
           color: #C33A6E;
           text-align: left;
         }
@@ -3070,7 +3070,7 @@ function PersonalizacaoStep({
           color: #fff;
           border-radius: 4px;
           font-size: 12px;
-          font-weight: 900;
+          font-weight: 700;
           letter-spacing: 0.05em;
           box-shadow: 0 2px 6px rgba(245,158,11,0.35);
           white-space: nowrap;
@@ -3198,7 +3198,7 @@ function PersonalizacaoStep({
           padding: 2px 8px;
           border-radius: 4px;
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 700;
           min-width: 22px;
           text-align: center;
         }
@@ -3355,7 +3355,7 @@ function PersonalizacaoStep({
           color: #fff;
           border: none;
           border-radius: 10px;
-          font-weight: 800;
+          font-weight: 700;
           font-size: 13px;
           cursor: pointer;
           box-shadow: 0 4px 12px rgba(232,90,140,0.4);
@@ -7606,7 +7606,7 @@ export default function Produtos() {
         .prod-preview-nome {
           margin: 0 0 6px;
           font-size: 22px;
-          font-weight: 800;
+          font-weight: 700;
           color: #2D1F26;
           font-family: inherit;
           line-height: 1.15;
@@ -7637,7 +7637,7 @@ export default function Produtos() {
         }
         .prod-preview-destaque-valor {
           font-size: 24px;
-          font-weight: 800;
+          font-weight: 700;
           color: #E85A8C;
           margin-top: 2px;
           font-family: inherit;
@@ -7693,7 +7693,7 @@ export default function Produtos() {
           border-radius: 10px;
           font-family: inherit;
           font-size: 13px;
-          font-weight: 800;
+          font-weight: 700;
           cursor: pointer;
           box-shadow: 0 3px 0 #C33A6E;
           transition: transform 0.08s, filter 0.08s, box-shadow 0.08s;
@@ -8029,7 +8029,7 @@ export default function Produtos() {
           cursor: pointer;
           color: var(--text-title);
           font-size: 18px;
-          font-weight: 800;
+          font-weight: 700;
           font-family: inherit;
           flex-shrink: 0;
           transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
@@ -8461,7 +8461,7 @@ export default function Produtos() {
         }
         .prod-promo-preview-final {
           font-size: 26px;
-          font-weight: 900;
+          font-weight: 700;
           color: #fff;
           letter-spacing: -0.02em;
           display: inline-flex;
@@ -8480,7 +8480,7 @@ export default function Produtos() {
           color: #fff;
           border-radius: 6px;
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 700;
           letter-spacing: 0.03em;
           align-self: center;
         }
@@ -8745,7 +8745,7 @@ export default function Produtos() {
           display: inline-flex; align-items: center;
           background: #2D1F26; color: #fff;
           padding: 2px 7px; border-radius: 6px;
-          font-size: 12px; font-weight: 800;
+          font-size: 12px; font-weight: 700;
           letter-spacing: 0.05em;
         }
         .prod-var-toggle-desc {
@@ -8803,7 +8803,7 @@ export default function Produtos() {
           font-size: 20px; font-weight: 800; line-height: 1;
         }
         .prod-var-tag-un {
-          font-size: 12px; font-weight: 800;
+          font-size: 12px; font-weight: 700;
           margin-top: 3px; letter-spacing: 0.08em; opacity: 0.95;
           text-align: center;
         }
@@ -8862,7 +8862,7 @@ export default function Produtos() {
           background: rgba(0,0,0,0.65); color: #fff;
           border: none; width: 18px; height: 18px;
           border-radius: 50%;
-          font-size: 12px; font-weight: 800;
+          font-size: 12px; font-weight: 700;
           display: flex; align-items: center; justify-content: center;
           cursor: pointer;
           font-family: var(--font-base);
@@ -8880,7 +8880,7 @@ export default function Produtos() {
         .prod-var-tag-inline {
           display: inline-block;
           background: #F5EEF0; color: #E85A8C;
-          font-size: 12px; font-weight: 800;
+          font-size: 12px; font-weight: 700;
           padding: 2px 7px; border-radius: 999px;
           letter-spacing: 0.05em;
         }
@@ -8889,7 +8889,7 @@ export default function Produtos() {
           margin-top: 4px; flex-wrap: wrap;
         }
         .prod-var-preco {
-          font-size: 14px; font-weight: 800; color: #16A34A;
+          font-size: 14px; font-weight: 700; color: #16A34A;
         }
         .prod-var-preco-un {
           font-size: 12px; color: #6B5D64; font-weight: 600;
@@ -8924,7 +8924,7 @@ export default function Produtos() {
           flex: 1; min-width: 0;
           border: none; outline: none;
           font-family: var(--font-base) !important;
-          font-size: 14px; font-weight: 800;
+          font-size: 14px; font-weight: 700;
           color: #16A34A;
           background: transparent;
           padding: 2px 0;
@@ -8957,7 +8957,7 @@ export default function Produtos() {
           background: #F5EEF0;
           color: #E85A8C;
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 700;
           padding: 0 12px;
           display: flex; align-items: center;
           letter-spacing: 0.08em;
@@ -8990,7 +8990,7 @@ export default function Produtos() {
           padding: 12px 16px; background: #E85A8C; color: #fff;
           border: none; border-radius: 10px;
           font-family: var(--font-base) !important;
-          font-size: 13px; font-weight: 800;
+          font-size: 13px; font-weight: 700;
           box-shadow: 0 3px 0 #C33A6E;
           cursor: pointer;
           display: flex; align-items: center; gap: 6px;
@@ -9070,7 +9070,7 @@ export default function Produtos() {
           border: 1.5px solid #E5D8DE;
           display: flex; align-items: center; justify-content: center;
           font-size: 14px;
-          font-weight: 800;
+          font-weight: 700;
           cursor: pointer;
           z-index: 3;
           font-family: var(--font-base);
@@ -9186,7 +9186,7 @@ export default function Produtos() {
         }
         .wiz-step1-sub-star {
           color: #E85A8C;
-          font-weight: 800;
+          font-weight: 700;
           font-size: 13px;
         }
 
@@ -9436,7 +9436,7 @@ export default function Produtos() {
           color: #6B5D64;
           border: none;
           display: flex; align-items: center; justify-content: center;
-          font-size: 13px; font-weight: 800;
+          font-size: 13px; font-weight: 700;
           cursor: pointer;
           transition: background 0.12s, color 0.12s;
           font-family: var(--font-base);
@@ -9631,7 +9631,7 @@ export default function Produtos() {
           .prod-modal--novo .prod-btn-cancelar-novo:hover,
           .prod-modal--novo .prod-btn-cancelar-novo:active { background: rgba(255,255,255,0.08); }
           .prod-modal--novo .prod-btn-avancar-novo {
-            background: #fff; color: #2C1219; box-shadow: none; font-weight: 800;
+            background: #fff; color: #2C1219; box-shadow: none; font-weight: 700;
           }
           .prod-modal--novo .prod-btn-avancar-novo:active:not(:disabled) { transform: scale(0.98); box-shadow: none; }
           .prod-modal--novo .prod-btn-avancar-novo:disabled {
@@ -9668,7 +9668,7 @@ export default function Produtos() {
         }
         .prod-field-star {
           color: #E85A8C;
-          font-weight: 800;
+          font-weight: 700;
           font-size: 14px;
           line-height: 1;
         }
@@ -9826,7 +9826,7 @@ export default function Produtos() {
         }
         .prod-pro-modal-eyebrow {
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 700;
           color: #E85A8C;
           letter-spacing: 0.1em;
           margin-bottom: 4px;
@@ -10442,7 +10442,7 @@ export default function Produtos() {
           color: #fff;
           font-family: var(--font-base);
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 700;
           border-radius: 6px;
           box-shadow: 0 2px 6px rgba(0,0,0,0.3);
           z-index: 2;
@@ -10487,7 +10487,7 @@ export default function Produtos() {
           background-clip: text;
           -webkit-text-fill-color: transparent;
           color: transparent;
-          font-weight: 800;
+          font-weight: 700;
           animation: prodRgbFlow 6s linear infinite;
         }
         @keyframes prodRgbFlow {
@@ -10827,7 +10827,7 @@ export default function Produtos() {
         }
         .prod-desc-empty-txt b {
           color: #A855F7;
-          font-weight: 800;
+          font-weight: 700;
         }
         .prod-desc-empty-hint {
           font-size: 12px;
@@ -10859,7 +10859,7 @@ export default function Produtos() {
           border-radius: 8px;
           font-family: var(--font-base) !important;
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 700;
           cursor: pointer;
           display: inline-flex;
           align-items: center;
@@ -10892,7 +10892,7 @@ export default function Produtos() {
           border-radius: 8px;
           font-family: var(--font-base) !important;
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 700;
           cursor: pointer;
           display: flex; align-items: center; gap: 4px;
           white-space: nowrap;
@@ -10906,7 +10906,7 @@ export default function Produtos() {
         }
         .prod-cat-nova-hint {
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 700;
           color: #E85A8C;
           margin: 0 0 8px;
           letter-spacing: 0.05em;
@@ -10944,7 +10944,7 @@ export default function Produtos() {
           border-radius: 8px;
           font-family: var(--font-base) !important;
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 700;
           cursor: pointer;
         }
         .prod-cat-criar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -10961,7 +10961,7 @@ export default function Produtos() {
           background: #F5EEF0;
           color: #E85A8C;
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 700;
           padding: 0 12px;
           display: flex; align-items: center;
           letter-spacing: 0.08em;
@@ -11024,7 +11024,7 @@ export default function Produtos() {
         .prod-var-eco {
           display: inline-flex; align-items: center;
           background: #DCFCE7; color: #14532D;
-          font-size: 12px; font-weight: 800;
+          font-size: 12px; font-weight: 700;
           padding: 2px 8px; border-radius: 999px;
           letter-spacing: 0.02em;
           white-space: nowrap;
@@ -11223,7 +11223,7 @@ export default function Produtos() {
           border: none;
           border-radius: 12px;
           font-size: 15px;
-          font-weight: 800;
+          font-weight: 700;
           cursor: pointer;
           font-family: inherit;
           box-shadow: 0 4px 14px rgba(232, 90, 140, 0.4);
@@ -12432,12 +12432,12 @@ export default function Produtos() {
       
         /* Preço do kit (02/10) */
         .kitp-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #F5F0F2; font-size: 14px; }
-        .kitp-row span { color: #6B5D64; } .kitp-row b { font-weight: 800; color: #2C1219; text-align: right; }
+        .kitp-row span { color: #6B5D64; } .kitp-row b { font-weight: 700; color: #2C1219; text-align: right; }
         .kitp-row em { font-style: normal; color: #16A34A; }
         .kitp-tag { background: #FCE0E9; color: #993556 !important; padding: 3px 10px; border-radius: 7px; font-size: 12.5px; }
         .kitp-dica { font-size: 12px; color: #9A8E94; margin: 8px 0 0; }
         .kitp-pct { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 14px; color: #4B3A42; }
-        .kitp-pct input { width: 64px; border: 1.5px solid #EDE6E9; border-radius: 10px; padding: 8px; font-family: inherit; font-size: 16px; font-weight: 800; text-align: center; color: #2C1219; }
+        .kitp-pct input { width: 64px; border: 1.5px solid #EDE6E9; border-radius: 10px; padding: 8px; font-family: inherit; font-size: 16px; font-weight: 700; text-align: center; color: #2C1219; }
 `}</style>
 
       {/* ═══ Barra flutuante de ações em massa (Desktop) ═══ */}

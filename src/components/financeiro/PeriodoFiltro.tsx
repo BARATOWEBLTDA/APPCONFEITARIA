@@ -56,10 +56,10 @@ export default function PeriodoFiltro({ valor, onChange }: { valor: Periodo; onC
       <style>{`
         .pf { display: flex; flex-direction: column; gap: 8px; font-family: var(--font-base); }
         .pf-seg { display: flex; background: #EFE9EC; border-radius: 12px; padding: 3px; }
-        .pf-seg button { flex: 1; min-height: 44px; border: none; background: none; border-radius: 10px; padding: 9px 4px; font-family: inherit; font-size: 13.5px; font-weight: 800; color: #6B5D64; cursor: pointer; }
+        .pf-seg button { flex: 1; min-height: 44px; border: none; background: none; border-radius: 10px; padding: 9px 4px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #6B5D64; cursor: pointer; }
         .pf-seg button.on { background: #fff; color: #2C1219; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
         .pf-mes { display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #F0EBED; border-radius: 12px; padding: 5px; }
-        .pf-mes b { font-size: 14px; font-weight: 800; color: #2C1219; }
+        .pf-mes b { font-size: 14px; font-weight: 700; color: #2C1219; }
         .pf-mes button { width: 44px; height: 44px; border-radius: 9px; border: none; background: #FFF1F6; color: #C33A6E; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .pf-mes button:disabled { opacity: .35; cursor: default; }
         .pf-datas { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }

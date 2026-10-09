@@ -138,36 +138,36 @@ export default function Lucratividade() {
 const CSS = `
   .lu { max-width: 1060px; margin: 0 auto; padding: 22px 0 96px; font-family: var(--font-base); color: #2C1219; display: flex; flex-direction: column; gap: 14px; }
   .lu-mes { display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #F0EBED; border-radius: 12px; padding: 6px; max-width: 420px; width: 100%; align-self: center; box-sizing: border-box; }
-  .lu-mes b { font-size: 14.5px; font-weight: 800; }
+  .lu-mes b { font-size: 14.5px; font-weight: 700; }
   .lu-mes button { width: 44px; height: 44px; border-radius: 10px; border: none; background: #FFF1F6; color: #C33A6E; display: flex; align-items: center; justify-content: center; cursor: pointer; }
   .lu-mes button:disabled { opacity: .35; cursor: default; }
   .lu-ph { height: 260px; background: #FAF7F8; border-radius: 16px; }
   .lu-vazio { background: #fff; border: 1px solid #F0EBED; border-radius: 18px; padding: 30px 20px; text-align: center; }
   .lu-vazio-ic { width: 60px; height: 60px; border-radius: 18px; background: #FFF1F6; color: #C33A6E; display: inline-flex; align-items: center; justify-content: center; }
-  .lu-vazio b { display: block; font-size: 17px; font-weight: 900; margin-top: 12px; }
+  .lu-vazio b { display: block; font-size: 17px; font-weight: 700; margin-top: 12px; }
   .lu-vazio p { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 6px auto 0; max-width: 400px; text-wrap: balance; }
-  .lu-cta { margin-top: 14px; border: none; border-radius: 12px; padding: 12px 18px; background: #2C1219; color: #fff; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
+  .lu-cta { margin-top: 14px; border: none; border-radius: 12px; padding: 12px 18px; background: #2C1219; color: #fff; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
   .lu-grid { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "conta" "eq" "prod"; }
   @media (min-width: 900px) { .lu-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "conta eq" "prod prod"; align-items: start; } }
   .lu-a-conta { grid-area: conta; } .lu-a-eq { grid-area: eq; } .lu-a-prod { grid-area: prod; }
   .lu-card { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 14px 16px; }
-  .lu-ct { margin: 0 0 8px; font-size: 15px; font-weight: 900; } .lu-ct small { display: block; margin-top: 2px; font-size: 13px; font-weight: 500; color: #9A8E94; }
+  .lu-ct { margin: 0 0 8px; font-size: 15px; font-weight: 700; } .lu-ct small { display: block; margin-top: 2px; font-size: 13px; font-weight: 500; color: #9A8E94; }
   .lu-vz { margin: 4px 0 0; font-size: 14px; line-height: 1.5; color: #6B5D64; }
   .lu-l { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 9px 0; border-bottom: 1px solid #F5F0F2; font-size: 14px; }
   .lu-l span { color: #4B3A42; } .lu-l small { display: block; font-size: 13px; color: #9A8E94; margin-top: 1px; }
-  .lu-l b { font-weight: 800; white-space: nowrap; } .lu-l.neg b { color: #DC2626; }
-  .lu-l.tt { border-bottom: none; padding-top: 12px; font-size: 16px; } .lu-l.tt span { font-weight: 800; color: #2C1219; } .lu-l.tt b { font-size: 21px; font-weight: 900; color: #C33A6E; }
+  .lu-l b { font-weight: 700; white-space: nowrap; } .lu-l.neg b { color: #DC2626; }
+  .lu-l.tt { border-bottom: none; padding-top: 12px; font-size: 16px; } .lu-l.tt span { font-weight: 700; color: #2C1219; } .lu-l.tt b { font-size: 21px; font-weight: 700; color: #C33A6E; }
   .lu-l.tt.ruim b { color: #DC2626; }
   .lu-margem { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: #6B5D64; } .lu-margem .lu-bar { flex: 1; }
   .lu-bar { height: 8px; border-radius: 9px; background: #F5F0F2; overflow: hidden; } .lu-bar i { display: block; height: 100%; background: #E85A8C; border-radius: 9px; }
   .lu-bar.grande { height: 12px; margin: 10px 0 8px; } .lu-bar i.ok { background: #16A34A; }
   .lu-eq-t { margin: 0; font-size: 13.5px; color: #4B3A42; line-height: 1.45; }
-  .lu-eq-v { display: block; font-size: 26px; font-weight: 900; letter-spacing: -.02em; margin-top: 4px; } .lu-eq-v small { font-size: 13px; font-weight: 700; color: #9A8E94; }
-  .lu-eq-s { margin: 0; font-size: 13.5px; font-weight: 800; color: #2C1219; } .lu-nota { margin: 6px 0 0; font-size: 12px; color: #9A8E94; }
-  .lu-link { border: none; background: none; padding: 0; font: inherit; color: #C33A6E; font-weight: 800; text-decoration: underline; cursor: pointer; }
+  .lu-eq-v { display: block; font-size: 26px; font-weight: 700; letter-spacing: -.02em; margin-top: 4px; } .lu-eq-v small { font-size: 13px; font-weight: 700; color: #9A8E94; }
+  .lu-eq-s { margin: 0; font-size: 13.5px; font-weight: 700; color: #2C1219; } .lu-nota { margin: 6px 0 0; font-size: 12px; color: #9A8E94; }
+  .lu-link { border: none; background: none; padding: 0; font: inherit; color: #C33A6E; font-weight: 700; text-decoration: underline; cursor: pointer; }
   .lu-p { padding: 10px 0; border-top: 1px solid #F5F0F2; } .lu-p:first-of-type { border-top: none; }
   .lu-p-h { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; } .lu-p-h b { font-weight: 800; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .lu-p-h span { font-weight: 900; color: #15803D; white-space: nowrap; } .lu-p-h span.ruim { color: #DC2626; }
+  .lu-p-h span { font-weight: 800; color: #15803D; white-space: nowrap; } .lu-p-h span.ruim { color: #DC2626; }
   .lu-p-bar { height: 6px; border-radius: 9px; background: #F5F0F2; margin: 6px 0 5px; overflow: hidden; } .lu-p-bar i { display: block; height: 100%; background: #22C55E; border-radius: 9px; } .lu-p-bar i.ruim { background: #F87171; }
   .lu-p small { font-size: 12px; color: #888780; } .lu-sf { color: #B45309; font-weight: 700; display: inline-flex; align-items: center; gap: 3px; }
   .lu-aviso { display: flex; align-items: flex-start; gap: 8px; width: 100%; text-align: left; margin-top: 10px; background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: 12px; padding: 10px 12px; font-family: inherit; font-size: 13px; font-weight: 700; line-height: 1.4; cursor: pointer; }

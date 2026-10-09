@@ -359,13 +359,13 @@ const CSS = `
   .pp-seta { color: #B4B2A9; display: flex; }
   .pp-at { background: var(--ui-rosa-claro); border: 0; border-radius: var(--ui-raio); padding: 12px; margin: 4px 0 8px; }
   .pp-at + .pp-ps { border-top: none; }
-  .pp-btn { display: block; width: 100%; min-height: 48px; margin-top: 12px; border: none; border-radius: var(--ui-raio-botao); padding: 13px; font-family: inherit; font-size: 15px; font-weight: 800; color: #fff; background: #E85A8C; box-shadow: 0 3px 0 #C33A6E; cursor: pointer; text-align: center; text-decoration: none; }
+  .pp-btn { display: block; width: 100%; min-height: 48px; margin-top: 12px; border: none; border-radius: var(--ui-raio-botao); padding: 13px; font-family: inherit; font-size: 15px; font-weight: 700; color: #fff; background: #E85A8C; box-shadow: 0 3px 0 #C33A6E; cursor: pointer; text-align: center; text-decoration: none; }
   .pp-btn:disabled { background: #F3B6CB; box-shadow: none; cursor: default; }
   .pp-lnk { display: block; width: 100%; min-height: 44px; margin-top: 8px; padding: 10px; border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #C33A6E; cursor: pointer; }
   .pp-lnk--cinza { color: #9A8E94; font-weight: 600; }
   .pp--fim { text-align: center; background: linear-gradient(180deg, #FFF1F6, #fff 70%); padding-bottom: 12px; }
   .pp-masc { display: block; width: 120px; height: auto; margin: 0 auto; }
-  .pp-ft { display: block; font-size: 18px; font-weight: 900; margin: 6px auto 0; max-width: 260px; line-height: 1.25; text-wrap: balance; }
+  .pp-ft { display: block; font-size: 18px; font-weight: 700; margin: 6px auto 0; max-width: 260px; line-height: 1.25; text-wrap: balance; }
   .pp-fs { font-size: 13.5px; color: #6B5D64; margin: 6px auto 4px; max-width: 290px; line-height: 1.45; text-wrap: balance; }
 
   /* (07/10 · 2.94) No Início, em tela larga (tablet e computador), os passos viram blocos lado a lado:
@@ -388,14 +388,14 @@ const CSS = `
   @keyframes ppfSobe { from { transform: translateY(30px); opacity: 0; } to { transform: none; opacity: 1; } }
   .ppf-alca { width: 40px; height: 4px; border-radius: 99px; background: #E5DDE1; margin: 10px auto 0; flex-shrink: 0; }
   .ppf-hd { display: flex; align-items: flex-start; gap: 10px; padding: 12px 18px 12px; border-bottom: 1px solid #F5F0F2; flex-shrink: 0; }
-  .ppf-hd > div { flex: 1; } .ppf-hd b { display: block; font-size: 18px; font-weight: 900; letter-spacing: -.01em; }
+  .ppf-hd > div { flex: 1; } .ppf-hd b { display: block; font-size: 18px; font-weight: 700; letter-spacing: -.01em; }
   .ppf-hd small { display: block; font-size: 13.5px; color: #6B5D64; margin-top: 2px; line-height: 1.4; }
   .ppf-x { width: 44px; height: 44px; border-radius: 10px; border: none; background: #F5F0F2; color: #6B5D64; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
   .ppf-corpo { padding: 4px 18px calc(18px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; }
   .ppf-l { display: block; font-size: 13px; font-weight: 600; color: #4B3A42; margin: 14px 0 6px; }
   .ppf-lrow { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; margin-bottom: 6px; }
   .ppf-lrow .ppf-l { margin: 0; }
-  .ppf-ia { min-height: 36px; border: none; border-radius: 10px; background: #2C1219; color: #fff; font-family: inherit; font-size: 13px; font-weight: 800; padding: 0 12px; cursor: pointer; }
+  .ppf-ia { min-height: 36px; border: none; border-radius: 10px; background: #2C1219; color: #fff; font-family: inherit; font-size: 13px; font-weight: 700; padding: 0 12px; cursor: pointer; }
   .ppf-ia:disabled { opacity: .6; }
   .ppf-in { width: 100%; box-sizing: border-box; min-height: 46px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 11px 14px; font-family: inherit; font-size: 16px; color: #2C1219; background: #fff; }
   .ppf-in:focus { outline: none; border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
@@ -410,18 +410,18 @@ const CSS = `
   .ppf-seg button { flex: 1; min-height: 44px; border: none; background: none; padding: 0 4px; border-radius: 8px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #6B5D64; cursor: pointer; }
   .ppf-seg button.on { background: #fff; color: #2C1219; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
   .ppf-dias { display: flex; gap: 6px; }
-  .ppf-dias button { flex: 1; aspect-ratio: 1; min-height: 40px; max-width: 46px; border: none; border-radius: 50%; font-family: inherit; font-size: 14px; font-weight: 800; background: #FFF1F6; color: #D9A5B9; cursor: pointer; }
+  .ppf-dias button { flex: 1; aspect-ratio: 1; min-height: 40px; max-width: 46px; border: none; border-radius: 50%; font-family: inherit; font-size: 14px; font-weight: 700; background: #FFF1F6; color: #D9A5B9; cursor: pointer; }
   .ppf-dias button.on { background: #E85A8C; color: #fff; box-shadow: 0 3px 10px rgba(232,90,140,.3); }
   .ppf-bl { background: #FAF7F8; border-radius: 12px; padding: 12px; margin-top: 12px; }
   .ppf-bl b { display: block; font-size: 13.5px; margin-bottom: 8px; }
   .ppf-hr { flex: 1; display: flex; align-items: center; gap: 10px; min-height: 50px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 8px 12px; background: #fff; font-family: inherit; color: #993556; text-align: left; cursor: pointer; }
-  .ppf-hr span { display: flex; flex-direction: column; color: #2C1219; font-size: 16px; font-weight: 800; line-height: 1.15; }
+  .ppf-hr span { display: flex; flex-direction: column; color: #2C1219; font-size: 16px; font-weight: 700; line-height: 1.15; }
   .ppf-hr small { font-size: 12.5px; font-weight: 700; color: var(--ui-texto-2); }
   .ppf-lg { display: flex; gap: 14px; align-items: center; margin-top: 12px; }
   .ppf-lgc { position: relative; width: 76px; height: 76px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 6px 16px rgba(232,90,140,.3); background: linear-gradient(135deg, #F9A8D4, #E85A8C); padding: 0; cursor: pointer; flex-shrink: 0; overflow: visible; }
   .ppf-lgc img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
-  .ppf-lgc span { color: #fff; font-weight: 900; font-size: 28px; }
+  .ppf-lgc span { color: #fff; font-weight: 700; font-size: 28px; }
   .ppf-lgc i { position: absolute; right: -4px; bottom: -4px; width: 26px; height: 26px; border-radius: 50%; background: #fff; color: #993556; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,.12); }
-  .ppf-lg b { display: block; font-size: 14.5px; font-weight: 800; }
+  .ppf-lg b { display: block; font-size: 14.5px; font-weight: 700; }
   .ppf-lg small { display: block; font-size: 12.5px; color: #6B5D64; margin-top: 3px; line-height: 1.4; }
 `;

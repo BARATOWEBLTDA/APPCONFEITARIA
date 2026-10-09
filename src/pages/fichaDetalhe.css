@@ -9,7 +9,7 @@
 .fd-foto { flex: none; display: flex; align-items: center; justify-content: center; width: 72px; height: 72px; overflow: hidden; border-radius: 16px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
 .fd-foto img { width: 100%; height: 100%; object-fit: cover; }
 .fd-lucro small { display: block; font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
-.fd-lucro b { display: block; font-size: 28px; font-weight: 800; line-height: 1.15; }
+.fd-lucro b { display: block; font-size: 28px; font-weight: 700; line-height: 1.15; }
 .fd-lucro span { display: block; font-size: 14px; font-weight: 700; }
 .fd-lucro--ok b, .fd-lucro--ok span { color: var(--ui-verde); }
 .fd-lucro--atencao b, .fd-lucro--atencao span { color: var(--ui-laranja); }
@@ -29,15 +29,15 @@
 .fd-ing-cab { display: none; }
 .fd-ing { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto 44px; grid-template-areas: "th nome nome x" "th qtd custo x"; align-items: center; gap: 6px 10px; padding: 10px 0; border-top: 1px solid var(--ui-linha); }
 .fd-ing:first-of-type, .fd-ing-cab + .fd-ing { border-top: 0; }
-.fd-ing-th { grid-area: th; align-self: start; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; overflow: hidden; border-radius: 12px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 16px; font-weight: 800; flex: none; }
+.fd-ing-th { grid-area: th; align-self: start; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; overflow: hidden; border-radius: 12px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 16px; font-weight: 700; flex: none; }
 .fd-ing-th img { width: 100%; height: 100%; object-fit: cover; background: #fff; }
 .fd-ing-nome { grid-area: nome; min-width: 0; }
-.fd-ing-nome b { display: block; font-size: 15px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fd-ing-nome b { display: block; font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fd-ing-nome small { display: block; font-size: 13px; font-weight: 700; color: var(--ui-laranja); }
 .fd-ing-qtd { grid-area: qtd; display: flex; align-items: stretch; min-width: 0; max-width: 220px; height: 44px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: #fff; overflow: hidden; }
 .fd-ing-qtd input { flex: 1; min-width: 0; padding: 0 12px; border: 0; outline: none; background: none; font-family: inherit; font-size: 16px; font-weight: 700; color: var(--ui-texto); }
 .fd-ing-qtd select, .fd-ing-qtd i { flex: none; min-width: 56px; padding: 0 10px; border: 0; border-left: 1px solid var(--ui-borda); background: var(--ui-cinza); font-family: inherit; font-size: 16px; font-style: normal; font-weight: 700; color: var(--ui-texto-2); display: flex; align-items: center; justify-content: center; }
-.fd-ing-custo { grid-area: custo; display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin: 0; padding: 0 2px; border: 0; background: none; font-family: inherit; font-size: 15px; font-weight: 800; color: var(--ui-texto); white-space: nowrap; cursor: pointer; }
+.fd-ing-custo { grid-area: custo; display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin: 0; padding: 0 2px; border: 0; background: none; font-family: inherit; font-size: 15px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; cursor: pointer; }
 .fd-ing-custo svg { display: none; color: var(--ui-texto-3); }
 .fd-ing > .ui-bti, .fd-ing > button:last-child { grid-area: x; align-self: start; }
 .fd-ing-acoes { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 4px; }
@@ -48,7 +48,7 @@
 .fd-rot { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
 .fd-cv { display: flex; align-items: flex-end; gap: 12px; }
 .fd-cv > :first-child { flex: 1; min-width: 0; }
-.fd-cv-res { flex: none; min-height: 48px; display: flex; align-items: center; padding: 0 12px; border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 15px; font-weight: 800; }
+.fd-cv-res { flex: none; min-height: 48px; display: flex; align-items: center; padding: 0 12px; border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 15px; font-weight: 700; }
 .fd-mo { margin: 0; padding: 12px 14px; border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 14px; color: var(--ui-texto-2); }
 .fd-mo b { color: var(--ui-texto); }
 .fd-chave { flex: none; position: relative; width: 52px; height: 32px; margin: 6px 0; padding: 0; border: 0; border-radius: 999px; background: var(--ui-borda); cursor: pointer; transition: background .15s; }
@@ -60,7 +60,7 @@
 .fd-fixo { position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); z-index: 40; display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-top: 1px solid var(--ui-borda); background: #fff; box-shadow: 0 -4px 16px rgba(31, 7, 17, .08); }
 .fd-fixo-lucro { flex: 1; min-width: 0; }
 .fd-fixo-lucro small { display: block; font-size: 13px; font-weight: 700; }
-.fd-fixo-lucro b { display: block; font-size: 20px; font-weight: 800; line-height: 1.2; }
+.fd-fixo-lucro b { display: block; font-size: 20px; font-weight: 700; line-height: 1.2; }
 .fd-fixo-lucro.fd-lucro--ok small, .fd-fixo-lucro.fd-lucro--ok b { color: var(--ui-verde); }
 .fd-fixo-lucro.fd-lucro--atencao small, .fd-fixo-lucro.fd-lucro--atencao b { color: var(--ui-laranja); }
 .fd-fixo-lucro.fd-lucro--neg small, .fd-fixo-lucro.fd-lucro--neg b { color: var(--ui-vermelho-escuro); }
@@ -73,7 +73,7 @@
 .fd-pick-l b { flex: 1; min-width: 0; font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fd-pick-v { flex: none; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border: 2px solid var(--ui-borda); border-radius: 8px; color: #fff; }
 .fd-pick-l[aria-pressed="true"] .fd-pick-v { border-color: var(--ui-vinho); background: var(--ui-vinho); }
-.fd-pick-novo { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; min-height: 48px; margin: 8px 0 0; padding: 0; border: 0; background: none; font-family: inherit; font-size: 15px; font-weight: 800; color: var(--ui-rosa-escuro); cursor: pointer; }
+.fd-pick-novo { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; min-height: 48px; margin: 8px 0 0; padding: 0; border: 0; background: none; font-family: inherit; font-size: 15px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
 
 @media (min-width: 700px) {
   .fd-par { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
@@ -97,7 +97,7 @@
 .fd-mo-conta { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
 .fd-mo-conta > span { flex: 1; min-width: 0; }
 .fd-mo-conta small { display: block; font-size: 13px; color: var(--ui-texto-2); }
-.fd-mo-conta b { display: block; font-size: 15px; font-weight: 800; }
+.fd-mo-conta b { display: block; font-size: 15px; font-weight: 700; }
 .fd-mo-acoes { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 /* 09/10: lista de ingredientes mais limpa no celular — nome e custo à esquerda, quantidade à direita */
 @media (max-width: 699px) {

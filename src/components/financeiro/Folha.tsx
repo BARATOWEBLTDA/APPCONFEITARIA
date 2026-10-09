@@ -32,7 +32,7 @@ export const FOLHA_CSS = `
   @media (min-width: 768px) { .fo { border-radius: 22px; } }
   @keyframes foSobe { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
   .fo-alca { display: block; width: 40px; height: 4px; border-radius: 9px; background: #E5DDE1; margin: 0 auto 12px; }
-  .fo-t { display: block; font-size: 19px; font-weight: 900; } .fo-s { display: block; font-size: 13px; color: #6B5D64; margin-top: 2px; line-height: 1.4; }
+  .fo-t { display: block; font-size: 19px; font-weight: 800; } .fo-s { display: block; font-size: 13px; color: #6B5D64; margin-top: 2px; line-height: 1.4; }
   .fo-lb { display: block; font-size: 13px; font-weight: 700; color: #4B3A42; margin: 14px 0 6px; } .fo-lb em { font-style: normal; font-weight: 500; color: #9A8E94; }
   .fo-in { display: flex; align-items: center; gap: 6px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 0 12px; height: 48px; background: #fff; }
   .fo-in:focus-within { border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
@@ -44,7 +44,7 @@ export const FOLHA_CSS = `
   .fo-chips button { border: 1.5px solid #EDE6E9; background: #fff; border-radius: 10px; padding: 8px 12px; font-family: inherit; font-size: 13px; font-weight: 700; color: #2C1219; cursor: pointer; }
   .fo-chips button.on { border-color: #E85A8C; background: #FFF1F6; color: #C33A6E; }
   .fo-seg { display: flex; background: #F5F0F2; border-radius: 10px; padding: 3px; }
-  .fo-seg button { flex: 1; min-height: 44px; border: none; background: none; border-radius: 8px; padding: 9px; font-family: inherit; font-size: 13.5px; font-weight: 800; color: #6B5D64; cursor: pointer; }
+  .fo-seg button { flex: 1; min-height: 44px; border: none; background: none; border-radius: 8px; padding: 9px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #6B5D64; cursor: pointer; }
   .fo-seg button.on { background: #fff; color: #2C1219; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
   .fo-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
   .fo-row > * { min-width: 0; }
@@ -56,8 +56,8 @@ export const FOLHA_CSS = `
   .fo-sw.on i { background: #16A34A; } .fo-sw.on i::after { transform: translateX(18px); }
   .fo-dica { margin-top: 12px; background: #FAF7F8; border-radius: 12px; padding: 10px 12px; font-size: 12.5px; color: #4B3A42; line-height: 1.45; }
   .fo-dica b { color: #2C1219; }
-  .fo-erro { margin: 10px 0 0; font-size: 13px; font-weight: 800; color: #DC2626; }
-  .fo-cta { margin-top: 16px; width: 100%; border: none; border-radius: 14px; padding: 15px; background: #E85A8C; color: #fff; font-family: inherit; font-size: 15.5px; font-weight: 800; cursor: pointer; box-shadow: 0 3px 0 #C33A6E; }
+  .fo-erro { margin: 10px 0 0; font-size: 13px; font-weight: 700; color: #DC2626; }
+  .fo-cta { margin-top: 16px; width: 100%; border: none; border-radius: 14px; padding: 15px; background: #E85A8C; color: #fff; font-family: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 0 #C33A6E; }
   .fo-cta.escuro { background: #2C1219; box-shadow: none; } .fo-cta.vermelho { background: #DC2626; box-shadow: none; }
   .fo-cta:disabled { opacity: .6; cursor: default; }
   .fo-sec { display: block; width: 100%; margin-top: 6px; border: none; background: none; padding: 12px; font-family: inherit; font-size: 14px; font-weight: 700; color: #DC2626; cursor: pointer; }

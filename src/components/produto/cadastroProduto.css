@@ -30,7 +30,7 @@ body .prod-modal--novo .bw { text-align: left; }
 body .prod-modal--novo .pv3-faixa-info { font-size: 13.5px; }
 
 /* ── títulos de seção ("Fotos do produto", "Como o cliente recebe") ── */
-body .prod-modal--novo .prod-section-label { margin: 0 0 8px !important; padding: 0 !important; font-size: 16px !important; font-weight: 800 !important; line-height: 1.3 !important; letter-spacing: 0 !important; text-transform: none !important; color: var(--ui-texto) !important; }
+body .prod-modal--novo .prod-section-label { margin: 0 0 8px !important; padding: 0 !important; font-size: 16px !important; font-weight: 700 !important; line-height: 1.3 !important; letter-spacing: 0 !important; text-transform: none !important; color: var(--ui-texto) !important; }
 body .prod-modal--novo .prod-section-label::before { display: none; }
 
 /* ── campos ── */
@@ -72,10 +72,10 @@ body .prod-modal--novo .kq-tg { min-width: 48px; min-height: 28px; }
 
 /* ── fotos ── */
 body .prod-modal--novo .prod-img-upload { height: auto !important; aspect-ratio: 1 / 1; }
-body .prod-modal--novo .prod-img-cta { font-size: 13.5px !important; font-weight: 800 !important; color: var(--ui-rosa-escuro) !important; text-transform: none !important; letter-spacing: 0 !important; }
+body .prod-modal--novo .prod-img-cta { font-size: 13.5px !important; font-weight: 700 !important; color: var(--ui-rosa-escuro) !important; text-transform: none !important; letter-spacing: 0 !important; }
 body .prod-modal--novo .prod-slot-lock-circle { background: transparent; box-shadow: none; }
 body .prod-modal--novo .prod-slot-lock-txt { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--ui-texto-3); }
-body .prod-modal--novo .prod-slot-lock-txt b { font-size: 13.5px; font-weight: 800; color: var(--ui-texto-2); }
+body .prod-modal--novo .prod-slot-lock-txt b { font-size: 13.5px; font-weight: 700; color: var(--ui-texto-2); }
 body .prod-modal--novo .prod-slot-lock-txt-rgb { font-size: 12.5px; font-weight: 700; color: var(--ui-texto-3); background: none; -webkit-text-fill-color: currentColor; text-transform: none; letter-spacing: 0; }
 body .prod-modal--novo .prod-img-remove { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
 body .prod-modal--novo .prod-toggles--clean > * { min-height: 56px; }
@@ -83,9 +83,9 @@ body .prod-modal--novo .prod-toggles--clean > * { min-height: 56px; }
 /* ── rodapé: claro e igual no celular e no computador ── */
 body .prod-modal--novo .prod-modal-footer--novo { display: grid !important; grid-template-columns: minmax(0, 1fr) minmax(0, 1.8fr); gap: 8px !important; background: var(--ui-branco) !important; border-top: 1px solid var(--ui-borda) !important; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)) !important; }
 @media (min-width: 641px) { body .prod-modal--novo .prod-modal-footer--novo { padding: 12px 24px 16px !important; } }
-body .prod-modal--novo .prod-btn-cancelar-novo { display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 16px; border-radius: var(--ui-raio-botao); background: var(--ui-cinza) !important; color: var(--ui-texto) !important; font-size: 15px; font-weight: 800; }
+body .prod-modal--novo .prod-btn-cancelar-novo { display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 16px; border-radius: var(--ui-raio-botao); background: var(--ui-cinza) !important; color: var(--ui-texto) !important; font-size: 15px; font-weight: 700; }
 body .prod-modal--novo .prod-btn-cancelar-novo:hover { filter: brightness(.97); }
-body .prod-modal--novo .prod-btn-avancar-novo { gap: 8px; min-height: 48px; padding: 0 16px; border-radius: var(--ui-raio-botao); background: var(--ui-rosa) !important; color: #fff !important; font-size: 15px; font-weight: 800; letter-spacing: 0; box-shadow: 0 3px 0 var(--ui-rosa-escuro) !important; }
+body .prod-modal--novo .prod-btn-avancar-novo { gap: 8px; min-height: 48px; padding: 0 16px; border-radius: var(--ui-raio-botao); background: var(--ui-rosa) !important; color: #fff !important; font-size: 15px; font-weight: 700; letter-spacing: 0; box-shadow: 0 3px 0 var(--ui-rosa-escuro) !important; }
 body .prod-modal--novo .prod-btn-avancar-novo:disabled { background: #F5DCE6 !important; color: #fff !important; box-shadow: 0 3px 0 #E8C4D2 !important; }
 body .prod-modal--novo .prod-btn-avancar-novo .prod-spinner-sm { border-color: rgba(255, 255, 255, .35); border-top-color: #fff; }
 body .prod-modal--novo .prod-btn-avancar-novo:only-child { grid-column: 1 / -1; }

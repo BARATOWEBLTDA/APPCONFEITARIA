@@ -249,13 +249,13 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
       <style>{`
         .vgd { display: flex; flex-direction: column; gap: 16px; font-family: var(--font-base); color: #2C1219; margin-top: 20px; }
         .vgd-card { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 18px 20px; }
-        .vgd-ct { margin: 0; font-size: 15.5px; font-weight: 800; } .vgd-cs { margin: 2px 0 0; font-size: 12.5px; color: #9A8E94; }
+        .vgd-ct { margin: 0; font-size: 15.5px; font-weight: 700; } .vgd-cs { margin: 2px 0 0; font-size: 12.5px; color: #9A8E94; }
         .vgd-rowh { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
         .vgd-hero { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; border-radius: 16px; padding: 20px 22px; color: #fff; background: linear-gradient(135deg, #2C1219, #6B2340); }
-        .vgd-st { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: #86EFAC; background: rgba(134,239,172,.12); padding: 4px 10px; border-radius: 999px; }
+        .vgd-st { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #86EFAC; background: rgba(134,239,172,.12); padding: 4px 10px; border-radius: 999px; }
         .vgd-st i { width: 7px; height: 7px; border-radius: 50%; background: #4ADE80; }
         .vgd-st.off { color: #FCD34D; background: rgba(252,211,77,.12); } .vgd-st.off i { background: #FBBF24; }
-        .vgd-hero h2 { margin: 8px 0 0; font-size: 20px; font-weight: 900; color: #fff; }
+        .vgd-hero h2 { margin: 8px 0 0; font-size: 20px; font-weight: 800; color: #fff; }
         .vgd-lk { display: flex; align-items: center; gap: 8px; margin-top: 12px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; }
         .vgd-lk span { flex: 1; opacity: .9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .vgd-btns { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
@@ -269,8 +269,8 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         .vgd-tabs button.on { background: #fff; color: #2C1219; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
         .vgd-kp { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 14px; }
         .vgd-k { border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 14px; }
-        .vgd-k small { display: block; font-size: 12px; font-weight: 800; letter-spacing: .08em; color: #9A8E94; }
-        .vgd-k b { display: block; font-size: 22px; font-weight: 900; margin-top: 2px; }
+        .vgd-k small { display: block; font-size: 12px; font-weight: 700; letter-spacing: .08em; color: #9A8E94; }
+        .vgd-k b { display: block; font-size: 22px; font-weight: 800; margin-top: 2px; }
         .vgd-k em { font-style: normal; font-size: 13px; font-weight: 700; color: #15803D; } .vgd-k em.down { color: #B91C1C; } .vgd-k em.n { color: #9A8E94; font-weight: 600; }
         .vgd-bars { display: flex; align-items: flex-end; gap: 12px; height: 120px; margin-top: 16px; }
         .vgd-bars--30 { gap: 3px; }
@@ -285,18 +285,18 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         .vgd-g2 { display: grid; grid-template-columns: 1.25fr 1fr; gap: 16px; align-items: start; }
         .vgd-pe, .vgd-di { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 0; border: none; border-top: 1px solid #F5F0F2; background: none; font-family: inherit; text-align: left; cursor: pointer; color: inherit; }
         .vgd-card > .vgd-pe:first-of-type, .vgd-card > .vgd-di:first-of-type { margin-top: 8px; }
-        .vgd-pa { width: 36px; height: 36px; border-radius: 50%; background: #FCE7F3; color: #C33A6E; display: flex; align-items: center; justify-content: center; font-weight: 900; flex-shrink: 0; }
+        .vgd-pa { width: 36px; height: 36px; border-radius: 50%; background: #FCE7F3; color: #C33A6E; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
         .vgd-pt, .vgd-dt { flex: 1; min-width: 0; }
         .vgd-pt b, .vgd-dt b { display: block; font-size: 13.5px; }
         .vgd-pt small, .vgd-dt small { display: block; font-size: 12px; color: #9A8E94; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .vgd-dt small { white-space: normal; }
         .vgd-pv { text-align: right; flex-shrink: 0; } .vgd-pv b { display: block; font-size: 13.5px; } .vgd-pv small { font-size: 13px; color: #9A8E94; }
-        .vgd-pill { font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
+        .vgd-pill { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
         .vgd-pill.ok { background: #DCFCE7; color: #15803D; } .vgd-pill.rd { background: #FEE2E2; color: #B91C1C; } .vgd-pill.bl { background: #DBEAFE; color: #1D4ED8; }
         .vgd-pill.am { background: #FEF3C7; color: #B45309; } .vgd-pill.cz { background: #F3F4F6; color: #6B7280; }
         .vgd-vt { border: none; background: none; font: 800 12.5px var(--font-base); color: #C33A6E; cursor: pointer; }
         .vgd-de { width: 36px; height: 36px; border-radius: 10px; background: #FFF6F9; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-        .vgd-db { font-size: 12.5px; font-weight: 800; color: #C33A6E; white-space: nowrap; }
+        .vgd-db { font-size: 12.5px; font-weight: 700; color: #C33A6E; white-space: nowrap; }
         .vgd-vazio { margin: 14px 0 4px; font-size: 13px; color: #9A8E94; }
         .vgd-pe:hover b, .vgd-di:hover .vgd-db { color: #C33A6E; }
         /* 08/10 · 3.21: no padrão do guia */

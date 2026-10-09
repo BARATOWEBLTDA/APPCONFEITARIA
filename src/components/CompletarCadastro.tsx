@@ -72,11 +72,11 @@ export default function CompletarCadastro({ user, nomeInicial, onPronto }: { use
         .ccad { position: fixed; inset: 0; z-index: 4000; overflow-y: auto; background: linear-gradient(180deg, #FCE7F3 0, #FAF7F8 240px); font-family: var(--font-base); color: #2C1219; }
         .ccad-in { max-width: 420px; margin: 0 auto; padding: calc(40px + env(safe-area-inset-top, 0px)) 20px calc(28px + env(safe-area-inset-bottom, 0px)); }
         .ccad-top { text-align: center; }
-        .ccad-ok { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 800; color: #15803D; background: #DCFCE7; padding: 5px 10px; border-radius: 999px; }
+        .ccad-ok { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #15803D; background: #DCFCE7; padding: 5px 10px; border-radius: 999px; }
         .ccad-av { width: 78px; height: 78px; border-radius: 50%; margin: 18px auto 0; overflow: hidden; display: flex; align-items: center; justify-content: center;
-          background: linear-gradient(135deg, #F9A8D4, #E85A8C); color: #fff; font-weight: 900; font-size: 30px; border: 4px solid #fff; box-shadow: 0 8px 22px rgba(232,90,140,.3); }
+          background: linear-gradient(135deg, #F9A8D4, #E85A8C); color: #fff; font-weight: 700; font-size: 30px; border: 4px solid #fff; box-shadow: 0 8px 22px rgba(232,90,140,.3); }
         .ccad-av img { width: 100%; height: 100%; object-fit: cover; }
-        .ccad h1 { text-align: center; font-size: 22px; font-weight: 900; margin: 14px 0 0; letter-spacing: -.02em; }
+        .ccad h1 { text-align: center; font-size: 22px; font-weight: 800; margin: 14px 0 0; letter-spacing: -.02em; }
         .ccad-sub { text-align: center; font-size: 13.5px; color: #6B5D64; margin: 6px auto 4px; line-height: 1.45; max-width: 320px; }
         .ccad-l { display: block; font-size: 13px; font-weight: 600; color: #4B3A42; margin: 16px 0 6px; }
         .ccad-in-f { width: 100%; box-sizing: border-box; min-height: 46px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 12px 14px; font-family: inherit; font-size: 16px; background: #fff; color: #2C1219; }
@@ -87,7 +87,7 @@ export default function CompletarCadastro({ user, nomeInicial, onPronto }: { use
         .ccad-wrap--tel .ccad-in-f { padding-left: 42px; }
         .ccad-dica { font-size: 13px; color: #9A8E94; margin: 5px 0 0; }
         .ccad-erro { margin: 14px 0 0; font-size: 13px; color: #B91C1C; font-weight: 700; }
-        .ccad-cta { display: block; width: 100%; margin-top: 22px; border: none; border-radius: 12px; padding: 15px; font-family: inherit; font-size: 15.5px; font-weight: 800; color: #fff; background: #E85A8C; box-shadow: 0 3px 0 #C33A6E; cursor: pointer; }
+        .ccad-cta { display: block; width: 100%; margin-top: 22px; border: none; border-radius: 12px; padding: 15px; font-family: inherit; font-size: 15.5px; font-weight: 700; color: #fff; background: #E85A8C; box-shadow: 0 3px 0 #C33A6E; cursor: pointer; }
         .ccad-cta:disabled { background: #F3B6CB; box-shadow: none; cursor: default; }
         .ccad-dep { text-align: center; margin: 12px 0 0; font-size: 12.5px; color: #9A8E94; }
       `}</style>

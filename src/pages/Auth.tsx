@@ -862,7 +862,7 @@ export default function Auth() {
           box-shadow: 0 6px 18px rgba(60, 15, 40, 0.28);
         }
         .auth-topbar-login:active { transform: scale(0.97); }
-        .auth-topbar-login b { font-weight: 800; }
+        .auth-topbar-login b { font-weight: 700; }
         .fade-overlay { position: fixed; inset: 0; z-index: 100; background: var(--bg-card); opacity: 0; pointer-events: none; transition: opacity 0.7s ease; }
         .fade-overlay.fade-in { opacity: 1; pointer-events: all; }
         .auth-bg {
@@ -903,7 +903,7 @@ export default function Auth() {
         @media (min-width: 900px) {
           .auth-text-hdr { display: block; }
         }
-        .auth-h2 { font-size: 22px; font-weight: 900; color: #2C1219; margin: 0 0 2px; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* guia: título da tela 22px */
+        .auth-h2 { font-size: 22px; font-weight: 800; color: #2C1219; margin: 0 0 2px; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* guia: título da tela 22px */
         .auth-p { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .auth-form { display: flex; flex-direction: column; gap: 1rem; }
         .field { display: flex; flex-direction: column; gap: 0.35rem; }
@@ -941,7 +941,7 @@ export default function Auth() {
         .forgot-link:hover { text-decoration: underline; }
         .auth-error { background: #fff1f2; border: 1px solid #fecdd3; color: var(--error); border-radius: var(--radius-sm); padding: 0.6rem 0.9rem; font-size: var(--font-button); }
         .cadastro-link-wrap { text-align: center; font-size: var(--font-button); color: var(--text-secondary); }
-        .cadastro-link { background: none; border: none; color: var(--primary); font-weight: var(--fw-semibold); cursor: pointer; font-family: inherit; font-size: var(--font-button); text-decoration: underline; -webkit-tap-highlight-color: transparent;  padding: 0 4px; min-height: 44px; font-weight: 800; color: #C33A6E; }
+        .cadastro-link { background: none; border: none; color: var(--primary); font-weight: var(--fw-semibold); cursor: pointer; font-family: inherit; font-size: var(--font-button); text-decoration: underline; -webkit-tap-highlight-color: transparent;  padding: 0 4px; min-height: 44px; font-weight: 700; color: #C33A6E; }
         .spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .auth-divider { display: flex; align-items: center; gap: 0.75rem; color: var(--text-muted); font-size: var(--font-helper); }
@@ -976,7 +976,7 @@ export default function Auth() {
           color: #FCE0E9;
           display: flex; align-items: center; justify-content: center;
           font-size: 18px;
-          font-weight: 900;
+          font-weight: 700;
           flex-shrink: 0;
           overflow: hidden;
           border: 2px solid #fff;
@@ -1002,7 +1002,7 @@ export default function Auth() {
           margin-top: 2px;
           line-height: 1.35;
         }
-        .ref-banner-desc b { font-weight: 800; }
+        .ref-banner-desc b { font-weight: 700; }
         .cad-field-wrap { display: flex; flex-direction: column; gap: 0.3rem; }
         .cad-field { position: relative; display: flex; align-items: center; height: 48px; border: 1.5px solid var(--border); border-radius: 12px; overflow: hidden; background: #fff; transition: border-color 0.2s; }
         .cad-lb { display: block; cursor: pointer; font-size: 13px; font-weight: 700; color: #4B3A42; margin: 0 0 5px 2px; }
@@ -1173,7 +1173,7 @@ export default function Auth() {
           .auth-marca-in { position: sticky; top: 0; height: min(100%, calc(100vh - 48px)); height: min(100%, calc(100dvh - 48px)); display: flex; flex-direction: column; align-items: center; justify-content: center; }
           .auth-marca-masc { display: block; width: 170px; height: auto; filter: drop-shadow(0 12px 16px rgba(80,10,40,.3)); }
           .auth-marca-nome { display: block; width: 210px; max-width: 100%; height: auto; margin-top: 14px; }
-          .auth-marca-frase { font-size: 24px; font-weight: 900; margin: 22px 0 6px; letter-spacing: -0.01em; } /* guia: 24px, o maior da escala */
+          .auth-marca-frase { font-size: 24px; font-weight: 800; margin: 22px 0 6px; letter-spacing: -0.01em; } /* guia: 24px, o maior da escala */
           .auth-marca-sub { font-size: 15px; opacity: .92; margin: 0; }
           .auth-marca-lista { display: none; }
           .auth-card { margin: 0 !important; padding: 48px 44px !important; box-shadow: none !important; border-radius: 0 28px 28px 0 !important; display: flex; flex-direction: column; justify-content: center; animation: none; }

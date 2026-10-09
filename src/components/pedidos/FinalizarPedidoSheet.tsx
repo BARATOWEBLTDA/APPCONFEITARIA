@@ -174,7 +174,7 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
         @keyframes fpsSobe { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
         .fps-alca { display: block; width: 40px; height: 4px; border-radius: 9px; background: #E5DDE1; margin: 0 auto 10px; }
         .fps-hd { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
-        .fps-t { display: block; font-size: 19px; font-weight: 900; }
+        .fps-t { display: block; font-size: 19px; font-weight: 800; }
         .fps-s { display: block; font-size: 13px; color: #6B5D64; margin-top: 2px; }
         .fps-x { width: 34px; height: 34px; border-radius: 50%; border: none; background: #F5F0F2; color: #6B5D64; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
         .fps-res { background: #FAF7F8; border-radius: 12px; padding: 8px 12px; }
@@ -182,12 +182,12 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
         .fps-res b { font-weight: 700; color: #2C1219; white-space: nowrap; } .fps-res s { color: #9A8E94; font-weight: 600; margin-right: 4px; }
         .fps-res .ok { color: #15803D; } .fps-res .aj span, .fps-res .aj b { color: #C33A6E; }
         .fps-res .tt { border-top: 1px solid #F0EBED; margin-top: 4px; padding-top: 8px; font-size: 15px; }
-        .fps-aj-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; border: none; background: none; padding: 4px 0; font-family: inherit; font-size: 13.5px; font-weight: 800; color: #C33A6E; cursor: pointer; }
+        .fps-aj-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; border: none; background: none; padding: 4px 0; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #C33A6E; cursor: pointer; }
         .fps-aj { margin-top: 12px; border: 1.5px solid #F3C9DA; border-radius: 14px; padding: 12px; background: #FFF9FB; }
         .fps-aj-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .fps-aj-h b { font-size: 14px; } .fps-aj-h button { border: none; background: none; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #9A8E94; cursor: pointer; }
         .fps-seg { display: flex; background: #F5F0F2; border-radius: 10px; padding: 3px; margin-bottom: 8px; }
-        .fps-seg button { flex: 1; border: none; background: none; border-radius: 8px; padding: 8px; font-family: inherit; font-size: 13.5px; font-weight: 800; color: #6B5D64; cursor: pointer; }
+        .fps-seg button { flex: 1; border: none; background: none; border-radius: 8px; padding: 8px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #6B5D64; cursor: pointer; }
         .fps-seg button.on { background: #fff; color: #2C1219; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
         .fps-lb { display: block; font-size: 13px; font-weight: 700; color: #4B3A42; margin: 14px 0 6px; }
         .fps-aj .fps-lb { margin-top: 10px; }
@@ -204,8 +204,8 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
         .fps-prev { margin-top: 14px; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 12px; padding: 10px 12px; }
         .fps-prev b { display: block; font-size: 13.5px; color: #92400E; } .fps-prev small { font-size: 12px; color: #92400E; }
         .fps-prev--ok { background: #F0FDF4; border-color: #BBF7D0; } .fps-prev--ok b, .fps-prev--ok small { color: #166534; }
-        .fps-erro { margin: 10px 0 0; font-size: 13px; font-weight: 800; color: #DC2626; }
-        .fps-cta { margin-top: 14px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 14px; padding: 15px; background: #16A34A; color: #fff; font-family: inherit; font-size: 15.5px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(22,163,74,.3); }
+        .fps-erro { margin: 10px 0 0; font-size: 13px; font-weight: 700; color: #DC2626; }
+        .fps-cta { margin-top: 14px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 14px; padding: 15px; background: #16A34A; color: #fff; font-family: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(22,163,74,.3); }
         .fps-sec { margin-top: 6px; width: 100%; border: none; background: none; padding: 12px; font-family: inherit; font-size: 14px; font-weight: 700; color: #6B5D64; cursor: pointer; }
         .fps-cta:disabled, .fps-sec:disabled { opacity: .6; cursor: default; }
       `}</style>

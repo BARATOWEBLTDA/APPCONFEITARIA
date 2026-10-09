@@ -65,8 +65,8 @@ export default function MinhaAssinatura() {
         .mas-cr { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: rgba(249,168,212,.2); border: 1px solid rgba(249,168,212,.35); flex-shrink: 0; }
         .mas-cr img { width: 30px; height: 30px; object-fit: contain; }
         .mas-tt { min-width: 0; } .mas-tt b { font-size: 17px; }
-        .mas-k { font-size: 12px; font-weight: 900; letter-spacing: .16em; margin: 0; background: linear-gradient(90deg, #F9A8D4, #C4B5FD, #93C5FD); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .mas-at { margin-left: auto; font-size: 12px; font-weight: 800; color: #86EFAC; background: rgba(134,239,172,.12); padding: 4px 8px; border-radius: 999px; white-space: nowrap; }
+        .mas-k { font-size: 12px; font-weight: 700; letter-spacing: .16em; margin: 0; background: linear-gradient(90deg, #F9A8D4, #C4B5FD, #93C5FD); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .mas-at { margin-left: auto; font-size: 12px; font-weight: 700; color: #86EFAC; background: rgba(134,239,172,.12); padding: 4px 8px; border-radius: 999px; white-space: nowrap; }
         .mas-g { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
         .mas-g div { background: rgba(255,255,255,.07); border-radius: 12px; padding: 10px; }
         .mas-g small { display: block; font-size: 12px; color: rgba(255,255,255,.6); } .mas-g b { font-size: 14px; }

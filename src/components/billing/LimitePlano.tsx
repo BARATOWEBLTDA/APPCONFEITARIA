@@ -30,10 +30,10 @@ export default function LimitePlano({ tipo, limite, onClose }: { tipo: "produtos
         @keyframes limUp { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
         .lim-ic { position: relative; width: 64px; height: 64px; margin: 0 auto; border-radius: 18px; background: #FFF1F6; display: flex; align-items: center; justify-content: center; font-size: 30px; }
         .lim-ic img { position: absolute; right: -8px; top: -10px; width: 26px; height: 26px; object-fit: contain; }
-        .lim-t { display: block; font-size: 19px; font-weight: 900; margin-top: 14px; letter-spacing: -.01em; }
+        .lim-t { display: block; font-size: 19px; font-weight: 800; margin-top: 14px; letter-spacing: -.01em; }
         .lim-s { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 8px 4px 0; }
         .lim-ok { font-size: 12.5px; color: #15803D; font-weight: 700; margin: 12px 0 0; }
-        .lim-cta { display: block; width: 100%; margin-top: 18px; border: none; border-radius: 12px; padding: 14px; font-family: inherit; font-size: 15px; font-weight: 800; color: #fff; background: #E85A8C; box-shadow: 0 3px 0 #C33A6E; cursor: pointer; }
+        .lim-cta { display: block; width: 100%; margin-top: 18px; border: none; border-radius: 12px; padding: 14px; font-family: inherit; font-size: 15px; font-weight: 700; color: #fff; background: #E85A8C; box-shadow: 0 3px 0 #C33A6E; cursor: pointer; }
         .lim-x { display: block; width: 100%; margin-top: 8px; padding: 10px; border: none; background: none; font-family: inherit; font-size: 13px; font-weight: 600; color: #9A8E94; cursor: pointer; }
       `}</style>
     </div>

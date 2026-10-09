@@ -74,7 +74,7 @@ export default function TipoProdutoTela({ onEscolher, onFechar }: Props) {
         .tpp-top { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px; }
         .tpp-vz { width: 44px; flex: none; }
         .tpp-tt { flex: 1; min-width: 0; text-align: center; }
-        .tpp-tt b { display: block; font-size: 16px; font-weight: 800; }
+        .tpp-tt b { display: block; font-size: 16px; font-weight: 700; }
         .tpp-tt small { display: block; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
         .tpp-barra { display: flex; gap: 4px; padding: 0 16px 12px; border-bottom: 1px solid var(--ui-linha); }
         .tpp-barra i { flex: 1; height: 6px; border-radius: 3px; background: var(--ui-borda); }
@@ -92,7 +92,7 @@ export default function TipoProdutoTela({ onEscolher, onFechar }: Props) {
         .tpp-emo { display: flex; }
         .tpp-ck { position: absolute; top: 8px; right: 8px; z-index: 1; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: var(--ui-rosa); color: #fff; }
         .tpp-tx { display: flex; flex-direction: column; padding: 10px 12px 12px; }
-        .tpp-tx b { font-size: 15px; font-weight: 800; color: var(--ui-texto); }
+        .tpp-tx b { font-size: 15px; font-weight: 700; color: var(--ui-texto); }
         .tpp-card.sel .tpp-tx b { color: var(--ui-rosa-escuro); }
         .tpp-tx small { margin-top: 2px; font-size: 13px; line-height: 1.35; color: var(--ui-texto-2); }
         .tpp-dica { display: flex; gap: 8px; margin: 16px 0 0; padding: 12px; border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 13.5px; line-height: 1.45; color: var(--ui-texto); }

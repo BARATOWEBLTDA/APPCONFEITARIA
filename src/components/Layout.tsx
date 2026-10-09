@@ -314,7 +314,7 @@ export default function Layout() {
         .sidebar-avatar:has(.sidebar-avatar-placeholder) { background: #993556; }
         .sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .sidebar-avatar-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-        .sidebar-avatar-inicial { font-family: var(--font-base); font-size: 40px; font-weight: 900; color: #FCE0E9; letter-spacing: -0.02em; line-height: 1; }
+        .sidebar-avatar-inicial { font-family: var(--font-base); font-size: 40px; font-weight: 700; color: #FCE0E9; letter-spacing: -0.02em; line-height: 1; }
 
         .sidebar-avatar-container {
           position: relative;
@@ -563,7 +563,7 @@ export default function Layout() {
             letter-spacing: 0.01em;
             line-height: 1;
           }
-          .bn-item--active .bn-label { font-weight: 800; }
+          .bn-item--active .bn-label { font-weight: 700; }
 
 
           /* ── Gestão Drawer ── */

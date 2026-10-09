@@ -74,19 +74,19 @@ export default function DataNascimentoSheet({ valor, onEscolher, onClose }: { va
         @media (min-width: 768px) { .dns { border-radius: 22px; } }
         @keyframes dnsSobe { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
         .dns-alca { display: block; width: 40px; height: 4px; border-radius: 9px; background: #E5DDE1; margin: 0 auto 12px; }
-        .dns-hd b { display: block; font-size: 18px; font-weight: 900; } .dns-hd small { font-size: 13px; color: #6B5D64; }
+        .dns-hd b { display: block; font-size: 18px; font-weight: 700; } .dns-hd small { font-size: 13px; color: #6B5D64; }
         .dns-mes { display: flex; align-items: center; gap: 8px; margin: 14px 0 8px; }
         .dns-mes button { width: 38px; height: 40px; flex-shrink: 0; border: none; border-radius: 11px; background: #F5F0F2; font-size: 20px; color: #2C1219; cursor: pointer; font-family: inherit; }
         .dns-mes button:disabled { opacity: .35; cursor: default; }
-        .dns-mes select { flex: 1; min-width: 0; height: 40px; border: 1.5px solid #EDE6E9; border-radius: 11px; background: #fff; font-family: inherit; font-size: 16px; font-weight: 800; color: #2C1219; padding: 0 8px; }
+        .dns-mes select { flex: 1; min-width: 0; height: 40px; border: 1.5px solid #EDE6E9; border-radius: 11px; background: #fff; font-family: inherit; font-size: 16px; font-weight: 700; color: #2C1219; padding: 0 8px; }
         .dns-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
-        .dns-wd { height: 22px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #9A8E94; }
+        .dns-wd { height: 22px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #9A8E94; }
         .dns-d { height: 40px; border: none; border-radius: 11px; background: none; font-family: inherit; font-size: 14.5px; font-weight: 700; color: #2C1219; cursor: pointer; }
         .dns-d:disabled { color: #D6CBD0; cursor: default; }
         .dns-d.sel { background: #E85A8C; color: #fff; box-shadow: 0 4px 10px rgba(232,90,140,.35); }
         .dns-bts { display: flex; gap: 8px; margin-top: 14px; }
-        .dns-limpar { border: 1.5px solid #EAE3E6; background: #fff; border-radius: 12px; padding: 0 14px; font-family: inherit; font-weight: 800; font-size: 14px; color: #6B5D64; cursor: pointer; }
-        .dns-ok { flex: 1; border: none; border-radius: 12px; padding: 14px; background: #E85A8C; color: #fff; font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 3px 0 #C33A6E; }
+        .dns-limpar { border: 1.5px solid #EAE3E6; background: #fff; border-radius: 12px; padding: 0 14px; font-family: inherit; font-weight: 700; font-size: 14px; color: #6B5D64; cursor: pointer; }
+        .dns-ok { flex: 1; border: none; border-radius: 12px; padding: 14px; background: #E85A8C; color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 0 #C33A6E; }
         .dns-ok:disabled { background: #F3B6CB; box-shadow: none; cursor: default; }
       `}</style>
     </div>

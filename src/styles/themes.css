@@ -182,6 +182,11 @@
   --fw-semibold: 600;
   --fw-bold:     700;
   --fw-black:    800;
+  /* Pesos por papel (09/10): título 800 · valor e nome em lista 700 · rótulo e apoio 500 */
+  --ui-peso-titulo: 800;
+  --ui-peso-valor:  700;
+  --ui-peso-nome:   700;
+  --ui-peso-apoio:  500;
 
   --lh-tight:    1.2;
   --lh-normal:   1.4;

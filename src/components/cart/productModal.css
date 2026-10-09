@@ -10,7 +10,7 @@
 /* barra de cima (aparece ao rolar) */
 .pm-barra { position: absolute; z-index: 6; top: 0; left: 0; right: 0; display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 8px; min-height: 56px; padding: calc(env(safe-area-inset-top, 0px) + 6px) 8px 6px; background: #fff; box-shadow: 0 1px 0 #EDE6E9; opacity: 0; transform: translateY(-100%); transition: opacity .18s, transform .18s; pointer-events: none; }
 .pm-barra.on, .pm--sem-foto .pm-barra { opacity: 1; transform: none; pointer-events: auto; }
-.pm-barra b { font-size: 16px; font-weight: 800; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pm-barra b { font-size: 16px; font-weight: 700; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pm-bt { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: 0; border: 0; border-radius: 12px; background: none; color: #2C1219; cursor: pointer; }
 .pm-bt:hover { background: #F3EEF0; }
 .pm-bt-x { visibility: hidden; }
@@ -33,11 +33,11 @@
 .pm-info > p { margin: 6px 0 0; font-size: 15px; line-height: 1.5; color: #6B5D64; white-space: pre-line; }
 .pm-preco { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; margin-top: 12px; }
 .pm-preco s { font-size: 14px; color: #9A8E94; }
-.pm-preco strong { font-size: 18px; font-weight: 800; }
+.pm-preco strong { font-size: 18px; font-weight: 700; }
 .pm-preco em { font-style: normal; font-size: 14px; color: #6B5D64; }
 .pm-aviso { display: flex; gap: 10px; margin-top: 14px; padding: 12px; border-radius: 12px; background: #F7F4F5; }
 .pm-aviso svg { flex: none; margin-top: 1px; color: #6B5D64; }
-.pm-aviso b { display: block; font-size: 14px; font-weight: 800; }
+.pm-aviso b { display: block; font-size: 14px; font-weight: 700; }
 .pm-aviso small { display: block; margin-top: 2px; font-size: 13px; color: #6B5D64; }
 
 /* grupos */
@@ -47,7 +47,7 @@
 .pm-g-cab small { display: block; margin-top: 2px; font-size: 13px; color: #6B5D64; }
 .pm-g-dir { display: flex; align-items: center; gap: 8px; flex: none; }
 .pm-g-dir em { font-style: normal; font-size: 13px; font-weight: 700; color: #6B5D64; }
-.pm-obr { padding: 3px 8px; border-radius: 6px; background: #2C1219; color: #fff; font-size: 12px; font-weight: 800; font-style: normal; }
+.pm-obr { padding: 3px 8px; border-radius: 6px; background: #2C1219; color: #fff; font-size: 12px; font-weight: 700; font-style: normal; }
 .pm-ok { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: #16a34a; color: #fff; }
 .pm-g.falta .pm-g-cab { background: #FEE2E2; box-shadow: inset 4px 0 0 #DC2626; }
 .pm-g.falta .pm-g-cab small { color: #B91C1C; font-weight: 700; }
@@ -57,7 +57,7 @@
 .pm-op:disabled { opacity: .45; cursor: default; }
 .pm-op-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .pm-op-tx b { font-size: 15px; font-weight: 600; }
-.pm-op[aria-checked="true"] .pm-op-tx b { font-weight: 800; }
+.pm-op[aria-checked="true"] .pm-op-tx b { font-weight: 700; }
 .pm-op-tx small { font-size: 13px; color: #6B5D64; }
 .pm-op-p { flex: none; font-size: 14px; font-weight: 700; }
 .pm-op-p.gratis { color: #15803D; }
@@ -84,11 +84,11 @@
 .pm-qtd { flex: none; display: flex; align-items: center; height: 52px; border: 1px solid #E5DDE1; border-radius: 12px; }
 .pm-qtd button { display: flex; align-items: center; justify-content: center; width: 44px; height: 50px; margin: 0; border: 0; background: none; color: #2C1219; cursor: pointer; }
 .pm-qtd button:disabled { color: #CFC3C9 !important; cursor: default; }
-.pm-qtd b { min-width: 28px; padding: 0 2px; text-align: center; font-size: 16px; font-weight: 800; white-space: nowrap; }
-.pm-add { flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; min-height: 52px; margin: 0; padding: 0 18px; border: 0; border-radius: 12px; color: #fff; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; }
+.pm-qtd b { min-width: 28px; padding: 0 2px; text-align: center; font-size: 16px; font-weight: 700; white-space: nowrap; }
+.pm-add { flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; min-height: 52px; margin: 0; padding: 0 18px; border: 0; border-radius: 12px; color: #fff; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
 .pm-add:hover { filter: brightness(.96); }
 .pm-add span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pm-add strong { flex: none; font-weight: 800; }
+.pm-add strong { flex: none; font-weight: 700; }
 .pm-add.treme { animation: pmTreme .35s; }
 @keyframes pmTreme { 20%, 60% { transform: translateX(-4px); } 40%, 80% { transform: translateX(4px); } }
 @media (prefers-reduced-motion: reduce) { .pm-add.treme, .pm, .pm-veu { animation: none; } }

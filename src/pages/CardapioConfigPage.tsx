@@ -1401,7 +1401,7 @@ export default function CardapioConfigPage() {
           background: #fff;
           font-family: 'Geist', sans-serif;
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 700;
           color: #6B5D64;
           cursor: pointer;
           transition: all 0.15s;

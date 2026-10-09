@@ -1,7 +1,7 @@
 /* Ficha técnica · lista (10.2). Base em clientes.css (cl9-*). */
 .fl-alerta { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 72px; margin: 0 0 12px; padding: 12px 14px; border: 0; border-radius: var(--ui-raio-cartao); background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); text-align: left; }
 .fl-alerta > span:nth-child(2) { flex: 1; min-width: 0; }
-.fl-alerta b { display: block; font-size: 15px; font-weight: 800; }
+.fl-alerta b { display: block; font-size: 15px; font-weight: 700; }
 .fl-alerta small { display: block; font-size: 13px; color: var(--ui-vermelho-escuro); opacity: .85; }
 .fl-alerta-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: #fff; }
 .fl-cab { display: none; }
@@ -10,16 +10,16 @@
 .fl-th { grid-area: t; flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; overflow: hidden; border-radius: 12px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
 .fl-th img { width: 100%; height: 100%; object-fit: cover; }
 .fl-tx { grid-area: n; min-width: 0; }
-.fl-tx b, .fl-lucro b { display: block; font-size: 15px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fl-tx b, .fl-lucro b { display: block; font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fl-tx small, .fl-lucro small, .fl-col small { display: block; font-size: 13px; font-weight: 400; color: var(--ui-texto-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fl-lucro { grid-area: l; text-align: right; }
 .fl-lucro--ok b { color: var(--ui-verde); }
 .fl-lucro--atencao b { color: var(--ui-laranja); }
 .fl-lucro--neg b { color: var(--ui-vermelho-escuro); }
-.fl-montar { grid-area: l; font-size: 14px; font-weight: 800; color: var(--ui-rosa-escuro); }
+.fl-montar { grid-area: l; font-size: 14px; font-weight: 700; color: var(--ui-rosa-escuro); }
 .fl-l > svg { grid-area: s; color: var(--ui-texto-3); }
 .fl-pc, .fl-pci { display: none; }
-.fl-pill { display: inline-flex; align-items: center; min-height: 28px; padding: 0 10px; border-radius: 999px; font-size: 13px; font-style: normal; font-weight: 800; }
+.fl-pill { display: inline-flex; align-items: center; min-height: 28px; padding: 0 10px; border-radius: 999px; font-size: 13px; font-style: normal; font-weight: 700; }
 .fl-pill--ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
 .fl-pill--atencao { background: var(--ui-laranja-fundo); color: #92400E; }
 .fl-pill--neg { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); }

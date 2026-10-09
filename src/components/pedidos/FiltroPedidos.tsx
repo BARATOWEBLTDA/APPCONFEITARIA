@@ -93,12 +93,12 @@ export default function FiltroLateral({ statusSelecionados, setStatusSelecionado
         @keyframes flEntra { from { transform: translateX(100%); } to { transform: none; } } @keyframes flSai { to { transform: translateX(100%); } }
         @keyframes flFundo { from { background: rgba(45,31,38,0); } } @keyframes flFundoSai { to { background: rgba(45,31,38,0); } }
         .fl-h { display: flex; justify-content: space-between; align-items: center; padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 12px; border-bottom: 1px solid #F3EEF1; }
-        .fl-h b { font-size: 19px; font-weight: 900; color: #2C1219; }
+        .fl-h b { font-size: 19px; font-weight: 800; color: #2C1219; }
         .fl-x { width: 36px; height: 36px; border-radius: 10px; border: none; background: #F5F0F2; color: #4B3A42; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .fl-b { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 4px 16px 14px; }
         .fl-sec { display: flex; justify-content: space-between; align-items: baseline; margin: 16px 2px 7px; }
         .fl-sec b { font-size: 12px; font-weight: 800; letter-spacing: .06em; color: #9A8E94; }
-        .fl-lk { border: none; background: none; padding: 0; font-family: inherit; font-size: 12.5px; font-weight: 800; color: #C33A6E; cursor: pointer; }
+        .fl-lk { border: none; background: none; padding: 0; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #C33A6E; cursor: pointer; }
         .fl-grp { border: 1px solid #F0EBED; border-radius: 14px; overflow: hidden; }
         .fl-ln { display: flex; align-items: center; gap: 10px; width: 100%; border: none; border-top: 1px solid #F5F0F2; background: #fff; padding: 12px; font-family: inherit; font-size: 14.5px; color: #2C1219; text-align: left; cursor: pointer; }
         .fl-grp > .fl-ln:first-child, .fl-grp > div:first-child > .fl-ln { border-top: none; }
@@ -114,8 +114,8 @@ export default function FiltroLateral({ statusSelecionados, setStatusSelecionado
         .fl-per small { display: block; font-size: 12px; font-weight: 700; color: #8A7E84; margin-bottom: 4px; }
         .fl-per .cdata { height: 42px; padding: 0 9px; font-size: 13px; gap: 6px; } /* De/Até lado a lado, sem quebrar */
         .fl-f { display: flex; align-items: center; gap: 10px; padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid #F3EEF1; }
-        .fl-limpar { border: none; background: none; padding: 10px 6px; font-family: inherit; font-size: 14.5px; font-weight: 800; color: #9A8E94; cursor: pointer; }
-        .fl-ver { flex: 1; border: none; border-radius: 13px; padding: 14px; background: #E85A8C; color: #fff; font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 3px 0 #C33A6E; }
+        .fl-limpar { border: none; background: none; padding: 10px 6px; font-family: inherit; font-size: 14.5px; font-weight: 700; color: #9A8E94; cursor: pointer; }
+        .fl-ver { flex: 1; border: none; border-radius: 13px; padding: 14px; background: #E85A8C; color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 0 #C33A6E; }
       `}</style>
     </div>, document.body)
 }

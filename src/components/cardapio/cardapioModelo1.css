@@ -25,7 +25,7 @@
 .cm1-content { position: relative; z-index: 2; margin-top: -24px; padding: 20px 16px 4px; border-radius: 24px 24px 0 0; }
 .cm1-logo { position: absolute; z-index: 6; top: -60px; right: 16px; width: 106px; height: 106px; padding: 2px; border: 4px solid; border-radius: 50%; background: #fff; box-shadow: 0 0 0 4px var(--cm1-fundo, #F7F4F5), 0 6px 18px rgba(44,18,25,.18); overflow: hidden; }
 .cm1-logo img, .cm1-logo span { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; font-size: 36px; font-weight: 800; }
-.cm1-nome { display: flex; align-items: center; margin: 0; padding-right: 118px; font-size: 22px; font-weight: 800; line-height: 1.25; letter-spacing: 0; }
+.cm1-nome { display: flex; align-items: center; margin: 0; padding-right: 118px; font-size: 22px; font-weight: 700; line-height: 1.25; letter-spacing: 0; }
 .cm1-nome .selo-verif { margin-left: 6px; }
 .cm1-descricao { margin: 6px 0 0; font-size: 15px; line-height: 1.45; color: #6B5D64; }
 
@@ -41,7 +41,7 @@
 .cm1-endereco { display: flex; align-items: center; gap: 6px; min-height: 44px; margin: 8px 0 0; font-size: 14px; line-height: 1.4; color: #6B5D64; }
 .cm1-endereco svg { flex: none; }
 .cm1-endereco span { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cm1-endereco button { flex: none; margin: 0; padding: 12px 0 12px 4px; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 800; white-space: nowrap; cursor: pointer; }
+.cm1-endereco button { flex: none; margin: 0; padding: 12px 0 12px 4px; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; }
 
 /* janela do endereço (mapa + Waze + Google Maps) */
 .cm1-mapa-veu { position: fixed; inset: 0; z-index: 999; display: flex; align-items: flex-end; justify-content: center; background: rgba(44,18,25,.5); }
@@ -50,8 +50,8 @@
 .cm1-mapa-end { display: flex; align-items: flex-start; gap: 8px; margin: 0 0 16px; font-size: 15px; line-height: 1.45; color: #2C1219; }
 .cm1-mapa-end svg { flex: none; margin-top: 1px; }
 .cm1-mapa-bts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-.cm1-mapa-bts a { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border-radius: 12px; font-size: 15px; font-weight: 800; text-decoration: none; }
+.cm1-mapa-bts a { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border-radius: 12px; font-size: 15px; font-weight: 700; text-decoration: none; }
 .cm1-mapa-bts img { width: 22px; height: 22px; object-fit: contain; }
 .cm1-mapa-bts .waze { background: #33CCFF; color: #fff; }
 .cm1-mapa-bts .gmaps { background: #ECF3FF; color: #1A73E8; }
-.cm1-mapa-fechar { width: 100%; min-height: 48px; margin: 0; border: 0; border-radius: 12px; background: #F3EEF0; color: #2C1219; font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer; }
+.cm1-mapa-fechar { width: 100%; min-height: 48px; margin: 0; border: 0; border-radius: 12px; background: #F3EEF0; color: #2C1219; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }

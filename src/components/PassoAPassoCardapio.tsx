@@ -321,7 +321,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           .pap-done-btn {
             padding: 10px;
             font-size: 13px;
-            font-weight: 800;
+            font-weight: 700;
             border-radius: 4px;
             border: none;
             cursor: pointer;
@@ -411,7 +411,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           }
           .pap-share-tag {
             font-size: 12px;
-            font-weight: 800;
+            font-weight: 700;
             color: #86EFAC;
             letter-spacing: 0.06em;
           }
@@ -436,7 +436,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           .pap-share-btn {
             padding: 10px;
             font-size: 13px;
-            font-weight: 800;
+            font-weight: 700;
             border-radius: 4px;
             border: none;
             cursor: pointer;
@@ -575,7 +575,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         }
         .pap-title {
           font-size: 20px;
-          font-weight: 900;
+          font-weight: 800;
           color: #2C1219;
           margin: 0 0 4px;
           letter-spacing: -0.01em;
@@ -594,7 +594,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           border-radius: 10px;
           margin-bottom: 14px;
           font-size: 13px;
-          font-weight: 800;
+          font-weight: 700;
           color: #16a34a;
         }
         .pap-progress-bar {
@@ -647,7 +647,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         }
         .pap-hero-title {
           font-size: 17px;
-          font-weight: 900;
+          font-weight: 800;
           color: #fff;
           margin: 0 0 6px;
           letter-spacing: -0.01em;
@@ -686,12 +686,12 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         .pap-row { display: flex; gap: 8px; margin-top: 10px; }
         .pap-btn-ia, .pap-btn-save {
           flex: 1; height: 42px; border-radius: 10px; cursor: pointer;
-          font-family: inherit; font-size: 13.5px; font-weight: 800;
+          font-family: inherit; font-size: 13.5px; font-weight: 700;
         }
         .pap-btn-ia { background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
         .pap-btn-save { background: #fff; color: #2C1219; border: none; }
         .pap-btn-ia:disabled, .pap-btn-save:disabled { opacity: 0.5; cursor: default; }
-        .pap-aviso { margin: 0 0 10px; padding: 9px 12px; border-radius: 10px; font-size: 12.5px; font-weight: 800; }
+        .pap-aviso { margin: 0 0 10px; padding: 9px 12px; border-radius: 10px; font-size: 12.5px; font-weight: 700; }
         .pap-aviso--ok { background: #DCFCE7; color: #15803D; }
         .pap-aviso--err { background: #FEE2E2; color: #B91C1C; }
 
@@ -742,7 +742,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           width: 22px; height: 22px;
           border-radius: 50%;
           display: flex; align-items: center; justify-content: center;
-          font-size: 12px; font-weight: 800;
+          font-size: 12px; font-weight: 700;
           flex-shrink: 0;
           background: #F5F0F2;
           color: #6B7280;
@@ -763,7 +763,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         }
         .pap-item-tag {
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 700;
           color: #2C1219;
           letter-spacing: 0.06em;
           flex-shrink: 0;

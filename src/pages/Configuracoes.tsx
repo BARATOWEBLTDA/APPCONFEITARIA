@@ -791,7 +791,7 @@ export default function Configuracoes() {
         .cfgp-hero-avatar { width: 60px; height: 60px; border-radius: 50%; flex-shrink: 0; cursor: pointer; position: relative; }
         .cfgp-hero-avatar-inner { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.35); display: flex; align-items: center; justify-content: center; }
         .cfgp-hero-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .cfgp-hero-inicial { font-size: 24px; font-weight: 900; letter-spacing: -0.02em; color: #fff; }
+        .cfgp-hero-inicial { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: #fff; }
         .cfgp-hero-cam { position: absolute; bottom: -2px; right: -2px; width: 24px; height: 24px; border-radius: 50%; background: #993556; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; z-index: 2; }
         .cfgp-hero-info { flex: 1; min-width: 0; }
         .cfgp-hero-nome { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
@@ -813,10 +813,10 @@ export default function Configuracoes() {
         /* Card assinatura */
         .cfgp-sub { padding: 16px 18px; }
         .cfgp-sub-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 12px; }
-        .cfgp-sub-label { font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: #888780; }
+        .cfgp-sub-label { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: #888780; }
         .cfgp-sub-plan { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
-        .cfgp-sub-plan-name { font-size: 20px; font-weight: 900; color: #2C2C2A; letter-spacing: -0.02em; }
-        .cfgp-sub-badge { font-size: 12px; font-weight: 800; padding: 3px 8px; border-radius: 999px; letter-spacing: 0.04em; }
+        .cfgp-sub-plan-name { font-size: 20px; font-weight: 700; color: #2C2C2A; letter-spacing: -0.02em; }
+        .cfgp-sub-badge { font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 999px; letter-spacing: 0.04em; }
         .cfgp-sub-badge--pro { background: #DCFCE7; color: #166534; }
         .cfgp-sub-badge--trial { background: #FEF0DF; color: #854F0B; }
         .cfgp-sub-badge--exp { background: #FEE2E2; color: #B91C1C; }
@@ -834,7 +834,7 @@ export default function Configuracoes() {
           color: #fff;
           border-radius: 12px;
           font-size: 14px;
-          font-weight: 800;
+          font-weight: 700;
           letter-spacing: -0.01em;
           cursor: pointer;
           font-family: var(--font-base) !important;
@@ -853,7 +853,7 @@ export default function Configuracoes() {
         .cfgp-sub-cta--manage:hover { background: #FCE0E9; box-shadow: 0 4px 10px rgba(232, 90, 140, 0.18); }
 
         /* Blocos */
-        .cfgp-block-hdr { padding: 12px 18px 6px; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: #888780; display: flex; justify-content: space-between; align-items: center; }
+        .cfgp-block-hdr { padding: 12px 18px 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: #888780; display: flex; justify-content: space-between; align-items: center; }
         .cfgp-edit-btn { all: unset; cursor: pointer; font-size: 12px; font-weight: 700; color: #E85A8C; letter-spacing: 0.04em; font-family: var(--font-base) !important; transition: color 0.15s ease; }
         .cfgp-edit-btn:hover { color: #C33A6E; }
 
@@ -1111,10 +1111,10 @@ export default function Configuracoes() {
 
         /* Assinatura */
         .cfgd-sub-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; gap: 12px; }
-        .cfgd-sub-label { font-size: 12px; font-weight: 800; color: #6B7280; letter-spacing: 0.05em; }
+        .cfgd-sub-label { font-size: 12px; font-weight: 700; color: #6B7280; letter-spacing: 0.05em; }
         .cfgd-sub-plan { display: flex; align-items: center; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
-        .cfgd-sub-plan-name { font-size: 19px; font-weight: 800; color: #2C1219; }
-        .cfgd-sub-badge { padding: 3px 8px; border-radius: 5px; font-size: 12px; font-weight: 800; letter-spacing: 0.05em; }
+        .cfgd-sub-plan-name { font-size: 19px; font-weight: 700; color: #2C1219; }
+        .cfgd-sub-badge { padding: 3px 8px; border-radius: 5px; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; }
         .cfgd-sub-badge--pro { background: #DCFCE7; color: #15803D; }
         .cfgd-sub-badge--trial { background: #FEF3C7; color: #B45309; }
         .cfgd-sub-badge--exp { background: #FEE2E2; color: #DC2626; }
@@ -1145,7 +1145,7 @@ export default function Configuracoes() {
           background-size: 200% 100%;
           color: #fff;
           border: none; border-radius: 12px;
-          font-size: 13.5px; font-weight: 800;
+          font-size: 13.5px; font-weight: 700;
           cursor: pointer;
           box-shadow: 0 3px 0 #7A1B47, 0 4px 20px rgba(232,90,140,0.35);
           animation: cfgdRoseShift 3.5s linear infinite;
@@ -1470,7 +1470,7 @@ export default function Configuracoes() {
       
         /* Botão "Ativar o PRO": as duas linhas centralizadas, com a coroa junto do título (equilibrado) */
         .sub-cta-txt { display: flex; flex-direction: column; align-items: center; line-height: 1.2; text-align: center; width: 100%; }
-        .sub-cta-txt b { display: inline-flex; align-items: center; gap: 7px; font-size: 15px; font-weight: 800; white-space: nowrap; }
+        .sub-cta-txt b { display: inline-flex; align-items: center; gap: 7px; font-size: 15px; font-weight: 700; white-space: nowrap; }
         .sub-cta-txt b img { width: 18px; height: 18px; object-fit: contain; }
         .sub-cta-txt small { font-size: 12px; font-weight: 600; opacity: .8; white-space: nowrap; margin-top: 3px; }
 `}</style>

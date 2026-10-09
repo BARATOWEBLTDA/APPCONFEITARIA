@@ -109,7 +109,7 @@ export default function InstalarAppCard() {
         .ia-d { margin: 2px 0 0; font-size: 12px; color: #888780; line-height: 1.4; }
         .ia-btn {
           width: 100%; height: 44px; margin-top: 14px; border: none; border-radius: 10px; cursor: pointer;
-          background: #F5F0F2; color: #2C1219; font-family: inherit; font-size: 14px; font-weight: 800;
+          background: #F5F0F2; color: #2C1219; font-family: inherit; font-size: 14px; font-weight: 700;
         }
         .ia-btn:active { transform: scale(0.99); }
         .ia-btn--ghost { background: #F5F0F2; color: #2C1219; }
@@ -118,7 +118,7 @@ export default function InstalarAppCard() {
         .ia-steps li svg { display: inline-block; vertical-align: -3px; margin: 0 2px; } /* Tailwind deixa svg como block */
         .ia-steps i {
           font-style: normal; flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
-          background: #2C1219; color: #fff; font-size: 12px; font-weight: 800;
+          background: #2C1219; color: #fff; font-size: 12px; font-weight: 700;
           display: flex; align-items: center; justify-content: center;
         }
         .ia-warn { margin: 14px 0 0; font-size: 12.5px; color: #4B3A42; line-height: 1.45; background: #FAF7F8; border-radius: 10px; padding: 10px 12px; }

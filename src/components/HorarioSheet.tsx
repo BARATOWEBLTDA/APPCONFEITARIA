@@ -134,7 +134,7 @@ export default function HorarioSheet({ value, onChange, onClose, titulo = 'Horá
           border-bottom: 1px solid #F0EBED;
         }
         .hs-title {
-          font-size: 15px; font-weight: 900; letter-spacing: -0.01em;
+          font-size: 15px; font-weight: 800; letter-spacing: -0.01em;
           color: #2D1F26;
           font-family: var(--font-base) !important;
         }
@@ -165,7 +165,7 @@ export default function HorarioSheet({ value, onChange, onClose, titulo = 'Horá
         .hs-item:hover { background: #FDFAFB; }
         .hs-item--on {
           color: #E85A8C;
-          font-weight: 800;
+          font-weight: 700;
           background: #FDF3F7;
         }
 
@@ -200,7 +200,7 @@ export default function HorarioSheet({ value, onChange, onClose, titulo = 'Horá
           border: 1.5px solid #E5D8DE;
           border-radius: 10px;
           padding: 14px 16px;
-          font-size: 24px; font-weight: 900;
+          font-size: 24px; font-weight: 700;
           font-family: var(--font-base) !important;
           color: #2D1F26;
           text-align: center;
@@ -229,7 +229,7 @@ export default function HorarioSheet({ value, onChange, onClose, titulo = 'Horá
           border-radius: 8px;
           background: #E85A8C;
           color: #fff;
-          font-size: 13.5px; font-weight: 800;
+          font-size: 13.5px; font-weight: 700;
           font-family: var(--font-base) !important;
           cursor: pointer;
           box-shadow: 0 3px 0 #C33A6E;

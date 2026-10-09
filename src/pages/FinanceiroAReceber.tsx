@@ -200,39 +200,39 @@ const CSS = `
   .far-resumo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .far-k { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 10px; min-width: 0; }
   .far-k small { display: block; font-size: 13px; font-weight: 700; color: #9A8E94; }
-  .far-k b { display: block; font-size: clamp(13.5px, 3.9vw, 17px); letter-spacing: -.02em; font-weight: 900; color: #B45309; margin: 3px 0 1px; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .far-k b { display: block; font-size: clamp(13.5px, 3.9vw, 17px); letter-spacing: -.02em; font-weight: 800; color: #B45309; margin: 3px 0 1px; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .far-k i { font-style: normal; font-size: 13px; color: #888780; }
   .far-k--atr { border-color: #FECACA; background: #FFF7F7; } .far-k--atr b { color: #DC2626; }
   .far-carregando { text-align: center; color: #9A8E94; font-size: 14px; padding: 30px 0; }
   .far-vazio { background: #fff; border-radius: 16px; padding: 30px 20px; text-align: center; border: 1px solid #F0EBED; }
   .far-vazio-ic { width: 64px; height: 64px; border-radius: 20px; background: #F0FDF4; color: #16A34A; display: inline-flex; align-items: center; justify-content: center; }
-  .far-vazio b { display: block; font-size: 17px; font-weight: 900; margin-top: 12px; color: #2C1219; }
+  .far-vazio b { display: block; font-size: 17px; font-weight: 700; margin-top: 12px; color: #2C1219; }
   .far-vazio p { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 6px auto 0; max-width: 360px; text-wrap: balance; }
-  .far-gt { margin: 0 0 8px; font-size: 13px; font-weight: 800; letter-spacing: .06em; color: #9A8E94; }
+  .far-gt { margin: 0 0 8px; font-size: 13px; font-weight: 700; letter-spacing: .06em; color: #9A8E94; }
   .far-gt span { color: #6B5D64; }
   .far-lista { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
   .far-it { min-width: 0; background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 14px; }
   .far-it-h { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .far-it-h b { font-size: 14.5px; font-weight: 800; color: #2C1219; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .far-tg { flex-shrink: 0; font-size: 12px; font-weight: 800; color: #92400E; background: #FEF3C7; padding: 3px 8px; border-radius: 7px; }
+  .far-tg { flex-shrink: 0; font-size: 12px; font-weight: 700; color: #92400E; background: #FEF3C7; padding: 3px 8px; border-radius: 7px; }
   .far-tg--atr { color: #991B1B; background: #FEE2E2; }
   .far-it-v { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 6px; }
   .far-it-v small { font-size: 12.5px; color: #888780; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; } /* numa linha só */
-  .far-it-v b { font-size: 15.5px; font-weight: 900; color: #B45309; white-space: nowrap; }
+  .far-it-v b { font-size: 15.5px; font-weight: 700; color: #B45309; white-space: nowrap; }
   .far-bar { height: 6px; border-radius: 9px; background: #F5F0F2; margin-top: 9px; overflow: hidden; }
   .far-bar i { display: block; height: 100%; background: #22C55E; border-radius: 9px; }
   .far-it-a { display: flex; justify-content: space-between; align-items: center; margin-top: 11px; gap: 8px; }
   .far-it-a > span { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: #6B5D64; }
   .far-bts { display: flex; gap: 6px; }
   .far-ver { width: 44px; height: 44px; flex-shrink: 0; border-radius: 10px; border: 1.5px solid #EDE6E9; background: #fff; color: #6B5D64; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-  .far-rec { border: none; border-radius: 10px; padding: 0 16px; height: 44px; background: #16A34A; color: #fff; font-family: inherit; font-weight: 800; font-size: 13.5px; cursor: pointer; }
+  .far-rec { border: none; border-radius: 10px; padding: 0 16px; height: 44px; background: #16A34A; color: #fff; font-family: inherit; font-weight: 700; font-size: 13.5px; cursor: pointer; }
   .far-ov { position: fixed; inset: 0; z-index: 1300; background: rgba(45,31,38,.5); display: flex; align-items: flex-end; justify-content: center; font-family: var(--font-base); }
   @media (min-width: 768px) { .far-ov { align-items: center; } }
   .far-sh { width: 100%; max-width: 460px; background: #fff; border-radius: 22px 22px 0 0; padding: 10px 18px calc(20px + env(safe-area-inset-bottom, 0px)); max-height: 92dvh; overflow-y: auto; color: #2C1219; animation: farSobe .22s ease; }
   @media (min-width: 768px) { .far-sh { border-radius: 22px; } }
   @keyframes farSobe { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
   .far-alca { display: block; width: 40px; height: 4px; border-radius: 9px; background: #E5DDE1; margin: 0 auto 12px; }
-  .far-sh-t { display: block; font-size: 19px; font-weight: 900; }
+  .far-sh-t { display: block; font-size: 19px; font-weight: 800; }
   .far-sh-s { display: block; font-size: 13px; color: #6B5D64; margin: 2px 0 12px; }
   .far-res { background: #FAF7F8; border-radius: 12px; padding: 8px 12px; }
   .far-res div { display: flex; justify-content: space-between; font-size: 13.5px; padding: 4px 0; color: #4B3A42; }
@@ -249,8 +249,8 @@ const CSS = `
   .far-prev { margin-top: 14px; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 12px; padding: 10px 12px; }
   .far-prev b { display: block; font-size: 13.5px; color: #92400E; } .far-prev small { font-size: 12px; color: #92400E; }
   .far-prev--ok { background: #F0FDF4; border-color: #BBF7D0; } .far-prev--ok b, .far-prev--ok small { color: #166534; }
-  .far-erro { margin: 10px 0 0; font-size: 13px; font-weight: 800; color: #DC2626; }
-  .far-cta { margin-top: 16px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 14px; padding: 15px; background: #16A34A; color: #fff; font-family: inherit; font-size: 15.5px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(22,163,74,.3); }
+  .far-erro { margin: 10px 0 0; font-size: 13px; font-weight: 700; color: #DC2626; }
+  .far-cta { margin-top: 16px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 14px; padding: 15px; background: #16A34A; color: #fff; font-family: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(22,163,74,.3); }
   .far-cta:disabled { opacity: .6; cursor: default; }
   .far-toast { position: fixed; left: 50%; bottom: calc(90px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 1400; background: #2C1219; color: #fff; padding: 12px 16px; border-radius: 12px; font-size: 13.5px; font-weight: 700; box-shadow: 0 10px 26px rgba(0,0,0,.25); max-width: calc(100vw - 32px); }
 `;

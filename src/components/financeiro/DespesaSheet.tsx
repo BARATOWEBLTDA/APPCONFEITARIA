@@ -65,7 +65,7 @@ export default function DespesaSheet({ onClose, onSalvo, onContaAPagar, tipo = "
         .dsp { width: 100%; max-width: 460px; background: #fff; border-radius: 22px 22px 0 0; padding: 10px 18px calc(18px + env(safe-area-inset-bottom, 0px)); max-height: 92dvh; overflow-y: auto; color: #2C1219; }
         @media (min-width: 768px) { .dsp { border-radius: 22px; } }
         .dsp-alca { display: block; width: 40px; height: 4px; border-radius: 9px; background: #E5DDE1; margin: 0 auto 12px; }
-        .dsp-t { display: block; font-size: 19px; font-weight: 900; } .dsp-s { display: block; font-size: 13px; color: #6B5D64; margin-top: 2px; }
+        .dsp-t { display: block; font-size: 19px; font-weight: 800; } .dsp-s { display: block; font-size: 13px; color: #6B5D64; margin-top: 2px; }
         .dsp-lb { display: block; font-size: 13px; font-weight: 700; color: #4B3A42; margin: 14px 0 6px; } .dsp-lb em { font-style: normal; font-weight: 500; color: #9A8E94; }
         .dsp-in { display: flex; align-items: center; gap: 6px; border: 1.5px solid #E85A8C; border-radius: 12px; padding: 0 12px; height: 52px; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
         .dsp-in span { font-size: 17px; color: #6B5D64; font-weight: 700; }
@@ -75,7 +75,7 @@ export default function DespesaSheet({ onClose, onSalvo, onContaAPagar, tipo = "
         .dsp-chips button { border: 1.5px solid #EDE6E9; background: #fff; border-radius: 10px; padding: 8px 12px; font-family: inherit; font-size: 13px; font-weight: 700; color: #2C1219; cursor: pointer; }
         .dsp-chips button.on { border-color: #E85A8C; background: #FFF1F6; color: #C33A6E; }
         .dsp-data { margin-top: 8px; width: 100%; min-width: 0; max-width: 100%; -webkit-appearance: none; appearance: none; background: #fff; height: 46px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 0 10px; font-family: inherit; font-size: 15px; box-sizing: border-box; }
-        .dsp-erro { margin: 10px 0 0; font-size: 13px; font-weight: 800; color: #DC2626; }
+        .dsp-erro { margin: 10px 0 0; font-size: 13px; font-weight: 700; color: #DC2626; }
         .dsp-cta { margin-top: 16px; width: 100%; border: none; border-radius: 14px; padding: 15px; background: ${ehEntrada ? "#16A34A" : "#2C1219"}; color: #fff; font-family: inherit; font-size: 15.5px; font-weight: 800; cursor: pointer; }
         .dsp-cta:disabled { opacity: .6; cursor: default; }
         .dsp-link { display: block; width: 100%; margin-top: 8px; border: none; background: none; padding: 10px; font-family: inherit; font-size: 13px; font-weight: 700; color: #C33A6E; cursor: pointer; }

@@ -132,7 +132,7 @@ export default function Notificacoes() {
         .ntf-t { font-size: 13.5px; font-weight: 800; color: #2C1219; margin: 0; line-height: 1.3; flex: 1; min-width: 0; }
         .ntf-badge {
           background: #E85A8C; color: #fff;
-          font-size: 12px; font-weight: 900; letter-spacing: 0.05em;
+          font-size: 12px; font-weight: 700; letter-spacing: 0.05em;
           padding: 2px 7px; border-radius: 4px; flex-shrink: 0;
         }
         .ntf-msg { font-size: 12.5px; color: #6B7280; margin: 0 0 6px; line-height: 1.45; }

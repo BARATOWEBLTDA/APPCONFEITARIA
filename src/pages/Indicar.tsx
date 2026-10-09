@@ -348,7 +348,7 @@ export default function Indicar() {
         }
         .ind-hdr {
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 700;
           letter-spacing: 0.08em;
           color: #888780;
           margin-bottom: 12px;
@@ -450,7 +450,7 @@ export default function Indicar() {
         }
         .ind-contador-num {
           font-size: 48px;
-          font-weight: 900;
+          font-weight: 800;
           color: #993556;
           letter-spacing: -0.03em;
           line-height: 1.1;
@@ -474,7 +474,7 @@ export default function Indicar() {
         }
         .ind-contador-title-zero {
           font-size: 19px;
-          font-weight: 900;
+          font-weight: 800;
           color: #993556;
           letter-spacing: -0.02em;
           margin-bottom: 6px;
@@ -487,13 +487,13 @@ export default function Indicar() {
           line-height: 1.5;
         }
         .ind-contador-desc-zero b {
-          font-weight: 800;
+          font-weight: 700;
         }
 
         /* Roadmap — Opção B (cards grandes com foto) */
         .ind-premios-hdr {
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 700;
           letter-spacing: 0.08em;
           color: #888780;
           margin: 0 4px 10px;
@@ -534,7 +534,7 @@ export default function Indicar() {
           top: 10px;
           left: 10px;
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 700;
           padding: 4px 9px;
           border-radius: 999px;
           letter-spacing: 0.04em;
@@ -554,7 +554,7 @@ export default function Indicar() {
           -webkit-backdrop-filter: blur(6px);
           color: #5F5E5A;
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 700;
           padding: 4px 10px;
           border-radius: 999px;
           letter-spacing: 0.03em;
@@ -596,7 +596,7 @@ export default function Indicar() {
           font-weight: 700;
           color: #888780;
         }
-        .ind-pcard-prog-faltam { color: #993556; font-weight: 800; }
+        .ind-pcard-prog-faltam { color: #993556; font-weight: 700; }
         .ind-pcard-prog-bar { height: 7px; background: #F0EBED; border-radius: 999px; overflow: hidden; }
         .ind-pcard-prog-fill { height: 100%; background: linear-gradient(90deg, #E85A8C 0%, #C33A6E 100%); border-radius: 999px; transition: width 0.4s ease; }
 
@@ -657,13 +657,13 @@ export default function Indicar() {
           background: #993556;
           color: #FCE0E9;
           display: flex; align-items: center; justify-content: center;
-          font-size: 14px; font-weight: 800;
+          font-size: 14px; font-weight: 700;
           flex-shrink: 0;
         }
         .ind-amiga-info { flex: 1; min-width: 0; }
         .ind-amiga-nome { font-size: 13.5px; font-weight: 700; color: #2C2C2A; }
         .ind-amiga-tempo { font-size: 13px; color: #888780; }
-        .ind-amiga-badge { font-size: 12px; font-weight: 800; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+        .ind-amiga-badge { font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
         .ind-amiga-badge--pro { background: #DCFCE7; color: #166534; }
         .ind-amiga-badge--trial { background: #FEF0DF; color: #854F0B; }
 
@@ -676,7 +676,7 @@ export default function Indicar() {
           background: #FCE0E9;
           color: #993556;
           display: flex; align-items: center; justify-content: center;
-          font-size: 12px; font-weight: 900;
+          font-size: 12px; font-weight: 800;
           flex-shrink: 0;
         }
         .ind-passo-txt { font-size: 12.5px; color: #5F5E5A; line-height: 1.5; }

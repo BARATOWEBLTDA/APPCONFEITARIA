@@ -309,7 +309,7 @@ export default function EditarPerfilModal({
           overflow: hidden;
         }
         .epm-avatar-inner img { width: 100%; height: 100%; object-fit: cover; }
-        .epm-avatar-inicial { color: #FCE0E9; font-size: 34px; font-weight: 900; letter-spacing: -0.02em; }
+        .epm-avatar-inicial { color: #FCE0E9; font-size: 34px; font-weight: 700; letter-spacing: -0.02em; }
         .epm-avatar-cam {
           position: absolute; bottom: 0; right: 0;
           width: 30px; height: 30px;

@@ -4,7 +4,7 @@
 /* abas Produtos / Categorias (só celular e tablet) */
 body .prod-tabs-novo { gap: 4px; padding: 4px; border-radius: var(--ui-raio-cartao); background: var(--ui-cinza); }
 body .prod-tab-novo { min-height: 44px; padding: 0 12px; border-radius: var(--ui-raio); font-size: 15px; font-weight: 700; color: var(--ui-texto-2); }
-body .prod-tab-novo.active { background: var(--ui-branco); color: var(--ui-rosa-escuro); font-weight: 800; box-shadow: var(--ui-sombra-cartao); }
+body .prod-tab-novo.active { background: var(--ui-branco); color: var(--ui-rosa-escuro); font-weight: 700; box-shadow: var(--ui-sombra-cartao); }
 
 /* busca + novo */
 .pl-topo { display: flex; gap: 8px; }
@@ -25,7 +25,7 @@ body .prod-tab-novo.active { background: var(--ui-branco); color: var(--ui-rosa-
 .pl-ord-menu { position: absolute; top: calc(100% + 4px); right: 0; z-index: 100; min-width: 200px; padding: 4px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-janela); }
 .pl-ord-it { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 44px; margin: 0; padding: 0 12px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto); font-family: var(--font-base); font-size: 15px; font-weight: 500; text-align: left; cursor: pointer; }
 .pl-ord-it:hover { background: var(--ui-linha); }
-.pl-ord-it.on { color: var(--ui-rosa-escuro); font-weight: 800; }
+.pl-ord-it.on { color: var(--ui-rosa-escuro); font-weight: 700; }
 
 /* cartão do produto */
 body .prod-grid { gap: 8px; }
@@ -39,8 +39,8 @@ body .prod-card-promo, body .prod-card-encomenda, body .prod-card-badge-var, bod
 body .prod-card-semcat { display: none; }
 body .prod-card-info { padding: 10px 12px 12px; }
 body .prod-card-cat { margin: 0 0 2px; font-size: 12.5px; font-weight: 600; color: var(--ui-texto-2); text-transform: none; letter-spacing: 0; }
-body .prod-card-nome { margin: 0 0 2px; font-size: 15px; font-weight: 800; line-height: 1.3; color: var(--ui-texto); }
-body .prod-card-preco { margin: 0; font-size: 15px; font-weight: 800; color: var(--ui-texto); }
+body .prod-card-nome { margin: 0 0 2px; font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); }
+body .prod-card-preco { margin: 0; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
 body .prod-card-preco small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
 body .prod-card-de { font-size: 13px; font-weight: 500; color: var(--ui-texto-3); text-decoration: line-through; }
 body .prod-card-bottom { margin-top: 4px; }
@@ -57,7 +57,7 @@ body .prod-preview-img--placeholder { flex-direction: column; gap: 8px; backgrou
 body .prod-preview-modal { border-radius: var(--ui-raio-janela) var(--ui-raio-janela) 0 0; }
 @media (min-width: 720px) { body .prod-preview-modal { max-width: 520px; border-radius: var(--ui-raio-janela); } }
 body .prod-preview-body { padding: 16px 20px calc(20px + env(safe-area-inset-bottom, 0px)); }
-body .prod-preview-nome { margin: 0 0 4px; font-size: 22px; font-weight: 800; line-height: 1.25; letter-spacing: 0; text-transform: none; }
+body .prod-preview-nome { margin: 0 0 4px; font-size: 22px; font-weight: 700; line-height: 1.25; letter-spacing: 0; text-transform: none; }
 body .prod-preview-desc { margin: 0 0 8px; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
 .prod-preview-linhas { margin: 8px 0 16px; }
 .prod-preview-linhas .ui-linha > b { white-space: normal; }
@@ -66,6 +66,6 @@ body .prod-preview-desc { margin: 0 0 8px; font-size: 14px; line-height: 1.5; co
 .prod-preview-cad { margin: 0 0 16px; font-size: 13px; color: var(--ui-texto-2); text-align: center; }
 body .prod-preview-actions { gap: 8px; }
 body .prod-preview-btn-editar { min-height: 48px; gap: 8px; padding: 0 16px; border-radius: var(--ui-raio-botao); background: var(--ui-rosa); font-size: 15px; box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
-body .prod-preview-btn-icon { min-height: 48px; gap: 6px; padding: 0 16px; border-radius: var(--ui-raio-botao); background: var(--ui-cinza); color: var(--ui-texto); font-size: 15px; font-weight: 800; }
+body .prod-preview-btn-icon { min-height: 48px; gap: 6px; padding: 0 16px; border-radius: var(--ui-raio-botao); background: var(--ui-cinza); color: var(--ui-texto); font-size: 15px; font-weight: 700; }
 body .prod-preview-menu-item { min-height: 48px; }
 body .prod-preview-menu-sub { font-size: 12.5px; }

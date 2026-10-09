@@ -70,10 +70,10 @@ export default function SucessoProdutoTela(p: Props) {
         .spt-confete { position: absolute; left: 0; right: 0; top: -20px; height: 110px; pointer-events: none; }
         .spt-confete i { position: absolute; width: 8px; height: 14px; border-radius: 2px; opacity: 0; animation: spt-cai .9s ease-out forwards; }
         @keyframes spt-cai { from { opacity: 0; translate: 0 -24px; } to { opacity: .9; translate: 0 0; } }
-        .spt-ok { width: 72px; height: 72px; border-radius: 50%; background: #DCFCE7; color: #15803D; display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 900; margin: 18px auto 16px; box-shadow: 0 0 0 10px #F0FDF4; animation: spt-pop .45s cubic-bezier(.2,1.4,.4,1) both; }
+        .spt-ok { width: 72px; height: 72px; border-radius: 50%; background: #DCFCE7; color: #15803D; display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 700; margin: 18px auto 16px; box-shadow: 0 0 0 10px #F0FDF4; animation: spt-pop .45s cubic-bezier(.2,1.4,.4,1) both; }
         .spt-ok--festa { background: #FCE7F3; color: #C33A6E; box-shadow: 0 0 0 10px #FFF1F6; margin-top: 30px; }
         @keyframes spt-pop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .spt-h { font-size: 23px; font-weight: 900; line-height: 1.2; margin: 0; color: #2C1219; }
+        .spt-h { font-size: 23px; font-weight: 800; line-height: 1.2; margin: 0; color: #2C1219; }
         .spt-sub { font-size: 14px; color: #6B5D64; line-height: 1.5; margin: 8px auto 0; max-width: 300px; }
         .spt-sub b { color: #2C1219; }
         .spt-prev { display: flex; gap: 12px; align-items: center; text-align: left; border: 1px solid #F0EBED; border-radius: 14px; padding: 10px; margin: 22px 0 18px; box-shadow: 0 6px 18px rgba(60,20,35,.06); }
@@ -81,11 +81,11 @@ export default function SucessoProdutoTela(p: Props) {
         .spt-prev-sem { background: #FCE7F3; color: #C33A6E; display: flex; align-items: center; justify-content: center; }
         .spt-prev small { display: block; font-size: 12.5px; font-weight: 700; color: #6B5D64; }
         .spt-prev b { display: block; font-size: 14.5px; margin: 2px 0 3px; }
-        .spt-prev span { font-size: 13px; color: #6B5D64; } .spt-prev em { font-style: normal; font-weight: 800; color: #2C1219; }
+        .spt-prev span { font-size: 13px; color: #6B5D64; } .spt-prev em { font-style: normal; font-weight: 700; color: #2C1219; }
         .spt-acts { display: flex; flex-direction: column; gap: 8px; }
-        .spt-a1 { min-height: 48px; border: none; background: #E85A8C; color: #fff; font-family: inherit; font-weight: 800; font-size: 15px; border-radius: 13px; padding: 0 14px; box-shadow: 0 3px 0 #C33A6E; cursor: pointer; }
+        .spt-a1 { min-height: 48px; border: none; background: #E85A8C; color: #fff; font-family: inherit; font-weight: 700; font-size: 15px; border-radius: 13px; padding: 0 14px; box-shadow: 0 3px 0 #C33A6E; cursor: pointer; }
         .spt-a1:active { transform: translateY(2px); box-shadow: 0 1px 0 #C33A6E; }
-        .spt-a2 { min-height: 48px; border: 0; background: #F3EEF1; color: #2C1219; font-family: inherit; font-weight: 800; font-size: 15px; border-radius: 13px; padding: 0 13px; cursor: pointer; }
+        .spt-a2 { min-height: 48px; border: 0; background: #F3EEF1; color: #2C1219; font-family: inherit; font-weight: 700; font-size: 15px; border-radius: 13px; padding: 0 13px; cursor: pointer; }
         .spt-ft { display: flex; align-items: center; gap: 12px; text-align: left; background: #FAF7F8; border: none; border-radius: 12px; padding: 12px; margin-top: 4px; font-family: inherit; cursor: pointer; color: #2C1219; }
         .spt-ft-ic { width: 40px; height: 40px; border-radius: 12px; background: #FCE7F3; color: #C33A6E; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .spt-ft-tx { flex: 1; min-width: 0; } .spt-ft-tx b { display: block; font-size: 15px; } .spt-ft-tx small { display: block; font-size: 13px; color: #6B5D64; margin-top: 2px; line-height: 1.4; }

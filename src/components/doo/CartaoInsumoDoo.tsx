@@ -116,12 +116,12 @@ const CSS = `
   .cid { margin-top: 10px; background: #fff; border: 1.5px solid #F7C6D9; border-radius: 16px; padding: 14px; font-family: var(--font-base); color: #2C1219; max-width: 340px; }
   .cid-hd { display: flex; gap: 11px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #F5F0F2; }
   .cid-ic { width: 40px; height: 40px; border-radius: 10px; background: #FCE0E9; color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .cid-k { margin: 0; font-size: 12px; font-weight: 900; letter-spacing: .1em; color: #E85A8C; }
-  .cid-hd b { display: block; font-size: 16px; font-weight: 800; margin-top: 1px; }
+  .cid-k { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .1em; color: #E85A8C; }
+  .cid-hd b { display: block; font-size: 16px; font-weight: 700; margin-top: 1px; }
   .cid-kv { display: grid; grid-template-columns: 96px 1fr; gap: 7px 10px; margin: 12px 0 0; font-size: 14px; }
   .cid-kv dt { color: #888780; font-weight: 600; } .cid-kv dd { margin: 0; font-weight: 700; }
   .cid-antes { color: #9A8E94 !important; font-weight: 600 !important; text-decoration: line-through; }
-  .cid-custo { color: #15803D; font-weight: 800 !important; }
+  .cid-custo { color: #15803D; font-weight: 700 !important; }
   .cid-custo--ed { margin: 8px 0 0; font-size: 13px; }
   .cid-ed { margin-top: 6px; }
   .cid-l { display: block; flex: 1; min-width: 0; font-size: 13px; font-weight: 600; color: #4B3A42; margin-top: 10px; }
@@ -140,7 +140,7 @@ const CSS = `
   @keyframes cidLoad { to { background-position: -200% 0; } }
   .cid-erro { margin: 10px 0 0; font-size: 13px; color: #B91C1C; font-weight: 700; }
   .cid-bts { display: flex; gap: 8px; margin-top: 14px; }
-  .cid-b1, .cid-b2 { flex: 1; border-radius: 12px; padding: 12px 10px; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+  .cid-b1, .cid-b2 { flex: 1; border-radius: 12px; padding: 12px 10px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; }
   .cid-b1 { border: none; background: #E85A8C; color: #fff; box-shadow: 0 3px 0 #C33A6E; flex: 2; }
   .cid-b2 { flex: 1; }
   .cid-b1:disabled { background: #F3B6CB; box-shadow: none; cursor: default; }

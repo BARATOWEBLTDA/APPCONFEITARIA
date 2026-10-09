@@ -977,7 +977,7 @@ export default function Inicio() {
         .ini-profile-inicial {
           font-family: var(--font-base);
           font-size: 26px;
-          font-weight: 900;
+          font-weight: 700;
           color: #FCE0E9;
           letter-spacing: -0.02em;
           line-height: 1;
@@ -1021,7 +1021,7 @@ export default function Inicio() {
           border-radius: 6px;
           font-family: var(--font-base);
           font-size: 12.5px;
-          font-weight: 900;
+          font-weight: 700;
           letter-spacing: 0.05em;
           margin-left: 4px;
           vertical-align: middle;
@@ -1281,7 +1281,7 @@ export default function Inicio() {
           color: #fff;
         }
         .ini-hero-cta-txt { flex: 1; z-index: 1; }
-        .ini-hero-cta-t { font-size: 16px; font-weight: 900; line-height: 1.15; }
+        .ini-hero-cta-t { font-size: 16px; font-weight: 800; line-height: 1.15; }
         .ini-hero-cta-d { font-size: 12.5px; opacity: 0.9; margin-top: 2px; }
         .ini-hero-cta-arr { color: #fff; opacity: 0.9; z-index: 1; flex-shrink: 0; }
 
@@ -1518,7 +1518,7 @@ export default function Inicio() {
           .ini-root .ini-hero-greeting h1 {
             flex-wrap: wrap; /* se o nome e a etiqueta não cabem lado a lado, a etiqueta desce: o nome não é cortado */
             gap: 4px 8px;
-            font-size: 22px; font-weight: 900;
+            font-size: 22px; font-weight: 800;
             letter-spacing: -.02em; line-height: 1.2;
             min-height: 26px;
           }
@@ -1540,7 +1540,7 @@ export default function Inicio() {
             margin-left: 0;
             border-radius: 12px;
             box-shadow: none;
-            font-size: 12.5px; font-weight: 800;
+            font-size: 12.5px; font-weight: 700;
             letter-spacing: 0;
             gap: 4px;
             color: var(--ui-branco);
@@ -1669,13 +1669,13 @@ export default function Inicio() {
           /* rosa encostado no topo e nas laterais da área do app (sem mexer nos cartões) */
           .ini-dk-top { background: linear-gradient(120deg, #E85A8C 0%, #C33A6E 60%, #8E2350 100%); color: #fff; border-radius: 0; margin: -72px -112px 0 -68px; padding: 48px 140px 74px 96px; display: flex; align-items: center; justify-content: space-between; gap: 20px; position: relative; overflow: hidden; }
           .ini-dk-top::after { content: ""; position: absolute; right: -70px; top: -80px; width: 260px; height: 260px; border-radius: 50%; background: rgba(255,255,255,.08); pointer-events: none; }
-          .ini-dk-txt h1 { font-size: 22px; font-weight: 900; letter-spacing: -.02em; margin: 0; color: #fff; }
+          .ini-dk-txt h1 { font-size: 22px; font-weight: 800; letter-spacing: -.02em; margin: 0; color: #fff; }
           .ini-dk-txt p { font-size: 14.5px; margin: 6px 0 0; color: rgba(255,255,255,.92); }
-          .ini-dk-atr { position: relative; z-index: 1; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+          .ini-dk-atr { position: relative; z-index: 1; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
           .ini-dk-atr::after { content: ""; position: absolute; inset: -12px -4px; } /* área de toque de 44px */
           .ini-dk-atr:focus-visible { outline: 3px solid rgba(255, 255, 255, .75); outline-offset: 2px; border-radius: 4px; }
           .ini-dk-bts { display: flex; gap: 10px; position: relative; z-index: 1; }
-          .ini-dk-bt { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: 12px; font-family: inherit; font-size: 14.5px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+          .ini-dk-bt { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: 12px; font-family: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; white-space: nowrap; }
           .ini-dk-bt--1 { border: none; background: #fff; color: #C33A6E; box-shadow: 0 4px 12px rgba(0,0,0,.12); }
           .ini-dk-bt--2 { border: 1.5px solid rgba(255,255,255,.7); background: transparent; color: #fff; }
           .ini-dk-bt:hover { transform: translateY(-1px); }
@@ -1685,7 +1685,7 @@ export default function Inicio() {
           .ini-dk-kh { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; color: #6B5D64; }
           .ini-dk-kh span { width: 30px; height: 30px; border-radius: 9px; background: #FCE7F3; color: #C33A6E; display: flex; align-items: center; justify-content: center; }
           .ini-dk-kpi--dest .ini-dk-kh { color: rgba(255,255,255,.8); } .ini-dk-kpi--dest .ini-dk-kh span { background: rgba(255,255,255,.15); color: #fff; }
-          .ini-dk-kpi b { display: block; font-size: 26px; font-weight: 900; margin-top: 10px; color: #2C1219; }
+          .ini-dk-kpi b { display: block; font-size: 26px; font-weight: 700; margin-top: 10px; color: #2C1219; }
           .ini-dk-kpi--dest b { color: #fff; }
           .ini-dk-kpi small { font-size: 12.5px; color: #9A8E94; } .ini-dk-kpi--dest small { color: rgba(255,255,255,.7); }
           /* o bloco antigo de números sai (agora fica no topo) */
@@ -1697,16 +1697,16 @@ export default function Inicio() {
           .ini-dk-side { display: flex; flex-direction: column; gap: 16px; }
           .ini-dk-side .cqc { margin-top: 0; }
           .ini-dk-card { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 16px; }
-          .ini-dk-ct { display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 800; color: #2C1219; margin-bottom: 10px; }
+          .ini-dk-ct { display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 700; color: #2C1219; margin-bottom: 10px; }
           .ini-dk-ct button { min-height: 44px; margin: -12px -8px -12px 0; padding: 0 8px; border: none; border-radius: 12px; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
           .ini-dk-vazio { font-size: 13.5px; color: #9A8E94; margin: 0; line-height: 1.45; }
           .ini-dk-en { display: flex; align-items: center; gap: 12px; width: 100%; padding: 9px 0; border: none; border-top: 1px solid #F5F0F2; background: none; font-family: inherit; text-align: left; cursor: pointer; }
           .ini-dk-ct + .ini-dk-en { border-top: none; padding-top: 0; }
           .ini-dk-dt { width: 48px; height: 48px; border-radius: 10px; background: #FAF7F8; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
-          .ini-dk-dt b { font-size: 16px; line-height: 1; color: #2C1219; } .ini-dk-dt small { font-size: 12.5px; font-weight: 800; color: #C33A6E; }
+          .ini-dk-dt b { font-size: 16px; line-height: 1; color: #2C1219; } .ini-dk-dt small { font-size: 12.5px; font-weight: 700; color: #C33A6E; }
           .ini-dk-ei { flex: 1; min-width: 0; display: flex; flex-direction: column; }
           .ini-dk-ei b { font-size: 15px; color: #2C1219; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ini-dk-ei small { font-size: 12.5px; color: #9A8E94; }
-          .ini-dk-ev { font-weight: 800; font-size: 13.5px; color: #15803D; white-space: nowrap; }
+          .ini-dk-ev { font-weight: 700; font-size: 13.5px; color: #15803D; white-space: nowrap; }
           .ini-dk-side .mu-root { margin: 0; }
           /* acesso rápido no estilo do celular: cartão branco, ícone rosa, nome + descrição, 4 por linha */
           .ini-section--nav { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 18px; }

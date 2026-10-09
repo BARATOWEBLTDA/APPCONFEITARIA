@@ -78,14 +78,14 @@ export default function ParabensPro() {
           background: linear-gradient(135deg, rgba(249,168,212,.28), rgba(196,181,253,.22)); border: 1px solid rgba(249,168,212,.4); box-shadow: 0 0 40px rgba(232,90,140,.45); }
         .ppr-cr img { width: 46px; height: 46px; object-fit: contain; }
         .ppr-k, .ppr h2 span { background: linear-gradient(90deg, #F9A8D4, #C4B5FD, #93C5FD); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .ppr-k { position: relative; font-size: 12px; font-weight: 900; letter-spacing: .16em; margin: 0; }
-        .ppr h2 { position: relative; font-size: 23px; font-weight: 900; line-height: 1.2; margin: 6px 0 0; color: #fff; }
+        .ppr-k { position: relative; font-size: 12px; font-weight: 700; letter-spacing: .16em; margin: 0; }
+        .ppr h2 { position: relative; font-size: 23px; font-weight: 800; line-height: 1.2; margin: 6px 0 0; color: #fff; }
         .ppr-s { position: relative; font-size: 13.5px; color: rgba(255,255,255,.75); margin: 8px auto 0; max-width: 290px; text-wrap: balance; }
         .ppr h2 { text-wrap: balance; }
         .ppr-ia { position: relative; width: 100%; margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; border: none; border-radius: 12px; padding: 11px 12px;
           background: rgba(255,255,255,.09); color: #fff; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
         .ppr-ia img { width: 28px; height: 28px; object-fit: contain; }
-        .ppr-b1 { position: relative; width: 100%; margin-top: 12px; border: none; border-radius: 12px; padding: 14px; font-family: inherit; font-size: 15px; font-weight: 800; color: #fff; cursor: pointer;
+        .ppr-b1 { position: relative; width: 100%; margin-top: 12px; border: none; border-radius: 12px; padding: 14px; font-family: inherit; font-size: 15px; font-weight: 700; color: #fff; cursor: pointer;
           background: linear-gradient(90deg, #E85A8C, #C33A6E); box-shadow: 0 8px 24px rgba(232,90,140,.45); }
         .ppr-b2 { position: relative; width: 100%; margin-top: 4px; border: none; background: none; font-family: inherit; font-size: 13px; color: rgba(255,255,255,.72); padding: 10px; cursor: pointer; }
       `}</style>

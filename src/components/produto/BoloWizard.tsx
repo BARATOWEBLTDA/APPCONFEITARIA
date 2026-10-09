@@ -550,7 +550,7 @@ export function BoloPrecoStep({ form, setForm, escolha, primeiroNome, edicao }: 
 
 const CSS = `
   .bw { font-family: var(--font-base); color: #2C1219; padding: 4px 2px 12px; }
-  .bw-eta { font-size: 12px; font-weight: 800; letter-spacing: .08em; color: #C33A6E; margin: 0; }
+  .bw-eta { font-size: 12px; font-weight: 700; letter-spacing: .08em; color: #C33A6E; margin: 0; }
   .bw-h { font-size: 22px; font-weight: 800; line-height: 1.25; letter-spacing: -.01em; margin: 6px 0 6px; color: #2C1219; }
   .bw-h span { color: #C33A6E; }
   .bw-sub { font-size: 14px; color: #6B5D64; line-height: 1.5; margin: 0 0 18px; }
@@ -559,7 +559,7 @@ const CSS = `
   .bw-opt { border: 1.5px solid #EDE5E8; border-radius: 16px; background: #fff; margin-bottom: 10px; transition: border-color .15s, background .15s; }
   .bw-opt.on { border-color: #E85A8C; background: #FFFAFC; }
   .bw-opt-h { width: 100%; display: flex; align-items: center; gap: 12px; padding: 15px 16px; border: none; background: none; font-family: inherit; text-align: left; cursor: pointer; color: #2C1219; }
-  .bw-opt-h i { width: 24px; height: 24px; border-radius: 8px; border: 2px solid #D6CBD0; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 13px; font-weight: 900; color: #fff; flex-shrink: 0; transition: all .15s; }
+  .bw-opt-h i { width: 24px; height: 24px; border-radius: 8px; border: 2px solid #D6CBD0; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0; transition: all .15s; }
   .bw-opt.on .bw-opt-h i { background: #E85A8C; border-color: #E85A8C; }
   .bw-opt-h b { font-size: 15.5px; font-weight: 700; flex: 1; }
   .bw-opt-h em { font-style: normal; font-size: 12px; font-weight: 700; color: #9D174D; background: #FCE7F3; padding: 3px 9px; border-radius: 999px; }
@@ -583,14 +583,14 @@ const CSS = `
   .bw-sug button:hover { border-color: #C33A6E; color: #C33A6E; }
   .bw-frase { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 14.5px; color: #2C1219; margin-top: 14px; }
   .bw-stepper { display: inline-flex; align-items: center; border: 1.5px solid #EAE3E6; border-radius: 10px; background: #fff; overflow: hidden; }
-  .bw-stepper button { width: 34px; height: 34px; border: none; background: none; font-size: 17px; font-weight: 800; color: #C33A6E; cursor: pointer; }
+  .bw-stepper button { width: 34px; height: 34px; border: none; background: none; font-size: 17px; font-weight: 700; color: #C33A6E; cursor: pointer; }
   .bw-stepper button:disabled { color: #D6CBD0; cursor: default; }
   .bw-stepper b { min-width: 26px; text-align: center; font-size: 15px; }
   .bw-dica { font-size: 12px; color: #9A8E94; margin: 12px 0 0; }
 
   .bw-sn { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
   .bw-sn button { border: 1.5px solid #EAE3E6; border-radius: 16px; background: #fff; padding: 16px 12px; font-family: inherit; cursor: pointer; color: #2C1219; display: flex; flex-direction: column; align-items: center; gap: 3px; transition: all .15s; }
-  .bw-sn button b { font-size: 17px; font-weight: 800; } .bw-sn button small { font-size: 12.5px; color: #888780; }
+  .bw-sn button b { font-size: 17px; font-weight: 700; } .bw-sn button small { font-size: 12.5px; color: #888780; }
   .bw-sn button.on { border-color: #2C1219; background: #2C1219; color: #fff; } .bw-sn button.on small { color: rgba(255,255,255,.75); }
   .bw-modos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .bw-modos button { display: flex; gap: 10px; align-items: flex-start; text-align: left; border: 1.5px solid #EAE3E6; border-radius: 14px; background: #fff; padding: 12px; font-family: inherit; cursor: pointer; color: #2C1219; }
@@ -609,15 +609,15 @@ const CSS = `
   .bw-money { display: flex; align-items: center; gap: 8px; height: 58px; border: 1.5px solid #EAE3E6; border-radius: 14px; padding: 0 16px; background: #fff; transition: border-color .15s; }
   .bw-money:focus-within { border-color: #2C1219; }
   .bw-money > span { font-size: 15px; font-weight: 700; color: #9A8E94; }
-  .bw-money input { flex: 1; min-width: 0; border: none; outline: none; background: none; font-family: inherit; font-size: 24px; font-weight: 800; color: #2C1219; }
+  .bw-money input { flex: 1; min-width: 0; border: none; outline: none; background: none; font-family: inherit; font-size: 24px; font-weight: 700; color: #2C1219; }
   .bw-money input::placeholder { color: #D6CBD0; }
   .bw-money em { font-style: normal; font-size: 13px; font-weight: 600; color: #888780; white-space: nowrap; }
   .bw-money--sm { height: 44px; width: 150px; padding: 0 12px; } .bw-money--sm input { font-size: 16px; }
   .bw-hint { font-size: 12px; color: #9A8E94; margin: 8px 0 0; line-height: 1.45; }
   .bw-hint--top { margin: 2px 0 12px; }
-  .bw-gerar-pill { border: 1px solid #F9D1E0; background: #FFF1F6; color: #C33A6E; border-radius: 999px; padding: 7px 13px; font-family: inherit; font-size: 12.5px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+  .bw-gerar-pill { border: 1px solid #F9D1E0; background: #FFF1F6; color: #C33A6E; border-radius: 999px; padding: 7px 13px; font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; white-space: nowrap; }
   .bw-gerar-pill:hover { background: #FCE7F3; }
-  .bw-col-sel { border: none; background: none; padding: 0 0 0 4px; font-family: inherit; font-size: 12px; font-weight: 800; color: #C33A6E; letter-spacing: .04em; cursor: pointer; text-align: left; }
+  .bw-col-sel { border: none; background: none; padding: 0 0 0 4px; font-family: inherit; font-size: 12px; font-weight: 700; color: #C33A6E; letter-spacing: .04em; cursor: pointer; text-align: left; }
   .bw-link--sec { display: block; color: #6B5D64; font-weight: 600; font-size: 12.5px; padding-top: 2px; }
   .bw-link--sec small { color: #B5AAB0; font-weight: 500; }
   .bw-tabela .bw-tam { grid-template-columns: 76px 1fr 1.3fr 24px; }
@@ -652,7 +652,7 @@ const CSS = `
   }
   .bw-kg-t { display: inline-flex; align-items: center; gap: 8px; }
   .bw-kg-t small { font-size: 12px; font-weight: 600; color: #9A8E94; }
-  .bw-i { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #C33A6E; background: #fff; color: #C33A6E; font-family: inherit; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+  .bw-i { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #C33A6E; background: #fff; color: #C33A6E; font-family: inherit; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
   .bw-tams-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 22px; margin-bottom: 8px; }
   .bw-tams-h .bw-lb { margin: 0; }
   .bw-rend { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #9A8E94; font-weight: 600; }
@@ -678,13 +678,13 @@ const CSS = `
   .bw-tam--h span { font-size: 12px; font-weight: 700; color: #9A8E94; letter-spacing: .04em; padding-left: 4px; }
   .bw-in, .bw-rs { height: 44px; border: 1.5px solid #EAE3E6; border-radius: 12px; background: #fff; display: flex; align-items: center; min-width: 0; transition: border-color .15s; }
   .bw-in:focus-within, .bw-rs:focus-within, input.bw-in:focus { border-color: #2C1219; outline: none; }
-  input.bw-in { padding: 0 10px; font-family: inherit; font-size: 16px; font-weight: 800; color: #2C1219; text-align: center; width: 100%; }
+  input.bw-in { padding: 0 10px; font-family: inherit; font-size: 16px; font-weight: 700; color: #2C1219; text-align: center; width: 100%; }
   .bw-in input, .bw-rs input { flex: 1; min-width: 0; width: 100%; border: none; outline: none; background: none; font-family: inherit; font-size: 16px; font-weight: 700; color: #2C1219; padding: 0 0 0 10px; }
   .bw-suf em { font-style: normal; font-size: 12px; color: #9A8E94; padding: 0 10px 0 4px; white-space: nowrap; }
   .bw-rs { padding-left: 10px; font-size: 12.5px; font-weight: 700; color: #9A8E94; gap: 2px; }
   .bw-rs input { padding-left: 4px; } .bw-rs.ok input { color: #15803D; }
-  .bw-rs--lg { width: 150px; background: #fff; } .bw-rs--xl { height: 60px; max-width: 260px; font-size: 16px; } .bw-rs--xl input { font-size: 24px; font-weight: 800; }
-  .bw-calc { font-size: 14.5px; font-weight: 800; color: #15803D; padding-left: 6px; }
+  .bw-rs--lg { width: 150px; background: #fff; } .bw-rs--xl { height: 60px; max-width: 260px; font-size: 16px; } .bw-rs--xl input { font-size: 24px; font-weight: 700; }
+  .bw-calc { font-size: 14.5px; font-weight: 700; color: #15803D; padding-left: 6px; }
   .bw-x { border: none; background: none; color: #C4B8BE; font-size: 13px; cursor: pointer; padding: 4px; }
   .bw-x:hover { color: #DC2626; }
   .bw-link { align-self: flex-start; border: none; background: none; color: #C33A6E; font-family: inherit; font-size: 13.5px; font-weight: 700; padding: 6px 2px; cursor: pointer; }
@@ -719,10 +719,10 @@ const CSS = `
   .bw-tabela .bw-rs { padding-left: 12px; }
   .bw-rs-p { font-size: 13px; font-weight: 700; color: #9A8E94; }
   .bw-tabela .bw-calc { display: flex; align-items: center; padding: 0 12px; background: #FAF7F8; border-color: #F0EBED; color: #B5AAB0; font-size: 13px; font-weight: 600; }
-  .bw-tabela .bw-calc.ok { background: #F0FDF4; border-color: #DCFCE7; color: #15803D; font-size: 14.5px; font-weight: 800; }
+  .bw-tabela .bw-calc.ok { background: #F0FDF4; border-color: #DCFCE7; color: #15803D; font-size: 14.5px; font-weight: 700; }
   .bw-rendbox { margin-top: 14px; padding-top: 14px; border-top: 1px solid #F3ECEE; }
   .bw-check { display: flex; align-items: center; gap: 10px; width: 100%; border: none; background: none; padding: 4px 0; font-family: inherit; font-size: 14px; font-weight: 600; color: #2C1219; cursor: pointer; text-align: left; }
-  .bw-check i { width: 20px; height: 20px; border-radius: 6px; border: 2px solid #D6CBD0; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 12px; font-weight: 900; color: #fff; flex-shrink: 0; }
+  .bw-check i { width: 20px; height: 20px; border-radius: 6px; border: 2px solid #D6CBD0; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; }
   .bw-check.on i { background: #E85A8C; border-color: #E85A8C; }
   .bw-rend-body { margin-top: 12px; padding: 14px; border-radius: 12px; background: #FAF7F8; }
   .bw-rend-uni { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; font-size: 13px; color: #6B5D64; font-weight: 600; }
@@ -765,7 +765,7 @@ const CSS = `
   .bo-rs { font-size: 13px; color: #4B3A42; margin-top: 3px; line-height: 1.45; }
   .bo-rs em { font-style: normal; color: #15803D; font-weight: 700; }
   .bo-rs small { display: block; font-size: 12px; color: #9A8E94; margin-top: 2px; white-space: normal; }
-  .bo-ck { width: 26px; height: 26px; border-radius: 7px; border: 2px solid #D6CBD0; background: #fff; color: #fff; font-size: 14px; font-weight: 900; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; padding: 0; }
+  .bo-ck { width: 26px; height: 26px; border-radius: 7px; border: 2px solid #D6CBD0; background: #fff; color: #fff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; padding: 0; }
   .bo-ck.on { background: #E85A8C; border-color: #E85A8C; }
   .bo-editar { border: 1px solid #F9D1E0; background: #FFF1F6; color: #C33A6E; border-radius: 8px; padding: 7px 12px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
   .bo-body { padding: 0 14px 14px; }
@@ -775,19 +775,19 @@ const CSS = `
   .bo-nm { flex: 1; min-width: 0; font-size: 14.5px; font-weight: 700; color: #2C1219; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .bo-vx { border: 1.5px dashed #DCCFD5; background: none; border-radius: 999px; padding: 6px 12px; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #9A8E94; cursor: pointer; white-space: nowrap; }
   .bo-vx:hover { border-color: #C33A6E; color: #C33A6E; }
-  .bo-vx.tem { border: 1.5px solid #BBF7D0; background: #F0FDF4; color: #15803D; font-weight: 800; }
+  .bo-vx.tem { border: 1.5px solid #BBF7D0; background: #F0FDF4; color: #15803D; font-weight: 700; }
   .bo-rm { width: 36px; height: 36px; border: none; background: none; border-radius: 8px; color: #B5AAB0; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-left: 2px; }
   .bo-rm:hover { color: #DC2626; background: #FEF2F2; }
   .bo-li--add { background: #FCFAFB; padding-right: 10px; }
   .bo-li--add input { flex: 1; min-width: 0; height: 48px; border: none; outline: none; background: none; font-family: inherit; font-size: 16px; color: #2C1219; }
   .bo-li--add input::placeholder { color: #B5AAB0; }
-  .bo-li--add button { border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 800; color: #C33A6E; cursor: pointer; padding: 8px 4px; white-space: nowrap; }
+  .bo-li--add button { border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #C33A6E; cursor: pointer; padding: 8px 4px; white-space: nowrap; }
   .bo-li--add button:disabled { color: #D6CBD0; cursor: default; }
   .bo-lim { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #F3ECEE; font-size: 14px; font-weight: 600; color: #2C1219; }
   .bo-tip { font-size: 12.5px; color: #9A8E94; margin: 6px 0 0; text-align: center; }
   .bo-sheet-acts { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
   .bo-sheet-tirar { border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #6B5D64; cursor: pointer; padding: 8px 0; }
-  .bo-sheet-ok { height: 46px; border: none; border-radius: 8px; background: #2C1219; color: #fff; font-family: inherit; font-size: 14.5px; font-weight: 800; padding: 0 28px; cursor: pointer; }
+  .bo-sheet-ok { height: 46px; border: none; border-radius: 8px; background: #2C1219; color: #fff; font-family: inherit; font-size: 14.5px; font-weight: 700; padding: 0 28px; cursor: pointer; }
   @media (max-width: 767px) {
     .bo-h { padding: 12px; } .bo-ic { width: 40px; height: 40px; font-size: 20px; }
     .bo-body { padding: 0 12px 12px; }
@@ -806,7 +806,7 @@ const CSS = `
   input.bw-t2-nome { text-align: left; padding: 0 12px; font-size: 16px; font-weight: 700; }
   .bw-t2 .bw-in input { padding-left: 12px; }
   .bw-check2 { display: flex; align-items: flex-start; gap: 12px; width: 100%; margin-top: 18px; border: none; background: none; padding: 0; font-family: inherit; text-align: left; cursor: pointer; color: #2C1219; }
-  .bw-check2 > i { width: 24px; height: 24px; border-radius: 5px; border: 2px solid #D6CBD0; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 13px; font-weight: 900; color: #fff; flex-shrink: 0; margin-top: 1px; }
+  .bw-check2 > i { width: 24px; height: 24px; border-radius: 5px; border: 2px solid #D6CBD0; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; margin-top: 1px; }
   .bw-check2.on > i { background: #E85A8C; border-color: #E85A8C; }
   .bw-check2 > span { display: flex; flex-direction: column; min-width: 0; }
   .bw-check2 b { font-size: 14px; font-weight: 700; white-space: nowrap; }
@@ -817,7 +817,7 @@ const CSS = `
   .bw-pr-lb b { color: #2C1219; font-size: 14.5px; } .bw-pr-lb small { color: #9A8E94; font-size: 12.5px; }
   .bw-pr-in { width: 160px; flex-shrink: 0; padding-left: 12px; }
   .bw-pr-calc { width: 160px; flex-shrink: 0; display: flex; align-items: center; padding: 0 12px; background: #FAF7F8; border-color: #F0EBED; color: #B5AAB0; font-size: 12.5px; font-weight: 600; }
-  .bw-pr-calc.ok { background: #F0FDF4; border-color: #DCFCE7; color: #15803D; font-size: 15px; font-weight: 800; }
+  .bw-pr-calc.ok { background: #F0FDF4; border-color: #DCFCE7; color: #15803D; font-size: 15px; font-weight: 700; }
   .bw-money--sm { width: 170px !important; }
   .bw-money--sm em { font-size: 12.5px; }
   @media (max-width: 767px) {
@@ -831,7 +831,7 @@ const CSS = `
   .bw-kg-t { white-space: nowrap; flex-shrink: 0; }
 
   /* Patch: lista de tamanhos com divisórias + "Editar lista" */
-  .bw-tt { font-size: 17px; font-weight: 800; color: #2C1219; margin: 0; }
+  .bw-tt { font-size: 17px; font-weight: 700; color: #2C1219; margin: 0; }
   .bw-tt-sub { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 4px 0 12px; }
   .bw-gerar-btn { display: inline-block; padding: 9px 14px; font-size: 13px; }
   .bw-lt { margin-top: 12px; border: 1px solid #EDE5E8; border-radius: 10px; overflow: hidden; background: #fff; }
@@ -853,7 +853,7 @@ const CSS = `
   .bw-lt-nome:focus, .bw-lt-peso:focus-within { background: #FFFAFC; }
   .bw-lt-rm { border: none; border-left: 1px solid #F3ECEE; background: none; color: #DC2626; display: flex; align-items: center; justify-content: center; cursor: pointer; }
   .bw-lt-rm:hover { background: #FEF2F2; }
-  .bw-lt-add { display: block; width: 100%; text-align: left; border: none; border-top: 1px solid #F3ECEE; background: #FCFAFB; padding: 15px 14px; font-family: inherit; font-size: 14px; font-weight: 800; color: #C33A6E; cursor: pointer; }
+  .bw-lt-add { display: block; width: 100%; text-align: left; border: none; border-top: 1px solid #F3ECEE; background: #FCFAFB; padding: 15px 14px; font-family: inherit; font-size: 14px; font-weight: 700; color: #C33A6E; cursor: pointer; }
   .bw-lt-h + .bw-lt-add { border-top: none; }
   .bw-check2 { margin-top: 20px; }
 
@@ -869,7 +869,7 @@ const CSS = `
   .bw-seg2 { grid-template-columns: 1fr 1fr !important; }
 
   .bw-pr-col { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0; }
-  .bw-pr-por { font-size: 12px; color: #6B5D64; } .bw-pr-por b { color: #15803D; font-weight: 800; }
+  .bw-pr-por { font-size: 12px; color: #6B5D64; } .bw-pr-por b { color: #15803D; font-weight: 700; }
   .bw-pr-por--unico { margin: 8px 0 0; font-size: 13px; }
   .bw-pr-calc--promo { gap: 6px; } .bw-pr-calc--promo s { color: #9A8E94; font-weight: 600; font-size: 12px; }
 `;
