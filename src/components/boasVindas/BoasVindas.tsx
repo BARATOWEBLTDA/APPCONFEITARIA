@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties, TouchEvent } from 'react'
-import { ArrowLeft, Bell, CalendarBlank, CaretRight } from '@phosphor-icons/react'
-import { Botao, BotaoIcone, Linha } from '@/components/base'
+import { ArrowLeft, Bell, CalendarBlank, CaretRight, DotsThree, Plus } from '@phosphor-icons/react'
+import { Botao, BotaoIcone, Linha, Titulo } from '@/components/base'
 import { Mascote, NomeDoonly } from '@/components/marca/Mascote'
 import { CartaoPedido } from '@/components/pedidos/CartaoPedido'
 import type { Pedido } from '@/components/pedidos/pedidoTexto'
@@ -280,8 +280,9 @@ const nada = () => {}
    ele abre como na tela do pedido, com as escolhas da cliente e a foto de referência. Se a pessoa não tocar
    em Aceitar, ele se aperta sozinho, pra ninguém ficar sem ver o pedido completo. ───────── */
 const PEDIDO_DEMO = pedidoExemplo({ numero: 1049, cliente_nome: 'Renata Dias', status: 'aguardando_aceite', origem: 'cardapio', horario_entrega: '14:00', valor_total: 320,
-  pedido_itens: [item('Bolo de aniversário', '/tutorial/leve/doisamores.webp', 1, 320)] })
-const ESCOLHAS: [string, string][] = [['Tamanho', '2 kg'], ['Massa', 'Chocolate'], ['Recheio', 'Brigadeiro com morango'], ['Topo de bolo', 'Sim']]
+  pedido_itens: [item('Bolo de aniversário 2 kg', '/tutorial/leve/doisamores.webp', 1, 320)] })
+// as mesmas linhas da tela do pedido (EditarPedido): o topo de bolo é um adicional
+const ESCOLHAS: [string, string][] = [['Tamanho', '2 kg'], ['Massa', 'Chocolate'], ['Recheios', 'Brigadeiro, Ninho com morango'], ['Cobertura', 'Chantilly'], ['Adicionais', 'Topo de bolo personalizado']]
 
 function DemoPedidos() {
   const [fase, setFase] = useState(0) // 0 = esperando · 1 = chegou · 2 = aceito
@@ -305,13 +306,14 @@ function DemoPedidos() {
         </div>
       )}
       {fase === 2 && (
-        <div className="bv-ped-det" aria-hidden="true">
-          <b className="bv-ped-det-t">Itens do pedido</b>
+        <section className="bv-ped-det" aria-hidden="true">
+          <Titulo contagem={1} acao={<span className="bv-ped-add"><Plus size={16} weight="bold" />Adicionar item</span>}>Itens do pedido</Titulo>
           <ul className="tpd-itens">
             <li>
               <div className="tpd-it-topo">
                 <span className="tpd-ft"><img src="/tutorial/leve/doisamores.webp" alt="" /></span>
-                <div className="tpd-it-tx"><b><em>1x</em> Bolo de aniversário</b><span>R$ 320,00</span></div>
+                <div className="tpd-it-tx"><b><em>1x</em> Bolo de aniversário 2 kg</b><span>R$ 320,00</span></div>
+                <span className="bv-ped-tres"><DotsThree size={20} weight="bold" /></span>
               </div>
               <div className="tpd-it-esc">{ESCOLHAS.map(([k, v]) => <Linha key={k} rotulo={k}>{v}</Linha>)}</div>
               <div className="tpd-recado">
@@ -319,12 +321,12 @@ function DemoPedidos() {
                 <div>
                   <small>Recado do item</small>
                   <p>“Tema jardim, com o nome Alice e 5 anos”</p>
-                  <span>Foto de referência da cliente</span>
+                  <span>Toque na foto pra ampliar</span>
                 </div>
               </div>
             </li>
           </ul>
-        </div>
+        </section>
       )}
     </div>
   )
