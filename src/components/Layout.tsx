@@ -78,7 +78,6 @@ export default function Layout() {
     return () => window.removeEventListener("doonly:abrir-doo", abrir);
   }, []);
   const location = useLocation();
-  const isAssinar = location.pathname === "/assinar";
   // Telas do Cardápio digital: no computador ganham o menu lateral pra trocar de tela sem voltar
   const comCdnav = ROTAS_CARDAPIO.includes(location.pathname);
   const isPrevia = location.pathname === "/cardapio-preview";
@@ -192,7 +191,7 @@ export default function Layout() {
         </nav>
       </aside>
 
-      <main className={`layout-main${isAssinar ? " layout-main--no-header" : ""}`}>
+      <main className="layout-main">
         {/* (07/10 · 2.99) O sininho e a janelinha de avisos saíram: o botão ficava escondido em todos os tamanhos de tela.
             As notificações continuam na tela "Notificações", pelo menu da foto. */}
         <Outlet />

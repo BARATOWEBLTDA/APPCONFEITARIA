@@ -1,0 +1,39 @@
+/* Página do PRO (09/10): no padrão do app. Base em clientes.css (cl9-*). */
+.pro9 { padding-bottom: 180px; }
+.pro9 .cl9-card { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+.pro9-hero { display: flex; align-items: center; gap: 16px; padding: 18px; border-radius: var(--ui-raio-cartao); background: linear-gradient(135deg, var(--ui-vinho), var(--vinho-profundo, #1F0711)); color: #fff; margin-bottom: 12px; }
+.pro9-hero img { flex: none; width: 96px; height: 110px; object-fit: contain; filter: drop-shadow(0 8px 18px rgba(232, 90, 140, .35)); }
+.pro9-hero h1 { margin: 0; font-size: 22px; font-weight: 800; line-height: 1.2; text-wrap: balance; }
+.pro9-hero p { margin: 6px 0 0; font-size: 14px; line-height: 1.45; color: rgba(255, 255, 255, .8); }
+.pro9-selo { display: inline-flex; margin-top: 10px; padding: 4px 10px; border-radius: 999px; background: var(--ui-rosa); font-size: 13px; font-weight: 800; }
+.pro9-li { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-top: 1px solid var(--ui-linha); }
+.pro9-li:first-of-type { border-top: 0; padding-top: 2px; }
+.pro9-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.pro9-li b { display: block; font-size: 15px; font-weight: 800; }
+.pro9-li small { display: block; margin-top: 2px; font-size: 14px; line-height: 1.45; color: var(--ui-texto-2); }
+.pro9-lado { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+.pro9-oferta { align-items: center; text-align: center; border-color: var(--ui-rosa) !important; }
+.pro9-desc { display: inline-flex; padding: 4px 12px; border-radius: 999px; background: var(--ui-verde-fundo); color: var(--ui-verde); font-size: 13px; font-weight: 800; }
+.pro9-oferta-t { font-size: 17px; font-weight: 800; }
+.pro9-preco { display: flex; align-items: baseline; justify-content: center; gap: 8px; }
+.pro9-preco s { font-size: 15px; color: var(--ui-texto-3); }
+.pro9-preco b { font-size: 34px; font-weight: 800; color: var(--ui-texto); }
+.pro9-preco small { font-size: 14px; color: var(--ui-texto-2); }
+.pro9-oferta-s { margin: -4px 0 0; font-size: 14px; line-height: 1.45; color: var(--ui-texto-2); }
+.pro9-oferta .ui-bt { width: 100%; }
+.pro9-seg { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 0; font-size: 13px; color: var(--ui-texto-2); }
+.pro9-ok { color: var(--ui-verde); }
+.pro9-faq > div b { display: block; font-size: 15px; font-weight: 800; }
+.pro9-faq > div p { margin: 2px 0 0; font-size: 14px; line-height: 1.45; color: var(--ui-texto-2); }
+.pro9-fixo { position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); z-index: 40; display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-top: 1px solid var(--ui-borda); background: #fff; box-shadow: 0 -4px 16px rgba(31, 7, 17, .08); }
+.pro9-fixo > span { flex: 1; min-width: 0; }
+.pro9-fixo small { display: block; font-size: 13px; color: var(--ui-texto-2); }
+.pro9-fixo b { display: block; font-size: 20px; font-weight: 800; }
+.pro9-fixo .ui-bt { flex: none; min-width: 170px; }
+@media (min-width: 1000px) {
+  .pro9 { padding-bottom: 40px; }
+  .pro9-grade { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start; }
+  .pro9-lado { margin-top: 0; position: sticky; top: 16px; }
+  .pro9-hero h1 { font-size: 26px; }
+  .pro9-fixo { display: none; }
+}

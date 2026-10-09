@@ -241,7 +241,7 @@ export default function Agenda() {
 
   // ── Agenda do dia em PDF (modelo padrão · recurso PRO) ──
   const imprimirAgendaDoDia = () => {
-    if (!isPro) { navigate("/assinar"); return; }
+    if (!isPro) { avisar("Imprimir a agenda do dia é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } }); return; }
     const lista = [...(pedidosDoDia as any[])].filter(p => p.status !== "cancelado")
       .sort((a, b) => String(a.horario_entrega || "99").localeCompare(String(b.horario_entrega || "99")));
     const dia = new Date(diaSel + "T12:00:00");

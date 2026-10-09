@@ -4631,12 +4631,12 @@ export default function Produtos() {
                 <p className="prod-card-cat">{catInvalida ? "Sem categoria" : p.categoria}</p>
                 <p className="prod-card-nome">{p.nome}</p>
                 {p.promocao && p.preco_promocional && p.preco_promocional > 0 ? (
-                  <p className="prod-card-preco" style={{ display: "flex", alignItems: "center", gap: "4px", flexWrap: "nowrap" }}>
-                    <span className="prod-card-de">R$ {formatPreco(p.preco_normal)}</span>
-                    <span>R$ {formatPreco(p.preco_promocional)}</span> <small>{unidadeDoPreco(p.forma_venda)}</small>
+                  <p className="prod-card-preco prod-card-preco--promo">
+                    <span className="prod-card-de">R$&nbsp;{formatPreco(p.preco_normal)}</span>
+                    <span className="prod-card-por">R$&nbsp;{formatPreco(p.preco_promocional)} <small>{unidadeDoPreco(p.forma_venda)}</small></span>
                   </p>
                 ) : (
-                  <p className="prod-card-preco">R$ {formatPreco(p.preco_normal)} <small>{unidadeDoPreco(p.forma_venda)}</small></p>
+                  <p className="prod-card-preco"><span className="prod-card-por">R$&nbsp;{formatPreco(p.preco_normal)} <small>{unidadeDoPreco(p.forma_venda)}</small></span></p>
                 )}
                 <div className="prod-card-bottom">
                 {(() => {
@@ -6448,7 +6448,7 @@ export default function Produtos() {
                         onClick={async () => {
                           setPreviewMenu(false);
                           // Ficha técnica em PDF é recurso PRO (relatórios em PDF)
-                          if (!isPro) { navigate("/assinar"); return; }
+                          if (!isPro) { avisar("A ficha técnica em PDF é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } }); return; }
                           try {
                             await gerarFichaProduto(previewProduto, userId);
                           } catch (err) {
@@ -7424,6 +7424,11 @@ export default function Produtos() {
         .prod-card-cat { font-size: 0.75rem; color:var(--text-muted); font-weight: var(--fw-medium); letter-spacing:0.04em; margin:0 0 0.15rem; }
         .prod-card-nome { font-size: var(--font-button); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 0.25rem; line-height:1.3; }
         .prod-card-preco { font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--success); margin:0; }
+        /* 09/10: preço "de/por" não quebra mais no meio ("R$" numa linha e o valor na outra) */
+        .prod-card-preco { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; row-gap: 0; }
+        .prod-card-por { white-space: nowrap; }
+        .prod-card-por small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
+        .prod-card-de { white-space: nowrap; font-size: 13px; font-weight: 500; color: var(--ui-texto-3); text-decoration: line-through; }
 
         /* ── Badge de lucro/margem por venda ── */
         .prod-card-lucro {

@@ -93,3 +93,9 @@
   .fd-lado { display: block; position: sticky; top: 16px; }
   .fd-so-cel, .fd-fixo { display: none !important; }
 }
+/* Mão de obra salva na conta (09/10) */
+.fd-mo-conta { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
+.fd-mo-conta > span { flex: 1; min-width: 0; }
+.fd-mo-conta small { display: block; font-size: 13px; color: var(--ui-texto-2); }
+.fd-mo-conta b { display: block; font-size: 15px; font-weight: 800; }
+.fd-mo-acoes { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }

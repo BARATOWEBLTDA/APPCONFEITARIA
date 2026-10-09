@@ -181,7 +181,10 @@ const MODAL_TITLE_VARIANTS: ((nome: string) => ReactNode)[] = [
  * Usa a MESMA conta da tela da ficha: ingredientes + custos invisíveis + mão de obra.
  * (Antes a lista só tirava os ingredientes e mostrava um lucro maior que o real.)
  */
-function calcular(p: Produto) {
+/** Mão de obra salva na conta (Custos → Mão de obra): vale pra todos os produtos (09/10) */
+type MaoConta = { salario: number; horasSemana: number; diasSemana: number } | null;
+
+function calcular(p: Produto, conta: MaoConta = null) {
   const itens = p.produto_insumos || [];
   const cmv = itens.reduce((s, pi) => {
     const qtd = Number(pi.quantidade) || 0;
@@ -193,8 +196,8 @@ function calcular(p: Produto) {
   const cv = cmv * (cvPct / 100);
   // Mão de obra: liga quando a ficha tem salário ou tempo salvos (igual à tela da ficha)
   const moAtivo = !!(p.salario_desejado || p.tempo_preparo_min);
-  const salario = parseNumBR(p.salario_desejado) || 0;
-  const horasSem = parseNumBR(p.horas_semanais) || 40;
+  const salario = conta ? conta.salario : (parseNumBR(p.salario_desejado) || 0);
+  const horasSem = conta ? conta.horasSemana : (parseNumBR(p.horas_semanais) || 40);
   const tempoMin = parseInt(String(p.tempo_preparo_min || 0)) || 0;
   const custoHora = horasSem > 0 ? salario / (horasSem * 4.33) : 0;
   const mo = moAtivo ? custoHora * (tempoMin / 60) : 0;
@@ -273,6 +276,32 @@ export default function FichaTecnica() {
   const [extras, setExtras] = useState({ rendimento_qtd: "", rendimento_peso: "", validade_dias: "", validade_tipo: "refrigerado", embalagem: "", observacoes_ficha: "", cv_percentual: "25", tempo_preparo_min: "", salario_desejado: "", horas_semanais: "40" });
   const [saving, setSaving] = useState(false);
 
+  const [maoConta, setMaoConta] = useState<MaoConta>(null);
+  const [editarMao, setEditarMao] = useState(false);
+  const [salvandoMao, setSalvandoMao] = useState(false);
+  const loadMaoConta = async (uid: string) => {
+    const { data } = await supabase.from("config_mao_obra").select("salario_mensal, horas_dia, dias_semana").eq("user_id", uid).maybeSingle();
+    const sal = Number((data as any)?.salario_mensal) || 0;
+    if (data && sal > 0) {
+      const dias = Number((data as any).dias_semana) || 5;
+      setMaoConta({ salario: sal, horasSemana: (Number((data as any).horas_dia) || 8) * dias, diasSemana: dias });
+    } else setMaoConta(null);
+  };
+  /** Salva salário e horas na conta: passa a valer em todos os produtos */
+  const salvarMaoConta = async () => {
+    if (!userId) return;
+    const sal = parseNumBR(extras.salario_desejado) || 0;
+    const hs = parseNumBR(extras.horas_semanais) || 40;
+    if (sal <= 0) { avisar("Coloque quanto você quer ganhar por mês", { tipo: "erro" }); return; }
+    const dias = maoConta?.diasSemana || 5;
+    setSalvandoMao(true);
+    const { error } = await supabase.from("config_mao_obra").upsert({ user_id: userId, salario_mensal: sal, horas_dia: Math.round((hs / dias) * 100) / 100, dias_semana: dias, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
+    setSalvandoMao(false);
+    if (error) { avisar("Não deu pra salvar agora. Tente de novo.", { tipo: "erro" }); return; }
+    setMaoConta({ salario: sal, horasSemana: hs, diasSemana: dias });
+    setEditarMao(false);
+    avisar("Salvo na sua conta: vale pra todos os produtos", { tipo: "ok" });
+  };
   const loadProdutos = async (uid: string) => {
     const { data } = await supabase
       .from("produtos")
@@ -292,7 +321,7 @@ export default function FichaTecnica() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      await Promise.all([loadProdutos(user.id), loadInsumos(user.id)]);
+      await Promise.all([loadProdutos(user.id), loadInsumos(user.id), loadMaoConta(user.id)]);
       setLoading(false);
     })();
   }, []);
@@ -328,9 +357,10 @@ export default function FichaTecnica() {
       observacoes_ficha: p.observacoes_ficha || "",
       cv_percentual: p.cv_percentual != null ? String(p.cv_percentual) : "25",
       tempo_preparo_min: p.tempo_preparo_min ? String(p.tempo_preparo_min) : "",
-      salario_desejado: p.salario_desejado ? String(p.salario_desejado) : "",
-      horas_semanais: p.horas_semanais ? String(p.horas_semanais) : "40",
+      salario_desejado: maoConta ? String(maoConta.salario) : (p.salario_desejado ? String(p.salario_desejado) : ""),
+      horas_semanais: maoConta ? String(maoConta.horasSemana) : (p.horas_semanais ? String(p.horas_semanais) : "40"),
     });
+    setEditarMao(false);
     setBuscaInsumo("");
     setShowQuickAdd(false);
     // Ativa as seções automaticamente se já houver dados salvos
@@ -440,7 +470,7 @@ export default function FichaTecnica() {
     if (busca.trim() && !p.nome.toLowerCase().includes(busca.toLowerCase())) return false;
     if (filtro === "com") return (p.produto_insumos || []).length > 0;
     if (filtro === "sem") return (p.produto_insumos || []).length === 0;
-    if (filtro === "prejuizo") { const c = calcular(p); return c.temFicha && c.lucro < 0; }
+    if (filtro === "prejuizo") { const c = calcular(p, maoConta); return c.temFicha && c.lucro < 0; }
     return true;
   });
   const totalComFicha = produtos.filter(p => (p.produto_insumos || []).length > 0).length;
@@ -598,12 +628,24 @@ export default function FichaTecnica() {
               {!moAtivo ? (
                 <p className="fd-dica">Ligue pra colocar o valor do seu tempo no custo do produto.</p>
               ) : (<>
-                <div className="cl9-f-2">
-                  <Campo rotulo="Quer ganhar por mês" inputMode="decimal" prefixo="R$" placeholder="3.000" value={extras.salario_desejado}
-                    onChange={e => setExtras(s => ({ ...s, salario_desejado: e.target.value }))} />
-                  <Campo rotulo="Horas por semana" inputMode="numeric" placeholder="40" value={extras.horas_semanais}
-                    onChange={e => setExtras(s => ({ ...s, horas_semanais: e.target.value }))} depois={<span className="cl9-f-uf">h</span>} />
-                </div>
+                {maoConta && !editarMao ? (
+                  <div className="fd-mo-conta">
+                    <span><small>Salvo na sua conta</small><b>R$ {fmt(maoConta.salario)} por mês · {fmtQty(maoConta.horasSemana)} h por semana</b></span>
+                    <Botao variante="link" tamanho="m" onClick={() => setEditarMao(true)}>Alterar</Botao>
+                  </div>
+                ) : (<>
+                  <div className="cl9-f-2">
+                    <Campo rotulo="Quer ganhar por mês" inputMode="decimal" prefixo="R$" placeholder="3.000" value={extras.salario_desejado}
+                      onChange={e => setExtras(s => ({ ...s, salario_desejado: e.target.value }))} />
+                    <Campo rotulo="Horas por semana" inputMode="numeric" placeholder="40" value={extras.horas_semanais}
+                      onChange={e => setExtras(s => ({ ...s, horas_semanais: e.target.value }))} depois={<span className="cl9-f-uf">h</span>} />
+                  </div>
+                  <div className="fd-mo-acoes">
+                    <Botao variante="secundario" tamanho="m" carregando={salvandoMao} onClick={salvarMaoConta}>Salvar pra todos os produtos</Botao>
+                    {maoConta && <Botao variante="link" tamanho="m" onClick={() => { setEditarMao(false); setExtras(s => ({ ...s, salario_desejado: String(maoConta.salario), horas_semanais: String(maoConta.horasSemana) })); }}>Cancelar</Botao>}
+                  </div>
+                  {!maoConta && <p className="fd-dica">Salve uma vez e todos os produtos usam esse valor. Você também muda em Custos.</p>}
+                </>)}
                 <Campo rotulo="Tempo pra fazer esta receita" inputMode="numeric" placeholder="0" value={extras.tempo_preparo_min}
                   onChange={e => setExtras(s => ({ ...s, tempo_preparo_min: e.target.value }))} depois={<span className="cl9-f-uf">min</span>} />
                 <p className="fd-mo">Sua hora vale <b>R$ {fmt(custoHora)}</b>{moLive > 0 && <> · nesta receita: <b>R$ {fmt(moLive)}</b></>}</p>
@@ -876,7 +918,7 @@ export default function FichaTecnica() {
   }
 
   /* LIST VIEW (10.2: lista no padrão do app, com o lucro certo) */
-  const nPrejuizo = produtos.filter(p => { const c = calcular(p); return c.temFicha && c.lucro < 0; }).length;
+  const nPrejuizo = produtos.filter(p => { const c = calcular(p, maoConta); return c.temFicha && c.lucro < 0; }).length;
   const reais = (v: number) => v < 0 ? `−R$ ${fmt(-v)}` : `R$ ${fmt(v)}`;
   const tomMargem = (m: number) => m >= 30 ? "ok" : m >= 0 ? "atencao" : "neg";
   const chipsFiltro = ([
@@ -934,7 +976,7 @@ export default function FichaTecnica() {
           ) : (<>
             <div className="fl-cab" aria-hidden="true"><span>Produto</span><span>Preço de venda</span><span>Custo</span><span>Lucro</span><span>Margem</span><span /></div>
             {filtrados.map(p => {
-              const c = calcular(p);
+              const c = calcular(p, maoConta);
               const foto = (p.imagem_url || "").split(",")[0];
               const emPromo = !!(p.promocao && p.preco_promocional && p.preco_promocional > 0);
               return (

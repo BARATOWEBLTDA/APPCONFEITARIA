@@ -226,7 +226,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
   );
 
   const escolherModelo = async (m: "modelo1" | "padrao") => {
-    if (m === "padrao" && !isPro) { navigate("/assinar"); return; }
+    if (m === "padrao" && !isPro) { avisar("O modelo Premium é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } }); return; }
     if (!userId || salvandoModelo) return;
     setSalvandoModelo(true);
     setCardapioModelo(m);
@@ -244,7 +244,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
 
   const modeloAtivo = modeloAtivoCalc(cardapioModelo);
   const ProSlot = ({ n }: { n: number }) => (
-    <button type="button" className="ap-slot ap-slot--pro" onClick={() => navigate("/assinar")} aria-label={`Banner ${n}, no plano PRO`}>
+    <button type="button" className="ap-slot ap-slot--pro" onClick={() => avisar("Os banners 3 e 4 são do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } })} aria-label={`Banner ${n}, no plano PRO`}>
       <Lock size={20} weight="bold" aria-hidden="true" /><b>No PRO</b>
     </button>
   );
