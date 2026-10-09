@@ -155,7 +155,7 @@ function Fluxo({ dados }: { dados: MesFinanceiro }) {
           <g key={i}>
             <rect x={cx0 - bw - 1} y={y(s.entradas)} width={bw} height={Math.max(0, base - y(s.entradas))} rx="3" fill="#22C55E" />
             <rect x={cx0 + 1} y={y(s.saidas)} width={bw} height={Math.max(0, base - y(s.saidas))} rx="3" fill="#F87171" />
-            <text x={cx0} y={H - 10} textAnchor="middle" fontSize="10.5" fill="#9A8E94">{s.label}</text>
+            <text x={cx0} y={H - 10} textAnchor="middle" fontSize="12" fill="#6B5D64">{s.label}</text>
           </g>); })}
         {!vazio && <polyline points={pts} fill="none" stroke="#2C1219" strokeWidth="2" />}
         {!vazio && sem.map((s, i) => <circle key={i} cx={i * larg + larg / 2} cy={y(Math.max(0, s.acumulado))} r="3" fill="#2C1219" />)}
@@ -192,10 +192,11 @@ const CSS = `
   }
   .fd-hd { display: flex; align-items: center; gap: 8px; }
   .fd-hd-mes { display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,.18); border-radius: 10px; padding: 4px; }
-  .fd-hd-mes b { font-size: 13px; font-weight: 700; color: #fff; padding: 0 6px; white-space: nowrap; }
-  .fd-hd-mes button { width: 26px; height: 26px; border: none; border-radius: 7px; background: rgba(255,255,255,.18); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .fd-hd-mes b { font-size: 14px; font-weight: 700; color: #fff; padding: 0 6px; white-space: nowrap; }
+  .fd-hd-mes button { position: relative; width: 36px; height: 36px; border: none; border-radius: 8px; background: rgba(255,255,255,.18); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .fd-hd-mes button::after { content: ""; position: absolute; inset: -4px; }
   .fd-hd-mes button:disabled { opacity: .35; cursor: default; }
-  .fd-hd-bt { display: flex; align-items: center; gap: 6px; border: none; border-radius: 10px; padding: 9px 13px; font-family: var(--font-base); font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; white-space: nowrap; }
+  .fd-hd-bt { display: flex; align-items: center; gap: 6px; min-height: 44px; border: none; border-radius: var(--ui-raio-botao); padding: 0 14px; font-family: var(--font-base); font-size: 14px; font-weight: 700; color: #fff; cursor: pointer; white-space: nowrap; }
   .fd-hd-bt.e { background: #16A34A; } .fd-hd-bt.s { background: #2C1219; }
   /* foco no convite do saldo: o resto fica levemente apagado (sem bloquear) */
   .fd > * { transition: opacity .3s ease, filter .3s ease; }
@@ -227,7 +228,7 @@ const CSS = `
   .fd-fl-res { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 4px; font-size: 12.5px; color: #6B5D64; }
   .fd-fl-res b { font-weight: 700; color: #2C1219; } .fd-fl-res b.e { color: #15803D; } .fd-fl-res b.s { color: #DC2626; }
   .fd-nota { margin: 8px 0 0; font-size: 12px; color: #9A8E94; line-height: 1.4; }
-  .fd-mais-t { margin: 4px 0 8px; font-size: 13px; font-weight: 800; letter-spacing: .06em; color: #9A8E94; }
+  .fd-mais-t { margin: 4px 0 8px; font-size: 13px; font-weight: 700; color: #9A8E94; }
   .fd-mais-g { display: grid; grid-template-columns: 1fr; gap: 8px; }
   @media (min-width: 640px) { .fd-mais-g { grid-template-columns: repeat(3, 1fr); } }
   .fd-mais-g button { display: grid; grid-template-columns: 38px 1fr; column-gap: 10px; align-items: center; text-align: left; background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px; font-family: inherit; color: #2C1219; cursor: pointer; }

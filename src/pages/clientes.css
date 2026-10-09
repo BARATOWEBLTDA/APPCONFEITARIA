@@ -142,7 +142,7 @@
 .cl9-f-mais svg { flex: none; color: var(--ui-texto-2); transition: transform .2s; }
 .cl9-f-mais.on svg { transform: rotate(180deg); }
 .cl9-f-extra { display: flex; flex-direction: column; gap: 14px; }
-.cl9-f-sec { margin: 8px 0 -4px; font-size: 15px; font-weight: 800; }
+.cl9-f-sec { margin: 8px 0 -4px; font-size: 15px; font-weight: 700; }
 .cl9-f-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .cl9-f-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .cl9-f-chips button { min-height: 44px; margin: 0; padding: 0 14px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto-2); font-size: 14px; font-weight: 700; }

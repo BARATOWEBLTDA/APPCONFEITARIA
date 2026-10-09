@@ -199,14 +199,14 @@ const CSS = `
   .tx-ph { height: 220px; background: #FAF7F8; border-radius: 16px; }
   .tx-vazio { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 26px 18px; text-align: center; }
   .tx-vazio b { display: block; font-size: 15.5px; font-weight: 700; } .tx-vazio p { margin: 6px auto 0; font-size: 13.5px; color: #6B5D64; max-width: 360px; line-height: 1.45; }
-  .tx-dia-t { margin: 0 0 6px; font-size: 13px; font-weight: 800; letter-spacing: .05em; color: #9A8E94; } .tx-dia-t span { color: #6B5D64; }
+  .tx-dia-t { margin: 0 0 6px; font-size: 13px; font-weight: 700; color: #9A8E94; } .tx-dia-t span { color: #6B5D64; }
   .tx-lista { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 2px 14px; }
   .tx-it { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: none; border-top: 1px solid #F5F0F2; padding: 11px 0; font-family: inherit; color: #2C1219; cursor: pointer; }
   .tx-it:first-child { border-top: none; }
   @media (min-width: 900px) { .tx-it { grid-template-columns: 34px minmax(0, 1fr) 140px 130px; } }
   .tx-ic { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
   .tx-ic.e { background: #DCFCE7; color: #15803D; } .tx-ic.s { background: #FEE2E2; color: #DC2626; }
-  .tx-it-t b { display: block; font-size: 14px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tx-it-t b { display: block; font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tx-it-t small { display: block; font-size: 12px; color: #888780; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
   .tx-it-c { display: none; font-size: 12.5px; color: #6B5D64; }
   @media (min-width: 900px) { .tx-it-c { display: block; } }

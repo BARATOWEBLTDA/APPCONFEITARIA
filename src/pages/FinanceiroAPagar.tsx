@@ -239,11 +239,11 @@ const CSS = `
   .fap-vazio b { display: block; font-size: 17px; font-weight: 700; color: #2C1219; margin-top: 12px; }
   .fap-vazio p { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 6px auto 0; max-width: 380px; text-wrap: balance; }
   .fap-link { border: none; background: none; padding: 0; font: inherit; color: #C33A6E; font-weight: 700; cursor: pointer; text-decoration: underline; }
-  .fap-gt { margin: 0 0 8px; font-size: 13px; font-weight: 700; letter-spacing: .06em; color: #9A8E94; } .fap-gt span { color: #6B5D64; }
+  .fap-gt { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: #9A8E94; } .fap-gt span { color: #6B5D64; }
   .fap-lista { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
   .fap-it { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 14px; }
   .fap-it-h { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-  .fap-it-h b { font-size: 14.5px; font-weight: 800; color: #2C1219; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fap-it-h b { font-size: 14.5px; font-weight: 700; color: #2C1219; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .fap-tg { flex-shrink: 0; font-size: 12px; font-weight: 700; color: #92400E; background: #FEF3C7; padding: 3px 8px; border-radius: 7px; }
   .fap-tg--atr { color: #991B1B; background: #FEE2E2; }
   .fap-it-v { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 6px; }

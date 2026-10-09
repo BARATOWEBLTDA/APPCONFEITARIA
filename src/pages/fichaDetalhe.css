@@ -21,7 +21,7 @@
 .fd-conta { display: flex; flex-direction: column; }
 .fd-conta > div { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; font-size: 14px; color: var(--ui-texto-2); }
 .fd-conta > div span:last-child { font-weight: 700; color: var(--ui-texto); white-space: nowrap; }
-.fd-conta .fd-t { margin-top: 4px; padding-top: 11px; border-top: 1px solid var(--ui-linha); font-size: 15px; font-weight: 800; color: var(--ui-texto); }
+.fd-conta .fd-t { margin-top: 4px; padding-top: 11px; border-top: 1px solid var(--ui-linha); font-size: 15px; font-weight: 700; color: var(--ui-texto); }
 .fd-conta .fd-t span:last-child { font-weight: 800; }
 .fd-conta .fd-pv span:last-child { color: var(--ui-rosa-escuro); }
 

@@ -116,7 +116,7 @@ const CSS = `
   .cid { margin-top: 10px; background: #fff; border: 1.5px solid #F7C6D9; border-radius: 16px; padding: 14px; font-family: var(--font-base); color: #2C1219; max-width: 340px; }
   .cid-hd { display: flex; gap: 11px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #F5F0F2; }
   .cid-ic { width: 40px; height: 40px; border-radius: 10px; background: #FCE0E9; color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .cid-k { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .1em; color: #E85A8C; }
+  .cid-k { margin: 0; font-size: 12px; font-weight: 700; color: #E85A8C; }
   .cid-hd b { display: block; font-size: 16px; font-weight: 700; margin-top: 1px; }
   .cid-kv { display: grid; grid-template-columns: 96px 1fr; gap: 7px 10px; margin: 12px 0 0; font-size: 14px; }
   .cid-kv dt { color: #888780; font-weight: 600; } .cid-kv dd { margin: 0; font-weight: 700; }

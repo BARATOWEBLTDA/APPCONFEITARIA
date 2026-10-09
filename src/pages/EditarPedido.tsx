@@ -3576,7 +3576,7 @@ const EP2_CSS = `
   .ep2-cupom { position: relative; background: #FFFDF8; border-radius: 10px 10px 0 0; padding: 14px 14px 16px; margin-bottom: 10px; box-shadow: 0 10px 24px -12px rgba(44,18,25,.28); font-variant-numeric: tabular-nums; }
   .ep2-cupom::after { content: ""; position: absolute; left: 0; right: 0; bottom: -8px; height: 8px; background: radial-gradient(circle at 7px 0, #FFFDF8 6.5px, transparent 7px) 0 0 / 14px 8px repeat-x; } /* borda serrilhada */
   .ep2-cup-h { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 4px; } /* sem a linha tracejada embaixo do título */
-  .ep2-cup-h b { font-size: 12px; font-weight: 800; letter-spacing: .12em; color: #2C1219; } .ep2-cup-h span { font-size: 12px; font-weight: 700; color: #9A8E94; }
+  .ep2-cup-h b { font-size: 12px; font-weight: 700; color: #2C1219; } .ep2-cup-h span { font-size: 12px; font-weight: 700; color: #9A8E94; }
   .ep2-cup-it { padding: 10px 0 11px; border-bottom: 1.5px dashed #E6DADF; display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 10px; align-items: start; }
   .ep2-cup-f { position: relative; width: 44px; height: 44px; border-radius: 11px; background: #F3EEF1; color: #B5A6AD; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-top: 1px; }
   .ep2-cup-f svg { width: 20px; height: 20px; } .ep2-cup-f img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -3592,7 +3592,7 @@ const EP2_CSS = `
   .ep2-cup-un span { font-size: 12px; color: #9A8E94; }
   .ep2-anexo { position: relative; margin: 14px 4px 4px 0; background: #fff; border: 1.5px dashed #F3A9C6; border-radius: 12px; padding: 12px; transform: rotate(-.6deg); box-shadow: 0 6px 14px -8px rgba(195,58,110,.35); }
   .ep2-anexo-clip { position: absolute; top: -12px; left: 16px; width: 26px; height: 26px; border-radius: 50%; background: #fff; color: #C33A6E; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 4px rgba(0,0,0,.18); }
-  .ep2-anexo-t { margin: 2px 0 8px; font-size: 12px; font-weight: 800; letter-spacing: .08em; color: #C33A6E; }
+  .ep2-anexo-t { margin: 2px 0 8px; font-size: 12px; font-weight: 700; color: #C33A6E; }
   .ep2-anexo-foto { position: relative; display: block; width: 100%; height: 150px; border-radius: 10px; overflow: hidden; background: linear-gradient(135deg, #F7C6D9, #C9B4F5); }
   .ep2-anexo-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .ep2-anexo-ph { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: #fff; }
@@ -3650,12 +3650,12 @@ const EP2_CSS = `
   /* ══ itens do pedido (03/10): modelo aprovado — nome numa linha, campos com rótulo, adicionais em caixinhas
         (uma por linha), referência grande e centralizada, valor no fim. Nada quebra linha (só o recado). ══ */
   .ep3 { background: #fff; border-radius: 16px; padding: 14px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(44,18,25,.05), 0 8px 22px -6px rgba(44,18,25,.10); border: 1px solid #EADFE4; font-variant-numeric: tabular-nums; }
-  .ep3-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; } .ep3-h b { font-size: 15.5px; font-weight: 800; color: #2C1219; } .ep3-h span { font-size: 12.5px; font-weight: 600; color: #9A8E94; }
+  .ep3-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; } .ep3-h b { font-size: 15.5px; font-weight: 700; color: #2C1219; } .ep3-h span { font-size: 12.5px; font-weight: 600; color: #9A8E94; }
   .ep3-it { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 10px; padding: 13px 0; border-top: 1px solid #F2ECEF; }
   .ep3-h + .ep3-it { border-top: none; }
   .ep3-c { min-width: 0; }
   .ep3-nmw { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; } .ep3-nmw .ep3-nm { flex: 1; min-width: 0; margin: 0; }
-  .ep3-add-h { display: inline-flex; align-items: center; gap: 4px; border: none; background: #FDF2F6; color: #C33A6E; border-radius: 10px; padding: 7px 11px; font-family: inherit; font-size: 13.5px; font-weight: 800; cursor: pointer; }
+  .ep3-add-h { display: inline-flex; align-items: center; gap: 4px; border: none; background: #FDF2F6; color: #C33A6E; border-radius: 10px; padding: 7px 11px; font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; }
   .ep3-cont { margin: 8px 0 0; padding-top: 10px; border-top: 1px solid #F2ECEF; font-size: 12.5px; color: #9A8E94; text-align: center; }
   .ep3-nm { margin: 0 0 4px; font-size: 15.5px; font-weight: 700; color: #2C1219; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ep3-nm em { font-style: normal; font-weight: 700; color: #C33A6E; }

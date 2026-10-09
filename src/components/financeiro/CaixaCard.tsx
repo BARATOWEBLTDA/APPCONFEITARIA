@@ -146,7 +146,7 @@ const CSS = `
   .cxc-depois { display: block; min-height: 44px; margin: 4px auto 0; border: none; background: none; padding: 8px 16px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #9A8E94; cursor: pointer; }
   .cxc-cta { margin-top: 14px; border: none; border-radius: 12px; padding: 12px 18px; background: #E85A8C; color: #fff; font-family: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 0 #C33A6E; }
   .cxc-movs { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 12px 14px; font-family: var(--font-base); }
-  .cxc-movs-t { margin: 0 0 4px; font-size: 14.5px; font-weight: 800; color: #2C1219; }
+  .cxc-movs-t { margin: 0 0 4px; font-size: 14.5px; font-weight: 700; color: #2C1219; }
   .cxc-movs-vazio { margin: 6px 0 2px; font-size: 13px; color: #888780; line-height: 1.45; }
   .cxc-mv { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid #F5F0F2; }
   .cxc-mv:first-of-type { border-top: none; }

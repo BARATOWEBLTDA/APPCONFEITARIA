@@ -149,7 +149,7 @@ export default function NotificacoesSons() {
       <style>{`
         .ns-root { font-family: var(--font-base); padding: 16px 4px 100px; max-width: 640px; margin: 0 auto; }
         .ns-sec {
-          font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
+          font-size: 13px; font-weight: 700;
           color: #888780; margin: 6px 6px 8px;
         }
         .ns-card {
@@ -174,7 +174,7 @@ export default function NotificacoesSons() {
           background: #FAF7F8; font-size: 13px; color: #6E5A66; line-height: 1.45;
         }
         .ns-toggle { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
-        .ns-toggle input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
+        .ns-toggle input { position: absolute; inset: -9px -4px; width: calc(100% + 8px); height: calc(100% + 18px); margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
         .ns-toggle input:disabled { cursor: not-allowed; }
         .ns-toggle-s { position: absolute; inset: 0; background: #E5DDE0; border-radius: 26px; transition: 0.25s; }
         .ns-toggle-s::before {

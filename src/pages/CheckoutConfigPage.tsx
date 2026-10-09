@@ -94,8 +94,14 @@ export default function CheckoutConfigPage() {
     load()
   }, [])
 
+  // 09/10: não salva (nem mostra "Salvo") só por ter aberto a tela; salva depois que algo muda
+  const foto = JSON.stringify([formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, enderecoRetirada, horarioRetirada, exibirCampoTroco, cupons, aceitaAgendamento, prazoMinimo])
+  const salvoRef = useRef<string | null>(null)
+  useEffect(() => { if (!loading) salvoRef.current = foto }, [loading]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (loading || !userId) return
+    if (salvoRef.current === null || salvoRef.current === foto) return
+    salvoRef.current = foto
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(async () => {
       await supabase.from('profiles').update({

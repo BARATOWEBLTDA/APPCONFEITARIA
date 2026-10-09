@@ -284,7 +284,7 @@ const CSS = `
   .cu-vazio { margin: 6px 0 4px; font-size: 13px; color: #888780; line-height: 1.45; }
   .cu-it { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: none; border-top: 1px solid #F5F0F2; padding: 11px 2px; font-family: inherit; color: #2C1219; cursor: pointer; }
   .cu-it:first-of-type { border-top: none; }
-  .cu-it-t { flex: 1; min-width: 0; } .cu-it-t b { display: block; font-size: 14px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cu-it-t { flex: 1; min-width: 0; } .cu-it-t b { display: block; font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cu-it-t small { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #888780; margin-top: 2px; }
   .cu-it-v { font-size: 14px; font-weight: 700; white-space: nowrap; } .cu-it-ar { color: #C9BEC3; flex-shrink: 0; }
   .cu-it.off { opacity: .55; }

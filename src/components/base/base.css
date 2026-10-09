@@ -120,7 +120,7 @@
 .ui-tit--tela .ui-tit-h { font-size: 22px; font-weight: 800; letter-spacing: -.02em; }
 .ui-tit--janela .ui-tit-h { font-size: 18px; font-weight: 800; }
 .ui-tit--secao .ui-tit-h { font-size: 16px; font-weight: 800; }
-.ui-tit-n { display: inline-flex; align-items: center; justify-content: center; flex: none; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 7px; background: var(--ui-cinza); color: var(--ui-cinza-texto); font-size: 12px; font-weight: 800; font-style: normal; font-variant-numeric: tabular-nums; }
+.ui-tit-n { display: inline-flex; align-items: center; justify-content: center; flex: none; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 7px; background: var(--ui-cinza); color: var(--ui-cinza-texto); font-size: 12px; font-weight: 700; font-style: normal; font-variant-numeric: tabular-nums; }
 .ui-tit-a { margin: 2px 0 0; font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
 .ui-tit-acao { display: flex; align-items: center; gap: 6px; flex: none; }
 .ui-tit--vermelho .ui-tit-h { color: var(--ui-vermelho); }

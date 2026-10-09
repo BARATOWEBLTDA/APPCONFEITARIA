@@ -294,7 +294,7 @@ export default function Pedidos() {
   return (
     <>
       <AppPageHeader
-        title="Meus Pedidos"
+        title="Meus pedidos"
         subtitle="Acompanhe suas encomendas e produção"
         infoIcon="📋"
         infoContent={

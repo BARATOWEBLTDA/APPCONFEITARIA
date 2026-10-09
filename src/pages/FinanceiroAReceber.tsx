@@ -199,12 +199,12 @@ const CSS = `
   .far-vazio-ic { width: 64px; height: 64px; border-radius: 20px; background: #F0FDF4; color: #16A34A; display: inline-flex; align-items: center; justify-content: center; }
   .far-vazio b { display: block; font-size: 17px; font-weight: 700; margin-top: 12px; color: #2C1219; }
   .far-vazio p { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 6px auto 0; max-width: 360px; text-wrap: balance; }
-  .far-gt { margin: 0 0 8px; font-size: 13px; font-weight: 700; letter-spacing: .06em; color: #9A8E94; }
+  .far-gt { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: #9A8E94; }
   .far-gt span { color: #6B5D64; }
   .far-lista { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
   .far-it { min-width: 0; background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 14px; }
   .far-it-h { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-  .far-it-h b { font-size: 14.5px; font-weight: 800; color: #2C1219; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .far-it-h b { font-size: 14.5px; font-weight: 700; color: #2C1219; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .far-tg { flex-shrink: 0; font-size: 12px; font-weight: 700; color: #92400E; background: #FEF3C7; padding: 3px 8px; border-radius: 7px; }
   .far-tg--atr { color: #991B1B; background: #FEE2E2; }
   .far-it-v { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 6px; }

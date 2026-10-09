@@ -62,8 +62,8 @@ export default function CardapioSubnav() {
           .layout-root.com-cdnav .cab { margin-left: calc(-236px - 2rem) !important; padding-left: calc(236px + 2rem) !important; }
         }
         .cdnav-g + .cdnav-g { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--ui-borda); }
-        .cdnav-t { margin: 0; padding: 4px 12px 6px; font-size: 12.5px; font-weight: 800; color: var(--ui-texto-3); }
-        .cdnav-i { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 44px; margin: 0; padding: 0 12px; border: 0; border-radius: var(--ui-raio);
+        .cdnav-t { margin: 0; padding: 4px 12px 6px; font-size: 12.5px; font-weight: 700; color: var(--ui-texto-3); }
+        .cdnav-i { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; margin: 0; padding: 0 10px; white-space: nowrap; border: 0; border-radius: var(--ui-raio);
           background: none; color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 600; text-align: left; cursor: pointer; transition: background-color var(--dur-fast) linear; }
         .cdnav-i svg { flex: none; color: var(--ui-texto-2); }
         .cdnav-i:hover { background: #EFE9EC; }

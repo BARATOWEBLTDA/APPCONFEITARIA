@@ -40,7 +40,7 @@ export default function PrevistosCard() {
         .pvc { display: block; width: 100%; text-align: left; background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 14px; font-family: var(--font-base); color: #2C1219; cursor: pointer; }
         .pvc--carregando { height: 128px; background: #F5F0F2; border: none; }
         .pvc-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 10px; }
-        .pvc-h b { font-size: 14.5px; font-weight: 800; } .pvc-h em { font-style: normal; font-size: 13px; font-weight: 700; color: #9A8E94; white-space: nowrap; }
+        .pvc-h b { font-size: 14.5px; font-weight: 700; } .pvc-h em { font-style: normal; font-size: 13px; font-weight: 700; color: #9A8E94; white-space: nowrap; }
         .pvc-g { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         .pvc-g span { background: #FFFBEB; border-radius: 10px; padding: 9px 6px; text-align: center; min-width: 0; }
         .pvc-g small { display: block; font-size: 12px; font-weight: 700; color: #92400E; }

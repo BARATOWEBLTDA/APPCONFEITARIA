@@ -306,7 +306,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
             flex-shrink: 0;
           }
           .pap-done-info { flex: 1; }
-          .pap-done-t { font-size: 13.5px; font-weight: 800; margin: 0; }
+          .pap-done-t { font-size: 13.5px; font-weight: 700; margin: 0; }
           .pap-done-s { font-size: 12px; opacity: 0.9; margin: 1px 0 0; }
           .pap-share-btn, .pap-done-btn { white-space: nowrap; }
           @media (max-width: 400px) { .pap-share-actions, .pap-done-actions { gap: 6px !important; } .pap-share-btn, .pap-done-btn { font-size: 12px !important; padding-left: 8px !important; padding-right: 8px !important; } }
@@ -413,11 +413,10 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
             font-size: 12px;
             font-weight: 700;
             color: #86EFAC;
-            letter-spacing: 0.06em;
           }
           .pap-share-t {
             font-size: 15px;
-            font-weight: 800;
+            font-weight: 700;
             margin: 0 0 4px;
             position: relative;
           }
@@ -640,8 +639,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         }
         .pap-hero-eyebrow {
           font-size: 12px;
-          font-weight: 800;
-          letter-spacing: 0.14em;
+          font-weight: 700;
           color: #F9A8C9;
           margin: 0 0 6px;
         }
@@ -669,7 +667,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           border-radius: 10px;
           font-family: inherit;
           font-size: 13.5px;
-          font-weight: 800;
+          font-weight: 700;
           cursor: pointer;
         }
         .pap-hero-cta:active { transform: scale(0.98); }
@@ -698,9 +696,8 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         /* Lista compacta */
         .pap-list-title {
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 700;
           color: #6B7280;
-          letter-spacing: 0.08em;
           margin: 0 4px 8px;
         }
         .pap-item {
@@ -765,7 +762,6 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           font-size: 12px;
           font-weight: 700;
           color: #2C1219;
-          letter-spacing: 0.06em;
           flex-shrink: 0;
         }
       `}</style>

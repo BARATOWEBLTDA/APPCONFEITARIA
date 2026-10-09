@@ -129,10 +129,10 @@ export default function Notificacoes() {
         .ntf-img img { width: 100%; height: 100%; object-fit: cover; }
         .ntf-content { flex: 1; min-width: 0; }
         .ntf-row { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
-        .ntf-t { font-size: 13.5px; font-weight: 800; color: #2C1219; margin: 0; line-height: 1.3; flex: 1; min-width: 0; }
+        .ntf-t { font-size: 13.5px; font-weight: 700; color: #2C1219; margin: 0; line-height: 1.3; flex: 1; min-width: 0; }
         .ntf-badge {
           background: #E85A8C; color: #fff;
-          font-size: 12px; font-weight: 700; letter-spacing: 0.05em;
+          font-size: 12px; font-weight: 700;
           padding: 2px 7px; border-radius: 4px; flex-shrink: 0;
         }
         .ntf-msg { font-size: 12.5px; color: #6B7280; margin: 0 0 6px; line-height: 1.45; }
@@ -144,7 +144,7 @@ export default function Notificacoes() {
         @keyframes ntfSpin { to { transform: rotate(360deg); } }
         .ntf-empty { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 60px 24px; }
         .ntf-empty-ic { width: 64px; height: 64px; border-radius: 50%; background: #FFF5F9; color: #E85A8C; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
-        .ntf-empty-t { font-size: 14.5px; font-weight: 800; color: #2C1219; margin: 0 0 4px; }
+        .ntf-empty-t { font-size: 14.5px; font-weight: 700; color: #2C1219; margin: 0 0 4px; }
         .ntf-empty-d { font-size: 12.5px; color: #6B7280; margin: 0; line-height: 1.5; max-width: 280px; }
       `}</style>
     </>

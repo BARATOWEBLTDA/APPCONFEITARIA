@@ -1022,7 +1022,6 @@ export default function Inicio() {
           font-family: var(--font-base);
           font-size: 12.5px;
           font-weight: 700;
-          letter-spacing: 0.05em;
           margin-left: 4px;
           vertical-align: middle;
           white-space: nowrap;
@@ -1281,7 +1280,7 @@ export default function Inicio() {
           color: #fff;
         }
         .ini-hero-cta-txt { flex: 1; z-index: 1; }
-        .ini-hero-cta-t { font-size: 16px; font-weight: 800; line-height: 1.15; }
+        .ini-hero-cta-t { font-size: 16px; font-weight: 700; line-height: 1.15; }
         .ini-hero-cta-d { font-size: 12.5px; opacity: 0.9; margin-top: 2px; }
         .ini-hero-cta-arr { color: #fff; opacity: 0.9; z-index: 1; flex-shrink: 0; }
 

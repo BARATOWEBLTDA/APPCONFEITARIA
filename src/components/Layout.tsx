@@ -327,7 +327,6 @@ export default function Layout() {
           font-weight: var(--fw-bold);
           padding: 4px 8px;
           white-space: nowrap;
-          letter-spacing: 0.04em;
           color: #fff;
           background: #2D1F26;
           border-radius: 6px;

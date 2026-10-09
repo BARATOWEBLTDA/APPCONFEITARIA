@@ -95,7 +95,7 @@ const CSS = `
   .cpd { margin-top: 10px; background: #fff; border: 1.5px solid #F7C6D9; border-radius: 16px; padding: 14px; font-family: var(--font-base); color: #2C1219; max-width: 340px; }
   .cpd-hd { display: flex; gap: 11px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #F5F0F2; }
   .cpd-ic { width: 40px; height: 40px; border-radius: 10px; background: #FCE0E9; color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .cpd-k { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .08em; color: #E85A8C; }
+  .cpd-k { margin: 0; font-size: 12px; font-weight: 700; color: #E85A8C; }
   .cpd-hd b { display: flex; align-items: center; gap: 6px; font-size: 16px; font-weight: 700; margin-top: 1px; flex-wrap: wrap; }
   .cpd-tag { font-size: 12px; font-weight: 700; color: #1D4ED8; background: #DBEAFE; padding: 2px 7px; border-radius: 6px; }
   .cpd-itens { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }

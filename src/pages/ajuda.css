@@ -30,6 +30,6 @@
 .aj-h { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); }
 .aj-h-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .aj-h-top small { font-size: 13px; color: var(--ui-texto-3); }
-.aj-h b { font-size: 15px; font-weight: 800; }
+.aj-h b { font-size: 15px; font-weight: 700; }
 .aj-h p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
 .aj-h em { align-self: flex-start; font-style: normal; font-size: 13px; color: var(--ui-texto-2); }
