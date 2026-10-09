@@ -507,8 +507,8 @@ export default function Layout() {
             bottom: 0; left: 0; right: 0;
             z-index: 50;
             padding: 0 0 env(safe-area-inset-bottom, 0px);
-            background: var(--vinho-escuro);
-            box-shadow: 0 -2px 16px rgba(44, 18, 25, 0.25);
+            background: var(--vinho-profundo);
+            box-shadow: 0 -2px 16px rgba(31, 7, 17, 0.3);
           }
           .bottom-nav-pill {
             display: flex;

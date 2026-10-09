@@ -17,7 +17,7 @@
   /* Vinho — a segunda cor da marca (03/10) */
   --vinho:            #4B1528;
   --vinho-escuro:     #2C1219;
-  --vinho-profundo:   #1A090E; /* menu lateral do computador: mais fechado, porque lá ocupa a altura toda de uma tela grande (07/10) */
+  --vinho-profundo:   #1F0711; /* menus de navegação (lateral do computador e de baixo do celular): vinho bem escuro, puxado pro vinho e não pro marrom (08/10) */
   --vinho-claro:      #72243E;
   --vinho-rgb:        75, 21, 40;
   --vinho-fundo:      radial-gradient(1000px 640px at 50% 38%, #4B1528 0%, #2C1219 72%); /* fundo de marca (login) */
