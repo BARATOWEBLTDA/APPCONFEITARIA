@@ -14,7 +14,8 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { ShareNetwork, Copy, WhatsappLogo, Check, Trophy, Lock } from "@phosphor-icons/react";
+import { ShareNetwork, Copy, WhatsappLogo, Check, Trophy, Lock, Gift, UsersThree } from "@phosphor-icons/react";
+import AppPageHeader from "@/components/AppPageHeader";
 
 interface Amiga {
   id: string;
@@ -84,7 +85,7 @@ export default function Indicar() {
     `Oi! Tô usando o Doonly pra organizar minha confeitaria — recomendo demais! 💖\n\n` +
     `Se você entrar pelo meu link ganha:\n` +
     `🎁 Kit grátis de precificação\n` +
-    `💰 50% OFF no 1º mês PRO\n\n` +
+    `💰 70% OFF no 1º mês do PRO\n\n` +
     link
   );
 
@@ -107,7 +108,7 @@ export default function Indicar() {
       try {
         await navigator.share({
           title: "Doonly - Gestão pra confeiteiras",
-          text: `Tô usando o Doonly! Entra pelo meu link e ganha 50% OFF no 1º mês PRO`,
+          text: `Tô usando o Doonly! Entra pelo meu link e ganha 70% OFF no 1º mês do PRO`,
           url: link,
         });
       } catch {}
@@ -120,6 +121,8 @@ export default function Indicar() {
   const proximoIdx = PREMIOS.findIndex(p => p.meta > conversoes);
 
   return (
+    <>
+    <AppPageHeader title="Indique e ganhe" subtitle="Prêmios por cada assinante que você indicar" />
     <div className="ind-root">
       <div className="ind-grid">
 
@@ -227,7 +230,7 @@ export default function Indicar() {
       {/* ── CONTADOR DESTAQUE (dinâmico) ────────────── */}
       {conversoes === 0 ? (
         <div className="ind-contador ind-contador--zero">
-          <div className="ind-contador-emoji">🎁</div>
+          <div className="ind-contador-emoji"><Gift size={30} weight="duotone" /></div>
           <div className="ind-contador-title-zero">Comece agora sua jornada!</div>
           <div className="ind-contador-desc-zero">
             Compartilhe seu link e ganhe seu 1º prêmio:<br/>
@@ -241,7 +244,7 @@ export default function Indicar() {
           <div className="ind-contador-desc">
             {proximoIdx !== -1
               ? `assinantes. Faltam ${PREMIOS[proximoIdx].meta - conversoes} para o próximo prêmio!`
-              : "assinantes. Você conquistou todos os prêmios! 🎉"}
+              : "assinantes. Você conquistou todos os prêmios!"}
           </div>
         </div>
       )}
@@ -255,7 +258,7 @@ export default function Indicar() {
 
         {amigas.length === 0 ? (
           <div className="ind-empty">
-            <div className="ind-empty-emoji">👥</div>
+            <div className="ind-empty-emoji"><UsersThree size={30} weight="duotone" /></div>
             <div className="ind-empty-title">Ninguém ainda</div>
             <div className="ind-empty-desc">Compartilhe seu link e acompanhe por aqui quem entra no Doonly através dele.</div>
           </div>
@@ -273,7 +276,7 @@ export default function Indicar() {
                     <div className="ind-amiga-tempo">{tempoTxt}</div>
                   </div>
                   {isPro
-                    ? <span className="ind-amiga-badge ind-amiga-badge--pro">👑 PRO</span>
+                    ? <span className="ind-amiga-badge ind-amiga-badge--pro">PRO</span>
                     : <span className="ind-amiga-badge ind-amiga-badge--trial">TRIAL</span>}
                 </div>
               );
@@ -292,7 +295,7 @@ export default function Indicar() {
           </div>
           <div className="ind-passo">
             <div className="ind-passo-num">2</div>
-            <div className="ind-passo-txt">Quem se cadastrar pelo seu link ganha 50% OFF no 1º mês PRO.</div>
+            <div className="ind-passo-txt">Quem se cadastrar pelo seu link ganha 70% OFF no 1º mês do PRO.</div>
           </div>
           <div className="ind-passo">
             <div className="ind-passo-num">3</div>
@@ -344,7 +347,7 @@ export default function Indicar() {
           margin-bottom: 12px;
         }
         .ind-hdr {
-          font-size: 10px;
+          font-size: 12px;
           font-weight: 800;
           letter-spacing: 0.08em;
           color: #888780;
@@ -354,7 +357,7 @@ export default function Indicar() {
           justify-content: space-between;
           align-items: baseline;
         }
-        .ind-hdr-count { font-weight: 700; color: #B4B2A9; letter-spacing: 0; font-size: 11px; text-transform: none; }
+        .ind-hdr-count { font-weight: 700; color: #B4B2A9; letter-spacing: 0; font-size: 12px; text-transform: none; }
         .ind-skeleton { height: 40px; background: #F0EBED; border-radius: 10px; animation: indShine 1.4s ease infinite; }
         @keyframes indShine { 0%, 100% { opacity: 0.7; } 50% { opacity: 0.4; } }
 
@@ -441,7 +444,7 @@ export default function Indicar() {
           margin-bottom: 12px;
         }
         .ind-contador-label {
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 700;
           color: #993556;
           letter-spacing: 0.05em;
@@ -491,7 +494,7 @@ export default function Indicar() {
 
         /* Roadmap — Opção B (cards grandes com foto) */
         .ind-premios-hdr {
-          font-size: 10px;
+          font-size: 12px;
           font-weight: 800;
           letter-spacing: 0.08em;
           color: #888780;
@@ -533,7 +536,7 @@ export default function Indicar() {
           position: absolute;
           top: 10px;
           left: 10px;
-          font-size: 9.5px;
+          font-size: 12px;
           font-weight: 800;
           padding: 4px 9px;
           border-radius: 999px;
@@ -553,7 +556,7 @@ export default function Indicar() {
           backdrop-filter: blur(6px);
           -webkit-backdrop-filter: blur(6px);
           color: #5F5E5A;
-          font-size: 10px;
+          font-size: 12px;
           font-weight: 800;
           padding: 4px 10px;
           border-radius: 999px;
@@ -576,7 +579,7 @@ export default function Indicar() {
           text-overflow: ellipsis;
         }
         .ind-pcard-desc {
-          font-size: 11.5px;
+          font-size: 13px;
           color: #888780;
           margin-top: 3px;
           line-height: 1.4;
@@ -593,7 +596,7 @@ export default function Indicar() {
           display: flex;
           justify-content: space-between;
           margin-bottom: 5px;
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 700;
           color: #888780;
         }
@@ -605,7 +608,7 @@ export default function Indicar() {
         .ind-pcard-faltam {
           margin-top: 10px;
           display: flex; align-items: center; gap: 5px;
-          font-size: 11px;
+          font-size: 12px;
           color: #888780;
           font-weight: 600;
         }
@@ -663,8 +666,8 @@ export default function Indicar() {
         }
         .ind-amiga-info { flex: 1; min-width: 0; }
         .ind-amiga-nome { font-size: 13.5px; font-weight: 700; color: #2C2C2A; }
-        .ind-amiga-tempo { font-size: 11.5px; color: #888780; }
-        .ind-amiga-badge { font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+        .ind-amiga-tempo { font-size: 13px; color: #888780; }
+        .ind-amiga-badge { font-size: 12px; font-weight: 800; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
         .ind-amiga-badge--pro { background: #DCFCE7; color: #166534; }
         .ind-amiga-badge--trial { background: #FEF0DF; color: #854F0B; }
 
@@ -739,5 +742,6 @@ export default function Indicar() {
         }
       `}</style>
     </div>
+    </>
   );
 }

@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import AppPageHeader from "@/components/AppPageHeader";
+import { avisar } from "@/components/base";
 import { refreshProfile } from "@/hooks/useProfile";
 import SugestaoWizard from "@/components/SugestaoWizard";
 import TermosModal from "@/components/TermosModal";
@@ -194,7 +196,7 @@ export default function Configuracoes() {
     } catch {}
 
     setSavingSenha(false);
-    setSenhaMsg("✓ Senha alterada com sucesso! Outros dispositivos foram deslogados.");
+    setSenhaMsg("Senha alterada. Os outros aparelhos saíram da conta.");
     setSenhaAtual("");
     setNovaSenha("");
     setConfirmSenha("");
@@ -303,6 +305,8 @@ export default function Configuracoes() {
   if (loading) return <div className="cfg-loading"><span className="cfg-spinner-lg" /></div>;
 
   return (
+    <>
+    <AppPageHeader title="Configurações" subtitle="Sua conta e o app" />
     <div className="cfg-root">
 
       {/* ─────────────── MOBILE ─────────────── */}
@@ -364,7 +368,7 @@ export default function Configuracoes() {
           )}
           {plano === "pro" && (
             <div className="cfgp-sub-info">
-              Você tem acesso a todas as funcionalidades. Obrigada por apoiar o Doonly! 💖
+              Você tem acesso a todas as funcionalidades. Obrigada por apoiar o Doonly!
             </div>
           )}
 
@@ -436,7 +440,7 @@ export default function Configuracoes() {
               <svg className="cfgp-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
 
-            <button className="cfgp-quick-item" onClick={() => alert("💬 Em breve! Chat de suporte a caminho.")}>
+            <button className="cfgp-quick-item" onClick={() => avisar("O chat de suporte chega em breve.", { tipo: "info" })}>
               <span className="cfgp-quick-ico cfgp-quick-ico--blue">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"/></svg>
               </span>
@@ -447,7 +451,7 @@ export default function Configuracoes() {
               <svg className="cfgp-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
 
-            <button className="cfgp-quick-item" onClick={() => alert("🚀 Central de ajuda em breve!")}>
+            <button className="cfgp-quick-item" onClick={() => avisar("A central de ajuda chega em breve.", { tipo: "info" })}>
               <span className="cfgp-quick-ico cfgp-quick-ico--gray">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               </span>
@@ -484,7 +488,7 @@ export default function Configuracoes() {
             </button>
           ) : (
             <div className="cfgp-delete-panel">
-              <p className="cfgp-delete-warn">⚠️ Sua conta, seu cardápio e todos os seus dados (produtos, pedidos, clientes) serão excluídos em até 7 dias, sem volta. Digite <b>EXCLUIR</b> para confirmar.</p>
+              <p className="cfgp-delete-warn">Sua conta, seu cardápio e todos os seus dados (produtos, pedidos, clientes) serão excluídos em até 7 dias, sem volta. Digite <b>EXCLUIR</b> para confirmar.</p>
               <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--error)" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>} placeholder="Digite EXCLUIR" value={excluirConfirm} onChange={(e: any) => setExcluirConfirm(e.target.value)} />
               <div className="cfgp-delete-actions">
                 <button className="cfgp-delete-cancel" onClick={() => { setShowExcluir(false); setExcluirConfirm(""); }}>Cancelar</button>
@@ -556,7 +560,7 @@ export default function Configuracoes() {
           )}
           {plano === "pro" && (
             <div className="cfgd-sub-info">
-              Você tem acesso a todas as funcionalidades. Obrigada por apoiar o Doonly! 💖
+              Você tem acesso a todas as funcionalidades. Obrigada por apoiar o Doonly!
             </div>
           )}
 
@@ -585,7 +589,7 @@ export default function Configuracoes() {
             </button>
           ) : (
             <div className="cfgd-delete-panel">
-              <p className="cfgd-delete-warn">⚠️ Sua conta, seu cardápio e todos os seus dados (produtos, pedidos, clientes) serão excluídos em até 7 dias, sem volta. Digite <b>EXCLUIR</b> para confirmar.</p>
+              <p className="cfgd-delete-warn">Sua conta, seu cardápio e todos os seus dados (produtos, pedidos, clientes) serão excluídos em até 7 dias, sem volta. Digite <b>EXCLUIR</b> para confirmar.</p>
               <input type="text" placeholder="Digite EXCLUIR" value={excluirConfirm} onChange={e => setExcluirConfirm(e.target.value)} className="cfgd-delete-input" />
               <div className="cfgd-delete-actions">
                 <button className="cfgd-delete-cancel" onClick={() => { setShowExcluir(false); setExcluirConfirm(""); }}>Cancelar</button>
@@ -649,7 +653,7 @@ export default function Configuracoes() {
               <svg className="cfgd-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
 
-            <button className="cfgd-quick-item" onClick={() => alert("💬 Em breve! Chat de suporte a caminho.")}>
+            <button className="cfgd-quick-item" onClick={() => avisar("O chat de suporte chega em breve.", { tipo: "info" })}>
               <span className="cfgd-quick-ico cfgd-quick-ico--blue">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"/></svg>
               </span>
@@ -660,7 +664,7 @@ export default function Configuracoes() {
               <svg className="cfgd-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
 
-            <button className="cfgd-quick-item" onClick={() => alert("🚀 Central de ajuda em breve!")}>
+            <button className="cfgd-quick-item" onClick={() => avisar("A central de ajuda chega em breve.", { tipo: "info" })}>
               <span className="cfgd-quick-ico cfgd-quick-ico--gray">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               </span>
@@ -781,11 +785,11 @@ export default function Configuracoes() {
         .cfgp-hero-cam { position: absolute; bottom: -2px; right: -2px; width: 24px; height: 24px; border-radius: 50%; background: #993556; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; z-index: 2; }
         .cfgp-hero-info { flex: 1; min-width: 0; }
         .cfgp-hero-nome { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
-        .cfgp-hero-email { font-size: 11.5px; opacity: 0.9; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+        .cfgp-hero-email { font-size: 13px; opacity: 0.9; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
         .cfgp-hero-edit {
           all: unset;
           cursor: pointer;
-          width: 36px; height: 36px;
+          width: 44px; height: 44px;
           border-radius: 10px;
           background: rgba(255, 255, 255, 0.14);
           color: #fff;
@@ -799,10 +803,10 @@ export default function Configuracoes() {
         /* Card assinatura */
         .cfgp-sub { padding: 16px 18px; }
         .cfgp-sub-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 12px; }
-        .cfgp-sub-label { font-size: 10px; font-weight: 800; letter-spacing: 0.08em; color: #888780; text-transform: uppercase; }
+        .cfgp-sub-label { font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: #888780; text-transform: uppercase; }
         .cfgp-sub-plan { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
         .cfgp-sub-plan-name { font-size: 20px; font-weight: 900; color: #2C2C2A; letter-spacing: -0.02em; }
-        .cfgp-sub-badge { font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 999px; letter-spacing: 0.04em; }
+        .cfgp-sub-badge { font-size: 12px; font-weight: 800; padding: 3px 8px; border-radius: 999px; letter-spacing: 0.04em; }
         .cfgp-sub-badge--pro { background: #DCFCE7; color: #166534; }
         .cfgp-sub-badge--trial { background: #FEF0DF; color: #854F0B; }
         .cfgp-sub-badge--exp { background: #FEE2E2; color: #B91C1C; }
@@ -839,8 +843,8 @@ export default function Configuracoes() {
         .cfgp-sub-cta--manage:hover { background: #FCE0E9; box-shadow: 0 4px 10px rgba(232, 90, 140, 0.18); }
 
         /* Blocos */
-        .cfgp-block-hdr { padding: 12px 18px 6px; font-size: 10px; font-weight: 800; letter-spacing: 0.08em; color: #888780; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
-        .cfgp-edit-btn { all: unset; cursor: pointer; font-size: 11px; font-weight: 700; color: #E85A8C; letter-spacing: 0.04em; text-transform: uppercase; font-family: var(--font-base) !important; transition: color 0.15s ease; }
+        .cfgp-block-hdr { padding: 12px 18px 6px; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: #888780; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
+        .cfgp-edit-btn { all: unset; cursor: pointer; font-size: 12px; font-weight: 700; color: #E85A8C; letter-spacing: 0.04em; text-transform: uppercase; font-family: var(--font-base) !important; transition: color 0.15s ease; }
         .cfgp-edit-btn:hover { color: #C33A6E; }
 
         .cfgp-rows { padding: 0 0 8px; }
@@ -860,8 +864,8 @@ export default function Configuracoes() {
         .cfgp-fields { padding: 0 18px 14px; display: flex; flex-direction: column; gap: 8px; }
         .cfgp-fields > *:first-child { margin-top: 4px; }
 
-        .cfgp-footer { text-align: center; font-size: 10.5px; color: #B4B2A9; margin: 12px 0 4px; }
-        .cfgp-hint { font-size: 11px; color: #888780; margin: -4px 0 0; padding: 0 4px; line-height: 1.4; font-style: italic; }
+        .cfgp-footer { text-align: center; font-size: 12px; color: #B4B2A9; margin: 12px 0 4px; }
+        .cfgp-hint { font-size: 12px; color: #888780; margin: -4px 0 0; padding: 0 4px; line-height: 1.4; font-style: italic; }
         .cfgp-toggles { padding: 4px 18px 12px; }
         .cfgp-toggles .cfg-push-row { padding: 12px 0; gap: 12px; }
         .cfgp-toggles .cfg-push-row:last-child { }
@@ -933,10 +937,10 @@ export default function Configuracoes() {
           text-align: center;
           padding: 4px 0 8px;
         }
-        .cfgp-delete-link-btn {
+        .cfgp-delete-link-btn { min-height: 44px;
           all: unset;
           cursor: pointer;
-          font-size: 11.5px;
+          font-size: 13px;
           color: #B4B2A9;
           font-family: var(--font-base) !important;
           transition: color 0.15s ease;
@@ -1072,7 +1076,7 @@ export default function Configuracoes() {
         .cfgd-hero-info { flex: 1; min-width: 0; }
         .cfgd-hero-nome { font-size: 16px; font-weight: 800; color: #2C1219; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .cfgd-hero-email { font-size: 12.5px; color: #6B7280; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .cfgd-hero-edit {
+        .cfgd-hero-edit { min-height: 44px;
           background: #FFF5F9;
           border: 1px solid #F0D8DE;
           color: #C33A6E;
@@ -1097,10 +1101,10 @@ export default function Configuracoes() {
 
         /* Assinatura */
         .cfgd-sub-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; gap: 12px; }
-        .cfgd-sub-label { font-size: 11px; font-weight: 800; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; }
+        .cfgd-sub-label { font-size: 12px; font-weight: 800; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; }
         .cfgd-sub-plan { display: flex; align-items: center; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
         .cfgd-sub-plan-name { font-size: 19px; font-weight: 800; color: #2C1219; }
-        .cfgd-sub-badge { padding: 3px 8px; border-radius: 5px; font-size: 10px; font-weight: 800; letter-spacing: 0.05em; }
+        .cfgd-sub-badge { padding: 3px 8px; border-radius: 5px; font-size: 12px; font-weight: 800; letter-spacing: 0.05em; }
         .cfgd-sub-badge--pro { background: #DCFCE7; color: #15803D; }
         .cfgd-sub-badge--trial { background: #FEF3C7; color: #B45309; }
         .cfgd-sub-badge--exp { background: #FEE2E2; color: #DC2626; }
@@ -1197,7 +1201,7 @@ export default function Configuracoes() {
         .cfgd-quick-ico--gray { background: #F3F4F6; color: #4B5563; }
         .cfgd-quick-info { flex: 1; min-width: 0; }
         .cfgd-quick-name { font-size: 13.5px; font-weight: 700; color: #2C1219; }
-        .cfgd-quick-desc { font-size: 11.5px; color: #6B7280; margin-top: 2px; }
+        .cfgd-quick-desc { font-size: 13px; color: #6B7280; margin-top: 2px; }
         .cfgd-quick-arrow { color: #C0B3B8; flex-shrink: 0; }
 
         /* Sair */
@@ -1217,7 +1221,7 @@ export default function Configuracoes() {
 
         /* Excluir conta */
         .cfgd-delete-link { display: block; text-align: center; padding: 8px; } /* antes ficava escondido no computador */
-        .cfgd-delete-link-btn {
+        .cfgd-delete-link-btn { min-height: 44px;
           all: unset;
           cursor: pointer;
           font-size: 12px;
@@ -1500,5 +1504,6 @@ export default function Configuracoes() {
         saveSuccess={success}
       />
     </div>
+    </>
   );
 }

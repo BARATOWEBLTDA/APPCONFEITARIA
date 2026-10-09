@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { Lock } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import { usePlano } from "@/hooks/usePlano";
 import { useProfile } from "@/hooks/useProfile";
@@ -98,7 +99,7 @@ export default function Assinar() {
           {isPro ? (
             <>
               <p className="pro-of-t">Seu plano</p>
-              <p className="pro-ja">Você já é PRO 👑</p>
+              <p className="pro-ja">Você já é PRO</p>
               {proExpiraEm && <p className="pro-of-s">Renova em <b>{diasRestantes} dia{diasRestantes !== 1 ? "s" : ""}</b></p>}
               <button type="button" className="pro-btn pro-btn--sec" onClick={() => navigate("/minha-assinatura")}>Ver minha assinatura</button>
             </>
@@ -117,7 +118,7 @@ export default function Assinar() {
           <p><b>Posso cancelar?</b> Sim, quando quiser, sem multa.</p>
           <p><b>E meus dados?</b> Continuam salvos, mesmo se voltar pro grátis.</p>
         </div>
-        <p className="pro-gar">🔒 Pagamento seguro · seus dados continuam salvos</p>
+        <p className="pro-gar"><Lock size={14} weight="bold" /> Pagamento seguro · seus dados continuam salvos</p>
       </div>
 
       <style>{`
@@ -126,14 +127,14 @@ export default function Assinar() {
         .pro-glow { position: absolute; width: 280px; height: 280px; border-radius: 50%; top: -80px; right: -90px; pointer-events: none;
           background: radial-gradient(circle, rgba(232,90,140,.35), transparent 70%); }
         .pro-in { position: relative; max-width: 560px; margin: 0 auto; padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(110px + env(safe-area-inset-bottom, 0px)); }
-        .pro-back { width: 36px; height: 36px; border-radius: 50%; border: none; background: rgba(255,255,255,.12); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .pro-back { width: 44px; height: 44px; border-radius: 50%; border: none; background: rgba(255,255,255,.12); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .pro-hero { text-align: center; padding: 6px 8px 4px; }
         .pro-crown { width: 60px; height: 60px; border-radius: 18px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center;
           background: linear-gradient(135deg, rgba(249,168,212,.25), rgba(196,181,253,.2)); border: 1px solid rgba(249,168,212,.35); }
         .pro-crown img { width: 36px; height: 36px; object-fit: contain; }
         /* Boneca confeiteira do PRO no topo (02/10) */
         .pro-boneca { display: block; width: auto; height: 150px; max-width: 70%; margin: 0 auto 6px; object-fit: contain; filter: drop-shadow(0 12px 28px rgba(232,90,140,.35)); }
-        .pro-k { font-size: 11px; font-weight: 900; letter-spacing: .18em; margin: 0; background: linear-gradient(90deg, #F9A8D4, #C4B5FD, #93C5FD); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .pro-k { font-size: 12px; font-weight: 900; letter-spacing: .18em; margin: 0; background: linear-gradient(90deg, #F9A8D4, #C4B5FD, #93C5FD); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .pro-hero h1 { font-size: 26px; font-weight: 900; line-height: 1.15; margin: 8px auto 0; max-width: 320px; text-wrap: balance; color: #fff; }
         .pro-hero h1 span { color: #F9A8D4; }
         .pro-sub { font-size: 14px; color: rgba(255,255,255,.72); margin: 10px auto 6px; max-width: 300px; line-height: 1.45; }
@@ -144,8 +145,8 @@ export default function Assinar() {
         .pro-li b { display: block; font-size: 14.5px; color: #fff; }
         .pro-li small { display: block; font-size: 12.5px; color: rgba(255,255,255,.65); margin-top: 2px; line-height: 1.35; }
         .pro-of { position: relative; margin-top: 22px; background: rgba(255,255,255,.07); border: 1px solid rgba(249,168,212,.4); border-radius: 18px; padding: 20px 18px 18px; text-align: center; box-shadow: 0 10px 40px rgba(232,90,140,.15); }
-        .pro-off { position: absolute; top: -11px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: linear-gradient(90deg, #16A34A, #15803D); color: #fff; font-size: 11px; font-weight: 900; letter-spacing: .06em; padding: 4px 10px; border-radius: 999px; box-shadow: 0 4px 12px rgba(22,163,74,.35); }
-        .pro-of-t { font-size: 11px; font-weight: 800; letter-spacing: .08em; color: #F9A8D4; text-transform: uppercase; margin: 0; }
+        .pro-off { position: absolute; top: -11px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: linear-gradient(90deg, #16A34A, #15803D); color: #fff; font-size: 12px; font-weight: 900; letter-spacing: .06em; padding: 4px 10px; border-radius: 999px; box-shadow: 0 4px 12px rgba(22,163,74,.35); }
+        .pro-of-t { font-size: 12px; font-weight: 800; letter-spacing: .08em; color: #F9A8D4; text-transform: uppercase; margin: 0; }
         .pro-of-p { display: flex; align-items: baseline; justify-content: center; gap: 8px; margin-top: 6px; }
         .pro-of-p s { color: rgba(255,255,255,.45); font-size: 14px; }
         .pro-of-p b { font-size: 36px; font-weight: 900; color: #fff; }

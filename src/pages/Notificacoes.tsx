@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { carregarNotificacoes, marcarLidas, type Notif } from "@/lib/notificacoesUsuario";
-import { Bell, Clock } from "@phosphor-icons/react";
+import { Bell, Checks, Clock, Crown, Newspaper, ShoppingBag, Trophy, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 
 interface Notificacao {
@@ -40,7 +40,7 @@ export default function Notificacoes() {
   useEffect(() => { recarregar(); }, []);
 
   const naoLidas = notificacoes.filter(n => !n.lida);
-  const ICONE: Record<string, string> = { pedido: "🛍️", pro: "👑", pro_vencendo: "⏰", pro_atrasado: "⚠️", conquista: "🏆", noticia: "📰" };
+  const ICONE: Record<string, typeof Bell> = { pedido: ShoppingBag, pro: Crown, pro_vencendo: Clock, pro_atrasado: WarningCircle, conquista: Trophy, noticia: Newspaper };
 
   const abrir = async (n: Notif) => {
     if (!n.lida) { setNotificacoes(l => l.map(x => x.id === n.id ? { ...x, lida: true } : x)); marcarLidas([n.id]); }
@@ -59,7 +59,7 @@ export default function Notificacoes() {
 
       <div className="ntf-root">
         {naoLidas.length > 0 && (
-          <div className="ntf-topo"><button type="button" className="ntf-todas" onClick={todas}>✓ Marcar todas como lidas</button></div>
+          <div className="ntf-topo"><button type="button" className="ntf-todas" onClick={todas}><Checks size={18} weight="bold" /> Marcar todas como lidas</button></div>
         )}
         {loading ? (
           <div className="ntf-loading"><span className="ntf-spinner" /></div>
@@ -74,7 +74,7 @@ export default function Notificacoes() {
             {notificacoes.map(n => (
               <div key={n.id} className={`ntf-item ${!n.lida ? "ntf-item--nova" : ""}${n.link ? " ntf-item--link" : ""}`} onClick={() => abrir(n)} role={n.link ? "button" : undefined}>
                 <div className="ntf-img">
-                  {n.imagem_url ? <img src={n.imagem_url} alt="" /> : (n.tipo && ICONE[n.tipo]) ? <span className="ntf-emo">{ICONE[n.tipo!]}</span> : <Bell size={22} weight="fill" />}
+                  {n.imagem_url ? <img src={n.imagem_url} alt="" /> : (n.tipo && ICONE[n.tipo]) ? <span className="ntf-emo">{(() => { const Ic = ICONE[n.tipo!]; return <Ic size={22} weight="fill" />; })()}</span> : <Bell size={22} weight="fill" />}
                 </div>
                 <div className="ntf-content">
                   <p className="ntf-t">{!n.lida && <span className="ntf-dot" aria-label="Não lida" />}{n.titulo}</p>
@@ -93,7 +93,7 @@ export default function Notificacoes() {
         .ntf-item--link { cursor: pointer; }
         .ntf-emo { font-size: 22px; }
         .ntf-acoes { margin-left: auto; display: flex; align-items: center; gap: 4px; }
-        .ntf-ac { border: none; background: none; font-family: inherit; font-size: 11.5px; font-weight: 700; color: #C33A6E; cursor: pointer; padding: 4px 6px; border-radius: 6px; }
+        .ntf-ac { border: none; background: none; font-family: inherit; font-size: 13px; font-weight: 700; color: #C33A6E; cursor: pointer; padding: 4px 6px; border-radius: 6px; }
         .ntf-ac--x { color: #B5AAB0; display: flex; align-items: center; } .ntf-ac--x:hover { color: #DC2626; background: #FEF2F2; }
         .ntf-content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
         .ntf-t { display: flex !important; align-items: center; gap: 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px !important; margin: 0 !important; }
@@ -132,14 +132,14 @@ export default function Notificacoes() {
         .ntf-t { font-size: 13.5px; font-weight: 800; color: #2C1219; margin: 0; line-height: 1.3; flex: 1; min-width: 0; }
         .ntf-badge {
           background: #E85A8C; color: #fff;
-          font-size: 9.5px; font-weight: 900; letter-spacing: 0.05em;
+          font-size: 12px; font-weight: 900; letter-spacing: 0.05em;
           padding: 2px 7px; border-radius: 4px;
           text-transform: uppercase; flex-shrink: 0;
         }
         .ntf-msg { font-size: 12.5px; color: #6B7280; margin: 0 0 6px; line-height: 1.45; }
         .ntf-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-        .ntf-tag { font-size: 10px; font-weight: 700; padding: 2px 8px; background: #F5F0F2; color: #4B5563; border-radius: 3px; text-transform: capitalize; }
-        .ntf-time { font-size: 11px; color: #9CA3AF; display: flex; align-items: center; gap: 3px; }
+        .ntf-tag { font-size: 12px; font-weight: 700; padding: 2px 8px; background: #F5F0F2; color: #4B5563; border-radius: 3px; text-transform: capitalize; }
+        .ntf-time { font-size: 12px; color: #9CA3AF; display: flex; align-items: center; gap: 3px; }
         .ntf-loading { display: flex; justify-content: center; padding: 60px; }
         .ntf-spinner { width: 28px; height: 28px; border: 3px solid #FCE0E9; border-top-color: #E85A8C; border-radius: 50%; animation: ntfSpin 0.7s linear infinite; }
         @keyframes ntfSpin { to { transform: rotate(360deg); } }

@@ -2,6 +2,7 @@ import { VERSAO_APP } from "@/lib/versao";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
+import { Check } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
 
@@ -51,8 +52,8 @@ export default function RelatarProblema() {
       <div className="rp-wrap">
         {ok ? (
           <div className="rp-card rp-ok">
-            <div className="rp-ok-ic" aria-hidden="true">✓</div>
-            <h2>{primeiroNome ? `Obrigado, ${primeiroNome}! 💗` : "Obrigado! 💗"}</h2>
+            <div className="rp-ok-ic" aria-hidden="true"><Check size={30} weight="bold" /></div>
+            <h2>{primeiroNome ? `Obrigado, ${primeiroNome}!` : "Obrigado!"}</h2>
             <p>Recebemos seu relato. A equipe Doonly já vai analisar e corrigir o mais rápido possível, e a gente te avisa assim que estiver resolvido.</p>
             <button type="button" className="rp-bt" onClick={() => navigate(-1)}>Voltar</button>
             <button type="button" className="rp-bt2" onClick={() => { setOk(false); setTexto(""); setParte(null); }}>Relatar outro problema</button>
@@ -77,12 +78,12 @@ export default function RelatarProblema() {
         .rp-root { font-family: var(--font-base); color: #2C1219; min-height: 100%; }
         .rp-wrap { max-width: 640px; margin: 0 auto; padding: 16px 16px 40px; }
         .rp-card { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 18px; }
-        .rp-lb { display: block; font-size: 14px; font-weight: 700; margin: 0 0 8px; } .rp-lb span { font-size: 11px; font-weight: 600; color: #9A8E94; background: #F5F0F2; padding: 2px 7px; border-radius: 999px; margin-left: 4px; }
+        .rp-lb { display: block; font-size: 14px; font-weight: 700; margin: 0 0 8px; } .rp-lb span { font-size: 12px; font-weight: 600; color: #9A8E94; background: #F5F0F2; padding: 2px 7px; border-radius: 999px; margin-left: 4px; }
         .rp-ta { width: 100%; min-height: 130px; border: 1.5px solid #EAE3E6; border-radius: 10px; padding: 12px; font-family: inherit; font-size: 15px; color: #2C1219; resize: vertical; }
         .rp-ta:focus { outline: none; border-color: #2C1219; } .rp-ta::placeholder { color: #B5AAB0; }
-        .rp-cont { text-align: right; font-size: 11.5px; color: #B5AAB0; margin: 4px 0 14px; }
+        .rp-cont { text-align: right; font-size: 13px; color: #B5AAB0; margin: 4px 0 14px; }
         .rp-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
-        .rp-chip { border: 1.5px solid #EAE3E6; background: #fff; border-radius: 999px; padding: 7px 13px; font-family: inherit; font-size: 13px; font-weight: 600; color: #4B3A42; cursor: pointer; }
+        .rp-chip { min-height: 44px; border: 1.5px solid #EAE3E6; background: #fff; border-radius: 999px; padding: 7px 14px; font-family: inherit; font-size: 13px; font-weight: 600; color: #4B3A42; cursor: pointer; }
         .rp-chip.on { background: #2C1219; border-color: #2C1219; color: #fff; }
         .rp-bt { width: 100%; height: 48px; border: none; border-radius: 10px; background: #E85A8C; color: #fff; font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 3px 0 #C33A6E; }
         .rp-bt:disabled { background: #F6D4E1; box-shadow: 0 3px 0 #EBC3D3; cursor: default; }

@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import AppPageHeader from "@/components/AppPageHeader";
 import { useProfile } from "@/hooks/useProfile";
-import { PaperPlaneTilt, CheckCircle } from "@phosphor-icons/react";
+import { PaperPlaneTilt, CheckCircle, Lightbulb } from "@phosphor-icons/react";
 
 interface Sugestao {
   id: string;
@@ -19,7 +19,7 @@ const AREAS = [
   { id: "pedidos", label: "Pedidos", emoji: "🧾" },
   { id: "cardapio", label: "Cardápio online", emoji: "📱" },
   { id: "produtos", label: "Produtos e receitas", emoji: "🧁" },
-  { id: "insumos", label: "Insumos", emoji: "🥚" },
+  { id: "insumos", label: "Ingredientes", emoji: "" },
   { id: "financeiro", label: "Financeiro", emoji: "💰" },
   { id: "clientes", label: "Clientes", emoji: "👥" },
   { id: "app", label: "App em geral", emoji: "⚙️" },
@@ -36,7 +36,7 @@ const IMPACTOS: { id: "baixo" | "medio" | "alto"; label: string; emoji: string }
 const STATUS: Record<string, { label: string; cls: string }> = {
   recebida:     { label: "Recebida",       cls: "sr-st--rec" },
   em_analise:   { label: "Em análise",     cls: "sr-st--analise" },
-  implementada: { label: "✓ Implementada", cls: "sr-st--ok" },
+  implementada: { label: "Implementada", cls: "sr-st--ok" },
   recusada:     { label: "Recusada",       cls: "sr-st--no" },
 };
 
@@ -155,7 +155,7 @@ export default function SolicitarRecurso() {
           ) : (
             <>
               <div className="sr-hero">
-                <span className="sr-hero-ic" aria-hidden="true">💡</span>
+                <span className="sr-hero-ic" aria-hidden="true"><Lightbulb size={26} weight="duotone" /></span>
                 <div>
                   <b>Sua ideia pode virar recurso</b>
                   <p>Conte o que falta no seu dia a dia. A gente lê todas e conta o andamento em "Minhas ideias".</p>
@@ -181,7 +181,7 @@ export default function SolicitarRecurso() {
                     {AREAS.map(a => (
                       <button key={a.id} type="button" className={`sr-area${area === a.id ? " on" : ""}`}
                         onClick={() => setArea(area === a.id ? null : a.id)}>
-                        <span className="sr-area-e" aria-hidden="true">{a.emoji}</span>{a.label}
+                        {a.label}
                       </button>
                     ))}
                   </div>
@@ -192,7 +192,7 @@ export default function SolicitarRecurso() {
                     {IMPACTOS.map(i => (
                       <button key={i.id} type="button" className={`sr-imp${impacto === i.id ? " on" : ""}`}
                         onClick={() => setImpacto(impacto === i.id ? null : i.id)}>
-                        <span className="sr-imp-e" aria-hidden="true">{i.emoji}</span>
+                        
                         <span className="sr-imp-l">{i.label}</span>
                       </button>
                     ))}
@@ -225,7 +225,7 @@ export default function SolicitarRecurso() {
               <div className="sr-flow">
                 <span className="sr-st sr-st--rec">Recebida</span>→
                 <span className="sr-st sr-st--analise">Em análise</span>→
-                <span className="sr-st sr-st--ok">✓ Implementada</span>
+                <span className="sr-st sr-st--ok"><CheckCircle size={14} weight="fill" /> Implementada</span>
               </div>
               {historico.map(s => {
                 const st = STATUS[s.status || "recebida"] || STATUS.recebida;
@@ -252,7 +252,7 @@ export default function SolicitarRecurso() {
         .sr-root { font-family: var(--font-base); padding: 14px 4px 100px; max-width: 640px; margin: 0 auto; color: #2C1219; }
 
         .sr-tabs { display: flex; gap: 4px; padding: 4px; background: #F5F0F2; border-radius: 10px; }
-        .sr-tab {
+        .sr-tab { min-height: 44px;
           flex: 1; padding: 9px 8px; border: none; border-radius: 7px; background: none; cursor: pointer;
           font-family: inherit; font-size: 13px; font-weight: 700; color: #7C7A8E;
           display: flex; align-items: center; justify-content: center; gap: 6px;
@@ -260,7 +260,7 @@ export default function SolicitarRecurso() {
         .sr-tab.on { background: #fff; color: #2C1219; box-shadow: 0 1px 3px rgba(44,18,25,0.08); }
         .sr-cnt {
           min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
-          background: #2C1219; color: #fff; font-size: 10.5px; font-weight: 800;
+          background: #2C1219; color: #fff; font-size: 12px; font-weight: 800;
           display: inline-flex; align-items: center; justify-content: center;
         }
 
@@ -274,7 +274,7 @@ export default function SolicitarRecurso() {
           display: flex; justify-content: space-between; align-items: baseline;
           font-size: 12.5px; font-weight: 800; color: #2C1219; margin-bottom: 8px;
         }
-        .sr-lbl small { font-size: 11px; font-weight: 500; color: #9CA3AF; }
+        .sr-lbl small { font-size: 12px; font-weight: 500; color: #9CA3AF; }
         .sr-in, .sr-ta {
           width: 100%; box-sizing: border-box; border: none; background: #F5F0F2; border-radius: 10px;
           padding: 12px 13px; font-family: inherit; font-size: 14px; color: #2C1219;
@@ -282,7 +282,7 @@ export default function SolicitarRecurso() {
         .sr-in:focus, .sr-ta:focus { outline: 2px solid #E85A8C; outline-offset: 0; background: #fff; }
         .sr-in::placeholder, .sr-ta::placeholder { color: #A8A0A4; }
         .sr-ta { min-height: 110px; resize: vertical; line-height: 1.45; }
-        .sr-count { text-align: right; font-size: 11px; color: #9CA3AF; margin-top: 5px; }
+        .sr-count { text-align: right; font-size: 12px; color: #9CA3AF; margin-top: 5px; }
 
         .sr-chips { display: flex; flex-wrap: wrap; gap: 6px; }
         .sr-chip {
@@ -304,7 +304,7 @@ export default function SolicitarRecurso() {
         }
         .sr-cta:disabled { opacity: 0.45; cursor: not-allowed; }
         .sr-cta:not(:disabled):active { transform: scale(0.99); }
-        .sr-req { font-size: 11.5px; color: #9CA3AF; text-align: center; margin: 8px 0 0; }
+        .sr-req { font-size: 13px; color: #9CA3AF; text-align: center; margin: 8px 0 0; }
         .sr-err { font-size: 12.5px; font-weight: 600; color: #B91C1C; background: #FEE2E2; border-radius: 8px; padding: 10px 12px; margin: 12px 0 0; }
         .sr-ghost {
           width: 100%; height: 44px; margin-top: 8px; border: none; background: none; cursor: pointer;
@@ -317,9 +317,9 @@ export default function SolicitarRecurso() {
         .sr-ok-d { font-size: 13px; color: #7C7A8E; margin: 6px auto 18px; max-width: 270px; line-height: 1.45; }
         .sr-ok .sr-cta { margin-top: 0; }
 
-        .sr-flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 11.5px; color: #7C7A8E; margin: 14px 4px 12px; }
-        .sr-st { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 5px; font-size: 11px; font-weight: 800; }
-        .sr-flow .sr-st { font-size: 10.5px; }
+        .sr-flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 13px; color: #7C7A8E; margin: 14px 4px 12px; }
+        .sr-st { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 5px; font-size: 12px; font-weight: 800; }
+        .sr-flow .sr-st { font-size: 12px; }
         .sr-st--rec { background: #F3F4F6; color: #4B5563; }
         .sr-st--analise { background: #FEF3C7; color: #B45309; }
         .sr-st--ok { background: #DCFCE7; color: #15803D; }
@@ -331,13 +331,13 @@ export default function SolicitarRecurso() {
         }
         .sr-h + .sr-h { margin-top: 8px; }
         .sr-h-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .sr-h-date { font-size: 11px; color: #9CA3AF; }
+        .sr-h-date { font-size: 12px; color: #9CA3AF; }
         .sr-h-t { font-size: 14px; font-weight: 800; line-height: 1.3; margin: 0; }
         .sr-h-d {
           font-size: 12.5px; color: #7C7A8E; line-height: 1.45; margin: 4px 0 0;
           display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
         }
-        .sr-h-area { display: inline-block; margin-top: 10px; font-size: 11px; font-weight: 600; color: #6E5A66; background: #F5F0F2; padding: 3px 8px; border-radius: 5px; }
+        .sr-h-area { display: inline-block; margin-top: 10px; font-size: 12px; font-weight: 600; color: #6E5A66; background: #F5F0F2; padding: 3px 8px; border-radius: 5px; }
 
         .sr-empty { text-align: center; padding: 40px 20px; }
         .sr-empty-t { font-size: 14px; font-weight: 800; margin: 0 0 4px; }

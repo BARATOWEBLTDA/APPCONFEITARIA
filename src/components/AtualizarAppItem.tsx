@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { VERSAO_APP } from "@/lib/versao";
 
 /**
  * Item "Atualizar app" (Configurações → Ações rápidas).
@@ -46,7 +47,7 @@ export default function AtualizarAppItem() {
             ? "Atualizando..."
             : temNova
               ? "Nova versão disponível"
-              : `Versão de ${dataVersao(__BUILD_ID__)}`}
+              : (dataVersao(__BUILD_ID__) ? `Versão ${VERSAO_APP} · de ${dataVersao(__BUILD_ID__)}` : `Versão ${VERSAO_APP}`)}
         </div>
       </div>
       {temNova && !atualizando && <span className="atz-dot" aria-hidden="true" />}
