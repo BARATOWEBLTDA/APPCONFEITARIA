@@ -172,7 +172,8 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
         <div className="bv-lado">
           <div className="bv-texto" key={`t${tela}`} aria-live="polite">
             {tela === 0 && (<>
-              <h1 className="bv-h">Que bom ter <em>você aqui</em></h1>
+              {/* o nome e o título são uma frase só: "Juliana, que bom ter você aqui" */}
+              {nomeOk ? <><p className="bv-oi">{nomeOk},</p><h1 className="bv-h">que bom ter <em>você aqui</em></h1></> : <h1 className="bv-h">Que bom ter <em>você aqui</em></h1>}
               <p className="bv-p">Pedidos, cardápio e dinheiro da sua confeitaria num só lugar. Veja em 1 minuto como funciona.</p>
             </>)}
             {tela === 1 && (<>
@@ -207,7 +208,7 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
         </div>
 
         <div className="bv-demo" key={`d${tela}`}>
-          {tela === 0 && <DemoMarca nome={nomeOk} />}
+          {tela === 0 && <DemoMarca comMarca={!nomeOk} />}
           {tela === 1 && <DemoCardapio />}
           {tela === 2 && <DemoPedidos />}
           {tela === 3 && <DemoDinheiro />}
@@ -221,13 +222,13 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
 }
 
 /* ───────── 1 e 6 · o mascote (acenando na chegada, comemorando no fim) ───────── */
-/* Na primeira tela, embaixo do mascote vem o nome da pessoa (09/10 · 3.76). Nome vazio, de teste, brincadeira ou
-   ofensivo não aparece (lib/nomeApresentavel): no lugar dele fica a marca do Doonly. */
-function DemoMarca({ nome, pose = 'acenando' }: { nome?: string; pose?: 'acenando' | 'comemorando' }) {
+/* Na primeira tela, o nome da pessoa abre a frase do título (09/10 · 3.77). Nome vazio, de teste, brincadeira ou
+   ofensivo não aparece (lib/nomeApresentavel): aí a marca do Doonly volta embaixo do mascote. */
+function DemoMarca({ comMarca = false, pose = 'acenando' }: { comMarca?: boolean; pose?: 'acenando' | 'comemorando' }) {
   return (
     <div className="bv-marca">
       <Mascote pose={pose} className="bv-marca-masc" />
-      {nome !== undefined && (nome ? <p className="bv-marca-oi">{nome}</p> : <NomeDoonly cor="branco" className="bv-marca-nome" />)}
+      {comMarca && <NomeDoonly cor="branco" className="bv-marca-nome" />}
     </div>
   )
 }

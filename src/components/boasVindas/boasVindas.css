@@ -49,7 +49,7 @@
 .bv-marca { display: flex; flex-direction: column; align-items: center; }
 .bv-marca-masc { display: block; width: 150px; height: auto; filter: drop-shadow(0 0 22px rgba(255, 157, 196, .5)) drop-shadow(0 10px 12px rgba(0, 0, 0, .35)); }
 .bv-marca-nome { display: block; width: 150px; height: auto; margin-top: 6px; }
-.bv-marca-oi { max-width: 100%; margin: -4px 0 -10px; padding: 6px 24px 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 44px; font-weight: 800; letter-spacing: -.03em; line-height: 1.1; color: #fff; text-shadow: 0 0 24px rgba(255, 157, 196, .45); }
+.bv-oi { margin: 0 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 40px; font-weight: 800; letter-spacing: -.03em; line-height: 1.15; color: #fff; text-shadow: 0 0 24px rgba(255, 157, 196, .45); }
 
 /* ── 2 · cardápio dentro do celular ── */
 /* (07/10 · 2.93) celular branco: no fundo vinho ele aparece muito mais que o preto */
@@ -196,7 +196,7 @@
 @media (max-height: 700px) {
   .bv-h { font-size: 23px; }
   .bv-demo { margin-top: 14px; }
-  .bv-marca-masc { width: 124px; } .bv-marca-nome { width: 128px; } .bv-marca-oi { font-size: 36px; }
+  .bv-marca-masc { width: 124px; } .bv-marca-nome { width: 128px; } .bv-oi { font-size: 34px; }
   .bv-din-it:nth-child(4), .bv-din-k { display: none; }
   .bv-tela-2 .bv-p, .bv-ped .pdc-linhas > :last-child { display: none; }
   .bv-ped { min-height: 380px; } .bv-ped .pdc-det > .ui-linha, .bv-ped .pdc-total, .bv-ped .pdc-rec { display: none; } .bv-ped .pdc-det { margin-top: 10px; padding-top: 10px; } .bv-ped .pdc-itens { margin-top: 0; padding-top: 0; border-top: 0; }
@@ -246,7 +246,7 @@
   .bv-sobre { font-size: 13px; margin-bottom: 10px; }
   .bv-h { font-size: 42px; line-height: 1.08; }
   .bv-p { font-size: 17px; margin-top: 14px; max-width: 30ch; }
-  .bv-marca-masc { width: 230px; } .bv-marca-nome { width: 230px; margin-top: 10px; } .bv-marca-oi { font-size: 64px; }
+  .bv-marca-masc { width: 230px; } .bv-marca-nome { width: 230px; margin-top: 10px; } .bv-oi { font-size: 56px; margin-bottom: 4px; }
   .bv-cel { width: 290px; } .bv-cel-tela { height: clamp(300px, calc(100dvh - 200px), 520px); }
   .bv-ped, .bv-din, .bv-luc { max-width: 400px; }
 }
