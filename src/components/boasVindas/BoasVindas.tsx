@@ -54,7 +54,8 @@ const vibrarLeve = () => {
 const PRODUTO = {
   bolo: '/tutorial/boas-vindas/produtos/bolo-aniversario.webp',
   caixa: '/tutorial/boas-vindas/produtos/caixa-brigadeiro.webp',
-  salgadinhos: '/tutorial/boas-vindas/produtos/salgadinhos.webp',
+  kit: '/tutorial/boas-vindas/produtos/kit-festa.webp',
+  salgados: '/tutorial/boas-vindas/produtos/salgados-mistos.webp',
 }
 const fotoCliente = (id: string) => `/tutorial/boas-vindas/clientes/${id}.webp`
 
@@ -293,10 +294,10 @@ const nada = () => {}
 const TEL_SUPORTE = '11978414991'
 // na ordem em que chegam: o último é o do bolo, que fica em cima
 const CHEGADAS: { p: Pedido }[] = [
-  { p: pedidoExemplo({ numero: 1049, cliente_nome: 'Marina Silva', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', status_pagamento: 'pago', forma_pagamento: 'pix', origem: 'cardapio', data_entrega: isoDia(5), horario_entrega: '16:30', valor_total: 150,
-      pedido_itens: [item('Caixa de Brigadeiro', PRODUTO.caixa, 1, 150)] }) },
-  { p: pedidoExemplo({ numero: 1050, cliente_nome: 'Juliana Souza', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', status_pagamento: 'pago', forma_pagamento: 'pix', origem: 'cardapio', data_entrega: isoDia(4), horario_entrega: '09:00', valor_total: 95,
-      pedido_itens: [item('Salgadinhos', PRODUTO.salgadinhos, 100, 0.95)] }) },
+  { p: pedidoExemplo({ numero: 1049, cliente_nome: 'Marina Silva', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', status_pagamento: 'pago', forma_pagamento: 'pix', origem: 'cardapio', data_entrega: isoDia(5), horario_entrega: '16:30', valor_total: 650,
+      pedido_itens: [item('Kit festa 30 pessoas', PRODUTO.kit, 1, 650)] }) },
+  { p: pedidoExemplo({ numero: 1050, cliente_nome: 'Juliana Souza', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', status_pagamento: 'pago', forma_pagamento: 'pix', origem: 'cardapio', data_entrega: isoDia(4), horario_entrega: '09:00', valor_total: 90,
+      pedido_itens: [item('1 cento de salgados mistos', PRODUTO.salgados, 1, 90)] }) },
   { p: pedidoExemplo({ numero: 1051, cliente_nome: 'Camila Rocha', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', status_pagamento: 'pago', forma_pagamento: 'pix', origem: 'cardapio', data_entrega: isoDia(3), horario_entrega: '14:00', valor_total: 320,
       pedido_itens: [item('Bolo de aniversário 2 kg', PRODUTO.bolo, 1, 320)] }) },
 ]
