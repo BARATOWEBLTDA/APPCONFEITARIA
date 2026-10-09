@@ -8,6 +8,7 @@ import { acaoDe, situacaoDe, type Pedido } from '@/components/pedidos/pedidoText
 import '@/components/pedidos/pedidos.css'
 import '@/components/pedidos/telaPedido.css'
 import { tocarSom } from '@/hooks/useSom'
+import { nomeApresentavel } from '@/lib/nomeApresentavel'
 import './boasVindas.css'
 
 /**
@@ -56,6 +57,7 @@ const IMAGENS = [
 
 export default function BoasVindas({ isOpen, onClose, nome }: Props) {
   const [tela, setTela] = useState(0)
+  const nomeOk = nomeApresentavel(nome)
   const [saindo, setSaindo] = useState(false)
   const telaRef = useRef(0)
   telaRef.current = tela
@@ -170,7 +172,7 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
         <div className="bv-lado">
           <div className="bv-texto" key={`t${tela}`} aria-live="polite">
             {tela === 0 && (<>
-              <h1 className="bv-h">{nome ? <>Que bom ter você aqui, <em>{nome}</em></> : <>Que bom ter <em>você aqui</em></>}</h1>
+              <h1 className="bv-h">Que bom ter <em>você aqui</em></h1>
               <p className="bv-p">Pedidos, cardápio e dinheiro da sua confeitaria num só lugar. Veja em 1 minuto como funciona.</p>
             </>)}
             {tela === 1 && (<>
@@ -205,7 +207,7 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
         </div>
 
         <div className="bv-demo" key={`d${tela}`}>
-          {tela === 0 && <DemoMarca comNome />}
+          {tela === 0 && <DemoMarca nome={nomeOk} />}
           {tela === 1 && <DemoCardapio />}
           {tela === 2 && <DemoPedidos />}
           {tela === 3 && <DemoDinheiro />}
@@ -219,11 +221,13 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
 }
 
 /* ───────── 1 e 6 · o mascote (acenando na chegada, comemorando no fim) ───────── */
-function DemoMarca({ comNome = false, pose = 'acenando' }: { comNome?: boolean; pose?: 'acenando' | 'comemorando' }) {
+/* Na primeira tela, embaixo do mascote vem o nome da pessoa (09/10 · 3.76). Nome vazio, de teste, brincadeira ou
+   ofensivo não aparece (lib/nomeApresentavel): no lugar dele fica a marca do Doonly. */
+function DemoMarca({ nome, pose = 'acenando' }: { nome?: string; pose?: 'acenando' | 'comemorando' }) {
   return (
     <div className="bv-marca">
       <Mascote pose={pose} className="bv-marca-masc" />
-      {comNome && <NomeDoonly cor="branco" className="bv-marca-nome" />}
+      {nome !== undefined && (nome ? <p className="bv-marca-oi">{nome}</p> : <NomeDoonly cor="branco" className="bv-marca-nome" />)}
     </div>
   )
 }
