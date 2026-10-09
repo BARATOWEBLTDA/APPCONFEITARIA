@@ -593,7 +593,7 @@ export default function FichaTecnica() {
                       ) : <i>{f.unidade_utilizada}</i>}
                     </span>
                     <button type="button" className="fd-ing-custo" onClick={() => setInfoCustoAberto(f.insumo_id)} aria-label={`Custo de ${ins.nome}: R$ ${fmt(custoLinha)}. Ver a conta`}>
-                      R$ {fmt(custoLinha)}<Info size={16} weight="bold" />
+                      R$ {fmt(custoLinha)}<Info size={16} weight="bold" aria-hidden="true" />
                     </button>
                     <BotaoIcone rotulo={`Tirar ${ins.nome} da ficha`} variante="limpo" onClick={() => removeInsumo(f.insumo_id)}><X size={18} weight="bold" /></BotaoIcone>
                   </div>
@@ -611,11 +611,9 @@ export default function FichaTecnica() {
             <section className="cl9-card fd-sec">
               <Titulo>Custos invisíveis</Titulo>
               <p className="fd-dica">Gás, luz, água, plástico filme e outros gastos difíceis de medir em cada receita.</p>
-              <div className="fd-cv">
-                <Campo rotulo="% sobre os ingredientes" inputMode="decimal" placeholder="25" value={extras.cv_percentual}
-                  onChange={e => setExtras(s => ({ ...s, cv_percentual: e.target.value }))} depois={<span className="cl9-f-uf">%</span>} />
-                <span className="fd-cv-res">= R$ {fmt(cvLive)}</span>
-              </div>
+              <Campo rotulo="% sobre os ingredientes" inputMode="decimal" placeholder="25" value={extras.cv_percentual}
+                onChange={e => setExtras(s => ({ ...s, cv_percentual: e.target.value }))} depois={<span className="cl9-f-uf">%</span>} />
+              <p className="fd-mo">Nesta receita: <b>R$ {fmt(cvLive)}</b></p>
               <p className="fd-dica">A maioria das confeiteiras usa entre 20% e 30%. Se não souber, deixe 25%.</p>
             </section>
 

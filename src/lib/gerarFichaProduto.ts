@@ -34,7 +34,7 @@ export async function gerarFichaProduto(produto: any, _userId?: string): Promise
       return { nome: x.insumos.nome, qtd: `${String(q).replace(".", ",")} ${un}`, custo: custoLinha(q, un, x.insumos) };
     });
     const cmv = linhas.reduce((s: number, l: any) => s + l.custo, 0);
-    const cvPct = Number(p.cv_percentual) || 0;
+    const cvPct = p.cv_percentual != null ? (Number(p.cv_percentual) || 0) : 25; // igual à tela da ficha: 25% quando nunca foi mudado
     const cv = cmv * (cvPct / 100);
     const sal = Number(p.salario_desejado) || 0, horas = Number(p.horas_semanais) || 40, min = Number(p.tempo_preparo_min) || 0;
     const mo = sal > 0 && min > 0 ? (sal / (horas * 4.33)) * (min / 60) : 0;
