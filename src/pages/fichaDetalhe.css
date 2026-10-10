@@ -79,7 +79,7 @@
   .fd-par { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
   .fd .fd-par .cl9-card + .cl9-card { margin-top: 0; }
   .fd .cl9-card + .fd-par { margin-top: 12px; }
-  .fd-ing-cab { display: grid; grid-template-columns: 44px minmax(0, 1fr) 190px 120px 44px; gap: 12px; padding: 8px 0; font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
+  .fd-ing-cab { display: grid; grid-template-columns: 44px minmax(0, 1fr) 190px 120px 44px; gap: 12px; padding: 8px 0; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
   .fd-ing-cab span:first-child { grid-column: 1 / 3; }
   .fd-ing { grid-template-columns: 44px minmax(0, 1fr) 190px 120px 44px; grid-template-areas: "th nome qtd custo x"; gap: 12px; }
   .fd-ing > .ui-bti, .fd-ing > button:last-child { align-self: center; }

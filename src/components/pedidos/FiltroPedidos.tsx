@@ -106,12 +106,12 @@ export default function FiltroLateral({ statusSelecionados, setStatusSelecionado
         .fl-cb { width: 22px; height: 22px; border-radius: 6px; border: 1.8px solid #D6CBD0; background: var(--ui-branco); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .fl-ln.on .fl-cb { background: var(--ui-rosa); border-color: var(--ui-rosa); }
         .fl-ln em { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-        .fl-ln u { text-decoration: none; font-size: 12px; font-weight: 700; color: var(--ui-texto-3); background: var(--ui-linha); border-radius: 6px; min-width: 24px; text-align: center; padding: 1px 6px; }
+        .fl-ln u { text-decoration: none; font-size: 12px; font-weight: 500; color: var(--ui-texto-3); background: var(--ui-linha); border-radius: 6px; min-width: 24px; text-align: center; padding: 1px 6px; }
         .fl-rb { width: 22px; height: 22px; border-radius: 50%; border: 1.8px solid #D6CBD0; flex-shrink: 0; position: relative; }
         .fl-ln.rd.on .fl-rb { border-color: var(--ui-rosa); } .fl-ln.rd.on .fl-rb::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: var(--ui-rosa); }
         .fl-ln.rd.on span { font-weight: 700; color: var(--ui-rosa-escuro); }
         .fl-per { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; padding: 10px 12px 12px; background: #FCF8F9; border-top: 1px solid var(--ui-linha); }
-        .fl-per small { display: block; font-size: 12px; font-weight: 700; color: #8A7E84; margin-bottom: 4px; }
+        .fl-per small { display: block; font-size: 12px; font-weight: 500; color: #8A7E84; margin-bottom: 4px; }
         .fl-per .cdata { padding: 0 10px; font-size: 14px; gap: 6px; } /* De/Até lado a lado, sem quebrar */
         .fl-f { display: flex; align-items: center; gap: 10px; padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--ui-cinza); }
         .fl-limpar { border: none; background: none; padding: 10px 6px; font-family: inherit; font-size: 14.5px; font-weight: 700; color: var(--ui-texto-3); cursor: pointer; }

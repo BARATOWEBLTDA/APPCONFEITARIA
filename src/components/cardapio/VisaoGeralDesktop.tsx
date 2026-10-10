@@ -269,7 +269,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         .vgd-tabs button.on { background: var(--ui-branco); color: var(--ui-texto); box-shadow: 0 1px 3px rgba(0,0,0,.06); }
         .vgd-kp { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 14px; }
         .vgd-k { border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 14px; }
-        .vgd-k small { display: block; font-size: 12px; font-weight: 700; color: var(--ui-texto-3); }
+        .vgd-k small { display: block; font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
         .vgd-k b { display: block; font-size: 22px; font-weight: 700; margin-top: 2px; }
         .vgd-k em { font-style: normal; font-size: 13px; font-weight: 700; color: var(--ui-verde); } .vgd-k em.down { color: #B91C1C; } .vgd-k em.n { color: var(--ui-texto-3); font-weight: 500; }
         .vgd-bars { display: flex; align-items: flex-end; gap: 12px; height: 120px; margin-top: 16px; }
@@ -277,7 +277,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         .vgd-bar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 5px; min-width: 0; }
         .vgd-bar i { width: 100%; border-radius: 7px 7px 3px 3px; background: linear-gradient(180deg, #F472B6, var(--ui-rosa-escuro)); }
         .vgd-bars--30 .vgd-bar i { border-radius: 3px 3px 1px 1px; }
-        .vgd-bar span { font-size: 12px; color: var(--ui-texto-3); height: 14px; } .vgd-bar em { font-style: normal; font-size: 12px; font-weight: 700; color: var(--ui-texto-2); }
+        .vgd-bar span { font-size: 12px; color: var(--ui-texto-3); height: 14px; } .vgd-bar em { font-style: normal; font-size: 12px; font-weight: 500; color: var(--ui-texto-2); }
         .vgd-lock { display: flex; align-items: center; gap: 14px; margin-top: 14px; padding: 16px; border-radius: 14px; background: #FFF6F9; border: 1px dashed #F3C9DA; }
         .vgd-lock img { width: 34px; height: 34px; object-fit: contain; }
         .vgd-lock div { flex: 1; } .vgd-lock b { display: block; font-size: 14.5px; } .vgd-lock small { font-size: 12.5px; color: var(--ui-texto-2); }

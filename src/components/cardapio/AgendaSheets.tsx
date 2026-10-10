@@ -128,7 +128,7 @@ const CSS = `
   .ags-mes button { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; border: none; background: var(--ui-cinza); color: var(--ui-texto); cursor: pointer; font-family: inherit; }
   .ags-mes button:disabled { opacity: .35; cursor: default; }
   .ags-cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; text-align: center; }
-  .ags-wd { height: 22px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--ui-texto-3); }
+  .ags-wd { height: 22px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
   .ags-d { min-width: 0; height: 44px; border: none; border-radius: 12px; background: none; font-family: inherit; font-size: 16px; font-weight: 500; color: var(--ui-texto); cursor: pointer; }
   .ags-d:disabled { color: #C9BCC2; text-decoration: line-through; cursor: default; }
   .ags-d { position: relative; }

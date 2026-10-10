@@ -63,7 +63,7 @@ export default function PeriodoFiltro({ valor, onChange }: { valor: Periodo; onC
         .pf-mes button { width: 44px; height: 44px; border-radius: 9px; border: none; background: #FFF1F6; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .pf-mes button:disabled { opacity: .35; cursor: default; }
         .pf-datas { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .pf-d { display: flex; flex-direction: column; gap: 4px; min-width: 0; } .pf-d > span { font-size: 12px; font-weight: 700; color: var(--ui-texto-2); }
+        .pf-d { display: flex; flex-direction: column; gap: 4px; min-width: 0; } .pf-d > span { font-size: 12px; font-weight: 500; color: var(--ui-texto-2); }
         .pf-datas input { height: 42px; border: 1.5px solid var(--ui-borda-campo); border-radius: 10px; padding: 0 10px; font-family: inherit; font-size: 16px; color: var(--ui-texto); background: var(--ui-branco); box-sizing: border-box; width: 100%; }
       `}</style>
     </div>

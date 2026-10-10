@@ -259,7 +259,7 @@ const CSS = `
   .kq-addrow input { flex: 1; min-width: 0; border: 1.5px solid var(--ui-borda-campo); border-radius: 12px; padding: 11px 12px; font-family: inherit; font-size: 16px; color: var(--ui-texto); }
   .kq-addrow input:focus { outline: none; border-color: var(--ui-rosa); box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
   .kq-addrow button { border: none; border-radius: 10px; background: var(--ui-vinho-escuro); color: var(--ui-branco); font-family: inherit; font-weight: 700; font-size: 13px; padding: 0 14px; cursor: pointer; white-space: nowrap; } .kq-addrow button:disabled { opacity: .35; cursor: default; }
-  .kq-sug-l { margin: 12px 0 6px; font-size: 12px; font-weight: 700; color: var(--ui-texto-3); }
+  .kq-sug-l { margin: 12px 0 6px; font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
   /* 10/10: as sugestões quebram linha (antes cortavam na borda: "+ Ni") */
   .kq-sug { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 2px; }
   .kq-sug button { min-height: 36px; white-space: nowrap; padding: 6px 11px; border: 1.5px dashed #F3C9DA; border-radius: 999px; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-weight: 700; font-size: 12.5px; cursor: pointer; }

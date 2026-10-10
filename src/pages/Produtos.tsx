@@ -2515,7 +2515,7 @@ function PersonalizacaoStep({
           background: #FAF8F5; border-radius: 8px; padding: 12px; margin-bottom: 12px;
         }
         .pv3-regras-label {
-          font-size: 12px; color: var(--ui-texto-2); font-weight: 700; margin-bottom: 6px;
+          font-size: 12px; color: var(--ui-texto-2); font-weight: 500; margin-bottom: 6px;
         }
         .pv3-regras-row {
           display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
@@ -2887,7 +2887,7 @@ function PersonalizacaoStep({
         .pv3-gerar-sub { font-size: 12px; color: #6B7280; margin: 0 0 16px; line-height: 1.45; }
         .pv3-gerar-row { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 14px; }
         .pv3-gerar-field { flex: 1; min-width: 0; }
-        .pv3-gerar-lbl { font-size: 12px; font-weight: 700; color: #6B7280; margin-bottom: 6px; }
+        .pv3-gerar-lbl { font-size: 12px; font-weight: 500; color: #6B7280; margin-bottom: 6px; }
         .pv3-gerar-input { display: flex; align-items: center; background: var(--ui-branco); border: 1.5px solid #F0EBED; border-radius: 8px; overflow: hidden; }
         .pv3-gerar-input input { flex: 1; padding: 10px 8px; border: none; outline: none; font-size: 16px; font-weight: 700; color: var(--ui-texto); font-family: inherit; min-width: 0; width: 100%; }
         .pv3-gerar-input span { padding: 10px 10px; background: var(--ui-linha); font-size: 12px; font-weight: 700; color: var(--ui-rosa-escuro); flex-shrink: 0; }
@@ -7078,7 +7078,7 @@ export default function Produtos() {
           display: flex; align-items: center; justify-content: center;
           color: var(--text-secondary);
           font-size: 0.75rem;
-          font-weight: var(--fw-black);
+          font-weight: 500;
         }
         .prod-card-promo {
           position: absolute;
@@ -7355,7 +7355,7 @@ export default function Produtos() {
         .prod-preview-destaque-label {
           font-size: 12px;
           color: var(--ui-texto-2);
-          font-weight: 700;
+          font-weight: 500;
         }
         .prod-preview-destaque-valor {
           font-size: 24px;
@@ -8023,7 +8023,7 @@ export default function Produtos() {
           display: inline-block;
           margin-left: 6px;
           font-size: 12px;
-          font-weight: var(--fw-bold);
+          font-weight: 500;
           color: var(--ui-texto-2);
           background: #F0EBED;
           padding: 2px 6px;
@@ -8892,7 +8892,7 @@ export default function Produtos() {
         .wiz-step1-sub-label {
           text-align: center;
           font-size: 13px;
-          font-weight: 700;
+          font-weight: 500;
           color: var(--ui-texto-2);
           margin: 22px 0 12px;
         }
@@ -9126,7 +9126,7 @@ export default function Produtos() {
         }
         .prod-modal-eyebrow {
           font-size: 12px;
-          font-weight: 700;
+          font-weight: 500;
           color: var(--text-muted);
           margin-bottom: 2px;
         }
@@ -10223,7 +10223,7 @@ export default function Produtos() {
         .prod-slot-locked-txt {
           font-size: 12px;
           color: var(--ui-texto-2);
-          font-weight: 700;
+          font-weight: 500;
           font-family: var(--font-base);
           letter-spacing: 0.02em;
         }
@@ -10746,7 +10746,7 @@ export default function Produtos() {
         .prod-var-preco-tachado {
           font-size: 12px; color: var(--text-muted);
           text-decoration: line-through;
-          font-weight: 700;
+          font-weight: 500;
         }
 
         /* Responsivo mobile pro toggle */
@@ -11682,7 +11682,7 @@ export default function Produtos() {
         .ficha-modal-hero-info { flex: 1; min-width: 0; }
         .ficha-modal-hero-label {
           margin: 0; font-size: var(--font-caption);
-          letter-spacing: var(--ls-wide); color: var(--text-muted); font-weight: var(--fw-bold);
+          letter-spacing: var(--ls-wide); color: var(--text-muted); font-weight: 500;
         }
         .ficha-modal-hero-nome {
           margin: 2px 0 var(--space-2);
@@ -11698,7 +11698,7 @@ export default function Produtos() {
         }
         .ficha-modal-metric span {
           display: block; font-size: var(--font-stat-label);
-          letter-spacing: var(--ls-wide); color: var(--text-muted); font-weight: var(--fw-bold);
+          letter-spacing: var(--ls-wide); color: var(--text-muted); font-weight: 500;
         }
         .ficha-modal-metric strong {
           display: block; font-size: var(--font-button); font-weight: var(--fw-black);
@@ -11813,7 +11813,7 @@ export default function Produtos() {
           border-radius: var(--radius-lg); padding: var(--space-3);
         }
         .ficha-modal-add-label {
-          font-size: var(--font-section-label); font-weight: var(--fw-bold); line-height: var(--lh-normal);
+          font-size: var(--font-section-label); font-weight: 500; line-height: var(--lh-normal);
           color: var(--text-secondary); letter-spacing: var(--ls-wide);
           margin-bottom: var(--space-2);
         }

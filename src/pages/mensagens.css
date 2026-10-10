@@ -10,7 +10,7 @@
 .mz-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
 .mz-tx b { font-size: 15px; font-weight: 700; line-height: 1.3; }
 .mz-tx small { font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
-.mz-tx em { margin-top: 4px; padding: 2px 8px; border-radius: 99px; background: var(--ui-cinza); font-size: 12px; font-style: normal; font-weight: 700; color: var(--ui-texto-2); }
+.mz-tx em { margin-top: 4px; padding: 2px 8px; border-radius: 99px; background: var(--ui-cinza); font-size: 12px; font-style: normal; font-weight: 500; color: var(--ui-texto-2); }
 .mz-tx em.on { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
 .mz-seta { flex: none; color: var(--ui-texto-3); }
 

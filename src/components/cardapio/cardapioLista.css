@@ -19,7 +19,7 @@
 .cl-cat-menu button { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 48px; margin: 0; padding: 0 12px; border: 0; border-radius: 12px; background: none; color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 700; text-align: left; cursor: pointer; }
 .cl-cat-menu button span { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .cl-cat-menu button[aria-checked="true"] { font-weight: 700; }
-.cl-cat-menu small { flex: none; min-width: 28px; padding: 2px 8px; border-radius: 999px; background: #F3EEF0; color: var(--ui-texto-2); font-size: 12.5px; font-weight: 700; text-align: center; }
+.cl-cat-menu small { flex: none; min-width: 28px; padding: 2px 8px; border-radius: 999px; background: #F3EEF0; color: var(--ui-texto-2); font-size: 12.5px; font-weight: 500; text-align: center; }
 
 /* títulos */
 .cl-h2 { margin: 20px 6px 12px; font-size: 18px; font-weight: 700; line-height: 1.3; }

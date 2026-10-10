@@ -201,7 +201,7 @@ const CSS = `
   .far-vazio-ic { width: 64px; height: 64px; border-radius: 20px; background: #F0FDF4; color: #16A34A; display: inline-flex; align-items: center; justify-content: center; }
   .far-vazio b { display: block; font-size: 17px; font-weight: 700; margin-top: 12px; color: var(--ui-texto); }
   .far-vazio p { font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; margin: 6px auto 0; max-width: 360px; text-wrap: balance; }
-  .far-gt { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: var(--ui-texto-3); }
+  .far-gt { margin: 0 0 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-3); }
   .far-gt span { color: var(--ui-texto-2); }
   .far-lista { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
   @media (min-width: 900px) { .far-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

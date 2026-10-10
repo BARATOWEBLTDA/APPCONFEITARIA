@@ -403,7 +403,7 @@ const CSS = `
   .ppf-bl b { display: block; font-size: 13.5px; margin-bottom: 8px; }
   .ppf-hr { flex: 1; display: flex; align-items: center; gap: 10px; min-height: 52px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); padding: 6px 12px; background: var(--ui-branco); font-family: inherit; color: var(--ui-rosa-escuro); text-align: left; cursor: pointer; }
   .ppf-hr span { display: flex; flex-direction: column; color: var(--ui-texto); font-size: 16px; font-weight: 700; line-height: 1.15; }
-  .ppf-hr small { font-size: 12.5px; font-weight: 700; color: var(--ui-texto-2); }
+  .ppf-hr small { font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
   .ppf-lg { display: flex; gap: 14px; align-items: center; margin-top: 12px; }
   .ppf-lgc { position: relative; width: 76px; height: 76px; border-radius: 50%; border: 0; background: var(--ui-rosa-claro); padding: 0; cursor: pointer; flex-shrink: 0; overflow: visible; }
   .ppf-lgc img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }

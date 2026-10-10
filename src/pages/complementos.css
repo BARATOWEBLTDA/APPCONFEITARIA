@@ -11,7 +11,7 @@
 
 /* exemplo da tela vazia */
 .pz-ex { margin-top: 12px; padding: 16px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); }
-.pz-ex-t { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
+.pz-ex-t { margin: 0 0 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
 .pz-ex-l { display: flex; align-items: center; gap: 12px; min-height: 48px; font-size: 15px; font-weight: 500; }
 .pz-ex-l + .pz-ex-l { border-top: 1px solid var(--ui-linha); }
 .pz-ex-l i { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border: 1.5px solid var(--ui-borda-campo); border-radius: 6px; color: var(--ui-branco); }
@@ -26,7 +26,7 @@
 .pz-seg button { flex: 1; min-width: 0; min-height: 44px; margin: 0; padding: 0 8px; border: 0; border-radius: 10px; background: none; color: var(--ui-texto-2); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
 .pz-seg button[aria-checked="true"] { background: var(--ui-branco); color: var(--ui-texto); box-shadow: var(--ui-sombra-cartao); }
 .pz-prods { margin-top: -6px; }
-.pz-prods-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
+.pz-prods-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
 .pz-prods-l { display: flex; flex-direction: column; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); overflow: hidden; }
 .pz-prod { display: flex; align-items: center; gap: 12px; min-height: 56px; margin: 0; padding: 6px 12px; border: 0; background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; }
 .pz-prod + .pz-prod { border-top: 1px solid var(--ui-linha); }

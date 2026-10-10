@@ -135,7 +135,7 @@ const CSS = `
   .cid-f img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .cid-f.on { border-color: var(--ui-rosa); box-shadow: 0 0 0 3px rgba(232,90,140,.15); }
   .cid-f i { position: absolute; right: 3px; bottom: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--ui-rosa); color: var(--ui-branco); display: flex; align-items: center; justify-content: center; }
-  .cid-f--sem { font-family: inherit; font-size: 12px; font-weight: 700; color: var(--ui-texto-3); }
+  .cid-f--sem { font-family: inherit; font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
   .cid-f--load { background: linear-gradient(90deg, var(--ui-linha), #FBF7F9, var(--ui-linha)); background-size: 200% 100%; animation: cidLoad 1.2s infinite; }
   @keyframes cidLoad { to { background-position: -200% 0; } }
   .cid-erro { margin: 10px 0 0; font-size: 13px; color: #B91C1C; font-weight: 700; }

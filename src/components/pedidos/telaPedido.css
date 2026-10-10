@@ -88,7 +88,7 @@
 .tpd-ref { position: relative; flex: none; display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; overflow: hidden; border-radius: var(--ui-raio-p); background: var(--ui-borda); color: var(--ui-texto-3); cursor: zoom-in; }
 .tpd-ref img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .tpd-recado > div { min-width: 0; }
-.tpd-recado small { display: block; font-size: 12.5px; font-weight: 700; color: var(--ui-texto-2); }
+.tpd-recado small { display: block; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
 .tpd-recado p { margin: 2px 0 0; font-size: 15px; font-weight: 500; line-height: 1.4; color: var(--ui-texto); overflow-wrap: anywhere; }
 .tpd-recado span { display: block; margin-top: 2px; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
 

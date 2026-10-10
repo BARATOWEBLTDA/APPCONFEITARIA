@@ -696,7 +696,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         /* Lista compacta */
         .pap-list-title {
           font-size: 12px;
-          font-weight: 700;
+          font-weight: 500;
           color: #6B7280;
           margin: 0 4px 8px;
         }

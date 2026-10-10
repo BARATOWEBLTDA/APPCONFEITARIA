@@ -696,7 +696,7 @@ export default function Cardapio() {
         }
         .ch-metric-body { min-width: 0; flex: 1; }
         .ch-metric-label {
-          font-size: 12px; font-weight: var(--fw-bold);
+          font-size: 12px; font-weight: 500;
           color: var(--text-muted);
           margin: 0 0 var(--space-1);
           white-space: nowrap;

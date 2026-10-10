@@ -241,7 +241,7 @@ const CSS = `
   .fap-vazio b { display: block; font-size: 17px; font-weight: 700; color: var(--ui-texto); margin-top: 12px; }
   .fap-vazio p { font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; margin: 6px auto 0; max-width: 380px; text-wrap: balance; }
   .fap-link { border: none; background: none; padding: 0; font: inherit; color: var(--ui-rosa-escuro); font-weight: 700; cursor: pointer; text-decoration: underline; }
-  .fap-gt { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: var(--ui-texto-3); } .fap-gt span { color: var(--ui-texto-2); }
+  .fap-gt { margin: 0 0 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-3); } .fap-gt span { color: var(--ui-texto-2); }
   .fap-lista { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; min-width: 0; }
   @media (min-width: 900px) { .fap-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .fap-it { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px; padding: 14px; }

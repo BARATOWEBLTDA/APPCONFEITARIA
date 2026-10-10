@@ -789,14 +789,14 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dz-hero b { display: block; font-size: 20px; font-weight: 700; margin-top: 12px; letter-spacing: -.01em; }
         .dz-hero p { font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; margin: 6px auto 0; max-width: 320px; text-wrap: balance; }
         .dz-hero b { text-wrap: balance; }
-        .dz-sl { margin: 4px 0 0; font-size: 13.5px; font-weight: 700; color: var(--ui-texto-2, #6B5D64); }
+        .dz-sl { margin: 4px 0 0; font-size: 13.5px; font-weight: 500; color: var(--ui-texto-2, #6B5D64); }
         .dz-sg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .dz-sc { min-height: 112px; text-align: left; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px; padding: 11px; font-family: inherit; color: inherit; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
         .dz-sc:hover { border-color: #F7C6D9; box-shadow: 0 4px 14px rgba(232,90,140,.1); }
         .dz-si { width: 36px; height: 36px; border-radius: 10px; background: var(--primary-light); color: #993556; display: flex; align-items: center; justify-content: center; }
         .dz-sc b { display: block; font-size: 13.5px; font-weight: 700; margin-top: 6px; line-height: 1.2; }
         .dz-sc small { display: block; font-size: 12.5px; color: var(--ui-texto-2, #6B5D64); margin-top: 2px; line-height: 1.3; }
-        .dz-dia { align-self: center; margin: 0; font-size: 12.5px; font-weight: 700; color: var(--ui-texto-3); background: #F0EBED; padding: 3px 10px; border-radius: 99px; }
+        .dz-dia { align-self: center; margin: 0; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-3); background: #F0EBED; padding: 3px 10px; border-radius: 99px; }
         .dz-m { display: flex; gap: 8px; align-items: flex-end; }
         .dz-m--eu { justify-content: flex-end; }
         .dz-mav { width: 28px; height: 28px; border-radius: 9px; object-fit: cover; object-position: top center; background: #FCE7F3; flex-shrink: 0; }

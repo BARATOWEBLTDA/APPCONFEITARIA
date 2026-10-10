@@ -251,7 +251,7 @@ const CSS = `
   .fd-fl-res { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 4px; font-size: 12.5px; color: var(--ui-texto-2); }
   .fd-fl-res b { font-weight: 700; color: var(--ui-texto); } .fd-fl-res b.e { color: var(--ui-verde); } .fd-fl-res b.s { color: var(--ui-vermelho); }
   .fd-nota { margin: 8px 0 0; font-size: 12px; color: var(--ui-texto-3); line-height: 1.4; }
-  .fd-mais-t { margin: 4px 0 8px; font-size: 13px; font-weight: 700; color: var(--ui-texto-3); }
+  .fd-mais-t { margin: 4px 0 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-3); }
   .fd-mais-g { display: grid; grid-template-columns: 1fr; gap: 8px; }
   @media (min-width: 640px) { .fd-mais-g { grid-template-columns: repeat(3, 1fr); } }
   .fd-mais-g button { display: grid; grid-template-columns: 38px 1fr; column-gap: 10px; align-items: center; text-align: left; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px; padding: 12px; font-family: inherit; color: var(--ui-texto); cursor: pointer; }

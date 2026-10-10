@@ -83,7 +83,7 @@ body .prod-modal--novo .prod-img-cta { font-size: 13.5px !important; font-weight
 body .prod-modal--novo .prod-slot-lock-circle { background: transparent; box-shadow: none; }
 body .prod-modal--novo .prod-slot-lock-txt { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--ui-texto-3); }
 body .prod-modal--novo .prod-slot-lock-txt b { font-size: 13.5px; font-weight: 700; color: var(--ui-texto-2); }
-body .prod-modal--novo .prod-slot-lock-txt-rgb { font-size: 12.5px; font-weight: 700; color: var(--ui-texto-3); background: none; -webkit-text-fill-color: currentColor; text-transform: none; letter-spacing: 0; }
+body .prod-modal--novo .prod-slot-lock-txt-rgb { font-size: 12.5px; font-weight: 500; color: var(--ui-texto-3); background: none; -webkit-text-fill-color: currentColor; text-transform: none; letter-spacing: 0; }
 body .prod-modal--novo .prod-img-remove { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
 body .prod-modal--novo .prod-toggles--clean > * { min-height: 56px; }
 

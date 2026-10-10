@@ -178,7 +178,7 @@ const CSS = `
   .lu-bar { height: 8px; border-radius: 9px; background: var(--ui-linha); overflow: hidden; } .lu-bar i { display: block; height: 100%; background: var(--ui-rosa); border-radius: 9px; }
   .lu-bar.grande { height: 12px; margin: 10px 0 8px; } .lu-bar i.ok { background: #16A34A; }
   .lu-eq-t { margin: 0; font-size: 13.5px; color: var(--ui-cinza-texto); line-height: 1.45; }
-  .lu-eq-v { display: block; font-size: 26px; font-weight: 700; letter-spacing: -.02em; margin-top: 4px; } .lu-eq-v small { font-size: 13px; font-weight: 700; color: var(--ui-texto-3); }
+  .lu-eq-v { display: block; font-size: 26px; font-weight: 700; letter-spacing: -.02em; margin-top: 4px; } .lu-eq-v small { font-size: 13px; font-weight: 500; color: var(--ui-texto-3); }
   .lu-eq-s { margin: 0; font-size: 13.5px; font-weight: 700; color: var(--ui-texto); } .lu-nota { margin: 6px 0 0; font-size: 12px; color: var(--ui-texto-3); }
   .lu-link { border: none; background: none; padding: 0; font: inherit; color: var(--ui-rosa-escuro); font-weight: 700; text-decoration: underline; cursor: pointer; }
   .lu-p { padding: 10px 0; border-top: 1px solid var(--ui-linha); } .lu-p:first-of-type { border-top: none; }

@@ -834,7 +834,7 @@ const CSS = `
   .bw-gerar-btn:hover { background: #FCE7F3; }
   .bw-t2 { display: flex; flex-direction: column; gap: 8px; }
   .bw-t2-row { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) 36px; gap: 10px; align-items: center; }
-  .bw-t2-row--h span { font-size: 12px; font-weight: 700; color: var(--ui-texto-3); padding-left: 2px; white-space: nowrap; }
+  .bw-t2-row--h span { font-size: 12px; font-weight: 500; color: var(--ui-texto-3); padding-left: 2px; white-space: nowrap; }
   input.bw-t2-nome { text-align: left; padding: 0 12px; font-size: 16px; font-weight: 700; }
   .bw-t2 .bw-in input { padding-left: 12px; }
   .bw-check2 { display: flex; align-items: flex-start; gap: 12px; width: 100%; margin-top: 18px; border: none; background: none; padding: 0; font-family: inherit; text-align: left; cursor: pointer; color: var(--ui-texto); }
@@ -870,7 +870,7 @@ const CSS = `
   .bw-lt-h, .bw-lt-row { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: stretch; }
   .bw-lt--ed .bw-lt-row { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) 44px; }
   .bw-lt-h { position: relative; background: #FAF7F8; border-bottom: 1px solid #EDE5E8; }
-  .bw-lt-h span { font-size: 12px; font-weight: 700; color: var(--ui-texto-3); padding: 10px 14px; white-space: nowrap; }
+  .bw-lt-h span { font-size: 12px; font-weight: 500; color: var(--ui-texto-3); padding: 10px 14px; white-space: nowrap; }
   .bw-lt-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .bw-lt-edit { border: 1px solid #EAE3E6; background: var(--ui-branco); border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--ui-cinza-texto); cursor: pointer; padding: 9px 14px; white-space: nowrap; }
   .bw-lt-edit.on { background: var(--ui-vinho-escuro); border-color: var(--ui-texto); color: var(--ui-branco); }
