@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 // deploy: Proposta D - nova arquitetura de navegação (Entrega 1)
+import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 import CardapioSubnav, { ROTAS_CARDAPIO } from "@/components/CardapioSubnav";
 import ParabensPro from "@/components/pro/ParabensPro";
 import DooIA from "@/components/DooIA";
@@ -151,7 +152,7 @@ export default function Layout() {
         <div className="sidebar-greeting">
           <p className="sidebar-greeting-name">
             {profile?.nome || (profile as any)?.nome_loja
-              ? <>Olá, {(profile as any)?.nome_loja?.trim() || profile?.nome?.split(" ")[0]}</>
+              ? <>Olá, {nomeCurtoLoja((profile as any)?.nome_loja) || profile?.nome?.split(" ")[0]}</>
               : <span className="sidebar-greeting-skel" aria-hidden="true" />}
           </p>
           <p className="sidebar-greeting-date">{new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }).replace(/^\w/, c => c.toUpperCase())}</p>

@@ -1,4 +1,5 @@
 // Build marker: 2026-09-05T11:00 — mobile hero: fonte menor, PRO achatado, texto centralizado
+import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
 import { STATUS_AINDA_NAO_PRONTO, dataISO } from "@/lib/pedidoStatus";
 import { entradasNoPeriodo } from "@/lib/painelFinanceiro";
@@ -581,21 +582,22 @@ export default function Inicio() {
               Olá,{" "}
               {profile ? (
                 // 02/10: o nome da confeitaria (o pessoal só se a loja ainda não tiver nome)
-                ((profile as any).nome_loja?.trim() || (nome ? nome.split(" ")[0] : "!"))
+                // 09/10 · 4.01: só o nome da loja, sem "Confeitaria", "Doceria" etc., pra caber com a etiqueta do plano
+                (nomeCurtoLoja((profile as any).nome_loja) || (nome ? nome.split(" ")[0] : "!"))
               ) : (
                 <span className="ini-hero-name-skel" aria-hidden="true" />
               )}
             </span>
             {profile && (
               isPro ? (
-                <span className="ini-plan-tag ini-plan-tag--pro" aria-label="Plano PRO">
+                <span className="ini-plan-tag ini-plan-tag--pc ini-plan-tag--pro" aria-label="Plano PRO">
                   <img src="/coroa.png" alt="" />
                   <span>PRO</span>
                 </span>
               ) : (
                 <button
                   type="button"
-                  className="ini-plan-tag ini-plan-tag--upgrade"
+                  className="ini-plan-tag ini-plan-tag--pc ini-plan-tag--upgrade"
                   onClick={() => navigate("/assinar")}
                   aria-label="Assinar o plano PRO"
                 >
@@ -606,7 +608,28 @@ export default function Inicio() {
             )}
           </h1>
           {/* Data — só mobile (embaixo do nome) */}
-          <p className="ini-hero-data-mobile">{hojeFormatado()}</p>
+          {/* 4.01: no celular a etiqueta do plano fica ao lado da data, e o nome da loja ganha a linha inteira */}
+          <div className="ini-hero-sub">
+            <p className="ini-hero-data-mobile">{hojeFormatado()}</p>
+              {profile && (
+                isPro ? (
+                  <span className="ini-plan-tag ini-plan-tag--mob ini-plan-tag--pro" aria-label="Plano PRO">
+                    <img src="/coroa.png" alt="" />
+                    <span>PRO</span>
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    className="ini-plan-tag ini-plan-tag--mob ini-plan-tag--upgrade"
+                    onClick={() => navigate("/assinar")}
+                    aria-label="Assinar o plano PRO"
+                  >
+                    <img src="/coroa.png" alt="" />
+                    <span>Seja PRO</span>
+                  </button>
+                )
+              )}
+          </div>
           {(() => {
             const msg = getSmartMessage();
             return (
@@ -906,6 +929,7 @@ export default function Inicio() {
         }
         @media (min-width: 768px) {
           .ini-hero-data-mobile { display: none; }
+          .ini-plan-tag--mob { display: none !important; }
         }
 
         /* ── Mensagem contextual embaixo do nome (hero mobile) ── */
@@ -1515,7 +1539,7 @@ export default function Inicio() {
           .ini-root .ini-hero-waves path:first-child { opacity: .55; }
           .ini-root .ini-hero-sparkles { display: none; }
           .ini-root .ini-hero-greeting h1 {
-            flex-wrap: wrap; /* se o nome e a etiqueta não cabem lado a lado, a etiqueta desce: o nome não é cortado */
+            flex-wrap: nowrap; /* 4.01: nome e etiqueta sempre na mesma linha; nome muito longo ganha reticências */
             gap: 4px 8px;
             font-size: 22px; font-weight: 700;
             letter-spacing: -.02em; line-height: 1.2;
@@ -1523,9 +1547,13 @@ export default function Inicio() {
           }
           /* 09/10: o nome não ocupa mais a linha toda — se o nome e o "Seja PRO" cabem, ficam na mesma linha; se não, a etiqueta desce */
           .ini-root .ini-hero-greeting h1 > span:first-child {
-            display: inline; flex: 0 1 auto; min-width: 0;
-            white-space: normal; overflow-wrap: anywhere;
+            display: block; flex: 0 1 auto; min-width: 0;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
           }
+          .ini-root .ini-hero-greeting .ini-plan-tag { flex-shrink: 0; }
+          .ini-root .ini-plan-tag--pc { display: none !important; }
+          .ini-root .ini-hero-sub { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+          .ini-root .ini-hero-sub .ini-hero-data-mobile { margin-top: 0; }
           .ini-root .ini-hero-data-mobile {
             font-size: 12.5px; font-weight: 500;
             color: rgba(255, 255, 255, .85);
