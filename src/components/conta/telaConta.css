@@ -1,7 +1,7 @@
 /* Telas de conta fora do app (07/10): Esqueci a senha e Criar nova senha.
    O mesmo desenho do login: fundo vinho, mascote saindo do cartão e, no computador, o cartão dividido. */
 .tc-root { position: fixed; inset: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; align-items: center; font-family: var(--font-base); color: var(--ui-texto); padding: calc(env(safe-area-inset-top, 0px) + 24px) 20px calc(env(safe-area-inset-bottom, 0px) + 24px); }
-.tc-fundo { position: fixed; inset: 0; z-index: 0; background: var(--vinho-fundo, radial-gradient(1000px 640px at 50% 38%, #4B1528 0%, #2C1219 72%)); }
+.tc-fundo { position: fixed; inset: 0; z-index: 0; background: var(--vinho-fundo, radial-gradient(1000px 640px at 50% 38%, var(--ui-vinho) 0%, var(--ui-vinho-escuro) 72%)); }
 .tc-layout { position: relative; z-index: 2; width: 100%; max-width: 440px; margin: auto 0; flex-shrink: 0; display: flex; flex-direction: column; }
 .tc-marca { display: none; }
 .tc-cartao { position: relative; margin-top: 108px; padding: 56px 24px 26px; background: var(--ui-branco); border-radius: 22px; box-shadow: 0 14px 40px -12px rgba(60, 10, 30, .45); text-align: center; }
@@ -33,14 +33,14 @@
 .tc-rodape div { display: flex; gap: 8px; align-items: center; }
 .tc-rodape a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 2px; color: inherit; font-weight: 500; text-decoration: none; -webkit-tap-highlight-color: transparent; }
 .tc-rodape a:focus-visible { outline: 3px solid rgba(255, 255, 255, .6); outline-offset: 1px; border-radius: 6px; }
-@media (hover: hover) { .tc-rodape a:hover { color: #fff; text-decoration: underline; } }
+@media (hover: hover) { .tc-rodape a:hover { color: var(--ui-branco); text-decoration: underline; } }
 .tc-rodape em { font-style: normal; font-size: 12px; opacity: .8; }
 @media (max-width: 380px) { .tc-root { padding-inline: 12px; } .tc-cartao { padding-inline: 18px; } }
 @media (max-width: 340px) { .tc-h { font-size: 20px; } }
 @media (min-width: 900px) {
   /* mesma altura do cartão do login (602px), pra tela não "pular" ao ir e voltar */
   .tc-layout { max-width: 960px; min-height: min(602px, calc(100dvh - 130px)); display: grid; grid-template-columns: 1fr 1fr; align-items: stretch; background: var(--ui-branco); border-radius: 28px; box-shadow: 0 30px 70px -30px rgba(80, 20, 45, .45); }
-  .tc-marca { display: block; position: relative; padding: 0 40px; border-radius: 28px 0 0 28px; background: linear-gradient(160deg, #FF9DC4 0%, #E85A8C 55%, #C33A6E 100%); color: #fff; text-align: center; }
+  .tc-marca { display: block; position: relative; padding: 0 40px; border-radius: 28px 0 0 28px; background: linear-gradient(160deg, #FF9DC4 0%, var(--ui-rosa) 55%, var(--ui-rosa-escuro) 100%); color: var(--ui-branco); text-align: center; }
   .tc-marca-in { position: sticky; top: 0; height: min(100%, calc(100dvh - 48px)); min-height: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   .tc-marca-masc { display: block; width: 170px; height: auto; filter: drop-shadow(0 12px 16px rgba(80, 10, 40, .3)); }
   .tc-marca .nome-doonly { display: block; width: 210px; max-width: 100%; height: auto; margin-top: 14px; }

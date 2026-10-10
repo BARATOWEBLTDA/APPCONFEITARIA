@@ -169,44 +169,44 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
       <style>{`
         .fps-ov { position: fixed; inset: 0; z-index: 1300; background: rgba(45,31,38,.5); display: flex; align-items: flex-end; justify-content: center; font-family: var(--font-base); }
         @media (min-width: 768px) { .fps-ov { align-items: center; } }
-        .fps { width: 100%; max-width: 460px; background: #fff; border-radius: 22px 22px 0 0; padding: 10px 18px calc(18px + env(safe-area-inset-bottom, 0px)); max-height: 94dvh; overflow-y: auto; color: #2C1219; animation: fpsSobe .22s ease; }
+        .fps { width: 100%; max-width: 460px; background: var(--ui-branco); border-radius: 22px 22px 0 0; padding: 10px 18px calc(18px + env(safe-area-inset-bottom, 0px)); max-height: 94dvh; overflow-y: auto; color: var(--ui-texto); animation: fpsSobe .22s ease; }
         @media (min-width: 768px) { .fps { border-radius: 22px; } }
         @keyframes fpsSobe { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
         .fps-alca { display: block; width: 40px; height: 4px; border-radius: 9px; background: #E5DDE1; margin: 0 auto 10px; }
         .fps-hd { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
         .fps-t { display: block; font-size: 19px; font-weight: 700; }
-        .fps-s { display: block; font-size: 13px; color: #6B5D64; margin-top: 2px; }
-        .fps-x { width: 34px; height: 34px; border-radius: 50%; border: none; background: #F5F0F2; color: #6B5D64; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+        .fps-s { display: block; font-size: 13px; color: var(--ui-texto-2); margin-top: 2px; }
+        .fps-x { width: 34px; height: 34px; border-radius: 50%; border: none; background: var(--ui-linha); color: var(--ui-texto-2); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
         .fps-res { background: #FAF7F8; border-radius: 12px; padding: 8px 12px; }
-        .fps-res div { display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px; padding: 4px 0; color: #4B3A42; }
-        .fps-res b { font-weight: 700; color: #2C1219; white-space: nowrap; } .fps-res s { color: #9A8E94; font-weight: 500; margin-right: 4px; }
-        .fps-res .ok { color: #15803D; } .fps-res .aj span, .fps-res .aj b { color: #C33A6E; }
+        .fps-res div { display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px; padding: 4px 0; color: var(--ui-cinza-texto); }
+        .fps-res b { font-weight: 700; color: var(--ui-texto); white-space: nowrap; } .fps-res s { color: var(--ui-texto-3); font-weight: 500; margin-right: 4px; }
+        .fps-res .ok { color: var(--ui-verde); } .fps-res .aj span, .fps-res .aj b { color: var(--ui-rosa-escuro); }
         .fps-res .tt { border-top: 1px solid #F0EBED; margin-top: 4px; padding-top: 8px; font-size: 15px; }
-        .fps-aj-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; border: none; background: none; padding: 4px 0; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #C33A6E; cursor: pointer; }
+        .fps-aj-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; border: none; background: none; padding: 4px 0; font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
         .fps-aj { margin-top: 12px; border: 1.5px solid #F3C9DA; border-radius: 14px; padding: 12px; background: #FFF9FB; }
         .fps-aj-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .fps-aj-h b { font-size: 14px; } .fps-aj-h button { border: none; background: none; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #9A8E94; cursor: pointer; }
-        .fps-seg { display: flex; background: #F5F0F2; border-radius: 10px; padding: 3px; margin-bottom: 8px; }
-        .fps-seg button { flex: 1; border: none; background: none; border-radius: 8px; padding: 8px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #6B5D64; cursor: pointer; }
-        .fps-seg button.on { background: #fff; color: #2C1219; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
-        .fps-lb { display: block; font-size: 13px; font-weight: 700; color: #4B3A42; margin: 14px 0 6px; }
+        .fps-aj-h b { font-size: 14px; } .fps-aj-h button { border: none; background: none; font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--ui-texto-3); cursor: pointer; }
+        .fps-seg { display: flex; background: var(--ui-linha); border-radius: 10px; padding: 3px; margin-bottom: 8px; }
+        .fps-seg button { flex: 1; border: none; background: none; border-radius: 8px; padding: 8px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-texto-2); cursor: pointer; }
+        .fps-seg button.on { background: var(--ui-branco); color: var(--ui-texto); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        .fps-lb { display: block; font-size: 13px; font-weight: 700; color: var(--ui-cinza-texto); margin: 14px 0 6px; }
         .fps-aj .fps-lb { margin-top: 10px; }
-        .fps-in { display: flex; align-items: center; gap: 6px; border: 1.5px solid #E85A8C; border-radius: 12px; padding: 0 12px; height: 52px; box-shadow: 0 0 0 3px rgba(232,90,140,.12); background: #fff; }
-        .fps-in.sm { height: 46px; border-color: #EDE6E9; box-shadow: none; }
-        .fps-in span { font-size: 17px; color: #6B5D64; font-weight: 700; }
-        .fps-in input { flex: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 21px; font-weight: 700; color: #2C1219; background: none; }
+        .fps-in { display: flex; align-items: center; gap: 6px; border: 1.5px solid var(--ui-rosa); border-radius: 12px; padding: 0 12px; height: 52px; box-shadow: 0 0 0 3px rgba(232,90,140,.12); background: var(--ui-branco); }
+        .fps-in.sm { height: 46px; border-color: var(--ui-borda-campo); box-shadow: none; }
+        .fps-in span { font-size: 17px; color: var(--ui-texto-2); font-weight: 700; }
+        .fps-in input { flex: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 21px; font-weight: 700; color: var(--ui-texto); background: none; }
         .fps-in.sm input { font-size: 17px; }
         .fps-chips { display: flex; gap: 6px; flex-wrap: wrap; }
-        .fps-chips button { border: 1.5px solid #EDE6E9; background: #fff; border-radius: 10px; padding: 8px 12px; font-family: inherit; font-size: 13px; font-weight: 700; color: #2C1219; cursor: pointer; }
-        .fps-chips button.on { border-color: #E85A8C; background: #FFF1F6; color: #C33A6E; }
-        .fps-motivo { margin-top: 8px; width: 100%; height: 42px; border: 1.5px solid #EDE6E9; border-radius: 10px; padding: 0 12px; font-family: inherit; font-size: 15px; box-sizing: border-box; }
-        .fps-data { margin-top: 8px; width: 100%; min-width: 0; max-width: 100%; -webkit-appearance: none; appearance: none; background: #fff; height: 46px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 0 12px; font-family: inherit; font-size: 16px; box-sizing: border-box; }
+        .fps-chips button { border: 1.5px solid var(--ui-borda-campo); background: var(--ui-branco); border-radius: 10px; padding: 8px 12px; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--ui-texto); cursor: pointer; }
+        .fps-chips button.on { border-color: var(--ui-rosa); background: #FFF1F6; color: var(--ui-rosa-escuro); }
+        .fps-motivo { margin-top: 8px; width: 100%; height: 42px; border: 1.5px solid var(--ui-borda-campo); border-radius: 10px; padding: 0 12px; font-family: inherit; font-size: 15px; box-sizing: border-box; }
+        .fps-data { margin-top: 8px; width: 100%; min-width: 0; max-width: 100%; -webkit-appearance: none; appearance: none; background: var(--ui-branco); height: 46px; border: 1.5px solid var(--ui-borda-campo); border-radius: 12px; padding: 0 12px; font-family: inherit; font-size: 16px; box-sizing: border-box; }
         .fps-prev { margin-top: 14px; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 12px; padding: 10px 12px; }
         .fps-prev b { display: block; font-size: 13.5px; color: #92400E; } .fps-prev small { font-size: 12px; color: #92400E; }
         .fps-prev--ok { background: #F0FDF4; border-color: #BBF7D0; } .fps-prev--ok b, .fps-prev--ok small { color: #166534; }
-        .fps-erro { margin: 10px 0 0; font-size: 13px; font-weight: 700; color: #DC2626; }
-        .fps-cta { margin-top: 14px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 14px; padding: 15px; background: #16A34A; color: #fff; font-family: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(22,163,74,.3); }
-        .fps-sec { margin-top: 6px; width: 100%; border: none; background: none; padding: 12px; font-family: inherit; font-size: 14px; font-weight: 700; color: #6B5D64; cursor: pointer; }
+        .fps-erro { margin: 10px 0 0; font-size: 13px; font-weight: 700; color: var(--ui-vermelho); }
+        .fps-cta { margin-top: 14px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 14px; padding: 15px; background: #16A34A; color: var(--ui-branco); font-family: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(22,163,74,.3); }
+        .fps-sec { margin-top: 6px; width: 100%; border: none; background: none; padding: 12px; font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ui-texto-2); cursor: pointer; }
         .fps-cta:disabled, .fps-sec:disabled { opacity: .6; cursor: default; }
       `}</style>
     </div>,

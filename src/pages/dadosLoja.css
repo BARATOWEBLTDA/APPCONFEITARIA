@@ -36,7 +36,7 @@
 .dl-recebe { position: relative; display: flex; align-items: flex-start; gap: 12px; min-height: 56px; padding: 12px; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); cursor: pointer; }
 .dl-recebe:has(input:checked) { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); }
 .dl-recebe > input { position: absolute !important; top: 0 !important; left: 0 !important; width: 1px !important; height: 1px !important; margin: 0 !important; opacity: 0; pointer-events: none; }
-.dl-cx { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin-top: 1px; border: 2px solid var(--ui-borda-campo); border-radius: 7px; background: var(--ui-branco); color: #fff; }
+.dl-cx { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin-top: 1px; border: 2px solid var(--ui-borda-campo); border-radius: 7px; background: var(--ui-branco); color: var(--ui-branco); }
 .dl-recebe input:checked + .dl-cx { border-color: var(--ui-rosa); background: var(--ui-rosa); }
 .dl-recebe b { display: block; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
 .dl-recebe small { display: block; margin-top: 2px; font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
@@ -46,7 +46,7 @@
 .dl-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
 .dl-days button { min-height: 44px; margin: 0; padding: 0; border: 0; background: none; font-family: inherit; cursor: pointer; }
 .dl-bola { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 44px; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto-2); font-size: 13px; font-weight: 700; transition: background-color .15s, color .15s; }
-.dl-days button.on .dl-bola { border-color: var(--ui-rosa); background: var(--ui-rosa); color: #fff; font-weight: 700; }
+.dl-days button.on .dl-bola { border-color: var(--ui-rosa); background: var(--ui-rosa); color: var(--ui-branco); font-weight: 700; }
 .dl-vazio { margin: 0; font-size: 13.5px; color: var(--ui-texto-2); }
 .dl-hr { padding: 12px; border-radius: var(--ui-raio); background: var(--ui-linha); }
 .dl-hr + .dl-hr { margin-top: -8px; }

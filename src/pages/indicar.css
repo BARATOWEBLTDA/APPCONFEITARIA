@@ -13,7 +13,7 @@
 .in9-link-tx { flex: 1; min-width: 0; display: flex; align-items: center; min-height: 48px; padding: 0 12px; overflow: hidden; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 15px; color: var(--ui-texto-2); white-space: nowrap; text-overflow: ellipsis; }
 .in9-link-in { display: block; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .in9-link-tx b { color: var(--ui-texto); font-weight: 700; }
-.ui-bt.in9-zap { background: #1FA855; box-shadow: 0 3px 0 #15803D; color: #fff; }
+.ui-bt.in9-zap { background: #1FA855; box-shadow: 0 3px 0 var(--ui-verde); color: var(--ui-branco); }
 .ui-bt.in9-zap:hover { background: #1B984C; }
 
 /* prêmios */
@@ -29,7 +29,7 @@
 .in9-tag { display: inline-flex; align-items: center; gap: 4px; margin-top: 2px; padding: 3px 10px; border-radius: 99px; background: var(--ui-cinza); font-size: 12px; font-weight: 700; color: var(--ui-texto-2); white-space: nowrap; }
 .in9-tag.prox { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
 .in9-tag.ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
-.in9-resgatar { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-size: 14px; font-weight: 700; color: #15803D; text-decoration: none; }
+.in9-resgatar { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-size: 14px; font-weight: 700; color: var(--ui-verde); text-decoration: none; }
 
 /* andamento */
 .in9-and { gap: 4px; }

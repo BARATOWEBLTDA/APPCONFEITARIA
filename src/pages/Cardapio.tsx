@@ -598,7 +598,7 @@ export default function Cardapio() {
           background: linear-gradient(135deg, var(--text-title) 0%, var(--primary-dark) 100%);
           border-radius: var(--radius-lg);
           box-shadow: var(--shadow-md);
-          color: #FFFFFF;
+          color: var(--ui-branco);
           display: flex; flex-direction: column; gap: var(--space-3);
         }
         .ch-status-row { display: flex; align-items: center; gap: var(--space-2); }
@@ -621,7 +621,7 @@ export default function Cardapio() {
         .ch-btn-primary {
           display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
           flex: 1;
-          background: #FFFFFF; color: var(--text-title);
+          background: var(--ui-branco); color: var(--text-title);
           border: none; border-radius: var(--radius-md);
           padding: var(--space-3) var(--space-4);
           font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-bold);
@@ -634,7 +634,7 @@ export default function Cardapio() {
         .ch-btn-ghost {
           width: 42px; height: 42px;
           display: inline-flex; align-items: center; justify-content: center;
-          background: rgba(255,255,255,0.15); color: #FFFFFF;
+          background: rgba(255,255,255,0.15); color: var(--ui-branco);
           border: none; border-radius: var(--radius-md);
           font-family: inherit;
           cursor: pointer;
@@ -669,7 +669,7 @@ export default function Cardapio() {
         .ch-periodo-tab:hover:not(.active) { background: var(--bg-subtle); color: var(--text-title); }
         .ch-periodo-tab.active {
           background: var(--text-title);
-          color: #fff;
+          color: var(--ui-branco);
         }
 
         /* ── Métricas ── */
@@ -735,7 +735,7 @@ export default function Cardapio() {
           position: absolute; top: 6px; right: 6px;
           display: inline-flex; align-items: center; gap: 4px;
           padding: 2px 8px 2px 6px;
-          background: #DCFCE7; color: #14532d;
+          background: var(--ui-verde-fundo); color: #14532d;
           border-radius: 999px;
           font-family: inherit;
           font-size: 12px; font-weight: var(--fw-black);
@@ -754,7 +754,7 @@ export default function Cardapio() {
         .ch-metric-value-wrap { position: relative; display: inline-block; }
         .ch-metric-pop {
           position: absolute; top: -6px; right: -26px;
-          background: #22c55e; color: #fff;
+          background: #22c55e; color: var(--ui-branco);
           padding: 1px 7px; border-radius: 999px;
           font-family: inherit;
           font-size: 12px; font-weight: var(--fw-black);
@@ -817,7 +817,7 @@ export default function Cardapio() {
         }
         .ch-list-icon--primary { background: var(--primary-light); color: var(--primary); }
         .ch-list-icon--accent  { background: #EEEDFE; color: #534AB7; }
-        .ch-list-icon--warning { background: #FEF3C7; color: #92400E; }
+        .ch-list-icon--warning { background: var(--ui-laranja-fundo); color: #92400E; }
         .ch-list-icon--muted   { background: var(--bg-subtle); color: var(--text-secondary); }
         .ch-list-lbl {
           flex: 1;
@@ -844,7 +844,7 @@ export default function Cardapio() {
 
         /* ─── Cards de configuração/catálogo (padrão "Ações rápidas") ─── */
         .cd-card {
-          background: #fff;
+          background: var(--ui-branco);
           border: 1px solid #F0EBED;
           border-radius: 8px;
           margin-bottom: var(--space-4);
@@ -852,7 +852,7 @@ export default function Cardapio() {
         }
         .cd-quick { padding: 4px 0 4px; }
         .cd-quick-hdr { padding: 14px 18px 10px; }
-        .cd-quick-title { font-size: 16px; font-weight: 700; color: #2C1219; letter-spacing: -0.01em; }
+        .cd-quick-title { font-size: 16px; font-weight: 700; color: var(--ui-texto); letter-spacing: -0.01em; }
         .cd-quick-sub { font-size: 12px; color: #888780; margin-top: 3px; }
         .cd-quick-list { display: flex; flex-direction: column; }
         .cd-quick-item {
@@ -874,21 +874,21 @@ export default function Cardapio() {
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
         }
-        .cd-quick-ico--pink  { background: #FCE0E9; color: #993556; }
+        .cd-quick-ico--pink  { background: var(--primary-light); color: #993556; }
         .cd-quick-ico--amber { background: #FEF0DF; color: #854F0B; }
-        .cd-quick-ico--red   { background: #FEE2E2; color: #B91C1C; }
-        .cd-quick-ico--blue  { background: #E6F1FB; color: #185FA5; }
+        .cd-quick-ico--red   { background: var(--ui-vermelho-fundo); color: #B91C1C; }
+        .cd-quick-ico--blue  { background: #E6F1FB; color: var(--ui-azul); }
         .cd-quick-ico--gray  { background: #F0EBED; color: #5F5E5A; }
         .cd-quick-info { flex: 1; min-width: 0; text-align: left; }
-        .cd-quick-name { font-size: 14px; font-weight: 700; color: #2C1219; letter-spacing: -0.01em; line-height: 1.2; }
+        .cd-quick-name { font-size: 14px; font-weight: 700; color: var(--ui-texto); letter-spacing: -0.01em; line-height: 1.2; }
         .cd-quick-desc { font-size: 12px; color: #888780; margin-top: 3px; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
         .cd-quick-arrow { color: #B4B2A9; flex-shrink: 0; }
 
         /* ─── Métricas locked (PRO upsell) ─── */
         .cd-metricas-locked {
           position: relative;
-          background: linear-gradient(135deg, #2D1F26, #4B3D46);
-          color: #fff;
+          background: linear-gradient(135deg, #2D1F26, var(--text-primary));
+          color: var(--ui-branco);
           border-radius: 8px;
           padding: 18px 18px 16px;
           margin-bottom: var(--space-4);
@@ -915,7 +915,7 @@ export default function Cardapio() {
           width: 32px; height: 32px;
           border-radius: 8px;
           background: linear-gradient(135deg, #FFC947, #DDAA00);
-          color: #2C1219;
+          color: var(--ui-texto);
           display: flex; align-items: center; justify-content: center;
           box-shadow: 0 2px 0 rgba(0,0,0,0.25);
           flex-shrink: 0;
@@ -968,7 +968,7 @@ export default function Cardapio() {
           width: 100%;
           padding: 11px;
           background: linear-gradient(135deg, #FFC947, #DDAA00);
-          color: #2C1219;
+          color: var(--ui-texto);
           font-size: 12.5px;
           font-weight: 700;
           border-radius: 6px;
@@ -1034,7 +1034,7 @@ export default function Cardapio() {
         }
         .ch-alerta:hover { transform: translateX(2px); }
         .ch-alerta--warning {
-          background: #FEF3C7;
+          background: var(--ui-laranja-fundo);
           border-color: #FCD34D;
           color: #92400E;
         }
@@ -1115,9 +1115,9 @@ export default function Cardapio() {
         .cardapio-hub .cd-quick-name { font-size: 15px; font-weight: 700; color: var(--ui-texto); }
         .cardapio-hub .cd-quick-desc { font-size: 13px; color: var(--ui-texto-2); margin-top: 2px; }
         .cardapio-hub .cd-quick-arrow { color: var(--ui-texto-3); }
-        .cd-pro { padding: 16px; border-radius: var(--ui-raio-cartao); background: linear-gradient(150deg, #3B1620, #6B2340); color: #fff; box-shadow: var(--ui-sombra-cartao); }
+        .cd-pro { padding: 16px; border-radius: var(--ui-raio-cartao); background: linear-gradient(150deg, #3B1620, #6B2340); color: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); }
         .cd-pro-ic { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-bottom: 12px; border-radius: var(--ui-raio); background: rgba(255,255,255,.14); }
-        .cd-pro h3 { margin: 0; font-size: 18px; font-weight: 700; color: #fff; }
+        .cd-pro h3 { margin: 0; font-size: 18px; font-weight: 700; color: var(--ui-branco); }
         .cd-pro p { margin: 4px 0 16px; font-size: 13.5px; line-height: 1.5; color: rgba(255,255,255,.82); }
         .ch-metric-label { font-size: 12.5px !important; text-transform: none !important; letter-spacing: 0 !important; }
         .ch-live-badge, .ch-metric-pop { font-size: 12px !important; text-transform: none !important; letter-spacing: 0 !important; }

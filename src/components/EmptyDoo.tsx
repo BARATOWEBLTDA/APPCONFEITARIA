@@ -92,7 +92,7 @@ export default function EmptyDoo({
           width: 82px;
           height: 82px;
           border-radius: 28%;
-          background: #fff;
+          background: var(--ui-branco);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -126,7 +126,7 @@ export default function EmptyDoo({
           align-items: center;
           gap: 0.5rem;
           background: var(--primary, #E85A8C);
-          color: #fff;
+          color: var(--ui-branco);
           border: none;
           border-radius: 12px;
           padding: 12px 24px;

@@ -14,7 +14,7 @@
 .pz-ex-t { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
 .pz-ex-l { display: flex; align-items: center; gap: 12px; min-height: 48px; font-size: 15px; font-weight: 500; }
 .pz-ex-l + .pz-ex-l { border-top: 1px solid var(--ui-linha); }
-.pz-ex-l i { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border: 1.5px solid var(--ui-borda-campo); border-radius: 6px; color: #fff; }
+.pz-ex-l i { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border: 1.5px solid var(--ui-borda-campo); border-radius: 6px; color: var(--ui-branco); }
 .pz-ex-l.on i { border-color: var(--ui-rosa); background: var(--ui-rosa); }
 .pz-ex-l span { flex: 1; min-width: 0; }
 .pz-ex-l b { font-weight: 700; color: var(--ui-rosa-escuro); }
@@ -31,7 +31,7 @@
 .pz-prod { display: flex; align-items: center; gap: 12px; min-height: 56px; margin: 0; padding: 6px 12px; border: 0; background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; }
 .pz-prod + .pz-prod { border-top: 1px solid var(--ui-linha); }
 .pz-prod[aria-checked="true"] { background: var(--ui-rosa-claro); }
-.pz-chk { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border: 1.5px solid var(--ui-borda-campo); border-radius: 6px; background: var(--ui-branco); color: #fff; }
+.pz-chk { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border: 1.5px solid var(--ui-borda-campo); border-radius: 6px; background: var(--ui-branco); color: var(--ui-branco); }
 .pz-prod[aria-checked="true"] .pz-chk { border-color: var(--ui-rosa); background: var(--ui-rosa); }
 .pz-prod-f { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; overflow: hidden; border-radius: 10px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
 .pz-prod-f img { width: 100%; height: 100%; object-fit: cover; }

@@ -13,9 +13,9 @@ const CARTOES = [
 export default function EstiloFinanceiro() {
   return (
     <style>{`
-      body, .layout-root, .layout-main { background-color: #F4EEF1 !important; }
+      body, .layout-root, .layout-main { background-color: var(--ui-fundo) !important; }
       ${CARTOES} {
-        border-color: #EADFE4 !important;
+        border-color: var(--ui-borda) !important;
         box-shadow: 0 1px 2px rgba(44, 18, 25, .05), 0 8px 22px -6px rgba(44, 18, 25, .10) !important;
       }
       /* as bordas coloridas continuam (a regra acima não pode apagar) */

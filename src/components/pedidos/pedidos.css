@@ -27,7 +27,7 @@
 .pd-filtro { position: relative; flex: none; display: flex; }
 .pd-filtro .ui-bti { width: 48px; height: 48px; border: 1.5px solid var(--ui-borda-campo); background: var(--ui-branco); }
 .pd-filtro .ui-bti.ligado { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
-.pd-filtro i { position: absolute; top: -6px; right: -6px; box-sizing: border-box; min-width: 20px; height: 20px; padding: 0 5px; border: 2px solid var(--ui-branco); border-radius: 10px; background: var(--ui-rosa); color: #fff; font-style: normal; font-size: 12px; font-weight: 700; line-height: 16px; text-align: center; pointer-events: none; }
+.pd-filtro i { position: absolute; top: -6px; right: -6px; box-sizing: border-box; min-width: 20px; height: 20px; padding: 0 5px; border: 2px solid var(--ui-branco); border-radius: 10px; background: var(--ui-rosa); color: var(--ui-branco); font-style: normal; font-size: 12px; font-weight: 700; line-height: 16px; text-align: center; pointer-events: none; }
 .pd-novo { flex: none; padding-left: 14px; padding-right: 16px; }
 .pd-modo { display: flex; flex: none; gap: 4px; padding: 2px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
 .pd-modo button { display: flex; align-items: center; gap: 8px; min-height: 44px; margin: 0; padding: 0 12px; border: 0; border-radius: var(--ui-raio-p); background: none; color: var(--ui-texto-2); font-family: var(--font-base); font-size: 13.5px; font-weight: 700; cursor: pointer; }
@@ -87,7 +87,7 @@
 @media (max-width: 389px) { .pdc { padding: 12px 12px 0; } .pdc-l1 { gap: 4px; } }
 
 /* botão do próximo passo (3.14): cinza chumbo — parece botão e deixa o rosa pro "Novo" e pro "Aceitar" */
-.ui-bt.pd-passo { --bt-fundo: var(--ui-cinza-texto); --bt-cor: #fff; --bt-sombra: var(--ui-texto); }
+.ui-bt.pd-passo { --bt-fundo: var(--ui-cinza-texto); --bt-cor: var(--ui-branco); --bt-sombra: var(--ui-texto); }
 
 /* pedido pra aceitar: em destaque no topo, com borda laranja (a cor de "precisa de atenção") */
 .pdc.aceitar, .pdq-cartao.aceitar { border: 1.5px solid var(--ui-laranja); box-shadow: 0 6px 16px -10px rgba(194, 65, 12, .45); }

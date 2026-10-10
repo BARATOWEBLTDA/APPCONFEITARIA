@@ -92,9 +92,9 @@ body .prod-modal--novo .prod-modal-footer--novo { display: grid !important; grid
 @media (min-width: 641px) { body .prod-modal--novo .prod-modal-footer--novo { padding: 12px 24px 16px !important; } }
 body .prod-modal--novo .prod-btn-cancelar-novo { display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 16px; border-radius: var(--ui-raio-botao); background: var(--ui-cinza) !important; color: var(--ui-texto) !important; font-size: 15px; font-weight: 700; }
 body .prod-modal--novo .prod-btn-cancelar-novo:hover { filter: brightness(.97); }
-body .prod-modal--novo .prod-btn-avancar-novo { gap: 8px; min-height: 48px; padding: 0 16px; border-radius: var(--ui-raio-botao); background: var(--ui-rosa) !important; color: #fff !important; font-size: 15px; font-weight: 700; letter-spacing: 0; box-shadow: 0 3px 0 var(--ui-rosa-escuro) !important; }
-body .prod-modal--novo .prod-btn-avancar-novo:disabled { background: #F5DCE6 !important; color: #fff !important; box-shadow: 0 3px 0 #E8C4D2 !important; }
-body .prod-modal--novo .prod-btn-avancar-novo .prod-spinner-sm { border-color: rgba(255, 255, 255, .35); border-top-color: #fff; }
+body .prod-modal--novo .prod-btn-avancar-novo { gap: 8px; min-height: 48px; padding: 0 16px; border-radius: var(--ui-raio-botao); background: var(--ui-rosa) !important; color: var(--ui-branco) !important; font-size: 15px; font-weight: 700; letter-spacing: 0; box-shadow: 0 3px 0 var(--ui-rosa-escuro) !important; }
+body .prod-modal--novo .prod-btn-avancar-novo:disabled { background: #F5DCE6 !important; color: var(--ui-branco) !important; box-shadow: 0 3px 0 #E8C4D2 !important; }
+body .prod-modal--novo .prod-btn-avancar-novo .prod-spinner-sm { border-color: rgba(255, 255, 255, .35); border-top-color: var(--ui-branco); }
 body .prod-modal--novo .prod-btn-avancar-novo:only-child { grid-column: 1 / -1; }
 /* 10/10: o que falta pra continuar (aparece ao clicar em Continuar com algo faltando) */
 body .prod-modal--novo .prod-falta-aviso { order: -1; grid-column: 1 / -1; display: flex; align-items: flex-start; gap: 8px; margin: 0 0 4px; padding: 10px 12px; border-radius: var(--ui-raio); background: #FFF7ED; color: #9A3412; font-size: 14px; font-weight: 600; line-height: 1.4; }
@@ -115,7 +115,7 @@ body .prod-modal--novo .prod-btn-ia-novo { min-height: 36px; padding: 0 12px; bo
 /* 10/10: "Gerar com IA" no plano grátis — não parece quebrado: botão claro, coroa e selo PRO */
 body .prod-modal--novo .prod-btn-ia-novo.prod-btn-ia-novo--pro { opacity: 1; cursor: pointer !important; background: var(--ui-branco); color: var(--ui-texto); border: 1.5px solid var(--ui-borda); box-shadow: none; }
 body .prod-modal--novo .prod-btn-ia-novo .prod-btn-ia-novo-crown { flex: none; width: 16px; height: 16px; filter: none; color: #F5B301; }
-body .prod-modal--novo .prod-btn-ia-pro { padding: 1px 6px; border-radius: 6px; background: var(--ui-texto); color: #fff; font-size: 12px; font-weight: 700; }
+body .prod-modal--novo .prod-btn-ia-pro { padding: 1px 6px; border-radius: 6px; background: var(--ui-texto); color: var(--ui-branco); font-size: 12px; font-weight: 700; }
 body .prod-modal--novo .prod-preco-input span { color: var(--ui-texto-2) !important; }
 body .prod-modal--novo .prod-preco-input--promo:not(:focus-within) input::placeholder { color: var(--ui-texto-3) !important; }
 body .prod-modal--novo .prod-preco-input input::placeholder { color: var(--ui-texto-3); }

@@ -757,7 +757,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dooia-panel {
           position: fixed; left: 0; right: 0; top: 0; bottom: var(--teclado, 0px);
           z-index: 1200; display: flex; flex-direction: column; overflow: hidden;
-          background: #FAF7F8; font-family: var(--font-base); color: #2C1219;
+          background: #FAF7F8; font-family: var(--font-base); color: var(--ui-texto);
           animation: dooSlideUp 0.25s cubic-bezier(0.16,1,0.3,1);
         }
         /* COMPUTADOR: painel alto do lado direito */
@@ -767,17 +767,17 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
             border-radius: 22px; box-shadow: 0 18px 60px rgba(44,18,25,.28); border: 1px solid rgba(110,53,72,.12);
           }
         }
-        .dz-hd { flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: calc(12px + env(safe-area-inset-top, 0px)) 14px 14px; background: radial-gradient(130% 160% at 0 0, #6B2340, #2C1219 70%); color: #fff; }
-        .dz-hb { width: 44px; height: 44px; border-radius: 12px; border: none; background: rgba(255,255,255,.12); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+        .dz-hd { flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: calc(12px + env(safe-area-inset-top, 0px)) 14px 14px; background: radial-gradient(130% 160% at 0 0, #6B2340, var(--ui-vinho-escuro) 70%); color: var(--ui-branco); }
+        .dz-hb { width: 44px; height: 44px; border-radius: 12px; border: none; background: rgba(255,255,255,.12); color: var(--ui-branco); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
         .dz-hb:disabled { opacity: .35; cursor: default; }
         .dz-fechar { display: none; }
         @media (min-width: 768px) { .dz-voltar { display: none; } .dz-fechar { display: flex; } }
         .dz-hav { position: relative; width: 44px; height: 44px; border-radius: 14px; background: #FCE7F3; border: 2px solid rgba(255,255,255,.35); flex-shrink: 0; }
         .dz-hav img { width: 100%; height: 100%; object-fit: cover; object-position: top center; border-radius: 12px; display: block; }
-        .dz-hav i { position: absolute; right: -3px; bottom: -3px; width: 14px; height: 14px; border-radius: 50%; background: #22C55E; border: 2.5px solid #2C1219; }
+        .dz-hav i { position: absolute; right: -3px; bottom: -3px; width: 14px; height: 14px; border-radius: 50%; background: #22C55E; border: 2.5px solid var(--ui-texto); }
         .dz-ht { flex: 1; min-width: 0; }
         .dz-ht b { display: flex; align-items: center; gap: 7px; font-size: 17px; font-weight: 700; }
-        .dz-ht em { font-style: normal; font-size: 12px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: linear-gradient(90deg, #F9A8D4, #C4B5FD); color: #2C1219; }
+        .dz-ht em { font-style: normal; font-size: 12px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: linear-gradient(90deg, #F9A8D4, #C4B5FD); color: var(--ui-texto); }
         .dz-ht small { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: #BBF7D0; margin-top: 2px; }
         .dz-ht small i { width: 7px; height: 7px; border-radius: 50%; background: #22C55E; box-shadow: 0 0 0 3px rgba(34,197,94,.25); }
         .dz-ht small.dz-esc { color: #FBCFE8; } .dz-ht small.dz-esc i { background: #F472B6; box-shadow: 0 0 0 3px rgba(244,114,182,.3); animation: dooTyping 1.2s infinite; }
@@ -787,27 +787,27 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dz-hav2 { width: 84px; height: 84px; margin: 0 auto; border-radius: 26px; background: #FCE7F3; overflow: hidden; box-shadow: 0 10px 26px rgba(232,90,140,.28); }
         .dz-hav2 img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
         .dz-hero b { display: block; font-size: 20px; font-weight: 700; margin-top: 12px; letter-spacing: -.01em; }
-        .dz-hero p { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 6px auto 0; max-width: 320px; text-wrap: balance; }
+        .dz-hero p { font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; margin: 6px auto 0; max-width: 320px; text-wrap: balance; }
         .dz-hero b { text-wrap: balance; }
         .dz-sl { margin: 4px 0 0; font-size: 13.5px; font-weight: 700; color: var(--ui-texto-2, #6B5D64); }
         .dz-sg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .dz-sc { min-height: 112px; text-align: left; background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 11px; font-family: inherit; color: inherit; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+        .dz-sc { min-height: 112px; text-align: left; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px; padding: 11px; font-family: inherit; color: inherit; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
         .dz-sc:hover { border-color: #F7C6D9; box-shadow: 0 4px 14px rgba(232,90,140,.1); }
-        .dz-si { width: 36px; height: 36px; border-radius: 10px; background: #FCE0E9; color: #993556; display: flex; align-items: center; justify-content: center; }
+        .dz-si { width: 36px; height: 36px; border-radius: 10px; background: var(--primary-light); color: #993556; display: flex; align-items: center; justify-content: center; }
         .dz-sc b { display: block; font-size: 13.5px; font-weight: 700; margin-top: 6px; line-height: 1.2; }
         .dz-sc small { display: block; font-size: 12.5px; color: var(--ui-texto-2, #6B5D64); margin-top: 2px; line-height: 1.3; }
-        .dz-dia { align-self: center; margin: 0; font-size: 12.5px; font-weight: 700; color: #9A8E94; background: #F0EBED; padding: 3px 10px; border-radius: 99px; }
+        .dz-dia { align-self: center; margin: 0; font-size: 12.5px; font-weight: 700; color: var(--ui-texto-3); background: #F0EBED; padding: 3px 10px; border-radius: 99px; }
         .dz-m { display: flex; gap: 8px; align-items: flex-end; }
         .dz-m--eu { justify-content: flex-end; }
         .dz-mav { width: 28px; height: 28px; border-radius: 9px; object-fit: cover; object-position: top center; background: #FCE7F3; flex-shrink: 0; }
         .dz-mc { max-width: 84%; min-width: 0; display: flex; flex-direction: column; }
         .dz-m--eu .dz-mc { max-width: 80%; align-items: flex-end; }
         .dz-bd { padding: 10px 13px; font-size: 14.5px; line-height: 1.5; word-wrap: break-word; overflow-wrap: anywhere; }
-        .dz-m--doo .dz-bd { background: #fff; border: 1px solid #F0EBED; border-radius: 18px 18px 18px 4px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
-        .dz-m--eu .dz-bd { background: #2C1219; color: #fff; border-radius: 18px 18px 4px 18px; }
+        .dz-m--doo .dz-bd { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 18px 18px 18px 4px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+        .dz-m--eu .dz-bd { background: var(--ui-vinho-escuro); color: var(--ui-branco); border-radius: 18px 18px 4px 18px; }
         .dz-bd ul, .dz-bd ol { margin: 6px 0; padding-left: 20px; }
         .dz-bd ul { list-style: disc; } .dz-bd ol { list-style: decimal; }
-        .dz-bd li::marker { color: #E85A8C; }
+        .dz-bd li::marker { color: var(--ui-rosa); }
         .dz-bd li { margin: 3px 0; }
         .dz-bd strong { font-weight: 700; }
         .dz-anexo { width: 100%; max-height: 180px; object-fit: cover; border-radius: 12px; margin-bottom: 8px; display: block; }
@@ -815,25 +815,25 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dz-acs { display: flex; gap: 6px; margin-top: 6px; }
         .dz-acs button { position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--ui-texto-2, #6B5D64); background: none; border: none; padding: 0 8px; margin-left: -8px; border-radius: 10px; cursor: pointer; }
         .dz-acs button::after { content: ""; position: absolute; inset: -4px 0; }
-        @media (hover: hover) { .dz-acs button:hover { background: #F3EEF1; } }
-        .dz-acs button.ok { color: #15803D; }
-        .dz-dig { display: flex; align-items: center; gap: 6px; padding: 14px 16px; font-size: 13px; color: #6B5D64; }
+        @media (hover: hover) { .dz-acs button:hover { background: var(--ui-cinza); } }
+        .dz-acs button.ok { color: var(--ui-verde); }
+        .dz-dig { display: flex; align-items: center; gap: 6px; padding: 14px 16px; font-size: 13px; color: var(--ui-texto-2); }
         .dz-dig i { width: 7px; height: 7px; border-radius: 50%; background: #D9A5B9; animation: dooTyping 1.2s ease-in-out infinite; }
         .dz-dig i:nth-child(2) { animation-delay: .2s; } .dz-dig i:nth-child(3) { animation-delay: .4s; }
-        .dz-spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #E85A8C; border-top-color: transparent; animation: dooSpin .7s linear infinite; }
-        .dz-digt { margin: 5px 0 0 2px; font-size: 12.5px; color: #9A8E94; }
+        .dz-spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--ui-rosa); border-top-color: transparent; animation: dooSpin .7s linear infinite; }
+        .dz-digt { margin: 5px 0 0 2px; font-size: 12.5px; color: var(--ui-texto-3); }
         .dz-in { flex-shrink: 0; padding: 8px 12px calc(12px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(180deg, rgba(250,247,248,0), #FAF7F8 30%); }
         .dz-pend { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
         .dz-pend-img { position: relative; flex-shrink: 0; }
-        .dz-pend-img img { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; border: 1.5px solid #E85A8C; display: block; }
-        .dz-pend-img button { position: absolute; top: -10px; right: -10px; width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; background: #2C1219; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
-        .dz-pend p { margin: 0; font-size: 12.5px; color: #6B5D64; }
-        .dz-inb { display: flex; align-items: center; gap: 8px; background: #fff; border: 1.5px solid #EDE6E9; border-radius: 999px; padding: 4px; box-shadow: 0 4px 14px rgba(44,18,25,.06); transition: border-color .15s; }
-        .dz-inb:focus-within { border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
-        .dz-ib { width: 44px; height: 44px; border-radius: 50%; border: none; background: #FCE0E9; color: #993556; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
-        .dz-txt { flex: 1; min-width: 0; height: 44px; border: none; outline: none; background: none; font-family: inherit; font-size: 16px; color: #2C1219; padding: 0 2px; }
+        .dz-pend-img img { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; border: 1.5px solid var(--ui-rosa); display: block; }
+        .dz-pend-img button { position: absolute; top: -10px; right: -10px; width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--ui-branco); background: var(--ui-vinho-escuro); color: var(--ui-branco); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+        .dz-pend p { margin: 0; font-size: 12.5px; color: var(--ui-texto-2); }
+        .dz-inb { display: flex; align-items: center; gap: 8px; background: var(--ui-branco); border: 1.5px solid var(--ui-borda-campo); border-radius: 999px; padding: 4px; box-shadow: 0 4px 14px rgba(44,18,25,.06); transition: border-color .15s; }
+        .dz-inb:focus-within { border-color: var(--ui-rosa); box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
+        .dz-ib { width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--primary-light); color: #993556; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+        .dz-txt { flex: 1; min-width: 0; height: 44px; border: none; outline: none; background: none; font-family: inherit; font-size: 16px; color: var(--ui-texto); padding: 0 2px; }
         .dz-txt::placeholder { color: #B5AAB0; }
-        .dz-snd { width: 44px; height: 44px; border-radius: 50%; border: none; background: #E85A8C; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: 0 4px 12px rgba(232,90,140,.35); transition: background .15s; }
+        .dz-snd { width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--ui-rosa); color: var(--ui-branco); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: 0 4px 12px rgba(232,90,140,.35); transition: background .15s; }
         .dz-snd:disabled { background: #F3D2DE; box-shadow: none; cursor: default; }
 
         /* janela de quem não é PRO */

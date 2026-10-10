@@ -275,9 +275,9 @@ export default function Layout() {
           width: 26px; height: 26px;
           border-radius: 50%;
           background: var(--primary);
-          color: #fff;
+          color: var(--ui-branco);
           display: flex; align-items: center; justify-content: center;
-          border: 2px solid #fff;
+          border: 2px solid var(--ui-branco);
           box-shadow: 0 2px 8px rgba(0,0,0,0.35);
           transition: transform var(--dur-fast, 150ms), background var(--dur-fast, 150ms);
           pointer-events: none;
@@ -289,11 +289,11 @@ export default function Layout() {
         }
         .sidebar-avatar-ring { width: 100px; height: 100px; border-radius: 50%; padding: 0; background: transparent; flex-shrink: 0; }
 
-        .sidebar-avatar { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; border: 3px solid #fff; background: #F8F5F6; box-shadow: 0 8px 24px rgba(153,53,86,0.15), 0 2px 6px rgba(0,0,0,0.06); }
+        .sidebar-avatar { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; border: 3px solid var(--ui-branco); background: #F8F5F6; box-shadow: 0 8px 24px rgba(153,53,86,0.15), 0 2px 6px rgba(0,0,0,0.06); }
         .sidebar-avatar:has(.sidebar-avatar-placeholder) { background: #993556; }
         .sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .sidebar-avatar-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-        .sidebar-avatar-inicial { font-family: var(--font-base); font-size: 40px; font-weight: 700; color: #FCE0E9; letter-spacing: -0.02em; line-height: 1; }
+        .sidebar-avatar-inicial { font-family: var(--font-base); font-size: 40px; font-weight: 700; color: var(--primary-light); letter-spacing: -0.02em; line-height: 1; }
 
         .sidebar-avatar-container {
           position: relative;
@@ -306,7 +306,7 @@ export default function Layout() {
           font-weight: var(--fw-bold);
           padding: 4px 8px;
           white-space: nowrap;
-          color: #fff;
+          color: var(--ui-branco);
           background: #2D1F26;
           border-radius: 6px;
           box-shadow: 0 2px 6px rgba(0,0,0,0.3);
@@ -321,7 +321,7 @@ export default function Layout() {
         .sidebar-badge--pro { cursor: default; }
         /* Variante Upgrade — branca clicável */
         .sidebar-badge--upgrade {
-          background: #fff;
+          background: var(--ui-branco);
           color: var(--primary);
           cursor: pointer;
           transition: transform 0.12s ease, box-shadow 0.12s ease;
@@ -399,17 +399,17 @@ export default function Layout() {
           transition: background-color var(--dur-fast) linear, color var(--dur-fast) linear;
           -webkit-tap-highlight-color: transparent;
         }
-        .nav-item:hover, .nav-item--group:hover { background: rgba(255,255,255,0.07); color: #fff; }
+        .nav-item:hover, .nav-item--group:hover { background: rgba(255,255,255,0.07); color: var(--ui-branco); }
         .nav-item:focus-visible, .nav-item--group:focus-visible, .nav-subitem:focus-visible { outline: 3px solid rgba(255,255,255,0.7); outline-offset: -3px; }
-        .nav-item.active { background: rgba(255,255,255,0.10); color: #fff; font-weight: var(--fw-bold); }
+        .nav-item.active { background: rgba(255,255,255,0.10); color: var(--ui-branco); font-weight: var(--fw-bold); }
         .nav-item.active .nav-icon, .nav-item--group.active-parent .nav-icon { color: #FF9DC4; }
-        .nav-item--group.active-parent { color: #fff; font-weight: var(--fw-bold); }
+        .nav-item--group.active-parent { color: var(--ui-branco); font-weight: var(--fw-bold); }
 
         .nav-group-body { display: flex; flex-direction: column; gap: 2px; margin: 2px 0 6px 21px; padding-left: 9px; border-left: 1px solid rgba(255,255,255,0.14); }
         .nav-subitem { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 10px; border-radius: 10px; font-size: 13.5px; font-weight: var(--fw-medium); color: rgba(255,255,255,0.78); text-decoration: none; transition: background-color var(--dur-fast) linear, color var(--dur-fast) linear; }
         .nav-subitem .nav-subicon { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .nav-subitem:hover { color: #fff; background: rgba(255,255,255,0.07); }
-        .nav-subitem.active { color: #fff; background: rgba(255,255,255,0.10); font-weight: var(--fw-bold); }
+        .nav-subitem:hover { color: var(--ui-branco); background: rgba(255,255,255,0.07); }
+        .nav-subitem.active { color: var(--ui-branco); background: rgba(255,255,255,0.10); font-weight: var(--fw-bold); }
         .nav-subitem.active .nav-subicon { color: #FF9DC4; }
 
         .sidebar-cad-complete {
@@ -420,7 +420,7 @@ export default function Layout() {
           margin: 0 0.25rem 1rem;
           padding: 0.75rem 0.5rem;
           background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-          color: #fff;
+          color: var(--ui-branco);
           border: none;
           border-radius: var(--radius-md);
           text-decoration: none;
@@ -519,7 +519,7 @@ export default function Layout() {
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
           }
-          @media (hover: hover) { .bn-item:hover { color: #fff; } .bn-item--active:hover { color: #FF9DC4; } }
+          @media (hover: hover) { .bn-item:hover { color: var(--ui-branco); } .bn-item--active:hover { color: #FF9DC4; } }
           .bn-item--active { color: #FF9DC4; }
           .bn-item--active::before {
             content: "";
@@ -561,9 +561,9 @@ export default function Layout() {
           .gestao-item:active { transform: scale(0.95); }
           .gestao-item.active { background: var(--primary); border-color: var(--primary); }
           .gestao-icon { color: var(--primary); display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--radius-md); background: rgba(152,98,116,0.12); }
-          .gestao-item.active .gestao-icon { color: #FFFFFF; background: rgba(255,255,255,0.2); }
+          .gestao-item.active .gestao-icon { color: var(--ui-branco); background: rgba(255,255,255,0.2); }
           .gestao-label { font-size: var(--font-caption); font-weight: 700; color: var(--text-title); text-align: center; font-family: var(--font-base); line-height: 1.25; white-space: normal; word-break: break-word; }
-          .gestao-item.active .gestao-label { color: #FFFFFF; }
+          .gestao-item.active .gestao-label { color: var(--ui-branco); }
         }
       `}</style>
     </div>

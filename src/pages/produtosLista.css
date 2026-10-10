@@ -34,7 +34,7 @@ body .prod-card { overflow: hidden; background: var(--ui-branco); border: 1px so
 body .prod-card-img { aspect-ratio: 1 / 1; height: auto; background: var(--ui-rosa-claro); }
 body .prod-card-sem-foto { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 100%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
 body .prod-card-sem-foto-title { font-size: 13px; font-weight: 700; color: var(--ui-rosa-escuro); }
-body .prod-card-indisponivel { top: 8px; left: 8px; right: auto; bottom: auto; padding: 3px 8px; border-radius: 8px; background: var(--ui-cinza-texto); color: #fff; font-size: 12px; font-weight: 700; text-transform: none; letter-spacing: 0; }
+body .prod-card-indisponivel { top: 8px; left: 8px; right: auto; bottom: auto; padding: 3px 8px; border-radius: 8px; background: var(--ui-cinza-texto); color: var(--ui-branco); font-size: 12px; font-weight: 700; text-transform: none; letter-spacing: 0; }
 body .prod-card-promo, body .prod-card-encomenda, body .prod-card-badge-var, body .prod-card-semcat { font-size: 12px; font-weight: 700; text-transform: none; letter-spacing: 0; padding: 3px 8px; border-radius: 8px; }
 body .prod-card-semcat { display: none; }
 body .prod-card-info { padding: 10px 12px 12px; }

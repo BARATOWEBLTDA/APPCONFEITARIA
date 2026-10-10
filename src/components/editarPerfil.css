@@ -4,7 +4,7 @@
 .ep9-av { display: flex; align-items: center; justify-content: center; width: 88px; height: 88px; overflow: hidden; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
 .ep9-av img { width: 100%; height: 100%; object-fit: cover; }
 .ep9-av b { font-size: 32px; font-weight: 700; }
-.ep9-foto i { position: absolute; top: 60px; left: calc(50% + 20px); display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 2px solid #fff; border-radius: 50%; background: var(--ui-rosa); color: #fff; }
+.ep9-foto i { position: absolute; top: 60px; left: calc(50% + 20px); display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 2px solid var(--ui-branco); border-radius: 50%; background: var(--ui-rosa); color: var(--ui-branco); }
 .ep9-foto i .ui-gira { width: 14px; height: 14px; }
 .ep9-foto small { font-size: 14px; font-weight: 700; color: var(--ui-rosa-escuro); }
 .ep9-erro, .ep9-ok { margin: 0; padding: 10px 12px; border-radius: var(--ui-raio); font-size: 14px; line-height: 1.4; }

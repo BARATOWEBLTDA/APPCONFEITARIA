@@ -158,11 +158,11 @@ export default function NotificacoesSons() {
           color: #888780; margin: 6px 6px 8px;
         }
         .ns-card {
-          background: #fff; border: 1px solid #F0EBED; border-radius: 14px;
+          background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px;
           overflow: hidden; margin-bottom: 14px;
         }
         .ns-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
-        .ns-row + .ns-row { border-top: 1px solid #F5F0F2; }
+        .ns-row + .ns-row { border-top: 1px solid var(--ui-linha); }
         .ns-ico {
           width: 38px; height: 38px; flex-shrink: 0; border-radius: 10px;
           background: #F0EBED; color: #5F5E5A;
@@ -172,7 +172,7 @@ export default function NotificacoesSons() {
         .ns-name { font-size: 14px; font-weight: 700; color: #2C2C2A; }
         .ns-desc { font-size: 12px; color: #888780; margin-top: 2px; line-height: 1.4; }
         .ns-desc--on { color: #16a34a; }
-        .ns-desc--warn { color: #DC2626; }
+        .ns-desc--warn { color: var(--ui-vermelho); }
         .ns-row--off .ns-name, .ns-row--off .ns-ico { opacity: 0.45; }
         .ns-note {
           margin: 0 16px 14px; padding: 10px 12px; border-radius: 10px;
@@ -184,12 +184,12 @@ export default function NotificacoesSons() {
         .ns-toggle-s { position: absolute; inset: 0; background: #E5DDE0; border-radius: 26px; transition: 0.25s; }
         .ns-toggle-s::before {
           content: ""; position: absolute; width: 20px; height: 20px; left: 3px; top: 3px;
-          background: #fff; border-radius: 50%; box-shadow: 0 1px 4px rgba(0,0,0,0.15); transition: 0.25s;
+          background: var(--ui-branco); border-radius: 50%; box-shadow: 0 1px 4px rgba(0,0,0,0.15); transition: 0.25s;
         }
-        .ns-toggle input:checked + .ns-toggle-s { background: #E85A8C; }
+        .ns-toggle input:checked + .ns-toggle-s { background: var(--ui-rosa); }
         .ns-toggle input:checked + .ns-toggle-s::before { transform: translateX(20px); }
         .ns-toggle input:disabled + .ns-toggle-s { opacity: 0.4; }
-        .ns-toggle input:focus-visible + .ns-toggle-s { outline: 2px solid #E85A8C; outline-offset: 2px; }
+        .ns-toggle input:focus-visible + .ns-toggle-s { outline: 2px solid var(--ui-rosa); outline-offset: 2px; }
       
         .ns-passos { margin: 8px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
         .ns-passos li { line-height: 1.4; }

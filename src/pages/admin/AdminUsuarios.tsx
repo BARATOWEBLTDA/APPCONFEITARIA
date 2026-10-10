@@ -388,7 +388,7 @@ export default function AdminUsuarios() {
         .au-so-cel { font-style: normal; white-space: pre; }
         .au-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; background: var(--ui-cinza); color: var(--ui-texto-2); font-size: 12px; font-weight: 700; white-space: nowrap; }
         .au-tag em { font-style: normal; font-weight: 500; }
-        .au-tag--pro { background: var(--ui-vinho); color: #fff; }
+        .au-tag--pro { background: var(--ui-vinho); color: var(--ui-branco); }
         .au-tag--pro em { color: rgba(255,255,255,.8); }
         .au-tag--ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
         .au-tag--bloq { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); }
@@ -418,7 +418,7 @@ export default function AdminUsuarios() {
         .au-j-apoio { margin: 0; font-size: 15px; font-weight: 500; line-height: 1.5; color: var(--ui-texto-2); overflow-wrap: anywhere; }
         .au-atalhos { display: flex; gap: 8px; flex-wrap: wrap; margin-top: -4px; }
         .au-atalhos button { min-height: 44px; padding: 0 16px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto-2); font-size: 14px; font-weight: 700; cursor: pointer; }
-        .au-atalhos button[aria-pressed="true"] { border-color: var(--ui-vinho); background: var(--ui-vinho); color: #fff; }
+        .au-atalhos button[aria-pressed="true"] { border-color: var(--ui-vinho); background: var(--ui-vinho); color: var(--ui-branco); }
       `}</style>
     </div>
   );

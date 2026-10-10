@@ -1,6 +1,6 @@
 /* Página não encontrada (10/10): o mesmo desenho das telas de conta (fundo vinho, mascote saindo do cartão). */
 .ne-root { position: fixed; inset: 0; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; align-items: center; font-family: var(--font-base); color: var(--ui-texto); padding: calc(env(safe-area-inset-top, 0px) + 120px) 20px calc(env(safe-area-inset-bottom, 0px) + 24px); }
-.ne-fundo { position: fixed; inset: 0; z-index: 0; background: var(--vinho-fundo, radial-gradient(1000px 640px at 50% 38%, #4B1528 0%, #2C1219 72%)); }
+.ne-fundo { position: fixed; inset: 0; z-index: 0; background: var(--vinho-fundo, radial-gradient(1000px 640px at 50% 38%, var(--ui-vinho) 0%, var(--ui-vinho-escuro) 72%)); }
 .ne-cartao { position: relative; z-index: 2; width: 100%; max-width: 420px; margin: auto 0; flex-shrink: 0; padding: 56px 24px 26px; background: var(--ui-branco); border-radius: 22px; box-shadow: 0 14px 40px -12px rgba(60, 10, 30, .45); text-align: center; }
 .ne-masc { position: absolute; left: 50%; top: -96px; transform: translateX(-50%); width: 136px; height: auto; z-index: 3; pointer-events: none; filter: drop-shadow(0 0 16px rgba(255, 157, 196, .55)) drop-shadow(0 8px 10px rgba(0, 0, 0, .35)); }
 .ne-nome { display: block; width: 128px; height: auto; margin: 0 auto 10px; }

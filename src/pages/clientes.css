@@ -28,7 +28,7 @@
 .cl9-busca input { flex: 1; min-width: 0; height: 100%; border: 0; outline: none; background: none; font-family: inherit; font-size: 16px; color: var(--ui-texto); }
 .cl9-busca button { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 0; border-radius: 10px; background: none; color: var(--ui-texto-2); }
 .cl9-acoes { display: flex; gap: 8px; flex: none; }
-.cl9-pro { flex: none; display: inline-flex; align-items: center; gap: 3px; margin-left: 6px; padding: 2px 6px; border-radius: 6px; background: var(--ui-vinho); color: #fff; font-size: 12px; font-style: normal; font-weight: 700; }
+.cl9-pro { flex: none; display: inline-flex; align-items: center; gap: 3px; margin-left: 6px; padding: 2px 6px; border-radius: 6px; background: var(--ui-vinho); color: var(--ui-branco); font-size: 12px; font-style: normal; font-weight: 700; }
 .cl9-pro svg { flex: none; color: #FF9DC4; }
 .cl9-g { display: none !important; }
 .cl9-chips { display: flex; gap: 8px; margin: 12px -12px 4px; padding: 0 12px; overflow-x: auto; scrollbar-width: none; }
@@ -38,7 +38,7 @@
 .cl9-chips::after { content: ""; flex: none; width: 24px; }
 .cl9-chips button { flex: none; display: flex; align-items: center; gap: 6px; min-height: 40px; margin: 0; padding: 0 14px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto-2); font-size: 14px; font-weight: 700; }
 .cl9-chips button i { font-style: normal; font-size: 13px; font-weight: 700; color: var(--ui-texto-3); }
-.cl9-chips button[aria-selected="true"] { border-color: var(--ui-vinho); background: var(--ui-vinho); color: #fff; }
+.cl9-chips button[aria-selected="true"] { border-color: var(--ui-vinho); background: var(--ui-vinho); color: var(--ui-branco); }
 .cl9-chips button[aria-selected="true"] i { color: rgba(255,255,255,.75); }
 
 .cl9-av { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; overflow: hidden; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 16px; font-weight: 700; }
@@ -111,7 +111,7 @@
 .cl9-j-quem > span:last-child { min-width: 0; }
 .cl9-parabens { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: var(--ui-raio); background: var(--ui-verde-fundo); color: var(--ui-verde); font-size: 14px; font-weight: 700; text-decoration: none; }
 .cl9-esq { display: flex; flex-direction: column; gap: 8px; }
-.cl9-esq span { height: 72px; border-radius: var(--ui-raio-cartao); background: linear-gradient(90deg, #fff 0%, var(--ui-cinza) 50%, #fff 100%); background-size: 200% 100%; animation: cl9Esq 1.2s ease-in-out infinite; }
+.cl9-esq span { height: 72px; border-radius: var(--ui-raio-cartao); background: linear-gradient(90deg, var(--ui-branco) 0%, var(--ui-cinza) 50%, var(--ui-branco) 100%); background-size: 200% 100%; animation: cl9Esq 1.2s ease-in-out infinite; }
 .cl9-esq span:first-child { height: 96px; }
 @keyframes cl9Esq { from { background-position: 100% 0; } to { background-position: -100% 0; } }
 /* Android com Importar: a busca ganha a linha inteira e os botões descem com texto */
@@ -138,7 +138,7 @@
 .cl9-f-dup > span { flex: 1; min-width: 0; }
 .cl9-f-dup b { display: block; font-size: 14px; font-weight: 700; }
 .cl9-f-dup small { display: block; font-size: 13px; color: #92400E; }
-.cl9-f-dup button { flex: none; min-height: 44px; margin: 0; padding: 0 14px; border: 0; border-radius: var(--ui-raio); background: #fff; color: #92400E; font-size: 14px; font-weight: 700; }
+.cl9-f-dup button { flex: none; min-height: 44px; margin: 0; padding: 0 14px; border: 0; border-radius: var(--ui-raio); background: var(--ui-branco); color: #92400E; font-size: 14px; font-weight: 700; }
 .cl9-f-mais { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin: 0; padding: 10px 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); text-align: left; color: var(--ui-texto); }
 .cl9-f-mais > span { flex: 1; min-width: 0; }
 .cl9-f-mais b { display: block; font-size: 15px; font-weight: 700; }
@@ -150,7 +150,7 @@
 .cl9-f-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .cl9-f-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .cl9-f-chips button { min-height: 44px; margin: 0; padding: 0 14px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto-2); font-size: 14px; font-weight: 700; }
-.cl9-f-chips button[aria-pressed="true"] { border-color: var(--ui-vinho); background: var(--ui-vinho); color: #fff; }
+.cl9-f-chips button[aria-pressed="true"] { border-color: var(--ui-vinho); background: var(--ui-vinho); color: var(--ui-branco); }
 .cl9-f-excluir { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; margin: 8px 0 0; border: 0; border-radius: var(--ui-raio); background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); font-size: 15px; font-weight: 700; }
 .cl9-f-data { position: relative; }
 .cl9-f-data input { cursor: pointer; }
@@ -166,7 +166,7 @@
 .cp9-av { position: relative; width: 72px; height: 72px; margin: 0; padding: 0; border: 0; border-radius: 50%; background: var(--ui-rosa-claro); cursor: pointer; }
 .cp9-av img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 .cp9-ini { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 26px; font-weight: 700; color: var(--ui-rosa-escuro); }
-.cp9-av i { position: absolute; right: -2px; bottom: -2px; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 2px solid #fff; border-radius: 50%; background: var(--ui-vinho); color: #fff; }
+.cp9-av i { position: absolute; right: -2px; bottom: -2px; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 2px solid var(--ui-branco); border-radius: 50%; background: var(--ui-vinho); color: var(--ui-branco); }
 .cp9-eu-tx { min-width: 0; display: flex; flex-direction: column; }
 .cp9-eu-tx > b { font-size: 18px; font-weight: 700; line-height: 1.25; }
 .cp9-eu-tx > small { font-size: 15px; color: var(--ui-texto-2); }
@@ -222,7 +222,7 @@
 }
 .cp9-zap--off { background: var(--ui-cinza); color: var(--ui-texto-3); }
 .cp9-av:disabled { cursor: default; }
-.cp9-gira { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: cp9Gira .7s linear infinite; }
+.cp9-gira { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.4); border-top-color: var(--ui-branco); border-radius: 50%; animation: cp9Gira .7s linear infinite; }
 @keyframes cp9Gira { to { transform: rotate(360deg); } }
 
 /* 9.4 · importar contatos (3.35) */
@@ -238,7 +238,7 @@
 .cl9-imp-l small { display: block; font-size: 13px; color: var(--ui-texto-2); }
 .cl9-imp-l.off { cursor: default; }
 .cl9-imp-l.off b { color: var(--ui-texto-3); }
-.cl9-imp-cx { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid #CFC3C9; border-radius: 7px; background: #fff; color: #fff; font-style: normal; }
+.cl9-imp-cx { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid #CFC3C9; border-radius: 7px; background: var(--ui-branco); color: var(--ui-branco); font-style: normal; }
 .cl9-imp-cx.on { border-color: var(--ui-vinho); background: var(--ui-vinho); }
 .cl9-imp-l.off .cl9-imp-cx { border-color: var(--ui-linha); background: var(--ui-cinza); }
 .cl9-imp-tag { flex: none; padding: 2px 8px; border-radius: 6px; background: var(--ui-cinza); color: var(--ui-cinza-texto); font-size: 12px; font-style: normal; font-weight: 700; }

@@ -374,9 +374,9 @@ function CardapioContent() {
           @keyframes fadeScaleIn{from{opacity:0;transform:translate(-50%,-50%) scale(0.95)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
           ::-webkit-scrollbar { width: 5px; height: 5px; }
           ::-webkit-scrollbar-track { background: transparent; }
-          ::-webkit-scrollbar-thumb { background: #E85A8C; border-radius: 99px; opacity: 0.6; }
+          ::-webkit-scrollbar-thumb { background: var(--ui-rosa); border-radius: 99px; opacity: 0.6; }
           ::-webkit-scrollbar-thumb:hover { opacity: 1; }
-          * { scrollbar-width: thin; scrollbar-color: #E85A8C transparent; }
+          * { scrollbar-width: thin; scrollbar-color: var(--ui-rosa) transparent; }
         `}</style>
       </div>
     </div>

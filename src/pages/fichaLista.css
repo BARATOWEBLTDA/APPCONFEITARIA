@@ -3,7 +3,7 @@
 .fl-alerta > span:nth-child(2) { flex: 1; min-width: 0; }
 .fl-alerta b { display: block; font-size: 15px; font-weight: 700; }
 .fl-alerta small { display: block; font-size: 13px; color: var(--ui-vermelho-escuro); opacity: .85; }
-.fl-alerta-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: #fff; }
+.fl-alerta-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: var(--ui-branco); }
 .fl-cab { display: none; }
 .fl-l { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "t n l s"; align-items: center; gap: 2px 12px; width: 100%; min-height: 72px; margin: 0; padding: 10px 0; border: 0; border-top: 1px solid var(--ui-linha); background: none; text-align: left; color: var(--ui-texto); }
 .cl9-chips + .fl-cab + .fl-l, .cl9-barra + .fl-cab + .fl-l { border-top: 0; }

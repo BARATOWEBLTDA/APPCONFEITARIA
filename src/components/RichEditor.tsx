@@ -223,7 +223,7 @@ export default function RichEditor({ content, onChange }: Props) {
 
       <style>{`
         .rich-editor {
-          background: #fff;
+          background: var(--ui-branco);
           border: 1.5px solid #F0EBED;
           border-radius: 10px;
           overflow: hidden;
@@ -243,8 +243,8 @@ export default function RichEditor({ content, onChange }: Props) {
           cursor: pointer;
           display: flex; align-items: center; justify-content: center;
         }
-        .rich-tool-btn:hover:not(:disabled) { background: #F0EBED; color: #2C1219; }
-        .rich-tool-btn.active { background: #FCE7F3; color: #C33A6E; }
+        .rich-tool-btn:hover:not(:disabled) { background: #F0EBED; color: var(--ui-texto); }
+        .rich-tool-btn.active { background: #FCE7F3; color: var(--ui-rosa-escuro); }
         .rich-tool-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .rich-tool-sep {
           width: 1px;
@@ -265,7 +265,7 @@ export default function RichEditor({ content, onChange }: Props) {
           position: absolute;
           top: 100%; left: 0;
           margin-top: 4px;
-          background: #fff;
+          background: var(--ui-branco);
           padding: 6px;
           border-radius: 8px;
           box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -278,7 +278,7 @@ export default function RichEditor({ content, onChange }: Props) {
         .rich-color-swatch {
           width: 22px; height: 22px;
           border-radius: 4px;
-          border: 1.5px solid #fff;
+          border: 1.5px solid var(--ui-branco);
           box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
           cursor: pointer;
         }
@@ -287,7 +287,7 @@ export default function RichEditor({ content, onChange }: Props) {
           grid-column: span 4;
           padding: 4px;
           border: none;
-          background: #F5F0F2;
+          background: var(--ui-linha);
           border-radius: 4px;
           font-size: 12px;
           cursor: pointer;
@@ -303,7 +303,7 @@ export default function RichEditor({ content, onChange }: Props) {
           font-family: 'Geist', -apple-system, sans-serif;
           font-size: 14.5px;
           line-height: 1.65;
-          color: #2C1219;
+          color: var(--ui-texto);
           min-height: 240px;
           outline: none;
         }
@@ -315,7 +315,7 @@ export default function RichEditor({ content, onChange }: Props) {
         .rich-content-editor ul, .rich-content-editor ol { margin: 0 0 12px; padding-left: 22px; }
         .rich-content-editor li { margin-bottom: 4px; }
         .rich-content-editor blockquote {
-          border-left: 3px solid #E85A8C;
+          border-left: 3px solid var(--ui-rosa);
           padding: 6px 0 6px 14px;
           margin: 12px 0;
           font-style: italic;
@@ -332,18 +332,18 @@ export default function RichEditor({ content, onChange }: Props) {
         .rich-content-editor .rich-file {
           display: inline-flex;
           padding: 10px 14px;
-          background: #F5F0F2;
+          background: var(--ui-linha);
           border-radius: 8px;
           margin: 8px 0;
         }
         .rich-content-editor .rich-file a {
-          color: #C33A6E;
+          color: var(--ui-rosa-escuro);
           text-decoration: none;
           font-weight: 700;
           font-size: 13px;
         }
-        .rich-content-editor a { color: #C33A6E; text-decoration: underline; }
-        .rich-content-editor mark { background: #FEF3C7; padding: 1px 3px; border-radius: 3px; }
+        .rich-content-editor a { color: var(--ui-rosa-escuro); text-decoration: underline; }
+        .rich-content-editor mark { background: var(--ui-laranja-fundo); padding: 1px 3px; border-radius: 3px; }
       `}</style>
     </div>
   );
@@ -397,7 +397,7 @@ export function RichContent({ content }: { content: any }) {
           font-family: 'Geist', -apple-system, sans-serif;
           font-size: 15px;
           line-height: 1.7;
-          color: #2C1219;
+          color: var(--ui-texto);
           outline: none;
         }
         .ProseMirror h1 { font-size: 26px; font-weight: 700; margin: 24px 0 12px; line-height: 1.2; letter-spacing: -0.02em; }
@@ -407,7 +407,7 @@ export function RichContent({ content }: { content: any }) {
         .ProseMirror ul, .ProseMirror ol { margin: 0 0 14px; padding-left: 22px; }
         .ProseMirror li { margin-bottom: 5px; }
         .ProseMirror blockquote {
-          border-left: 3px solid #E85A8C;
+          border-left: 3px solid var(--ui-rosa);
           padding: 8px 0 8px 16px;
           margin: 14px 0;
           font-style: italic;
@@ -424,18 +424,18 @@ export function RichContent({ content }: { content: any }) {
         .ProseMirror .rich-file {
           display: inline-flex;
           padding: 12px 16px;
-          background: #F5F0F2;
+          background: var(--ui-linha);
           border-radius: 10px;
           margin: 10px 0;
         }
         .ProseMirror .rich-file a {
-          color: #C33A6E;
+          color: var(--ui-rosa-escuro);
           text-decoration: none;
           font-weight: 700;
           font-size: 14px;
         }
-        .ProseMirror a { color: #C33A6E; text-decoration: underline; }
-        .ProseMirror mark { background: #FEF3C7; padding: 1px 3px; border-radius: 3px; }
+        .ProseMirror a { color: var(--ui-rosa-escuro); text-decoration: underline; }
+        .ProseMirror mark { background: var(--ui-laranja-fundo); padding: 1px 3px; border-radius: 3px; }
       `}</style>
     </>
   );

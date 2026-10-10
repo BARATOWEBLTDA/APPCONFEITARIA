@@ -15,7 +15,7 @@
   cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; -webkit-appearance: none; appearance: none;
   transition: background-color var(--dur-fast) linear, color var(--dur-fast) linear, border-color var(--dur-fast) linear;
 }
-.nl-filtro[aria-pressed="true"] { border-color: var(--ui-rosa); background: var(--ui-rosa); color: #fff; }
+.nl-filtro[aria-pressed="true"] { border-color: var(--ui-rosa); background: var(--ui-rosa); color: var(--ui-branco); }
 @media (hover: hover) { .nl-filtro:not([aria-pressed="true"]):hover { border-color: var(--ui-rosa); color: var(--ui-rosa-escuro); } }
 .nl-filtro:active { transform: translateY(1px); }
 .nl-filtro:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }

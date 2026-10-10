@@ -14,7 +14,7 @@
 }
 .dh-grade button:hover:not(:disabled):not(.sel) { background: var(--ui-cinza); }
 .dh-grade button.hj { box-shadow: inset 0 0 0 1.5px var(--dh-cor); font-weight: 700; }
-.dh-grade button.sel { background: var(--dh-cor); color: #fff; font-weight: 700; box-shadow: none; }
+.dh-grade button.sel { background: var(--dh-cor); color: var(--ui-branco); font-weight: 700; box-shadow: none; }
 .dh-grade button:disabled { color: var(--ui-texto-3); opacity: .45; cursor: default; box-shadow: none; }
 .dh-grade button:focus-visible { outline: 2px solid var(--dh-cor); outline-offset: 1px; }
 
@@ -26,7 +26,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 .dh-horas button:hover:not(.sel) { border-color: var(--ui-rosa); }
-.dh-horas button.sel { border-color: var(--ui-rosa); background: var(--ui-rosa); color: #fff; font-weight: 700; }
+.dh-horas button.sel { border-color: var(--ui-rosa); background: var(--ui-rosa); color: var(--ui-branco); font-weight: 700; }
 .dh-outro { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--ui-linha); }
 .dh-outro > .ui-bt { margin-top: 23px; }
 

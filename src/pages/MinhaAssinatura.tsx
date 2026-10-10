@@ -58,9 +58,9 @@ export default function MinhaAssinatura() {
         <p className="mas-cancel">Quer mudar ou cancelar o plano? <button type="button" onClick={() => whats("Quero mudar ou cancelar meu plano do Doonly PRO.")}>Fale com a gente</button></p>
       </div>
       <style>{`
-        .mas-root { font-family: var(--font-base); color: #2C1219; }
+        .mas-root { font-family: var(--font-base); color: var(--ui-texto); }
         .mas-wrap { max-width: 560px; margin: 0 auto; padding: 14px 14px 40px; }
-        .mas-card { border-radius: 18px; padding: 16px; color: #fff; background: radial-gradient(130% 90% at 50% 0%, #6B2340, #2C1219 65%, #1A0B10); box-shadow: 0 10px 30px rgba(44,18,25,.3); }
+        .mas-card { border-radius: 18px; padding: 16px; color: var(--ui-branco); background: radial-gradient(130% 90% at 50% 0%, #6B2340, var(--ui-vinho-escuro) 65%, #1A0B10); box-shadow: 0 10px 30px rgba(44,18,25,.3); }
         .mas-top { display: flex; gap: 12px; align-items: center; }
         .mas-cr { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: rgba(249,168,212,.2); border: 1px solid rgba(249,168,212,.35); flex-shrink: 0; }
         .mas-cr { color: #F9A8D4; }
@@ -70,11 +70,11 @@ export default function MinhaAssinatura() {
         .mas-g { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
         .mas-g div { background: rgba(255,255,255,.07); border-radius: 12px; padding: 10px; }
         .mas-g small { display: block; font-size: 12px; color: rgba(255,255,255,.6); } .mas-g b { font-size: 14px; }
-        .mas-sec { margin: 18px 4px 8px; font-size: 12px; font-weight: 700; color: #9A8E94; }
-        .mas-op { width: 100%; display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 14px; font-family: inherit; font-size: 14px; font-weight: 700; color: #2C1219; cursor: pointer; }
+        .mas-sec { margin: 18px 4px 8px; font-size: 12px; font-weight: 700; color: var(--ui-texto-3); }
+        .mas-op { width: 100%; display: flex; justify-content: space-between; align-items: center; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px; padding: 14px; font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ui-texto); cursor: pointer; }
         .mas-op i { font-style: normal; color: #C4B8BE; font-size: 18px; }
         .mas-cancel { text-align: center; font-size: 12px; color: #B5AAB0; margin: 20px 0 0; }
-        .mas-cancel button { border: none; background: none; padding: 0; font-family: inherit; font-size: 12px; color: #9A8E94; text-decoration: underline; cursor: pointer; }
+        .mas-cancel button { border: none; background: none; padding: 0; font-family: inherit; font-size: 12px; color: var(--ui-texto-3); text-decoration: underline; cursor: pointer; }
       `}</style>
     </div>
   );

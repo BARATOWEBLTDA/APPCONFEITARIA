@@ -9,7 +9,7 @@
 /* ───────── Botão ───────── */
 .ui-bt {
   --bt-fundo: var(--ui-rosa);
-  --bt-cor: #fff;
+  --bt-cor: var(--ui-branco);
   --bt-sombra: var(--ui-rosa-escuro);
   position: relative;
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
@@ -65,7 +65,7 @@
 .ui-bti--p::after { content: ""; position: absolute; inset: -4px; }
 .ui-bti--suave { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
 .ui-bti--limpo { background: transparent; color: var(--ui-texto-2); }
-.ui-bti--claro { background: rgba(255, 255, 255, .2); color: #fff; }
+.ui-bti--claro { background: rgba(255, 255, 255, .2); color: var(--ui-branco); }
 @media (hover: hover) { .ui-bti:hover:not(:disabled) { filter: brightness(.96); } .ui-bti--limpo:hover:not(:disabled) { background: var(--ui-cinza); filter: none; } }
 .ui-bti:active:not(:disabled) { transform: scale(.94); }
 .ui-bti:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }

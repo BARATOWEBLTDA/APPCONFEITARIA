@@ -8,7 +8,7 @@
 
 /* Cartão */
 .dl-card, .chk-card, .cd-card {
-  background: #fff !important;
+  background: var(--ui-branco) !important;
   border: 1px solid #F0EBED !important;
   border-radius: 16px !important;
   padding: 22px 24px !important;
@@ -22,18 +22,18 @@
 .cfg-hd, .chk-section-header, .cd-section-header {
   display: flex !important; align-items: center !important; gap: 12px !important;
   padding-bottom: 14px !important; margin: 0 0 6px !important;
-  border-bottom: 1px solid #F5F0F2 !important;
+  border-bottom: 1px solid var(--ui-linha) !important;
 }
 .cfg-ic, .chk-section-icon, .cd-section-icon {
   width: 38px !important; height: 38px !important; flex-shrink: 0 !important;
-  border-radius: 11px !important; background: #FFF1F6 !important; color: #C33A6E !important;
+  border-radius: 11px !important; background: #FFF1F6 !important; color: var(--ui-rosa-escuro) !important;
   display: flex !important; align-items: center !important; justify-content: center !important; font-size: 18px; line-height: 1;
 }
 .cfg-h, .chk-section-label, .cd-section-label {
-  margin: 0 !important; font-size: 16.5px !important; font-weight: 700 !important; color: #2C1219 !important; letter-spacing: -.015em !important; line-height: 1.25 !important;
+  margin: 0 !important; font-size: 16.5px !important; font-weight: 700 !important; color: var(--ui-texto) !important; letter-spacing: -.015em !important; line-height: 1.25 !important;
 }
 .cfg-s, .chk-section-sub, .cd-section-sub {
-  margin: 2px 0 0 !important; font-size: 12.5px !important; font-weight: 400 !important; color: #9A8E94 !important; line-height: 1.4 !important;
+  margin: 2px 0 0 !important; font-size: 12.5px !important; font-weight: 400 !important; color: var(--ui-texto-3) !important; line-height: 1.4 !important;
 }
 
 /* Rótulos e campos */
@@ -41,9 +41,9 @@
   display: block; font-size: 13px !important; font-weight: 700 !important; color: #3A2830 !important; margin: 14px 0 6px !important;
 }
 .dl-in, .chk-input {
-  min-height: 44px; border: 1.5px solid #EDE6E9 !important; border-radius: 12px !important;
-  font-size: 14px !important; background: #fff !important; transition: border-color .15s, box-shadow .15s;
+  min-height: 44px; border: 1.5px solid var(--ui-borda-campo) !important; border-radius: 12px !important;
+  font-size: 14px !important; background: var(--ui-branco) !important; transition: border-color .15s, box-shadow .15s;
 }
 .dl-in:focus, .chk-input:focus, .dl-in-ic:focus-within {
-  outline: none !important; border-color: #E85A8C !important; box-shadow: 0 0 0 3px rgba(232, 90, 140, .12) !important;
+  outline: none !important; border-color: var(--ui-rosa) !important; box-shadow: 0 0 0 3px rgba(232, 90, 140, .12) !important;
 }

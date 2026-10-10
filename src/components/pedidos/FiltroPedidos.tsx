@@ -88,34 +88,34 @@ export default function FiltroLateral({ statusSelecionados, setStatusSelecionado
       </div>
       <style>{`
         .fl-ov { position: fixed; inset: 0; z-index: 10040; background: rgba(45,31,38,.45); animation: flFundo .2s ease; font-family: var(--font-base); }
-        .fl { position: absolute; top: 0; right: 0; bottom: 0; width: min(86vw, 400px); background: #fff; display: flex; flex-direction: column; border-radius: 20px 0 0 20px; box-shadow: -12px 0 30px -12px rgba(44,18,25,.4); animation: flEntra .22s ease; }
+        .fl { position: absolute; top: 0; right: 0; bottom: 0; width: min(86vw, 400px); background: var(--ui-branco); display: flex; flex-direction: column; border-radius: 20px 0 0 20px; box-shadow: -12px 0 30px -12px rgba(44,18,25,.4); animation: flEntra .22s ease; }
         .fl-ov.saindo { animation: flFundoSai .18s ease forwards; } .fl-ov.saindo .fl { animation: flSai .18s ease forwards; }
         @keyframes flEntra { from { transform: translateX(100%); } to { transform: none; } } @keyframes flSai { to { transform: translateX(100%); } }
         @keyframes flFundo { from { background: rgba(45,31,38,0); } } @keyframes flFundoSai { to { background: rgba(45,31,38,0); } }
-        .fl-h { display: flex; justify-content: space-between; align-items: center; padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 12px; border-bottom: 1px solid #F3EEF1; }
-        .fl-h b { font-size: 19px; font-weight: 700; color: #2C1219; }
-        .fl-x { width: 36px; height: 36px; border-radius: 10px; border: none; background: #F5F0F2; color: #4B3A42; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .fl-h { display: flex; justify-content: space-between; align-items: center; padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 12px; border-bottom: 1px solid var(--ui-cinza); }
+        .fl-h b { font-size: 19px; font-weight: 700; color: var(--ui-texto); }
+        .fl-x { width: 36px; height: 36px; border-radius: 10px; border: none; background: var(--ui-linha); color: var(--ui-cinza-texto); display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .fl-b { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 4px 16px 14px; }
         .fl-sec { display: flex; justify-content: space-between; align-items: baseline; margin: 16px 2px 7px; }
-        .fl-sec b { font-size: 12px; font-weight: 700; color: #9A8E94; }
-        .fl-lk { border: none; background: none; padding: 0; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #C33A6E; cursor: pointer; }
+        .fl-sec b { font-size: 12px; font-weight: 700; color: var(--ui-texto-3); }
+        .fl-lk { border: none; background: none; padding: 0; font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
         .fl-grp { border: 1px solid #F0EBED; border-radius: 14px; overflow: hidden; }
-        .fl-ln { display: flex; align-items: center; gap: 10px; width: 100%; border: none; border-top: 1px solid #F5F0F2; background: #fff; padding: 12px; font-family: inherit; font-size: 14.5px; color: #2C1219; text-align: left; cursor: pointer; }
+        .fl-ln { display: flex; align-items: center; gap: 10px; width: 100%; border: none; border-top: 1px solid var(--ui-linha); background: var(--ui-branco); padding: 12px; font-family: inherit; font-size: 14.5px; color: var(--ui-texto); text-align: left; cursor: pointer; }
         .fl-grp > .fl-ln:first-child, .fl-grp > div:first-child > .fl-ln { border-top: none; }
         .fl-ln span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .fl-cb { width: 22px; height: 22px; border-radius: 6px; border: 1.8px solid #D6CBD0; background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .fl-ln.on .fl-cb { background: #E85A8C; border-color: #E85A8C; }
+        .fl-cb { width: 22px; height: 22px; border-radius: 6px; border: 1.8px solid #D6CBD0; background: var(--ui-branco); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .fl-ln.on .fl-cb { background: var(--ui-rosa); border-color: var(--ui-rosa); }
         .fl-ln em { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-        .fl-ln u { text-decoration: none; font-size: 12px; font-weight: 700; color: #9A8E94; background: #F5F0F2; border-radius: 6px; min-width: 24px; text-align: center; padding: 1px 6px; }
+        .fl-ln u { text-decoration: none; font-size: 12px; font-weight: 700; color: var(--ui-texto-3); background: var(--ui-linha); border-radius: 6px; min-width: 24px; text-align: center; padding: 1px 6px; }
         .fl-rb { width: 22px; height: 22px; border-radius: 50%; border: 1.8px solid #D6CBD0; flex-shrink: 0; position: relative; }
-        .fl-ln.rd.on .fl-rb { border-color: #E85A8C; } .fl-ln.rd.on .fl-rb::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: #E85A8C; }
-        .fl-ln.rd.on span { font-weight: 700; color: #C33A6E; }
-        .fl-per { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; padding: 10px 12px 12px; background: #FCF8F9; border-top: 1px solid #F5F0F2; }
+        .fl-ln.rd.on .fl-rb { border-color: var(--ui-rosa); } .fl-ln.rd.on .fl-rb::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: var(--ui-rosa); }
+        .fl-ln.rd.on span { font-weight: 700; color: var(--ui-rosa-escuro); }
+        .fl-per { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; padding: 10px 12px 12px; background: #FCF8F9; border-top: 1px solid var(--ui-linha); }
         .fl-per small { display: block; font-size: 12px; font-weight: 700; color: #8A7E84; margin-bottom: 4px; }
         .fl-per .cdata { padding: 0 10px; font-size: 14px; gap: 6px; } /* De/Até lado a lado, sem quebrar */
-        .fl-f { display: flex; align-items: center; gap: 10px; padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid #F3EEF1; }
-        .fl-limpar { border: none; background: none; padding: 10px 6px; font-family: inherit; font-size: 14.5px; font-weight: 700; color: #9A8E94; cursor: pointer; }
-        .fl-ver { flex: 1; border: none; border-radius: 13px; padding: 14px; background: #E85A8C; color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 0 #C33A6E; }
+        .fl-f { display: flex; align-items: center; gap: 10px; padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--ui-cinza); }
+        .fl-limpar { border: none; background: none; padding: 10px 6px; font-family: inherit; font-size: 14.5px; font-weight: 700; color: var(--ui-texto-3); cursor: pointer; }
+        .fl-ver { flex: 1; border: none; border-radius: 13px; padding: 14px; background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
       `}</style>
     </div>, document.body)
 }

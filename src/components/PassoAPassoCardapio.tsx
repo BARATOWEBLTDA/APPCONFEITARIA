@@ -277,8 +277,8 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         <style>{`
           .pap-done {
             position: relative;
-            background: linear-gradient(135deg, #16a34a, #15803d);
-            color: #fff;
+            background: linear-gradient(135deg, #16a34a, var(--ui-verde));
+            color: var(--ui-branco);
             padding: 14px 16px;
             border-radius: 6px;
             margin-bottom: 16px;
@@ -334,13 +334,13 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           }
           .pap-done-btn:active { transform: scale(0.97); }
           .pap-done-btn-wa {
-            background: #fff;
-            color: #15803d;
+            background: var(--ui-branco);
+            color: var(--ui-verde);
           }
           .pap-done-btn-wa:hover { background: #F5F5F5; }
           .pap-done-btn-copy {
             background: rgba(255,255,255,0.18);
-            color: #fff;
+            color: var(--ui-branco);
           }
           .pap-done-btn-copy:hover { background: rgba(255,255,255,0.28); }
         `}</style>
@@ -378,8 +378,8 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           .pap-share-btn-ver { flex: 0 0 auto !important; padding-left: 14px !important; padding-right: 14px !important; }
           .pap-share {
             position: relative;
-            background: linear-gradient(135deg, #2C1219, #4B3D46);
-            color: #fff;
+            background: linear-gradient(135deg, var(--ui-vinho-escuro), var(--text-primary));
+            color: var(--ui-branco);
             border-radius: 6px;
             padding: 16px;
             margin-bottom: 16px;
@@ -403,7 +403,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
             width: 18px; height: 18px;
             border-radius: 50%;
             background: #16a34a;
-            color: #fff;
+            color: var(--ui-branco);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -449,12 +449,12 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           .pap-share-btn:active { transform: scale(0.97); }
           .pap-share-btn-wa {
             background: #16a34a;
-            color: #fff;
+            color: var(--ui-branco);
           }
-          .pap-share-btn-wa:hover { background: #15803d; }
+          .pap-share-btn-wa:hover { background: var(--ui-verde); }
           .pap-share-btn-copy {
             background: rgba(255,255,255,0.12);
-            color: #fff;
+            color: var(--ui-branco);
           }
           .pap-share-btn-copy:hover { background: rgba(255,255,255,0.18); }
         `}</style>
@@ -575,7 +575,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         .pap-title {
           font-size: 20px;
           font-weight: 700;
-          color: #2C1219;
+          color: var(--ui-texto);
           margin: 0 0 4px;
           letter-spacing: -0.01em;
         }
@@ -599,7 +599,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         .pap-progress-bar {
           flex: 1;
           height: 6px;
-          background: #DCFCE7;
+          background: var(--ui-verde-fundo);
           border-radius: 3px;
           overflow: hidden;
         }
@@ -615,8 +615,8 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           display: block;
           width: 100%;
           padding: 20px 18px;
-          background: linear-gradient(135deg, #2C1219 0%, #4B2334 100%);
-          color: #fff;
+          background: linear-gradient(135deg, var(--ui-vinho-escuro) 0%, #4B2334 100%);
+          color: var(--ui-branco);
           border: none;
           border-radius: 14px;
           margin-bottom: 14px;
@@ -646,7 +646,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         .pap-hero-title {
           font-size: 17px;
           font-weight: 700;
-          color: #fff;
+          color: var(--ui-branco);
           margin: 0 0 6px;
           letter-spacing: -0.01em;
           line-height: 1.25;
@@ -661,8 +661,8 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           display: inline-flex;
           align-items: center;
           padding: 11px 18px;
-          background: #fff;
-          color: #2C1219;
+          background: var(--ui-branco);
+          color: var(--ui-texto);
           border: none;
           border-radius: 10px;
           font-family: inherit;
@@ -672,8 +672,8 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         }
         .pap-hero-cta:active { transform: scale(0.98); }
         .pap-in, .pap-ta {
-          width: 100%; box-sizing: border-box; border: none; border-radius: 10px; background: #fff;
-          font-family: inherit; font-size: 14px; color: #2C1219;
+          width: 100%; box-sizing: border-box; border: none; border-radius: 10px; background: var(--ui-branco);
+          font-family: inherit; font-size: 14px; color: var(--ui-texto);
         }
         .pap-in { height: 44px; padding: 0 12px; }
         .pap-ta { min-height: 92px; resize: none; padding: 11px 12px 22px; line-height: 1.45; display: block; }
@@ -686,12 +686,12 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           flex: 1; height: 42px; border-radius: 10px; cursor: pointer;
           font-family: inherit; font-size: 13.5px; font-weight: 700;
         }
-        .pap-btn-ia { background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
-        .pap-btn-save { background: #fff; color: #2C1219; border: none; }
+        .pap-btn-ia { background: rgba(255,255,255,0.12); color: var(--ui-branco); border: 1px solid rgba(255,255,255,0.2); }
+        .pap-btn-save { background: var(--ui-branco); color: var(--ui-texto); border: none; }
         .pap-btn-ia:disabled, .pap-btn-save:disabled { opacity: 0.5; cursor: default; }
         .pap-aviso { margin: 0 0 10px; padding: 9px 12px; border-radius: 10px; font-size: 12.5px; font-weight: 700; }
-        .pap-aviso--ok { background: #DCFCE7; color: #15803D; }
-        .pap-aviso--err { background: #FEE2E2; color: #B91C1C; }
+        .pap-aviso--ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
+        .pap-aviso--err { background: var(--ui-vermelho-fundo); color: #B91C1C; }
 
         /* Lista compacta */
         .pap-list-title {
@@ -706,7 +706,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           gap: 10px;
           width: 100%;
           padding: 10px 14px;
-          background: #fff;
+          background: var(--ui-branco);
           border: 1px solid #F0EBED;
           border-radius: 8px;
           margin-bottom: 6px;
@@ -726,8 +726,8 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           text-decoration: line-through;
         }
         .pap-item.next {
-          border-color: #2C1219;
-          background: #fff;
+          border-color: var(--ui-texto);
+          background: var(--ui-branco);
         }
         .pap-item.next .pap-item-t {
           font-weight: 700;
@@ -741,27 +741,27 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           display: flex; align-items: center; justify-content: center;
           font-size: 12px; font-weight: 700;
           flex-shrink: 0;
-          background: #F5F0F2;
+          background: var(--ui-linha);
           color: #6B7280;
         }
         .pap-item.done .pap-item-ic {
           background: #16a34a;
-          color: #fff;
+          color: var(--ui-branco);
         }
         .pap-item.next .pap-item-ic {
-          background: #2C1219;
-          color: #fff;
+          background: var(--ui-vinho-escuro);
+          color: var(--ui-branco);
         }
         .pap-item-t {
           flex: 1;
           font-weight: 500;
-          color: #2C1219;
+          color: var(--ui-texto);
           line-height: 1.3;
         }
         .pap-item-tag {
           font-size: 12px;
           font-weight: 700;
-          color: #2C1219;
+          color: var(--ui-texto);
           flex-shrink: 0;
         }
       `}</style>

@@ -50,7 +50,7 @@ export default function BtnNovo({
           align-items: center;
           gap: 0.4rem;
           background: var(--text-title);
-          color: #fff;
+          color: var(--ui-branco);
           border: none;
           border-radius: var(--radius-md);
           padding: 0.65rem 1rem;

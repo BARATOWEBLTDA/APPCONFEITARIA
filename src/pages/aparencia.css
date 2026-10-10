@@ -52,7 +52,7 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-modelo-pe b { font-size: 15px; font-weight: 700; color: var(--ui-texto); }
 .ap-modelo-pe small { flex-shrink: 0; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 700; color: var(--ui-texto-2); }
 .ap-modelo-pe small.pro { color: var(--ui-vinho, #6B2340); }
-.ap-modelo-ok { position: absolute; top: 8px; right: 8px; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--ui-rosa); color: #fff; z-index: 2; }
+.ap-modelo-ok { position: absolute; top: 8px; right: 8px; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--ui-rosa); color: var(--ui-branco); z-index: 2; }
 /* mini prévias dos modelos */
 .ap .cd-layout-preview { position: relative; width: 100%; height: 120px; overflow: hidden; background: var(--ui-linha); }
 .ap .cd-lp-lines { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 8px; padding: 0 12px; }
@@ -70,9 +70,9 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 /* cores */
 .ap-cores-pro { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
 .ap-cores-sw { display: flex; flex-wrap: wrap; gap: 10px; }
-.ap-cores-sw span { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; color: #fff; box-shadow: 0 0 0 3px #fff, 0 0 0 4px var(--ui-borda); }
+.ap-cores-sw span { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; color: var(--ui-branco); box-shadow: 0 0 0 3px var(--ui-branco), 0 0 0 4px var(--ui-borda); }
 .ap-cores-sw span:not(.on) { opacity: .7; }
-.ap-cores-sw span.on { box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--ui-rosa, #FF6FA9); }
+.ap-cores-sw span.on { box-shadow: 0 0 0 3px var(--ui-branco), 0 0 0 5px var(--ui-rosa, #FF6FA9); }
 .ap-cores-pro p { margin: 0; font-size: 15px; line-height: 1.45; color: var(--ui-texto-2); }
 .ap-cores { display: flex; flex-direction: column; margin: -4px -8px; }
 .ap-cor + .ap-cor { border-top: 1px solid var(--ui-linha); }
@@ -82,7 +82,7 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-cor-tx b { font-size: 15px; font-weight: 700; }
 .ap-cor-tx small { font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
 .ap-cor-tx code { font-family: inherit; font-size: 13px; font-weight: 500; color: var(--ui-texto-3); }
-.ap-cor-sw { flex: none; width: 40px; height: 40px; border-radius: 50%; box-shadow: 0 0 0 3px #fff, 0 0 0 4px var(--ui-borda); }
+.ap-cor-sw { flex: none; width: 40px; height: 40px; border-radius: 50%; box-shadow: 0 0 0 3px var(--ui-branco), 0 0 0 4px var(--ui-borda); }
 .ap-picker { display: flex; flex-direction: column; gap: 12px; padding: 4px 8px 16px; }
 .ap-picker .react-colorful__saturation { border-radius: var(--ui-raio) var(--ui-raio) 0 0; }
 .ap-picker .react-colorful__last-control { border-radius: 0 0 var(--ui-raio) var(--ui-raio); }
@@ -91,12 +91,12 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-hex { flex: 1; min-width: 0; }
 .ap-previa { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 72px; padding: 12px; border-radius: var(--ui-raio); background: var(--ui-linha); border: 1px solid var(--ui-borda); }
 .ap-previa small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); background: rgba(255,255,255,.85); padding: 2px 8px; border-radius: 8px; }
-.ap-previa-logo { width: 56px; height: 56px; border: 4px solid; border-radius: 50%; overflow: hidden; background: #fff; flex: none; }
+.ap-previa-logo { width: 56px; height: 56px; border: 4px solid; border-radius: 50%; overflow: hidden; background: var(--ui-branco); flex: none; }
 .ap-previa-logo img { width: 100%; height: 100%; object-fit: cover; }
-.ap-previa-logo b { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: #fff; font-size: 18px; font-weight: 700; }
+.ap-previa-logo b { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: var(--ui-branco); font-size: 18px; font-weight: 700; }
 .ap-previa > i { width: 80px; height: 20px; border-radius: 4px; opacity: .8; }
 .ap-previa-nome { font-size: 18px; font-weight: 700; }
-.ap-previa-bt { padding: 10px 24px; border-radius: 12px; color: #fff; font-size: 15px; font-weight: 700; }
+.ap-previa-bt { padding: 10px 24px; border-radius: 12px; color: var(--ui-branco); font-size: 15px; font-weight: 700; }
 
 /* exemplo de banner */
 .ap-ex { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--ui-raio); }

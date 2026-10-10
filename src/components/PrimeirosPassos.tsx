@@ -332,39 +332,39 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo }: FolhaProps) {
 }
 
 const CSS = `
-  .pp { background: #fff; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); padding: 16px 16px 8px; box-shadow: var(--ui-sombra-cartao); font-family: var(--font-base); color: #2C1219; }
+  .pp { background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); padding: 16px 16px 8px; box-shadow: var(--ui-sombra-cartao); font-family: var(--font-base); color: var(--ui-texto); }
   .pp-t { display: block; font-size: 18px; font-weight: 700; line-height: 1.3; }
-  .pp-sub { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 4px 0 0; }
+  .pp-sub { font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; margin: 4px 0 0; }
   .pp-bar { height: 8px; border-radius: 4px; background: var(--ui-linha); margin: 12px 0 8px; overflow: hidden; }
   .pp-bar i { display: block; height: 100%; border-radius: 99px; background: var(--ui-rosa); transition: width .5s ease; }
-  .pp-ps { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 8px 2px; border: none; border-top: 1px solid #F5F0F2; background: none; font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
+  .pp-ps { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 8px 2px; border: none; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
   .pp-ps:disabled { cursor: default; }
   .pp-ps--sem { border-top: none; padding: 0; cursor: default; }
-  .pp-ic { width: 40px; height: 40px; border-radius: 10px; background: #FCE0E9; color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .pp-ic--ok { background: #DCFCE7; color: #15803D; }
-  .pp-ic--at { background: #E85A8C; color: #fff; }
+  .pp-ic { width: 40px; height: 40px; border-radius: 10px; background: var(--primary-light); color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .pp-ic--ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
+  .pp-ic--at { background: var(--ui-rosa); color: var(--ui-branco); }
   .pp-tx { flex: 1; min-width: 0; }
   .pp-tx b { display: block; font-size: 15px; font-weight: 700; letter-spacing: -.01em; line-height: 1.2; color: #2C2C2A; }
-  .pp-tx small { display: block; font-size: 13px; color: #6B5D64; margin-top: 2px; line-height: 1.4; }
+  .pp-tx small { display: block; font-size: 13px; color: var(--ui-texto-2); margin-top: 2px; line-height: 1.4; }
   .pp-ps--ok .pp-tx b { color: var(--ui-texto-2); font-weight: 500; }
   .pp-ps--ok .pp-tx small { color: var(--ui-verde); font-weight: 700; }
   .pp-ps--trava { cursor: default; }
-  .pp-ic--trava { background: #F5F0F2; color: #B5AAB0; }
-  .pp-ps--trava .pp-tx b { color: #9A8E94; font-weight: 500; }
+  .pp-ic--trava { background: var(--ui-linha); color: #B5AAB0; }
+  .pp-ps--trava .pp-tx b { color: var(--ui-texto-3); font-weight: 500; }
   .pp-seta { color: #B4B2A9; display: flex; }
   .pp-at { background: var(--ui-rosa-claro); border: 0; border-radius: var(--ui-raio); padding: 12px; margin: 4px 0 8px; }
   .pp-at + .pp-ps { border-top: none; }
   .pp--destaque .pp-at { animation: ppDestaque 1.1s ease-in-out 2; }
   @keyframes ppDestaque { 0%, 100% { box-shadow: 0 0 0 0 rgba(232, 90, 140, 0); } 50% { box-shadow: 0 0 0 4px rgba(232, 90, 140, .45); } }
   @media (prefers-reduced-motion: reduce) { .pp--destaque .pp-at { animation: none; box-shadow: 0 0 0 3px rgba(232, 90, 140, .45); } }
-  .pp-btn { display: block; width: 100%; min-height: 48px; margin-top: 12px; border: none; border-radius: var(--ui-raio-botao); padding: 13px; font-family: inherit; font-size: 15px; font-weight: 700; color: #fff; background: #E85A8C; box-shadow: 0 3px 0 #C33A6E; cursor: pointer; text-align: center; text-decoration: none; }
+  .pp-btn { display: block; width: 100%; min-height: 48px; margin-top: 12px; border: none; border-radius: var(--ui-raio-botao); padding: 13px; font-family: inherit; font-size: 15px; font-weight: 700; color: var(--ui-branco); background: var(--ui-rosa); box-shadow: 0 3px 0 var(--ui-rosa-escuro); cursor: pointer; text-align: center; text-decoration: none; }
   .pp-btn:disabled { background: #F3B6CB; box-shadow: none; cursor: default; }
-  .pp-lnk { display: block; width: 100%; min-height: 44px; margin-top: 8px; padding: 10px; border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #C33A6E; cursor: pointer; }
-  .pp-lnk--cinza { color: #9A8E94; font-weight: 500; }
-  .pp--fim { text-align: center; background: linear-gradient(180deg, #FFF1F6, #fff 70%); padding-bottom: 12px; }
+  .pp-lnk { display: block; width: 100%; min-height: 44px; margin-top: 8px; padding: 10px; border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
+  .pp-lnk--cinza { color: var(--ui-texto-3); font-weight: 500; }
+  .pp--fim { text-align: center; background: linear-gradient(180deg, #FFF1F6, var(--ui-branco) 70%); padding-bottom: 12px; }
   .pp-masc { display: block; width: 120px; height: auto; margin: 0 auto; }
   .pp-ft { display: block; font-size: 18px; font-weight: 700; margin: 6px auto 0; max-width: 260px; line-height: 1.25; text-wrap: balance; }
-  .pp-fs { font-size: 13.5px; color: #6B5D64; margin: 6px auto 4px; max-width: 290px; line-height: 1.45; text-wrap: balance; }
+  .pp-fs { font-size: 13.5px; color: var(--ui-texto-2); margin: 6px auto 4px; max-width: 290px; line-height: 1.45; text-wrap: balance; }
 
   /* (07/10 · 2.94) No Início, em tela larga (tablet e computador), os passos viram blocos lado a lado:
      o cartão fica com metade da altura e não empurra o resto da tela pra baixo. */
@@ -382,7 +382,7 @@ const CSS = `
   .ppf-l { display: block; font-size: 13px; font-weight: 700; color: var(--ui-cinza-texto); margin: 16px 0 6px; }
   .ppf-lrow { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; margin-bottom: 6px; }
   .ppf-lrow .ppf-l { margin: 0; }
-  .ppf-ia { min-height: 44px; border: none; border-radius: var(--ui-raio); background: var(--ui-vinho, #2C1219); color: #fff; font-family: inherit; font-size: 14px; font-weight: 700; padding: 0 14px; cursor: pointer; }
+  .ppf-ia { min-height: 44px; border: none; border-radius: var(--ui-raio); background: var(--ui-vinho, #2C1219); color: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 700; padding: 0 14px; cursor: pointer; }
   .ppf-ia:disabled { opacity: .6; }
   .ppf-in { width: 100%; box-sizing: border-box; min-height: 48px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); padding: 0 12px; font-family: inherit; font-size: 16px; font-weight: 500; color: var(--ui-texto); background: var(--ui-branco); }
   .ppf-in:focus { outline: none; border-color: var(--ui-rosa); }
@@ -392,23 +392,23 @@ const CSS = `
   .ppf-f { flex: 1; min-width: 0; }
   .ppf-row { display: flex; gap: 10px; }
   .ppf-wrap { position: relative; }
-  .ppf-cep { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 12.5px; font-weight: 700; color: #15803D; }
+  .ppf-cep { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 12.5px; font-weight: 700; color: var(--ui-verde); }
   .ppf-seg { display: flex; gap: 4px; background: var(--ui-cinza); border-radius: var(--ui-raio); padding: 4px; }
   .ppf-seg button { flex: 1; min-height: 44px; border: none; background: none; padding: 0 4px; border-radius: 10px; font-family: inherit; font-size: 15px; font-weight: 700; color: var(--ui-texto-2); cursor: pointer; }
   .ppf-seg button.on { background: var(--ui-branco); color: var(--ui-texto); box-shadow: var(--ui-sombra-cartao); }
   .ppf-dias { display: flex; gap: 6px; }
   .ppf-dias button { flex: 1; aspect-ratio: 1; min-height: 44px; max-width: 48px; border: none; border-radius: 50%; font-family: inherit; font-size: 15px; font-weight: 700; background: var(--ui-cinza); color: var(--ui-texto-2); cursor: pointer; }
-  .ppf-dias button.on { background: var(--ui-rosa); color: #fff; }
+  .ppf-dias button.on { background: var(--ui-rosa); color: var(--ui-branco); }
   .ppf-bl { background: var(--ui-cinza); border-radius: var(--ui-raio); padding: 12px; margin-top: 12px; }
   .ppf-bl b { display: block; font-size: 13.5px; margin-bottom: 8px; }
   .ppf-hr { flex: 1; display: flex; align-items: center; gap: 10px; min-height: 52px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); padding: 6px 12px; background: var(--ui-branco); font-family: inherit; color: var(--ui-rosa-escuro); text-align: left; cursor: pointer; }
-  .ppf-hr span { display: flex; flex-direction: column; color: #2C1219; font-size: 16px; font-weight: 700; line-height: 1.15; }
+  .ppf-hr span { display: flex; flex-direction: column; color: var(--ui-texto); font-size: 16px; font-weight: 700; line-height: 1.15; }
   .ppf-hr small { font-size: 12.5px; font-weight: 700; color: var(--ui-texto-2); }
   .ppf-lg { display: flex; gap: 14px; align-items: center; margin-top: 12px; }
   .ppf-lgc { position: relative; width: 76px; height: 76px; border-radius: 50%; border: 0; background: var(--ui-rosa-claro); padding: 0; cursor: pointer; flex-shrink: 0; overflow: visible; }
   .ppf-lgc img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
   .ppf-lgc span { color: var(--ui-rosa-escuro); font-weight: 700; font-size: 28px; }
-  .ppf-lgc i { position: absolute; right: -4px; bottom: -4px; width: 28px; height: 28px; border: 2px solid #fff; border-radius: 50%; background: var(--ui-rosa); color: #fff; display: flex; align-items: center; justify-content: center; }
+  .ppf-lgc i { position: absolute; right: -4px; bottom: -4px; width: 28px; height: 28px; border: 2px solid var(--ui-branco); border-radius: 50%; background: var(--ui-rosa); color: var(--ui-branco); display: flex; align-items: center; justify-content: center; }
   .ppf-lg b { display: block; font-size: 14.5px; font-weight: 700; }
   .ppf-lg small { display: block; font-size: 13px; color: var(--ui-texto-2); margin-top: 3px; line-height: 1.4; }
 `;

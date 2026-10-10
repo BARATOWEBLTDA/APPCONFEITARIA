@@ -5,8 +5,8 @@
   --bv-rosa: #FF9DC4; /* o rosa claro da marca, o mesmo do lado rosa do login */
   position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; overflow: hidden;
   padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) 0 env(safe-area-inset-left, 0px);
-  background: var(--vinho-fundo, radial-gradient(1000px 640px at 50% 38%, #4B1528 0%, #2C1219 72%)); background-color: var(--vinho-escuro);
-  color: #fff; font-family: var(--font-base);
+  background: var(--vinho-fundo, radial-gradient(1000px 640px at 50% 38%, var(--ui-vinho) 0%, var(--ui-vinho-escuro) 72%)); background-color: var(--vinho-escuro);
+  color: var(--ui-branco); font-family: var(--font-base);
   -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; touch-action: pan-y; overscroll-behavior: contain;
   transition: opacity var(--dur-normal) linear;
 }
@@ -24,7 +24,7 @@
 .bv-pular { min-height: 44px; padding: 0 10px; border: 0; border-radius: var(--ui-raio-p); background: transparent; color: rgba(255, 255, 255, .84); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .bv-pular:active { background: rgba(255, 255, 255, .12); }
 .bv-pular:focus-visible { outline: 3px solid rgba(255, 255, 255, .75); outline-offset: 1px; }
-@media (hover: hover) { .bv-pular:hover { color: #fff; background: rgba(255, 255, 255, .1); } }
+@media (hover: hover) { .bv-pular:hover { color: var(--ui-branco); background: rgba(255, 255, 255, .1); } }
 
 /* ── corpo (tela estreita): texto, demonstração e o botão preso embaixo ── */
 .bv-corpo { flex: 1; min-height: 0; overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; display: flex; flex-direction: column; align-items: center; padding: 8px 20px 0; }
@@ -41,7 +41,7 @@
 @keyframes bvEntra { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
 .bv-sobre { margin: 0 0 6px; font-size: 13px; font-weight: 700; color: var(--bv-rosa); }
-.bv-h { margin: 0; font-family: var(--font-base); font-size: 26px; font-weight: 700; letter-spacing: -.02em; line-height: 1.15; color: #fff; text-wrap: balance; }
+.bv-h { margin: 0; font-family: var(--font-base); font-size: 26px; font-weight: 700; letter-spacing: -.02em; line-height: 1.15; color: var(--ui-branco); text-wrap: balance; }
 .bv-h em { font-style: normal; color: var(--bv-rosa); }
 .bv-p { max-width: 34ch; margin: 10px auto 0; font-size: 15.5px; font-weight: 500; line-height: 1.5; color: rgba(255, 255, 255, .84); text-wrap: balance; }
 
@@ -49,11 +49,11 @@
 .bv-marca { display: flex; flex-direction: column; align-items: center; }
 .bv-marca-masc { display: block; width: 150px; height: auto; filter: drop-shadow(0 0 22px rgba(255, 157, 196, .5)) drop-shadow(0 10px 12px rgba(0, 0, 0, .35)); }
 .bv-marca-nome { display: block; width: 150px; height: auto; margin-top: 6px; }
-.bv-oi { margin: 0 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 40px; font-weight: 700; letter-spacing: -.03em; line-height: 1.15; color: #fff; text-shadow: 0 0 24px rgba(255, 157, 196, .45); }
+.bv-oi { margin: 0 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 40px; font-weight: 700; letter-spacing: -.03em; line-height: 1.15; color: var(--ui-branco); text-shadow: 0 0 24px rgba(255, 157, 196, .45); }
 
 /* ── 2 · cardápio dentro do celular ── */
 /* (07/10 · 2.93) celular branco: no fundo vinho ele aparece muito mais que o preto */
-.bv-cel { position: relative; width: 275px; max-width: 78vw; padding: 7px; border-radius: 36px; background: linear-gradient(150deg, #FFFFFF 0%, #F1ECEF 100%); box-shadow: 0 24px 60px rgba(0, 0, 0, .5), 0 0 0 1px rgba(255, 255, 255, .5), inset 0 0 0 1px #D9D0D5; }
+.bv-cel { position: relative; width: 275px; max-width: 78vw; padding: 7px; border-radius: 36px; background: linear-gradient(150deg, var(--ui-branco) 0%, #F1ECEF 100%); box-shadow: 0 24px 60px rgba(0, 0, 0, .5), 0 0 0 1px rgba(255, 255, 255, .5), inset 0 0 0 1px #D9D0D5; }
 .bv-cel::before, .bv-cel::after { content: ""; position: absolute; width: 3px; border-radius: 2px; background: #E4DDE1; }
 .bv-cel::before { left: -3px; top: 96px; height: 58px; box-shadow: 0 -40px 0 0 #E4DDE1; clip-path: inset(-40px 0 0 0); } /* volume */
 .bv-cel::after { right: -3px; top: 118px; height: 64px; } /* liga e desliga */
@@ -67,7 +67,7 @@
 /* ── 3, 4 e 5: cópias das telas reais (09/10 · 3.68) ── */
 .bv-cai { opacity: 0; animation: bvCai .55s cubic-bezier(.22, 1, .36, 1) forwards; animation-delay: calc(.25s + var(--i, 0) * .4s); }
 @keyframes bvCai { from { opacity: 0; transform: translateY(-22px); } to { opacity: 1; transform: none; } }
-.bv-aviso { position: absolute; top: 0; left: 50%; z-index: 3; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: #fff; color: var(--ui-texto); font-size: 12px; white-space: nowrap; box-shadow: 0 8px 20px rgba(0, 0, 0, .3); opacity: 0; transform: translate(-50%, 6px); animation: bvAviso 3.2s ease 1.6s forwards; }
+.bv-aviso { position: absolute; top: 0; left: 50%; z-index: 3; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto); font-size: 12px; white-space: nowrap; box-shadow: 0 8px 20px rgba(0, 0, 0, .3); opacity: 0; transform: translate(-50%, 6px); animation: bvAviso 3.2s ease 1.6s forwards; }
 .bv-aviso svg { flex: none; color: var(--ui-rosa); }
 .bv-aviso b { font-weight: 700; }
 @keyframes bvAviso { 0% { opacity: 0; transform: translate(-50%, 6px); } 12%, 100% { opacity: 1; transform: translate(-50%, 0); } }
@@ -108,14 +108,14 @@
 .bv-app { position: relative; display: flex; width: 100%; height: 100%; overflow: hidden; background: #FAF7F8; color: var(--ui-texto); text-align: left; font-family: var(--font-base); }
 .bv-app-menu { flex: none; width: 190px; padding: 18px 12px; background: var(--sidebar-bg, #1C1C1F); color: rgba(255, 255, 255, .86); }
 .bv-app-perfil { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 18px; }
-.bv-app-perfil span { display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; overflow: hidden; border: 3px solid #fff; border-radius: 50%; background: #fff; color: #fff; font-size: 26px; font-weight: 700; }
-.bv-app-perfil span img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: #fff; }
-.bv-app-perfil b { font-size: 14px; font-weight: 700; color: #fff; }
+.bv-app-perfil span { display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; overflow: hidden; border: 3px solid var(--ui-branco); border-radius: 50%; background: var(--ui-branco); color: var(--ui-branco); font-size: 26px; font-weight: 700; }
+.bv-app-perfil span img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: var(--ui-branco); }
+.bv-app-perfil b { font-size: 14px; font-weight: 700; color: var(--ui-branco); }
 .bv-app-menu p { display: flex; align-items: center; gap: 10px; margin: 0 0 2px; padding: 9px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; }
-.bv-app-menu p.on { background: rgba(255, 255, 255, .10); color: #fff; font-weight: 700; }
+.bv-app-menu p.on { background: rgba(255, 255, 255, .10); color: var(--ui-branco); font-weight: 700; }
 .bv-app-menu p.on svg { color: var(--ui-rosa); }
 .bv-app-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.bv-app-topo { flex: none; display: flex; flex-direction: column; justify-content: center; height: 76px; padding: 0 28px; background: var(--ui-rosa); color: #fff; }
+.bv-app-topo { flex: none; display: flex; flex-direction: column; justify-content: center; height: 76px; padding: 0 28px; background: var(--ui-rosa); color: var(--ui-branco); }
 .bv-app-topo b { font-size: 21px; font-weight: 700; }
 .bv-app-topo small { font-size: 12.5px; font-weight: 500; opacity: .9; }
 .bv-app-corpo { position: relative; flex: 1; min-height: 0; overflow: hidden; padding: 56px 28px 20px; }
@@ -124,7 +124,7 @@
 .bv-app .pdl-cab { padding: 0 16px; font-size: 12.5px; font-weight: 700; color: var(--ui-texto-2); }
 .bv-app-grupo { display: flex; align-items: center; gap: 8px; margin: 14px 0 8px; font-size: 16px; font-weight: 700; }
 .bv-app-grupo i { padding: 0 7px; border-radius: 6px; background: var(--ui-cinza); font-size: 12.5px; font-style: normal; font-weight: 700; color: var(--ui-texto-2); }
-.bv-app .pdl-tabela { overflow: hidden; background: #fff; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
+.bv-app .pdl-tabela { overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
 .bv-app .pdl-tabela .bv-ped-entra > div { padding-bottom: 0; }
 .bv-app .pdl-tabela .bv-ped-entra + .bv-ped-entra .pdl { border-top: 1px solid var(--ui-linha); }
 .bv-app .pdl { position: relative; min-height: 72px; padding: 8px 16px; cursor: default; }
@@ -140,7 +140,7 @@
 .bv-app .pdl-tabela > .bv-ped--novo:first-child .pdl.aceitar .ui-bt { animation: bvChama 1.1s ease-in-out .9s infinite; }
 
 /* 4 · dinheiro (09/10 · 3.83): um cartão só, com o total que falta e cada cliente */
-.bv-din { width: 100%; max-width: 380px; padding: 16px; border-radius: var(--ui-raio-cartao); background: #fff; color: var(--ui-texto); text-align: left; box-shadow: 0 12px 30px rgba(0, 0, 0, .35); }
+.bv-din { width: 100%; max-width: 380px; padding: 16px; border-radius: var(--ui-raio-cartao); background: var(--ui-branco); color: var(--ui-texto); text-align: left; box-shadow: 0 12px 30px rgba(0, 0, 0, .35); }
 .bv-din-topo { padding-bottom: 12px; border-bottom: 1px solid var(--ui-linha); }
 .bv-din-topo small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
 .bv-din-topo b { display: block; font-size: 30px; font-weight: 700; line-height: 1.2; color: var(--ui-laranja); font-variant-numeric: tabular-nums; animation: bvValor .45s cubic-bezier(.34, 1.56, .64, 1); }
@@ -164,7 +164,7 @@
 .bv-din-ok { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 99px; background: var(--ui-verde-fundo); color: var(--ui-verde); font-size: 13px; font-weight: 700; animation: bvValor .45s cubic-bezier(.34, 1.56, .64, 1); }
 
 /* 5 · resumo da Ficha técnica (as mesmas medidas do fichaDetalhe.css) */
-.bv-luc { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: var(--ui-raio-cartao); background: #fff; color: var(--ui-texto); text-align: left; box-shadow: 0 12px 30px rgba(0, 0, 0, .35); }
+.bv-luc { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: var(--ui-raio-cartao); background: var(--ui-branco); color: var(--ui-texto); text-align: left; box-shadow: 0 12px 30px rgba(0, 0, 0, .35); }
 .bv-luc-topo { display: flex; align-items: center; gap: 14px; }
 .bv-luc-foto { flex: none; width: 72px; height: 72px; overflow: hidden; border-radius: 16px; background: var(--ui-rosa-claro); }
 .bv-luc-foto img { width: 100%; height: 100%; object-fit: cover; }

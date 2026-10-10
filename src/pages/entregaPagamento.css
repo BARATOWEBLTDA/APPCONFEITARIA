@@ -17,7 +17,7 @@
 .ep-ops { display: flex; flex-direction: column; gap: 8px; }
 .ep-op { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 52px; margin: 0; padding: 0 12px 0 16px; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 500; text-align: left; cursor: pointer; }
 .ep-op[aria-checked="true"] { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-weight: 700; }
-.ep-cx { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid var(--ui-borda-campo); border-radius: 7px; background: var(--ui-branco); color: #fff; }
+.ep-cx { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid var(--ui-borda-campo); border-radius: 7px; background: var(--ui-branco); color: var(--ui-branco); }
 .ep-op[aria-checked="true"] .ep-cx { border-color: var(--ui-rosa); background: var(--ui-rosa); }
 
 /* chave liga/desliga */
@@ -26,7 +26,7 @@
 .ep-sw-tx b { font-size: 15px; font-weight: 700; }
 .ep-sw-tx small { font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
 .ep-sw { position: relative; flex: none; width: 52px; height: 32px; border-radius: 16px; background: var(--ui-borda-campo); transition: background-color .2s; }
-.ep-sw::before { content: ""; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.18); transition: transform .2s; }
+.ep-sw::before { content: ""; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%; background: var(--ui-branco); box-shadow: 0 1px 3px rgba(0,0,0,.18); transition: transform .2s; }
 .ep-sw-l[aria-checked="true"] .ep-sw { background: var(--ui-rosa); }
 .ep-sw-l[aria-checked="true"] .ep-sw::before { transform: translateX(20px); }
 
