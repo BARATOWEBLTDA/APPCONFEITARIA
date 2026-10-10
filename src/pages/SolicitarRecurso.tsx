@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { explicarErro } from "@/lib/erros";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -123,7 +124,7 @@ export default function SolicitarRecurso() {
       setEnviado(true);
       carregarHistorico();
     } catch (err: any) {
-      setErro("Não foi possível enviar: " + (err?.message || "tente de novo"));
+      setErro(explicarErro(err, "Não foi possível enviar. Tente de novo em instantes."));
     }
     setEnviando(false);
   };

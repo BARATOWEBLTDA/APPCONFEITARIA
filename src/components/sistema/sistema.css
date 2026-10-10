@@ -1,0 +1,12 @@
+/* Mensagens do sistema (10/10): sem internet e tela de erro, no padrão do guia. */
+
+/* Sem internet: a mesma pílula do aviso rápido, só que no alto e parada enquanto durar. */
+.sis-net-ar { position: fixed; left: 0; right: 0; top: calc(10px + env(safe-area-inset-top, 0px)); z-index: 10095; display: flex; justify-content: center; padding: 0 16px; pointer-events: none; font-family: var(--font-base); }
+.sis-net { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; min-height: 38px; padding: 8px 15px 8px 11px; background: var(--ui-branco); color: var(--ui-texto); border: 1px solid var(--ui-borda); border-radius: 99px; box-shadow: var(--ui-sombra-aviso); font-size: 13px; font-weight: 500; line-height: 1.3; animation: sisNetDesce var(--dur-normal) var(--ease-out) both; }
+.sis-net-ic { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--ui-laranja-fundo); color: var(--ui-laranja); }
+.sis-net-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@keyframes sisNetDesce { from { opacity: 0; transform: translateY(-8px); } }
+@media (prefers-reduced-motion: reduce) { .sis-net { animation-duration: 1ms; } }
+
+/* Tela de erro: os dois botões, um embaixo do outro */
+.sis-erro-acoes { display: flex; flex-direction: column; gap: 10px; }

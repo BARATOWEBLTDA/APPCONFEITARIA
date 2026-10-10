@@ -70,6 +70,7 @@ import EmBreve from "@/pages/EmBreve";
 import Lucratividade from "@/pages/Lucratividade";
 import FichaTecnica from "@/pages/FichaTecnica";
 import NaoEncontrada from "@/pages/NaoEncontrada";
+import SemInternet from "@/components/sistema/SemInternet";
 
 
 
@@ -297,6 +298,7 @@ export default function App() {
             A raiz "/" com ?ref= continua na rota de cima. */}
         <Route path="*" element={<NaoEncontrada />} />
       </Routes>
+      <SemInternet />
       <Analytics />
     </BrowserRouter>
     </NotificationProvider>

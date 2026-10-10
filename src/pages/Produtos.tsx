@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { explicarErro } from "@/lib/erros";
 import LimitePlano from "@/components/billing/LimitePlano";
 import { LIMITE_PRODUTOS_GRATIS } from "@/lib/limitesPlano";
 import CampoNumero from "@/components/ui/CampoNumero";
@@ -4048,7 +4049,7 @@ export default function Produtos() {
     const ids = selecionados.map(p => p.id!).filter(Boolean);
     const { error } = await supabase.from("produtos").update({ disponivel: publicar }).in("id", ids);
     setBulkLoading(false);
-    if (error) { showToast("error", "Erro", error.message); return; }
+    if (error) { showToast("error", "Não deu certo", explicarErro(error)); return; }
     await loadProdutos(userId);
     clearSelection();
     showToast(
@@ -4102,7 +4103,7 @@ export default function Produtos() {
     const { error } = await supabase.from("produtos").delete().in("id", ids);
     setBulkLoading(false);
     setConfirmBulkDelete(false);
-    if (error) { showToast("error", "Erro ao excluir", error.message); return; }
+    if (error) { showToast("error", "Não deu pra excluir", explicarErro(error)); return; }
     await loadProdutos(userId);
     clearSelection();
     showToast("success", `${ids.length} ${ids.length > 1 ? "produtos removidos" : "produto removido"}`, "Essa ação é definitiva. Se precisar novamente, cadastre outra vez.");
@@ -4197,7 +4198,7 @@ export default function Produtos() {
       const { error } = await supabase.from("produtos").update(payload).eq("id", form.id);
       if (error) {
         console.error("Erro ao atualizar produto:", error);
-        showToast("error", "Erro ao salvar", error.message);
+        showToast("error", "Não deu pra salvar", explicarErro(error));
         setSaving(false);
         return;
       }
@@ -4206,7 +4207,7 @@ export default function Produtos() {
       const { data: novo, error } = await supabase.from("produtos").insert({ ...payload, user_id: userId }).select("id").single();
       if (error) {
         console.error("Erro ao criar produto:", error);
-        showToast("error", "Erro ao criar", error.message);
+        showToast("error", "Não deu pra criar", explicarErro(error));
         setSaving(false);
         return;
       }
@@ -5207,7 +5208,7 @@ export default function Produtos() {
                   const ext = file.name.split(".").pop();
                   const path = `${userData.user.id}/produto-opcao-${opcaoId}-${Date.now()}.${ext}`;
                   const { error: upErr } = await supabase.storage.from("produtos").upload(path, file, { upsert: true });
-                  if (upErr) { avisar("Erro ao enviar foto: " + upErr.message, { tipo: "erro" }); return; }
+                  if (upErr) { avisar(explicarErro(upErr, "Não deu pra enviar a foto. Tente de novo."), { tipo: "erro" }); return; }
                   const { data: pub } = supabase.storage.from("produtos").getPublicUrl(path);
                   const campo = `grupo_${grupoKey}` as keyof Produto;
                   setForm(f => ({
@@ -6377,7 +6378,7 @@ export default function Produtos() {
                             .select("id")
                             .single();
                           if (error) {
-                            showToast("error", "Erro ao duplicar", error.message);
+                            showToast("error", "Não deu pra duplicar", explicarErro(error));
                             return;
                           }
                           // Se tinha ficha técnica, clona também
@@ -6428,7 +6429,7 @@ export default function Produtos() {
                           setPreviewMenu(false);
                           const novoDisponivel = !(previewProduto.disponivel !== false);
                           const { error } = await supabase.from("produtos").update({ disponivel: novoDisponivel }).eq("id", previewProduto.id!);
-                          if (error) { showToast("error", "Erro", error.message); return; }
+                          if (error) { showToast("error", "Não deu certo", explicarErro(error)); return; }
                           await loadProdutos(userId);
                           setPreviewProduto({ ...previewProduto, disponivel: novoDisponivel });
                           showToast(

@@ -9,7 +9,8 @@ import { TextStyle } from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import { useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { avisar } from "@/components/base";
+import { Botao, Campo, Janela, avisar } from "@/components/base";
+import { explicarErro } from "@/lib/erros";
 import {
   TextB, TextItalic, TextUnderline, TextStrikethrough,
   TextHOne, TextHTwo, TextHThree, ListBullets, ListNumbers,
@@ -69,6 +70,8 @@ export default function RichEditor({ content, onChange }: Props) {
   const audioRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [linkAberto, setLinkAberto] = useState(false);
+  const [linkUrl, setLinkUrl] = useState("");
 
   const editor = useEditor({
     extensions: [
@@ -108,7 +111,7 @@ export default function RichEditor({ content, onChange }: Props) {
       const { data } = supabase.storage.from("noticias-anexos").getPublicUrl(fileName);
       return data.publicUrl;
     } catch (err: any) {
-      avisar("Erro no upload: " + err.message, { tipo: "erro" });
+      avisar(explicarErro(err, "Não deu pra enviar o arquivo. Tente de novo."), { tipo: "erro" });
       return null;
     } finally {
       setUploading(null);
@@ -143,9 +146,13 @@ export default function RichEditor({ content, onChange }: Props) {
     e.target.value = "";
   };
 
-  const addLink = () => {
-    const url = window.prompt("URL do link:");
-    if (url) editor.chain().focus().setLink({ href: url }).run();
+  // (10/10) o endereço do link é pedido na janela do app (antes era a caixinha do navegador)
+  const addLink = () => { setLinkUrl(editor.getAttributes("link").href || ""); setLinkAberto(true); };
+  const salvarLink = () => {
+    const url = linkUrl.trim();
+    setLinkAberto(false);
+    if (!url) { editor.chain().focus().unsetLink().run(); return; }
+    editor.chain().focus().setLink({ href: /^(https?:|mailto:|tel:|\/)/i.test(url) ? url : `https://${url}` }).run();
   };
 
   return (
@@ -220,6 +227,13 @@ export default function RichEditor({ content, onChange }: Props) {
       <div className="rich-content-wrap">
         <EditorContent editor={editor} />
       </div>
+
+      <Janela aberta={linkAberto} aoFechar={() => setLinkAberto(false)} tipo="conteudo" titulo="Link"
+        acoes={<><Botao variante="secundario" onClick={() => setLinkAberto(false)}>Cancelar</Botao><Botao onClick={salvarLink}>Salvar</Botao></>}>
+        <Campo rotulo="Endereço do link" placeholder="https://" inputMode="url" autoCapitalize="off" autoCorrect="off" value={linkUrl}
+          dica="Deixe vazio pra tirar o link do texto." onChange={e => setLinkUrl(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); salvarLink(); } }} />
+      </Janela>
 
       <style>{`
         .rich-editor {

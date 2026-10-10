@@ -11,6 +11,7 @@ import './styles/typography.css'
 import { ThemeProvider } from './context/ThemeContext'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import App from './App.tsx'
+import TelaDeErro from './components/sistema/TelaDeErro'
 import { ensureServiceWorker } from './lib/notifications'
 import './lib/installPrompt' // captura o convite de instalação do Chrome o quanto antes
 
@@ -27,7 +28,7 @@ if (typeof window !== "undefined") {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider>
-      <App />
+      <TelaDeErro><App /></TelaDeErro>
       <SpeedInsights />
     </ThemeProvider>
   </StrictMode>,

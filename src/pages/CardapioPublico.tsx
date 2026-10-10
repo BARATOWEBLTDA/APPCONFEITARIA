@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { explicarErro } from '@/lib/erros'
 import { SeloVerificado } from '@/components/cardapio/SeloVerificado'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { getCardapioByCodigo, getCardapioBySlug } from '@/services/cardapio'
@@ -346,7 +347,7 @@ function CardapioContent() {
         }))
       }
       setLoading(false)
-    }).catch(e => { setError(e.message); setLoading(false) })
+    }).catch(e => { setError(explicarErro(e, 'Não deu pra abrir o cardápio agora. Tente de novo em instantes.')); setLoading(false) })
   }, [codigo, slugAtual, isRotaNova])
 
   const toggleFavorite = (id: string) => setFavorites(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id])

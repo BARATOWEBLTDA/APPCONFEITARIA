@@ -1,4 +1,5 @@
 import CalendarioSheet from '@/components/CalendarioSheet'
+import { explicarErro } from '@/lib/erros'
 import CampoData from '@/components/CampoData'
 import { DotsThree, Check, Heart, Plus, NotePencil, Trash, PencilSimple, ArrowUp, ArrowCounterClockwise, CalendarBlank, Image as ImageIcon, CaretRight, Phone, ArrowsDownUp, Cake } from '@phosphor-icons/react'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
@@ -401,7 +402,7 @@ export default function EditarPedido() {
     if (!ok || !pedido) return
     await supabase.from('pedido_itens').delete().eq('pedido_id', pedido.id)
     const { error } = await supabase.from('pedidos').delete().eq('id', pedido.id)
-    if (error) { avisarJanela('Não foi possível excluir', 'Confira a internet e tente de novo. (' + error.message + ')', 'erro'); return }
+    if (error) { avisarJanela('Não foi possível excluir', explicarErro(error, 'Tente de novo em instantes.'), 'erro'); return }
     navigate('/pedidos')
   }
   const snapshotRef = useRef<string | null>(null)
@@ -718,7 +719,7 @@ export default function EditarPedido() {
       }
 
       if (error) {
-        avisarJanela('Não foi possível cancelar', 'Confira a internet e tente de novo. (' + error.message + ')', 'erro')
+        avisarJanela('Não foi possível cancelar', explicarErro(error, 'Tente de novo em instantes.'), 'erro')
         setCancelando(false)
         return
       }
