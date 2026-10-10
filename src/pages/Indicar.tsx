@@ -21,8 +21,8 @@ interface Amiga {
 const PREMIOS = [
   { meta: 3, imagem: "/Sistema/brinde1.png", titulo: "1 mês grátis no Doonly", desc: "Uma mensalidade completa por sua conta" },
   { meta: 10, imagem: "/Sistema/brinde2.png", titulo: "3 meses grátis + camiseta", desc: "Camiseta personalizada com a marca da sua confeitaria" },
-  { meta: 25, imagem: "/Sistema/brinde3.png", titulo: "Kit Exclusivo + 6 meses grátis", desc: "Avental + faixa + Confeiteira Destaque" },
-  { meta: 50, imagem: "/Sistema/brinde4.png", titulo: "Batedeira Planetária + 1 ano grátis", desc: "O grande prêmio Doonly" },
+  { meta: 25, imagem: "/Sistema/brinde3.png", titulo: "Kit exclusivo + 6 meses grátis", desc: "Avental + faixa de confeiteira destaque" },
+  { meta: 50, imagem: "/Sistema/brinde4.png", titulo: "Batedeira planetária + 1 ano grátis", desc: "O grande prêmio Doonly" },
 ];
 
 export default function Indicar() {
@@ -100,7 +100,7 @@ export default function Indicar() {
       try {
         await navigator.share({
           title: "Doonly - Gestão pra confeiteiras",
-          text: `Tô usando o Doonly! Entra pelo meu link e ganha 70% OFF no 1º mês do PRO`,
+          text: `Tô usando o Doonly! Entra pelo meu link e ganha 70% de desconto no 1º mês do PRO`,
           url: link,
         });
       } catch {}
@@ -116,17 +116,17 @@ export default function Indicar() {
 
   return (
     <>
-    <AppPageHeader title="Indique e ganhe" subtitle="Prêmios por cada assinante que você indicar" />
+    <AppPageHeader title="Indique e ganhe" subtitle="Ganhe prêmios por cada assinante que você indicar" />
     <div className="in9">
       <div className="in9-col">
-        <img className="in9-banner" src="/Sistema/bannerindica.png" alt="Suas indicações viram recompensas. Convide pro Doonly e ganhe prêmios exclusivos." />
+        <img className="in9-banner" src="/Sistema/bannerindica.png" alt="Suas indicações viram recompensas. Convide para o Doonly e avance rumo a prêmios exclusivos." />
 
         {/* Seu link */}
         <section className="in9-card">
           <h2 className="in9-t">Seu link</h2>
           {loading ? <div className="in9-esq" /> : (<>
             <div className="in9-link">
-              <span className="in9-link-tx">doonly.com.br/?ref=<b>{codigo || "…"}</b></span>
+              <span className="in9-link-tx" title={link}><span className="in9-link-in">{codigo ? <>doonly.com.br/?ref=<b>{codigo}</b></> : "doonly.com.br"}</span></span>
               <Botao variante="secundario" tamanho="m" icone={copiado ? <Check size={18} weight="bold" /> : <Copy size={18} weight="bold" />} onClick={copiarLink}>{copiado ? "Copiado" : "Copiar"}</Botao>
             </div>
             <Botao cheio className="in9-zap" icone={<WhatsappLogo size={20} weight="fill" />} onClick={abrirWhatsApp}>Mandar no WhatsApp</Botao>

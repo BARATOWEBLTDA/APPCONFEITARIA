@@ -48,5 +48,9 @@
   .tc-marca-sub { margin: 0; font-size: 15px; line-height: 1.45; opacity: .92; text-wrap: balance; }
   .tc-cartao { margin: 0; padding: 48px 64px; border-radius: 0 28px 28px 0; box-shadow: none; display: flex; flex-direction: column; justify-content: center; }
   .tc-masc, .tc-nome { display: none; }
+  /* (10/10) cartão compacto: sem a altura mínima do login (ex.: enquanto confere o link) */
+  .tc-root--compacto .tc-layout { min-height: 0; }
+  .tc-root--compacto .tc-marca-in { min-height: 340px; }
+  .tc-root--compacto .tc-cartao { padding-block: 40px; }
   .tc-rodape { flex-direction: row; gap: 8px; } .tc-rodape em::before { content: '·'; margin-right: 8px; }
 }

@@ -10,7 +10,7 @@ import "./clientes.css";
 
 /**
  * Página da cliente (08/10 · 3.34 · etapa 9.3): o mesmo topo da tela do pedido, a cliente com
- * WhatsApp / Editar / Novo pedido, os números, os pedidos (cada um abre a tela dele) e os dados.
+ * WhatsApp / Editar / Nova venda, os números, os pedidos (cada um abre a tela dele) e os dados.
  */
 
 interface Cliente {
@@ -148,9 +148,9 @@ export default function ClientePerfil() {
 
   if (!cliente) return (
     <>
-      <AppPageHeader title="Cliente" subtitle="Não encontrada" onBack={() => navigate("/clientes")} />
+      <AppPageHeader title="Cliente" subtitle="Não encontrado" onBack={() => navigate("/clientes")} />
       <div className="cl9">
-        <TelaVazia caixa icone={<UserCircle size={30} />} titulo="Não achamos essa cliente" texto="Ela pode ter sido excluída."
+        <TelaVazia caixa icone={<UserCircle size={30} />} titulo="Não achamos esse cliente" texto="Ele pode ter sido excluído."
           acao={<Botao onClick={() => navigate("/clientes")}>Ver os clientes</Botao>} />
       </div>
     </>
@@ -178,7 +178,7 @@ export default function ClientePerfil() {
 
   return (
     <>
-      <AppPageHeader title={cliente.nome} subtitle={`Cliente desde ${mesAno(cliente.created_at)}`} onBack={() => navigate("/clientes")} />
+      <AppPageHeader title="Cliente" subtitle={`Cliente desde ${mesAno(cliente.created_at)}`} onBack={() => navigate("/clientes")} />
       <div className="cl9 cp9">
         <div className="cp9-col">
           {/* a cliente */}
@@ -205,7 +205,7 @@ export default function ClientePerfil() {
                 ? <a className="cp9-zap" href={zap} target="_blank" rel="noopener noreferrer"><WhatsappLogo size={20} weight="bold" />WhatsApp</a>
                 : <span className="cp9-zap cp9-zap--off">Sem WhatsApp</span>}
               <Botao variante="secundario" tamanho="m" icone={<PencilSimple size={20} weight="bold" />} onClick={editar}>Editar</Botao>
-              <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={novoPedido}>Novo pedido</Botao>
+              <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={novoPedido}>Nova venda</Botao>
             </div>
           </section>
 
@@ -249,8 +249,8 @@ export default function ClientePerfil() {
           <section className="cl9-card cp9-o3">
             <Titulo contagem={pedidos.length || undefined}>Pedidos</Titulo>
             {pedidos.length === 0 ? (
-              <TelaVazia compacta icone={<Receipt size={28} />} titulo="Ainda não tem pedido" texto="Quando ela comprar, os pedidos aparecem aqui."
-                acao={<Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={novoPedido}>Novo pedido pra {primeiro}</Botao>} />
+              <TelaVazia compacta icone={<Receipt size={28} />} titulo="Ainda não tem pedido" texto="Quando ele comprar, os pedidos aparecem aqui."
+                acao={<Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={novoPedido}>Nova venda pra {primeiro}</Botao>} />
             ) : (<>
               {visiveis.map(p => {
                 const st = situacaoDe(p as any);

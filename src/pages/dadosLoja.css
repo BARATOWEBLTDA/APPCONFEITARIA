@@ -44,7 +44,7 @@
 /* horário */
 .dl-dias-t { margin: 0 0 -8px; font-size: 13px; font-weight: 700; color: var(--ui-cinza-texto); }
 .dl-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
-.dl-days button { margin: 0; padding: 0; border: 0; background: none; font-family: inherit; cursor: pointer; }
+.dl-days button { min-height: 44px; margin: 0; padding: 0; border: 0; background: none; font-family: inherit; cursor: pointer; }
 .dl-bola { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 44px; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto-2); font-size: 13px; font-weight: 700; transition: background-color .15s, color .15s; }
 .dl-days button.on .dl-bola { border-color: var(--ui-rosa); background: var(--ui-rosa); color: #fff; font-weight: 700; }
 .dl-vazio { margin: 0; font-size: 13.5px; color: var(--ui-texto-2); }

@@ -75,7 +75,7 @@ export default function ConquistasCard() {
         )}
         {prox && (
           <div className="cqc-prox">
-            <div className="cqc-pl"><span>Próxima: <b>{prox.nome}</b></span><span>{feito} de {prox.alvo}</span></div>
+            <div className="cqc-pl"><span>Próxima: <b>{prox.nome}</b></span><span>{feito.toLocaleString("pt-BR")} de {prox.alvo.toLocaleString("pt-BR")}</span></div>
             <div className="cqc-bar" role="progressbar" aria-label={`Próxima conquista: ${prox.nome}`} aria-valuemin={0} aria-valuemax={prox.alvo} aria-valuenow={feito}>
               <i style={{ width: `${Math.min(100, (r.valores[prox.metrica] / prox.alvo) * 100)}%` }} />
             </div>

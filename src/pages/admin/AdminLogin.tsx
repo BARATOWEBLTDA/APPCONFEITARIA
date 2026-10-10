@@ -47,7 +47,7 @@ export default function AdminLogin() {
         <form onSubmit={handleSubmit} className="al-form">
           <Campo
             rotulo="E-mail" type="email" autoComplete="email" inputMode="email"
-            placeholder="admin@doonly.com" value={email} onChange={e => setEmail(e.target.value)} required
+            placeholder="admin@doonly.com.br" value={email} onChange={e => setEmail(e.target.value)} required
           />
           <Campo
             rotulo="Senha" type="password" autoComplete="current-password"

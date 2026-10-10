@@ -10,7 +10,8 @@ import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
 
 /** "Relatar um problema" (09/10): mesmo padrão do "Sugerir uma melhoria", com os componentes do app */
-const PARTES = ["Pedidos", "Cardápio", "Produtos", "Ficha técnica", "Clientes", "Financeiro", "Agenda", "Outro"];
+// Mesmos nomes do menu do app (iguais aos de Sugerir uma melhoria)
+const PARTES = ["Cardápio digital", "Pedidos", "Agenda", "Produtos", "Ficha técnica", "Financeiro", "Clientes", "Outro"];
 
 export default function RelatarProblema() {
   const navigate = useNavigate();
@@ -68,7 +69,7 @@ export default function RelatarProblema() {
               <div><b>Algo deu errado?</b><p>Conte o que aconteceu. A gente lê todos os relatos e corrige o mais rápido possível.</p></div>
             </div>
             <CampoArea rotulo="O que aconteceu?" obrigatorio rows={5} maxLength={800} value={texto} onChange={e => setTexto(e.target.value)}
-              placeholder="Ex.: toquei em Salvar no produto e apareceu uma mensagem de erro" />
+              placeholder="Ex.: salvei o produto e apareceu uma mensagem de erro" />
             <p className="aj-cont">{texto.length} / 800</p>
             <div>
               <p className="aj-rot">Em que parte do app?<small>opcional</small></p>
@@ -78,7 +79,7 @@ export default function RelatarProblema() {
             </div>
             {erro && <p className="aj-erro" role="alert">{erro}</p>}
             <Botao cheio carregando={enviando} disabled={texto.trim().length < 5} onClick={enviar}>Enviar</Botao>
-            <p className="aj-dica">Quanto mais detalhes (o que você tocou e o que esperava acontecer), mais rápido a gente resolve.</p>
+            <p className="aj-dica">Quanto mais detalhes (o que você fez antes do erro e o que esperava acontecer), mais rápido a gente resolve.</p>
           </section>
         )}
       </div>

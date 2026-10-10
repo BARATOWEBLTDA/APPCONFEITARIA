@@ -3,10 +3,10 @@
 .arc button { font-family: inherit; cursor: pointer; }
 .arc-carregando { margin: 24px 0; font-size: 15px; font-weight: 500; color: var(--ui-texto-2); }
 
-/* filtros: chips de 44px que rolam no celular */
-.arc-chips { display: flex; gap: 8px; margin: 16px 0 12px; overflow-x: auto; scrollbar-width: none; }
+/* filtros: chips de 44px que quebram de linha no celular (nenhum fica cortado) */
+.arc-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 12px; }
 .arc-chips::-webkit-scrollbar { display: none; }
-.arc-chips button { flex: none; display: flex; align-items: center; gap: 6px; min-height: 44px; margin: 0; padding: 0 16px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto-2); font-size: 14px; font-weight: 700; }
+.arc-chips button { flex: none; display: flex; align-items: center; gap: 6px; min-height: 44px; margin: 0; padding: 0 14px; border: 1px solid var(--ui-borda); border-radius: 999px; white-space: nowrap; background: var(--ui-branco); color: var(--ui-texto-2); font-size: 14px; font-weight: 700; }
 .arc-chips button i { font-style: normal; font-size: 13px; font-weight: 700; color: var(--ui-texto-3); }
 .arc-chips button[aria-selected="true"] { border-color: var(--ui-vinho); background: var(--ui-vinho); color: var(--ui-branco); }
 .arc-chips button[aria-selected="true"] i { color: rgba(255, 255, 255, .75); }

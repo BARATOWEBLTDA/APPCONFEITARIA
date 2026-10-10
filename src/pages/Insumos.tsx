@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { CaretRight, Cookie, Drop, Egg, Gift, MagnifyingGlass, Package, Plus, X } from "@phosphor-icons/react";
+import { Broom, CaretRight, Drop, Egg, ForkKnife, Grains, MagnifyingGlass, Package, Plus, Sparkle, Tag, X } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
-import QuickAddInsumo, { InsumoQuick, custoNaReceita, descreverCompra, formatarCusto } from "@/components/QuickAddInsumo";
+import QuickAddInsumo, { InsumoQuick, custoNaReceita, descreverCompra, formatarCusto, rotuloCategoria } from "@/components/QuickAddInsumo";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, TelaVazia, avisar, confirmar } from "@/components/base";
 import "./clientes.css";
@@ -20,11 +20,19 @@ interface Insumo {
   imagem_url: string;
 }
 
-/** Ícone de cada categoria (quando o ingrediente não tem foto) */
-const ICONE_CAT: Record<string, typeof Egg> = { Ingredientes: Egg, Embalagens: Package, Decorações: Cookie, Bebidas: Drop, Descartáveis: Package };
+/** Ícone de cada categoria (quando o ingrediente não tem foto). 10/10: um por tipo — antes quase tudo saía com o ovo */
+const sem = (t: string) => (t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+const ICONE_CAT: Record<string, typeof Egg> = { ingredientes: Grains, alimentos: Grains, embalagens: Package, decoracoes: Sparkle, bebidas: Drop, descartaveis: ForkKnife, limpeza: Broom };
+// Item salvo como "Ingredientes" mas que pelo nome é embalagem ou decoração
+const PARECE_EMBALAGEM = /^(caixa|embalage|saco|saquinho|sacola|forminha|forma de papel|fita|pote|tampa|etiqueta|tag|papel|bandeja|cake ?board|base |filme|celofane|copo|colher|garfo|guardanapo|tubete|blister)/;
+const PARECE_DECORACAO = /^(topo|topper|vela|granulado|confeito|glitter|brilho|perol|po para decorar|corante|flor|confete|sprinkle)/;
 const Miniatura = ({ i }: { i: Insumo }) => {
   if (i.imagem_url) return <span className="ig-th"><img src={i.imagem_url} alt="" /></span>;
-  const Ic = ICONE_CAT[i.categoria] || Gift;
+  const cat = sem(i.categoria);
+  const nome = sem(i.nome);
+  const Ic = (cat === "ingredientes" || !cat) && PARECE_EMBALAGEM.test(nome) ? Package
+    : (cat === "ingredientes" || !cat) && PARECE_DECORACAO.test(nome) ? Sparkle
+    : ICONE_CAT[cat] || Tag;
   return <span className="ig-th"><Ic size={22} weight="duotone" /></span>;
 };
 
@@ -144,7 +152,7 @@ export default function Insumos() {
               <div className="cl9-chips" role="tablist" aria-label="Filtrar por categoria">
                 {["Todos", ...chips].map(c => (
                   <button key={c} type="button" role="tab" aria-selected={filtroCategoria === c} onClick={() => setFiltroCategoria(c)}>
-                    {c}<i>{c === "Todos" ? insumos.length : contagem[c]}</i>
+                    {rotuloCategoria(c)}<i>{c === "Todos" ? insumos.length : contagem[c]}</i>
                   </button>
                 ))}
               </div>
@@ -153,7 +161,7 @@ export default function Insumos() {
             {filtrados.length === 0 ? (
               <p className="cl9-semres">{termo ? "Nenhum ingrediente com esse nome ou marca. Confira a busca." : "Nenhum ingrediente nessa categoria."}</p>
             ) : (<>
-              <div className="ig-tab-cab" aria-hidden="true"><span>Ingrediente</span><span>Compra</span><span>Custo na receita</span><span /></div>
+              <div className="ig-tab-cab" aria-hidden="true"><span>Item</span><span>Compra</span><span>Custo na receita</span><span /></div>
               {filtrados.map(i => {
                 const preco = `R$\u00a0${(i.valor_compra || 0).toFixed(2).replace(".", ",")}`;
                 const compra = descreverCompra(i.embalagem_tipo, i.qtd_embalagem || 1, i.unidade);
@@ -163,11 +171,11 @@ export default function Insumos() {
                     <Miniatura i={i} />
                     <span className="ig-l-tx">
                       <b>{i.nome}</b>
-                      <small className="ig-pc">{[i.marca, i.categoria].filter(Boolean).join(" · ")}</small>
+                      <small className="ig-pc">{[i.marca, rotuloCategoria(i.categoria)].filter(Boolean).join(" · ")}</small>
                       <small className="ig-cel">{preco} · {compra}</small>
                     </span>
                     <span className="ig-l-compra"><b>{preco}</b><small>{compra}</small></span>
-                    <span className="ig-l-custo"><b>{formatarCusto(c.valor)}</b><small>{c.por}</small></span>
+                    <span className="ig-l-custo"><b>{formatarCusto(c.valor)}</b><small>{c.por.replace(/ (?=\S+$)/, "\u00a0")}</small></span>
                     <CaretRight size={18} weight="bold" />
                   </button>
                 );

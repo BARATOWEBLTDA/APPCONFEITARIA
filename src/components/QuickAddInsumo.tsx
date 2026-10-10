@@ -131,10 +131,21 @@ function detectarInconsistencia(nome: string, unidade: string): string | null {
 
 const numBR = (v: number) => (Math.round(v * 1000) / 1000).toString().replace(".", ",");
 
-/** "R$ 0,19" com mais casas só quando o valor é muito pequeno (a granel) */
+/** Custo sempre com 2 casas ("R$ 0,10"); abaixo de 1 centavo, "menos de R$ 0,01" (10/10) */
 export function formatarCusto(v: number) {
-  const casas = v >= 0.1 ? 2 : v >= 0.01 ? 3 : 4;
-  return `R$ ${v.toFixed(casas).replace(".", ",")}`;
+  const n = Number(v) || 0;
+  if (n > 0 && n < 0.01) return "menos de R$\u00a00,01";
+  return `R$\u00a0${n.toFixed(2).replace(".", ",")}`;
+}
+
+/**
+ * Nome da categoria na tela. O valor salvo continua o mesmo; só o rótulo muda.
+ * "Ingredientes" vira "Alimentos" pra não repetir o título da tela (10/10).
+ */
+const ROTULO_CATEGORIA: Record<string, string> = { Ingredientes: "Alimentos" };
+export function rotuloCategoria(c?: string | null) {
+  const v = (c || "").trim();
+  return ROTULO_CATEGORIA[v] || v;
 }
 
 /**
@@ -161,7 +172,7 @@ export function custoNaReceita(custo_unitario: number, unidade: string, qtd_emba
 export function descreverCompra(embalagem: string, qtd: number, unidade: string) {
   let n = qtd || 1, u = unidade;
   if ((u === "g" || u === "ml") && n >= 1000) { n = n / 1000; u = u === "g" ? "kg" : "L"; } // 1000 g → 1 kg
-  const q = `${numBR(n)} ${u}`;
+  const q = `${numBR(n)}\u00a0${u}`; // sem quebrar "1 / kg" em duas linhas
   if (!embalagem || embalagem === "Avulso") return q;
   return `${embalagem.toLowerCase()} ${unidade === "un" ? "com" : "de"} ${q}`;
 }
@@ -401,7 +412,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         </div>
       )}
 
-      <Campo rotulo="Nome" obrigatorio placeholder="Ex.: Leite condensado" value={form.nome} erro={erroNome}
+      <Campo rotulo="Nome" obrigatorio placeholder="Ex.: leite condensado" value={form.nome} erro={erroNome}
         onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
       <Campo rotulo="Marca" opcional placeholder="Ex.: Moça" value={form.marca}
         onChange={e => setForm(f => ({ ...f, marca: e.target.value }))} />
@@ -409,7 +420,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         <p className="ig-rot">Categoria</p>
         <div className="cl9-f-chips">
           {categorias.map(c => (
-            <button key={c} type="button" aria-pressed={form.categoria === c} onClick={() => setForm(f => ({ ...f, categoria: c }))}>{c}</button>
+            <button key={c} type="button" aria-pressed={form.categoria === c} onClick={() => setForm(f => ({ ...f, categoria: c }))}>{rotuloCategoria(c)}</button>
           ))}
         </div>
       </div>
@@ -439,7 +450,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
               onClick={() => { setUnidadeTocadaManualmente(true); setForm(f => ({ ...f, unidade: u.sigla })); }}>{u.nome}</button>
           ))}
         </div>
-        {sugerida && <p className="ig-sug">Escolhida pelo nome. Toque em outra se for diferente.</p>}
+        {sugerida && <p className="ig-sug">Escolhida pelo nome. Escolha outra se for diferente.</p>}
       </div>
 
       {mostraAlerta && (

@@ -1,5 +1,5 @@
-/* Conta da cliente no cardápio (08/10 · 3.31): o que Pedidos e Perfil usam juntos */
-import { useEffect, useState } from 'react'
+/* Conta do cliente no cardápio (08/10 · 3.31): o que Pedidos e Perfil usam juntos */
+import { useEffect, useState, type ReactNode } from 'react'
 import { Check, Wallet, Storefront, Truck, UserCircle, WhatsappLogo } from '@phosphor-icons/react'
 import { supabase } from '@/lib/supabase'
 import { Campo, Janela } from '@/components/base'
@@ -101,10 +101,10 @@ export function JanelaEntrar({ aberta, aoFechar, loja, cor, aoEntrar }: { aberta
 }
 
 /** Tela de quem ainda não entrou */
-export function SemConta({ cor, titulo, texto, aoEntrar }: { cor: string; titulo: string; texto: string; aoEntrar: () => void }) {
+export function SemConta({ cor, titulo, texto, aoEntrar, icone }: { cor: string; titulo: string; texto: string; aoEntrar: () => void; icone?: ReactNode }) {
   return (
     <div className="cc-sem">
-      <span className="cc-sem-ic" style={{ color: cor, background: `${cor}14` }}><UserCircle size={40} weight="duotone" /></span>
+      <span className="cc-sem-ic" style={{ color: cor, background: `${cor}14` }}>{icone || <UserCircle size={40} weight="duotone" />}</span>
       <b>{titulo}</b>
       <p>{texto}</p>
       <button type="button" className="cc-bt" style={{ background: cor }} onClick={aoEntrar}>Entrar com o WhatsApp</button>

@@ -233,7 +233,7 @@ export default function AdminNoticias() {
   };
 
   const excluir = async (n: Noticia) => {
-    if (!(await confirmar({ titulo: `Excluir "${n.titulo}"?`, texto: "Ela some da Home e de /noticias.", rotulo: "Excluir", perigo: true }))) return;
+    if (!(await confirmar({ titulo: `Excluir "${n.titulo}"?`, texto: "Ela some do Início e da tela de Notícias.", rotulo: "Excluir", perigo: true }))) return;
     const { error } = await supabase.from("admin_noticias").delete().eq("id", n.id);
     if (error) showMsg("Erro: " + error.message, "err"); else { showMsg("Excluída!", "ok"); await load(); }
   };
@@ -267,20 +267,20 @@ export default function AdminNoticias() {
 
   return (
     <div className="an-root">
-      <Titulo nivel="tela" contagem={rows.length || undefined} apoio="Aparecem na Home e em /noticias." acao={rows.length > 0 ? botaoNovo : undefined}>
-        Notícias da Home
+      <Titulo nivel="tela" contagem={rows.length || undefined} apoio="Aparecem no Início e na tela de Notícias." acao={rows.length > 0 ? botaoNovo : undefined}>
+        Notícias do Início
       </Titulo>
 
       {rows.length === 0 ? (
         <TelaVazia caixa className="an-vazia" icone={<Newspaper size={30} />} titulo="Nenhuma notícia ainda"
-          texto="Crie a primeira pra ela aparecer na Home."
+          texto="Crie a primeira pra ela aparecer no Início."
           acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={abrirNovo}>Criar notícia</Botao>} />
       ) : (
         <div className="an-list">
           {rows.map((n, idx) => (
             <div key={n.id} className={`an-card${!n.ativo ? " an-card--off" : ""}`}>
               <div className="an-card-main">
-                <div className="an-card-capa">{n.imagem_capa ? <img src={n.imagem_capa} alt="" /> : <span>{n.emoji}</span>}</div>
+                <div className="an-card-capa">{n.imagem_capa ? <img src={n.imagem_capa} alt="" /> : n.icone_url ? <img src={n.icone_url} alt="" /> : <Newspaper size={26} weight="bold" aria-hidden="true" />}</div>
                 <div className="an-card-body">
                   <div className="an-card-tags">
                     {n.fixada && <span className="an-tag an-tag--fix"><PushPin size={12} weight="fill" />Fixada</span>}
@@ -292,7 +292,7 @@ export default function AdminNoticias() {
                   <p className="an-card-meta">
                     <span className="an-card-slug">/{n.slug}</span>
                     {n.views > 0 && <span><Eye size={12} weight="bold" />{n.views} {n.views === 1 ? "visualização" : "visualizações"}</span>}
-                    <span>Ordem {n.ordem}</span>
+                    <span>Posição {idx + 1}</span>
                   </p>
                 </div>
                 <BotaoIcone className="an-mais" rotulo={`Opções de ${n.titulo}`} variante="limpo" onClick={() => setMenuDe(n)}><DotsThree size={22} weight="bold" /></BotaoIcone>
@@ -367,7 +367,7 @@ export default function AdminNoticias() {
                 {uploadingIcone ? <span className="ui-gira" aria-label="Enviando" /> : (<><ImageIcon size={22} weight="bold" /><span><b>Enviar ícone quadrado</b><small>1:1, até 500 KB. Sem ícone, usa o emoji.</small></span></>)}
               </button>
             )}
-            <p className="ui-campo-msg">Aparece no cartão da Home.</p>
+            <p className="ui-campo-msg">Aparece no cartão do Início.</p>
             <input ref={iconeRef} type="file" accept="image/*" hidden onChange={uploadIcone} />
           </div>
 
@@ -411,7 +411,7 @@ export default function AdminNoticias() {
             placeholder="Ex.: 42" dica="Somam às curtidas reais, pra não começar do zero." />
 
           <CampoArea rotulo="Descrição curta" value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} rows={2} maxLength={200}
-            dica="Aparece no cartão da Home." />
+            dica="Aparece no cartão do Início." />
 
           <div className="ui-campo">
             <span className="ui-campo-r"><span>Conteúdo completo</span></span>
@@ -432,7 +432,7 @@ export default function AdminNoticias() {
             </label>
             <label className="an-check">
               <input type="checkbox" checked={form.fixada} onChange={e => setForm(f => ({ ...f, fixada: e.target.checked }))} />
-              <span><b><PushPin size={16} weight="bold" aria-hidden="true" />Fixar no topo</b><small>Sempre visível na Home.</small></span>
+              <span><b><PushPin size={16} weight="bold" aria-hidden="true" />Fixar no topo</b><small>Sempre visível no Início.</small></span>
             </label>
             {form.fixada && (
               <p className="an-fix-hint">

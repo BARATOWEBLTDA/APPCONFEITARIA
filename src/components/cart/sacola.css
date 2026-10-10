@@ -30,6 +30,7 @@
 .sc-it-tx small { font-size: 13px; line-height: 1.4; color: #6B5D64; }
 .sc-it-tx .sc-it-obs { font-style: italic; }
 .sc-it-tx strong { margin-top: 4px; font-size: 15px; font-weight: 700; }
+.sc-it-tx .sc-it-un { font-style: normal; font-size: 13px; font-weight: 500; color: #6B5D64; }
 .sc-qtd { flex: none; align-self: flex-end; display: flex; align-items: center; height: 46px; border: 1px solid #E5DDE1; border-radius: 12px; }
 .sc-qtd button { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: 0; border: 0; background: none; color: #2C1219; }
 .sc-qtd button:disabled { color: #CFC3C9; cursor: default; }
@@ -83,6 +84,8 @@
 .sc-g-cab b { display: block; font-size: 16px; font-weight: 700; }
 .sc-g-cab small { display: block; margin-top: 2px; font-size: 13px; color: #6B5D64; }
 .sc-obr { flex: none; padding: 3px 8px; border-radius: 6px; background: #2C1219; color: #fff; font-size: 12px; font-weight: 700; font-style: normal; }
+.sc-opc { background: #fff; color: #6B5D64; box-shadow: inset 0 0 0 1px #E5DDE1; }
+.sc-recado .ui-campo-r { display: none; }
 .sc-ok { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: #16a34a; color: #fff; }
 .sc-g-cab.falta { background: #FEE2E2; box-shadow: inset 4px 0 0 #DC2626; }
 .sc-g-cab.falta small { color: #B91C1C; font-weight: 700; }
@@ -142,7 +145,8 @@
 .sc-res > span > span { min-width: 0; }
 .sc-res b { display: block; font-size: 15px; font-weight: 700; }
 .sc-res small { display: block; font-size: 13px; line-height: 1.4; color: #6B5D64; }
-.sc-res em { flex: none; font-style: normal; font-weight: 700; }
+.sc-res em { flex: none; font-style: normal; font-weight: 700; text-align: right; }
+.sc-res em small { font-weight: 500; }
 .sc-res .t { padding-top: 10px; border-top: 1px solid #EDE6E9; }
 .sc-res .t b, .sc-res .t em { font-size: 17px; font-weight: 700; }
 .sc-res .q { justify-content: flex-start; align-items: center; gap: 8px; font-weight: 700; color: #2C1219; }

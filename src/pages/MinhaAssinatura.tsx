@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
-import { CaretRight, ChatCircleDots } from "@phosphor-icons/react";
+import { CaretRight, ChatCircleDots, Crown } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
 import { useProfile } from "@/hooks/useProfile";
@@ -39,8 +39,8 @@ export default function MinhaAssinatura() {
       <div className="mas-wrap">
         <div className="mas-card">
           <div className="mas-top">
-            <div className="mas-cr"><img src="/coroa.png" alt="" /></div>
-            <div className="mas-tt"><p className="mas-k">DOONLY PRO</p><b>Plano PRO ativo</b></div>
+            <div className="mas-cr"><Crown size={28} weight="fill" aria-hidden="true" /></div>
+            <div className="mas-tt"><p className="mas-k">Doonly PRO</p><b>Plano PRO ativo</b></div>
             <span className="mas-at">● Ativo</span>
           </div>
           <div className="mas-g">
@@ -63,7 +63,7 @@ export default function MinhaAssinatura() {
         .mas-card { border-radius: 18px; padding: 16px; color: #fff; background: radial-gradient(130% 90% at 50% 0%, #6B2340, #2C1219 65%, #1A0B10); box-shadow: 0 10px 30px rgba(44,18,25,.3); }
         .mas-top { display: flex; gap: 12px; align-items: center; }
         .mas-cr { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: rgba(249,168,212,.2); border: 1px solid rgba(249,168,212,.35); flex-shrink: 0; }
-        .mas-cr img { width: 30px; height: 30px; object-fit: contain; }
+        .mas-cr { color: #F9A8D4; }
         .mas-tt { min-width: 0; } .mas-tt b { font-size: 17px; }
         .mas-k { font-size: 12px; font-weight: 700; margin: 0; background: linear-gradient(90deg, #F9A8D4, #C4B5FD, #93C5FD); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .mas-at { margin-left: auto; font-size: 12px; font-weight: 700; color: #86EFAC; background: rgba(134,239,172,.12); padding: 4px 8px; border-radius: 999px; white-space: nowrap; }

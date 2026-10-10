@@ -463,7 +463,7 @@ function DemoDinheiro() {
 // o mesmo bolo da Camila, da tela das encomendas (2 kg a R$ 75 o quilo)
 const CONTA = [
   { rotulo: 'Ingredientes', valor: 51.37, cor: 'var(--ui-rosa)' },
-  { rotulo: 'Custos invisíveis (25%)', valor: 12.84, cor: '#F59E0B' },
+  { rotulo: 'Invisíveis (25%)', valor: 12.84, cor: '#F59E0B' },
   { rotulo: 'Mão de obra (2h30)', valor: 24.6, cor: 'var(--ui-vinho)' },
 ]
 const PRECO = 150

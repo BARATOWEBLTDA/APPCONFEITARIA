@@ -36,3 +36,11 @@
 }
 /* 09/10: no celular a segunda linha quebra em vez de cortar ("margem -0,4…") */
 .fl-tx small { white-space: normal; }
+/* 10/10: o nome do produto quebra em até 2 linhas em vez de cortar ("Salgadinhos frit...") por causa do "Montar ficha" */
+.fl-tx b { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow-wrap: anywhere; line-height: 1.3; }
+.fl-montar { white-space: nowrap; }
+@media (max-width: 380px) {
+  /* Tela bem estreita: "Montar ficha" desce pra baixo do nome */
+  .fl-l--sem { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "t n s" "t l s"; }
+  .fl-montar { justify-self: start; font-size: 13px; }
+}

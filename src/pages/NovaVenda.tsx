@@ -10,7 +10,7 @@ import HorarioSheet from '@/components/HorarioSheet'
 import { tocarSom } from '@/hooks/useSom'
 import { Bank, CalendarBlank, CalendarDots, Check, Clock, Copy, CreditCard, Lightning, MagnifyingGlass, Minus, Money, Package, Plus, QrCode, Storefront, Trash, Truck, UserPlus, X } from '@phosphor-icons/react'
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, Linha, TelaVazia, Titulo, avisar, confirmar } from '@/components/base'
-import { dataLonga, nomeDeProduto, rs, telefoneBonito } from '@/components/pedidos/pedidoTexto'
+import { dataLonga, itemComQtd, nomeDeProduto, rs, telefoneBonito } from '@/components/pedidos/pedidoTexto'
 import '@/components/pedidos/telaPedido.css'
 import './novaVenda.css'
 
@@ -58,12 +58,15 @@ interface Produto {
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 // "2026-10-20" → "Terça, 20/10" (o que aparece no campo de data)
+// (no meio da frase, minusculo=true: "até terça, 20/10")
 const SEMANA = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
-const dataDoCampo = (iso: string): string => {
+const dataDoCampo = (iso: string, minusculo = false): string => {
   if (!iso) return ''
   const [y, m, d] = iso.split('-').map(Number)
-  return `${SEMANA[new Date(y, m - 1, d).getDay()]}, ${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}`
+  const dia = SEMANA[new Date(y, m - 1, d).getDay()]
+  return `${minusculo ? dia.toLowerCase() : dia}, ${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}`
 }
+const hojeISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }
 // a foto do produto pode vir com várias URLs separadas por vírgula: usa a primeira
 const primeiraFoto = (f?: string) => (f ? String(f).split(/,(?=\s*https?:)/)[0].trim() : '')
 
@@ -97,12 +100,12 @@ const ETAPAS_ENCOMENDA = ['Venda', 'Cliente', 'Entrega', 'Pagamento', 'Revisar']
 const ETAPAS_PRONTA    = ['Venda', 'Cliente', 'Entrega', 'Pagamento', 'Revisar']
 const NOME_DO_PASSO: Record<string, string> = { Venda: 'Produtos' }
 
-// Como o pedido começa: o valor gravado não muda, só o nome na tela (igual à lista de pedidos)
+// Em que situação o pedido entra: o valor gravado não muda, só o nome na tela (igual à lista de pedidos)
 const COMECOS = [
   { chave: 'aguardando_aceite', nome: 'Novo pedido', dica: 'Fica em "Pra aceitar" na sua lista até você aceitar.' },
-  { chave: 'agendado', nome: 'Agendado', dica: 'Já confirmado com a cliente, entra na agenda.' },
-  { chave: 'finalizado', nome: 'Pronto', dica: 'Já está feito, esperando a cliente.' },
-  { chave: 'entregue', nome: 'Entregue', dica: 'A cliente já levou o pedido.' },
+  { chave: 'agendado', nome: 'Agendado', dica: 'Já confirmado com o cliente, entra na agenda.' },
+  { chave: 'finalizado', nome: 'Pronto', dica: 'Já está feito, esperando o cliente.' },
+  { chave: 'entregue', nome: 'Entregue', dica: 'O cliente já levou o pedido.' },
 ] as const
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -136,7 +139,8 @@ export default function NovaVenda() {
 
   const [desconto, setDesconto] = useState(0)
   const [acrescimo, setAcrescimo] = useState(0)
-  const [situacaoPag, setSituacaoPag] = useState<SituacaoPag>('total')
+  // 10/10: nada vem marcado em "Quanto já entrou?" (antes "Tudo agora" vinha marcado e dava pra registrar como paga sem escolher)
+  const [situacaoPag, setSituacaoPag] = useState<SituacaoPag | null>(null)
   const [valorParcial, setValorParcial] = useState(0)
   const [statusPedido, setStatusPedido] = useState<'aguardando_aceite' | 'agendado' | 'finalizado' | 'entregue'>('agendado')
   const [dataPrevistaPagamento, setDataPrevistaPagamento] = useState('')
@@ -247,23 +251,33 @@ export default function NovaVenda() {
   const etapaLabelAtual = etapas[etapa - 1]
 
   // ── Validação por etapa ────────────────────────────────────────────────
-  const podeAvancar = (): boolean => {
-    if (etapaLabelAtual === 'Venda') return tipo !== null && itens.length > 0
-    if (etapaLabelAtual === 'Cliente') return true
+  // 10/10: o "Continuar" sempre responde; quando falta algo, diz o quê (no aviso e no próprio passo)
+  const oQueFalta = (): string | null => {
+    if (etapaLabelAtual === 'Venda') {
+      if (!tipo && itens.length === 0) return 'Escolha o tipo de venda e adicione pelo menos um produto pra continuar.'
+      if (itens.length === 0) return 'Adicione pelo menos um produto pra continuar.'
+      if (!tipo) return 'Escolha o tipo de venda pra continuar.'
+      return null
+    }
     if (etapaLabelAtual === 'Entrega') {
-      if (tipo === 'encomenda' && !dataEntrega) return false
-      if (tipoEntrega === 'entrega' && !enderecoRua) return false
-      return true
+      if (tipo === 'encomenda' && !dataEntrega) return 'Escolha a data pra continuar.'
+      if (tipoEntrega === 'entrega' && !enderecoRua.trim()) return 'Escreva a rua pra continuar.'
+      return null
     }
-    // Pagamento parcial precisa do valor recebido (maior que zero e menor que o total)
-    if (etapaLabelAtual === 'Pagamento' && situacaoPag === 'parcial') {
-      return valorParcial > 0 && valorParcial < total
+    if (etapaLabelAtual === 'Pagamento') {
+      if (!situacaoPag) return 'Escolha quanto já entrou pra continuar.'
+      // Pagamento parcial precisa do valor recebido (maior que zero e menor que o total)
+      if (situacaoPag === 'parcial' && !(valorParcial > 0 && valorParcial < total)) return 'Escreva quanto ele já pagou pra continuar.'
     }
-    return true
+    return null
   }
+  const [tentou, setTentou] = useState(false)
+  useEffect(() => { setTentou(false) }, [etapa])
 
   const proximaEtapa = () => {
-    if (podeAvancar() && etapa < totalEtapas) setEtapa(e => e + 1)
+    const falta = oQueFalta()
+    if (falta) { setTentou(true); return }
+    if (etapa < totalEtapas) setEtapa(e => e + 1)
   }
   const voltarEtapa = () => {
     if (etapa > 1) setEtapa(e => e - 1)
@@ -341,6 +355,7 @@ export default function NovaVenda() {
   // ── Finalizar Venda ────────────────────────────────────────────────────
   const finalizarVenda = async () => {
     if (!userId || salvando) return
+    if (!situacaoPag) { setEtapa(etapas.indexOf('Pagamento') + 1); avisar('Escolha quanto já entrou pra continuar.', { tipo: 'info' }); return }
     setSalvando(true)
 
     // Salvar: a mesma função usada pela Doo IA (lib/pedidosDoo) — pedido igual nos dois caminhos
@@ -350,7 +365,9 @@ export default function NovaVenda() {
       tipoEntrega: tipoEntrega as any, dataEntrega, horarioEntrega,
       endereco: { rua: enderecoRua, numero: enderecoNumero, bairro: enderecoBairro, cidade: enderecoCidade, complemento: enderecoComplemento },
       taxaEntrega, desconto, acrescimo, formaPagamento, situacaoPag, valorParcial, dataPrevistaPagamento,
-      statusPedido, observacoes, origem: origemDoo ? 'doo' : 'manual',
+      // "Pronto" de retirada entra como "Pronto pra retirar" (o mesmo caminho da lista e da tela do pedido)
+      statusPedido: statusPedido === 'finalizado' && tipoEntrega === 'retirada' ? 'aguardando_retirada' : statusPedido,
+      observacoes, origem: origemDoo ? 'doo' : 'manual',
     })
     if (res.ok === false) {
       avisar('Não deu pra registrar a venda: ' + res.erro, { tipo: 'erro' })
@@ -363,7 +380,7 @@ export default function NovaVenda() {
     // Salva dados do pedido pra mostrar na tela de sucesso
     setPedidoCriado({
       id: novoPedido.id,
-      numero: novoPedido.numero || novoPedido.id.slice(0, 8),
+      numero: novoPedido.numero || null, // sem número: a tela diz só "Pedido registrado" (nunca mostra o id interno)
       itens: [...itens],
       clienteNome: semCliente || !clienteNome ? '' : clienteNome,
       clienteTelefone: semCliente ? '' : clienteTelefone,
@@ -382,7 +399,7 @@ export default function NovaVenda() {
     const pc = pedidoCriado
     if (!pc?.id) return
     const janela = abrirJanela()
-    const { data } = await supabase.from('pedidos').select('*, pedido_itens(*)').eq('id', pc.id).maybeSingle()
+    const { data } = await supabase.from('pedidos').select('*, pedido_itens(*, produtos(forma_venda))').eq('id', pc.id).maybeSingle()
     await gerarPedidoPDF((data || { id: pc.id, numero: pc.numero, valor_total: pc.total }) as any, janela)
   }
 
@@ -412,7 +429,7 @@ export default function NovaVenda() {
     setTipoEntrega('retirada')
     setDataEntrega(''); setHorarioEntrega('')
     setEnderecoRua(''); setEnderecoNumero(''); setEnderecoBairro(''); setEnderecoCidade('Curitiba'); setEnderecoComplemento(''); setTaxaEntrega(0); setEnderecoCep('')
-    setDesconto(0); setAcrescimo(0); setSituacaoPag('total'); setValorParcial(0); setDataPrevistaPagamento(''); setFormaPagamento('PIX'); setStatusPedido('agendado')
+    setDesconto(0); setAcrescimo(0); setSituacaoPag(null); setValorParcial(0); setDataPrevistaPagamento(''); setFormaPagamento('PIX'); setStatusPedido('agendado')
     setObservacoes('')
     setPedidoCriado(null); setSucessoAberto(false)
   }
@@ -428,13 +445,17 @@ export default function NovaVenda() {
   const taxaConta = ehEntrega ? taxaEntrega : 0
   const falta = situacaoPag === 'parcial' ? Math.max(0, total - valorParcial) : situacaoPag === 'total' ? 0 : total
   const nomeForma = formaPagamento === 'PIX' ? 'Pix' : formaPagamento
+  // o mesmo texto no Revisar e na tela de venda registrada
   const textoPagamento =
-    situacaoPag === 'total' ? `${nomeForma} · pago agora`
-    : situacaoPag === 'parcial' ? `${nomeForma} · sinal de ${rs(valorParcial)}`
+    situacaoPag === 'total' ? `Pago · ${nomeForma}`
+    : situacaoPag === 'parcial' ? `Sinal de ${rs(valorParcial)} · ${nomeForma}`
     : situacaoPag === 'na_entrega' ? (ehEntrega ? 'Paga na entrega' : 'Paga na retirada')
-    : `Vai pagar depois${dataPrevistaPagamento ? ` · até ${dataDoCampo(dataPrevistaPagamento)}` : ''}`
+    : situacaoPag === 'fiado' ? `Vai pagar depois${dataPrevistaPagamento ? ` · até ${dataDoCampo(dataPrevistaPagamento, true)}` : ''}`
+    : 'Falta escolher'
   const enderecoTexto = [[enderecoRua, enderecoNumero].filter(Boolean).join(', '), enderecoBairro].filter(Boolean).join(' · ')
-  const cabecalho = <AppPageHeader title="Nova venda" subtitle="Encomenda ou pronta entrega" onBack={sucessoAberto ? () => navigate('/pedidos') : sairDaVenda} />
+  // subtítulo (10/10): no passo 1 explica a escolha; depois mostra o tipo escolhido; no fim, que a venda foi registrada
+  const subtituloTopo = sucessoAberto ? 'Venda registrada' : etapa === 1 || !tipo ? 'Encomenda ou pronta entrega' : tipo === 'pronta_entrega' ? 'Pronta entrega' : 'Encomenda'
+  const cabecalho = <AppPageHeader title="Nova venda" subtitle={subtituloTopo} onBack={sucessoAberto ? () => navigate('/pedidos') : sairDaVenda} />
 
   // ═══ Venda registrada ═══
   if (sucessoAberto && pedidoCriado) {
@@ -446,13 +467,14 @@ export default function NovaVenda() {
         <div className="nv3">
           <section className="nv3-card nv3-ok" aria-live="polite">
             <span className="nv3-ok-ic" aria-hidden="true"><Check size={32} weight="bold" /></span>
-            <h2>Pedido #{pc.numero} registrado</h2>
+            <h2>{pc.numero ? `Pedido #${pc.numero} registrado` : 'Pedido registrado'}</h2>
             <p>{naAgenda ? 'Já está na sua lista de pedidos e na agenda.' : 'Já está na sua lista de pedidos.'}</p>
             <div className="nv3-res">
               <Linha rotulo="Cliente">{pc.clienteNome ? toTitleCase(pc.clienteNome) : 'Venda avulsa'}</Linha>
               {pc.tipo === 'encomenda' && pc.dataEntrega && <Linha rotulo={ehEntrega ? 'Entrega' : 'Retirada'}>{dataLonga(pc.dataEntrega, pc.horarioEntrega)}</Linha>}
               <Linha rotulo="Total">{rs(pc.total)}</Linha>
-              <Linha rotulo="Pagamento" tom={situacaoPag === 'total' ? 'verde' : 'laranja'}>{situacaoPag === 'total' ? 'Pago' : `Falta ${rs(falta)}`}</Linha>
+              <Linha rotulo="Pagamento" tom={situacaoPag === 'total' ? 'verde' : 'laranja'}>{textoPagamento}</Linha>
+              {situacaoPag !== 'total' && falta > 0.009 && <Linha rotulo="Falta receber" tom="laranja">{rs(falta)}</Linha>}
             </div>
             <Botao cheio onClick={() => navigate(`/pedidos/${pc.id}/editar`)}>Abrir o pedido</Botao>
             <div className="nv3-2">
@@ -532,10 +554,10 @@ export default function NovaVenda() {
                 <CalendarDots size={24} weight={tipo === 'encomenda' ? 'fill' : 'bold'} /><b>Encomenda</b><small>Pra entregar ou retirar em outro dia</small>
               </button>
               <button type="button" aria-pressed={tipo === 'pronta_entrega'} onClick={() => setTipo('pronta_entrega')}>
-                <Lightning size={24} weight={tipo === 'pronta_entrega' ? 'fill' : 'bold'} /><b>Pronta entrega</b><small>A cliente está levando agora</small>
+                <Lightning size={24} weight={tipo === 'pronta_entrega' ? 'fill' : 'bold'} /><b>Pronta entrega</b><small>O cliente está levando agora</small>
               </button>
             </div>
-            {!tipo && itens.length > 0 && <p className="nv3-dica nv3-falta">Escolha o tipo de venda pra continuar.</p>}
+            {!tipo && (itens.length > 0 || tentou) && <p className="nv3-dica nv3-falta">Escolha o tipo de venda pra continuar.</p>}
           </section>
 
           <section className="nv3-card">
@@ -544,8 +566,9 @@ export default function NovaVenda() {
               <div className="nv3-vz">
                 <span className="nv3-vz-ic" aria-hidden="true"><Package size={30} /></span>
                 <b>Nenhum produto ainda</b>
-                <p>Adicione o que a cliente pediu.</p>
+                <p>Adicione o que o cliente pediu.</p>
                 <Botao icone={<Plus size={20} weight="bold" />} onClick={() => setModalProduto(true)}>Adicionar produto</Botao>
+                {tentou && <p className="nv3-dica nv3-falta">Adicione pelo menos um produto pra continuar.</p>}
               </div>
             ) : (
               <ul className="nv3-itens">
@@ -588,10 +611,10 @@ export default function NovaVenda() {
             {modoNovoCli ? (
               <>
                 <div className="nv3-cols">
-                  <Campo className="nv3-larga" rotulo="Nome da cliente" placeholder="Ex.: Mariana Albuquerque" autoComplete="off" value={clienteNome} onChange={e => setClienteNome(e.target.value)} />
+                  <Campo className="nv3-larga" rotulo="Nome do cliente" placeholder="Ex.: Mariana Albuquerque" autoComplete="off" value={clienteNome} onChange={e => setClienteNome(e.target.value)} />
                   <Campo className="nv3-larga" rotulo="Telefone ou WhatsApp" opcional type="tel" inputMode="tel" placeholder="(41) 99999-0000" value={clienteTelefone} onChange={e => setClienteTelefone(e.target.value)} />
                 </div>
-                <p className="nv3-dica">Ela fica salva nas suas clientes quando você registrar a venda.</p>
+                <p className="nv3-dica">Ele fica salvo nos seus clientes quando você registrar a venda.</p>
                 <Botao variante="link" icone={<X size={16} weight="bold" />} onClick={() => { setModoNovoCli(false); setClienteNome(''); setClienteTelefone('') }}>Voltar pra busca</Botao>
               </>
             ) : clienteId ? (
@@ -603,21 +626,21 @@ export default function NovaVenda() {
                     <span>{clienteTelefone ? telefoneBonito(clienteTelefone) : 'Sem telefone'}</span>
                     {enderecoTexto && <small>{enderecoTexto}</small>}
                   </div>
-                  <BotaoIcone rotulo="Tirar a cliente" variante="limpo" tamanho="p" onClick={tirarCliente}><X size={20} weight="bold" /></BotaoIcone>
+                  <BotaoIcone rotulo="Tirar o cliente" variante="limpo" tamanho="p" onClick={tirarCliente}><X size={20} weight="bold" /></BotaoIcone>
                 </div>
                 <div className="nv3-cli-acoes">
                   <Botao variante="secundario" tamanho="m" icone={<MagnifyingGlass size={20} weight="bold" />} onClick={() => setModalCliente(true)}>Trocar cliente</Botao>
-                  <Botao variante="secundario" tamanho="m" icone={<UserPlus size={20} weight="bold" />} onClick={() => { tirarCliente(); setModoNovoCli(true) }}>Nova cliente</Botao>
+                  <Botao variante="secundario" tamanho="m" icone={<UserPlus size={20} weight="bold" />} onClick={() => { tirarCliente(); setModoNovoCli(true) }}>Novo cliente</Botao>
                 </div>
               </>
             ) : (
               <div className="nv3-cli-acoes nv3-cli-acoes--so">
                 <Botao variante="secundario" tamanho="m" icone={<MagnifyingGlass size={20} weight="bold" />} onClick={() => setModalCliente(true)}>Escolher cliente</Botao>
-                <Botao variante="secundario" tamanho="m" icone={<UserPlus size={20} weight="bold" />} onClick={() => { setModoNovoCli(true); setClienteId(null); setClienteNome(''); setClienteTelefone('') }}>Nova cliente</Botao>
+                <Botao variante="secundario" tamanho="m" icone={<UserPlus size={20} weight="bold" />} onClick={() => { setModoNovoCli(true); setClienteId(null); setClienteNome(''); setClienteTelefone('') }}>Novo cliente</Botao>
               </div>
             )}
           </section>
-          <p className="nv3-dica nv3-centro">A cliente é opcional. Sem ela, a venda fica como "Venda avulsa".</p>
+          <p className="nv3-dica nv3-centro">O cliente é opcional. Sem ele, a venda fica como "Venda avulsa".</p>
         </>
       )}
 
@@ -630,7 +653,7 @@ export default function NovaVenda() {
               <button type="button" aria-pressed={!ehEntrega} onClick={() => setTipoEntrega('retirada')}><Storefront size={20} weight={!ehEntrega ? 'fill' : 'bold'} />Retirada</button>
               <button type="button" aria-pressed={ehEntrega} onClick={() => setTipoEntrega('entrega')}><Truck size={20} weight={ehEntrega ? 'fill' : 'bold'} />Entrega</button>
             </div>
-            <p className="nv3-dica">{ehEntrega ? 'Você leva o pedido até a cliente.' : 'A cliente vem buscar com você.'}</p>
+            <p className="nv3-dica">{ehEntrega ? 'Você leva o pedido até o cliente.' : 'O cliente vem buscar com você.'}</p>
             {tipo === 'encomenda' && (
               <div className="nv3-cols nv3-dh">
                 <div className="ui-campo">
@@ -653,7 +676,7 @@ export default function NovaVenda() {
 
           {ehEntrega && (
             <section className="nv3-card">
-              <Titulo acao={podeUsarEndereco ? <Botao variante="link" onClick={usarEnderecoDaCliente}>Usar o da {primeiroNome}</Botao> : undefined}>Endereço</Titulo>
+              <Titulo acao={podeUsarEndereco ? <Botao variante="link" onClick={usarEnderecoDaCliente}>Usar o de {primeiroNome}</Botao> : undefined}>Endereço</Titulo>
               <div className="nv3-cols">
                 <Campo
                   rotulo="CEP" opcional inputMode="numeric" placeholder="00000-000" maxLength={9} value={enderecoCep}
@@ -670,30 +693,22 @@ export default function NovaVenda() {
                 <Campo rotulo="Bairro" placeholder="Ex.: Centro" value={enderecoBairro} onChange={e => setEnderecoBairro(e.target.value)} />
                 <Campo rotulo="Cidade" value={enderecoCidade} onChange={e => setEnderecoCidade(e.target.value)} />
               </div>
-              <Campo rotulo="Complemento" opcional placeholder="Apto, bloco, ponto de referência" value={enderecoComplemento} onChange={e => setEnderecoComplemento(e.target.value)} />
+              <Campo rotulo="Complemento" opcional placeholder="Ex.: apto, bloco, ponto de referência" value={enderecoComplemento} onChange={e => setEnderecoComplemento(e.target.value)} />
               <div className="nv3-taxa">
                 <Campo rotulo="Taxa de entrega" opcional prefixo="R$" inputMode="numeric" placeholder="0,00" value={formatMaskMoney(taxaEntrega)} onChange={e => setTaxaEntrega(parseMaskMoney(e.target.value))} />
               </div>
             </section>
           )}
-          {tipo === 'encomenda' && !dataEntrega && <p className="nv3-dica nv3-centro">Escolha a data pra continuar.</p>}
-          {ehEntrega && !enderecoRua.trim() && <p className="nv3-dica nv3-centro">Escreva a rua pra continuar.</p>}
+          {tipo === 'encomenda' && !dataEntrega && <p className={`nv3-dica nv3-centro${tentou ? ' nv3-falta' : ''}`}>Escolha a data pra continuar.</p>}
+          {ehEntrega && !enderecoRua.trim() && <p className={`nv3-dica nv3-centro${tentou ? ' nv3-falta' : ''}`}>Escreva a rua pra continuar.</p>}
         </>
       )}
 
       {/* ═══ PASSO 4: pagamento ═══ */}
       {etapaLabelAtual === 'Pagamento' && (
         <>
-          <section className="nv3-card nv3-tot">
-            <span>Total da venda</span>
-            <b>{rs(total)}</b>
-            <small>
-              {[`Produtos ${rs(subtotalProdutos)}`, taxaConta > 0 && `Entrega ${rs(taxaConta)}`, desconto > 0 && `Desconto − ${rs(desconto)}`, acrescimo > 0 && `Acréscimo ${rs(acrescimo)}`].filter(Boolean).join(' · ')}
-            </small>
-          </section>
-
           <section className="nv3-card">
-            <Titulo>Como ela pagou?</Titulo>
+            <Titulo>Como ele pagou?</Titulo>
             <div className="nv3-formas" role="group" aria-label="Forma de pagamento">
               {([['PIX', 'Pix', QrCode], ['Dinheiro', 'Dinheiro', Money], ['Crédito', 'Crédito', CreditCard], ['Débito', 'Débito', Bank]] as const).map(([chave, nome, Icone]) => (
                 <button key={chave} type="button" aria-pressed={formaPagamento === chave} onClick={() => setFormaPagamento(chave)}>
@@ -709,7 +724,7 @@ export default function NovaVenda() {
               {([
                 { chave: 'total', nome: 'Tudo agora', dica: `Recebi ${rs(total)}` },
                 { chave: 'parcial', nome: 'Só uma parte (sinal)', dica: 'Você escreve quanto recebeu' },
-                ...(tipo === 'encomenda' ? [{ chave: 'na_entrega', nome: ehEntrega ? 'Paga na entrega' : 'Paga na retirada', dica: ehEntrega ? 'Ela paga quando receber o pedido' : 'Ela paga quando vier buscar' }] : []),
+                ...(tipo === 'encomenda' ? [{ chave: 'na_entrega', nome: ehEntrega ? 'Paga na entrega' : 'Paga na retirada', dica: ehEntrega ? 'Ele paga quando receber o pedido' : 'Ele paga quando vier buscar' }] : []),
                 { chave: 'fiado', nome: 'Vai pagar depois', dica: 'Você escolhe a data combinada' },
               ] as { chave: SituacaoPag; nome: string; dica: string }[]).map(o => (
                 <div key={o.chave}>
@@ -721,9 +736,9 @@ export default function NovaVenda() {
                   {o.chave === 'parcial' && situacaoPag === 'parcial' && (
                     <div className="nv3-op-mais">
                       <Campo
-                        rotulo="Quanto ela já pagou" prefixo="R$" inputMode="numeric" placeholder="0,00" autoFocus
+                        rotulo="Quanto ele já pagou" prefixo="R$" inputMode="numeric" placeholder="0,00" autoFocus
                         value={formatMaskMoney(valorParcial)} onChange={e => setValorParcial(parseMaskMoney(e.target.value))}
-                        erro={valorParcial > 0 && valorParcial >= total ? `Precisa ser menos que ${rs(total)}. Se ela pagou tudo, escolha "Tudo agora".` : undefined}
+                        erro={valorParcial > 0 && valorParcial >= total ? `Precisa ser menos que ${rs(total)}. Se ele pagou tudo, escolha "Tudo agora".` : undefined}
                         dica={valorParcial > 0 && valorParcial < total ? `Falta ${rs(total - valorParcial)}` : undefined}
                       />
                     </div>
@@ -740,6 +755,7 @@ export default function NovaVenda() {
                 </div>
               ))}
             </div>
+            {!situacaoPag && <p className={`nv3-dica${tentou ? ' nv3-falta' : ''}`}>Escolha quanto já entrou pra continuar.</p>}
           </section>
 
           <section className="nv3-card">
@@ -756,8 +772,8 @@ export default function NovaVenda() {
       {etapaLabelAtual === 'Revisar' && (
         <>
           <section className="nv3-card">
-            <Titulo>Como o pedido começa?</Titulo>
-            <div className="nv3-sit" role="group" aria-label="Como o pedido começa">
+            <Titulo>Em que situação o pedido entra?</Titulo>
+            <div className="nv3-sit" role="group" aria-label="Em que situação o pedido entra">
               {COMECOS.map(c => <button key={c.chave} type="button" aria-pressed={statusPedido === c.chave} onClick={() => setStatusPedido(c.chave)}>{c.nome}</button>)}
             </div>
             <p className="nv3-dica"><b>{comeco.nome}:</b> {comeco.dica}</p>
@@ -778,14 +794,14 @@ export default function NovaVenda() {
             <div className="nv3-contas">
               {itens.map((it, idx) => (
                 <div key={idx}>
-                  <p><span>{String(it.quantidade).replace('.', ',')}x {nomeDeProduto(it.nome_produto)}{it.opcaoLabel ? ` · ${it.opcaoLabel}` : ''}</span><span>{rs(it.valor_unitario * it.quantidade)}</span></p>
+                  <p><span>{itemComQtd(`${nomeDeProduto(it.nome_produto)}${it.opcaoLabel ? ` · ${it.opcaoLabel}` : ''}`, it.quantidade, it.forma_venda)}</span><span>{rs(it.valor_unitario * it.quantidade)}</span></p>
                   {it.observacoes && <p className="rec"><span>Recado: {it.observacoes}</span></p>}
                 </div>
               ))}
               {taxaConta > 0 && <p className="dim"><span>Taxa de entrega</span><span>{rs(taxaConta)}</span></p>}
               {desconto > 0 && <p className="dim"><span>Desconto</span><span>− {rs(desconto)}</span></p>}
               {acrescimo > 0 && <p className="dim"><span>Acréscimo</span><span>{rs(acrescimo)}</span></p>}
-              <p className="tot"><span>Total</span><span>{rs(total)}</span></p>
+              {/* o total fica no rodapé (sem repetir aqui) */}
               {situacaoPag === 'parcial' && <p className="dim"><span>Recebido agora</span><span>{rs(valorParcial)}</span></p>}
               {situacaoPag !== 'total' && <p className="falta"><span>Falta receber</span><span>{rs(falta)}</span></p>}
             </div>
@@ -805,8 +821,8 @@ export default function NovaVenda() {
         <div className="nv3-pe-bts">
           <Botao variante="secundario" onClick={voltarEtapa} disabled={salvando}>{etapa === 1 ? 'Cancelar' : 'Voltar'}</Botao>
           {isUltima
-            ? <Botao onClick={finalizarVenda} carregando={salvando}>Registrar pedido</Botao>
-            : <Botao onClick={proximaEtapa} disabled={!podeAvancar()}>Continuar</Botao>}
+            ? <Botao onClick={finalizarVenda} carregando={salvando}>Registrar venda</Botao>
+            : <Botao onClick={proximaEtapa}>Continuar</Botao>}
         </div>
       </div>
     </div>
@@ -815,7 +831,7 @@ export default function NovaVenda() {
     <Janela aberta={!!escolhaProduto} aoFechar={() => setEscolhaProduto(null)} tipo="conteudo" titulo={escolhaProduto ? nomeDeProduto(escolhaProduto.p.nome) : ''}>
       {escolhaProduto && (
         <>
-          <p className="tpj-txt">{escolhaProduto.p.kit_qtd?.ativo ? 'Qual kit a cliente levou?' : 'Qual tamanho?'}</p>
+          <p className="tpj-txt">{escolhaProduto.p.kit_qtd?.ativo ? 'Qual kit o cliente levou?' : 'Qual tamanho?'}</p>
           <div className="tpj-lista">
             {escolhaProduto.opcoes.map(o => (
               <button type="button" key={o.label} className="tpj-it" onClick={() => addProduto(escolhaProduto.p, o)}>
@@ -878,15 +894,16 @@ export default function NovaVenda() {
                 <span className="tpj-tx"><b>{toTitleCase(c.nome || 'Sem nome')}</b>{(c.telefone || c.whatsapp) && <small>{telefoneBonito(c.telefone || c.whatsapp || '')}</small>}</span>
               </button>
             ))}
-            {clientes.length === 0 && <p className="tpj-vz">Nenhuma cliente cadastrada ainda.</p>}
-            {clientes.length > 0 && lista.length === 0 && <p className="tpj-vz">Nenhuma cliente com “{buscaCliente.trim()}”.</p>}
+            {clientes.length === 0 && <p className="tpj-vz">Nenhum cliente cadastrado ainda.</p>}
+            {clientes.length > 0 && lista.length === 0 && <p className="tpj-vz">Nenhum cliente com “{buscaCliente.trim()}”.</p>}
           </div>
         </Janela>
       )
     })()}
 
     {/* calendário e horário do app */}
-    {calNv && <CalendarioSheet valor={calNv === 'entrega' ? dataEntrega : dataPrevistaPagamento} titulo={calNv === 'entrega' ? (ehEntrega ? 'Data da entrega' : 'Data da retirada') : 'Pagamento combinado pra'}
+    {/* encomenda (e pagamento combinado) não aceita dia que já passou */}
+    {calNv && <CalendarioSheet valor={calNv === 'entrega' ? dataEntrega : dataPrevistaPagamento} min={hojeISO()} titulo={calNv === 'entrega' ? (ehEntrega ? 'Data da entrega' : 'Data da retirada') : 'Pagamento combinado pra'}
       onClose={() => setCalNv(null)} onConfirmar={d => { if (calNv === 'entrega') setDataEntrega(d); else setDataPrevistaPagamento(d); setCalNv(null) }} />}
     {horaSheetAberto && (
       <HorarioSheet value={horarioEntrega} onChange={setHorarioEntrega} onClose={() => setHoraSheetAberto(false)} titulo={ehEntrega ? 'Horário da entrega' : 'Horário da retirada'} />

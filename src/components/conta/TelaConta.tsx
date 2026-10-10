@@ -12,9 +12,9 @@ import './telaConta.css'
  * o cartão dividido, com a marca à esquerda e o formulário à direita.
  *   pose: a pose do mascote · frase e sub: o que aparece no lado da marca, no computador
  */
-type Props = { pose?: PoseMascote; frase: string; sub: string; children: ReactNode }
+type Props = { pose?: PoseMascote; frase: string; sub: string; children: ReactNode; /** cartão só da altura do conteúdo (ex.: "Conferindo seu link…") */ compacto?: boolean }
 
-export function TelaConta({ pose = 'acenando', frase, sub, children }: Props) {
+export function TelaConta({ pose = 'acenando', frase, sub, children, compacto = false }: Props) {
   const [doc, setDoc] = useState<null | 'termos' | 'privacidade'>(null)
   const abrir = (qual: 'termos' | 'privacidade') => (e: MouseEvent) => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
@@ -22,7 +22,7 @@ export function TelaConta({ pose = 'acenando', frase, sub, children }: Props) {
     setDoc(qual)
   }
   return (
-    <div className="tc-root">
+    <div className={compacto ? 'tc-root tc-root--compacto' : 'tc-root'}>
       <div className="tc-fundo" />
       <div className="tc-layout">
         <aside className="tc-marca" aria-hidden="true">
@@ -40,7 +40,7 @@ export function TelaConta({ pose = 'acenando', frase, sub, children }: Props) {
         </main>
       </div>
       <footer className="tc-rodape">
-        <div><a href="/privacidade" onClick={abrir('privacidade')}>Política de Privacidade</a><span aria-hidden="true">·</span><a href="/termos" onClick={abrir('termos')}>Termos de Uso</a></div>
+        <div><a href="/privacidade" onClick={abrir('privacidade')}>Política de privacidade</a><span aria-hidden="true">·</span><a href="/termos" onClick={abrir('termos')}>Termos de uso</a></div>
         <em>© {new Date().getFullYear()} Doonly</em>
       </footer>
       <TermosModal open={!!doc} initialTab={doc || 'termos'} onClose={() => setDoc(null)} paginaNoComputador />

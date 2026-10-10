@@ -14,8 +14,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import useSom from "@/hooks/useSom";
 import type { ReactNode } from "react";
-import { Botao, Campo, CampoArea, Titulo, avisar } from "@/components/base";
-import { Check, Crown, SpeakerHigh, UserPlus } from "@phosphor-icons/react";
+import { Botao, Campo, CampoArea, TelaVazia, Titulo, avisar } from "@/components/base";
+import { BellSlash, Check, Crown, SpeakerHigh, UserPlus, WarningCircle } from "@phosphor-icons/react";
 import "./adminNotifTemplates.css";
 
 type Som = "notificacao" | "pedido" | "nenhum";
@@ -53,12 +53,14 @@ export default function AdminNotifTemplates() {
   const [dirty, setDirty] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
+  const [erroCarregar, setErroCarregar] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
       const { data, error } = await supabase.from("notif_templates").select("*");
       if (error) {
-        avisar("Não deu pra carregar os modelos: " + error.message, { tipo: "erro" });
+        setErroCarregar(error.message);
+        setLoading(false);
         return;
       }
       const map: Record<string, Template> = {};
@@ -103,9 +105,32 @@ export default function AdminNotifTemplates() {
     return <div className="ant"><p className="ant-carregando">Carregando modelos…</p></div>;
   }
 
+  const titulo = <Titulo nivel="tela" apoio="Avisos que o app manda sozinho quando algo acontece.">Notificações automáticas</Titulo>;
+  const temAlgum = EVENTOS_META.some(meta => !!templates[meta.evento]);
+
+  if (erroCarregar) {
+    return (
+      <div className="ant">
+        {titulo}
+        <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os modelos"
+          texto={`Confira a internet e recarregue a página. Se continuar, a tabela de notificações pode não existir ainda (erro: ${erroCarregar}).`} />
+      </div>
+    );
+  }
+
+  if (!temAlgum) {
+    return (
+      <div className="ant">
+        {titulo}
+        <TelaVazia caixa icone={<BellSlash size={30} />} titulo="Nenhum modelo de notificação encontrado"
+          texto="Rode o SQL de configuração das notificações e recarregue esta página." />
+      </div>
+    );
+  }
+
   return (
     <div className="ant">
-      <Titulo nivel="tela" apoio="Avisos que o app manda sozinho quando algo acontece.">Notificações automáticas</Titulo>
+      {titulo}
 
       {EVENTOS_META.map(meta => {
         const t = templates[meta.evento];

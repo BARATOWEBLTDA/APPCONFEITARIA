@@ -16,7 +16,7 @@ import {
 import {
   Plus, CalendarDots, CurrencyDollar, ShoppingBag, Camera, Users, ChartLineUp,
   CaretRight, Cake, Receipt, Gear, ClipboardText,
-  WarningCircle, Clock, Package, TrendUp, Confetti, RocketLaunch, Sparkle,
+  WarningCircle, Clock, Package, TrendUp, Confetti, RocketLaunch, Sparkle, Crown,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
@@ -254,7 +254,7 @@ export default function Inicio() {
         Icone: Confetti,
         prefix: "Você faturou ",
         highlight: formatCurrency(resumoSemana.vendas),
-        suffix: " essa semana!",
+        suffix: " nesta semana!",
         tone: "success",
       };
     }
@@ -618,7 +618,7 @@ export default function Inicio() {
             {profile && (
               isPro ? (
                 <span className="ini-plan-tag ini-plan-tag--pc ini-plan-tag--pro" aria-label="Plano PRO">
-                  <img src="/coroa.png" alt="" />
+                  <Crown size={14} weight="fill" aria-hidden="true" />
                   <span>PRO</span>
                 </span>
               ) : (
@@ -628,7 +628,7 @@ export default function Inicio() {
                   onClick={() => navigate("/assinar")}
                   aria-label="Assinar o plano PRO"
                 >
-                  <img src="/coroa.png" alt="" />
+                  <Crown size={14} weight="fill" aria-hidden="true" />
                   <span>Seja PRO</span>
                 </button>
               )
@@ -641,7 +641,7 @@ export default function Inicio() {
               {profile && (
                 isPro ? (
                   <span className="ini-plan-tag ini-plan-tag--mob ini-plan-tag--pro" aria-label="Plano PRO">
-                    <img src="/coroa.png" alt="" />
+                    <Crown size={14} weight="fill" aria-hidden="true" />
                     <span>PRO</span>
                   </span>
                 ) : (
@@ -651,7 +651,7 @@ export default function Inicio() {
                     onClick={() => navigate("/assinar")}
                     aria-label="Assinar o plano PRO"
                   >
-                    <img src="/coroa.png" alt="" />
+                    <Crown size={14} weight="fill" aria-hidden="true" />
                     <span>Seja PRO</span>
                   </button>
                 )
@@ -710,7 +710,7 @@ export default function Inicio() {
               <div className="ini-dk-kpi ini-dk-kpi--dest">
                 <div className="ini-dk-kh"><span><CurrencyDollar size={20} weight="bold" /></span>Recebido no mês</div>
                 {/* sem centavos, igual ao Financeiro mostra: os dois lugares têm que exibir o mesmo número */}
-                <b>{loading ? "—" : counts.recebidoMes.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}</b><small>dinheiro que entrou</small>
+                <b>{loading ? "—" : counts.recebidoMes.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</b><small>dinheiro que entrou</small>
               </div>
               <div className="ini-dk-kpi">
                 <div className="ini-dk-kh"><span><Receipt size={20} weight="bold" /></span>Pedidos na semana</div>
@@ -801,11 +801,12 @@ export default function Inicio() {
           {(() => {
             const temDados = chartData.some(d => (d.valor || 0) > 0);
             return temDados ? (
-              <div className="ini-chart-inner" style={{ width: "100%", height: 220 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData} margin={{ top: 8, right: 10, bottom: 0, left: 0 }}>
+              <div className="ini-chart-inner" style={{ width: "100%", height: 220, minWidth: 0, minHeight: 200 }}>
+                {/* initialDimension: evita o aviso "width(-1) and height(-1)" no primeiro desenho, antes de medir o espaço */}
+                <ResponsiveContainer width="100%" height="100%" minHeight={200} initialDimension={{ width: 600, height: 220 }}>
+                  <LineChart data={chartData} margin={{ top: 8, right: 24, bottom: 0, left: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                    <XAxis dataKey="dia" tick={{ fontSize: 12.5, fill: "var(--ui-texto-2)" }} tickLine={false} axisLine={false} interval={4} />
+                    <XAxis dataKey="dia" tick={{ fontSize: 12.5, fill: "var(--ui-texto-2)" }} tickLine={false} axisLine={false} interval={4} padding={{ left: 4, right: 12 }} />
                     <YAxis width={72} tick={{ fontSize: 12.5, fill: "var(--ui-texto-2)" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `R$ ${Number(v).toLocaleString("pt-BR")}`} />
                     <Tooltip
                       contentStyle={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 12, fontSize: 13.5, fontFamily: "Geist,sans-serif" }}
@@ -832,17 +833,20 @@ export default function Inicio() {
           <div className="ini-dk-side">
             <ConquistasCard />
             <div className="ini-dk-card">
-              <div className="ini-dk-ct"><span>Próximas entregas</span><button type="button" onClick={() => navigate("/agenda")}>Ver agenda ›</button></div>
+              <div className="ini-dk-ct"><span>Próximas entregas</span><button type="button" onClick={() => navigate("/agenda")}>Ver agenda <CaretRight size={16} weight="bold" aria-hidden="true" /></button></div>
               {proximasEntregas.length === 0 ? (
                 <p className="ini-dk-vazio">Nenhuma entrega marcada. Os próximos pedidos aparecem aqui.</p>
               ) : proximasEntregas.map(e => {
                 const d = new Date(e.data + "T12:00:00");
-                const mes = d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "").toUpperCase();
-                const quando = d.toLocaleDateString("pt-BR", { weekday: "long" });
+                const mes = d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "");
+                // mesmo formato do celular: "Hoje às 23:30", "Amanhã às 10:00", "Terça às 10:00" (o dia já está no quadradinho)
+                const dias = Math.round((d.getTime() - new Date(dataISO(new Date()) + "T12:00:00").getTime()) / 86400000);
+                const semana = d.toLocaleDateString("pt-BR", { weekday: "long" }).replace("-feira", "");
+                const quando = dias === 0 ? "Hoje" : dias === 1 ? "Amanhã" : semana.charAt(0).toUpperCase() + semana.slice(1);
                 return (
                   <button type="button" key={e.id} className="ini-dk-en" onClick={() => navigate(`/pedidos/${e.id}`)}>
                     <span className="ini-dk-dt"><b>{String(d.getDate()).padStart(2, "0")}</b><small>{mes}</small></span>
-                    <span className="ini-dk-ei"><b>{e.cliente}</b><small>{quando.charAt(0).toUpperCase() + quando.slice(1)}{e.hora ? ` às ${String(e.hora).slice(0, 5)}` : ""}</small></span>
+                    <span className="ini-dk-ei"><b>{e.cliente}</b><small>{quando}{e.hora ? ` às ${String(e.hora).slice(0, 5)}` : ""}</small></span>
                     <span className="ini-dk-ev">{formatCurrency(e.valor)}</span>
                   </button>
                 );
@@ -1081,12 +1085,7 @@ export default function Inicio() {
           flex-shrink: 0;
           box-shadow: 0 2px 6px rgba(0,0,0,0.28);
         }
-        .ini-plan-tag img {
-          width: 13px;
-          height: 13px;
-          object-fit: contain;
-          display: block;
-        }
+        .ini-plan-tag svg { display: block; flex-shrink: 0; color: #FF9DC4; }
         /* Variante PRO (não clicável) — preta/accent, coroa colorida original */
         .ini-plan-tag--pro {
           background: var(--accent);
@@ -1107,10 +1106,6 @@ export default function Inicio() {
           box-shadow: 0 2px 6px rgba(0,0,0,0.35);
         }
         .ini-plan-tag--upgrade::after { content: ""; position: absolute; inset: -13px -6px; } /* área de toque de 44px */
-        .ini-plan-tag--upgrade img {
-          width: 11px;
-          height: 11px;
-        }
         .ini-plan-tag--upgrade:hover {
           transform: translateY(-1px);
           background: #3D1A24;
@@ -1126,12 +1121,10 @@ export default function Inicio() {
             font-size: 12.5px;
             padding: 4px 11px;
           }
-          .ini-plan-tag img { width: 14px; height: 14px; }
           .ini-plan-tag--upgrade {
             font-size: 12.5px;
             padding: 3px 10px;
           }
-          .ini-plan-tag--upgrade img { width: 12px; height: 12px; }
         }
 
         .ini-profile-cam:hover:not(:disabled) { transform: scale(1.12); background: var(--primary-dark); }
@@ -1600,7 +1593,6 @@ export default function Inicio() {
             gap: 4px;
             color: var(--ui-branco);
           }
-          .ini-root .ini-plan-tag img { width: 14px; height: 14px; }
           .ini-root .ini-plan-tag--pro { background: rgba(var(--primary-rgb), .16); border: 1px solid rgba(var(--primary-rgb), .7); }
           .ini-root .ini-plan-tag--upgrade { background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .3); -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: background-color var(--dur-fast) linear, transform var(--dur-fast) var(--ease-out); }
           .ini-root .ini-plan-tag--upgrade::after { content: ""; position: absolute; inset: -10px -6px; } /* área de toque de 44px */
@@ -1753,7 +1745,7 @@ export default function Inicio() {
           .ini-dk-side .cqc { margin-top: 0; }
           .ini-dk-card { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 16px; }
           .ini-dk-ct { display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 700; color: #2C1219; margin-bottom: 10px; }
-          .ini-dk-ct button { min-height: 44px; margin: -12px -8px -12px 0; padding: 0 8px; border: none; border-radius: 12px; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
+          .ini-dk-ct button { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin: -12px -8px -12px 0; padding: 0 8px; border: none; border-radius: 12px; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
           .ini-dk-vazio { font-size: 13.5px; color: #9A8E94; margin: 0; line-height: 1.45; }
           .ini-dk-en { display: flex; align-items: center; gap: 12px; width: 100%; padding: 9px 0; border: none; border-top: 1px solid #F5F0F2; background: none; font-family: inherit; text-align: left; cursor: pointer; }
           .ini-dk-ct + .ini-dk-en { border-top: none; padding-top: 0; }
@@ -1789,13 +1781,25 @@ export default function Inicio() {
           .ini-dk-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); margin: -50px 0 0; }
           .ini-content { grid-template-columns: minmax(0, 1fr) !important; grid-template-areas: "main" "aside" !important; }
         }
-        @media (min-width: 901px) and (max-width: 1499px) {
+        /* (10/10) Acesso rápido no computador: todos os cartões iguais em qualquer largura — ícone em cima, nome embaixo,
+           centralizados na altura, mesma altura, nome numa linha só e sem reticências (a descrição e a seta não cabiam e cortavam) */
+        @media (min-width: 901px) {
+          .ini-root .ini-section--nav .ini-nav-grid { grid-auto-rows: 1fr; }
           .ini-root .ini-section--nav .ini-nav-arrow { display: none !important; }
-          /* nessa largura a descrição não cabe: fica só o nome, sem cortar */
           .ini-root .ini-section--nav .ini-nav-sub { display: none !important; }
-          .ini-root .ini-section--nav .ini-nav-label { white-space: normal !important; line-height: 1.2 !important; }
-          .ini-root .ini-section--nav .ini-nav-card { flex-direction: column !important; align-items: flex-start !important; justify-content: center !important; gap: 8px !important; min-height: 88px !important; }
+          .ini-root .ini-section--nav .ini-nav-label { white-space: nowrap !important; overflow: visible !important; text-overflow: clip !important; line-height: 1.2 !important; }
+          .ini-root .ini-section--nav .ini-nav-card { flex-direction: column !important; align-items: flex-start !important; justify-content: center !important; gap: 8px !important; min-height: 88px !important; height: 100% !important; padding: 12px 10px 12px 12px !important; }
           .ini-root .ini-section--nav .ini-nav-meta { align-self: stretch !important; flex: none !important; }
+        }
+        /* (10/10) Acesso rápido no celular e tablet: mesma altura em todos, texto e seta centralizados na altura */
+        @media (max-width: 900px) {
+          .ini-root .ini-nav-grid { grid-auto-rows: 1fr; }
+          .ini-root .ini-nav-card, .ini-root .ini-nav-card[data-nav] { align-items: center; min-height: 64px; height: 100%; padding: 8px 10px 8px 8px; }
+          .ini-root .ini-nav-card .ini-nav-icon { position: static; flex-shrink: 0; width: 41px; height: 41px; border-radius: 11px; }
+          .ini-root .ini-nav-card .ini-nav-icon svg { width: 24px; height: 24px; }
+          .ini-root .ini-nav-meta { margin-left: 10px; justify-content: center; }
+          .ini-root .ini-nav-card .ini-nav-label { margin-top: 0; }
+          .ini-root .ini-nav-card .ini-nav-arrow { position: static; align-self: center; flex-shrink: 0; margin-left: 6px; width: 16px; height: 16px; }
         }
       
         /* ── Espaço entre os cartões do Início no celular (02/10): eram 6–10px, agora 20px ── */

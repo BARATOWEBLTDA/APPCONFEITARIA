@@ -34,13 +34,14 @@ export function precoDoCartao(product: Produto) {
   const final = descRatio > 0 ? Math.round(pc.valor * (1 - descRatio) * 100) / 100 : pc.valor
   // Com tamanhos ou kit o preço é o do menor; aí a unidade não vale (não é "por kg")
   const unidade = pc.aPartir || p?.grupo_tamanhos?.ativo ? '' : unidadeCliente(product.forma_venda)
-  return { de: descRatio > 0 ? pc.valor : 0, final, unidade }
+  // Com mais de um tamanho (ou kit) o valor é o menor: "a partir de R$ 120,00", como no produto aberto
+  return { de: descRatio > 0 ? pc.valor : 0, final, unidade, aPartir: pc.aPartir }
 }
 
 export function ProductCard({ product, corBotao = '#E85A8C', comBotao = false }: Props) {
   const [showModal, setShowModal] = useState(false)
   const foto = product.imagem_url?.split(',')[0]?.trim() || null
-  const { de, final, unidade } = precoDoCartao(product)
+  const { de, final, unidade, aPartir } = precoDoCartao(product)
 
   return (
     <>
@@ -56,6 +57,7 @@ export function ProductCard({ product, corBotao = '#E85A8C', comBotao = false }:
           {product.descricao && <small>{product.descricao}</small>}
           <span className="cl-preco">
             {de > 0 && <s>{fmtBRL(de)}</s>}
+            {aPartir && <span className="cl-apartir">a partir de</span>}
             <strong>{fmtBRL(final)}</strong>{unidade && <em>{unidade}</em>}
           </span>
           {comBotao && (

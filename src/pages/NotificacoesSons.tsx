@@ -64,7 +64,12 @@ export default function NotificacoesSons() {
   } else if (permission === "denied") {
     pushDesc = ehIphone()
       ? "Notificações desligadas. Ligue em Ajustes → Notificações → Doonly."
-      : "Notificações bloqueadas. Libere nas configurações do navegador.";
+      : (
+        <>
+          Notificações bloqueadas no navegador.
+          <br />Pra liberar: clique no cadeado da barra de endereço, depois em Notificações e escolha Permitir.
+        </>
+      );
     pushDescClass = "ns-desc ns-desc--warn";
   } else {
     pushDesc = loading
@@ -78,7 +83,7 @@ export default function NotificacoesSons() {
           checked={isSubscribed}
           disabled={loading}
           onChange={() => (isSubscribed ? unsubscribe() : subscribe())}
-          aria-label="Notificações no celular"
+          aria-label="Notificações"
         />
         <span className="ns-toggle-s" />
       </label>
@@ -99,7 +104,7 @@ export default function NotificacoesSons() {
           <div className="ns-row">
             <span className="ns-ico"><DeviceMobile size={20} /></span>
             <div className="ns-txt">
-              <div className="ns-name">Notificações no celular</div>
+              <div className="ns-name">Notificações</div>
               <div className={pushDescClass}>{pushDesc}</div>
               {error && <div className="ns-desc ns-desc--warn">{error}</div>}
             </div>

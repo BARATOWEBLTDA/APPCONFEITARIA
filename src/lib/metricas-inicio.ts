@@ -69,7 +69,7 @@ export const METRICAS_DISPONIVEIS: MetricaOption[] = [
     id: "estoque-baixo",
     emoji: "⚠️",
     titulo: "Estoque baixo",
-    descricao: "Insumos que precisam de reposição",
+    descricao: "Ingredientes que precisam de reposição",
   },
 ];
 
@@ -95,7 +95,7 @@ export function setMetricaEscolhida(id: MetricaId) {
 }
 
 function formatCurrency(v: number): string {
-  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function primeiroNome(nome: string): string {
@@ -192,7 +192,7 @@ export async function fetchMetricaData(id: MetricaId, userId: string): Promise<M
         return {
           label: n === 1 ? "Aniversariante da semana" : "Aniversariantes da semana",
           valor: n === 1 ? primeiroNome(primeiro.nome) : `${n} clientes`,
-          sub: n === 1 ? "Mande uma mensagem" : `${primeiroNome(primeiro.nome)} e mais ${n - 1}`,
+          sub: n === 1 ? "Mande uma mensagem" : n === 2 ? `${primeiroNome(primeiro.nome)} e ${primeiroNome((proximos[1] as any).nome)}` : `${primeiroNome(primeiro.nome)} e mais ${n - 1}`,
         };
       }
 
@@ -200,11 +200,11 @@ export async function fetchMetricaData(id: MetricaId, userId: string): Promise<M
         const { data } = await supabase.from("insumos").select("nome, quantidade, quantidade_minima").eq("user_id", userId);
         const baixos = (data || []).filter((i: any) => i.quantidade_minima != null && Number(i.quantidade) <= Number(i.quantidade_minima));
         const n = baixos.length;
-        if (n === 0) return { label: "Estoque baixo", valor: "Tudo em ordem", sub: "Nenhum insumo precisa de reposição" };
+        if (n === 0) return { label: "Estoque baixo", valor: "Tudo em ordem", sub: "Nenhum ingrediente precisa de reposição" };
         const primeiro: any = baixos[0];
         return {
           label: n === 1 ? "Estoque baixo" : "Estoque baixo",
-          valor: n === 1 ? primeiro.nome : `${n} insumos`,
+          valor: n === 1 ? primeiro.nome : `${n} ingredientes`,
           sub: n === 1 ? "Precisa de reposição" : `${primeiro.nome} e mais ${n - 1}`,
         };
       }

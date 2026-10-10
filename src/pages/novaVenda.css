@@ -58,10 +58,6 @@
 .nv3-seg button[aria-pressed="true"] { background: var(--ui-branco); color: var(--ui-rosa-escuro); font-weight: 700; box-shadow: var(--ui-sombra-cartao); }
 .nv3-taxa { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--ui-linha); }
 .nv3-taxa .ui-campo { max-width: 220px; }
-.nv3-tot { text-align: center; }
-.nv3-tot span { display: block; font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
-.nv3-tot b { display: block; margin: 2px 0; font-size: 24px; font-weight: 700; }
-.nv3-tot small { font-size: 12.5px; color: var(--ui-texto-2); }
 .nv3-formas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .nv3-formas button { display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 72px; margin: 0; padding: 8px 4px; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; font-size: 13.5px; font-weight: 700; }
 .nv3-formas button svg { color: var(--ui-texto-2); }

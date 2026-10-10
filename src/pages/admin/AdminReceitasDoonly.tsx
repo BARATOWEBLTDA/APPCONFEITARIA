@@ -123,7 +123,7 @@ export default function AdminReceitasDoonly() {
 
       {/* Categorias: aparecem como cartões na tela de Receitas do app */}
       <section className="ard-cat">
-        <Titulo nivel="secao" apoio="Viram os cartões da tela de Receitas. Sem foto, o app usa a cor e o desenho.">Categorias</Titulo>
+        <Titulo nivel="secao" apoio="Aparecem como cartões na tela de Receitas. Sem foto, o app usa a cor e o desenho.">Categorias</Titulo>
         <div className="ard-cat-add">
           <input
             placeholder="Nova categoria"

@@ -207,7 +207,7 @@ export default function AdminUsuarios() {
           <TelaVazia
             compacta
             icone={<Users size={30} />}
-            titulo={search ? "Nenhum usuário com essa busca." : "Nenhum usuário ainda."}
+            titulo={search ? "Nenhum usuário com essa busca" : "Nenhum usuário ainda"}
             texto={search ? "Confira o nome ou o e-mail." : undefined}
           />
         ) : (

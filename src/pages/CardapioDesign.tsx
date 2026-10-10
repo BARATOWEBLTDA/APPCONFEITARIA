@@ -281,7 +281,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
           </button>
           <div className="ap-logo-tx">
             <b>{logoUrl ? "Sua logo" : fotoPerfil ? "Usando a sua foto de perfil" : "Nenhuma logo ainda"}</b>
-            <span>{logoUrl ? "É ela que aparece no topo do cardápio." : fotoPerfil ? "Se tiver uma logo, envie aqui. Ela aparece no lugar da foto." : "Sem logo, o cardápio mostra a primeira letra do nome."}</span>
+            <span>{logoUrl ? "Pode trocar quando quiser." : fotoPerfil ? "Se tiver uma logo, envie aqui. Ela aparece no lugar da foto." : "Sem logo, o cardápio mostra a primeira letra do nome."}</span>
             {!logoUrl && fotoPerfil && <em><Check size={14} weight="bold" aria-hidden="true" />Já aparece no seu cardápio</em>}
           </div>
           <Botao variante="secundario" tamanho="m" className="ap-logo-bt" icone={<UploadSimple size={20} weight="bold" />} carregando={uploading === "logo"} onClick={() => logoRef.current?.click()}>
@@ -376,10 +376,13 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
 
       {/* Cores */}
       <section className="ap-card ap-largo">
-        <Cabeca Ic={Palette} titulo="Cores do cardápio" apoio={isPro ? "Toque numa cor pra mudar. Salva sozinho." : "Botões, bordas e o nome da loja"} />
+        <Cabeca Ic={Palette} titulo="Cores do cardápio" apoio={isPro ? "Escolha uma cor pra mudar. Salva sozinho." : "Botões, bordas e o nome da loja"} />
         {!isPro ? (
           <div className="ap-cores-pro">
-            <div className="ap-cores-sw" aria-hidden="true">{["#7C3AED", "#0EA5E9", "#16A34A", "#F59E0B", "#2C1219"].map(c => <span key={c} style={{ background: c }} />)}</div>
+            <div className="ap-cores-sw" role="img" aria-label="Rosa do Doonly em uso. As outras cores são do plano PRO.">
+              <span className="on" style={{ background: "#FF6FA9" }}><Check size={16} weight="bold" aria-hidden="true" /></span>
+              {["#7C3AED", "#0EA5E9", "#16A34A", "#F59E0B", "#2C1219"].map(c => <span key={c} style={{ background: c }}><Lock size={14} weight="bold" aria-hidden="true" /></span>)}
+            </div>
             <p>Deixe o cardápio com as cores da sua marca. No plano grátis, ele usa o rosa do Doonly.</p>
             <Botao variante="vinho" icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>
           </div>

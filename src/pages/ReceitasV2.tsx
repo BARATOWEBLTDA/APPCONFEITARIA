@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import AppPageHeader from "@/components/AppPageHeader";
 import { TelaVazia, avisar } from "@/components/base";
-import { BookmarkSimple, BookOpen, CaretRight, Lightbulb, MagnifyingGlass, ShareNetwork, Trophy, X } from "@phosphor-icons/react";
+import { BookmarkSimple, BookOpen, Cake, CaretRight, ChartPie, Cookie, CookingPot, Diamond, Drop, ForkKnife, Grains, IceCream, Lightbulb, MagnifyingGlass, ShareNetwork, Sparkle, Trophy, X } from "@phosphor-icons/react";
+import type { Icon as PhIcon } from "@phosphor-icons/react";
 import "./clientes.css";
 import "./receitas.css";
 
@@ -46,23 +47,16 @@ const CORES: Record<string, [string, string]> = {
 const COR_TEMA: Record<string, string> = { Recheios: "creme", Bolos: "rosa", Coberturas: "chocolate", "Doces finos": "cacau", Tortas: "limao", Salgados: "caramelo", Pudins: "caramelo", Massas: "creme", Bombons: "cacau" };
 const corDe = (r: Receita): [string, string] => CORES[r.cor || ""] || CORES[COR_TEMA[r.categoria || ""] || ""] || CORES.creme;
 
-// Desenhos de linha por tema (feitos aqui — sem imagem de terceiros)
-const ICONES: Record<string, string> = {
-  Recheios: "M10 18h28l-2.5 20a4 4 0 0 1-4 3.5h-15a4 4 0 0 1-4-3.5zM8 18h32M17 18c0-4 3-7 7-7s7 3 7 7M30 8l4-4",
-  Bolos: "M8 40h32M10 40V26h28v14M14 26v-6h20v6M24 20v-6M24 10a2 2 0 1 0 .01 0M10 32c3 2 6 2 9 0s6-2 9 0 6 2 9 0",
-  Coberturas: "M30 6l8 8-18 18-8 2 2-8zM26 10l8 8M8 40h18",
-  "Doces finos": "M14 26h20l-3 14H17zM12 26h24M24 26a8 8 0 0 1-8-8c0-4 4-8 8-8s8 4 8 8a8 8 0 0 1-8 8",
-  Tortas: "M6 34L24 12l18 22zM6 34v6h36v-6M14 24l20 0",
-  Salgados: "M24 8c-7 8-12 16-12 23a12 12 0 0 0 24 0c0-7-5-15-12-23zM16 34h16",
-  Pudins: "M13 38h22l-3.5-17h-15zM9 38h30M16.5 21c2-2.5 4.5-3.5 7.5-3.5s5.5 1 7.5 3.5M21 17.5v-3h6v3M18 27c2 1.5 4 1.5 6 0s4-1.5 6 0",
-  Massas: "M10 22h28l-3 16a4 4 0 0 1-4 3H17a4 4 0 0 1-4-3zM8 22h32M30 20L38 6M34 8c3 0 5 3 4 6",
-  Bombons: "M14 20h20l-2 18H16zM12 20h24M17 20c0-5 3-8 7-8s7 3 7 8M20 12l-2-4M28 12l2-4",
+// Ícone por tema (10/10: Phosphor, um diferente pra cada — antes Recheios e Massas tinham a mesma tigela e Coberturas um lápis).
+// Mesma lógica do cadastro de bolo: recheio = gota, cobertura = brilho.
+const ICONES: Record<string, PhIcon> = {
+  Recheios: Drop, Massas: Grains, Coberturas: Sparkle, Bolos: Cake, "Doces finos": Diamond,
+  Tortas: ChartPie, Salgados: ForkKnife, Pudins: IceCream, Bombons: Cookie,
 };
-const Icone = ({ tema, size = 30 }: { tema?: string | null; size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d={ICONES[tema || ""] || ICONES.Recheios} />
-  </svg>
-);
+const Icone = ({ tema, size = 30 }: { tema?: string | null; size?: number }) => {
+  const Ic = ICONES[tema || ""] || CookingPot;
+  return <Ic size={size} weight="bold" aria-hidden="true" />;
+};
 const IcCoracao = ({ cheio = true, size = 13 }: { cheio?: boolean; size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={cheio ? "currentColor" : "none"} stroke="currentColor" strokeWidth={cheio ? 0 : 2.2} aria-hidden="true">
     <path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.3 3 4.5 6.7 4.5c2 0 3.5 1.1 4.3 2.4.8-1.3 2.3-2.4 4.3-2.4 3.7 0 5.8 3.8 4.3 7.3C19.5 16.4 12 21 12 21z" />
@@ -278,7 +272,7 @@ export default function ReceitasV2() {
   // ═══════════ Listas ═══════════
   const grade = () => filtradas.length === 0 ? (
     vista.tipo === "salvas" && !q
-      ? <TelaVazia compacta icone={<BookmarkSimple size={28} />} titulo="Nenhuma receita salva" texto="Toque no marcador dentro de uma receita pra guardar aqui." />
+      ? <TelaVazia compacta icone={<BookmarkSimple size={28} />} titulo="Nenhuma receita salva" texto="Use o marcador dentro de uma receita pra guardar aqui." />
       : <p className="cl9-semres">Nenhuma receita com esse nome ou ingrediente. Confira a busca.</p>
   ) : <div className="rv-grid">{filtradas.map(r => <Card key={r.id} r={r} />)}</div>;
 
@@ -314,7 +308,11 @@ export default function ReceitasV2() {
   // Tela inicial: categorias
   return (
     <>
-      <AppPageHeader title="Receitas" subtitle="Receitas prontas pra confeitaria" />
+      <AppPageHeader title="Receitas" subtitle="Receitas prontas pra confeitaria"
+        infoContent={<>
+          <p>Aqui ficam <strong>receitas prontas</strong> do Doonly: recheios, massas, coberturas e mais.</p>
+          <p>Use o marcador dentro de uma receita pra guardar nas suas salvas.</p>
+        </>} />
       <div className="rv-root">
         {campoBusca("Buscar receita ou ingrediente")}
         {loading ? (

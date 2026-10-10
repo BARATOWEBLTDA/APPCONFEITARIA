@@ -17,6 +17,9 @@ export default function CardapioPrevia() {
   const navigate = useNavigate();
   const [url, setUrl] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("mobile");
+  // Carregando dentro da moldura até o iframe avisar (onLoad); depois de 8s, oferece abrir em outra aba
+  const [carregou, setCarregou] = useState(false);
+  const [demorou, setDemorou] = useState(false);
 
   // Link oficial do cardápio (/c/código/slug). Sem ele, o endereço antigo (/cardapio/id).
   const { profile } = useProfile();
@@ -27,6 +30,13 @@ export default function CardapioPrevia() {
       if (user) setUrl(`${window.location.origin}/cardapio/${user.id}`);
     });
   }, [profile?.id, (profile as any)?.codigo_publico]);
+
+  useEffect(() => {
+    if (!url) return;
+    setCarregou(false); setDemorou(false);
+    const t = setTimeout(() => setDemorou(true), 8000);
+    return () => clearTimeout(t);
+  }, [url, viewMode]);
 
   const copiar = async () => {
     if (!url) return;
@@ -54,6 +64,18 @@ export default function CardapioPrevia() {
     }
   };
 
+  const espera = !carregou && (
+    <div className="pv-espera" role="status">
+      <span className="ui-gira" aria-hidden="true" />
+      {demorou ? (
+        <>
+          <p>A prévia está demorando pra carregar.</p>
+          <Botao variante="secundario" tamanho="m" icone={<ArrowSquareOut size={20} weight="bold" />} onClick={abrir}>Abrir o cardápio em outra aba</Botao>
+        </>
+      ) : <p>Carregando a prévia…</p>}
+    </div>
+  );
+
   return (
     <div className="pv">
       <header className="pv-topo">
@@ -76,10 +98,13 @@ export default function CardapioPrevia() {
         <div className={`pv-area pv-area--${viewMode}`}>
           {viewMode === "mobile" ? (
             <div className="pv-cel">
-              <div className="pv-cel-tela"><iframe src={url} title="Prévia do cardápio no celular" /></div>
+              <div className="pv-cel-tela"><iframe key={`m-${url}`} src={url} title="Prévia do cardápio no celular" onLoad={() => setCarregou(true)} />{espera}</div>
             </div>
           ) : (
-            <iframe className="pv-pc" src={url} title="Prévia do cardápio no computador" />
+            <div className="pv-pc-caixa">
+              <iframe key={`d-${url}`} className="pv-pc" src={url} title="Prévia do cardápio no computador" onLoad={() => setCarregou(true)} />
+              {espera}
+            </div>
           )}
         </div>
       ) : (

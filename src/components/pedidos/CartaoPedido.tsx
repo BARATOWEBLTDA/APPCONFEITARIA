@@ -3,7 +3,7 @@ import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { ArrowRight, Bag, CaretDown, DotsThreeVertical } from '@phosphor-icons/react'
 import { Botao, BotaoIcone, Linha } from '@/components/base'
 import type { Pedido } from './pedidoTexto'
-import { acaoDe, atrasado, precisaAceitar, criadoEm, dataLonga, enderecoCurto, fotoDoPedido, horaCurta, itensOrdenados, nomeCliente, nomeDeProduto, qtdCurta, recebidoPedido, resumoItens, rs, saldoPedido, situacaoDe, telefoneBonito, grupoDoStatus } from './pedidoTexto'
+import { acaoDe, atrasado, precisaAceitar, criadoEm, dataLonga, enderecoCurto, formaDoItem, fotoDoPedido, horaCurta, itensOrdenados, nomeCliente, nomeDeProduto, partesDaQtd, recebidoPedido, resumoItens, rs, saldoPedido, situacaoDe, telefoneBonito, grupoDoStatus } from './pedidoTexto'
 
 /**
  * Pedido na lista (08/10 · 3.11, no padrão do guia).
@@ -29,6 +29,12 @@ const parar = (fn: () => void) => (e: MouseEvent) => { e.stopPropagation(); fn()
 const teclaAbre = (fn: () => void) => (e: KeyboardEvent<HTMLElement>) => {
   if (e.target !== e.currentTarget) return
   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn() }
+}
+
+/** Nome do item com a quantidade em destaque, conforme a forma de venda: "<b>2x</b> Brownie", "Bolo red velvet <b>1,5 kg</b>" */
+export function NomeComQtd({ nome, qtd, forma, semUm = false, Destaque = 'b' }: { nome: string; qtd: number; forma?: string | null; semUm?: boolean; Destaque?: 'b' | 'em' }) {
+  const { antes, depois, sep } = partesDaQtd(qtd, forma, semUm)
+  return <>{antes && <><Destaque>{antes}</Destaque> </>}{nome}{depois && <>{sep}<Destaque>{depois}</Destaque></>}</>
 }
 
 function Foto({ p }: { p: Pedido }) {
@@ -82,7 +88,7 @@ export function CartaoPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudand
           {itensOrdenados(p).length > 0 && (
             <div className="pdc-itens">
               {itensOrdenados(p).map((it, i) => (
-                <p key={i}><span><b>{qtdCurta(it.quantidade, it.produtos?.forma_venda)}</b> {nomeDeProduto(it.nome_produto)}</span><span>{rs((it.valor_unitario || 0) * (it.quantidade || 1))}</span></p>
+                <p key={i}><span><NomeComQtd nome={nomeDeProduto(it.nome_produto)} qtd={it.quantidade} forma={formaDoItem(it)} /></span><span>{rs((it.valor_unitario || 0) * (it.quantidade || 1))}</span></p>
               ))}
             </div>
           )}

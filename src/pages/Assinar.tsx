@@ -23,17 +23,17 @@ const PRECO_1O_MES = "R$ 8,97"; // 70% de desconto no 1º mês (30% de R$ 29,90)
 const BENEFICIOS: [Icon, string, string][] = [
   [Calculator, "Preço certo em tudo que você vende", "Bolos, doces ou salgados: a precificação calcula custo, margem e lucro. Chega de vender no prejuízo."],
   [ChartLineUp, "Saiba quanto você lucra de verdade", "Relatórios de lucratividade por produto e por mês, pra decidir com segurança."],
-  [Robot, "Um assistente que trabalha por você", "O Doo IA calcula preços, sugere receitas e escreve legendas, respostas e a descrição dos produtos."],
+  [Robot, "Uma assistente que trabalha por você", "A Doo IA calcula preços, sugere receitas e escreve legendas, respostas e a descrição dos produtos."],
   [Bell, "Avisos no celular", "Receba os avisos do Doonly no celular, mesmo com o app fechado."],
   [Eye, "Veja quem visita e quem compra", "Visitas, pedidos pelo cardápio e conversão, de hoje e do mês."],
   [Tag, "Cupons que trazem cliente de volta", "Crie cupons de desconto pra atrair novos clientes e fazer os antigos voltarem."],
   [Palette, "Cardápio com a cara da sua marca", "Suas cores, até 3 fotos por produto e um link com o nome da sua loja."],
-  [Sparkle, "Modelo de cardápio Premium", "Um modelo só de quem é PRO, com mais destaque pra sua marca e seus produtos."],
+  [Sparkle, "Modelo de cardápio “Premium”", "Um modelo só de quem é PRO, com mais destaque pra sua marca e seus produtos."],
   [ImageSquare, "Banners que vendem", "Até 4 banners em carrossel pra destacar promoções e lançamentos."],
   [SealCheck, "Selo de loja verificada", "Mais confiança na hora em que o cliente decide comprar."],
   [Crown, "Sem marca d'água", "O cardápio só com a sua marca, sem o \"Feito com Doonly\"."],
   [Infinito, "Produtos e clientes sem limite", "Cadastre todo o cardápio e guarde toda a clientela com o histórico de compras."],
-  [AddressBook, "Importe clientes em um toque", "Traga os contatos direto da agenda do celular (Android)."],
+  [AddressBook, "Importe clientes dos contatos", "Traga os contatos direto da agenda do celular (Android)."],
   [FilePdf, "Relatórios em PDF", "Agenda do dia, pedidos e fichas técnicas prontos pra mandar ou imprimir."],
 ];
 

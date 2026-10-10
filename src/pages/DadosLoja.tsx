@@ -273,7 +273,7 @@ export default function DadosLoja() {
           <div id="dl-desc" className="dl-desc">
             <CampoArea id="dl-in-desc" rotulo="Descrição" value={descricao} maxLength={200} rows={4}
               placeholder="Conte em uma frase o que sua confeitaria tem de especial"
-              dica={`${descricao.length} de 200 letras`} onChange={(e) => setDescricao(e.target.value)} />
+              dica={`${descricao.length} de 200 caracteres`} onChange={(e) => setDescricao(e.target.value)} />
             <Botao variante="suave" tamanho="p" className="dl-ia" icone={<Sparkle size={16} weight="bold" />} carregando={gerando} onClick={gerarDescricao}>
               {gerando ? "Escrevendo…" : "Escrever com IA"}
             </Botao>
@@ -309,7 +309,7 @@ export default function DadosLoja() {
           <label className="dl-recebe">
             <input type="checkbox" checked={recebeAqui} onChange={(e) => setRecebeAqui(e.target.checked)} />
             <span className="dl-cx" aria-hidden="true">{recebeAqui && <Check size={16} weight="bold" />}</span>
-            <span><b>Recebo pedidos nesse endereço</b><small>O cliente vê esse endereço pra retirar a encomenda.</small></span>
+            <span><b>Recebo pedidos nesse endereço</b><small>O endereço completo aparece pro cliente só quando ele escolhe retirar a encomenda.</small></span>
           </label>
         </section>
 
@@ -341,7 +341,7 @@ export default function DadosLoja() {
             <div className="dl-hr"><b>Domingo</b><BotoesHora abre="domingo_abertura" fecha="domingo_fechamento" /></div>
           )}
           {diasMarcados.length === 0 && !horario.abre_sabado && !horario.abre_domingo && (
-            <p className="dl-vazio">Toque nos dias em que a loja abre.</p>
+            <p className="dl-vazio">Escolha os dias em que a loja abre.</p>
           )}
         </section>
       </div>

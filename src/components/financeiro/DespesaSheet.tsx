@@ -6,7 +6,7 @@ import { Botao } from "@/components/base";
 import { supabase } from "@/lib/supabase";
 
 /**
- * Financeiro · Passo 7 (03/10) — "Nova despesa": uma saída JÁ PAGA (sai do caixa na data escolhida).
+ * Financeiro · Passo 7 (03/10) — "Nova saída" (antes "Nova despesa"): uma saída JÁ PAGA (sai do caixa na data escolhida).
  * Conta pra pagar depois vai em "A pagar" (Passo 5), que só sai do caixa quando for paga.
  */
 const CATEGORIAS = ["Insumos", "Embalagens", "Aluguel", "Energia e água", "Internet", "Gás", "Transporte", "Marketing", "Equipamentos", "Outros"];
@@ -14,7 +14,7 @@ const CATEGORIAS_ENTRADA = ["Venda fora do app", "Venda no balcão", "Aporte (di
 const isoDia = (n = 0) => { const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 const num = (s: string) => Math.round((parseFloat(String(s).replace(/\./g, "").replace(",", ".")) || 0) * 100) / 100;
 
-export default function DespesaSheet({ onClose, onSalvo, onContaAPagar, tipo = "saida" }: { onClose: () => void; onSalvo: () => void; onContaAPagar?: () => void; tipo?: "entrada" | "saida" }) {
+export default function DespesaSheet({ onClose, onSalvo, onContaAPagar, onReceberPedido, tipo = "saida" }: { onClose: () => void; onSalvo: () => void; onContaAPagar?: () => void; onReceberPedido?: () => void; tipo?: "entrada" | "saida" }) {
   const ehEntrada = tipo === "entrada";
   const cats = ehEntrada ? CATEGORIAS_ENTRADA : CATEGORIAS;
   const [descricao, setDescricao] = useState("");
@@ -39,19 +39,20 @@ export default function DespesaSheet({ onClose, onSalvo, onContaAPagar, tipo = "
   };
 
   return (
-    <Folha titulo={ehEntrada ? "Nova entrada" : "Nova despesa"} onClose={onClose} umaAcao
+    <Folha titulo={ehEntrada ? "Nova entrada" : "Nova saída"} onClose={onClose} umaAcao
       sub={ehEntrada ? "Dinheiro que entrou fora dos pedidos do app. Entra no caixa na data escolhida." : "Algo que você já pagou. Sai do caixa na data escolhida."}
-      acoes={<Botao cheio carregando={salvando} onClick={salvar}>{ehEntrada ? "Lançar entrada" : "Lançar despesa"}</Botao>}>
+      acoes={<Botao cheio carregando={salvando} onClick={salvar}>{ehEntrada ? "Lançar entrada" : "Lançar saída"}</Botao>}>
       <label className="fo-lb" htmlFor="dsp-v">{ehEntrada ? "Quanto entrou?" : "Quanto pagou?"}</label>
       <div className="fo-in"><span>R$</span><input id="dsp-v" inputMode="numeric" placeholder="0,00" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro(""); }} /></div>
       <p className="fo-lb">Categoria</p>
       <div className="fo-chips">{cats.map(c => <button type="button" key={c} className={categoria === c ? "on" : ""} onClick={() => setCategoria(c)}>{c === "Insumos" ? "Ingredientes" : c}</button>)}</div>
       <label className="fo-lb" htmlFor="dsp-d">Descrição <em>(opcional)</em></label>
-      <input id="dsp-d" className="fo-txt" placeholder={ehEntrada ? "Ex.: 30 brigadeiros pra vizinha" : "Ex.: Leite condensado e creme de leite"} value={descricao} onChange={e => setDescricao(e.target.value)} />
+      <input id="dsp-d" className="fo-txt" placeholder={ehEntrada ? "Ex.: 30 brigadeiros pra vizinha" : "Ex.: leite condensado e creme de leite"} value={descricao} onChange={e => setDescricao(e.target.value)} />
       <p className="fo-lb">{ehEntrada ? "Quando entrou?" : "Quando pagou?"}</p>
       <div className="fo-chips">{(["hoje", "ontem", "outra"] as const).map(q => <button type="button" key={q} className={quando === q ? "on" : ""} onClick={() => setQuando(q)}>{q === "hoje" ? "Hoje" : q === "ontem" ? "Ontem" : "Outra data"}</button>)}</div>
       {quando === "outra" && <div style={{ marginTop: 8 }}><CampoData valor={outra} onChange={setOutra} max={isoDia()} titulo={ehEntrada ? "Data da entrada" : "Data do pagamento"} /></div>}
       {erro && <p className="fo-erro">{erro}</p>}
+      {ehEntrada && onReceberPedido && <button type="button" className="fo-sec neutro" onClick={onReceberPedido}>É o pagamento de um pedido? Registre em A receber</button>}
       {!ehEntrada && onContaAPagar && <button type="button" className="fo-sec neutro" onClick={onContaAPagar}>É uma conta pra pagar depois? Cadastre em A pagar</button>}
     </Folha>
   );

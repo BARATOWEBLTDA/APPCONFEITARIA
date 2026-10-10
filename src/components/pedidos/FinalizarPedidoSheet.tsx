@@ -29,7 +29,7 @@ const txt = (v: number) => textoBRL(r2(v)) || "0,00";
 const isoDia = (n = 0) => { const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 const FORMAS = [{ k: "pix", l: "Pix" }, { k: "dinheiro", l: "Dinheiro" }, { k: "credito", l: "Crédito" }, { k: "debito", l: "Débito" }];
 const MOTIVOS: Record<TipoAjuste, string[]> = {
-  desconto: ["Combinado com a cliente", "Atraso", "Arredondamento"],
+  desconto: ["Combinado com o cliente", "Atraso", "Arredondamento"],
   acrescimo: ["Taxa de entrega", "Item a mais", "Embalagem especial"],
 };
 
@@ -114,7 +114,7 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
         <span className="fps-alca" aria-hidden="true" />
         <div className="fps-hd">
           <div>
-            <b className="fps-t">{aguardandoPagamento ? "Cliente pagou?" : "Finalizar pedido"}</b>
+            <b className="fps-t">{aguardandoPagamento ? "O cliente pagou?" : "Finalizar pedido"}</b>
             <small className="fps-s">Pedido #{pedido.numero ?? "—"}{pedido.cliente_nome ? ` · ${pedido.cliente_nome}` : ""} · {novoStatusLabel}</small>
           </div>
           <button type="button" className="fps-x" onClick={onCancelar} aria-label="Fechar" disabled={salvando}><X size={18} weight="bold" /></button>

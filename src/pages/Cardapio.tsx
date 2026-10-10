@@ -465,7 +465,7 @@ export default function Cardapio() {
             varAnt: metricasAnterior.pedidos,
           },
           {
-            label: "Receita online",
+            label: "Faturamento online",
             value: formatCurrency(metricas.receita),
             icon: <CurrencyDollar size={18} weight="duotone" />,
             color: "#15803D",

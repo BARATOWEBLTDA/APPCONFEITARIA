@@ -7,6 +7,19 @@ import { supabase } from "@/lib/supabase";
 import { linhaDeTempo, semAcento } from "@/lib/noticias";
 import "./noticias.css";
 
+/** Tira do título o nome da categoria quando ele começa igual ("Novidade: ..." com a etiqueta "Novidade" ao lado). */
+function tituloSemCategoria(titulo: string, categoria: string | null): string {
+  if (!categoria) return titulo;
+  const sem = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  const m = titulo.match(/^\s*([^:]{1,40}):\s*(.+)$/);
+  if (!m) return titulo;
+  const prefixo = sem(m[1]);
+  const cat = sem(categoria);
+  if (prefixo === cat || prefixo === cat.replace(/s$/, "") || prefixo + "s" === cat) return m[2].charAt(0).toUpperCase() + m[2].slice(1);
+  return titulo;
+}
+
+
 /**
  * Notícias — a lista (07/10 · 3.10, no padrão do guia).
  * Busca no campo padrão (48px, letra de 16px, botão de limpar), filtros de categoria com 44px de toque,
@@ -83,7 +96,7 @@ export default function Noticias() {
             <p>A notícia <strong>fixada</strong> fica sempre no topo. As outras aparecem da mais nova pra mais antiga.</p>
           </>
         }
-        infoTip={<>Toque numa <strong>categoria</strong> pra ver só as dicas, as novidades ou os tutoriais.</>}
+        infoTip={<>Escolha uma <strong>categoria</strong> pra ver só as dicas, as novidades ou os tutoriais.</>}
       />
       <div className="nl">
         {estado === "pronto" && noticias.length > 0 && (
@@ -156,7 +169,7 @@ export default function Noticias() {
                           {n.categoria && <span>{n.categoria}</span>}
                         </span>
                       )}
-                      <span className="nl-t">{n.titulo}</span>
+                      <span className="nl-t">{tituloSemCategoria(n.titulo, n.categoria)}</span>
                       {n.descricao && <span className="nl-d">{n.descricao}</span>}
                       {tempo && <span className="nl-q">{tempo}</span>}
                     </span>

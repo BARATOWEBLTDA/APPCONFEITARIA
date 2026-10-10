@@ -21,7 +21,7 @@ interface MenuSection {
 const menuSections: MenuSection[] = [
   {
     items: [
-      { path: "/admin", label: "Dashboard", icon: <ChartLine size={20} weight="bold" /> },
+      { path: "/admin", label: "Painel", icon: <ChartLine size={20} weight="bold" /> },
       { path: "/admin/usuarios", label: "Usuários", icon: <UsersThree size={20} weight="bold" /> },
     ],
   },
@@ -99,7 +99,9 @@ export default function AdminLayout() {
       if (ADMIN_EMAILS.includes(session.user.email || "")) {
         setAuthorized(true);
         setUserEmail(session.user.email || "");
-        setUserName((session.user.email || "A").split("@")[0]);
+        const usuario = (session.user.email || "admin").split("@")[0].toLowerCase();
+        const NOMES: Record<string, string> = { gestao: "Gestão" };
+        setUserName(NOMES[usuario] || (usuario.charAt(0).toUpperCase() + usuario.slice(1)));
       } else {
         navigate("/admin/login");
       }
@@ -263,8 +265,8 @@ export default function AdminLayout() {
         .adm-sidebar-top { display: flex; align-items: center; gap: 12px; padding: 20px; border-bottom: 1px solid rgba(255,255,255,.08); }
         .adm-logo-square { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; overflow: hidden; border-radius: 12px; background: var(--ui-rosa); }
         .adm-logo-square img { width: 26px; height: 26px; object-fit: contain; filter: brightness(0) invert(1); }
-        .adm-logo-square--sm { width: 36px; height: 36px; }
-        .adm-logo-square--sm img { width: 22px; height: 22px; }
+        .adm-logo-square--sm { width: 44px; height: 44px; }
+        .adm-logo-square--sm img { width: 32px; height: 32px; }
         .adm-brand { display: flex; flex-direction: column; min-width: 0; }
         .adm-brand-name { font-size: 16px; font-weight: 700; line-height: 1.15; color: #fff; }
         .adm-brand-role { font-size: 12px; font-weight: 500; color: rgba(255,255,255,.6); }

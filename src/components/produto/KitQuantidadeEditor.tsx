@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Basket, X } from "@phosphor-icons/react";
+import { Basket, Cookie, ForkKnife, PencilSimple, X } from "@phosphor-icons/react";
+import type { Icon } from "@phosphor-icons/react";
 import KitPicker from "@/components/cardapio/KitPicker";
 import {
   KIT_VAZIO, KitQtdConfig, KitSelecao, SUGESTOES_SABORES, erroKit, kitsValidos, novoId, presetKit, selecaoInicial,
@@ -15,6 +16,37 @@ interface Props {
   onChange: (k: KitQtdConfig) => void;
   modo: "compacto" | "completo";
   nomeProduto?: string;
+}
+
+/** Ícone de cada modelo de kit (sem emoji nem desenho que pareça emoji) */
+const ICONE_MODELO: Record<"docinhos" | "salgados" | "livre", Icon> = { docinhos: Cookie, salgados: ForkKnife, livre: PencilSimple };
+
+/**
+ * O que falta pra continuar na tela "Monte seu kit", na ordem em que aparece na tela,
+ * com o seletor do campo pra rolar até ele. null = tudo certo.
+ */
+export function faltaKit(kit?: KitQtdConfig | null): { msg: string; alvo?: string } | null {
+  const k: KitQtdConfig = { ...KIT_VAZIO, ...(kit || {}), livre: { ...KIT_VAZIO.livre, ...(kit?.livre || {}) } };
+  if (!k.sabores.filter(s => s.nome.trim()).length) return { msg: "Adicione pelo menos 1 sabor", alvo: ".kq-addrow input" };
+  if (k.modo === "fechado") {
+    if (!kitsValidos(k).length) {
+      const semPreco = k.kits.find(x => (x.qtd || 0) > 0 && !(x.preco > 0));
+      if (semPreco) return { msg: `Coloque o preço do kit de ${semPreco.qtd}`, alvo: `[data-falta="kit-${semPreco.id}"] input` };
+      const semQtd = k.kits.find(x => !((x.qtd || 0) > 0));
+      if (semQtd) return { msg: "Coloque quantas unidades vêm no kit", alvo: `[data-falta="kitqtd-${semQtd.id}"]` };
+      return { msg: "Adicione pelo menos 1 kit com quantidade e preço", alvo: ".kq-link" };
+    }
+  } else {
+    const l = k.livre;
+    if (!(l.min > 0)) return { msg: "Coloque o mínimo de unidades", alvo: 'input[aria-label="Mínimo"]' };
+    if (!(l.max >= l.min)) return { msg: "O máximo precisa ser maior que o mínimo", alvo: 'input[aria-label="Máximo"]' };
+    if (!(l.passo > 0)) return { msg: "Coloque de quanto em quanto o cliente pode pedir", alvo: 'input[aria-label="De quanto em quanto"]' };
+    if (!(l.preco_cento > 0)) return { msg: "Coloque o preço do cento", alvo: 'input[aria-label="Preço do cento"]' };
+  }
+  if ((k.max_sabores || 0) < 1) return { msg: "Coloque até quantos sabores o cliente pode misturar", alvo: 'input[aria-label="Máximo de sabores"]' };
+  if ((k.passo_sabor || 0) < 1) return { msg: "Coloque de quanto em quanto cada sabor sobe", alvo: 'input[aria-label="De quanto em quanto cada sabor"]' };
+  const outro = erroKit(k);
+  return outro ? { msg: outro } : null;
 }
 
 const num = (v: string) => { const n = parseFloat(v.replace(",", ".")); return isNaN(n) ? 0 : n; };
@@ -55,32 +87,32 @@ export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }
   // ═══ Tela "Monte seu kit" ═══
   const precisaModelo = !k.modelo && k.sabores.length === 0;
   if (precisaModelo) {
-    // 02/10: nomes mais específicos e os desenhos das categorias (sem emoji); toque no cartão escolhe
-    const modelos: { id: "docinhos" | "salgados" | "livre"; img: string; t: string; d: string }[] = [
-      { id: "docinhos", img: "/categoriaicones/icone (1).png", t: "Brigadeiro", d: "Brigadeiro, beijinho e docinhos de festa" },
-      { id: "salgados", img: "/categoriaicones/icone (3).png", t: "Salgadinhos", d: "Coxinha, risole, kibe e outros de festa" },
-      { id: "livre", img: "/categoriaicones/icone (35).png", t: "Personalizado", d: "Você monta do zero, com os seus sabores e quantidades" },
+    // 02/10: nomes mais específicos; 10/10: ícones Phosphor no lugar dos desenhos (pareciam emoji)
+    const modelos: { id: "docinhos" | "salgados" | "livre"; t: string; d: string }[] = [
+      { id: "docinhos", t: "Brigadeiro", d: "Brigadeiro, beijinho e doces de festa" },
+      { id: "salgados", t: "Salgadinhos", d: "Coxinha, risole, kibe e outros de festa" },
+      { id: "livre", t: "Personalizado", d: "Você monta do zero, com os seus sabores e quantidades" },
     ];
     return (
       <div className="kq-tela">
         <h2 className="kq-q">O que vai nesse kit?</h2>
         <p className="kq-qs">Escolha o mais parecido. A gente já sugere os sabores e os tamanhos de kit.</p>
         <div className="kq-modelos">
-          {modelos.map(m => (
+          {modelos.map(m => { const Ic = ICONE_MODELO[m.id]; return (
             <button type="button" key={m.id} className={`kq-mod${m.id === "livre" ? " kq-mod--wide" : ""}`} onClick={() => onChange(presetKit(m.id, k))}>
-              <span className="kq-mod-e" aria-hidden="true"><img src={m.img} alt="" /></span>
+              <span className="kq-mod-e" aria-hidden="true"><Ic size={28} weight="bold" /></span>
               <b>{m.t}</b><small>{m.d}</small>
             </button>
-          ))}
+          ); })}
         </div>
         <style>{CSS}</style>
       </div>
     );
   }
 
-  const modeloInfo = k.modelo === "docinhos" ? { t: "Brigadeiro", img: "/categoriaicones/icone (1).png" }
-    : k.modelo === "salgados" ? { t: "Salgadinhos", img: "/categoriaicones/icone (3).png" }
-    : { t: "Personalizado", img: "/categoriaicones/icone (35).png" };
+  const modeloInfo = k.modelo === "docinhos" ? { t: "Brigadeiro", Ic: ICONE_MODELO.docinhos }
+    : k.modelo === "salgados" ? { t: "Salgadinhos", Ic: ICONE_MODELO.salgados }
+    : { t: "Personalizado", Ic: ICONE_MODELO.livre };
   const sabores = k.sabores.filter(s => s.nome.trim());
   const okSabores = sabores.length > 0;
   const okPreco = k.modo === "fechado" ? kitsValidos(k).length > 0 : k.livre.preco_cento > 0 && k.livre.min > 0 && k.livre.passo > 0 && k.livre.max >= k.livre.min;
@@ -92,7 +124,7 @@ export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }
 
   return (
     <div className="kq-tela">
-      <div className="kq-modelo-on"><span>Modelo</span><b><img src={modeloInfo.img} alt="" />{modeloInfo.t}</b>
+      <div className="kq-modelo-on"><span>Modelo</span><b><modeloInfo.Ic size={20} weight="bold" aria-hidden="true" />{modeloInfo.t}</b>
         {k.sabores.length === 0 && <button type="button" className="kq-trocar" onClick={() => set({ modelo: undefined })}>Trocar</button>}
       </div>
 
@@ -111,7 +143,7 @@ export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }
               </div>
             )}
             <div className="kq-addrow">
-              <input placeholder={k.modelo === "salgados" ? "Ex: Coxinha de frango" : "Ex: Brigadeiro de Ninho"} value={novoSabor}
+              <input placeholder={k.modelo === "salgados" ? "Ex.: coxinha de frango" : "Ex.: brigadeiro de ninho"} value={novoSabor}
                 onChange={e => setNovoSabor(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addSabor(novoSabor); } }} />
               <button type="button" onClick={() => addSabor(novoSabor)} disabled={!novoSabor.trim()}>Adicionar</button>
             </div>
@@ -137,10 +169,10 @@ export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }
               <>
                 {k.kits.map(x => (
                   <div className="kq-frase kq-frase--kit" key={x.id}>
-                    <span className="kq-t">Kit de</span><input className="kq-box kq-box--qtd" inputMode="numeric" value={x.qtd || ""} placeholder="50" aria-label="Unidades do kit"
+                    <span className="kq-t">Kit de</span><input className="kq-box kq-box--qtd" data-falta={`kitqtd-${x.id}`} inputMode="numeric" value={x.qtd || ""} placeholder="50" aria-label="Unidades do kit"
                       onChange={e => set({ kits: k.kits.map(y => y.id === x.id ? { ...y, qtd: Math.round(num(e.target.value)) } : y) })} />
                     <span className="kq-t">un. por</span>
-                    <span className={`kq-box kq-box--rs${x.preco > 0 ? " ok" : " falta"}`}>R$ <input inputMode="decimal" defaultValue={moeda(x.preco)} placeholder="0,00" aria-label="Preço do kit"
+                    <span data-falta={`kit-${x.id}`} className={`kq-box kq-box--rs${x.preco > 0 ? " ok" : " falta"}`}>R$ <input inputMode="decimal" defaultValue={moeda(x.preco)} placeholder="0,00" aria-label="Preço do kit"
                       onChange={e => set({ kits: k.kits.map(y => y.id === x.id ? { ...y, preco: num(e.target.value) } : y) })} /></span>
                     <button type="button" className="kq-x" onClick={() => set({ kits: k.kits.filter(y => y.id !== x.id) })} aria-label="Remover kit"><X size={16} weight="bold" /></button>
                   </div>
@@ -191,12 +223,12 @@ const CSS = `
   .kq-tg.on { background: #E85A8C; } .kq-tg.on i { left: 20px; }
 
   .kq-tela { font-family: var(--font-base); color: #2C1219; padding-bottom: 8px; }
-  .kq-q { font-size: 22px; font-weight: 700; text-align: left; margin: 18px 0 4px; color: #2C1219; letter-spacing: -.02em; text-wrap: balance; }
+  .kq-q { font-size: 22px; font-weight: 700; text-align: left; margin: 0 0 4px; color: #2C1219; letter-spacing: -.02em; text-wrap: balance; }
   .kq-qs { text-align: left; font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 0 0 16px; text-wrap: balance; }
   .kq-modelos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .kq-mod { border: 1.5px solid #EDE6E9; border-radius: 16px; padding: 16px 12px; background: #fff; display: flex; flex-direction: column; align-items: center; text-align: center; font-family: inherit; color: #2C1219; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
   .kq-mod:hover { border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
-  .kq-mod-e { width: 52px; height: 52px; border-radius: 15px; background: #FFF1F6; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+  .kq-mod-e { width: 52px; height: 52px; border-radius: 15px; background: #FFF1F6; color: #C33A6E; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
   .kq-mod-e img { width: 36px; height: 36px; object-fit: contain; }
   .kq-mod b { font-size: 15px; font-weight: 700; } .kq-mod small { font-size: 12px; color: #888780; line-height: 1.35; margin-top: 3px; text-wrap: balance; }
   .kq-mod--wide { grid-column: 1 / -1; display: grid; grid-template-columns: 52px 1fr; column-gap: 12px; text-align: left; align-items: center; }
@@ -204,8 +236,8 @@ const CSS = `
   .kq-mod ul { list-style: none; margin: 10px 0 0; padding: 0; flex: 1; } .kq-mod li { font-size: 12px; color: #4B3A42; padding: 3px 0; } .kq-mod li::before { content: "✓ "; color: #16a34a; font-weight: 700; }
   .kq-mod button { margin-top: 12px; height: 40px; border: none; border-radius: 10px; background: #2C1219; color: #fff; font-family: inherit; font-weight: 700; font-size: 13px; cursor: pointer; }
   .kq-mod--cm button { background: #F5F0F2; color: #2C1219; }
-  .kq-modelo-on { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #888780; margin-top: 18px; padding: 10px 12px; background: #FAF7F8; border-radius: 12px; }
-  .kq-modelo-on b { display: inline-flex; align-items: center; gap: 5px; color: #2C1219; font-weight: 700; } .kq-modelo-on b img { width: 20px; height: 20px; object-fit: contain; }
+  .kq-modelo-on { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #888780; margin-top: 0; padding: 10px 12px; background: #FAF7F8; border-radius: 12px; }
+  .kq-modelo-on b { display: inline-flex; align-items: center; gap: 5px; color: #2C1219; font-weight: 700; } .kq-modelo-on b svg { flex: none; color: #C33A6E; }
   .kq-trocar { margin-left: auto; border: none; background: none; color: #C33A6E; font-family: inherit; font-weight: 700; font-size: 13px; cursor: pointer; }
   .kq-chk { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 4px; }
   .kq-chk span { font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 999px; background: #FFF7ED; color: #B45309; } .kq-chk span.ok { background: #F0FDF4; color: #15803D; }
@@ -228,9 +260,9 @@ const CSS = `
   .kq-addrow input:focus { outline: none; border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
   .kq-addrow button { border: none; border-radius: 10px; background: #2C1219; color: #fff; font-family: inherit; font-weight: 700; font-size: 13px; padding: 0 14px; cursor: pointer; white-space: nowrap; } .kq-addrow button:disabled { opacity: .35; cursor: default; }
   .kq-sug-l { margin: 12px 0 6px; font-size: 12px; font-weight: 700; color: #9A8E94; }
-  .kq-sug { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px; }
-  .kq-sug::-webkit-scrollbar { display: none; }
-  .kq-sug button { flex-shrink: 0; white-space: nowrap; padding: 6px 11px; border: 1.5px dashed #F3C9DA; border-radius: 999px; background: none; color: #C33A6E; font-family: inherit; font-weight: 700; font-size: 12.5px; cursor: pointer; }
+  /* 10/10: as sugestões quebram linha (antes cortavam na borda: "+ Ni") */
+  .kq-sug { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 2px; }
+  .kq-sug button { min-height: 36px; white-space: nowrap; padding: 6px 11px; border: 1.5px dashed #F3C9DA; border-radius: 999px; background: none; color: #C33A6E; font-family: inherit; font-weight: 700; font-size: 12.5px; cursor: pointer; }
   .kq-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
   .kq-op { border: 1.5px solid #EAE3E6; border-radius: 14px; padding: 11px; background: #fff; text-align: left; font-family: inherit; cursor: pointer; color: #2C1219; }
   .kq-op.on { border-color: #2C1219; background: #FAF7F8; }

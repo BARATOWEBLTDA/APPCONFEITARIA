@@ -2,6 +2,16 @@ import { Cake, Minus, Plus, Trash } from '@phosphor-icons/react'
 import { CartItem } from '@/types/cart'
 import { formatCurrency } from '@/utils/helpers'
 import { detalhesItem, kgLivre } from '@/lib/itemSacola'
+import { sufixoVenda, unidadeCliente } from '@/lib/formaVenda'
+
+/**
+ * Unidade do preço como no cardápio ("o cento", "a caixa", "por kg"…).
+ * Vazio quando é por unidade, quando tem tamanho/kit (o preço é do item inteiro) ou por kg livre (já tem a linha "por kg").
+ */
+export function unidadeItem(item: any): string {
+  if (!item || kgLivre(item) || item?.escolhas?.tamanho || item?.escolhas?.kit) return ''
+  return sufixoVenda(item.saleType) === 'un' ? '' : unidadeCliente(item.saleType)
+}
 
 /** "Brigadeiro" → "brigadeiros", "Beijinho de coco" → "beijinhos de coco", "Pão de mel" → "pães de mel" */
 function pluralSabor(nome: string, qtd: number): string {
@@ -41,6 +51,7 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove, cor = '#E8
   const foto = item.imageUrl ? item.imageUrl.split(',')[0] : ''
   const kit = (item as any).escolhas?.kit
   const detalhes = detalhesItem(item)
+  const unidade = unidadeItem(item)
 
   return (
     <div className="sc-it">
@@ -52,8 +63,9 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove, cor = '#E8
         ) : null}
         {detalhes.length > 0 && <small>{detalhes.join(' · ')}</small>}
         {item.observations && <small className="sc-it-obs">Obs.: {item.observations}</small>}
-        <strong>{formatCurrency(item.price * item.quantity)}</strong>
+        <strong>{formatCurrency(item.price * item.quantity)}{unidade && item.quantity === 1 && <em className="sc-it-un"> {unidade}</em>}</strong>
         {livre && <small>{formatCurrency(item.price)} por kg</small>}
+        {unidade && item.quantity !== 1 && <small>{formatCurrency(item.price)} {unidade}</small>}
       </div>
       <div className="sc-qtd">
         <button type="button" aria-label={ultimo ? 'Tirar da sacola' : 'Diminuir'} onClick={dec}>

@@ -19,6 +19,7 @@ export default function AdminBanner() {
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<Audiencia | null>(null);
   const [uploadingId, setUploadingId] = useState<Audiencia | null>(null);
+  const [criandoId, setCriandoId] = useState<Audiencia | null>(null);
   const freeRef = useRef<HTMLInputElement>(null);
   const proRef = useRef<HTMLInputElement>(null);
 
@@ -58,7 +59,7 @@ export default function AdminBanner() {
       const publicUrl = publicData.publicUrl;
 
       const row = rows[aud];
-      if (!row) throw new Error("Registro não encontrado — rode o SQL de setup.");
+      if (!row) throw new Error("Este banner ainda não foi criado no banco.");
 
       const { error: updErr } = await supabase
         .from("admin_banner")
@@ -66,7 +67,7 @@ export default function AdminBanner() {
         .eq("id", row.id);
       if (updErr) throw updErr;
 
-      showMsg("Imagem enviada!", "ok");
+      showMsg("Imagem enviada", "ok");
       await load();
     } catch (err: any) {
       showMsg("Erro no upload: " + (err.message || err), "err");
@@ -86,7 +87,17 @@ export default function AdminBanner() {
       .eq("id", row.id);
     setSavingId(null);
     if (error) { showMsg("Erro ao salvar: " + error.message, "err"); return; }
-    showMsg("Salvo!", "ok");
+    showMsg("Salvo", "ok");
+    await load();
+  };
+
+  /** Cria o registro padrão do banner (sem imagem, desligado) quando ele ainda não existe no banco */
+  const criarRegistro = async (aud: Audiencia) => {
+    setCriandoId(aud);
+    const { error } = await supabase.from("admin_banner").insert({ audiencia: aud, imagem_url: null, link_destino: "/assinar", ativo: false });
+    setCriandoId(null);
+    if (error) { showMsg("Não deu pra criar o banner. Peça para rodar o SQL de configuração. (" + error.message + ")", "err"); return; }
+    showMsg("Banner criado", "ok");
     await load();
   };
 
@@ -103,7 +114,14 @@ export default function AdminBanner() {
     const row = rows[aud];
     if (!row) return (
       <div className="ab-card">
-        <p className="ab-warn"><WarningCircle size={18} weight="bold" aria-hidden="true" /><span>O registro <b>{aud}</b> não existe na tabela. Rode o SQL de setup.</span></p>
+        <div className="ab-head-tx">
+          <h2 className="ab-title">{titulo}</h2>
+          <p className="ab-desc">{descricao}</p>
+        </div>
+        <p className="ab-warn"><WarningCircle size={18} weight="bold" aria-hidden="true" /><span>Este banner ainda não foi criado no banco. Crie agora ou peça para rodar o SQL de configuração.</span></p>
+        <div className="ab-actions">
+          <Botao tamanho="m" onClick={() => criarRegistro(aud)} carregando={criandoId === aud}>Criar registro</Botao>
+        </div>
       </div>
     );
     const uploading = uploadingId === aud;
@@ -171,8 +189,8 @@ export default function AdminBanner() {
       <Titulo nivel="tela" apoio="Aparece no Início do app (celular), entre o Acesso rápido e as Últimas atualizações.">Banner do celular</Titulo>
 
       <div className="ab-grid">
-        {renderCard("free", "Banner do plano Free", "Aparece pra quem está no plano Free (ex.: promoção do Pro).", freeRef)}
-        {renderCard("pro", "Banner do plano Pro", "Opcional. Aparece pra quem já é Pro. Inativo ou sem imagem, o Pro não vê banner.", proRef)}
+        {renderCard("free", "Banner do plano grátis", "Aparece pra quem está no plano grátis (ex.: promoção do PRO).", freeRef)}
+        {renderCard("pro", "Banner do plano PRO", "Opcional. Aparece pra quem já é PRO. Inativo ou sem imagem, quem é PRO não vê banner.", proRef)}
       </div>
     </div>
   );

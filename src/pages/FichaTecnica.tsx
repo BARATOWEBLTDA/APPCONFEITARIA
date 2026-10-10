@@ -8,7 +8,7 @@ import QuickAddInsumo, { InsumoQuick } from "@/components/QuickAddInsumo";
 import DooInfoModal from "@/components/DooInfoModal";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar } from "@/components/base";
-import { Cake, CaretRight, Check, Egg, Info, MagnifyingGlass, Plus, Receipt, TrendDown, X } from "@phosphor-icons/react";
+import { Camera, CaretRight, Check, Egg, Info, MagnifyingGlass, Plus, Receipt, TrendDown, X } from "@phosphor-icons/react";
 import "./clientes.css";
 import "./fichaLista.css";
 import "./fichaDetalhe.css";
@@ -570,7 +570,7 @@ export default function FichaTecnica() {
           {/* Resumo do lucro (celular e tablet) */}
           <section className="cl9-card fd-resumo fd-so-cel">
             <div className="fd-topo">
-              <span className="fd-foto">{foto ? <img src={foto} alt="" /> : <Cake size={26} weight="duotone" />}</span>
+              <span className="fd-foto">{foto ? <img src={foto} alt="" /> : <Camera size={24} weight="bold" aria-label="Sem foto" />}</span>
               <div className={`fd-lucro fd-lucro--${tom}`}>
                 <small>{lucroLive < 0 ? "Prejuízo" : "Seu lucro"}</small>
                 <b>R$ {fmt(Math.abs(lucroLive))}</b>
@@ -704,7 +704,7 @@ export default function FichaTecnica() {
                     ))}
                   </div>
                 </div>
-              <Campo rotulo="Embalagem" opcional placeholder="Ex.: Caixa kraft 20x20" value={extras.embalagem} onChange={e => setExtras(s => ({ ...s, embalagem: e.target.value }))} />
+              <Campo rotulo="Embalagem" opcional placeholder="Ex.: caixa kraft 20x20" value={extras.embalagem} onChange={e => setExtras(s => ({ ...s, embalagem: e.target.value }))} />
               <CampoArea rotulo="Observações" opcional rows={2} placeholder="Produção, armazenamento ou venda" value={extras.observacoes_ficha} onChange={e => setExtras(s => ({ ...s, observacoes_ficha: e.target.value }))} />
             </>)}
           </section>
@@ -714,7 +714,7 @@ export default function FichaTecnica() {
         <aside className="fd-lado">
           <section className="cl9-card fd-resumo">
             <div className="fd-topo">
-              <span className="fd-foto">{foto ? <img src={foto} alt="" /> : <Cake size={26} weight="duotone" />}</span>
+              <span className="fd-foto">{foto ? <img src={foto} alt="" /> : <Camera size={24} weight="bold" aria-label="Sem foto" />}</span>
               <div className={`fd-lucro fd-lucro--${tom}`}>
                 <small>{lucroLive < 0 ? "Prejuízo" : "Seu lucro"}</small>
                 <b>R$ {fmt(Math.abs(lucroLive))}</b>
@@ -967,7 +967,7 @@ export default function FichaTecnica() {
           <p>O custo soma os ingredientes, os custos invisíveis (gás, luz, água) e a sua mão de obra, quando você coloca.</p>
         </>
       }
-      infoTip={<>Toque num produto pra montar ou ajustar a ficha.</>}
+      infoTip={<>Escolha um produto pra montar ou ajustar a ficha.</>}
     />
     <div className="cl9 fl">
       {produtos.length === 0 ? (
@@ -1009,7 +1009,7 @@ export default function FichaTecnica() {
               const foto = (p.imagem_url || "").split(",")[0];
               return (
                 <button key={p.id} type="button" className={`fl-l${c.temFicha ? "" : " fl-l--sem"}`} onClick={() => abrirFicha(p)}>
-                  <span className="fl-th">{foto ? <img src={foto} alt="" /> : <Cake size={22} weight="duotone" />}</span>
+                  <span className="fl-th">{foto ? <img src={foto} alt="" /> : <Camera size={20} weight="bold" aria-label="Sem foto" />}</span>
                   <span className="fl-tx">
                     <b>{p.nome}</b>
                     <small className="fl-cel">

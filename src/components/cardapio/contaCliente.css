@@ -1,4 +1,4 @@
-/* Pedidos e Perfil da cliente (08/10 · 3.31) */
+/* Pedidos e Perfil do cliente (08/10 · 3.31) */
 .cc { flex: 1; min-height: 0; display: flex; flex-direction: column; background: #F7F4F5; font-family: var(--font-base); color: #2C1219; }
 .cc button { font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .cc button:focus { outline: none; }

@@ -3,6 +3,7 @@ import { MagnifyingGlass, CaretDown, Check, SquaresFour, X } from '@phosphor-ico
 import { ProductCard } from './ProductCard'
 import { Produto } from '@/types/database'
 import { ProductModal } from '@/components/cart/ProductModal'
+import { EmptyState } from './EmptyState'
 import './cardapioLista.css'
 
 /**
@@ -23,9 +24,11 @@ interface Props {
   categories?: string[]
   onCategorySelect?: (cat: string | null) => void
   categoryCounts?: Record<string, number>
+  /** WhatsApp da loja (pro estado de cardápio em montagem) */
+  telefone?: string | null
 }
 
-export function ProductList({ produtos, favorites, onToggleFavorite, backgroundColor, borderColor, corBotao = '#E85A8C', selectedCategory, searchTerm, onSearchChange, categories = [], onCategorySelect, categoryCounts = {} }: Props) {
+export function ProductList({ produtos, favorites, onToggleFavorite, backgroundColor, borderColor, corBotao = '#E85A8C', selectedCategory, searchTerm, onSearchChange, categories = [], onCategorySelect, categoryCounts = {}, telefone }: Props) {
   const [modalProduct, setModalProduct] = useState<Produto | null>(null)
   const [catOpen, setCatOpen] = useState(false)
   const catRef = useRef<HTMLDivElement>(null)
@@ -96,13 +99,14 @@ export function ProductList({ produtos, favorites, onToggleFavorite, backgroundC
         <div className="cl-grade">{regular.map(cartao)}</div>
       </>)}
 
-      {filtered.length === 0 && (
+      {filtered.length === 0 && (searchTerm.trim() || selectedCategory) && (
         <div className="cl-vazio">
           <MagnifyingGlass size={32} aria-hidden="true" />
-          <b>Nenhum produto encontrado</b>
-          <span>{searchTerm ? 'Tente buscar com outra palavra.' : 'Escolha outra categoria.'}</span>
+          <b>{searchTerm.trim() ? `Nenhum produto com “${searchTerm.trim()}”` : 'Nenhum produto nessa categoria'}</b>
+          <span>{searchTerm.trim() ? 'Tente buscar com outra palavra.' : 'Escolha outra categoria.'}</span>
         </div>
       )}
+      {filtered.length === 0 && !searchTerm.trim() && !selectedCategory && <EmptyState telefone={telefone} />}
 
       {modalProduct && (
         <ProductModal isOpen={!!modalProduct} onClose={() => setModalProduct(null)} product={modalProduct} corBotao={corBotao} />

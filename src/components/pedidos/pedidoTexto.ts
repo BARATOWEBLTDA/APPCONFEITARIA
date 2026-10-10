@@ -1,6 +1,7 @@
 /**
  * Tudo o que a lista de pedidos escreve (08/10 · 3.11): situação, botão do próximo passo, datas, dinheiro.
  * As palavras seguem o dicionário do guia (C7): Novo pedido, Pronto, Pronto pra retirar, Saiu pra entrega.
+ * Botões (10/10): sempre verbo de ação, os mesmos da tela do pedido (VERBOS).
  * A mesma regra vale pro cartão do celular, a linha do computador e o quadro.
  */
 export type PedidoItem = {
@@ -9,6 +10,7 @@ export type PedidoItem = {
   imagem_url?: string | null
   personalizacoes?: any
   produtos?: { imagem_url?: string | null; forma_venda?: string | null } | null
+  forma_venda?: string | null
 }
 
 export type Pedido = {
@@ -58,28 +60,38 @@ export function situacaoDe(p: Pedido): { nome: string; tom?: Tom } {
   return { nome: s.nome, tom: s.tom }
 }
 
-/** O botão do próximo passo (o mesmo fluxo de antes; só os textos mudaram) */
-export function acaoDe(p: Pedido): { rotulo: string; proximo: string; pago?: boolean } | null {
-  const g = grupoDoStatus(p.status)
-  const retirada = p.tipo_entrega === 'retirada'
+/**
+ * O próximo passo do pedido (10/10): o MESMO caminho e os MESMOS verbos na lista, no quadro e na tela do pedido.
+ *   Retirada: Produzir → Marcar pronto (vai pra "Pronto pra retirar") → Marcar retirado.
+ *   Entrega:  Produzir → Marcar pronto (vai pra "Pronto") → Saiu pra entrega → Marcar entregue.
+ * Pedido de retirada que já está em "Pronto" (antigo) segue direto pra Marcar retirado.
+ */
+export const VERBOS = {
+  receber: 'Recebi', aceitar: 'Aceitar', produzir: 'Produzir', pronto: 'Marcar pronto',
+  saiu: 'Saiu pra entrega', entregue: 'Marcar entregue', retirado: 'Marcar retirado',
+} as const
+export function proximoPasso(status: string, tipoEntrega?: string | null, origem?: string | null): { rotulo: string; proximo: string; pago?: boolean } | null {
+  const g = grupoDoStatus(status)
+  const retirada = tipoEntrega !== 'entrega'
   switch (g) {
     // pedido do cardápio ainda precisa ser aceito depois de pago; o lançado por ela já fica agendado
-    case 'aguardando_pagamento': return { rotulo: 'Recebi', proximo: p.origem === 'cardapio' ? 'aguardando_aceite' : 'agendado', pago: true }
-    case 'aguardando_aceite': return { rotulo: 'Aceitar', proximo: 'agendado' }
-    case 'agendado': return { rotulo: 'Produzir', proximo: 'em_producao' }
-    case 'em_producao': return { rotulo: 'Pronto', proximo: 'finalizado' }
-    case 'finalizado': return retirada ? { rotulo: 'Pronto pra retirar', proximo: 'aguardando_retirada' } : { rotulo: 'Saiu pra entrega', proximo: 'em_entrega' }
-    case 'aguardando_retirada': return { rotulo: 'Retirou', proximo: 'entregue' }
-    case 'em_entrega': return { rotulo: 'Entregue', proximo: 'entregue' }
+    case 'aguardando_pagamento': return { rotulo: VERBOS.receber, proximo: origem === 'cardapio' ? 'aguardando_aceite' : 'agendado', pago: true }
+    case 'aguardando_aceite': return { rotulo: VERBOS.aceitar, proximo: 'agendado' }
+    case 'agendado': return { rotulo: VERBOS.produzir, proximo: 'em_producao' }
+    case 'em_producao': return retirada ? { rotulo: VERBOS.pronto, proximo: 'aguardando_retirada' } : { rotulo: VERBOS.pronto, proximo: 'finalizado' }
+    case 'finalizado': return retirada ? { rotulo: VERBOS.retirado, proximo: 'entregue' } : { rotulo: VERBOS.saiu, proximo: 'em_entrega' }
+    case 'aguardando_retirada': return { rotulo: VERBOS.retirado, proximo: 'entregue' }
+    case 'em_entrega': return { rotulo: VERBOS.entregue, proximo: 'entregue' }
     default: return null
   }
 }
+export const acaoDe = (p: Pedido) => proximoPasso(p.status, p.tipo_entrega, p.origem)
 
 /** Pedido que chegou e ainda precisa ser aceito (fica no topo da lista, em destaque) */
 export const precisaAceitar = (p: Pedido) => grupoDoStatus(p.status) === 'aguardando_aceite'
 
 /** Aviso curto, no passado, de quando o pedido muda de situação (3.14) */
-export function avisoDaMudanca(p: Pedido, status: string, pago = false): string {
+export function avisoDaMudanca(p: Pick<Pedido, 'numero'> & { tipo_entrega?: string | null }, status: string, pago = false): string {
   const n = `#${p.numero || ''}`
   if (pago) return `Pagamento do pedido ${n} registrado.`
   switch (status) {
@@ -88,7 +100,7 @@ export function avisoDaMudanca(p: Pedido, status: string, pago = false): string 
     case 'finalizado': return `Pedido ${n} pronto.`
     case 'aguardando_retirada': return `Pedido ${n} pronto pra retirar.`
     case 'em_entrega': return `Pedido ${n} saiu pra entrega.`
-    case 'entregue': return `Pedido ${n} entregue.`
+    case 'entregue': return p.tipo_entrega === 'retirada' ? `Pedido ${n} retirado.` : `Pedido ${n} entregue.`
     case 'cancelado': return `Pedido ${n} cancelado.`
     default: return `Pedido ${n}: ${nomeDaSituacao(status)}.`
   }
@@ -124,11 +136,11 @@ export function rs(v: number, redondo = false): string {
 }
 
 const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
-const SEMANA = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
+const SEMANA = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado']
 const hora5 = (h?: string | null) => (h ? h.slice(0, 5) : '')
 const dataDe = (iso: string) => { const [y, m, d] = iso.slice(0, 10).split('-').map(Number); return new Date(y, m - 1, d) }
 
-/** "10 de outubro às 10:00 (Sábado)" */
+/** "10 de outubro às 10:00 (sábado)": dia da semana em minúscula no meio da frase */
 export function dataLonga(data?: string | null, hora?: string | null): string {
   if (!data) return 'Sem data'
   const d = dataDe(data)
@@ -142,7 +154,8 @@ export function dataCurta(data?: string | null, hora?: string | null): string {
   const h = hora ? ` às ${hora5(hora)}` : ''
   if (dias === 0) return `Hoje${h}`
   if (dias === 1) return `Amanhã${h}`
-  return `${SEMANA[d.getDay()].slice(0, 3)}, ${d.getDate()}/${d.getMonth() + 1}${h}`
+  const sem = SEMANA[d.getDay()].slice(0, 3)
+  return `${sem.charAt(0).toUpperCase()}${sem.slice(1)}, ${d.getDate()}/${d.getMonth() + 1}${h}`
 }
 export const horaCurta = (h?: string | null) => hora5(h)
 
@@ -170,12 +183,32 @@ export const nomeCliente = (p: Pedido) => (p.cliente_nome ? nomeDeGente(p.client
 export function itensOrdenados(p: Pedido): PedidoItem[] {
   return [...(p.pedido_itens || [])].sort((a, b) => (b.valor_unitario || 0) * (b.quantidade || 1) - (a.valor_unitario || 0) * (a.quantidade || 1))
 }
-/** "2x Caixa com 12 brownies e mais 1" */
+/** Forma de venda do item: a do produto (lista) ou a que veio no próprio item (nova venda) */
+export const formaDoItem = (it: { forma_venda?: string | null; produtos?: { forma_venda?: string | null } | null }) => it.produtos?.forma_venda || it.forma_venda || null
+const numeroBR = (q: number) => (Number.isInteger(q) ? String(q) : q.toLocaleString('pt-BR', { maximumFractionDigits: 3 }))
+/**
+ * Quantidade junto do nome, conforme a forma de venda (10/10):
+ *   unidade/caixa/kit: antes = "2x" (vazio quando é 1 e semUm=true)
+ *   kg: depois = "1,5 kg" ("Bolo red velvet 1,5 kg")
+ *   cento/fatia: depois = "2 centos" ("Brigadeiro · 2 centos")
+ */
+export function partesDaQtd(qtd: number, forma?: string | null, semUm = false): { antes: string; depois: string; sep: string } {
+  const q = Number(qtd) || 1
+  if (forma === 'kg') return { antes: '', depois: `${numeroBR(q)} kg`, sep: ' ' }
+  if (forma === 'cento') return { antes: '', depois: `${numeroBR(q)} ${q === 1 ? 'cento' : 'centos'}`, sep: ' · ' }
+  if (forma === 'fatia') return { antes: '', depois: `${numeroBR(q)} ${q === 1 ? 'fatia' : 'fatias'}`, sep: ' · ' }
+  return { antes: semUm && q === 1 ? '' : `${numeroBR(q)}x`, depois: '', sep: '' }
+}
+/** "2x Brownie", "Bolo red velvet 1,5 kg", "Brigadeiro · 2 centos" */
+export function itemComQtd(nome: string, qtd: number, forma?: string | null, semUm = false): string {
+  const { antes, depois, sep } = partesDaQtd(qtd, forma, semUm)
+  return `${antes ? `${antes} ` : ''}${nome}${depois ? `${sep}${depois}` : ''}`
+}
+/** "2x Caixa com 12 brownies e mais 1", "Bolo red velvet 1,5 kg" */
 export function resumoItens(p: Pedido): string {
   const it = itensOrdenados(p)
   if (!it.length) return 'Sem itens'
-  const q = it[0].quantidade || 1
-  return `${q > 1 ? `${String(q).replace('.', ',')}x ` : ''}${nomeDeProduto(it[0].nome_produto)}${it.length > 1 ? ` e mais ${it.length - 1}` : ''}`
+  return `${itemComQtd(nomeDeProduto(it[0].nome_produto), it[0].quantidade || 1, formaDoItem(it[0]), true)}${it.length > 1 ? ` e mais ${it.length - 1}` : ''}`
 }
 export function fotoDoItem(it?: PedidoItem): string | null {
   const f = String(it?.imagem_url || it?.produtos?.imagem_url || '')
@@ -189,7 +222,7 @@ export function fotoDoPedido(p: Pedido): string | null {
 
 /** "1kg", "2 fatias", "1 cento", "3x" */
 export function qtdCurta(qtd: number, forma?: string | null): string {
-  const q = Number.isInteger(qtd) ? String(qtd) : String(qtd).replace('.', ',')
+  const q = numeroBR(Number(qtd) || 1)
   if (!forma) return `${q}x`
   if (forma === 'kg') return `${q} kg`
   if (forma === 'fatia') return `${q} ${qtd === 1 ? 'fatia' : 'fatias'}`
@@ -205,7 +238,12 @@ export function telefoneBonito(t?: string): string {
   if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`
   return t || ''
 }
-export const temTelefone = (p: Pedido) => String(p.cliente_telefone || '').replace(/\D/g, '').length >= 10
+/** Telefone de verdade: 10 ou mais dígitos e não um número de enfeite ("0000000000", "1111111111") */
+export function telefoneValido(t?: string | null): boolean {
+  const d = String(t || '').replace(/\D/g, '').replace(/^55(?=\d{10,11}$)/, '')
+  return d.length >= 10 && !/^(\d)\1+$/.test(d) && !/^\d{2}0+$/.test(d)
+}
+export const temTelefone = (p: Pedido) => telefoneValido(p.cliente_telefone)
 export function enderecoCurto(p: Pedido): string {
   return [[p.endereco_rua, p.endereco_numero].filter(Boolean).join(', '), p.endereco_bairro].filter(Boolean).join(' · ')
 }

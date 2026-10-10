@@ -53,7 +53,7 @@ export default function MensagensWhatsApp() {
   const salvar = async () => {
     if (!editando || !profile?.id) return;
     const limpo = texto.trim();
-    if (!limpo) { avisar("Escreva a mensagem ou toque em Voltar ao padrão.", { tipo: "erro" }); return; }
+    if (!limpo) { avisar("Escreva a mensagem ou use Voltar ao padrão.", { tipo: "erro" }); return; }
     const novas: Record<string, string> = { ...salvas };
     if (limpo === editando.padrao) delete novas[editando.chave]; else novas[editando.chave] = limpo;
     setSalvando(true);
@@ -69,7 +69,7 @@ export default function MensagensWhatsApp() {
 
   return (
     <>
-      <AppPageHeader title="Mensagens do WhatsApp" subtitle="Os textos que o app escreve por você" onBack={() => navigate("/configuracoes")} />
+      <AppPageHeader title="Mensagens" subtitle="Os textos do WhatsApp que o app escreve por você" onBack={() => navigate("/configuracoes")} />
       <div className="mz">
         <p className="mz-intro"><Info size={20} weight="bold" aria-hidden="true" />O app abre o WhatsApp com a mensagem pronta. Aqui você troca o texto do seu jeito.</p>
         <section className="mz-lista">

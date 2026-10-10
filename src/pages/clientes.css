@@ -4,12 +4,12 @@
 .cl9 button:focus { outline: none; }
 
 /* números: faixa que rola no celular, 4 colunas no computador */
-.cl9-nums { display: flex; gap: 8px; margin: 0 -12px 12px; padding: 0 12px 4px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
-.cl9-nums::-webkit-scrollbar { display: none; }
-.cl9-nums > div { flex: none; display: flex; flex-direction: column; gap: 2px; width: 156px; padding: 12px 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); scroll-snap-align: start; }
-.cl9-nums small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cl9-nums b { font-size: 22px; font-weight: 700; line-height: 1.2; white-space: nowrap; }
-.cl9-nums em { font-style: normal; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; }
+/* (10/10) No celular os 4 números ficam numa grade de 2 colunas: antes rolavam de lado e cortavam na borda sem aviso */
+.cl9-nums { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0 0 12px; padding: 0; }
+.cl9-nums > div { min-width: 0; display: flex; flex-direction: column; gap: 2px; padding: 12px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); }
+.cl9-nums small { font-size: 12.5px; font-weight: 500; line-height: 1.3; color: var(--ui-texto-2); }
+.cl9-nums b { font-size: 20px; font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cl9-nums em { font-style: normal; font-size: 12.5px; line-height: 1.3; color: var(--ui-texto-2); }
 .cl9-nums em.ok { color: var(--ui-verde); font-weight: 700; }
 .cl9-nums em.rosa { color: var(--ui-rosa-escuro); font-weight: 700; }
 
@@ -28,10 +28,14 @@
 .cl9-busca input { flex: 1; min-width: 0; height: 100%; border: 0; outline: none; background: none; font-family: inherit; font-size: 16px; color: var(--ui-texto); }
 .cl9-busca button { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 0; border-radius: 10px; background: none; color: var(--ui-texto-2); }
 .cl9-acoes { display: flex; gap: 8px; flex: none; }
-.cl9-pro { flex: none; margin-left: 6px; padding: 2px 6px; border-radius: 6px; background: var(--ui-vinho); color: #fff; font-size: 12px; font-style: normal; font-weight: 700; }
+.cl9-pro { flex: none; display: inline-flex; align-items: center; gap: 3px; margin-left: 6px; padding: 2px 6px; border-radius: 6px; background: var(--ui-vinho); color: #fff; font-size: 12px; font-style: normal; font-weight: 700; }
+.cl9-pro svg { flex: none; color: #FF9DC4; }
 .cl9-g { display: none !important; }
 .cl9-chips { display: flex; gap: 8px; margin: 12px -12px 4px; padding: 0 12px; overflow-x: auto; scrollbar-width: none; }
 .cl9-chips::-webkit-scrollbar { display: none; }
+/* (10/10) Os filtros rolam de lado: o fim some num degradê (avisa que tem mais) e há um respiro depois do último */
+.cl9-chips { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
+.cl9-chips::after { content: ""; flex: none; width: 24px; }
 .cl9-chips button { flex: none; display: flex; align-items: center; gap: 6px; min-height: 40px; margin: 0; padding: 0 14px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto-2); font-size: 14px; font-weight: 700; }
 .cl9-chips button i { font-style: normal; font-size: 13px; font-weight: 700; color: var(--ui-texto-3); }
 .cl9-chips button[aria-selected="true"] { border-color: var(--ui-vinho); background: var(--ui-vinho); color: #fff; }

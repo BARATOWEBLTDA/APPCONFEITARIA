@@ -12,7 +12,7 @@ import { Botao, confirmar, avisar as avisarBase } from "@/components/base";
 
 /**
  * Financeiro · Passo 5 (03/10) — Contas a pagar.
- * A conta não mexe no caixa até ela tocar em "Pagar": aí a função do banco contas_pagar_pagar()
+ * A conta não mexe no caixa até usar "Pagar": aí a função do banco contas_pagar_pagar()
  * lança a saída no financeiro e marca a conta como paga, tudo junto.
  * Custos fixos com dia de vencimento viram uma conta por mês (este mês e o próximo).
  */
@@ -82,7 +82,7 @@ export default function FinanceiroAPagar() {
         onBack={() => navigate("/financeiro")}
         infoIcon="🧾"
         infoContent={<>
-          <p>Aqui ficam as <strong>contas que você ainda vai pagar</strong>, com o vencimento. Elas <strong>não saem do caixa</strong> até você tocar em <strong>Pagar</strong>.</p>
+          <p>Aqui ficam as <strong>contas que você ainda vai pagar</strong>, com o vencimento. Elas <strong>não saem do caixa</strong> até você usar <strong>Pagar</strong>.</p>
           <p>Os <strong>custos fixos com dia de vencimento</strong> (aluguel, internet…) viram uma conta aqui todo mês, sozinhos.</p>
         </>}
       />
@@ -96,9 +96,9 @@ export default function FinanceiroAPagar() {
 
           {!carregando && contas.length > 0 && (
             <div className="fap-resumo">
-              <div className={`fap-k ${soma(grupos.vencidas) > 0 ? "fap-k--atr" : ""}`}><small>Vencidas</small><b>{brl(soma(grupos.vencidas))}</b><i>{grupos.vencidas.length} {grupos.vencidas.length === 1 ? "conta" : "contas"}</i></div>
-              <div className="fap-k"><small>Próximos 7 dias</small><b>{brl(soma(grupos.semana))}</b><i>{grupos.semana.length} {grupos.semana.length === 1 ? "conta" : "contas"}</i></div>
-              <div className="fap-k"><small>Depois</small><b>{brl(soma(grupos.depois))}</b><i>{grupos.depois.length} {grupos.depois.length === 1 ? "conta" : "contas"}</i></div>
+              <div className={`fap-k ${soma(grupos.vencidas) > 0 ? "fap-k--atr" : "fap-k--zero"}`}><small>Vencidas</small><b>{brl(soma(grupos.vencidas))}</b><i>{grupos.vencidas.length} {grupos.vencidas.length === 1 ? "conta" : "contas"}</i></div>
+              <div className={`fap-k ${soma(grupos.semana) > 0 ? "" : "fap-k--zero"}`}><small>Próximos 7 dias</small><b>{brl(soma(grupos.semana))}</b><i>{grupos.semana.length} {grupos.semana.length === 1 ? "conta" : "contas"}</i></div>
+              <div className={`fap-k ${soma(grupos.depois) > 0 ? "" : "fap-k--zero"}`}><small>Depois</small><b>{brl(soma(grupos.depois))}</b><i>{grupos.depois.length} {grupos.depois.length === 1 ? "conta" : "contas"}</i></div>
             </div>
           )}
 
@@ -107,7 +107,7 @@ export default function FinanceiroAPagar() {
             <div className="fap-vazio">
               <span className="fap-vazio-ic"><CheckCircle size={34} weight="duotone" /></span>
               <b>Nenhuma conta a pagar</b>
-              <p>Cadastre as contas com vencimento, ou coloque o dia de vencimento nos seus <button type="button" className="fap-link" onClick={() => navigate("/custos")}>custos fixos</button> pra elas aparecerem aqui todo mês.</p>
+              <p>Cadastre as contas com vencimento ou coloque o dia de vencimento nos seus <button type="button" className="fap-link" onClick={() => navigate("/custos")}>custos fixos</button> pra elas aparecerem aqui todo mês.</p>
             </div>
           )}
 
@@ -225,7 +225,8 @@ function NovaContaSheet({ onClose, onFeito }: { onClose: () => void; onFeito: ()
 
 const CSS = `
   .fap-root { font-family: var(--font-base); }
-  .fap-wrap { max-width: 760px; margin: 0 auto; padding: 22px 0 96px; display: flex; flex-direction: column; gap: 20px; }
+  /* 10/10: mesma largura de conteúdo de Transações (antes 760px, numa coluna estreita no PC) */
+  .fap-wrap { max-width: 980px; margin: 0 auto; padding: 22px 0 96px; display: flex; flex-direction: column; gap: 20px; }
   .fap-nova { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; border: 1.5px dashed #F3C9DA; background: #FFF6F9; color: #C33A6E; border-radius: 12px; padding: 11px 14px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
   .fap-resumo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .fap-k { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 10px; min-width: 0; }
@@ -233,6 +234,7 @@ const CSS = `
   .fap-k b { display: block; font-size: clamp(13.5px, 3.9vw, 17px); letter-spacing: -.02em; font-weight: 700; color: #2C1219; margin: 3px 0 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .fap-k i { font-style: normal; font-size: 13px; color: #888780; }
   .fap-k--atr { border-color: #FECACA; background: #FFF7F7; } .fap-k--atr b { color: #DC2626; }
+  .fap-k--zero b { color: #9A8E94; }
   .fap-carregando { text-align: center; color: #9A8E94; font-size: 14px; padding: 30px 0; }
   .fap-vazio { background: #fff; border: 1px solid #F0EBED; border-radius: 16px; padding: 28px 20px; text-align: center; }
   .fap-vazio-ic { width: 64px; height: 64px; border-radius: 20px; background: #F0FDF4; color: #16A34A; display: inline-flex; align-items: center; justify-content: center; }
@@ -240,7 +242,8 @@ const CSS = `
   .fap-vazio p { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 6px auto 0; max-width: 380px; text-wrap: balance; }
   .fap-link { border: none; background: none; padding: 0; font: inherit; color: #C33A6E; font-weight: 700; cursor: pointer; text-decoration: underline; }
   .fap-gt { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: #9A8E94; } .fap-gt span { color: #6B5D64; }
-  .fap-lista { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .fap-lista { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; min-width: 0; }
+  @media (min-width: 900px) { .fap-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .fap-it { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 14px; }
   .fap-it-h { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .fap-it-h b { font-size: 14.5px; font-weight: 700; color: #2C1219; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

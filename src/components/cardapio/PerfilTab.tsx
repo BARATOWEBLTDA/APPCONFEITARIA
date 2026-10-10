@@ -1,4 +1,4 @@
-/* Perfil da cliente (08/10 · 3.31): dados, endereços e sair. Os pedidos ficam só na aba Pedidos. */
+/* Perfil do cliente (08/10 · 3.31): dados, endereços e sair. Os pedidos ficam só na aba Pedidos. */
 import { useEffect, useState } from 'react'
 import { MapPin, Plus, SignOut, Trash } from '@phosphor-icons/react'
 import { Campo, Janela, avisar, confirmar } from '@/components/base'

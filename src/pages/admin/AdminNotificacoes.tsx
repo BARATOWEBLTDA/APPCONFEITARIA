@@ -96,7 +96,7 @@ export default function AdminNotificacoes() {
       <Titulo
         nivel="tela"
         apoio="Mande um aviso para todas as confeiteiras."
-        acao={<Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={novaNotificacao}>Nova notificação</Botao>}
+        acao={!loading && notificacoes.length > 0 ? <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={novaNotificacao}>Nova notificação</Botao> : undefined}
       >
         Notificações
       </Titulo>

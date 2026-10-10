@@ -1,7 +1,7 @@
 // Financeiro — painel (Passo 7, 03/10). Junta o que antes ficava na Visão Geral e no menu:
 // saldo em caixa, os números do mês, a receber, a pagar, previstos, fluxo e últimas movimentações.
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowUp, ArrowDown, CaretLeft, CaretRight, ArrowsLeftRight, Calculator, ChartPieSlice, ShoppingBagOpen, TrendUp } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -12,16 +12,14 @@ import { carregarMes, resumoAPagar, type MesFinanceiro } from "@/lib/painelFinan
 import { carregarAReceber, isoDia } from "@/lib/contasReceber";
 
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-// números do mês sem centavos (o valor exato fica nas telas de detalhe)
-const brlInt = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
-const brlCurto = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+// 10/10: dinheiro sempre com centavos (antes os cards do mês mostravam "R$ 801" ao lado de "R$ 1.835,40")
 const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
 export default function Financeiro() {
   const navigate = useNavigate();
   const { uid, cx, recarregar } = useCaixa();
   const [definir, setDefinir] = useState(false);
-  const [despesa, setDespesa] = useState(false);
+  const [nova, setNova] = useState<"entrada" | "saida" | null>(null);
   const hoje = new Date();
   const [mes, setMes] = useState({ ano: hoje.getFullYear(), m: hoje.getMonth() });
   const [dados, setDados] = useState<MesFinanceiro | null>(null);
@@ -62,8 +60,8 @@ export default function Financeiro() {
               <b>{MESES[mes.m]} de {mes.ano}</b>
               <button type="button" onClick={() => mudarMes(1)} disabled={ehMesAtual} aria-label="Próximo mês"><CaretRight size={14} weight="bold" /></button>
             </div>
-            <button type="button" className="fd-hd-bt e" onClick={() => navigate("/financeiro/a-receber")}><ArrowUp size={15} weight="bold" />Registrar recebimento</button>
-            <button type="button" className="fd-hd-bt s" onClick={() => setDespesa(true)}><ArrowDown size={15} weight="bold" />Nova despesa</button>
+            <button type="button" className="fd-hd-bt e" onClick={() => setNova("entrada")}><ArrowUp size={15} weight="bold" />Nova entrada</button>
+            <button type="button" className="fd-hd-bt s" onClick={() => setNova("saida")}><ArrowDown size={15} weight="bold" />Nova saída</button>
           </div>
         }
         infoContent={<>
@@ -74,13 +72,13 @@ export default function Financeiro() {
       />
       <EstiloFinanceiro />
       <CaixaEstilos />
-      <div className={`fd${foco ? " fd--foco" : ""}`}>
+      <div className={`fd${foco ? " fd--foco" : ""}${cx && !cx.configurado ? " fd--sem-caixa" : ""}`}>
         <div className="fd-a-saldo">
           <SaldoCaixa cx={cx} onAcertar={() => setDefinir(true)} destaque={foco}
             onDepois={foco ? () => { setDepois(true); try { localStorage.setItem(chaveDepois, "1"); } catch { /* sem acesso */ } } : undefined} />
           <div className="fd-acoes">
-            <button type="button" className="fd-bt e" onClick={() => navigate("/financeiro/a-receber")}><ArrowUp size={17} weight="bold" />Receber</button>
-            <button type="button" className="fd-bt s" onClick={() => setDespesa(true)}><ArrowDown size={17} weight="bold" />Despesa</button>
+            <button type="button" className="fd-bt e" onClick={() => setNova("entrada")}><ArrowUp size={17} weight="bold" />Nova entrada</button>
+            <button type="button" className="fd-bt s" onClick={() => setNova("saida")}><ArrowDown size={17} weight="bold" />Nova saída</button>
           </div>
         </div>
 
@@ -91,21 +89,21 @@ export default function Financeiro() {
         </div>
 
         <div className="fd-a-kpis fd-kpis">
-          <div className="fd-k"><span className="fd-ki e" aria-hidden="true"><ArrowUp size={14} weight="bold" /></span><small>Recebido no mês</small><b className="e">{dados ? brlInt(dados.recebido) : "…"}</b><i>dinheiro que entrou</i></div>
-          <div className="fd-k"><span className="fd-ki s" aria-hidden="true"><ArrowDown size={14} weight="bold" /></span><small>Despesas pagas</small><b className="s">{dados ? brlInt(dados.despesasPagas) : "…"}</b><i>dinheiro que saiu</i></div>
-          <div className="fd-k fd-k--vendido"><span className="fd-ki n" aria-hidden="true"><ShoppingBagOpen size={14} weight="bold" /></span><small>Vendido no mês</small><b>{dados ? brlInt(dados.vendido) : "…"}</b><i>{dados ? `${dados.qtdVendidos} ${dados.qtdVendidos === 1 ? "pedido entregue" : "pedidos entregues"}` : ""}</i></div>
-          <div className="fd-k"><span className="fd-ki l" aria-hidden="true"><TrendUp size={14} weight="bold" /></span><small>Lucro do mês</small><b className={dados && dados.lucro < 0 ? "s" : "l"}>{dados ? brlInt(dados.lucro) : "…"}</b>
+          <div className="fd-k"><span className="fd-ki e" aria-hidden="true"><ArrowUp size={14} weight="bold" /></span><small>Recebido no mês</small><b className="e">{dados ? brl(dados.recebido) : "…"}</b><i>dinheiro que entrou</i></div>
+          <div className="fd-k"><span className="fd-ki s" aria-hidden="true"><ArrowDown size={14} weight="bold" /></span><small>Despesas pagas</small><b className="s">{dados ? brl(dados.despesasPagas) : "…"}</b><i>dinheiro que saiu</i></div>
+          <div className="fd-k fd-k--vendido"><span className="fd-ki n" aria-hidden="true"><ShoppingBagOpen size={14} weight="bold" /></span><small>Vendido no mês</small><b>{dados ? brl(dados.vendido) : "…"}</b><i>{dados ? `${dados.qtdVendidos} ${dados.qtdVendidos === 1 ? "pedido entregue" : "pedidos entregues"}` : ""}</i></div>
+          <div className="fd-k"><span className="fd-ki l" aria-hidden="true"><TrendUp size={14} weight="bold" /></span><small>Lucro do mês</small><b className={dados && dados.lucro < 0 ? "s" : "l"}>{dados ? brl(dados.lucro) : "…"}</b>
             <i className="fd-so-cel">{dados ? (dados.vendido > 0 ? `margem de ${dados.margem}%` : "sem vendas entregues") : ""}{dados && dados.semFicha > 0 ? ` · ${dados.semFicha} sem ficha` : ""}</i>
-            <i className="fd-so-desk">{dados ? `vendido ${brlInt(dados.vendido)}${dados.vendido > 0 ? ` · margem ${dados.margem}%` : ""}` : ""}{dados && dados.semFicha > 0 ? ` · ${dados.semFicha} sem ficha` : ""}</i></div>
+            <i className="fd-so-desk">{dados ? `vendido ${brl(dados.vendido)}${dados.vendido > 0 ? ` · margem ${dados.margem}%` : ""}` : ""}{dados && dados.semFicha > 0 ? ` · ${dados.semFicha} sem ficha` : ""}</i></div>
         </div>
 
         <div className="fd-a-contas fd-contas">
           <button type="button" className="fd-k2 rec" onClick={() => navigate("/financeiro/a-receber")}>
-            <small>A receber</small><b>{rec ? brlInt(rec.total) : "…"}</b>
+            <small>A receber</small><b>{rec ? brl(rec.total) : "…"}</b>
             <i>{rec ? `${rec.qtd} ${rec.qtd === 1 ? "pedido" : "pedidos"}${rec.semana ? ` · ${rec.semana} nesta semana` : ""}` : ""}<CaretRight size={13} weight="bold" /></i>
           </button>
           <button type="button" className="fd-k2 pag" onClick={() => navigate("/financeiro/a-pagar")}>
-            <small>A pagar</small><b>{pag === undefined ? "…" : pag ? brlInt(pag.total) : "—"}</b>
+            <small>A pagar</small><b>{pag === undefined ? "…" : pag ? brl(pag.total) : "—"}</b>
             <i>{pag === null ? "falta o SQL do Passo 5" : pag ? `${pag.qtd} ${pag.qtd === 1 ? "conta" : "contas"}${pag.proxima ? ` · vence dia ${pag.proxima.slice(8, 10)}` : ""}` : ""}<CaretRight size={13} weight="bold" /></i>
           </button>
         </div>
@@ -115,7 +113,7 @@ export default function Financeiro() {
         <div className="fd-a-fluxo fd-card">
           <div className="fd-ct"><b>Fluxo de caixa · {MESES[mes.m].toLowerCase()}</b>
             <span className="fd-lg"><i className="e" />Entradas <i className="s" />Saídas <i className="l" />Resultado</span></div>
-          {dados ? <Fluxo dados={dados} /> : <div className="fd-ph" />}
+          {dados ? <Fluxo dados={dados} diaHoje={ehMesAtual ? hoje.getDate() : null} /> : <div className="fd-ph" />}
           {dados && dados.fonteRecebido === "pedidos" && <p className="fd-nota">Os recebimentos estão pelo mês da entrega: rode o SQL do Passo 1 pra usar a data real de cada pagamento.</p>}
         </div>
 
@@ -132,23 +130,38 @@ export default function Financeiro() {
       </div>
 
       {definir && uid && cx && <SaldoSheet atual={cx.configurado ? cx.saldo : null} uid={uid} onClose={() => setDefinir(false)} onSalvo={async () => { setDefinir(false); await depoisDeMudar(); }} />}
-      {despesa && <DespesaSheet onClose={() => setDespesa(false)} onSalvo={async () => { setDespesa(false); await depoisDeMudar(); }} onContaAPagar={() => navigate("/financeiro/a-pagar")} />}
+      {nova && <DespesaSheet tipo={nova} onClose={() => setNova(null)} onSalvo={async () => { setNova(null); await depoisDeMudar(); }}
+        onContaAPagar={() => navigate("/financeiro/a-pagar")} onReceberPedido={() => navigate("/financeiro/a-receber")} />}
       <style>{CSS}</style>
     </>
   );
 }
 
-/** Barras de entradas e saídas por semana, com a linha do resultado acumulado. */
-function Fluxo({ dados }: { dados: MesFinanceiro }) {
-  const W = 340, H = 150, base = 120, topo = 14;
+/** Barras de entradas e saídas por semana, com a linha do resultado acumulado.
+ *  10/10: a largura do desenho acompanha o cartão (no PC o gráfico ocupa a largura toda) e,
+ *  no mês atual, a linha do resultado para na semana de hoje (semanas futuras não têm ponto). */
+function Fluxo({ dados, diaHoje }: { dados: MesFinanceiro; diaHoje: number | null }) {
+  const caixa = useRef<HTMLDivElement>(null);
+  const [W, setW] = useState(340);
+  useEffect(() => {
+    const el = caixa.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(([e]) => { const w = Math.round(e.contentRect.width); if (w > 0) setW(Math.max(280, w)); });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const H = 150, base = 120, topo = 14;
   const sem = dados.semanas;
   const max = Math.max(1, ...sem.map(s => Math.max(s.entradas, s.saidas)), ...sem.map(s => Math.abs(s.acumulado)));
-  const larg = W / sem.length, bw = Math.min(18, larg / 4);
+  const larg = W / sem.length, bw = Math.min(22, larg / 4);
   const y = (v: number) => base - (v / max) * (base - topo);
-  const pts = sem.map((s, i) => `${i * larg + larg / 2},${y(Math.max(0, s.acumulado))}`).join(" ");
+  // semana futura (começa depois de hoje) não tem resultado ainda
+  const passou = (label: string) => diaHoje == null || (parseInt(label, 10) || 1) <= diaHoje;
+  const linha = sem.map((s, i) => ({ s, i })).filter(({ s }) => passou(s.label));
+  const pts = linha.map(({ s, i }) => `${i * larg + larg / 2},${y(Math.max(0, s.acumulado))}`).join(" ");
   const vazio = sem.every(s => !s.entradas && !s.saidas);
   return (
-    <div className="fd-fluxo">
+    <div className="fd-fluxo" ref={caixa}>
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label="Entradas e saídas por semana">
         <line x1="0" x2={W} y1={base} y2={base} stroke="#F0EBED" />
         {sem.map((s, i) => { const cx0 = i * larg + larg / 2; return (
@@ -157,13 +170,13 @@ function Fluxo({ dados }: { dados: MesFinanceiro }) {
             <rect x={cx0 + 1} y={y(s.saidas)} width={bw} height={Math.max(0, base - y(s.saidas))} rx="3" fill="#F87171" />
             <text x={cx0} y={H - 10} textAnchor="middle" fontSize="12" fill="#6B5D64">{s.label}</text>
           </g>); })}
-        {!vazio && <polyline points={pts} fill="none" stroke="#2C1219" strokeWidth="2" />}
-        {!vazio && sem.map((s, i) => <circle key={i} cx={i * larg + larg / 2} cy={y(Math.max(0, s.acumulado))} r="3" fill="#2C1219" />)}
+        {!vazio && linha.length > 1 && <polyline points={pts} fill="none" stroke="#2C1219" strokeWidth="2" />}
+        {!vazio && linha.map(({ s, i }) => <circle key={i} cx={i * larg + larg / 2} cy={y(Math.max(0, s.acumulado))} r="3" fill="#2C1219" />)}
       </svg>
       <div className="fd-fl-res">
-        <span>Entrou <b className="e">{brlCurto(dados.recebido)}</b></span>
-        <span>Saiu <b className="s">{brlCurto(dados.despesasPagas)}</b></span>
-        <span>Resultado <b>{brlCurto(dados.recebido - dados.despesasPagas)}</b></span>
+        <span>Entrou <b className="e">{brl(dados.recebido)}</b></span>
+        <span>Saiu <b className="s">{brl(dados.despesasPagas)}</b></span>
+        <span>Resultado <b>{brl(dados.recebido - dados.despesasPagas)}</b></span>
       </div>
       {vazio && <p className="fd-nota">Nenhuma entrada ou saída neste mês ainda.</p>}
     </div>
@@ -189,6 +202,16 @@ const CSS = `
     .fd .fd-so-cel { display: none !important; } .fd .fd-so-desk { display: flex !important; }
     .fd .fd-a-saldo .cxc { height: 100%; box-sizing: border-box; }
     .fd .fd-k2 { display: flex; flex-direction: column; justify-content: center; }
+    /* 10/10: sem caixa informado (convite alto e sem "Últimas movimentações") a grade deixava buracos:
+       o convite vira uma faixa compacta em largura total e o fluxo de caixa ocupa a linha inteira */
+    .fd.fd--sem-caixa { grid-template-areas: "saldo saldo saldo saldo" "kpis kpis kpis kpis" "contas contas prev prev" "fluxo fluxo fluxo fluxo" "mais mais mais mais"; }
+    .fd.fd--sem-caixa .fd-a-movs { display: none; }
+    .fd.fd--sem-caixa .cxc-convite { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: auto auto; column-gap: 16px; align-items: center; text-align: left; padding: 16px 20px; }
+    .fd.fd--sem-caixa .cxc-convite-ic { grid-row: span 2; }
+    .fd.fd--sem-caixa .cxc-convite b { margin-top: 0; grid-column: 2; }
+    .fd.fd--sem-caixa .cxc-convite p { margin: 4px 0 0; max-width: none; grid-column: 2; text-wrap: pretty; }
+    .fd.fd--sem-caixa .cxc-convite .cxc-cta { grid-column: 3; grid-row: 1; margin-top: 0; white-space: nowrap; }
+    .fd.fd--sem-caixa .cxc-convite .cxc-depois { grid-column: 3; grid-row: 2; margin: 0 auto; }
   }
   .fd-hd { display: flex; align-items: center; gap: 8px; }
   .fd-hd-mes { display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,.18); border-radius: 10px; padding: 4px; }
@@ -214,7 +237,7 @@ const CSS = `
   .fd-ki.e { background: #DCFCE7; color: #15803D; } .fd-ki.s { background: #FEE2E2; color: #DC2626; } .fd-ki.n { background: #F3EEF1; color: #6B5D64; } .fd-ki.l { background: #FCE7F3; color: #C33A6E; }
   .fd-k small { padding-right: 30px; }
   .fd-k small, .fd-k2 small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
-  .fd-k b, .fd-k2 b { display: block; font-size: clamp(15px, 4.6vw, 21px); font-weight: 700; letter-spacing: -.02em; margin: 3px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #2C1219; }
+  .fd-k b, .fd-k2 b { display: block; font-size: clamp(14px, 4.2vw, 20px); font-weight: 700; letter-spacing: -.02em; margin: 3px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #2C1219; }
   .fd-k i, .fd-k2 i { display: flex; align-items: center; gap: 3px; font-style: normal; font-size: 13px; color: #888780; line-height: 1.35; }
   .fd-k b.e { color: #15803D; } .fd-k b.s { color: #DC2626; } .fd-k b.l { color: #C33A6E; }
   .fd-contas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }

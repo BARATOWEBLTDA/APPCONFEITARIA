@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Cake, Check, DotsThreeVertical, Info, MagnifyingGlass, Package, PencilSimple, Plus, PuzzlePiece, Trash, X } from "@phosphor-icons/react";
+import { Camera, Check, DotsThreeVertical, Info, MagnifyingGlass, Package, PencilSimple, Plus, PuzzlePiece, Trash, X } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
@@ -152,7 +152,7 @@ export default function Complementos() {
             <div className="pz-ex-l"><i /><span>Escrita no bolo</span><b className="g">Grátis</b></div>
           </section>
         </>) : (<>
-          <Titulo contagem={items.length} apoio="Toque numa personalização pra editar."
+          <Titulo contagem={items.length} apoio="Escolha uma personalização pra editar."
             acao={<Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}><span className="ct-g">Nova personalização</span><span className="ct-c">Nova</span></Botao>}>Suas personalizações</Titulo>
           {items.length > 8 && (
             <label className="pz-busca">
@@ -199,9 +199,9 @@ export default function Complementos() {
       <Janela aberta={aberta} aoFechar={fechar} tipo="conteudo" travada titulo={editando ? "Editar personalização" : "Nova personalização"}
         acoes={<><Botao variante="secundario" onClick={fechar}>Cancelar</Botao><Botao onClick={salvar} carregando={saving}>{editando ? "Salvar" : "Criar"}</Botao></>}>
         <div className="pz-form">
-          <Campo rotulo="Nome" obrigatorio placeholder="Ex.: Topo de bolo, Escrita, Papel de arroz" value={form.nome} maxLength={50} erro={erroNome}
+          <Campo rotulo="Nome" obrigatorio placeholder="Ex.: topo de bolo, escrita, papel de arroz" value={form.nome} maxLength={50} erro={erroNome}
             onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
-          <CampoArea rotulo="Explicação pro cliente" opcional placeholder="Ex.: Escolha um tema ou envie sua imagem" value={form.descricao} maxLength={140} rows={2}
+          <CampoArea rotulo="Explicação pro cliente" opcional placeholder="Ex.: escolha um tema ou envie sua imagem" value={form.descricao} maxLength={140} rows={2}
             dica="Aparece embaixo do nome, no cardápio." onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} />
 
           <div className="ui-campo">
@@ -241,7 +241,7 @@ export default function Complementos() {
                   return (
                     <button key={p.id} type="button" role="checkbox" aria-checked={on} className="pz-prod" onClick={() => alternarProduto(p.id)}>
                       <i className="pz-chk" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
-                      <span className="pz-prod-f">{p.imagem_url ? <img src={p.imagem_url} alt="" /> : <Cake size={20} weight="duotone" />}</span>
+                      <span className="pz-prod-f">{p.imagem_url ? <img src={p.imagem_url} alt="" /> : <Camera size={20} weight="bold" aria-label="Sem foto" />}</span>
                       <span className="pz-prod-n">{nomeBonito(p.nome)}</span>
                     </button>
                   );

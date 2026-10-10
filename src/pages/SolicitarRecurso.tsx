@@ -18,16 +18,19 @@ interface Sugestao {
   created_at: string;
 }
 
+// Mesmos nomes do menu do app (iguais aos de Relatar um problema)
 const AREAS = [
+  { id: "cardapio", label: "Cardápio digital" },
   { id: "pedidos", label: "Pedidos" },
-  { id: "cardapio", label: "Cardápio online" },
-  { id: "produtos", label: "Produtos e receitas" },
-  { id: "insumos", label: "Ingredientes" },
+  { id: "agenda", label: "Agenda" },
+  { id: "produtos", label: "Produtos" },
+  { id: "ficha", label: "Ficha técnica" },
   { id: "financeiro", label: "Financeiro" },
   { id: "clientes", label: "Clientes" },
-  { id: "app", label: "App em geral" },
   { id: "outro", label: "Outro" },
 ];
+// Áreas antigas (só pra mostrar o histórico)
+const AREAS_ANTIGAS: Record<string, string> = { insumos: "Ingredientes", app: "Outro" };
 
 // Rótulos em linguagem de confeiteira — no banco continua baixo/medio/alto
 const IMPACTOS: { id: "baixo" | "medio" | "alto"; label: string }[] = [
@@ -130,7 +133,7 @@ export default function SolicitarRecurso() {
     setEnviado(false); setErro(null);
   };
 
-  const areaLabel = (id: string | null) => AREAS.find(a => a.id === id)?.label || null;
+  const areaLabel = (id: string | null) => AREAS.find(a => a.id === id)?.label || (id ? AREAS_ANTIGAS[id] : null) || null;
 
   return (
     <>

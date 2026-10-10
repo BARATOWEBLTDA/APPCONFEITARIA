@@ -145,7 +145,12 @@ export default function Categorias() {
 
   return (
     <>
-      <AppPageHeader title="Categorias" subtitle="Separam os produtos no seu cardápio" />
+      <AppPageHeader title="Categorias" subtitle="Organize os produtos do seu cardápio"
+        infoContent={<>
+          <p>As categorias <strong>separam os produtos no seu cardápio</strong>, como Bolos, Doces e Salgados.</p>
+          <p>O cliente acha o que quer mais rápido. O cardápio mostra as categorias na ordem desta lista.</p>
+        </>}
+        infoTip={<>Cada produto fica em uma categoria. Você escolhe a categoria no cadastro do produto.</>} />
       <div className="ct">
         <div className="ct-abas" role="tablist" aria-label="Catálogo">
           <button type="button" role="tab" aria-selected="false" onClick={() => navigate("/produtos")}>Produtos</button>
@@ -156,7 +161,7 @@ export default function Categorias() {
           <div className="ct-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
         ) : categorias.length === 0 ? (
           <TelaVazia caixa icone={<SquaresFour size={30} />} titulo="Nenhuma categoria ainda"
-            texto='Crie categorias como "Bolos", "Docinhos" e "Salgados". No cardápio, o cliente acha o que quer mais rápido.'
+            texto='Crie categorias como "Bolos", "Doces" e "Salgados". No cardápio, o cliente acha o que quer mais rápido.'
             acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={openNova}>Criar categoria</Botao>} />
         ) : (<>
           <Titulo contagem={categorias.length} apoio="O cardápio mostra as categorias nesta ordem."
@@ -192,7 +197,7 @@ export default function Categorias() {
       <Janela aberta={modal} aoFechar={fecharModal} tipo="conteudo" travada titulo={form.id ? "Editar categoria" : "Nova categoria"}
         acoes={<><Botao variante="secundario" onClick={fecharModal}>Cancelar</Botao><Botao onClick={handleSalvar} carregando={saving}>{form.id ? "Salvar" : "Criar categoria"}</Botao></>}>
         <div className="ct-form">
-          <Campo rotulo="Nome" obrigatorio placeholder="Ex.: Bolos, Docinhos, Salgados" value={form.nome} maxLength={40}
+          <Campo rotulo="Nome" obrigatorio placeholder="Ex.: bolos, doces, salgados" value={form.nome} maxLength={40}
             onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
           {mudouNome && qtdOriginal > 0 && <p className="ct-aviso-nome">{qtdOriginal === 1 ? `O produto de ${nomeOriginal} muda junto.` : `Os ${qtdOriginal} produtos de ${nomeOriginal} mudam junto.`}</p>}
           <div className="ui-campo">

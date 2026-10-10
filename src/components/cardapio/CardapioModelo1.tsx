@@ -81,7 +81,7 @@ export function getEnderecoData(config: Configuracoes | null): { linha: string; 
   } catch { return null }
 }
 
-/** Etiquetas que a cliente vê: só o que a loja faz de verdade */
+/** Etiquetas que o cliente vê: só o que a loja faz de verdade */
 export function etiquetasDaLoja(config: Configuracoes | null, produtos: any[] = []) {
   const formas: string[] = (config as any)?.formas_entrega || []
   const entrega = formas.some(f => f === 'entrega_propria' || f === 'motoboy' || f === 'uber_flash')

@@ -9,6 +9,7 @@ import './dataHora.css'
  * (O horário usa o HorarioSheet, também compartilhado.)
  *   valor / min / max: 'AAAA-MM-DD'. Dias fora do limite ficam apagados.
  *   cor: cor de destaque (no cardápio, a cor da loja).
+ * 10/10: fecha só pelo X da janela (sem "Cancelar" repetido) e o mês aparece "Outubro de 2026".
  */
 const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
 const DIAS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
@@ -35,15 +36,12 @@ export default function CalendarioSheet({ valor, titulo = 'Escolha a data', min,
   const podeVoltar = !min || iso(1) > min, podeAvancar = !max || iso(totalDias) < max
   const hoje = hojeIso()
   return (
-    <Janela aberta aoFechar={onClose} tipo="conteudo" titulo={titulo}
-      acoes={<>
-        <Botao variante="secundario" onClick={onClose}>Cancelar</Botao>
-        <Botao disabled={!dia} onClick={() => dia && onConfirmar(dia)} data-foco-inicial>{dia ? `Usar ${dataPorExtenso(dia, true)}` : 'Escolha um dia'}</Botao>
-      </>}>
+    <Janela aberta aoFechar={onClose} tipo="conteudo" titulo={titulo} umaAcao
+      acoes={<Botao disabled={!dia} onClick={() => dia && onConfirmar(dia)} data-foco-inicial>{dia ? `Usar ${dataPorExtenso(dia, true)}` : 'Escolha um dia'}</Botao>}>
       <div className="dh-cal" style={cor ? { ['--dh-cor' as any]: cor } : undefined}>
         <div className="dh-mes">
           <BotaoIcone rotulo="Mês anterior" onClick={() => mudar(-1)} disabled={!podeVoltar}><CaretLeft size={20} weight="bold" /></BotaoIcone>
-          <b aria-live="polite">{MESES[mes.m]} {mes.a}</b>
+          <b aria-live="polite">{MESES[mes.m]} de {mes.a}</b>
           <BotaoIcone rotulo="Próximo mês" onClick={() => mudar(1)} disabled={!podeAvancar}><CaretRight size={20} weight="bold" /></BotaoIcone>
         </div>
         <div className="dh-grade" role="grid" aria-label={`${MESES[mes.m]} de ${mes.a}`}>

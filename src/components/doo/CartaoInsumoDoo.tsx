@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
-import { Package, Check } from "@phosphor-icons/react";
+import { Package, Check, X } from "@phosphor-icons/react";
 import CampoNumero from "@/components/ui/CampoNumero";
 import { custoLegivel, salvarInsumoDoo, UNIDADES_INSUMO, EMBALAGENS_INSUMO, type RascunhoInsumo, type InsumoResumo } from "@/lib/insumosDoo";
 
@@ -50,8 +50,8 @@ export default function CartaoInsumoDoo({ uid, rascunho, existente, estado, onFe
   if (estado !== "pendente") {
     return (
       <div className={`cid cid--fim${estado === "cancelado" ? " cid--cancel" : ""}`}>
-        <span className="cid-ok">{estado === "salvo" ? <Check size={16} weight="bold" /> : "×"}</span>
-        <span>{estado === "salvo" ? `${r.nome} ${atualizar ? "atualizado" : "cadastrado"} nos seus insumos` : "Cadastro cancelado"}</span>
+        <span className="cid-ok">{estado === "salvo" ? <Check size={16} weight="bold" /> : <X size={14} weight="bold" />}</span>
+        <span>{estado === "salvo" ? `${r.nome} ${atualizar ? "atualizado" : "cadastrado"} nos seus ingredientes` : "Cadastro cancelado"}</span>
         <style>{CSS}</style>
       </div>
     );
@@ -60,7 +60,7 @@ export default function CartaoInsumoDoo({ uid, rascunho, existente, estado, onFe
   return (
     <div className="cid">
       <div className="cid-hd"><span className="cid-ic"><Package size={20} /></span>
-        <div><p className="cid-k">{atualizar ? "ATUALIZAR PREÇO" : "NOVO INSUMO"}</p><b>{r.nome || "Insumo"}</b></div></div>
+        <div><p className="cid-k">{atualizar ? "Atualizar preço" : "Novo ingrediente"}</p><b>{r.nome || "Ingrediente"}</b></div></div>
 
       {!editando ? (
         <dl className="cid-kv">
@@ -86,7 +86,7 @@ export default function CartaoInsumoDoo({ uid, rascunho, existente, estado, onFe
 
       {(buscando || fotos.length > 0) && (
         <div className="cid-fotos">
-          <p className="cid-fl">Foto do insumo</p>
+          <p className="cid-fl">Foto do ingrediente</p>
           <div className="cid-fg">
             {buscando && !fotos.length ? [0, 1, 2].map(k => <span key={k} className="cid-f cid-f--load" />) : fotos.map(f => (
               <button type="button" key={f} className={`cid-f${r.imagem_url === f ? " on" : ""}`} onClick={() => setR(x => ({ ...x, imagem_url: f }))} aria-label="Usar esta foto">
@@ -103,7 +103,7 @@ export default function CartaoInsumoDoo({ uid, rascunho, existente, estado, onFe
       <div className="cid-bts">
         <button type="button" className="cid-b2" onClick={() => setEditando(e => !e)}>{editando ? "Pronto" : "Editar"}</button>
         <button type="button" className="cid-b1" onClick={salvar} disabled={salvando || !(r.qtd_embalagem > 0) || !(r.valor_compra > 0) || !r.nome.trim()}>
-          {salvando ? "Salvando…" : atualizar ? "Atualizar preço" : "Cadastrar insumo"}
+          {salvando ? "Salvando…" : atualizar ? "Atualizar preço" : "Cadastrar ingrediente"}
         </button>
       </div>
       <button type="button" className="cid-x" onClick={() => onFeito("cancelado")}>Cancelar</button>

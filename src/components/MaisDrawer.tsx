@@ -52,7 +52,7 @@ const GRUPOS: Grupo[] = [
   {
     label: "Configuração",
     items: [
-      { label: "Cardápio Design", desc: "Personalize o cardápio", path: "/cardapio-design", Icone: PaintBrush },
+      { label: "Aparência do cardápio", desc: "Personalize o cardápio", path: "/cardapio-design", Icone: PaintBrush },
       { label: "Checkout",        desc: "Configure o pagamento",  path: "/checkout-config", Icone: CreditCard },
       { label: "Configurações",   desc: "Ajustes gerais do app",  path: "/configuracoes",   Icone: Gear },
     ],
@@ -112,7 +112,7 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
           <div className="mais-ola">
             <h2 className="mais-ola-t" id={idTitulo}>
               <span>{saudacao()}{primeiroNome ? `, ${primeiroNome}` : ""}</span>
-              {isPro && <span className="mais-pro"><img src="/coroa.png" alt="" />PRO</span>}
+              {isPro && <span className="mais-pro"><Crown size={12} weight="fill" aria-hidden="true" />PRO</span>}
             </h2>
             <p className="mais-ola-s">O que quer fazer hoje?</p>
           </div>

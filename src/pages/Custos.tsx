@@ -56,6 +56,10 @@ export default function Custos() {
   const custoHora = horasMes > 0 ? (totalFixos + mo.salario_mensal) / horasMes : 0;
   const valorHora = horasMes > 0 ? mo.salario_mensal / horasMes : 0;
   const ativosVar = variaveis.filter(v => v.ativo);
+  // 10/10: o card de variáveis no mesmo formato dos outros (valor em reais + quantos ativos)
+  const varPorPedido = ativosVar.filter(v => v.tipo === "fixo").reduce((s, v) => s + v.valor, 0);
+  const varPct = Math.round(ativosVar.filter(v => v.tipo === "percentual").reduce((s, v) => s + v.valor, 0) * 100) / 100;
+  const qtdFixosAtivos = fixos.filter(f => f.ativo).length;
   const diasTxt = (arr: number[]) => {
     const s = [...arr].sort((a, b) => a - b);
     const seq = s.length > 1 && s.every((d, i) => i === 0 || d === s[i - 1] + 1);
@@ -78,10 +82,10 @@ export default function Custos() {
       <EstiloFinanceiro />
       <div className="cu">
         <div className="cu-resumo">
-          <div className="cu-k"><small>Custos fixos por mês</small><b>{brl(totalFixos)}</b><i>{fixos.filter(f => f.ativo).length} ativos</i></div>
+          <div className="cu-k"><small>Custos fixos por mês</small><b>{brl(totalFixos)}</b><i>{qtdFixosAtivos} {qtdFixosAtivos === 1 ? "ativo" : "ativos"}</i></div>
           <div className="cu-k"><small>Seu salário</small><b>{brl(mo.salario_mensal)}</b><i>mão de obra</i></div>
           <div className="cu-k destaque"><small>Custo da sua hora</small><b>{brl(custoHora)}</b><i>fixos + salário</i></div>
-          <div className="cu-k"><small>Custos variáveis</small><b>{ativosVar.length}</b><i>{ativosVar.length === 1 ? "ativo" : "ativos"}</i></div>
+          <div className="cu-k"><small>Custos variáveis por pedido</small><b>{brl(varPorPedido)}</b><i>{varPct > 0 ? `+ ${String(varPct).replace(".", ",")}% da venda · ` : ""}{ativosVar.length} {ativosVar.length === 1 ? "ativo" : "ativos"}</i></div>
         </div>
 
         <div className="cu-grid">
@@ -104,8 +108,8 @@ export default function Custos() {
             <button type="button" className="cu-mo" onClick={() => setEditMo(true)}>
               <div className="cu-mo-l"><span>Salário</span><b>{brl(mo.salario_mensal)}</b></div>
               <div className="cu-mo-l"><span>Jornada</span><b>{mo.horas_dia}h por dia · {diasTxt(mo.dias_semana_array)}</b></div>
-              <div className="cu-mo-l"><span>Valor da sua hora</span><b className="rosa">{brl(valorHora)}</b></div>
-              <div className="cu-mo-l"><span>Valor do seu dia</span><b>{brl(valorHora * mo.horas_dia)}</b></div>
+              <div className="cu-mo-l"><span>Salário por hora</span><b className="rosa">{brl(valorHora)}</b></div>
+              <div className="cu-mo-l"><span>Salário por dia</span><b>{brl(valorHora * mo.horas_dia)}</b></div>
               <i>Editar <CaretRight size={13} weight="bold" /></i>
             </button>
           </section>
@@ -113,7 +117,7 @@ export default function Custos() {
           <section className="cu-card cu-a-var">
             <div className="cu-ct"><span className="cu-ic"><Percent size={18} weight="duotone" /></span><div><b>Custos variáveis</b><small>Acompanham cada venda</small></div></div>
             {carregando ? <div className="cu-ph" /> : variaveis.length === 0 ? (
-              <p className="cu-vazio">Nenhum ainda. Ex.: taxa da maquininha (3,5% da venda), embalagem (R$ 4 por pedido).</p>
+              <p className="cu-vazio">Nenhum ainda. Ex.: taxa da maquininha (3,5% da venda), embalagem (R$ 4,00 por pedido).</p>
             ) : variaveis.map(v => (
               <button type="button" key={v.id} className={`cu-it ${v.ativo ? "" : "off"}`} onClick={() => setEditVar(v)}>
                 <div className="cu-it-t"><b>{v.nome}</b><small>{!v.ativo ? "Pausado" : v.tipo === "percentual" ? "% de cada venda" : "Valor por pedido"}</small></div>
@@ -218,7 +222,7 @@ function VariavelSheet({ uid, item, onClose, onFeito }: { uid: string; item: Cus
       <div className="fo-seg"><button type="button" className={tipo === "percentual" ? "on" : ""} onClick={() => { if (tipo !== "percentual") { setTipo("percentual"); setValor(""); } }}>% da venda</button><button type="button" className={tipo === "fixo" ? "on" : ""} onClick={() => { if (tipo !== "fixo") { setTipo("fixo"); setValor(""); } }}>R$ por pedido</button></div>
       <label className="fo-lb" htmlFor="cv-v">{tipo === "percentual" ? "Porcentagem" : "Valor por pedido"}</label>
       <div className="fo-in">{tipo === "fixo" && <span>R$</span>}<input id="cv-v" inputMode={tipo === "percentual" ? "decimal" : "numeric"} placeholder={tipo === "percentual" ? "Ex.: 3,5" : "0,00"} value={valor} onChange={e => { setValor(tipo === "fixo" ? mascaraBRL(e.target.value) : e.target.value); setErro(""); }} />{tipo === "percentual" && <span>%</span>}</div>
-      {v > 0 && <div className="fo-dica">Numa venda de <b>R$ 100</b>, este custo é <b>{brl(tipo === "percentual" ? v : v)}</b>{tipo === "percentual" ? "" : " (por pedido, qualquer valor)"}.</div>}
+      {v > 0 && <div className="fo-dica">Numa venda de <b>R$ 100,00</b>, este custo é <b>{brl(tipo === "percentual" ? v : v)}</b>{tipo === "percentual" ? "" : " (por pedido, qualquer valor)"}.</div>}
       <Switch ligado={ativo} onToggle={() => setAtivo(a => !a)} titulo={ativo ? "Ativo" : "Pausado"} sub={ativo ? "Entra no cálculo dos seus preços" : "Não entra no cálculo enquanto estiver pausado"} />
       {erro && <p className="fo-erro">{erro}</p>}
       {excluir ? <Excluir nome={item?.nome || ""} ocupado={ocupado} onNao={() => setExcluir(false)} onSim={apagar} /> : (<>
@@ -256,7 +260,7 @@ function MaoObraSheet({ uid, atual, totalFixos, onClose, onFeito }: { uid: strin
       <div className="fo-in"><input id="mo-h" inputMode="decimal" value={horas} onChange={e => { setHoras(e.target.value); setErro(""); }} /><span>horas</span></div>
       <p className="fo-lb">Dias em que você produz</p>
       <div className="fo-chips">{DIAS.map(d => <button type="button" key={d.id} className={dias.includes(d.id) ? "on" : ""} onClick={() => setDias(x => x.includes(d.id) ? x.filter(y => y !== d.id) : [...x, d.id])}>{d.l}</button>)}</div>
-      {hMes > 0 && <div className="fo-dica">São <b>{Math.round(hMes)} horas por mês</b>. Valor da sua hora: <b>{brl(s / hMes)}</b> · custo total da hora (com os custos fixos): <b>{brl((s + totalFixos) / hMes)}</b>.</div>}
+      {hMes > 0 && <div className="fo-dica">São <b>{Math.round(hMes)} horas por mês</b>. Salário por hora: <b>{brl(s / hMes)}</b> · custo da sua hora (com os custos fixos): <b>{brl((s + totalFixos) / hMes)}</b>.</div>}
       {erro && <p className="fo-erro">{erro}</p>}
       <button type="button" className="fo-cta" onClick={salvar} disabled={ocupado}>{ocupado ? "Salvando…" : "Salvar"}</button>
     </Folha>

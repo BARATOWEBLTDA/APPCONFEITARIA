@@ -1,12 +1,20 @@
-import { Search } from 'lucide-react'
-export function EmptyState() {
+import { Cake, WhatsappLogo } from '@phosphor-icons/react'
+import './cardapioLista.css'
+
+/** Loja ainda sem produto no cardápio: cardápio em montagem (com o WhatsApp da loja quando tem). */
+export function EmptyState({ telefone }: { telefone?: string | null }) {
+  const fone = String(telefone || '').replace(/\D/g, '')
+  const zap = fone ? `https://wa.me/${fone.startsWith('55') ? fone : '55' + fone}` : ''
   return (
-    <div style={{ textAlign: 'center', padding: '48px 0' }}>
-      <div style={{ width: '80px', height: '80px', backgroundColor: 'var(--bg-body)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-        <Search style={{ width: '40px', height: '40px', color: 'var(--text-muted)' }} />
-      </div>
-      <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-title)', marginBottom: '8px' }}>Nenhum produto encontrado</h3>
-      <p style={{ color: 'var(--text-secondary)' }}>Tente buscar por outro termo</p>
+    <div className="cl-vazio cl-vazio--loja">
+      <span className="cl-vazio-ic"><Cake size={36} weight="duotone" aria-hidden="true" /></span>
+      <b>O cardápio está sendo preparado</b>
+      <span>{zap ? 'Volte daqui a pouco ou fale com a loja pelo WhatsApp.' : 'Volte daqui a pouco pra ver as delícias da loja.'}</span>
+      {zap && (
+        <a className="cl-vazio-zap" href={zap} target="_blank" rel="noopener noreferrer">
+          <WhatsappLogo size={20} weight="bold" aria-hidden="true" />Chamar no WhatsApp
+        </a>
+      )}
     </div>
   )
 }

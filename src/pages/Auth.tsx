@@ -28,7 +28,7 @@ const validate = {
     if (!trimmed.includes("@")) return "Está faltando o @ no seu e-mail";
     const [local, domain] = trimmed.split("@");
     if (!local) return "Digite algo antes do @";
-    if (!domain || !domain.includes(".")) return "E-mail incompleto (ex: nome@gmail.com)";
+    if (!domain || !domain.includes(".")) return "E-mail incompleto (Ex.: nome@gmail.com)";
     if (!EMAIL_REGEX.test(trimmed)) return "E-mail em formato inválido";
     return "";
   },
@@ -39,6 +39,7 @@ const validate = {
     return "";
   },
   senha: (v: string) => {
+    if (!v) return "Crie uma senha";
     if (v.length < 6) return "Mínimo 6 caracteres";
     if (!/[a-zA-Z]/.test(v)) return "A senha precisa ter ao menos uma letra";
     if (!/\d/.test(v)) return "A senha precisa ter ao menos um número";
@@ -304,7 +305,7 @@ export default function Auth() {
       email: validate.email(cadastroForm.email),
       telefone: validate.telefone(cadastroForm.telefone),
       senha: validate.senha(cadastroForm.senha),
-      confirmarSenha: cadastroForm.confirmarSenha !== cadastroForm.senha ? "As senhas digitadas não são iguais" : "",
+      confirmarSenha: !cadastroForm.confirmarSenha ? "Repita a senha" : cadastroForm.confirmarSenha !== cadastroForm.senha ? "As senhas digitadas não são iguais" : "",
     };
     setCadastroErrors(nextErrors);
     setCadastroTouched({ nome: true, email: true, telefone: true, senha: true, confirmarSenha: true });
@@ -614,14 +615,15 @@ export default function Auth() {
             )}
           </div>
 
-          {/* Nome da confeitaria */}
+          {/* Nome da confeitaria + WhatsApp: opcionais no cadastro por e-mail (lado a lado no computador) */}
+          <div className="cad-par cad-par--loja">
           <div className="cad-field-wrap">
-            <label className="cad-lb" htmlFor="cad-confeitaria">Nome da confeitaria</label>
+            <label className="cad-lb" htmlFor="cad-confeitaria">Nome da confeitaria <span className="cad-opc">opcional</span></label>
             <div className="cad-field">
               <input
                 id="cad-confeitaria"
                 type="text"
-                placeholder="Ex.: Doces da Ju"
+                placeholder="Ex.: Doce Formiga"
                 value={cadastroForm.nomeLoja}
                 onChange={e => handleCadastroChange("nomeLoja", e.target.value)}
                 autoComplete="organization"
@@ -634,7 +636,7 @@ export default function Auth() {
 
           {/* Telefone */}
           <div className="cad-field-wrap">
-            <label className="cad-lb" htmlFor="cad-whatsapp">WhatsApp</label>
+            <label className="cad-lb" htmlFor="cad-whatsapp">WhatsApp <span className="cad-opc">opcional</span></label>
             <div className={`cad-field ${cadastroTouched.telefone && cadastroErrors.telefone ? "has-error" : ""}`}>
               <input
                 id="cad-whatsapp"
@@ -653,6 +655,7 @@ export default function Auth() {
             {cadastroTouched.telefone && cadastroErrors.telefone && (
               <span className="cad-error">{cadastroErrors.telefone}</span>
             )}
+          </div>
           </div>
 
           {/* E-mail */}
@@ -682,14 +685,15 @@ export default function Auth() {
             )}
           </div>
 
-          {/* Senha */}
-          <div className="cad-field-wrap">
+          {/* Senha + confirmação (lado a lado no computador; as regras ficam logo abaixo da senha) */}
+          <div className="cad-par cad-par--senha">
+          <div className="cad-field-wrap cad-a-senha">
             <label className="cad-lb" htmlFor="cad-senha">Senha</label>
             <div className={`cad-field ${cadastroTouched.senha && cadastroErrors.senha ? "has-error" : ""}`}>
               <input
                 id="cad-senha"
                 type={showCadastroSenha ? "text" : "password"}
-                placeholder="Mínimo 6 caracteres"
+                placeholder="Crie uma senha"
                 value={cadastroForm.senha}
                 onChange={e => handleCadastroChange("senha", e.target.value)}
                 onBlur={() => handleCadastroBlur("senha")}
@@ -707,36 +711,27 @@ export default function Auth() {
                 {showCadastroSenha ? <EyeSlash size={20} weight="regular" /> : <Eye size={20} weight="regular" />}
               </button>
             </div>
-            {cadastroForm.senha && (
-              passwordChecks.length && passwordChecks.letter && passwordChecks.number ? (
-                <div className="pw-req-done" role="status" aria-live="polite">
-                  <span className="pw-req-dot" aria-hidden="true">✓</span>
-                  Senha forte
-                </div>
-              ) : (
-                <ul className="pw-req" aria-label="Requisitos da senha">
-                  <li className={passwordChecks.length ? "ok" : ""}>
-                    <span className="pw-req-dot" aria-hidden="true">{passwordChecks.length ? "✓" : "•"}</span>
-                    6 caracteres ou mais
-                  </li>
-                  <li className={passwordChecks.letter ? "ok" : ""}>
-                    <span className="pw-req-dot" aria-hidden="true">{passwordChecks.letter ? "✓" : "•"}</span>
-                    1 letra
-                  </li>
-                  <li className={passwordChecks.number ? "ok" : ""}>
-                    <span className="pw-req-dot" aria-hidden="true">{passwordChecks.number ? "✓" : "•"}</span>
-                    1 número
-                  </li>
-                </ul>
-              )
-            )}
             {cadastroTouched.senha && cadastroErrors.senha && !cadastroForm.senha && (
               <span className="cad-error">{cadastroErrors.senha}</span>
             )}
           </div>
 
+          {/* Regras da senha: visíveis desde o início (antes só apareciam ao digitar) */}
+          <ul className={`pw-req cad-a-regras ${cadastroTouched.senha && cadastroErrors.senha && cadastroForm.senha ? "pw-req--erro" : ""}`} aria-label="A senha precisa ter" aria-live="polite">
+            {([
+              ["length", "6 caracteres ou mais"],
+              ["letter", "1 letra"],
+              ["number", "1 número"],
+            ] as const).map(([k, txt]) => (
+              <li key={k} className={passwordChecks[k] ? "ok" : ""}>
+                <span className="pw-req-dot" aria-hidden="true">{passwordChecks[k] ? <Check size={12} weight="bold" /> : "•"}</span>
+                {txt}
+              </li>
+            ))}
+          </ul>
+
           {/* Confirmar Senha */}
-          <div className="cad-field-wrap">
+          <div className="cad-field-wrap cad-a-conf">
             <label className="cad-lb" htmlFor="cad-confirmar">Confirmar a senha</label>
             <div className={`cad-field ${cadastroTouched.confirmarSenha && cadastroErrors.confirmarSenha ? "has-error" : ""}`}>
               <input
@@ -763,6 +758,7 @@ export default function Auth() {
             {cadastroTouched.confirmarSenha && cadastroErrors.confirmarSenha && (
               <span className="cad-error">{cadastroErrors.confirmarSenha}</span>
             )}
+          </div>
           </div>
 
           {cadastroError && (
@@ -799,11 +795,11 @@ export default function Auth() {
           <div className="auth-divider"><span>ou</span></div>
           <BotaoGoogle modo="signup_with" textoReserva="Criar conta com Google" desativado={cadastroLoading} />
           </>)}
-          <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', textAlign: 'center', lineHeight: '1.5', margin: '0' }}>
+          <p className="cad-termos" style={{ fontSize: '12.5px', color: 'var(--text-secondary)', textAlign: 'center', lineHeight: '1.5', margin: '0' }}>
             Ao criar sua conta, você concorda com nossos{' '}
-            <a href="/termos" onClick={abrirDoc("termos")} style={{ color: '#C33A6E', fontWeight: 700, whiteSpace: 'nowrap' }}>Termos de Uso</a>
+            <a href="/termos" onClick={abrirDoc("termos")} style={{ color: '#C33A6E', fontWeight: 700, whiteSpace: 'nowrap' }}>Termos de uso</a>
             {' '}e{' '}
-            <a href="/privacidade" onClick={abrirDoc("privacidade")} style={{ color: '#C33A6E', fontWeight: 700, whiteSpace: 'nowrap' }}>Política de Privacidade</a>
+            <a href="/privacidade" onClick={abrirDoc("privacidade")} style={{ color: '#C33A6E', fontWeight: 700, whiteSpace: 'nowrap' }}>Política de privacidade</a>
           </p>
           <div className="cad-mobile-login-link">
             <span>Já tem conta? </span>
@@ -817,7 +813,7 @@ export default function Auth() {
 
       {/* Rodapé (03/10): links das políticas, como no Dora */}
       <footer className="auth-rodape">
-        <div><a href="/privacidade" onClick={abrirDoc("privacidade")}>Política de Privacidade</a><span aria-hidden="true">·</span><a href="/termos" onClick={abrirDoc("termos")}>Termos de Uso</a></div>
+        <div><a href="/privacidade" onClick={abrirDoc("privacidade")}>Política de privacidade</a><span aria-hidden="true">·</span><a href="/termos" onClick={abrirDoc("termos")}>Termos de uso</a></div>
         <em>© {new Date().getFullYear()} Doonly</em>
       </footer>
 
@@ -1049,6 +1045,9 @@ export default function Auth() {
         .cad-eye:hover { color: var(--primary); }
         .cad-error { font-size: 12.5px; color: var(--error); padding-left: 2px; font-weight: 700; }
         .cad-btn { margin-top: 0.5rem; }
+        .cad-opc { font-weight: 500; color: #6B5D64; font-size: 12.5px; margin-left: 2px; }
+        .cad-par { display: flex; flex-direction: column; gap: 0.75rem; }
+        .cad-par--senha .cad-a-regras { margin-top: calc(-0.75rem + 6px); } /* regras coladas na senha */
 
         .cad-header {
           text-align: center;
@@ -1119,13 +1118,11 @@ export default function Auth() {
         .cad-subtitle { font-size: 0.9rem; color: var(--text-secondary); margin: 0; line-height: 1.4; }
 
         /* ── Requisitos da senha (substitui medidor) ──────── */
-        .pw-req { list-style: none; padding: 0.25rem 1.25rem 0; margin: 0; display: flex; flex-direction: column; gap: 0.25rem; }
-        .pw-req li { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--text-muted); transition: color 0.2s ease; }
-        .pw-req li.ok { color: #16A34A; }
-        .pw-req-dot { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
-        .pw-req li.ok .pw-req-dot { color: #16A34A; }
-        .pw-req-done { display: flex; align-items: center; gap: 0.4rem; padding: 0.25rem 1.25rem 0; font-size: 0.75rem; font-weight: 500; color: #16A34A; animation: pwDoneIn 0.25s ease both; }
-        .pw-req-done .pw-req-dot { color: #16A34A; }
+        .pw-req { list-style: none; padding: 0 0 0 2px; margin: 0; display: flex; flex-wrap: wrap; column-gap: 14px; row-gap: 2px; }
+        .pw-req li { display: flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 500; color: #6B5D64; transition: color 0.2s ease; }
+        .pw-req li.ok { color: #15803D; }
+        .pw-req--erro li:not(.ok) { color: var(--error); font-weight: 700; }
+        .pw-req-dot { display: inline-flex; align-items: center; justify-content: center; width: 12px; height: 12px; font-size: 14px; font-weight: 700; flex-shrink: 0; }
         @keyframes pwDoneIn { from { opacity: 0; transform: translateY(-2px); } to { opacity: 1; transform: translateY(0); } }
 
         /* ── Alerta soft (identidade Doonly) ──────────────── */
@@ -1187,6 +1184,24 @@ export default function Auth() {
           .so-cel-bloco { display: none !important; } /* computador: o cartão tem só o título */
           .auth-card .auth-text-hdr { margin-bottom: 1.25rem; }
           .auth-topbar-login { display: none !important; } /* o cartão já tem "Já tem conta? Entrar" no fim */
+          /* Cadastro no computador (10/10): cabe inteiro em 800px de altura (antes o "Criar conta com Google" ficava cortado) */
+          .auth-root { padding-top: 16px; padding-bottom: 16px; }
+          .auth-rodape { padding-top: 6px; }
+          .cadastro-form { gap: 10px; padding-top: 0; }
+          .auth-card:has(.cadastro-form) { padding: 28px 40px !important; }
+          .auth-card:has(.cadastro-form) .auth-text-hdr { margin-bottom: 12px; }
+          .cadastro-form .cad-field { height: 44px; }
+          .cadastro-form .cad-eye { height: 42px; }
+          .cadastro-form .cad-lb { margin-bottom: 2px; line-height: 1.3; }
+          .cadastro-form .cad-field-wrap { gap: 2px; }
+          .cad-par { display: grid; column-gap: 12px; row-gap: 6px; align-items: start; }
+          .cad-par--loja { grid-template-columns: 1.4fr 1fr; }
+          .cad-par--senha { grid-template-columns: 1fr 1fr; grid-template-areas: "senha conf" "regras regras"; }
+          .cad-par--senha .cad-a-senha { grid-area: senha; }
+          .cad-par--senha .cad-a-conf { grid-area: conf; }
+          .cad-par--senha .cad-a-regras { grid-area: regras; margin-top: 0; }
+          .cad-btn { margin-top: 2px; }
+          .cad-mobile-login-link { padding-top: 0; }
           /* Grid layouts:
              - Desktop/tablet: form centralizado
              - Mobile: só o form */

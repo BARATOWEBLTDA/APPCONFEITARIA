@@ -17,7 +17,14 @@ body .prod-modal--novo .prod-wiz-passo { font-size: 13px; font-weight: 500; colo
 body .prod-modal--novo .prod-wiz-dots { gap: 4px; margin: 10px 0 0; justify-content: stretch; }
 body .prod-modal--novo .prod-wiz-dots i { flex: 1; width: auto; height: 6px; border-radius: 3px; background: var(--ui-borda); }
 body .prod-modal--novo .prod-wiz-dots i.on { background: var(--ui-rosa); }
+/* 10/10: barra contínua, igual à da tela "Que tipo de produto é?" (o total de passos muda com o tipo) */
+body .prod-modal--novo .prod-wiz-barra { height: 6px; margin: 10px 0 0; border-radius: 3px; background: var(--ui-borda); overflow: hidden; }
+body .prod-modal--novo .prod-wiz-barra i { display: block; height: 100%; border-radius: 3px; background: var(--ui-rosa); transition: width .25s ease; }
 body .prod-modal--novo .prod-modal-edit-nome { font-size: 13px; color: var(--ui-texto-2); }
+
+/* 10/10: respiro entre a barra de progresso e o título do passo ("Sobre o produto" estava grudado) */
+body .prod-modal--novo .prod-modal-body { padding-top: 20px !important; }
+@media (min-width: 641px) { body .prod-modal--novo .prod-modal-body { padding-top: 24px !important; } }
 
 /* ── títulos de cada passo: todos iguais, sem caixa alta, à esquerda ── */
 body .prod-modal--novo .cad-h2 { margin: 0 0 16px; font-size: 22px; font-weight: 700; line-height: 1.25; color: var(--ui-texto); }
@@ -89,6 +96,10 @@ body .prod-modal--novo .prod-btn-avancar-novo { gap: 8px; min-height: 48px; padd
 body .prod-modal--novo .prod-btn-avancar-novo:disabled { background: #F5DCE6 !important; color: #fff !important; box-shadow: 0 3px 0 #E8C4D2 !important; }
 body .prod-modal--novo .prod-btn-avancar-novo .prod-spinner-sm { border-color: rgba(255, 255, 255, .35); border-top-color: #fff; }
 body .prod-modal--novo .prod-btn-avancar-novo:only-child { grid-column: 1 / -1; }
+/* 10/10: o que falta pra continuar (aparece ao clicar em Continuar com algo faltando) */
+body .prod-modal--novo .prod-falta-aviso { order: -1; grid-column: 1 / -1; display: flex; align-items: flex-start; gap: 8px; margin: 0 0 4px; padding: 10px 12px; border-radius: var(--ui-raio); background: #FFF7ED; color: #9A3412; font-size: 14px; font-weight: 600; line-height: 1.4; }
+body .prod-modal--novo .prod-falta-aviso svg { flex: none; margin-top: 1px; }
+body .prod-modal--novo .prod-btn-avancar-novo[aria-disabled="true"] { opacity: .75; }
 
 /* ── modo edição: abas de 44px ── */
 body .prod-modal--novo .prod-edit-tab { min-height: 40px; font-size: 13.5px; }
@@ -101,6 +112,10 @@ body .prod-modal--novo .bw-topo { text-align: left; }
 body .prod-modal--novo .bw-produto { display: inline-block; margin: 8px 0 0; }
 body .prod-modal--novo .bw-topo .bw-sub { max-width: none; margin-left: 0; margin-right: 0; }
 body .prod-modal--novo .prod-btn-ia-novo { min-height: 36px; padding: 0 12px; border-radius: 10px; font-size: 13px; }
+/* 10/10: "Gerar com IA" no plano grátis — não parece quebrado: botão claro, coroa e selo PRO */
+body .prod-modal--novo .prod-btn-ia-novo.prod-btn-ia-novo--pro { opacity: 1; cursor: pointer !important; background: var(--ui-branco); color: var(--ui-texto); border: 1.5px solid var(--ui-borda); box-shadow: none; }
+body .prod-modal--novo .prod-btn-ia-novo .prod-btn-ia-novo-crown { flex: none; width: 16px; height: 16px; filter: none; color: #F5B301; }
+body .prod-modal--novo .prod-btn-ia-pro { padding: 1px 6px; border-radius: 6px; background: var(--ui-texto); color: #fff; font-size: 12px; font-weight: 700; }
 body .prod-modal--novo .prod-preco-input span { color: var(--ui-texto-2) !important; }
 body .prod-modal--novo .prod-preco-input--promo:not(:focus-within) input::placeholder { color: var(--ui-texto-3) !important; }
 body .prod-modal--novo .prod-preco-input input::placeholder { color: var(--ui-texto-3); }

@@ -10,7 +10,7 @@ import { useProfile, isPro, perfilAtual } from "@/hooks/useProfile";
 import AppPageHeader from "@/components/AppPageHeader";
 import ReqTag from "@/components/ReqTag";
 import { Botao, Campo, CampoArea, Janela, TelaVazia, avisar, confirmar } from "@/components/base";
-import { AddressBook, Cake, CalendarBlank, Camera, CaretDown, Check, CaretRight, MagnifyingGlass, Plus, Trash, UsersThree, WarningCircle, WhatsappLogo, X } from "@phosphor-icons/react";
+import { AddressBook, Cake, CalendarBlank, Camera, CaretDown, Check, CaretRight, Crown, MagnifyingGlass, Plus, Trash, UsersThree, WarningCircle, WhatsappLogo, X } from "@phosphor-icons/react";
 import "./clientes.css";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -125,7 +125,7 @@ function formatSince(created_at: string): string {
   const d = new Date(created_at);
   const now = new Date();
   const diffDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return "Nova cliente hoje";
+  if (diffDays === 0) return "Novo cliente hoje";
   const dd = String(d.getDate()).padStart(2, "0");
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const yy = String(d.getFullYear()).slice(-2);
@@ -434,7 +434,7 @@ export default function Clientes() {
     // Cliente NOVO → toast com botão "Ver perfil" (não navega automaticamente)
     if (!wasEditing && savedId) {
       const idNovo = savedId;
-      avisar(`${completo.nome.trim()} cadastrada`, { tipo: "ok", acao: { rotulo: "Ver", aoTocar: () => navigate(`/clientes/${idNovo}`) } });
+      avisar(`Cliente cadastrado: ${completo.nome.trim()}`, { tipo: "ok", acao: { rotulo: "Ver", aoTocar: () => navigate(`/clientes/${idNovo}`) } });
     }
   };
 
@@ -467,7 +467,7 @@ export default function Clientes() {
   const fecharForm = () => { setShowForm(false); setEditando(null); setTimeout(() => setCompleto(emptyCompleto), 250); talvezVoltar(); };
   const tryCloseForm = async () => {
     if (!hasFormData()) { setShowForm(false); talvezVoltar(); return; }
-    const ok = await confirmar({ titulo: editando ? "Sair sem salvar?" : "Descartar o cadastro?", texto: editando ? "As mudanças que você fez nesta cliente vão se perder." : "O que você preencheu vai se perder.", rotulo: editando ? "Sair sem salvar" : "Descartar", rotuloVoltar: "Continuar editando", perigo: true, icone: "alerta" });
+    const ok = await confirmar({ titulo: editando ? "Sair sem salvar?" : "Descartar o cadastro?", texto: editando ? "As mudanças que você fez neste cliente vão se perder." : "O que você preencheu vai se perder.", rotulo: editando ? "Sair sem salvar" : "Descartar", rotuloVoltar: "Continuar editando", perigo: true, icone: "alerta" });
     if (ok) fecharForm();
   };
   // Cadastrar/Salvar: mostra embaixo de cada campo o que falta (antes o botão ficava apagado sem dizer por quê)
@@ -479,7 +479,7 @@ export default function Clientes() {
   const excluirDoForm = async () => {
     if (!editando) return;
     const id = editando;
-    const ok = await confirmar({ titulo: "Excluir esta cliente?", texto: "O cadastro some da lista. Os pedidos dela continuam salvos.", rotulo: "Excluir", perigo: true, icone: "erro" });
+    const ok = await confirmar({ titulo: "Excluir este cliente?", texto: "O cadastro some da lista. Os pedidos dele continuam salvos.", rotulo: "Excluir", perigo: true, icone: "erro" });
     if (!ok) return;
     voltarPerfil.current = null; // a cliente foi excluída: fica na lista
     fecharForm();
@@ -701,14 +701,14 @@ export default function Clientes() {
       {limiteAberto && <LimitePlano tipo="clientes" limite={LIMITE_CLIENTES_GRATIS} onClose={() => setLimiteAberto(false)} />}
     <AppPageHeader
       title="Clientes"
-      subtitle={loading ? "Quem compra de você" : clientes.length === 0 ? "Quem compra de você" : `${clientes.length} ${clientes.length === 1 ? "cliente" : "clientes"}`}
+      subtitle="Quem compra de você"
       infoContent={
         <>
           <p>Aqui ficam as pessoas que compram de você: nome, WhatsApp, endereço, aniversário e o histórico de pedidos.</p>
           <p>Quem pede pelo cardápio entra aqui sozinho. Quem compra pelo WhatsApp ou no balcão, você cadastra.</p>
         </>
       }
-      infoTip={<>Toque numa cliente pra ver os <strong>pedidos</strong> e quanto ela já gastou.</>}
+      infoTip={<>Abra um cliente pra ver os <strong>pedidos</strong> e quanto ele já gastou.</>}
     />
     <div className="cli-root">
 
@@ -725,7 +725,7 @@ export default function Clientes() {
             texto="Quem pede pelo cardápio entra aqui sozinho. Você também pode cadastrar quem compra pelo WhatsApp ou no balcão."
             acao={<div className="cl9-vz-acoes">
               <Botao icone={<Plus size={20} weight="bold" />} onClick={() => openNew()}>Cadastrar cliente</Botao>
-              {suportaContatos && <Botao variante="secundario" icone={<AddressBook size={20} weight="bold" />} onClick={importarContatos}>Importar dos contatos<i className="cl9-pro">PRO</i></Botao>}
+              {suportaContatos && <Botao variante="secundario" icone={<AddressBook size={20} weight="bold" />} onClick={importarContatos}>Importar dos contatos<i className="cl9-pro"><Crown size={12} weight="fill" aria-hidden="true" />PRO</i></Botao>}
             </div>} />
         </div>
       ) : (() => {
@@ -800,7 +800,7 @@ export default function Clientes() {
                   {search && <button type="button" aria-label="Limpar a busca" onClick={() => setSearch("")}><X size={18} weight="bold" /></button>}
                 </label>
                 <div className="cl9-acoes">
-                  {suportaContatos && <Botao variante="secundario" tamanho="m" icone={<AddressBook size={20} weight="bold" />} onClick={importarContatos}>Importar<i className="cl9-pro">PRO</i></Botao>}
+                  {suportaContatos && <Botao variante="secundario" tamanho="m" icone={<AddressBook size={20} weight="bold" />} onClick={importarContatos}>Importar<i className="cl9-pro"><Crown size={12} weight="fill" aria-hidden="true" />PRO</i></Botao>}
                   <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => openNew()}><span className="cl9-g">Novo cliente</span><span className="cl9-c">Novo</span></Botao>
                 </div>
               </div>

@@ -66,8 +66,8 @@ export function MovimentosCaixa({ cx, limite = 6 }: { cx: EstadoCaixa | null; li
       <p className="cxc-movs-t">Últimas movimentações</p>
       {cx.movimentos.length === 0 ? (
         <p className="cxc-movs-vazio">Nenhuma movimentação desde que você informou o saldo. Quando receber um pedido ou lançar uma despesa, aparece aqui.</p>
-      ) : cx.movimentos.slice(0, limite).map(m => (
-        <div key={m.id} className="cxc-mv">
+      ) : cx.movimentos.slice(0, limite).map((m, idx) => (
+        <div key={`${m.id}-${idx}`} className="cxc-mv">
           <span className={`cxc-mv-ic ${m.tipo === "entrada" ? "e" : "s"}`}>{m.tipo === "entrada" ? <ArrowUp size={15} weight="bold" /> : <ArrowDown size={15} weight="bold" />}</span>
           <div className="cxc-mv-t"><b>{m.titulo}</b><small>{[m.detalhe, dataCurta(m.data)].filter(Boolean).join(" · ")}</small></div>
           <span className={`cxc-mv-v ${m.tipo === "entrada" ? "e" : "s"}`}>{m.tipo === "entrada" ? "+" : "−"} {brl(m.valor)}</span>

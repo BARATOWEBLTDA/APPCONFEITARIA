@@ -12,7 +12,15 @@ import {
  * - Outros (sem prompt): instrução pelo menu do navegador.
  */
 
-type Modo = "android" | "ios" | "inapp" | "menu";
+type Modo = "android" | "ios" | "inapp" | "menu" | "pc";
+
+/** Computador: sem toque e sem "Mobi/Android" no navegador */
+function ehComputador(): boolean {
+  const ua = navigator.userAgent || "";
+  if (/Android|Mobi|iPad|iPhone|iPod/i.test(ua)) return false;
+  if (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1) return false;
+  return true;
+}
 
 function detectarModo(temPrompt: boolean): Modo {
   const ua = navigator.userAgent || "";
@@ -21,6 +29,7 @@ function detectarModo(temPrompt: boolean): Modo {
   if (ios && inApp) return "inapp";
   if (ios) return "ios";
   if (temPrompt) return "android";
+  if (ehComputador()) return "pc";
   return "menu";
 }
 
@@ -48,6 +57,7 @@ export default function InstalarAppCard() {
   if (instalado) return null;
 
   const modo = detectarModo(temPrompt);
+  const pc = ehComputador();
 
   const instalar = async () => {
     const aceitou = await promptInstall();
@@ -67,8 +77,10 @@ export default function InstalarAppCard() {
       <div className="ia-top">
         <img src="/Sistema/icon-192.png" alt="" />
         <div>
-          <p className="ia-t">Instale o Doonly no celular</p>
-          <p className="ia-d">Acesse com um toque direto da tela inicial e receba as novidades na hora.</p>
+          <p className="ia-t">{pc ? "Instale o Doonly no computador" : "Instale o Doonly no celular"}</p>
+          <p className="ia-d">{pc
+            ? "Abra o app direto da área de trabalho, numa janela só dele."
+            : "Acesse com um toque direto da tela inicial e receba as novidades na hora."}</p>
         </div>
       </div>
 
@@ -93,6 +105,12 @@ export default function InstalarAppCard() {
             {copiado ? "Link copiado!" : "Copiar link pra colar no Safari"}
           </button>
         </>
+      )}
+
+      {modo === "pc" && (
+        <p className="ia-warn">
+          No Chrome ou no Edge, clique no ícone de instalar na barra de endereço (à direita) e escolha <b>Instalar</b>.
+        </p>
       )}
 
       {modo === "menu" && (

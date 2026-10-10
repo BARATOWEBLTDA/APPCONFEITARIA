@@ -68,6 +68,7 @@ import Custos from "@/pages/Custos";
 import EmBreve from "@/pages/EmBreve";
 import Lucratividade from "@/pages/Lucratividade";
 import FichaTecnica from "@/pages/FichaTecnica";
+import NaoEncontrada from "@/pages/NaoEncontrada";
 
 
 
@@ -291,7 +292,9 @@ export default function App() {
         </Route>
 
         <Route path="/" element={<NavigateWithSearch to="/inicio" replace />} />
-        <Route path="*" element={<NavigateWithSearch to="/login" replace />} />
+        {/* (10/10) endereço que não existe: página própria (antes ia pro login, até pra quem estava logado).
+            A raiz "/" com ?ref= continua na rota de cima. */}
+        <Route path="*" element={<NaoEncontrada />} />
       </Routes>
       <Analytics />
     </BrowserRouter>

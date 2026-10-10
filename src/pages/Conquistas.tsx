@@ -3,11 +3,19 @@ import { useNavigate } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
-import { CONQUISTAS, GRUPOS, sincronizarConquistas, type ResultadoConquistas, type Metrica } from "@/lib/conquistas";
+import { CONQUISTAS, sincronizarConquistas, type ResultadoConquistas, type Metrica } from "@/lib/conquistas";
 import { Cake, Calculator, CalendarCheck, Crown, DeviceMobile, Globe, Receipt, Users, type Icon } from "@phosphor-icons/react";
 
 /** Ícone de cada medalha (09/10: antes era emoji) */
 const ICONE_MEDALHA: Record<Metrica, Icon> = { pedidos: Receipt, pedidosCardapio: DeviceMobile, clientes: Users, produtos: Cake, fichas: Calculator, cardapio: Globe, pro: Crown, mesesPro: CalendarCheck };
+
+/** (10/10) Seções da tela, pelo tipo de medalha: antes as de produtos, cardápio e ficha técnica ficavam misturadas em "Pedidos e clientes" */
+const SECOES: { titulo: string; metricas: Metrica[] }[] = [
+  { titulo: "Pedidos", metricas: ["pedidos", "pedidosCardapio"] },
+  { titulo: "Clientes", metricas: ["clientes"] },
+  { titulo: "Cardápio e produtos", metricas: ["cardapio", "produtos", "fichas"] },
+  { titulo: "PRO", metricas: ["pro", "mesesPro"] },
+];
 
 /** "Minhas conquistas" — todas as medalhas (aprovado 30/09) */
 export default function Conquistas() {
@@ -18,7 +26,8 @@ export default function Conquistas() {
   useEffect(() => { if (profile) sincronizarConquistas(profile, isPro).then(setR); }, [profile?.id, isPro]);
 
   const feitas = r ? CONQUISTAS.filter(q => r.feitas[q.codigo]).length : 0;
-  const data = (iso: string) => new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+  /** "10 de out." — a data em que a medalha foi ganha (antes "10/10", que parecia progresso) */
+  const data = (iso: string) => new Date(iso).toLocaleDateString("pt-BR", { day: "numeric", month: "short" });
   const frase = feitas === 0 ? "Sua primeira conquista está logo ali!" : feitas < 6 ? "Você está começando bem!" : feitas < 15 ? "Você está voando!" : "Você é uma lenda da confeitaria!";
 
   return (
@@ -31,24 +40,24 @@ export default function Conquistas() {
           </div>
           <div><b>{frase}</b><p>Continue vendendo e cadastrando pra desbloquear as próximas medalhas.</p></div>
         </div>
-        {r && GRUPOS.map(g => (
-          <div key={g}>
-            <p className="cqp-sec">{g}</p>
+        {r && SECOES.map(sec => (
+          <section key={sec.titulo} aria-label={sec.titulo}>
+            <h2 className="cqp-sec">{sec.titulo}</h2>
             <div className="cqp-grid">
-              {CONQUISTAS.filter(q => q.grupo === g).map(q => {
+              {CONQUISTAS.filter(q => sec.metricas.includes(q.metrica)).map(q => {
                 const f = r.feitas[q.codigo];
                 const v = Math.min(r.valores[q.metrica], q.alvo);
                 return (
                   <div key={q.codigo} className={`cqp-bd${f ? "" : " off"}`}>
                     <div className={`cqp-medal${f ? "" : " off"}`} aria-hidden="true">{(() => { const Ic = ICONE_MEDALHA[q.metrica]; return <Ic size={26} weight="duotone" />; })()}</div>
                     <b>{q.nome}</b>
-                    <small>{f ? `Conquistado ${data(f.conquistada_em)}` : q.metrica === "pro" ? "Ative o PRO" : `${v} de ${q.alvo}`}</small>
+                    <small>{f ? `Conquistada em ${data(f.conquistada_em)}` : q.metrica === "pro" ? "Ative o PRO" : `${v.toLocaleString("pt-BR")} de ${q.alvo.toLocaleString("pt-BR")}`}</small>
                     {!f && q.alvo > 1 && <div className="cqp-mini"><i style={{ width: `${(v / q.alvo) * 100}%` }} /></div>}
                   </div>
                 );
               })}
             </div>
-          </div>
+          </section>
         ))}
       </div>
       <style>{`
@@ -59,7 +68,7 @@ export default function Conquistas() {
         .cqp-ring > div { width: 54px; height: 54px; border-radius: 50%; background: #fff; display: flex; align-items: baseline; justify-content: center; padding-top: 14px; }
         .cqp-ring b { font-size: 20px; font-weight: 700; color: #3B1620; } .cqp-ring small { font-size: 12px; color: #C33A6E; font-weight: 700; }
         .cqp-sum > div:last-child b { font-size: 14.5px; } .cqp-sum p { font-size: 12.5px; color: #6B5D64; margin: 2px 0 0; line-height: 1.4; }
-        .cqp-sec { margin: 18px 2px 8px; font-size: 12px; font-weight: 700; color: #9A8E94; }
+        .cqp-sec { margin: 22px 2px 10px; font-size: 15px; font-weight: 700; line-height: 1.3; color: #2C1219; }
         .cqp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         @media (min-width: 700px) { .cqp-grid { grid-template-columns: repeat(5, 1fr); } }
         .cqp-bd { background: #fff; border: 1px solid #F0EBED; border-radius: 12px; padding: 12px 6px 10px; text-align: center; display: flex; flex-direction: column; align-items: center; }

@@ -225,7 +225,7 @@ export default function CheckoutConfigPage() {
 
   if (loading) return (
     <>
-      <AppPageHeader title="Entrega e pagamento" subtitle="Formas de pagar, entrega e cupons" onBack={() => navigate("/cardapio")} />
+      <AppPageHeader title="Entrega e pagamento" subtitle="Pagamento, entrega e cupons" onBack={() => navigate("/cardapio")} />
       <div className="ep-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
     </>
   )
@@ -234,7 +234,7 @@ export default function CheckoutConfigPage() {
 
   return (
     <>
-      <AppPageHeader title="Entrega e pagamento" subtitle="Formas de pagar, entrega e cupons" onBack={() => navigate("/cardapio")} />
+      <AppPageHeader title="Entrega e pagamento" subtitle="Pagamento, entrega e cupons" onBack={() => navigate("/cardapio")} />
       <div className="ep">
         <p className="ep-salva"><Check size={16} weight="bold" aria-hidden="true" />Tudo aqui salva sozinho.</p>
 
@@ -266,7 +266,7 @@ export default function CheckoutConfigPage() {
 
         {/* Cupons */}
         <section className="ep-card ep-largo">
-          <Cabeca Ic={Ticket} titulo="Cupons de desconto" apoio={isPro ? "Códigos que o cliente usa ao finalizar o pedido" : undefined}
+          <Cabeca Ic={Ticket} titulo="Cupons de desconto" apoio="Códigos que o cliente usa ao finalizar o pedido"
  />
           {!isPro ? (
             <div className="ep-pro">

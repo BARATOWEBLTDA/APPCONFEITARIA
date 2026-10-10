@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { ShoppingBag, Home, ClipboardList, User, ChevronRight } from 'lucide-react'
 import { ArrowLeft, CalendarBlank, CaretRight, Check, ChatCircleDots, Clock, CreditCard, Money, PixLogo, Plus, ShoppingBag as Sacola, Storefront, Tag, Truck, WhatsappLogo, X } from '@phosphor-icons/react'
 import { useCart } from '@/hooks/useCart'
-import { CartItemComponent } from '@/components/cart/CartItemComponent'
+import { CartItemComponent, unidadeItem } from '@/components/cart/CartItemComponent'
 import { formatCurrency } from '@/utils/helpers'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { PerfilTab } from './PerfilTab'
@@ -77,11 +77,13 @@ function dataCurta(iso: string): string {
 }
 
 /** Faixa cinza de cada parte do finalizar (igual ao produto aberto da 8.2) */
-function Cab({ t, sub, obr, ok, falta }: { t: string; sub?: string; obr?: boolean; ok?: boolean; falta?: string }) {
+function Cab({ t, sub, obr, opc, ok, falta, pendente }: { t: string; sub?: string; obr?: boolean; opc?: boolean; ok?: boolean; falta?: string; pendente?: string }) {
+  // pendente: já começou mas falta algo ("Falta o endereço") — no lugar de "Obrigatório"
   return (
     <header className={`sc-g-cab${falta ? ' falta' : ''}`}>
       <span><b>{t}</b>{(falta || sub) && <small>{falta || sub}</small>}</span>
-      {obr && (ok && !falta ? <i className="sc-ok" aria-label="Pronto"><Check size={14} weight="bold" /></i> : <i className="sc-obr">Obrigatório</i>)}
+      {obr && (ok && !falta ? <i className="sc-ok" aria-label="Pronto"><Check size={14} weight="bold" /></i> : <i className="sc-obr">{pendente || 'Obrigatório'}</i>)}
+      {opc && <i className="sc-obr sc-opc">Opcional</i>}
     </header>
   )
 }
@@ -115,6 +117,7 @@ function CartContent({
   const [treme, setTreme] = useState(false)
   const [enviando, setEnviando] = useState(false)
   const [cepErro, setCepErro] = useState('')
+  const [cepAviso, setCepAviso] = useState('')
 
   // ═══ Finalizar encomenda (02/10): tudo numa tela só ═══
   const [feErro, setFeErro] = useState<'' | 'agenda' | 'endereco' | 'pagamento' | 'dados'>('')
@@ -194,7 +197,7 @@ function CartContent({
   const [nome, setNome] = useState(clienteLogado?.nome || '')
   const [telefone, setTelefone] = useState(clienteLogado?.telefone || '')
 
-  // Endereços que a cliente já usou nesta loja (salvos no aparelho depois de cada pedido com entrega)
+  // Endereços que o cliente já usou nesta loja (salvos no aparelho depois de cada pedido com entrega)
   const enderecosSalvos: any[] = useMemo(() => {
     try {
       const uid = localStorage.getItem('cardapio_user_id') || ''
@@ -214,16 +217,20 @@ function CartContent({
   const buscarCep = async (v: string) => {
     const c = v.replace(/\D/g,'')
     if (c.length !== 8) return
-    setCepLoading(true); setCepErro('')
+    setCepLoading(true); setCepErro(''); setCepAviso('')
+    // CEP com 8 números nunca fica vermelho: se a busca não acha (ou falha), só avisa pra preencher à mão
+    const naoAchou = config.entrega_por_bairro.length > 0
+      ? 'Não achamos esse CEP. Preencha a rua abaixo e escolha o bairro.'
+      : 'Não achamos esse CEP. Preencha rua e bairro abaixo.'
     try {
       const res = await fetch(`https://viacep.com.br/ws/${c}/json/`)
       const d = await res.json()
-      if (d.erro) { setCepErro('CEP não encontrado'); } else {
+      if (d.erro) { setCepAviso(naoAchou) } else {
         setRua(d.logradouro || '')
         setBairro(d.bairro || '')
         setCidade(d.localidade || '')
       }
-    } catch { setCepErro('Erro ao buscar CEP') }
+    } catch { setCepAviso(naoAchou) }
     setCepLoading(false)
   }
 
@@ -481,7 +488,11 @@ function CartContent({
   const okQuando = !!(dataEntrega && horaEntrega)
   const okDados = !!nome.trim() && telefone.replace(/\D/g, '').length >= 10
   const antTexto = regras.horas >= 48 && regras.horas % 24 === 0 ? `${regras.horas / 24} dias` : `${regras.horas}h`
-  const limparEndereco = () => { setRua(''); setNumero(''); setComplemento(''); setBairro(''); setCidade(''); setCep(''); setBairroSelecionado('') }
+  const limparEndereco = () => { setRua(''); setNumero(''); setComplemento(''); setBairro(''); setCidade(''); setCep(''); setBairroSelecionado(''); setCepErro(''); setCepAviso('') }
+  // O que ainda falta na entrega (o selo diz isso em vez de voltar pra "Obrigatório")
+  const faltaReceber = !formaEntrega || !comEndereco ? ''
+    : !rua.trim() || !numero.trim() ? 'Falta o endereço'
+    : config.entrega_por_bairro.length > 0 && !bairroSelecionado ? 'Falta o bairro' : ''
 
   /* ═══ Pedido enviado ═══ */
   if (pedidoConfirmado) return (
@@ -496,7 +507,9 @@ function CartContent({
             return (
               <span key={k}>
                 <span><b>{qtdItem(it)} {it.name}</b>{det.length > 0 && <small>{det.join(' · ')}</small>}{it.observations && <small>Obs.: {it.observations}</small>}</span>
-                <em>{formatCurrency(it.price * it.quantity)}</em>
+                <em>{formatCurrency(it.price * it.quantity)}{unidadeItem(it) && (it.quantity === 1
+                  ? <small>{unidadeItem(it)}</small>
+                  : <small>{formatCurrency(it.price)} {unidadeItem(it)}</small>)}</em>
               </span>
             )
           })}
@@ -533,7 +546,7 @@ function CartContent({
           </div>
         ) : (
           <>
-            <div className="sc-loja"><span>{nomeLoja || 'Seu pedido'}</span><button type="button" style={{ color: accent }} onClick={onClose}>Adicionar mais itens</button></div>
+            <div className="sc-loja"><span>Seus itens</span><button type="button" style={{ color: accent }} onClick={onClose}>Adicionar mais itens</button></div>
             {items.map((item: any) => (
               <CartItemComponent key={item.lineId ?? item.id} item={item} cor={accent} onUpdateQuantity={updateQuantity} onUpdateObservations={updateObservations} onRemove={removeItem} />
             ))}
@@ -541,7 +554,7 @@ function CartContent({
             {/* Cupom: só quando a loja tem cupom ativo */}
             {temCupom && (cupomAplicado ? (
               <button type="button" className="sc-linha ok" onClick={removerCupom}>
-                <Tag size={20} weight="bold" /><span><b>Cupom {cupomAplicado.codigo}</b><small>− {formatCurrency(desconto)} · toque pra tirar</small></span><X size={18} weight="bold" />
+                <Tag size={20} weight="bold" /><span><b>Cupom {cupomAplicado.codigo}</b><small>− {formatCurrency(desconto)} · tirar o cupom</small></span><X size={18} weight="bold" />
               </button>
             ) : cupomAberto ? (
               <>
@@ -563,7 +576,8 @@ function CartContent({
               <b>Resumo de valores</b>
               <span>Subtotal<em>{formatCurrency(totalPrice)}</em></span>
               {desconto > 0 && <span className="ok">Cupom {cupomAplicado?.codigo}<em>− {formatCurrency(desconto)}</em></span>}
-              {entregaTexto && <span>Entrega<em className={entregaGratis ? 'ok' : ''}>{entregaTexto}</em></span>}
+              {/* Ainda não escolheu retirar ou receber: o valor da entrega só sai no finalizar */}
+              {opsEntrega.ent && <span>Entrega<em>Calculada ao finalizar</em></span>}
               <span className="t">{rotuloTotal}<em>{formatCurrency(subtotalCupom)}</em></span>
             </div>
           </>
@@ -586,13 +600,13 @@ function CartContent({
       <div className="sc-rolo">
         {/* Como receber + endereço */}
         <section ref={refEndereco}>
-          <Cab t="Como você quer receber?" sub={opsEntrega.ret && opsEntrega.ent ? 'Escolha 1 opção' : undefined} obr ok={okReceber}
+          <Cab t="Como você quer receber?" sub={opsEntrega.ret && opsEntrega.ent ? 'Escolha 1 opção' : undefined} obr ok={okReceber} pendente={faltaReceber || undefined}
             falta={feErro === 'endereco' ? (config.entrega_por_bairro.length > 0 && !bairroSelecionado && rua.trim() && numero.trim() ? 'Escolha o bairro da entrega' : 'Preencha o endereço da entrega') : undefined} />
           <div className={`sc-receber${opsEntrega.ret && opsEntrega.ent ? '' : ' um'}`}>
             {opsEntrega.ret && (
               <button type="button" aria-pressed={formaEntrega === 'retirada'} style={formaEntrega === 'retirada' ? { borderColor: accent } : undefined}
                 onClick={() => { setFormaEntrega('retirada'); setBairroSelecionado(''); setFeErro('') }}>
-                <Storefront size={22} weight="bold" /><b>Retirar na loja</b><small>Grátis</small>
+                <Storefront size={22} weight="bold" /><b>Retirar na loja</b>
               </button>
             )}
             {opsEntrega.ent && (
@@ -627,15 +641,16 @@ function CartContent({
                 <>
                   <div className="sc-campos-2">
                     <Campo rotulo="CEP" inputMode="numeric" autoComplete="postal-code" placeholder="00000-000" value={cep}
-                      dica={cepLoading ? 'Procurando…' : undefined} erro={cepErro || undefined}
-                      onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 8); setCep(v.length > 5 ? `${v.slice(0, 5)}-${v.slice(5)}` : v); buscarCep(v) }} />
+                      dica={cepLoading ? 'Procurando…' : cepAviso || undefined} erro={cepErro || undefined}
+                      onBlur={() => { const n = cep.replace(/\D/g, '').length; setCepErro(n > 0 && n < 8 ? 'Faltam números no CEP' : '') }}
+                      onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 8); setCep(v.length > 5 ? `${v.slice(0, 5)}-${v.slice(5)}` : v); setCepErro(''); setCepAviso(''); buscarCep(v) }} />
                     <Campo rotulo="Número" inputMode="numeric" value={numero} onChange={e => setNumero(e.target.value)}
                       erro={feErro === 'endereco' && !numero.trim() ? 'Falta o número' : undefined} />
                   </div>
                   <Campo rotulo="Rua" autoComplete="address-line1" value={rua} onChange={e => setRua(e.target.value)}
                     erro={feErro === 'endereco' && !rua.trim() ? 'Falta a rua' : undefined} />
                   {config.entrega_por_bairro.length === 0 && <Campo rotulo="Bairro" value={bairro} onChange={e => setBairro(e.target.value)} />}
-                  <Campo rotulo="Complemento" opcional placeholder="Apto, bloco…" value={complemento} onChange={e => setComplemento(e.target.value)} />
+                  <Campo rotulo="Complemento" placeholder="Ex.: apto 12, bloco B (se tiver)" value={complemento} onChange={e => setComplemento(e.target.value)} />
                   {endNovo && enderecosSalvos.length > 0 && (
                     <button type="button" className="sc-mais" style={{ color: accent }} onClick={() => usarEndereco(enderecosSalvos[0])}>Usar um endereço salvo</button>
                   )}
@@ -698,7 +713,7 @@ function CartContent({
           </div>
           {formaPagamento === 'dinheiro' && config.exibir_campo_troco && (
             <div className="sc-troco">
-              <Campo rotulo="Troco pra quanto?" opcional prefixo="R$" inputMode="decimal" value={trocoParaStr} onChange={e => setTrocoParaStr(e.target.value.replace(/[^0-9.,]/g, ''))} />
+              <Campo rotulo="Troco pra quanto?" dica="Deixe em branco se não precisar de troco." prefixo="R$" inputMode="decimal" value={trocoParaStr} onChange={e => setTrocoParaStr(e.target.value.replace(/[^0-9.,]/g, ''))} />
             </div>
           )}
         </section>
@@ -709,7 +724,7 @@ function CartContent({
           <div className="sc-campos">
             <Campo rotulo="Nome" value={nome} onChange={e => setNome(e.target.value)} placeholder="Como você se chama?" autoComplete="name"
               erro={feErro === 'dados' && !nome.trim() ? 'Falta o seu nome' : undefined} />
-            <Campo rotulo="WhatsApp" value={telefone} inputMode="tel" autoComplete="tel" placeholder="(00) 90000-0000"
+            <Campo rotulo="WhatsApp" value={telefone} inputMode="tel" autoComplete="tel" placeholder="(41) 9 9999-0000"
               erro={feErro === 'dados' && telefone.replace(/\D/g, '').length < 10 ? 'Coloque o número com DDD' : undefined}
               onChange={e => { const d = e.target.value.replace(/\D/g, '').slice(0, 11); setTelefone(d.length > 6 ? `(${d.slice(0, 2)}) ${d.slice(2, d.length - 4)}-${d.slice(-4)}` : d.length > 2 ? `(${d.slice(0, 2)}) ${d.slice(2)}` : d) }} />
           </div>
@@ -717,9 +732,9 @@ function CartContent({
 
         {/* Recado */}
         <section>
-          <Cab t="Recado pra loja" sub="Opcional" />
-          <div className="sc-campos">
-            <CampoArea rotulo="Recado" value={observacoes} onChange={e => setObservacoes(e.target.value)} placeholder={ehEntrega ? 'Ex.: tocar a campainha do portão' : 'Ex.: vou mandar outra pessoa buscar'} rows={3} />
+          <Cab t="Recado pra loja" opc />
+          <div className="sc-campos sc-recado">
+            <CampoArea rotulo="" aria-label="Recado pra loja" value={observacoes} onChange={e => setObservacoes(e.target.value)} placeholder={ehEntrega ? 'Ex.: tocar a campainha do portão' : 'Ex.: vou mandar outra pessoa buscar'} rows={3} />
           </div>
         </section>
 

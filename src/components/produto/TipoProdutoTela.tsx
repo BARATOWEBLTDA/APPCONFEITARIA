@@ -12,7 +12,7 @@ export type TipoProduto = "bolos" | "doces" | "salgados" | "sobremesas" | "kitfe
 
 export const TIPOS: { id: TipoProduto; img?: string; emoji: string; titulo: string; sub: string; dica: string; bg: [string, string]; cor: string }[] = [
   { id: "bolos", img: "/Sistema/bolocard.png", emoji: "🎂", titulo: "Bolos", sub: "Aniversário, caseiros, naked cake — com tamanhos e recheios", dica: "a categoria Bolos já vem marcada e o cadastro sugere tamanhos, massas e recheios", bg: ["#FCE7F3", "#F9D1E0"], cor: "#9D174D" },
-  { id: "doces", img: "/Sistema/brigadeiro.jpeg", emoji: "🍬", titulo: "Doces", sub: "Brigadeiro, beijinho, bombom — em kit ou por unidade", dica: "o cadastro já abre o kit de docinhos (50 e 100 unidades, até 2 sabores). Se vender por unidade, é só desligar o kit", bg: ["#FEF3C7", "#FDE68A"], cor: "#92400E" },
+  { id: "doces", img: "/Sistema/brigadeiro.jpeg", emoji: "🍬", titulo: "Doces", sub: "Brigadeiro, beijinho, bombom — em kit ou por unidade", dica: "o cadastro já abre o kit de doces (50 e 100 unidades, até 2 sabores). Se vender por unidade, é só desligar o kit", bg: ["#FEF3C7", "#FDE68A"], cor: "#92400E" },
   { id: "salgados", img: "/Sistema/salgados.png", emoji: "🥟", titulo: "Salgados", sub: "Coxinha, risole, kibe — no cento ou no atacado", dica: "o cadastro já abre o kit de salgados (de 100 a 4.000, preço do cento)", bg: ["#FFEDD5", "#FED7AA"], cor: "#9A3412" },
   { id: "sobremesas", img: "/Sistema/pudim.webp", emoji: "🍮", titulo: "Sobremesas", sub: "Pudim, mousse, torta, bolo no pote", dica: "a categoria Sobremesas já vem marcada, pra um produto simples (pote, fatia, unidade)", bg: ["#E0E7FF", "#C7D2FE"], cor: "#3730A3" },
   { id: "kitfesta", img: "/Sistema/kitfesta.webp", emoji: "🎉", titulo: "Kit festa", sub: "Combos de festa com bolo, salgados e doces", dica: "o cadastro já vem com os tamanhos do combo (20, 40, 60 pessoas…), cada um com seu preço. Conte o que vem em cada um na descrição", bg: ["#DCFCE7", "#BBF7D0"], cor: "#166534" },
@@ -36,7 +36,8 @@ export default function TipoProdutoTela({ onEscolher, onFechar }: Props) {
         <div className="tpp-tt"><b>Novo produto</b><small>Passo 1 · Tipo</small></div>
         <BotaoIcone rotulo="Fechar" variante="limpo" onClick={onFechar}><X size={20} weight="bold" /></BotaoIcone>
       </div>
-      <div className="tpp-barra" aria-hidden="true"><i className="on" /><i /><i /><i /><i /></div>
+      {/* 10/10: barra contínua (a mesma dos passos seguintes) — o total de passos só se sabe depois do tipo */}
+      <div className="tpp-barra" aria-hidden="true"><span><i /></span></div>
       <div className="tpp-body">
         <div className="tpp-h">
           <h1>Que tipo de produto é?</h1>
@@ -77,8 +78,8 @@ export default function TipoProdutoTela({ onEscolher, onFechar }: Props) {
         .tpp-tt b { display: block; font-size: 16px; font-weight: 700; }
         .tpp-tt small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
         .tpp-barra { display: flex; gap: 4px; padding: 0 16px 12px; border-bottom: 1px solid var(--ui-linha); }
-        .tpp-barra i { flex: 1; height: 6px; border-radius: 3px; background: var(--ui-borda); }
-        .tpp-barra i.on { background: var(--ui-rosa); }
+        .tpp-barra span { flex: 1; display: block; height: 6px; border-radius: 3px; background: var(--ui-borda); overflow: hidden; }
+        .tpp-barra i { display: block; width: 17%; height: 100%; border-radius: 3px; background: var(--ui-rosa); }
         .tpp-body { flex: 1; overflow-y: auto; padding: 20px 16px 16px; }
         .tpp-h { padding: 0 0 16px; }
         .tpp-h h1 { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.25; color: var(--ui-texto); }

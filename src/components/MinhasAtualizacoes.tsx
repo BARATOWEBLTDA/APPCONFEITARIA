@@ -38,12 +38,13 @@ function inicioFimSemana() {
 }
 
 // Aniversariantes nos próximos 7 dias
-function calcularAniversariantesSemana(clientes: any[]): { total: number; primeiro: string | null } {
+function calcularAniversariantesSemana(clientes: any[]): { total: number; primeiro: string | null; nomes: string[] } {
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
   let total = 0;
   let primeiro: string | null = null;
   let menorDias = Infinity;
+  const lista: { nome: string; dias: number }[] = [];
 
   clientes.forEach((c) => {
     if (!c.data_nascimento) return;
@@ -54,6 +55,7 @@ function calcularAniversariantesSemana(clientes: any[]): { total: number; primei
     const dias = Math.floor((aniv.getTime() - hoje.getTime()) / 86400000);
     if (dias >= 0 && dias <= 7) {
       total++;
+      lista.push({ nome: String(c.nome || "").trim().split(" ")[0], dias });
       if (dias < menorDias) {
         menorDias = dias;
         primeiro = c.nome || null;
@@ -61,7 +63,8 @@ function calcularAniversariantesSemana(clientes: any[]): { total: number; primei
     }
   });
 
-  return { total, primeiro };
+  const nomes = lista.sort((a, b) => a.dias - b.dias).map(x => x.nome).filter(Boolean);
+  return { total, primeiro, nomes };
 }
 
 export default function MinhasAtualizacoes() {
@@ -91,7 +94,7 @@ export default function MinhasAtualizacoes() {
         totalPedidosRes,
         clientesComVendaRes,
       ] = await Promise.all([
-        // 2. Entregas essa semana
+        // 2. Entregas nesta semana
         supabase
           .from("pedidos")
           .select("id", { count: "exact", head: true })
@@ -145,7 +148,7 @@ export default function MinhasAtualizacoes() {
 
       // (07/10 · 3.07) Os pedidos atrasados saíram daqui: já aparecem no "Seu dia", no topo do Início, e estavam repetidos.
 
-      // 2️⃣ Entregas essa semana
+      // 2️⃣ Entregas nesta semana
       const nEntregas = entregasSemanaRes.count || 0;
       if (nEntregas > 0) {
         lista.push({
@@ -153,7 +156,7 @@ export default function MinhasAtualizacoes() {
           Icone: Clock,
           categoria: "Esta semana",
           categoriaCor: "azul",
-          titulo: `${nEntregas} ${nEntregas === 1 ? "entrega essa semana" : "entregas essa semana"}`,
+          titulo: `${nEntregas} ${nEntregas === 1 ? "entrega nesta semana" : "entregas nesta semana"}`,
           descricao: nEntregas === 1
             ? "Você tem uma entrega programada — se organize."
             : "Se organize pra dar conta de todas as entregas.",
@@ -173,11 +176,11 @@ export default function MinhasAtualizacoes() {
           categoria: "Oportunidade",
           categoriaCor: "rosa",
           titulo: aniv.total === 1
-            ? `${primeiroNome} faz aniversário essa semana!`
-            : `${aniv.total} aniversariantes essa semana`,
+            ? `${primeiroNome} faz aniversário nesta semana!`
+            : `${aniv.total} aniversariantes nesta semana`,
           descricao: aniv.total === 1
             ? "Mande uma mensagem e ofereça um bolo especial."
-            : `${primeiroNome} e outros — mande mensagens e ofereça bolos.`,
+            : `${aniv.total === 2 && aniv.nomes.length === 2 ? `${aniv.nomes[0]} e ${aniv.nomes[1]}` : `${primeiroNome} e mais ${aniv.total - 1}`} — mande mensagens e ofereça bolos.`,
           cta: "Ver clientes",
           path: "/clientes",
           prioridade: 70,

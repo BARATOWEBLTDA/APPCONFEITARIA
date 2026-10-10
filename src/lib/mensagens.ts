@@ -26,12 +26,12 @@ export const MODELOS: Modelo[] = [
   {
     chave: "pedido_cardapio",
     titulo: "Pedido feito pelo cardápio",
-    quando: "A cliente manda pro seu WhatsApp quando termina o pedido no cardápio",
+    quando: "O cliente manda pro seu WhatsApp quando termina o pedido no cardápio",
     padrao: "Oi, *{loja}*! Acabei de fazer um pedido pelo cardápio.\n\n{pedido}",
     etiquetas: [
       { k: "pedido", rotulo: "Itens do pedido", exemplo: PEDIDO_EXEMPLO },
       { k: "loja", rotulo: "Nome da loja", exemplo: "Doce Formiga" },
-      { k: "nome", rotulo: "Nome da cliente", exemplo: "Ana" },
+      { k: "nome", rotulo: "Nome do cliente", exemplo: "Ana" },
       { k: "numero", rotulo: "Nº do pedido", exemplo: "214" },
     ],
     obrigatoria: "pedido",
@@ -39,11 +39,11 @@ export const MODELOS: Modelo[] = [
   },
   {
     chave: "sobre_pedido",
-    titulo: "Falar com a cliente sobre o pedido",
+    titulo: "Falar com o cliente sobre o pedido",
     quando: "Você manda pelo botão de WhatsApp na Agenda e em Pedidos",
     padrao: "Olá {nome}! Sobre o seu pedido #{numero}, tudo certo?",
     etiquetas: [
-      { k: "nome", rotulo: "Nome da cliente", exemplo: "Ana" },
+      { k: "nome", rotulo: "Nome do cliente", exemplo: "Ana" },
       { k: "numero", rotulo: "Nº do pedido", exemplo: "214" },
       { k: "data", rotulo: "Data da entrega", exemplo: "sábado, 17/10" },
       { k: "horario", rotulo: "Horário", exemplo: "15:00" },
@@ -58,7 +58,7 @@ export const MODELOS: Modelo[] = [
     quando: "Você manda pelo botão de parabéns em Clientes",
     padrao: "Feliz aniversário, {nome}! Que o seu dia seja muito doce.",
     etiquetas: [
-      { k: "nome", rotulo: "Nome da cliente", exemplo: "Ana" },
+      { k: "nome", rotulo: "Nome do cliente", exemplo: "Ana" },
       { k: "loja", rotulo: "Nome da loja", exemplo: "Doce Formiga" },
     ],
   },
@@ -95,7 +95,7 @@ export function exemplo(m: Modelo): Record<string, string> {
 const DIAS_SEMANA = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
 const reais = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-/** Dados de um pedido pras etiquetas de "Falar com a cliente sobre o pedido" */
+/** Dados de um pedido pras etiquetas de "Falar com o cliente sobre o pedido" */
 export function dadosDoPedido(p: any, primeiroNome: string): Record<string, string> {
   let data = "";
   if (p?.data_entrega) {

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 /**
- * Textos dos Termos de Uso e da Política de Privacidade (07/10).
+ * Textos dos Termos de uso e da Política de privacidade (07/10).
  * São os mesmos textos de antes, palavra por palavra: só saíram das páginas pra um lugar só,
  * usado pela página (/termos, /privacidade) e pela janela que abre no login e nas Configurações.
  * Pra mudar um texto, mude aqui.
@@ -13,11 +13,11 @@ export type DocLegalDados = { titulo: string; curto: string; atualizado: string;
 export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
   termos: {
     titulo: 'Termos de uso',
-    curto: 'Termos de Uso',
+    curto: 'Termos de uso',
     atualizado: 'Última atualização: junho de 2026',
     intro: (
       <>
-        <p>Bem-vindo ao <strong>Doonly</strong>. Ao criar uma conta e utilizar nosso serviço, você concorda com os seguintes Termos de Uso. Leia atentamente antes de usar a plataforma.</p>
+        <p>Boas-vindas ao <strong>Doonly</strong>. Ao criar uma conta e utilizar nosso serviço, você concorda com os seguintes Termos de uso. Leia atentamente antes de usar a plataforma.</p>
       </>
     ),
     secoes: [
@@ -71,7 +71,7 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         titulo: 'Disponibilidade do serviço',
         corpo: (
           <>
-        <p>Nos esforçamos para manter o Doonly disponível 24 horas por dia, mas não garantimos disponibilidade ininterrupta. Podemos realizar manutenções programadas com aviso prévio sempre que possível.</p>
+        <p>Esforçamo-nos para manter o Doonly disponível 24 horas por dia, mas não garantimos disponibilidade ininterrupta. Podemos realizar manutenções programadas com aviso prévio sempre que possível.</p>
           </>
         ),
       },
@@ -79,7 +79,7 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         titulo: 'Encerramento de conta',
         corpo: (
           <>
-        <p>Você pode encerrar sua conta a qualquer momento. Nos reservamos o direito de suspender ou encerrar contas que violem estes termos.</p>
+        <p>Você pode encerrar sua conta a qualquer momento. O Doonly se reserva o direito de suspender ou encerrar contas que violem estes termos.</p>
           </>
         ),
       },
@@ -103,7 +103,7 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         titulo: 'Contato',
         corpo: (
           <>
-        <p>Dúvidas sobre estes Termos de Uso? Entre em contato: <a href="mailto:contato@doonly.com.br">contato@doonly.com.br</a></p>
+        <p>Dúvidas sobre estes Termos de uso? Entre em contato: <a href="mailto:contato@doonly.com.br">contato@doonly.com.br</a></p>
           </>
         ),
       },

@@ -21,7 +21,7 @@
 .pd-aba[aria-selected="true"] i { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
 .pd-aba:focus-visible, .pd-modo button:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
 .pd-busca-l { display: flex; align-items: center; gap: 8px; }
-.pd-busca { flex: 1; min-width: 0; }
+.pd-busca { flex: 1; min-width: 112px; }
 .pd-busca input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
 .pd-busca-x { margin-right: -6px; }
 .pd-filtro { position: relative; flex: none; display: flex; }
@@ -29,7 +29,6 @@
 .pd-filtro .ui-bti.ligado { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
 .pd-filtro i { position: absolute; top: -6px; right: -6px; box-sizing: border-box; min-width: 20px; height: 20px; padding: 0 5px; border: 2px solid var(--ui-branco); border-radius: 10px; background: var(--ui-rosa); color: #fff; font-style: normal; font-size: 12px; font-weight: 700; line-height: 16px; text-align: center; pointer-events: none; }
 .pd-novo { flex: none; padding-left: 14px; padding-right: 16px; }
-.pd-novo-g { display: none; }
 .pd-modo { display: flex; flex: none; gap: 4px; padding: 2px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
 .pd-modo button { display: flex; align-items: center; gap: 8px; min-height: 44px; margin: 0; padding: 0 12px; border: 0; border-radius: var(--ui-raio-p); background: none; color: var(--ui-texto-2); font-family: var(--font-base); font-size: 13.5px; font-weight: 700; cursor: pointer; }
 .pd-modo button[aria-pressed="true"] { background: var(--ui-branco); color: var(--ui-rosa-escuro); font-weight: 700; box-shadow: var(--ui-sombra-cartao); }
@@ -127,7 +126,6 @@
   .pd-aba > svg { display: block; }
   .pd-busca-l { flex: 1 1 100%; gap: 12px; }
   .pd-novo { padding-left: 20px; padding-right: 20px; }
-  .pd-novo-c { display: none; } .pd-novo-g { display: inline; }
   .pdc-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 }
 
@@ -138,6 +136,7 @@
   .pd-abas { flex: 0 0 auto; }
   .pd-aba { flex: 0 0 auto; padding: 0 12px; white-space: nowrap; }
   .pd-busca-l { flex: 1 1 0; min-width: 0; }
+  .pd-busca { min-width: 160px; }
   .pdl-cab, .pdl { display: grid; grid-template-columns: minmax(220px, 2fr) minmax(172px, 1.1fr) minmax(110px, .9fr) minmax(150px, 1.1fr) 152px 36px; align-items: center; gap: 16px; }
   .pdl-cab { margin-bottom: -12px; padding: 0 16px; font-size: 12.5px; font-weight: 700; color: var(--ui-texto-2); }
   .pdl-tabela { overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }

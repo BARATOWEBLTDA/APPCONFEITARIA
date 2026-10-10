@@ -12,7 +12,8 @@ import { registrarEtapa } from "@/lib/historicoPedido";
 import AppPageHeader from "@/components/AppPageHeader";
 import CalendarioSheet from "@/components/CalendarioSheet";
 import { Botao, BotaoIcone, Janela, Linha, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
-import { nomeDaSituacao, nomeDeGente, nomeDeProduto, recebidoPedido, rs, saldoPedido, situacaoDe } from "@/components/pedidos/pedidoTexto";
+import { avisoDaMudanca, formaDoItem, itemComQtd, nomeDaSituacao, nomeDeGente, nomeDeProduto, qtdCurta, recebidoPedido, rs, saldoPedido, situacaoDe, telefoneValido } from "@/components/pedidos/pedidoTexto";
+import { NomeComQtd } from "@/components/pedidos/CartaoPedido";
 import "@/components/pedidos/pedidos.css";
 import "./agenda.css";
 
@@ -115,7 +116,7 @@ export default function Agenda() {
     (async () => {
       setLoading(true);
       const { data } = await supabase.from("pedidos")
-        .select("*, pedido_itens(nome_produto, quantidade, valor_unitario, imagem_url, personalizacoes, produtos(imagem_url)), clientes(foto_url)")
+        .select("*, pedido_itens(nome_produto, quantidade, valor_unitario, imagem_url, personalizacoes, produtos(imagem_url, forma_venda)), clientes(foto_url)")
         .eq("user_id", userId)
         .order("data_entrega", { ascending: true, nullsFirst: false })
         .order("horario_entrega", { ascending: true, nullsFirst: false });
@@ -193,17 +194,18 @@ export default function Agenda() {
   const abrirEditar = (id: string) => navigate(`/pedidos/${id}/editar`);
 
   const marcarComoPronto = async (p: any) => {
-    // "finalizado" é o status atual de "pronto" (o antigo "pronto" sumia da lista)
-    const { error } = await supabase.from("pedidos").update({ status: "finalizado" }).eq("id", p.id);
+    // o mesmo caminho da lista e da tela do pedido (10/10): retirada vai pra "Pronto pra retirar"; entrega, pra "Pronto"
+    const novo = p.tipo_entrega === "entrega" ? "finalizado" : "aguardando_retirada";
+    const { error } = await supabase.from("pedidos").update({ status: novo }).eq("id", p.id);
     if (error) { avisar("Não deu pra mudar a situação. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
-    registrarEtapa(p.id, "finalizado");
-    setPedidos(prev => prev.map(x => x.id === p.id ? { ...x, status: "finalizado" } : x));
-    avisar(`Pedido #${p.numero || ""} está pronto.`);
+    registrarEtapa(p.id, novo);
+    setPedidos(prev => prev.map(x => x.id === p.id ? { ...x, status: novo } : x));
+    avisar(avisoDaMudanca(p, novo));
   };
 
   const abrirWhatsApp = (p: any) => {
-    const tel = normalizarTelefone(p.cliente_whatsapp || p.cliente_telefone || "");
-    if (!tel) { avisar("Essa cliente não tem telefone cadastrado.", { tipo: "erro" }); return; }
+    const tel = [p.cliente_whatsapp, p.cliente_telefone].map(t => normalizarTelefone(t || "")).find(t => telefoneValido(t)) || "";
+    if (!tel) { avisar("Esse cliente não tem telefone cadastrado.", { tipo: "erro" }); return; }
     const numero = tel.startsWith("55") ? tel : `55${tel}`;
     const nome = p.cliente_nome ? nomeDeGente(p.cliente_nome).split(" ")[0] : "";
     const msg = encodeURIComponent(montarMensagem("sobre_pedido", dadosDoPedido(p, nome)));
@@ -238,7 +240,7 @@ export default function Agenda() {
 
   const baixarPdf = async (p: any) => {
     const janela = pdf.abrirJanela();
-    const { data } = await supabase.from("pedidos").select("*, pedido_itens(*)").eq("id", p.id).maybeSingle();
+    const { data } = await supabase.from("pedidos").select("*, pedido_itens(*, produtos(forma_venda))").eq("id", p.id).maybeSingle();
     await gerarPedidoPDF((data || { id: p.id }) as any, janela);
   };
 
@@ -255,23 +257,24 @@ export default function Agenda() {
       aguardando_pagamento: ["Aguardando pagamento", "rd"], aguardando_aceite: ["Novo pedido", "rd"], novo: ["Novo pedido", "rd"],
     };
     const nomeOp = (v: any) => (!v ? "" : typeof v === "string" ? v : v.nome || "");
-    const produzir = new Map<string, { qtd: number; extra: Map<string, number> }>();
+    const produzir = new Map<string, { qtd: number; forma: string | null; extra: Map<string, number> }>();
     const linhas = lista.map(p => {
       const itens = (p.pedido_itens || []).map((it: any) => {
         const tam = nomeOp(it.personalizacoes?.tamanho);
         const chave = [it.nome_produto, tam].filter(Boolean).join(" ");
-        const atual = produzir.get(chave) || { qtd: 0, extra: new Map() };
+        const forma = formaDoItem(it);
+        const atual = produzir.get(chave) || { qtd: 0, forma, extra: new Map() };
         atual.qtd += Number(it.quantidade) || 1;
         (it.personalizacoes?.kit?.sabores || []).forEach((x: any) => atual.extra.set(x.nome, (atual.extra.get(x.nome) || 0) + (Number(x.qtd) || 0) * (Number(it.quantidade) || 1)));
         produzir.set(chave, atual);
-        return `${chave}${(Number(it.quantidade) || 1) > 1 ? ` × ${it.quantidade}` : ""}`;
+        return itemComQtd(chave, Number(it.quantidade) || 1, forma, true);
       }).join(" + ");
       const [stTxt, stCor] = STATUS_PDF[p.status] || ["Agendado", "bl"];
       const ent = p.tipo_entrega === "entrega";
       const end = ent ? [[p.endereco_rua, p.endereco_numero].filter(Boolean).join(", "), p.endereco_bairro].filter(Boolean).join(" · ") : "";
       return `<tr><td class="hr">${p.horario_entrega ? String(p.horario_entrega).slice(0, 5) : "—"}</td><td><b>${pdf.esc(p.cliente_nome || "Venda avulsa")}</b><small>${ent ? "Entrega" : "Retirada"}${end ? ` · ${pdf.esc(end)}` : ""}</small></td><td>${pdf.esc(itens)}</td><td>${pdf.pill(stTxt, stCor)}</td><td class="ck">☐</td></tr>`;
     }).join("");
-    const prod = [...produzir.entries()].map(([nome, v]) => [nome, `${v.qtd}${v.extra.size ? ` (${[...v.extra.entries()].map(([n, q]) => `${n} ${q}`).join(" · ")})` : ""}`] as [string, string]);
+    const prod = [...produzir.entries()].map(([nome, v]) => [nome, `${qtdCurta(v.qtd, v.forma).replace(/x$/, "")}${v.extra.size ? ` (${[...v.extra.entries()].map(([n, q]) => `${n} ${q}`).join(" · ")})` : ""}`] as [string, string]);
     const entregas = lista.filter(p => p.tipo_entrega === "entrega").length;
     pdf.gerarDocumento(() => ({
       titulo: `Agenda do dia · ${diaTxt}`,
@@ -307,20 +310,22 @@ export default function Agenda() {
           <p>As bolinhas no calendário mostram a situação dos pedidos de cada dia. Vermelho quer dizer que tem pedido atrasado.</p>
         </>
       }
-      infoTip={<>Toque num dia pra ver os <strong>pedidos daquele dia</strong>.</>}
+      infoTip={<>Escolha um dia no calendário pra ver os <strong>pedidos daquele dia</strong>.</>}
     />
     <div className="ag3">
       {/* Busca + filtro */}
       <div className="ag3-topo">
         <div className="ui-campo-c ag3-busca" onClick={e => { if (e.target === e.currentTarget) (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.focus(); }}>
           <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
-          <input type="search" inputMode="search" enterKeyHint="search" autoComplete="off" aria-label="Buscar pedido por cliente ou número" placeholder="Buscar cliente ou número" value={busca} onChange={e => setBusca(e.target.value)} />
+          <input type="search" inputMode="search" enterKeyHint="search" autoComplete="off" aria-label="Buscar pedido por cliente ou número" placeholder="Buscar" value={busca} onChange={e => setBusca(e.target.value)} />
           {busca && <BotaoIcone variante="limpo" tamanho="p" rotulo="Limpar a busca" onClick={() => setBusca("")}><X size={20} weight="bold" /></BotaoIcone>}
         </div>
         <BotaoIcone className={"ag3-filtro" + (filtrosDesligados > 0 ? " on" : "")} rotulo={filtrosDesligados > 0 ? `Filtrar por situação (${filtrosDesligados} escondida${filtrosDesligados > 1 ? "s" : ""})` : "Filtrar por situação"} onClick={() => setFiltroAberto(true)}>
           <Funnel size={20} weight={filtrosDesligados > 0 ? "fill" : "bold"} />
           {filtrosDesligados > 0 && <span className="ag3-filtro-n" aria-hidden="true">{filtrosDesligados}</span>}
         </BotaoIcone>
+        {/* Nova venda no topo, igual à lista de Pedidos (antes era um botão flutuante que cobria o primeiro cartão) */}
+        <Botao className="ag3-novo-g" icone={<Plus size={20} weight="bold" />} onClick={() => navigate("/vendas/novo")}>Nova venda</Botao>
       </div>
 
       <div className="ag3-grade">
@@ -340,7 +345,7 @@ export default function Agenda() {
           {loading ? (
             demorou ? <p className="ag3-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando os pedidos…</p> : null
           ) : pedidosDoDia.length === 0 ? (
-            <TelaVazia icone={<CalendarBlank size={30} />} titulo="Nenhum pedido nesse dia" texto={busca.trim() ? `Nada com “${busca.trim()}” nesse dia.` : "Os pedidos com entrega nesse dia aparecem aqui."} acao={<Botao variante="suave" tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => navigate("/vendas/novo")}>Novo pedido</Botao>} />
+            <TelaVazia icone={<CalendarBlank size={30} />} titulo="Nenhum pedido nesse dia" texto={busca.trim() ? `Nada com “${busca.trim()}” nesse dia.` : "Os pedidos com entrega nesse dia aparecem aqui."} acao={<Botao variante="suave" tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => navigate("/vendas/novo")}>Nova venda</Botao>} />
           ) : pedidosDiaFiltrados.length === 0 ? (
             <TelaVazia icone={<Funnel size={30} />} titulo="Nenhum pedido com esse filtro" texto="Tem pedido nesse dia, mas as situações dele estão escondidas." acao={<Botao variante="suave" tamanho="m" onClick={mostrarTodas}>Mostrar todas as situações</Botao>} />
           ) : (
@@ -358,10 +363,6 @@ export default function Agenda() {
         </div>
       </div>
 
-      {/* Novo pedido */}
-      <button type="button" className="ag3-novo" onClick={() => navigate("/vendas/novo")} aria-label="Novo pedido">
-        <Plus size={24} weight="bold" />
-      </button>
     </div>
 
     {/* Filtro por situação */}
@@ -390,7 +391,7 @@ export default function Agenda() {
     <MenuAgenda p={menuDe} aoFechar={() => setMenuDe(null)}
       itens={[
         { nome: "Editar pedido", Ic: PencilSimple, fn: doMenu(p => abrirEditar(p.id)) },
-        ...(menuDe && STATUS_AINDA_NAO_PRONTO.includes(menuDe.status || "agendado") ? [{ nome: "Marcar como pronto", Ic: Check, fn: doMenu(marcarComoPronto) }] : []),
+        ...(menuDe && STATUS_AINDA_NAO_PRONTO.includes(menuDe.status || "agendado") ? [{ nome: "Marcar pronto", Ic: Check, fn: doMenu(marcarComoPronto) }] : []),
         { nome: "Mudar a data da entrega", Ic: CalendarBlank, fn: doMenu(p => setReagendando(p)) },
         { nome: "Duplicar pedido", Ic: Copy, fn: doMenu(duplicarPedido) },
         { nome: "Baixar PDF", Ic: FilePdf, fn: doMenu(baixarPdf) },
@@ -490,7 +491,7 @@ function CartaoAgenda({ p, aoAbrir, aoMenu, aoPronto, aoWhats }: any) {
   const foto = primeiraFoto(primeiro?.imagem_url || primeiro?.produtos?.imagem_url);
   const extras = Math.max(0, itens.length - 1);
   const podePronto = STATUS_AINDA_NAO_PRONTO.includes(p.status || "agendado");
-  const temTel = normalizarTelefone(p.cliente_whatsapp || p.cliente_telefone || "").length >= 10;
+  const temTel = telefoneValido(p.cliente_whatsapp) || telefoneValido(p.cliente_telefone);
   const cancelado = p.status === "cancelado";
   const pagamento = cancelado ? null
     : falta <= 0.009 ? { t: "Pago", tom: "verde" as const }
@@ -528,7 +529,7 @@ function CartaoAgenda({ p, aoAbrir, aoMenu, aoPronto, aoWhats }: any) {
       {itens.length > 0 && (
         <div className="ag3-pc-itens">
           {itens.map((it: any, i: number) => (
-            <p key={i}><span><b>{String(Number(it.quantidade) || 1).replace('.', ',')}x</b> {nomeDeProduto(it.nome_produto || "")}</span><span>{rs((Number(it.valor_unitario) || 0) * (Number(it.quantidade) || 0))}</span></p>
+            <p key={i}><span><NomeComQtd nome={nomeDeProduto(it.nome_produto || "")} qtd={Number(it.quantidade) || 1} forma={formaDoItem(it)} /></span><span>{rs((Number(it.valor_unitario) || 0) * (Number(it.quantidade) || 0))}</span></p>
           ))}
           {desconto > 0 && <p className="dim"><span>Desconto</span><span>− {rs(desconto)}</span></p>}
           <p className="tot"><span>Total</span><span>{rs(total)}</span></p>

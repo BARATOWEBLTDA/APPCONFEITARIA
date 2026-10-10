@@ -28,9 +28,8 @@ interface Props {
 
 const real = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 const hhmm = (h?: string | null) => (h ? String(h).slice(0, 5) : "");
-const maiuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
-/** "Hoje às 15:30" · "Amanhã às 10:00" · "10 de outubro às 10:00 (Sábado)" */
+/** "Hoje às 15:30" · "Amanhã às 10:00" · "13 de outubro (terça) às 10:00" */
 function quando(data: string, hora: string | null | undefined, hoje: string): string {
   const d = new Date(data + "T12:00:00");
   const h = hhmm(hora);
@@ -39,8 +38,8 @@ function quando(data: string, hora: string | null | undefined, hoje: string): st
   if (dias === 0) return h ? `Hoje às ${h}` : "Hoje";
   if (dias === 1) return h ? `Amanhã às ${h}` : "Amanhã";
   const dia = d.toLocaleDateString("pt-BR", { day: "numeric", month: "long" });
-  const semana = maiuscula(d.toLocaleDateString("pt-BR", { weekday: "long" }).replace("-feira", ""));
-  return `${dia}${h ? ` às ${h}` : ""} (${semana})`;
+  const semana = d.toLocaleDateString("pt-BR", { weekday: "long" }).replace("-feira", "").toLowerCase();
+  return `${dia} (${semana})${h ? ` às ${h}` : ""}`;
 }
 
 export default function SeuDia({ carregando, erro, aoTentar, entregasHoje, atrasados, novos, proximaHoje, proximas, hoje }: Props) {
@@ -84,7 +83,8 @@ export default function SeuDia({ carregando, erro, aoTentar, entregasHoje, atras
             <p className="sd-x">{lista.length ? "Nenhuma entrega hoje." : "Nenhuma entrega marcada. Os próximos pedidos aparecem aqui."}</p>
           )}
 
-          {proximaHoje && (
+          {/* A linha "Próxima entrega" só aparece se a lista abaixo não estiver na tela (senão repetia o 1º item) */}
+          {proximaHoje && lista.length === 0 && (
             <p className="sd-linha"><span>Próxima entrega:</span> {hhmm(proximaHoje.hora)} · {proximaHoje.cliente}</p>
           )}
 

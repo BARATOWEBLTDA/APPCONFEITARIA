@@ -18,7 +18,7 @@ const validarEmail = (v: string) => {
   const t = v.trim();
   if (!t) return "Informe seu e-mail";
   if (!t.includes("@")) return "Está faltando o @ no seu e-mail";
-  if (!EMAIL_REGEX.test(t)) return "E-mail incompleto (ex: nome@gmail.com)";
+  if (!EMAIL_REGEX.test(t)) return "E-mail incompleto (Ex.: nome@gmail.com)";
   return "";
 };
 

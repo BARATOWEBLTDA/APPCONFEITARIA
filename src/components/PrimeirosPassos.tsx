@@ -233,7 +233,7 @@ function FolhaLogo({ uid, perfil, onClose, onSalvo }: FolhaProps) {
             {atual ? <img src={atual} alt="" /> : <span>{String(perfil?.nome_loja || "D").charAt(0).toUpperCase()}</span>}
             <i><Camera size={14} /></i>
           </button>
-          <div><b>Toque pra escolher o seu logo</b><small>{perfil?.logo_url ? "Da galeria ou da câmera. Você ajusta o recorte antes de salvar." : atual ? "Hoje o cardápio mostra a sua foto de perfil. Envie o logo da loja pra trocar." : "Da galeria ou da câmera. Você ajusta o recorte antes de salvar."}</small></div>
+          <div><b>Escolha o seu logo</b><small>{perfil?.logo_url ? "Da galeria ou da câmera. Você ajusta o recorte antes de salvar." : atual ? "Hoje o cardápio mostra a sua foto de perfil. Envie o logo da loja pra trocar." : "Da galeria ou da câmera. Você ajusta o recorte antes de salvar."}</small></div>
         </div>
         {!perfil?.logo_url && <button type="button" className="pp-lnk" onClick={usarFoto}>Usar minha foto de perfil por enquanto</button>}
       </Janelinha>

@@ -9,8 +9,8 @@ import { useState, useEffect, type ReactNode } from "react";
 import {
   House, CalendarDots, ShoppingBag, Users, BookOpen,
   Package, CurrencyDollar, Gear, CaretDown,
-  SquaresFour, Camera, Cake, FolderSimple, PuzzlePiece, Plus,
-  Receipt, Sparkle,
+  SquaresFour, Camera, Plus,
+  Receipt, Sparkle, Crown,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
@@ -82,10 +82,6 @@ export default function Layout() {
   // Telas do Cardápio digital: no computador ganham o menu lateral pra trocar de tela sem voltar
   const comCdnav = ROTAS_CARDAPIO.includes(location.pathname);
   const isPrevia = location.pathname === "/cardapio-preview";
-  // Cadastros: expande automaticamente quando estiver em uma das rotas filhas
-  const isInCadastros = ["/produtos", "/clientes", "/insumos", "/categorias", "/complementos"].some(p => location.pathname.startsWith(p));
-  const [cadastrosOpen, setCadastrosOpen] = useState(isInCadastros);
-  useEffect(() => { if (isInCadastros) setCadastrosOpen(true); }, [isInCadastros]);
 
   // Scroll pro topo ao mudar de rota (fix: antes ficava na posição anterior)
   useEffect(() => {
@@ -124,7 +120,7 @@ export default function Layout() {
             <div className="sidebar-badge sidebar-badge--skel" aria-hidden="true" />
           ) : isPro ? (
             <div className="sidebar-badge sidebar-badge--pro">
-              <img src="/coroa.png" alt="" className="sidebar-badge-coroa" />
+              <Crown size={12} weight="fill" className="sidebar-badge-coroa" aria-hidden="true" />
               PRO
             </div>
           ) : (
@@ -134,7 +130,7 @@ export default function Layout() {
               onClick={() => navigate("/assinar")}
               aria-label="Assinar o plano PRO"
             >
-              <img src="/coroa.png" alt="" className="sidebar-badge-coroa" />
+              <Crown size={12} weight="fill" className="sidebar-badge-coroa" aria-hidden="true" />
               Seja PRO
             </button>
           )}
@@ -160,35 +156,17 @@ export default function Layout() {
 
         <nav className="sidebar-nav" aria-label="Menu principal">
           <ItemMenu to="/inicio" icone={House}>Início</ItemMenu>
-          <ItemMenu to="/vendas/novo" icone={Plus}>Nova Venda</ItemMenu>
-
-          {/* ═══ CADASTROS (abre e fecha) ═══ */}
-          <button
-            type="button"
-            className={`nav-item nav-item--group ${isInCadastros ? "active-parent" : ""}`}
-            onClick={() => setCadastrosOpen(o => !o)}
-            aria-expanded={cadastrosOpen}
-          >
-            <span className="nav-icon"><FolderSimple size={20} weight={isInCadastros ? "fill" : "bold"} /></span>
-            <span className="nav-rotulo">Cadastros</span>
-            <CaretDown size={16} weight="bold" className="nav-seta" style={{ transform: cadastrosOpen ? "rotate(180deg)" : "rotate(0)" }} />
-          </button>
-          {cadastrosOpen && (
-            <div className="nav-group-body">
-              <SubitemMenu to="/produtos" end icone={Cake}>Produtos</SubitemMenu>
-              <SubitemMenu to="/categorias" icone={SquaresFour}>Categorias</SubitemMenu>
-              <SubitemMenu to="/insumos" icone={Package}>Ingredientes</SubitemMenu>
-              <SubitemMenu to="/complementos" icone={PuzzlePiece}>Personalização</SubitemMenu>
-              <SubitemMenu to="/clientes" icone={Users}>Clientes</SubitemMenu>
-            </div>
-          )}
-
-          <ItemMenu to="/cardapio" icone={ShoppingBag} tour="cardapio" ativoSe={c => c.startsWith("/cardapio") || c.startsWith("/checkout-config")}>Cardápio Digital</ItemMenu>
+          <ItemMenu to="/vendas/novo" icone={Plus}>Nova venda</ItemMenu>
+          {/* (10/10) O grupo "Cadastros" saiu: Produtos, Categorias e Personalização já ficam no menu do
+              Cardápio digital (que abre ao lado). Clientes e Ingredientes viraram itens diretos. */}
+          <ItemMenu to="/cardapio" icone={ShoppingBag} tour="cardapio" ativoSe={c => ROTAS_CARDAPIO.includes(c) || c.startsWith("/cardapio") || c.startsWith("/checkout-config") || c.startsWith("/produtos")}>Cardápio digital</ItemMenu>
           <ItemMenu to="/pedidos" icone={Receipt}>Pedidos</ItemMenu>
           <ItemMenu to="/agenda" icone={CalendarDots}>Agenda</ItemMenu>
-          <ItemMenu to="/receitas" icone={BookOpen} ativoSe={c => c.startsWith("/comunidade")}>Receitas</ItemMenu>
+          <ItemMenu to="/clientes" icone={Users}>Clientes</ItemMenu>
+          <ItemMenu to="/insumos" icone={Package}>Ingredientes</ItemMenu>
+          <ItemMenu to="/receitas" icone={BookOpen} ativoSe={c => c.startsWith("/comunidade") || c.startsWith("/ficha-tecnica")}>Receitas</ItemMenu>
           <ItemMenu to="/financeiro" icone={CurrencyDollar} ativoSe={c => c === "/custos" || c === "/lucratividade"}>Financeiro</ItemMenu>
-          <ItemMenu to="/configuracoes" icone={Gear}>Configurações</ItemMenu>
+          <ItemMenu to="/configuracoes" icone={Gear} ativoSe={c => c === "/minha-assinatura" || c === "/assinar"}>Configurações</ItemMenu>
         </nav>
       </aside>
 
@@ -355,13 +333,8 @@ export default function Layout() {
         .sidebar-badge--upgrade:active {
           transform: translateX(-50%) translateY(0);
         }
-        .sidebar-badge-coroa {
-          width: 10px;
-          height: 10px;
-          object-fit: contain;
-          display: block;
-          flex-shrink: 0;
-        }
+        .sidebar-badge-coroa { display: block; flex-shrink: 0; color: var(--primary); }
+        .sidebar-badge--pro .sidebar-badge-coroa { color: #FF9DC4; }
         /* Skeleton enquanto carrega o plano (evita flash Upgrade→PRO) */
         .sidebar-badge--skel {
           width: 68px;
@@ -403,6 +376,16 @@ export default function Layout() {
         /* (07/10 · 2.95) Menu lateral no padrão do guia: itens de 44px, ícone de 20px (cheio e rosa na tela atual),
            foco visível pelo teclado e fundo vinho (o grafite antigo saiu). */
         .sidebar-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; min-height: 0; overflow-y: auto; margin-right: -8px; padding-right: 8px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.22) transparent; }
+        /* (10/10) Sombra no fim do menu: avisa que tem mais itens pra baixo quando a tela é baixa */
+        .sidebar-nav::after { content: ""; position: sticky; bottom: 0; flex-shrink: 0; min-height: 28px; margin-top: -28px; background: linear-gradient(to bottom, transparent, var(--sidebar-bg)); pointer-events: none; }
+        @media (max-height: 820px) {
+          .sidebar { padding-top: 0.5rem; padding-bottom: 0.75rem; }
+          .sidebar-profile { margin-top: 0.25rem; }
+          .sidebar-avatar-ring { width: 72px; height: 72px; }
+          .sidebar-avatar-inicial { font-size: 30px; }
+          .sidebar-greeting { margin: 0.4rem 0 0.4rem; min-height: 0; }
+          .sidebar-nav { gap: 0; }
+        }
         .nav-icon { display: flex; align-items: center; flex-shrink: 0; }
         .nav-rotulo { flex: 1; min-width: 0; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .nav-seta { flex-shrink: 0; opacity: 0.6; transition: transform var(--dur-normal) var(--ease-out); }

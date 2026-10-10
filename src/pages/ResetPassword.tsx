@@ -150,6 +150,7 @@ export default function ResetPassword() {
 
   return (
     <TelaConta
+      compacto={status === "processing"}
       pose={status === "invalid" || status === "expired" ? "senha" : "acenando"}
       frase={success ? "Tudo certo" : "Senha nova, vida nova"}
       sub={success ? "Sua conta está protegida de novo." : "Escolha uma senha que só você sabe."}
@@ -158,6 +159,7 @@ export default function ResetPassword() {
         <div className="tc-espera" role="status" aria-live="polite">
           <span className="ui-gira" aria-hidden="true" />
           <h1 className="tc-h">Conferindo seu link…</h1>
+          <div className="tc-acoes" style={{ marginTop: 0 }}>{voltar}</div>
         </div>
       )}
 
@@ -202,7 +204,7 @@ export default function ResetPassword() {
                 id="nova-senha"
                 rotulo="Senha nova"
                 type="password"
-                placeholder="Mínimo 6 caracteres"
+                placeholder="Crie uma senha"
                 value={senha}
                 onChange={e => { setSenha(e.target.value); setError(""); }}
                 autoComplete="new-password"

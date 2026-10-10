@@ -35,13 +35,25 @@ const titulo = (s: string) => s.trim().replace(/^./, c => c.toUpperCase());
 
 // ═══════════════════ Etapa 2 · Opções ═══════════════════
 const TIPOS_OPCAO = [
-  { key: "grupo_massas", titulo: "Sabor da massa", ph: "Ex: Pão de ló, Red velvet…", sug: ["Branca", "Chocolate", "Red velvet", "Cenoura", "Nozes", "Coco"] },
-  { key: "grupo_recheios", titulo: "Tipo de recheio", ph: "Ex: Ninho, Doce de leite…", sug: ["Ninho", "Brigadeiro", "Doce de leite", "Morango", "Nutella", "Prestígio", "Maracujá", "Abacaxi"] },
-  { key: "grupo_coberturas", titulo: "Tipo de cobertura", ph: "Ex: Chantilly, Ganache…", sug: ["Chantilly", "Ganache", "Pasta americana", "Buttercream", "Glacê"] },
+  { key: "grupo_massas", titulo: "Sabor da massa", ph: "Ex.: pão de ló, red velvet…", sug: ["Branca", "Chocolate", "Red velvet", "Cenoura", "Nozes", "Coco"] },
+  { key: "grupo_recheios", titulo: "Tipo de recheio", ph: "Ex.: ninho, doce de leite…", sug: ["Ninho", "Brigadeiro", "Doce de leite", "Morango", "Nutella", "Prestígio", "Maracujá", "Abacaxi"] },
+  { key: "grupo_coberturas", titulo: "Tipo de cobertura", ph: "Ex.: chantilly, ganache…", sug: ["Chantilly", "Ganache", "Pasta americana", "Buttercream", "Glacê"] },
 ] as const;
 
+/** O que falta numa etapa do cadastro: a mensagem e onde está o campo (seletor CSS) */
+export type FaltaCampo = { msg: string; alvo?: string } | null;
+const cssStr = (s: string) => s.replace(/(["\\])/g, "\\$1");
+const NOME_OPCAO: Record<string, string> = { grupo_massas: "massa", grupo_recheios: "recheio", grupo_coberturas: "cobertura" };
+
+export function boloOpcoesFalta(form: any): FaltaCampo {
+  for (const t of TIPOS_OPCAO) {
+    const g = form[t.key] as Grupo | undefined;
+    if (g?.ativo && !(g.opcoes?.length || 0)) return { msg: `Adicione pelo menos 1 ${NOME_OPCAO[t.key]} (ou desmarque "${t.titulo}")`, alvo: `[data-falta="${t.key}"]` };
+  }
+  return null;
+}
 export function boloOpcoesOk(form: any): boolean {
-  return TIPOS_OPCAO.every(t => { const g = form[t.key] as Grupo | undefined; return !g?.ativo || (g.opcoes?.length || 0) > 0; });
+  return !boloOpcoesFalta(form);
 }
 
 const ICONE: Record<string, ReactNode> = { grupo_massas: <Cake size={20} weight="bold" />, grupo_recheios: <Drop size={20} weight="bold" />, grupo_coberturas: <Sparkle size={20} weight="bold" /> };
@@ -100,7 +112,7 @@ export function BoloOpcoesStep({ form, setForm, edicao }: { form: any; setForm: 
         const sub = !g.ativo ? EXEMPLO[t.key]
           : `${qtd} ${qtd === 1 ? "opção" : "opções"}${t.key === "grupo_recheios" && qtd > 0 ? ` · o cliente escolhe até ${maxRecheio(g)}` : ""}`;
         return (
-          <div key={t.key} className={`bo-card${g.ativo ? " on" : ""}${resumo ? " resumo" : ""}`}>
+          <div key={t.key} data-falta={t.key} className={`bo-card${g.ativo ? " on" : ""}${resumo ? " resumo" : ""}`}>
             <div className="bo-h">
               <button type="button" className="bo-h-main" onClick={() => g.ativo ? setAberto(editando ? null : t.key) : alternar(t.key)}>
                 <span className="bo-ic" aria-hidden="true">{ICONE[t.key]}</span>
@@ -197,29 +209,49 @@ export function MoneyInput({ value, onChange, className, ariaLabel, autoFocus }:
 export type BoloTam = "sim" | "nao" | null;
 
 /** Etapa 3: respondeu Sim/Não e, se Sim, tem pelo menos 1 tamanho com nome */
-export function boloTamanhosOk(form: any, escolha: BoloTam): boolean {
-  if (!escolha) return false;
-  if (escolha === "nao") return true;
+export function boloTamanhosFalta(form: any, escolha: BoloTam): FaltaCampo {
+  if (!escolha) return { msg: "Responda se o bolo tem mais de um tamanho", alvo: ".bw-sn" };
+  if (escolha === "nao") return null;
   const gt = form.grupo_tamanhos;
   const nomeados = (gt?.opcoes || []).filter((o: Tam) => o.nome?.trim());
-  if (!nomeados.length) return false;
+  if (!nomeados.length) return { msg: "Dê nome a pelo menos 1 tamanho", alvo: ".bw-lt-nome" };
   // Marcou "Informar o rendimento": precisa preencher em todos
-  if (gt?.mostra_rendimento && nomeados.some((o: Tam) => !String(o.serve || "").trim())) return false;
-  return true;
+  const semRend = gt?.mostra_rendimento ? nomeados.find((o: Tam) => !String(o.serve || "").trim()) : null;
+  if (semRend) return { msg: `Preencha o rendimento do tamanho ${semRend.nome} (ou desmarque a opção)`, alvo: `input[aria-label="Rendimento do tamanho ${cssStr(semRend.nome)}"]` };
+  return null;
+}
+export function boloTamanhosOk(form: any, escolha: BoloTam): boolean {
+  return !boloTamanhosFalta(form, escolha);
 }
 
 /** Etapa 4: preços preenchidos */
-export function boloPrecoOk(form: any, escolha: BoloTam): boolean {
-  if (form.promocao) {
-    if (form.tipo_promocao === "percentual") { if (!((form.desconto_percentual || 0) > 0)) return false; }
-    else if (!((form.preco_promocional || 0) > 0 && (form.preco_promocional || 0) < (form.preco_normal || 0))) return false;
+export function boloPrecoFalta(form: any, escolha: BoloTam): FaltaCampo {
+  if (escolha === "nao") {
+    if (!((form.preco_normal || 0) > 0)) return { msg: "Coloque o preço do bolo", alvo: 'input[aria-label="Preço do bolo"]' };
+  } else {
+    const gt = form.grupo_tamanhos;
+    const linhas: Tam[] = (gt?.opcoes || []).filter((o: Tam) => o.nome?.trim());
+    if (!linhas.length) return { msg: "Volte uma etapa e cadastre os tamanhos" };
+    if (gt?.modo_preco_tamanho === "por_peso") {
+      if (!((form.preco_normal || 0) > 0)) return { msg: "Coloque o preço base (preço do kg)", alvo: 'input[aria-label="Preço base por kg"]' };
+      const semPeso = linhas.find(o => !((o.peso_kg || 0) > 0));
+      if (semPeso) return { msg: `Volte uma etapa e coloque o peso do tamanho ${semPeso.nome}` };
+    } else {
+      const semPreco = linhas.find(o => !(o.preco > 0));
+      if (semPreco) return { msg: `Coloque o preço do tamanho ${semPreco.nome}`, alvo: `input[aria-label="Preço do tamanho ${cssStr(semPreco.nome)}"]` };
+    }
   }
-  if (escolha === "nao") return (form.preco_normal || 0) > 0;
-  const gt = form.grupo_tamanhos;
-  const linhas: Tam[] = (gt?.opcoes || []).filter((o: Tam) => o.nome?.trim());
-  if (!linhas.length) return false;
-  if (gt?.modo_preco_tamanho === "por_peso") return (form.preco_normal || 0) > 0 && linhas.every(o => (o.peso_kg || 0) > 0);
-  return linhas.every(o => o.preco > 0);
+  if (form.promocao) {
+    if (form.tipo_promocao === "percentual") {
+      if (!((form.desconto_percentual || 0) > 0)) return { msg: "Coloque o desconto da promoção (ou desmarque a promoção)", alvo: 'input[aria-label="Desconto em %"]' };
+    } else if (!((form.preco_promocional || 0) > 0 && (form.preco_promocional || 0) < (form.preco_normal || 0))) {
+      return { msg: "O preço da promoção tem que ser menor que o preço normal", alvo: 'input[aria-label="Preço promocional"]' };
+    }
+  }
+  return null;
+}
+export function boloPrecoOk(form: any, escolha: BoloTam): boolean {
+  return !boloPrecoFalta(form, escolha);
 }
 
 const VENDA = [
@@ -331,8 +363,8 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, edicao }:
             </div>
             {tams.map(x => (
               <div className="bw-lt-row" key={x.id}>
-                <input className="bw-lt-nome" value={x.nome} placeholder="Ex: P" onChange={e => setTam(x.id, { nome: e.target.value })} aria-label="Nome do tamanho" />
-                <label className="bw-lt-peso"><input inputMode="text" defaultValue={x.peso_kg ? (x.peso_kg < 1 ? `${Math.round(x.peso_kg * 1000)}g` : String(x.peso_kg).replace(".", ",")) : ""} placeholder="Ex: 1 ou 500g"
+                <input className="bw-lt-nome" value={x.nome} placeholder="Ex.: P" onChange={e => setTam(x.id, { nome: e.target.value })} aria-label="Nome do tamanho" />
+                <label className="bw-lt-peso"><input inputMode="text" defaultValue={x.peso_kg ? (x.peso_kg < 1 ? `${Math.round(x.peso_kg * 1000)}g` : String(x.peso_kg).replace(".", ",")) : ""} placeholder="Ex.: 1 ou 500g"
                   onChange={e => setTam(x.id, { peso_kg: numKg(e.target.value) || null })} aria-label="Peso (kg ou g)" /><em>{x.peso_kg && x.peso_kg < 1 ? `= ${kgTxt(x.peso_kg)}` : "kg"}</em></label>
                 {editando && (
                   <button type="button" className="bw-lt-rm" onClick={() => setGt({ opcoes: tams.filter(y => y.id !== x.id) })} aria-label={`Remover ${x.nome || "tamanho"}`}>{LIX}</button>
@@ -361,7 +393,7 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, edicao }:
               ) : nomeados.map(x => (
                 <div className="bw-rend-row" key={x.id}>
                   <span className="bw-rend-lb">Rendimento <b>{x.nome}</b>{x.peso_kg && kgTxt(x.peso_kg) !== x.nome ? <small> · {kgTxt(x.peso_kg)}</small> : null}</span>
-                  <label className="bw-in bw-suf bw-rend-in"><input inputMode="numeric" value={x.serve || ""} placeholder={`Ex: ${Math.max(5, Math.round((x.peso_kg || 1) * 10))}`}
+                  <label className="bw-in bw-suf bw-rend-in"><input inputMode="numeric" value={x.serve || ""} placeholder={`Ex.: ${Math.max(5, Math.round((x.peso_kg || 1) * 10))}`}
                     onChange={e => setTam(x.id, { serve: e.target.value.replace(/\D/g, "") })} aria-label={`Rendimento do tamanho ${x.nome}`} /><em>{fatias ? "fatias" : "pessoas"}</em></label>
                 </div>
               ))}

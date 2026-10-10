@@ -44,18 +44,19 @@ export default function AdminDashboard() {
     load();
   }, []);
 
+  const n = (v: number, um: string, varios: string) => (v === 1 ? um : varios);
   const cards = [
-    { label: "Usuários cadastrados", value: stats.usuarios, icon: <Users size={22} weight="bold" />, tom: "rosa" },
-    { label: "Receitas da comunidade", value: stats.receitasComunidade, icon: <Cake size={22} weight="bold" />, tom: "rosa" },
-    { label: "Receitas pendentes", value: stats.receitasPendentes, icon: <Hourglass size={22} weight="bold" />, tom: "laranja" },
-    { label: "Receitas aprovadas", value: stats.receitasAprovadas, icon: <CheckCircle size={22} weight="bold" />, tom: "verde" },
-    { label: "PDFs cadastrados", value: stats.pdfs, icon: <FilePdf size={22} weight="bold" />, tom: "neutro" },
-    { label: "Receitas Doonly", value: stats.receitasDoonly, icon: <Medal size={22} weight="bold" />, tom: "rosa" },
+    { label: n(stats.usuarios, "Usuário cadastrado", "Usuários cadastrados"), value: stats.usuarios, icon: <Users size={22} weight="bold" />, tom: "rosa" },
+    { label: n(stats.receitasComunidade, "Receita da comunidade", "Receitas da comunidade"), value: stats.receitasComunidade, icon: <Cake size={22} weight="bold" />, tom: "rosa" },
+    { label: n(stats.receitasPendentes, "Receita pendente", "Receitas pendentes"), value: stats.receitasPendentes, icon: <Hourglass size={22} weight="bold" />, tom: "laranja" },
+    { label: n(stats.receitasAprovadas, "Receita aprovada", "Receitas aprovadas"), value: stats.receitasAprovadas, icon: <CheckCircle size={22} weight="bold" />, tom: "verde" },
+    { label: n(stats.pdfs, "PDF cadastrado", "PDFs cadastrados"), value: stats.pdfs, icon: <FilePdf size={22} weight="bold" />, tom: "neutro" },
+    { label: n(stats.receitasDoonly, "Receita Doonly", "Receitas Doonly"), value: stats.receitasDoonly, icon: <Medal size={22} weight="bold" />, tom: "rosa" },
   ];
 
   return (
     <div className="ad-root">
-      <h1 className="ad-h1">Dashboard</h1>
+      <h1 className="ad-h1">Painel</h1>
       <p className="ad-sub">Os números da plataforma Doonly.</p>
 
       {loading ? (
@@ -81,7 +82,7 @@ export default function AdminDashboard() {
         <span className="ad-ic ad-ic--rosa" aria-hidden="true"><Play size={22} weight="bold" /></span>
         <div className="ad-tx">
           <b className="ad-teste-t">Boas-vindas</b>
-          <small>A apresentação que aparece depois de criar a conta. No fim, "Configurar minha confeitaria" leva ao Início, como pra quem acabou de entrar.</small>
+          <small>Abre a apresentação de boas-vindas como uma conta nova vê.</small>
         </div>
         <Botao onClick={abrirBoasVindas}>Ver as boas-vindas</Botao>
       </div>

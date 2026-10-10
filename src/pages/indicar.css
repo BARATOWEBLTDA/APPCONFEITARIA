@@ -11,6 +11,7 @@
 /* link */
 .in9-link { display: flex; align-items: center; gap: 8px; }
 .in9-link-tx { flex: 1; min-width: 0; display: flex; align-items: center; min-height: 48px; padding: 0 12px; overflow: hidden; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 15px; color: var(--ui-texto-2); white-space: nowrap; text-overflow: ellipsis; }
+.in9-link-in { display: block; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .in9-link-tx b { color: var(--ui-texto); font-weight: 700; }
 .ui-bt.in9-zap { background: #1FA855; box-shadow: 0 3px 0 #15803D; color: #fff; }
 .ui-bt.in9-zap:hover { background: #1B984C; }
@@ -19,8 +20,8 @@
 .in9-premios { display: flex; flex-direction: column; }
 .in9-pr { display: flex; gap: 12px; padding: 12px 0; }
 .in9-pr + .in9-pr { border-top: 1px solid var(--ui-linha); }
-.in9-pr-f { flex: none; width: 88px; height: 88px; overflow: hidden; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); }
-.in9-pr-f img { width: 100%; height: 100%; object-fit: cover; }
+.in9-pr-f { flex: none; width: 120px; height: auto; aspect-ratio: 16 / 9; align-self: flex-start; overflow: hidden; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); }
+.in9-pr-f img { display: block; width: 100%; height: 100%; object-fit: contain; } /* (10/10) a foto inteira, sem cortar as bordas */
 .in9-pr:not(.prox):not(.ok) .in9-pr-f img { opacity: .55; filter: grayscale(.4); }
 .in9-pr-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
 .in9-pr-tx b { font-size: 15px; font-weight: 700; line-height: 1.3; }

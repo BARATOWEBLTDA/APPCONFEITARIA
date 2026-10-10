@@ -7,7 +7,13 @@ import { supabase } from "@/lib/supabase";
  */
 export type MovExtrato = {
   id: string; origem: "pagamento" | "manual"; ref: string; tipo: "entrada" | "saida";
-  valor: number; data: string; titulo: string; detalhe: string;
+  valor: number; data: string;
+  /** título da linha: "Pedido #12 · Ana" ou a descrição (ou a categoria, sem descrição) */
+  titulo: string;
+  /** tipo do lançamento: "Sinal", "Pagamento", "Entrada", "Saída" */
+  subtipo: string;
+  /** a informação que sobra, sem repetir o título: forma de pagamento (pedido) ou categoria (manual) */
+  detalhe: string;
   forma: string | null; categoria: string | null; pedidoId: string | null; estornado: boolean; ordem: string;
 };
 
@@ -32,7 +38,7 @@ export async function carregarExtrato(uid: string, ini: string, fim: string): Pr
   const ids = [...new Set(pagamentos.map(g => g.pedido_id).filter(Boolean))];
   const nomes: Record<string, { numero: any; cliente: string }> = {};
   if (ids.length) {
-    // 09/10: o nome vem também do cadastro da cliente (pedido feito só com a cliente escolhida não tinha cliente_nome)
+    // 09/10: o nome vem também do cadastro do cliente (pedido feito só com o cliente escolhido não tinha cliente_nome)
     const r1: any = await supabase.from("pedidos").select("id, numero, cliente_nome, clientes(nome)").in("id", ids);
     const data: any[] = (r1.error ? (await supabase.from("pedidos").select("id, numero, cliente_nome").in("id", ids)).data : r1.data) || [];
     for (const x of data) {
@@ -45,17 +51,23 @@ export async function carregarExtrato(uid: string, ini: string, fim: string): Pr
     const n = g.pedido_id ? nomes[g.pedido_id] : null;
     itens.push({
       id: "g" + g.id, origem: "pagamento", ref: g.id, tipo: "entrada", valor: Number(g.valor) || 0, data: g.recebido_em,
-      titulo: `${TIPO[g.tipo] || "Pagamento"}${n ? ` · Pedido #${n.numero ?? "—"}` : " de pedido"}`,
-      detalhe: [n?.cliente, nomeForma(g.forma)].filter(Boolean).join(" · "),
+      // 10/10: "Pedido #N · Nome do cliente" (antes "Pagamento de pedido", sem dizer qual)
+      titulo: n ? [n.numero != null ? `Pedido #${n.numero}` : "Pedido", n.cliente].filter(Boolean).join(" · ") : "Pagamento de pedido",
+      subtipo: TIPO[g.tipo] || "Pagamento",
+      detalhe: nomeForma(g.forma),
       forma: g.forma || null, categoria: "Pedidos", pedidoId: g.pedido_id || null, estornado: !!g.estornado_em, ordem: `${g.recebido_em} ${g.created_at || ""}`,
     });
   }
   for (const l of ((fin.data as any[]) || [])) {
     const entrada = l.tipo === "entrada";
+    // 10/10: cada informação uma vez (antes "Luz / Despesa · Luz / Luz")
+    const titulo = String(l.descricao || l.categoria || (entrada ? "Entrada" : "Saída")).trim();
+    const cat = String(l.categoria || "").trim();
     itens.push({
       id: "f" + l.id, origem: "manual", ref: l.id, tipo: entrada ? "entrada" : "saida", valor: Number(l.valor) || 0, data: l.data,
-      titulo: l.descricao || l.categoria || (entrada ? "Entrada" : "Despesa"),
-      detalhe: l.categoria ? (entrada ? l.categoria : `Despesa · ${l.categoria}`) : (entrada ? "Entrada avulsa" : "Despesa"),
+      titulo,
+      subtipo: entrada ? "Entrada" : "Saída",
+      detalhe: cat && cat.toLowerCase() !== titulo.toLowerCase() ? (cat === "Insumos" ? "Ingredientes" : cat) : "",
       forma: null, categoria: l.categoria || null, pedidoId: null, estornado: !!l.estornado_em, ordem: `${l.data} ${l.created_at || ""}`,
     });
   }

@@ -11,7 +11,6 @@ import { carregarMes, custoPorProduto, type MesFinanceiro } from "@/lib/painelFi
 
 type Produto = { chave: string; nome: string; qtd: number; vendido: number; custo: number; lucro: number; margem: number; semFicha: boolean };
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-const brlInt = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
@@ -64,6 +63,9 @@ export default function Lucratividade() {
   const metaEquilibrio = fixos && margemBruta > 0 ? (fixos.custos + fixos.salario) / margemBruta : 0;
   const maxLucro = useMemo(() => Math.max(1, ...(produtos || []).map(p => Math.abs(p.lucro))), [produtos]);
   const semFicha = (produtos || []).filter(p => p.semFicha);
+  // 10/10: produto vendido sem ficha (ou custo de ingredientes zerado) = lucro e margem maiores do que são: avisa
+  const qtdSemFicha = produtos && produtos.length ? semFicha.length : (dados?.semFicha || 0);
+  const faltaFicha = !!dados && dados.qtdVendidos > 0 && (dados.cmv === 0 || qtdSemFicha > 0);
 
   return (
     <>
@@ -98,18 +100,30 @@ export default function Lucratividade() {
               <p className="lu-ct">A conta do mês</p>
               <div className="lu-l"><span>Vendido <small>{dados.qtdVendidos} {dados.qtdVendidos === 1 ? "pedido entregue" : "pedidos entregues"}</small></span><b>{brl(dados.vendido)}</b></div>
               <div className="lu-l neg"><span>Custo dos ingredientes <small>pela ficha técnica</small></span><b>− {brl(dados.cmv)}</b></div>
-              <div className="lu-l neg"><span>Despesas pagas <small>sem ingredientes ({brl(dados.despesasInsumos)} já estão na ficha)</small></span><b>− {brl(despesasSemInsumos)}</b></div>
+              <div className="lu-l neg"><span>Despesas pagas <small>não inclui ingredientes, que já entram pela ficha técnica</small></span><b>− {brl(despesasSemInsumos)}</b></div>
               <div className={`lu-l tt ${dados.lucro < 0 ? "ruim" : ""}`}><span>Lucro do mês</span><b>{brl(dados.lucro)}</b></div>
-              <div className="lu-margem"><div className="lu-bar"><i style={{ width: `${Math.max(0, Math.min(100, dados.margem))}%` }} /></div><span>Margem de <b>{dados.margem}%</b></span></div>
+              <div className="lu-margem"><div className="lu-bar"><i style={{ width: `${Math.max(0, Math.min(100, dados.margem))}%` }} /></div><span>Margem de <b>{dados.margem}%</b>{faltaFicha ? " (sem o custo dos ingredientes)" : ""}</span></div>
+              {faltaFicha && (
+                <div className="lu-aviso" role="note">
+                  <Warning size={15} weight="bold" />
+                  <span>
+                    {qtdSemFicha > 0
+                      ? `${qtdSemFicha} ${qtdSemFicha === 1 ? "produto vendido está" : "produtos vendidos estão"} sem ficha técnica, então o custo dos ingredientes não entrou na conta.`
+                      : "Os produtos vendidos estão sem ficha técnica, então o custo dos ingredientes não entrou na conta."}
+                    {" "}Monte a ficha pra ver o lucro real.{" "}
+                    <button type="button" className="lu-link" onClick={() => navigate("/ficha-tecnica")}>Montar ficha técnica</button>
+                  </span>
+                </div>
+              )}
             </section>
 
             <section className="lu-card lu-a-eq">
               <p className="lu-ct">Ponto de equilíbrio</p>
               {fixos && (fixos.custos + fixos.salario) > 0 && margemBruta > 0 ? (<>
-                <p className="lu-eq-t">Pra pagar seus custos fixos e o seu salário ({brlInt(fixos.custos + fixos.salario)}), você precisa vender</p>
-                <b className="lu-eq-v">{brlInt(metaEquilibrio)} <small>no mês</small></b>
+                <p className="lu-eq-t">Pra pagar seus custos fixos e o seu salário ({brl(fixos.custos + fixos.salario)}), você precisa vender</p>
+                <b className="lu-eq-v">{brl(metaEquilibrio)} <small>no mês</small></b>
                 <div className="lu-bar grande"><i className={dados.vendido >= metaEquilibrio ? "ok" : ""} style={{ width: `${Math.min(100, (dados.vendido / metaEquilibrio) * 100)}%` }} /></div>
-                <p className="lu-eq-s">{dados.vendido >= metaEquilibrio ? `Bateu! ${brlInt(dados.vendido - metaEquilibrio)} acima do necessário.` : `Faltam ${brlInt(metaEquilibrio - dados.vendido)} em vendas (${Math.round((dados.vendido / metaEquilibrio) * 100)}% do caminho).`}</p>
+                <p className="lu-eq-s">{dados.vendido >= metaEquilibrio ? `Bateu! ${brl(dados.vendido - metaEquilibrio)} acima do necessário.` : `Faltam ${brl(metaEquilibrio - dados.vendido)} em vendas (${Math.round((dados.vendido / metaEquilibrio) * 100)}% do caminho).`}</p>
                 <p className="lu-nota">Com a sua margem de ingredientes de {Math.round(margemBruta * 100)}%.</p>
               </>) : (
                 <p className="lu-eq-t">Cadastre seus <button type="button" className="lu-link" onClick={() => navigate("/custos")}>custos fixos e o seu salário</button> pra saber quanto precisa vender no mês pra fechar no azul.</p>
@@ -118,14 +132,16 @@ export default function Lucratividade() {
 
             <section className="lu-card lu-a-prod">
               <p className="lu-ct">Lucro por produto <small>antes das despesas, taxas e descontos do pedido</small></p>
-              {!produtos ? <div className="lu-ph" style={{ height: 120 }} /> : produtos.length === 0 ? <p className="lu-vz">Quando você entregar pedidos neste mês, aqui aparece quanto cada produto deu de lucro.</p> : produtos.map(p => (
+              {!produtos ? <div className="lu-ph" style={{ height: 120 }} /> : produtos.length === 0 ? (
+                // aqui sempre há pedido entregue no mês (sem pedido, a tela mostra o aviso de vazio lá em cima)
+                <p className="lu-vz">Monte a <button type="button" className="lu-link" onClick={() => navigate("/ficha-tecnica")}>ficha técnica dos produtos</button> pra ver o lucro de cada um.</p>
+              ) : produtos.map(p => (
                 <div key={p.chave} className="lu-p">
                   <div className="lu-p-h"><b>{p.nome}</b><span className={p.lucro < 0 ? "ruim" : ""}>{brl(p.lucro)}</span></div>
                   <div className="lu-p-bar"><i className={p.lucro < 0 ? "ruim" : ""} style={{ width: `${Math.max(2, (Math.abs(p.lucro) / maxLucro) * 100)}%` }} /></div>
                   <small>{p.qtd} {p.qtd === 1 ? "vendido" : "vendidos"} · {brl(p.vendido)} · {p.semFicha ? <span className="lu-sf"><Warning size={12} weight="bold" /> sem ficha técnica (custo não descontado)</span> : `custo ${brl(p.custo)} · margem ${p.margem}%`}</small>
                 </div>
               ))}
-              {semFicha.length > 0 && <button type="button" className="lu-aviso" onClick={() => navigate("/ficha-tecnica")}><Warning size={15} weight="bold" />{semFicha.length} {semFicha.length === 1 ? "produto está" : "produtos estão"} sem ficha técnica: o lucro deles aparece maior do que é. Cadastrar a ficha</button>}
             </section>
           </div>
         </>)}
@@ -170,6 +186,7 @@ const CSS = `
   .lu-p-h span { font-weight: 700; color: #15803D; white-space: nowrap; } .lu-p-h span.ruim { color: #DC2626; }
   .lu-p-bar { height: 6px; border-radius: 9px; background: #F5F0F2; margin: 6px 0 5px; overflow: hidden; } .lu-p-bar i { display: block; height: 100%; background: #22C55E; border-radius: 9px; } .lu-p-bar i.ruim { background: #F87171; }
   .lu-p small { font-size: 12px; color: #888780; } .lu-sf { color: #B45309; font-weight: 700; display: inline-flex; align-items: center; gap: 3px; }
-  .lu-aviso { display: flex; align-items: flex-start; gap: 8px; width: 100%; text-align: left; margin-top: 10px; background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: 12px; padding: 10px 12px; font-family: inherit; font-size: 13px; font-weight: 700; line-height: 1.4; cursor: pointer; }
+  .lu-aviso { display: flex; align-items: flex-start; gap: 8px; width: 100%; box-sizing: border-box; text-align: left; margin-top: 12px; background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: 12px; padding: 10px 12px; font-family: inherit; font-size: 13px; font-weight: 600; line-height: 1.45; }
+  .lu-aviso .lu-link { color: #92400E; min-height: 0; }
   .lu-aviso svg { flex-shrink: 0; margin-top: 2px; }
 `;

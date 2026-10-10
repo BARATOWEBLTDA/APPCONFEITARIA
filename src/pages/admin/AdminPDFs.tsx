@@ -81,7 +81,7 @@ export default function AdminPDFs() {
       <Titulo
         nivel="tela"
         apoio="Materiais exclusivos para as confeiteiras."
-        acao={<Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={novoPdf}>Novo PDF</Botao>}
+        acao={!loading && pdfs.length > 0 ? <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={novoPdf}>Novo PDF</Botao> : undefined}
       >
         Biblioteca de PDFs
       </Titulo>

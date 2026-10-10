@@ -58,7 +58,7 @@ export function CalendarioSheet({ titulo, horario, minimo, valor, onEscolher, on
           const ok = d <= limite && diaDisponivel(d, horario, minimo);
           return (
             <button type="button" key={i} disabled={!ok} onClick={() => setSel(iso)}
-              className={`ags-d${sel === iso ? " sel" : ""}${isoDia(hoje) === iso ? " hoje" : ""}`} aria-label={d.toLocaleDateString("pt-BR")}>{d.getDate()}</button>
+              className={`ags-d${sel === iso ? " sel" : ""}${isoDia(hoje) === iso ? " hoje" : ""}`} aria-label={`${d.toLocaleDateString("pt-BR")}${isoDia(hoje) === iso ? " (hoje)" : ""}`}>{d.getDate()}</button>
           );
         })}
       </div>
@@ -131,7 +131,10 @@ const CSS = `
   .ags-wd { height: 22px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #9A8E94; }
   .ags-d { min-width: 0; height: 44px; border: none; border-radius: 12px; background: none; font-family: inherit; font-size: 16px; font-weight: 500; color: #2C1219; cursor: pointer; }
   .ags-d:disabled { color: #C9BCC2; text-decoration: line-through; cursor: default; }
-  .ags-d.hoje { box-shadow: inset 0 0 0 1.5px #E85A8C; font-weight: 700; }
+  .ags-d { position: relative; }
+  /* Hoje: só um pontinho discreto embaixo do número (sem contorno, pra não parecer seleção) */
+  .ags-d.hoje::after { content: ""; position: absolute; left: 50%; bottom: 5px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: currentColor; }
+  .ags-d.hoje:not(:disabled) { font-weight: 700; }
   .ags-d.sel { background: #E85A8C; color: #fff; font-weight: 700; box-shadow: none; }
   .ags-leg { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: #6B5D64; margin: 10px 0 12px; }
   .ags-leg i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }

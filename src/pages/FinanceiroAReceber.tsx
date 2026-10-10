@@ -20,9 +20,7 @@ import { registrarPagamento, normalizarForma } from "@/lib/pagamentos";
  */
 type Item = ItemReceber;
 
-const brlInt = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
-/** Sem centavos só quando o valor é redondo (R$ 100); com centavos, mostra (R$ 244,80) — nunca arredonda */
-const brlExato = (v: number) => { const n = Math.round((Number(v) || 0) * 100) / 100; return Number.isInteger(n) ? brlInt(n) : n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) };
+// 10/10: dinheiro sempre com centavos (antes "Total R$ 245" ao lado de "falta R$ 245,00")
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const isoHoje = () => isoDia(0);
 const isoMais = (n: number) => isoDia(n);
@@ -68,7 +66,7 @@ export default function FinanceiroAReceber() {
         infoIcon="💰"
         infoContent={<>
           <p>Aqui ficam os <strong>pedidos que ainda têm valor a receber</strong>: o total menos o que já entrou (sinal, parcelas…).</p>
-          <p>Toque em <strong>Receber</strong> quando o cliente pagar. O valor entra no financeiro na data que você escolher, e o pedido sai daqui quando estiver quitado.</p>
+          <p>Use <strong>Receber</strong> quando o cliente pagar. O valor entra no financeiro na data que você escolher, e o pedido sai daqui quando estiver quitado.</p>
         </>}
       />
       <EstiloFinanceiro />
@@ -76,9 +74,10 @@ export default function FinanceiroAReceber() {
       <div className="far-wrap">
         {!carregando && itens.length > 0 && (
           <div className="far-resumo">
-            <div className={`far-k ${soma(grupos.atrasados) > 0 ? "far-k--atr" : ""}`}><small>Atrasados</small><b>{brl(soma(grupos.atrasados))}</b><i>{grupos.atrasados.length} {grupos.atrasados.length === 1 ? "pedido" : "pedidos"}</i></div>
-            <div className="far-k"><small>Em 7 dias</small><b>{brl(soma(grupos.semana))}</b><i>{grupos.semana.length} {grupos.semana.length === 1 ? "pedido" : "pedidos"}</i></div>
-            <div className="far-k"><small>Depois</small><b>{brl(soma(grupos.depois) + soma(grupos.semData))}</b><i>{grupos.depois.length + grupos.semData.length} {grupos.depois.length + grupos.semData.length === 1 ? "pedido" : "pedidos"}</i></div>
+            {/* 10/10: valor zerado fica neutro (cinza), não no laranja de alerta */}
+            <div className={`far-k ${soma(grupos.atrasados) > 0 ? "far-k--atr" : "far-k--zero"}`}><small>Atrasados</small><b>{brl(soma(grupos.atrasados))}</b><i>{grupos.atrasados.length} {grupos.atrasados.length === 1 ? "pedido" : "pedidos"}</i></div>
+            <div className={`far-k ${soma(grupos.semana) > 0 ? "" : "far-k--zero"}`}><small>Em 7 dias</small><b>{brl(soma(grupos.semana))}</b><i>{grupos.semana.length} {grupos.semana.length === 1 ? "pedido" : "pedidos"}</i></div>
+            <div className={`far-k ${soma(grupos.depois) + soma(grupos.semData) > 0 ? "" : "far-k--zero"}`}><small>Depois</small><b>{brl(soma(grupos.depois) + soma(grupos.semData))}</b><i>{grupos.depois.length + grupos.semData.length} {grupos.depois.length + grupos.semData.length === 1 ? "pedido" : "pedidos"}</i></div>
           </div>
         )}
 
@@ -96,7 +95,8 @@ export default function FinanceiroAReceber() {
           .filter(([, l]) => l.length > 0)
           .map(([titulo, lista]) => (
             <section key={titulo} className="far-grupo">
-              <p className="far-gt">{titulo} <span>· {brl(soma(lista))}</span></p>
+              {/* "Atrasados" e "Próximos 7 dias" já têm o valor no card de cima: não repete */}
+              <p className="far-gt">{titulo}{titulo === "Atrasados" || titulo === "Próximos 7 dias" ? null : <span> · {brl(soma(lista))}</span>}</p>
               <div className="far-lista">
                 {lista.map(it => (
                   <div key={it.id} className="far-it">
@@ -105,14 +105,14 @@ export default function FinanceiroAReceber() {
                       <span className={`far-tg ${it.dias !== null && it.dias < 0 ? "far-tg--atr" : ""}`}>{quando(it.dias)}</span>
                     </div>
                     <div className="far-it-v">
-                      <small>Total {brlExato(it.total)}{it.recebido > 0 ? ` · recebido ${brlExato(it.recebido)}` : ""}</small>
+                      <small>Total {brl(it.total)}{it.recebido > 0 ? ` · recebido ${brl(it.recebido)}` : ""}</small>
                       <b>falta {brl(it.falta)}</b>
                     </div>
                     <div className="far-bar" aria-hidden="true"><i style={{ width: `${Math.min(100, (it.recebido / (it.total || 1)) * 100)}%` }} /></div>
                     <div className="far-it-a">
                       <span><CalendarBlank size={15} />{it.data_entrega ? `entrega ${dataCurta(it.data_entrega)}` : "sem data de entrega"}</span>
                       <div className="far-bts">
-                        <button type="button" className="far-ver" onClick={() => navigate(`/pedidos/${it.id}/editar`)} aria-label="Abrir o pedido"><ArrowSquareOut size={16} /></button>
+                        <button type="button" className="far-ver" onClick={() => navigate(`/pedidos/${it.id}/editar`)} aria-label={`Abrir o pedido${it.numero ? ` #${it.numero}` : ""}`}><ArrowSquareOut size={16} aria-hidden="true" /><span>Abrir</span></button>
                         <button type="button" className="far-rec" onClick={() => setReceber(it)}>Receber</button>
                       </div>
                     </div>
@@ -187,13 +187,15 @@ export function ReceberSheet({ item, onClose, onFeito }: { item: Item; onClose: 
 
 const CSS = `
   .far-root { font-family: var(--font-base); }
-  .far-wrap { max-width: 760px; margin: 0 auto; padding: 22px 0 96px; display: flex; flex-direction: column; gap: 20px; }
+  /* 10/10: mesma largura de conteúdo de Transações (antes 760px, numa coluna estreita no PC) */
+  .far-wrap { max-width: 980px; margin: 0 auto; padding: 22px 0 96px; display: flex; flex-direction: column; gap: 20px; }
   .far-resumo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .far-k { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 10px; min-width: 0; }
   .far-k small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
   .far-k b { display: block; font-size: clamp(13.5px, 3.9vw, 17px); letter-spacing: -.02em; font-weight: 700; color: #B45309; margin: 3px 0 1px; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .far-k i { font-style: normal; font-size: 13px; color: #888780; }
   .far-k--atr { border-color: #FECACA; background: #FFF7F7; } .far-k--atr b { color: #DC2626; }
+  .far-k--zero b { color: #9A8E94; }
   .far-carregando { text-align: center; color: #9A8E94; font-size: 14px; padding: 30px 0; }
   .far-vazio { background: #fff; border-radius: 16px; padding: 30px 20px; text-align: center; border: 1px solid #F0EBED; }
   .far-vazio-ic { width: 64px; height: 64px; border-radius: 20px; background: #F0FDF4; color: #16A34A; display: inline-flex; align-items: center; justify-content: center; }
@@ -202,6 +204,7 @@ const CSS = `
   .far-gt { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: #9A8E94; }
   .far-gt span { color: #6B5D64; }
   .far-lista { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  @media (min-width: 900px) { .far-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .far-it { min-width: 0; background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 14px; }
   .far-it-h { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .far-it-h b { font-size: 14.5px; font-weight: 700; color: #2C1219; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -213,9 +216,10 @@ const CSS = `
   .far-bar { height: 6px; border-radius: 9px; background: #F5F0F2; margin-top: 9px; overflow: hidden; }
   .far-bar i { display: block; height: 100%; background: #22C55E; border-radius: 9px; }
   .far-it-a { display: flex; justify-content: space-between; align-items: center; margin-top: 11px; gap: 8px; }
+  @media (max-width: 360px) { .far-ver span { display: none; } .far-ver { padding: 0; } }
   .far-it-a > span { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: #6B5D64; }
   .far-bts { display: flex; gap: 6px; }
-  .far-ver { width: 44px; height: 44px; flex-shrink: 0; border-radius: 10px; border: 1.5px solid #EDE6E9; background: #fff; color: #6B5D64; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .far-ver { min-width: 44px; height: 44px; padding: 0 12px; gap: 6px; font-family: inherit; font-size: 13.5px; font-weight: 700; flex-shrink: 0; border-radius: 10px; border: 1.5px solid #EDE6E9; background: #fff; color: #6B5D64; display: flex; align-items: center; justify-content: center; cursor: pointer; }
   .far-rec { border: none; border-radius: 10px; padding: 0 16px; height: 44px; background: #16A34A; color: #fff; font-family: inherit; font-weight: 700; font-size: 13.5px; cursor: pointer; }
   .far-ov { position: fixed; inset: 0; z-index: 1300; background: rgba(45,31,38,.5); display: flex; align-items: flex-end; justify-content: center; font-family: var(--font-base); }
   @media (min-width: 768px) { .far-ov { align-items: center; } }

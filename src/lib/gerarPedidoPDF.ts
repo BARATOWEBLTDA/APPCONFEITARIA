@@ -3,6 +3,7 @@
 // Usado em Pedidos, Editar pedido e Nova venda. Grátis pra todos.
 // ─────────────────────────────────────────────────────────────────────────────
 import { gerarDocumento, abrirJanela, esc, brl, dataBR, card, kv, pill } from "@/lib/pdfDoonly";
+import { formaDoItem, qtdCurta } from "@/components/pedidos/pedidoTexto";
 
 type PedidoItemPDF = {
   nome_produto?: string;
@@ -10,6 +11,8 @@ type PedidoItemPDF = {
   valor_unitario?: number;
   observacoes?: string | null;
   personalizacoes?: any;
+  forma_venda?: string | null;
+  produtos?: { forma_venda?: string | null } | null;
 };
 
 export type PedidoPDF = {
@@ -47,9 +50,9 @@ export type PedidoPDF = {
 const STATUS: Record<string, string> = {
   aguardando_pagamento: "Aguardando pagamento", aguardando_aceite: "Aguardando aceite", novo: "Aguardando aceite", pendente: "Aguardando aceite",
   agendado: "Agendado", confirmado: "Agendado", em_producao: "Em produção", em_preparo: "Em produção", finalizado: "Pronto", pronto: "Pronto",
-  aguardando_retirada: "Pronto pra retirada", em_entrega: "Saiu pra entrega", a_caminho: "Saiu pra entrega", entregue: "Entregue", concluido: "Entregue", cancelado: "Cancelado",
+  aguardando_retirada: "Pronto pra retirar", em_entrega: "Saiu pra entrega", a_caminho: "Saiu pra entrega", entregue: "Entregue", concluido: "Entregue", cancelado: "Cancelado",
 };
-const PAGAMENTO: Record<string, string> = { pix: "PIX", dinheiro: "Dinheiro", credito: "Cartão de crédito", debito: "Cartão de débito", cartao: "Cartão", link_pagamento: "Link de pagamento", mercado_pago: "Mercado Pago", pagamento_retirada: "Na retirada", boleto: "Boleto" };
+const PAGAMENTO: Record<string, string> = { pix: "Pix", PIX: "Pix", dinheiro: "Dinheiro", credito: "Cartão de crédito", debito: "Cartão de débito", cartao: "Cartão", link_pagamento: "Link de pagamento", mercado_pago: "Mercado Pago", pagamento_retirada: "Na retirada", boleto: "Boleto" };
 
 /** Escolhas do item (tamanho, massa, recheios, cobertura, kit, adicionais) numa linha. */
 function escolhas(pz: any): string {
@@ -93,7 +96,7 @@ export async function gerarPedidoPDF(pedido: PedidoPDF, janelaAberta?: Window | 
       ? itens.map(it => {
           const q = Number(it.quantidade) || 1, u = Number(it.valor_unitario) || 0;
           const det = [escolhas(it.personalizacoes), it.observacoes ? `Obs.: ${it.observacoes}` : ""].filter(Boolean).join(" · ");
-          return `<tr><td><b>${esc(it.nome_produto)}</b>${det ? `<small>${esc(det)}</small>` : ""}</td><td class="c">${q}</td><td class="r">${brl(u)}</td><td class="r">${brl(q * u)}</td></tr>`;
+          return `<tr><td><b>${esc(it.nome_produto)}</b>${det ? `<small>${esc(det)}</small>` : ""}</td><td class="c">${esc(qtdCurta(q, formaDoItem(it)).replace(/x$/, ""))}</td><td class="r">${brl(u)}</td><td class="r">${brl(q * u)}</td></tr>`;
         }).join("")
       : `<tr><td colspan="4" class="vazio">Sem itens</td></tr>`;
     const tabela = card(prontaEntrega ? "Itens" : "Itens do pedido", `<table class="tb"><tr><th>Item</th><th class="c">Qtd</th><th class="r">Unit.</th><th class="r">Total</th></tr>${linhas}</table>`);
@@ -113,9 +116,9 @@ export async function gerarPedidoPDF(pedido: PedidoPDF, janelaAberta?: Window | 
       ["Situação", situacao],
       ["Recebido", sp === "parcial" ? brl(recebido) : ""],
       ["Pagar até", sp !== "pago" && pedido.data_prevista_pagamento ? esc(dataBR(pedido.data_prevista_pagamento)) : ""],
-    ]) + (pedido.observacoes ? `<p class="obs">📝 ${esc(pedido.observacoes)}</p>` : ""));
+    ]) + (pedido.observacoes ? `<p class="obs">Obs.: ${esc(pedido.observacoes)}</p>` : ""));
 
-    const corpo = `<div class="g2">${cliente}${blocoEntrega}</div>${tabela}<div class="g2">${pagamento}${totais}</div>${prontaEntrega ? `<p class="thx">Obrigada pela preferência! 💗</p>` : ""}`;
+    const corpo = `<div class="g2">${cliente}${blocoEntrega}</div>${tabela}<div class="g2">${pagamento}${totais}</div>${prontaEntrega ? `<p class="thx">Obrigada pela preferência!</p>` : ""}`;
     const feito = pedido.created_at ? new Date(pedido.created_at) : new Date();
     return {
       titulo: `${prontaEntrega ? "Venda" : "Pedido"} #${pedido.numero ?? ""}`,

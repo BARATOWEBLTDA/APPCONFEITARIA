@@ -10,7 +10,7 @@ import PeriodoFiltro, { periodoInicial, rotuloPeriodo, type Periodo } from "@/co
 import DespesaSheet from "@/components/financeiro/DespesaSheet";
 import Folha, { FOLHA_CSS } from "@/components/financeiro/Folha";
 import { supabase } from "@/lib/supabase";
-import { carregarExtrato, estornar, nomeForma, type MovExtrato } from "@/lib/extrato";
+import { carregarExtrato, estornar, type MovExtrato } from "@/lib/extrato";
 
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const FORMAS = [{ k: "pix", l: "Pix" }, { k: "dinheiro", l: "Dinheiro" }, { k: "credito", l: "Crédito" }, { k: "debito", l: "Débito" }];
@@ -55,7 +55,7 @@ export default function FinanceiroTransacoes() {
     return itens.filter(i => (verEstornados || !i.estornado)
       && (tipo === "todas" || i.tipo === tipo)
       && (!forma || i.forma === forma)
-      && (!q || `${i.titulo} ${i.detalhe}`.toLowerCase().includes(q)));
+      && (!q || `${i.titulo} ${i.subtipo} ${i.detalhe}`.toLowerCase().includes(q)));
   }, [itens, tipo, forma, busca, verEstornados]);
   const porDia = useMemo(() => {
     const g: { dia: string; itens: MovExtrato[] }[] = [];
@@ -67,7 +67,7 @@ export default function FinanceiroTransacoes() {
   const exportar = () => {
     const linhas = [`Extrato ${rotuloPeriodo(periodo)}`, "", `Entradas;${entradas.toFixed(2).replace(".", ",")}`, `Saídas;${saidas.toFixed(2).replace(".", ",")}`, `Resultado (entradas − saídas);${(entradas - saidas).toFixed(2).replace(".", ",")}`, "",
       "Data;Tipo;Descrição;Detalhe;Valor;Situação",
-      ...lista.map(i => `${i.data.split("-").reverse().join("/")};${i.tipo === "entrada" ? "Entrada" : "Saída"};${i.titulo.replace(/;/g, ",")};${i.detalhe.replace(/;/g, ",")};${(i.tipo === "entrada" ? i.valor : -i.valor).toFixed(2).replace(".", ",")};${i.estornado ? "Estornado" : ""}`)];
+      ...lista.map(i => `${i.data.split("-").reverse().join("/")};${i.tipo === "entrada" ? "Entrada" : "Saída"};${i.titulo.replace(/;/g, ",")};${[i.subtipo, i.detalhe].filter(Boolean).join(" · ").replace(/;/g, ",")};${(i.tipo === "entrada" ? i.valor : -i.valor).toFixed(2).replace(".", ",")};${i.estornado ? "Estornado" : ""}`)];
     const blob = new Blob(["\ufeff" + linhas.join("\n")], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `extrato-${periodo.ini}-a-${periodo.fim}.csv`; a.click(); URL.revokeObjectURL(a.href);
   };
@@ -81,7 +81,7 @@ export default function FinanceiroTransacoes() {
         infoIcon="📑"
         infoContent={<>
           <p>Aqui aparece <strong>todo o dinheiro que entrou e saiu</strong>: os recebimentos de pedidos (na data em que você recebeu), as entradas avulsas e as despesas pagas.</p>
-          <p>Lançou errado? Toque no item e use <strong>Estornar</strong>: ele sai das contas, mas continua no histórico, riscado.</p>
+          <p>Lançou errado? Abra o item e use <strong>Estornar</strong>: ele sai das contas, mas continua no histórico, riscado.</p>
         </>}
       />
       <EstiloFinanceiro />
@@ -89,8 +89,8 @@ export default function FinanceiroTransacoes() {
         <div className="tx-topo">
           <PeriodoFiltro valor={periodo} onChange={setPeriodo} />
           <div className="tx-bts">
-            <button type="button" className="tx-bt e" onClick={() => setNova("entrada")}><ArrowUp size={15} weight="bold" />Entrada</button>
-            <button type="button" className="tx-bt s" onClick={() => setNova("saida")}><ArrowDown size={15} weight="bold" />Despesa</button>
+            <button type="button" className="tx-bt e" onClick={() => setNova("entrada")}><ArrowUp size={15} weight="bold" />Nova entrada</button>
+            <button type="button" className="tx-bt s" onClick={() => setNova("saida")}><ArrowDown size={15} weight="bold" />Nova saída</button>
             <button type="button" className="tx-bt n" onClick={exportar} aria-label="Exportar planilha"><DownloadSimple size={16} weight="bold" /><span>Exportar</span></button>
           </div>
         </div>
@@ -109,16 +109,16 @@ export default function FinanceiroTransacoes() {
         </div>
 
         {carregando ? <div className="tx-ph" /> : lista.length === 0 ? (
-          <div className="tx-vazio"><b>Nada por aqui {rotuloPeriodo(periodo)}</b><p>{itens.length ? "Nenhum item com esses filtros." : "Quando você receber um pedido ou lançar uma entrada ou despesa, aparece aqui."}</p></div>
-        ) : porDia.map(g => (
-          <section key={g.dia} className="tx-dia">
+          <div className="tx-vazio"><b>Nada por aqui {rotuloPeriodo(periodo)}</b><p>{itens.length ? "Nenhum item com esses filtros." : "Quando você receber um pedido ou lançar uma entrada ou saída, aparece aqui."}</p></div>
+        ) : porDia.map((g, gi) => (
+          <section key={`${g.dia}-${gi}`} className="tx-dia">
             <p className="tx-dia-t">{rotuloDia(g.dia)} <span>· {brl(g.itens.filter(i => !i.estornado).reduce((s, i) => s + (i.tipo === "entrada" ? i.valor : -i.valor), 0))}</span></p>
             <div className="tx-lista">
-              {g.itens.map(i => (
-                <button type="button" key={i.id} className={`tx-it ${i.estornado ? "est" : ""}`} onClick={() => setAberto(i)}>
+              {g.itens.map((i, ii) => (
+                <button type="button" key={`${i.id}-${ii}`} className={`tx-it ${i.estornado ? "est" : ""}`} onClick={() => setAberto(i)}>
                   <span className={`tx-ic ${i.tipo === "entrada" ? "e" : "s"}`}>{i.tipo === "entrada" ? <ArrowUp size={15} weight="bold" /> : <ArrowDown size={15} weight="bold" />}</span>
-                  <div className="tx-it-t"><b>{i.titulo}</b><small>{i.estornado ? "Estornado · " : ""}{i.detalhe}</small></div>
-                  <span className="tx-it-c">{i.origem === "pagamento" ? nomeForma(i.forma) : (i.categoria || "")}</span>
+                  <div className="tx-it-t"><b>{i.titulo}</b><small>{i.estornado ? "Estornado · " : ""}{i.subtipo}{i.detalhe && <span className="tx-so-cel"> · {i.detalhe}</span>}</small></div>
+                  <span className="tx-it-c">{i.detalhe}</span>
                   <span className={`tx-it-v ${i.tipo === "entrada" ? "e" : "s"}`}>{i.tipo === "entrada" ? "+" : "−"} {brl(i.valor)}</span>
                 </button>
               ))}
@@ -131,7 +131,7 @@ export default function FinanceiroTransacoes() {
 
       {aberto && <DetalheSheet m={aberto} semEstorno={semEstorno} onClose={() => setAberto(null)} onAbrirPedido={id => navigate(`/pedidos/${id}/editar`)}
         onEstornado={msg => { setAberto(null); avisar(msg); carregar(); }} />}
-      {nova && uid && <DespesaSheet tipo={nova} onClose={() => setNova(null)} onSalvo={() => { setNova(null); avisar(nova === "entrada" ? "Entrada lançada." : "Despesa lançada."); carregar(); }} onContaAPagar={() => navigate("/financeiro/a-pagar")} />}
+      {nova && uid && <DespesaSheet tipo={nova} onClose={() => setNova(null)} onSalvo={() => { setNova(null); avisar(nova === "entrada" ? "Entrada lançada." : "Saída lançada."); carregar(); }} onContaAPagar={() => navigate("/financeiro/a-pagar")} onReceberPedido={() => navigate("/financeiro/a-receber")} />}
       <style>{CSS}{FOLHA_CSS}</style>
     </>
   );
@@ -148,11 +148,11 @@ function DetalheSheet({ m, semEstorno, onClose, onAbrirPedido, onEstornado }: { 
     onEstornado(m.origem === "pagamento" ? "Estornado. O pedido voltou a ter valor a receber." : "Estornado. Ele saiu das contas e ficou no histórico.");
   };
   return (
-    <Folha titulo={m.titulo} sub={m.estornado ? "Este lançamento foi estornado" : (m.tipo === "entrada" ? "Entrada" : "Saída")} onClose={onClose}>
+    <Folha titulo={m.titulo} sub={m.estornado ? "Este lançamento foi estornado" : m.subtipo} onClose={onClose}>
       <div className="fo-dica" style={{ marginTop: 12 }}>
         <div className="tx-dl"><span>Valor</span><b className={m.tipo === "entrada" ? "e" : "s"}>{m.tipo === "entrada" ? "+" : "−"} {brl(m.valor)}</b></div>
         <div className="tx-dl"><span>Data</span><b>{d}/{mm}/{y}</b></div>
-        {m.detalhe && <div className="tx-dl"><span>{m.origem === "pagamento" ? "Cliente e forma" : "Categoria"}</span><b>{m.detalhe}</b></div>}
+        {m.detalhe && <div className="tx-dl"><span>{m.origem === "pagamento" ? "Forma de pagamento" : "Categoria"}</span><b>{m.detalhe}</b></div>}
       </div>
       {m.pedidoId && <button type="button" className="fo-cta escuro" onClick={() => onAbrirPedido(m.pedidoId!)}><ArrowSquareOut size={16} weight="bold" style={{ verticalAlign: "-3px", marginRight: 6 }} />Abrir o pedido</button>}
       {!m.estornado && (confirmar ? (
@@ -180,7 +180,7 @@ const CSS = `
   .tx-bts { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; }
   .tx-bt { display: flex; align-items: center; justify-content: center; gap: 6px; border: none; border-radius: 12px; padding: 11px 14px; font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; white-space: nowrap; }
   .tx-bt.e { background: #16A34A; color: #fff; } .tx-bt.s { background: #2C1219; color: #fff; } .tx-bt.n { background: #fff; color: #2C1219; border: 1.5px solid #EDE6E9; }
-  @media (max-width: 420px) { .tx-bt.n span { display: none; } }
+  @media (max-width: 420px) { .tx-bt.n span { display: none; } .tx-bt { padding: 11px 8px; gap: 4px; font-size: 13px; } }
   .tx-res { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .tx-k { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 10px; min-width: 0; }
   .tx-k small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
@@ -209,7 +209,7 @@ const CSS = `
   .tx-it-t b { display: block; font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tx-it-t small { display: block; font-size: 12px; color: #888780; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
   .tx-it-c { display: none; font-size: 12.5px; color: #6B5D64; }
-  @media (min-width: 900px) { .tx-it-c { display: block; } }
+  @media (min-width: 900px) { .tx-it-c { display: block; } .tx-so-cel { display: none; } }
   .tx-it-v { font-size: 14px; font-weight: 700; white-space: nowrap; text-align: right; } .tx-it-v.e { color: #15803D; } .tx-it-v.s { color: #DC2626; }
   .tx-it.est { opacity: .5; } .tx-it.est .tx-it-v, .tx-it.est .tx-it-t b { text-decoration: line-through; }
   .tx-ver-est { align-self: center; border: none; background: none; font-family: inherit; font-size: 13px; font-weight: 700; color: #9A8E94; cursor: pointer; padding: 8px;  min-height: 44px; }

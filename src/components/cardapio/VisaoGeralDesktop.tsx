@@ -182,7 +182,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         {!pro ? (
           <div className="vgd-lock">
             <span className="vgd-lock-ic" aria-hidden="true"><ChartBar size={24} weight="bold" /></span>
-            <div><b>Veja quem visita e quem compra</b><small>Visitas, pedidos pelo link, receita e conversão ficam liberados no PRO.</small></div>
+            <div><b>Veja quem visita e quem compra</b><small>Visitas, pedidos pelo link, faturamento e conversão ficam liberados no PRO.</small></div>
             <Botao icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>
           </div>
         ) : metr && (
@@ -190,7 +190,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
             <div className="vgd-kp">
               {[["Visitas", String(metr.vis), variacao(metr.vis, metr.ant?.vis)],
                 ["Pedidos online", String(metr.ped), variacao(metr.ped, metr.ant?.ped)],
-                ["Receita online", brl(metr.rec), variacao(metr.rec, metr.ant?.rec)],
+                ["Faturamento online", brl(metr.rec), variacao(metr.rec, metr.ant?.rec)],
                 ["Conversão", `${metr.conv.toFixed(1).replace(".", ",")}%`, metr.vis ? { txt: `de cada 100 visitas, ${Math.round(metr.conv)} compram`, up: true, neutro: true } : null],
               ].map(([l, v, d]: any) => (
                 <div className="vgd-k" key={l}><small>{l}</small><b>{v}</b>{d && <em className={d.neutro ? "n" : d.up ? "" : "down"}>{d.txt}</em>}</div>
@@ -289,6 +289,9 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         .vgd-pt b, .vgd-dt b { display: block; font-size: 13.5px; }
         .vgd-pt small, .vgd-dt small { display: block; font-size: 12px; color: #9A8E94; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .vgd-dt small { white-space: normal; }
+        .vgd-di { flex-wrap: wrap; row-gap: 4px; }
+        .vgd-dt { flex: 1 1 170px; }
+        .vgd-db { margin-left: auto; }
         .vgd-pv { text-align: right; flex-shrink: 0; } .vgd-pv b { display: block; font-size: 13.5px; } .vgd-pv small { font-size: 13px; color: #9A8E94; }
         .vgd-pill { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
         .vgd-pill.ok { background: #DCFCE7; color: #15803D; } .vgd-pill.rd { background: #FEE2E2; color: #B91C1C; } .vgd-pill.bl { background: #DBEAFE; color: #1D4ED8; }

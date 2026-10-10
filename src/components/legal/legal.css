@@ -55,6 +55,7 @@
 @media (min-width: 900px) {
   .lg-corpo { grid-template-columns: 232px minmax(0, 720px); justify-content: center; gap: 28px; }
   .lg-topo-in { max-width: 980px; }
+  .lg-pe { max-width: 1028px; } /* (10/10) alinhado com o conteúdo: 980px (índice + texto) + 24px de margem de cada lado */
   .lg-masc { right: max(36px, calc(50% - 478px)); }
   .lg-indice { display: block; position: sticky; top: 16px; padding: 14px 10px 10px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: 16px; box-shadow: var(--ui-sombra-cartao); }
   .lg-indice-t { margin: 0 6px 6px; font-size: 12px; font-weight: 700; color: var(--ui-texto-3); }

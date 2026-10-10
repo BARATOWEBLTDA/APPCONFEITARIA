@@ -40,6 +40,12 @@ interface Props {
   rotuloAdicionar?: string
 }
 
+/** Texto do botão enquanto falta uma escolha obrigatória */
+const TEXTO_FALTA: Record<string, string> = {
+  kit: 'Monte o seu kit', tamanho: 'Escolha o tamanho', sabor: 'Escolha o sabor',
+  massa: 'Escolha a massa', recheio: 'Escolha o recheio', cobertura: 'Escolha a cobertura',
+}
+
 export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', onAdicionar, rotuloAdicionar }: Props) {
   const { addItem } = useCart()
   const [quantity, setQuantity] = useState(1)
@@ -317,7 +323,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
   }, [kitInfo?.completo, gTamanho, gSabor, gMassa, gRecheio, gCobertura, escolhaTamanho, escolhaSabor, escolhaMassa, escolhasRecheio.length, escolhaCobertura])
   useEffect(() => { if (faltou && faltou !== pendente) setFaltou(null) }, [pendente, faltou])
 
-  // Fotos: trocam sozinhas a cada 4 s, bem suave (para quando a cliente mexe; não roda com "reduzir movimento")
+  // Fotos: trocam sozinhas a cada 4 s, bem suave (para quando o cliente mexe; não roda com "reduzir movimento")
   const imagensMemo = useMemo(() => product?.imagem_url?.split(',').map((x: string) => x.trim()).filter(Boolean) || [], [product?.imagem_url])
   useEffect(() => {
     if (!isOpen || imagensMemo.length < 2) return
@@ -540,7 +546,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
           <header className="pm-g-cab"><span><b>Foto de referência</b><small>Mostre uma ideia do que você quer</small></span></header>
           <label className="pm-foto">
             {fotoRef ? <img src={fotoRef} alt="Foto de referência" /> : <span className="pm-foto-ic"><Camera size={20} weight="bold" /></span>}
-            <span className="pm-foto-tx"><b>{fotoRefUploading ? 'Carregando…' : fotoRef ? 'Foto anexada' : 'Enviar uma foto'}</b><small>{fotoRef ? 'Toque pra trocar' : 'Opcional'}</small></span>
+            <span className="pm-foto-tx"><b>{fotoRefUploading ? 'Carregando…' : fotoRef ? 'Foto anexada' : 'Enviar uma foto'}</b><small>{fotoRef ? 'Escolha outra pra trocar' : 'Opcional'}</small></span>
             {fotoRef && <button type="button" className="pm-foto-x" aria-label="Tirar a foto" onClick={ev => { ev.preventDefault(); ev.stopPropagation(); setFotoRef(null) }}><X size={18} weight="bold" /></button>}
             <input type="file" accept="image/*" onChange={handleFotoRef} hidden />
           </label>
@@ -567,8 +573,10 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
           <button type="button" aria-label="Aumentar" style={{ color: corBotao }} disabled={quantity >= 50} onClick={() => setQuantity(q => Math.min(50, Math.round((q + passo) * 10) / 10))}><Plus size={20} weight="bold" /></button>
         </div>
       )}
-      <button type="button" className={`pm-add${faltou ? ' treme' : ''}`} style={{ background: corBotao }} onClick={tentarAdicionar}>
-        <span>{rotuloAdicionar || 'Adicionar'}</span><strong>{formatCurrency(totalDisplay)}</strong>
+      {/* Faltando escolha obrigatória o botão diz o que falta; sem tamanho/kit ainda não mostra preço (seria o do menor como se estivesse escolhido) */}
+      <button type="button" className={`pm-add${faltou ? ' treme' : ''}${pendente === 'tamanho' || pendente === 'kit' ? ' so-texto' : ''}`} style={{ background: corBotao }} onClick={tentarAdicionar}>
+        <span>{pendente ? TEXTO_FALTA[pendente] : (rotuloAdicionar || 'Adicionar')}</span>
+        {pendente !== 'tamanho' && pendente !== 'kit' && <strong>{formatCurrency(totalDisplay)}</strong>}
       </button>
     </footer>
   )

@@ -80,8 +80,8 @@ export default function PaginaLegal({ doc, camada }: { doc: DocLegalId; camada?:
       <footer className="lg-pe">
         <span>© {new Date().getFullYear()} Doonly</span>
         {camada
-          ? <button type="button" className="lg-pe-link" onClick={() => camada.aoTrocar(outro)}>{doc === 'termos' ? 'Ler a Política de Privacidade' : 'Ler os Termos de Uso'}</button>
-          : <Link className="lg-pe-link" to={`/${outro}`} replace>{doc === 'termos' ? 'Ler a Política de Privacidade' : 'Ler os Termos de Uso'}</Link>}
+          ? <button type="button" className="lg-pe-link" onClick={() => camada.aoTrocar(outro)}>{doc === 'termos' ? 'Ler a Política de privacidade' : 'Ler os Termos de uso'}</button>
+          : <Link className="lg-pe-link" to={`/${outro}`} replace>{doc === 'termos' ? 'Ler a Política de privacidade' : 'Ler os Termos de uso'}</Link>}
       </footer>
     </div>
   )

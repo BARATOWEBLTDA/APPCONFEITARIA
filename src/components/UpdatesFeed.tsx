@@ -3,6 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { Newspaper, CaretRight } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 
+/** Tira do título o nome da categoria quando ele começa igual ("Novidade: ..." com a etiqueta "Novidade" ao lado). */
+function tituloSemCategoria(titulo: string, categoria: string | null): string {
+  if (!categoria) return titulo;
+  const sem = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  const m = titulo.match(/^\s*([^:]{1,40}):\s*(.+)$/);
+  if (!m) return titulo;
+  const prefixo = sem(m[1]);
+  const cat = sem(categoria);
+  if (prefixo === cat || prefixo === cat.replace(/s$/, "") || prefixo + "s" === cat) return m[2].charAt(0).toUpperCase() + m[2].slice(1);
+  return titulo;
+}
+
+
 interface Noticia {
   id: string;
   emoji: string;
@@ -78,7 +91,7 @@ export default function UpdatesFeed() {
               </div>
               <div className="uf-body">
                 {n.categoria && <span className="uf-cat">{n.categoria}</span>}
-                <p className="uf-title">{n.titulo}</p>
+                <p className="uf-title">{tituloSemCategoria(n.titulo, n.categoria)}</p>
                 {n.descricao && <p className="uf-desc">{n.descricao}</p>}
               </div>
               <CaretRight size={16} weight="bold" className="uf-arr" aria-hidden="true" />

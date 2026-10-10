@@ -1,4 +1,4 @@
-/* Pedidos da cliente (08/10 · 3.31): em andamento com o passo a passo, depois os anteriores */
+/* Pedidos do cliente (08/10 · 3.31): em andamento com o passo a passo, depois os anteriores */
 import { useState } from 'react'
 import { ArrowClockwise, Receipt } from '@phosphor-icons/react'
 import { CartaoPedido, JanelaEntrar, SemConta, lerCliente, pedidoAberto, usePedidosCliente, type Cliente } from './contaCliente'
@@ -28,7 +28,7 @@ export function PedidosTab({ accent, confeteiraUserId }: {
 
       <div className="cc-rolo">
         {!cliente ? (
-          <SemConta cor={accent} titulo="Acompanhe seus pedidos" texto="Entre com o seu WhatsApp pra ver o andamento e o histórico dos seus pedidos." aoEntrar={() => setEntrar(true)} />
+          <SemConta cor={accent} titulo="Acompanhe seus pedidos" texto="Entre com o seu WhatsApp pra ver o andamento e o histórico dos seus pedidos." icone={<Receipt size={40} weight="duotone" />} aoEntrar={() => setEntrar(true)} />
         ) : carregando && pedidos.length === 0 ? (
           <div className="cc-carregando">{[0, 1].map(i => <span key={i} className="cc-ped cc-ped--esq" />)}</div>
         ) : pedidos.length === 0 ? (

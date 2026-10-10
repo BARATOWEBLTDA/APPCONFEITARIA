@@ -89,6 +89,7 @@
 .pm-add:hover { filter: brightness(.96); }
 .pm-add span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pm-add strong { flex: none; font-weight: 700; }
+.pm-add.so-texto { justify-content: center; }
 .pm-add.treme { animation: pmTreme .35s; }
 @keyframes pmTreme { 20%, 60% { transform: translateX(-4px); } 40%, 80% { transform: translateX(4px); } }
 @media (prefers-reduced-motion: reduce) { .pm-add.treme, .pm, .pm-veu { animation: none; } }

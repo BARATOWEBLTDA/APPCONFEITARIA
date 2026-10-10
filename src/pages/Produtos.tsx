@@ -3,12 +3,12 @@ import LimitePlano from "@/components/billing/LimitePlano";
 import { LIMITE_PRODUTOS_GRATIS } from "@/lib/limitesPlano";
 import CampoNumero from "@/components/ui/CampoNumero";
 import { useLocation, useNavigate } from "react-router-dom";
-import KitQuantidadeEditor from "@/components/produto/KitQuantidadeEditor";
-import { kitAtivo, erroKit, precoMinKit, presetKit, kitsValidos, type KitQtdConfig } from "@/lib/kitQuantidade";
+import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
+import { kitAtivo, precoMinKit, presetKit, kitsValidos, type KitQtdConfig } from "@/lib/kitQuantidade";
 import TipoProdutoTela, { type TipoProduto as TipoCadastro } from "@/components/produto/TipoProdutoTela";
 import SucessoProdutoTela from "@/components/produto/SucessoProdutoTela";
 import { precoCardapio } from "@/lib/precoCardapio";
-import { BoloOpcoesStep, BoloTamanhosStep, BoloPrecoStep, boloOpcoesOk, boloTamanhosOk, boloPrecoOk, type BoloTam } from "@/components/produto/BoloWizard";
+import { BoloOpcoesStep, BoloTamanhosStep, BoloPrecoStep, boloOpcoesFalta, boloTamanhosFalta, boloPrecoFalta, type BoloTam, type FaltaCampo } from "@/components/produto/BoloWizard";
 import { supabase } from "@/lib/supabase";
 import { listarBiblioteca, salvarNaBiblioteca, type BibliotecaOpcao } from "@/lib/biblioteca";
 import { carregarGruposDoBanco, salvarGruposParaBanco } from "@/lib/produto-grupos";
@@ -28,7 +28,7 @@ import BtnNovo from "@/components/BtnNovo";
 import Categorias from "@/pages/Categorias";
 import QuickAddInsumo from "@/components/QuickAddInsumo";
 import AppPageHeader from "@/components/AppPageHeader";
-import { ArrowLeft as ArrowLeftIc, Camera, CaretDown, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, SortAscending, WarningCircle, Trash, X as XIc, DotsThreeVertical, Lightbulb, Cake, BookOpen, Egg } from "@phosphor-icons/react";
+import { ArrowLeft as ArrowLeftIc, Camera, CaretDown, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, SortAscending, WarningCircle, Trash, X as XIc, DotsThreeVertical, Lightbulb, Cake, BookOpen, Egg, Crown } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Janela, Linha as LinhaUi, Titulo as TituloUi, avisar, confirmar } from "@/components/base";
 import { sufixoVenda } from "@/lib/formaVenda";
 import "./produtosLista.css";
@@ -38,6 +38,21 @@ import "@/components/produto/cadastroProduto.css";
 const unidadeDoPreco = (fv?: string | null) => {
   const s = sufixoVenda(fv);
   return s === "kg" ? "por kg" : s === "cento" ? "o cento" : s === "caixa" ? "a caixa" : s === "fatia" ? "a fatia" : s === "kit" ? "o kit" : "a unidade";
+};
+/**
+ * Preço do cartão na lista — mesma regra do cardápio (10/10): com tamanhos ou kit mostra
+ * "a partir de R$ X" (o menor) e sem "por kg"; sem tamanhos mostra o preço e a unidade.
+ */
+const precoDaLista = (prod: any) => {
+  const pc = precoCardapio(prod);
+  const descRatio = prod?.promocao
+    ? (prod.tipo_promocao === "percentual" && prod.desconto_percentual > 0
+        ? prod.desconto_percentual / 100
+        : prod.preco_promocional && prod.preco_normal > 0 ? 1 - (prod.preco_promocional / prod.preco_normal) : 0)
+    : 0;
+  const final = descRatio > 0 ? Math.round(pc.valor * (1 - descRatio) * 100) / 100 : pc.valor;
+  const unidade = pc.aPartir || prod?.grupo_tamanhos?.ativo ? "" : unidadeDoPreco(prod?.forma_venda);
+  return { de: descRatio > 0 ? pc.valor : 0, final, unidade, aPartir: pc.aPartir };
 };
 import ReqTag from "@/components/ReqTag";
 import { apiFetch } from "@/lib/apiFetch";
@@ -383,7 +398,7 @@ function SaboresTamanhosStep({ subtipo, onSubtipoChange, sabores, onSaboresChang
                 <div key={i} className="st-item">
                   <span className="st-item-num">{i + 1}</span>
                   <span className="st-item-label">{s}</span>
-                  <button type="button" className="st-item-remove" onClick={() => removeSabor(i)} aria-label="Remover">✕</button>
+                  <button type="button" className="st-item-remove" onClick={() => removeSabor(i)} aria-label="Remover"><XIc size={14} weight="bold" aria-hidden="true" /></button>
                 </div>
               ))}
             </div>
@@ -416,7 +431,7 @@ function SaboresTamanhosStep({ subtipo, onSubtipoChange, sabores, onSaboresChang
                 <div key={i} className="st-item">
                   <span className="st-item-num">{i + 1}</span>
                   <span className="st-item-label">{t.label}</span>
-                  <button type="button" className="st-item-remove" onClick={() => removeTamanho(i)} aria-label="Remover">✕</button>
+                  <button type="button" className="st-item-remove" onClick={() => removeTamanho(i)} aria-label="Remover"><XIc size={14} weight="bold" aria-hidden="true" /></button>
                 </div>
               ))}
             </div>
@@ -1893,7 +1908,7 @@ function PersonalizacaoStep({
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                               </button>
                             </div>
-                            <p className="pv3-gerar-sub">Escolha o range e o passo. Ex: 0,5kg até 5kg com passo 0,5kg = 10 tamanhos.</p>
+                            <p className="pv3-gerar-sub">Escolha de quanto a quanto e o passo. Ex.: 0,5 kg até 5 kg, de 0,5 em 0,5 kg = 10 tamanhos.</p>
 
                             <div className="pv3-gerar-row">
                               <div className="pv3-gerar-field">
@@ -2049,7 +2064,7 @@ function PersonalizacaoStep({
                         }}>
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                           <div className="pv3-empty-txt">Cadastrar 1º tamanho</div>
-                          <div className="pv3-empty-sub">Ex: P, M, G, 1kg, 2kg</div>
+                          <div className="pv3-empty-sub">Ex.: P, M, G, 1 kg, 2 kg</div>
                         </div>
                       )}
                     </div>
@@ -2058,7 +2073,7 @@ function PersonalizacaoStep({
                     <div className="pv3-add-row">
                       <input
                         type="text"
-                        placeholder="Ex: P, M, G, 1,5..."
+                        placeholder="Ex.: P, M, G, 1,5 kg"
                         value={novoTamanhoNome}
                         onChange={e => setNovoTamanhoNome(e.target.value)}
                         onKeyDown={e => {
@@ -3490,6 +3505,9 @@ export default function Produtos() {
   const [boloTam, setBoloTam] = useState<BoloTam>(null);
   // Bolo: a etapa 4 tem duas telas — Tamanhos e depois Preço
   const [boloPrecoTela, setBoloPrecoTela] = useState(false);
+  // Cadastro: tentou continuar com algo faltando → mostra o que falta acima do botão (some ao trocar de tela)
+  const [mostrarFalta, setMostrarFalta] = useState(false);
+  useEffect(() => { setMostrarFalta(false); }, [wizardStep, kitTela, boloPrecoTela, mobilePersonaStep, modal, tipoTela]);
   const [isMobileMain, setIsMobileMain] = useState(false);
   useEffect(() => {
     const check = () => setIsMobileMain(window.innerWidth <= 720);
@@ -4420,7 +4438,7 @@ export default function Produtos() {
           <p>Cada produto pode ter foto, preço, descrição, sabores e variações. Você organiza por <strong>categorias</strong> pra ficar fácil de encontrar e mostrar no seu cardápio digital.</p>
         </>
       }
-      infoTip={<>Toque em <strong>"Novo produto"</strong> pra cadastrar. Depois é só compartilhar seu cardápio com os clientes.</>}
+      infoTip={<>Clique em <strong>"Novo produto"</strong> pra cadastrar. Depois é só compartilhar seu cardápio com os clientes.</>}
     />
     {cropSrc && (
       <ImageCropper
@@ -4628,14 +4646,17 @@ export default function Produtos() {
               <div className="prod-card-info">
                 <p className="prod-card-cat">{catInvalida ? "Sem categoria" : p.categoria}</p>
                 <p className="prod-card-nome">{p.nome}</p>
-                {p.promocao && p.preco_promocional && p.preco_promocional > 0 ? (
-                  <p className="prod-card-preco prod-card-preco--promo">
-                    <span className="prod-card-de">R$&nbsp;{formatPreco(p.preco_normal)}</span>
-                    <span className="prod-card-por">R$&nbsp;{formatPreco(p.preco_promocional)} <small>{unidadeDoPreco(p.forma_venda)}</small></span>
-                  </p>
-                ) : (
-                  <p className="prod-card-preco"><span className="prod-card-por">R$&nbsp;{formatPreco(p.preco_normal)} <small>{unidadeDoPreco(p.forma_venda)}</small></span></p>
-                )}
+                {(() => {
+                  const pl = precoDaLista(p);
+                  return pl.de > 0 ? (
+                    <p className="prod-card-preco prod-card-preco--promo">
+                      <span className="prod-card-de">R$&nbsp;{formatPreco(pl.de)}</span>
+                      <span className="prod-card-por">{pl.aPartir && <small>a partir de </small>}R$&nbsp;{formatPreco(pl.final)}{pl.unidade && <> <small>{pl.unidade}</small></>}</span>
+                    </p>
+                  ) : (
+                    <p className="prod-card-preco"><span className="prod-card-por">{pl.aPartir && <small>a partir de </small>}R$&nbsp;{formatPreco(pl.final)}{pl.unidade && <> <small>{pl.unidade}</small></>}</span></p>
+                  );
+                })()}
                 <div className="prod-card-bottom">
                 {(() => {
                   const { lucro, margem, temFicha } = calcularLucro(p);
@@ -4695,9 +4716,8 @@ export default function Produtos() {
                     <>
                       <div className="prod-modal-title-novo">Novo produto</div>
                       <div className="prod-wiz-passo">Passo {atual} de {total} · {nomes[atual - 1]}</div>
-                      <div className="prod-wiz-dots" aria-hidden="true">
-                        {Array.from({ length: total }, (_, i) => <i key={i} className={i < atual ? "on" : ""} />)}
-                      </div>
+                      {/* 10/10: barra contínua (igual à da tela de tipo) — o total depende do tipo, então não mostra tracinhos contados */}
+                      <div className="prod-wiz-barra" aria-hidden="true"><i style={{ width: `${Math.round((atual / total) * 100)}%` }} /></div>
                     </>
                   );
                 })()}
@@ -4731,7 +4751,7 @@ export default function Produtos() {
             {wizardStep === 1 && (
               <div className="wiz-step1-full">
                 {/* Botão X */}
-                <button className="wiz-step1-x" onClick={handleTryClose} aria-label="Fechar">✕</button>
+                <button className="wiz-step1-x" onClick={handleTryClose} aria-label="Fechar"><XIc size={14} weight="bold" aria-hidden="true" /></button>
 
                 {/* Hero — pergunta */}
                 <div className="wiz-step1-hero">
@@ -4874,8 +4894,9 @@ export default function Produtos() {
                 <div className="prod-field">
                   <label className="prod-field-label-novo">Nome do produto <ReqTag /></label>
                   <input
+                    id="prod-nome-input"
                     type="text"
-                    placeholder="Ex: Bolo de Morango"
+                    placeholder="Ex.: bolo de morango"
                     value={form.nome}
                     onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
                     onBlur={e => setForm(f => ({ ...f, nome: titleCase(e.target.value) }))}
@@ -4883,7 +4904,7 @@ export default function Produtos() {
                 </div>
 
                 {/* 2. Categoria */}
-                <div className="prod-field">
+                <div className="prod-field" id="prod-categoria-campo">
                   <label className="prod-field-label-novo">Categoria <ReqTag /></label>
                   {!showCatInput ? (
                     <SelectDoonly
@@ -4900,7 +4921,7 @@ export default function Produtos() {
                       <p className="prod-cat-nova-hint">Criar nova categoria</p>
                       <input
                         type="text"
-                        placeholder="Ex: Bolos, Doces, Salgados..."
+                        placeholder="Ex.: bolos, doces, salgados"
                         value={novaCategoria}
                         onChange={e => setNovaCategoria(e.target.value)}
                         autoFocus
@@ -4942,10 +4963,12 @@ export default function Produtos() {
                     <label className="prod-field-label-novo">Descrição</label>
                     <button
                       type="button"
-                      className={`prod-btn-ia-novo ${!form.nome.trim() || !isPro ? "prod-btn-ia-novo--locked" : ""}`}
-                      disabled={!form.nome.trim() || !isPro || form.descricao === "Gerando..." || form.descricao === "Melhorando..."}
+                      className={`prod-btn-ia-novo${!isPro ? " prod-btn-ia-novo--pro" : ""}`}
+                      disabled={form.descricao === "Gerando..." || form.descricao === "Melhorando..."}
                       onClick={async () => {
-                        if (!form.nome.trim() || !isPro) return;
+                        // 10/10: o botão não fica apagado — explica o que falta (plano PRO ou o nome)
+                        if (!isPro) { avisar("Gerar a descrição com IA é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } }); return; }
+                        if (!form.nome.trim()) { avisar("Dê um nome ao produto primeiro.", { tipo: "info" }); document.getElementById("prod-nome-input")?.focus(); return; }
                         const textoAtual = (form.descricao || "").trim();
                         const ehMelhorar = textoAtual.length > 0 && textoAtual !== "Gerando..." && textoAtual !== "Melhorando...";
                         setForm(f => ({ ...f, descricao: ehMelhorar ? "Melhorando..." : "Gerando..." }));
@@ -4967,17 +4990,18 @@ export default function Produtos() {
                       }}
                       title={!form.nome.trim() ? "Preencha o nome primeiro" : !isPro ? "Disponível no plano PRO" : (form.descricao?.trim() ? "Melhorar descrição atual" : "Gerar descrição automaticamente")}
                     >
-                      <img src="/coroa.png" alt="" className="prod-btn-ia-novo-crown" />
+                      <Crown size={16} weight="fill" className="prod-btn-ia-novo-crown" aria-hidden="true" />
                       {form.descricao === "Gerando..."
                         ? "Gerando..."
                         : form.descricao === "Melhorando..."
                         ? "Melhorando..."
                         : (form.descricao?.trim() ? "Melhorar com IA" : "Gerar com IA")}
+                      {!isPro && <span className="prod-btn-ia-pro">PRO</span>}
                     </button>
                   </div>
                   <textarea
                     id="prod-desc-input"
-                    placeholder={"Descreva como é seu produto\n\nExemplo:\n2 camadas de Mousse de chocolate (massa pão de ló de chocolate)\nCobertura Mousse Branco (tipo chantilly)"}
+                    placeholder={"Descreva como é seu produto\n\nEx.: 2 camadas de mousse de chocolate (massa pão de ló de chocolate)\ncobertura de mousse branco (tipo chantilly)"}
                     value={form.descricao === "Gerando..." || form.descricao === "Melhorando..." ? "" : form.descricao}
                     onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
                     rows={5}
@@ -5007,7 +5031,7 @@ export default function Produtos() {
             {/* ══════ WIZARD STEP 3 (UNIFICADO — PERSONALIZAÇÃO V3) ══════ */}
             {wizardStep === 3 && !form.id && kitTela && (
               <div className="prod-modal-body">
-                <h2 className="cad-h2">Monte seu kit</h2>
+                <h2 className="cad-h2" style={{ marginBottom: 0 }}>Monte seu kit</h2>
                 <KitQuantidadeEditor modo="completo" kit={(form as any).kit_qtd} onChange={onKitChange} nomeProduto={form.nome} />
               </div>
             )}
@@ -5254,7 +5278,7 @@ export default function Produtos() {
                                         className="prod-opcao-foto-mini-remove"
                                         onClick={e => { e.preventDefault(); removeOpcaoFoto(key, op.id); }}
                                         aria-label="Remover"
-                                      >✕</button>
+                                      ><XIc size={14} weight="bold" aria-hidden="true" /></button>
                                     </>
                                   ) : (
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B4A9AE" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -5327,7 +5351,7 @@ export default function Produtos() {
                               {fotos[key] ? (
                                 <>
                                   <img src={fotos[key]} alt={label} />
-                                  <button type="button" className="prod-var-foto-remove" onClick={() => removeFotoVariacaoKey(key)} aria-label="Remover">✕</button>
+                                  <button type="button" className="prod-var-foto-remove" onClick={() => removeFotoVariacaoKey(key)} aria-label="Remover"><XIc size={14} weight="bold" aria-hidden="true" /></button>
                                 </>
                               ) : (
                                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#B4A9AE" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -5378,6 +5402,7 @@ export default function Produtos() {
                             type="text"
                             inputMode="numeric"
                             value={formatPreco(op.preco)}
+                            aria-label={`Preço de ${op.nome}`}
                             onChange={e => {
                               const preco = parsePreco(e.target.value);
                               setForm(f => ({
@@ -5405,7 +5430,7 @@ export default function Produtos() {
                     Preço por sabor <ReqTag />
                   </p>
                   <p style={{fontSize: 12, color: "#6B5D64", margin: "0 0 12px"}}>
-                    Defina o preço de cada sabor. Ex: Pudim de Chocolate R$ 45.
+                    Defina o preço de cada sabor. Ex.: pudim de chocolate, R$ 45,00.
                   </p>
                   <div style={{display: "flex", flexDirection: "column", gap: 8}}>
                     {form.grupo_sabores.opcoes.map((op: any) => (
@@ -5501,7 +5526,7 @@ export default function Produtos() {
                       <label>Preço cheio</label>
                       <div className="prod-preco-input prod-preco-input--big">
                         <span>R$</span>
-                        <input type="text" placeholder="0,00" value={form.preco_normal ? formatPreco(form.preco_normal) : ""} onChange={e => setForm(f => ({ ...f, preco_normal: parsePreco(e.target.value) }))} />
+                        <input type="text" placeholder="0,00" aria-label="Preço cheio" value={form.preco_normal ? formatPreco(form.preco_normal) : ""} onChange={e => setForm(f => ({ ...f, preco_normal: parsePreco(e.target.value) }))} />
                       </div>
                     </div>
                     <div className="prod-field">
@@ -5597,7 +5622,7 @@ export default function Produtos() {
                   <div className="prod-section">
                     <p className="prod-section-label prod-section-label--novo">Adicionais das opções <span className="prod-field-req prod-field-req--opt">opcional</span></p>
                     <p style={{fontSize: 12, color: "#6B5D64", margin: "0 0 12px"}}>
-                      Deixe R$ 0,00 se a opção não custa a mais. Ex: "Ninho +R$ 5" cobra extra pelo recheio.
+                      Deixe R$ 0,00 se a opção não custa a mais. Ex.: "ninho + R$ 5,00" cobra extra pelo recheio.
                     </p>
 
                     {gruposComOpcoes.map(({ key, label, grupo }) => (
@@ -5760,12 +5785,12 @@ export default function Produtos() {
 
                   <div className="prod-field" style={{ marginTop: "4px" }}>
                     <label>Nome do item</label>
-                    <input type="text" placeholder="Ex: Bolo, Brigadeiros, Cupcakes..." value={novoKitItem.nome} onChange={e => setNovoKitItem(k => ({ ...k, nome: e.target.value }))} onKeyDown={e => e.key === "Enter" && (() => { if (!novoKitItem.nome.trim()) return; setForm(f => ({ ...f, kit_itens: [...(f.kit_itens || []), { nome: novoKitItem.nome.trim(), quantidade: novoKitItem.quantidade || "1" }] })); setNovoKitItem({ nome: "", quantidade: "" }); })()} />
+                    <input type="text" placeholder="Ex.: bolo, brigadeiros, cupcakes" value={novoKitItem.nome} onChange={e => setNovoKitItem(k => ({ ...k, nome: e.target.value }))} onKeyDown={e => e.key === "Enter" && (() => { if (!novoKitItem.nome.trim()) return; setForm(f => ({ ...f, kit_itens: [...(f.kit_itens || []), { nome: novoKitItem.nome.trim(), quantidade: novoKitItem.quantidade || "1" }] })); setNovoKitItem({ nome: "", quantidade: "" }); })()} />
                   </div>
                   <div style={{ display: "flex", gap: "8px", alignItems: "flex-end" }}>
                     <div className="prod-field" style={{ flex: 1 }}>
                       <label>Quantidade</label>
-                      <input type="text" placeholder="Ex: 1 unidade, 30 pçs..." value={novoKitItem.quantidade} onChange={e => setNovoKitItem(k => ({ ...k, quantidade: e.target.value }))} />
+                      <input type="text" placeholder="Ex.: 1 unidade, 30 peças" value={novoKitItem.quantidade} onChange={e => setNovoKitItem(k => ({ ...k, quantidade: e.target.value }))} />
                     </div>
                     <button onClick={() => {
                       if (!novoKitItem.nome.trim()) return;
@@ -5776,11 +5801,11 @@ export default function Produtos() {
 
                   <div className="prod-field">
                     <label>Serve quantas pessoas</label>
-                    <input type="text" placeholder="Ex: 20 a 30 pessoas" value={form.kit_serve_pessoas || ""} onChange={e => setForm(f => ({ ...f, kit_serve_pessoas: e.target.value }))} />
+                    <input type="text" placeholder="Ex.: 20 a 30 pessoas" value={form.kit_serve_pessoas || ""} onChange={e => setForm(f => ({ ...f, kit_serve_pessoas: e.target.value }))} />
                   </div>
                   <div className="prod-field">
                     <label>Prazo mínimo de encomenda</label>
-                    <input type="text" placeholder="Ex: 5 dias de antecedência" value={form.kit_prazo_encomenda || ""} onChange={e => setForm(f => ({ ...f, kit_prazo_encomenda: e.target.value }))} />
+                    <input type="text" placeholder="Ex.: 5 dias de antecedência" value={form.kit_prazo_encomenda || ""} onChange={e => setForm(f => ({ ...f, kit_prazo_encomenda: e.target.value }))} />
                   </div>
                 </div>
               )}
@@ -5854,7 +5879,7 @@ export default function Produtos() {
                     <div className="prod-adic-add">
                       <input
                         type="text"
-                        placeholder="Ex: Vela decorativa"
+                        placeholder="Ex.: vela decorativa"
                         value={novoAdicional.nome}
                         onChange={e => setNovoAdicional(a => ({ ...a, nome: e.target.value }))}
                         className="prod-add-input"
@@ -5927,7 +5952,7 @@ export default function Produtos() {
                           <span style={{ color: "var(--primary)" }}>%</span>
                           <input
                             type="text"
-                            placeholder="Ex: 10, 20, 50..."
+                            placeholder="Ex.: 10, 20, 50"
                             value={form.desconto_percentual || ""}
                             onChange={e => {
                               const v = e.target.value.replace(/[^0-9]/g, "");
@@ -6037,49 +6062,66 @@ export default function Produtos() {
                 ? <button className="prod-btn-cancelar-novo" onClick={voltarPassoCadastro}>Voltar</button>
                 : <button className="prod-btn-cancelar-novo" onClick={handleTryClose}>Cancelar</button>}
               {(() => {
-                // Validações por passo
-                const canAdvance = (() => {
+                // Validações por passo (10/10: além de saber se pode seguir, diz O QUE falta e onde está o campo)
+                const NOME_GRUPO: Record<string, string> = { grupo_massas: "massa", grupo_recheios: "recheio", grupo_coberturas: "cobertura", grupo_tamanhos: "tamanho" };
+                const falta: FaltaCampo = (() => {
                   // Step 2: Informações — nome + categoria obrigatórios
-                  if (wizardStep === 2) return form.nome.trim().length > 0 && form.categoria.trim().length > 0;
+                  if (wizardStep === 2) {
+                    if (!form.nome.trim()) return { msg: "Dê um nome ao produto", alvo: "#prod-nome-input" };
+                    if (!form.categoria.trim()) return { msg: "Escolha a categoria do produto", alvo: "#prod-categoria-campo" };
+                    return null;
+                  }
                   // Step 3: Opções — valida só as personalizações
                   //   Se ativou algum grupo, precisa ter pelo menos 1 opção nele
-                  //   Se Tamanhos ativo, precisa pelo menos 1 tamanho com preço
-                  //   Preço base é validado no step 4 (Fotos e finalização)
-                  if (wizardStep === 3 && isBolo) return boloOpcoesOk(form);
-                  if (wizardStep === 4 && isBolo) return boloPrecoTela ? boloPrecoOk(form, boloTam) : boloTamanhosOk(form, boloTam);
+                  //   Preço base é validado no step 4
+                  if (wizardStep === 3 && isBolo) return boloOpcoesFalta(form);
+                  if (wizardStep === 4 && isBolo) return boloPrecoTela ? boloPrecoFalta(form, boloTam) : boloTamanhosFalta(form, boloTam);
                   if (wizardStep === 3) {
-                    const gm = form.grupo_massas, gr = form.grupo_recheios, gc = form.grupo_coberturas, gt = form.grupo_tamanhos;
-                    // Mobile na etapa checklist: basta ter 1 grupo marcado (opcoes vem depois)
-                    if (isMobileMain && !form.id && mobilePersonaStep === "checklist" && !kitTela) {
-                      // Produto sem opções também pode seguir (vai direto pro preço)
-                      return true;
-                    }
+                    // Mobile na etapa checklist: produto sem opções também pode seguir (vai direto pro preço)
+                    if (isMobileMain && !form.id && mobilePersonaStep === "checklist" && !kitTela) return null;
                     // Tela "Monte seu kit": precisa estar completo
-                    if (kitTela) return !erroKit((form as any).kit_qtd);
-                    const gruposAtivos = [gm, gr, gc, gt].filter(g => g?.ativo);
-                    if (gruposAtivos.some(g => (g?.opcoes.length || 0) === 0)) return false;
-                    return true;
+                    if (kitTela) return faltaKit((form as any).kit_qtd);
+                    const grupos: [string, any][] = [["grupo_massas", form.grupo_massas], ["grupo_recheios", form.grupo_recheios], ["grupo_coberturas", form.grupo_coberturas], ["grupo_tamanhos", form.grupo_tamanhos]];
+                    const vazio = grupos.find(([, g]) => g?.ativo && (g?.opcoes.length || 0) === 0);
+                    if (vazio) return { msg: `Adicione pelo menos 1 ${NOME_GRUPO[vazio[0]]} (ou desligue essa opção)` };
+                    return null;
                   }
                   // Step 4: Preço e venda — valida preço base OU preços dos tamanhos
                   if (wizardStep === 4) {
                     // Kit por quantidade: o preço vem dos kits
-                    if (kitAtivo((form as any).kit_qtd)) return precoMinKit((form as any).kit_qtd) > 0;
+                    if (kitAtivo((form as any).kit_qtd)) return precoMinKit((form as any).kit_qtd) > 0 ? null : { msg: 'Volte em "Monte seu kit" e coloque o preço dos kits' };
                     const gt = form.grupo_tamanhos;
                     const temTamanhoAtivo = gt?.ativo && gt.opcoes.length > 0;
                     if (temTamanhoAtivo) {
                       // Modo "por peso": preços dos tamanhos são calculados via preco_normal (R$/kg)
                       if (gt!.modo_preco_tamanho === "por_peso") {
-                        return (form.preco_normal || 0) > 0;
+                        return (form.preco_normal || 0) > 0 ? null : { msg: "Coloque o preço do kg", alvo: 'input[aria-label="Preço cheio"]' };
                       }
                       // Modo "preço fixo": todos os tamanhos precisam ter preço próprio
-                      return gt!.opcoes.every(o => o.preco > 0);
+                      const semPreco = gt!.opcoes.find(o => !(o.preco > 0));
+                      return semPreco ? { msg: `Coloque o preço de ${semPreco.nome}`, alvo: `input[aria-label="Preço de ${semPreco.nome.replace(/(["\\])/g, "\\$1")}"]` } : null;
                     }
-                    return (form.preco_normal || 0) > 0;
+                    return (form.preco_normal || 0) > 0 ? null : { msg: "Coloque o preço do produto", alvo: 'input[aria-label="Preço cheio"]' };
                   }
                   // Step 5: Fotos — sempre pode avançar (fotos opcionais)
-                  if (wizardStep === 5) return true;
-                  return true;
+                  return null;
                 })();
+                const canAdvance = !falta;
+                // Rola até o campo que falta e põe o cursor nele
+                const irParaFalta = () => {
+                  setMostrarFalta(true);
+                  if (!falta?.alvo) return;
+                  const raiz = document.querySelector(".prod-modal--novo") || document;
+                  let el: Element | null = null;
+                  try { el = raiz.querySelector(falta.alvo); } catch { el = null; }
+                  if (!el) return;
+                  el.scrollIntoView({ behavior: "smooth", block: "center" });
+                  const campo = (el.matches("input, textarea, button") ? el : el.querySelector("input, textarea, button")) as HTMLElement | null;
+                  setTimeout(() => campo?.focus({ preventScroll: true }), 250);
+                };
+                const avisoFalta = mostrarFalta && falta && !form.id ? (
+                  <p className="prod-falta-aviso" role="alert"><WarningCircle size={18} weight="bold" aria-hidden="true" /><span>{falta.msg}</span></p>
+                ) : null;
                 const isLast = wizardStep === 5;
                 const isEdit = !!form.id;
 
@@ -6105,12 +6147,13 @@ export default function Produtos() {
                   );
                 }
 
-                return (
+                return (<>
+                  {avisoFalta}
                   <button
                     className="prod-btn-avancar-novo"
-                    disabled={!canAdvance}
+                    aria-disabled={!canAdvance}
                     onClick={() => {
-                      if (!canAdvance) return;
+                      if (!canAdvance) { irParaFalta(); return; }
                       // Mobile: se está no checklist da personalização, primeiro avança pra fill (não pro próximo step)
                       const kitLigado = kitAtivo((form as any).kit_qtd);
                       if (isMobileMain && !form.id && wizardStep === 3 && mobilePersonaStep === "checklist" && !isBolo && !kitTela) {
@@ -6131,7 +6174,7 @@ export default function Produtos() {
                   >
                     Continuar
                   </button>
-                );
+                </>);
               })()}
             </div>
             )}
@@ -6243,7 +6286,7 @@ export default function Produtos() {
                       <LinhaUi rotulo="Situação" tom={pv.disponivel !== false ? "verde" : "laranja"}>{pv.disponivel !== false ? "No cardápio" : "Fora do cardápio"}{promo ? " · em promoção" : ""}</LinhaUi>
                       <LinhaUi rotulo="Categoria" tom={catOk ? undefined : "laranja"}>{catOk ? pv.categoria : "Sem categoria"}</LinhaUi>
                       <LinhaUi rotulo="Preço">
-                        {promo ? <><s className="prod-preview-de">R$ {formatPreco(pv.preco_normal)}</s> R$ {formatPreco(pv.preco_promocional)}</> : <>{temVariacoes ? "a partir de " : ""}R$ {formatPreco(pv.preco_normal)}</>} {unidadeDoPreco(pv.forma_venda)}
+                        {(() => { const pl = precoDaLista(pv); return <>{pl.de > 0 && <><s className="prod-preview-de">R$ {formatPreco(pl.de)}</s> </>}{pl.aPartir || (temVariacoes && !(pv as any).grupo_tamanhos?.ativo) ? "a partir de " : ""}R$ {formatPreco(pl.final)}{pl.unidade ? ` ${pl.unidade}` : ""}</>; })()}
                       </LinhaUi>
                       <LinhaUi rotulo="Opções">{opcoes}</LinhaUi>
                       <LinhaUi rotulo="Ficha técnica" tom={temFicha ? "verde" : "laranja"}>{temFicha ? `Lucro de R$ ${formatPreco(lucro)} por venda (${margem.toFixed(0)}%)` : "Ainda não montada"}</LinhaUi>
@@ -8437,10 +8480,11 @@ export default function Produtos() {
           position: relative;
         }
         .prod-var-switch--locked::after {
-          content: "🔒";
+          content: "";
           position: absolute;
           top: -3px; right: -6px;
-          font-size: 12px;
+          width: 12px; height: 12px;
+          background: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%234B3A42' d='M208 80h-32V56a48 48 0 0 0-96 0v24H48a16 16 0 0 0-16 16v112a16 16 0 0 0 16 16h160a16 16 0 0 0 16-16V96a16 16 0 0 0-16-16ZM96 56a32 32 0 0 1 64 0v24H96Z'/%3E%3C/svg%3E");
         }
         .prod-var-switch-thumb {
           position: absolute;

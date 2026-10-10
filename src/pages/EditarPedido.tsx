@@ -6,7 +6,8 @@ import { type DialogoOpcoes, type IconeDialogo } from '@/components/DialogoApp'
 import AppPageHeader from '@/components/AppPageHeader'
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, Linha, Titulo, avisar as avisarBase, confirmar, informar } from '@/components/base'
 import { ArrowsLeftRight, Clock, CreditCard, DotsThreeVertical, MagnifyingGlass, Package, Truck, WhatsappLogo } from '@phosphor-icons/react'
-import { SITUACOES, avisoDaMudanca, dataLonga, grupoDoStatus, nomeDaSituacao, nomeDeProduto } from '@/components/pedidos/pedidoTexto'
+import { SITUACOES, VERBOS, avisoDaMudanca, dataLonga, grupoDoStatus, nomeDaSituacao, nomeDeProduto, itemComQtd, proximoPasso, telefoneValido } from '@/components/pedidos/pedidoTexto'
+import { NomeComQtd } from '@/components/pedidos/CartaoPedido'
 import { tocarSom } from '@/hooks/useSom'
 import '@/components/pedidos/telaPedido.css'
 import { Paperclip, MagnifyingGlassPlus, Quotes, MapPin, MapTrifold, Copy, Money, Storefront, Tag } from '@phosphor-icons/react'
@@ -237,7 +238,8 @@ const EVENTO_MAP: Record<string, string[]> = {
 }
 
 // Ordem visual dos passos por tipo de entrega
-const PASSOS_RETIRADA = ['criado', 'aguardando_aceite', 'agendado', 'em_producao', 'finalizado', 'aguardando_retirada', 'entregue']
+// retirada (10/10): Em produção → Pronto pra retirar → Retirado (o "Pronto" fica só pra entrega)
+const PASSOS_RETIRADA = ['criado', 'aguardando_aceite', 'agendado', 'em_producao', 'aguardando_retirada', 'entregue']
 const PASSOS_ENTREGA  = ['criado', 'aguardando_aceite', 'agendado', 'em_producao', 'finalizado', 'em_entrega', 'entregue']
 
 const LABEL_PASSO: Record<string, string> = {
@@ -260,6 +262,8 @@ function posicaoStatus(status: string, sequencia: string[]): number {
     confirmado: 'agendado',
   }
   const chave = map[status] || status
+  // pedido de retirada que ficou em "Pronto" (caminho antigo) conta como pronto pra retirar
+  if ((chave === 'finalizado' || chave === 'pronto') && !sequencia.includes('finalizado')) return sequencia.indexOf('aguardando_retirada')
   return sequencia.indexOf(chave)
 }
 
@@ -393,7 +397,7 @@ export default function EditarPedido() {
   const confirmarJanela = (o: DialogoOpcoes) => confirmar({ titulo: o.titulo, texto: o.texto, icone: o.icone, rotulo: o.rotuloConfirmar, perigo: o.perigo })
   // Excluir pedido (03/10): veio da janela da lista, que saiu; aqui fica longe do toque fácil
   const excluirPedido = async () => {
-    const ok = await confirmarJanela({ titulo: `Excluir o pedido #${pedido?.numero ?? ''}?`, texto: 'Ele some da lista, da agenda e do financeiro. Não dá pra desfazer. Se a cliente só desistiu, prefira "Cancelar pedido".', icone: 'erro', rotuloConfirmar: 'Excluir', perigo: true })
+    const ok = await confirmarJanela({ titulo: `Excluir o pedido #${pedido?.numero ?? ''}?`, texto: 'Ele some da lista, da agenda e do financeiro. Não dá pra desfazer. Se o cliente só desistiu, prefira "Cancelar pedido".', icone: 'erro', rotuloConfirmar: 'Excluir', perigo: true })
     if (!ok || !pedido) return
     await supabase.from('pedido_itens').delete().eq('pedido_id', pedido.id)
     const { error } = await supabase.from('pedidos').delete().eq('id', pedido.id)
@@ -503,7 +507,8 @@ export default function EditarPedido() {
     return dias <= 15 ? { dias, data: `${String(dd).padStart(2, '0')}/${String(mm).padStart(2, '0')}` } : null
   })()
   const desdeTxt = clienteInfo?.desde ? new Date(clienteInfo.desde).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }).replace('. de ', '/').replace(' de ', '/').replace('.', '') : ''
-  const telDigitos = (clienteTelefone || '').replace(/\D/g, '')
+  // só telefone de verdade mostra WhatsApp/Ligar (cliente de balcão sem telefone não ganha botão vazio)
+  const telDigitos = telefoneValido(clienteTelefone) ? (clienteTelefone || '').replace(/\D/g, '').replace(/^55(?=\d{10,11}$)/, '') : ''
   const nomeCurto = (n: string) => { const p = toTitleCase(n.trim()).split(/\s+/).filter(Boolean); return p.length > 2 ? `${p[0]} ${p[p.length - 1]}` : p.join(' ') }
 
   // ── Aba Entrega (03/10) ──────────────────────────────────────────────
@@ -536,7 +541,7 @@ export default function EditarPedido() {
     const c = enderecoDaCliente; if (!c) return
     setEnderecoRua(c.rua); setEnderecoNumero(c.numero); setEnderecoBairro(c.bairro); setEnderecoCidade(c.cidade); setEnderecoComplemento(c.complemento)
     if (c.cep) { const d = c.cep.replace(/\D/g, ''); setEnderecoCep(d.length === 8 ? `${d.slice(0, 5)}-${d.slice(5)}` : c.cep) }
-    setEditandoEndereco(false); avisar('Endereço da cliente aplicado.')
+    setEditandoEndereco(false); avisar('Endereço do cliente aplicado.')
   }
   // endereço da loja (pra retirada) e o do cadastro da cliente
   useEffect(() => {
@@ -838,7 +843,7 @@ export default function EditarPedido() {
       origem: pedido.origem,
       cupom_codigo: (pedido as any).cupom_codigo,
       created_at: pedido.created_at,
-      pedido_itens: itens,
+      pedido_itens: itens.map(it => ({ ...it, forma_venda: produtos.find(x => x.id === it.produto_id)?.forma_venda || null })),
     })
   }
 
@@ -1036,12 +1041,23 @@ export default function EditarPedido() {
     setItens(prev => prev.filter((_, i) => i !== idx))
   }
 
+  // 4.03: item vendido por kg anda de 0,5 em 0,5 e aceita meio quilo (antes arredondava 1,5 kg pra 1)
+  const porKg = (it: { produto_id?: string | null }) => produtos.find(x => x.id === it.produto_id)?.forma_venda === 'kg'
   const updateQtd = (idx: number, delta: number) => {
-    setItens(prev => prev.map((it, i) => i === idx ? { ...it, quantidade: Math.max(1, it.quantidade + delta) } : it))
+    setItens(prev => prev.map((it, i) => {
+      if (i !== idx) return it
+      const kg = porKg(it)
+      const passo = kg ? 0.5 : 1
+      return { ...it, quantidade: Math.max(passo, Math.round((it.quantidade + delta * passo) * 2) / 2) }
+    }))
   }
 
   const setQtdManual = (idx: number, valor: number) => {
-    setItens(prev => prev.map((it, i) => i === idx ? { ...it, quantidade: Math.max(1, Math.floor(valor) || 1) } : it))
+    setItens(prev => prev.map((it, i) => {
+      if (i !== idx) return it
+      if (porKg(it)) return { ...it, quantidade: Math.max(0.5, Math.round((valor || 0.5) * 2) / 2) }
+      return { ...it, quantidade: Math.max(1, Math.floor(valor) || 1) }
+    }))
   }
 
   // ── Derivados pro header ──────────────────────────────────────────────
@@ -1092,22 +1108,29 @@ export default function EditarPedido() {
   const descontoManual = r2(Math.max(0, desconto - descontoCupom))
   const produtosTotal = r2(subtotalItens - adicionaisTotal + promocoesTotal)
 
+  // forma de venda do item (kg, cento…) vem do produto cadastrado: "Bolo red velvet 1,5 kg" em vez de "1,5x"
+  const formaDoItem = (it: { produto_id?: string | null }) => produtos.find(x => x.id === it.produto_id)?.forma_venda || null
+  const porUnidade = (it: any, eKit: boolean) => { const f = formaDoItem(it); return eKit ? 'por kit' : f === 'kg' ? 'o kg' : f === 'cento' ? 'o cento' : f === 'fatia' ? 'a fatia' : 'cada' }
+
   // ── Etapas do pedido ───────────────────────────────────────────────────
   // Etapas dinâmicas (03/10): mudam com o tipo (entrega/retirada) e com o status
+  // 10/10: o mesmo caminho da lista. Retirada: Em produção → Pronto pra retirar → Retirado.
+  // Entrega: Em produção → Pronto → Saiu pra entrega → Entregue.
   const ETAPAS: string[] = tipoEntrega === 'retirada'
-    ? ['Agendado', 'Em produção', 'Pronto pra retirar', statusPedido === 'entregue' ? 'Retirado' : 'Retirada']
-    : ['Agendado', 'Em produção', statusPedido === 'em_entrega' ? 'Saiu pra entrega' : 'Pronto', 'Entregue']
-  const posEtapa = statusPedido === 'em_producao' ? 1 : ['finalizado', 'aguardando_retirada', 'em_entrega'].includes(statusPedido) ? 2 : statusPedido === 'entregue' ? 3 : 0
+    ? ['Agendado', 'Em produção', 'Pronto pra retirar', 'Retirado']
+    : ['Agendado', 'Em produção', 'Pronto', 'Saiu pra entrega', 'Entregue']
+  const posEtapa = (() => {
+    const g = grupoDoStatus(statusPedido)
+    if (g === 'em_producao') return 1
+    if (tipoEntrega === 'retirada') return ['finalizado', 'aguardando_retirada'].includes(g) ? 2 : g === 'entregue' ? 3 : 0
+    return g === 'finalizado' || g === 'aguardando_retirada' ? 2 : g === 'em_entrega' ? 3 : g === 'entregue' ? 4 : 0
+  })()
+  // O botão do próximo passo usa os mesmos verbos da lista (VERBOS). Aqui "Aguardando pagamento" só aceita:
+  // o recebimento é registrado na parte de Pagamentos, logo abaixo.
   const proximaEtapa: { s: string; l: string } | null = (() => {
-    switch (statusPedido) {
-      case 'aguardando_pagamento': case 'aguardando_aceite': return { s: 'agendado', l: 'Aceitar pedido' }
-      case 'agendado': return { s: 'em_producao', l: 'Iniciar produção' }
-      case 'em_producao': return tipoEntrega === 'retirada' ? { s: 'aguardando_retirada', l: 'Pronto pra retirar' } : { s: 'finalizado', l: 'Marcar como pronto' }
-      case 'finalizado': return tipoEntrega === 'retirada' ? { s: 'aguardando_retirada', l: 'Pronto pra retirar' } : { s: 'em_entrega', l: 'Saiu pra entrega' }
-      case 'aguardando_retirada': return { s: 'entregue', l: 'Confirmar retirada' }
-      case 'em_entrega': return { s: 'entregue', l: 'Confirmar entrega' }
-      default: return null
-    }
+    if (grupoDoStatus(statusPedido) === 'aguardando_pagamento') return { s: 'agendado', l: VERBOS.aceitar }
+    const a = proximoPasso(statusPedido, tipoEntrega, pedido?.origem)
+    return a ? { s: a.proximo, l: a.rotulo } : null
   })()
   const salvarQuemRetirou = async (nome: string) => {
     if (!pedido) return
@@ -1137,7 +1160,7 @@ export default function EditarPedido() {
     const label = (STATUS_CONFIG[novo] || {}).label || novo
     supabase.from('pedido_historico').insert({ pedido_id: pedido.id, evento: label, descricao: `Status alterado para "${label}"` }).then(() => {}, () => {})
     setStatusPedido(novo); setPedido(p => p ? { ...p, status: novo } : p)
-    avisar(avisoDaMudanca({ numero: pedido.numero } as any, novo))
+    avisar(avisoDaMudanca({ numero: pedido.numero, tipo_entrega: tipoEntrega }, novo))
     if (novo === 'entregue') tocarSom('sucesso')
   }
   const estornarPagamento = async (g: any) => {
@@ -1167,7 +1190,8 @@ export default function EditarPedido() {
   const atrasadoHoje = !!dataEntrega && dataEntrega.slice(0, 10) < hojeISO() && !['entregue', 'cancelado'].includes(grupoAtual)
   const novoPedido = grupoAtual === 'aguardando_aceite'
   const origemTexto = pedido.origem === 'cardapio' ? 'Pedido feito pelo cardápio digital' : 'Pedido lançado por você'
-  const subtituloTopo = `${primeiroNome ? `${primeiroNome} · ` : ''}${dataLonga(dataEntrega, horarioEntrega)}`
+  // 10/10: o subtítulo traz só o cliente (a data já aparece logo abaixo, na linha de Entrega/Retirada)
+  const subtituloTopo = clienteNome.trim() ? toTitleCase(clienteNome.trim()) : 'Venda avulsa'
 
   return (
     <>
@@ -1185,7 +1209,7 @@ export default function EditarPedido() {
               </Linha>
             )}
             {atrasadoHoje && <p className="tpd-aviso atr">A data de entrega já passou.</p>}
-            {novoPedido && <p className="tpd-aviso">{pedido.origem === 'cardapio' ? 'Chegou pelo cardápio. Aceite pra entrar na sua agenda.' : 'Aceite pra entrar na sua agenda.'}</p>}
+            {novoPedido && <p className="tpd-aviso">Aceite pra entrar na sua agenda.</p>}
           </div>
           <BotaoIcone rotulo="Mais ações" variante="limpo" className="tpd-mais" onClick={() => setMenuAberto(true)}><DotsThreeVertical size={24} weight="bold" /></BotaoIcone>
         </div>
@@ -1222,7 +1246,7 @@ export default function EditarPedido() {
                   <Botao variante="suave" tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => setModalCliente(true)}>Escolher cliente</Botao>
                 </div>
               ) : (<>
-                <button type="button" className="tpd-cli" onClick={() => clienteId ? navigate(`/clientes/${clienteId}`) : setModalCliente(true)} aria-label={clienteId ? 'Abrir o perfil da cliente' : 'Escolher a cliente'}>
+                <button type="button" className="tpd-cli" onClick={() => clienteId ? navigate(`/clientes/${clienteId}`) : setModalCliente(true)} aria-label={clienteId ? 'Abrir o perfil do cliente' : 'Escolher o cliente'}>
                   {clienteInfo?.foto ? <img className="tpd-ini" src={clienteInfo.foto} alt="" /> : <span className="tpd-ini" aria-hidden="true">{initialsOf(toTitleCase(clienteNome.trim()))}</span>}
                   <span className="tpd-cli-tx">
                     <b>{toTitleCase(clienteNome.trim())}</b>
@@ -1277,8 +1301,8 @@ export default function EditarPedido() {
                         <div className="tpd-it-topo">
                           <span className="tpd-ft" aria-hidden="true"><Package size={20} weight="bold" />{foto && <img src={foto} alt="" onError={e => { e.currentTarget.style.display = 'none' }} />}</span>
                           <div className="tpd-it-tx">
-                            <b><em>{String(q).replace('.', ',')}x</em> {nomeDeProduto(it.nome_produto)}</b>
-                            <span>{formatMoney((it.valor_unitario || 0) * q)}{q > 1 ? ` · ${formatMoney(it.valor_unitario || 0)} ${eKit ? 'por kit' : 'cada'}` : ''}</span>
+                            <b><NomeComQtd nome={nomeDeProduto(it.nome_produto)} qtd={q} forma={formaDoItem(it)} Destaque="em" /></b>
+                            <span>{formatMoney((it.valor_unitario || 0) * q)}{q !== 1 ? ` · ${formatMoney(it.valor_unitario || 0)} ${porUnidade(it, eKit)}` : ''}</span>
                           </div>
                           <BotaoIcone rotulo={`Opções de ${it.nome_produto}`} variante="limpo" tamanho="p" onClick={() => setItemMenu(idx)}><DotsThree size={20} weight="bold" /></BotaoIcone>
                         </div>
@@ -1340,7 +1364,7 @@ export default function EditarPedido() {
                   <a className="ui-bt ui-bt--secundario ui-bt--m ui-bt--cheio tpd-entregador" href={`https://wa.me/?text=${encodeURIComponent(textoEntregador)}`} target="_blank" rel="noreferrer"><span className="ui-bt-ic" aria-hidden="true"><WhatsappLogo size={20} weight="bold" className="tpd-zap" /></span><span className="ui-bt-t">Mandar pro entregador</span></a>
                 </>) : (<>
                   {enderecoDaCliente && (
-                    <button className="ep2-usar" onClick={usarEnderecoDaCliente}>Usar o endereço {clienteNome.trim() ? `de ${toTitleCase(clienteNome.trim().split(/\s+/)[0])}` : 'da cliente'}
+                    <button className="ep2-usar" onClick={usarEnderecoDaCliente}>Usar o endereço {clienteNome.trim() ? `de ${toTitleCase(clienteNome.trim().split(/\s+/)[0])}` : 'do cliente'}
                       <span>{[enderecoDaCliente.rua, enderecoDaCliente.numero].filter(Boolean).join(', ')}{enderecoDaCliente.bairro ? ` · ${enderecoDaCliente.bairro}` : ''}</span></button>
                   )}
                   <label className="ep2-lb" htmlFor="ep2-cep">CEP</label>
@@ -1376,7 +1400,7 @@ export default function EditarPedido() {
                   <div className="ep2-addr tpd-end"><div><b>{lojaInfo.nome || 'Sua loja'}</b><small>{lojaInfo.endereco.linha1}</small>{lojaInfo.endereco.linha2 && <small>{lojaInfo.endereco.linha2}</small>}</div></div>
                   <p className="ep2-nota">O endereço vem dos <button className="ep2-lk" onClick={() => navigate('/cardapio-config')}>Dados da loja</button>.</p>
                 </>) : (
-                  <p className="ep2-vazio">Cadastre o endereço da sua loja nos <button className="ep2-lk" onClick={() => navigate('/cardapio-config')}>Dados da loja</button> pra ele aparecer aqui e na mensagem pra cliente.</p>
+                  <p className="ep2-vazio">Cadastre o endereço da sua loja nos <button className="ep2-lk" onClick={() => navigate('/cardapio-config')}>Dados da loja</button> pra ele aparecer aqui e na mensagem pro cliente.</p>
                 )}
               </div>
             )}
@@ -1393,10 +1417,10 @@ export default function EditarPedido() {
               const eKit = !!it.personalizacoes?.kit?.total
               const extras: any[] = Array.isArray(it.personalizacoes?.extras) ? it.personalizacoes.extras : []
               const origem: string[] = []
-              if (!c.fecha && q > 1) origem.push(`${formatMoney(it.valor_unitario || 0)} ${eKit ? 'por kit' : 'cada'}`)
+              if (!c.fecha && q !== 1) origem.push(`${formatMoney(it.valor_unitario || 0)} ${porUnidade(it, eKit)}`)
               return (
                 <div key={it.id || `v${idx}`} className="ep3-pv">
-                  <div className="ep3-pv-h"><span><em>{String(q).replace('.', ',')}x</em> {it.nome_produto}</span><b>{formatMoney((it.valor_unitario || 0) * q)}</b></div>
+                  <div className="ep3-pv-h"><span><NomeComQtd nome={nomeDeProduto(it.nome_produto)} qtd={q} forma={formaDoItem(it)} Destaque="em" /></span><b>{formatMoney((it.valor_unitario || 0) * q)}</b></div>
                   {c.fecha ? (
                     <div className="ep3-pv-d">
                       <p><span>Produto{q > 1 ? ` · ${q} × ${formatMoney(c.base)}` : ''}</span><b>{formatMoney(c.base * q)}</b></p>
@@ -1483,7 +1507,7 @@ export default function EditarPedido() {
       {/* ── ⋯ de um item: quantidade, recado e remover ── */}
       <Janela
         aberta={itemMenu !== null && !!itens[itemMenu]} aoFechar={() => setItemMenu(null)} tipo="conteudo"
-        titulo={itemMenu !== null && itens[itemMenu] ? `${String(itens[itemMenu].quantidade).replace('.', ',')}x ${nomeDeProduto(itens[itemMenu].nome_produto)}` : 'Item'}
+        titulo={itemMenu !== null && itens[itemMenu] ? itemComQtd(nomeDeProduto(itens[itemMenu].nome_produto), itens[itemMenu].quantidade, formaDoItem(itens[itemMenu])) : 'Item'}
         acoes={itemMenu !== null && itens[itemMenu] ? <>
           <Botao variante="secundario" icone={<Trash size={20} weight="bold" />} onClick={() => { const i = itemMenu; setItemMenu(null); removerComDesfazer(i) }}>Remover item</Botao>
           <Botao onClick={() => setItemMenu(null)}>Pronto</Botao>
@@ -1495,7 +1519,7 @@ export default function EditarPedido() {
               <span className="ui-campo-r"><span>Quantidade</span></span>
               <div className="tpd-qtd">
                 <BotaoIcone rotulo="Diminuir" disabled={itens[itemMenu].quantidade <= 1} onClick={() => updateQtd(itemMenu, -1)}><span aria-hidden="true">−</span></BotaoIcone>
-                <input type="number" inputMode="numeric" value={itens[itemMenu].quantidade} onChange={e => setQtdManual(itemMenu, Number(e.target.value))} aria-label="Quantidade" />
+                <input type="number" inputMode={porKg(itens[itemMenu]) ? "decimal" : "numeric"} step={porKg(itens[itemMenu]) ? 0.5 : 1} value={itens[itemMenu].quantidade} onChange={e => setQtdManual(itemMenu, Number(e.target.value))} aria-label="Quantidade" />
                 <BotaoIcone rotulo="Aumentar" onClick={() => updateQtd(itemMenu, 1)}><Plus size={20} weight="bold" /></BotaoIcone>
               </div>
             </div>
@@ -1543,7 +1567,7 @@ export default function EditarPedido() {
       <Janela aberta={retiradaAberta} aoFechar={() => setRetiradaAberta(false)} tipo="conteudo" titulo="Quem retirou?"
         acoes={<><Botao variante="secundario" onClick={() => { if (depoisRetirada === 'etapa') confirmarRetirada(''); else setRetiradaAberta(false) }}>{depoisRetirada === 'etapa' ? 'Pular' : 'Agora não'}</Botao><Botao onClick={() => confirmarRetirada()}>{depoisRetirada === 'etapa' ? 'Marcar como retirado' : 'Salvar'}</Botao></>}>
         <div className="tpj-ret">
-          <Campo rotulo="Nome de quem retirou" opcional placeholder="Ex.: a própria cliente, Maria (irmã)" value={quemRetirou} onChange={e => setQuemRetirou(e.target.value)} autoFocus />
+          <Campo rotulo="Nome de quem retirou" opcional placeholder="Ex.: o próprio cliente, Maria (irmã)" value={quemRetirou} onChange={e => setQuemRetirou(e.target.value)} autoFocus />
           <p>Fica salvo no pedido, no histórico e no PDF.</p>
         </div>
       </Janela>
@@ -1552,7 +1576,7 @@ export default function EditarPedido() {
           status_pagamento: (pedido as any).status_pagamento ?? null, forma_pagamento: pedido.forma_pagamento }}
         novoStatus="entregue" novoStatusLabel="Entregue"
         onCancelar={() => setFinalizarAberto(false)}
-        onConcluido={async () => { setFinalizarAberto(false); await recarregarDinheiro(); avisar(`Pedido #${pedido.numero ?? ''} entregue.`); tocarSom('sucesso'); if (tipoEntrega === 'retirada') { setQuemRetirou(''); setDepoisRetirada('editar'); setRetiradaAberta(true) } }} />}
+        onConcluido={async () => { setFinalizarAberto(false); await recarregarDinheiro(); avisar(avisoDaMudanca({ numero: pedido.numero, tipo_entrega: tipoEntrega }, 'entregue')); tocarSom('sucesso'); if (tipoEntrega === 'retirada') { setQuemRetirou(''); setDepoisRetirada('editar'); setRetiradaAberta(true) } }} />}
 
       <style>{EP2_CSS}{FOLHA_CSS}</style>
 
@@ -1573,8 +1597,8 @@ export default function EditarPedido() {
                   <span className="tpj-tx"><b>{toTitleCase(c.nome || 'Sem nome')}</b>{(c.telefone || c.whatsapp) && <small>{formatTelefone(c.telefone || c.whatsapp || '')}</small>}</span>
                 </button>
               ))}
-              {clientes.length === 0 && <p className="tpj-vz">Nenhuma cliente cadastrada ainda.</p>}
-              {clientes.length > 0 && lista.length === 0 && <p className="tpj-vz">Nenhuma cliente com “{buscaCliente.trim()}”.</p>}
+              {clientes.length === 0 && <p className="tpj-vz">Nenhum cliente cadastrado ainda.</p>}
+              {clientes.length > 0 && lista.length === 0 && <p className="tpj-vz">Nenhum cliente com “{buscaCliente.trim()}”.</p>}
             </div>
           </Janela>
         )
@@ -1619,7 +1643,7 @@ export default function EditarPedido() {
 
       {/* ═══ CANCELAR PEDIDO (3.16: janela padrão) ═══ */}
       {(() => {
-        const motivos = ['Sem ingredientes pra produzir', 'Não deu pra entregar na data', 'Fora da área de entrega', 'Pagamento não confirmado', 'A cliente desistiu']
+        const motivos = ['Sem ingredientes pra produzir', 'Não deu pra entregar na data', 'Fora da área de entrega', 'Pagamento não confirmado', 'O cliente desistiu']
         const temMotivo = !!motivoCancelamento.trim()
         return (
           <Janela
@@ -1639,13 +1663,13 @@ export default function EditarPedido() {
               <div className="ui-campo-c"><textarea rows={2} aria-label="Motivo do cancelamento" placeholder="Escreva o motivo ou escolha um acima" value={motivoCancelamento} onChange={e => setMotivoCancelamento(e.target.value)} /></div>
             </div>
             <label className={`tpj-chave${temMotivo ? '' : ' off'}`}>
-              <span><b>Mostrar o motivo pra cliente</b><small>{temMotivo ? 'Ela vê o motivo no acompanhamento do pedido.' : 'Escreva ou escolha um motivo pra ligar.'}</small></span>
+              <span><b>Mostrar o motivo pro cliente</b><small>{temMotivo ? 'Ele vê o motivo no acompanhamento do pedido.' : 'Escreva ou escolha um motivo pra ligar.'}</small></span>
               <input type="checkbox" role="switch" checked={mostrarMotivoCliente && temMotivo} disabled={!temMotivo} onChange={e => setMostrarMotivoCliente(e.target.checked)} className="tpj-esc" /><i className="tpj-sw" aria-hidden="true" />
             </label>
             {recebidoAtual > 0.009 && pagamentosOk && (
               <div className="ui-campo tpj-bloco" role="radiogroup" aria-label="O que aconteceu com o dinheiro">
                 <span className="ui-campo-r"><span>O que aconteceu com os {formatMoney(recebidoAtual)}?</span></span>
-                <label className="tpj-op"><input type="radio" name="devol" checked={devolverSinal === true} onChange={() => setDevolverSinal(true)} className="tpj-esc" /><i className="tpj-rd" aria-hidden="true" /><span><b>Devolvi pra cliente</b><small>O valor sai do caixa.</small></span></label>
+                <label className="tpj-op"><input type="radio" name="devol" checked={devolverSinal === true} onChange={() => setDevolverSinal(true)} className="tpj-esc" /><i className="tpj-rd" aria-hidden="true" /><span><b>Devolvi pro cliente</b><small>O valor sai do caixa.</small></span></label>
                 <label className="tpj-op"><input type="radio" name="devol" checked={devolverSinal === false} onChange={() => setDevolverSinal(false)} className="tpj-esc" /><i className="tpj-rd" aria-hidden="true" /><span><b>Fiquei com ele</b><small>O valor continua no caixa.</small></span></label>
               </div>
             )}
@@ -3453,7 +3477,7 @@ function AjusteSheet({ total, onClose, onAplicar }: { total: number; onClose: ()
   const [valor, setValor] = useState('')
   const [motivo, setMotivo] = useState('')
   const [erro, setErro] = useState('')
-  const MOTIVOS = tipo === 'desconto' ? ['Combinado com a cliente', 'Atraso', 'Arredondamento', 'Cliente fiel'] : ['Taxa de entrega', 'Item a mais', 'Embalagem especial']
+  const MOTIVOS = tipo === 'desconto' ? ['Combinado com o cliente', 'Atraso', 'Arredondamento', 'Cliente fiel'] : ['Taxa de entrega', 'Item a mais', 'Embalagem especial']
   const v = lerBRL(valor)
   const novo = Math.max(0, Math.round((total + (tipo === 'acrescimo' ? v : -v)) * 100) / 100)
   const aplicar = () => {

@@ -11,7 +11,7 @@ import MenuPedido from '@/components/pedidos/MenuPedido'
 import type { AcaoMenu } from '@/components/pedidos/MenuPedido'
 import QuadroPedidos from '@/components/pedidos/QuadroPedidos'
 import type { Pedido } from '@/components/pedidos/pedidoTexto'
-import { acaoDe, avisoDaMudanca, precisaAceitar, dataISO, grupoDoStatus, nomeCliente, nomeDaSituacao, nomeDeProduto, recebidoPedido, rs, saldoPedido, terminou } from '@/components/pedidos/pedidoTexto'
+import { acaoDe, avisoDaMudanca, formaDoItem, itemComQtd, precisaAceitar, dataISO, grupoDoStatus, nomeCliente, nomeDaSituacao, nomeDeProduto, recebidoPedido, rs, saldoPedido, terminou } from '@/components/pedidos/pedidoTexto'
 import { registrarPagamento } from '@/lib/pagamentos'
 import { duplicarPedido } from '@/lib/duplicarPedido'
 import { pedidoAtrasado } from '@/lib/pedidoStatus'
@@ -201,7 +201,7 @@ export default function Pedidos() {
     }
     if (acao === 'compartilhar') {
       const itens = p.pedido_itens || []
-      const linhasItens = itens.map(it => `• ${String(it.quantidade).replace('.', ',')}x ${nomeDeProduto(it.nome_produto)}`).join('\n')
+      const linhasItens = itens.map(it => `• ${itemComQtd(nomeDeProduto(it.nome_produto), it.quantidade, formaDoItem(it))}`).join('\n')
       const [y, m, d] = (p.data_entrega || '').split('-')
       const dataEnt = p.data_entrega ? `${d}/${m}/${y}` : '—'
       const hora = p.horario_entrega ? ` às ${p.horario_entrega.slice(0, 5)}` : ''
@@ -220,7 +220,7 @@ export default function Pedidos() {
     if (acao === 'pdf') {
       const janela = abrirJanela()
       // busca o pedido completo (com as escolhas de cada item) pro comprovante sair inteiro
-      const { data } = await supabase.from('pedidos').select('*, pedido_itens(*)').eq('id', p.id).maybeSingle()
+      const { data } = await supabase.from('pedidos').select('*, pedido_itens(*, produtos(forma_venda))').eq('id', p.id).maybeSingle()
       await gerarPedidoPDF((data || p) as any, janela)
       fechar(); return
     }
@@ -285,7 +285,7 @@ export default function Pedidos() {
     if (totalProdutos === 0 && pedidos.length === 0) return <TelaVazia icone={<Cake size={30} />} titulo="Cadastre um produto primeiro" texto="Pra registrar um pedido, você precisa ter pelo menos um produto." acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => navigate('/produtos', { state: { abrirCadastro: true } })}>Cadastrar produto</Botao>} />
     if (pedidos.length === 0) return (
       <TelaVazia icone={<Receipt size={30} />} titulo="Nenhum pedido ainda" texto="Quando chegar uma encomenda, ela aparece aqui."
-        acao={<div className="pd-vazio-acoes"><Botao icone={<Plus size={20} weight="bold" />} onClick={handleNovoPedido}>Registrar pedido</Botao><Botao variante="link" onClick={() => navigate('/cardapio')}>Divulgar o cardápio</Botao></div>} />
+        acao={<div className="pd-vazio-acoes"><Botao icone={<Plus size={20} weight="bold" />} onClick={handleNovoPedido}>Nova venda</Botao><Botao variante="link" onClick={() => navigate('/cardapio')}>Divulgar o cardápio</Botao></div>} />
     )
     return null
   }
@@ -300,10 +300,10 @@ export default function Pedidos() {
         infoContent={
           <>
             <p>Aqui ficam <strong>todas as suas encomendas</strong>, agrupadas por dia: o que está atrasado, o que entrega hoje, amanhã e nos próximos dias.</p>
-            <p>O botão de cada pedido leva pro próximo passo: aceitar, produzir, marcar como pronto, entregar.</p>
+            <p>O botão de cada pedido leva pro próximo passo: aceitar, produzir, marcar pronto, marcar entregue ou retirado.</p>
           </>
         }
-        infoTip={<>Toque num pedido pra abrir, ver tudo e marcar o pagamento.</>}
+        infoTip={<>Abra um pedido pra ver tudo e marcar o pagamento.</>}
       />
 
       <div className="pd">
@@ -321,7 +321,7 @@ export default function Pedidos() {
               <div className="pd-busca-l">
                 <div className="ui-campo-c pd-busca" onClick={e => { if (e.target === e.currentTarget) e.currentTarget.querySelector('input')?.focus() }}>
                   <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
-                  <input type="search" inputMode="search" enterKeyHint="search" autoComplete="off" aria-label="Buscar pedido por cliente ou número" placeholder="Buscar pedido" value={busca} onChange={e => setBusca(e.target.value)} />
+                  <input type="search" inputMode="search" enterKeyHint="search" autoComplete="off" aria-label="Buscar pedido por cliente ou número" placeholder="Buscar" value={busca} onChange={e => setBusca(e.target.value)} />
                   {busca && <BotaoIcone className="pd-busca-x" variante="limpo" tamanho="p" rotulo="Limpar a busca" onClick={() => setBusca('')}><X size={20} weight="bold" /></BotaoIcone>}
                 </div>
                 <span className="pd-filtro">
@@ -334,7 +334,7 @@ export default function Pedidos() {
                     <button type="button" aria-pressed={modo === 'quadro'} onClick={() => setModo('quadro')}><Kanban size={20} weight="bold" aria-hidden="true" /><span>Quadro</span></button>
                   </div>
                 )}
-                <Botao className="pd-novo" icone={<Plus size={20} weight="bold" />} onClick={handleNovoPedido}><span className="pd-novo-c">Novo</span><span className="pd-novo-g">Registrar pedido</span></Botao>
+                <Botao className="pd-novo" icone={<Plus size={20} weight="bold" />} onClick={handleNovoPedido}>Nova venda</Botao>
               </div>
             </div>
 
@@ -359,7 +359,7 @@ export default function Pedidos() {
                 {computador && <div className="pdl-cab" aria-hidden="true"><span>Cliente e pedido</span><span>Situação</span><span>Pagamento</span><span>Entrega</span><span /><span /></div>}
                 {grupos.map(g => (
                   <section key={g.chave} className="pd-grupo" aria-label={g.titulo}>
-                    <Titulo contagem={g.itens.length} tom={g.chave === 'atrasado' ? 'vermelho' : undefined} apoio={g.chave === 'aceitar' ? 'Chegaram pelo cardápio. Aceite pra entrar na sua agenda.' : undefined}>{g.titulo}</Titulo>
+                    <Titulo contagem={g.itens.length} tom={g.chave === 'atrasado' ? 'vermelho' : undefined} apoio={g.chave === 'aceitar' ? (g.itens.length === 1 ? 'Chegou pelo cardápio. Aceite pra entrar na sua agenda.' : 'Chegaram pelo cardápio. Aceite pra entrar na sua agenda.') : undefined}>{g.titulo}</Titulo>
                     {computador
                       ? <div className="pdl-tabela" role="table">{g.itens.map(p => <LinhaPedido key={p.id} {...props(p)} comDia={g.chave === 'concluidos' || g.chave === 'semdata'} />)}</div>
                       : <div className="pdc-lista">{g.itens.map(p => <CartaoPedido key={p.id} {...props(p)} />)}</div>}

@@ -13,6 +13,7 @@ import { EmptyState } from '@/components/cardapio/EmptyState'
 import { Footer } from '@/components/cardapio/Footer'
 import { CardapioModelo1, getStatusLoja, getEnderecoData } from '@/components/cardapio/CardapioModelo1'
 import { DesktopProductCard } from '@/components/desktop/ProductCard'
+import { unidadeItem } from '@/components/cart/CartItemComponent'
 import { CartProvider } from '@/context/CartContext'
 import { DesignSettings, Configuracoes, Produto } from '@/types/database'
 import { PerfilTab } from '@/components/cardapio/PerfilTab'
@@ -131,7 +132,7 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
 
       <SobreLoja aberta={aba === 'sobre'} fechar={() => setAba('inicio')} design={design} config={config} />
 
-      {/* Minha conta (pedidos e perfil da cliente — revisão na 8.4) */}
+      {/* Minha conta (pedidos e perfil do cliente — revisão na 8.4) */}
       {aba === 'conta' && (
         <>
           <div onClick={() => setAba('inicio')} style={{ position: 'fixed', inset: 0, background: 'rgba(44,18,25,0.5)', zIndex: 200 }} />
@@ -194,7 +195,7 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
           return (
             <div key={item.id} className="cp-it">
               {img ? <img src={img} alt="" /> : <span className="cp-it-sem"><ShoppingBag size={20} /></span>}
-              <span><b>{qtdItem(item)} {item.name}</b><small>{formatCurrency(item.price * item.quantity)}</small></span>
+              <span><b>{qtdItem(item)} {item.name}</b><small>{formatCurrency(item.price * item.quantity)}{unidadeItem(item) && (item.quantity === 1 ? ` ${unidadeItem(item)}` : ` · ${formatCurrency(item.price)} ${unidadeItem(item)}`)}</small></span>
             </div>
           )
         })}
@@ -422,7 +423,8 @@ function CardapioContent() {
             </div>
           </>
         )}
-        <div style={{ padding: '0 10px 112px' }}>
+        {/* Espaço embaixo: menu (60px) e, com itens, a barra "Ver seu pedido" (~64px) não cobrem o último produto */}
+        <div style={{ padding: `0 10px calc(${cartCount > 0 ? 148 : 84}px + env(safe-area-inset-bottom, 0px))` }}>
           {produtos.length > 0 ? (
             <ProductList
               produtos={filteredProdutos}
@@ -437,8 +439,9 @@ function CardapioContent() {
               categories={!design.ocultar_categorias ? categorias.map((c: any) => c.name) : []}
               onCategorySelect={!design.ocultar_categorias ? setSelectedCategory : undefined}
               categoryCounts={contagem}
+              telefone={config?.telefone}
             />
-          ) : <EmptyState />}
+          ) : <EmptyState telefone={config?.telefone} />}
         </div>
         <Footer textoRodape={design.texto_rodape} />
       </div>
@@ -466,6 +469,7 @@ function CardapioContent() {
               <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
             </div>
           )}
+          {produtos.length === 0 ? <EmptyState telefone={config?.telefone} /> : (<>
           <div className="cp-busca">
             <MagnifyingGlass size={20} weight="bold" aria-hidden="true" />
             <input type="search" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Buscar no cardápio" aria-label="Buscar no cardápio" />
@@ -480,8 +484,11 @@ function CardapioContent() {
               ))}
             </div>
           ) : (
-            <div className="cp-nada"><MagnifyingGlass size={32} aria-hidden="true" /><b>Nenhum produto encontrado</b><span>{searchTerm ? 'Tente buscar com outra palavra.' : 'Escolha outra categoria.'}</span></div>
+            <div className="cp-nada"><MagnifyingGlass size={32} aria-hidden="true" />
+              <b>{searchTerm.trim() ? `Nenhum produto com “${searchTerm.trim()}”` : 'Nenhum produto nessa categoria'}</b>
+              <span>{searchTerm.trim() ? 'Tente buscar com outra palavra.' : 'Escolha outra categoria.'}</span></div>
           )}
+          </>)}
         </main>
 
         <aside className="cp-dir">
@@ -489,7 +496,7 @@ function CardapioContent() {
           {(config as any).programa_fidelidade_ativo !== false && (
             <section className="cp-box cp-fid">
               <b>Programa de fidelidade</b>
-              <small>A cada R$ 50,00 em compras, você acumula 5% de cashback pra usar no próximo pedido.</small>
+              <small>A cada R$ 50,00 em compras, você ganha 5% de volta em dinheiro pra usar no próximo pedido.</small>
             </section>
           )}
         </aside>

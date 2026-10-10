@@ -11,7 +11,7 @@ import "./clientes.css";
 const TELAS = {
   estoque: {
     titulo: "Estoque", icone: Package,
-    texto: "Em breve você vai poder acompanhar quanto tem de cada ingrediente e receber um aviso quando estiver acabando.",
+    texto: "Aqui você vai poder acompanhar quanto tem de cada ingrediente e receber um aviso quando estiver acabando.",
   },
 } as const;
 

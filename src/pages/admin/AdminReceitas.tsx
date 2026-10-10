@@ -72,7 +72,7 @@ export default function AdminReceitas() {
         {FILTROS.map(([val, lb]) => (
           <button key={val} type="button" role="tab" aria-selected={filtro === val} onClick={() => setFiltro(val)}>
             {lb}
-            {val !== "todas" && <i>{counts[val as Status]}</i>}
+            <i>{val === "todas" ? receitas.length : counts[val as Status]}</i>
           </button>
         ))}
       </div>

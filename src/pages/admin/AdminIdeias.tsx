@@ -32,13 +32,15 @@ interface Ideia {
 interface PerfilMini { nome_loja: string | null; telefone: string | null }
 
 const AREAS: Record<string, string> = {
+  cardapio: "Cardápio digital",
   pedidos: "Pedidos",
-  cardapio: "Cardápio online",
-  produtos: "Produtos e receitas",
-  insumos: "Insumos",
+  agenda: "Agenda",
+  produtos: "Produtos",
+  ficha: "Ficha técnica",
   financeiro: "Financeiro",
   clientes: "Clientes",
-  app: "App em geral",
+  insumos: "Ingredientes",
+  app: "Outro",
   outro: "Outro",
 };
 
@@ -183,7 +185,7 @@ export default function AdminIdeias() {
           </label>
           <select className="ai-sel" value={area} onChange={e => setArea(e.target.value)} aria-label="Área">
             <option value="">Todas as áreas</option>
-            {Object.entries(AREAS).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+            {Object.entries(AREAS).filter(([id]) => id !== "app").map(([id, label]) => <option key={id} value={id}>{label}</option>)}
           </select>
         </div>
 
@@ -192,7 +194,9 @@ export default function AdminIdeias() {
         {loading ? (
           <div className="ai-esq" aria-busy="true"><span /><span /><span /></div>
         ) : visiveis.length === 0 ? (
-          <TelaVazia compacta icone={<Lightbulb size={30} />} titulo="Nenhuma ideia nesse filtro." texto="Troque o filtro ou a busca pra ver outras." />
+          ideias.length === 0
+            ? <TelaVazia compacta icone={<Lightbulb size={30} />} titulo="Nenhuma ideia ainda" texto="As sugestões das confeiteiras aparecem aqui." />
+            : <TelaVazia compacta icone={<Lightbulb size={30} />} titulo="Nenhuma ideia nesse filtro" texto="Troque o filtro ou a busca pra ver outras." />
         ) : (
           <div className="ai-list">
             {visiveis.map(i => {
