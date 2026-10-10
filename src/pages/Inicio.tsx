@@ -7,7 +7,7 @@ import ConquistasCard from "@/components/ConquistasCard";
 import SeuDia from "@/components/inicio/SeuDia";
 import { TelaVazia, informar } from "@/components/base";
 import MenuConta from "@/components/MenuConta";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -285,8 +285,35 @@ export default function Inicio() {
     };
   };
 
+  // 4.01: a etiqueta do plano fica ao lado do nome quando cabe; se não cabe, desce pra linha da data (o topo não cresce)
+  const saudacaoRef = useRef<HTMLDivElement>(null);
+  const [tagEmbaixo, setTagEmbaixo] = useState(false);
+  useLayoutEffect(() => {
+    const el = saudacaoRef.current;
+    if (!el) return;
+    const medir = () => {
+      const nomeEl = el.querySelector("h1 > span:first-child") as HTMLElement | null;
+      const tagEl = el.querySelector(".ini-plan-tag--pc, .ini-plan-tag--mob") as HTMLElement | null;
+      const tags = Array.from(el.querySelectorAll(".ini-plan-tag")) as HTMLElement[];
+      const larguraTag = Math.max(0, ...tags.map(t => t.offsetWidth));
+      if (!nomeEl || !tagEl || !larguraTag) return;
+      // largura do nome inteiro, sem a reticência (mede um instante sem encolher)
+      const antes = nomeEl.style.flex;
+      nomeEl.style.flex = "none";
+      const larguraNome = nomeEl.getBoundingClientRect().width;
+      nomeEl.style.flex = antes;
+      setTagEmbaixo(larguraNome + 8 + larguraTag > el.clientWidth);
+    };
+    medir();
+    const ro = new ResizeObserver(medir);
+    ro.observe(el);
+    document.fonts?.ready.then(medir);
+    return () => ro.disconnect();
+  }, [profile]);
+
   // Detecta plano PRO ativo (mostra a coroinha)
   const isPro = (() => {
+
     if (profile?.plano !== "pro") return false;
     if (!profile.pro_expira_em) return true;
     return new Date(profile.pro_expira_em) > new Date();
@@ -576,7 +603,7 @@ export default function Inicio() {
         </div>
 
         {/* Texto da saudação */}
-        <div className="ini-hero-greeting">
+        <div ref={saudacaoRef} className={`ini-hero-greeting${tagEmbaixo ? " ini-hero-greeting--apertado" : ""}`}>
           <h1>
             <span>
               Olá,{" "}
@@ -1551,7 +1578,8 @@ export default function Inicio() {
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
           }
           .ini-root .ini-hero-greeting .ini-plan-tag { flex-shrink: 0; }
-          .ini-root .ini-plan-tag--pc { display: none !important; }
+          .ini-root .ini-hero-greeting--apertado .ini-plan-tag--pc { display: none !important; }
+          .ini-root .ini-hero-greeting:not(.ini-hero-greeting--apertado) .ini-plan-tag--mob { display: none !important; }
           .ini-root .ini-hero-sub { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
           .ini-root .ini-hero-sub .ini-hero-data-mobile { margin-top: 0; }
           .ini-root .ini-hero-data-mobile {
