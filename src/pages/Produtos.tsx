@@ -2404,7 +2404,7 @@ function PersonalizacaoStep({
           font-size: 13px;
           color: #2D1F26;
           font-family: inherit;
-          font-weight: 700;
+          font-weight: 500;
         }
         .pv3-unidade-item:hover { background: #FAF8F5; }
         .pv3-unidade-item--ativo {
@@ -2712,7 +2712,7 @@ function PersonalizacaoStep({
           color: #2D1F26;
           text-align: right;
         }
-        .pv3-opcao-serve-suf { font-size: 12px; color: #6B7280; white-space: nowrap; font-weight: 700; }
+        .pv3-opcao-serve-suf { font-size: 12px; color: #6B7280; white-space: nowrap; font-weight: 500; }
         .pv3-opcao-preco:focus-within { border-color: #E85A8C; }
         .pv3-opcao-preco-prefix { font-size: 13px; font-weight: 700; color: #E85A8C; white-space: nowrap; }
         .pv3-opcao-preco input {
@@ -2983,7 +2983,7 @@ function PersonalizacaoStep({
         }
         .pv3-serve-d input::placeholder {
           font-size: 13px;
-          font-weight: 700;
+          font-weight: 500;
           color: #C0B3B8;
           text-align: left;
           letter-spacing: 0;
@@ -4379,7 +4379,7 @@ export default function Produtos() {
   const TagList = ({ items, onRemove }: { items: string[], onRemove: (i: number) => void }) => (
     <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "6px" }}>
       {items.map((item, i) => (
-        <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", background: "var(--primary-light)", color: "var(--primary-dark)", borderRadius: "50px", fontSize: "0.8rem", fontWeight: 700 }}>
+        <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", background: "var(--primary-light)", color: "var(--primary-dark)", borderRadius: "50px", fontSize: "0.8rem", fontWeight: 500 }}>
           {item}
           <button onClick={() => onRemove(i)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--primary-dark)", padding: 0, lineHeight: 1, fontSize: "0.85rem" }}>×</button>
         </span>
@@ -5752,7 +5752,7 @@ export default function Produtos() {
                     <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "var(--primary-light)", borderRadius: "10px", marginBottom: "6px", border: "1px solid var(--primary-light)" }}>
                       <div>
                         <span style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary)" }}>{item.nome}</span>
-                        <span style={{ fontSize: "0.8rem", color: "var(--primary)", marginLeft: "8px", fontWeight: 700 }}>× {item.quantidade}</span>
+                        <span style={{ fontSize: "0.8rem", color: "var(--primary)", marginLeft: "8px", fontWeight: 500 }}>× {item.quantidade}</span>
                       </div>
                       <button onClick={() => setForm(f => ({ ...f, kit_itens: (f.kit_itens || []).filter((_, idx) => idx !== i) }))} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--error)", fontSize: "1.1rem", padding: 0 }}>×</button>
                     </div>
@@ -5938,7 +5938,7 @@ export default function Produtos() {
                         </div>
                         {form.desconto_percentual > 0 && form.preco_normal > 0 && (
                           <div style={{ marginTop: "6px", padding: "8px 12px", background: "#dcfce7", borderRadius: "8px" }}>
-                            <p style={{ fontSize: "0.78rem", color: "var(--success)", fontWeight: 700, margin: 0 }}>
+                            <p style={{ fontSize: "0.78rem", color: "var(--success)", fontWeight: 500, margin: 0 }}>
                               Preço base: R$ {formatPreco(form.preco_normal)} → R$ {formatPreco(form.preco_normal * (1 - (form.desconto_percentual || 0) / 100))}
                             </p>
                             {(form.tamanhos_disponiveis || []).length > 0 && (
@@ -5961,7 +5961,7 @@ export default function Produtos() {
                           <input type="text" placeholder="0,00" value={form.preco_promocional ? formatPreco(form.preco_promocional) : ""} onChange={e => setForm(f => ({ ...f, preco_promocional: parsePreco(e.target.value) }))} />
                         </div>
                         {form.preco_normal > 0 && form.preco_promocional > 0 && (
-                          <p style={{ fontSize: "0.75rem", color: "var(--primary)", fontWeight: 700, margin: "4px 0 0" }}>
+                          <p style={{ fontSize: "0.75rem", color: "var(--primary)", fontWeight: 500, margin: "4px 0 0" }}>
                             Desconto de {Math.round((1 - form.preco_promocional / form.preco_normal) * 100)}%
                           </p>
                         )}
@@ -7125,7 +7125,7 @@ export default function Produtos() {
         }
         .prod-card-lucro-label {
           font-size: var(--font-caption);
-          font-weight: 700;
+          font-weight: 500;
           opacity: 0.75;
         }
         .prod-card-lucro strong {
@@ -7150,7 +7150,7 @@ export default function Produtos() {
           color: var(--primary-dark);
           font-family: var(--font-base);
           font-size: var(--font-caption);
-          font-weight: 700;
+          font-weight: 500;
           cursor: pointer;
           text-align: center;
           width: 100%;
@@ -7837,7 +7837,7 @@ export default function Produtos() {
         .prod-section-label { font-size: var(--font-section-label); font-weight: var(--fw-bold); line-height: var(--lh-normal); letter-spacing: var(--ls-wide); color: var(--primary); margin: 0; }
         .prod-img-upload { width: 120px; height: 120px; border-radius: var(--radius-lg); border: 2px dashed var(--primary-light); background: var(--primary-light); cursor: pointer; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; transition: border-color var(--dur-fast) var(--ease-out); }
         .prod-img-placeholder { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-3); text-align: center; }
-        .prod-img-placeholder p { font-size: var(--font-helper); font-weight: 700; line-height: var(--lh-normal); color: var(--text-primary); margin: 0; }
+        .prod-img-placeholder p { font-size: var(--font-helper); font-weight: 500; line-height: var(--lh-normal); color: var(--text-primary); margin: 0; }
         .prod-img-placeholder span { font-size: var(--font-caption); font-weight: var(--fw-regular); color: var(--text-muted); }
         .prod-img-remove { position: absolute; top: var(--space-1); right: var(--space-1); background: rgba(0,0,0,0.5); border: none; border-radius: 50%; width: 22px; height: 22px; color: var(--text-inverse); font-size: var(--font-caption); cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .prod-field { display: flex; flex-direction: column; gap: var(--space-1); }
@@ -8970,7 +8970,7 @@ export default function Produtos() {
         }
         .wiz-step1-card-desc {
           font-size: 12.5px;
-          font-weight: 700;
+          font-weight: 500;
           line-height: 1.4;
           opacity: 0.85;
         }
@@ -9762,7 +9762,7 @@ export default function Produtos() {
         .st-item-label {
           flex: 1;
           font-size: 13px;
-          font-weight: 700;
+          font-weight: 500;
           color: #2D1F26;
         }
         .st-item-remove {
@@ -9844,7 +9844,7 @@ export default function Produtos() {
           all: unset;
           width: 60px;
           font-size: 12.5px;
-          font-weight: 700;
+          font-weight: 500;
           color: #2D1F26;
           text-align: right;
         }
@@ -9901,7 +9901,7 @@ export default function Produtos() {
           border-radius: 10px;
           color: #78350F;
           font-size: 12.5px;
-          font-weight: 700;
+          font-weight: 500;
           margin-bottom: 14px;
         }
 
@@ -9978,7 +9978,7 @@ export default function Produtos() {
         .st-combo-sep {
           font-size: 12px;
           color: #B4A9AE;
-          font-weight: 700;
+          font-weight: 500;
         }
         .st-combo-tam {
           font-size: 12.5px;
@@ -10140,7 +10140,7 @@ export default function Produtos() {
         .prod-slot-lock-txt {
           font-size: 12px;
           color: #F5B8CD;
-          font-weight: 700;
+          font-weight: 500;
           font-family: var(--font-base);
           letter-spacing: 0.02em;
         }
@@ -11744,7 +11744,7 @@ export default function Produtos() {
         .ficha-modal-unit-select {
           border: 1.5px solid var(--border); border-radius: var(--radius-sm);
           background: var(--bg-card); color: var(--text-primary);
-          font-family: inherit; font-size: var(--font-caption); font-weight: 700;
+          font-family: inherit; font-size: var(--font-caption); font-weight: 500;
           padding: 2px 4px; cursor: pointer; outline: none; min-width: 38px;
         }
         .ficha-modal-unit-select:focus { border-color: var(--primary); }

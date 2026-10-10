@@ -15,7 +15,7 @@
 
 /* opções de marcar */
 .ep-ops { display: flex; flex-direction: column; gap: 8px; }
-.ep-op { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 52px; margin: 0; padding: 0 12px 0 16px; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 700; text-align: left; cursor: pointer; }
+.ep-op { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 52px; margin: 0; padding: 0 12px 0 16px; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 500; text-align: left; cursor: pointer; }
 .ep-op[aria-checked="true"] { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-weight: 700; }
 .ep-cx { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid var(--ui-borda-campo); border-radius: 7px; background: var(--ui-branco); color: #fff; }
 .ep-op[aria-checked="true"] .ep-cx { border-color: var(--ui-rosa); background: var(--ui-rosa); }
@@ -46,7 +46,7 @@
 .ep-cupom.off .ep-cupom-ic { background: var(--ui-cinza); color: var(--ui-texto-3); }
 .ep-cupom-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .ep-cupom-tx b { font-size: 15px; font-weight: 700; letter-spacing: .02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ep-cupom-d { font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); }
+.ep-cupom-d { font-size: 13.5px; font-weight: 500; color: var(--ui-rosa-escuro); }
 .ep-cupom.off .ep-cupom-d { color: var(--ui-texto-2); }
 .ep-cupom-tags { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 2px; }
 .ep-cupom-tags small { display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }

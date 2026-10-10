@@ -754,7 +754,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         }
         .pap-item-t {
           flex: 1;
-          font-weight: 700;
+          font-weight: 500;
           color: #2C1219;
           line-height: 1.3;
         }

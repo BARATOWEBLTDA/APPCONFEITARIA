@@ -83,7 +83,7 @@
 .nv3-sit button[aria-pressed="true"] { border-color: var(--ui-rosa); background: var(--ui-rosa); color: #fff; }
 .nv3-res .ui-linha > b { white-space: normal; }
 .nv3-contas { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--ui-linha); }
-.nv3-contas p { display: flex; justify-content: space-between; gap: 12px; margin: 0; font-size: 13.5px; font-weight: 700; line-height: 1.8; }
+.nv3-contas p { display: flex; justify-content: space-between; gap: 12px; margin: 0; font-size: 13.5px; font-weight: 500; line-height: 1.8; }
 .nv3-contas p.dim { color: var(--ui-texto-2); font-weight: 500; }
 .nv3-contas p.tot { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--ui-linha); font-size: 16px; font-weight: 700; }
 .nv3-ok { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 24px 16px; }
@@ -109,7 +109,7 @@
 @media (min-width: 901px) { .nv3 { padding-top: 24px; } .nv3-pe { left: 220px; bottom: 0; } }
 
 /* botões de abrir calendário e horário com cara de campo */
-.nv3-abre { width: 100%; margin: 0; font-family: inherit; font-size: 16px; font-weight: 700; color: var(--ui-texto); text-align: left; cursor: pointer; }
+.nv3-abre { width: 100%; margin: 0; font-family: inherit; font-size: 16px; font-weight: 500; color: var(--ui-texto); text-align: left; cursor: pointer; }
 .nv3-abre > span:last-child { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nv3-abre:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
 .nv3-tipos button, .nv3-seg button, .nv3-formas button, .nv3-sit button { cursor: pointer; -webkit-tap-highlight-color: transparent; }

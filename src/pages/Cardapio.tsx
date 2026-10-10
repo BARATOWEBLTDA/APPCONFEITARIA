@@ -1096,7 +1096,7 @@ export default function Cardapio() {
           flex-shrink: 0;
         }
         .ch-tile-label {
-          font-size: var(--font-helper); font-weight: 700;
+          font-size: var(--font-helper); font-weight: 500;
           color: var(--text-primary);
           white-space: nowrap;
           overflow: hidden;

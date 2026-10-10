@@ -13,7 +13,7 @@
 .dl-st { gap: 8px; }
 .dl-st-row { display: flex; flex-direction: column; gap: 2px; }
 .dl-st-row b { font-size: 16px; font-weight: 700; }
-.dl-st-row span { font-size: 13.5px; font-weight: 700; color: var(--ui-laranja); }
+.dl-st-row span { font-size: 13.5px; font-weight: 500; color: var(--ui-laranja); }
 .dl-bar { height: 8px; margin: 4px 0; border-radius: 4px; background: var(--ui-linha); overflow: hidden; }
 .dl-bar i { display: block; height: 100%; border-radius: 4px; background: var(--ui-rosa); transition: width .3s; }
 .dl-bar i.ok { background: var(--ui-verde); }

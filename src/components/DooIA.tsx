@@ -842,7 +842,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dz-pw p { margin: 0 0 16px; font-size: 15px; line-height: 1.5; color: var(--ui-texto-2, #6B5D64); }
         .dz-pw p b { color: var(--ui-texto, #2C1219); }
         .dz-pw ul { margin: 0; padding: 12px 16px; list-style: none; border-radius: var(--ui-raio, 12px); background: var(--ui-rosa-claro, #FDF0F5); text-align: left; }
-        .dz-pw li { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 13.5px; font-weight: 700; color: var(--ui-texto, #2C1219); }
+        .dz-pw li { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 13.5px; font-weight: 500; color: var(--ui-texto, #2C1219); }
         .dz-pw li svg { flex: none; color: var(--ui-rosa-escuro, #C33A6E); }
         @keyframes dooSlideUp {
           from { opacity: 0; transform: translateY(16px) scale(0.97); }

@@ -854,7 +854,7 @@ export default function Auth() {
           color: var(--primary);
           font-family: inherit;
           font-size: 0.82rem;
-          font-weight: 700;
+          font-weight: 500;
           cursor: pointer;
           transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
           box-shadow: 0 4px 14px rgba(60, 15, 40, 0.2);
@@ -876,7 +876,7 @@ export default function Auth() {
         }
         .auth-rodape { position: relative; z-index: 3; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding-top: 18px; color: rgba(255,255,255,.72); font-size: 12.5px; white-space: nowrap; }
         .auth-rodape div { display: flex; gap: 8px; align-items: center; }
-        .auth-rodape a { display: inline-flex; align-items: center; min-height: 44px; color: inherit; font-weight: 700; text-decoration: none; padding: 0 2px; -webkit-tap-highlight-color: transparent; }
+        .auth-rodape a { display: inline-flex; align-items: center; min-height: 44px; color: inherit; font-weight: 500; text-decoration: none; padding: 0 2px; -webkit-tap-highlight-color: transparent; }
         .auth-rodape a:hover { color: #fff; text-decoration: underline; }
         .auth-rodape em { font-style: normal; font-size: 12px; opacity: .8; }
         .mouse-glow { position: fixed; z-index: 1; width: 350px; height: 350px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%); transform: translate(-50%, -50%); pointer-events: none; will-change: transform; opacity: 0; transition: opacity .4s ease; }
@@ -1124,7 +1124,7 @@ export default function Auth() {
         .pw-req li.ok { color: #16A34A; }
         .pw-req-dot { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
         .pw-req li.ok .pw-req-dot { color: #16A34A; }
-        .pw-req-done { display: flex; align-items: center; gap: 0.4rem; padding: 0.25rem 1.25rem 0; font-size: 0.75rem; font-weight: 700; color: #16A34A; animation: pwDoneIn 0.25s ease both; }
+        .pw-req-done { display: flex; align-items: center; gap: 0.4rem; padding: 0.25rem 1.25rem 0; font-size: 0.75rem; font-weight: 500; color: #16A34A; animation: pwDoneIn 0.25s ease both; }
         .pw-req-done .pw-req-dot { color: #16A34A; }
         @keyframes pwDoneIn { from { opacity: 0; transform: translateY(-2px); } to { opacity: 1; transform: translateY(0); } }
 

@@ -124,12 +124,12 @@ const CSS = `
   .cid-custo { color: #15803D; font-weight: 700 !important; }
   .cid-custo--ed { margin: 8px 0 0; font-size: 13px; }
   .cid-ed { margin-top: 6px; }
-  .cid-l { display: block; flex: 1; min-width: 0; font-size: 13px; font-weight: 700; color: #4B3A42; margin-top: 10px; }
+  .cid-l { display: block; flex: 1; min-width: 0; font-size: 13px; font-weight: 500; color: #4B3A42; margin-top: 10px; }
   .cid-in { display: block; width: 100%; box-sizing: border-box; margin-top: 5px; min-height: 44px; border: 1.5px solid #EDE6E9; border-radius: 12px; padding: 10px 12px; font-family: inherit; font-size: 16px; color: #2C1219; background: #fff; }
   .cid-in:focus { outline: none; border-color: #E85A8C; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
   .cid-row { display: flex; gap: 8px; }
   .cid-fotos { margin-top: 12px; }
-  .cid-fl { margin: 0 0 6px; font-size: 13px; font-weight: 700; color: #4B3A42; }
+  .cid-fl { margin: 0 0 6px; font-size: 13px; font-weight: 500; color: #4B3A42; }
   .cid-fg { display: flex; gap: 8px; }
   .cid-f { position: relative; width: 56px; height: 56px; border-radius: 12px; border: 2px solid #EDE6E9; background: #FAF7F8; padding: 0; overflow: hidden; cursor: pointer; flex-shrink: 0; }
   .cid-f img { width: 100%; height: 100%; object-fit: cover; display: block; }

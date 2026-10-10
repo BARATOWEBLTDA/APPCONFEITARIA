@@ -22,7 +22,7 @@
 .tpd-sit-l { display: flex; align-items: flex-start; gap: 8px; }
 .tpd-sit-tx { flex: 1; min-width: 0; }
 .tpd-sit-tx .ui-linha > b { white-space: normal; }
-.tpd-aviso { margin: 4px 0 0; font-size: 13.5px; font-weight: 700; line-height: 1.4; color: var(--ui-laranja); }
+.tpd-aviso { margin: 4px 0 0; font-size: 13.5px; font-weight: 500; line-height: 1.4; color: var(--ui-laranja); }
 .tpd-aviso.atr { color: var(--ui-vermelho); }
 .tpd-mais { flex: none; margin: -8px -8px 0 0; }
 .tpd-passos { display: flex; margin: 16px 0; padding: 0; list-style: none; }
@@ -89,7 +89,7 @@
 .tpd-ref img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .tpd-recado > div { min-width: 0; }
 .tpd-recado small { display: block; font-size: 12.5px; font-weight: 700; color: var(--ui-texto-2); }
-.tpd-recado p { margin: 2px 0 0; font-size: 15px; font-weight: 700; line-height: 1.4; color: var(--ui-texto); overflow-wrap: anywhere; }
+.tpd-recado p { margin: 2px 0 0; font-size: 15px; font-weight: 500; line-height: 1.4; color: var(--ui-texto); overflow-wrap: anywhere; }
 .tpd-recado span { display: block; margin-top: 2px; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
 
 /* janela do item */
@@ -105,17 +105,17 @@
 .tpd-seg button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; margin: 0; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto-2); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
 .tpd-seg button[aria-pressed="true"] { background: var(--ui-branco); color: var(--ui-rosa-escuro); font-weight: 700; box-shadow: var(--ui-sombra-cartao); }
 .tpd-quando { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 12px; }
-.tpd-fal { width: 100%; margin: 0; font-family: var(--font-base); font-size: 16px; font-weight: 700; color: var(--ui-texto); text-align: left; cursor: pointer; }
+.tpd-fal { width: 100%; margin: 0; font-family: var(--font-base); font-size: 16px; font-weight: 500; color: var(--ui-texto); text-align: left; cursor: pointer; }
 .tpd-fal > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tpd-ph { color: var(--ui-texto-3); font-weight: 500; }
 .ep2.tpd .ep2-addr { display: block; padding: 0; background: none; border: 0; }
 .ep2.tpd .tpd-end b { display: block; font-size: 15px; font-weight: 700; line-height: 1.4; color: var(--ui-texto); }
 .ep2.tpd .tpd-end small { display: block; font-size: 13.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
-.ep2.tpd .ep2-taxa { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--ui-linha); font-size: 15px; font-weight: 700; color: var(--ui-texto); }
+.ep2.tpd .ep2-taxa { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--ui-linha); font-size: 15px; font-weight: 500; color: var(--ui-texto); }
 .ep2.tpd .ep2-taxa > span:first-child { flex: 1; }
 .ep2.tpd .ep2-mini { display: flex; align-items: center; gap: 6px; width: 140px; height: 48px; padding: 0 12px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); }
 .ep2.tpd .ep2-mini em { font-style: normal; font-size: 15px; font-weight: 700; color: var(--ui-texto-3); }
-.ep2.tpd .ep2-mini input { flex: 1; min-width: 0; height: 44px; border: 0; outline: 0; background: none; font-family: var(--font-base); font-size: 16px; font-weight: 700; text-align: right; color: var(--ui-texto); }
+.ep2.tpd .ep2-mini input { flex: 1; min-width: 0; height: 44px; border: 0; outline: 0; background: none; font-family: var(--font-base); font-size: 16px; font-weight: 500; text-align: right; color: var(--ui-texto); }
 .ep2.tpd .ep2-mini:focus-within { border-color: var(--ui-rosa); }
 .ep2.tpd .ep2-usar { min-height: 44px; }
 

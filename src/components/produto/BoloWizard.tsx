@@ -718,10 +718,10 @@ const CSS = `
   .bw-tabela .bw-in input { padding-left: 12px; }
   .bw-tabela .bw-rs { padding-left: 12px; }
   .bw-rs-p { font-size: 13px; font-weight: 700; color: #9A8E94; }
-  .bw-tabela .bw-calc { display: flex; align-items: center; padding: 0 12px; background: #FAF7F8; border-color: #F0EBED; color: #B5AAB0; font-size: 13px; font-weight: 700; }
+  .bw-tabela .bw-calc { display: flex; align-items: center; padding: 0 12px; background: #FAF7F8; border-color: #F0EBED; color: #B5AAB0; font-size: 13px; font-weight: 500; }
   .bw-tabela .bw-calc.ok { background: #F0FDF4; border-color: #DCFCE7; color: #15803D; font-size: 14.5px; font-weight: 700; }
   .bw-rendbox { margin-top: 14px; padding-top: 14px; border-top: 1px solid #F3ECEE; }
-  .bw-check { display: flex; align-items: center; gap: 10px; width: 100%; border: none; background: none; padding: 4px 0; font-family: inherit; font-size: 14px; font-weight: 700; color: #2C1219; cursor: pointer; text-align: left; }
+  .bw-check { display: flex; align-items: center; gap: 10px; width: 100%; border: none; background: none; padding: 4px 0; font-family: inherit; font-size: 14px; font-weight: 500; color: #2C1219; cursor: pointer; text-align: left; }
   .bw-check i { width: 20px; height: 20px; border-radius: 6px; border: 2px solid #D6CBD0; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; }
   .bw-check.on i { background: #E85A8C; border-color: #E85A8C; }
   .bw-rend-body { margin-top: 12px; padding: 14px; border-radius: 12px; background: #FAF7F8; }
@@ -761,7 +761,7 @@ const CSS = `
   .bo-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .bo-tx b { font-size: 15px; font-weight: 700; }
   .bo-tx small { font-size: 12.5px; color: #888780; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .bo-tx small.on { color: #C33A6E; font-weight: 700; }
+  .bo-tx small.on { color: #C33A6E; font-weight: 500; }
   .bo-rs { font-size: 13px; color: #4B3A42; margin-top: 3px; line-height: 1.45; }
   .bo-rs em { font-style: normal; color: #15803D; font-weight: 700; }
   .bo-rs small { display: block; font-size: 12px; color: #9A8E94; margin-top: 2px; white-space: normal; }
@@ -783,7 +783,7 @@ const CSS = `
   .bo-li--add input::placeholder { color: #B5AAB0; }
   .bo-li--add button { border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #C33A6E; cursor: pointer; padding: 8px 4px; white-space: nowrap; }
   .bo-li--add button:disabled { color: #D6CBD0; cursor: default; }
-  .bo-lim { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #F3ECEE; font-size: 14px; font-weight: 700; color: #2C1219; }
+  .bo-lim { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #F3ECEE; font-size: 14px; font-weight: 500; color: #2C1219; }
   .bo-tip { font-size: 12.5px; color: #9A8E94; margin: 6px 0 0; text-align: center; }
   .bo-sheet-acts { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
   .bo-sheet-tirar { border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #6B5D64; cursor: pointer; padding: 8px 0; }
@@ -816,7 +816,7 @@ const CSS = `
   .bw-pr-lb { font-size: 14px; color: #4B3A42; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .bw-pr-lb b { color: #2C1219; font-size: 14.5px; } .bw-pr-lb small { color: #9A8E94; font-size: 12.5px; }
   .bw-pr-in { width: 160px; flex-shrink: 0; padding-left: 12px; }
-  .bw-pr-calc { width: 160px; flex-shrink: 0; display: flex; align-items: center; padding: 0 12px; background: #FAF7F8; border-color: #F0EBED; color: #B5AAB0; font-size: 12.5px; font-weight: 700; }
+  .bw-pr-calc { width: 160px; flex-shrink: 0; display: flex; align-items: center; padding: 0 12px; background: #FAF7F8; border-color: #F0EBED; color: #B5AAB0; font-size: 12.5px; font-weight: 500; }
   .bw-pr-calc.ok { background: #F0FDF4; border-color: #DCFCE7; color: #15803D; font-size: 15px; font-weight: 700; }
   .bw-money--sm { width: 170px !important; }
   .bw-money--sm em { font-size: 12.5px; }

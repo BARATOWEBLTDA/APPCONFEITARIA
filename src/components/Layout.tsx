@@ -410,7 +410,7 @@ export default function Layout() {
           all: unset; box-sizing: border-box;
           display: flex; align-items: center; gap: 10px;
           min-height: 44px; padding: 0 12px; border-radius: 12px;
-          font-family: var(--font-base); font-size: 14.5px; font-weight: 700; line-height: 1.2;
+          font-family: var(--font-base); font-size: 14.5px; font-weight: 500; line-height: 1.2;
           color: rgba(255,255,255,0.82); text-decoration: none; cursor: pointer;
           transition: background-color var(--dur-fast) linear, color var(--dur-fast) linear;
           -webkit-tap-highlight-color: transparent;

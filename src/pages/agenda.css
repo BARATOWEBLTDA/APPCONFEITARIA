@@ -92,7 +92,7 @@ i.atr { background: var(--ui-vermelho); }
 .ag3-cx { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid var(--ui-borda); border-radius: 7px; background: #fff; color: transparent; box-sizing: border-box; }
 .ag3-fil-it.on .ag3-cx { border-color: var(--ui-rosa); background: var(--ui-rosa); color: #fff; }
 .ag3-esc:focus-visible + .ag3-cx { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
-.ag3-fil-n { flex: 1; font-size: 15px; font-weight: 700; }
+.ag3-fil-n { flex: 1; font-size: 15px; font-weight: 500; }
 .ag3-fil-q { flex: none; min-width: 24px; padding: 2px 8px; border-radius: 8px; background: var(--ui-cinza); color: var(--ui-cinza-texto); font-size: 12.5px; font-weight: 700; text-align: center; }
 
 /* botão de novo pedido: acima do menu de baixo */
