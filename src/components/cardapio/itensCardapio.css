@@ -1,0 +1,58 @@
+/* Itens do cardápio no estilo de delivery (10/10 · 4.05) */
+.ic-sec { padding: 0 6px; scroll-margin-top: 124px; }
+.ic-h2 { margin: 24px 0 14px; font-size: 20px; font-weight: 600; line-height: 1.25; letter-spacing: -.01em; color: #2C1219; }
+.ic-sem { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: #B4A9AE; }
+
+/* preço com desconto */
+.ic-pp { display: flex; flex-direction: column; gap: 2px; }
+.ic-pp-novo { display: flex; align-items: center; flex-wrap: wrap; gap: 0 5px; color: #2C1219; }
+.ic-pp-novo b { font-size: 16px; font-weight: 600; }
+.ic-pp-novo small { font-size: 12.5px; color: #6B5D64; }
+.ic-pct { display: inline-grid; place-items: center; width: 17px; height: 17px; border-radius: 50%; color: #fff; font-size: 9.5px; font-weight: 700; line-height: 1; flex: none; }
+.ic-pp-de { display: flex; align-items: center; gap: 6px; }
+.ic-pp-de s { font-size: 13px; color: #9A8E94; }
+.ic-off { padding: 1px 7px; border-radius: 999px; color: #fff; font-size: 12px; font-weight: 700; line-height: 1.5; }
+
+/* modo de entrega, em texto embaixo */
+.ic-ent { display: block; margin-top: 4px; font-size: 12.5px; font-weight: 500; color: #6B5D64; }
+.ic-ent--pronta { color: #15803D; }
+
+/* cartão de promoção: 2 por linha */
+.ic-grade { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 12px; }
+.ic-cp { display: flex; flex-direction: column; gap: 6px; min-width: 0; cursor: pointer; text-align: left; outline-offset: 4px; }
+.ic-cp-ft { aspect-ratio: 1; border-radius: 14px; overflow: hidden; background: #F3EEF0; margin-bottom: 4px; }
+.ic-cp-ft img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .25s; }
+@media (hover: hover) { .ic-cp:hover .ic-cp-ft img { transform: scale(1.03); } }
+.ic-cp-nome { margin-top: 2px; font-size: 14.5px; font-weight: 500; line-height: 1.3; color: #2C1219; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* lista */
+.ic-lista { display: flex; flex-direction: column; }
+.ic-ln { display: flex; align-items: center; gap: 14px; padding: 18px 0; border-top: 1px solid #EDE6E9; cursor: pointer; text-align: left; outline-offset: 2px; }
+.ic-ln-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ic-ln-tx > b { font-size: 16px; font-weight: 600; line-height: 1.3; color: #2C1219; }
+.ic-ln-tx > p { margin: 4px 0 0; font-size: 14px; line-height: 1.4; color: #6B5D64; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ic-ln-tx .ic-pp, .ic-ln-preco { margin-top: 10px; }
+.ic-ln-preco { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 5px; color: #2C1219; }
+.ic-ln-preco b { font-size: 16px; font-weight: 500; }
+.ic-ln-preco small { font-size: 12.5px; color: #6B5D64; }
+.ic-ln-ft { width: 108px; height: 108px; border-radius: 14px; overflow: hidden; background: #F3EEF0; flex: none; }
+.ic-ln-ft img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* computador */
+.ic-sec--pc { padding: 0; scroll-margin-top: 24px; }
+.ic-sec--pc .ic-h2 { font-size: 22px; }
+.ic-sec--pc .ic-grade { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 22px 16px; }
+.ic-sec--pc .ic-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); column-gap: 32px; }
+.ic-sec--pc .ic-ln-ft { width: 120px; height: 120px; }
+@media (hover: hover) { .ic-sec--pc .ic-ln:hover .ic-ln-tx > b { text-decoration: underline; text-underline-offset: 3px; } }
+
+/* barra presa no celular: busca + abas das seções */
+.ic-presa { position: sticky; top: 0; z-index: 20; margin: 12px -10px 0; padding: 10px 10px 0; background: #F7F4F5; }
+.ic-abas { display: flex; align-items: center; gap: 4px; margin-top: 6px; border-bottom: 1px solid #E5DDE1; }
+.ic-abas-menu { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex: none; margin: 0; border: 0; background: none; color: #6B5D64; cursor: pointer; }
+.ic-abas-lista { display: flex; gap: 20px; overflow-x: auto; scrollbar-width: none; scroll-behavior: smooth; padding-right: 16px; }
+.ic-abas-lista::-webkit-scrollbar { display: none; }
+.ic-aba { flex: none; margin: 0; padding: 12px 0 10px; border: 0; border-bottom: 2.5px solid transparent; background: none; color: #9A8E94; font-family: inherit; font-size: 15px; font-weight: 500; white-space: nowrap; cursor: pointer; min-height: 44px; }
+.ic-aba.on { color: #2C1219; border-bottom-color: #2C1219; }
+.ic-presa .cl-busca { margin: 0; border-radius: 999px; background: #fff; }
+.ic-presa .cl-cat-menu { top: calc(100% + 4px); left: 0; }

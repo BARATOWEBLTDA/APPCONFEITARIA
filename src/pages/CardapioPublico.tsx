@@ -7,12 +7,12 @@ import { useDeviceDetection } from '@/hooks/useDeviceDetection'
 import { BannerAd } from '@/components/cardapio/BannerAd'
 import { Logo } from '@/components/cardapio/Logo'
 import { ProductList } from '@/components/cardapio/ProductList'
+import { montarSecoes, SecaoCardapio, LinhaProduto } from '@/components/cardapio/ItensCardapio'
 import { contarItens, qtdItem } from '@/lib/itemSacola'
 import { NavigationMenu } from '@/components/cardapio/NavigationMenu'
 import { EmptyState } from '@/components/cardapio/EmptyState'
 import { Footer } from '@/components/cardapio/Footer'
 import { CardapioModelo1, getStatusLoja, getEnderecoData } from '@/components/cardapio/CardapioModelo1'
-import { DesktopProductCard } from '@/components/desktop/ProductCard'
 import { unidadeItem } from '@/components/cart/CartItemComponent'
 import { CartProvider } from '@/context/CartContext'
 import { DesignSettings, Configuracoes, Produto } from '@/types/database'
@@ -475,14 +475,15 @@ function CardapioContent() {
             <input type="search" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Buscar no cardápio" aria-label="Buscar no cardápio" />
             {searchTerm && <button type="button" aria-label="Limpar a busca" onClick={() => setSearchTerm('')}><X size={18} weight="bold" /></button>}
           </div>
-          <h2 className="cp-h2">{selectedCategory || 'Cardápio'}<small>{filteredProdutos.length} {filteredProdutos.length === 1 ? 'produto' : 'produtos'}</small></h2>
+          {/* 4.05: promoções em cartões com o selo de desconto e as categorias em lista, como nos apps de delivery */}
           {filteredProdutos.length > 0 ? (
-            <div className="cp-grade">
-              {filteredProdutos.map((p: Produto) => (
-                <DesktopProductCard key={p.id} product={p} isFavorite={favorites.includes(p.id)} onToggleFavorite={toggleFavorite}
-                  backgroundColor={design.cor_background || '#fff'} borderColor={design.cor_borda || '#E85A8C'} corBotao={cor} />
-              ))}
-            </div>
+            searchTerm.trim() ? (
+              <section className="ic-sec ic-sec--pc">
+                <h2 className="ic-h2">{filteredProdutos.length === 1 ? '1 produto' : `${filteredProdutos.length} produtos`}</h2>
+                <div className="ic-lista">{filteredProdutos.map((p: Produto) => <LinhaProduto key={p.id} produto={p} cor={cor} />)}</div>
+              </section>
+            ) : montarSecoes(filteredProdutos, selectedCategory ? [selectedCategory] : (!design.ocultar_categorias ? categorias.map((c: any) => c.name).filter((n: string) => n !== 'Todos') : []), !design.ocultar_categorias)
+                .map(sec => <SecaoCardapio key={sec.id} secao={sec} cor={cor} pc />)
           ) : (
             <div className="cp-nada"><MagnifyingGlass size={32} aria-hidden="true" />
               <b>{searchTerm.trim() ? `Nenhum produto com “${searchTerm.trim()}”` : 'Nenhum produto nessa categoria'}</b>
