@@ -174,8 +174,9 @@
 .bv-luc-lucro span { display: block; font-size: 14px; font-weight: 700; color: var(--ui-verde); font-variant-numeric: tabular-nums; }
 .bv-luc-barra { display: flex; height: 10px; overflow: hidden; border-radius: 999px; background: var(--ui-cinza); }
 .bv-luc-barra i { display: block; height: 100%; transition: width .45s cubic-bezier(.22, 1, .36, 1); }
-.bv-luc-leg { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: -4px; font-size: 13px; color: var(--ui-texto-2); }
-.bv-luc-leg span::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--c); }
+.bv-luc-leg { display: grid; grid-template-columns: repeat(4, auto); justify-content: space-between; gap: 4px 8px; margin-top: -4px; font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; } /* as 4 numa linha só (o "Lucro" não fica sozinho embaixo) */
+@media (max-width: 379px) { .bv-luc-leg { grid-template-columns: repeat(2, auto); justify-content: start; column-gap: 16px; } }
+.bv-luc-leg span::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 5px; border-radius: 50%; background: var(--c); }
 .bv-luc-conta > div { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; font-size: 14px; color: var(--ui-texto-2); opacity: .25; transition: opacity .3s ease; }
 .bv-luc-conta > div.v { opacity: 1; }
 .bv-luc-conta > div span:last-child { font-weight: 700; color: var(--ui-texto); white-space: nowrap; font-variant-numeric: tabular-nums; }
