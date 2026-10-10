@@ -344,7 +344,6 @@ export default function Agenda() {
               <div className="ag3-dia-v">
                 <small>Falta receber</small>
                 <b>{rs(faltaDoDia)}</b>
-                <small>{aReceberDoDia.length === 1 ? "em 1 pedido" : `em ${aReceberDoDia.length} pedidos`}</small>
               </div>
             )}
           </section>
