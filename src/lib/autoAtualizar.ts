@@ -18,7 +18,8 @@ function momentoSeguro(): boolean {
   const ativo = document.activeElement as HTMLElement | null;
   if (ativo && (ativo.tagName === "INPUT" || ativo.tagName === "TEXTAREA" || ativo.isContentEditable)) return false;
   // janela aberta por cima (cadastro de produto, edição, sacola do cardápio…)
-  if (document.querySelector(".prod-modal-overlay, .ep-wrap, [role='dialog']")) return false;
+  // (10/10) as janelas de pergunta e aviso usam role="alertdialog": também seguram a atualização
+  if (document.querySelector(".prod-modal-overlay, .ep-wrap, [role='dialog'], [role='alertdialog']")) return false;
   return true;
 }
 

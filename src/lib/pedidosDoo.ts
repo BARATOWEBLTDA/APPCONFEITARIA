@@ -3,7 +3,9 @@
  * Assim um pedido feito pela Doo fica idêntico ao manual: mesma situação, mesmo cálculo de
  * pagamento, mesmo cadastro de cliente novo, mesmos itens (com tamanho/kit) e mesmo histórico.
  */
-import { registrarPagamento } from "@/lib/pagamentos";
+import { ajustarRecebido, ESTORNO_POR_EXCLUSAO, faltaNoBanco, registrarPagamento } from "@/lib/pagamentos";
+import { explicarErro } from "@/lib/erros";
+import { pesoDoTamanho } from "@/lib/itemSacola";
 import { supabase } from "@/lib/supabase";
 import { criarPersonalizacoesV1, criarBreakdownV1, SNAPSHOT_VERSION_ATUAL } from "@/lib/pedido-snapshot";
 
@@ -21,8 +23,9 @@ export function opcoesDoProduto(p: any): { label: string; valor: number; pers: a
   if (gt?.ativo && Array.isArray(gt.opcoes)) {
     const porPeso = gt.modo_preco_tamanho === "por_peso";
     const ops = gt.opcoes.filter((o: any) => o?.nome?.trim()).map((o: any) => {
-      const valor = porPeso ? Math.round((p.preco_normal || 0) * (o.peso_kg || 0) * 100) / 100 : Number(o.preco) || 0;
-      return { label: o.nome, valor, pers: { tamanho: { nome: o.nome, preco: valor, peso_kg: o.peso_kg || null } } };
+      const peso = pesoDoTamanho(o, porPeso); // (10/10) sem peso_kg, lê o peso do nome ("1,5kg")
+      const valor = porPeso ? Math.round((p.preco_normal || 0) * peso * 100) / 100 : Number(o.preco) || 0;
+      return { label: o.nome, valor, pers: { tamanho: { nome: o.nome, preco: valor, peso_kg: peso || null } } };
     }).filter((o: any) => o.valor > 0);
     if (ops.length) return ops;
   }
@@ -100,7 +103,7 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
     else console.error("Não deu pra cadastrar o cliente novo:", errCli);
   }
 
-  const { data: novoPedido, error } = await supabase.from("pedidos").insert({
+  const linhaPedido: any = {
     user_id: userId,
     cliente_id: clienteIdFinal,
     cliente_nome: d.semCliente ? "" : d.clienteNome,
@@ -111,6 +114,7 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
     valor_total: total,
     valor_produtos: subtotal,
     desconto: d.desconto,
+    acrescimo: d.acrescimo, // (10/10) antes só entrava no total: ao editar o pedido, o acréscimo sumia
     taxa_entrega: d.tipoEntrega === "entrega" ? d.taxaEntrega : 0,
     forma_pagamento: d.formaPagamento,
     tipo_entrega: d.tipoEntrega,
@@ -126,7 +130,13 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
     observacoes: d.observacoes,
     data_prevista_pagamento: d.situacaoPag === "fiado" ? (d.dataPrevistaPagamento || null)
       : d.situacaoPag === "na_entrega" ? (d.tipo === "encomenda" ? d.dataEntrega || null : hojeISO()) : null,
-  }).select().single();
+  };
+  let { data: novoPedido, error } = await supabase.from("pedidos").insert(linhaPedido).select().single();
+  if (error && /acrescimo/i.test(error.message || "")) {
+    // a coluna "acrescimo" não existe nessa conta: grava sem ela (mesmo plano B do Editar pedido)
+    const { acrescimo: _semColuna, ...semAcrescimo } = linhaPedido;
+    ({ data: novoPedido, error } = await supabase.from("pedidos").insert(semAcrescimo).select().single());
+  }
   if (error || !novoPedido) return { ok: false, erro: error?.message || "desconhecido" };
 
   const itensInsert = d.itens.map(it => ({
@@ -151,13 +161,68 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
 
   // Financeiro · Passo 1: o recebido do pedido vira uma linha em "pagamentos" (com forma e data).
   // O pedido já nasceu com o valor certo, então sem a tabela (SQL não rodado) não grava nada a mais.
+  const avisos: string[] = [];
+  if (errItens) avisos.push("Pedido salvo, mas os produtos falharam: " + errItens.message);
   if (valorRecebido > 0) {
-    await registrarPagamento({
+    const pg = await registrarPagamento({
       pedidoId: (novoPedido as any).id, userId, valor: valorRecebido, forma: d.formaPagamento,
       tipo: statusPag === "pago" ? "total" : "sinal", origem: d.origem === "doo" ? "doo" : "app", pedidoJaTemOValor: true,
     });
+    if (!pg.ok) {
+      // (10/10) o recebimento não gravou: o pedido não pode ficar "pago" sem dinheiro no caixa.
+      // O pedido passa a mostrar o que está gravado de verdade (a soma dos recebimentos dele, em geral zero)
+      // e a tela avisa; o pedido não se perde.
+      const pid = (novoPedido as any).id;
+      const { data: linhas, error: errLer } = await supabase.from("pagamentos").select("valor").eq("pedido_id", pid).is("estornado_em", null);
+      const gravado = errLer ? 0 : Math.round(((linhas as any[]) || []).reduce((s, l) => s + (Number(l.valor) || 0), 0) * 100) / 100;
+      if (gravado < valorRecebido - 0.009) { // (se a soma bate, o pagamento entrou e só a resposta se perdeu: nada a corrigir)
+        const real = gravado > 0 ? (gravado >= total - 0.009 ? "pago" : "parcial") : "pendente";
+        const { error: errVolta } = await supabase.from("pedidos").update({ status_pagamento: real, valor_recebido: gravado }).eq("id", pid);
+        if (errVolta) {
+          console.error("[pedidos] não consegui corrigir o pagamento do pedido:", errVolta);
+          avisos.push("O pedido foi salvo, mas o recebimento não entrou no financeiro. Abra o pedido e confira o pagamento.");
+        } else {
+          (novoPedido as any).status_pagamento = real;
+          (novoPedido as any).valor_recebido = gravado;
+          avisos.push("O pedido foi salvo, mas o recebimento não foi registrado. Abra o pedido e registre o recebimento.");
+        }
+      }
+    }
   }
-  return { ok: true, pedido: novoPedido, ...(errItens ? { aviso: "Pedido salvo, mas os produtos falharam: " + errItens.message } : {}) };
+  return { ok: true, pedido: novoPedido, ...(avisos.length ? { aviso: avisos.join(" ") } : {}) };
+}
+
+/**
+ * Excluir pedido (10/10): um lugar só, usado pela lista e pela tela do pedido.
+ * A confirmação promete que ele some do financeiro, então os recebimentos ativos são estornados antes
+ * (sem isso continuavam somando no caixa: o pagamento fica sem pedido, mas não some).
+ * Qualquer passo que falhar para tudo: o pedido não é apagado e a tela avisa.
+ * "estornou" diz se os recebimentos já tinham sido estornados quando parou (a tela precisa reler o pedido).
+ */
+export async function excluirPedido(pedidoId: string): Promise<{ ok: true } | { ok: false; erro: string; estornou: boolean }> {
+  // 1) recebimentos ativos do pedido (sem a tabela de pagamentos não há o que estornar)
+  const { data: ativos, error: errPag } = await supabase.from("pagamentos")
+    .select("id").eq("pedido_id", pedidoId).is("estornado_em", null);
+  if (errPag && !faltaNoBanco(errPag)) {
+    return { ok: false, estornou: false, erro: explicarErro(errPag, "Não deu pra conferir os recebimentos deste pedido, então ele não foi excluído. Tente de novo.") };
+  }
+  let estornou = false;
+  if (!errPag && (ativos || []).length > 0) {
+    const r = await ajustarRecebido({ pedidoId, alvo: 0 }); // alvo zero = estorna todos os ativos (nada é apagado)
+    if (!r.ok) return { ok: false, estornou: true, erro: "Não deu pra estornar os recebimentos deste pedido, então ele não foi excluído. Confira os pagamentos do pedido e tente de novo." };
+    estornou = true;
+    // marca que o estorno veio da exclusão (não é devolução de dinheiro): o saldo em caixa informado antes não mexe por isso
+    const { error: errMarca } = await supabase.from("pagamentos").update({ observacao: ESTORNO_POR_EXCLUSAO }).in("id", (ativos as any[]).map(a => a.id));
+    if (errMarca) console.error("[Doonly] marca do estorno por exclusão:", errMarca);
+  }
+  const depoisDoEstorno = estornou ? " Os recebimentos dele já foram estornados." : "";
+  // 2) itens (antes o erro daqui era ignorado)
+  const { error: errItens } = await supabase.from("pedido_itens").delete().eq("pedido_id", pedidoId);
+  if (errItens) return { ok: false, estornou, erro: explicarErro(errItens, "Não deu pra excluir o pedido. Tente de novo.") + depoisDoEstorno };
+  // 3) o pedido
+  const { error } = await supabase.from("pedidos").delete().eq("id", pedidoId);
+  if (error) return { ok: false, estornou, erro: explicarErro(error, "Não deu pra excluir o pedido. Tente de novo.") + depoisDoEstorno };
+  return { ok: true };
 }
 
 /* ── Doo IA: catálogo, clientes e o rascunho que ela prepara ─────────────── */

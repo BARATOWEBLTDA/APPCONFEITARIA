@@ -6,6 +6,9 @@ import LimitePlano from "@/components/billing/LimitePlano";
 import { LIMITE_CLIENTES_GRATIS } from "@/lib/limitesPlano";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { buscarTudo } from "@/lib/buscarTudo";
+import { explicarErro } from "@/lib/erros";
+import { digitosTelefone, linkWhatsApp } from "@/lib/telefone";
 import { useProfile, isPro, perfilAtual } from "@/hooks/useProfile";
 import AppPageHeader from "@/components/AppPageHeader";
 import ReqTag from "@/components/ReqTag";
@@ -72,7 +75,7 @@ const emptyCompleto: Omit<Cliente, "id" | "user_id" | "created_at"> = {
 
 function formatPhone(phone?: string) {
   if (!phone) return null;
-  const d = phone.replace(/\D/g, "");
+  const d = digitosTelefone(phone);
   if (d.length === 11) return `(${d.slice(0,2)}) ${d.slice(2,3)} ${d.slice(3,7)}-${d.slice(7)}`;
   if (d.length === 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
   return phone;
@@ -163,9 +166,10 @@ function formatClienteHa(created_at: string): string {
 // Última compra: "hoje", "ontem", "há X dias", ou data
 function formatUltimaCompra(isoStr?: string | null): string {
   if (!isoStr) return "Sem pedidos";
-  const d = new Date(isoStr);
-  const diffMs = Date.now() - d.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  // (10/10) conta por dia do calendário daqui: antes eram janelas de 24h, e a compra de ontem à noite aparecia como "hoje"
+  const d = /^\d{4}-\d{2}-\d{2}$/.test(isoStr) ? dataLocal(isoStr) : new Date(isoStr);
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const diffDays = Math.round((hoje.getTime() - new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()) / (1000 * 60 * 60 * 24));
   if (diffDays <= 0) return "hoje";
   if (diffDays === 1) return "ontem";
   if (diffDays < 7) return `há ${diffDays} dias`;
@@ -201,6 +205,7 @@ export default function Clientes() {
   // Plano grátis: até 50 clientes (quem já tinha mais continua com tudo; só não cria novos)
   const [limiteAberto, setLimiteAberto] = useState(false);
   const [loading,       setLoading]       = useState(true);
+  const [erroCarregar,  setErroCarregar]  = useState(""); // não deu pra carregar: mostra o erro com "Tentar de novo"
   const [search,        setSearch]        = useState("");
   const [userId,        setUserId]        = useState<string | null>(null);
   const [filtroChip,    setFiltroChip]    = useState<"todos" | "aniversariantes" | "recentes" | "sumidas">("todos");
@@ -223,6 +228,8 @@ export default function Clientes() {
   const [niverAberto, setNiverAberto] = useState(false);
   const [preview,       setPreview]       = useState<string | null>(null);
   const [saving,        setSaving]        = useState(false);
+  const [enviandoFoto,  setEnviandoFoto]  = useState(false); // a foto ainda está subindo: o salvar espera
+  const excluindo = useRef(false);
   const [cepLoading,    setCepLoading]    = useState(false);
   const [avancadoOpen,  setAvancadoOpen]  = useState(false);
   const [tentouSalvar,  setTentouSalvar]  = useState(false); // mostra o que falta só depois de tocar em salvar
@@ -237,14 +244,6 @@ export default function Clientes() {
   const talvezVoltar = () => { const v = voltarPerfil.current; voltarPerfil.current = null; if (v) setTimeout(() => navigate(`/clientes/${v}`, { replace: true }), 350); };
 
   // ── Init ──────────────────────────────────────────────────────────────────
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return;
-      setUserId(user.id);
-      fetchClientes(user.id);
-    });
-  }, []);
 
   // Se URL tem ?edit=xxx, abre modal de edição do cliente
   useEffect(() => {
@@ -263,17 +262,20 @@ export default function Clientes() {
 
   // ── Data ──────────────────────────────────────────────────────────────────
 
-  const fetchClientes = async (uid: string) => {
+  /** Devolve o erro quando a busca falha (a lista que já estava na tela continua). */
+  const fetchClientes = async (uid: string): Promise<unknown> => {
     setLoading(true);
-    // Busca clientes e pedidos em paralelo
-    const [{ data: cls }, { data: peds }] = await Promise.all([
-      supabase.from("clientes").select("*").eq("user_id", uid).order("nome"),
-      supabase.from("pedidos")
+    // Busca clientes e pedidos em paralelo. (10/10) De 1.000 em 1.000: o banco corta em 1.000 linhas sem avisar,
+    // e "Pedidos", "Total gasto" e "Última compra" ficavam errados em conta grande.
+    const [{ data: cls, error: erroCls }, { data: peds, error: erroPeds }] = await Promise.all([
+      buscarTudo<Cliente>((de, ate) => supabase.from("clientes").select("*").eq("user_id", uid).order("nome").order("id").range(de, ate)),
+      buscarTudo<any>((de, ate) => supabase.from("pedidos")
         .select("cliente_id, valor_total, valor_recebido, data_entrega, created_at, status")
-        .eq("user_id", uid)
+        .eq("user_id", uid).order("id").range(de, ate)),
     ]);
+    if (erroCls || erroPeds) { setLoading(false); return erroCls || erroPeds; }
 
-    if (cls) {
+    {
       // Agrupa métricas por cliente_id em memória (O(n) — 1 pass só)
       type Agg = { total: number; totalValor: number; ultima: string | null };
       const map = new Map<string, Agg>();
@@ -309,7 +311,24 @@ export default function Clientes() {
       setClientes(enriquecidos);
     }
     setLoading(false);
+    return null;
   };
+
+  // (10/10) Sem internet a tela ficava carregando pra sempre (o getUser vai à rede) ou mostrava "Nenhum cliente ainda".
+  // O getSession lê a conta do próprio aparelho; se a busca falhar, aparece o erro com "Tentar de novo".
+  const carregar = async () => {
+    setLoading(true); setErroCarregar("");
+    let uid = userId;
+    if (!uid) {
+      try { uid = (await supabase.auth.getSession()).data.session?.user?.id ?? null; } catch { /* trata abaixo */ }
+      if (!uid) { setErroCarregar("Tente de novo em instantes."); setLoading(false); return; }
+      setUserId(uid);
+    }
+    const erro = await fetchClientes(uid);
+    if (erro) setErroCarregar(explicarErro(erro, "Tente de novo em instantes."));
+  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { void carregar(); }, []);
 
   // ── Form helpers ──────────────────────────────────────────────────────────
 
@@ -348,13 +367,20 @@ export default function Clientes() {
   const handleFileChange = async (file: File) => {
     if (!file || !userId) return;
     setPreview(URL.createObjectURL(file));
+    // (10/10) enquanto a foto sobe, o salvar espera (antes salvava sem a foto); se não subir, avisa
+    setEnviandoFoto(true);
     const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
     const path = `clientes/${userId}-${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("profiles").upload(path, file, { upsert: true });
+    let error: unknown = null;
+    try { error = (await supabase.storage.from("profiles").upload(path, file, { upsert: true })).error; } catch (e) { error = e; }
     if (!error) {
       const { data } = supabase.storage.from("profiles").getPublicUrl(path);
       setCompleto(f => ({ ...f, foto_url: data.publicUrl }));
+    } else {
+      setPreview(completo.foto_url || null);
+      avisar(explicarErro(error, "Não deu pra enviar a foto. Tente de novo."), { tipo: "erro" });
     }
+    setEnviandoFoto(false);
   };
   const recorte = useRecorte(f => { void handleFileChange(f); }, { forma: "round" });
 
@@ -438,12 +464,6 @@ export default function Clientes() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!userId) return;
-    await supabase.from("clientes").delete().eq("id", id);
-    await fetchClientes(userId);
-  };
-
   // ═══ IMPORTAÇÃO DE CONTATOS (PRO) ═══
 
   // Detecta se tem dados preenchidos no formulário (pra decidir se abre guard)
@@ -480,10 +500,20 @@ export default function Clientes() {
     if (!editando) return;
     const id = editando;
     const ok = await confirmar({ titulo: "Excluir este cliente?", texto: "O cadastro some da lista. Os pedidos dele continuam salvos.", rotulo: "Excluir", perigo: true, icone: "erro" });
-    if (!ok) return;
+    if (!ok || !userId || excluindo.current) return;
+    // (10/10) só fecha e avisa "excluída" se o banco excluiu mesmo (antes avisava até quando falhava)
+    excluindo.current = true;
+    const { error } = await supabase.from("clientes").delete().eq("id", id);
+    excluindo.current = false;
+    if (error) {
+      avisar(error.code === "23503"
+        ? "Esse cliente tem pedidos, por isso não dá pra excluir."
+        : explicarErro(error, "Não deu pra excluir o cliente. Tente de novo."), { tipo: "erro" });
+      return;
+    }
     voltarPerfil.current = null; // a cliente foi excluída: fica na lista
     fecharForm();
-    await handleDelete(id);
+    await fetchClientes(userId);
     avisar("Cliente excluída", { tipo: "ok" });
   };
   // Número que já é de outra cliente (pra não cadastrar a mesma pessoa duas vezes)
@@ -515,9 +545,10 @@ export default function Clientes() {
       if (!contatosAndroid || contatosAndroid.length === 0) return;
 
       // Normaliza telefones existentes no banco pra detectar duplicatas
+      // (10/10) pelo digitosTelefone: tira o +55 sem confundir com o DDD 55 e compara os dois lados do mesmo jeito
       const telefonesExistentes = new Set(
         clientes
-          .map(c => (c.whatsapp || "").replace(/\D/g, ""))
+          .map(c => digitosTelefone(c.whatsapp))
           .filter(t => t.length >= 10)
       );
 
@@ -525,7 +556,7 @@ export default function Clientes() {
         .map((c: any) => {
           const nome = Array.isArray(c.name) && c.name.length > 0 ? c.name[0] : "";
           const telRaw = Array.isArray(c.tel) && c.tel.length > 0 ? c.tel[0] : "";
-          const telNorm = (telRaw || "").replace(/\D/g, "").replace(/^55/, ""); // Remove código país BR
+          const telNorm = digitosTelefone(telRaw); // sem o código do país (o DDD 55 continua inteiro)
           return {
             nome: nome.trim(),
             telefone: maskPhone(telNorm),
@@ -623,14 +654,14 @@ export default function Clientes() {
     <Janela aberta={showForm} aoFechar={tryCloseForm} tipo="conteudo" titulo={editando ? "Editar cliente" : "Novo cliente"}
       acoes={<>
         <Botao variante="secundario" onClick={tryCloseForm}>Cancelar</Botao>
-        <Botao carregando={saving} onClick={salvarComAviso}>{editando ? "Salvar" : "Cadastrar cliente"}</Botao>
+        <Botao carregando={saving} disabled={enviandoFoto} onClick={salvarComAviso}>{editando ? "Salvar" : "Cadastrar cliente"}</Botao>
       </>}>
       <div className="cl9-f">
         <input ref={fileRef} type="file" accept="image/*" onChange={recorte.escolher} hidden />
       {recorte.janela}
-        <button type="button" className="cl9-f-foto" onClick={() => fileRef.current?.click()}>
+        <button type="button" className="cl9-f-foto" onClick={() => !enviandoFoto && fileRef.current?.click()}>
           <span className="cl9-f-av">{preview ? <img src={preview} alt="" /> : <Camera size={26} weight="bold" />}</span>
-          <span><b>{preview ? "Trocar a foto" : "Colocar uma foto"}</b><small>Opcional · ajuda a lembrar quem é</small></span>
+          <span><b>{enviandoFoto ? "Enviando a foto…" : preview ? "Trocar a foto" : "Colocar uma foto"}</b><small>Opcional · ajuda a lembrar quem é</small></span>
         </button>
 
         <Campo rotulo="Nome" obrigatorio placeholder="Ex.: Ana Beatriz" autoComplete="off" value={completo.nome}
@@ -715,6 +746,11 @@ export default function Clientes() {
       {/* ═══ Carregando (evita piscar) ═══ */}
       {loading ? (
         <div className="cl9"><div className="cl9-esq" aria-label="Carregando clientes">{[0, 1, 2, 3, 4].map(i => <span key={i} />)}</div></div>
+      ) : erroCarregar ? (
+        <div className="cl9">
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os clientes" texto={erroCarregar}
+            acao={<Botao onClick={() => void carregar()}>Tentar de novo</Botao>} />
+        </div>
       ) : (
       <>
 
@@ -743,12 +779,8 @@ export default function Clientes() {
         const prox = aniversariantes[0] ? getDaysUntil(aniversariantes[0].data_nascimento!) : null;
         const quandoNiver = (d: number) => d === 0 ? "hoje" : d === 1 ? "amanhã" : `em ${d} dias`;
         const qtdFiltro = { todos: clientes.length, aniversariantes: aniversariantes.length, recentes: recentesIds.size, sumidas: sumidasIds.size };
-        const linkWhats = (c: Cliente, texto?: string) => {
-          let d = (c.whatsapp || "").replace(/\D/g, "");
-          if (!d) return null;
-          if (!d.startsWith("55")) d = "55" + d;
-          return `https://wa.me/${d}${texto ? `?text=${encodeURIComponent(texto)}` : ""}`;
-        };
+        // (10/10) o DDD 55 era confundido com o código do país e o link saía sem o 55 da frente
+        const linkWhats = (c: Cliente, texto?: string) => linkWhatsApp(c.whatsapp, texto) || null;
         const primeiroNome = (n: string) => (n || "").trim().split(/\s+/)[0] || "";
         const niverCurto = (data?: string | null) => {
           if (!data) return "—";

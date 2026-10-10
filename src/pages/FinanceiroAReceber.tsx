@@ -1,13 +1,14 @@
 import CampoData from '@/components/CampoData'
 import { useTravarRolagem } from "@/hooks/useTravarRolagem";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import Folha from "@/components/financeiro/Folha";
 import { useNavigate } from "react-router-dom";
-import { CalendarBlank, CheckCircle, ArrowSquareOut, Wallet } from "@phosphor-icons/react";
+import { CalendarBlank, CheckCircle, ArrowSquareOut, Wallet, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
-import { Botao, avisar as avisarBase } from "@/components/base";
+import { Botao, TelaVazia, avisar as avisarBase } from "@/components/base";
+import { erroDeConexao } from "@/lib/erros";
 import { supabase } from "@/lib/supabase";
 import { carregarAReceber, isoDia, type ItemReceber } from "@/lib/contasReceber";
 import { registrarPagamento, normalizarForma } from "@/lib/pagamentos";
@@ -32,16 +33,29 @@ export default function FinanceiroAReceber() {
   const navigate = useNavigate();
   const [itens, setItens] = useState<Item[]>([]);
   const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(false); // não deu pra carregar (10/10)
   const [receber, setReceber] = useState<Item | null>(null);
 
+  // 10/10: se a busca falhar, a tela avisa (antes aparecia "Nada a receber agora"); e só vale a resposta da última busca
+  const numBusca = useRef(0);
   const carregar = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const lista = await carregarAReceber(user.id); // regra única (Passos 2 e 6)
-    setItens(lista);
+    const n = ++numBusca.current;
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (n !== numBusca.current) return;
+      if (!user) { if (erroDeConexao(error)) { setErro(true); setCarregando(false); } return; }
+      const r = await carregarAReceber(user.id); // regra única (Passos 2 e 6)
+      if (n !== numBusca.current) return;
+      setItens(r.itens); setErro(r.erro);
+    } catch (e) {
+      console.error("[a receber] não consegui carregar:", e);
+      if (n !== numBusca.current) return;
+      setItens([]); setErro(true);
+    }
     setCarregando(false);
   }, []);
   useEffect(() => { carregar(); }, [carregar]);
+  const tentarDeNovo = () => { setCarregando(true); carregar(); };
 
   const grupos = useMemo(() => {
     const hoje = isoHoje(), em7 = isoMais(6);
@@ -61,7 +75,7 @@ export default function FinanceiroAReceber() {
     <div className="far-root">
       <AppPageHeader
         title="A receber"
-        subtitle={carregando ? "Carregando…" : itens.length ? `${brl(total)} em ${itens.length} ${itens.length === 1 ? "pedido" : "pedidos"}` : "Tudo recebido por aqui"}
+        subtitle={carregando ? "Carregando…" : erro ? "Não deu pra carregar" : itens.length ? `${brl(total)} em ${itens.length} ${itens.length === 1 ? "pedido" : "pedidos"}` : "Tudo recebido por aqui"}
         onBack={() => navigate("/financeiro")}
         infoIcon="💰"
         infoContent={<>
@@ -83,7 +97,12 @@ export default function FinanceiroAReceber() {
 
         {carregando && <p className="far-carregando">Carregando…</p>}
 
-        {!carregando && itens.length === 0 && (
+        {!carregando && erro && (
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar o que falta receber" texto="Confira a internet e tente de novo."
+            acao={<Botao variante="suave" tamanho="m" onClick={tentarDeNovo}>Tentar de novo</Botao>} />
+        )}
+
+        {!carregando && !erro && itens.length === 0 && (
           <div className="far-vazio">
             <span className="far-vazio-ic"><CheckCircle size={34} weight="duotone" /></span>
             <b>Nada a receber agora</b>

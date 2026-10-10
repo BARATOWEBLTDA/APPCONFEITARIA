@@ -2,6 +2,7 @@ import { seloEntrega } from "@/lib/entregaProduto";
 import { unidadeCliente } from '@/lib/formaVenda'
 import KitPicker from '@/components/cardapio/KitPicker'
 import { precoCardapio } from '@/lib/precoCardapio'
+import { pesoDoNome, pesoDoTamanho } from '@/lib/itemSacola'
 import { kitAtivo, calcularKit, selecaoInicial, type KitSelecao } from '@/lib/kitQuantidade'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
@@ -197,6 +198,10 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
   const opSabor = acharOpcao(gSabor, escolhaSabor)
   const opTamanho = acharOpcao(gTamanho, escolhaTamanho)
   const opsRecheios = escolhasRecheio.map(id => acharOpcao(gRecheio, id)).filter(Boolean)
+  // 10/10: tamanho "pelo peso" cadastrado sem o peso → lê o peso do nome da opção ("0,5kg", "500g").
+  // O mesmo valor vale pro preço da opção, pro total e pro que vai pra sacola.
+  const tamanhoPorPeso = (gTamanho as any)?.modo_preco_tamanho === 'por_peso'
+  const pesoOpTamanho = opTamanho ? pesoDoTamanho(opTamanho, tamanhoPorPeso) : 0
 
   // ═══ Cálculo do preço em tempo real ═══════════════════════════════
   const calculo = useMemo<PrecoBreakdownCarrinho>(() => {
@@ -211,8 +216,8 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
       const modo = gt?.modo_preco_tamanho || 'preco_fixo'
       if (modo === 'preco_fixo' && opTamanho.preco > 0) {
         baseEfetivo = opTamanho.preco
-      } else if (modo === 'por_peso' && opTamanho.peso_kg) {
-        baseEfetivo = basePrice * opTamanho.peso_kg
+      } else if (modo === 'por_peso' && pesoOpTamanho > 0) {
+        baseEfetivo = basePrice * pesoOpTamanho
       }
     }
 
@@ -251,7 +256,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
       quantidade_pedido: quantity,
       quantidade_base: (product as any).quantidade_base || null,
       forma_venda: product.forma_venda,
-      tamanho_escolhido_peso_kg: opTamanho?.peso_kg || null,
+      tamanho_escolhido_peso_kg: pesoOpTamanho || null,
     }
     if (opMassa) adicionaisTotal += calcularAdicionalOpcao(opMassa, ctx)
     if (opCobertura) adicionaisTotal += calcularAdicionalOpcao(opCobertura, ctx)
@@ -288,7 +293,8 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
       desconto,
       final,
     }
-  }, [product, grupos, quantity, opMassa, opCobertura, opSabor, opTamanho, opsRecheios.length, basePrice, descPct, extrasMarcados, extrasBiblioteca, kitInfo?.preco])
+    // 10/10: depende das escolhas de recheio (antes era só a quantidade: trocar o recheio A pelo B, com máximo de 1, mantinha o adicional do A)
+  }, [product, grupos, quantity, opMassa, opCobertura, opSabor, opTamanho, pesoOpTamanho, escolhasRecheio, basePrice, descPct, extrasMarcados, extrasBiblioteca, kitInfo?.preco]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ═══ Validação: obrigatórios preenchidos ═══════════════════════════
   const podeAdicionar = useMemo(() => {
@@ -364,7 +370,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
     if (opTamanho) {
       const e: EscolhaOpcao = { id: opTamanho.id, nome: opTamanho.nome }
       if (opTamanho.preco) e.preco_fixo = opTamanho.preco
-      if (opTamanho.peso_kg) e.peso_kg = opTamanho.peso_kg
+      if (pesoOpTamanho > 0) e.peso_kg = pesoOpTamanho
       escolhas.tamanho = e
     }
     if (kitInfo) escolhas.kit = kitInfo.escolha
@@ -421,7 +427,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
   const semTamanho = !!gTamanho && !opTamanho && !kitInfo
   const precosTam = semTamanho ? (gTamanho!.opcoes || []).map((o: any) => {
     const modo = (gTamanho as any)?.modo_preco_tamanho || 'preco_fixo'
-    const v = modo === 'por_peso' ? basePrice * (Number(o.peso_kg) || 0) : (Number(o.preco) || 0)
+    const v = modo === 'por_peso' ? basePrice * pesoDoTamanho(o, true) : (Number(o.preco) || 0)
     return Math.round(v * (1 - descPct) * 100) / 100
   }).filter((v: number) => v > 0) : []
   const valorTopo = semTamanho ? Math.round(precoCardapio(product).valor * (1 - descPct) * 100) / 100 : calculo.final
@@ -472,9 +478,9 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
             let preco = ''
             if (g.tipo === 'sabor' && saborTemPrecoProprio && op.preco > 0) preco = formatCurrency(op.preco)
             else if (g.tipo === 'tamanho' && op.preco > 0) preco = formatCurrency(op.preco)
-            else if (g.tipo === 'tamanho' && (g as any).modo_preco_tamanho === 'por_peso' && op.peso_kg && basePrice > 0) preco = formatCurrency(Math.round(basePrice * op.peso_kg * 100) / 100)
+            else if (g.tipo === 'tamanho' && (g as any).modo_preco_tamanho === 'por_peso' && pesoDoTamanho(op, true) > 0 && basePrice > 0) preco = formatCurrency(Math.round(basePrice * pesoDoTamanho(op, true) * 100) / 100)
             else if ((op.adicional || 0) > 0) preco = `+ ${formatCurrency(op.adicional)}`
-            const peso = op.peso_kg ? `${String(op.peso_kg).replace('.', ',')} kg` : ''
+            const peso = op.peso_kg && pesoDoNome(op.nome) !== Number(op.peso_kg) ? `${String(op.peso_kg).replace('.', ',')} kg` : '' // (10/10) não repete quando o nome já é o peso
             const serve = op.serve ? (/^\d+$/.test(String(op.serve).trim()) ? (emFatias ? `${String(op.serve).trim()} fatias` : `Serve ${String(op.serve).trim()} pessoas`) : `Serve ${op.serve}`) : ''
             const bloqueado = multi && !on && max > 1 && qtdMarcada >= max
             return (

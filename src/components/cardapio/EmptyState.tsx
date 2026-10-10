@@ -1,10 +1,11 @@
 import { Cake, WhatsappLogo } from '@phosphor-icons/react'
+import { linkWhatsApp } from '@/lib/telefone'
 import './cardapioLista.css'
 
 /** Loja ainda sem produto no cardápio: cardápio em montagem (com o WhatsApp da loja quando tem). */
 export function EmptyState({ telefone }: { telefone?: string | null }) {
-  const fone = String(telefone || '').replace(/\D/g, '')
-  const zap = fone ? `https://wa.me/${fone.startsWith('55') ? fone : '55' + fone}` : ''
+  // 10/10: o link trata o +55 e o DDD 55 num lugar só (lib/telefone)
+  const zap = linkWhatsApp(telefone)
   return (
     <div className="cl-vazio cl-vazio--loja">
       <span className="cl-vazio-ic"><Cake size={36} weight="duotone" aria-hidden="true" /></span>

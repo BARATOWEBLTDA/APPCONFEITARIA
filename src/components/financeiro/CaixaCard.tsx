@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { ArrowUp, ArrowDown, Wallet, PencilSimple } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { carregarCaixa, definirSaldoInicial, type EstadoCaixa } from "@/lib/caixa";
+import { erroDeConexao } from "@/lib/erros";
 
 /**
  * Financeiro · Passo 4 (03/10) — cartão "Saldo em caixa" + últimas movimentações.
@@ -18,18 +19,26 @@ export function useCaixa() {
   const [uid, setUid] = useState<string | null>(null);
   const [cx, setCx] = useState<EstadoCaixa | null>(null);
   const recarregar = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    // 10/10: sem internet (ou falha inesperada) a tela avisa, em vez de ficar carregando pra sempre
+    const comErro: EstadoCaixa = { precisaSql: false, configurado: false, semPagamentos: false, saldoInicial: 0, inicio: null, saldo: 0, entrouHoje: 0, saiuHoje: 0, movimentos: [], erro: true };
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (!user) { if (erroDeConexao(error)) setCx(comErro); return; }
     setUid(user.id);
-    setCx(await carregarCaixa(user.id));
+    try { setCx(await carregarCaixa(user.id)); }
+    catch (e) { console.error("[caixa] não consegui carregar:", e); setCx(comErro); }
   }, []);
   useEffect(() => { recarregar(); }, [recarregar]);
   return { uid, cx, recarregar };
 }
 
 /** O cartão escuro "Saldo em caixa" (ou o convite pra informar o saldo inicial). */
-export function SaldoCaixa({ cx, onAcertar, onDepois, destaque }: { cx: EstadoCaixa | null; onAcertar: () => void; onDepois?: () => void; destaque?: boolean }) {
+export function SaldoCaixa({ cx, onAcertar, onDepois, destaque, onTentar }: { cx: EstadoCaixa | null; onAcertar: () => void; onDepois?: () => void; destaque?: boolean; onTentar?: () => void }) {
   if (!cx) return <div className="cxc cxc--carregando" aria-busy="true" />;
+  // 10/10: falha de internet ou do servidor não vira saldo errado nem "falta o SQL"
+  if (cx.erro) return (
+    <div className="cxc-convite" role="alert"><b>Saldo em caixa</b><p>Não deu pra carregar o saldo. Confira a internet e tente de novo.</p>
+      {onTentar && <button type="button" className="cxc-cta" onClick={onTentar}>Tentar de novo</button>}</div>
+  );
   if (cx.precisaSql) return (
     <div className="cxc-convite"><b>Saldo em caixa</b><p>Falta um ajuste no banco de dados pra ativar o caixa (o SQL do Passo 4).</p></div>
   );
@@ -86,7 +95,7 @@ export default function CaixaCard({ mostrarMovimentos = true, meio }: { mostrarM
   const [definir, setDefinir] = useState(false);
   return (
     <>
-      <SaldoCaixa cx={cx} onAcertar={() => setDefinir(true)} />
+      <SaldoCaixa cx={cx} onAcertar={() => setDefinir(true)} onTentar={recarregar} />
       {meio}
       {mostrarMovimentos && <MovimentosCaixa cx={cx} />}
       {definir && uid && cx && <SaldoSheet atual={cx.configurado ? cx.saldo : null} uid={uid} onClose={() => setDefinir(false)} onSalvo={async () => { setDefinir(false); await recarregar(); }} />}

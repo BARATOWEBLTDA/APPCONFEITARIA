@@ -3,6 +3,9 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Check, Wallet, Storefront, Truck, UserCircle, WhatsappLogo } from '@phosphor-icons/react'
 import { supabase } from '@/lib/supabase'
 import { Campo, Janela } from '@/components/base'
+import { digitosTelefone, linkWhatsApp } from '@/lib/telefone'
+import { lojaAtualWhatsApp } from './lojaAtual'
+import { digitosAoDigitar } from './telefoneDigitado'
 import './contaCliente.css'
 
 export type Cliente = { id: string; nome: string; telefone: string }
@@ -16,8 +19,10 @@ export type Pedido = {
 
 export const dinheiro = (v: number) => (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
-export const mascaraTel = (v: string) => {
-  const n = v.replace(/\D/g, '').slice(0, 11)
+// 10/10: tira o +55 antes da máscara (antes "+55 41 99999-8888" virava "(55) 41999-9988").
+// digitando = no campo, enquanto a pessoa escreve (não confunde o DDD 55 com o código do país)
+export const mascaraTel = (v: string, digitando = false) => {
+  const n = digitando ? digitosAoDigitar(v) : digitosTelefone(v).slice(0, 11)
   if (n.length > 10) return `(${n.slice(0, 2)}) ${n.slice(2, 7)}-${n.slice(7)}`
   if (n.length > 6) return `(${n.slice(0, 2)}) ${n.slice(2, 6)}-${n.slice(6)}`
   if (n.length > 2) return `(${n.slice(0, 2)}) ${n.slice(2)}`
@@ -86,7 +91,7 @@ export function JanelaEntrar({ aberta, aoFechar, loja, cor, aoEntrar }: { aberta
       <div className="cc-entrar">
         <p>{novo ? 'Não achamos esse número. Como você se chama?' : 'Use o WhatsApp que você coloca nos pedidos. Assim você acompanha tudo por aqui.'}</p>
         <Campo rotulo="WhatsApp" value={tel} inputMode="tel" autoComplete="tel" placeholder="(00) 90000-0000" autoFocus={!novo}
-          onChange={e => { setTel(mascaraTel(e.target.value)); setNovo(false); setErro('') }}
+          onChange={e => { setTel(mascaraTel(e.target.value, true)); setNovo(false); setErro('') }}
           onKeyDown={e => { if (e.key === 'Enter') entrar() }}
           erro={!novo && erro ? erro : undefined} />
         {novo && (
@@ -116,16 +121,28 @@ export function SemConta({ cor, titulo, texto, aoEntrar, icone }: { cor: string;
 const FEITOS = ['concluido', 'entregue', 'cancelado']
 export const pedidoAberto = (p: Pedido) => !FEITOS.includes(p.status)
 
+// 10/10: conhece as situações que o app grava hoje (e as antigas). Antes, tudo o que não era antigo
+// caía em "Entregue/Retirado": pedido agendado ou em entrega aparecia como entregue.
 function situacao(p: Pedido): { txt: string; passo: number; tom: 'and' | 'ok' | 'off' } {
   const ret = p.tipo_entrega === 'retirada'
   switch (p.status) {
-    case 'novo': return { txt: 'Esperando a loja confirmar', passo: 1, tom: 'and' }
-    case 'confirmado': return { txt: 'Confirmado', passo: 1, tom: 'and' }
-    case 'em_producao': return { txt: 'Em produção', passo: 2, tom: 'and' }
-    case 'pronto': return { txt: ret ? 'Pronto pra retirar' : 'Pronto', passo: 3, tom: 'and' }
-    case 'a_caminho': return { txt: 'Saiu pra entrega', passo: 3, tom: 'and' }
+    case 'aguardando_pagamento': return { txt: 'Aguardando pagamento', passo: 1, tom: 'and' }
+    case 'novo':
+    case 'aguardando_aceite': return { txt: 'Esperando a loja confirmar', passo: 1, tom: 'and' }
+    case 'confirmado':
+    case 'agendado': return { txt: 'Confirmado', passo: 1, tom: 'and' }
+    case 'em_producao':
+    case 'em_preparo': return { txt: 'Em produção', passo: 2, tom: 'and' }
+    case 'pronto':
+    case 'finalizado': return { txt: ret ? 'Pronto pra retirar' : 'Pronto', passo: 3, tom: 'and' }
+    case 'aguardando_retirada': return { txt: 'Pronto pra retirar', passo: 3, tom: 'and' }
+    case 'a_caminho':
+    case 'em_entrega': return { txt: 'Saiu pra entrega', passo: 3, tom: 'and' }
+    case 'concluido':
+    case 'entregue': return { txt: ret ? 'Retirado' : 'Entregue', passo: 4, tom: 'ok' }
     case 'cancelado': return { txt: 'Cancelado', passo: 0, tom: 'off' }
-    default: return { txt: ret ? 'Retirado' : 'Entregue', passo: 4, tom: 'ok' }
+    // Situação que esta tela não conhece: nunca diz que foi entregue
+    default: return { txt: 'Em andamento', passo: 1, tom: 'and' }
   }
 }
 
@@ -140,7 +157,8 @@ export function CartaoPedido({ p, cor }: { p: Pedido; cor: string }) {
     ? new Date(p.data_entrega + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }).replace('.', '') + (p.horario_entrega ? ` às ${p.horario_entrega.slice(0, 5)}` : '')
     : ''
   const itens = p.pedido_itens || []
-  const zap = (() => { try { return (localStorage.getItem('cardapio_whatsapp') || '').replace(/\D/g, '') } catch { return '' } })()
+  // 10/10: o WhatsApp é o da loja desta aba, e o link trata o +55 e o DDD 55 (lib/telefone)
+  const zap = linkWhatsApp(lojaAtualWhatsApp(), `Oi! Queria saber do meu pedido #${p.numero}`)
   const pago = p.status_pagamento === 'pago'
   const pag = PAGAMENTO[p.forma_pagamento] || p.forma_pagamento || ''
 
@@ -174,7 +192,7 @@ export function CartaoPedido({ p, cor }: { p: Pedido; cor: string }) {
       </div>
 
       {aberto && zap && (
-        <a className="cc-zap" href={`https://wa.me/55${zap}?text=${encodeURIComponent(`Oi! Queria saber do meu pedido #${p.numero}`)}`} target="_blank" rel="noreferrer">
+        <a className="cc-zap" href={zap} target="_blank" rel="noreferrer">
           <WhatsappLogo size={20} weight="bold" />Falar com a loja
         </a>
       )}

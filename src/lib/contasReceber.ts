@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { valorRecebidoPedido } from "@/lib/financeiroPedido";
+import { buscarTudo } from "@/lib/buscarTudo";
 
 /**
  * Contas a receber (Passo 2) e recebimentos previstos (Passo 6) — a MESMA regra pros dois.
@@ -18,11 +19,20 @@ export type ItemReceber = {
 export const isoDia = (n = 0) => { const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 export const diasAte = (iso: string) => { const [y, m, d] = iso.split("-").map(Number); const h = new Date(); return Math.round((new Date(y, m - 1, d).getTime() - new Date(h.getFullYear(), h.getMonth(), h.getDate()).getTime()) / 86400000); };
 
-export async function carregarAReceber(uid: string): Promise<ItemReceber[]> {
-  const { data } = await supabase.from("pedidos")
+/**
+ * 10/10: devolve { itens, erro }. Com erro (internet, servidor) a tela avisa "Não deu pra carregar":
+ * antes a lista vinha vazia e aparecia "Nada a receber".
+ * A busca vai de 1.000 em 1.000 (o Supabase corta em 1.000 linhas sem avisar) e já deixa de fora, no banco,
+ * os pedidos pagos e os estornados: eles nunca têm saldo, então o resultado é o mesmo.
+ */
+export async function carregarAReceber(uid: string): Promise<{ itens: ItemReceber[]; erro: boolean }> {
+  const { data, error } = await buscarTudo<any>((de, ate) => supabase.from("pedidos")
     .select("id, numero, cliente_nome, valor_total, valor_recebido, status, status_pagamento, forma_pagamento, data_entrega, horario_entrega, data_prevista_pagamento")
-    .eq("user_id", uid).neq("status", "cancelado");
-  return ((data as any[]) || [])
+    .eq("user_id", uid).neq("status", "cancelado")
+    .or("status_pagamento.is.null,status_pagamento.not.in.(pago,estornado)")
+    .order("id").range(de, ate));
+  if (error) { console.error("[a receber] não consegui carregar:", error); return { itens: [], erro: true }; }
+  const itens = data
     .filter(p => p.status_pagamento !== "estornado")
     .map(p => {
       const total = Number(p.valor_total) || 0;
@@ -32,6 +42,7 @@ export async function carregarAReceber(uid: string): Promise<ItemReceber[]> {
     })
     .filter(p => p.falta > 0.009)
     .sort((a, b) => (a.dataRef || "9999").localeCompare(b.dataRef || "9999"));
+  return { itens, erro: false };
 }
 
 export type Previstos = { d7: number; d15: number; d30: number; atrasados: number; semData: number; qtd30: number };

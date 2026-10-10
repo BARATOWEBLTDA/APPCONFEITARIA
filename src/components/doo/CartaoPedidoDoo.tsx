@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { avisar } from "@/components/base";
 import { Receipt, Check, WarningCircle } from "@phosphor-icons/react";
 import { criarPedido, montarPedido, subtotalDe, totalDe, type RascunhoPedido, type ProdutoCat, type ClienteCat, type DadosPedido } from "@/lib/pedidosDoo";
 
@@ -34,6 +35,7 @@ export default function CartaoPedidoDoo({ uid, rascunho, catalogo, estado, numer
     setSalvando(false);
     if (res.ok === false) { setErro(res.erro); return; }
     const p: any = res.pedido;
+    if (res.aviso) avisar(res.aviso, { tipo: "erro" }); // (10/10) pedido salvo, recebimento não
     onFeito("salvo", { id: p.id, numero: p.numero, resumo: `${dados.clienteNome || "venda avulsa"}, ${brl(total)}` });
   };
 

@@ -302,7 +302,11 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
   const recorte = useRecorte(f => { void handleUploadFile(f); }, { forma: "rect" });
 
   const valorNum = parseNumBR(form.valor_compra);
-  const qtdNum = parseNumBR(form.qtd_embalagem) || 1;
+  // 10/10: em g, kg, ml e L "quanto vem" é obrigatório (vazio virava 1 e o custo saía por 1 g).
+  // Em unidade, vazio continua valendo 1.
+  const precisaQtd = form.unidade !== "un";
+  const qtdDigitada = parseNumBR(form.qtd_embalagem);
+  const qtdNum = qtdDigitada > 0 ? qtdDigitada : (precisaQtd ? 0 : 1);
   const erroNome = tentouSalvar && !form.nome.trim() ? "Falta o nome" : undefined;
   const erroValor = tentouSalvar && valorNum <= 0 ? "Falta o preço" : undefined;
   const erroQtd = tentouSalvar && qtdNum <= 0 ? "Falta quanto vem" : undefined;
@@ -369,7 +373,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
     onCancel();
   };
 
-  const custo = valorNum > 0 ? custoNaReceita(valorNum / qtdNum, form.unidade, qtdNum) : null;
+  const custo = valorNum > 0 && qtdNum > 0 ? custoNaReceita(valorNum / qtdNum, form.unidade, qtdNum) : null;
   const medidaTxt = form.unidade === "un" ? "un" : form.unidade;
   const emb = form.embalagem_tipo;
   const rotuloQtd = emb === "Avulso" ? "Quanto vem" : `Quanto vem ${EMB_FEMININAS.includes(emb) ? "na" : "no"} ${emb.toLowerCase()}`;
@@ -471,7 +475,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       )}
 
       <div className="cl9-f-2">
-        <Campo rotulo={rotuloQtd} inputMode="decimal" placeholder="1" value={form.qtd_embalagem} erro={erroQtd}
+        <Campo rotulo={rotuloQtd} inputMode="decimal" placeholder={precisaQtd ? "Ex.: 395" : "1"} value={form.qtd_embalagem} erro={erroQtd}
           onChange={e => setForm(f => ({ ...f, qtd_embalagem: e.target.value }))}
           depois={<span className="cl9-f-uf">{medidaTxt}</span>} />
         <Campo rotulo="Quanto pagou" inputMode="decimal" prefixo="R$" placeholder="0,00" value={form.valor_compra} erro={erroValor}

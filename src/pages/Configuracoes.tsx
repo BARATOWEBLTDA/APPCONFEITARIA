@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { INDICACAO_ATIVA } from "@/lib/recursos";
 import { useNavigate } from "react-router-dom";
-import { Bell, Camera, ChatCircleText, CaretRight, Crown, FileText, Gift, Headset, Lightbulb, PencilSimple, SignOut, Bug } from "@phosphor-icons/react";
+import { Bell, Camera, ChatCircleText, CaretRight, Crown, FileText, Gift, Headset, Lightbulb, PencilSimple, SignOut, Bug, WarningCircle } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
+import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
-import { Botao, Campo, Janela, avisar, informar } from "@/components/base";
-import { refreshProfile } from "@/hooks/useProfile";
+import { Botao, Campo, Janela, TelaVazia, avisar, informar } from "@/components/base";
+import { refreshProfile, sairDaConta } from "@/hooks/useProfile";
 import { useRecorte } from "@/components/ui/useRecorte";
 import TermosModal from "@/components/TermosModal";
 import EditarPerfilModal from "@/components/EditarPerfilModal";
@@ -44,6 +45,7 @@ const formatPhone = (value: string) => {
 export default function Configuracoes() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [erroCarregar, setErroCarregar] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -66,22 +68,27 @@ export default function Configuracoes() {
   const [senhaMsg, setSenhaMsg] = useState("");
   const [savingSenha, setSavingSenha] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      setUserId(user.id);
-      setUserEmail(user.email || "");
-      const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-      const proExpira = data?.pro_expira_em ? new Date(data.pro_expira_em) : null;
-      setPro(data?.plano === "pro" && (!proExpira || proExpira > new Date()));
-      if (data) {
-        setForm({ nome: data.nome || "", nome_loja: data.nome_loja || "", foto_url: data.foto_url || "", telefone: data.telefone || "" });
-        if (data.foto_url) setPreview(data.foto_url);
-      }
-      setLoading(false);
-    })();
-  }, []);
+  // (10/10) Sem internet a tela ficava carregando pra sempre (o getUser vai à rede) e, quando só a leitura do perfil
+  // falhava, abria com o formulário em branco: salvar gravava vazio por cima. Agora mostra o erro com "Tentar de novo"
+  // e o perfil só pode ser editado depois de lido. O getSession lê a conta do próprio aparelho.
+  const carregar = async () => {
+    setLoading(true); setErroCarregar("");
+    let user: { id: string; email?: string } | null = null;
+    try { user = (await supabase.auth.getSession()).data.session?.user ?? null; } catch { /* trata abaixo */ }
+    if (!user) { setErroCarregar("Tente de novo em instantes."); setLoading(false); return; }
+    setUserId(user.id);
+    setUserEmail(user.email || "");
+    const { data, error: erroPerfil } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+    if (erroPerfil) { setErroCarregar(explicarErro(erroPerfil, "Tente de novo em instantes.")); setLoading(false); return; }
+    const proExpira = data?.pro_expira_em ? new Date(data.pro_expira_em) : null;
+    setPro(data?.plano === "pro" && (!proExpira || proExpira > new Date()));
+    if (data) {
+      setForm({ nome: data.nome || "", nome_loja: data.nome_loja || "", foto_url: data.foto_url || "", telefone: data.telefone || "" });
+      if (data.foto_url) setPreview(data.foto_url);
+    }
+    setLoading(false);
+  };
+  useEffect(() => { void carregar(); }, []);
 
   const enviarFoto = async (file: File) => {
     if (!userId) return;
@@ -106,7 +113,7 @@ export default function Configuracoes() {
   const recorte = useRecorte(f => { void enviarFoto(f); }, { forma: "round" });
 
   const salvarPerfil = async () => {
-    if (!userId) return;
+    if (!userId || erroCarregar) return; // perfil não lido: não grava o formulário em branco por cima
     if (!form.nome.trim()) { setError("Escreva seu nome."); return; }
     setSaving(true); setError("");
     const { error: err } = await supabase.from("profiles").upsert({ id: userId, nome: form.nome.trim(), nome_loja: form.nome_loja, foto_url: form.foto_url, telefone: form.telefone }, { onConflict: "id" });
@@ -131,15 +138,17 @@ export default function Configuracoes() {
     if (reauthErr) { setSavingSenha(false); return setSenhaMsg("A senha atual está errada."); }
     const { error } = await supabase.auth.updateUser({ password: novaSenha });
     if (error) { setSavingSenha(false); return setSenhaMsg("Não deu pra trocar a senha. Tente de novo."); }
-    try { await supabase.auth.signOut({ scope: "others" }); } catch { /* opcional */ }
+    // sair dos outros aparelhos precisa do servidor: o signOut devolve o erro (não lança). Se falhar, avisa (10/10)
+    let saiuDosOutros = false;
+    try { saiuDosOutros = !(await supabase.auth.signOut({ scope: "others" })).error; } catch { /* avisa abaixo */ }
     setSavingSenha(false);
-    setSenhaMsg("Senha alterada. Os outros aparelhos saíram da conta.");
+    setSenhaMsg(saiuDosOutros ? "Senha alterada. Os outros aparelhos saíram da conta." : "Senha alterada. Não deu pra sair dos outros aparelhos agora.");
     setSenhaAtual(""); setNovaSenha(""); setConfirmSenha("");
   };
 
   const sair = async () => {
-    await supabase.auth.signOut();
-    try { localStorage.removeItem("doonly_profile_cache_v1"); } catch { /* ok */ }
+    // (10/10) sai neste aparelho mesmo sem internet; só vai pro login quando a sessão daqui foi mesmo encerrada
+    if (!(await sairDaConta())) { avisar("Não deu pra sair agora. Tente de novo.", { tipo: "erro" }); return; }
     navigate("/login");
   };
 
@@ -163,8 +172,8 @@ export default function Configuracoes() {
       avisar("Não deu pra registrar o pedido agora. Tente de novo ou fale com a equipe Doonly.", { tipo: "erro" });
       return;
     }
-    await supabase.auth.signOut();
-    navigate("/login");
+    if (await sairDaConta()) navigate("/login");
+    else setExcluindo(false);
   };
 
   const inicial = (form.nome || "?").trim().charAt(0).toUpperCase();
@@ -176,6 +185,12 @@ export default function Configuracoes() {
         {loading ? (
           <div className="cl9-esq" aria-label="Carregando">{[0, 1, 2].map(k => <span key={k} />)}</div>
         ) : (<>
+          {/* Perfil não carregou: avisa e deixa tentar de novo (o resto da tela, com o Sair, continua) */}
+          {erroCarregar && (
+            <TelaVazia caixa compacta icone={<WarningCircle size={30} />} titulo="Não deu pra carregar seu perfil" texto={erroCarregar}
+              acao={<Botao tamanho="m" onClick={() => void carregar()}>Tentar de novo</Botao>} />
+          )}
+          {!erroCarregar && (<>
           {/* Perfil */}
           <section className="cf9-card cf9-perfil">
             <button type="button" className="cf9-av" onClick={() => !uploading && fileRef.current?.click()} aria-label={preview ? "Trocar a foto" : "Colocar uma foto"}>
@@ -209,6 +224,7 @@ export default function Configuracoes() {
               ? <Botao variante="secundario" cheio onClick={() => navigate("/minha-assinatura")}>Ver minha assinatura</Botao>
               : <Botao variante="vinho" cheio icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>}
           </section>
+          </>)}
 
           <InstalarAppCard />
 

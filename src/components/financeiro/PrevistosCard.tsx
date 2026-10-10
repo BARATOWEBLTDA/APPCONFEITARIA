@@ -13,13 +13,30 @@ const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "cu
 export default function PrevistosCard() {
   const navigate = useNavigate();
   const [p, setP] = useState<Previstos | null>(null);
+  const [erro, setErro] = useState(false);
+  const [tentativa, setTentativa] = useState(0);
   useEffect(() => {
+    let cancelado = false;
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      setP(calcularPrevistos(await carregarAReceber(user.id)));
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const r = await carregarAReceber(user.id);
+        if (cancelado) return;
+        // 10/10: com erro, avisa (antes mostrava R$ 0,00 e "Nenhum recebimento previsto")
+        if (r.erro) setErro(true); else { setErro(false); setP(calcularPrevistos(r.itens)); }
+      } catch { if (!cancelado) setErro(true); }
     })();
-  }, []);
+    return () => { cancelado = true; };
+  }, [tentativa]);
+  if (erro) return (
+    <div className="pvc pvc--erro" role="alert">
+      <div className="pvc-h"><b>Recebimentos previstos</b></div>
+      <p>Não deu pra carregar. Tente de novo.</p>
+      <button type="button" onClick={() => { setErro(false); setTentativa(t => t + 1); }}>Tentar de novo</button>
+      <style>{CSS}</style>
+    </div>
+  );
   if (!p) return <div className="pvc pvc--carregando" aria-busy="true" />;
 
   return (
@@ -36,7 +53,12 @@ export default function PrevistosCard() {
           : <span>{p.qtd30 > 0 ? `${p.qtd30} ${p.qtd30 === 1 ? "pedido" : "pedidos"} nos próximos 30 dias` : "Nenhum recebimento previsto nos próximos 30 dias"}</span>}
         <i>Ver o que falta receber <CaretRight size={13} weight="bold" /></i>
       </div>
-      <style>{`
+      <style>{CSS}</style>
+    </button>
+  );
+}
+
+const CSS = `
         .pvc { display: block; width: 100%; text-align: left; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 14px; font-family: var(--font-base); color: var(--ui-texto); cursor: pointer; }
         .pvc--carregando { height: 128px; background: var(--ui-linha); border: none; }
         .pvc-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 10px; }
@@ -48,7 +70,7 @@ export default function PrevistosCard() {
         .pvc-f { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 10px; font-size: 12.5px; color: var(--ui-texto-2); }
         .pvc-atr { color: var(--ui-vermelho); font-weight: 700; }
         .pvc-f i { font-style: normal; display: inline-flex; align-items: center; gap: 3px; color: var(--ui-rosa-escuro); font-weight: 700; white-space: nowrap; }
-      `}</style>
-    </button>
-  );
-}
+        .pvc--erro { cursor: default; box-sizing: border-box; }
+        .pvc--erro p { margin: 0 0 10px; font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; }
+        .pvc--erro button { min-height: 44px; border: 1.5px solid var(--ui-borda-campo); background: var(--ui-branco); border-radius: var(--ui-raio-p); padding: 0 14px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-texto); cursor: pointer; }
+`;

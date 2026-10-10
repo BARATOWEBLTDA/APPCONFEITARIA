@@ -204,6 +204,29 @@ export function clearProfileCache() {
 }
 
 /**
+ * Sai da conta NESTE aparelho, mesmo sem internet (10/10).
+ * O signOut do Supabase avisa o servidor primeiro; sem internet ele devolve o erro (não lança) e deixa a sessão
+ * guardada: a tela de entrar aparecia, mas a conta continuava aberta. E o signOut({ scope: "local" }) também
+ * depende do servidor. Então, se o servidor não respondeu, a sessão guardada no aparelho é apagada aqui.
+ * Devolve true quando não sobrou sessão neste aparelho (só aí a tela pode ir pro login).
+ */
+export async function sairDaConta(): Promise<boolean> {
+  let erro: unknown;
+  try { erro = (await supabase.auth.signOut()).error; } catch (e) { erro = e; }
+  if (erro) {
+    // primeiro pelo caminho do próprio Supabase (apaga a sessão e avisa as telas que saiu)…
+    try { await (supabase.auth as any)._removeSession?.(); } catch { /* segue pro plano B */ }
+    // …e, por garantia, apaga a sessão guardada (igual ao "Lembrar de mim" desmarcado)
+    try {
+      Object.keys(localStorage).filter(k => /^sb-.*-auth-token/.test(k)).forEach(k => localStorage.removeItem(k));
+    } catch { /* sem acesso ao armazenamento */ }
+  }
+  const saiu = !usuarioLogadoNoAparelho();
+  if (saiu) clearProfileCache();
+  return saiu;
+}
+
+/**
  * Domínio canônico do Doonly. O link público SEMPRE aponta pra cá,
  * independente de onde o app está sendo acessado (localhost, preview 
  * Vercel, domínio secundário). Isso garante que confeiteiras possam 

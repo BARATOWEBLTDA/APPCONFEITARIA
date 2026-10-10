@@ -3,6 +3,7 @@
 // (% de cada venda ou R$ por pedido) e mão de obra (salário, horas e dias).
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
+import { parseNumBR } from "@/lib/numeroBR";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Buildings, Percent, Clock, Plus, CaretRight, Receipt } from "@phosphor-icons/react";
@@ -201,7 +202,8 @@ function VariavelSheet({ uid, item, onClose, onFeito }: { uid: string; item: Cus
   const [excluir, setExcluir] = useState(false);
   const [ocupado, setOcupado] = useState(false);
   const [erro, setErro] = useState("");
-  const v = num(valor);
+  // 10/10: a porcentagem aceita "3,5" e "3.5" (antes o ponto era apagado e "3.5" virava 35). O valor em reais segue na máscara de centavos.
+  const v = tipo === "percentual" ? Math.round(parseNumBR(valor) * 100) / 100 : num(valor);
   const salvar = async () => {
     if (!nome.trim()) { setErro("Dê um nome (ex.: Taxa da maquininha)"); return; }
     if (v <= 0) { setErro("Digite o valor"); return; }

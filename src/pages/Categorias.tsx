@@ -3,6 +3,7 @@ import { useRecorte } from "@/components/ui/useRecorte";
 import { useNavigate } from "react-router-dom";
 import { ArrowDown, ArrowUp, DotsThreeVertical, Image as ImageIcon, Info, PencilSimple, Plus, SquaresFour, Trash, UploadSimple } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
+import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, BotaoIcone, Campo, Janela, TelaVazia, Titulo, avisar, confirmar, informar } from "@/components/base";
 import "./categorias.css";
@@ -91,19 +92,33 @@ export default function Categorias() {
   const recorte = useRecorte(f => { void handleImageUpload(f); }, { forma: "rect" });
 
   const handleSalvar = async () => {
-    if (!form.nome.trim()) return avisar("Escreva o nome da categoria", { tipo: "erro" });
+    const novo = form.nome.trim();
+    if (!novo) return avisar("Escreva o nome da categoria", { tipo: "erro" });
+    // 10/10: nome repetido não salva (os produtos guardam o NOME da categoria: duas iguais se misturavam)
+    if (categorias.some(c => c.id !== form.id && c.nome.trim().toLowerCase() === novo.toLowerCase())) {
+      return avisar("Já existe uma categoria com esse nome", { tipo: "erro" });
+    }
     setSaving(true);
+    // 10/10: confere o erro de cada gravação (antes fechava a janela como se tivesse salvado)
+    const falhou = (err: unknown) => { setSaving(false); avisar(explicarErro(err, "Não deu pra salvar a categoria. Tente de novo."), { tipo: "erro" }); };
     if (form.id) {
       const antigo = categorias.find(c => c.id === form.id)?.nome;
-      const novo = form.nome.trim();
-      await supabase.from("categorias").update({ nome: novo, imagem_url: form.imagem_url || null, ordem: form.ordem }).eq("id", form.id);
+      const { error } = await supabase.from("categorias").update({ nome: novo, imagem_url: form.imagem_url || null, ordem: form.ordem }).eq("id", form.id);
+      if (error) return falhou(error);
       // Os produtos guardam o NOME da categoria: renomeou, eles acompanham (antes ficavam numa categoria que não existia mais)
       if (antigo && antigo !== novo) {
-        await supabase.from("produtos").update({ categoria: novo }).eq("user_id", userId).eq("categoria", antigo);
+        const { error: errProd } = await supabase.from("produtos").update({ categoria: novo }).eq("user_id", userId).eq("categoria", antigo);
+        if (errProd) {
+          // Os produtos não acompanharam: desfaz o nome pra eles não ficarem numa categoria que não existe
+          await supabase.from("categorias").update({ nome: antigo }).eq("id", form.id);
+          await loadCategorias(userId);
+          return falhou(errProd);
+        }
         await loadProdutos(userId);
       }
     } else {
-      await supabase.from("categorias").insert({ nome: form.nome, imagem_url: form.imagem_url || null, ordem: form.ordem, user_id: userId });
+      const { error } = await supabase.from("categorias").insert({ nome: novo, imagem_url: form.imagem_url || null, ordem: form.ordem, user_id: userId });
+      if (error) return falhou(error);
     }
     await loadCategorias(userId);
     setSaving(false);

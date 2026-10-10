@@ -4,6 +4,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { supabase } from "@/lib/supabase";
 import { gerarDocumento, abrirJanela, esc, brl, card, kv, kpis } from "@/lib/pdfDoonly";
+import { calcularCustoLucro } from "@/lib/produto-precificacao";
 
 const UNIT: Record<string, { family: string; toBase: number }> = {
   kg: { family: "massa", toBase: 1 }, g: { family: "massa", toBase: 0.001 },
@@ -41,17 +42,17 @@ export async function gerarFichaProduto(produto: any, _userId?: string): Promise
       supabase.from("config_mao_obra").select("salario_mensal, horas_dia, dias_semana").eq("user_id", uid).maybeSingle().then(r => r, () => ({ data: null } as any)),
     ]) : [{ data: null }, { data: null }] as any;
     const cvConta = (perfilCv as any)?.custos_invisiveis_pct;
-    const cvPct = cvConta != null ? Number(cvConta) : (p.cv_percentual != null ? (Number(p.cv_percentual) || 0) : 25);
-    const cv = cmv * (cvPct / 100);
     const salConta = Number((mao as any)?.salario_mensal) || 0;
-    const sal = salConta > 0 ? salConta : (Number(p.salario_desejado) || 0);
-    const horas = salConta > 0 ? (Number((mao as any).horas_dia) || 8) * (Number((mao as any).dias_semana) || 5) : (Number(p.horas_semanais) || 40);
-    const min = Number(p.tempo_preparo_min) || 0;
-    const mo = sal > 0 && min > 0 ? (sal / (horas * 4.33)) * (min / 60) : 0;
-    const custo = cmv + cv + mo;
-    const preco = p.promocao && Number(p.preco_promocional) > 0 ? Number(p.preco_promocional) : Number(p.preco_normal) || 0;
-    const lucro = preco - custo;
-    const margem = preco > 0 ? (lucro / preco) * 100 : 0;
+    // 10/10: a conta é a mesma função da tela de Produtos e da Ficha técnica (promoção em % incluída)
+    const conta = calcularCustoLucro(
+      { ...p, produto_insumos: itens },
+      salConta > 0 ? { salario: salConta, horasSemana: (Number((mao as any).horas_dia) || 8) * (Number((mao as any).dias_semana) || 5) } : null,
+      cvConta != null ? Number(cvConta) : null,
+    );
+    const { cvPct, cv, mo, preco, lucro } = conta;
+    const min = conta.tempoMin;
+    const custo = conta.custoTotal;
+    const margem = conta.margemLucro;
 
     const tabela = linhas.length
       ? `<table class="tb"><tr><th>Ingrediente</th><th class="c">Quantidade</th><th class="r">Custo</th></tr>${linhas.map((l: any) => `<tr><td>${esc(l.nome)}</td><td class="c">${esc(l.qtd)}</td><td class="r">${brl(l.custo)}</td></tr>`).join("")}<tr class="sub"><td>CMV (ingredientes)</td><td></td><td class="r">${brl(cmv)}</td></tr></table>`

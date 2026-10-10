@@ -25,6 +25,8 @@ import { valorRecebidoPedido } from '@/lib/financeiroPedido'
 import { useTravarRolagem } from '@/hooks/useTravarRolagem'
 // ── EditarPedido.tsx ─────────────────────────────────────────────────────────
 import { ajustarRecebido } from '@/lib/pagamentos'
+import { excluirPedido as excluirPedidoNoBanco } from '@/lib/pedidosDoo'
+import { digitosTelefone, linkWhatsApp } from '@/lib/telefone'
 import CampoNumero from "@/components/ui/CampoNumero"
 import ReqTag from "@/components/ReqTag";
 // Tela de edição de pedido — design novo estilo Dora
@@ -327,6 +329,7 @@ export default function EditarPedido() {
   const [clienteId, setClienteId] = useState<string | null>(null)
   const [clienteNome, setClienteNome] = useState('')
   const [clienteTelefone, setClienteTelefone] = useState('')
+  const clienteDoEnderecoRef = useRef<string | null>(null) // de qual cliente é o endereço que está na tela (pra troca de cliente)
 
   const [statusPedido, setStatusPedido] = useState('agendado')
   const [tipoEntrega, setTipoEntrega] = useState<'retirada' | 'entrega'>('retirada')
@@ -397,13 +400,21 @@ export default function EditarPedido() {
   const avisarJanela = (titulo: string, texto?: string, icone: IconeDialogo = 'alerta') => { informar({ titulo, texto, icone }) }
   const confirmarJanela = (o: DialogoOpcoes) => confirmar({ titulo: o.titulo, texto: o.texto, icone: o.icone, rotulo: o.rotuloConfirmar, perigo: o.perigo })
   // Excluir pedido (03/10): veio da janela da lista, que saiu; aqui fica longe do toque fácil
+  const excluindoRef = useRef(false)
   const excluirPedido = async () => {
     const ok = await confirmarJanela({ titulo: `Excluir o pedido #${pedido?.numero ?? ''}?`, texto: 'Ele some da lista, da agenda e do financeiro. Não dá pra desfazer. Se o cliente só desistiu, prefira "Cancelar pedido".', icone: 'erro', rotuloConfirmar: 'Excluir', perigo: true })
-    if (!ok || !pedido) return
-    await supabase.from('pedido_itens').delete().eq('pedido_id', pedido.id)
-    const { error } = await supabase.from('pedidos').delete().eq('id', pedido.id)
-    if (error) { avisarJanela('Não foi possível excluir', explicarErro(error, 'Tente de novo em instantes.'), 'erro'); return }
-    navigate('/pedidos')
+    if (!ok || !pedido || excluindoRef.current) return
+    // (10/10) a mesma regra da lista (lib/pedidosDoo): estorna os recebimentos antes e para se algum passo falhar
+    excluindoRef.current = true
+    try {
+      const r = await excluirPedidoNoBanco(pedido.id)
+      if (r.ok === false) {
+        if (r.estornou) await recarregarDinheiro() // o pedido ficou, mas os recebimentos já saíram: a tela mostra o que está gravado
+        avisarJanela('Não foi possível excluir', r.erro, 'erro')
+        return
+      }
+      navigate('/pedidos')
+    } finally { excluindoRef.current = false }
   }
   const snapshotRef = useRef<string | null>(null)
 
@@ -509,7 +520,8 @@ export default function EditarPedido() {
   })()
   const desdeTxt = clienteInfo?.desde ? new Date(clienteInfo.desde).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }).replace('. de ', '/').replace(' de ', '/').replace('.', '') : ''
   // só telefone de verdade mostra WhatsApp/Ligar (cliente de balcão sem telefone não ganha botão vazio)
-  const telDigitos = telefoneValido(clienteTelefone) ? (clienteTelefone || '').replace(/\D/g, '').replace(/^55(?=\d{10,11}$)/, '') : ''
+  // (10/10) os dígitos e o link do WhatsApp saem de lib/telefone (trata o +55 e o DDD 55)
+  const telDigitos = telefoneValido(clienteTelefone) ? digitosTelefone(clienteTelefone) : ''
   const nomeCurto = (n: string) => { const p = toTitleCase(n.trim()).split(/\s+/).filter(Boolean); return p.length > 2 ? `${p[0]} ${p[p.length - 1]}` : p.join(' ') }
 
   // ── Aba Entrega (03/10) ──────────────────────────────────────────────
@@ -601,6 +613,7 @@ export default function EditarPedido() {
       setPedido(p)
       // Popular states editáveis
       setClienteId(p.cliente_id || null)
+      clienteDoEnderecoRef.current = p.cliente_id || null
       setClienteNome(p.cliente_nome || '')
       setClienteTelefone(p.cliente_telefone || '')
       setStatusPedido(p.status || 'agendado')
@@ -801,12 +814,20 @@ export default function EditarPedido() {
     setClienteId(c.id)
     setClienteNome(c.nome)
     setClienteTelefone(c.telefone || c.whatsapp || '')
-    // Se tem endereço no cadastro do cliente, preenche
-    if (c.rua) setEnderecoRua(c.rua)
-    if (c.numero) setEnderecoNumero(c.numero)
-    if (c.bairro) setEnderecoBairro(c.bairro)
-    if (c.cidade) setEnderecoCidade(c.cidade)
-    if (c.complemento) setEnderecoComplemento(c.complemento)
+    // (10/10) Trocou de cliente: o endereço inteiro passa a ser o dela (vazio no que ela não tem).
+    // Antes só os campos preenchidos entravam e sobrava pedaço do endereço da cliente anterior.
+    // Mesma cliente de novo: não mexe. Pedido sem cliente antes + cliente sem endereço: fica o que estava escrito.
+    const anterior = clienteDoEnderecoRef.current
+    const temEndereco = !!(c.rua || c.numero || c.bairro || c.cidade || c.complemento)
+    if (c.id !== anterior && (anterior || temEndereco)) {
+      setEnderecoRua(c.rua || '')
+      setEnderecoNumero(c.numero || '')
+      setEnderecoBairro(c.bairro || '')
+      setEnderecoCidade(c.cidade || '')
+      setEnderecoComplemento(c.complemento || '')
+      setEnderecoCep('') // o CEP era do endereço anterior ("Usar endereço do cliente" traz o dela)
+    }
+    clienteDoEnderecoRef.current = c.id
     setModalCliente(false)
     setBuscaCliente('')
   }
@@ -815,6 +836,11 @@ export default function EditarPedido() {
   const handleExportarPDF = async () => {
     if (!pedido) return
     // Usa o state atual (que pode ter mudanças não salvas) pra gerar o PDF
+    // (10/10) o pagamento sai do dinheiro de agora (recebidoAtual/faltaReceber, relidos do banco depois de
+    // receber, estornar ou finalizar); antes saía da situação de quando a tela abriu
+    const pagoPdf = recebidoAtual > 0.009
+      ? (faltaReceber <= 0.009 ? 'pago' : 'parcial')
+      : ((pedido as any).status_pagamento === 'pago' && total <= 0.009 ? 'pago' : 'pendente') // pedido de valor zero já marcado como pago
     await gerarPedidoPDF({
       id: pedido.id,
       numero: pedido.numero,
@@ -822,7 +848,7 @@ export default function EditarPedido() {
       cliente_nome: clienteNome,
       cliente_telefone: clienteTelefone,
       status: statusPedido,
-      status_pagamento: situacaoPag === 'total' ? 'pago' : situacaoPag === 'parcial' ? 'parcial' : 'pendente',
+      status_pagamento: pagoPdf,
       tipo_entrega: tipoEntrega,
       tipo_venda: pedido.tipo_venda,
       data_entrega: dataEntrega,
@@ -834,13 +860,13 @@ export default function EditarPedido() {
       endereco_complemento: enderecoComplemento,
       valor_total: total,
       valor_produtos: subtotalItens,
-      valor_recebido: situacaoPag === 'total' ? total : situacaoPag === 'parcial' ? valorParcial : 0,
+      valor_recebido: recebidoAtual,
       desconto: desconto,
       acrescimo: acrescimo,
       taxa_entrega: tipoEntrega === 'entrega' ? taxaEntrega : 0,
       forma_pagamento: formaPagamento,
       observacoes: pedido.observacoes,
-      data_prevista_pagamento: situacaoPag === 'fiado' ? dataPrevistaPagamento : null,
+      data_prevista_pagamento: faltaReceber > 0.009 ? (dataPrevistaPagamento || null) : null,
       origem: pedido.origem,
       cupom_codigo: (pedido as any).cupom_codigo,
       created_at: pedido.created_at,
@@ -918,9 +944,11 @@ export default function EditarPedido() {
         endereco_cidade: tipoEntrega === 'entrega' ? enderecoCidade : '',
         endereco_complemento: tipoEntrega === 'entrega' ? enderecoComplemento : '',
         endereco_cep: tipoEntrega === 'entrega' ? (enderecoCep.replace(/\D/g, '') || null) : null, // antes o CEP se perdia ao salvar
+        // (10/10) "Combinado pra pagar o resto" vale sozinho: a data do campo é gravada mesmo sem troca de
+        // situação do pagamento (antes só ia junto com ela, que esta tela não muda mais, e nunca era salva)
         data_prevista_pagamento: mexeuNoPagamento
           ? (situacaoPag === 'fiado' ? (dataPrevistaPagamento || null) : null)
-          : ((pedido as any)?.data_prevista_pagamento ?? null),
+          : (dataPrevistaPagamento || null),
       }
 
       // ── 1) UPDATE do pedido ─────────────────────────────────────────
@@ -1053,6 +1081,12 @@ export default function EditarPedido() {
     }))
   }
 
+  // (10/10) O campo de quantidade pode ficar vazio enquanto ela digita (antes virava 1 na hora e não dava
+  // pra apagar e escrever outro número). O texto fica só no campo; o item continua sempre com um número
+  // válido (o mínimo), então salvar no meio da digitação não grava quantidade vazia. Ao sair do campo, ele
+  // volta a mostrar a quantidade do item.
+  const [qtdTexto, setQtdTexto] = useState<string | null>(null)
+  useEffect(() => { setQtdTexto(null) }, [itemMenu])
   const setQtdManual = (idx: number, valor: number) => {
     setItens(prev => prev.map((it, i) => {
       if (i !== idx) return it
@@ -1268,7 +1302,7 @@ export default function EditarPedido() {
                 )}
                 {telDigitos ? (
                   <div className="tpd-dois">
-                    <a className="ui-bt ui-bt--secundario ui-bt--m" href={`https://wa.me/55${telDigitos}`} target="_blank" rel="noreferrer"><span className="ui-bt-ic" aria-hidden="true"><WhatsappLogo size={20} weight="bold" className="tpd-zap" /></span><span className="ui-bt-t">WhatsApp</span></a>
+                    <a className="ui-bt ui-bt--secundario ui-bt--m" href={linkWhatsApp(clienteTelefone) || `https://wa.me/55${telDigitos}`} target="_blank" rel="noreferrer"><span className="ui-bt-ic" aria-hidden="true"><WhatsappLogo size={20} weight="bold" className="tpd-zap" /></span><span className="ui-bt-t">WhatsApp</span></a>
                     <a className="ui-bt ui-bt--secundario ui-bt--m" href={`tel:+55${telDigitos}`}><span className="ui-bt-ic" aria-hidden="true"><Phone size={20} weight="bold" /></span><span className="ui-bt-t">Ligar</span></a>
                   </div>
                 ) : (
@@ -1519,9 +1553,10 @@ export default function EditarPedido() {
             <div className="ui-campo">
               <span className="ui-campo-r"><span>Quantidade</span></span>
               <div className="tpd-qtd">
-                <BotaoIcone rotulo="Diminuir" disabled={itens[itemMenu].quantidade <= 1} onClick={() => updateQtd(itemMenu, -1)}><span aria-hidden="true">−</span></BotaoIcone>
-                <input type="number" inputMode={porKg(itens[itemMenu]) ? "decimal" : "numeric"} step={porKg(itens[itemMenu]) ? 0.5 : 1} value={itens[itemMenu].quantidade} onChange={e => setQtdManual(itemMenu, Number(e.target.value))} aria-label="Quantidade" />
-                <BotaoIcone rotulo="Aumentar" onClick={() => updateQtd(itemMenu, 1)}><Plus size={20} weight="bold" /></BotaoIcone>
+                <BotaoIcone rotulo="Diminuir" disabled={itens[itemMenu].quantidade <= 1} onClick={() => { setQtdTexto(null); updateQtd(itemMenu, -1) }}><span aria-hidden="true">−</span></BotaoIcone>
+                <input type="number" inputMode={porKg(itens[itemMenu]) ? "decimal" : "numeric"} step={porKg(itens[itemMenu]) ? 0.5 : 1} value={qtdTexto ?? itens[itemMenu].quantidade}
+                  onChange={e => { setQtdTexto(e.target.value); setQtdManual(itemMenu, Number(e.target.value)) }} onBlur={() => setQtdTexto(null)} aria-label="Quantidade" />
+                <BotaoIcone rotulo="Aumentar" onClick={() => { setQtdTexto(null); updateQtd(itemMenu, 1) }}><Plus size={20} weight="bold" /></BotaoIcone>
               </div>
             </div>
             <CampoArea rotulo="Recado do item" opcional rows={2} placeholder="Ex.: escrever Parabéns, Lia! em rosa" value={itens[itemMenu].observacoes || ''}
@@ -1577,6 +1612,7 @@ export default function EditarPedido() {
           status_pagamento: (pedido as any).status_pagamento ?? null, forma_pagamento: pedido.forma_pagamento }}
         novoStatus="entregue" novoStatusLabel="Entregue"
         onCancelar={() => setFinalizarAberto(false)}
+        onParcial={() => { recarregarDinheiro() }}
         onConcluido={async () => { setFinalizarAberto(false); await recarregarDinheiro(); avisar(avisoDaMudanca({ numero: pedido.numero, tipo_entrega: tipoEntrega }, 'entregue')); tocarSom('sucesso'); if (tipoEntrega === 'retirada') { setQuemRetirou(''); setDepoisRetirada('editar'); setRetiradaAberta(true) } }} />}
 
       <style>{EP2_CSS}{FOLHA_CSS}</style>

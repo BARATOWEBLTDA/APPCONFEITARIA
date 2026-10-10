@@ -7,14 +7,51 @@ import { ArrowLeft, CalendarBlank, CaretRight, Check, ChatCircleDots, Clock, Cre
 import { useCart } from '@/hooks/useCart'
 import { CartItemComponent, unidadeItem } from '@/components/cart/CartItemComponent'
 import { formatCurrency } from '@/utils/helpers'
-import { useIsMobile } from '@/hooks/use-mobile'
+import { useDeviceDetection } from '@/hooks/useDeviceDetection'
 import { PerfilTab } from './PerfilTab'
 import { PedidosTab } from './PedidosTab'
 import { itemDoCarrinhoParaPedido } from '@/lib/itemDoCarrinho'
 import { contarItens, detalhesItem, qtdItem } from '@/lib/itemSacola'
 import { Campo, CampoArea, avisar } from '@/components/base'
 import { useSobreposicao } from '@/components/base/useSobreposicao'
+import { explicarErro } from '@/lib/erros'
+import { linkWhatsApp } from '@/lib/telefone'
+import { lojaAtualCheckout, lojaAtualId, lojaAtualNome, lojaAtualWhatsApp } from './lojaAtual'
+import { digitosAoDigitar } from './telefoneDigitado'
 import '@/components/cart/sacola.css'
+
+/**
+ * Pedido em envio (10/10). Fica fora do componente pra valer mesmo se a sacola fechar e abrir:
+ * se a tentativa falha no meio, a próxima (com os mesmos dados) usa o MESMO id, e a loja não recebe pedido repetido nem pela metade.
+ */
+type TentativaPedido = { id: string; assinatura: string; gravado: boolean; quando: number }
+let tentativaPedido: TentativaPedido | null = null
+/** Envio em andamento: fica fora do componente porque a sacola pode fechar e abrir no meio (a trava do componente zerava). */
+let enviandoPedido = false
+
+const novoIdPedido = (): string => (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
+  ? crypto.randomUUID()
+  : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16) })
+
+/** Tira um pedido que ficou sem os itens. Só diz "sim" quando o banco confirma que apagou. */
+async function desfazerPedido(id: string): Promise<boolean> {
+  try {
+    const { error, count } = await supabase.from('pedidos').delete({ count: 'exact' }).eq('id', id)
+    return !error && count === 1
+  } catch { return false }
+}
+
+/** A tentativa pra esses dados: a mesma de antes (mesmo id) ou uma nova. */
+async function abrirTentativa(assinatura: string): Promise<TentativaPedido> {
+  const t = tentativaPedido
+  if (t && t.assinatura === assinatura && Date.now() - t.quando <= 15 * 60_000) return t
+  // Os dados mudaram (ou passou muito tempo) depois de uma tentativa que ficou pela metade: tira a antiga, se o banco deixar
+  if (t?.gravado) await desfazerPedido(t.id)
+  tentativaPedido = { id: novoIdPedido(), assinatura, gravado: false, quando: Date.now() }
+  return tentativaPedido
+}
+const marcarGravada = (t: TentativaPedido) => { t.gravado = true }
+const fecharTentativa = () => { tentativaPedido = null }
 
 interface CheckoutConfig {
   /** texto da loja pra mensagem do pedido (Mensagens do WhatsApp) */
@@ -145,8 +182,10 @@ function CartContent({
     if (!formaPagamento && metodosPag.length === 1) setFormaPagamento(metodosPag[0])
   }, [step]) // eslint-disable-line react-hooks/exhaustive-deps
   const irPara = (r: any) => setTimeout(() => r.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+  // 10/10: trava também por ref (dois toques seguidos não mandam dois pedidos)
+  const enviandoRef = useRef(false)
   const enviarFinalizar = async () => {
-    if (enviando) return
+    if (enviando || enviandoRef.current || enviandoPedido) return
     let falta: typeof feErro = ''
     if (!dataEntrega || !horaEntrega) falta = 'agenda'
     else if (ehEntrega && formaEntrega !== 'combinar' && (!rua.trim() || !numero.trim() || (config.entrega_por_bairro.length > 0 && !bairroSelecionado))) falta = 'endereco'
@@ -158,8 +197,9 @@ function CartContent({
       setTreme(true); setTimeout(() => setTreme(false), 400)
       return
     }
+    enviandoRef.current = true; enviandoPedido = true
     setEnviando(true)
-    try { await enviarPedido() } finally { setEnviando(false) }
+    try { await enviarPedido() } finally { enviandoRef.current = false; enviandoPedido = false; setEnviando(false) }
   }
 
   // Toca som de sucesso quando o pedido é confirmado
@@ -188,7 +228,7 @@ function CartContent({
   // Pegar dados do cliente logado
   const clienteLogado = (() => {
     try {
-      const uid = localStorage.getItem('cardapio_user_id') || ''
+      const uid = lojaAtualId()
       const saved = localStorage.getItem(`cardapio_cliente_${uid}`)
       return saved ? JSON.parse(saved) : null
     } catch { return null }
@@ -199,7 +239,7 @@ function CartContent({
   // Endereços que o cliente já usou nesta loja (salvos no aparelho depois de cada pedido com entrega)
   const enderecosSalvos: any[] = useMemo(() => {
     try {
-      const uid = localStorage.getItem('cardapio_user_id') || ''
+      const uid = lojaAtualId()
       const lista = JSON.parse(localStorage.getItem(`enderecos_${uid}_${telefone.replace(/\D/g, '')}`) || '[]')
       return Array.isArray(lista) ? lista.filter((e: any) => e && e.rua) : []
     } catch { return [] }
@@ -247,26 +287,31 @@ function CartContent({
     return 0
   }, [formaEntrega, bairroSelecionado, config])
 
+  // 10/10: o desconto nunca passa do subtotal (percentual vai de 0 a 100) e o total nunca fica negativo
   const desconto = useMemo(() => {
     if (!cupomAplicado) return 0
-    if (cupomAplicado.tipo === 'percentual') return Math.round(totalPrice * cupomAplicado.valor) / 100
-    return Math.min(cupomAplicado.valor, totalPrice)
+    const valor = Math.max(0, Number(cupomAplicado.valor) || 0)
+    const bruto = cupomAplicado.tipo === 'percentual' ? Math.round(totalPrice * Math.min(100, valor)) / 100 : valor
+    return Math.max(0, Math.min(bruto, totalPrice))
   }, [cupomAplicado, totalPrice])
 
-  const totalFinal = Math.round((totalPrice - desconto + freteValor) * 100) / 100
+  const totalFinal = Math.max(0, Math.round((totalPrice - desconto + freteValor) * 100) / 100)
 
   const [validandoCupom, setValidandoCupom] = useState(false)
+  // Subtotal com que o cupom foi conferido (se a sacola mudar, confere de novo)
+  const subtotalDoCupom = useRef(0)
   const aplicarCupom = async () => {
     setCupomErro('')
     const code = cupomDigitado.trim().toUpperCase()
     if (!code) return
-    const loja = localStorage.getItem('cardapio_user_id') || ''
+    const loja = lojaAtualId()
     setValidandoCupom(true)
     try {
       // Validação no banco: ativo, período, valor mínimo e limite de usos
       const { data, error } = await supabase.rpc('cardapio_validar_cupom', { p_loja: loja, p_codigo: code, p_subtotal: totalPrice })
       const r: any = data
       if (!error && r?.ok) {
+        subtotalDoCupom.current = totalPrice
         setCupomAplicado({ codigo: r.codigo, tipo: r.tipo, valor: Number(r.valor) || 0 })
       } else {
         setCupomErro(r?.erro || 'Cupom inválido ou expirado')
@@ -281,6 +326,26 @@ function CartContent({
 
   const removerCupom = () => { setCupomAplicado(null); setCupomDigitado(''); setCupomErro('') }
 
+  // 10/10: a sacola mudou com o cupom aplicado → confere o cupom de novo com o subtotal novo (pedido mínimo etc.).
+  // Se a conferência falhar por falta de internet, o cupom fica como está.
+  useEffect(() => {
+    if (!cupomAplicado || subtotalDoCupom.current === totalPrice) return
+    const subtotal = totalPrice
+    subtotalDoCupom.current = subtotal
+    let valendo = true
+    ;(async () => {
+      try {
+        if (subtotal <= 0) { if (valendo) setCupomAplicado(null); return }
+        const { data, error } = await supabase.rpc('cardapio_validar_cupom', { p_loja: lojaAtualId(), p_codigo: cupomAplicado.codigo, p_subtotal: subtotal })
+        if (!valendo || error) return
+        const r: any = data
+        if (r?.ok) setCupomAplicado({ codigo: r.codigo, tipo: r.tipo, valor: Number(r.valor) || 0 })
+        else { setCupomAplicado(null); avisar(r?.erro || 'O cupom não vale mais pra essa sacola.', { tipo: 'info' }) }
+      } catch { /* sem internet: mantém o cupom */ }
+    })()
+    return () => { valendo = false }
+  }, [totalPrice]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const enviarPedido = async () => {
     if (!nome.trim() || !telefone.trim()) return avisar('Preencha o seu nome e o WhatsApp', { tipo: 'erro' })
     if (!formaEntrega) return avisar('Escolha como vai receber', { tipo: 'erro' })
@@ -288,9 +353,10 @@ function CartContent({
     // Endereço vai junto em toda entrega com endereço (antes o do motoboy/Uber Flash ficava de fora)
     const temEndereco = ehEntrega && formaEntrega !== 'combinar'
 
-    const whatsapp = localStorage.getItem('cardapio_whatsapp') || ''
-    const storeName = localStorage.getItem('cardapio_nome') || 'Cardápio'
-    const confeteiraUserId = localStorage.getItem('cardapio_user_id') || ''
+    // 10/10: a loja é a que ESTA aba abriu (não a última gravada no navegador)
+    const whatsapp = lojaAtualWhatsApp()
+    const storeName = lojaAtualNome() || 'Cardápio'
+    const confeteiraUserId = lojaAtualId()
 
     // ── Mensagem do WhatsApp (montada depois de salvar, pra levar o nº do pedido) ──
     const montarMensagem = (numPedido: number) => {
@@ -338,7 +404,8 @@ function CartContent({
           m += `Adicionais: ${item.extrasBiblioteca.map((x: any) => x.valor > 0 ? `${x.nome} (+${formatCurrency(x.valor)})` : x.nome).join(', ')}\n`
         }
         if (item.observations) m += `Obs.: ${item.observations}\n`
-        if (item.fotoReferencia) m += `Foto de referência: ${item.fotoReferencia}\n`
+        // 10/10: a foto vai gravada no pedido; na mensagem só entra se for um link (nunca a imagem em texto)
+        if (item.fotoReferencia) m += /^https?:\/\//i.test(String(item.fotoReferencia)) ? `Foto de referência: ${item.fotoReferencia}\n` : `Foto de referência: enviada no pedido\n`
         m += `\n`
       })
 
@@ -368,106 +435,119 @@ function CartContent({
       return montarMensagemModelo('pedido_cardapio', { pedido: m, loja: storeName, nome: nome.trim().split(' ')[0], numero: numPedido || '' }, config.msg_pedido ?? null)
     }
 
-    const num = whatsapp.replace(/\D/g, '')
-
-    // Resumo para tela de sucesso (mantém referência aos itens originais)
-
     // ── Salva pedido no Supabase e vincula cliente ──
+    // 10/10: se o pedido (ou os itens) não gravar, a sacola NÃO é limpa e a tela de "Pedido enviado" não aparece:
+    // avisa e a cliente tenta de novo. Antes o erro ia só pro console e o pedido aparecia como enviado.
+    const falhou = (err: unknown) => { avisar(explicarErro(err, 'Não deu pra enviar o pedido. Tente de novo.'), { tipo: 'erro' }) }
+    if (!confeteiraUserId) return falhou(null)
+    if (items.length === 0) return avisar('Sua sacola está vazia', { tipo: 'erro' })
     let numeroPedido = 0
-    if (confeteiraUserId) {
-      try {
-        const telefoneLimpo = telefone.replace(/\D/g, '')
-        let clienteId: string | null = null
-        // Função segura no banco: acha o cliente pelo telefone ou cria (sem ler a tabela direto)
-        const { data: listaCliente } = await supabase.rpc('cardapio_cliente', {
-          p_loja: confeteiraUserId, p_telefone: telefone.trim(), p_nome: nome.trim(),
-        })
-        if (Array.isArray(listaCliente) && listaCliente[0]) clienteId = listaCliente[0].id
+    try {
+      let clienteId: string | null = null
+      // Função segura no banco: acha o cliente pelo telefone ou cria (sem ler a tabela direto)
+      const { data: listaCliente } = await supabase.rpc('cardapio_cliente', {
+        p_loja: confeteiraUserId, p_telefone: telefone.trim(), p_nome: nome.trim(),
+      })
+      if (Array.isArray(listaCliente) && listaCliente[0]) clienteId = listaCliente[0].id
 
+      const dadosPedido = {
+        user_id: confeteiraUserId, cliente_id: clienteId,
+        cliente_nome: nome.trim(), cliente_telefone: telefone.trim(), cliente_whatsapp: telefone.trim(),
+        status: 'novo', origem: 'cardapio', prioridade: 'media',
+        data_entrega: dataEntrega || null, horario_entrega: horaEntrega || null,
+        tipo_entrega: formaEntrega === 'retirada' ? 'retirada' : 'entrega',
+        taxa_entrega: freteValor,
+        endereco_rua: temEndereco ? rua : null,
+        endereco_numero: temEndereco ? numero : null,
+        endereco_complemento: temEndereco ? complemento : null,
+        endereco_bairro: temEndereco ? bairro : null,
+        endereco_cidade: temEndereco ? cidade : null,
+        endereco_cep: temEndereco ? cep.replace(/\D/g,'') : null,
+        forma_pagamento: formaPagamento, status_pagamento: 'pendente',
+        valor_produtos: totalPrice, cupom_codigo: cupomAplicado?.codigo || null,
+        cupom_desconto: desconto || 0, desconto: desconto || 0,
+        valor_total: totalFinal, observacoes: observacoes || null,
+      }
+
+      // O id é gerado aqui, então o pedido é gravado sem precisar ler a tabela de volta.
+      // Tentando de novo com os mesmos dados, o id é o mesmo (não cria outro pedido na loja).
+      const tentativa = await abrirTentativa(JSON.stringify(dadosPedido))
+      const novoPedidoId = tentativa.id
+
+      if (!tentativa.gravado) {
+        const { error: erroPedido } = await supabase.from('pedidos').insert({ id: novoPedidoId, ...dadosPedido })
+        // "Esse id já existe" numa nova tentativa: o pedido tinha gravado e só a resposta se perdeu no caminho
+        const jaGravado = !!erroPedido && (erroPedido as any).code === '23505' && /pkey/i.test(String(erroPedido.message || ''))
+        if (erroPedido && !jaGravado) return falhou(erroPedido)
+        marcarGravada(tentativa)
+      }
+
+      const { error: erroItens } = await supabase.from('pedido_itens').insert(
+        items.map((item: any) => ({
+          // Tudo o que o cliente escolheu vai pro pedido (regra única em lib/itemDoCarrinho)
+          pedido_id: novoPedidoId, user_id: confeteiraUserId, desconto: 0,
+          ...itemDoCarrinhoParaPedido(item),
+        }))
+      )
+      if (erroItens) {
+        // Pedido sem itens não vale: tenta desfazer. Se o banco não deixar apagar, a próxima tentativa completa esse mesmo pedido.
+        // (23503 no pedido_id = o pedido não existe mais no banco: começa do zero na próxima. 23503 em outra coluna,
+        //  como um produto que a loja apagou, não: aí a tentativa continua a mesma e não cria pedido repetido)
+        const pedidoSumiu = (erroItens as any).code === '23503' && /pedido_id|pedidos/i.test(`${erroItens.message || ''} ${(erroItens as any).details || ''}`)
+        if (await desfazerPedido(novoPedidoId) || pedidoSumiu) fecharTentativa()
+        return falhou(erroItens)
+      }
+      fecharTentativa()
+
+      // Daqui pra baixo o pedido já está gravado: nada disso impede o "Pedido enviado"
+      try {
         // Loga o cliente automaticamente após o pedido (se ainda não estiver logado)
         if (clienteId && !localStorage.getItem(`cardapio_cliente_${confeteiraUserId}`)) {
           localStorage.setItem(`cardapio_cliente_${confeteiraUserId}`, JSON.stringify({
             id: clienteId, nome: nome.trim(), telefone: telefone.trim(),
           }))
         }
-
-        // O id é gerado aqui, então o pedido é gravado sem precisar ler a tabela de volta
-        const novoPedidoId: string = (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
-          ? crypto.randomUUID()
-          : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16) })
-        const { error: erroPedido } = await supabase.from('pedidos').insert({
-            id: novoPedidoId,
-            user_id: confeteiraUserId, cliente_id: clienteId,
-            cliente_nome: nome.trim(), cliente_telefone: telefone.trim(), cliente_whatsapp: telefone.trim(),
-            status: 'novo', origem: 'cardapio', prioridade: 'media',
-            data_entrega: dataEntrega || null, horario_entrega: horaEntrega || null,
-            tipo_entrega: formaEntrega === 'retirada' ? 'retirada' : 'entrega',
-            taxa_entrega: freteValor,
-            endereco_rua: temEndereco ? rua : null,
-            endereco_numero: temEndereco ? numero : null,
-            endereco_complemento: temEndereco ? complemento : null,
-            endereco_bairro: temEndereco ? bairro : null,
-            endereco_cidade: temEndereco ? cidade : null,
-            endereco_cep: temEndereco ? cep.replace(/\D/g,'') : null,
-            forma_pagamento: formaPagamento, status_pagamento: 'pendente',
-            valor_produtos: totalPrice, cupom_codigo: cupomAplicado?.codigo || null,
-            cupom_desconto: desconto || 0, desconto: desconto || 0,
-            valor_total: totalFinal, observacoes: observacoes || null,
-          })
-        if (erroPedido) throw erroPedido
-        const pedidoSalvo = { id: novoPedidoId }
-
         // Entrega: guarda o endereço em "Dados pessoais" pra próxima compra (sem repetir)
         if (formaEntrega === 'entrega_propria' && rua.trim()) {
-          try {
-            const chave = `enderecos_${confeteiraUserId}_${telefoneLimpo}`
-            const lista: any[] = JSON.parse(localStorage.getItem(chave) || '[]')
-            const cepLimpo = cep.replace(/\D/g, '')
-            const jaTem = lista.some((e: any) =>
-              (e.rua || '').trim().toLowerCase() === rua.trim().toLowerCase() &&
-              (e.numero || '').trim() === numero.trim() &&
-              (e.cep || '').replace(/\D/g, '') === cepLimpo)
-            if (!jaTem) {
-              lista.unshift({ rua: rua.trim(), numero: numero.trim(), complemento: complemento.trim(), bairro: bairro.trim(), cidade: cidade.trim(), cep })
-              localStorage.setItem(chave, JSON.stringify(lista.slice(0, 5)))
-            }
-          } catch { /* sem localStorage: ignora */ }
-        }
-
-        if (pedidoSalvo) {
-          // Número do pedido (função segura no banco)
-          const { data: num } = await supabase.rpc('cardapio_numero_pedido', { p_pedido: novoPedidoId })
-          if (typeof num === 'number') numeroPedido = num
-          if (items.length > 0) {
-            await supabase.from('pedido_itens').insert(
-              items.map((item: any) => ({
-                // Tudo o que o cliente escolheu vai pro pedido (regra única em lib/itemDoCarrinho)
-                pedido_id: pedidoSalvo.id, user_id: confeteiraUserId, desconto: 0,
-                ...itemDoCarrinhoParaPedido(item),
-              }))
-            )
-            await supabase.from('pedido_historico').insert({
-              pedido_id: pedidoSalvo.id, user_id: confeteiraUserId,
-              evento: 'Pedido criado', descricao: 'Pedido recebido pelo Cardápio Digital',
-            })
+          const chave = `enderecos_${confeteiraUserId}_${telefone.replace(/\D/g, '')}`
+          const lista: any[] = JSON.parse(localStorage.getItem(chave) || '[]')
+          const cepLimpo = cep.replace(/\D/g, '')
+          const jaTem = lista.some((e: any) =>
+            (e.rua || '').trim().toLowerCase() === rua.trim().toLowerCase() &&
+            (e.numero || '').trim() === numero.trim() &&
+            (e.cep || '').replace(/\D/g, '') === cepLimpo)
+          if (!jaTem) {
+            lista.unshift({ rua: rua.trim(), numero: numero.trim(), complemento: complemento.trim(), bairro: bairro.trim(), cidade: cidade.trim(), cep })
+            localStorage.setItem(chave, JSON.stringify(lista.slice(0, 5)))
           }
         }
-      } catch (err) {
-        console.error('Erro ao salvar pedido no Supabase:', err)
-      }
+      } catch { /* sem localStorage: ignora */ }
+      try {
+        // Número do pedido (função segura no banco)
+        const { data: num } = await supabase.rpc('cardapio_numero_pedido', { p_pedido: novoPedidoId })
+        if (typeof num === 'number') numeroPedido = num
+        // O histórico é só um registro: se falhar, o pedido vale do mesmo jeito
+        const { error: erroHistorico } = await supabase.from('pedido_historico').insert({
+          pedido_id: novoPedidoId, user_id: confeteiraUserId,
+          evento: 'Pedido criado', descricao: 'Pedido recebido pelo Cardápio Digital',
+        })
+        if (erroHistorico) console.error('[Doonly] histórico do pedido:', erroHistorico)
+      } catch (err) { console.error('[Doonly] depois de gravar o pedido:', err) }
+    } catch (err) {
+      return falhou(err)
     }
 
+    // Mostra tela de sucesso em vez de fechar
+    const whatsappUrl = (() => { try { return linkWhatsApp(whatsapp, montarMensagem(numeroPedido)) } catch { return linkWhatsApp(whatsapp) } })()
     clearCart()
     setStep('cart')
-    // Mostra tela de sucesso em vez de fechar
-    const whatsappUrl = `https://wa.me/55${num}?text=${encodeURIComponent(montarMensagem(numeroPedido))}`
     const quandoTxt = dataEntrega ? `${formaEntrega === 'retirada' ? 'Retirada' : 'Entrega'} ${rotuloData(dataEntrega).toLowerCase()}${horaEntrega ? ` às ${horaEntrega}` : ''}` : ''
     setPedidoConfirmado({ numero: numeroPedido, itens: items, whatsapp: whatsappUrl, storeName, total: totalFinal, quando: quandoTxt })
   }
 
 
   const accent = corBotao || '#E85A8C'
-  const nomeLoja = (() => { try { return localStorage.getItem('cardapio_nome') || '' } catch { return '' } })()
+  const nomeLoja = lojaAtualNome()
   const temCupom = !!(config.tem_cupom || config.cupons_desconto.length > 0)
 
   // Entrega na sacola (08/10): segue o que a loja configurou
@@ -515,7 +595,7 @@ function CartContent({
           <span className="t"><span><b>Total</b></span><em>{formatCurrency(pedidoConfirmado.total)}</em></span>
           {pedidoConfirmado.quando && <span className="q"><CalendarBlank size={18} weight="bold" />{pedidoConfirmado.quando}</span>}
         </div>
-        <button type="button" className="sc-zap" onClick={() => window.open(pedidoConfirmado.whatsapp, '_blank')}><WhatsappLogo size={22} weight="bold" />Mandar mensagem pra loja</button>
+        {pedidoConfirmado.whatsapp && <button type="button" className="sc-zap" onClick={() => window.open(pedidoConfirmado.whatsapp, '_blank')}><WhatsappLogo size={22} weight="bold" />Mandar mensagem pra loja</button>}
         <button type="button" className="sc-bt-sec" onClick={() => { setPedidoConfirmado(null); onClose() }}>Voltar ao cardápio</button>
       </div>
     </div>
@@ -725,7 +805,7 @@ function CartContent({
               erro={feErro === 'dados' && !nome.trim() ? 'Falta o seu nome' : undefined} />
             <Campo rotulo="WhatsApp" value={telefone} inputMode="tel" autoComplete="tel" placeholder="(41) 9 9999-0000"
               erro={feErro === 'dados' && telefone.replace(/\D/g, '').length < 10 ? 'Coloque o número com DDD' : undefined}
-              onChange={e => { const d = e.target.value.replace(/\D/g, '').slice(0, 11); setTelefone(d.length > 6 ? `(${d.slice(0, 2)}) ${d.slice(2, d.length - 4)}-${d.slice(-4)}` : d.length > 2 ? `(${d.slice(0, 2)}) ${d.slice(2)}` : d) }} />
+              onChange={e => { const d = digitosAoDigitar(e.target.value); setTelefone(d.length > 6 ? `(${d.slice(0, 2)}) ${d.slice(2, d.length - 4)}-${d.slice(-4)}` : d.length > 2 ? `(${d.slice(0, 2)}) ${d.slice(2)}` : d) }} />
           </div>
         </section>
 
@@ -768,7 +848,7 @@ function CartContent({
 
 /* ─── Componente principal ─── */
 /* ─── Componente principal ─── */
-export function NavigationMenu({ corBotao }: { corBotao?: string }) {
+export function NavigationMenu({ corBotao, celular }: { corBotao?: string; /** a página está no layout de celular? (10/10) */ celular?: boolean }) {
   const { items, totalPrice, updateQuantity, updateObservations, removeItem, clearCart } = useCart()
   const [isOpen, setIsOpen] = useState(false)
   const [step, setStep] = useState<'cart' | 'finalizar'>('cart')
@@ -783,15 +863,17 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
     ro.observe(el)
     return () => ro.disconnect()
   })
-  const isMobile = useIsMobile()
+  // 10/10: a barra de baixo (sacola, Pedidos, Minha conta) segue a MESMA régua da página (celular = abaixo de 1024).
+  // Antes usava 768: no tablet em pé (768 a 1023) a página era a de celular, mas sem a barra não dava pra abrir a sacola.
+  const aparelho = useDeviceDetection()
+  const isMobile = celular ?? aparelho !== 'desktop'
 
   const [config, setConfig] = useState<CheckoutConfig>(DEFAULT_CONFIG)
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem('cardapio_checkout_config')
-      if (raw) setConfig({ ...DEFAULT_CONFIG, ...JSON.parse(raw) })
-    } catch {}
+    // 10/10: a configuração é a da loja desta aba (o localStorage fica só de reserva)
+    const c = lojaAtualCheckout()
+    if (c) setConfig({ ...DEFAULT_CONFIG, ...(c as Partial<CheckoutConfig>) })
   }, [isOpen])
 
   useEffect(() => {
@@ -866,7 +948,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
             /* Termina em cima do menu de baixo (antes cobria o menu e o cliente não conseguia voltar) */
             <div style={{position:'fixed',top:0,left:0,right:0,bottom:alturaRodape,zIndex:200,background:'#fff',display:'flex',flexDirection:'column',overflowY:'auto'}}>
               <div style={{flexShrink:0,height:'env(safe-area-inset-top, 0px)'}} />
-              <PerfilTab accent={accent} confeteiraUserId={localStorage.getItem('cardapio_user_id') || ''} />
+              <PerfilTab accent={accent} confeteiraUserId={lojaAtualId()} />
             </div>
           )}
 
@@ -876,7 +958,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
               <div style={{flexShrink:0,height:'env(safe-area-inset-top, 0px)'}} />
               <PedidosTab
                 accent={accent}
-                confeteiraUserId={localStorage.getItem('cardapio_user_id') || ''}
+                confeteiraUserId={lojaAtualId()}
                 onIrParaPerfil={() => setActiveTab('perfil')}
               />
             </div>

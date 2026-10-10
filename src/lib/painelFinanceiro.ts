@@ -1,5 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { valorRecebidoPedido } from "@/lib/financeiroPedido";
+import { buscarTudo } from "@/lib/buscarTudo";
+import { faltaNoBanco } from "@/lib/pagamentos";
 
 /**
  * Financeiro · Passo 7 (03/10) — os números do mês do painel, com UMA regra cada:
@@ -9,6 +11,9 @@ import { valorRecebidoPedido } from "@/lib/financeiroPedido";
  *   Lucro .......... vendido − custo dos ingredientes (ficha técnica) − despesas pagas do mês,
  *                    SEM as despesas de insumos (o ingrediente já está no custo da ficha; senão contaria 2x)
  * Sem a tabela de pagamentos (SQL do Passo 1 não rodado), o recebido usa a regra antiga (pelo mês da entrega).
+ * 10/10: a regra antiga só vale quando a tabela ou a coluna não existe MESMO. Queda de internet ou outro erro
+ * devolve { erro: true } e a tela avisa "Não deu pra carregar" (antes virava R$ 0,00 ou um número pela regra antiga).
+ * As buscas vão de 1.000 em 1.000 (o Supabase corta em 1.000 linhas sem avisar).
  */
 export type Semana = { label: string; entradas: number; saidas: number; acumulado: number };
 export type MesFinanceiro = {
@@ -17,11 +22,33 @@ export type MesFinanceiro = {
   vendido: number; qtdVendidos: number; cmv: number; semFicha: number;
   lucro: number; margem: number;
   semanas: Semana[]; fonteRecebido: "pagamentos" | "pedidos";
+  /** não deu pra carregar: os números acima vêm zerados e NÃO devem ser mostrados (10/10) */
+  erro?: boolean;
+};
+const MES_COM_ERRO: MesFinanceiro = {
+  recebido: 0, recebidoPedidos: 0, entradasAvulsas: 0, qtdRecebimentos: 0, despesasPagas: 0, despesasInsumos: 0,
+  vendido: 0, qtdVendidos: 0, cmv: 0, semFicha: 0, lucro: 0, margem: 0, semanas: [], fonteRecebido: "pagamentos", erro: true,
 };
 
 const r2 = (v: number) => Math.round((Number(v) || 0) * 100) / 100;
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 export const ehInsumo = (cat?: string | null) => /insumo|ingrediente|mat[eé]ria/i.test(cat || "");
+
+/** Recebimentos de pedidos (sem os estornados) entre dois dias, pela data do recebimento. */
+const buscarPagamentos = (uid: string, ini: string, ate: string) => buscarTudo<any>((de, a) => supabase.from("pagamentos")
+  .select("valor, recebido_em").eq("user_id", uid).is("estornado_em", null).gte("recebido_em", ini).lte("recebido_em", ate).order("id").range(de, a));
+
+/** Lançamentos manuais entre dois dias. Sem a coluna de estorno (SQL não rodado), busca sem ela; outro erro volta como erro. */
+async function buscarLancamentos(uid: string, ini: string, ate: string) {
+  const buscar = (colunas: string) => buscarTudo<any>((de, a) => supabase.from("financeiro")
+    .select(colunas).eq("user_id", uid).gte("data", ini).lte("data", ate).order("id").range(de, a));
+  const r = await buscar("tipo, categoria, valor, data, estornado_em");
+  return r.error && faltaNoBanco(r.error) ? buscar("tipo, categoria, valor, data") : r;
+}
+
+/** Regra antiga do recebido (sem a tabela de pagamentos): pedidos pelo dia da entrega. */
+const buscarRecebidoAntigo = (uid: string, ini: string, ate: string) => buscarTudo<any>((de, a) => supabase.from("pedidos")
+  .select("valor_total, valor_recebido, status, status_pagamento, data_entrega").eq("user_id", uid).gte("data_entrega", ini).lte("data_entrega", ate).order("id").range(de, a));
 
 /**
  * O que entrou no caixa entre dois dias (AAAA-MM-DD), com a MESMA regra do "Recebido no mês" do painel (carregarMes, logo abaixo):
@@ -31,36 +58,41 @@ export const ehInsumo = (cat?: string | null) => /insumo|ingrediente|mat[eé]ria
  * Se mudar a regra do recebido em carregarMes, mude aqui também.
  */
 export async function entradasNoPeriodo(uid: string, ini: string, ate: string): Promise<{ itens: { valor: number; data: string }[]; erro: boolean }> {
-  const [pag, fin0] = await Promise.all([
-    supabase.from("pagamentos").select("valor, recebido_em").eq("user_id", uid).is("estornado_em", null).gte("recebido_em", ini).lte("recebido_em", ate),
-    supabase.from("financeiro").select("tipo, valor, data, estornado_em").eq("user_id", uid).gte("data", ini).lte("data", ate),
-  ]);
-  const fin: any = fin0.error ? await supabase.from("financeiro").select("tipo, valor, data").eq("user_id", uid).gte("data", ini).lte("data", ate) : fin0;
+  const [pag, fin] = await Promise.all([buscarPagamentos(uid, ini, ate), buscarLancamentos(uid, ini, ate)]);
   let itens: { valor: number; data: string }[] = [];
   let erro = false;
   if (!pag.error) {
-    itens = ((pag.data as any[]) || []).map(g => ({ valor: r2(g.valor), data: String(g.recebido_em).slice(0, 10) }));
-  } else {
+    itens = pag.data.map(g => ({ valor: r2(g.valor), data: String(g.recebido_em).slice(0, 10) }));
+  } else if (faltaNoBanco(pag.error)) {
     // sem a tabela de pagamentos: regra antiga, pelo dia da entrega (igual ao painel)
-    const { data: peds, error } = await supabase.from("pedidos").select("valor_total, valor_recebido, status, status_pagamento, data_entrega")
-      .eq("user_id", uid).gte("data_entrega", ini).lte("data_entrega", ate);
-    if (error) erro = true;
-    itens = ((peds as any[]) || []).map(p => ({ valor: r2(valorRecebidoPedido(p)), data: String(p.data_entrega).slice(0, 10) })).filter(x => x.valor > 0);
-  }
+    const peds = await buscarRecebidoAntigo(uid, ini, ate);
+    if (peds.error) erro = true;
+    itens = peds.data.map(p => ({ valor: r2(valorRecebidoPedido(p)), data: String(p.data_entrega).slice(0, 10) })).filter(x => x.valor > 0);
+  } else erro = true; // 10/10: internet ou servidor não é "sem a tabela": avisa em vez de usar a regra antiga
   if (fin.error) erro = true;
-  const avulsas = ((fin.data as any[]) || []).filter(l => !l.estornado_em && l.tipo === "entrada")
+  const avulsas = fin.data.filter(l => !l.estornado_em && l.tipo === "entrada")
     .map(l => ({ valor: r2(l.valor), data: String(l.data).slice(0, 10) }));
   return { itens: [...itens, ...avulsas], erro };
 }
 
-/** Custo dos ingredientes de 1 unidade de cada produto, pela ficha técnica (com conversão de unidades). */
+/**
+ * Custo dos ingredientes de 1 unidade de cada produto, pela ficha técnica (com conversão de unidades).
+ * 10/10: busca em blocos de 30 produtos e de 1.000 em 1.000 linhas (muitos produtos com ficha passam de 1.000 linhas
+ * e o custo ficava cortado). Se a busca falhar, lança erro: custo zerado viraria lucro maior do que é.
+ */
 export async function custoPorProduto(produtoIds: string[]): Promise<Record<string, number>> {
   const out: Record<string, number> = {};
   if (!produtoIds.length) return out;
-  const { data } = await supabase.from("produto_insumos")
-    .select("produto_id, quantidade, unidade_utilizada, insumos(custo_unitario, unidade)").in("produto_id", produtoIds);
+  const blocos: string[][] = [];
+  for (let i = 0; i < produtoIds.length; i += 30) blocos.push(produtoIds.slice(i, i + 30));
+  const partes = await Promise.all(blocos.map(bloco => buscarTudo<any>((de, ate) => supabase.from("produto_insumos")
+    .select("produto_id, quantidade, unidade_utilizada, insumos(custo_unitario, unidade)").in("produto_id", bloco)
+    .order("produto_id").order("insumo_id").range(de, ate))));
+  const falha = partes.find(p => p.error);
+  if (falha) throw falha.error;
+  const linhas = partes.flatMap(p => p.data);
   const fator: Record<string, number> = { kg: 1, g: 0.001, L: 1, l: 1, ml: 0.001, un: 1 };
-  for (const f of (data as any[]) || []) {
+  for (const f of linhas) {
     const qtd = Number(f.quantidade) || 0, custo = Number(f.insumos?.custo_unitario) || 0;
     const uUsada = f.unidade_utilizada || f.insumos?.unidade || "", uInsumo = f.insumos?.unidade || "";
     const fu = fator[uUsada], fi = fator[uInsumo];
@@ -70,31 +102,36 @@ export async function custoPorProduto(produtoIds: string[]): Promise<Record<stri
   return out;
 }
 
+/** Os números do mês. Nunca lança: se algo falhar, devolve tudo zerado com erro: true (confira antes de mostrar). */
 export async function carregarMes(uid: string, ano: number, mes0: number): Promise<MesFinanceiro> {
+  try { return await calcularMes(uid, ano, mes0); }
+  catch (e) { console.error("[financeiro] não consegui carregar o mês:", e); return MES_COM_ERRO; }
+}
+
+async function calcularMes(uid: string, ano: number, mes0: number): Promise<MesFinanceiro> {
   const ini = iso(new Date(ano, mes0, 1)), fim = iso(new Date(ano, mes0 + 1, 0)), hoje = iso(new Date());
   const ate = fim < hoje ? fim : hoje;
 
-  const [pag, fin0, vend] = await Promise.all([
-    supabase.from("pagamentos").select("valor, recebido_em").eq("user_id", uid).is("estornado_em", null).gte("recebido_em", ini).lte("recebido_em", ate),
-    supabase.from("financeiro").select("tipo, categoria, valor, data, estornado_em").eq("user_id", uid).gte("data", ini).lte("data", ate),
-    supabase.from("pedidos").select("id, valor_total, status, data_entrega, pedido_itens(quantidade, produtos(id))")
-      .eq("user_id", uid).eq("status", "entregue").gte("data_entrega", ini).lte("data_entrega", fim),
+  const [pag, fin, vend] = await Promise.all([
+    buscarPagamentos(uid, ini, ate),
+    buscarLancamentos(uid, ini, ate),
+    buscarTudo<any>((de, a) => supabase.from("pedidos").select("id, valor_total, status, data_entrega, pedido_itens(quantidade, produtos(id))")
+      .eq("user_id", uid).eq("status", "entregue").gte("data_entrega", ini).lte("data_entrega", fim).order("id").range(de, a)),
   ]);
-
-  const fin: any = fin0.error ? await supabase.from("financeiro").select("tipo, categoria, valor, data").eq("user_id", uid).gte("data", ini).lte("data", ate) : fin0;
+  if (fin.error || vend.error) return MES_COM_ERRO;
 
   // ── Recebido ──
   let fonteRecebido: MesFinanceiro["fonteRecebido"] = "pagamentos";
   let recebimentos: { valor: number; data: string }[] = [];
   if (!pag.error) {
-    recebimentos = ((pag.data as any[]) || []).map(g => ({ valor: r2(g.valor), data: g.recebido_em }));
-  } else {
+    recebimentos = pag.data.map(g => ({ valor: r2(g.valor), data: g.recebido_em }));
+  } else if (faltaNoBanco(pag.error)) {
     fonteRecebido = "pedidos";
-    const { data: peds } = await supabase.from("pedidos").select("valor_total, valor_recebido, status, status_pagamento, data_entrega")
-      .eq("user_id", uid).gte("data_entrega", ini).lte("data_entrega", ate);
-    recebimentos = ((peds as any[]) || []).map(p => ({ valor: r2(valorRecebidoPedido(p)), data: p.data_entrega })).filter(x => x.valor > 0);
-  }
-  const lanc = ((fin.data as any[]) || []).filter(l => !l.estornado_em); // estornado não conta
+    const peds = await buscarRecebidoAntigo(uid, ini, ate);
+    if (peds.error) return MES_COM_ERRO;
+    recebimentos = peds.data.map(p => ({ valor: r2(valorRecebidoPedido(p)), data: p.data_entrega })).filter(x => x.valor > 0);
+  } else return MES_COM_ERRO;
+  const lanc = fin.data.filter(l => !l.estornado_em); // estornado não conta
   const entradasAv = lanc.filter(l => l.tipo === "entrada");
   const saidas = lanc.filter(l => l.tipo !== "entrada");
   const recebidoPedidos = r2(recebimentos.reduce((s, x) => s + x.valor, 0));
@@ -103,10 +140,10 @@ export async function carregarMes(uid: string, ano: number, mes0: number): Promi
   const despesasInsumos = r2(saidas.filter(l => ehInsumo(l.categoria)).reduce((s, l) => s + (Number(l.valor) || 0), 0));
 
   // ── Vendido e custo dos ingredientes ──
-  const vendidos = ((vend.data as any[]) || []).filter(p => p.status !== "cancelado");
+  const vendidos = vend.data.filter(p => p.status !== "cancelado");
   const vendido = r2(vendidos.reduce((s, p) => s + (Number(p.valor_total) || 0), 0));
   const ids = [...new Set(vendidos.flatMap(p => (p.pedido_itens || []).map((it: any) => it.produtos?.id).filter(Boolean)))] as string[];
-  const custo = await custoPorProduto(ids);
+  const custo = await custoPorProduto(ids); // se falhar, lança: carregarMes devolve erro (custo zerado inflaria o lucro)
   let cmv = 0, semFicha = 0;
   for (const p of vendidos) {
     let faltou = false;
@@ -140,10 +177,14 @@ export async function carregarMes(uid: string, ano: number, mes0: number): Promi
   };
 }
 
-/** Resumo das contas a pagar pendentes (null se a tabela ainda não existir). */
-export async function resumoAPagar(): Promise<{ total: number; qtd: number; proxima: string | null } | null> {
-  const { data, error } = await supabase.from("contas_pagar").select("valor, vencimento").eq("status", "pendente").order("vencimento", { ascending: true });
-  if (error) return null;
+/**
+ * Resumo das contas a pagar pendentes (null se a tabela ainda não existir).
+ * 10/10: filtra pela dona da conta (antes dependia só da regra de segurança do banco) e, se a busca falhar
+ * por outro motivo (internet, servidor), devolve { erro: true } em vez de "falta o SQL".
+ */
+export async function resumoAPagar(uid: string): Promise<{ total: number; qtd: number; proxima: string | null; erro?: boolean } | null> {
+  const { data, error } = await supabase.from("contas_pagar").select("valor, vencimento").eq("user_id", uid).eq("status", "pendente").order("vencimento", { ascending: true });
+  if (error) return faltaNoBanco(error) ? null : { total: 0, qtd: 0, proxima: null, erro: true };
   const l = (data as any[]) || [];
   return { total: r2(l.reduce((s, c) => s + (Number(c.valor) || 0), 0)), qtd: l.length, proxima: l[0]?.vencimento || null };
 }

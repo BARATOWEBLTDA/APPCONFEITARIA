@@ -1,14 +1,17 @@
 import CampoData from '@/components/CampoData'
 import { useTravarRolagem } from "@/hooks/useTravarRolagem";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import Folha from "@/components/financeiro/Folha";
 import { useNavigate } from "react-router-dom";
-import { CalendarBlank, CheckCircle, Plus, Receipt, X } from "@phosphor-icons/react";
+import { CalendarBlank, CheckCircle, Plus, Receipt, WarningCircle, X } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { supabase } from "@/lib/supabase";
-import { Botao, confirmar, avisar as avisarBase } from "@/components/base";
+import { buscarTudo } from "@/lib/buscarTudo";
+import { erroDeConexao } from "@/lib/erros";
+import { faltaNoBanco } from "@/lib/pagamentos";
+import { Botao, TelaVazia, confirmar, avisar as avisarBase } from "@/components/base";
 
 /**
  * Financeiro · Passo 5 (03/10) — Contas a pagar.
@@ -37,23 +40,40 @@ export default function FinanceiroAPagar() {
   const [pagasMes, setPagasMes] = useState<Conta[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [precisaSql, setPrecisaSql] = useState(false);
+  const [erro, setErro] = useState(false); // não deu pra carregar (10/10)
   const [pagar, setPagar] = useState<Conta | null>(null);
   const [nova, setNova] = useState(false);
 
+  const numBusca = useRef(0); // 10/10: só vale a resposta da última busca
   const carregar = useCallback(async () => {
-    // contas do mês (e do próximo) a partir dos custos fixos — não duplica
-    await Promise.all([supabase.rpc("contas_pagar_gerar_mes", { p_competencia: competencia(0) }), supabase.rpc("contas_pagar_gerar_mes", { p_competencia: competencia(1) })]).catch(() => {});
-    const { data, error } = await supabase.from("contas_pagar")
-      .select("id, descricao, categoria, valor, vencimento, status, pago_em, valor_pago, custo_fixo_id")
-      .in("status", ["pendente", "paga"]).order("vencimento", { ascending: true });
-    if (error) { setPrecisaSql(true); setCarregando(false); return; }
-    const lista = (data as Conta[]) || [];
-    const ini = `${competencia(0)}-01`;
-    setContas(lista.filter(c => c.status === "pendente"));
-    setPagasMes(lista.filter(c => c.status === "paga" && (c.pago_em || "") >= ini).sort((a, b) => (b.pago_em || "").localeCompare(a.pago_em || "")));
+    const n = ++numBusca.current;
+    try {
+      const { data: { user }, error: eUser } = await supabase.auth.getUser();
+      if (n !== numBusca.current) return;
+      if (!user) { if (erroDeConexao(eUser)) { setErro(true); setCarregando(false); } return; }
+      // contas do mês (e do próximo) a partir dos custos fixos — não duplica
+      await Promise.all([supabase.rpc("contas_pagar_gerar_mes", { p_competencia: competencia(0) }), supabase.rpc("contas_pagar_gerar_mes", { p_competencia: competencia(1) })]).catch(() => {});
+      // 10/10: só as contas dela (antes dependia só da regra de segurança do banco) e de 1.000 em 1.000
+      // (o Supabase corta em 1.000 linhas sem avisar; pela ordem do vencimento, as cortadas seriam as mais novas)
+      const { data, error } = await buscarTudo<Conta>((de, ate) => supabase.from("contas_pagar")
+        .select("id, descricao, categoria, valor, vencimento, status, pago_em, valor_pago, custo_fixo_id")
+        .eq("user_id", user.id).in("status", ["pendente", "paga"]).order("vencimento", { ascending: true }).order("id").range(de, ate));
+      if (n !== numBusca.current) return;
+      // 10/10: "falta o SQL" só quando a tabela não existe mesmo; internet ou outro erro vira "Não deu pra carregar"
+      if (error) { if (faltaNoBanco(error)) setPrecisaSql(true); else setErro(true); setCarregando(false); return; }
+      const ini = `${competencia(0)}-01`;
+      setErro(false);
+      setContas(data.filter(c => c.status === "pendente"));
+      setPagasMes(data.filter(c => c.status === "paga" && (c.pago_em || "") >= ini).sort((a, b) => (b.pago_em || "").localeCompare(a.pago_em || "")));
+    } catch (e) {
+      console.error("[a pagar] não consegui carregar:", e);
+      if (n !== numBusca.current) return;
+      setErro(true);
+    }
     setCarregando(false);
   }, []);
   useEffect(() => { carregar(); }, [carregar]);
+  const tentarDeNovo = () => { setCarregando(true); setErro(false); carregar(); };
 
   const grupos = useMemo(() => {
     const hoje = isoDia(), em7 = isoDia(6);
@@ -78,7 +98,7 @@ export default function FinanceiroAPagar() {
     <div className="fap-root">
       <AppPageHeader
         title="A pagar"
-        subtitle={carregando ? "Carregando…" : contas.length ? `${brl(total)} em ${contas.length} ${contas.length === 1 ? "conta" : "contas"}` : "Nenhuma conta pendente"}
+        subtitle={carregando ? "Carregando…" : erro ? "Não deu pra carregar" : contas.length ? `${brl(total)} em ${contas.length} ${contas.length === 1 ? "conta" : "contas"}` : "Nenhuma conta pendente"}
         onBack={() => navigate("/financeiro")}
         infoIcon="🧾"
         infoContent={<>
@@ -91,6 +111,9 @@ export default function FinanceiroAPagar() {
       <div className="fap-wrap">
         {precisaSql ? (
           <div className="fap-vazio"><b>Falta um ajuste no banco</b><p>Rode o SQL do Passo 5 (contas a pagar) no Supabase pra ativar esta tela.</p></div>
+        ) : erro && !carregando ? (
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar as contas" texto="Confira a internet e tente de novo."
+            acao={<Botao variante="suave" tamanho="m" onClick={tentarDeNovo}>Tentar de novo</Botao>} />
         ) : (<>
           <button type="button" className="fap-nova" onClick={() => setNova(true)}><Plus size={17} weight="bold" />Nova conta a pagar</button>
 

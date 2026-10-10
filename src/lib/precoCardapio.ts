@@ -1,4 +1,5 @@
 import { kitAtivo, precoMinKit } from '@/lib/kitQuantidade'
+import { pesoDoTamanho } from '@/lib/itemSacola'
 
 /**
  * Preço que o cardápio mostra no card do produto.
@@ -12,7 +13,7 @@ export function precoCardapio(p: any): { valor: number; aPartir: boolean } {
   const ops: any[] = gt?.ativo ? (gt.opcoes || []) : []
   if (ops.length > 0) {
     if (gt.modo_preco_tamanho === 'por_peso') {
-      const pesos = ops.map(o => Number(o.peso_kg) || 0).filter(x => x > 0)
+      const pesos = ops.map(o => pesoDoTamanho(o, true)).filter(x => x > 0) // (10/10) sem peso_kg, lê o peso do nome
       const menor = pesos.length ? Math.min(...pesos) : 1
       return { valor: Math.round((Number(p.preco_normal) || 0) * menor * 100) / 100, aPartir: ops.length > 1 }
     }

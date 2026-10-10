@@ -126,6 +126,7 @@ export default function NovaVenda() {
   const [clienteNome, setClienteNome] = useState('')
   const [clienteTelefone, setClienteTelefone] = useState('')
   const [modoNovoCli, setModoNovoCli] = useState(false)
+  const clienteDoEnderecoRef = useRef<string | null>(null) // de qual cliente é o endereço que está na tela (pra troca de cliente)
 
   const [tipoEntrega, setTipoEntrega] = useState<TipoEntrega>('retirada')
   const [dataEntrega, setDataEntrega] = useState('')
@@ -342,12 +343,20 @@ export default function NovaVenda() {
     setClienteTelefone(c.telefone || c.whatsapp || '')
     setSemCliente(false)
     setModoNovoCli(false)
-    // Puxa endereço cadastrado (se tiver)
-    if (c.rua) setEnderecoRua(c.rua)
-    if (c.numero) setEnderecoNumero(c.numero)
-    if (c.bairro) setEnderecoBairro(c.bairro)
-    if (c.cidade) setEnderecoCidade(c.cidade)
-    if (c.complemento) setEnderecoComplemento(c.complemento)
+    // (10/10) Trocou de cliente: o endereço inteiro passa a ser o dela (vazio no que ela não tem).
+    // Antes só os campos preenchidos entravam e sobrava pedaço do endereço da cliente anterior.
+    // Mesma cliente de novo: não mexe. Sem cliente antes + cliente sem endereço: fica o que ela digitou.
+    const anterior = clienteDoEnderecoRef.current
+    const temEndereco = !!(c.rua || c.numero || c.bairro || c.cidade || c.complemento)
+    if (c.id !== anterior && (anterior || temEndereco)) {
+      setEnderecoRua(c.rua || '')
+      setEnderecoNumero(c.numero || '')
+      setEnderecoBairro(c.bairro || '')
+      setEnderecoCidade(c.cidade || '')
+      setEnderecoComplemento(c.complemento || '')
+      setEnderecoCep('') // o CEP era do endereço anterior
+    }
+    clienteDoEnderecoRef.current = c.id
     setModalCliente(false)
     setBuscaCliente('')
   }
@@ -411,6 +420,7 @@ export default function NovaVenda() {
     setOrigemDoo(true)
     preenchidaRef.current = true
     setTipo(d.tipo as any); setItens(d.itens as any)
+    clienteDoEnderecoRef.current = d.clienteId || null
     setSemCliente(d.semCliente); setClienteId(d.clienteId); setClienteNome(d.clienteNome); setClienteTelefone(d.clienteTelefone); setModoNovoCli(d.clienteNovo)
     setTipoEntrega(d.tipoEntrega as any); setDataEntrega(d.dataEntrega); setHorarioEntrega(d.horarioEntrega)
     setEnderecoRua(d.endereco.rua); setEnderecoNumero(d.endereco.numero); setEnderecoBairro(d.endereco.bairro); setEnderecoCidade(d.endereco.cidade); setEnderecoComplemento(d.endereco.complemento)
@@ -425,6 +435,7 @@ export default function NovaVenda() {
     setEtapa(1)
     setTipo(null)
     setItens([])
+    clienteDoEnderecoRef.current = null
     setClienteId(null); setClienteNome(''); setClienteTelefone(''); setSemCliente(false); setModoNovoCli(false)
     setTipoEntrega('retirada')
     setDataEntrega(''); setHorarioEntrega('')
@@ -526,6 +537,7 @@ export default function NovaVenda() {
     setEnderecoComplemento(c.complemento || '')
   }
   const tirarCliente = () => {
+    clienteDoEnderecoRef.current = null // o endereço dela sai junto, logo abaixo
     setClienteId(null); setClienteNome(''); setClienteTelefone('')
     setEnderecoRua(''); setEnderecoNumero(''); setEnderecoBairro(''); setEnderecoComplemento('')
   }

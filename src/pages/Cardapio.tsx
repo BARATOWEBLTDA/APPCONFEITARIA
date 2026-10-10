@@ -173,7 +173,7 @@ export default function Cardapio() {
         // Pedidos vindos do cardápio
         supabase
           .from("pedidos")
-          .select("id, valor_total, pedido_itens(nome_produto, quantidade, produtos(imagem_url))")
+          .select("id, valor_total, status, pedido_itens(nome_produto, quantidade, produtos(imagem_url))")
           .eq("user_id", userId)
           .eq("origem", "cardapio")
           .gte("created_at", dataLimite.toISOString()),
@@ -195,7 +195,7 @@ export default function Cardapio() {
         dataAnterior
           ? supabase
               .from("pedidos")
-              .select("id, valor_total")
+              .select("id, valor_total, status")
               .eq("user_id", userId)
               .eq("origem", "cardapio")
               .gte("created_at", dataAnterior.inicio.toISOString())
@@ -204,7 +204,10 @@ export default function Cardapio() {
       ]);
 
       const visitas = visitasRes.count || 0;
-      const pedidosLista = pedidosRes.data || [];
+      // 10/10: pedido cancelado não é venda: sai da contagem, do faturamento e dos mais vendidos (antes somava)
+      const semCancelados = (lista: any[] | null | undefined) => (lista || []).filter((p: any) => p.status !== "cancelado");
+      const pedidosLista = semCancelados(pedidosRes.data);
+      const pedidosAntLista = semCancelados(pedidosAntRes.data);
       const pedidosCount = pedidosLista.length;
       const receita = pedidosLista.reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0);
 
@@ -226,8 +229,8 @@ export default function Cardapio() {
       setMetricas({ visitas, pedidosCardapio: pedidosCount, receita, topProdutos });
       setMetricasAnterior({
         visitas: visitasAntRes.count || 0,
-        pedidos: (pedidosAntRes.data?.length) || 0,
-        receita: (pedidosAntRes.data || []).reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0),
+        pedidos: pedidosAntLista.length,
+        receita: pedidosAntLista.reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0),
       });
 
       // ─── Alertas ───

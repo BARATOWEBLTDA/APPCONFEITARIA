@@ -1,6 +1,6 @@
 import CampoData from '@/components/CampoData'
 import { useTravarRolagem } from "@/hooks/useTravarRolagem";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import { createPortal } from "react-dom";
 import { Wallet, PencilSimple, X } from "@phosphor-icons/react";
@@ -40,9 +40,11 @@ function recebidoDe(p: PedidoFinalizar) {
   return 0;
 }
 
-export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLabel, aguardandoPagamento, onCancelar, onConcluido }: {
+export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLabel, aguardandoPagamento, onCancelar, onConcluido, onParcial }: {
   pedido: PedidoFinalizar; novoStatus: string; novoStatusLabel: string; aguardandoPagamento?: boolean;
   onCancelar: () => void; onConcluido: (r: ResultadoFinalizar) => void;
+  /** fechou sem concluir, mas algo já tinha sido gravado (valor ajustado ou situação): o que mudou no banco */
+  onParcial?: (r: Partial<ResultadoFinalizar>) => void;
 }) {
   const totalOriginal = r2(Number(pedido.valor_total) || 0);
   const jaRecebido = r2(recebidoDe(pedido));
@@ -67,7 +69,20 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
   const [erro, setErro] = useState("");
   useTravarRolagem(true)
 
-  useEffect(() => { const esc = (e: KeyboardEvent) => { if (e.key === "Escape" && !salvando) onCancelar(); }; window.addEventListener("keydown", esc); return () => window.removeEventListener("keydown", esc); }, [onCancelar, salvando]);
+  // (10/10) O que já foi gravado nesta abertura. Se um passo falhar e ela tentar de novo, o que já gravou
+  // não é refeito (antes o desconto era somado de novo a cada tentativa).
+  const [ajusteGravado, setAjusteGravado] = useState<number | null>(null); // o novo total, depois de gravado
+  const statusGravado = useRef(false);
+  const fechar = () => {
+    const parcial: Partial<ResultadoFinalizar> = {
+      ...(ajusteGravado !== null ? { valor_total: ajusteGravado } : {}),
+      ...(statusGravado.current ? { status: novoStatus } : {}),
+    };
+    if (Object.keys(parcial).length) onParcial?.(parcial);
+    onCancelar();
+  };
+
+  useEffect(() => { const esc = (e: KeyboardEvent) => { if (e.key === "Escape" && !salvando) fechar(); }; window.addEventListener("keydown", esc); return () => window.removeEventListener("keydown", esc); }, [onCancelar, salvando, ajusteGravado]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const concluir = async (comRecebimento: boolean) => {
     setErro("");
@@ -79,17 +94,21 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
     const data = quando === "hoje" ? isoDia() : quando === "ontem" ? isoDia(-1) : outraData;
     if (comRecebimento && recebe > 0 && (!data || data > isoDia())) { setErro("Escolha uma data até hoje"); return; }
     setSalvando(true);
-    let total = totalOriginal;
-    // 1) ajuste de valor (se houver)
-    if (ajusteAberto && valorAjuste > 0) {
+    let total = ajusteGravado ?? totalOriginal;
+    // 1) ajuste de valor (se houver, e só uma vez por abertura)
+    if (ajusteGravado === null && ajusteAberto && valorAjuste > 0) {
       const a = await ajustarValorPedido({ pedidoId: pedido.id, totalAtual: totalOriginal, tipo: tipoAjuste, valor: valorAjuste, motivo: motivo.trim() || null });
       if (!a.ok) { setSalvando(false); setErro(a.erro || "Não foi possível ajustar o valor"); return; }
       total = a.novoTotal;
+      setAjusteGravado(a.novoTotal);
     }
     // 2) status
-    const { error } = await supabase.from("pedidos").update({ status: novoStatus }).eq("id", pedido.id);
-    if (error) { setSalvando(false); setErro("Não foi possível salvar agora. Confira a internet e tente de novo."); return; }
-    if (novoStatus !== pedido.status) registrarEtapa(pedido.id, novoStatus);
+    if (!statusGravado.current) {
+      const { error } = await supabase.from("pedidos").update({ status: novoStatus }).eq("id", pedido.id);
+      if (error) { setSalvando(false); setErro("Não foi possível salvar agora. Confira a internet e tente de novo."); return; }
+      statusGravado.current = true;
+      if (novoStatus !== pedido.status) registrarEtapa(pedido.id, novoStatus);
+    }
     // 3) o que entrou agora vira pagamento
     let recebido = jaRecebido;
     let statusPag = pedido.status_pagamento || (recebido > 0 ? "parcial" : "pendente");
@@ -109,7 +128,7 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
   };
 
   return createPortal(
-    <div className="fps-ov" onClick={() => !salvando && onCancelar()} role="dialog" aria-modal="true" aria-label="Finalizar pedido">
+    <div className="fps-ov" onClick={() => !salvando && fechar()} role="dialog" aria-modal="true" aria-label="Finalizar pedido">
       <div className="fps" onClick={e => e.stopPropagation()}>
         <span className="fps-alca" aria-hidden="true" />
         <div className="fps-hd">
@@ -117,7 +136,7 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
             <b className="fps-t">{aguardandoPagamento ? "O cliente pagou?" : "Finalizar pedido"}</b>
             <small className="fps-s">Pedido #{pedido.numero ?? "—"}{pedido.cliente_nome ? ` · ${pedido.cliente_nome}` : ""} · {novoStatusLabel}</small>
           </div>
-          <button type="button" className="fps-x" onClick={onCancelar} aria-label="Fechar" disabled={salvando}><X size={18} weight="bold" /></button>
+          <button type="button" className="fps-x" onClick={fechar} aria-label="Fechar" disabled={salvando}><X size={18} weight="bold" /></button>
         </div>
 
         <div className="fps-res">
@@ -131,14 +150,15 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
           <button type="button" className="fps-aj-link" onClick={() => setAjusteAberto(true)}><PencilSimple size={15} weight="bold" />Ajustar valor do pedido</button>
         ) : (
           <div className="fps-aj">
-            <div className="fps-aj-h"><b>Ajustar valor</b><button type="button" onClick={() => { setAjusteAberto(false); setValorAjusteTxt(""); setMotivo(""); }}>Cancelar ajuste</button></div>
+            {/* ajuste já gravado (uma tentativa falhou depois dele): fica travado, não dá pra mudar nem aplicar de novo */}
+            <div className="fps-aj-h"><b>{ajusteGravado !== null ? "Valor ajustado" : "Ajustar valor"}</b>{ajusteGravado === null && <button type="button" onClick={() => { setAjusteAberto(false); setValorAjusteTxt(""); setMotivo(""); }}>Cancelar ajuste</button>}</div>
             <div className="fps-seg">
-              {(["desconto", "acrescimo"] as TipoAjuste[]).map(t => <button type="button" key={t} className={tipoAjuste === t ? "on" : ""} onClick={() => setTipoAjuste(t)}>{t === "desconto" ? "Desconto" : "Acréscimo"}</button>)}
+              {(["desconto", "acrescimo"] as TipoAjuste[]).map(t => <button type="button" key={t} className={tipoAjuste === t ? "on" : ""} disabled={ajusteGravado !== null} onClick={() => setTipoAjuste(t)}>{t === "desconto" ? "Desconto" : "Acréscimo"}</button>)}
             </div>
-            <div className="fps-in sm"><span>R$</span><input inputMode="numeric" placeholder="0,00" value={valorAjusteTxt} onChange={e => setValorAjusteTxt(mascaraBRL(e.target.value))} aria-label="Valor do ajuste" /></div>
+            <div className="fps-in sm"><span>R$</span><input inputMode="numeric" placeholder="0,00" value={valorAjusteTxt} disabled={ajusteGravado !== null} onChange={e => setValorAjusteTxt(mascaraBRL(e.target.value))} aria-label="Valor do ajuste" /></div>
             <p className="fps-lb">Motivo</p>
-            <div className="fps-chips">{MOTIVOS[tipoAjuste].map(m => <button type="button" key={m} className={motivo === m ? "on" : ""} onClick={() => setMotivo(m)}>{m}</button>)}</div>
-            <input className="fps-motivo" placeholder="Ou escreva o motivo" value={MOTIVOS[tipoAjuste].includes(motivo) ? "" : motivo} onChange={e => setMotivo(e.target.value)} />
+            <div className="fps-chips">{MOTIVOS[tipoAjuste].map(m => <button type="button" key={m} className={motivo === m ? "on" : ""} disabled={ajusteGravado !== null} onClick={() => setMotivo(m)}>{m}</button>)}</div>
+            <input className="fps-motivo" placeholder="Ou escreva o motivo" value={MOTIVOS[tipoAjuste].includes(motivo) ? "" : motivo} disabled={ajusteGravado !== null} onChange={e => setMotivo(e.target.value)} />
           </div>
         )}
 

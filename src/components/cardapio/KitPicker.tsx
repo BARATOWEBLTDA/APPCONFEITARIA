@@ -57,14 +57,19 @@ export default function KitPicker({ kit, sel, onChange, desconto = 0 }: Props) {
 
       {kit.sabores.filter(s => s.nome.trim()).map(s => {
         const q = sel.qtds[s.id] || 0
-        const podeMais = c.soma + passo <= c.alvo && (q > 0 || c.usados < (kit.max_sabores || 1))
+        // 10/10: quando falta menos que o passo, o "+" soma só o que falta (kit de 30 com passo 25 travava em 25).
+        // O "−" tira primeiro essa sobra e depois volta a descer de passo em passo.
+        const falta = c.alvo - c.soma
+        const mais = Math.min(passo, falta)
+        const menos = q % passo > 0 ? q % passo : Math.min(passo, q)
+        const podeMais = falta > 0 && (q > 0 || c.usados < (kit.max_sabores || 1))
         return (
           <div className="kp-sabor" key={s.id}>
             <span className="kp-sab-nome"><Heart size={16} weight="duotone" aria-hidden="true" />{s.nome}</span>
             <div className="kp-stp">
-              <button type="button" aria-label={`Menos ${s.nome}`} disabled={q <= 0} onClick={() => setQtd(s.id, q - passo)}>−</button>
+              <button type="button" aria-label={`Menos ${s.nome}`} disabled={q <= 0} onClick={() => setQtd(s.id, q - menos)}>−</button>
               <b>{q}</b>
-              <button type="button" aria-label={`Mais ${s.nome}`} disabled={!podeMais} onClick={() => setQtd(s.id, q + passo)}>+</button>
+              <button type="button" aria-label={`Mais ${s.nome}`} disabled={!podeMais} onClick={() => setQtd(s.id, q + mais)}>+</button>
             </div>
           </div>
         )

@@ -4,9 +4,12 @@
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CaretLeft, CaretRight, ChartLineUp, Warning } from "@phosphor-icons/react";
+import { CaretLeft, CaretRight, ChartLineUp, Warning, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
+import { Botao, TelaVazia } from "@/components/base";
 import { supabase } from "@/lib/supabase";
+import { buscarTudo } from "@/lib/buscarTudo";
+import { erroDeConexao } from "@/lib/erros";
 import { carregarMes, custoPorProduto, type MesFinanceiro } from "@/lib/painelFinanceiro";
 
 type Produto = { chave: string; nome: string; qtd: number; vendido: number; custo: number; lucro: number; margem: number; semFicha: boolean };
@@ -21,26 +24,36 @@ export default function Lucratividade() {
   const [dados, setDados] = useState<MesFinanceiro | null>(null);
   const [produtos, setProdutos] = useState<Produto[] | null>(null);
   const [fixos, setFixos] = useState<{ custos: number; salario: number } | null>(null);
+  const [erro, setErro] = useState(false); // não deu pra carregar (10/10)
+  const [tentativa, setTentativa] = useState(0);
 
   useEffect(() => {
+    // 10/10: ao trocar de mês rápido, só vale a resposta da última busca (a atrasada era aplicada por cima da nova).
+    // E se alguma busca falhar, a tela avisa em vez de mostrar "nenhum pedido entregue" ou um lucro errado.
+    let cancelado = false;
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      setDados(null); setProdutos(null);
+      setDados(null); setProdutos(null); setErro(false);
+      const { data: { user }, error: eUser } = await supabase.auth.getUser();
+      if (cancelado) return;
+      if (!user) { if (erroDeConexao(eUser)) setErro(true); return; }
       const ini = iso(new Date(mes.ano, mes.m, 1)), fim = iso(new Date(mes.ano, mes.m + 1, 0));
       const [d, peds, cf, mo] = await Promise.all([
         carregarMes(user.id, mes.ano, mes.m),
-        supabase.from("pedidos").select("status, pedido_itens(nome_produto, quantidade, valor_unitario, produtos(id, nome))")
-          .eq("user_id", user.id).eq("status", "entregue").gte("data_entrega", ini).lte("data_entrega", fim),
+        // de 1.000 em 1.000, igual ao painel (o Supabase corta em 1.000 linhas sem avisar)
+        buscarTudo<any>((de, ate) => supabase.from("pedidos").select("status, pedido_itens(nome_produto, quantidade, valor_unitario, produtos(id, nome))")
+          .eq("user_id", user.id).eq("status", "entregue").gte("data_entrega", ini).lte("data_entrega", fim).order("id").range(de, ate)),
         supabase.from("custos_fixos").select("valor, ativo").eq("user_id", user.id),
         supabase.from("config_mao_obra").select("salario_mensal").eq("user_id", user.id).maybeSingle(),
       ]);
+      if (cancelado) return;
+      if (d.erro || peds.error || cf.error || mo.error) { setErro(true); return; }
       setDados(d);
       setFixos({ custos: ((cf.data as any[]) || []).filter(x => x.ativo !== false).reduce((s, x) => s + (Number(x.valor) || 0), 0), salario: Number((mo.data as any)?.salario_mensal) || 0 });
       // lucro por produto
-      const itens = ((peds.data as any[]) || []).filter(p => p.status !== "cancelado").flatMap(p => p.pedido_itens || []);
+      const itens = peds.data.filter(p => p.status !== "cancelado").flatMap(p => p.pedido_itens || []);
       const ids = [...new Set(itens.map((it: any) => it.produtos?.id).filter(Boolean))] as string[];
       const custo = await custoPorProduto(ids);
+      if (cancelado) return;
       const mapa: Record<string, Produto> = {};
       for (const it of itens) {
         const id = it.produtos?.id; const chave = id || `nome:${it.nome_produto}`;
@@ -53,8 +66,12 @@ export default function Lucratividade() {
       const lista = Object.values(mapa).map(p => ({ ...p, lucro: p.vendido - p.custo, margem: p.vendido > 0 ? Math.round(((p.vendido - p.custo) / p.vendido) * 100) : 0 }))
         .sort((a, b) => b.lucro - a.lucro);
       setProdutos(lista);
-    })();
-  }, [mes]);
+    })().catch(e => {
+      console.error("[lucratividade] não consegui carregar:", e);
+      if (!cancelado) { setDados(null); setErro(true); }
+    });
+    return () => { cancelado = true; };
+  }, [mes, tentativa]);
 
   const ehMesAtual = mes.ano === h.getFullYear() && mes.m === h.getMonth();
   const mudar = (d: number) => setMes(x => { const n = new Date(x.ano, x.m + d, 1); return { ano: n.getFullYear(), m: n.getMonth() }; });
@@ -87,7 +104,10 @@ export default function Lucratividade() {
           <button type="button" onClick={() => mudar(1)} disabled={ehMesAtual} aria-label="Próximo mês"><CaretRight size={16} weight="bold" /></button>
         </div>
 
-        {!dados ? <div className="lu-ph" /> : dados.qtdVendidos === 0 ? (
+        {erro ? (
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar a lucratividade" texto="Confira a internet e tente de novo."
+            acao={<Botao variante="suave" tamanho="m" onClick={() => setTentativa(t => t + 1)}>Tentar de novo</Botao>} />
+        ) : !dados ? <div className="lu-ph" /> : dados.qtdVendidos === 0 ? (
           <div className="lu-vazio">
             <span className="lu-vazio-ic"><ChartLineUp size={30} weight="duotone" /></span>
             <b>Nenhum pedido entregue em {MESES[mes.m].toLowerCase()}</b>
@@ -125,7 +145,13 @@ export default function Lucratividade() {
                 <div className="lu-bar grande"><i className={dados.vendido >= metaEquilibrio ? "ok" : ""} style={{ width: `${Math.min(100, (dados.vendido / metaEquilibrio) * 100)}%` }} /></div>
                 <p className="lu-eq-s">{dados.vendido >= metaEquilibrio ? `Bateu! ${brl(dados.vendido - metaEquilibrio)} acima do necessário.` : `Faltam ${brl(metaEquilibrio - dados.vendido)} em vendas (${Math.round((dados.vendido / metaEquilibrio) * 100)}% do caminho).`}</p>
                 <p className="lu-nota">Com a sua margem de ingredientes de {Math.round(margemBruta * 100)}%.</p>
-              </>) : (
+              </>) : fixos && (fixos.custos + fixos.salario) > 0 ? (
+                // 10/10: com os custos cadastrados e os ingredientes custando tudo o que foi vendido (ou mais), não existe
+                // ponto de equilíbrio. Antes caía no "cadastre seus custos", mesmo com tudo cadastrado.
+                <p className="lu-eq-t">{dados.vendido > 0
+                  ? `Neste mês, os ingredientes custaram ${dados.cmv > dados.vendido ? "mais do que" : "o mesmo que"} você vendeu. Assim não sobra pra pagar os custos fixos e o seu salário, e não existe ponto de equilíbrio.`
+                  : "Os pedidos entregues neste mês estão sem valor, então não dá pra calcular o ponto de equilíbrio."}</p>
+              ) : (
                 <p className="lu-eq-t">Cadastre seus <button type="button" className="lu-link" onClick={() => navigate("/custos")}>custos fixos e o seu salário</button> pra saber quanto precisa vender no mês pra fechar no azul.</p>
               )}
             </section>

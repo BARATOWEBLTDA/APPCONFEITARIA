@@ -11,23 +11,66 @@ import { useTravarRolagem } from '@/hooks/useTravarRolagem'
  * Várias abertas juntas (calendário por cima de gaveta): Esc e voltar fecham só a de cima.
  */
 
-type Aberta = { fechar: () => void; peloVoltar: boolean }
+type Aberta = { fechar: () => void; temEntrada: boolean }
 const pilha: Aberta[] = []
 let popsAIgnorar = 0
 let ouvindo = false
 let voltarFecha = true
+let esperandoToque = false
+const aoAssentar: (() => void)[] = []
 
 /** A vitrine roda dentro de outra página: lá o histórico não é nosso, então desliga. */
 export function configurarSobreposicao(opcoes: { voltarFecha?: boolean }) {
   if (typeof opcoes.voltarFecha === 'boolean') voltarFecha = opcoes.voltarFecha
 }
 
+/** A entrada que a janela coloca no histórico pro "voltar" do Android. */
+function empurrar(a: Aberta) {
+  try { window.history.pushState({ ...(window.history.state || {}), uiJanela: true }, ''); a.temEntrada = true } catch { /* sem histórico: segue sem o voltar */ }
+}
+
+/**
+ * (10/10) Janela que continuou aberta depois do voltar (perguntou "Descartar?" e a pessoa ficou, ou estava salvando)
+ * ficava sem entrada no histórico, e o voltar seguinte saía da tela. A entrada é reposta no próximo toque ou tecla:
+ * o Chrome pula entradas criadas logo depois de um voltar, sem a pessoa ter tocado na tela.
+ */
+function reporEntradas(e: Event) {
+  if ((e as KeyboardEvent).key === 'Escape') return // o Esc fecha a janela de cima: não precisa repor
+  window.removeEventListener('click', reporEntradas, true)
+  window.removeEventListener('keydown', reporEntradas, true)
+  esperandoToque = false
+  if (voltarFecha) pilha.forEach(a => { if (!a.temEntrada) empurrar(a) })
+}
+
 function aoVoltar() {
-  if (popsAIgnorar > 0) { popsAIgnorar--; return }
+  if (popsAIgnorar > 0) {
+    // era o "voltar" que uma janela pediu ao fechar: quando chega o último, avisa quem esperava pra navegar
+    if (--popsAIgnorar === 0) { const fila = aoAssentar.splice(0); window.setTimeout(() => fila.forEach(f => f()), 0) }
+    return
+  }
   const topo = pilha[pilha.length - 1]
   if (!topo) return
-  topo.peloVoltar = true
+  // o voltar já tirou do histórico a entrada de uma janela (a mais de cima que ainda tinha)
+  for (let i = pilha.length - 1; i >= 0; i--) { if (pilha[i].temEntrada) { pilha[i].temEntrada = false; break } }
   topo.fechar()
+  if (!esperandoToque) {
+    esperandoToque = true
+    window.addEventListener('click', reporEntradas, true)
+    window.addEventListener('keydown', reporEntradas, true)
+  }
+}
+
+/**
+ * (10/10) Espera o histórico assentar. A janela que fecha pelo botão pede um "voltar" pra tirar a entrada dela,
+ * e esse voltar só acontece um instante depois: quem navegava logo em seguida tinha a tela nova desfeita.
+ * Resolve quando os "voltar" pedidos chegarem (ou no tempo limite, por segurança). O confirmar() e o informar() já esperam.
+ */
+export function historicoAssentado(limite = 500): Promise<void> {
+  if (popsAIgnorar === 0) return Promise.resolve()
+  return new Promise(resolve => {
+    aoAssentar.push(resolve)
+    window.setTimeout(resolve, limite)
+  })
 }
 function aoTeclar(e: KeyboardEvent) {
   if (e.key !== 'Escape') return
@@ -59,15 +102,12 @@ export function useSobreposicao(aberta: boolean, aoFechar: () => void, caixa: Re
   useEffect(() => {
     if (!aberta) return
     ouvir()
-    const eu: Aberta = { fechar: () => fecharRef.current(), peloVoltar: false }
+    const eu: Aberta = { fechar: () => fecharRef.current(), temEntrada: false }
     pilha.push(eu)
     marcar()
 
     // voltar do Android: a janela coloca uma entrada no histórico; o voltar tira a entrada e fecha a janela
-    let empurrou = false
-    if (voltarFecha) {
-      try { window.history.pushState({ ...(window.history.state || {}), uiJanela: true }, ''); empurrou = true } catch { /* sem histórico: segue sem o voltar */ }
-    }
+    if (voltarFecha) empurrar(eu)
 
     // foco: entra na janela, fica preso nela e depois volta pra onde estava
     const antes = document.activeElement as HTMLElement | null
@@ -92,7 +132,8 @@ export function useSobreposicao(aberta: boolean, aoFechar: () => void, caixa: Re
       if (i >= 0) pilha.splice(i, 1)
       marcar()
       // fechou pelo X, pelo fundo ou pelo Esc: tira a entrada que a janela colocou no histórico
-      if (empurrou && !eu.peloVoltar) {
+      // (se foi o voltar que fechou, a entrada já saiu)
+      if (eu.temEntrada) {
         try { if (window.history.state?.uiJanela) { popsAIgnorar++; window.history.back() } } catch { /* nada */ }
       }
       if (antes && document.contains(antes)) antes.focus({ preventScroll: true })

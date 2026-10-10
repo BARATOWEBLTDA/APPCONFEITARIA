@@ -65,6 +65,7 @@ export default function Inicio() {
   const [counts, setCounts] = useState({
     pedidosPendentes: 0,
     entregasHoje: 0,
+    valorEntregasHoje: 0,
     aniversariantes: 0,
     recebidoMes: 0,
     pedidosAtrasados: 0,
@@ -382,10 +383,11 @@ export default function Inicio() {
           .select("id", { count: "exact", head: true })
           .eq("user_id", userId)
           .in("status", STATUS_PENDENTES),
-        // Entregas de hoje (qualquer status ativo)
+        // Entregas de hoje (qualquer status ativo). (10/10) Traz também o valor de cada uma, pro "R$ X em entregas hoje"
+        // do computador: antes ele somava só as 5 primeiras da lista "Próximas entregas".
         supabase
           .from("pedidos")
-          .select("id", { count: "exact", head: true })
+          .select("valor_total", { count: "exact" })
           .eq("user_id", userId)
           .eq("data_entrega", hojeISO)
           .in("status", STATUS_ATIVOS),
@@ -462,6 +464,7 @@ export default function Inicio() {
       setCounts({
         pedidosPendentes: pedidosPendentesRes.count || 0,
         entregasHoje: entregasHojeRes.count || 0,
+        valorEntregasHoje: (entregasHojeRes.data || []).reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0),
         aniversariantes: aniversariantes.length,
         recebidoMes,
         pedidosAtrasados: pedidosAtrasadosRes.count || 0,
@@ -682,7 +685,7 @@ export default function Inicio() {
       {/* ══ Computador (≥1100px): topo rosa com o resumo do dia + números (30/09) ══ */}
       {(() => {
         const hojeISO = dataISO(new Date());
-        const aReceberHoje = proximasEntregas.filter(e => e.data === hojeISO).reduce((s, e) => s + e.valor, 0);
+        const aReceberHoje = counts.valorEntregasHoje; // todas as entregas de hoje (não só as 5 da lista)
         const proxHora = proximasEntregas.find(e => e.data === hojeISO && e.hora)?.hora;
         const partes: string[] = [];
         if (counts.entregasHoje > 0) partes.push(`${counts.entregasHoje} ${counts.entregasHoje === 1 ? "entrega" : "entregas"} hoje`);

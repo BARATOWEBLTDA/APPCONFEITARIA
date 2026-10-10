@@ -6,6 +6,8 @@ import { Check, Clock, MapPin, Sparkle, Storefront, WhatsappLogo } from "@phosph
 import AppPageHeader from "@/components/AppPageHeader";
 import HorarioSheet from "@/components/HorarioSheet";
 import { Botao, Campo, CampoArea, Titulo, avisar } from "@/components/base";
+import { digitosTelefone } from "@/lib/telefone";
+import { digitosAoDigitar } from "@/components/cardapio/telefoneDigitado";
 import "./dadosLoja.css";
 
 /**
@@ -46,8 +48,10 @@ const HORARIO_PADRAO: Horario = {
 
 type CampoHora = "abertura" | "fechamento" | "sabado_abertura" | "sabado_fechamento" | "domingo_abertura" | "domingo_fechamento";
 
-function formatPhone(v: string) {
-  const d = (v || "").replace(/\D/g, "").slice(0, 11);
+// 10/10: tira o +55 antes da máscara (antes "+55 41 99999-8888" virava "(55) 41999-9988").
+// digitando = no campo, enquanto ela escreve (não confunde o DDD 55 com o código do país)
+function formatPhone(v: string, digitando = false) {
+  const d = digitando ? digitosAoDigitar(v) : digitosTelefone(v).slice(0, 11);
   if (!d) return "";
   if (d.length <= 2) return `(${d}`;
   if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
@@ -268,7 +272,7 @@ export default function DadosLoja() {
           </div>
           <div id="dl-whats">
             <Campo id="dl-in-whats" rotulo="WhatsApp que recebe os pedidos" inputMode="tel" value={telefone} placeholder="(41) 99999-8888"
-              icone={<WhatsappLogo size={20} weight="bold" className="dl-zap" />} onChange={(e) => setTelefone(formatPhone(e.target.value))} />
+              icone={<WhatsappLogo size={20} weight="bold" className="dl-zap" />} onChange={(e) => setTelefone(formatPhone(e.target.value, true))} />
           </div>
           <div id="dl-desc" className="dl-desc">
             <CampoArea id="dl-in-desc" rotulo="Descrição" value={descricao} maxLength={200} rows={4}

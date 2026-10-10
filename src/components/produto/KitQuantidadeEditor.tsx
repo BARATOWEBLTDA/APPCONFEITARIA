@@ -5,6 +5,7 @@ import KitPicker from "@/components/cardapio/KitPicker";
 import {
   KIT_VAZIO, KitQtdConfig, KitSelecao, SUGESTOES_SABORES, erroKit, kitsValidos, novoId, presetKit, selecaoInicial,
 } from "@/lib/kitQuantidade";
+import { parseNumBR } from "@/lib/numeroBR";
 
 /**
  * Kit por quantidade no cadastro (aprovado 30/09 — "cadastro fácil").
@@ -49,7 +50,8 @@ export function faltaKit(kit?: KitQtdConfig | null): { msg: string; alvo?: strin
   return outro ? { msg: outro } : null;
 }
 
-const num = (v: string) => { const n = parseFloat(v.replace(",", ".")); return isNaN(n) ? 0 : n; };
+// 10/10: parseNumBR entende ponto de milhar ("1.200,00" lia como 1,2)
+const num = (v: string) => parseNumBR(v);
 const moeda = (v: number) => v > 0 ? v.toFixed(2).replace(".", ",") : "";
 
 export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }: Props) {
@@ -121,6 +123,11 @@ export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }
   const addSabor = (nome: string) => { const n = nome.trim(); if (!n) return; set({ sabores: [...k.sabores, { id: novoId(), nome: n }] }); setNovoSabor(""); };
   const kitEx = kitsValidos(k)[0]?.qtd || (k.modo === "livre" ? k.livre.min : 50);
   const ex1 = sabores[0]?.nome.toLowerCase() || "brigadeiro", ex2 = sabores[1]?.nome.toLowerCase() || "beijinho";
+  // 10/10: exemplo e aviso de quando o total do kit não fecha no "de quanto em quanto" (só avisa, não bloqueia)
+  const passoS = Math.max(1, k.passo_sabor || 1);
+  const exA = Math.min(kitEx, Math.max(passoS, Math.floor(kitEx / 2 / passoS) * passoS)), exB = kitEx - exA;
+  const kitQuebrado = k.modo === "fechado" ? k.kits.find(x => x.qtd > 0 && x.qtd % passoS !== 0)?.qtd : undefined;
+  const livreQuebrado = k.modo === "livre" && k.livre.min > 0 && k.livre.passo > 0 && (k.livre.min % passoS !== 0 || k.livre.passo % passoS !== 0);
 
   return (
     <div className="kq-tela">
@@ -199,7 +206,9 @@ export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }
               onChange={e => set({ max_sabores: Math.round(num(e.target.value)) })} /> sabores</div>
             <div className="kq-frase">Cada sabor vem de <input className="kq-box" inputMode="numeric" value={k.passo_sabor || ""} aria-label="De quanto em quanto cada sabor"
               onChange={e => set({ passo_sabor: Math.round(num(e.target.value)) })} /> em {k.passo_sabor || "–"}</div>
-            <p className="kq-ex">Exemplo no kit de {kitEx}: <b>{Math.floor(kitEx / 2 / (k.passo_sabor || 1)) * (k.passo_sabor || 1)} {ex1} + {kitEx - Math.floor(kitEx / 2 / (k.passo_sabor || 1)) * (k.passo_sabor || 1)} {ex2}</b>, ou {kitEx} de um sabor só.</p>
+            <p className="kq-ex">Exemplo no kit de {kitEx}: {exB > 0 && <><b>{exA} {ex1} + {exB} {ex2}</b>, ou </>}{kitEx} de um sabor só.</p>
+            {kitQuebrado ? <p className="kq-ex">O kit de {kitQuebrado} não fecha de {passoS} em {passoS}. O último passo completa o que faltar.</p>
+              : livreQuebrado ? <p className="kq-ex">Nem toda quantidade fecha de {passoS} em {passoS}. O último passo completa o que faltar.</p> : null}
           </section>
         </div>
 

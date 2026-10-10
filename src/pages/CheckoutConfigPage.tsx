@@ -7,6 +7,7 @@ import { Botao, Campo, Janela, Titulo, avisar, confirmar } from "@/components/ba
 import "./entregaPagamento.css"
 import { useState, useEffect, useRef } from "react"
 import { supabase } from "@/lib/supabase"
+import { explicarErro } from "@/lib/erros"
 import { useNavigate } from "react-router-dom"
 import AppPageHeader from "@/components/AppPageHeader"
 import { usePlano } from "@/hooks/usePlano"
@@ -98,36 +99,81 @@ export default function CheckoutConfigPage() {
   const foto = JSON.stringify([formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, enderecoRetirada, horarioRetirada, exibirCampoTroco, cupons, aceitaAgendamento, prazoMinimo])
   const salvoRef = useRef<string | null>(null)
   useEffect(() => { if (!loading) salvoRef.current = foto }, [loading]) // eslint-disable-line react-hooks/exhaustive-deps
+  // 10/10: o que está na tela agora (o salvamento sempre grava o mais novo, inclusive ao sair da tela)
+  const telaRef = useRef({ userId, formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, exibirCampoTroco, cupons })
+  const pendenteRef = useRef(false)
+
+  /**
+   * Grava tudo (10/10). Confere o erro do banco: se falhar, avisa e NÃO diz "Salvo".
+   * Os usos de cada cupom vêm do banco na hora de gravar: a tela pode estar com a contagem antiga
+   * (um pedido com cupom chegou com a tela aberta) e não pode regravar o número velho por cima.
+   */
+  const salvarTudo = async (opcoes: { aviso?: string; limparCuponsDoPerfil?: boolean } = {}): Promise<boolean> => {
+    const t = telaRef.current
+    if (!t.userId) return false
+    pendenteRef.current = false
+    try {
+      const { error: erroPerfil } = await supabase.from('profiles').update({
+        formas_pagamento: t.formasPagamento,
+        formas_entrega: t.formasEntrega,
+        valor_entrega_propria: t.valorEntregaPropria ? numBR(t.valorEntregaPropria) : 0,
+        entrega_por_bairro: t.entregaPorBairro.filter(b => b.bairro.trim()).map(b => ({ bairro: b.bairro, valor: numBR(b.valor) })),
+        exibir_campo_troco: t.exibirCampoTroco,
+      }).eq('id', t.userId)
+      if (erroPerfil) throw erroPerfil
+      const usosNoBanco: Record<string, number> = {}
+      const { data: atual } = await supabase.from('loja_cupons').select('cupons').eq('user_id', t.userId).maybeSingle()
+      if (Array.isArray(atual?.cupons)) atual.cupons.forEach((c: any) => { if (c?.codigo) usosNoBanco[String(c.codigo).toUpperCase()] = Number(c.usos) || 0 })
+      // Cupons: tabela privada (o visitante do cardápio não consegue ler)
+      const cuponsParaSalvar = t.cupons.filter(c => c.codigo.trim()).map(c => ({
+        codigo: c.codigo,
+        tipo: c.tipo,
+        valor: numBR(c.valor),
+        ativo: c.ativo,
+        data_inicio: c.data_inicio || null,
+        data_fim: c.data_fim || null,
+        limite_uso: c.limite_uso ? parseInt(c.limite_uso) : null,
+        valor_minimo: c.valor_minimo ? numBR(c.valor_minimo) : null,
+        usos: Math.max(c.usos || 0, usosNoBanco[c.codigo.toUpperCase()] || 0),
+      }))
+      const { error: erroCupons } = await supabase.from('loja_cupons').upsert({ user_id: t.userId, cupons: cuponsParaSalvar, updated_at: new Date().toISOString() })
+      if (erroCupons) throw erroCupons
+      // Limpa a cópia antiga do perfil (o cardápio público consegue ler o perfil). Só depois de a tabela nova gravar:
+      // se limpasse antes e o upsert falhasse, os cupons sumiam dos dois lugares.
+      if (opcoes.limparCuponsDoPerfil) {
+        const { error: erroLimpar } = await supabase.from('profiles').update({ cupons_desconto: [] }).eq('id', t.userId)
+        if (erroLimpar) console.error('[Doonly] cupons antigos do perfil:', erroLimpar)
+      }
+      avisar(opcoes.aviso || 'Salvo', { tipo: 'ok' })
+      return true
+    } catch (err) {
+      // Não gravou: continua pendente (tenta de novo na próxima mudança ou ao sair da tela)
+      pendenteRef.current = true
+      avisar(explicarErro(err, 'Não deu pra salvar. Tente de novo.'), { tipo: 'erro' })
+      return false
+    }
+  }
+  const salvarTudoRef = useRef(salvarTudo)
+  // Roda a cada mudança, antes dos efeitos de baixo: deixa nas refs o que está na tela agora
+  useEffect(() => {
+    telaRef.current = { userId, formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, exibirCampoTroco, cupons }
+    salvarTudoRef.current = salvarTudo
+  })
+
   useEffect(() => {
     if (loading || !userId) return
     if (salvoRef.current === null || salvoRef.current === foto) return
     salvoRef.current = foto
+    pendenteRef.current = true
     if (timerRef.current) clearTimeout(timerRef.current)
-    timerRef.current = setTimeout(async () => {
-      await supabase.from('profiles').update({
-        formas_pagamento: formasPagamento,
-        formas_entrega: formasEntrega,
-        valor_entrega_propria: valorEntregaPropria ? numBR(valorEntregaPropria) : 0,
-        entrega_por_bairro: entregaPorBairro.filter(b => b.bairro.trim()).map(b => ({ bairro: b.bairro, valor: numBR(b.valor) })),
-        exibir_campo_troco: exibirCampoTroco,
-      }).eq('id', userId)
-      // Cupons: tabela privada (o visitante do cardápio não consegue ler)
-      const cuponsParaSalvar = cupons.filter(c => c.codigo.trim()).map(c => ({
-          codigo: c.codigo,
-          tipo: c.tipo,
-          valor: numBR(c.valor),
-          ativo: c.ativo,
-          data_inicio: c.data_inicio || null,
-          data_fim: c.data_fim || null,
-          limite_uso: c.limite_uso ? parseInt(c.limite_uso) : null,
-          valor_minimo: c.valor_minimo ? numBR(c.valor_minimo) : null,
-          usos: c.usos || 0,
-        }))
-      await supabase.from('loja_cupons').upsert({ user_id: userId, cupons: cuponsParaSalvar, updated_at: new Date().toISOString() })
-      avisar('Salvo', { tipo: 'ok' })
-    }, 2000)
-    return () => { if (timerRef.current) clearTimeout(timerRef.current) }
-  }, [formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, enderecoRetirada, horarioRetirada, exibirCampoTroco, cupons, aceitaAgendamento, prazoMinimo])
+    timerRef.current = setTimeout(() => { timerRef.current = null; salvarTudoRef.current() }, 2000)
+  }, [formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, enderecoRetirada, horarioRetirada, exibirCampoTroco, cupons, aceitaAgendamento, prazoMinimo]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 10/10: saiu da tela antes dos 2 s → salva na hora (antes a mudança era descartada em silêncio)
+  useEffect(() => () => {
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null }
+    if (pendenteRef.current) salvarTudoRef.current()
+  }, [])
 
   const togglePagamento = (key: string) => {
     setFormasPagamento(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key])
@@ -159,6 +205,8 @@ export default function CheckoutConfigPage() {
   const salvarCupomForm = () => {
     if (!cupomForm.codigo.trim()) return avisar('Escreva o código do cupom', { tipo: 'erro' })
     if (!cupomForm.valor || numBR(cupomForm.valor) <= 0) return avisar('Escreva quanto é o desconto', { tipo: 'erro' })
+    // 10/10: desconto em porcentagem vai até 100
+    if (cupomForm.tipo === 'percentual' && numBR(cupomForm.valor) > 100) return avisar('O desconto em porcentagem vai até 100%', { tipo: 'erro' })
     if (cupomForm.data_inicio && cupomForm.data_fim && cupomForm.data_fim < cupomForm.data_inicio) {
       return avisar('A data do fim tem que ser depois da do começo', { tipo: 'erro' })
     }
@@ -180,25 +228,11 @@ export default function CheckoutConfigPage() {
 
   const handleSalvarCupons = async () => {
     if (!userId) return
-    if (timerRef.current) clearTimeout(timerRef.current)
+    // 10/10: grava tudo de uma vez (o que estava esperando os 2 s vai junto, sem gravar duas vezes) e confere o erro
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null }
     setSavingCupons(true)
-    await supabase.from('loja_cupons').upsert({ user_id: userId, updated_at: new Date().toISOString(),
-      cupons: cupons.filter(c => c.codigo.trim()).map(c => ({
-        codigo: c.codigo,
-        tipo: c.tipo,
-        valor: numBR(c.valor),
-        ativo: c.ativo,
-        data_inicio: c.data_inicio || null,
-        data_fim: c.data_fim || null,
-        limite_uso: c.limite_uso ? parseInt(c.limite_uso) : null,
-        valor_minimo: c.valor_minimo ? numBR(c.valor_minimo) : null,
-        usos: c.usos || 0,
-      })),
-    })
-    // Limpa a cópia antiga do perfil (o cardápio público consegue ler o perfil)
-    await supabase.from('profiles').update({ cupons_desconto: [] }).eq('id', userId)
+    await salvarTudo({ aviso: 'Cupons salvos', limparCuponsDoPerfil: true })
     setSavingCupons(false)
-    avisar('Cupons salvos', { tipo: 'ok' })
   }
 
   const formatDate = (iso: string) => {

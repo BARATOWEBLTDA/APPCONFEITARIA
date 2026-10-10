@@ -17,6 +17,22 @@ const hojeBR = () => {
 const r2 = (v: number) => Math.round((Number(v) || 0) * 100) / 100;
 const tabelaNaoExiste = (e: any) => !!e && (e.code === "42P01" || e.code === "PGRST205" || /pagamentos/i.test(e.message || "") && /exist|schema cache|not find/i.test(e.message || ""));
 
+/** Texto gravado na observação do recebimento estornado porque o PEDIDO FOI EXCLUÍDO (10/10). Não é devolução de dinheiro: o caixa lê isso. */
+export const ESTORNO_POR_EXCLUSAO = "Pedido excluído";
+
+/**
+ * O erro é de coluna ou tabela que ainda não existe no banco (SQL não rodado)? (10/10)
+ * Só nesse caso o financeiro usa o plano B (regra antiga). Queda de internet ou qualquer outro erro
+ * NÃO é isso: a tela avisa "Não deu pra carregar" em vez de mostrar um número errado.
+ *   42703 coluna não existe · 42P01 tabela não existe · PGRST204/PGRST205 coluna/tabela fora do cache do PostgREST
+ */
+export function faltaNoBanco(e: unknown): boolean {
+  if (!e) return false;
+  const x = e as { code?: unknown; message?: unknown };
+  if (["42703", "42P01", "PGRST204", "PGRST205"].includes(String(x.code || ""))) return true;
+  return /does not exist|schema cache/i.test(String(x.message || ""));
+}
+
 /** Normaliza a forma ("PIX", "Pix", "Cartão de crédito"…) pros 4 valores do app. */
 export function normalizarForma(f?: string | null): string | null {
   const s = String(f || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();

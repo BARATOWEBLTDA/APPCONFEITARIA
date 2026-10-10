@@ -4,6 +4,7 @@ import CompletarCadastro from "@/components/CompletarCadastro";
 import { useEffect, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "@/lib/supabase";
+import { erroDeConexao } from "@/lib/erros";
 import { NotificationProvider } from "@/context/NotificationContext";
 import BoasVindas, { depoisDoVoltar } from "@/components/boasVindas/BoasVindas";
 import Auth from "@/pages/Auth";
@@ -104,7 +105,9 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   });
 
   // Entrou pelo Google e ainda falta o nome da confeitaria ou o WhatsApp: tela "Complete seu cadastro" (02/10)
-  const [completar, setCompletar] = useState<null | { nome: string }>(null);
+  const [completar, setCompletar] = useState<null | { nome: string; loja: string; telefone: string }>(null);
+  // (10/10) a leitura do perfil falhou por falta de internet: tenta de novo (muda o número e o efeito roda outra vez)
+  const [tentativa, setTentativa] = useState(0);
   // Login pelo Google: só mostra o app depois de conferir se falta completar o cadastro
   // (antes o Início aparecia por um instante e depois era trocado pela tela de cadastro)
   const [perfilConferido, setPerfilConferido] = useState(false);
@@ -123,18 +126,31 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
     let cancelado = false;
     // Internet muito lenta: depois de 4s abre o app mesmo assim (nunca fica numa tela vazia)
     const limite = setTimeout(() => { if (!cancelado) setPerfilConferido(true); }, 4000);
+    let repetir: ReturnType<typeof setTimeout> | undefined;
+    const denovo = () => { if (!cancelado) setTentativa(t => t + 1); };
     (async () => {
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("profiles")
           .select("tutorial_visto, nome, nome_loja, telefone")
           .eq("id", session.user.id)
-          .single();
+          .maybeSingle();
         if (cancelado) return;
+        // (10/10) Não deu pra ler o perfil: não conclui nada. Antes, a falha virava "Complete seu cadastro"
+        // pra quem já tinha cadastro, e salvar ali gravava por cima. Abre o app e tenta de novo quando a internet voltar.
+        if (error) {
+          setPerfilConferido(true);
+          if (erroDeConexao(error)) {
+            // sem internet: espera ela voltar (antes as 5 tentativas acabavam em 75 s e ninguém mais conferia)
+            window.addEventListener("online", denovo, { once: true });
+            if (tentativa < 5 && navigator.onLine !== false) repetir = setTimeout(denovo, 15000);
+          }
+          return;
+        }
         const viaGoogle = session.user?.app_metadata?.provider === "google"
           || (session.user?.identities || []).some((i: any) => i?.provider === "google");
         const faltaDado = !String((data as any)?.nome_loja || "").trim() || String((data as any)?.telefone || "").replace(/\D/g, "").length < 10;
-        if (viaGoogle && faltaDado) setCompletar({ nome: String((data as any)?.nome || "") });
+        if (viaGoogle && faltaDado) setCompletar({ nome: String((data as any)?.nome || ""), loja: String((data as any)?.nome_loja || ""), telefone: String((data as any)?.telefone || "") });
         setPerfilConferido(true);
         if (data?.tutorial_visto) {
           // Banco diz que já viu — sincroniza localStorage e esconde
@@ -150,8 +166,8 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
         if (!cancelado) setPerfilConferido(true);
       }
     })();
-    return () => { cancelado = true; clearTimeout(limite); };
-  }, [session?.user?.id]);
+    return () => { cancelado = true; clearTimeout(limite); clearTimeout(repetir); window.removeEventListener("online", denovo); };
+  }, [session?.user?.id, tentativa]);
 
   if (session === undefined) return null;
   if (!session) return <NavigateWithSearch to="/login" replace />;
@@ -163,7 +179,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (completar) {
-    return <CompletarCadastro user={session.user} nomeInicial={completar.nome} onPronto={() => setCompletar(null)} />;
+    return <CompletarCadastro user={session.user} nomeInicial={completar.nome} lojaInicial={completar.loja} telefoneInicial={completar.telefone} onPronto={() => setCompletar(null)} />;
   }
 
   if (showFirstTutorial) {

@@ -1,4 +1,6 @@
 import { supabase } from "@/lib/supabase";
+import { buscarTudo } from "@/lib/buscarTudo";
+import { faltaNoBanco } from "@/lib/pagamentos";
 
 /**
  * Extrato (Transações, 03/10): recebimentos de pedidos (tabela pagamentos) + lançamentos manuais
@@ -21,26 +23,40 @@ const FORMA: Record<string, string> = { pix: "Pix", dinheiro: "Dinheiro", credit
 const TIPO: Record<string, string> = { sinal: "Sinal", parcial: "Parcial", restante: "Restante", total: "Pagamento", pagamento: "Pagamento", migracao: "Pagamento" };
 export const nomeForma = (f?: string | null) => (f ? FORMA[f] || f : "");
 
-export async function carregarExtrato(uid: string, ini: string, fim: string): Promise<{ itens: MovExtrato[]; semEstornoManual: boolean }> {
+/**
+ * 10/10: as buscas vão de 1.000 em 1.000 (o Supabase corta em 1.000 linhas sem avisar: num período longo o extrato
+ * e os totais ficavam pela metade). E o plano B "sem a coluna de estorno" só vale quando a coluna não existe MESMO:
+ * com queda de internet ou outro erro, devolve erro: true e a tela avisa (antes os estornados voltavam a contar
+ * ou os recebimentos sumiam).
+ */
+export async function carregarExtrato(uid: string, ini: string, fim: string): Promise<{ itens: MovExtrato[]; semEstornoManual: boolean; erro: boolean }> {
+  const lancamentos = (colunas: string) => buscarTudo<any>((de, ate) => supabase.from("financeiro").select(colunas)
+    .eq("user_id", uid).gte("data", ini).lte("data", fim).order("id").range(de, ate));
   const [pag, fin1] = await Promise.all([
-    supabase.from("pagamentos").select("id, valor, forma, tipo, recebido_em, pedido_id, created_at, estornado_em")
-      .eq("user_id", uid).gte("recebido_em", ini).lte("recebido_em", fim),
-    supabase.from("financeiro").select("id, tipo, categoria, descricao, valor, data, created_at, estornado_em")
-      .eq("user_id", uid).gte("data", ini).lte("data", fim),
+    buscarTudo<any>((de, ate) => supabase.from("pagamentos").select("id, valor, forma, tipo, recebido_em, pedido_id, created_at, estornado_em")
+      .eq("user_id", uid).gte("recebido_em", ini).lte("recebido_em", fim).order("id").range(de, ate)),
+    lancamentos("id, tipo, categoria, descricao, valor, data, created_at, estornado_em"),
   ]);
   // sem a coluna de estorno (SQL não rodado), busca sem ela
-  let fin: any = fin1, semEstornoManual = false;
-  if (fin1.error) {
+  let fin = fin1, semEstornoManual = false;
+  if (fin1.error && faltaNoBanco(fin1.error)) {
     semEstornoManual = true;
-    fin = await supabase.from("financeiro").select("id, tipo, categoria, descricao, valor, data").eq("user_id", uid).gte("data", ini).lte("data", fim);
+    fin = await lancamentos("id, tipo, categoria, descricao, valor, data");
   }
-  const pagamentos: any[] = pag.error ? [] : (pag.data as any[]) || [];
-  const ids = [...new Set(pagamentos.map(g => g.pedido_id).filter(Boolean))];
+  // sem a tabela de pagamentos (Passo 1 não rodado) o extrato mostra só os lançamentos manuais, como antes
+  if (fin.error || (pag.error && !faltaNoBanco(pag.error))) {
+    console.error("[extrato] não consegui carregar:", fin.error || pag.error);
+    return { itens: [], semEstornoManual, erro: true };
+  }
+  const pagamentos: any[] = pag.error ? [] : pag.data;
+  const ids = [...new Set(pagamentos.map(g => g.pedido_id).filter(Boolean))] as string[];
   const nomes: Record<string, { numero: any; cliente: string }> = {};
-  if (ids.length) {
+  // em blocos de 100 pedidos: com muitos recebimentos, a lista de ids pode passar do tamanho que o servidor aceita (10/10)
+  for (let i = 0; i < ids.length; i += 100) {
+    const bloco = ids.slice(i, i + 100);
     // 09/10: o nome vem também do cadastro do cliente (pedido feito só com o cliente escolhido não tinha cliente_nome)
-    const r1: any = await supabase.from("pedidos").select("id, numero, cliente_nome, clientes(nome)").in("id", ids);
-    const data: any[] = (r1.error ? (await supabase.from("pedidos").select("id, numero, cliente_nome").in("id", ids)).data : r1.data) || [];
+    const r1: any = await supabase.from("pedidos").select("id, numero, cliente_nome, clientes(nome)").in("id", bloco);
+    const data: any[] = (r1.error ? (await supabase.from("pedidos").select("id, numero, cliente_nome").in("id", bloco)).data : r1.data) || [];
     for (const x of data) {
       const cad = Array.isArray(x.clientes) ? x.clientes[0]?.nome : x.clientes?.nome;
       nomes[x.id] = { numero: x.numero, cliente: String(x.cliente_nome || cad || "").trim() };
@@ -58,7 +74,7 @@ export async function carregarExtrato(uid: string, ini: string, fim: string): Pr
       forma: g.forma || null, categoria: "Pedidos", pedidoId: g.pedido_id || null, estornado: !!g.estornado_em, ordem: `${g.recebido_em} ${g.created_at || ""}`,
     });
   }
-  for (const l of ((fin.data as any[]) || [])) {
+  for (const l of fin.data) {
     const entrada = l.tipo === "entrada";
     // 10/10: cada informação uma vez (antes "Luz / Despesa · Luz / Luz")
     const titulo = String(l.descricao || l.categoria || (entrada ? "Entrada" : "Saída")).trim();
@@ -72,7 +88,7 @@ export async function carregarExtrato(uid: string, ini: string, fim: string): Pr
     });
   }
   itens.sort((a, b) => b.ordem.localeCompare(a.ordem));
-  return { itens, semEstornoManual };
+  return { itens, semEstornoManual, erro: false };
 }
 
 /** Estorna um item do extrato. Recebimento: o pedido volta a ter saldo. Conta paga: a conta volta pra "A pagar". */

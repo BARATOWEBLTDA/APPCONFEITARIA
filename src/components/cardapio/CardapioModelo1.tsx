@@ -24,8 +24,9 @@ const DIAS_MAP: Record<string, number> = {
   "Sexta": 5, "Sábado": 6, "Domingo": 0
 }
 const DIAS_LABEL = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"]
-const hhmm = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
-const curtoHora = (m: number) => `${Math.floor(m / 60)}h${m % 60 ? String(m % 60).padStart(2, '0') : ''}`
+// (24:00 aparece como "00:00" / "0h")
+const hhmm = (m: number) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
+const curtoHora = (m: number) => `${Math.floor(m / 60) % 24}h${m % 60 ? String(m % 60).padStart(2, '0') : ''}`
 
 type Status = { aberto: boolean; msg: string; curto: string }
 
@@ -42,10 +43,12 @@ export function getStatusLoja(horarioJson: any): Status | null {
       if (dia === 0 && h.abre_domingo) return true
       return (h.dias || []).some((d: string) => DIAS_MAP[d] === dia)
     }
+    // 10/10: fechar às "00:00" é fechar no fim do dia (24:00). Antes a loja aparecia sempre fechada.
+    const fim = (t: string) => toMin(t) || 1440
     const getHorarioDia = (dia: number) => {
-      if (dia === 6 && h.abre_sabado) return { ab: toMin(h.sabado_abertura || '09:00'), fe: toMin(h.sabado_fechamento || '14:00') }
-      if (dia === 0 && h.abre_domingo) return { ab: toMin(h.domingo_abertura || '09:00'), fe: toMin(h.domingo_fechamento || '14:00') }
-      return { ab: toMin(h.abertura || '08:00'), fe: toMin(h.fechamento || '18:00') }
+      if (dia === 6 && h.abre_sabado) return { ab: toMin(h.sabado_abertura || '09:00'), fe: fim(h.sabado_fechamento || '14:00') }
+      if (dia === 0 && h.abre_domingo) return { ab: toMin(h.domingo_abertura || '09:00'), fe: fim(h.domingo_fechamento || '14:00') }
+      return { ab: toMin(h.abertura || '08:00'), fe: fim(h.fechamento || '18:00') }
     }
     if (isDiaAtivo(diaSemana)) {
       const { ab, fe } = getHorarioDia(diaSemana)

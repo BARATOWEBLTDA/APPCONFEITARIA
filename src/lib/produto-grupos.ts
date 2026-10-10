@@ -389,6 +389,8 @@ export function salvarGruposParaBanco(grupos: GrupoOpcoes[]): Record<string, any
       opcoes: tamanho.opcoes,
       foto_por_opcao: tamanho.foto_por_opcao,
       ...extras,
+      // 10/10: o nome do grupo ("Quantidades", "Tamanhos do combo") se perdia ao salvar; o padrão não precisa gravar
+      ...(tamanho.nome_exibicao && ![CONFIG_TIPO.tamanho.label, "Tamanhos e Pesos"].includes(tamanho.nome_exibicao) ? { nome_exibicao: tamanho.nome_exibicao } : {}),
     };
   }
   // Sabor não tem coluna antiga — só grupos_opcoes

@@ -4,11 +4,11 @@ import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { Bell, Gear, Lightbulb, SignOut, Sparkle, Storefront, WarningCircle } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
-import { Botao, Janela } from "@/components/base";
+import { Botao, Janela, avisar } from "@/components/base";
 import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
 import { abrirDooIA } from "@/components/MenuContaItens";
 import { usePlano } from "@/hooks/usePlano";
-import { supabase } from "@/lib/supabase";
+import { sairDaConta } from "@/hooks/useProfile";
 import { VERSAO_APP } from "@/lib/versao";
 import "./menuConta.css";
 
@@ -67,7 +67,10 @@ export default function MenuConta({ aberto, aoFechar, ancora }: Props) {
   const sair = async () => {
     if (saindo) return;
     setSaindo(true);
-    try { await supabase.auth.signOut(); } finally { setSaindo(false); setPerguntando(false); }
+    // (10/10) sai neste aparelho mesmo sem internet; só vai pro login quando a sessão daqui foi mesmo encerrada
+    const saiu = await sairDaConta();
+    setSaindo(false); setPerguntando(false);
+    if (!saiu) { avisar("Não deu pra sair agora. Tente de novo.", { tipo: "erro" }); return; }
     navigate("/login");
   };
 

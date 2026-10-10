@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowUp, ArrowDown, CaretLeft, CaretRight, ArrowsLeftRight, Calculator, ChartPieSlice, ShoppingBagOpen, TrendUp } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
+import { Botao } from "@/components/base";
 import { useCaixa, SaldoCaixa, MovimentosCaixa, SaldoSheet, CaixaEstilos } from "@/components/financeiro/CaixaCard";
 import PrevistosCard from "@/components/financeiro/PrevistosCard";
 import DespesaSheet from "@/components/financeiro/DespesaSheet";
@@ -23,29 +24,44 @@ export default function Financeiro() {
   const hoje = new Date();
   const [mes, setMes] = useState({ ano: hoje.getFullYear(), m: hoje.getMonth() });
   const [dados, setDados] = useState<MesFinanceiro | null>(null);
-  const [rec, setRec] = useState<{ total: number; qtd: number; semana: number } | null>(null);
-  const [pag, setPag] = useState<{ total: number; qtd: number; proxima: string | null } | null | undefined>(undefined);
+  const [rec, setRec] = useState<{ total: number; qtd: number; semana: number; erro?: boolean } | null>(null);
+  const [pag, setPag] = useState<{ total: number; qtd: number; proxima: string | null; erro?: boolean } | null | undefined>(undefined);
   const [versao, setVersao] = useState(0); // recarrega tudo depois de uma mudança
   // Sem saldo informado: o resto do painel fica levemente apagado pra guiar o olho pro convite
   // (continua tocável — os números do mês já valem sem o saldo). "Agora não" tira o efeito.
   const chaveDepois = uid ? `doonly_saldo_depois_${uid}` : "";
   const [depois, setDepois] = useState(false);
   useEffect(() => { if (chaveDepois) { try { setDepois(!!localStorage.getItem(chaveDepois)); } catch { /* sem acesso */ } } }, [chaveDepois]);
-  const foco = !!cx && !cx.precisaSql && !cx.configurado && !depois;
+  const foco = !!cx && !cx.erro && !cx.precisaSql && !cx.configurado && !depois;
 
-  useEffect(() => { if (uid) { setDados(null); carregarMes(uid, mes.ano, mes.m).then(setDados); } }, [uid, mes, versao]);
+  // 10/10: ao trocar de mês rápido, só vale a resposta da última busca (a atrasada era aplicada por cima da nova)
   useEffect(() => {
     if (!uid) return;
-    carregarAReceber(uid).then(l => {
-      const em7 = isoDia(6);
-      setRec({ total: l.reduce((s, x) => s + x.falta, 0), qtd: l.length, semana: l.filter(x => x.dataRef && x.dataRef <= em7).length });
-    });
-    resumoAPagar().then(setPag);
+    let cancelado = false;
+    setDados(null);
+    carregarMes(uid, mes.ano, mes.m).then(d => { if (!cancelado) setDados(d); });
+    return () => { cancelado = true; };
+  }, [uid, mes, versao]);
+  useEffect(() => {
+    if (!uid) return;
+    let cancelado = false;
+    carregarAReceber(uid).then(({ itens: l, erro }) => {
+      if (cancelado) return;
+      // 10/10: "nesta semana" é de hoje até o 7º dia, igual à tela A receber (antes contava também os atrasados)
+      const dia0 = isoDia(0), em7 = isoDia(6);
+      setRec({ total: l.reduce((s, x) => s + x.falta, 0), qtd: l.length, semana: l.filter(x => x.dataRef && x.dataRef >= dia0 && x.dataRef <= em7).length, erro });
+    }, () => { if (!cancelado) setRec({ total: 0, qtd: 0, semana: 0, erro: true }); });
+    resumoAPagar(uid).then(r => { if (!cancelado) setPag(r); }, () => { if (!cancelado) setPag({ total: 0, qtd: 0, proxima: null, erro: true }); });
+    return () => { cancelado = true; };
   }, [uid, versao]);
 
   const ehMesAtual = mes.ano === hoje.getFullYear() && mes.m === hoje.getMonth();
   const mudarMes = (d: number) => setMes(x => { const n = new Date(x.ano, x.m + d, 1); return { ano: n.getFullYear(), m: n.getMonth() }; });
   const depoisDeMudar = async () => { await recarregar(); setVersao(v => v + 1); };
+  // 10/10: se alguma busca falhou, a tela avisa e mostra "—" no lugar do número (antes aparecia R$ 0,00 como se fosse certo)
+  const mesOk = dados && !dados.erro ? dados : null;
+  const esp = dados?.erro ? "—" : "…";
+  const algumErro = !!(dados?.erro || rec?.erro || pag?.erro || cx?.erro);
 
   return (
     <>
@@ -72,6 +88,12 @@ export default function Financeiro() {
       />
       <EstiloFinanceiro />
       <CaixaEstilos />
+      {algumErro && (
+        <div className="fd-erro" role="alert">
+          <span>Não deu pra carregar tudo. Confira a internet e tente de novo.</span>
+          <Botao variante="secundario" tamanho="m" onClick={depoisDeMudar}>Tentar de novo</Botao>
+        </div>
+      )}
       <div className={`fd${foco ? " fd--foco" : ""}${cx && !cx.configurado ? " fd--sem-caixa" : ""}`}>
         <div className="fd-a-saldo">
           <SaldoCaixa cx={cx} onAcertar={() => setDefinir(true)} destaque={foco}
@@ -89,22 +111,22 @@ export default function Financeiro() {
         </div>
 
         <div className="fd-a-kpis fd-kpis">
-          <div className="fd-k"><span className="fd-ki e" aria-hidden="true"><ArrowUp size={14} weight="bold" /></span><small>Recebido no mês</small><b className="e">{dados ? brl(dados.recebido) : "…"}</b><i>dinheiro que entrou</i></div>
-          <div className="fd-k"><span className="fd-ki s" aria-hidden="true"><ArrowDown size={14} weight="bold" /></span><small>Despesas pagas</small><b className="s">{dados ? brl(dados.despesasPagas) : "…"}</b><i>dinheiro que saiu</i></div>
-          <div className="fd-k fd-k--vendido"><span className="fd-ki n" aria-hidden="true"><ShoppingBagOpen size={14} weight="bold" /></span><small>Vendido no mês</small><b>{dados ? brl(dados.vendido) : "…"}</b><i>{dados ? `${dados.qtdVendidos} ${dados.qtdVendidos === 1 ? "pedido entregue" : "pedidos entregues"}` : ""}</i></div>
-          <div className="fd-k"><span className="fd-ki l" aria-hidden="true"><TrendUp size={14} weight="bold" /></span><small>Lucro do mês</small><b className={dados && dados.lucro < 0 ? "s" : "l"}>{dados ? brl(dados.lucro) : "…"}</b>
-            <i className="fd-so-cel">{dados ? (dados.vendido > 0 ? `margem de ${dados.margem}%` : "sem vendas entregues") : ""}{dados && dados.semFicha > 0 ? ` · ${dados.semFicha} sem ficha` : ""}</i>
-            <i className="fd-so-desk">{dados ? `vendido ${brl(dados.vendido)}${dados.vendido > 0 ? ` · margem ${dados.margem}%` : ""}` : ""}{dados && dados.semFicha > 0 ? ` · ${dados.semFicha} sem ficha` : ""}</i></div>
+          <div className="fd-k"><span className="fd-ki e" aria-hidden="true"><ArrowUp size={14} weight="bold" /></span><small>Recebido no mês</small><b className="e">{mesOk ? brl(mesOk.recebido) : esp}</b><i>dinheiro que entrou</i></div>
+          <div className="fd-k"><span className="fd-ki s" aria-hidden="true"><ArrowDown size={14} weight="bold" /></span><small>Despesas pagas</small><b className="s">{mesOk ? brl(mesOk.despesasPagas) : esp}</b><i>dinheiro que saiu</i></div>
+          <div className="fd-k fd-k--vendido"><span className="fd-ki n" aria-hidden="true"><ShoppingBagOpen size={14} weight="bold" /></span><small>Vendido no mês</small><b>{mesOk ? brl(mesOk.vendido) : esp}</b><i>{mesOk ? `${mesOk.qtdVendidos} ${mesOk.qtdVendidos === 1 ? "pedido entregue" : "pedidos entregues"}` : ""}</i></div>
+          <div className="fd-k"><span className="fd-ki l" aria-hidden="true"><TrendUp size={14} weight="bold" /></span><small>Lucro do mês</small><b className={mesOk && mesOk.lucro < 0 ? "s" : "l"}>{mesOk ? brl(mesOk.lucro) : esp}</b>
+            <i className="fd-so-cel">{mesOk ? (mesOk.vendido > 0 ? `margem de ${mesOk.margem}%` : "sem vendas entregues") : ""}{mesOk && mesOk.semFicha > 0 ? ` · ${mesOk.semFicha} sem ficha` : ""}</i>
+            <i className="fd-so-desk">{mesOk ? `vendido ${brl(mesOk.vendido)}${mesOk.vendido > 0 ? ` · margem ${mesOk.margem}%` : ""}` : ""}{mesOk && mesOk.semFicha > 0 ? ` · ${mesOk.semFicha} sem ficha` : ""}</i></div>
         </div>
 
         <div className="fd-a-contas fd-contas">
           <button type="button" className="fd-k2 rec" onClick={() => navigate("/financeiro/a-receber")}>
-            <small>A receber</small><b>{rec ? brl(rec.total) : "…"}</b>
-            <i>{rec ? `${rec.qtd} ${rec.qtd === 1 ? "pedido" : "pedidos"}${rec.semana ? ` · ${rec.semana} nesta semana` : ""}` : ""}<CaretRight size={13} weight="bold" /></i>
+            <small>A receber</small><b>{!rec ? "…" : rec.erro ? "—" : brl(rec.total)}</b>
+            <i>{!rec ? "" : rec.erro ? "não deu pra carregar" : `${rec.qtd} ${rec.qtd === 1 ? "pedido" : "pedidos"}${rec.semana ? ` · ${rec.semana} nesta semana` : ""}`}<CaretRight size={13} weight="bold" /></i>
           </button>
           <button type="button" className="fd-k2 pag" onClick={() => navigate("/financeiro/a-pagar")}>
-            <small>A pagar</small><b>{pag === undefined ? "…" : pag ? brl(pag.total) : "—"}</b>
-            <i>{pag === null ? "falta o SQL do Passo 5" : pag ? `${pag.qtd} ${pag.qtd === 1 ? "conta" : "contas"}${pag.proxima ? ` · vence dia ${pag.proxima.slice(8, 10)}` : ""}` : ""}<CaretRight size={13} weight="bold" /></i>
+            <small>A pagar</small><b>{pag === undefined ? "…" : pag && !pag.erro ? brl(pag.total) : "—"}</b>
+            <i>{pag === null ? "falta o SQL do Passo 5" : pag?.erro ? "não deu pra carregar" : pag ? `${pag.qtd} ${pag.qtd === 1 ? "conta" : "contas"}${pag.proxima ? ` · vence dia ${pag.proxima.slice(8, 10)}` : ""}` : ""}<CaretRight size={13} weight="bold" /></i>
           </button>
         </div>
 
@@ -113,8 +135,8 @@ export default function Financeiro() {
         <div className="fd-a-fluxo fd-card">
           <div className="fd-ct"><b>Fluxo de caixa · {MESES[mes.m].toLowerCase()}</b>
             <span className="fd-lg"><i className="e" />Entradas <i className="s" />Saídas <i className="l" />Resultado</span></div>
-          {dados ? <Fluxo dados={dados} diaHoje={ehMesAtual ? hoje.getDate() : null} /> : <div className="fd-ph" />}
-          {dados && dados.fonteRecebido === "pedidos" && <p className="fd-nota">Os recebimentos estão pelo mês da entrega: rode o SQL do Passo 1 pra usar a data real de cada pagamento.</p>}
+          {mesOk ? <Fluxo dados={mesOk} diaHoje={ehMesAtual ? hoje.getDate() : null} /> : <div className="fd-ph" />}
+          {mesOk && mesOk.fonteRecebido === "pedidos" && <p className="fd-nota">Os recebimentos estão pelo mês da entrega: rode o SQL do Passo 1 pra usar a data real de cada pagamento.</p>}
         </div>
 
         <div className="fd-a-movs"><MovimentosCaixa cx={cx} limite={6} /></div>
@@ -187,6 +209,9 @@ const CSS = `
   .fd { max-width: 1120px; margin: 0 auto; padding: 22px 0 96px; display: grid; gap: 14px; font-family: var(--font-base);
     grid-template-columns: minmax(0, 1fr); grid-template-areas: "saldo" "mes" "kpis" "contas" "prev" "fluxo" "movs" "mais"; }
   .fd > * { min-width: 0; }
+  /* 10/10: aviso de que alguma busca falhou (com "Tentar de novo") */
+  .fd-erro { max-width: 1120px; margin: 22px auto 0; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: 10px 12px; flex-wrap: wrap; background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: var(--ui-raio); padding: 10px 12px; font-family: var(--font-base); font-size: 13.5px; font-weight: 600; line-height: 1.45; }
+  .fd-erro + .fd { padding-top: 14px; }
   .fd-a-saldo { grid-area: saldo; display: flex; flex-direction: column; gap: 10px; } .fd-a-mes { grid-area: mes; } .fd-a-kpis { grid-area: kpis; }
   .fd-a-contas { grid-area: contas; } .fd-a-prev { grid-area: prev; } .fd-a-fluxo { grid-area: fluxo; } .fd-a-movs { grid-area: movs; } .fd-a-mais { grid-area: mais; }
   /* computador: mês e botões no cabeçalho (como no mockup) */

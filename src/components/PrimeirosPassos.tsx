@@ -55,7 +55,8 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [local, estado]);
 
-  const atualizar = useCallback(() => { if (uid) lerPassos(uid).then(setEstado).catch(() => {}); }, [uid]);
+  // (10/10) leitura que falhou não conclui nada: fica o que já estava na tela (ou escondido) até ler com sucesso
+  const atualizar = useCallback(() => { if (uid) lerPassos(uid).then(e => { if (!e.falhou) setEstado(e); }).catch(() => {}); }, [uid]);
 
   useEffect(() => {
     if (!uid) return;

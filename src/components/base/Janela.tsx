@@ -1,11 +1,11 @@
-import { useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 import { ArrowCounterClockwise, CheckCircle, Info, WarningCircle, X, XCircle } from '@phosphor-icons/react'
 import { Botao, BotaoIcone } from './Botao'
 import { Titulo } from './Titulo'
-import { useFase, useSobreposicao } from './useSobreposicao'
+import { historicoAssentado, useFase, useSobreposicao } from './useSobreposicao'
 import './base.css'
 
 /**
@@ -108,15 +108,23 @@ function abrir(o: OpcoesJanela, pergunta: boolean): Promise<boolean> {
     document.body.appendChild(lugar)
     const raiz = createRoot(lugar)
     let respondido = false
+    let resposta = false
     function Caixa() {
       const [aberta, setAberta] = useState(true)
       const responder = (sim: boolean) => {
         if (respondido) return
         respondido = true
+        resposta = sim
         setAberta(false)
-        resolve(sim)
+        window.setTimeout(() => resolve(sim), 800) // segurança: nunca fica sem responder
         window.setTimeout(() => { raiz.unmount(); lugar.remove() }, 320)
       }
+      // (10/10) Só responde depois que a entrada da janela saiu do histórico (o "voltar" que ela pede ao fechar
+      // acontece um instante depois). Antes, quem fazia `await confirmar()` e navegava em seguida tinha a tela nova desfeita.
+      useEffect(() => {
+        if (aberta) return
+        historicoAssentado().then(() => resolve(resposta))
+      }, [aberta])
       const ic = ICONES[o.icone || (o.perigo ? 'erro' : 'info')]
       return (
         <Janela

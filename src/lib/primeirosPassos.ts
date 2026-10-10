@@ -9,6 +9,7 @@
  *   compartilhou ... enviou ou copiou o link (profiles.cardapio_compartilhado)
  */
 import { supabase } from "@/lib/supabase";
+import { erroDeConexao } from "@/lib/erros";
 
 /** Foto de perfil enviada pela própria confeiteira (não a que vem do login com Google). */
 const fotoPropria = (url?: string | null) => !!url && !/googleusercontent\.com|gravatar\.com|graph\.facebook/i.test(url);
@@ -19,6 +20,11 @@ export type EstadoPassos = {
   descricao: boolean; logo: boolean; endereco: boolean; horario: boolean; produto: boolean; compartilhou: boolean;
   /** dados atuais, pra abrir as janelinhas já preenchidas */
   perfil: any;
+  /**
+   * (10/10) A leitura falhou (sem internet, por exemplo): os passos acima NÃO valem. Quem mostra o cartão ignora
+   * este resultado e mantém o que já tinha (antes aparecia tudo "não feito" e, depois, a comemoração de novo).
+   */
+  falhou?: boolean;
 };
 
 const lerJson = (v: any) => { if (!v) return null; if (typeof v === "object") return v; try { return JSON.parse(v); } catch { return null; } };
@@ -36,11 +42,13 @@ export async function lerPassos(uid: string): Promise<EstadoPassos> {
   ]);
   const p: any = { ...(perfil.error ? {} : (perfil.data || {})) };
   extras.forEach((r: any) => { if (!r.error && r.data) Object.assign(p, r.data); });
+  // campo novo que ainda não existe no banco dá erro e segue; queda de internet não: aí a leitura toda não vale
+  const falhou = !!perfil.error || !!produtos.error || extras.some((r: any) => r.error && erroDeConexao(r.error));
   let logoLocal = false;
   try { logoLocal = localStorage.getItem(chaveLogo(uid)) === "1"; } catch {}
   let local = false;
   try { local = localStorage.getItem(chaveLocal(uid)) === "1"; } catch {}
-  if (local && p && !p.cardapio_compartilhado) {
+  if (local && !falhou && !p.cardapio_compartilhado) {
     supabase.from("profiles").update({ cardapio_compartilhado: true }).eq("id", uid).then(() => {}, () => {});
   }
   const end = lerJson(p.endereco) || {};
@@ -55,6 +63,7 @@ export async function lerPassos(uid: string): Promise<EstadoPassos> {
     produto: ((produtos.data as any[]) || []).some((x) => x.disponivel !== false),
     compartilhou: !!p.cardapio_compartilhado || local,
     perfil: { ...p, endereco: end, horario: hor },
+    falhou,
   };
 }
 

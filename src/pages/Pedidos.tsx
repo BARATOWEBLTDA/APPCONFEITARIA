@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { montarMensagem, dadosDoPedido } from '@/lib/mensagens'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Cake, CalendarDots, Funnel, Kanban, Lightning, ListBullets, MagnifyingGlass, Plus, Receipt, WarningCircle, X } from '@phosphor-icons/react'
@@ -14,6 +14,9 @@ import type { Pedido } from '@/components/pedidos/pedidoTexto'
 import { acaoDe, avisoDaMudanca, formaDoItem, itemComQtd, precisaAceitar, dataISO, grupoDoStatus, nomeCliente, nomeDaSituacao, nomeDeProduto, recebidoPedido, rs, saldoPedido, terminou } from '@/components/pedidos/pedidoTexto'
 import { registrarPagamento } from '@/lib/pagamentos'
 import { duplicarPedido } from '@/lib/duplicarPedido'
+import { excluirPedido as excluirPedidoNoBanco } from '@/lib/pedidosDoo'
+import { buscarTudo } from '@/lib/buscarTudo'
+import { linkWhatsApp } from '@/lib/telefone'
 import { pedidoAtrasado } from '@/lib/pedidoStatus'
 import { gerarPedidoPDF } from '@/lib/gerarPedidoPDF'
 import { abrirJanela } from '@/lib/pdfDoonly'
@@ -45,7 +48,7 @@ export default function Pedidos() {
   const [computador, setComputador] = useState(() => window.matchMedia(MEDIDA_COMPUTADOR).matches)
   const [largo, setLargo] = useState(() => window.matchMedia(MEDIDA_TABLET).matches) // tablet em pé pra cima: tem o Quadro
 
-  // Filtros rápidos que vêm do Início: ?filtro=aguardando (pedidos do cardápio pra aceitar) e ?filtro=atrasados
+  // Filtros rápidos que vêm do Início: ?filtro=aguardando (pedidos pra aceitar ou esperando pagamento) e ?filtro=atrasados
   const params = new URLSearchParams(location.search)
   const [filtroAguardando, setFiltroAguardando] = useState(params.get('filtro') === 'aguardando')
   const [filtroAtrasados, setFiltroAtrasados] = useState(params.get('filtro') === 'atrasados')
@@ -73,11 +76,14 @@ export default function Pedidos() {
 
   const fetchPedidos = useCallback(async (uid: string) => {
     setEstado('carregando')
-    const { data, error } = await supabase
+    // (10/10) de 1.000 em 1.000: a lista não corta mais quando a conta passa de mil pedidos (o "id" deixa a ordem fixa)
+    const { data, error } = await buscarTudo<any>((de, ate) => supabase
       .from('pedidos')
       .select('*, clientes(foto_url), pedido_itens(nome_produto, quantidade, valor_unitario, observacoes, personalizacoes, preco_breakdown, snapshot_version, imagem_url, produtos(imagem_url, forma_venda))')
       .eq('user_id', uid)
       .order('numero', { ascending: false })
+      .order('id')
+      .range(de, ate))
     if (error) { setEstado('erro'); return }
     setPedidos((data || []) as Pedido[])
     setEstado('pronto')
@@ -133,14 +139,27 @@ export default function Pedidos() {
     }
 
     // Botão "Recebi": entrou o que faltava (Passo 1: vira um pagamento registrado)
+    // (10/10) Primeiro o recebimento, depois a situação: se o pagamento não gravar, nada muda e o pedido
+    // não aparece como pago. Antes a falha caía no "senão" e a lista mostrava pago, com aviso de sucesso.
     if (statusAtual === 'aguardando_pagamento' && pagoDireto) {
-      const { error } = await supabase.from('pedidos').update({ status }).eq('id', id)
-      if (error) { falhou(); return }
       const falta = saldoPedido(pedido)
       const r = falta > 0
         ? await registrarPagamento({ pedidoId: id, valor: falta, forma: pedido.forma_pagamento, tipo: recebidoPedido(pedido) > 0 ? 'restante' : 'total' })
         : null
-      const novo = r?.status_pagamento ? { valor_recebido: r.valor_recebido, status_pagamento: r.status_pagamento } : { valor_recebido: pedido.valor_total, status_pagamento: 'pago' }
+      if (r && !r.ok) {
+        // relê o pedido: se o pagamento entrou e só a resposta se perdeu, a lista já mostra pago e o próximo toque não cobra de novo
+        const { data: gravado } = await supabase.from('pedidos').select('valor_recebido, status_pagamento').eq('id', id).maybeSingle()
+        if (gravado) setPedidos(prev => prev.map(p => p.id === id ? { ...p, ...(gravado as any) } : p))
+        avisar('Não deu pra registrar o recebimento. Confira a internet e tente de novo.', { tipo: 'erro' }); return
+      }
+      const novo = r?.status_pagamento ? { valor_recebido: r.valor_recebido ?? pedido.valor_total, status_pagamento: r.status_pagamento } : { valor_recebido: pedido.valor_total, status_pagamento: 'pago' }
+      const { error } = await supabase.from('pedidos').update({ status }).eq('id', id)
+      if (error) {
+        // o dinheiro entrou, a situação não: a lista mostra o que está gravado (tocar de novo só muda a situação)
+        setPedidos(prev => prev.map(p => p.id === id ? { ...p, ...novo } : p))
+        avisar('O recebimento foi registrado, mas a situação do pedido não mudou. Tente de novo.', { tipo: 'erro' })
+        return
+      }
       setPedidos(prev => prev.map(p => p.id === id ? { ...p, status, ...novo } : p))
       confirmarMudanca(pedido, status, true)
       return
@@ -172,31 +191,51 @@ export default function Pedidos() {
     try { await updateStatus(p.id, a.proximo, !!a.pago) } finally { setMudando(null) }
   }
 
+  // (10/10) Excluir estorna os recebimentos do pedido antes (some do financeiro, como a confirmação promete)
+  // e para se algum passo falhar. A regra fica em lib/pedidosDoo, a mesma da tela do pedido.
+  const excluindo = useRef(false)
   const excluirPedido = async (p: Pedido) => {
-    await supabase.from('pedido_itens').delete().eq('pedido_id', p.id)
-    const { error } = await supabase.from('pedidos').delete().eq('id', p.id)
-    if (error) { avisar('Não deu pra excluir o pedido. Confira a internet e tente de novo.', { tipo: 'erro' }); return false }
-    setPedidos(prev => prev.filter(x => x.id !== p.id))
-    avisar('Pedido excluído.')
-    return true
+    if (excluindo.current) return false
+    excluindo.current = true
+    try {
+      const r = await excluirPedidoNoBanco(p.id)
+      if (r.ok === false) {
+        avisar(r.erro, { tipo: 'erro' })
+        if (r.estornou) {
+          // o pedido ficou, mas os recebimentos já saíram: a lista mostra o que está gravado
+          const { data } = await supabase.from('pedidos').select('valor_recebido, status_pagamento').eq('id', p.id).maybeSingle()
+          if (data) setPedidos(prev => prev.map(x => x.id === p.id ? { ...x, ...(data as any) } : x))
+        }
+        return false
+      }
+      setPedidos(prev => prev.filter(x => x.id !== p.id))
+      avisar('Pedido excluído.')
+      return true
+    } finally { excluindo.current = false }
   }
 
   // ── "Mais ações" do pedido: faz a ação e depois fecha a janela ──
+  const duplicando = useRef(false) // (10/10) trava: dois toques seguidos criavam duas cópias
   const handleMenuAcao = async (p: Pedido, acao: AcaoMenu) => {
     const fechar = () => setMenuDe(null)
     if (acao === 'editar') { irDaJanela(`/pedidos/${p.id}/editar`); fechar(); return }
     if (acao === 'duplicar') {
-      const r = await duplicarPedido(p.id)
-      if ('erro' in r) { avisar(r.erro, { tipo: 'erro' }); return }
-      irDaJanela(`/pedidos/${r.id}/editar`); fechar()
+      if (duplicando.current) return
+      duplicando.current = true
+      avisar('Duplicando o pedido…', { tipo: 'info' })
+      try {
+        const r = await duplicarPedido(p.id)
+        if ('erro' in r) { avisar(r.erro, { tipo: 'erro' }); return }
+        irDaJanela(`/pedidos/${r.id}/editar`); fechar()
+      } finally { duplicando.current = false }
       return
     }
     if (acao === 'contatar') {
-      const tel = (p.cliente_telefone || '').replace(/\D/g, '')
-      if (!tel) return
-      const num = tel.startsWith('55') ? tel : `55${tel}`
       const nome = p.cliente_nome ? nomeCliente(p).split(' ')[0] : ''
-      window.open(`https://wa.me/${num}?text=${encodeURIComponent(montarMensagem('sobre_pedido', dadosDoPedido(p, nome)))}`, '_blank')
+      // (10/10) o número sai de lib/telefone: trata o +55 e não confunde o DDD 55 com o código do país
+      const link = linkWhatsApp(p.cliente_telefone, montarMensagem('sobre_pedido', dadosDoPedido(p, nome)))
+      if (!link) { avisar('O telefone deste cliente está incompleto.', { tipo: 'info' }); return }
+      window.open(link, '_blank')
       fechar(); return
     }
     if (acao === 'compartilhar') {
@@ -237,7 +276,8 @@ export default function Pedidos() {
   const pedidosFiltrados = useMemo(() => {
     const q = semAcento(busca)
     return pedidos.filter(p => {
-      if (filtroAguardando) return p.origem === 'cardapio' && p.status === 'novo'
+      // (10/10) a mesma regra do "X pra aceitar" do Início (STATUS_PENDENTES em pages/Inicio.tsx), de qualquer origem
+      if (filtroAguardando) return ['aguardando_aceite', 'aguardando_pagamento', 'novo', 'pendente'].includes(p.status)
       if (filtroAtrasados) return pedidoAtrasado(p as any)
       if ((p.tipo_venda || 'encomenda') !== aba) return false
       const okStatus = statusSelecionados.includes(grupoDoStatus(p.status))
@@ -341,8 +381,8 @@ export default function Pedidos() {
             {(filtroAguardando || filtroAtrasados) && (
               <div className={`pd-rapido${filtroAtrasados ? ' atr' : ''}`}>
                 <div>
-                  <b>{filtroAtrasados ? 'Pedidos atrasados' : 'Novos pedidos do cardápio'}</b>
-                  <p>{filtroAtrasados ? 'A data de entrega passou e eles ainda não ficaram prontos.' : 'Só os pedidos do cardápio que você ainda precisa aceitar.'}</p>
+                  <b>{filtroAtrasados ? 'Pedidos atrasados' : 'Pedidos pra aceitar'}</b>
+                  <p>{filtroAtrasados ? 'A data de entrega passou e eles ainda não ficaram prontos.' : 'Os pedidos que esperam você aceitar ou o pagamento do cliente.'}</p>
                 </div>
                 <Botao variante="secundario" tamanho="p" onClick={sairDoFiltroRapido}>Ver todos</Botao>
               </div>
@@ -401,6 +441,7 @@ export default function Pedidos() {
           novoStatusLabel={nomeDaSituacao(pendingPag.novoStatus)}
           aguardandoPagamento={grupoDoStatus(pendingPag.pedido.status) === 'aguardando_pagamento'}
           onCancelar={() => setPendingPag(null)}
+          onParcial={(r) => setPedidos(prev => prev.map(p => p.id === pendingPag.pedido.id ? { ...p, ...r } : p))}
           onConcluido={(r) => { setPedidos(prev => prev.map(p => p.id === pendingPag.pedido.id ? { ...p, ...r } : p)); confirmarMudanca(pendingPag.pedido, pendingPag.novoStatus); setPendingPag(null) }}
         />
       )}

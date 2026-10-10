@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { refreshProfile } from "@/hooks/useProfile";
+import { digitosTelefone } from "@/lib/telefone";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { Botao, Campo } from "@/components/base";
 
@@ -18,12 +19,13 @@ const maskTel = (v: string) => {
   return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
 };
 
-export default function CompletarCadastro({ user, nomeInicial, onPronto }: { user: any; nomeInicial: string; onPronto: () => void }) {
+export default function CompletarCadastro({ user, nomeInicial, lojaInicial = "", telefoneInicial = "", onPronto }: { user: any; nomeInicial: string; lojaInicial?: string; telefoneInicial?: string; onPronto: () => void }) {
   const meta = user?.user_metadata || {};
   const foto: string = meta.avatar_url || meta.picture || "";
   const [nome, setNome] = useState(nomeInicial || meta.full_name || meta.name || "");
-  const [loja, setLoja] = useState("");
-  const [tel, setTel] = useState("");
+  // (10/10) o que já está no cadastro vem preenchido (só falta um dos dois): ela não redigita nem grava por cima
+  const [loja, setLoja] = useState(lojaInicial);
+  const [tel, setTel] = useState(() => maskTel(digitosTelefone(telefoneInicial)));
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
   const digitos = tel.replace(/\D/g, "");
@@ -34,8 +36,9 @@ export default function CompletarCadastro({ user, nomeInicial, onPronto }: { use
     if (!pronto || salvando) return;
     setSalvando(true); setErro("");
     const dados: Record<string, unknown> = { id: user.id, nome: nome.trim(), nome_loja: loja.trim(), telefone: tel };
-    const { data: atual } = await supabase.from("profiles").select("foto_url").eq("id", user.id).maybeSingle();
-    if (foto && !(atual as any)?.foto_url) dados.foto_url = foto; // a foto do Google vira a foto de perfil
+    const { data: atual, error: erroFoto } = await supabase.from("profiles").select("foto_url").eq("id", user.id).maybeSingle();
+    // a foto do Google vira a foto de perfil, só se a leitura deu certo e ela ainda não tem foto (10/10: com a leitura falhando, gravava por cima)
+    if (foto && !erroFoto && !(atual as any)?.foto_url) dados.foto_url = foto;
     const { error } = await supabase.from("profiles").upsert(dados, { onConflict: "id" });
     if (error) { setErro("Não foi possível salvar agora. Confira a internet e tente de novo."); setSalvando(false); return; }
     supabase.auth.updateUser({ data: { nome: nome.trim(), nome_loja: loja.trim(), telefone: tel } }).then(() => {}, () => {});

@@ -5,6 +5,7 @@ import { Botao } from "@/components/base";
 import TermosModal from "@/components/TermosModal";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { definirSessaoTemporaria } from "@/lib/sessaoTemporaria";
 import { User, Storefront, Phone, Envelope, Eye, EyeSlash, Check } from "@phosphor-icons/react";
 
 // ───────────────────────────────────────────────────────────────
@@ -91,6 +92,17 @@ export default function Auth() {
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, []);
+
+  // (10/10) Sem ninguém conectado neste aparelho, a marca da sessão temporária acompanha a caixinha "Lembrar de mim".
+  // Assim vale também pra quem entra pelo Google ou cria a conta (antes só o login por senha mexia nela,
+  // e uma marca antiga derrubava a sessão de quem entrou pelo Google). Criar conta sempre continua conectada.
+  useEffect(() => {
+    let cancelado = false;
+    supabase.auth.getSession().then(({ data, error: erro }) => {
+      if (!cancelado && !erro && !data.session) definirSessaoTemporaria(!keepConnected && !showCadastro);
+    }, () => { /* sem leitura da sessão: não mexe */ });
+    return () => { cancelado = true; };
+  }, [keepConnected, showCadastro]);
 
   // ── Captura código de indicação da URL (?ref=XXX) ──────────
   // Salva em localStorage pra persistir caso a visitante navegue antes de cadastrar.
@@ -226,10 +238,7 @@ export default function Auth() {
       });
       if (error) throw error;
       // "Lembrar de mim" desmarcado: a sessão vale só enquanto o app estiver aberto (ver main.tsx)
-      try {
-        if (keepConnected) localStorage.removeItem("doonly_sessao_temporaria");
-        else { localStorage.setItem("doonly_sessao_temporaria", "1"); sessionStorage.setItem("doonly_sessao_viva", "1"); }
-      } catch { /* sem armazenamento: segue conectada */ }
+      definirSessaoTemporaria(!keepConnected);
       const userId = signInData.user?.id;
       const { data: prof } = await supabase.from("profiles").select("is_admin").eq("id", userId).single();
       const dest = prof?.is_admin === true ? "/admin" : "/inicio";

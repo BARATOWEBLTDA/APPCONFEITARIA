@@ -32,7 +32,8 @@ function situacaoLoja(horario: any): { aberto: boolean; txt: string } | null {
       : d === 0 && h.abre_domingo ? [h.domingo_abertura || "09:00", h.domingo_fechamento || "14:00"] : [h.abertura || "08:00", h.fechamento || "18:00"];
     if (ativo(dia)) {
       const [ab, fe] = horas(dia);
-      if (min >= toMin(ab) && min < toMin(fe)) return { aberto: true, txt: `Aberto agora · fecha às ${fe.slice(0, 5)}` };
+      // 10/10: fechar às "00:00" é fechar no fim do dia (24:00)
+      if (min >= toMin(ab) && min < (toMin(fe) || 1440)) return { aberto: true, txt: `Aberto agora · fecha às ${fe.slice(0, 5)}` };
       if (min < toMin(ab)) return { aberto: false, txt: `Fechado · abre hoje às ${ab.slice(0, 5)}` };
     }
     for (let i = 1; i <= 7; i++) {

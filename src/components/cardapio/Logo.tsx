@@ -39,10 +39,12 @@ function getStatusLoja(horarioJson: string | null) {
       return (h.dias || []).some((d: string) => DIAS_MAP[d] === dia)
     }
 
+    // 10/10: fechar às "00:00" é fechar no fim do dia (24:00). Antes a loja aparecia sempre fechada.
+    const fim = (t: string) => toMin(t) || 1440
     const getHorarioDia = (dia: number) => {
-      if (dia === 6 && h.abre_sabado) return { ab: toMin(h.sabado_abertura || '09:00'), fe: toMin(h.sabado_fechamento || '14:00') }
-      if (dia === 0 && h.abre_domingo) return { ab: toMin(h.domingo_abertura || '09:00'), fe: toMin(h.domingo_fechamento || '14:00') }
-      return { ab: toMin(h.abertura || '08:00'), fe: toMin(h.fechamento || '18:00') }
+      if (dia === 6 && h.abre_sabado) return { ab: toMin(h.sabado_abertura || '09:00'), fe: fim(h.sabado_fechamento || '14:00') }
+      if (dia === 0 && h.abre_domingo) return { ab: toMin(h.domingo_abertura || '09:00'), fe: fim(h.domingo_fechamento || '14:00') }
+      return { ab: toMin(h.abertura || '08:00'), fe: fim(h.fechamento || '18:00') }
     }
 
     if (isDiaAtivo(diaSemana)) {

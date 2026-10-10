@@ -11,6 +11,8 @@ import { ProductList } from '@/components/cardapio/ProductList'
 import { montarSecoes, SecaoCardapio, LinhaProduto } from '@/components/cardapio/ItensCardapio'
 import { contarItens, qtdItem } from '@/lib/itemSacola'
 import { NavigationMenu } from '@/components/cardapio/NavigationMenu'
+import { definirLojaAtual } from '@/components/cardapio/lojaAtual'
+import { linkWhatsApp } from '@/lib/telefone'
 import { EmptyState } from '@/components/cardapio/EmptyState'
 import { Footer } from '@/components/cardapio/Footer'
 import { CardapioModelo1, getStatusLoja, getEnderecoData } from '@/components/cardapio/CardapioModelo1'
@@ -76,8 +78,8 @@ function SobreLoja({ aberta, fechar, design, config }: { aberta: boolean; fechar
   const end = getEnderecoData(config)
   const horas = linhasHorario((config as any)?.horario)
   const receber = comoReceber(config)
-  const fone = String(config?.telefone || '').replace(/\D/g, '')
-  const zap = fone ? `https://wa.me/${fone.startsWith('55') ? fone : '55' + fone}` : ''
+  // 10/10: o link trata o +55 e o DDD 55 num lugar só (lib/telefone)
+  const zap = linkWhatsApp(config?.telefone)
   return (
     <Janela aberta={aberta} aoFechar={fechar} tipo="conteudo" titulo={`Sobre a ${design.nome_loja || 'loja'}`} umaAcao={!!zap}
       acoes={zap ? <a className="cp-zap" href={zap} target="_blank" rel="noopener noreferrer"><WhatsappLogo size={20} weight="bold" />Chamar no WhatsApp</a> : undefined}>
@@ -103,7 +105,8 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
   const corBorda = design.cor_borda || '#E85A8C'
   const [aba, setAba] = useState<'inicio' | 'sobre' | 'conta'>('inicio')
   const [contaAba, setContaAba] = useState<'pedidos' | 'perfil'>('pedidos')
-  const confeteiraUserId = localStorage.getItem('cardapio_user_id') || ''
+  // 10/10: a loja desta página (antes vinha do localStorage, que é do navegador inteiro)
+  const confeteiraUserId = design.user_id || ''
   const accent = design.cor_botao || design.cor_borda || '#E85A8C'
   const status = getStatusLoja((config as any)?.horario || null)
   let cidade = ''
@@ -194,7 +197,7 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
         {items.slice(0, 4).map((item: any) => {
           const img = item.imageUrl?.split(',')[0]?.trim()
           return (
-            <div key={item.id} className="cp-it">
+            <div key={item.lineId ?? item.id} className="cp-it">
               {img ? <img src={img} alt="" /> : <span className="cp-it-sem"><ShoppingBag size={20} /></span>}
               <span><b>{qtdItem(item)} {item.name}</b><small>{formatCurrency(item.price * item.quantity)}{unidadeItem(item) && (item.quantity === 1 ? ` ${unidadeItem(item)}` : ` · ${formatCurrency(item.price)} ${unidadeItem(item)}`)}</small></span>
             </div>
@@ -287,6 +290,25 @@ function CardapioContent() {
       setDesign(design); setConfig(config); setProdutos(produtos)
       setIsPro(isPro || false); setCardapioModelo(modelo === 'padrao' && isPro ? 'padrao' : 'modelo1'); setCategoryImages(categoryImages || {})
       setCategoriasList(categoriasList || [])
+      // 10/10: a loja fica guardada nesta aba (lojaAtual); o localStorage segue gravado, só de reserva
+      const checkoutConfig = config ? {
+        formas_pagamento: config.formas_pagamento || ['pix'],
+        formas_entrega: config.formas_entrega || ['retirada'],
+        valor_entrega_propria: config.valor_entrega_propria || 0,
+        entrega_por_bairro: config.entrega_por_bairro || [],
+        endereco_retirada: config.endereco_retirada || '',
+        horario_retirada: config.horario_retirada || '',
+        exibir_campo_troco: config.exibir_campo_troco !== false,
+        cupons_desconto: [],
+        tem_cupom: !!config.tem_cupom,
+        aceita_agendamento: config.aceita_agendamento !== false,
+        prazo_minimo_horas: config.prazo_minimo_horas ?? 24,
+        msg_pedido: (config as any).msg_pedido || null,
+        // Finalizar encomenda (02/10): horário da loja e antecedência de cada produto, pro agendamento
+        horario: (config as any).horario || null,
+        antecedencias: Object.fromEntries((produtos || []).map((p: any) => [p.id, { ant: p.antecedencia || null, pronta: p.pronta_entrega ?? null }])),
+      } : null
+      definirLojaAtual({ userId: design.user_id || '', whatsapp: config?.telefone || '', nome: design.nome_loja || '', checkout: checkoutConfig })
       if (config?.telefone) localStorage.setItem('cardapio_whatsapp', config.telefone)
       if (design?.nome_loja) localStorage.setItem('cardapio_nome', design.nome_loja)
       if (design?.user_id) {
@@ -327,25 +349,7 @@ function CardapioContent() {
       setMetaName('twitter:title',  pageTitle)
       setMetaName('twitter:description', pageDesc)
       if (ogImage) setMetaName('twitter:image', ogImage)
-      if (config) {
-        localStorage.setItem('cardapio_checkout_config', JSON.stringify({
-          formas_pagamento: config.formas_pagamento || ['pix'],
-          formas_entrega: config.formas_entrega || ['retirada'],
-          valor_entrega_propria: config.valor_entrega_propria || 0,
-          entrega_por_bairro: config.entrega_por_bairro || [],
-          endereco_retirada: config.endereco_retirada || '',
-          horario_retirada: config.horario_retirada || '',
-          exibir_campo_troco: config.exibir_campo_troco !== false,
-          cupons_desconto: [],
-          tem_cupom: !!config.tem_cupom,
-          aceita_agendamento: config.aceita_agendamento !== false,
-          prazo_minimo_horas: config.prazo_minimo_horas ?? 24,
-          msg_pedido: (config as any).msg_pedido || null,
-          // Finalizar encomenda (02/10): horário da loja e antecedência de cada produto, pro agendamento
-          horario: (config as any).horario || null,
-          antecedencias: Object.fromEntries((produtos || []).map((p: any) => [p.id, { ant: p.antecedencia || null, pronta: p.pronta_entrega ?? null }])),
-        }))
-      }
+      if (checkoutConfig) localStorage.setItem('cardapio_checkout_config', JSON.stringify(checkoutConfig))
       setLoading(false)
     }).catch(e => { setError(explicarErro(e, 'Não deu pra abrir o cardápio agora. Tente de novo em instantes.')); setLoading(false) })
   }, [codigo, slugAtual, isRotaNova])
@@ -402,7 +406,7 @@ function CardapioContent() {
       <div className="min-h-screen relative" style={{ backgroundColor: '#F7F4F5' }}>
         {/* Caixa dos banners: some quando a loja não tem banner */}
         <style>{`.cp-banner-wrap { margin-top: 16px; } .cp-banner-wrap:empty { display: none; }`}</style>
-        <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#E85A8C'} />
+        <NavigationMenu celular corBotao={design.cor_botao || design.cor_borda || '#E85A8C'} />
 
         {cardapioModelo === 'modelo1' ? (
           <>
@@ -454,7 +458,7 @@ function CardapioContent() {
   const cor = design.cor_botao || design.cor_borda || '#E85A8C'
   return (
     <div className="cp-pc">
-      <NavigationMenu corBotao={cor} />
+      <NavigationMenu celular={false} corBotao={cor} />
       <DeskNav isPro={isPro} design={design} config={config} />
 
       <div className="cp-corpo">
@@ -495,12 +499,7 @@ function CardapioContent() {
 
         <aside className="cp-dir">
           <DeskSacola cartCount={cartCount} cartTotal={cartTotal} design={design} items={cartItems} />
-          {(config as any).programa_fidelidade_ativo !== false && (
-            <section className="cp-box cp-fid">
-              <b>Programa de fidelidade</b>
-              <small>A cada R$ 50,00 em compras, você ganha 5% de volta em dinheiro pra usar no próximo pedido.</small>
-            </section>
-          )}
+          {/* 10/10: saiu o aviso de "Programa de fidelidade" (a fidelidade ainda não existe no app) */}
         </aside>
       </div>
 

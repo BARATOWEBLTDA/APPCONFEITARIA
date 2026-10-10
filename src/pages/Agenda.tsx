@@ -8,6 +8,10 @@ import { gerarPedidoPDF } from "@/lib/gerarPedidoPDF";
 import * as pdf from "@/lib/pdfDoonly";
 import { usePlano } from "@/hooks/usePlano";
 import { supabase } from "@/lib/supabase";
+import { buscarTudo } from "@/lib/buscarTudo";
+import { explicarErro } from "@/lib/erros";
+import { linkWhatsApp } from "@/lib/telefone";
+import { excluirPedido as excluirPedidoNoBanco } from "@/lib/pedidosDoo";
 import { registrarEtapa } from "@/lib/historicoPedido";
 import AppPageHeader from "@/components/AppPageHeader";
 import CalendarioSheet from "@/components/CalendarioSheet";
@@ -81,7 +85,6 @@ const criadoEmTexto = (created_at: string) => {
   return `${d.getDate()} de ${MESES[d.getMonth()]} às ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 };
 const primeiraFoto = (f?: string | null) => (f ? String(f).split(/,(?=\s*https?:)/)[0].trim() : "");
-const normalizarTelefone = (tel: string) => (tel || "").replace(/\D/g, "");
 
 export default function Agenda() {
   const navigate = useNavigate();
@@ -95,6 +98,13 @@ export default function Agenda() {
   const [pedidos, setPedidos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [demorou, setDemorou] = useState(false);
+  // (10/10) períodos (do primeiro ao último dia que o calendário mostra) que já foram buscados
+  const [faixas, setFaixas] = useState<{ ini: string; fim: string }[]>([]);
+  const [erroCarregar, setErroCarregar] = useState(""); // não deu pra carregar: mostra o erro com "Tentar de novo"
+  const [tentativa, setTentativa] = useState(0);
+  const emBusca = useRef(new Set<string>()); // períodos sendo buscados agora
+  const naTela = useRef(true);
+  useEffect(() => { naTela.current = true; return () => { naTela.current = false; }; }, []);
 
   // Cancelados ficam de fora por padrão (dá pra ligar no filtro), igual ao total do dia
   const [statusSelecionados, setStatusSelecionados] = useState<string[]>(STATUS_FILTRAVEIS.filter(s => s !== "cancelado"));
@@ -102,36 +112,78 @@ export default function Agenda() {
   const [menuDe, setMenuDe] = useState<any | null>(null);
   const [reagendando, setReagendando] = useState<any | null>(null);
 
-  /* Autenticação */
+  /* Autenticação — (10/10) o getSession lê a conta do próprio aparelho (o getUser vai à rede: sem internet a tela ficava carregando pra sempre) */
   useEffect(() => {
+    if (userId) return;
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) setUserId(user.id);
+      let uid = "";
+      try { uid = (await supabase.auth.getSession()).data.session?.user?.id || ""; } catch { /* trata abaixo */ }
+      if (uid) setUserId(uid);
+      else { setErroCarregar("Tente de novo em instantes."); setLoading(false); }
     })();
-  }, []);
+  }, [userId, tentativa]);
 
-  /* Busca de pedidos */
+  // O que o calendário mostra: o mês inteiro mais os dias vizinhos que completam as semanas
+  const faixa = useMemo(() => {
+    const ano = refDate.getFullYear(), mes = refDate.getMonth();
+    const ini = new Date(ano, mes, 1 - new Date(ano, mes, 1).getDay());
+    const fim = new Date(ano, mes + 1, 6 - new Date(ano, mes + 1, 0).getDay());
+    return { ini: isoDate(ini), fim: isoDate(fim) };
+  }, [refDate]);
+  // o dia escolhido já veio do banco? (ele pode ser de um mês que não está mais no calendário)
+  const diaCarregado = faixas.some(f => diaSel >= f.ini && diaSel <= f.fim);
+
+  /* Busca de pedidos — (10/10) só o período que o calendário mostra, de 1.000 em 1.000.
+     Antes buscava todos os pedidos da conta em ordem de data: o banco corta em 1.000 linhas sem avisar,
+     e numa conta grande vinham os mais antigos e sumiam os de hoje. Cada mês visitado é buscado uma vez e fica guardado. */
   useEffect(() => {
     if (!userId) return;
+    const chave = `${faixa.ini}_${faixa.fim}`;
+    if (emBusca.current.has(chave) || faixas.some(f => f.ini === faixa.ini && f.fim === faixa.fim)) return;
+    emBusca.current.add(chave);
+    setLoading(true); setErroCarregar("");
     (async () => {
-      setLoading(true);
-      const { data } = await supabase.from("pedidos")
-        .select("*, pedido_itens(nome_produto, quantidade, valor_unitario, imagem_url, personalizacoes, produtos(imagem_url, forma_venda)), clientes(foto_url)")
-        .eq("user_id", userId)
-        .order("data_entrega", { ascending: true, nullsFirst: false })
-        .order("horario_entrega", { ascending: true, nullsFirst: false });
+      const CAMPOS = "*, pedido_itens(nome_produto, quantidade, valor_unitario, imagem_url, personalizacoes, produtos(imagem_url, forma_venda)), clientes(foto_url)";
+      // pedido sem data de entrega aparece no dia em que foi feito (no horário daqui)
+      const feitoDe = parseISO(faixa.ini); feitoDe.setHours(0, 0, 0, 0);
+      const feitoAte = parseISO(faixa.fim); feitoAte.setHours(24, 0, 0, 0);
+      const [comData, semData] = await Promise.all([
+        buscarTudo<any>((de, ate) => supabase.from("pedidos").select(CAMPOS).eq("user_id", userId)
+          .gte("data_entrega", faixa.ini).lte("data_entrega", faixa.fim)
+          .order("data_entrega", { ascending: true })
+          .order("horario_entrega", { ascending: true, nullsFirst: false })
+          .order("id").range(de, ate)),
+        buscarTudo<any>((de, ate) => supabase.from("pedidos").select(CAMPOS).eq("user_id", userId)
+          .is("data_entrega", null).gte("created_at", feitoDe.toISOString()).lt("created_at", feitoAte.toISOString())
+          .order("id").range(de, ate)),
+      ]);
+      emBusca.current.delete(chave);
+      if (!naTela.current) return;
+      const erro = comData.error || semData.error;
+      if (erro) {
+        setErroCarregar(explicarErro(erro, "Tente de novo em instantes."));
+        setLoading(emBusca.current.size > 0);
+        // o dia escolhido já está na tela: o erro é só do mês novo, avisa embaixo
+        if (diaCarregado) avisar("Não deu pra carregar os pedidos desse mês.", { tipo: "erro", acao: { rotulo: "Tentar de novo", aoTocar: () => setTentativa(t => t + 1) } });
+        return;
+      }
 
       // Status antigos viram os atuais (senão somem da lista do dia — igual à tela de Pedidos)
       const ANTIGOS: Record<string, string> = { confirmado: "agendado", pronto: "finalizado", a_caminho: "em_entrega", concluido: "entregue", em_preparo: "em_producao" };
-      const pedidosNormalizados = (data || []).map((p: any) => ({
+      const pedidosNormalizados = [...comData.data, ...semData.data].map((p: any) => ({
         ...p,
         status: ANTIGOS[p.status] || p.status,
-        data_entrega: p.data_entrega || (p.created_at ? p.created_at.slice(0, 10) : null),
+        // (10/10) o dia em que foi feito, no horário daqui (o created_at vem no horário de Londres: depois das 21h caía no dia seguinte)
+        data_entrega: p.data_entrega || (p.created_at ? isoDate(new Date(p.created_at)) : null),
       }));
-      setPedidos(pedidosNormalizados);
-      setLoading(false);
+      // entra no lugar do que já estava guardado desse período (e de pedido que mudou de data)
+      const ids = new Set(pedidosNormalizados.map((p: any) => p.id));
+      setPedidos(prev => [...prev.filter(p => !ids.has(p.id) && !(p.data_entrega >= faixa.ini && p.data_entrega <= faixa.fim)), ...pedidosNormalizados]);
+      setFaixas(prev => [...prev, faixa]);
+      setLoading(emBusca.current.size > 0);
     })();
-  }, [userId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, faixa.ini, faixa.fim, tentativa]);
 
   // o "carregando" só aparece se passar de 300ms
   useEffect(() => {
@@ -204,12 +256,13 @@ export default function Agenda() {
   };
 
   const abrirWhatsApp = (p: any) => {
-    const tel = [p.cliente_whatsapp, p.cliente_telefone].map(t => normalizarTelefone(t || "")).find(t => telefoneValido(t)) || "";
+    const tel = [p.cliente_whatsapp, p.cliente_telefone].find(t => telefoneValido(t)) || "";
     if (!tel) { avisar("Esse cliente não tem telefone cadastrado.", { tipo: "erro" }); return; }
-    const numero = tel.startsWith("55") ? tel : `55${tel}`;
     const nome = p.cliente_nome ? nomeDeGente(p.cliente_nome).split(" ")[0] : "";
-    const msg = encodeURIComponent(montarMensagem("sobre_pedido", dadosDoPedido(p, nome)));
-    window.open(`https://wa.me/${numero}?text=${msg}`, "_blank");
+    // (10/10) pelo linkWhatsApp: o DDD 55 era confundido com o código do país e o link saía sem o 55 da frente
+    const link = linkWhatsApp(tel, montarMensagem("sobre_pedido", dadosDoPedido(p, nome)));
+    if (!link) { avisar("O telefone desse cliente está incompleto.", { tipo: "erro" }); return; }
+    window.open(link, "_blank");
   };
 
   const duplicarPedido = async (p: any) => {
@@ -222,8 +275,9 @@ export default function Agenda() {
   const excluirPedido = async (p: any) => {
     const ok = await confirmar({ titulo: `Excluir o pedido #${p.numero || ""}?`, texto: "Ele some da agenda, da lista de pedidos e do financeiro. Não dá pra desfazer.", rotulo: "Excluir", perigo: true });
     if (!ok) return;
-    const { error } = await supabase.from("pedidos").delete().eq("id", p.id);
-    if (error) { avisar("Não deu pra excluir o pedido. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
+    // (10/10) pela função única: estorna os recebimentos antes de apagar (antes o dinheiro continuava no financeiro)
+    const r = await excluirPedidoNoBanco(p.id);
+    if (r.ok === false) { avisar(r.erro, { tipo: "erro" }); if (r.estornou) setTentativa(t => t + 1); return; }
     setPedidos(prev => prev.filter(x => x.id !== p.id));
     avisar("Pedido excluído.");
   };
@@ -298,6 +352,7 @@ export default function Agenda() {
   const faltaDoDia = aReceberDoDia.reduce((s: number, p: any) => s + saldoPedido(p), 0);
   const stDia = dayStats[diaSel] || { total: 0 };
   const relDia = relativo(diaSel);
+  const diaVazio = diaCarregado && stDia.total === 0; // só diz "Nenhum pedido" depois de buscar
 
   /* ═══ Render ═══ */
   return (
@@ -339,7 +394,7 @@ export default function Agenda() {
             <div>
               <h2>{diaPorExtenso(diaSel)}</h2>
               {/* 4.10: a contagem saiu daqui ("Pedidos do dia" logo abaixo já mostra); fica só "Hoje"/"Amanhã" e o aviso de dia vazio */}
-              {(relDia || stDia.total === 0) && <p>{relDia && <b>{relDia}</b>}{relDia && stDia.total === 0 && " · "}{stDia.total === 0 && "Nenhum pedido"}</p>}
+              {(relDia || diaVazio) && <p>{relDia && <b>{relDia}</b>}{relDia && diaVazio && " · "}{diaVazio && "Nenhum pedido"}</p>}
             </div>
             {faltaDoDia > 0.009 && (
               <div className="ag3-dia-v">
@@ -350,7 +405,10 @@ export default function Agenda() {
           </section>
 
           {/* Pedidos do dia */}
-          {loading ? (
+          {!diaCarregado && (erroCarregar || !loading) ? (
+            /* (10/10) também quando o mês do dia escolhido não carregou e outro mês carregou: antes a lista ficava em branco */
+            <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os pedidos" texto={erroCarregar || "Tente de novo em instantes."} acao={<Botao variante="suave" tamanho="m" onClick={() => { setRefDate(parseISO(diaSel)); setTentativa(t => t + 1); }}>Tentar de novo</Botao>} />
+          ) : !diaCarregado ? (
             demorou ? <p className="ag3-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando os pedidos…</p> : null
           ) : pedidosDoDia.length === 0 ? (
             <TelaVazia icone={<CalendarBlank size={30} />} titulo="Nenhum pedido nesse dia" texto={busca.trim() ? `Nada com “${busca.trim()}” nesse dia.` : "Os pedidos com entrega nesse dia aparecem aqui."} acao={<Botao variante="suave" tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => navigate("/vendas/novo")}>Nova venda</Botao>} />

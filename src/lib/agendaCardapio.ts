@@ -20,7 +20,8 @@ const HORAS_ANT: Record<string, number> = { "24h": 24, "48h": 48, "3d": 72, "5d"
 const PADRAO = { dias: ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"], abertura: "08:00", fechamento: "18:00", abre_sabado: true, sabado_abertura: "08:00", sabado_fechamento: "14:00", abre_domingo: false };
 
 const minutos = (hhmm?: string) => { const m = /^(\d{1,2}):(\d{2})/.exec(hhmm || ""); return m ? Number(m[1]) * 60 + Number(m[2]) : NaN; };
-const hhmm = (min: number) => `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
+// (24:00 aparece como "00:00")
+const hhmm = (min: number) => `${String(Math.floor(min / 60) % 24).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
 export const inicioDoDia = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 export const somarDias = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
 export const isoDia = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -41,7 +42,8 @@ export function expediente(d: Date, horarioBruto: any): { abre: number; fecha: n
   if (dia === 6) { if (!h.abre_sabado) return null; a = h.sabado_abertura || h.abertura; f = h.sabado_fechamento || h.fechamento; }
   else if (dia === 0) { if (!h.abre_domingo) return null; a = h.domingo_abertura || h.abertura; f = h.domingo_fechamento || h.fechamento; }
   else { if (!(h.dias || []).includes(DIAS_SEMANA[dia])) return null; a = h.abertura; f = h.fechamento; }
-  const abre = minutos(a), fecha = minutos(f);
+  // 10/10: fechar às "00:00" é fechar no fim do dia (24:00). Antes a loja ficava sempre fechada.
+  const abre = minutos(a), fecha = minutos(f) === 0 ? 1440 : minutos(f);
   if (isNaN(abre) || isNaN(fecha) || fecha <= abre) return null;
   return { abre, fecha };
 }
@@ -106,7 +108,7 @@ export function horariosLivres(d: Date, horario: any, minimo: Date): string[] {
   if (!ex) return [];
   const dia = inicioDoDia(d).getTime();
   const out: string[] = [];
-  for (let m = ex.abre; m <= ex.fecha; m += 15) {
+  for (let m = ex.abre; m <= ex.fecha && m < 1440; m += 15) {
     if (new Date(dia + m * 60_000) >= minimo) out.push(hhmm(m));
   }
   return out;

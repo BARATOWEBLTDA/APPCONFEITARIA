@@ -67,8 +67,6 @@
 .cp-contas .t b { font-weight: 700; }
 .cp-finalizar { width: 100%; min-height: 48px; margin: 12px 0 0; border: 0; border-radius: var(--ui-raio); color: var(--ui-branco); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
 .cp-finalizar:hover { filter: brightness(.96); }
-.cp-fid b { display: block; font-size: 15px; font-weight: 700; }
-.cp-fid small { display: block; margin-top: 4px; font-size: 13.5px; line-height: 1.45; color: var(--ui-texto-2); }
 
 /* rodapé */
 .cp-rod { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; width: 100%; max-width: 1440px; margin: 0 auto; padding: 20px 32px; box-sizing: border-box; font-size: 13px; color: var(--ui-texto-2); }

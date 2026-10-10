@@ -20,6 +20,9 @@
  * ═══════════════════════════════════════════════════════════════════
  */
 
+import { parseNumBR } from "@/lib/numeroBR";
+import { pesoDoNome } from "@/lib/itemSacola";
+
 // ─── Tipos ──────────────────────────────────────────────────────────
 
 export type TipoAdicional = "fixo" | "por_kg" | "por_unidade" | "por_quantidade";
@@ -265,3 +268,80 @@ export const REGRA_CONFLITO_HINT: Record<RegraConflitoTamanho, string> = {
   preco_sabor: "Tamanho vira só um rótulo, sem valor",
   tamanho_base_sabor_adicional: "Ex: M (R$60) + Ninho (+R$10) = R$70",
 };
+
+// ─── Preço que o cliente paga, custo e lucro (10/10) ────────────────
+// Uma conta só pra Produtos, Ficha técnica e o PDF da ficha (antes cada tela fazia a sua).
+
+/** Desconto da promoção, de 0 a 1. Mesma regra do cardápio (cartão do produto): em % ou em valor. */
+export function descontoPromocao(p: any): number {
+  if (!p?.promocao) return 0;
+  const pct = Number(p.desconto_percentual) || 0;
+  if (p.tipo_promocao === "percentual" && pct > 0) return Math.min(pct, 100) / 100;
+  const normal = Number(p.preco_normal) || 0;
+  const promo = Number(p.preco_promocional) || 0;
+  if (promo > 0 && normal > 0 && promo < normal) return 1 - promo / normal;
+  return 0;
+}
+
+/** Preço que o cliente paga pelo produto: o preço cheio já com a promoção (em valor ou em %). */
+export function precoQueClientePaga(p: any): number {
+  const normal = Number(p?.preco_normal) || 0;
+  const d = descontoPromocao(p);
+  return d > 0 ? Math.round(normal * (1 - d) * 100) / 100 : normal;
+}
+
+const FAMILIA_UNIDADE: Record<string, { familia: string; base: number }> = {
+  kg: { familia: "massa", base: 1 }, g: { familia: "massa", base: 0.001 },
+  L: { familia: "volume", base: 1 }, ml: { familia: "volume", base: 0.001 },
+  un: { familia: "unidade", base: 1 },
+};
+
+/** Custo de um ingrediente na receita, convertendo a unidade usada pra unidade em que ele foi comprado. */
+export function custoIngrediente(qtd: number, unidadeUsada: string, insumo: { unidade?: string; custo_unitario?: number } | null | undefined): number {
+  const cu = Number(insumo?.custo_unitario) || 0;
+  const q = Number(qtd) || 0;
+  const a = FAMILIA_UNIDADE[unidadeUsada], b = FAMILIA_UNIDADE[insumo?.unidade || ""];
+  if (a && b && a.familia === b.familia && b.base > 0) return ((q * a.base) / b.base) * cu;
+  return q * cu;
+}
+
+/** Mão de obra salva na conta (Custos → Mão de obra): vale pra todos os produtos. */
+export type MaoObraConta = { salario: number; horasSemana: number } | null;
+
+/**
+ * Custo e lucro de um produto: ingredientes + custos invisíveis + mão de obra (a regra da Ficha técnica).
+ * `p` vem com produto_insumos(quantidade, unidade_utilizada, insumos(custo_unitario, unidade)).
+ * `mao` e `cvConta` são os valores salvos na conta; sem eles valem os do próprio produto (25% quando nunca mudou).
+ */
+export function calcularCustoLucro(p: any, mao: MaoObraConta = null, cvConta: number | null = null) {
+  const itens: any[] = (p?.produto_insumos || []).filter((x: any) => x?.insumos);
+  const cmv = itens.reduce((s, pi) => s + custoIngrediente(Number(pi.quantidade) || 0, pi.unidade_utilizada || pi.insumos?.unidade || "", pi.insumos), 0);
+  const cvPct = cvConta != null ? Number(cvConta) || 0 : (p?.cv_percentual != null ? Number(p.cv_percentual) || 0 : 25);
+  const cv = cmv * (cvPct / 100);
+  // Mão de obra: liga quando a ficha tem salário ou tempo salvos
+  const moAtivo = !!(p?.salario_desejado || p?.tempo_preparo_min);
+  const salario = mao ? mao.salario : (Number(p?.salario_desejado) || 0);
+  const horasSem = mao ? mao.horasSemana : (Number(p?.horas_semanais) || 40);
+  const tempoMin = parseInt(String(p?.tempo_preparo_min || 0)) || 0;
+  const custoHora = horasSem > 0 ? salario / (horasSem * 4.33) : 0;
+  const mo = moAtivo ? custoHora * (tempoMin / 60) : 0;
+  const custoTotal = cmv + cv + mo;
+  const preco = precoQueClientePaga(p);
+  const lucro = preco - custoTotal;
+  const margemCmv = preco > 0 ? (cmv / preco) * 100 : 0;
+  const margemLucro = preco > 0 ? (lucro / preco) * 100 : 0;
+  return { cmv, cvPct, cv, mo, tempoMin, custoTotal, preco, lucro, margemCmv, margemLucro, temFicha: itens.length > 0 };
+}
+
+// ─── Peso do tamanho pelo nome (10/10) ──────────────────────────────
+
+/**
+ * Lê o peso (em kg) escrito no nome do tamanho: "0,5kg" → 0.5 · "1 kg" → 1 · "1,5 Kg" → 1.5 · "500g" → 0.5.
+ * Sem peso no nome ("P", "20 cm", "10 un") devolve null.
+ */
+export function pesoKgDoNome(nome: string | null | undefined): number | null {
+  // Uma leitura só, a do cardápio (lib/itemSacola): fração ("1/2 kg"), faixa ("2 a 3 kg"), dois pesos ("1kg e 500g")
+  // e "e meio" não dão pra ter certeza, então devolvem null e o cadastro pede o peso certo.
+  const kg = pesoDoNome(nome);
+  return kg > 0 ? kg : null;
+}

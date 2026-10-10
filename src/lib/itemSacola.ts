@@ -11,6 +11,34 @@ export function kgLivre(item: any): boolean {
 
 const num = (n: number) => String(n).replace('.', ',')
 
+/**
+ * Peso (em kg) escrito no nome do tamanho (10/10): "0,5kg" → 0.5 · "1kg" → 1 · "1,5 kg" → 1.5 · "500g" → 0.5 · "P (2 quilos)" → 2.
+ * Rede de segurança pro tamanho vendido "pelo peso" que foi cadastrado sem o peso (peso_kg vazio).
+ * Devolve 0 quando o nome não tem peso (ou o número não faz sentido): aí quem chama mantém o que fazia.
+ */
+export function pesoDoNome(nome: unknown): number {
+  const texto = String(nome ?? '')
+  const achados = [...texto.matchAll(/(\d+(?:[.,]\d+)?)\s*(kgs?|quilos?|kilos?|gramas?|grs?|g)(?![a-zà-ú])/gi)]
+  // Dois pesos no nome ("1kg e 500g"), fração ("1/2 kg") ou faixa ("2 a 3 kg"): não dá pra ter certeza
+  if (achados.length !== 1) return 0
+  const m = achados[0]
+  if (/(?:\/|\d\s*(?:a|à|até|ou|e|-|–))\s*$/i.test(texto.slice(0, m.index))) return 0
+  // "1 kg e meio", "1kg500": tem mais peso depois do número, não dá pra ter certeza
+  if (/^\s*(e\s+mei[oa]\b|\d)/i.test(texto.slice((m.index ?? 0) + m[0].length))) return 0
+  const emKg = /^[kq]/i.test(m[2])
+  // em gramas, "1.500g" é mil e quinhentos (ponto de milhar)
+  const n = parseFloat((emKg ? m[1] : m[1].replace(/[.,](?=\d{3}$)/, '')).replace(',', '.'))
+  const kg = emKg ? n : n / 1000
+  return kg >= 0.05 && kg <= 100 ? Math.round(kg * 1000) / 1000 : 0
+}
+
+/** Peso de uma opção de tamanho vendida pelo peso: o cadastrado; se faltar, o que está escrito no nome. */
+export function pesoDoTamanho(op: any, porPeso: boolean): number {
+  const p = Number(op?.peso_kg) || 0
+  if (p > 0) return p
+  return porPeso ? pesoDoNome(op?.nome) : 0
+}
+
 /** "2×" ou "1,5 kg" */
 export function qtdItem(item: any): string {
   return kgLivre(item) ? `${num(item.quantity)} kg` : `${Math.floor(Number(item.quantity) || 0)}×`

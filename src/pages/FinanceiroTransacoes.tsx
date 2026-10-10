@@ -1,11 +1,12 @@
 // Transações — o extrato do financeiro, refeito no padrão novo (03/10).
 // Período (hoje, 7 dias, mês ou datas), filtros, busca, exportar e ESTORNO em vez de apagar.
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowUp, ArrowDown, MagnifyingGlass, DownloadSimple, ArrowSquareOut, ArrowCounterClockwise } from "@phosphor-icons/react";
+import { ArrowUp, ArrowDown, MagnifyingGlass, DownloadSimple, ArrowSquareOut, ArrowCounterClockwise, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
-import { avisar as avisarBase } from "@/components/base";
+import { Botao, TelaVazia, avisar as avisarBase } from "@/components/base";
+import { erroDeConexao } from "@/lib/erros";
 import PeriodoFiltro, { periodoInicial, rotuloPeriodo, type Periodo } from "@/components/financeiro/PeriodoFiltro";
 import DespesaSheet from "@/components/financeiro/DespesaSheet";
 import Folha, { FOLHA_CSS } from "@/components/financeiro/Folha";
@@ -29,6 +30,7 @@ export default function FinanceiroTransacoes() {
   const [itens, setItens] = useState<MovExtrato[]>([]);
   const [semEstorno, setSemEstorno] = useState(false);
   const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(false); // não deu pra carregar (10/10)
   const [tipo, setTipo] = useState<"todas" | "entrada" | "saida">("todas");
   const [forma, setForma] = useState<string | null>(null);
   const [busca, setBusca] = useState("");
@@ -36,19 +38,31 @@ export default function FinanceiroTransacoes() {
   const [aberto, setAberto] = useState<MovExtrato | null>(null);
   const [nova, setNova] = useState<"entrada" | "saida" | null>(null);
 
+  // 10/10: ao trocar de período rápido, só vale a resposta da última busca (a atrasada era aplicada por cima da nova)
+  const numBusca = useRef(0);
   const carregar = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    setUid(user.id); setCarregando(true);
-    const r = await carregarExtrato(user.id, periodo.ini, periodo.fim);
-    setItens(r.itens); setSemEstorno(r.semEstornoManual); setCarregando(false);
+    const n = ++numBusca.current;
+    setCarregando(true);
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (n !== numBusca.current) return;
+      if (!user) { if (erroDeConexao(error)) { setErro(true); setCarregando(false); } return; }
+      setUid(user.id);
+      const r = await carregarExtrato(user.id, periodo.ini, periodo.fim);
+      if (n !== numBusca.current) return;
+      // 10/10: com erro, a tela avisa (antes mostrava o extrato vazio ou com os estornados contando)
+      setItens(r.itens); setSemEstorno(r.semEstornoManual); setErro(r.erro); setCarregando(false);
+    } catch (e) {
+      console.error("[extrato] não consegui carregar:", e);
+      if (n === numBusca.current) { setItens([]); setErro(true); setCarregando(false); }
+    }
   }, [periodo]);
   useEffect(() => { carregar(); }, [carregar]);
 
-  const ativos = itens.filter(i => !i.estornado);
-  const entradas = ativos.filter(i => i.tipo === "entrada").reduce((s, i) => s + i.valor, 0);
-  const saidas = ativos.filter(i => i.tipo === "saida").reduce((s, i) => s + i.valor, 0);
-  const qEstornados = itens.length - ativos.length;
+  const somar = (l: MovExtrato[], t: "entrada" | "saida") => l.filter(i => !i.estornado && i.tipo === t).reduce((s, i) => s + i.valor, 0);
+  const entradas = somar(itens, "entrada");
+  const saidas = somar(itens, "saida");
+  const qEstornados = itens.filter(i => i.estornado).length;
 
   const lista = useMemo(() => {
     const q = busca.trim().toLowerCase();
@@ -65,9 +79,22 @@ export default function FinanceiroTransacoes() {
 
   const avisar = (m: string) => avisarBase(m, { tipo: /^Não /.test(m) ? "erro" : "ok" });
   const exportar = () => {
-    const linhas = [`Extrato ${rotuloPeriodo(periodo)}`, "", `Entradas;${entradas.toFixed(2).replace(".", ",")}`, `Saídas;${saidas.toFixed(2).replace(".", ",")}`, `Resultado (entradas − saídas);${(entradas - saidas).toFixed(2).replace(".", ",")}`, "",
+    if (carregando) return;
+    if (erro) { avisar("Não deu pra carregar o extrato. Tente de novo."); return; }
+    // 10/10: os totais do cabeçalho saem das MESMAS linhas da planilha (a lista da tela, com os filtros) e não contam
+    // as estornadas, que ficam marcadas na coluna Situação. Antes o cabeçalho era do período inteiro e não batia.
+    const num = (v: number) => v.toFixed(2).replace(".", ",");
+    // texto com ponto e vírgula, aspas ou quebra de linha vai entre aspas (e as aspas dobram), como o CSV pede
+    const txt = (s: string) => { const t = String(s ?? "").replace(/\s*[\r\n]+\s*/g, " "); return /[;"]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+    const ent = somar(lista, "entrada"), sai = somar(lista, "saida");
+    const nEst = lista.filter(i => i.estornado).length;
+    const filtrado = tipo !== "todas" || !!forma || !!busca.trim();
+    const linhas = [txt(`Extrato ${rotuloPeriodo(periodo)}`), ...(filtrado ? ["Só os lançamentos filtrados na tela"] : []), "",
+      `Entradas;${num(ent)}`, `Saídas;${num(sai)}`, `Resultado (entradas − saídas);${num(ent - sai)}`,
+      ...(nEst ? [`Estornados (não entram nos totais);${nEst}`] : []), "",
       "Data;Tipo;Descrição;Detalhe;Valor;Situação",
-      ...lista.map(i => `${i.data.split("-").reverse().join("/")};${i.tipo === "entrada" ? "Entrada" : "Saída"};${i.titulo.replace(/;/g, ",")};${[i.subtipo, i.detalhe].filter(Boolean).join(" · ").replace(/;/g, ",")};${(i.tipo === "entrada" ? i.valor : -i.valor).toFixed(2).replace(".", ",")};${i.estornado ? "Estornado" : ""}`)];
+      ...lista.map(i => [i.data.split("-").reverse().join("/"), i.tipo === "entrada" ? "Entrada" : "Saída", txt(i.titulo), txt([i.subtipo, i.detalhe].filter(Boolean).join(" · ")),
+        num(i.tipo === "entrada" ? i.valor : -i.valor), i.estornado ? "Estornado (não entra nos totais)" : ""].join(";"))];
     const blob = new Blob(["\ufeff" + linhas.join("\n")], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `extrato-${periodo.ini}-a-${periodo.fim}.csv`; a.click(); URL.revokeObjectURL(a.href);
   };
@@ -96,9 +123,9 @@ export default function FinanceiroTransacoes() {
         </div>
 
         <div className="tx-res">
-          <div className="tx-k"><small>Entradas</small><b className="e">{brl(entradas)}</b></div>
-          <div className="tx-k"><small>Saídas</small><b className="s">{brl(saidas)}</b></div>
-          <div className="tx-k"><small>Resultado</small><b>{brl(entradas - saidas)}</b></div>
+          <div className="tx-k"><small>Entradas</small><b className="e">{erro ? "—" : brl(entradas)}</b></div>
+          <div className="tx-k"><small>Saídas</small><b className="s">{erro ? "—" : brl(saidas)}</b></div>
+          <div className="tx-k"><small>Resultado</small><b>{erro ? "—" : brl(entradas - saidas)}</b></div>
         </div>
 
         <div className="tx-filtros">
@@ -108,7 +135,10 @@ export default function FinanceiroTransacoes() {
           {tipo !== "saida" && <div className="tx-chips">{FORMAS.map(f => <button type="button" key={f.k} className={forma === f.k ? "on" : ""} onClick={() => setForma(x => x === f.k ? null : f.k)}>{f.l}</button>)}</div>}
         </div>
 
-        {carregando ? <div className="tx-ph" /> : lista.length === 0 ? (
+        {carregando ? <div className="tx-ph" /> : erro ? (
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar o extrato" texto="Confira a internet e tente de novo."
+            acao={<Botao variante="suave" tamanho="m" onClick={carregar}>Tentar de novo</Botao>} />
+        ) : lista.length === 0 ? (
           <div className="tx-vazio"><b>Nada por aqui {rotuloPeriodo(periodo)}</b><p>{itens.length ? "Nenhum item com esses filtros." : "Quando você receber um pedido ou lançar uma entrada ou saída, aparece aqui."}</p></div>
         ) : porDia.map((g, gi) => (
           <section key={`${g.dia}-${gi}`} className="tx-dia">

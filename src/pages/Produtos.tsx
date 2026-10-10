@@ -19,8 +19,13 @@ import {
   REGRA_CONFLITO_HINT,
   REGRA_CONFLITO_DEFAULT,
   TIPO_ADICIONAL_DEFAULT,
+  calcularCustoLucro,
+  descontoPromocao,
+  pesoKgDoNome,
+  type MaoObraConta,
   type RegraConflitoTamanho,
 } from "@/lib/produto-precificacao";
+import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import { gerarFichaProduto } from "@/lib/gerarFichaProduto";
 import { usePlano } from "@/hooks/usePlano";
 import { ImageCropper } from "@/components/ui/ImageCropper";
@@ -1051,7 +1056,8 @@ function PersonalizacaoStep({
       const novos = selecionados
         .map(n => titleCase(n.trim()))
         .filter(n => n && !existentes.has(n.toLowerCase()))
-        .map(n => ({ id: gerarId(), nome: n, preco: 0 }));
+        // 10/10: pelo peso, o tamanho já entra com o peso lido do nome ("1 kg" → 1)
+        .map(n => ({ id: gerarId(), nome: n, preco: 0, ...(grupoTamanhos.modo_preco_tamanho === "por_peso" && pesoKgDoNome(n) ? { peso_kg: pesoKgDoNome(n) } : {}) }));
       if (novos.length > 0) {
         onChange({ grupo_tamanhos: { ...grupoTamanhos, opcoes: [...grupoTamanhos.opcoes, ...novos] } } as any);
       }
@@ -1257,10 +1263,17 @@ function PersonalizacaoStep({
     const nomeLimpo = nomeTrim.length <= 3 ? nomeTrim.toUpperCase() : titleCase(nomeTrim);
     // Evita duplicata
     if (grupoTamanhos.opcoes.some(o => o.nome.toLowerCase() === nomeLimpo.toLowerCase())) return;
+    // 10/10: pelo peso, o tamanho guarda o peso (peso_kg); sem ele o cardápio cobrava o preço de 1 kg
+    const porPeso = grupoTamanhos.modo_preco_tamanho === "por_peso";
+    const pesoKg = porPeso ? pesoKgDoNome(nomeLimpo) : null;
+    if (porPeso && !pesoKg) {
+      avisar("No preço pelo peso, o tamanho precisa do peso (ex.: 1 kg ou 500 g). Pra usar P, M e G, escolha preço fixo.", { tipo: "erro" });
+      return false;
+    }
     onChange({
       grupo_tamanhos: {
         ...grupoTamanhos,
-        opcoes: [...grupoTamanhos.opcoes, { id: gerarId(), nome: nomeLimpo, preco: preco || 0 }],
+        opcoes: [...grupoTamanhos.opcoes, { id: gerarId(), nome: nomeLimpo, preco: preco || 0, ...(pesoKg ? { peso_kg: pesoKg } : {}) }],
       },
     });
     // Salva na biblioteca
@@ -1273,7 +1286,7 @@ function PersonalizacaoStep({
   // Gera tamanhos em intervalo (0,5 a 10 de 0,5 em 0,5 = 20 tamanhos) — pra modo por_peso
   const gerarTamanhosPadrao = (deKg: number = 0.5, ateKg: number = 5, passoKg: number = 0.5) => {
     const existentes = new Set(grupoTamanhos.opcoes.map(o => o.nome.toLowerCase()));
-    const novos: { id: string; nome: string; preco: number }[] = [];
+    const novos: { id: string; nome: string; preco: number; peso_kg: number }[] = [];
     // Trabalha com inteiros (× 100) pra evitar erros de ponto flutuante do JS
     const deI = Math.round(deKg * 100);
     const ateI = Math.round(ateKg * 100);
@@ -1283,7 +1296,7 @@ function PersonalizacaoStep({
       const peso = pesoI / 100;
       const nome = peso % 1 === 0 ? `${peso}kg` : `${peso.toString().replace(".", ",")}kg`;
       if (existentes.has(nome.toLowerCase())) continue;
-      novos.push({ id: gerarId(), nome, preco: 0 });
+      novos.push({ id: gerarId(), nome, preco: 0, peso_kg: peso }); // 10/10: grava o peso (o cardápio multiplica o preço do kg por ele)
     }
     if (novos.length === 0) return;
     onChange({
@@ -2085,8 +2098,7 @@ function PersonalizacaoStep({
                             // Se é só número, concatena a unidade escolhida
                             const soNumero = /^[\d.,]+$/.test(nome);
                             const nomeFinal = soNumero ? `${nome} ${novoTamanhoUnid}` : nome;
-                            addTamanho(nomeFinal, 0);
-                            setNovoTamanhoNome("");
+                            if (addTamanho(nomeFinal, 0) !== false) setNovoTamanhoNome("");
                           }
                         }}
                       />
@@ -2110,8 +2122,7 @@ function PersonalizacaoStep({
                           if (!nome) return;
                           const soNumero = /^[\d.,]+$/.test(nome);
                           const nomeFinal = soNumero ? `${nome} ${novoTamanhoUnid}` : nome;
-                          addTamanho(nomeFinal, 0);
-                          setNovoTamanhoNome("");
+                          if (addTamanho(nomeFinal, 0) !== false) setNovoTamanhoNome("");
                         }}
                       >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -3591,6 +3602,15 @@ export default function Produtos() {
   type FichaItem = { insumo_id: string; quantidade: number; unidade_utilizada: string; insumo?: Insumo };
   const [insumosCadastrados, setInsumosCadastrados] = useState<Insumo[]>([]);
   const [fichaTecnica, setFichaTecnica] = useState<FichaItem[]>([]);
+  // 10/10: a ficha só é regravada ao salvar se foi lida com sucesso pra ESTE produto (e se mudou).
+  // Antes, se a leitura falhasse ou demorasse, salvar o produto apagava a ficha inteira.
+  const fichaLida = useRef<{ produtoId: string; assinatura: string } | null>(null);
+  const fichaPedida = useRef<string | null>(null);
+  const assinaturaFicha = (itens: { insumo_id: string; quantidade: number; unidade_utilizada: string }[]) =>
+    JSON.stringify(itens.filter(f => f.insumo_id && f.quantidade > 0).map(f => [f.insumo_id, Number(f.quantidade), f.unidade_utilizada || ""]));
+  // Custos da conta (pra conta do lucro ser a mesma da Ficha técnica)
+  const [maoConta, setMaoConta] = useState<MaoObraConta>(null);
+  const [cvConta, setCvConta] = useState<number | null>(null);
   const [buscaInsumo, setBuscaInsumo] = useState("");
   // Modal dedicado da ficha técnica
   const [fichaModalOpen, setFichaModalOpen] = useState(false);
@@ -3601,6 +3621,7 @@ export default function Produtos() {
   const img2Ref = useRef<HTMLInputElement>(null);
   const img3Ref = useRef<HTMLInputElement>(null);
   const { isPro } = usePlano();
+  const { profile } = useProfile();
 
   // Auto-abre cadastro quando vem de Pedidos
   useEffect(() => {
@@ -3659,6 +3680,7 @@ export default function Produtos() {
       await loadCategorias(user.id);
       await loadInsumos(user.id);
       await loadBiblioteca(user.id);
+      await loadCustosConta(user.id);
       setLoading(false);
     };
     load();
@@ -3696,6 +3718,23 @@ export default function Produtos() {
     if (data) setInsumosCadastrados(data as Insumo[]);
   };
 
+  // 10/10: custos invisíveis e mão de obra salvos na conta, lidos do mesmo jeito que a Ficha técnica lê
+  // (cada um à parte: se a coluna ou a tabela não existir, vale o que está no produto)
+  const loadCustosConta = async (uid: string) => {
+    try {
+      const [cv, mao] = await Promise.all([
+        supabase.from("profiles").select("custos_invisiveis_pct").eq("id", uid).maybeSingle(),
+        supabase.from("config_mao_obra").select("salario_mensal, horas_dia, dias_semana").eq("user_id", uid).maybeSingle(),
+      ]);
+      const v = (cv.data as any)?.custos_invisiveis_pct;
+      setCvConta(!cv.error && v != null ? Number(v) : null);
+      const sal = Number((mao.data as any)?.salario_mensal) || 0;
+      setMaoConta(mao.data && sal > 0
+        ? { salario: sal, horasSemana: (Number((mao.data as any).horas_dia) || 8) * (Number((mao.data as any).dias_semana) || 5) }
+        : null);
+    } catch { /* sem esses dados o lucro usa o que está salvo no produto */ }
+  };
+
   const loadProdutos = async (uid: string) => {
     const { data } = await supabase
       .from("produtos")
@@ -3718,27 +3757,10 @@ export default function Produtos() {
     temFicha: boolean;
     precoEfetivo: number;
   } => {
-    const itens: any[] = p.produto_insumos || [];
-    // Mapa de conversão para unidade base
-    const toBaseFactor: Record<string, number> = { kg: 1, g: 0.001, L: 1, ml: 0.001, un: 1 };
-    const cmv = itens.reduce((sum, pi) => {
-      const qtd = Number(pi.quantidade) || 0;
-      const custo = Number(pi.insumos?.custo_unitario) || 0;
-      const unidadeUtilizada = pi.unidade_utilizada || pi.insumos?.unidade || "";
-      const unidadeInsumo = pi.insumos?.unidade || "";
-      const fU = toBaseFactor[unidadeUtilizada];
-      const fI = toBaseFactor[unidadeInsumo];
-      if (fU != null && fI != null && fI > 0) {
-        return sum + (qtd * fU / fI) * custo;
-      }
-      return sum + qtd * custo;
-    }, 0);
-    const precoEfetivo = (p.promocao && p.preco_promocional && p.preco_promocional > 0)
-      ? Number(p.preco_promocional)
-      : Number(p.preco_normal) || 0;
-    const lucro = precoEfetivo - cmv;
-    const margem = precoEfetivo > 0 ? (lucro / precoEfetivo) * 100 : 0;
-    return { cmv, lucro, margem, temFicha: itens.length > 0, precoEfetivo };
+    // 10/10: mesma conta da Ficha técnica (ingredientes + custos invisíveis + mão de obra) e
+    // preço com a promoção em valor ou em %. Antes aqui só saíam os ingredientes e o lucro aparecia maior.
+    const c = calcularCustoLucro(p, maoConta, cvConta);
+    return { cmv: c.cmv, lucro: c.lucro, margem: c.margemLucro, temFicha: c.temFicha, precoEfetivo: c.preco };
   };
 
   const loadCategorias = async (uid: string) => {
@@ -3815,6 +3837,7 @@ export default function Produtos() {
   const passouDoLimite = (novos = 1) => !isPro && produtos.length + novos > LIMITE_PRODUTOS_GRATIS;
   const openNovo = () => {
     if (passouDoLimite()) { setLimiteAberto(true); return; }
+    fichaLida.current = null; fichaPedida.current = null;
     // Se tem rascunho, abre o modal vazio + mostra banner pra escolher
     if (hasDraft()) {
       setForm(EMPTY); setFichaTecnica([]); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setMobilePersonaStep("checklist"); setKitTela(false); setTipoCadastro(null); setBoloTam(null); setTipoTela(false); setModal(true);
@@ -3916,22 +3939,28 @@ export default function Produtos() {
     setWizardStep(2);
     setEditTab("info");
     setModal(true);
+    fichaLida.current = null;
+    fichaPedida.current = p.id || null;
     if (p.id && userId) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("produto_insumos")
         .select("insumo_id, quantidade, unidade_utilizada, insumos(id, nome, unidade, custo_unitario, imagem_url)")
         .eq("produto_id", p.id);
-      if (data) {
-        setFichaTecnica(data.map((d: any) => ({
+      // Resposta atrasada de outro produto (abriu um, fechou e abriu outro): descarta
+      if (fichaPedida.current !== p.id) return;
+      if (data && !error) {
+        const itens = data.map((d: any) => ({
           insumo_id: d.insumo_id,
           quantidade: Number(d.quantidade) || 0,
           unidade_utilizada: d.unidade_utilizada || (d.insumos as any)?.unidade || "",
           insumo: d.insumos as Insumo,
-        })));
+        }));
+        setFichaTecnica(itens);
+        fichaLida.current = { produtoId: p.id, assinatura: assinaturaFicha(itens) };
       }
     }
   };
-  const fecharModal = () => { setSucesso(null); setTipoTela(false); setKitTela(false); setModal(false); setForm(EMPTY); setFichaTecnica([]); setFichaModalOpen(false); setShowQuickAdd(false); setBuscaInsumo(""); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setConfirmDiscardProd(false); };
+  const fecharModal = () => { fichaLida.current = null; fichaPedida.current = null; setUploading(false); /* envio de foto que nunca respondeu não deixa o Salvar preso */ setSucesso(null); setTipoTela(false); setKitTela(false); setModal(false); setForm(EMPTY); setFichaTecnica([]); setFichaModalOpen(false); setShowQuickAdd(false); setBuscaInsumo(""); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setConfirmDiscardProd(false); };
 
   // Guard: verifica se o produto tem dados preenchidos (pra decidir se avisa antes de fechar)
   const hasProdData = (): boolean => {
@@ -3969,7 +3998,9 @@ export default function Produtos() {
     setUploading(true);
     const suffix = isVariacao ? `var-${idxVar}` : `${cropSlot}`;
     const path = `produtos/${userId}-${Date.now()}-${suffix}.jpg`;
-    const { error } = await supabase.storage.from("products").upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
+    const { error } = await supabase.storage.from("products").upload(path, blob, { upsert: true, contentType: 'image/jpeg' }).catch((e: unknown) => ({ error: e }));
+    // 10/10: a falha no envio não avisava (a foto simplesmente não aparecia)
+    if (error) avisar(explicarErro(error, "Não deu pra enviar a foto. Tente de novo."), { tipo: "erro" });
     if (!error) {
       const { data } = supabase.storage.from("products").getPublicUrl(path);
       const url = `${data.publicUrl}?t=${Date.now()}`;
@@ -4013,7 +4044,8 @@ export default function Produtos() {
     setUploading(true);
     const safeName = key.replace(/[^a-zA-Z0-9]/g, "_");
     const path = `produtos/${userId}-${Date.now()}-v-${safeName}.jpg`;
-    const { error } = await supabase.storage.from("products").upload(path, file, { upsert: true, contentType: file.type });
+    const { error } = await supabase.storage.from("products").upload(path, file, { upsert: true, contentType: file.type }).catch((e: unknown) => ({ error: e }));
+    if (error) avisar(explicarErro(error, "Não deu pra enviar a foto. Tente de novo."), { tipo: "erro" });
     if (!error) {
       const { data } = supabase.storage.from("products").getPublicUrl(path);
       const url = `${data.publicUrl}?t=${Date.now()}`;
@@ -4110,6 +4142,8 @@ export default function Produtos() {
   };
 
   const handleSalvar = async () => {
+    // 10/10: não salva com foto ainda subindo (o produto ia pro banco sem a foto)
+    if (uploading) return avisar("Espere a foto terminar de enviar.", { tipo: "info" });
     const eraPrimeiro = !form.id && produtos.length === 0;
     if (!form.nome.trim()) return avisar("Nome é obrigatório", { tipo: "erro" });
     if (!form.categoria.trim()) return avisar("Categoria é obrigatória", { tipo: "erro" });
@@ -4154,6 +4188,40 @@ export default function Produtos() {
       if (!form.preco_normal || form.preco_normal <= 0) return avisar("Preço deve ser maior que zero", { tipo: "erro" });
     }
 
+    // ─── Tamanhos (10/10): as mesmas regras na criação e na edição ───
+    // Antes só a criação conferia: na edição dava pra salvar tamanho sem nome, sem preço ou sem peso
+    // (e o cardápio cobrava o menor preço, ou o preço de 1 kg).
+    let formSalvar: Produto = form;
+    const gtForm: any = form.grupo_tamanhos;
+    if (gtForm?.ativo && !kitAtivo((form as any).kit_qtd)) {
+      // Tamanhos ligados sem modo definido: é preço fixo por tamanho
+      const modoT: string = gtForm.modo_preco_tamanho || "preco_fixo";
+      // Linha em branco (sem nome, preço nem peso) sai sozinha
+      let ops: OpcaoTamanho[] = (gtForm.opcoes || []).filter((o: any) => String(o?.nome || "").trim() || o?.preco > 0 || o?.peso_kg > 0);
+      if (ops.some(o => !String(o.nome || "").trim())) {
+        return avisar("Tem um tamanho sem nome. Coloque o nome ou apague esse tamanho.", { tipo: "erro" });
+      }
+      if (modoT === "preco_fixo") {
+        // Exceção: o preço vem só do sabor (nenhum tamanho tem preço) — aí o tamanho é só um rótulo
+        const gsForm: any = form.grupo_sabores;
+        const saborDaPreco = !!gsForm?.ativo && !!gsForm.sabor_tem_preco_proprio && (gsForm.opcoes || []).some((o: any) => o?.preco > 0);
+        const semPreco = ops.find(o => !(o.preco > 0));
+        if (semPreco && !(saborDaPreco && ops.every(o => !(o.preco > 0)))) {
+          return avisar(`Coloque o preço do tamanho ${semPreco.nome}.`, { tipo: "erro" });
+        }
+      } else if (modoT === "por_peso") {
+        // Tamanho sem peso gravado: lê do nome ("1 kg", "500 g"). Salvar um produto antigo já conserta os dados dele.
+        ops = ops.map(o => (Number(o.peso_kg) > 0 ? o : { ...o, peso_kg: pesoKgDoNome(o.nome) }));
+        const semPeso = ops.find(o => !(Number(o.peso_kg) > 0));
+        if (semPeso) {
+          return avisar(isBolo || isBoloEdit
+            ? `Coloque o peso do tamanho ${semPeso.nome}.`
+            : `Falta o peso do tamanho ${semPeso.nome}. Cadastre de novo com o peso no nome (ex.: 1 kg) ou use preço fixo.`, { tipo: "erro" });
+        }
+      }
+      formSalvar = { ...form, grupo_tamanhos: { ...gtForm, modo_preco_tamanho: modoT, opcoes: ops } };
+    }
+
     // Define tipo_produto
     let tipoProduto: TipoProduto = form.tipo_produto || "simples";
     if (!form.id) {
@@ -4167,21 +4235,20 @@ export default function Produtos() {
     // ─── Adapter Passo 1: converte state antigo (grupo_massas/recheios/etc)
     // pra formato genérico `grupos_opcoes[]` e salva em ambos formatos
     // pra manter compatibilidade durante a transição.
-    const gruposArray = carregarGruposDoBanco(form);
+    // 10/10: usa o form já conferido (modo de preço definido e peso dos tamanhos preenchido).
+    // O ajuste "sem modo = preço fixo" ficava depois daqui e não chegava a ser gravado.
+    const gruposArray = carregarGruposDoBanco(formSalvar);
     const gruposPayload = salvarGruposParaBanco(gruposArray);
 
     // ─── Limpar campos que NÃO pertencem à tabela produtos ───
     // (evita Supabase rejeitar silenciosamente o update inteiro)
-    const { produto_insumos, created_at, ...formLimpo } = form as any;
+    const { produto_insumos, created_at, ...formLimpo } = formSalvar as any;
 
     // Edição: se mexeu nos preços dos tamanhos (preço fixo), o "a partir de" acompanha
     if (form.id && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.modo_preco_tamanho || "preco_fixo") === "preco_fixo") {
       const pt = (form.grupo_tamanhos.opcoes || []).map((o: any) => o.preco).filter((p: number) => p > 0);
       if (pt.length) precoBase = Math.min(...pt);
     }
-    // Tamanhos ligados sem modo definido: é preço fixo por tamanho
-    const gtSalvar: any = (form as any).grupo_tamanhos;
-    if (gtSalvar?.ativo && !gtSalvar.modo_preco_tamanho) (form as any).grupo_tamanhos = { ...gtSalvar, modo_preco_tamanho: "preco_fixo" };
 
     // Kit por quantidade: o preço base é o menor preço do kit
     if (kitAtivo((form as any).kit_qtd) && precoMinKit((form as any).kit_qtd) > 0) precoBase = precoMinKit((form as any).kit_qtd);
@@ -4215,8 +4282,10 @@ export default function Produtos() {
     }
 
     // Persistir ficha técnica
+    // 10/10: na edição, só regrava se a ficha foi lida com sucesso pra este produto E mudou.
+    // (Antes apagava e regravava sempre: se a leitura tivesse falhado, a ficha sumia.)
+    let erroFicha: unknown = null;
     if (produtoId && userId) {
-      await supabase.from("produto_insumos").delete().eq("produto_id", produtoId);
       const itens = fichaTecnica
         .filter(f => f.insumo_id && f.quantidade > 0)
         .map(f => ({
@@ -4227,13 +4296,36 @@ export default function Produtos() {
           unidade_utilizada: f.unidade_utilizada,
           quantidade_base: toBaseProd(f.quantidade, f.unidade_utilizada),
         }));
-      if (itens.length > 0) {
-        await supabase.from("produto_insumos").insert(itens);
+      const lida = fichaLida.current;
+      if (!form.id) {
+        // Produto novo: não tem ficha antiga pra apagar
+        if (itens.length > 0) {
+          const { error } = await supabase.from("produto_insumos").insert(itens);
+          if (error) erroFicha = error;
+        }
+      } else if (lida && lida.produtoId === produtoId && assinaturaFicha(fichaTecnica) !== lida.assinatura) {
+        const { error: errDel } = await supabase.from("produto_insumos").delete().eq("produto_id", produtoId);
+        if (errDel) erroFicha = errDel;
+        else if (itens.length > 0) {
+          const { error: errIns } = await supabase.from("produto_insumos").insert(itens);
+          if (errIns) erroFicha = errIns;
+        }
+        if (!erroFicha) fichaLida.current = { produtoId, assinatura: assinaturaFicha(fichaTecnica) };
+      } else if (form.id && !lida && itens.length > 0) {
+        // a ficha não foi lida (falha de rede) e ela montou ingredientes: avisa em vez de descartar em silêncio
+        erroFicha = new Error("A ficha técnica não foi carregada. Feche e abra o produto de novo.");
       }
     }
 
     await loadProdutos(userId);
     setSaving(false);
+    if (erroFicha) {
+      // O produto foi salvo; a ficha não. Na edição a janela fica aberta pra tentar de novo.
+      avisar(explicarErro(erroFicha, form.id
+        ? "O produto foi salvo, mas a ficha técnica não. Tente salvar de novo."
+        : "O produto foi criado, mas os ingredientes não foram salvos. Monte a ficha técnica de novo."), { tipo: "erro" });
+      if (form.id) return;
+    }
     // Edição: aviso rápido e fecha
     if (form.id) {
       fecharModal();
@@ -4266,9 +4358,11 @@ export default function Produtos() {
   };
 
   const handleDelete = async (id: string) => {
-    await supabase.from("produtos").delete().eq("id", id);
-    setProdutos(p => p.filter(x => x.id !== id));
+    const { error } = await supabase.from("produtos").delete().eq("id", id);
     setDeleteConfirm(null);
+    // 10/10: se o banco recusar, o produto continua na lista (antes sumia da tela e voltava ao recarregar)
+    if (error) { showToast("error", "Não deu pra excluir", explicarErro(error)); return; }
+    setProdutos(p => p.filter(x => x.id !== id));
   };
 
   const handleAdicionarCategoria = async (iconeOverride?: string) => {
@@ -5206,10 +5300,11 @@ export default function Produtos() {
                   const { data: userData } = await supabase.auth.getUser();
                   if (!userData.user) return;
                   const ext = file.name.split(".").pop();
-                  const path = `${userData.user.id}/produto-opcao-${opcaoId}-${Date.now()}.${ext}`;
-                  const { error: upErr } = await supabase.storage.from("produtos").upload(path, file, { upsert: true });
+                  // 10/10: mesmo bucket ("products") e mesmo formato de caminho das outras fotos do app (antes ia pra "produtos")
+                  const path = `produtos/${userData.user.id}-${Date.now()}-opcao-${opcaoId}.${ext}`;
+                  const { error: upErr } = await supabase.storage.from("products").upload(path, file, { upsert: true });
                   if (upErr) { avisar(explicarErro(upErr, "Não deu pra enviar a foto. Tente de novo."), { tipo: "erro" }); return; }
-                  const { data: pub } = supabase.storage.from("produtos").getPublicUrl(path);
+                  const { data: pub } = supabase.storage.from("products").getPublicUrl(path);
                   const campo = `grupo_${grupoKey}` as keyof Produto;
                   setForm(f => ({
                     ...f,
@@ -5388,7 +5483,8 @@ export default function Produtos() {
               {((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco" && !isBoloEdit)) && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && form.grupo_tamanhos.modo_preco_tamanho !== "sob_consulta" && form.grupo_tamanhos.modo_preco_tamanho !== "por_peso" && (
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">
-                    Preço por {(form.grupo_tamanhos.nome_exibicao || "Tamanhos").toLowerCase().slice(0, -1)} <ReqTag />
+                    {/* 10/10: antes cortava a última letra do nome do grupo ("tamanhos e peso", "tamanhos do comb") */}
+                    Preço por {form.grupo_tamanhos.nome_exibicao === "Quantidades" ? "quantidade" : "tamanho"} <ReqTag />
                   </p>
                   <p style={{fontSize: 12, color: "#6B5D64", margin: "0 0 12px"}}>
                     Defina o preço de cada opção. No cardápio aparece a faixa do menor ao maior.
@@ -5527,7 +5623,15 @@ export default function Produtos() {
                       <label>Preço cheio</label>
                       <div className="prod-preco-input prod-preco-input--big">
                         <span>R$</span>
-                        <input type="text" placeholder="0,00" aria-label="Preço cheio" value={form.preco_normal ? formatPreco(form.preco_normal) : ""} onChange={e => setForm(f => ({ ...f, preco_normal: parsePreco(e.target.value) }))} />
+                        <input type="text" placeholder="0,00" aria-label="Preço cheio" value={form.preco_normal ? formatPreco(form.preco_normal) : ""} onChange={e => {
+                          const n = parsePreco(e.target.value);
+                          // 10/10: a promoção em valor acompanha o preço cheio (antes só era conferida ao digitar o promocional)
+                          setForm(f => {
+                            const pp = Number(f.preco_promocional) || 0;
+                            if (f.tipo_promocao === "percentual" || !(pp > 0)) return { ...f, preco_normal: n };
+                            return { ...f, preco_normal: n, promocao: pp < n };
+                          });
+                        }} />
                       </div>
                     </div>
                     <div className="prod-field">
@@ -6009,13 +6113,14 @@ export default function Produtos() {
                   <Toggle
                     label="Pronta entrega"
                     value={form.pronta_entrega === true}
-                    onChange={(v: boolean) => setForm(f => ({ ...(f as any), pronta_entrega: v ? true : undefined, antecedencia: v ? undefined : (f as any).antecedencia }))}
+                    // 10/10: false/null em vez de undefined (o banco ignora undefined e o desligar não gravava)
+                    onChange={(v: boolean) => setForm(f => ({ ...(f as any), pronta_entrega: v, antecedencia: v ? null : ((f as any).antecedencia ?? null) }))}
                     colorClass="active-green"
                   />
                   <Toggle
                     label="Precisa encomendar antes"
                     value={!!(form as any).antecedencia}
-                    onChange={(v: boolean) => setForm(f => ({ ...(f as any), antecedencia: v ? "48h" : undefined, pronta_entrega: v ? false : (f as any).pronta_entrega }))}
+                    onChange={(v: boolean) => setForm(f => ({ ...(f as any), antecedencia: v ? "48h" : null, pronta_entrega: v ? false : (f as any).pronta_entrega }))}
                     colorClass="active-pink"
                   />
                 </div>
@@ -6129,7 +6234,7 @@ export default function Produtos() {
                 if (isEdit) {
                   // Modo edição: salva direto em qualquer passo
                   return (
-                    <button className="prod-btn-avancar-novo" onClick={handleSalvar} disabled={saving}>
+                    <button className="prod-btn-avancar-novo" onClick={handleSalvar} disabled={saving || uploading}>
                       {saving ? <span className="prod-spinner-sm" /> : "Salvar alterações"}
                     </button>
                   );
@@ -6137,7 +6242,7 @@ export default function Produtos() {
 
                 if (isLast) {
                   return (
-                    <button className="prod-btn-avancar-novo" onClick={handleSalvar} disabled={saving}>
+                    <button className="prod-btn-avancar-novo" onClick={handleSalvar} disabled={saving || uploading}>
                       {saving ? <span className="prod-spinner-sm" /> : (
                         <>
                           <CheckIc size={20} weight="bold" aria-hidden="true" />
@@ -6267,7 +6372,7 @@ export default function Produtos() {
                 const pv = previewProduto;
                 const catOk = !!pv.categoria && categorias.includes(pv.categoria);
                 const temVariacoes = (pv.tamanhos_disponiveis || []).length > 0 || (pv.recheios_disponiveis || []).length > 0;
-                const promo = !!(pv.promocao && pv.preco_promocional && pv.preco_promocional > 0);
+                const promo = descontoPromocao(pv) > 0; // 10/10: vale também pra promoção em %
                 const partes: string[] = [];
                 const contar = (grupo: any, label: string, labelPlural: string) => {
                   if (grupo?.ativo && (grupo.opcoes?.length || 0) > 0) { const n = grupo.opcoes.length; partes.push(`${n} ${n === 1 ? label : labelPlural}`); }
@@ -6362,6 +6467,8 @@ export default function Produtos() {
                         onClick={async () => {
                           setPreviewMenu(false);
                           if (!userId) return;
+                          // 10/10: mesma trava do plano grátis de "Novo produto" e do duplicar em massa
+                          if (passouDoLimite()) { setPreviewProduto(null); setLimiteAberto(true); return; }
                           // Limpa TODOS os campos que não pertencem à tabela produtos
                           const {
                             id, created_at, updated_at, produto_insumos, user_id, ...limpo
@@ -6410,7 +6517,12 @@ export default function Produtos() {
                         className="prod-preview-menu-item"
                         onClick={async () => {
                           setPreviewMenu(false);
-                          const url = `${window.location.origin}/c/${userId}`;
+                          // 10/10: o link usa o código público do cardápio, como no resto do app (com o id da conta não abria)
+                          const url = getCardapioUrl(profile);
+                          if (!url) {
+                            avisar("Seu cardápio ainda não tem link. Publique o cardápio primeiro.", { tipo: "info", acao: { rotulo: "Ir pro cardápio", aoTocar: () => navigate("/cardapio") } });
+                            return;
+                          }
                           try { await navigator.clipboard.writeText(url); avisar("Link do cardápio copiado!", { tipo: "ok" }); }
                           catch { avisar(url, { tipo: "info" }); }
                         }}

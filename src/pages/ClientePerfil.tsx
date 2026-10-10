@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useRecorte } from "@/components/ui/useRecorte";
 import { useNavigate, useParams } from "react-router-dom";
-import { Cake, Camera, CaretRight, Envelope, IdentificationCard, MapPin, MegaphoneSimple, NotePencil, PencilSimple, Plus, Receipt, UserCircle, WhatsappLogo } from "@phosphor-icons/react";
+import { Cake, Camera, CaretRight, Envelope, IdentificationCard, MapPin, MegaphoneSimple, NotePencil, PencilSimple, Plus, Receipt, UserCircle, WarningCircle, WhatsappLogo } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
+import { buscarTudo } from "@/lib/buscarTudo";
+import { explicarErro } from "@/lib/erros";
+import { digitosTelefone, linkWhatsApp } from "@/lib/telefone";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, TelaVazia, Titulo, avisar } from "@/components/base";
 import { situacaoDe } from "@/components/pedidos/pedidoTexto";
@@ -46,7 +49,7 @@ interface Pedido {
 
 function formatPhone(phone?: string) {
   if (!phone) return "";
-  const d = phone.replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
+  const d = digitosTelefone(phone);
   if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 3)} ${d.slice(3, 7)}-${d.slice(7)}`;
   if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
   return phone;
@@ -57,7 +60,10 @@ const diaMes = (iso: string) => new Date(iso).toLocaleDateString("pt-BR", { day:
 const mesAno = (iso: string) => new Date(iso).toLocaleDateString("pt-BR", { month: "short", year: "numeric" }).replace(".", "").replace(" de ", "/");
 
 function haQuanto(iso: string) {
-  const dias = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  // (10/10) por dia do calendário daqui (antes eram janelas de 24h: a compra de ontem à noite aparecia como "Hoje")
+  const d = new Date(iso);
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const dias = Math.round((hoje.getTime() - new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()) / 86400000);
   if (dias <= 0) return "Hoje";
   if (dias === 1) return "Ontem";
   if (dias < 30) return `Há ${dias} dias`;
@@ -90,25 +96,40 @@ export default function ClientePerfil() {
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
+  const [erroCarregar, setErroCarregar] = useState(""); // não deu pra carregar: mostra o erro com "Tentar de novo"
+  const [tentativa, setTentativa] = useState(0);
   const [todos, setTodos] = useState(false);
   const [uploadingFoto, setUploadingFoto] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    let cancelado = false;
+    // (10/10) Sem internet a tela ficava carregando pra sempre (o getUser vai à rede) ou dizia "Não achamos esse cliente".
+    // O getSession lê a conta do próprio aparelho; se a busca falhar, aparece o erro com "Tentar de novo".
     const load = async () => {
-      if (!id) return;
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!id) { setLoading(false); return; }
+      setLoading(true); setErroCarregar("");
+      const falhou = (erro?: unknown) => { if (!cancelado) { setErroCarregar(explicarErro(erro, "Tente de novo em instantes.")); setLoading(false); } };
+      let user: { id: string } | null = null;
+      try { user = (await supabase.auth.getSession()).data.session?.user ?? null; } catch { /* trata abaixo */ }
+      if (cancelado) return;
+      if (!user) { falhou(); return; }
 
-      const { data: cData } = await supabase.from("clientes").select("*").eq("id", id).single();
-      if (cData) setCliente(cData);
+      const { data: cData, error: erroCliente } = await supabase.from("clientes").select("*").eq("id", id).maybeSingle();
+      if (cancelado) return;
+      if (erroCliente) { falhou(erroCliente); return; }
+      setCliente(cData || null);
 
       // Pedidos da cliente: pelo cadastro (cliente_id) + os antigos só com o nome, sem duplicar
+      // (de 1.000 em 1.000: o banco corta em 1.000 linhas sem avisar)
       if (cData) {
+        const uid = user.id;
         const [porId, porNome] = await Promise.all([
-          supabase.from("pedidos").select("*").eq("user_id", user.id).eq("cliente_id", id),
-          supabase.from("pedidos").select("*").eq("user_id", user.id).is("cliente_id", null).eq("cliente_nome", cData.nome),
+          buscarTudo<any>((de, ate) => supabase.from("pedidos").select("*").eq("user_id", uid).eq("cliente_id", id).order("id").range(de, ate)),
+          buscarTudo<any>((de, ate) => supabase.from("pedidos").select("*").eq("user_id", uid).is("cliente_id", null).eq("cliente_nome", cData.nome).order("id").range(de, ate)),
         ]);
+        if (cancelado) return;
+        if (porId.error || porNome.error) { falhou(porId.error || porNome.error); return; }
         const vistos = new Set<string>();
         const lista = [...(porId.data || []), ...(porNome.data || [])]
           .filter((p: any) => (vistos.has(p.id) ? false : (vistos.add(p.id), true)))
@@ -118,7 +139,8 @@ export default function ClientePerfil() {
       setLoading(false);
     };
     load();
-  }, [id]);
+    return () => { cancelado = true; };
+  }, [id, tentativa]);
 
   const handleFotoUpload = async (file: File) => {
     if (!file || !cliente) return;
@@ -146,6 +168,16 @@ export default function ClientePerfil() {
     </>
   );
 
+  if (erroCarregar) return (
+    <>
+      <AppPageHeader title="Cliente" subtitle="Não carregou" onBack={() => navigate("/clientes")} />
+      <div className="cl9">
+        <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar esse cliente" texto={erroCarregar}
+          acao={<Botao onClick={() => setTentativa(t => t + 1)}>Tentar de novo</Botao>} />
+      </div>
+    </>
+  );
+
   if (!cliente) return (
     <>
       <AppPageHeader title="Cliente" subtitle="Não encontrado" onBack={() => navigate("/clientes")} />
@@ -164,8 +196,7 @@ export default function ClientePerfil() {
   const niver = niverInfo(cliente.data_nascimento);
   const origem = cliente.origem || cliente.como_conheceu;
   const novo = (Date.now() - new Date(cliente.created_at).getTime()) / 86400000 <= 30 && validos.length <= 1;
-  const zapDigitos = (cliente.whatsapp || "").replace(/\D/g, "");
-  const zap = zapDigitos ? `https://wa.me/${zapDigitos.startsWith("55") ? zapDigitos : "55" + zapDigitos}` : "";
+  const zap = linkWhatsApp(cliente.whatsapp); // (10/10) o DDD 55 era confundido com o código do país
   const rua = [cliente.rua, cliente.numero].filter(Boolean).join(", ");
   const lugar = [cliente.complemento, cliente.bairro, cliente.cidade, cliente.estado, cliente.cep].filter(Boolean).join(" · ");
   const temEndereco = !!(rua || lugar);

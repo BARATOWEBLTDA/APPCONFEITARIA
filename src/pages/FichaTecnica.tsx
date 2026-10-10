@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo, ReactNode } from "react";
 import CampoNumero from "@/components/ui/CampoNumero";
 import { parseNumBR } from "@/lib/numeroBR";
+import { explicarErro } from "@/lib/erros";
+import { calcularCustoLucro, precoQueClientePaga } from "@/lib/produto-precificacao";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
@@ -184,29 +186,9 @@ const MODAL_TITLE_VARIANTS: ((nome: string) => ReactNode)[] = [
 /** Mão de obra salva na conta (Custos → Mão de obra): vale pra todos os produtos (09/10) */
 type MaoConta = { salario: number; horasSemana: number; diasSemana: number } | null;
 
+// 10/10: a conta agora mora em produto-precificacao (a mesma em Produtos, aqui e no PDF) e considera promoção em %
 function calcular(p: Produto, conta: MaoConta = null, cvConta: number | null = null) {
-  const itens = p.produto_insumos || [];
-  const cmv = itens.reduce((s, pi) => {
-    const qtd = Number(pi.quantidade) || 0;
-    const unidadeUtilizada = pi.unidade_utilizada || pi.insumos?.unidade || "";
-    return s + calcCusto(qtd, unidadeUtilizada, pi.insumos as Insumo);
-  }, 0);
-  // Custos invisíveis: % sobre os ingredientes (25% quando nunca foi mudado, igual à tela da ficha)
-  const cvPct = cvConta != null ? cvConta : (p.cv_percentual != null ? parseNumBR(p.cv_percentual) : 25);
-  const cv = cmv * (cvPct / 100);
-  // Mão de obra: liga quando a ficha tem salário ou tempo salvos (igual à tela da ficha)
-  const moAtivo = !!(p.salario_desejado || p.tempo_preparo_min);
-  const salario = conta ? conta.salario : (parseNumBR(p.salario_desejado) || 0);
-  const horasSem = conta ? conta.horasSemana : (parseNumBR(p.horas_semanais) || 40);
-  const tempoMin = parseInt(String(p.tempo_preparo_min || 0)) || 0;
-  const custoHora = horasSem > 0 ? salario / (horasSem * 4.33) : 0;
-  const mo = moAtivo ? custoHora * (tempoMin / 60) : 0;
-  const custoTotal = cmv + cv + mo;
-  const preco = (p.promocao && p.preco_promocional && p.preco_promocional > 0) ? Number(p.preco_promocional) : Number(p.preco_normal) || 0;
-  const lucro = preco - custoTotal;
-  const margemCmv = preco > 0 ? (cmv / preco) * 100 : 0;
-  const margemLucro = preco > 0 ? (lucro / preco) * 100 : 0;
-  return { cmv, custoTotal, lucro, preco, margemCmv, margemLucro, temFicha: itens.length > 0 };
+  return calcularCustoLucro(p, conta, cvConta);
 }
 
 export default function FichaTecnica() {
@@ -436,8 +418,13 @@ export default function FichaTecnica() {
     if (!selected || !userId) return;
     setSaving(true);
 
-    // 1. Persiste vinculos produto_insumos
-    await supabase.from("produto_insumos").delete().eq("produto_id", selected.id);
+    // 1. Persiste vinculos produto_insumos (10/10: confere o erro antes de seguir)
+    const { error: errDel } = await supabase.from("produto_insumos").delete().eq("produto_id", selected.id);
+    if (errDel) {
+      setSaving(false);
+      avisar(explicarErro(errDel, "Não deu pra salvar a ficha técnica. Tente de novo."), { tipo: "erro" });
+      return;
+    }
     const itens = ficha
       .filter(f => f.insumo_id && f.quantidade > 0)
       .map(f => ({
@@ -453,13 +440,13 @@ export default function FichaTecnica() {
       if (errIns) {
         // Não deixa a ficha "sumir" calada: avisa e para (os ingredientes continuam na tela pra tentar de novo)
         setSaving(false);
-        avisar("Não deu pra salvar os ingredientes. Confira a internet e tente de novo.", { tipo: "erro" });
+        avisar(explicarErro(errIns, "Não deu pra salvar os ingredientes. Tente de novo."), { tipo: "erro" });
         return;
       }
     }
 
     // 2. Persiste campos extras no produto (respeitando os toggles ativos)
-    await supabase.from("produtos").update({
+    const { error: errProd } = await supabase.from("produtos").update({
       rendimento_qtd: infoAtivo ? extras.rendimento_qtd : "",
       rendimento_peso: infoAtivo ? extras.rendimento_peso : "",
       validade_dias: infoAtivo ? (parseInt(extras.validade_dias) || 0) : 0,
@@ -472,6 +459,12 @@ export default function FichaTecnica() {
       horas_semanais: moAtivo ? (parseNumBR(extras.horas_semanais) || 40) : 40,
       updated_at: new Date().toISOString(),
     }).eq("id", selected.id);
+    if (errProd) {
+      // Os ingredientes já foram gravados; o que não entrou foram os outros campos da ficha
+      setSaving(false);
+      avisar(explicarErro(errProd, "Os ingredientes foram salvos, mas o resto da ficha não. Tente salvar de novo."), { tipo: "erro" });
+      return;
+    }
 
     // 3. Recarrega e atualiza o produto selecionado
     await loadProdutos(userId);
@@ -500,7 +493,8 @@ export default function FichaTecnica() {
   /* DETAIL / EDIT VIEW */
   if (selected) {
     const cmvLive = ficha.reduce((s, f) => s + calcCusto(f.quantidade, f.unidade_utilizada, f.insumo), 0);
-    const precoLive = (selected.promocao && selected.preco_promocional && selected.preco_promocional > 0) ? Number(selected.preco_promocional) : Number(selected.preco_normal) || 0;
+    // 10/10: preço que o cliente paga, com promoção em valor ou em %
+    const precoLive = precoQueClientePaga(selected);
 
     // Custos invisíveis
     const cvPct = parseNumBR(extras.cv_percentual) || 0;
