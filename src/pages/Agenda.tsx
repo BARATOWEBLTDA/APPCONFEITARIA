@@ -338,7 +338,8 @@ export default function Agenda() {
           <section className="ag3-card ag3-dia" aria-live="polite">
             <div>
               <h2>{diaPorExtenso(diaSel)}</h2>
-              <p>{relDia && <b>{relDia}</b>}{relDia && " · "}{stDia.total === 0 ? "Nenhum pedido" : `${stDia.total} pedido${stDia.total !== 1 ? "s" : ""}`}</p>
+              {/* 4.10: a contagem saiu daqui ("Pedidos do dia" logo abaixo já mostra); fica só "Hoje"/"Amanhã" e o aviso de dia vazio */}
+              {(relDia || stDia.total === 0) && <p>{relDia && <b>{relDia}</b>}{relDia && stDia.total === 0 && " · "}{stDia.total === 0 && "Nenhum pedido"}</p>}
             </div>
             {faltaDoDia > 0.009 && (
               <div className="ag3-dia-v">
