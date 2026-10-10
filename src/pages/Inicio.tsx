@@ -1,4 +1,5 @@
 // Build marker: 2026-09-05T11:00 — mobile hero: fonte menor, PRO achatado, texto centralizado
+import { resumoItens } from "@/components/pedidos/pedidoTexto";
 import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
 import { STATUS_AINDA_NAO_PRONTO, dataISO } from "@/lib/pedidoStatus";
@@ -73,7 +74,7 @@ export default function Inicio() {
   const [resumoSemana, setResumoSemana] = useState({ vendas: 0, pedidos: 0 });
   const [resumoAnterior, setResumoAnterior] = useState({ vendas: 0, pedidos: 0 });
   const [chartData, setChartData] = useState<ChartPoint[]>([]);
-  const [proximasEntregas, setProximasEntregas] = useState<Array<{ id: string; cliente: string; data: string; valor: number; hora?: string | null }>>([]);
+  const [proximasEntregas, setProximasEntregas] = useState<Array<{ id: string; cliente: string; data: string; valor: number; hora?: string | null; produto?: string | null; tipo?: string | null }>>([]);
   // Onboarding: se cliente novo, o card destaque muda pra empty state contextual
   const [onboarding, setOnboarding] = useState({
     produtosCount: 0,
@@ -415,12 +416,13 @@ export default function Inicio() {
         // Próximas entregas (a partir de hoje, ordenadas por data)
         supabase
           .from("pedidos")
-          .select("id, cliente_nome, data_entrega, valor_total, horario_entrega")
+          .select("id, cliente_nome, data_entrega, valor_total, horario_entrega, tipo_entrega, pedido_itens(nome_produto, quantidade, valor_unitario, produtos(forma_venda))")
           .eq("user_id", userId)
           .gte("data_entrega", hojeISO)
           .in("status", STATUS_ATIVOS)
           .order("data_entrega", { ascending: true })
-          .limit(4),
+          .order("horario_entrega", { ascending: true, nullsFirst: false })
+          .limit(5),
         // Pedidos atrasados: data passou e ainda não ficou pronto (regra única em lib/pedidoStatus)
         supabase
           .from("pedidos")
@@ -481,6 +483,9 @@ export default function Inicio() {
           data: p.data_entrega,
           valor: Number(p.valor_total) || 0,
           hora: p.horario_entrega || null,
+          // 4.06: o que vai e se é retirada, pro destaque e pra lista do "Seu dia"
+          produto: p.pedido_itens?.length ? resumoItens(p) : null,
+          tipo: p.tipo_entrega || null,
         }))
       );
       // o Supabase não lança erro: ele devolve. Sem isso a tela ficava zerada, como se não houvesse pedido nenhum
@@ -738,7 +743,7 @@ export default function Inicio() {
         <SeuDia
           carregando={loading} erro={erroCarga} aoTentar={carregarTudo}
           entregasHoje={counts.entregasHoje} atrasados={counts.pedidosAtrasados} novos={counts.pedidosPendentes}
-          proximaHoje={proximaEntregaHoje} proximas={proximasEntregas} hoje={dataISO(new Date())}
+          proximas={proximasEntregas} hoje={dataISO(new Date())}
         />
       </section>
 

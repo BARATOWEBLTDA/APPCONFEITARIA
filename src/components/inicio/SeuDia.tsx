@@ -1,15 +1,20 @@
 import { useNavigate } from "react-router-dom";
-import { CaretRight } from "@phosphor-icons/react";
+import { CaretRight, CheckCircle } from "@phosphor-icons/react";
 import { Botao } from "@/components/base";
 import "./seuDia.css";
 
 /**
- * "Seu dia" — o resumo do dia no topo do Início, pra celular e tablet (07/10 · 3.04).
- * Antes essas informações só existiam no computador. Aqui: quantas entregas tem hoje, o que está atrasado,
- * os pedidos novos esperando resposta e as próximas entregas. Cada número leva pra lista certa.
- * Feito no padrão do guia: cartão branco, rótulo + texto, toque de 44px, cores pelo themes.css.
+ * "Seu dia" — o resumo do dia no topo do Início, no celular e no tablet (10/10 · 4.06, redesenho).
+ * - A próxima entrega de hoje em destaque (horário grande, quanto falta, cliente e o que vai).
+ * - Alertas em etiquetas pequenas, só quando existem: atrasados, pra aceitar, entregas de hoje.
+ * - As próximas entregas com o dia em formato de calendário.
+ * - Sem entrega hoje: faixa "Nada pra entregar hoje". Sem nada marcado: mascote + "Nova venda".
+ * Pesos leves (pedido do dono): título e números 600; nomes, valores e etiquetas 500.
  */
-export interface EntregaResumo { id: string; cliente: string; data: string; valor: number; hora?: string | null }
+export interface EntregaResumo {
+  id: string; cliente: string; data: string; valor: number;
+  hora?: string | null; produto?: string | null; tipo?: string | null;
+}
 
 interface Props {
   carregando: boolean;
@@ -20,7 +25,6 @@ interface Props {
   atrasados: number;
   /** pedidos novos esperando a confeiteira aceitar */
   novos: number;
-  proximaHoje: { cliente: string; hora: string } | null;
   proximas: EntregaResumo[];
   /** hoje, em AAAA-MM-DD */
   hoje: string;
@@ -29,35 +33,46 @@ interface Props {
 const real = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 const hhmm = (h?: string | null) => (h ? String(h).slice(0, 5) : "");
 
-/** "Hoje às 15:30" · "Amanhã às 10:00" · "13 de outubro (terça) às 10:00" */
-function quando(data: string, hora: string | null | undefined, hoje: string): string {
-  const d = new Date(data + "T12:00:00");
-  const h = hhmm(hora);
-  const base = new Date(hoje + "T12:00:00");
-  const dias = Math.round((d.getTime() - base.getTime()) / 86400000);
-  if (dias === 0) return h ? `Hoje às ${h}` : "Hoje";
-  if (dias === 1) return h ? `Amanhã às ${h}` : "Amanhã";
-  const dia = d.toLocaleDateString("pt-BR", { day: "numeric", month: "long" });
-  const semana = d.toLocaleDateString("pt-BR", { weekday: "long" }).replace("-feira", "").toLowerCase();
-  return `${dia} (${semana})${h ? ` às ${h}` : ""}`;
+/** "em 2h", "em 40 min", "agora" */
+function falta(hora: string): string {
+  const [h, m] = hora.split(":").map(Number);
+  const alvo = new Date(); alvo.setHours(h, m || 0, 0, 0);
+  const min = Math.round((alvo.getTime() - Date.now()) / 60000);
+  if (min <= 0) return "agora";
+  if (min < 60) return `em ${min} min`;
+  const horas = Math.floor(min / 60), resto = min % 60;
+  return resto >= 30 && horas < 3 ? `em ${horas}h${String(resto).padStart(2, "0")}` : `em ${horas}h`;
 }
 
-export default function SeuDia({ carregando, erro, aoTentar, entregasHoje, atrasados, novos, proximaHoje, proximas, hoje }: Props) {
+/** dia em formato de calendário: { n: "11", s: "dom" } — hoje vira "hoje" */
+function diaCal(data: string, hoje: string) {
+  const d = new Date(data + "T12:00:00");
+  const s = data === hoje ? "hoje" : d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "").toLowerCase();
+  return { n: String(d.getDate()), s };
+}
+
+export default function SeuDia({ carregando, erro, aoTentar, entregasHoje, atrasados, novos, proximas, hoje }: Props) {
   const navigate = useNavigate();
-  const temNumeros = entregasHoje > 0 || atrasados > 0 || novos > 0;
-  const lista = proximas.slice(0, 3);
-  const numeros = [
-    { n: entregasHoje, rotulo: entregasHoje === 1 ? "Entrega hoje" : "Entregas hoje", para: "/agenda", tom: "" },
-    { n: atrasados, rotulo: atrasados === 1 ? "Atrasado" : "Atrasados", para: "/pedidos?filtro=atrasados", tom: atrasados > 0 ? "vermelho" : "" },
-    { n: novos, rotulo: novos === 1 ? "Novo pedido" : "Novos pedidos", para: "/pedidos?filtro=aguardando", tom: novos > 0 ? "laranja" : "" },
-  ];
+
+  // destaque: a primeira entrega de hoje (com horário primeiro; se nenhuma tiver, a primeira do dia)
+  const deHoje = proximas.filter(e => e.data === hoje);
+  const destaque = deHoje.find(e => e.hora) || deHoje[0] || null;
+  const lista = proximas.filter(e => e !== destaque).slice(0, 3);
+
+  const chips = [
+    atrasados > 0 && { k: "atr", txt: `${atrasados} ${atrasados === 1 ? "atrasado" : "atrasados"}`, tom: "vermelho", para: "/pedidos?filtro=atrasados" },
+    novos > 0 && { k: "nov", txt: `${novos} pra aceitar`, tom: "amarelo", para: "/pedidos?filtro=aguardando" },
+    entregasHoje > 0 && { k: "hoj", txt: `${entregasHoje} ${entregasHoje === 1 ? "entrega hoje" : "entregas hoje"}`, tom: "", para: "/agenda" },
+  ].filter(Boolean) as { k: string; txt: string; tom: string; para: string }[];
+
+  const nadaMarcado = !destaque && lista.length === 0 && chips.length === 0;
 
   return (
     <div className="sd">
       <div className="sd-cab">
         <h2 className="sd-t">Seu dia</h2>
         <button type="button" className="sd-link" onClick={() => navigate("/agenda")}>
-          Ver agenda <CaretRight size={16} weight="bold" aria-hidden="true" />
+          Agenda <CaretRight size={16} weight="bold" aria-hidden="true" />
         </button>
       </div>
 
@@ -68,42 +83,63 @@ export default function SeuDia({ carregando, erro, aoTentar, entregasHoje, atras
         </div>
       ) : carregando ? (
         <p className="sd-x sd-carregando" aria-live="polite">Carregando…</p>
+      ) : nadaMarcado ? (
+        <div className="sd-vazio">
+          <img src="/marca/leve/acenando.webp" alt="" width={56} height={56} />
+          <div>
+            <b>Sua agenda está livre</b>
+            <span>Quando chegar um pedido, ele aparece aqui.</span>
+            <button type="button" className="sd-vazio-bt" onClick={() => navigate("/vendas/novo")}>Nova venda</button>
+          </div>
+        </div>
       ) : (
         <>
-          {temNumeros ? (
-            <div className="sd-nums">
-              {numeros.map(({ n, rotulo, para, tom }) => (
-                <button key={para} type="button" className={`sd-num${tom ? ` sd-num--${tom}` : ""}${n === 0 ? " sd-num--zero" : ""}`} onClick={() => navigate(para)}>
-                  <b>{n}</b>
-                  <span>{rotulo}</span>
+          {destaque ? (
+            <button type="button" className="sd-prox" onClick={() => navigate(`/pedidos/${destaque.id}`)}>
+              <span className="sd-hora">
+                {destaque.hora ? <><b>{hhmm(destaque.hora)}</b><small>{falta(hhmm(destaque.hora))}</small></> : <><b>Hoje</b><small>sem horário</small></>}
+              </span>
+              <span className="sd-prox-tx">
+                <em>{destaque.tipo === "retirada" ? "Próxima retirada" : "Próxima entrega"}</em>
+                <b>{destaque.cliente}</b>
+                {destaque.produto && <span>{destaque.produto}</span>}
+              </span>
+              <span className="sd-prox-seta" aria-hidden="true"><CaretRight size={16} weight="bold" /></span>
+            </button>
+          ) : (
+            <p className="sd-calmo"><CheckCircle size={20} weight="bold" aria-hidden="true" />Nada pra entregar hoje</p>
+          )}
+
+          {chips.length > 0 && (
+            <div className="sd-chips">
+              {chips.map(c => (
+                <button key={c.k} type="button" className={`sd-chip${c.tom ? ` sd-chip--${c.tom}` : ""}`} onClick={() => navigate(c.para)}>
+                  {c.tom && <i aria-hidden="true" />}{c.txt}
                 </button>
               ))}
             </div>
-          ) : (
-            <p className="sd-x">{lista.length ? "Nenhuma entrega hoje." : "Nenhuma entrega marcada. Os próximos pedidos aparecem aqui."}</p>
-          )}
-
-          {/* A linha "Próxima entrega" só aparece se a lista abaixo não estiver na tela (senão repetia o 1º item) */}
-          {proximaHoje && lista.length === 0 && (
-            <p className="sd-linha"><span>Próxima entrega:</span> {hhmm(proximaHoje.hora)} · {proximaHoje.cliente}</p>
           )}
 
           {lista.length > 0 && (
             <>
-              <h3 className="sd-sub">Próximas entregas</h3>
+              <h3 className="sd-sub">{lista.some(e => e.data === hoje) ? "Próximas entregas" : "Próximos dias"}</h3>
               <ul className="sd-lista">
-                {lista.map(e => (
-                  <li key={e.id}>
-                    <button type="button" className="sd-it" onClick={() => navigate(`/pedidos/${e.id}`)}>
-                      <span className="sd-it-txt">
-                        <b>{e.cliente}</b>
-                        <small>{quando(e.data, e.hora, hoje)}</small>
-                      </span>
-                      <span className="sd-it-v">{real(e.valor)}</span>
-                      <CaretRight size={16} weight="bold" className="sd-it-seta" aria-hidden="true" />
-                    </button>
-                  </li>
-                ))}
+                {lista.map(e => {
+                  const d = diaCal(e.data, hoje);
+                  const detalhe = [e.produto, hhmm(e.hora)].filter(Boolean).join(" · ");
+                  return (
+                    <li key={e.id}>
+                      <button type="button" className="sd-it" onClick={() => navigate(`/pedidos/${e.id}`)}>
+                        <span className="sd-dia"><b>{d.n}</b><small>{d.s}</small></span>
+                        <span className="sd-it-txt">
+                          <b>{e.cliente}</b>
+                          {detalhe && <small>{detalhe}</small>}
+                        </span>
+                        <span className="sd-it-v">{real(e.valor)}</span>
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
             </>
           )}

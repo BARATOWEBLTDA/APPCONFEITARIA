@@ -1,39 +1,59 @@
-/* "Seu dia" no Início (07/10 · 3.04) — medidas do guia: título de seção 16/800, número 24/700, texto 15, pequeno 12.5, espaços de 4/8/12/16. */
-.sd { padding: 16px; background: var(--ui-branco); color: var(--ui-texto); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); font-family: var(--font-base); text-align: left; }
-.sd-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: -10px -8px 2px 0; }
-.sd-t { margin: 0; font-family: var(--font-base); font-size: 16px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); }
-.sd-link { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin: 0; padding: 0 8px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; -webkit-appearance: none; appearance: none; }
+/* "Seu dia" no Início (10/10 · 4.06, redesenho). Pesos leves: título e números 600; nomes, valores e etiquetas 500. */
+.sd { padding: 4px 0 6px; background: var(--ui-branco); color: var(--ui-texto); border: 1px solid var(--ui-borda); border-radius: 20px; box-shadow: var(--ui-sombra-cartao); font-family: var(--font-base); text-align: left; overflow: hidden; }
+.sd-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px 0 16px; }
+.sd-t { margin: 0; font-family: var(--font-base); font-size: 16px; font-weight: 600; line-height: 1.3; color: var(--ui-texto); }
+.sd-link { display: inline-flex; align-items: center; gap: 3px; min-height: 44px; margin: 0; padding: 0 8px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 13.5px; font-weight: 500; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; -webkit-appearance: none; appearance: none; }
 .sd-link:active { background: var(--ui-rosa-claro); }
-.sd-link:focus-visible, .sd-num:focus-visible, .sd-it:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
+.sd-link:focus-visible, .sd-prox:focus-visible, .sd-chip:focus-visible, .sd-it:focus-visible, .sd-vazio-bt:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
 
-.sd-nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.sd-num { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 2px; min-width: 0; min-height: 68px; margin: 0; padding: 10px 12px; border: 0; border-radius: var(--ui-raio); background: var(--ui-cinza); color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; -webkit-appearance: none; appearance: none; transition: transform var(--dur-fast) var(--ease-out), filter var(--dur-fast) linear; }
-.sd-num:active { transform: scale(.97); filter: brightness(.97); }
-.sd-num b { font-size: 24px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
-.sd-num span { font-size: 12.5px; font-weight: 500; line-height: 1.25; color: var(--ui-texto-2); text-wrap: balance; }
-.sd-num--zero b { color: var(--ui-texto-3); }
-.sd-num--vermelho { background: var(--ui-vermelho-fundo); }
-.sd-num--vermelho b, .sd-num--vermelho span { color: var(--ui-vermelho-escuro); }
-.sd-num--laranja { background: var(--ui-laranja-fundo); }
-.sd-num--laranja b, .sd-num--laranja span { color: var(--ui-laranja); }
-
-.sd-x { margin: 0; font-size: 15px; font-weight: 500; line-height: 1.45; color: var(--ui-texto-2); }
-/* "Carregando…" só aparece se demorar mais de 300ms (não pisca em carga rápida) */
+.sd-x { margin: 4px 16px 10px; font-size: 15px; font-weight: 500; line-height: 1.45; color: var(--ui-texto-2); }
 .sd-carregando { animation: sdAparece 1ms linear 300ms both; }
 @keyframes sdAparece { from { opacity: 0; } to { opacity: 1; } }
-.sd-linha { margin: 12px 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto); }
-.sd-linha span { color: var(--ui-texto-2); }
-.sd-erro { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+.sd-erro { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 4px 16px 10px; }
 .sd-erro p { margin: 0; font-size: 15px; font-weight: 500; line-height: 1.45; color: var(--ui-texto-2); }
 
-.sd-sub { margin: 16px 0 4px; font-family: var(--font-base); font-size: 13px; font-weight: 700; line-height: 1.3; color: var(--ui-texto-2); }
-.sd-lista { margin: 0 0 -8px; padding: 0; list-style: none; }
+/* próxima entrega em destaque */
+.sd-prox { display: flex; align-items: center; gap: 14px; box-sizing: border-box; width: calc(100% - 24px); margin: 6px 12px 0; padding: 14px; border: 0; border-radius: 16px; background: linear-gradient(135deg, #3B1220, #5A1E33); color: #fff; font-family: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; -webkit-appearance: none; appearance: none; transition: transform var(--dur-fast) var(--ease-out); }
+.sd-prox:active { transform: scale(.985); }
+.sd-hora { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 64px; height: 64px; flex: none; border-radius: 14px; background: rgba(255,255,255,.12); }
+.sd-hora b { font-size: 20px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
+.sd-hora small { margin-top: 4px; font-size: 12px; font-weight: 500; opacity: .78; }
+.sd-prox-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.sd-prox-tx em { font-style: normal; font-size: 12.5px; font-weight: 500; color: #FFB3D1; }
+.sd-prox-tx b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 16px; font-weight: 500; line-height: 1.3; }
+.sd-prox-tx span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 400; opacity: .82; }
+.sd-prox-seta { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius: 50%; background: #fff; color: #3B1220; }
+
+/* nada hoje */
+.sd-calmo { display: flex; align-items: center; gap: 10px; margin: 6px 12px 0; padding: 14px; border-radius: 16px; background: #EAF6EF; color: #15803D; font-size: 14.5px; font-weight: 500; }
+
+/* etiquetas de alerta (só quando existem) */
+.sd-chips { display: flex; flex-wrap: nowrap; gap: 6px; padding: 12px 16px 0; overflow-x: auto; scrollbar-width: none; }
+.sd-chips::-webkit-scrollbar { display: none; }
+.sd-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; flex: none; margin: 0; padding: 0 10px; border: 0; border-radius: 999px; background: var(--ui-cinza); color: var(--ui-texto); font-family: inherit; font-size: 13px; font-weight: 500; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; -webkit-appearance: none; appearance: none; }
+.sd-chip i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.sd-chip--vermelho { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); }
+.sd-chip--amarelo { background: var(--ui-laranja-fundo); color: var(--ui-laranja); }
+
+/* próximas entregas, com o dia em calendário */
+.sd-sub { margin: 16px 16px 2px; font-family: var(--font-base); font-size: 12.5px; font-weight: 500; line-height: 1.3; color: var(--ui-texto-2); }
+.sd-lista { margin: 0; padding: 0; list-style: none; }
 .sd-lista li + li { border-top: 1px solid var(--ui-linha); }
-.sd-it { display: flex; align-items: center; gap: 8px; box-sizing: border-box; width: 100%; min-height: 56px; margin: 0; padding: 8px 0; border: 0; background: none; color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; -webkit-appearance: none; appearance: none; }
+.sd-it { display: flex; align-items: center; gap: 12px; box-sizing: border-box; width: 100%; min-height: 60px; margin: 0; padding: 8px 16px; border: 0; background: none; color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; -webkit-appearance: none; appearance: none; }
 .sd-it:active { background: var(--ui-linha); }
-.sd-it-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.sd-it-txt b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 700; line-height: 1.3; }
-.sd-it-txt small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
-.sd-it-v { flex: none; font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.sd-it-seta { flex: none; color: var(--ui-texto-3); }
-@media (prefers-reduced-motion: reduce) { .sd-num { transition-duration: 1ms; } .sd-num:active { transform: none; } }
+.sd-dia { display: flex; flex-direction: column; align-items: center; width: 40px; flex: none; }
+.sd-dia b { font-size: 17px; font-weight: 600; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.sd-dia small { margin-top: 2px; font-size: 12px; font-weight: 500; color: var(--ui-texto-2); }
+.sd-it-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.sd-it-txt b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 500; line-height: 1.3; }
+.sd-it-txt small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; font-weight: 400; line-height: 1.4; color: var(--ui-texto-2); }
+.sd-it-v { flex: none; font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; }
+
+/* agenda vazia */
+.sd-vazio { display: flex; align-items: center; gap: 14px; margin: 6px 12px 8px; padding: 16px; border-radius: 16px; background: #FBF6F8; }
+.sd-vazio img { flex: none; object-fit: contain; }
+.sd-vazio b { display: block; font-size: 15px; font-weight: 500; }
+.sd-vazio span { display: block; margin-top: 2px; font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
+.sd-vazio-bt { display: inline-flex; align-items: center; min-height: 40px; margin: 10px 0 0; padding: 0 14px; border: 0; border-radius: 10px; background: var(--ui-rosa, #E8478C); color: #fff; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
+
+@media (prefers-reduced-motion: reduce) { .sd-prox { transition-duration: 1ms; } .sd-prox:active { transform: none; } }
