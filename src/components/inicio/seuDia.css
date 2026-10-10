@@ -4,7 +4,7 @@
 .sd-t { margin: 0; font-family: var(--font-base); font-size: 16px; font-weight: 600; line-height: 1.3; color: var(--ui-texto); }
 .sd-link { display: inline-flex; align-items: center; gap: 3px; min-height: 44px; margin: 0; padding: 0 8px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 13.5px; font-weight: 500; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; -webkit-appearance: none; appearance: none; }
 .sd-link:active { background: var(--ui-rosa-claro); }
-.sd-link:focus-visible, .sd-prox:focus-visible, .sd-chip:focus-visible, .sd-it:focus-visible, .sd-vazio-bt:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
+.sd-link:focus-visible, .sd-prox:focus-visible, .sd-chip:focus-visible, .sd-it:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
 
 .sd-x { margin: 4px 16px 10px; font-size: 15px; font-weight: 500; line-height: 1.45; color: var(--ui-texto-2); }
 .sd-carregando { animation: sdAparece 1ms linear 300ms both; }
@@ -54,6 +54,5 @@
 .sd-vazio img { flex: none; object-fit: contain; }
 .sd-vazio b { display: block; font-size: 15px; font-weight: 500; }
 .sd-vazio span { display: block; margin-top: 2px; font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
-.sd-vazio-bt { display: inline-flex; align-items: center; min-height: 40px; margin: 10px 0 0; padding: 0 14px; border: 0; border-radius: 10px; background: var(--ui-rosa, #E8478C); color: #fff; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
 
 @media (prefers-reduced-motion: reduce) { .sd-prox { transition-duration: 1ms; } .sd-prox:active { transform: none; } }

@@ -8,7 +8,7 @@ import "./seuDia.css";
  * - A próxima entrega de hoje em destaque (horário grande, quanto falta, cliente e o que vai).
  * - Alertas em etiquetas pequenas, só quando existem: atrasados, pra aceitar, entregas de hoje.
  * - As próximas entregas com o dia em formato de calendário.
- * - Sem entrega hoje: faixa "Nada pra entregar hoje". Sem nada marcado: mascote + "Nova venda".
+ * - Sem entrega hoje: faixa "Nada pra entregar hoje". Sem nada marcado: mascote e "Sua agenda está livre".
  * Pesos leves (pedido do dono): título e números 600; nomes, valores e etiquetas 500.
  */
 export interface EntregaResumo {
@@ -89,7 +89,6 @@ export default function SeuDia({ carregando, erro, aoTentar, entregasHoje, atras
           <div>
             <b>Sua agenda está livre</b>
             <span>Quando chegar um pedido, ele aparece aqui.</span>
-            <button type="button" className="sd-vazio-bt" onClick={() => navigate("/vendas/novo")}>Nova venda</button>
           </div>
         </div>
       ) : (
