@@ -1779,7 +1779,7 @@ export default function EditarPedido() {
         .ep-header-info { padding: 4px 16px 12px; }
         .ep-header-cliente {
           font-size: 14px;
-          font-weight: 600;
+          font-weight: 700;
           color: #2C2C2A;
           letter-spacing: -0.005em;
         }
@@ -1805,7 +1805,7 @@ export default function EditarPedido() {
           background: #F1EFE8;
           color: #5F5E5A;
           font-size: 12px;
-          font-weight: 600;
+          font-weight: 700;
           padding: 4px 10px;
           border-radius: 999px;
         }
@@ -1823,7 +1823,7 @@ export default function EditarPedido() {
           padding: 10px 4px;
           text-align: center;
           font-size: 12.5px;
-          font-weight: 600;
+          font-weight: 500;
           color: #888780;
           cursor: pointer;
           display: flex;
@@ -1865,7 +1865,7 @@ export default function EditarPedido() {
         .ep-label {
           display: block;
           font-size: 12px;
-          font-weight: 600;
+          font-weight: 700;
           color: #5F5E5A;
           margin-bottom: 6px;
           letter-spacing: -0.005em;
@@ -1956,7 +1956,7 @@ export default function EditarPedido() {
           border: 1px solid #E8E5DC;
           border-radius: 8px;
           font-size: 12.5px;
-          font-weight: 600;
+          font-weight: 700;
           color: #5F5E5A;
           cursor: pointer;
           flex-shrink: 0;
@@ -1976,7 +1976,7 @@ export default function EditarPedido() {
           justify-content: center;
           gap: 8px;
           font-size: 14px;
-          font-weight: 600;
+          font-weight: 700;
           color: #5F5E5A;
           cursor: pointer;
           transition: background 0.15s, border-color 0.15s;
@@ -2021,7 +2021,7 @@ export default function EditarPedido() {
           align-items: center;
           gap: 3px;
           font-size: 12.5px;
-          font-weight: 600;
+          font-weight: 700;
           color: #E85A8C;
           flex-shrink: 0;
         }
@@ -2047,7 +2047,7 @@ export default function EditarPedido() {
           padding: 10px 12px;
           border-radius: 8px;
           font-size: 13.5px;
-          font-weight: 600;
+          font-weight: 700;
           color: #2C2C2A;
           cursor: pointer;
           width: 100%;
@@ -2112,7 +2112,7 @@ export default function EditarPedido() {
           border-radius: 12px;
           text-align: center;
           font-size: 14px;
-          font-weight: 600;
+          font-weight: 700;
           color: #5F5E5A;
           cursor: pointer;
           display: flex;
@@ -2145,7 +2145,7 @@ export default function EditarPedido() {
           border: 1px solid #E8E5DC;
           border-radius: 999px;
           font-size: 12.5px;
-          font-weight: 600;
+          font-weight: 700;
           color: #5F5E5A;
           cursor: pointer;
           background: #fff;
@@ -2190,7 +2190,7 @@ export default function EditarPedido() {
         .ep-footer-total-label {
           font-size: 13px;
           color: #5F5E5A;
-          font-weight: 600;
+          font-weight: 700;
         }
         .ep-footer-total-val {
           font-size: 18px;
@@ -2469,7 +2469,7 @@ export default function EditarPedido() {
           font-size: 12.5px;
           color: #888780;
           margin-top: 4px;
-          font-weight: 600;
+          font-weight: 500;
         }
 
         .ep-cnc-section {
@@ -2509,7 +2509,7 @@ export default function EditarPedido() {
           border: 1px solid #E8E5DC;
           border-radius: 999px;
           font-size: 12.5px;
-          font-weight: 600;
+          font-weight: 700;
           color: #5F5E5A;
           cursor: pointer;
           background: #fff;
@@ -2694,7 +2694,7 @@ export default function EditarPedido() {
         .ep-tl-card-cli {
           font-size: 12.5px;
           color: #888780;
-          font-weight: 600;
+          font-weight: 500;
           margin-top: 4px;
           display: inline-flex;
           align-items: center;
@@ -2713,7 +2713,7 @@ export default function EditarPedido() {
         .ep-tl-info-label {
           font-size: 13px;
           color: #888780;
-          font-weight: 600;
+          font-weight: 500;
           margin-bottom: 4px;
         }
         .ep-tl-info-val {
@@ -2822,12 +2822,12 @@ export default function EditarPedido() {
         }
         .ep-tl-step--pendente .ep-tl-step-label {
           color: #B4B2A9;
-          font-weight: 600;
+          font-weight: 700;
         }
         .ep-tl-step-data {
           font-size: 13px;
           color: #888780;
-          font-weight: 600;
+          font-weight: 500;
           flex-shrink: 0;
           margin-top: 2px;
         }
@@ -2963,7 +2963,7 @@ export default function EditarPedido() {
           border-top: 1px solid #E8E5DC;
           font-size: 13px;
           color: #5F5E5A;
-          font-weight: 600;
+          font-weight: 700;
         }
         .ep-pag-sit-pendente {
           color: #B91C1C;
@@ -2983,7 +2983,7 @@ export default function EditarPedido() {
           align-items: center;
           font-size: 13px;
           color: #5F5E5A;
-          font-weight: 600;
+          font-weight: 700;
           margin-bottom: 8px;
         }
         .ep-pag-resumo-row:last-child { margin-bottom: 0; }
@@ -3090,7 +3090,7 @@ export default function EditarPedido() {
           justify-content: space-between;
           font-size: 13px;
           color: #5F5E5A;
-          font-weight: 600;
+          font-weight: 700;
           margin-bottom: 6px;
           font-variant-numeric: tabular-nums;
         }
@@ -3109,7 +3109,7 @@ export default function EditarPedido() {
         }
         .ep-section-count {
           font-size: 13px;
-          font-weight: 600;
+          font-weight: 500;
           color: #888780;
           margin-left: 4px;
         }
@@ -3254,7 +3254,7 @@ export default function EditarPedido() {
           gap: 5px;
           padding: 6px 10px;
           font-size: 12.5px;
-          font-weight: 600;
+          font-weight: 700;
           color: #B91C1C;
           cursor: pointer;
           border-radius: 8px;
@@ -3296,7 +3296,7 @@ export default function EditarPedido() {
           border-top: 1px solid #F1EFE8;
           font-size: 13px;
           color: #5F5E5A;
-          font-weight: 600;
+          font-weight: 700;
         }
         .ep-subtotal-val {
           font-size: 15px;
@@ -3322,7 +3322,7 @@ export default function EditarPedido() {
           align-items: center;
           justify-content: space-between;
           font-size: 13.5px;
-          font-weight: 600;
+          font-weight: 700;
           color: #5F5E5A;
           cursor: pointer;
           background: #fff;
@@ -3357,7 +3357,7 @@ export default function EditarPedido() {
           justify-content: space-between;
           border-radius: 8px;
           font-size: 13px;
-          font-weight: 600;
+          font-weight: 700;
           color: #2C2C2A;
           cursor: pointer;
           transition: background 0.12s;
@@ -3541,7 +3541,7 @@ const EP2_CSS = `
   .ep2-ca-top { display: flex; align-items: center; gap: 10px; width: 100%; border: none; background: none; padding: 0; font-family: inherit; text-align: left; color: #2C1219; cursor: pointer; }
   .ep2-ca .ep2-av, .ep2-cv .ep2-av { width: 44px; height: 44px; background: #F1EDEF; color: #6B5D64; object-fit: cover; }
   .ep2-av.vz { border: 2px dashed #DDD0D6; color: #A99BA2; } .ep2-av.vz svg { width: 18px; height: 18px; }
-  .ep2-ca .ep2-cli-t b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; } .ep2-cli-rot { font-weight: 600; color: #8A7E84; }
+  .ep2-ca .ep2-cli-t b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; } .ep2-cli-rot { font-weight: 700; color: #8A7E84; }
   .ep2-ca .ep2-cli-t small, .ep2-cv .ep2-cli-t small { display: block; line-height: 1.35; margin-top: 2px; }
   .ep2-ca .ep2-tag { display: table; }
   .ep2-ca-chev { color: #C9BEC3; flex-shrink: 0; }
@@ -3554,7 +3554,7 @@ const EP2_CSS = `
   .ep2-ca-bts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
   .ep2-cb { display: flex; align-items: center; justify-content: center; gap: 5px; border: 1.5px solid #EDE6E9; background: #fff; border-radius: 11px; padding: 9px 4px; font-family: inherit; font-size: 13px; font-weight: 700; color: #4B3A42; text-decoration: none; cursor: pointer; }
   .ep2-cb.wa { background: #16A34A; border-color: #16A34A; color: #fff; }
-  .ep2-cb.mute { grid-column: span 2; color: #9A8E94; font-weight: 600; border-style: dashed; } .ep2-cb.mute u { color: #C33A6E; font-weight: 700; }
+  .ep2-cb.mute { grid-column: span 2; color: #9A8E94; font-weight: 500; border-style: dashed; } .ep2-cb.mute u { color: #C33A6E; font-weight: 700; }
   .ep2-add { display: inline-flex; align-items: center; gap: 4px; border: none; background: #E85A8C; color: #fff; border-radius: 10px; padding: 9px 11px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
   /* itens (03/10): fechados com resumo no celular, abrem ao tocar; no computador ficam abertos */
   .ep2-sec-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; }
@@ -3628,7 +3628,7 @@ const EP2_CSS = `
   .ep2-acts > * { display: flex; align-items: center; justify-content: center; gap: 5px; border: 1.5px solid #EDE6E9; background: #fff; border-radius: 11px; padding: 10px 4px; font-family: inherit; font-size: 13px; font-weight: 700; color: #4B3A42; text-decoration: none; cursor: pointer; }
   .ep2-acts > .wa { background: #16A34A; border-color: #16A34A; color: #fff; }
   .ep2-usar { display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left; background: #FFF1F6; border: 1.5px dashed #F3A9C6; border-radius: 12px; padding: 10px 12px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #C33A6E; cursor: pointer; margin-bottom: 4px; }
-  .ep2-usar span { font-weight: 600; color: #6B5D64; font-size: 12.5px; }
+  .ep2-usar span { font-weight: 500; color: #6B5D64; font-size: 12.5px; }
   .ep2-lb { display: block; font-size: 12.5px; font-weight: 700; color: #4B3A42; margin: 10px 0 5px; }
   .ep2-in { width: 100%; box-sizing: border-box; height: 46px; border: 1.5px solid #EDE6E9; border-radius: 11px; padding: 0 12px; font-family: inherit; font-size: 15px; color: #2C1219; background: #fff; min-width: 0; }
   div.ep2-in { display: flex; align-items: center; gap: 8px; } div.ep2-in input { flex: 1; min-width: 0; border: none; outline: none; font: inherit; color: inherit; background: none; height: 100%; }
@@ -3650,7 +3650,7 @@ const EP2_CSS = `
   /* ══ itens do pedido (03/10): modelo aprovado — nome numa linha, campos com rótulo, adicionais em caixinhas
         (uma por linha), referência grande e centralizada, valor no fim. Nada quebra linha (só o recado). ══ */
   .ep3 { background: #fff; border-radius: 16px; padding: 14px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(44,18,25,.05), 0 8px 22px -6px rgba(44,18,25,.10); border: 1px solid #EADFE4; font-variant-numeric: tabular-nums; }
-  .ep3-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; } .ep3-h b { font-size: 15.5px; font-weight: 700; color: #2C1219; } .ep3-h span { font-size: 12.5px; font-weight: 600; color: #9A8E94; }
+  .ep3-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; } .ep3-h b { font-size: 15.5px; font-weight: 700; color: #2C1219; } .ep3-h span { font-size: 12.5px; font-weight: 500; color: #9A8E94; }
   .ep3-it { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 10px; padding: 13px 0; border-top: 1px solid #F2ECEF; }
   .ep3-h + .ep3-it { border-top: none; }
   .ep3-c { min-width: 0; }
@@ -3661,7 +3661,7 @@ const EP2_CSS = `
   .ep3-nm em { font-style: normal; font-weight: 700; color: #C33A6E; }
   .ep3-cp { margin: 0; font-size: 13.5px; color: #2C1219; line-height: 1.55; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ep3-cp span { color: #8A7E84; }
   .ep3-ads { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; margin-top: 3px; min-width: 0; } .ep3-ads > span:first-child { font-size: 13.5px; color: #8A7E84; }
-  .ep3-ad { display: inline-flex; gap: 5px; max-width: 100%; box-sizing: border-box; white-space: nowrap; font-size: 12.5px; font-weight: 600; color: #2C1219; border: 1.5px solid #E8DDE2; border-radius: 8px; padding: 3px 9px; background: #fff; }
+  .ep3-ad { display: inline-flex; gap: 5px; max-width: 100%; box-sizing: border-box; white-space: nowrap; font-size: 12.5px; font-weight: 700; color: #2C1219; border: 1.5px solid #E8DDE2; border-radius: 8px; padding: 3px 9px; background: #fff; }
   .ep3-ad > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; } /* só o nome encolhe */
   .ep3-ad b { flex-shrink: 0; font-weight: 700; color: #C33A6E; } /* o valor fica sempre visível */
   .ep3-obs { margin-top: 10px; } .ep3-obs small { display: block; font-size: 12px; font-weight: 700; color: #8A7E84; }
@@ -3672,7 +3672,7 @@ const EP2_CSS = `
   .ep3-conta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed #EDE4E8; }
   .ep3-conta small { display: block; font-size: 13px; color: #A99CA2; margin-bottom: 2px; }
   .ep3-conta p { display: flex; justify-content: space-between; gap: 10px; margin: 0; font-size: 13px; line-height: 1.6; white-space: nowrap; }
-  .ep3-conta p span { color: #8A7E84; overflow: hidden; text-overflow: ellipsis; } .ep3-conta p b { font-weight: 600; color: #2C1219; }
+  .ep3-conta p span { color: #8A7E84; overflow: hidden; text-overflow: ellipsis; } .ep3-conta p b { font-weight: 700; color: #2C1219; }
   .ep3-conta p.promo span, .ep3-conta p.promo b { color: #15803D; }
   .ep3-conta + .ep3-vl { margin-top: 4px; }
   .ep3-vl { display: flex; align-items: center; gap: 6px; margin-top: 9px; } .ep3-vl > span { font-size: 13.5px; color: #8A7E84; } .ep3-vl small { font-size: 12px; color: #A99CA2; white-space: nowrap; }
@@ -3684,7 +3684,7 @@ const EP2_CSS = `
   .ep3-pv p { margin: 2px 0 0; font-size: 12.5px; color: #8A7E84; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ep3-pv-d { margin-top: 4px; }
   .ep3-pv-d p { display: flex; justify-content: space-between; gap: 10px; margin: 0; font-size: 12.5px; line-height: 1.65; color: #8A7E84; white-space: nowrap; }
-  .ep3-pv-d p span { min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px; } .ep3-pv-d p b { font-weight: 600; color: #6B5D64; flex-shrink: 0; }
+  .ep3-pv-d p span { min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px; } .ep3-pv-d p b { font-weight: 500; color: #6B5D64; flex-shrink: 0; }
   .ep3-pv-d p.pr span, .ep3-pv-d p.pr b { color: #15803D; }
   .ep3-pv-itens { margin-top: 6px; }
   .ep3-tot { margin-top: 4px; padding-top: 10px; border-top: 1px solid #2C1219; } .ep3-tot > span { font-size: 12px; color: #9A8E94; }
@@ -3721,7 +3721,7 @@ const EP2_CSS = `
   .ep2-rm { display: inline-flex; align-items: center; gap: 5px; border: none; background: none; font-family: inherit; font-size: 13px; font-weight: 700; color: #DC2626; cursor: pointer; padding: 6px 2px; }
   .ep2-addi { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; border: 2px dashed #F3C9DA; border-radius: 12px; padding: 12px; background: #FFF6F9; color: #C33A6E; font-family: inherit; font-weight: 700; font-size: 14px; cursor: pointer; }
   .ep2-ajs { display: flex; flex-direction: column; gap: 3px; margin-top: 8px; font-size: 12px; color: #9A8E94; }
-  .ep2-aj { display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; border: none; background: none; padding: 4px 0; font-family: inherit; font-size: 12.5px; font-weight: 600; color: #B0809A; cursor: pointer; } /* mais leve */
+  .ep2-aj { display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; border: none; background: none; padding: 4px 0; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #B0809A; cursor: pointer; } /* mais leve */
   .ep2-vazio { margin: 2px 0 6px; font-size: 13px; color: #888780; line-height: 1.45; }
   .ep2-pg { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid #F5F0F2; } .ep2-pg:first-of-type { border-top: none; }
   .ep2-pg-ic { width: 32px; height: 32px; border-radius: 10px; background: #DCFCE7; color: #15803D; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -3745,7 +3745,7 @@ const EP2_CSS = `
   html.teclado-aberto .ep2-foot { bottom: var(--teclado, 0px); }
   .ep2-foot .ep2-mud { grid-column: 1 / -1; }
   @keyframes ep2Sobe { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
-  .ep2-toast { position: fixed; left: 50%; bottom: calc(150px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 1400; display: inline-flex; align-items: center; gap: 8px; background: #fff; color: #2C1219; padding: 9px 15px 9px 11px; border-radius: 99px; border: 1px solid #EDE4E8; font-size: 13px; font-weight: 600; box-shadow: 0 6px 18px -6px rgba(44,18,25,.25); max-width: calc(100vw - 32px); white-space: nowrap; animation: ep2ToastIn .2s ease; }
+  .ep2-toast { position: fixed; left: 50%; bottom: calc(150px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 1400; display: inline-flex; align-items: center; gap: 8px; background: #fff; color: #2C1219; padding: 9px 15px 9px 11px; border-radius: 99px; border: 1px solid #EDE4E8; font-size: 13px; font-weight: 700; box-shadow: 0 6px 18px -6px rgba(44,18,25,.25); max-width: calc(100vw - 32px); white-space: nowrap; animation: ep2ToastIn .2s ease; }
   .ep2-toast::before { content: "✓"; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: #DCFCE7; color: #15803D; font-size: 12px; font-weight: 700; flex-shrink: 0; }
   @keyframes ep2ToastIn { from { opacity: 0; transform: translate(-50%, 6px); } to { opacity: 1; transform: translate(-50%, 0); } }
   .ep2-ov { position: fixed; inset: 0; z-index: 1300; background: rgba(45,31,38,.5); display: flex; align-items: flex-end; justify-content: center; font-family: var(--font-base); }

@@ -854,7 +854,7 @@ export default function Auth() {
           color: var(--primary);
           font-family: inherit;
           font-size: 0.82rem;
-          font-weight: 600;
+          font-weight: 700;
           cursor: pointer;
           transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
           box-shadow: 0 4px 14px rgba(60, 15, 40, 0.2);
@@ -876,7 +876,7 @@ export default function Auth() {
         }
         .auth-rodape { position: relative; z-index: 3; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding-top: 18px; color: rgba(255,255,255,.72); font-size: 12.5px; white-space: nowrap; }
         .auth-rodape div { display: flex; gap: 8px; align-items: center; }
-        .auth-rodape a { display: inline-flex; align-items: center; min-height: 44px; color: inherit; font-weight: 600; text-decoration: none; padding: 0 2px; -webkit-tap-highlight-color: transparent; }
+        .auth-rodape a { display: inline-flex; align-items: center; min-height: 44px; color: inherit; font-weight: 700; text-decoration: none; padding: 0 2px; -webkit-tap-highlight-color: transparent; }
         .auth-rodape a:hover { color: #fff; text-decoration: underline; }
         .auth-rodape em { font-style: normal; font-size: 12px; opacity: .8; }
         .mouse-glow { position: fixed; z-index: 1; width: 350px; height: 350px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%); transform: translate(-50%, -50%); pointer-events: none; will-change: transform; opacity: 0; transition: opacity .4s ease; }
@@ -930,7 +930,7 @@ export default function Auth() {
         .field input:focus { border-color: var(--border-focus) !important; } /* foco discreto: só a borda rosa, sem brilho */
         .field input[aria-invalid="true"]:focus { border-color: var(--error) !important; }
         .field input::placeholder { color: var(--text-muted); }
-        .field-error { font-size: 12.5px; font-weight: 600; color: var(--error); padding-left: 2px; }
+        .field-error { font-size: 12.5px; font-weight: 700; color: var(--error); padding-left: 2px; }
         .password-wrap { position: relative; }
         .password-wrap input { padding-right: 3rem; }
         .eye-btn { position: absolute; right: 3px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; background: none; border: none; border-radius: 10px; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -946,7 +946,7 @@ export default function Auth() {
         .forgot-link:hover { text-decoration: underline; }
         .auth-error { background: #fff1f2; border: 1px solid #fecdd3; color: var(--error); border-radius: var(--radius-sm); padding: 0.6rem 0.9rem; font-size: var(--font-button); }
         .cadastro-link-wrap { text-align: center; font-size: var(--font-button); color: var(--text-secondary); }
-        .cadastro-link { background: none; border: none; color: var(--primary); font-weight: var(--fw-semibold); cursor: pointer; font-family: inherit; font-size: var(--font-button); text-decoration: underline; -webkit-tap-highlight-color: transparent;  padding: 0 4px; min-height: 44px; font-weight: 700; color: #C33A6E; }
+        .cadastro-link { background: none; border: none; color: var(--primary); font-weight: 700; cursor: pointer; font-family: inherit; font-size: var(--font-button); text-decoration: underline; -webkit-tap-highlight-color: transparent;  padding: 0 4px; min-height: 44px; font-weight: 700; color: #C33A6E; }
         .spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .auth-divider { display: flex; align-items: center; gap: 0.75rem; color: var(--text-muted); font-size: var(--font-helper); }
@@ -1047,7 +1047,7 @@ export default function Auth() {
         .cad-icon { margin-right: 1.5rem; flex-shrink: 0; color: var(--text-muted); }
         .cad-eye { background: none; border: none; cursor: pointer; padding: 0 0.85rem; height: 46px; min-width: 44px; justify-content: center; display: flex; align-items: center; color: var(--text-muted); flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
         .cad-eye:hover { color: var(--primary); }
-        .cad-error { font-size: 12.5px; color: var(--error); padding-left: 2px; font-weight: 600; }
+        .cad-error { font-size: 12.5px; color: var(--error); padding-left: 2px; font-weight: 700; }
         .cad-btn { margin-top: 0.5rem; }
 
         .cad-header {
@@ -1124,7 +1124,7 @@ export default function Auth() {
         .pw-req li.ok { color: #16A34A; }
         .pw-req-dot { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
         .pw-req li.ok .pw-req-dot { color: #16A34A; }
-        .pw-req-done { display: flex; align-items: center; gap: 0.4rem; padding: 0.25rem 1.25rem 0; font-size: 0.75rem; font-weight: 600; color: #16A34A; animation: pwDoneIn 0.25s ease both; }
+        .pw-req-done { display: flex; align-items: center; gap: 0.4rem; padding: 0.25rem 1.25rem 0; font-size: 0.75rem; font-weight: 700; color: #16A34A; animation: pwDoneIn 0.25s ease both; }
         .pw-req-done .pw-req-dot { color: #16A34A; }
         @keyframes pwDoneIn { from { opacity: 0; transform: translateY(-2px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -1144,7 +1144,7 @@ export default function Auth() {
         }
         .auth-alert-icon { color: var(--primary); flex-shrink: 0; display: flex; align-items: center; margin-top: 1px; }
         .auth-alert-body { display: flex; flex-direction: column; gap: 0.15rem; line-height: 1.35; }
-        .auth-alert-body strong { font-weight: 600; color: var(--text-title); }
+        .auth-alert-body strong { font-weight: 700; color: var(--text-title); }
         .auth-alert-link {
           background: none;
           border: none;
@@ -1152,7 +1152,7 @@ export default function Auth() {
           color: var(--primary);
           font-family: inherit;
           font-size: var(--font-button);
-          font-weight: 600;
+          font-weight: 700;
           cursor: pointer;
           text-align: left;
           text-decoration: underline;

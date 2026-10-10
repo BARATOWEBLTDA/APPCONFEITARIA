@@ -271,7 +271,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         .vgd-k { border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 14px; }
         .vgd-k small { display: block; font-size: 12px; font-weight: 700; color: #9A8E94; }
         .vgd-k b { display: block; font-size: 22px; font-weight: 800; margin-top: 2px; }
-        .vgd-k em { font-style: normal; font-size: 13px; font-weight: 700; color: #15803D; } .vgd-k em.down { color: #B91C1C; } .vgd-k em.n { color: #9A8E94; font-weight: 600; }
+        .vgd-k em { font-style: normal; font-size: 13px; font-weight: 700; color: #15803D; } .vgd-k em.down { color: #B91C1C; } .vgd-k em.n { color: #9A8E94; font-weight: 500; }
         .vgd-bars { display: flex; align-items: flex-end; gap: 12px; height: 120px; margin-top: 16px; }
         .vgd-bars--30 { gap: 3px; }
         .vgd-bar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 5px; min-width: 0; }

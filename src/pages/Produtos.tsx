@@ -2404,7 +2404,7 @@ function PersonalizacaoStep({
           font-size: 13px;
           color: #2D1F26;
           font-family: inherit;
-          font-weight: 600;
+          font-weight: 700;
         }
         .pv3-unidade-item:hover { background: #FAF8F5; }
         .pv3-unidade-item--ativo {
@@ -2712,7 +2712,7 @@ function PersonalizacaoStep({
           color: #2D1F26;
           text-align: right;
         }
-        .pv3-opcao-serve-suf { font-size: 12px; color: #6B7280; white-space: nowrap; font-weight: 600; }
+        .pv3-opcao-serve-suf { font-size: 12px; color: #6B7280; white-space: nowrap; font-weight: 700; }
         .pv3-opcao-preco:focus-within { border-color: #E85A8C; }
         .pv3-opcao-preco-prefix { font-size: 13px; font-weight: 700; color: #E85A8C; white-space: nowrap; }
         .pv3-opcao-preco input {
@@ -2983,7 +2983,7 @@ function PersonalizacaoStep({
         }
         .pv3-serve-d input::placeholder {
           font-size: 13px;
-          font-weight: 600;
+          font-weight: 700;
           color: #C0B3B8;
           text-align: left;
           letter-spacing: 0;
@@ -4379,7 +4379,7 @@ export default function Produtos() {
   const TagList = ({ items, onRemove }: { items: string[], onRemove: (i: number) => void }) => (
     <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "6px" }}>
       {items.map((item, i) => (
-        <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", background: "var(--primary-light)", color: "var(--primary-dark)", borderRadius: "50px", fontSize: "0.8rem", fontWeight: 600 }}>
+        <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", background: "var(--primary-light)", color: "var(--primary-dark)", borderRadius: "50px", fontSize: "0.8rem", fontWeight: 700 }}>
           {item}
           <button onClick={() => onRemove(i)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--primary-dark)", padding: 0, lineHeight: 1, fontSize: "0.85rem" }}>×</button>
         </span>
@@ -5752,7 +5752,7 @@ export default function Produtos() {
                     <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "var(--primary-light)", borderRadius: "10px", marginBottom: "6px", border: "1px solid var(--primary-light)" }}>
                       <div>
                         <span style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary)" }}>{item.nome}</span>
-                        <span style={{ fontSize: "0.8rem", color: "var(--primary)", marginLeft: "8px", fontWeight: 600 }}>× {item.quantidade}</span>
+                        <span style={{ fontSize: "0.8rem", color: "var(--primary)", marginLeft: "8px", fontWeight: 700 }}>× {item.quantidade}</span>
                       </div>
                       <button onClick={() => setForm(f => ({ ...f, kit_itens: (f.kit_itens || []).filter((_, idx) => idx !== i) }))} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--error)", fontSize: "1.1rem", padding: 0 }}>×</button>
                     </div>
@@ -5938,7 +5938,7 @@ export default function Produtos() {
                         </div>
                         {form.desconto_percentual > 0 && form.preco_normal > 0 && (
                           <div style={{ marginTop: "6px", padding: "8px 12px", background: "#dcfce7", borderRadius: "8px" }}>
-                            <p style={{ fontSize: "0.78rem", color: "var(--success)", fontWeight: 600, margin: 0 }}>
+                            <p style={{ fontSize: "0.78rem", color: "var(--success)", fontWeight: 700, margin: 0 }}>
                               Preço base: R$ {formatPreco(form.preco_normal)} → R$ {formatPreco(form.preco_normal * (1 - (form.desconto_percentual || 0) / 100))}
                             </p>
                             {(form.tamanhos_disponiveis || []).length > 0 && (
@@ -5961,7 +5961,7 @@ export default function Produtos() {
                           <input type="text" placeholder="0,00" value={form.preco_promocional ? formatPreco(form.preco_promocional) : ""} onChange={e => setForm(f => ({ ...f, preco_promocional: parsePreco(e.target.value) }))} />
                         </div>
                         {form.preco_normal > 0 && form.preco_promocional > 0 && (
-                          <p style={{ fontSize: "0.75rem", color: "var(--primary)", fontWeight: 600, margin: "4px 0 0" }}>
+                          <p style={{ fontSize: "0.75rem", color: "var(--primary)", fontWeight: 700, margin: "4px 0 0" }}>
                             Desconto de {Math.round((1 - form.preco_promocional / form.preco_normal) * 100)}%
                           </p>
                         )}
@@ -6478,7 +6478,7 @@ export default function Produtos() {
       <style>{`
         /* ── Tabs ── */
         .prod-tabs { display:flex; gap:0.25rem; background:var(--border); border-radius: var(--radius-md); padding:4px; width:fit-content; margin-bottom:0.5rem; }
-        .prod-tab { display:flex; align-items:center; gap:0.4rem; padding:0.5rem 1.1rem; border-radius: var(--radius-md); border:none; background:transparent; font-family:'Geist',sans-serif; font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--text-secondary); cursor:pointer; transition:all 0.18s; white-space:nowrap; }
+        .prod-tab { display:flex; align-items:center; gap:0.4rem; padding:0.5rem 1.1rem; border-radius: var(--radius-md); border:none; background:transparent; font-family:'Geist',sans-serif; font-size: var(--font-button); font-weight: 500; color:var(--text-secondary); cursor:pointer; transition:all 0.18s; white-space:nowrap; }
         .prod-tab:hover { color:var(--text-title); background:rgba(255,255,255,0.6); }
         .prod-tab--active { background:var(--bg-card); color:var(--primary); box-shadow:0 1px 4px rgba(0,0,0,0.08); }
         @media(max-width:640px) { .prod-tabs { width:100%; } .prod-tab { flex:1; justify-content:center; padding:0.5rem 0.25rem; font-size: var(--font-helper); } }
@@ -7105,7 +7105,7 @@ export default function Produtos() {
         .prod-card-bottom { margin-top:auto; }
         .prod-card-cat { font-size: 0.75rem; color:var(--text-muted); font-weight: var(--fw-medium); margin:0 0 0.15rem; }
         .prod-card-nome { font-size: var(--font-button); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 0.25rem; line-height:1.3; }
-        .prod-card-preco { font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--success); margin:0; }
+        .prod-card-preco { font-size: var(--font-button); font-weight: 700; color:var(--success); margin:0; }
         /* 09/10: preço "de/por" não quebra mais no meio ("R$" numa linha e o valor na outra) */
         .prod-card-preco { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; row-gap: 0; }
         .prod-card-por { white-space: nowrap; }
@@ -7125,7 +7125,7 @@ export default function Produtos() {
         }
         .prod-card-lucro-label {
           font-size: var(--font-caption);
-          font-weight: var(--fw-semibold);
+          font-weight: 700;
           opacity: 0.75;
         }
         .prod-card-lucro strong {
@@ -7150,7 +7150,7 @@ export default function Produtos() {
           color: var(--primary-dark);
           font-family: var(--font-base);
           font-size: var(--font-caption);
-          font-weight: var(--fw-semibold);
+          font-weight: 700;
           cursor: pointer;
           text-align: center;
           width: 100%;
@@ -7162,7 +7162,7 @@ export default function Produtos() {
           transform: translateY(-1px);
         }
         .prod-card-actions { display:flex; gap:0.4rem; padding:0.5rem 0.75rem; border-top:1px solid var(--border); }
-        .prod-card-btn-edit { flex:1; padding:0.4rem; background:var(--bg-subtle); border:none; border-radius: var(--radius-sm); font-family: var(--font-base); font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--text-primary); cursor:pointer; }
+        .prod-card-btn-edit { flex:1; padding:0.4rem; background:var(--bg-subtle); border:none; border-radius: var(--radius-sm); font-family: var(--font-base); font-size: var(--font-helper); font-weight: 700; color:var(--text-primary); cursor:pointer; }
         .prod-card-btn-del { padding:0.4rem 0.6rem; background:#fff1f2; border:none; border-radius: var(--radius-sm); color:var(--error); cursor:pointer; display:flex; align-items:center; }
         /* ── Modal de Preview do Produto (abre ao clicar no card) ── */
         .prod-preview-overlay {
@@ -7345,7 +7345,7 @@ export default function Produtos() {
           font-family: var(--font-base);
           font-size: var(--font-caption);
           color: var(--text-secondary);
-          font-weight: var(--fw-semibold);
+          font-weight: 500;
           letter-spacing: 0.03em;
         }
         .prod-preview-info-valor {
@@ -7837,11 +7837,11 @@ export default function Produtos() {
         .prod-section-label { font-size: var(--font-section-label); font-weight: var(--fw-bold); line-height: var(--lh-normal); letter-spacing: var(--ls-wide); color: var(--primary); margin: 0; }
         .prod-img-upload { width: 120px; height: 120px; border-radius: var(--radius-lg); border: 2px dashed var(--primary-light); background: var(--primary-light); cursor: pointer; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; transition: border-color var(--dur-fast) var(--ease-out); }
         .prod-img-placeholder { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-3); text-align: center; }
-        .prod-img-placeholder p { font-size: var(--font-helper); font-weight: var(--fw-semibold); line-height: var(--lh-normal); color: var(--text-primary); margin: 0; }
+        .prod-img-placeholder p { font-size: var(--font-helper); font-weight: 700; line-height: var(--lh-normal); color: var(--text-primary); margin: 0; }
         .prod-img-placeholder span { font-size: var(--font-caption); font-weight: var(--fw-regular); color: var(--text-muted); }
         .prod-img-remove { position: absolute; top: var(--space-1); right: var(--space-1); background: rgba(0,0,0,0.5); border: none; border-radius: 50%; width: 22px; height: 22px; color: var(--text-inverse); font-size: var(--font-caption); cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .prod-field { display: flex; flex-direction: column; gap: var(--space-1); }
-        .prod-field label { font-size: var(--font-field-label); font-weight: var(--fw-semibold); line-height: var(--lh-normal); color: var(--text-secondary); }
+        .prod-field label { font-size: var(--font-field-label); font-weight: 500; line-height: var(--lh-normal); color: var(--text-secondary); }
         .prod-field input, .prod-field select, .prod-field textarea { padding: var(--pad-input); border: 1.5px solid var(--border); border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-medium); line-height: var(--lh-normal); color: var(--text-title); background: var(--bg-input); outline: none; transition: border-color var(--dur-fast) var(--ease-out); width: 100%; box-sizing: border-box; }
         .prod-field input:focus, .prod-field select:focus, .prod-field textarea:focus { border-color: var(--border-focus); }
         .prod-field textarea { resize: none; }
@@ -7854,7 +7854,7 @@ export default function Produtos() {
         .prod-nova-cat input { flex: 1; padding: var(--space-2) var(--space-3); border: 1.5px solid var(--primary); border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-medium); outline: none; }
         .prod-nova-cat button { padding: var(--space-2) var(--space-3); background: var(--primary-gradient); color: var(--text-inverse); border: none; border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-bold); cursor: pointer; white-space: nowrap; transition: opacity var(--dur-fast) var(--ease-out); }
         .prod-toggles { display: flex; gap: var(--gap-stack); flex-wrap: wrap; }
-        .prod-toggle-item { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); background: var(--bg-subtle); cursor: pointer; font-size: var(--font-button); font-weight: var(--fw-semibold); line-height: var(--lh-normal); color: var(--text-primary); transition: all var(--dur-normal) var(--ease-out); flex: 1; min-width: 100px; }
+        .prod-toggle-item { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); background: var(--bg-subtle); cursor: pointer; font-size: var(--font-button); font-weight: 700; line-height: var(--lh-normal); color: var(--text-primary); transition: all var(--dur-normal) var(--ease-out); flex: 1; min-width: 100px; }
         .prod-toggle-item.active-green { background: #dcfce7; color: #15803d; }
         /* Modifier: sem background nos toggles (usado em "Disponível" e "Pronta entrega") */
         .prod-toggles--clean .prod-toggle-item,
@@ -7944,7 +7944,7 @@ export default function Produtos() {
         /* ── Wizard ── */
         .wiz-subtitle { font-size: var(--font-button); color: var(--text-secondary); margin: 0; line-height: var(--lh-relaxed); }
         .wiz-reassurance { font-size: var(--font-helper); color: var(--text-muted); margin: var(--space-1) 0 0; font-style: italic; }
-        .wiz-step-label { font-size: var(--font-caption); font-weight: var(--fw-semibold); color: var(--text-muted); margin: 0 0 var(--space-1); letter-spacing: var(--ls-wide); }
+        .wiz-step-label { font-size: var(--font-caption); font-weight: 500; color: var(--text-muted); margin: 0 0 var(--space-1); letter-spacing: var(--ls-wide); }
         .wiz-progress { display: flex; gap: var(--space-2); }
         .wiz-progress-bar { flex: 1; height: 4px; border-radius: 2px; background: var(--border); }
         .wiz-progress-bar--active { background: var(--primary); }
@@ -8562,7 +8562,7 @@ export default function Produtos() {
           font-size: 14px; font-weight: 700; color: #16A34A;
         }
         .prod-var-preco-un {
-          font-size: 12px; color: #6B5D64; font-weight: 600;
+          font-size: 12px; color: #6B5D64; font-weight: 500;
         }
 
         /* Botões editar/excluir */
@@ -8970,7 +8970,7 @@ export default function Produtos() {
         }
         .wiz-step1-card-desc {
           font-size: 12.5px;
-          font-weight: 600;
+          font-weight: 700;
           line-height: 1.4;
           opacity: 0.85;
         }
@@ -9128,7 +9128,7 @@ export default function Produtos() {
         .prod-modal-edit-nome {
           font-size: 12.5px;
           color: #6B5D64;
-          font-weight: 600;
+          font-weight: 500;
           margin-top: 2px;
         }
 
@@ -9762,7 +9762,7 @@ export default function Produtos() {
         .st-item-label {
           flex: 1;
           font-size: 13px;
-          font-weight: 600;
+          font-weight: 700;
           color: #2D1F26;
         }
         .st-item-remove {
@@ -9844,7 +9844,7 @@ export default function Produtos() {
           all: unset;
           width: 60px;
           font-size: 12.5px;
-          font-weight: 600;
+          font-weight: 700;
           color: #2D1F26;
           text-align: right;
         }
@@ -9901,7 +9901,7 @@ export default function Produtos() {
           border-radius: 10px;
           color: #78350F;
           font-size: 12.5px;
-          font-weight: 600;
+          font-weight: 700;
           margin-bottom: 14px;
         }
 
@@ -9978,11 +9978,11 @@ export default function Produtos() {
         .st-combo-sep {
           font-size: 12px;
           color: #B4A9AE;
-          font-weight: 600;
+          font-weight: 700;
         }
         .st-combo-tam {
           font-size: 12.5px;
-          font-weight: 600;
+          font-weight: 500;
           color: #6B5D64;
           padding: 2px 8px;
           background: #F0EBED;
@@ -10140,7 +10140,7 @@ export default function Produtos() {
         .prod-slot-lock-txt {
           font-size: 12px;
           color: #F5B8CD;
-          font-weight: 600;
+          font-weight: 700;
           font-family: var(--font-base);
           letter-spacing: 0.02em;
         }
@@ -10702,7 +10702,7 @@ export default function Produtos() {
         .prod-var-preco-tachado {
           font-size: 12px; color: #9A8B93;
           text-decoration: line-through;
-          font-weight: 600;
+          font-weight: 700;
         }
 
         /* Responsivo mobile pro toggle */
@@ -11221,7 +11221,7 @@ export default function Produtos() {
           border-radius: var(--radius-md);
           font-family: inherit;
           font-size: var(--font-button);
-          font-weight: var(--fw-semibold);
+          font-weight: 500;
           color: var(--text-secondary);
           cursor: pointer;
           transition: all var(--dur-fast) var(--ease-out);
@@ -11303,7 +11303,7 @@ export default function Produtos() {
           padding: 0.45rem 0.95rem;
           font-family: inherit;
           font-size: var(--font-helper);
-          font-weight: var(--fw-semibold);
+          font-weight: 500;
           color: var(--text-secondary);
           cursor: pointer;
           white-space: nowrap;
@@ -11365,7 +11365,7 @@ export default function Produtos() {
         .ficha-row-img--placeholder { display:flex; align-items:center; justify-content:center; font-size: var(--font-input); }
         .ficha-row-info { flex:1; min-width:0; }
         .ficha-row-nome {
-          font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--text-title);
+          font-size: var(--font-button); font-weight: 700; color:var(--text-title);
           margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
         }
         .ficha-row-sub { font-size: var(--font-caption); color:var(--text-muted); margin:1px 0 0; }
@@ -11386,7 +11386,7 @@ export default function Produtos() {
         .ficha-row-qtd input::-webkit-inner-spin-button {
           -webkit-appearance:none; margin:0;
         }
-        .ficha-row-qtd span { font-size: var(--font-caption); color:var(--text-secondary); font-weight: var(--fw-semibold); }
+        .ficha-row-qtd span { font-size: var(--font-caption); color:var(--text-secondary); font-weight: 500; }
         .ficha-row-custo {
           font-size: var(--font-button); font-weight: var(--fw-black);
           color:var(--primary-dark);
@@ -11459,7 +11459,7 @@ export default function Produtos() {
           padding:0.4rem 1rem;
           background:var(--bg-card);
           border:1px solid var(--border); border-radius: var(--radius-full);
-          font-family:inherit; font-size: var(--font-helper); font-weight: var(--fw-semibold);
+          font-family:inherit; font-size: var(--font-helper); font-weight: 500;
           color:var(--text-secondary); cursor:pointer;
         }
 
@@ -11491,7 +11491,7 @@ export default function Produtos() {
         .ficha-alerta {
           margin:0; padding:0.55rem 0.85rem;
           background:#fef3c7; color:#92400e;
-          border-radius: var(--radius-md); font-size: var(--font-helper); font-weight: var(--fw-semibold);
+          border-radius: var(--radius-md); font-size: var(--font-helper); font-weight: 700;
         }
 
         /* ── Botão-resumo (trigger do modal da ficha) ── */
@@ -11617,7 +11617,7 @@ export default function Produtos() {
           padding: var(--space-1) var(--space-2) var(--space-1) 0;
           margin-bottom: var(--space-3);
           color: var(--text-secondary);
-          font-size: var(--font-button); font-weight: var(--fw-semibold); line-height: var(--lh-normal);
+          font-size: var(--font-button); font-weight: 500; line-height: var(--lh-normal);
           border-radius: var(--radius-sm);
           transition: color var(--dur-fast) var(--ease-out);
         }
@@ -11670,7 +11670,7 @@ export default function Produtos() {
         .ficha-modal-alerta {
           margin: var(--space-3) 0 0; padding: var(--space-2) var(--space-3);
           background: #fef3c7; color: #92400e;
-          border-radius: var(--radius-md); font-size: var(--font-helper); font-weight: var(--fw-semibold); line-height: var(--lh-normal);
+          border-radius: var(--radius-md); font-size: var(--font-helper); font-weight: 700; line-height: var(--lh-normal);
         }
 
         /* Body */
@@ -11739,12 +11739,12 @@ export default function Produtos() {
         .ficha-modal-item-qtd input::-webkit-outer-spin-button,
         .ficha-modal-item-qtd input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .ficha-modal-item-qtd span {
-          font-size: var(--font-caption); font-weight: var(--fw-semibold); color: var(--text-secondary);
+          font-size: var(--font-caption); font-weight: 500; color: var(--text-secondary);
         }
         .ficha-modal-unit-select {
           border: 1.5px solid var(--border); border-radius: var(--radius-sm);
           background: var(--bg-card); color: var(--text-primary);
-          font-family: inherit; font-size: var(--font-caption); font-weight: var(--fw-semibold);
+          font-family: inherit; font-size: var(--font-caption); font-weight: 700;
           padding: 2px 4px; cursor: pointer; outline: none; min-width: 38px;
         }
         .ficha-modal-unit-select:focus { border-color: var(--primary); }
@@ -11804,7 +11804,7 @@ export default function Produtos() {
           margin-top: var(--space-1); padding: var(--space-2) var(--space-3);
           background: var(--bg-card); border: 1.5px dashed var(--primary);
           border-radius: var(--radius-md); cursor: pointer;
-          font-size: var(--font-button); color: var(--primary); font-weight: var(--fw-semibold); line-height: var(--lh-normal);
+          font-size: var(--font-button); color: var(--primary); font-weight: 700; line-height: var(--lh-normal);
           transition: all var(--dur-fast) var(--ease-out); text-align: left;
         }
         .ficha-modal-add-novo:hover { background: var(--primary-light); }
@@ -11914,7 +11914,7 @@ export default function Produtos() {
           color: #fff;
           font-family: inherit;
           font-size: 13px;
-          font-weight: 600;
+          font-weight: 700;
           padding: 8px 14px;
           border-radius: 8px;
           cursor: pointer;

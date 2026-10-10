@@ -13,7 +13,7 @@
 .dl-st { gap: 8px; }
 .dl-st-row { display: flex; flex-direction: column; gap: 2px; }
 .dl-st-row b { font-size: 16px; font-weight: 700; }
-.dl-st-row span { font-size: 13.5px; font-weight: 600; color: var(--ui-laranja); }
+.dl-st-row span { font-size: 13.5px; font-weight: 700; color: var(--ui-laranja); }
 .dl-bar { height: 8px; margin: 4px 0; border-radius: 4px; background: var(--ui-linha); overflow: hidden; }
 .dl-bar i { display: block; height: 100%; border-radius: 4px; background: var(--ui-rosa); transition: width .3s; }
 .dl-bar i.ok { background: var(--ui-verde); }
@@ -54,7 +54,7 @@
 .dl-tbtns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .dl-tb { display: flex; align-items: center; gap: 8px; min-height: 52px; margin: 0; padding: 0 12px; border: 1px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; font-size: 16px; font-weight: 700; text-align: left; cursor: pointer; }
 .dl-tb svg { flex: none; color: var(--ui-texto-2); }
-.dl-tb small { display: block; font-size: 12.5px; font-weight: 600; color: var(--ui-texto-2); }
+.dl-tb small { display: block; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
 
 /* salvar fixo: em cima do menu de baixo no celular */
 .dl-savebar { position: fixed; left: 220px; right: 0; bottom: 0; z-index: 40; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--ui-branco); border-top: 1px solid var(--ui-borda); }

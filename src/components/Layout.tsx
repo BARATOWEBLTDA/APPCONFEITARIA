@@ -385,7 +385,7 @@ export default function Layout() {
           flex-direction: column;
           justify-content: center;
         }
-        .sidebar-greeting-name { margin: 0; font-size: 0.95rem; font-weight: var(--fw-semibold); color: var(--sidebar-text); line-height: 1.3; min-height: 1.25rem; display: flex; align-items: center; justify-content: center; }
+        .sidebar-greeting-name { margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--sidebar-text); line-height: 1.3; min-height: 1.25rem; display: flex; align-items: center; justify-content: center; }
         .sidebar-greeting-skel {
           display: inline-block;
           width: 120px; height: 12px;
@@ -410,7 +410,7 @@ export default function Layout() {
           all: unset; box-sizing: border-box;
           display: flex; align-items: center; gap: 10px;
           min-height: 44px; padding: 0 12px; border-radius: 12px;
-          font-family: var(--font-base); font-size: 14.5px; font-weight: var(--fw-semibold); line-height: 1.2;
+          font-family: var(--font-base); font-size: 14.5px; font-weight: 700; line-height: 1.2;
           color: rgba(255,255,255,0.82); text-decoration: none; cursor: pointer;
           transition: background-color var(--dur-fast) linear, color var(--dur-fast) linear;
           -webkit-tap-highlight-color: transparent;
@@ -556,10 +556,9 @@ export default function Layout() {
           .bn-item:active .bn-icon { transform: scale(0.9); }
           .bn-label {
             font-size: 12px;
-            font-weight: var(--fw-semibold);
+            font-weight: 500; /* (09/10 · 3.97) era 600: o guia usa 500 no texto de apoio e 700 no que está marcado */
             color: inherit;
             white-space: nowrap;
-            letter-spacing: 0.01em;
             line-height: 1;
           }
           .bn-item--active .bn-label { font-weight: 700; }
@@ -579,7 +578,7 @@ export default function Layout() {
           .gestao-item.active { background: var(--primary); border-color: var(--primary); }
           .gestao-icon { color: var(--primary); display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--radius-md); background: rgba(152,98,116,0.12); }
           .gestao-item.active .gestao-icon { color: #FFFFFF; background: rgba(255,255,255,0.2); }
-          .gestao-label { font-size: var(--font-caption); font-weight: var(--fw-semibold); color: var(--text-title); text-align: center; font-family: var(--font-base); line-height: 1.25; white-space: normal; word-break: break-word; }
+          .gestao-label { font-size: var(--font-caption); font-weight: 700; color: var(--text-title); text-align: center; font-family: var(--font-base); line-height: 1.25; white-space: normal; word-break: break-word; }
           .gestao-item.active .gestao-label { color: #FFFFFF; }
         }
       `}</style>

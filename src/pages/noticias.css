@@ -84,7 +84,7 @@
 .nd-texto .ProseMirror ol { margin: 0 0 12px; padding-left: 24px; list-style: decimal outside; }
 .nd-texto .ProseMirror li { margin-bottom: 4px; }
 .nd-texto .ProseMirror li p { margin: 0; }
-.nd-texto .ProseMirror blockquote { margin: 16px 0; padding: 8px 0 8px 16px; border-left: 3px solid var(--ui-rosa); color: var(--ui-texto-2); font-style: normal; font-weight: 600; }
+.nd-texto .ProseMirror blockquote { margin: 16px 0; padding: 8px 0 8px 16px; border-left: 3px solid var(--ui-rosa); color: var(--ui-texto-2); font-style: normal; font-weight: 500; }
 .nd-texto .ProseMirror blockquote p:last-child { margin-bottom: 0; }
 .nd-texto .ProseMirror img { border-radius: var(--ui-raio); }
 .nd-texto .ProseMirror a { color: var(--ui-rosa-escuro); }

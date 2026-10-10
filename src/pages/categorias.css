@@ -32,7 +32,7 @@
 
 /* menu da categoria */
 .ct-menu { display: flex; flex-direction: column; margin: 0 -8px; }
-.ct-menu button { display: flex; align-items: center; gap: 12px; min-height: 52px; margin: 0; padding: 0 12px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 600; text-align: left; cursor: pointer; }
+.ct-menu button { display: flex; align-items: center; gap: 12px; min-height: 52px; margin: 0; padding: 0 12px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 700; text-align: left; cursor: pointer; }
 .ct-menu button svg { color: var(--ui-texto-2); }
 @media (hover: hover) { .ct-menu button:not(:disabled):hover { background: var(--ui-linha); } }
 .ct-menu button:disabled, .ct-menu button:disabled svg { color: var(--ui-texto-3); cursor: default; }

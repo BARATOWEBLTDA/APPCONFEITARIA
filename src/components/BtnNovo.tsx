@@ -56,7 +56,7 @@ export default function BtnNovo({
           padding: 0.65rem 1rem;
           font-family: inherit;
           font-size: var(--font-button);
-          font-weight: var(--fw-semibold);
+          font-weight: 700;
           cursor: pointer;
           white-space: nowrap;
           flex-shrink: 0;

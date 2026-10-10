@@ -346,11 +346,11 @@ const CSS = `
   .pp-tx { flex: 1; min-width: 0; }
   .pp-tx b { display: block; font-size: 15px; font-weight: 700; letter-spacing: -.01em; line-height: 1.2; color: #2C2C2A; }
   .pp-tx small { display: block; font-size: 13px; color: #6B5D64; margin-top: 2px; line-height: 1.4; }
-  .pp-ps--ok .pp-tx b { color: var(--ui-texto-2); font-weight: 600; }
+  .pp-ps--ok .pp-tx b { color: var(--ui-texto-2); font-weight: 500; }
   .pp-ps--ok .pp-tx small { color: var(--ui-verde); font-weight: 700; }
   .pp-ps--trava { cursor: default; }
   .pp-ic--trava { background: #F5F0F2; color: #B5AAB0; }
-  .pp-ps--trava .pp-tx b { color: #9A8E94; font-weight: 600; }
+  .pp-ps--trava .pp-tx b { color: #9A8E94; font-weight: 500; }
   .pp-seta { color: #B4B2A9; display: flex; }
   .pp-at { background: var(--ui-rosa-claro); border: 0; border-radius: var(--ui-raio); padding: 12px; margin: 4px 0 8px; }
   .pp-at + .pp-ps { border-top: none; }
@@ -360,7 +360,7 @@ const CSS = `
   .pp-btn { display: block; width: 100%; min-height: 48px; margin-top: 12px; border: none; border-radius: var(--ui-raio-botao); padding: 13px; font-family: inherit; font-size: 15px; font-weight: 700; color: #fff; background: #E85A8C; box-shadow: 0 3px 0 #C33A6E; cursor: pointer; text-align: center; text-decoration: none; }
   .pp-btn:disabled { background: #F3B6CB; box-shadow: none; cursor: default; }
   .pp-lnk { display: block; width: 100%; min-height: 44px; margin-top: 8px; padding: 10px; border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #C33A6E; cursor: pointer; }
-  .pp-lnk--cinza { color: #9A8E94; font-weight: 600; }
+  .pp-lnk--cinza { color: #9A8E94; font-weight: 500; }
   .pp--fim { text-align: center; background: linear-gradient(180deg, #FFF1F6, #fff 70%); padding-bottom: 12px; }
   .pp-masc { display: block; width: 120px; height: auto; margin: 0 auto; }
   .pp-ft { display: block; font-size: 18px; font-weight: 700; margin: 6px auto 0; max-width: 260px; line-height: 1.25; text-wrap: balance; }

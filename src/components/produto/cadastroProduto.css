@@ -13,7 +13,7 @@ body .prod-modal--novo .prod-modal-header-novo { align-items: flex-start; gap: 8
 body .prod-modal--novo .prod-modal-back-novo, body .prod-modal--novo .prod-modal-close-novo { width: 44px; height: 44px; border-radius: var(--ui-raio); background: transparent; color: var(--ui-texto); }
 body .prod-modal--novo .prod-modal-back-novo:hover, body .prod-modal--novo .prod-modal-close-novo:hover { background: var(--ui-cinza); color: var(--ui-texto); }
 body .prod-modal--novo .prod-modal-title-novo { color: var(--ui-texto) !important; font-size: 16px; font-weight: 800; line-height: 1.3; padding-top: 2px; }
-body .prod-modal--novo .prod-wiz-passo { font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
+body .prod-modal--novo .prod-wiz-passo { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
 body .prod-modal--novo .prod-wiz-dots { gap: 4px; margin: 10px 0 0; justify-content: stretch; }
 body .prod-modal--novo .prod-wiz-dots i { flex: 1; width: auto; height: 6px; border-radius: 3px; background: var(--ui-borda); }
 body .prod-modal--novo .prod-wiz-dots i.on { background: var(--ui-rosa); }

@@ -127,7 +127,7 @@ export default function AdminLayout() {
         .adm-sidebar-bottom { padding: 1rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 0.5rem; }
         .adm-app-btn { padding: 0.6rem 0.9rem; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); border: none; border-radius: var(--radius-sm); font-family: 'Geist', sans-serif; font-size: var(--font-helper); font-weight: var(--fw-medium); cursor: pointer; text-align: left; transition: background 0.15s; }
         .adm-app-btn:hover { background: rgba(255,255,255,0.12); }
-        .adm-logout-btn { padding: 0.6rem 0.9rem; background: rgba(239,68,68,0.1); color: #ef4444; border: none; border-radius: var(--radius-sm); font-family: 'Geist', sans-serif; font-size: var(--font-helper); font-weight: var(--fw-semibold); cursor: pointer; text-align: left; }
+        .adm-logout-btn { padding: 0.6rem 0.9rem; background: rgba(239,68,68,0.1); color: #ef4444; border: none; border-radius: var(--radius-sm); font-family: 'Geist', sans-serif; font-size: var(--font-helper); font-weight: 700; cursor: pointer; text-align: left; }
 
         .adm-main { margin-left: 240px; flex: 1; padding: 2rem; min-height: 100vh; }
 

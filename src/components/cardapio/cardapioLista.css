@@ -16,7 +16,7 @@
 .cl-cat-bt svg { flex: none; transition: transform .15s; }
 .cl-cat-bt.on { color: #fff; }
 .cl-cat-menu { position: absolute; z-index: 30; top: calc(100% + 6px); left: 0; width: min(320px, calc(100vw - 32px)); max-height: 360px; overflow-y: auto; padding: 6px; background: #fff; border: 1px solid #EDE6E9; border-radius: 16px; box-shadow: 0 12px 32px rgba(44,18,25,.16); }
-.cl-cat-menu button { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 48px; margin: 0; padding: 0 12px; border: 0; border-radius: 12px; background: none; color: #2C1219; font-family: inherit; font-size: 15px; font-weight: 600; text-align: left; cursor: pointer; }
+.cl-cat-menu button { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 48px; margin: 0; padding: 0 12px; border: 0; border-radius: 12px; background: none; color: #2C1219; font-family: inherit; font-size: 15px; font-weight: 700; text-align: left; cursor: pointer; }
 .cl-cat-menu button span { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .cl-cat-menu button[aria-checked="true"] { font-weight: 700; }
 .cl-cat-menu small { flex: none; min-width: 28px; padding: 2px 8px; border-radius: 999px; background: #F3EEF0; color: #6B5D64; font-size: 12.5px; font-weight: 700; text-align: center; }

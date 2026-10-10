@@ -815,7 +815,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
         .cpn-pedido-tx small { font-size: 13px; opacity: .9; }
         .cpn-pedido strong { font-size: 16px; font-weight: 700; }
         .cpn-menu { display: flex; padding-bottom: env(safe-area-inset-bottom, 0px); background: #2C1219; box-shadow: 0 -2px 12px rgba(0,0,0,.12); }
-        .cpn-menu button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 60px; margin: 0; border: 0; background: none; color: rgba(255,255,255,.62); font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+        .cpn-menu button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 60px; margin: 0; border: 0; background: none; color: rgba(255,255,255,.62); font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; }
         .cpn-ic { display: flex; align-items: center; justify-content: center; width: 52px; height: 30px; border-radius: 12px; }
         .cpn-menu button[aria-current="page"] { color: #fff; font-weight: 700; }
         .cpn-menu button[aria-current="page"] .cpn-ic { background: rgba(255,255,255,.16); }

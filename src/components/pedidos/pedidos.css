@@ -62,7 +62,7 @@
 .pdc-quem { flex: 1; min-width: 0; }
 .pdc-nome { display: flex; align-items: baseline; gap: 8px; min-width: 0; margin: 0; }
 .pdc-nome b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); }
-.pdc-nome span { flex: none; font-size: 12.5px; font-weight: 600; color: var(--ui-texto-2); }
+.pdc-nome span { flex: none; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
 .pdc-res { margin: 2px 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
 .pdc-mais { flex: none; margin-right: -8px; }
 .pdc-linhas { margin-top: 12px; }

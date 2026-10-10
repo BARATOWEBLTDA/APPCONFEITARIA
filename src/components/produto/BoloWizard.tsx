@@ -579,7 +579,7 @@ const CSS = `
   .bw-add button { height: 44px; border: none; border-radius: 12px; background: #2C1219; color: #fff; font-family: inherit; font-size: 13.5px; font-weight: 700; padding: 0 18px; cursor: pointer; }
   .bw-add button:disabled { opacity: .3; cursor: default; }
   .bw-sug { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-  .bw-sug button { border: 1.5px dashed #DCCFD5; background: none; border-radius: 999px; padding: 5px 12px; font-family: inherit; font-size: 12.5px; font-weight: 600; color: #6B5D64; cursor: pointer; }
+  .bw-sug button { border: 1.5px dashed #DCCFD5; background: none; border-radius: 999px; padding: 5px 12px; font-family: inherit; font-size: 12.5px; font-weight: 500; color: #6B5D64; cursor: pointer; }
   .bw-sug button:hover { border-color: #C33A6E; color: #C33A6E; }
   .bw-frase { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 14.5px; color: #2C1219; margin-top: 14px; }
   .bw-stepper { display: inline-flex; align-items: center; border: 1.5px solid #EAE3E6; border-radius: 10px; background: #fff; overflow: hidden; }
@@ -611,14 +611,14 @@ const CSS = `
   .bw-money > span { font-size: 15px; font-weight: 700; color: #9A8E94; }
   .bw-money input { flex: 1; min-width: 0; border: none; outline: none; background: none; font-family: inherit; font-size: 24px; font-weight: 700; color: #2C1219; }
   .bw-money input::placeholder { color: #D6CBD0; }
-  .bw-money em { font-style: normal; font-size: 13px; font-weight: 600; color: #888780; white-space: nowrap; }
+  .bw-money em { font-style: normal; font-size: 13px; font-weight: 500; color: #888780; white-space: nowrap; }
   .bw-money--sm { height: 44px; width: 150px; padding: 0 12px; } .bw-money--sm input { font-size: 16px; }
   .bw-hint { font-size: 12px; color: #9A8E94; margin: 8px 0 0; line-height: 1.45; }
   .bw-hint--top { margin: 2px 0 12px; }
   .bw-gerar-pill { border: 1px solid #F9D1E0; background: #FFF1F6; color: #C33A6E; border-radius: 999px; padding: 7px 13px; font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; white-space: nowrap; }
   .bw-gerar-pill:hover { background: #FCE7F3; }
   .bw-col-sel { border: none; background: none; padding: 0 0 0 4px; font-family: inherit; font-size: 12px; font-weight: 700; color: #C33A6E; cursor: pointer; text-align: left; }
-  .bw-link--sec { display: block; color: #6B5D64; font-weight: 600; font-size: 12.5px; padding-top: 2px; }
+  .bw-link--sec { display: block; color: #6B5D64; font-weight: 500; font-size: 12.5px; padding-top: 2px; }
   .bw-link--sec small { color: #B5AAB0; font-weight: 500; }
   .bw-tabela .bw-tam { grid-template-columns: 76px 1fr 1.3fr 24px; }
   .bw-tabela.bw-tam--serve .bw-tam { grid-template-columns: 70px 1fr 1fr 1.3fr 24px; }
@@ -651,11 +651,11 @@ const CSS = `
     .bw-money input { font-size: 22px; }
   }
   .bw-kg-t { display: inline-flex; align-items: center; gap: 8px; }
-  .bw-kg-t small { font-size: 12px; font-weight: 600; color: #9A8E94; }
+  .bw-kg-t small { font-size: 12px; font-weight: 500; color: #9A8E94; }
   .bw-i { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #C33A6E; background: #fff; color: #C33A6E; font-family: inherit; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
   .bw-tams-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 22px; margin-bottom: 8px; }
   .bw-tams-h .bw-lb { margin: 0; }
-  .bw-rend { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #9A8E94; font-weight: 600; }
+  .bw-rend { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #9A8E94; font-weight: 500; }
   .bw-rend span { margin-right: 4px; }
   .bw-rend button { border: 1.5px solid #EAE3E6; background: #fff; border-radius: 999px; padding: 5px 12px; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #6B5D64; cursor: pointer; }
   .bw-rend button.on { border-color: #2C1219; background: #2C1219; color: #fff; }
@@ -718,14 +718,14 @@ const CSS = `
   .bw-tabela .bw-in input { padding-left: 12px; }
   .bw-tabela .bw-rs { padding-left: 12px; }
   .bw-rs-p { font-size: 13px; font-weight: 700; color: #9A8E94; }
-  .bw-tabela .bw-calc { display: flex; align-items: center; padding: 0 12px; background: #FAF7F8; border-color: #F0EBED; color: #B5AAB0; font-size: 13px; font-weight: 600; }
+  .bw-tabela .bw-calc { display: flex; align-items: center; padding: 0 12px; background: #FAF7F8; border-color: #F0EBED; color: #B5AAB0; font-size: 13px; font-weight: 700; }
   .bw-tabela .bw-calc.ok { background: #F0FDF4; border-color: #DCFCE7; color: #15803D; font-size: 14.5px; font-weight: 700; }
   .bw-rendbox { margin-top: 14px; padding-top: 14px; border-top: 1px solid #F3ECEE; }
-  .bw-check { display: flex; align-items: center; gap: 10px; width: 100%; border: none; background: none; padding: 4px 0; font-family: inherit; font-size: 14px; font-weight: 600; color: #2C1219; cursor: pointer; text-align: left; }
+  .bw-check { display: flex; align-items: center; gap: 10px; width: 100%; border: none; background: none; padding: 4px 0; font-family: inherit; font-size: 14px; font-weight: 700; color: #2C1219; cursor: pointer; text-align: left; }
   .bw-check i { width: 20px; height: 20px; border-radius: 6px; border: 2px solid #D6CBD0; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; }
   .bw-check.on i { background: #E85A8C; border-color: #E85A8C; }
   .bw-rend-body { margin-top: 12px; padding: 14px; border-radius: 12px; background: #FAF7F8; }
-  .bw-rend-uni { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; font-size: 13px; color: #6B5D64; font-weight: 600; }
+  .bw-rend-uni { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; font-size: 13px; color: #6B5D64; font-weight: 500; }
   .bw-rend-uni span { margin-right: 4px; }
   .bw-rend-uni button { border: 1.5px solid #EAE3E6; background: #fff; border-radius: 8px; padding: 7px 14px; font-family: inherit; font-size: 13px; font-weight: 700; color: #6B5D64; cursor: pointer; }
   .bw-rend-uni button.on { border-color: #2C1219; background: #2C1219; color: #fff; }
@@ -761,7 +761,7 @@ const CSS = `
   .bo-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .bo-tx b { font-size: 15px; font-weight: 700; }
   .bo-tx small { font-size: 12.5px; color: #888780; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .bo-tx small.on { color: #C33A6E; font-weight: 600; }
+  .bo-tx small.on { color: #C33A6E; font-weight: 700; }
   .bo-rs { font-size: 13px; color: #4B3A42; margin-top: 3px; line-height: 1.45; }
   .bo-rs em { font-style: normal; color: #15803D; font-weight: 700; }
   .bo-rs small { display: block; font-size: 12px; color: #9A8E94; margin-top: 2px; white-space: normal; }
@@ -783,7 +783,7 @@ const CSS = `
   .bo-li--add input::placeholder { color: #B5AAB0; }
   .bo-li--add button { border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #C33A6E; cursor: pointer; padding: 8px 4px; white-space: nowrap; }
   .bo-li--add button:disabled { color: #D6CBD0; cursor: default; }
-  .bo-lim { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #F3ECEE; font-size: 14px; font-weight: 600; color: #2C1219; }
+  .bo-lim { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #F3ECEE; font-size: 14px; font-weight: 700; color: #2C1219; }
   .bo-tip { font-size: 12.5px; color: #9A8E94; margin: 6px 0 0; text-align: center; }
   .bo-sheet-acts { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
   .bo-sheet-tirar { border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #6B5D64; cursor: pointer; padding: 8px 0; }
@@ -816,7 +816,7 @@ const CSS = `
   .bw-pr-lb { font-size: 14px; color: #4B3A42; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .bw-pr-lb b { color: #2C1219; font-size: 14.5px; } .bw-pr-lb small { color: #9A8E94; font-size: 12.5px; }
   .bw-pr-in { width: 160px; flex-shrink: 0; padding-left: 12px; }
-  .bw-pr-calc { width: 160px; flex-shrink: 0; display: flex; align-items: center; padding: 0 12px; background: #FAF7F8; border-color: #F0EBED; color: #B5AAB0; font-size: 12.5px; font-weight: 600; }
+  .bw-pr-calc { width: 160px; flex-shrink: 0; display: flex; align-items: center; padding: 0 12px; background: #FAF7F8; border-color: #F0EBED; color: #B5AAB0; font-size: 12.5px; font-weight: 700; }
   .bw-pr-calc.ok { background: #F0FDF4; border-color: #DCFCE7; color: #15803D; font-size: 15px; font-weight: 700; }
   .bw-money--sm { width: 170px !important; }
   .bw-money--sm em { font-size: 12.5px; }
@@ -848,7 +848,7 @@ const CSS = `
   .bw-lt-nome { border: none; outline: none; background: none; padding: 0 14px; font-family: inherit; font-size: 15px; font-weight: 700; color: #2C1219; min-width: 0; }
   .bw-lt-peso { display: flex; align-items: center; gap: 4px; border-left: 1px solid #F3ECEE; padding: 0 14px; min-width: 0; cursor: text; }
   .bw-lt-peso input { flex: 1; min-width: 0; border: none; outline: none; background: none; font-family: inherit; font-size: 16px; font-weight: 700; color: #2C1219; padding: 0; }
-  .bw-lt-peso em { font-style: normal; font-size: 12.5px; color: #9A8E94; font-weight: 600; }
+  .bw-lt-peso em { font-style: normal; font-size: 12.5px; color: #9A8E94; font-weight: 500; }
   .bw-lt-nome::placeholder, .bw-lt-peso input::placeholder { color: #B5AAB0; font-weight: 500; }
   .bw-lt-nome:focus, .bw-lt-peso:focus-within { background: #FFFAFC; }
   .bw-lt-rm { border: none; border-left: 1px solid #F3ECEE; background: none; color: #DC2626; display: flex; align-items: center; justify-content: center; cursor: pointer; }
@@ -871,5 +871,5 @@ const CSS = `
   .bw-pr-col { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0; }
   .bw-pr-por { font-size: 12px; color: #6B5D64; } .bw-pr-por b { color: #15803D; font-weight: 700; }
   .bw-pr-por--unico { margin: 8px 0 0; font-size: 13px; }
-  .bw-pr-calc--promo { gap: 6px; } .bw-pr-calc--promo s { color: #9A8E94; font-weight: 600; font-size: 12px; }
+  .bw-pr-calc--promo { gap: 6px; } .bw-pr-calc--promo s { color: #9A8E94; font-weight: 500; font-size: 12px; }
 `;

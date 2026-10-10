@@ -105,7 +105,7 @@ const CSS = `
   .cpd-n small { display: block; font-size: 12px; color: #888780; margin-top: 2px; }
   .cpd-v { font-weight: 700; white-space: nowrap; }
   .cpd-kv { display: grid; grid-template-columns: 86px 1fr; gap: 6px 10px; margin: 12px 0 0; padding-top: 10px; border-top: 1px solid #F5F0F2; font-size: 13.5px; }
-  .cpd-kv dt { color: #888780; font-weight: 600; } .cpd-kv dd { margin: 0; font-weight: 700; }
+  .cpd-kv dt { color: #888780; font-weight: 500; } .cpd-kv dd { margin: 0; font-weight: 700; }
   .cpd-neg { color: #B91C1C; }
   .cpd-tot { margin-top: 12px; background: #2C1219; color: #fff; border-radius: 12px; padding: 10px 12px; }
   .cpd-tot div { display: flex; justify-content: space-between; align-items: baseline; }
@@ -121,7 +121,7 @@ const CSS = `
   .cpd-b1 { flex: 2; border: none; background: #E85A8C; color: #fff; box-shadow: 0 3px 0 #C33A6E; }
   .cpd-b1:disabled { background: #F3B6CB; box-shadow: none; cursor: default; }
   .cpd-b2 { flex: 1; border: 1.5px solid #EAE3E6; background: #fff; color: #2C1219; }
-  .cpd-x { display: block; width: 100%; margin-top: 4px; padding: 8px; border: none; background: none; font-family: inherit; font-size: 13px; font-weight: 600; color: #9A8E94; cursor: pointer; }
+  .cpd-x { display: block; width: 100%; margin-top: 4px; padding: 8px; border: none; background: none; font-family: inherit; font-size: 13px; font-weight: 500; color: #9A8E94; cursor: pointer; }
   .cpd--fim { display: flex; align-items: center; gap: 8px; padding: 10px 12px; font-size: 13.5px; font-weight: 700; border-color: #BBF7D0; background: #F0FDF4; color: #15803D; }
   .cpd--cancel { border-color: #EDE6E9; background: #FAF7F8; color: #9A8E94; }
   .cpd-ok { width: 24px; height: 24px; border-radius: 50%; background: #DCFCE7; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }

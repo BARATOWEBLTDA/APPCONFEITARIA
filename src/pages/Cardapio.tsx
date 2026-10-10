@@ -660,7 +660,7 @@ export default function Cardapio() {
           background: transparent;
           color: var(--text-secondary);
           border-right: 1px solid var(--border);
-          font-family: inherit; font-size: var(--font-helper); font-weight: var(--fw-semibold);
+          font-family: inherit; font-size: var(--font-helper); font-weight: 500;
           cursor: pointer;
           transition: background var(--dur-fast) var(--ease-out),
                       color var(--dur-fast) var(--ease-out);
@@ -822,7 +822,7 @@ export default function Cardapio() {
         .ch-list-lbl {
           flex: 1;
           font-size: 14px;
-          font-weight: 600;
+          font-weight: 700;
           color: var(--text-title);
           letter-spacing: -0.01em;
         }
@@ -1046,7 +1046,7 @@ export default function Cardapio() {
         .ch-alerta-icon { display: inline-flex; flex-shrink: 0; }
         .ch-alerta-texto {
           flex: 1; min-width: 0;
-          font-size: var(--font-button); font-weight: var(--fw-semibold);
+          font-size: var(--font-button); font-weight: 700;
         }
         .ch-alerta-cta {
           font-size: var(--font-helper); font-weight: var(--fw-bold);
@@ -1096,7 +1096,7 @@ export default function Cardapio() {
           flex-shrink: 0;
         }
         .ch-tile-label {
-          font-size: var(--font-helper); font-weight: var(--fw-semibold);
+          font-size: var(--font-helper); font-weight: 700;
           color: var(--text-primary);
           white-space: nowrap;
           overflow: hidden;

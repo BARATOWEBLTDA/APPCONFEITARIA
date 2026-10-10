@@ -179,7 +179,7 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
         .fps-x { width: 34px; height: 34px; border-radius: 50%; border: none; background: #F5F0F2; color: #6B5D64; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
         .fps-res { background: #FAF7F8; border-radius: 12px; padding: 8px 12px; }
         .fps-res div { display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px; padding: 4px 0; color: #4B3A42; }
-        .fps-res b { font-weight: 700; color: #2C1219; white-space: nowrap; } .fps-res s { color: #9A8E94; font-weight: 600; margin-right: 4px; }
+        .fps-res b { font-weight: 700; color: #2C1219; white-space: nowrap; } .fps-res s { color: #9A8E94; font-weight: 500; margin-right: 4px; }
         .fps-res .ok { color: #15803D; } .fps-res .aj span, .fps-res .aj b { color: #C33A6E; }
         .fps-res .tt { border-top: 1px solid #F0EBED; margin-top: 4px; padding-top: 8px; font-size: 15px; }
         .fps-aj-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; border: none; background: none; padding: 4px 0; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #C33A6E; cursor: pointer; }

@@ -811,7 +811,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                       )}
                     </div>
-                    <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: '#2C1219' }}>{e.nome}</span>
+                    <span style={{ flex: 1, fontSize: 14, fontWeight: 700, color: '#2C1219' }}>{e.nome}</span>
                     <span style={{
                       fontSize: 12.5, fontWeight: 800,
                       color: isGratis ? '#16a34a' : '#C33A6E',

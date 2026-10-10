@@ -75,7 +75,7 @@ export default function TipoProdutoTela({ onEscolher, onFechar }: Props) {
         .tpp-vz { width: 44px; flex: none; }
         .tpp-tt { flex: 1; min-width: 0; text-align: center; }
         .tpp-tt b { display: block; font-size: 16px; font-weight: 700; }
-        .tpp-tt small { display: block; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
+        .tpp-tt small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
         .tpp-barra { display: flex; gap: 4px; padding: 0 16px 12px; border-bottom: 1px solid var(--ui-linha); }
         .tpp-barra i { flex: 1; height: 6px; border-radius: 3px; background: var(--ui-borda); }
         .tpp-barra i.on { background: var(--ui-rosa); }

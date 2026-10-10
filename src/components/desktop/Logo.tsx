@@ -58,7 +58,7 @@ export function DesktopLogo({ logoUrl, borderColor, storeName, storeDescription,
         {!hideStars && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '8px' }}>
             <div style={{ display: 'flex', gap: '1px' }}>{renderStars(avaliacaoMedia)}</div>
-            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>{avaliacaoMedia}/5.0</span>
+            <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)' }}>{avaliacaoMedia}/5.0</span>
           </div>
         )}
         {storeDescription && (
