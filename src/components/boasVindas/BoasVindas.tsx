@@ -204,8 +204,9 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
             </>)}
             {tela === 5 && (<>
               <p className="bv-sobre">Agora é com você</p>
-              <h1 className="bv-h">Sua confeitaria <em>começa aqui</em></h1>
-              <p className="bv-p">Em poucos passos seu cardápio fica no ar, pronto pra mandar pros seus clientes.</p>
+              {/* fecha com o nome, como abriu (sem nome válido, fica só "Sua confeitaria começa aqui") */}
+              <h1 className="bv-h">{nomeOk ? <>{nomeOk}, sua confeitaria <em>começa aqui</em></> : <>Sua confeitaria <em>começa aqui</em></>}</h1>
+              <p className="bv-p">São 5 passos rápidos pra deixar seu cardápio no ar, pronto pra mandar no WhatsApp.</p>
             </>)}
           </div>
           <div className="bv-base">
