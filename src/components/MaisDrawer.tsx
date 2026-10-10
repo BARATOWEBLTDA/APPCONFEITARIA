@@ -1,4 +1,5 @@
 import { useId, useRef } from "react";
+import { INDICACAO_ATIVA } from "@/lib/recursos";
 import { createPortal } from "react-dom";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
@@ -62,7 +63,7 @@ const GRUPOS: Grupo[] = [
     items: [
       { label: "Minhas conquistas", desc: "Suas medalhas",     path: "/conquistas", Icone: Trophy },
       { label: "Assinatura",        desc: "Gerencie seu PRO",  path: "/assinar",    Icone: Crown },
-      { label: "Indicar amigo",     desc: "Ganhe indicando",   path: "/indicar",    Icone: UserPlus },
+      ...(INDICACAO_ATIVA ? [{ label: "Indicar amigo",     desc: "Ganhe indicando",   path: "/indicar",    Icone: UserPlus }] : []),
     ],
   },
 ];

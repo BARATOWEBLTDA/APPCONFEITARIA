@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { INDICACAO_ATIVA } from "@/lib/recursos";
 import CompletarCadastro from "@/components/CompletarCadastro";
 import { useEffect, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
@@ -271,7 +272,7 @@ export default function App() {
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/configuracoes/notificacoes" element={<NotificacoesSons />} />
           <Route path="/configuracoes/mensagens" element={<MensagensWhatsApp />} />
-          <Route path="/indicar" element={<Indicar />} />
+          <Route path="/indicar" element={INDICACAO_ATIVA ? <Indicar /> : <Navigate to="/inicio" replace />} />
           <Route path="/personalizacao" element={<Navigate to="/complementos" replace />} />
         </Route>
 

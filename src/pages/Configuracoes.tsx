@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
+import { INDICACAO_ATIVA } from "@/lib/recursos";
 import { useNavigate } from "react-router-dom";
 import { Bell, Camera, ChatCircleText, CaretRight, Crown, FileText, Gift, Headset, Lightbulb, PencilSimple, SignOut, Bug } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
@@ -217,7 +218,7 @@ export default function Configuracoes() {
             <ItemConfig icone={<Bell size={20} weight="bold" />} nome="Notificações e sons" apoio="Avisos e sons do app" onClick={() => navigate("/configuracoes/notificacoes")} />
             <ItemConfig icone={<ChatCircleText size={20} weight="bold" />} tom="rosa" nome="Mensagens do WhatsApp" apoio="Troque o texto das mensagens prontas" onClick={() => navigate("/configuracoes/mensagens")} />
             <AtualizarAppItem />
-            <ItemConfig icone={<Gift size={20} weight="bold" />} tom="rosa" nome="Indique e ganhe" apoio="Ganhe prêmios por cada assinante que você indicar" onClick={() => navigate("/indicar")} />
+            {INDICACAO_ATIVA && <ItemConfig icone={<Gift size={20} weight="bold" />} tom="rosa" nome="Indique e ganhe" apoio="Ganhe prêmios por cada assinante que você indicar" onClick={() => navigate("/indicar")} />}
             <h2 className="cf9-sec">Ajuda</h2>
             <ItemConfig icone={<Lightbulb size={20} weight="bold" />} tom="amarelo" nome="Sugerir uma melhoria" apoio="Conte o que falta ou o que melhoraria" onClick={() => navigate("/solicitar-recurso")} />
             <ItemConfig icone={<Bug size={20} weight="bold" />} tom="vermelho" nome="Relatar um problema" apoio="Algo não funcionou? Conte pra equipe" onClick={() => navigate("/relatar-problema")} />
