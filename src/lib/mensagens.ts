@@ -30,7 +30,7 @@ export const MODELOS: Modelo[] = [
     padrao: "Oi, *{loja}*! Acabei de fazer um pedido pelo cardápio.\n\n{pedido}",
     etiquetas: [
       { k: "pedido", rotulo: "Itens do pedido", exemplo: PEDIDO_EXEMPLO },
-      { k: "loja", rotulo: "Nome da loja", exemplo: "Doces da Ju" },
+      { k: "loja", rotulo: "Nome da loja", exemplo: "Doce Formiga" },
       { k: "nome", rotulo: "Nome da cliente", exemplo: "Ana" },
       { k: "numero", rotulo: "Nº do pedido", exemplo: "214" },
     ],
@@ -49,7 +49,7 @@ export const MODELOS: Modelo[] = [
       { k: "horario", rotulo: "Horário", exemplo: "15:00" },
       { k: "total", rotulo: "Total", exemplo: "R$ 140,00" },
       { k: "falta", rotulo: "Falta pagar", exemplo: "R$ 70,00" },
-      { k: "loja", rotulo: "Nome da loja", exemplo: "Doces da Ju" },
+      { k: "loja", rotulo: "Nome da loja", exemplo: "Doce Formiga" },
     ],
   },
   {
@@ -59,7 +59,7 @@ export const MODELOS: Modelo[] = [
     padrao: "Feliz aniversário, {nome}! Que o seu dia seja muito doce.",
     etiquetas: [
       { k: "nome", rotulo: "Nome da cliente", exemplo: "Ana" },
-      { k: "loja", rotulo: "Nome da loja", exemplo: "Doces da Ju" },
+      { k: "loja", rotulo: "Nome da loja", exemplo: "Doce Formiga" },
     ],
   },
 ];

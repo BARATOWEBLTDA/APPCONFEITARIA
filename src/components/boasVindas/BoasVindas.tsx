@@ -364,7 +364,7 @@ function DemoPedidos() {
       <Notebook>
         <div className="bv-app">
           <aside className="bv-app-menu" aria-hidden="true">
-            <div className="bv-app-perfil"><span>D</span><b>Olá, Doces da Ju</b></div>
+            <div className="bv-app-perfil"><span><img src="/tutorial/boas-vindas/doce-formiga.webp" alt="" /></span><b>Olá, Doce Formiga</b></div>
             {MENU_PC.map(([Icone, nome]) => <p key={nome} className={nome === 'Pedidos' ? 'on' : ''}><Icone size={18} />{nome}</p>)}
           </aside>
           <div className="bv-app-main">

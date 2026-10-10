@@ -95,9 +95,9 @@
 .bv-nb { display: none; }
 @media (min-width: 1100px) and (min-height: 600px) {
   .bv-tela-2 .bv-ped { display: none; }
-  .bv-tela-2 .bv-corpo { grid-template-columns: minmax(0, 360px) minmax(0, 780px); }
+  .bv-tela-2 .bv-corpo { grid-template-columns: minmax(0, 380px) minmax(0, 660px); }
   .bv-tela-2 .bv-corpo::before { flex: 1 1 0; }
-  .bv-nb { display: block; width: 100%; max-width: 780px; }
+  .bv-nb { display: block; width: 100%; max-width: 660px; }
   .bv-nb-tampa { position: relative; padding: 18px 14px 14px; border-radius: 18px 18px 6px 6px; background: linear-gradient(180deg, #2A2A2E, #19191C); box-shadow: 0 0 0 1px #3A3A40, 0 30px 60px rgba(0, 0, 0, .5); }
   .bv-nb-cam { position: absolute; top: 7px; left: 50%; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: #0D0D0F; box-shadow: inset 0 0 0 1.5px #2E2E34; }
   .bv-nb-tela { position: relative; aspect-ratio: 1040 / 650; overflow: hidden; border-radius: 4px; background: var(--ui-fundo, #FAF7F8); }
@@ -108,7 +108,8 @@
 .bv-app { position: relative; display: flex; width: 100%; height: 100%; overflow: hidden; background: #FAF7F8; color: var(--ui-texto); text-align: left; font-family: var(--font-base); }
 .bv-app-menu { flex: none; width: 190px; padding: 18px 12px; background: var(--sidebar-bg, #1C1C1F); color: rgba(255, 255, 255, .86); }
 .bv-app-perfil { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 18px; }
-.bv-app-perfil span { display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; border: 3px solid #fff; border-radius: 50%; background: #9D3B63; color: #fff; font-size: 26px; font-weight: 700; }
+.bv-app-perfil span { display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; overflow: hidden; border: 3px solid #fff; border-radius: 50%; background: #fff; color: #fff; font-size: 26px; font-weight: 700; }
+.bv-app-perfil span img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: #fff; }
 .bv-app-perfil b { font-size: 14px; font-weight: 700; color: #fff; }
 .bv-app-menu p { display: flex; align-items: center; gap: 10px; margin: 0 0 2px; padding: 9px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; }
 .bv-app-menu p.on { background: rgba(255, 255, 255, .10); color: #fff; font-weight: 700; }
