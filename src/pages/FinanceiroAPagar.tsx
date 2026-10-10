@@ -230,7 +230,7 @@ const CSS = `
   .fap-resumo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .fap-k { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 10px; min-width: 0; }
   .fap-k small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
-  .fap-k b { display: block; font-size: clamp(13.5px, 3.9vw, 17px); letter-spacing: -.02em; font-weight: 800; color: #2C1219; margin: 3px 0 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fap-k b { display: block; font-size: clamp(13.5px, 3.9vw, 17px); letter-spacing: -.02em; font-weight: 700; color: #2C1219; margin: 3px 0 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .fap-k i { font-style: normal; font-size: 13px; color: #888780; }
   .fap-k--atr { border-color: #FECACA; background: #FFF7F7; } .fap-k--atr b { color: #DC2626; }
   .fap-carregando { text-align: center; color: #9A8E94; font-size: 14px; padding: 30px 0; }
@@ -262,7 +262,7 @@ const CSS = `
   .fap-sh { width: 100%; max-width: 460px; background: #fff; border-radius: 22px 22px 0 0; padding: 10px 18px calc(20px + env(safe-area-inset-bottom, 0px)); max-height: 92dvh; overflow-y: auto; color: #2C1219; }
   @media (min-width: 768px) { .fap-sh { border-radius: 22px; } }
   .fap-alca { display: block; width: 40px; height: 4px; border-radius: 9px; background: #E5DDE1; margin: 0 auto 12px; }
-  .fap-sh-t { display: block; font-size: 19px; font-weight: 800; } .fap-sh-s { display: block; font-size: 13px; color: #6B5D64; margin-top: 2px; }
+  .fap-sh-t { display: block; font-size: 19px; font-weight: 700; } .fap-sh-s { display: block; font-size: 13px; color: #6B5D64; margin-top: 2px; }
   .fap-lb { display: block; font-size: 13px; font-weight: 700; color: #4B3A42; margin: 14px 0 6px; }
   .fap-in { display: flex; align-items: center; gap: 6px; border: 1.5px solid #E85A8C; border-radius: 12px; padding: 0 12px; height: 52px; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
   .fap-in.sm { height: 46px; border-color: #EDE6E9; box-shadow: none; }

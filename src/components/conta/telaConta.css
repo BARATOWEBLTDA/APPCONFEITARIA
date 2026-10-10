@@ -7,7 +7,7 @@
 .tc-cartao { position: relative; margin-top: 108px; padding: 56px 24px 26px; background: var(--ui-branco); border-radius: 22px; box-shadow: 0 14px 40px -12px rgba(60, 10, 30, .45); text-align: center; }
 .tc-masc { position: absolute; left: 50%; top: -96px; transform: translateX(-50%); width: 136px; height: auto; z-index: 3; pointer-events: none; filter: drop-shadow(0 0 16px rgba(255, 157, 196, .55)) drop-shadow(0 8px 10px rgba(0, 0, 0, .35)); }
 .tc-nome { display: block; width: 128px; height: auto; margin: 0 auto 6px; }
-.tc-h { margin: 0; font-family: var(--font-base); font-size: 22px; font-weight: 800; letter-spacing: -.01em; line-height: 1.25; color: var(--ui-texto); text-wrap: balance; }
+.tc-h { margin: 0; font-family: var(--font-base); font-size: 22px; font-weight: 700; letter-spacing: -.01em; line-height: 1.25; color: var(--ui-texto); text-wrap: balance; }
 .tc-p { max-width: 340px; margin: 6px auto 0; font-size: 14px; font-weight: 500; line-height: 1.5; color: var(--ui-texto-2); text-wrap: balance; }
 .tc-p--2 { margin-top: 2px; }
 .tc-bl { display: inline-block; } /* a frase quebra na vírgula, não no meio */
@@ -44,7 +44,7 @@
   .tc-marca-in { position: sticky; top: 0; height: min(100%, calc(100dvh - 48px)); min-height: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   .tc-marca-masc { display: block; width: 170px; height: auto; filter: drop-shadow(0 12px 16px rgba(80, 10, 40, .3)); }
   .tc-marca .nome-doonly { display: block; width: 210px; max-width: 100%; height: auto; margin-top: 14px; }
-  .tc-marca-frase { margin: 22px 0 6px; font-size: 24px; font-weight: 800; letter-spacing: -.01em; line-height: 1.2; text-wrap: balance; }
+  .tc-marca-frase { margin: 22px 0 6px; font-size: 24px; font-weight: 700; letter-spacing: -.01em; line-height: 1.2; text-wrap: balance; }
   .tc-marca-sub { margin: 0; font-size: 15px; line-height: 1.45; opacity: .92; text-wrap: balance; }
   .tc-cartao { margin: 0; padding: 48px 64px; border-radius: 0 28px 28px 0; box-shadow: none; display: flex; flex-direction: column; justify-content: center; }
   .tc-masc, .tc-nome { display: none; }

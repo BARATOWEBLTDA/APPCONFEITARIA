@@ -214,7 +214,7 @@ const CSS = `
   .fd-ki.e { background: #DCFCE7; color: #15803D; } .fd-ki.s { background: #FEE2E2; color: #DC2626; } .fd-ki.n { background: #F3EEF1; color: #6B5D64; } .fd-ki.l { background: #FCE7F3; color: #C33A6E; }
   .fd-k small { padding-right: 30px; }
   .fd-k small, .fd-k2 small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
-  .fd-k b, .fd-k2 b { display: block; font-size: clamp(15px, 4.6vw, 21px); font-weight: 800; letter-spacing: -.02em; margin: 3px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #2C1219; }
+  .fd-k b, .fd-k2 b { display: block; font-size: clamp(15px, 4.6vw, 21px); font-weight: 700; letter-spacing: -.02em; margin: 3px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #2C1219; }
   .fd-k i, .fd-k2 i { display: flex; align-items: center; gap: 3px; font-style: normal; font-size: 13px; color: #888780; line-height: 1.35; }
   .fd-k b.e { color: #15803D; } .fd-k b.s { color: #DC2626; } .fd-k b.l { color: #C33A6E; }
   .fd-contas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }

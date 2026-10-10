@@ -22,7 +22,7 @@
 .cl-cat-menu small { flex: none; min-width: 28px; padding: 2px 8px; border-radius: 999px; background: #F3EEF0; color: #6B5D64; font-size: 12.5px; font-weight: 700; text-align: center; }
 
 /* títulos */
-.cl-h2 { margin: 20px 6px 12px; font-size: 18px; font-weight: 800; line-height: 1.3; }
+.cl-h2 { margin: 20px 6px 12px; font-size: 18px; font-weight: 700; line-height: 1.3; }
 
 /* grade */
 .cl-grade { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0 6px; }

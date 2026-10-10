@@ -50,7 +50,7 @@ export default function AssistenteVirtual() {
         .av-wrap { max-width: 720px; margin: 0 auto; padding: 16px 16px 96px; }
         .av-hero { text-align: center; background: linear-gradient(150deg, #3B1620, #6B2340); color: #fff; border-radius: 18px; padding: 24px 18px; }
         .av-doo { width: 80px; height: 80px; object-fit: cover; object-position: top center; border-radius: 24px; background: #FCE7F3; margin: 0 auto 12px; display: block; }
-        .av-hero h1 { font-size: 21px; font-weight: 800; line-height: 1.25; margin: 0 0 8px; }
+        .av-hero h1 { font-size: 21px; font-weight: 700; line-height: 1.25; margin: 0 0 8px; }
         .av-hero p { font-size: 14px; line-height: 1.5; color: rgba(255,255,255,.85); margin: 0; }
         .av-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 16px; }
         @media (min-width: 700px) { .av-grid { grid-template-columns: 1fr 1fr; } }

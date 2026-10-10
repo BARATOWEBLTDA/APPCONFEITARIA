@@ -852,7 +852,7 @@ export default function Cardapio() {
         }
         .cd-quick { padding: 4px 0 4px; }
         .cd-quick-hdr { padding: 14px 18px 10px; }
-        .cd-quick-title { font-size: 16px; font-weight: 800; color: #2C1219; letter-spacing: -0.01em; }
+        .cd-quick-title { font-size: 16px; font-weight: 700; color: #2C1219; letter-spacing: -0.01em; }
         .cd-quick-sub { font-size: 12px; color: #888780; margin-top: 3px; }
         .cd-quick-list { display: flex; flex-direction: column; }
         .cd-quick-item {
@@ -1107,7 +1107,7 @@ export default function Cardapio() {
         .cardapio-hub { padding: 16px 8px 112px; gap: 12px; }
         .cardapio-hub .cd-card.cd-quick { padding: 16px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); background: var(--ui-branco); }
         .cardapio-hub .cd-quick-hdr { margin: 0 0 8px; padding: 0; border: 0; }
-        .cardapio-hub .cd-quick-title { font-size: 16px; font-weight: 800; color: var(--ui-texto); }
+        .cardapio-hub .cd-quick-title { font-size: 16px; font-weight: 700; color: var(--ui-texto); }
         .cardapio-hub .cd-quick-list { margin: 0 -8px; padding: 0; }
         .cardapio-hub .cd-quick-item { min-height: 56px; padding: 8px; border-radius: 0; gap: 12px; }
         .cardapio-hub .cd-quick-item + .cd-quick-item { border-top: 1px solid var(--ui-linha); }
@@ -1117,7 +1117,7 @@ export default function Cardapio() {
         .cardapio-hub .cd-quick-arrow { color: var(--ui-texto-3); }
         .cd-pro { padding: 16px; border-radius: var(--ui-raio-cartao); background: linear-gradient(150deg, #3B1620, #6B2340); color: #fff; box-shadow: var(--ui-sombra-cartao); }
         .cd-pro-ic { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-bottom: 12px; border-radius: var(--ui-raio); background: rgba(255,255,255,.14); }
-        .cd-pro h3 { margin: 0; font-size: 18px; font-weight: 800; color: #fff; }
+        .cd-pro h3 { margin: 0; font-size: 18px; font-weight: 700; color: #fff; }
         .cd-pro p { margin: 4px 0 16px; font-size: 13.5px; line-height: 1.5; color: rgba(255,255,255,.82); }
         .ch-metric-label { font-size: 12.5px !important; text-transform: none !important; letter-spacing: 0 !important; }
         .ch-live-badge, .ch-metric-pop { font-size: 12px !important; text-transform: none !important; letter-spacing: 0 !important; }

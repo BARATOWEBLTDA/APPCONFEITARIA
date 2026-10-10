@@ -181,7 +181,7 @@
   --fw-medium:   500;
   --fw-semibold: 600;
   --fw-bold:     700;
-  --fw-black:    800;
+  --fw-black:    700;
   /* Pesos por papel (09/10): título 800 · valor e nome em lista 700 · rótulo e apoio 500 */
   --ui-peso-titulo: 800;
   --ui-peso-valor:  700;

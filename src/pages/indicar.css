@@ -4,7 +4,7 @@
 @media (min-width: 1000px) { .in9 { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: start; } }
 .in9-banner { display: block; width: 100%; height: auto; border-radius: var(--ui-raio-cartao); }
 .in9-card { display: flex; flex-direction: column; gap: 12px; padding: 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
-.in9-t { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 17px; font-weight: 800; }
+.in9-t { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 17px; font-weight: 700; }
 .in9-t i { padding: 1px 8px; border-radius: 99px; background: var(--ui-cinza); font-size: 13px; font-style: normal; font-weight: 700; color: var(--ui-texto-2); }
 .in9-esq { height: 48px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
 
@@ -33,7 +33,7 @@
 /* andamento */
 .in9-and { gap: 4px; }
 .in9-and > small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
-.in9-num { font-size: 40px; font-weight: 800; line-height: 1.1; color: var(--ui-rosa-escuro); }
+.in9-num { font-size: 40px; font-weight: 700; line-height: 1.1; color: var(--ui-rosa-escuro); }
 .in9-and p { margin: 4px 0 8px; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
 .in9-and p b { color: var(--ui-texto); }
 .in9-barra { height: 8px; overflow: hidden; border-radius: 99px; background: var(--ui-cinza); }

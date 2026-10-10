@@ -73,7 +73,7 @@ export default function SucessoProdutoTela(p: Props) {
         .spt-ok { width: 72px; height: 72px; border-radius: 50%; background: #DCFCE7; color: #15803D; display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 700; margin: 18px auto 16px; box-shadow: 0 0 0 10px #F0FDF4; animation: spt-pop .45s cubic-bezier(.2,1.4,.4,1) both; }
         .spt-ok--festa { background: #FCE7F3; color: #C33A6E; box-shadow: 0 0 0 10px #FFF1F6; margin-top: 30px; }
         @keyframes spt-pop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .spt-h { font-size: 23px; font-weight: 800; line-height: 1.2; margin: 0; color: #2C1219; }
+        .spt-h { font-size: 23px; font-weight: 700; line-height: 1.2; margin: 0; color: #2C1219; }
         .spt-sub { font-size: 14px; color: #6B5D64; line-height: 1.5; margin: 8px auto 0; max-width: 300px; }
         .spt-sub b { color: #2C1219; }
         .spt-prev { display: flex; gap: 12px; align-items: center; text-align: left; border: 1px solid #F0EBED; border-radius: 14px; padding: 10px; margin: 22px 0 18px; box-shadow: 0 6px 18px rgba(60,20,35,.06); }

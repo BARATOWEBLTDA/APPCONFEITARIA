@@ -3,7 +3,7 @@
 .cc button { font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .cc button:focus { outline: none; }
 .cc-topo { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 64px; padding: 12px 8px 12px 16px; background: #fff; border-bottom: 1px solid #F3EEF0; }
-.cc-topo h2 { margin: 0; font-size: 22px; font-weight: 800; line-height: 1.2; }
+.cc-topo h2 { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.2; }
 .cc-topo small { display: block; font-size: 13px; color: #6B5D64; }
 .cc-rolo { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 8px 16px 24px; }
 .cc-sec { margin: 16px 0 8px; font-size: 15px; font-weight: 700; color: #2C1219; }
@@ -30,9 +30,9 @@
 .cc-ped--esq { height: 180px; background: linear-gradient(90deg, #fff 0%, #F7F4F5 50%, #fff 100%); background-size: 200% 100%; animation: ccEsq 1.2s ease-in-out infinite; }
 @keyframes ccEsq { from { background-position: 100% 0; } to { background-position: -100% 0; } }
 .cc-ped-cab { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-.cc-ped-cab b { display: block; font-size: 16px; font-weight: 800; }
+.cc-ped-cab b { display: block; font-size: 16px; font-weight: 700; }
 .cc-ped-cab small { display: block; font-size: 13px; color: #6B5D64; }
-.cc-ped-cab strong { flex: none; font-size: 16px; font-weight: 800; }
+.cc-ped-cab strong { flex: none; font-size: 16px; font-weight: 700; }
 .cc-sit { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; font-size: 15px; font-weight: 700; }
 .cc-sit--ok { color: #15803D; }
 .cc-sit--off { color: #B91C1C; }

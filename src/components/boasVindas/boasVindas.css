@@ -41,7 +41,7 @@
 @keyframes bvEntra { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
 .bv-sobre { margin: 0 0 6px; font-size: 13px; font-weight: 700; color: var(--bv-rosa); }
-.bv-h { margin: 0; font-family: var(--font-base); font-size: 26px; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; color: #fff; text-wrap: balance; }
+.bv-h { margin: 0; font-family: var(--font-base); font-size: 26px; font-weight: 700; letter-spacing: -.02em; line-height: 1.15; color: #fff; text-wrap: balance; }
 .bv-h em { font-style: normal; color: var(--bv-rosa); }
 .bv-p { max-width: 34ch; margin: 10px auto 0; font-size: 15.5px; font-weight: 500; line-height: 1.5; color: rgba(255, 255, 255, .84); text-wrap: balance; }
 
@@ -49,7 +49,7 @@
 .bv-marca { display: flex; flex-direction: column; align-items: center; }
 .bv-marca-masc { display: block; width: 150px; height: auto; filter: drop-shadow(0 0 22px rgba(255, 157, 196, .5)) drop-shadow(0 10px 12px rgba(0, 0, 0, .35)); }
 .bv-marca-nome { display: block; width: 150px; height: auto; margin-top: 6px; }
-.bv-oi { margin: 0 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 40px; font-weight: 800; letter-spacing: -.03em; line-height: 1.15; color: #fff; text-shadow: 0 0 24px rgba(255, 157, 196, .45); }
+.bv-oi { margin: 0 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 40px; font-weight: 700; letter-spacing: -.03em; line-height: 1.15; color: #fff; text-shadow: 0 0 24px rgba(255, 157, 196, .45); }
 
 /* ── 2 · cardápio dentro do celular ── */
 /* (07/10 · 2.93) celular branco: no fundo vinho ele aparece muito mais que o preto */
@@ -116,13 +116,13 @@
 .bv-app-menu p.on svg { color: var(--ui-rosa); }
 .bv-app-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .bv-app-topo { flex: none; display: flex; flex-direction: column; justify-content: center; height: 76px; padding: 0 28px; background: var(--ui-rosa); color: #fff; }
-.bv-app-topo b { font-size: 21px; font-weight: 800; }
+.bv-app-topo b { font-size: 21px; font-weight: 700; }
 .bv-app-topo small { font-size: 12.5px; font-weight: 500; opacity: .9; }
 .bv-app-corpo { position: relative; flex: 1; min-height: 0; overflow: hidden; padding: 56px 28px 20px; }
 .bv-app .bv-aviso--pc { top: 14px; font-size: 13px; animation-delay: .15s; }
 .bv-app .pdl-cab, .bv-app .pdl { display: grid; grid-template-columns: minmax(0, 1fr) 96px 96px 172px 100px 0; align-items: center; gap: 14px; }
 .bv-app .pdl-cab { padding: 0 16px; font-size: 12.5px; font-weight: 700; color: var(--ui-texto-2); }
-.bv-app-grupo { display: flex; align-items: center; gap: 8px; margin: 14px 0 8px; font-size: 16px; font-weight: 800; }
+.bv-app-grupo { display: flex; align-items: center; gap: 8px; margin: 14px 0 8px; font-size: 16px; font-weight: 700; }
 .bv-app-grupo i { padding: 0 7px; border-radius: 6px; background: var(--ui-cinza); font-size: 12.5px; font-style: normal; font-weight: 700; color: var(--ui-texto-2); }
 .bv-app .pdl-tabela { overflow: hidden; background: #fff; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
 .bv-app .pdl-tabela .bv-ped-entra > div { padding-bottom: 0; }
@@ -143,7 +143,7 @@
 .bv-din { width: 100%; max-width: 380px; padding: 16px; border-radius: var(--ui-raio-cartao); background: #fff; color: var(--ui-texto); text-align: left; box-shadow: 0 12px 30px rgba(0, 0, 0, .35); }
 .bv-din-topo { padding-bottom: 12px; border-bottom: 1px solid var(--ui-linha); }
 .bv-din-topo small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
-.bv-din-topo b { display: block; font-size: 30px; font-weight: 800; line-height: 1.2; color: var(--ui-laranja); font-variant-numeric: tabular-nums; animation: bvValor .45s cubic-bezier(.34, 1.56, .64, 1); }
+.bv-din-topo b { display: block; font-size: 30px; font-weight: 700; line-height: 1.2; color: var(--ui-laranja); font-variant-numeric: tabular-nums; animation: bvValor .45s cubic-bezier(.34, 1.56, .64, 1); }
 @keyframes bvValor { from { transform: scale(.92); opacity: .4; } to { transform: none; opacity: 1; } }
 .bv-din-topo span { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
 .bv-din-lista { margin: 0; padding: 0; list-style: none; }
@@ -182,7 +182,7 @@
 .bv-luc-conta > div.v { opacity: 1; }
 .bv-luc-conta > div span:last-child { font-weight: 700; color: var(--ui-texto); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .bv-luc-conta .bv-luc-t { margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--ui-linha); font-size: 15px; font-weight: 700; color: var(--ui-texto); }
-.bv-luc-conta .bv-luc-t span:last-child { font-weight: 800; }
+.bv-luc-conta .bv-luc-t span:last-child { font-weight: 700; }
 .bv-luc-conta .bv-luc-pv span:last-child { color: var(--ui-rosa-escuro); }
 
 /* ── celulares baixos: aperta pra demonstração caber inteira em cima do botão ── */

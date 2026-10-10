@@ -384,7 +384,7 @@ function CardapioContent() {
   if (error || !design) return (
     <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'var(--bg-body)' }}>
       <div style={{ textAlign:'center' }}>
-        <h1 style={{ fontSize:'24px', fontWeight:800, color:'var(--text-title)' }}>Cardápio não encontrado</h1>
+        <h1 style={{ fontSize:'24px', fontWeight:700, color:'var(--text-title)' }}>Cardápio não encontrado</h1>
         <p style={{ color:'var(--text-secondary)' }}>{error || 'Verifique o link e tente novamente.'}</p>
       </div>
     </div>

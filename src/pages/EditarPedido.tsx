@@ -3489,7 +3489,7 @@ const EP2_CSS = `
   .ep2-qty input { width: 38px; height: 34px; border: none; outline: none; text-align: center; font-family: inherit; font-size: 16px; font-weight: 700; color: #2C1219; background: none; -moz-appearance: textfield; }
   .ep2-qty input::-webkit-outer-spin-button, .ep2-qty input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .ep2-hd { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 8px; background: #E85A8C; color: #fff; padding: calc(12px + env(safe-area-inset-top, 0px)) 12px 12px; }
-  .ep2-hd-t { flex: 1; min-width: 0; } .ep2-hd-t b { display: block; font-size: 19px; font-weight: 800; letter-spacing: -.01em; line-height: 1.15; } /* título mais perto da linha de baixo */
+  .ep2-hd-t { flex: 1; min-width: 0; } .ep2-hd-t b { display: block; font-size: 19px; font-weight: 700; letter-spacing: -.01em; line-height: 1.15; } /* título mais perto da linha de baixo */
   .ep2-hd-sub { display: flex; align-items: center; gap: 4px; font-size: 12.5px; line-height: 1.3; opacity: .95; white-space: nowrap; min-width: 0; margin-top: 2px; }
   .ep2-hd-nome { min-width: 0; overflow: hidden; text-overflow: ellipsis; flex-shrink: 1; font-weight: 700; }
   .ep2-hd-quando { flex-shrink: 0; } .ep2-hd-virg { flex-shrink: 0; margin-left: -4px; font-weight: 700; }
@@ -3641,7 +3641,7 @@ const EP2_CSS = `
   .ep2-taxa > svg { color: #9A8E94; } .ep2-taxa .ep2-mini { margin-left: auto; }
   .ep2-nota { margin: 9px 0 0; font-size: 12px; color: #9A8E94; } .ep2-nota .ep2-lk, .ep2-vazio .ep2-lk { padding: 0; font-size: inherit; text-decoration: underline; }
   .ep2-cal-h { display: flex; justify-content: space-between; align-items: center; margin: 10px 4px 6px; } .ep2-cal-h b { font-size: 15px; }
-  .ep2-cal-h button { width: 32px; height: 32px; border-radius: 9px; border: none; background: #FFF1F6; color: #C33A6E; font-size: 18px; font-weight: 800; cursor: pointer; }
+  .ep2-cal-h button { width: 32px; height: 32px; border-radius: 9px; border: none; background: #FFF1F6; color: #C33A6E; font-size: 18px; font-weight: 700; cursor: pointer; }
   .ep2-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center; padding: 0 2px; }
   .ep2-cal i { font-style: normal; font-size: 12px; font-weight: 700; color: #9A8E94; padding: 4px 0; }
   .ep2-cal button { border: none; background: none; border-radius: 9px; padding: 8px 0; font-family: inherit; font-size: 14px; color: #2C1219; cursor: pointer; }
@@ -3679,7 +3679,7 @@ const EP2_CSS = `
   .ep3-vl b { margin-left: auto; font-size: 16px; font-weight: 700; color: #2C1219; white-space: nowrap; }
   .ep3-pv { padding: 9px 0; border-bottom: 1px solid #F2ECEF; } .ep2-ct + .ep3-pv { padding-top: 2px; }
   .ep3-pv-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
-  .ep3-pv-h span { font-size: 14px; font-weight: 700; color: #2C1219; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ep3-pv-h em { font-style: normal; font-weight: 800; color: #C33A6E; }
+  .ep3-pv-h span { font-size: 14px; font-weight: 700; color: #2C1219; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ep3-pv-h em { font-style: normal; font-weight: 700; color: #C33A6E; }
   .ep3-pv-h b { font-size: 14.5px; font-weight: 700; white-space: nowrap; }
   .ep3-pv p { margin: 2px 0 0; font-size: 12.5px; color: #8A7E84; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ep3-pv-d { margin-top: 4px; }
@@ -3753,7 +3753,7 @@ const EP2_CSS = `
   .ep2-sh { width: 100%; max-width: 440px; background: #fff; border-radius: 22px 22px 0 0; padding: 10px 14px calc(16px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 2px; max-height: 88dvh; overflow-y: auto; }
   @media (min-width: 768px) { .ep2-sh { border-radius: 22px; } }
   .ep2-alca { display: block; width: 40px; height: 4px; border-radius: 9px; background: #E5DDE1; margin: 0 auto 10px; }
-  .ep2-sh-t { font-size: 17px; font-weight: 800; color: #2C1219; padding: 2px 6px 8px; }
+  .ep2-sh-t { font-size: 17px; font-weight: 700; color: #2C1219; padding: 2px 6px 8px; }
   .ep2-mi { display: flex; align-items: center; gap: 12px; border: none; background: none; border-radius: 12px; padding: 13px 10px; font-family: inherit; font-size: 15px; font-weight: 700; color: #2C1219; cursor: pointer; text-align: left; }
   .ep2-mi:hover { background: #FAF7F8; } .ep2-mi svg { width: 18px; height: 18px; color: #6B5D64; } .ep2-mi.perigo, .ep2-mi.perigo svg { color: #DC2626; }
   .ep2-mi.sel { background: #FFF1F6; } .ep2-mi em { margin-left: auto; font-style: normal; font-size: 12px; font-weight: 700; color: #C33A6E; }

@@ -12,7 +12,7 @@ body .prod-modal--novo .prod-modal-header-novo { align-items: flex-start; gap: 8
 @media (max-width: 640px) { body .prod-modal--novo .prod-modal-header-novo { padding-top: calc(env(safe-area-inset-top, 0px) + 8px); } }
 body .prod-modal--novo .prod-modal-back-novo, body .prod-modal--novo .prod-modal-close-novo { width: 44px; height: 44px; border-radius: var(--ui-raio); background: transparent; color: var(--ui-texto); }
 body .prod-modal--novo .prod-modal-back-novo:hover, body .prod-modal--novo .prod-modal-close-novo:hover { background: var(--ui-cinza); color: var(--ui-texto); }
-body .prod-modal--novo .prod-modal-title-novo { color: var(--ui-texto) !important; font-size: 16px; font-weight: 800; line-height: 1.3; padding-top: 2px; }
+body .prod-modal--novo .prod-modal-title-novo { color: var(--ui-texto) !important; font-size: 16px; font-weight: 700; line-height: 1.3; padding-top: 2px; }
 body .prod-modal--novo .prod-wiz-passo { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
 body .prod-modal--novo .prod-wiz-dots { gap: 4px; margin: 10px 0 0; justify-content: stretch; }
 body .prod-modal--novo .prod-wiz-dots i { flex: 1; width: auto; height: 6px; border-radius: 3px; background: var(--ui-borda); }
@@ -20,9 +20,9 @@ body .prod-modal--novo .prod-wiz-dots i.on { background: var(--ui-rosa); }
 body .prod-modal--novo .prod-modal-edit-nome { font-size: 13px; color: var(--ui-texto-2); }
 
 /* ── títulos de cada passo: todos iguais, sem caixa alta, à esquerda ── */
-body .prod-modal--novo .cad-h2 { margin: 0 0 16px; font-size: 22px; font-weight: 800; line-height: 1.25; color: var(--ui-texto); }
+body .prod-modal--novo .cad-h2 { margin: 0 0 16px; font-size: 22px; font-weight: 700; line-height: 1.25; color: var(--ui-texto); }
 body .prod-modal--novo .prod-step-header, body .prod-modal--novo .pv3-header { margin: 0 0 16px; text-align: left; }
-body .prod-modal--novo .prod-step-title, body .prod-modal--novo .pv3-title, body .prod-modal--novo .bw-h, body .prod-modal--novo .bw-topo .bw-h { margin: 0; max-width: none; font-size: 22px; font-weight: 800; line-height: 1.25; letter-spacing: 0; text-transform: none; color: var(--ui-texto) !important; text-align: left; text-wrap: wrap; }
+body .prod-modal--novo .prod-step-title, body .prod-modal--novo .pv3-title, body .prod-modal--novo .bw-h, body .prod-modal--novo .bw-topo .bw-h { margin: 0; max-width: none; font-size: 22px; font-weight: 700; line-height: 1.25; letter-spacing: 0; text-transform: none; color: var(--ui-texto) !important; text-align: left; text-wrap: wrap; }
 body .prod-modal--novo .prod-step-sub, body .prod-modal--novo .pv3-subtitle, body .prod-modal--novo .bw-sub { max-width: none; margin: 4px 0 0; font-size: 15px; line-height: 1.45; color: var(--ui-texto-2); text-align: left; }
 body .prod-modal--novo .bw-sub { margin-bottom: 16px; }
 body .prod-modal--novo .bw-eta, body .prod-modal--novo .pv3-eyebrow { font-size: 13px; letter-spacing: 0; text-transform: none; color: var(--ui-rosa-escuro); }
@@ -94,7 +94,7 @@ body .prod-modal--novo .prod-btn-avancar-novo:only-child { grid-column: 1 / -1; 
 body .prod-modal--novo .prod-edit-tab { min-height: 40px; font-size: 13.5px; }
 
 /* ── produto publicado (tela final) ── */
-body .prod-modal-overlay--sucesso .spt-h { font-size: 22px; font-weight: 800; }
+body .prod-modal-overlay--sucesso .spt-h { font-size: 22px; font-weight: 700; }
 
 /* ── ajustes finos ── */
 body .prod-modal--novo .bw-topo { text-align: left; }

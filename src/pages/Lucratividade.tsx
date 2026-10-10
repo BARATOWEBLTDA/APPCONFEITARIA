@@ -166,8 +166,8 @@ const CSS = `
   .lu-eq-s { margin: 0; font-size: 13.5px; font-weight: 700; color: #2C1219; } .lu-nota { margin: 6px 0 0; font-size: 12px; color: #9A8E94; }
   .lu-link { border: none; background: none; padding: 0; font: inherit; color: #C33A6E; font-weight: 700; text-decoration: underline; cursor: pointer; }
   .lu-p { padding: 10px 0; border-top: 1px solid #F5F0F2; } .lu-p:first-of-type { border-top: none; }
-  .lu-p-h { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; } .lu-p-h b { font-weight: 800; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .lu-p-h span { font-weight: 800; color: #15803D; white-space: nowrap; } .lu-p-h span.ruim { color: #DC2626; }
+  .lu-p-h { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; } .lu-p-h b { font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lu-p-h span { font-weight: 700; color: #15803D; white-space: nowrap; } .lu-p-h span.ruim { color: #DC2626; }
   .lu-p-bar { height: 6px; border-radius: 9px; background: #F5F0F2; margin: 6px 0 5px; overflow: hidden; } .lu-p-bar i { display: block; height: 100%; background: #22C55E; border-radius: 9px; } .lu-p-bar i.ruim { background: #F87171; }
   .lu-p small { font-size: 12px; color: #888780; } .lu-sf { color: #B45309; font-weight: 700; display: inline-flex; align-items: center; gap: 3px; }
   .lu-aviso { display: flex; align-items: flex-start; gap: 8px; width: 100%; text-align: left; margin-top: 10px; background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: 12px; padding: 10px 12px; font-family: inherit; font-size: 13px; font-weight: 700; line-height: 1.4; cursor: pointer; }

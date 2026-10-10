@@ -52,7 +52,7 @@ export function DesktopLogo({ logoUrl, borderColor, storeName, storeDescription,
         textAlign: 'center',
         position: 'relative', zIndex: 20,
       }}>
-        <h1 style={{ fontSize: '22px', fontWeight: 800, color: corNome || 'var(--text-title)', margin: '0 0 6px', letterSpacing: '-0.3px' }}>
+        <h1 style={{ fontSize: '22px', fontWeight: 700, color: corNome || 'var(--text-title)', margin: '0 0 6px', letterSpacing: '-0.3px' }}>
           {storeName}
         </h1>
         {!hideStars && (

@@ -95,14 +95,14 @@ export default function AdminDashboard() {
       }} />
 
       <style>{`
-        .ad-h2 { margin: 28px 0 12px; font-size: 17px; font-weight: 800; color: var(--ui-texto); }
+        .ad-h2 { margin: 28px 0 12px; font-size: 17px; font-weight: 700; color: var(--ui-texto); }
         .ad-teste { display: flex; align-items: center; gap: 14px; padding: 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
         .ad-teste .ad-tx { flex: 1; }
         .ad-teste .ad-teste-t { font-size: 15px; }
         .ad-teste small { line-height: 1.45; }
         @media (max-width: 599px) { .ad-teste { flex-wrap: wrap; } .ad-teste .ui-bt { width: 100%; } }
         .ad-root { font-family: var(--font-base); color: var(--ui-texto); max-width: 1000px; }
-        .ad-h1 { font-size: 22px; font-weight: 800; color: var(--ui-texto); margin: 0; }
+        .ad-h1 { font-size: 22px; font-weight: 700; color: var(--ui-texto); margin: 0; }
         .ad-sub { font-size: 15px; font-weight: 500; color: var(--ui-texto-2); margin: 4px 0 20px; }
         .ad-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
         .ad-card { display: flex; align-items: center; gap: 14px; min-height: 84px; padding: 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }

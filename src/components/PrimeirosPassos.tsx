@@ -333,7 +333,7 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo }: FolhaProps) {
 
 const CSS = `
   .pp { background: #fff; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); padding: 16px 16px 8px; box-shadow: var(--ui-sombra-cartao); font-family: var(--font-base); color: #2C1219; }
-  .pp-t { display: block; font-size: 18px; font-weight: 800; line-height: 1.3; }
+  .pp-t { display: block; font-size: 18px; font-weight: 700; line-height: 1.3; }
   .pp-sub { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 4px 0 0; }
   .pp-bar { height: 8px; border-radius: 4px; background: var(--ui-linha); margin: 12px 0 8px; overflow: hidden; }
   .pp-bar i { display: block; height: 100%; border-radius: 99px; background: var(--ui-rosa); transition: width .5s ease; }

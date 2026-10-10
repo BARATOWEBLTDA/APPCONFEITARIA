@@ -786,7 +786,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dz-hero { text-align: center; padding: 8px 6px 2px; }
         .dz-hav2 { width: 84px; height: 84px; margin: 0 auto; border-radius: 26px; background: #FCE7F3; overflow: hidden; box-shadow: 0 10px 26px rgba(232,90,140,.28); }
         .dz-hav2 img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
-        .dz-hero b { display: block; font-size: 20px; font-weight: 800; margin-top: 12px; letter-spacing: -.01em; }
+        .dz-hero b { display: block; font-size: 20px; font-weight: 700; margin-top: 12px; letter-spacing: -.01em; }
         .dz-hero p { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 6px auto 0; max-width: 320px; text-wrap: balance; }
         .dz-hero b { text-wrap: balance; }
         .dz-sl { margin: 4px 0 0; font-size: 13.5px; font-weight: 700; color: var(--ui-texto-2, #6B5D64); }

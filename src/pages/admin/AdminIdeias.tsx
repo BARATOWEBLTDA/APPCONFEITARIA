@@ -248,7 +248,7 @@ export default function AdminIdeias() {
       <style>{`
         .ai-root { font-family: var(--font-base); max-width: 1000px; margin: 0 auto; color: var(--ui-texto); }
         .ai-root button, .ai-root select { font-family: inherit; }
-        .ai-h1 { font-size: 22px; font-weight: 800; margin: 0; color: var(--ui-texto); }
+        .ai-h1 { font-size: 22px; font-weight: 700; margin: 0; color: var(--ui-texto); }
         .ai-sub { font-size: 15px; font-weight: 500; line-height: 1.5; color: var(--ui-texto-2); margin: 4px 0 0; }
 
         .ai-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0 12px; }

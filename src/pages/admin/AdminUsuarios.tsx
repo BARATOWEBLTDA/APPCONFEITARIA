@@ -351,7 +351,7 @@ export default function AdminUsuarios() {
         .au-root button { font-family: inherit; }
         .au-topo { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
         .au-topo-t { min-width: 0; }
-        .au-h1 { font-size: 22px; font-weight: 800; margin: 0; color: var(--ui-texto); }
+        .au-h1 { font-size: 22px; font-weight: 700; margin: 0; color: var(--ui-texto); }
         .au-sub { font-size: 15px; font-weight: 500; color: var(--ui-texto-2); margin: 4px 0 0; }
 
         .au-card { padding: 12px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }

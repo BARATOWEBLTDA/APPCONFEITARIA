@@ -266,7 +266,7 @@ export default function AdminLayout() {
         .adm-logo-square--sm { width: 36px; height: 36px; }
         .adm-logo-square--sm img { width: 22px; height: 22px; }
         .adm-brand { display: flex; flex-direction: column; min-width: 0; }
-        .adm-brand-name { font-size: 16px; font-weight: 800; line-height: 1.15; color: #fff; }
+        .adm-brand-name { font-size: 16px; font-weight: 700; line-height: 1.15; color: #fff; }
         .adm-brand-role { font-size: 12px; font-weight: 500; color: rgba(255,255,255,.6); }
         .adm-nav { flex: 1; padding: 8px 12px 20px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.15) transparent; }
         .adm-nav-section { margin-bottom: 4px; }
@@ -307,7 +307,7 @@ export default function AdminLayout() {
         @keyframes admSheetIn { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
         .adm-sheet-grab { width: 40px; height: 4px; margin: 0 auto 10px; border-radius: 9px; background: #E5DDE1; }
         .adm-sheet-hdr { display: flex; align-items: center; justify-content: space-between; padding: 0 6px 8px; }
-        .adm-sheet-hdr b { font-size: 18px; font-weight: 800; }
+        .adm-sheet-hdr b { font-size: 18px; font-weight: 700; }
         .adm-sheet-x { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto-2); cursor: pointer; }
         .adm-sheet-x svg { width: 20px; height: 20px; }
         .adm-sheet-it { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 8px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto-3); font-family: inherit; text-align: left; cursor: pointer; }

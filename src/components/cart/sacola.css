@@ -69,7 +69,7 @@
 .sc-bt-pri:disabled { opacity: .6; cursor: default; }
 .sc-bt-pri.treme { animation: scTreme .35s; }
 @keyframes scTreme { 0%,100% { transform: none; } 25% { transform: translateX(-6px); } 50% { transform: translateX(6px); } 75% { transform: translateX(-3px); } }
-.sc-bt-sec { width: 100%; min-height: 52px; margin: 0; border: 0; border-radius: 12px; background: #F3EEF0; color: #2C1219; font-size: 16px; font-weight: 800; }
+.sc-bt-sec { width: 100%; min-height: 52px; margin: 0; border: 0; border-radius: 12px; background: #F3EEF0; color: #2C1219; font-size: 16px; font-weight: 700; }
 
 /* sacola vazia */
 .sc-vazia { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 64px 24px; text-align: center; }
@@ -80,7 +80,7 @@
 
 /* seções do finalizar (faixa cinza, igual ao produto aberto) */
 .sc-g-cab { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: #F3EEF0; scroll-margin-top: 8px; }
-.sc-g-cab b { display: block; font-size: 16px; font-weight: 800; }
+.sc-g-cab b { display: block; font-size: 16px; font-weight: 700; }
 .sc-g-cab small { display: block; margin-top: 2px; font-size: 13px; color: #6B5D64; }
 .sc-obr { flex: none; padding: 3px 8px; border-radius: 6px; background: #2C1219; color: #fff; font-size: 12px; font-weight: 700; font-style: normal; }
 .sc-ok { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: #16a34a; color: #fff; }
@@ -134,7 +134,7 @@
 .sc-enviado-in { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; max-width: 420px; margin: auto; }
 .sc-enviado-ic { display: flex; align-items: center; justify-content: center; width: 80px; height: 80px; border-radius: 50%; background: #16a34a; color: #fff; animation: scCheck .5s .1s both cubic-bezier(.34,1.56,.64,1); }
 @keyframes scCheck { 0% { transform: scale(0); } 70% { transform: scale(1.12); } 100% { transform: scale(1); } }
-.sc-enviado h2 { margin: 4px 0 0; font-size: 24px; font-weight: 800; }
+.sc-enviado h2 { margin: 4px 0 0; font-size: 24px; font-weight: 700; }
 .sc-enviado-in > p { margin: 0; max-width: 340px; font-size: 15px; line-height: 1.5; color: #6B5D64; }
 .sc-enviado-in > p b { color: #2C1219; }
 .sc-res { display: flex; flex-direction: column; gap: 10px; width: 100%; margin: 8px 0; padding: 16px; border-radius: 16px; background: #F7F4F5; text-align: left; }

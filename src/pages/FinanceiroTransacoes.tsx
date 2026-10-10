@@ -184,7 +184,7 @@ const CSS = `
   .tx-res { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .tx-k { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 10px; min-width: 0; }
   .tx-k small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
-  .tx-k b { display: block; font-size: clamp(13.5px, 3.9vw, 19px); font-weight: 800; letter-spacing: -.02em; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tx-k b { display: block; font-size: clamp(13.5px, 3.9vw, 19px); font-weight: 700; letter-spacing: -.02em; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tx-k b.e { color: #15803D; } .tx-k b.s { color: #DC2626; }
   .tx-filtros { display: flex; flex-direction: column; gap: 8px; }
   @media (min-width: 900px) { .tx-filtros { flex-direction: row; align-items: center; flex-wrap: wrap; } .tx-busca { flex: 1; min-width: 240px; } }

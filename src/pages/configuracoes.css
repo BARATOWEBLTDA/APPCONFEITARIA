@@ -21,7 +21,7 @@
 .cf9-plano-cab { display: flex; align-items: center; gap: 12px; }
 .cf9-plano-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--ui-raio); background: #FEF3C7; color: #B45309; }
 .cf9-plano-cab small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
-.cf9-plano-cab b { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 800; }
+.cf9-plano-cab b { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 700; }
 .cf9-plano-cab em { padding: 2px 8px; border-radius: 99px; background: var(--ui-verde-fundo); color: var(--ui-verde); font-size: 12px; font-style: normal; font-weight: 700; }
 .cf9-plano p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
 

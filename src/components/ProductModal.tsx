@@ -433,7 +433,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: '#2C1219' }}>{g.nome_exibicao}</span>
             {g.min_selecionavel > 0 && (
-              <span style={{ display: 'inline-block', padding: '2px 6px', background: '#FCE0E9', color: '#C33A6E', fontSize: 12, fontWeight: 800, borderRadius: 3, letterSpacing: '0.04em' }}>
+              <span style={{ display: 'inline-block', padding: '2px 6px', background: '#FCE0E9', color: '#C33A6E', fontSize: 12, fontWeight: 700, borderRadius: 3, letterSpacing: '0.04em' }}>
                 Obrigatório
               </span>
             )}
@@ -471,7 +471,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
               </div>
             </div>
             {opSelecionada && selecPreco ? (
-              <span style={{ fontSize: 13.5, fontWeight: 800, color: '#C33A6E', flexShrink: 0 }}>{selecPreco}</span>
+              <span style={{ fontSize: 13.5, fontWeight: 700, color: '#C33A6E', flexShrink: 0 }}>{selecPreco}</span>
             ) : null}
             <span style={{ color: opSelecionada ? '#16a34a' : '#C33A6E', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
               {isOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
@@ -532,7 +532,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                       )}
                     </div>
                     {precoLabel && (
-                      <span style={{ fontSize: 13.5, fontWeight: 800, color: '#C33A6E', flexShrink: 0 }}>{precoLabel}</span>
+                      <span style={{ fontSize: 13.5, fontWeight: 700, color: '#C33A6E', flexShrink: 0 }}>{precoLabel}</span>
                     )}
                   </button>
                 )
@@ -719,7 +719,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
         {/* Nome + descrição — corpo scrollável */}
         <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 14, flex: 1, overflowY: 'auto', minHeight: 0, overscrollBehavior: 'contain', touchAction: 'pan-y' }}>
           <div>
-            <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#2C1219', margin: 0, textAlign: 'center', lineHeight: 1.15, letterSpacing: '-0.01em' }}>{product.nome}</h2>
+            <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#2C1219', margin: 0, textAlign: 'center', lineHeight: 1.15, letterSpacing: '-0.01em' }}>{product.nome}</h2>
             {product.descricao && (
               <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '6px 0 0', lineHeight: 1.4 }}>
                 {product.descricao}
@@ -739,7 +739,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
               return (
                 <>
                   <span style={{ fontSize: 12, fontWeight: 700, color: '#6B5D64' }}>{semTamanho ? 'A partir de' : 'Preço unitário'}</span>
-                  <span style={{ fontSize: 18, fontWeight: 800, color: corBotao }}>
+                  <span style={{ fontSize: 18, fontWeight: 700, color: corBotao }}>
                     {formatCurrency(valor)} {!semTamanho && <span style={{ fontSize: 12, color: '#6B5D64', fontWeight: 700 }}>/{FORMA_LABEL[product.forma_venda] || 'un'}</span>}
                   </span>
                 </>
@@ -781,7 +781,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           {/* ═══ Personalizações da biblioteca (aba /complementos) ═══ */}
           {extrasBiblioteca.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: '#2C1219', letterSpacing: '-0.01em' }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#2C1219', letterSpacing: '-0.01em' }}>
                 Adicionais
               </div>
               {extrasBiblioteca.map(e => {
@@ -813,7 +813,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                     </div>
                     <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: '#2C1219' }}>{e.nome}</span>
                     <span style={{
-                      fontSize: 12.5, fontWeight: 800,
+                      fontSize: 12.5, fontWeight: 700,
                       color: isGratis ? '#16a34a' : '#C33A6E',
                     }}>
                       {isGratis ? 'Grátis' : `+ ${formatCurrency(e.valor)}`}

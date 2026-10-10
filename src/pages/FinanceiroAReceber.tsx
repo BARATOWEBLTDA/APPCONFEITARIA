@@ -191,7 +191,7 @@ const CSS = `
   .far-resumo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .far-k { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 10px; min-width: 0; }
   .far-k small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
-  .far-k b { display: block; font-size: clamp(13.5px, 3.9vw, 17px); letter-spacing: -.02em; font-weight: 800; color: #B45309; margin: 3px 0 1px; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .far-k b { display: block; font-size: clamp(13.5px, 3.9vw, 17px); letter-spacing: -.02em; font-weight: 700; color: #B45309; margin: 3px 0 1px; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .far-k i { font-style: normal; font-size: 13px; color: #888780; }
   .far-k--atr { border-color: #FECACA; background: #FFF7F7; } .far-k--atr b { color: #DC2626; }
   .far-carregando { text-align: center; color: #9A8E94; font-size: 14px; padding: 30px 0; }
@@ -223,7 +223,7 @@ const CSS = `
   @media (min-width: 768px) { .far-sh { border-radius: 22px; } }
   @keyframes farSobe { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
   .far-alca { display: block; width: 40px; height: 4px; border-radius: 9px; background: #E5DDE1; margin: 0 auto 12px; }
-  .far-sh-t { display: block; font-size: 19px; font-weight: 800; }
+  .far-sh-t { display: block; font-size: 19px; font-weight: 700; }
   .far-sh-s { display: block; font-size: 13px; color: #6B5D64; margin: 2px 0 12px; }
   .far-res { background: #FAF7F8; border-radius: 12px; padding: 8px 12px; }
   .far-res div { display: flex; justify-content: space-between; font-size: 14px; padding: 4px 0; color: #4B3A42; }

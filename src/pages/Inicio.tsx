@@ -924,11 +924,11 @@ export default function Inicio() {
         }
         .ini-hero-msg-icon { display: inline-flex; flex: none; }
         .ini-hero-msg-hl {
-          font-weight: 800;
+          font-weight: 700;
           color: #FFFFFF;
         }
         /* sobre o rosa, só o branco dá leitura (o rosa claro, o verde e o amarelo sumiam): o destaque vem do peso da letra */
-        .ini-hero-msg .ini-hero-msg-hl { color: var(--ui-branco); font-weight: 800; }
+        .ini-hero-msg .ini-hero-msg-hl { color: var(--ui-branco); font-weight: 700; }
         .ini-hero-msg--neutral { color: rgba(255, 255, 255, 0.92); }
 
         /* Skeleton do nome enquanto carrega — evita flash de "bem-vinda" grande */
@@ -1117,7 +1117,7 @@ export default function Inicio() {
         /* ── Engajamento (mobile, rodapé) ── */
 
         .ini-section-title {
-          font-size: 16px; font-weight: 800;
+          font-size: 16px; font-weight: 700;
           color: var(--text-title);
           margin: 0;
         }
@@ -1517,7 +1517,7 @@ export default function Inicio() {
           .ini-root .ini-hero-greeting h1 {
             flex-wrap: wrap; /* se o nome e a etiqueta não cabem lado a lado, a etiqueta desce: o nome não é cortado */
             gap: 4px 8px;
-            font-size: 22px; font-weight: 800;
+            font-size: 22px; font-weight: 700;
             letter-spacing: -.02em; line-height: 1.2;
             min-height: 26px;
           }
@@ -1571,7 +1571,7 @@ export default function Inicio() {
           .ini-root .ini-content { gap: 10px; }
           .ini-root .ini-main > .ini-section--nav { margin-top: 6px; gap: 0; }
           .ini-root .ini-section--nav .ini-section-title {
-            font-size: 16px; font-weight: 800;
+            font-size: 16px; font-weight: 700;
             letter-spacing: -0.2px;
             color: #2C1219;
             margin: 0 5px 10px;
@@ -1603,7 +1603,7 @@ export default function Inicio() {
             color: #E85A8C;
           }
           .ini-root .ini-hero-cta-txt { position: relative; z-index: 2; }
-          .ini-root .ini-hero-cta-t { font-size: 17px; font-weight: 800; letter-spacing: -0.2px; line-height: 1.2; }
+          .ini-root .ini-hero-cta-t { font-size: 17px; font-weight: 700; letter-spacing: -0.2px; line-height: 1.2; }
           .ini-root .ini-hero-cta-d { font-size: 12.5px; opacity: 0.95; margin-top: 2px; }
           .ini-root .ini-hero-cta-bag {
             display: block;
@@ -1668,7 +1668,7 @@ export default function Inicio() {
           /* rosa encostado no topo e nas laterais da área do app (sem mexer nos cartões) */
           .ini-dk-top { background: linear-gradient(120deg, #E85A8C 0%, #C33A6E 60%, #8E2350 100%); color: #fff; border-radius: 0; margin: -72px -112px 0 -68px; padding: 48px 140px 74px 96px; display: flex; align-items: center; justify-content: space-between; gap: 20px; position: relative; overflow: hidden; }
           .ini-dk-top::after { content: ""; position: absolute; right: -70px; top: -80px; width: 260px; height: 260px; border-radius: 50%; background: rgba(255,255,255,.08); pointer-events: none; }
-          .ini-dk-txt h1 { font-size: 22px; font-weight: 800; letter-spacing: -.02em; margin: 0; color: #fff; }
+          .ini-dk-txt h1 { font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin: 0; color: #fff; }
           .ini-dk-txt p { font-size: 14.5px; margin: 6px 0 0; color: rgba(255,255,255,.92); }
           .ini-dk-atr { position: relative; z-index: 1; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
           .ini-dk-atr::after { content: ""; position: absolute; inset: -12px -4px; } /* área de toque de 44px */

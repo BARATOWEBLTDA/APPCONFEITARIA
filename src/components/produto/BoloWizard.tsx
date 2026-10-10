@@ -551,7 +551,7 @@ export function BoloPrecoStep({ form, setForm, escolha, primeiroNome, edicao }: 
 const CSS = `
   .bw { font-family: var(--font-base); color: #2C1219; padding: 4px 2px 12px; }
   .bw-eta { font-size: 12px; font-weight: 700; color: #C33A6E; margin: 0; }
-  .bw-h { font-size: 22px; font-weight: 800; line-height: 1.25; letter-spacing: -.01em; margin: 6px 0 6px; color: #2C1219; }
+  .bw-h { font-size: 22px; font-weight: 700; line-height: 1.25; letter-spacing: -.01em; margin: 6px 0 6px; color: #2C1219; }
   .bw-h span { color: #C33A6E; }
   .bw-sub { font-size: 14px; color: #6B5D64; line-height: 1.5; margin: 0 0 18px; }
   .bw-lb { font-size: 12.5px; font-weight: 700; color: #4B3A42; margin: 22px 0 8px; }
@@ -626,7 +626,7 @@ const CSS = `
   .bw-sheet { width: 100%; max-width: 440px; background: #fff; border-radius: 22px; padding: 16px 18px 18px; box-shadow: 0 24px 60px rgba(44,18,25,.3); color: #2C1219; }
   .bw-grab { display: none; width: 40px; height: 4px; border-radius: 2px; background: #E5DDE0; margin: 0 auto 10px; }
   .bw-sheet-h { display: flex; align-items: center; justify-content: space-between; }
-  .bw-sheet-h b { font-size: 17px; font-weight: 800; }
+  .bw-sheet-h b { font-size: 17px; font-weight: 700; }
   .bw-sheet-h button { width: 32px; height: 32px; border-radius: 50%; border: none; background: #F5F0F2; color: #6B5D64; cursor: pointer; font-size: 13px; }
   .bw-sheet .bw-gerar-bt { width: 100%; height: 48px; margin-top: 16px; }
   .bw-sheet .bw-prev { margin-top: 12px; }

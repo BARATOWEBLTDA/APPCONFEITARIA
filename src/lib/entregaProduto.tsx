@@ -71,7 +71,7 @@ export function AvisoAntecedencia({ produto }: { produto: any }) {
     }}>
       <span style={{ marginTop: 1 }}><IconeCalendario size={16} /></span>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <strong style={{ display: "block", fontSize: 13.5, fontWeight: 800, lineHeight: 1.3, textWrap: "balance" } as any}>Encomende com {s.prazo} de antecedência</strong>
+        <strong style={{ display: "block", fontSize: 13.5, fontWeight: 700, lineHeight: 1.3, textWrap: "balance" } as any}>Encomende com {s.prazo} de antecedência</strong>
         {/* 02/10: bloco (antes ficava solto na linha e ignorava a altura de linha) e um texto que ajuda */}
         <span style={{ display: "block", marginTop: 3, fontSize: 12.5, color: "#6B5D64", lineHeight: 1.4, textWrap: "balance" } as any}>Você escolhe o dia ao finalizar o pedido.</span>
       </div>

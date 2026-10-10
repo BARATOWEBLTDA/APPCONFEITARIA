@@ -88,7 +88,7 @@
 .nv3-contas p.tot { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--ui-linha); font-size: 16px; font-weight: 700; }
 .nv3-ok { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 24px 16px; }
 .nv3-ok-ic { display: flex; align-items: center; justify-content: center; width: 72px; height: 72px; margin-bottom: 12px; border-radius: 50%; background: var(--ui-verde-fundo); color: var(--ui-verde); }
-.nv3-ok h2 { margin: 0; font-size: 22px; font-weight: 800; }
+.nv3-ok h2 { margin: 0; font-size: 22px; font-weight: 700; }
 .nv3-ok > p { margin: 4px 0 16px; font-size: 15px; color: var(--ui-texto-2); }
 .nv3-ok .nv3-res { align-self: stretch; margin-bottom: 16px; padding: 12px; border-radius: var(--ui-raio); background: var(--ui-cinza); text-align: left; }
 .nv3-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-self: stretch; margin: 8px 0 4px; }

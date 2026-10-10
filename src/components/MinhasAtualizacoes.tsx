@@ -311,7 +311,7 @@ export default function MinhasAtualizacoes() {
       <style>{`
         .mu-root { overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); font-family: var(--font-base); }
         .mu-header { padding: 16px 16px 12px; color: var(--ui-texto); }
-        .mu-header h2 { margin: 0; font-family: var(--font-base); font-size: 16px; font-weight: 800; line-height: 1.3; }
+        .mu-header h2 { margin: 0; font-family: var(--font-base); font-size: 16px; font-weight: 700; line-height: 1.3; }
         .mu-list { display: flex; flex-direction: column; }
         .mu-item { display: flex; align-items: flex-start; gap: 12px; box-sizing: border-box; width: 100%; min-height: 64px; margin: 0; padding: 12px 16px; background: transparent; border: 0; border-top: 1px solid var(--ui-linha); color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: background-color var(--dur-fast) linear; }
         @media (hover: hover) { .mu-item:hover { background: var(--ui-linha); } }

@@ -11,7 +11,7 @@
 .ab-card { display: flex; flex-direction: column; gap: 14px; min-width: 0; padding: 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
 .ab-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .ab-head-tx { min-width: 0; }
-.ab-title { margin: 0 0 2px; font-size: 16px; font-weight: 800; color: var(--ui-texto); }
+.ab-title { margin: 0 0 2px; font-size: 16px; font-weight: 700; color: var(--ui-texto); }
 .ab-desc { margin: 0; font-size: 13px; font-weight: 500; line-height: 1.45; color: var(--ui-texto-2); }
 
 .ab-toggle { flex: none; display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 14px; font-weight: 700; color: var(--ui-texto); cursor: pointer; user-select: none; }

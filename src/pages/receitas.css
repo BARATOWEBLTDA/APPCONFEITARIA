@@ -2,7 +2,7 @@
 .rv-root { max-width: 1100px; margin: 0 auto; padding: 16px 12px 112px; font-family: var(--font-base); color: var(--ui-texto); text-align: left; }
 .rv-root button { font-family: inherit; cursor: pointer; }
 .rv-busca { flex: none; width: 100%; }
-.rv-sec { display: flex; align-items: center; gap: 8px; margin: 24px 0 10px; font-size: 17px; font-weight: 800; }
+.rv-sec { display: flex; align-items: center; gap: 8px; margin: 24px 0 10px; font-size: 17px; font-weight: 700; }
 .rv-sec svg { color: var(--ui-laranja); }
 .rv-sub { margin: 14px 2px 10px; font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
 .rv-pad { padding: 0; }
@@ -19,7 +19,7 @@
 .rv-tile-grad { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(31,7,17,.75)); }
 .rv-tile-ic { position: absolute; top: 12px; right: 12px; }
 .rv-tile-t { position: absolute; left: 12px; right: 12px; bottom: 10px; display: flex; flex-direction: column; }
-.rv-tile-t b { font-size: 16px; font-weight: 800; line-height: 1.2; }
+.rv-tile-t b { font-size: 16px; font-weight: 700; line-height: 1.2; }
 .rv-tile-t small { font-size: 13px; font-weight: 700; opacity: .85; }
 .rv-tile.com-foto .rv-tile-t { color: #fff; }
 .rv-cat-h { height: 160px; margin-bottom: 4px; overflow: hidden; border-radius: var(--ui-raio-cartao); background: #000; }
@@ -52,7 +52,7 @@
 .rv-hero { height: 220px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 14px; border-radius: var(--ui-raio-cartao); }
 @media (min-width: 768px) { .rv-hero { height: 300px; } }
 .rv-hero img { width: 100%; height: 100%; object-fit: cover; }
-.rv-det h1 { margin: 4px 0 2px; font-size: 24px; font-weight: 800; line-height: 1.2; }
+.rv-det h1 { margin: 4px 0 2px; font-size: 24px; font-weight: 700; line-height: 1.2; }
 .rv-by { margin: 0; font-size: 13px; color: var(--ui-texto-2); }
 .rv-infos { display: grid; margin: 14px 0; border-top: 1px solid var(--ui-linha); border-bottom: 1px solid var(--ui-linha); }
 .rv-infos div { padding: 10px 6px; text-align: center; border-left: 1px solid var(--ui-linha); }
@@ -65,13 +65,13 @@
 .rv-like.on { background: var(--ui-rosa); color: #fff; }
 .rv-ic { width: 52px; background: var(--ui-cinza); color: var(--ui-texto); }
 .rv-ic.on { background: var(--ui-vinho); color: #fff; }
-.rv-det h2 { margin: 24px 0 4px; padding-bottom: 8px; border-bottom: 2px solid var(--ui-vinho); font-size: 19px; font-weight: 800; }
+.rv-det h2 { margin: 24px 0 4px; padding-bottom: 8px; border-bottom: 2px solid var(--ui-vinho); font-size: 19px; font-weight: 700; }
 .rv-etapa { margin: 14px 0 4px; font-size: 14px; font-weight: 700; color: var(--ui-rosa-escuro); }
 .rv-ing { list-style: none; margin: 0; padding: 0; }
 .rv-ing li { position: relative; padding: 9px 0 9px 18px; border-bottom: 1px solid var(--ui-linha); font-size: 15px; line-height: 1.45; }
 .rv-ing li::before { content: ""; position: absolute; left: 2px; top: 17px; width: 6px; height: 6px; border-radius: 50%; background: var(--ui-rosa); }
 .rv-passo { display: flex; gap: 12px; padding: 10px 0; }
-.rv-passo .rv-num { flex: none; min-width: 22px; font-size: 20px; font-weight: 800; line-height: 1.2; color: var(--ui-rosa-escuro); }
+.rv-passo .rv-num { flex: none; min-width: 22px; font-size: 20px; font-weight: 700; line-height: 1.2; color: var(--ui-rosa-escuro); }
 .rv-passo p { margin: 0; font-size: 15px; line-height: 1.6; }
 .rv-dica { margin-top: 18px; padding: 14px 16px; border-radius: var(--ui-raio); background: var(--ui-laranja-fundo); }
 .rv-dica b { display: flex; align-items: center; gap: 8px; font-size: 15px; color: #92400E; }

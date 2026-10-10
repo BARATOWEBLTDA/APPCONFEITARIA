@@ -161,19 +161,19 @@ const fmtUnidade = (unidade: string, qtd: number): string => {
  *  Mantidas curtas para combinar bem com `text-wrap: balance`. */
 const MODAL_TITLE_VARIANTS: ((nome: string) => ReactNode)[] = [
   // Formais
-  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, veja como calculamos este custo.</>,
-  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, confira como chegamos a este valor.</>,
-  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, entenda como este custo foi calculado.</>,
-  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, vamos mostrar como esse valor foi obtido.</>,
-  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, veja o passo a passo deste cálculo.</>,
-  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, descubra como calculamos este ingrediente.</>,
-  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, este é o cálculo por trás deste custo.</>,
-  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, entenda de onde vem este valor.</>,
+  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, veja como calculamos este custo.</>,
+  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, confira como chegamos a este valor.</>,
+  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, entenda como este custo foi calculado.</>,
+  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, vamos mostrar como esse valor foi obtido.</>,
+  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, veja o passo a passo deste cálculo.</>,
+  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, descubra como calculamos este ingrediente.</>,
+  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, este é o cálculo por trás deste custo.</>,
+  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, entenda de onde vem este valor.</>,
   // Descontraídas
-  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, sem mistério! Veja como fizemos esse cálculo.</>,
-  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, vamos abrir a calculadora e mostrar tudo.</>,
-  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, aqui está a conta por trás deste custo.</>,
-  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, veja cada etapa do cálculo.</>,
+  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, sem mistério! Veja como fizemos esse cálculo.</>,
+  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, vamos abrir a calculadora e mostrar tudo.</>,
+  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, aqui está a conta por trás deste custo.</>,
+  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, veja cada etapa do cálculo.</>,
 ];
 
 /**

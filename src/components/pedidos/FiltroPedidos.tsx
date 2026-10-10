@@ -93,7 +93,7 @@ export default function FiltroLateral({ statusSelecionados, setStatusSelecionado
         @keyframes flEntra { from { transform: translateX(100%); } to { transform: none; } } @keyframes flSai { to { transform: translateX(100%); } }
         @keyframes flFundo { from { background: rgba(45,31,38,0); } } @keyframes flFundoSai { to { background: rgba(45,31,38,0); } }
         .fl-h { display: flex; justify-content: space-between; align-items: center; padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 12px; border-bottom: 1px solid #F3EEF1; }
-        .fl-h b { font-size: 19px; font-weight: 800; color: #2C1219; }
+        .fl-h b { font-size: 19px; font-weight: 700; color: #2C1219; }
         .fl-x { width: 36px; height: 36px; border-radius: 10px; border: none; background: #F5F0F2; color: #4B3A42; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .fl-b { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 4px 16px 14px; }
         .fl-sec { display: flex; justify-content: space-between; align-items: baseline; margin: 16px 2px 7px; }

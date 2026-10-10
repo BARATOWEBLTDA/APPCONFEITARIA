@@ -73,7 +73,7 @@ export default function AdminLogin() {
         .al-logo { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 16px; }
         .al-logo img { height: 72px; max-width: 100%; object-fit: contain; }
         .al-badge { padding: 2px 10px; border-radius: 999px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 13px; font-weight: 700; }
-        .al-h1 { margin: 0; text-align: center; font-size: 22px; font-weight: 800; color: var(--ui-texto); }
+        .al-h1 { margin: 0; text-align: center; font-size: 22px; font-weight: 700; color: var(--ui-texto); }
         .al-sub { margin: 4px 0 24px; text-align: center; font-size: 15px; font-weight: 500; color: var(--ui-texto-2); }
         .al-form { display: flex; flex-direction: column; gap: 16px; }
         .al-erro { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 12px; border-radius: var(--ui-raio); background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); font-size: 14px; font-weight: 500; line-height: 1.4; }

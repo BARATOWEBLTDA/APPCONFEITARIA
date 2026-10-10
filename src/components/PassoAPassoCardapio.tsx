@@ -574,7 +574,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         }
         .pap-title {
           font-size: 20px;
-          font-weight: 800;
+          font-weight: 700;
           color: #2C1219;
           margin: 0 0 4px;
           letter-spacing: -0.01em;
@@ -645,7 +645,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         }
         .pap-hero-title {
           font-size: 17px;
-          font-weight: 800;
+          font-weight: 700;
           color: #fff;
           margin: 0 0 6px;
           letter-spacing: -0.01em;
@@ -730,7 +730,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           background: #fff;
         }
         .pap-item.next .pap-item-t {
-          font-weight: 800;
+          font-weight: 700;
         }
         .pap-item:disabled { cursor: default; }
         .pap-item.todo:active { transform: scale(0.98); }

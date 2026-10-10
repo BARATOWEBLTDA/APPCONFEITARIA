@@ -29,7 +29,7 @@
 
 /* nome, descrição, preço */
 .pm-info { padding: 20px 16px 16px; }
-.pm-info h2 { margin: 0; font-size: 22px; font-weight: 800; line-height: 1.25; }
+.pm-info h2 { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.25; }
 .pm-info > p { margin: 6px 0 0; font-size: 15px; line-height: 1.5; color: #6B5D64; white-space: pre-line; }
 .pm-preco { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; margin-top: 12px; }
 .pm-preco s { font-size: 14px; color: #9A8E94; }
@@ -43,7 +43,7 @@
 /* grupos */
 .pm-g { scroll-margin-top: 64px; }
 .pm-g-cab { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: #F3EEF0; transition: background-color .2s; }
-.pm-g-cab b { display: block; font-size: 16px; font-weight: 800; }
+.pm-g-cab b { display: block; font-size: 16px; font-weight: 700; }
 .pm-g-cab small { display: block; margin-top: 2px; font-size: 13px; color: #6B5D64; }
 .pm-g-dir { display: flex; align-items: center; gap: 8px; flex: none; }
 .pm-g-dir em { font-style: normal; font-size: 13px; font-weight: 700; color: #6B5D64; }

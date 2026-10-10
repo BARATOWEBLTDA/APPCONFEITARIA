@@ -134,7 +134,7 @@ const CSS = `
   .cxc-top { display: flex; justify-content: space-between; align-items: center; }
   .cxc-top p { margin: 0; font-size: 12.5px; opacity: .82; } .cxc-top i { font-style: normal; background: rgba(255,255,255,.15); border-radius: 6px; padding: 1px 6px; margin-left: 4px; font-size: 12px; }
   .cxc-acertar { display: inline-flex; align-items: center; gap: 4px; border: none; background: rgba(255,255,255,.14); color: #fff; border-radius: 8px; padding: 5px 9px; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
-  .cxc-v { display: block; font-size: 31px; font-weight: 800; letter-spacing: -.02em; margin: 4px 0 10px; }
+  .cxc-v { display: block; font-size: 31px; font-weight: 700; letter-spacing: -.02em; margin: 4px 0 10px; }
   .cxc-hoje { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; opacity: .92; }
   .cxc-hoje span { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; } .cxc-hoje em { font-style: normal; font-weight: 700; }
   .cxc small { display: block; font-size: 13px; opacity: .6; margin-top: 9px; line-height: 1.4; }
@@ -160,7 +160,7 @@ const CSS = `
   .cxs { width: 100%; max-width: 440px; background: #fff; border-radius: 22px 22px 0 0; padding: 10px 18px calc(20px + env(safe-area-inset-bottom, 0px)); color: #2C1219; }
   @media (min-width: 768px) { .cxs { border-radius: 22px; } }
   .cxs-alca { display: block; width: 40px; height: 4px; border-radius: 9px; background: #E5DDE1; margin: 0 auto 12px; }
-  .cxs-t { display: block; font-size: 19px; font-weight: 800; }
+  .cxs-t { display: block; font-size: 19px; font-weight: 700; }
   .cxs-s { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 4px 0 0; }
   .cxs-lb { display: block; font-size: 13px; font-weight: 700; color: #4B3A42; margin: 16px 0 6px; }
   .cxs-in { display: flex; align-items: center; gap: 6px; border: 1.5px solid #E85A8C; border-radius: 12px; padding: 0 12px; height: 54px; box-shadow: 0 0 0 3px rgba(232,90,140,.12); }

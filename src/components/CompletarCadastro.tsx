@@ -74,7 +74,7 @@ export default function CompletarCadastro({ user, nomeInicial, onPronto }: { use
         .ccad-ok { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 99px; background: var(--ui-verde-fundo); color: var(--ui-verde); font-size: 13px; font-weight: 700; }
         .ccad-av { display: flex; align-items: center; justify-content: center; width: 80px; height: 80px; margin: 18px auto 0; overflow: hidden; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 30px; font-weight: 700; }
         .ccad-av img { width: 100%; height: 100%; object-fit: cover; }
-        .ccad h1 { margin: 14px 0 0; text-align: center; font-size: 22px; font-weight: 800; line-height: 1.25; }
+        .ccad h1 { margin: 14px 0 0; text-align: center; font-size: 22px; font-weight: 700; line-height: 1.25; }
         .ccad-sub { max-width: 320px; margin: 6px auto 0; text-align: center; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
         .ccad-form { display: flex; flex-direction: column; gap: 16px; margin-top: 24px; }
         .ccad-zap { color: #16A34A; }

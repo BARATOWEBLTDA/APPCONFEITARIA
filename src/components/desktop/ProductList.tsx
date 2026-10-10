@@ -30,7 +30,7 @@ export function DesktopProductList({ produtos, favorites, onToggleFavorite, back
       {/* Promoções */}
       {promo.length > 0 && (
         <div style={{ marginBottom: '32px' }}>
-          <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-title)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-title)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span>🔥</span> Promoções
           </h3>
           <div style={{
@@ -46,7 +46,7 @@ export function DesktopProductList({ produtos, favorites, onToggleFavorite, back
       {/* Produtos */}
       {regular.length > 0 && (
         <div style={{ marginBottom: '32px' }}>
-          <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-title)', marginBottom: '16px' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-title)', marginBottom: '16px' }}>
             {selectedCategory || 'Todos os Produtos'}
           </h3>
           <div style={{

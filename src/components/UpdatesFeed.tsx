@@ -92,7 +92,7 @@ export default function UpdatesFeed() {
         .uf-header { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 6px 8px 2px 16px; }
         .uf-root--vazio { padding-bottom: 16px; }
         .uf-nada { margin: 0; padding: 0 16px; font-size: 15px; font-weight: 500; line-height: 1.45; color: var(--ui-texto-2); }
-        .uf-header h2 { flex: 1; margin: 0; font-family: var(--font-base); font-size: 16px; font-weight: 800; line-height: 1.3; color: var(--ui-texto); }
+        .uf-header h2 { flex: 1; margin: 0; font-family: var(--font-base); font-size: 16px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); }
         .uf-ver-todas { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin: 0; padding: 0 8px; background: none; border: 0; border-radius: var(--ui-raio); font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; -webkit-tap-highlight-color: transparent; }
         .uf-ver-todas:active { background: var(--ui-rosa-claro); }
         .uf-list { display: flex; flex-direction: column; }

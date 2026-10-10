@@ -33,7 +33,7 @@
 .ant-prev { margin-top: 16px; padding: 12px; border: 1px dashed var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-fundo); }
 .ant-prev-r { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
 .ant-prev-l { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); }
-.ant-prev-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: var(--ui-rosa); color: var(--ui-branco); font-size: 14px; font-weight: 800; }
+.ant-prev-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: var(--ui-rosa); color: var(--ui-branco); font-size: 14px; font-weight: 700; }
 .ant-prev-tx { flex: 1; min-width: 0; }
 .ant-prev-tx b { display: block; font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
 .ant-prev-tx p { margin: 2px 0 0; font-size: 13px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); overflow-wrap: anywhere; }

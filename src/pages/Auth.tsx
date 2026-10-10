@@ -908,7 +908,7 @@ export default function Auth() {
         @media (min-width: 900px) {
           .auth-text-hdr { display: block; }
         }
-        .auth-h2 { font-size: 22px; font-weight: 800; color: #2C1219; margin: 0 0 2px; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* guia: título da tela 22px */
+        .auth-h2 { font-size: 22px; font-weight: 700; color: #2C1219; margin: 0 0 2px; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* guia: título da tela 22px */
         .auth-p { font-size: 13.5px; color: #6B5D64; line-height: 1.45; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .auth-form { display: flex; flex-direction: column; gap: 1rem; }
         .field { display: flex; flex-direction: column; gap: 0.35rem; }
@@ -1000,7 +1000,7 @@ export default function Auth() {
           line-height: 1.3;
           font-weight: 500;
         }
-        .ref-banner-title b { font-weight: 800; color: #72243E; }
+        .ref-banner-title b { font-weight: 700; color: #72243E; }
         .ref-banner-desc {
           font-size: 13px;
           color: #993556;
@@ -1178,7 +1178,7 @@ export default function Auth() {
           .auth-marca-in { position: sticky; top: 0; height: min(100%, calc(100vh - 48px)); height: min(100%, calc(100dvh - 48px)); display: flex; flex-direction: column; align-items: center; justify-content: center; }
           .auth-marca-masc { display: block; width: 170px; height: auto; filter: drop-shadow(0 12px 16px rgba(80,10,40,.3)); }
           .auth-marca-nome { display: block; width: 210px; max-width: 100%; height: auto; margin-top: 14px; }
-          .auth-marca-frase { font-size: 24px; font-weight: 800; margin: 22px 0 6px; letter-spacing: -0.01em; } /* guia: 24px, o maior da escala */
+          .auth-marca-frase { font-size: 24px; font-weight: 700; margin: 22px 0 6px; letter-spacing: -0.01em; } /* guia: 24px, o maior da escala */
           .auth-marca-sub { font-size: 15px; opacity: .92; margin: 0; }
           .auth-marca-lista { display: none; }
           .auth-card { margin: 0 !important; padding: 48px 44px !important; box-shadow: none !important; border-radius: 0 28px 28px 0 !important; display: flex; flex-direction: column; justify-content: center; animation: none; }

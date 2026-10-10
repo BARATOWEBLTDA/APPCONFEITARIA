@@ -81,7 +81,7 @@ export default function TipoProdutoTela({ onEscolher, onFechar }: Props) {
         .tpp-barra i.on { background: var(--ui-rosa); }
         .tpp-body { flex: 1; overflow-y: auto; padding: 20px 16px 16px; }
         .tpp-h { padding: 0 0 16px; }
-        .tpp-h h1 { margin: 0; font-size: 22px; font-weight: 800; line-height: 1.25; color: var(--ui-texto); }
+        .tpp-h h1 { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.25; color: var(--ui-texto); }
         .tpp-h p { margin: 4px 0 0; font-size: 15px; line-height: 1.45; color: var(--ui-texto-2); }
         .tpp-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
         .tpp-card { display: flex; flex-direction: column; align-items: stretch; margin: 0; padding: 0; overflow: hidden; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); font-family: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }

@@ -308,8 +308,8 @@ export default function RichEditor({ content, onChange }: Props) {
           outline: none;
         }
         .rich-content-editor:focus { outline: none; }
-        .rich-content-editor h1 { font-size: 24px; font-weight: 800; margin: 20px 0 10px; line-height: 1.2; }
-        .rich-content-editor h2 { font-size: 20px; font-weight: 800; margin: 18px 0 8px; line-height: 1.25; }
+        .rich-content-editor h1 { font-size: 24px; font-weight: 700; margin: 20px 0 10px; line-height: 1.2; }
+        .rich-content-editor h2 { font-size: 20px; font-weight: 700; margin: 18px 0 8px; line-height: 1.25; }
         .rich-content-editor h3 { font-size: 17px; font-weight: 700; margin: 14px 0 6px; }
         .rich-content-editor p { margin: 0 0 10px; }
         .rich-content-editor ul, .rich-content-editor ol { margin: 0 0 12px; padding-left: 22px; }
@@ -400,8 +400,8 @@ export function RichContent({ content }: { content: any }) {
           color: #2C1219;
           outline: none;
         }
-        .ProseMirror h1 { font-size: 26px; font-weight: 800; margin: 24px 0 12px; line-height: 1.2; letter-spacing: -0.02em; }
-        .ProseMirror h2 { font-size: 20px; font-weight: 800; margin: 20px 0 10px; }
+        .ProseMirror h1 { font-size: 26px; font-weight: 700; margin: 24px 0 12px; line-height: 1.2; letter-spacing: -0.02em; }
+        .ProseMirror h2 { font-size: 20px; font-weight: 700; margin: 20px 0 10px; }
         .ProseMirror h3 { font-size: 17px; font-weight: 700; margin: 16px 0 8px; }
         .ProseMirror p { margin: 0 0 12px; }
         .ProseMirror ul, .ProseMirror ol { margin: 0 0 14px; padding-left: 22px; }

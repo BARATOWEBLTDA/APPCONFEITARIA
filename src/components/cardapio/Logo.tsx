@@ -123,7 +123,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
       </div>
 
       <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: '18px', padding: '66px 16px 14px', margin: '0 14px', marginTop: '-70px', boxShadow: '0 8px 24px rgba(60,20,35,0.10)', zIndex: 20, position: 'relative', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '22px', fontWeight: 800, color: corNome || '#000000', margin: 0, letterSpacing: '-0.02em', lineHeight: 1.2 }}>{storeName}{verificada && <SeloVerificado tamanho={20} />}</h1>
+        <h1 style={{ fontSize: '22px', fontWeight: 700, color: corNome || '#000000', margin: 0, letterSpacing: '-0.02em', lineHeight: 1.2 }}>{storeName}{verificada && <SeloVerificado tamanho={20} />}</h1>
 
         {/* Status + nota numa linha só */}
         {(status || !hideStars) && (

@@ -11,7 +11,7 @@
 .cab-voltar:focus-visible, .cab-i:focus-visible, .cab-foto:focus-visible, .cab-foto-cam:focus-visible { outline: 3px solid rgba(255, 255, 255, .75); outline-offset: 2px; }
 .cab-txt { flex: 1; min-width: 0; }
 .cab-linha { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.cab-t { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-base); font-size: 22px; font-weight: 800; letter-spacing: -.02em; line-height: 1.2; color: inherit; }
+.cab-t { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-base); font-size: 22px; font-weight: 700; letter-spacing: -.02em; line-height: 1.2; color: inherit; }
 .cab-i { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin: 0; padding: 0; border: 0; border-radius: 50%; background: none; color: inherit; opacity: .9; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; -webkit-appearance: none; appearance: none; transition: opacity var(--dur-fast) linear, transform var(--dur-fast) var(--ease-out); }
 .cab-i::after { content: ""; position: absolute; inset: -10px; } /* área de toque de 44px */
 @media (hover: hover) { .cab-i:hover { opacity: 1; } }

@@ -65,7 +65,7 @@
 .nd-capa { display: block; width: 100%; height: auto; max-height: 240px; margin: 0 0 16px; object-fit: cover; border-radius: var(--ui-raio); background: var(--ui-cinza); }
 .nd-meta { margin: 0 0 8px; font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
 .nd-meta b { font-weight: 700; color: var(--ui-rosa-escuro); }
-.nd-t { margin: 0 0 16px; font-family: var(--font-base); font-size: 22px; font-weight: 800; line-height: 1.25; letter-spacing: -0.01em; color: var(--ui-texto); text-wrap: balance; overflow-wrap: anywhere; }
+.nd-t { margin: 0 0 16px; font-family: var(--font-base); font-size: 22px; font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; color: var(--ui-texto); text-wrap: balance; overflow-wrap: anywhere; }
 .nd-autor { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; padding: 12px 0; border-top: 1px solid var(--ui-linha); border-bottom: 1px solid var(--ui-linha); }
 .nd-foto { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; overflow: hidden; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 15px; font-weight: 700; }
 .nd-foto img { width: 100%; height: 100%; object-fit: cover; }
@@ -76,9 +76,9 @@
 
 /* o texto que o admin escreve: mesmas letras e cores do app */
 .nd-texto .ProseMirror { font-family: var(--font-base); font-size: 15px; font-weight: 500; line-height: 1.6; color: var(--ui-texto); overflow-wrap: anywhere; }
-.nd-texto .ProseMirror h1, .nd-texto .ProseMirror h2 { margin: 24px 0 8px; font-family: var(--font-base); font-size: 18px; font-weight: 800; line-height: 1.3; letter-spacing: 0; color: var(--ui-texto); }
+.nd-texto .ProseMirror h1, .nd-texto .ProseMirror h2 { margin: 24px 0 8px; font-family: var(--font-base); font-size: 18px; font-weight: 700; line-height: 1.3; letter-spacing: 0; color: var(--ui-texto); }
 .nd-texto .ProseMirror h1, .nd-texto .ProseMirror h2, .nd-texto .ProseMirror h3 { text-wrap: pretty; }
-.nd-texto .ProseMirror h3 { margin: 16px 0 8px; font-family: var(--font-base); font-size: 16px; font-weight: 800; line-height: 1.3; color: var(--ui-texto); }
+.nd-texto .ProseMirror h3 { margin: 16px 0 8px; font-family: var(--font-base); font-size: 16px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); }
 .nd-texto .ProseMirror p { margin: 0 0 12px; }
 .nd-texto .ProseMirror ul { margin: 0 0 12px; padding-left: 24px; list-style: disc outside; }
 .nd-texto .ProseMirror ol { margin: 0 0 12px; padding-left: 24px; list-style: decimal outside; }

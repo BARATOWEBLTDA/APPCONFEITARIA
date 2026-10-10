@@ -47,7 +47,7 @@ export default function DialogoApp({ tipo = 'aviso', titulo, texto, icone = 'inf
         @media (min-width: 768px) { .dlg { border-radius: 24px; } }
         @keyframes dlgSobe { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
         .dlg-ic { width: 68px; height: 68px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px; }
-        .dlg-t { display: block; font-size: 18px; font-weight: 800; line-height: 1.3; text-wrap: balance; }
+        .dlg-t { display: block; font-size: 18px; font-weight: 700; line-height: 1.3; text-wrap: balance; }
         .dlg-x { margin: 8px auto 0; font-size: 14px; color: #6B5D64; line-height: 1.5; max-width: 320px; text-wrap: balance; }
         .dlg-bts { display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px; margin-top: 20px; }
         .dlg-b1, .dlg-b2 { border: none; border-radius: 14px; padding: 14px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }

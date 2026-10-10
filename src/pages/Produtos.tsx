@@ -2218,7 +2218,7 @@ function PersonalizacaoStep({
         }
         .pv3-title {
           font-size: 20px;
-          font-weight: 800;
+          font-weight: 700;
           color: #4B5563;
           margin-top: 4px;
           line-height: 1.2;
@@ -6923,7 +6923,7 @@ export default function Produtos() {
         }
         .prod-lib-title {
           font-size: 17px;
-          font-weight: 800;
+          font-weight: 700;
           margin: 0 0 8px;
           letter-spacing: -0.02em;
           color: var(--text-title);
@@ -8067,7 +8067,7 @@ export default function Produtos() {
         }
         .prod-step-title {
           font-size: 20px;
-          font-weight: 800;
+          font-weight: 700;
           color: #4B5563;
           line-height: 1.2;
           letter-spacing: 0.02em;
@@ -8471,7 +8471,7 @@ export default function Produtos() {
           min-width: 76px;
         }
         .prod-var-tag-num {
-          font-size: 20px; font-weight: 800; line-height: 1;
+          font-size: 20px; font-weight: 700; line-height: 1;
         }
         .prod-var-tag-un {
           font-size: 12px; font-weight: 700;
@@ -8486,7 +8486,7 @@ export default function Produtos() {
         }
         .prod-var-body-info { min-width: 0; flex: 1; }
         .prod-var-preco-big {
-          font-size: 16px; font-weight: 800; color: #16A34A;
+          font-size: 16px; font-weight: 700; color: #16A34A;
           line-height: 1.1;
         }
         .prod-var-preco-un-mini {
@@ -8545,7 +8545,7 @@ export default function Produtos() {
           flex-wrap: wrap;
         }
         .prod-var-num-inline {
-          font-size: 17px; font-weight: 800; color: #2D1F26;
+          font-size: 17px; font-weight: 700; color: #2D1F26;
           line-height: 1;
         }
         .prod-var-tag-inline {
@@ -8757,7 +8757,7 @@ export default function Produtos() {
         }
         .wiz-step1-title {
           font-size: 22px;
-          font-weight: 800;
+          font-weight: 700;
           color: #2D1F26;
           letter-spacing: -0.02em;
           line-height: 1.15;
@@ -9089,7 +9089,7 @@ export default function Produtos() {
         .prod-modal-title-novo { color: #4B5563 !important; } /* mesmo cinza do "Fotos e finalização" */
         .prod-modal-title-novo {
           font-size: 18px;
-          font-weight: 800;
+          font-weight: 700;
           color: #2D1F26;
           letter-spacing: -0.01em;
         }
@@ -9503,7 +9503,7 @@ export default function Produtos() {
         }
         .prod-pro-modal-title {
           font-size: 22px;
-          font-weight: 800;
+          font-weight: 700;
           color: #2D1F26;
           margin: 4px 0 8px;
           line-height: 1.2;
@@ -10014,7 +10014,7 @@ export default function Produtos() {
           align-items: center;
           gap: 10px;
           font-size: 16px;
-          font-weight: 800;
+          font-weight: 700;
           color: #78350F;
           margin: 0 0 12px;
         }
@@ -10800,7 +10800,7 @@ export default function Produtos() {
         .prod-mchk-title {
           margin: 0 0 4px;
           font-size: 17px;
-          font-weight: 800;
+          font-weight: 700;
           color: #1F1F23;
           letter-spacing: -0.01em;
         }
