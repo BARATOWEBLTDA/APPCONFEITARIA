@@ -215,6 +215,10 @@ export default function App() {
         <Route path="/cardapio/:slug" element={<CardapioPublico />} />
         <Route path="/esqueci-senha" element={<EsqueciSenha />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        {/* outros nomes que um link antigo de e-mail pode usar (09/10 · 3.95): todos abrem a tela de criar a senha nova */}
+        <Route path="/redefinir-senha" element={<ResetPassword />} />
+        <Route path="/nova-senha" element={<ResetPassword />} />
+        <Route path="/alterar-senha" element={<ResetPassword />} />
         <Route path="/verificar-email" element={<VerificarEmail />} />
 
         <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
