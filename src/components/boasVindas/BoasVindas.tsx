@@ -461,9 +461,9 @@ function DemoDinheiro() {
 /* ───────── 5 · custos: o resumo da Ficha técnica, montando a conta linha por linha ───────── */
 // o mesmo bolo da Camila, da tela das encomendas (2 kg a R$ 75 o quilo)
 const CONTA = [
-  { rotulo: 'Ingredientes', valor: 52, cor: 'var(--ui-rosa)' },
-  { rotulo: 'Custos invisíveis (25%)', valor: 13, cor: '#F59E0B' },
-  { rotulo: 'Mão de obra (2h30)', valor: 25, cor: 'var(--ui-vinho)' },
+  { rotulo: 'Ingredientes', valor: 51.37, cor: 'var(--ui-rosa)' },
+  { rotulo: 'Custos invisíveis (25%)', valor: 12.84, cor: '#F59E0B' },
+  { rotulo: 'Mão de obra (2h30)', valor: 24.6, cor: 'var(--ui-vinho)' },
 ]
 const PRECO = 150
 const CUSTO = CONTA.reduce((s, c) => s + c.valor, 0)
