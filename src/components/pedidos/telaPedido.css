@@ -259,6 +259,6 @@
 .tpj-tl small { font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
 @media (prefers-reduced-motion: reduce) { .tpj-sw, .tpj-sw::after { transition: none; } }
 /* Quem retirou (09/10) */
-.tpd-ret-bt { margin: 0 0 0 6px; padding: 0; border: 0; background: none; font: inherit; font-weight: 700; color: var(--ui-rosa-escuro); text-decoration: underline; cursor: pointer; min-height: 32px; }
+.tpd-ret-bt { margin: -8px 0 -8px 6px; padding: 8px 0; border: 0; background: none; font: inherit; line-height: inherit; vertical-align: baseline; font-weight: 600; color: var(--ui-rosa-escuro); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; min-height: 0; }
 .tpj-ret { display: flex; flex-direction: column; gap: 8px; padding-bottom: 8px; }
 .tpj-ret p { margin: 0; font-size: 13px; color: var(--ui-texto-2); }

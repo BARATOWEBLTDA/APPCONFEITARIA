@@ -441,9 +441,6 @@ function Calendario({ refDate, setRefDate, diaSel, setDiaSel, dayStats, irParaHo
         <h2 className="ag3-cal-t">{mesNome.charAt(0).toUpperCase() + mesNome.slice(1)} de {refDate.getFullYear()}</h2>
         <BotaoIcone rotulo="Próximo mês" onClick={() => setRefDate(new Date(refDate.getFullYear(), refDate.getMonth() + 1, 1))}><CaretRight size={20} weight="bold" /></BotaoIcone>
       </div>
-      {(!ehMesDeHoje || diaSel !== hojeISO) && (
-        <div className="ag3-hoje"><Botao variante="suave" tamanho="p" onClick={irParaHoje}>Voltar pra hoje</Botao></div>
-      )}
 
       <div className="ag3-sem" aria-hidden="true">{SEMANA_CURTA.map(d => <span key={d}>{d}</span>)}</div>
 
