@@ -116,7 +116,7 @@ export default function UpdatesFeed() {
         .uf-capa { flex: none; display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro) center / cover no-repeat; color: var(--ui-rosa-escuro); }
         .uf-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
         .uf-cat { font-size: 12.5px; font-weight: 700; line-height: 1.3; color: var(--ui-rosa-escuro); }
-        .uf-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin: 2px 0 0; font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); }
+        .uf-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin: 2px 0 0; font-size: 15px; font-weight: 600; line-height: 1.3; color: var(--ui-texto); }
         .uf-desc { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin: 2px 0 0; font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
         .uf-arr { flex: none; color: var(--ui-texto-3); }
       `}</style>
