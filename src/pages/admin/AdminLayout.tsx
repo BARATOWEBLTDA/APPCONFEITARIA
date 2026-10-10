@@ -263,7 +263,7 @@ export default function AdminLayout() {
         /* Menu do computador */
         .adm-sidebar { position: fixed; top: 0; bottom: 0; left: 0; z-index: 30; display: flex; flex-direction: column; width: 260px; background: var(--vinho-profundo); }
         .adm-sidebar-top { display: flex; align-items: center; gap: 12px; padding: 20px; border-bottom: 1px solid rgba(255,255,255,.08); }
-        .adm-logo-square { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; overflow: hidden; border-radius: 12px; background: var(--ui-rosa); }
+        .adm-logo-square { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; overflow: hidden; border-radius: var(--ui-raio); background: var(--ui-rosa); }
         .adm-logo-square img { width: 26px; height: 26px; object-fit: contain; filter: brightness(0) invert(1); }
         .adm-logo-square--sm { width: 44px; height: 44px; }
         .adm-logo-square--sm img { width: 32px; height: 32px; }
@@ -305,7 +305,7 @@ export default function AdminLayout() {
         .adm-bnav-ic { position: relative; display: flex; }
         .adm-bnav-badge { position: absolute; top: -6px; right: -12px; min-width: 20px; height: 20px; padding: 0 5px; border: 2px solid var(--vinho-profundo); border-radius: 99px; background: var(--ui-rosa); color: var(--ui-branco); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
         .adm-sheet-ov { position: fixed; top: 0; left: 0; right: 0; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); z-index: 40; background: var(--ui-veu); }
-        .adm-sheet { position: fixed; left: 0; right: 0; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); max-height: 75vh; overflow-y: auto; padding: 10px 12px 12px; border-radius: 24px 24px 0 0; background: var(--ui-branco); animation: admSheetIn .2s ease-out; }
+        .adm-sheet { position: fixed; left: 0; right: 0; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); max-height: 75vh; overflow-y: auto; padding: 10px 12px 12px; border-radius: var(--ui-raio-janela) var(--ui-raio-janela) 0 0; background: var(--ui-branco); animation: admSheetIn .2s ease-out; }
         @keyframes admSheetIn { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
         .adm-sheet-grab { width: 40px; height: 4px; margin: 0 auto 10px; border-radius: 9px; background: #E5DDE1; }
         .adm-sheet-hdr { display: flex; align-items: center; justify-content: space-between; padding: 0 6px 8px; }

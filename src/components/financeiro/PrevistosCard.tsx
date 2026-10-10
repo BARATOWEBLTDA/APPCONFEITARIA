@@ -37,12 +37,12 @@ export default function PrevistosCard() {
         <i>Ver o que falta receber <CaretRight size={13} weight="bold" /></i>
       </div>
       <style>{`
-        .pvc { display: block; width: 100%; text-align: left; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 16px; padding: 14px; font-family: var(--font-base); color: var(--ui-texto); cursor: pointer; }
+        .pvc { display: block; width: 100%; text-align: left; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 14px; font-family: var(--font-base); color: var(--ui-texto); cursor: pointer; }
         .pvc--carregando { height: 128px; background: var(--ui-linha); border: none; }
         .pvc-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 10px; }
         .pvc-h b { font-size: 14.5px; font-weight: 700; } .pvc-h em { font-style: normal; font-size: 13px; font-weight: 500; color: var(--ui-texto-3); white-space: nowrap; }
         .pvc-g { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-        .pvc-g span { background: #FFFBEB; border-radius: 10px; padding: 9px 6px; text-align: center; min-width: 0; }
+        .pvc-g span { background: #FFFBEB; border-radius: var(--ui-raio-p); padding: 9px 6px; text-align: center; min-width: 0; }
         .pvc-g small { display: block; font-size: 12px; font-weight: 700; color: #92400E; }
         .pvc-g b { display: block; font-size: clamp(13px, 3.7vw, 15.5px); font-weight: 700; color: #92400E; letter-spacing: -.02em; white-space: nowrap; }
         .pvc-f { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 10px; font-size: 12.5px; color: var(--ui-texto-2); }

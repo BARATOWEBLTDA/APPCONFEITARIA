@@ -14,7 +14,7 @@ textarea.fo-txt { min-height: 88px; padding: 12px; resize: vertical; line-height
 .fo-chips button { min-height: 44px; margin: 0; padding: 0 14px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ui-texto); cursor: pointer; }
 .fo-chips button.on { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
 .fo-seg { display: flex; gap: 4px; padding: 4px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
-.fo-seg button { flex: 1; min-width: 0; min-height: 44px; margin: 0; padding: 0 8px; border: 0; border-radius: 10px; background: none; font-family: inherit; font-size: 15px; font-weight: 700; color: var(--ui-texto-2); cursor: pointer; }
+.fo-seg button { flex: 1; min-width: 0; min-height: 44px; margin: 0; padding: 0 8px; border: 0; border-radius: var(--ui-raio-p); background: none; font-family: inherit; font-size: 15px; font-weight: 700; color: var(--ui-texto-2); cursor: pointer; }
 .fo-seg button.on { background: var(--ui-branco); color: var(--ui-texto); box-shadow: var(--ui-sombra-cartao); }
 .fo-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
 .fo-row > * { min-width: 0; }

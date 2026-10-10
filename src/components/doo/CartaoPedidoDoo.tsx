@@ -92,9 +92,9 @@ export default function CartaoPedidoDoo({ uid, rascunho, catalogo, estado, numer
 }
 
 const CSS = `
-  .cpd { margin-top: 10px; background: var(--ui-branco); border: 1.5px solid #F7C6D9; border-radius: 16px; padding: 14px; font-family: var(--font-base); color: var(--ui-texto); max-width: 340px; }
+  .cpd { margin-top: 10px; background: var(--ui-branco); border: 1.5px solid #F7C6D9; border-radius: var(--ui-raio-cartao); padding: 14px; font-family: var(--font-base); color: var(--ui-texto); max-width: 340px; }
   .cpd-hd { display: flex; gap: 11px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid var(--ui-linha); }
-  .cpd-ic { width: 40px; height: 40px; border-radius: 10px; background: var(--primary-light); color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .cpd-ic { width: 40px; height: 40px; border-radius: var(--ui-raio-p); background: var(--primary-light); color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .cpd-k { margin: 0; font-size: 12px; font-weight: 700; color: var(--ui-rosa); }
   .cpd-hd b { display: flex; align-items: center; gap: 6px; font-size: 16px; font-weight: 700; margin-top: 1px; flex-wrap: wrap; }
   .cpd-tag { font-size: 12px; font-weight: 700; color: #1D4ED8; background: #DBEAFE; padding: 2px 7px; border-radius: 6px; }
@@ -107,17 +107,17 @@ const CSS = `
   .cpd-kv { display: grid; grid-template-columns: 86px 1fr; gap: 6px 10px; margin: 12px 0 0; padding-top: 10px; border-top: 1px solid var(--ui-linha); font-size: 13.5px; }
   .cpd-kv dt { color: #888780; font-weight: 500; } .cpd-kv dd { margin: 0; font-weight: 700; }
   .cpd-neg { color: #B91C1C; }
-  .cpd-tot { margin-top: 12px; background: var(--ui-vinho-escuro); color: var(--ui-branco); border-radius: 12px; padding: 10px 12px; }
+  .cpd-tot { margin-top: 12px; background: var(--ui-vinho-escuro); color: var(--ui-branco); border-radius: var(--ui-raio); padding: 10px 12px; }
   .cpd-tot div { display: flex; justify-content: space-between; align-items: baseline; }
   .cpd-tot span { font-size: 13px; opacity: .8; } .cpd-tot b { font-size: 18px; font-weight: 700; }
   .cpd-falta b { font-size: 14px; color: #F9A8D4; }
   .cpd-tot small { display: block; font-size: 13px; opacity: .7; margin-top: 2px; }
-  .cpd-prob { margin-top: 10px; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 10px; padding: 8px 10px; }
+  .cpd-prob { margin-top: 10px; background: #FEF2F2; border: 1px solid #FECACA; border-radius: var(--ui-raio-p); padding: 8px 10px; }
   .cpd-prob p { margin: 0; display: flex; gap: 6px; align-items: flex-start; font-size: 12.5px; font-weight: 700; color: #B91C1C; line-height: 1.35; }
   .cpd-prob p + p { margin-top: 4px; }
   .cpd-erro { margin: 10px 0 0; font-size: 13px; color: #B91C1C; font-weight: 700; }
   .cpd-bts { display: flex; gap: 8px; margin-top: 12px; }
-  .cpd-b1, .cpd-b2 { border-radius: 12px; padding: 12px 10px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .cpd-b1, .cpd-b2 { border-radius: var(--ui-raio); padding: 12px 10px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; }
   .cpd-b1 { flex: 2; border: none; background: var(--ui-rosa); color: var(--ui-branco); box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
   .cpd-b1:disabled { background: #F3B6CB; box-shadow: none; cursor: default; }
   .cpd-b2 { flex: 1; border: 1.5px solid #EAE3E6; background: var(--ui-branco); color: var(--ui-texto); }

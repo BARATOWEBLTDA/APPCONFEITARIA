@@ -111,7 +111,7 @@
 .bv-app-perfil span { display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; overflow: hidden; border: 3px solid var(--ui-branco); border-radius: 50%; background: var(--ui-branco); color: var(--ui-branco); font-size: 26px; font-weight: 700; }
 .bv-app-perfil span img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: var(--ui-branco); }
 .bv-app-perfil b { font-size: 14px; font-weight: 700; color: var(--ui-branco); }
-.bv-app-menu p { display: flex; align-items: center; gap: 10px; margin: 0 0 2px; padding: 9px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; }
+.bv-app-menu p { display: flex; align-items: center; gap: 10px; margin: 0 0 2px; padding: 9px 12px; border-radius: var(--ui-raio-p); font-size: 14px; font-weight: 500; }
 .bv-app-menu p.on { background: rgba(255, 255, 255, .10); color: var(--ui-branco); font-weight: 700; }
 .bv-app-menu p.on svg { color: var(--ui-rosa); }
 .bv-app-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
@@ -166,7 +166,7 @@
 /* 5 · resumo da Ficha técnica (as mesmas medidas do fichaDetalhe.css) */
 .bv-luc { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: var(--ui-raio-cartao); background: var(--ui-branco); color: var(--ui-texto); text-align: left; box-shadow: 0 12px 30px rgba(0, 0, 0, .35); }
 .bv-luc-topo { display: flex; align-items: center; gap: 14px; }
-.bv-luc-foto { flex: none; width: 72px; height: 72px; overflow: hidden; border-radius: 16px; background: var(--ui-rosa-claro); }
+.bv-luc-foto { flex: none; width: 72px; height: 72px; overflow: hidden; border-radius: var(--ui-raio-cartao); background: var(--ui-rosa-claro); }
 .bv-luc-foto img { width: 100%; height: 100%; object-fit: cover; }
 .bv-luc-nome { margin: 0 0 4px; font-size: 14px; font-weight: 700; color: var(--ui-texto); }
 .bv-luc-lucro .bv-luc-espera { color: var(--ui-texto-3); }

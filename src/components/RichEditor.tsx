@@ -225,7 +225,7 @@ export default function RichEditor({ content, onChange }: Props) {
         .rich-editor {
           background: var(--ui-branco);
           border: 1.5px solid #F0EBED;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           overflow: hidden;
         }
         .rich-toolbar {
@@ -323,7 +323,7 @@ export default function RichEditor({ content, onChange }: Props) {
         }
         .rich-content-editor img {
           max-width: 100%; height: auto;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           display: block; margin: 12px 0;
         }
         .rich-content-editor audio {
@@ -415,7 +415,7 @@ export function RichContent({ content }: { content: any }) {
         }
         .ProseMirror img {
           max-width: 100%; height: auto;
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           display: block; margin: 16px 0;
         }
         .ProseMirror audio {
@@ -425,7 +425,7 @@ export function RichContent({ content }: { content: any }) {
           display: inline-flex;
           padding: 12px 16px;
           background: var(--ui-linha);
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           margin: 10px 0;
         }
         .ProseMirror .rich-file a {

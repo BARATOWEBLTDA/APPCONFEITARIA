@@ -158,13 +158,13 @@ export default function NotificacoesSons() {
           color: #888780; margin: 6px 6px 8px;
         }
         .ns-card {
-          background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px;
+          background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao);
           overflow: hidden; margin-bottom: 14px;
         }
         .ns-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
         .ns-row + .ns-row { border-top: 1px solid var(--ui-linha); }
         .ns-ico {
-          width: 38px; height: 38px; flex-shrink: 0; border-radius: 10px;
+          width: 38px; height: 38px; flex-shrink: 0; border-radius: var(--ui-raio-p);
           background: #F0EBED; color: #5F5E5A;
           display: flex; align-items: center; justify-content: center;
         }
@@ -175,7 +175,7 @@ export default function NotificacoesSons() {
         .ns-desc--warn { color: var(--ui-vermelho); }
         .ns-row--off .ns-name, .ns-row--off .ns-ico { opacity: 0.45; }
         .ns-note {
-          margin: 0 16px 14px; padding: 10px 12px; border-radius: 10px;
+          margin: 0 16px 14px; padding: 10px 12px; border-radius: var(--ui-raio-p);
           background: #FAF7F8; font-size: 13px; color: #6E5A66; line-height: 1.45;
         }
         .ns-toggle { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }

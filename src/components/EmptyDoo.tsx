@@ -128,7 +128,7 @@ export default function EmptyDoo({
           background: var(--primary, #E85A8C);
           color: var(--ui-branco);
           border: none;
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           padding: 12px 24px;
           font-family: inherit;
           font-size: 14px;

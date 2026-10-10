@@ -649,7 +649,7 @@ export default function Cardapio() {
           width: 100%;
           background: var(--bg-card);
           border: 1px solid var(--border);
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           overflow: hidden;
         }
         .ch-periodo-tab {
@@ -870,7 +870,7 @@ export default function Cardapio() {
         .cd-quick-item:hover, .cd-quick-item:active { background: #FAF8F5; }
         .cd-quick-ico {
           width: 40px; height: 40px;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
         }

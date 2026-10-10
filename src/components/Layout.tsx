@@ -393,7 +393,7 @@ export default function Layout() {
         .nav-item, .nav-item--group {
           all: unset; box-sizing: border-box;
           display: flex; align-items: center; gap: 10px;
-          min-height: 44px; padding: 0 12px; border-radius: 12px;
+          min-height: 44px; padding: 0 12px; border-radius: var(--ui-raio);
           font-family: var(--font-base); font-size: 14.5px; font-weight: 500; line-height: 1.2;
           color: rgba(255,255,255,0.82); text-decoration: none; cursor: pointer;
           transition: background-color var(--dur-fast) linear, color var(--dur-fast) linear;
@@ -406,7 +406,7 @@ export default function Layout() {
         .nav-item--group.active-parent { color: var(--ui-branco); font-weight: var(--fw-bold); }
 
         .nav-group-body { display: flex; flex-direction: column; gap: 2px; margin: 2px 0 6px 21px; padding-left: 9px; border-left: 1px solid rgba(255,255,255,0.14); }
-        .nav-subitem { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 10px; border-radius: 10px; font-size: 13.5px; font-weight: var(--fw-medium); color: rgba(255,255,255,0.78); text-decoration: none; transition: background-color var(--dur-fast) linear, color var(--dur-fast) linear; }
+        .nav-subitem { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 10px; border-radius: var(--ui-raio-p); font-size: 13.5px; font-weight: var(--fw-medium); color: rgba(255,255,255,0.78); text-decoration: none; transition: background-color var(--dur-fast) linear, color var(--dur-fast) linear; }
         .nav-subitem .nav-subicon { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .nav-subitem:hover { color: var(--ui-branco); background: rgba(255,255,255,0.07); }
         .nav-subitem.active { color: var(--ui-branco); background: rgba(255,255,255,0.10); font-weight: var(--fw-bold); }
@@ -529,7 +529,7 @@ export default function Layout() {
             background: currentColor;
             border-radius: 0 0 3px 3px;
           }
-          .bn-item:focus-visible { outline: 3px solid rgba(255, 255, 255, 0.7); outline-offset: -4px; border-radius: 12px; }
+          .bn-item:focus-visible { outline: 3px solid rgba(255, 255, 255, 0.7); outline-offset: -4px; border-radius: var(--ui-raio); }
           .bn-icon {
             display: flex;
             align-items: center;

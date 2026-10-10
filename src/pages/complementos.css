@@ -23,7 +23,7 @@
 /* formulário */
 .pz-form { display: flex; flex-direction: column; gap: 16px; }
 .pz-seg { display: flex; gap: 4px; padding: 4px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
-.pz-seg button { flex: 1; min-width: 0; min-height: 44px; margin: 0; padding: 0 8px; border: 0; border-radius: 10px; background: none; color: var(--ui-texto-2); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+.pz-seg button { flex: 1; min-width: 0; min-height: 44px; margin: 0; padding: 0 8px; border: 0; border-radius: var(--ui-raio-p); background: none; color: var(--ui-texto-2); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
 .pz-seg button[aria-checked="true"] { background: var(--ui-branco); color: var(--ui-texto); box-shadow: var(--ui-sombra-cartao); }
 .pz-prods { margin-top: -6px; }
 .pz-prods-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
@@ -33,7 +33,7 @@
 .pz-prod[aria-checked="true"] { background: var(--ui-rosa-claro); }
 .pz-chk { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border: 1.5px solid var(--ui-borda-campo); border-radius: 6px; background: var(--ui-branco); color: var(--ui-branco); }
 .pz-prod[aria-checked="true"] .pz-chk { border-color: var(--ui-rosa); background: var(--ui-rosa); }
-.pz-prod-f { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; overflow: hidden; border-radius: 10px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.pz-prod-f { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; overflow: hidden; border-radius: var(--ui-raio-p); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
 .pz-prod-f img { width: 100%; height: 100%; object-fit: cover; }
 .pz-prod-n { flex: 1; min-width: 0; font-size: 15px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pz-prods-l .pz-semres { margin: 12px; }

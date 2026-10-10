@@ -3,8 +3,7 @@ import { montarMensagem as montarMensagemModelo } from '@/lib/mensagens'
 import { CalendarioSheet, HorariosSheet } from '@/components/cardapio/AgendaSheets'
 import { antecedenciaHoras, calcularRegras, primeiraData, rotuloData } from '@/lib/agendaCardapio'
 import { supabase } from '@/lib/supabase'
-import { ShoppingBag, Home, ClipboardList, User, ChevronRight } from 'lucide-react'
-import { ArrowLeft, CalendarBlank, CaretRight, Check, ChatCircleDots, Clock, CreditCard, Money, PixLogo, Plus, ShoppingBag as Sacola, Storefront, Tag, Truck, WhatsappLogo, X } from '@phosphor-icons/react'
+import { ArrowLeft, CalendarBlank, CaretRight, Check, ChatCircleDots, Clock, CreditCard, Money, PixLogo, Plus, ClipboardText, House, ShoppingBag as Sacola, Storefront, Tag, Truck, User, WhatsappLogo, X } from '@phosphor-icons/react'
 import { useCart } from '@/hooks/useCart'
 import { CartItemComponent, unidadeItem } from '@/components/cart/CartItemComponent'
 import { formatCurrency } from '@/utils/helpers'
@@ -823,15 +822,15 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
         /* 08/10 · 3.28: menu de baixo (vinho, igual ao do app) e o botão do pedido na cor da loja */
         .cpn-pe { pointer-events: none; }
         .cpn-pe > * { pointer-events: auto; }
-        .cpn-pedido { display: flex; align-items: center; gap: 12px; width: calc(100% - 16px); min-height: 56px; margin: 0 8px 8px; padding: 8px 12px; border: 0; border-radius: 16px; color: var(--ui-branco); font-family: inherit; text-align: left; box-shadow: 0 8px 24px rgba(44,18,25,.22); cursor: pointer; }
-        .cpn-pedido-ic { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,.2); flex: none; }
+        .cpn-pedido { display: flex; align-items: center; gap: 12px; width: calc(100% - 16px); min-height: 56px; margin: 0 8px 8px; padding: 8px 12px; border: 0; border-radius: var(--ui-raio-cartao); color: var(--ui-branco); font-family: inherit; text-align: left; box-shadow: 0 8px 24px rgba(44,18,25,.22); cursor: pointer; }
+        .cpn-pedido-ic { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: rgba(255,255,255,.2); flex: none; }
         .cpn-pedido-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
         .cpn-pedido-tx b { font-size: 15px; font-weight: 700; line-height: 1.25; }
         .cpn-pedido-tx small { font-size: 13px; opacity: .9; }
         .cpn-pedido strong { font-size: 16px; font-weight: 700; }
         .cpn-menu { display: flex; padding-bottom: env(safe-area-inset-bottom, 0px); background: var(--ui-vinho-escuro); box-shadow: 0 -2px 12px rgba(0,0,0,.12); }
         .cpn-menu button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 60px; margin: 0; border: 0; background: none; color: rgba(255,255,255,.62); font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; }
-        .cpn-ic { display: flex; align-items: center; justify-content: center; width: 52px; height: 30px; border-radius: 12px; }
+        .cpn-ic { display: flex; align-items: center; justify-content: center; width: 52px; height: 30px; border-radius: var(--ui-raio); }
         .cpn-menu button[aria-current="page"] { color: var(--ui-branco); font-weight: 700; }
         .cpn-menu button[aria-current="page"] .cpn-ic { background: rgba(255,255,255,.16); }
       `}</style>
@@ -842,21 +841,21 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
           <div ref={rodapeRef} className="cpn-pe fixed bottom-0 left-0 right-0 z-30">
             {count > 0 && (
               <button type="button" className="cpn-pedido" style={{ background: accent }} onClick={() => setIsOpen(true)}>
-                <span className="cpn-pedido-ic"><ShoppingBag size={20} color="white" /></span>
+                <span className="cpn-pedido-ic"><Sacola size={20} weight="fill" color="white" /></span>
                 <span className="cpn-pedido-tx"><b>Ver seu pedido</b><small>{count} {count === 1 ? 'item' : 'itens'}</small></span>
                 <strong>{formatCurrency(totalPrice)}</strong>
-                <ChevronRight size={18} color="rgba(255,255,255,0.8)" />
+                <CaretRight size={18} weight="bold" color="rgba(255,255,255,0.8)" />
               </button>
             )}
 
             <nav className="cpn-menu" aria-label="Menu do cardápio">
               {[
-                { id: 'inicio',   label: 'Início',  icon: <Home size={24} /> },
-                { id: 'pedidos',  label: 'Pedidos', icon: <ClipboardList size={24} /> },
-                { id: 'perfil',   label: 'Minha conta',  icon: <User size={24} /> },
-              ].map(({ id, label, icon }) => (
+                { id: 'inicio',   label: 'Início',  Icone: House },
+                { id: 'pedidos',  label: 'Pedidos', Icone: ClipboardText },
+                { id: 'perfil',   label: 'Minha conta',  Icone: User },
+              ].map(({ id, label, Icone }) => (
                 <button key={id} type="button" aria-current={activeTab === id ? 'page' : undefined} onClick={() => setActiveTab(id)}>
-                  <span className="cpn-ic">{icon}</span>{label}
+                  <span className="cpn-ic"><Icone size={24} weight={activeTab === id ? "fill" : "bold"} /></span>{label}
                 </button>
               ))}
             </nav>

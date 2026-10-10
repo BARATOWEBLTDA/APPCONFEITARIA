@@ -111,7 +111,7 @@ body .prod-modal-overlay--sucesso .spt-h { font-size: 22px; font-weight: 700; }
 body .prod-modal--novo .bw-topo { text-align: left; }
 body .prod-modal--novo .bw-produto { display: inline-block; margin: 8px 0 0; }
 body .prod-modal--novo .bw-topo .bw-sub { max-width: none; margin-left: 0; margin-right: 0; }
-body .prod-modal--novo .prod-btn-ia-novo { min-height: 36px; padding: 0 12px; border-radius: 10px; font-size: 13px; }
+body .prod-modal--novo .prod-btn-ia-novo { min-height: 36px; padding: 0 12px; border-radius: var(--ui-raio-p); font-size: 13px; }
 /* 10/10: "Gerar com IA" no plano grátis — não parece quebrado: botão claro, coroa e selo PRO */
 body .prod-modal--novo .prod-btn-ia-novo.prod-btn-ia-novo--pro { opacity: 1; cursor: pointer !important; background: var(--ui-branco); color: var(--ui-texto); border: 1.5px solid var(--ui-borda); box-shadow: none; }
 body .prod-modal--novo .prod-btn-ia-novo .prod-btn-ia-novo-crown { flex: none; width: 16px; height: 16px; filter: none; color: #F5B301; }

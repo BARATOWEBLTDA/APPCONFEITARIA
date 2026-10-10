@@ -340,7 +340,7 @@ const CSS = `
   .pp-ps { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 8px 2px; border: none; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
   .pp-ps:disabled { cursor: default; }
   .pp-ps--sem { border-top: none; padding: 0; cursor: default; }
-  .pp-ic { width: 40px; height: 40px; border-radius: 10px; background: var(--primary-light); color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .pp-ic { width: 40px; height: 40px; border-radius: var(--ui-raio-p); background: var(--primary-light); color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .pp-ic--ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
   .pp-ic--at { background: var(--ui-rosa); color: var(--ui-branco); }
   .pp-tx { flex: 1; min-width: 0; }
@@ -394,7 +394,7 @@ const CSS = `
   .ppf-wrap { position: relative; }
   .ppf-cep { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 12.5px; font-weight: 700; color: var(--ui-verde); }
   .ppf-seg { display: flex; gap: 4px; background: var(--ui-cinza); border-radius: var(--ui-raio); padding: 4px; }
-  .ppf-seg button { flex: 1; min-height: 44px; border: none; background: none; padding: 0 4px; border-radius: 10px; font-family: inherit; font-size: 15px; font-weight: 700; color: var(--ui-texto-2); cursor: pointer; }
+  .ppf-seg button { flex: 1; min-height: 44px; border: none; background: none; padding: 0 4px; border-radius: var(--ui-raio-p); font-family: inherit; font-size: 15px; font-weight: 700; color: var(--ui-texto-2); cursor: pointer; }
   .ppf-seg button.on { background: var(--ui-branco); color: var(--ui-texto); box-shadow: var(--ui-sombra-cartao); }
   .ppf-dias { display: flex; gap: 6px; }
   .ppf-dias button { flex: 1; aspect-ratio: 1; min-height: 44px; max-width: 48px; border: none; border-radius: 50%; font-family: inherit; font-size: 15px; font-weight: 700; background: var(--ui-cinza); color: var(--ui-texto-2); cursor: pointer; }

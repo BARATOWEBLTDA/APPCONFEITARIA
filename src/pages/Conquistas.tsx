@@ -71,7 +71,7 @@ export default function Conquistas() {
         .cqp-sec { margin: 22px 2px 10px; font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); }
         .cqp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         @media (min-width: 700px) { .cqp-grid { grid-template-columns: repeat(5, 1fr); } }
-        .cqp-bd { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 12px; padding: 12px 6px 10px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+        .cqp-bd { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio); padding: 12px 6px 10px; text-align: center; display: flex; flex-direction: column; align-items: center; }
         .cqp-bd b { font-size: 12px; margin-top: 8px; line-height: 1.2; } .cqp-bd small { font-size: 12px; color: var(--ui-texto-3); margin-top: 3px; }
         .cqp-bd.off b { color: var(--ui-texto-3); }
         .cqp-medal { color: #92400E; width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; background: radial-gradient(circle at 30% 30%, #FFF1F6, #F5B8CD 55%, var(--ui-rosa)); box-shadow: 0 0 0 3px #FCE7F3, 0 4px 12px rgba(195,58,110,.3); }

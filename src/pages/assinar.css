@@ -8,7 +8,7 @@
 .pro9-selo { display: inline-flex; margin-top: 10px; padding: 4px 10px; border-radius: 999px; background: var(--ui-rosa); font-size: 13px; font-weight: 700; }
 .pro9-li { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-top: 1px solid var(--ui-linha); }
 .pro9-li:first-of-type { border-top: 0; padding-top: 2px; }
-.pro9-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.pro9-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
 .pro9-li b { display: block; font-size: 15px; font-weight: 700; }
 .pro9-li small { display: block; margin-top: 2px; font-size: 14px; line-height: 1.45; color: var(--ui-texto-2); }
 .pro9-lado { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }

@@ -590,7 +590,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           gap: 10px;
           padding: 9px 14px;
           background: #F0FDF4;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           margin-bottom: 14px;
           font-size: 13px;
           font-weight: 700;
@@ -664,7 +664,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           background: var(--ui-branco);
           color: var(--ui-texto);
           border: none;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           font-family: inherit;
           font-size: 13.5px;
           font-weight: 700;
@@ -672,7 +672,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         }
         .pap-hero-cta:active { transform: scale(0.98); }
         .pap-in, .pap-ta {
-          width: 100%; box-sizing: border-box; border: none; border-radius: 10px; background: var(--ui-branco);
+          width: 100%; box-sizing: border-box; border: none; border-radius: var(--ui-raio-p); background: var(--ui-branco);
           font-family: inherit; font-size: 14px; color: var(--ui-texto);
         }
         .pap-in { height: 44px; padding: 0 12px; }
@@ -683,13 +683,13 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         .pap-ta-count { position: absolute; right: 10px; bottom: 7px; font-size: 12px; color: #9CA3AF; }
         .pap-row { display: flex; gap: 8px; margin-top: 10px; }
         .pap-btn-ia, .pap-btn-save {
-          flex: 1; height: 42px; border-radius: 10px; cursor: pointer;
+          flex: 1; height: 42px; border-radius: var(--ui-raio-p); cursor: pointer;
           font-family: inherit; font-size: 13.5px; font-weight: 700;
         }
         .pap-btn-ia { background: rgba(255,255,255,0.12); color: var(--ui-branco); border: 1px solid rgba(255,255,255,0.2); }
         .pap-btn-save { background: var(--ui-branco); color: var(--ui-texto); border: none; }
         .pap-btn-ia:disabled, .pap-btn-save:disabled { opacity: 0.5; cursor: default; }
-        .pap-aviso { margin: 0 0 10px; padding: 9px 12px; border-radius: 10px; font-size: 12.5px; font-weight: 700; }
+        .pap-aviso { margin: 0 0 10px; padding: 9px 12px; border-radius: var(--ui-raio-p); font-size: 12.5px; font-weight: 700; }
         .pap-aviso--ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
         .pap-aviso--err { background: var(--ui-vermelho-fundo); color: #B91C1C; }
 

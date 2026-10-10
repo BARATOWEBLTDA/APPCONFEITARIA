@@ -89,7 +89,7 @@ export default function Notificacoes() {
 
       <style>{`
         .ntf-topo { display: flex; justify-content: flex-end; margin-bottom: 10px; }
-        .ntf-todas { border: 1px solid #EAE3E6; background: var(--ui-branco); border-radius: 8px; padding: 8px 12px; font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--ui-cinza-texto); cursor: pointer; }
+        .ntf-todas { border: 1px solid #EAE3E6; background: var(--ui-branco); border-radius: var(--ui-raio-p); padding: 8px 12px; font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--ui-cinza-texto); cursor: pointer; }
         .ntf-item--link { cursor: pointer; }
         .ntf-emo { font-size: 22px; }
         .ntf-acoes { margin-left: auto; display: flex; align-items: center; gap: 4px; }
@@ -108,7 +108,7 @@ export default function Notificacoes() {
           padding: 14px;
           background: var(--ui-branco);
           border: 1px solid #F0EBED;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           box-shadow: 0 1px 2px rgba(0,0,0,0.03);
           position: relative;
           transition: all 0.15s;

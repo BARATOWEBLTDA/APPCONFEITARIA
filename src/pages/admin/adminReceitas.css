@@ -16,7 +16,7 @@
 .arc-busca:focus-within { border-color: var(--ui-rosa); }
 .arc-busca input { flex: 1; min-width: 0; height: 100%; border: 0; outline: none; background: none; font-family: inherit; font-size: 16px; font-weight: 500; color: var(--ui-texto); }
 .arc-busca input::placeholder { color: var(--ui-texto-3); }
-.arc-busca button { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 0; border-radius: 10px; background: none; color: var(--ui-texto-2); }
+.arc-busca button { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 0; border-radius: var(--ui-raio-p); background: none; color: var(--ui-texto-2); }
 
 /* cartões */
 .arc-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 12px; }

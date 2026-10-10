@@ -399,7 +399,7 @@ export default function AdminUsuarios() {
         @media (min-width: 900px) {
           .au-card { padding: 16px; }
           .au-cab, .au-l { display: grid; grid-template-columns: minmax(0, 2.6fr) minmax(0, 1.1fr) 104px minmax(0, 1.3fr) 96px 148px; align-items: center; column-gap: 12px; }
-          .au-cab { margin-top: 12px; padding: 10px 12px; border-radius: 10px; background: var(--ui-cinza); font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
+          .au-cab { margin-top: 12px; padding: 10px 12px; border-radius: var(--ui-raio-p); background: var(--ui-cinza); font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
           .au-cab-acoes { text-align: right; }
           .au-l { min-height: 68px; padding: 8px 12px; border-top: 0; border-bottom: 1px solid var(--ui-linha); }
           .au-l:last-child { border-bottom: 0; }

@@ -26,7 +26,7 @@
 .ap-img--topo { aspect-ratio: 3 / 1; }
 .ap-img-sombra { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.45)); pointer-events: none; }
 .ap-img-acoes { position: absolute; left: 8px; right: 8px; bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.ap-chip { position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; margin: 0; padding: 0 12px; border: 0; border-radius: 10px; background: rgba(255,255,255,.94); color: var(--ui-texto); font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(44,18,25,.18); }
+.ap-chip { position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; margin: 0; padding: 0 12px; border: 0; border-radius: var(--ui-raio-p); background: rgba(255,255,255,.94); color: var(--ui-texto); font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(44,18,25,.18); }
 .ap-chip::after { content: ""; position: absolute; inset: -4px; }
 body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto); box-shadow: 0 2px 8px rgba(44,18,25,.18); }
 .ap-enviar { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 100%; margin: 0; border: 1.5px dashed var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-rosa-escuro); font-family: inherit; cursor: pointer; }
@@ -96,7 +96,7 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-previa-logo b { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: var(--ui-branco); font-size: 18px; font-weight: 700; }
 .ap-previa > i { width: 80px; height: 20px; border-radius: 4px; opacity: .8; }
 .ap-previa-nome { font-size: 18px; font-weight: 700; }
-.ap-previa-bt { padding: 10px 24px; border-radius: 12px; color: var(--ui-branco); font-size: 15px; font-weight: 700; }
+.ap-previa-bt { padding: 10px 24px; border-radius: var(--ui-raio); color: var(--ui-branco); font-size: 15px; font-weight: 700; }
 
 /* exemplo de banner */
 .ap-ex { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--ui-raio); }

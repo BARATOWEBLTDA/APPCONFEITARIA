@@ -153,20 +153,20 @@ export default function Lucratividade() {
 
 const CSS = `
   .lu { max-width: 1060px; margin: 0 auto; padding: 22px 0 96px; font-family: var(--font-base); color: var(--ui-texto); display: flex; flex-direction: column; gap: 14px; }
-  .lu-mes { display: flex; justify-content: space-between; align-items: center; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 12px; padding: 6px; max-width: 420px; width: 100%; align-self: center; box-sizing: border-box; }
+  .lu-mes { display: flex; justify-content: space-between; align-items: center; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio); padding: 6px; max-width: 420px; width: 100%; align-self: center; box-sizing: border-box; }
   .lu-mes b { font-size: 14.5px; font-weight: 700; }
-  .lu-mes button { width: 44px; height: 44px; border-radius: 10px; border: none; background: #FFF1F6; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .lu-mes button { width: 44px; height: 44px; border-radius: var(--ui-raio-p); border: none; background: #FFF1F6; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; cursor: pointer; }
   .lu-mes button:disabled { opacity: .35; cursor: default; }
-  .lu-ph { height: 260px; background: #FAF7F8; border-radius: 16px; }
+  .lu-ph { height: 260px; background: #FAF7F8; border-radius: var(--ui-raio-cartao); }
   .lu-vazio { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 18px; padding: 30px 20px; text-align: center; }
   .lu-vazio-ic { width: 60px; height: 60px; border-radius: 18px; background: #FFF1F6; color: var(--ui-rosa-escuro); display: inline-flex; align-items: center; justify-content: center; }
   .lu-vazio b { display: block; font-size: 17px; font-weight: 700; margin-top: 12px; }
   .lu-vazio p { font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; margin: 6px auto 0; max-width: 400px; text-wrap: balance; }
-  .lu-cta { margin-top: 14px; border: none; border-radius: 12px; padding: 12px 18px; background: var(--ui-vinho-escuro); color: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .lu-cta { margin-top: 14px; border: none; border-radius: var(--ui-raio); padding: 12px 18px; background: var(--ui-vinho-escuro); color: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
   .lu-grid { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "conta" "eq" "prod"; }
   @media (min-width: 900px) { .lu-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "conta eq" "prod prod"; align-items: start; } }
   .lu-a-conta { grid-area: conta; } .lu-a-eq { grid-area: eq; } .lu-a-prod { grid-area: prod; }
-  .lu-card { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 16px; padding: 14px 16px; }
+  .lu-card { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 14px 16px; }
   .lu-ct { margin: 0 0 8px; font-size: 15px; font-weight: 700; } .lu-ct small { display: block; margin-top: 2px; font-size: 13px; font-weight: 500; color: var(--ui-texto-3); }
   .lu-vz { margin: 4px 0 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
   .lu-l { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--ui-linha); font-size: 14px; }
@@ -186,7 +186,7 @@ const CSS = `
   .lu-p-h span { font-weight: 700; color: var(--ui-verde); white-space: nowrap; } .lu-p-h span.ruim { color: var(--ui-vermelho); }
   .lu-p-bar { height: 6px; border-radius: 9px; background: var(--ui-linha); margin: 6px 0 5px; overflow: hidden; } .lu-p-bar i { display: block; height: 100%; background: #22C55E; border-radius: 9px; } .lu-p-bar i.ruim { background: #F87171; }
   .lu-p small { font-size: 12px; color: #888780; } .lu-sf { color: var(--ui-laranja); font-weight: 700; display: inline-flex; align-items: center; gap: 3px; }
-  .lu-aviso { display: flex; align-items: flex-start; gap: 8px; width: 100%; box-sizing: border-box; text-align: left; margin-top: 12px; background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: 12px; padding: 10px 12px; font-family: inherit; font-size: 13px; font-weight: 600; line-height: 1.45; }
+  .lu-aviso { display: flex; align-items: flex-start; gap: 8px; width: 100%; box-sizing: border-box; text-align: left; margin-top: 12px; background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: var(--ui-raio); padding: 10px 12px; font-family: inherit; font-size: 13px; font-weight: 600; line-height: 1.45; }
   .lu-aviso .lu-link { color: #92400E; min-height: 0; }
   .lu-aviso svg { flex-shrink: 0; margin-top: 2px; }
 `;

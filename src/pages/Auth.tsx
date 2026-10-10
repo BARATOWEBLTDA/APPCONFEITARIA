@@ -929,7 +929,7 @@ export default function Auth() {
         .field-error { font-size: 12.5px; font-weight: 700; color: var(--error); padding-left: 2px; }
         .password-wrap { position: relative; }
         .password-wrap input { padding-right: 3rem; }
-        .eye-btn { position: absolute; right: 3px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; background: none; border: none; border-radius: 10px; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; padding: 0; -webkit-tap-highlight-color: transparent; }
+        .eye-btn { position: absolute; right: 3px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; background: none; border: none; border-radius: var(--ui-raio-p); cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; padding: 0; -webkit-tap-highlight-color: transparent; }
         .eye-btn:focus-visible, .cad-eye:focus-visible, .cadastro-link:focus-visible, .forgot-link:focus-visible, .auth-rodape a:focus-visible { outline: 3px solid rgba(232,90,140,.45); outline-offset: 1px; border-radius: 8px; }
         .keep-connected input[type="checkbox"]:focus-visible { outline: 3px solid rgba(232,90,140,.45) !important; outline-offset: 2px; }
         .eye-btn:hover { color: var(--primary); }
@@ -962,7 +962,7 @@ export default function Auth() {
           padding: 12px 14px;
           background: linear-gradient(135deg, var(--primary-light) 0%, #F4C0D1 100%);
           border: 1.5px solid var(--ui-rosa);
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           margin-bottom: 4px;
           animation: refPop 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
         }
@@ -1005,7 +1005,7 @@ export default function Auth() {
         }
         .ref-banner-desc b { font-weight: 700; }
         .cad-field-wrap { display: flex; flex-direction: column; gap: 0.3rem; }
-        .cad-field { position: relative; display: flex; align-items: center; height: 48px; border: 1.5px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--ui-branco); transition: border-color 0.2s; }
+        .cad-field { position: relative; display: flex; align-items: center; height: 48px; border: 1.5px solid var(--border); border-radius: var(--ui-raio); overflow: hidden; background: var(--ui-branco); transition: border-color 0.2s; }
         .cad-lb { display: block; cursor: pointer; font-size: 13px; font-weight: 700; color: var(--ui-cinza-texto); margin: 0 0 5px 2px; }
         .cad-field:focus-within { border-color: var(--border-focus); }
         .cad-field.has-error { border-color: var(--error); }

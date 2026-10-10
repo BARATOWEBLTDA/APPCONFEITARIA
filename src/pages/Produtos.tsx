@@ -812,7 +812,7 @@ function SelectDoonly({
           padding: 14px 14px;
           background: var(--ui-branco);
           border: 1.5px solid #E5D8DE;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           font-size: 15px;
           font-weight: 700;
           color: #2D1F26;
@@ -863,7 +863,7 @@ function SelectDoonly({
         .sd-sheet {
           width: 100%;
           background: var(--ui-branco);
-          border-radius: 20px 20px 0 0;
+          border-radius: var(--ui-raio-janela) var(--ui-raio-janela) 0 0;
           padding: 8px 16px 24px;
           max-height: 70vh;
           overflow-y: auto;
@@ -925,7 +925,7 @@ function SelectDoonly({
           position: fixed;
           background: var(--ui-branco);
           border: 1px solid #F0EBED;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           box-shadow: 0 12px 32px rgba(0,0,0,0.18), 0 4px 10px rgba(0,0,0,0.08);
           padding: 6px;
           z-index: 10050;
@@ -2285,7 +2285,7 @@ function PersonalizacaoStep({
           color: var(--ui-branco);
           border: none;
           padding: 11px 28px;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           font-size: 13.5px;
           font-weight: 700;
           cursor: pointer;
@@ -2335,7 +2335,7 @@ function PersonalizacaoStep({
           background: #1A1A1A;
           color: var(--ui-branco);
           padding: 12px 14px;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           font-size: 12px;
           line-height: 1.5;
           width: 260px;
@@ -2384,7 +2384,7 @@ function PersonalizacaoStep({
           font-weight: 700;
           cursor: pointer;
           padding: 6px 10px;
-          border-radius: 8px;
+          border-radius: var(--ui-raio-p);
           background: transparent;
           border: 1.5px dashed transparent;
           transition: all 0.15s;
@@ -2399,7 +2399,7 @@ function PersonalizacaoStep({
           top: calc(100% + 6px);
           left: 0;
           background: var(--ui-branco);
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           border: 1px solid #F0EBED;
           box-shadow: 0 12px 32px rgba(0,0,0,0.14);
           padding: 6px;
@@ -2430,7 +2430,7 @@ function PersonalizacaoStep({
         .pv3-card {
           background: var(--ui-branco);
           border: 1.5px solid #F0EBED;
-          border-radius: 14px;
+          border-radius: var(--ui-raio-cartao);
           overflow: hidden;
           transition: border-color 0.15s;
         }
@@ -2457,7 +2457,7 @@ function PersonalizacaoStep({
         .pv3-card-ico {
           width: 40px;
           height: 40px;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           background: #FAF8F5;
           color: var(--ui-texto-2);
           display: inline-flex;
@@ -2538,7 +2538,7 @@ function PersonalizacaoStep({
           padding: 14px;
           background: linear-gradient(135deg, #FDF3F7 0%, var(--primary-light) 100%);
           border: 1.5px solid #F0D0DC;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           margin-bottom: 14px;
         }
         .pv3-sabor-modo-info { flex: 1; min-width: 0; }
@@ -2600,7 +2600,7 @@ function PersonalizacaoStep({
           grid-template-columns: 1fr 1fr;
           gap: 5px;
           background: #F8F5F6;
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           padding: 5px;
           box-sizing: border-box;
           width: 100%;
@@ -2658,7 +2658,7 @@ function PersonalizacaoStep({
         .pv3-opcao-row {
           display: flex; align-items: center; gap: 12px;
           padding: 14px 14px; background: var(--ui-branco); border: 1.5px solid #F0EBED;
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           transition: all 0.15s;
         }
         .pv3-opcao-row:hover {
@@ -2758,7 +2758,7 @@ function PersonalizacaoStep({
           padding: 24px 16px;
           text-align: center;
           background: #FFF5F9;
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           border: 2px dashed var(--ui-rosa);
           cursor: pointer;
           transition: all 0.15s ease;
@@ -2795,7 +2795,7 @@ function PersonalizacaoStep({
           margin-top: 10px;
           padding: 8px;
           background: #FAF8F5;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           border: 1px dashed #E5D8DE;
           flex-wrap: wrap;
           align-items: center;
@@ -2804,7 +2804,7 @@ function PersonalizacaoStep({
           flex: 1 1 100%;
           padding: 10px 12px;
           border: 1px solid #F0EBED;
-          border-radius: 8px;
+          border-radius: var(--ui-raio);
           font-size: 16px;
           background: var(--ui-branco);
           font-family: inherit;
@@ -2826,7 +2826,7 @@ function PersonalizacaoStep({
           color: var(--ui-branco);
           font-size: 12.5px;
           font-weight: 700;
-          border-radius: 8px;
+          border-radius: var(--ui-raio-p);
           cursor: pointer;
           box-shadow: 0 2px 0 var(--ui-rosa-escuro);
           transition: transform 0.1s;
@@ -2853,7 +2853,7 @@ function PersonalizacaoStep({
           background: var(--primary-light);
           color: var(--ui-rosa);
           border: 1.5px solid var(--ui-rosa);
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           font-weight: 700;
           font-size: 12.5px;
           cursor: pointer;
@@ -2888,7 +2888,7 @@ function PersonalizacaoStep({
         .pv3-gerar-row { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 14px; }
         .pv3-gerar-field { flex: 1; min-width: 0; }
         .pv3-gerar-lbl { font-size: 12px; font-weight: 500; color: #6B7280; margin-bottom: 6px; }
-        .pv3-gerar-input { display: flex; align-items: center; background: var(--ui-branco); border: 1.5px solid #F0EBED; border-radius: 8px; overflow: hidden; }
+        .pv3-gerar-input { display: flex; align-items: center; background: var(--ui-branco); border: 1.5px solid #F0EBED; border-radius: var(--ui-raio); overflow: hidden; }
         .pv3-gerar-input input { flex: 1; padding: 10px 8px; border: none; outline: none; font-size: 16px; font-weight: 700; color: var(--ui-texto); font-family: inherit; min-width: 0; width: 100%; }
         .pv3-gerar-input span { padding: 10px 10px; background: var(--ui-linha); font-size: 12px; font-weight: 700; color: var(--ui-rosa-escuro); flex-shrink: 0; }
         .pv3-gerar-arr { color: #6B7280; font-size: 16px; flex-shrink: 0; margin-bottom: 10px; }
@@ -2897,7 +2897,7 @@ function PersonalizacaoStep({
         .pv3-gerar-chip--on { background: var(--ui-rosa); color: var(--ui-branco); border-color: var(--ui-rosa); }
         .pv3-gerar-preview { background: #FFF5F9; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 12px; color: #4B5563; line-height: 1.5; margin-bottom: 16px; }
         .pv3-gerar-actions { display: flex; gap: 8px; }
-        .pv3-gerar-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.12s ease; }
+        .pv3-gerar-btn { flex: 1; padding: 12px; border: none; border-radius: var(--ui-raio-p); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.12s ease; }
         .pv3-gerar-btn--sec { background: #F3F4F6; color: #4B5563; box-shadow: 0 3px 0 #D1D5DB; }
         .pv3-gerar-btn--sec:active { transform: translateY(2px); box-shadow: 0 1px 0 #D1D5DB; }
         .pv3-gerar-btn--pri { background: linear-gradient(135deg, var(--ui-rosa), var(--ui-rosa-escuro)); color: var(--ui-branco); box-shadow: 0 3px 0 #993556, 0 6px 14px rgba(232,90,140,0.3); flex: 2; }
@@ -3117,7 +3117,7 @@ function PersonalizacaoStep({
           padding: 12px 14px;
           background: linear-gradient(135deg, var(--ui-laranja-fundo) 0%, #FEF9E7 100%);
           border: 1.5px solid #FDE68A;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           display: flex;
           align-items: center;
           gap: 10px;
@@ -3194,7 +3194,7 @@ function PersonalizacaoStep({
           padding: 11px 14px;
           background: #2C2C2A;
           border: none;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           color: var(--ui-branco);
           font-family: inherit;
           font-weight: 700;
@@ -3233,7 +3233,7 @@ function PersonalizacaoStep({
           width: 100%;
           max-width: 480px;
           max-height: 85vh;
-          border-radius: 20px 20px 0 0;
+          border-radius: var(--ui-raio-janela) var(--ui-raio-janela) 0 0;
           display: flex;
           flex-direction: column;
           overflow: hidden;
@@ -3242,7 +3242,7 @@ function PersonalizacaoStep({
         }
         @media (min-width: 720px) {
           .pv3-bib-overlay { align-items: center; padding: 24px; }
-          .pv3-bib-sheet { border-radius: 16px; max-height: 80vh; }
+          .pv3-bib-sheet { border-radius: var(--ui-raio-cartao); max-height: 80vh; }
         }
         @keyframes pv3BibSheetIn { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .pv3-bib-handle {
@@ -3307,7 +3307,7 @@ function PersonalizacaoStep({
           padding: 12px;
           background: var(--ui-branco);
           border: 1.5px solid #E5E7EB;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           margin-bottom: 6px;
           cursor: pointer;
           transition: all 0.15s;
@@ -3354,7 +3354,7 @@ function PersonalizacaoStep({
           background: #F3F4F6;
           color: #4B5563;
           border: none;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           font-weight: 700;
           font-size: 13px;
           cursor: pointer;
@@ -3367,7 +3367,7 @@ function PersonalizacaoStep({
           background: var(--ui-rosa);
           color: var(--ui-branco);
           border: none;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           font-weight: 700;
           font-size: 13px;
           cursor: pointer;
@@ -6592,7 +6592,7 @@ export default function Produtos() {
           background: var(--primary, #E85A8C);
           color: var(--ui-branco);
           border: none;
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           font-size: 14px;
           font-weight: var(--fw-black);
           cursor: pointer;
@@ -6840,7 +6840,7 @@ export default function Produtos() {
         /* Sugestões da biblioteca */
         .prod-sugestoes {
           background: linear-gradient(135deg, #FFF9E5, #FFF3D6);
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           padding: 12px 14px;
         }
         .prod-sugestoes-lbl {
@@ -6881,7 +6881,7 @@ export default function Produtos() {
           justify-content: space-between;
           background: var(--bg-subtle, #FBF4F6);
           border: 1.5px solid transparent;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           padding: 10px 12px;
           gap: 8px;
         }
@@ -6947,7 +6947,7 @@ export default function Produtos() {
         @keyframes prodLibIn { from { opacity: 0; } to { opacity: 1; } }
         .prod-lib-modal {
           background: var(--ui-branco);
-          border-radius: 20px;
+          border-radius: var(--ui-raio-janela);
           padding: 26px 22px 20px;
           width: 100%;
           max-width: 380px;
@@ -6985,7 +6985,7 @@ export default function Produtos() {
           background: var(--bg-subtle, #F0EBED);
           border: none;
           padding: 12px 16px;
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           font-size: 12px;
           font-weight: 700;
           color: var(--text-secondary);
@@ -6997,7 +6997,7 @@ export default function Produtos() {
         .prod-add-input {
           padding: 10px 14px !important;
           border: 1.5px solid var(--border) !important;
-          border-radius: 10px !important;
+          border-radius: var(--ui-raio-p) !important;
           font-size: 14px !important;
           font-family: var(--font-base) !important;
           outline: none !important;
@@ -7222,7 +7222,7 @@ export default function Produtos() {
           width: 100%;
           max-height: 92vh;
           display: flex; flex-direction: column;
-          border-radius: 20px 20px 0 0;
+          border-radius: var(--ui-raio-janela) var(--ui-raio-janela) 0 0;
           box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.18);
           animation: prodModalSlideUp 0.28s cubic-bezier(0.32, 0.72, 0, 1);
           position: relative;
@@ -7246,7 +7246,7 @@ export default function Produtos() {
           .prod-preview-modal {
             max-width: 620px;
             max-height: 92vh;
-            border-radius: 20px;
+            border-radius: var(--ui-raio-janela);
             animation: prodModalFadeIn 0.22s ease;
           }
           .prod-preview-modal::before { display: none; }
@@ -7272,7 +7272,7 @@ export default function Produtos() {
           overflow: hidden;
           background: var(--bg-subtle);
           flex-shrink: 0;
-          border-radius: 20px 20px 0 0;
+          border-radius: var(--ui-raio-janela) var(--ui-raio-janela) 0 0;
           position: relative;
           z-index: 1;
         }
@@ -7348,7 +7348,7 @@ export default function Produtos() {
         /* Card destaque preço */
         .prod-preview-destaque {
           background: #FDF3F7;
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           padding: 14px;
           margin-bottom: 12px;
         }
@@ -7381,7 +7381,7 @@ export default function Produtos() {
         .prod-preview-info-box {
           background: #FAF8F5;
           padding: 10px 12px;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           border: 1px solid #F0EBED;
         }
         .prod-preview-info-label {
@@ -7412,7 +7412,7 @@ export default function Produtos() {
           background: var(--ui-rosa);
           color: var(--ui-branco);
           border: none;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           font-family: inherit;
           font-size: 13px;
           font-weight: 700;
@@ -7433,7 +7433,7 @@ export default function Produtos() {
           background: #F5F1F3;
           color: var(--ui-texto-2);
           border: none;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           font-family: inherit;
           cursor: pointer;
           transition: background 0.12s, color 0.12s;
@@ -7447,7 +7447,7 @@ export default function Produtos() {
           background: var(--ui-vermelho-fundo);
           color: var(--ui-vermelho);
           border: none;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           font-family: inherit;
           cursor: pointer;
           transition: background 0.12s;
@@ -7482,7 +7482,7 @@ export default function Produtos() {
           align-items: center;
           gap: 14px;
           padding: 12px 14px;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           cursor: pointer;
           width: 100%;
           box-sizing: border-box;
@@ -7495,7 +7495,7 @@ export default function Produtos() {
         .prod-preview-menu-ico {
           width: 36px;
           height: 36px;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           background: #FAF8F5;
           color: var(--ui-texto-2);
           display: inline-flex;
@@ -7550,7 +7550,7 @@ export default function Produtos() {
           display: flex;
           flex-direction: column;
           font-family: var(--font-base);
-          border-radius: 20px 20px 0 0;
+          border-radius: var(--ui-raio-janela) var(--ui-raio-janela) 0 0;
           animation: prodModalSlideUp 0.28s cubic-bezier(0.32, 0.72, 0, 1);
           overflow: hidden;
           box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.18);
@@ -7573,7 +7573,7 @@ export default function Produtos() {
             max-width: 640px;
             height: 88vh;
             max-height: 88vh;
-            border-radius: 20px;
+            border-radius: var(--ui-raio-janela);
             animation: prodModalFadeIn 0.22s ease;
           }
           .prod-modal::before { display: none; }
@@ -7606,7 +7606,7 @@ export default function Produtos() {
         }
         .prod-modal-header-icon {
           width: 44px; height: 44px;
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           background: var(--ui-branco);
           display: flex; align-items: center; justify-content: center;
           font-size: 22px;
@@ -7662,7 +7662,7 @@ export default function Produtos() {
           }
           .prod-desk-preview-card {
             background: var(--ui-branco);
-            border-radius: 16px;
+            border-radius: var(--ui-raio-cartao);
             width: 100%;
             overflow: hidden;
             box-shadow: 0 12px 40px rgba(0,0,0,0.25);
@@ -7835,9 +7835,9 @@ export default function Produtos() {
         .prod-field textarea {
           padding: 14px 16px !important;
           font-size: 16px !important;
-          border-radius: 12px !important;
+          border-radius: var(--ui-raio) !important;
         }
-        .prod-preco-input { border-radius: 12px !important; }
+        .prod-preco-input { border-radius: var(--ui-raio) !important; }
         .prod-preco-input span { font-size: 14px !important; }
         .prod-preco-input input { padding: 14px 8px 14px 0 !important; font-size: 16px !important; }
         /* Fotos maiores */
@@ -7865,7 +7865,7 @@ export default function Produtos() {
           padding: 14px 16px !important;
           font-size: 14px !important;
           font-weight: 700 !important;
-          border-radius: 12px !important;
+          border-radius: var(--ui-raio) !important;
         }
         /* ═══ FIM PROPOSTA A ═══ */
         .prod-modal-footer {
@@ -7921,7 +7921,7 @@ export default function Produtos() {
           padding: 10px 6px;
           background: var(--ui-branco);
           border: 1.5px solid #E5D8DE;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           font-size: 12.5px;
           font-weight: 700;
           color: var(--ui-texto-2);
@@ -8154,7 +8154,7 @@ export default function Produtos() {
           margin-top: 12px;
           padding: 16px 18px;
           background: var(--ui-vinho-escuro);
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
         }
         .prod-promo-preview-label {
           display: block;
@@ -8211,7 +8211,7 @@ export default function Produtos() {
           background: linear-gradient(135deg, #FCE7F3, #FBCFE8);
           color: var(--primary-dark);
           border: 2px dashed var(--primary);
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           font-family: var(--font-base) !important;
           font-size: 14px;
           font-weight: var(--fw-black);
@@ -8288,7 +8288,7 @@ export default function Produtos() {
           padding: 12px 14px;
           background: var(--ui-branco);
           border: 2px solid var(--border);
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           cursor: pointer;
           font-family: var(--font-base) !important;
           text-align: left;
@@ -8330,7 +8330,7 @@ export default function Produtos() {
           background: linear-gradient(135deg, #FCE7F3, #FBCFE8);
           color: var(--primary-dark);
           border: 2px dashed var(--primary);
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           font-family: var(--font-base) !important;
           font-size: 14px;
           font-weight: var(--fw-black);
@@ -8358,7 +8358,7 @@ export default function Produtos() {
           width: 100%;
           padding: 12px 14px;
           border: 1.5px solid var(--border);
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           font-family: var(--font-base) !important;
           font-size: 14px;
           outline: none;
@@ -8395,7 +8395,7 @@ export default function Produtos() {
           padding: 12px;
           background: var(--bg-card);
           border: 1.5px solid var(--border);
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           font-family: var(--font-base) !important;
           font-size: 13px;
           font-weight: var(--fw-bold);
@@ -8408,7 +8408,7 @@ export default function Produtos() {
           background: var(--primary);
           color: var(--ui-branco);
           border: none;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           font-family: var(--font-base) !important;
           font-size: 13px;
           font-weight: var(--fw-black);
@@ -8427,7 +8427,7 @@ export default function Produtos() {
           padding: 12px 14px; margin-bottom: 12px;
           background: linear-gradient(135deg, var(--ui-laranja-fundo) 0%, #FCE7F3 100%);
           border: 1.5px solid #F59E0B;
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           cursor: pointer;
           transition: all 0.15s ease;
           font-family: var(--font-base);
@@ -8445,7 +8445,7 @@ export default function Produtos() {
         }
         .prod-var-toggle--locked:hover { transform: none; }
         .prod-var-toggle-icon {
-          width: 40px; height: 40px; border-radius: 10px;
+          width: 40px; height: 40px; border-radius: var(--ui-raio-p);
           display: flex; align-items: center; justify-content: center;
           background: rgba(255,255,255,0.7);
           font-size: 20px; flex-shrink: 0;
@@ -8500,7 +8500,7 @@ export default function Produtos() {
         .prod-var-item {
           display: flex; align-items: stretch;
           background: var(--ui-branco); border: 1.5px solid #F0EBED;
-          border-radius: 10px; margin-bottom: 6px;
+          border-radius: var(--ui-raio-p); margin-bottom: 6px;
           overflow: hidden;
           transition: border-color 0.15s ease;
         }
@@ -8544,7 +8544,7 @@ export default function Produtos() {
           padding: 10px 12px;
         }
         .prod-var-avatar {
-          width: 52px; height: 52px; border-radius: 12px;
+          width: 52px; height: 52px; border-radius: var(--ui-raio);
           background: linear-gradient(135deg, var(--ui-laranja), #7C2D12);
           display: flex; align-items: center; justify-content: center;
           font-size: 20px; flex-shrink: 0;
@@ -8651,7 +8651,7 @@ export default function Produtos() {
         }
         .prod-var-input-group {
           display: flex; align-items: stretch;
-          border: 1.5px solid #E5DFE1; border-radius: 10px;
+          border: 1.5px solid #E5DFE1; border-radius: var(--ui-raio-p);
           background: var(--ui-branco); overflow: hidden;
           flex: 1.4; min-width: 0;
           transition: border-color 0.15s ease;
@@ -8681,7 +8681,7 @@ export default function Produtos() {
         .prod-var-preco-input {
           flex: 1; min-width: 100px;
           display: flex; align-items: center;
-          border: 1.5px solid #E5DFE1; border-radius: 10px;
+          border: 1.5px solid #E5DFE1; border-radius: var(--ui-raio-p);
           background: var(--ui-branco); padding-left: 10px;
           transition: border-color 0.15s ease;
         }
@@ -8701,7 +8701,7 @@ export default function Produtos() {
         }
         .prod-var-btn-add {
           padding: 12px 16px; background: var(--ui-rosa); color: var(--ui-branco);
-          border: none; border-radius: 10px;
+          border: none; border-radius: var(--ui-raio-p);
           font-family: var(--font-base) !important;
           font-size: 13px; font-weight: 700;
           box-shadow: 0 3px 0 var(--ui-rosa-escuro);
@@ -8829,7 +8829,7 @@ export default function Produtos() {
         .wiz-step1-card {
           all: unset;
           padding: 22px 10px;
-          border-radius: 16px;
+          border-radius: var(--ui-raio-cartao);
           text-align: center;
           box-sizing: border-box;
           border: 2px solid transparent;
@@ -8919,7 +8919,7 @@ export default function Produtos() {
         .wiz-step1-subcard {
           all: unset;
           padding: 16px 10px;
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           text-align: center;
           box-sizing: border-box;
           border: 1.5px solid #E5D8DE;
@@ -8942,7 +8942,7 @@ export default function Produtos() {
         .wiz-step1-subcard-icon {
           width: 40px;
           height: 40px;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           background: #F0EBED;
           display: flex;
           align-items: center;
@@ -8981,7 +8981,7 @@ export default function Produtos() {
           font-family: var(--font-base) !important;
           font-size: 14px;
           font-weight: 700;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           cursor: pointer;
           box-shadow: 0 3px 0 var(--ui-rosa-escuro);
           transition: transform 0.08s, filter 0.08s, box-shadow 0.08s;
@@ -9074,7 +9074,7 @@ export default function Produtos() {
 
         /* Modal com cantos menos arredondados */
         .prod-modal--novo {
-          border-radius: 18px !important;
+          border-radius: var(--ui-raio-janela) !important;
           max-width: 780px !important;
           height: 90vh !important;
           max-height: 90vh !important;
@@ -9106,7 +9106,7 @@ export default function Produtos() {
         }
         .prod-modal-back-novo {
           width: 36px; height: 36px;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           background: transparent;
           color: var(--ui-texto-2);
           border: none;
@@ -9184,7 +9184,7 @@ export default function Produtos() {
           margin: 12px 24px 16px;
           background: #FAF8F5;
           border: 1px solid #F0EBED;
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           align-self: flex-start;
           max-width: calc(100% - 48px);
           box-sizing: border-box;
@@ -9277,7 +9277,7 @@ export default function Produtos() {
           font-family: var(--font-base) !important;
           font-size: 13.5px;
           font-weight: 700;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           cursor: pointer;
           transition: background 0.12s;
           text-align: center;
@@ -9291,7 +9291,7 @@ export default function Produtos() {
           padding: 14px 20px;
           background: var(--ui-rosa);
           color: var(--ui-branco);
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           font-family: var(--font-base) !important;
           font-size: 14px;
           font-weight: 700;
@@ -9424,7 +9424,7 @@ export default function Produtos() {
           font-family: var(--font-base) !important;
           font-size: 13px;
           font-weight: 700;
-          border-radius: 8px;
+          border-radius: var(--ui-raio-p);
           cursor: pointer;
           box-shadow: 0 2px 6px rgba(0,0,0,0.2);
           transition: transform 0.08s, box-shadow 0.12s, filter 0.12s;
@@ -9461,7 +9461,7 @@ export default function Produtos() {
           padding: 10px 14px;
           background: linear-gradient(135deg, #FDF3F7 0%, var(--primary-light) 100%);
           border: 1px solid var(--primary-light);
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           margin-top: 10px;
         }
         .prod-cta-pro-ia-txt {
@@ -9500,7 +9500,7 @@ export default function Produtos() {
         @keyframes prodProModalFadeIn { from { opacity: 0; } to { opacity: 1; } }
         .prod-pro-modal {
           background: var(--ui-branco);
-          border-radius: 20px;
+          border-radius: var(--ui-raio-janela);
           padding: 32px 28px 24px;
           max-width: 440px;
           width: 100%;
@@ -9560,7 +9560,7 @@ export default function Produtos() {
         }
         .prod-pro-modal-beneficios {
           background: #FAF8F5;
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           padding: 16px;
           margin-bottom: 20px;
           text-align: left;
@@ -9594,7 +9594,7 @@ export default function Produtos() {
           background: #1A1A1A;
           color: var(--ui-branco);
           border: none;
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           font-size: 15px;
           font-weight: 700;
           cursor: pointer;
@@ -9628,7 +9628,7 @@ export default function Produtos() {
         .st-subtipo-wrap {
           background: #FAF8F5;
           border: 1px solid #F0EBED;
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           padding: 14px;
           margin-bottom: 20px;
         }
@@ -9649,7 +9649,7 @@ export default function Produtos() {
         .st-subcard {
           all: unset;
           padding: 12px 8px;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           text-align: center;
           box-sizing: border-box;
           border: 1.5px solid #E5D8DE;
@@ -9691,7 +9691,7 @@ export default function Produtos() {
         .st-secao {
           background: var(--ui-branco);
           border: 1px solid #F0EBED;
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           padding: 14px;
           margin-bottom: 14px;
         }
@@ -9736,7 +9736,7 @@ export default function Produtos() {
           flex: 1;
           padding: 10px 12px;
           border: 1.5px solid #E5D8DE;
-          border-radius: 8px;
+          border-radius: var(--ui-raio);
           font-family: var(--font-base);
           font-size: 13px;
           outline: none;
@@ -9767,7 +9767,7 @@ export default function Produtos() {
           padding: 24px 16px;
           background: #FAF8F5;
           border: 1.5px dashed #E5D8DE;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           color: var(--text-muted);
           font-size: 12px;
           display: flex;
@@ -9835,7 +9835,7 @@ export default function Produtos() {
         .st-grid-wrap {
           overflow-x: auto;
           border: 1px solid #F0EBED;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
         }
         .st-grid {
           width: 100%;
@@ -9918,7 +9918,7 @@ export default function Produtos() {
           gap: 4px;
           padding: 6px 10px;
           border: 1.5px solid #E5D8DE;
-          border-radius: 8px;
+          border-radius: var(--ui-raio);
           background: var(--ui-branco);
           transition: border-color 0.12s;
         }
@@ -9942,7 +9942,7 @@ export default function Produtos() {
           padding: 16px;
           background: var(--ui-laranja-fundo);
           border: 1px solid #FDE68A;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           color: #78350F;
           font-size: 12.5px;
           font-weight: 500;
@@ -10092,7 +10092,7 @@ export default function Produtos() {
         .st-confirm-btn-cancel {
           all: unset;
           padding: 10px 18px;
-          border-radius: 8px;
+          border-radius: var(--ui-raio-p);
           border: 1.5px solid #E5D8DE;
           background: var(--ui-branco);
           color: #2D1F26;
@@ -10105,7 +10105,7 @@ export default function Produtos() {
         .st-confirm-btn-ok {
           all: unset;
           padding: 10px 20px;
-          border-radius: 8px;
+          border-radius: var(--ui-raio-p);
           background: #D97706;
           color: var(--ui-branco);
           font-size: 13px;
@@ -10234,7 +10234,7 @@ export default function Produtos() {
           padding: 12px 14px;
           background: linear-gradient(135deg, var(--ui-laranja-fundo) 0%, #FEF9E7 100%);
           border: 1.5px solid #FDE68A;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           display: flex;
           align-items: center;
           gap: 10px;
@@ -10308,7 +10308,7 @@ export default function Produtos() {
           padding: 8px 12px;
           background: var(--ui-branco);
           border: 1.5px solid #F0EBED;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           cursor: pointer;
           transition: all 0.15s;
         }
@@ -10369,7 +10369,7 @@ export default function Produtos() {
         .prod-opcao-foto-slot {
           width: 100%;
           aspect-ratio: 1;
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           background: #FAF8F5;
           border: 2px dashed #E5D8DE;
           display: flex; align-items: center; justify-content: center;
@@ -10418,7 +10418,7 @@ export default function Produtos() {
           padding: 14px 16px;
           background: #FAF8F5;
           border: 1.5px dashed #E5D8DE;
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
         }
         .prod-var-fotos-lock-logo {
           width: 44px;
@@ -10438,7 +10438,7 @@ export default function Produtos() {
           padding: 8px 12px;
           background: #FAF8F5;
           border: 1px solid #F0EBED;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
         }
         .prod-var-foto-thumb {
           width: 52px;
@@ -10515,7 +10515,7 @@ export default function Produtos() {
           padding: 20px 16px;
           background: linear-gradient(135deg, #FDFAFF 0%, #FDF7FA 100%);
           border: 1.5px dashed #E5DBEB;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           text-align: center;
           transition: all 0.15s;
         }
@@ -10549,7 +10549,7 @@ export default function Produtos() {
           background: var(--ui-branco);
           border: 1.5px solid #E5DFE1;
           color: var(--ui-texto-2);
-          border-radius: 8px;
+          border-radius: var(--ui-raio-p);
           font-family: var(--font-base) !important;
           font-size: 12px;
           font-weight: 700;
@@ -10565,7 +10565,7 @@ export default function Produtos() {
           background: linear-gradient(135deg, #A855F7, #EC4899);
           color: var(--ui-branco);
           border: none;
-          border-radius: 8px;
+          border-radius: var(--ui-raio-p);
           font-family: var(--font-base) !important;
           font-size: 12px;
           font-weight: 700;
@@ -10598,7 +10598,7 @@ export default function Produtos() {
           background: #FCE7F3;
           color: var(--ui-rosa);
           border: 1.5px dashed var(--ui-rosa);
-          border-radius: 8px;
+          border-radius: var(--ui-raio-p);
           font-family: var(--font-base) !important;
           font-size: 12px;
           font-weight: 700;
@@ -10611,7 +10611,7 @@ export default function Produtos() {
           padding: 12px;
           background: #FDF7FA;
           border: 1.5px dashed var(--ui-rosa);
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
         }
         .prod-cat-nova-hint {
           font-size: 12px;
@@ -10623,7 +10623,7 @@ export default function Produtos() {
           width: 100%;
           padding: 11px 12px;
           border: 1.5px solid #E5DFE1;
-          border-radius: 8px;
+          border-radius: var(--ui-raio);
           font-family: var(--font-base) !important;
           font-size: 16px;
           outline: none;
@@ -10637,7 +10637,7 @@ export default function Produtos() {
           background: var(--ui-branco);
           border: 1.5px solid #E5DFE1;
           color: var(--ui-texto-2);
-          border-radius: 8px;
+          border-radius: var(--ui-raio-p);
           font-family: var(--font-base) !important;
           font-size: 12px;
           font-weight: 700;
@@ -10649,7 +10649,7 @@ export default function Produtos() {
           background: var(--ui-rosa);
           color: var(--ui-branco);
           border: none;
-          border-radius: 8px;
+          border-radius: var(--ui-raio-p);
           font-family: var(--font-base) !important;
           font-size: 12px;
           font-weight: 700;
@@ -10684,7 +10684,7 @@ export default function Produtos() {
           padding: 12px 14px; margin-bottom: 12px;
           background: linear-gradient(135deg, var(--ui-laranja-fundo) 0%, #FCE7F3 100%);
           border: 1.5px solid #F59E0B;
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           cursor: pointer;
           transition: all 0.15s ease;
           font-family: var(--font-base);
@@ -10695,7 +10695,7 @@ export default function Produtos() {
           border-color: #16A34A;
         }
         .prod-pacote-toggle-icon {
-          width: 40px; height: 40px; border-radius: 10px;
+          width: 40px; height: 40px; border-radius: var(--ui-raio-p);
           display: flex; align-items: center; justify-content: center;
           background: rgba(255,255,255,0.7);
           font-size: 20px; flex-shrink: 0;
@@ -10867,7 +10867,7 @@ export default function Produtos() {
           padding: 14px;
           background: var(--ui-branco);
           border: 2px solid #E5E7EB;
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           cursor: pointer;
           transition: all 0.15s ease;
           user-select: none;
@@ -10897,7 +10897,7 @@ export default function Produtos() {
         .prod-mchk-ico {
           width: 36px; height: 36px;
           background: #F3F4F6;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           display: flex; align-items: center; justify-content: center;
           color: #6B7280;
           flex-shrink: 0;
@@ -10928,7 +10928,7 @@ export default function Produtos() {
           background: var(--ui-rosa);
           color: var(--ui-branco);
           border: none;
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           font-size: 15px;
           font-weight: 700;
           cursor: pointer;
@@ -10958,7 +10958,7 @@ export default function Produtos() {
           background: #F3F4F6;
           color: #4B5563;
           border: none;
-          border-radius: 8px;
+          border-radius: var(--ui-raio-p);
           font-size: 12px;
           font-weight: 700;
           cursor: pointer;
@@ -10975,7 +10975,7 @@ export default function Produtos() {
           margin: 0 0 16px;
           background: linear-gradient(135deg, var(--ui-laranja-fundo) 0%, #FDE68A 100%);
           border-left: 4px solid #F59E0B;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           animation: prod-draft-in 0.35s ease-out;
         }
         @keyframes prod-draft-in {
@@ -11008,7 +11008,7 @@ export default function Produtos() {
         }
         .prod-draft-btn {
           padding: 7px 12px;
-          border-radius: 8px;
+          border-radius: var(--ui-raio-p);
           border: none;
           font-size: 12px;
           font-weight: 700;
@@ -11062,7 +11062,7 @@ export default function Produtos() {
           text-align: left !important;
           gap: 14px !important;
           padding: 16px 16px !important;
-          border-radius: 12px !important;
+          border-radius: var(--ui-raio) !important;
           background: var(--ui-branco) !important;
           border: 2px solid var(--border) !important;
           box-shadow: 0 1px 3px rgba(45,31,38,0.06);
@@ -11592,7 +11592,7 @@ export default function Produtos() {
           width: 100%;
           max-height: 92vh;
           background: var(--bg-card);
-          border-radius: 20px 20px 0 0;
+          border-radius: var(--ui-raio-janela) var(--ui-raio-janela) 0 0;
           display: flex; flex-direction: column;
           overflow: hidden;
           box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.18);
@@ -11632,7 +11632,7 @@ export default function Produtos() {
           .ficha-modal {
             max-width: 760px;
             max-height: 88vh;
-            border-radius: 20px;
+            border-radius: var(--ui-raio-janela);
             animation: fichaFadeScale 0.22s ease;
           }
           .ficha-modal::before { display: none; }
@@ -11924,7 +11924,7 @@ export default function Produtos() {
           transform: translateX(-50%);
           background: #1F1418;
           color: var(--ui-branco);
-          border-radius: 16px;
+          border-radius: var(--ui-raio-cartao);
           padding: 10px 12px 10px 20px;
           display: none;
           align-items: center;
@@ -11996,7 +11996,7 @@ export default function Produtos() {
         }
         .bulk-confirm-modal {
           background: var(--ui-branco);
-          border-radius: 20px;
+          border-radius: var(--ui-raio-janela);
           padding: 28px 24px 24px;
           max-width: 380px;
           width: 100%;
@@ -12033,7 +12033,7 @@ export default function Produtos() {
           flex: 1;
           padding: 12px;
           border: none;
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           font-family: inherit;
           font-size: 13.5px;
           font-weight: 700;
@@ -12124,7 +12124,7 @@ export default function Produtos() {
           border: none;
           background: var(--ui-rosa);
           color: var(--ui-branco);
-          border-radius: 10px;
+          border-radius: var(--ui-raio-p);
           font-family: var(--font-base);
           font-size: 13.5px;
           font-weight: 700;
@@ -12143,7 +12143,7 @@ export default function Produtos() {
         .kitp-tag { background: var(--primary-light); color: #993556 !important; padding: 3px 10px; border-radius: 7px; font-size: 12.5px; }
         .kitp-dica { font-size: 12px; color: var(--ui-texto-3); margin: 8px 0 0; }
         .kitp-pct { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 14px; color: var(--ui-cinza-texto); }
-        .kitp-pct input { width: 64px; border: 1.5px solid var(--ui-borda-campo); border-radius: 10px; padding: 8px; font-family: inherit; font-size: 16px; font-weight: 700; text-align: center; color: var(--ui-texto); }
+        .kitp-pct input { width: 64px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio-p); padding: 8px; font-family: inherit; font-size: 16px; font-weight: 700; text-align: center; color: var(--ui-texto); }
 `}</style>
 
       {/* ═══ Barra flutuante de ações em massa (Desktop) ═══ */}

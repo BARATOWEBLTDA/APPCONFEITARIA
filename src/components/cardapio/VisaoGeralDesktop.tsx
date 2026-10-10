@@ -248,15 +248,15 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
 
       <style>{`
         .vgd { display: flex; flex-direction: column; gap: 16px; font-family: var(--font-base); color: var(--ui-texto); margin-top: 20px; }
-        .vgd-card { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 16px; padding: 18px 20px; }
+        .vgd-card { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 18px 20px; }
         .vgd-ct { margin: 0; font-size: 15.5px; font-weight: 700; } .vgd-cs { margin: 2px 0 0; font-size: 12.5px; color: var(--ui-texto-3); }
         .vgd-rowh { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-        .vgd-hero { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; border-radius: 16px; padding: 20px 22px; color: var(--ui-branco); background: linear-gradient(135deg, var(--ui-vinho-escuro), #6B2340); }
+        .vgd-hero { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; border-radius: var(--ui-raio-cartao); padding: 20px 22px; color: var(--ui-branco); background: linear-gradient(135deg, var(--ui-vinho-escuro), #6B2340); }
         .vgd-st { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #86EFAC; background: rgba(134,239,172,.12); padding: 4px 10px; border-radius: 999px; }
         .vgd-st i { width: 7px; height: 7px; border-radius: 50%; background: #4ADE80; }
         .vgd-st.off { color: #FCD34D; background: rgba(252,211,77,.12); } .vgd-st.off i { background: #FBBF24; }
         .vgd-hero h2 { margin: 8px 0 0; font-size: 20px; font-weight: 700; color: var(--ui-branco); }
-        .vgd-lk { display: flex; align-items: center; gap: 8px; margin-top: 12px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; }
+        .vgd-lk { display: flex; align-items: center; gap: 8px; margin-top: 12px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); border-radius: var(--ui-raio); padding: 10px 12px; font-size: 13.5px; }
         .vgd-lk span { flex: 1; opacity: .9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .vgd-btns { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
         .vgd-b { border: none; border-radius: var(--ui-raio-botao); gap: 6px; min-height: 44px; padding: 0 16px; font: 700 14px var(--font-base); cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
@@ -264,7 +264,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         .vgd-qr { text-align: center; }
         .vgd-qr img { width: 124px; height: 124px; border-radius: 14px; background: var(--ui-branco); padding: 8px; display: block; margin: 0 auto; }
         .vgd-qr button { margin-top: 8px; border: none; background: none; color: rgba(255,255,255,.85); font: 600 11.5px var(--font-base); cursor: pointer; }
-        .vgd-tabs { display: flex; gap: 4px; background: var(--ui-linha); border-radius: 10px; padding: 3px; }
+        .vgd-tabs { display: flex; gap: 4px; background: var(--ui-linha); border-radius: var(--ui-raio-p); padding: 3px; }
         .vgd-tabs button { border: none; background: none; padding: 6px 12px; border-radius: 8px; font: 700 12.5px var(--font-base); color: var(--ui-texto-2); cursor: pointer; }
         .vgd-tabs button.on { background: var(--ui-branco); color: var(--ui-texto); box-shadow: 0 1px 3px rgba(0,0,0,.06); }
         .vgd-kp { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 14px; }
@@ -297,7 +297,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         .vgd-pill.ok { background: var(--ui-verde-fundo); color: var(--ui-verde); } .vgd-pill.rd { background: var(--ui-vermelho-fundo); color: #B91C1C; } .vgd-pill.bl { background: #DBEAFE; color: #1D4ED8; }
         .vgd-pill.am { background: var(--ui-laranja-fundo); color: var(--ui-laranja); } .vgd-pill.cz { background: #F3F4F6; color: #6B7280; }
         .vgd-vt { border: none; background: none; font: 700 14px var(--font-base); min-height: 44px; color: var(--ui-rosa-escuro); cursor: pointer; }
-        .vgd-de { width: 36px; height: 36px; border-radius: 10px; background: #FFF6F9; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+        .vgd-de { width: 36px; height: 36px; border-radius: var(--ui-raio-p); background: #FFF6F9; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
         .vgd-db { font-size: 12.5px; font-weight: 700; color: var(--ui-rosa-escuro); white-space: nowrap; }
         .vgd-vazio { margin: 14px 0 4px; font-size: 13px; color: var(--ui-texto-3); }
         .vgd-pe:hover b, .vgd-di:hover .vgd-db { color: var(--ui-rosa-escuro); }

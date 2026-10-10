@@ -10,7 +10,7 @@
 .anf-l:first-child { border-top: 0; }
 .anf-img { flex: none; display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; overflow: hidden; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa); }
 .anf-img img { width: 100%; height: 100%; object-fit: cover; }
-.anf-img--p { width: 44px; height: 44px; border-radius: 10px; }
+.anf-img--p { width: 44px; height: 44px; border-radius: var(--ui-raio-p); }
 .anf-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .anf-tx b { font-size: 15px; font-weight: 700; overflow-wrap: anywhere; }
 .anf-tx p { margin: 0; font-size: 14px; font-weight: 500; line-height: 1.45; color: var(--ui-texto-2); overflow-wrap: anywhere; }

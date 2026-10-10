@@ -53,7 +53,7 @@
 /* Instalar o app (InstalarAppCard) */
 .ia-card { padding: 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); font-family: var(--font-base); }
 .ia-top { display: flex; align-items: center; gap: 12px; }
-.ia-top img { flex: none; width: 48px; height: 48px; border-radius: 12px; }
+.ia-top img { flex: none; width: 48px; height: 48px; border-radius: var(--ui-raio); }
 .ia-t { margin: 0; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
 .ia-d { margin: 2px 0 0; font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
 .ia-btn { width: 100%; min-height: 48px; margin-top: 14px; border: 0; border-radius: var(--ui-raio-botao); background: var(--ui-cinza); color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }

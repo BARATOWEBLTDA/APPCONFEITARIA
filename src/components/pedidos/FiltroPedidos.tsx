@@ -94,7 +94,7 @@ export default function FiltroLateral({ statusSelecionados, setStatusSelecionado
         @keyframes flFundo { from { background: rgba(45,31,38,0); } } @keyframes flFundoSai { to { background: rgba(45,31,38,0); } }
         .fl-h { display: flex; justify-content: space-between; align-items: center; padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 12px; border-bottom: 1px solid var(--ui-cinza); }
         .fl-h b { font-size: 19px; font-weight: 700; color: var(--ui-texto); }
-        .fl-x { width: 36px; height: 36px; border-radius: 10px; border: none; background: var(--ui-linha); color: var(--ui-cinza-texto); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .fl-x { width: 36px; height: 36px; border-radius: var(--ui-raio-p); border: none; background: var(--ui-linha); color: var(--ui-cinza-texto); display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .fl-b { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 4px 16px 14px; }
         .fl-sec { display: flex; justify-content: space-between; align-items: baseline; margin: 16px 2px 7px; }
         .fl-sec b { font-size: 12px; font-weight: 700; color: var(--ui-texto-3); }
@@ -115,7 +115,7 @@ export default function FiltroLateral({ statusSelecionados, setStatusSelecionado
         .fl-per .cdata { padding: 0 10px; font-size: 14px; gap: 6px; } /* De/Até lado a lado, sem quebrar */
         .fl-f { display: flex; align-items: center; gap: 10px; padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--ui-cinza); }
         .fl-limpar { border: none; background: none; padding: 10px 6px; font-family: inherit; font-size: 14.5px; font-weight: 700; color: var(--ui-texto-3); cursor: pointer; }
-        .fl-ver { flex: 1; border: none; border-radius: 13px; padding: 14px; background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
+        .fl-ver { flex: 1; border: none; border-radius: var(--ui-raio-botao); padding: 14px; background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
       `}</style>
     </div>, document.body)
 }

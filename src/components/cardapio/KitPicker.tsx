@@ -80,12 +80,12 @@ export default function KitPicker({ kit, sel, onChange, desconto = 0 }: Props) {
       <style>{`
         .kp { display: flex; flex-direction: column; gap: 8px; font-family: var(--font-base); }
         .kp-kits { display: flex; gap: 8px; flex-wrap: wrap; }
-        .kp-kits button { flex: 1; min-width: 110px; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 9px 8px; border: 1.5px solid #EAE3E6; border-radius: 10px; background: var(--ui-branco); font-family: inherit; cursor: pointer; color: var(--ui-texto); }
+        .kp-kits button { flex: 1; min-width: 110px; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 9px 8px; border: 1.5px solid #EAE3E6; border-radius: var(--ui-raio-p); background: var(--ui-branco); font-family: inherit; cursor: pointer; color: var(--ui-texto); }
         .kp-kits button b { font-size: 14px; } .kp-kits button span { font-size: 12px; color: var(--ui-texto-2); font-weight: 700; }
         .kp-kits button.on { border-color: var(--ui-texto); background: var(--ui-vinho-escuro); color: var(--ui-branco); } .kp-kits button.on span { color: var(--ui-branco); }
         .kp-livre { display: flex; align-items: center; gap: 10px; }
         .kp-livre > span { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); } .kp-livre em { font-style: normal; margin-left: auto; font-weight: 700; color: var(--ui-texto); }
-        .kp-regra { background: #FFF5F9; border: 1px solid #F9D1E0; border-radius: 10px; padding: 9px 11px; font-size: 12.5px; color: var(--ui-cinza-texto); line-height: 1.4; }
+        .kp-regra { background: #FFF5F9; border: 1px solid #F9D1E0; border-radius: var(--ui-raio-p); padding: 9px 11px; font-size: 12.5px; color: var(--ui-cinza-texto); line-height: 1.4; }
         .kp-tot { display: flex; justify-content: space-between; align-items: baseline; font-size: 12.5px; font-weight: 700; color: var(--ui-texto-2); margin-top: 2px; }
         .kp-tot b { font-size: 22px; color: var(--ui-texto); } .kp-tot b small { font-size: 12px; color: var(--ui-texto-2); }
         .kp-tot b.ok { color: #16a34a; } .kp-tot b.erro { color: var(--ui-vermelho); }

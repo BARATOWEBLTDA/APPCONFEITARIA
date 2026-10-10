@@ -18,7 +18,7 @@
 .dl-bar i { display: block; height: 100%; border-radius: 4px; background: var(--ui-rosa); transition: width .3s; }
 .dl-bar i.ok { background: var(--ui-verde); }
 .dl-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.dl-chip { position: relative; display: inline-flex; align-items: center; gap: 4px; min-height: 36px; margin: 0; padding: 0 12px; border: 0; border-radius: 10px; background: var(--ui-laranja-fundo); color: var(--ui-laranja); font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; }
+.dl-chip { position: relative; display: inline-flex; align-items: center; gap: 4px; min-height: 36px; margin: 0; padding: 0 12px; border: 0; border-radius: var(--ui-raio-p); background: var(--ui-laranja-fundo); color: var(--ui-laranja); font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; }
 .dl-chip::after { content: ""; position: absolute; inset: -4px 0; }
 .dl-chip.ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
 

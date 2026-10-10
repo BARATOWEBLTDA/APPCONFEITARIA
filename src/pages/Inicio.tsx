@@ -1294,7 +1294,7 @@ export default function Inicio() {
           gap: 12px;
           padding: 16px;
           background: linear-gradient(135deg, var(--ui-rosa) 0%, var(--ui-rosa-escuro) 100%);
-          border-radius: 14px;
+          border-radius: var(--ui-raio-botao);
           color: var(--ui-branco);
           margin-bottom: 10px;
           box-shadow: 0 8px 20px rgba(232,90,140,0.32);
@@ -1320,7 +1320,7 @@ export default function Inicio() {
         }
         .ini-hero-cta-ic {
           width: 44px; height: 44px;
-          border-radius: 12px;
+          border-radius: var(--ui-raio);
           background: rgba(255,255,255,0.22);
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
@@ -1457,7 +1457,7 @@ export default function Inicio() {
           .ini-main .ini-section--nav {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 14px;
+            border-radius: var(--ui-raio-cartao);
             padding: var(--space-5);
           }
           .ini-main .ini-section--nav .ini-nav-grid {
@@ -1502,7 +1502,7 @@ export default function Inicio() {
           .ini-main .ini-section--chart {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 14px;
+            border-radius: var(--ui-raio-cartao);
             padding: var(--space-5);
             box-sizing: border-box;
           }
@@ -1591,7 +1591,7 @@ export default function Inicio() {
             height: 24px;
             padding: 0 8px 0 6px;
             margin-left: 0;
-            border-radius: 12px;
+            border-radius: var(--ui-raio);
             box-shadow: none;
             font-size: 12.5px; font-weight: 700;
             letter-spacing: 0;
@@ -1635,7 +1635,7 @@ export default function Inicio() {
             height: 71px;
             padding: 0 16px;
             gap: 13px;
-            border-radius: 13px;
+            border-radius: var(--ui-raio-botao);
             margin-bottom: 0;
             background: linear-gradient(100deg, #E95B8D 0%, #DD5082 45%, #C94271 75%, #B23560 100%);
             box-shadow: 0 6px 16px rgba(200,60,110,0.22);
@@ -1677,7 +1677,7 @@ export default function Inicio() {
             min-height: 64px;
             padding: 8px 17px 8px 7px;
             border: none;
-            border-radius: 13px;
+            border-radius: var(--ui-raio-botao);
             background: var(--ui-branco);
             box-shadow: 0 1px 2px rgba(60,20,35,0.04), 0 4px 14px rgba(60,20,35,0.05);
           }
@@ -1727,12 +1727,12 @@ export default function Inicio() {
           .ini-dk-atr::after { content: ""; position: absolute; inset: -12px -4px; } /* área de toque de 44px */
           .ini-dk-atr:focus-visible { outline: 3px solid rgba(255, 255, 255, .75); outline-offset: 2px; border-radius: 4px; }
           .ini-dk-bts { display: flex; gap: 10px; position: relative; z-index: 1; }
-          .ini-dk-bt { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: 12px; font-family: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+          .ini-dk-bt { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: var(--ui-raio); font-family: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; white-space: nowrap; }
           .ini-dk-bt--1 { border: none; background: var(--ui-branco); color: var(--ui-rosa-escuro); box-shadow: 0 4px 12px rgba(0,0,0,.12); }
           .ini-dk-bt--2 { border: 1.5px solid rgba(255,255,255,.7); background: transparent; color: var(--ui-branco); }
           .ini-dk-bt:hover { transform: translateY(-1px); }
           .ini-dk-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: -50px 20px 0; position: relative; z-index: 2; }
-          .ini-dk-kpi { background: var(--ui-branco); border-radius: 16px; padding: 16px; box-shadow: 0 8px 22px rgba(60,20,35,.08); border: 1px solid #F3ECEF; }
+          .ini-dk-kpi { background: var(--ui-branco); border-radius: var(--ui-raio-cartao); padding: 16px; box-shadow: 0 8px 22px rgba(60,20,35,.08); border: 1px solid #F3ECEF; }
           .ini-dk-kpi--dest { background: linear-gradient(150deg, #3B1620, #6B2340); border-color: transparent; }
           .ini-dk-kh { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
           .ini-dk-kh span { width: 30px; height: 30px; border-radius: 9px; background: #FCE7F3; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; }
@@ -1748,24 +1748,24 @@ export default function Inicio() {
 
           .ini-dk-side { display: flex; flex-direction: column; gap: 16px; }
           .ini-dk-side .cqc { margin-top: 0; }
-          .ini-dk-card { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 16px; padding: 16px; }
+          .ini-dk-card { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 16px; }
           .ini-dk-ct { display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 700; color: var(--ui-texto); margin-bottom: 10px; }
-          .ini-dk-ct button { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin: -12px -8px -12px 0; padding: 0 8px; border: none; border-radius: 12px; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
+          .ini-dk-ct button { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin: -12px -8px -12px 0; padding: 0 8px; border: none; border-radius: var(--ui-raio); background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
           .ini-dk-vazio { font-size: 13.5px; color: var(--ui-texto-3); margin: 0; line-height: 1.45; }
           .ini-dk-en { display: flex; align-items: center; gap: 12px; width: 100%; padding: 9px 0; border: none; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; text-align: left; cursor: pointer; }
           .ini-dk-ct + .ini-dk-en { border-top: none; padding-top: 0; }
-          .ini-dk-dt { width: 48px; height: 48px; border-radius: 10px; background: #FAF7F8; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+          .ini-dk-dt { width: 48px; height: 48px; border-radius: var(--ui-raio-p); background: #FAF7F8; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
           .ini-dk-dt b { font-size: 16px; line-height: 1; color: var(--ui-texto); } .ini-dk-dt small { font-size: 12.5px; font-weight: 700; color: var(--ui-rosa-escuro); }
           .ini-dk-ei { flex: 1; min-width: 0; display: flex; flex-direction: column; }
           .ini-dk-ei b { font-size: 15px; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ini-dk-ei small { font-size: 12.5px; color: var(--ui-texto-3); }
           .ini-dk-ev { font-weight: 700; font-size: 13.5px; color: var(--ui-verde); white-space: nowrap; }
           .ini-dk-side .mu-root { margin: 0; }
           /* acesso rápido no estilo do celular: cartão branco, ícone rosa, nome + descrição, 4 por linha */
-          .ini-section--nav { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 16px; padding: 18px; }
+          .ini-section--nav { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 18px; }
           .ini-nav-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 10px !important; }
-          .ini-root .ini-section--nav .ini-nav-card { display: flex !important; flex-direction: row !important; align-items: center !important; gap: 10px !important; background: var(--ui-branco) !important; border: 1px solid #F0EBED !important; border-radius: 12px !important; padding: 12px !important; min-height: 0 !important; box-shadow: none !important; opacity: 1 !important; text-align: left !important; }
+          .ini-root .ini-section--nav .ini-nav-card { display: flex !important; flex-direction: row !important; align-items: center !important; gap: 10px !important; background: var(--ui-branco) !important; border: 1px solid #F0EBED !important; border-radius: var(--ui-raio) !important; padding: 12px !important; min-height: 0 !important; box-shadow: none !important; opacity: 1 !important; text-align: left !important; }
           .ini-root .ini-section--nav .ini-nav-card:hover { border-color: #F3D6E2 !important; background: #FFFAFC !important; }
-          .ini-root .ini-section--nav .ini-nav-icon { width: 38px !important; position: static !important; height: 38px !important; border-radius: 10px !important; background: #FCE7F3 !important; color: var(--ui-rosa-escuro) !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0 !important; margin: 0 !important; }
+          .ini-root .ini-section--nav .ini-nav-icon { width: 38px !important; position: static !important; height: 38px !important; border-radius: var(--ui-raio-p) !important; background: #FCE7F3 !important; color: var(--ui-rosa-escuro) !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0 !important; margin: 0 !important; }
           .ini-root .ini-section--nav .ini-nav-meta { display: flex !important; padding: 0 !important; margin: 0 !important; justify-content: center !important; align-self: center !important; gap: 1px; flex-direction: column !important; min-width: 0; flex: 1; }
           .ini-root .ini-section--nav .ini-nav-label { font-size: 13.5px !important; margin: 0 !important; padding: 0 !important; font-weight: 700 !important; color: var(--ui-texto) !important; }
           .ini-root .ini-section--nav .ini-nav-sub { display: block !important; font-size: 12.5px !important; color: var(--ui-texto-3) !important; line-height: 1.3 !important; }

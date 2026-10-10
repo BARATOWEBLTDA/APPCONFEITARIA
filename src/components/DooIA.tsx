@@ -768,12 +768,12 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
           }
         }
         .dz-hd { flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: calc(12px + env(safe-area-inset-top, 0px)) 14px 14px; background: radial-gradient(130% 160% at 0 0, #6B2340, var(--ui-vinho-escuro) 70%); color: var(--ui-branco); }
-        .dz-hb { width: 44px; height: 44px; border-radius: 12px; border: none; background: rgba(255,255,255,.12); color: var(--ui-branco); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+        .dz-hb { width: 44px; height: 44px; border-radius: var(--ui-raio); border: none; background: rgba(255,255,255,.12); color: var(--ui-branco); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
         .dz-hb:disabled { opacity: .35; cursor: default; }
         .dz-fechar { display: none; }
         @media (min-width: 768px) { .dz-voltar { display: none; } .dz-fechar { display: flex; } }
         .dz-hav { position: relative; width: 44px; height: 44px; border-radius: 14px; background: #FCE7F3; border: 2px solid rgba(255,255,255,.35); flex-shrink: 0; }
-        .dz-hav img { width: 100%; height: 100%; object-fit: cover; object-position: top center; border-radius: 12px; display: block; }
+        .dz-hav img { width: 100%; height: 100%; object-fit: cover; object-position: top center; border-radius: var(--ui-raio); display: block; }
         .dz-hav i { position: absolute; right: -3px; bottom: -3px; width: 14px; height: 14px; border-radius: 50%; background: #22C55E; border: 2.5px solid var(--ui-texto); }
         .dz-ht { flex: 1; min-width: 0; }
         .dz-ht b { display: flex; align-items: center; gap: 7px; font-size: 17px; font-weight: 700; }
@@ -793,7 +793,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dz-sg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .dz-sc { min-height: 112px; text-align: left; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px; padding: 11px; font-family: inherit; color: inherit; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
         .dz-sc:hover { border-color: #F7C6D9; box-shadow: 0 4px 14px rgba(232,90,140,.1); }
-        .dz-si { width: 36px; height: 36px; border-radius: 10px; background: var(--primary-light); color: #993556; display: flex; align-items: center; justify-content: center; }
+        .dz-si { width: 36px; height: 36px; border-radius: var(--ui-raio-p); background: var(--primary-light); color: #993556; display: flex; align-items: center; justify-content: center; }
         .dz-sc b { display: block; font-size: 13.5px; font-weight: 700; margin-top: 6px; line-height: 1.2; }
         .dz-sc small { display: block; font-size: 12.5px; color: var(--ui-texto-2, #6B5D64); margin-top: 2px; line-height: 1.3; }
         .dz-dia { align-self: center; margin: 0; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-3); background: #F0EBED; padding: 3px 10px; border-radius: 99px; }
@@ -810,10 +810,10 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dz-bd li::marker { color: var(--ui-rosa); }
         .dz-bd li { margin: 3px 0; }
         .dz-bd strong { font-weight: 700; }
-        .dz-anexo { width: 100%; max-height: 180px; object-fit: cover; border-radius: 12px; margin-bottom: 8px; display: block; }
-        .dz-gerada { width: 100%; border-radius: 12px; margin-bottom: 8px; display: block; }
+        .dz-anexo { width: 100%; max-height: 180px; object-fit: cover; border-radius: var(--ui-raio); margin-bottom: 8px; display: block; }
+        .dz-gerada { width: 100%; border-radius: var(--ui-raio); margin-bottom: 8px; display: block; }
         .dz-acs { display: flex; gap: 6px; margin-top: 6px; }
-        .dz-acs button { position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--ui-texto-2, #6B5D64); background: none; border: none; padding: 0 8px; margin-left: -8px; border-radius: 10px; cursor: pointer; }
+        .dz-acs button { position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--ui-texto-2, #6B5D64); background: none; border: none; padding: 0 8px; margin-left: -8px; border-radius: var(--ui-raio-p); cursor: pointer; }
         .dz-acs button::after { content: ""; position: absolute; inset: -4px 0; }
         @media (hover: hover) { .dz-acs button:hover { background: var(--ui-cinza); } }
         .dz-acs button.ok { color: var(--ui-verde); }
@@ -825,7 +825,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dz-in { flex-shrink: 0; padding: 8px 12px calc(12px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(180deg, rgba(250,247,248,0), #FAF7F8 30%); }
         .dz-pend { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
         .dz-pend-img { position: relative; flex-shrink: 0; }
-        .dz-pend-img img { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; border: 1.5px solid var(--ui-rosa); display: block; }
+        .dz-pend-img img { width: 48px; height: 48px; border-radius: var(--ui-raio-p); object-fit: cover; border: 1.5px solid var(--ui-rosa); display: block; }
         .dz-pend-img button { position: absolute; top: -10px; right: -10px; width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--ui-branco); background: var(--ui-vinho-escuro); color: var(--ui-branco); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
         .dz-pend p { margin: 0; font-size: 12.5px; color: var(--ui-texto-2); }
         .dz-inb { display: flex; align-items: center; gap: 8px; background: var(--ui-branco); border: 1.5px solid var(--ui-borda-campo); border-radius: 999px; padding: 4px; box-shadow: 0 4px 14px rgba(44,18,25,.06); transition: border-color .15s; }
@@ -838,7 +838,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
 
         /* janela de quem não é PRO */
         .dz-pw { text-align: center; }
-        .dz-pw-ft { display: block; width: 88px; height: 88px; margin: 0 auto 12px; border-radius: 24px; background: #FCE7F3; object-fit: cover; object-position: top center; box-shadow: 0 10px 26px rgba(232,90,140,.25); }
+        .dz-pw-ft { display: block; width: 88px; height: 88px; margin: 0 auto 12px; border-radius: var(--ui-raio-janela); background: #FCE7F3; object-fit: cover; object-position: top center; box-shadow: 0 10px 26px rgba(232,90,140,.25); }
         .dz-pw p { margin: 0 0 16px; font-size: 15px; line-height: 1.5; color: var(--ui-texto-2, #6B5D64); }
         .dz-pw p b { color: var(--ui-texto, #2C1219); }
         .dz-pw ul { margin: 0; padding: 12px 16px; list-style: none; border-radius: var(--ui-raio, 12px); background: var(--ui-rosa-claro, #FDF0F5); text-align: left; }

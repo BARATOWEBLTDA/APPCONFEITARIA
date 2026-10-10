@@ -113,9 +113,9 @@ export default function CartaoInsumoDoo({ uid, rascunho, existente, estado, onFe
 }
 
 const CSS = `
-  .cid { margin-top: 10px; background: var(--ui-branco); border: 1.5px solid #F7C6D9; border-radius: 16px; padding: 14px; font-family: var(--font-base); color: var(--ui-texto); max-width: 340px; }
+  .cid { margin-top: 10px; background: var(--ui-branco); border: 1.5px solid #F7C6D9; border-radius: var(--ui-raio-cartao); padding: 14px; font-family: var(--font-base); color: var(--ui-texto); max-width: 340px; }
   .cid-hd { display: flex; gap: 11px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid var(--ui-linha); }
-  .cid-ic { width: 40px; height: 40px; border-radius: 10px; background: var(--primary-light); color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .cid-ic { width: 40px; height: 40px; border-radius: var(--ui-raio-p); background: var(--primary-light); color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .cid-k { margin: 0; font-size: 12px; font-weight: 700; color: var(--ui-rosa); }
   .cid-hd b { display: block; font-size: 16px; font-weight: 700; margin-top: 1px; }
   .cid-kv { display: grid; grid-template-columns: 96px 1fr; gap: 7px 10px; margin: 12px 0 0; font-size: 14px; }
@@ -125,13 +125,13 @@ const CSS = `
   .cid-custo--ed { margin: 8px 0 0; font-size: 13px; }
   .cid-ed { margin-top: 6px; }
   .cid-l { display: block; flex: 1; min-width: 0; font-size: 13px; font-weight: 500; color: var(--ui-cinza-texto); margin-top: 10px; }
-  .cid-in { display: block; width: 100%; box-sizing: border-box; margin-top: 5px; min-height: 44px; border: 1.5px solid var(--ui-borda-campo); border-radius: 12px; padding: 10px 12px; font-family: inherit; font-size: 16px; color: var(--ui-texto); background: var(--ui-branco); }
+  .cid-in { display: block; width: 100%; box-sizing: border-box; margin-top: 5px; min-height: 44px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); padding: 10px 12px; font-family: inherit; font-size: 16px; color: var(--ui-texto); background: var(--ui-branco); }
   .cid-in:focus { outline: none; border-color: var(--ui-rosa); box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
   .cid-row { display: flex; gap: 8px; }
   .cid-fotos { margin-top: 12px; }
   .cid-fl { margin: 0 0 6px; font-size: 13px; font-weight: 500; color: var(--ui-cinza-texto); }
   .cid-fg { display: flex; gap: 8px; }
-  .cid-f { position: relative; width: 56px; height: 56px; border-radius: 12px; border: 2px solid var(--ui-borda-campo); background: #FAF7F8; padding: 0; overflow: hidden; cursor: pointer; flex-shrink: 0; }
+  .cid-f { position: relative; width: 56px; height: 56px; border-radius: var(--ui-raio); border: 2px solid var(--ui-borda-campo); background: #FAF7F8; padding: 0; overflow: hidden; cursor: pointer; flex-shrink: 0; }
   .cid-f img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .cid-f.on { border-color: var(--ui-rosa); box-shadow: 0 0 0 3px rgba(232,90,140,.15); }
   .cid-f i { position: absolute; right: 3px; bottom: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--ui-rosa); color: var(--ui-branco); display: flex; align-items: center; justify-content: center; }
@@ -140,7 +140,7 @@ const CSS = `
   @keyframes cidLoad { to { background-position: -200% 0; } }
   .cid-erro { margin: 10px 0 0; font-size: 13px; color: #B91C1C; font-weight: 700; }
   .cid-bts { display: flex; gap: 8px; margin-top: 14px; }
-  .cid-b1, .cid-b2 { flex: 1; border-radius: 12px; padding: 12px 10px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .cid-b1, .cid-b2 { flex: 1; border-radius: var(--ui-raio); padding: 12px 10px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; }
   .cid-b1 { border: none; background: var(--ui-rosa); color: var(--ui-branco); box-shadow: 0 3px 0 var(--ui-rosa-escuro); flex: 2; }
   .cid-b2 { flex: 1; }
   .cid-b1:disabled { background: #F3B6CB; box-shadow: none; cursor: default; }
