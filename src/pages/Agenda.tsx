@@ -293,7 +293,9 @@ export default function Agenda() {
   // Cancelado escondido é o normal: o número no botão conta só as outras situações que foram escondidas
   const filtrosDesligados = FILTROS.filter(f => f.nome !== "Cancelado" && !f.chaves.some(c => statusSelecionados.includes(c))).length;
   const mostrarTodas = () => setStatusSelecionados([...STATUS_FILTRAVEIS]);
-  const valorDoDia = pedidosDoDia.filter((p: any) => p.status !== "cancelado").reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0);
+  // 4.08: a agenda não mostra o total vendido no dia (isso é do Financeiro); mostra só o que falta receber, quando existe
+  const aReceberDoDia = pedidosDoDia.filter((p: any) => p.status !== "cancelado" && saldoPedido(p) > 0.009);
+  const faltaDoDia = aReceberDoDia.reduce((s: number, p: any) => s + saldoPedido(p), 0);
   const stDia = dayStats[diaSel] || { total: 0 };
   const relDia = relativo(diaSel);
 
@@ -338,7 +340,13 @@ export default function Agenda() {
               <h2>{diaPorExtenso(diaSel)}</h2>
               <p>{relDia && <b>{relDia}</b>}{relDia && " · "}{stDia.total === 0 ? "Nenhum pedido" : `${stDia.total} pedido${stDia.total !== 1 ? "s" : ""}`}</p>
             </div>
-            {stDia.total > 0 && <div className="ag3-dia-v"><small>Total do dia</small><b>{rs(valorDoDia)}</b></div>}
+            {faltaDoDia > 0.009 && (
+              <div className="ag3-dia-v">
+                <small>Falta receber</small>
+                <b>{rs(faltaDoDia)}</b>
+                <small>{aReceberDoDia.length === 1 ? "em 1 pedido" : `em ${aReceberDoDia.length} pedidos`}</small>
+              </div>
+            )}
           </section>
 
           {/* Pedidos do dia */}

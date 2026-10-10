@@ -50,7 +50,7 @@ i.atr { background: var(--ui-vermelho); }
 .ag3-dia p b { color: var(--ui-rosa-escuro); font-weight: 700; }
 .ag3-dia-v { flex: none; text-align: right; }
 .ag3-dia-v small { display: block; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
-.ag3-dia-v b { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ag3-dia-v b { display: block; font-size: 17px; font-weight: 600; color: var(--ui-laranja); font-variant-numeric: tabular-nums; }
 
 .ag3-tit { margin-top: 4px; }
 .ag3-pro { display: inline-flex; align-items: center; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 12px; font-weight: 700; line-height: 18px; text-decoration: none; vertical-align: middle; }
