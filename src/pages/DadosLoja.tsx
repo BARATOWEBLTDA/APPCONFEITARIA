@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
-import { Check, Clock, MapPin, Sparkle, Storefront, WhatsappLogo } from "@phosphor-icons/react";
+import { Check, Clock, MapPin, Sparkle, Storefront, WarningCircle, WhatsappLogo } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import HorarioSheet from "@/components/HorarioSheet";
-import { Botao, Campo, CampoArea, Titulo, avisar } from "@/components/base";
+import { Botao, Campo, CampoArea, TelaVazia, Titulo, avisar } from "@/components/base";
 import { digitosTelefone } from "@/lib/telefone";
 import { digitosAoDigitar } from "@/components/cardapio/telefoneDigitado";
 import "./dadosLoja.css";
@@ -78,16 +78,23 @@ export default function DadosLoja() {
   const [recebeAqui, setRecebeAqui] = useState(true);
   const [horario, setHorario] = useState<Horario>(HORARIO_PADRAO);
 
+  // (10/10) Se a leitura falhar, a tela NÃO abre: antes abria em branco e "Salvar alterações" gravava nome, WhatsApp,
+  // endereço e horário vazios por cima dos dados da loja.
+  const [erroCarga, setErroCarga] = useState(false);
+  const [tentativa, setTentativa] = useState(0);
   useEffect(() => {
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      setErroCarga(false); setLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
+      if (!user) { setErroCarga(true); setLoading(false); return; }
       setUserId(user.id);
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("profiles")
         .select("nome_loja, telefone, descricao_loja, endereco, mostrar_localizacao, mostrar_apenas_cidade, horario, endereco_retirada, formas_entrega")
         .eq("id", user.id)
         .single();
+      if (error || !data) { setErroCarga(true); setLoading(false); return; }
       if (data) {
         setNome(data.nome_loja || "");
         setTelefone(formatPhone(data.telefone || ""));
@@ -109,7 +116,7 @@ export default function DadosLoja() {
       }
       setLoading(false);
     })();
-  }, []);
+  }, [tentativa]);
 
   // ── Resumo do que falta ──
   const itens = useMemo(() => {
@@ -234,6 +241,14 @@ export default function DadosLoja() {
       <>
         <AppPageHeader title="Dados da loja" subtitle="O que o cliente vê sobre sua confeitaria" onBack={() => navigate("/cardapio")} />
         <div className="dl-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
+      </>
+    );
+  }
+  if (erroCarga) {
+    return (
+      <>
+        <AppPageHeader title="Dados da loja" subtitle="O que o cliente vê sobre sua confeitaria" onBack={() => navigate("/cardapio")} />
+        <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os dados da loja" texto="Confira a internet e tente de novo." acao={<Botao variante="suave" tamanho="m" onClick={() => setTentativa(t => t + 1)}>Tentar de novo</Botao>} />
       </>
     );
   }

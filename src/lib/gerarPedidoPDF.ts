@@ -86,7 +86,8 @@ export async function gerarPedidoPDF(pedido: PedidoPDF, janelaAberta?: Window | 
       ["Nome", esc(pedido.cliente_nome || "Venda avulsa")],
       ["WhatsApp", esc(pedido.cliente_telefone || "")],
     ]));
-    const endereco = [[pedido.endereco_rua, pedido.endereco_numero].filter(Boolean).join(", "), pedido.endereco_complemento, [pedido.endereco_bairro, pedido.endereco_cidade].filter(Boolean).join(" · ")].filter(Boolean).join("<br>");
+    // (10/10) cada parte passa pelo esc(): o endereço é digitado pela cliente no cardápio e entrava cru no HTML do PDF
+    const endereco = [[pedido.endereco_rua, pedido.endereco_numero].filter(Boolean).join(", "), pedido.endereco_complemento, [pedido.endereco_bairro, pedido.endereco_cidade].filter(Boolean).join(" · ")].filter(Boolean).map(x => esc(String(x))).join("<br>");
     const quando = [pedido.data_entrega ? new Date(pedido.data_entrega + "T12:00:00").toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" }) : "", pedido.horario_entrega ? String(pedido.horario_entrega).slice(0, 5) : ""].filter(Boolean).join(" · ");
     const blocoEntrega = card(prontaEntrega ? "Pagamento" : "Entrega", prontaEntrega
       ? kv([["Forma", esc(PAGAMENTO[pedido.forma_pagamento || ""] || pedido.forma_pagamento || "")], ["Situação", situacao]])

@@ -2,8 +2,8 @@
 // O que salva continua igual (salva sozinho 2s depois de mexer; cupons na tabela loja_cupons).
 // Mudou o visual: campos e botões do app, cupom novo/editar numa janela, convite pro PRO sem borrão.
 import CampoData from '@/components/CampoData'
-import { CalendarBlank, CaretRight, Check, Crown, CurrencyCircleDollar, Plus, Tag, Ticket, Truck, Users, Wallet } from "@phosphor-icons/react"
-import { Botao, Campo, Janela, Titulo, avisar, confirmar } from "@/components/base"
+import { CalendarBlank, CaretRight, Check, Crown, CurrencyCircleDollar, Plus, Tag, Ticket, Truck, Users, Wallet, WarningCircle } from "@phosphor-icons/react"
+import { Botao, Campo, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base"
 import "./entregaPagamento.css"
 import { useState, useEffect, useRef } from "react"
 import { supabase } from "@/lib/supabase"
@@ -59,12 +59,19 @@ export default function CheckoutConfigPage() {
   const [aceitaAgendamento, setAceitaAgendamento] = useState(true)
   const [prazoMinimo, setPrazoMinimo] = useState('24')
 
+  // (10/10) Se a leitura do perfil ou dos cupons falhar, a tela NÃO abre: antes abria com os valores padrão e o
+  // salvamento automático gravava isso por cima (formas de entrega, taxas por bairro e todos os cupons sumiam).
+  const [erroCarga, setErroCarga] = useState(false)
+  const [tentativa, setTentativa] = useState(0)
   useEffect(() => {
     const load = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      setErroCarga(false); setLoading(true)
+      const { data: { session } } = await supabase.auth.getSession()
+      const user = session?.user
+      if (!user) { setErroCarga(true); return }
       setUserId(user.id)
-      const { data } = await supabase.from('profiles').select('formas_pagamento, formas_entrega, valor_entrega_propria, entrega_por_bairro, endereco_retirada, horario_retirada, exibir_campo_troco, cupons_desconto, aceita_agendamento, prazo_minimo_horas').eq('id', user.id).single()
+      const { data, error } = await supabase.from('profiles').select('formas_pagamento, formas_entrega, valor_entrega_propria, entrega_por_bairro, endereco_retirada, horario_retirada, exibir_campo_troco, cupons_desconto, aceita_agendamento, prazo_minimo_horas').eq('id', user.id).single()
+      if (error || !data) { setErroCarga(true); return }
       if (data) {
         setFormasPagamento(data.formas_pagamento || ['pix'])
         setFormasEntrega(data.formas_entrega || ['retirada'])
@@ -74,7 +81,8 @@ export default function CheckoutConfigPage() {
         setHorarioRetirada(data.horario_retirada || '')
         setExibirCampoTroco(data.exibir_campo_troco !== false)
         // Cupons ficam na tabela privada loja_cupons (fallback: os antigos do perfil)
-        const { data: lc } = await supabase.from('loja_cupons').select('cupons').eq('user_id', user.id).maybeSingle()
+        const { data: lc, error: erroCupons } = await supabase.from('loja_cupons').select('cupons').eq('user_id', user.id).maybeSingle()
+        if (erroCupons) { setErroCarga(true); return }
         const listaCupons = Array.isArray(lc?.cupons) ? lc!.cupons : (data.cupons_desconto || [])
         setCupons((listaCupons || []).map((c: any) => ({
           codigo: c.codigo || '',
@@ -93,7 +101,7 @@ export default function CheckoutConfigPage() {
       setLoading(false)
     }
     load()
-  }, [])
+  }, [tentativa])
 
   // 09/10: não salva (nem mostra "Salvo") só por ter aberto a tela; salva depois que algo muda
   const foto = JSON.stringify([formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, enderecoRetirada, horarioRetirada, exibirCampoTroco, cupons, aceitaAgendamento, prazoMinimo])
@@ -257,6 +265,13 @@ export default function CheckoutConfigPage() {
   const descontoDe = (c: { tipo: string; valor: string }) => c.tipo === 'percentual' ? `${c.valor}% de desconto` : `R$ ${c.valor} de desconto`
   const dinheiroBR = (v: string) => { const n = numBR(v); return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
 
+  // com erro, "loading" continua ligado: o salvamento automático só arma depois de uma leitura que deu certo
+  if (erroCarga) return (
+    <>
+      <AppPageHeader title="Entrega e pagamento" subtitle="Pagamento, entrega e cupons" onBack={() => navigate("/cardapio")} />
+      <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu pra carregar" texto="Confira a internet e tente de novo." acao={<Botao variante="suave" tamanho="m" onClick={() => setTentativa(t => t + 1)}>Tentar de novo</Botao>} />
+    </>
+  )
   if (loading) return (
     <>
       <AppPageHeader title="Entrega e pagamento" subtitle="Pagamento, entrega e cupons" onBack={() => navigate("/cardapio")} />
