@@ -496,28 +496,38 @@ function CartContent({
       const tentativa = await abrirTentativa(JSON.stringify(dadosPedido))
       const novoPedidoId = tentativa.id
 
-      if (!tentativa.gravado) {
-        const { error: erroPedido } = await supabase.from('pedidos').insert({ id: novoPedidoId, ...dadosPedido })
-        // "Esse id já existe" numa nova tentativa: o pedido tinha gravado e só a resposta se perdeu no caminho
-        const jaGravado = !!erroPedido && (erroPedido as any).code === '23505' && /pkey/i.test(String(erroPedido.message || ''))
-        if (erroPedido && !jaGravado) return falhou(erroPedido)
-        marcarGravada(tentativa)
-      }
+      const itensDoPedido = items.map((item: any) => ({
+        // Tudo o que o cliente escolheu vai pro pedido (regra única em lib/itemDoCarrinho)
+        pedido_id: novoPedidoId, user_id: confeteiraUserId, desconto: 0,
+        ...itemDoCarrinhoParaPedido(item),
+      }))
 
-      const { error: erroItens } = await supabase.from('pedido_itens').insert(
-        items.map((item: any) => ({
-          // Tudo o que o cliente escolheu vai pro pedido (regra única em lib/itemDoCarrinho)
-          pedido_id: novoPedidoId, user_id: confeteiraUserId, desconto: 0,
-          ...itemDoCarrinhoParaPedido(item),
-        }))
-      )
-      if (erroItens) {
-        // Pedido sem itens não vale: tenta desfazer. Se o banco não deixar apagar, a próxima tentativa completa esse mesmo pedido.
-        // (23503 no pedido_id = o pedido não existe mais no banco: começa do zero na próxima. 23503 em outra coluna,
-        //  como um produto que a loja apagou, não: aí a tentativa continua a mesma e não cria pedido repetido)
-        const pedidoSumiu = (erroItens as any).code === '23503' && /pedido_id|pedidos/i.test(`${erroItens.message || ''} ${(erroItens as any).details || ''}`)
-        if (await desfazerPedido(novoPedidoId) || pedidoSumiu) fecharTentativa()
-        return falhou(erroItens)
+      // (4.22) O banco cria o pedido e os itens de uma vez (função cardapio_criar_pedido): confere a loja e os produtos,
+      // refaz a soma, o cupom e o total, e não duplica numa nova tentativa. Sem a função no banco, grava como antes.
+      const viaBanco = await supabase.rpc('cardapio_criar_pedido', {
+        p_loja: confeteiraUserId, p_pedido: { id: novoPedidoId, ...dadosPedido }, p_itens: itensDoPedido,
+      })
+      const semFuncao = !!viaBanco.error && (viaBanco.error.code === 'PGRST202' || viaBanco.error.code === '42883' || /could not find the function/i.test(String(viaBanco.error.message || '')))
+      if (viaBanco.error && !semFuncao) return falhou(viaBanco.error)
+
+      if (semFuncao) {
+        if (!tentativa.gravado) {
+          const { error: erroPedido } = await supabase.from('pedidos').insert({ id: novoPedidoId, ...dadosPedido })
+          // "Esse id já existe" numa nova tentativa: o pedido tinha gravado e só a resposta se perdeu no caminho
+          const jaGravado = !!erroPedido && (erroPedido as any).code === '23505' && /pkey/i.test(String(erroPedido.message || ''))
+          if (erroPedido && !jaGravado) return falhou(erroPedido)
+          marcarGravada(tentativa)
+        }
+
+        const { error: erroItens } = await supabase.from('pedido_itens').insert(itensDoPedido)
+        if (erroItens) {
+          // Pedido sem itens não vale: tenta desfazer. Se o banco não deixar apagar, a próxima tentativa completa esse mesmo pedido.
+          // (23503 no pedido_id = o pedido não existe mais no banco: começa do zero na próxima. 23503 em outra coluna,
+          //  como um produto que a loja apagou, não: aí a tentativa continua a mesma e não cria pedido repetido)
+          const pedidoSumiu = (erroItens as any).code === '23503' && /pedido_id|pedidos/i.test(`${erroItens.message || ''} ${(erroItens as any).details || ''}`)
+          if (await desfazerPedido(novoPedidoId) || pedidoSumiu) fecharTentativa()
+          return falhou(erroItens)
+        }
       }
       fecharTentativa()
 

@@ -33,15 +33,24 @@ const EMPTY_RESULT: CardapioData = {
  * Nova função principal — o código é o identificador real.
  * Slug (2º segmento) é apenas decoração/SEO.
  */
+/**
+ * (4.22) Os dados da loja vêm da função cardapio_loja do banco, que não entrega campos internos
+ * (plano interno, Hotmart, caixa, cupons, indicação). Se a função ainda não existir no banco
+ * (SQL 4.22 ainda não rodado), lê o perfil como antes.
+ */
+const funcaoFaltando = (e: any) => !!e && (e.code === 'PGRST202' || e.code === '42883' || /could not find the function/i.test(String(e.message || '')))
+
+async function perfilDaLoja(chave: string, coluna: 'codigo_publico' | 'id'): Promise<any | null> {
+  const { data, error } = await supabase.rpc('cardapio_loja', { p_chave: chave })
+  if (!error) return data || null
+  if (!funcaoFaltando(error)) return null
+  const { data: profile } = await supabase.from('profiles').select('*').eq(coluna, chave).maybeSingle()
+  return profile || null
+}
+
 export async function getCardapioByCodigo(codigo: string): Promise<CardapioData> {
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('codigo_publico', codigo)
-    .maybeSingle()
-
+  const profile = await perfilDaLoja(codigo, 'codigo_publico')
   if (!profile) return EMPTY_RESULT
-
   return fetchByUserId(profile.id, profile)
 }
 
@@ -55,13 +64,9 @@ export async function getCardapioBySlug(slug: string): Promise<CardapioData> {
   const porCodigo = await getCardapioByCodigo(slug)
   if (porCodigo.design) return porCodigo
 
-  // Fallback: tenta por id (comportamento antigo)
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', slug)
-    .maybeSingle()
-
+  // Fallback: tenta por id (comportamento antigo). A função cardapio_loja também aceita o id.
+  if (!/^[0-9a-f-]{36}$/i.test(slug)) return EMPTY_RESULT
+  const profile = await perfilDaLoja(slug, 'id')
   if (!profile) return EMPTY_RESULT
 
   return fetchByUserId(profile.id, profile)

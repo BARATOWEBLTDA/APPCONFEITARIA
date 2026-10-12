@@ -383,11 +383,19 @@ export default function Auth() {
           const { data: userRes } = await supabase.auth.getUser();
           const novoId = userRes?.user?.id;
           if (novoId) {
-            const { data: indicador, error: errBuscar } = await supabase
-              .from("profiles")
-              .select("id")
-              .eq("codigo_indicacao", refCode)
-              .maybeSingle();
+            // (4.22) quem indicou vem da função indicador_por_codigo (o perfil das outras contas não fica mais aberto);
+            // sem a função no banco, lê como antes
+            let indicador: { id: string } | null = null;
+            let errBuscar: any = null;
+            {
+              const r = await supabase.rpc("indicador_por_codigo", { p_codigo: refCode });
+              const semFuncao = !!r.error && (r.error.code === "PGRST202" || r.error.code === "42883" || /could not find the function/i.test(String(r.error.message || "")));
+              if (!r.error) indicador = r.data ? { id: String(r.data) } : null;
+              else if (semFuncao) {
+                const v = await supabase.from("profiles").select("id").eq("codigo_indicacao", refCode).maybeSingle();
+                indicador = (v.data as any) || null; errBuscar = v.error;
+              } else errBuscar = r.error;
+            }
 
             if (!errBuscar && (!indicador?.id || indicador.id === novoId)) podeLimpar = true;
             if (indicador?.id && indicador.id !== novoId) {
