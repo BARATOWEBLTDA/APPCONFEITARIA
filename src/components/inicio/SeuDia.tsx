@@ -5,7 +5,7 @@ import { faltaPara, separarEntregasDeHoje, useAgora } from "./entregasDeHoje";
 import "./seuDia.css";
 
 /**
- * "Seu dia" — o resumo do dia no topo do Início, no celular e no tablet (10/10 · 4.06, redesenho).
+ * "Próximas entregas" (4.29, antes "Seu dia") — o resumo das entregas, logo abaixo do Acesso rápido no Início, no celular e no tablet (10/10 · 4.06, redesenho).
  * - A próxima entrega de hoje em destaque (horário grande, quanto falta, cliente e o que vai).
  * - Alertas em etiquetas pequenas, só quando existem: atrasados, pra aceitar, entregas de hoje.
  * - As próximas entregas com o dia em formato de calendário.
@@ -64,7 +64,7 @@ export default function SeuDia({ carregando, erro, aoTentar, entregasHoje, atras
   return (
     <div className="sd">
       <div className="sd-cab">
-        <h2 className="sd-t">Seu dia</h2>
+        <h2 className="sd-t">Próximas entregas</h2>
         <button type="button" className="sd-link" onClick={() => navigate("/agenda")}>
           Agenda <CaretRight size={16} weight="bold" aria-hidden="true" />
         </button>

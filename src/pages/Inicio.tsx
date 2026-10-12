@@ -1335,10 +1335,11 @@ export default function Inicio() {
         .ini-mobile-updates { order: 4; }
 
         /* Nível 2: seções dentro de .ini-main */
-        .ini-section--dia { order: -1; }
-        .ini-root .ini-section.ini-section--dia { margin-top: 16px !important; }
+        /* (4.29) ordem do celular: topo · Acesso rápido · Próximas entregas · abrir/pausar a loja · banner */
+        .ini-section--dia { order: 3; }
+        .ini-root .ini-section.ini-section--dia { margin-top: var(--space-3) !important; }
         @media (min-width: 901px) { .ini-section--dia { display: none; } }
-        .ini-section--pausa { order: 0; margin-top: var(--space-3); }
+        .ini-section--pausa { order: 4; margin-top: var(--space-3); }
         .ini-section--checklist-top { order: 0; margin-top: var(--space-3); }
         .ini-pp:empty { display: none; }
 
