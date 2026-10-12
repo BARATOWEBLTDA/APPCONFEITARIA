@@ -140,6 +140,8 @@ export default function Financeiro() {
       />
       <EstiloFinanceiro />
       <CaixaEstilos />
+      {/* (4.29) continuação da faixa rosa: o período fica "pousado" nela, como no desenho */}
+      <div className="fd-faixa" aria-hidden="true" />
       {algumErro && (
         <div className="fd-erro" role="alert">
           <span>Não deu pra carregar tudo. Confira a internet e tente de novo.</span>
@@ -162,14 +164,6 @@ export default function Financeiro() {
           )}
         </div>
 
-        <div className="fd-a-saldo">
-          <SaldoCaixa cx={cx} onAcertar={() => setDefinir(true)} destaque={foco}
-            onDepois={foco ? () => { setDepois(true); try { localStorage.setItem(chaveDepois, "1"); } catch { /* sem acesso */ } } : undefined} />
-          <div className="fd-acoes">
-            <button type="button" className="fd-bt e" onClick={() => setNova("entrada")}><ArrowUp size={17} weight="bold" />Nova entrada</button>
-            <button type="button" className="fd-bt s" onClick={() => setNova("saida")}><ArrowDown size={17} weight="bold" />Nova saída</button>
-          </div>
-        </div>
 
         <div className="fd-a-kpis fd-kpis">
           <div className="fd-k fd-k--rec"><span className="fd-ki e" aria-hidden="true"><ArrowUp size={14} weight="bold" /></span><small>Recebido</small><b className="e">{ok ? brl(ok.recebido) : esp}</b>
@@ -181,6 +175,11 @@ export default function Financeiro() {
           <div className="fd-k"><span className="fd-ki l" aria-hidden="true"><Equals size={14} weight="bold" /></span><small>Resultado</small><b className={ok && ok.resultado < 0 ? "s" : ""}>{ok ? brl(ok.resultado) : esp}</b>
             {ok && <Variacao atual={ok.resultado} anterior={ant ? r2(ant.recebido - ant.despesas) : null} rotulo={per.rotuloAnt} />}
             <i>o que entrou menos o que saiu</i></div>
+        </div>
+
+        <div className="fd-a-acoes fd-acoes">
+          <button type="button" className="fd-bt e" onClick={() => setNova("entrada")}><ArrowUp size={17} weight="bold" />Nova entrada</button>
+          <button type="button" className="fd-bt s" onClick={() => setNova("saida")}><ArrowDown size={17} weight="bold" />Nova saída</button>
         </div>
 
         <div className="fd-a-fluxo fd-card">
@@ -239,6 +238,12 @@ export default function Financeiro() {
               ))}
             </ul>
           )}
+        </div>
+
+        {/* saldo em caixa: depois dos números do período (no desenho ele não fica no topo) */}
+        <div className="fd-a-saldo">
+          <SaldoCaixa cx={cx} onAcertar={() => setDefinir(true)} destaque={foco}
+            onDepois={foco ? () => { setDepois(true); try { localStorage.setItem(chaveDepois, "1"); } catch { /* sem acesso */ } } : undefined} />
         </div>
 
         <div className="fd-a-mais fd-mais">
@@ -320,24 +325,28 @@ function BarrasPorDia({ dias }: { dias: DiaFluxo[] }) {
 
 const CSS = `
   .fd { max-width: 1160px; margin: 0 auto; padding: 22px 0 96px; display: grid; gap: 14px; font-family: var(--font-base);
-    grid-template-columns: minmax(0, 1fr); grid-template-areas: "per" "saldo" "kpis" "fluxo" "formas" "contas" "prev" "vend" "ult" "mais"; }
+    grid-template-columns: minmax(0, 1fr); grid-template-areas: "per" "kpis" "acoes" "fluxo" "formas" "contas" "prev" "saldo" "vend" "ult" "mais"; position: relative; margin-top: -58px; }
+  .fd-faixa { height: 58px; background: var(--ui-rosa); width: 100vw; margin: 0 calc(50% - 50vw); }
+  .fd-faixa + .fd-erro { position: relative; margin-top: -40px; }
+  .fd-faixa + .fd-erro + .fd { margin-top: 0; }
+  .fd-a-acoes { grid-area: acoes; }
   .fd > * { min-width: 0; }
   .fd-erro { max-width: 1160px; margin: 22px auto 0; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: 10px 12px; flex-wrap: wrap; background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: var(--ui-raio); padding: 10px 12px; font-family: var(--font-base); font-size: 13.5px; font-weight: 600; line-height: 1.45; }
   .fd-erro + .fd { padding-top: 14px; }
-  .fd-a-per { grid-area: per; } .fd-a-saldo { grid-area: saldo; display: flex; flex-direction: column; gap: 10px; } .fd-a-kpis { grid-area: kpis; }
+  .fd-a-per { grid-area: per; } .fd-a-saldo { grid-area: saldo; } .fd-a-kpis { grid-area: kpis; }
   .fd-a-fluxo { grid-area: fluxo; } .fd-a-formas { grid-area: formas; } .fd-a-contas { grid-area: contas; } .fd-a-prev { grid-area: prev; }
   .fd-a-vend { grid-area: vend; } .fd-a-ult { grid-area: ult; } .fd-a-mais { grid-area: mais; }
   @media (min-width: 768px) { .fd-acoes { display: none !important; } }
+  @media (min-width: 901px) { .fd-faixa { width: auto; margin: 0 -2rem; } }
   @media (min-width: 1024px) {
     .fd { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px; align-items: start;
-      grid-template-areas: "per per per per per per" "saldo saldo kpis kpis kpis kpis" "fluxo fluxo fluxo fluxo formas formas" "contas contas contas prev prev prev" "vend vend vend ult ult ult" "mais mais mais mais mais mais"; }
+      grid-template-areas: "per per per per per per" "kpis kpis kpis kpis kpis kpis" "fluxo fluxo fluxo fluxo formas formas" "contas contas contas prev prev prev" "vend vend vend ult ult ult" "saldo saldo saldo saldo saldo saldo" "mais mais mais mais mais mais"; }
     .fd .fd-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); height: 100%; }
     .fd .fd-kpis .fd-k { display: flex; flex-direction: column; justify-content: center; grid-column: auto; }
-    .fd .fd-a-saldo .cxc { height: 100%; box-sizing: border-box; }
     .fd .fd-k2 { display: flex; flex-direction: column; justify-content: center; }
     .fd .fd-a-fluxo, .fd .fd-a-formas, .fd .fd-a-vend, .fd .fd-a-ult { height: 100%; box-sizing: border-box; }
     /* sem caixa informado: o convite vira uma faixa compacta em largura total */
-    .fd.fd--sem-caixa { grid-template-areas: "per per per per per per" "saldo saldo saldo saldo saldo saldo" "kpis kpis kpis kpis kpis kpis" "fluxo fluxo fluxo fluxo formas formas" "contas contas contas prev prev prev" "vend vend vend ult ult ult" "mais mais mais mais mais mais"; }
+    .fd .fd-a-saldo .cxc { height: auto; }
     .fd.fd--sem-caixa .cxc-convite { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: auto auto; column-gap: 16px; align-items: center; text-align: left; padding: 16px 20px; }
     .fd.fd--sem-caixa .cxc-convite-ic { grid-row: span 2; }
     .fd.fd--sem-caixa .cxc-convite b { margin-top: 0; grid-column: 2; }
