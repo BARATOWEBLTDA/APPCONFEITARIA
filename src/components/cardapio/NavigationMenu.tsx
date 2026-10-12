@@ -534,9 +534,13 @@ function CartContent({
       // Daqui pra baixo o pedido já está gravado: nada disso impede o "Pedido enviado"
       try {
         // Loga o cliente automaticamente após o pedido (se ainda não estiver logado)
-        if (clienteId && !localStorage.getItem(`cardapio_cliente_${confeteiraUserId}`)) {
+        // (4.23) o banco devolve um código de acesso: com ele o cliente vê os próprios pedidos na aba Pedidos
+        const acesso: string | undefined = (viaBanco.data as any)?.acesso || undefined
+        const salvo = (() => { try { return JSON.parse(localStorage.getItem(`cardapio_cliente_${confeteiraUserId}`) || 'null') } catch { return null } })()
+        const mesmoTel = salvo && String(salvo.telefone || '').replace(/\D/g, '').slice(-11) === telefone.replace(/\D/g, '').slice(-11)
+        if (clienteId && (!salvo || (mesmoTel && acesso))) {
           localStorage.setItem(`cardapio_cliente_${confeteiraUserId}`, JSON.stringify({
-            id: clienteId, nome: nome.trim(), telefone: telefone.trim(),
+            id: clienteId, nome: nome.trim(), telefone: telefone.trim(), ...(acesso ? { token: acesso } : {}),
           }))
         }
         // Entrega: guarda o endereço em "Dados pessoais" pra próxima compra (sem repetir)

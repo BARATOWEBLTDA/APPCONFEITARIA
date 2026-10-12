@@ -55,6 +55,35 @@ export async function planoDoUsuario(req: Request, usuario: UsuarioLogado): Prom
   }
 }
 
+/**
+ * (4.23) Conta um uso da IA no limite diário da conta (função ia_usar do banco, com o token da própria usuária).
+ * "ok" = pode usar · "limite" = acabou o limite de hoje · Se a função ainda não existe no banco, deixa passar.
+ */
+export async function usarCota(req: Request, tipo: "chat" | "imagem" | "descricao" | "buscar_imagem"): Promise<{ ok: boolean; limite?: number }> {
+  const token = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
+  const e = env();
+  const url = e.SUPABASE_URL || e.VITE_SUPABASE_URL;
+  const anon = e.SUPABASE_ANON_KEY || e.VITE_SUPABASE_ANON_KEY;
+  if (!token || !url || !anon) return { ok: true };
+  try {
+    const res = await fetch(`${url}/rest/v1/rpc/ia_usar`, {
+      method: "POST",
+      headers: { apikey: anon, Authorization: `Bearer ${token}`, "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ p_tipo: tipo }),
+    });
+    if (!res.ok) return { ok: true }; // função ainda não criada (404) ou instabilidade: não trava a IA por isso
+    const r = await res.json();
+    return r?.ok === false && r?.erro === "limite" ? { ok: false, limite: Number(r.limite) || 0 } : { ok: true };
+  } catch {
+    return { ok: true };
+  }
+}
+
+/** Resposta de limite de uso da IA atingido (429) */
+export function respostaLimite(limite: number | undefined, headers: Record<string, string> = {}): Response {
+  return respostaJson({ error: "limite_diario", message: limite ? `Você chegou ao limite de ${limite} usos de hoje. Amanhã libera de novo.` : "Esse recurso é do plano PRO." }, 429, headers);
+}
+
 /** Resposta em JSON com o código certo (as telas sempre leem JSON). */
 export function respostaJson(corpo: unknown, status: number, headers: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(corpo), { status, headers: { "Content-Type": "application/json", ...headers } });

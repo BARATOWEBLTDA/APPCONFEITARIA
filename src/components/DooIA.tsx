@@ -423,6 +423,8 @@ const PEDE_NOVA_CONVERSA = 'Comece uma nova conversa e tente de novo.'
 
 /** caso: 'foto' = a mensagem levava uma foto · 'imagem' = pedido de criar imagem · 'texto' = conversa normal */
 function getErrorMessage(errorType: string, status?: number, caso: 'foto' | 'imagem' | 'texto' = 'texto'): string {
+  // (4.23) limite diário de uso da Doo
+  if (errorType === 'limite_diario') return caso === 'imagem' ? 'Você chegou ao limite de imagens de hoje. Amanhã libera de novo.' : 'Você chegou ao limite de mensagens de hoje. Amanhã libera de novo.'
   if (status === 429 || errorType === 'rate_limit_error') return 'Muitas mensagens em seguida. Aguarde um momento e tente novamente.'
   // (11/10) só o erro de plano mostra o "Assine o PRO" (outro 403 cai no aviso genérico)
   if (errorType === 'pro_required') return 'A Doo faz parte do plano PRO. Assine o PRO pra continuar.'

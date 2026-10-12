@@ -10,7 +10,8 @@ import { lojaAtualWhatsApp } from './lojaAtual'
 import { digitosAoDigitar } from './telefoneDigitado'
 import './contaCliente.css'
 
-export type Cliente = { id: string; nome: string; telefone: string }
+/** token: código de acesso que o banco dá depois de um pedido ou de entrar com o número de um pedido (4.23) */
+export type Cliente = { id: string; nome: string; telefone: string; token?: string }
 export type ItemPedido = { nome_produto: string; quantidade: number; valor_unitario: number; produtos?: { imagem_url?: string } }
 export type Pedido = {
   id: string; numero: number; status: string; created_at: string; valor_total: number
@@ -39,6 +40,9 @@ export function guardarCliente(loja: string, c: Cliente | null) {
   try { if (c) localStorage.setItem(chave(loja), JSON.stringify(c)); else localStorage.removeItem(chave(loja)) } catch { /* sem localStorage */ }
 }
 
+/** A função nova ainda não existe no banco (SQL 4.23 não rodado) */
+export const semFuncaoNova = (e: any) => !!e && (e.code === 'PGRST202' || e.code === '42883' || /could not find the function/i.test(String(e.message || '')))
+
 /** Pedidos desse telefone nessa loja (função segura no banco) */
 export function usePedidosCliente(loja: string, cliente: Cliente | null) {
   const [pedidos, setPedidos] = useState<Pedido[]>([])
@@ -47,7 +51,9 @@ export function usePedidosCliente(loja: string, cliente: Cliente | null) {
     if (!cliente?.telefone || !loja) { setPedidos([]); return }
     setCarregando(true)
     try {
-      const { data, error } = await supabase.rpc('cardapio_pedidos_do_cliente', { p_loja: loja, p_telefone: cliente.telefone })
+      // (4.23) com o código de acesso; sem a função nova no banco, busca do jeito antigo
+      let { data, error } = await supabase.rpc('cardapio_pedidos_do_cliente', { p_loja: loja, p_telefone: cliente.telefone, p_token: cliente.token || '' })
+      if (error && semFuncaoNova(error)) ({ data, error } = await supabase.rpc('cardapio_pedidos_do_cliente', { p_loja: loja, p_telefone: cliente.telefone }))
       if (error) console.error('Erro ao buscar pedidos:', error)
       setPedidos(Array.isArray(data) ? data : [])
     } catch (err) { console.error('Erro ao buscar pedidos:', err) }
@@ -57,49 +63,75 @@ export function usePedidosCliente(loja: string, cliente: Cliente | null) {
   return { pedidos, carregando, buscar }
 }
 
-/* ─── Entrar (um passo só: o WhatsApp; se for a primeira vez, pede o nome) ─── */
+/* ─── Entrar (4.23): o WhatsApp; quem já pediu confirma com o número de um pedido; quem nunca pediu diz o nome ─── */
 export function JanelaEntrar({ aberta, aoFechar, loja, cor, aoEntrar }: { aberta: boolean; aoFechar: () => void; loja: string; cor: string; aoEntrar: (c: Cliente) => void }) {
   const [tel, setTel] = useState('')
   const [nome, setNome] = useState('')
-  const [novo, setNovo] = useState(false)
+  const [numero, setNumero] = useState('')
+  const [etapa, setEtapa] = useState<'tel' | 'numero' | 'novo'>('tel')
   const [erro, setErro] = useState('')
   const [indo, setIndo] = useState(false)
-  useEffect(() => { if (aberta) { setTel(''); setNome(''); setNovo(false); setErro('') } }, [aberta])
+  useEffect(() => { if (aberta) { setTel(''); setNome(''); setNumero(''); setEtapa('tel'); setErro('') } }, [aberta])
+
+  // Jeito antigo (sem a função cardapio_entrar no banco): procura pelo telefone e, se for novo, pede o nome
+  const entrarAntigo = async (digitos: string) => {
+    const { data: lista, error } = await supabase.rpc('cardapio_cliente', etapa === 'novo'
+      ? { p_loja: loja, p_telefone: tel, p_nome: nome.trim() }
+      : { p_loja: loja, p_telefone: digitos })
+    if (error) { setErro(explicarErro(error, 'Não deu pra entrar agora. Tente de novo.')); return }
+    const r = Array.isArray(lista) ? lista[0] : null
+    if (r) { const c = { id: r.id, nome: r.nome, telefone: r.telefone }; guardarCliente(loja, c); aoEntrar(c); aoFechar() }
+    else if (etapa !== 'novo') setEtapa('novo')
+    else setErro('Não deu pra entrar agora. Tente de novo.')
+  }
 
   const entrar = async () => {
     setErro('')
     const digitos = tel.replace(/\D/g, '')
     if (digitos.length < 10) { setErro('Coloque o número com DDD'); return }
-    if (novo && !nome.trim()) { setErro('Falta o seu nome'); return }
+    if (etapa === 'novo' && !nome.trim()) { setErro('Falta o seu nome'); return }
+    const num = parseInt(numero.replace(/\D/g, ''), 10)
+    if (etapa === 'numero' && !num) { setErro('Coloque o número de um pedido seu'); return }
     setIndo(true)
     try {
-      // Já tem cadastro: só procura. Primeira vez: cria com o nome (a mesma função do pedido)
-      const { data: lista, error } = await supabase.rpc('cardapio_cliente', novo
-        ? { p_loja: loja, p_telefone: tel, p_nome: nome.trim() }
-        : { p_loja: loja, p_telefone: digitos })
-      // (11/10) falha na consulta (sem internet, banco fora) não é "número novo":
-      // antes a cliente antiga caía no formulário de primeira vez
+      const { data, error } = await supabase.rpc('cardapio_entrar', {
+        p_loja: loja, p_telefone: tel, p_numero: etapa === 'numero' ? num : null, p_nome: etapa === 'novo' ? nome.trim() : null,
+      })
+      if (error && semFuncaoNova(error)) { await entrarAntigo(digitos); setIndo(false); return }
+      // (11/10) falha na consulta (sem internet, banco fora) não é "número novo"
       if (error) { setErro(explicarErro(error, 'Não deu pra entrar agora. Tente de novo.')); setIndo(false); return }
-      const r = Array.isArray(lista) ? lista[0] : null
-      if (r) {
-        const c = { id: r.id, nome: r.nome, telefone: r.telefone }
+      const r: any = data
+      if (r?.status === 'ok' && r.cliente) {
+        const c: Cliente = { id: r.cliente.id, nome: r.cliente.nome, telefone: r.cliente.telefone || tel, token: r.token }
         guardarCliente(loja, c); aoEntrar(c); aoFechar()
-      } else if (!novo) setNovo(true)
-      else setErro('Não deu pra entrar agora. Tente de novo.')
+      } else if (r?.status === 'precisa_numero') setEtapa('numero')
+      else if (r?.status === 'novo') setEtapa('novo')
+      else setErro(r?.erro || 'Não deu pra entrar agora. Tente de novo.')
     } catch (err) { setErro(explicarErro(err, 'Não deu pra entrar agora. Tente de novo.')) }
     setIndo(false)
   }
 
+  const titulo = etapa === 'novo' ? 'Primeira vez por aqui' : 'Entrar'
+  const texto = etapa === 'novo' ? 'Não achamos pedidos desse número. Como você se chama?'
+    : etapa === 'numero' ? 'Pra sua segurança, confirme com o número de um pedido que você já fez aqui. Ele aparece na confirmação e na conversa do WhatsApp.'
+    : 'Use o WhatsApp que você coloca nos pedidos. Assim você acompanha tudo por aqui.'
+
   return (
-    <Janela aberta={aberta} aoFechar={aoFechar} tipo="conteudo" titulo={novo ? 'Primeira vez por aqui' : 'Entrar'}
-      acoes={<button type="button" className="cc-bt" style={{ background: cor }} disabled={indo} onClick={entrar}>{indo ? 'Entrando…' : novo ? 'Criar e entrar' : 'Continuar'}</button>} umaAcao>
+    <Janela aberta={aberta} aoFechar={aoFechar} tipo="conteudo" titulo={titulo}
+      acoes={<button type="button" className="cc-bt" style={{ background: cor }} disabled={indo} onClick={entrar}>{indo ? 'Entrando…' : etapa === 'novo' ? 'Criar e entrar' : etapa === 'numero' ? 'Entrar' : 'Continuar'}</button>} umaAcao>
       <div className="cc-entrar">
-        <p>{novo ? 'Não achamos esse número. Como você se chama?' : 'Use o WhatsApp que você coloca nos pedidos. Assim você acompanha tudo por aqui.'}</p>
-        <Campo rotulo="WhatsApp" value={tel} inputMode="tel" autoComplete="tel" placeholder="(00) 90000-0000" autoFocus={!novo}
-          onChange={e => { setTel(mascaraTel(e.target.value, true)); setNovo(false); setErro('') }}
+        <p>{texto}</p>
+        <Campo rotulo="WhatsApp" value={tel} inputMode="tel" autoComplete="tel" placeholder="(41) 9 9999-0000" autoFocus={etapa === 'tel'}
+          onChange={e => { setTel(mascaraTel(e.target.value, true)); setEtapa('tel'); setErro('') }}
           onKeyDown={e => { if (e.key === 'Enter') entrar() }}
-          erro={!novo && erro ? erro : undefined} />
-        {novo && (
+          erro={etapa === 'tel' && erro ? erro : undefined} />
+        {etapa === 'numero' && (
+          <Campo rotulo="Número de um pedido seu" value={numero} inputMode="numeric" placeholder="Ex.: 1049" autoFocus
+            onChange={e => { setNumero(e.target.value.replace(/\D/g, '').slice(0, 9)); setErro('') }}
+            onKeyDown={e => { if (e.key === 'Enter') entrar() }}
+            erro={erro || undefined} />
+        )}
+        {etapa === 'novo' && (
           <Campo rotulo="Nome" value={nome} autoComplete="name" placeholder="Como você se chama?" autoFocus
             onChange={e => { setNome(e.target.value); setErro('') }}
             onKeyDown={e => { if (e.key === 'Enter') entrar() }}

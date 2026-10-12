@@ -1,4 +1,4 @@
-import { usuarioDoToken, respostaNaoAutorizado, planoDoUsuario, respostaJson, lerCorpo, chaveOpenAI } from "./_auth";
+import { usuarioDoToken, respostaNaoAutorizado, planoDoUsuario, usarCota, respostaLimite, respostaJson, lerCorpo, chaveOpenAI } from "./_auth";
 
 const LIMITE_CORPO = 32 * 1024;
 const MAX_PROMPT = 4000; // (11/10) o limite do próprio gerador de imagem
@@ -24,6 +24,9 @@ export default async function handler(req: Request) {
   const plano = await planoDoUsuario(req, usuario);
   if (plano === "erro") return respostaJson({ error: "api_error" }, 503, CORS);
   if (plano !== "pro") return respostaJson({ error: "pro_required" }, 403, CORS);
+  // (4.23) limite de uso por dia
+  const cota = await usarCota(req, "imagem");
+  if (!cota.ok) return respostaLimite(cota.limite, CORS);
 
   const apiKey = chaveOpenAI();
   if (!apiKey) return new Response(JSON.stringify({ error: "missing_key" }), { status: 500, headers: CORS });

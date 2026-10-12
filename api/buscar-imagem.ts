@@ -1,4 +1,4 @@
-import { usuarioDoToken, respostaNaoAutorizado, respostaJson } from "./_auth";
+import { usuarioDoToken, respostaNaoAutorizado, respostaJson, usarCota, respostaLimite } from "./_auth";
 
 export const config = { runtime: "edge" };
 
@@ -10,6 +10,10 @@ export default async function handler(req: Request) {
   // Só quem está logado no Doonly pode usar (cada busca gasta crédito da SerpAPI)
   const usuario = await usuarioDoToken(req);
   if (!usuario) return respostaNaoAutorizado();
+
+  // (4.23) limite de buscas por dia
+  const cota = await usarCota(req, "buscar_imagem");
+  if (!cota.ok) return respostaLimite(cota.limite);
 
   const { searchParams } = new URL(req.url);
   const q = searchParams.get("q");

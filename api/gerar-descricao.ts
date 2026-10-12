@@ -1,4 +1,4 @@
-import { usuarioDoToken, respostaNaoAutorizado, respostaJson, lerCorpo, chaveAnthropic } from "./_auth";
+import { usuarioDoToken, respostaNaoAutorizado, usarCota, respostaLimite, respostaJson, lerCorpo, chaveAnthropic } from "./_auth";
 
 const LIMITE_CORPO = 64 * 1024;
 const MAX_PROMPT = 8000; // (11/10) um pedido de descrição nunca chega perto disso
@@ -13,6 +13,10 @@ export default async function handler(req: Request) {
   // Só quem está logado no Doonly pode usar (cada chamada gasta crédito da API)
   const usuario = await usuarioDoToken(req);
   if (!usuario) return respostaNaoAutorizado();
+
+  // (4.23) limite de uso por dia (PRO 60, grátis 5)
+  const cota = await usarCota(req, "descricao");
+  if (!cota.ok) return respostaLimite(cota.limite);
 
   const cru = await lerCorpo(req, LIMITE_CORPO);
   let prompt: unknown;
