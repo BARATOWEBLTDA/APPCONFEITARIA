@@ -263,7 +263,8 @@ function CardapioContent() {
         localStorage.setItem('cardapio_user_id', design.user_id)
         // Registra a visita (1x por sessão de navegador, pra não inflar o número)
         const visitKey = `cardapio_visita_${design.user_id}`
-        if (!sessionStorage.getItem(visitKey)) {
+        // (4.27) a prévia dentro do app (?previa=1) não conta como visita
+        if (!sessionStorage.getItem(visitKey) && !new URLSearchParams(window.location.search).has('previa')) {
           supabase.from('cardapio_visitas').insert({ user_id: design.user_id }).then(() => {})
           sessionStorage.setItem(visitKey, '1')
         }

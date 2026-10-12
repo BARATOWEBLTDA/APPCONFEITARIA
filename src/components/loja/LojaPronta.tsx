@@ -1,34 +1,42 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowSquareOut, Check, Copy } from '@phosphor-icons/react'
-import { supabase } from '@/lib/supabase'
 import { getCardapioUrl } from '@/hooks/useProfile'
 import { avisar } from '@/components/base'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
-import { formatCurrency } from '@/utils/helpers'
 import './loja.css'
 
 /**
  * Loja pronta (4.27) · o fim dos Primeiros passos: a prévia do cardápio, o link com Copiar e Abrir,
  * e o botão pra mandar o link no WhatsApp. Usado no cartão do Início e na janela que abre uma vez quando ela termina.
  */
-type Produto = { id: string; nome: string; imagem_url?: string | null; preco_normal?: number | null }
+/** O cardápio real num celular em miniatura: carrega o link oficial e mostra o topo, sem deixar tocar */
+function PreviaReal({ url }: { url: string }) {
+  const caixa = useRef<HTMLDivElement>(null)
+  const [escala, setEscala] = useState(0.8)
+  const [sobra, setSobra] = useState(0)
+  const [carregou, setCarregou] = useState(false)
+  useEffect(() => {
+    const el = caixa.current
+    if (!el) return
+    const medir = () => { const e = Math.min(1, el.clientWidth / 390); setEscala(e); setSobra(Math.max(0, (el.clientWidth - 390 * e) / 2)) }
+    medir()
+    const ro = new ResizeObserver(medir); ro.observe(el)
+    return () => ro.disconnect()
+  }, [url])
+  if (!url) return null
+  return (
+    <div ref={caixa} className="lp-previa" aria-label="Prévia do seu cardápio">
+      {!carregou && <span className="lp-carregando"><i className="ui-gira" aria-hidden="true" />Abrindo o seu cardápio…</span>}
+      <iframe src={url} title="Prévia do cardápio" tabIndex={-1} aria-hidden="true" onLoad={() => setCarregou(true)}
+        style={{ width: 390, height: 844, left: sobra, transform: `scale(${escala})`, opacity: carregou ? 1 : 0 }} />
+    </div>
+  )
+}
 
 export function LojaProntaConteudo({ profile }: { profile: any }) {
-  const [produtos, setProdutos] = useState<Produto[]>([])
   const [copiado, setCopiado] = useState(false)
   const link = getCardapioUrl(profile)
 
-  useEffect(() => {
-    if (!profile?.id) return
-    let vivo = true
-    supabase.from('produtos').select('id, nome, imagem_url, preco_normal').eq('user_id', profile.id).eq('disponivel', true)
-      .order('created_at', { ascending: false }).limit(3)
-      .then(({ data }) => { if (vivo && Array.isArray(data)) setProdutos(data as Produto[]) }, () => {})
-    return () => { vivo = false }
-  }, [profile?.id])
-
-  const cor = profile?.cor_navbar || profile?.cor_borda || '#E85A8C'
-  const logo = profile?.logo_url || profile?.foto_url || ''
   const texto = `Oi! Agora você pode fazer sua encomenda pelo meu cardápio: ${link}`
 
   const copiar = async () => {
@@ -38,28 +46,8 @@ export function LojaProntaConteudo({ profile }: { profile: any }) {
 
   return (
     <div className="lp">
-      <div className="lp-previa" aria-label="Prévia do seu cardápio">
-        <div className="lp-topo" style={{ background: cor }} />
-        <div className="lp-loja">
-          <span className="lp-logo" style={{ borderColor: cor }}>{logo ? <img src={logo} alt="" /> : <b style={{ color: cor }}>{String(profile?.nome_loja || 'D').charAt(0)}</b>}</span>
-          <b className="lp-nome">{profile?.nome_loja || 'Sua confeitaria'}</b>
-          {profile?.descricao_loja && <small className="lp-desc">{profile.descricao_loja}</small>}
-        </div>
-        {produtos.length > 0 && (
-          <div className="lp-prods">
-            {produtos.map(p => {
-              const img = String(p.imagem_url || '').split(',')[0].trim()
-              return (
-                <span key={p.id} className="lp-prod">
-                  {img ? <img src={img} alt="" /> : <i />}
-                  <small>{p.nome}</small>
-                  {Number(p.preco_normal) > 0 && <em>{formatCurrency(Number(p.preco_normal))}</em>}
-                </span>
-              )
-            })}
-          </div>
-        )}
-      </div>
+      {/* (4.27) a prévia é o cardápio de verdade (o mesmo link que o cliente abre), no modelo que a loja escolheu */}
+      <PreviaReal url={(() => { const u = getCardapioUrl(profile, window.location.origin); return u ? `${u}?previa=1` : '' })()} />
 
       <p className="lp-url" title={link}>{link.replace(/^https?:\/\//, '')}</p>
       <div className="lj-link-bts">
