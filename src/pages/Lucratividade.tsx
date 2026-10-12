@@ -4,7 +4,7 @@
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CaretLeft, CaretRight, ChartLineUp, Warning, WarningCircle } from "@phosphor-icons/react";
+import { CalendarBlank, CaretLeft, CaretRight, ChartLineUp, Equals, Minus, ShoppingBagOpen, Warning, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, TelaVazia } from "@/components/base";
 import { supabase } from "@/lib/supabase";
@@ -98,11 +98,16 @@ export default function Lucratividade() {
         </>}
       />
       <EstiloFinanceiro />
+      {/* (4.29) mesmo desenho do Financeiro: o mês pousado na faixa rosa, a conta em 4 cartões e o lucro por produto em tabela */}
+      <div className="lu-faixa" aria-hidden="true" />
       <div className="lu">
-        <div className="lu-mes">
-          <button type="button" onClick={() => mudar(-1)} aria-label="Mês anterior"><CaretLeft size={16} weight="bold" /></button>
-          <b>{MESES[mes.m]} de {mes.ano}</b>
-          <button type="button" onClick={() => mudar(1)} disabled={ehMesAtual} aria-label="Próximo mês"><CaretRight size={16} weight="bold" /></button>
+        <div className="lu-per">
+          <div className="lu-per-tx"><span className="lu-per-ic" aria-hidden="true"><CalendarBlank size={20} /></span><span><b>Mês</b><small>Pedidos entregues e despesas pagas no mês</small></span></div>
+          <div className="lu-mes">
+            <button type="button" onClick={() => mudar(-1)} aria-label="Mês anterior"><CaretLeft size={16} weight="bold" /></button>
+            <b>{MESES[mes.m]} de {mes.ano}</b>
+            <button type="button" onClick={() => mudar(1)} disabled={ehMesAtual} aria-label="Próximo mês"><CaretRight size={16} weight="bold" /></button>
+          </div>
         </div>
 
         {erro ? (
@@ -116,59 +121,68 @@ export default function Lucratividade() {
             <button type="button" className="lu-cta" onClick={() => navigate("/pedidos")}>Ver meus pedidos</button>
           </div>
         ) : (<>
+          {/* a conta do mês, da esquerda pra direita: vendido − ingredientes − despesas = lucro */}
+          <div className="lu-conta">
+            <div className="lu-k"><span className="lu-ki n" aria-hidden="true"><ShoppingBagOpen size={15} weight="bold" /></span><small>Vendido</small><b>{brl(dados.vendido)}</b>
+              <i>{dados.qtdVendidos} {dados.qtdVendidos === 1 ? "pedido entregue" : "pedidos entregues"}</i></div>
+            <div className="lu-k"><span className="lu-ki s" aria-hidden="true"><Minus size={15} weight="bold" /></span><small>Custo dos ingredientes</small><b className="s">{brl(dados.cmv)}</b>
+              <i>pela ficha técnica</i></div>
+            <div className="lu-k"><span className="lu-ki s" aria-hidden="true"><Minus size={15} weight="bold" /></span><small>Despesas pagas</small><b className="s">{brl(despesasSemInsumos)}</b>
+              <i>sem os ingredientes (já estão na ficha)</i></div>
+            <div className={`lu-k lu-k--lucro${dados.lucro < 0 ? " ruim" : ""}`}><span className="lu-ki l" aria-hidden="true"><Equals size={15} weight="bold" /></span><small>Lucro do mês</small><b>{brl(dados.lucro)}</b>
+              <div className="lu-margem"><div className="lu-bar"><i style={{ width: `${Math.max(0, Math.min(100, dados.margem))}%` }} /></div><span>margem de <b>{dados.margem}%</b></span></div></div>
+          </div>
+
+          {faltaFicha && (
+            <div className="lu-aviso" role="note">
+              <Warning size={16} weight="bold" />
+              <span>
+                {qtdSemFicha > 0
+                  ? `${qtdSemFicha} ${qtdSemFicha === 1 ? "produto vendido está" : "produtos vendidos estão"} sem ficha técnica: o custo dos ingredientes deles não entrou na conta, então o lucro aparece maior do que é.`
+                  : "Os produtos vendidos estão sem ficha técnica: o custo dos ingredientes não entrou na conta, então o lucro aparece maior do que é."}
+              </span>
+              <button type="button" className="lu-aviso-bt" onClick={() => navigate("/ficha-tecnica")}>Montar ficha técnica</button>
+            </div>
+          )}
+
           <div className="lu-grid">
-            <section className="lu-card lu-a-conta">
-              <p className="lu-ct">A conta do mês</p>
-              <div className="lu-l"><span>Vendido <small>{dados.qtdVendidos} {dados.qtdVendidos === 1 ? "pedido entregue" : "pedidos entregues"}</small></span><b>{brl(dados.vendido)}</b></div>
-              <div className="lu-l neg"><span>Custo dos ingredientes <small>pela ficha técnica</small></span><b>− {brl(dados.cmv)}</b></div>
-              <div className="lu-l neg"><span>Despesas pagas <small>não inclui ingredientes, que já entram pela ficha técnica</small></span><b>− {brl(despesasSemInsumos)}</b></div>
-              <div className={`lu-l tt ${dados.lucro < 0 ? "ruim" : ""}`}><span>Lucro do mês</span><b>{brl(dados.lucro)}</b></div>
-              <div className="lu-margem"><div className="lu-bar"><i style={{ width: `${Math.max(0, Math.min(100, dados.margem))}%` }} /></div><span>Margem de <b>{dados.margem}%</b>{faltaFicha ? " (sem o custo dos ingredientes)" : ""}</span></div>
-              {faltaFicha && (
-                <div className="lu-aviso" role="note">
-                  <Warning size={15} weight="bold" />
-                  <span>
-                    {qtdSemFicha > 0
-                      ? `${qtdSemFicha} ${qtdSemFicha === 1 ? "produto vendido está" : "produtos vendidos estão"} sem ficha técnica, então o custo dos ingredientes não entrou na conta.`
-                      : "Os produtos vendidos estão sem ficha técnica, então o custo dos ingredientes não entrou na conta."}
-                    {" "}Monte a ficha pra ver o lucro real.{" "}
-                    <button type="button" className="lu-link" onClick={() => navigate("/ficha-tecnica")}>Montar ficha técnica</button>
-                  </span>
+            <section className="lu-card lu-a-prod">
+              <p className="lu-ct">Lucro por produto <small>Antes das despesas, taxas e descontos do pedido</small></p>
+              {!produtos ? <div className="lu-ph" style={{ height: 120 }} /> : produtos.length === 0 ? (
+                <p className="lu-vz">Monte a <button type="button" className="lu-link" onClick={() => navigate("/ficha-tecnica")}>ficha técnica dos produtos</button> pra ver o lucro de cada um.</p>
+              ) : (
+                <div className="lu-tab" role="table" aria-label="Lucro por produto">
+                  <div className="lu-tab-cab" role="row"><span role="columnheader">Produto</span><span role="columnheader">Vendidos</span><span role="columnheader">Vendido</span><span role="columnheader">Custo</span><span role="columnheader">Lucro</span></div>
+                  {produtos.map(p => (
+                    <div key={p.chave} className="lu-tab-l" role="row">
+                      <span role="cell" className="lu-tab-nm"><b>{p.nome}</b>
+                        <span className="lu-p-bar"><i className={p.lucro < 0 ? "ruim" : ""} style={{ width: `${Math.max(2, (Math.abs(p.lucro) / maxLucro) * 100)}%` }} /></span></span>
+                      <span role="cell" className="lu-tab-n">{p.qtd}</span>
+                      <span role="cell" className="lu-tab-n">{brl(p.vendido)}</span>
+                      <span role="cell" className="lu-tab-n">{p.semFicha ? <span className="lu-sf"><Warning size={12} weight="bold" /> sem ficha</span> : brl(p.custo)}</span>
+                      <span role="cell" className={`lu-tab-n lu-tab-lucro${p.lucro < 0 ? " ruim" : ""}`}>{brl(p.lucro)}<small>{p.semFicha ? "custo não descontado" : `margem ${p.margem}%`}</small></span>
+                    </div>
+                  ))}
                 </div>
               )}
             </section>
 
             <section className="lu-card lu-a-eq">
-              <p className="lu-ct">Ponto de equilíbrio</p>
+              <p className="lu-ct">Ponto de equilíbrio <small>Quanto vender no mês pra pagar tudo</small></p>
               {fixos && (fixos.custos + fixos.salario) > 0 && margemBruta > 0 ? (<>
-                <p className="lu-eq-t">Pra pagar seus custos fixos e o seu salário ({brl(fixos.custos + fixos.salario)}), você precisa vender</p>
                 <b className="lu-eq-v">{brl(metaEquilibrio)} <small>no mês</small></b>
+                <p className="lu-eq-t">pra pagar os custos fixos e o seu salário ({brl(fixos.custos + fixos.salario)})</p>
                 <div className="lu-bar grande"><i className={dados.vendido >= metaEquilibrio ? "ok" : ""} style={{ width: `${Math.min(100, (dados.vendido / metaEquilibrio) * 100)}%` }} /></div>
                 <p className="lu-eq-s">{dados.vendido >= metaEquilibrio ? `Bateu! ${brl(dados.vendido - metaEquilibrio)} acima do necessário.` : `Faltam ${brl(metaEquilibrio - dados.vendido)} em vendas (${Math.round((dados.vendido / metaEquilibrio) * 100)}% do caminho).`}</p>
                 <p className="lu-nota">Com a sua margem de ingredientes de {Math.round(margemBruta * 100)}%.</p>
               </>) : fixos && (fixos.custos + fixos.salario) > 0 ? (
-                // 10/10: com os custos cadastrados e os ingredientes custando tudo o que foi vendido (ou mais), não existe
-                // ponto de equilíbrio. Antes caía no "cadastre seus custos", mesmo com tudo cadastrado.
                 <p className="lu-eq-t">{dados.vendido > 0
                   ? `Neste mês, os ingredientes custaram ${dados.cmv > dados.vendido ? "mais do que" : "o mesmo que"} você vendeu. Assim não sobra pra pagar os custos fixos e o seu salário, e não existe ponto de equilíbrio.`
                   : "Os pedidos entregues neste mês estão sem valor, então não dá pra calcular o ponto de equilíbrio."}</p>
-              ) : (
-                <p className="lu-eq-t">Cadastre seus <button type="button" className="lu-link" onClick={() => navigate("/custos")}>custos fixos e o seu salário</button> pra saber quanto precisa vender no mês pra fechar no azul.</p>
-              )}
-            </section>
-
-            <section className="lu-card lu-a-prod">
-              <p className="lu-ct">Lucro por produto <small>antes das despesas, taxas e descontos do pedido</small></p>
-              {!produtos ? <div className="lu-ph" style={{ height: 120 }} /> : produtos.length === 0 ? (
-                // aqui sempre há pedido entregue no mês (sem pedido, a tela mostra o aviso de vazio lá em cima)
-                <p className="lu-vz">Monte a <button type="button" className="lu-link" onClick={() => navigate("/ficha-tecnica")}>ficha técnica dos produtos</button> pra ver o lucro de cada um.</p>
-              ) : produtos.map(p => (
-                <div key={p.chave} className="lu-p">
-                  <div className="lu-p-h"><b>{p.nome}</b><span className={p.lucro < 0 ? "ruim" : ""}>{brl(p.lucro)}</span></div>
-                  <div className="lu-p-bar"><i className={p.lucro < 0 ? "ruim" : ""} style={{ width: `${Math.max(2, (Math.abs(p.lucro) / maxLucro) * 100)}%` }} /></div>
-                  <small>{p.qtd} {p.qtd === 1 ? "vendido" : "vendidos"} · {brl(p.vendido)} · {p.semFicha ? <span className="lu-sf"><Warning size={12} weight="bold" /> sem ficha técnica (custo não descontado)</span> : `custo ${brl(p.custo)} · margem ${p.margem}%`}</small>
-                </div>
-              ))}
+              ) : (<>
+                <p className="lu-eq-t">Cadastre seus custos fixos e o seu salário pra saber quanto precisa vender no mês pra fechar no azul.</p>
+                <button type="button" className="lu-sec" onClick={() => navigate("/custos")}>Cadastrar custos</button>
+              </>)}
             </section>
           </div>
         </>)}
@@ -179,41 +193,70 @@ export default function Lucratividade() {
 }
 
 const CSS = `
-  .lu { max-width: 1060px; margin: 0 auto; padding: 22px 0 96px; font-family: var(--font-base); color: var(--ui-texto); display: flex; flex-direction: column; gap: 14px; }
-  .lu-mes { display: flex; justify-content: space-between; align-items: center; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio); padding: 6px; max-width: 420px; width: 100%; align-self: center; box-sizing: border-box; }
-  .lu-mes b { font-size: 14.5px; font-weight: 700; }
-  .lu-mes button { width: 44px; height: 44px; border-radius: var(--ui-raio-p); border: none; background: #FFF1F6; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .lu-faixa { height: 58px; background: var(--ui-rosa); width: 100vw; margin: 0 calc(50% - 50vw); }
+  .lu { position: relative; margin: -58px auto 0; max-width: 1160px; padding: 22px 0 96px; font-family: var(--font-base); color: var(--ui-texto); display: flex; flex-direction: column; gap: 14px; }
+  @media (min-width: 901px) { .lu-faixa { width: auto; margin: 0 -2rem; } }
+  .lu-per { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 16px; padding: 10px 12px; }
+  .lu-per-tx { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .lu-per-ic { flex: none; width: 38px; height: 38px; border-radius: 11px; background: #FFF1F6; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; }
+  .lu-per-tx b { display: block; font-size: 14.5px; font-weight: 600; } .lu-per-tx small { display: block; font-size: 13px; color: var(--ui-texto-2); }
+  .lu-mes { display: flex; align-items: center; gap: 6px; background: #F4EEF1; border-radius: 12px; padding: 3px; }
+  .lu-mes b { min-width: 150px; text-align: center; font-size: 14px; font-weight: 600; }
+  .lu-mes button { width: 40px; height: 40px; border-radius: 9px; border: none; background: var(--ui-branco); color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; cursor: pointer; }
   .lu-mes button:disabled { opacity: .35; cursor: default; }
+  @media (max-width: 767px) { .lu-per-tx { display: none; } .lu-per { padding: 6px; } .lu-mes { width: 100%; justify-content: space-between; } }
   .lu-ph { height: 260px; background: #FAF7F8; border-radius: var(--ui-raio-cartao); }
   .lu-vazio { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 18px; padding: 30px 20px; text-align: center; }
   .lu-vazio-ic { width: 60px; height: 60px; border-radius: 18px; background: #FFF1F6; color: var(--ui-rosa-escuro); display: inline-flex; align-items: center; justify-content: center; }
-  .lu-vazio b { display: block; font-size: 17px; font-weight: 700; margin-top: 12px; }
+  .lu-vazio b { display: block; font-size: 17px; font-weight: 600; margin-top: 12px; }
   .lu-vazio p { font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; margin: 6px auto 0; max-width: 400px; text-wrap: balance; }
-  .lu-cta { margin-top: 14px; border: none; border-radius: var(--ui-raio); padding: 12px 18px; background: var(--ui-vinho-escuro); color: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
-  .lu-grid { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "conta" "eq" "prod"; }
-  @media (min-width: 900px) { .lu-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "conta eq" "prod prod"; align-items: start; } }
-  .lu-a-conta { grid-area: conta; } .lu-a-eq { grid-area: eq; } .lu-a-prod { grid-area: prod; }
-  .lu-card { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 14px 16px; }
-  .lu-ct { margin: 0 0 8px; font-size: 15px; font-weight: 700; } .lu-ct small { display: block; margin-top: 2px; font-size: 13px; font-weight: 500; color: var(--ui-texto-3); }
-  .lu-vz { margin: 4px 0 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
-  .lu-l { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--ui-linha); font-size: 14px; }
-  .lu-l span { color: var(--ui-cinza-texto); } .lu-l small { display: block; font-size: 13px; color: var(--ui-texto-3); margin-top: 1px; }
-  .lu-l b { font-weight: 700; white-space: nowrap; } .lu-l.neg b { color: var(--ui-vermelho); }
-  .lu-l.tt { border-bottom: none; padding-top: 12px; font-size: 16px; } .lu-l.tt span { font-weight: 700; color: var(--ui-texto); } .lu-l.tt b { font-size: 21px; font-weight: 700; color: var(--ui-rosa-escuro); }
-  .lu-l.tt.ruim b { color: var(--ui-vermelho); }
-  .lu-margem { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--ui-texto-2); } .lu-margem .lu-bar { flex: 1; }
+  .lu-cta { margin-top: 14px; border: none; border-radius: var(--ui-raio); padding: 12px 18px; background: var(--ui-vinho-escuro); color: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+  /* a conta em 4 cartões */
+  .lu-conta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (min-width: 1024px) { .lu-conta { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; } }
+  .lu-k { position: relative; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 16px; padding: 14px; min-width: 0; }
+  .lu-k small { display: block; padding-right: 32px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
+  .lu-k > b { display: block; margin: 6px 0 4px; font-size: clamp(17px, 4.6vw, 26px); font-weight: 600; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lu-k > b.s { color: var(--ui-vermelho); }
+  .lu-k i { display: block; font-style: normal; font-size: 12.5px; color: var(--ui-texto-2); line-height: 1.35; }
+  .lu-ki { position: absolute; top: 12px; right: 12px; width: 28px; height: 28px; border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+  .lu-ki.n { background: var(--ui-cinza); color: var(--ui-texto-2); } .lu-ki.s { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); } .lu-ki.l { background: #FCE7F3; color: var(--ui-rosa-escuro); }
+  .lu-k--lucro { border-color: #F7C9DA; background: #FFF8FB; } .lu-k--lucro > b { color: var(--ui-rosa-escuro); } .lu-k--lucro.ruim > b { color: var(--ui-vermelho); }
+  .lu-margem { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ui-texto-2); } .lu-margem .lu-bar { flex: 1; }
+  .lu-margem b { font-weight: 600; color: var(--ui-texto); }
   .lu-bar { height: 8px; border-radius: 9px; background: var(--ui-linha); overflow: hidden; } .lu-bar i { display: block; height: 100%; background: var(--ui-rosa); border-radius: 9px; }
-  .lu-bar.grande { height: 12px; margin: 10px 0 8px; } .lu-bar i.ok { background: #16A34A; }
-  .lu-eq-t { margin: 0; font-size: 13.5px; color: var(--ui-cinza-texto); line-height: 1.45; }
-  .lu-eq-v { display: block; font-size: 26px; font-weight: 700; letter-spacing: -.02em; margin-top: 4px; } .lu-eq-v small { font-size: 13px; font-weight: 500; color: var(--ui-texto-3); }
-  .lu-eq-s { margin: 0; font-size: 13.5px; font-weight: 700; color: var(--ui-texto); } .lu-nota { margin: 6px 0 0; font-size: 12px; color: var(--ui-texto-3); }
-  .lu-link { border: none; background: none; padding: 0; font: inherit; color: var(--ui-rosa-escuro); font-weight: 700; text-decoration: underline; cursor: pointer; }
-  .lu-p { padding: 10px 0; border-top: 1px solid var(--ui-linha); } .lu-p:first-of-type { border-top: none; }
-  .lu-p-h { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; } .lu-p-h b { font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .lu-p-h span { font-weight: 700; color: var(--ui-verde); white-space: nowrap; } .lu-p-h span.ruim { color: var(--ui-vermelho); }
-  .lu-p-bar { height: 6px; border-radius: 9px; background: var(--ui-linha); margin: 6px 0 5px; overflow: hidden; } .lu-p-bar i { display: block; height: 100%; background: #22C55E; border-radius: 9px; } .lu-p-bar i.ruim { background: #F87171; }
-  .lu-p small { font-size: 12px; color: #888780; } .lu-sf { color: var(--ui-laranja); font-weight: 700; display: inline-flex; align-items: center; gap: 3px; }
-  .lu-aviso { display: flex; align-items: flex-start; gap: 8px; width: 100%; box-sizing: border-box; text-align: left; margin-top: 12px; background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: var(--ui-raio); padding: 10px 12px; font-family: inherit; font-size: 13px; font-weight: 600; line-height: 1.45; }
-  .lu-aviso .lu-link { color: #92400E; min-height: 0; }
-  .lu-aviso svg { flex-shrink: 0; margin-top: 2px; }
+  .lu-bar.grande { height: 12px; margin: 14px 0 8px; } .lu-bar i.ok { background: #16A34A; }
+  /* aviso de ficha técnica: uma faixa só */
+  .lu-aviso { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: 14px; padding: 10px 12px; font-size: 13.5px; font-weight: 500; line-height: 1.45; }
+  .lu-aviso > span { flex: 1 1 260px; } .lu-aviso svg { flex-shrink: 0; }
+  .lu-aviso-bt { flex: none; min-height: 40px; padding: 0 14px; border: 0; border-radius: 10px; background: #92400E; color: #fff; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+  /* produto + equilíbrio */
+  .lu-grid { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "prod" "eq"; }
+  @media (min-width: 1024px) { .lu-grid { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); grid-template-areas: "prod eq"; align-items: start; gap: 16px; } }
+  .lu-a-eq { grid-area: eq; } .lu-a-prod { grid-area: prod; }
+  .lu-card { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 16px; padding: 16px 18px; }
+  .lu-ct { margin: 0 0 10px; font-size: 15.5px; font-weight: 600; } .lu-ct small { display: block; margin-top: 2px; font-size: 12.5px; font-weight: 400; color: var(--ui-texto-2); }
+  .lu-vz { margin: 4px 0 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
+  .lu-tab-cab, .lu-tab-l { display: grid; grid-template-columns: minmax(0, 2.2fr) 70px minmax(90px, 1fr) minmax(90px, 1fr) minmax(110px, 1.1fr); gap: 12px; align-items: center; }
+  .lu-tab-cab { padding: 8px 10px; border-radius: 10px; background: var(--ui-cinza); font-size: 12.5px; font-weight: 600; color: var(--ui-texto-2); }
+  .lu-tab-cab span:not(:first-child) { text-align: right; }
+  .lu-tab-l { padding: 10px; border-bottom: 1px solid var(--ui-linha); font-size: 14px; } .lu-tab-l:last-child { border-bottom: 0; }
+  .lu-tab-nm { min-width: 0; } .lu-tab-nm b { display: block; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lu-tab-n { text-align: right; white-space: nowrap; }
+  .lu-tab-lucro { font-weight: 600; color: var(--ui-verde); } .lu-tab-lucro.ruim { color: var(--ui-vermelho); }
+  .lu-tab-lucro small { display: block; font-size: 12px; font-weight: 400; color: var(--ui-texto-2); }
+  .lu-p-bar { display: block; height: 5px; border-radius: 9px; background: var(--ui-linha); margin-top: 6px; overflow: hidden; max-width: 220px; } .lu-p-bar i { display: block; height: 100%; background: #22C55E; border-radius: 9px; } .lu-p-bar i.ruim { background: #F87171; }
+  .lu-sf { color: var(--ui-laranja); font-weight: 600; display: inline-flex; align-items: center; gap: 3px; font-size: 12.5px; }
+  /* celular: a tabela vira lista */
+  @media (max-width: 767px) {
+    .lu-tab-cab { display: none; }
+    .lu-tab-l { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "nm lucro" "info info"; row-gap: 2px; padding: 10px 0; }
+    .lu-tab-nm { grid-area: nm; } .lu-tab-lucro { grid-area: lucro; }
+    .lu-tab-l > .lu-tab-n:not(.lu-tab-lucro) { display: none; }
+  }
+  .lu-eq-v { display: block; font-size: 26px; font-weight: 600; letter-spacing: -.02em; } .lu-eq-v small { font-size: 13px; font-weight: 400; color: var(--ui-texto-2); }
+  .lu-eq-t { margin: 4px 0 0; font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; }
+  .lu-eq-s { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--ui-texto); } .lu-nota { margin: 6px 0 0; font-size: 12px; color: var(--ui-texto-3); }
+  .lu-sec { margin-top: 12px; min-height: 44px; padding: 0 16px; border: 1px solid #EADFE3; border-radius: 12px; background: var(--ui-branco); color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .lu-link { border: none; background: none; padding: 0; font: inherit; color: var(--ui-rosa-escuro); font-weight: 600; text-decoration: underline; cursor: pointer; }
 `;
