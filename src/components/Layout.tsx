@@ -1,3 +1,4 @@
+import { useNotifications } from "@/context/NotificationContext";
 import { PausarPedidos } from "@/components/loja/PausarPedidos";
 import { NavLink, Outlet, useNavigate, useLocation, useNavigationType } from "react-router-dom";
 // deploy: Proposta D - nova arquitetura de navegação (Entrega 1)
@@ -11,7 +12,7 @@ import {
   House, CalendarDots, ShoppingBag, Users, BookOpen,
   Package, CurrencyDollar, Gear, CaretDown,
   SquaresFour, Camera, Plus,
-  Receipt, Sparkle, Crown,
+  Receipt, Sparkle, Crown, Bell,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
@@ -40,6 +41,32 @@ function SidebarGroup({ label, icon, paths, location, children }: { label: strin
  * Item do menu lateral (07/10 · 2.95, guia A14): ícone de 20px, em traço grosso;
  * quando é a tela atual, o ícone fica cheio e rosa. "ativoSe" marca o item também em telas "filhas".
  */
+/** (4.27) Sininho do menu da esquerda (computador): número de notificações novas e atalho pra lista */
+function SinoMenu() {
+  const { notifCount } = useNotifications();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const n = notifCount > 9 ? "9+" : String(notifCount);
+  return (
+    <button type="button" className={`sidebar-sino${pathname === "/notificacoes" ? " ativo" : ""}`} onClick={() => navigate("/notificacoes")}
+      aria-label={notifCount > 0 ? `Notificações, ${notifCount} nova${notifCount > 1 ? "s" : ""}` : "Notificações"}>
+      <Bell size={20} weight={pathname === "/notificacoes" ? "fill" : "bold"} />
+      {notifCount > 0 && <span className="sidebar-sino-n" aria-hidden="true">{n}</span>}
+    </button>
+  );
+}
+/** só monta no computador (no celular o menu da esquerda fica escondido e não precisa buscar nada) */
+function useComputador() {
+  const [sim, setSim] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 901px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 901px)");
+    const f = () => setSim(mq.matches);
+    mq.addEventListener("change", f);
+    return () => mq.removeEventListener("change", f);
+  }, []);
+  return sim;
+}
+
 function ItemMenu({ to, icone: Icone, children, ativoSe, tour }: { to: string; icone: Icon; children: ReactNode; ativoSe?: (caminho: string) => boolean; tour?: string }) {
   const { pathname } = useLocation();
   const extra = !!ativoSe?.(pathname);
@@ -76,6 +103,7 @@ export default function Layout() {
   } = useAvatarUpload();
   const [maisOpen, setMaisOpen] = useState(false);
   const [dooOpen, setDooOpen] = useState(false);
+  const computador = useComputador();
   // Menu da foto → "Assistente virtual" abre o mesmo chat do menu de baixo
   useEffect(() => {
     const abrir = () => setDooOpen(true);
@@ -102,6 +130,7 @@ export default function Layout() {
       {/* ── Sidebar Desktop ── */}
       <aside className="sidebar">
         <div className="sidebar-profile">
+          {computador && <SinoMenu />}
           <div className="sidebar-avatar-container">
           <button
             type="button"
@@ -174,6 +203,11 @@ export default function Layout() {
           <ItemMenu to="/insumos" icone={Package}>Ingredientes</ItemMenu>
           <ItemMenu to="/receitas" icone={BookOpen} ativoSe={c => c.startsWith("/comunidade") || c.startsWith("/ficha-tecnica")}>Receitas</ItemMenu>
           <ItemMenu to="/financeiro" icone={CurrencyDollar} ativoSe={c => c === "/custos" || c === "/lucratividade"}>Financeiro</ItemMenu>
+          {/* (4.27) Doo IA no computador: abre o painel do lado direito */}
+          <button type="button" className={`nav-item${dooOpen ? " active" : ""}`} data-tour="doo-pc" onClick={() => setDooOpen(true)} aria-haspopup="dialog">
+            <span className="nav-icon"><Sparkle size={20} weight={dooOpen ? "fill" : "bold"} /></span>
+            <span className="nav-rotulo">Doo IA</span>
+          </button>
           <ItemMenu to="/configuracoes" icone={Gear} ativoSe={c => c === "/minha-assinatura" || c === "/assinar"}>Configurações</ItemMenu>
         </nav>
         {/* (4.27) abrir e pausar os pedidos do cardápio na hora */}
@@ -269,6 +303,10 @@ export default function Layout() {
           box-shadow: var(--shadow-card);
         }
 
+        .sidebar-sino { position: absolute; top: 0.75rem; right: 0.75rem; z-index: 2; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 0; border-radius: 12px; background: rgba(255, 255, 255, .08); color: rgba(255, 255, 255, .86); cursor: pointer; }
+        .sidebar-sino:hover, .sidebar-sino.ativo { background: rgba(255, 255, 255, .16); color: #fff; }
+        .sidebar-sino:focus-visible { outline: 3px solid rgba(255, 255, 255, .6); outline-offset: 1px; }
+        .sidebar-sino-n { position: absolute; top: 4px; right: 3px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #E85A8C; color: #fff; font-size: 11px; font-weight: 600; line-height: 18px; text-align: center; box-shadow: 0 0 0 2px var(--sidebar-bg, #2C1219); }
         .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin-top: 0.75rem; margin-bottom: 0.5rem; padding-bottom: 0; }
 
         .sidebar-avatar-btn {

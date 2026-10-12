@@ -911,6 +911,9 @@ export default function Inicio() {
               })}
             </div>
             <MinhasAtualizacoes />
+            {/* (4.27) no computador também: o banner do admin e as notícias */}
+            <AdminBannerMobile />
+            <UpdatesFeed />
           </div>
         </aside>
         )}
