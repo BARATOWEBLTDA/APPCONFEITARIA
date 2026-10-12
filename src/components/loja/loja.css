@@ -1,0 +1,44 @@
+/* (4.27) Pausar pedidos e Seu link de vendas */
+.lj-pausa { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 16px; background: var(--ui-branco); border: 1px solid #F0E6EA; font-family: var(--font-base); }
+.lj-pausa.compacto { padding: 12px 0 0; border: 0; border-top: 1px solid #F3ECEF; border-radius: 0; margin-top: 14px; background: none; }
+.lj-pausa-luz { flex: none; width: 10px; height: 10px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 4px rgba(34, 197, 94, .14); }
+.lj-pausa.pausada .lj-pausa-luz { background: #ef4444; box-shadow: 0 0 0 4px rgba(239, 68, 68, .14); }
+.lj-pausa-tx { flex: 1; min-width: 0; }
+.lj-pausa-tx b { display: block; font-size: 15px; font-weight: 600; color: var(--ui-texto); }
+.lj-pausa.pausada .lj-pausa-tx b { color: #B42318; }
+.lj-pausa-tx small { display: block; margin-top: 2px; font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
+.lj-chave { flex: none; position: relative; width: 50px; height: 30px; margin: 0; padding: 0; border: 0; border-radius: 999px; background: #D9CFD3; cursor: pointer; transition: background-color var(--dur-fast, .15s) linear; }
+.lj-chave span { position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform var(--dur-fast, .15s) ease-out; }
+.lj-chave[aria-checked="true"] { background: #16a34a; }
+.lj-chave[aria-checked="true"] span { transform: translateX(20px); }
+.lj-chave:disabled { opacity: .6; }
+.lj-chave:focus-visible { outline: 3px solid rgba(22, 163, 74, .35); outline-offset: 2px; }
+
+.lj-link { padding: 18px; border-radius: 18px; background: var(--ui-branco); border: 1px solid #F0E6EA; font-family: var(--font-base); }
+.lj-link-cab { display: flex; gap: 12px; align-items: center; }
+.lj-link-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: #FCE0E9; color: var(--ui-rosa); }
+.lj-link-cab b { display: block; font-size: 16px; font-weight: 600; color: var(--ui-texto); }
+.lj-link-cab small { display: block; font-size: 13px; color: var(--ui-texto-2); }
+.lj-link-url { margin: 14px 0 10px; padding: 11px 12px; border-radius: 12px; background: #F8F5F6; font-size: 14px; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lj-link-bts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.lj-bt { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; border-radius: 12px; border: 1px solid #EADFE3; background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; font-size: 14.5px; font-weight: 500; text-decoration: none; cursor: pointer; }
+.lj-bt--pri { border-color: transparent; background: var(--ui-rosa); color: #fff; }
+
+
+/* (4.27) Loja pronta */
+.lp { display: flex; flex-direction: column; gap: 10px; font-family: var(--font-base); text-align: left; }
+.lp-previa { overflow: hidden; border-radius: 16px; border: 1px solid #F0E6EA; background: #FBF8F9; }
+.lp-topo { height: 48px; }
+.lp-loja { display: flex; flex-direction: column; align-items: center; padding: 0 14px 12px; margin-top: -26px; text-align: center; }
+.lp-logo { display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; overflow: hidden; border-radius: 50%; border: 2px solid; background: #fff; }
+.lp-logo img { width: 100%; height: 100%; object-fit: contain; }
+.lp-logo b { font-size: 22px; font-weight: 600; }
+.lp-nome { margin-top: 6px; font-size: 16px; font-weight: 600; color: var(--ui-texto); }
+.lp-desc { margin-top: 2px; font-size: 12.5px; line-height: 1.4; color: var(--ui-texto-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.lp-prods { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 0 12px 12px; }
+.lp-prod { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.lp-prod img, .lp-prod i { width: 100%; aspect-ratio: 4 / 3; border-radius: 10px; object-fit: cover; background: #F0E6EA; }
+.lp-prod small { font-size: 12px; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lp-prod em { font-style: normal; font-size: 12px; font-weight: 600; color: var(--ui-texto); }
+.lp-url { margin: 4px 0 0; padding: 11px 12px; border-radius: 12px; background: #F8F5F6; font-size: 14px; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lp-zap { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border-radius: 12px; background: #16a34a; color: #fff; font-size: 15px; font-weight: 600; text-decoration: none; box-shadow: 0 3px 0 #15803D; }

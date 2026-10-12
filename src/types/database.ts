@@ -66,6 +66,8 @@ export interface Configuracoes {
   horario?: string | null
   /** (4.25) redes sociais da loja: vazias = não aparecem no cardápio */
   instagram?: string | null
+  /** (4.27) a loja pausou os pedidos do cardápio na hora (folga, agenda cheia) */
+  loja_pausada?: boolean | null
   facebook?: string | null
   // Checkout
   formas_pagamento?: string[]

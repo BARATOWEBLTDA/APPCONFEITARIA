@@ -153,3 +153,5 @@
 .sc-zap { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 52px; margin: 0; border: 0; border-radius: var(--ui-raio); background: #16a34a; color: var(--ui-branco); font-size: 16px; font-weight: 700; }
 .sc-zap:hover { background: var(--ui-verde); }
 @media (prefers-reduced-motion: reduce) { .sc-enviado-ic, .sc-bt-pri.treme { animation: none; } }
+/* (4.27) loja com os pedidos pausados */
+.sc-bt-pausada { background: #9C8F95 !important; box-shadow: none !important; }

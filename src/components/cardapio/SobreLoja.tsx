@@ -104,7 +104,8 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
 
         {aba === 'horario' && (
           <div className="sl-corpo" role="tabpanel">
-            {status && <p className={`sl-status${status.aberto ? ' aberto' : ''}`}><i aria-hidden="true" />{status.aberto ? 'Aberto agora' : 'Fechado agora'}</p>}
+            {cfg.loja_pausada ? <p className="sl-status"><i aria-hidden="true" />Pedidos pausados no momento</p>
+              : status && <p className={`sl-status${status.aberto ? ' aberto' : ''}`}><i aria-hidden="true" />{status.aberto ? 'Aberto agora' : 'Fechado agora'}</p>}
             {dias.length > 0 ? (
               <ul className="sl-dias">
                 {dias.map(d => <li key={d.dia} className={d.hoje ? 'hoje' : ''}><span>{d.dia}{d.hoje && <small>hoje</small>}</span><span>{d.texto}</span></li>)}

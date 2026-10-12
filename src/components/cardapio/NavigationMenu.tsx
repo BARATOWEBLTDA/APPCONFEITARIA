@@ -56,6 +56,8 @@ const marcarGravada = (t: TentativaPedido) => { t.gravado = true }
 const fecharTentativa = () => { tentativaPedido = null }
 
 interface CheckoutConfig {
+  /** (4.27) a loja pausou os pedidos: dá pra montar a sacola, mas não enviar */
+  loja_pausada?: boolean
   /** texto da loja pra mensagem do pedido (Mensagens do WhatsApp) */
   msg_pedido?: string | null
   formas_pagamento: string[]
@@ -192,6 +194,7 @@ function CartContent({
   const enviandoRef = useRef(false)
   const enviarFinalizar = async () => {
     if (enviando || enviandoRef.current || enviandoPedido) return
+    if (config.loja_pausada) { avisar('A loja pausou os pedidos por enquanto. Chame no WhatsApp pra combinar.', { tipo: 'erro' }); return }
     let falta: typeof feErro = ''
     // (11/10) confere a data e a hora com o relógio de AGORA (a tela pode ter ficado aberta um tempão):
     // precisa estar dentro do expediente e respeitar a antecedência a partir deste momento
@@ -463,6 +466,7 @@ function CartContent({
     const falhou = (err: unknown) => {
       // (4.24) recusas do banco com motivo: explica em vez do "tente de novo" genérico
       const msg = String((err as { message?: unknown } | null)?.message ?? '')
+      if (/loja_pausada/.test(msg)) return avisar('A loja pausou os pedidos agora há pouco. Chame no WhatsApp pra combinar.', { tipo: 'erro' })
       if (/cupom_esgotado/.test(msg)) return avisar('Este cupom acabou de esgotar. Tire o cupom e envie de novo.', { tipo: 'erro' })
       if (/item_invalido/.test(msg)) return avisar('Um produto da sacola mudou ou saiu do cardápio. Confira a sacola e envie de novo.', { tipo: 'erro' })
       avisar(explicarErro(err, 'Não deu pra enviar o pedido. Tente de novo.'), { tipo: 'erro' })
@@ -708,7 +712,9 @@ function CartContent({
       {items.length > 0 && (
         <footer className="sc-pe">
           <span className="sc-pe-tot"><small>{rotuloTotal}</small><b>{formatCurrency(subtotalCupom)}</b><em>{count} {count === 1 ? 'item' : 'itens'}</em></span>
-          <button type="button" className="sc-bt-pri" style={{ background: accent }} onClick={() => setStep('finalizar')}>Continuar</button>
+          {config.loja_pausada
+            ? <button type="button" className="sc-bt-pri sc-bt-pausada" onClick={() => avisar('A loja pausou os pedidos por enquanto. Chame no WhatsApp pra combinar.', { tipo: 'info' })}>Pedidos pausados</button>
+            : <button type="button" className="sc-bt-pri" style={{ background: accent }} onClick={() => setStep('finalizar')}>Continuar</button>}
         </footer>
       )}
     </>

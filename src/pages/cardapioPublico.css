@@ -92,3 +92,10 @@
 .cp-conta-x:hover { background: #F3EEF0; }
 .cp-conta .cc-topo { display: none; }
 .cp-conta .cc-rolo { padding: 8px 24px 24px; }
+
+/* (4.27) aviso de pedidos pausados */
+.cp-pausada { display: flex; gap: 10px; align-items: flex-start; margin: 14px 10px 0; padding: 12px 14px; border-radius: 14px; background: #FDF0F0; border: 1px solid #F6D4D4; font-family: var(--font-base); }
+.cp-meio .cp-pausada { margin: 0 0 16px; }
+.cp-pausada i { flex: none; width: 9px; height: 9px; margin-top: 6px; border-radius: 50%; background: #ef4444; }
+.cp-pausada b { display: block; font-size: 15px; font-weight: 600; color: #B42318; }
+.cp-pausada small { display: block; margin-top: 2px; font-size: 13.5px; line-height: 1.45; color: var(--ui-texto-2); }

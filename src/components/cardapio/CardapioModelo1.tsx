@@ -75,7 +75,8 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
   const ehBranco = (c?: string | null) => !c || ['#fff', '#ffffff', '#fefefe', 'white', 'transparent'].includes(c.trim().toLowerCase())
   const corFaixa = !ehBranco(design.cor_navbar) ? design.cor_navbar! : (!ehBranco(design.cor_borda) ? design.cor_borda! : '#E85A8C')
   const corIcone = !ehBranco(design.cor_botao) ? design.cor_botao! : accent
-  const status = getStatusLoja(config?.horario || null)
+  // (4.27) loja com os pedidos pausados aparece fechada, seja qual for o horário
+  const status = (config as any)?.loja_pausada ? { aberto: false, msg: 'Pedidos pausados no momento', curto: 'Pedidos pausados' } : getStatusLoja(config?.horario || null)
   const endereco = getEnderecoData(config)
   const etiquetas = etiquetasDaLoja(config, produtos)
 

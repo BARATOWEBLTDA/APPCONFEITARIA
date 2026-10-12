@@ -2,6 +2,8 @@
 import { resumoItens } from "@/components/pedidos/pedidoTexto";
 import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
+import { LinkDeVendas } from "@/components/loja/LinkDeVendas";
+import { PausarPedidos } from "@/components/loja/PausarPedidos";
 import { STATUS_AINDA_NAO_PRONTO, dataISO } from "@/lib/pedidoStatus";
 import { entradasNoPeriodo } from "@/lib/painelFinanceiro";
 import ConquistasCard from "@/components/ConquistasCard";
@@ -790,6 +792,13 @@ export default function Inicio() {
         />
       </section>
 
+      {/* (4.27) Abrir e pausar os pedidos do cardápio na hora (no computador fica no cartão do link, na lateral) */}
+      {!computador && (
+        <section className="ini-section ini-section--pausa">
+          <PausarPedidos />
+        </section>
+      )}
+
       {/* ── Primeiros passos (02/10) — some quando ela termina.
              (07/10 · 2.94) Passou a aparecer em todos os aparelhos: é o único guia depois das boas-vindas (o tour saiu). ── */}
       <section className="ini-section ini-section--checklist-top ini-pp">
@@ -879,6 +888,7 @@ export default function Inicio() {
         <aside className="ini-aside">
           {/* Computador: conquistas, próximas entregas e atualizações (30/09) */}
           <div className="ini-dk-side">
+            <LinkDeVendas />
             <ConquistasCard />
             <div className="ini-dk-card">
               <div className="ini-dk-ct"><span>Próximas entregas</span><button type="button" onClick={() => navigate("/agenda")}>Ver agenda <CaretRight size={16} weight="bold" aria-hidden="true" /></button></div>
@@ -1325,6 +1335,7 @@ export default function Inicio() {
         .ini-section--dia { order: -1; }
         .ini-root .ini-section.ini-section--dia { margin-top: 16px !important; }
         @media (min-width: 901px) { .ini-section--dia { display: none; } }
+        .ini-section--pausa { order: 0; margin-top: var(--space-3); }
         .ini-section--checklist-top { order: 0; margin-top: var(--space-3); }
         .ini-pp:empty { display: none; }
 

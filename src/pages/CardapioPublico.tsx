@@ -54,7 +54,7 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
   // 10/10: a loja desta página (antes vinha do localStorage, que é do navegador inteiro)
   const confeteiraUserId = design.user_id || ''
   const accent = design.cor_botao || design.cor_borda || '#E85A8C'
-  const status = getStatusLoja((config as any)?.horario || null)
+  const status = (config as any)?.loja_pausada ? { aberto: false, msg: 'Pedidos pausados no momento', curto: 'Pedidos pausados' } : getStatusLoja((config as any)?.horario || null)
   let cidade = ''
   try { const e = config?.endereco ? (typeof config.endereco === 'string' ? JSON.parse(config.endereco) : config.endereco) : null; if (e?.cidade && ((config as any)?.mostrar_localizacao || (config as any)?.mostrar_apenas_cidade)) cidade = [e.cidade, e.estado].filter(Boolean).join(' - ') } catch {}
   const sub = [status?.msg, cidade].filter(Boolean).join(' · ')
@@ -251,6 +251,7 @@ function CardapioContent() {
         aceita_agendamento: config.aceita_agendamento !== false,
         prazo_minimo_horas: config.prazo_minimo_horas ?? 24,
         msg_pedido: (config as any).msg_pedido || null,
+        loja_pausada: (config as any).loja_pausada === true,
         // Finalizar encomenda (02/10): horário da loja e antecedência de cada produto, pro agendamento
         horario: (config as any).horario || null,
         antecedencias: Object.fromEntries((produtos || []).map((p: any) => [p.id, { ant: p.antecedencia || null, pronta: p.pronta_entrega ?? null }])),
@@ -376,7 +377,10 @@ function CardapioContent() {
             </div>
           </>
         )}
-        {/* Espaço embaixo: menu (60px) e, com itens, a barra "Ver seu pedido" (~64px) não cobrem o último produto */}
+{(config as any)?.loja_pausada && (
+          <div className="cp-pausada" role="status"><i aria-hidden="true" /><span><b>Pedidos pausados no momento</b><small>Você pode olhar o cardápio. Pra encomendar, chame a loja no WhatsApp.</small></span></div>
+        )}
+                {/* Espaço embaixo: menu (60px) e, com itens, a barra "Ver seu pedido" (~64px) não cobrem o último produto */}
         <div style={{ padding: `0 10px calc(${cartCount > 0 ? 148 : 84}px + env(safe-area-inset-bottom, 0px))` }}>
           {produtos.length > 0 ? (
             <ProductList
@@ -417,6 +421,9 @@ function CardapioContent() {
         )}
 
         <main className="cp-meio">
+          {(config as any)?.loja_pausada && (
+          <div className="cp-pausada" role="status"><i aria-hidden="true" /><span><b>Pedidos pausados no momento</b><small>Você pode olhar o cardápio. Pra encomendar, chame a loja no WhatsApp.</small></span></div>
+        )}
           {temBanner && (
             <div className="desk-banner cp-banner">
               <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />

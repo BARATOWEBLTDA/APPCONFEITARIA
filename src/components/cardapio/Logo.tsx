@@ -33,7 +33,7 @@ function getStatusLoja(horarioJson: any): { aberto: boolean; msg?: string } | nu
 
 export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNome, avaliacaoMedia = 4.9, hideStars = false, configuracoes, verificada = false, aoAbrirSobre }: LogoProps) {
   const [modalEndereco, setModalEndereco] = useState(false)
-  const status = getStatusLoja(configuracoes?.horario || null)
+  const status = configuracoes?.loja_pausada ? { aberto: false, msg: 'Pedidos pausados' } : getStatusLoja(configuracoes?.horario || null)
 
 
   // Monta endereço a partir do JSON
@@ -91,7 +91,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
             {status && (
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: status.aberto ? '#15803d' : '#dc2626' }}>
                 <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: status.aberto ? '#22c55e' : '#ef4444', flexShrink: 0 }} />
-                {status.aberto ? 'Aberto agora' : status.msg ? `Fechado · ${status.msg}` : 'Fechado'}
+                {status.aberto ? 'Aberto agora' : configuracoes?.loja_pausada ? 'Pedidos pausados no momento' : status.msg ? `Fechado · ${status.msg}` : 'Fechado'}
               </span>
             )}
             {status && !hideStars && <span style={{ color: '#D1D5DB' }}>·</span>}

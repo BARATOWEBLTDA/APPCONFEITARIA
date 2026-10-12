@@ -1,3 +1,4 @@
+import { PausarPedidos } from "@/components/loja/PausarPedidos";
 import { useState, useEffect, useRef, type ReactElement } from "react";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
 import VisaoGeralDesktop from "@/components/cardapio/VisaoGeralDesktop";
@@ -361,6 +362,7 @@ export default function Cardapio() {
     ) : (
     <div className="cardapio-hub">
       {/* Passo a passo único (02/10): o mesmo cartão do Início. Pronto → cartão do link */}
+      <PausarPedidos />
       <PrimeirosPassos local="cardapio" onEstado={setPassosOk} />
       {passosOk && (
         <PassoAPassoCardapio

@@ -10,7 +10,8 @@ import Janelinha from "@/components/financeiro/Folha";
 import { Mascote } from "@/components/marca/Mascote";
 import { lerPassos, marcarCompartilhado, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk, type EstadoPassos } from "@/lib/primeirosPassos";
 
-import { Botao, avisar } from "@/components/base";
+import { Botao, Janela, avisar } from "@/components/base";
+import { LojaProntaConteudo } from "@/components/loja/LojaPronta";
 import { erroDeConexao, SEM_INTERNET } from "@/lib/erros";
 /**
  * "Primeiros passos" (aprovado 02/10) — o MESMO cartão no Início (celular) e no Cardápio digital.
@@ -71,14 +72,31 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   }, [uid, atualizar, kFechado, kIncompleto]);
 
   const completo = passosCompletos(estado);
+  // (4.27) janela "Sua loja está pronta!": uma vez por conta, só pra quem viu a lista incompleta antes
+  const kPronta = uid ? `doonly_pp_pronta_${uid}` : "";
+  const [prontaAberta, setProntaAberta] = useState(false);
+  useEffect(() => {
+    if (!uid || !estado || !completo || !jaViuIncompleto || local !== "inicio") return;
+    try { if (localStorage.getItem(kPronta) === "1") return; localStorage.setItem(kPronta, "1"); } catch { return; }
+    setProntaAberta(true);
+  }, [uid, estado, completo, jaViuIncompleto, local, kPronta]);
+  const fecharPronta = () => setProntaAberta(false);
   useEffect(() => { if (estado) onEstado?.(completo); }, [estado, completo]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (uid && estado && !completo && !jaViuIncompleto) { try { localStorage.setItem(kIncompleto, "1"); } catch {} setJaViuIncompleto(true); }
   }, [uid, estado, completo, jaViuIncompleto, kIncompleto]);
 
   if (!uid || !estado) return null;
+
+  // (4.27) Loja pronta: quando ela termina os passos, abre uma vez a janela com a prévia, o link e o WhatsApp
+  const janelaPronta = (
+    <Janela aberta={prontaAberta} aoFechar={fecharPronta} tipo="conteudo" titulo="Sua loja está pronta!">
+      <p className="pp-pronta-tx">Tudo configurado. Assim o seu cardápio aparece pros clientes:</p>
+      <LojaProntaConteudo profile={profile} />
+    </Janela>
+  );
   // No Cardápio digital o cartão some quando está tudo pronto (a tela mostra o cartão do link)
-  if (completo && (local === "cardapio" || fechado || !jaViuIncompleto)) return null;
+  if (completo && (local === "cardapio" || fechado || !jaViuIncompleto)) return janelaPronta;
 
   const link = getCardapioUrl(profile);
   const fechar = () => { try { localStorage.setItem(kFechado, "1"); } catch {} setFechado(true); };
@@ -100,10 +118,11 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
         {/* (07/10 · 2.94) o mascote no lugar dos emojis */}
         <Mascote pose="acenando" className="pp-masc" />
         <b className="pp-ft">Sua confeitaria está pronta pra vender!</b>
-        <p className="pp-fs">Você concluiu os primeiros passos. Agora é só esperar os pedidos chegarem.</p>
-        <a className="pp-btn" href={link} target="_blank" rel="noopener noreferrer">Ver meu cardápio</a>
+        <p className="pp-fs">Agora é só mandar o link pros clientes. Assim o seu cardápio aparece pra eles:</p>
+        <LojaProntaConteudo profile={profile} />
         <button type="button" className="pp-lnk pp-lnk--cinza" onClick={fechar}>Fechar</button>
         <style>{CSS}</style>
+        {janelaPronta}
       </div>
     );
   }
@@ -341,6 +360,9 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo }: FolhaProps) {
 }
 
 const CSS = `
+.pp-pronta-tx { margin: 0 0 12px; font-size: 15px; line-height: 1.5; color: var(--ui-texto-2); }
+.pp--fim .lp { margin-top: 12px; }
+
   .pp { background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); padding: 16px 16px 8px; box-shadow: var(--ui-sombra-cartao); font-family: var(--font-base); color: var(--ui-texto); }
   .pp-t { display: block; font-size: 18px; font-weight: 700; line-height: 1.3; }
   .pp-sub { font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; margin: 4px 0 0; }
