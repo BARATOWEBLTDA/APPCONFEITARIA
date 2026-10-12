@@ -91,7 +91,8 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   // (4.27) Loja pronta: quando ela termina os passos, abre uma vez a janela com a prévia, o link e o WhatsApp
   const janelaPronta = (
     <Janela aberta={prontaAberta} aoFechar={fecharPronta} tipo="conteudo" titulo="Sua loja está pronta!">
-      <p className="pp-pronta-tx">Tudo configurado. Assim o seu cardápio aparece pros clientes:</p>
+      <Mascote pose="acenando" className="pp-pronta-masc" />
+      <p className="pp-pronta-tx">Tudo configurado. Agora é só mandar o link do cardápio pros seus clientes:</p>
       <LojaProntaConteudo profile={profile} />
     </Janela>
   );
@@ -118,7 +119,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
         {/* (07/10 · 2.94) o mascote no lugar dos emojis */}
         <Mascote pose="acenando" className="pp-masc" />
         <b className="pp-ft">Sua confeitaria está pronta pra vender!</b>
-        <p className="pp-fs">Agora é só mandar o link pros clientes. Assim o seu cardápio aparece pra eles:</p>
+        <p className="pp-fs">Agora é só mandar o link do cardápio pros seus clientes.</p>
         <LojaProntaConteudo profile={profile} />
         <button type="button" className="pp-lnk pp-lnk--cinza" onClick={fechar}>Fechar</button>
         <style>{CSS}</style>
@@ -360,7 +361,8 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo }: FolhaProps) {
 }
 
 const CSS = `
-.pp-pronta-tx { margin: 0 0 12px; font-size: 15px; line-height: 1.5; color: var(--ui-texto-2); }
+.pp-pronta-masc { display: block; width: 104px; height: 104px; object-fit: contain; margin: 0 auto 8px; }
+.pp-pronta-tx { margin: 0 0 12px; text-align: center; font-size: 15px; line-height: 1.5; color: var(--ui-texto-2); }
 .pp--fim .lp { margin-top: 12px; }
 
   .pp { background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); padding: 16px 16px 8px; box-shadow: var(--ui-sombra-cartao); font-family: var(--font-base); color: var(--ui-texto); }
