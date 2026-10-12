@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Sparkle } from "@phosphor-icons/react";
 import { Botao, Janela } from "@/components/base";
 import { useNavigate } from "react-router-dom";
 import { usePlano } from "@/hooks/usePlano";
 import { useProfile } from "@/hooks/useProfile";
-import { abrirDooIA } from "@/components/MenuContaItens";
 
 /**
  * "Parabéns, agora você é PRO" (aprovado 01/10): aparece UMA vez, na hora em que o plano vira PRO
@@ -47,11 +45,10 @@ export default function ParabensPro() {
   const nome = String(profile?.nome || "").trim().split(" ")[0];
 
   return (
-    <Janela aberta aoFechar={fechar} titulo={nome ? `Parabéns, ${nome}! Agora você é PRO` : "Parabéns! Agora você é PRO"}
-      texto="A Doo IA, o cardápio Premium, os cupons e o lucro de cada produto já estão liberados. Que bom ter você com a gente." icone={<img src="/coroa.png" alt="" className="ppr-coroa" />} tom="laranja"
-      acoes={<><Botao variante="secundario" onClick={() => { fechar(); navigate("/minha-assinatura"); }}>Assinatura</Botao><Botao onClick={fechar} data-foco-inicial>Começar a usar</Botao></>}>
-      <Botao variante="link" icone={<Sparkle size={20} weight="fill" />} onClick={() => { fechar(); abrirDooIA(); }} className="ppr-ia">Falar com o Doo IA</Botao>
-      <style>{`.ppr-ia { margin-top: 12px; } .ppr-coroa { width: 46px; height: auto; display: block; }`}</style>
+    <Janela aberta aoFechar={fechar} titulo={nome ? `Bem-vinda ao PRO, ${nome}!` : "Bem-vinda ao PRO!"}
+      texto="Sua assinatura está ativa e tudo já está liberado: cardápio Premium, cupons de desconto, Doo IA e o lucro de cada produto. Obrigada por confiar no Doonly." icone={<img src="/coroa.png" alt="" className="ppr-coroa" />} tom="laranja"
+      acoes={<><Botao variante="secundario" onClick={() => { fechar(); navigate("/minha-assinatura"); }}>Ver assinatura</Botao><Botao onClick={fechar} data-foco-inicial>Começar a usar</Botao></>}>
+      <style>{`.ppr-coroa { width: 46px; height: auto; display: block; }`}</style>
     </Janela>
   );
 }
