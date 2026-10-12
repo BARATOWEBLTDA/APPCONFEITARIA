@@ -47,7 +47,7 @@ type Form = {
   imagem_url: string;
 };
 
-const CATEGORIAS_DEFAULT = ["Ingredientes", "Embalagens", "Decorações", "Bebidas", "Limpeza", "Descartáveis", "Outros"];
+const CATEGORIAS_DEFAULT = ["Ingredientes", "Embalagens", "Decorações", "Bebidas", "Descartáveis", "Outros"];
 
 /** Medidas (mesmos valores de antes: un, kg, g, L, ml) */
 const MEDIDAS = [
@@ -233,7 +233,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
   const [imagens, setImagens] = useState<string[]>([]);
   const [buscandoImg, setBuscandoImg] = useState(false);
   const [uploadingImg, setUploadingImg] = useState(false);
-  const [fotoAberta, setFotoAberta] = useState(false);
+  const [pedirNome, setPedirNome] = useState<{ nome: string; marca: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const [tentouSalvar, setTentouSalvar] = useState(false);
   const [categorias, setCategorias] = useState<string[]>(CATEGORIAS_DEFAULT);
@@ -248,7 +248,9 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
     (async () => {
       const { data } = await supabase.from("insumo_categorias").select("nome").or(`is_default.eq.true,user_id.eq.${userId}`).order("nome");
       if (!cancel && data && data.length > 0) {
-        setCategorias([...new Set([...CATEGORIAS_DEFAULT, ...data.map((c: any) => c.nome)])]);
+        // 4.29: "Limpeza" saiu da lista (só aparece se o ingrediente já estiver nela)
+        setCategorias([...new Set([...CATEGORIAS_DEFAULT, ...data.map((c: any) => c.nome)])]
+          .filter(c => c.trim().toLowerCase() !== "limpeza" || c === inicial.current.categoria));
       }
     })();
     return () => { cancel = true; };
@@ -265,9 +267,10 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
     return () => { cancel = true; };
   }, [editing?.id]);
 
-  const handleBuscarImagem = async () => {
-    const termo = `${form.nome} ${form.marca}`.trim();
-    if (form.nome.trim().length < 3) { avisar("Escreva o nome primeiro pra buscar a foto", { tipo: "info" }); return; }
+  const handleBuscarImagem = async (nome = form.nome, marca = form.marca) => {
+    const termo = `${nome} ${marca}`.trim();
+    // 4.29: sem nome, pergunta numa janela em vez de só avisar
+    if (nome.trim().length < 3) { setPedirNome({ nome, marca }); return; }
     setBuscandoImg(true);
     setImagens([]);
     try {
@@ -295,7 +298,6 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       const { data } = supabase.storage.from("profiles").getPublicUrl(path);
       setForm(f => ({ ...f, imagem_url: data.publicUrl }));
       setImagens([]); // limpa resultados de busca se havia
-      setFotoAberta(false);
     }
     setUploadingImg(false);
   };
@@ -385,20 +387,26 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       {/* Foto (opcional) */}
       <input ref={galleryRef} type="file" accept="image/*" hidden onChange={recorte.escolher} />
       {recorte.janela}
-      <button type="button" className="cl9-f-foto" onClick={() => setFotoAberta(a => !a)} aria-expanded={fotoAberta}>
-        <span className="cl9-f-av ig-f-av">{form.imagem_url ? <img src={form.imagem_url} alt="" /> : <Camera size={24} weight="bold" />}</span>
-        <span>
-          <b>{form.imagem_url ? "Trocar a foto" : "Colocar uma foto"}</b>
-          <small>{form.imagem_url ? "Buscar outra, escolher do celular ou tirar" : "Opcional · buscar na internet ou do celular"}</small>
-        </span>
-      </button>
-      {fotoAberta && (
-        <div className="ig-foto">
-          <div className="ig-foto-acoes">
-            <Botao variante="secundario" tamanho="m" icone={<MagnifyingGlass size={20} weight="bold" />} carregando={buscandoImg} disabled={uploadingImg} onClick={handleBuscarImagem}>Na internet</Botao>
-            <Botao variante="secundario" tamanho="m" icone={<ImagemIc size={20} weight="bold" />} carregando={uploadingImg} disabled={buscandoImg} onClick={() => galleryRef.current?.click()}>Do celular</Botao>
+      <div className="ig-foto2">
+        <span className="ig-foto2-th">{form.imagem_url ? <img src={form.imagem_url} alt="" /> : <Camera size={26} />}</span>
+        <div className="ig-foto2-tx">
+          <b>Foto <small>opcional</small></b>
+          <div className="ig-foto2-bts">
+            <button type="button" className="ig-bt-net" disabled={buscandoImg || uploadingImg} onClick={() => handleBuscarImagem()}>
+              {buscandoImg ? <span className="ig-gira" aria-hidden="true" /> : <MagnifyingGlass size={18} weight="bold" />}
+              {buscandoImg ? "Buscando..." : "Buscar na internet"}
+            </button>
+            <button type="button" className="ig-bt-cel" disabled={buscandoImg || uploadingImg} onClick={() => galleryRef.current?.click()}>
+              {uploadingImg ? <span className="ig-gira" aria-hidden="true" /> : <ImagemIc size={18} weight="bold" />}
+              Do celular
+            </button>
           </div>
-          {imagens.length > 0 && (
+        </div>
+      </div>
+      {(imagens.length > 0 || form.imagem_url) && (
+        <div className="ig-foto">
+          {imagens.length > 0 && (<>
+            <p className="ig-rot">Toque na foto que combina</p>
             <div className="ig-foto-grade">
               {imagens.map((url, idx) => (
                 <button key={idx} type="button" aria-pressed={form.imagem_url === url} aria-label={`Usar a foto ${idx + 1}`}
@@ -407,7 +415,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
                 </button>
               ))}
             </div>
-          )}
+          </>)}
           {form.imagem_url && (
             <button type="button" className="ig-foto-tirar" onClick={() => { setForm(f => ({ ...f, imagem_url: "" })); setImagens([]); }}>
               <X size={16} weight="bold" />Tirar a foto
@@ -415,6 +423,23 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           )}
         </div>
       )}
+      <Janela aberta={!!pedirNome} aoFechar={() => setPedirNome(null)} tipo="conteudo" titulo="Buscar a foto"
+        acoes={<><Botao variante="secundario" onClick={() => setPedirNome(null)}>Cancelar</Botao>
+          <Botao icone={<MagnifyingGlass size={20} weight="bold" />} disabled={(pedirNome?.nome.trim().length || 0) < 3} onClick={() => {
+            if (!pedirNome) return;
+            const { nome, marca } = pedirNome;
+            setForm(f => ({ ...f, nome: nome.trim(), marca: marca.trim() }));
+            setPedirNome(null);
+            void handleBuscarImagem(nome.trim(), marca.trim());
+          }}>Buscar foto</Botao></>}>
+        <div className="cl9-f">
+          <p className="ig-dica ig-pedir">Antes de buscar a foto, qual é o nome do ingrediente e a marca?</p>
+          <Campo rotulo="Nome" obrigatorio autoFocus placeholder="Ex.: leite condensado" value={pedirNome?.nome || ""}
+            onChange={e => setPedirNome(p => p && ({ ...p, nome: e.target.value }))} />
+          <Campo rotulo="Marca" opcional placeholder="Ex.: Moça" value={pedirNome?.marca || ""}
+            onChange={e => setPedirNome(p => p && ({ ...p, marca: e.target.value }))} />
+        </div>
+      </Janela>
 
       <Campo rotulo="Nome" obrigatorio placeholder="Ex.: leite condensado" value={form.nome} erro={erroNome}
         onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
@@ -422,24 +447,28 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         onChange={e => setForm(f => ({ ...f, marca: e.target.value }))} />
       <div>
         <p className="ig-rot">Categoria</p>
-        <div className="cl9-f-chips">
+        <div className="ig-chips ig-chips-cat">
           {categorias.map(c => (
             <button key={c} type="button" aria-pressed={form.categoria === c} onClick={() => setForm(f => ({ ...f, categoria: c }))}>{rotuloCategoria(c)}</button>
           ))}
         </div>
       </div>
 
-      <p className="cl9-f-sec">Como você compra</p>
+      <section className="ig-compra">
+      <div className="ig-compra-cab">
+        <b>Como você compra</b>
+        <small>Pra calcular quanto custa na receita</small>
+      </div>
       <div>
         <p className="ig-rot">Vem em</p>
-        <div className="cl9-f-chips">
+        <div className="ig-chips">
           {EMB_PRINCIPAIS.map(o => (
             <button key={o} type="button" aria-pressed={emb === o} onClick={() => { setVerOutras(false); setForm(f => ({ ...f, embalagem_tipo: o })); }}>{o}</button>
           ))}
           <button type="button" aria-pressed={EMB_OUTRAS.includes(emb)} aria-expanded={verOutras || EMB_OUTRAS.includes(emb)} onClick={() => setVerOutras(v => !v)}>Outra</button>
         </div>
         {(verOutras || EMB_OUTRAS.includes(emb)) && (
-          <div className="cl9-f-chips ig-outras">
+          <div className="ig-chips ig-outras">
             {EMB_OUTRAS.map(o => (
               <button key={o} type="button" aria-pressed={emb === o} onClick={() => setForm(f => ({ ...f, embalagem_tipo: o }))}>{o}</button>
             ))}
@@ -494,6 +523,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       ) : (
         <p className="ig-dica">Coloque quanto vem e quanto pagou: o Doonly calcula o custo de cada {form.unidade === "un" ? "unidade" : "grama"} pra ficha técnica.</p>
       )}
+      </section>
 
       {isEditing && onDelete && (
         <button type="button" className="cl9-f-excluir" onClick={onDelete} disabled={saving}><Trash size={20} weight="bold" />Excluir ingrediente</button>

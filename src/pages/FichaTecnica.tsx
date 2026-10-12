@@ -714,7 +714,10 @@ export default function FichaTecnica() {
                 </>)}
                 <Campo rotulo="Tempo pra fazer esta receita" inputMode="numeric" placeholder="0" value={extras.tempo_preparo_min}
                   onChange={e => setExtras(s => ({ ...s, tempo_preparo_min: e.target.value }))} depois={<span className="cl9-f-uf">min</span>} />
-                <p className="fd-mo">Sua hora vale <b>R$ {fmt(custoHora)}</b>{moLive > 0 && <> · nesta receita: <b>R$ {fmt(moLive)}</b></>}</p>
+                <div className="fd-mo-par">
+                  <div><small>Sua hora</small><b>R$ {fmt(custoHora)}</b></div>
+                  <div><small>Nesta receita</small><b>R$ {fmt(moLive)}</b></div>
+                </div>
               </>)}
             </section>
           </div>

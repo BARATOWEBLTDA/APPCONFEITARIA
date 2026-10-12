@@ -51,6 +51,10 @@
 .fd-cv-res { flex: none; min-height: 48px; display: flex; align-items: center; padding: 0 12px; border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 15px; font-weight: 700; }
 .fd-mo { margin: 0; padding: 12px 14px; border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 14px; color: var(--ui-texto-2); }
 .fd-mo b { color: var(--ui-texto); }
+.fd-mo-par { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.fd-mo-par > div { min-width: 0; padding: 10px 12px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
+.fd-mo-par small { display: block; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; }
+.fd-mo-par b { display: block; margin-top: 2px; font-size: 16px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; }
 .fd-chave { flex: none; position: relative; width: 52px; height: 32px; margin: 6px 0; padding: 0; border: 0; border-radius: 999px; background: var(--ui-borda); cursor: pointer; transition: background .15s; }
 .fd-chave span { position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%; background: var(--ui-branco); box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .15s; }
 .fd-chave[aria-checked="true"] { background: var(--ui-verde); }
