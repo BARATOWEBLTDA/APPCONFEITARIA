@@ -824,9 +824,10 @@ export default function Clientes() {
         const linkWhats = (c: Cliente, texto?: string) => linkWhatsApp(c.whatsapp, texto) || null;
         const primeiroNome = (n: string) => (n || "").trim().split(/\s+/)[0] || "";
         const niverCurto = (data?: string | null) => {
-          if (!data) return "—";
+          if (!data) return <em className="cl9-nada">Sem data</em>;
           const d = dataLocal(data);
-          return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+          // (4.29) com o ano: 17/10/1990
+          return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
         };
         const iniciaisDe = (n: string) => (n || "?").trim().split(/\s+/).slice(0, 2).map(x => x[0]?.toUpperCase() || "").join("");
         const Avatar = ({ c }: { c: Cliente }) => <span className="cl9-av">{c.foto_url ? <img src={c.foto_url} alt="" /> : iniciaisDe(c.nome)}</span>;
@@ -897,8 +898,8 @@ export default function Clientes() {
                     return (
                       <div key={c.id} className="cl9-tab-l" role="row" onClick={() => navigate(`/clientes/${c.id}`)}>
                         <span role="cell" className="cl9-tab-quem"><Avatar c={c} /><span><b>{c.nome}</b><span className="cl9-tab-l2"><small>{formatPhone(c.whatsapp) || "Sem WhatsApp"}</small><Etiqueta c={c} /></span></span></span>
-                        <span role="cell">{ped || "—"}</span>
-                        <span role="cell">{ped ? formatMoneyFull(c._totalGasto) : "—"}</span>
+                        <span role="cell">{ped || <em className="cl9-nada">0</em>}</span>
+                        <span role="cell">{ped ? formatMoneyFull(c._totalGasto) : <em className="cl9-nada">R$ 0,00</em>}</span>
                         <span role="cell">{ped ? ultimaTxt(c) : <em className="cl9-nada">Ainda não comprou</em>}</span>
                         <span role="cell">{niverCurto(c.data_nascimento)}</span>
                         <span role="cell" className="cl9-tab-bt">

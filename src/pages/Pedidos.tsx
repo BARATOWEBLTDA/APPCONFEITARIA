@@ -463,7 +463,7 @@ export default function Pedidos() {
         infoTip={<>Abra um pedido pra ver tudo e marcar o pagamento.</>}
       />
 
-      <div className="pd">
+      <div className={`pd${quadro ? " pd--quadro" : ""}`}>
         {parada ?? (
           <>
             <div className="pd-barra">
