@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { CaretRight, CheckCircle, Cake } from "@phosphor-icons/react";
+import { CaretRight, Cake } from "@phosphor-icons/react";
 import { Botao } from "@/components/base";
 import { faltaPara, separarEntregasDeHoje, useAgora } from "./entregasDeHoje";
 import "./seuDia.css";
@@ -36,14 +36,14 @@ interface Props {
 const real = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 const hhmm = (h?: string | null) => (h ? String(h).slice(0, 5) : "");
 
-export default function SeuDia({ carregando, erro, aoTentar, entregasHoje, atrasados, novos, proximas, hoje }: Props) {
+export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje }: Props) {
   const navigate = useNavigate();
 
   // 11/10: destaque = a primeira entrega de hoje com hora de AGORA em diante (sem nenhuma, a primeira sem horário).
   // As de hora já passada que ainda não foram entregues viram o aviso "N passaram do horário" e saem da lista.
   // Antes o destaque era sempre a mais cedo do dia: às 20h40 ainda mostrava "15:30 · agora".
   const agora = useAgora();
-  const { destaque, passaram, restantes } = separarEntregasDeHoje(proximas, hoje, agora);
+  const { destaque, restantes } = separarEntregasDeHoje(proximas, hoje, agora);
   // 4.29: uma lista só, um pedido por linha (a próxima de hoje primeiro, depois as outras), até 5
   const lista = [...(destaque ? [destaque] : []), ...restantes].slice(0, 5);
   const quantoFalta = destaque?.hora ? faltaPara(hhmm(destaque.hora), agora) : "";
@@ -54,14 +54,9 @@ export default function SeuDia({ carregando, erro, aoTentar, entregasHoje, atras
     return `${dia.charAt(0).toUpperCase()}${dia.slice(1)}${e.hora ? ` às ${hhmm(e.hora)}` : ""}`;
   };
 
-  const chips = [
-    atrasados > 0 && { k: "atr", txt: `${atrasados} ${atrasados === 1 ? "atrasado" : "atrasados"}`, tom: "vermelho", para: "/pedidos?filtro=atrasados" },
-    passaram.length > 0 && { k: "pas", txt: `${passaram.length} ${passaram.length === 1 ? "passou" : "passaram"} do horário`, tom: "amarelo", para: "/agenda" },
-    novos > 0 && { k: "nov", txt: `${novos} pra aceitar`, tom: "amarelo", para: "/pedidos?filtro=aguardando" },
-    entregasHoje > 0 && { k: "hoj", txt: `${entregasHoje} ${entregasHoje === 1 ? "entrega hoje" : "entregas hoje"}`, tom: "", para: "/agenda" },
-  ].filter(Boolean) as { k: string; txt: string; tom: string; para: string }[];
 
-  const nadaMarcado = lista.length === 0 && chips.length === 0;
+  // 4.29: sem etiquetas (pedido do dono): só o título, o link da Agenda e os pedidos
+  const nadaMarcado = lista.length === 0;
 
   return (
     <div className="sd">
@@ -89,18 +84,6 @@ export default function SeuDia({ carregando, erro, aoTentar, entregasHoje, atras
         </div>
       ) : (
         <>
-          {chips.length > 0 && (
-            <div className="sd-chips">
-              {chips.map(c => (
-                <button key={c.k} type="button" className={`sd-chip${c.tom ? ` sd-chip--${c.tom}` : ""}`} onClick={() => navigate(c.para)}>
-                  {c.tom && <i aria-hidden="true" />}{c.txt}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {!destaque && passaram.length === 0 && <p className="sd-calmo"><CheckCircle size={20} weight="bold" aria-hidden="true" />Nada pra entregar hoje</p>}
-
           {lista.length > 0 && (
             <ul className="sd-pl">
               {lista.map(e => (
