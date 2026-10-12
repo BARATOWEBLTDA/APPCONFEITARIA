@@ -277,7 +277,13 @@ export default function FichaTecnica() {
     setSalvandoCv(true);
     const { error } = await supabase.from("profiles").update({ custos_invisiveis_pct: v }).eq("id", userId);
     setSalvandoCv(false);
-    if (error) { avisar("Não deu pra salvar agora. Tente de novo.", { tipo: "erro" }); console.error(error); return; }
+    if (error) {
+      console.error(error);
+      // (4.29) sem a coluna no banco (SQL 3.51 não rodado) o erro era genérico: agora diz o que falta
+      const semColuna = error.code === "PGRST204" || error.code === "42703" || /custos_invisiveis_pct/i.test(String(error.message || ""));
+      avisar(semColuna ? "Falta um ajuste no banco pra salvar pra todos (SQL 4.30). Por enquanto, salve nesta ficha." : "Não deu pra salvar agora. Tente de novo.", { tipo: "erro" });
+      return;
+    }
     setCvConta(v); setEditarCv(false);
     // já ficou salvo na conta: não conta como mudança sem salvar desta ficha
     if (retrato.current) retrato.current = { ...retrato.current, extras: { ...retrato.current.extras, cv_percentual: extras.cv_percentual } };
