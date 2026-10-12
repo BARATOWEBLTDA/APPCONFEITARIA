@@ -203,9 +203,9 @@ function FixoSheet({ uid, item, onClose, onFeito }: { uid: string; item: CustoFi
       <input id="cf-n" className="fo-txt" placeholder="Ex.: Aluguel do ateliê" value={nome} onChange={e => { setNome(e.target.value); setErro(""); }} />
       <div className="fo-row">
         <div><label className="fo-lb" htmlFor="cf-v">Valor por mês</label><div className="fo-in"><span>R$</span><input id="cf-v" inputMode="numeric" placeholder="0,00" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro(""); }} /></div></div>
-        <div><label className="fo-lb" htmlFor="cf-d">Vence dia <em>(opcional)</em></label><div className="fo-in"><input id="cf-d" inputMode="numeric" placeholder="Ex.: 5" value={dia} onChange={e => { setDia(e.target.value.replace(/\D/g, "").slice(0, 2)); setErro(""); }} /></div></div>
+        <div><label className="fo-lb" htmlFor="cf-d">Vence dia <em>(opcional)</em></label><div className="fo-in"><input id="cf-d" inputMode="numeric" placeholder="Ex.: 5" value={dia} onChange={e => { const d = e.target.value.replace(/\D/g, "").slice(0, 2); if (Number(d) > 31) { setErro("O dia de vencimento vai de 1 a 31"); return; } setDia(d); setErro(""); }} /></div></div>
       </div>
-      <div className="fo-dica">{dia ? <>Todo mês, uma conta de <b>{brl(num(valor))}</b> vencendo no <b>dia {dia}</b> aparece em <b>A pagar</b>. Ela só sai do caixa quando você pagar.</> : <>Com o dia de vencimento, este custo vira uma conta em <b>A pagar</b> todo mês, sozinho.</>}</div>
+      <div className="fo-dica">{Number(dia) >= 1 && Number(dia) <= 31 ? <>Todo mês, uma conta de <b>{brl(num(valor))}</b> vencendo no <b>dia {Number(dia)}</b> aparece em <b>A pagar</b>. Ela só sai do caixa quando você pagar.</> : <>Com o dia de vencimento, este custo vira uma conta em <b>A pagar</b> todo mês, sozinho.</>}</div>
       <Switch ligado={ativo} onToggle={() => setAtivo(a => !a)} titulo={ativo ? "Ativo" : "Pausado"} sub={ativo ? "Entra no custo da sua hora e gera a conta do mês" : "Não conta nem gera conta enquanto estiver pausado"} />
       {erro && <p className="fo-erro">{erro}</p>}
       {excluir ? <Excluir nome={item?.nome || ""} ocupado={ocupado} onNao={() => setExcluir(false)} onSim={apagar} /> : (<>
