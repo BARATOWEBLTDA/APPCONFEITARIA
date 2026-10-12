@@ -146,6 +146,8 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     aceita_agendamento: profile.aceita_agendamento !== false,
     prazo_minimo_horas: profile.prazo_minimo_horas ?? 24,
     msg_pedido: profile.mensagens_whatsapp?.pedido_cardapio || null,
+    instagram: profile.instagram || null,
+    facebook: profile.facebook || null,
   }
 
   return {

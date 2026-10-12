@@ -55,3 +55,6 @@
 .cm1-mapa-bts .waze { background: #33CCFF; color: var(--ui-branco); }
 .cm1-mapa-bts .gmaps { background: #ECF3FF; color: #1A73E8; }
 .cm1-mapa-fechar { width: 100%; min-height: 48px; margin: 0; border: 0; border-radius: var(--ui-raio); background: #F3EEF0; color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+/* (4.25) Sobre a loja */
+.cm1-sobre { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin: 2px 0 0; padding: 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
+.cm1-sobre svg { flex: none; }

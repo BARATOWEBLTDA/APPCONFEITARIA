@@ -72,3 +72,4 @@
   .dl-savebar { left: calc(220px + 236px); background: transparent; border: 0; pointer-events: none; display: flex; justify-content: flex-end; padding: 0 28px 24px; }
   .dl-savebar .dl-save { width: 280px; margin: 0; pointer-events: auto; box-shadow: 0 3px 0 var(--ui-rosa-escuro), 0 10px 28px rgba(232, 90, 140, .3); }
 }
+.dl-aviso-redes { margin: 0; font-size: 14px; line-height: 1.45; color: var(--ui-texto-2); }

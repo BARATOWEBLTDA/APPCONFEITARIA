@@ -12,18 +12,16 @@ import { montarSecoes, SecaoCardapio, LinhaProduto } from '@/components/cardapio
 import { contarItens, qtdItem, valorLinha } from '@/lib/itemSacola'
 import { NavigationMenu } from '@/components/cardapio/NavigationMenu'
 import { definirLojaAtual } from '@/components/cardapio/lojaAtual'
-import { linkWhatsApp } from '@/lib/telefone'
 import { EmptyState } from '@/components/cardapio/EmptyState'
 import { Footer } from '@/components/cardapio/Footer'
-import { CardapioModelo1, getStatusLoja, getEnderecoData } from '@/components/cardapio/CardapioModelo1'
+import { CardapioModelo1, getStatusLoja } from '@/components/cardapio/CardapioModelo1'
 import { unidadeItem } from '@/components/cart/CartItemComponent'
 import { CartProvider } from '@/context/CartContext'
 import { DesignSettings, Configuracoes, Produto } from '@/types/database'
 import { PerfilTab } from '@/components/cardapio/PerfilTab'
 import { PedidosTab } from '@/components/cardapio/PedidosTab'
-import { ClockCountdown, House, MagnifyingGlass, MapPin, ShoppingBag, Storefront, Truck, User, X } from '@phosphor-icons/react'
-import IconeWhatsApp from '@/components/IconeWhatsApp'
-import { Janela } from '@/components/base'
+import { House, MagnifyingGlass, ShoppingBag, Storefront, User, X } from '@phosphor-icons/react'
+import { SobreLoja } from '@/components/cardapio/SobreLoja'
 import { useCart } from '@/hooks/useCart'
 import { formatCurrency } from '@/utils/helpers'
 import './cardapioPublico.css'
@@ -46,59 +44,6 @@ const corValida = (c: string | undefined | null): boolean => {
   return !['', '#fff', '#ffffff', '#fefefe', 'white', 'transparent', 'rgb(255,255,255)', 'rgba(255,255,255,1)'].includes(norm)
 }
 const corDoTopo = (design: DesignSettings) => corValida(design.cor_navbar) ? design.cor_navbar! : (corValida(design.cor_borda) ? design.cor_borda! : '#E85A8C')
-
-/* Horário em texto: "Segunda a sexta · 08:00 às 18:00" */
-const ORDEM = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta']
-function linhasHorario(horario: any): string[] {
-  try {
-    const h = typeof horario === 'string' ? JSON.parse(horario) : horario
-    if (!h) return []
-    const out: string[] = []
-    const dias = ORDEM.filter(d => (h.dias || []).includes(d))
-    if (dias.length) {
-      const nome = dias.length === 5 ? 'Segunda a sexta' : dias.map(d => d.slice(0, 3)).join(', ')
-      out.push(`${nome} · ${h.abertura || '08:00'} às ${h.fechamento || '18:00'}`)
-    }
-    if (h.abre_sabado) out.push(`Sábado · ${h.sabado_abertura || '09:00'} às ${h.sabado_fechamento || '14:00'}`)
-    if (h.abre_domingo) out.push(`Domingo · ${h.domingo_abertura || '09:00'} às ${h.domingo_fechamento || '14:00'}`)
-    return out
-  } catch { return [] }
-}
-function comoReceber(config: any): string {
-  const f: string[] = config?.formas_entrega || []
-  const entrega = f.some(x => x === 'entrega_propria' || x === 'motoboy' || x === 'uber_flash')
-  const retira = f.includes('retirada')
-  if (retira && entrega) return 'Retirada na loja ou entrega'
-  if (entrega) return 'Entrega'
-  if (retira) return 'Retirada na loja'
-  return f.includes('combinar') ? 'Combinado pelo WhatsApp' : ''
-}
-
-/* ── Sobre a loja (Sobre nós no computador) ── */
-function SobreLoja({ aberta, fechar, design, config }: { aberta: boolean; fechar: () => void; design: DesignSettings; config: Configuracoes | null }) {
-  const end = getEnderecoData(config)
-  const horas = linhasHorario((config as any)?.horario)
-  const receber = comoReceber(config)
-  // 10/10: o link trata o +55 e o DDD 55 num lugar só (lib/telefone)
-  const zap = linkWhatsApp(config?.telefone)
-  return (
-    <Janela aberta={aberta} aoFechar={fechar} tipo="conteudo" titulo={`Sobre a ${design.nome_loja || 'loja'}`} umaAcao={!!zap}
-      acoes={zap ? <a className="cp-zap" href={zap} target="_blank" rel="noopener noreferrer"><IconeWhatsApp size={20} />Chamar no WhatsApp</a> : undefined}>
-      <div className="cp-sobre">
-        {design.descricao_loja && <p>{design.descricao_loja}</p>}
-        {end && (
-          <div className="cp-sobre-l"><MapPin size={20} weight="bold" /><span><b>{end.completo}</b>
-            <span className="cp-sobre-mapa">
-              <a href={`https://maps.google.com/?q=${encodeURIComponent(end.completo)}`} target="_blank" rel="noopener noreferrer">Abrir no Google Maps</a>
-              <a href={`https://waze.com/ul?q=${encodeURIComponent(end.completo)}`} target="_blank" rel="noopener noreferrer">Abrir no Waze</a>
-            </span></span></div>
-        )}
-        {horas.length > 0 && <div className="cp-sobre-l"><ClockCountdown size={20} weight="bold" /><span><b>Horário</b>{horas.map(h => <small key={h}>{h}</small>)}</span></div>}
-        {receber && <div className="cp-sobre-l"><Truck size={20} weight="bold" /><span><b>Como receber</b><small>{receber}</small></span></div>}
-      </div>
-    </Janela>
-  )
-}
 
 /* ── Topo do computador ── */
 function DeskNav({ design, config, isPro = false }: { design: DesignSettings; config: Configuracoes | null; isPro?: boolean }) {
@@ -261,6 +206,7 @@ function CardapioContent() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [favorites, setFavorites] = useState<string[]>([])
+  const [sobreAberta, setSobreAberta] = useState(false) // (4.25) Sobre a loja no celular
   const device = useDeviceDetection()
   const { items: cartItems, totalPrice: cartTotal } = useCart()
   const cartCount = contarItens(cartItems)
@@ -408,10 +354,11 @@ function CardapioContent() {
         {/* Caixa dos banners: some quando a loja não tem banner */}
         <style>{`.cp-banner-wrap { margin-top: 16px; } .cp-banner-wrap:empty { display: none; }`}</style>
         <NavigationMenu celular corBotao={design.cor_botao || design.cor_borda || '#E85A8C'} />
+        <SobreLoja aberta={sobreAberta} fechar={() => setSobreAberta(false)} design={design} config={config} />
 
         {cardapioModelo === 'modelo1' ? (
           <>
-            <CardapioModelo1 design={design} config={config} verificada={isPro} produtos={produtos} />
+            <CardapioModelo1 design={design} config={config} verificada={isPro} produtos={produtos} aoAbrirSobre={() => setSobreAberta(true)} />
             <div className="cp-banner-wrap">
               <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
             </div>
@@ -423,7 +370,7 @@ function CardapioContent() {
               backgroundImage: 'linear-gradient(160deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.14) 100%), radial-gradient(circle at 20% 50%, rgba(255,255,255,0.16) 1.2px, transparent 1.3px), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.16) 1.2px, transparent 1.3px), radial-gradient(circle at 50% 80%, rgba(255,255,255,0.16) 1.8px, transparent 1.9px)',
               backgroundSize: '100% 100%, 60px 60px, 80px 80px, 40px 40px',
               backgroundColor: corDoTopo(design) }} />
-            <Logo verificada={isPro} logoUrl={design.logo_url} borderColor={design.cor_borda} storeName={design.nome_loja} storeDescription={design.descricao_loja} corNome={corNomeCelular(design.cor_nome)} avaliacaoMedia={config?.avaliacao_media} configuracoes={config} hideStars={design.hide_stars} />
+            <Logo verificada={isPro} logoUrl={design.logo_url} borderColor={design.cor_borda} storeName={design.nome_loja} storeDescription={design.descricao_loja} corNome={corNomeCelular(design.cor_nome)} avaliacaoMedia={config?.avaliacao_media} configuracoes={config} hideStars={design.hide_stars}  aoAbrirSobre={() => setSobreAberta(true)} />
             <div className="cp-banner-wrap">
               <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
             </div>

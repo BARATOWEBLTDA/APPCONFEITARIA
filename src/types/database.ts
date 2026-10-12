@@ -64,6 +64,9 @@ export interface Configuracoes {
   mostrar_localizacao?: boolean
   mostrar_apenas_cidade?: boolean
   horario?: string | null
+  /** (4.25) redes sociais da loja: vazias = não aparecem no cardápio */
+  instagram?: string | null
+  facebook?: string | null
   // Checkout
   formas_pagamento?: string[]
   formas_entrega?: string[]

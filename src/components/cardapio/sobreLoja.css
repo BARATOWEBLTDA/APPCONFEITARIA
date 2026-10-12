@@ -1,0 +1,31 @@
+/* Sobre a loja (4.25) · abas Sobre · Horário · Pagamento */
+.sl { display: flex; flex-direction: column; gap: 16px; }
+.sl-abas { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid #F0EBED; margin: -4px 0 0; }
+.sl-abas button { min-height: 44px; margin: 0; padding: 0 4px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--ui-texto-2); font-family: inherit; font-size: 14.5px; font-weight: 500; cursor: pointer; }
+.sl-abas button[aria-selected="true"] { color: var(--sl-cor); border-bottom-color: var(--sl-cor); font-weight: 600; }
+.sl-corpo { display: flex; flex-direction: column; gap: 18px; }
+.sl-apres { display: flex; gap: 14px; align-items: flex-start; }
+.sl-apres img { flex: none; width: 64px; height: 64px; border-radius: 14px; object-fit: cover; background: #fff; border: 1px solid #F0EBED; }
+.sl-apres p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ui-texto-2); }
+.sl-redes { display: flex; flex-wrap: wrap; gap: 8px; }
+.sl-redes a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border: 1px solid #EADFE3; border-radius: 999px; color: var(--ui-texto); font-size: 14.5px; font-weight: 500; text-decoration: none; }
+.sl-redes a svg { color: var(--sl-cor); }
+.sl-bloco h3 { margin: 0 0 8px; font-size: 15px; font-weight: 600; color: var(--ui-texto); }
+.sl-end { display: flex; gap: 8px; margin: 0; font-size: 14.5px; line-height: 1.45; color: var(--ui-texto-2); }
+.sl-end svg { flex: none; margin-top: 2px; color: var(--sl-cor); }
+.sl-mapa { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.sl-mapa a { display: flex; align-items: center; justify-content: center; min-height: 44px; border-radius: var(--ui-raio); background: #F3EEF0; color: var(--ui-texto); font-size: 14px; font-weight: 500; text-decoration: none; }
+.sl-status { display: inline-flex; align-items: center; gap: 8px; margin: 0; font-size: 14.5px; font-weight: 600; color: #dc2626; }
+.sl-status i { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
+.sl-status.aberto { color: #15803d; }
+.sl-status.aberto i { background: #22c55e; }
+.sl-dias { list-style: none; margin: 0; padding: 0; }
+.sl-dias li { display: flex; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid #F5F0F2; font-size: 14.5px; color: var(--ui-texto-2); }
+.sl-dias li:last-child { border-bottom: 0; }
+.sl-dias li.hoje { color: var(--ui-texto); font-weight: 600; }
+.sl-dias li small { margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: color-mix(in srgb, var(--sl-cor) 12%, #fff); color: var(--sl-cor); font-size: 12px; font-weight: 500; }
+.sl-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.sl-lista li { padding: 12px 14px; border-radius: var(--ui-raio); background: #F8F5F6; font-size: 14.5px; font-weight: 500; color: var(--ui-texto); }
+.sl-lista li small { display: block; margin-top: 2px; font-size: 13px; font-weight: 400; color: var(--ui-texto-2); }
+.sl-nota { margin: 0; font-size: 13.5px; color: var(--ui-texto-2); }
+.sl-vazio { margin: 0; font-size: 14.5px; color: var(--ui-texto-2); }

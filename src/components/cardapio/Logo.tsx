@@ -13,6 +13,8 @@ interface LogoProps {
   avaliacaoMedia?: number
   configuracoes?: any
   hideStars?: boolean
+  /** (4.25) abre a janela Sobre a loja */
+  aoAbrirSobre?: () => void
 }
 
 const DIAS_LABEL = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"]
@@ -29,7 +31,7 @@ function getStatusLoja(horarioJson: any): { aberto: boolean; msg?: string } | nu
   return { aberto: false, msg: `Abre ${quando} às ${horaTexto(s.abre.minutos)}` }
 }
 
-export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNome, avaliacaoMedia = 4.9, hideStars = false, configuracoes, verificada = false }: LogoProps) {
+export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNome, avaliacaoMedia = 4.9, hideStars = false, configuracoes, verificada = false, aoAbrirSobre }: LogoProps) {
   const [modalEndereco, setModalEndereco] = useState(false)
   const status = getStatusLoja(configuracoes?.horario || null)
 
@@ -126,6 +128,12 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
               </button>
             )}
           </div>
+        )}
+
+        {aoAbrirSobre && (
+          <button type="button" onClick={aoAbrirSobre} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', minHeight: '44px', marginTop: '2px', padding: 0, border: 0, background: 'none', color: accent, fontFamily: 'inherit', fontSize: '13.5px', fontWeight: 500, cursor: 'pointer' }}>
+            Sobre a loja · horário e pagamento ›
+          </button>
         )}
       </div>
 

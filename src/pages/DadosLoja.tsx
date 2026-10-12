@@ -2,12 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
-import { Check, Clock, MapPin, Sparkle, Storefront, WarningCircle } from "@phosphor-icons/react";
+import { Check, Clock, FacebookLogo, InstagramLogo, MapPin, ShareNetwork, Sparkle, Storefront, WarningCircle } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import AppPageHeader from "@/components/AppPageHeader";
 import HorarioSheet from "@/components/HorarioSheet";
 import { Botao, Campo, CampoArea, TelaVazia, Titulo, avisar } from "@/components/base";
 import { digitosTelefone, digitosAoDigitar } from "@/lib/telefone";
+import { limparFacebook, limparInstagram } from "@/lib/redesSociais";
 import "./dadosLoja.css";
 
 /**
@@ -77,6 +78,10 @@ export default function DadosLoja() {
   // 02/10: "Recebo pedidos nesse endereço" — vira o endereço de retirada da Finalizar encomenda
   const [recebeAqui, setRecebeAqui] = useState(true);
   const [horario, setHorario] = useState<Horario>(HORARIO_PADRAO);
+  // (4.25) Instagram e Facebook: vazios = não aparecem no cardápio. Sem as colunas no banco (SQL 4.25), o bloco avisa.
+  const [instagram, setInstagram] = useState("");
+  const [facebook, setFacebook] = useState("");
+  const [redesNoBanco, setRedesNoBanco] = useState(true);
 
   // (10/10) Se a leitura falhar, a tela NÃO abre: antes abria em branco e "Salvar alterações" gravava nome, WhatsApp,
   // endereço e horário vazios por cima dos dados da loja.
@@ -95,6 +100,11 @@ export default function DadosLoja() {
         .eq("id", user.id)
         .single();
       if (error || !data) { setErroCarga(true); setLoading(false); return; }
+      {
+        const r = await supabase.from("profiles").select("instagram, facebook").eq("id", user.id).maybeSingle();
+        if (r.error) setRedesNoBanco(false);
+        else { setRedesNoBanco(true); setInstagram(((r.data as any)?.instagram) ? "@" + (r.data as any).instagram : ""); setFacebook((r.data as any)?.facebook || ""); }
+      }
       if (data) {
         setNome(data.nome_loja || "");
         setTelefone(formatPhone(data.telefone || ""));
@@ -211,6 +221,9 @@ export default function DadosLoja() {
     if (!nome.trim()) { mostrarAviso("Escreva o nome da loja.", "err"); irPara("dl-nome"); return; }
     const horarioRuim = problemaNoHorario();
     if (horarioRuim) { mostrarAviso(horarioRuim, "err"); irPara("dl-horario"); return; }
+    const insta = limparInstagram(instagram), face = limparFacebook(facebook);
+    if (instagram.trim() && !insta) { mostrarAviso("Confira o Instagram: escreva só o @ da loja, como @doceformiga.", "err"); irPara("dl-redes"); return; }
+    if (facebook.trim() && !face) { mostrarAviso("Confira o Facebook: cole o link da página, como facebook.com/doceformiga.", "err"); irPara("dl-redes"); return; }
     setSalvando(true);
     const endereco = JSON.stringify(end);
     const { error } = await supabase.from("profiles").update({
@@ -225,8 +238,15 @@ export default function DadosLoja() {
         : "",
       horario: JSON.stringify(horario),
     }).eq("id", userId);
+    let erroRedes = false;
+    if (!error && redesNoBanco) {
+      const r = await supabase.from("profiles").update({ instagram: insta || null, facebook: face || null }).eq("id", userId);
+      erroRedes = !!r.error;
+      if (!r.error) { setInstagram(insta ? "@" + insta : ""); setFacebook(face); }
+    }
     setSalvando(false);
     if (error) mostrarAviso("Não foi possível salvar. Tente de novo.", "err");
+    else if (erroRedes) mostrarAviso("Salvou, menos as redes sociais. Tente de novo.", "err");
     else mostrarAviso("Alterações salvas");
   };
 
@@ -320,6 +340,21 @@ export default function DadosLoja() {
               {gerando ? "Escrevendo…" : "Escrever com IA"}
             </Botao>
           </div>
+        </section>
+
+        {/* (4.25) Redes sociais: aparecem em "Sobre a loja" no cardápio */}
+        <section className="dl-card" id="dl-redes">
+          <Cabeca Ic={ShareNetwork} titulo="Redes sociais" apoio="Aparecem em Sobre a loja, no cardápio. Vazio não aparece" />
+          {redesNoBanco ? (
+            <>
+              <Campo id="dl-in-insta" rotulo="Instagram" value={instagram} maxLength={80} placeholder="@suaconfeitaria" autoCapitalize="none" autoCorrect="off"
+                icone={<InstagramLogo size={20} />} onChange={(e) => setInstagram(e.target.value)} />
+              <Campo id="dl-in-face" rotulo="Facebook" value={facebook} maxLength={120} placeholder="facebook.com/suaconfeitaria" autoCapitalize="none" autoCorrect="off"
+                icone={<FacebookLogo size={20} />} onChange={(e) => setFacebook(e.target.value)} />
+            </>
+          ) : (
+            <p className="dl-aviso-redes">Falta um ajuste no banco pra usar as redes sociais (SQL 4.25).</p>
+          )}
         </section>
 
         {/* Endereço */}

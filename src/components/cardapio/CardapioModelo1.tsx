@@ -1,7 +1,7 @@
 import { SeloVerificado } from './SeloVerificado'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { MapPin, Lightning, CalendarBlank, Truck } from '@phosphor-icons/react'
+import { MapPin, Lightning, CalendarBlank, Truck, Info, CaretRight } from '@phosphor-icons/react'
 import { DesignSettings, Configuracoes } from '@/types/database'
 import { seloEntrega } from '@/lib/entregaProduto'
 import { situacaoDaLoja, horaTexto } from '@/lib/agendaCardapio'
@@ -69,7 +69,7 @@ export function etiquetasDaLoja(config: Configuracoes | null, produtos: any[] = 
   ].filter(Boolean) as { Ic: typeof Truck; t: string }[]
 }
 
-export function CardapioModelo1({ design, config, verificada = false, produtos = [] }: CardapioModeloProps) {
+export function CardapioModelo1({ design, config, verificada = false, produtos = [], aoAbrirSobre }: CardapioModeloProps & { aoAbrirSobre?: () => void }) {
   const [modalEndereco, setModalEndereco] = useState(false)
   const accent = design.cor_borda || design.cor_botao || '#E85A8C'
   const ehBranco = (c?: string | null) => !c || ['#fff', '#ffffff', '#fefefe', 'white', 'transparent'].includes(c.trim().toLowerCase())
@@ -129,6 +129,13 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
             <span>{endereco.linha}</span>
             <button type="button" onClick={() => setModalEndereco(true)} style={{ color: corIcone }}>Ver no mapa</button>
           </p>
+        )}
+
+        {/* (4.25) Sobre a loja: horário da semana, pagamento, redes sociais */}
+        {aoAbrirSobre && (
+          <button type="button" className="cm1-sobre" onClick={aoAbrirSobre} style={{ color: corIcone }}>
+            <Info size={18} aria-hidden="true" />Sobre a loja · horário e pagamento<CaretRight size={14} aria-hidden="true" />
+          </button>
         )}
       </div>
 
