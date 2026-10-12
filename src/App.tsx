@@ -11,6 +11,9 @@ import { Mascote, NomeDoonly } from "@/components/marca/Mascote";
 import { ArrowClockwise } from "@phosphor-icons/react";
 import { NotificationProvider } from "@/context/NotificationContext";
 import BoasVindas, { depoisDoVoltar } from "@/components/boasVindas/BoasVindas";
+import { AceiteTermos } from "@/components/termos/AceiteTermos";
+import { ContaAtiva } from "@/components/termos/ContaAtiva";
+import { TERMOS_VERSAO } from "@/lib/termos";
 import Auth from "@/pages/Auth";
 import EsqueciSenha from "@/pages/EsqueciSenha";
 import ResetPassword from "@/pages/ResetPassword";
@@ -178,6 +181,12 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
     }
   });
 
+  // (4.26) Aceite dos termos: "conferindo" até ler o banco; "pedir" mostra a tela; "ok" segue.
+  // Sem a coluna no banco (SQL 4.26 não rodado) ou sem internet, não trava ninguém: segue como "ok".
+  const [termos, setTermos] = useState<"conferindo" | "pedir" | "ok">("conferindo");
+  // (4.26) Conta ativa: a confirmação aparece só pra quem acabou de criar a conta (antes das boas-vindas)
+  const [contaAtivaPendente, setContaAtivaPendente] = useState<boolean>(() => showFirstTutorial);
+
   // Entrou pelo Google e ainda falta o nome da confeitaria ou o WhatsApp: tela "Complete seu cadastro" (02/10)
   const [completar, setCompletar] = useState<null | { nome: string; loja: string; telefone: string }>(null);
   // (10/10) a leitura do perfil falhou por falta de internet: tenta de novo (muda o número e o efeito roda outra vez)
@@ -304,6 +313,27 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
     return () => { cancelado = true; clearTimeout(limite); clearTimeout(repetir); window.removeEventListener("online", denovo); };
   }, [session?.user?.id, tentativa]);
 
+  // (4.26) confere se esta conta já aceitou a versão atual dos termos
+  useEffect(() => {
+    const uid = session?.user?.id;
+    if (!uid) return;
+    try { if (localStorage.getItem(`doonly_termos_${uid}`) === TERMOS_VERSAO) { setTermos("ok"); return; } } catch { /* sem storage */ }
+    let cancelado = false;
+    const limite = setTimeout(() => { if (!cancelado) setTermos(t => (t === "conferindo" ? "ok" : t)); }, 5000);
+    (async () => {
+      try {
+        const { data, error } = await supabase.from("profiles").select("termos_versao").eq("id", uid).maybeSingle();
+        if (cancelado) return;
+        if (error || !data) { setTermos("ok"); return; }
+        if ((data as any).termos_versao === TERMOS_VERSAO) {
+          try { localStorage.setItem(`doonly_termos_${uid}`, TERMOS_VERSAO); } catch { /* sem storage */ }
+          setTermos("ok");
+        } else setTermos("pedir");
+      } catch { if (!cancelado) setTermos("ok"); }
+    })();
+    return () => { cancelado = true; clearTimeout(limite); };
+  }, [session?.user?.id]);
+
   const esperandoDemais = session === undefined && (demorou === 2 || (demorou === 1 && navigator.onLine === false)) && temSessaoGuardada();
   if (!session && (semRede || esperandoDemais)) {
     return <SemInternetNaEntrada tentando={tentandoRede} aoTentar={tentarRede} />;
@@ -319,6 +349,20 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
   if (completar) {
     return <CompletarCadastro user={session.user} nomeInicial={completar.nome} lojaInicial={completar.loja} telefoneInicial={completar.telefone} onPronto={() => setCompletar(null)} />;
+  }
+
+  const primeiroNome = String(session.user?.user_metadata?.nome || session.user?.user_metadata?.full_name || session.user?.user_metadata?.name || "").trim().split(/\s+/)[0];
+
+  // (4.26) aceite dos termos: por cima do app (quem já usava) ou antes das boas-vindas (conta nova)
+  if (termos === "pedir") {
+    return <>{showFirstTutorial ? null : children}<AceiteTermos userId={session.user.id} aoAceitar={() => setTermos("ok")} /></>;
+  }
+  // conta nova: espera conferir os termos antes de abrir qualquer coisa (não pisca a apresentação)
+  if (showFirstTutorial && termos === "conferindo") {
+    return <div style={{ position: "fixed", inset: 0, background: "var(--vinho-escuro, #2C1219)" }} aria-busy="true" />;
+  }
+  if (showFirstTutorial && contaAtivaPendente) {
+    return <>{children}<ContaAtiva nome={primeiroNome} aoContinuar={() => setContaAtivaPendente(false)} /></>;
   }
 
   if (showFirstTutorial) {
