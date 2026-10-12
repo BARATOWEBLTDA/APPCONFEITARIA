@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Crown, Sparkle } from "@phosphor-icons/react";
+import { Sparkle } from "@phosphor-icons/react";
 import { Botao, Janela } from "@/components/base";
 import { useNavigate } from "react-router-dom";
 import { usePlano } from "@/hooks/usePlano";
@@ -48,10 +48,10 @@ export default function ParabensPro() {
 
   return (
     <Janela aberta aoFechar={fechar} titulo={nome ? `Parabéns, ${nome}! Agora você é PRO` : "Parabéns! Agora você é PRO"}
-      texto="Todos os recursos PRO já estão liberados. Obrigada por apoiar o Doonly." icone={<Crown size={32} weight="fill" />} tom="laranja"
-      acoes={<><Botao variante="secundario" onClick={() => { fechar(); navigate("/minha-assinatura"); }}>Ver assinatura</Botao><Botao onClick={fechar} data-foco-inicial>Começar a usar</Botao></>}>
+      texto="A Doo IA, o cardápio Premium, os cupons e o lucro de cada produto já estão liberados. Que bom ter você com a gente." icone={<img src="/coroa.png" alt="" className="ppr-coroa" />} tom="laranja"
+      acoes={<><Botao variante="secundario" onClick={() => { fechar(); navigate("/minha-assinatura"); }}>Assinatura</Botao><Botao onClick={fechar} data-foco-inicial>Começar a usar</Botao></>}>
       <Botao variante="link" icone={<Sparkle size={20} weight="fill" />} onClick={() => { fechar(); abrirDooIA(); }} className="ppr-ia">Falar com o Doo IA</Botao>
-      <style>{`.ppr-ia { margin-top: 12px; }`}</style>
+      <style>{`.ppr-ia { margin-top: 12px; } .ppr-coroa { width: 46px; height: auto; display: block; }`}</style>
     </Janela>
   );
 }

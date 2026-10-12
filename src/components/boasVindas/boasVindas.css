@@ -42,7 +42,20 @@
 
 .bv-sobre { margin: 0 0 6px; font-size: 13px; font-weight: 700; color: var(--bv-rosa); }
 .bv-h { margin: 0; font-family: var(--font-base); font-size: 26px; font-weight: 700; letter-spacing: -.02em; line-height: 1.15; color: var(--ui-branco); text-wrap: balance; }
+/* (11/10) destaque em degradê que corre devagar: rosa da marca → pêssego → lilás (sem degradê, fica o rosa) */
 .bv-h em { font-style: normal; color: var(--bv-rosa); }
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .bv-h em {
+    background: linear-gradient(90deg, #FF9DC4 0%, #FFC59E 25%, #C9A7FF 50%, #FF8FB8 75%, #FF9DC4 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+    -webkit-box-decoration-break: clone; box-decoration-break: clone;
+    animation: bv-brilho 6s linear infinite;
+  }
+}
+@keyframes bv-brilho { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
+@media (prefers-reduced-motion: reduce) { .bv-h em { animation: none; } }
 .bv-p { max-width: 34ch; margin: 10px auto 0; font-size: 15.5px; font-weight: 500; line-height: 1.5; color: rgba(255, 255, 255, .84); text-wrap: balance; }
 
 /* ── 1 e 5 · mascote ── */
