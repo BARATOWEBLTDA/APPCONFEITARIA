@@ -14,6 +14,12 @@ import "./conquistasCard.css";
  * a borda colorida, o lilás e o azul), ícone desenhado no lugar do emoji, e o aviso da conquista nova usa a janela do app.
  * A lógica (o que conta, quando comemora, o que marca como visto) é a mesma.
  */
+/** (4.29) a janela "Parabéns! Agora você é PRO" ainda vai abrir (ou está aberta) nesta conta? */
+const proParaComemorar = (uid: string | undefined, isPro: boolean) => {
+  if (!uid || !isPro) return false;
+  try { return !localStorage.getItem(`doonly_pro_celebrado_${uid}`); } catch { return false; }
+};
+
 export default function ConquistasCard() {
   const navigate = useNavigate();
   const { profile } = useProfile();
@@ -25,11 +31,27 @@ export default function ConquistasCard() {
   useEffect(() => {
     if (!profile) return;
     verificarAvisosPro(profile); // PRO vencendo / mensalidade atrasada
-    sincronizarConquistas(profile, isPro).then(res => {
+    sincronizarConquistas(profile, isPro).then(r0 => {
+      let res = r0;
       if (!res) return;
+      // (4.29) "Virou PRO" já tem a sua comemoração (a janela "Parabéns! Agora você é PRO"): não abre outra por cima.
+      // Ela conta como comemorada aqui, e as outras conquistas novas esperam essa janela fechar.
+      if (res.feitas.pro && !res.feitas.pro.celebrada) {
+        marcarConquista("pro", { celebrada: true });
+        res = { ...res, feitas: { ...res.feitas, pro: { ...res.feitas.pro, celebrada: true } } };
+      }
       setR(res);
-      const pend = CONQUISTAS.filter(q => res.feitas[q.codigo] && !res.feitas[q.codigo].celebrada);
-      if (pend.length) setCelebrar(pend[pend.length - 1].codigo);
+      const pend = CONQUISTAS.filter(q => res!.feitas[q.codigo] && !res!.feitas[q.codigo].celebrada);
+      if (!pend.length) return;
+      const abrir = () => setCelebrar(pend[pend.length - 1].codigo);
+      if (proParaComemorar(profile?.id, isPro)) {
+        let feito = false;
+        const uma = () => { if (!feito) { feito = true; abrir(); } };
+        window.addEventListener("doonly:parabens-pro-fechou", uma, { once: true });
+        // se a janela do PRO não abrir (conta que não é PRO de verdade no banco), não fica esperando pra sempre
+        setTimeout(() => { if (!proParaComemorar(profile?.id, isPro)) return; uma(); }, 20000);
+      }
+      else abrir();
     }).catch(e => { console.error("[conquistas] não consegui carregar:", e); }); // 11/10: sem internet o cartão só não aparece (a tela "Minhas conquistas" avisa)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id, isPro]);

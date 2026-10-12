@@ -43,7 +43,7 @@ export default function ParabensPro() {
   useEffect(() => { if (!isPro) setAberto(false); }, [isPro]);
 
   if (!aberto) return null;
-  const fechar = () => { try { localStorage.setItem(chave, new Date().toISOString()); } catch {} setAberto(false); };
+  const fechar = () => { try { localStorage.setItem(chave, new Date().toISOString()); } catch {} setAberto(false); setTimeout(() => window.dispatchEvent(new Event("doonly:parabens-pro-fechou")), 350); };
   const nome = String(profile?.nome || "").trim().split(" ")[0];
 
   return (
