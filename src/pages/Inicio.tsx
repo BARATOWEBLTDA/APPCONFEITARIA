@@ -889,7 +889,7 @@ export default function Inicio() {
           {/* Computador: conquistas, próximas entregas e atualizações (30/09) */}
           <div className="ini-dk-side">
             <LinkDeVendas />
-            <ConquistasCard />
+            {/* (4.28) Conquistas saiu da lateral do computador: fica em Configurações › Minhas conquistas */}
             <div className="ini-dk-card">
               <div className="ini-dk-ct"><span>Próximas entregas</span><button type="button" onClick={() => navigate("/agenda")}>Ver agenda <CaretRight size={16} weight="bold" aria-hidden="true" /></button></div>
               {proximasEntregas.length === 0 ? (

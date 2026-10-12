@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { INDICACAO_ATIVA } from "@/lib/recursos";
 import { useNavigate } from "react-router-dom";
-import { Bell, Camera, ChatCircleText, CaretRight, Crown, FileText, Gift, Lightbulb, PencilSimple, SignOut, Bug, WarningCircle } from "@phosphor-icons/react";
+import { Bell, Camera, ChatCircleText, CaretRight, Crown, FileText, Gift, Lightbulb, PencilSimple, SignOut, Bug, Trophy, WarningCircle } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
 import { explicarErro, erroDeConexao, SEM_INTERNET } from "@/lib/erros";
@@ -248,6 +248,7 @@ export default function Configuracoes() {
             <h2 className="cf9-sec">App</h2>
             <ItemConfig icone={<Bell size={20} weight="bold" />} nome="Notificações e sons" apoio="Avisos e sons do app" onClick={() => navigate("/configuracoes/notificacoes")} />
             <ItemConfig icone={<ChatCircleText size={20} weight="bold" />} tom="rosa" nome="Mensagens do WhatsApp" apoio="Troque o texto das mensagens prontas" onClick={() => navigate("/configuracoes/mensagens")} />
+            <ItemConfig icone={<Trophy size={20} weight="bold" />} tom="amarelo" nome="Minhas conquistas" apoio="Suas medalhas e a próxima a ganhar" onClick={() => navigate("/conquistas")} />
             <AtualizarAppItem />
             {INDICACAO_ATIVA && <ItemConfig icone={<Gift size={20} weight="bold" />} tom="rosa" nome="Indique e ganhe" apoio="Ganhe prêmios por cada assinante que você indicar" onClick={() => navigate("/indicar")} />}
             <h2 className="cf9-sec">Ajuda</h2>
