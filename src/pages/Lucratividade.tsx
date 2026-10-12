@@ -2,7 +2,7 @@
 // lucro = vendido (pedidos entregues no mês) − custo dos ingredientes (ficha técnica) − despesas pagas
 // (sem as de insumos, que já estão no custo da ficha). Mais: ponto de equilíbrio e lucro por produto.
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarBlank, CaretLeft, CaretRight, ChartLineUp, Equals, Minus, ShoppingBagOpen, Warning, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -12,7 +12,7 @@ import { buscarTudo } from "@/lib/buscarTudo";
 import { erroDeConexao } from "@/lib/erros";
 import { carregarMes, custoPorProduto, multiplicadorDoItem, produtosPeloPeso, type MesFinanceiro } from "@/lib/painelFinanceiro";
 
-type Produto = { chave: string; nome: string; qtd: number; vendido: number; custo: number; lucro: number; margem: number; semFicha: boolean };
+type Produto = { chave: string; nome: string; foto: string; qtd: number; vendido: number; custo: number; lucro: number; margem: number; semFicha: boolean };
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -40,7 +40,7 @@ export default function Lucratividade() {
       const [d, peds, cf, mo] = await Promise.all([
         carregarMes(user.id, mes.ano, mes.m),
         // de 1.000 em 1.000, igual ao painel (o Supabase corta em 1.000 linhas sem avisar)
-        buscarTudo<any>((de, ate) => supabase.from("pedidos").select("status, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(id, nome, forma_venda))")
+        buscarTudo<any>((de, ate) => supabase.from("pedidos").select("status, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(id, nome, forma_venda, imagem_url))")
           .eq("user_id", user.id).eq("status", "entregue").gte("data_entrega", ini).lte("data_entrega", fim).order("id").range(de, ate)),
         supabase.from("custos_fixos").select("valor, ativo").eq("user_id", user.id),
         supabase.from("config_mao_obra").select("salario_mensal").eq("user_id", user.id).maybeSingle(),
@@ -57,7 +57,7 @@ export default function Lucratividade() {
       const mapa: Record<string, Produto> = {};
       for (const it of itens) {
         const id = it.produtos?.id; const chave = id || `nome:${it.nome_produto}`;
-        const p = mapa[chave] || (mapa[chave] = { chave, nome: it.produtos?.nome || it.nome_produto || "Produto", qtd: 0, vendido: 0, custo: 0, lucro: 0, margem: 0, semFicha: false });
+        const p = mapa[chave] || (mapa[chave] = { chave, nome: it.produtos?.nome || it.nome_produto || "Produto", foto: String(it.produtos?.imagem_url || "").split(",")[0].trim(), qtd: 0, vendido: 0, custo: 0, lucro: 0, margem: 0, semFicha: false });
         const q = Number(it.quantidade) || 0;
         p.qtd += q; p.vendido += (Number(it.valor_unitario) || 0) * q;
         const c = id ? custo[id] : 0;
@@ -79,7 +79,6 @@ export default function Lucratividade() {
   const despesasSemInsumos = dados ? dados.despesasPagas - dados.despesasInsumos : 0;
   const margemBruta = dados && dados.vendido > 0 ? (dados.vendido - dados.cmv) / dados.vendido : 0;
   const metaEquilibrio = fixos && margemBruta > 0 ? (fixos.custos + fixos.salario) / margemBruta : 0;
-  const maxLucro = useMemo(() => Math.max(1, ...(produtos || []).map(p => Math.abs(p.lucro))), [produtos]);
   const semFicha = (produtos || []).filter(p => p.semFicha);
   // 10/10: produto vendido sem ficha (ou custo de ingredientes zerado) = lucro e margem maiores do que são: avisa
   const qtdSemFicha = produtos && produtos.length ? semFicha.length : (dados?.semFicha || 0);
@@ -151,19 +150,23 @@ export default function Lucratividade() {
               {!produtos ? <div className="lu-ph" style={{ height: 120 }} /> : produtos.length === 0 ? (
                 <p className="lu-vz">Monte a <button type="button" className="lu-link" onClick={() => navigate("/ficha-tecnica")}>ficha técnica dos produtos</button> pra ver o lucro de cada um.</p>
               ) : (
-                <div className="lu-tab" role="table" aria-label="Lucro por produto">
-                  <div className="lu-tab-cab" role="row"><span role="columnheader">Produto</span><span role="columnheader">Vendidos</span><span role="columnheader">Vendido</span><span role="columnheader">Custo</span><span role="columnheader">Lucro</span></div>
+                // (4.29) em cartões, como no cardápio: foto, nome e o lucro embaixo
+                <ul className="lu-pg">
                   {produtos.map(p => (
-                    <div key={p.chave} className="lu-tab-l" role="row">
-                      <span role="cell" className="lu-tab-nm"><b>{p.nome}</b>
-                        <span className="lu-p-bar"><i className={p.lucro < 0 ? "ruim" : ""} style={{ width: `${Math.max(2, (Math.abs(p.lucro) / maxLucro) * 100)}%` }} /></span></span>
-                      <span role="cell" className="lu-tab-n">{p.qtd}</span>
-                      <span role="cell" className="lu-tab-n">{brl(p.vendido)}</span>
-                      <span role="cell" className="lu-tab-n">{p.semFicha ? <span className="lu-sf"><Warning size={12} weight="bold" /> sem ficha</span> : brl(p.custo)}</span>
-                      <span role="cell" className={`lu-tab-n lu-tab-lucro${p.lucro < 0 ? " ruim" : ""}`}>{brl(p.lucro)}<small>{p.semFicha ? "custo não descontado" : `margem ${p.margem}%`}</small></span>
-                    </div>
+                    <li key={p.chave} className="lu-pc">
+                      <span className="lu-pc-foto">{p.foto ? <img src={p.foto} alt="" loading="lazy" /> : <ShoppingBagOpen size={28} aria-hidden="true" />}</span>
+                      <span className="lu-pc-tx">
+                        <b className="lu-pc-nm">{p.nome}</b>
+                        <small>{p.qtd} {p.qtd === 1 ? "vendido" : "vendidos"} · {brl(p.vendido)}</small>
+                        <span className="lu-pc-l">Lucro</span>
+                        <strong className={p.lucro < 0 ? "ruim" : p.semFicha ? "sf" : ""}>{brl(p.lucro)}</strong>
+                        {p.semFicha
+                          ? <span className="lu-sf"><Warning size={12} weight="bold" /> sem ficha técnica</span>
+                          : <span className="lu-pc-m"><span className="lu-p-bar"><i className={p.lucro < 0 ? "ruim" : ""} style={{ width: `${Math.max(2, Math.min(100, p.margem))}%` }} /></span>margem {p.margem}%</span>}
+                      </span>
+                    </li>
                   ))}
-                </div>
+                </ul>
               )}
             </section>
 
@@ -237,23 +240,22 @@ const CSS = `
   .lu-card { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 16px; padding: 16px 18px; }
   .lu-ct { margin: 0 0 10px; font-size: 15.5px; font-weight: 600; } .lu-ct small { display: block; margin-top: 2px; font-size: 12.5px; font-weight: 400; color: var(--ui-texto-2); }
   .lu-vz { margin: 4px 0 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
-  .lu-tab-cab, .lu-tab-l { display: grid; grid-template-columns: minmax(0, 2.2fr) 70px minmax(90px, 1fr) minmax(90px, 1fr) minmax(110px, 1.1fr); gap: 12px; align-items: center; }
-  .lu-tab-cab { padding: 8px 10px; border-radius: 10px; background: var(--ui-cinza); font-size: 12.5px; font-weight: 600; color: var(--ui-texto-2); }
-  .lu-tab-cab span:not(:first-child) { text-align: right; }
-  .lu-tab-l { padding: 10px; border-bottom: 1px solid var(--ui-linha); font-size: 14px; } .lu-tab-l:last-child { border-bottom: 0; }
-  .lu-tab-nm { min-width: 0; } .lu-tab-nm b { display: block; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .lu-tab-n { text-align: right; white-space: nowrap; }
-  .lu-tab-lucro { font-weight: 600; color: var(--ui-verde); } .lu-tab-lucro.ruim { color: var(--ui-vermelho); }
-  .lu-tab-lucro small { display: block; font-size: 12px; font-weight: 400; color: var(--ui-texto-2); }
-  .lu-p-bar { display: block; height: 5px; border-radius: 9px; background: var(--ui-linha); margin-top: 6px; overflow: hidden; max-width: 220px; } .lu-p-bar i { display: block; height: 100%; background: #22C55E; border-radius: 9px; } .lu-p-bar i.ruim { background: #F87171; }
-  .lu-sf { color: var(--ui-laranja); font-weight: 600; display: inline-flex; align-items: center; gap: 3px; font-size: 12.5px; }
-  /* celular: a tabela vira lista */
-  @media (max-width: 767px) {
-    .lu-tab-cab { display: none; }
-    .lu-tab-l { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "nm lucro" "info info"; row-gap: 2px; padding: 10px 0; }
-    .lu-tab-nm { grid-area: nm; } .lu-tab-lucro { grid-area: lucro; }
-    .lu-tab-l > .lu-tab-n:not(.lu-tab-lucro) { display: none; }
-  }
+  .lu-pg { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  @media (min-width: 640px) { .lu-pg { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; } }
+  @media (min-width: 1280px) { .lu-pg { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .lu-pc { overflow: hidden; border: 1px solid #F0EBED; border-radius: 14px; background: var(--ui-branco); display: flex; flex-direction: column; }
+  .lu-pc-foto { aspect-ratio: 4 / 3; background: #F8F3F5; color: #C9B8BF; display: flex; align-items: center; justify-content: center; }
+  .lu-pc-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .lu-pc-tx { flex: 1; display: flex; flex-direction: column; gap: 2px; padding: 10px 12px 12px; min-width: 0; }
+  .lu-pc-nm { font-size: 14px; font-weight: 500; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .lu-pc-tx small { font-size: 12px; color: var(--ui-texto-2); }
+  .lu-pc-l { margin-top: auto; padding-top: 6px; font-size: 12px; color: var(--ui-texto-2); }
+  .lu-pc-tx strong { font-size: 18px; font-weight: 600; color: var(--ui-verde); letter-spacing: -.01em; }
+  .lu-pc-tx strong.ruim { color: var(--ui-vermelho); } .lu-pc-tx strong.sf { color: var(--ui-texto); }
+  .lu-pc-m { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ui-texto-2); }
+  .lu-pc-m .lu-p-bar { flex: 1; margin: 0; }
+  .lu-p-bar { display: block; height: 5px; border-radius: 9px; background: var(--ui-linha); overflow: hidden; } .lu-p-bar i { display: block; height: 100%; background: #22C55E; border-radius: 9px; } .lu-p-bar i.ruim { background: #F87171; }
+  .lu-sf { color: var(--ui-laranja); font-weight: 600; display: inline-flex; align-items: center; gap: 3px; font-size: 12px; }
   .lu-eq-v { display: block; font-size: 26px; font-weight: 600; letter-spacing: -.02em; } .lu-eq-v small { font-size: 13px; font-weight: 400; color: var(--ui-texto-2); }
   .lu-eq-t { margin: 4px 0 0; font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; }
   .lu-eq-s { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--ui-texto); } .lu-nota { margin: 6px 0 0; font-size: 12px; color: var(--ui-texto-3); }
