@@ -85,16 +85,19 @@
   .cl9-tab { display: block; }
   .cl9-tab-cab, .cl9-tab-l { display: grid; grid-template-columns: minmax(0, 2.6fr) .8fr 1.1fr 1.2fr 1fr 104px; align-items: center; gap: 12px; }
   .cl9-tab-cab { padding: 10px 12px; border-radius: var(--ui-raio-p); background: var(--ui-cinza); font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
-  .cl9-tab-l { min-height: 68px; padding: 0 12px; border-bottom: 1px solid var(--ui-linha); font-size: 15px; }
+  .cl9-tab-l { min-height: 58px; padding: 0 12px; border-bottom: 1px solid var(--ui-linha); font-size: 15px; }
   .cl9-tab-l:last-child { border-bottom: 0; }
   .cl9-tab-l:hover { background: #FCFAFB; }
-  .cl9-tab-quem { display: flex; align-items: center; gap: 12px; min-width: 0; margin: 0; padding: 8px 0; border: 0; background: none; text-align: left; color: var(--ui-texto); }
+  .cl9-tab-quem { display: flex; align-items: center; gap: 12px; min-width: 0; margin: 0; padding: 6px 0; border: 0; background: none; text-align: left; color: var(--ui-texto); }
   .cl9-tab-quem .cl9-av { width: 40px; height: 40px; font-size: 14px; }
   .cl9-tab-quem > span { min-width: 0; }
   .cl9-tab-quem b { display: block; font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .cl9-tab-quem small { display: block; font-size: 13px; color: var(--ui-texto-2); }
   .cl9-tab-quem > span { display: flex; flex-direction: column; }
-  .cl9-tab-quem .cl9-tag { margin-top: 4px; }
+  /* (4.29) duas linhas: nome em cima, telefone e etiqueta lado a lado embaixo (cabe mais cliente na tela) */
+  .cl9-tab-l2 { display: flex; align-items: center; gap: 8px; min-width: 0; margin-top: 2px; }
+  .cl9-tab-l2 small { flex: none; }
+  .cl9-tab-quem .cl9-tag { margin-top: 0; padding: 1px 7px; font-size: 11.5px; font-weight: 600; }
   .cl9-nada { font-style: normal; color: var(--ui-texto-3); }
   .cl9-tab-bt { display: flex; justify-content: flex-end; gap: 4px; }
 }

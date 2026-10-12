@@ -896,7 +896,7 @@ export default function Clientes() {
                     const ped = c._totalPedidos || 0;
                     return (
                       <div key={c.id} className="cl9-tab-l" role="row" onClick={() => navigate(`/clientes/${c.id}`)}>
-                        <span role="cell" className="cl9-tab-quem"><Avatar c={c} /><span><b>{c.nome}</b><small>{formatPhone(c.whatsapp) || "Sem WhatsApp"}</small><Etiqueta c={c} /></span></span>
+                        <span role="cell" className="cl9-tab-quem"><Avatar c={c} /><span><b>{c.nome}</b><span className="cl9-tab-l2"><small>{formatPhone(c.whatsapp) || "Sem WhatsApp"}</small><Etiqueta c={c} /></span></span></span>
                         <span role="cell">{ped || "—"}</span>
                         <span role="cell">{ped ? formatMoneyFull(c._totalGasto) : "—"}</span>
                         <span role="cell">{ped ? ultimaTxt(c) : <em className="cl9-nada">Ainda não comprou</em>}</span>
