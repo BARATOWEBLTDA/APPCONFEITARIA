@@ -382,7 +382,24 @@ export default function Auth() {
           let podeLimpar = false;
           const { data: userRes } = await supabase.auth.getUser();
           const novoId = userRes?.user?.id;
+          // (4.24) o banco grava o vínculo e a indicação de uma vez (função aplicar_indicacao), sem repetir.
+          // Sem a função no banco, segue o caminho de antes (abaixo).
+          let viaBanco = false;
           if (novoId) {
+            const r = await supabase.rpc("aplicar_indicacao", { p_codigo: refCode });
+            const semFuncao = !!r.error && (r.error.code === "PGRST202" || r.error.code === "42883" || /could not find the function/i.test(String(r.error.message || "")));
+            if (!semFuncao) {
+              viaBanco = true;
+              const res = (r.data || {}) as { status?: string; indicador_id?: string };
+              podeLimpar = !r.error;
+              if (res.status === "ok" && res.indicador_id) {
+                supabase.functions.invoke("notif-indicacao", {
+                  body: { evento: "indicacao_cadastro", indicador_id: res.indicador_id, nome_indicada: cadastroForm.nome, codigo: refCode },
+                }).catch((err) => console.warn("[notif] falha:", err));
+              }
+            }
+          }
+          if (novoId && !viaBanco) {
             // (4.22) quem indicou vem da função indicador_por_codigo (o perfil das outras contas não fica mais aberto);
             // sem a função no banco, lê como antes
             let indicador: { id: string } | null = null;
@@ -415,11 +432,14 @@ export default function Auth() {
               }).select();
               let { error: errInsert } = await registrar();
               if (errInsert && erroDeConexao(errInsert)) ({ error: errInsert } = await registrar());
+              // (4.24) já registrada (nova tentativa depois de a resposta se perder): vale como gravada, sem novo aviso
+              const jaTinha = (errInsert as { code?: string } | null)?.code === "23505";
+              if (jaTinha) errInsert = null;
               podeLimpar = !errUpdate && !errInsert;
 
               // Dispara push pra quem indicou (template configurado no admin)
               // Fire-and-forget — não bloqueia o fluxo se falhar
-              if (!errInsert) {
+              if (!errInsert && !jaTinha) {
                 supabase.functions.invoke("notif-indicacao", {
                   body: {
                     evento: "indicacao_cadastro",

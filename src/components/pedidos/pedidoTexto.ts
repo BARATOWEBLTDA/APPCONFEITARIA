@@ -56,11 +56,14 @@ export const SITUACOES: { chave: string; nome: string; tom?: Tom }[] = [
   { chave: 'cancelado', nome: 'Cancelado', tom: 'vermelho' },
 ]
 const SIT = Object.fromEntries(SITUACOES.map(s => [s.chave, s]))
-export const nomeDaSituacao = (chave: string) => SIT[chave]?.nome || chave
+/** (4.24) Pedido de retirada que já foi entregue aparece como "Retirado". */
+export const nomeDaSituacao = (chave: string, tipoEntrega?: string | null) =>
+  grupoDoStatus(chave) === 'entregue' && tipoEntrega != null && tipoEntrega !== 'entrega' ? 'Retirado' : (SIT[chave]?.nome || SIT[grupoDoStatus(chave)]?.nome || chave)
 
 export function situacaoDe(p: Pedido): { nome: string; tom?: Tom } {
-  const s = SIT[grupoDoStatus(p.status)] || SIT.agendado
-  return { nome: s.nome, tom: s.tom }
+  const g = grupoDoStatus(p.status)
+  const s = SIT[g] || SIT.agendado
+  return { nome: SIT[g] ? nomeDaSituacao(g, p.tipo_entrega || 'retirada') : s.nome, tom: s.tom }
 }
 
 /**

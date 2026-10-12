@@ -460,7 +460,13 @@ function CartContent({
     // ── Salva pedido no Supabase e vincula cliente ──
     // 10/10: se o pedido (ou os itens) não gravar, a sacola NÃO é limpa e a tela de "Pedido enviado" não aparece:
     // avisa e a cliente tenta de novo. Antes o erro ia só pro console e o pedido aparecia como enviado.
-    const falhou = (err: unknown) => { avisar(explicarErro(err, 'Não deu pra enviar o pedido. Tente de novo.'), { tipo: 'erro' }) }
+    const falhou = (err: unknown) => {
+      // (4.24) recusas do banco com motivo: explica em vez do "tente de novo" genérico
+      const msg = String((err as { message?: unknown } | null)?.message ?? '')
+      if (/cupom_esgotado/.test(msg)) return avisar('Este cupom acabou de esgotar. Tire o cupom e envie de novo.', { tipo: 'erro' })
+      if (/item_invalido/.test(msg)) return avisar('Um produto da sacola mudou ou saiu do cardápio. Confira a sacola e envie de novo.', { tipo: 'erro' })
+      avisar(explicarErro(err, 'Não deu pra enviar o pedido. Tente de novo.'), { tipo: 'erro' })
+    }
     if (!confeteiraUserId) return falhou(null)
     if (items.length === 0) return avisar('Sua sacola está vazia', { tipo: 'erro' })
     let numeroPedido = 0

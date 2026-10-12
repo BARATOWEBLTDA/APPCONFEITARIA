@@ -110,7 +110,12 @@ export default function Categorias() {
     }
     setSaving(true);
     // 10/10: confere o erro de cada gravação (antes fechava a janela como se tivesse salvado)
-    const falhou = (err: unknown) => { setSaving(false); avisar(explicarErro(err, "Não deu pra salvar a categoria. Tente de novo."), { tipo: "erro" }); };
+    const falhou = (err: unknown) => {
+      setSaving(false);
+      // (4.24) o banco não deixa duas categorias com o mesmo nome
+      if ((err as { code?: string } | null)?.code === "23505") { avisar("Já existe uma categoria com esse nome", { tipo: "erro" }); return; }
+      avisar(explicarErro(err, "Não deu pra salvar a categoria. Tente de novo."), { tipo: "erro" });
+    };
     if (form.id) {
       const antigo = categorias.find(c => c.id === form.id)?.nome;
       const { error } = await supabase.from("categorias").update({ nome: novo, imagem_url: form.imagem_url || null, ordem: form.ordem }).eq("id", form.id);

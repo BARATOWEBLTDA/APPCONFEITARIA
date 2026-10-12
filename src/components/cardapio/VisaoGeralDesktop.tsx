@@ -61,7 +61,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
     const desde = new Date(); desde.setDate(desde.getDate() - 60);
     Promise.all([
       supabase.from("cardapio_visitas").select("created_at").eq("user_id", profile.id).gte("created_at", desde.toISOString()),
-      supabase.from("pedidos").select("id, numero, cliente_nome, valor_total, status, created_at, pedido_itens(nome_produto, quantidade)")
+      supabase.from("pedidos").select("id, numero, cliente_nome, valor_total, status, tipo_entrega, created_at, pedido_itens(nome_produto, quantidade)")
         .eq("user_id", profile.id).eq("origem", "cardapio").order("created_at", { ascending: false }).limit(500),
       supabase.from("produtos").select("id, imagem_url, descricao, disponivel").eq("user_id", profile.id),
       supabase.from("loja_cupons").select("cupons").eq("user_id", profile.id).maybeSingle(),
@@ -206,7 +206,8 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
           {!dados ? <p className="vgd-vazio">Carregando…</p> : ultimos.length === 0 ? (
             <p className="vgd-vazio">Nenhum pedido pelo cardápio ainda. Compartilhe o link pra receber o primeiro.</p>
           ) : ultimos.map(p => {
-            const [st, cor] = STATUS[p.status] || ["Agendado", "bl"];
+            const [st0, cor] = STATUS[p.status] || ["Agendado", "bl"];
+            const st = st0 === "Entregue" && p.tipo_entrega !== "entrega" ? "Retirado" : st0;
             const itens = (p.pedido_itens || []).map((i: any) => `${i.nome_produto}${Number(i.quantidade) > 1 ? ` × ${i.quantidade}` : ""}`).join(" + ");
             const quando = new Date(p.created_at); const hoje = new Date();
             const q = quando.toDateString() === hoje.toDateString() ? `hoje ${quando.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}` : quando.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });

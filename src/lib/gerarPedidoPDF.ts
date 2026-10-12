@@ -135,7 +135,7 @@ export async function gerarPedidoPDF(pedido: PedidoPDF, janelaAberta?: Window | 
       tipo: prontaEntrega ? "Venda" : "Pedido",
       numero: `#${pedido.numero ?? "—"}`,
       sub: prontaEntrega ? feito.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }).replace(",", " ·") : `Feito em ${feito.toLocaleDateString("pt-BR")}`,
-      tag: prontaEntrega ? "Pronta entrega" : (STATUS[pedido.status || ""] || ""),
+      tag: prontaEntrega ? "Pronta entrega" : ((STATUS[pedido.status || ""] === "Entregue" && pedido.tipo_entrega !== "entrega") ? "Retirado" : (STATUS[pedido.status || ""] || "")),
       corpo,
     };
   }, janela);

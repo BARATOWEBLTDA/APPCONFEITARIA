@@ -3896,7 +3896,8 @@ export default function Produtos() {
         setCategorias(prev => (prev.includes(nova.nome) ? prev : [...prev, nova.nome].sort()));
         const { error } = await supabase.from("categorias").insert({ nome: nova.nome, imagem_url: `/categoriaicones/icone (${nova.icone}).png`, ordem: lista.length, user_id: userId })
           .then(r => r, (e: unknown) => ({ error: e }));
-        if (!error) return;
+        // (4.24) 23505 = o banco já tem essa categoria (gravada em outro aparelho): vale como criada
+        if (!error || (error as { code?: string })?.code === "23505") return;
         // não gravou: tira da lista e do produto (senão o produto ia pra uma categoria que não existe)
         setCategorias(prev => prev.filter(c => c !== nova.nome));
         if (abertura.current !== vez) { console.error("[Doonly]", error); return; }
@@ -4474,7 +4475,7 @@ export default function Produtos() {
       user_id: userId
     }).then(r => r, (e: unknown) => ({ error: e }));
     setSavingCat(false);
-    if (error) return avisar(explicarErro(error, "Não deu pra criar a categoria. Tente de novo."), { tipo: "erro" });
+    if (error && (error as { code?: string })?.code !== "23505") return avisar(explicarErro(error, "Não deu pra criar a categoria. Tente de novo."), { tipo: "erro" });
     setCategorias(prev => (prev.includes(nome) ? prev : [...prev, nome].sort()));
     setForm(f => ({ ...f, categoria: nome }));
     setNovaCategoria(""); setNovaCategoriaIcone(""); setShowCatInput(false);

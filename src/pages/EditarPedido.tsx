@@ -1297,7 +1297,7 @@ export default function EditarPedido() {
 
   // ── Topo da tela (08/10 · 3.15): situação, entrega, aviso e o próximo passo num cartão só ──
   const grupoAtual = grupoDoStatus(statusPedido)
-  const situacao = { nome: nomeDaSituacao(grupoAtual), tom: SITUACOES.find(x => x.chave === grupoAtual)?.tom }
+  const situacao = { nome: nomeDaSituacao(grupoAtual, tipoEntrega), tom: SITUACOES.find(x => x.chave === grupoAtual)?.tom }
   // (11/10) a regra única de atraso (lib/pedidoStatus): a data passou E o pedido ainda não ficou pronto.
   // Antes "Pronto pra retirar" de ontem ficava vermelho aqui e normal na lista.
   const atrasadoHoje = pedidoAtrasado({ data_entrega: dataEntrega, status: statusPedido })

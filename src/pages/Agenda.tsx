@@ -428,7 +428,8 @@ export default function Agenda() {
         produzir.set(chave, atual);
         return itemComQtd(chave, Number(it.quantidade) || 1, forma, true);
       }).join(" + ");
-      const [stTxt, stCor] = STATUS_PDF[p.status] || ["Agendado", "bl"];
+      const [stTxt0, stCor] = STATUS_PDF[p.status] || ["Agendado", "bl"];
+      const stTxt = stTxt0 === "Entregue" && p.tipo_entrega !== "entrega" ? "Retirado" : stTxt0;
       const ent = p.tipo_entrega === "entrega";
       const end = ent ? [[p.endereco_rua, p.endereco_numero].filter(Boolean).join(", "), p.endereco_bairro].filter(Boolean).join(" · ") : "";
       return `<tr><td class="hr">${p.horario_entrega ? String(p.horario_entrega).slice(0, 5) : "—"}</td><td><b>${pdf.esc(p.cliente_nome || "Venda avulsa")}</b><small>${ent ? "Entrega" : "Retirada"}${end ? ` · ${pdf.esc(end)}` : ""}</small></td><td>${pdf.esc(itens)}</td><td>${pdf.pill(stTxt, stCor)}</td><td class="ck">☐</td></tr>`;
@@ -723,7 +724,7 @@ function MenuAgenda({ p: atual, aoFechar, itens, aoExcluir }: { p: any; aoFechar
     <Janela aberta={!!atual} aoFechar={aoFechar} tipo="conteudo" titulo={p ? `Pedido #${p.numero || ""}` : ""}>
       {p && (
         <>
-          <p className="pdm-quem">{p.cliente_nome ? nomeDeGente(p.cliente_nome) : "Cliente não informado"} · {nomeDaSituacao(p.status)}</p>
+          <p className="pdm-quem">{p.cliente_nome ? nomeDeGente(p.cliente_nome) : "Cliente não informado"} · {nomeDaSituacao(p.status, p.tipo_entrega || 'retirada')}</p>
           <div className="pdm">
             {itens.map(({ nome, Ic, fn }) => (
               <button key={nome} type="button" className="pdm-it" onClick={fn}>
