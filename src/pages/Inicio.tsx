@@ -450,7 +450,7 @@ export default function Inicio() {
         // Próximas entregas (a partir de hoje, ordenadas por data)
         supabase
           .from("pedidos")
-          .select("id, cliente_nome, data_entrega, valor_total, horario_entrega, tipo_entrega, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(forma_venda))")
+          .select("id, numero, cliente_nome, data_entrega, valor_total, horario_entrega, tipo_entrega, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(forma_venda, imagem_url))")
           .eq("user_id", userId)
           .gte("data_entrega", hojeISO)
           .in("status", STATUS_ATIVOS)
@@ -468,7 +468,7 @@ export default function Inicio() {
         // continuava como "próxima" depois da hora. Com todas, a tela escolhe a primeira de agora em diante.
         supabase
           .from("pedidos")
-          .select("id, cliente_nome, data_entrega, valor_total, horario_entrega, tipo_entrega, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(forma_venda))")
+          .select("id, numero, cliente_nome, data_entrega, valor_total, horario_entrega, tipo_entrega, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(forma_venda, imagem_url))")
           .eq("user_id", userId)
           .eq("data_entrega", hojeISO)
           .in("status", STATUS_ATIVOS)
@@ -488,6 +488,9 @@ export default function Inicio() {
         // 4.06: o que vai e se é retirada, pro destaque e pra lista do "Seu dia"
         produto: p.pedido_itens?.length ? resumoItens(p) : null,
         tipo: p.tipo_entrega || null,
+        // 4.29: número do pedido e a foto do primeiro produto que tem foto (lista de Próximas entregas)
+        numero: p.numero ?? null,
+        foto: String((p.pedido_itens || []).map((it: any) => (Array.isArray(it.produtos) ? it.produtos[0] : it.produtos)?.imagem_url).find((u: any) => !!u) || "").split(",")[0].trim() || null,
       });
 
       // Aniversariantes nos próximos 7 dias

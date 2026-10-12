@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { CaretRight, CheckCircle } from "@phosphor-icons/react";
+import { CaretRight, CheckCircle, Cake } from "@phosphor-icons/react";
 import { Botao } from "@/components/base";
 import { faltaPara, separarEntregasDeHoje, useAgora } from "./entregasDeHoje";
 import "./seuDia.css";
@@ -15,6 +15,8 @@ import "./seuDia.css";
 export interface EntregaResumo {
   id: string; cliente: string; data: string; valor: number;
   hora?: string | null; produto?: string | null; tipo?: string | null;
+  /** 4.29: número do pedido e foto do produto, pra lista */
+  numero?: number | null; foto?: string | null;
 }
 
 interface Props {
@@ -34,13 +36,6 @@ interface Props {
 const real = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 const hhmm = (h?: string | null) => (h ? String(h).slice(0, 5) : "");
 
-/** dia em formato de calendário: { n: "11", s: "dom" } — hoje vira "hoje" */
-function diaCal(data: string, hoje: string) {
-  const d = new Date(data + "T12:00:00");
-  const s = data === hoje ? "hoje" : d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "").toLowerCase();
-  return { n: String(d.getDate()), s };
-}
-
 export default function SeuDia({ carregando, erro, aoTentar, entregasHoje, atrasados, novos, proximas, hoje }: Props) {
   const navigate = useNavigate();
 
@@ -49,8 +44,15 @@ export default function SeuDia({ carregando, erro, aoTentar, entregasHoje, atras
   // Antes o destaque era sempre a mais cedo do dia: às 20h40 ainda mostrava "15:30 · agora".
   const agora = useAgora();
   const { destaque, passaram, restantes } = separarEntregasDeHoje(proximas, hoje, agora);
-  const lista = restantes.slice(0, 3);
+  // 4.29: uma lista só, um pedido por linha (a próxima de hoje primeiro, depois as outras), até 5
+  const lista = [...(destaque ? [destaque] : []), ...restantes].slice(0, 5);
   const quantoFalta = destaque?.hora ? faltaPara(hhmm(destaque.hora), agora) : "";
+  const amanha = (() => { const d = new Date(hoje + "T12:00:00"); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10); })();
+  const quando = (e: EntregaResumo) => {
+    const d = new Date(e.data + "T12:00:00");
+    const dia = e.data === hoje ? "Hoje" : e.data === amanha ? "Amanhã" : `${d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")}, ${d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}`;
+    return `${dia.charAt(0).toUpperCase()}${dia.slice(1)}${e.hora ? ` às ${hhmm(e.hora)}` : ""}`;
+  };
 
   const chips = [
     atrasados > 0 && { k: "atr", txt: `${atrasados} ${atrasados === 1 ? "atrasado" : "atrasados"}`, tom: "vermelho", para: "/pedidos?filtro=atrasados" },
@@ -59,7 +61,7 @@ export default function SeuDia({ carregando, erro, aoTentar, entregasHoje, atras
     entregasHoje > 0 && { k: "hoj", txt: `${entregasHoje} ${entregasHoje === 1 ? "entrega hoje" : "entregas hoje"}`, tom: "", para: "/agenda" },
   ].filter(Boolean) as { k: string; txt: string; tom: string; para: string }[];
 
-  const nadaMarcado = !destaque && lista.length === 0 && chips.length === 0;
+  const nadaMarcado = lista.length === 0 && chips.length === 0;
 
   return (
     <div className="sd">
@@ -87,22 +89,6 @@ export default function SeuDia({ carregando, erro, aoTentar, entregasHoje, atras
         </div>
       ) : (
         <>
-          {destaque ? (
-            <button type="button" className="sd-prox" onClick={() => navigate(`/pedidos/${destaque.id}`)}>
-              <span className="sd-hora">
-                {destaque.hora ? <><b>{hhmm(destaque.hora)}</b>{quantoFalta && <small>{quantoFalta}</small>}</> : <><b>Hoje</b><small>sem horário</small></>}
-              </span>
-              <span className="sd-prox-tx">
-                <em>{destaque.tipo === "retirada" ? "Próxima retirada" : "Próxima entrega"}</em>
-                <b>{destaque.cliente}</b>
-                {destaque.produto && <span>{destaque.produto}</span>}
-              </span>
-              <span className="sd-prox-seta" aria-hidden="true"><CaretRight size={16} weight="bold" /></span>
-            </button>
-          ) : passaram.length === 0 ? (
-            <p className="sd-calmo"><CheckCircle size={20} weight="bold" aria-hidden="true" />Nada pra entregar hoje</p>
-          ) : null /* só sobraram entregas de hora passada: o aviso amarelo logo abaixo já diz */}
-
           {chips.length > 0 && (
             <div className="sd-chips">
               {chips.map(c => (
@@ -113,28 +99,24 @@ export default function SeuDia({ carregando, erro, aoTentar, entregasHoje, atras
             </div>
           )}
 
+          {!destaque && passaram.length === 0 && <p className="sd-calmo"><CheckCircle size={20} weight="bold" aria-hidden="true" />Nada pra entregar hoje</p>}
+
           {lista.length > 0 && (
-            <>
-              <h3 className="sd-sub">{lista.some(e => e.data === hoje) ? "Próximas entregas" : "Próximos dias"}</h3>
-              <ul className="sd-lista">
-                {lista.map(e => {
-                  const d = diaCal(e.data, hoje);
-                  const detalhe = [e.produto, hhmm(e.hora)].filter(Boolean).join(" · ");
-                  return (
-                    <li key={e.id}>
-                      <button type="button" className="sd-it" onClick={() => navigate(`/pedidos/${e.id}`)}>
-                        <span className="sd-dia"><b>{d.n}</b><small>{d.s}</small></span>
-                        <span className="sd-it-txt">
-                          <b>{e.cliente}</b>
-                          {detalhe && <small>{detalhe}</small>}
-                        </span>
-                        <span className="sd-it-v">{real(e.valor)}</span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </>
+            <ul className="sd-pl">
+              {lista.map(e => (
+                <li key={e.id}>
+                  <button type="button" className={`sd-pi${e === destaque ? " sd-pi--agora" : ""}`} onClick={() => navigate(`/pedidos/${e.id}`)}>
+                    <span className="sd-pi-foto">{e.foto ? <img src={e.foto} alt="" loading="lazy" /> : <Cake size={22} aria-hidden="true" />}</span>
+                    <span className="sd-pi-tx">
+                      <span className="sd-pi-l1"><b>{e.cliente}</b>{e.numero ? <em>#{e.numero}</em> : null}</span>
+                      {e.produto && <small className="sd-pi-pr">{e.produto}</small>}
+                      <small className="sd-pi-q">{quando(e)}{e === destaque && quantoFalta ? ` · ${quantoFalta}` : ""} · {e.tipo === "entrega" ? "Entrega" : "Retirada"}</small>
+                    </span>
+                    <span className="sd-pi-v">{real(e.valor)}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
           )}
         </>
       )}
