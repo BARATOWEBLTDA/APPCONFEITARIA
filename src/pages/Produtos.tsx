@@ -5269,6 +5269,18 @@ export default function Produtos() {
                   )}
                 </div>
               </div>
+              {/* (4.29) edição: Mostrar no cardápio, no fim da aba Info */}
+              {form.id && (
+                <div className="prod-section">
+                  <p className="prod-section-label">No cardápio</p>
+                  <div className="prod-toggles prod-toggles--clean" style={{ flexDirection: "column", gap: "0.25rem" }}>
+                    <Toggle label="Mostrar no cardápio" value={form.disponivel !== false} onChange={(v: boolean) => setForm(f => ({ ...f, disponivel: v }))} colorClass="active-green" />
+                  </div>
+                  <p style={{ margin: "6px 0 0", fontSize: 13, color: "#6B5D64" }}>{form.disponivel !== false
+                    ? "Os clientes veem e podem pedir este produto pelo cardápio."
+                    : "Fica guardado só pra você: não aparece no cardápio até ligar de novo."}</p>
+                </div>
+              )}
             </div>
             )}
 
@@ -6049,6 +6061,24 @@ export default function Produtos() {
             </>
             )}
 
+              {/* (4.29) Mostrar no cardápio: no último passo do cadastro (na edição fica na aba Info) */}
+              {wizardStep === 5 && !form.id && (
+              <div className="prod-section">
+                <p className="prod-section-label">No cardápio</p>
+                <div className="prod-toggles prod-toggles--clean" style={{ flexDirection: "column", gap: "0.25rem" }}>
+                  <Toggle
+                    label="Mostrar no cardápio"
+                    value={form.disponivel !== false}
+                    onChange={(v: boolean) => setForm(f => ({ ...f, disponivel: v }))}
+                    colorClass="active-green"
+                  />
+                </div>
+                <p style={{ margin: "6px 0 0", fontSize: 13, color: "#6B5D64" }}>{form.disponivel !== false
+                  ? "Os clientes veem e podem pedir este produto pelo cardápio."
+                  : "Fica guardado só pra você: não aparece no cardápio até ligar de novo."}</p>
+              </div>
+              )}
+
               {/* Status — só em step 5 (Fotos) ou tab Fotos na edição */}
               {((wizardStep === 5 && !form.id) || (form.id && editTab === "fotos")) && (
               <div className="prod-section">
@@ -6195,7 +6225,7 @@ export default function Produtos() {
                       {saving ? <span className="prod-spinner-sm" /> : (
                         <>
                           <CheckIc size={20} weight="bold" aria-hidden="true" />
-                          Publicar produto
+                          {form.disponivel !== false ? "Publicar produto" : "Salvar fora do cardápio"}
                         </>
                       )}
                     </button>
@@ -6516,10 +6546,10 @@ export default function Produtos() {
                         </span>
                         <span>
                           <div className="prod-preview-menu-title">
-                            {previewProduto.disponivel !== false ? "Despublicar" : "Publicar"}
+                            {previewProduto.disponivel !== false ? "Tirar do cardápio" : "Mostrar no cardápio"}
                           </div>
                           <div className="prod-preview-menu-sub">
-                            {previewProduto.disponivel !== false ? "Ocultar do cardápio" : "Voltar a exibir no cardápio"}
+                            {previewProduto.disponivel !== false ? "Fica guardado, sem aparecer pros clientes" : "Volta a aparecer pros clientes"}
                           </div>
                         </span>
                       </button>
