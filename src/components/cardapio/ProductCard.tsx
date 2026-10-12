@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { unidadeCliente } from '@/lib/formaVenda'
-import { precoCardapio } from '@/lib/precoCardapio'
+import { precoCardapioComPromocao } from '@/lib/precoCardapio'
 import { formatCurrency as fmtBRL } from '@/utils/helpers'
 import { Cake } from '@phosphor-icons/react'
 import { Produto } from '@/types/database'
@@ -25,17 +25,13 @@ interface Props {
 
 export function precoDoCartao(product: Produto) {
   const p = product as any
-  const pc = precoCardapio(product)
-  const descRatio = product.promocao
-    ? (p.tipo_promocao === 'percentual' && p.desconto_percentual > 0
-        ? p.desconto_percentual / 100
-        : product.preco_promocional && product.preco_normal > 0 ? 1 - (product.preco_promocional / product.preco_normal) : 0)
-    : 0
-  const final = descRatio > 0 ? Math.round(pc.valor * (1 - descRatio) * 100) / 100 : pc.valor
+  // (11/10) a promoção e os centavos saem da mesma conta do produto aberto (lib/precoCardapio):
+  // promoção em valor não entra em produto com tamanhos de preço fixo nem em kit
+  const pc = precoCardapioComPromocao(product)
   // Com tamanhos ou kit o preço é o do menor; aí a unidade não vale (não é "por kg")
   const unidade = pc.aPartir || p?.grupo_tamanhos?.ativo ? '' : unidadeCliente(product.forma_venda)
   // Com mais de um tamanho (ou kit) o valor é o menor: "a partir de R$ 120,00", como no produto aberto
-  return { de: descRatio > 0 ? pc.valor : 0, final, unidade, aPartir: pc.aPartir }
+  return { de: pc.de, final: pc.final, unidade, aPartir: pc.aPartir }
 }
 
 export function ProductCard({ product, corBotao = '#E85A8C', comBotao = false }: Props) {
@@ -49,7 +45,7 @@ export function ProductCard({ product, corBotao = '#E85A8C', comBotao = false }:
         onClick={() => setShowModal(true)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowModal(true) } }}>
         <div className="cl-pr-ft">
           {foto ? <img src={foto} alt="" loading="lazy" /> : <span className="cl-pr-sem"><Cake size={32} aria-hidden="true" /></span>}
-          {product.promocao && <span className="cl-promo">Promoção</span>}
+          {de > 0 && <span className="cl-promo">Promoção</span>}
           <SeloEntregaFoto produto={product} />
         </div>
         <div className="cl-pr-tx">

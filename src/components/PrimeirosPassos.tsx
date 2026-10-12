@@ -11,6 +11,7 @@ import { Mascote } from "@/components/marca/Mascote";
 import { lerPassos, marcarCompartilhado, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk, type EstadoPassos } from "@/lib/primeirosPassos";
 
 import { Botao, avisar } from "@/components/base";
+import { erroDeConexao, SEM_INTERNET } from "@/lib/erros";
 /**
  * "Primeiros passos" (aprovado 02/10) — o MESMO cartão no Início (celular) e no Cardápio digital.
  * 7 passos; os que dá pra preencher abrem numa janelinha que sobe de baixo, sem sair da tela:
@@ -220,8 +221,15 @@ function FolhaLogo({ uid, perfil, onClose, onSalvo }: FolhaProps) {
     setEnviando(false); avisar("Não foi possível enviar a imagem. Tente de novo.", { tipo: "erro" });
   };
   const usarFoto = async () => {
+    if (enviando) return;
+    setEnviando(true);
+    // (11/10) Confere a gravação: antes fechava como "feito" mesmo sem internet (e o passo só valia neste aparelho).
+    // Erro que não é de conexão (coluna que ainda não existe no banco) segue como antes: fica a marca no aparelho.
+    let erro: unknown = null;
+    try { erro = (await supabase.from("profiles").update({ design_escolhido: true, logo_confirmado: true }).eq("id", uid)).error; } catch (e) { erro = e; }
+    setEnviando(false);
+    if (erro && erroDeConexao(erro)) { avisar(SEM_INTERNET, { tipo: "erro" }); return; }
     marcarLogoOk(uid);
-    await atualizarPerfil(uid, { design_escolhido: true, logo_confirmado: true }, ["design_escolhido", "logo_confirmado"]);
     onSalvo();
   };
   return (

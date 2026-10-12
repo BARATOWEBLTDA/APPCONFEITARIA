@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { Plus, PencilSimple, Trash, ArrowUp, ArrowDown, Eye, EyeSlash, Image as ImageIcon, CaretDown, PushPin, Bell, WarningCircle, Newspaper, DotsThree } from "@phosphor-icons/react";
 import RichEditor from "@/components/RichEditor";
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
+import { explicarErro } from "@/lib/erros";
 import "./admin-noticias.css";
 
 interface Noticia {
@@ -84,16 +85,24 @@ export default function AdminNoticias() {
 
   const showMsg = (text: string, kind: "ok" | "err") => { avisar(text, { tipo: kind === "err" ? "erro" : "ok" }); };
 
+  // (11/10) como o formulário estava ao abrir: pra perguntar antes de fechar só se algo mudou
+  const formAoAbrir = useRef("");
+  const salvandoRef = useRef(false);
+
   const abrirNovo = () => {
     setEditing(null);
-    setForm({ emoji: "📢", titulo: "", descricao: "", conteudo: null, imagem_capa: "", icone_url: "", autor: "Equipe Doonly", autor_id: "", categoria: "", cta_texto: "", cta_url: "", ativo: true, fixada: false, likes_base: 0 });
+    const inicial = { emoji: "📢", titulo: "", descricao: "", conteudo: null as any, imagem_capa: "", icone_url: "", autor: "Equipe Doonly", autor_id: "", categoria: "", cta_texto: "", cta_url: "", ativo: true, fixada: false, likes_base: 0 };
+    setForm(inicial);
+    formAoAbrir.current = JSON.stringify(inicial);
     setNotif(NOTIF_VAZIA);
     setModalOpen(true);
   };
 
   const abrirEditar = (n: Noticia) => {
     setEditing(n);
-    setForm({ emoji: n.emoji, titulo: n.titulo, descricao: n.descricao, conteudo: n.conteudo, imagem_capa: n.imagem_capa || "", icone_url: n.icone_url || "", autor: n.autor || "Equipe Doonly", autor_id: n.autor_id || "", categoria: n.categoria || "", cta_texto: n.cta_texto || "", cta_url: n.cta_url || "", ativo: n.ativo, fixada: n.fixada || false, likes_base: n.likes_base || 0 });
+    const inicial = { emoji: n.emoji, titulo: n.titulo, descricao: n.descricao, conteudo: n.conteudo, imagem_capa: n.imagem_capa || "", icone_url: n.icone_url || "", autor: n.autor || "Equipe Doonly", autor_id: n.autor_id || "", categoria: n.categoria || "", cta_texto: n.cta_texto || "", cta_url: n.cta_url || "", ativo: n.ativo, fixada: n.fixada || false, likes_base: n.likes_base || 0 };
+    setForm(inicial);
+    formAoAbrir.current = JSON.stringify(inicial);
     // Editando: não reenvia por padrão (evita notificar todo mundo ao corrigir um detalhe)
     setNotif({ ...NOTIF_VAZIA, enviar: false });
     setModalOpen(true);
@@ -172,6 +181,8 @@ export default function AdminNoticias() {
 
   const salvar = async () => {
     if (!form.titulo.trim()) { avisar("Preencha o título.", { tipo: "erro" }); return; }
+    if (salvandoRef.current) return; // (11/10) toque duplo não cria a notícia duas vezes
+    salvandoRef.current = true;
     setSaving(true);
     try {
       const payload = {
@@ -209,17 +220,24 @@ export default function AdminNoticias() {
 
       if (notif.enviar && podeNotificar && salvaId) {
         // Também vira uma notificação na aba Notificações (uma vez só por notícia)
+        // (11/10) se o aviso da aba Notificações não gravar, a mensagem do fim conta (antes passava em silêncio)
+        let semAviso = false;
         try {
           const chave = `noticia-${salvaId}`;
-          const { data: ja } = await supabase.from("notificacoes").select("id").is("user_id", null).eq("chave", chave).maybeSingle();
-          if (!ja) await supabase.from("notificacoes").insert({
-            titulo: notifTituloFinal, mensagem: notifTextoFinal, imagem_url: notifImagemFinal || null,
-            tipo: "noticia", tag: "Novidade", link: salvaSlug ? `/noticias/${salvaSlug}` : "/noticias", chave,
-          });
-        } catch { /* não impede o push */ }
+          const { data: ja, error: erroLer } = await supabase.from("notificacoes").select("id").is("user_id", null).eq("chave", chave).maybeSingle();
+          if (erroLer) semAviso = true;
+          else if (!ja) {
+            const { error: erroAviso } = await supabase.from("notificacoes").insert({
+              titulo: notifTituloFinal, mensagem: notifTextoFinal, imagem_url: notifImagemFinal || null,
+              tipo: "noticia", tag: "Novidade", link: salvaSlug ? `/noticias/${salvaSlug}` : "/noticias", chave,
+            });
+            if (erroAviso) { semAviso = true; console.error("[Doonly]", erroAviso); }
+          }
+        } catch { semAviso = true; /* não impede o push */ }
         try {
           const enviados = await enviarPushNoticia(salvaId, salvaSlug);
-          showMsg(`${acao}! Notificação enviada para ${enviados} ${enviados === 1 ? "aparelho" : "aparelhos"}.`, "ok");
+          if (semAviso) showMsg(`${acao}! Push enviado para ${enviados} ${enviados === 1 ? "aparelho" : "aparelhos"}, mas o aviso da aba Notificações não gravou.`, "err");
+          else showMsg(`${acao}! Notificação enviada para ${enviados} ${enviados === 1 ? "aparelho" : "aparelhos"}.`, "ok");
         } catch (pushErr: any) {
           showMsg(`${acao}, mas a notificação falhou: ${pushErr.message}`, "err");
         }
@@ -229,6 +247,7 @@ export default function AdminNoticias() {
       setModalOpen(false);
       await load();
     } catch (err: any) { showMsg("Erro: " + err.message, "err"); }
+    salvandoRef.current = false;
     setSaving(false);
   };
 
@@ -249,12 +268,29 @@ export default function AdminNoticias() {
     const outroIdx = dir === "up" ? idx - 1 : idx + 1;
     if (outroIdx < 0 || outroIdx >= rows.length) return;
     const outro = rows[outroIdx];
-    await supabase.from("admin_noticias").update({ ordem: outro.ordem }).eq("id", n.id);
-    await supabase.from("admin_noticias").update({ ordem: n.ordem }).eq("id", outro.id);
+    // (11/10) confere as duas gravações: se a segunda falhar, desfaz a primeira (senão as duas ficam com a mesma ordem)
+    const { error: e1 } = await supabase.from("admin_noticias").update({ ordem: outro.ordem }).eq("id", n.id);
+    if (e1) { showMsg(explicarErro(e1, "Não deu pra mudar a ordem. Tente de novo."), "err"); return; }
+    const { error: e2 } = await supabase.from("admin_noticias").update({ ordem: n.ordem }).eq("id", outro.id);
+    if (e2) {
+      await supabase.from("admin_noticias").update({ ordem: n.ordem }).eq("id", n.id);
+      showMsg(explicarErro(e2, "Não deu pra mudar a ordem. Tente de novo."), "err");
+    }
     await load();
   };
 
-  const fecharModal = () => { if (!saving) setModalOpen(false); };
+  // (11/10) Esc, voltar, X e Cancelar perguntam antes de fechar se a notícia foi mexida (antes o texto se perdia sem aviso)
+  const perguntandoFechar = useRef(false);
+  const fecharModal = async () => {
+    if (saving || perguntandoFechar.current) return;
+    if (JSON.stringify(form) !== formAoAbrir.current) {
+      perguntandoFechar.current = true;
+      const ok = await confirmar({ titulo: "Fechar sem salvar?", texto: "O que você escreveu nesta notícia vai se perder.", rotulo: "Fechar sem salvar", rotuloVoltar: "Continuar editando", perigo: true, icone: "alerta" });
+      perguntandoFechar.current = false;
+      if (!ok) return;
+    }
+    setModalOpen(false);
+  };
   const idxMenu = menuDe ? rows.findIndex(r => r.id === menuDe.id) : -1;
 
   if (loading) return <div className="an-carregando"><span className="ui-gira" aria-label="Carregando" /></div>;

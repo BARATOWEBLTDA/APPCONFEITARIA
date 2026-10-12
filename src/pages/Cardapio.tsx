@@ -1,4 +1,4 @@
-import { useState, useEffect, type ReactElement } from "react";
+import { useState, useEffect, useRef, type ReactElement } from "react";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
 import VisaoGeralDesktop from "@/components/cardapio/VisaoGeralDesktop";
 import { useNavigate } from "react-router-dom";
@@ -6,12 +6,13 @@ import {
   ChartBar, Eye, Storefront, Sliders, PaintBrush, Tag,
   Share, Percent, ForkKnife, Copy, CheckCircle, Warning, Lightbulb,
   TrendUp, TrendDown, ShoppingBag, Users as UsersIcon, CurrencyDollar,
-  CaretRight, SquaresFour, Stack, Crown, Package,
+  CaretRight, SquaresFour, Stack, Crown, Package, WarningCircle,
 } from "@phosphor-icons/react";
-import { Botao } from "@/components/base";
+import { Botao, TelaVazia } from "@/components/base";
 import { useProfile, getCardapioUrl, isPro } from "@/hooks/useProfile";
 import { validarCardapio } from "@/lib/cardapio-validacao";
 import { supabase } from "@/lib/supabase";
+import { buscarTudo } from "@/lib/buscarTudo";
 import AppPageHeader from "@/components/AppPageHeader";
 import PassoAPassoCardapio from "@/components/PassoAPassoCardapio";
 
@@ -57,6 +58,10 @@ export default function Cardapio() {
   const [metricasAnterior, setMetricasAnterior] = useState({ visitas: 0, pedidos: 0, receita: 0 });
   const [alertas, setAlertas] = useState<Alerta[]>([]);
   const [loading, setLoading] = useState(true);
+  // (11/10) erro de leitura não vira mais zeros: mostra "Não deu pra carregar" com "Tentar de novo"
+  const [erroLeitura, setErroLeitura] = useState(false);
+  // (11/10) número da busca em andamento: resposta de uma busca antiga (período trocado rápido) é descartada
+  const buscaAtual = useRef(0);
   const [copiado, setCopiado] = useState(false);
   const [contadores, setContadores] = useState({ produtos: 0, produtosAtivos: 0, categorias: 0, promocoes: 0 });
   const [visitasPop, setVisitasPop] = useState<number | null>(null); // +N flutuante quando chega visita nova
@@ -90,9 +95,13 @@ export default function Cardapio() {
   useEffect(() => {
     if (!profile?.id) return;
     carregarTudo();
+    return () => { buscaAtual.current++; };
   }, [profile?.id, periodo]);
 
   // Contadores de catálogo (produtos ativos, categorias, promoções) — recarrega ao voltar pra tela
+  // (11/10) leitura que falha não vira "Nenhum produto ainda": mostra o aviso, e o "Tentar de novo" lê de novo
+  const [erroContadores, setErroContadores] = useState(false);
+  const [tentarContadores, setTentarContadores] = useState(0);
   useEffect(() => {
     if (!profile?.id) return;
     (async () => {
@@ -101,6 +110,8 @@ export default function Cardapio() {
         supabase.from("produtos").select("id, disponivel", { count: "exact" }).eq("user_id", uid),
         supabase.from("categorias").select("id", { count: "exact", head: true }).eq("user_id", uid),
       ]);
+      if (prod.error || cat.error) { setErroContadores(true); return; }
+      setErroContadores(false);
       setContadores({
         produtos: prod.count ?? 0,
         produtosAtivos: (prod.data || []).filter((p: any) => p.disponivel !== false).length,
@@ -108,7 +119,7 @@ export default function Cardapio() {
         promocoes: 0,
       });
     })();
-  }, [profile?.id]);
+  }, [profile?.id, tentarContadores]);
 
   // Visitas em tempo real — subscribe a novos inserts na tabela cardapio_visitas
   useEffect(() => {
@@ -143,13 +154,21 @@ export default function Cardapio() {
     if (p === "tudo") return null;
     const fim = calcularDataLimite(p);
     const inicio = new Date(fim);
-    if (p === "hoje") inicio.setDate(inicio.getDate() - 1);
-    else if (p === "7d") inicio.setDate(inicio.getDate() - 7);
+    if (p === "hoje") {
+      // (11/10) hoje ainda está pela metade: compara com o mesmo trecho de ontem (da meia-noite até esta hora),
+      // e não com ontem inteiro
+      inicio.setDate(inicio.getDate() - 1);
+      const mesmaHoraOntem = new Date();
+      mesmaHoraOntem.setDate(mesmaHoraOntem.getDate() - 1);
+      return { inicio, fim: mesmaHoraOntem };
+    }
+    if (p === "7d") inicio.setDate(inicio.getDate() - 7);
     else if (p === "30d") inicio.setDate(inicio.getDate() - 30);
     return { inicio, fim };
   };
 
   const carregarTudo = async () => {
+    const minha = ++buscaAtual.current;
     setLoading(true);
     try {
       const userId = profile!.id;
@@ -170,13 +189,15 @@ export default function Cardapio() {
           .select("id", { count: "exact", head: true })
           .eq("user_id", userId)
           .gte("created_at", dataLimite.toISOString()),
-        // Pedidos vindos do cardápio
-        supabase
+        // Pedidos vindos do cardápio (11/10: de 1.000 em 1.000, senão o período "Tudo" vinha cortado)
+        buscarTudo<any>((de, ate) => supabase
           .from("pedidos")
           .select("id, valor_total, status, pedido_itens(nome_produto, quantidade, produtos(imagem_url))")
           .eq("user_id", userId)
           .eq("origem", "cardapio")
-          .gte("created_at", dataLimite.toISOString()),
+          .gte("created_at", dataLimite.toISOString())
+          .order("id")
+          .range(de, ate)),
         // Todos os produtos disponíveis (pra alertas)
         supabase
           .from("produtos")
@@ -190,18 +211,26 @@ export default function Cardapio() {
               .eq("user_id", userId)
               .gte("created_at", dataAnterior.inicio.toISOString())
               .lt("created_at", dataAnterior.fim.toISOString())
-          : Promise.resolve({ count: 0, data: null }),
+          : Promise.resolve({ count: 0, data: null, error: null }),
         // Comparação: pedidos no período anterior
         dataAnterior
-          ? supabase
+          ? buscarTudo<any>((de, ate) => supabase
               .from("pedidos")
               .select("id, valor_total, status")
               .eq("user_id", userId)
               .eq("origem", "cardapio")
               .gte("created_at", dataAnterior.inicio.toISOString())
               .lt("created_at", dataAnterior.fim.toISOString())
-          : Promise.resolve({ count: 0, data: [] }),
+              .order("id")
+              .range(de, ate))
+          : Promise.resolve({ data: [] as any[], error: null }),
       ]);
+
+      // (11/10) ela já trocou de período: esta resposta é velha e não pode ir pra tela
+      if (minha !== buscaAtual.current) return;
+      // (11/10) falha de leitura não é "nenhum pedido": avisa em vez de mostrar zeros
+      const falha = visitasRes.error || pedidosRes.error || produtosRes.error || visitasAntRes.error || pedidosAntRes.error;
+      if (falha) throw falha;
 
       const visitas = visitasRes.count || 0;
       // 10/10: pedido cancelado não é venda: sai da contagem, do faturamento e dos mais vendidos (antes somava)
@@ -254,8 +283,11 @@ export default function Cardapio() {
       // passo a passo no topo (PassoAPassoCardapio), evitando duplicação.
 
       setAlertas(novosAlertas);
+      setErroLeitura(false);
     } catch (err) {
+      if (minha !== buscaAtual.current) return;
       console.error("Erro ao carregar dados do cardápio:", err);
+      setErroLeitura(true);
     }
     setLoading(false);
   };
@@ -351,7 +383,7 @@ export default function Cardapio() {
             <div className="cd-quick-info">
               <div className="cd-quick-name">Produtos</div>
               <div className="cd-quick-desc">
-                {contadores.produtos === 0 ? "Nenhum produto ainda"
+                {erroContadores ? "Ver seus produtos" : contadores.produtos === 0 ? "Nenhum produto ainda"
                   : `${contadores.produtosAtivos} no cardápio${contadores.produtos !== contadores.produtosAtivos ? ` · ${contadores.produtos} cadastrado${contadores.produtos === 1 ? "" : "s"}` : ""}`}
               </div>
             </div>
@@ -364,7 +396,7 @@ export default function Cardapio() {
             <div className="cd-quick-info">
               <div className="cd-quick-name">Categorias</div>
               <div className="cd-quick-desc">
-                {contadores.categorias === 0
+                {erroContadores ? "Ver suas categorias" : contadores.categorias === 0
                   ? "Organize seus produtos em grupos"
                   : `${contadores.categorias} categoria${contadores.categorias === 1 ? "" : "s"} cadastrada${contadores.categorias === 1 ? "" : "s"}`}
               </div>
@@ -446,7 +478,14 @@ export default function Cardapio() {
         ))}
       </div>
 
+      {/* (11/10) Não leu: não mostra zeros como se fosse conta nova */}
+      {(erroLeitura || erroContadores) && (
+        <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu pra carregar" texto="Confira a internet e tente de novo."
+          acao={<Botao variante="suave" tamanho="m" carregando={loading} onClick={() => { carregarTudo(); setTentarContadores(n => n + 1); }}>Tentar de novo</Botao>} />
+      )}
+
       {/* Métricas */}
+      {!erroLeitura && (
       <div className="ch-metricas-grid">
         {[
           {
@@ -521,9 +560,10 @@ export default function Cardapio() {
           );
         })}
       </div>
+      )}
 
       {/* Top 3 produtos */}
-      {metricas.topProdutos.length > 0 && (
+      {!erroLeitura && metricas.topProdutos.length > 0 && (
         <div className="ch-block">
           <h2 className="ch-block-title">Mais vendidos no cardápio</h2>
           <div className="ch-top-list">

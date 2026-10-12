@@ -6,6 +6,8 @@ import TermosModal from "@/components/TermosModal";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { definirSessaoTemporaria } from "@/lib/sessaoTemporaria";
+import { mascaraTelefone } from "@/lib/telefone";
+import { explicarErro, erroDeConexao } from "@/lib/erros";
 import { User, Storefront, Phone, Envelope, Eye, EyeSlash, Check } from "@phosphor-icons/react";
 
 // ───────────────────────────────────────────────────────────────
@@ -212,13 +214,8 @@ export default function Auth() {
     setLoginEmailError(validate.email(form.email));
   };
 
-  const formatPhone = (value: string) => {
-    const d = value.replace(/\D/g, "").slice(0, 11);
-    if (d.length <= 2) return `(${d}`;
-    if (d.length <= 6) return `(${d.slice(0,2)}) ${d.slice(2)}`;
-    if (d.length <= 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
-    return `(${d.slice(0,2)}) ${d.slice(2,3)} ${d.slice(3,7)}-${d.slice(7)}`;
-  };
+  // (11/10) máscara única do app: número colado com +55 não vira mais "(55) 4 1999-9900"
+  const formatPhone = mascaraTelefone;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -249,12 +246,18 @@ export default function Auth() {
       const msg = err?.message || "";
       // cada erro com a sua mensagem (antes, até "sem internet" virava "senha incorreta")
       const status = Number(err?.status) || 0;
+      const codigo = String(err?.code || "");
+      // (11/10) os códigos específicos vêm antes do "status 400" (antes viravam "E-mail ou senha incorretos")
       if (!navigator.onLine || /failed to fetch|networkerror|network request failed|load failed/i.test(msg)) {
         setError("Sem conexão. Confira a internet e tente de novo.");
+      } else if (codigo === "email_not_confirmed" || /email not confirmed|email_not_confirmed/i.test(msg)) {
+        setError("Falta confirmar seu e-mail. Abra o link que enviamos pra você.");
+      } else if (codigo === "user_banned" || /user is banned|user_banned/i.test(msg)) {
+        setError("Esta conta está bloqueada. Fale com a equipe Doonly.");
+      } else if (status === 429 || codigo === "over_request_rate_limit" || /rate limit|too many/i.test(msg)) {
+        setError("Muitas tentativas. Espere 1 minuto e tente de novo.");
       } else if (/invalid login credentials|invalid_credentials|invalid grant/i.test(msg) || status === 400) {
         setError("E-mail ou senha incorretos. Confira e tente de novo.");
-      } else if (/email not confirmed|email_not_confirmed/i.test(msg)) {
-        setError("Falta confirmar seu e-mail. Abra o link que enviamos pra você.");
       } else {
         setError("Não conseguimos entrar agora. Tente de novo em instantes.");
       }
@@ -359,9 +362,10 @@ export default function Auth() {
         try {
           const { data: userRes } = await supabase.auth.getUser();
           if (userRes?.user?.id) {
-            await supabase.from("profiles").update({
+            const { error: erroLoja } = await supabase.from("profiles").update({
               nome_loja: cadastroForm.nomeLoja.trim(),
             }).eq("id", userRes.user.id);
+            if (erroLoja) console.warn("[signup] falha ao salvar nome_loja:", erroLoja);
           }
         } catch (err) {
           console.warn("[signup] falha ao salvar nome_loja:", err);
@@ -373,33 +377,37 @@ export default function Auth() {
       // no profile novo. Se falhar, loga mas não bloqueia o cadastro.
       try {
         const refCode = localStorage.getItem("doonly_ref_code");
-        console.log("[REF SIGNUP] refCode:", refCode);
         if (refCode) {
+          // (11/10) podeLimpar = o vínculo gravou, ou não tinha o que gravar (código que não existe, ou o dela mesma)
+          let podeLimpar = false;
           const { data: userRes } = await supabase.auth.getUser();
           const novoId = userRes?.user?.id;
-          console.log("[REF SIGNUP] novoId:", novoId);
           if (novoId) {
             const { data: indicador, error: errBuscar } = await supabase
               .from("profiles")
               .select("id")
               .eq("codigo_indicacao", refCode)
               .maybeSingle();
-            console.log("[REF SIGNUP] indicador:", indicador, "erro:", errBuscar);
 
+            if (!errBuscar && (!indicador?.id || indicador.id === novoId)) podeLimpar = true;
             if (indicador?.id && indicador.id !== novoId) {
-              const { error: errUpdate } = await supabase.from("profiles").update({
+              // cada gravação tenta de novo uma vez (falha passageira de internet não perde mais o vínculo)
+              const gravarVinculo = () => supabase.from("profiles").update({
                 indicado_por: indicador.id,
                 desconto_primeiro_mes: true,
               }).eq("id", novoId);
-              console.log("[REF SIGNUP] update profile erro:", errUpdate);
+              let { error: errUpdate } = await gravarVinculo();
+              if (errUpdate) ({ error: errUpdate } = await gravarVinculo());
 
               // Registra na tabela de indicações com status "cadastrou"
-              const { data: insData, error: errInsert } = await supabase.from("indicacoes").insert({
+              const registrar = () => supabase.from("indicacoes").insert({
                 indicador_id: indicador.id,
                 indicada_id: novoId,
                 status: "cadastrou",
               }).select();
-              console.log("[REF SIGNUP] insert indicacao:", insData, "erro:", errInsert);
+              let { error: errInsert } = await registrar();
+              if (errInsert && erroDeConexao(errInsert)) ({ error: errInsert } = await registrar());
+              podeLimpar = !errUpdate && !errInsert;
 
               // Dispara push pra quem indicou (template configurado no admin)
               // Fire-and-forget — não bloqueia o fluxo se falhar
@@ -415,11 +423,14 @@ export default function Auth() {
               }
             }
           }
-          // Limpa após usar (evita re-aplicar)
-          localStorage.removeItem("doonly_ref_code");
+          // (11/10) o código sai do aparelho depois do cadastro, gravando ou não: nada tenta de novo depois,
+          // e ficar guardado faria ele grudar na próxima conta criada neste aparelho
+          if (!podeLimpar) console.error("[ref] indicação não vinculada:", refCode);
         }
       } catch (err) {
-        console.warn("[ref] falha ao vincular indicação:", err);
+        console.error("[ref] falha ao vincular indicação:", err);
+      } finally {
+        try { localStorage.removeItem("doonly_ref_code"); } catch { /* sem acesso ao armazenamento */ }
       }
 
       // ── 4) Dispara e-mail de boas-vindas (fire-and-forget) ──
@@ -453,7 +464,8 @@ export default function Auth() {
       } else if (/rate limit|too many/i.test(msg)) {
         setCadastroError("Muitas tentativas. Aguarde 1 minuto e tente novamente.");
       } else {
-        setCadastroError("Erro ao criar conta. Tente novamente.");
+        // (11/10) sem internet diz "Sem internet" (antes era sempre "Erro ao criar conta")
+        setCadastroError(explicarErro(err, "Não deu pra criar a conta. Tente de novo."));
       }
       setCadastroLoading(false);
     }
@@ -650,7 +662,7 @@ export default function Auth() {
               <input
                 id="cad-whatsapp"
                 type="tel"
-                placeholder="(41) 9 9999-0000"
+                placeholder="(41) 99999-0000"
                 value={cadastroForm.telefone}
                 onChange={e => handleCadastroChange("telefone", e.target.value)}
                 onBlur={() => handleCadastroBlur("telefone")}

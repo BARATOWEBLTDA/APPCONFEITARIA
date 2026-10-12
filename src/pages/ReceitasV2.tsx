@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
-import { TelaVazia, avisar } from "@/components/base";
-import { BookmarkSimple, BookOpen, Cake, CaretRight, ChartPie, Cookie, CookingPot, Diamond, Drop, ForkKnife, Grains, IceCream, Lightbulb, MagnifyingGlass, ShareNetwork, Sparkle, Trophy, X } from "@phosphor-icons/react";
+import { Botao, TelaVazia, avisar } from "@/components/base";
+import { BookmarkSimple, BookOpen, Cake, CaretRight, ChartPie, Cookie, CookingPot, Diamond, Drop, ForkKnife, Grains, IceCream, Lightbulb, MagnifyingGlass, ShareNetwork, Sparkle, Trophy, WarningCircle, X } from "@phosphor-icons/react";
 import type { Icon as PhIcon } from "@phosphor-icons/react";
 import "./clientes.css";
 import "./receitas.css";
@@ -99,23 +100,36 @@ export default function ReceitasV2() {
   const [salvas, setSalvas] = useState<Set<string>>(new Set());
   const [aberta, setAberta] = useState<Receita | null>(null);
 
-  useEffect(() => {
-    (async () => {
+  // (11/10) a leitura falhou: mostra o erro com "Tentar de novo" em vez de "Nenhuma receita ainda" / "Nenhuma receita salva"
+  const [erroCarga, setErroCarga] = useState("");
+  const [erroSalvas, setErroSalvas] = useState(false);
+  const carregar = async () => {
+    setLoading(true); setErroCarga("");
+    try {
       const { data: { user } } = await supabase.auth.getUser();
       setUserId(user?.id || null);
-      const [{ data: rs }, { data: cs }, { data: ss }, { data: cats }] = await Promise.all([
+      const vazio = Promise.resolve({ data: [] as any[], error: null as unknown });
+      const [{ data: rs, error: erroRs }, { data: cs, error: erroCs }, { data: ss, error: erroSs }, { data: cats }] = await Promise.all([
         supabase.from("receitas_doonly").select("*").order("created_at", { ascending: false }),
-        user ? supabase.from("receitas_doonly_curtidas").select("receita_id").eq("user_id", user.id) : Promise.resolve({ data: [] as any[] }),
-        user ? supabase.from("receitas_doonly_salvas").select("receita_id").eq("user_id", user.id) : Promise.resolve({ data: [] as any[] }),
+        user ? supabase.from("receitas_doonly_curtidas").select("receita_id").eq("user_id", user.id) : vazio,
+        user ? supabase.from("receitas_doonly_salvas").select("receita_id").eq("user_id", user.id) : vazio,
         supabase.from("receitas_categorias").select("*").order("ordem", { ascending: true }),
       ]);
+      // sem as receitas não tem tela; sem as salvas, só a lista "Receitas salvas" mostra o erro (as receitas continuam abrindo)
+      if (erroRs || !rs) { setErroCarga(explicarErro(erroRs, "Tente de novo em instantes.")); setLoading(false); return; }
+      if (erroCs) console.error("[Doonly]", erroCs);
+      if (erroSs) console.error("[Doonly]", erroSs);
+      setErroSalvas(!!erroSs || !ss);
       setCategoriasDb((cats || []) as Categoria[]);
       setReceitas(((rs || []) as Receita[]).filter(r => r.publicada !== false));
       setCurti(new Set((cs || []).map((x: any) => x.receita_id)));
       setSalvas(new Set((ss || []).map((x: any) => x.receita_id)));
-      setLoading(false);
-    })();
-  }, []);
+    } catch (e) {
+      setErroCarga(explicarErro(e, "Tente de novo em instantes."));
+    }
+    setLoading(false);
+  };
+  useEffect(() => { void carregar(); }, []);
 
   const mostrarAviso = (t: string, erro = false) => avisar(t, { tipo: erro ? "erro" : "ok" });
 
@@ -152,18 +166,27 @@ export default function ReceitasV2() {
   const irPara = (v: Vista) => { setVista(v); setBusca(""); window.scrollTo(0, 0); };
 
   // ── Curtir / salvar (otimista: muda na tela na hora e grava no banco) ──
+  // 11/10: uma gravação por receita de cada vez (toque duplo não grava duas vezes) e o desfazer mexe só na receita
+  // que falhou. Antes o desfazer devolvia o retrato antigo da lista inteira e apagava curtidas feitas no meio.
+  const gravando = useRef<Set<string>>(new Set());
+  const comOuSem = (s: Set<string>, id: string, dentro: boolean) => { const n = new Set(s); if (dentro) n.add(id); else n.delete(id); return n; };
   const alternarCurtida = async (r: Receita) => {
     if (!userId) return;
+    const chave = `curtir:${r.id}`;
+    if (gravando.current.has(chave)) return;
+    gravando.current.add(chave);
     const ja = curti.has(r.id);
-    const novo = new Set(curti); ja ? novo.delete(r.id) : novo.add(r.id); setCurti(novo);
+    setCurti(s => comOuSem(s, r.id, !ja));
     const delta = ja ? -1 : 1;
     const atualiza = (x: Receita) => x.id === r.id ? { ...x, curtidas: Math.max(0, (x.curtidas || 0) + delta) } : x;
     setReceitas(l => l.map(atualiza)); setAberta(a => a && a.id === r.id ? atualiza(a) : a);
-    const { error } = ja
-      ? await supabase.from("receitas_doonly_curtidas").delete().eq("receita_id", r.id).eq("user_id", userId)
-      : await supabase.from("receitas_doonly_curtidas").insert({ receita_id: r.id, user_id: userId });
+    const { error } = await (ja
+      ? supabase.from("receitas_doonly_curtidas").delete().eq("receita_id", r.id).eq("user_id", userId)
+      : supabase.from("receitas_doonly_curtidas").insert({ receita_id: r.id, user_id: userId })
+    ).then(x => x, (e: unknown) => ({ error: e }));
+    gravando.current.delete(chave);
     if (error) { // desfaz se não gravou
-      setCurti(curti);
+      setCurti(s => comOuSem(s, r.id, ja));
       const volta = (x: Receita) => x.id === r.id ? { ...x, curtidas: Math.max(0, (x.curtidas || 0) - delta) } : x;
       setReceitas(l => l.map(volta)); setAberta(a => a && a.id === r.id ? volta(a) : a);
       mostrarAviso("Não deu pra curtir agora. Tente de novo.", true);
@@ -171,12 +194,17 @@ export default function ReceitasV2() {
   };
   const alternarSalva = async (r: Receita) => {
     if (!userId) return;
+    const chave = `salvar:${r.id}`;
+    if (gravando.current.has(chave)) return;
+    gravando.current.add(chave);
     const ja = salvas.has(r.id);
-    const novo = new Set(salvas); ja ? novo.delete(r.id) : novo.add(r.id); setSalvas(novo);
-    const { error } = ja
-      ? await supabase.from("receitas_doonly_salvas").delete().eq("receita_id", r.id).eq("user_id", userId)
-      : await supabase.from("receitas_doonly_salvas").insert({ receita_id: r.id, user_id: userId });
-    if (error) { setSalvas(salvas); mostrarAviso("Não deu pra salvar agora. Tente de novo.", true); }
+    setSalvas(s => comOuSem(s, r.id, !ja));
+    const { error } = await (ja
+      ? supabase.from("receitas_doonly_salvas").delete().eq("receita_id", r.id).eq("user_id", userId)
+      : supabase.from("receitas_doonly_salvas").insert({ receita_id: r.id, user_id: userId })
+    ).then(x => x, (e: unknown) => ({ error: e }));
+    gravando.current.delete(chave);
+    if (error) { setSalvas(s => comOuSem(s, r.id, ja)); mostrarAviso("Não deu pra salvar agora. Tente de novo.", true); }
     else mostrarAviso(ja ? "Tirada das salvas" : "Guardada em Receitas salvas");
   };
   const compartilhar = async (r: Receita) => {
@@ -272,7 +300,10 @@ export default function ReceitasV2() {
   // ═══════════ Listas ═══════════
   const grade = () => filtradas.length === 0 ? (
     vista.tipo === "salvas" && !q
-      ? <TelaVazia compacta icone={<BookmarkSimple size={28} />} titulo="Nenhuma receita salva" texto="Use o marcador dentro de uma receita pra guardar aqui." />
+      ? (erroSalvas
+        ? <TelaVazia compacta icone={<WarningCircle size={28} />} titulo="Não deu pra carregar as receitas salvas" texto="Tente de novo em instantes."
+            acao={<Botao onClick={() => { setVista({ tipo: "home" }); void carregar(); }}>Tentar de novo</Botao>} />
+        : <TelaVazia compacta icone={<BookmarkSimple size={28} />} titulo="Nenhuma receita salva" texto="Use o marcador dentro de uma receita pra guardar aqui." />)
       : <p className="cl9-semres">Nenhuma receita com esse nome ou ingrediente. Confira a busca.</p>
   ) : <div className="rv-grid">{filtradas.map(r => <Card key={r.id} r={r} />)}</div>;
 
@@ -317,6 +348,9 @@ export default function ReceitasV2() {
         {campoBusca("Buscar receita ou ingrediente")}
         {loading ? (
           <div className="cl9-esq" aria-label="Carregando receitas">{[0, 1, 2, 3].map(k => <span key={k} />)}</div>
+        ) : erroCarga ? (
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar as receitas" texto={erroCarga}
+            acao={<Botao onClick={() => void carregar()}>Tentar de novo</Botao>} />
         ) : q ? (
           <>
             <p className="rv-sub">{filtradas.length} receita{filtradas.length === 1 ? "" : "s"} encontrada{filtradas.length === 1 ? "" : "s"}</p>

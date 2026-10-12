@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { CaretRight, CheckCircle } from "@phosphor-icons/react";
 import { Botao } from "@/components/base";
+import { faltaPara, separarEntregasDeHoje, useAgora } from "./entregasDeHoje";
 import "./seuDia.css";
 
 /**
@@ -33,17 +34,6 @@ interface Props {
 const real = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 const hhmm = (h?: string | null) => (h ? String(h).slice(0, 5) : "");
 
-/** "em 2h", "em 40 min", "agora" */
-function falta(hora: string): string {
-  const [h, m] = hora.split(":").map(Number);
-  const alvo = new Date(); alvo.setHours(h, m || 0, 0, 0);
-  const min = Math.round((alvo.getTime() - Date.now()) / 60000);
-  if (min <= 0) return "agora";
-  if (min < 60) return `em ${min} min`;
-  const horas = Math.floor(min / 60), resto = min % 60;
-  return resto >= 30 && horas < 3 ? `em ${horas}h${String(resto).padStart(2, "0")}` : `em ${horas}h`;
-}
-
 /** dia em formato de calendário: { n: "11", s: "dom" } — hoje vira "hoje" */
 function diaCal(data: string, hoje: string) {
   const d = new Date(data + "T12:00:00");
@@ -54,13 +44,17 @@ function diaCal(data: string, hoje: string) {
 export default function SeuDia({ carregando, erro, aoTentar, entregasHoje, atrasados, novos, proximas, hoje }: Props) {
   const navigate = useNavigate();
 
-  // destaque: a primeira entrega de hoje (com horário primeiro; se nenhuma tiver, a primeira do dia)
-  const deHoje = proximas.filter(e => e.data === hoje);
-  const destaque = deHoje.find(e => e.hora) || deHoje[0] || null;
-  const lista = proximas.filter(e => e !== destaque).slice(0, 3);
+  // 11/10: destaque = a primeira entrega de hoje com hora de AGORA em diante (sem nenhuma, a primeira sem horário).
+  // As de hora já passada que ainda não foram entregues viram o aviso "N passaram do horário" e saem da lista.
+  // Antes o destaque era sempre a mais cedo do dia: às 20h40 ainda mostrava "15:30 · agora".
+  const agora = useAgora();
+  const { destaque, passaram, restantes } = separarEntregasDeHoje(proximas, hoje, agora);
+  const lista = restantes.slice(0, 3);
+  const quantoFalta = destaque?.hora ? faltaPara(hhmm(destaque.hora), agora) : "";
 
   const chips = [
     atrasados > 0 && { k: "atr", txt: `${atrasados} ${atrasados === 1 ? "atrasado" : "atrasados"}`, tom: "vermelho", para: "/pedidos?filtro=atrasados" },
+    passaram.length > 0 && { k: "pas", txt: `${passaram.length} ${passaram.length === 1 ? "passou" : "passaram"} do horário`, tom: "amarelo", para: "/agenda" },
     novos > 0 && { k: "nov", txt: `${novos} pra aceitar`, tom: "amarelo", para: "/pedidos?filtro=aguardando" },
     entregasHoje > 0 && { k: "hoj", txt: `${entregasHoje} ${entregasHoje === 1 ? "entrega hoje" : "entregas hoje"}`, tom: "", para: "/agenda" },
   ].filter(Boolean) as { k: string; txt: string; tom: string; para: string }[];
@@ -96,7 +90,7 @@ export default function SeuDia({ carregando, erro, aoTentar, entregasHoje, atras
           {destaque ? (
             <button type="button" className="sd-prox" onClick={() => navigate(`/pedidos/${destaque.id}`)}>
               <span className="sd-hora">
-                {destaque.hora ? <><b>{hhmm(destaque.hora)}</b><small>{falta(hhmm(destaque.hora))}</small></> : <><b>Hoje</b><small>sem horário</small></>}
+                {destaque.hora ? <><b>{hhmm(destaque.hora)}</b>{quantoFalta && <small>{quantoFalta}</small>}</> : <><b>Hoje</b><small>sem horário</small></>}
               </span>
               <span className="sd-prox-tx">
                 <em>{destaque.tipo === "retirada" ? "Próxima retirada" : "Próxima entrega"}</em>
@@ -105,9 +99,9 @@ export default function SeuDia({ carregando, erro, aoTentar, entregasHoje, atras
               </span>
               <span className="sd-prox-seta" aria-hidden="true"><CaretRight size={16} weight="bold" /></span>
             </button>
-          ) : (
+          ) : passaram.length === 0 ? (
             <p className="sd-calmo"><CheckCircle size={20} weight="bold" aria-hidden="true" />Nada pra entregar hoje</p>
-          )}
+          ) : null /* só sobraram entregas de hora passada: o aviso amarelo logo abaixo já diz */}
 
           {chips.length > 0 && (
             <div className="sd-chips">

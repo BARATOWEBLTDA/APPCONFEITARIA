@@ -47,20 +47,36 @@ const AudioExtension = Image.extend({
 // Extensão customizada pra arquivo (link download)
 const FileExtension = Image.extend({
   name: "arquivo",
+  // (11/10) O anexo era inserido como HTML com data-src/data-filename, mas o nó lia "src"/"filename": o endereço
+  // se perdia e o link saía vazio. Agora os dois atributos sabem ler e escrever os data-* (e o link de dentro).
   addAttributes() {
     return {
-      src: { default: null },
-      filename: { default: "arquivo" },
+      src: {
+        default: null,
+        parseHTML: (el: HTMLElement) => el.getAttribute("data-src") || el.getAttribute("src") || el.querySelector("a")?.getAttribute("href") || null,
+        renderHTML: (attrs: Record<string, any>) => (attrs.src ? { "data-src": attrs.src } : {}),
+      },
+      filename: {
+        default: "arquivo",
+        parseHTML: (el: HTMLElement) => el.getAttribute("data-filename") || el.getAttribute("filename") || el.querySelector("a")?.getAttribute("download") || "arquivo",
+        renderHTML: (attrs: Record<string, any>) => ({ "data-filename": attrs.filename || "arquivo" }),
+      },
     };
   },
   parseHTML() {
     return [{ tag: 'div[data-type="arquivo"]' }];
   },
-  renderHTML({ HTMLAttributes }) {
+  renderHTML({ node, HTMLAttributes }) {
+    const nome = String(node.attrs.filename || "") || "Baixar arquivo";
+    const src = String(node.attrs.src || "");
+    // o link do anexo só aceita https:// (nada de javascript: ou data:)
+    const seguro = /^https:\/\//i.test(src) ? src : "";
     return [
       "div",
-      { "data-type": "arquivo", class: "rich-file" },
-      ["a", { href: HTMLAttributes.src, download: HTMLAttributes.filename, target: "_blank" }, `📎 ${HTMLAttributes.filename || "Baixar arquivo"}`],
+      { ...HTMLAttributes, "data-type": "arquivo", class: "rich-file" },
+      seguro
+        ? ["a", { href: seguro, download: nome, target: "_blank", rel: "noopener noreferrer" }, `📎 ${nome}`]
+        : ["span", {}, `📎 ${nome}`],
     ];
   },
 });
@@ -141,7 +157,8 @@ export default function RichEditor({ content, onChange }: Props) {
     if (!file) return;
     const url = await uploadArquivo(file, "arquivo");
     if (url) {
-      editor.chain().focus().insertContent(`<div data-type="arquivo" data-src="${url}" data-filename="${file.name}"></div><p></p>`).run();
+      // (11/10) entra como nó, com o endereço e o nome nos atributos (antes ia como HTML e o endereço se perdia)
+      editor.chain().focus().insertContent([{ type: "arquivo", attrs: { src: url, filename: file.name } }, { type: "paragraph" }]).run();
     }
     e.target.value = "";
   };

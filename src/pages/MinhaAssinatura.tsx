@@ -5,6 +5,7 @@ import { CaretRight, ChatCircleDots, Crown } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
 import { useProfile } from "@/hooks/useProfile";
+import { voltarOuIr } from "@/lib/voltar"; // 11/10: seta de voltar que funciona com a tela aberta direto
 
 /** "Minha assinatura" (aprovado 01/10): pra quem já é PRO. Quem não é PRO vai pra página de assinar. */
 const WHATSAPP_EQUIPE = "5511978414991";
@@ -35,7 +36,7 @@ export default function MinhaAssinatura() {
 
   return (
     <div className="mas-root">
-      <AppPageHeader title="Minha assinatura" subtitle="Seu plano PRO" onBack={() => navigate(-1)} />
+      <AppPageHeader title="Minha assinatura" subtitle="Seu plano PRO" onBack={() => voltarOuIr(navigate, "/configuracoes")} />
       <div className="mas-wrap">
         <div className="mas-card">
           <div className="mas-top">

@@ -3,7 +3,8 @@ import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { ArrowRight, Bag, CaretDown, DotsThreeVertical } from '@phosphor-icons/react'
 import { Botao, BotaoIcone, Linha } from '@/components/base'
 import type { Pedido } from './pedidoTexto'
-import { acaoDe, atrasado, precisaAceitar, criadoEm, dataLonga, enderecoCurto, formaDoItem, fotoDoPedido, horaCurta, itensOrdenados, nomeCliente, nomeDeProduto, partesDaQtd, recebidoPedido, resumoItens, rs, saldoPedido, situacaoDe, telefoneBonito, grupoDoStatus } from './pedidoTexto'
+import { acaoDe, atrasado, precisaAceitar, criadoEm, dataLonga, enderecoCurto, formaDoItem, fotoDoPedido, horaCurta, itensOrdenados, nomeCliente, nomeDoItem, partesDaQtd, recebidoPedido, resumoItens, rs, saldoPedido, situacaoDe, telefoneBonito, grupoDoStatus } from './pedidoTexto'
+import { r2 } from '@/lib/moeda'
 
 /**
  * Pedido na lista (08/10 · 3.11, no padrão do guia).
@@ -88,7 +89,7 @@ export function CartaoPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudand
           {itensOrdenados(p).length > 0 && (
             <div className="pdc-itens">
               {itensOrdenados(p).map((it, i) => (
-                <p key={i}><span><NomeComQtd nome={nomeDeProduto(it.nome_produto)} qtd={it.quantidade} forma={formaDoItem(it)} /></span><span>{rs((it.valor_unitario || 0) * (it.quantidade || 1))}</span></p>
+                <p key={i}><span><NomeComQtd nome={nomeDoItem(it)} qtd={it.quantidade} forma={formaDoItem(it)} /></span><span>{rs(r2((it.valor_unitario || 0) * (it.quantidade || 1)))}</span></p>
               ))}
             </div>
           )}

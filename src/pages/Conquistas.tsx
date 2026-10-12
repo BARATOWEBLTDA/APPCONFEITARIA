@@ -4,7 +4,9 @@ import AppPageHeader from "@/components/AppPageHeader";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
 import { CONQUISTAS, sincronizarConquistas, type ResultadoConquistas, type Metrica } from "@/lib/conquistas";
-import { Cake, Calculator, CalendarCheck, Crown, DeviceMobile, Globe, Receipt, Users, type Icon } from "@phosphor-icons/react";
+import { Cake, Calculator, CalendarCheck, Crown, DeviceMobile, Globe, Receipt, Users, WarningCircle, type Icon } from "@phosphor-icons/react";
+import { Botao, TelaVazia } from "@/components/base";
+import { voltarOuIr } from "@/lib/voltar";
 
 /** Ícone de cada medalha (09/10: antes era emoji) */
 const ICONE_MEDALHA: Record<Metrica, Icon> = { pedidos: Receipt, pedidosCardapio: DeviceMobile, clientes: Users, produtos: Cake, fichas: Calculator, cardapio: Globe, pro: Crown, mesesPro: CalendarCheck };
@@ -20,10 +22,28 @@ const SECOES: { titulo: string; metricas: Metrica[] }[] = [
 /** "Minhas conquistas" — todas as medalhas (aprovado 30/09) */
 export default function Conquistas() {
   const navigate = useNavigate();
-  const { profile } = useProfile();
+  const { profile, loading: carregandoPerfil, refetch: recarregarPerfil } = useProfile();
   const { isPro } = usePlano();
   const [r, setR] = useState<ResultadoConquistas | null>(null);
-  useEffect(() => { if (profile) sincronizarConquistas(profile, isPro).then(setR); }, [profile?.id, isPro]);
+  // 11/10: se a leitura falhar, avisa com "Tentar de novo" (antes ficava em "Carregando…" e "0/24" sem fim)
+  const [erro, setErro] = useState(false);
+  const [tentativa, setTentativa] = useState(0);
+  useEffect(() => {
+    if (!profile) { if (!carregandoPerfil) setErro(true); return; } // nem o perfil veio
+    let cancelado = false;
+    setErro(false);
+    sincronizarConquistas(profile, isPro).then(
+      res => { if (cancelado) return; if (res) setR(res); else setErro(true); },
+      e => { console.error("[conquistas] não consegui carregar:", e); if (!cancelado) setErro(true); },
+    );
+    return () => { cancelado = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.id, isPro, carregandoPerfil, tentativa]);
+  const tentarDeNovo = async () => {
+    setErro(false);
+    if (!profile) { try { await recarregarPerfil(); } catch { /* o aviso volta logo abaixo */ } }
+    setTentativa(t => t + 1);
+  };
 
   const feitas = r ? CONQUISTAS.filter(q => r.feitas[q.codigo]).length : 0;
   /** "10 de out." — a data em que a medalha foi ganha (antes "10/10", que parecia progresso) */
@@ -32,14 +52,19 @@ export default function Conquistas() {
 
   return (
     <div className="cqp">
-      <AppPageHeader title="Minhas conquistas" subtitle={r ? `${feitas} de ${CONQUISTAS.length} conquistadas` : "Carregando…"} onBack={() => navigate(-1)} />
+      <AppPageHeader title="Minhas conquistas" subtitle={r ? `${feitas} de ${CONQUISTAS.length} conquistadas` : erro ? "Não deu pra carregar" : "Carregando…"} onBack={() => voltarOuIr(navigate)} />
       <div className="cqp-wrap">
+        {erro && !r ? (
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar as conquistas" texto="Confira a internet e tente de novo."
+            acao={<Botao variante="suave" tamanho="m" onClick={tentarDeNovo}>Tentar de novo</Botao>} />
+        ) : (
         <div className="cqp-sum">
           <div className="cqp-ring" style={{ background: `conic-gradient(#E85A8C ${(feitas / CONQUISTAS.length) * 360}deg, #F5E1EA 0)` }}>
             <div><b>{feitas}</b><small>/{CONQUISTAS.length}</small></div>
           </div>
           <div><b>{frase}</b><p>Continue vendendo e cadastrando pra desbloquear as próximas medalhas.</p></div>
         </div>
+        )}
         {r && SECOES.map(sec => (
           <section key={sec.titulo} aria-label={sec.titulo}>
             <h2 className="cqp-sec">{sec.titulo}</h2>

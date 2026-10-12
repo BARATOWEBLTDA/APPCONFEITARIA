@@ -9,6 +9,7 @@ import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, Titulo } from "@/components/base";
 import { usePlano } from "@/hooks/usePlano";
 import { useProfile } from "@/hooks/useProfile";
+import { voltarOuIr } from "@/lib/voltar"; // 11/10: seta de voltar que funciona com a tela aberta direto (link de notificação)
 import "./clientes.css";
 import "./assinar.css";
 
@@ -60,7 +61,7 @@ export default function Assinar() {
 
   return (
     <>
-      <AppPageHeader title="Doonly PRO" subtitle={isPro ? "Você já é PRO" : "Tudo pra sua confeitaria vender mais"} onBack={() => navigate(-1)} />
+      <AppPageHeader title="Doonly PRO" subtitle={isPro ? "Você já é PRO" : "Tudo pra sua confeitaria vender mais"} onBack={() => voltarOuIr(navigate)} />
       <div className="cl9 pro9">
         <section className="pro9-hero">
           <img src="/pro.png" alt="" />

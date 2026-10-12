@@ -1,6 +1,7 @@
 import CampoData from '@/components/CampoData'
 import { useTravarRolagem } from "@/hooks/useTravarRolagem";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import Folha from "@/components/financeiro/Folha";
@@ -38,27 +39,36 @@ export default function FinanceiroAReceber() {
 
   // 10/10: se a busca falhar, a tela avisa (antes aparecia "Nada a receber agora"); e só vale a resposta da última busca
   const numBusca = useRef(0);
-  const carregar = useCallback(async () => {
+  const carregouBem = useRef(false);
+  const carregar = useCallback(async (semPiscar?: unknown) => {
     const n = ++numBusca.current;
+    // (11/10) atualização por trás (ao voltar pro app) que falha mantém a lista que já está na tela
+    const quieto = semPiscar === true && carregouBem.current;
     try {
       const { data: { user }, error } = await supabase.auth.getUser();
       if (n !== numBusca.current) return;
-      if (!user) { if (erroDeConexao(error)) { setErro(true); setCarregando(false); } return; }
+      if (!user) { if (erroDeConexao(error) && !quieto) { setErro(true); setCarregando(false); } return; }
       const r = await carregarAReceber(user.id); // regra única (Passos 2 e 6)
       if (n !== numBusca.current) return;
+      if (r.erro && quieto) return;
       setItens(r.itens); setErro(r.erro);
+      if (!r.erro) carregouBem.current = true;
     } catch (e) {
       console.error("[a receber] não consegui carregar:", e);
-      if (n !== numBusca.current) return;
+      if (n !== numBusca.current || quieto) return;
       setItens([]); setErro(true);
     }
     setCarregando(false);
   }, []);
-  useEffect(() => { carregar(); }, [carregar]);
+  // 11/10: app aberto de um dia pro outro. Virou o dia ou a pessoa voltou pro app: busca de novo
+  // (o "atrasado 2 dias" de cada pedido é calculado na busca) e refaz os grupos com o dia de agora.
+  const hoje = useDiaAtual();
+  useEffect(() => { carregar(); }, [carregar, hoje]);
+  useAoVoltar(() => { carregar(true); });
   const tentarDeNovo = () => { setCarregando(true); carregar(); };
 
   const grupos = useMemo(() => {
-    const hoje = isoHoje(), em7 = isoMais(6);
+    const em7 = isoMais(6);
     const g = { atrasados: [] as Item[], semana: [] as Item[], depois: [] as Item[], semData: [] as Item[] };
     for (const it of itens) {
       if (!it.dataRef) g.semData.push(it);
@@ -67,9 +77,12 @@ export default function FinanceiroAReceber() {
       else g.depois.push(it);
     }
     return g;
-  }, [itens]);
+  }, [itens, hoje]);
   const soma = (l: Item[]) => l.reduce((s, x) => s + x.falta, 0);
   const total = soma(itens);
+  // 11/10: os 3 valores do resumo usam a mesma letra, do tamanho em que o MAIOR cabe inteiro (em 360 px "R$ 105.302,13" virava "R$ 105.30…")
+  const resumo = [brl(soma(grupos.atrasados)), brl(soma(grupos.semana)), brl(soma(grupos.depois) + soma(grupos.semData))];
+  const letrasDoMaior = Math.max(...resumo.map(v => v.length));
 
   return (
     <div className="far-root">
@@ -87,11 +100,11 @@ export default function FinanceiroAReceber() {
 
       <div className="far-wrap">
         {!carregando && itens.length > 0 && (
-          <div className="far-resumo">
+          <div className="far-resumo" style={{ "--far-n": letrasDoMaior } as CSSProperties}>
             {/* 10/10: valor zerado fica neutro (cinza), não no laranja de alerta */}
-            <div className={`far-k ${soma(grupos.atrasados) > 0 ? "far-k--atr" : "far-k--zero"}`}><small>Atrasados</small><b>{brl(soma(grupos.atrasados))}</b><i>{grupos.atrasados.length} {grupos.atrasados.length === 1 ? "pedido" : "pedidos"}</i></div>
-            <div className={`far-k ${soma(grupos.semana) > 0 ? "" : "far-k--zero"}`}><small>Em 7 dias</small><b>{brl(soma(grupos.semana))}</b><i>{grupos.semana.length} {grupos.semana.length === 1 ? "pedido" : "pedidos"}</i></div>
-            <div className={`far-k ${soma(grupos.depois) + soma(grupos.semData) > 0 ? "" : "far-k--zero"}`}><small>Depois</small><b>{brl(soma(grupos.depois) + soma(grupos.semData))}</b><i>{grupos.depois.length + grupos.semData.length} {grupos.depois.length + grupos.semData.length === 1 ? "pedido" : "pedidos"}</i></div>
+            <div className={`far-k ${soma(grupos.atrasados) > 0 ? "far-k--atr" : "far-k--zero"}`}><small>Atrasados</small><b>{resumo[0]}</b><i>{grupos.atrasados.length} {grupos.atrasados.length === 1 ? "pedido" : "pedidos"}</i></div>
+            <div className={`far-k ${soma(grupos.semana) > 0 ? "" : "far-k--zero"}`}><small>Em 7 dias</small><b>{resumo[1]}</b><i>{grupos.semana.length} {grupos.semana.length === 1 ? "pedido" : "pedidos"}</i></div>
+            <div className={`far-k ${soma(grupos.depois) + soma(grupos.semData) > 0 ? "" : "far-k--zero"}`}><small>Depois</small><b>{resumo[2]}</b><i>{grupos.depois.length + grupos.semData.length} {grupos.depois.length + grupos.semData.length === 1 ? "pedido" : "pedidos"}</i></div>
           </div>
         )}
 
@@ -209,9 +222,12 @@ const CSS = `
   /* 10/10: mesma largura de conteúdo de Transações (antes 760px, numa coluna estreita no PC) */
   .far-wrap { max-width: 980px; margin: 0 auto; padding: 22px 0 96px; display: flex; flex-direction: column; gap: 20px; }
   .far-resumo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .far-k { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 10px; min-width: 0; }
+  .far-k { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 10px; min-width: 0; container-type: inline-size; }
   .far-k small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
   .far-k b { display: block; font-size: clamp(13.5px, 3.9vw, 17px); letter-spacing: -.02em; font-weight: 700; color: var(--ui-laranja); margin: 3px 0 1px; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* 11/10: o valor cabe inteiro. A letra encolhe até caber na largura do cartão (--far-n = letras do maior valor;
+     0,57 = largura média de cada letra de um valor em reais na Geist Bold). Nunca passa do tamanho de antes nem fica menor que 10px. */
+  .far-k b { font-size: max(10px, min(clamp(13.5px, 3.9vw, 17px), calc(100cqi / (var(--far-n, 11) * .57)))); }
   .far-k i { font-style: normal; font-size: 13px; color: #888780; }
   .far-k--atr { border-color: #FECACA; background: #FFF7F7; } .far-k--atr b { color: var(--ui-vermelho); }
   .far-k--zero b { color: var(--ui-texto-3); }

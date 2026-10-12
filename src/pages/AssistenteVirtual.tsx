@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
 import { usePlano } from "@/hooks/usePlano";
 import { abrirDooIA } from "@/components/MenuContaItens";
+import { voltarOuIr } from "@/lib/voltar"; // 11/10: seta de voltar que funciona com a tela aberta direto
 import { BookOpenText, Cake, CalendarCheck, ChatCircleDots, Crown, CurrencyCircleDollar, PencilSimpleLine } from "@phosphor-icons/react";
 
 /** "Assistente virtual" — o que a Doo IA faz (aparece pra quem ainda não é PRO). 08/10 · 3.19: ícones do app no lugar dos emojis. */
@@ -19,7 +20,7 @@ export default function AssistenteVirtual() {
   const { isPro } = usePlano();
   return (
     <div className="av-root">
-      <AppPageHeader title="Assistente virtual" subtitle="Conheça a Doo IA" onBack={() => navigate(-1)} />
+      <AppPageHeader title="Assistente virtual" subtitle="Conheça a Doo IA" onBack={() => voltarOuIr(navigate)} />
       <div className="av-wrap">
         <div className="av-hero">
           <img src="/Sistema/doo.png" alt="" className="av-doo" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />

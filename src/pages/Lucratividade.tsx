@@ -10,7 +10,7 @@ import { Botao, TelaVazia } from "@/components/base";
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { erroDeConexao } from "@/lib/erros";
-import { carregarMes, custoPorProduto, type MesFinanceiro } from "@/lib/painelFinanceiro";
+import { carregarMes, custoPorProduto, multiplicadorDoItem, produtosPeloPeso, type MesFinanceiro } from "@/lib/painelFinanceiro";
 
 type Produto = { chave: string; nome: string; qtd: number; vendido: number; custo: number; lucro: number; margem: number; semFicha: boolean };
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -40,7 +40,7 @@ export default function Lucratividade() {
       const [d, peds, cf, mo] = await Promise.all([
         carregarMes(user.id, mes.ano, mes.m),
         // de 1.000 em 1.000, igual ao painel (o Supabase corta em 1.000 linhas sem avisar)
-        buscarTudo<any>((de, ate) => supabase.from("pedidos").select("status, pedido_itens(nome_produto, quantidade, valor_unitario, produtos(id, nome))")
+        buscarTudo<any>((de, ate) => supabase.from("pedidos").select("status, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(id, nome, forma_venda))")
           .eq("user_id", user.id).eq("status", "entregue").gte("data_entrega", ini).lte("data_entrega", fim).order("id").range(de, ate)),
         supabase.from("custos_fixos").select("valor, ativo").eq("user_id", user.id),
         supabase.from("config_mao_obra").select("salario_mensal").eq("user_id", user.id).maybeSingle(),
@@ -52,7 +52,7 @@ export default function Lucratividade() {
       // lucro por produto
       const itens = peds.data.filter(p => p.status !== "cancelado").flatMap(p => p.pedido_itens || []);
       const ids = [...new Set(itens.map((it: any) => it.produtos?.id).filter(Boolean))] as string[];
-      const custo = await custoPorProduto(ids);
+      const [custo, peloPeso] = await Promise.all([custoPorProduto(ids), produtosPeloPeso(itens)]);
       if (cancelado) return;
       const mapa: Record<string, Produto> = {};
       for (const it of itens) {
@@ -61,7 +61,8 @@ export default function Lucratividade() {
         const q = Number(it.quantidade) || 0;
         p.qtd += q; p.vendido += (Number(it.valor_unitario) || 0) * q;
         const c = id ? custo[id] : 0;
-        if (c) p.custo += c * q; else p.semFicha = true;
+        // 11/10: tamanho pelo peso ("M · 2 kg") e kit (50 un) custam o tamanho/kit inteiro, não 1 kg ou 1 unidade
+        if (c) p.custo += c * multiplicadorDoItem(it, peloPeso) * q; else p.semFicha = true;
       }
       const lista = Object.values(mapa).map(p => ({ ...p, lucro: p.vendido - p.custo, margem: p.vendido > 0 ? Math.round(((p.vendido - p.custo) / p.vendido) * 100) : 0 }))
         .sort((a, b) => b.lucro - a.lucro);

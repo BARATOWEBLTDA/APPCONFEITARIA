@@ -8,7 +8,7 @@ import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidad
 import { kitAtivo, precoMinKit, presetKit, kitsValidos, type KitQtdConfig } from "@/lib/kitQuantidade";
 import TipoProdutoTela, { type TipoProduto as TipoCadastro } from "@/components/produto/TipoProdutoTela";
 import SucessoProdutoTela from "@/components/produto/SucessoProdutoTela";
-import { precoCardapio } from "@/lib/precoCardapio";
+import { precoCardapio, precoCardapioComPromocao } from "@/lib/precoCardapio";
 import { BoloOpcoesStep, BoloTamanhosStep, BoloPrecoStep, boloOpcoesFalta, boloTamanhosFalta, boloPrecoFalta, type BoloTam, type FaltaCampo } from "@/components/produto/BoloWizard";
 import { supabase } from "@/lib/supabase";
 import { listarBiblioteca, salvarNaBiblioteca, type BibliotecaOpcao } from "@/lib/biblioteca";
@@ -35,7 +35,8 @@ import Categorias from "@/pages/Categorias";
 import QuickAddInsumo from "@/components/QuickAddInsumo";
 import AppPageHeader from "@/components/AppPageHeader";
 import { ArrowLeft as ArrowLeftIc, Camera, CaretDown, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, SortAscending, WarningCircle, Trash, X as XIc, DotsThreeVertical, Lightbulb, Cake, BookOpen, Egg, Crown } from "@phosphor-icons/react";
-import { Botao, BotaoIcone, Janela, Linha as LinhaUi, Titulo as TituloUi, avisar, confirmar } from "@/components/base";
+import { Botao, BotaoIcone, Janela, Linha as LinhaUi, TelaVazia, Titulo as TituloUi, avisar, confirmar } from "@/components/base";
+import { historicoAssentado, useSobreposicao } from "@/components/base/useSobreposicao";
 import { sufixoVenda } from "@/lib/formaVenda";
 import "./produtosLista.css";
 import "@/components/produto/cadastroProduto.css";
@@ -50,15 +51,10 @@ const unidadeDoPreco = (fv?: string | null) => {
  * "a partir de R$ X" (o menor) e sem "por kg"; sem tamanhos mostra o preço e a unidade.
  */
 const precoDaLista = (prod: any) => {
-  const pc = precoCardapio(prod);
-  const descRatio = prod?.promocao
-    ? (prod.tipo_promocao === "percentual" && prod.desconto_percentual > 0
-        ? prod.desconto_percentual / 100
-        : prod.preco_promocional && prod.preco_normal > 0 ? 1 - (prod.preco_promocional / prod.preco_normal) : 0)
-    : 0;
-  const final = descRatio > 0 ? Math.round(pc.valor * (1 - descRatio) * 100) / 100 : pc.valor;
+  // (11/10) pela função única do cardápio: mesma regra de promoção e mesmo arredondamento do cartão da cliente
+  const pc = precoCardapioComPromocao(prod);
   const unidade = pc.aPartir || prod?.grupo_tamanhos?.ativo ? "" : unidadeDoPreco(prod?.forma_venda);
-  return { de: descRatio > 0 ? pc.valor : 0, final, unidade, aPartir: pc.aPartir };
+  return { de: pc.de, final: pc.final, unidade, aPartir: pc.aPartir };
 };
 import ReqTag from "@/components/ReqTag";
 import { apiFetch } from "@/lib/apiFetch";
@@ -658,6 +654,9 @@ function SelectDoonly({
   const [pop, setPop] = useState<{ top: number; left: number; width: number } | null>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
   const popRef = useRef<HTMLDivElement>(null);
+  // (11/10) no celular a lista abre por cima: o "voltar" do Android fecha a lista (e não volta o passo do cadastro)
+  const sheetRef = useRef<HTMLDivElement>(null);
+  useSobreposicao(open && isMobile, () => setOpen(false), sheetRef);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth <= 720);
@@ -728,7 +727,7 @@ function SelectDoonly({
 
       {open && isMobile && (
         <div className="sd-sheet-ov" onClick={() => setOpen(false)}>
-          <div className="sd-sheet" onClick={e => e.stopPropagation()}>
+          <div className="sd-sheet" ref={sheetRef} onClick={e => e.stopPropagation()}>
             <div className="sd-sheet-handle" />
             <div className="sd-sheet-title">{title}</div>
             <div className="sd-sheet-list">
@@ -1323,6 +1322,13 @@ function PersonalizacaoStep({
   const [novoTamanhoUnid, setNovoTamanhoUnid] = useState<UnidadeTam>("kg");
   // 1️⃣ Modal do "gerar tamanhos"
   const [gerarModalAberto, setGerarModalAberto] = useState(false);
+  // (11/10) "voltar" do Android e Esc fecham primeiro a janela de dentro (dica, gerar tamanhos, biblioteca), e não o passo do cadastro
+  const semCaixa = useRef<HTMLDivElement>(null);
+  useSobreposicao(!!(infoTip || gerarModalAberto || bibSheetGrupo), () => {
+    if (infoTip) setInfoTip(null);
+    else if (gerarModalAberto) setGerarModalAberto(false);
+    else setBibSheetGrupo(null);
+  }, semCaixa);
   const [gerarDe, setGerarDe] = useState("0,5");
   const [gerarAte, setGerarAte] = useState("5");
   const [gerarPasso, setGerarPasso] = useState(0.5);
@@ -3503,8 +3509,14 @@ export default function Produtos() {
     return `${semTag} (cópia ${proximo})`;
   };
   const [loading, setLoading] = useState(true);
+  // (11/10) a lista não carregou: mostra o erro com "Tentar de novo" em vez da tela de conta nova
+  const [erroCarga, setErroCarga] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  // (11/10) IA escrevendo a descrição: estado próprio (antes o "Melhorando..." ficava dentro do campo e era salvo)
+  const [gerandoDesc, setGerandoDesc] = useState<null | "gerar" | "melhorar">(null);
+  // (11/10) muda a cada abrir/fechar do cadastro: resposta atrasada (foto subindo, IA) de outra abertura é descartada
+  const abertura = useRef(0);
   const [modal, setModal] = useState(false);
   const [wizardStep, setWizardStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   // Mobile: divide step 3 (personalização) em 2 sub-etapas: 'checklist' (só marca as categorias) → 'fill' (preenche)
@@ -3565,7 +3577,6 @@ export default function Produtos() {
   const [showDraftBanner, setShowDraftBanner] = useState(false);
   const draftSaveTimer = useRef<any>(null);
   const DRAFT_KEY = "doonly_produto_draft_v1";
-  const [confirmDiscardProd, setConfirmDiscardProd] = useState(false);
   const [ordenarPor, setOrdenarPor] = useState<"recentes"|"alfabetica"|"categoria"|"preco">("recentes");
   const [showOrdenar, setShowOrdenar] = useState(false);
   const [filtroOrfaos, setFiltroOrfaos] = useState(false);
@@ -3626,37 +3637,15 @@ export default function Produtos() {
   // Auto-abre cadastro quando vem de Pedidos
   useEffect(() => {
     if (!loading && (location.state as any)?.abrirCadastro) {
-      window.history.replaceState({}, "");
+      window.history.replaceState({ ...(window.history.state || {}), usr: null }, ""); // (11/10) mantém idx e key do roteador (o voltarOuIr usa)
       // Abre igual ao botão "Novo produto" (a escolha com imagens: bolos, doces, salgados…).
       // Antes abria a janela sem zerar e caía na tela antiga de tipo de cadastro.
       openNovo();
     }
   }, [loading, location.state]);
 
-  // Bloqueia scroll quando modal aberto
-  useEffect(() => {
-    if (modal || previewProduto) {
-      const scrollY = window.scrollY;
-      document.body.style.position = "fixed";
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.left = "0";
-      document.body.style.right = "0";
-      document.body.style.width = "100%";
-      document.body.style.overflow = "hidden";
-      document.documentElement.style.overflow = "hidden";
-      return () => {
-        const y = document.body.style.top;
-        document.body.style.position = "";
-        document.body.style.top = "";
-        document.body.style.left = "";
-        document.body.style.right = "";
-        document.body.style.width = "";
-        document.body.style.overflow = "";
-        document.documentElement.style.overflow = "";
-        window.scrollTo(0, y ? -parseInt(y, 10) : 0);
-      };
-    }
-  }, [modal, previewProduto]);
+  // (11/10) a trava de rolagem do cadastro e do produto aberto agora é a do useSobreposicao (mais abaixo):
+  // a trava manual daqui brigava com a das janelas abertas por cima e a lista voltava pro topo.
 
   // Fecha menu do preview quando preview fecha
   useEffect(() => { if (!previewProduto) setPreviewMenu(false); }, [previewProduto]);
@@ -3668,23 +3657,29 @@ export default function Produtos() {
     window.addEventListener("click", handler);
     return () => window.removeEventListener("click", handler);
   }, [previewMenu]);
-  useEffect(() => {
-    const load = async () => {
+  // (11/10) se a lista de produtos não carregar, a tela mostra o erro com "Tentar de novo"
+  // (antes aparecia "Cadastre seu primeiro produto" pra quem tinha produtos, ou o carregando ficava pra sempre)
+  const carregarTudo = async () => {
+    setLoading(true); setErroCarga("");
+    try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) { setErroCarga("Tente de novo em instantes."); setLoading(false); return; }
       setUserId(user.id);
       // Buscar nome pra personalizar tooltips
       const { data: profile } = await supabase.from("profiles").select("nome").eq("id", user.id).single();
       if (profile?.nome) setPrimeiroNome(profile.nome.trim().split(/\s+/)[0]);
-      await loadProdutos(user.id);
+      const erroProdutos = await loadProdutos(user.id);
+      if (erroProdutos) { setErroCarga(explicarErro(erroProdutos, "Tente de novo em instantes.")); setLoading(false); return; }
       await loadCategorias(user.id);
       await loadInsumos(user.id);
       await loadBiblioteca(user.id);
       await loadCustosConta(user.id);
-      setLoading(false);
-    };
-    load();
-  }, []);
+    } catch (e) {
+      setErroCarga(explicarErro(e, "Tente de novo em instantes."));
+    }
+    setLoading(false);
+  };
+  useEffect(() => { void carregarTudo(); }, []);
 
   // ═══ BIBLIOTECA DE EXTRAS ═══
   const loadBiblioteca = async (uid: string) => {
@@ -3710,7 +3705,9 @@ export default function Produtos() {
     if (!form.categoria) return true;
     // Se o extra não tem categorias, mostra pra todos
     if (!b.categorias || b.categorias.length === 0) return true;
-    return b.categorias.includes(form.categoria);
+    // (11/10) "categorias" guarda os ids dos PRODUTOS em que o extra aparece (igual à tela Personalização e ao cardápio).
+    // O nome da categoria é só de registro antigo.
+    return b.categorias.some(c => c === form.id || c === form.categoria || produtos.some(p => p.id === c && p.categoria === form.categoria));
   });
 
   const loadInsumos = async (uid: string) => {
@@ -3735,13 +3732,15 @@ export default function Produtos() {
     } catch { /* sem esses dados o lucro usa o que está salvo no produto */ }
   };
 
-  const loadProdutos = async (uid: string) => {
-    const { data } = await supabase
+  // Devolve o erro da leitura (null = leu). Se falhar, a lista que está na tela continua como estava.
+  const loadProdutos = async (uid: string): Promise<unknown> => {
+    const { data, error } = await supabase
       .from("produtos")
       .select("*, produto_insumos(quantidade, unidade_utilizada, insumos(custo_unitario, unidade))")
       .eq("user_id", uid)
       .order("created_at", { ascending: false });
-    if (data) setProdutos(data as Produto[]);
+    if (data && !error) setProdutos(data as Produto[]);
+    return error || (data ? null : new Error("sem dados"));
   };
 
   /**
@@ -3763,9 +3762,16 @@ export default function Produtos() {
     return { cmv: c.cmv, lucro: c.lucro, margem: c.margemLucro, temFicha: c.temFicha, precoEfetivo: c.preco };
   };
 
-  const loadCategorias = async (uid: string) => {
-    const { data } = await supabase.from("categorias").select("nome").eq("user_id", uid).order("nome");
-    if (data) setCategorias(data.map((c: any) => c.nome));
+  // (11/10) devolve os nomes lidos, ou null se a leitura falhou. `categoriasLidas` diz se a lista da tela é de verdade:
+  // sem isso, uma leitura que falhou parecia "conta sem categorias" e o cadastro criava "Bolos" de novo.
+  const categoriasLidas = useRef(false);
+  const loadCategorias = async (uid: string): Promise<string[] | null> => {
+    const { data, error } = await supabase.from("categorias").select("nome").eq("user_id", uid).order("nome");
+    if (error || !data) return null;
+    const nomes = data.map((c: any) => c.nome as string);
+    categoriasLidas.current = true;
+    setCategorias(nomes);
+    return nomes;
   };
 
   // ═══ Draft de produto (mobile - autosave em localStorage) ═══
@@ -3838,6 +3844,7 @@ export default function Produtos() {
   const openNovo = () => {
     if (passouDoLimite()) { setLimiteAberto(true); return; }
     fichaLida.current = null; fichaPedida.current = null;
+    abertura.current++; setGerandoDesc(null); setUploading(false);
     // Se tem rascunho, abre o modal vazio + mostra banner pra escolher
     if (hasDraft()) {
       setForm(EMPTY); setFichaTecnica([]); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setMobilePersonaStep("checklist"); setKitTela(false); setTipoCadastro(null); setBoloTam(null); setTipoTela(false); setModal(true);
@@ -3875,11 +3882,27 @@ export default function Produtos() {
       sobremesas: { nome: "Sobremesas", icone: 10 }, kitfesta: { nome: "Kit festa", icone: 28 },
     };
     const nova = NOVA_CATEGORIA[tp];
-    if (!cat && nova && userId && !categorias.some(c => norm(c) === norm(nova.nome))) {
-      setForm(f => ({ ...f, categoria: nova.nome }));
-      setCategorias(prev => (prev.includes(nova.nome) ? prev : [...prev, nova.nome].sort()));
-      supabase.from("categorias").insert({ nome: nova.nome, imagem_url: `/categoriaicones/icone (${nova.icone}).png`, ordem: categorias.length, user_id: userId })
-        .then(() => {}, () => {});
+    if (!cat && nova && userId) {
+      const vez = abertura.current;
+      void (async () => {
+        // (11/10) a leitura das categorias falhou: lê de novo antes de decidir. Antes a lista vazia parecia
+        // "conta sem categorias" e escolher "Bolos" criava outra "Bolos". Se continuar falhando, não cria nada:
+        // a pessoa escolhe a categoria no passo seguinte.
+        const lista = categoriasLidas.current ? categorias : await loadCategorias(userId);
+        if (!lista || abertura.current !== vez) return;
+        const jaTem = lista.find(c => palavras[tp]?.test(norm(c))) || lista.find(c => norm(c) === norm(nova.nome));
+        if (jaTem) { setForm(f => (f.categoria ? f : { ...f, categoria: jaTem })); return; }
+        setForm(f => ({ ...f, categoria: nova.nome }));
+        setCategorias(prev => (prev.includes(nova.nome) ? prev : [...prev, nova.nome].sort()));
+        const { error } = await supabase.from("categorias").insert({ nome: nova.nome, imagem_url: `/categoriaicones/icone (${nova.icone}).png`, ordem: lista.length, user_id: userId })
+          .then(r => r, (e: unknown) => ({ error: e }));
+        if (!error) return;
+        // não gravou: tira da lista e do produto (senão o produto ia pra uma categoria que não existe)
+        setCategorias(prev => prev.filter(c => c !== nova.nome));
+        if (abertura.current !== vez) { console.error("[Doonly]", error); return; }
+        setForm(f => (f.categoria === nova.nome ? { ...f, categoria: "" } : f));
+        avisar(explicarErro(error, `Não deu pra criar a categoria ${nova.nome}. Escolha a categoria no cadastro.`), { tipo: "erro" });
+      })();
     }
   };
   const isBolo = tipoCadastro === "bolos" && !form.id;
@@ -3939,6 +3962,7 @@ export default function Produtos() {
     setWizardStep(2);
     setEditTab("info");
     setModal(true);
+    abertura.current++; setGerandoDesc(null); setUploading(false);
     fichaLida.current = null;
     fichaPedida.current = p.id || null;
     if (p.id && userId) {
@@ -3960,7 +3984,7 @@ export default function Produtos() {
       }
     }
   };
-  const fecharModal = () => { fichaLida.current = null; fichaPedida.current = null; setUploading(false); /* envio de foto que nunca respondeu não deixa o Salvar preso */ setSucesso(null); setTipoTela(false); setKitTela(false); setModal(false); setForm(EMPTY); setFichaTecnica([]); setFichaModalOpen(false); setShowQuickAdd(false); setBuscaInsumo(""); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setConfirmDiscardProd(false); };
+  const fecharModal = () => { fichaLida.current = null; fichaPedida.current = null; abertura.current++; setGerandoDesc(null); setCropSrc(null); setCropVariacaoIdx(null); setSalvarBibliotecaAsk(null); setUploading(false); /* envio de foto que nunca respondeu não deixa o Salvar preso */ setSucesso(null); setTipoTela(false); setKitTela(false); setModal(false); setForm(EMPTY); setFichaTecnica([]); setFichaModalOpen(false); setShowQuickAdd(false); setBuscaInsumo(""); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); };
 
   // Guard: verifica se o produto tem dados preenchidos (pra decidir se avisa antes de fechar)
   const hasProdData = (): boolean => {
@@ -3975,9 +3999,21 @@ export default function Produtos() {
       (form.tamanhos_disponiveis && form.tamanhos_disponiveis.length > 0)
     );
   };
-  const handleTryClose = () => {
-    if (hasProdData()) setConfirmDiscardProd(true);
-    else fecharModal();
+  // 11/10: a pergunta "Descartar?" usa o confirmar(): ele só responde depois que a janela dele saiu do histórico,
+  // então o cadastro fecha depois (uma janela de cada vez; fechar as duas juntas pedia dois "voltar" ao mesmo tempo).
+  const perguntandoDescartar = useRef(false);
+  const handleTryClose = async () => {
+    if (!hasProdData()) { fecharModal(); return; }
+    if (perguntandoDescartar.current) return;
+    perguntandoDescartar.current = true;
+    const vez = abertura.current;
+    const ok = await confirmar({
+      titulo: form.id ? "Descartar as alterações?" : "Descartar o cadastro?", texto: "O que você preencheu vai se perder.",
+      rotulo: "Descartar", rotuloVoltar: "Continuar", perigo: true, icone: "alerta",
+    });
+    perguntandoDescartar.current = false;
+    if (!ok || abertura.current !== vez) return;
+    limparDraft(); fecharModal();
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, slot: number = 0) => {
@@ -3993,12 +4029,17 @@ export default function Produtos() {
     if (!userId) return;
     const isVariacao = cropVariacaoIdx !== null;
     const idxVar = cropVariacaoIdx;
+    const slot = cropSlot;
+    // (11/10) a foto é desta abertura do cadastro: se fechar ou abrir outro produto enquanto ela sobe, o resultado é descartado
+    // (antes a foto caía no produto que estivesse aberto na hora em que o envio terminava)
+    const vez = abertura.current;
     setCropSrc(null);
     setCropVariacaoIdx(null);
     setUploading(true);
-    const suffix = isVariacao ? `var-${idxVar}` : `${cropSlot}`;
+    const suffix = isVariacao ? `var-${idxVar}` : `${slot}`;
     const path = `produtos/${userId}-${Date.now()}-${suffix}.jpg`;
     const { error } = await supabase.storage.from("products").upload(path, blob, { upsert: true, contentType: 'image/jpeg' }).catch((e: unknown) => ({ error: e }));
+    if (abertura.current !== vez) return;
     // 10/10: a falha no envio não avisava (a foto simplesmente não aparecia)
     if (error) avisar(explicarErro(error, "Não deu pra enviar a foto. Tente de novo."), { tipo: "erro" });
     if (!error) {
@@ -4013,7 +4054,7 @@ export default function Produtos() {
       } else {
         setForm(f => {
           const imgs = (f.imagem_url || "").split(",").map(s => s.trim()).filter(Boolean);
-          imgs[cropSlot] = url;
+          imgs[slot] = url;
           return { ...f, imagem_url: imgs.join(",") };
         });
       }
@@ -4041,10 +4082,12 @@ export default function Produtos() {
   const uploadFotoVariacaoKey = async (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
     const file = e.target.files?.[0];
     if (!file || !userId) return;
+    const vez = abertura.current; // (11/10) envio de outra abertura do cadastro é descartado
     setUploading(true);
     const safeName = key.replace(/[^a-zA-Z0-9]/g, "_");
     const path = `produtos/${userId}-${Date.now()}-v-${safeName}.jpg`;
     const { error } = await supabase.storage.from("products").upload(path, file, { upsert: true, contentType: file.type }).catch((e: unknown) => ({ error: e }));
+    if (abertura.current !== vez) return;
     if (error) avisar(explicarErro(error, "Não deu pra enviar a foto. Tente de novo."), { tipo: "erro" });
     if (!error) {
       const { data } = supabase.storage.from("products").getPublicUrl(path);
@@ -4095,34 +4138,41 @@ export default function Produtos() {
     );
   };
 
+  // (11/10) Copia a ficha técnica de um produto pra cópia dele. Devolve false se a leitura ou a gravação falhar.
+  const copiarFichaTecnica = async (deId: string, paraId: string): Promise<boolean> => {
+    const { data: insumos, error: erroLer } = await supabase.from("produto_insumos")
+      .select("insumo_id, quantidade, unidade_utilizada, quantidade_base")
+      .eq("produto_id", deId);
+    if (erroLer || !insumos) { console.error("[Doonly]", erroLer); return false; }
+    if (insumos.length === 0) return true;
+    const { error: erroGravar } = await supabase.from("produto_insumos").insert(
+      insumos.map((i: any) => ({ ...i, produto_id: paraId, user_id: userId }))
+    );
+    if (erroGravar) { console.error("[Doonly]", erroGravar); return false; }
+    return true;
+  };
+
   const handleBulkDuplicar = async () => {
     if (selecionados.length === 0 || !userId) return;
     if (passouDoLimite(selecionados.length)) { setLimiteAberto(true); return; }
     setBulkLoading(true);
-    let ok = 0, falhas = 0;
+    let ok = 0, falhas = 0, semFicha = 0;
     for (const p of selecionados) {
       const { id, created_at, updated_at, produto_insumos, user_id, ...limpo } = p as any;
       const novo = { ...limpo, nome: proximoNomeCopia(p.nome), user_id: userId, disponivel: false };
       const { data, error } = await supabase.from("produtos").insert(novo).select("id").single();
       if (error) { falhas++; continue; }
-      // Duplica ficha técnica também
-      if (id && data?.id) {
-        const { data: insumos } = await supabase.from("produto_insumos")
-          .select("insumo_id, quantidade, unidade_utilizada, quantidade_base")
-          .eq("produto_id", id);
-        if (insumos && insumos.length > 0) {
-          await supabase.from("produto_insumos").insert(
-            insumos.map((i: any) => ({ ...i, produto_id: data.id, user_id: userId }))
-          );
-        }
-      }
+      // Duplica ficha técnica também (11/10: confere a leitura e a gravação; antes dizia "cópia criada" sem a ficha)
+      if (id && data?.id && !(await copiarFichaTecnica(id, data.id))) semFicha++;
       ok++;
     }
     setBulkLoading(false);
     await loadProdutos(userId);
     clearSelection();
     if (falhas > 0) {
-      showToast("error", `${ok} ${ok > 1 ? "cópias criadas" : "cópia criada"}, ${falhas} ${falhas > 1 ? "falharam" : "falhou"}`, "As cópias que deram certo estão despublicadas — revise antes de publicar no cardápio.");
+      showToast("error", `${ok} ${ok > 1 ? "cópias criadas" : "cópia criada"}, ${falhas} ${falhas > 1 ? "falharam" : "falhou"}`, `As cópias que deram certo estão despublicadas — revise antes de publicar no cardápio.${semFicha > 0 ? ` ${semFicha === 1 ? "1 ficou" : `${semFicha} ficaram`} sem a ficha técnica.` : ""}`);
+    } else if (semFicha > 0) {
+      showToast("error", ok === 1 ? "Cópia criada, mas sem a ficha técnica." : `${ok} cópias criadas, ${semFicha} sem a ficha técnica.`, "Abra a cópia e monte a ficha técnica de novo.");
     } else {
       showToast("success", `${ok} ${ok > 1 ? "cópias criadas" : "cópia criada"}`, "As cópias estão despublicadas. Revise as informações antes de publicar no cardápio.");
     }
@@ -4144,6 +4194,8 @@ export default function Produtos() {
   const handleSalvar = async () => {
     // 10/10: não salva com foto ainda subindo (o produto ia pro banco sem a foto)
     if (uploading) return avisar("Espere a foto terminar de enviar.", { tipo: "info" });
+    // 11/10: nem com a IA ainda escrevendo a descrição
+    if (gerandoDesc) return avisar("Espere a descrição ficar pronta.", { tipo: "info" });
     const eraPrimeiro = !form.id && produtos.length === 0;
     if (!form.nome.trim()) return avisar("Nome é obrigatório", { tipo: "erro" });
     if (!form.categoria.trim()) return avisar("Categoria é obrigatória", { tipo: "erro" });
@@ -4211,7 +4263,9 @@ export default function Produtos() {
         }
       } else if (modoT === "por_peso") {
         // Tamanho sem peso gravado: lê do nome ("1 kg", "500 g"). Salvar um produto antigo já conserta os dados dele.
-        ops = ops.map(o => (Number(o.peso_kg) > 0 ? o : { ...o, peso_kg: pesoKgDoNome(o.nome) }));
+        // 11/10: pelo peso, o preço de cada tamanho é peso × preço do kg: o preço fixo que ficou de antes sai
+        // (ele continuava gravado e o cardápio mostrava "P R$ 70,00" cobrando R$ 100)
+        ops = ops.map(o => ({ ...o, preco: 0, peso_kg: Number(o.peso_kg) > 0 ? o.peso_kg : pesoKgDoNome(o.nome) }));
         const semPeso = ops.find(o => !(Number(o.peso_kg) > 0));
         if (semPeso) {
           return avisar(isBolo || isBoloEdit
@@ -4220,6 +4274,26 @@ export default function Produtos() {
         }
       }
       formSalvar = { ...form, grupo_tamanhos: { ...gtForm, modo_preco_tamanho: modoT, opcoes: ops } };
+    }
+
+    // ─── Promoção em valor (11/10) ───
+    // Preço promocional maior ou igual ao cheio não é promoção: avisa e não salva (antes gravava o valor com a promoção desligada).
+    // Com kit ou tamanhos de preço fixo os campos da promoção em valor somem da tela, então o que ficou gravado antes sai
+    // (no cardápio e na lista virava desconto em todos os tamanhos). Promoção em % continua como está.
+    let ajustePromo: Partial<Produto> = {};
+    if (form.tipo_promocao !== "percentual") {
+      const pp = Number(form.preco_promocional) || 0;
+      const gtS: any = formSalvar.grupo_tamanhos;
+      const semPromoEmValor = kitAtivo((form as any).kit_qtd)
+        || (!!gtS?.ativo && (gtS.modo_preco_tamanho || "preco_fixo") === "preco_fixo" && (gtS.opcoes || []).some((o: any) => o?.preco > 0));
+      if (semPromoEmValor) {
+        if (pp > 0 || form.promocao) ajustePromo = { promocao: false, preco_promocional: 0 };
+      } else if (pp > 0 && pp >= (Number(form.preco_normal) || 0)) {
+        // no cadastro de bolo a promoção tem um botão próprio: desligada, o valor antigo só sai
+        // promoção desligada: o valor antigo só sai (produto antigo ficava sem salvar, às vezes com o campo fora da tela)
+        if (!form.promocao) ajustePromo = { preco_promocional: 0 };
+        else { if (form.id && !isBoloEdit) setEditTab("preco"); return avisar("O preço promocional precisa ser menor que o preço cheio.", { tipo: "erro" }); }
+      }
     }
 
     // Define tipo_produto
@@ -4256,6 +4330,7 @@ export default function Produtos() {
     const payload = {
       ...formLimpo,
       ...gruposPayload,
+      ...ajustePromo,
       preco_normal: precoBase,
       tipo_produto: tipoProduto,
       updated_at: new Date().toISOString(),
@@ -4353,8 +4428,8 @@ export default function Produtos() {
       const cod = (data as any)?.codigo_publico;
       if (cod && aba) { aba.location.href = `/c/${cod}`; return; }
       if (cod) { window.location.href = `/c/${cod}`; return; }
-      aba?.close(); navigate("/cardapio");
-    } catch { aba?.close(); navigate("/cardapio"); }
+      aba?.close(); irFechandoJanela(() => navigate("/cardapio"));
+    } catch { aba?.close(); irFechandoJanela(() => navigate("/cardapio")); }
   };
 
   const handleDelete = async (id: string) => {
@@ -4374,17 +4449,35 @@ export default function Produtos() {
     if (nomeLower.includes("selecione") || nomeLower.includes("ícone") || nomeLower.includes("icone")) {
       return avisar("Nome inválido. Digite o nome da sua categoria (ex: Pudins, Bolos, Doces)", { tipo: "erro" });
     }
+    if (savingCat) return;
     setSavingCat(true);
-    await supabase.from("categorias").insert({
+    // 11/10: confere no banco se o nome já existe (sem diferenciar maiúsculas e acentos) e se gravou.
+    // Antes criava categoria repetida e, se a gravação falhasse, o produto ia pra uma categoria que não existia.
+    const igual = (a: string, b: string) => a.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase() === b.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+    const lista = await loadCategorias(userId);
+    if (!lista) {
+      setSavingCat(false);
+      return avisar("Não deu pra criar a categoria. Confira a internet e tente de novo.", { tipo: "erro" });
+    }
+    const repetida = lista.find(c => igual(c, nome));
+    if (repetida) {
+      // já existe: usa a que existe em vez de criar outra
+      setForm(f => ({ ...f, categoria: repetida }));
+      setNovaCategoria(""); setNovaCategoriaIcone(""); setShowCatInput(false);
+      setSavingCat(false);
+      return avisar(`A categoria ${repetida} já existe. Ela foi escolhida.`, { tipo: "info" });
+    }
+    const { error } = await supabase.from("categorias").insert({
       nome,
       imagem_url: icone,
-      ordem: categorias.length,
+      ordem: lista.length,
       user_id: userId
-    });
-    setCategorias(prev => [...prev, nome].sort());
+    }).then(r => r, (e: unknown) => ({ error: e }));
+    setSavingCat(false);
+    if (error) return avisar(explicarErro(error, "Não deu pra criar a categoria. Tente de novo."), { tipo: "erro" });
+    setCategorias(prev => (prev.includes(nome) ? prev : [...prev, nome].sort()));
     setForm(f => ({ ...f, categoria: nome }));
     setNovaCategoria(""); setNovaCategoriaIcone(""); setShowCatInput(false);
-    setSavingCat(false);
   };
 
   const addOpcao = (campo: "massas_disponiveis" | "recheios_disponiveis" | "coberturas_disponiveis", key: "massa" | "recheio" | "cobertura") => {
@@ -4518,6 +4611,42 @@ export default function Produtos() {
                   setWizardStep(s => Math.max(2, s - 1) as 1 | 2 | 3 | 4 | 5);
                 };
 
+  // ═══ "Voltar" do Android/navegador e Esc (11/10) ═══
+  // O cadastro e o produto aberto são telas por cima da lista: o voltar saía de Produtos e perdia tudo.
+  // Agora: no cadastro novo volta um passo; no primeiro passo (e na edição) pergunta antes de descartar.
+  // A rolagem do fundo também é travada aqui (uma trava só, a mesma das janelas que abrem por cima).
+  const caixaCadastro = useRef<HTMLDivElement>(null);
+  const caixaPreview = useRef<HTMLDivElement>(null);
+  const aoVoltarNoCadastro = () => {
+    if (limiteAberto) { setLimiteAberto(false); return; }
+    if (salvarBibliotecaAsk) { setSalvarBibliotecaAsk(null); return; }
+    if (sucesso) { fecharModal(); return; }
+    if (saving) return;
+    if (!form.id && !tipoTela && wizardStep >= 2) { voltarPassoCadastro(); return; }
+    handleTryClose();
+  };
+  useSobreposicao(modal, aoVoltarNoCadastro, caixaCadastro);
+  useSobreposicao(!!previewProduto, () => { if (previewMenu) setPreviewMenu(false); else setPreviewProduto(null); }, caixaPreview);
+  // Fechar e ir pra outra tela: só navega depois que a entrada da janela saiu do histórico (senão o voltar dela desfaz a tela nova)
+  const irDepoisDeFechar = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    if (modal || previewProduto || !irDepoisDeFechar.current) return;
+    const ir = irDepoisDeFechar.current;
+    irDepoisDeFechar.current = null;
+    void historicoAssentado().then(ir);
+  }, [modal, previewProduto]);
+  // (11/10) ir pra outra tela de um aviso/botão de dentro da janela: fecha a janela antes (senão fica entrada velha no histórico).
+  // Lê o estado de agora pela ref: o toque no aviso pode chegar depois que a janela já fechou.
+  const abertos = useRef({ modal: false, preview: false });
+  abertos.current = { modal, preview: !!previewProduto };
+  const irFechandoJanela = (ir: () => void) => {
+    const { modal: m, preview: pv } = abertos.current;
+    if (!m && !pv) { ir(); return; }
+    irDepoisDeFechar.current = ir;
+    if (m) fecharModal();
+    if (pv) setPreviewProduto(null);
+  };
+
   if (loading) return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "40vh" }}><span className="prod-spinner" /></div>;
 
   return (
@@ -4627,6 +4756,13 @@ export default function Produtos() {
         <div className="prod-loading-full">
           <span className="prod-spinner" />
         </div>
+      ) : erroCarga ? (
+        <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os produtos" texto={erroCarga}
+          acao={<Botao onClick={() => void carregarTudo()}>Tentar de novo</Botao>} />
+      ) : produtos.length > 0 && produtosFiltrados.length === 0 ? (
+        // (11/10) busca sem resultado não é conta nova (antes aparecia "Cadastre seu primeiro produto")
+        <TelaVazia caixa icone={<MagnifyingGlass size={30} />} titulo="Nenhum produto com esse nome" texto="Confira a busca."
+          acao={<Botao variante="secundario" onClick={() => setBuscaTexto("")}>Limpar a busca</Botao>} />
       ) : produtosFiltrados.length === 0 ? (
         <div className="prod-hero-split">
           {/* ── Lado esquerdo: texto + CTAs + dica ── */}
@@ -4778,12 +4914,13 @@ export default function Produtos() {
 
       {modal && (
         <div className={`prod-modal-overlay${sucesso ? " prod-modal-overlay--sucesso" : ""}`} onClick={sucesso ? fecharModal : handleTryClose}>
-          <div className="prod-modal prod-modal--novo" onClick={e => e.stopPropagation()}>
+          {/* a janela do limite do plano abre por cima sem entrar na pilha: nessa hora o foco não fica preso aqui */}
+          <div className="prod-modal prod-modal--novo" ref={limiteAberto || salvarBibliotecaAsk ? undefined : caixaCadastro} onClick={e => e.stopPropagation()}>
             {sucesso ? (
               <SucessoProdutoTela {...sucesso}
                 onFechar={fecharModal}
                 onOutro={() => { setSucesso(null); openNovo(); }}
-                onCusto={() => { const id = sucesso.id; fecharModal(); navigate("/ficha-tecnica", { state: { produtoId: id } }); setTimeout(() => window.scrollTo(0, 0), 0); }}
+                onCusto={() => { const id = sucesso.id; irDepoisDeFechar.current = () => { navigate("/ficha-tecnica", { state: { produtoId: id } }); setTimeout(() => window.scrollTo(0, 0), 0); }; fecharModal(); }}
                 onVerCardapio={verNoCardapio} />
             ) : tipoTela && !form.id ? (
               <TipoProdutoTela onEscolher={aplicarTipoProduto} onFechar={handleTryClose} />
@@ -5059,14 +5196,19 @@ export default function Produtos() {
                     <button
                       type="button"
                       className={`prod-btn-ia-novo${!isPro ? " prod-btn-ia-novo--pro" : ""}`}
-                      disabled={form.descricao === "Gerando..." || form.descricao === "Melhorando..."}
+                      disabled={!!gerandoDesc}
                       onClick={async () => {
+                        if (gerandoDesc) return;
                         // 10/10: o botão não fica apagado — explica o que falta (plano PRO ou o nome)
-                        if (!isPro) { avisar("Gerar a descrição com IA é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } }); return; }
+                        if (!isPro) { avisar("Gerar a descrição com IA é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => irFechandoJanela(() => navigate("/assinar")) } }); return; }
                         if (!form.nome.trim()) { avisar("Dê um nome ao produto primeiro.", { tipo: "info" }); document.getElementById("prod-nome-input")?.focus(); return; }
                         const textoAtual = (form.descricao || "").trim();
-                        const ehMelhorar = textoAtual.length > 0 && textoAtual !== "Gerando..." && textoAtual !== "Melhorando...";
-                        setForm(f => ({ ...f, descricao: ehMelhorar ? "Melhorando..." : "Gerando..." }));
+                        const ehMelhorar = textoAtual.length > 0;
+                        // 11/10: o "gerando" fica num estado próprio e o campo continua com o texto dele.
+                        // Antes o campo virava "Melhorando..." e, salvando nessa hora, essa era a descrição gravada.
+                        // A resposta só entra se o cadastro ainda for o mesmo (não fechou nem abriu outro produto).
+                        const vez = abertura.current;
+                        setGerandoDesc(ehMelhorar ? "melhorar" : "gerar");
                         try {
                           const prompt = ehMelhorar
                             ? `Melhore esta descrição de produto de confeitaria, mantendo a intenção e informações originais. Torne mais atraente, clara e profissional. Máximo 2 frases curtas (até 150 caracteres). Português brasileiro. Retorne APENAS a descrição melhorada, sem aspas, sem emojis, sem introdução.\n\nProduto: "${form.nome}"\nDescrição atual: "${textoAtual}"`
@@ -5074,21 +5216,26 @@ export default function Produtos() {
                           const res = await apiFetch("/api/gerar-descricao", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ prompt })
+                            body: JSON.stringify({ prompt }),
+                            signal: AbortSignal.timeout(30000), // (11/10) a IA pendurada travava o Salvar
                           });
                           const data = await res.json();
+                          if (abertura.current !== vez) return;
                           const desc = data.content?.[0]?.text?.trim() || "";
-                          setForm(f => ({ ...f, descricao: desc || textoAtual }));
-                        } catch {
-                          setForm(f => ({ ...f, descricao: textoAtual }));
+                          if (desc) setForm(f => ({ ...f, descricao: desc }));
+                          else avisar("Não deu pra gerar a descrição. Tente de novo.", { tipo: "erro" });
+                        } catch (e) {
+                          if (abertura.current === vez) avisar(explicarErro(e, "Não deu pra gerar a descrição. Tente de novo."), { tipo: "erro" });
+                        } finally {
+                          if (abertura.current === vez) setGerandoDesc(null);
                         }
                       }}
                       title={!form.nome.trim() ? "Preencha o nome primeiro" : !isPro ? "Disponível no plano PRO" : (form.descricao?.trim() ? "Melhorar descrição atual" : "Gerar descrição automaticamente")}
                     >
                       <Crown size={16} weight="fill" className="prod-btn-ia-novo-crown" aria-hidden="true" />
-                      {form.descricao === "Gerando..."
+                      {gerandoDesc === "gerar"
                         ? "Gerando..."
-                        : form.descricao === "Melhorando..."
+                        : gerandoDesc === "melhorar"
                         ? "Melhorando..."
                         : (form.descricao?.trim() ? "Melhorar com IA" : "Gerar com IA")}
                       {!isPro && <span className="prod-btn-ia-pro">PRO</span>}
@@ -5097,10 +5244,11 @@ export default function Produtos() {
                   <textarea
                     id="prod-desc-input"
                     placeholder={"Descreva como é seu produto\n\nEx.: 2 camadas de mousse de chocolate (massa pão de ló de chocolate)\ncobertura de mousse branco (tipo chantilly)"}
-                    value={form.descricao === "Gerando..." || form.descricao === "Melhorando..." ? "" : form.descricao}
+                    value={form.descricao}
                     onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
                     rows={5}
-                    disabled={form.descricao === "Gerando..." || form.descricao === "Melhorando..."}
+                    disabled={!!gerandoDesc}
+                    aria-busy={!!gerandoDesc}
                     style={{fontFamily: 'inherit', resize: 'vertical'}}
                   />
                   {!isPro && (
@@ -5110,7 +5258,7 @@ export default function Produtos() {
                         <button
                           type="button"
                           className="prod-cta-pro-ia-info"
-                          onClick={() => avisar("Gerar a descrição com IA é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } })}
+                          onClick={() => avisar("Gerar a descrição com IA é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => irFechandoJanela(() => navigate("/assinar")) } })}
                           aria-label="Saiba mais"
                         >
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
@@ -5211,7 +5359,7 @@ export default function Produtos() {
                         <div
                           className={`prod-img-upload ${isLocked ? "prod-img-upload--locked" : ""}`}
                           onClick={() => {
-                            if (isLocked) { avisar("Mais fotos por produto é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } }); return; }
+                            if (isLocked) { avisar("Mais fotos por produto é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => irFechandoJanela(() => navigate("/assinar")) } }); return; }
                             if (!uploading) ref.current?.click();
                           }}
                           style={{
@@ -5263,137 +5411,6 @@ export default function Produtos() {
                   })}
                 </div>
               </div>
-
-              {/* Fotos por opção (V3 unificado — PRO) — ESCONDIDO por enquanto (30/09), volta depois */}
-              {false && (() => {
-                // Lista todos os grupos ativos com opções (pra oferecer o toggle)
-                const gruposAtivos: Array<{ key: string; label: string; grupo: any }> = [];
-                if (form.grupo_massas?.ativo && (form.grupo_massas.opcoes.length || 0) > 0) {
-                  gruposAtivos.push({ key: "massas", label: "Massas", grupo: form.grupo_massas });
-                }
-                if (form.grupo_recheios?.ativo && (form.grupo_recheios.opcoes.length || 0) > 0) {
-                  gruposAtivos.push({ key: "recheios", label: "Recheios", grupo: form.grupo_recheios });
-                }
-                if (form.grupo_coberturas?.ativo && (form.grupo_coberturas.opcoes.length || 0) > 0) {
-                  gruposAtivos.push({ key: "coberturas", label: "Coberturas", grupo: form.grupo_coberturas });
-                }
-                if (form.grupo_sabores?.ativo && (form.grupo_sabores.opcoes.length || 0) > 0) {
-                  gruposAtivos.push({ key: "sabores", label: "Sabores", grupo: form.grupo_sabores });
-                }
-                if (form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0) {
-                  gruposAtivos.push({ key: "tamanhos", label: form.grupo_tamanhos.nome_exibicao || "Tamanhos", grupo: form.grupo_tamanhos });
-                }
-                if (gruposAtivos.length === 0) return null;
-
-                const toggleFotoPorOpcao = (grupoKey: string, atual: any) => {
-                  if (!isPro) {
-                    avisar("Foto por opção é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } });
-                    return;
-                  }
-                  const key = `grupo_${grupoKey}` as keyof Produto;
-                  setForm(f => ({ ...f, [key]: { ...(f[key] as any), foto_por_opcao: !atual.foto_por_opcao } }));
-                };
-
-                const uploadOpcaoFoto = async (grupoKey: string, opcaoId: string, e: React.ChangeEvent<HTMLInputElement>) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  const { data: userData } = await supabase.auth.getUser();
-                  if (!userData.user) return;
-                  const ext = file.name.split(".").pop();
-                  // 10/10: mesmo bucket ("products") e mesmo formato de caminho das outras fotos do app (antes ia pra "produtos")
-                  const path = `produtos/${userData.user.id}-${Date.now()}-opcao-${opcaoId}.${ext}`;
-                  const { error: upErr } = await supabase.storage.from("products").upload(path, file, { upsert: true });
-                  if (upErr) { avisar(explicarErro(upErr, "Não deu pra enviar a foto. Tente de novo."), { tipo: "erro" }); return; }
-                  const { data: pub } = supabase.storage.from("products").getPublicUrl(path);
-                  const campo = `grupo_${grupoKey}` as keyof Produto;
-                  setForm(f => ({
-                    ...f,
-                    [campo]: {
-                      ...(f[campo] as any),
-                      opcoes: (f[campo] as any).opcoes.map((o: any) => o.id === opcaoId ? { ...o, foto: pub.publicUrl } : o),
-                    },
-                  }));
-                };
-
-                const removeOpcaoFoto = (grupoKey: string, opcaoId: string) => {
-                  const campo = `grupo_${grupoKey}` as keyof Produto;
-                  setForm(f => ({
-                    ...f,
-                    [campo]: {
-                      ...(f[campo] as any),
-                      opcoes: (f[campo] as any).opcoes.map((o: any) => o.id === opcaoId ? { ...o, foto: undefined } : o),
-                    },
-                  }));
-                };
-
-                return (
-                  <div className="prod-section">
-                    <p className="prod-section-label prod-section-label--novo">
-                      Fotos por opção
-                      {!isPro && <span className="prod-pro-tag"><img src="/coroa.png" alt="" />PRO</span>}
-                    </p>
-                    <p style={{fontSize: 12, color: "#6B5D64", margin: "0 0 14px"}}>
-                      Ative pra ter uma foto de cada opção. Cliente verá a foto ao escolher no cardápio.
-                    </p>
-
-                    {gruposAtivos.map(({ key, label, grupo }) => (
-                      <div key={key} style={{marginBottom: 14}}>
-                        <button
-                          type="button"
-                          className={`pv3-sub-toggle ${grupo.foto_por_opcao ? "pv3-sub-toggle--on" : ""}`}
-                          onClick={() => toggleFotoPorOpcao(key, grupo)}
-                        >
-                          <div className="pv3-sub-toggle-ico">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                          </div>
-                          <div className="pv3-sub-toggle-txt">
-                            <div className="pv3-sub-toggle-titulo">
-                              Foto por {({ massas: "massa", recheios: "recheio", coberturas: "cobertura", sabores: "sabor", tamanhos: "tamanho" } as Record<string, string>)[key] || label.toLowerCase()}
-                              {!isPro && <span className="prod-pro-tag"><img src="/coroa.png" alt="" />PRO</span>}
-                            </div>
-                            <div className="pv3-sub-toggle-desc">
-                              {grupo.foto_por_opcao ? "Ligado. Adicione as fotos abaixo" : `${grupo.opcoes.length} opções cadastradas`}
-                            </div>
-                          </div>
-                          <div className={`pv3-mini-switch ${grupo.foto_por_opcao ? "pv3-mini-switch--on" : ""}`}>
-                            <div className="pv3-mini-switch-thumb" />
-                          </div>
-                        </button>
-
-                        {/* Lista horizontal: cada opção com quadradinho de foto à esquerda */}
-                        {grupo.foto_por_opcao && isPro && (
-                          <div style={{marginTop: 10, display: "flex", flexDirection: "column", gap: 8}}>
-                            {grupo.opcoes.map((op: any) => (
-                              <label key={op.id} className="prod-opcao-foto-linha">
-                                <div className="prod-opcao-foto-mini">
-                                  {op.foto ? (
-                                    <>
-                                      <img src={op.foto} alt={op.nome} />
-                                      <button
-                                        type="button"
-                                        className="prod-opcao-foto-mini-remove"
-                                        onClick={e => { e.preventDefault(); removeOpcaoFoto(key, op.id); }}
-                                        aria-label="Remover"
-                                      ><XIc size={14} weight="bold" aria-hidden="true" /></button>
-                                    </>
-                                  ) : (
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B4A9AE" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                                  )}
-                                </div>
-                                <span className="prod-opcao-foto-linha-nome">{op.nome}</span>
-                                <span className="prod-opcao-foto-linha-cta">
-                                  {op.foto ? "Trocar foto" : "Adicionar foto"}
-                                </span>
-                                <input type="file" accept="image/*" style={{display: "none"}} onChange={e => uploadOpcaoFoto(key, op.id, e)} />
-                              </label>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                );
-              })()}
 
               {/* Fotos das variações — só quando variações */}
               {wizardTipo === "variacoes" && (() => {
@@ -5641,6 +5658,7 @@ export default function Produtos() {
                         <input
                           type="text"
                           placeholder="0,00"
+                          aria-label="Preço promocional"
                           value={form.preco_promocional && form.preco_promocional > 0 ? formatPreco(form.preco_promocional) : ""}
                           onChange={e => {
                             const v = parsePreco(e.target.value);
@@ -6027,81 +6045,6 @@ export default function Produtos() {
                 )}
               </div>
 
-              {/* Promoção — DESATIVADA: agora está inline no bloco "Preço cheio / Preço promocional" acima */}
-              {false && ((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco" && !isBoloEdit)) && (
-              <div className="prod-section">
-                <p className="prod-section-label">Promoção</p>
-                <Toggle label="Produto em promoção" value={form.promocao} onChange={(v: boolean) => setForm(f => ({ ...f, promocao: v }))} colorClass="active-pink" />
-
-                {form.promocao && (
-                  <>
-                    <div style={{ display: "flex", gap: "8px" }}>
-                      <button
-                        onClick={() => setForm(f => ({ ...f, tipo_promocao: 'fixo' }))}
-                        style={{ flex: 1, padding: "8px", borderRadius: "10px", border: `2px solid ${form.tipo_promocao !== 'percentual' ? 'var(--primary)' : 'var(--border)'}`, background: form.tipo_promocao !== 'percentual' ? 'var(--primary-light)' : 'var(--bg-card)', fontFamily: "inherit", fontSize: "0.82rem", fontWeight: 700, color: form.tipo_promocao !== 'percentual' ? 'var(--primary)' : 'var(--text-secondary)', cursor: "pointer" }}
-                      >
-                        Preço fixo
-                      </button>
-                      <button
-                        onClick={() => setForm(f => ({ ...f, tipo_promocao: 'percentual' }))}
-                        style={{ flex: 1, padding: "8px", borderRadius: "10px", border: `2px solid ${form.tipo_promocao === 'percentual' ? 'var(--primary)' : 'var(--border)'}`, background: form.tipo_promocao === 'percentual' ? 'var(--primary-light)' : 'var(--bg-card)', fontFamily: "inherit", fontSize: "0.82rem", fontWeight: 700, color: form.tipo_promocao === 'percentual' ? 'var(--primary)' : 'var(--text-secondary)', cursor: "pointer" }}
-                      >
-                        % Desconto
-                      </button>
-                    </div>
-
-                    {form.tipo_promocao === 'percentual' ? (
-                      <div className="prod-field">
-                        <label>Percentual de desconto</label>
-                        <div className="prod-preco-input">
-                          <span style={{ color: "var(--primary)" }}>%</span>
-                          <input
-                            type="text"
-                            placeholder="Ex.: 10, 20, 50"
-                            value={form.desconto_percentual || ""}
-                            onChange={e => {
-                              const v = e.target.value.replace(/[^0-9]/g, "");
-                              const num = Math.min(100, parseInt(v) || 0);
-                              setForm(f => ({ ...f, desconto_percentual: num, preco_promocional: num > 0 ? parseFloat((f.preco_normal * (1 - num / 100)).toFixed(2)) : 0 }));
-                            }}
-                          />
-                        </div>
-                        {form.desconto_percentual > 0 && form.preco_normal > 0 && (
-                          <div style={{ marginTop: "6px", padding: "8px 12px", background: "#dcfce7", borderRadius: "8px" }}>
-                            <p style={{ fontSize: "0.78rem", color: "var(--success)", fontWeight: 500, margin: 0 }}>
-                              Preço base: R$ {formatPreco(form.preco_normal)} → R$ {formatPreco(form.preco_normal * (1 - (form.desconto_percentual || 0) / 100))}
-                            </p>
-                            {(form.tamanhos_disponiveis || []).length > 0 && (
-                              <div style={{ marginTop: "4px", display: "flex", flexDirection: "column", gap: "2px" }}>
-                                {(form.tamanhos_disponiveis || []).map((t, i) => (
-                                  <p key={i} style={{ fontSize: "0.75rem", color: "var(--success)", margin: 0 }}>
-                                    {t.label}: R$ {formatPreco(t.preco)} → R$ {formatPreco(t.preco * (1 - (form.desconto_percentual || 0) / 100))}
-                                  </p>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="prod-field">
-                        <label>Preço promocional</label>
-                        <div className="prod-preco-input">
-                          <span>R$</span>
-                          <input type="text" placeholder="0,00" value={form.preco_promocional ? formatPreco(form.preco_promocional) : ""} onChange={e => setForm(f => ({ ...f, preco_promocional: parsePreco(e.target.value) }))} />
-                        </div>
-                        {form.preco_normal > 0 && form.preco_promocional > 0 && (
-                          <p style={{ fontSize: "0.75rem", color: "var(--primary)", fontWeight: 500, margin: "4px 0 0" }}>
-                            Desconto de {Math.round((1 - form.preco_promocional / form.preco_normal) * 100)}%
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-              )}
-
             </>
             )}
 
@@ -6198,16 +6141,21 @@ export default function Produtos() {
                     if (kitAtivo((form as any).kit_qtd)) return precoMinKit((form as any).kit_qtd) > 0 ? null : { msg: 'Volte em "Monte seu kit" e coloque o preço dos kits' };
                     const gt = form.grupo_tamanhos;
                     const temTamanhoAtivo = gt?.ativo && gt.opcoes.length > 0;
+                    // 11/10: preço promocional maior ou igual ao cheio não é promoção: avisa e não avança
+                    // (antes seguia calado e gravava o valor com a promoção desligada)
+                    const ppFalta = Number(form.preco_promocional) || 0;
+                    const promoMaior: FaltaCampo = form.tipo_promocao !== "percentual" && ppFalta > 0 && ppFalta >= (form.preco_normal || 0)
+                      ? { msg: "O preço promocional precisa ser menor que o preço cheio", alvo: 'input[aria-label="Preço promocional"]' } : null;
                     if (temTamanhoAtivo) {
                       // Modo "por peso": preços dos tamanhos são calculados via preco_normal (R$/kg)
                       if (gt!.modo_preco_tamanho === "por_peso") {
-                        return (form.preco_normal || 0) > 0 ? null : { msg: "Coloque o preço do kg", alvo: 'input[aria-label="Preço cheio"]' };
+                        return (form.preco_normal || 0) > 0 ? promoMaior : { msg: "Coloque o preço do kg", alvo: 'input[aria-label="Preço cheio"]' };
                       }
                       // Modo "preço fixo": todos os tamanhos precisam ter preço próprio
                       const semPreco = gt!.opcoes.find(o => !(o.preco > 0));
                       return semPreco ? { msg: `Coloque o preço de ${semPreco.nome}`, alvo: `input[aria-label="Preço de ${semPreco.nome.replace(/(["\\])/g, "\\$1")}"]` } : null;
                     }
-                    return (form.preco_normal || 0) > 0 ? null : { msg: "Coloque o preço do produto", alvo: 'input[aria-label="Preço cheio"]' };
+                    return (form.preco_normal || 0) > 0 ? promoMaior : { msg: "Coloque o preço do produto", alvo: 'input[aria-label="Preço cheio"]' };
                   }
                   // Step 5: Fotos — sempre pode avançar (fotos opcionais)
                   return null;
@@ -6234,7 +6182,7 @@ export default function Produtos() {
                 if (isEdit) {
                   // Modo edição: salva direto em qualquer passo
                   return (
-                    <button className="prod-btn-avancar-novo" onClick={handleSalvar} disabled={saving || uploading}>
+                    <button className="prod-btn-avancar-novo" onClick={handleSalvar} disabled={saving || uploading || !!gerandoDesc}>
                       {saving ? <span className="prod-spinner-sm" /> : "Salvar alterações"}
                     </button>
                   );
@@ -6242,7 +6190,7 @@ export default function Produtos() {
 
                 if (isLast) {
                   return (
-                    <button className="prod-btn-avancar-novo" onClick={handleSalvar} disabled={saving || uploading}>
+                    <button className="prod-btn-avancar-novo" onClick={handleSalvar} disabled={saving || uploading || !!gerandoDesc}>
                       {saving ? <span className="prod-spinner-sm" /> : (
                         <>
                           <CheckIc size={20} weight="bold" aria-hidden="true" />
@@ -6312,12 +6260,24 @@ export default function Produtos() {
                 style={{ flex: 1 }}
                 onClick={async () => {
                   if (!userId) return;
+                  // 11/10: "categorias" guarda os ids dos PRODUTOS em que o extra aparece (vazio = todos), como a tela
+                  // Personalização e o cardápio leem. Antes ia o nome da categoria e o extra não aparecia em produto nenhum.
+                  // Este produto fica de fora: ele já tem o extra na lista dele.
+                  const outros = form.categoria
+                    ? produtos.filter(p => p.id && p.id !== form.id && p.categoria === form.categoria).map(p => p.id as string)
+                    : [];
+                  if (form.categoria && outros.length === 0) {
+                    setSalvarBibliotecaAsk(null);
+                    avisar(`Ainda não tem outro produto em ${form.categoria}. O extra ficou só neste produto.`, { tipo: "info" });
+                    return;
+                  }
                   const { data, error } = await supabase.from("biblioteca_extras").insert({
                     user_id: userId,
                     nome: salvarBibliotecaAsk.nome,
                     valor: salvarBibliotecaAsk.valor,
-                    categorias: form.categoria ? [form.categoria] : []
+                    categorias: outros
                   }).select().single();
+                  if (error || !data) avisar(explicarErro(error, "Não deu pra salvar na biblioteca. O extra ficou só neste produto."), { tipo: "erro" });
                   if (!error && data) {
                     setBiblioteca(b => [...b, data as BibliotecaExtra]);
                     // Vincula esse adicional ao id da biblioteca
@@ -6340,7 +6300,7 @@ export default function Produtos() {
       {/* Preview Modal */}
       {previewProduto && (
         <div className="prod-preview-overlay" onClick={() => setPreviewProduto(null)}>
-          <div className="prod-preview-modal" onClick={e => e.stopPropagation()}>
+          <div className="prod-preview-modal" ref={caixaPreview} onClick={e => e.stopPropagation()}>
             <BotaoIcone className="prod-preview-close" variante="limpo" rotulo="Fechar" onClick={() => setPreviewProduto(null)}><XIc size={20} weight="bold" /></BotaoIcone>
 
             {/* Foto hero (com carousel dots se tiver mais) */}
@@ -6399,7 +6359,7 @@ export default function Produtos() {
                     </div>
                     {!temFicha && pv.id && (
                       <Botao variante="suave" cheio icone={<ListChecks size={20} weight="bold" />} className="prod-preview-ficha"
-                        onClick={() => { const id = pv.id; setPreviewProduto(null); navigate("/ficha-tecnica", { state: { produtoId: id } }); }}>
+                        onClick={() => { const id = pv.id; irDepoisDeFechar.current = () => navigate("/ficha-tecnica", { state: { produtoId: id } }); setPreviewProduto(null); }}>
                         Montar a ficha técnica
                       </Botao>
                     )}
@@ -6445,7 +6405,7 @@ export default function Produtos() {
                         onClick={async () => {
                           setPreviewMenu(false);
                           // Ficha técnica em PDF é recurso PRO (relatórios em PDF)
-                          if (!isPro) { avisar("A ficha técnica em PDF é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } }); return; }
+                          if (!isPro) { avisar("A ficha técnica em PDF é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => irFechandoJanela(() => navigate("/assinar")) } }); return; }
                           try {
                             await gerarFichaProduto(previewProduto, userId);
                           } catch (err) {
@@ -6488,21 +6448,12 @@ export default function Produtos() {
                             showToast("error", "Não deu pra duplicar", explicarErro(error));
                             return;
                           }
-                          // Se tinha ficha técnica, clona também
-                          if (id && data?.id) {
-                            const { data: insumos } = await supabase
-                              .from("produto_insumos")
-                              .select("insumo_id, quantidade, unidade_utilizada, quantidade_base")
-                              .eq("produto_id", id);
-                            if (insumos && insumos.length > 0) {
-                              await supabase.from("produto_insumos").insert(
-                                insumos.map((i: any) => ({ ...i, produto_id: data.id, user_id: userId }))
-                              );
-                            }
-                          }
+                          // Se tinha ficha técnica, clona também (11/10: confere se copiou)
+                          const fichaOk = !(id && data?.id) || await copiarFichaTecnica(id, data.id);
                           setPreviewProduto(null);
                           await loadProdutos(userId);
-                          showToast("success", "Cópia criada", "Está despublicada. Revise as informações antes de publicar no cardápio.");
+                          if (fichaOk) showToast("success", "Cópia criada", "Está despublicada. Revise as informações antes de publicar no cardápio.");
+                          else showToast("error", "Cópia criada, mas sem a ficha técnica.", "Está despublicada. Abra a cópia e monte a ficha técnica de novo.");
                         }}
                       >
                         <span className="prod-preview-menu-ico" style={{color: "#3B82F6"}}>
@@ -6520,7 +6471,7 @@ export default function Produtos() {
                           // 10/10: o link usa o código público do cardápio, como no resto do app (com o id da conta não abria)
                           const url = getCardapioUrl(profile);
                           if (!url) {
-                            avisar("Seu cardápio ainda não tem link. Publique o cardápio primeiro.", { tipo: "info", acao: { rotulo: "Ir pro cardápio", aoTocar: () => navigate("/cardapio") } });
+                            avisar("Seu cardápio ainda não tem link. Publique o cardápio primeiro.", { tipo: "info", acao: { rotulo: "Ir pro cardápio", aoTocar: () => irFechandoJanela(() => navigate("/cardapio")) } });
                             return;
                           }
                           try { await navigator.clipboard.writeText(url); avisar("Link do cardápio copiado!", { tipo: "ok" }); }
@@ -6619,10 +6570,7 @@ export default function Produtos() {
                 setConfirmMudaSubtipo(null);
               }}>Trocar</Botao></>} />
 
-      {/* ═══ Modal "Descartar cadastro?" ═══ */}
-      <Janela aberta={confirmDiscardProd} aoFechar={() => setConfirmDiscardProd(false)} icone={<WarningCircle size={32} />} tom="laranja"
-        titulo={form.id ? "Descartar as alterações?" : "Descartar o cadastro?"} texto="O que você preencheu vai se perder."
-        acoes={<><Botao variante="secundario" onClick={() => setConfirmDiscardProd(false)}>Continuar</Botao><Botao variante="perigo" onClick={() => { limparDraft(); setConfirmDiscardProd(false); fecharModal(); }}>Descartar</Botao></>} />
+      {/* "Descartar o cadastro?" agora é o confirmar() do handleTryClose (11/10) */}
 
       <Janela aberta={!!deleteConfirm} aoFechar={() => setDeleteConfirm(null)} icone={<Trash size={32} />} tom="vermelho"
         titulo="Excluir o produto?" texto="Ele sai do cardápio e da sua lista. Pedidos antigos não mudam."

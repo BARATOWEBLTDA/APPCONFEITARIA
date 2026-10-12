@@ -4,6 +4,36 @@
  * mesmo o tamanho já definindo o peso (o preço é do bolo inteiro).
  */
 
+import { r2, somarReais } from '@/lib/moeda'
+
+/**
+ * Valor de uma linha da sacola (11/10): preço × quantidade, já em centavos certos.
+ * A linha, o subtotal, o total, a mensagem do WhatsApp e o pedido gravado usam esta mesma conta
+ * (antes 0,5 kg de R$ 19,99 aparecia R$ 10,00 na linha e R$ 9,99 no total).
+ */
+export function valorLinha(item: any): number {
+  return r2((Number(item?.price) || 0) * (Number(item?.quantity) || 0))
+}
+
+/** Subtotal da sacola: a soma das linhas já arredondadas. */
+export function subtotalSacola(items: any[]): number {
+  return somarReais((items || []).map(valorLinha))
+}
+
+/**
+ * Tira "meio emoji" do texto (11/10). Cortar um texto no meio de um emoji deixa metade dele pra trás;
+ * com essa metade, montar o link do WhatsApp dá erro e a conversa abria sem a mensagem do pedido.
+ */
+export function semMeioEmoji(texto: unknown): string {
+  // com a flag "u", só casa a metade solta (o emoji inteiro conta como um caractere só)
+  return String(texto ?? '').replace(/[\uD800-\uDFFF]/gu, '')
+}
+
+/** Corta o texto por caracteres inteiros (um emoji conta 1 e nunca fica pela metade). */
+export function cortarTexto(texto: unknown, maximo: number): string {
+  return Array.from(semMeioEmoji(texto)).slice(0, Math.max(0, maximo)).join('')
+}
+
 /** Por kg e sem tamanho/kit: a quantidade é o peso (anda de 0,5 em 0,5). */
 export function kgLivre(item: any): boolean {
   return item?.saleType === 'kg' && !item?.escolhas?.tamanho && !item?.escolhas?.kit

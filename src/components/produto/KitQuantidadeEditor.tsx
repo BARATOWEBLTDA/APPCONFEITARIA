@@ -128,6 +128,8 @@ export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }
   const exA = Math.min(kitEx, Math.max(passoS, Math.floor(kitEx / 2 / passoS) * passoS)), exB = kitEx - exA;
   const kitQuebrado = k.modo === "fechado" ? k.kits.find(x => x.qtd > 0 && x.qtd % passoS !== 0)?.qtd : undefined;
   const livreQuebrado = k.modo === "livre" && k.livre.min > 0 && k.livre.passo > 0 && (k.livre.min % passoS !== 0 || k.livre.passo % passoS !== 0);
+  // 11/10: no modo livre, (máximo − mínimo) que não é múltiplo do passo
+  const maxQuebrado = k.modo === "livre" && k.livre.min > 0 && k.livre.passo > 0 && k.livre.max > k.livre.min && (k.livre.max - k.livre.min) % k.livre.passo !== 0;
 
   return (
     <div className="kq-tela">
@@ -193,6 +195,8 @@ export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }
                   onChange={e => set({ livre: { ...k.livre, max: Math.round(num(e.target.value)) } })} /> unidades</div>
                 <div className="kq-frase">Subindo de <input className="kq-box" inputMode="numeric" value={k.livre.passo || ""} aria-label="De quanto em quanto"
                   onChange={e => set({ livre: { ...k.livre, passo: Math.round(num(e.target.value)) } })} /> em {k.livre.passo || "–"}</div>
+                {/* 11/10: o máximo não cai num passo (25 a 75 de 15 em 15): só avisa, o cardápio completa até o máximo */}
+                {maxQuebrado && <p className="kq-ex">O máximo de {k.livre.max} não fecha de {k.livre.passo} em {k.livre.passo}. O último passo vai até o máximo.</p>}
                 <div className="kq-frase">O cento custa <span className={`kq-box kq-box--rs${k.livre.preco_cento > 0 ? " ok" : " falta"}`}>R$ <input inputMode="decimal" defaultValue={moeda(k.livre.preco_cento)} placeholder="0,00" aria-label="Preço do cento"
                   onChange={e => set({ livre: { ...k.livre, preco_cento: num(e.target.value) } })} /></span></div>
               </>

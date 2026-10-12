@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, ReactNode } from "react";
+import { useState, useEffect, useMemo, useRef, ReactNode } from "react";
 import CampoNumero from "@/components/ui/CampoNumero";
 import { parseNumBR } from "@/lib/numeroBR";
 import { explicarErro } from "@/lib/erros";
@@ -9,8 +9,8 @@ import { useProfile } from "@/hooks/useProfile";
 import QuickAddInsumo, { InsumoQuick } from "@/components/QuickAddInsumo";
 import DooInfoModal from "@/components/DooInfoModal";
 import AppPageHeader from "@/components/AppPageHeader";
-import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar } from "@/components/base";
-import { Camera, CaretRight, Check, Egg, Info, MagnifyingGlass, Plus, Receipt, TrendDown, X } from "@phosphor-icons/react";
+import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
+import { Camera, CaretRight, Check, Egg, Info, MagnifyingGlass, Plus, Receipt, TrendDown, WarningCircle, X } from "@phosphor-icons/react";
 import "./clientes.css";
 import "./fichaLista.css";
 import "./fichaDetalhe.css";
@@ -279,6 +279,8 @@ export default function FichaTecnica() {
     setSalvandoCv(false);
     if (error) { avisar("Não deu pra salvar agora. Tente de novo.", { tipo: "erro" }); console.error(error); return; }
     setCvConta(v); setEditarCv(false);
+    // já ficou salvo na conta: não conta como mudança sem salvar desta ficha
+    if (retrato.current) retrato.current = { ...retrato.current, extras: { ...retrato.current.extras, cv_percentual: extras.cv_percentual } };
     avisar("Salvo na sua conta: vale pra todos os produtos", { tipo: "ok" });
   };
   const loadMaoConta = async (uid: string) => {
@@ -302,15 +304,19 @@ export default function FichaTecnica() {
     if (error) { avisar("Não deu pra salvar agora. Tente de novo.", { tipo: "erro" }); return; }
     setMaoConta({ salario: sal, horasSemana: hs, diasSemana: dias });
     setEditarMao(false); setEditarCv(false);
+    // já ficou salvo na conta: não conta como mudança sem salvar desta ficha
+    if (retrato.current) retrato.current = { ...retrato.current, extras: { ...retrato.current.extras, salario_desejado: extras.salario_desejado, horas_semanais: extras.horas_semanais } };
     avisar("Salvo na sua conta: vale pra todos os produtos", { tipo: "ok" });
   };
-  const loadProdutos = async (uid: string) => {
-    const { data } = await supabase
+  // Devolve o erro da leitura (null = leu). Se falhar, a lista que está na tela continua como estava.
+  const loadProdutos = async (uid: string): Promise<unknown> => {
+    const { data, error } = await supabase
       .from("produtos")
       .select("*, produto_insumos(quantidade, unidade_utilizada, quantidade_base, insumos(id, nome, unidade, embalagem_tipo, qtd_embalagem, valor_compra, custo_unitario, imagem_url))")
       .eq("user_id", uid)
       .order("nome");
-    if (data) setProdutos(data as Produto[]);
+    if (data && !error) setProdutos(data as Produto[]);
+    return error || (data ? null : new Error("sem dados"));
   };
 
   const loadInsumos = async (uid: string) => {
@@ -318,15 +324,22 @@ export default function FichaTecnica() {
     if (data) setInsumosCadastrados(data as Insumo[]);
   };
 
-  useEffect(() => {
-    (async () => {
+  // (11/10) a lista não carregou: mostra o erro com "Tentar de novo" em vez de "Nenhum produto ainda"
+  const [erroCarga, setErroCarga] = useState("");
+  const carregar = async () => {
+    setLoading(true); setErroCarga("");
+    try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) { setErroCarga("Tente de novo em instantes."); setLoading(false); return; }
       setUserId(user.id);
-      await Promise.all([loadProdutos(user.id), loadInsumos(user.id), loadMaoConta(user.id), loadCvConta(user.id)]);
-      setLoading(false);
-    })();
-  }, []);
+      const [erroProdutos] = await Promise.all([loadProdutos(user.id), loadInsumos(user.id), loadMaoConta(user.id), loadCvConta(user.id)]);
+      if (erroProdutos) setErroCarga(explicarErro(erroProdutos, "Tente de novo em instantes."));
+    } catch (e) {
+      setErroCarga(explicarErro(e, "Tente de novo em instantes."));
+    }
+    setLoading(false);
+  };
+  useEffect(() => { void carregar(); }, []);
 
   // Abre direto a ficha de um produto quando navega de Produtos com state.produtoId
   useEffect(() => {
@@ -339,9 +352,19 @@ export default function FichaTecnica() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, produtos, location.state]);
 
+  // (11/10) Retrato da ficha como foi aberta (ou salva pela última vez): a seta de voltar pergunta antes de descartar mudanças.
+  const retrato = useRef<{ ficha: string; extras: typeof extras; mo: boolean; info: boolean } | null>(null);
+  const assinarFicha = (f: FichaItem[]) => JSON.stringify(f.map(x => [x.insumo_id, Number(x.quantidade) || 0, x.unidade_utilizada]));
+  const mudouFicha = () => {
+    const r = retrato.current;
+    if (!r) return false;
+    return r.ficha !== assinarFicha(ficha) || r.mo !== moAtivo || r.info !== infoAtivo
+      || (Object.keys(r.extras) as (keyof typeof extras)[]).some(k => r.extras[k] !== extras[k]);
+  };
+
   const abrirFicha = (p: Produto) => {
     setSelected(p);
-    setFicha((p.produto_insumos || []).map(pi => {
+    const fichaAberta: FichaItem[] = (p.produto_insumos || []).map(pi => {
       const insumo = pi.insumos as Insumo;
       return {
         insumo_id: insumo.id,
@@ -349,8 +372,9 @@ export default function FichaTecnica() {
         unidade_utilizada: pi.unidade_utilizada || insumo.unidade,
         insumo,
       };
-    }));
-    setExtras({
+    });
+    setFicha(fichaAberta);
+    const extrasAbertos = {
       rendimento_qtd: p.rendimento_qtd || "",
       rendimento_peso: p.rendimento_peso || "",
       validade_dias: p.validade_dias ? String(p.validade_dias) : "",
@@ -361,16 +385,27 @@ export default function FichaTecnica() {
       tempo_preparo_min: p.tempo_preparo_min ? String(p.tempo_preparo_min) : "",
       salario_desejado: maoConta ? String(maoConta.salario) : (p.salario_desejado ? String(p.salario_desejado) : ""),
       horas_semanais: maoConta ? String(maoConta.horasSemana) : (p.horas_semanais ? String(p.horas_semanais) : "40"),
-    });
+    };
+    setExtras(extrasAbertos);
     setEditarMao(false);
     setBuscaInsumo("");
     setShowQuickAdd(false);
     // Ativa as seções automaticamente se já houver dados salvos
-    setMoAtivo(!!(p.salario_desejado || p.tempo_preparo_min));
-    setInfoAtivo(!!(p.rendimento_qtd || p.rendimento_peso || p.validade_dias || p.embalagem || p.observacoes_ficha));
+    const moAberto = !!(p.salario_desejado || p.tempo_preparo_min);
+    const infoAberto = !!(p.rendimento_qtd || p.rendimento_peso || p.validade_dias || p.embalagem || p.observacoes_ficha);
+    setMoAtivo(moAberto);
+    setInfoAtivo(infoAberto);
+    retrato.current = { ficha: assinarFicha(fichaAberta), extras: extrasAbertos, mo: moAberto, info: infoAberto };
   };
 
-  const fecharFicha = () => {
+  const fecharFicha = async () => {
+    if (saving) return;
+    // 11/10: com mudanças sem salvar, pergunta antes (a seta de voltar fechava e perdia tudo calada)
+    if (mudouFicha()) {
+      const ok = await confirmar({ titulo: "Descartar as alterações?", texto: "O que você mudou na ficha técnica não foi salvo.", rotulo: "Descartar", rotuloVoltar: "Continuar", perigo: true, icone: "alerta" });
+      if (!ok) return;
+    }
+    retrato.current = null;
     setSelected(null);
     setFicha([]);
     setBuscaInsumo("");
@@ -475,6 +510,8 @@ export default function FichaTecnica() {
       .single();
     if (data) setSelected(data as Produto);
 
+    // salvou: o que está na tela passa a ser o ponto de partida (a seta de voltar não pergunta mais)
+    retrato.current = { ficha: assinarFicha(ficha), extras: { ...extras }, mo: moAtivo, info: infoAtivo };
     setSaving(false);
     avisar("Ficha técnica salva", { tipo: "ok" });
   };
@@ -964,7 +1001,10 @@ export default function FichaTecnica() {
       infoTip={<>Escolha um produto pra montar ou ajustar a ficha.</>}
     />
     <div className="cl9 fl">
-      {produtos.length === 0 ? (
+      {erroCarga ? (
+        <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar as fichas técnicas" texto={erroCarga}
+          acao={<Botao onClick={() => void carregar()}>Tentar de novo</Botao>} />
+      ) : produtos.length === 0 ? (
         <TelaVazia caixa icone={<Receipt size={30} />} titulo="Nenhum produto ainda"
           texto="Cadastre seus produtos primeiro. Depois, aqui você monta a ficha técnica de cada um e vê quanto lucra."
           acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => navigate("/produtos")}>Cadastrar produto</Botao>} />

@@ -1,4 +1,4 @@
-import { usuarioDoToken, respostaNaoAutorizado } from "./_auth";
+import { usuarioDoToken, respostaNaoAutorizado, respostaJson } from "./_auth";
 
 export const config = { runtime: "edge" };
 
@@ -14,6 +14,8 @@ export default async function handler(req: Request) {
   const { searchParams } = new URL(req.url);
   const q = searchParams.get("q");
   if (!q) return new Response("Missing query", { status: 400 });
+  // (11/10) busca de imagem é um nome de produto: texto gigante não passa
+  if (q.length > 200) return respostaJson({ error: "too_large", message: "O texto da busca ficou grande demais.", images: [] }, 413);
 
   const apiKey = (globalThis as any).process?.env?.SERP_API_KEY ?? "";
 

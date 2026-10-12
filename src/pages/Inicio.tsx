@@ -5,7 +5,9 @@ import PrimeirosPassos from "@/components/PrimeirosPassos";
 import { STATUS_AINDA_NAO_PRONTO, dataISO } from "@/lib/pedidoStatus";
 import { entradasNoPeriodo } from "@/lib/painelFinanceiro";
 import ConquistasCard from "@/components/ConquistasCard";
-import SeuDia from "@/components/inicio/SeuDia";
+import SeuDia, { type EntregaResumo } from "@/components/inicio/SeuDia";
+import { minutosDoDia, separarEntregasDeHoje } from "@/components/inicio/entregasDeHoje";
+import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import { TelaVazia, informar } from "@/components/base";
 import MenuConta from "@/components/MenuConta";
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
@@ -21,7 +23,7 @@ import {
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile, perfilAtual } from "@/hooks/useProfile";
 import { useIsMobile } from "@/hooks/use-mobile";
 import UpdatesFeed from "@/components/UpdatesFeed";
 import MinhasAtualizacoes from "@/components/MinhasAtualizacoes";
@@ -58,7 +60,7 @@ export default function Inicio() {
     mq.addEventListener("change", ouvir);
     return () => mq.removeEventListener("change", ouvir);
   }, []);
-  const { profile, refetch: refetchProfile } = useProfile();
+  const { profile, loading: carregandoPerfil, refetch: refetchProfile } = useProfile();
 
   const [loading, setLoading] = useState(true);
   const [erroCarga, setErroCarga] = useState(false); // a busca do dia falhou (sem internet, por exemplo)
@@ -70,7 +72,10 @@ export default function Inicio() {
     recebidoMes: 0,
     pedidosAtrasados: 0,
   });
-  const [proximaEntregaHoje, setProximaEntregaHoje] = useState<{ cliente: string; hora: string; produto: string | null } | null>(null);
+  // 11/10: todas as entregas de hoje (a "próxima" é escolhida na hora de mostrar: a primeira com hora de agora em diante)
+  const [entregasDeHoje, setEntregasDeHoje] = useState<EntregaResumo[]>([]);
+  // o dia a que os dados da tela se referem (AAAA-MM-DD): o "hoje" da tela anda junto com os dados
+  const [diaDosDados, setDiaDosDados] = useState<string | null>(null);
   const [aniversariantesDetalhe, setAniversariantesDetalhe] = useState<{ nome: string; dias: number } | null>(null);
   const [resumoSemana, setResumoSemana] = useState({ vendas: 0, pedidos: 0 });
   const [resumoAnterior, setResumoAnterior] = useState({ vendas: 0, pedidos: 0 });
@@ -197,13 +202,9 @@ export default function Inicio() {
       };
     }
     // 2. Próxima entrega hoje com horário
-    if (proximaEntregaHoje) {
-      const [hh, mm] = proximaEntregaHoje.hora.split(":").map(Number);
+    if (proximaEntregaHoje?.hora) {
       const agora = new Date();
-      const alvo = new Date();
-      alvo.setHours(hh, mm || 0, 0, 0);
-      const diffMs = alvo.getTime() - agora.getTime();
-      const diffMin = Math.max(0, Math.floor(diffMs / 60000));
+      const diffMin = minutosDoDia(proximaEntregaHoje.hora) - (agora.getHours() * 60 + agora.getMinutes());
       if (diffMin > 0 && diffMin < 6 * 60) {
         const tempo = diffMin < 60 ? `${diffMin}min` : `${Math.floor(diffMin / 60)}h${diffMin % 60 > 0 ? ` ${diffMin % 60}min` : ""}`;
         return {
@@ -328,10 +329,33 @@ export default function Inicio() {
   };
 
   // ─── Carregar dados ───
+  // 11/10: o app instalado fica aberto dias. Antes só carregava ao trocar de conta: de manhã o "Seu dia" era o de ontem.
+  // Agora recarrega quando vira o dia e quando a pessoa volta pro app (por trás, sem trocar a tela por "Carregando…").
+  const hoje = useDiaAtual();
+  const numCarga = useRef(0);          // só vale a resposta da última busca
+  const contaNaTela = useRef<string | null>(null); // a conta que já tem dados na tela
+  const telaBoa = useRef<string | null>(null);     // "conta|dia" da última busca que deu certo (null: a tela está em erro ou carregando)
   useEffect(() => {
     if (!profile?.id) return;
-    carregarTudo();
-  }, [profile?.id]);
+    carregarTudo(contaNaTela.current === profile.id);
+  }, [profile?.id, hoje]);
+  useAoVoltar(() => { if (profile?.id) carregarTudo(true); });
+
+  // 11/10: a leitura do perfil falhou (1º acesso sem internet, por exemplo): avisa com "Tentar de novo".
+  // Antes ficava em "Olá," com "Seu dia: Carregando…" sem fim, porque a busca do dia nem chegava a começar.
+  useEffect(() => {
+    if (profile?.id) return;
+    const falhou = () => { if (!perfilAtual()?.id) { setErroCarga(true); setLoading(false); } };
+    if (!carregandoPerfil) { falhou(); return; }
+    const t = window.setTimeout(falhou, 15000); // rede que não responde nem com erro
+    return () => window.clearTimeout(t);
+  }, [profile?.id, carregandoPerfil]);
+  const tentarDeNovo = async () => {
+    if (profile?.id) { carregarTudo(); return; }
+    setLoading(true); setErroCarga(false);
+    try { await refetchProfile(); } catch { /* cai no aviso de novo */ }
+    if (!perfilAtual()?.id) { setErroCarga(true); setLoading(false); } // com o perfil na mão, a busca do dia começa sozinha
+  };
 
   // Onboarding: verifica se cliente é novo (sem produtos/clientes/cardápio publicado)
   // pra mostrar empty state contextual em vez do "Novo pedido" como destaque
@@ -352,11 +376,17 @@ export default function Inicio() {
     })();
   }, [profile?.id, profile?.codigo_publico, profile?.nome_loja]);
 
-  const carregarTudo = async () => {
-    setLoading(true);
-    setErroCarga(false);
+  /** `semPiscar === true`: atualiza por trás (voltou pro app, virou o dia), sem mostrar "Carregando…". */
+  const carregarTudo = async (semPiscar?: unknown) => {
+    if (!profile?.id) return;
+    const n = ++numCarga.current;
+    const porTras = semPiscar === true;
+    if (!porTras) { setLoading(true); setErroCarga(false); telaBoa.current = null; }
+    const userId = profile.id;
+    const chaveDaBusca = `${userId}|${dataISO(new Date())}`;
+    // busca por trás que falha (voltou pro app ainda sem sinal): se a tela já mostra os dados certos de hoje, ficam como estão
+    const manterTela = () => porTras && telaBoa.current === chaveDaBusca;
     try {
-      const userId = profile!.id;
       const hoje = new Date();
       // (07/10 · 3.02) "hoje" no horário do Brasil: antes vinha no horário de Londres e, depois das 21h, já era amanhã
       const hojeISO = dataISO(hoje);
@@ -418,7 +448,7 @@ export default function Inicio() {
         // Próximas entregas (a partir de hoje, ordenadas por data)
         supabase
           .from("pedidos")
-          .select("id, cliente_nome, data_entrega, valor_total, horario_entrega, tipo_entrega, pedido_itens(nome_produto, quantidade, valor_unitario, produtos(forma_venda))")
+          .select("id, cliente_nome, data_entrega, valor_total, horario_entrega, tipo_entrega, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(forma_venda))")
           .eq("user_id", userId)
           .gte("data_entrega", hojeISO)
           .in("status", STATUS_ATIVOS)
@@ -432,17 +462,31 @@ export default function Inicio() {
           .eq("user_id", userId)
           .lt("data_entrega", hojeISO)
           .in("status", STATUS_AINDA_NAO_PRONTO),
-        // Próxima entrega HOJE com horário (pra "próxima em Xh")
+        // TODAS as entregas de hoje ainda não entregues (11/10). Antes vinha só a mais cedo do dia (limit 1), e ela
+        // continuava como "próxima" depois da hora. Com todas, a tela escolhe a primeira de agora em diante.
         supabase
           .from("pedidos")
-          .select("cliente_nome, horario_entrega, data_entrega")
+          .select("id, cliente_nome, data_entrega, valor_total, horario_entrega, tipo_entrega, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(forma_venda))")
           .eq("user_id", userId)
           .eq("data_entrega", hojeISO)
           .in("status", STATUS_ATIVOS)
-          .not("horario_entrega", "is", null)
-          .order("horario_entrega", { ascending: true })
-          .limit(1),
+          .order("horario_entrega", { ascending: true, nullsFirst: false })
+          .order("id"),
       ]);
+      if (n !== numCarga.current) return; // chegou uma busca mais nova
+      // o Supabase não lança erro: ele devolve. Sem isso a tela ficava zerada, como se não houvesse pedido nenhum
+      const falhou = !!(entregasHojeRes.error || proximasEntregasRes.error || pedidosAtrasadosRes.error || entradasRes.erro || proximaEntregaHojeRes.error);
+      if (falhou && manterTela()) return;
+      const entregaDoPedido = (p: any): EntregaResumo => ({
+        id: p.id,
+        cliente: p.cliente_nome || "Cliente",
+        data: p.data_entrega,
+        valor: Number(p.valor_total) || 0,
+        hora: p.horario_entrega || null,
+        // 4.06: o que vai e se é retirada, pro destaque e pra lista do "Seu dia"
+        produto: p.pedido_itens?.length ? resumoItens(p) : null,
+        tipo: p.tipo_entrega || null,
+      });
 
       // Aniversariantes nos próximos 7 dias
       const aniversariantes = calcularAniversariantes(clientesRes.data || []);
@@ -469,38 +513,26 @@ export default function Inicio() {
         recebidoMes,
         pedidosAtrasados: pedidosAtrasadosRes.count || 0,
       });
-      const proxHoje = proximaEntregaHojeRes.data?.[0];
-      setProximaEntregaHoje(proxHoje ? {
-        cliente: proxHoje.cliente_nome || "Cliente",
-        hora: proxHoje.horario_entrega,
-        produto: null,
-      } : null);
+      setEntregasDeHoje((proximaEntregaHojeRes.data || []).map(entregaDoPedido));
+      setDiaDosDados(hojeISO);
       setAniversariantesDetalhe(proxAniv);
       setResumoSemana({ vendas: vendasSemana, pedidos: pedidosSemanaRes.data?.length || 0 });
       setResumoAnterior({ vendas: vendasAnt, pedidos: pedidosSemanaAntRes.data?.length || 0 });
       setChartData(chart);
-      setProximasEntregas(
-        (proximasEntregasRes.data || []).map((p: any) => ({
-          id: p.id,
-          cliente: p.cliente_nome || "Cliente",
-          data: p.data_entrega,
-          valor: Number(p.valor_total) || 0,
-          hora: p.horario_entrega || null,
-          // 4.06: o que vai e se é retirada, pro destaque e pra lista do "Seu dia"
-          produto: p.pedido_itens?.length ? resumoItens(p) : null,
-          tipo: p.tipo_entrega || null,
-        }))
-      );
-      // o Supabase não lança erro: ele devolve. Sem isso a tela ficava zerada, como se não houvesse pedido nenhum
-      if (entregasHojeRes.error || proximasEntregasRes.error || pedidosAtrasadosRes.error || entradasRes.erro) setErroCarga(true);
+      setProximasEntregas((proximasEntregasRes.data || []).map(entregaDoPedido));
+      setErroCarga(falhou);
+      telaBoa.current = falhou ? null : chaveDaBusca;
     } catch (err) {
       console.error("Erro ao carregar dados do início:", err);
+      if (n !== numCarga.current || manterTela()) return;
       setErroCarga(true);
+      telaBoa.current = null;
     }
+    contaNaTela.current = userId;
     setLoading(false);
   };
 
-  /** Calcula aniversariantes nos próximos 7 dias (ignora ano). */
+  /** Calcula aniversariantes nos próximos 7 dias: hoje até hoje + 6 (ignora ano). */
   const calcularAniversariantes = (clientes: any[]): Array<{ nome: string; dias: number }> => {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
@@ -510,10 +542,11 @@ export default function Inicio() {
         const [, mes, dia] = c.data_nascimento.split("-").map(Number);
         const proximoAniv = new Date(hoje.getFullYear(), mes - 1, dia);
         if (proximoAniv < hoje) proximoAniv.setFullYear(hoje.getFullYear() + 1);
-        const dias = Math.ceil((proximoAniv.getTime() - hoje.getTime()) / 86400000);
+        const dias = Math.round((proximoAniv.getTime() - hoje.getTime()) / 86400000);
         return { nome: c.nome, dias };
       })
-      .filter((c): c is { nome: string; dias: number } => c !== null && c.dias >= 0 && c.dias <= 7)
+      // 11/10: "próximos 7 dias" = hoje até hoje + 6, igual no app inteiro (antes 0 a 7 eram 8 dias)
+      .filter((c): c is { nome: string; dias: number } => c !== null && c.dias >= 0 && c.dias <= 6)
       .sort((a, b) => a.dias - b.dias);
   };
 
@@ -538,6 +571,13 @@ export default function Inicio() {
   // ─── Helpers de render ───
   const formatCurrency = (v: number) =>
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
+
+  // 11/10: o "hoje" da tela é o dia dos dados que estão nela (os dois mudam juntos quando vira o dia)
+  const diaDaTela = diaDosDados || hoje;
+  // a próxima entrega de hoje: a primeira com hora de agora em diante (antes era a mais cedo do dia, mesmo já passada)
+  const proximaEntregaHoje = diaDaTela === hoje ? (separarEntregasDeHoje(entregasDeHoje, diaDaTela, new Date()).destaque || null) : null;
+  // o "Seu dia" recebe TODAS as de hoje + as dos próximos dias (a lista de 5 podia cortar as de hoje pela metade)
+  const entregasDoSeuDia = [...entregasDeHoje, ...proximasEntregas.filter(e => e.data !== diaDaTela)];
 
 
   return (
@@ -614,8 +654,9 @@ export default function Inicio() {
         <div ref={saudacaoRef} className={`ini-hero-greeting${tagEmbaixo ? " ini-hero-greeting--apertado" : ""}`}>
           <h1>
             <span>
-              Olá,{" "}
-              {profile ? (
+              {/* 11/10: sem o perfil e com erro, "Olá!" (antes ficava "Olá," com o nome carregando pra sempre) */}
+              {!profile && erroCarga ? "Olá!" : <>Olá,{" "}</>}
+              {!profile && erroCarga ? null : profile ? (
                 // 02/10: o nome da confeitaria (o pessoal só se a loja ainda não tiver nome)
                 // 09/10 · 4.01: só o nome da loja, sem "Confeitaria", "Doceria" etc., pra caber com a etiqueta do plano
                 (nomeCurtoLoja((profile as any).nome_loja) || (nome ? nome.split(" ")[0] : "!"))
@@ -684,9 +725,8 @@ export default function Inicio() {
 
       {/* ══ Computador (≥1100px): topo rosa com o resumo do dia + números (30/09) ══ */}
       {(() => {
-        const hojeISO = dataISO(new Date());
         const aReceberHoje = counts.valorEntregasHoje; // todas as entregas de hoje (não só as 5 da lista)
-        const proxHora = proximasEntregas.find(e => e.data === hojeISO && e.hora)?.hora;
+        const proxHora = proximaEntregaHoje?.hora; // 11/10: a próxima de agora em diante (antes a mais cedo do dia, mesmo já passada)
         const partes: string[] = [];
         if (counts.entregasHoje > 0) partes.push(`${counts.entregasHoje} ${counts.entregasHoje === 1 ? "entrega" : "entregas"} hoje`);
         const txtAtrasados = counts.pedidosAtrasados > 0 ? `${counts.pedidosAtrasados} ${counts.pedidosAtrasados === 1 ? "pedido atrasado" : "pedidos atrasados"}` : "";
@@ -698,7 +738,7 @@ export default function Inicio() {
               <div className="ini-dk-txt">
                 <h1>Seu dia hoje</h1>
                 <p>
-                  {loading ? "Carregando…" : erroCarga ? "Não deu pra carregar o seu dia. Confira a internet e atualize a página." : !partes.length ? "Nenhuma entrega hoje · aproveite pra divulgar seu cardápio"
+                  {loading ? "Carregando…" : erroCarga ? <>Não deu pra carregar o seu dia. Confira a internet. <button type="button" className="ini-dk-atr" onClick={tentarDeNovo}>Tentar de novo</button></> : !partes.length ? "Nenhuma entrega hoje · aproveite pra divulgar seu cardápio"
                     : partes.map((t, i) => (
                       <span key={t}>
                         {i > 0 && " · "}
@@ -744,9 +784,9 @@ export default function Inicio() {
       {/* ── Seu dia (07/10 · 3.04): o resumo do dia no celular e no tablet. No computador ele já está no topo rosa. ── */}
       <section className="ini-section ini-section--dia">
         <SeuDia
-          carregando={loading} erro={erroCarga} aoTentar={carregarTudo}
+          carregando={loading} erro={erroCarga} aoTentar={tentarDeNovo}
           entregasHoje={counts.entregasHoje} atrasados={counts.pedidosAtrasados} novos={counts.pedidosPendentes}
-          proximas={proximasEntregas} hoje={dataISO(new Date())}
+          proximas={entregasDoSeuDia} hoje={diaDaTela}
         />
       </section>
 

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRecorte } from "@/components/ui/useRecorte";
 import { useNavigate } from "react-router-dom";
-import { ArrowDown, ArrowUp, DotsThreeVertical, Image as ImageIcon, Info, PencilSimple, Plus, SquaresFour, Trash, UploadSimple } from "@phosphor-icons/react";
+import { ArrowDown, ArrowUp, DotsThreeVertical, Image as ImageIcon, Info, PencilSimple, Plus, SquaresFour, Trash, UploadSimple, WarningCircle } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -49,25 +49,35 @@ export default function Categorias() {
   const [menuDe, setMenuDe] = useState<Categoria | null>(null);
   const imgRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    const load = async () => {
+  // (11/10) a lista não carregou: mostra o erro com "Tentar de novo" em vez de "Nenhuma categoria ainda"
+  const [erroCarga, setErroCarga] = useState("");
+  const carregar = async () => {
+    setLoading(true); setErroCarga("");
+    try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) { setErroCarga("Tente de novo em instantes."); setLoading(false); return; }
       setUserId(user.id);
-      await Promise.all([loadCategorias(user.id), loadProdutos(user.id)]);
-      setLoading(false);
-    };
-    load();
-  }, []);
+      const [erroCat, erroProd] = await Promise.all([loadCategorias(user.id), loadProdutos(user.id)]);
+      // sem a lista de produtos a contagem de cada categoria ficaria errada ("Nenhum produto"): também é erro de carga
+      if (erroCat || erroProd) setErroCarga(explicarErro(erroCat || erroProd, "Tente de novo em instantes."));
+    } catch (e) {
+      setErroCarga(explicarErro(e, "Tente de novo em instantes."));
+    }
+    setLoading(false);
+  };
+  useEffect(() => { void carregar(); }, []);
 
-  const loadCategorias = async (uid: string) => {
-    const { data } = await supabase.from("categorias").select("*").eq("user_id", uid).order("ordem").order("nome");
-    if (data) setCategorias(data);
+  // As duas leituras devolvem o erro (null = leu). Se falhar, o que está na tela continua como estava.
+  const loadCategorias = async (uid: string): Promise<unknown> => {
+    const { data, error } = await supabase.from("categorias").select("*").eq("user_id", uid).order("ordem").order("nome");
+    if (data && !error) setCategorias(data);
+    return error || (data ? null : new Error("sem dados"));
   };
 
-  const loadProdutos = async (uid: string) => {
-    const { data } = await supabase.from("produtos").select("categoria").eq("user_id", uid);
-    if (data) setProdutos(data);
+  const loadProdutos = async (uid: string): Promise<unknown> => {
+    const { data, error } = await supabase.from("produtos").select("categoria").eq("user_id", uid);
+    if (data && !error) setProdutos(data);
+    return error || (data ? null : new Error("sem dados"));
   };
 
   const contarProdutos = (nome: string) => produtos.filter(p => p.categoria === nome).length;
@@ -110,7 +120,15 @@ export default function Categorias() {
         const { error: errProd } = await supabase.from("produtos").update({ categoria: novo }).eq("user_id", userId).eq("categoria", antigo);
         if (errProd) {
           // Os produtos não acompanharam: desfaz o nome pra eles não ficarem numa categoria que não existe
-          await supabase.from("categorias").update({ nome: antigo }).eq("id", form.id);
+          const { error: errVolta } = await supabase.from("categorias").update({ nome: antigo }).eq("id", form.id);
+          if (errVolta) {
+            // 11/10: nem o desfazer gravou. A categoria ficou com o nome novo e os produtos com o antigo.
+            // A janela fica aberta e a lista continua com o nome antigo: salvar de novo leva os produtos junto.
+            console.error("[Doonly]", errVolta);
+            setSaving(false);
+            avisar("A categoria mudou de nome, mas os produtos não acompanharam. Toque em Salvar de novo.", { tipo: "erro" });
+            return;
+          }
           await loadCategorias(userId);
           return falhou(errProd);
         }
@@ -127,7 +145,14 @@ export default function Categorias() {
 
   // Excluir: com produtos dentro não deixa (os produtos ficariam sem categoria e sumiriam do cardápio)
   const handleDelete = async (cat: Categoria) => {
-    const qtd = contarProdutos(cat.nome);
+    // 11/10: conta os produtos no banco na hora. A contagem da tela vinha de uma leitura que podia ter falhado
+    // (dava 0 e deixava excluir categoria com produtos). Se não der pra contar, não exclui.
+    const { count, error: erroContar } = await supabase.from("produtos").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("categoria", cat.nome);
+    if (erroContar || count == null) {
+      avisar(explicarErro(erroContar, "Não deu pra conferir os produtos da categoria. Tente de novo."), { tipo: "erro" });
+      return;
+    }
+    const qtd = count;
     if (qtd > 0) {
       await informar({ titulo: `${cat.nome} tem ${qtd} ${qtd === 1 ? "produto" : "produtos"}`, texto: `Mova ${qtd === 1 ? "o produto" : "os produtos"} pra outra categoria antes de excluir. Senão ${qtd === 1 ? "ele some" : "eles somem"} do cardápio.`, icone: "alerta" });
       return;
@@ -140,16 +165,35 @@ export default function Categorias() {
     avisar("Categoria excluída", { tipo: "ok" });
   };
 
-  const moverOrdem = async (id: string, dir: -1 | 1) => {
+  // 11/10: a ordem é gravada numa fila (uma gravação por vez, na ordem dos toques) e cada gravação é conferida.
+  // Antes cada toque disparava todas as gravações juntas, sem conferir: dois toques seguidos podiam gravar a ordem misturada.
+  const filaOrdem = useRef<Promise<void>>(Promise.resolve());
+  const vezOrdem = useRef(0); // muda quando uma gravação falha: o que estava na fila não é mais gravado
+  const moverOrdem = (id: string, dir: -1 | 1) => {
     const idx = categorias.findIndex(c => c.id === id);
     if (idx < 0) return;
     const newIdx = idx + dir;
     if (newIdx < 0 || newIdx >= categorias.length) return;
     const updated = [...categorias];
     [updated[idx], updated[newIdx]] = [updated[newIdx], updated[idx]];
-    updated.forEach((c, i) => c.ordem = i);
-    setCategorias(updated);
-    await Promise.all(updated.map(c => supabase.from("categorias").update({ ordem: c.ordem }).eq("id", c.id!)));
+    const nova = updated.map((c, i) => ({ ...c, ordem: i }));
+    setCategorias(nova);
+    // só o que mudou de posição
+    const mudaram = nova.filter(c => c.id && categorias.find(x => x.id === c.id)?.ordem !== c.ordem).map(c => ({ id: c.id!, ordem: c.ordem }));
+    const vez = vezOrdem.current;
+    filaOrdem.current = filaOrdem.current.then(async () => {
+      if (vez !== vezOrdem.current) return;
+      try {
+        for (const m of mudaram) {
+          const { error } = await supabase.from("categorias").update({ ordem: m.ordem }).eq("id", m.id);
+          if (error) throw error;
+        }
+      } catch (e) {
+        vezOrdem.current++;
+        avisar(explicarErro(e, "Não deu pra salvar a ordem. Tente de novo."), { tipo: "erro" });
+        if (userId) await loadCategorias(userId); // volta a mostrar a ordem que está gravada
+      }
+    });
   };
 
   const qtdTexto = (q: number) => q === 0 ? "Nenhum produto" : `${q} ${q === 1 ? "produto" : "produtos"}`;
@@ -174,6 +218,9 @@ export default function Categorias() {
 
         {loading ? (
           <div className="ct-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
+        ) : erroCarga ? (
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar as categorias" texto={erroCarga}
+            acao={<Botao onClick={() => void carregar()}>Tentar de novo</Botao>} />
         ) : categorias.length === 0 ? (
           <TelaVazia caixa icone={<SquaresFour size={30} />} titulo="Nenhuma categoria ainda"
             texto='Crie categorias como "Bolos", "Doces" e "Salgados". No cardápio, o cliente acha o que quer mais rápido.'

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowRight, CaretLeft, Heart, Newspaper, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -63,8 +63,12 @@ export default function NoticiaDetalhe() {
   const [total, setTotal] = useState(0);
   const [salvando, setSalvando] = useState(false);
 
+  // (11/10) cada abertura tem um número: resposta atrasada de outra notícia (ela trocou de notícia no meio) é ignorada
+  const pedido = useRef(0);
   const carregar = useCallback(async () => {
     if (!slug) return;
+    const meu = ++pedido.current;
+    const velho = () => meu !== pedido.current;
     setEstado("carregando");
     try {
       const { data, error } = await supabase
@@ -73,26 +77,30 @@ export default function NoticiaDetalhe() {
         .eq("slug", slug)
         .eq("ativo", true)
         .single();
+      if (velho()) return;
       if ((error && (error as { code?: string }).code === "PGRST116") || (!error && !data)) { setEstado("sumiu"); return; }
       if (error) throw error;
       const n = data as Noticia;
       setNoticia(n);
+      setGostou(false);
       setTotal((n.likes_base || 0) + (n.likes_count || 0));
       const { data: { user } } = await supabase.auth.getUser();
+      if (velho()) return;
       if (user) {
-        const { data: meu } = await supabase.from("admin_noticias_likes").select("id").eq("noticia_id", n.id).eq("user_id", user.id).maybeSingle();
-        setGostou(!!meu);
+        const { data: meuGostei } = await supabase.from("admin_noticias_likes").select("id").eq("noticia_id", n.id).eq("user_id", user.id).maybeSingle();
+        if (velho()) return;
+        setGostou(!!meuGostei);
       }
       // conta a leitura (não espera a resposta)
       supabase.rpc("incrementar_view_noticia", { noticia_slug: slug }).then(() => {});
       setEstado("pronto");
       window.scrollTo(0, 0);
     } catch {
-      setEstado("erro");
+      if (!velho()) setEstado("erro");
     }
   }, [slug]);
 
-  useEffect(() => { carregar(); }, [carregar]);
+  useEffect(() => { carregar(); return () => { pedido.current++; }; }, [carregar]);
 
   // o "carregando" só aparece se passar de 300ms
   useEffect(() => {
@@ -130,9 +138,15 @@ export default function NoticiaDetalhe() {
   };
 
   const abrirBotao = () => {
-    const url = noticia?.cta_url;
+    const url = (noticia?.cta_url || "").trim();
     if (!url) return;
-    if (url.startsWith("/")) navigate(url); else window.location.href = url;
+    // (11/10) só dois tipos de endereço: tela do app ("/produtos") ou site (http/https). Antes qualquer outra coisa
+    // (até "javascript:") ia direto pro navegador, e "produtos" sem a barra caía em página não encontrada.
+    if (url.startsWith("//")) return;
+    if (url.startsWith("/")) { navigate(url); return; }
+    if (/^https?:\/\//i.test(url)) { window.location.href = url; return; }
+    if (/^[a-z][a-z0-9+.-]*:/i.test(url)) return; // outro tipo de endereço (javascript:, data:…): ignora
+    navigate(`/${url}`);
   };
 
   const tempo = noticia ? linhaDeTempo(noticia.publicado_em, noticia.tempo_leitura) : "";

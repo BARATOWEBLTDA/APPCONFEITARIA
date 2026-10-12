@@ -1,16 +1,22 @@
 import CalendarioSheet from '@/components/CalendarioSheet'
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { criarPedido, opcoesDoProduto as opcoesDoProdutoLib, type DadosPedido } from '@/lib/pedidosDoo'
+import { criarPedido, lerProdutosDeVenda, opcoesDoProduto as opcoesDoProdutoLib, precoDeVenda, totalDe, type DadosPedido } from '@/lib/pedidosDoo'
 import { gerarPedidoPDF } from '@/lib/gerarPedidoPDF'
 import { abrirJanela } from '@/lib/pdfDoonly'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { erroDeConexao, explicarErro } from '@/lib/erros'
+import { r2 } from '@/lib/moeda'
+import { digitosTelefone } from '@/lib/telefone'
+import { voltarOuIr } from '@/lib/voltar'
 import AppPageHeader from '@/components/AppPageHeader'
 import HorarioSheet from '@/components/HorarioSheet'
 import { tocarSom } from '@/hooks/useSom'
-import { Bank, CalendarBlank, CalendarDots, Check, Clock, Copy, CreditCard, Lightning, MagnifyingGlass, Minus, Money, Package, Plus, QrCode, Storefront, Trash, Truck, UserPlus, X } from '@phosphor-icons/react'
+import { Bank, CalendarBlank, CalendarDots, Check, Clock, Copy, CreditCard, Lightning, MagnifyingGlass, Minus, Money, Package, Plus, QrCode, Storefront, Trash, Truck, UserPlus, WarningCircle, X } from '@phosphor-icons/react'
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, Linha, TelaVazia, Titulo, avisar, confirmar } from '@/components/base'
-import { dataLonga, itemComQtd, nomeDeProduto, rs, telefoneBonito } from '@/components/pedidos/pedidoTexto'
+import { historicoAssentado } from '@/components/base/useSobreposicao'
+import { dataLonga, itemComQtd, nomeDeProduto, recebidoPedido, rs, saldoPedido, telefoneBonito } from '@/components/pedidos/pedidoTexto'
+import { pesoLivre } from '@/lib/itemPedido'
 import '@/components/pedidos/telaPedido.css'
 import './novaVenda.css'
 
@@ -54,6 +60,11 @@ interface Produto {
   categoria?: string
   grupo_tamanhos?: any
   kit_qtd?: any
+  // promoção (11/10): a venda sai pelo preço que o cliente paga, como no cardápio
+  promocao?: boolean | null
+  tipo_promocao?: string | null
+  desconto_percentual?: number | null
+  preco_promocional?: number | null
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
@@ -134,7 +145,9 @@ export default function NovaVenda() {
   const [enderecoRua, setEnderecoRua] = useState('')
   const [enderecoNumero, setEnderecoNumero] = useState('')
   const [enderecoBairro, setEnderecoBairro] = useState('')
-  const [enderecoCidade, setEnderecoCidade] = useState('Curitiba')
+  // (11/10) a cidade começa com a da loja (Dados da loja), e vazia se a loja não tiver. Antes era "Curitiba" pra todo mundo.
+  const [enderecoCidade, setEnderecoCidade] = useState('')
+  const cidadeDaLoja = useRef('')
   const [enderecoComplemento, setEnderecoComplemento] = useState('')
   const [taxaEntrega, setTaxaEntrega] = useState(0)
 
@@ -162,6 +175,8 @@ export default function NovaVenda() {
   const [buscaCliente, setBuscaCliente] = useState('')
 
   const [salvando, setSalvando] = useState(false)
+  const salvandoRef = useRef(false)
+  salvandoRef.current = salvando
   const [sucessoAberto, setSucessoAberto] = useState(false)
   const [pedidoCriado, setPedidoCriado] = useState<any>(null)
   const [horaSheetAberto, setHoraSheetAberto] = useState(false)
@@ -194,23 +209,39 @@ export default function NovaVenda() {
   }
 
   // ── Load inicial ────────────────────────────────────────────────────────
+  // (11/10) Se a leitura falhar, a tela diz "Não deu pra carregar" com "Tentar de novo".
+  // Antes o erro virava lista vazia e aparecia "Cadastre seu primeiro produto", travando a venda de quem já tinha produtos.
+  const [erroCarga, setErroCarga] = useState('')
+  const [tentativaCarga, setTentativaCarga] = useState(0)
   useEffect(() => {
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) { navigate('/login'); return }
+    let vivo = true
+    const falhou = (e: unknown) => { if (!vivo) return; setErroCarga(explicarErro(e, 'Tente de novo em instantes.')); setProdutosLoaded(true) }
+    supabase.auth.getUser().then(async ({ data: { user }, error: erroConta }) => {
+      if (!vivo) return
+      if (!user) { if (erroConta && erroDeConexao(erroConta)) falhou(erroConta); else navigate('/login'); return }
       setUserId(user.id)
-      const [{ data: prds }, { data: cls }] = await Promise.all([
-        supabase.from('produtos').select('id,nome,preco_normal,forma_venda,imagem_url,categoria,grupo_tamanhos,kit_qtd').eq('user_id', user.id).order('nome'),
+      const [{ data: prds, error: e1 }, { data: cls, error: e2 }, { data: loja }] = await Promise.all([
+        lerProdutosDeVenda(user.id), // com os campos da promoção
         supabase.from('clientes').select('id,nome,telefone,whatsapp,rua,numero,bairro,cidade,complemento,foto_url').eq('user_id', user.id).order('nome'),
+        supabase.from('profiles').select('endereco').eq('id', user.id).maybeSingle(),
       ])
-      setProdutos(prds || [])
+      if (!vivo) return
+      if (e1 || e2) { falhou(e1 || e2); return }
+      // cidade da loja (profiles.endereco, em JSON); sem ela, o campo fica vazio
+      const lerEndereco = (cru: any): any => { try { return cru ? (typeof cru === 'string' ? JSON.parse(cru) : cru) : {} } catch { return {} } }
+      cidadeDaLoja.current = String(lerEndereco((loja as any)?.endereco)?.cidade || '').trim()
+      if (cidadeDaLoja.current) setEnderecoCidade(atual => atual || cidadeDaLoja.current)
+      setProdutos((prds || []) as Produto[])
       setClientes(cls || [])
+      setErroCarga('')
       setProdutosLoaded(true)
       // Veio da página da cliente ("Novo pedido"): já começa com ela escolhida (08/10 · 3.34)
       const doLink = new URLSearchParams(window.location.search).get('cliente')
       const escolhida = doLink ? (cls || []).find((c: any) => c.id === doLink) : null
       if (escolhida) selecionarCliente(escolhida as any)
-    })
-  }, [])
+    }).catch(falhou)
+    return () => { vivo = false }
+  }, [tentativaCarga]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Ajusta tipoEntrega default quando muda o tipo de venda
   useEffect(() => {
@@ -225,13 +256,10 @@ export default function NovaVenda() {
   }, [etapa, sucessoAberto])
 
   // ── Cálculos ────────────────────────────────────────────────────────────
-  const subtotalProdutos = useMemo(
-    () => itens.reduce((acc, i) => acc + i.valor_unitario * i.quantidade, 0),
-    [itens]
-  )
+  // (11/10) a mesma conta que grava o pedido (lib/pedidosDoo), em centavos certos: o total da tela é o total gravado
   const total = useMemo(
-    () => Math.max(0, subtotalProdutos + (tipoEntrega === 'entrega' ? taxaEntrega : 0) - desconto + acrescimo),
-    [subtotalProdutos, taxaEntrega, desconto, acrescimo, tipoEntrega]
+    () => totalDe({ itens, tipoEntrega, taxaEntrega, desconto, acrescimo }),
+    [itens, taxaEntrega, desconto, acrescimo, tipoEntrega]
   )
 
   // Lista de categorias com contagem (ordenada)
@@ -268,21 +296,113 @@ export default function NovaVenda() {
     if (etapaLabelAtual === 'Pagamento') {
       if (!situacaoPag) return 'Escolha quanto já entrou pra continuar.'
       // Pagamento parcial precisa do valor recebido (maior que zero e menor que o total)
-      if (situacaoPag === 'parcial' && !(valorParcial > 0 && valorParcial < total)) return 'Escreva quanto ele já pagou pra continuar.'
+      if (situacaoPag === 'parcial' && !(r2(valorParcial) > 0 && r2(valorParcial) < total)) return 'Escreva quanto ele já pagou pra continuar.'
     }
     return null
   }
   const [tentou, setTentou] = useState(false)
   useEffect(() => { setTentou(false) }, [etapa])
 
+  // ── Passos no histórico (11/10) ─────────────────────────────────────────
+  // Cada "Continuar" coloca uma entrada no histórico: o voltar do navegador ou do Android volta um passo
+  // (antes saía da tela e a venda se perdia sem perguntar). No primeiro passo, com produto já escolhido,
+  // o voltar pergunta antes de sair, igual ao botão Cancelar.
+  // É o mesmo jeito das janelas do app (useSobreposicao): a entrada copia o que o roteador guardou e leva as marcas "nv".
+  const sessaoNv = useRef('')   // de qual venda são as entradas (criado na primeira entrada; as de uma venda antiga não valem)
+  const profNv = useRef(0)      // quantas entradas desta venda estão no histórico
+  const etapaRef = useRef(etapa)
+  const temDados = useRef(false)
+  useEffect(() => { etapaRef.current = etapa; temDados.current = itens.length > 0 && !sucessoAberto })
+  const perguntandoSaida = useRef(false)
+  const recolhendo = useRef(false)
+  const lixoAbaixo = useRef(false) // tem entrada de outra venda logo abaixo: sair pelo "voltar" não tiraria desta tela
+
+  const empurrarPasso = (passo: number, de = 0) => {
+    const st = (window.history.state || {}) as any
+    if (st.uiJanela) return // tem janela do app fechando por cima: não mexe (segue sem a entrada)
+    if (!sessaoNv.current) sessaoNv.current = Math.random().toString(36).slice(2)
+    try {
+      window.history.pushState({ ...st, nvSessao: sessaoNv.current, nvProf: profNv.current + 1, nvEtapa: passo, nvDe: de }, '')
+      profNv.current += 1
+    } catch { /* sem histórico: segue sem o voltar */ }
+  }
+  /** Vai pra um passo colocando uma entrada no histórico (o voltar leva pro passo de onde veio). */
+  const irParaPasso = (passo: number) => { empurrarPasso(passo, etapa); setEtapa(passo) }
+  /** Troca de passo sem entrada nova (só acerta a marca da entrada atual). */
+  const trocarPasso = (passo: number) => {
+    const st = window.history.state as any
+    if (profNv.current > 0 && st?.nvSessao === sessaoNv.current) { try { window.history.replaceState({ ...st, nvEtapa: passo, nvDe: 0 }, '') } catch { /* nada */ } }
+    setEtapa(passo)
+  }
+  /** Tira do histórico as entradas da venda (antes de sair da tela, ou quando a venda foi registrada). */
+  const recolherPassos = (quantas = profNv.current) => new Promise<void>(resolve => {
+    if (quantas <= 0) { resolve(); return }
+    recolhendo.current = true
+    let feito = false
+    const fim = () => { if (feito) return; feito = true; window.removeEventListener('popstate', chegou); recolhendo.current = false; profNv.current = 0; resolve() }
+    const chegou = () => { if (!(Number((window.history.state as any)?.nvProf) > 0)) fim() }
+    window.addEventListener('popstate', chegou)
+    window.setTimeout(fim, 600) // segurança: nunca fica esperando
+    try { window.history.go(-quantas) } catch { fim() }
+  })
+
+  // Voltou pra esta tela pelo histórico e caiu numa entrada de uma venda antiga: tira essas entradas (senão cada "voltar" não faria nada)
+  const limpouVelhas = useRef(false)
+  useEffect(() => {
+    const st = window.history.state as any
+    const velhas = Number(st?.nvProf) || 0
+    if (limpouVelhas.current || velhas <= 0 || st?.nvSessao === sessaoNv.current) return
+    limpouVelhas.current = true
+    recolherPassos(velhas)
+  }, [])
+
+  // O voltar do navegador/Android
+  useEffect(() => {
+    const aoVoltarNoHistorico = () => {
+      if (recolhendo.current || perguntandoSaida.current) return
+      const st = (window.history.state || {}) as any
+      if (st.uiJanela) return // o voltar fechou uma janela e ainda tem outra por cima
+      const prof = st.nvSessao === sessaoNv.current ? Number(st.nvProf) || 0 : 0
+      if (prof === profNv.current) return // nada desta venda saiu do histórico (foi uma janela do app fechando)
+      profNv.current = prof
+      // (11/10) registrando a venda: não pergunta "Cancelar?" (a venda seria gravada mesmo assim); a entrada volta
+      if (prof === 0 && salvandoRef.current) { empurrarPasso(etapaRef.current); return }
+      if (prof > 0) { setEtapa(Math.min(5, Math.max(1, Number(st.nvEtapa) || 1))); return }
+      // saiu da última entrada da venda: a pessoa está indo embora da tela
+      const sair = () => { if (lixoAbaixo.current) navigate('/pedidos', { replace: true }); else voltarOuIr(navigate, '/pedidos') }
+      if (!temDados.current) { sair(); return }
+      perguntandoSaida.current = true
+      confirmar({ titulo: 'Cancelar esta venda?', texto: 'O que você preencheu até aqui vai ser perdido.', rotulo: 'Cancelar venda', rotuloVoltar: 'Continuar a venda', perigo: true }).then(ok => {
+        perguntandoSaida.current = false
+        if (ok) sair()
+        else empurrarPasso(etapaRef.current) // ficou: a entrada volta pro histórico
+      })
+    }
+    window.addEventListener('popstate', aoVoltarNoHistorico)
+    return () => window.removeEventListener('popstate', aoVoltarNoHistorico)
+  }, [navigate])
+
+  // Tem produto na venda e nenhuma entrada no histórico: coloca uma, pro voltar perguntar antes de sair
+  const temItens = itens.length > 0
+  useEffect(() => {
+    if (!temItens || sucessoAberto || profNv.current > 0) return
+    let vivo = true
+    // espera a janela de escolher o produto tirar a entrada dela do histórico
+    historicoAssentado().then(() => { if (vivo && profNv.current === 0 && !perguntandoSaida.current && !recolhendo.current) empurrarPasso(etapaRef.current) })
+    return () => { vivo = false }
+  }, [temItens, sucessoAberto, locNV.key])
+
   const proximaEtapa = () => {
     const falta = oQueFalta()
     if (falta) { setTentou(true); return }
-    if (etapa < totalEtapas) setEtapa(e => e + 1)
+    if (etapa < totalEtapas) irParaPasso(etapa + 1)
   }
   const voltarEtapa = () => {
-    if (etapa > 1) setEtapa(e => e - 1)
-    else sairDaVenda()
+    if (etapa <= 1) { sairDaVenda(); return }
+    // a entrada de baixo é o passo anterior: volta pelo histórico (o mesmo caminho do voltar do aparelho)
+    const st = window.history.state as any
+    if (profNv.current > 0 && st?.nvSessao === sessaoNv.current && st.nvEtapa === etapa && st.nvDe === etapa - 1) { window.history.back(); return }
+    trocarPasso(etapa - 1)
   }
   // Sair no meio: se já tem produto, pergunta antes de perder o que foi preenchido
   const sairDaVenda = async () => {
@@ -290,6 +410,7 @@ export default function NovaVenda() {
       const ok = await confirmar({ titulo: 'Cancelar esta venda?', texto: 'O que você preencheu até aqui vai ser perdido.', rotulo: 'Cancelar venda', perigo: true })
       if (!ok) return
     }
+    await recolherPassos() // sem isso, o "voltar" na lista de pedidos caía de novo nos passos desta venda
     navigate('/pedidos')
   }
 
@@ -310,7 +431,7 @@ export default function NovaVenda() {
       produto_id: p.id,
       nome_produto: p.nome,
       quantidade: 1,
-      valor_unitario: escolha ? escolha.valor : p.preco_normal,
+      valor_unitario: escolha ? escolha.valor : precoDeVenda(p), // (11/10) com a promoção (antes entrava o preço cheio)
       imagem_url: p.imagem_url,
       forma_venda: p.forma_venda,
       observacoes: '',
@@ -362,45 +483,73 @@ export default function NovaVenda() {
   }
 
   // ── Finalizar Venda ────────────────────────────────────────────────────
+  // (11/10) cliente nova que já foi cadastrada numa tentativa em que o pedido falhou: a próxima tentativa usa a mesma
+  // (antes cada "Registrar venda" cadastrava a cliente de novo). Vale enquanto o nome e o telefone forem os mesmos.
+  const clienteCriada = useRef<{ id: string; chave: string } | null>(null)
   const finalizarVenda = async () => {
     if (!userId || salvando) return
-    if (!situacaoPag) { setEtapa(etapas.indexOf('Pagamento') + 1); avisar('Escolha quanto já entrou pra continuar.', { tipo: 'info' }); return }
+    // (11/10) o Editar da Doo abre direto no Revisar: a data da encomenda é conferida aqui também
+    if (tipo !== 'pronta_entrega' && (!dataEntrega || dataEntrega < hojeISO())) { trocarPasso(3); avisar(dataEntrega ? 'Essa data já passou. Escolha outra.' : 'Escolha a data da entrega.', { tipo: 'info' }); return }
+    if (!semCliente && !clienteId && !modoNovoCli && clienteNome.trim()) { trocarPasso(2); avisar('Escolha a cliente pra continuar.', { tipo: 'info' }); return }
+    if (!situacaoPag) { trocarPasso(etapas.indexOf('Pagamento') + 1); avisar('Escolha quanto já entrou pra continuar.', { tipo: 'info' }); return }
+    // o total pode ter mudado depois do passo do pagamento (tirou um produto, deu desconto): o sinal continua tendo que ser menor
+    if (situacaoPag === 'parcial' && !(r2(valorParcial) > 0 && r2(valorParcial) < total)) { trocarPasso(etapas.indexOf('Pagamento') + 1); avisar('O sinal precisa ser menor que o total. Confira o pagamento.', { tipo: 'info' }); return }
     setSalvando(true)
 
-    // Salvar: a mesma função usada pela Doo IA (lib/pedidosDoo) — pedido igual nos dois caminhos
-    const res = await criarPedido(userId, {
-      tipo: (tipo || 'encomenda') as any, itens, semCliente, clienteId, clienteNome, clienteTelefone,
-      clienteNovo: !semCliente && !clienteId && modoNovoCli && !!clienteNome.trim(),
-      tipoEntrega: tipoEntrega as any, dataEntrega, horarioEntrega,
-      endereco: { rua: enderecoRua, numero: enderecoNumero, bairro: enderecoBairro, cidade: enderecoCidade, complemento: enderecoComplemento },
-      taxaEntrega, desconto, acrescimo, formaPagamento, situacaoPag, valorParcial, dataPrevistaPagamento,
-      // "Pronto" de retirada entra como "Pronto pra retirar" (o mesmo caminho da lista e da tela do pedido)
-      statusPedido: statusPedido === 'finalizado' && tipoEntrega === 'retirada' ? 'aguardando_retirada' : statusPedido,
-      observacoes, origem: origemDoo ? 'doo' : 'manual',
-    })
-    if (res.ok === false) {
-      avisar('Não deu pra registrar a venda: ' + res.erro, { tipo: 'erro' })
-      setSalvando(false)
-      return
-    }
-    if (res.aviso) avisar(res.aviso, { tipo: 'info' })
-    const novoPedido: any = res.pedido
+    const clienteNovo = !semCliente && !clienteId && modoNovoCli && !!clienteNome.trim()
+    const chaveCliente = `${clienteNome.trim().toLowerCase()}|${digitosTelefone(clienteTelefone)}`
+    const jaCriada = clienteNovo && clienteCriada.current?.chave === chaveCliente ? clienteCriada.current.id : null
+    try {
+      // Salvar: a mesma função usada pela Doo IA (lib/pedidosDoo) — pedido igual nos dois caminhos
+      const res = await criarPedido(userId, {
+        tipo: (tipo || 'encomenda') as any, itens, semCliente, clienteId: clienteId || jaCriada, clienteNome, clienteTelefone,
+        clienteNovo,
+        tipoEntrega: tipoEntrega as any, dataEntrega, horarioEntrega,
+        endereco: { rua: enderecoRua, numero: enderecoNumero, bairro: enderecoBairro, cidade: enderecoCidade, complemento: enderecoComplemento },
+        taxaEntrega, desconto, acrescimo, formaPagamento, situacaoPag, valorParcial, dataPrevistaPagamento,
+        // "Pronto" de retirada entra como "Pronto pra retirar" (o mesmo caminho da lista e da tela do pedido)
+        statusPedido: statusPedido === 'finalizado' && tipoEntrega === 'retirada' ? 'aguardando_retirada' : statusPedido,
+        observacoes, origem: origemDoo ? 'doo' : 'manual',
+      })
+      if (res.ok === false) {
+        // (11/10) não gravou (ou gravou sem os produtos e foi desfeito): mostra o erro e fica no Revisar, sem tela de sucesso
+        if (clienteNovo && res.clienteId) clienteCriada.current = { id: res.clienteId, chave: chaveCliente }
+        avisar(res.erro, { tipo: 'erro' })
+        return
+      }
+      clienteCriada.current = null
+      if (res.aviso) avisar(res.aviso, { tipo: 'info' })
+      const novoPedido: any = res.pedido
+      // a cliente nova entra na lista da tela (a próxima venda já acha ela na busca)
+      if (clienteNovo && res.clienteId && !clientes.some(c => c.id === res.clienteId)) {
+        const comEndereco = tipoEntrega === 'entrega' ? { rua: enderecoRua, numero: enderecoNumero, bairro: enderecoBairro, cidade: enderecoCidade, complemento: enderecoComplemento } : {}
+        setClientes(prev => [...prev, { id: res.clienteId as string, nome: clienteNome.trim(), whatsapp: clienteTelefone.trim(), ...comEndereco }].sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR')))
+      }
 
-    // Salva dados do pedido pra mostrar na tela de sucesso
-    setPedidoCriado({
-      id: novoPedido.id,
-      numero: novoPedido.numero || null, // sem número: a tela diz só "Pedido registrado" (nunca mostra o id interno)
-      itens: [...itens],
-      clienteNome: semCliente || !clienteNome ? '' : clienteNome,
-      clienteTelefone: semCliente ? '' : clienteTelefone,
-      total,
-      tipo,
-      dataEntrega,
-      horarioEntrega,
-    })
-    setSucessoAberto(true)
-    setSalvando(false)
-    tocarSom('pedido')
+      // Salva dados do pedido pra mostrar na tela de sucesso
+      // (11/10) total e pagamento são os que ficaram GRAVADOS: se o recebimento não entrou, a tela não diz mais "Sinal de R$ 50,00"
+      setPedidoCriado({
+        id: novoPedido.id,
+        numero: novoPedido.numero || null, // sem número: a tela diz só "Pedido registrado" (nunca mostra o id interno)
+        itens: [...itens],
+        clienteNome: semCliente || !clienteNome ? '' : clienteNome,
+        clienteTelefone: semCliente ? '' : clienteTelefone,
+        total: novoPedido.valor_total != null ? Number(novoPedido.valor_total) || 0 : total,
+        recebido: recebidoPedido(novoPedido),
+        falta: saldoPedido(novoPedido),
+        statusPagamento: String(novoPedido.status_pagamento || ''),
+        tipo,
+        dataEntrega,
+        horarioEntrega,
+      })
+      setSucessoAberto(true)
+      recolherPassos() // os passos desta venda saem do histórico: o voltar não reabre uma venda já registrada
+      tocarSom('pedido')
+    } catch (e) {
+      avisar(explicarErro(e, 'Não deu pra registrar a venda. Tente de novo.'), { tipo: 'erro' })
+    } finally {
+      setSalvando(false)
+    }
   }
 
   // Comprovante da venda no modelo padrão de PDF (o mesmo do pedido). Grátis pra todos.
@@ -413,12 +562,27 @@ export default function NovaVenda() {
   }
 
   // Veio do "Editar" do cartão da Doo IA: abre preenchida, direto no Revisar
+  // (11/10) Vale também pra quem JÁ está nesta tela e toca "Editar" no cartão: antes só era lido ao abrir a tela e nada era preenchido.
+  const jaAbriu = useRef(false)
+  const rascunhoLido = useRef('') // a entrada do histórico de onde o rascunho já foi lido (não preenche duas vezes)
   useEffect(() => {
     const d = (locNV.state as any)?.rascunhoDoo as DadosPedido | undefined
-    if (!d) return
-    window.history.replaceState({}, '')
+    const chegouComATelaAberta = jaAbriu.current
+    jaAbriu.current = true
+    if (!d || rascunhoLido.current === locNV.key) return
+    rascunhoLido.current = locNV.key
+    // tira o rascunho do histórico (recarregar a página não preenche de novo), sem apagar o que o roteador guarda nele
+    navigate(locNV.pathname + locNV.search, { replace: true, state: null })
+    if (chegouComATelaAberta) {
+      // a entrada nova entrou por cima dos passos da venda que estava na tela: eles não valem mais
+      if (profNv.current > 0) lixoAbaixo.current = true
+      sessaoNv.current = '' // as entradas antigas deixam de valer (a próxima entrada cria outra marca)
+      profNv.current = 0
+      setSucessoAberto(false); setPedidoCriado(null); setEnderecoCep('')
+    }
+    clienteCriada.current = null
     setOrigemDoo(true)
-    preenchidaRef.current = true
+    if (d.tipo !== tipo) preenchidaRef.current = true
     setTipo(d.tipo as any); setItens(d.itens as any)
     clienteDoEnderecoRef.current = d.clienteId || null
     setSemCliente(d.semCliente); setClienteId(d.clienteId); setClienteNome(d.clienteNome); setClienteTelefone(d.clienteTelefone); setModoNovoCli(d.clienteNovo)
@@ -427,19 +591,22 @@ export default function NovaVenda() {
     setTaxaEntrega(d.taxaEntrega); setDesconto(d.desconto); setAcrescimo(d.acrescimo)
     setFormaPagamento(d.formaPagamento); setSituacaoPag(d.situacaoPag); setValorParcial(d.valorParcial); setDataPrevistaPagamento(d.dataPrevistaPagamento)
     setStatusPedido((d.statusPedido || 'agendado') as any); setObservacoes(d.observacoes)
-    setEtapa(5)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    // (11/10) mais de uma cliente com o nome que a Doo ouviu: abre no passo da cliente pra ela escolher qual é
+    trocarPasso(!d.semCliente && !d.clienteId && !d.clienteNovo && d.clienteNome ? 2 : 5)
+  }, [locNV.key]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset completo pra nova venda
   const resetVenda = () => {
-    setEtapa(1)
+    trocarPasso(1)
+    setOrigemDoo(false) // (11/10) a venda seguinte é manual (antes continuava saindo como "pela Doo IA")
+    clienteCriada.current = null
     setTipo(null)
     setItens([])
     clienteDoEnderecoRef.current = null
     setClienteId(null); setClienteNome(''); setClienteTelefone(''); setSemCliente(false); setModoNovoCli(false)
     setTipoEntrega('retirada')
     setDataEntrega(''); setHorarioEntrega('')
-    setEnderecoRua(''); setEnderecoNumero(''); setEnderecoBairro(''); setEnderecoCidade('Curitiba'); setEnderecoComplemento(''); setTaxaEntrega(0); setEnderecoCep('')
+    setEnderecoRua(''); setEnderecoNumero(''); setEnderecoBairro(''); setEnderecoCidade(cidadeDaLoja.current); setEnderecoComplemento(''); setTaxaEntrega(0); setEnderecoCep('')
     setDesconto(0); setAcrescimo(0); setSituacaoPag(null); setValorParcial(0); setDataPrevistaPagamento(''); setFormaPagamento('PIX'); setStatusPedido('agendado')
     setObservacoes('')
     setPedidoCriado(null); setSucessoAberto(false)
@@ -454,7 +621,7 @@ export default function NovaVenda() {
   const nomeDaCliente = semCliente || !clienteNome.trim() ? 'Venda avulsa' : toTitleCase(clienteNome.trim())
   const ehEntrega = tipoEntrega === 'entrega'
   const taxaConta = ehEntrega ? taxaEntrega : 0
-  const falta = situacaoPag === 'parcial' ? Math.max(0, total - valorParcial) : situacaoPag === 'total' ? 0 : total
+  const falta = situacaoPag === 'parcial' ? Math.max(0, r2(total - valorParcial)) : situacaoPag === 'total' ? 0 : total
   const nomeForma = formaPagamento === 'PIX' ? 'Pix' : formaPagamento
   // o mesmo texto no Revisar e na tela de venda registrada
   const textoPagamento =
@@ -472,6 +639,12 @@ export default function NovaVenda() {
   if (sucessoAberto && pedidoCriado) {
     const pc = pedidoCriado
     const naAgenda = pc.tipo === 'encomenda' && statusPedido !== 'entregue'
+    // (11/10) o pagamento que ficou gravado no pedido (se o recebimento não entrou, o pedido ficou "a receber")
+    const pagoGravado = pc.statusPagamento === 'pago'
+    const pagamentoGravado = pagoGravado ? `Pago · ${nomeForma}`
+      : pc.recebido > 0 ? `Sinal de ${rs(pc.recebido)} · ${nomeForma}`
+      : situacaoPag === 'na_entrega' || situacaoPag === 'fiado' ? textoPagamento
+      : 'A receber'
     return (
       <>
         {cabecalho}
@@ -484,8 +657,8 @@ export default function NovaVenda() {
               <Linha rotulo="Cliente">{pc.clienteNome ? toTitleCase(pc.clienteNome) : 'Venda avulsa'}</Linha>
               {pc.tipo === 'encomenda' && pc.dataEntrega && <Linha rotulo={ehEntrega ? 'Entrega' : 'Retirada'}>{dataLonga(pc.dataEntrega, pc.horarioEntrega)}</Linha>}
               <Linha rotulo="Total">{rs(pc.total)}</Linha>
-              <Linha rotulo="Pagamento" tom={situacaoPag === 'total' ? 'verde' : 'laranja'}>{textoPagamento}</Linha>
-              {situacaoPag !== 'total' && falta > 0.009 && <Linha rotulo="Falta receber" tom="laranja">{rs(falta)}</Linha>}
+              <Linha rotulo="Pagamento" tom={pagoGravado ? 'verde' : 'laranja'}>{pagamentoGravado}</Linha>
+              {!pagoGravado && pc.falta > 0.009 && <Linha rotulo="Falta receber" tom="laranja">{rs(pc.falta)}</Linha>}
             </div>
             <Botao cheio onClick={() => navigate(`/pedidos/${pc.id}/editar`)}>Abrir o pedido</Botao>
             <div className="nv3-2">
@@ -505,6 +678,23 @@ export default function NovaVenda() {
       <>
         {cabecalho}
         <p className="nv3-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Abrindo a venda…</p>
+      </>
+    )
+  }
+
+  // ── Não deu pra ler os produtos ou os clientes (11/10): avisa e deixa tentar de novo ──
+  if (erroCarga) {
+    return (
+      <>
+        {cabecalho}
+        <div className="nv3">
+          <TelaVazia
+            icone={<WarningCircle size={30} />}
+            titulo="Não deu pra carregar"
+            texto={erroCarga}
+            acao={<Botao variante="suave" tamanho="m" onClick={() => { setErroCarga(''); setProdutosLoaded(false); setTentativaCarga(t => t + 1) }}>Tentar de novo</Botao>}
+          />
+        </div>
       </>
     )
   }
@@ -593,7 +783,7 @@ export default function NovaVenda() {
                         <span className="nv3-ft" aria-hidden="true"><Package size={20} weight="bold" />{foto && <img src={foto} alt="" onError={e => { e.currentTarget.style.display = 'none' }} />}</span>
                         <div className="nv3-it-tx">
                           <b>{nome}{it.opcaoLabel ? ` · ${it.opcaoLabel}` : ''}</b>
-                          <span>{rs(it.valor_unitario * it.quantidade)}{it.quantidade > 1 ? ` · ${rs(it.valor_unitario)} cada` : ''}</span>
+                          <span>{rs(r2(it.valor_unitario * it.quantidade))}{it.quantidade > 1 ? ` · ${rs(it.valor_unitario)} cada` : ''}</span>
                         </div>
                       </div>
                       <div className="nv3-it-ctl">
@@ -750,8 +940,8 @@ export default function NovaVenda() {
                       <Campo
                         rotulo="Quanto ele já pagou" prefixo="R$" inputMode="numeric" placeholder="0,00" autoFocus
                         value={formatMaskMoney(valorParcial)} onChange={e => setValorParcial(parseMaskMoney(e.target.value))}
-                        erro={valorParcial > 0 && valorParcial >= total ? `Precisa ser menos que ${rs(total)}. Se ele pagou tudo, escolha "Tudo agora".` : undefined}
-                        dica={valorParcial > 0 && valorParcial < total ? `Falta ${rs(total - valorParcial)}` : undefined}
+                        erro={valorParcial > 0 && r2(valorParcial) >= total ? `Precisa ser menos que ${rs(total)}. Se ele pagou tudo, escolha "Tudo agora".` : undefined}
+                        dica={valorParcial > 0 && r2(valorParcial) < total ? `Falta ${rs(r2(total - valorParcial))}` : undefined}
                       />
                     </div>
                   )}
@@ -792,7 +982,7 @@ export default function NovaVenda() {
           </section>
 
           <section className="nv3-card">
-            <Titulo acao={<Botao variante="link" onClick={() => setEtapa(1)}>Editar</Botao>}>Resumo</Titulo>
+            <Titulo acao={<Botao variante="link" onClick={() => irParaPasso(1)}>Editar</Botao>}>Resumo</Titulo>
             <div className="nv3-res">
               <Linha rotulo="Tipo">{tipo === 'pronta_entrega' ? 'Pronta entrega' : 'Encomenda'}</Linha>
               <Linha rotulo="Cliente">{nomeDaCliente}</Linha>
@@ -806,7 +996,7 @@ export default function NovaVenda() {
             <div className="nv3-contas">
               {itens.map((it, idx) => (
                 <div key={idx}>
-                  <p><span>{itemComQtd(`${nomeDeProduto(it.nome_produto)}${it.opcaoLabel ? ` · ${it.opcaoLabel}` : ''}`, it.quantidade, it.forma_venda)}</span><span>{rs(it.valor_unitario * it.quantidade)}</span></p>
+                  <p><span>{itemComQtd(`${nomeDeProduto(it.nome_produto)}${it.opcaoLabel ? ` · ${it.opcaoLabel}` : ''}`, it.quantidade, it.forma_venda === 'kg' && !pesoLivre(it, 'kg') ? null : it.forma_venda)}</span><span>{rs(r2(it.valor_unitario * it.quantidade))}</span></p>
                   {it.observacoes && <p className="rec"><span>Recado: {it.observacoes}</span></p>}
                 </div>
               ))}
@@ -879,7 +1069,8 @@ export default function NovaVenda() {
                 <button key={p.id} type="button" className="tpj-it" onClick={() => addProduto(p)}>
                   <span className="tpj-ft" aria-hidden="true"><Package size={20} weight="bold" />{foto && <img src={foto} alt="" onError={e => { e.currentTarget.style.display = 'none' }} />}</span>
                   <span className="tpj-tx"><b>{nomeDeProduto(p.nome || 'Produto sem nome')}</b>{p.categoria && <small>{p.categoria}</small>}</span>
-                  <span className="tpj-preco">{rs(p.preco_normal)}</span>
+                  {/* (11/10) produto simples: o preço já com a promoção, o mesmo que entra na venda (com tamanhos ou kit, o preço aparece na escolha) */}
+                  <span className="tpj-preco">{rs(opcoesDoProduto(p).length ? p.preco_normal : precoDeVenda(p))}</span>
                 </button>
               )
             })}
@@ -892,7 +1083,12 @@ export default function NovaVenda() {
     {/* ═══ Escolher cliente (janela padrão) ═══ */}
     {(() => {
       const q = buscaCliente.trim().toLowerCase()
-      const lista = clientes.filter(c => (c.nome || '').toLowerCase().includes(q) || (c.telefone || '').includes(buscaCliente.trim()))
+      // (11/10) o telefone é procurado nos dois campos (os clientes novos ficam em "whatsapp") e só pelos números,
+      // então "41 9999" acha "(41) 99999-0000"
+      const qTel = buscaCliente.replace(/\D/g, '')
+      const qSem55 = digitosTelefone(buscaCliente) // colou com +55: procura sem o código do país
+      const lista = clientes.filter(c => (c.nome || '').toLowerCase().includes(q)
+        || (qTel.length >= 3 && [c.telefone, c.whatsapp].some(t => String(t || '').replace(/\D/g, '').includes(qTel) || (qSem55.length >= 3 && digitosTelefone(t).includes(qSem55)))))
       return (
         <Janela aberta={modalCliente} aoFechar={() => setModalCliente(false)} tipo="conteudo" titulo="Escolher cliente">
           <div className="ui-campo-c tpj-busca">

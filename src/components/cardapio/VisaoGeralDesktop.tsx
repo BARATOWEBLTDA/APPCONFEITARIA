@@ -7,6 +7,7 @@ import PrimeirosPassos from "@/components/PrimeirosPassos";
 import { ArrowSquareOut, Camera, CaretRight, ChartBar, Crown, ImageSquare, LinkSimple, Package, TextAlignLeft, Ticket } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { Botao } from "@/components/base";
+import { situacaoDaLoja, horaTexto } from "@/lib/agendaCardapio";
 
 /**
  * Visão geral do Cardápio digital — COMPUTADOR (aprovada 02/10).
@@ -17,31 +18,17 @@ import { Botao } from "@/components/base";
  * número do pedido aparecendo, botões de 44px e o PRO no cartão vinho.
  */
 type Periodo = "hoje" | "7d" | "30d" | "tudo";
-const DIAS_MAP: Record<string, number> = { "Segunda": 1, "Terça": 2, "Quarta": 3, "Quinta": 4, "Sexta": 5, "Sábado": 6, "Domingo": 0 };
 const DIAS_LABEL = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
+// (11/10) a situação vem de UMA conta só (lib/agendaCardapio), a mesma do topo do cardápio
 function situacaoLoja(horario: any): { aberto: boolean; txt: string } | null {
-  if (!horario) return null;
-  try {
-    const h = typeof horario === "string" ? JSON.parse(horario) : horario;
-    const agora = new Date(); const dia = agora.getDay(); const min = agora.getHours() * 60 + agora.getMinutes();
-    const toMin = (t: string) => { const [a, b] = String(t || "0:0").split(":").map(Number); return a * 60 + (b || 0); };
-    const ativo = (d: number) => (d === 6 && h.abre_sabado) || (d === 0 && h.abre_domingo) || (h.dias || []).some((x: string) => DIAS_MAP[x] === d);
-    const horas = (d: number) => d === 6 && h.abre_sabado ? [h.sabado_abertura || "09:00", h.sabado_fechamento || "14:00"]
-      : d === 0 && h.abre_domingo ? [h.domingo_abertura || "09:00", h.domingo_fechamento || "14:00"] : [h.abertura || "08:00", h.fechamento || "18:00"];
-    if (ativo(dia)) {
-      const [ab, fe] = horas(dia);
-      // 10/10: fechar às "00:00" é fechar no fim do dia (24:00)
-      if (min >= toMin(ab) && min < (toMin(fe) || 1440)) return { aberto: true, txt: `Aberto agora · fecha às ${fe.slice(0, 5)}` };
-      if (min < toMin(ab)) return { aberto: false, txt: `Fechado · abre hoje às ${ab.slice(0, 5)}` };
-    }
-    for (let i = 1; i <= 7; i++) {
-      const d = (dia + i) % 7;
-      if (ativo(d)) return { aberto: false, txt: `Fechado · abre ${i === 1 ? "amanhã" : DIAS_LABEL[d]} às ${horas(d)[0].slice(0, 5)}` };
-    }
-    return { aberto: false, txt: "Fechado" };
-  } catch { return null; }
+  const s = situacaoDaLoja(horario);
+  if (!s) return null;
+  if (s.aberto) return { aberto: true, txt: `Aberto agora · fecha às ${horaTexto(s.fecha)}` };
+  if (!s.abre) return { aberto: false, txt: "Fechado" };
+  const quando = s.abre.dias === 0 ? "hoje" : s.abre.dias === 1 ? "amanhã" : DIAS_LABEL[s.abre.diaSemana];
+  return { aberto: false, txt: `Fechado · abre ${quando} às ${horaTexto(s.abre.minutos)}` };
 }
 
 function inicioPeriodo(p: Periodo): Date | null {

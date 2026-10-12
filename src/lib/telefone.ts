@@ -32,3 +32,24 @@ export function linkWhatsApp(t: string | null | undefined, texto?: string): stri
   if (!n) return "";
   return `https://wa.me/${n}${texto ? `?text=${encodeURIComponent(texto)}` : ""}`;
 }
+
+/**
+ * Dígitos do telefone ENQUANTO a pessoa digita ou cola (10/10), no máximo 11 (DDD + número). Use nas máscaras de campo.
+ * Tira o +55 de número colado ou preenchido pelo navegador ("+55 41 99999-8888", "5541999998888"),
+ * que antes era cortado nos 11 primeiros dígitos e virava "(55) 41999-9988".
+ * Cuidado com o DDD 55: "55999991234" mais um dígito a mais (12 dígitos, sem "+") NÃO é código do país.
+ */
+export function digitosAoDigitar(v: string | null | undefined): string {
+  const texto = String(v ?? "");
+  const cru = texto.replace(/\D/g, "");
+  const duvida = cru.length === 12 && cru.startsWith("559") && !/^\s*\+/.test(texto);
+  return (duvida ? cru : digitosTelefone(texto)).slice(0, 11);
+}
+
+/** Máscara padrão de campo de telefone: "(41) 99999-8888" ou "(41) 3333-4444". Aceita colar com +55. */
+export function mascaraTelefone(v: string | null | undefined): string {
+  const d = digitosAoDigitar(v);
+  if (d.length <= 2) return d.length ? `(${d}` : "";
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, d.length - 4)}-${d.slice(-4)}`;
+}

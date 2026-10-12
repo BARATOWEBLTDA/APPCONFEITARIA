@@ -6,8 +6,10 @@ import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import { parseNumBR } from "@/lib/numeroBR";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Buildings, Percent, Clock, Plus, CaretRight, Receipt } from "@phosphor-icons/react";
+import { Buildings, Percent, Clock, Plus, CaretRight, Receipt, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
+import { Botao, TelaVazia } from "@/components/base";
+import { erroDeConexao, explicarErro } from "@/lib/erros";
 import Folha, { FOLHA_CSS } from "@/components/financeiro/Folha";
 import { supabase } from "@/lib/supabase";
 
@@ -27,19 +29,26 @@ export default function Custos() {
   const [variaveis, setVariaveis] = useState<CustoVariavel[]>([]);
   const [mo, setMo] = useState<MaoObra>({ salario_mensal: 0, horas_dia: 8, dias_semana_array: [1, 2, 3, 4, 5] });
   const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(false); // não deu pra carregar (11/10)
   const [editFixo, setEditFixo] = useState<CustoFixo | "novo" | null>(null);
   const [editVar, setEditVar] = useState<CustoVariavel | "novo" | null>(null);
   const [editMo, setEditMo] = useState(false);
 
   const carregar = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    // 11/10: leitura que falha avisa "Não deu pra carregar" (antes virava "Nenhum custo fixo ainda" e salário R$ 0,00)
+    setErro(false);
+    const { data: { user }, error: eUser } = await supabase.auth.getUser().catch(e => ({ data: { user: null }, error: e }));
+    if (!user) { if (erroDeConexao(eUser)) { setErro(true); setCarregando(false); } return; }
     setUid(user.id);
     const [f, v, m] = await Promise.all([
       supabase.from("custos_fixos").select("id, nome, valor, ativo, dia_vencimento").eq("user_id", user.id).order("nome"),
       supabase.from("custos_variaveis").select("id, nome, tipo, valor, ativo").eq("user_id", user.id).order("nome"),
       supabase.from("config_mao_obra").select("salario_mensal, horas_dia, dias_semana, dias_semana_array").eq("user_id", user.id).maybeSingle(),
     ]);
+    if (f.error || v.error || m.error) {
+      console.error("[custos] não consegui carregar:", f.error || v.error || m.error);
+      setErro(true); setCarregando(false); return;
+    }
     setFixos(((f.data as any[]) || []).map(x => ({ ...x, valor: Number(x.valor) || 0 })));
     setVariaveis(((v.data as any[]) || []).map(x => ({ ...x, valor: Number(x.valor) || 0 })));
     if (m.data) {
@@ -82,6 +91,10 @@ export default function Custos() {
       />
       <EstiloFinanceiro />
       <div className="cu">
+        {erro ? (
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os custos" texto="Confira a internet e tente de novo."
+            acao={<Botao variante="suave" tamanho="m" onClick={() => { setCarregando(true); carregar(); }}>Tentar de novo</Botao>} />
+        ) : (<>
         <div className="cu-resumo">
           <div className="cu-k"><small>Custos fixos por mês</small><b>{brl(totalFixos)}</b><i>{qtdFixosAtivos} {qtdFixosAtivos === 1 ? "ativo" : "ativos"}</i></div>
           <div className="cu-k"><small>Seu salário</small><b>{brl(mo.salario_mensal)}</b><i>mão de obra</i></div>
@@ -128,6 +141,7 @@ export default function Custos() {
             <button type="button" className="cu-add" onClick={() => setEditVar("novo")}><Plus size={15} weight="bold" />Novo custo variável</button>
           </section>
         </div>
+        </>)}
       </div>
 
       {editFixo && uid && <FixoSheet uid={uid} item={editFixo === "novo" ? null : editFixo} onClose={() => setEditFixo(null)} onFeito={() => { setEditFixo(null); carregar(); }} />}
@@ -174,7 +188,15 @@ function FixoSheet({ uid, item, onClose, onFeito }: { uid: string; item: CustoFi
     if (error) { setErro("Não foi possível salvar agora."); return; }
     onFeito();
   };
-  const apagar = async () => { if (!item) return; setOcupado(true); await supabase.from("custos_fixos").delete().eq("id", item.id); setOcupado(false); onFeito(); };
+  const apagar = async () => {
+    if (!item) return;
+    setOcupado(true);
+    // 11/10: confere se excluiu mesmo (antes a folha fechava e o custo reaparecia)
+    const { error } = await supabase.from("custos_fixos").delete().eq("id", item.id);
+    setOcupado(false);
+    if (error) { console.error("[custos] não excluiu:", error); setExcluir(false); setErro(explicarErro(error, "Não deu pra excluir. Tente de novo.")); return; }
+    onFeito();
+  };
   return (
     <Folha titulo={item ? "Editar custo fixo" : "Novo custo fixo"} sub="Um gasto que vem todo mês, no mesmo valor" onClose={onClose}>
       <label className="fo-lb" htmlFor="cf-n">Nome</label>
@@ -215,7 +237,15 @@ function VariavelSheet({ uid, item, onClose, onFeito }: { uid: string; item: Cus
     if (error) { setErro("Não foi possível salvar agora."); return; }
     onFeito();
   };
-  const apagar = async () => { if (!item) return; setOcupado(true); await supabase.from("custos_variaveis").delete().eq("id", item.id); setOcupado(false); onFeito(); };
+  const apagar = async () => {
+    if (!item) return;
+    setOcupado(true);
+    // 11/10: confere se excluiu mesmo (antes a folha fechava e o custo reaparecia)
+    const { error } = await supabase.from("custos_variaveis").delete().eq("id", item.id);
+    setOcupado(false);
+    if (error) { console.error("[custos] não excluiu:", error); setExcluir(false); setErro(explicarErro(error, "Não deu pra excluir. Tente de novo.")); return; }
+    onFeito();
+  };
   return (
     <Folha titulo={item ? "Editar custo variável" : "Novo custo variável"} sub="Um gasto que acompanha cada venda" onClose={onClose}>
       <label className="fo-lb" htmlFor="cv-n">Nome</label>

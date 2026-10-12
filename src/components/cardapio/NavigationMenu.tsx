@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { montarMensagem as montarMensagemModelo } from '@/lib/mensagens'
 import { CalendarioSheet, HorariosSheet } from '@/components/cardapio/AgendaSheets'
-import { antecedenciaHoras, calcularRegras, primeiraData, rotuloData } from '@/lib/agendaCardapio'
+import { antecedenciaHoras, calcularRegras, deIso, horarioPermitido, primeiraData, rotuloData } from '@/lib/agendaCardapio'
 import { supabase } from '@/lib/supabase'
 import { ArrowLeft, CalendarBlank, CaretRight, Check, ChatCircleDots, Clock, CreditCard, Money, PixLogo, Plus, ClipboardText, House, ShoppingBag as Sacola, Storefront, Tag, Truck, User, WhatsappLogo, X } from '@phosphor-icons/react'
 import { useCart } from '@/hooks/useCart'
@@ -11,7 +11,8 @@ import { useDeviceDetection } from '@/hooks/useDeviceDetection'
 import { PerfilTab } from './PerfilTab'
 import { PedidosTab } from './PedidosTab'
 import { itemDoCarrinhoParaPedido } from '@/lib/itemDoCarrinho'
-import { contarItens, detalhesItem, qtdItem } from '@/lib/itemSacola'
+import { contarItens, detalhesItem, qtdItem, semMeioEmoji, valorLinha } from '@/lib/itemSacola'
+import { r2, somarReais } from '@/lib/moeda'
 import { Campo, CampoArea, avisar } from '@/components/base'
 import { useSobreposicao } from '@/components/base/useSobreposicao'
 import { explicarErro } from '@/lib/erros'
@@ -171,7 +172,11 @@ function CartContent({
   }, [config.formas_pagamento])
   const horasAnt = useMemo(() => antecedenciaHoras(items.map((i: any) => i.id), config.antecedencias, config.prazo_minimo_horas, config.aceita_agendamento !== false),
     [items, config.antecedencias, config.prazo_minimo_horas, config.aceita_agendamento])
-  const regras = useMemo(() => calcularRegras(new Date(), config.horario, horasAnt), [config.horario, horasAnt, step])
+  // (11/10) as regras eram calculadas uma vez só, com a hora de quando o finalizar abriu.
+  // Agora o relógio é lido de novo ao abrir a data ou o horário (e mais uma vez na hora de enviar).
+  const [relogio, setRelogio] = useState(0)
+  const acertarRelogio = () => setRelogio(Date.now())
+  const regras = useMemo(() => calcularRegras(new Date(), config.horario, horasAnt), [config.horario, horasAnt, step, relogio])
   const primeiraDisp = useMemo(() => primeiraData(config.horario, regras.minimo), [config.horario, regras])
   const ehEntrega = !!formaEntrega && formaEntrega !== 'retirada'
   useEffect(() => {
@@ -187,11 +192,26 @@ function CartContent({
   const enviarFinalizar = async () => {
     if (enviando || enviandoRef.current || enviandoPedido) return
     let falta: typeof feErro = ''
-    if (!dataEntrega || !horaEntrega) falta = 'agenda'
+    // (11/10) confere a data e a hora com o relógio de AGORA (a tela pode ter ficado aberta um tempão):
+    // precisa estar dentro do expediente e respeitar a antecedência a partir deste momento
+    let horarioVenceu = ''
+    if (dataEntrega && horaEntrega) {
+      const agora = new Date()
+      if (!horarioPermitido(dataEntrega, horaEntrega, config.horario, calcularRegras(new Date(agora.getTime() - 15 * 60_000), config.horario, horasAnt).minimo)) { // 15 min de folga: o horário que a tela ofereceu há pouco continua valendo
+        const [h, m] = horaEntrega.split(':').map(Number)
+        const escolhido = deIso(dataEntrega); escolhido.setHours(h || 0, m || 0, 0, 0)
+        horarioVenceu = escolhido < agora ? 'Esse horário já passou. Escolha outro.' : 'Esse horário não está mais livre. Escolha outro.'
+      }
+    }
+    if (!dataEntrega || !horaEntrega || horarioVenceu) falta = 'agenda'
     else if (ehEntrega && formaEntrega !== 'combinar' && (!rua.trim() || !numero.trim() || (config.entrega_por_bairro.length > 0 && !bairroSelecionado))) falta = 'endereco'
     else if (!formaPagamento) falta = 'pagamento'
     else if (!nome.trim() || telefone.replace(/\D/g, '').length < 10) falta = 'dados'
     setFeErro(falta)
+    if (horarioVenceu) {
+      setDataEntrega(''); setHoraEntrega(''); acertarRelogio()
+      avisar(horarioVenceu, { tipo: 'erro' })
+    }
     if (falta) {
       irPara({ agenda: refAgenda, endereco: refEndereco, pagamento: refPagamento, dados: refDados }[falta])
       setTreme(true); setTimeout(() => setTreme(false), 400)
@@ -291,11 +311,12 @@ function CartContent({
   const desconto = useMemo(() => {
     if (!cupomAplicado) return 0
     const valor = Math.max(0, Number(cupomAplicado.valor) || 0)
-    const bruto = cupomAplicado.tipo === 'percentual' ? Math.round(totalPrice * Math.min(100, valor)) / 100 : valor
+    const bruto = cupomAplicado.tipo === 'percentual' ? r2(totalPrice * Math.min(100, valor) / 100) : r2(valor)
     return Math.max(0, Math.min(bruto, totalPrice))
   }, [cupomAplicado, totalPrice])
 
-  const totalFinal = Math.max(0, Math.round((totalPrice - desconto + freteValor) * 100) / 100)
+  // (11/10) uma conta só de centavos (lib/moeda): o subtotal já vem como a soma das linhas arredondadas
+  const totalFinal = Math.max(0, somarReais([totalPrice, -desconto, freteValor]))
 
   const [validandoCupom, setValidandoCupom] = useState(false)
   // Subtotal com que o cupom foi conferido (se a sacola mudar, confere de novo)
@@ -374,7 +395,7 @@ function CartContent({
 
       items.forEach((item: any) => {
         const qtd = qtdItem(item) // bolo por kg COM tamanho é "1×", não "1 kg"
-        m += `*${qtd} ${item.name}* — ${formatCurrency(item.price * item.quantity)}\n`
+        m += `*${qtd} ${item.name}* — ${formatCurrency(valorLinha(item))}\n`
         const detalhes: string[] = []
         const e = item.escolhas
         if (e) {
@@ -538,7 +559,8 @@ function CartContent({
     }
 
     // Mostra tela de sucesso em vez de fechar
-    const whatsappUrl = (() => { try { return linkWhatsApp(whatsapp, montarMensagem(numeroPedido)) } catch { return linkWhatsApp(whatsapp) } })()
+    // (11/10) "meio emoji" em qualquer texto (observação, recado, nome) fazia o link dar erro e o WhatsApp abria sem a mensagem
+    const whatsappUrl = (() => { try { return linkWhatsApp(whatsapp, semMeioEmoji(montarMensagem(numeroPedido))) } catch { return linkWhatsApp(whatsapp) } })()
     clearCart()
     setStep('cart')
     const quandoTxt = dataEntrega ? `${formaEntrega === 'retirada' ? 'Retirada' : 'Entrega'} ${rotuloData(dataEntrega).toLowerCase()}${horaEntrega ? ` às ${horaEntrega}` : ''}` : ''
@@ -557,7 +579,7 @@ function CartContent({
     : 'A combinar'
   const entregaGratis = entregaTexto === 'Grátis'
   const rotuloTotal = !opsEntrega.ent || entregaGratis ? 'Total' : 'Total sem a entrega'
-  const subtotalCupom = Math.round((totalPrice - desconto) * 100) / 100
+  const subtotalCupom = somarReais([totalPrice, -desconto])
   const freteTexto = formaEntrega !== 'entrega_propria' ? 'A combinar'
     : config.entrega_por_bairro.length > 0 && !bairroSelecionado ? 'Escolha o bairro'
     : freteValor > 0 ? formatCurrency(freteValor) : 'Grátis'
@@ -586,7 +608,7 @@ function CartContent({
             return (
               <span key={k}>
                 <span><b>{qtdItem(it)} {it.name}</b>{det.length > 0 && <small>{det.join(' · ')}</small>}{it.observations && <small>Obs.: {it.observations}</small>}</span>
-                <em>{formatCurrency(it.price * it.quantity)}{unidadeItem(it) && (it.quantity === 1
+                <em>{formatCurrency(valorLinha(it))}{unidadeItem(it) && (it.quantity === 1
                   ? <small>{unidadeItem(it)}</small>
                   : <small>{formatCurrency(it.price)} {unidadeItem(it)}</small>)}</em>
               </span>
@@ -760,10 +782,10 @@ function CartContent({
           <Cab t={`Quando? (${tipo})`} sub={regras.horas > 0 ? `Esse pedido precisa de ${antTexto} de antecedência` : `Escolha o dia e o horário da ${tipo}`} obr ok={okQuando}
             falta={feErro === 'agenda' ? 'Escolha a data e o horário pra continuar' : undefined} />
           <div className="sc-quando">
-            <button type="button" className={`sc-campo${feErro === 'agenda' && !dataEntrega ? ' err' : ''}`} onClick={() => setCalAberto(true)}>
+            <button type="button" className={`sc-campo${feErro === 'agenda' && !dataEntrega ? ' err' : ''}`} onClick={() => { acertarRelogio(); setCalAberto(true) }}>
               <CalendarBlank size={20} weight="bold" /><span><small>Data</small><b className={dataEntrega ? '' : 'ph'}>{dataEntrega ? dataCurta(dataEntrega) : 'Escolher'}</b></span>
             </button>
-            <button type="button" className={`sc-campo${feErro === 'agenda' && dataEntrega && !horaEntrega ? ' err' : ''}`} disabled={!dataEntrega} onClick={() => setHoraAberta(true)}>
+            <button type="button" className={`sc-campo${feErro === 'agenda' && dataEntrega && !horaEntrega ? ' err' : ''}`} disabled={!dataEntrega} onClick={() => { acertarRelogio(); setHoraAberta(true) }}>
               <Clock size={20} weight="bold" /><span><small>Horário</small><b className={horaEntrega ? '' : 'ph'}>{horaEntrega || 'Escolher'}</b></span>
             </button>
           </div>
@@ -834,7 +856,7 @@ function CartContent({
 
       {calAberto && (
         <CalendarioSheet titulo={`Data da ${tipo}`} horario={config.horario} minimo={regras.minimo} valor={dataEntrega}
-          onEscolher={(iso) => { setDataEntrega(iso); setHoraEntrega(''); setFeErro(''); setTimeout(() => setHoraAberta(true), 250) }}
+          onEscolher={(iso) => { setDataEntrega(iso); setHoraEntrega(''); setFeErro(''); setTimeout(() => { acertarRelogio(); setHoraAberta(true) }, 250) }}
           onClose={() => setCalAberto(false)} />
       )}
       {horaAberta && dataEntrega && (

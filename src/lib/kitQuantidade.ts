@@ -7,6 +7,7 @@
  *  - "livre":   mínimo, de quanto em quanto sobe, máximo e preço por cento
  * Regras: máximo de sabores diferentes e de quanto em quanto cada sabor sobe.
  */
+import { r2 } from "@/lib/moeda"
 
 export interface KitSabor { id: string; nome: string }
 export interface KitFechado { id: string; qtd: number; preco: number }
@@ -54,14 +55,33 @@ export function kitsValidos(k: KitQtdConfig): KitFechado[] {
 
 /** Preço de uma quantidade no modo livre (preço por cento) */
 export function precoLivre(k: KitQtdConfig, qtd: number): number {
-  return Math.round(((k.livre?.preco_cento || 0) * qtd) / 100 * 100) / 100
+  return r2(((k.livre?.preco_cento || 0) * qtd) / 100)
 }
 
 /** Menor preço possível — vira o "a partir de" do cardápio */
 export function precoMinKit(k: KitQtdConfig): number {
   if (k.modo === "livre") return precoLivre(k, k.livre?.min || 0)
+  // (11/10) o mais BARATO, não o de menos unidades (kit de 50 por R$ 55 e de 25 por R$ 60 mostrava 60)
   const v = kitsValidos(k)
-  return v.length ? v[0].preco : 0
+  return v.length ? Math.min(...v.map(x => x.preco)) : 0
+}
+
+/**
+ * Kit livre, botões "+" e "−" (11/10): o último passo vai até o máximo.
+ * Antes, mínimo 25 de 15 em 15 até 75 parava em 70 e o texto dizia "até 75".
+ */
+export function proximaQtdLivre(l: KitLivre, qtd: number): number {
+  const passo = Math.max(1, Number(l?.passo) || 1)
+  const max = Number(l?.max) || 0
+  return qtd >= max ? qtd : Math.min(qtd + passo, max)
+}
+export function anteriorQtdLivre(l: KitLivre, qtd: number): number {
+  const passo = Math.max(1, Number(l?.passo) || 1)
+  const min = Number(l?.min) || 0
+  if (qtd <= min) return qtd
+  // saindo do máximo, tira primeiro a sobra (75 → 70) e depois volta a descer de passo em passo
+  const sobra = (qtd - min) % passo
+  return Math.max(min, qtd - (sobra > 0 ? sobra : passo))
 }
 
 /** Mensagem do que falta no cadastro (null = pronto pra salvar) */

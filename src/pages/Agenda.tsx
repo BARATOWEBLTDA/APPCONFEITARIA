@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { montarMensagem, dadosDoPedido } from "@/lib/mensagens";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useNavigationType } from "react-router-dom";
 import { CalendarBlank, CaretLeft, CaretRight, Check, Copy, FilePdf, Funnel, MagnifyingGlass, Package, PencilSimple, Plus, Printer, Trash, WarningCircle, WhatsappLogo, X } from "@phosphor-icons/react";
 import { pedidoAtrasado, STATUS_AINDA_NAO_PRONTO } from "@/lib/pedidoStatus";
 import { duplicarPedido as duplicarPedidoLib } from "@/lib/duplicarPedido";
@@ -10,13 +10,16 @@ import { usePlano } from "@/hooks/usePlano";
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { explicarErro } from "@/lib/erros";
+import { r2, somarReais } from "@/lib/moeda";
+import { pesoLivre } from "@/lib/itemPedido";
+import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import { linkWhatsApp } from "@/lib/telefone";
 import { excluirPedido as excluirPedidoNoBanco } from "@/lib/pedidosDoo";
 import { registrarEtapa } from "@/lib/historicoPedido";
 import AppPageHeader from "@/components/AppPageHeader";
 import CalendarioSheet from "@/components/CalendarioSheet";
 import { Botao, BotaoIcone, Janela, Linha, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
-import { avisoDaMudanca, formaDoItem, itemComQtd, nomeDaSituacao, nomeDeGente, nomeDeProduto, qtdCurta, recebidoPedido, rs, saldoPedido, situacaoDe, telefoneValido } from "@/components/pedidos/pedidoTexto";
+import { avisoDaMudanca, formaDoItem, itemComQtd, nomeDaSituacao, nomeDeGente, nomeDeProduto, nomeDoItem, qtdCurta, recebidoPedido, rs, saldoPedido, situacaoDe, telefoneValido } from "@/components/pedidos/pedidoTexto";
 import { NomeComQtd } from "@/components/pedidos/CartaoPedido";
 import "@/components/pedidos/pedidos.css";
 import "./agenda.css";
@@ -85,11 +88,33 @@ const criadoEmTexto = (created_at: string) => {
   return `${d.getDate()} de ${MESES[d.getMonth()]} às ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 };
 const primeiraFoto = (f?: string | null) => (f ? String(f).split(/,(?=\s*https?:)/)[0].trim() : "");
+/**
+ * Forma de venda do item pra escrever a quantidade (11/10): só é "kg" quando o produto por kg é de PESO LIVRE.
+ * Bolo por kg com tamanho escolhido ("M · 2 kg") ou kit conta em unidades (antes saía "1 kg" na agenda e no PDF do dia).
+ */
+const formaNaAgenda = (it: any): string | null => {
+  const forma = formaDoItem(it);
+  return forma === "kg" && !pesoLivre(it, "kg") ? null : forma;
+};
+
+/* O dia escolhido fica guardado enquanto o app está aberto (11/10), com o id da conta na chave: voltar do pedido cai no mesmo dia */
+const CHAVE_DIA = "doonly_agenda_dia_";
+const VALE_POR = 30 * 60 * 1000;               // saiu da agenda há menos de meia hora
+const VALE_POR_AO_VOLTAR = 6 * 60 * 60 * 1000; // pelo "voltar" do aparelho ou do navegador
+function lerDiaGuardado(uid: string): { dia: string; eraHoje: boolean; em: number } | null {
+  try {
+    for (let i = sessionStorage.length - 1; i >= 0; i--) { const k = sessionStorage.key(i); if (k && k.startsWith(CHAVE_DIA) && k !== CHAVE_DIA + uid) sessionStorage.removeItem(k); }
+    const g = JSON.parse(sessionStorage.getItem(CHAVE_DIA + uid) || "null");
+    return g && /^\d{4}-\d{2}-\d{2}$/.test(String(g.dia)) ? g : null;
+  } catch { return null; }
+}
 
 export default function Agenda() {
   const navigate = useNavigate();
+  const tipoNavegacao = useNavigationType();
   const { isPro } = usePlano();
   const [userId, setUserId] = useState("");
+  const hoje = useDiaAtual(); // (11/10) muda sozinho quando vira o dia
 
   const [refDate, setRefDate] = useState(new Date());
   const [diaSel, setDiaSel] = useState(isoDate(new Date()));
@@ -103,6 +128,18 @@ export default function Agenda() {
   const [erroCarregar, setErroCarregar] = useState(""); // não deu pra carregar: mostra o erro com "Tentar de novo"
   const [tentativa, setTentativa] = useState(0);
   const emBusca = useRef(new Set<string>()); // períodos sendo buscados agora
+  const velhas = useRef(new Set<string>());  // períodos já buscados que precisam ser buscados de novo (11/10)
+  // (11/10) pedidos com uma ação em andamento: o segundo toque não muda a situação nem a data duas vezes
+  const ocupadosRef = useRef(new Set<string>());
+  const [ocupados, setOcupados] = useState<ReadonlySet<string>>(() => new Set());
+  // (11/10) sobe a cada mudança feita aqui na tela: a recarga por trás que começou antes não sobrescreve a agenda
+  const versao = useRef(0);
+  const mudarPedidos = (f: (prev: any[]) => any[]) => { versao.current++; setPedidos(f); };
+  const ocupar = (id: string, ligar: boolean) => {
+    versao.current++;
+    if (ligar) ocupadosRef.current.add(id); else ocupadosRef.current.delete(id);
+    setOcupados(new Set(ocupadosRef.current));
+  };
   const naTela = useRef(true);
   useEffect(() => { naTela.current = true; return () => { naTela.current = false; }; }, []);
 
@@ -118,10 +155,27 @@ export default function Agenda() {
     (async () => {
       let uid = "";
       try { uid = (await supabase.auth.getSession()).data.session?.user?.id || ""; } catch { /* trata abaixo */ }
-      if (uid) setUserId(uid);
+      if (uid) {
+        // (11/10) volta no dia em que ela estava (voltou do pedido, ou saiu da agenda há pouco). Se o dia guardado era "hoje", vale o hoje de agora.
+        const g = lerDiaGuardado(uid);
+        const faz = g ? Date.now() - (Number(g.em) || 0) : Infinity;
+        if (g && (faz < VALE_POR || (tipoNavegacao === "POP" && faz < VALE_POR_AO_VOLTAR))) {
+          const dia = g.eraHoje ? isoDate(new Date()) : g.dia;
+          setDiaSel(dia); setRefDate(parseISO(dia));
+        }
+        setUserId(uid);
+      }
       else { setErroCarregar("Tente de novo em instantes."); setLoading(false); }
     })();
-  }, [userId, tentativa]);
+  }, [userId, tentativa]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Guarda o dia escolhido (a cada troca e ao sair da tela)
+  useEffect(() => {
+    if (!userId) return;
+    const guardar = () => { try { sessionStorage.setItem(CHAVE_DIA + userId, JSON.stringify({ dia: diaSel, eraHoje: diaSel === isoDate(new Date()), em: Date.now() })); } catch { /* segue sem guardar */ } };
+    guardar();
+    return guardar;
+  }, [userId, diaSel]);
 
   // O que o calendário mostra: o mês inteiro mais os dias vizinhos que completam as semanas
   const faixa = useMemo(() => {
@@ -139,9 +193,13 @@ export default function Agenda() {
   useEffect(() => {
     if (!userId) return;
     const chave = `${faixa.ini}_${faixa.fim}`;
-    if (emBusca.current.has(chave) || faixas.some(f => f.ini === faixa.ini && f.fim === faixa.fim)) return;
+    // (11/10) mês já buscado só é buscado de novo se ficou velho (voltou pro app, virou o dia): aí é por trás, sem "carregando"
+    const jaTem = faixas.some(f => f.ini === faixa.ini && f.fim === faixa.fim);
+    if (emBusca.current.has(chave) || (jaTem && !velhas.current.has(chave))) return;
     emBusca.current.add(chave);
-    setLoading(true); setErroCarregar("");
+    const quieto = jaTem;
+    const v = versao.current;
+    if (!quieto) { setLoading(true); setErroCarregar(""); }
     (async () => {
       const CAMPOS = "*, pedido_itens(nome_produto, quantidade, valor_unitario, imagem_url, personalizacoes, produtos(imagem_url, forma_venda)), clientes(foto_url)";
       // pedido sem data de entrega aparece no dia em que foi feito (no horário daqui)
@@ -160,6 +218,8 @@ export default function Agenda() {
       emBusca.current.delete(chave);
       if (!naTela.current) return;
       const erro = comData.error || semData.error;
+      // a atualização por trás falhou, ou uma ação (marcar pronto, mudar a data) começou no meio: fica o que está na tela e tenta na próxima
+      if (quieto && (erro || ocupadosRef.current.size > 0 || v !== versao.current)) { setLoading(emBusca.current.size > 0); return; }
       if (erro) {
         setErroCarregar(explicarErro(erro, "Tente de novo em instantes."));
         setLoading(emBusca.current.size > 0);
@@ -173,17 +233,42 @@ export default function Agenda() {
       const pedidosNormalizados = [...comData.data, ...semData.data].map((p: any) => ({
         ...p,
         status: ANTIGOS[p.status] || p.status,
-        // (10/10) o dia em que foi feito, no horário daqui (o created_at vem no horário de Londres: depois das 21h caía no dia seguinte)
-        data_entrega: p.data_entrega || (p.created_at ? isoDate(new Date(p.created_at)) : null),
+        // (11/10) Em que dia o pedido aparece no calendário: o da entrega; sem data de entrega, o dia em que foi feito, no horário daqui
+        // (o created_at vem no horário de Londres: depois das 21h caía no dia seguinte).
+        // A data de entrega continua vazia: antes ela recebia o dia da criação, e o pedido sem data virava "Ontem" e "Atrasado".
+        _diaAgenda: p.data_entrega ? String(p.data_entrega).slice(0, 10) : (p.created_at ? isoDate(new Date(p.created_at)) : null),
       }));
       // entra no lugar do que já estava guardado desse período (e de pedido que mudou de data)
       const ids = new Set(pedidosNormalizados.map((p: any) => p.id));
-      setPedidos(prev => [...prev.filter(p => !ids.has(p.id) && !(p.data_entrega >= faixa.ini && p.data_entrega <= faixa.fim)), ...pedidosNormalizados]);
-      setFaixas(prev => [...prev, faixa]);
+      setPedidos(prev => [...prev.filter(p => !ids.has(p.id) && !(p._diaAgenda >= faixa.ini && p._diaAgenda <= faixa.fim)), ...pedidosNormalizados]);
+      setFaixas(prev => prev.some(f => f.ini === faixa.ini && f.fim === faixa.fim) ? prev : [...prev, faixa]);
+      velhas.current.delete(chave);
       setLoading(emBusca.current.size > 0);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, faixa.ini, faixa.fim, tentativa]);
+
+  // (11/10) O app instalado fica aberto por dias. Ao voltar pra ele (ou a internet voltar), o mês da tela é buscado de novo
+  // por trás, e os outros meses guardados são refeitos quando ela passar por eles. Antes só buscava ao abrir a tela.
+  const recarregar = () => {
+    faixas.forEach(f => velhas.current.add(`${f.ini}_${f.fim}`));
+    setTentativa(t => t + 1);
+  };
+  useAoVoltar(recarregar);
+  // Virou o dia com a agenda aberta: quem estava no "hoje" passa pro hoje de agora, e os meses guardados são refeitos
+  const diaAnterior = useRef(hoje);
+  useEffect(() => {
+    if (diaAnterior.current === hoje) return;
+    const ontem = diaAnterior.current;
+    diaAnterior.current = hoje;
+    if (diaSel === ontem) {
+      setDiaSel(hoje);
+      const o = parseISO(ontem);
+      if (refDate.getMonth() === o.getMonth() && refDate.getFullYear() === o.getFullYear()) setRefDate(parseISO(hoje));
+    }
+    recarregar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hoje]);
 
   // o "carregando" só aparece se passar de 300ms
   useEffect(() => {
@@ -206,21 +291,22 @@ export default function Agenda() {
   const dayStats = useMemo(() => {
     const m: Record<string, { total: number; agendado: number; producao: number; concluido: number; atrasado: number }> = {};
     pedidosBuscados.forEach(p => {
-      if (!p.data_entrega || p.status === "cancelado") return;
-      if (!m[p.data_entrega]) m[p.data_entrega] = { total: 0, agendado: 0, producao: 0, concluido: 0, atrasado: 0 };
-      m[p.data_entrega].total++;
+      const dia = p._diaAgenda; // o dia em que o pedido aparece (o da entrega; sem data, o dia em que foi feito)
+      if (!dia || p.status === "cancelado") return;
+      if (!m[dia]) m[dia] = { total: 0, agendado: 0, producao: 0, concluido: 0, atrasado: 0 };
+      m[dia].total++;
       const g = grupoDe(p.status);
-      if (g === "agendado") m[p.data_entrega].agendado++;
-      else if (g === "producao") m[p.data_entrega].producao++;
-      else if (g === "concluido") m[p.data_entrega].concluido++;
-      if (pedidoAtrasado(p)) m[p.data_entrega].atrasado++;
+      if (g === "agendado") m[dia].agendado++;
+      else if (g === "producao") m[dia].producao++;
+      else if (g === "concluido") m[dia].concluido++;
+      if (pedidoAtrasado(p, hoje)) m[dia].atrasado++; // pela data de ENTREGA: pedido sem data não é atrasado
     });
     return m;
-  }, [pedidosBuscados]);
+  }, [pedidosBuscados, hoje]);
 
   const pedidosDoDia = useMemo(() =>
     pedidosBuscados
-      .filter(p => p.data_entrega === diaSel)
+      .filter(p => p._diaAgenda === diaSel)
       .sort((a, b) => (a.horario_entrega || "99").localeCompare(b.horario_entrega || "99")),
     [pedidosBuscados, diaSel]
   );
@@ -232,7 +318,7 @@ export default function Agenda() {
 
   const countStatusDia = useMemo(() => {
     const m: Record<string, number> = {};
-    pedidosBuscados.filter(p => p.data_entrega === diaSel).forEach(p => { m[p.status] = (m[p.status] || 0) + 1; });
+    pedidosBuscados.filter(p => p._diaAgenda === diaSel).forEach(p => { m[p.status] = (m[p.status] || 0) + 1; });
     return m;
   }, [pedidosBuscados, diaSel]);
 
@@ -246,13 +332,17 @@ export default function Agenda() {
   const abrirEditar = (id: string) => navigate(`/pedidos/${id}/editar`);
 
   const marcarComoPronto = async (p: any) => {
-    // o mesmo caminho da lista e da tela do pedido (10/10): retirada vai pra "Pronto pra retirar"; entrega, pra "Pronto"
-    const novo = p.tipo_entrega === "entrega" ? "finalizado" : "aguardando_retirada";
-    const { error } = await supabase.from("pedidos").update({ status: novo }).eq("id", p.id);
-    if (error) { avisar("Não deu pra mudar a situação. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
-    registrarEtapa(p.id, novo);
-    setPedidos(prev => prev.map(x => x.id === p.id ? { ...x, status: novo } : x));
-    avisar(avisoDaMudanca(p, novo));
+    if (ocupadosRef.current.has(p.id)) return; // (11/10) toque duplo: a situação muda uma vez só
+    ocupar(p.id, true);
+    try {
+      // o mesmo caminho da lista e da tela do pedido (10/10): retirada vai pra "Pronto pra retirar"; entrega, pra "Pronto"
+      const novo = p.tipo_entrega === "entrega" ? "finalizado" : "aguardando_retirada";
+      const { error } = await supabase.from("pedidos").update({ status: novo }).eq("id", p.id);
+      if (error) { avisar("Não deu pra mudar a situação. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
+      registrarEtapa(p.id, novo);
+      mudarPedidos(prev => prev.map(x => x.id === p.id ? { ...x, status: novo } : x));
+      avisar(avisoDaMudanca(p, novo));
+    } finally { ocupar(p.id, false); }
   };
 
   const abrirWhatsApp = (p: any) => {
@@ -265,31 +355,45 @@ export default function Agenda() {
     window.open(link, "_blank");
   };
 
+  const duplicando = useRef(false); // dois toques seguidos não criam duas cópias
   const duplicarPedido = async (p: any) => {
-    const r = await duplicarPedidoLib(p.id);
-    if ("erro" in r) { avisar(r.erro, { tipo: "erro" }); return; }
-    avisar("Pedido duplicado. Ajuste a data da cópia.");
-    navigate(`/pedidos/${r.id}/editar`);
+    if (duplicando.current) return;
+    duplicando.current = true;
+    try {
+      const r = await duplicarPedidoLib(p.id);
+      if ("erro" in r) { avisar(r.erro, { tipo: "erro" }); return; } // (11/10) a frase já vem em português (lib/duplicarPedido)
+      avisar(`${r.aviso} Ajuste a data da cópia.`); // diz quando a cópia veio sem os descontos do pedido original
+      navigate(`/pedidos/${r.id}/editar`);
+    } finally { duplicando.current = false; }
   };
 
   const excluirPedido = async (p: any) => {
     const ok = await confirmar({ titulo: `Excluir o pedido #${p.numero || ""}?`, texto: "Ele some da agenda, da lista de pedidos e do financeiro. Não dá pra desfazer.", rotulo: "Excluir", perigo: true });
     if (!ok) return;
     // (10/10) pela função única: estorna os recebimentos antes de apagar (antes o dinheiro continuava no financeiro)
+    versao.current++;
     const r = await excluirPedidoNoBanco(p.id);
     if (r.ok === false) { avisar(r.erro, { tipo: "erro" }); if (r.estornou) setTentativa(t => t + 1); return; }
-    setPedidos(prev => prev.filter(x => x.id !== p.id));
+    mudarPedidos(prev => prev.filter(x => x.id !== p.id));
     avisar("Pedido excluído.");
   };
 
   const confirmarReagendamento = async (novaData: string) => {
     const p = reagendando;
     setReagendando(null);
-    if (!p) return;
-    const { error } = await supabase.from("pedidos").update({ data_entrega: novaData }).eq("id", p.id);
-    if (error) { avisar("Não deu pra mudar a data. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
-    setPedidos(prev => prev.map(x => x.id === p.id ? { ...x, data_entrega: novaData } : x));
-    avisar(`Pedido #${p.numero || ""} foi pra ${diaPorExtenso(novaData).toLowerCase()}.`);
+    if (!p || ocupadosRef.current.has(p.id)) return; // (11/10) toque duplo: muda a data uma vez só
+    ocupar(p.id, true);
+    try {
+      // (11/10) O pagamento estava previsto pro MESMO dia da entrega (o "paga na entrega" antigo gravava assim):
+      // a data prevista fica vazia e o A receber passa a acompanhar a entrega. Data combinada diferente não é mexida.
+      const entregaAntiga = p.data_entrega ? String(p.data_entrega).slice(0, 10) : "";
+      const pagaNaEntrega = !!entregaAntiga && !!p.data_prevista_pagamento && String(p.data_prevista_pagamento).slice(0, 10) === entregaAntiga;
+      const mudanca = pagaNaEntrega ? { data_entrega: novaData, data_prevista_pagamento: null } : { data_entrega: novaData };
+      const { error } = await supabase.from("pedidos").update(mudanca).eq("id", p.id);
+      if (error) { avisar("Não deu pra mudar a data. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
+      mudarPedidos(prev => prev.map(x => x.id === p.id ? { ...x, ...mudanca, _diaAgenda: novaData } : x));
+      avisar(`Pedido #${p.numero || ""} foi pra ${diaPorExtenso(novaData).toLowerCase()}.`);
+    } finally { ocupar(p.id, false); }
   };
 
   const baixarPdf = async (p: any) => {
@@ -316,7 +420,7 @@ export default function Agenda() {
       const itens = (p.pedido_itens || []).map((it: any) => {
         const tam = nomeOp(it.personalizacoes?.tamanho);
         const chave = [it.nome_produto, tam].filter(Boolean).join(" ");
-        const forma = formaDoItem(it);
+        const forma = formaNaAgenda(it); // (11/10) bolo com tamanho não é "1 kg": conta em unidades
         const atual = produzir.get(chave) || { qtd: 0, forma, extra: new Map() };
         atual.qtd += Number(it.quantidade) || 1;
         (it.personalizacoes?.kit?.sabores || []).forEach((x: any) => atual.extra.set(x.nome, (atual.extra.get(x.nome) || 0) + (Number(x.qtd) || 0) * (Number(it.quantidade) || 1)));
@@ -349,7 +453,7 @@ export default function Agenda() {
   const mostrarTodas = () => setStatusSelecionados([...STATUS_FILTRAVEIS]);
   // 4.08: a agenda não mostra o total vendido no dia (isso é do Financeiro); mostra só o que falta receber, quando existe
   const aReceberDoDia = pedidosDoDia.filter((p: any) => p.status !== "cancelado" && saldoPedido(p) > 0.009);
-  const faltaDoDia = aReceberDoDia.reduce((s: number, p: any) => s + saldoPedido(p), 0);
+  const faltaDoDia = somarReais(aReceberDoDia.map((p: any) => saldoPedido(p))); // (11/10) soma em centavos certos
   const stDia = dayStats[diaSel] || { total: 0 };
   const relDia = relativo(diaSel);
   const diaVazio = diaCarregado && stDia.total === 0; // só diz "Nenhum pedido" depois de buscar
@@ -421,7 +525,7 @@ export default function Agenda() {
               }>Pedidos do dia</Titulo>
               <div className="ag3-lista">
                 {pedidosDiaFiltrados.map((p: any) => (
-                  <CartaoAgenda key={p.id} p={p} aoAbrir={() => abrirEditar(p.id)} aoMenu={() => setMenuDe(p)} aoPronto={() => marcarComoPronto(p)} aoWhats={() => abrirWhatsApp(p)} />
+                  <CartaoAgenda key={p.id} p={p} ocupado={ocupados.has(p.id)} aoAbrir={() => abrirEditar(p.id)} aoMenu={() => setMenuDe(p)} aoPronto={() => marcarComoPronto(p)} aoWhats={() => abrirWhatsApp(p)} />
                 ))}
               </div>
             </>
@@ -466,7 +570,7 @@ export default function Agenda() {
     />
 
     {reagendando && (
-      <CalendarioSheet valor={reagendando.data_entrega} min={isoDate(new Date())} titulo="Nova data da entrega"
+      <CalendarioSheet valor={reagendando.data_entrega || ""} min={isoDate(new Date())} titulo="Nova data da entrega"
         onClose={() => setReagendando(null)} onConfirmar={confirmarReagendamento} />
     )}
     </>
@@ -542,7 +646,7 @@ function Calendario({ refDate, setRefDate, diaSel, setDiaSel, dayStats, irParaHo
 }
 
 /* ═══ Cartão do pedido na Agenda (o mesmo de antes, no padrão do guia) ═══ */
-function CartaoAgenda({ p, aoAbrir, aoMenu, aoPronto, aoWhats }: any) {
+function CartaoAgenda({ p, ocupado, aoAbrir, aoMenu, aoPronto, aoWhats }: any) {
   const atr = pedidoAtrasado(p);
   const sit = situacaoDe(p);
   const itens = p.pedido_itens || [];
@@ -592,7 +696,7 @@ function CartaoAgenda({ p, aoAbrir, aoMenu, aoPronto, aoWhats }: any) {
       {itens.length > 0 && (
         <div className="ag3-pc-itens">
           {itens.map((it: any, i: number) => (
-            <p key={i}><span><NomeComQtd nome={nomeDeProduto(it.nome_produto || "")} qtd={Number(it.quantidade) || 1} forma={formaDoItem(it)} /></span><span>{rs((Number(it.valor_unitario) || 0) * (Number(it.quantidade) || 0))}</span></p>
+            <p key={i}><span><NomeComQtd nome={nomeDoItem(it)} qtd={Number(it.quantidade) || 1} forma={formaNaAgenda(it)} /></span><span>{rs(r2((Number(it.valor_unitario) || 0) * (Number(it.quantidade) || 0)))}</span></p>
           ))}
           {desconto > 0 && <p className="dim"><span>Desconto</span><span>− {rs(desconto)}</span></p>}
           <p className="tot"><span>Total</span><span>{rs(total)}</span></p>
@@ -601,7 +705,7 @@ function CartaoAgenda({ p, aoAbrir, aoMenu, aoPronto, aoWhats }: any) {
 
       {(podePronto || temTel) && (
         <div className={"ag3-pc-bts" + (podePronto && temTel ? "" : " um")}>
-          {podePronto && <Botao variante="secundario" tamanho="m" onClick={aoPronto}>Marcar pronto</Botao>}
+          {podePronto && <Botao variante="secundario" tamanho="m" carregando={!!ocupado} onClick={aoPronto}>Marcar pronto</Botao>}
           {temTel && <Botao variante="secundario" tamanho="m" className="ag3-whats" icone={<WhatsappLogo size={20} weight="fill" />} onClick={aoWhats}>WhatsApp</Botao>}
         </div>
       )}

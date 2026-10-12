@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { Broom, CaretRight, Drop, Egg, ForkKnife, Grains, MagnifyingGlass, Package, Plus, Sparkle, Tag, X } from "@phosphor-icons/react";
+import { Broom, CaretRight, Drop, Egg, ForkKnife, Grains, MagnifyingGlass, Package, Plus, Sparkle, Tag, WarningCircle, X } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
+import { explicarErro } from "@/lib/erros";
 import QuickAddInsumo, { InsumoQuick, custoNaReceita, descreverCompra, formatarCusto, rotuloCategoria } from "@/components/QuickAddInsumo";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, TelaVazia, avisar, confirmar } from "@/components/base";
@@ -40,6 +41,8 @@ export default function Insumos() {
   const [userId, setUserId] = useState<string | null>(null);
   const [insumos, setInsumos] = useState<Insumo[]>([]);
   const [loading, setLoading] = useState(true);
+  // (11/10) a lista não carregou: mostra o erro com "Tentar de novo" em vez de "Nenhum ingrediente ainda"
+  const [erroCarga, setErroCarga] = useState("");
   const [busca, setBusca] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState("Todos");
 
@@ -49,20 +52,30 @@ export default function Insumos() {
   const tempoFechar = useRef<number | undefined>(undefined);
 
   // ── Carrega usuário e ingredientes ──
-  useEffect(() => {
-    let cancel = false;
-    (async () => {
+  const carregar = async () => {
+    setLoading(true); setErroCarga("");
+    try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user || cancel) return;
+      if (!user) { setErroCarga("Tente de novo em instantes."); setLoading(false); return; }
       setUserId(user.id);
-      await loadInsumos(user.id);
-    })();
-    return () => { cancel = true; window.clearTimeout(tempoFechar.current); };
+      await loadInsumos(user.id, true);
+    } catch (e) {
+      setErroCarga(explicarErro(e, "Tente de novo em instantes."));
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    void carregar();
+    return () => { window.clearTimeout(tempoFechar.current); };
   }, []);
 
-  const loadInsumos = async (uid: string) => {
-    const { data } = await supabase.from("insumos").select("*").eq("user_id", uid).order("nome");
-    setInsumos((data as Insumo[]) || []);
+  // (11/10) leitura que falha não vira lista vazia: na primeira carga mostra o erro; depois, a lista da tela continua
+  const loadInsumos = async (uid: string, primeira = false) => {
+    const { data, error } = await supabase.from("insumos").select("*").eq("user_id", uid).order("nome");
+    if (error || !data) {
+      if (primeira) setErroCarga(explicarErro(error, "Tente de novo em instantes."));
+      else console.error("[Doonly]", error);
+    } else setInsumos(data as Insumo[]);
     setLoading(false);
   };
 
@@ -94,8 +107,11 @@ export default function Insumos() {
     if (userId) await loadInsumos(userId);
   };
   const excluir = async (i: Insumo) => {
-    const { data: usos } = await supabase.from("produto_insumos").select("produto_id").eq("insumo_id", i.id);
-    const n = new Set((usos || []).map((r: any) => r.produto_id)).size;
+    // (11/10) se não der pra saber em quantas fichas ele está, não exclui (antes a pergunta dizia "Ele sai da sua lista"
+    // pra ingrediente usado em fichas técnicas)
+    const { data: usos, error: erroUsos } = await supabase.from("produto_insumos").select("produto_id").eq("insumo_id", i.id);
+    if (erroUsos || !usos) { avisar(explicarErro(erroUsos, "Não deu pra conferir as fichas técnicas. Tente de novo."), { tipo: "erro" }); return; }
+    const n = new Set(usos.map((r: any) => r.produto_id)).size;
     const ok = await confirmar({
       titulo: `Excluir ${i.nome}?`,
       texto: n > 0
@@ -105,7 +121,13 @@ export default function Insumos() {
     });
     if (!ok) return;
     const { error } = await supabase.from("insumos").delete().eq("id", i.id);
-    if (error) { console.error(error); avisar("Não deu pra excluir. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
+    if (error) {
+      // 23503: o banco não deixa apagar ingrediente que ainda está em ficha técnica
+      avisar(error.code === "23503"
+        ? "Esse ingrediente está em fichas técnicas, por isso não dá pra excluir."
+        : explicarErro(error, "Não deu pra excluir. Tente de novo."), { tipo: "erro" });
+      return;
+    }
     fecharForm();
     avisar("Ingrediente excluído", { tipo: "ok" });
     if (userId) await loadInsumos(userId);
@@ -131,6 +153,9 @@ export default function Insumos() {
       <div className="cl9">
         {loading ? (
           <div className="cl9-esq" aria-label="Carregando ingredientes">{[0, 1, 2, 3, 4].map(k => <span key={k} />)}</div>
+        ) : erroCarga ? (
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os ingredientes" texto={erroCarga}
+            acao={<Botao onClick={() => void carregar()}>Tentar de novo</Botao>} />
         ) : insumos.length === 0 ? (
           <TelaVazia caixa icone={<Egg size={30} />} titulo="Nenhum ingrediente ainda"
             texto="Cadastre o que você compra (leite condensado, chocolate, caixas…) com o preço pago. A ficha técnica usa isso pra calcular o custo de cada produto."

@@ -5,6 +5,7 @@ import { ProductModal } from '@/components/cart/ProductModal'
 import { formatCurrency as fmtBRL } from '@/utils/helpers'
 import { seloEntrega } from '@/lib/entregaProduto'
 import { precoDoCartao } from './ProductCard'
+import { descontoCardapio } from '@/lib/precoCardapio'
 import './itensCardapio.css'
 
 /**
@@ -107,8 +108,11 @@ export type Secao = { id: string; nome: string; tipo: 'promo' | 'lista'; produto
  * (ou "Todos os produtos" quando a loja não usa categorias).
  */
 export function montarSecoes(produtos: Produto[], categorias: string[], agrupar: boolean): Secao[] {
-  const promo = produtos.filter(p => p.promocao)
-  const resto = produtos.filter(p => !p.promocao)
+  // (11/10) "em promoção" é ter desconto de verdade no cardápio: promoção antiga em valor num produto
+  // com tamanhos de preço fixo não dá desconto, então o produto fica na categoria dele
+  const emPromocao = (p: Produto) => descontoCardapio(p) > 0
+  const promo = produtos.filter(emPromocao)
+  const resto = produtos.filter(p => !emPromocao(p))
   const secoes: Secao[] = []
   if (promo.length) secoes.push({ id: 'sec-promocoes', nome: 'Promoções', tipo: 'promo', produtos: promo })
   if (!agrupar || categorias.length === 0) {

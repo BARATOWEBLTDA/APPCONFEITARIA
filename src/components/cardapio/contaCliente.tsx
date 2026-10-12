@@ -4,6 +4,7 @@ import { Check, Wallet, Storefront, Truck, UserCircle, WhatsappLogo } from '@pho
 import { supabase } from '@/lib/supabase'
 import { Campo, Janela } from '@/components/base'
 import { digitosTelefone, linkWhatsApp } from '@/lib/telefone'
+import { explicarErro } from '@/lib/erros'
 import { lojaAtualWhatsApp } from './lojaAtual'
 import { digitosAoDigitar } from './telefoneDigitado'
 import './contaCliente.css'
@@ -72,16 +73,19 @@ export function JanelaEntrar({ aberta, aoFechar, loja, cor, aoEntrar }: { aberta
     setIndo(true)
     try {
       // Já tem cadastro: só procura. Primeira vez: cria com o nome (a mesma função do pedido)
-      const { data: lista } = await supabase.rpc('cardapio_cliente', novo
+      const { data: lista, error } = await supabase.rpc('cardapio_cliente', novo
         ? { p_loja: loja, p_telefone: tel, p_nome: nome.trim() }
         : { p_loja: loja, p_telefone: digitos })
+      // (11/10) falha na consulta (sem internet, banco fora) não é "número novo":
+      // antes a cliente antiga caía no formulário de primeira vez
+      if (error) { setErro(explicarErro(error, 'Não deu pra entrar agora. Tente de novo.')); setIndo(false); return }
       const r = Array.isArray(lista) ? lista[0] : null
       if (r) {
         const c = { id: r.id, nome: r.nome, telefone: r.telefone }
         guardarCliente(loja, c); aoEntrar(c); aoFechar()
       } else if (!novo) setNovo(true)
       else setErro('Não deu pra entrar agora. Tente de novo.')
-    } catch { setErro('Não deu pra entrar agora. Tente de novo.') }
+    } catch (err) { setErro(explicarErro(err, 'Não deu pra entrar agora. Tente de novo.')) }
     setIndo(false)
   }
 

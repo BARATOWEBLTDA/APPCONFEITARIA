@@ -134,6 +134,8 @@
 .ep2.tpd .ep2-vazio { font-size: 13.5px; font-weight: 500; color: var(--ui-texto-2); }
 .tpd-falta { margin-top: 12px; padding: 12px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
 .tpd-falta .ui-linha { justify-content: space-between; }
+/* (11/10) recebido maior que o total: a frase do que fazer, embaixo das linhas */
+.tpd-amais { margin: 8px 0 0; font-size: 13.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
 .tpd-barra { height: 8px; margin-top: 8px; overflow: hidden; border-radius: 4px; background: var(--ui-borda); }
 .tpd-barra i { display: block; height: 100%; border-radius: 4px; background: var(--ui-verde); }
 .ui-bt.tpd-receber { --bt-fundo: var(--ui-cinza-texto); --bt-sombra: var(--ui-texto); margin-top: 12px; }

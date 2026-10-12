@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import CampoData from '@/components/CampoData'
-import { useTravarRolagem } from '@/hooks/useTravarRolagem'
+import { useSobreposicao } from '@/components/base/useSobreposicao'
 import type { Pedido } from './pedidoTexto'
 import { grupoDoStatus as getStatusGroup } from './pedidoTexto'
 
@@ -23,7 +23,7 @@ const SITUACOES_FILTRO = [
   { k: 'entregue', label: 'Entregue', grupos: ['entregue'], cor: '#5F5E5A' },
   { k: 'cancelado', label: 'Cancelado', grupos: ['cancelado'], cor: '#791F1F' },
 ]
-const DATAS_FILTRO: [string, string][] = [['todos', 'Todas as datas'], ['hoje', 'Hoje'], ['amanha', 'Amanhã'], ['semana', 'Esta semana'], ['mes', 'Este mês'], ['personalizado', 'Escolher período']]
+const DATAS_FILTRO: [string, string][] = [['todos', 'Todas as datas'], ['hoje', 'Hoje'], ['amanha', 'Amanhã'], ['semana', 'Próximos 7 dias'], ['mes', 'Este mês'], ['personalizado', 'Escolher período']]
 /** A mesma regra de data da lista (uma só, pra a contagem bater) */
 export function bateData(p: any, periodo: string, ini: string, fim: string): boolean {
   if (periodo === 'todos') return true
@@ -32,7 +32,8 @@ export function bateData(p: any, periodo: string, ini: string, fim: string): boo
   const data = parseLocalDate(p.data_entrega)
   if (periodo === 'hoje') return data.getTime() === hoje.getTime()
   if (periodo === 'amanha') { const a = new Date(hoje); a.setDate(a.getDate() + 1); return data.getTime() === a.getTime() }
-  if (periodo === 'semana') { const f = new Date(hoje); f.setDate(f.getDate() + 7); return data >= hoje && data <= f }
+  // (11/10) "Próximos 7 dias": hoje e mais 6 (antes ia até hoje+7 e pegava 8 dias)
+  if (periodo === 'semana') { const f = new Date(hoje); f.setDate(f.getDate() + 6); return data >= hoje && data <= f }
   if (periodo === 'mes') return data.getMonth() === hoje.getMonth() && data.getFullYear() === hoje.getFullYear()
   if (periodo === 'personalizado') return (!ini || data >= parseLocalDate(ini)) && (!fim || data <= parseLocalDate(fim))
   return true
@@ -41,13 +42,15 @@ export default function FiltroLateral({ statusSelecionados, setStatusSelecionado
   statusSelecionados: string[]; setStatusSelecionados: (v: string[]) => void; periodoFiltro: string; setPeriodoFiltro: (v: string) => void
   dataInicio: string; setDataInicio: (v: string) => void; dataFim: string; setDataFim: (v: string) => void; onClose: () => void; pedidos: Pedido[]
 }) {
-  useTravarRolagem(true) // a lista atrás não rola enquanto a gaveta está aberta
   const [st, setSt] = useState<string[]>(statusSelecionados)
   const [per, setPer] = useState(periodoFiltro === 'custom' ? 'personalizado' : periodoFiltro)
   const [ini, setIni] = useState(dataInicio)
   const [fim, setFim] = useState(dataFim)
   const [saindo, setSaindo] = useState(false)
-  const fechar = () => { setSaindo(true); setTimeout(onClose, 180) }
+  const fechar = () => { if (saindo) return; setSaindo(true); setTimeout(onClose, 180) }
+  // (11/10) a lista atrás não rola, e o Esc e o "voltar" do Android fecham a gaveta (antes o voltar saía da tela)
+  const caixa = useRef<HTMLDivElement>(null)
+  useSobreposicao(true, fechar, caixa)
   const marcada = (s: typeof SITUACOES_FILTRO[number]) => s.grupos.every(g => st.includes(g))
   const alternar = (s: typeof SITUACOES_FILTRO[number]) => setSt(prev => marcada(s) ? prev.filter(g => !s.grupos.includes(g)) : [...new Set([...prev, ...s.grupos])])
   const todasMarcadas = SITUACOES_FILTRO.every(marcada)
@@ -57,7 +60,7 @@ export default function FiltroLateral({ statusSelecionados, setStatusSelecionado
   const limpar = () => { setSt(STATUS_PADRAO); setPer('todos'); setIni(''); setFim('') }
   return createPortal(
     <div className={`fl-ov ${saindo ? 'saindo' : ''}`} onClick={fechar}>
-      <div className="fl" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Filtros">
+      <div className="fl" ref={caixa} tabIndex={-1} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Filtros">
         <div className="fl-h"><b>Filtros</b><button className="fl-x" onClick={fechar} aria-label="Fechar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg></button></div>
         <div className="fl-b">
           <div className="fl-sec"><b>Situação</b><button className="fl-lk" onClick={() => setSt(todasMarcadas ? [] : [...new Set(SITUACOES_FILTRO.flatMap(s => s.grupos))])}>{todasMarcadas ? 'Desmarcar todas' : 'Marcar todas'}</button></div>
@@ -88,6 +91,7 @@ export default function FiltroLateral({ statusSelecionados, setStatusSelecionado
       </div>
       <style>{`
         .fl-ov { position: fixed; inset: 0; z-index: 10040; background: rgba(45,31,38,.45); animation: flFundo .2s ease; font-family: var(--font-base); }
+        .fl:focus { outline: none; }
         .fl { position: absolute; top: 0; right: 0; bottom: 0; width: min(86vw, 400px); background: var(--ui-branco); display: flex; flex-direction: column; border-radius: 20px 0 0 20px; box-shadow: -12px 0 30px -12px rgba(44,18,25,.4); animation: flEntra .22s ease; }
         .fl-ov.saindo { animation: flFundoSai .18s ease forwards; } .fl-ov.saindo .fl { animation: flSai .18s ease forwards; }
         @keyframes flEntra { from { transform: translateX(100%); } to { transform: none; } } @keyframes flSai { to { transform: translateX(100%); } }

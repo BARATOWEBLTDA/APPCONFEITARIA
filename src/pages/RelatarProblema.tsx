@@ -8,6 +8,7 @@ import "./clientes.css";
 import "./ajuda.css";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
+import { voltarOuIr } from "@/lib/voltar"; // 11/10: voltar que funciona com a tela aberta direto (antes o navigate(-1) não fazia nada)
 
 /** "Relatar um problema" (09/10): mesmo padrão do "Sugerir uma melhoria", com os componentes do app */
 // Mesmos nomes do menu do app (iguais aos de Sugerir uma melhoria)
@@ -52,14 +53,14 @@ export default function RelatarProblema() {
 
   return (
     <>
-      <AppPageHeader title="Relatar um problema" subtitle="Conte pra gente o que não funcionou" onBack={() => navigate(-1)} />
+      <AppPageHeader title="Relatar um problema" subtitle="Conte pra gente o que não funcionou" onBack={() => voltarOuIr(navigate, "/configuracoes")} />
       <div className="cl9 aj">
         {ok ? (
           <section className="cl9-card aj-ok">
             <span className="aj-ok-ic" aria-hidden="true"><Check size={30} weight="bold" /></span>
             <h2>{primeiroNome ? `Obrigado, ${primeiroNome}!` : "Obrigado!"}</h2>
             <p>Recebemos o seu relato. A equipe vai analisar e corrigir o mais rápido possível, e a gente te avisa quando estiver resolvido.</p>
-            <Botao onClick={() => navigate(-1)}>Voltar</Botao>
+            <Botao onClick={() => voltarOuIr(navigate, "/configuracoes")}>Voltar</Botao>
             <Botao variante="link" onClick={() => { setOk(false); setTexto(""); setParte(null); }}>Relatar outro problema</Botao>
           </section>
         ) : (

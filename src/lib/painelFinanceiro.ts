@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { valorRecebidoPedido } from "@/lib/financeiroPedido";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { faltaNoBanco } from "@/lib/pagamentos";
+import { pesoDoTamanho } from "@/lib/itemSacola";
 
 /**
  * Financeiro · Passo 7 (03/10) — os números do mês do painel, com UMA regra cada:
@@ -102,6 +103,53 @@ export async function custoPorProduto(produtoIds: string[]): Promise<Record<stri
   return out;
 }
 
+/** O que a busca dos itens precisa trazer pra conta do custo (use dentro de pedido_itens(...)). */
+export const CAMPOS_ITEM_CUSTO = "quantidade, personalizacoes, produtos(id, forma_venda)";
+
+const produtoDoItem = (it: any) => (Array.isArray(it?.produtos) ? it.produtos[0] : it?.produtos) || null;
+/** Tamanho e kit escolhidos no item (os dois formatos que o app grava). */
+function escolhasDoItem(it: any): { tamanho: any; totalKit: number } {
+  let pers = it?.personalizacoes;
+  if (typeof pers === "string") { try { pers = JSON.parse(pers); } catch { pers = null; } }
+  const esc = pers?.escolhas ?? pers;
+  return { tamanho: esc?.tamanho ?? pers?.tamanho ?? null, totalKit: Number(esc?.kit?.total ?? pers?.kit?.total) || 0 };
+}
+
+/**
+ * Dos produtos vendidos COM tamanho, quais têm os tamanhos "pelo peso" (preço do kg × peso do tamanho). (11/10)
+ * Só busca os produtos que precisam (item com tamanho e produto que não é "por kg"). Se a busca falhar, lança erro.
+ */
+export async function produtosPeloPeso(itens: any[]): Promise<Set<string>> {
+  const ids = [...new Set(itens.filter(it => escolhasDoItem(it).tamanho && produtoDoItem(it)?.id && produtoDoItem(it)?.forma_venda !== "kg")
+    .map(it => produtoDoItem(it).id as string))];
+  const out = new Set<string>();
+  for (let i = 0; i < ids.length; i += 30) {
+    const { data, error } = await supabase.from("produtos").select("id, grupo_tamanhos").in("id", ids.slice(i, i + 30));
+    if (error) throw error;
+    for (const p of (data as any[]) || []) if (p.grupo_tamanhos?.modo_preco_tamanho === "por_peso") out.add(p.id);
+  }
+  return out;
+}
+
+/**
+ * Quantas "fichas" tem em 1 unidade do item vendido (11/10). O custo do item = ficha × este número × quantidade.
+ * PREMISSA: a ficha técnica é de 1 kg (produto vendido por kg ou com tamanhos "pelo peso") ou de 1 unidade (os outros).
+ *   - Tamanho com peso ("M · 2 kg") em produto por kg: a quantidade do item é 1, mas vão 2 kg → 2.
+ *   - Kit (50 docinhos): 1. A Ficha técnica mede o custo contra o preço do kit, então a ficha é do kit inteiro.
+ *   - Item simples (unidade, ou kg com o peso na quantidade): 1, como sempre foi.
+ * Tamanho de preço fixo (cada tamanho com o seu preço) fica em 1: não dá pra saber de que tamanho é a ficha.
+ */
+export function multiplicadorDoItem(it: any, peloPeso: Set<string>): number {
+  const { tamanho, totalKit } = escolhasDoItem(it);
+  if (totalKit > 0) return 1;
+  const prod = produtoDoItem(it);
+  if (tamanho && prod && (prod.forma_venda === "kg" || peloPeso.has(prod.id))) {
+    const peso = pesoDoTamanho(tamanho, true); // o peso gravado; se faltar, o que está no nome do tamanho
+    if (peso > 0) return peso;
+  }
+  return 1;
+}
+
 /** Os números do mês. Nunca lança: se algo falhar, devolve tudo zerado com erro: true (confira antes de mostrar). */
 export async function carregarMes(uid: string, ano: number, mes0: number): Promise<MesFinanceiro> {
   try { return await calcularMes(uid, ano, mes0); }
@@ -115,7 +163,7 @@ async function calcularMes(uid: string, ano: number, mes0: number): Promise<MesF
   const [pag, fin, vend] = await Promise.all([
     buscarPagamentos(uid, ini, ate),
     buscarLancamentos(uid, ini, ate),
-    buscarTudo<any>((de, a) => supabase.from("pedidos").select("id, valor_total, status, data_entrega, pedido_itens(quantidade, produtos(id))")
+    buscarTudo<any>((de, a) => supabase.from("pedidos").select(`id, valor_total, status, data_entrega, pedido_itens(${CAMPOS_ITEM_CUSTO})`)
       .eq("user_id", uid).eq("status", "entregue").gte("data_entrega", ini).lte("data_entrega", fim).order("id").range(de, a)),
   ]);
   if (fin.error || vend.error) return MES_COM_ERRO;
@@ -143,14 +191,15 @@ async function calcularMes(uid: string, ano: number, mes0: number): Promise<MesF
   const vendidos = vend.data.filter(p => p.status !== "cancelado");
   const vendido = r2(vendidos.reduce((s, p) => s + (Number(p.valor_total) || 0), 0));
   const ids = [...new Set(vendidos.flatMap(p => (p.pedido_itens || []).map((it: any) => it.produtos?.id).filter(Boolean)))] as string[];
-  const custo = await custoPorProduto(ids); // se falhar, lança: carregarMes devolve erro (custo zerado inflaria o lucro)
+  // se uma das duas falhar, lança: carregarMes devolve erro (custo zerado inflaria o lucro)
+  const [custo, peloPeso] = await Promise.all([custoPorProduto(ids), produtosPeloPeso(vendidos.flatMap(p => p.pedido_itens || []))]);
   let cmv = 0, semFicha = 0;
   for (const p of vendidos) {
     let faltou = false;
     for (const it of p.pedido_itens || []) {
       const c = custo[it.produtos?.id];
       if (!c) { faltou = true; continue; }
-      cmv += c * (Number(it.quantidade) || 0);
+      cmv += c * multiplicadorDoItem(it, peloPeso) * (Number(it.quantidade) || 0); // 11/10: tamanho pelo peso e kit contam inteiros
     }
     if (faltou) semFicha++;
   }
@@ -181,10 +230,18 @@ async function calcularMes(uid: string, ano: number, mes0: number): Promise<MesF
  * Resumo das contas a pagar pendentes (null se a tabela ainda não existir).
  * 10/10: filtra pela dona da conta (antes dependia só da regra de segurança do banco) e, se a busca falhar
  * por outro motivo (internet, servidor), devolve { erro: true } em vez de "falta o SQL".
+ * 11/10: `vencidas` = quantas já venceram (vencimento antes de hoje) e `proxima` = a próxima A VENCER (de hoje em diante).
+ * Antes `proxima` era o menor vencimento pendente: o cartão dizia "vence dia 28" pra conta que venceu no mês passado.
  */
-export async function resumoAPagar(uid: string): Promise<{ total: number; qtd: number; proxima: string | null; erro?: boolean } | null> {
+export type ResumoAPagar = { total: number; qtd: number; vencidas: number; proxima: string | null; erro?: boolean };
+export async function resumoAPagar(uid: string, hoje: string = iso(new Date())): Promise<ResumoAPagar | null> {
   const { data, error } = await supabase.from("contas_pagar").select("valor, vencimento").eq("user_id", uid).eq("status", "pendente").order("vencimento", { ascending: true });
-  if (error) return faltaNoBanco(error) ? null : { total: 0, qtd: 0, proxima: null, erro: true };
+  if (error) return faltaNoBanco(error) ? null : { total: 0, qtd: 0, vencidas: 0, proxima: null, erro: true };
   const l = (data as any[]) || [];
-  return { total: r2(l.reduce((s, c) => s + (Number(c.valor) || 0), 0)), qtd: l.length, proxima: l[0]?.vencimento || null };
+  const dia = (c: any) => String(c.vencimento || "").slice(0, 10);
+  return {
+    total: r2(l.reduce((s, c) => s + (Number(c.valor) || 0), 0)), qtd: l.length,
+    vencidas: l.filter(c => dia(c) && dia(c) < hoje).length,
+    proxima: l.map(dia).find(d => d >= hoje) || null,
+  };
 }

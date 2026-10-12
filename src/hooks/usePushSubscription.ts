@@ -37,6 +37,47 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return outputArray
 }
 
+/**
+ * Desfaz a inscrição de push DESTE aparelho (11/10): apaga a linha do endereço atual no banco e cancela no navegador.
+ * Usado ao sair da conta: antes, quem saía continuava recebendo neste aparelho os avisos da conta anterior.
+ * Chamar ANTES de sair (apagar a linha precisa da conta ainda aberta). Nunca lança.
+ */
+export async function desfazerPushDesteAparelho(): Promise<void> {
+  try {
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return
+    const reg = await navigator.serviceWorker.getRegistration('/sw.js')
+    const sub = await reg?.pushManager?.getSubscription()
+    if (!sub) return
+    try { localStorage.setItem(MARCA_REATIVAR, '1') } catch { /* sem armazenamento */ }
+    try { await supabase.from('push_subscriptions').delete().eq('endpoint', sub.endpoint) } catch { /* sem internet: o cancelar abaixo já para os avisos */ }
+    await sub.unsubscribe()
+  } catch { /* sem push neste aparelho: segue */ }
+}
+
+const MARCA_REATIVAR = 'doonly_push_reativar'
+
+/**
+ * (11/10) Quem saiu da conta com os avisos ligados e entrou de novo neste aparelho: liga os avisos de novo, sozinho
+ * (a permissão do navegador continua dada, então não precisa de toque). Chamar com a conta aberta. Nunca lança.
+ */
+export async function reativarPushSeSaiu(): Promise<void> {
+  try {
+    if (localStorage.getItem(MARCA_REATIVAR) !== '1') return
+    if (!VAPID_PUBLIC_KEY || !('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return
+    if (Notification.permission !== 'granted') { localStorage.removeItem(MARCA_REATIVAR); return }
+    const reg = (await navigator.serviceWorker.getRegistration('/sw.js')) || (await navigator.serviceWorker.register('/sw.js', { scope: '/' }))
+    await navigator.serviceWorker.ready
+    const sub = (await reg.pushManager.getSubscription()) || (await reg.pushManager.subscribe({
+      userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource,
+    }))
+    const j = sub.toJSON()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user || !j.endpoint || !j.keys?.p256dh || !j.keys?.auth) return
+    const { error } = await supabase.from('push_subscriptions').upsert({ user_id: user.id, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth }, { onConflict: 'endpoint' })
+    if (!error) localStorage.removeItem(MARCA_REATIVAR)
+  } catch (e) { console.warn('[Doonly] não deu pra religar os avisos:', e) }
+}
+
 export function usePushSubscription() {
   const [isSupported, setIsSupported] = useState(false)
   const [isSubscribed, setIsSubscribed] = useState(false)

@@ -9,7 +9,8 @@ import { Botao } from "@/components/base";
 import { useCaixa, SaldoCaixa, MovimentosCaixa, SaldoSheet, CaixaEstilos } from "@/components/financeiro/CaixaCard";
 import PrevistosCard from "@/components/financeiro/PrevistosCard";
 import DespesaSheet from "@/components/financeiro/DespesaSheet";
-import { carregarMes, resumoAPagar, type MesFinanceiro } from "@/lib/painelFinanceiro";
+import { carregarMes, resumoAPagar, type MesFinanceiro, type ResumoAPagar } from "@/lib/painelFinanceiro";
+import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import { carregarAReceber, isoDia } from "@/lib/contasReceber";
 
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -25,7 +26,7 @@ export default function Financeiro() {
   const [mes, setMes] = useState({ ano: hoje.getFullYear(), m: hoje.getMonth() });
   const [dados, setDados] = useState<MesFinanceiro | null>(null);
   const [rec, setRec] = useState<{ total: number; qtd: number; semana: number; erro?: boolean } | null>(null);
-  const [pag, setPag] = useState<{ total: number; qtd: number; proxima: string | null; erro?: boolean } | null | undefined>(undefined);
+  const [pag, setPag] = useState<ResumoAPagar | null | undefined>(undefined);
   const [versao, setVersao] = useState(0); // recarrega tudo depois de uma mudança
   // Sem saldo informado: o resto do painel fica levemente apagado pra guiar o olho pro convite
   // (continua tocável — os números do mês já valem sem o saldo). "Agora não" tira o efeito.
@@ -34,30 +35,39 @@ export default function Financeiro() {
   useEffect(() => { if (chaveDepois) { try { setDepois(!!localStorage.getItem(chaveDepois)); } catch { /* sem acesso */ } } }, [chaveDepois]);
   const foco = !!cx && !cx.erro && !cx.precisaSql && !cx.configurado && !depois;
 
+  const mesDosDados = useRef("");
   // 10/10: ao trocar de mês rápido, só vale a resposta da última busca (a atrasada era aplicada por cima da nova)
   useEffect(() => {
     if (!uid) return;
     let cancelado = false;
-    setDados(null);
-    carregarMes(uid, mes.ano, mes.m).then(d => { if (!cancelado) setDados(d); });
+    // 11/10: só mostra "…" ao trocar de mês; recarregar o mesmo mês (voltou pro app, lançou algo) troca os números sem piscar
+    const chave = `${mes.ano}-${mes.m}`;
+    if (mesDosDados.current !== chave) setDados(null);
+    carregarMes(uid, mes.ano, mes.m).then(d => { if (!cancelado) { mesDosDados.current = chave; setDados(d); } });
     return () => { cancelado = true; };
   }, [uid, mes, versao]);
   useEffect(() => {
     if (!uid) return;
     let cancelado = false;
+    const dia0 = isoDia(0), em7 = isoDia(6);
     carregarAReceber(uid).then(({ itens: l, erro }) => {
       if (cancelado) return;
       // 10/10: "nesta semana" é de hoje até o 7º dia, igual à tela A receber (antes contava também os atrasados)
-      const dia0 = isoDia(0), em7 = isoDia(6);
       setRec({ total: l.reduce((s, x) => s + x.falta, 0), qtd: l.length, semana: l.filter(x => x.dataRef && x.dataRef >= dia0 && x.dataRef <= em7).length, erro });
     }, () => { if (!cancelado) setRec({ total: 0, qtd: 0, semana: 0, erro: true }); });
-    resumoAPagar(uid).then(r => { if (!cancelado) setPag(r); }, () => { if (!cancelado) setPag({ total: 0, qtd: 0, proxima: null, erro: true }); });
+    resumoAPagar(uid, dia0).then(r => { if (!cancelado) setPag(r); }, () => { if (!cancelado) setPag({ total: 0, qtd: 0, vencidas: 0, proxima: null, erro: true }); });
     return () => { cancelado = true; };
   }, [uid, versao]);
 
   const ehMesAtual = mes.ano === hoje.getFullYear() && mes.m === hoje.getMonth();
   const mudarMes = (d: number) => setMes(x => { const n = new Date(x.ano, x.m + d, 1); return { ano: n.getFullYear(), m: n.getMonth() }; });
   const depoisDeMudar = async () => { await recarregar(); setVersao(v => v + 1); };
+  // 11/10: app aberto de um dia pro outro. Voltou pro app ou virou o dia: busca tudo de novo
+  // (o "hoje", o "nesta semana" e as vencidas eram os de quando a tela abriu).
+  useAoVoltar(() => { depoisDeMudar(); });
+  const dia = useDiaAtual();
+  const diaVisto = useRef(dia);
+  useEffect(() => { if (diaVisto.current !== dia) { diaVisto.current = dia; depoisDeMudar(); } }, [dia]); // eslint-disable-line react-hooks/exhaustive-deps
   // 10/10: se alguma busca falhou, a tela avisa e mostra "—" no lugar do número (antes aparecia R$ 0,00 como se fosse certo)
   const mesOk = dados && !dados.erro ? dados : null;
   const esp = dados?.erro ? "—" : "…";
@@ -126,11 +136,13 @@ export default function Financeiro() {
           </button>
           <button type="button" className="fd-k2 pag" onClick={() => navigate("/financeiro/a-pagar")}>
             <small>A pagar</small><b>{pag === undefined ? "…" : pag && !pag.erro ? brl(pag.total) : "—"}</b>
-            <i>{pag === null ? "falta o SQL do Passo 5" : pag?.erro ? "não deu pra carregar" : pag ? `${pag.qtd} ${pag.qtd === 1 ? "conta" : "contas"}${pag.proxima ? ` · vence dia ${pag.proxima.slice(8, 10)}` : ""}` : ""}<CaretRight size={13} weight="bold" /></i>
+            <i>{pag === null ? "falta o SQL do Passo 5" : pag?.erro ? "não deu pra carregar" : pag ? <>{pag.qtd} {pag.qtd === 1 ? "conta" : "contas"}{pag.vencidas > 0
+              ? <> · <em className="fd-venc">{pag.vencidas} {pag.vencidas === 1 ? "vencida" : "vencidas"}</em></>
+              : pag.proxima ? ` · vence dia ${Number(pag.proxima.slice(8, 10))}` : ""}</> : ""}<CaretRight size={13} weight="bold" /></i>
           </button>
         </div>
 
-        <div className="fd-a-prev"><PrevistosCard key={versao} /></div>
+        <div className="fd-a-prev"><PrevistosCard versao={versao} /></div>
 
         <div className="fd-a-fluxo fd-card">
           <div className="fd-ct"><b>Fluxo de caixa · {MESES[mes.m].toLowerCase()}</b>
@@ -265,6 +277,7 @@ const CSS = `
   .fd-k b, .fd-k2 b { display: block; font-size: clamp(14px, 4.2vw, 20px); font-weight: 700; letter-spacing: -.02em; margin: 3px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ui-texto); }
   .fd-k i, .fd-k2 i { display: flex; align-items: center; gap: 3px; font-style: normal; font-size: 13px; color: #888780; line-height: 1.35; }
   .fd-k b.e { color: var(--ui-verde); } .fd-k b.s { color: var(--ui-vermelho); } .fd-k b.l { color: var(--ui-rosa-escuro); }
+  .fd-venc { font-style: normal; font-weight: 700; color: var(--ui-vermelho); } /* 11/10: conta já vencida */
   .fd-contas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .fd-k2 { cursor: pointer; } .fd-k2.rec { border-left: 4px solid #F59E0B; } .fd-k2.pag { border-left: 4px solid #EF4444; }
   .fd-card { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 14px; }

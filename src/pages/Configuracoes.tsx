@@ -3,7 +3,8 @@ import { INDICACAO_ATIVA } from "@/lib/recursos";
 import { useNavigate } from "react-router-dom";
 import { Bell, Camera, ChatCircleText, CaretRight, Crown, FileText, Gift, Headset, Lightbulb, PencilSimple, SignOut, Bug, WarningCircle } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
-import { explicarErro } from "@/lib/erros";
+import { explicarErro, erroDeConexao, SEM_INTERNET } from "@/lib/erros";
+import { mascaraTelefone } from "@/lib/telefone";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, Campo, Janela, TelaVazia, avisar, informar } from "@/components/base";
 import { refreshProfile, sairDaConta } from "@/hooks/useProfile";
@@ -33,14 +34,8 @@ function ItemConfig({ icone, tom = "cinza", nome, apoio, onClick, destaque, chil
   );
 }
 
-const formatPhone = (value: string) => {
-  const d = value.replace(/\D/g, "").slice(0, 11);
-  if (!d) return "";
-  if (d.length <= 2) return `(${d}`;
-  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
-  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
-  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
-};
+// (11/10) máscara única do app: "+55 41 99999-0000" não vira mais "(55) 41999-9900"
+const formatPhone = mascaraTelefone;
 
 export default function Configuracoes() {
   const navigate = useNavigate();
@@ -54,6 +49,8 @@ export default function Configuracoes() {
   const [userEmail, setUserEmail] = useState("");
   const [pro, setPro] = useState(false);
   const [form, setForm] = useState({ nome: "", nome_loja: "", foto_url: "", telefone: "" });
+  // (11/10) "Editar perfil" mexe numa cópia: o cartão de trás só muda depois de salvar (cancelar não deixa nome não salvo na tela)
+  const [rascunho, setRascunho] = useState({ nome: "", telefone: "" });
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [termosOpen, setTermosOpen] = useState(false);
@@ -102,11 +99,18 @@ export default function Configuracoes() {
     } else {
       const { data } = supabase.storage.from("profiles").getPublicUrl(path);
       const publicUrl = `${data.publicUrl}?t=${Date.now()}`;
-      setForm(f => ({ ...f, foto_url: publicUrl }));
-      setPreview(publicUrl);
-      await supabase.from("profiles").update({ foto_url: publicUrl }).eq("id", userId);
-      await refreshProfile();
-      avisar("Foto trocada", { tipo: "ok" });
+      // (11/10) só diz "Foto trocada" se o perfil gravou (antes avisava mesmo quando falhava)
+      let erroGravar: unknown = null;
+      try { erroGravar = (await supabase.from("profiles").update({ foto_url: publicUrl }).eq("id", userId)).error; } catch (e) { erroGravar = e; }
+      if (erroGravar) {
+        avisar(explicarErro(erroGravar, "Não deu pra salvar a foto. Tente de novo."), { tipo: "erro" });
+        setPreview(form.foto_url || null);
+      } else {
+        setForm(f => ({ ...f, foto_url: publicUrl }));
+        setPreview(publicUrl);
+        await refreshProfile();
+        avisar("Foto trocada", { tipo: "ok" });
+      }
     }
     setUploading(false);
   };
@@ -114,12 +118,15 @@ export default function Configuracoes() {
 
   const salvarPerfil = async () => {
     if (!userId || erroCarregar) return; // perfil não lido: não grava o formulário em branco por cima
-    if (!form.nome.trim()) { setError("Escreva seu nome."); return; }
+    if (saving) return;
+    const nome = rascunho.nome.trim(), telefone = rascunho.telefone;
+    if (!nome) { setError("Escreva seu nome."); return; }
     setSaving(true); setError("");
-    const { error: err } = await supabase.from("profiles").upsert({ id: userId, nome: form.nome.trim(), nome_loja: form.nome_loja, foto_url: form.foto_url, telefone: form.telefone }, { onConflict: "id" });
+    const { error: err } = await supabase.from("profiles").upsert({ id: userId, nome, nome_loja: form.nome_loja, foto_url: form.foto_url, telefone }, { onConflict: "id" });
     if (err) setError("Não deu pra salvar. Confira a internet e tente de novo.");
     else {
-      try { await supabase.auth.updateUser({ data: { nome: form.nome.trim(), telefone: form.telefone } }); } catch { /* opcional */ }
+      setForm(f => ({ ...f, nome, telefone })); // gravou: agora sim o cartão de trás muda
+      try { await supabase.auth.updateUser({ data: { nome, telefone } }); } catch { /* opcional */ }
       await refreshProfile();
       setEditarOpen(false);
       avisar("Perfil salvo", { tipo: "ok" });
@@ -135,9 +142,16 @@ export default function Configuracoes() {
     if (!userEmail) return setSenhaMsg("Entre de novo na conta e tente outra vez.");
     setSavingSenha(true);
     const { error: reauthErr } = await supabase.auth.signInWithPassword({ email: userEmail, password: senhaAtual });
-    if (reauthErr) { setSavingSenha(false); return setSenhaMsg("A senha atual está errada."); }
+    // (11/10) queda de internet não é senha errada
+    if (reauthErr) {
+      setSavingSenha(false);
+      if (erroDeConexao(reauthErr)) return setSenhaMsg(SEM_INTERNET);
+      const st = Number((reauthErr as { status?: number }).status) || 0;
+      if (st === 429 || st >= 500) return setSenhaMsg("Não deu pra conferir a senha agora. Tente de novo em instantes.");
+      return setSenhaMsg("A senha atual está errada.");
+    }
     const { error } = await supabase.auth.updateUser({ password: novaSenha });
-    if (error) { setSavingSenha(false); return setSenhaMsg("Não deu pra trocar a senha. Tente de novo."); }
+    if (error) { setSavingSenha(false); return setSenhaMsg(explicarErro(error, "Não deu pra trocar a senha. Tente de novo.")); }
     // sair dos outros aparelhos precisa do servidor: o signOut devolve o erro (não lança). Se falhar, avisa (10/10)
     let saiuDosOutros = false;
     try { saiuDosOutros = !(await supabase.auth.signOut({ scope: "others" })).error; } catch { /* avisa abaixo */ }
@@ -201,7 +215,7 @@ export default function Configuracoes() {
               <b>{form.nome || "Seu nome"}</b>
               <small>{userEmail}</small>
             </div>
-            <Botao variante="secundario" tamanho="m" icone={<PencilSimple size={18} weight="bold" />} onClick={() => { setError(""); setSenhaMsg(""); setEditarOpen(true); }}>
+            <Botao variante="secundario" tamanho="m" icone={<PencilSimple size={18} weight="bold" />} onClick={() => { setError(""); setSenhaMsg(""); setRascunho({ nome: form.nome, telefone: form.telefone }); setEditarOpen(true); }}>
               <span className="cf9-g">Editar perfil</span><span className="cf9-c">Editar</span>
             </Botao>
             <input ref={fileRef} type="file" accept="image/*" hidden onChange={recorte.escolher} />
@@ -252,13 +266,13 @@ export default function Configuracoes() {
       <EditarPerfilModal
         open={editarOpen}
         onClose={() => setEditarOpen(false)}
-        nome={form.nome}
-        telefone={form.telefone}
+        nome={rascunho.nome}
+        telefone={rascunho.telefone}
         email={userEmail}
         fotoPreview={preview}
         inicial={inicial}
-        onNomeChange={v => setForm(f => ({ ...f, nome: v }))}
-        onTelefoneChange={v => setForm(f => ({ ...f, telefone: formatPhone(v) }))}
+        onNomeChange={v => setRascunho(r => ({ ...r, nome: v }))}
+        onTelefoneChange={v => setRascunho(r => ({ ...r, telefone: formatPhone(v) }))}
         onFotoClick={() => fileRef.current?.click()}
         onSave={salvarPerfil}
         saving={saving}

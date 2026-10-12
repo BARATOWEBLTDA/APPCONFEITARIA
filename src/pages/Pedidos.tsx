@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { montarMensagem, dadosDoPedido } from '@/lib/mensagens'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'
 import { Cake, CalendarDots, Funnel, Kanban, Lightning, ListBullets, MagnifyingGlass, Plus, Receipt, WarningCircle, X } from '@phosphor-icons/react'
 import AppPageHeader from '@/components/AppPageHeader'
 import { Botao, BotaoIcone, Janela, TelaVazia, Titulo, avisar, confirmar } from '@/components/base'
@@ -11,7 +11,7 @@ import MenuPedido from '@/components/pedidos/MenuPedido'
 import type { AcaoMenu } from '@/components/pedidos/MenuPedido'
 import QuadroPedidos from '@/components/pedidos/QuadroPedidos'
 import type { Pedido } from '@/components/pedidos/pedidoTexto'
-import { acaoDe, avisoDaMudanca, formaDoItem, itemComQtd, precisaAceitar, dataISO, grupoDoStatus, nomeCliente, nomeDaSituacao, nomeDeProduto, recebidoPedido, rs, saldoPedido, terminou } from '@/components/pedidos/pedidoTexto'
+import { acaoDe, avisoDaMudanca, formaDoItem, itemComQtd, precisaAceitar, dataISO, grupoDoStatus, nomeCliente, nomeDaSituacao, nomeDoItem, recebidoPedido, rs, saldoPedido, terminou } from '@/components/pedidos/pedidoTexto'
 import { registrarPagamento } from '@/lib/pagamentos'
 import { duplicarPedido } from '@/lib/duplicarPedido'
 import { excluirPedido as excluirPedidoNoBanco } from '@/lib/pedidosDoo'
@@ -24,6 +24,7 @@ import { supabase } from '@/lib/supabase'
 import { registrarEtapa } from "@/lib/historicoPedido";
 import { semAcento } from '@/lib/noticias'
 import { tocarSom } from '@/hooks/useSom'
+import { useAoVoltar, useDiaAtual } from '@/hooks/useAoVoltar'
 import '@/components/pedidos/pedidos.css'
 
 /**
@@ -37,9 +38,33 @@ import '@/components/pedidos/pedidos.css'
 const MEDIDA_COMPUTADOR = '(min-width: 901px)'
 const MEDIDA_TABLET = '(min-width: 768px)'
 
+/**
+ * Como a lista estava (11/10): busca, filtros, aba, lista ou quadro e a posição da rolagem.
+ * Fica guardado enquanto o app está aberto (sessionStorage), com o id da conta na chave: outra conta não herda nada.
+ * Volta sozinho quando ela saiu da lista há pouco (a seta da tela do pedido traz pra cá) ou quando retorna pelo "voltar".
+ * Passado esse tempo, a lista abre do jeito normal (ninguém encontra uma busca de ontem).
+ */
+const CHAVE_TELA = 'doonly_pedidos_tela_'
+const VALE_POR = 30 * 60 * 1000               // saiu da lista há menos de meia hora
+const VALE_POR_AO_VOLTAR = 6 * 60 * 60 * 1000 // pelo "voltar" do aparelho ou do navegador
+type TelaGuardada = { em: number; busca: string; aba: 'encomenda' | 'pronta_entrega'; modo: 'lista' | 'quadro'; status: string[]; periodo: string; ini: string; fim: string; y: number }
+function lerTela(uid: string): TelaGuardada | null {
+  try {
+    // tira o que ficou de outra conta neste aparelho
+    for (let i = sessionStorage.length - 1; i >= 0; i--) { const k = sessionStorage.key(i); if (k && k.startsWith(CHAVE_TELA) && k !== CHAVE_TELA + uid) sessionStorage.removeItem(k) }
+    const t = JSON.parse(sessionStorage.getItem(CHAVE_TELA + uid) || 'null')
+    return t && typeof t === 'object' && Array.isArray(t.status) ? t as TelaGuardada : null
+  } catch { return null }
+}
+function guardarTela(uid: string, t: TelaGuardada) {
+  try { sessionStorage.setItem(CHAVE_TELA + uid, JSON.stringify(t)) } catch { /* sem espaço ou sem permissão: segue sem guardar */ }
+}
+
 export default function Pedidos() {
   const navigate = useNavigate()
   const location = useLocation()
+  const tipoNavegacao = useNavigationType()
+  const hoje = useDiaAtual() // (11/10) muda sozinho quando vira o dia: "Hoje", "Amanhã" e "Atrasado" não ficam os de ontem
   const [pedidos, setPedidos] = useState<Pedido[]>([])
   const [userId, setUserId] = useState<string | null>(null)
   const [estado, setEstado] = useState<'carregando' | 'erro' | 'pronto'>('carregando')
@@ -63,7 +88,13 @@ export default function Pedidos() {
   const [dataFim, setDataFim] = useState('')
   const [menuDe, setMenuDe] = useState<Pedido | null>(null)
   const [semProdutos, setSemProdutos] = useState(false)
-  const [mudando, setMudando] = useState<string | null>(null)
+  // (11/10) Trava POR PEDIDO: antes era uma só pra lista inteira, e tocar "Aceitar" em três pedidos seguidos
+  // só mudava o primeiro, sem aviso. Agora cada pedido tem a sua (e o "carregando" aparece no botão de cada um).
+  const [mudando, setMudando] = useState<ReadonlySet<string>>(() => new Set())
+  const mudandoRef = useRef(new Set<string>())
+  // (11/10) sobe a cada mudança feita aqui na tela: a recarga por trás que começou antes não sobrescreve a lista
+  const versao = useRef(0)
+  const mudarPedidos = (f: (prev: Pedido[]) => Pedido[]) => { versao.current++; setPedidos(f) }
   // "cliente pagou?" quando sai de Aguardando pagamento ou vai pra Entregue com saldo (Financeiro · Passo 3)
   const [pendingPag, setPendingPag] = useState<{ pedido: Pedido; novoStatus: string } | null>(null)
 
@@ -74,8 +105,10 @@ export default function Pedidos() {
     return () => { m.removeEventListener('change', muda); t.removeEventListener('change', muda) }
   }, [])
 
-  const fetchPedidos = useCallback(async (uid: string) => {
-    setEstado('carregando')
+  // "quieto" (11/10): recarrega por trás, sem trocar a lista pelo "carregando" nem pela tela de erro (usado ao voltar pro app)
+  const fetchPedidos = useCallback(async (uid: string, quieto = false) => {
+    if (!quieto) setEstado('carregando')
+    const v = versao.current
     // (10/10) de 1.000 em 1.000: a lista não corta mais quando a conta passa de mil pedidos (o "id" deixa a ordem fixa)
     const { data, error } = await buscarTudo<any>((de, ate) => supabase
       .from('pedidos')
@@ -84,22 +117,63 @@ export default function Pedidos() {
       .order('numero', { ascending: false })
       .order('id')
       .range(de, ate))
-    if (error) { setEstado('erro'); return }
+    if (error) { if (!quieto) setEstado('erro'); return }
+    // uma mudança de situação começou enquanto a lista vinha: essa resposta pode estar velha, fica pra próxima
+    if (quieto && mudandoRef.current.size > 0) return
+    // (11/10) algo mudou aqui na tela enquanto a lista vinha: a resposta pode estar velha
+    if (quieto && v !== versao.current) return
     setPedidos((data || []) as Pedido[])
     setEstado('pronto')
   }, [])
 
+  const rolagemGuardada = useRef(0)             // onde a lista estava (pra guardar ao sair)
+  const rolagemPraVoltar = useRef<number | null>(null) // posição a restaurar quando a lista carregar
   useEffect(() => {
     // Link antigo /pedidos?ver=ID (atalhos de outras telas): abre direto a tela do pedido
     const ver = new URLSearchParams(window.location.search).get('ver')
     if (ver) { navigate(`/pedidos/${ver}/editar`, { replace: true }); return }
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
+      // (11/10) a lista volta como estava: busca, filtros, aba, lista/quadro e rolagem
+      // (menos quando veio do Início com um filtro rápido na frente)
+      const t = lerTela(user.id)
+      const comFiltroRapido = !!new URLSearchParams(window.location.search).get('filtro')
+      const faz = t ? Date.now() - (Number(t.em) || 0) : Infinity
+      if (t && !comFiltroRapido && (faz < VALE_POR || (tipoNavegacao === 'POP' && faz < VALE_POR_AO_VOLTAR))) {
+        setBusca(String(t.busca || '')); setAba(t.aba === 'pronta_entrega' ? 'pronta_entrega' : 'encomenda'); setModo(t.modo === 'quadro' ? 'quadro' : 'lista')
+        setStatusSelecionados(t.status.filter(s => typeof s === 'string')); setPeriodoFiltro(String(t.periodo || 'todos')); setDataInicio(String(t.ini || '')); setDataFim(String(t.fim || ''))
+        rolagemPraVoltar.current = Number(t.y) > 0 ? Number(t.y) : null
+      }
       setUserId(user.id)
       fetchPedidos(user.id)
       supabase.from('produtos').select('id', { count: 'exact', head: true }).eq('user_id', user.id).then(({ count }) => setTotalProdutos(count ?? 0))
     })
-  }, [fetchPedidos, navigate])
+  }, [fetchPedidos, navigate]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Guarda como a lista está: a cada mudança e ao sair da tela (com a rolagem do momento)
+  useEffect(() => {
+    if (!userId) return
+    const guardar = () => guardarTela(userId, { busca, aba, modo, status: statusSelecionados, periodo: periodoFiltro, ini: dataInicio, fim: dataFim, em: Date.now(), y: rolagemGuardada.current })
+    guardar()
+    return guardar // ao sair da tela (ou antes da próxima mudança): com a rolagem e a hora do momento
+  }, [userId, busca, aba, modo, statusSelecionados, periodoFiltro, dataInicio, dataFim])
+  useEffect(() => {
+    // com janela aberta a página fica presa no topo (trava da rolagem): essa posição não conta
+    const aoRolar = () => { if (document.body.style.position !== 'fixed') rolagemGuardada.current = window.scrollY }
+    window.addEventListener('scroll', aoRolar, { passive: true })
+    return () => window.removeEventListener('scroll', aoRolar)
+  }, [])
+  // A lista chegou: volta pra posição em que estava (uma vez só)
+  useEffect(() => {
+    if (estado !== 'pronto' || rolagemPraVoltar.current == null) return
+    const y = rolagemPraVoltar.current
+    const quadro = window.requestAnimationFrame(() => { rolagemPraVoltar.current = null; window.scrollTo(0, y) })
+    return () => window.cancelAnimationFrame(quadro)
+  }, [estado])
+
+  // (11/10) O app instalado fica aberto por dias: ao voltar pra ele (ou a internet voltar), a lista é buscada de novo.
+  // Não recarrega com o "cliente pagou?" aberto nem com uma mudança de situação em andamento.
+  useAoVoltar(() => { if (userId && estado === 'pronto' && !pendingPag && mudandoRef.current.size === 0) fetchPedidos(userId, true) })
 
   // o "carregando" só aparece se passar de 300ms
   useEffect(() => {
@@ -133,7 +207,7 @@ export default function Pedidos() {
     if (status === 'aguardando_pagamento' && statusAtual !== 'aguardando_pagamento') {
       const { error } = await supabase.from('pedidos').update({ status }).eq('id', id)
       if (error) { falhou(); return }
-      setPedidos(prev => prev.map(p => p.id === id ? { ...p, status } : p))
+      mudarPedidos(prev => prev.map(p => p.id === id ? { ...p, status } : p))
       confirmarMudanca(pedido, status)
       return
     }
@@ -142,26 +216,40 @@ export default function Pedidos() {
     // (10/10) Primeiro o recebimento, depois a situação: se o pagamento não gravar, nada muda e o pedido
     // não aparece como pago. Antes a falha caía no "senão" e a lista mostrava pago, com aviso de sucesso.
     if (statusAtual === 'aguardando_pagamento' && pagoDireto) {
-      const falta = saldoPedido(pedido)
+      // (11/10) Antes de registrar, relê o pedido no banco: a lista pode estar aberta há horas e o pagamento já ter
+      // entrado (pelo cardápio, em outro aparelho). O valor registrado é o que falta DE VERDADE; se já está pago, não registra de novo.
+      const { data: noBanco, error: errLer } = await supabase.from('pedidos').select('valor_total, valor_recebido, status_pagamento, status').eq('id', id).maybeSingle()
+      if (errLer || !noBanco) { avisar('Não deu pra conferir o pagamento deste pedido. Confira a internet e tente de novo.', { tipo: 'erro' }); return }
+      const atual = { ...pedido, ...(noBanco as any) } as Pedido
+      if (grupoDoStatus(atual.status) !== 'aguardando_pagamento') {
+        // já saiu de "Aguardando pagamento" em outro lugar: a lista só passa a mostrar o que está gravado
+        mudarPedidos(prev => prev.map(p => p.id === id ? { ...p, ...(noBanco as any) } : p))
+        avisar(`O pedido #${pedido.numero || ''} já tinha sido atualizado.`, { tipo: 'info' })
+        return
+      }
+      const falta = saldoPedido(atual)
       const r = falta > 0
-        ? await registrarPagamento({ pedidoId: id, valor: falta, forma: pedido.forma_pagamento, tipo: recebidoPedido(pedido) > 0 ? 'restante' : 'total' })
+        ? await registrarPagamento({ pedidoId: id, valor: falta, forma: atual.forma_pagamento, tipo: recebidoPedido(atual) > 0 ? 'restante' : 'total' })
         : null
       if (r && !r.ok) {
         // relê o pedido: se o pagamento entrou e só a resposta se perdeu, a lista já mostra pago e o próximo toque não cobra de novo
         const { data: gravado } = await supabase.from('pedidos').select('valor_recebido, status_pagamento').eq('id', id).maybeSingle()
-        if (gravado) setPedidos(prev => prev.map(p => p.id === id ? { ...p, ...(gravado as any) } : p))
+        if (gravado) mudarPedidos(prev => prev.map(p => p.id === id ? { ...p, ...(gravado as any) } : p))
         avisar('Não deu pra registrar o recebimento. Confira a internet e tente de novo.', { tipo: 'erro' }); return
       }
-      const novo = r?.status_pagamento ? { valor_recebido: r.valor_recebido ?? pedido.valor_total, status_pagamento: r.status_pagamento } : { valor_recebido: pedido.valor_total, status_pagamento: 'pago' }
+      const novo = !r ? { valor_total: atual.valor_total, valor_recebido: atual.valor_recebido, status_pagamento: atual.status_pagamento } // já estava pago: fica o que está gravado
+        : r.status_pagamento ? { valor_total: atual.valor_total, valor_recebido: r.valor_recebido ?? atual.valor_total, status_pagamento: r.status_pagamento }
+        : { valor_total: atual.valor_total, valor_recebido: atual.valor_total, status_pagamento: 'pago' }
       const { error } = await supabase.from('pedidos').update({ status }).eq('id', id)
       if (error) {
         // o dinheiro entrou, a situação não: a lista mostra o que está gravado (tocar de novo só muda a situação)
-        setPedidos(prev => prev.map(p => p.id === id ? { ...p, ...novo } : p))
-        avisar('O recebimento foi registrado, mas a situação do pedido não mudou. Tente de novo.', { tipo: 'erro' })
+        mudarPedidos(prev => prev.map(p => p.id === id ? { ...p, ...novo } : p))
+        if (r) avisar('O recebimento foi registrado, mas a situação do pedido não mudou. Tente de novo.', { tipo: 'erro' })
+        else falhou()
         return
       }
-      setPedidos(prev => prev.map(p => p.id === id ? { ...p, status, ...novo } : p))
-      confirmarMudanca(pedido, status, true)
+      mudarPedidos(prev => prev.map(p => p.id === id ? { ...p, status, ...novo } : p))
+      confirmarMudanca(pedido, status, !!r) // já estava pago: avisa só a mudança de situação
       return
     }
 
@@ -180,15 +268,37 @@ export default function Pedidos() {
     // Padrão: só muda a situação
     const { error } = await supabase.from('pedidos').update({ status }).eq('id', id)
     if (error) { falhou(); return }
-    setPedidos(prev => prev.map(p => p.id === id ? { ...p, status } : p))
+    mudarPedidos(prev => prev.map(p => p.id === id ? { ...p, status } : p))
     confirmarMudanca(pedido, status)
   }
 
+  /** Liga e desliga a trava de um pedido (a tela mostra o "carregando" no botão dele). */
+  const travar = (id: string, ligar: boolean) => {
+    if (ligar) mudandoRef.current.add(id); else mudandoRef.current.delete(id)
+    versao.current++
+    setMudando(new Set(mudandoRef.current))
+  }
   const avancar = async (p: Pedido) => {
     const a = acaoDe(p)
-    if (!a || mudando) return
-    setMudando(p.id)
-    try { await updateStatus(p.id, a.proximo, !!a.pago) } finally { setMudando(null) }
+    if (!a || mudandoRef.current.has(p.id)) return
+    travar(p.id, true)
+    try { await updateStatus(p.id, a.proximo, !!a.pago) } finally { travar(p.id, false) }
+  }
+
+  // (11/10) Quadro: arrastar pra "Cancelado" um pedido que já tem dinheiro recebido não cancela direto.
+  // Abre a tela do pedido já na janela de cancelar, que pergunta o que fazer com o valor (antes cancelava calado e o dinheiro ficava no caixa).
+  const moverNoQuadro = async (id: string, status: string) => {
+    if (mudandoRef.current.has(id)) return
+    travar(id, true)
+    try {
+      if (status === 'cancelado') {
+        const pedido = pedidos.find(p => p.id === id)
+        // o recebido que está no banco agora (a lista pode estar velha); se a leitura falhar, vale o da lista
+        const { data: noBanco } = await supabase.from('pedidos').select('valor_total, valor_recebido, status_pagamento').eq('id', id).maybeSingle()
+        if (recebidoPedido({ ...pedido, ...((noBanco as any) || {}) }) > 0.009) { navigate(`/pedidos/${id}/editar`, { state: { abrirCancelar: true } }); return }
+      }
+      await updateStatus(id, status)
+    } finally { travar(id, false) }
   }
 
   // (10/10) Excluir estorna os recebimentos do pedido antes (some do financeiro, como a confirmação promete)
@@ -197,6 +307,7 @@ export default function Pedidos() {
   const excluirPedido = async (p: Pedido) => {
     if (excluindo.current) return false
     excluindo.current = true
+    versao.current++
     try {
       const r = await excluirPedidoNoBanco(p.id)
       if (r.ok === false) {
@@ -204,11 +315,11 @@ export default function Pedidos() {
         if (r.estornou) {
           // o pedido ficou, mas os recebimentos já saíram: a lista mostra o que está gravado
           const { data } = await supabase.from('pedidos').select('valor_recebido, status_pagamento').eq('id', p.id).maybeSingle()
-          if (data) setPedidos(prev => prev.map(x => x.id === p.id ? { ...x, ...(data as any) } : x))
+          if (data) mudarPedidos(prev => prev.map(x => x.id === p.id ? { ...x, ...(data as any) } : x))
         }
         return false
       }
-      setPedidos(prev => prev.filter(x => x.id !== p.id))
+      mudarPedidos(prev => prev.filter(x => x.id !== p.id))
       avisar('Pedido excluído.')
       return true
     } finally { excluindo.current = false }
@@ -226,6 +337,7 @@ export default function Pedidos() {
       try {
         const r = await duplicarPedido(p.id)
         if ('erro' in r) { avisar(r.erro, { tipo: 'erro' }); return }
+        avisar(`${r.aviso} Ajuste a data da cópia.`) // (11/10) diz quando a cópia veio sem os descontos do original
         irDaJanela(`/pedidos/${r.id}/editar`); fechar()
       } finally { duplicando.current = false }
       return
@@ -240,7 +352,7 @@ export default function Pedidos() {
     }
     if (acao === 'compartilhar') {
       const itens = p.pedido_itens || []
-      const linhasItens = itens.map(it => `• ${itemComQtd(nomeDeProduto(it.nome_produto), it.quantidade, formaDoItem(it))}`).join('\n')
+      const linhasItens = itens.map(it => `• ${itemComQtd(nomeDoItem(it), it.quantidade, formaDoItem(it))}`).join('\n')
       const [y, m, d] = (p.data_entrega || '').split('-')
       const dataEnt = p.data_entrega ? `${d}/${m}/${y}` : '—'
       const hora = p.horario_entrega ? ` às ${p.horario_entrega.slice(0, 5)}` : ''
@@ -278,19 +390,20 @@ export default function Pedidos() {
     return pedidos.filter(p => {
       // (10/10) a mesma regra do "X pra aceitar" do Início (STATUS_PENDENTES em pages/Inicio.tsx), de qualquer origem
       if (filtroAguardando) return ['aguardando_aceite', 'aguardando_pagamento', 'novo', 'pendente'].includes(p.status)
-      if (filtroAtrasados) return pedidoAtrasado(p as any)
+      if (filtroAtrasados) return pedidoAtrasado(p as any, hoje)
       if ((p.tipo_venda || 'encomenda') !== aba) return false
       const okStatus = statusSelecionados.includes(grupoDoStatus(p.status))
       const okBusca = !q || semAcento(p.cliente_nome || '').includes(q) || String(p.numero).includes(q)
       const okData = bateData(p, periodoFiltro === 'custom' ? 'personalizado' : periodoFiltro, dataInicio, dataFim)
       return okStatus && okBusca && okData
     })
-  }, [pedidos, busca, aba, statusSelecionados, periodoFiltro, dataInicio, dataFim, filtroAguardando, filtroAtrasados])
+  }, [pedidos, busca, aba, statusSelecionados, periodoFiltro, dataInicio, dataFim, filtroAguardando, filtroAtrasados, hoje]) // "hoje": os filtros de data e de atrasado andam com o dia
 
   // Agrupado por dia: Atrasado, Hoje, Amanhã, os próximos dias, Sem data e Concluídos
   const grupos = useMemo(() => {
-    const hojeD = new Date(); hojeD.setHours(0, 0, 0, 0)
-    const hojeIso = dataISO(hojeD), amanhaD = new Date(hojeD); amanhaD.setDate(amanhaD.getDate() + 1); const amanhaIso = dataISO(amanhaD)
+    // (11/10) "hoje" vem do useDiaAtual: com a lista aberta de um dia pro outro, os grupos se refazem sozinhos
+    const [ah, mh, dh] = hoje.split('-').map(Number)
+    const hojeIso = hoje, amanhaIso = dataISO(new Date(ah, mh - 1, dh + 1))
     const DIAS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado']
     const rot = (iso: string) => { const [y, m, d] = iso.split('-').map(Number); return `${DIAS[new Date(y, m - 1, d).getDay()]}, ${d}/${m}` }
     const porHora = (a: Pedido, b: Pedido) => String(a.data_entrega || '').localeCompare(String(b.data_entrega || '')) || String(a.horario_entrega || '').localeCompare(String(b.horario_entrega || ''))
@@ -299,7 +412,11 @@ export default function Pedidos() {
     // pedidos pra aceitar vêm primeiro, em destaque (3.14); os outros seguem agrupados por dia
     add('aceitar', 'Pra aceitar', pedidosFiltrados.filter(p => !terminou(p) && precisaAceitar(p)).sort(porHora))
     const ativos = pedidosFiltrados.filter(p => !terminou(p) && !precisaAceitar(p)).sort(porHora)
-    add('atrasado', 'Atrasado', ativos.filter(p => p.data_entrega && p.data_entrega < hojeIso))
+    // (11/10) "Atrasado" pela regra única (lib/pedidoStatus): a data passou E o pedido ainda não ficou pronto.
+    // O que já está pronto (ou saiu pra entrega) e é de um dia anterior não é atraso: fica num grupo à parte, pra não sumir da lista.
+    const passados = ativos.filter(p => p.data_entrega && p.data_entrega.slice(0, 10) < hojeIso)
+    add('atrasado', 'Atrasado', passados.filter(p => pedidoAtrasado(p, hojeIso)))
+    add('antes', 'De dias anteriores', passados.filter(p => !pedidoAtrasado(p, hojeIso)))
     add('hoje', `Hoje · ${rot(hojeIso)}`, ativos.filter(p => p.data_entrega === hojeIso))
     add('amanha', `Amanhã · ${rot(amanhaIso)}`, ativos.filter(p => p.data_entrega === amanhaIso))
     const futuros = ativos.filter(p => p.data_entrega && p.data_entrega > amanhaIso)
@@ -307,7 +424,7 @@ export default function Pedidos() {
     add('semdata', 'Sem data', ativos.filter(p => !p.data_entrega))
     add('concluidos', 'Concluídos', pedidosFiltrados.filter(terminou).sort((a, b) => -porHora(a, b)))
     return g
-  }, [pedidosFiltrados])
+  }, [pedidosFiltrados, hoje])
 
   const nFiltros = (statusSelecionados.length !== STATUS_PADRAO.length || !STATUS_PADRAO.every(s => statusSelecionados.includes(s)) ? 1 : 0) + (periodoFiltro !== 'todos' ? 1 : 0)
   const filtrando = nFiltros > 0 || !!busca.trim()
@@ -317,7 +434,7 @@ export default function Pedidos() {
   const sairDoFiltroRapido = () => { setFiltroAguardando(false); setFiltroAtrasados(false); navigate('/pedidos', { replace: true }) }
   const quadro = largo && modo === 'quadro'
 
-  const props = (p: Pedido) => ({ p, aoAbrir: abrirPedido, aoAvancar: avancar, aoMenu: setMenuDe, aoEndereco: verEndereco, mudando: mudando === p.id })
+  const props = (p: Pedido) => ({ p, aoAbrir: abrirPedido, aoAvancar: avancar, aoMenu: setMenuDe, aoEndereco: verEndereco, mudando: mudando.has(p.id) })
 
   const conteudo = () => {
     if (estado === 'carregando') return demorou ? <p className="pd-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando os pedidos…</p> : null
@@ -393,7 +510,8 @@ export default function Pedidos() {
                 ? <TelaVazia icone={<MagnifyingGlass size={30} />} titulo="Nenhum pedido encontrado" texto={busca.trim() ? `Não achamos nada com “${busca.trim()}”.` : 'Nenhum pedido com esses filtros.'} acao={<Botao variante="suave" tamanho="m" onClick={limparTudo}>Ver todos os pedidos</Botao>} />
                 : <TelaVazia icone={aba === 'pronta_entrega' ? <Lightning size={30} /> : <Receipt size={30} />} titulo={aba === 'pronta_entrega' ? 'Nenhuma venda de pronta entrega' : 'Nenhum pedido aqui'} texto={aba === 'pronta_entrega' ? 'As vendas do balcão aparecem aqui.' : 'Quando chegar uma encomenda, ela aparece aqui.'} />
             ) : quadro ? (
-              <QuadroPedidos pedidos={pedidosFiltrados} aoAbrir={abrirPedido} aoAvancar={avancar} aoMover={(id, st) => updateStatus(id, st)} mudando={mudando} />
+              // o Quadro mostra o "carregando" de um pedido por vez (a trava em si é por pedido, aqui na lista)
+              <QuadroPedidos pedidos={pedidosFiltrados} aoAbrir={abrirPedido} aoAvancar={avancar} aoMover={moverNoQuadro} mudando={mudando.values().next().value ?? null} />
             ) : (
               <div className="pd-grupos">
                 {computador && <div className="pdl-cab" aria-hidden="true"><span>Cliente e pedido</span><span>Situação</span><span>Pagamento</span><span>Entrega</span><span /><span /></div>}
@@ -401,7 +519,7 @@ export default function Pedidos() {
                   <section key={g.chave} className="pd-grupo" aria-label={g.titulo}>
                     <Titulo contagem={g.itens.length} tom={g.chave === 'atrasado' ? 'vermelho' : undefined} apoio={g.chave === 'aceitar' ? (g.itens.length === 1 ? 'Chegou pelo cardápio. Aceite pra entrar na sua agenda.' : 'Chegaram pelo cardápio. Aceite pra entrar na sua agenda.') : undefined}>{g.titulo}</Titulo>
                     {computador
-                      ? <div className="pdl-tabela" role="table">{g.itens.map(p => <LinhaPedido key={p.id} {...props(p)} comDia={g.chave === 'concluidos' || g.chave === 'semdata'} />)}</div>
+                      ? <div className="pdl-tabela" role="table">{g.itens.map(p => <LinhaPedido key={p.id} {...props(p)} comDia={g.chave === 'concluidos' || g.chave === 'semdata' || g.chave === 'antes'} />)}</div>
                       : <div className="pdc-lista">{g.itens.map(p => <CartaoPedido key={p.id} {...props(p)} />)}</div>}
                   </section>
                 ))}
@@ -441,8 +559,8 @@ export default function Pedidos() {
           novoStatusLabel={nomeDaSituacao(pendingPag.novoStatus)}
           aguardandoPagamento={grupoDoStatus(pendingPag.pedido.status) === 'aguardando_pagamento'}
           onCancelar={() => setPendingPag(null)}
-          onParcial={(r) => setPedidos(prev => prev.map(p => p.id === pendingPag.pedido.id ? { ...p, ...r } : p))}
-          onConcluido={(r) => { setPedidos(prev => prev.map(p => p.id === pendingPag.pedido.id ? { ...p, ...r } : p)); confirmarMudanca(pendingPag.pedido, pendingPag.novoStatus); setPendingPag(null) }}
+          onParcial={(r) => mudarPedidos(prev => prev.map(p => p.id === pendingPag.pedido.id ? { ...p, ...r } : p))}
+          onConcluido={(r) => { mudarPedidos(prev => prev.map(p => p.id === pendingPag.pedido.id ? { ...p, ...r } : p)); confirmarMudanca(pendingPag.pedido, pendingPag.novoStatus); setPendingPag(null) }}
         />
       )}
     </>

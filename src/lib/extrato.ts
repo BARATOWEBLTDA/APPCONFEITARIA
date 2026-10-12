@@ -101,6 +101,19 @@ export async function estornar(m: MovExtrato): Promise<{ ok: boolean; erro?: str
   const { error } = await supabase.from("financeiro").update({ estornado_em: agora }).eq("id", m.ref);
   if (error) return { ok: false, erro: /estornado_em/i.test(error.message) ? "Pra estornar lançamentos, rode o SQL do estorno no Supabase." : "Não foi possível estornar agora." };
   // se era o pagamento de uma conta, ela volta pra "A pagar"
-  await supabase.from("contas_pagar").update({ status: "pendente", pago_em: null, valor_pago: null, forma: null, financeiro_id: null }).eq("financeiro_id", m.ref).then(() => {}, () => {});
+  // 11/10: confere se voltou mesmo. Antes o erro era engolido: o dinheiro voltava pro caixa e a conta seguia "paga".
+  let erroConta: unknown;
+  try {
+    const r = await supabase.from("contas_pagar").update({ status: "pendente", pago_em: null, valor_pago: null, forma: null, financeiro_id: null }).eq("financeiro_id", m.ref);
+    erroConta = r.error;
+  } catch (e) { erroConta = e; }
+  // sem a tabela de contas (SQL não rodado) não existe conta pra voltar: o estorno do lançamento vale
+  if (erroConta && !faltaNoBanco(erroConta)) {
+    console.error("[extrato] a conta não voltou pra A pagar:", erroConta);
+    const { error: eDesfaz } = await supabase.from("financeiro").update({ estornado_em: null }).eq("id", m.ref);
+    return { ok: false, erro: eDesfaz
+      ? "O lançamento foi estornado, mas a conta continua como paga. Confira em A pagar e tente de novo."
+      : "Não deu pra estornar: a conta não voltou pra A pagar. Tente de novo." };
+  }
   return { ok: true };
 }

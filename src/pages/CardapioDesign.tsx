@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { explicarErro } from "@/lib/erros";
 import { usePlano } from "@/hooks/usePlano";
 import { HexColorPicker } from "react-colorful";
 import { ImageCropper } from "@/components/ui/ImageCropper";
@@ -39,10 +40,26 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
   // Avaliação (veio de Dados da loja em 29/09)
   const [hideStars, setHideStars] = useState(false);
   const [avaliacaoMedia, setAvaliacaoMedia] = useState(5.0);
+  // (11/10) Grava no perfil conferindo o erro. Devolve true se gravou; se falhar, avisa e quem chamou desfaz a mudança da tela.
+  const gravar = async (campos: Record<string, unknown>): Promise<boolean> => {
+    if (!userId) return false;
+    try {
+      const { error } = await supabase.from("profiles").update(campos).eq("id", userId);
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      avisar(explicarErro(err, "Não deu pra salvar. Tente de novo."), { tipo: "erro" });
+      return false;
+    }
+  };
+  // (11/10) trava contra toque duplo: enquanto uma gravação está indo, o mesmo botão não dispara outra
+  const travas = useRef(new Set<string>());
   const salvarAvaliacao = async (campos: { hide_stars?: boolean; avaliacao_media?: number }) => {
-    if (!userId) return;
-    await supabase.from("profiles").update(campos).eq("id", userId);
-    showSuccess();
+    if (!userId || travas.current.has("avaliacao")) return;
+    travas.current.add("avaliacao");
+    const ok = await gravar(campos);
+    travas.current.delete("avaliacao");
+    if (ok) showSuccess();
   };
   const [nomeLoja, setNomeLoja] = useState("");
   const [bannerUrl, setBannerUrl] = useState("");
@@ -99,6 +116,13 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         setCorNavbar(data.cor_navbar || "#FF6FA9");
         setCorSacola(data.cor_sacola || "#FF6FA9");
         setCorRodape(data.cor_rodape || "#FF6FA9");
+        // (11/10) as cores que estão no banco: é pra elas que a tela volta se uma gravação falhar
+        coresSalvas.current = {
+          cor_borda: data.cor_borda || "#FF6FA9",
+          cor_nome: data.cor_nome || "#1f2937",
+          cor_botao: data.cor_botao || "#FF6FA9",
+          cor_navbar: data.cor_navbar || "#FF6FA9",
+        };
         setCardapioModelo(data.cardapio_modelo || "modelo1");
       }
       setLoading(false);
@@ -138,9 +162,12 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     if (!error) {
       const { data } = supabase.storage.from("products").getPublicUrl(path);
       const url = `${data.publicUrl}?t=${Date.now()}`;
-      setLogoUrl(url);
-      await supabase.from("profiles").update({ logo_url: url }).eq("id", userId); marcarDesignEscolhido(userId);
-      showSuccess();
+      // (11/10) a logo nova só aparece na tela depois de gravar no perfil
+      if (await gravar({ logo_url: url })) {
+        setLogoUrl(url);
+        marcarDesignEscolhido(userId);
+        showSuccess();
+      }
     } else {
       avisar("Não deu pra enviar a logo. Confira a internet e tente de novo.", { tipo: "erro" });
     }
@@ -156,19 +183,28 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     if (url) {
       const fields = [setBannerUrl, setBanner1Url, setBanner2Url, setBanner3Url];
       const keys = ["banner_url", "banner1_url", "banner2_url", "banner3_url"];
-      fields[index](url);
-      await supabase.from("profiles").update({ [keys[index]]: url }).eq("id", userId); marcarDesignEscolhido(userId);
-      showSuccess();
+      // (11/10) o banner novo só aparece na tela depois de gravar no perfil
+      if (await gravar({ [keys[index]]: url })) {
+        fields[index](url);
+        marcarDesignEscolhido(userId);
+        showSuccess();
+      }
     }
     setUploading(null);
   };
 
   const handleRemoveBanner = async (index: number) => {
-    if (!userId) return;
+    const chave = `tirar-banner${index}`;
+    if (!userId || travas.current.has(chave)) return;
+    travas.current.add(chave);
     const fields = [setBannerUrl, setBanner1Url, setBanner2Url, setBanner3Url];
     const keys = ["banner_url", "banner1_url", "banner2_url", "banner3_url"];
+    const anterior = [bannerUrl, banner1Url, banner2Url, banner3Url][index];
     fields[index]("");
-    await supabase.from("profiles").update({ [keys[index]]: null }).eq("id", userId);
+    const ok = await gravar({ [keys[index]]: null });
+    travas.current.delete(chave);
+    // (11/10) não gravou: o banner volta pra tela (ele continua no cardápio)
+    if (!ok) fields[index](v => (v === "" ? anterior : v));
   };
 
   const handleBannerTopoUpload = async (file: File) => {
@@ -177,9 +213,12 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     const url = await uploadImage(file, `banners/${userId}-topo`);
     if (!url) avisar("Não deu pra enviar a imagem. Confira a internet e tente de novo.", { tipo: "erro" });
     if (url) {
-      setBannerTopoUrl(url);
-      await supabase.from("profiles").update({ banner_topo_url: url }).eq("id", userId); marcarDesignEscolhido(userId);
-      showSuccess();
+      // (11/10) a foto nova só aparece na tela depois de gravar no perfil
+      if (await gravar({ banner_topo_url: url })) {
+        setBannerTopoUrl(url);
+        marcarDesignEscolhido(userId);
+        showSuccess();
+      }
     }
     setUploading(null);
   };
@@ -188,25 +227,52 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
   const bannerIdx = useRef(0);
   const recorteBanner = useRecorte(f => { void handleBannerUpload(f, bannerIdx.current); }, { aspect: 16 / 9, forma: "rect" });
   const handleRemoveBannerTopo = async () => {
-    if (!userId) return;
+    if (!userId || travas.current.has("tirar-topo")) return;
+    travas.current.add("tirar-topo");
+    const anterior = bannerTopoUrl;
     setBannerTopoUrl("");
-    await supabase.from("profiles").update({ banner_topo_url: null }).eq("id", userId);
+    const ok = await gravar({ banner_topo_url: null });
+    travas.current.delete("tirar-topo");
+    // (11/10) não gravou: a foto volta pra tela (ela continua no cardápio)
+    if (!ok) setBannerTopoUrl(v => (v === "" ? anterior : v));
   };
 
-  const colorSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const handleColorChange = (field: string, value: string, setter: (v: string) => void) => {
+  // (11/10) Cores: um temporizador por campo (antes era um só: mudar "Botões" e logo depois "Borda" perdia a primeira)
+  // e só grava cor completa (#RRGGBB). Se a gravação falhar, a tela volta pra cor que está no banco.
+  const COR_VALIDA = /^#[0-9a-fA-F]{6}$/;
+  const colorSaveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const coresSalvas = useRef<Record<string, string>>({});
+  // o que ela está digitando no campo do código (pode estar pela metade; não vai pra tela nem pro banco)
+  const [hexDigitando, setHexDigitando] = useState<{ campo: string; texto: string } | null>(null);
+  const handleColorChange = (field: string, value: string, setter: React.Dispatch<React.SetStateAction<string>>) => {
+    if (!COR_VALIDA.test(value)) return;
     setter(value);
-    if (colorSaveTimer.current) clearTimeout(colorSaveTimer.current);
-    colorSaveTimer.current = setTimeout(async () => {
+    if (colorSaveTimers.current[field]) clearTimeout(colorSaveTimers.current[field]);
+    colorSaveTimers.current[field] = setTimeout(async () => {
+      delete colorSaveTimers.current[field];
       if (!userId) return;
-      await supabase.from("profiles").update({ [field]: value }).eq("id", userId); marcarDesignEscolhido(userId);
+      if (!(await gravar({ [field]: value }))) {
+        const salva = coresSalvas.current[field];
+        if (salva) setter(v => (v === value ? salva : v));
+        return;
+      }
+      coresSalvas.current[field] = value;
+      marcarDesignEscolhido(userId);
       showSuccess();
     }, 600);
+  };
+  // Campo do código: aceita digitar aos poucos e colar sem o "#" ("FF0000" vira "#FF0000"); só a cor completa vale
+  const digitarHex = (campo: string, bruto: string, setter: React.Dispatch<React.SetStateAction<string>>) => {
+    const limpo = bruto.replace(/\s/g, "");
+    const texto = limpo && !limpo.startsWith("#") ? `#${limpo}` : limpo;
+    if (texto && !/^#[0-9a-fA-F]{0,6}$/.test(texto)) return;
+    setHexDigitando({ campo, texto });
+    handleColorChange(campo, texto, setter);
   };
 
   const bannerValues = [bannerUrl, banner1Url, banner2Url, banner3Url];
 
-  const coresPro: { campo: string; rotulo: string; dica?: string; valor: string; set: (v: string) => void; padrao: string }[] = [
+  const coresPro: { campo: string; rotulo: string; dica?: string; valor: string; set: React.Dispatch<React.SetStateAction<string>>; padrao: string }[] = [
     { campo: "cor_borda", rotulo: "Borda da logo", valor: corBorda, set: setCorBorda, padrao: "#FF6FA9" },
     { campo: "cor_nome", rotulo: "Nome da confeitaria", dica: "Sem cor escolhida: branco no computador e preto no celular", valor: corNome, set: setCorNome, padrao: "#1f2937" },
     { campo: "cor_botao", rotulo: "Botões de comprar", valor: corBotao, set: setCorBotao, padrao: "#FF6FA9" },
@@ -234,9 +300,13 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     if (m === "padrao" && !isPro) { avisar("O modelo Premium é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } }); return; }
     if (!userId || salvandoModelo) return;
     setSalvandoModelo(true);
+    const anterior = cardapioModelo;
     setCardapioModelo(m);
-    await supabase.from("profiles").update({ cardapio_modelo: m }).eq("id", userId); marcarDesignEscolhido(userId);
+    const ok = await gravar({ cardapio_modelo: m });
     setSalvandoModelo(false);
+    // (11/10) não gravou: volta pro modelo que estava
+    if (!ok) { setCardapioModelo(anterior); return; }
+    marcarDesignEscolhido(userId);
     showSuccess();
   };
 
@@ -249,7 +319,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
 
   const modeloAtivo = modeloAtivoCalc(cardapioModelo);
   const ProSlot = ({ n }: { n: number }) => (
-    <button type="button" className="ap-slot ap-slot--pro" onClick={() => avisar("Os banners 3 e 4 são do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } })} aria-label={`Banner ${n}, no plano PRO`}>
+    <button type="button" className="ap-slot ap-slot--pro" onClick={() => avisar("Os banners 2, 3 e 4 são do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } })} aria-label={`Banner ${n}, no plano PRO`}>
       <Lock size={20} weight="bold" aria-hidden="true" /><b>No PRO</b>
     </button>
   );
@@ -259,6 +329,8 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     {cropSrc && (
       <ImageCropper imageSrc={cropSrc} cropShape="round" aspect={1} onCancel={() => setCropSrc(null)} onCropDone={handleLogoCropDone} />
     )}
+    {/* (11/10) fora da seção "Foto do topo": no modelo Premium ela não existe e o recorte do banner não abria */}
+    {recorteTopo.janela}{recorteBanner.janela}
     {!identityCard && (
       <AppPageHeader title="Aparência" subtitle="Logo, banners, modelo e cores" onBack={() => navigate("/cardapio")}
         infoIcon="🎨"
@@ -309,7 +381,6 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
             </button>
           )}
           <input ref={bannerTopoRef} type="file" accept="image/*" hidden onChange={recorteTopo.escolher} />
-          {recorteTopo.janela}{recorteBanner.janela}
         </section>
       )}
 
@@ -399,10 +470,13 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
                   {aberta && (
                     <div className="ap-picker">
                       <PreviaCor campo={c.campo} valor={c.valor} />
-                      <HexColorPicker color={c.valor} onChange={v => handleColorChange(c.campo, v, c.set)} style={{ width: "100%", height: 168 }} />
+                      <HexColorPicker color={c.valor} onChange={v => { setHexDigitando(null); handleColorChange(c.campo, v, c.set); }} style={{ width: "100%", height: 168 }} />
                       <div className="ap-picker-pe">
-                        <div className="ui-campo-c ap-hex"><input aria-label="Código da cor" value={c.valor} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange(c.campo, e.target.value, c.set); }} /></div>
-                        <BotaoIcone rotulo="Voltar pra cor padrão" variante="neutro" onClick={() => handleColorChange(c.campo, c.padrao, c.set)}><ArrowCounterClockwise size={20} weight="bold" /></BotaoIcone>
+                        <div className="ui-campo-c ap-hex"><input aria-label="Código da cor" maxLength={9}
+                          value={hexDigitando?.campo === c.campo ? hexDigitando.texto : c.valor}
+                          onChange={e => digitarHex(c.campo, e.target.value, c.set)}
+                          onBlur={() => setHexDigitando(null)} /></div>
+                        <BotaoIcone rotulo="Voltar pra cor padrão" variante="neutro" onClick={() => { setHexDigitando(null); handleColorChange(c.campo, c.padrao, c.set); }}><ArrowCounterClockwise size={20} weight="bold" /></BotaoIcone>
                         <Botao variante="suave" tamanho="m" onClick={() => setActivePicker(null)}>Pronto</Botao>
                       </div>
                     </div>

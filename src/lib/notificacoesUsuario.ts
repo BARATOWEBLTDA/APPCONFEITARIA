@@ -45,19 +45,34 @@ export async function criarNotificacaoPessoal(n: { tipo: string; titulo: string;
   window.dispatchEvent(new CustomEvent("doonly:notif-mudou"));
 }
 
+/**
+ * Qual aviso do PRO cabe agora (11/10), ou null. Conta dias de CALENDÁRIO (meia-noite daqui), não blocos de 24h:
+ *   - ainda não venceu e faltam até 3 dias → "vencendo" (o texto diz a DATA; o aviso é criado uma vez só e o
+ *     "em 2 dias" gravado nele ficava errado no dia seguinte)
+ *   - já venceu (a hora passou), até 30 dias atrás → "atrasado"
+ * Antes: dizia "vence hoje" depois de vencido e "em 1 dia" no próprio dia do vencimento.
+ */
+export function avisoDoPro(proExpiraEm: string, agora: Date = new Date()): { tipo: "pro_vencendo" | "pro_atrasado"; mensagem: string; chave: string } | null {
+  const exp = new Date(proExpiraEm);
+  if (Number.isNaN(exp.getTime())) return null;
+  const meiaNoite = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const dias = Math.round((meiaNoite(exp) - meiaNoite(agora)) / 86400000);
+  const ref = String(proExpiraEm).slice(0, 10);
+  const venceu = exp.getTime() <= agora.getTime();
+  if (!venceu && dias <= 3) {
+    const dia = `${String(exp.getDate()).padStart(2, "0")}/${String(exp.getMonth() + 1).padStart(2, "0")}`;
+    return { tipo: "pro_vencendo", mensagem: `Seu plano PRO vence no dia ${dia}. Renove pra não perder os recursos.`, chave: `pro-vencendo-${ref}` };
+  }
+  if (venceu && dias >= -30) {
+    return { tipo: "pro_atrasado", mensagem: "Seu plano PRO venceu. Regularize pra voltar a usar o assistente virtual e os recursos PRO.", chave: `pro-atrasado-${ref}` };
+  }
+  return null;
+}
+
 /** PRO vencendo (3 dias antes) e mensalidade atrasada — conferido quando ela abre o app */
 export async function verificarAvisosPro(profile: any) {
   if (!profile?.pro_expira_em) return;
-  const exp = new Date(profile.pro_expira_em).getTime();
-  const dias = Math.ceil((exp - Date.now()) / 86400000);
-  const ref = String(profile.pro_expira_em).slice(0, 10);
-  if (dias >= 0 && dias <= 3) {
-    await criarNotificacaoPessoal({ tipo: "pro_vencendo", titulo: "Seu PRO vence em breve ⏰",
-      mensagem: dias === 0 ? "Seu plano PRO vence hoje. Renove pra não perder os recursos." : `Seu plano PRO vence em ${dias} ${dias === 1 ? "dia" : "dias"}. Renove pra não perder os recursos.`,
-      link: "/assinar", chave: `pro-vencendo-${ref}` });
-  } else if (dias < 0 && dias >= -30) {
-    await criarNotificacaoPessoal({ tipo: "pro_atrasado", titulo: "Mensalidade em atraso ⚠️",
-      mensagem: "Seu plano PRO venceu. Regularize pra voltar a usar o assistente virtual e os recursos PRO.",
-      link: "/assinar", chave: `pro-atrasado-${ref}` });
-  }
+  const aviso = avisoDoPro(profile.pro_expira_em);
+  if (!aviso) return;
+  await criarNotificacaoPessoal({ ...aviso, titulo: aviso.tipo === "pro_vencendo" ? "Seu PRO vence em breve ⏰" : "Mensalidade em atraso ⚠️", link: "/assinar" });
 }

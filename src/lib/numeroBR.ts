@@ -14,3 +14,27 @@ export function parseNumBR(v: string | number | null | undefined): number {
   else n = parseFloat(s);
   return Number.isFinite(n) ? n : 0;
 }
+
+/**
+ * Lê um peso digitado e devolve em kg (11/10). 0 = não entendeu.
+ *   "500g" → 0.5 · "1.500g" → 1.5 · "1,5" → 1.5 · "1.5" → 1.5 · "20" → 20 · "0,5 kg" → 0.5 · "500" → 0.5 · "1.500" → 1.5
+ * Com "g" é grama, com "kg" é quilo. Sem unidade: até 99 é quilo; de 100 pra cima é grama (ninguém vende bolo de 100 kg).
+ * Antes "1.500g" virava 0,0015 kg e "20" virava 0,02 kg.
+ */
+export function lerPesoKg(v: string | number | null | undefined): number {
+  const s = String(v ?? "").toLowerCase().replace(/\s/g, "");
+  // a unidade pode estar pela metade enquanto a pessoa digita ("1,5k"): vale pela primeira letra
+  const m = s.match(/^([\d.,]+)([a-z]*)$/);
+  if (!m) return 0;
+  const emKg = /^[kq]/.test(m[2]);
+  const emG = /^g/.test(m[2]);
+  if (m[2] && !emKg && !emG) return 0;
+  let n: number;
+  // em kg, "1.500" é um e meio (decimal); em gramas, ponto ou vírgula antes de 3 dígitos é milhar ("1.500g")
+  if (emKg) n = parseFloat(m[1].replace(",", "."));
+  else if (emG) n = parseNumBR(m[1].replace(/[.,](?=\d{3}$)/, ""));
+  else n = parseNumBR(m[1]);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  const kg = emKg ? n : emG || n >= 100 ? n / 1000 : n;
+  return Math.round(kg * 1000) / 1000;
+}

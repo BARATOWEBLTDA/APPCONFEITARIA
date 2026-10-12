@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { refreshProfile } from "@/hooks/useProfile";
-import { digitosTelefone } from "@/lib/telefone";
+import { digitosTelefone, mascaraTelefone } from "@/lib/telefone";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { Botao, Campo } from "@/components/base";
 
@@ -11,13 +11,8 @@ import { Botao, Campo } from "@/components/base";
  * e o WhatsApp (os mesmos campos do cadastro normal). Os 3 são obrigatórios.
  * 09/10 (3.57): no padrão do guia (Campo, Botao, cores --ui-*, sem degradê).
  */
-const maskTel = (v: string) => {
-  const d = v.replace(/\D/g, "").slice(0, 11);
-  if (d.length <= 2) return d ? `(${d}` : "";
-  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
-  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
-  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
-};
+// (11/10) máscara única do app (aceita colar com +55)
+const maskTel = mascaraTelefone;
 
 export default function CompletarCadastro({ user, nomeInicial, lojaInicial = "", telefoneInicial = "", onPronto }: { user: any; nomeInicial: string; lojaInicial?: string; telefoneInicial?: string; onPronto: () => void }) {
   const meta = user?.user_metadata || {};
@@ -48,7 +43,7 @@ export default function CompletarCadastro({ user, nomeInicial, lojaInicial = "",
 
   const doGoogle = !!(meta.full_name || meta.name) && nome === (nomeInicial || meta.full_name || meta.name);
   return (
-    <div className="ccad">
+    <div className="ccad" data-sem-recarregar="">{/* (11/10) a atualização automática não recarrega com esta tela aberta */}
       <div className="ccad-in">
         <div className="ccad-top"><span className="ccad-ok">
           <svg width="14" height="14" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>

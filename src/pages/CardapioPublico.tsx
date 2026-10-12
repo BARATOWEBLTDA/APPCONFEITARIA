@@ -9,7 +9,7 @@ import { BannerAd } from '@/components/cardapio/BannerAd'
 import { Logo } from '@/components/cardapio/Logo'
 import { ProductList } from '@/components/cardapio/ProductList'
 import { montarSecoes, SecaoCardapio, LinhaProduto } from '@/components/cardapio/ItensCardapio'
-import { contarItens, qtdItem } from '@/lib/itemSacola'
+import { contarItens, qtdItem, valorLinha } from '@/lib/itemSacola'
 import { NavigationMenu } from '@/components/cardapio/NavigationMenu'
 import { definirLojaAtual } from '@/components/cardapio/lojaAtual'
 import { linkWhatsApp } from '@/lib/telefone'
@@ -199,7 +199,7 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
           return (
             <div key={item.lineId ?? item.id} className="cp-it">
               {img ? <img src={img} alt="" /> : <span className="cp-it-sem"><ShoppingBag size={20} /></span>}
-              <span><b>{qtdItem(item)} {item.name}</b><small>{formatCurrency(item.price * item.quantity)}{unidadeItem(item) && (item.quantity === 1 ? ` ${unidadeItem(item)}` : ` · ${formatCurrency(item.price)} ${unidadeItem(item)}`)}</small></span>
+              <span><b>{qtdItem(item)} {item.name}</b><small>{formatCurrency(valorLinha(item))}{unidadeItem(item) && (item.quantity === 1 ? ` ${unidadeItem(item)}` : ` · ${formatCurrency(item.price)} ${unidadeItem(item)}`)}</small></span>
             </div>
           )
         })}
@@ -509,8 +509,12 @@ function CardapioContent() {
 }
 
 export default function CardapioPublico() {
+  // (11/10) a sacola fica guardada por loja (código do endereço) e volta ao recarregar a página.
+  // A `key` troca a sacola quando o endereço passa pra outra loja sem recarregar.
+  const params = useParams<{ codigo?: string; slug?: string }>()
+  const loja = (params.codigo || params.slug || '').toLowerCase()
   return (
-    <CartProvider>
+    <CartProvider key={loja} loja={loja || undefined}>
       <CardapioContent />
     </CartProvider>
   )

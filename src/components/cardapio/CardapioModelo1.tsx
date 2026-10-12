@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { MapPin, Lightning, CalendarBlank, Truck } from '@phosphor-icons/react'
 import { DesignSettings, Configuracoes } from '@/types/database'
 import { seloEntrega } from '@/lib/entregaProduto'
+import { situacaoDaLoja, horaTexto } from '@/lib/agendaCardapio'
 import './cardapioModelo1.css'
 
 // ─────────────────────────────────────────────────────────────
@@ -19,52 +20,22 @@ interface CardapioModeloProps {
   produtos?: any[]
 }
 
-const DIAS_MAP: Record<string, number> = {
-  "Segunda": 1, "Terça": 2, "Quarta": 3, "Quinta": 4,
-  "Sexta": 5, "Sábado": 6, "Domingo": 0
-}
 const DIAS_LABEL = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"]
 // (24:00 aparece como "00:00" / "0h")
-const hhmm = (m: number) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
 const curtoHora = (m: number) => `${Math.floor(m / 60) % 24}h${m % 60 ? String(m % 60).padStart(2, '0') : ''}`
 
 type Status = { aberto: boolean; msg: string; curto: string }
 
+// (11/10) a situação vem de UMA conta só (lib/agendaCardapio), a mesma do selo do modelo padrão e da Visão geral
 export function getStatusLoja(horarioJson: any): Status | null {
-  if (!horarioJson) return null
-  try {
-    const h = typeof horarioJson === 'string' ? JSON.parse(horarioJson) : horarioJson
-    const now = new Date()
-    const diaSemana = now.getDay()
-    const horaAtual = now.getHours() * 60 + now.getMinutes()
-    const toMin = (t: string) => { const [hh, mm] = t.split(':').map(Number); return hh * 60 + mm }
-    const isDiaAtivo = (dia: number) => {
-      if (dia === 6 && h.abre_sabado) return true
-      if (dia === 0 && h.abre_domingo) return true
-      return (h.dias || []).some((d: string) => DIAS_MAP[d] === dia)
-    }
-    // 10/10: fechar às "00:00" é fechar no fim do dia (24:00). Antes a loja aparecia sempre fechada.
-    const fim = (t: string) => toMin(t) || 1440
-    const getHorarioDia = (dia: number) => {
-      if (dia === 6 && h.abre_sabado) return { ab: toMin(h.sabado_abertura || '09:00'), fe: fim(h.sabado_fechamento || '14:00') }
-      if (dia === 0 && h.abre_domingo) return { ab: toMin(h.domingo_abertura || '09:00'), fe: fim(h.domingo_fechamento || '14:00') }
-      return { ab: toMin(h.abertura || '08:00'), fe: fim(h.fechamento || '18:00') }
-    }
-    if (isDiaAtivo(diaSemana)) {
-      const { ab, fe } = getHorarioDia(diaSemana)
-      if (horaAtual >= ab && horaAtual < fe) return { aberto: true, msg: `Aberto agora · até ${hhmm(fe)}`, curto: `Aberto · até ${curtoHora(fe)}` }
-      if (horaAtual < ab) return { aberto: false, msg: `Fechado · abre hoje às ${hhmm(ab)}`, curto: `Fechado · abre ${curtoHora(ab)}` }
-    }
-    for (let i = 1; i <= 7; i++) {
-      const proximo = (diaSemana + i) % 7
-      if (isDiaAtivo(proximo)) {
-        const { ab } = getHorarioDia(proximo)
-        const label = i === 1 ? 'amanhã' : DIAS_LABEL[proximo]
-        return { aberto: false, msg: `Fechado · abre ${label} às ${hhmm(ab)}`, curto: `Fechado · abre ${label} ${curtoHora(ab)}` }
-      }
-    }
-    return { aberto: false, msg: 'Fechado', curto: 'Fechado' }
-  } catch { return null }
+  const s = situacaoDaLoja(horarioJson)
+  if (!s) return null
+  if (s.aberto) return { aberto: true, msg: `Aberto agora · até ${horaTexto(s.fecha)}`, curto: `Aberto · até ${curtoHora(s.fecha)}` }
+  if (!s.abre) return { aberto: false, msg: 'Fechado', curto: 'Fechado' }
+  const ab = s.abre.minutos
+  if (s.abre.dias === 0) return { aberto: false, msg: `Fechado · abre hoje às ${horaTexto(ab)}`, curto: `Fechado · abre ${curtoHora(ab)}` }
+  const label = s.abre.dias === 1 ? 'amanhã' : DIAS_LABEL[s.abre.diaSemana]
+  return { aberto: false, msg: `Fechado · abre ${label} às ${horaTexto(ab)}`, curto: `Fechado · abre ${label} ${curtoHora(ab)}` }
 }
 
 /** Endereço do jeito que a loja escolheu em Dados da loja (Completo · Só a cidade · Não mostrar) */

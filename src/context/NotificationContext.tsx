@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { carregarNotificacoes, marcarLidas } from "@/lib/notificacoesUsuario";
 
 interface Notification {
@@ -22,14 +22,21 @@ interface NotificationContextType {
 }
 
 const NotificationContext = createContext<NotificationContextType | null>(null);
+/** "Estou usando as notificações": devolve a função que avisa que parou de usar. */
+const UsarContext = createContext<(() => () => void) | null>(null);
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const [notifCount, setNotifCount] = useState(0);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notificacoes, setNotificacoes] = useState<Notification[]>([]);
   const notifRef = useRef<HTMLDivElement>(null);
+  // (11/10) Só busca enquanto alguma tela estiver usando useNotifications(). Hoje nenhuma usa, e este provider envolve o
+  // app inteiro (até o cardápio público): eram 3 requisições por minuto, pra sempre, por um resultado que ninguém lia.
+  const [telasUsando, setTelasUsando] = useState(0);
+  const usar = useCallback(() => { setTelasUsando(n => n + 1); return () => setTelasUsando(n => Math.max(0, n - 1)); }, []);
 
   useEffect(() => {
+    if (telasUsando === 0) return;
     // Conta as não lidas (guardado na conta, não só no aparelho) e atualiza quando algo muda
     const load = async () => {
       const lista = await carregarNotificacoes(30);
@@ -38,9 +45,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     };
     load();
     window.addEventListener("doonly:notif-mudou", load);
-    const t = window.setInterval(load, 60000);
+    const t = window.setInterval(() => { if (document.visibilityState === "visible") load(); }, 60000);
     return () => { window.removeEventListener("doonly:notif-mudou", load); window.clearInterval(t); };
-  }, []);
+  }, [telasUsando === 0]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -64,13 +71,16 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   return (
     <NotificationContext.Provider value={{ notifCount, notifOpen, notificacoes, notifRef, openNotif, closeNotif, toggleNotif }}>
-      {children}
+      <UsarContext.Provider value={usar}>{children}</UsarContext.Provider>
     </NotificationContext.Provider>
   );
 }
 
 export function useNotifications() {
   const ctx = useContext(NotificationContext);
+  const usar = useContext(UsarContext);
   if (!ctx) throw new Error("useNotifications must be used within NotificationProvider");
+  // a busca das notificações liga quando a primeira tela usa este hook e desliga quando a última sai
+  useEffect(() => usar?.(), [usar]);
   return ctx;
 }

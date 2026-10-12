@@ -4,6 +4,9 @@
  * Botões (10/10): sempre verbo de ação, os mesmos da tela do pedido (VERBOS).
  * A mesma regra vale pro cartão do celular, a linha do computador e o quadro.
  */
+import { pedidoAtrasado } from '@/lib/pedidoStatus'
+import { pesoLivre } from '@/lib/itemPedido'
+
 export type PedidoItem = {
   nome_produto: string; quantidade: number; valor_unitario: number
   observacoes?: string
@@ -111,9 +114,9 @@ export const terminou = (p: Pedido) => ['entregue', 'cancelado'].includes(grupoD
 export function dataISO(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
-export function atrasado(p: Pedido): boolean {
-  if (['concluido', 'cancelado', 'excluido', 'entregue'].includes(p.status)) return false
-  return !!p.data_entrega && p.data_entrega.slice(0, 10) < dataISO(new Date())
+/** (11/10) A regra é uma só, a de lib/pedidoStatus: a data passou E o pedido ainda não ficou pronto. */
+export function atrasado(p: Pick<Pedido, 'data_entrega' | 'status'>): boolean {
+  return pedidoAtrasado(p)
 }
 
 // ── Quanto já entrou e quanto falta (Financeiro · Passo 0) ──
@@ -183,8 +186,30 @@ export const nomeCliente = (p: Pedido) => (p.cliente_nome ? nomeDeGente(p.client
 export function itensOrdenados(p: Pedido): PedidoItem[] {
   return [...(p.pedido_itens || [])].sort((a, b) => (b.valor_unitario || 0) * (b.quantidade || 1) - (a.valor_unitario || 0) * (a.quantidade || 1))
 }
-/** Forma de venda do item: a do produto (lista) ou a que veio no próprio item (nova venda) */
-export const formaDoItem = (it: { forma_venda?: string | null; produtos?: { forma_venda?: string | null } | null }) => it.produtos?.forma_venda || it.forma_venda || null
+/**
+ * Forma de venda do item: a do produto (lista) ou a que veio no próprio item (nova venda).
+ * (11/10) Produto por kg só conta em kg quando é PESO LIVRE. Com tamanho escolhido ("M · 2 kg") ou kit,
+ * a quantidade é de unidades: devolve null e o item sai como "1x Bolo red velvet · M (2 kg)", não "1 kg".
+ */
+export const formaDoItem = (it: { forma_venda?: string | null; personalizacoes?: any; produtos?: { forma_venda?: string | null } | null }) => {
+  const forma = it.produtos?.forma_venda || it.forma_venda || null
+  return forma === 'kg' && !pesoLivre(it, forma) ? null : forma
+}
+/** O tamanho escolhido no item, pra ir junto do nome: "M (2 kg)". Vazio quando o item não tem tamanho. */
+export function tamanhoDoItem(it: { personalizacoes?: any }): string {
+  let pers = it?.personalizacoes
+  if (typeof pers === 'string') { try { pers = JSON.parse(pers) } catch { pers = null } }
+  const t = pers?.tamanho ?? pers?.escolhas?.tamanho
+  const nome = String((typeof t === 'string' ? t : t?.nome) || '').trim()
+  if (!nome) return ''
+  const peso = Number(t?.peso_kg) || 0
+  return peso > 0 && !/kg/i.test(nome) ? `${nome} (${numeroBR(peso)} kg)` : nome
+}
+/** Nome do item com o tamanho: "Bolo red velvet · M (2 kg)" */
+export function nomeDoItem(it: { nome_produto?: string | null; personalizacoes?: any }): string {
+  const nome = nomeDeProduto(it?.nome_produto || ''), tam = tamanhoDoItem(it)
+  return tam ? `${nome} · ${tam}` : nome
+}
 const numeroBR = (q: number) => (Number.isInteger(q) ? String(q) : q.toLocaleString('pt-BR', { maximumFractionDigits: 3 }))
 /**
  * Quantidade junto do nome, conforme a forma de venda (10/10):
@@ -208,7 +233,7 @@ export function itemComQtd(nome: string, qtd: number, forma?: string | null, sem
 export function resumoItens(p: Pedido): string {
   const it = itensOrdenados(p)
   if (!it.length) return 'Sem itens'
-  return `${itemComQtd(nomeDeProduto(it[0].nome_produto), it[0].quantidade || 1, formaDoItem(it[0]), true)}${it.length > 1 ? ` e mais ${it.length - 1}` : ''}`
+  return `${itemComQtd(nomeDoItem(it[0]), it[0].quantidade || 1, formaDoItem(it[0]), true)}${it.length > 1 ? ` e mais ${it.length - 1}` : ''}`
 }
 export function fotoDoItem(it?: PedidoItem): string | null {
   const f = String(it?.imagem_url || it?.produtos?.imagem_url || '')

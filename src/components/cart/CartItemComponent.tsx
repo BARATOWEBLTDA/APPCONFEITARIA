@@ -1,7 +1,7 @@
 import { Cake, Minus, Plus, Trash } from '@phosphor-icons/react'
 import { CartItem } from '@/types/cart'
 import { formatCurrency } from '@/utils/helpers'
-import { detalhesItem, kgLivre } from '@/lib/itemSacola'
+import { detalhesItem, kgLivre, valorLinha } from '@/lib/itemSacola'
 import { sufixoVenda, unidadeCliente } from '@/lib/formaVenda'
 
 /**
@@ -63,7 +63,7 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove, cor = '#E8
         ) : null}
         {detalhes.length > 0 && <small>{detalhes.join(' · ')}</small>}
         {item.observations && <small className="sc-it-obs">Obs.: {item.observations}</small>}
-        <strong>{formatCurrency(item.price * item.quantity)}{unidade && item.quantity === 1 && <em className="sc-it-un"> {unidade}</em>}</strong>
+        <strong>{formatCurrency(valorLinha(item))}{unidade && item.quantity === 1 && <em className="sc-it-un"> {unidade}</em>}</strong>
         {livre && <small>{formatCurrency(item.price)} por kg</small>}
         {unidade && item.quantity !== 1 && <small>{formatCurrency(item.price)} {unidade}</small>}
       </div>

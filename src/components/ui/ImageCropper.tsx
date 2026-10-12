@@ -29,14 +29,29 @@ const createImage = (url: string): Promise<HTMLImageElement> =>
     img.src = url
   })
 
+const LADO_MAXIMO = 1600
+
 async function getCroppedImg(imageSrc: string, pixelCrop: any): Promise<Blob> {
   const image = await createImage(imageSrc)
   const canvas = document.createElement('canvas')
-  const ctx = canvas.getContext('2d')!
-  canvas.width = pixelCrop.width
-  canvas.height = pixelCrop.height
-  ctx.drawImage(image, pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height, 0, 0, pixelCrop.width, pixelCrop.height)
-  return new Promise(resolve => canvas.toBlob(blob => resolve(blob!), 'image/jpeg', 0.92))
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('sem canvas')
+  // (11/10) Teto de 1600 px no lado maior: foto de 24 MP passava do limite de canvas do Safari e saía um arquivo quebrado
+  const maior = Math.max(pixelCrop.width, pixelCrop.height)
+  if (!(maior > 0)) throw new Error('recorte vazio')
+  const escala = Math.min(1, LADO_MAXIMO / maior)
+  canvas.width = Math.max(1, Math.round(pixelCrop.width * escala))
+  canvas.height = Math.max(1, Math.round(pixelCrop.height * escala))
+  // (11/10) Fundo branco: o jpg não tem transparência e o PNG transparente saía com fundo preto
+  ctx.fillStyle = '#fff'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+  ctx.imageSmoothingQuality = 'high'
+  ctx.drawImage(image, pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height, 0, 0, canvas.width, canvas.height)
+  // (11/10) Sem foto pronta (blob nulo ou vazio), recusa: quem chama avisa e não envia nada
+  return new Promise((resolve, reject) => canvas.toBlob(
+    blob => (blob && blob.size > 0 ? resolve(blob) : reject(new Error('foto não ficou pronta'))),
+    'image/jpeg', 0.92,
+  ))
 }
 
 export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCancel, onCropDone }: Props) {
@@ -61,8 +76,9 @@ export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCanc
       const blob = await getCroppedImg(imageSrc, croppedAreaPixels)
       onCropDone(blob)
     } catch (e) {
+      // (11/10) não chama onCropDone: nada é enviado
       console.error(e)
-      avisar('Não deu pra usar essa foto. Tente outra.', { tipo: 'erro' })
+      avisar('Não deu pra preparar a foto. Tente outra imagem.', { tipo: 'erro' })
     }
     setLoading(false)
   }

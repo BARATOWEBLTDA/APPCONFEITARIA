@@ -57,7 +57,53 @@
       @media (min-width:768px){.ab-masc{width:170px}.ab-nome{width:210px;margin-top:14px}.ab-pontos{margin-top:32px}}
       @media (max-height:500px){.ab-masc{width:96px}.ab-nome{width:104px;margin-top:8px}.ab-pontos{margin-top:16px}.ab-frase{bottom:calc(12px + env(safe-area-inset-bottom,0px))}}
       @media (prefers-reduced-motion:reduce){.ab-pontos i{animation:none;opacity:.85;transform:none}#abertura{transition:none}}
+      /* plano B (11/10): o app não carregou */
+      .ab-erro{max-width:280px;margin:24px 0 0;text-align:center;line-height:1.4;font-family:Geist,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;font-weight:500;color:#fff}
+      .ab-botao{min-height:48px;margin-top:16px;padding:0 24px;border:0;border-radius:12px;background:#fff;color:#4B1528;font-family:Geist,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;font-weight:700;cursor:pointer}
+      #plano-b{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:#fff;text-align:center;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;font-weight:500;line-height:1.4;color:#333}
+      #plano-b button{min-height:48px;margin-top:16px;padding:0 24px;border:0;border-radius:12px;background:#222;color:#fff;font:inherit;font-weight:700;cursor:pointer}
     </style>
+    <script>
+      // Plano B da abertura (11/10): se o arquivo principal do app não carregar (internet caiu no meio, arquivo antigo
+      // que não existe mais), a abertura ficava presa pra sempre, porque o limite de 8 s vive dentro desse arquivo.
+      // Depois de 12 s sem o app na tela, aparece o aviso com "Tentar de novo". Se o app carregar depois, ele assume.
+      setTimeout(function () {
+        var raiz = document.getElementById('root');
+        if (raiz && raiz.firstChild) return; // o app já está na tela
+        var frase = 'Não deu pra abrir. Confira a internet.';
+        var botao = document.createElement('button');
+        botao.type = 'button';
+        botao.textContent = 'Tentar de novo';
+        botao.onclick = function () { window.location.reload(); };
+        var ab = document.getElementById('abertura');
+        if (ab && !document.documentElement.hasAttribute('data-no-splash')) {
+          if (ab.className.indexOf('saindo') >= 0) return;
+          var meio = ab.querySelector('.ab-meio');
+          var pontos = ab.querySelector('.ab-pontos');
+          var embaixo = ab.querySelector('.ab-frase');
+          if (!meio) return;
+          if (pontos) pontos.style.display = 'none';
+          if (embaixo) embaixo.style.display = 'none';
+          var p = document.createElement('p');
+          p.className = 'ab-erro';
+          p.textContent = frase;
+          botao.className = 'ab-botao';
+          meio.appendChild(p);
+          meio.appendChild(botao);
+          ab.setAttribute('role', 'alert');
+          ab.setAttribute('aria-label', frase);
+          return;
+        }
+        // cardápio da cliente (sem a abertura do Doonly): aviso simples, sem a marca
+        var b = document.createElement('div');
+        b.id = 'plano-b';
+        b.setAttribute('role', 'alert');
+        b.appendChild(document.createTextNode(frase));
+        b.appendChild(botao);
+        document.body.appendChild(b);
+        if (raiz && window.MutationObserver) new MutationObserver(function () { if (raiz.firstChild) b.remove(); }).observe(raiz, { childList: true });
+      }, 12000);
+    </script>
     <script type="module" src="/src/main.tsx"></script>
     <script>
       if ('serviceWorker' in navigator) {

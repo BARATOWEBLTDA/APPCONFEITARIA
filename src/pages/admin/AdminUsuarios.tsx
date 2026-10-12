@@ -2,10 +2,13 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { Plus, MagnifyingGlass, X, Crown, Lock, LockOpen, Trash, Users, UserPlus } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Campo, Janela, TelaVazia, avisar, confirmar, informar } from "@/components/base";
+import { buscarTudo } from "@/lib/buscarTudo";
+import { explicarErro } from "@/lib/erros";
 
 export default function AdminUsuarios() {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [erroCarregar, setErroCarregar] = useState("");
   const [search, setSearch] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<any | null>(null);
   const [confirmBlock, setConfirmBlock] = useState<any | null>(null);
@@ -20,17 +23,22 @@ export default function AdminUsuarios() {
   useEffect(() => { load(); }, []);
 
   const load = async () => {
-    setLoading(true);
-    const { data } = await supabase.from("admin_users").select("*").order("created_at", { ascending: false });
+    setLoading(true); setErroCarregar("");
+    // (11/10) De 1.000 em 1.000 (o banco corta em 1.000 linhas sem avisar) e conferindo os erros:
+    // antes, se a leitura dos planos falhava, todo mundo aparecia como Grátis.
+    const { data, error } = await buscarTudo<any>((de, ate) =>
+      supabase.from("admin_users").select("*").order("created_at", { ascending: false }).order("id").range(de, ate));
+    if (error) { setErroCarregar(explicarErro(error, "Tente de novo em instantes.")); setLoading(false); return; }
     // Mescla plano e pro_expira_em vindos de profiles (caso a view admin_users não inclua)
-    const ids = (data || []).map(u => u.id).filter(Boolean);
-    if (ids.length) {
-      const { data: planos } = await supabase.from("profiles").select("id, plano, pro_expira_em, indicado_por").in("id", ids);
-      const mapa = new Map((planos || []).map(p => [p.id, p]));
-      setUsers((data || []).map(u => ({ ...u, ...(mapa.get(u.id) || {}) })));
-    } else {
-      setUsers(data || []);
+    // em lotes de 100: com todos os ids num pedido só, o endereço ficava grande demais
+    const ids = data.map(u => u.id).filter(Boolean);
+    const mapa = new Map<string, any>();
+    for (let i = 0; i < ids.length; i += 100) {
+      const { data: planos, error: erroPlanos } = await supabase.from("profiles").select("id, plano, pro_expira_em, indicado_por").in("id", ids.slice(i, i + 100));
+      if (erroPlanos) { setErroCarregar(explicarErro(erroPlanos, "Tente de novo em instantes.")); setLoading(false); return; }
+      (planos || []).forEach(p => mapa.set(p.id, p));
     }
+    setUsers(data.map(u => ({ ...u, ...(mapa.get(u.id) || {}) })));
     setLoading(false);
   };
 
@@ -203,6 +211,14 @@ export default function AdminUsuarios() {
 
         {loading ? (
           <div className="au-esq" aria-busy="true"><span /><span /><span /><span /></div>
+        ) : erroCarregar ? (
+          <TelaVazia
+            compacta
+            icone={<Users size={30} />}
+            titulo="Não deu pra carregar os usuários"
+            texto={erroCarregar}
+            acao={<Botao tamanho="m" onClick={() => load()}>Tentar de novo</Botao>}
+          />
         ) : filtered.length === 0 ? (
           <TelaVazia
             compacta

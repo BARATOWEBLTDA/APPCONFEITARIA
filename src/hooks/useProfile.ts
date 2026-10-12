@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { desfazerPushDesteAparelho } from "@/hooks/usePushSubscription";
 
 export interface Profile {
   id: string;
@@ -211,6 +212,8 @@ export function clearProfileCache() {
  * Devolve true quando não sobrou sessão neste aparelho (só aí a tela pode ir pro login).
  */
 export async function sairDaConta(): Promise<boolean> {
+  // (11/10) este aparelho para de receber os avisos da conta. Espera no máximo 2,5 s: nunca trava o sair.
+  try { await Promise.race([desfazerPushDesteAparelho(), new Promise(r => setTimeout(r, 2500))]); } catch { /* segue */ }
   let erro: unknown;
   try { erro = (await supabase.auth.signOut()).error; } catch (e) { erro = e; }
   if (erro) {
@@ -222,7 +225,13 @@ export async function sairDaConta(): Promise<boolean> {
     } catch { /* sem acesso ao armazenamento */ }
   }
   const saiu = !usuarioLogadoNoAparelho();
-  if (saiu) clearProfileCache();
+  if (saiu) {
+    clearProfileCache();
+    // (11/10) as conversas com a Doo não ficam guardadas no aparelho depois de sair
+    try {
+      Object.keys(localStorage).filter(k => k.startsWith("doonly_doo_conversa_")).forEach(k => localStorage.removeItem(k));
+    } catch { /* sem acesso ao armazenamento */ }
+  }
   return saiu;
 }
 

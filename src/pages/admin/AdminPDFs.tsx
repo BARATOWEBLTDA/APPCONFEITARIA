@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
-import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, confirmar } from "@/components/base";
+import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
+import { explicarErro } from "@/lib/erros";
+
+/** (11/10) nome seguro pro caminho do arquivo: só a hora e a extensão (nome com acento ou espaço quebrava o envio) */
+const extensaoSegura = (nome: string, padrao: string) => (nome.includes(".") ? nome.split(".").pop() || "" : "").toLowerCase().replace(/[^a-z0-9]/g, "") || padrao;
 import { Camera, CheckCircle, Eye, FilePdf, PencilSimple, Paperclip, Plus, Trash } from "@phosphor-icons/react";
 import "./adminPDFs.css";
 
@@ -15,6 +19,9 @@ export default function AdminPDFs() {
   const [capaPreview, setCapaPreview] = useState<string | null>(null);
   const [pdfName, setPdfName] = useState("");
   const [saving, setSaving] = useState(false);
+  // (11/10) quantos arquivos ainda estão subindo: o Publicar espera
+  const [enviando, setEnviando] = useState(0);
+  const salvandoRef = useRef(false);
   const capaRef = useRef<HTMLInputElement>(null);
   const pdfRef = useRef<HTMLInputElement>(null);
 
@@ -30,32 +37,58 @@ export default function AdminPDFs() {
   const handleCapa = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    e.target.value = "";
     setCapaPreview(URL.createObjectURL(file));
-    const path = `pdfs/capas/${Date.now()}.${file.name.split(".").pop()}`;
-    const { error } = await supabase.storage.from("profiles").upload(path, file, { upsert: true });
+    const path = `pdfs/capas/${Date.now()}.${extensaoSegura(file.name, "jpg")}`;
+    setEnviando(n => n + 1);
+    let error: unknown = null;
+    try { error = (await supabase.storage.from("profiles").upload(path, file, { upsert: true })).error; } catch (err) { error = err; }
+    setEnviando(n => n - 1);
     if (!error) {
       const { data } = supabase.storage.from("profiles").getPublicUrl(path);
       setForm(f => ({ ...f, capa_url: data.publicUrl }));
+    } else {
+      // (11/10) antes a falha era ignorada e o PDF era publicado sem a capa
+      setCapaPreview(form.capa_url || null);
+      avisar(explicarErro(error, "Não deu pra enviar a capa. Tente de novo."), { tipo: "erro" });
     }
   };
 
   const handlePdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    e.target.value = "";
+    const nomeAntes = pdfName;
     setPdfName(file.name);
-    const path = `pdfs/arquivos/${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage.from("profiles").upload(path, file, { upsert: true });
+    const path = `pdfs/arquivos/${Date.now()}.${extensaoSegura(file.name, "pdf")}`;
+    setEnviando(n => n + 1);
+    let error: unknown = null;
+    try { error = (await supabase.storage.from("profiles").upload(path, file, { upsert: true })).error; } catch (err) { error = err; }
+    setEnviando(n => n - 1);
     if (!error) {
       const { data } = supabase.storage.from("profiles").getPublicUrl(path);
       setForm(f => ({ ...f, pdf_url: data.publicUrl }));
+    } else {
+      // (11/10) antes a falha era ignorada e o material era publicado sem arquivo
+      setPdfName(nomeAntes);
+      avisar(explicarErro(error, "Não deu pra enviar o PDF. Tente de novo."), { tipo: "erro" });
     }
   };
 
   const handleSave = async () => {
-    if (!form.titulo.trim()) return;
+    if (!form.titulo.trim() || enviando > 0 || salvandoRef.current) return;
+    if (!form.pdf_url) { avisar("Escolha o arquivo PDF antes de publicar.", { tipo: "erro" }); return; }
+    salvandoRef.current = true;
     setSaving(true);
-    if (editId) await supabase.from("biblioteca_pdf").update(form).eq("id", editId);
-    else await supabase.from("biblioteca_pdf").insert(form);
+    // (11/10) só fecha e limpa se gravou (antes fechava mesmo com erro, e o que foi preenchido se perdia)
+    let error: unknown = null;
+    try {
+      error = editId
+        ? (await supabase.from("biblioteca_pdf").update(form).eq("id", editId)).error
+        : (await supabase.from("biblioteca_pdf").insert(form)).error;
+    } catch (err) { error = err; }
+    salvandoRef.current = false;
+    if (error) { setSaving(false); avisar(explicarErro(error, "Não deu pra salvar o PDF. Tente de novo."), { tipo: "erro" }); return; }
     await load();
     setShowForm(false); setForm(emptyForm); setEditId(null); setCapaPreview(null); setPdfName(""); setSaving(false);
   };
@@ -70,7 +103,8 @@ export default function AdminPDFs() {
 
   const handleDelete = async (id: string) => {
     if (!(await confirmar({ titulo: "Excluir este PDF?", texto: "Ele some da biblioteca do app.", rotulo: "Excluir", perigo: true }))) return;
-    await supabase.from("biblioteca_pdf").delete().eq("id", id);
+    const { error } = await supabase.from("biblioteca_pdf").delete().eq("id", id);
+    if (error) { avisar(explicarErro(error, "Não deu pra excluir. Tente de novo."), { tipo: "erro" }); return; }
     load();
   };
 
@@ -131,7 +165,7 @@ export default function AdminPDFs() {
         acoes={
           <>
             <Botao variante="secundario" onClick={() => setShowForm(false)}>Cancelar</Botao>
-            <Botao onClick={handleSave} carregando={saving} disabled={!form.titulo.trim()}>{editId ? "Salvar" : "Publicar"}</Botao>
+            <Botao onClick={handleSave} carregando={saving} disabled={!form.titulo.trim() || enviando > 0}>{enviando > 0 ? "Enviando o arquivo…" : editId ? "Salvar" : "Publicar"}</Botao>
           </>
         }
       >

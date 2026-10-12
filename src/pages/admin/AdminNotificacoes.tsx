@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
-import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, confirmar } from "@/components/base";
+import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
+import { explicarErro } from "@/lib/erros";
 import { Bell, Camera, PaperPlaneTilt, Plus, Trash } from "@phosphor-icons/react";
 import "./adminNotificacoes.css";
 
@@ -19,6 +20,8 @@ export default function AdminNotificacoes() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ titulo: "", mensagem: "", tag: "", imagem_url: "" });
   const [saving, setSaving] = useState(false);
+  const [enviandoImagem, setEnviandoImagem] = useState(false); // (11/10) a imagem ainda está subindo: o Enviar espera
+  const enviandoRef = useRef(false);
   const [preview, setPreview] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -26,34 +29,55 @@ export default function AdminNotificacoes() {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase.from("notificacoes").select("*").order("created_at", { ascending: false });
-    setNotificacoes(data || []);
+    // (11/10) só os avisos gerais (user_id vazio): antes a lista misturava os avisos pessoais de todas as contas
+    const { data, error } = await supabase.from("notificacoes").select("*").is("user_id", null).order("created_at", { ascending: false });
+    if (error) avisar(explicarErro(error, "Não deu pra carregar as notificações."), { tipo: "erro" });
+    else setNotificacoes(data || []);
     setLoading(false);
   };
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    e.target.value = "";
     setPreview(URL.createObjectURL(file));
-    const path = `notificacoes/${Date.now()}.${file.name.split(".").pop()}`;
-    const { error } = await supabase.storage.from("profiles").upload(path, file, { upsert: true });
+    // (11/10) nome seguro no caminho (só a hora e a extensão) e o Enviar espera a imagem subir
+    const ext = (file.name.includes(".") ? file.name.split(".").pop() || "" : "").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+    const path = `notificacoes/${Date.now()}.${ext}`;
+    setEnviandoImagem(true);
+    let error: unknown = null;
+    try { error = (await supabase.storage.from("profiles").upload(path, file, { upsert: true })).error; } catch (err) { error = err; }
+    setEnviandoImagem(false);
     if (!error) {
       const { data } = supabase.storage.from("profiles").getPublicUrl(path);
       setForm(f => ({ ...f, imagem_url: data.publicUrl }));
+    } else {
+      setPreview(form.imagem_url || null);
+      avisar(explicarErro(error, "Não deu pra enviar a imagem. Tente de novo."), { tipo: "erro" });
     }
   };
 
   const handleSend = async () => {
-    if (!form.titulo.trim()) return;
+    if (!form.titulo.trim() || enviandoImagem || enviandoRef.current) return;
+    enviandoRef.current = true; // toque duplo não manda duas vezes
     setSaving(true);
 
     // 1. Salva na tabela notificacoes (pra histórico + sininho in-app)
-    await supabase.from("notificacoes").insert({
-      titulo: form.titulo,
-      mensagem: form.mensagem,
-      tag: form.tag || null,
-      imagem_url: form.imagem_url || null,
-    });
+    let erroGravar: unknown = null;
+    try {
+      erroGravar = (await supabase.from("notificacoes").insert({
+        titulo: form.titulo,
+        mensagem: form.mensagem,
+        tag: form.tag || null,
+        imagem_url: form.imagem_url || null,
+      })).error;
+    } catch (err) { erroGravar = err; }
+    // (11/10) não gravou: não dispara o push nem fecha o formulário
+    if (erroGravar) {
+      enviandoRef.current = false; setSaving(false);
+      avisar(explicarErro(erroGravar, "Não deu pra enviar a notificação. Tente de novo."), { tipo: "erro" });
+      return;
+    }
 
     // 2. Dispara Web Push real pra todos os subscribers
     try {
@@ -66,12 +90,14 @@ export default function AdminNotificacoes() {
           url: "/",
         },
       });
-      if (error) console.error("Push error:", error);
+      if (error) { console.error("Push error:", error); avisar("A notificação ficou salva no app, mas o aviso no celular não saiu.", { tipo: "info", duracao: 6000 }); }
       else console.log("Push result:", data);
     } catch (err) {
       console.warn("Push dispatch failed (notifications still saved in-app):", err);
+      avisar("A notificação ficou salva no app, mas o aviso no celular não saiu.", { tipo: "info", duracao: 6000 });
     }
 
+    enviandoRef.current = false;
     await load();
     setShowForm(false);
     setForm({ titulo: "", mensagem: "", tag: "", imagem_url: "" });
@@ -81,7 +107,8 @@ export default function AdminNotificacoes() {
 
   const handleDelete = async (id: string) => {
     if (!(await confirmar({ titulo: "Excluir notificação?", texto: "Ela some para todas as confeiteiras.", rotulo: "Excluir", perigo: true }))) return;
-    await supabase.from("notificacoes").delete().eq("id", id);
+    const { error } = await supabase.from("notificacoes").delete().eq("id", id);
+    if (error) { avisar(explicarErro(error, "Não deu pra excluir. Tente de novo."), { tipo: "erro" }); return; }
     load();
   };
 
@@ -142,7 +169,7 @@ export default function AdminNotificacoes() {
         acoes={
           <>
             <Botao variante="secundario" onClick={() => setShowForm(false)}>Cancelar</Botao>
-            <Botao icone={<PaperPlaneTilt size={20} weight="bold" />} onClick={handleSend} carregando={saving} disabled={!form.titulo.trim()}>Enviar para todas</Botao>
+            <Botao icone={<PaperPlaneTilt size={20} weight="bold" />} onClick={handleSend} carregando={saving} disabled={!form.titulo.trim() || enviandoImagem}>{enviandoImagem ? "Enviando a imagem…" : "Enviar para todas"}</Botao>
           </>
         }
       >

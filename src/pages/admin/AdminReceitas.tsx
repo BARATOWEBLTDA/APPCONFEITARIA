@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { Botao, Janela, TelaVazia, Titulo, confirmar } from "@/components/base";
+import { Botao, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
+import { explicarErro } from "@/lib/erros";
 import { Cake, CheckCircle, MagnifyingGlass, Trash, X, XCircle } from "@phosphor-icons/react";
 import "./adminReceitas.css";
 
@@ -37,14 +38,17 @@ export default function AdminReceitas() {
   const fechar = () => setAberta(false);
 
   const handleStatus = async (id: string, status: Status) => {
-    await supabase.from("receitas_comunidade").update({ status }).eq("id", id);
+    // (11/10) só fecha se gravou (antes fechava mesmo com erro e a receita continuava como estava)
+    const { error } = await supabase.from("receitas_comunidade").update({ status }).eq("id", id);
+    if (error) { avisar(explicarErro(error, "Não deu pra salvar. Tente de novo."), { tipo: "erro" }); return; }
     fechar();
     load();
   };
 
   const handleDelete = async (id: string) => {
     if (!(await confirmar({ titulo: "Excluir esta receita?", texto: "Ela some do app e não dá pra desfazer.", rotulo: "Excluir", perigo: true }))) return;
-    await supabase.from("receitas_comunidade").delete().eq("id", id);
+    const { error } = await supabase.from("receitas_comunidade").delete().eq("id", id);
+    if (error) { avisar(explicarErro(error, "Não deu pra excluir. Tente de novo."), { tipo: "erro" }); return; }
     fechar();
     load();
   };

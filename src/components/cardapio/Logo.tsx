@@ -1,5 +1,6 @@
 import { SeloVerificado } from './SeloVerificado'
 import { useState } from 'react'
+import { situacaoDaLoja, horaTexto } from '@/lib/agendaCardapio'
 
 interface LogoProps {
   logoUrl?: string
@@ -14,63 +15,18 @@ interface LogoProps {
   hideStars?: boolean
 }
 
-const DIAS_MAP: Record<string, number> = {
-  "Segunda": 1, "Terça": 2, "Quarta": 3, "Quinta": 4,
-  "Sexta": 5, "Sábado": 6, "Domingo": 0
-}
 const DIAS_LABEL = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"]
 
-function getStatusLoja(horarioJson: string | null) {
-  if (!horarioJson) return null
-  try {
-    const h = typeof horarioJson === 'string' ? JSON.parse(horarioJson) : horarioJson
-    const now = new Date()
-    const diaSemana = now.getDay() // 0=dom, 1=seg...
-    const horaAtual = now.getHours() * 60 + now.getMinutes()
-
-    const toMin = (t: string) => {
-      const [hh, mm] = t.split(':').map(Number)
-      return hh * 60 + mm
-    }
-
-    const isDiaAtivo = (dia: number) => {
-      if (dia === 6 && h.abre_sabado) return true
-      if (dia === 0 && h.abre_domingo) return true
-      return (h.dias || []).some((d: string) => DIAS_MAP[d] === dia)
-    }
-
-    // 10/10: fechar às "00:00" é fechar no fim do dia (24:00). Antes a loja aparecia sempre fechada.
-    const fim = (t: string) => toMin(t) || 1440
-    const getHorarioDia = (dia: number) => {
-      if (dia === 6 && h.abre_sabado) return { ab: toMin(h.sabado_abertura || '09:00'), fe: fim(h.sabado_fechamento || '14:00') }
-      if (dia === 0 && h.abre_domingo) return { ab: toMin(h.domingo_abertura || '09:00'), fe: fim(h.domingo_fechamento || '14:00') }
-      return { ab: toMin(h.abertura || '08:00'), fe: fim(h.fechamento || '18:00') }
-    }
-
-    if (isDiaAtivo(diaSemana)) {
-      const { ab, fe } = getHorarioDia(diaSemana)
-      if (horaAtual >= ab && horaAtual < fe) return { aberto: true }
-      // Ainda hoje mas depois do fechamento — verifica próximo dia
-      if (horaAtual < ab) {
-        const abre = h.abertura || '08:00'
-        return { aberto: false, msg: `Abre hoje às ${abre}` }
-      }
-    }
-
-    // Procura próximo dia com funcionamento
-    for (let i = 1; i <= 7; i++) {
-      const proximo = (diaSemana + i) % 7
-      if (isDiaAtivo(proximo)) {
-        const { ab } = getHorarioDia(proximo)
-        const hh = Math.floor(ab / 60).toString().padStart(2, '0')
-        const mm = (ab % 60).toString().padStart(2, '0')
-        const label = i === 1 ? 'amanhã' : DIAS_LABEL[proximo]
-        return { aberto: false, msg: `Abre ${label} às ${hh}:${mm}` }
-      }
-    }
-
-    return { aberto: false, msg: 'Fechado' }
-  } catch { return null }
+// (11/10) a situação vem de UMA conta só (lib/agendaCardapio), a mesma do Modelo 1 e da Visão geral.
+// Antes este selo usava a abertura dos dias úteis no sábado e no domingo ("Abre hoje às 08:00" com a loja abrindo às 09:00)
+// e escrevia "Fechado · Fechado" quando a loja não abria em nenhum dia.
+function getStatusLoja(horarioJson: any): { aberto: boolean; msg?: string } | null {
+  const s = situacaoDaLoja(horarioJson)
+  if (!s) return null
+  if (s.aberto) return { aberto: true }
+  if (!s.abre) return { aberto: false, msg: '' }
+  const quando = s.abre.dias === 0 ? 'hoje' : s.abre.dias === 1 ? 'amanhã' : DIAS_LABEL[s.abre.diaSemana]
+  return { aberto: false, msg: `Abre ${quando} às ${horaTexto(s.abre.minutos)}` }
 }
 
 export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNome, avaliacaoMedia = 4.9, hideStars = false, configuracoes, verificada = false }: LogoProps) {
@@ -133,7 +89,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
             {status && (
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: status.aberto ? '#15803d' : '#dc2626' }}>
                 <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: status.aberto ? '#22c55e' : '#ef4444', flexShrink: 0 }} />
-                {status.aberto ? 'Aberto agora' : `Fechado · ${status.msg}`}
+                {status.aberto ? 'Aberto agora' : status.msg ? `Fechado · ${status.msg}` : 'Fechado'}
               </span>
             )}
             {status && !hideStars && <span style={{ color: '#D1D5DB' }}>·</span>}

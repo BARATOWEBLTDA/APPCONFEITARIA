@@ -64,18 +64,33 @@ self.addEventListener("push", (event) => {
 });
 
 // Ao clicar na notificação, abre/foca a janela do app
+// (11/10) Com o app aberto, NÃO recarrega mais a página (o client.navigate recarregava tudo e o que estava sendo
+// preenchido se perdia): traz a janela pra frente e pede pro app trocar de tela por dentro ({ tipo: "abrir", url }).
+// Se o app aberto não responder em 3 s (versão antiga, ainda sem esse ouvinte), faz como antes.
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const targetUrl = event.notification.data?.url || "/";
   event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientsArr) => {
-      for (const client of clientsArr) {
-        if ("focus" in client) {
-          client.navigate(targetUrl);
-          return client.focus();
-        }
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(async (clientsArr) => {
+      const client = clientsArr.find((c) => "focus" in c);
+      if (!client) {
+        if (self.clients.openWindow) return self.clients.openWindow(targetUrl);
+        return;
       }
-      if (self.clients.openWindow) return self.clients.openWindow(targetUrl);
+      // o foco vem primeiro: ele precisa acontecer logo depois do toque
+      let janela = client;
+      try { janela = (await client.focus()) || client; } catch (e) { /* segue com a janela que tem */ }
+      const ouviu = await new Promise((resolve) => {
+        try {
+          const canal = new MessageChannel();
+          canal.port1.onmessage = () => resolve(true);
+          janela.postMessage({ tipo: "abrir", url: targetUrl }, [canal.port2]);
+        } catch (e) { resolve(false); return; }
+        setTimeout(() => resolve(false), 3000);
+      });
+      if (!ouviu && "navigate" in janela) {
+        try { await janela.navigate(targetUrl); } catch (e) { /* janela de outro endereço: fica só com o foco */ }
+      }
     })
   );
 });

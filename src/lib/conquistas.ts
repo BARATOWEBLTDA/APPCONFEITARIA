@@ -1,5 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { criarNotificacaoPessoal } from "@/lib/notificacoesUsuario";
+import { erroDeConexao } from "@/lib/erros";
+import { faltaNoBanco } from "@/lib/pagamentos";
 
 /** As 24 conquistas do Doonly (aprovadas 30/09) */
 export type Metrica = "pedidos" | "pedidosCardapio" | "clientes" | "produtos" | "fichas" | "cardapio" | "pro" | "mesesPro";
@@ -43,12 +45,18 @@ const STATUS_ENTREGUE = ["entregue", "concluido"];
 // Evita rodar duas vezes ao mesmo tempo (ex.: Início e página abertos juntos)
 let emAndamento: Promise<ResultadoConquistas | null> | null = null;
 export function sincronizarConquistas(profile: any, isPro: boolean): Promise<ResultadoConquistas | null> {
-  if (!emAndamento) emAndamento = _sincronizar(profile, isPro).finally(() => { setTimeout(() => { emAndamento = null; }, 1500); });
+  if (!emAndamento) {
+    const esta = _sincronizar(profile, isPro);
+    emAndamento = esta;
+    // deu certo: segura a resposta 1,5 s (Início e página abertos juntos). Falhou: libera na hora, pro "Tentar de novo" buscar de verdade.
+    esta.then(() => { setTimeout(() => { if (emAndamento === esta) emAndamento = null; }, 1500); }, () => { if (emAndamento === esta) emAndamento = null; });
+  }
   return emAndamento;
 }
 async function _sincronizar(profile: any, isPro: boolean): Promise<ResultadoConquistas | null> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
+  const { data: { user }, error: eUser } = await supabase.auth.getUser();
+  // 11/10: sem internet a função LANÇA o erro (quem chama avisa "Não deu pra carregar"); null é só "ninguém logado"
+  if (!user) { if (erroDeConexao(eUser)) throw eUser; return null; }
   const uid = user.id;
   const [ped, pedC, cli, prods, est] = await Promise.all([
     supabase.from("pedidos").select("id", { count: "exact", head: true }).eq("user_id", uid).in("status", STATUS_ENTREGUE),
@@ -57,6 +65,9 @@ async function _sincronizar(profile: any, isPro: boolean): Promise<ResultadoConq
     supabase.from("produtos").select("id, produto_insumos(id)").eq("user_id", uid),
     supabase.from("conquistas_usuario").select("codigo, conquistada_em, vista, celebrada").eq("user_id", uid),
   ]);
+  // 11/10: leitura que falhou não vira "0 de 24" nem regrava conquistas (tabela ou coluna que ainda não existe segue como antes)
+  const falha = [ped, pedC, cli, prods, est].map(x => x.error).find(e => e && !faltaNoBanco(e));
+  if (falha) throw falha;
   const listaProd: any[] = (prods.data as any[]) || [];
   const feitas: Record<string, EstadoConquista> = {};
   ((est.data as any[]) || []).forEach(r => { feitas[r.codigo] = r; });
@@ -71,11 +82,14 @@ async function _sincronizar(profile: any, isPro: boolean): Promise<ResultadoConq
     pro: isPro ? 1 : 0,
     mesesPro: isPro && feitas["pro"] ? Math.floor((Date.now() - proDesde) / (30 * 86400000)) : 0,
   };
-  const primeiraVez = Object.keys(feitas).length === 0;
   const novas = CONQUISTAS.filter(q => !feitas[q.codigo] && valores[q.metrica] >= q.alvo);
+  // "Em silêncio" = a conta ainda não tem nenhuma conquista guardada e chegam VÁRIAS de uma vez (conta que já existia
+  // antes das conquistas): guarda tudo sem comemorar em massa. (11/10) Com UMA só é a primeira conquista de uma conta
+  // nova: ela comemora e avisa como as outras (antes nunca ganhava comemoração nem notificação).
+  const primeiraVez = Object.keys(feitas).length === 0 && novas.length > 1;
   if (novas.length) {
     const agora = new Date().toISOString();
-    // 1ª vez: registra o que ela já tinha em silêncio (só a mais recente ganha o cartão)
+    // em silêncio: registra o que ela já tinha (só a mais recente ganha o cartão)
     const linhas = novas.map((q, i) => ({ user_id: uid, codigo: q.codigo, conquistada_em: agora,
       vista: primeiraVez ? i !== novas.length - 1 : false, celebrada: primeiraVez }));
     const { error } = await supabase.from("conquistas_usuario").upsert(linhas, { onConflict: "user_id,codigo", ignoreDuplicates: true });

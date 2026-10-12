@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
 import { Package, Check, X } from "@phosphor-icons/react";
 import CampoNumero from "@/components/ui/CampoNumero";
-import { custoLegivel, salvarInsumoDoo, UNIDADES_INSUMO, EMBALAGENS_INSUMO, type RascunhoInsumo, type InsumoResumo } from "@/lib/insumosDoo";
+import { custoLegivel, procurarInsumoPorNome, salvarInsumoDoo, UNIDADES_INSUMO, EMBALAGENS_INSUMO, type RascunhoInsumo, type InsumoResumo } from "@/lib/insumosDoo";
 
 /**
  * Cartão de conferência do insumo (02/10): a Doo entende, mostra o que entendeu,
@@ -22,26 +22,40 @@ export default function CartaoInsumoDoo({ uid, rascunho, existente, estado, onFe
   // Foto: a mesma busca de imagem do cadastro manual, já feita ao abrir o cartão (insumo novo)
   const [fotos, setFotos] = useState<string[]>([]);
   const [buscando, setBuscando] = useState(false);
+  // (11/10) ingrediente que já existe mas a Doo não recebeu na lista: achado pelo nome, o cartão vira "Atualizar preço"
+  const [achado, setAchado] = useState<InsumoResumo | null>(null);
+  const [conferindo, setConferindo] = useState(estado === "pendente" && !rascunho.insumo_id);
   useEffect(() => {
-    if (estado !== "pendente" || rascunho.insumo_id || rascunho.nome.trim().length < 3) return;
+    if (estado !== "pendente" || rascunho.insumo_id) return;
     let cancel = false;
-    setBuscando(true);
-    apiFetch(`/api/buscar-imagem?q=${encodeURIComponent(`${rascunho.nome} ${rascunho.marca || ""}`.trim())}`)
-      .then(r => r.json())
-      .then(d => { if (!cancel && Array.isArray(d?.images)) { const l = d.images.slice(0, 3); setFotos(l); if (l[0]) setR(x => ({ ...x, imagem_url: x.imagem_url || l[0] })); } })
-      .catch(() => {})
-      .finally(() => { if (!cancel) setBuscando(false); });
+    // internet travada: depois de uns segundos o botão é liberado
+    const espera = window.setTimeout(() => { if (!cancel) setConferindo(false); }, 6000);
+    (async () => {
+      const ja = await procurarInsumoPorNome(uid, rascunho.nome, rascunho.marca).catch(() => null);
+      window.clearTimeout(espera);
+      if (cancel) return;
+      setConferindo(false);
+      if (ja) { setAchado(ja); setR(x => ({ ...x, insumo_id: ja.id, nome: ja.nome })); return; } // já existe: atualiza o preço; o nome e a foto ficam os do cadastro
+      if (rascunho.nome.trim().length < 3) return;
+      setBuscando(true);
+      apiFetch(`/api/buscar-imagem?q=${encodeURIComponent(`${rascunho.nome} ${rascunho.marca || ""}`.trim())}`)
+        .then(r => r.json())
+        .then(d => { if (!cancel && Array.isArray(d?.images)) { const l = d.images.slice(0, 3); setFotos(l); if (l[0]) setR(x => ({ ...x, imagem_url: x.imagem_url || l[0] })); } })
+        .catch(() => {})
+        .finally(() => { if (!cancel) setBuscando(false); });
+    })();
     return () => { cancel = true; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const atualizar = !!r.insumo_id;
+  const antes = existente || achado;
   const custo = custoLegivel(r.unidade, r.qtd_embalagem, r.valor_compra);
-  const custoAntes = existente ? custoLegivel(existente.unidade, existente.qtd_embalagem, existente.valor_compra) : "";
+  const custoAntes = antes ? custoLegivel(antes.unidade, antes.qtd_embalagem, antes.valor_compra) : "";
   const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
   const fmtQtd = (q: number, u: string) => `${String(q).replace(".", ",")} ${u}`;
 
   const salvar = async () => {
     setSalvando(true); setErro("");
-    const res = await salvarInsumoDoo(uid, r);
+    const res = await salvarInsumoDoo(uid, r, existente ? null : achado);
     setSalvando(false);
     if (res.ok === false) { setErro(res.erro); return; }
     onFeito("salvo", r);
@@ -66,7 +80,7 @@ export default function CartaoInsumoDoo({ uid, rascunho, existente, estado, onFe
         <dl className="cid-kv">
           <dt>Embalagem</dt><dd>{fmtQtd(r.qtd_embalagem, r.unidade)}{r.embalagem_tipo && r.embalagem_tipo !== "Avulso" ? ` · ${r.embalagem_tipo}` : ""}</dd>
           <dt>Você pagou</dt><dd>{brl(r.valor_compra)}</dd>
-          {atualizar && existente && <><dt>Antes</dt><dd className="cid-antes">{brl(existente.valor_compra)} · {custoAntes}</dd></>}
+          {atualizar && antes && <><dt>Antes</dt><dd className="cid-antes">{brl(antes.valor_compra)} · {custoAntes}</dd></>}
           <dt>Custo</dt><dd className="cid-custo">{custo || "—"}</dd>
         </dl>
       ) : (
@@ -102,7 +116,7 @@ export default function CartaoInsumoDoo({ uid, rascunho, existente, estado, onFe
       {erro && <p className="cid-erro">{erro}</p>}
       <div className="cid-bts">
         <button type="button" className="cid-b2" onClick={() => setEditando(e => !e)}>{editando ? "Pronto" : "Editar"}</button>
-        <button type="button" className="cid-b1" onClick={salvar} disabled={salvando || !(r.qtd_embalagem > 0) || !(r.valor_compra > 0) || !r.nome.trim()}>
+        <button type="button" className="cid-b1" onClick={salvar} disabled={salvando || conferindo || !(r.qtd_embalagem > 0) || !(r.valor_compra > 0) || !r.nome.trim()}>
           {salvando ? "Salvando…" : atualizar ? "Atualizar preço" : "Cadastrar ingrediente"}
         </button>
       </div>

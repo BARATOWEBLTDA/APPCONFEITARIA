@@ -1,4 +1,7 @@
-import { usuarioDoToken, respostaNaoAutorizado } from "./_auth";
+import { usuarioDoToken, respostaNaoAutorizado, respostaJson, lerCorpo, chaveAnthropic } from "./_auth";
+
+const LIMITE_CORPO = 64 * 1024;
+const MAX_PROMPT = 8000; // (11/10) um pedido de descrição nunca chega perto disso
 
 export const config = { runtime: "edge" };
 
@@ -11,9 +14,15 @@ export default async function handler(req: Request) {
   const usuario = await usuarioDoToken(req);
   if (!usuario) return respostaNaoAutorizado();
 
-  const { prompt } = await req.json();
+  const cru = await lerCorpo(req, LIMITE_CORPO);
+  let prompt: unknown;
+  try { prompt = cru === null ? null : JSON.parse(cru)?.prompt; } catch { return respostaJson({ error: "invalid_request_error" }, 400); }
+  if (cru !== null && (typeof prompt !== "string" || !prompt.trim())) return respostaJson({ error: "invalid_request_error" }, 400);
+  if (cru === null || (prompt as string).length > MAX_PROMPT) {
+    return respostaJson({ error: "too_large", message: "O texto ficou grande demais." }, 413);
+  }
 
-  const apiKey = (globalThis as any).process?.env?.VITE_ANTHROPIC_KEY ?? "";
+  const apiKey = chaveAnthropic();
 
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",

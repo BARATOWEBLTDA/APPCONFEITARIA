@@ -7,7 +7,8 @@ import { ArrowUp, ArrowDown, MagnifyingGlass, DownloadSimple, ArrowSquareOut, Ar
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, TelaVazia, avisar as avisarBase } from "@/components/base";
 import { erroDeConexao } from "@/lib/erros";
-import PeriodoFiltro, { periodoInicial, rotuloPeriodo, type Periodo } from "@/components/financeiro/PeriodoFiltro";
+import PeriodoFiltro, { iso as isoPeriodo, periodoInicial, rotuloPeriodo, type Periodo } from "@/components/financeiro/PeriodoFiltro";
+import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import DespesaSheet from "@/components/financeiro/DespesaSheet";
 import Folha, { FOLHA_CSS } from "@/components/financeiro/Folha";
 import { supabase } from "@/lib/supabase";
@@ -40,24 +41,41 @@ export default function FinanceiroTransacoes() {
 
   // 10/10: ao trocar de período rápido, só vale a resposta da última busca (a atrasada era aplicada por cima da nova)
   const numBusca = useRef(0);
-  const carregar = useCallback(async () => {
+  const carregouBem = useRef(false);
+  const carregar = useCallback(async (semPiscar?: unknown) => {
     const n = ++numBusca.current;
-    setCarregando(true);
+    // (11/10) atualização por trás que falha mantém o extrato que já está na tela
+    const quieto = semPiscar === true && carregouBem.current;
+    if (semPiscar !== true) setCarregando(true); // 11/10: ao voltar pro app, atualiza por trás, sem trocar a lista por "Carregando…"
     try {
       const { data: { user }, error } = await supabase.auth.getUser();
       if (n !== numBusca.current) return;
-      if (!user) { if (erroDeConexao(error)) { setErro(true); setCarregando(false); } return; }
+      if (!user) { if (erroDeConexao(error) && !quieto) { setErro(true); setCarregando(false); } return; }
       setUid(user.id);
       const r = await carregarExtrato(user.id, periodo.ini, periodo.fim);
       if (n !== numBusca.current) return;
+      if (r.erro && quieto) return;
+      if (!r.erro) carregouBem.current = true;
       // 10/10: com erro, a tela avisa (antes mostrava o extrato vazio ou com os estornados contando)
       setItens(r.itens); setSemEstorno(r.semEstornoManual); setErro(r.erro); setCarregando(false);
     } catch (e) {
       console.error("[extrato] não consegui carregar:", e);
-      if (n === numBusca.current) { setItens([]); setErro(true); setCarregando(false); }
+      if (n === numBusca.current && !quieto) { setItens([]); setErro(true); setCarregando(false); }
     }
   }, [periodo]);
   useEffect(() => { carregar(); }, [carregar]);
+  // 11/10: app aberto de um dia pro outro. Voltou pro app: busca de novo. Virou o dia: "Hoje" e "7 dias" passam a ser
+  // os de agora (antes continuavam no dia em que o filtro foi tocado) e os títulos "Hoje / Ontem" da lista se refazem.
+  useAoVoltar(() => { carregar(true); });
+  const hoje = useDiaAtual();
+  useEffect(() => {
+    setPeriodo(p => {
+      if (p.tipo !== "hoje" && p.tipo !== "7dias") return p;
+      const d = new Date(); d.setDate(d.getDate() - (p.tipo === "7dias" ? 6 : 0));
+      const ini = isoPeriodo(d);
+      return p.fim === hoje && p.ini === ini ? p : { ...p, ini, fim: hoje };
+    });
+  }, [hoje]);
 
   const somar = (l: MovExtrato[], t: "entrada" | "saida") => l.filter(i => !i.estornado && i.tipo === t).reduce((s, i) => s + i.valor, 0);
   const entradas = somar(itens, "entrada");

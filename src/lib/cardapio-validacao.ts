@@ -5,7 +5,7 @@
  *
  * Regra de "cardápio pronto pra publicar":
  * - Nome da loja preenchido
- * - Alguma info de localização (cidade OU endereço)
+ * - Endereço da loja: cidade + (rua ou CEP), a mesma regra da tela Dados da loja
  * - Horário configurado (dias + horário abre/fecha)
  *
  * Retorna a lista do que falta, pra mostrar mensagem clara pra confeiteira.
@@ -24,11 +24,22 @@ export function validarCardapio(profile: any): CardapioValidacao {
   const nomeLoja = (profile?.nome_loja || "").trim();
   if (!nomeLoja) faltando.push("Nome da loja");
 
-  const temLocalizacao =
-    (profile?.cidade || "").trim() ||
-    (profile?.endereco || "").trim() ||
-    (profile?.cep || "").trim();
-  if (!temLocalizacao) faltando.push("Localização (cidade ou endereço)");
+  // (11/10) O endereço é guardado como JSON ({"rua":"","cidade":"",...}): o texto nunca é vazio,
+  // então loja com o endereço em branco passava. Agora lê o JSON e usa a regra da tela Dados da loja:
+  // cidade + (rua ou CEP).
+  const txt = (v: unknown) => (v == null ? "" : String(v).trim());
+  let end: any = profile?.endereco ?? null;
+  let ruaSolta = "";
+  if (typeof end === "string") {
+    const bruto = end;
+    try { end = JSON.parse(bruto); } catch { end = null; ruaSolta = bruto.trim(); } // endereço antigo, escrito direto
+  }
+  if (!end || typeof end !== "object") end = {};
+  const cidade = txt(end.cidade) || txt(profile?.cidade);
+  const rua = txt(end.rua) || ruaSolta;
+  const cep = txt(end.cep) || txt(profile?.cep);
+  const temLocalizacao = !!cidade && (!!rua || !!cep);
+  if (!temLocalizacao) faltando.push("Endereço da loja (cidade e rua ou CEP)");
 
   // Horário: verifica se tem pelo menos 1 dia + horário abre/fecha
   // A tela "Dados da loja" grava o horário como texto (JSON): lê dos dois jeitos.

@@ -1,10 +1,14 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { INDICACAO_ATIVA } from "@/lib/recursos";
 import CompletarCadastro from "@/components/CompletarCadastro";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "@/lib/supabase";
 import { erroDeConexao } from "@/lib/erros";
+import { momentoSeguro } from "@/lib/autoAtualizar";
+import { Botao, confirmar } from "@/components/base";
+import { Mascote, NomeDoonly } from "@/components/marca/Mascote";
+import { ArrowClockwise } from "@phosphor-icons/react";
 import { NotificationProvider } from "@/context/NotificationContext";
 import BoasVindas, { depoisDoVoltar } from "@/components/boasVindas/BoasVindas";
 import Auth from "@/pages/Auth";
@@ -86,8 +90,78 @@ function NavigateWithSearch({ to, replace }: { to: string; replace?: boolean }) 
   return <Navigate to={{ pathname: to, search: location.search }} replace={replace} />;
 }
 
+/** Tem sessão guardada neste aparelho? (a chave que o Supabase grava no localStorage) */
+function temSessaoGuardada(): boolean {
+  try { return Object.keys(localStorage).some(k => /^sb-.*-auth-token$/.test(k) && !!localStorage.getItem(k)); } catch { return false; }
+}
+/** A leitura da sessão falhou por falta de conexão? (o Supabase chama esse erro de AuthRetryableFetchError) */
+function falhaDeRede(erro: unknown): boolean {
+  return !!erro && ((erro as { name?: string }).name === "AuthRetryableFetchError" || erroDeConexao(erro));
+}
+
+/**
+ * (11/10) Sessão vencida + sem internet: a renovação falha e o Supabase devolve "sem sessão", mas a conta continua
+ * guardada no aparelho. Em vez de mandar pro login, fica esta tela até a internet voltar (mesmo desenho da tela de erro).
+ */
+function SemInternetNaEntrada({ tentando, aoTentar }: { tentando: boolean; aoTentar: () => void }) {
+  return (
+    <div className="ne-root">
+      <div className="ne-fundo" />
+      <main className="ne-cartao" role="alert">
+        <Mascote pose="senha" className="ne-masc" />
+        <NomeDoonly className="ne-nome" />
+        {/* (11/10) o aparelho diz que tem conexão: o problema pode ser do servidor, não da internet dela */}
+        <h1 className="ne-h">{navigator.onLine !== false ? "Não deu pra conectar agora" : "Você está sem internet"}</h1>
+        <p className="ne-p">Sua conta continua aberta neste aparelho. Confira a conexão pra continuar.</p>
+        <Botao cheio carregando={tentando} icone={<ArrowClockwise size={20} weight="bold" />} onClick={aoTentar}>Tentar de novo</Botao>
+      </main>
+    </div>
+  );
+}
+
+/**
+ * (11/10) Toque numa notificação com o app aberto: o sw.js manda { tipo: "abrir", url } e a tela troca por aqui,
+ * SEM recarregar a página (antes recarregava tudo e o que estava sendo preenchido se perdia).
+ * Se ela está no meio de um cadastro, pergunta antes de sair da tela.
+ */
+function AbrirPelaNotificacao() {
+  const navegar = useNavigate();
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
+    let perguntando = false;
+    const aoReceber = async (e: MessageEvent) => {
+      const dado = e.data as { tipo?: string; url?: string } | null;
+      if (!dado || dado.tipo !== "abrir") return;
+      try { e.ports?.[0]?.postMessage("ok"); } catch { /* o sw.js só usa pra saber que o app ouviu */ }
+      let destino: URL;
+      try { destino = new URL(String(dado.url || "/"), window.location.origin); } catch { return; }
+      // (11/10) só abre link de site (http/https); javascript:, data: e afins são ignorados
+      if (destino.protocol !== "http:" && destino.protocol !== "https:") return;
+      if (destino.origin !== window.location.origin) { window.open(destino.href, "_blank", "noopener"); return; }
+      const caminho = destino.pathname + destino.search + destino.hash;
+      if (caminho === window.location.pathname + window.location.search + window.location.hash) return;
+      if (!momentoSeguro()) {
+        if (perguntando) return;
+        perguntando = true;
+        const ok = await confirmar({ titulo: "Abrir a notificação?", texto: "O que você está preenchendo nesta tela vai se perder.", rotulo: "Abrir", rotuloVoltar: "Ficar aqui", icone: "alerta" });
+        perguntando = false;
+        if (!ok) return;
+      }
+      navegar(caminho);
+    };
+    navigator.serviceWorker.addEventListener("message", aoReceber);
+    return () => navigator.serviceWorker.removeEventListener("message", aoReceber);
+  }, [navegar]);
+  return null;
+}
+
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<any>(undefined);
+  // (11/10) a sessão não pôde ser renovada por falta de internet (ver SemInternetNaEntrada)
+  const [semRede, setSemRede] = useState(false);
+  const semRedeRef = useRef(false);
+  const [tentandoRede, setTentandoRede] = useState(false);
+  const [demorou, setDemorou] = useState(0); // 1 = passou de 2 s · 2 = passou de 8 s
   const navegar = useNavigate();
   const local = useLocation();
 
@@ -111,12 +185,69 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   // Login pelo Google: só mostra o app depois de conferir se falta completar o cadastro
   // (antes o Início aparecia por um instante e depois era trocado pela tela de cadastro)
   const [perfilConferido, setPerfilConferido] = useState(false);
+  // (11/10) o app já estava em uso quando se descobriu que falta dado (nova tentativa, ou resposta que demorou):
+  // a tela "Complete seu cadastro" espera a próxima troca de tela, pra não entrar no meio de uma venda
+  const appJaAberto = useRef(false);
+  const completarDepois = useRef<null | { nome: string; loja: string; telefone: string }>(null);
+  useEffect(() => { if (perfilConferido) appJaAberto.current = true; }, [perfilConferido]);
+  useEffect(() => {
+    if (!completarDepois.current) return;
+    setCompletar(completarDepois.current);
+    completarDepois.current = null;
+  }, [local.pathname]);
+
+  const marcarSemRede = (v: boolean) => { semRedeRef.current = v; setSemRede(v); };
+  const lendoSessao = useRef<Promise<void> | null>(null);
+  const lerSessao = useCallback((): Promise<void> => {
+    if (lendoSessao.current) return lendoSessao.current; // uma leitura por vez (sem internet ela demora)
+    const leitura = (async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        // sem internet e com a conta guardada no aparelho: NÃO é "sem sessão" (não vai pro login)
+        if (!data.session && falhaDeRede(error) && temSessaoGuardada()) { marcarSemRede(true); return; }
+        marcarSemRede(false);
+        setSession(data.session);
+      } catch {
+        if (temSessaoGuardada()) marcarSemRede(true);
+        else { marcarSemRede(false); setSession(null); }
+      }
+    })().finally(() => { lendoSessao.current = null; });
+    lendoSessao.current = leitura;
+    return leitura;
+  }, []);
+  // enquanto a tela de "sem internet" estiver no ar, tenta de novo sozinho de 10 em 10 s (se o aparelho disser que tem conexão)
+  useEffect(() => {
+    if (!semRede) return;
+    const t = window.setInterval(() => { if (navigator.onLine !== false) void lerSessao(); }, 10000);
+    return () => window.clearInterval(t);
+  }, [semRede, lerSessao]);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => { setSession(session); });
-    return () => listener.subscription.unsubscribe();
-  }, []);
+    void lerSessao();
+    const { data: listener } = supabase.auth.onAuthStateChange((evento, session) => {
+      // o "sem sessão" do começo, enquanto a falta de internet durar, não vale (a conta continua guardada)
+      if (!session && evento === "INITIAL_SESSION" && (semRedeRef.current || (navigator.onLine === false && temSessaoGuardada()))) return;
+      marcarSemRede(false);
+      setSession(session);
+    });
+    // a internet voltou: lê a sessão de novo (agora a renovação passa)
+    const voltou = () => { if (semRedeRef.current) void lerSessao(); };
+    window.addEventListener("online", voltou);
+    // sem internet o Supabase insiste por quase 1 minuto antes de responder (a tela ficava em branco esse tempo todo):
+    // com o aparelho dizendo que está sem conexão, a tela de "sem internet" aparece em 2 s; senão, em 8 s
+    const t1 = window.setTimeout(() => setDemorou(1), 2000);
+    const t2 = window.setTimeout(() => setDemorou(2), 8000);
+    return () => { listener.subscription.unsubscribe(); window.removeEventListener("online", voltou); window.clearTimeout(t1); window.clearTimeout(t2); };
+  }, [lerSessao]);
+
+  const tentarRede = async () => {
+    if (tentandoRede) return;
+    setTentandoRede(true);
+    // sem conexão nenhuma nem adianta chamar (o Supabase demoraria uns 25 s pra desistir): só mostra que tentou
+    if (navigator.onLine === false) await new Promise(r => setTimeout(r, 700));
+    else await lerSessao();
+    setTentandoRede(false);
+  };
 
   // Ao logar, sincroniza estado do tutorial com Supabase (fonte de verdade cross-device).
   // Se o banco diz "já viu", esconde o tutorial mesmo que o localStorage esteja vazio
@@ -150,7 +281,11 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
         const viaGoogle = session.user?.app_metadata?.provider === "google"
           || (session.user?.identities || []).some((i: any) => i?.provider === "google");
         const faltaDado = !String((data as any)?.nome_loja || "").trim() || String((data as any)?.telefone || "").replace(/\D/g, "").length < 10;
-        if (viaGoogle && faltaDado) setCompletar({ nome: String((data as any)?.nome || ""), loja: String((data as any)?.nome_loja || ""), telefone: String((data as any)?.telefone || "") });
+        if (viaGoogle && faltaDado) {
+          const falta = { nome: String((data as any)?.nome || ""), loja: String((data as any)?.nome_loja || ""), telefone: String((data as any)?.telefone || "") };
+          if (tentativa > 0 || appJaAberto.current) completarDepois.current = falta;
+          else setCompletar(falta);
+        } else completarDepois.current = null;
         setPerfilConferido(true);
         if (data?.tutorial_visto) {
           // Banco diz que já viu — sincroniza localStorage e esconde
@@ -169,6 +304,10 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
     return () => { cancelado = true; clearTimeout(limite); clearTimeout(repetir); window.removeEventListener("online", denovo); };
   }, [session?.user?.id, tentativa]);
 
+  const esperandoDemais = session === undefined && (demorou === 2 || (demorou === 1 && navigator.onLine === false)) && temSessaoGuardada();
+  if (!session && (semRede || esperandoDemais)) {
+    return <SemInternetNaEntrada tentando={tentandoRede} aoTentar={tentarRede} />;
+  }
   if (session === undefined) return null;
   if (!session) return <NavigateWithSearch to="/login" replace />;
 
@@ -315,6 +454,7 @@ export default function App() {
         <Route path="*" element={<NaoEncontrada />} />
       </Routes>
       <SemInternet />
+      <AbrirPelaNotificacao />
       <Analytics />
     </BrowserRouter>
     </NotificationProvider>

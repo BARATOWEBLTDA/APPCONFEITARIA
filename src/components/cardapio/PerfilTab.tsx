@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { MapPin, Plus, SignOut, Trash } from '@phosphor-icons/react'
 import { Campo, Janela, avisar, confirmar } from '@/components/base'
 import { JanelaEntrar, SemConta, guardarCliente, lerCliente, mascaraTel, type Cliente } from './contaCliente'
+import { digitosTelefone } from '@/lib/telefone'
 
 export type EnderecoSalvo = {
   rua: string; numero: string; complemento: string; bairro: string; cidade: string; cep: string
@@ -58,6 +59,15 @@ export function PerfilTab({ accent, confeteiraUserId }: { accent: string; confet
   const sair = async () => {
     const ok = await confirmar({ titulo: 'Sair da conta?', texto: 'Seus pedidos continuam salvos. É só entrar de novo com o WhatsApp.', rotulo: 'Sair', icone: 'alerta' })
     if (!ok) return
+    // (11/10) os endereços salvos desse telefone também saem do aparelho (antes ficavam e apareciam pra quem digitasse o número)
+    try {
+      const prefixo = `enderecos_${confeteiraUserId}_`
+      const meu = digitosTelefone(cliente?.telefone)
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i)
+        if (k && k.startsWith(prefixo) && digitosTelefone(k.slice(prefixo.length)) === meu) localStorage.removeItem(k)
+      }
+    } catch { /* sem localStorage */ }
     guardarCliente(confeteiraUserId, null); setCliente(null)
   }
 

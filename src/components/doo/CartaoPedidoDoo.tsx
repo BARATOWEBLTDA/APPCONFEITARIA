@@ -1,7 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { avisar } from "@/components/base";
 import { Receipt, Check, WarningCircle } from "@phosphor-icons/react";
-import { criarPedido, montarPedido, subtotalDe, totalDe, type RascunhoPedido, type ProdutoCat, type ClienteCat, type DadosPedido } from "@/lib/pedidosDoo";
+import { criarPedido, montarPedido, procurarClientesPorNome, subtotalDe, totalDe, type RascunhoPedido, type ProdutoCat, type ClienteCat, type DadosPedido } from "@/lib/pedidosDoo";
+import { explicarErro } from "@/lib/erros";
+import { r2 } from "@/lib/moeda";
 
 /**
  * Cartão de conferência do pedido (02/10): mostra o que a Doo entendeu, com os PREÇOS do cardápio.
@@ -16,9 +18,32 @@ export default function CartaoPedidoDoo({ uid, rascunho, catalogo, estado, numer
   onEditar: (dados: DadosPedido) => void;
   onFeito: (estado: "salvo" | "cancelado", info?: { id: string; numero?: number; resumo: string }) => void;
 }) {
-  const { dados, problemas } = useMemo(() => montarPedido(rascunho, catalogo), [rascunho, catalogo]);
+  // (11/10) A Doo só recebe parte das clientes: quando vem um nome sem cliente escolhida e ele não está na lista,
+  // procura no banco antes de tratar como "cliente nova" (antes a cliente antiga era cadastrada de novo).
+  const idDito = rascunho.cliente?.id || "";
+  const nomeDito = String(rascunho.cliente?.nome || "").trim();
+  const [busca, setBusca] = useState<{ nome: string; achadas: ClienteCat[] } | null>(null); // a última busca que terminou
+  const precisaProcurar = estado === "pendente" && !!nomeDito && !(idDito && catalogo.clientes.some(c => c.id === idDito));
+  const procurando = precisaProcurar && busca?.nome !== nomeDito; // enquanto procura, o "Registrar pedido" espera
+  useEffect(() => {
+    if (!precisaProcurar) return;
+    let cancel = false;
+    // se a busca falhar, segue com o que a lista tem (a falha fica no console, em lib/pedidosDoo)
+    procurarClientesPorNome(uid, nomeDito).catch(() => [] as ClienteCat[]).then(l => { if (!cancel) setBusca({ nome: nomeDito, achadas: l }); });
+    // internet travada: depois de uns segundos o botão é liberado (a busca ainda vale se chegar depois)
+    const espera = window.setTimeout(() => { if (!cancel) setBusca(b => (b?.nome === nomeDito ? b : { nome: nomeDito, achadas: [] })); }, 6000);
+    return () => { cancel = true; window.clearTimeout(espera); };
+  }, [precisaProcurar, uid, nomeDito]);
+  const catalogoCompleto = useMemo(() => {
+    const novas = (busca?.nome === nomeDito ? busca.achadas : []).filter(a => !catalogo.clientes.some(c => c.id === a.id));
+    return novas.length ? { produtos: catalogo.produtos, clientes: [...catalogo.clientes, ...novas] } : catalogo;
+  }, [catalogo, busca, nomeDito]);
+  const { dados, problemas } = useMemo(() => montarPedido(rascunho, catalogoCompleto), [rascunho, catalogoCompleto]);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
+  // (11/10) cliente nova já cadastrada numa tentativa que falhou: a próxima tentativa usa a mesma (não cadastra de novo)
+  const clienteCriada = useRef<string | null>(null);
+  const travado = useRef(false); // dois toques seguidos não registram dois pedidos
   const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
   const total = totalDe(dados);
   const quando = dados.tipo === "pronta_entrega" ? "Hoje (pronta entrega)"
@@ -30,13 +55,22 @@ export default function CartaoPedidoDoo({ uid, rascunho, catalogo, estado, numer
     : `A receber${dados.dataPrevistaPagamento ? ` até ${new Date(dados.dataPrevistaPagamento + "T12:00:00").toLocaleDateString("pt-BR")}` : ""}`;
 
   const registrar = async () => {
+    if (travado.current) return;
+    travado.current = true;
     setSalvando(true); setErro("");
-    const res = await criarPedido(uid, dados);
-    setSalvando(false);
-    if (res.ok === false) { setErro(res.erro); return; }
-    const p: any = res.pedido;
-    if (res.aviso) avisar(res.aviso, { tipo: "erro" }); // (10/10) pedido salvo, recebimento não
-    onFeito("salvo", { id: p.id, numero: p.numero, resumo: `${dados.clienteNome || "venda avulsa"}, ${brl(total)}` });
+    try {
+      const res = await criarPedido(uid, dados.clienteNovo && !dados.clienteId && clienteCriada.current ? { ...dados, clienteId: clienteCriada.current } : dados);
+      if (res.ok === false) {
+        // (11/10) não gravou (ou gravou sem os produtos e foi desfeito): mostra o erro, em português, e o cartão continua aberto
+        if (dados.clienteNovo && res.clienteId) clienteCriada.current = res.clienteId;
+        setErro(res.erro); return;
+      }
+      const p: any = res.pedido;
+      if (res.aviso) avisar(res.aviso, { tipo: "erro" }); // (10/10) pedido salvo, recebimento não
+      onFeito("salvo", { id: p.id, numero: p.numero, resumo: `${dados.clienteNome || "venda avulsa"}, ${brl(total)}` });
+    } catch (e) {
+      setErro(explicarErro(e, "Não deu pra registrar o pedido. Tente de novo."));
+    } finally { travado.current = false; setSalvando(false); }
   };
 
   if (estado !== "pendente") {
@@ -59,7 +93,7 @@ export default function CartaoPedidoDoo({ uid, rascunho, catalogo, estado, numer
           <div className="cpd-it" key={k}>
             <span className="cpd-q">{it.quantidade}×</span>
             <span className="cpd-n"><b>{it.nome_produto}{it.opcaoLabel ? ` · ${it.opcaoLabel}` : ""}</b>{it.observacoes && <small>{it.observacoes}</small>}</span>
-            <span className="cpd-v">{brl(it.valor_unitario * it.quantidade)}</span>
+            <span className="cpd-v">{brl(r2(it.valor_unitario * it.quantidade))}</span>
           </div>
         ))}
       </div>
@@ -75,7 +109,7 @@ export default function CartaoPedidoDoo({ uid, rascunho, catalogo, estado, numer
 
       <div className="cpd-tot">
         <div><span>Total</span><b>{brl(total)}</b></div>
-        {dados.situacaoPag === "parcial" && dados.valorParcial > 0 && dados.valorParcial < total && <div className="cpd-falta"><span>Falta receber</span><b>{brl(total - dados.valorParcial)}</b></div>}
+        {dados.situacaoPag === "parcial" && dados.valorParcial > 0 && dados.valorParcial < total && <div className="cpd-falta"><span>Falta receber</span><b>{brl(r2(total - dados.valorParcial))}</b></div>}
         {subtotalDe(dados.itens) !== total && <small>Produtos {brl(subtotalDe(dados.itens))}</small>}
       </div>
 
@@ -84,8 +118,8 @@ export default function CartaoPedidoDoo({ uid, rascunho, catalogo, estado, numer
       )}
       {erro && <p className="cpd-erro">{erro}</p>}
       <div className="cpd-bts">
-        <button type="button" className="cpd-b2" onClick={() => onEditar(dados)}>Editar</button>
-        <button type="button" className="cpd-b1" onClick={registrar} disabled={salvando || problemas.length > 0}>{salvando ? "Registrando…" : "Registrar pedido"}</button>
+        <button type="button" className="cpd-b2" onClick={() => onEditar(dados.clienteNovo && !dados.clienteId && clienteCriada.current ? { ...dados, clienteId: clienteCriada.current, clienteNovo: false } : dados)}>Editar</button>
+        <button type="button" className="cpd-b1" onClick={registrar} disabled={salvando || procurando || problemas.length > 0}>{salvando ? "Registrando…" : "Registrar pedido"}</button>
       </div>
       <button type="button" className="cpd-x" onClick={() => onFeito("cancelado")}>Cancelar</button>
       <style>{CSS}</style>

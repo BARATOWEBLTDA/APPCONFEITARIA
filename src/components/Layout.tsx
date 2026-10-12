@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
+import { NavLink, Outlet, useNavigate, useLocation, useNavigationType } from "react-router-dom";
 // deploy: Proposta D - nova arquitetura de navegação (Entrega 1)
 import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 import CardapioSubnav, { ROTAS_CARDAPIO } from "@/components/CardapioSubnav";
@@ -14,6 +14,7 @@ import {
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
+import { reativarPushSeSaiu } from "@/hooks/usePushSubscription";
 import { usePlano } from "@/hooks/usePlano";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 import { ImageCropper } from "@/components/ui/ImageCropper";
@@ -65,6 +66,8 @@ export default function Layout() {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const { isPro, loading: loadingPlano } = usePlano();
+  // (11/10) saiu e entrou de novo neste aparelho: os avisos de pedido voltam a ligar sozinhos
+  useEffect(() => { void reativarPushSeSaiu(); }, []);
   const {
     fileInputRef, uploading: uploadingFoto, cropSrc,
     openPicker: abrirSeletorFoto,
@@ -84,8 +87,12 @@ export default function Layout() {
   const isPrevia = location.pathname === "/cardapio-preview";
 
   // Scroll pro topo ao mudar de rota (fix: antes ficava na posição anterior)
+  // (11/10) menos ao VOLTAR ("POP"): a lista volta no ponto em que ela estava, em vez de pular pro topo
+  const tipoNavegacao = useNavigationType();
   useEffect(() => {
+    if (tipoNavegacao === "POP") return;
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
   return (

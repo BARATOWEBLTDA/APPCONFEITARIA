@@ -11,13 +11,22 @@ import { useTravarRolagem } from '@/hooks/useTravarRolagem'
  * Várias abertas juntas (calendário por cima de gaveta): Esc e voltar fecham só a de cima.
  */
 
-type Aberta = { fechar: () => void; temEntrada: boolean }
+type Aberta = { fechar: () => void; temEntrada: boolean; abertaEm: number }
 const pilha: Aberta[] = []
 let popsAIgnorar = 0
 let ouvindo = false
 let voltarFecha = true
 let esperandoToque = false
 const aoAssentar: (() => void)[] = []
+/** (11/10) Entradas de janelas que fecharam neste mesmo instante: se outra janela abrir junto (prévia → Editar), ela herda a entrada em vez de back + push, que o Chrome embaralhava. */
+let entradasLivres = 0
+function devolverLivres() {
+  const n = entradasLivres
+  entradasLivres = 0
+  for (let k = 0; k < n; k++) {
+    try { if (window.history.state?.uiJanela) { popsAIgnorar++; window.history.back() } } catch { /* nada */ }
+  }
+}
 
 /** A vitrine roda dentro de outra página: lá o histórico não é nosso, então desliga. */
 export function configurarSobreposicao(opcoes: { voltarFecha?: boolean }) {
@@ -42,7 +51,7 @@ function reporEntradas(e: Event) {
   if (voltarFecha) pilha.forEach(a => { if (!a.temEntrada) empurrar(a) })
 }
 
-function aoVoltar() {
+function aoVoltar(e: Event) {
   if (popsAIgnorar > 0) {
     // era o "voltar" que uma janela pediu ao fechar: quando chega o último, avisa quem esperava pra navegar
     if (--popsAIgnorar === 0) { const fila = aoAssentar.splice(0); window.setTimeout(() => fila.forEach(f => f()), 0) }
@@ -50,6 +59,8 @@ function aoVoltar() {
   }
   const topo = pilha[pilha.length - 1]
   if (!topo) return
+  // (11/10) a janela de cima foi aberta por este mesmo voltar (a pergunta "Cancelar esta venda?"): não é ela que o voltar fecha
+  if (topo.abertaEm >= e.timeStamp) return
   // o voltar já tirou do histórico a entrada de uma janela (a mais de cima que ainda tinha)
   for (let i = pilha.length - 1; i >= 0; i--) { if (pilha[i].temEntrada) { pilha[i].temEntrada = false; break } }
   topo.fechar()
@@ -66,6 +77,8 @@ function aoVoltar() {
  * Resolve quando os "voltar" pedidos chegarem (ou no tempo limite, por segurança). O confirmar() e o informar() já esperam.
  */
 export function historicoAssentado(limite = 500): Promise<void> {
+  // janela que acabou de fechar ainda vai pedir o voltar dela (logo em seguida): espera esse pedido sair primeiro
+  if (entradasLivres > 0) return Promise.resolve().then(() => historicoAssentado(limite))
   if (popsAIgnorar === 0) return Promise.resolve()
   return new Promise(resolve => {
     aoAssentar.push(resolve)
@@ -102,12 +115,15 @@ export function useSobreposicao(aberta: boolean, aoFechar: () => void, caixa: Re
   useEffect(() => {
     if (!aberta) return
     ouvir()
-    const eu: Aberta = { fechar: () => fecharRef.current(), temEntrada: false }
+    const eu: Aberta = { fechar: () => fecharRef.current(), temEntrada: false, abertaEm: performance.now() }
     pilha.push(eu)
     marcar()
 
     // voltar do Android: a janela coloca uma entrada no histórico; o voltar tira a entrada e fecha a janela
-    if (voltarFecha) empurrar(eu)
+    if (voltarFecha) {
+      if (entradasLivres > 0) { entradasLivres--; eu.temEntrada = true }
+      else empurrar(eu)
+    }
 
     // foco: entra na janela, fica preso nela e depois volta pra onde estava
     const antes = document.activeElement as HTMLElement | null
@@ -134,7 +150,7 @@ export function useSobreposicao(aberta: boolean, aoFechar: () => void, caixa: Re
       // fechou pelo X, pelo fundo ou pelo Esc: tira a entrada que a janela colocou no histórico
       // (se foi o voltar que fechou, a entrada já saiu)
       if (eu.temEntrada) {
-        try { if (window.history.state?.uiJanela) { popsAIgnorar++; window.history.back() } } catch { /* nada */ }
+        if (entradasLivres++ === 0) queueMicrotask(devolverLivres)
       }
       if (antes && document.contains(antes)) antes.focus({ preventScroll: true })
     }

@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { dataISO } from "@/lib/pedidoStatus";
+import { useDiaAtual } from "@/hooks/useAoVoltar";
 import { useNavigate } from "react-router-dom";
 import { CaretRight, Clock, Cake, Trophy, TrendUp, TrendDown, Camera, Moon } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
@@ -24,21 +25,29 @@ const STATUS_ATIVOS = ["aguardando_pagamento", "aguardando_aceite", "novo", "pen
 const STATUS_ENTREGUE = ["entregue", "concluido"];
 const MAX_VISIVEIS = 4;
 
-// Calcula domingo→sábado da semana atual
-function inicioFimSemana() {
+// (11/10) "Próximos 7 dias" = de hoje até hoje + 6, igual no app inteiro (A receber, A pagar, Início).
+// Antes era a semana de domingo a sábado: na sexta contava entregas de dias que já passaram e ignorava a segunda seguinte.
+function proximos7Dias() {
   const hoje = new Date();
-  const diaSemana = hoje.getDay(); // 0 = dom
-  const inicio = new Date(hoje);
-  inicio.setDate(hoje.getDate() - diaSemana);
-  inicio.setHours(0, 0, 0, 0);
-  const fim = new Date(inicio);
-  fim.setDate(inicio.getDate() + 6);
-  fim.setHours(23, 59, 59, 999);
-  return { inicio: dataISO(inicio), fim: dataISO(fim) };
+  const fim = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 6);
+  return { inicio: dataISO(hoje), fim: dataISO(fim) };
 }
 
-// Aniversariantes nos próximos 7 dias
-function calcularAniversariantesSemana(clientes: any[]): { total: number; primeiro: string | null; nomes: string[] } {
+/**
+ * O MESMO trecho do mês anterior (11/10): do dia 1 até o mesmo dia e hora, limitado ao fim daquele mês.
+ * Dia 3 de outubro às 14h compara com 1 a 3 de setembro até as 14h. Dia 31 de março compara com fevereiro inteiro.
+ * Antes o mês até hoje era comparado com o mês passado INTEIRO: todo começo de mês dizia "faturamento caiu 90%".
+ */
+function mesmoTrechoDoMesAnterior(agora: Date): { inicio: Date; fim: Date } {
+  const inicioDesteMes = new Date(agora.getFullYear(), agora.getMonth(), 1);
+  const inicio = new Date(agora.getFullYear(), agora.getMonth() - 1, 1);
+  const mesmoMomento = new Date(agora.getFullYear(), agora.getMonth() - 1, agora.getDate(), agora.getHours(), agora.getMinutes(), agora.getSeconds(), agora.getMilliseconds());
+  // dia 31 num mês anterior de 30 (ou 29, 30 e 31 em fevereiro) cairia neste mês: para no fim do mês anterior
+  return { inicio, fim: mesmoMomento < inicioDesteMes ? mesmoMomento : inicioDesteMes };
+}
+
+// Aniversariantes nos próximos 7 dias (hoje até hoje + 6)
+function calcularAniversariantesSemana(clientes: any[]): { total: number; primeiro: string | null; nomes: string[]; dias: number } {
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
   let total = 0;
@@ -52,8 +61,8 @@ function calcularAniversariantesSemana(clientes: any[]): { total: number; primei
     if (!mes || !dia) return;
     const aniv = new Date(hoje.getFullYear(), mes - 1, dia);
     if (aniv < hoje) aniv.setFullYear(aniv.getFullYear() + 1);
-    const dias = Math.floor((aniv.getTime() - hoje.getTime()) / 86400000);
-    if (dias >= 0 && dias <= 7) {
+    const dias = Math.round((aniv.getTime() - hoje.getTime()) / 86400000);
+    if (dias >= 0 && dias <= 6) { // 11/10: 7 dias contando hoje (antes 0 a 7 eram 8 dias)
       total++;
       lista.push({ nome: String(c.nome || "").trim().split(" ")[0], dias });
       if (dias < menorDias) {
@@ -64,7 +73,7 @@ function calcularAniversariantesSemana(clientes: any[]): { total: number; primei
   });
 
   const nomes = lista.sort((a, b) => a.dias - b.dias).map(x => x.nome).filter(Boolean);
-  return { total, primeiro, nomes };
+  return { total, primeiro, nomes, dias: menorDias };
 }
 
 export default function MinhasAtualizacoes() {
@@ -73,17 +82,27 @@ export default function MinhasAtualizacoes() {
   const [updates, setUpdates] = useState<Update[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // (11/10) app aberto de um dia pro outro: quando vira o dia, refaz os avisos (aniversário, entregas dos próximos 7 dias…)
+  const diaAtual = useDiaAtual();
+  const contaCarregada = useRef<string | null>(null);
   useEffect(() => {
     if (!profile?.id) return;
+    let cancelado = false;
     (async () => {
-      setLoading(true);
+      // só esconde o cartão na primeira busca da conta: ao virar o dia, troca o conteúdo sem piscar
+      if (contaCarregada.current !== profile.id) setLoading(true);
       const userId = profile.id;
       const hoje = new Date();
       // (07/10 · 3.02) datas no horário do Brasil: antes, depois das 21h, a semana ganhava um dia
-      const semana = inicioFimSemana();
-      const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString(); // o instante exato em que o mês começou aqui
-      const inicioMesAnt = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1).toISOString();
-      const dataLimite60d = new Date(hoje); dataLimite60d.setDate(hoje.getDate() - 60);
+      const semana = proximos7Dias();
+      const trechoAnt = mesmoTrechoDoMesAnterior(hoje);
+      // (11/10) faturamento comparado pela DATA DE ENTREGA (antes pela criação): último dia do trecho, inclusive
+      const fimAntISO = dataISO(new Date(Math.min(
+        new Date(hoje.getFullYear(), hoje.getMonth() - 1, hoje.getDate()).getTime(),
+        new Date(hoje.getFullYear(), hoje.getMonth(), 0).getTime(),
+      )));
+      // (11/10) meia-noite daqui, 60 dias atrás (antes era o texto "AAAA-MM-DD" no horário de Londres)
+      const dataLimite60d = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - 60);
 
       const [
         entregasSemanaRes,
@@ -93,6 +112,7 @@ export default function MinhasAtualizacoes() {
         pedidosMesAntRes,
         totalPedidosRes,
         clientesComVendaRes,
+        totalClientesRes,
       ] = await Promise.all([
         // 2. Entregas nesta semana
         supabase
@@ -119,15 +139,16 @@ export default function MinhasAtualizacoes() {
           .from("pedidos")
           .select("valor_total")
           .eq("user_id", userId)
-          .gte("created_at", inicioMes)
+          .gte("data_entrega", dataISO(new Date(hoje.getFullYear(), hoje.getMonth(), 1)))
+          .lte("data_entrega", dataISO(hoje))
           .in("status", STATUS_ENTREGUE),
-        // 6. Faturamento mês anterior
+        // 6. Faturamento do MESMO trecho do mês anterior (do dia 1 até o mesmo dia e hora)
         supabase
           .from("pedidos")
           .select("valor_total")
           .eq("user_id", userId)
-          .gte("created_at", inicioMesAnt)
-          .lt("created_at", inicioMes) // até o fim do mês passado (antes o último dia ficava de fora)
+          .gte("data_entrega", dataISO(trechoAnt.inicio))
+          .lte("data_entrega", fimAntISO)
           .in("status", STATUS_ENTREGUE),
         // 7. Total de pedidos (marco)
         supabase
@@ -140,23 +161,30 @@ export default function MinhasAtualizacoes() {
           .from("pedidos")
           .select("cliente_id")
           .eq("user_id", userId)
-          .gte("created_at", dataLimite60d.toISOString().slice(0, 10))
+          .gte("created_at", dataLimite60d.toISOString())
           .not("cliente_id", "is", null),
+        // 9. Total de clientes cadastrados (11/10): a busca 3 traz só quem tem aniversário
+        supabase
+          .from("clientes")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId),
       ]);
+      if (cancelado) return;
+      contaCarregada.current = userId;
 
       const lista: Update[] = [];
 
       // (07/10 · 3.07) Os pedidos atrasados saíram daqui: já aparecem no "Seu dia", no topo do Início, e estavam repetidos.
 
-      // 2️⃣ Entregas nesta semana
+      // 2️⃣ Entregas nos próximos 7 dias (hoje até hoje + 6)
       const nEntregas = entregasSemanaRes.count || 0;
       if (nEntregas > 0) {
         lista.push({
           key: "entregas-semana",
           Icone: Clock,
-          categoria: "Esta semana",
+          categoria: "Próximos 7 dias",
           categoriaCor: "azul",
-          titulo: `${nEntregas} ${nEntregas === 1 ? "entrega nesta semana" : "entregas nesta semana"}`,
+          titulo: `${nEntregas} ${nEntregas === 1 ? "entrega nos próximos 7 dias" : "entregas nos próximos 7 dias"}`,
           descricao: nEntregas === 1
             ? "Você tem uma entrega programada — se organize."
             : "Se organize pra dar conta de todas as entregas.",
@@ -170,14 +198,15 @@ export default function MinhasAtualizacoes() {
       const aniv = calcularAniversariantesSemana(clientesRes.data || []);
       if (aniv.total > 0) {
         const primeiroNome = aniv.primeiro?.split(" ")[0] || "";
+        const quando = aniv.dias === 0 ? "hoje" : aniv.dias === 1 ? "amanhã" : `em ${aniv.dias} dias`;
         lista.push({
           key: "aniversarios",
           Icone: Cake,
           categoria: "Oportunidade",
           categoriaCor: "rosa",
           titulo: aniv.total === 1
-            ? `${primeiroNome} faz aniversário nesta semana!`
-            : `${aniv.total} aniversariantes nesta semana`,
+            ? `${primeiroNome} faz aniversário ${quando}!`
+            : `${aniv.total} aniversariantes nos próximos 7 dias`,
           descricao: aniv.total === 1
             ? "Mande uma mensagem e ofereça um bolo especial."
             : `${aniv.total === 2 && aniv.nomes.length === 2 ? `${aniv.nomes[0]} e ${aniv.nomes[1]}` : `${primeiroNome} e mais ${aniv.total - 1}`} — mande mensagens e ofereça bolos.`,
@@ -214,6 +243,8 @@ export default function MinhasAtualizacoes() {
       const fatMesAnt = (pedidosMesAntRes.data || []).reduce((s: number, p: any) => s + Number(p.valor_total || 0), 0);
       if (fatMes > 0 && fatMesAnt > 0) {
         const diff = ((fatMes - fatMesAnt) / fatMesAnt) * 100;
+        // 11/10: o texto diz o que foi comparado (os mesmos dias dos dois meses)
+        const comparado = hoje.getDate() === 1 ? "Hoje, comparado com o dia 1 do mês passado" : `Do dia 1 ao dia ${hoje.getDate()}, comparado com os mesmos dias do mês passado`;
         if (diff >= 20) {
           lista.push({
             key: "faturamento-up",
@@ -221,7 +252,7 @@ export default function MinhasAtualizacoes() {
             categoria: "Conquista",
             categoriaCor: "verde",
             titulo: `Faturamento subiu ${diff.toFixed(0)}%!`,
-            descricao: `Comparado ao mês passado. Continue nesse ritmo!`,
+            descricao: `${comparado}. Continue nesse ritmo!`,
             cta: "Ver financeiro",
             path: "/financeiro",
             prioridade: 60,
@@ -233,7 +264,7 @@ export default function MinhasAtualizacoes() {
             categoria: "Atenção",
             categoriaCor: "amarelo",
             titulo: `Faturamento caiu ${Math.abs(diff).toFixed(0)}%`,
-            descricao: `Comparado ao mês passado — hora de reativar clientes.`,
+            descricao: `${comparado}. Hora de reativar clientes.`,
             cta: "Ver financeiro",
             path: "/financeiro",
             prioridade: 40,
@@ -261,9 +292,10 @@ export default function MinhasAtualizacoes() {
 
       // 7️⃣ Clientes sumidos (comparação: total de clientes vs ativos)
       // Só faz sentido se tem base > 5
-      if ((clientesRes.data?.length || 0) >= 5) {
+      // 11/10: o total é o de TODOS os clientes (antes só os que têm aniversário cadastrado). Se a contagem falhar, não mostra.
+      const totalCli = totalClientesRes.error || clientesComVendaRes.error ? 0 : (totalClientesRes.count || 0);
+      if (totalCli >= 5) {
         const clientesAtivos = new Set((clientesComVendaRes.data || []).map((v: any) => v.cliente_id));
-        const totalCli = clientesRes.data?.length || 0;
         const sumidos = totalCli - clientesAtivos.size;
         if (sumidos >= 3) {
           lista.push({
@@ -285,7 +317,8 @@ export default function MinhasAtualizacoes() {
       setUpdates(lista.slice(0, MAX_VISIVEIS));
       setLoading(false);
     })();
-  }, [profile?.id]);
+    return () => { cancelado = true; };
+  }, [profile?.id, diaAtual]);
 
   if (loading) return null;
   if (updates.length === 0) return null;

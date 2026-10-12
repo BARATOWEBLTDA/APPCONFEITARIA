@@ -6,8 +6,7 @@ import { Check, Clock, MapPin, Sparkle, Storefront, WarningCircle, WhatsappLogo 
 import AppPageHeader from "@/components/AppPageHeader";
 import HorarioSheet from "@/components/HorarioSheet";
 import { Botao, Campo, CampoArea, TelaVazia, Titulo, avisar } from "@/components/base";
-import { digitosTelefone } from "@/lib/telefone";
-import { digitosAoDigitar } from "@/components/cardapio/telefoneDigitado";
+import { digitosTelefone, digitosAoDigitar } from "@/lib/telefone";
 import "./dadosLoja.css";
 
 /**
@@ -186,8 +185,31 @@ export default function DadosLoja() {
   const toggleDiaUtil = (diaNome: string) =>
     setHorario((h) => ({ ...h, dias: h.dias.includes(diaNome) ? h.dias.filter((d) => d !== diaNome) : [...h.dias, diaNome] }));
 
+  // (11/10) Confere o horário antes de salvar: fechar antes (ou na mesma hora) de abrir deixava o cardápio
+  // sem nenhuma data pra agendar e a loja sempre "fechada". "00:00" no fechar vale como meia-noite.
+  const problemaNoHorario = (): string | null => {
+    const emMin = (h: string) => { const m = /^(\d{1,2}):(\d{2})$/.exec(h || ""); return m ? Number(m[1]) * 60 + Number(m[2]) : null; };
+    const blocos: [boolean, string, CampoHora, CampoHora][] = [
+      [DIAS_UTEIS.some((d) => horario.dias.includes(d.nome)), "Dias de semana", "abertura", "fechamento"],
+      [horario.abre_sabado, "Sábado", "sabado_abertura", "sabado_fechamento"],
+      [horario.abre_domingo, "Domingo", "domingo_abertura", "domingo_fechamento"],
+    ];
+    for (const [abre, rotulo, campoAbre, campoFecha] of blocos) {
+      if (!abre) continue;
+      const a = emMin(horario[campoAbre]);
+      const f = emMin(horario[campoFecha]);
+      if (a === null || f === null) return `${rotulo}: escolha o horário de abrir e o de fechar.`;
+      if ((f === 0 ? 24 * 60 : f) <= a) return `${rotulo}: o horário de fechar precisa ser depois do de abrir. Pra fechar à meia-noite, use 00:00.`;
+    }
+    return null;
+  };
+
   const salvar = async () => {
     if (!userId) return;
+    // (11/10) loja sem nome não salva
+    if (!nome.trim()) { mostrarAviso("Escreva o nome da loja.", "err"); irPara("dl-nome"); return; }
+    const horarioRuim = problemaNoHorario();
+    if (horarioRuim) { mostrarAviso(horarioRuim, "err"); irPara("dl-horario"); return; }
     setSalvando(true);
     const endereco = JSON.stringify(end);
     const { error } = await supabase.from("profiles").update({

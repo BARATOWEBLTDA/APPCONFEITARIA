@@ -8,7 +8,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { explicarErro } from "@/lib/erros";
-import { digitosTelefone, linkWhatsApp } from "@/lib/telefone";
+import { digitosTelefone, digitosAoDigitar, linkWhatsApp } from "@/lib/telefone";
 import { useProfile, isPro, perfilAtual } from "@/hooks/useProfile";
 import AppPageHeader from "@/components/AppPageHeader";
 import ReqTag from "@/components/ReqTag";
@@ -83,7 +83,7 @@ function formatPhone(phone?: string) {
 
 // Máscara live durante digitação: (00) 9 0000-0000 ou (00) 0000-0000
 function maskPhone(value: string): string {
-  const d = value.replace(/\D/g, "").slice(0, 11);
+  const d = digitosAoDigitar(value); // (11/10) número colado com +55 não perde mais o final
   if (d.length === 0) return "";
   if (d.length <= 2) return `(${d}`;
   if (d.length <= 3) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
@@ -238,6 +238,9 @@ export default function Clientes() {
   const [showNiver,     setShowNiver]     = useState(false);
 
   const fileRef = useRef<HTMLInputElement>(null);
+  // (11/10) cada abertura do formulário tem um número: foto que termina de subir depois de trocar de cliente é ignorada
+  const aberturaForm = useRef(0);
+  const salvandoRef = useRef(false);
   // Editar aberto pela página da cliente: ao fechar ou salvar, volta pra ela (08/10 · 3.34)
   const voltarPerfil = useRef<string | null>(null);
   // (espera a janela fechar: ao fechar, ela tira do histórico a entrada que colocou pro voltar do Android)
@@ -334,6 +337,7 @@ export default function Clientes() {
 
   const openNew = (_mode?: FormMode) => {
     if (!usuarioEhPro && clientes.length >= LIMITE_CLIENTES_GRATIS) { setLimiteAberto(true); return; }
+    aberturaForm.current++; setEnviandoFoto(false);
     setFormMode("completo");
     setEditando(null);
     setRapido(emptyRapido);
@@ -345,6 +349,7 @@ export default function Clientes() {
   };
 
   const openEdit = (c: Cliente) => {
+    aberturaForm.current++; setEnviandoFoto(false);
     setFormMode("completo");
     setEditando(c.id);
     setRapido({ nome: c.nome, whatsapp: c.whatsapp || "", email: c.email || "", observacoes: c.observacoes || "", data_nascimento: c.data_nascimento || "" });
@@ -366,6 +371,7 @@ export default function Clientes() {
 
   const handleFileChange = async (file: File) => {
     if (!file || !userId) return;
+    const abertura = aberturaForm.current;
     setPreview(URL.createObjectURL(file));
     // (10/10) enquanto a foto sobe, o salvar espera (antes salvava sem a foto); se não subir, avisa
     setEnviandoFoto(true);
@@ -373,6 +379,8 @@ export default function Clientes() {
     const path = `clientes/${userId}-${Date.now()}.${ext}`;
     let error: unknown = null;
     try { error = (await supabase.storage.from("profiles").upload(path, file, { upsert: true })).error; } catch (e) { error = e; }
+    // (11/10) o formulário já é de outra cliente (ou foi fechado): a foto antiga não entra no cadastro errado
+    if (abertura !== aberturaForm.current) return;
     if (!error) {
       const { data } = supabase.storage.from("profiles").getPublicUrl(path);
       setCompleto(f => ({ ...f, foto_url: data.publicUrl }));
@@ -484,17 +492,32 @@ export default function Clientes() {
     );
   };
 
-  const fecharForm = () => { setShowForm(false); setEditando(null); setTimeout(() => setCompleto(emptyCompleto), 250); talvezVoltar(); };
+  const fecharForm = () => { aberturaForm.current++; setEnviandoFoto(false); setShowForm(false); setEditando(null); setTimeout(() => setCompleto(emptyCompleto), 250); talvezVoltar(); };
   const tryCloseForm = async () => {
     if (!hasFormData()) { setShowForm(false); talvezVoltar(); return; }
     const ok = await confirmar({ titulo: editando ? "Sair sem salvar?" : "Descartar o cadastro?", texto: editando ? "As mudanças que você fez neste cliente vão se perder." : "O que você preencheu vai se perder.", rotulo: editando ? "Sair sem salvar" : "Descartar", rotuloVoltar: "Continuar editando", perigo: true, icone: "alerta" });
     if (ok) fecharForm();
   };
   // Cadastrar/Salvar: mostra embaixo de cada campo o que falta (antes o botão ficava apagado sem dizer por quê)
-  const salvarComAviso = () => {
+  const salvarComAviso = async () => {
     setTentouSalvar(true);
     if (!completo.nome.trim() || (completo.whatsapp || "").replace(/\D/g, "").length < 10) return;
-    handleSave();
+    if (salvandoRef.current) return;
+    salvandoRef.current = true;
+    try {
+      // (11/10) número que já é de outra cliente: pergunta antes de gravar, ao cadastrar e ao trocar o número na edição
+      // (antes só aparecia o aviso embaixo do campo, e o cadastro repetido era gravado do mesmo jeito)
+      const numeroDeAntes = editando ? digitosTelefone(clientes.find(c => c.id === editando)?.whatsapp) : "";
+      if (clienteRepetido && numeroDeAntes !== digitosForm) {
+        const ok = await confirmar({
+          titulo: `Esse número já é de ${clienteRepetido.nome}`,
+          texto: "Vão ficar dois cadastros com o mesmo WhatsApp.",
+          rotulo: editando ? "Salvar mesmo assim" : "Cadastrar mesmo assim", rotuloVoltar: "Voltar", icone: "alerta",
+        });
+        if (!ok) return;
+      }
+      await handleSave();
+    } finally { salvandoRef.current = false; }
   };
   const excluirDoForm = async () => {
     if (!editando) return;
@@ -517,9 +540,9 @@ export default function Clientes() {
     avisar("Cliente excluída", { tipo: "ok" });
   };
   // Número que já é de outra cliente (pra não cadastrar a mesma pessoa duas vezes)
-  const digitosForm = (completo.whatsapp || "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
+  const digitosForm = digitosTelefone(completo.whatsapp);
   const clienteRepetido = digitosForm.length >= 10
-    ? clientes.find(c => c.id !== editando && (c.whatsapp || "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "") === digitosForm) || null
+    ? clientes.find(c => c.id !== editando && digitosTelefone(c.whatsapp) === digitosForm) || null
     : null;
 
   const tryCloseImport = async () => {
@@ -552,6 +575,9 @@ export default function Clientes() {
           .filter(t => t.length >= 10)
       );
 
+      // (11/10) o mesmo número escolhido duas vezes (contato repetido na agenda) entra uma vez só,
+      // ficando o que tem nome (guarda a posição de cada número já visto)
+      const jaNaSelecao = new Map<string, number>();
       const importados: ImportContato[] = contatosAndroid
         .map((c: any) => {
           const nome = Array.isArray(c.name) && c.name.length > 0 ? c.name[0] : "";
@@ -565,7 +591,14 @@ export default function Clientes() {
             selecionado: !(telNorm.length >= 10 && telefonesExistentes.has(telNorm)) && !!nome.trim() && telNorm.length >= 10,
           };
         })
-        .filter((c: ImportContato) => c.nome || c.telefone); // Descarta contatos vazios
+        .filter((c: ImportContato) => c.nome || c.telefone) // Descarta contatos vazios
+        .reduce((lista: ImportContato[], c: ImportContato) => {
+          if (c.telefoneNormalizado.length < 10) { lista.push(c); return lista; }
+          const pos = jaNaSelecao.get(c.telefoneNormalizado);
+          if (pos === undefined) { jaNaSelecao.set(c.telefoneNormalizado, lista.length); lista.push(c); }
+          else if (!lista[pos].nome && c.nome) lista[pos] = c;
+          return lista;
+        }, []);
 
       setImportSheet(importados);
     } catch (err: any) {
@@ -588,7 +621,14 @@ export default function Clientes() {
 
   const handleConfirmImport = async () => {
     if (!importSheet || !userId) return;
-    const paraCadastrar = importSheet.filter(c => c.selecionado && !c.duplicado && c.nome && c.telefoneNormalizado.length >= 10);
+    if (importing) return;
+    const numerosVistos = new Set<string>();
+    const paraCadastrar = importSheet.filter(c => {
+      if (!(c.selecionado && !c.duplicado && c.nome && c.telefoneNormalizado.length >= 10)) return false;
+      if (numerosVistos.has(c.telefoneNormalizado)) return false; // (11/10) repetido dentro da seleção
+      numerosVistos.add(c.telefoneNormalizado);
+      return true;
+    });
     if (paraCadastrar.length === 0) return;
     if (!usuarioEhPro && clientes.length + paraCadastrar.length > LIMITE_CLIENTES_GRATIS) { setLimiteAberto(true); return; }
 
@@ -667,7 +707,7 @@ export default function Clientes() {
         <Campo rotulo="Nome" obrigatorio placeholder="Ex.: Ana Beatriz" autoComplete="off" value={completo.nome}
           onChange={e => setCompleto(f => ({ ...f, nome: e.target.value }))}
           erro={tentouSalvar && !completo.nome.trim() ? "Falta o nome" : undefined} />
-        <Campo rotulo="WhatsApp" obrigatorio type="tel" inputMode="tel" placeholder="(00) 9 0000-0000" autoComplete="off" maxLength={16} value={completo.whatsapp}
+        <Campo rotulo="WhatsApp" obrigatorio type="tel" inputMode="tel" placeholder="(00) 9 0000-0000" autoComplete="off" maxLength={20} value={completo.whatsapp}
           onChange={e => setCompleto(f => ({ ...f, whatsapp: maskPhone(e.target.value) }))}
           erro={tentouSalvar && (completo.whatsapp || "").replace(/\D/g, "").length < 10 ? "Coloque o número com DDD" : undefined} />
         {clienteRepetido && (

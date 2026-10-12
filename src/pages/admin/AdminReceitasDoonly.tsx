@@ -1,6 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
-import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, confirmar, informar } from "@/components/base";
+import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar, informar } from "@/components/base";
+import { explicarErro } from "@/lib/erros";
+
+/** (11/10) nome seguro pro caminho do arquivo: só a extensão, sem acento nem espaço */
+const extensaoSegura = (nome: string) => (nome.includes(".") ? nome.split(".").pop() || "" : "").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+/** (11/10) avisa a falha de uma gravação; devolve true quando deu erro */
+const falhou = (error: unknown, frase = "Não deu pra salvar. Tente de novo."): boolean => {
+  if (!error) return false;
+  avisar(explicarErro(error, frase), { tipo: "erro" });
+  return true;
+};
 import { ArrowDown, ArrowUp, Cake, Camera, Medal, PencilSimple, Plus, SquaresFour, Trash } from "@phosphor-icons/react";
 import "./adminReceitasDoonly.css";
 
@@ -14,6 +24,8 @@ export default function AdminReceitasDoonly() {
   const [editId, setEditId] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [enviandoFoto, setEnviandoFoto] = useState(false); // (11/10) a foto ainda está subindo: o Publicar espera
+  const ocupado = useRef(false); // trava o toque duplo nos botões que criam registro
   const fileRef = useRef<HTMLInputElement>(null);
 
   // ── Categorias (cartões da tela de Receitas do app) ──
@@ -23,24 +35,34 @@ export default function AdminReceitasDoonly() {
   const catFileRef = useRef<HTMLInputElement>(null);
   const catAlvo = useRef<string | null>(null);
   const loadCategorias = async () => {
-    const { data } = await supabase.from("receitas_categorias").select("*").order("ordem", { ascending: true });
+    const { data, error } = await supabase.from("receitas_categorias").select("*").order("ordem", { ascending: true });
+    if (falhou(error, "Não deu pra carregar as categorias.")) return;
     setCategorias(data || []);
   };
   const addCategoria = async () => {
     const nome = novaCat.trim();
-    if (!nome) return;
+    if (!nome || ocupado.current) return;
+    ocupado.current = true;
     const ordem = (categorias.reduce((m, c) => Math.max(m, c.ordem || 0), 0) || 0) + 1;
-    await supabase.from("receitas_categorias").insert({ nome, ordem });
+    const { error } = await supabase.from("receitas_categorias").insert({ nome, ordem });
+    ocupado.current = false;
+    if (falhou(error, "Não deu pra criar a categoria. Tente de novo.")) return; // o nome continua no campo
     setNovaCat(""); loadCategorias();
   };
   const moverCategoria = async (id: string, dir: -1 | 1) => {
     const i = categorias.findIndex(c => c.id === id); const j = i + dir;
     if (i < 0 || j < 0 || j >= categorias.length) return;
     const a = categorias[i], b = categorias[j];
-    await Promise.all([
+    const [r1, r2] = await Promise.all([
       supabase.from("receitas_categorias").update({ ordem: b.ordem ?? j }).eq("id", a.id),
       supabase.from("receitas_categorias").update({ ordem: a.ordem ?? i }).eq("id", b.id),
     ]);
+    // se só uma das duas gravou, desfaz essa (senão as duas categorias ficam com a mesma ordem)
+    if (r1.error || r2.error) {
+      if (!r1.error) await supabase.from("receitas_categorias").update({ ordem: a.ordem ?? i }).eq("id", a.id);
+      if (!r2.error) await supabase.from("receitas_categorias").update({ ordem: b.ordem ?? j }).eq("id", b.id);
+      falhou(r1.error || r2.error, "Não deu pra mudar a ordem. Tente de novo.");
+    }
     loadCategorias();
   };
   const escolherFotoCategoria = (id: string) => { catAlvo.current = id; catFileRef.current?.click(); };
@@ -49,21 +71,26 @@ export default function AdminReceitasDoonly() {
     e.target.value = "";
     if (!file || !id) return;
     setEnviandoCat(id);
-    const path = `receitas-categorias/${id}-${Date.now()}.${file.name.split(".").pop()}`;
-    const { error } = await supabase.storage.from("profiles").upload(path, file, { upsert: true });
-    if (!error) {
+    const path = `receitas-categorias/${id}-${Date.now()}.${extensaoSegura(file.name)}`;
+    let error: unknown = null;
+    try { error = (await supabase.storage.from("profiles").upload(path, file, { upsert: true })).error; } catch (err) { error = err; }
+    if (!falhou(error, "Não deu pra enviar a foto. Tente de novo.")) {
       const { data } = supabase.storage.from("profiles").getPublicUrl(path);
-      await supabase.from("receitas_categorias").update({ imagem_url: data.publicUrl }).eq("id", id);
-      loadCategorias();
+      const { error: erroGravar } = await supabase.from("receitas_categorias").update({ imagem_url: data.publicUrl }).eq("id", id);
+      if (!falhou(erroGravar, "Não deu pra salvar a foto. Tente de novo.")) loadCategorias();
     }
     setEnviandoCat(null);
   };
-  const tirarFotoCategoria = async (id: string) => { await supabase.from("receitas_categorias").update({ imagem_url: null }).eq("id", id); loadCategorias(); };
+  const tirarFotoCategoria = async (id: string) => {
+    const { error } = await supabase.from("receitas_categorias").update({ imagem_url: null }).eq("id", id);
+    if (!falhou(error, "Não deu pra tirar a foto. Tente de novo.")) loadCategorias();
+  };
   const apagarCategoria = async (c: any) => {
     const usadas = receitas.filter(r => r.categoria === c.nome).length;
     if (usadas > 0) { await informar({ titulo: `"${c.nome}" ainda tem receitas`, texto: `São ${usadas} receita${usadas === 1 ? "" : "s"} nela. Troque a categoria delas antes de apagar.`, icone: "alerta" }); return; }
     if (!(await confirmar({ titulo: `Apagar a categoria "${c.nome}"?`, texto: "Ela sai da tela de Receitas do app.", rotulo: "Apagar", perigo: true }))) return;
-    await supabase.from("receitas_categorias").delete().eq("id", c.id); loadCategorias();
+    const { error } = await supabase.from("receitas_categorias").delete().eq("id", c.id);
+    if (!falhou(error, "Não deu pra apagar a categoria. Tente de novo.")) loadCategorias();
   };
 
   useEffect(() => { load(); loadCategorias(); }, []);
@@ -78,20 +105,34 @@ export default function AdminReceitasDoonly() {
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    e.target.value = "";
     setPreview(URL.createObjectURL(file));
-    const path = `receitas-doonly/${Date.now()}.${file.name.split(".").pop()}`;
-    const { error } = await supabase.storage.from("profiles").upload(path, file, { upsert: true });
-    if (!error) {
+    const path = `receitas-doonly/${Date.now()}.${extensaoSegura(file.name)}`;
+    setEnviandoFoto(true);
+    let error: unknown = null;
+    try { error = (await supabase.storage.from("profiles").upload(path, file, { upsert: true })).error; } catch (err) { error = err; }
+    setEnviandoFoto(false);
+    if (!falhou(error, "Não deu pra enviar a foto. Tente de novo.")) {
       const { data } = supabase.storage.from("profiles").getPublicUrl(path);
       setForm(f => ({ ...f, foto_url: data.publicUrl }));
+    } else {
+      setPreview(form.foto_url || null); // (11/10) antes a falha era ignorada e a receita saía sem a foto
     }
   };
 
   const handleSave = async () => {
-    if (!form.nome.trim()) return;
+    if (!form.nome.trim() || enviandoFoto || ocupado.current) return;
+    ocupado.current = true;
     setSaving(true);
-    if (editId) await supabase.from("receitas_doonly").update(form).eq("id", editId);
-    else await supabase.from("receitas_doonly").insert(form);
+    // (11/10) só fecha e limpa se gravou (antes fechava mesmo com erro, e a receita digitada se perdia)
+    let error: unknown = null;
+    try {
+      error = editId
+        ? (await supabase.from("receitas_doonly").update(form).eq("id", editId)).error
+        : (await supabase.from("receitas_doonly").insert(form)).error;
+    } catch (err) { error = err; }
+    ocupado.current = false;
+    if (falhou(error, "Não deu pra salvar a receita. Tente de novo.")) { setSaving(false); return; }
     await load();
     setShowForm(false); setForm(emptyForm); setEditId(null); setPreview(null); setSaving(false);
   };
@@ -105,8 +146,8 @@ export default function AdminReceitasDoonly() {
 
   const handleDelete = async (id: string) => {
     if (!(await confirmar({ titulo: "Excluir esta receita?", texto: "Ela some do app e não dá pra desfazer.", rotulo: "Excluir", perigo: true }))) return;
-    await supabase.from("receitas_doonly").delete().eq("id", id);
-    load();
+    const { error } = await supabase.from("receitas_doonly").delete().eq("id", id);
+    if (!falhou(error, "Não deu pra excluir. Tente de novo.")) load();
   };
 
   const novaReceita = () => { setForm(emptyForm); setPreview(null); setEditId(null); setShowForm(true); };
@@ -200,7 +241,7 @@ export default function AdminReceitasDoonly() {
         acoes={
           <>
             <Botao variante="secundario" onClick={() => setShowForm(false)}>Cancelar</Botao>
-            <Botao onClick={handleSave} carregando={saving} disabled={!form.nome.trim()}>{editId ? "Salvar" : "Publicar"}</Botao>
+            <Botao onClick={handleSave} carregando={saving} disabled={!form.nome.trim() || enviandoFoto}>{enviandoFoto ? "Enviando a foto…" : editId ? "Salvar" : "Publicar"}</Botao>
           </>
         }
       >

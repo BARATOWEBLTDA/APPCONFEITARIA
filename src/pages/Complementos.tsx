@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Camera, Check, DotsThreeVertical, Info, MagnifyingGlass, Package, PencilSimple, Plus, PuzzlePiece, Trash, X } from "@phosphor-icons/react";
+import { Camera, Check, DotsThreeVertical, Info, MagnifyingGlass, Package, PencilSimple, Plus, PuzzlePiece, Trash, WarningCircle, X } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
+import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
 import "./categorias.css";
@@ -41,21 +42,27 @@ export default function Complementos() {
   const [tentou, setTentou] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    (async () => {
+  // (11/10) a leitura falhou: mostra o erro com "Tentar de novo" em vez de "Cadastre um produto primeiro" ou "Nenhuma personalização ainda"
+  const [erroCarga, setErroCarga] = useState("");
+  const carregar = async () => {
+    setLoading(true); setErroCarga("");
+    try {
       const { data: userData } = await supabase.auth.getUser();
       const uid = userData.user?.id;
-      if (!uid) { setLoading(false); return; }
+      if (!uid) { setErroCarga("Tente de novo em instantes."); setLoading(false); return; }
       setUserId(uid);
-      const [{ data }, { data: prods }] = await Promise.all([
+      const [{ data, error }, { data: prods, error: erroProds }] = await Promise.all([
         supabase.from("biblioteca_extras").select("*").eq("user_id", uid).order("nome"),
         supabase.from("produtos").select("id, nome, categoria, imagem_url").eq("user_id", uid).order("nome"),
       ]);
-      setItems((data as Complemento[]) || []);
-      setProdutos((prods as ProdutoLite[]) || []);
-      setLoading(false);
-    })();
-  }, []);
+      if (error || erroProds || !data || !prods) setErroCarga(explicarErro(error || erroProds, "Tente de novo em instantes."));
+      else { setItems(data as Complemento[]); setProdutos(prods as ProdutoLite[]); }
+    } catch (e) {
+      setErroCarga(explicarErro(e, "Tente de novo em instantes."));
+    }
+    setLoading(false);
+  };
+  useEffect(() => { void carregar(); }, []);
 
   const abrir = (c: Complemento | null, escolherProdutos = false) => {
     setEditando(c);
@@ -137,6 +144,9 @@ export default function Complementos() {
       <div className="ct">
         {loading ? (
           <div className="ct-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
+        ) : erroCarga ? (
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar as personalizações" texto={erroCarga}
+            acao={<Botao onClick={() => void carregar()}>Tentar de novo</Botao>} />
         ) : produtos.length === 0 ? (
           <TelaVazia caixa icone={<Package size={30} />} titulo="Cadastre um produto primeiro"
             texto="A personalização aparece dentro dos produtos do cardápio. Cadastre pelo menos um produto antes."

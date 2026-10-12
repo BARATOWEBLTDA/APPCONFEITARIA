@@ -154,9 +154,12 @@ export default function ClientePerfil() {
       return;
     }
     const { data } = supabase.storage.from("profiles").getPublicUrl(path);
-    await supabase.from("clientes").update({ foto_url: data.publicUrl }).eq("id", cliente.id);
-    setCliente({ ...cliente, foto_url: data.publicUrl });
+    // (11/10) só diz "Foto trocada" se o cadastro gravou (antes avisava mesmo quando falhava)
+    let erroGravar: unknown = null;
+    try { erroGravar = (await supabase.from("clientes").update({ foto_url: data.publicUrl }).eq("id", cliente.id)).error; } catch (e) { erroGravar = e; }
     setUploadingFoto(false);
+    if (erroGravar) { avisar(explicarErro(erroGravar, "Não deu pra salvar a foto. Tente de novo."), { tipo: "erro" }); return; }
+    setCliente(c => (c && c.id === cliente.id ? { ...c, foto_url: data.publicUrl } : c));
     avisar("Foto trocada", { tipo: "ok" });
   };
   const recorte = useRecorte(f => { void handleFotoUpload(f); }, { forma: "round" });

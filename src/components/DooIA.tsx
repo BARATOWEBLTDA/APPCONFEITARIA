@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { CaretLeft, X, Check, Copy, ImageSquare, ArrowRight, CurrencyCircleDollar, BookOpenText, InstagramLogo, CalendarCheck, Receipt, Package } from '@phosphor-icons/react'
+import { CaretLeft, X, Check, Copy, ImageSquare, ArrowRight, CurrencyCircleDollar, BookOpenText, InstagramLogo, CalendarCheck, Receipt, Package, NotePencil, DownloadSimple } from '@phosphor-icons/react'
 import { useNavigate as useNavigateDoo } from 'react-router-dom'
 import CartaoPedidoDoo from '@/components/doo/CartaoPedidoDoo'
 import { listarCatalogo, catalogoParaDoo, type RascunhoPedido, type ProdutoCat, type ClienteCat } from '@/lib/pedidosDoo'
@@ -9,7 +9,8 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { usePlano } from '@/hooks/usePlano'
 import { apiFetch } from "@/lib/apiFetch";
-import { Botao, Janela } from '@/components/base'
+import { Botao, Janela, avisar, confirmar } from '@/components/base'
+import { useSobreposicao } from '@/components/base/useSobreposicao'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -19,9 +20,16 @@ interface Message {
   attachmentPreview?: string
   /** Rascunho de cadastro que a Doo preparou (só é salvo quando ela confirma no cartão) */
   acao?: RascunhoInsumo | RascunhoPedido
-  acaoEstado?: 'pendente' | 'salvo' | 'cancelado'
+  /** 'editando' (11/10): ela tocou em "Editar" e o rascunho foi pra Nova venda (o cartão não registra mais por aqui) */
+  acaoEstado?: 'pendente' | 'salvo' | 'cancelado' | 'editando'
   /** número do pedido registrado (pra mostrar no cartão) */
   acaoNumero?: string | number
+  /** (11/10) aviso de erro do próprio app: aparece na conversa, mas NÃO vai pra IA */
+  erro?: boolean
+  /** (11/10) o erro se resolve começando outra conversa: mostra o botão embaixo */
+  oferecerNova?: boolean
+  /** (11/10) a resposta bateu no limite de tamanho e veio cortada */
+  cortada?: boolean
 }
 
 const MAX_HISTORY = 12
@@ -323,7 +331,20 @@ ${catTxt}
 /** Separa o bloco acao-doonly da resposta. */
 function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | RascunhoPedido | null } {
   const m = reply.match(/```acao-doonly\s*([\s\S]*?)```/)
-  if (!m) return { texto: reply, acao: null }
+  if (!m) {
+    // (11/10) bloco de ação que não fechou (a resposta foi cortada no meio): o JSON cru não aparece na conversa
+    const i = reply.lastIndexOf('```')
+    if (i >= 0 && (reply.split('```').length - 1) % 2 === 1) {
+      const resto = reply.slice(i + 3)
+      const nome = resto.split(/\s/)[0]
+      // (11/10) bloco ``` comum sem nome não esconde o resto; só a cerca recém-aberta (nada depois dela)
+      const ehAcao = nome ? (nome.startsWith('acao-doonly') || 'acao-doonly'.startsWith(nome)) : !resto.trim()
+      if (ehAcao) {
+        return { texto: reply.slice(0, i).trim() || 'Não consegui terminar de montar. Peça de novo, por favor.', acao: null }
+      }
+    }
+    return { texto: reply, acao: null }
+  }
   let acao: RascunhoInsumo | RascunhoPedido | null = null
   try {
     const j = JSON.parse(m[1].trim())
@@ -353,12 +374,81 @@ function fileToBase64(file: File): Promise<string> {
 }
 
 
-function getErrorMessage(errorType: string, status?: number): string {
+/**
+ * (11/10) Foto do celular (3 a 8 MB) não passa pelo servidor e virava "Problema de conexão".
+ * Antes de mandar, ela é reduzida no aparelho: no máximo 1600 px no lado maior, em JPEG (PNG transparente ganha fundo branco).
+ */
+async function reduzirFoto(file: File, ladoMaior = 1600): Promise<{ base64: string; mediaType: string }> {
+  const url = URL.createObjectURL(file)
+  try {
+    const img = await new Promise<HTMLImageElement>((ok, falhou) => {
+      const i = new Image()
+      i.onload = () => ok(i)
+      i.onerror = () => falhou(new Error('foto'))
+      i.src = url
+    })
+    if (!img.naturalWidth || !img.naturalHeight) throw new Error('foto')
+    const escala = Math.min(1, ladoMaior / Math.max(img.naturalWidth, img.naturalHeight))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.max(1, Math.round(img.naturalWidth * escala))
+    canvas.height = Math.max(1, Math.round(img.naturalHeight * escala))
+    const ctx = canvas.getContext('2d')
+    if (!ctx) throw new Error('canvas')
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+    const base64 = canvas.toDataURL('image/jpeg', 0.85).split(',')[1]
+    if (!base64) throw new Error('canvas')
+    return { base64, mediaType: 'image/jpeg' }
+  } finally {
+    URL.revokeObjectURL(url)
+  }
+}
+
+/** Os avisos de erro antigos (gravados na conversa antes de existir a marca "erro"): também não vão pra IA. */
+const ERROS_ANTIGOS = new Set([
+  'Muitas mensagens em seguida. Aguarde um momento e tente novamente.',
+  'Problema de autenticação. Contate o suporte do Doonly.',
+  'O servidor está instável. Tente novamente em instantes.',
+  'Configuração incompleta. Contate o suporte do Doonly.',
+  'Problema de conexão. Verifique sua internet e tente novamente.',
+  'Não consegui responder agora. Tenta de novo!',
+])
+const ehErroLocal = (m: Message | undefined): boolean => !!m && m.role === 'assistant' && (!!m.erro || ERROS_ANTIGOS.has(m.content))
+
+/** A nota que o app escreve no fim da mensagem pra IA saber o que aconteceu com o cartão (não aparece na tela). */
+const NOTA_DO_APP = /\n\n\[(O app confirmou|A confeiteira cancelou|A confeiteira abriu)[^\]]*\]$/
+
+const PEDE_NOVA_CONVERSA = 'Comece uma nova conversa e tente de novo.'
+
+/** caso: 'foto' = a mensagem levava uma foto · 'imagem' = pedido de criar imagem · 'texto' = conversa normal */
+function getErrorMessage(errorType: string, status?: number, caso: 'foto' | 'imagem' | 'texto' = 'texto'): string {
   if (status === 429 || errorType === 'rate_limit_error') return 'Muitas mensagens em seguida. Aguarde um momento e tente novamente.'
+  // (11/10) só o erro de plano mostra o "Assine o PRO" (outro 403 cai no aviso genérico)
+  if (errorType === 'pro_required') return 'A Doo faz parte do plano PRO. Assine o PRO pra continuar.'
   if (status === 401 || errorType === 'authentication_error') return 'Problema de autenticação. Contate o suporte do Doonly.'
-  if (status === 500 || errorType === 'api_error') return 'O servidor está instável. Tente novamente em instantes.'
+  if (status === 413 || errorType === 'too_large' || errorType === 'request_too_large') {
+    return caso === 'foto' ? 'A foto ficou grande demais. Tente outra.' : `A conversa ficou grande demais. ${PEDE_NOVA_CONVERSA}`
+  }
+  if (status === 400 || errorType === 'invalid_request_error') {
+    if (caso === 'foto') return 'Não consegui ler essa foto. Tente outra.'
+    if (caso === 'imagem') return 'Não consegui criar essa imagem. Tente pedir de outro jeito.'
+    return `Não consegui continuar essa conversa. ${PEDE_NOVA_CONVERSA}`
+  }
   if (errorType === 'missing_key') return 'Configuração incompleta. Contate o suporte do Doonly.'
+  if ((status && status >= 500) || errorType === 'api_error' || errorType === 'overloaded_error') return 'O servidor está instável. Tente novamente em instantes.'
   return 'Problema de conexão. Verifique sua internet e tente novamente.'
+}
+
+/** Lê a resposta das rotas da Doo. Erro vira { type, status } (o chat responde 200 e manda o erro dentro do JSON). */
+async function lerResposta(res: Response): Promise<any> {
+  let data: any = null
+  try { data = await res.json() } catch { /* resposta sem JSON (ex.: o 413 da hospedagem) */ }
+  if (!res.ok || !data || data.error) {
+    const tipo = typeof data?.error === 'string' ? data.error : data?.error?.type
+    throw { type: tipo || (res.ok ? 'api_error' : ''), status: res.ok ? (Number(data?.status) || 500) : res.status }
+  }
+  return data
 }
 
 function formatText(text: string): string {
@@ -390,6 +480,9 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const painelRef = useRef<HTMLDivElement>(null)
+  // (11/10) imagens geradas já baixadas no aparelho (quando o endereço deixa), pro botão "Baixar imagem"
+  const blobsImagem = useRef<Record<string, Blob>>({})
 
 
 
@@ -446,28 +539,10 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
     })
   }, [])
 
-  // Scroll lock ao abrir — iOS Safari safe (salva scrollY e restaura ao fechar)
-  useEffect(() => {
-    if (!open) return
-    const scrollY = window.scrollY
-    const prev = {
-      overflow: document.body.style.overflow,
-      position: document.body.style.position,
-      top: document.body.style.top,
-      width: document.body.style.width,
-    }
-    document.body.style.overflow = 'hidden'
-    document.body.style.position = 'fixed'
-    document.body.style.top = `-${scrollY}px`
-    document.body.style.width = '100%'
-    return () => {
-      document.body.style.overflow = prev.overflow
-      document.body.style.position = prev.position
-      document.body.style.top = prev.top
-      document.body.style.width = prev.width
-      window.scrollTo(0, scrollY)
-    }
-  }, [open])
+  // (11/10) Antes a Doo travava a rolagem por conta própria e brigava com a trava da <Janela> (o aviso do PRO):
+  // ao fechar, a tela ficava sem rolar e deslocada. Agora usa a mesma peça das janelas do app: a tela de trás
+  // não rola, o Esc e o "voltar" do Android fecham a Doo (antes o voltar trocava a tela de trás e ela ficava aberta).
+  useSobreposicao(open && isPro, handleClose, painelRef)
 
   // Scroll para última mensagem
   useEffect(() => {
@@ -491,11 +566,45 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
     
   }
 
+  // (11/10) "Nova conversa": pergunta antes, porque a conversa de agora sai do aparelho
+  const novaConversa = async () => {
+    if (loading || generatingImage) return
+    if (messages.length) {
+      const ok = await confirmar({ titulo: 'Começar uma nova conversa?', texto: 'A conversa de agora some deste aparelho.', rotulo: 'Nova conversa', rotuloVoltar: 'Voltar', icone: 'info' })
+      if (!ok) return
+    }
+    clearConversation()
+  }
+
   const handleFileSelect = async (file: File) => {
     if (!file.type.startsWith('image/')) return
-    const base64 = await fileToBase64(file)
+    let pronta: { base64: string; mediaType: string }
+    try {
+      pronta = await reduzirFoto(file)
+    } catch {
+      // o aparelho não conseguiu abrir a foto pra reduzir: se ela for pequena e de um tipo aceito, vai como está
+      const aceito = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)
+      if (!aceito || file.size > 2.5 * 1024 * 1024) { avisar('Não deu pra abrir essa foto. Tente outra.', { tipo: 'erro' }); return }
+      try { pronta = { base64: await fileToBase64(file), mediaType: file.type } }
+      catch { avisar('Não deu pra abrir essa foto. Tente outra.', { tipo: 'erro' }); return }
+    }
     const preview = URL.createObjectURL(file)
-    setPendingImage({ base64, mediaType: file.type, preview })
+    setPendingImage({ ...pronta, preview })
+  }
+
+  // (11/10) O app bloqueia o "salvar imagem" do toque longo: o botão baixa a imagem (quando ela já está no aparelho)
+  // ou abre em outra aba, onde dá pra salvar. Sem esperar nada antes, pra o navegador não bloquear a aba nova.
+  const baixarImagem = (url: string) => {
+    const blob = blobsImagem.current[url]
+    if (!blob) { window.open(url, '_blank', 'noopener'); return }
+    const endereco = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = endereco
+    link.download = `imagem-doo-${Date.now()}.png`
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    setTimeout(() => URL.revokeObjectURL(endereco), 10000)
   }
 
   const removePendingImage = () => {
@@ -528,9 +637,12 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
     setLoading(true)
 
     // Limita histórico enviado para a API — mantém display completo
-    const historyForApi = newMessages
-      .filter(m => !m.isImage)
+    // (11/10) não vão pra IA: os avisos de erro do próprio app e a pergunta que ficou sem resposta por causa deles.
+    // E o recorte precisa começar numa mensagem dela: começando numa resposta da Doo, a IA recusava e a conversa travava.
+    const recorte = newMessages
+      .filter((m, k) => !m.isImage && !ehErroLocal(m) && !(m.role === 'user' && ehErroLocal(newMessages[k + 1])) && !!m.content.trim())
       .slice(-MAX_HISTORY)
+    const historyForApi = recorte.slice(Math.max(0, recorte.findIndex(m => m.role === 'user')))
 
     try {
       if (!imgPayload && isImageRequest(text)) {
@@ -542,15 +654,15 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt: buildImagePrompt(text) })
         })
-        const data = await res.json()
-
-        if (!res.ok) throw { type: data.error, status: res.status }
+        const data = await lerResposta(res)
 
         const imageUrl = data?.data?.[0]?.url
         if (imageUrl) {
+          // já tenta guardar a imagem no aparelho, pro "Baixar imagem" funcionar num toque (se o endereço não deixar, o botão abre em outra aba)
+          fetch(imageUrl).then(r => (r.ok ? r.blob() : null)).then(b => { if (b) blobsImagem.current[imageUrl] = b }).catch(() => {})
           setMessages(prev => [...prev, {
             role: 'assistant',
-            content: 'Aqui está a imagem gerada. Você pode salvar clicando com o botão direito. Para impressão, recomendo solicitar em PDF ou vetor ao designer com sangria de 3mm.',
+            content: 'Aqui está a imagem. Toque em "Baixar imagem" pra guardar; se ela abrir em outra aba, salve por lá. Baixe logo: o endereço dela vale por pouco tempo. Para impressão, recomendo solicitar em PDF ou vetor ao designer com sangria de 3mm.',
             imageUrl,
             isImage: true
           }])
@@ -577,17 +689,27 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
           })
         })
 
-        const data = await res.json()
-        if (!res.ok) throw { type: data.error, status: res.status }
+        const data = await lerResposta(res)
 
-        const reply = data?.content?.[0]?.text || 'Não consegui responder agora. Tenta de novo!'
-        const { texto, acao } = extrairAcao(reply)
-        setMessages(prev => [...prev, acao ? { role: 'assistant', content: texto, acao, acaoEstado: 'pendente' } : { role: 'assistant', content: texto }])
+        const reply: string = data?.content?.[0]?.text || ''
+        if (!reply) {
+          setMessages(prev => [...prev, { role: 'assistant', content: 'Não consegui responder agora. Tente de novo.', erro: true }])
+        } else {
+          // (11/10) resposta que bateu no limite de tamanho: avisa embaixo (antes ela só parava no meio da frase)
+          const cortada = data?.stop_reason === 'max_tokens'
+          const { texto, acao } = extrairAcao(reply)
+          setMessages(prev => [...prev, acao
+            ? { role: 'assistant', content: texto, acao, acaoEstado: 'pendente' }
+            : { role: 'assistant', content: texto, ...(cortada ? { cortada: true } : {}) }])
+        }
       }
     } catch (err: any) {
+      const frase = getErrorMessage(err?.type ?? '', err?.status, imgPayload ? 'foto' : isImageRequest(text) ? 'imagem' : 'texto')
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: getErrorMessage(err?.type ?? '', err?.status)
+        content: frase,
+        erro: true,
+        ...(frase.endsWith(PEDE_NOVA_CONVERSA) ? { oferecerNova: true } : {}),
       }])
     }
 
@@ -640,7 +762,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
 
       {/* ── Janela do chat (02/10): tela cheia no celular, painel alto do lado direito no computador ── */}
       {open && isPro && (
-        <div className="dooia-panel" role="dialog" aria-label="Doo IA">
+        <div ref={painelRef} tabIndex={-1} className="dooia-panel" role="dialog" aria-label="Doo IA">
 
           {/* Cabeçalho */}
           <div className="dz-hd">
@@ -650,6 +772,9 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
               <b>Doo IA <em>PRO</em></b>
               <small className={loading || generatingImage ? 'dz-esc' : ''}><i aria-hidden="true" />{loading ? 'Escrevendo…' : generatingImage ? 'Criando a imagem…' : 'Online · responde na hora'}</small>
             </div>
+            {messages.length > 0 && (
+              <button type="button" className="dz-hb" onClick={novaConversa} disabled={loading || generatingImage} aria-label="Nova conversa" title="Nova conversa"><NotePencil size={20} weight="bold" /></button>
+            )}
             <button type="button" className="dz-hb dz-fechar" onClick={handleClose} aria-label="Fechar"><X size={20} weight="bold" /></button>
           </div>
 
@@ -682,11 +807,22 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                   <div className="dz-bd">
                     {msg.attachmentPreview && <img src={msg.attachmentPreview} alt="Referência" className="dz-anexo" />}
                     {msg.imageUrl && <img src={msg.imageUrl} alt="Imagem gerada" className="dz-gerada" />}
-                    <span dangerouslySetInnerHTML={{ __html: formatText(msg.content.replace(/\n\n\[(O app confirmou|A confeiteira cancelou)[^\]]*\]$/, '')) }} />
+                    <span dangerouslySetInnerHTML={{ __html: formatText(msg.content.replace(NOTA_DO_APP, '')) }} />
                   </div>
-                  {msg.acao && uid && msg.acao.acao === 'pedido' && (
+                  {msg.cortada && <p className="dz-corte">A resposta ficou longa e foi cortada. Peça pra continuar.</p>}
+                  {/* (11/10) "Editar" levou o rascunho pra Nova venda: o cartão fica resolvido (antes continuava pendente e,
+                      ao reabrir a Doo, um toque registrava o pedido de novo) */}
+                  {msg.acao && msg.acao.acao === 'pedido' && msg.acaoEstado === 'editando' && (
+                    <p className="dz-res"><ArrowRight size={16} weight="bold" aria-hidden="true" />Aberto na Nova venda</p>
+                  )}
+                  {msg.acao && uid && msg.acao.acao === 'pedido' && msg.acaoEstado !== 'editando' && (
                     <CartaoPedidoDoo uid={uid} rascunho={msg.acao as RascunhoPedido} catalogo={catalogo} estado={msg.acaoEstado || 'pendente'} numero={msg.acaoNumero}
-                      onEditar={(dados) => { handleClose(); navigateDoo('/vendas/novo', { state: { rascunhoDoo: dados } }) }}
+                      onEditar={(dados) => {
+                        setMessages(prev => prev.map((m, k) => k === i ? { ...m, acaoEstado: 'editando', content: m.content + '\n\n[A confeiteira abriu esse pedido na tela Nova venda pra terminar por lá.]' } : m))
+                        // a Doo guarda uma entrada no histórico pro "voltar"; a Nova venda entra no lugar dela
+                        const substituir = !!(window.history.state as { uiJanela?: boolean } | null)?.uiJanela
+                        handleClose(); navigateDoo('/vendas/novo', { state: { rascunhoDoo: dados }, replace: substituir })
+                      }}
                       onFeito={(estado, info) => {
                         const nota = estado === 'salvo' ? `\n\n[O app confirmou: pedido${info?.numero ? ' #' + info.numero : ''} registrado (${info?.resumo}).]` : '\n\n[A confeiteira cancelou esse pedido.]'
                         setMessages(prev => prev.map((m, k) => k === i ? { ...m, acaoEstado: estado, acaoNumero: info?.numero, content: m.content + nota } : m))
@@ -694,7 +830,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                       }} />
                   )}
                   {msg.acao && uid && msg.acao.acao === 'insumo' && (
-                    <CartaoInsumoDoo uid={uid} rascunho={msg.acao as RascunhoInsumo} estado={msg.acaoEstado || 'pendente'}
+                    <CartaoInsumoDoo uid={uid} rascunho={msg.acao as RascunhoInsumo} estado={!msg.acaoEstado || msg.acaoEstado === 'editando' ? 'pendente' : msg.acaoEstado}
                       existente={(msg.acao as RascunhoInsumo).insumo_id ? insumos.find(x => x.id === (msg.acao as RascunhoInsumo).insumo_id) || null : null}
                       onFeito={(estado, final) => {
                         // O histórico enviado pra Doo fica sabendo do resultado (pra ela não oferecer de novo)
@@ -705,9 +841,17 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                   )}
                   {msg.role === 'assistant' && !msg.isImage && (
                     <div className="dz-acs">
-                      <button type="button" onClick={() => copyMessage(msg.content.replace(/\n\n\[(O app confirmou|A confeiteira cancelou)[^\]]*\]$/, ''), i)} className={copiedId === i ? 'ok' : ''}>
+                      <button type="button" onClick={() => copyMessage(msg.content.replace(NOTA_DO_APP, ''), i)} className={copiedId === i ? 'ok' : ''}>
                         {copiedId === i ? <><Check size={16} weight="bold" />Copiado</> : <><Copy size={16} weight="bold" />Copiar</>}
                       </button>
+                      {msg.oferecerNova && i === messages.length - 1 && (
+                        <button type="button" onClick={novaConversa}><NotePencil size={16} weight="bold" />Nova conversa</button>
+                      )}
+                    </div>
+                  )}
+                  {msg.imageUrl && (
+                    <div className="dz-acs">
+                      <button type="button" onClick={() => baixarImagem(msg.imageUrl as string)}><DownloadSimple size={16} weight="bold" />Baixar imagem</button>
                     </div>
                   )}
                 </div>
@@ -817,6 +961,10 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dz-acs button::after { content: ""; position: absolute; inset: -4px 0; }
         @media (hover: hover) { .dz-acs button:hover { background: var(--ui-cinza); } }
         .dz-acs button.ok { color: var(--ui-verde); }
+        .dz-acs button + button { margin-left: 0; }
+        .dooia-panel:focus { outline: none; }
+        .dz-corte { margin: 6px 0 0 2px; font-size: 12.5px; line-height: 1.4; color: var(--ui-laranja); }
+        .dz-res { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; margin: 8px 0 0; padding: 8px 12px; border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 13.5px; font-weight: 500; color: var(--ui-texto-2); }
         .dz-dig { display: flex; align-items: center; gap: 6px; padding: 14px 16px; font-size: 13px; color: var(--ui-texto-2); }
         .dz-dig i { width: 7px; height: 7px; border-radius: 50%; background: #D9A5B9; animation: dooTyping 1.2s ease-in-out infinite; }
         .dz-dig i:nth-child(2) { animation-delay: .2s; } .dz-dig i:nth-child(3) { animation-delay: .4s; }

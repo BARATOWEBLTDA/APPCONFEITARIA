@@ -1,6 +1,7 @@
 import { Heart } from '@phosphor-icons/react'
 import { formatCurrency } from '@/utils/helpers'
-import { KitQtdConfig, KitSelecao, calcularKit, kitsValidos, precoLivre } from '@/lib/kitQuantidade'
+import { KitQtdConfig, KitSelecao, calcularKit, kitsValidos, precoLivre, proximaQtdLivre, anteriorQtdLivre } from '@/lib/kitQuantidade'
+import { comDesconto } from '@/lib/precoCardapio'
 
 /**
  * Cardápio: o cliente monta o kit escolhendo quantos de cada sabor.
@@ -27,7 +28,8 @@ export default function KitPicker({ kit, sel, onChange, desconto = 0 }: Props) {
             <button key={k.id} type="button" role="radio" aria-checked={sel.kitId === k.id}
               className={sel.kitId === k.id ? 'on' : ''} onClick={() => onChange({ ...sel, kitId: k.id })}>
               <b>{k.qtd} un</b>
-              <span>{formatCurrency(desconto > 0 ? parseFloat((k.preco - parseFloat((k.preco * desconto).toFixed(2))).toFixed(2)) : k.preco)}</span>
+              {/* (11/10) a mesma conta do botão "Adicionar" */}
+              <span>{formatCurrency(comDesconto(k.preco, desconto))}</span>
               {desconto > 0 && <s className="kp-cheio">{formatCurrency(k.preco)}</s>}
             </button>
           ))}
@@ -36,11 +38,13 @@ export default function KitPicker({ kit, sel, onChange, desconto = 0 }: Props) {
         <div className="kp-livre">
           <span>Quantidade</span>
           <div className="kp-stp">
-            <button type="button" aria-label="Diminuir" disabled={sel.qtdLivre - l.passo < l.min} onClick={() => onChange({ ...sel, qtdLivre: sel.qtdLivre - l.passo })}>−</button>
+            {/* (11/10) o último passo vai até o máximo (antes o "+" parava antes do "até X" do texto) */}
+            <button type="button" aria-label="Diminuir" disabled={anteriorQtdLivre(l, sel.qtdLivre) >= sel.qtdLivre} onClick={() => onChange({ ...sel, qtdLivre: anteriorQtdLivre(l, sel.qtdLivre) })}>−</button>
             <b>{sel.qtdLivre}</b>
-            <button type="button" aria-label="Aumentar" disabled={sel.qtdLivre + l.passo > l.max} onClick={() => onChange({ ...sel, qtdLivre: sel.qtdLivre + l.passo })}>+</button>
+            <button type="button" aria-label="Aumentar" disabled={proximaQtdLivre(l, sel.qtdLivre) <= sel.qtdLivre} onClick={() => onChange({ ...sel, qtdLivre: proximaQtdLivre(l, sel.qtdLivre) })}>+</button>
           </div>
-          <em>{formatCurrency(precoLivre(kit, sel.qtdLivre))}</em>
+          {/* (11/10) com promoção, mostra o preço que o botão cobra (e o cheio riscado) */}
+          <em>{desconto > 0 && <s className="kp-cheio">{formatCurrency(precoLivre(kit, sel.qtdLivre))}</s>}{formatCurrency(comDesconto(precoLivre(kit, sel.qtdLivre), desconto))}</em>
         </div>
       )}
 
@@ -102,6 +106,7 @@ export default function KitPicker({ kit, sel, onChange, desconto = 0 }: Props) {
         .kp-sab-nome svg { color: var(--ui-rosa); flex-shrink: 0; }
         .kp-kits .kp-cheio { font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
         .kp-kits button.on .kp-cheio { color: rgba(255,255,255,.6); }
+        .kp-livre .kp-cheio { margin-right: 6px; font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
         .kp-stp { display: flex; align-items: center; border: 1px solid #EAE3E6; border-radius: 9px; overflow: hidden; background: var(--ui-branco); }
         .kp-stp button { width: 34px; height: 34px; border: none; background: none; font-size: 18px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
         .kp-stp button:last-child { color: #16a34a; } .kp-stp button:disabled { color: #D6CBD0; cursor: default; }

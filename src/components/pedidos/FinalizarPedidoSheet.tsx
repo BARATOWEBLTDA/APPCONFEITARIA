@@ -1,5 +1,5 @@
 import CampoData from '@/components/CampoData'
-import { useTravarRolagem } from "@/hooks/useTravarRolagem";
+import { useSobreposicao } from "@/components/base/useSobreposicao";
 import { useEffect, useRef, useState } from "react";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import { createPortal } from "react-dom";
@@ -55,6 +55,9 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
   const valorAjuste = ajusteAberto ? num(valorAjusteTxt) : 0;
   const novoTotal = r2(totalOriginal + (tipoAjuste === "acrescimo" ? valorAjuste : -valorAjuste));
   const saldo = Math.max(0, r2(novoTotal - jaRecebido));
+  // (11/10) recebido maior que o total (desconto dado depois de pagar, item tirado): não bloqueia, mas avisa
+  const recebidoBruto = pedido.status_pagamento === "pago" ? Math.max(totalOriginal, r2(Number(pedido.valor_recebido) || 0)) : jaRecebido;
+  const aMais = Math.max(0, r2(recebidoBruto - novoTotal));
 
   const [recebeTxt, setRecebeTxt] = useState(txt(saldo));
   const [recebeEditado, setRecebeEditado] = useState(false);
@@ -67,7 +70,6 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
   const [outraData, setOutraData] = useState(isoDia());
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
-  useTravarRolagem(true)
 
   // (10/10) O que já foi gravado nesta abertura. Se um passo falhar e ela tentar de novo, o que já gravou
   // não é refeito (antes o desconto era somado de novo a cada tentativa).
@@ -82,7 +84,9 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
     onCancelar();
   };
 
-  useEffect(() => { const esc = (e: KeyboardEvent) => { if (e.key === "Escape" && !salvando) fechar(); }; window.addEventListener("keydown", esc); return () => window.removeEventListener("keydown", esc); }, [onCancelar, salvando, ajusteGravado]); // eslint-disable-line react-hooks/exhaustive-deps
+  // (11/10) Esc, o "voltar" do Android e a trava da rolagem vêm do mesmo lugar das outras janelas do app
+  const caixa = useRef<HTMLDivElement>(null);
+  useSobreposicao(true, () => { if (!salvando) fechar(); }, caixa);
 
   const concluir = async (comRecebimento: boolean) => {
     setErro("");
@@ -129,7 +133,7 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
 
   return createPortal(
     <div className="fps-ov" onClick={() => !salvando && fechar()} role="dialog" aria-modal="true" aria-label="Finalizar pedido">
-      <div className="fps" onClick={e => e.stopPropagation()}>
+      <div className="fps" ref={caixa} tabIndex={-1} onClick={e => e.stopPropagation()}>
         <span className="fps-alca" aria-hidden="true" />
         <div className="fps-hd">
           <div>
@@ -178,7 +182,13 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
                            : <><b>O pedido fica quitado</b><small>{brl(recebe)} entram no financeiro.</small></>}
           </div>
         )}
-        {saldo <= 0.009 && <div className="fps-prev fps-prev--ok"><b>Pedido já está pago</b><small>Nada a receber agora.</small></div>}
+        {saldo <= 0.009 && aMais <= 0.009 && <div className="fps-prev fps-prev--ok"><b>Pedido já está pago</b><small>Nada a receber agora.</small></div>}
+        {aMais > 0.009 && (
+          <div className="fps-prev">
+            <b>{valorAjuste > 0 && tipoAjuste === "desconto" ? `Com esse desconto, o cliente já pagou ${brl(aMais)} a mais` : `O cliente já pagou ${brl(aMais)} a mais`}</b>
+            <small>Se for devolver, estorne o recebimento na tela do pedido e lance o valor certo.</small>
+          </div>
+        )}
         {erro && <p className="fps-erro">{erro}</p>}
 
         <button type="button" className="fps-cta" onClick={() => concluir(true)} disabled={salvando}>
@@ -189,6 +199,7 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
       <style>{`
         .fps-ov { position: fixed; inset: 0; z-index: 1300; background: rgba(45,31,38,.5); display: flex; align-items: flex-end; justify-content: center; font-family: var(--font-base); }
         @media (min-width: 768px) { .fps-ov { align-items: center; } }
+        .fps:focus { outline: none; }
         .fps { width: 100%; max-width: 460px; background: var(--ui-branco); border-radius: var(--ui-raio-janela) var(--ui-raio-janela) 0 0; padding: 10px 18px calc(18px + env(safe-area-inset-bottom, 0px)); max-height: 94dvh; overflow-y: auto; color: var(--ui-texto); animation: fpsSobe .22s ease; }
         @media (min-width: 768px) { .fps { border-radius: 22px; } }
         @keyframes fpsSobe { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }

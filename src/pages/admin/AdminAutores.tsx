@@ -23,6 +23,8 @@ export default function AdminAutores() {
   const [menuDe, setMenuDe] = useState<Autor | null>(null);
   const fotoRef = useRef<HTMLInputElement>(null);
   const [uploadingFoto, setUploadingFoto] = useState(false);
+  const [salvando, setSalvando] = useState(false); // (11/10) o botão mostra que está salvando e não aceita toque duplo
+  const salvandoRef = useRef(false);
   const [form, setForm] = useState({ nome: "", cargo: "", foto_url: "", bio: "", ativo: true, ordem: 0 });
 
   const carregar = async () => {
@@ -70,6 +72,9 @@ export default function AdminAutores() {
 
   const salvar = async () => {
     if (!form.nome.trim()) return showMsg("Preencha o nome.", "err");
+    if (salvandoRef.current || uploadingFoto) return;
+    salvandoRef.current = true; setSalvando(true);
+    const liberar = () => { salvandoRef.current = false; setSalvando(false); };
     const payload = {
       nome: form.nome.trim(),
       cargo: form.cargo.trim() || null,
@@ -81,11 +86,12 @@ export default function AdminAutores() {
     };
     if (editing) {
       const { error } = await supabase.from("admin_autores").update(payload).eq("id", editing.id);
-      if (error) return showMsg("Erro: " + error.message, "err");
+      if (error) { liberar(); return showMsg("Erro: " + error.message, "err"); }
     } else {
       const { error } = await supabase.from("admin_autores").insert(payload);
-      if (error) return showMsg("Erro: " + error.message, "err");
+      if (error) { liberar(); return showMsg("Erro: " + error.message, "err"); }
     }
+    liberar();
     setModalOpen(false);
     carregar();
     showMsg(editing ? "Atualizado!" : "Autor criado!");
@@ -100,7 +106,8 @@ export default function AdminAutores() {
   };
 
   const toggleAtivo = async (a: Autor) => {
-    await supabase.from("admin_autores").update({ ativo: !a.ativo }).eq("id", a.id);
+    const { error } = await supabase.from("admin_autores").update({ ativo: !a.ativo }).eq("id", a.id);
+    if (error) return showMsg("Não deu pra mudar. Tente de novo.", "err"); // (11/10) antes a falha passava em silêncio
     carregar();
   };
 
@@ -158,7 +165,7 @@ export default function AdminAutores() {
 
       {/* novo / editar */}
       <Janela aberta={modalOpen} aoFechar={fecharModal} tipo="conteudo" travada titulo={editing ? "Editar autor" : "Novo autor"}
-        acoes={<><Botao variante="secundario" onClick={fecharModal}>Cancelar</Botao><Botao onClick={salvar}>{editing ? "Salvar" : "Criar autor"}</Botao></>}>
+        acoes={<><Botao variante="secundario" onClick={fecharModal}>Cancelar</Botao><Botao onClick={salvar} carregando={salvando} disabled={uploadingFoto}>{editing ? "Salvar" : "Criar autor"}</Botao></>}>
         <div className="aa-form">
           <div className="ui-campo">
             <span className="ui-campo-r"><span>Foto</span><small>opcional</small></span>

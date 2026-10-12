@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { carregarNotificacoes, marcarLidas, type Notif } from "@/lib/notificacoesUsuario";
 import { Bell, Checks, Clock, Crown, Newspaper, ShoppingBag, Trophy, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
+import { quandoFoi } from "@/lib/noticias";
 
 interface Notificacao {
   id: string;
@@ -15,21 +16,19 @@ interface Notificacao {
 
 const LS_KEY = "notif_last_seen";
 
+/**
+ * Quando o aviso chegou (11/10). De hoje: "agora", "12 min", "3h". De outros dias: "ontem", "há 3 dias"…, contando
+ * dias do calendário (quandoFoi). Antes contava blocos de 24h: o aviso de ontem à noite aparecia como "9h" de manhã,
+ * "ontem" era o de anteontem, e saía "0 meses" (28 e 29 dias) e "1 anos".
+ */
 function tempoRelativo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  const hrs = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-  if (mins < 1) return "agora";
-  if (mins < 60) return `${mins} min`;
-  if (hrs < 24) return `${hrs}h`;
-  if (days === 1) return "ontem";
-  if (days < 7) return `${days}d`;
-  const semanas = Math.floor(days / 7);
-  if (semanas < 4) return `${semanas} sem`;
-  const meses = Math.floor(days / 30);
-  if (meses < 12) return `${meses} ${meses === 1 ? "mês" : "meses"}`;
-  return `${Math.floor(days / 365)} anos`;
+  const d = new Date(iso), agora = new Date();
+  if (Number.isNaN(d.getTime())) return "";
+  const mesmoDia = d.getFullYear() === agora.getFullYear() && d.getMonth() === agora.getMonth() && d.getDate() === agora.getDate();
+  if (!mesmoDia) return quandoFoi(iso, agora);
+  const mins = Math.floor((agora.getTime() - d.getTime()) / 60000);
+  if (mins < 1) return "agora"; // inclui relógio do aparelho um pouco atrasado (aviso "no futuro")
+  return mins < 60 ? `${mins} min` : `${Math.floor(mins / 60)}h`;
 }
 
 export default function Notificacoes() {

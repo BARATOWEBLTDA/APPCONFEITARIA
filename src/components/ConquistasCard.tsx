@@ -30,7 +30,7 @@ export default function ConquistasCard() {
       setR(res);
       const pend = CONQUISTAS.filter(q => res.feitas[q.codigo] && !res.feitas[q.codigo].celebrada);
       if (pend.length) setCelebrar(pend[pend.length - 1].codigo);
-    });
+    }).catch(e => { console.error("[conquistas] não consegui carregar:", e); }); // 11/10: sem internet o cartão só não aparece (a tela "Minhas conquistas" avisa)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id, isPro]);
 

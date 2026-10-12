@@ -10,7 +10,7 @@ import { carregarAReceber, calcularPrevistos, type Previstos } from "@/lib/conta
  */
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-export default function PrevistosCard() {
+export default function PrevistosCard({ versao = 0 }: { versao?: number }) {
   const navigate = useNavigate();
   const [p, setP] = useState<Previstos | null>(null);
   const [erro, setErro] = useState(false);
@@ -28,7 +28,7 @@ export default function PrevistosCard() {
       } catch { if (!cancelado) setErro(true); }
     })();
     return () => { cancelado = true; };
-  }, [tentativa]);
+  }, [tentativa, versao]); // 11/10: `versao` muda quando o painel recarrega (sem desmontar o cartão, pra não piscar)
   if (erro) return (
     <div className="pvc pvc--erro" role="alert">
       <div className="pvc-h"><b>Recebimentos previstos</b></div>

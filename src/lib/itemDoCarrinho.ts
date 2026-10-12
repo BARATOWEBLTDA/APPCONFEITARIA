@@ -1,4 +1,5 @@
 import { criarBreakdownV1, criarPersonalizacoesV1, SNAPSHOT_VERSION_ATUAL } from '@/lib/pedido-snapshot'
+import { r2 } from '@/lib/moeda'
 
 /**
  * Item do carrinho (janela de produto do cardápio) → item de pedido (03/10).
@@ -21,7 +22,9 @@ export function itemDoCarrinhoParaPedido(item: any) {
         recheio: item.selectedRecheio || null,
         cobertura: item.selectedCobertura || null,
       })
-  const breakdown = item.precoBreakdown ? item.precoBreakdown : criarBreakdownV1({ final: item.price })
+  // (11/10) preço do item em centavos certos: é dele que saem a linha, o subtotal e o total do pedido
+  const preco = r2(item.price)
+  const breakdown = item.precoBreakdown ? item.precoBreakdown : criarBreakdownV1({ final: preco })
   const temExtras = Array.isArray(item.extrasBiblioteca) && item.extrasBiblioteca.length > 0
   const personalizacoesFinal = (temExtras || item.fotoReferencia)
     ? {
@@ -34,7 +37,7 @@ export function itemDoCarrinhoParaPedido(item: any) {
     produto_id: item.id,
     nome_produto: item.name,
     quantidade: item.quantity,
-    valor_unitario: item.price,
+    valor_unitario: preco,
     observacoes: item.observations || null,
     personalizacoes: personalizacoesFinal,
     preco_breakdown: breakdown,

@@ -2,6 +2,7 @@ import { useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowCounterClockwise, CaretRight, ChatCircleText, Info } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
+import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, CampoArea, Janela, avisar } from "@/components/base";
 import { refreshProfile, useProfile } from "@/hooks/useProfile";
@@ -54,12 +55,24 @@ export default function MensagensWhatsApp() {
     if (!editando || !profile?.id) return;
     const limpo = texto.trim();
     if (!limpo) { avisar("Escreva a mensagem ou use Voltar ao padrão.", { tipo: "erro" }); return; }
-    const novas: Record<string, string> = { ...salvas };
-    if (limpo === editando.padrao) delete novas[editando.chave]; else novas[editando.chave] = limpo;
+    if (salvando) return;
     setSalvando(true);
-    const { error } = await supabase.from("profiles").update({ mensagens_whatsapp: novas }).eq("id", profile.id);
+    try {
+      // (11/10) Relê do banco antes de gravar e troca só esta mensagem: antes regravava tudo a partir do que
+      // estava no aparelho e apagava a mensagem alterada em outro aparelho.
+      const { data: atual, error: erroLer } = await supabase.from("profiles").select("mensagens_whatsapp").eq("id", profile.id).single();
+      if (erroLer) throw erroLer;
+      const noBanco = (atual as { mensagens_whatsapp?: unknown } | null)?.mensagens_whatsapp;
+      const novas: Record<string, string> = noBanco && typeof noBanco === "object" && !Array.isArray(noBanco) ? { ...(noBanco as Record<string, string>) } : {};
+      if (limpo === editando.padrao) delete novas[editando.chave]; else novas[editando.chave] = limpo;
+      const { error } = await supabase.from("profiles").update({ mensagens_whatsapp: novas }).eq("id", profile.id);
+      if (error) throw error;
+    } catch (err) {
+      setSalvando(false);
+      avisar(explicarErro(err, "Não deu pra salvar. Tente de novo."), { tipo: "erro" });
+      return;
+    }
     setSalvando(false);
-    if (error) { console.error(error); avisar("Não deu pra salvar. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
     await refreshProfile();
     fechar();
     avisar("Mensagem salva", { tipo: "ok" });

@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
-import { diaDisponivel, horariosDoDia, horariosLivres, inicioDoDia, isoDia, deIso, somarDias } from "@/lib/agendaCardapio";
+import { diaDisponivel, horariosDoDia, horariosLivres, horariosParaMostrar, inicioDoDia, isoDia, deIso, somarDias } from "@/lib/agendaCardapio";
 
 /** Janelinha que sobe de baixo (no computador, fica centralizada). */
-function Folha({ titulo, sub, onClose, children }: { titulo: string; sub?: string; onClose: () => void; children: ReactNode }) {
+// (11/10) o conteúdo rola e o rodapé (botão de confirmar) fica sempre à vista: com o celular deitado o botão ficava fora da tela
+function Folha({ titulo, sub, onClose, children, rodape }: { titulo: string; sub?: string; onClose: () => void; children: ReactNode; rodape?: ReactNode }) {
   useEffect(() => {
     const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", esc);
@@ -14,7 +15,8 @@ function Folha({ titulo, sub, onClose, children }: { titulo: string; sub?: strin
       <div className="ags" onClick={e => e.stopPropagation()}>
         <span className="ags-alca" aria-hidden="true" />
         <div className="ags-hd"><b>{titulo}</b>{sub && <small>{sub}</small>}</div>
-        {children}
+        <div className="ags-rolo">{children}</div>
+        {rodape && <div className="ags-pe">{rodape}</div>}
       </div>
       <style>{CSS}</style>
     </div>
@@ -30,7 +32,8 @@ export function CalendarioSheet({ titulo, horario, minimo, valor, onEscolher, on
   const hoje = inicioDoDia(new Date());
   const base = valor ? deIso(valor) : (inicioDoDia(minimo) > hoje ? inicioDoDia(minimo) : hoje);
   const [mes, setMes] = useState(new Date(base.getFullYear(), base.getMonth(), 1));
-  const [sel, setSel] = useState(valor);
+  // (11/10) a data que já estava escolhida só vem marcada se ainda está disponível
+  const [sel, setSel] = useState(() => (valor && diaDisponivel(deIso(valor), horario, minimo) ? valor : ""));
   const limite = somarDias(hoje, 120);
   const celulas = useMemo(() => {
     const primeiro = new Date(mes.getFullYear(), mes.getMonth(), 1);
@@ -44,7 +47,12 @@ export function CalendarioSheet({ titulo, horario, minimo, valor, onEscolher, on
   const podeAvancar = new Date(mes.getFullYear(), mes.getMonth() + 1, 1) <= limite;
   const rotSel = sel ? deIso(sel).toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "2-digit" }) : "";
   return (
-    <Folha titulo={titulo} sub="Os dias apagados não estão disponíveis" onClose={onClose}>
+    <Folha titulo={titulo} sub="Os dias apagados não estão disponíveis" onClose={onClose}
+      rodape={
+        <button type="button" className="ags-ok" disabled={!sel} onClick={() => { onEscolher(sel); onClose(); }}>
+          {sel ? `Confirmar ${rotSel}` : "Escolha um dia"}
+        </button>
+      }>
       <div className="ags-mes">
         <button type="button" onClick={() => setMes(new Date(mes.getFullYear(), mes.getMonth() - 1, 1))} disabled={!podeVoltar} aria-label="Mês anterior"><CaretLeft size={20} weight="bold" /></button>
         <b>{nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1)}</b>
@@ -63,9 +71,6 @@ export function CalendarioSheet({ titulo, horario, minimo, valor, onEscolher, on
         })}
       </div>
       <div className="ags-leg"><span><i className="l1" />Disponível</span><span><i className="l2" />Fechado ou sem antecedência</span></div>
-      <button type="button" className="ags-ok" disabled={!sel} onClick={() => { onEscolher(sel); onClose(); }}>
-        {sel ? `Confirmar ${rotSel}` : "Escolha um dia"}
-      </button>
     </Folha>
   );
 }
@@ -74,9 +79,12 @@ export function CalendarioSheet({ titulo, horario, minimo, valor, onEscolher, on
 export function HorariosSheet({ data, horario, minimo, valor, onEscolher, onClose }: {
   data: string; horario: any; minimo: Date; valor: string; onEscolher: (h: string) => void; onClose: () => void;
 }) {
-  const lista = horariosDoDia(deIso(data), horario, minimo);
+  // (11/10) na última hora antes de fechar não sobra horário "de hora em hora": aí os botões são os de 15 em 15
+  // (antes a tela ficava só com "Outro horário")
+  const lista = horariosParaMostrar(deIso(data), horario, minimo);
   const livres = horariosLivres(deIso(data), horario, minimo); // de 15 em 15
-  const valorFora = !!valor && !lista.includes(valor);
+  const soLivres = horariosDoDia(deIso(data), horario, minimo).length === 0;
+  const valorFora = !!valor && !lista.includes(valor) && livres.includes(valor);
   const [outro, setOutro] = useState(valorFora);
   const horas = [...new Set(livres.map(h => h.slice(0, 2)))];
   const [hSel, setHSel] = useState(valorFora ? valor.slice(0, 2) : (horas[0] || ""));
@@ -90,12 +98,12 @@ export function HorariosSheet({ data, horario, minimo, valor, onEscolher, onClos
         {lista.map(h => (
           <button type="button" key={h} className={valor === h && !outro ? "sel" : ""} onClick={() => { onEscolher(h); onClose(); }}>{h}</button>
         ))}
-        {livres.length > 0 && (
+        {livres.length > 0 && !soLivres && (
           <button type="button" className={`ags-outro${outro ? " sel" : ""}`} onClick={() => setOutro(o => !o)}>Outro horário</button>
         )}
         {!lista.length && !livres.length && <p className="ags-vazio">Nenhum horário nesse dia. Escolha outra data.</p>}
       </div>
-      {outro && livres.length > 0 && (
+      {outro && livres.length > 0 && !soLivres && (
         <div className="ags-outro-box">
           <p>Escolha um horário entre <b>{livres[0]}</b> e <b>{livres[livres.length - 1]}</b>:</p>
           <div className="ags-outro-row">
@@ -117,7 +125,11 @@ export function HorariosSheet({ data, horario, minimo, valor, onEscolher, onClos
 const CSS = `
   .ags-ov { position: fixed; inset: 0; z-index: 1300; background: rgba(45,31,38,.5); display: flex; align-items: flex-end; justify-content: center; font-family: var(--font-base, inherit); }
   @media (min-width: 768px) { .ags-ov { align-items: center; } }
-  .ags { width: 100%; max-width: 440px; background: var(--ui-branco); border-radius: var(--ui-raio-janela) var(--ui-raio-janela) 0 0; padding: 10px 16px calc(18px + env(safe-area-inset-bottom, 0px)); color: var(--ui-texto); animation: agsSobe .25s ease; max-height: 92vh; overflow-y: auto; }
+  .ags { width: 100%; max-width: 440px; background: var(--ui-branco); border-radius: var(--ui-raio-janela) var(--ui-raio-janela) 0 0; padding: 10px 16px calc(18px + env(safe-area-inset-bottom, 0px)); color: var(--ui-texto); animation: agsSobe .25s ease; max-height: 92vh; max-height: 92dvh; display: flex; flex-direction: column; overflow: hidden; }
+  /* (11/10) o meio rola; o título e o botão de confirmar ficam sempre à vista (celular deitado) */
+  .ags-alca, .ags-hd, .ags-pe { flex: none; }
+  .ags-rolo { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin: 0 -4px; padding: 0 4px 4px; }
+  .ags-pe { padding-top: 4px; }
   @media (min-width: 768px) { .ags { border-radius: 22px; } }
   @keyframes agsSobe { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
   .ags-alca { display: block; width: 40px; height: 4px; border-radius: 9px; background: #E5DDE1; margin: 0 auto 12px; }

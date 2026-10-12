@@ -1,6 +1,7 @@
 import CampoData from '@/components/CampoData'
 import { useTravarRolagem } from "@/hooks/useTravarRolagem";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import Folha from "@/components/financeiro/Folha";
@@ -31,6 +32,8 @@ const diasAte = (iso: string) => { const [y, m, d] = iso.split("-").map(Number);
 const dataCurta = (iso: string) => { const [y, m, d] = iso.split("-").map(Number); return new Date(y, m - 1, d).toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" }).replace(".", ""); };
 const quando = (d: number) => d === 0 ? "vence hoje" : d === 1 ? "vence amanhã" : d > 1 ? `em ${d} dias` : d === -1 ? "venceu ontem" : `venceu há ${-d} dias`;
 const num = (s: string) => Math.round((parseFloat(String(s).replace(/\./g, "").replace(",", ".")) || 0) * 100) / 100;
+/** A função do banco ainda não existe (SQL do Passo 5 não rodado)? Aí não é falha: a tela já avisa que falta o SQL. */
+const funcaoNaoExiste = (e: unknown) => ["PGRST202", "42883"].includes(String((e as { code?: unknown } | null)?.code || "")) || faltaNoBanco(e);
 const FORMAS = [{ k: "pix", l: "Pix" }, { k: "dinheiro", l: "Dinheiro" }, { k: "credito", l: "Crédito" }, { k: "debito", l: "Débito" }, { k: "boleto", l: "Boleto" }];
 const CATEGORIAS = ["Insumos", "Embalagens", "Aluguel", "Energia e água", "Internet", "Gás", "Transporte", "Marketing", "Equipamentos", "Outros"];
 
@@ -45,14 +48,21 @@ export default function FinanceiroAPagar() {
   const [nova, setNova] = useState(false);
 
   const numBusca = useRef(0); // 10/10: só vale a resposta da última busca
-  const carregar = useCallback(async () => {
+  const avisouGerar = useRef(false);
+  const carregouBem = useRef(false);
+  const carregar = useCallback(async (semPiscar?: unknown) => {
     const n = ++numBusca.current;
+    // (11/10) atualização por trás (ao voltar pro app) que falha mantém a lista que já está na tela
+    const quieto = semPiscar === true && carregouBem.current;
     try {
       const { data: { user }, error: eUser } = await supabase.auth.getUser();
       if (n !== numBusca.current) return;
-      if (!user) { if (erroDeConexao(eUser)) { setErro(true); setCarregando(false); } return; }
+      if (!user) { if (erroDeConexao(eUser) && !quieto) { setErro(true); setCarregando(false); } return; }
       // contas do mês (e do próximo) a partir dos custos fixos — não duplica
-      await Promise.all([supabase.rpc("contas_pagar_gerar_mes", { p_competencia: competencia(0) }), supabase.rpc("contas_pagar_gerar_mes", { p_competencia: competencia(1) })]).catch(() => {});
+      // 11/10: o rpc não lança, devolve { error } (o .catch de antes nunca disparava e a falha passava calada)
+      const geradas = await Promise.all([supabase.rpc("contas_pagar_gerar_mes", { p_competencia: competencia(0) }), supabase.rpc("contas_pagar_gerar_mes", { p_competencia: competencia(1) })])
+        .catch(e => [{ error: e }]);
+      const eGerar = geradas.map(r => r.error).find(e => e && !funcaoNaoExiste(e));
       // 10/10: só as contas dela (antes dependia só da regra de segurança do banco) e de 1.000 em 1.000
       // (o Supabase corta em 1.000 linhas sem avisar; pela ordem do vencimento, as cortadas seriam as mais novas)
       const { data, error } = await buscarTudo<Conta>((de, ate) => supabase.from("contas_pagar")
@@ -60,29 +70,40 @@ export default function FinanceiroAPagar() {
         .eq("user_id", user.id).in("status", ["pendente", "paga"]).order("vencimento", { ascending: true }).order("id").range(de, ate));
       if (n !== numBusca.current) return;
       // 10/10: "falta o SQL" só quando a tabela não existe mesmo; internet ou outro erro vira "Não deu pra carregar"
-      if (error) { if (faltaNoBanco(error)) setPrecisaSql(true); else setErro(true); setCarregando(false); return; }
+      if (error) { if (quieto) return; if (faltaNoBanco(error)) setPrecisaSql(true); else setErro(true); setCarregando(false); return; }
+      carregouBem.current = true;
       const ini = `${competencia(0)}-01`;
       setErro(false);
       setContas(data.filter(c => c.status === "pendente"));
       setPagasMes(data.filter(c => c.status === "paga" && (c.pago_em || "") >= ini).sort((a, b) => (b.pago_em || "").localeCompare(a.pago_em || "")));
+      // a lista carregou, mas a geração das contas dos custos fixos falhou: avisa (uma vez por visita à tela)
+      if (eGerar && !avisouGerar.current) {
+        avisouGerar.current = true;
+        console.error("[a pagar] não gerei as contas fixas do mês:", eGerar);
+        avisarBase("As contas fixas deste mês podem não ter sido criadas. Abra a tela de novo daqui a pouco.", { tipo: "info", duracao: 6000 });
+      }
     } catch (e) {
       console.error("[a pagar] não consegui carregar:", e);
-      if (n !== numBusca.current) return;
+      if (n !== numBusca.current || quieto) return;
       setErro(true);
     }
     setCarregando(false);
   }, []);
-  useEffect(() => { carregar(); }, [carregar]);
+  // 11/10: app aberto de um dia pro outro. Virou o dia ou a pessoa voltou pro app: busca de novo
+  // (gera as contas do mês novo) e refaz "vencidas / próximos 7 dias" com o dia de agora.
+  const hoje = useDiaAtual();
+  useEffect(() => { carregar(); }, [carregar, hoje]);
+  useAoVoltar(() => { carregar(true); });
   const tentarDeNovo = () => { setCarregando(true); setErro(false); carregar(); };
 
   const grupos = useMemo(() => {
-    const hoje = isoDia(), em7 = isoDia(6);
+    const em7 = isoDia(6);
     return {
       vencidas: contas.filter(c => c.vencimento < hoje),
       semana: contas.filter(c => c.vencimento >= hoje && c.vencimento <= em7),
       depois: contas.filter(c => c.vencimento > em7),
     };
-  }, [contas]);
+  }, [contas, hoje]);
   const soma = (l: Conta[]) => l.reduce((s, c) => s + (Number(c.valor) || 0), 0);
   const total = soma(contas);
   const avisar = (m: string) => avisarBase(m, { tipo: /^Não /.test(m) ? "erro" : "ok" });
@@ -118,7 +139,7 @@ export default function FinanceiroAPagar() {
           <button type="button" className="fap-nova" onClick={() => setNova(true)}><Plus size={17} weight="bold" />Nova conta a pagar</button>
 
           {!carregando && contas.length > 0 && (
-            <div className="fap-resumo">
+            <div className="fap-resumo" style={{ "--fap-n": Math.max(...[grupos.vencidas, grupos.semana, grupos.depois].map(l => brl(soma(l)).length)) } as CSSProperties}>
               <div className={`fap-k ${soma(grupos.vencidas) > 0 ? "fap-k--atr" : "fap-k--zero"}`}><small>Vencidas</small><b>{brl(soma(grupos.vencidas))}</b><i>{grupos.vencidas.length} {grupos.vencidas.length === 1 ? "conta" : "contas"}</i></div>
               <div className={`fap-k ${soma(grupos.semana) > 0 ? "" : "fap-k--zero"}`}><small>Próximos 7 dias</small><b>{brl(soma(grupos.semana))}</b><i>{grupos.semana.length} {grupos.semana.length === 1 ? "conta" : "contas"}</i></div>
               <div className={`fap-k ${soma(grupos.depois) > 0 ? "" : "fap-k--zero"}`}><small>Depois</small><b>{brl(soma(grupos.depois))}</b><i>{grupos.depois.length} {grupos.depois.length === 1 ? "conta" : "contas"}</i></div>
@@ -252,9 +273,11 @@ const CSS = `
   .fap-wrap { max-width: 980px; margin: 0 auto; padding: 22px 0 96px; display: flex; flex-direction: column; gap: 20px; }
   .fap-nova { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; border: 1.5px dashed #F3C9DA; background: #FFF6F9; color: var(--ui-rosa-escuro); border-radius: var(--ui-raio); padding: 11px 14px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
   .fap-resumo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .fap-k { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 10px; min-width: 0; }
+  .fap-k { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 10px; min-width: 0; container-type: inline-size; }
   .fap-k small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
   .fap-k b { display: block; font-size: clamp(13.5px, 3.9vw, 17px); letter-spacing: -.02em; font-weight: 700; color: var(--ui-texto); margin: 3px 0 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* 11/10: o valor cabe inteiro, igual em A receber (a letra encolhe até o maior dos 3 valores caber no cartão) */
+  .fap-k b { font-size: max(10px, min(clamp(13.5px, 3.9vw, 17px), calc(100cqi / (var(--fap-n, 11) * .57)))); }
   .fap-k i { font-style: normal; font-size: 13px; color: #888780; }
   .fap-k--atr { border-color: #FECACA; background: #FFF7F7; } .fap-k--atr b { color: var(--ui-vermelho); }
   .fap-k--zero b { color: var(--ui-texto-3); }

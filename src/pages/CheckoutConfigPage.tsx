@@ -8,6 +8,7 @@ import "./entregaPagamento.css"
 import { useState, useEffect, useRef } from "react"
 import { supabase } from "@/lib/supabase"
 import { explicarErro } from "@/lib/erros"
+import { parseNumBR } from "@/lib/numeroBR"
 import { useNavigate } from "react-router-dom"
 import AppPageHeader from "@/components/AppPageHeader"
 import { usePlano } from "@/hooks/usePlano"
@@ -28,14 +29,9 @@ const ENTREGAS = [
   { key: 'combinar',        label: 'Combinar pelo WhatsApp' },
 ]
 
-// Converte o que ela digita (10,50 · 1.250,00 · 10.5) em número
-const numBR = (v: string | number | null | undefined): number => {
-  if (typeof v === 'number') return v
-  const s = String(v ?? '').trim()
-  if (!s) return 0
-  const n = s.includes(',') ? parseFloat(s.replace(/\./g, '').replace(',', '.')) : parseFloat(s)
-  return Number.isFinite(n) ? n : 0
-}
+// Converte o que ela digita (10,50 · 1.250,00 · 10.5 · 1.000) em número.
+// (11/10) Usa o leitor do app: o daqui lia "1.000" como 1 (pedido mínimo de R$ 1.000 virava R$ 1).
+const numBR = parseNumBR
 
 export default function CheckoutConfigPage() {
   const navigate = useNavigate()
@@ -181,6 +177,23 @@ export default function CheckoutConfigPage() {
   useEffect(() => () => {
     if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null }
     if (pendenteRef.current) salvarTudoRef.current()
+  }, [])
+
+  // (11/10) Fechou o app ou a aba (ou mandou pro fundo) antes dos 2 s: salva na hora também.
+  // Só grava se tiver mudança esperando; com erro de leitura nada fica esperando, então nada é gravado.
+  useEffect(() => {
+    const descarregar = () => {
+      if (!pendenteRef.current) return
+      if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null }
+      salvarTudoRef.current()
+    }
+    const aoEsconder = () => { if (document.visibilityState === 'hidden') descarregar() }
+    window.addEventListener('pagehide', descarregar)
+    document.addEventListener('visibilitychange', aoEsconder)
+    return () => {
+      window.removeEventListener('pagehide', descarregar)
+      document.removeEventListener('visibilitychange', aoEsconder)
+    }
   }, [])
 
   const togglePagamento = (key: string) => {

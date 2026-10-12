@@ -3,7 +3,8 @@
 // Usado em Pedidos, Editar pedido e Nova venda. Grátis pra todos.
 // ─────────────────────────────────────────────────────────────────────────────
 import { gerarDocumento, abrirJanela, esc, brl, dataBR, card, kv, pill } from "@/lib/pdfDoonly";
-import { formaDoItem, qtdCurta } from "@/components/pedidos/pedidoTexto";
+import { formaDoItem, qtdCurta, saldoPedido, tamanhoDoItem } from "@/components/pedidos/pedidoTexto";
+import { r2, somarReais } from "@/lib/moeda";
 
 type PedidoItemPDF = {
   nome_produto?: string;
@@ -59,7 +60,9 @@ function escolhas(pz: any): string {
   if (!pz || typeof pz !== "object") return "";
   const nome = (v: any) => (!v ? "" : typeof v === "string" ? v : v.nome || "");
   const p: string[] = [];
-  if (nome(pz.tamanho)) p.push(`Tamanho ${nome(pz.tamanho)}`);
+  // (11/10) mesmo texto do resto do app: pelo peso sai "M (2 kg)"
+  const tam = tamanhoDoItem({ personalizacoes: pz });
+  if (tam) p.push(`Tamanho ${tam}`);
   if (nome(pz.sabor)) p.push(`Sabor ${nome(pz.sabor)}`);
   if (nome(pz.massa)) p.push(`Massa ${nome(pz.massa)}`);
   const rec = Array.isArray(pz.recheios) ? pz.recheios.map(nome).filter(Boolean).join(" e ") : nome(pz.recheio);
@@ -76,11 +79,15 @@ export async function gerarPedidoPDF(pedido: PedidoPDF, janelaAberta?: Window | 
     const prontaEntrega = pedido.tipo_venda === "pronta_entrega";
     const entrega = pedido.tipo_entrega === "entrega";
     const itens = pedido.pedido_itens || [];
-    const subtotal = pedido.valor_produtos ?? itens.reduce((s, it) => s + (Number(it.valor_unitario) || 0) * (Number(it.quantidade) || 1), 0);
+    // (11/10) cada linha arredondada pra centavos antes de somar (1,5 kg × R$ 44,91 não vira 67,365)
+    const subtotal = pedido.valor_produtos ?? somarReais(itens.map(it => (Number(it.valor_unitario) || 0) * (Number(it.quantidade) || 1)));
     const total = Number(pedido.valor_total) || 0;
     const recebido = Number(pedido.valor_recebido) || 0;
     const sp = pedido.status_pagamento || "pendente";
-    const situacao = sp === "pago" ? pill("Pago", "ok") : sp === "parcial" ? pill("Sinal pago", "am") : pill("A receber", "rd");
+    // (11/10) pedido cancelado não cobra: o que falta sai da mesma conta da lista (saldoPedido)
+    const cancelado = pedido.status === "cancelado";
+    const falta = saldoPedido(pedido);
+    const situacao = cancelado ? pill("Cancelado", "rd") : sp === "pago" ? pill("Pago", "ok") : sp === "parcial" ? pill("Sinal pago", "am") : pill("A receber", "rd");
 
     const cliente = card("Cliente", kv([
       ["Nome", esc(pedido.cliente_nome || "Venda avulsa")],
@@ -96,8 +103,10 @@ export async function gerarPedidoPDF(pedido: PedidoPDF, janelaAberta?: Window | 
     const linhas = itens.length
       ? itens.map(it => {
           const q = Number(it.quantidade) || 1, u = Number(it.valor_unitario) || 0;
+          // (11/10) kg só no peso livre; bolo com tamanho ou kit conta em unidades (formaDoItem já decide)
+          const forma = formaDoItem(it);
           const det = [escolhas(it.personalizacoes), it.observacoes ? `Obs.: ${it.observacoes}` : ""].filter(Boolean).join(" · ");
-          return `<tr><td><b>${esc(it.nome_produto)}</b>${det ? `<small>${esc(det)}</small>` : ""}</td><td class="c">${esc(qtdCurta(q, formaDoItem(it)).replace(/x$/, ""))}</td><td class="r">${brl(u)}</td><td class="r">${brl(q * u)}</td></tr>`;
+          return `<tr><td><b>${esc(it.nome_produto)}</b>${det ? `<small>${esc(det)}</small>` : ""}</td><td class="c">${esc(qtdCurta(q, forma).replace(/x$/, ""))}</td><td class="r">${brl(u)}${forma === "kg" ? " /kg" : ""}</td><td class="r">${brl(r2(q * u))}</td></tr>`;
         }).join("")
       : `<tr><td colspan="4" class="vazio">Sem itens</td></tr>`;
     const tabela = card(prontaEntrega ? "Itens" : "Itens do pedido", `<table class="tb"><tr><th>Item</th><th class="c">Qtd</th><th class="r">Unit.</th><th class="r">Total</th></tr>${linhas}</table>`);
@@ -110,13 +119,13 @@ export async function gerarPedidoPDF(pedido: PedidoPDF, janelaAberta?: Window | 
       ${acr ? `<div><span>Acréscimo</span><b>${brl(acr)}</b></div>` : ""}
       ${desc ? `<div><span>${pedido.cupom_codigo ? `Cupom ${esc(pedido.cupom_codigo)}` : "Desconto"}</span><b class="neg">− ${brl(desc)}</b></div>` : ""}
       <div class="tt"><span>Total</span><b>${brl(total)}</b></div>
-      ${sp !== "pago" && total - recebido > 0.009 ? `<div class="rest"><span>Falta receber</span><b>${brl(total - recebido)}</b></div>` : ""}
+      ${cancelado ? `<div class="rest"><span>Situação</span><b>Cancelado</b></div>` : falta > 0.009 ? `<div class="rest"><span>Falta receber</span><b>${brl(falta)}</b></div>` : ""}
     </div>`;
     const pagamento = prontaEntrega ? "<div></div>" : card("Pagamento", kv([
       ["Forma", esc(PAGAMENTO[pedido.forma_pagamento || ""] || pedido.forma_pagamento || "")],
       ["Situação", situacao],
       ["Recebido", sp === "parcial" ? brl(recebido) : ""],
-      ["Pagar até", sp !== "pago" && pedido.data_prevista_pagamento ? esc(dataBR(pedido.data_prevista_pagamento)) : ""],
+      ["Pagar até", !cancelado && falta > 0.009 && pedido.data_prevista_pagamento ? esc(dataBR(pedido.data_prevista_pagamento)) : ""],
     ]) + (pedido.observacoes ? `<p class="obs">Obs.: ${esc(pedido.observacoes)}</p>` : ""));
 
     const corpo = `<div class="g2">${cliente}${blocoEntrega}</div>${tabela}<div class="g2">${pagamento}${totais}</div>${prontaEntrega ? `<p class="thx">Obrigada pela preferência!</p>` : ""}`;

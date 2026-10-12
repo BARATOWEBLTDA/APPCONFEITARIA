@@ -27,7 +27,12 @@ export function useRecorte(enviar: (foto: File) => void, opcoes: { aspect?: numb
       aspect={opcoes.aspect ?? 1}
       cropShape={opcoes.forma ?? 'round'}
       onCancel={() => setSrc(null)}
-      onCropDone={blob => { setSrc(null); enviar(new File([blob], 'foto.jpg', { type: 'image/jpeg' })) }}
+      onCropDone={blob => {
+        setSrc(null)
+        // (11/10) sem foto pronta, não envia (antes virava um arquivo quebrado de 4 bytes)
+        if (!blob || !blob.size) { avisar('Não deu pra preparar a foto. Tente outra imagem.', { tipo: 'erro' }); return }
+        enviar(new File([blob], 'foto.jpg', { type: 'image/jpeg' }))
+      }}
     />,
     document.body,
   ) : null

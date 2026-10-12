@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { explicarErro } from "@/lib/erros";
+import { quandoFoi } from "@/lib/noticias";
+import { voltarOuIr } from "@/lib/voltar";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -47,17 +49,8 @@ const STATUS: Record<string, { label: string; cls: string }> = {
   recusada:     { label: "Recusada",       cls: "aj-st--no" },
 };
 
-function tempoRelativo(iso: string): string {
-  const dias = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
-  if (dias === 0) return "hoje";
-  if (dias === 1) return "ontem";
-  if (dias < 7) return `há ${dias} dias`;
-  const sem = Math.floor(dias / 7);
-  if (sem < 4) return `há ${sem} sem`;
-  const meses = Math.floor(dias / 30);
-  if (meses < 12) return `há ${meses} ${meses === 1 ? "mês" : "meses"}`;
-  return `há ${Math.floor(dias / 365)} anos`;
-}
+// 11/10: "hoje / ontem / há 3 dias" por dia do calendário (antes em blocos de 24h, e saía "há 0 meses" e "há 1 anos")
+const tempoRelativo = (iso: string): string => quandoFoi(iso);
 
 // Ideias antigas sem título mostram o começo da descrição
 function tituloDe(s: Sugestao): string {
@@ -138,7 +131,7 @@ export default function SolicitarRecurso() {
 
   return (
     <>
-      <AppPageHeader title="Sugerir uma melhoria" subtitle="Sua opinião molda o Doonly" onBack={() => navigate(-1)} />
+      <AppPageHeader title="Sugerir uma melhoria" subtitle="Sua opinião molda o Doonly" onBack={() => voltarOuIr(navigate, "/configuracoes")} />
 
       <div className="cl9 aj">
         <div className="aj-seg" role="tablist" aria-label="Ideias">

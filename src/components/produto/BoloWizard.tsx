@@ -1,7 +1,9 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Cake, Check, Drop, Sparkle, X } from "@phosphor-icons/react";
 import { createPortal } from "react-dom";
 import DooInfoModal from "@/components/DooInfoModal";
+import { lerPesoKg } from "@/lib/numeroBR";
+import { useSobreposicao } from "@/components/base/useSobreposicao";
 
 /**
  * Cadastro de BOLO em 4 etapas (aprovado 30/09):
@@ -19,15 +21,9 @@ type Tam = { id: string; nome: string; preco: number; peso_kg?: number | null; s
 
 const uid = () => (typeof crypto !== "undefined" && (crypto as any).randomUUID ? (crypto as any).randomUUID() : `id_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`);
 const num = (v: string) => { const n = parseFloat(String(v).replace(/\./g, "").replace(",", ".")); return isNaN(n) ? 0 : n; };
-/** Peso: entende "1,3", "1,3kg", "500g" e "500" (de 20 pra cima = gramas). Antes "500g" virava 500 kg (02/10). */
-const numKg = (v: string) => {
-  const s = String(v).toLowerCase().replace(/\s/g, "").replace(",", ".");
-  const n = parseFloat(s);
-  if (isNaN(n) || n <= 0) return 0;
-  if (/kg/.test(s)) return n;
-  if (/g$/.test(s)) return n / 1000;
-  return n >= 20 ? n / 1000 : n;
-};
+/** Peso em kg: entende "1,3", "1,3kg", "500g", "1.500g" e "500" (de 100 pra cima = gramas). 11/10: uma leitura só, a de lib/numeroBR
+ *  (antes "1.500g" virava 0,0015 kg e "20" virava 0,02 kg). */
+const numKg = (v: string) => lerPesoKg(v);
 const moeda = (v: number) => v > 0 ? v.toFixed(2).replace(".", ",") : "";
 const brl = (v: number) => `R$ ${v.toFixed(2).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
 const GRUPO_VAZIO: Grupo = { ativo: false, min: 1, max: 1, distribuicao: "nenhuma", opcoes: [] };
@@ -95,6 +91,9 @@ export function BoloOpcoesStep({ form, setForm, edicao }: { form: any; setForm: 
     setExtra(null);
   };
   const opExtra = extra ? grupo(extra.key).opcoes.find(o => o.id === extra.id) : null;
+  // (11/10) essa janela abre por cima do cadastro: o "voltar" do Android e o Esc fecham só ela
+  const caixaExtra = useRef<HTMLDivElement>(null);
+  useSobreposicao(!!(extra && opExtra), () => setExtra(null), caixaExtra);
 
   return (
     <div className="bw">
@@ -175,7 +174,7 @@ export function BoloOpcoesStep({ form, setForm, edicao }: { form: any; setForm: 
       {/* "Quanto essa opção custa a mais?" — abre por baixo */}
       {extra && opExtra && createPortal(
         <div className="bw-sheet-bg" onClick={() => setExtra(null)}>
-          <div className="bw-sheet" onClick={e => e.stopPropagation()} role="dialog" aria-label={`Valor extra de ${opExtra.nome}`}>
+          <div className="bw-sheet" ref={caixaExtra} onClick={e => e.stopPropagation()} role="dialog" aria-label={`Valor extra de ${opExtra.nome}`}>
             <div className="bw-grab" aria-hidden="true" />
             <div className="bw-sheet-h"><b>{opExtra.nome}</b><button type="button" onClick={() => setExtra(null)} aria-label="Fechar"><X size={20} weight="bold" /></button></div>
             <p className="bw-hint bw-hint--top">Quanto essa opção custa a mais?</p>
@@ -330,6 +329,9 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, edicao }:
     : pesosGerados.map(p => ({ id: uid(), nome: kgTxt(p), preco: 0, peso_kg: p, serve: "" }));
   const temNomes = tams.some(x => x.nome.trim());
   const nomeados = tams.filter(x => x.nome.trim());
+  // (11/10) "Gerar tamanhos" abre por cima do cadastro: o "voltar" do Android e o Esc fecham só ela
+  const caixaGerar = useRef<HTMLDivElement>(null);
+  useSobreposicao(gerarAberto, () => setGerarAberto(false), caixaGerar);
 
   return (
     <div className="bw">
@@ -404,7 +406,7 @@ export function BoloTamanhosStep({ form, setForm, escolha, setEscolha, edicao }:
 
       {gerarAberto && createPortal(
         <div className="bw-sheet-bg" onClick={() => setGerarAberto(false)}>
-          <div className="bw-sheet" onClick={e => e.stopPropagation()} role="dialog" aria-label="Gerar tamanhos">
+          <div className="bw-sheet" ref={caixaGerar} onClick={e => e.stopPropagation()} role="dialog" aria-label="Gerar tamanhos">
             <div className="bw-grab" aria-hidden="true" />
             <div className="bw-sheet-h"><b>Gerar tamanhos</b><button type="button" onClick={() => setGerarAberto(false)} aria-label="Fechar"><X size={20} weight="bold" /></button></div>
             <p className="bw-hint bw-hint--top">Escolha um jeito rápido de começar. Depois dá pra editar tudo.</p>
@@ -485,6 +487,8 @@ export function BoloPrecoStep({ form, setForm, escolha, primeiroNome, edicao }: 
               <button type="button" role="radio" aria-checked={!porPeso} className={!porPeso ? "on" : ""} onClick={() => setGt({ modo_preco_tamanho: "preco_fixo" })}>
                 <i aria-hidden="true" /><span><b>Cada tamanho tem seu preço</b><small>Você define o preço de cada tamanho</small></span>
               </button>
+              {/* 11/10: o preço digitado em cada tamanho continua aqui (se a pessoa voltar pra "cada tamanho tem seu preço" não perde
+                  o que digitou); ele é zerado na hora de salvar no modo "pelo peso" (handleSalvar em Produtos.tsx) */}
               <button type="button" role="radio" aria-checked={porPeso} className={porPeso ? "on" : ""} onClick={() => setGt({ modo_preco_tamanho: "por_peso" })}>
                 <i aria-hidden="true" /><span><b>Calcular pelo peso</b><small>Você informa o preço do kg e o Doonly faz a conta de cada tamanho</small></span>
               </button>

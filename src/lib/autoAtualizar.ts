@@ -8,13 +8,22 @@
  *     pra nunca perder o que ela está digitando. Se não for seguro, espera e tenta de novo.
  */
 const TELAS_DE_PREENCHER = [/^\/vendas\/novo/, /^\/pedidos\/[^/]+\/editar/, /^\/ficha-tecnica/, /^\/cardapio-config/, /^\/checkout-config/,
-  /^\/solicitar-recurso/, /^\/relatar-problema/, /^\/reset-password/, /^\/login/, /^\/cadastro/];
+  /^\/solicitar-recurso/, /^\/relatar-problema/, /^\/reset-password/, /^\/login/, /^\/cadastro/,
+  // (11/10) também: recuperar a senha (e os outros nomes da mesma tela), conferir o e-mail e o painel da equipe inteiro
+  /^\/esqueci-senha/, /^\/verificar-email/, /^\/(redefinir|nova|alterar)-senha/, /^\/admin(\/|$)/];
 
 let temVersaoNova = false;
+/** (11/10) hora do último toque, tecla ou "voltar": logo depois deles pode ter um salvar ou excluir em andamento */
+let ultimaAcao = 0;
+const CALMA = 3000;
 
-function momentoSeguro(): boolean {
+/** Dá pra recarregar (ou trocar de tela) sem perder o que ela está preenchendo? */
+export function momentoSeguro(): boolean {
   const path = window.location.pathname;
   if (TELAS_DE_PREENCHER.some(r => r.test(path))) return false;
+  // (11/10) sacola do cardápio com itens (o cardápio marca) e a tela "Complete seu cadastro"
+  if (document.documentElement.dataset.sacola === "1") return false;
+  if (document.querySelector("[data-sem-recarregar]")) return false;
   const ativo = document.activeElement as HTMLElement | null;
   if (ativo && (ativo.tagName === "INPUT" || ativo.tagName === "TEXTAREA" || ativo.isContentEditable)) return false;
   // janela aberta por cima (cadastro de produto, edição, sacola do cardápio…)
@@ -24,7 +33,9 @@ function momentoSeguro(): boolean {
 }
 
 function recarregarSePuder() {
-  if (temVersaoNova && document.visibilityState === "visible" && momentoSeguro()) {
+  // (11/10) só com uns segundos de calma: o "voltar" que uma janela de confirmar faz ao fechar chegava aqui
+  // com o excluir ou o salvar ainda em andamento
+  if (temVersaoNova && document.visibilityState === "visible" && Date.now() - ultimaAcao >= CALMA && momentoSeguro()) {
     try { sessionStorage.setItem("doonly_splash_shown", "1"); } catch {}
     window.location.reload();
   }
@@ -47,7 +58,11 @@ export function iniciarAutoAtualizacao(): void {
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") conferir(); });
   window.addEventListener("focus", conferir);
   // trocou de tela: se já tem versão nova esperando, aproveita se a tela nova for segura
-  window.addEventListener("popstate", () => setTimeout(recarregarSePuder, 300));
+  // (11/10) espera a calma (antes eram 300 ms depois de QUALQUER "voltar", inclusive o de fechar uma janela)
+  const agir = () => { ultimaAcao = Date.now(); };
+  window.addEventListener("pointerdown", agir, { capture: true, passive: true });
+  window.addEventListener("keydown", agir, { capture: true, passive: true });
+  window.addEventListener("popstate", () => { agir(); setTimeout(recarregarSePuder, CALMA + 200); });
   // com versão nova esperando, tenta de novo a cada 30s (só recarrega se o momento for seguro)
   setInterval(() => { if (temVersaoNova) recarregarSePuder(); }, 30 * 1000);
   setInterval(conferir, 10 * 60 * 1000);

@@ -10,6 +10,10 @@ export const SEM_INTERNET = "Sem internet. Confira a conexão e tente de novo.";
 export function erroDeConexao(err: unknown): boolean {
   if (typeof navigator !== "undefined" && navigator.onLine === false) return true;
   const msg = String((err as { message?: unknown } | null)?.message ?? err ?? "");
+  // erro que veio DO banco (código do Postgres, 5 caracteres, ou PGRST…) chegou lá: não é falta de internet
+  // (antes o "statement timeout" do banco virava "Sem internet")
+  const codigo = String((err as { code?: unknown } | null)?.code ?? "");
+  if (/^([0-9A-Z]{5}|PGRST\d+)$/.test(codigo)) return false;
   return /failed to fetch|networkerror|network request failed|load failed|fetch failed|timeout|timed out/i.test(msg);
 }
 

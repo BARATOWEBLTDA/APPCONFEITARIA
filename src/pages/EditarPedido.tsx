@@ -20,13 +20,16 @@ import { kitAtivo } from '@/lib/kitQuantidade'
 import FinalizarPedidoSheet from '@/components/pedidos/FinalizarPedidoSheet'
 import { ReceberSheet } from '@/pages/FinanceiroAReceber'
 import Folha, { FOLHA_CSS } from '@/components/financeiro/Folha'
-import { mascaraBRL, textoBRL, lerBRL } from '@/lib/moeda'
+import { mascaraBRL, textoBRL, lerBRL, r2, somarReais } from '@/lib/moeda'
 import { valorRecebidoPedido } from '@/lib/financeiroPedido'
 import { useTravarRolagem } from '@/hooks/useTravarRolagem'
 // ── EditarPedido.tsx ─────────────────────────────────────────────────────────
-import { ajustarRecebido } from '@/lib/pagamentos'
+import { ajustarRecebido, faltaNoBanco } from '@/lib/pagamentos'
 import { excluirPedido as excluirPedidoNoBanco } from '@/lib/pedidosDoo'
-import { digitosTelefone, linkWhatsApp } from '@/lib/telefone'
+import { digitosTelefone, linkWhatsApp, mascaraTelefone } from '@/lib/telefone'
+import { pesoLivre } from '@/lib/itemPedido'
+import { pedidoAtrasado } from '@/lib/pedidoStatus'
+import { historicoAssentado } from '@/components/base/useSobreposicao'
 import CampoNumero from "@/components/ui/CampoNumero"
 import ReqTag from "@/components/ReqTag";
 // Tela de edição de pedido — design novo estilo Dora
@@ -36,7 +39,7 @@ import ReqTag from "@/components/ReqTag";
 
 import { useEffect, useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { gerarPedidoPDF } from '@/lib/gerarPedidoPDF'
 import HorarioSheet from '@/components/HorarioSheet'
@@ -167,13 +170,8 @@ function formatCep(v: string): string {
   if (digits.length > 5) return `${digits.slice(0, 5)}-${digits.slice(5)}`
   return digits
 }
-function formatTelefone(v: string): string {
-  const digits = v.replace(/\D/g, '').slice(0, 11)
-  if (digits.length <= 2) return digits
-  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
-  if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`
-  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
-}
+// (11/10) telefone na tela: a máscara de lib/telefone (tira o +55; antes "+55 41 99999-8888" virava "(55) 41999-9988")
+const formatTelefone = (v: string): string => mascaraTelefone(v)
 
 // Máscara ao digitar: "150" → 1,50 / "1500" → 15,00
 const parseMaskMoney = (s: string): number => {
@@ -297,21 +295,19 @@ function tempoRelativo(iso?: string): string {
   return `há ${m} ${m === 1 ? 'mês' : 'meses'}`
 }
 
-// Pedido está atrasado? Data de entrega + hora já passou e não foi entregue
-function pedidoAtrasado(dataEntrega?: string, horaEntrega?: string, status?: string): boolean {
-  if (!dataEntrega) return false
-  if (status === 'entregue' || status === 'cancelado') return false
-  const dataStr = `${dataEntrega}T${(horaEntrega || '23:59').slice(0, 5)}`
-  const alvo = new Date(dataStr).getTime()
-  return Date.now() > alvo
-}
-
 // ═════════════════════════════════════════════════════════════════════════════
 // COMPONENTE PRINCIPAL
 // ═════════════════════════════════════════════════════════════════════════════
 export default function EditarPedido() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
+  // (11/10) o quadro de pedidos manda abrir já na janela de cancelar: navigate(`/pedidos/${id}/editar`, { state: { abrirCancelar: true } }).
+  // O pedido é guardado aqui e o state é limpo na hora, pra o "voltar" e o recarregar não abrirem a janela de novo.
+  const abrirCancelarRef = useRef((location.state as any)?.abrirCancelar === true)
+  useEffect(() => {
+    if ((location.state as any)?.abrirCancelar === true) navigate(location.pathname + location.search, { replace: true, state: null })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const [pedido, setPedido] = useState<Pedido | null>(null)
   // Quem retirou (09/10): pergunta ao marcar uma retirada como entregue; aparece na tela, no histórico e no PDF
@@ -386,6 +382,7 @@ export default function EditarPedido() {
   // ══════════════ Tela nova (03/10): etapas, pagamentos, ajustes e "alterações não salvas" ══════════════
   const [pagamentos, setPagamentos] = useState<any[]>([])
   const [pagamentosOk, setPagamentosOk] = useState(false) // a tabela de pagamentos existe (SQL do Passo 1)
+  const [pagamentosFalhou, setPagamentosFalhou] = useState(false) // (11/10) não deu pra LER os recebimentos (internet): não é o modo antigo
   const [ajustesHist, setAjustesHist] = useState<any[]>([])
   const [ajustesPendentes, setAjustesPendentes] = useState<{ tipo: 'desconto' | 'acrescimo'; valor: number; motivo: string }[]>([])
   const [menuAberto, setMenuAberto] = useState(false)
@@ -413,16 +410,21 @@ export default function EditarPedido() {
         avisarJanela('Não foi possível excluir', r.erro, 'erro')
         return
       }
-      navigate('/pedidos')
+      navigate('/pedidos', { replace: true }) // (11/10) o "voltar" não reabre o pedido que acabou de ser excluído
     } finally { excluindoRef.current = false }
   }
   const snapshotRef = useRef<string | null>(null)
 
   const carregarPagamentos = async (pid: string) => {
     const r = await supabase.from('pagamentos').select('id, valor, forma, tipo, recebido_em, estornado_em, created_at').eq('pedido_id', pid).order('created_at', { ascending: true })
-    if (r.error) { setPagamentosOk(false); setPagamentos([]) } else { setPagamentosOk(true); setPagamentos((r.data as any[]) || []) }
+    // (11/10) modo antigo (sem a tabela) só quando o banco diz que ela não existe. Queda de internet não é isso:
+    // a tela mostra o recebido que está no pedido e avisa que não deu pra carregar a lista.
+    if (r.error && faltaNoBanco(r.error)) { setPagamentosOk(false); setPagamentosFalhou(false); setPagamentos([]) }
+    else if (r.error) { console.error('[Doonly] recebimentos do pedido', r.error); setPagamentosFalhou(true) }
+    else { setPagamentosOk(true); setPagamentosFalhou(false); setPagamentos((r.data as any[]) || []) }
     const a = await supabase.from('pedido_ajustes').select('tipo, valor, motivo, created_at').eq('pedido_id', pid).order('created_at', { ascending: true })
-    setAjustesHist(a.error ? [] : ((a.data as any[]) || []))
+    if (!a.error) setAjustesHist((a.data as any[]) || [])
+    else if (faltaNoBanco(a.error)) setAjustesHist([])
   }
   // Depois de receber, estornar ou finalizar: lê de novo o que o banco calculou (o recebido é do banco)
   const recarregarDinheiro = async () => {
@@ -433,7 +435,8 @@ export default function EditarPedido() {
       setPedido(p => p ? { ...p, ...d } : p)
       setStatusPedido(d.status || statusPedido)
       // o ajuste feito no "Finalizar pedido" mexe no desconto/acréscimo: a tela acompanha (sem virar "alteração")
-      if (typeof d.desconto === 'number' || typeof d.acrescimo === 'number') {
+      // (11/10) com desconto ou acréscimo ainda não salvo na tela, fica o da tela: o do banco passava por cima e o ajuste sumia
+      if (ajustesPendentes.length === 0 && (typeof d.desconto === 'number' || typeof d.acrescimo === 'number')) {
         const novoDesc = Number(d.desconto) || 0, novoAcr = Number(d.acrescimo) || 0
         setDesconto(novoDesc); setAcrescimo(novoAcr)
         if (snapshotRef.current) { const s = JSON.parse(snapshotRef.current); s.desconto = novoDesc; s.acrescimo = novoAcr; snapshotRef.current = JSON.stringify(s) }
@@ -497,14 +500,18 @@ export default function EditarPedido() {
     ;(async () => {
       const [c, ps] = await Promise.all([
         supabase.from('clientes').select('foto_url, created_at, data_nascimento').eq('id', clienteId).maybeSingle(),
-        supabase.from('pedidos').select('id, valor_total, status, data_entrega, created_at').eq('cliente_id', clienteId).neq('status', 'cancelado'),
+        supabase.from('pedidos').select('id, valor_total, valor_recebido, status, status_pagamento, created_at').eq('cliente_id', clienteId).neq('status', 'cancelado'),
       ])
       if (!vivo) return
       const outros = ((ps.data as any[]) || []).filter(x => x.id !== pedido?.id)
-      const datas = outros.map(x => (x.data_entrega || x.created_at || '').slice(0, 10)).filter(Boolean).sort()
+      // (11/10) "Último pedido" = quando o pedido foi FEITO, no dia daqui (antes usava a data de entrega e mostrava data futura).
+      const feitos = outros.map(x => (x.created_at ? new Date(x.created_at).getTime() : NaN)).filter(t => !isNaN(t))
+      const ultimoFeito = feitos.length ? new Date(Math.max(...feitos)) : null
       setClienteInfo({
         foto: (c.data as any)?.foto_url || null, desde: (c.data as any)?.created_at || null, nascimento: (c.data as any)?.data_nascimento || null,
-        pedidos: outros.length, gasto: outros.reduce((s, x) => s + (Number(x.valor_total) || 0), 0), ultimo: datas.length ? datas[datas.length - 1] : null,
+        // "Já gastou" = o que já entrou no caixa nos outros pedidos (pago = total, sinal = o recebido, fiado = 0); antes somava pedido não pago
+        pedidos: outros.length, gasto: somarReais(outros.map(x => valorRecebidoPedido(x))),
+        ultimo: ultimoFeito ? `${ultimoFeito.getFullYear()}-${String(ultimoFeito.getMonth() + 1).padStart(2, '0')}-${String(ultimoFeito.getDate()).padStart(2, '0')}` : null,
       })
     })()
     return () => { vivo = false }
@@ -568,11 +575,14 @@ export default function EditarPedido() {
   }, [])
   useEffect(() => {
     if (!clienteId) { setEnderecoDaCliente(null); return }
+    let vivo = true // (11/10) trocou de cliente de novo antes de chegar: a resposta antiga é ignorada
     ;(async () => {
       const { data } = await supabase.from('clientes').select('rua, numero, bairro, cidade, complemento, cep').eq('id', clienteId).maybeSingle()
+      if (!vivo) return
       const c: any = data || {}
       setEnderecoDaCliente(c.rua || c.bairro || c.cidade ? { rua: c.rua || '', numero: c.numero || '', bairro: c.bairro || '', cidade: c.cidade || '', complemento: c.complemento || '', cep: c.cep || '' } : null)
     })()
+    return () => { vivo = false }
   }, [clienteId])
 
 
@@ -600,13 +610,17 @@ export default function EditarPedido() {
     let cancelado = false
     ;(async () => {
       const [{ data: pedidoData, error }, { data: user }] = await Promise.all([
-        supabase.from('pedidos').select('*, pedido_itens(*)').eq('id', id).single(),
+        supabase.from('pedidos').select('*, pedido_itens(*)').eq('id', id).maybeSingle(),
         supabase.auth.getUser(),
       ])
       if (cancelado) return
       if (error || !pedidoData) {
-        avisarJanela('Não foi possível abrir o pedido', 'Confira a internet e tente de novo.', 'erro')
-        navigate('/pedidos')
+        // (11/10) pedido que não existe mais (excluído, link antigo) não é falta de internet; e o "voltar" não cai aqui de novo
+        const naoExiste = !error || ['PGRST116', '22P02'].includes(String((error as any).code || ''))
+        if (naoExiste) avisarJanela('Esse pedido não existe mais', 'Ele pode ter sido excluído.', 'alerta')
+        else avisarJanela('Não foi possível abrir o pedido', explicarErro(error, 'Tente de novo em instantes.'), 'erro')
+        setSalvando(false)
+        navigate('/pedidos', { replace: true })
         return
       }
       const p = pedidoData as Pedido
@@ -659,7 +673,10 @@ export default function EditarPedido() {
         preco_breakdown: (it as any).preco_breakdown ?? null,
         snapshot_version: (it as any).snapshot_version ?? null,
       })))
-      carregarPagamentos(p.id)
+      // (11/10) a "foto" do que está salvo é tirada junto com os dados que acabaram de chegar (logo no próximo desenho),
+      // e não depois da segunda espera (clientes e produtos): o que ela mexesse nesse meio tempo era marcado como salvo.
+      snapshotRef.current = null
+      const lendoPag = carregarPagamentos(p.id)
       // Carregar lista de clientes + produtos
       if (user?.user) {
         const [{ data: cls }, { data: prds }] = await Promise.all([
@@ -671,8 +688,16 @@ export default function EditarPedido() {
           setProdutos(prds || [])
         }
       }
-      snapshotRef.current = null // tira a "foto" de novo: depois de salvar, nada fica pendente
       setCarregando(false)
+      setSalvando(false) // (11/10) depois de salvar, a tela só destrava aqui, com tudo recarregado
+      // (11/10) chegou do quadro de pedidos pedindo pra cancelar: abre a janela com o pedido já na tela (uma vez só)
+      if (abrirCancelarRef.current) {
+        abrirCancelarRef.current = false
+        if (p.status !== 'cancelado') {
+          try { await lendoPag } catch { /* a janela trata pagamentos que falharam */ }
+          if (!cancelado) { setDevolverSinal(null); setCancelarAberto(true) }
+        }
+      }
     })()
     return () => { cancelado = true }
   }, [id, recarga])
@@ -686,37 +711,30 @@ export default function EditarPedido() {
     return () => { clearTimeout(t); document.removeEventListener('click', onDoc) }
   }, [statusDropdownAberto])
 
-  // ── Cancelar sheet: trava scroll do body ──────────────────────────────
-  useEffect(() => {
-    if (!cancelarAberto) return
-    const scrollY = window.scrollY
-    const original = {
-      overflow: document.body.style.overflow,
-      position: document.body.style.position,
-      top: document.body.style.top,
-      width: document.body.style.width,
-    }
-    document.body.style.overflow = 'hidden'
-    document.body.style.position = 'fixed'
-    document.body.style.top = `-${scrollY}px`
-    document.body.style.width = '100%'
-    return () => {
-      document.body.style.overflow = original.overflow
-      document.body.style.position = original.position
-      document.body.style.top = original.top
-      document.body.style.width = original.width
-      window.scrollTo(0, scrollY)
-    }
-  }, [cancelarAberto])
+  // (11/10) A janela de cancelar não trava mais a rolagem por conta própria: a <Janela> já trava
+  // (as duas travas brigavam e, ao fechar, a tela ficava sem rolar).
 
   // ── Handler de cancelar pedido (Fase 8) ───────────────────────────────
   const handleConfirmarCancelamento = async () => {
     if (!pedido || cancelando) return
+    // (11/10) sem conseguir ler os recebimentos não dá pra saber se há valor a devolver: não cancela às cegas
+    if (pagamentosFalhou && recebidoAtual > 0.009) { avisarJanela('Não deu pra carregar os recebimentos', 'Confira a internet e tente cancelar de novo.', 'erro'); return }
     if (recebidoAtual > 0.009 && pagamentosOk && devolverSinal === null) { avisarJanela('Falta uma resposta', 'Escolha o que aconteceu com o valor que você já recebeu deste pedido.', 'alerta'); return }
     setCancelando(true)
     try {
       const motivoLimpo = motivoCancelamento.trim()
-      // Tenta salvar com as colunas novas (motivo/mostrar); se der erro de coluna, cai pra fallback
+      // (11/10) "Devolvi pro cliente": o estorno vem ANTES de cancelar, e com o erro conferido.
+      // Antes o erro era engolido: o pedido ficava cancelado e o dinheiro continuava no caixa.
+      // Se falhar aqui, o pedido não é cancelado; tentar de novo só estorna o que ainda não foi estornado.
+      if (devolverSinal && pagamentosOk) {
+        const { error: erroEstorno } = await supabase.from('pagamentos').update({ estornado_em: new Date().toISOString() }).eq('pedido_id', pedido.id).is('estornado_em', null)
+        if (erroEstorno) {
+          avisarJanela('Não foi possível cancelar', explicarErro(erroEstorno, 'Não deu pra estornar o valor recebido, então o pedido não foi cancelado. Tente de novo.'), 'erro')
+          setCancelando(false)
+          return
+        }
+      }
+      // Tenta salvar com as colunas novas (motivo/mostrar)
       const payloadCompleto: any = {
         status: 'cancelado',
         motivo_cancelamento: motivoLimpo || null,
@@ -724,54 +742,45 @@ export default function EditarPedido() {
       }
       let { error } = await supabase.from('pedidos').update(payloadCompleto).eq('id', pedido.id)
 
-      // Se der erro (provavelmente colunas não existem), tenta só com status
-      if (error) {
-        console.warn('Fallback: colunas motivo/mostrar não existem, salvando só status.', error.message)
+      // (11/10) Plano B "só a situação" apenas quando as colunas do motivo não existem no banco.
+      // Antes qualquer erro (até de internet) caía aqui e o motivo do cancelamento se perdia.
+      if (error && faltaNoBanco(error)) {
+        console.warn('Colunas do motivo do cancelamento não existem: salvando só a situação.', error.message)
         const r = await supabase.from('pedidos').update({ status: 'cancelado' }).eq('id', pedido.id)
         error = r.error
       }
 
       if (error) {
-        avisarJanela('Não foi possível cancelar', explicarErro(error, 'Tente de novo em instantes.'), 'erro')
+        const jaEstornou = !!devolverSinal && pagamentosOk
+        if (jaEstornou) await recarregarDinheiro() // o estorno já foi feito: a tela mostra o que está gravado
+        avisarJanela('Não foi possível cancelar', `${explicarErro(error, 'Tente de novo em instantes.')}${jaEstornou ? ' O valor recebido já foi estornado, mas o pedido continua aberto.' : ''}`, 'erro')
         setCancelando(false)
         return
       }
 
       // Registra no histórico (silencioso — não falha se tabela não existir)
-      // Devolveu o sinal? Os recebimentos são estornados (saem do caixa, ficam no histórico)
-      if (devolverSinal) {
-        await supabase.from('pagamentos').update({ estornado_em: new Date().toISOString() }).eq('pedido_id', pedido.id).is('estornado_em', null).then(() => {}, () => {})
-      }
       supabase.from('pedido_historico').insert({
         pedido_id: pedido.id,
         evento: 'Pedido cancelado',
         descricao: motivoLimpo || 'Sem motivo informado',
       }).then(() => {}, () => {})
 
+      // (11/10) fecha a janela, espera o histórico do navegador assentar e TROCA esta tela pela lista:
+      // assim o "voltar" não reabre o pedido cancelado.
       setCancelarAberto(false)
-      navigate('/pedidos')
+      await new Promise(r => window.setTimeout(r, 60))
+      await historicoAssentado()
+      navigate('/pedidos', { replace: true })
     } catch (err: any) {
-      avisarJanela('Não foi possível cancelar', 'Algo deu errado. Tente de novo em instantes.', 'erro')
+      avisarJanela('Não foi possível cancelar', explicarErro(err, 'Algo deu errado. Tente de novo em instantes.'), 'erro')
       setCancelando(false)
     }
   }
 
-  // ── Timeline: trava scroll do body + carrega histórico ao abrir ───────
+  // ── Timeline: carrega o histórico ao abrir ────────────────────────────
+  // (11/10) sem trava de rolagem própria: a <Janela> já trava (as duas brigavam e a tela ficava sem rolar ao fechar)
   useEffect(() => {
     if (!timelineAberto) return
-    // Trava scroll
-    const scrollY = window.scrollY
-    const original = {
-      overflow: document.body.style.overflow,
-      position: document.body.style.position,
-      top: document.body.style.top,
-      width: document.body.style.width,
-    }
-    document.body.style.overflow = 'hidden'
-    document.body.style.position = 'fixed'
-    document.body.style.top = `-${scrollY}px`
-    document.body.style.width = '100%'
-    // Carrega histórico se ainda não carregou
     ;(async () => {
       if (!pedido?.id) return
       setHistoricoCarregando(true)
@@ -783,13 +792,6 @@ export default function EditarPedido() {
       setHistorico((data as HistoricoEvento[]) || [])
       setHistoricoCarregando(false)
     })()
-    return () => {
-      document.body.style.overflow = original.overflow
-      document.body.style.position = original.position
-      document.body.style.top = original.top
-      document.body.style.width = original.width
-      window.scrollTo(0, scrollY)
-    }
   }, [timelineAberto, pedido?.id])
 
   // ── CEP ───────────────────────────────────────────────────────────────
@@ -861,7 +863,7 @@ export default function EditarPedido() {
       valor_total: total,
       valor_produtos: subtotalItens,
       valor_recebido: recebidoAtual,
-      desconto: desconto,
+      desconto: descontoEfetivo,
       acrescimo: acrescimo,
       taxa_entrega: tipoEntrega === 'entrega' ? taxaEntrega : 0,
       forma_pagamento: formaPagamento,
@@ -913,10 +915,19 @@ export default function EditarPedido() {
         statusPag = 'pendente'; valorRecebido = 0
       } // sem situação (antigo) ou estornado: não toca no pagamento
       // Tela nova (03/10): com a tabela de pagamentos, o recebido é do banco (soma dos pagamentos) — o salvar não toca nele
-      if (pagamentosOk) { statusPag = undefined; valorRecebido = undefined }
+      // (11/10) se a leitura dos recebimentos falhou (internet), a tabela pode existir: também não escreve o recebido na mão
+      if (pagamentosOk || pagamentosFalhou) { statusPag = undefined; valorRecebido = undefined }
 
-      // Recalcular valor dos produtos (soma bruta dos itens)
-      const valorProdutos = itens.reduce((acc, it) => acc + (it.valor_unitario || 0) * (it.quantidade || 1), 0)
+      // Valor dos produtos: a mesma soma da tela, cada linha arredondada pra centavos (11/10)
+      const valorProdutos = subtotalItens
+
+      // (11/10) "Paga na entrega" + remarcar: se a data combinada era a própria data da entrega e a entrega mudou,
+      // o combinado volta a ser "na entrega" (vazio), em vez de ficar preso na data antiga. Data combinada diferente fica.
+      const entregaAntiga = String(pedido?.data_entrega || '').slice(0, 10)
+      const previstaAntiga = String(pedido?.data_prevista_pagamento || '').slice(0, 10)
+      const previstaNaTela = String(dataPrevistaPagamento || '').slice(0, 10)
+      const seguiaAEntrega = !!previstaAntiga && previstaAntiga === entregaAntiga && previstaNaTela === previstaAntiga && String(dataEntrega).slice(0, 10) !== entregaAntiga
+      const previstaParaGravar = seguiaAEntrega ? null : (dataPrevistaPagamento || null)
 
       // Detectar mudança de status pra registrar no histórico
       const statusAntigo = pedido?.status
@@ -931,7 +942,8 @@ export default function EditarPedido() {
         ...(statusPag !== undefined ? { status_pagamento: statusPag, valor_recebido: valorRecebido } : {}),
         valor_total: total,
         valor_produtos: valorProdutos,
-        desconto: desconto,
+        ...((pedido as any)?.cupom_codigo ? { cupom_desconto: descontoCupom } : {}), // o cupom cortado fica gravado, senão o desconto à parte sumia a cada salvar
+        desconto: descontoEfetivo, // (11/10) o que foi descontado de verdade (o cupom não passa do valor dos itens)
         acrescimo: acrescimo,
         taxa_entrega: tipoEntrega === 'entrega' ? taxaEntrega : 0,
         forma_pagamento: formaPagamento,
@@ -947,8 +959,8 @@ export default function EditarPedido() {
         // (10/10) "Combinado pra pagar o resto" vale sozinho: a data do campo é gravada mesmo sem troca de
         // situação do pagamento (antes só ia junto com ela, que esta tela não muda mais, e nunca era salva)
         data_prevista_pagamento: mexeuNoPagamento
-          ? (situacaoPag === 'fiado' ? (dataPrevistaPagamento || null) : null)
-          : (dataPrevistaPagamento || null),
+          ? (situacaoPag === 'fiado' ? previstaParaGravar : null)
+          : previstaParaGravar,
       }
 
       // ── 1) UPDATE do pedido ─────────────────────────────────────────
@@ -966,8 +978,7 @@ export default function EditarPedido() {
       }
 
       if (errPedido) {
-        console.error('Erro ao atualizar pedido:', errPedido)
-        avisarJanela('Não foi possível salvar', 'Confira a internet e tente de novo. (' + errPedido.message + ')', 'erro')
+        avisarJanela('Não foi possível salvar', explicarErro(errPedido, 'Nada foi alterado. Tente de novo em instantes.'), 'erro')
         setSalvando(false)
         return
       }
@@ -982,6 +993,9 @@ export default function EditarPedido() {
           supabase.from('pedido_historico').insert({ pedido_id: pedido!.id, evento: 'Valor ajustado', descricao: `${a.tipo === 'desconto' ? 'Desconto' : 'Acréscimo'} de ${formatMoney(a.valor)}${a.motivo ? ` (${a.motivo})` : ''}` }).then(() => {}, () => {})
           corrente = depois
         }
+        // (11/10) gravou, não é mais pendente: se um passo adiante falhar e ela salvar de novo, o ajuste não é registrado outra vez
+        setAjustesHist(h => [...h, ...ajustesPendentes])
+        setAjustesPendentes([])
       }
 
       // Financeiro · Passo 1: ela mudou o pagamento → os registros de pagamento acompanham
@@ -1000,14 +1014,17 @@ export default function EditarPedido() {
         }).then(() => {}, () => {})
       }
 
-      // ── 2) Substituir itens: DELETE tudo → INSERT tudo ──────────────
-      const { error: errDel } = await supabase.from('pedido_itens').delete().eq('pedido_id', pedido!.id)
-      if (errDel) {
-        console.error('Erro ao remover itens antigos:', errDel)
-        avisarJanela('Salvo pela metade', 'O pedido foi salvo, mas os itens não foram atualizados. Tente salvar de novo. (' + errDel.message + ')', 'erro')
+      // ── 2) Trocar os itens (11/10): grava os NOVOS primeiro e só depois apaga os antigos, pelos ids lidos agora.
+      // Antes era "apaga tudo, grava tudo": se a conexão caísse no meio, o pedido ficava sem itens.
+      // Se gravar os novos falhar, nada se perdeu. Se apagar os antigos falhar, ficam repetidos até salvar de novo
+      // (o próximo salvar lê todos os que estão no banco, grava os da tela e apaga os lidos).
+      const { data: antigos, error: errLer } = await supabase.from('pedido_itens').select('id').eq('pedido_id', pedido!.id)
+      if (errLer) {
+        avisarJanela('Salvo pela metade', `Os dados do pedido foram salvos, mas os itens não foram atualizados. ${explicarErro(errLer, 'Toque em Salvar de novo.')}`, 'erro')
         setSalvando(false)
         return
       }
+      const idsAntigos: string[] = ((antigos as any[]) || []).map(x => x.id).filter(Boolean)
 
       if (itens.length > 0) {
         const itensInsert = itens.map(it => ({
@@ -1030,23 +1047,30 @@ export default function EditarPedido() {
         }))
         const { error: errIns } = await supabase.from('pedido_itens').insert(itensInsert)
         if (errIns) {
-          console.error('Erro ao inserir itens:', errIns)
-          avisarJanela('Salvo pela metade', 'O pedido foi salvo, mas os itens não foram gravados. Tente salvar de novo. (' + errIns.message + ')', 'erro')
+          avisarJanela('Salvo pela metade', `Os dados do pedido foram salvos, mas os itens não foram atualizados (continuam os de antes). ${explicarErro(errIns, 'Toque em Salvar de novo.')}`, 'erro')
           setSalvando(false)
           return
         }
       }
 
-      setAjustesPendentes([])
-      // Sucesso: continua no pedido (03/10 — antes voltava pra lista), já com tudo recarregado
+      if (idsAntigos.length > 0) {
+        const { error: errDel } = await supabase.from('pedido_itens').delete().in('id', idsAntigos)
+        if (errDel) {
+          avisarJanela('Os itens ficaram repetidos', `Os itens novos foram gravados, mas os antigos não saíram do pedido. ${explicarErro(errDel, 'Toque em Salvar de novo pra arrumar.')}`, 'erro')
+          setSalvando(false)
+          return
+        }
+      }
+
+      // Sucesso: continua no pedido (03/10 — antes voltava pra lista), já com tudo recarregado.
+      // (11/10) A tela continua travada (salvando) até a recarga terminar: é a recarga que destrava.
+      // Antes ela destravava aqui, e o que fosse mexido durante a recarga era apagado ou marcado como salvo.
       setSalvouOk(true)
-      setSalvando(false)
       setRecarga(x => x + 1)
       avisar('Alterações salvas.')
       setTimeout(() => setSalvouOk(false), 1800)
     } catch (err: any) {
-      console.error('Erro inesperado ao salvar:', err)
-      avisarJanela('Não foi possível salvar', 'Algo deu errado. Tente de novo em instantes.', 'erro')
+      avisarJanela('Não foi possível salvar', explicarErro(err, 'Algo deu errado. Tente de novo em instantes.'), 'erro')
       setSalvando(false)
     }
   }
@@ -1071,13 +1095,14 @@ export default function EditarPedido() {
   }
 
   // 4.03: item vendido por kg anda de 0,5 em 0,5 e aceita meio quilo (antes arredondava 1,5 kg pra 1)
-  const porKg = (it: { produto_id?: string | null }) => produtos.find(x => x.id === it.produto_id)?.forma_venda === 'kg'
+  // (11/10) só o PESO LIVRE (lib/itemPedido). Bolo por kg com tamanho escolhido ("M · 2 kg") ou kit conta em unidades:
+  // passo 1, mínimo 1. Antes aparecia como "1 kg" e o "+" somava meio quilo.
+  const porKg = (it: { produto_id?: string | null; personalizacoes?: any }) => pesoLivre(it, produtos.find(x => x.id === it.produto_id)?.forma_venda)
   const updateQtd = (idx: number, delta: number) => {
     setItens(prev => prev.map((it, i) => {
       if (i !== idx) return it
-      const kg = porKg(it)
-      const passo = kg ? 0.5 : 1
-      return { ...it, quantidade: Math.max(passo, Math.round((it.quantidade + delta * passo) * 2) / 2) }
+      if (porKg(it)) return { ...it, quantidade: Math.max(0.5, Math.round((it.quantidade + delta * 0.5) * 2) / 2) }
+      return { ...it, quantidade: Math.max(1, Math.round((Number(it.quantidade) || 1) + delta)) }
     }))
   }
 
@@ -1096,10 +1121,26 @@ export default function EditarPedido() {
   }
 
   // ── Derivados pro header ──────────────────────────────────────────────
-  const subtotalItens = itens.reduce((acc, it) => acc + (it.valor_unitario || 0) * (it.quantidade || 1), 0)
+  // (11/10) cada linha (preço × quantidade) arredondada pra centavos antes de somar, e o total também:
+  // 1,5 kg × R$ 44,91 = 67,365 mostrava "Total R$ 67,37" e "Falta receber R$ 67,36"
+  const valorDaLinha = (it: { valor_unitario?: number; quantidade?: number }) => r2((it.valor_unitario || 0) * (it.quantidade || 1))
+  // (11/10) itens iguais aos que estão salvos: vale o subtotal gravado (pedido antigo somava sem arredondar cada linha,
+  // e só de abrir aparecia "Falta receber R$ 0,01" num pedido pago)
+  const itensIguaisAFoto = (() => {
+    if (!snapshotRef.current) return true
+    try { return JSON.stringify(JSON.parse(snapshotRef.current).itens) === JSON.stringify(itens.map(it => [it.produto_id || it.nome_produto, it.quantidade, it.valor_unitario, it.observacoes || ''])) } catch { return false }
+  })()
+  const subtotalGravado = (pedido as any)?.valor_produtos != null ? r2((pedido as any).valor_produtos) : null
+  const subtotalItens = itensIguaisAFoto && subtotalGravado != null ? subtotalGravado : somarReais(itens.map(valorDaLinha))
   const totalItens = itens.length
+  // (11/10) o cupom do cardápio fica guardado em reais: ao tirar itens, ele não pode passar do valor dos itens
+  // (cupom de R$ 30 em R$ 24 de itens comia R$ 6 do frete). O desconto dado à parte continua inteiro.
+  const cupomGravado = (pedido as any)?.cupom_codigo ? r2(Math.min(Number((pedido as any)?.cupom_desconto) || 0, desconto)) : 0
+  // só corta o cupom quando ela diminuiu os itens nesta edição (pedido antigo gravado com cupom maior abre igual ao banco)
+  const tetoCupom = subtotalGravado != null && subtotalItens < subtotalGravado ? subtotalItens : cupomGravado
+  const descontoEfetivo = r2(desconto - cupomGravado + Math.min(cupomGravado, tetoCupom))
   // Total calculado: subtotal + taxa (se entrega) − desconto + acréscimo
-  const total = Math.max(0, subtotalItens + (tipoEntrega === 'entrega' ? taxaEntrega : 0) - desconto + acrescimo)
+  const total = r2(Math.max(0, subtotalItens + (tipoEntrega === 'entrega' ? taxaEntrega : 0) - descontoEfetivo + acrescimo))
   const origemLabel = pedido?.origem === 'cardapio' ? 'Cardápio' : 'Manual'
   const tipoEntregaIcon = tipoEntrega === 'entrega' ? I.truck : I.home
 
@@ -1115,10 +1156,13 @@ export default function EditarPedido() {
   })()
 
   // ── Dinheiro do pedido (tela nova) ─────────────────────────────────────
-  const r2 = (v: number) => Math.round((Number(v) || 0) * 100) / 100
+  // (11/10) r2 agora é o de lib/moeda (um só pro app)
   const pagAtivos = pagamentos.filter(g => !g.estornado_em)
-  const recebidoAtual = pagamentosOk ? r2(pagAtivos.reduce((s, g) => s + (Number(g.valor) || 0), 0)) : (pedido ? valorRecebidoPedido(pedido as any) : 0)
+  // se a lista de recebimentos não carregou (internet), vale o recebido que está no pedido
+  const recebidoAtual = pagamentosOk && !pagamentosFalhou ? r2(pagAtivos.reduce((s, g) => s + (Number(g.valor) || 0), 0)) : (pedido ? valorRecebidoPedido(pedido as any) : 0)
   const faltaReceber = Math.max(0, r2(total - recebidoAtual))
+  // (11/10) recebido maior que o total (tirou um item ou deu desconto depois de pago): antes a tela dizia só "Pedido pago"
+  const recebidoAMais = statusPedido !== 'cancelado' ? Math.max(0, r2(recebidoAtual - total)) : 0
   // Conta de cada item (03/10): preço do produto + adicionais − promoção = valor do item.
   // Vem do preco_breakdown gravado; se não fechar com o valor (item antigo ou editado), mostra só o valor.
   function contaDoItem(it: any) {
@@ -1139,12 +1183,17 @@ export default function EditarPedido() {
   const adicionaisTotal = r2(somaContas.adic)
   const promocoesTotal = r2(somaContas.desc)
   // o desconto do pedido pode juntar o cupom (do cardápio) e um desconto dado à parte
-  const descontoCupom = (pedido as any)?.cupom_codigo ? r2(Math.min(Number((pedido as any)?.cupom_desconto) || 0, desconto)) : 0
-  const descontoManual = r2(Math.max(0, desconto - descontoCupom))
+  // (11/10) a parte do cupom não passa do valor dos itens (a mesma conta do total, acima)
+  const descontoCupom = r2(Math.min(cupomGravado, tetoCupom))
+  const descontoManual = r2(Math.max(0, desconto - cupomGravado))
   const produtosTotal = r2(subtotalItens - adicionaisTotal + promocoesTotal)
 
   // forma de venda do item (kg, cento…) vem do produto cadastrado: "Bolo red velvet 1,5 kg" em vez de "1,5x"
-  const formaDoItem = (it: { produto_id?: string | null }) => produtos.find(x => x.id === it.produto_id)?.forma_venda || null
+  // (11/10) kg só no peso livre; com tamanho ou kit o item conta em unidades ("1x Bolo red velvet")
+  const formaDoItem = (it: { produto_id?: string | null; personalizacoes?: any }) => {
+    const forma = produtos.find(x => x.id === it.produto_id)?.forma_venda || null
+    return forma === 'kg' && !pesoLivre(it, forma) ? null : forma
+  }
   const porUnidade = (it: any, eKit: boolean) => { const f = formaDoItem(it); return eKit ? 'por kit' : f === 'kg' ? 'o kg' : f === 'cento' ? 'o cento' : f === 'fatia' ? 'a fatia' : 'cada' }
 
   // ── Etapas do pedido ───────────────────────────────────────────────────
@@ -1167,42 +1216,69 @@ export default function EditarPedido() {
     const a = proximoPasso(statusPedido, tipoEntrega, pedido?.origem)
     return a ? { s: a.proximo, l: a.rotulo } : null
   })()
-  const salvarQuemRetirou = async (nome: string) => {
-    if (!pedido) return
+  // (11/10) Devolve se gravou. Antes qualquer erro virava só um aviso no console e a tela dizia "Quem retirou foi salvo".
+  //   'ok' gravou · 'sem-coluna' o banco ainda não tem o campo (segue sem ele) · 'erro' não gravou (internet etc.)
+  const salvarQuemRetirou = async (nome: string): Promise<'ok' | 'sem-coluna' | 'erro'> => {
+    if (!pedido) return 'erro'
     const limpo = nome.trim()
     const { error } = await supabase.from('pedidos').update({ retirado_por: limpo || null }).eq('id', pedido.id)
-    if (error) { console.warn('retirado_por ainda não existe no banco (rode o SQL)', error.message); return }
+    if (error && faltaNoBanco(error)) { console.warn('retirado_por ainda não existe no banco (rode o SQL)', error.message); return 'sem-coluna' }
+    if (error) { console.error('[Doonly] quem retirou', error); return 'erro' }
     setPedido(p => p ? ({ ...p, retirado_por: limpo || null } as any) : p)
     if (limpo) supabase.from('pedido_historico').insert({ pedido_id: pedido.id, evento: 'Retirado por', descricao: limpo }).then(() => {}, () => {})
+    return 'ok'
   }
+  const retirandoRef = useRef(false) // (11/10) toque duplo em "Marcar como retirado" não grava duas vezes
   const confirmarRetirada = async (nomeForcado?: string) => {
-    const nome = nomeForcado ?? quemRetirou
-    setRetiradaAberta(false)
-    await salvarQuemRetirou(nome)
-    if (depoisRetirada === 'etapa') {
-      // segue a mudança de etapa normal, sem perguntar de novo
-      await irParaEtapa('entregue', true)
-    } else avisar('Quem retirou foi salvo')
+    if (retirandoRef.current) return
+    retirandoRef.current = true
+    try {
+      const nome = nomeForcado ?? quemRetirou
+      setRetiradaAberta(false)
+      // "Pular" sem nome e sem nome gravado antes: não há o que salvar
+      const nadaASalvar = !nome.trim() && !(pedido as any)?.retirado_por
+      const r = nadaASalvar ? 'ok' : await salvarQuemRetirou(nome)
+      if (r === 'erro') { avisarJanela('Não deu pra salvar quem retirou', 'Confira a internet e tente de novo.', 'erro'); return }
+      if (depoisRetirada === 'etapa') {
+        // segue a mudança de etapa normal, sem perguntar de novo
+        await irParaEtapa('entregue', true)
+      } else if (r === 'sem-coluna') avisarJanela('Não deu pra salvar quem retirou', 'Esse campo ainda não está disponível na sua conta.', 'alerta')
+      else avisar('Quem retirou foi salvo')
+    } finally { retirandoRef.current = false }
   }
   // Mudar a etapa grava na hora (como na tela de Pedidos). Entregue com saldo → "Finalizar pedido".
+  const mudandoEtapaRef = useRef(false) // (11/10) toque duplo no botão não muda a etapa duas vezes
+  const [mudandoEtapa, setMudandoEtapa] = useState(false)
   const irParaEtapa = async (novo: string, pularRetirada = false) => {
-    if (!pedido || novo === statusPedido) return
+    if (!pedido || novo === statusPedido || mudandoEtapaRef.current) return
     if (alteracoes > 0) { avisarJanela('Salve antes de mudar a etapa', 'Você tem alterações não salvas. Salve ou descarte antes de mudar a etapa do pedido.', 'info'); return }
     if (novo === 'entregue' && faltaReceber > 0.009) { setFinalizarAberto(true); return }
     if (novo === 'entregue' && tipoEntrega === 'retirada' && !pularRetirada) { setQuemRetirou((pedido as any).retirado_por || ''); setDepoisRetirada('etapa'); setRetiradaAberta(true); return }
-    const { error } = await supabase.from('pedidos').update({ status: novo }).eq('id', pedido.id)
-    if (error) { avisarJanela('Não foi possível mudar a etapa', 'Confira a internet e tente de novo.', 'erro'); return }
-    const label = (STATUS_CONFIG[novo] || {}).label || novo
-    supabase.from('pedido_historico').insert({ pedido_id: pedido.id, evento: label, descricao: `Status alterado para "${label}"` }).then(() => {}, () => {})
-    setStatusPedido(novo); setPedido(p => p ? { ...p, status: novo } : p)
-    avisar(avisoDaMudanca({ numero: pedido.numero, tipo_entrega: tipoEntrega }, novo))
-    if (novo === 'entregue') tocarSom('sucesso')
+    mudandoEtapaRef.current = true; setMudandoEtapa(true)
+    try {
+      const { error } = await supabase.from('pedidos').update({ status: novo }).eq('id', pedido.id)
+      if (error) { avisarJanela('Não foi possível mudar a etapa', explicarErro(error, 'Tente de novo em instantes.'), 'erro'); return }
+      const label = (STATUS_CONFIG[novo] || {}).label || novo
+      supabase.from('pedido_historico').insert({ pedido_id: pedido.id, evento: label, descricao: `Status alterado para "${label}"` }).then(() => {}, () => {})
+      setStatusPedido(novo); setPedido(p => p ? { ...p, status: novo } : p)
+      avisar(avisoDaMudanca({ numero: pedido.numero, tipo_entrega: tipoEntrega }, novo))
+      if (novo === 'entregue') tocarSom('sucesso')
+    } finally { mudandoEtapaRef.current = false; setMudandoEtapa(false) }
   }
+  // (11/10) Receber e estornar relêem o dinheiro do banco: com alteração não salva na tela (desconto, item tirado),
+  // o recebimento era lançado em cima de um total que ainda não existia e o ajuste sumia. Mesmo aviso de mudar a etapa.
+  const semAlteracoesPendentes = (oQue: string): boolean => {
+    if (alteracoes === 0) return true
+    avisarJanela(`Salve antes de ${oQue}`, `Você tem alterações não salvas. Salve ou descarte antes de ${oQue}.`, 'info')
+    return false
+  }
+  const abrirReceber = () => { if (semAlteracoesPendentes('registrar o recebimento')) setReceberAberto(true) }
   const estornarPagamento = async (g: any) => {
+    if (!semAlteracoesPendentes('estornar')) return
     const ok = await confirmarJanela({ titulo: `Estornar ${formatMoney(Number(g.valor) || 0)}?`, texto: 'Use quando o recebimento foi lançado errado. O valor sai do caixa e volta a faltar neste pedido. Ele continua no histórico, riscado.', icone: 'estorno', rotuloConfirmar: 'Estornar', perigo: true })
     if (!ok) return
     const { error } = await supabase.from('pagamentos').update({ estornado_em: new Date().toISOString() }).eq('id', g.id)
-    if (error) { avisarJanela('Não foi possível estornar', 'Confira a internet e tente de novo.', 'erro'); return }
+    if (error) { avisarJanela('Não foi possível estornar', explicarErro(error, 'Tente de novo em instantes.'), 'erro'); return }
     await recarregarDinheiro(); avisar('Recebimento estornado.')
   }
   const NOME_FORMA: Record<string, string> = { pix: 'Pix', dinheiro: 'Dinheiro', credito: 'Crédito', debito: 'Débito', boleto: 'Boleto' }
@@ -1222,7 +1298,15 @@ export default function EditarPedido() {
   // ── Topo da tela (08/10 · 3.15): situação, entrega, aviso e o próximo passo num cartão só ──
   const grupoAtual = grupoDoStatus(statusPedido)
   const situacao = { nome: nomeDaSituacao(grupoAtual), tom: SITUACOES.find(x => x.chave === grupoAtual)?.tom }
-  const atrasadoHoje = !!dataEntrega && dataEntrega.slice(0, 10) < hojeISO() && !['entregue', 'cancelado'].includes(grupoAtual)
+  // (11/10) a regra única de atraso (lib/pedidoStatus): a data passou E o pedido ainda não ficou pronto.
+  // Antes "Pronto pra retirar" de ontem ficava vermelho aqui e normal na lista.
+  const atrasadoHoje = pedidoAtrasado({ data_entrega: dataEntrega, status: statusPedido })
+  // (11/10) a seta do topo pergunta antes de jogar fora o que não foi salvo
+  const voltarPraLista = async () => {
+    if (salvando) return
+    if (alteracoes > 0 && !(await confirmar({ titulo: 'Descartar as alterações?', texto: 'O que você mudou e ainda não salvou vai se perder.', rotulo: 'Descartar', rotuloVoltar: 'Continuar', perigo: true, icone: 'alerta' }))) return
+    navigate('/pedidos')
+  }
   const novoPedido = grupoAtual === 'aguardando_aceite'
   const origemTexto = pedido.origem === 'cardapio' ? 'Pedido feito pelo cardápio digital' : 'Pedido lançado por você'
   // 10/10: o subtítulo traz só o cliente (a data já aparece logo abaixo, na linha de Entrega/Retirada)
@@ -1230,8 +1314,9 @@ export default function EditarPedido() {
 
   return (
     <>
-    <AppPageHeader title={`Pedido #${pedido.numero || '—'}`} subtitle={subtituloTopo} onBack={() => navigate('/pedidos')} />
-    <div className="ep-wrap ep2 tpd">
+    <AppPageHeader title={`Pedido #${pedido.numero || '—'}`} subtitle={subtituloTopo} onBack={voltarPraLista} />
+    {/* (11/10) enquanto salva e recarrega, a tela não aceita toque nem digitação */}
+    <div className="ep-wrap ep2 tpd" aria-busy={salvando || undefined} inert={salvando || undefined} style={salvando ? { pointerEvents: 'none' } : undefined}>
       <section className={`tpd-sit${novoPedido ? ' aceitar' : ''}${atrasadoHoje ? ' atr' : ''}`} aria-label="Situação do pedido">
         <div className="tpd-sit-l">
           <div className="tpd-sit-tx">
@@ -1257,7 +1342,7 @@ export default function EditarPedido() {
             })}
           </ol>
         )}
-        {proximaEtapa ? <Botao className="tpd-acao" cheio onClick={() => irParaEtapa(proximaEtapa.s)}>{proximaEtapa.l}</Botao>
+        {proximaEtapa ? <Botao className="tpd-acao" cheio carregando={mudandoEtapa} onClick={() => irParaEtapa(proximaEtapa.s)}>{proximaEtapa.l}</Botao>
           : statusPedido === 'entregue' ? <p className="tpd-fim"><Check size={16} weight="bold" /> {tipoEntrega === 'retirada' ? 'Pedido retirado' : 'Pedido entregue'}</p> : null}
       </section>
 
@@ -1293,7 +1378,7 @@ export default function EditarPedido() {
                 {clienteId && clienteInfo && clienteInfo.pedidos > 0 && (
                   <div className="tpd-cli-st">
                     <span><b>{clienteInfo.pedidos + 1}</b><small>pedidos</small></span>
-                    <span><b>{formatMoney(clienteInfo.gasto + total)}</b><small>já gastou</small></span>
+                    <span><b>{formatMoney(r2(clienteInfo.gasto + recebidoAtual))}</b><small>já gastou</small></span>
                     <span><b>{clienteInfo.ultimo ? clienteInfo.ultimo.slice(8, 10) + '/' + clienteInfo.ultimo.slice(5, 7) : '—'}</b><small>último pedido</small></span>
                   </div>
                 )}
@@ -1337,7 +1422,7 @@ export default function EditarPedido() {
                           <span className="tpd-ft" aria-hidden="true"><Package size={20} weight="bold" />{foto && <img src={foto} alt="" onError={e => { e.currentTarget.style.display = 'none' }} />}</span>
                           <div className="tpd-it-tx">
                             <b><NomeComQtd nome={nomeDeProduto(it.nome_produto)} qtd={q} forma={formaDoItem(it)} Destaque="em" /></b>
-                            <span>{formatMoney((it.valor_unitario || 0) * q)}{q !== 1 ? ` · ${formatMoney(it.valor_unitario || 0)} ${porUnidade(it, eKit)}` : ''}</span>
+                            <span>{formatMoney(valorDaLinha(it))}{q !== 1 ? ` · ${formatMoney(it.valor_unitario || 0)} ${porUnidade(it, eKit)}` : ''}</span>
                           </div>
                           <BotaoIcone rotulo={`Opções de ${it.nome_produto}`} variante="limpo" tamanho="p" onClick={() => setItemMenu(idx)}><DotsThree size={20} weight="bold" /></BotaoIcone>
                         </div>
@@ -1455,7 +1540,7 @@ export default function EditarPedido() {
               if (!c.fecha && q !== 1) origem.push(`${formatMoney(it.valor_unitario || 0)} ${porUnidade(it, eKit)}`)
               return (
                 <div key={it.id || `v${idx}`} className="ep3-pv">
-                  <div className="ep3-pv-h"><span><NomeComQtd nome={nomeDeProduto(it.nome_produto)} qtd={q} forma={formaDoItem(it)} Destaque="em" /></span><b>{formatMoney((it.valor_unitario || 0) * q)}</b></div>
+                  <div className="ep3-pv-h"><span><NomeComQtd nome={nomeDeProduto(it.nome_produto)} qtd={q} forma={formaDoItem(it)} Destaque="em" /></span><b>{formatMoney(valorDaLinha(it))}</b></div>
                   {c.fecha ? (
                     <div className="ep3-pv-d">
                       <p><span>Produto{q > 1 ? ` · ${q} × ${formatMoney(c.base)}` : ''}</span><b>{formatMoney(c.base * q)}</b></p>
@@ -1483,7 +1568,9 @@ export default function EditarPedido() {
 
           <div className="ep2-card">
             <Titulo>Pagamentos</Titulo>
-            {pagamentosOk ? (pagamentos.length === 0 ? <p className="ep2-vazio">Nenhum recebimento ainda.</p> : pagamentos.map(g => (
+            {pagamentosFalhou ? (
+              <p className="ep2-vazio">Não deu pra carregar os recebimentos. Recebido até agora: <b>{formatMoney(recebidoAtual)}</b>. <button type="button" className="ep2-lk" onClick={() => carregarPagamentos(pedido.id)}>Tentar de novo</button></p>
+            ) : pagamentosOk ? (pagamentos.length === 0 ? <p className="ep2-vazio">Nenhum recebimento ainda.</p> : pagamentos.map(g => (
               <div key={g.id} className={`ep2-pg ${g.estornado_em ? 'est' : ''}`}>
                 <span className="ep2-pg-ic" aria-hidden="true"><ArrowUp size={20} weight="bold" /></span>
                 <div><b>{NOME_TIPO[g.tipo] || 'Pagamento'} · {NOME_FORMA[g.forma] || g.forma || '—'}</b><small>{g.estornado_em ? 'Estornado · ' : ''}{dataCurtaBR(g.recebido_em)}</small></div>
@@ -1497,12 +1584,20 @@ export default function EditarPedido() {
                 <Linha rotulo="Falta receber" tom="laranja">{formatMoney(faltaReceber)}</Linha>
                 <div className="tpd-barra" role="progressbar" aria-label="Quanto já foi recebido" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(100, (recebidoAtual / (total || 1)) * 100))}><i style={{ width: `${Math.min(100, (recebidoAtual / (total || 1)) * 100)}%` }} /></div>
               </div>
-              <Botao className="tpd-receber" cheio icone={<ArrowUp size={20} weight="bold" />} onClick={() => setReceberAberto(true)}>Registrar recebimento</Botao>
+              <Botao className="tpd-receber" cheio icone={<ArrowUp size={20} weight="bold" />} onClick={abrirReceber}>Registrar recebimento</Botao>
               <div className="tpd-comb">
                 <span className="ui-campo-r"><span>Combinado pra pagar o resto</span><small>opcional</small></span>
                 <CampoData valor={dataPrevistaPagamento || ''} onChange={setDataPrevistaPagamento} titulo="Combinado pra pagar" placeholder="Na entrega" />
               </div>
-            </>) : <p className="tpd-quitado"><Check size={16} weight="bold" /> Pedido pago</p>)}
+            </>) : recebidoAMais > 0.009 ? (
+              /* (11/10) recebido maior que o total: aparece, com o que fazer (antes ficava escondido atrás de "Pedido pago") */
+              <div className="tpd-falta">
+                <Linha rotulo="Total do pedido">{formatMoney(total)}</Linha>
+                <Linha rotulo="Recebido">{formatMoney(recebidoAtual)}</Linha>
+                <Linha rotulo="Recebido a mais" tom="vermelho">{formatMoney(recebidoAMais)}</Linha>
+                <p className="tpd-amais">{pagamentosOk && !pagamentosFalhou ? 'Estorne o recebimento acima e registre o valor certo.' : 'Confira o que foi recebido neste pedido.'}{alteracoes > 0 ? ' Antes, salve as alterações.' : ''}</p>
+              </div>
+            ) : <p className="tpd-quitado"><Check size={16} weight="bold" /> Pedido pago</p>)}
           </div>
 
           {/* salvar (computador) */}
@@ -1553,7 +1648,7 @@ export default function EditarPedido() {
             <div className="ui-campo">
               <span className="ui-campo-r"><span>Quantidade</span></span>
               <div className="tpd-qtd">
-                <BotaoIcone rotulo="Diminuir" disabled={itens[itemMenu].quantidade <= 1} onClick={() => { setQtdTexto(null); updateQtd(itemMenu, -1) }}><span aria-hidden="true">−</span></BotaoIcone>
+                <BotaoIcone rotulo="Diminuir" disabled={itens[itemMenu].quantidade <= (porKg(itens[itemMenu]) ? 0.5 : 1)} onClick={() => { setQtdTexto(null); updateQtd(itemMenu, -1) }}><span aria-hidden="true">−</span></BotaoIcone>
                 <input type="number" inputMode={porKg(itens[itemMenu]) ? "decimal" : "numeric"} step={porKg(itens[itemMenu]) ? 0.5 : 1} value={qtdTexto ?? itens[itemMenu].quantidade}
                   onChange={e => { setQtdTexto(e.target.value); setQtdManual(itemMenu, Number(e.target.value)) }} onBlur={() => setQtdTexto(null)} aria-label="Quantidade" />
                 <BotaoIcone rotulo="Aumentar" onClick={() => { setQtdTexto(null); updateQtd(itemMenu, 1) }}><Plus size={20} weight="bold" /></BotaoIcone>
@@ -1588,7 +1683,7 @@ export default function EditarPedido() {
       </Janela>
 
       {/* ── ajustar valor (fica registrado com o motivo ao salvar) ── */}
-      {ajusteAberto && <AjusteSheet total={total} onClose={() => setAjusteAberto(false)} onAplicar={(a) => {
+      {ajusteAberto && <AjusteSheet total={total} recebido={recebidoAtual} onClose={() => setAjusteAberto(false)} onAplicar={(a) => {
         if (a.tipo === 'desconto') setDesconto(d => r2(d + a.valor)); else setAcrescimo(x => r2(x + a.valor))
         setAjustesPendentes(l => [...l, a]); setAjusteAberto(false)
       }} />}
@@ -1620,7 +1715,9 @@ export default function EditarPedido() {
       {/* ═══ ESCOLHER CLIENTE (08/10 · 3.16: janela padrão) ═══ */}
       {(() => {
         const q = buscaCliente.trim().toLowerCase()
-        const lista = clientes.filter(c => (c.nome || '').toLowerCase().includes(q) || (c.telefone || '').includes(buscaCliente.trim()))
+        // (11/10) o telefone é procurado pelos dígitos, no telefone e no WhatsApp (os clientes são gravados em "whatsapp")
+        const qDigitos = /[a-zà-ÿ]/i.test(buscaCliente) ? '' : digitosTelefone(buscaCliente)
+        const lista = clientes.filter(c => (c.nome || '').toLowerCase().includes(q) || (qDigitos.length >= 2 && (digitosTelefone(c.telefone).includes(qDigitos) || digitosTelefone(c.whatsapp).includes(qDigitos))))
         return (
           <Janela aberta={modalCliente} aoFechar={() => setModalCliente(false)} tipo="conteudo" titulo="Escolher cliente">
             <div className="ui-campo-c tpj-busca">
@@ -3509,7 +3606,7 @@ function TabPlaceholder({ titulo, descricao }: { titulo: string; descricao: stri
 }
 
 // ══════════════ Ajustar valor do pedido (desconto ou acréscimo, com motivo) ══════════════
-function AjusteSheet({ total, onClose, onAplicar }: { total: number; onClose: () => void; onAplicar: (a: { tipo: 'desconto' | 'acrescimo'; valor: number; motivo: string }) => void }) {
+function AjusteSheet({ total, recebido = 0, onClose, onAplicar }: { total: number; recebido?: number; onClose: () => void; onAplicar: (a: { tipo: 'desconto' | 'acrescimo'; valor: number; motivo: string }) => void }) {
   const [tipo, setTipo] = useState<'desconto' | 'acrescimo'>('desconto')
   const [valor, setValor] = useState('')
   const [motivo, setMotivo] = useState('')
@@ -3517,6 +3614,8 @@ function AjusteSheet({ total, onClose, onAplicar }: { total: number; onClose: ()
   const MOTIVOS = tipo === 'desconto' ? ['Combinado com o cliente', 'Atraso', 'Arredondamento', 'Cliente fiel'] : ['Taxa de entrega', 'Item a mais', 'Embalagem especial']
   const v = lerBRL(valor)
   const novo = Math.max(0, Math.round((total + (tipo === 'acrescimo' ? v : -v)) * 100) / 100)
+  // (11/10) desconto maior que o que falta receber: não bloqueia, mas avisa que vai sobrar dinheiro recebido
+  const aMais = tipo === 'desconto' && v > 0 ? Math.max(0, r2(recebido - novo)) : 0
   const aplicar = () => {
     if (v <= 0) { setErro('Digite o valor'); return }
     if (tipo === 'desconto' && v > total) { setErro('O desconto passa do valor do pedido'); return }
@@ -3531,7 +3630,7 @@ function AjusteSheet({ total, onClose, onAplicar }: { total: number; onClose: ()
       <p className="fo-lb">Motivo <em>(opcional)</em></p>
       <div className="fo-chips">{MOTIVOS.map(m => <button type="button" key={m} className={motivo === m ? 'on' : ''} onClick={() => setMotivo(m)}>{m}</button>)}</div>
       <input className="fo-txt" style={{ marginTop: 8 }} placeholder="Ou escreva o motivo" value={MOTIVOS.includes(motivo) ? '' : motivo} onChange={e => setMotivo(e.target.value)} />
-      {v > 0 && <div className="fo-dica">O total do pedido vai de <b>{total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</b> para <b>{novo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</b>. Vale quando você salvar.</div>}
+      {v > 0 && <div className="fo-dica">O total do pedido vai de <b>{total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</b> para <b>{novo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</b>. Vale quando você salvar.{aMais > 0.009 && <> Com esse desconto, o cliente já pagou <b>{aMais.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</b> a mais.</>}</div>}
       {erro && <p className="fo-erro">{erro}</p>}
       <button type="button" className="fo-cta" onClick={aplicar}>Aplicar ajuste</button>
     </Folha>

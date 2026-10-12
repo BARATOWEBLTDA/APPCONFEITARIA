@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase";
 import { ShareNetwork, Copy, WhatsappLogo, Check, Trophy, Lock, UsersThree } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, avisar } from "@/components/base";
+import { quandoFoi } from "@/lib/noticias";
 import "./indicar.css";
 interface Amiga {
   id: string;
@@ -195,8 +196,9 @@ export default function Indicar() {
             <div className="in9-amigas">
               {amigas.map((a, idxA) => {
                 const isPro = a.status === "pro" || a.status === "premio_resgatado";
-                const dias = Math.floor((Date.now() - new Date(a.created_at).getTime()) / 86400000);
-                const tempoTxt = dias <= 0 ? "Entrou hoje" : dias === 1 ? "Entrou ontem" : `Entrou há ${dias} dias`;
+                // 11/10: "hoje / ontem / há 3 dias" por dia do calendário (antes em blocos de 24h: quem entrou ontem à noite aparecia "hoje")
+                const quando = quandoFoi(a.created_at);
+                const tempoTxt = quando ? `Entrou ${quando}` : "";
                 return (
                   <div key={a.id || `amiga-${idxA}`} className="in9-am">
                     <span className="in9-am-av" aria-hidden="true">{(a.nome || "?").trim().charAt(0).toUpperCase()}</span>

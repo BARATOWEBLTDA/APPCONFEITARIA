@@ -13,6 +13,7 @@ import { useRef, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
 import { informar } from "@/components/base";
+import { explicarErro } from "@/lib/erros";
 
 interface Options {
   /** Chamado após upload bem-sucedido (útil pra fechar menus, mostrar toast, etc). */
@@ -78,8 +79,8 @@ export function useAvatarUpload(options: Options = {}) {
       await refetch();
       options.onSuccess?.();
     } catch (err: any) {
-      console.error("[useAvatarUpload] erro no upload:", err);
-      informar({ titulo: "Não deu pra trocar a foto", texto: "Confira a internet e tente de novo.", icone: "erro" });
+      // (11/10) a frase certa pro que houve: "sem internet" só quando foi a conexão
+      informar({ titulo: "Não deu pra trocar a foto", texto: explicarErro(err, "Tente de novo em instantes."), icone: "erro" });
     } finally {
       setUploading(false);
     }

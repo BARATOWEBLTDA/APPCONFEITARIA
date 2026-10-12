@@ -39,6 +39,8 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
   const isMobile = useIsMobile();
   const [steps, setSteps] = useState<Step[]>([]);
   const [loading, setLoading] = useState(true);
+  // (11/10) a leitura falhou (internet caiu): tenta de novo em vez de mostrar todos os passos como "não feito"
+  const [tentativa, setTentativa] = useState(0);
   const [copied, setCopied] = useState(false);
   // Passos 1 e 2 são preenchidos dentro do próprio card
   const [nomeLoja, setNomeLoja] = useState("");
@@ -51,17 +53,19 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
   useEffect(() => {
     if (!userId) return;
     let cancelled = false;
+    let repetir: number | undefined;
+    const denovo = () => { if (!cancelled) setTentativa(t => t + 1); };
 
     (async () => {
       // Lê perfil direto (evita cache do useProfile)
-      const { data: profileData } = await supabase
+      const { data: profileData, error: erroPerfil } = await supabase
         .from("profiles")
         .select("logo_url, foto_url, descricao_loja, cardapio_modelo, nome_loja")
         .eq("id", userId)
         .single();
 
       // Conta produtos e produtos sem foto
-      const { data: produtos } = await supabase
+      const { data: produtos, error: erroProdutos } = await supabase
         .from("produtos")
         .select("id, imagem_url, disponivel")
         .eq("user_id", userId);
@@ -70,7 +74,19 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
       const temProduto = produtosAtivos.length > 0;
 
       // Regra única com os Primeiros passos do Início (guardado no banco, vale em qualquer aparelho)
-      const jaCompartilhou = (await lerPassos(userId)).compartilhou;
+      const passos = await lerPassos(userId);
+      const jaCompartilhou = passos.compartilhou;
+
+      // (11/10) Alguma leitura falhou: não conclui nada. Antes o cartão aparecia com tudo "por fazer" (e os campos
+      // do nome e da descrição vazios, prontos pra gravar por cima). O que já estava na tela continua; tenta de novo
+      // quando a internet voltar, ou em 15 s (até 5 vezes).
+      if (erroPerfil || erroProdutos || passos.falhou) {
+        if (!cancelled) {
+          window.addEventListener("online", denovo, { once: true });
+          if (tentativa < 5) repetir = window.setTimeout(denovo, 15000);
+        }
+        return;
+      }
 
       // Design escolhido: marcado quando ela mexe na tela de Design (design_escolhido).
       // cardapio_modelo não serve: o banco já cria a conta com 'padrao' preenchido.
@@ -132,8 +148,8 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
       }
     })();
 
-    return () => { cancelled = true; };
-  }, [userId, publicado]);
+    return () => { cancelled = true; window.clearTimeout(repetir); window.removeEventListener("online", denovo); };
+  }, [userId, publicado, tentativa]);
 
   const feitos = steps.filter((s) => s.done).length;
   const total = steps.length;

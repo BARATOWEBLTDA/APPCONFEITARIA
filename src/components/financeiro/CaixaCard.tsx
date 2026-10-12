@@ -1,5 +1,6 @@
-import { useTravarRolagem } from "@/hooks/useTravarRolagem";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { confirmar } from "@/components/base";
+import { useSobreposicao } from "@/components/base/useSobreposicao";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import { createPortal } from "react-dom";
 import { ArrowUp, ArrowDown, Wallet, PencilSimple } from "@phosphor-icons/react";
@@ -108,9 +109,22 @@ export function SaldoSheet({ atual, uid, onClose, onSalvo }: { atual: number | n
   const [txt, setTxt] = useState(atual != null ? (textoBRL(atual) || "0,00") : "");
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
-  useTravarRolagem(true)
   const v = Math.round((parseFloat(txt.replace(/\./g, "").replace(",", ".")) || 0) * 100) / 100;
-  useEffect(() => { const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); }; window.addEventListener("keydown", esc); return () => window.removeEventListener("keydown", esc); }, [onClose]);
+  // 11/10: o "voltar" do Android fecha a folha (antes saía da tela) e, com valor digitado, pergunta antes de descartar
+  const caixa = useRef<HTMLDivElement>(null);
+  const comoAbriu = useRef(txt);
+  const perguntando = useRef(false);
+  const fechar = async () => {
+    if (perguntando.current) return;
+    if (txt !== comoAbriu.current) {
+      perguntando.current = true;
+      const ok = await confirmar({ titulo: "Descartar o que você digitou?", texto: "O saldo que você digitou não vai ser salvo.", rotulo: "Descartar", rotuloVoltar: "Continuar", perigo: true, icone: "alerta" });
+      perguntando.current = false;
+      if (!ok) return;
+    }
+    onClose();
+  };
+  useSobreposicao(true, fechar, caixa); // trava a rolagem de trás, Esc e voltar
   const salvar = async () => {
     if (!txt.trim()) { setErro("Digite o valor (pode ser 0)"); return; }
     setSalvando(true);
@@ -120,15 +134,15 @@ export function SaldoSheet({ atual, uid, onClose, onSalvo }: { atual: number | n
     onSalvo();
   };
   return createPortal(
-    <div className="cxs-ov" onClick={onClose} role="dialog" aria-modal="true" aria-label="Saldo em caixa">
-      <div className="cxs" onClick={e => e.stopPropagation()}>
+    <div className="cxs-ov" onClick={fechar} role="dialog" aria-modal="true" aria-label="Saldo em caixa">
+      <div ref={caixa} className="cxs" onClick={e => e.stopPropagation()}>
         <span className="cxs-alca" aria-hidden="true" />
         <b className="cxs-t">{atual == null ? "Quanto você tem em caixa?" : "Acertar o saldo"}</b>
         <p className="cxs-s">{atual == null
           ? "Some o dinheiro da gaveta e o que está na conta da confeitaria agora. Daqui pra frente, o app atualiza sozinho."
           : `O app calcula ${brl(atual)}. Se você contou e deu diferente, informe o valor certo: o caixa recomeça a partir de agora.`}</p>
         <label className="cxs-lb" htmlFor="cxs-v">Saldo agora</label>
-        <div className="cxs-in"><span>R$</span><input id="cxs-v" inputMode="numeric" placeholder="0,00" value={txt} onChange={e => { setTxt(mascaraBRL(e.target.value)); setErro(""); }} autoFocus /></div>
+        <div className="cxs-in"><span>R$</span><input id="cxs-v" inputMode="numeric" placeholder="0,00" value={txt} onChange={e => { setTxt(mascaraBRL(e.target.value)); setErro(""); }} autoFocus data-foco-inicial /></div>
         {erro && <p className="cxs-erro">{erro}</p>}
         <button type="button" className="cxs-cta" onClick={salvar} disabled={salvando}>{salvando ? "Salvando…" : "Salvar saldo"}</button>
       </div>
