@@ -2,10 +2,9 @@ import { useState } from 'react'
 import { ArrowSquareOut, Copy, Check, Storefront } from '@phosphor-icons/react'
 import { useProfile, getCardapioUrl } from '@/hooks/useProfile'
 import { avisar } from '@/components/base'
-import { PausarPedidos } from './PausarPedidos'
 import './loja.css'
 
-/** Seu link de vendas (4.27) · no Início do computador: o link do cardápio sempre à mão, e o abrir/pausar da loja. */
+/** Seu link de vendas (4.27) · no Início do computador: o link do cardápio sempre à mão, (o abrir/pausar fica no menu da esquerda). */
 export function LinkDeVendas() {
   const { profile } = useProfile()
   const [copiado, setCopiado] = useState(false)
@@ -28,7 +27,6 @@ export function LinkDeVendas() {
         <button type="button" className="lj-bt" onClick={copiar}>{copiado ? <Check size={18} aria-hidden="true" /> : <Copy size={18} aria-hidden="true" />}{copiado ? 'Copiado' : 'Copiar'}</button>
         <a className="lj-bt lj-bt--pri" href={link} target="_blank" rel="noopener noreferrer"><ArrowSquareOut size={18} aria-hidden="true" />Abrir</a>
       </div>
-      <PausarPedidos compacto />
     </section>
   )
 }

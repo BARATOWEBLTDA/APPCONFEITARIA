@@ -29,3 +29,13 @@
 .lp { display: flex; flex-direction: column; gap: 10px; font-family: var(--font-base); text-align: left; }
 .lp-url { margin: 4px 0 0; padding: 11px 12px; border-radius: 12px; background: #F8F5F6; font-size: 14px; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lp-zap { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border-radius: 12px; background: #16a34a; color: #fff; font-size: 15px; font-weight: 600; text-decoration: none; box-shadow: 0 3px 0 #15803D; }
+
+/* (4.27) no menu da esquerda do computador (fundo vinho) */
+.lj-pausa.escuro { flex: none; gap: 10px; margin-top: 12px; padding: 12px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, .12); background: rgba(255, 255, 255, .06); }
+.lj-pausa.escuro .lj-pausa-tx b { font-size: 14px; color: #fff; }
+.lj-pausa.escuro.pausada .lj-pausa-tx b { color: #FCA5A5; }
+.lj-pausa.escuro .lj-pausa-tx small { font-size: 12px; color: rgba(255, 255, 255, .66); }
+.lj-pausa.escuro .lj-chave { width: 44px; height: 26px; background: rgba(255, 255, 255, .22); }
+.lj-pausa.escuro .lj-chave span { width: 20px; height: 20px; }
+.lj-pausa.escuro .lj-chave[aria-checked="true"] { background: #16a34a; }
+.lj-pausa.escuro .lj-chave[aria-checked="true"] span { transform: translateX(18px); }

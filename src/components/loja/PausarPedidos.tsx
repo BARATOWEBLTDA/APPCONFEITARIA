@@ -9,7 +9,7 @@ import './loja.css'
  * Pausar pedidos (4.27) · abre e fecha a loja na hora, sem mexer no horário.
  * Pausada: o cardápio mostra "Pedidos pausados no momento" e não deixa enviar pedido (o banco também barra).
  */
-export function PausarPedidos({ compacto = false }: { compacto?: boolean }) {
+export function PausarPedidos({ compacto = false, escuro = false }: { compacto?: boolean; escuro?: boolean }) {
   const { profile, refetch } = useProfile()
   const [salvando, setSalvando] = useState(false)
   const [local, setLocal] = useState<boolean | null>(null)
@@ -34,11 +34,11 @@ export function PausarPedidos({ compacto = false }: { compacto?: boolean }) {
   }
 
   return (
-    <div className={`lj-pausa${pausada ? ' pausada' : ''}${compacto ? ' compacto' : ''}`}>
+    <div className={`lj-pausa${pausada ? ' pausada' : ''}${compacto ? ' compacto' : ''}${escuro ? ' escuro' : ''}`}>
       <span className="lj-pausa-luz" aria-hidden="true" />
       <span className="lj-pausa-tx">
-        <b>{pausada ? 'Pedidos pausados' : 'Recebendo pedidos'}</b>
-        <small>{pausada ? 'O cardápio mostra a loja fechada e não aceita pedidos.' : 'Pause num dia de folga ou com a agenda cheia.'}</small>
+        <b>{escuro ? (pausada ? 'Loja pausada' : 'Loja aberta') : pausada ? 'Pedidos pausados' : 'Recebendo pedidos'}</b>
+        <small>{escuro ? (pausada ? 'O cardápio não aceita pedidos' : 'Pelo cardápio') : pausada ? 'O cardápio mostra a loja fechada e não aceita pedidos.' : 'Pause num dia de folga ou com a agenda cheia.'}</small>
       </span>
       <button type="button" role="switch" aria-checked={!pausada} aria-label={pausada ? 'Abrir a loja' : 'Pausar os pedidos'}
         className="lj-chave" disabled={salvando} onClick={alternar}><span /></button>

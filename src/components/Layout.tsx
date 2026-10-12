@@ -1,3 +1,4 @@
+import { PausarPedidos } from "@/components/loja/PausarPedidos";
 import { NavLink, Outlet, useNavigate, useLocation, useNavigationType } from "react-router-dom";
 // deploy: Proposta D - nova arquitetura de navegação (Entrega 1)
 import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
@@ -175,6 +176,8 @@ export default function Layout() {
           <ItemMenu to="/financeiro" icone={CurrencyDollar} ativoSe={c => c === "/custos" || c === "/lucratividade"}>Financeiro</ItemMenu>
           <ItemMenu to="/configuracoes" icone={Gear} ativoSe={c => c === "/minha-assinatura" || c === "/assinar"}>Configurações</ItemMenu>
         </nav>
+        {/* (4.27) abrir e pausar os pedidos do cardápio na hora */}
+        <PausarPedidos escuro />
       </aside>
 
       <main className="layout-main">
