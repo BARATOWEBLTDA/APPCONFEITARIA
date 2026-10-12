@@ -1,6 +1,7 @@
 import { useRef } from 'react'
-import { Copy, FilePdf, PencilSimple, ShareNetwork, Trash, WhatsappLogo } from '@phosphor-icons/react'
-import type { Icon } from '@phosphor-icons/react'
+import type { ReactNode } from 'react'
+import { Copy, FilePdf, PencilSimple, Trash } from '@phosphor-icons/react'
+import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { Janela } from '@/components/base'
 import type { Pedido } from './pedidoTexto'
 import { nomeCliente, temTelefone } from './pedidoTexto'
@@ -19,12 +20,13 @@ export default function MenuPedido({ p: atual, aoFechar, aoEscolher }: Props) {
   const ultimo = useRef<Pedido | null>(null)
   if (atual) ultimo.current = atual
   const p = atual || ultimo.current
-  const itens: [AcaoMenu, string, Icon][] = [
-    ['editar', 'Editar pedido', PencilSimple],
-    ['duplicar', 'Duplicar pedido', Copy],
-    ...(p && temTelefone(p) ? [['contatar', 'Chamar no WhatsApp', WhatsappLogo] as [AcaoMenu, string, Icon]] : []),
-    ['compartilhar', 'Enviar resumo do pedido', ShareNetwork],
-    ['pdf', 'Baixar PDF', FilePdf],
+  // "Chamar no WhatsApp" e "Enviar resumo" abrem o WhatsApp: os dois com o logo oficial (IconeWhatsApp)
+  const itens: [AcaoMenu, string, ReactNode][] = [
+    ['editar', 'Editar pedido', <PencilSimple size={20} weight="bold" />],
+    ['duplicar', 'Duplicar pedido', <Copy size={20} weight="bold" />],
+    ...(p && temTelefone(p) ? [['contatar', 'Chamar no WhatsApp', <IconeWhatsApp size={20} />] as [AcaoMenu, string, ReactNode]] : []),
+    ['compartilhar', 'Enviar resumo do pedido', <IconeWhatsApp size={20} />],
+    ['pdf', 'Baixar PDF', <FilePdf size={20} weight="bold" />],
   ]
   return (
     <Janela aberta={!!atual} aoFechar={aoFechar} tipo="conteudo" titulo={p ? `Pedido #${p.numero || ''}` : ''}>
@@ -32,9 +34,9 @@ export default function MenuPedido({ p: atual, aoFechar, aoEscolher }: Props) {
         <>
           <p className="pdm-quem">{nomeCliente(p)}</p>
           <div className="pdm">
-            {itens.map(([acao, nome, Ic]) => (
+            {itens.map(([acao, nome, ic]) => (
               <button key={acao} type="button" className="pdm-it" onClick={() => aoEscolher(p, acao)}>
-                <span className="pdm-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span><span>{nome}</span>
+                <span className="pdm-ic" aria-hidden="true">{ic}</span><span>{nome}</span>
               </button>
             ))}
             <button type="button" className="pdm-it pdm-it--excluir" onClick={() => aoEscolher(p, 'excluir')}>

@@ -21,7 +21,8 @@ import { CartProvider } from '@/context/CartContext'
 import { DesignSettings, Configuracoes, Produto } from '@/types/database'
 import { PerfilTab } from '@/components/cardapio/PerfilTab'
 import { PedidosTab } from '@/components/cardapio/PedidosTab'
-import { ClockCountdown, House, MagnifyingGlass, MapPin, ShoppingBag, Storefront, Truck, User, WhatsappLogo, X } from '@phosphor-icons/react'
+import { ClockCountdown, House, MagnifyingGlass, MapPin, ShoppingBag, Storefront, Truck, User, X } from '@phosphor-icons/react'
+import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { Janela } from '@/components/base'
 import { useCart } from '@/hooks/useCart'
 import { formatCurrency } from '@/utils/helpers'
@@ -82,7 +83,7 @@ function SobreLoja({ aberta, fechar, design, config }: { aberta: boolean; fechar
   const zap = linkWhatsApp(config?.telefone)
   return (
     <Janela aberta={aberta} aoFechar={fechar} tipo="conteudo" titulo={`Sobre a ${design.nome_loja || 'loja'}`} umaAcao={!!zap}
-      acoes={zap ? <a className="cp-zap" href={zap} target="_blank" rel="noopener noreferrer"><WhatsappLogo size={20} weight="bold" />Chamar no WhatsApp</a> : undefined}>
+      acoes={zap ? <a className="cp-zap" href={zap} target="_blank" rel="noopener noreferrer"><IconeWhatsApp size={20} />Chamar no WhatsApp</a> : undefined}>
       <div className="cp-sobre">
         {design.descricao_loja && <p>{design.descricao_loja}</p>}
         {end && (

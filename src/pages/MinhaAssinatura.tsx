@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
-import { CaretRight, ChatCircleDots, Crown } from "@phosphor-icons/react";
+import { CaretRight, Crown } from "@phosphor-icons/react";
+import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
 import { useProfile } from "@/hooks/useProfile";
@@ -54,7 +55,7 @@ export default function MinhaAssinatura() {
 
         <p className="mas-sec">Precisa de algo?</p>
         <button type="button" className="mas-op" onClick={() => whats("Preciso de ajuda com a minha assinatura do Doonly PRO.")}>
-          <span><ChatCircleDots size={20} weight="bold" /> Falar com a equipe</span><CaretRight size={18} weight="bold" aria-hidden="true" />
+          <span><IconeWhatsApp size={20} /> Falar com a equipe</span><CaretRight size={18} weight="bold" aria-hidden="true" />
         </button>
         <p className="mas-cancel">Quer mudar ou cancelar o plano? <button type="button" onClick={() => whats("Quero mudar ou cancelar meu plano do Doonly PRO.")}>Fale com a gente</button></p>
       </div>

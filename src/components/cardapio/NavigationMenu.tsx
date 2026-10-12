@@ -3,7 +3,8 @@ import { montarMensagem as montarMensagemModelo } from '@/lib/mensagens'
 import { CalendarioSheet, HorariosSheet } from '@/components/cardapio/AgendaSheets'
 import { antecedenciaHoras, calcularRegras, deIso, horarioPermitido, primeiraData, rotuloData } from '@/lib/agendaCardapio'
 import { supabase } from '@/lib/supabase'
-import { ArrowLeft, CalendarBlank, CaretRight, Check, ChatCircleDots, Clock, CreditCard, Money, PixLogo, Plus, ClipboardText, House, ShoppingBag as Sacola, Storefront, Tag, Truck, User, WhatsappLogo, X } from '@phosphor-icons/react'
+import { ArrowLeft, CalendarBlank, CaretRight, Check, ChatCircleDots, Clock, CreditCard, Money, PixLogo, Plus, ClipboardText, House, ShoppingBag as Sacola, Storefront, Tag, Truck, User, X } from '@phosphor-icons/react'
+import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { useCart } from '@/hooks/useCart'
 import { CartItemComponent, unidadeItem } from '@/components/cart/CartItemComponent'
 import { formatCurrency } from '@/utils/helpers'
@@ -617,7 +618,7 @@ function CartContent({
           <span className="t"><span><b>Total</b></span><em>{formatCurrency(pedidoConfirmado.total)}</em></span>
           {pedidoConfirmado.quando && <span className="q"><CalendarBlank size={18} weight="bold" />{pedidoConfirmado.quando}</span>}
         </div>
-        {pedidoConfirmado.whatsapp && <button type="button" className="sc-zap" onClick={() => window.open(pedidoConfirmado.whatsapp, '_blank')}><WhatsappLogo size={22} weight="bold" />Mandar mensagem pra loja</button>}
+        {pedidoConfirmado.whatsapp && <button type="button" className="sc-zap" onClick={() => window.open(pedidoConfirmado.whatsapp, '_blank')}><IconeWhatsApp size={22} />Mandar mensagem pra loja</button>}
         <button type="button" className="sc-bt-sec" onClick={() => { setPedidoConfirmado(null); onClose() }}>Voltar ao cardápio</button>
       </div>
     </div>

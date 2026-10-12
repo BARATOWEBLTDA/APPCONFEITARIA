@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { MagnifyingGlass, WhatsappLogo, EnvelopeSimple, Lightbulb, X } from "@phosphor-icons/react";
+import { MagnifyingGlass, EnvelopeSimple, Lightbulb, X } from "@phosphor-icons/react";
+import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { BotaoIcone, TelaVazia, avisar } from "@/components/base";
 
 /**
@@ -234,7 +235,7 @@ export default function AdminIdeias() {
                     </select>
                     {wa ? (
                       <a className="ai-act ai-act--wa" href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer">
-                        <WhatsappLogo size={18} weight="fill" aria-hidden="true" /> WhatsApp
+                        <IconeWhatsApp size={18} /> WhatsApp
                       </a>
                     ) : i.email ? (
                       <a className="ai-act" href={`mailto:${i.email}`}>

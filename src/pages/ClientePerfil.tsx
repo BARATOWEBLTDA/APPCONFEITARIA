@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useRecorte } from "@/components/ui/useRecorte";
 import { useNavigate, useParams } from "react-router-dom";
-import { Cake, Camera, CaretRight, Envelope, IdentificationCard, MapPin, MegaphoneSimple, NotePencil, PencilSimple, Plus, Receipt, UserCircle, WarningCircle, WhatsappLogo } from "@phosphor-icons/react";
+import { Cake, Camera, CaretRight, Envelope, IdentificationCard, MapPin, MegaphoneSimple, NotePencil, PencilSimple, Plus, Receipt, UserCircle, WarningCircle } from "@phosphor-icons/react";
+import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { explicarErro } from "@/lib/erros";
@@ -236,7 +237,7 @@ export default function ClientePerfil() {
             </div>
             <div className="cp9-acoes">
               {zap
-                ? <a className="cp9-zap" href={zap} target="_blank" rel="noopener noreferrer"><WhatsappLogo size={20} weight="bold" />WhatsApp</a>
+                ? <a className="cp9-zap" href={zap} target="_blank" rel="noopener noreferrer"><IconeWhatsApp size={20} />WhatsApp</a>
                 : <span className="cp9-zap cp9-zap--off">Sem WhatsApp</span>}
               <Botao variante="secundario" tamanho="m" icone={<PencilSimple size={20} weight="bold" />} onClick={editar}>Editar</Botao>
               <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={novoPedido}>Nova venda</Botao>

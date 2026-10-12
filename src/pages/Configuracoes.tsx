@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { INDICACAO_ATIVA } from "@/lib/recursos";
 import { useNavigate } from "react-router-dom";
-import { Bell, Camera, ChatCircleText, CaretRight, Crown, FileText, Gift, Headset, Lightbulb, PencilSimple, SignOut, Bug, WarningCircle } from "@phosphor-icons/react";
+import { Bell, Camera, ChatCircleText, CaretRight, Crown, FileText, Gift, Lightbulb, PencilSimple, SignOut, Bug, WarningCircle } from "@phosphor-icons/react";
+import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
 import { explicarErro, erroDeConexao, SEM_INTERNET } from "@/lib/erros";
 import { mascaraTelefone } from "@/lib/telefone";
@@ -252,7 +253,7 @@ export default function Configuracoes() {
             <h2 className="cf9-sec">Ajuda</h2>
             <ItemConfig icone={<Lightbulb size={20} weight="bold" />} tom="amarelo" nome="Sugerir uma melhoria" apoio="Conte o que falta ou o que melhoraria" onClick={() => navigate("/solicitar-recurso")} />
             <ItemConfig icone={<Bug size={20} weight="bold" />} tom="vermelho" nome="Relatar um problema" apoio="Algo não funcionou? Conte pra equipe" onClick={() => navigate("/relatar-problema")} />
-            <ItemConfig icone={<Headset size={20} weight="bold" />} tom="azul" nome="Fale com o suporte" apoio="Converse com a equipe pelo WhatsApp" onClick={() => window.open(`https://wa.me/5511978414991?text=${encodeURIComponent("Olá! Preciso de ajuda com o Doonly.")}`, "_blank", "noopener")} />
+            <ItemConfig icone={<IconeWhatsApp size={20} />} tom="azul" nome="Fale com o suporte" apoio="Converse com a equipe pelo WhatsApp" onClick={() => window.open(`https://wa.me/5511978414991?text=${encodeURIComponent("Olá! Preciso de ajuda com o Doonly.")}`, "_blank", "noopener")} />
             <ItemConfig icone={<FileText size={20} weight="bold" />} nome="Termos e privacidade" apoio="Termos de uso e política de privacidade" onClick={() => setTermosOpen(true)} />
           </section>
 

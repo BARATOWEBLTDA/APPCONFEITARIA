@@ -13,7 +13,8 @@ import { useProfile, isPro, perfilAtual } from "@/hooks/useProfile";
 import AppPageHeader from "@/components/AppPageHeader";
 import ReqTag from "@/components/ReqTag";
 import { Botao, Campo, CampoArea, Janela, TelaVazia, avisar, confirmar } from "@/components/base";
-import { AddressBook, Cake, CalendarBlank, Camera, CaretDown, Check, CaretRight, Crown, MagnifyingGlass, Plus, Trash, UsersThree, WarningCircle, WhatsappLogo, X } from "@phosphor-icons/react";
+import { AddressBook, Cake, CalendarBlank, Camera, CaretDown, Check, CaretRight, Crown, MagnifyingGlass, Plus, Trash, UsersThree, WarningCircle, X } from "@phosphor-icons/react";
+import IconeWhatsApp from "@/components/IconeWhatsApp";
 import "./clientes.css";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -841,7 +842,7 @@ export default function Clientes() {
         };
         const BotaoZap = ({ c }: { c: Cliente }) => {
           const wa = linkWhats(c);
-          return wa ? <a className="cl9-zap" href={wa} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp de ${c.nome}`} onClick={e => e.stopPropagation()}><WhatsappLogo size={22} weight="bold" /></a> : null;
+          return wa ? <a className="cl9-zap" href={wa} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp de ${c.nome}`} onClick={e => e.stopPropagation()}><IconeWhatsApp size={22} /></a> : null;
         };
 
         return (
@@ -935,7 +936,7 @@ export default function Clientes() {
                       <Avatar c={c} />
                       <span><b>{c.nome}</b><small>{niverCurto(c.data_nascimento)} · {quandoNiver(d)}</small></span>
                     </button>
-                    {wa && <a className="cl9-parabens" href={wa} target="_blank" rel="noopener noreferrer"><WhatsappLogo size={18} weight="bold" />Parabéns</a>}
+                    {wa && <a className="cl9-parabens" href={wa} target="_blank" rel="noopener noreferrer"><IconeWhatsApp size={18} />Parabéns</a>}
                   </div>
                 );
               })}

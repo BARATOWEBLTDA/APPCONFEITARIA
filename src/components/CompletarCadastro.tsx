@@ -2,8 +2,8 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { refreshProfile } from "@/hooks/useProfile";
 import { digitosTelefone, mascaraTelefone } from "@/lib/telefone";
-import { WhatsappLogo } from "@phosphor-icons/react";
 import { Botao, Campo } from "@/components/base";
+import IconeWhatsApp from "@/components/IconeWhatsApp";
 
 /**
  * "Complete seu cadastro" (aprovado 02/10) — aparece logo depois do PRIMEIRO login com o Google.
@@ -58,7 +58,7 @@ export default function CompletarCadastro({ user, nomeInicial, lojaInicial = "",
           <Campo id="cc-loja" rotulo="Nome da sua confeitaria" value={loja} onChange={e => setLoja(e.target.value)} placeholder="Ex.: Doce Encanto" autoComplete="organization"
             dica="É o nome que aparece no seu cardápio." />
           <Campo id="cc-tel" rotulo="WhatsApp que recebe os pedidos" value={tel} onChange={e => setTel(maskTel(e.target.value))} placeholder="(41) 99999-8888" inputMode="tel" autoComplete="tel"
-            icone={<WhatsappLogo size={20} weight="fill" className="ccad-zap" />} />
+            icone={<IconeWhatsApp size={20} className="ccad-zap" />} />
         </div>
 
         {erro && <p className="ccad-erro" role="alert">{erro}</p>}

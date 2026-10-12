@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { montarMensagem, dadosDoPedido } from "@/lib/mensagens";
 import { useNavigate, useNavigationType } from "react-router-dom";
-import { CalendarBlank, CaretLeft, CaretRight, Check, Copy, FilePdf, Funnel, MagnifyingGlass, Package, PencilSimple, Plus, Printer, Trash, WarningCircle, WhatsappLogo, X } from "@phosphor-icons/react";
+import { CalendarBlank, CaretLeft, CaretRight, Check, Copy, FilePdf, Funnel, MagnifyingGlass, Package, PencilSimple, Plus, Printer, Trash, WarningCircle, X } from "@phosphor-icons/react";
+import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { pedidoAtrasado, STATUS_AINDA_NAO_PRONTO } from "@/lib/pedidoStatus";
 import { duplicarPedido as duplicarPedidoLib } from "@/lib/duplicarPedido";
 import { gerarPedidoPDF } from "@/lib/gerarPedidoPDF";
@@ -706,7 +707,7 @@ function CartaoAgenda({ p, ocupado, aoAbrir, aoMenu, aoPronto, aoWhats }: any) {
       {(podePronto || temTel) && (
         <div className={"ag3-pc-bts" + (podePronto && temTel ? "" : " um")}>
           {podePronto && <Botao variante="secundario" tamanho="m" carregando={!!ocupado} onClick={aoPronto}>Marcar pronto</Botao>}
-          {temTel && <Botao variante="secundario" tamanho="m" className="ag3-whats" icone={<WhatsappLogo size={20} weight="fill" />} onClick={aoWhats}>WhatsApp</Botao>}
+          {temTel && <Botao variante="secundario" tamanho="m" className="ag3-whats" icone={<IconeWhatsApp size={20} />} onClick={aoWhats}>WhatsApp</Botao>}
         </div>
       )}
     </article>

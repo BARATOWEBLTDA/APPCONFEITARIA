@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
-import { Check, Clock, MapPin, Sparkle, Storefront, WarningCircle, WhatsappLogo } from "@phosphor-icons/react";
+import { Check, Clock, MapPin, Sparkle, Storefront, WarningCircle } from "@phosphor-icons/react";
+import IconeWhatsApp from "@/components/IconeWhatsApp";
 import AppPageHeader from "@/components/AppPageHeader";
 import HorarioSheet from "@/components/HorarioSheet";
 import { Botao, Campo, CampoArea, TelaVazia, Titulo, avisar } from "@/components/base";
@@ -309,7 +310,7 @@ export default function DadosLoja() {
           </div>
           <div id="dl-whats">
             <Campo id="dl-in-whats" rotulo="WhatsApp que recebe os pedidos" inputMode="tel" value={telefone} placeholder="(41) 99999-8888"
-              icone={<WhatsappLogo size={20} weight="bold" className="dl-zap" />} onChange={(e) => setTelefone(formatPhone(e.target.value, true))} />
+              icone={<IconeWhatsApp size={20} className="dl-zap" />} onChange={(e) => setTelefone(formatPhone(e.target.value, true))} />
           </div>
           <div id="dl-desc" className="dl-desc">
             <CampoArea id="dl-in-desc" rotulo="Descrição" value={descricao} maxLength={200} rows={4}

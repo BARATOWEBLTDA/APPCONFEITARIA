@@ -6,7 +6,8 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { ShareNetwork, Copy, WhatsappLogo, Check, Trophy, Lock, UsersThree } from "@phosphor-icons/react";
+import { ShareNetwork, Copy, Check, Trophy, Lock, UsersThree } from "@phosphor-icons/react";
+import IconeWhatsApp from "@/components/IconeWhatsApp";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, avisar } from "@/components/base";
 import { quandoFoi } from "@/lib/noticias";
@@ -130,7 +131,7 @@ export default function Indicar() {
               <span className="in9-link-tx" title={link}><span className="in9-link-in">{codigo ? <>doonly.com.br/?ref=<b>{codigo}</b></> : "doonly.com.br"}</span></span>
               <Botao variante="secundario" tamanho="m" icone={copiado ? <Check size={18} weight="bold" /> : <Copy size={18} weight="bold" />} onClick={copiarLink}>{copiado ? "Copiado" : "Copiar"}</Botao>
             </div>
-            <Botao cheio className="in9-zap" icone={<WhatsappLogo size={20} weight="fill" />} onClick={abrirWhatsApp}>Mandar no WhatsApp</Botao>
+            <Botao cheio className="in9-zap" icone={<IconeWhatsApp size={20} />} onClick={abrirWhatsApp}>Mandar no WhatsApp</Botao>
             <Botao variante="link" cheio icone={<ShareNetwork size={18} weight="bold" />} onClick={compartilharNativo}>Outras formas de mandar</Botao>
           </>)}
         </section>
@@ -157,7 +158,7 @@ export default function Indicar() {
                     )}
                     {ganhou && (
                       <a href="https://wa.me/5511978414991?text=Oi! Quero resgatar meu pr%C3%AAmio de indica%C3%A7%C3%A3o do Doonly." target="_blank" rel="noopener" className="in9-resgatar">
-                        <WhatsappLogo size={18} weight="fill" />Resgatar pelo WhatsApp
+                        <IconeWhatsApp size={18} />Resgatar pelo WhatsApp
                       </a>
                     )}
                   </div>

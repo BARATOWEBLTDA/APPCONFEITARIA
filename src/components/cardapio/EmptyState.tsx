@@ -1,4 +1,5 @@
-import { Cake, WhatsappLogo } from '@phosphor-icons/react'
+import { Cake } from '@phosphor-icons/react'
+import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { linkWhatsApp } from '@/lib/telefone'
 import './cardapioLista.css'
 
@@ -13,7 +14,7 @@ export function EmptyState({ telefone }: { telefone?: string | null }) {
       <span>{zap ? 'Volte daqui a pouco ou fale com a loja pelo WhatsApp.' : 'Volte daqui a pouco pra ver as delícias da loja.'}</span>
       {zap && (
         <a className="cl-vazio-zap" href={zap} target="_blank" rel="noopener noreferrer">
-          <WhatsappLogo size={20} weight="bold" aria-hidden="true" />Chamar no WhatsApp
+          <IconeWhatsApp size={20} />Chamar no WhatsApp
         </a>
       )}
     </div>

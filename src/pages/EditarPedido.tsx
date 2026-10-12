@@ -6,7 +6,7 @@ import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { type DialogoOpcoes, type IconeDialogo } from '@/components/DialogoApp'
 import AppPageHeader from '@/components/AppPageHeader'
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, Linha, Titulo, avisar as avisarBase, confirmar, informar } from '@/components/base'
-import { ArrowsLeftRight, Clock, CreditCard, DotsThreeVertical, MagnifyingGlass, Package, Truck, WhatsappLogo } from '@phosphor-icons/react'
+import { ArrowsLeftRight, Clock, CreditCard, DotsThreeVertical, MagnifyingGlass, Package, Truck } from '@phosphor-icons/react'
 import { SITUACOES, VERBOS, avisoDaMudanca, dataLonga, grupoDoStatus, nomeDaSituacao, nomeDeProduto, itemComQtd, proximoPasso, telefoneValido } from '@/components/pedidos/pedidoTexto'
 import { NomeComQtd } from '@/components/pedidos/CartaoPedido'
 import { tocarSom } from '@/hooks/useSom'
@@ -1387,7 +1387,7 @@ export default function EditarPedido() {
                 )}
                 {telDigitos ? (
                   <div className="tpd-dois">
-                    <a className="ui-bt ui-bt--secundario ui-bt--m" href={linkWhatsApp(clienteTelefone) || `https://wa.me/55${telDigitos}`} target="_blank" rel="noreferrer"><span className="ui-bt-ic" aria-hidden="true"><WhatsappLogo size={20} weight="bold" className="tpd-zap" /></span><span className="ui-bt-t">WhatsApp</span></a>
+                    <a className="ui-bt ui-bt--secundario ui-bt--m" href={linkWhatsApp(clienteTelefone) || `https://wa.me/55${telDigitos}`} target="_blank" rel="noreferrer"><span className="ui-bt-ic" aria-hidden="true"><IconeWhatsApp size={20} className="tpd-zap" /></span><span className="ui-bt-t">WhatsApp</span></a>
                     <a className="ui-bt ui-bt--secundario ui-bt--m" href={`tel:+55${telDigitos}`}><span className="ui-bt-ic" aria-hidden="true"><Phone size={20} weight="bold" /></span><span className="ui-bt-t">Ligar</span></a>
                   </div>
                 ) : (
@@ -1481,7 +1481,7 @@ export default function EditarPedido() {
                     <a className="ui-bt ui-bt--secundario ui-bt--m" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoCompleto)}`} target="_blank" rel="noreferrer"><span className="ui-bt-ic" aria-hidden="true"><MapTrifold size={20} weight="bold" /></span><span className="ui-bt-t">Ver no mapa</span></a>
                     <Botao variante="secundario" tamanho="m" icone={<Copy size={20} weight="bold" />} onClick={copiarEndereco}>Copiar</Botao>
                   </div>
-                  <a className="ui-bt ui-bt--secundario ui-bt--m ui-bt--cheio tpd-entregador" href={`https://wa.me/?text=${encodeURIComponent(textoEntregador)}`} target="_blank" rel="noreferrer"><span className="ui-bt-ic" aria-hidden="true"><WhatsappLogo size={20} weight="bold" className="tpd-zap" /></span><span className="ui-bt-t">Mandar pro entregador</span></a>
+                  <a className="ui-bt ui-bt--secundario ui-bt--m ui-bt--cheio tpd-entregador" href={`https://wa.me/?text=${encodeURIComponent(textoEntregador)}`} target="_blank" rel="noreferrer"><span className="ui-bt-ic" aria-hidden="true"><IconeWhatsApp size={20} className="tpd-zap" /></span><span className="ui-bt-t">Mandar pro entregador</span></a>
                 </>) : (<>
                   {enderecoDaCliente && (
                     <button className="ep2-usar" onClick={usarEnderecoDaCliente}>Usar o endereço {clienteNome.trim() ? `de ${toTitleCase(clienteNome.trim().split(/\s+/)[0])}` : 'do cliente'}

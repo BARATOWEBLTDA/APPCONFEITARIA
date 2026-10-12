@@ -1,7 +1,8 @@
 import { useEffect, useState, type ReactElement } from "react";
 import { lerPassos, marcarCompartilhado as marcarCompartilhadoLib } from "@/lib/primeirosPassos";
 import { useNavigate } from "react-router-dom";
-import { Eye, Check, WhatsappLogo, Copy, Storefront, PencilLine, ShoppingBag, Palette, ShareNetwork } from "@phosphor-icons/react";
+import { Eye, Check, Copy, Storefront, PencilLine, ShoppingBag, Palette, ShareNetwork } from "@phosphor-icons/react";
+import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -280,7 +281,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         </div>
         <div className="pap-done-actions">
           <button className="pap-done-btn pap-done-btn-wa" onClick={handleWhatsApp}>
-            <WhatsappLogo size={16} weight="fill" /> WhatsApp
+            <IconeWhatsApp size={16} /> WhatsApp
           </button>
           <button className="pap-done-btn pap-done-btn-copy" onClick={handleCopy}>
             <Copy size={15} weight="bold" /> {copied ? "Copiado!" : "Copiar link"}
@@ -377,7 +378,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         <p className="pap-share-s">Divulgue e comece a receber pedidos.</p>
         <div className="pap-share-actions">
           <button className="pap-share-btn pap-share-btn-wa" onClick={handleWhatsApp}>
-            <WhatsappLogo size={16} weight="fill" /> WhatsApp
+            <IconeWhatsApp size={16} /> WhatsApp
           </button>
           <button className="pap-share-btn pap-share-btn-copy" onClick={handleCopy}>
             <Copy size={15} weight="bold" /> {copied ? "Copiado!" : "Copiar link"}

@@ -1,6 +1,7 @@
 /* Conta do cliente no cardápio (08/10 · 3.31): o que Pedidos e Perfil usam juntos */
 import { useEffect, useState, type ReactNode } from 'react'
-import { Check, Wallet, Storefront, Truck, UserCircle, WhatsappLogo } from '@phosphor-icons/react'
+import { Check, Wallet, Storefront, Truck, UserCircle } from '@phosphor-icons/react'
+import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { supabase } from '@/lib/supabase'
 import { Campo, Janela } from '@/components/base'
 import { digitosTelefone, linkWhatsApp } from '@/lib/telefone'
@@ -197,7 +198,7 @@ export function CartaoPedido({ p, cor }: { p: Pedido; cor: string }) {
 
       {aberto && zap && (
         <a className="cc-zap" href={zap} target="_blank" rel="noreferrer">
-          <WhatsappLogo size={20} weight="bold" />Falar com a loja
+          <IconeWhatsApp size={20} />Falar com a loja
         </a>
       )}
     </article>
