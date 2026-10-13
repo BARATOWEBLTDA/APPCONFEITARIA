@@ -855,11 +855,14 @@ export default function Auth() {
 
       </div>
 
-      {/* Rodapé (03/10): links das políticas, como no Dora */}
-      <footer className="auth-rodape">
-        <div><a href="/privacidade" onClick={abrirDoc("privacidade")}>Política de privacidade</a><span aria-hidden="true">·</span><a href="/termos" onClick={abrirDoc("termos")}>Termos de uso</a></div>
-        <em>© {new Date().getFullYear()} Doonly</em>
-      </footer>
+      {/* Rodapé (03/10): links das políticas, como no Dora.
+          13/10: só na tela de entrar. No cadastro os mesmos links já estão no "Li e concordo", logo acima. */}
+      {!showCadastro && (
+        <footer className="auth-rodape">
+          <div><a href="/privacidade" onClick={abrirDoc("privacidade")}>Política de privacidade</a><span aria-hidden="true">·</span><a href="/termos" onClick={abrirDoc("termos")}>Termos de uso</a></div>
+          <em>© {new Date().getFullYear()} Doonly</em>
+        </footer>
+      )}
 
       <TermosModal open={!!docLegal} initialTab={docLegal || "termos"} onClose={() => setDocLegal(null)} paginaNoComputador />
 
