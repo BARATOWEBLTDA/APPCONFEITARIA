@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useRecorte } from "@/components/ui/useRecorte";
 import { Camera, Image as ImagemIc, MagnifyingGlass, Trash, WarningCircle, X } from "@phosphor-icons/react";
 import { parseNumBR } from "@/lib/numeroBR";
@@ -63,67 +64,75 @@ const EMB_PRINCIPAIS = ["Avulso", "Pacote", "Caixa", "Lata", "Pote", "Garrafa", 
 const EMB_OUTRAS = ["Frasco", "Bisnaga", "Sachê", "Envelope", "Balde", "Rolo"];
 const EMB_FEMININAS = ["Caixa", "Lata", "Garrafa", "Bandeja", "Bisnaga"];
 
-/** Heurística pra sugerir unidade de medida com base no nome + embalagem.
- *  Nível 2 (nome) tem prioridade sobre Nível 1 (embalagem) porque o nome
- *  é informação mais específica. */
-function sugerirUnidade(nome: string, embalagem: string): string {
+/**
+ * O que o nome diz sobre a medida (4.29, revisado).
+ * A primeira regra que bate vale; por isso os nomes mais específicos vêm antes
+ * ("leite condensado" e "doce de leite" antes de "leite", "coco ralado" antes de "coco").
+ *   tipo .... peso (g/kg), volume (ml/L) ou unidade
+ *   un ...... a medida sugerida
+ *   ambos ... aceita peso e volume sem alerta (vem escrito dos dois jeitos na embalagem)
+ *   ex ...... exemplo que aparece no alerta
+ */
+type PeloNome = { tipo: "peso" | "volume" | "unidade"; un: string; ambos?: boolean; ex?: string };
+const REGRAS_NOME: [string, PeloNome][] = [
+  // doces e laticínios que parecem líquidos mas vêm em gramas
+  ["leite condensado", { tipo: "peso", un: "g", ambos: true, ex: "lata de 395 g" }],
+  ["creme de leite", { tipo: "peso", un: "g", ambos: true, ex: "caixinha de 200 g" }],
+  ["doce de leite", { tipo: "peso", un: "g", ex: "pote de 400 g" }],
+  ["leite em p[oó]|leite ninho", { tipo: "peso", un: "g", ex: "lata de 400 g" }],
+  ["leite de coco", { tipo: "volume", un: "ml", ex: "garrafa de 200 ml" }],
+  ["coco ralado|coco em flocos", { tipo: "peso", un: "g", ex: "pacote de 100 g" }],
+  ["glucose|mel|xarope de glucose", { tipo: "peso", un: "g", ambos: true }],
+  ["ess[eê]ncias?|extratos?|aromas?|aromatizantes?", { tipo: "volume", un: "ml", ambos: true, ex: "frasco de 30 ml" }],
+  ["nutella|cacau|chocolates?|cobertura|gotas de chocolate|granulados?|confeitos?|corantes?|pasta americana|gelatina|ganache", { tipo: "peso", un: "g" }],
+  ["manteiga|margarina|cream cheese|queijos?|requeij[aã]o|fermento|bicarbonato|castanhas?|nozes|am[eê]ndoas?|amendoim|pistache|uvas? passas?", { tipo: "peso", un: "g", ex: "tablete de 200 g" }],
+  ["farinhas?|a[cç][uú]car(es)?|sal|polvilho|amido|maisena|fub[aá]|aveia|trigo", { tipo: "peso", un: "kg", ex: "pacote de 1 kg" }],
+  // líquidos
+  ["leites?", { tipo: "volume", un: "ml", ex: "caixa de 1 L" }],
+  ["sucos?|[aá]guas?|[oó]leos?|[aá]lcool|vinagre|licor|rum|conhaque|caf[eé] coado|refrigerantes?", { tipo: "volume", un: "ml" }],
+  // contáveis
+  ["ovos?", { tipo: "unidade", un: "un", ex: "bandeja com 30 un" }],
+  ["morangos?|lim[oõ](es)?|lim[aã]o|laranjas?|bananas?|ma[cç][aã]s?|abacaxis?|kiwis?|peras?|cocos?|maracuj[aá]s?", { tipo: "unidade", un: "un" }],
+  ["bombons?|biscoitos?|wafers?|pa[cç]ocas?|bis", { tipo: "unidade", un: "un" }],
+  ["forminhas?|velas?|palitos?|saquinhos?|sacos?|etiquetas?|adesivos?|copos?|pratinhos?|colheres?|garfos?|tampas?|toppers?|topos?|bases?|cake boards?|caixas?|potes?|marmitas?|fitas?|la[cç]os?", { tipo: "unidade", un: "un" }],
+];
+
+function pelonome(nome: string): PeloNome | null {
   const n = nome.toLowerCase();
+  for (const [padrao, r] of REGRAS_NOME) {
+    // \b não entende acento; aqui "palavra" é qualquer letra, com ou sem acento
+    if (new RegExp(`(?<!\\p{L})(?:${padrao})(?!\\p{L})`, "u").test(n)) return r;
+  }
+  return null;
+}
 
-  // ─── Nível 2 — palavras-chave no nome ───
-  // Itens contáveis
-  if (/\b(ovos?|morangos?|limões?|limao|laranjas?|bananas?|maçãs?|macas?|abacaxis?|kiwis?|peras?|coco|cocos)\b/.test(n)) return "un";
-  if (/\b(bombons?|biscoitos?|wafers?|paçocas?|pacocas?|amendoim japon[eê]s)\b/.test(n)) return "un";
-
-  // Sólidos pesáveis (kg)
-  if (/\b(farinhas?|açúcares?|acucar(es)?|sal|sais|polvilhos?|amidos?)\b/.test(n)) return "kg";
-
-  // Sólidos em quantidade menor (g)
-  if (/\b(leite condensado|creme de leite|doce de leite|nutella|cacau|chocolates?|cobertura|gotas? de chocolate|granulados?|confeitos?|corante)\b/.test(n)) return "g";
-  if (/\b(manteiga|margarina|cream cheese|queijos?|requeij[aã]o|fermento|essências?|essencia)\b/.test(n)) return "g";
-
-  // Líquidos (ml)
-  if (/\b(leites?|sucos?|águas?|aguas?|óleos?|oleos?|leite de coco|leite vegetal|aroma|álcool|alcool)\b/.test(n)) return "ml";
-
-  // ─── Nível 1 — pela embalagem ───
+/** Sugere a medida: pelo nome primeiro (mais específico); se o nome não diz nada, pela embalagem. */
+function sugerirUnidade(nome: string, embalagem: string): string {
+  const r = pelonome(nome);
+  if (r) return r.un;
   switch (embalagem) {
-    case "Pacote":   return "kg";
-    case "Caixa":    return "kg";
-    case "Lata":     return "g";
-    case "Pote":     return "g";
-    case "Garrafa":  return "ml";
-    case "Frasco":   return "ml";
-    case "Bandeja":  return "un";
-    case "Bisnaga":  return "g";
-    case "Sachê":    return "g";
-    case "Envelope": return "g";
-    case "Balde":    return "kg";
-    case "Rolo":     return "un";
-    default:         return "g";
+    case "Pacote": case "Caixa": case "Balde": return "kg";
+    case "Garrafa": case "Frasco": return "ml";
+    case "Bandeja": case "Rolo": return "un";
+    default: return "g"; // Lata, Pote, Bisnaga, Sachê, Envelope, Avulso
   }
 }
 
-/** Detecta se a combinação nome × unidade parece um cadastro incoerente.
- *  Retorna mensagem de alerta (string) ou null se estiver tudo certo. */
+/** Alerta só quando a medida claramente não combina com o nome. Devolve a mensagem ou null. */
 function detectarInconsistencia(nome: string, unidade: string): string | null {
   if (!nome || nome.trim().length < 3) return null;
-  const n = nome.toLowerCase();
-
-  // Produto sólido pesável cadastrado como "un"
-  if (unidade === "un") {
-    if (/\b(farinhas?|açúcares?|acucar(es)?|sal|sais|polvilhos?|amidos?|cacau)\b/.test(n))
-      return `${nome.trim()} geralmente é medido em quilos (kg) ou gramas (g), não em unidades. Quer trocar?`;
-    if (/\b(leites?(?! em p[oó])|sucos?|águas?|aguas?|óleos?|oleos?|essências?|essencia)\b/.test(n))
-      return `${nome.trim()} geralmente é medido em mililitros (ml) ou litros (L), não em unidades. Quer trocar?`;
-    if (/\b(manteiga|margarina|cream cheese|chocolates? em barra|cobertura|leite condensado|creme de leite)\b/.test(n))
-      return `${nome.trim()} geralmente é medido em gramas (g), não em unidades. Quer trocar?`;
-  }
-
-  // Produto contável cadastrado como medida de peso/volume
-  if (unidade === "kg" || unidade === "g" || unidade === "ml" || unidade === "L") {
-    if (/\b(ovos?)\b/.test(n))
-      return `Ovo geralmente é medido em unidades, não em ${unidade}. Quer trocar?`;
-  }
-
+  const r = pelonome(nome);
+  if (!r) return null;
+  const nm = nome.trim();
+  const ex = r.ex ? `, como ${r.ex}` : "";
+  const peso = unidade === "g" || unidade === "kg", volume = unidade === "ml" || unidade === "L";
+  const emPeso = r.un === "kg" ? "quilos (kg) ou gramas (g)" : "gramas (g)";
+  if (r.tipo === "peso" && (unidade === "un" || (volume && !r.ambos)))
+    return `${nm}: o mais comum é medir em ${emPeso}${ex}. Quer trocar?`;
+  if (r.tipo === "volume" && (unidade === "un" || (peso && !r.ambos)))
+    return `${nm}: o mais comum é medir em mililitros (ml) ou litros (L)${ex}. Quer trocar?`;
+  if (r.tipo === "unidade" && unidade !== "un")
+    return `${nm}: o mais comum é contar em unidades${ex}. Quer trocar?`;
   return null;
 }
 
@@ -233,7 +242,9 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
   const [imagens, setImagens] = useState<string[]>([]);
   const [buscandoImg, setBuscandoImg] = useState(false);
   const [uploadingImg, setUploadingImg] = useState(false);
-  const [pedirNome, setPedirNome] = useState<{ nome: string; marca: string } | null>(null);
+  const [avisoNome, setAvisoNome] = useState(0);
+  const nomeRef = useRef<HTMLInputElement>(null);
+  useEffect(() => { if (!avisoNome) return; const t = setTimeout(() => setAvisoNome(0), 2600); return () => clearTimeout(t); }, [avisoNome]);
   const [saving, setSaving] = useState(false);
   const [tentouSalvar, setTentouSalvar] = useState(false);
   const [categorias, setCategorias] = useState<string[]>(CATEGORIAS_DEFAULT);
@@ -269,8 +280,8 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
 
   const handleBuscarImagem = async (nome = form.nome, marca = form.marca) => {
     const termo = `${nome} ${marca}`.trim();
-    // 4.29: sem nome, pergunta numa janela em vez de só avisar
-    if (nome.trim().length < 3) { setPedirNome({ nome, marca }); return; }
+    // 4.29: sem nome, aviso no meio da tela e o cursor vai pro campo Nome
+    if (nome.trim().length < 3) { setAvisoNome(Date.now()); nomeRef.current?.focus(); return; }
     setBuscandoImg(true);
     setImagens([]);
     try {
@@ -390,11 +401,11 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       <div className="ig-foto2">
         <span className="ig-foto2-th">{form.imagem_url ? <img src={form.imagem_url} alt="" /> : <Camera size={26} />}</span>
         <div className="ig-foto2-tx">
-          <b>Foto <small>opcional</small></b>
+          <b>Foto <small>essencial</small></b>
           <div className="ig-foto2-bts">
             <button type="button" className="ig-bt-net" disabled={buscandoImg || uploadingImg} onClick={() => handleBuscarImagem()}>
               {buscandoImg ? <span className="ig-gira" aria-hidden="true" /> : <MagnifyingGlass size={18} weight="bold" />}
-              {buscandoImg ? "Buscando..." : "Buscar na internet"}
+              {buscandoImg ? "Buscando..." : "Buscar com Doo IA"}
             </button>
             <button type="button" className="ig-bt-cel" disabled={buscandoImg || uploadingImg} onClick={() => galleryRef.current?.click()}>
               {uploadingImg ? <span className="ig-gira" aria-hidden="true" /> : <ImagemIc size={18} weight="bold" />}
@@ -423,25 +434,14 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           )}
         </div>
       )}
-      <Janela aberta={!!pedirNome} aoFechar={() => setPedirNome(null)} tipo="conteudo" titulo="Buscar a foto"
-        acoes={<><Botao variante="secundario" onClick={() => setPedirNome(null)}>Cancelar</Botao>
-          <Botao icone={<MagnifyingGlass size={20} weight="bold" />} disabled={(pedirNome?.nome.trim().length || 0) < 3} onClick={() => {
-            if (!pedirNome) return;
-            const { nome, marca } = pedirNome;
-            setForm(f => ({ ...f, nome: nome.trim(), marca: marca.trim() }));
-            setPedirNome(null);
-            void handleBuscarImagem(nome.trim(), marca.trim());
-          }}>Buscar foto</Botao></>}>
-        <div className="cl9-f">
-          <p className="ig-dica ig-pedir">Antes de buscar a foto, qual é o nome do ingrediente e a marca?</p>
-          <Campo rotulo="Nome" obrigatorio autoFocus placeholder="Ex.: leite condensado" value={pedirNome?.nome || ""}
-            onChange={e => setPedirNome(p => p && ({ ...p, nome: e.target.value }))} />
-          <Campo rotulo="Marca" opcional placeholder="Ex.: Moça" value={pedirNome?.marca || ""}
-            onChange={e => setPedirNome(p => p && ({ ...p, marca: e.target.value }))} />
-        </div>
-      </Janela>
+      {avisoNome > 0 && createPortal(
+        <div key={avisoNome} className="ig-aviso-meio" role="status">
+          <MagnifyingGlass size={28} weight="bold" />
+          <b>Escreva o nome primeiro</b>
+          <span>A Doo IA usa o nome e a marca pra achar a foto certa.</span>
+        </div>, document.body)}
 
-      <Campo rotulo="Nome" obrigatorio placeholder="Ex.: leite condensado" value={form.nome} erro={erroNome}
+      <Campo ref={nomeRef} rotulo="Nome" obrigatorio placeholder="Ex.: leite condensado" value={form.nome} erro={erroNome}
         onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
       <Campo rotulo="Marca" opcional placeholder="Ex.: Moça" value={form.marca}
         onChange={e => setForm(f => ({ ...f, marca: e.target.value }))} />
