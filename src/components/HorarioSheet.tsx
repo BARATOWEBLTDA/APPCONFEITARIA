@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { Botao, Campo, Janela } from '@/components/base'
+import type { KeyboardEvent } from 'react'
+import { Botao, Janela } from '@/components/base'
 import './dataHora.css'
 
-// ── Horários 07:00–22:00 de 30 em 30 min ────────────────────────────────────
+// ── Horários 07:00–22:00 de 30 em 30 min (lista de apoio, mantida pra quem importa) ──
 function gerarHorarios(): string[] {
   const slots: string[] = []
   for (let h = 7; h <= 22; h++) {
@@ -21,49 +22,69 @@ interface HorarioSheetProps {
   titulo?: string
 }
 
-/** "1437" / "14:37" / "9" → "14:37" / "09:00" (ou null se não for um horário) */
-function lerHora(t: string): string | null {
-  const d = t.replace(/\D/g, '').slice(0, 4)
-  if (!d) return null
-  const h = parseInt(d.length <= 2 ? d : d.slice(0, d.length - 2)), m = d.length <= 2 ? 0 : parseInt(d.slice(-2))
-  if (h > 23 || m > 59) return null
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+const ALTURA = 44 // altura de cada linha da rodinha
+const HORAS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'))
+const MINUTOS_BASE = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, '0'))
+
+/** Uma coluna da rodinha: rola e para sempre numa linha (a do meio é a escolhida) */
+function Rodinha({ itens, valor, aoMudar, rotulo }: { itens: string[]; valor: string; aoMudar: (v: string) => void; rotulo: string }) {
+  const caixa = useRef<HTMLDivElement>(null)
+  const parar = useRef<number | undefined>(undefined)
+  const idx = Math.max(0, itens.indexOf(valor))
+
+  // começa já no valor escolhido
+  useEffect(() => {
+    const el = caixa.current
+    if (el) el.scrollTop = idx * ALTURA
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const aoRolar = () => {
+    window.clearTimeout(parar.current)
+    parar.current = window.setTimeout(() => {
+      const el = caixa.current
+      if (!el) return
+      const i = Math.min(itens.length - 1, Math.max(0, Math.round(el.scrollTop / ALTURA)))
+      if (itens[i] !== valor) aoMudar(itens[i])
+    }, 90)
+  }
+  const ir = (i: number) => caixa.current?.scrollTo({ top: i * ALTURA, behavior: 'smooth' })
+  const teclado = (e: KeyboardEvent) => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); ir(Math.min(itens.length - 1, idx + 1)) }
+    if (e.key === 'ArrowUp') { e.preventDefault(); ir(Math.max(0, idx - 1)) }
+  }
+
+  return (
+    <div className="dh-roda" ref={caixa} onScroll={aoRolar} tabIndex={0} onKeyDown={teclado}
+      role="listbox" aria-label={rotulo} aria-activedescendant={`dh-${rotulo}-${valor}`}>
+      {itens.map((it, i) => (
+        <div key={it} id={`dh-${rotulo}-${it}`} role="option" aria-selected={it === valor}
+          className={`dh-roda-it${it === valor ? ' sel' : ''}`} onClick={() => ir(i)}>{it}</div>
+      ))}
+    </div>
+  )
 }
 
 /**
  * Janela de escolher o horário (a mesma em todo o app).
- * 09/10 (3.53): no padrão do guia. Grade de horários de 30 em 30 min (toque e pronto)
- * e, embaixo, um campo pra digitar outro horário (14:37).
+ * 13/10: duas rodinhas, hora e minuto (como o relógio do celular). No celular sobe de baixo; no computador fica no meio.
+ * Os minutos andam de 5 em 5; um horário salvo fora disso (14:37) aparece na lista do mesmo jeito.
  */
 export default function HorarioSheet({ value, onChange, onClose, titulo = 'Horário' }: HorarioSheetProps) {
-  const [outro, setOutro] = useState(value && !HORARIOS.includes(value) ? value : '')
-  const [erro, setErro] = useState('')
-  const grade = useRef<HTMLDivElement | null>(null)
+  const ok = /^\d{2}:\d{2}$/.test(value || '')
+  const [h, setH] = useState(ok ? value.slice(0, 2) : '09')
+  const [m, setM] = useState(ok ? value.slice(3, 5) : '00')
+  const [minutos] = useState(() => (MINUTOS_BASE.includes(m) ? MINUTOS_BASE : [...MINUTOS_BASE, m].sort()))
 
-  useEffect(() => {
-    const el = value ? grade.current?.querySelector(`[data-hora="${value}"]`) as HTMLElement | null : null
-    if (el) el.scrollIntoView({ block: 'center' })
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const escolher = (hora: string) => { onChange(hora); onClose() }
-  const usarOutro = () => {
-    const h = lerHora(outro)
-    if (!h) { setErro('Escreva um horário como 14:30'); return }
-    escolher(h)
-  }
+  const confirmar = () => { onChange(`${h}:${m}`); onClose() }
 
   return (
-    <Janela aberta aoFechar={onClose} tipo="conteudo" titulo={titulo}>
-      <div className="dh-horas" ref={grade}>
-        {HORARIOS.map(hora => (
-          <button key={hora} type="button" data-hora={hora} className={value === hora ? 'sel' : ''} aria-pressed={value === hora} onClick={() => escolher(hora)}>{hora}</button>
-        ))}
-      </div>
-      <div className="dh-outro">
-        <Campo rotulo="Outro horário" placeholder="14:45" inputMode="numeric" maxLength={5} value={outro} erro={erro || undefined}
-          onChange={e => { setErro(''); const d = e.target.value.replace(/\D/g, '').slice(0, 4); setOutro(d.length > 2 ? `${d.slice(0, 2)}:${d.slice(2)}` : d) }}
-          onKeyDown={e => { if (e.key === 'Enter') usarOutro() }} />
-        <Botao variante="secundario" disabled={!outro} onClick={usarOutro}>Usar</Botao>
+    <Janela aberta aoFechar={onClose} tipo="conteudo" titulo={titulo}
+      acoes={<Botao cheio onClick={confirmar}>Usar {h}:{m}</Botao>} umaAcao>
+      <div className="dh-relogio">
+        <span className="dh-faixa" aria-hidden="true" />
+        <Rodinha itens={HORAS} valor={h} aoMudar={setH} rotulo="Hora" />
+        <b className="dh-dois" aria-hidden="true">:</b>
+        <Rodinha itens={minutos} valor={m} aoMudar={setM} rotulo="Minuto" />
       </div>
     </Janela>
   )

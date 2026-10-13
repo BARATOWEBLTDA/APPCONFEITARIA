@@ -48,3 +48,14 @@
   flex: 1; min-width: 0; height: 44px; padding: 0 10px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio);
   background: var(--ui-branco); font-family: inherit; font-size: 16px; font-weight: 500; color: var(--ui-texto);
 }
+
+/* ── Horário em rodinhas (13/10): hora e minuto, a linha do meio é a escolhida ── */
+.dh-relogio { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; height: 220px; margin: 4px auto 0; max-width: 300px; font-family: var(--font-base); user-select: none; }
+.dh-faixa { position: absolute; left: 0; right: 0; top: 88px; height: 44px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); pointer-events: none; }
+.dh-roda { position: relative; height: 220px; overflow-y: auto; scroll-snap-type: y mandatory; padding: 88px 0; box-sizing: border-box; scrollbar-width: none; overscroll-behavior: contain; outline: 0;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 30%, #000 70%, transparent 100%); mask-image: linear-gradient(180deg, transparent 0, #000 30%, #000 70%, transparent 100%); }
+.dh-roda::-webkit-scrollbar { display: none; }
+.dh-roda:focus-visible { box-shadow: inset 0 0 0 2px rgba(var(--ui-rosa-rgb), .35); border-radius: var(--ui-raio); }
+.dh-roda-it { height: 44px; display: flex; align-items: center; justify-content: center; scroll-snap-align: center; font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--ui-texto-3); cursor: pointer; transition: color .12s; }
+.dh-roda-it.sel { color: var(--ui-rosa-escuro); font-weight: 700; }
+.dh-dois { position: relative; padding: 0 6px; font-size: 22px; font-weight: 700; color: var(--ui-rosa-escuro); }

@@ -62,3 +62,22 @@
 .ia-steps li svg { display: inline-block; vertical-align: -3px; margin: 0 2px; }
 .ia-steps i { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--ui-vinho, #2C1219); color: var(--ui-branco); font-size: 12px; font-style: normal; font-weight: 700; }
 .ia-warn { margin: 14px 0 0; padding: 10px 12px; border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 14px; line-height: 1.45; color: var(--ui-cinza-texto); }
+
+/* (13/10) celular: uma coluna, na ordem de sempre · computador: duas colunas */
+.cf9-grade { display: flex; flex-direction: column; gap: 12px; }
+.cf9-col { display: contents; }
+.cf9-o1 { order: 1; } .cf9-o2 { order: 2; } .cf9-o3 { order: 3; } .cf9-o4 { order: 4; } .cf9-o5 { order: 5; } .cf9-o6 { order: 6; }
+@media (min-width: 1000px) {
+  .cf9 { max-width: 1080px; padding-inline: 24px; }
+  .cf9-grade { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 360px); align-items: start; gap: 20px; }
+  .cf9-col { display: flex; flex-direction: column; gap: 12px; }
+  .cf9-col--lado { position: sticky; top: 16px; }
+}
+/* Avançado: fechado até tocar (o "Excluir minha conta" fica aqui dentro) */
+.cf9-avanc { border-radius: var(--ui-raio-cartao); }
+.cf9-avanc summary { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; list-style: none; font-size: 14px; font-weight: 500; color: var(--ui-texto-2); cursor: pointer; }
+.cf9-avanc summary::-webkit-details-marker { display: none; }
+.cf9-avanc[open] summary svg { transform: rotate(180deg); }
+.cf9-avanc-c { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 16px 12px; text-align: center; }
+.cf9-avanc-c p { margin: 0; font-size: 13px; color: var(--ui-texto-2); }
+.cf9-avanc-c .ui-bt { color: var(--ui-vermelho); }

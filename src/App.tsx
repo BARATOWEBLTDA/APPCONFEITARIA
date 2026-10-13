@@ -470,6 +470,7 @@ export default function App() {
           <Route path="/cardapio-design" element={<CardapioDesign />} />
           <Route path="/checkout-config" element={<CheckoutConfigPage />} />
           <Route path="/estoque" element={<EmBreve tela="estoque" />} />
+          <Route path="/marketing" element={<EmBreve tela="marketing" />} />
           <Route path="/arquivos" element={<Navigate to="/" replace />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/configuracoes/notificacoes" element={<NotificacoesSons />} />

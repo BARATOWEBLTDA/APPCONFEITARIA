@@ -21,6 +21,8 @@ export type EstadoPassos = {
   descricao: boolean; logo: boolean; endereco: boolean; horario: boolean; produto: boolean; compartilhou: boolean;
   /** (13/10) conferiu as formas de pagamento e entrega (ou já tem produto: conta antiga não volta a ver os passos) */
   pagamento: boolean;
+  /** (13/10) informou o saldo do caixa (ou já tem produto: conta antiga não volta a ver os passos) */
+  caixa: boolean;
   /** dados atuais, pra abrir as janelinhas já preenchidas */
   perfil: any;
   /**
@@ -34,7 +36,7 @@ const lerJson = (v: any) => { if (!v) return null; if (typeof v === "object") re
 
 // Campos novos (vêm de SQLs que podem ainda não ter sido rodados): lidos à parte, um por um,
 // pra um campo faltando não derrubar a leitura do resto (antes o cartão mostrava tudo "não feito").
-const CAMPOS_NOVOS = ["design_escolhido", "cardapio_compartilhado", "logo_confirmado"] as const;
+const CAMPOS_NOVOS = ["design_escolhido", "cardapio_compartilhado", "logo_confirmado", "caixa_inicio_em"] as const;
 const chaveLogo = (uid: string) => `doonly_logo_ok_${uid}`;
 
 export async function lerPassos(uid: string): Promise<EstadoPassos> {
@@ -68,6 +70,7 @@ export async function lerPassos(uid: string): Promise<EstadoPassos> {
     compartilhou: !!p.cardapio_compartilhado || local,
     // (13/10) salvo também na conta (user_metadata), não só no aparelho
     pagamento: pagamentoConferido(uid) || !!(conta as any)?.data?.user?.user_metadata?.pp_pagamento || ((produtos.data as any[]) || []).length > 0,
+    caixa: p.caixa_inicio_em != null || !!(conta as any)?.data?.user?.user_metadata?.pp_caixa || ((produtos.data as any[]) || []).length > 0,
     perfil: { ...p, endereco: end, horario: hor },
     falhou,
   };
@@ -75,7 +78,7 @@ export async function lerPassos(uid: string): Promise<EstadoPassos> {
 
 // 02/10: o "compartilhar o link" saiu dos passos — com o cardápio pronto, vai direto pra comemoração
 export const passosCompletos = (e: EstadoPassos | null) =>
-  !!e && e.descricao && e.logo && e.endereco && e.horario && e.pagamento && e.produto;
+  !!e && e.descricao && e.logo && e.endereco && e.horario && e.pagamento && e.caixa && e.produto;
 
 /** (13/10) Passo "Pagamento e entrega": marca quando ela salva a tela Entrega e pagamento (neste aparelho). */
 const chavePagamento = (uid: string) => `doonly_pp_pagamento_${uid}`;

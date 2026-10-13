@@ -12,7 +12,7 @@ import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { erroDeConexao } from "@/lib/erros";
 import { faltaNoBanco } from "@/lib/pagamentos";
-import { Botao, TelaVazia, confirmar, avisar as avisarBase } from "@/components/base";
+import { Botao, BotaoIcone, TelaVazia, confirmar, avisar as avisarBase } from "@/components/base";
 
 /**
  * Financeiro · Passo 5 (03/10) — Contas a pagar.
@@ -35,6 +35,9 @@ const num = (s: string) => Math.round((parseFloat(String(s).replace(/\./g, "").r
 /** A função do banco ainda não existe (SQL do Passo 5 não rodado)? Aí não é falha: a tela já avisa que falta o SQL. */
 const funcaoNaoExiste = (e: unknown) => ["PGRST202", "42883"].includes(String((e as { code?: unknown } | null)?.code || "")) || faltaNoBanco(e);
 const FORMAS = [{ k: "pix", l: "Pix" }, { k: "dinheiro", l: "Dinheiro" }, { k: "credito", l: "Crédito" }, { k: "debito", l: "Débito" }, { k: "boleto", l: "Boleto" }];
+type Filtro = "atrasadas" | "semana" | "mes" | "todas";
+const FILTROS: [Filtro, string, string][] = [["atrasadas", "Atrasadas", "Atrasadas"], ["semana", "Esta semana", "Semana"], ["mes", "Este mês", "Mês"], ["todas", "Todas", "Todas"]];
+const MES_CURTO = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
 const CATEGORIAS = ["Insumos", "Embalagens", "Aluguel", "Energia e água", "Internet", "Gás", "Transporte", "Marketing", "Equipamentos", "Outros"];
 
 export default function FinanceiroAPagar() {
@@ -74,7 +77,10 @@ export default function FinanceiroAPagar() {
       carregouBem.current = true;
       const ini = `${competencia(0)}-01`;
       setErro(false);
-      setContas(data.filter(c => c.status === "pendente"));
+      // (13/10) conta fixa aparece uma vez só: a próxima que vence (antes a do mês que vem aparecia junto, parecendo repetida)
+      const pend = data.filter(c => c.status === "pendente");
+      const vistas = new Set<string>();
+      setContas(pend.filter(c => { if (!c.custo_fixo_id) return true; if (vistas.has(c.custo_fixo_id)) return false; vistas.add(c.custo_fixo_id); return true; }));
       setPagasMes(data.filter(c => c.status === "paga" && (c.pago_em || "") >= ini).sort((a, b) => (b.pago_em || "").localeCompare(a.pago_em || "")));
       // a lista carregou, mas a geração das contas dos custos fixos falhou: avisa (uma vez por visita à tela)
       if (eGerar && !avisouGerar.current) {
@@ -96,14 +102,16 @@ export default function FinanceiroAPagar() {
   useAoVoltar(() => { carregar(true); });
   const tentarDeNovo = () => { setCarregando(true); setErro(false); carregar(); };
 
-  const grupos = useMemo(() => {
-    const em7 = isoDia(6);
-    return {
-      vencidas: contas.filter(c => c.vencimento < hoje),
-      semana: contas.filter(c => c.vencimento >= hoje && c.vencimento <= em7),
-      depois: contas.filter(c => c.vencimento > em7),
-    };
-  }, [contas, hoje]);
+  // (13/10) filtro por dias: Atrasadas, Esta semana, Este mês e Todas
+  const [filtro, setFiltro] = useState<Filtro>("mes");
+  const fimMes = useMemo(() => { const d = new Date(); return `${competencia(0)}-${String(new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()).padStart(2, "0")}`; }, [hoje]); // eslint-disable-line react-hooks/exhaustive-deps
+  const doFiltro = useCallback((f: Filtro) => contas.filter(c =>
+    f === "atrasadas" ? c.vencimento < hoje : f === "semana" ? c.vencimento <= isoDia(6) : f === "mes" ? c.vencimento <= fimMes : true), [contas, hoje, fimMes]);
+  const visiveis = doFiltro(filtro);
+  const grupos = useMemo(() => ({
+    vencidas: visiveis.filter(c => c.vencimento < hoje),
+    aVencer: visiveis.filter(c => c.vencimento >= hoje),
+  }), [visiveis, hoje]);
   const soma = (l: Conta[]) => l.reduce((s, c) => s + (Number(c.valor) || 0), 0);
   const total = soma(contas);
   const avisar = (m: string) => avisarBase(m, { tipo: /^Não /.test(m) ? "erro" : "ok" });
@@ -136,41 +144,52 @@ export default function FinanceiroAPagar() {
           <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar as contas" texto="Confira a internet e tente de novo."
             acao={<Botao variante="suave" tamanho="m" onClick={tentarDeNovo}>Tentar de novo</Botao>} />
         ) : (<>
-          <button type="button" className="fap-nova" onClick={() => setNova(true)}><Plus size={17} weight="bold" />Nova conta a pagar</button>
-
-          {!carregando && contas.length > 0 && (
-            <div className="fap-resumo" style={{ "--fap-n": Math.max(...[grupos.vencidas, grupos.semana, grupos.depois].map(l => brl(soma(l)).length)) } as CSSProperties}>
-              <div className={`fap-k ${soma(grupos.vencidas) > 0 ? "fap-k--atr" : "fap-k--zero"}`}><small>Vencidas</small><b>{brl(soma(grupos.vencidas))}</b><i>{grupos.vencidas.length} {grupos.vencidas.length === 1 ? "conta" : "contas"}</i></div>
-              <div className={`fap-k ${soma(grupos.semana) > 0 ? "" : "fap-k--zero"}`}><small>Em 7 dias</small><b>{brl(soma(grupos.semana))}</b><i>{grupos.semana.length} {grupos.semana.length === 1 ? "conta" : "contas"}</i></div>
-              <div className={`fap-k ${soma(grupos.depois) > 0 ? "" : "fap-k--zero"}`}><small>Depois</small><b>{brl(soma(grupos.depois))}</b><i>{grupos.depois.length} {grupos.depois.length === 1 ? "conta" : "contas"}</i></div>
+          <div className="fap-topo">
+            <div className="tx-seg fap-seg" role="tablist" aria-label="Mostrar contas">
+              {FILTROS.map(([k, l, c]) => {
+                const n = doFiltro(k).length;
+                return (
+                  <button key={k} type="button" role="tab" aria-selected={filtro === k} className={filtro === k ? "on" : ""} onClick={() => setFiltro(k)}>
+                    <span className="fap-l-g">{l}</span><span className="fap-l-c">{c}</span>{n > 0 && <i className={k === "atrasadas" ? "atr" : ""}>{n}</i>}
+                  </button>
+                );
+              })}
             </div>
-          )}
+            <Botao icone={<Plus size={18} weight="bold" />} onClick={() => setNova(true)} className="fap-nova-bt">Nova conta</Botao>
+          </div>
 
           {carregando && <p className="fap-carregando">Carregando…</p>}
           {!carregando && contas.length === 0 && (
             <div className="fap-vazio">
               <span className="fap-vazio-ic"><CheckCircle size={34} weight="duotone" /></span>
               <b>Nenhuma conta a pagar</b>
-              <p>Cadastre as contas com vencimento ou coloque o dia de vencimento nos seus <button type="button" className="fap-link" onClick={() => navigate("/custos")}>custos fixos</button> pra elas aparecerem aqui todo mês.</p>
+              <p>Cadastre as contas com vencimento. As que se repetem todo mês aparecem aqui sozinhas.</p>
+            </div>
+          )}
+          {!carregando && contas.length > 0 && visiveis.length === 0 && (
+            <div className="fap-vazio fap-vazio--p">
+              <b>{filtro === "atrasadas" ? "Nenhuma conta atrasada" : filtro === "semana" ? "Nada vence esta semana" : "Nada vence este mês"}</b>
+              <p><button type="button" className="fap-link" onClick={() => setFiltro("todas")}>Ver todas as contas</button></p>
             </div>
           )}
 
-          {([["Vencidas", grupos.vencidas], ["Próximos 7 dias", grupos.semana], ["Depois", grupos.depois]] as [string, Conta[]][])
+          {([["Atrasadas", grupos.vencidas], ["A vencer", grupos.aVencer]] as [string, Conta[]][])
             .filter(([, l]) => l.length > 0)
             .map(([titulo, lista]) => (
               <section key={titulo}>
                 <p className="fap-gt">{titulo} <span>· {brl(soma(lista))}</span></p>
                 <div className="fap-lista">
                   {lista.map(c => { const d = diasAte(c.vencimento); return (
-                    <div key={c.id} className="fap-it">
-                      <div className="fap-it-h"><b>{c.descricao}</b><span className={`fap-tg ${d < 0 ? "fap-tg--atr" : ""}`}>{quando(d)}</span></div>
-                      <div className="fap-it-v"><small>{c.custo_fixo_id ? "Custo fixo · todo mês" : (c.categoria === "Insumos" ? "Ingredientes" : (c.categoria || "Conta"))}</small><b>{brl(c.valor)}</b></div>
-                      <div className="fap-it-a">
-                        <span><CalendarBlank size={15} />vence {dataCurta(c.vencimento)}</span>
-                        <div className="fap-bts">
-                          <button type="button" className="fap-canc" onClick={() => cancelar(c)} aria-label="Cancelar conta"><X size={15} weight="bold" /></button>
-                          <button type="button" className="fap-pag" onClick={() => setPagar(c)}>Pagar</button>
-                        </div>
+                    <div key={c.id} className={`fap-it${d < 0 ? " fap-it--atr" : ""}`}>
+                      <div className="fap-it-d" aria-hidden="true"><b>{c.vencimento.slice(8, 10)}</b><small>{MES_CURTO[Number(c.vencimento.slice(5, 7)) - 1]}</small></div>
+                      <div className="fap-it-m">
+                        <b>{c.descricao}</b>
+                        <small><span className={d < 0 ? "atr" : d <= 1 ? "logo" : ""}>{quando(d)}</span> · {c.custo_fixo_id ? "todo mês" : (c.categoria === "Insumos" ? "Ingredientes" : (c.categoria || "Conta"))}</small>
+                      </div>
+                      <b className="fap-it-v">{brl(c.valor)}</b>
+                      <div className="fap-bts">
+                        <BotaoIcone rotulo="Cancelar conta" tamanho="p" onClick={() => cancelar(c)}><X size={16} weight="bold" /></BotaoIcone>
+                        <Botao tamanho="p" onClick={() => setPagar(c)}>Pagar</Botao>
                       </div>
                     </div>
                   ); })}
@@ -191,15 +210,17 @@ export default function FinanceiroAPagar() {
         </>)}
       </div>
 
-      {pagar && <PagarSheet conta={pagar} onClose={() => setPagar(null)} onFeito={() => { setPagar(null); avisar("Conta paga. A saída entrou no financeiro."); carregar(); }} />}
-      {nova && <NovaContaSheet onClose={() => setNova(false)} onFeito={() => { setNova(false); avisar("Conta cadastrada."); carregar(); }} />}
+      {pagar && <PagarSheet conta={pagar} onClose={() => setPagar(null)} onFeito={(doCaixa) => { setPagar(null); avisar(doCaixa ? "Conta paga. A saída entrou no financeiro." : "Conta marcada como paga. O caixa não mudou."); carregar(); }} />}
+      {nova && <NovaContaSheet onClose={() => setNova(false)} onFeito={(fixa) => { setNova(false); avisar(fixa ? "Conta fixa cadastrada. Ela aparece aqui todo mês." : "Conta cadastrada."); carregar(); }} />}
       <style>{CSS}</style>
     </div>
   );
 }
 
-export function PagarSheet({ conta, onClose, onFeito }: { conta: Conta; onClose: () => void; onFeito: () => void }) {
+export function PagarSheet({ conta, onClose, onFeito }: { conta: Conta; onClose: () => void; onFeito: (doCaixa: boolean) => void }) {
   const [valor, setValor] = useState(textoBRL(conta.valor));
+  // (13/10) o dinheiro pode não ter saído do caixa da loja (outra pessoa pagou): aí só marca a conta como paga
+  const [doCaixa, setDoCaixa] = useState(true);
   const [forma, setForma] = useState("pix");
   const [quandoPg, setQuandoPg] = useState<"hoje" | "ontem" | "outra">("hoje");
   const [outra, setOutra] = useState(isoDia());
@@ -211,28 +232,42 @@ export function PagarSheet({ conta, onClose, onFeito }: { conta: Conta; onClose:
     const data = quandoPg === "hoje" ? isoDia() : quandoPg === "ontem" ? isoDia(-1) : outra;
     if (!data || data > isoDia()) { setErro("Escolha uma data até hoje"); return; }
     setSalvando(true); setErro("");
+    if (!doCaixa) {
+      const { data: feita, error } = await supabase.from("contas_pagar").update({ status: "paga", pago_em: data, valor_pago: v })
+        .eq("id", conta.id).eq("status", "pendente").select("id");
+      setSalvando(false);
+      if (error) { setErro("Não foi possível marcar agora. Confira a internet e tente de novo."); return; }
+      if (!feita?.length) { setErro("Essa conta já foi paga."); return; }
+      onFeito(false); return;
+    }
     const { error } = await supabase.rpc("contas_pagar_pagar", { p_id: conta.id, p_valor: v, p_data: data, p_forma: forma });
     setSalvando(false);
     if (error) { setErro(/não está mais a pagar/i.test(error.message) ? "Essa conta já foi paga." : "Não foi possível pagar agora. Confira a internet e tente de novo."); return; }
-    onFeito();
+    onFeito(true);
   };
   return (
     <Folha titulo={`Pagar · ${conta.descricao}`} sub={`Vence ${dataCurta(conta.vencimento)} · ${brl(conta.valor)}`} onClose={onClose} umaAcao
-      acoes={<Botao cheio carregando={salvando} onClick={confirmar}>Confirmar pagamento</Botao>}>
-      <label className="fo-lb" htmlFor="fap-v">Quanto você pagou?</label>
+      acoes={<Botao cheio carregando={salvando} onClick={confirmar}>{doCaixa ? "Confirmar pagamento" : "Marcar como paga"}</Botao>}>
+      <p className="fo-lb">De onde saiu o dinheiro?</p>
+      <div className="fo-seg"><button type="button" className={doCaixa ? "on" : ""} onClick={() => setDoCaixa(true)}>Do caixa da loja</button><button type="button" className={!doCaixa ? "on" : ""} onClick={() => setDoCaixa(false)}>Outra pessoa pagou</button></div>
+      <label className="fo-lb" htmlFor="fap-v">Quanto foi pago?</label>
       <div className="fo-in"><span>R$</span><input id="fap-v" inputMode="numeric" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro(""); }} /></div>
-      <p className="fo-lb">Forma de pagamento</p>
-      <div className="fo-chips">{FORMAS.map(f => <button type="button" key={f.k} className={forma === f.k ? "on" : ""} onClick={() => setForma(f.k)}>{f.l}</button>)}</div>
+      {doCaixa && <p className="fo-lb">Forma de pagamento</p>}
+      {doCaixa && <div className="fo-chips">{FORMAS.map(f => <button type="button" key={f.k} className={forma === f.k ? "on" : ""} onClick={() => setForma(f.k)}>{f.l}</button>)}</div>}
       <p className="fo-lb">Quando pagou?</p>
       <div className="fo-chips">{(["hoje", "ontem", "outra"] as const).map(q => <button type="button" key={q} className={quandoPg === q ? "on" : ""} onClick={() => setQuandoPg(q)}>{q === "hoje" ? "Hoje" : q === "ontem" ? "Ontem" : "Outra data"}</button>)}</div>
       {quandoPg === "outra" && <div style={{ marginTop: 8 }}><CampoData valor={outra} onChange={setOutra} max={isoDia()} titulo="Data do pagamento" /></div>}
-      <div className="fap-prev"><b>Sai do caixa: {brl(num(valor))}</b><small>A saída entra no financeiro na data do pagamento.</small></div>
+      {doCaixa
+        ? <div className="fap-prev"><b>Sai do caixa: {brl(num(valor))}</b><small>A saída entra no financeiro na data do pagamento.</small></div>
+        : <div className="fap-prev fap-prev--neutro"><b>O caixa não muda</b><small>A conta fica como paga e não entra saída no financeiro.</small></div>}
       {erro && <p className="fo-erro">{erro}</p>}
     </Folha>
   );
 }
 
-function NovaContaSheet({ onClose, onFeito }: { onClose: () => void; onFeito: () => void }) {
+function NovaContaSheet({ onClose, onFeito }: { onClose: () => void; onFeito: (fixa: boolean) => void }) {
+  // (13/10) conta fixa (todo mês) vira um custo fixo da conta, com o dia de vencimento: aparece aqui sozinha todo mês
+  const [fixa, setFixa] = useState(false);
   const [descricao, setDescricao] = useState("");
   const [categoria, setCategoria] = useState("Insumos");
   const [valor, setValor] = useState("");
@@ -246,21 +281,31 @@ function NovaContaSheet({ onClose, onFeito }: { onClose: () => void; onFeito: ()
     if (!vencimento) { setErro("Escolha o vencimento"); return; }
     setSalvando(true); setErro("");
     const { data: { user } } = await supabase.auth.getUser();
+    if (fixa) {
+      const dia = Number(vencimento.slice(8, 10));
+      const { error } = await supabase.from("custos_fixos").insert({ user_id: user?.id, nome: descricao.trim(), valor: v, ativo: true, dia_vencimento: dia });
+      setSalvando(false);
+      if (error) { setErro("Não foi possível salvar agora. Confira a internet e tente de novo."); return; }
+      onFeito(true); return;
+    }
     const { error } = await supabase.from("contas_pagar").insert({ user_id: user?.id, descricao: descricao.trim(), categoria, valor: v, vencimento });
     setSalvando(false);
     if (error) { setErro("Não foi possível salvar agora. Confira a internet e tente de novo."); return; }
-    onFeito();
+    onFeito(false);
   };
   return (
     <Folha titulo="Nova conta a pagar" sub="Ela só sai do caixa quando você pagar" onClose={onClose} umaAcao
-      acoes={<Botao cheio carregando={salvando} onClick={salvar}>Cadastrar conta</Botao>}>
+      acoes={<Botao cheio carregando={salvando} onClick={salvar}>{fixa ? "Cadastrar conta fixa" : "Cadastrar conta"}</Botao>}>
+      <p className="fo-lb">Essa conta se repete todo mês?</p>
+      <div className="fo-seg"><button type="button" className={!fixa ? "on" : ""} onClick={() => setFixa(false)}>Só esta vez</button><button type="button" className={fixa ? "on" : ""} onClick={() => setFixa(true)}>Todo mês</button></div>
+      {fixa && <div className="fo-dica">Ela fica nos seus custos fixos e aparece aqui todo mês, no mesmo dia.</div>}
       <label className="fo-lb" htmlFor="fap-d">Conta</label>
       <input id="fap-d" className="fo-txt" placeholder="Ex.: Fornecedor de chocolate" value={descricao} onChange={e => { setDescricao(e.target.value); setErro(""); }} />
-      <p className="fo-lb">Categoria</p>
-      <div className="fo-chips">{CATEGORIAS.map(c => <button type="button" key={c} className={categoria === c ? "on" : ""} onClick={() => setCategoria(c)}>{c === "Insumos" ? "Ingredientes" : c}</button>)}</div>
+      {!fixa && <p className="fo-lb">Categoria</p>}
+      {!fixa && <div className="fo-chips">{CATEGORIAS.map(c => <button type="button" key={c} className={categoria === c ? "on" : ""} onClick={() => setCategoria(c)}>{c === "Insumos" ? "Ingredientes" : c}</button>)}</div>}
       <div className="fo-row">
         <div><label className="fo-lb" htmlFor="fap-nv">Valor</label><div className="fo-in sm"><span>R$</span><input id="fap-nv" inputMode="numeric" placeholder="0,00" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro(""); }} /></div></div>
-        <div><label className="fo-lb" htmlFor="fap-venc">Vencimento</label><CampoData id="fap-venc" valor={vencimento} onChange={setVencimento} titulo="Vencimento" curto /></div>
+        <div><label className="fo-lb" htmlFor="fap-venc">{fixa ? "Próximo vencimento" : "Vencimento"}</label><CampoData id="fap-venc" valor={vencimento} onChange={setVencimento} titulo="Vencimento" curto /></div>
       </div>
       {erro && <p className="fo-erro">{erro}</p>}
     </Folha>
@@ -269,6 +314,30 @@ function NovaContaSheet({ onClose, onFeito }: { onClose: () => void; onFeito: ()
 
 const CSS = `
   .fap-root { font-family: var(--font-base); }
+  /* (13/10) topo: filtro por dias + nova conta */
+  .fap-topo { display: flex; flex-direction: column; gap: 10px; }
+  @media (min-width: 900px) { .fap-topo { flex-direction: row; align-items: center; justify-content: space-between; } .fap-seg { flex: 0 1 560px; } }
+  .tx-seg { display: flex; background: #EFE9EC; border-radius: var(--ui-raio); padding: 3px; }
+  .tx-seg button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 44px; border: none; background: none; border-radius: var(--ui-raio-p); padding: 8px 6px; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); cursor: pointer; white-space: nowrap; }
+  .tx-seg button.on { background: var(--ui-branco); color: var(--ui-texto); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .fap-seg i { font-style: normal; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: #E3D9DE; color: var(--ui-texto-2); font-size: 11px; font-weight: 700; line-height: 18px; }
+  .fap-seg i.atr { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); }
+  .fap-l-c { display: none; }
+  @media (max-width: 599px) { .fap-l-g { display: none; } .fap-l-c { display: inline; } }
+  .fap-nova-bt { flex: none; }
+  @media (max-width: 899px) { .fap-nova-bt { width: 100%; } }
+  .fap-vazio--p { padding: 22px 16px; } .fap-vazio--p b { margin-top: 0; }
+  .fap-it { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "d m v" "d m b"; align-items: center; column-gap: 12px; row-gap: 8px; }
+  .fap-it-d { grid-area: d; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 52px; height: 56px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
+  .fap-it-d b { font-size: 19px; font-weight: 700; line-height: 1; color: var(--ui-texto); } .fap-it-d small { font-size: 12px; color: var(--ui-texto-2); margin-top: 3px; }
+  .fap-it--atr .fap-it-d { background: var(--ui-vermelho-fundo); } .fap-it--atr .fap-it-d b, .fap-it--atr .fap-it-d small { color: var(--ui-vermelho); }
+  .fap-it-m { grid-area: m; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .fap-it-m b { font-size: 15px; font-weight: 600; color: var(--ui-texto); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fap-it-m small { font-size: 13px; color: var(--ui-texto-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fap-it-m small .atr { color: var(--ui-vermelho); font-weight: 600; } .fap-it-m small .logo { color: #B45309; font-weight: 600; }
+  .fap-it > .fap-it-v { grid-area: v; justify-self: end; font-size: 15.5px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; }
+  .fap-it > .fap-bts { grid-area: b; justify-self: end; display: flex; align-items: center; gap: 6px; }
+  .fap-prev.fap-prev--neutro { background: var(--ui-cinza); border-color: var(--ui-borda); } .fap-prev.fap-prev--neutro b, .fap-prev.fap-prev--neutro small { color: var(--ui-texto-2); }
   /* 10/10: mesma largura de conteúdo de Transações (antes 760px, numa coluna estreita no PC) */
   .fap-wrap { max-width: 980px; margin: 0 auto; padding: 22px 0 96px; display: flex; flex-direction: column; gap: 20px; }
   .fap-nova { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; border: 1.5px dashed #F3C9DA; background: #FFF6F9; color: var(--ui-rosa-escuro); border-radius: var(--ui-raio); padding: 11px 14px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }

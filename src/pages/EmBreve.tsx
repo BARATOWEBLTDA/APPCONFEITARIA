@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Lightbulb, Package } from "@phosphor-icons/react";
+import { Lightbulb, Megaphone, Package } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, TelaVazia } from "@/components/base";
 import "./clientes.css";
@@ -12,6 +12,11 @@ const TELAS = {
   estoque: {
     titulo: "Estoque", icone: Package,
     texto: "Aqui você vai poder acompanhar quanto tem de cada ingrediente e receber um aviso quando estiver acabando.",
+  },
+  // 13/10: espaço pras ferramentas de divulgação que vêm depois
+  marketing: {
+    titulo: "Marketing", icone: Megaphone,
+    texto: "Aqui vão ficar as ferramentas pra divulgar sua confeitaria e vender mais. Conte pra gente o que você gostaria de ter.",
   },
 } as const;
 

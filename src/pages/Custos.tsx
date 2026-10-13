@@ -6,7 +6,7 @@ import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import { parseNumBR } from "@/lib/numeroBR";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Buildings, Percent, Clock, Plus, CaretRight, Receipt, WarningCircle } from "@phosphor-icons/react";
+import { Buildings, Percent, Clock, Plus, CaretRight, Receipt, WarningCircle, CreditCard } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, TelaVazia } from "@/components/base";
 import { erroDeConexao, explicarErro } from "@/lib/erros";
@@ -14,7 +14,19 @@ import Folha, { FOLHA_CSS } from "@/components/financeiro/Folha";
 import { supabase } from "@/lib/supabase";
 
 type CustoFixo = { id: string; nome: string; valor: number; ativo: boolean; dia_vencimento: number | null };
-type CustoVariavel = { id: string; nome: string; tipo: "percentual" | "fixo"; valor: number; ativo: boolean };
+// (13/10) forma: em que vendas o custo entra (null = todas). A maquininha cobra diferente no crédito e no débito.
+type FormaCusto = "credito" | "debito" | null;
+type CustoVariavel = { id: string; nome: string; tipo: "percentual" | "fixo"; valor: number; ativo: boolean; forma?: FormaCusto };
+const FORMA_TXT: Record<string, string> = { credito: "no crédito", debito: "no débito" };
+/** Grava; se a coluna "forma" ainda não existir no banco (SQL 4.33 não rodado), grava sem ela */
+async function gravarVariavel(id: string | null, uid: string, payload: Record<string, any>) {
+  const ir = (dados: Record<string, any>) => id ? supabase.from("custos_variaveis").update(dados).eq("id", id) : supabase.from("custos_variaveis").insert({ user_id: uid, ...dados });
+  let r = await ir(payload);
+  if (r.error && "forma" in payload && /forma|PGRST204|42703|column/i.test(`${r.error.code} ${r.error.message}`)) {
+    const { forma: _f, ...sem } = payload; r = await ir(sem);
+  }
+  return r;
+}
 type MaoObra = { salario_mensal: number; horas_dia: number; dias_semana_array: number[] };
 
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -32,6 +44,7 @@ export default function Custos() {
   const [erro, setErro] = useState(false); // não deu pra carregar (11/10)
   const [editFixo, setEditFixo] = useState<CustoFixo | "novo" | null>(null);
   const [editVar, setEditVar] = useState<CustoVariavel | "novo" | null>(null);
+  const [editMaq, setEditMaq] = useState(false);
   const [editMo, setEditMo] = useState(false);
 
   const carregar = useCallback(async () => {
@@ -42,7 +55,7 @@ export default function Custos() {
     setUid(user.id);
     const [f, v, m] = await Promise.all([
       supabase.from("custos_fixos").select("id, nome, valor, ativo, dia_vencimento").eq("user_id", user.id).order("nome"),
-      supabase.from("custos_variaveis").select("id, nome, tipo, valor, ativo").eq("user_id", user.id).order("nome"),
+      supabase.from("custos_variaveis").select("*").eq("user_id", user.id).order("nome"),
       supabase.from("config_mao_obra").select("salario_mensal, horas_dia, dias_semana, dias_semana_array").eq("user_id", user.id).maybeSingle(),
     ]);
     if (f.error || v.error || m.error) {
@@ -136,10 +149,12 @@ export default function Custos() {
               <p className="cu-vazio">Nenhum ainda. Ex.: maquininha, embalagem.</p>
             ) : variaveis.map(v => (
               <button type="button" key={v.id} className={`cu-it ${v.ativo ? "" : "off"}`} onClick={() => setEditVar(v)}>
-                <div className="cu-it-t"><b>{v.nome}</b><small>{!v.ativo ? "Pausado" : v.tipo === "percentual" ? "% de cada venda" : "Valor por pedido"}</small></div>
+                <div className="cu-it-t"><b>{v.nome}</b><small>{!v.ativo ? "Pausado" : v.tipo === "percentual" ? (v.forma ? `% das vendas ${FORMA_TXT[v.forma]}` : "% de cada venda") : "Valor por pedido"}</small></div>
                 <span className="cu-it-v">{v.tipo === "percentual" ? `${String(v.valor).replace(".", ",")}%` : brl(v.valor)}</span><CaretRight size={14} weight="bold" className="cu-it-ar" />
               </button>
             ))}
+            {/* (13/10) atalho: a taxa da maquininha com o débito e o crédito separados */}
+            {!carregando && !variaveis.some(v => v.forma) && <button type="button" className="cu-add" onClick={() => setEditMaq(true)}><CreditCard size={15} weight="bold" />Taxa da maquininha (débito e crédito)</button>}
             <button type="button" className="cu-add" onClick={() => setEditVar("novo")}><Plus size={15} weight="bold" />Novo custo variável</button>
           </section>
         </div>
@@ -148,6 +163,7 @@ export default function Custos() {
 
       {editFixo && uid && <FixoSheet uid={uid} item={editFixo === "novo" ? null : editFixo} onClose={() => setEditFixo(null)} onFeito={() => { setEditFixo(null); carregar(); }} />}
       {editVar && uid && <VariavelSheet uid={uid} item={editVar === "novo" ? null : editVar} onClose={() => setEditVar(null)} onFeito={() => { setEditVar(null); carregar(); }} />}
+      {editMaq && uid && <MaquininhaSheet uid={uid} onClose={() => setEditMaq(false)} onFeito={() => { setEditMaq(false); carregar(); }} />}
       {editMo && uid && <MaoObraSheet uid={uid} atual={mo} totalFixos={totalFixos} onClose={() => setEditMo(false)} onFeito={() => { setEditMo(false); carregar(); }} />}
       <style>{CSS}{FOLHA_CSS}</style>
     </>
@@ -223,6 +239,7 @@ function VariavelSheet({ uid, item, onClose, onFeito }: { uid: string; item: Cus
   const [tipo, setTipo] = useState<"percentual" | "fixo">(item?.tipo || "percentual");
   const [valor, setValor] = useState(item?.tipo === "fixo" ? textoBRL(item?.valor) : txt(item?.valor));
   const [ativo, setAtivo] = useState(item ? item.ativo : true);
+  const [forma, setForma] = useState<FormaCusto>(item?.forma || null);
   const [excluir, setExcluir] = useState(false);
   const [ocupado, setOcupado] = useState(false);
   const [erro, setErro] = useState("");
@@ -233,8 +250,8 @@ function VariavelSheet({ uid, item, onClose, onFeito }: { uid: string; item: Cus
     if (v <= 0) { setErro("Digite o valor"); return; }
     if (tipo === "percentual" && v > 100) { setErro("A porcentagem vai até 100%"); return; }
     setOcupado(true);
-    const payload = { nome: nome.trim(), tipo, valor: v, ativo };
-    const { error } = item ? await supabase.from("custos_variaveis").update(payload).eq("id", item.id) : await supabase.from("custos_variaveis").insert({ user_id: uid, ...payload });
+    const payload = { nome: nome.trim(), tipo, valor: v, ativo, forma: tipo === "percentual" ? forma : null };
+    const { error } = await gravarVariavel(item?.id || null, uid, payload);
     setOcupado(false);
     if (error) { setErro("Não foi possível salvar agora."); return; }
     onFeito();
@@ -256,6 +273,14 @@ function VariavelSheet({ uid, item, onClose, onFeito }: { uid: string; item: Cus
       <div className="fo-seg"><button type="button" className={tipo === "percentual" ? "on" : ""} onClick={() => { if (tipo !== "percentual") { setTipo("percentual"); setValor(""); } }}>% da venda</button><button type="button" className={tipo === "fixo" ? "on" : ""} onClick={() => { if (tipo !== "fixo") { setTipo("fixo"); setValor(""); } }}>R$ por pedido</button></div>
       <label className="fo-lb" htmlFor="cv-v">{tipo === "percentual" ? "Porcentagem" : "Valor por pedido"}</label>
       <div className="fo-in">{tipo === "fixo" && <span>R$</span>}<input id="cv-v" inputMode={tipo === "percentual" ? "decimal" : "numeric"} placeholder={tipo === "percentual" ? "Ex.: 3,5" : "0,00"} value={valor} onChange={e => { setValor(tipo === "fixo" ? mascaraBRL(e.target.value) : e.target.value); setErro(""); }} />{tipo === "percentual" && <span>%</span>}</div>
+      {tipo === "percentual" && (<>
+        <p className="fo-lb">Entra em quais vendas?</p>
+        <div className="fo-seg fo-seg--3">
+          <button type="button" className={!forma ? "on" : ""} onClick={() => setForma(null)}>Todas</button>
+          <button type="button" className={forma === "credito" ? "on" : ""} onClick={() => setForma("credito")}>Crédito</button>
+          <button type="button" className={forma === "debito" ? "on" : ""} onClick={() => setForma("debito")}>Débito</button>
+        </div>
+      </>)}
       {v > 0 && <div className="fo-dica">Numa venda de <b>R$ 100,00</b>, este custo é <b>{brl(tipo === "percentual" ? v : v)}</b>{tipo === "percentual" ? "" : " (por pedido, qualquer valor)"}.</div>}
       <Switch ligado={ativo} onToggle={() => setAtivo(a => !a)} titulo={ativo ? "Ativo" : "Pausado"} sub={ativo ? "Entra no cálculo dos seus preços" : "Não entra no cálculo enquanto estiver pausado"} />
       {erro && <p className="fo-erro">{erro}</p>}
@@ -263,6 +288,39 @@ function VariavelSheet({ uid, item, onClose, onFeito }: { uid: string; item: Cus
         <button type="button" className="fo-cta" onClick={salvar} disabled={ocupado}>{ocupado ? "Salvando…" : item ? "Salvar" : "Cadastrar custo variável"}</button>
         {item && <button type="button" className="fo-sec" onClick={() => setExcluir(true)}>Excluir este custo</button>}
       </>)}
+    </Folha>
+  );
+}
+
+/** (13/10) Taxa da maquininha: cada empresa cobra uma taxa no débito e outra no crédito. Vira 2 custos, cada um na sua forma de pagamento. */
+function MaquininhaSheet({ uid, onClose, onFeito }: { uid: string; onClose: () => void; onFeito: () => void }) {
+  const [deb, setDeb] = useState("");
+  const [cred, setCred] = useState("");
+  const [ocupado, setOcupado] = useState(false);
+  const [erro, setErro] = useState("");
+  const d = Math.round(parseNumBR(deb) * 100) / 100, c = Math.round(parseNumBR(cred) * 100) / 100;
+  const salvar = async () => {
+    if (d <= 0 && c <= 0) { setErro("Digite a taxa do débito ou do crédito"); return; }
+    if (d > 100 || c > 100) { setErro("A porcentagem vai até 100%"); return; }
+    setOcupado(true);
+    const linhas: [string, number, FormaCusto][] = [["Maquininha (débito)", d, "debito"], ["Maquininha (crédito)", c, "credito"]];
+    for (const [nome, valor, forma] of linhas) {
+      if (valor <= 0) continue;
+      const { error } = await gravarVariavel(null, uid, { nome, tipo: "percentual", valor, ativo: true, forma });
+      if (error) { setOcupado(false); setErro(explicarErro(error, "Não foi possível salvar agora.")); return; }
+    }
+    setOcupado(false);
+    onFeito();
+  };
+  return (
+    <Folha titulo="Taxa da maquininha" sub="Veja no app da sua maquininha quanto ela cobra" onClose={onClose}>
+      <label className="fo-lb" htmlFor="mq-d">No débito</label>
+      <div className="fo-in"><input id="mq-d" inputMode="decimal" placeholder="Ex.: 1,99" value={deb} onChange={e => { setDeb(e.target.value); setErro(""); }} /><span>%</span></div>
+      <label className="fo-lb" htmlFor="mq-c">No crédito à vista</label>
+      <div className="fo-in"><input id="mq-c" inputMode="decimal" placeholder="Ex.: 4,99" value={cred} onChange={e => { setCred(e.target.value); setErro(""); }} /><span>%</span></div>
+      <div className="fo-dica">Pix e dinheiro não pagam taxa. Cada taxa entra só nas vendas pagas daquele jeito.</div>
+      {erro && <p className="fo-erro">{erro}</p>}
+      <button type="button" className="fo-cta" onClick={salvar} disabled={ocupado}>{ocupado ? "Salvando…" : "Salvar taxas"}</button>
     </Folha>
   );
 }

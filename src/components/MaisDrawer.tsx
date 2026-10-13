@@ -8,8 +8,7 @@ import {
   Gear, PaintBrush, Crown,
   SquaresFour, UserPlus, CreditCard,
   X, CaretRight,
-  Trophy,
-} from "@phosphor-icons/react";
+  Trophy, Megaphone, } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { BotaoIcone } from "@/components/base";
 import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
@@ -48,6 +47,7 @@ const GRUPOS: Grupo[] = [
     items: [
       { label: "Lucratividade", desc: "Análise de margem",   path: "/lucratividade",         Icone: ChartLineUp },
       { label: "Transações",    desc: "Histórico detalhado", path: "/financeiro/transacoes", Icone: CurrencyDollar },
+      { label: "Marketing",     desc: "Divulgue e venda mais", path: "/marketing",           Icone: Megaphone },
     ],
   },
   {

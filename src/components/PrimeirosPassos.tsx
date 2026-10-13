@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, Wallet, Sparkle, ShareNetwork, CaretRight, Camera, X, LockSimple } from "@phosphor-icons/react";
+import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, Wallet, Coins, Sparkle, ShareNetwork, CaretRight, Camera, X, LockSimple } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
 import { useProfile, getCardapioUrl, refreshProfile } from "@/hooks/useProfile";
@@ -16,6 +16,8 @@ import { lerPassos, marcarCompartilhado, passosCompletos, avisarPassos, atualiza
 import { Botao, Janela, avisar } from "@/components/base";
 import { LojaProntaConteudo } from "@/components/loja/LojaPronta";
 import { erroDeConexao, SEM_INTERNET } from "@/lib/erros";
+import { definirSaldoInicial } from "@/lib/caixa";
+import { mascaraBRL, lerBRL } from "@/lib/moeda";
 /**
  * "Primeiros passos" (aprovado 02/10) — o MESMO cartão no Início (celular) e no Cardápio digital.
  * 7 passos (13/10: + "Pagamento e entrega"); os que dá pra preencher abrem numa janelinha que sobe de baixo, sem sair da tela:
@@ -23,7 +25,7 @@ import { erroDeConexao, SEM_INTERNET } from "@/lib/erros";
  * Salva exatamente como os Dados da loja (endereço e horário em JSON no profiles).
  */
 type Local = "inicio" | "cardapio";
-type Folha = null | "descricao" | "logo" | "endereco" | "horario" | "pagamento";
+type Folha = null | "descricao" | "logo" | "endereco" | "horario" | "pagamento" | "caixa";
 
 const DIAS = [
   { nome: "Segunda", letra: "S", curto: "Seg" }, { nome: "Terça", letra: "T", curto: "Ter" }, { nome: "Quarta", letra: "Q", curto: "Qua" },
@@ -37,7 +39,7 @@ const HORARIO_PADRAO = {
 };
 // (13/10) ordem dos passos: "Salvar e continuar" abre o próximo que falta, e o "Configurar minha confeitaria" abre o primeiro
 // 13/10: o logo vem antes da descrição, assim a prévia da descrição já mostra o logo dela ao lado do nome
-const ORDEM = ["logo", "descricao", "endereco", "horario", "pagamento", "produto"] as const;
+const ORDEM = ["logo", "descricao", "endereco", "horario", "pagamento", "caixa", "produto"] as const;
 type Passo = typeof ORDEM[number];
 // (13/10) a sequência guiada vai até o pagamento: o produto fica livre (ela cadastra quando quiser, navegando pelo app)
 const SEQ: Passo[] = ORDEM.filter(k => k !== "produto");
@@ -192,8 +194,12 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
     { feito: estado.endereco, ic: I(MapPin), t: "Endereço da loja", s: "Pra calcular a entrega", abrir: () => setFolha("endereco") },
     { feito: estado.horario, ic: I(Clock), t: "Horário de funcionamento", s: "Mostra \"Aberto agora\" no cardápio", abrir: () => setFolha("horario") },
     { feito: estado.pagamento, ic: I(Wallet), t: "Pagamento e entrega", s: "Como o cliente paga e recebe", abrir: () => abrirPasso("pagamento") },
-    { feito: estado.produto, ic: I(Basket), t: "Cadastrar um produto", s: "Com foto e preço", abrir: () => navigate("/produtos", { state: { abrirCadastro: true } }) },
+    { feito: estado.caixa, ic: I(Coins), t: "Saldo do caixa", s: "Quanto tem em caixa hoje", abrir: () => setFolha("caixa") },
+    // (13/10) quando só falta o produto, o texto chama pro cardápio ir pro ar
+    { feito: estado.produto, ic: I(Basket), t: "Cadastrar um produto", s: "", abrir: () => navigate("/produtos", { state: { abrirCadastro: true } }) },
   ];
+  const ultimoQueFalta = passos.filter(p => !p.feito).length === 1;
+  passos[passos.length - 1].s = ultimoQueFalta ? "Falta só isso pro cardápio ir pro ar" : "Seu primeiro doce no cardápio";
   const feitos = passos.filter(p => p.feito).length;
   const atual = passos.findIndex(p => !p.feito);
   const ultimo = -1; // (o passo "compartilhar" saiu em 02/10)
@@ -231,6 +237,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
       {folha === "logo" && <FolhaLogo uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
       {folha === "endereco" && <FolhaEndereco uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
       {folha === "pagamento" && <FolhaPagamento uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
+      {folha === "caixa" && <FolhaCaixa uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
       {folha === "horario" && <FolhaHorario uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
       <style>{CSS}</style>
     </div>
@@ -298,6 +305,33 @@ function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
       <p className="ppf-l">Como ele recebe?</p>
       <div className="ppf-p-opc">{opc(entrega.includes("retirada"), "Retirada", () => trocarEntrega("retirada"))}{opc(temEntrega, "Entrega", () => trocarEntrega("entrega"))}</div>
       <p className="ppf-p-dica">Desmarque o que você não usa.</p>
+      {erro && <p className="ppf-erro">{erro}</p>}
+    </Janelinha>
+  );
+}
+
+/* ── (13/10) Passo 6: quanto ela tem em caixa hoje. Daqui pra frente o Financeiro soma o que entra e tira o que sai. ── */
+function FolhaCaixa({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
+  const [txt, setTxt] = useState("");
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState("");
+  const salvar = async () => {
+    if (salvando) return;
+    setSalvando(true); setErro("");
+    const r = await definirSaldoInicial(uid, lerBRL(txt || "0"));
+    setSalvando(false);
+    if (!r.ok) { setErro(erroDeConexao(r.erro) ? SEM_INTERNET : "Não foi possível salvar agora. Tente de novo."); return; }
+    supabase.auth.updateUser({ data: { pp_caixa: true } }).then(() => {}, () => {});
+    onSalvo();
+  };
+  return (
+    <Janelinha foco titulo="Saldo do caixa" onClose={onClose}
+      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
+      <PassoTopo k="caixa" />
+      <p className="ppf-l">Quanto você tem hoje no caixa da confeitaria?</p>
+      <div className="ppf-cx"><span>R$</span><input inputMode="numeric" placeholder="0,00" value={txt} aria-label="Saldo do caixa hoje"
+        onChange={e => { setTxt(mascaraBRL(e.target.value)); setErro(""); }} onKeyDown={e => { if (e.key === "Enter") salvar(); }} /></div>
+      <p className="ppf-p-dica">Dinheiro e saldo da conta da loja. Daqui pra frente o app soma o que entra e tira o que sai. Se não tiver nada, deixe 0,00.</p>
       {erro && <p className="ppf-erro">{erro}</p>}
     </Janelinha>
   );
@@ -762,6 +796,10 @@ const CSS = `
   .ppf-p-taxa small { margin-right: 6px; font-size: 14px; color: var(--ui-texto-3); }
   .ppf-p-taxa input { width: 100%; min-width: 0; border: 0; outline: none; background: none; font-family: inherit; font-size: 16px; font-weight: 600; color: var(--ui-texto); }
   .ppf-p-dica { margin: 12px 0 0; font-size: 13px; color: var(--ui-texto-3); }
+  .ppf-cx { display: flex; align-items: center; gap: 8px; height: 56px; padding: 0 16px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); }
+  .ppf-cx:focus-within { border-color: var(--ui-rosa); }
+  .ppf-cx span { font-size: 18px; font-weight: 600; color: var(--ui-texto-2); }
+  .ppf-cx input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font-family: inherit; font-size: 24px; font-weight: 600; color: var(--ui-texto); font-variant-numeric: tabular-nums; }
   .ppf-lg2 { margin-top: 18px; border: 1px solid var(--ui-borda); border-radius: 18px; overflow: hidden; }
   .ppf-lg2-cap { height: 64px; background: linear-gradient(120deg, #F7B2CB, var(--ui-rosa)); }
   .ppf-lg2-corpo { display: flex; flex-direction: column; align-items: center; padding: 0 16px 18px; margin-top: -48px; text-align: center; }

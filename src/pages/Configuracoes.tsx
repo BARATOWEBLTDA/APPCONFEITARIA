@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { INDICACAO_ATIVA } from "@/lib/recursos";
 import { useNavigate } from "react-router-dom";
-import { Bell, Camera, ChatCircleText, CaretRight, Crown, FileText, Gift, Lightbulb, PencilSimple, SignOut, Bug, Trophy, WarningCircle } from "@phosphor-icons/react";
+import { Bell, Camera, ChatCircleText, CaretRight, CaretDown, Crown, FileText, Gift, Lightbulb, PencilSimple, SignOut, Bug, Trophy, WarningCircle } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
 import { explicarErro, erroDeConexao, SEM_INTERNET } from "@/lib/erros";
@@ -205,8 +205,11 @@ export default function Configuracoes() {
             <TelaVazia caixa compacta icone={<WarningCircle size={30} />} titulo="Não deu pra carregar seu perfil" texto={erroCarregar}
               acao={<Botao tamanho="m" onClick={() => void carregar()}>Tentar de novo</Botao>} />
           )}
-          {!erroCarregar && (<>
-          {/* Perfil */}
+          {/* (13/10) No computador: duas colunas. Esquerda: perfil, opções do app e ajuda. Direita: assinatura e instalar o app.
+              No celular continua uma coluna só, na ordem de antes. "Excluir minha conta" fica guardado em "Avançado". */}
+          <div className="cf9-grade">
+            <div className="cf9-col">
+              {!erroCarregar && <div className="cf9-o1">
           <section className="cf9-card cf9-perfil">
             <button type="button" className="cf9-av" onClick={() => !uploading && fileRef.current?.click()} aria-label={preview ? "Trocar a foto" : "Colocar uma foto"}>
               <span>{preview ? <img src={preview} alt="" /> : <b>{inicial}</b>}</span>
@@ -223,26 +226,8 @@ export default function Configuracoes() {
             {recorte.janela}
           </section>
 
-          {/* Assinatura */}
-          <section className={`cf9-card cf9-plano${pro ? " pro" : ""}`}>
-            <div className="cf9-plano-cab">
-              <span className="cf9-plano-ic" aria-hidden="true"><Crown size={24} weight="fill" /></span>
-              <div>
-                <small>Sua assinatura</small>
-                <b>{pro ? "Plano PRO" : "Plano grátis"}{pro && <em>Ativo</em>}</b>
-              </div>
-            </div>
-            <p>{pro
-              ? "Você tem acesso a tudo do Doonly. Agradecemos o apoio!"
-              : "Você já tem o essencial pra organizar sua confeitaria. No PRO, ganha a ficha técnica completa, relatórios de lucro, o Doo IA e muito mais."}</p>
-            {pro
-              ? <Botao variante="secundario" cheio onClick={() => navigate("/minha-assinatura")}>Ver minha assinatura</Botao>
-              : <Botao variante="vinho" cheio icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>}
-          </section>
-          </>)}
-
-          <InstalarAppCard />
-
+              </div>}
+              <div className="cf9-o4">
           {/* App e ajuda */}
           <section className="cf9-card cf9-lista" aria-label="App e ajuda">
             <h2 className="cf9-sec">App</h2>
@@ -258,8 +243,37 @@ export default function Configuracoes() {
             <ItemConfig icone={<FileText size={20} weight="bold" />} nome="Termos e privacidade" apoio="Termos de uso e política de privacidade" onClick={() => setTermosOpen(true)} />
           </section>
 
-          <Botao variante="secundario" cheio icone={<SignOut size={20} weight="bold" />} onClick={sair}>Sair da conta</Botao>
-          <p className="cf9-excluir">Não quer mais usar? <Botao variante="link" tamanho="p" onClick={() => { setExcluirConfirm(""); setExcluirOpen(true); }}>Excluir minha conta</Botao></p>
+              </div>
+              <div className="cf9-o5"><Botao variante="secundario" cheio icone={<SignOut size={20} weight="bold" />} onClick={sair}>Sair da conta</Botao></div>
+              <details className="cf9-avanc cf9-o6">
+                <summary>Avançado<CaretDown size={16} weight="bold" aria-hidden="true" /></summary>
+                <div className="cf9-avanc-c">
+                  <p>Não quer mais usar o Doonly? A conta e todos os dados são apagados.</p>
+                  <Botao variante="link" tamanho="p" onClick={() => { setExcluirConfirm(""); setExcluirOpen(true); }}>Excluir minha conta</Botao>
+                </div>
+              </details>
+            </div>
+            <div className="cf9-col cf9-col--lado">
+              {!erroCarregar && <div className="cf9-o2">
+          <section className={`cf9-card cf9-plano${pro ? " pro" : ""}`}>
+            <div className="cf9-plano-cab">
+              <span className="cf9-plano-ic" aria-hidden="true"><Crown size={24} weight="fill" /></span>
+              <div>
+                <small>Sua assinatura</small>
+                <b>{pro ? "Plano PRO" : "Plano grátis"}{pro && <em>Ativo</em>}</b>
+              </div>
+            </div>
+            <p>{pro
+              ? "Você tem acesso a tudo do Doonly. Agradecemos o apoio!"
+              : "Você já tem o essencial pra organizar sua confeitaria. No PRO, ganha a ficha técnica completa, relatórios de lucro, o Doo IA e muito mais."}</p>
+            {pro
+              ? <Botao variante="secundario" cheio onClick={() => navigate("/minha-assinatura")}>Ver minha assinatura</Botao>
+              : <Botao variante="vinho" cheio icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>}
+          </section>
+              </div>}
+              <div className="cf9-o3"><InstalarAppCard /></div>
+            </div>
+          </div>
         </>)}
       </div>
 

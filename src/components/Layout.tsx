@@ -9,7 +9,7 @@ import ParabensPro from "@/components/pro/ParabensPro";
 import DooIA from "@/components/DooIA";
 import MaisDrawer from "@/components/MaisDrawer";
 import { useState, useEffect, type ReactNode } from "react";
-import { ClipboardText,
+import { ClipboardText, ArrowsDownUp, CalendarCheck, Tag, ChartLineUp, Megaphone,
   House, CalendarDots, ShoppingBag, Users, BookOpen,
   Package, CurrencyDollar, Gear, CaretDown,
   SquaresFour, Camera, Plus,
@@ -203,11 +203,19 @@ export default function Layout() {
           {/* 13/10: Receitas escondida até as fotos ficarem prontas; no lugar, a Ficha técnica (no computador ela não tinha item no menu) */}
           <ItemMenu to="/ficha-tecnica" icone={ClipboardText}>Ficha técnica</ItemMenu>
           <ItemMenu to="/financeiro" icone={CurrencyDollar} ativoSe={c => c === "/custos" || c === "/lucratividade"}>Financeiro</ItemMenu>
+          {/* (13/10) as telas do Financeiro no menu: abrem embaixo dele quando ela está no Financeiro (todas abertas sempre empurravam o fim do menu pra fora da tela) */}
+          {(location.pathname.startsWith("/financeiro") || location.pathname === "/custos" || location.pathname === "/lucratividade") && <div className="nav-group-body nav-group-body--fin">
+            <SubitemMenu to="/financeiro/transacoes" icone={ArrowsDownUp}>Transações</SubitemMenu>
+            <SubitemMenu to="/financeiro/a-pagar" icone={CalendarCheck}>A pagar</SubitemMenu>
+            <SubitemMenu to="/custos" icone={Tag}>Custos</SubitemMenu>
+            <SubitemMenu to="/lucratividade" icone={ChartLineUp}>Lucratividade</SubitemMenu>
+          </div>}
           {/* (4.27) Doo IA no computador: abre o painel do lado direito */}
           <button type="button" className={`nav-item${dooOpen ? " active" : ""}`} data-tour="doo-pc" onClick={() => setDooOpen(true)} aria-haspopup="dialog">
             <span className="nav-icon"><Sparkle size={20} weight={dooOpen ? "fill" : "bold"} /></span>
             <span className="nav-rotulo">Doo IA</span>
           </button>
+          <ItemMenu to="/marketing" icone={Megaphone}>Marketing</ItemMenu>
           <ItemMenu to="/configuracoes" icone={Gear} ativoSe={c => c === "/minha-assinatura" || c === "/assinar"}>Configurações</ItemMenu>
         </nav>
         {/* (4.27) abrir e pausar os pedidos do cardápio na hora */}
@@ -453,6 +461,7 @@ export default function Layout() {
         .nav-item.active .nav-icon, .nav-item--group.active-parent .nav-icon { color: #FF9DC4; }
         .nav-item--group.active-parent { color: var(--ui-branco); font-weight: var(--fw-bold); }
 
+        .nav-group-body--fin .nav-subitem { min-height: 34px; font-size: 13px; }
         .nav-group-body { display: flex; flex-direction: column; gap: 2px; margin: 2px 0 6px 21px; padding-left: 9px; border-left: 1px solid rgba(255,255,255,0.14); }
         .nav-subitem { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 10px; border-radius: var(--ui-raio-p); font-size: 13.5px; font-weight: var(--fw-medium); color: rgba(255,255,255,0.78); text-decoration: none; transition: background-color var(--dur-fast) linear, color var(--dur-fast) linear; }
         .nav-subitem .nav-subicon { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }

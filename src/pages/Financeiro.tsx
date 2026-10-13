@@ -83,7 +83,8 @@ export default function Financeiro() {
   const [contas, setContas] = useState<Conta[] | null>(null);
   const [movs, setMovs] = useState<MovExtrato[] | null>(null);
   // (4.29) período: Hoje · 7 dias · 30 dias · Este mês · Personalizado (lembra a última escolha neste aparelho)
-  const [tipo, setTipo] = useState<TipoPer>(() => { try { const t = localStorage.getItem("doonly_fin_periodo"); return (["hoje", "7", "30", "mes"].includes(t || "") ? t : "mes") as TipoPer; } catch { return "mes"; } });
+  // (13/10) sempre abre no dia de hoje (antes lembrava o último período escolhido)
+  const [tipo, setTipo] = useState<TipoPer>("hoje");
   const [pIni, setPIni] = useState(() => somar(isoDe(new Date()), -14));
   const [pAte, setPAte] = useState(() => isoDe(new Date()));
   const [dados, setDados] = useState<PeriodoDados | null>(null);
