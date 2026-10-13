@@ -9,14 +9,14 @@ import ParabensPro from "@/components/pro/ParabensPro";
 import DooIA from "@/components/DooIA";
 import MaisDrawer from "@/components/MaisDrawer";
 import { useState, useEffect, type ReactNode } from "react";
-import { ClipboardText, ArrowsDownUp, CalendarCheck, Tag, ChartLineUp, Megaphone, HandCoins, Trophy, CaretDoubleLeft, CaretDoubleRight,
+import { ClipboardText, ChartBar, Stack, Palette, Truck, Storefront, ArrowSquareOut, ArrowsDownUp, CalendarCheck, Tag, ChartLineUp, Megaphone, HandCoins, Trophy, CaretDoubleLeft, CaretDoubleRight,
   House, CalendarDots, ShoppingBag, Users, BookOpen,
   Package, CurrencyDollar, Gear, CaretDown,
   SquaresFour, Camera, Plus,
   Receipt, Sparkle, Crown, Bell,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
-import { useProfile, avatarDaConta } from "@/hooks/useProfile";
+import { useProfile, avatarDaConta, getCardapioUrl } from "@/hooks/useProfile";
 import { reativarPushSeSaiu } from "@/hooks/usePushSubscription";
 import { usePlano } from "@/hooks/usePlano";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
@@ -82,11 +82,13 @@ function ItemMenu({ to, icone: Icone, children, ativoSe, tour }: { to: string; i
     </NavLink>
   );
 }
-function SubitemMenu({ to, icone: Icone, children, end }: { to: string; icone: Icon; children: ReactNode; end?: boolean }) {
+function SubitemMenu({ to, icone: Icone, children, end, tambem }: { to: string; icone: Icon; children: ReactNode; end?: boolean; tambem?: string[] }) {
+  const { pathname } = useLocation();
+  const extra = !!tambem?.includes(pathname);
   return (
-    <NavLink to={to} end={end} className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>
+    <NavLink to={to} end={end} className={({ isActive }) => `nav-subitem ${isActive || extra ? "active" : ""}`}>
       {({ isActive }) => (<>
-        <span className="nav-subicon" aria-hidden="true"><Icone size={16} weight={isActive ? "fill" : "bold"} /></span>
+        <span className="nav-subicon" aria-hidden="true"><Icone size={16} weight={isActive || extra ? "fill" : "bold"} /></span>
         {children}
       </>)}
     </NavLink>
@@ -95,7 +97,7 @@ function SubitemMenu({ to, icone: Icone, children, end }: { to: string; icone: I
 
 /** (13/10) Grupo do menu (Cadastros, Financeiro, Minha conta): abre e fecha, fica aberto quando a tela é dele.
  *  Recolhido (só ícones): o ícone leva pra primeira tela do grupo. */
-function GrupoMenu({ id, rotulo, icone: Icone, rotas, recolhido, children }: { id: string; rotulo: string; icone: Icon; rotas: string[]; recolhido: boolean; children: ReactNode }) {
+function GrupoMenu({ id, rotulo, icone: Icone, rotas, recolhido, children, tour }: { id: string; rotulo: string; icone: Icon; rotas: string[]; recolhido: boolean; children: ReactNode; tour?: string }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const dentro = rotas.some(r => pathname === r || pathname.startsWith(r + "/"));
@@ -105,7 +107,7 @@ function GrupoMenu({ id, rotulo, icone: Icone, rotas, recolhido, children }: { i
   const alternar = () => setAberto(a => { const n = !a; try { localStorage.setItem(chave, n ? "1" : "0"); } catch {} return n; });
   if (recolhido) {
     return (
-      <button type="button" className={`nav-item${dentro ? " active" : ""}`} onClick={() => navigate(rotas[0])} title={rotulo} aria-label={rotulo}>
+      <button type="button" className={`nav-item${dentro ? " active" : ""}`} data-tour={tour} onClick={() => navigate(rotas[0])} title={rotulo} aria-label={rotulo}>
         <span className="nav-icon"><Icone size={20} weight={dentro ? "fill" : "bold"} /></span>
         <span className="nav-rotulo">{rotulo}</span>
       </button>
@@ -113,7 +115,7 @@ function GrupoMenu({ id, rotulo, icone: Icone, rotas, recolhido, children }: { i
   }
   return (
     <div className="nav-grupo">
-      <button type="button" className={`nav-item nav-item--grupo${dentro ? " active-parent" : ""}`} onClick={alternar} aria-expanded={aberto}>
+      <button type="button" className={`nav-item nav-item--grupo${dentro ? " active-parent" : ""}`} data-tour={tour} onClick={alternar} aria-expanded={aberto}>
         <span className="nav-icon"><Icone size={20} weight={dentro ? "fill" : "bold"} /></span>
         <span className="nav-rotulo">{rotulo}</span>
         <CaretDown size={14} weight="bold" className={`nav-seta${aberto ? " aberta" : ""}`} aria-hidden="true" />
@@ -137,12 +139,13 @@ export default function Layout() {
   const [maisOpen, setMaisOpen] = useState(false);
   const [dooOpen, setDooOpen] = useState(false);
   const computador = useComputador();
+  const linkCardapio = profile ? getCardapioUrl(profile) : "";
   // (13/10) menu recolhido (só os ícones): fica lembrado neste aparelho. A largura vai na variável --sidebar-w,
   // que as barras fixas de baixo (Nova venda, Dados da loja, Editar pedido) também usam.
   const [recolhido, setRecolhido] = useState(() => { try { return localStorage.getItem("doonly_menu_recolhido") === "1"; } catch { return false; } });
   const alternarRecolhido = () => setRecolhido(r => { const n = !r; try { localStorage.setItem("doonly_menu_recolhido", n ? "1" : "0"); } catch {} return n; });
   useEffect(() => {
-    document.documentElement.style.setProperty("--sidebar-w", recolhido ? "72px" : "220px");
+    document.documentElement.style.setProperty("--sidebar-w", recolhido ? "72px" : "236px");
   }, [recolhido]);
   // Menu da foto → "Assistente virtual" abre o mesmo chat do menu de baixo
   useEffect(() => {
@@ -180,8 +183,19 @@ export default function Layout() {
           <ItemMenu to="/vendas/novo" icone={Plus}>Nova venda</ItemMenu>
           <ItemMenu to="/pedidos" icone={Receipt}>Pedidos</ItemMenu>
           <ItemMenu to="/agenda" icone={CalendarDots}>Agenda</ItemMenu>
-          {/* as telas do Cardápio digital ficam nas abas da faixa rosa (AppPageHeader) */}
-          <ItemMenu to="/cardapio" icone={ShoppingBag} tour="cardapio" ativoSe={c => ROTAS_CARDAPIO.includes(c) || c.startsWith("/cardapio") || c.startsWith("/checkout-config") || c.startsWith("/produtos")}>Cardápio digital</ItemMenu>
+          {/* (13/10) as telas do Cardápio digital viraram um grupo do menu (antes eram abas na faixa rosa) */}
+          <GrupoMenu id="cardapio" rotulo="Cardápio digital" icone={ShoppingBag} tour="cardapio" rotas={[...ROTAS_CARDAPIO, "/cardapio-preview"]} recolhido={recolhido}>
+            <SubitemMenu to="/cardapio" end icone={ChartBar}>Visão geral</SubitemMenu>
+            <p className="nav-sec">Catálogo</p>
+            <SubitemMenu to="/produtos" end icone={Package}>Produtos</SubitemMenu>
+            <SubitemMenu to="/complementos" icone={Stack}>Personalização</SubitemMenu>
+            <SubitemMenu to="/categorias" icone={SquaresFour} tambem={["/produtos/categorias"]}>Categorias</SubitemMenu>
+            <p className="nav-sec">Loja</p>
+            <SubitemMenu to="/cardapio-design" icone={Palette}>Aparência</SubitemMenu>
+            <SubitemMenu to="/checkout-config" icone={Truck}>Entrega e pagamento</SubitemMenu>
+            <SubitemMenu to="/cardapio-config" icone={Storefront}>Dados da loja</SubitemMenu>
+            {linkCardapio && <a className="nav-subitem" href={linkCardapio} target="_blank" rel="noopener noreferrer"><span className="nav-subicon" aria-hidden="true"><ArrowSquareOut size={16} weight="bold" /></span>Ver meu cardápio</a>}
+          </GrupoMenu>
           {/* (13/10) grupos que abrem e fecham (ficam abertos quando a tela é deles; o que ela abrir ou fechar fica lembrado) */}
           <GrupoMenu id="cadastros" rotulo="Cadastros" icone={Users} rotas={["/clientes", "/insumos", "/ficha-tecnica"]} recolhido={recolhido}>
             <SubitemMenu to="/clientes" icone={Users}>Clientes</SubitemMenu>
@@ -486,7 +500,9 @@ export default function Layout() {
         .sb-topo .sidebar-sino .sidebar-sino-n { top: -4px; right: -5px; }
         .nav-item--grupo .nav-seta { margin-left: auto; transition: transform var(--dur-fast) linear; }
         .nav-item--grupo .nav-seta.aberta { transform: rotate(180deg); }
-        .nav-grupo .nav-group-body .nav-subitem { min-height: 36px; font-size: 13.5px; }
+        .nav-grupo .nav-group-body { margin-left: 12px; padding-left: 8px; }
+        .nav-grupo .nav-group-body .nav-subitem { min-height: 36px; padding: 0 8px; gap: 7px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nav-sec { margin: 8px 0 2px 10px; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
         .sb-pe { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
         .sb-versao { padding-left: 6px; font-size: 11.5px; color: rgba(255,255,255,0.45); }
         .sb-recolher { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 0; border-radius: 8px; background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); cursor: pointer; }

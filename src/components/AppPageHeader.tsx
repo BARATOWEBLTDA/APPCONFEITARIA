@@ -10,9 +10,8 @@ import MenuConta from '@/components/MenuConta'
 import { ImageCropper } from '@/components/ui/ImageCropper'
 import { useProfile, avatarDaConta } from '@/hooks/useProfile'
 import { useAvatarUpload } from '@/hooks/useAvatarUpload'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { usePlano } from '@/hooks/usePlano'
-import { CardapioAbas, ROTAS_CARDAPIO } from '@/components/CardapioSubnav'
 import './appPageHeader.css'
 
 /**
@@ -47,12 +46,11 @@ const ICONE_DO_EMOJI: Record<string, Icon> = {
 export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, infoContent, infoTip, rightActions, onBack }: AppPageHeaderProps) {
   const [mostrarInfo, setMostrarInfo] = useState(false)
   const IconeInfo = (infoIcon && ICONE_DO_EMOJI[infoIcon]) || Info
-  const { pathname } = useLocation()
-  const comAbas = ROTAS_CARDAPIO.includes(pathname)
 
   return (
     <>
-      <header className={`cab${comAbas ? ' cab--abas' : ''}`}>
+      {/* (13/10) as abas do Cardápio digital saíram da faixa: viraram um grupo no menu da esquerda */}
+      <header className="cab">
         {onBack && (
           <BotaoIcone rotulo="Voltar" variante="claro" className="cab-voltar" onClick={onBack}><CaretLeft size={24} weight="bold" /></BotaoIcone>
         )}
@@ -69,7 +67,6 @@ export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, in
         </div>
         {rightActions && <div className="cab-acoes">{rightActions}</div>}
         <LogoDaLoja />
-        {comAbas && <CardapioAbas />}
       </header>
 
       {infoContent && (
