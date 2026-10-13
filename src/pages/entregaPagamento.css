@@ -77,4 +77,4 @@
 .ep-passos small { display: block; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ep-passos .ui-bt { flex: none; min-width: 140px; }
 .ep--passos { padding-bottom: 96px; }
-@media (min-width: 901px) { .ep-passos { left: 220px; bottom: 0; padding: 14px 32px; } }
+@media (min-width: 901px) { .ep-passos { left: var(--sidebar-w, 220px); bottom: 0; padding: 14px 32px; } }

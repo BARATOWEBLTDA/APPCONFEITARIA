@@ -103,7 +103,7 @@
   .nv3-passos p { display: none; }
   .nv3-sit { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
-@media (min-width: 901px) { .nv3 { padding-top: 24px; } .nv3-pe { left: 220px; bottom: 0; } }
+@media (min-width: 901px) { .nv3 { padding-top: 24px; } .nv3-pe { left: var(--sidebar-w, 220px); bottom: 0; } }
 
 /* botões de abrir calendário e horário com cara de campo */
 .nv3-abre { width: 100%; margin: 0; font-family: inherit; font-size: 16px; font-weight: 500; color: var(--ui-texto); text-align: left; cursor: pointer; }

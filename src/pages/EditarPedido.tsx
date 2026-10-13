@@ -2337,7 +2337,7 @@ export default function EditarPedido() {
         }
         /* Computador: começa depois do menu lateral */
         @media (min-width: 768px) {
-          .ep-footer { left: 220px; }
+          .ep-footer { left: var(--sidebar-w, 220px); }
         }
         .ep-footer-total {
           display: flex;

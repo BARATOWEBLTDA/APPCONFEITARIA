@@ -90,9 +90,9 @@ export default function CardapioSubnav() {
         .cdnav { display: none; }
         @media (min-width: 1024px) {
           /* 02/10: o menu começa embaixo do cabeçalho rosa (que agora vai até o menu escuro) e tem o cinza da página */
-          .cdnav { display: block; position: fixed; top: 96px; bottom: 0; left: 220px; width: 236px; z-index: 9; overflow-y: auto;
+          .cdnav { display: block; position: fixed; top: 96px; bottom: 0; left: var(--sidebar-w, 220px); width: 236px; z-index: 9; overflow-y: auto;
             background: #F6F3F4; border-right: none; padding: 16px 12px; font-family: var(--font-base); }
-          .layout-root.com-cdnav .layout-main { margin-left: calc(220px + 236px) !important; background: #F6F3F4; min-height: 100vh; }
+          .layout-root.com-cdnav .layout-main { margin-left: calc(var(--sidebar-w, 220px) + 236px) !important; background: #F6F3F4; min-height: 100vh; }
           .layout-root.com-cdnav .cab { margin-left: calc(-236px - 2rem) !important; padding-left: calc(236px + 2rem) !important; }
         }
         .cdnav-g + .cdnav-g { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--ui-borda); }

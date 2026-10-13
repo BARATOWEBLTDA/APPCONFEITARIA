@@ -9,7 +9,7 @@ import ParabensPro from "@/components/pro/ParabensPro";
 import DooIA from "@/components/DooIA";
 import MaisDrawer from "@/components/MaisDrawer";
 import { useState, useEffect, type ReactNode } from "react";
-import { ClipboardText, ArrowsDownUp, CalendarCheck, Tag, ChartLineUp, Megaphone,
+import { ClipboardText, ArrowsDownUp, CalendarCheck, Tag, ChartLineUp, Megaphone, HandCoins, Trophy, CaretDoubleLeft, CaretDoubleRight,
   House, CalendarDots, ShoppingBag, Users, BookOpen,
   Package, CurrencyDollar, Gear, CaretDown,
   SquaresFour, Camera, Plus,
@@ -22,6 +22,7 @@ import { usePlano } from "@/hooks/usePlano";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import { supabase } from "@/lib/supabase";
+import { VERSAO_APP } from "@/lib/versao";
 
 function SidebarGroup({ label, icon, paths, location, children }: { label: string; icon?: ReactNode; paths: string[]; location: any; children: ReactNode }) {
   const isAnyActive = paths.some(p => location.pathname.startsWith(p));
@@ -72,7 +73,7 @@ function ItemMenu({ to, icone: Icone, children, ativoSe, tour }: { to: string; i
   const { pathname } = useLocation();
   const extra = !!ativoSe?.(pathname);
   return (
-    <NavLink to={to} data-tour={tour} className={({ isActive }) => `nav-item ${(isActive || extra) ? "active" : ""}`}>
+    <NavLink to={to} data-tour={tour} title={typeof children === "string" ? children : undefined} className={({ isActive }) => `nav-item ${(isActive || extra) ? "active" : ""}`}>
       {({ isActive }) => (<>
         <span className="nav-icon"><Icone size={20} weight={(isActive || extra) ? "fill" : "bold"} /></span>
         <span className="nav-rotulo">{children}</span>
@@ -91,6 +92,36 @@ function SubitemMenu({ to, icone: Icone, children, end }: { to: string; icone: I
   );
 }
 
+/** (13/10) Grupo do menu (Cadastros, Financeiro, Minha conta): abre e fecha, fica aberto quando a tela é dele.
+ *  Recolhido (só ícones): o ícone leva pra primeira tela do grupo. */
+function GrupoMenu({ id, rotulo, icone: Icone, rotas, recolhido, children }: { id: string; rotulo: string; icone: Icon; rotas: string[]; recolhido: boolean; children: ReactNode }) {
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const dentro = rotas.some(r => pathname === r || pathname.startsWith(r + "/"));
+  const chave = `doonly_menu_grupo_${id}`;
+  const [aberto, setAberto] = useState<boolean>(() => { try { const v = localStorage.getItem(chave); return v === null ? dentro : v === "1"; } catch { return dentro; } });
+  useEffect(() => { if (dentro) setAberto(true); }, [dentro]);
+  const alternar = () => setAberto(a => { const n = !a; try { localStorage.setItem(chave, n ? "1" : "0"); } catch {} return n; });
+  if (recolhido) {
+    return (
+      <button type="button" className={`nav-item${dentro ? " active" : ""}`} onClick={() => navigate(rotas[0])} title={rotulo} aria-label={rotulo}>
+        <span className="nav-icon"><Icone size={20} weight={dentro ? "fill" : "bold"} /></span>
+        <span className="nav-rotulo">{rotulo}</span>
+      </button>
+    );
+  }
+  return (
+    <div className="nav-grupo">
+      <button type="button" className={`nav-item nav-item--grupo${dentro ? " active-parent" : ""}`} onClick={alternar} aria-expanded={aberto}>
+        <span className="nav-icon"><Icone size={20} weight={dentro ? "fill" : "bold"} /></span>
+        <span className="nav-rotulo">{rotulo}</span>
+        <CaretDown size={14} weight="bold" className={`nav-seta${aberto ? " aberta" : ""}`} aria-hidden="true" />
+      </button>
+      {aberto && <div className="nav-group-body">{children}</div>}
+    </div>
+  );
+}
+
 export default function Layout() {
   const navigate = useNavigate();
   const { profile } = useProfile();
@@ -105,6 +136,13 @@ export default function Layout() {
   const [maisOpen, setMaisOpen] = useState(false);
   const [dooOpen, setDooOpen] = useState(false);
   const computador = useComputador();
+  // (13/10) menu recolhido (só os ícones): fica lembrado neste aparelho. A largura vai na variável --sidebar-w,
+  // que as barras fixas de baixo (Nova venda, Dados da loja, Editar pedido) também usam.
+  const [recolhido, setRecolhido] = useState(() => { try { return localStorage.getItem("doonly_menu_recolhido") === "1"; } catch { return false; } });
+  const alternarRecolhido = () => setRecolhido(r => { const n = !r; try { localStorage.setItem("doonly_menu_recolhido", n ? "1" : "0"); } catch {} return n; });
+  useEffect(() => {
+    document.documentElement.style.setProperty("--sidebar-w", recolhido ? "72px" : "220px");
+  }, [recolhido]);
   // Menu da foto → "Assistente virtual" abre o mesmo chat do menu de baixo
   useEffect(() => {
     const abrir = () => setDooOpen(true);
@@ -124,102 +162,79 @@ export default function Layout() {
   }, [location.pathname]);
 
   return (
-    <div className="layout-root">
+    <div className={`layout-root${recolhido ? " menu-recolhido" : ""}`}>
       {/* (13/10) as telas do Cardápio digital agora têm abas na faixa rosa (AppPageHeader), não um 2º menu lateral */}
       {/* ── Sidebar Desktop ── */}
       <aside className="sidebar">
-        <div className="sidebar-profile">
-          {computador && <SinoMenu />}
-          <div className="sidebar-avatar-container">
-          <button
-            type="button"
-            className="sidebar-avatar-btn"
-            onClick={abrirSeletorFoto}
-            disabled={uploadingFoto}
-            aria-label={avatarDaConta(profile) ? "Trocar foto de perfil" : "Adicionar foto de perfil"}
-          >
-            <div className="sidebar-avatar-ring">
-              <div className="sidebar-avatar">
-                {avatarDaConta(profile)
-                  ? <img src={avatarDaConta(profile)} alt="Foto de perfil" />
-                  : <div className="sidebar-avatar-placeholder"><span className="sidebar-avatar-inicial">{(profile?.nome || "?").trim().charAt(0).toUpperCase()}</span></div>
-                }
-              </div>
-            </div>
-            {!avatarDaConta(profile) && (
-              <span className="sidebar-avatar-cam" aria-hidden="true">
-                <Camera size={14} weight="fill" />
-              </span>
-            )}
+        {/* (13/10) topo numa linha só: logo pequena, saudação, PRO e o sino (antes a foto grande e a data ocupavam ~180px) */}
+        <div className="sb-topo">
+          <button type="button" className="sb-logo" onClick={abrirSeletorFoto} disabled={uploadingFoto}
+            aria-label={avatarDaConta(profile) ? "Trocar a foto" : "Colocar uma foto"} title={avatarDaConta(profile) ? "Trocar a foto" : "Colocar uma foto"}>
+            {avatarDaConta(profile)
+              ? <img src={avatarDaConta(profile)} alt="" />
+              : <span className="sb-logo-letra">{(profile?.nome || "?").trim().charAt(0).toUpperCase()}</span>}
+            {!avatarDaConta(profile) && <i className="sb-logo-cam" aria-hidden="true"><Camera size={10} weight="fill" /></i>}
           </button>
-          {loadingPlano ? (
-            <div className="sidebar-badge sidebar-badge--skel" aria-hidden="true" />
-          ) : isPro ? (
-            <div className="sidebar-badge sidebar-badge--pro">
-              <Crown size={12} weight="fill" className="sidebar-badge-coroa" aria-hidden="true" />
-              PRO
+          <div className="sb-quem">
+            <b className="sb-ola">
+              {profile?.nome || (profile as any)?.nome_loja
+                ? <>Olá, {nomeCurtoLoja((profile as any)?.nome_loja) || profile?.nome?.split(" ")[0]}</>
+                : <span className="sidebar-greeting-skel" aria-hidden="true" />}
+            </b>
+            {/* o sino fica na linha do plano: assim a saudação usa a largura toda e não corta */}
+            <div className="sb-linha2">
+              {loadingPlano ? <span className="sb-plano sb-plano--skel" aria-hidden="true" />
+                : isPro ? <span className="sb-plano sb-plano--pro"><Crown size={11} weight="fill" aria-hidden="true" />PRO</span>
+                : <button type="button" className="sb-plano sb-plano--seja" onClick={() => navigate("/assinar")}><Crown size={11} weight="fill" aria-hidden="true" />Seja PRO</button>}
+              {computador && !recolhido && <SinoMenu />}
             </div>
-          ) : (
-            <button
-              type="button"
-              className="sidebar-badge sidebar-badge--upgrade"
-              onClick={() => navigate("/assinar")}
-              aria-label="Assinar o plano PRO"
-            >
-              <Crown size={12} weight="fill" className="sidebar-badge-coroa" aria-hidden="true" />
-              Seja PRO
-            </button>
-          )}
           </div>
-          {/* Input file escondido — disparado pelo botão do avatar */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            style={{ display: "none" }}
-            onChange={handleFileSelected}
-          />
-        </div>
-
-        <div className="sidebar-greeting">
-          <p className="sidebar-greeting-name">
-            {profile?.nome || (profile as any)?.nome_loja
-              ? <>Olá, {nomeCurtoLoja((profile as any)?.nome_loja) || profile?.nome?.split(" ")[0]}</>
-              : <span className="sidebar-greeting-skel" aria-hidden="true" />}
-          </p>
-          <p className="sidebar-greeting-date">{new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }).replace(/^\w/, c => c.toUpperCase())}</p>
+          {computador && recolhido && <SinoMenu />}
+          <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleFileSelected} />
         </div>
 
         <nav className="sidebar-nav" aria-label="Menu principal">
           <ItemMenu to="/inicio" icone={House}>Início</ItemMenu>
           <ItemMenu to="/vendas/novo" icone={Plus}>Nova venda</ItemMenu>
-          {/* (10/10) O grupo "Cadastros" saiu: Produtos, Categorias e Personalização já ficam no menu do
-              Cardápio digital (abas na faixa rosa). Clientes e Ingredientes viraram itens diretos. */}
-          <ItemMenu to="/cardapio" icone={ShoppingBag} tour="cardapio" ativoSe={c => ROTAS_CARDAPIO.includes(c) || c.startsWith("/cardapio") || c.startsWith("/checkout-config") || c.startsWith("/produtos")}>Cardápio digital</ItemMenu>
           <ItemMenu to="/pedidos" icone={Receipt}>Pedidos</ItemMenu>
           <ItemMenu to="/agenda" icone={CalendarDots}>Agenda</ItemMenu>
-          <ItemMenu to="/clientes" icone={Users}>Clientes</ItemMenu>
-          <ItemMenu to="/insumos" icone={Package}>Ingredientes</ItemMenu>
-          {/* 13/10: Receitas escondida até as fotos ficarem prontas; no lugar, a Ficha técnica (no computador ela não tinha item no menu) */}
-          <ItemMenu to="/ficha-tecnica" icone={ClipboardText}>Ficha técnica</ItemMenu>
-          <ItemMenu to="/financeiro" icone={CurrencyDollar} ativoSe={c => c === "/custos" || c === "/lucratividade"}>Financeiro</ItemMenu>
-          {/* (13/10) as telas do Financeiro no menu: abrem embaixo dele quando ela está no Financeiro (todas abertas sempre empurravam o fim do menu pra fora da tela) */}
-          {(location.pathname.startsWith("/financeiro") || location.pathname === "/custos" || location.pathname === "/lucratividade") && <div className="nav-group-body nav-group-body--fin">
+          {/* as telas do Cardápio digital ficam nas abas da faixa rosa (AppPageHeader) */}
+          <ItemMenu to="/cardapio" icone={ShoppingBag} tour="cardapio" ativoSe={c => ROTAS_CARDAPIO.includes(c) || c.startsWith("/cardapio") || c.startsWith("/checkout-config") || c.startsWith("/produtos")}>Cardápio digital</ItemMenu>
+          {/* (13/10) grupos que abrem e fecham (ficam abertos quando a tela é deles; o que ela abrir ou fechar fica lembrado) */}
+          <GrupoMenu id="cadastros" rotulo="Cadastros" icone={Users} rotas={["/clientes", "/insumos", "/ficha-tecnica"]} recolhido={recolhido}>
+            <SubitemMenu to="/clientes" icone={Users}>Clientes</SubitemMenu>
+            <SubitemMenu to="/insumos" icone={Package}>Ingredientes</SubitemMenu>
+            <SubitemMenu to="/ficha-tecnica" icone={ClipboardText}>Ficha técnica</SubitemMenu>
+          </GrupoMenu>
+          <GrupoMenu id="financeiro" rotulo="Financeiro" icone={CurrencyDollar} rotas={["/financeiro", "/custos", "/lucratividade"]} recolhido={recolhido}>
+            <SubitemMenu to="/financeiro" end icone={SquaresFour}>Visão geral</SubitemMenu>
             <SubitemMenu to="/financeiro/transacoes" icone={ArrowsDownUp}>Transações</SubitemMenu>
+            <SubitemMenu to="/financeiro/a-receber" icone={HandCoins}>A receber</SubitemMenu>
             <SubitemMenu to="/financeiro/a-pagar" icone={CalendarCheck}>A pagar</SubitemMenu>
             <SubitemMenu to="/custos" icone={Tag}>Custos</SubitemMenu>
             <SubitemMenu to="/lucratividade" icone={ChartLineUp}>Lucratividade</SubitemMenu>
-          </div>}
+          </GrupoMenu>
+          <ItemMenu to="/marketing" icone={Megaphone}>Marketing</ItemMenu>
           {/* (4.27) Doo IA no computador: abre o painel do lado direito */}
-          <button type="button" className={`nav-item${dooOpen ? " active" : ""}`} data-tour="doo-pc" onClick={() => setDooOpen(true)} aria-haspopup="dialog">
+          <button type="button" className={`nav-item${dooOpen ? " active" : ""}`} data-tour="doo-pc" onClick={() => setDooOpen(true)} aria-haspopup="dialog" title="Doo IA">
             <span className="nav-icon"><Sparkle size={20} weight={dooOpen ? "fill" : "bold"} /></span>
             <span className="nav-rotulo">Doo IA</span>
           </button>
-          <ItemMenu to="/marketing" icone={Megaphone}>Marketing</ItemMenu>
-          <ItemMenu to="/configuracoes" icone={Gear} ativoSe={c => c === "/minha-assinatura" || c === "/assinar"}>Configurações</ItemMenu>
+          <GrupoMenu id="conta" rotulo="Minha conta" icone={Gear} rotas={["/configuracoes", "/minha-assinatura", "/assinar", "/conquistas"]} recolhido={recolhido}>
+            <SubitemMenu to="/configuracoes" end icone={Gear}>Configurações</SubitemMenu>
+            <SubitemMenu to={isPro ? "/minha-assinatura" : "/assinar"} icone={Crown}>Minha assinatura</SubitemMenu>
+            <SubitemMenu to="/configuracoes/notificacoes" icone={Bell}>Notificações e sons</SubitemMenu>
+            <SubitemMenu to="/conquistas" icone={Trophy}>Minhas conquistas</SubitemMenu>
+          </GrupoMenu>
         </nav>
         {/* (4.27) abrir e pausar os pedidos do cardápio na hora */}
-        <PausarPedidos escuro />
+        {!recolhido && <PausarPedidos escuro />}
+        <div className="sb-pe">
+          {!recolhido && <span className="sb-versao">v{VERSAO_APP}</span>}
+          <button type="button" className="sb-recolher" onClick={alternarRecolhido} aria-label={recolhido ? "Abrir o menu" : "Recolher o menu"} title={recolhido ? "Abrir o menu" : "Recolher o menu"}>
+            {recolhido ? <CaretDoubleRight size={16} weight="bold" /> : <CaretDoubleLeft size={16} weight="bold" />}
+          </button>
+        </div>
       </aside>
 
       <main className="layout-main">
@@ -302,7 +317,7 @@ export default function Layout() {
 
         /* ── Sidebar ── */
         .sidebar {
-          width: 220px; min-height: 100vh;
+          width: var(--sidebar-w, 220px); min-height: 100vh;
           background: var(--sidebar-bg);
           border-right: 1px solid var(--sidebar-border);
           display: flex; flex-direction: column;
@@ -461,6 +476,36 @@ export default function Layout() {
         .nav-item.active .nav-icon, .nav-item--group.active-parent .nav-icon { color: #FF9DC4; }
         .nav-item--group.active-parent { color: var(--ui-branco); font-weight: var(--fw-bold); }
 
+        /* (13/10) topo numa linha: logo, saudação + plano, sino */
+        .sb-topo { display: flex; align-items: center; gap: 10px; padding: 0 0 12px; margin: 0 0 8px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .sb-logo { position: relative; flex: none; width: 42px; height: 42px; padding: 0; border: 2px solid var(--ui-branco); border-radius: 50%; background: #993556; overflow: visible; cursor: pointer; }
+        .sb-logo img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: #F8F5F6; display: block; }
+        .sb-logo-letra { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 18px; font-weight: 700; color: var(--primary-light); }
+        .sb-logo-cam { position: absolute; right: -4px; bottom: -4px; display: flex; align-items: center; justify-content: center; width: 18px; height: 18px; border: 2px solid var(--sidebar-bg); border-radius: 50%; background: var(--primary); color: var(--ui-branco); }
+        .sb-logo:focus-visible { outline: 3px solid rgba(255,255,255,0.7); outline-offset: 2px; }
+        .sb-quem { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+        .sb-ola { display: block; max-width: 100%; font-size: 14px; font-weight: 700; color: var(--ui-branco); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sb-plano { display: inline-flex; align-items: center; gap: 4px; padding: 3px 7px; border: 0; border-radius: 6px; font-family: inherit; font-size: 11px; font-weight: 700; line-height: 1; white-space: nowrap; }
+        .sb-plano--pro { background: rgba(255,255,255,0.10); color: var(--ui-branco); } .sb-plano--pro svg { color: #FF9DC4; }
+        .sb-plano--seja { background: var(--ui-branco); color: var(--primary); cursor: pointer; } .sb-plano--seja:hover { transform: translateY(-1px); }
+        .sb-plano--skel { width: 56px; height: 17px; background: rgba(255,255,255,0.12); }
+        .sb-linha2 { display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; }
+        .sb-topo .sidebar-sino { position: relative; top: auto; right: auto; flex: none; width: 30px; height: 30px; border-radius: 9px; }
+        .sb-topo .sidebar-sino .sidebar-sino-n { top: -4px; right: -5px; }
+        .nav-item--grupo .nav-seta { margin-left: auto; transition: transform var(--dur-fast) linear; }
+        .nav-item--grupo .nav-seta.aberta { transform: rotate(180deg); }
+        .nav-grupo .nav-group-body .nav-subitem { min-height: 36px; font-size: 13.5px; }
+        .sb-pe { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+        .sb-versao { padding-left: 6px; font-size: 11.5px; color: rgba(255,255,255,0.45); }
+        .sb-recolher { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 0; border-radius: 8px; background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); cursor: pointer; }
+        .sb-recolher:hover { background: rgba(255,255,255,0.12); color: var(--ui-branco); }
+        /* recolhido: só os ícones */
+        .menu-recolhido .sidebar { padding-left: 0.6rem; padding-right: 0.6rem; }
+        .menu-recolhido .sb-topo { flex-direction: column; gap: 10px; }
+        .menu-recolhido .sb-quem, .menu-recolhido .nav-rotulo, .menu-recolhido .nav-seta { display: none; }
+        .menu-recolhido .nav-item { justify-content: center; padding: 0; }
+        .menu-recolhido .sb-pe { justify-content: center; }
+        .menu-recolhido .sidebar-nav { margin-right: 0; padding-right: 0; }
         .nav-group-body--fin .nav-subitem { min-height: 34px; font-size: 13px; }
         .nav-group-body { display: flex; flex-direction: column; gap: 2px; margin: 2px 0 6px 21px; padding-left: 9px; border-left: 1px solid rgba(255,255,255,0.14); }
         .nav-subitem { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 10px; border-radius: var(--ui-raio-p); font-size: 13.5px; font-weight: var(--fw-medium); color: rgba(255,255,255,0.78); text-decoration: none; transition: background-color var(--dur-fast) linear, color var(--dur-fast) linear; }
@@ -518,7 +563,7 @@ export default function Layout() {
         /* ── Layout main ── */
         /* Desktop: margem lateral (esquerda vem do sidebar 220px) + respiro no topo.
            Aplica em TODAS as páginas: Início, Agenda, Pedidos, Clientes, Cardápio, etc. */
-        .layout-main { margin-left: 220px; flex: 1; padding: 3rem 2rem 2rem; min-height: 100vh; min-width: 0; }
+        .layout-main { margin-left: var(--sidebar-w, 220px); flex: 1; padding: 3rem 2rem 2rem; min-height: 100vh; min-width: 0; }
         /* ── Mobile ── */
         @media (max-width: 900px) {
           .sidebar { display: none; }
