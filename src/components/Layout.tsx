@@ -16,7 +16,7 @@ import { ClipboardText,
   Receipt, Sparkle, Crown, Bell,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile, avatarDaConta } from "@/hooks/useProfile";
 import { reativarPushSeSaiu } from "@/hooks/usePushSubscription";
 import { usePlano } from "@/hooks/usePlano";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
@@ -136,17 +136,17 @@ export default function Layout() {
             className="sidebar-avatar-btn"
             onClick={abrirSeletorFoto}
             disabled={uploadingFoto}
-            aria-label={profile?.foto_url ? "Trocar foto de perfil" : "Adicionar foto de perfil"}
+            aria-label={avatarDaConta(profile) ? "Trocar foto de perfil" : "Adicionar foto de perfil"}
           >
             <div className="sidebar-avatar-ring">
               <div className="sidebar-avatar">
-                {profile?.foto_url
-                  ? <img src={profile.foto_url} alt="Foto de perfil" />
+                {avatarDaConta(profile)
+                  ? <img src={avatarDaConta(profile)} alt="Foto de perfil" />
                   : <div className="sidebar-avatar-placeholder"><span className="sidebar-avatar-inicial">{(profile?.nome || "?").trim().charAt(0).toUpperCase()}</span></div>
                 }
               </div>
             </div>
-            {!profile?.foto_url && (
+            {!avatarDaConta(profile) && (
               <span className="sidebar-avatar-cam" aria-hidden="true">
                 <Camera size={14} weight="fill" />
               </span>

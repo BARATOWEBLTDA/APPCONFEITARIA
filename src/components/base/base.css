@@ -203,6 +203,8 @@
 @keyframes uiEncolhe { to { opacity: 0; transform: scale(.98); } }
 
 /* ───────── Gaveta (entra pela direita, altura toda) ───────── */
+/* foco: escurece e desfoca o app inteiro atrás (passo a passo da conta nova) */
+.ui-veu--foco { background: rgba(24, 8, 14, .78); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
 .ui-veu--gaveta { z-index: 10070; align-items: stretch; justify-content: flex-end; }
 .ui-gaveta {
   display: flex; flex-direction: column; width: min(86vw, 400px); height: 100%;

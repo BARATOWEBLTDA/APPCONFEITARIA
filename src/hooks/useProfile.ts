@@ -193,6 +193,11 @@ export function useProfile() {
 }
 
 /** O perfil já carregado (sem esperar a rede). Pra funções fora de componentes. */
+/** (13/10) Foto do círculo da conta: a foto de perfil, ou a logo da loja quando não tem foto. */
+export function avatarDaConta(p: Profile | null | undefined): string {
+  return String(p?.foto_url || (p as any)?.logo_url || "");
+}
+
 export function perfilAtual(): Profile | null {
   return globalProfile;
 }

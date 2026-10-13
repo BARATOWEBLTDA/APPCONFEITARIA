@@ -10,10 +10,10 @@ import './termos.css'
  * Mostra o que já está liberado (tudo do plano grátis, sem falar do PRO) e leva pra apresentação.
  */
 const RECURSOS = [
-  { Ic: ListBullets, t: 'Cardápio digital com link próprio' },
-  { Ic: CalendarDots, t: 'Pedidos e agenda de entregas' },
-  { Ic: Users, t: 'Clientes e histórico de compras' },
-  { Ic: CurrencyDollar, t: 'Financeiro e preço dos produtos' },
+  { Ic: ListBullets, t: 'Cardápio online com seu link' },
+  { Ic: CalendarDots, t: 'Pedidos e entregas na agenda' },
+  { Ic: Users, t: 'Clientes e o que compraram' },
+  { Ic: CurrencyDollar, t: 'Lucro e preço certo dos doces' },
 ]
 
 export function ContaAtiva({ nome, aoContinuar }: { nome?: string; aoContinuar: () => void }) {
@@ -26,7 +26,7 @@ export function ContaAtiva({ nome, aoContinuar }: { nome?: string; aoContinuar: 
         <Mascote pose="acenando" className="ca-masc" />
         <span className="ca-ok"><i aria-hidden="true" />Conta ativa</span>
         <h2 id="ca-titulo">{nome ? `Tudo pronto, ${nome}!` : 'Tudo pronto!'}</h2>
-        <p>Sua conta está ativa e estes recursos já estão liberados pra você usar agora:</p>
+        <p>Já está tudo liberado pra você:</p>
         <ul className="ca-lista">
           {RECURSOS.map(({ Ic, t }) => (
             <li key={t}><span className="ca-ic"><Ic size={20} aria-hidden="true" /></span>{t}<Check size={16} weight="bold" className="ca-v" aria-hidden="true" /></li>

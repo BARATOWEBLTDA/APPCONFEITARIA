@@ -106,11 +106,39 @@
 /* 3 no computador (09/10 · 3.75): a tela de Pedidos do computador dentro de um notebook.
    A tela do app é desenhada em 1040 x 650 e encolhe (scale) pra caber na moldura. */
 .bv-nb { display: none; }
+.bv-dup-wrap { display: none; }
+.bv-ped-fixo, .bv-ped-fixo > div { animation: none !important; }
+/* celular (13/10): o celular do cardápio levemente inclinado */
+.bv-incl { display: flex; justify-content: center; perspective: 1400px; }
+.bv-incl .bv-cel { transform: rotateY(-11deg) rotateX(4deg) rotateZ(1deg); }
+@media (prefers-reduced-motion: no-preference) { .bv-incl .bv-cel { animation: bvBoia 6s ease-in-out infinite alternate; } }
+@keyframes bvBoia { from { transform: rotateY(-11deg) rotateX(4deg) rotateZ(1deg); } to { transform: rotateY(-7deg) rotateX(2deg) rotateZ(.5deg) translateY(-6px); } }
+.bv-encolhe { width: 100%; height: 100%; overflow: hidden; }
+.bv-cel-app { height: 100%; background: #FAF7F8; font-family: var(--font-base); text-align: left; }
+.bv-cel-app header { display: flex; align-items: center; height: 64px; padding: 0 18px; background: var(--ui-rosa); color: var(--ui-branco); }
+.bv-cel-app header b { font-size: 20px; font-weight: 700; }
+.bv-cel-app-lista { padding: 14px 12px 0; }
+.bv-cel-app .pdc { cursor: default; }
+.bv-cel-app .pdc-seta, .bv-cel-app .pdc-mais { display: none; }
 @media (min-width: 1100px) and (min-height: 600px) {
-  .bv-tela-2 .bv-ped { display: none; }
-  .bv-tela-2 .bv-corpo { grid-template-columns: minmax(0, 380px) minmax(0, 660px); }
+  .bv-tela-1 .bv-so-cel, .bv-tela-2 .bv-ped { display: none; }
+  .bv-tela-1 .bv-corpo { grid-template-columns: minmax(0, 450px) minmax(0, 640px); }
+  .bv-tela-2 .bv-corpo { grid-template-columns: minmax(0, 380px) minmax(0, 680px); }
   .bv-tela-2 .bv-corpo::before { flex: 1 1 0; }
-  .bv-nb { display: block; width: 100%; max-width: 660px; }
+  /* (13/10) notebook e celular juntos, em diagonal */
+  .bv-dup-wrap { position: relative; display: block; width: 100%; max-width: 680px; padding: 30px 46px 40px 0; perspective: 2200px; }
+  .bv-dup { position: relative; transform: rotateY(-9deg) rotateX(3deg); transform-style: preserve-3d; }
+  .bv-dup .bv-nb { display: block; width: 100%; max-width: none; }
+  .bv-dup .bv-cel--mini { position: absolute; right: -46px; bottom: -40px; width: 176px; max-width: none; padding: 5px; border-radius: 28px; transform: translateZ(70px) rotateY(4deg); box-shadow: 0 28px 50px rgba(0, 0, 0, .55), 0 0 0 1px rgba(255, 255, 255, .5), inset 0 0 0 1px #D9D0D5; }
+  .bv-dup .bv-cel--mini::before, .bv-dup .bv-cel--mini::after { display: none; }
+  .bv-dup .bv-cel--mini .bv-cel-entalhe { top: 11px; width: 48px; height: 13px; border-radius: 8px; }
+  .bv-dup .bv-cel--mini .bv-cel-tela { height: 330px; padding-top: 18px; border-width: 2px; border-radius: 23px; }
+  .bv-tela-2 .bv-dup .bv-cel--mini .bv-cel-tela { background: var(--ui-rosa); }
+  /* o aviso de pedido novo: um balão do lado de fora, apontando pra lista */
+  .bv-balao { position: absolute; top: -30px; left: 9%; z-index: 5; display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 14px; background: var(--ui-branco); color: var(--ui-texto); font-family: var(--font-base); font-size: 14px; white-space: nowrap; box-shadow: 0 14px 34px rgba(0, 0, 0, .45); opacity: 0; animation: bvBalao 4.2s ease .1s forwards; }
+  .bv-balao::after { content: ""; position: absolute; left: 28px; bottom: -6px; width: 14px; height: 14px; background: var(--ui-branco); transform: rotate(45deg); border-radius: 2px; }
+  .bv-balao svg { flex: none; color: var(--ui-rosa); }
+  .bv-balao b { font-weight: 700; }
   .bv-nb-tampa { position: relative; padding: 18px 14px 14px; border-radius: 18px 18px 6px 6px; background: linear-gradient(180deg, #2A2A2E, #19191C); box-shadow: 0 0 0 1px #3A3A40, 0 30px 60px rgba(0, 0, 0, .5); }
   .bv-nb-cam { position: absolute; top: 7px; left: 50%; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: #0D0D0F; box-shadow: inset 0 0 0 1.5px #2E2E34; }
   .bv-nb-tela { position: relative; aspect-ratio: 1040 / 650; overflow: hidden; border-radius: 4px; background: var(--ui-fundo, #FAF7F8); }
@@ -131,7 +159,7 @@
 .bv-app-topo { flex: none; display: flex; flex-direction: column; justify-content: center; height: 76px; padding: 0 28px; background: var(--ui-rosa); color: var(--ui-branco); }
 .bv-app-topo b { font-size: 21px; font-weight: 700; }
 .bv-app-topo small { font-size: 12.5px; font-weight: 500; opacity: .9; }
-.bv-app-corpo { position: relative; flex: 1; min-height: 0; overflow: hidden; padding: 56px 28px 20px; }
+.bv-app-corpo { position: relative; flex: 1; min-height: 0; overflow: hidden; padding: 24px 28px 20px; }
 .bv-app .bv-aviso--pc { top: 14px; font-size: 13px; animation-delay: .15s; }
 .bv-app .pdl-cab, .bv-app .pdl { display: grid; grid-template-columns: minmax(0, 1fr) 96px 96px 172px 100px 0; align-items: center; gap: 14px; }
 .bv-app .pdl-cab { padding: 0 16px; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
@@ -275,7 +303,10 @@
   .bv-marca-masc { width: 120px; } .bv-marca-nome { width: 120px; }
 }
 
+@keyframes bvBalao { 0% { opacity: 0; transform: translateY(10px) scale(.92); } 10% { opacity: 1; transform: translateY(0) scale(1.04); } 16%, 82% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-6px); } }
 @media (prefers-reduced-motion: reduce) {
+  .bv-balao { animation: none; opacity: 1; }
+  .bv-incl .bv-cel { animation: none; }
   .bv-texto, .bv-demo, .bv-cai, .bv-din-topo b, .bv-din-ok, .bv-ped .ui-bt, .bv-ped-entra, .bv-ped-entra > div, .bv-app .ui-bt { animation-duration: 1ms !important; animation-delay: 0s !important; }
   .bv-cel-print { animation: none; }
   .bv-aviso { animation: none; opacity: 1; transform: translate(-50%, 0); }

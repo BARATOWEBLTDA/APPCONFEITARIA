@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, Wallet, Sparkle, ShareNetwork, CaretRight, Camera, X, LockSimple } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
-import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
+import { useProfile, getCardapioUrl, refreshProfile } from "@/hooks/useProfile";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import HorarioSheet from "@/components/HorarioSheet";
 import Janelinha from "@/components/financeiro/Folha";
@@ -290,7 +290,7 @@ function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
     <button type="button" key={rot} className={on ? "on" : ""} aria-pressed={on} onClick={fn}><i>{on && <Check size={13} weight="bold" />}</i>{rot}</button>
   );
   return (
-    <Janelinha titulo="Pagamento e entrega" onClose={onClose}
+    <Janelinha foco titulo="Pagamento e entrega" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!pronto || !carregou} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
       <PassoTopo k="pagamento" />
       <p className="ppf-l">Como o cliente paga?</p>
@@ -342,7 +342,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
   };
   const logo = <span className="ppf-d-logo">{logoPrev ? <img src={logoPrev} alt="" /> : nomeLoja.charAt(0).toUpperCase()}</span>;
   return (
-    <Janelinha titulo="Sobre a sua confeitaria" onClose={onClose}
+    <Janelinha foco titulo="Sobre a sua confeitaria" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!txt.trim()} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
       <div className={`ppf-d${focado ? " ppf-d--foco" : ""}`}>
         <PassoTopo k="descricao" />
@@ -411,6 +411,7 @@ function FolhaLogo({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
       const e = await atualizarPerfil(uid, { logo_url: logoUrl, design_escolhido: true, logo_confirmado: true }, ["design_escolhido", "logo_confirmado"]);
       setEnviando(false);
       if (e) { avisar("Não foi possível salvar agora. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
+      refreshProfile(); // o círculo da conta (menu) já mostra a logo
       onSalvo({ logo_url: logoUrl }); return;
     }
     setEnviando(false); avisar("Não foi possível enviar a imagem. Tente de novo.", { tipo: "erro" });
@@ -433,7 +434,7 @@ function FolhaLogo({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
   const escolherFoto = () => ref.current?.click();
   return (
     <>
-      <Janelinha titulo="Logo da loja" onClose={onClose}
+      <Janelinha foco titulo="Logo da loja" onClose={onClose}
         acoes={temFoto
           ? <><Botao variante="secundario" onClick={escolherFoto}>Trocar</Botao><Botao cheio carregando={enviando} onClick={usarFoto}>Usar esta foto</Botao></>
           : <><Botao variante="secundario" disabled={enviando} onClick={usarFoto}>Agora não</Botao><Botao cheio carregando={enviando} onClick={escolherFoto}>Escolher foto</Botao></>}>
@@ -508,7 +509,7 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
       <input id={`pp-${k}`} className="ppf-in" value={end[k]} placeholder={ph} onChange={e => setEnd(x => ({ ...x, [k]: e.target.value }))} {...extra} /></div>
   );
   return (
-    <Janelinha titulo="Endereço da loja" onClose={onClose}
+    <Janelinha foco titulo="Endereço da loja" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!pronto} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
       <PassoTopo k="endereco" />
       <div className="ppf-e-prev" aria-hidden="true">
@@ -595,7 +596,7 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
     </div>
   );
   return (
-    <Janelinha titulo="Horário de funcionamento" onClose={onClose}
+    <Janelinha foco titulo="Horário de funcionamento" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!temDia} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
       <PassoTopo k="horario" />
       <div className="ppf-e-prev" aria-hidden="true">

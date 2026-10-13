@@ -240,40 +240,86 @@ function DemoMarca({ comMarca = false, pose = 'acenando' }: { comMarca?: boolean
   )
 }
 
-/* ───────── 2 · cardápio: print real rolando sozinho dentro do celular ───────── */
-function DemoCardapio() {
+/* ───────── 2 · cardápio: print real rolando sozinho ───────── */
+/* (13/10) No computador: o notebook com o cardápio do computador e o celular na frente, em diagonal (os 2 jeitos que o
+   cliente vê). No celular: só o celular, levemente inclinado. */
+
+/** O print sobe e desce sozinho, devagar. Quem move é o próprio navegador (animação de CSS), por isso não engasga. */
+function PrintRolando({ src, alt = '', menu, velocidade = 38 }: { src: string; alt?: string; menu?: string; velocidade?: number }) {
   const janela = useRef<HTMLDivElement>(null)
   const print = useRef<HTMLImageElement>(null)
-
-  // O print sobe e desce sozinho, devagar. Quem move é o próprio navegador (animação de CSS), por isso não engasga.
-  // (07/10 · 2.93) Saiu a rolagem com o dedo ou com a rodinha do mouse dentro do celular: ela brigava com a rolagem automática.
+  // (07/10 · 2.93) Sem rolagem com o dedo ou com a rodinha do mouse: ela brigava com a rolagem automática.
   useEffect(() => {
     const caixa = janela.current, img = print.current
     if (!caixa || !img) return
-    const VELOCIDADE = 38 // px por segundo
     const medir = () => {
       const distancia = Math.max(0, img.offsetHeight - caixa.clientHeight)
       img.style.setProperty('--bv-distancia', `${-distancia}px`)
       // 12% do tempo fica parado nas pontas (6% em cada), o resto anda na velocidade certa
-      img.style.setProperty('--bv-tempo', `${Math.max(4, distancia / VELOCIDADE / 0.88).toFixed(2)}s`)
+      img.style.setProperty('--bv-tempo', `${Math.max(4, distancia / velocidade / 0.88).toFixed(2)}s`)
     }
     medir()
     img.addEventListener('load', medir)
     const obs = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(medir) : null
     obs?.observe(caixa)
     return () => { img.removeEventListener('load', medir); obs?.disconnect() }
-  }, [])
-
+  }, [velocidade])
   return (
-    <div className="bv-cel">
-      <div className="bv-cel-entalhe" />
-      <div className="bv-cel-tela">
-        <div className="bv-cel-rolo" ref={janela}>
-          <img ref={print} className="bv-cel-print" src="/tutorial/cardapio-exemplo.jpg" alt="Cardápio online de uma confeitaria feito no Doonly" />
-        </div>
-        <img className="bv-cel-menu" src="/tutorial/cardapio-exemplo-nav.jpg" alt="" aria-hidden="true" />
+    <>
+      <div className="bv-cel-rolo" ref={janela}>
+        <img ref={print} className="bv-cel-print" src={src} alt={alt} />
       </div>
+      {menu && <img className="bv-cel-menu" src={menu} alt="" aria-hidden="true" />}
+    </>
+  )
+}
+
+function Celular({ children, className = '' }: { children: ReactNode; className?: string }) {
+  return (
+    <div className={`bv-cel${className ? ' ' + className : ''}`}>
+      <div className="bv-cel-entalhe" />
+      <div className="bv-cel-tela">{children}</div>
     </div>
+  )
+}
+
+/** Desenha o conteúdo numa largura fixa e encolhe pra caber (a tela do celular pequeno do computador) */
+function Encolhe({ largura, children }: { largura: number; children: ReactNode }) {
+  const caixa = useRef<HTMLDivElement>(null)
+  const [escala, setEscala] = useState(.4)
+  useEffect(() => {
+    const el = caixa.current
+    if (!el) return
+    const medir = () => { if (el.clientWidth) setEscala(el.clientWidth / largura) }
+    medir()
+    const obs = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(medir) : null
+    obs?.observe(el)
+    return () => obs?.disconnect()
+  }, [largura])
+  return (
+    <div className="bv-encolhe" ref={caixa}>
+      <div style={{ width: largura, height: `${100 / escala}%`, transform: `scale(${escala})`, transformOrigin: '0 0' }}>{children}</div>
+    </div>
+  )
+}
+
+const PRINT_CEL = '/tutorial/cardapio-exemplo.jpg'
+const PRINT_CEL_MENU = '/tutorial/cardapio-exemplo-nav.jpg'
+const PRINT_PC = '/tutorial/cardapio-exemplo-pc.jpg'
+
+function DemoCardapio() {
+  return (
+    <>
+      <div className="bv-so-cel bv-incl">
+        <Celular><PrintRolando src={PRINT_CEL} menu={PRINT_CEL_MENU} alt="Cardápio online de uma confeitaria feito no Doonly" /></Celular>
+      </div>
+      <div className="bv-dup-wrap" aria-hidden="true">
+        <div className="bv-dup">
+          <Notebook><PrintRolando src={PRINT_PC} velocidade={70} /></Notebook>
+          <Celular className="bv-cel--mini"><PrintRolando src={PRINT_CEL} menu={PRINT_CEL_MENU} /></Celular>
+        </div>
+      </div>
+    </>
   )
 }
 
@@ -288,26 +334,36 @@ const pedidoExemplo = (x: Partial<Pedido> & { pedido_itens: any[] }): Pedido => 
 } as Pedido)
 const nada = () => {}
 
-/* ───────── 3 · pedidos (09/10 · 3.80): os pedidos vão chegando pelo cardápio, já pagos no Pix, cada um com o som de pedido,
-   e o mais novo entra em cima (como na lista de Pedidos). Os cartões só aparecem, não se abrem; o botão de cada um
-   segue o fluxo do app. As datas andam com o dia de hoje (entregas daqui a 3 a 5 dias). ───────── */
+/* ───────── 3 · pedidos ───────── */
+/* (13/10) A lista já começa com a semana andando (pedidos em produção, pronto, entregue) e só chegam 2 pedidos novos
+   pelo cardápio, um de cada vez (o som toca 2 vezes, não a cada segundo). No computador: notebook e celular juntos,
+   e o aviso "Novo pedido" num balão do lado de fora. Os cartões só aparecem, não se abrem; o botão de cada um
+   segue o fluxo do app. As datas andam com o dia de hoje. */
 const TEL_SUPORTE = '11978414991'
-// na ordem em que chegam: o último é o do bolo, que fica em cima
-const CHEGADAS: { p: Pedido }[] = [
-  { p: pedidoExemplo({ numero: 1049, cliente_nome: 'Marina Silva', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', status_pagamento: 'pago', forma_pagamento: 'pix', origem: 'cardapio', data_entrega: isoDia(5), horario_entrega: '16:30', valor_total: 650,
-      pedido_itens: [item('Kit festa 30 pessoas', PRODUTO.kit, 1, 650)] }) },
-  { p: pedidoExemplo({ numero: 1050, cliente_nome: 'Juliana Souza', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', status_pagamento: 'pago', forma_pagamento: 'pix', origem: 'cardapio', data_entrega: isoDia(4), horario_entrega: '09:00', valor_total: 90,
-      pedido_itens: [item('1 cento de salgados mistos', PRODUTO.salgados, 1, 90)] }) },
-  { p: pedidoExemplo({ numero: 1051, cliente_nome: 'Camila Rocha', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', status_pagamento: 'pago', forma_pagamento: 'pix', origem: 'cardapio', data_entrega: isoDia(3), horario_entrega: '14:00', valor_total: 150,
-      pedido_itens: [item('Bolo de aniversário 2 kg', PRODUTO.bolo, 1, 150)] }) },
+const JA_TINHA: Pedido[] = [
+  pedidoExemplo({ numero: 1048, cliente_nome: 'Fernanda Lima', cliente_telefone: TEL_SUPORTE, status: 'em_producao', status_pagamento: 'parcial', forma_pagamento: 'pix', data_entrega: isoDia(1), horario_entrega: '10:00', valor_total: 260, valor_recebido: 130,
+    pedido_itens: [item('Bolo de aniversário 3 kg', PRODUTO.bolo, 1, 260)] }),
+  pedidoExemplo({ numero: 1047, cliente_nome: 'Paula Ribeiro', cliente_telefone: TEL_SUPORTE, status: 'aguardando_retirada', status_pagamento: 'pago', forma_pagamento: 'pix', data_entrega: isoDia(0), horario_entrega: '17:00', valor_total: 95, valor_recebido: 95,
+    pedido_itens: [item('Meio cento de salgados', PRODUTO.salgados, 1, 95)] }),
+  pedidoExemplo({ numero: 1046, cliente_nome: 'Marina Silva', cliente_telefone: TEL_SUPORTE, status: 'agendado', status_pagamento: 'pago', forma_pagamento: 'cartao', origem: 'cardapio', data_entrega: isoDia(5), horario_entrega: '16:30', valor_total: 650, valor_recebido: 650,
+    pedido_itens: [item('Kit festa 30 pessoas', PRODUTO.kit, 1, 650)] }),
+  pedidoExemplo({ numero: 1045, cliente_nome: 'Carla Menezes', cliente_telefone: TEL_SUPORTE, status: 'entregue', status_pagamento: 'pago', forma_pagamento: 'dinheiro', data_entrega: isoDia(-1), horario_entrega: '15:00', valor_total: 180.5, valor_recebido: 180.5,
+    pedido_itens: [item('Bolo de aniversário 2 kg', PRODUTO.bolo, 1, 180.5)] }),
 ]
-const INTERVALO_CHEGADA = 1500
+// os que chegam pelo cardápio, na ordem (o mais novo entra em cima)
+const CHEGADAS: { p: Pedido; em: number }[] = [
+  { em: 1400, p: pedidoExemplo({ numero: 1049, cliente_nome: 'Camila Rocha', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', status_pagamento: 'pago', forma_pagamento: 'pix', origem: 'cardapio', data_entrega: isoDia(3), horario_entrega: '14:00', valor_total: 150, valor_recebido: 150,
+      pedido_itens: [item('Bolo de aniversário 2 kg', PRODUTO.bolo, 1, 150)] }) },
+  { em: 7400, p: pedidoExemplo({ numero: 1050, cliente_nome: 'Juliana Souza', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', status_pagamento: 'pago', forma_pagamento: 'pix', origem: 'cardapio', data_entrega: isoDia(4), horario_entrega: '09:00', valor_total: 90, valor_recebido: 90,
+      pedido_itens: [item('1 cento de salgados mistos', PRODUTO.salgados, 1, 90)] }) },
+]
+const NO_CELULAR = 3 // quantos cartões cabem na tela do celular
 
 function DemoPedidos() {
   const [chegaram, setChegaram] = useState(0)
   const [status, setStatus] = useState<Record<string, string>>({})
   useEffect(() => {
-    const ts = CHEGADAS.map((_, i) => window.setTimeout(() => { tocarSom('pedido'); vibrarLeve(); setChegaram(i + 1) }, 700 + i * INTERVALO_CHEGADA))
+    const ts = CHEGADAS.map((c, i) => window.setTimeout(() => { tocarSom('pedido'); vibrarLeve(); setChegaram(i + 1) }, c.em))
     return () => ts.forEach(t => clearTimeout(t))
   }, [])
   const comStatus = (p: Pedido) => ({ ...p, status: status[p.id] || p.status })
@@ -318,10 +374,12 @@ function DemoPedidos() {
     tocarSom(prox === 'entregue' ? 'sucesso' : 'click'); vibrarLeve()
     setStatus(s => ({ ...s, [p.id]: prox }))
   }
-  const lista = CHEGADAS.slice(0, chegaram).reverse() // o mais novo em cima
+  const novos = CHEGADAS.slice(0, chegaram).map(c => c.p).reverse() // o mais novo em cima
+  const lista = [...novos, ...JA_TINHA]
+  const ehNovo = (p: Pedido) => novos.some(n => n.id === p.id)
 
-  // Celular: os 3 cartões precisam caber inteiros entre o título e o botão. Mede o primeiro cartão que chegou,
-  // calcula a altura dos 3 juntos e encolhe a lista (só o necessário) pra caber na tela de qualquer aparelho.
+  // Celular: os cartões precisam caber inteiros entre o título e o botão. Mede o primeiro cartão,
+  // calcula a altura dos que cabem e encolhe a lista (só o necessário) pra caber na tela de qualquer aparelho.
   const caixa = useRef<HTMLDivElement>(null)
   const [encaixe, setEncaixe] = useState<{ escala: number; altura: number } | null>(null)
   useLayoutEffect(() => {
@@ -329,7 +387,7 @@ function DemoPedidos() {
       const el = caixa.current
       const cartao = el?.querySelector('.pdc') as HTMLElement | null
       if (!el || !cartao || !el.offsetParent) return // no computador a lista do celular fica escondida
-      const alturaFinal = (cartao.offsetHeight + 10) * CHEGADAS.length
+      const alturaFinal = (cartao.offsetHeight + 10) * NO_CELULAR
       const base = (document.querySelector('.bv-base') as HTMLElement | null)?.offsetHeight || 96
       const sobra = window.innerHeight - el.getBoundingClientRect().top - base + 6
       const escala = Math.max(.6, Math.min(1, sobra / alturaFinal))
@@ -338,53 +396,64 @@ function DemoPedidos() {
     medir()
     window.addEventListener('resize', medir)
     return () => window.removeEventListener('resize', medir)
-  }, [chegaram > 0])
+  }, [])
+  const cartoes = (qtd: number, comSombra = true) => lista.slice(0, qtd).map(p => {
+    const atual = comStatus(p)
+    const novo = ehNovo(p)
+    return (
+      <div key={p.id} className={`bv-ped-entra${novo ? '' : ' bv-ped-fixo'}${atual.status === 'aguardando_aceite' ? ' bv-ped--novo' : ''}${comSombra ? '' : ' bv-ped-liso'}`}>
+        <div><CartaoPedido p={atual} aoAbrir={nada} aoAvancar={avancar} aoMenu={nada} aoEndereco={nada} /></div>
+      </div>
+    )
+  })
+  const aviso = (cls: string) => chegaram > 0 && <div className={cls} key={`a${chegaram}`}><Bell size={14} weight="fill" aria-hidden="true" /><span><b>Novo pedido</b> pelo cardápio</span></div>
   return (
     <>
       {/* celular e tablet: os cartões da lista de Pedidos */}
       <div className="bv-ped">
-        {chegaram > 0 && <div className="bv-aviso" key={`a${chegaram}`}><Bell size={14} weight="fill" aria-hidden="true" /><span><b>Novo pedido</b> pelo cardápio</span></div>}
+        {aviso('bv-aviso')}
         <div className="bv-ped-lista" ref={caixa} style={encaixe ? { height: encaixe.altura } : undefined}>
           <div className="bv-ped-escala" style={encaixe && encaixe.escala < 1 ? { transform: `scale(${encaixe.escala})` } : undefined}>
-          {lista.map(({ p }) => {
-            const atual = comStatus(p)
-            return (
-              <div key={p.id} className={`bv-ped-entra${atual.status === 'aguardando_aceite' ? ' bv-ped--novo' : ''}`}>
-                <div>
-                  <CartaoPedido p={atual} aoAbrir={nada} aoAvancar={avancar} aoMenu={nada} aoEndereco={nada} />
-                </div>
-              </div>
-            )
-          })}
+            {cartoes(NO_CELULAR)}
           </div>
         </div>
       </div>
 
-      {/* computador: a tela de Pedidos do computador dentro de um notebook (09/10 · 3.75) */}
-      <Notebook>
-        <div className="bv-app">
-          <aside className="bv-app-menu" aria-hidden="true">
-            <div className="bv-app-perfil"><span><img src="/tutorial/boas-vindas/doce-formiga.webp" alt="" /></span><b>Olá, Doce Formiga</b></div>
-            {MENU_PC.map(([Icone, nome]) => <p key={nome} className={nome === 'Pedidos' ? 'on' : ''}><Icone size={18} />{nome}</p>)}
-          </aside>
-          <div className="bv-app-main">
-            <header className="bv-app-topo"><b>Meus pedidos</b><small>Acompanhe suas encomendas e produção</small></header>
-            <div className="bv-app-corpo">
-              {chegaram > 0 && <div className="bv-aviso bv-aviso--pc" key={`b${chegaram}`}><Bell size={14} weight="fill" aria-hidden="true" /><span><b>Novo pedido</b> pelo cardápio</span></div>}
-              <div className="pdl-cab" aria-hidden="true"><span>Cliente e pedido</span><span>Situação</span><span>Pagamento</span><span>Entrega</span><span /><span /></div>
-              <p className="bv-app-grupo">Esta semana{chegaram > 0 && <i>{chegaram}</i>}</p>
-              {lista.length > 0 && (
-                <div className="pdl-tabela">
-                  {lista.map(({ p }) => {
-                    const atual = comStatus(p)
-                    return <div key={p.id} className={`bv-ped-entra${atual.status === 'aguardando_aceite' ? ' bv-ped--novo' : ''}`}><div><LinhaPedido p={atual} aoAbrir={nada} aoAvancar={avancar} aoMenu={nada} aoEndereco={nada} comDia /></div></div>
-                  })}
+      {/* computador: a tela de Pedidos do computador no notebook e a do celular na frente */}
+      <div className="bv-dup-wrap">
+        {aviso('bv-balao')}
+        <div className="bv-dup">
+          <Notebook>
+            <div className="bv-app">
+              <aside className="bv-app-menu" aria-hidden="true">
+                <div className="bv-app-perfil"><span><img src="/tutorial/boas-vindas/doce-formiga.webp" alt="" /></span><b>Olá, Doce Formiga</b></div>
+                {MENU_PC.map(([Icone, nome]) => <p key={nome} className={nome === 'Pedidos' ? 'on' : ''}><Icone size={18} />{nome}</p>)}
+              </aside>
+              <div className="bv-app-main">
+                <header className="bv-app-topo"><b>Meus pedidos</b><small>Acompanhe suas encomendas e produção</small></header>
+                <div className="bv-app-corpo">
+                  <div className="pdl-cab" aria-hidden="true"><span>Cliente e pedido</span><span>Situação</span><span>Pagamento</span><span>Entrega</span><span /><span /></div>
+                  <p className="bv-app-grupo">Esta semana<i>{lista.length}</i></p>
+                  <div className="pdl-tabela">
+                    {lista.map(p => {
+                      const atual = comStatus(p)
+                      return <div key={p.id} className={`bv-ped-entra${ehNovo(p) ? '' : ' bv-ped-fixo'}${atual.status === 'aguardando_aceite' ? ' bv-ped--novo' : ''}`}><div><LinhaPedido p={atual} aoAbrir={nada} aoAvancar={avancar} aoMenu={nada} aoEndereco={nada} comDia /></div></div>
+                    })}
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
-          </div>
+          </Notebook>
+          <Celular className="bv-cel--mini">
+            <Encolhe largura={360}>
+              <div className="bv-cel-app">
+                <header><b>Pedidos</b></header>
+                <div className="bv-cel-app-lista">{cartoes(4, false)}</div>
+              </div>
+            </Encolhe>
+          </Celular>
         </div>
-      </Notebook>
+      </div>
     </>
   )
 }

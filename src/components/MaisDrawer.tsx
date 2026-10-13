@@ -13,7 +13,7 @@ import {
 import type { Icon } from "@phosphor-icons/react";
 import { BotaoIcone } from "@/components/base";
 import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile, avatarDaConta } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
 import "./maisDrawer.css";
 
@@ -107,8 +107,8 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
         <span className="ui-janela-alca" aria-hidden="true" />
 
         <div className="mais-cab">
-          <span className={`mais-foto${profile?.foto_url ? "" : " mais-foto--letra"}`} aria-hidden="true">
-            {profile?.foto_url ? <img src={profile.foto_url} alt="" /> : inicial}
+          <span className={`mais-foto${avatarDaConta(profile) ? "" : " mais-foto--letra"}`} aria-hidden="true">
+            {avatarDaConta(profile) ? <img src={avatarDaConta(profile)} alt="" /> : inicial}
           </span>
           <div className="mais-ola">
             <h2 className="mais-ola-t" id={idTitulo}>

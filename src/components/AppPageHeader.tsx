@@ -8,7 +8,7 @@ import type { Icon } from '@phosphor-icons/react'
 import { Botao, BotaoIcone, Janela } from '@/components/base'
 import MenuConta from '@/components/MenuConta'
 import { ImageCropper } from '@/components/ui/ImageCropper'
-import { useProfile } from '@/hooks/useProfile'
+import { useProfile, avatarDaConta } from '@/hooks/useProfile'
 import { useAvatarUpload } from '@/hooks/useAvatarUpload'
 import { useLocation } from 'react-router-dom'
 import { CardapioAbas, ROTAS_CARDAPIO } from '@/components/CardapioSubnav'
@@ -78,12 +78,12 @@ export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, in
             ref={foto} type="button" className="cab-foto" onClick={() => setMenuAberto(a => !a)}
             aria-label="Abrir o menu da conta" aria-haspopup="dialog" aria-expanded={menuAberto}
           >
-            {profile?.foto_url
-              ? <img src={profile.foto_url} alt="" className="cab-foto-img" />
+            {avatarDaConta(profile)
+              ? <img src={avatarDaConta(profile)} alt="" className="cab-foto-img" />
               : <User size={24} weight="bold" aria-hidden="true" />}
           </button>
           {/* sem foto: a câmera é o atalho pra colocar uma (agora é um botão de verdade; antes era só enfeite) */}
-          {!profile?.foto_url && (
+          {!avatarDaConta(profile) && (
             <button type="button" className="cab-foto-cam" disabled={enviandoFoto} onClick={() => fileInputRef.current?.click()} aria-label="Colocar uma foto" title="Colocar uma foto">
               <Camera size={16} weight="bold" aria-hidden="true" />
             </button>

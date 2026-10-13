@@ -85,8 +85,15 @@ export default function TipoProdutoTela({ onEscolher, onFechar }: Props) {
         .tpp-h h1 { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.25; color: var(--ui-texto); }
         .tpp-h p { margin: 4px 0 0; font-size: 15px; line-height: 1.45; color: var(--ui-texto-2); }
         .tpp-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-        .tpp-card { display: flex; flex-direction: column; align-items: stretch; margin: 0; padding: 0; overflow: hidden; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); font-family: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-        .tpp-card.sel { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); box-shadow: inset 0 0 0 1px var(--ui-rosa); }
+        .tpp-card { display: flex; flex-direction: column; align-items: stretch; margin: 0; padding: 0; overflow: hidden; border: 2px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); font-family: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: border-color .15s; }
+        .tpp-card.sel { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); box-shadow: 0 0 0 1px var(--ui-rosa), 0 8px 20px rgba(var(--ui-rosa-rgb), .16); }
+        /* (13/10) só no computador: ao passar o mouse, um pulse leve */
+        @media (hover: hover) and (pointer: fine) {
+          .tpp-card:hover:not(.sel) { border-color: #F2B8CC; }
+          .tpp-card:hover { animation: tppPulse .45s ease-out; }
+        }
+        @keyframes tppPulse { 0% { transform: scale(1); } 45% { transform: scale(1.03); } 100% { transform: scale(1); } }
+        @media (prefers-reduced-motion: reduce) { .tpp-card:hover { animation: none; } }
         .tpp-card:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
         .tpp-img { position: relative; display: flex; align-items: center; justify-content: center; aspect-ratio: 16 / 9; overflow: hidden; background: var(--ui-cinza); color: var(--ui-texto-2); }
         .tpp-foto { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }

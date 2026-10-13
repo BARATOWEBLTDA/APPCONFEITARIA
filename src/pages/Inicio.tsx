@@ -25,7 +25,7 @@ import {
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
-import { useProfile, perfilAtual } from "@/hooks/useProfile";
+import { useProfile, perfilAtual, avatarDaConta } from "@/hooks/useProfile";
 import { useIsMobile } from "@/hooks/use-mobile";
 import UpdatesFeed from "@/components/UpdatesFeed";
 import MinhasAtualizacoes from "@/components/MinhasAtualizacoes";
@@ -611,7 +611,7 @@ export default function Inicio() {
         </svg>
 
         {/* Foto da confeiteira — abre o menu da conta (celular e tablet). A câmera, quando não tem foto, abre a escolha da foto. */}
-        <div className="ini-profile-wrapper" data-has-photo={profile?.foto_url ? "true" : "false"}>
+        <div className="ini-profile-wrapper" data-has-photo={avatarDaConta(profile) ? "true" : "false"}>
           <button
             ref={fotoRef}
             className="ini-profile-btn"
@@ -620,14 +620,14 @@ export default function Inicio() {
             title="Menu da conta"
             disabled={uploadingFoto}
           >
-            {profile?.foto_url
-              ? <img src={profile.foto_url} alt="" className="ini-profile-img" />
+            {avatarDaConta(profile)
+              ? <img src={avatarDaConta(profile)} alt="" className="ini-profile-img" />
               : <div className="ini-profile-placeholder"><span className="ini-profile-inicial">{(nome || "?").trim().charAt(0).toUpperCase()}</span></div>
             }
           </button>
 
           {/* Badge de câmera — só quando NÃO tem foto (ou durante upload) */}
-          {(!profile?.foto_url || uploadingFoto) && (
+          {(!avatarDaConta(profile) || uploadingFoto) && (
           <button
             type="button"
             className="ini-profile-cam"

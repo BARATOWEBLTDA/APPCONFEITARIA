@@ -582,7 +582,7 @@ export default function Auth() {
                 enterKeyHint="done"
                 style={{ backgroundColor: "#fff", borderColor: "var(--border)" }}
               />
-              <button type="button" className="eye-btn" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}>
+              <button type="button" tabIndex={-1} className="eye-btn" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}>
                 {showPassword ? <EyeSlash size={18} weight="regular" /> : <Eye size={18} weight="regular" />}
               </button>
             </div>
@@ -754,6 +754,7 @@ export default function Auth() {
               />
               <button
                 type="button"
+                tabIndex={-1}
                 className="cad-eye"
                 onClick={() => setShowCadastroSenha(!showCadastroSenha)}
                 aria-label={showCadastroSenha ? "Ocultar senha" : "Mostrar senha"}
@@ -796,6 +797,7 @@ export default function Auth() {
               />
               <button
                 type="button"
+                tabIndex={-1}
                 className="cad-eye"
                 onClick={() => setShowConfirmarSenha(!showConfirmarSenha)}
                 aria-label={showConfirmarSenha ? "Ocultar senha" : "Mostrar senha"}

@@ -11,7 +11,8 @@ import "./folha.css";
  * 09/10 (3.56): agora é a Janela do app (mesmo véu, cantos, título com X, Esc e "voltar" do Android).
  *   titulo / sub: em cima · children: os campos (classes fo-*) · acoes: os botões fixos embaixo (opcional; umaAcao = um botão na largura toda)
  */
-export default function Folha({ titulo, sub, onClose, children, acoes, umaAcao = false }: { titulo: string; sub?: ReactNode; onClose: () => void; children: ReactNode; acoes?: ReactNode; umaAcao?: boolean }) {
+/** foco: fundo escuro e desfocado (o app por trás não aparece), usado no passo a passo da conta nova */
+export default function Folha({ titulo, sub, onClose, children, acoes, umaAcao = false, foco = false }: { titulo: string; sub?: ReactNode; onClose: () => void; children: ReactNode; acoes?: ReactNode; umaAcao?: boolean; foco?: boolean }) {
   const caixa = useRef<HTMLDivElement>(null);
   const id = useId();
   // 11/10: tocar fora, Esc e o "voltar" do Android perguntam antes de jogar fora o que foi digitado (o X fecha direto).
@@ -35,7 +36,7 @@ export default function Folha({ titulo, sub, onClose, children, acoes, umaAcao =
   };
   useSobreposicao(true, fecharComCuidado, caixa);
   return createPortal(
-    <div className="ui-veu ui-veu--centro" onClick={fecharComCuidado}>
+    <div className={`ui-veu ui-veu--centro${foco ? " ui-veu--foco" : ""}`} onClick={fecharComCuidado}>
       <div ref={caixa} tabIndex={-1} className="ui-janela ui-janela--conteudo fo" role="dialog" aria-modal="true" aria-labelledby={id} onClick={e => e.stopPropagation()}
         onInput={() => { mexeu.current = true; }} onChange={() => { mexeu.current = true; }}>
         <span className="ui-janela-alca" aria-hidden="true" />

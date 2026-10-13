@@ -1380,8 +1380,8 @@ function PersonalizacaoStep({
           <path d="M8 10V6a4 4 0 0 1 8 0v4"/>
         </svg>
       ),
-      titulo: "Massas",
-      subtitulo: "Baunilha, chocolate, red velvet...",
+      titulo: "Sabor da massa",
+      subtitulo: "Branca, chocolate, red velvet…",
       dados: grupoMassas,
     },
     {
@@ -1391,8 +1391,8 @@ function PersonalizacaoStep({
           <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
         </svg>
       ),
-      titulo: "Recheios",
-      subtitulo: "Brigadeiro, ninho, doce de leite...",
+      titulo: "Tipo de recheio",
+      subtitulo: "Ninho, brigadeiro, doce de leite…",
       dados: grupoRecheios,
     },
     {
@@ -1402,8 +1402,8 @@ function PersonalizacaoStep({
           <path d="M12 3l2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3z"/>
         </svg>
       ),
-      titulo: "Coberturas",
-      subtitulo: "Chantilly, ganache, pasta americana...",
+      titulo: "Tipo de cobertura",
+      subtitulo: "Chantilly, ganache, pasta americana…",
       dados: grupoCoberturas,
     },
     {
@@ -1516,7 +1516,7 @@ function PersonalizacaoStep({
       <div className="pv3-header">
         <div className="pv3-title">O cliente escolhe alguma opção?</div>
         <div className="pv3-subtitle">
-          Marque o que o produto tem. Depois é só preencher. Se não tiver nada, é só continuar.
+          Marque só o que o cliente escolhe. Se não tiver nada, é só continuar.
         </div>
         {algumGrupoAtivo && faixa.max > faixa.min && (
           <div className="pv3-faixa-info">
@@ -5196,7 +5196,7 @@ export default function Produtos() {
                       onClick={async () => {
                         if (gerandoDesc) return;
                         // 10/10: o botão não fica apagado — explica o que falta (plano PRO ou o nome)
-                        if (!isPro) { avisar("Gerar a descrição com IA é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => irFechandoJanela(() => navigate("/assinar")) } }); return; }
+                        if (!isPro) { avisar("Gerar a descrição com IA é do plano PRO.", { tipo: "info" }); return; }
                         if (!form.nome.trim()) { avisar("Dê um nome ao produto primeiro.", { tipo: "info" }); document.getElementById("prod-nome-input")?.focus(); return; }
                         const textoAtual = (form.descricao || "").trim();
                         const ehMelhorar = textoAtual.length > 0;
@@ -5254,7 +5254,7 @@ export default function Produtos() {
                         <button
                           type="button"
                           className="prod-cta-pro-ia-info"
-                          onClick={() => avisar("Gerar a descrição com IA é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => irFechandoJanela(() => navigate("/assinar")) } })}
+                          onClick={() => avisar("Gerar a descrição com IA é do plano PRO.", { tipo: "info" })}
                           aria-label="Saiba mais"
                         >
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
@@ -5367,7 +5367,7 @@ export default function Produtos() {
                         <div
                           className={`prod-img-upload ${isLocked ? "prod-img-upload--locked" : ""}`}
                           onClick={() => {
-                            if (isLocked) { avisar("Mais fotos por produto é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => irFechandoJanela(() => navigate("/assinar")) } }); return; }
+                            if (isLocked) { avisar("Mais fotos por produto é do plano PRO.", { tipo: "info" }); return; }
                             if (!uploading) ref.current?.click();
                           }}
                           style={{
