@@ -32,7 +32,8 @@ const HORARIO_PADRAO = {
   abre_domingo: false, domingo_abertura: "09:00", domingo_fechamento: "14:00",
 };
 // (13/10) ordem dos passos: "Salvar e continuar" abre o próximo que falta, e o "Configurar minha confeitaria" abre o primeiro
-const ORDEM = ["descricao", "logo", "endereco", "horario", "pagamento", "produto"] as const;
+// 13/10: o logo vem antes da descrição, assim a prévia da descrição já mostra o logo dela ao lado do nome
+const ORDEM = ["logo", "descricao", "endereco", "horario", "pagamento", "produto"] as const;
 type Passo = typeof ORDEM[number];
 const proximoPasso = (e: EstadoPassos, feitoAgora?: Passo, pulados: Set<Passo> = new Set()): Passo | null =>
   ORDEM.find(k => k !== feitoAgora && !pulados.has(k) && !e[k]) || null;
@@ -61,6 +62,8 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   const kFechado = uid ? `doonly_pp_fechado_${uid}` : "";
   const kIncompleto = uid ? `doonly_pp_incompleto_${uid}` : "";
   const pulados = useRef<Set<Passo>>(new Set());
+  // o que acabou de ser salvo (logo novo), até a releitura dos passos chegar
+  const [perfilNovo, setPerfilNovo] = useState<Record<string, any>>({});
   const abrirPasso = useCallback((k: Passo) => {
     // dos passos: a tela de Entrega e pagamento mostra o "Continuar" que leva pro primeiro produto
     if (k === "pagamento") navigate("/checkout-config", { state: { dosPassos: true } });
@@ -139,14 +142,15 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   const fechar = () => { try { localStorage.setItem(kFechado, "1"); } catch {} setFechado(true); };
   // "Salvar e continuar": fecha e abre o próximo passo que falta.
   // "Fazer depois": pula este (fica pendente) e segue pro próximo, sem voltar nele nesta sequência.
-  const seguir = (pular: boolean) => {
+  const seguir = (pular: boolean, patch?: Record<string, any>) => {
+    if (patch) setPerfilNovo(p => ({ ...p, ...patch }));
     const agora = folha as Passo | null;
     if (pular && agora) pulados.current.add(agora);
     setFolha(null); if (!pular) avisarPassos();
     const prox = agora ? proximoPasso(estado, agora, pulados.current) : null;
     if (prox) window.setTimeout(() => abrirPasso(prox), 250);
   };
-  const salvo = () => seguir(false);
+  const salvo = (patch?: Record<string, any>) => seguir(false, patch);
   const depois = () => seguir(true);
 
   const compartilhar = async () => {
@@ -177,8 +181,8 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   const I = (C: any) => <C size={20} weight="regular" />;
   const passos: { feito: boolean; ic: ReactNode; t: string; s: string; abrir: () => void }[] = [
     { feito: true, ic: I(Check), t: "Criar sua conta", s: "Pronto! Boas-vindas ao Doonly", abrir: () => {} },
-    { feito: estado.descricao, ic: I(PencilSimpleLine), t: "Contar sobre a sua confeitaria", s: "Uma frase no topo do cardápio", abrir: () => setFolha("descricao") },
     { feito: estado.logo, ic: I(ImageSquare), t: "Colocar o logo da loja", s: "Ou use a sua foto de perfil", abrir: () => setFolha("logo") },
+    { feito: estado.descricao, ic: I(PencilSimpleLine), t: "Sobre a sua confeitaria", s: "Uma frase no topo do cardápio", abrir: () => setFolha("descricao") },
     { feito: estado.endereco, ic: I(MapPin), t: "Endereço da loja", s: "Pra calcular a entrega", abrir: () => setFolha("endereco") },
     { feito: estado.horario, ic: I(Clock), t: "Horário de funcionamento", s: "Mostra \"Aberto agora\" no cardápio", abrir: () => setFolha("horario") },
     { feito: estado.pagamento, ic: I(Wallet), t: "Pagamento e entrega", s: "Como o cliente paga e recebe", abrir: () => abrirPasso("pagamento") },
@@ -217,17 +221,17 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
         )
       ))}
 
-      {folha === "descricao" && <FolhaDescricao uid={uid} perfil={estado.perfil} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
-      {folha === "logo" && <FolhaLogo uid={uid} perfil={estado.perfil} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
-      {folha === "endereco" && <FolhaEndereco uid={uid} perfil={estado.perfil} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
-      {folha === "horario" && <FolhaHorario uid={uid} perfil={estado.perfil} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
+      {folha === "descricao" && <FolhaDescricao uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
+      {folha === "logo" && <FolhaLogo uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
+      {folha === "endereco" && <FolhaEndereco uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
+      {folha === "horario" && <FolhaHorario uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
       <style>{CSS}</style>
     </div>
   );
 }
 
 /* ── Janelinha: a Janela de formulário do app (components/financeiro/Folha) ── */
-type FolhaProps = { uid: string; perfil: any; onClose: () => void; onSalvo: () => void; onDepois: () => void };
+type FolhaProps = { uid: string; perfil: any; onClose: () => void; onSalvo: (patch?: Record<string, any>) => void; onDepois: () => void };
 
 function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
   const [txt, setTxt] = useState(String(perfil?.descricao_loja || ""));
@@ -296,10 +300,11 @@ function FolhaLogo({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
     if (!error) {
       const { data } = supabase.storage.from("products").getPublicUrl(path);
       marcarLogoOk(uid);
-      const e = await atualizarPerfil(uid, { logo_url: `${data.publicUrl}?t=${Date.now()}`, design_escolhido: true, logo_confirmado: true }, ["design_escolhido", "logo_confirmado"]);
+      const logoUrl = `${data.publicUrl}?t=${Date.now()}`;
+      const e = await atualizarPerfil(uid, { logo_url: logoUrl, design_escolhido: true, logo_confirmado: true }, ["design_escolhido", "logo_confirmado"]);
       setEnviando(false);
       if (e) { avisar("Não foi possível salvar agora. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
-      onSalvo(); return;
+      onSalvo({ logo_url: logoUrl }); return;
     }
     setEnviando(false); avisar("Não foi possível enviar a imagem. Tente de novo.", { tipo: "erro" });
   };
