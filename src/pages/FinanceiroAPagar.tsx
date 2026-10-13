@@ -141,7 +141,7 @@ export default function FinanceiroAPagar() {
           {!carregando && contas.length > 0 && (
             <div className="fap-resumo" style={{ "--fap-n": Math.max(...[grupos.vencidas, grupos.semana, grupos.depois].map(l => brl(soma(l)).length)) } as CSSProperties}>
               <div className={`fap-k ${soma(grupos.vencidas) > 0 ? "fap-k--atr" : "fap-k--zero"}`}><small>Vencidas</small><b>{brl(soma(grupos.vencidas))}</b><i>{grupos.vencidas.length} {grupos.vencidas.length === 1 ? "conta" : "contas"}</i></div>
-              <div className={`fap-k ${soma(grupos.semana) > 0 ? "" : "fap-k--zero"}`}><small>Próximos 7 dias</small><b>{brl(soma(grupos.semana))}</b><i>{grupos.semana.length} {grupos.semana.length === 1 ? "conta" : "contas"}</i></div>
+              <div className={`fap-k ${soma(grupos.semana) > 0 ? "" : "fap-k--zero"}`}><small>Em 7 dias</small><b>{brl(soma(grupos.semana))}</b><i>{grupos.semana.length} {grupos.semana.length === 1 ? "conta" : "contas"}</i></div>
               <div className={`fap-k ${soma(grupos.depois) > 0 ? "" : "fap-k--zero"}`}><small>Depois</small><b>{brl(soma(grupos.depois))}</b><i>{grupos.depois.length} {grupos.depois.length === 1 ? "conta" : "contas"}</i></div>
             </div>
           )}

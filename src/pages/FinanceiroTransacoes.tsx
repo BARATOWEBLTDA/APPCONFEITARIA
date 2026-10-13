@@ -150,7 +150,7 @@ export default function FinanceiroTransacoes() {
           </div>
         </div>
 
-        <div className="tx-res">
+        <div className="tx-res" style={{ ["--tx-n" as any]: Math.max(brl(entradas).length, brl(saidas).length, brl(entradas - saidas).length) }}>
           <div className="tx-k"><small>Entradas</small><b className="e">{erro ? "—" : brl(entradas)}</b></div>
           <div className="tx-k"><small>Saídas</small><b className="s">{erro ? "—" : brl(saidas)}</b></div>
           <div className="tx-k"><small>Diferença</small><b>{erro ? "—" : brl(entradas - saidas)}</b></div>
@@ -264,9 +264,11 @@ const CSS = `
   .tx-bt.n { background: var(--ui-branco); color: var(--ui-texto); border: 1px solid #F0EBED; width: 52px; padding: 0; }
   .tx-bt.n span { display: none; }
   .tx-res { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .tx-k { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 10px; min-width: 0; }
+  .tx-k { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 10px; min-width: 0; container-type: inline-size; }
   .tx-k small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
   .tx-k b { display: block; font-size: clamp(13.5px, 3.9vw, 19px); font-weight: 600; letter-spacing: -.02em; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* (4.29) o valor cabe inteiro: a letra encolhe até caber (--tx-n = letras do maior valor), como em A receber */
+  .tx-k b { font-size: max(10px, min(clamp(13.5px, 3.9vw, 19px), calc(100cqi / (var(--tx-n, 11) * .57)))); text-overflow: clip; }
   .tx-k b.e { color: var(--ui-verde); } .tx-k b.s { color: var(--ui-vermelho); }
   .tx-filtros { display: flex; flex-direction: column; gap: 8px; }
   @media (min-width: 900px) { .tx-filtros { flex-direction: row; align-items: center; flex-wrap: wrap; } .tx-busca { flex: 1; min-width: 240px; } }

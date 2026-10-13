@@ -248,7 +248,7 @@ export default function Financeiro() {
             {recItens && recItens.length === 0 && <p className="fd-vazio">Nenhum pedido com valor a receber.</p>}
             {(recItens || []).slice(0, 3).map(it => (
               <div key={it.id} className="fd-lst-it">
-                <span className="fd-lst-tx"><b>{it.cliente_nome || "Cliente sem nome"}{it.dataRef && <em className={it.dias !== null && it.dias < 0 ? "atr" : ""}>{dataTag(it.dataRef, it.dias)}</em>}</b>
+                <span className="fd-lst-tx"><b><span className="fd-lst-nm">{it.cliente_nome || "Cliente sem nome"}</span>{it.dataRef && <em className={it.dias !== null && it.dias < 0 ? "atr" : ""}>{dataTag(it.dataRef, it.dias)}</em>}</b>
                   <small>{[it.numero != null ? `#${it.numero}` : "", it.recebido > 0 ? "sinal pago" : "falta tudo"].filter(Boolean).join(" · ")}</small></span>
                 <span className="fd-lst-v">{brl(it.falta)}{it.recebido > 0 && <small>de {brl(it.total)}</small>}</span>
                 <button type="button" className="fd-lst-bt v" onClick={() => abrirReceber(it)}>Receber</button>
@@ -262,7 +262,7 @@ export default function Financeiro() {
               const venceu = c.vencimento < isoDia(0);
               return (
                 <div key={c.id} className="fd-lst-it">
-                  <span className="fd-lst-tx"><b>{c.descricao}<em className={venceu ? "atr" : ""}>{venceu ? "venceu" : "vence"} {dm(c.vencimento)}</em></b><small>{nomeCategoriaFin(c.categoria) || "Conta"}</small></span>
+                  <span className="fd-lst-tx"><b><span className="fd-lst-nm">{c.descricao}</span><em className={venceu ? "atr" : ""}>{venceu ? "venceu" : "vence"} {dm(c.vencimento)}</em></b><small>{nomeCategoriaFin(c.categoria) || "Conta"}</small></span>
                   <span className={`fd-lst-v${venceu ? " s" : ""}`}>{brl(c.valor)}</span>
                   <button type="button" className="fd-lst-bt p" onClick={() => setPagar(c)}>Pagar</button>
                 </div>
@@ -549,7 +549,9 @@ const CSS = `
   .fd-lst-tx { min-width: 0; }
   .fd-lst-tx b, .fd-lst-tx small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .fd-lst-tx b { font-size: 14px; font-weight: 600; color: var(--ui-texto); }
-  .fd-lst-tx b em { margin-left: 8px; padding: 2px 7px; border-radius: 6px; background: #FFFBEB; color: #B45309; font-style: normal; font-size: 11.5px; font-weight: 500; }
+  .fd-lst-tx b { display: flex !important; align-items: center; min-width: 0; }
+  .fd-lst-nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fd-lst-tx b em { flex: none; margin-left: 8px; padding: 2px 7px; border-radius: 6px; background: #FFFBEB; color: #B45309; font-style: normal; font-size: 11.5px; font-weight: 500; }
   .fd-lst-tx b em.atr { background: #FEF2F2; color: var(--ui-vermelho); }
   .fd-lst-tx small { margin-top: 2px; font-size: 12.5px; color: var(--ui-texto-2); }
   .fd-lst-v { text-align: right; font-size: 14px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; }
