@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { faltaNoBanco, ESTORNO_POR_EXCLUSAO } from "@/lib/pagamentos";
+import { nomeCategoriaFin } from "@/lib/categoriasFinanceiro";
 
 /**
  * Financeiro · Passo 4 (03/10) — Saldo em caixa.
@@ -29,6 +30,13 @@ const diaLocal = (dataHora: string) => { const d = new Date(dataHora); return `$
 const FORMA: Record<string, string> = { pix: "Pix", dinheiro: "Dinheiro", credito: "Crédito", debito: "Débito" };
 const TIPO: Record<string, string> = { sinal: "Sinal", parcial: "Parcial", restante: "Restante", total: "Pagamento", pagamento: "Pagamento", migracao: "Pagamento" };
 
+/** "Saída · Ingredientes"; a categoria só aparece quando não é a mesma coisa que o título (4.29) */
+const detalheLanc = (entrada: boolean, categoria?: string | null, descricao?: string | null) => {
+  const cat = nomeCategoriaFin(categoria), desc = String(descricao || "").trim();
+  const repete = !cat || !desc || cat.toLowerCase() === desc.toLowerCase() || String(categoria || "").toLowerCase() === desc.toLowerCase();
+  return repete ? (entrada ? "Entrada" : "Saída") : `${entrada ? "Entrada" : "Saída"} · ${cat}`;
+};
+
 export async function carregarCaixa(uid: string): Promise<EstadoCaixa> {
   const vazio: EstadoCaixa = { precisaSql: false, configurado: false, semPagamentos: false, saldoInicial: 0, inicio: null, saldo: 0, entrouHoje: 0, saiuHoje: 0, movimentos: [] };
   const { data: perfil, error: ePerfil } = await supabase.from("profiles").select("caixa_saldo_inicial, caixa_inicio_em").eq("id", uid).maybeSingle();
@@ -44,10 +52,12 @@ export async function carregarCaixa(uid: string): Promise<EstadoCaixa> {
 
   // 10/10: tudo de 1.000 em 1.000 (o Supabase corta em 1.000 linhas sem avisar e o saldo ficava errado)
   const finDesde = (colunas: string) => buscarTudo<any>((de, ate) => supabase.from("financeiro").select(colunas)
-    .eq("user_id", uid).gte("created_at", inicio).lte("data", hoje).order("id").range(de, ate)); // lançamento com data no futuro ainda não saiu do caixa
+    .eq("user_id", uid).gte("created_at", inicio).gte("data", diaInicio).lte("data", hoje).order("id").range(de, ate));
+  // lançamento com data no futuro ainda não saiu do caixa; (4.29) com data ANTES do dia em que ela contou o caixa também não
+  // mexe: esse dinheiro já estava (ou já não estava) na conta quando ela informou o saldo
   const [pag, fin0, pagEst, finEst] = await Promise.all([
     buscarTudo<any>((de, ate) => supabase.from("pagamentos").select("id, valor, forma, tipo, recebido_em, pedido_id, created_at")
-      .eq("user_id", uid).is("estornado_em", null).gte("created_at", inicio).lte("recebido_em", hoje).order("id").range(de, ate)),
+      .eq("user_id", uid).is("estornado_em", null).gte("created_at", inicio).gte("recebido_em", diaInicio).lte("recebido_em", hoje).order("id").range(de, ate)),
     finDesde("id, tipo, categoria, descricao, valor, data, created_at, estornado_em"),
     // registrado ANTES do início do caixa e estornado DEPOIS (a conta está mais abaixo)
     buscarTudo<any>((de, ate) => supabase.from("pagamentos").select("id, valor, forma, pedido_id, estornado_em, observacao")
@@ -95,8 +105,9 @@ export async function carregarCaixa(uid: string): Promise<EstadoCaixa> {
     if (entrada) { saldo += v; if (l.data === hoje) entrouHoje += v; } else { saldo -= v; if (l.data === hoje) saiuHoje += v; }
     movimentos.push({
       id: "f" + l.id, tipo: entrada ? "entrada" : "saida", valor: v, data: l.data, ordem: `${l.data} ${l.created_at || ""}`,
-      titulo: l.descricao || l.categoria || (entrada ? "Entrada" : "Despesa"),
-      detalhe: entrada ? (l.categoria || "Entrada avulsa") : `Despesa${l.categoria ? ` · ${l.categoria}` : ""}`,
+      titulo: l.descricao || nomeCategoriaFin(l.categoria) || (entrada ? "Entrada" : "Saída"),
+      // (4.29) "Saída · Ingredientes" (antes "Despesa · Insumos"); a categoria não repete quando já é o título
+      detalhe: detalheLanc(entrada, l.categoria, l.descricao),
     });
   }
   // 10/10 · Estorno, DEPOIS do início do caixa, de algo registrado ANTES dele. Esse valor já estava dentro do saldo
@@ -121,8 +132,8 @@ export async function carregarCaixa(uid: string): Promise<EstadoCaixa> {
     if (eraEntrada) { saldo -= v; if (dia === hoje) saiuHoje += v; } else { saldo += v; if (dia === hoje) entrouHoje += v; }
     movimentos.push({
       id: "ef" + l.id, tipo: eraEntrada ? "saida" : "entrada", valor: v, data: dia, ordem: `${dia} ${l.estornado_em}`,
-      titulo: `Estorno · ${l.descricao || l.categoria || (eraEntrada ? "Entrada" : "Despesa")}`,
-      detalhe: eraEntrada ? "Entrada estornada" : "Despesa estornada",
+      titulo: `Estorno · ${l.descricao || nomeCategoriaFin(l.categoria) || (eraEntrada ? "Entrada" : "Saída")}`,
+      detalhe: eraEntrada ? "Entrada estornada" : "Saída estornada",
     });
   }
   movimentos.sort((a, b) => b.ordem.localeCompare(a.ordem));

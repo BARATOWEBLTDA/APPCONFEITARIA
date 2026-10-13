@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { faltaNoBanco } from "@/lib/pagamentos";
 import { entradasNoPeriodo } from "@/lib/painelFinanceiro";
+import { ehDinheiroDaDona } from "@/lib/categoriasFinanceiro";
 
 /**
  * Financeiro por período (4.29) · os números do painel para qualquer intervalo de dias (AAAA-MM-DD, os dois inclusos).
@@ -9,7 +10,8 @@ import { entradasNoPeriodo } from "@/lib/painelFinanceiro";
  *   Recebido ...... pagamentos pela data do recebimento (sem estornados) + entradas avulsas (sem estornadas)
  *   Despesas ...... saídas do financeiro pela data (sem estornadas)
  *   Resultado ..... recebido − despesas (o que entrou menos o que saiu, no período)
- *   Formas ........ só dos pagamentos de pedidos (as entradas avulsas entram em "Outras entradas")
+ *   Formas ........ pagamentos de pedidos + entradas avulsas pela forma escolhida (sem forma: "Outras")
+ *   Aporte e retirada da dona (4.29) ficam fora do recebido e das despesas (só mexem no saldo em caixa)
  *   Mais vendidos . itens dos pedidos com entrega no período, sem cancelados, pelo valor (preço × quantidade)
  * Nunca lança: se algo falhar, devolve erro: true e a tela mostra "—".
  */
@@ -52,10 +54,10 @@ const NOME_TIPO: Record<string, string> = { sinal: "Sinal", parcial: "Parte", re
 async function saidasNoPeriodo(uid: string, ini: string, ate: string) {
   const buscar = (colunas: string) => buscarTudo<any>((de, a) => supabase.from("financeiro")
     .select(colunas).eq("user_id", uid).gte("data", ini).lte("data", ate).order("id").range(de, a));
-  let r = await buscar("tipo, valor, data, estornado_em");
-  if (r.error && faltaNoBanco(r.error)) r = await buscar("tipo, valor, data");
+  let r = await buscar("tipo, categoria, valor, data, estornado_em");
+  if (r.error && faltaNoBanco(r.error)) r = await buscar("tipo, categoria, valor, data");
   if (r.error) return { itens: [] as { valor: number; data: string }[], erro: true };
-  return { itens: r.data.filter(l => !l.estornado_em && l.tipo !== "entrada").map(l => ({ valor: r2(l.valor), data: String(l.data).slice(0, 10) })), erro: false };
+  return { itens: r.data.filter(l => !l.estornado_em && l.tipo !== "entrada" && !ehDinheiroDaDona(l.categoria)).map(l => ({ valor: r2(l.valor), data: String(l.data).slice(0, 10) })), erro: false };
 }
 
 /** Só os totais (pra comparar com o período anterior). */
@@ -96,6 +98,8 @@ export async function carregarPeriodo(uid: string, ini: string, ate: string): Pr
     const somaForma: Record<FormaPagamento["chave"], number> = { pix: 0, cartao: 0, dinheiro: 0, outras: 0 };
     let somaPagamentos = 0;
     if (temPagamentos) for (const g of pag.data) { const v = r2(g.valor); somaForma[formaDe(g.forma)] += v; somaPagamentos += v; }
+    // (4.29) entrada avulsa com forma vai pra forma dela; o resto (sem forma, regra antiga) fica em "Outras"
+    for (const x of entradas.itens) if (x.avulsa && x.forma) { somaForma[formaDe(x.forma)] += x.valor; somaPagamentos += x.valor; }
     somaForma.outras += Math.max(0, r2(recebido - somaPagamentos));
     const formas = (Object.keys(somaForma) as FormaPagamento["chave"][])
       .map(k => ({ chave: k, nome: NOME_FORMA[k], valor: r2(somaForma[k]) }))

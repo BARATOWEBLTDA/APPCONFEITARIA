@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { faltaNoBanco } from "@/lib/pagamentos";
+import { nomeCategoriaFin } from "@/lib/categoriasFinanceiro";
 
 /**
  * Extrato (Transações, 03/10): recebimentos de pedidos (tabela pagamentos) + lançamentos manuais
@@ -35,11 +36,12 @@ export async function carregarExtrato(uid: string, ini: string, fim: string): Pr
   const [pag, fin1] = await Promise.all([
     buscarTudo<any>((de, ate) => supabase.from("pagamentos").select("id, valor, forma, tipo, recebido_em, pedido_id, created_at, estornado_em")
       .eq("user_id", uid).gte("recebido_em", ini).lte("recebido_em", fim).order("id").range(de, ate)),
-    lancamentos("id, tipo, categoria, descricao, valor, data, created_at, estornado_em"),
+    lancamentos("id, tipo, categoria, descricao, valor, data, created_at, estornado_em, forma"),
   ]);
-  // sem a coluna de estorno (SQL não rodado), busca sem ela
+  // (4.29) sem a coluna forma (SQL 4.31), busca sem ela; sem a de estorno, sem as duas
   let fin = fin1, semEstornoManual = false;
-  if (fin1.error && faltaNoBanco(fin1.error)) {
+  if (fin.error && faltaNoBanco(fin.error)) fin = await lancamentos("id, tipo, categoria, descricao, valor, data, created_at, estornado_em");
+  if (fin.error && faltaNoBanco(fin.error)) {
     semEstornoManual = true;
     fin = await lancamentos("id, tipo, categoria, descricao, valor, data");
   }
@@ -83,8 +85,8 @@ export async function carregarExtrato(uid: string, ini: string, fim: string): Pr
       id: "f" + l.id, origem: "manual", ref: l.id, tipo: entrada ? "entrada" : "saida", valor: Number(l.valor) || 0, data: l.data,
       titulo,
       subtipo: entrada ? "Entrada" : "Saída",
-      detalhe: cat && cat.toLowerCase() !== titulo.toLowerCase() ? (cat === "Insumos" ? "Ingredientes" : cat) : "",
-      forma: null, categoria: l.categoria || null, pedidoId: null, estornado: !!l.estornado_em, ordem: `${l.data} ${l.created_at || ""}`,
+      detalhe: [cat && cat.toLowerCase() !== titulo.toLowerCase() ? nomeCategoriaFin(cat) : "", nomeForma(l.forma)].filter(Boolean).join(" · "),
+      forma: l.forma || null, categoria: l.categoria || null, pedidoId: null, estornado: !!l.estornado_em, ordem: `${l.data} ${l.created_at || ""}`,
     });
   }
   itens.sort((a, b) => b.ordem.localeCompare(a.ordem));

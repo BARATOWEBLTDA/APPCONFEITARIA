@@ -27,11 +27,12 @@ textarea.fo-txt { min-height: 88px; padding: 12px; resize: vertical; line-height
 .fo-sw.on i::after { transform: translateX(18px); }
 .fo-dica { margin-top: 12px; padding: 12px; border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 14px; line-height: 1.45; color: var(--ui-cinza-texto); }
 .fo-dica b { color: var(--ui-texto); }
-.fo-erro { margin: 10px 0 0; font-size: 14px; font-weight: 700; color: var(--ui-vermelho); }
+.fo-erro { margin: 10px 0 0; font-size: 14px; font-weight: 600; color: var(--ui-vermelho); }
+.fo-nota { margin: 8px 0 0; padding: 10px 12px; border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 13px; line-height: 1.45; color: var(--ui-texto-2); }
 /* botão dentro do corpo (os novos usam "acoes" com <Botao>) */
 .fo-cta { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 48px; margin-top: 16px; padding: 0 16px; border: 0; border-radius: var(--ui-raio-botao); background: var(--ui-rosa); box-shadow: 0 3px 0 var(--ui-rosa-escuro); font-family: inherit; font-size: 16px; font-weight: 700; color: var(--ui-branco); cursor: pointer; }
 .fo-cta.escuro { background: var(--ui-vinho, #2C1219); box-shadow: none; }
 .fo-cta.vermelho { background: var(--ui-vermelho); box-shadow: none; }
 .fo-cta:disabled { opacity: .6; cursor: default; }
-.fo-sec { display: block; width: 100%; min-height: 44px; margin-top: 6px; padding: 0 12px; border: 0; background: none; font-family: inherit; font-size: 15px; font-weight: 700; color: var(--ui-vermelho); cursor: pointer; }
+.fo-sec { display: block; width: 100%; min-height: 44px; margin-top: 6px; padding: 0 12px; border: 0; background: none; font-family: inherit; font-size: 15px; font-weight: 500; color: var(--ui-vermelho); cursor: pointer; }
 .fo-sec.neutro { color: var(--ui-texto-2); }

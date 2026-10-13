@@ -1,3 +1,4 @@
+import { ehDinheiroDaDona } from "@/lib/categoriasFinanceiro";
 import { supabase } from "@/lib/supabase";
 import { valorRecebidoPedido } from "@/lib/financeiroPedido";
 import { buscarTudo } from "@/lib/buscarTudo";
@@ -43,8 +44,11 @@ const buscarPagamentos = (uid: string, ini: string, ate: string) => buscarTudo<a
 async function buscarLancamentos(uid: string, ini: string, ate: string) {
   const buscar = (colunas: string) => buscarTudo<any>((de, a) => supabase.from("financeiro")
     .select(colunas).eq("user_id", uid).gte("data", ini).lte("data", ate).order("id").range(de, a));
-  const r = await buscar("tipo, categoria, valor, data, estornado_em");
-  return r.error && faltaNoBanco(r.error) ? buscar("tipo, categoria, valor, data") : r;
+  // (4.29) forma: como a entrada avulsa foi recebida (coluna do SQL 4.31; sem ela, busca sem)
+  const r = await buscar("tipo, categoria, valor, data, estornado_em, forma");
+  if (!r.error || !faltaNoBanco(r.error)) return r;
+  const r2 = await buscar("tipo, categoria, valor, data, estornado_em");
+  return r2.error && faltaNoBanco(r2.error) ? buscar("tipo, categoria, valor, data") : r2;
 }
 
 /** Regra antiga do recebido (sem a tabela de pagamentos): pedidos pelo dia da entrega. */
@@ -58,9 +62,10 @@ const buscarRecebidoAntigo = (uid: string, ini: string, ate: string) => buscarTu
  * (07/10 · 3.08) Feita pro Início: lá o "Faturamento do mês" somava os pedidos CRIADOS no mês e não batia com o Financeiro.
  * Se mudar a regra do recebido em carregarMes, mude aqui também.
  */
-export async function entradasNoPeriodo(uid: string, ini: string, ate: string): Promise<{ itens: { valor: number; data: string }[]; erro: boolean }> {
+export type EntradaPeriodo = { valor: number; data: string; avulsa?: boolean; forma?: string | null };
+export async function entradasNoPeriodo(uid: string, ini: string, ate: string): Promise<{ itens: EntradaPeriodo[]; erro: boolean }> {
   const [pag, fin] = await Promise.all([buscarPagamentos(uid, ini, ate), buscarLancamentos(uid, ini, ate)]);
-  let itens: { valor: number; data: string }[] = [];
+  let itens: EntradaPeriodo[] = [];
   let erro = false;
   if (!pag.error) {
     itens = pag.data.map(g => ({ valor: r2(g.valor), data: String(g.recebido_em).slice(0, 10) }));
@@ -71,8 +76,9 @@ export async function entradasNoPeriodo(uid: string, ini: string, ate: string): 
     itens = peds.data.map(p => ({ valor: r2(valorRecebidoPedido(p)), data: String(p.data_entrega).slice(0, 10) })).filter(x => x.valor > 0);
   } else erro = true; // 10/10: internet ou servidor não é "sem a tabela": avisa em vez de usar a regra antiga
   if (fin.error) erro = true;
-  const avulsas = fin.data.filter(l => !l.estornado_em && l.tipo === "entrada")
-    .map(l => ({ valor: r2(l.valor), data: String(l.data).slice(0, 10) }));
+  // (4.29) aporte da dona entra no caixa, mas não é venda: fica fora do recebido
+  const avulsas = fin.data.filter(l => !l.estornado_em && l.tipo === "entrada" && !ehDinheiroDaDona(l.categoria))
+    .map(l => ({ valor: r2(l.valor), data: String(l.data).slice(0, 10), avulsa: true, forma: l.forma || null }));
   return { itens: [...itens, ...avulsas], erro };
 }
 
@@ -179,7 +185,8 @@ async function calcularMes(uid: string, ano: number, mes0: number): Promise<MesF
     if (peds.error) return MES_COM_ERRO;
     recebimentos = peds.data.map(p => ({ valor: r2(valorRecebidoPedido(p)), data: p.data_entrega })).filter(x => x.valor > 0);
   } else return MES_COM_ERRO;
-  const lanc = fin.data.filter(l => !l.estornado_em); // estornado não conta
+  // estornado não conta; (4.29) aporte e retirada da dona também não (não são venda nem despesa do negócio)
+  const lanc = fin.data.filter(l => !l.estornado_em && !ehDinheiroDaDona(l.categoria));
   const entradasAv = lanc.filter(l => l.tipo === "entrada");
   const saidas = lanc.filter(l => l.tipo !== "entrada");
   const recebidoPedidos = r2(recebimentos.reduce((s, x) => s + x.valor, 0));

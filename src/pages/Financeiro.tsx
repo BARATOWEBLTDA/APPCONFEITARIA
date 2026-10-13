@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowUp, ArrowDown, CaretRight, ArrowsLeftRight, Calculator, CalendarBlank, ChartPieSlice, Equals } from "@phosphor-icons/react";
 import CampoData from "@/components/CampoData";
 import AppPageHeader from "@/components/AppPageHeader";
-import { Botao } from "@/components/base";
+import { Botao, avisar } from "@/components/base";
 import { useCaixa, SaldoCaixa, SaldoSheet, CaixaEstilos } from "@/components/financeiro/CaixaCard";
 import PrevistosCard from "@/components/financeiro/PrevistosCard";
 import DespesaSheet from "@/components/financeiro/DespesaSheet";
@@ -257,7 +257,8 @@ export default function Financeiro() {
       </div>
 
       {definir && uid && cx && <SaldoSheet atual={cx.configurado ? cx.saldo : null} uid={uid} onClose={() => setDefinir(false)} onSalvo={async () => { setDefinir(false); await depoisDeMudar(); }} />}
-      {nova && <DespesaSheet tipo={nova} onClose={() => setNova(null)} onSalvo={async () => { setNova(null); await depoisDeMudar(); }}
+      {nova && <DespesaSheet tipo={nova} inicioCaixa={cx?.configurado && cx.inicio ? isoDe(new Date(cx.inicio)) : null} onClose={() => setNova(null)}
+        onSalvo={async aviso => { setNova(null); avisar(aviso, { tipo: "ok" }); await depoisDeMudar(); }}
         onContaAPagar={() => navigate("/financeiro/a-pagar")} onReceberPedido={() => navigate("/financeiro/a-receber")} />}
       <style>{CSS}</style>
     </>
