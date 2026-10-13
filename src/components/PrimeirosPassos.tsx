@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { useNavigate } from "react-router-dom";
 import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, Wallet, Sparkle, ShareNetwork, CaretRight, Camera, X, LockSimple } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
+import { parseNumBR } from "@/lib/numeroBR";
 import { apiFetch } from "@/lib/apiFetch";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import { ImageCropper } from "@/components/ui/ImageCropper";
@@ -9,6 +10,7 @@ import HorarioSheet from "@/components/HorarioSheet";
 import Janelinha from "@/components/financeiro/Folha";
 import { Mascote } from "@/components/marca/Mascote";
 import { situacaoDaLoja, horaTexto } from "@/lib/agendaCardapio";
+import { marcarPagamentoConferido } from "@/lib/primeirosPassos";
 import { lerPassos, marcarCompartilhado, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk, type EstadoPassos } from "@/lib/primeirosPassos";
 
 import { Botao, Janela, avisar } from "@/components/base";
@@ -21,7 +23,7 @@ import { erroDeConexao, SEM_INTERNET } from "@/lib/erros";
  * Salva exatamente como os Dados da loja (endereço e horário em JSON no profiles).
  */
 type Local = "inicio" | "cardapio";
-type Folha = null | "descricao" | "logo" | "endereco" | "horario";
+type Folha = null | "descricao" | "logo" | "endereco" | "horario" | "pagamento";
 
 const DIAS = [
   { nome: "Segunda", letra: "S", curto: "Seg" }, { nome: "Terça", letra: "T", curto: "Ter" }, { nome: "Quarta", letra: "Q", curto: "Qua" },
@@ -67,9 +69,8 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   // o que acabou de ser salvo (logo novo), até a releitura dos passos chegar
   const [perfilNovo, setPerfilNovo] = useState<Record<string, any>>({});
   const abrirPasso = useCallback((k: Passo) => {
-    // dos passos: a tela de Entrega e pagamento mostra o "Continuar" que leva pro primeiro produto
-    if (k === "pagamento") navigate("/checkout-config", { state: { dosPassos: true } });
-    else if (k === "produto") navigate("/produtos", { state: { abrirCadastro: true } });
+    // (13/10) pagamento e entrega virou um card como os outros (antes abria a tela inteira de Entrega e pagamento)
+    if (k === "produto") navigate("/produtos", { state: { abrirCadastro: true } });
     else setFolha(k);
   }, [navigate]);
 
@@ -226,9 +227,85 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
       {folha === "descricao" && <FolhaDescricao uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
       {folha === "logo" && <FolhaLogo uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
       {folha === "endereco" && <FolhaEndereco uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
+      {folha === "pagamento" && <FolhaPagamento uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
       {folha === "horario" && <FolhaHorario uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
       <style>{CSS}</style>
     </div>
+  );
+}
+
+
+const PAGA: [string, string][] = [["pix", "Pix"], ["dinheiro", "Dinheiro"], ["credito", "Crédito"], ["debito", "Débito"]];
+const reaisPP = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/** (13/10) Passo 5: o básico de como o cliente paga e recebe. O resto (bairros, cupons, motoboy…) fica em Entrega e pagamento. */
+function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
+  const [paga, setPaga] = useState<string[]>(["pix"]);
+  const [entrega, setEntrega] = useState<string[]>(["retirada"]);
+  const [taxa, setTaxa] = useState("");
+  const [carregou, setCarregou] = useState(false);
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState("");
+  useEffect(() => {
+    let vivo = true;
+    supabase.from("profiles").select("formas_pagamento, formas_entrega, valor_entrega_propria").eq("id", uid).maybeSingle().then(({ data }) => {
+      if (!vivo) return;
+      const d: any = data || {};
+      if (Array.isArray(d.formas_pagamento) && d.formas_pagamento.length) setPaga(d.formas_pagamento);
+      if (Array.isArray(d.formas_entrega) && d.formas_entrega.length) setEntrega(d.formas_entrega);
+      if (Number(d.valor_entrega_propria) > 0) setTaxa(reaisPP(Number(d.valor_entrega_propria)));
+      setCarregou(true);
+    }, () => { if (vivo) setCarregou(true); });
+    return () => { vivo = false; };
+  }, [uid]);
+  const temEntrega = entrega.some(e => e !== "retirada");
+  const trocarPaga = (k: string) => setPaga(l => l.includes(k) ? l.filter(x => x !== k) : [...l, k]);
+  const trocarEntrega = (k: "retirada" | "entrega") => setEntrega(l => {
+    if (k === "retirada") return l.includes("retirada") ? l.filter(x => x !== "retirada") : ["retirada", ...l];
+    // "Entrega" aqui é a entrega própria; motoboy e Uber Flash (marcados na outra tela) continuam como estão
+    return temEntrega ? l.filter(x => x === "retirada") : [...l, "entrega_propria"];
+  });
+  const pronto = paga.length > 0 && entrega.length > 0;
+  const taxaNum = taxa ? parseNumBR(taxa) : 0;
+  const nomes = (l: string[]) => { const m = l.map((x, k) => k ? x.toLowerCase() : x); return m.length <= 1 ? m.join("") : `${m.slice(0, -1).join(", ")} ou ${m[m.length - 1]}`; };
+  const salvar = async () => {
+    if (!pronto) return;
+    setSalvando(true); setErro("");
+    const patch: any = { formas_pagamento: paga, formas_entrega: entrega };
+    if (entrega.includes("entrega_propria")) patch.valor_entrega_propria = taxaNum;
+    const { error } = await supabase.from("profiles").update(patch).eq("id", uid);
+    setSalvando(false);
+    if (error) { setErro(erroDeConexao(error) ? SEM_INTERNET : "Não foi possível salvar agora. Tente de novo."); return; }
+    marcarPagamentoConferido(uid);
+    onSalvo();
+  };
+  const opc = (on: boolean, rot: string, fn: () => void) => (
+    <button type="button" key={rot} className={on ? "on" : ""} aria-pressed={on} onClick={fn}><i>{on && <Check size={13} weight="bold" />}</i>{rot}</button>
+  );
+  return (
+    <Janelinha titulo="Pagamento e entrega" onClose={onClose}
+      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!pronto || !carregou} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
+      <PassoTopo k="pagamento" />
+      <div className="ppf-p-prev" aria-hidden="true">
+        <p>O cliente vê ao fechar o pedido</p>
+        <div><span>Pagamento</span><b>{paga.length ? nomes(PAGA.filter(([k]) => paga.includes(k)).map(([, n]) => n)) : "Escolha ao menos um"}</b></div>
+        <div><span>Como recebe</span><b>{!entrega.length ? "Escolha ao menos um" : entrega.includes("retirada") && temEntrega ? "Retirada ou entrega" : temEntrega ? "Entrega" : "Retirada"}</b></div>
+        {entrega.includes("entrega_propria") && <div><span>Taxa de entrega</span><b>{taxaNum > 0 ? `R$ ${reaisPP(taxaNum)}` : "Grátis"}</b></div>}
+      </div>
+      <p className="ppf-l">Como o cliente paga?</p>
+      <div className="ppf-p-opc">{PAGA.map(([k, n]) => opc(paga.includes(k), n, () => trocarPaga(k)))}</div>
+      <p className="ppf-l">Como ele recebe?</p>
+      <div className="ppf-p-opc">{opc(entrega.includes("retirada"), "Retirada", () => trocarEntrega("retirada"))}{opc(temEntrega, "Entrega", () => trocarEntrega("entrega"))}</div>
+      {entrega.includes("entrega_propria") && (
+        <div className="ppf-p-taxa">
+          <b>Taxa de entrega</b>
+          <span><small>R$</small><input inputMode="numeric" aria-label="Taxa de entrega" placeholder="0,00" value={taxa}
+            onChange={e => { const d = e.target.value.replace(/\D/g, ""); setTaxa(d ? reaisPP(parseInt(d, 10) / 100) : ""); }} /></span>
+        </div>
+      )}
+      <p className="ppf-p-dica">Cupons e taxa por bairro ficam no Cardápio digital.</p>
+      {erro && <p className="ppf-erro">{erro}</p>}
+    </Janelinha>
   );
 }
 
@@ -655,6 +732,24 @@ const CSS = `
   .ppf-h-hh button { min-height: 44px; padding: 0 12px; border: 1.5px solid var(--ui-borda-campo); border-radius: 12px; background: var(--ui-branco); font-family: inherit; font-size: 16px; font-weight: 600;
     color: var(--ui-texto); font-variant-numeric: tabular-nums; cursor: pointer; }
   .ppf-h-hh button:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .4); outline-offset: 1px; }
+  .ppf-p-prev { margin-top: 16px; padding: 12px 14px; border: 1px solid var(--ui-borda); border-radius: 16px; }
+  .ppf-p-prev p { margin: 0; font-size: 12.5px; font-weight: 600; color: var(--ui-texto-3); }
+  .ppf-p-prev div { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; font-size: 13.5px; }
+  .ppf-p-prev span { color: var(--ui-texto-2); white-space: nowrap; }
+  .ppf-p-prev b { min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ppf-p-opc { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ppf-p-opc button { display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 12px; border: 1.5px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco);
+    font-family: inherit; font-size: 14.5px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; cursor: pointer; text-align: left; }
+  .ppf-p-opc button i { flex: none; width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid #D7CBD0; display: flex; align-items: center; justify-content: center; color: var(--ui-branco); }
+  .ppf-p-opc button.on { border-color: var(--ui-rosa); background: #FFF5F9; font-weight: 600; }
+  .ppf-p-opc button.on i { background: var(--ui-rosa); border-color: var(--ui-rosa); }
+  .ppf-p-taxa { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; padding: 10px 12px; border-radius: 14px; background: var(--ui-cinza); }
+  .ppf-p-taxa b { font-size: 14px; font-weight: 600; white-space: nowrap; }
+  .ppf-p-taxa span { display: flex; align-items: center; width: 128px; height: 44px; padding: 0 12px; border: 1.5px solid var(--ui-borda-campo); border-radius: 12px; background: var(--ui-branco); }
+  .ppf-p-taxa span:focus-within { border-color: var(--ui-rosa); }
+  .ppf-p-taxa small { margin-right: 6px; font-size: 14px; color: var(--ui-texto-3); }
+  .ppf-p-taxa input { width: 100%; min-width: 0; border: 0; outline: none; background: none; font-family: inherit; font-size: 16px; font-weight: 600; color: var(--ui-texto); }
+  .ppf-p-dica { margin: 12px 0 0; font-size: 13px; color: var(--ui-texto-3); }
   .ppf-lg2 { margin-top: 18px; border: 1px solid var(--ui-borda); border-radius: 18px; overflow: hidden; }
   .ppf-lg2-cap { height: 64px; background: linear-gradient(120deg, #F7B2CB, var(--ui-rosa)); }
   .ppf-lg2-corpo { display: flex; flex-direction: column; align-items: center; padding: 0 16px 18px; margin-top: -48px; text-align: center; }

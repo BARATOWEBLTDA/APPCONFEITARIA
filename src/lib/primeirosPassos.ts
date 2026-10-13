@@ -38,7 +38,8 @@ const CAMPOS_NOVOS = ["design_escolhido", "cardapio_compartilhado", "logo_confir
 const chaveLogo = (uid: string) => `doonly_logo_ok_${uid}`;
 
 export async function lerPassos(uid: string): Promise<EstadoPassos> {
-  const [perfil, produtos, ...extras] = await Promise.all([
+  const [conta, perfil, produtos, ...extras] = await Promise.all([
+    supabase.auth.getUser().then(r => r, () => ({ data: { user: null } } as any)),
     supabase.from("profiles").select("nome_loja, descricao_loja, logo_url, foto_url, endereco, mostrar_localizacao, mostrar_apenas_cidade, horario").eq("id", uid).maybeSingle(),
     supabase.from("produtos").select("id, disponivel").eq("user_id", uid),
     ...CAMPOS_NOVOS.map(c => supabase.from("profiles").select(c).eq("id", uid).maybeSingle()),
@@ -65,7 +66,8 @@ export async function lerPassos(uid: string): Promise<EstadoPassos> {
     horario: !!hor && ((hor.dias?.length || 0) > 0 || !!hor.abre_sabado || !!hor.abre_domingo),
     produto: ((produtos.data as any[]) || []).some((x) => x.disponivel !== false),
     compartilhou: !!p.cardapio_compartilhado || local,
-    pagamento: pagamentoConferido(uid) || ((produtos.data as any[]) || []).length > 0,
+    // (13/10) salvo também na conta (user_metadata), não só no aparelho
+    pagamento: pagamentoConferido(uid) || !!(conta as any)?.data?.user?.user_metadata?.pp_pagamento || ((produtos.data as any[]) || []).length > 0,
     perfil: { ...p, endereco: end, horario: hor },
     falhou,
   };
@@ -81,6 +83,7 @@ export function pagamentoConferido(uid: string) { try { return localStorage.getI
 export function marcarPagamentoConferido(uid: string | null | undefined) {
   if (!uid) return;
   try { localStorage.setItem(chavePagamento(uid), "1"); } catch {}
+  supabase.auth.updateUser({ data: { pp_pagamento: true } }).then(() => {}, () => {});
   window.dispatchEvent(new Event("doonly:passos"));
 }
 
