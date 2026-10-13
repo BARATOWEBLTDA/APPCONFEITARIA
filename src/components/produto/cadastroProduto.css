@@ -142,3 +142,7 @@ body .prod-modal--novo .pv3-card-ico { background: var(--ui-rosa-claro); color: 
 /* (13/10) "Monte seu kit": a janela do cadastro é estreita, então fica uma coluna só (as 2 colunas espremiam tudo no computador) */
 body .prod-modal--novo .kq-grid2 { grid-template-columns: minmax(0, 1fr); }
 body .prod-modal--novo .kq-prev { position: static; }
+
+/* (13/10) "Como você vende" no Básico */
+body .prod-modal--novo .prod-como-vende { max-width: 420px; }
+body .prod-modal--novo .prod-como-vende-dica { margin: 6px 0 0; font-size: 12.5px; color: var(--ui-texto-3); }

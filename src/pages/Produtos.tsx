@@ -5,7 +5,8 @@ import { LIMITE_PRODUTOS_GRATIS } from "@/lib/limitesPlano";
 import CampoNumero from "@/components/ui/CampoNumero";
 import { useLocation, useNavigate } from "react-router-dom";
 import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
-import { kitAtivo, precoMinKit, presetKit, kitsValidos, type KitQtdConfig } from "@/lib/kitQuantidade";
+import EscolhasProduto from "@/components/produto/EscolhasProduto";
+import { kitAtivo, precoMinKit, kitsValidos, type KitQtdConfig } from "@/lib/kitQuantidade";
 import TipoProdutoTela, { type TipoProduto as TipoCadastro } from "@/components/produto/TipoProdutoTela";
 import SucessoProdutoTela from "@/components/produto/SucessoProdutoTela";
 import { precoCardapio, precoCardapioComPromocao } from "@/lib/precoCardapio";
@@ -3868,13 +3869,10 @@ export default function Produtos() {
       ...(!(f.grupo_recheios?.opcoes?.length) ? { grupo_recheios: { ...(f.grupo_recheios || GRUPO_VAZIO), ativo: false } } : {}),
       ...(!((f as any).kit_qtd?.sabores?.length) ? { kit_qtd: null } : {}),
       ...(cat ? { categoria: cat } : {}),
-      ...(tp === "bolos" ? { forma_venda: "unidade" } : {}),
-      ...(tp === "doces" ? { kit_qtd: presetKit("docinhos"), forma_venda: "kit" } : {}),
+      // (13/10) o tipo só sugere: o kit (cento, 50, 100) e o tamanho são ligados na tela de Escolhas
+      ...(tp === "bolos" ? { forma_venda: "kg" } : { forma_venda: "unidade" }),
       // Kit festa: tamanhos do combo (20, 40, 60 pessoas…) com preço fixo cada
-      ...(tp === "kitfesta" ? {
-        grupo_tamanhos: { ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO), ativo: true, min: 1, max: 1, modo_preco_tamanho: "preco_fixo", nome_exibicao: "Tamanhos do combo" },
-      } : {}),
-      ...(tp === "salgados" ? { kit_qtd: presetKit("salgados"), forma_venda: "kit" } : {}),
+
     } as any));
     setKitTela(false); setBoloPrecoTela(false); setTipoCadastro(tp); setTipoTela(false); setWizardStep(2);
     // Conta sem uma categoria desse tipo (02/10): cria sozinha e já seleciona. Antes, numa conta nova,
@@ -3908,13 +3906,12 @@ export default function Produtos() {
       })();
     }
   };
-  const isBolo = tipoCadastro === "bolos" && !form.id;
+  // (13/10) o bolo usa o mesmo cadastro dos outros tipos (Escolhas → Preço): as telas próprias do bolo saíram do caminho
+  const isBolo: boolean = false;
   // Edição de bolo nas telas novas: só quando o produto usa o que essas telas cobrem
   // (massa, recheio, cobertura e tamanhos por preço fixo ou pelo peso). Senão, abas antigas.
   const isKitEdit = !!form.id && kitAtivo((form as any).kit_qtd);
-  const isBoloEdit = !!form.id && /bolo/i.test(form.categoria || "") && !kitAtivo((form as any).kit_qtd)
-    && !form.grupo_sabores?.ativo
-    && (!form.grupo_tamanhos?.ativo || ["preco_fixo", "por_peso", undefined].includes(form.grupo_tamanhos?.modo_preco_tamanho as any));
+  const isBoloEdit: boolean = false; // (13/10) edição do bolo também na tela de Escolhas
   // Liga/desliga e edita o kit (Tamanhos e Sabores saem quando o kit liga)
   const onKitChange = (k: KitQtdConfig) => setForm(f => {
     const ligando = k.ativo && !kitAtivo((f as any).kit_qtd);
@@ -4935,15 +4932,10 @@ export default function Produtos() {
               <div className="prod-modal-title-wrap">
                 {!form.id && (() => {
                   // Um tracinho por tela do cadastro (a tela de tipos é a 1ª)
-                  const comKit = kitAtivo((form as any).kit_qtd);
-                  const total = isBolo || comKit ? 6 : 5;
-                  let atual = 2;
-                  if (wizardStep === 3) atual = comKit && kitTela ? 4 : 3;
-                  if (wizardStep === 4) atual = isBolo ? (boloPrecoTela ? 5 : 4) : (comKit ? 5 : 4);
-                  if (wizardStep === 5) atual = total;
-                  const nomes = isBolo ? ["Tipo", "Sobre o produto", "Opções", "Tamanhos", "Preço", "Fotos e entrega"]
-                    : comKit ? ["Tipo", "Sobre o produto", "Opções", "Kit", "Preço", "Fotos e entrega"]
-                    : ["Tipo", "Sobre o produto", "Opções", "Preço", "Fotos e entrega"];
+                  // (13/10) o mesmo caminho pra todos os tipos: Tipo → Sobre o produto → Escolhas → Preço → Fotos e entrega
+                  const total = 5;
+                  const atual = wizardStep;
+                  const nomes = ["Tipo", "Sobre o produto", "Escolhas", "Preço", "Fotos e entrega"];
                   return (
                     <>
                       <div className="prod-modal-title-novo">Novo produto</div>
@@ -4965,11 +4957,8 @@ export default function Produtos() {
             {/* ══════ Tabs do MODO EDIÇÃO (V3 — 4 tabs espelhando o wizard) ══════ */}
             {form.id && (() => {
               // As abas espelham as etapas do cadastro de cada tipo
-              const abas: { id: typeof editTab; label: string }[] = isBoloEdit
-                ? [{ id: "info", label: "Info" }, { id: "opcoes", label: "Opções" }, { id: "tamanhos", label: "Tamanhos" }, { id: "preco", label: "Preço" }, { id: "fotos", label: "Fotos" }]
-                : isKitEdit
-                  ? [{ id: "info", label: "Info" }, { id: "kit", label: "Kit" }, { id: "fotos", label: "Fotos" }]
-                  : [{ id: "info", label: "Info" }, { id: "opcoes", label: "Opções" }, { id: "preco", label: "Preço" }, { id: "fotos", label: "Fotos" }];
+              // (13/10) as mesmas abas pra todos: o kit e os tamanhos ficam dentro de Escolhas
+              const abas: { id: typeof editTab; label: string }[] = [{ id: "info", label: "Info" }, { id: "opcoes", label: "Escolhas" }, { id: "preco", label: "Preço" }, { id: "fotos", label: "Fotos" }];
               return (
                 <div className="prod-edit-tabs">
                   {abas.map(a => (
@@ -5135,6 +5124,22 @@ export default function Produtos() {
                   />
                 </div>
 
+                {/* (13/10) Como vende: dá sentido ao preço (do produto ou do kg) e aos tamanhos pelo peso */}
+                {!kitAtivo((form as any).kit_qtd) && (
+                  <div className="prod-field">
+                    <label className="prod-field-label-novo">Como você vende</label>
+                    <div className="esc-seg esc-seg--2 prod-como-vende" role="radiogroup" aria-label="Como você vende">
+                      <button type="button" role="radio" aria-checked={form.forma_venda !== "kg"} className={form.forma_venda !== "kg" ? "on" : ""}
+                        onClick={() => setForm(f => ({ ...f, forma_venda: f.forma_venda === "kg" ? "unidade" : f.forma_venda,
+                          ...(f.grupo_tamanhos?.modo_preco_tamanho === "por_peso" ? { grupo_tamanhos: { ...f.grupo_tamanhos, modo_preco_tamanho: "preco_fixo" } } : {}) }))}>Por unidade</button>
+                      <button type="button" role="radio" aria-checked={form.forma_venda === "kg"} className={form.forma_venda === "kg" ? "on" : ""}
+                        onClick={() => setForm(f => ({ ...f, forma_venda: "kg",
+                          ...(f.grupo_tamanhos?.ativo ? { grupo_tamanhos: { ...f.grupo_tamanhos, modo_preco_tamanho: "por_peso" } } : {}) }))}>Por quilo (kg)</button>
+                    </div>
+                    <p className="prod-como-vende-dica">{form.forma_venda === "kg" ? "O preço é do quilo. Os tamanhos saem pelo peso." : "O preço é de uma peça. Cento e kit você monta no próximo passo."}</p>
+                  </div>
+                )}
+
                 {/* 2. Categoria */}
                 <div className="prod-field" id="prod-categoria-campo">
                   <label className="prod-field-label-novo">Categoria <ReqTag /></label>
@@ -5284,54 +5289,10 @@ export default function Produtos() {
             )}
 
             {/* ══════ WIZARD STEP 3 (UNIFICADO — PERSONALIZAÇÃO V3) ══════ */}
-            {wizardStep === 3 && !form.id && kitTela && (
+            {/* (13/10) Escolhas: a mesma tela pra todos os tipos, no cadastro e na edição */}
+            {((wizardStep === 3 && !form.id) || (form.id && (editTab === "opcoes" || editTab === "kit" || editTab === "tamanhos"))) && (
               <div className="prod-modal-body">
-                <h2 className="cad-h2" style={{ marginBottom: 0 }}>Monte seu kit</h2>
-                <KitQuantidadeEditor modo="completo" kit={(form as any).kit_qtd} onChange={onKitChange} nomeProduto={form.nome} />
-              </div>
-            )}
-            {wizardStep === 3 && isBolo && (
-              <div className="prod-modal-body">
-                <BoloOpcoesStep form={form} setForm={setForm as any} />
-              </div>
-            )}
-            {form.id && editTab === "kit" && isKitEdit && (
-              <div className="prod-modal-body">
-                <KitQuantidadeEditor modo="completo" kit={(form as any).kit_qtd} onChange={onKitChange} nomeProduto={form.nome} />
-              </div>
-            )}
-            {form.id && editTab === "opcoes" && isBoloEdit && (
-              <div className="prod-modal-body">
-                <BoloOpcoesStep form={form} setForm={setForm as any} edicao />
-              </div>
-            )}
-            {((wizardStep === 3 && !form.id && !kitTela && !isBolo) || (form.id && editTab === "opcoes" && !isBoloEdit)) && (
-              <div className="prod-modal-body">
-                <PersonalizacaoStep
-                  grupoMassas={form.grupo_massas || GRUPO_VAZIO}
-                  grupoRecheios={form.grupo_recheios || GRUPO_VAZIO}
-                  grupoCoberturas={form.grupo_coberturas || GRUPO_VAZIO}
-                  grupoSabores={form.grupo_sabores || GRUPO_SABORES_VAZIO}
-                  grupoTamanhos={form.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO}
-                  precoBase={form.preco_normal || 0}
-                  quantidadeBase={form.quantidade_base ?? null}
-                  formaVenda={form.forma_venda || "unidade"}
-                  onChange={(patch) => setForm(f => ({ ...f, ...patch }))}
-                  onPrecoBaseChange={(v) => setForm(f => ({ ...f, preco_normal: v }))}
-                  onFormaVendaChange={(v) => setForm(f => ({ ...f, forma_venda: v }))}
-                  mobileMode={isMobileMain && !form.id ? mobilePersonaStep : undefined}
-                  onGoToFill={() => setMobilePersonaStep("fill")}
-                  onBackToChecklist={() => setMobilePersonaStep("checklist")}
-                  primeiroNome={primeiroNome}
-                  produtoNome={form.nome}
-                  produtoCategoria={form.categoria}
-                  ocultarTamanhosSabores={kitAtivo((form as any).kit_qtd)}
-                  slotTopo={<KitQuantidadeEditor modo="compacto" kit={(form as any).kit_qtd} onChange={onKitChange} />}
-                />
-                {/* Edição: o kit fica aqui mesmo, completo */}
-                {form.id && kitAtivo((form as any).kit_qtd) && (
-                  <KitQuantidadeEditor modo="completo" kit={(form as any).kit_qtd} onChange={onKitChange} nomeProduto={form.nome} />
-                )}
+                <EscolhasProduto form={form} setForm={setForm as any} tipo={form.id ? null : tipoCadastro} onKitChange={onKitChange} />
               </div>
             )}
 
@@ -5617,7 +5578,7 @@ export default function Produtos() {
                     ) : kits.map((x: any) => (
                       <div className="kitp-row" key={x.id}><span>Kit de {x.qtd} un.</span><b>R$ {formatPreco(x.preco)}{promoOn && pct > 0 && <em> → R$ {formatPreco(x.preco * (1 - pct / 100))}</em>}</b></div>
                     ))}
-                    <p className="kitp-dica">Pra mudar um preço, volte em "Monte seu kit".</p>
+                    <p className="kitp-dica">Pra mudar um preço, volte em Escolhas › Quantidade.</p>
                     <div style={{ marginTop: 12 }}>
                       <Toggle label="Colocar em promoção" value={promoOn} colorClass="active-pink"
                         onChange={(v: boolean) => setForm(f => ({ ...f, promocao: v, tipo_promocao: "percentual", desconto_percentual: v ? (f.desconto_percentual || 10) : 0, preco_promocional: 0 }))} />
@@ -5705,7 +5666,7 @@ export default function Produtos() {
                     );
                   })()}
 
-                  <div className="prod-field" style={{marginTop: 14}}>
+                  {!(form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") && <div className="prod-field" style={{marginTop: 14}}>
                     <label>Vendido por</label>
                     <SelectDoonly
                       value={form.forma_venda}
@@ -5714,7 +5675,7 @@ export default function Produtos() {
                       title="Como esse produto é vendido?"
                       big
                     />
-                  </div>
+                  </div>}
                 </div>
               )}
 
@@ -5736,8 +5697,8 @@ export default function Produtos() {
                 </div>
               )}
 
-              {/* ══════ SEÇÃO 2: Adicionais das opções ══════ */}
-              {((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco" && !isBoloEdit)) && (() => {
+              {/* ══════ SEÇÃO 2: Adicionais das opções ══════ (13/10: os valores agora ficam nas Escolhas) */}
+              {false && ((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco" && !isBoloEdit)) && (() => {
                 const gruposComOpcoes = [
                   { key: "massas", label: "Massas", grupo: form.grupo_massas },
                   { key: "recheios", label: "Recheios", grupo: form.grupo_recheios },
@@ -6156,19 +6117,17 @@ export default function Produtos() {
                   if (wizardStep === 3 && isBolo) return boloOpcoesFalta(form);
                   if (wizardStep === 4 && isBolo) return boloPrecoTela ? boloPrecoFalta(form, boloTam) : boloTamanhosFalta(form, boloTam);
                   if (wizardStep === 3) {
-                    // Mobile na etapa checklist: produto sem opções também pode seguir (vai direto pro preço)
-                    if (isMobileMain && !form.id && mobilePersonaStep === "checklist" && !kitTela) return null;
-                    // Tela "Monte seu kit": precisa estar completo
-                    if (kitTela) return faltaKit((form as any).kit_qtd);
-                    const grupos: [string, any][] = [["grupo_massas", form.grupo_massas], ["grupo_recheios", form.grupo_recheios], ["grupo_coberturas", form.grupo_coberturas], ["grupo_tamanhos", form.grupo_tamanhos]];
+                    // (13/10) kit ligado: precisa estar completo · escolha ligada: precisa ter pelo menos 1 opção
+                    if (kitAtivo((form as any).kit_qtd)) { const fk = faltaKit((form as any).kit_qtd); if (fk) return fk; }
+                    const grupos: [string, any][] = [["grupo_massas", form.grupo_massas], ["grupo_recheios", form.grupo_recheios], ["grupo_coberturas", form.grupo_coberturas], ["grupo_sabores", form.grupo_sabores], ["grupo_tamanhos", form.grupo_tamanhos]];
                     const vazio = grupos.find(([, g]) => g?.ativo && (g?.opcoes.length || 0) === 0);
-                    if (vazio) return { msg: `Adicione pelo menos 1 ${NOME_GRUPO[vazio[0]]} (ou desligue essa opção)` };
+                    if (vazio) return { msg: `Coloque pelo menos 1 ${NOME_GRUPO[vazio[0]] || "sabor"} (ou toque em Tirar)`, alvo: `[data-falta="${vazio[0]}"]` };
                     return null;
                   }
                   // Step 4: Preço e venda — valida preço base OU preços dos tamanhos
                   if (wizardStep === 4) {
                     // Kit por quantidade: o preço vem dos kits
-                    if (kitAtivo((form as any).kit_qtd)) return precoMinKit((form as any).kit_qtd) > 0 ? null : { msg: 'Volte em "Monte seu kit" e coloque o preço dos kits' };
+                    if (kitAtivo((form as any).kit_qtd)) return precoMinKit((form as any).kit_qtd) > 0 ? null : { msg: 'Volte em Escolhas e coloque o preço dos kits' };
                     const gt = form.grupo_tamanhos;
                     const temTamanhoAtivo = gt?.ativo && gt.opcoes.length > 0;
                     // 11/10: preço promocional maior ou igual ao cheio não é promoção: avisa e não avança
@@ -6240,7 +6199,7 @@ export default function Produtos() {
                       if (!canAdvance) { irParaFalta(); return; }
                       // Mobile: se está no checklist da personalização, primeiro avança pra fill (não pro próximo step)
                       const kitLigado = kitAtivo((form as any).kit_qtd);
-                      if (isMobileMain && !form.id && wizardStep === 3 && mobilePersonaStep === "checklist" && !isBolo && !kitTela) {
+                      if (false && isMobileMain && !form.id && wizardStep === 3 && mobilePersonaStep === "checklist" && !isBolo && !kitTela) {
                         const outros = [form.grupo_massas, form.grupo_recheios, form.grupo_coberturas, form.grupo_sabores, form.grupo_tamanhos].some(g => g?.ativo);
                         // Só o kit ligado: vai direto pra "Monte seu kit"
                         if (kitLigado && !outros) { setKitTela(true); return; }
@@ -6252,7 +6211,7 @@ export default function Produtos() {
                       // Bolo: depois dos tamanhos vem a tela de preço
                       if (!form.id && wizardStep === 4 && isBolo && !boloPrecoTela) { setBoloPrecoTela(true); return; }
                       // Kit ligado: depois das opções vem a tela "Monte seu kit"
-                      if (!form.id && wizardStep === 3 && kitLigado && !kitTela) { setKitTela(true); return; }
+                      void kitLigado; // (13/10) o kit agora é montado dentro de Escolhas
                       setWizardStep(s => (s + 1) as 1 | 2 | 3 | 4 | 5);
                     }}
                   >

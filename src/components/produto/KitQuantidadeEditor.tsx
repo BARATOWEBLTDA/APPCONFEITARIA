@@ -253,7 +253,7 @@ const CSS = `
   .kq-modelo-on b { display: inline-flex; align-items: center; gap: 5px; color: var(--ui-texto); font-weight: 700; } .kq-modelo-on b svg { flex: none; color: var(--ui-rosa-escuro); }
   .kq-trocar { margin-left: auto; border: none; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-weight: 700; font-size: 13px; cursor: pointer; }
   .kq-chk { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 4px; }
-  .kq-chk span { font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 999px; background: #FFF7ED; color: var(--ui-laranja); } .kq-chk span.ok { background: #F0FDF4; color: var(--ui-verde); }
+  .kq-chk span { font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 6px; background: #FFF7ED; color: var(--ui-laranja); } .kq-chk span.ok { background: #F0FDF4; color: var(--ui-verde); }
   .kq-grid2 { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; margin-top: 8px; }
   @media (min-width: 900px) {
     .kq-grid2 { grid-template-columns: minmax(0, 1fr) 290px; } .kq-prev { position: sticky; top: 0; align-self: start; }
@@ -266,7 +266,7 @@ const CSS = `
   .kq-n { width: 28px; height: 28px; border-radius: 50%; background: var(--ui-vinho-escuro); color: var(--ui-branco); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0; } .kq-n.ok { background: #16a34a; }
   .kq-sth b { font-size: 15px; display: block; } .kq-sth small { font-size: 12px; color: #888780; }
   .kq-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .kq-chip { display: inline-flex; align-items: center; gap: 6px; padding: 7px 8px 7px 12px; border-radius: 999px; background: #FCE7F3; color: #9D174D; font-weight: 700; font-size: 13px; }
+  .kq-chip { display: inline-flex; align-items: center; gap: 6px; padding: 7px 8px 7px 12px; border-radius: 8px; background: #FCE7F3; color: #9D174D; font-weight: 700; font-size: 13px; }
   .kq-chip button { border: none; background: none; color: #C4789C; font-size: 12px; cursor: pointer; padding: 0 2px; }
   .kq-addrow { display: flex; gap: 8px; margin-top: 10px; }
   .kq-addrow input { flex: 1; min-width: 0; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); padding: 11px 12px; font-family: inherit; font-size: 16px; color: var(--ui-texto); }
@@ -275,9 +275,9 @@ const CSS = `
   .kq-sug-l { margin: 12px 0 6px; font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
   /* 10/10: as sugestões quebram linha (antes cortavam na borda: "+ Ni") */
   .kq-sug { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 2px; }
-  .kq-sug button { min-height: 36px; white-space: nowrap; padding: 6px 11px; border: 1.5px dashed #F3C9DA; border-radius: 999px; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-weight: 700; font-size: 12.5px; cursor: pointer; }
+  .kq-sug button { min-height: 36px; white-space: nowrap; padding: 6px 11px; border: 1.5px dashed #F3C9DA; border-radius: 8px; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-weight: 700; font-size: 12.5px; cursor: pointer; }
   .kq-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
-  .kq-op { border: 1.5px solid #EAE3E6; border-radius: 14px; padding: 11px; background: var(--ui-branco); text-align: left; font-family: inherit; cursor: pointer; color: var(--ui-texto); }
+  .kq-op { border: 1.5px solid #EAE3E6; border-radius: 10px; padding: 11px; background: var(--ui-branco); text-align: left; font-family: inherit; cursor: pointer; color: var(--ui-texto); }
   .kq-op.on { border-color: var(--ui-texto); background: #FAF7F8; }
   .kq-op b { font-size: 13.5px; display: flex; align-items: center; gap: 8px; }
   .kq-op b i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #C4B8BE; display: inline-block; flex-shrink: 0; } .kq-op.on b i { border: 5px solid var(--ui-texto); }
