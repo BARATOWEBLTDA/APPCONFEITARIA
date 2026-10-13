@@ -1228,15 +1228,19 @@ export default function Auth() {
           .auth-root { padding-top: 16px; padding-bottom: 16px; }
           .auth-rodape { padding-top: 6px; }
           .cadastro-form { gap: 10px; padding-top: 0; }
-          .auth-card:has(.cadastro-form) { padding: 28px 40px !important; }
+          .auth-card:has(.cadastro-form) { padding: 28px 40px !important; max-width: none; } /* 13/10: ocupa a metade toda (antes ficava em 360px e os campos lado a lado cortavam o texto) */
           .auth-card:has(.cadastro-form) .auth-text-hdr { margin-bottom: 12px; }
           .cadastro-form .cad-field { height: 44px; }
           .cadastro-form .cad-eye { height: 42px; }
           .cadastro-form .cad-lb { margin-bottom: 2px; line-height: 1.3; }
           .cadastro-form .cad-field-wrap { gap: 2px; }
           .cad-par { display: grid; column-gap: 12px; row-gap: 6px; align-items: start; }
-          .cad-par--loja { grid-template-columns: 1.4fr 1fr; }
-          .cad-par--senha { grid-template-columns: 1fr 1fr; grid-template-areas: "senha conf" "regras regras"; }
+          /* 13/10: minmax(0, …) e min-width 0: sem isso o campo da direita (WhatsApp, Confirmar a senha) passava pra fora do cartão */
+          .cad-par--loja { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+          .cad-par--senha { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "senha conf" "regras regras"; }
+          .cad-par > * { min-width: 0; }
+          .cad-par .cad-field, .cad-par input { min-width: 0; max-width: 100%; box-sizing: border-box; }
+          .cad-par input { width: 100%; }
           .cad-par--senha .cad-a-senha { grid-area: senha; }
           .cad-par--senha .cad-a-conf { grid-area: conf; }
           .cad-par--senha .cad-a-regras { grid-area: regras; margin-top: 0; }
