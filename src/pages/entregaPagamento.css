@@ -68,3 +68,13 @@
 .ep-excluir { align-self: flex-start; padding: 0; color: var(--ui-vermelho); }
 .ep-cupons-pe { display: flex; flex-direction: column; gap: 8px; }
 @media (min-width: 768px) { .ep-cupons-pe { flex-direction: row; } }
+
+/* (13/10) barra "Continuar" de quem veio dos Primeiros passos */
+.ep-passos { position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); z-index: 51; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 16px; background: var(--ui-branco); border-top: 1px solid var(--ui-borda); box-shadow: 0 -6px 18px rgba(44, 18, 25, .08); font-family: var(--font-base); }
+.ep-passos span { min-width: 0; }
+.ep-passos b { display: block; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); white-space: nowrap; }
+.ep-passos small { display: block; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ep-passos .ui-bt { flex: none; min-width: 140px; }
+.ep--passos { padding-bottom: 96px; }
+@media (min-width: 901px) { .ep-passos { left: 220px; bottom: 0; padding: 14px 32px; } }

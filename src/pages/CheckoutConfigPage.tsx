@@ -10,7 +10,8 @@ import { supabase } from "@/lib/supabase"
 import { explicarErro } from "@/lib/erros"
 import { parseNumBR } from "@/lib/numeroBR"
 import { marcarPagamentoConferido } from "@/lib/primeirosPassos"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
+import { createPortal } from "react-dom"
 import AppPageHeader from "@/components/AppPageHeader"
 import { usePlano } from "@/hooks/usePlano"
 
@@ -36,6 +37,8 @@ const numBR = parseNumBR
 
 export default function CheckoutConfigPage() {
   const navigate = useNavigate()
+  // (13/10) veio dos Primeiros passos: barra embaixo com o "Continuar" pro último passo (o primeiro produto)
+  const dosPassos = !!(useLocation().state as { dosPassos?: boolean } | null)?.dosPassos
   const { isPro } = usePlano()
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
@@ -300,7 +303,12 @@ export default function CheckoutConfigPage() {
   return (
     <>
       <AppPageHeader title="Entrega e pagamento" subtitle="Pagamento, entrega e cupons" onBack={() => navigate("/cardapio")} />
-      <div className="ep">
+      {dosPassos && createPortal(
+        <div className="ep-passos">
+          <span><b>Passo 5 de 6</b><small>Confira e siga pro último</small></span>
+          <Botao onClick={() => navigate("/produtos", { state: { abrirCadastro: true } })}>Continuar</Botao>
+        </div>, document.body)}
+      <div className={`ep${dosPassos ? " ep--passos" : ""}`}>
         <p className="ep-salva"><Check size={16} weight="bold" aria-hidden="true" />Tudo aqui salva sozinho.</p>
 
         {/* Pagamento */}
