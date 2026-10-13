@@ -51,9 +51,9 @@ function SinoMenu() {
   const { pathname } = useLocation();
   const n = notifCount > 9 ? "9+" : String(notifCount);
   return (
-    <button type="button" className={`sidebar-sino${pathname === "/notificacoes" ? " ativo" : ""}`} onClick={() => navigate("/notificacoes")}
+    <button type="button" className={`sidebar-sino${pathname === "/notificacoes" ? " ativo" : ""}${notifCount > 0 ? " sidebar-sino--novo" : ""}`} onClick={() => navigate("/notificacoes")}
       aria-label={notifCount > 0 ? `Notificações, ${notifCount} nova${notifCount > 1 ? "s" : ""}` : "Notificações"}>
-      <Bell size={20} weight={pathname === "/notificacoes" ? "fill" : "bold"} />
+      <Bell size={20} weight={pathname === "/notificacoes" || notifCount > 0 ? "fill" : "bold"} />
       {notifCount > 0 && <span className="sidebar-sino-n" aria-hidden="true">{n}</span>}
     </button>
   );
@@ -311,6 +311,12 @@ export default function Layout() {
         .sidebar-sino { position: absolute; top: 0.75rem; right: 0.75rem; z-index: 2; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 0; border-radius: 12px; background: rgba(255, 255, 255, .08); color: rgba(255, 255, 255, .86); cursor: pointer; }
         .sidebar-sino:hover, .sidebar-sino.ativo { background: rgba(255, 255, 255, .16); color: #fff; }
         .sidebar-sino:focus-visible { outline: 3px solid rgba(255, 255, 255, .6); outline-offset: 1px; }
+        /* (13/10) notificação nova: o sino fica amarelo e balança de tempos em tempos, até ela ler */
+        .sidebar-sino--novo { color: #FACC15; background: rgba(250, 204, 21, .14); }
+        .sidebar-sino--novo:hover { color: #FDE047; background: rgba(250, 204, 21, .22); }
+        .sidebar-sino--novo svg { transform-origin: 50% 2px; animation: sinoBalanca 3s ease-in-out infinite; }
+        @keyframes sinoBalanca { 0%, 30%, 100% { transform: rotate(0); } 4% { transform: rotate(16deg); } 9% { transform: rotate(-14deg); } 14% { transform: rotate(10deg); } 19% { transform: rotate(-7deg); } 24% { transform: rotate(3deg); } }
+        @media (prefers-reduced-motion: reduce) { .sidebar-sino--novo svg { animation: none; } }
         .sidebar-sino-n { position: absolute; top: 4px; right: 3px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #E85A8C; color: #fff; font-size: 11px; font-weight: 600; line-height: 18px; text-align: center; box-shadow: 0 0 0 2px var(--sidebar-bg, #2C1219); }
         .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin-top: 0.75rem; margin-bottom: 0.5rem; padding-bottom: 0; }
 
