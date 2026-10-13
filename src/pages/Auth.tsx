@@ -207,6 +207,8 @@ export default function Auth() {
   };
 
   const handleLoginEmailBlur = () => {
+    // campo vazio só acusa ao tentar entrar (não ao passar pelo campo)
+    if (!form.email.trim()) return;
     setLoginEmailTouched(true);
     setLoginEmailError(validate.email(form.email));
   };
@@ -289,6 +291,8 @@ export default function Auth() {
   };
 
   const handleCadastroBlur = (field: keyof typeof cadastroForm) => {
+    // campo vazio só acusa ao clicar em "Criar conta" (não ao passar pelo campo)
+    if (!String(cadastroForm[field] ?? "").trim()) return;
     setCadastroTouched(prev => ({ ...prev, [field]: true }));
     if (field === "confirmarSenha") {
       const confErr = cadastroForm.confirmarSenha && cadastroForm.confirmarSenha !== cadastroForm.senha
