@@ -3,6 +3,7 @@ import { resumoItens } from "@/components/pedidos/pedidoTexto";
 import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
 import FaltaPouco from "@/components/FaltaPouco";
+import { LogoDaLoja } from "@/components/AppPageHeader";
 import { LinkDeVendas } from "@/components/loja/LinkDeVendas";
 import { PausarPedidos } from "@/components/loja/PausarPedidos";
 import { STATUS_AINDA_NAO_PRONTO, dataISO } from "@/lib/pedidoStatus";
@@ -758,6 +759,8 @@ export default function Inicio() {
               <div className="ini-dk-bts">
                 <button type="button" className="ini-dk-bt ini-dk-bt--1" onClick={() => navigate("/vendas/novo")}><Plus size={16} weight="bold" /> Nova venda</button>
                 <button type="button" className="ini-dk-bt ini-dk-bt--2" onClick={() => navigate("/agenda")}><CalendarDots size={16} weight="bold" /> Ver agenda</button>
+                {/* (13/10) a logo da loja no canto direito, como nas outras telas */}
+                <LogoDaLoja className="ini-dk-logo" />
               </div>
             </div>
             <div className="ini-dk-kpis">
@@ -1796,7 +1799,8 @@ export default function Inicio() {
           .ini-dk-atr { position: relative; z-index: 1; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
           .ini-dk-atr::after { content: ""; position: absolute; inset: -12px -4px; } /* área de toque de 44px */
           .ini-dk-atr:focus-visible { outline: 3px solid rgba(255, 255, 255, .75); outline-offset: 2px; border-radius: 4px; }
-          .ini-dk-bts { display: flex; gap: 10px; position: relative; z-index: 1; }
+          .ini-dk-bts { display: flex; align-items: center; gap: 10px; position: relative; z-index: 1; }
+          .ini-dk-logo { margin-left: 8px; }
           .ini-dk-bt { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: var(--ui-raio); font-family: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; white-space: nowrap; }
           .ini-dk-bt--1 { border: none; background: var(--ui-branco); color: var(--ui-rosa-escuro); box-shadow: 0 4px 12px rgba(0,0,0,.12); }
           .ini-dk-bt--2 { border: 1.5px solid rgba(255,255,255,.7); background: transparent; color: var(--ui-branco); }

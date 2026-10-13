@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
-  Bell, Cake, CalendarDots, Calculator, Camera, CaretLeft, ChartLineUp, CurrencyDollar, Info, Invoice, Lightbulb,
+  Bell, Cake, CalendarDots, Calculator, Camera, CaretLeft, ChartLineUp, Crown, CurrencyDollar, Info, Invoice, Lightbulb,
   ListDashes, Newspaper, Package, PaintBrush, Receipt, ShoppingBag, ShoppingCart, SquaresFour, User, Users,
 } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
@@ -10,7 +10,8 @@ import MenuConta from '@/components/MenuConta'
 import { ImageCropper } from '@/components/ui/ImageCropper'
 import { useProfile, avatarDaConta } from '@/hooks/useProfile'
 import { useAvatarUpload } from '@/hooks/useAvatarUpload'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { usePlano } from '@/hooks/usePlano'
 import { CardapioAbas, ROTAS_CARDAPIO } from '@/components/CardapioSubnav'
 import './appPageHeader.css'
 
@@ -45,10 +46,6 @@ const ICONE_DO_EMOJI: Record<string, Icon> = {
 
 export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, infoContent, infoTip, rightActions, onBack }: AppPageHeaderProps) {
   const [mostrarInfo, setMostrarInfo] = useState(false)
-  const [menuAberto, setMenuAberto] = useState(false)
-  const { profile } = useProfile()
-  const { fileInputRef, uploading: enviandoFoto, handleFileSelected, cropSrc, cancelCrop, handleCropDone } = useAvatarUpload()
-  const foto = useRef<HTMLButtonElement>(null)
   const IconeInfo = (infoIcon && ICONE_DO_EMOJI[infoIcon]) || Info
   const { pathname } = useLocation()
   const comAbas = ROTAS_CARDAPIO.includes(pathname)
@@ -71,25 +68,7 @@ export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, in
           <p className="cab-s">{subtitle}</p>
         </div>
         {rightActions && <div className="cab-acoes">{rightActions}</div>}
-        <div className="cab-foto-area">
-          {/* (07/10 · 3.07) a foto abre o menu da conta em todo lugar onde aparece (celular e tablet, até 900px).
-              Antes, de 768px pra cima, ela trocava a foto, e no tablet em pé não havia caminho pra "Sair". */}
-          <button
-            ref={foto} type="button" className="cab-foto" onClick={() => setMenuAberto(a => !a)}
-            aria-label="Abrir o menu da conta" aria-haspopup="dialog" aria-expanded={menuAberto}
-          >
-            {avatarDaConta(profile)
-              ? <img src={avatarDaConta(profile)} alt="" className="cab-foto-img" />
-              : <User size={24} weight="bold" aria-hidden="true" />}
-          </button>
-          {/* sem foto: a câmera é o atalho pra colocar uma (agora é um botão de verdade; antes era só enfeite) */}
-          {!avatarDaConta(profile) && (
-            <button type="button" className="cab-foto-cam" disabled={enviandoFoto} onClick={() => fileInputRef.current?.click()} aria-label="Colocar uma foto" title="Colocar uma foto">
-              <Camera size={16} weight="bold" aria-hidden="true" />
-            </button>
-          )}
-          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelected} style={{ display: 'none' }} tabIndex={-1} aria-hidden="true" />
-        </div>
+        <LogoDaLoja />
         {comAbas && <CardapioAbas />}
       </header>
 
@@ -109,9 +88,50 @@ export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, in
         </Janela>
       )}
 
-      <MenuConta aberto={menuAberto} aoFechar={() => setMenuAberto(false)} ancora={foto} />
+    </>
+  )
+}
 
-      {/* (07/10 · 3.05) faltava a janela de recortar: no tablet, escolher a foto pelo cabeçalho não fazia nada */}
+/**
+ * A logo da loja (ou a foto) no canto direito da faixa rosa. Abre o menu da conta.
+ * (13/10) Agora também no computador, como nos outros apps de gestão: a marca Doonly fica no topo do menu da esquerda.
+ * No computador, conta grátis ganha o atalho "Seja PRO" do lado; conta PRO ganha a coroinha na logo.
+ */
+export function LogoDaLoja({ className = '' }: { className?: string }) {
+  const [menuAberto, setMenuAberto] = useState(false)
+  const { profile } = useProfile()
+  const { isPro, loading: carregandoPlano } = usePlano()
+  const navigate = useNavigate()
+  const { fileInputRef, uploading: enviandoFoto, handleFileSelected, cropSrc, cancelCrop, handleCropDone } = useAvatarUpload()
+  const foto = useRef<HTMLButtonElement>(null)
+  return (
+    <>
+      <div className={`cab-foto-area ${className}`}>
+        {!carregandoPlano && !isPro && (
+          <button type="button" className="cab-seja-pro" onClick={() => navigate('/assinar')}><Crown size={13} weight="fill" aria-hidden="true" />Seja PRO</button>
+        )}
+        <div className="cab-foto-caixa">
+          {/* (07/10 · 3.07) a foto abre o menu da conta em todo lugar onde aparece */}
+          <button
+            ref={foto} type="button" className="cab-foto" onClick={() => setMenuAberto(a => !a)}
+            aria-label="Abrir o menu da conta" aria-haspopup="dialog" aria-expanded={menuAberto}
+          >
+            {avatarDaConta(profile)
+              ? <img src={avatarDaConta(profile)} alt="" className="cab-foto-img" />
+              : <User size={24} weight="bold" aria-hidden="true" />}
+          </button>
+          {isPro && <span className="cab-foto-pro" aria-label="Plano PRO"><Crown size={11} weight="fill" /></span>}
+          {/* sem foto: a câmera é o atalho pra colocar uma */}
+          {!avatarDaConta(profile) && (
+            <button type="button" className="cab-foto-cam" disabled={enviandoFoto} onClick={() => fileInputRef.current?.click()} aria-label="Colocar uma foto" title="Colocar uma foto">
+              <Camera size={16} weight="bold" aria-hidden="true" />
+            </button>
+          )}
+        </div>
+        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelected} style={{ display: 'none' }} tabIndex={-1} aria-hidden="true" />
+      </div>
+      <MenuConta aberto={menuAberto} aoFechar={() => setMenuAberto(false)} ancora={foto} />
+      {/* (07/10 · 3.05) a janela de recortar a foto */}
       {cropSrc && <ImageCropper imageSrc={cropSrc} aspect={1} cropShape="round" onCancel={cancelCrop} onCropDone={handleCropDone} />}
     </>
   )

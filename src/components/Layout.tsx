@@ -23,6 +23,7 @@ import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import { supabase } from "@/lib/supabase";
 import { VERSAO_APP } from "@/lib/versao";
+import { Mascote, NomeDoonly } from "@/components/marca/Mascote";
 
 function SidebarGroup({ label, icon, paths, location, children }: { label: string; icon?: ReactNode; paths: string[]; location: any; children: ReactNode }) {
   const isAnyActive = paths.some(p => location.pathname.startsWith(p));
@@ -166,31 +167,12 @@ export default function Layout() {
       {/* (13/10) as telas do Cardápio digital agora têm abas na faixa rosa (AppPageHeader), não um 2º menu lateral */}
       {/* ── Sidebar Desktop ── */}
       <aside className="sidebar">
-        {/* (13/10) topo numa linha só: logo pequena, saudação, PRO e o sino (antes a foto grande e a data ocupavam ~180px) */}
+        {/* (13/10) topo do menu: a marca Doonly (branca) e o sino. A logo da loja fica no canto direito da faixa rosa. */}
         <div className="sb-topo">
-          <button type="button" className="sb-logo" onClick={abrirSeletorFoto} disabled={uploadingFoto}
-            aria-label={avatarDaConta(profile) ? "Trocar a foto" : "Colocar uma foto"} title={avatarDaConta(profile) ? "Trocar a foto" : "Colocar uma foto"}>
-            {avatarDaConta(profile)
-              ? <img src={avatarDaConta(profile)} alt="" />
-              : <span className="sb-logo-letra">{(profile?.nome || "?").trim().charAt(0).toUpperCase()}</span>}
-            {!avatarDaConta(profile) && <i className="sb-logo-cam" aria-hidden="true"><Camera size={10} weight="fill" /></i>}
+          <button type="button" className="sb-marca" onClick={() => navigate("/inicio")} aria-label="Doonly, ir pro início">
+            {recolhido ? <Mascote pose="acenando" className="sb-marca-masc" /> : <NomeDoonly cor="branco" className="sb-marca-nome" />}
           </button>
-          <div className="sb-quem">
-            <b className="sb-ola">
-              {profile?.nome || (profile as any)?.nome_loja
-                ? <>Olá, {nomeCurtoLoja((profile as any)?.nome_loja) || profile?.nome?.split(" ")[0]}</>
-                : <span className="sidebar-greeting-skel" aria-hidden="true" />}
-            </b>
-            {/* o sino fica na linha do plano: assim a saudação usa a largura toda e não corta */}
-            <div className="sb-linha2">
-              {loadingPlano ? <span className="sb-plano sb-plano--skel" aria-hidden="true" />
-                : isPro ? <span className="sb-plano sb-plano--pro"><Crown size={11} weight="fill" aria-hidden="true" />PRO</span>
-                : <button type="button" className="sb-plano sb-plano--seja" onClick={() => navigate("/assinar")}><Crown size={11} weight="fill" aria-hidden="true" />Seja PRO</button>}
-              {computador && !recolhido && <SinoMenu />}
-            </div>
-          </div>
-          {computador && recolhido && <SinoMenu />}
-          <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleFileSelected} />
+          {computador && <SinoMenu />}
         </div>
 
         <nav className="sidebar-nav" aria-label="Menu principal">
@@ -477,7 +459,11 @@ export default function Layout() {
         .nav-item--group.active-parent { color: var(--ui-branco); font-weight: var(--fw-bold); }
 
         /* (13/10) topo numa linha: logo, saudação + plano, sino */
-        .sb-topo { display: flex; align-items: center; gap: 10px; padding: 0 0 12px; margin: 0 0 8px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .sb-topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 52px; padding: 2px 0 12px 4px; margin: 0 0 8px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .sb-marca { display: flex; align-items: center; padding: 0; border: 0; background: none; cursor: pointer; }
+        .sb-marca:focus-visible { outline: 3px solid rgba(255,255,255,0.7); outline-offset: 3px; border-radius: 6px; }
+        .sb-marca-nome { display: block; height: 34px; width: auto; }
+        .sb-marca-masc { display: block; width: 40px; height: 40px; object-fit: contain; }
         .sb-logo { position: relative; flex: none; width: 42px; height: 42px; padding: 0; border: 2px solid var(--ui-branco); border-radius: 50%; background: #993556; overflow: visible; cursor: pointer; }
         .sb-logo img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: #F8F5F6; display: block; }
         .sb-logo-letra { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 18px; font-weight: 700; color: var(--primary-light); }
@@ -490,7 +476,7 @@ export default function Layout() {
         .sb-plano--seja { background: var(--ui-branco); color: var(--primary); cursor: pointer; } .sb-plano--seja:hover { transform: translateY(-1px); }
         .sb-plano--skel { width: 56px; height: 17px; background: rgba(255,255,255,0.12); }
         .sb-linha2 { display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; }
-        .sb-topo .sidebar-sino { position: relative; top: auto; right: auto; flex: none; width: 30px; height: 30px; border-radius: 9px; }
+        .sb-topo .sidebar-sino { position: relative; top: auto; right: auto; flex: none; width: 36px; height: 36px; border-radius: 10px; }
         .sb-topo .sidebar-sino .sidebar-sino-n { top: -4px; right: -5px; }
         .nav-item--grupo .nav-seta { margin-left: auto; transition: transform var(--dur-fast) linear; }
         .nav-item--grupo .nav-seta.aberta { transform: rotate(180deg); }
