@@ -39,7 +39,7 @@ const GRUPOS: Grupo[] = [
     items: [
       { label: "Categorias",    desc: "Organize seus produtos", path: "/categorias",    Icone: SquaresFour },
       { label: "Ingredientes",  desc: "O que você compra",      path: "/insumos",       Icone: Package },
-      { label: "Receitas",      desc: "Suas receitas",          path: "/receitas",      Icone: BookOpen },
+      // 13/10: Receitas escondida até as fotos ficarem prontas
       { label: "Ficha técnica", desc: "Calcule o custo real",   path: "/ficha-tecnica", Icone: ClipboardText },
     ],
   },

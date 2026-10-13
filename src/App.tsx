@@ -33,6 +33,7 @@ import Agenda from "@/pages/Agenda";
 import Insumos from "@/pages/Insumos";
 import Assinar from "@/pages/Assinar";
 import ReceitasV2 from "@/pages/ReceitasV2";
+const RECEITAS_ATIVAS = false;
 import Notificacoes from "@/pages/Notificacoes";
 import SolicitarRecurso from "@/pages/SolicitarRecurso";
 import RelatarProblema from "@/pages/RelatarProblema";
@@ -430,7 +431,8 @@ export default function App() {
           <Route path="/noticias" element={<Noticias />} />
           <Route path="/noticias/:slug" element={<NoticiaDetalhe />} />
           <Route path="/assinar" element={<Assinar />} />
-          <Route path="/receitas" element={<ReceitasV2 />} />
+          {/* 13/10: Receitas escondida das confeiteiras até as fotos ficarem prontas (pra voltar: element={<ReceitasV2 />}) */}
+          <Route path="/receitas" element={RECEITAS_ATIVAS ? <ReceitasV2 /> : <Navigate to="/inicio" replace />} />
           <Route path="/notificacoes" element={<Notificacoes />} />
           <Route path="/solicitar-recurso" element={<SolicitarRecurso />} />
           <Route path="/relatar-problema" element={<RelatarProblema />} />

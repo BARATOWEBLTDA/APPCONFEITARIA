@@ -9,7 +9,7 @@ import ParabensPro from "@/components/pro/ParabensPro";
 import DooIA from "@/components/DooIA";
 import MaisDrawer from "@/components/MaisDrawer";
 import { useState, useEffect, type ReactNode } from "react";
-import {
+import { ClipboardText,
   House, CalendarDots, ShoppingBag, Users, BookOpen,
   Package, CurrencyDollar, Gear, CaretDown,
   SquaresFour, Camera, Plus,
@@ -200,7 +200,8 @@ export default function Layout() {
           <ItemMenu to="/agenda" icone={CalendarDots}>Agenda</ItemMenu>
           <ItemMenu to="/clientes" icone={Users}>Clientes</ItemMenu>
           <ItemMenu to="/insumos" icone={Package}>Ingredientes</ItemMenu>
-          <ItemMenu to="/receitas" icone={BookOpen} ativoSe={c => c.startsWith("/comunidade") || c.startsWith("/ficha-tecnica")}>Receitas</ItemMenu>
+          {/* 13/10: Receitas escondida até as fotos ficarem prontas; no lugar, a Ficha técnica (no computador ela não tinha item no menu) */}
+          <ItemMenu to="/ficha-tecnica" icone={ClipboardText}>Ficha técnica</ItemMenu>
           <ItemMenu to="/financeiro" icone={CurrencyDollar} ativoSe={c => c === "/custos" || c === "/lucratividade"}>Financeiro</ItemMenu>
           {/* (4.27) Doo IA no computador: abre o painel do lado direito */}
           <button type="button" className={`nav-item${dooOpen ? " active" : ""}`} data-tour="doo-pc" onClick={() => setDooOpen(true)} aria-haspopup="dialog">
