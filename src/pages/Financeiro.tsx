@@ -2,8 +2,9 @@
 // saldo em caixa, os números do mês, a receber, a pagar, previstos, fluxo e últimas movimentações.
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
-import { ArrowUp, ArrowDown, CaretRight, ArrowsLeftRight, Calculator, CalendarBlank, ChartPieSlice, CurrencyCircleDollar, Plus, Receipt } from "@phosphor-icons/react";
+import { ArrowUp, ArrowDown, CaretRight, ArrowsLeftRight, Calculator, CalendarBlank, ChartPieSlice, CurrencyCircleDollar, Plus } from "@phosphor-icons/react";
 import CampoData from "@/components/CampoData";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, avisar } from "@/components/base";
@@ -166,40 +167,18 @@ export default function Financeiro() {
       <EstiloFinanceiro />
       <CaixaEstilos />
 
-      {/* (4.29 · jeito de app de banco) saldo grande no rosa + atalhos redondos */}
+      {/* (4.29 · resultado em destaque) o período fica no rosa; o cartão do resultado "pousa" nele */}
       <div className="fd-hero">
         <div className="fd-hero-in">
-          <div className="fd-hero-saldo">
-            <small>Saldo em caixa</small>
-            {!cx ? <b className="fd-hero-v">…</b>
-              : cx.erro ? <><b className="fd-hero-v">—</b><span className="fd-hero-hoje">Não deu pra carregar · <button type="button" onClick={depoisDeMudar}>Tentar de novo</button></span></>
-              : cx.precisaSql ? <span className="fd-hero-hoje">Falta um ajuste no banco pra ativar o caixa</span>
-              : !cx.configurado ? <>
-                  <b className="fd-hero-v fd-hero-v--p">Quanto você tem hoje?</b>
-                  <button type="button" className="fd-hero-cta" onClick={() => setDefinir(true)}>Informar meu saldo</button>
-                </>
-              : <>
-                  <b className="fd-hero-v">{brl(cx.saldo)}</b>
-                  <span className="fd-hero-hoje">Hoje + {brl(cx.entrouHoje)} · − {brl(cx.saiuHoje)} · <button type="button" onClick={() => setDefinir(true)}>Acertar</button></span>
-                </>}
+          <div className="fd-hero-per" role="tablist" aria-label="Período">
+            {([["hoje", "Hoje", "Hoje"], ["7", "7 dias", "7 dias"], ["30", "30 dias", "30 dias"], ["mes", "Este mês", "Mês"], ["pers", "Outro", "Outro"]] as [TipoPer, string, string][]).map(([k, l, c]) => (
+              <button key={k} type="button" role="tab" aria-selected={tipo === k} className={tipo === k ? "on" : ""} onClick={() => escolher(k)} aria-label={l}><span className="fd-so-pc">{l}</span><span className="fd-so-cel">{c}</span></button>
+            ))}
           </div>
-          <div className="fd-hero-dir">
-            <div className="fd-hero-per fd-per-chips" role="tablist" aria-label="Período">
-              {([["hoje", "Hoje"], ["7", "7 dias"], ["30", "30 dias"], ["mes", "Este mês"], ["pers", "Outro"]] as [TipoPer, string][]).map(([k, l]) => (
-                <button key={k} type="button" role="tab" aria-selected={tipo === k} className={tipo === k ? "on" : ""} onClick={() => escolher(k)}>{l}</button>
-              ))}
-            </div>
-            {tipo === "pers" && <div className="fd-hero-datas"><div className="fd-per-datas">
+          {tipo === "pers" && <div className="fd-hero-datas"><div className="fd-per-datas">
             <div><span>De</span><CampoData valor={pIni} max={pAte} titulo="Início do período" curto onChange={d => setPIni(d)} /></div>
             <div><span>Até</span><CampoData valor={pAte} min={pIni} max={isoDe(new Date())} titulo="Fim do período" curto onChange={d => setPAte(d)} /></div>
           </div></div>}
-          </div>
-        </div>
-        <div className="fd-hero-acoes">
-          <button type="button" onClick={() => setNova("entrada")}><i><ArrowUp size={20} weight="bold" /></i>Entrou</button>
-          <button type="button" onClick={() => setNova("saida")}><i><ArrowDown size={20} weight="bold" /></i>Saiu</button>
-          <button type="button" onClick={() => abrirReceber()}><i><CurrencyCircleDollar size={22} weight="bold" />{qtdReceber > 0 && <em>{qtdReceber}</em>}</i>Receber</button>
-          <button type="button" onClick={() => navigate("/financeiro/a-pagar")}><i><Receipt size={20} weight="bold" />{pag && !pag.erro && pag.vencidas > 0 && <em className="v">{pag.vencidas}</em>}</i>A pagar</button>
         </div>
       </div>
 
@@ -210,35 +189,36 @@ export default function Financeiro() {
         </div>
       )}
       <div className="fd">
-        <div className="fd-a-per fd-per">
-          <div className="fd-per-chips" role="tablist" aria-label="Período">
-            {([["hoje", "Hoje"], ["7", "7 dias"], ["30", "30 dias"], ["mes", "Mês"], ["pers", "Outro"]] as [TipoPer, string][]).map(([k, l]) => (
-              <button key={k} type="button" role="tab" aria-selected={tipo === k} className={tipo === k ? "on" : ""} onClick={() => escolher(k)}>{l}</button>
-            ))}
-          </div>
-          {tipo === "pers" && <div className="fd-per-datas">
-            <div><span>De</span><CampoData valor={pIni} max={pAte} titulo="Início do período" curto onChange={d => setPIni(d)} /></div>
-            <div><span>Até</span><CampoData valor={pAte} min={pIni} max={isoDe(new Date())} titulo="Fim do período" curto onChange={d => setPAte(d)} /></div>
-          </div>}
-        </div>
-
-        {/* um cartão só com os números do período */}
+        {/* o cartão principal: como foi o período */}
         <div className="fd-a-res fd-card fd-res">
-          <div className="fd-ct"><span><b>{tituloPer}</b></span>
-            <button type="button" className="fd-ct-lk" onClick={() => navigate("/financeiro/transacoes")}>Extrato<CaretRight size={13} weight="bold" /></button></div>
-          <div className="fd-res-l"><span>Recebido</span><b className="e">{ok ? brl(ok.recebido) : esp}</b><span className="fd-res-b"><i className="e" style={{ width: ok ? pct(ok.recebido) : 0 }} /></span></div>
-          <div className="fd-res-l"><span>Despesas</span><b className="s">{ok ? brl(ok.despesas) : esp}</b><span className="fd-res-b"><i className="s" style={{ width: ok ? pct(ok.despesas) : 0 }} /></span></div>
-          <div className="fd-res-t"><span>Resultado</span><b className={ok && ok.resultado < 0 ? "s" : ""}>{ok ? brl(ok.resultado) : esp}</b></div>
-          {ok && <p className="fd-res-c"><Variacao atual={ok.resultado} anterior={ant ? r2(ant.recebido - ant.despesas) : null} rotulo={per.rotuloAnt} /></p>}
+          <small className="fd-res-rot">Resultado · {tituloPer.toLowerCase().replace(/^(\d)/, "$1")}</small>
+          <b className={`fd-res-v${ok && ok.resultado < 0 ? " s" : ""}`}>{ok ? brl(ok.resultado) : esp}</b>
+          {ok ? <Variacao atual={ok.resultado} anterior={ant ? r2(ant.recebido - ant.despesas) : null} rotulo={per.rotuloAnt} /> : <span className="fd-var neu">&nbsp;</span>}
+          <div className="fd-pilha" aria-hidden="true">
+            {ok && ok.recebido + ok.despesas > 0
+              ? <><i className="e" style={{ flexGrow: Math.max(ok.recebido, 0.0001) }} /><i className="s" style={{ flexGrow: Math.max(ok.despesas, 0.0001) }} /></>
+              : <i className="z" />}
+          </div>
+          <div className="fd-leg">
+            <div><small><i className="e" />Recebido</small><b className="e">{ok ? brl(ok.recebido) : esp}</b><em>{ok ? `${ok.qtdRecebimentos} ${ok.qtdRecebimentos === 1 ? "recebimento" : "recebimentos"}` : "\u00a0"}</em></div>
+            <div><small><i className="s" />Despesas</small><b className="s">{ok ? brl(ok.despesas) : esp}</b><em>{ok ? (ok.recebido > 0 ? `${Math.round((ok.despesas / ok.recebido) * 100)}% do recebido` : `${ok.qtdDespesas} ${ok.qtdDespesas === 1 ? "saída" : "saídas"}`) : "\u00a0"}</em></div>
+          </div>
         </div>
 
-        {/* celular: a receber e a pagar em 2 cartões */}
-        <div className="fd-a-contas fd-contas">
-          <button type="button" className="fd-k2" onClick={() => navigate("/financeiro/a-receber")}>
-            <span><small>A receber</small><b>{!rec ? "…" : rec.erro ? "—" : brl(rec.total)}</b></span><CaretRight size={16} weight="bold" />
+        {/* em caixa · a receber · a pagar */}
+        <div className="fd-a-tres fd-tres">
+          <button type="button" className="fd-t esc" onClick={() => setDefinir(true)}>
+            <span><small><span className="fd-so-pc">Saldo em caixa</span><span className="fd-so-cel">Em caixa</span></small>
+              <b>{!cx ? "…" : cx.erro ? "—" : cx.precisaSql ? "—" : cx.configurado ? brl(cx.saldo) : "Informar"}</b></span>
+            <em>{cx && cx.configurado && !cx.erro ? "agora" : cx && !cx.configurado && !cx.erro && !cx.precisaSql ? "toque aqui" : ""}</em>
           </button>
-          <button type="button" className="fd-k2" onClick={() => navigate("/financeiro/a-pagar")}>
-            <span><small>A pagar</small><b className={pag && !pag.erro && pag.total > 0 ? "s" : ""}>{pag === undefined ? "…" : pag && !pag.erro ? brl(pag.total) : "—"}</b></span><CaretRight size={16} weight="bold" />
+          <button type="button" className="fd-t" onClick={() => navigate("/financeiro/a-receber")}>
+            <span><small>A receber</small><b>{!rec ? "…" : rec.erro ? "—" : brl(rec.total)}</b></span>
+            <em>{rec && !rec.erro ? `${rec.qtd} ${rec.qtd === 1 ? "pedido" : "pedidos"}` : ""}</em>
+          </button>
+          <button type="button" className="fd-t" onClick={() => navigate("/financeiro/a-pagar")}>
+            <span><small>A pagar</small><b className={pag && !pag.erro && pag.total > 0 ? "s" : ""}>{pag === undefined ? "…" : pag && !pag.erro ? brl(pag.total) : "—"}</b></span>
+            <em>{pag && !pag.erro ? (pag.vencidas > 0 ? `${pag.vencidas} ${pag.vencidas === 1 ? "vencida" : "vencidas"}` : `${pag.qtd} ${pag.qtd === 1 ? "conta" : "contas"}`) : ""}</em>
           </button>
         </div>
 
@@ -331,6 +311,13 @@ export default function Financeiro() {
           </div>
         </div>
       </div>
+
+      {/* celular: os botões ficam presos no rodapé, sempre à mão */}
+      {createPortal(<div className="fdp-barra">
+        <button type="button" className="e" onClick={() => setNova("entrada")}><ArrowUp size={16} weight="bold" />Entrou</button>
+        <button type="button" className="s" onClick={() => setNova("saida")}><ArrowDown size={16} weight="bold" />Saiu</button>
+        <button type="button" className="r" onClick={() => abrirReceber()}><CurrencyCircleDollar size={18} weight="bold" />Receber{qtdReceber > 0 && <em>{qtdReceber}</em>}</button>
+      </div>, document.body)}
 
       {definir && uid && cx && <SaldoSheet atual={cx.configurado ? cx.saldo : null} uid={uid} onClose={() => setDefinir(false)} onSalvo={async () => { setDefinir(false); await depoisDeMudar(); }} />}
       {nova && <DespesaSheet tipo={nova === "entrada" ? "entrada" : "saida"} inicialAPagar={nova === "apagar"} inicioCaixa={caixaOk && cx?.inicio ? isoDe(new Date(cx.inicio)) : null}
@@ -567,47 +554,50 @@ const CSS = `
   .fd-mais-g span { grid-row: span 2; width: 38px; height: 38px; border-radius: 11px; background: #FFF1F6; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; }
   .fd-mais-g b { font-size: 14px; font-weight: 700; } .fd-mais-g small { font-size: 13px; color: var(--ui-texto-2); }
 
-  /* ═══ (4.29 · jeito de app de banco) ═══ */
-  .fd { margin-top: 0; padding-top: 12px; grid-template-areas: "per" "res" "contas" "movs" "fluxo" "formas" "vend" "mais"; }
-  .fd-hero-dir { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
-  .fd-hero-datas { display: none; width: 340px; padding: 8px; border-radius: 14px; background: var(--ui-branco); color: var(--ui-texto); }
-  .fd-a-per .fd-per-datas { margin-top: 6px; }
+  /* ═══ (4.29 · resultado em destaque) ═══ */
+  .fd { margin-top: -50px; padding-top: 0; padding-bottom: 150px; grid-template-areas: "res" "tres" "movs" "fluxo" "formas" "vend" "mais"; }
+  .fd-a-res { grid-area: res; } .fd-a-movs { grid-area: movs; } .fd-a-tres { grid-area: tres; }
+  .fd-a-contas { display: none !important; }
+  .fd-hero { background: var(--ui-rosa); width: 100vw; margin: 0 calc(50% - 50vw); padding: 2px 12px 62px; box-sizing: border-box; font-family: var(--font-base); }
+  .fd-hero-in { max-width: 1160px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
+  .fd-hero-per { display: flex; gap: 2px; padding: 4px; border-radius: 13px; background: rgba(255,255,255,.18); }
+  .fd-hero-per button { flex: 1; min-width: 0; min-height: 40px; padding: 0 8px; border: 0; border-radius: 10px; background: none; font-family: inherit; font-size: 13.5px; font-weight: 500; color: rgba(255,255,255,.92); white-space: nowrap; cursor: pointer; }
+  .fd-hero-per button.on { background: var(--ui-branco); color: var(--ui-rosa-escuro); font-weight: 600; }
+  .fd-hero-datas { padding: 8px; border-radius: 14px; background: var(--ui-branco); }
   .fd-hero-datas .fd-per-datas { width: auto; margin: 0; }
-  @media (max-width: 767px) { .fd-fl-res span:last-child { display: none; } .fd-hero-dir { display: none; } }
-  .fd-a-res { grid-area: res; } .fd-a-movs { grid-area: movs; } .fd-a-datas { grid-area: datas; }
-  .fd-hero { background: var(--ui-rosa); color: var(--ui-branco); width: 100vw; margin: 0 calc(50% - 50vw); padding: 2px 16px 18px; box-sizing: border-box; font-family: var(--font-base); }
-  .fd-hero-in { max-width: 1160px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; }
-  .fd-hero-saldo { min-width: 0; }
-  .fd-hero-saldo small { display: block; font-size: 13px; opacity: .88; }
-  .fd-hero-v { display: block; margin: 2px 0 4px; font-size: clamp(28px, 8.6vw, 38px); font-weight: 600; letter-spacing: -.02em; white-space: nowrap; }
-  .fd-hero-v--p { font-size: clamp(20px, 6vw, 26px); }
-  .fd-hero-hoje { display: block; font-size: 13px; opacity: .94; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .fd-hero-hoje button { margin: 0; padding: 0; border: 0; background: none; font-family: inherit; font-size: inherit; font-weight: 600; color: var(--ui-branco); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
-  .fd-hero-cta { margin-top: 8px; min-height: 42px; padding: 0 18px; border: 0; border-radius: 12px; background: var(--ui-branco); font-family: inherit; font-size: 14.5px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; white-space: nowrap; }
-  .fd-hero-acoes { max-width: 1160px; margin: 18px auto 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
-  .fd-hero-acoes button { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; margin: 0; padding: 0; border: 0; background: none; font-family: inherit; font-size: 12.5px; font-weight: 500; color: var(--ui-branco); white-space: nowrap; cursor: pointer; }
-  .fd-hero-acoes i { position: relative; display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,.22); font-style: normal; transition: background .15s; }
-  .fd-hero-acoes button:active i, .fd-hero-acoes button:hover i { background: rgba(255,255,255,.32); }
-  .fd-hero-acoes em { position: absolute; top: -3px; right: -3px; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 10px; background: var(--ui-branco); color: var(--ui-rosa-escuro); font-style: normal; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
-  .fd-hero-acoes em.v { background: #FEE2E2; color: var(--ui-vermelho); }
-  .fd-hero-per { display: none !important; }
-  .fd-a-per.fd-per { padding: 4px; }
-  /* cartão do período */
-  .fd-res .fd-ct { margin-bottom: 2px; }
-  .fd-res-l { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 10px; align-items: center; padding: 9px 0; border-top: 1px solid #F6F1F3; font-size: 14px; color: var(--ui-texto); }
-  .fd-res .fd-ct + .fd-res-l { border-top: 0; padding-top: 6px; }
-  .fd-res-l b { font-weight: 600; white-space: nowrap; } .fd-res-l b.e { color: var(--ui-verde); } .fd-res-l b.s { color: var(--ui-vermelho); }
-  .fd-res-b { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: #F3ECEF; overflow: hidden; }
-  .fd-res-b i { display: block; height: 100%; border-radius: 3px; transition: width .4s ease; } .fd-res-b i.e { background: #22C55E; } .fd-res-b i.s { background: #F87171; }
-  .fd-res-t { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-top: 2px; padding-top: 10px; border-top: 1px dashed #EADFE4; font-size: 14px; color: var(--ui-texto); }
-  .fd-res-t b { font-size: 22px; font-weight: 600; letter-spacing: -.01em; white-space: nowrap; } .fd-res-t b.s { color: var(--ui-vermelho); }
-  .fd-res-c { margin: 4px 0 0; text-align: right; font-size: 12.5px; }
-  .fd-res-c .fd-var { display: block; margin: 0; }
-  .fd .fd-res-c .fd-so-pc { display: inline !important; } .fd .fd-res-c .fd-so-cel { display: none !important; }
-  /* a receber / a pagar (celular) */
-  .fd-contas .fd-k2 { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--ui-texto-3); }
-  .fd-contas .fd-k2 > span { min-width: 0; }
-  .fd-contas .fd-k2 b { font-size: clamp(15px, 4.4vw, 18px); } .fd-contas .fd-k2 b.s { color: var(--ui-vermelho); }
+  .fd-hero .fd-so-cel { display: none; }
+  @media (max-width: 767px) { .fd-hero .fd-so-pc { display: none; } .fd-hero .fd-so-cel { display: inline; } }
+  /* cartão do resultado */
+  .fd-res { padding: 16px; box-shadow: 0 4px 16px rgba(42,21,32,.06); }
+  .fd-res-rot { display: block; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fd-res-rot::first-letter { text-transform: uppercase; }
+  .fd-res-v { display: block; margin: 2px 0 1px; font-size: clamp(28px, 8.6vw, 36px); font-weight: 600; letter-spacing: -.02em; color: var(--ui-texto); white-space: nowrap; }
+  .fd-res-v.s { color: var(--ui-vermelho); }
+  .fd-res .fd-var { font-size: 12.5px; }
+  .fd .fd-res .fd-so-pc { display: inline !important; } .fd .fd-res .fd-so-cel { display: none !important; }
+  .fd-pilha { display: flex; gap: 3px; height: 12px; margin: 14px 0 10px; border-radius: 6px; overflow: hidden; }
+  .fd-pilha i { display: block; height: 100%; min-width: 4px; flex-basis: 0; transition: flex-grow .4s ease; }
+  .fd-pilha i.e { background: #22C55E; } .fd-pilha i.s { background: #F87171; } .fd-pilha i.z { flex-grow: 1; background: #F3ECEF; }
+  .fd-leg { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+  .fd-leg > div { min-width: 0; padding: 10px; border-radius: 12px; background: #F8F4F6; }
+  .fd-leg small { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ui-texto-2); }
+  .fd-leg small i { width: 8px; height: 8px; border-radius: 50%; } .fd-leg small i.e { background: #22C55E; } .fd-leg small i.s { background: #F87171; }
+  .fd-leg b { display: block; margin-top: 2px; font-size: clamp(14.5px, 4.3vw, 17px); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fd-leg b.e { color: var(--ui-verde); } .fd-leg b.s { color: var(--ui-vermelho); }
+  .fd-leg em { display: block; font-style: normal; font-size: 11.5px; color: var(--ui-texto-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* em caixa · a receber · a pagar */
+  .fd-tres { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .fd-t { min-width: 0; margin: 0; padding: 10px; border: 1px solid #F0EBED; border-radius: 14px; background: var(--ui-branco); font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
+  .fd-t > span { display: block; min-width: 0; }
+  .fd-t small { display: block; font-size: 11.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fd-t b { display: block; margin-top: 3px; font-size: clamp(12.5px, 3.7vw, 15px); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .fd-t b.s { color: var(--ui-vermelho); }
+  .fd-t em { display: block; margin-top: 1px; font-style: normal; font-size: 11px; color: var(--ui-texto-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fd-t.esc { background: var(--ui-vinho-escuro, #1F1117); border-color: transparent; } .fd-t.esc small { color: #CBB8C1; } .fd-t.esc b { color: var(--ui-branco); } .fd-t.esc em { color: #9C8A92; }
+  /* botões presos no rodapé (celular) */
+  .fdp-barra { position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); z-index: 51; display: flex; align-items: stretch; gap: 6px; padding: 14px 12px 10px; box-sizing: border-box; background: linear-gradient(rgba(244,238,241,0), var(--ui-fundo, #F4EEF1) 35%); font-family: var(--font-base); }
+  .fdp-barra button { position: relative; flex: 1 1 0; display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; height: 48px; padding: 0 8px; border: 0; border-radius: 14px; font-family: inherit; font-size: 14.5px; font-weight: 600; white-space: nowrap; cursor: pointer; box-shadow: 0 4px 14px rgba(42,21,32,.14); }
+  .fdp-barra .e { background: #16A34A; color: var(--ui-branco); } .fdp-barra .s { background: var(--ui-vinho-escuro, #1F1117); color: var(--ui-branco); } .fdp-barra .r { flex-grow: 1.25; background: var(--ui-branco); color: #B45309; }
+  .fdp-barra em { min-width: 19px; height: 19px; padding: 0 5px; border-radius: 10px; background: #B45309; color: var(--ui-branco); font-style: normal; font-size: 11px; display: flex; align-items: center; justify-content: center; }
   /* últimas movimentações */
   .fd-mov { list-style: none; margin: 2px 0 0; padding: 0; }
   .fd-mov li { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid #F6F1F3; }
@@ -618,17 +608,22 @@ const CSS = `
   .fd-mov-tx b, .fd-mov-tx small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .fd-mov-tx b { font-size: 14px; font-weight: 500; color: var(--ui-texto); } .fd-mov-tx small { margin-top: 1px; font-size: 12px; color: var(--ui-texto-2); }
   .fd-mov-v { flex: none; font-size: 14px; font-weight: 600; white-space: nowrap; } .fd-mov-v.e { color: var(--ui-verde); } .fd-mov-v.s { color: var(--ui-vermelho); }
+  @media (max-width: 767px) { .fd-fl-res span:last-child { display: none; } }
   @media (min-width: 768px) {
-    .fd-hero-acoes { display: none; }
-    .fd-hero-per { display: flex !important; background: var(--ui-branco); border-radius: 14px; padding: 4px; flex: none; }
-    .fd-a-per { display: none !important; }
-    .fd { grid-template-areas: "res" "fluxo" "listas" "movs" "formas" "vend" "mais"; }
-    .fd-hero-datas { display: block; }
+    .fdp-barra { display: none; }
+    .fd { padding-bottom: 96px; grid-template-areas: "res" "tres" "listas" "fluxo" "movs" "formas" "vend" "mais"; }
+    .fd-hero-in { flex-direction: row; align-items: center; justify-content: space-between; }
+    .fd-hero-per { width: 460px; }
+    .fd-hero-datas { width: 340px; }
   }
-  @media (min-width: 901px) { .fd-hero { width: auto; margin: 0 -2rem; padding: 4px 2rem 88px; } .fd { margin-top: -64px; padding-top: 0; } }
+  @media (min-width: 901px) { .fd-hero { width: auto; margin: 0 -2rem; padding: 4px 2rem 70px; } .fd { margin-top: -54px; } }
   @media (min-width: 1024px) {
-    .fd, .fd.fd--sem-caixa { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch;
-      grid-template-areas: "res fluxo" "listas listas" "movs formas" "vend vend" "mais mais"; }
-    .fd .fd-a-res, .fd .fd-a-movs { height: 100%; box-sizing: border-box; }
+    .fd, .fd.fd--sem-caixa { grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: stretch;
+      grid-template-areas: "res res res res res res res tres tres tres tres tres" "listas listas listas listas listas listas listas listas listas listas listas listas" "fluxo fluxo fluxo fluxo fluxo fluxo fluxo formas formas formas formas formas" "movs movs movs movs movs movs vend vend vend vend vend vend" "mais mais mais mais mais mais mais mais mais mais mais mais"; }
+    .fd-tres { grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(3, minmax(0, 1fr)); }
+    .fd-t { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; }
+    .fd-t small { font-size: 12.5px; } .fd-t b { font-size: 19px; } .fd-t em { font-size: 12.5px; flex: none; }
+    .fd-res { padding: 20px; } .fd-res-v { font-size: 38px; }
+    .fd .fd-a-res, .fd .fd-a-movs, .fd .fd-a-vend { height: 100%; box-sizing: border-box; }
   }
 `;
