@@ -223,8 +223,8 @@ export default function Financeiro() {
         </div>
 
         <div className="fd-a-fluxo fd-card">
-          <div className="fd-ct"><span><b>Entradas e saídas por dia</b><small className="fd-ct-sub">{extenso(per.ini, per.ate)}</small></span>
-            <span className="fd-lg"><i className="e" />Entradas <i className="s" />Saídas</span></div>
+          <div className="fd-ct fd-ct--fluxo"><span><b>Entradas e saídas por dia</b><small className="fd-ct-sub">{extenso(per.ini, per.ate)}</small></span>
+            <span className="fd-lg"><span><i className="e" />Entrou</span><span><i className="s" />Saiu</span></span></div>
           {ok ? <BarrasPorDia dias={ok.dias} /> : <div className="fd-ph" />}
         </div>
 
@@ -345,50 +345,78 @@ function dataTag(iso: string, dias: number | null) {
   if (dias !== null && dias < 0) return "atrasado";
   return `${SEMANA[deIso(iso).getDay()]}, ${dm(iso)}`;
 }
-/** (4.29) Barras de entradas e saídas por dia. Mais de 45 dias: junta de 7 em 7 dias. */
+/**
+ * (4.29) Barras de entradas e saídas por dia (mais de 45 dias: de 7 em 7).
+ * Verde e vermelha do mesmo tamanho, lado a lado · duas linhas de escala com valor · "hoje" no eixo ·
+ * tocar (ou passar o mouse) num dia mostra os valores dele em cima, numa linha só.
+ */
 function BarrasPorDia({ dias }: { dias: DiaFluxo[] }) {
   const caixa = useRef<HTMLDivElement>(null);
-  const [W, setW] = useState(340);
+  const [W, setW] = useState(320);
+  const [sel, setSel] = useState<number | null>(null);
   useEffect(() => {
     const el = caixa.current;
     if (!el || typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver(([e]) => { const w = Math.round(e.contentRect.width); if (w > 0) setW(Math.max(260, w)); });
+    const ro = new ResizeObserver(([e]) => { const w = Math.round(e.contentRect.width); if (w > 0) setW(Math.max(240, w)); });
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+  useEffect(() => { setSel(null); }, [dias]);
+  const hoje = isoDia(0);
   const porSemana = dias.length > 45;
-  const grupos: { label: string; entradas: number; saidas: number }[] = [];
+  const grupos: { label: string; titulo: string; entradas: number; saidas: number; hoje: boolean }[] = [];
   if (porSemana) {
     for (let i = 0; i < dias.length; i += 7) {
       const g = dias.slice(i, i + 7);
-      grupos.push({ label: dm(g[0].data), entradas: g.reduce((s, d) => s + d.entradas, 0), saidas: g.reduce((s, d) => s + d.saidas, 0) });
+      grupos.push({ label: dm(g[0].data), titulo: `${dm(g[0].data)} a ${dm(g[g.length - 1].data)}`, entradas: g.reduce((s, d) => s + d.entradas, 0), saidas: g.reduce((s, d) => s + d.saidas, 0), hoje: g.some(d => d.data === hoje) });
     }
   } else for (const d of dias) {
     const dt = deIso(d.data);
-    grupos.push({ label: dias.length <= 7 ? `${SEMANA[dt.getDay()]} ${String(dt.getDate()).padStart(2, "0")}` : String(dt.getDate()), entradas: d.entradas, saidas: d.saidas });
+    grupos.push({ label: dias.length <= 7 ? `${SEMANA[dt.getDay()]} ${String(dt.getDate()).padStart(2, "0")}` : String(dt.getDate()), titulo: `${SEMANA[dt.getDay()]}, ${dm(d.data)}`, entradas: d.entradas, saidas: d.saidas, hoje: d.data === hoje });
   }
-  const H = 170, base = 138, topo = 10, esq = 4;
+  const H = 150, topo = 8, base = H - 2, dir = 64; // dir: espaço da escala
   const max = Math.max(1, ...grupos.map(g => Math.max(g.entradas, g.saidas)));
-  const larg = (W - esq) / Math.max(1, grupos.length);
-  const bw = Math.max(3, Math.min(26, larg * 0.42));
-  const sw = Math.max(2, Math.min(14, larg * 0.22));
+  const area = Math.max(120, W - dir);
+  const larg = area / Math.max(1, grupos.length);
+  const bw = Math.max(2, Math.min(12, (larg - 4) * 0.4));
   const y = (v: number) => base - (v / max) * (base - topo);
-  // muitos dias: mostra o rótulo de alguns (pra não encavalar)
-  const passo = Math.max(1, Math.ceil(grupos.length / Math.max(1, Math.floor(W / 46))));
+  const passo = Math.max(1, Math.ceil(grupos.length / Math.max(1, Math.floor(area / 38))));
   const vazio = grupos.every(g => !g.entradas && !g.saidas);
   const total = grupos.reduce((s, g) => ({ e: s.e + g.entradas, s: s.s + g.saidas }), { e: 0, s: 0 });
+  const gs = sel !== null ? grupos[sel] : null;
+  const ehMouse = (e: React.PointerEvent) => e.pointerType === "mouse";
   return (
     <div className="fd-fluxo" ref={caixa}>
-      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label={`Entradas e saídas ${porSemana ? "por semana" : "por dia"}`}>
-        {[0.33, 0.66, 1].map(f => <line key={f} x1="0" x2={W} y1={base - f * (base - topo)} y2={base - f * (base - topo)} stroke="#F6F1F3" />)}
-        <line x1="0" x2={W} y1={base} y2={base} stroke="#EDE6E9" />
+      <div className={`fd-fl-dica${gs ? "" : " vazia"}`} aria-live="polite">
+        {gs ? <><b>{gs.hoje && !porSemana ? "Hoje" : gs.titulo}</b><span><em className="e">+ {brl(gs.entradas)}</em> · <em className="s">− {brl(gs.saidas)}</em></span></>
+          : vazio ? "Nenhuma entrada ou saída neste período" : "Toque num dia pra ver os valores"}
+      </div>
+      <svg viewBox={`0 0 ${W} ${H + 22}`} width="100%" height={H + 22} role="img" aria-label={`Entradas e saídas ${porSemana ? "por semana" : "por dia"}`}
+        onPointerLeave={e => { if (ehMouse(e)) setSel(null); }}>
+        {[1, 0.5].map(f => (
+          <g key={f}>
+            <line x1="0" x2={W} y1={y(max * f)} y2={y(max * f)} stroke="#EBE2E6" strokeDasharray="3 4" />
+            {!vazio && <text x={W} y={y(max * f) + 4} textAnchor="end" fontSize="10.5" fill="#A3949B">{brl(max * f)}</text>}
+          </g>
+        ))}
+        <line x1="0" x2={area} y1={base} y2={base} stroke="#E6DCE1" />
         {grupos.map((g, i) => {
-          const cx0 = esq + i * larg + larg / 2;
+          const x0 = i * larg, cx0 = x0 + larg / 2;
+          const apagado = sel !== null && sel !== i;
           return (
-            <g key={i}>
-              {g.entradas > 0 && <rect x={cx0 - bw / 2 - (g.saidas > 0 ? sw / 2 : 0)} y={y(g.entradas)} width={bw} height={Math.max(2, base - y(g.entradas))} rx={Math.min(5, bw / 3)} fill="#22C55E"><title>{`${g.label}: entrou ${brl(g.entradas)}`}</title></rect>}
-              {g.saidas > 0 && <rect x={cx0 + bw / 2 - sw / 2 + (g.entradas > 0 ? 2 : -bw / 2)} y={y(g.saidas)} width={sw} height={Math.max(2, base - y(g.saidas))} rx={Math.min(3, sw / 3)} fill="#F87171"><title>{`${g.label}: saiu ${brl(g.saidas)}`}</title></rect>}
-              {i % passo === 0 && <text x={cx0} y={H - 12} textAnchor="middle" fontSize="11.5" fill="#6B5D64">{g.label}</text>}
+            <g key={i} style={{ cursor: "pointer" }} opacity={apagado ? 0.35 : 1}
+              onClick={() => setSel(s => (s === i ? null : i))}
+              onPointerEnter={e => { if (ehMouse(e)) setSel(i); }}>
+              {sel === i && <rect x={x0 + 1} y={topo - 4} width={Math.max(4, larg - 2)} height={base - topo + 4} rx="6" fill="#FDF2F6" />}
+              <rect x={x0} y={0} width={larg} height={H + 22} fill="transparent" />
+              {g.entradas > 0 && <rect x={cx0 - bw - 1} y={y(g.entradas)} width={bw} height={Math.max(2, base - y(g.entradas))} rx={Math.min(3, bw / 2)} fill="#22C55E" />}
+              {g.saidas > 0 && <rect x={cx0 + 1} y={y(g.saidas)} width={bw} height={Math.max(2, base - y(g.saidas))} rx={Math.min(3, bw / 2)} fill="#F87171" />}
+              {(i % passo === 0 || g.hoje || sel === i) && (
+                <text x={cx0} y={H + 16} textAnchor="middle" fontSize="11"
+                  fill={sel === i ? "#2A1520" : g.hoje ? "#C33A6E" : "#A3949B"} fontWeight={sel === i || g.hoje ? 600 : 400}>
+                  {g.hoje && !porSemana && dias.length > 7 ? "hoje" : g.label}
+                </text>
+              )}
             </g>
           );
         })}
@@ -398,7 +426,6 @@ function BarrasPorDia({ dias }: { dias: DiaFluxo[] }) {
         <span>Saiu <b className="s">{brl(total.s)}</b></span>
         <span>Resultado <b>{brl(total.e - total.s)}</b></span>
       </div>
-      {vazio && <p className="fd-nota">Nenhuma entrada ou saída neste período.</p>}
     </div>
   );
 }
@@ -626,4 +653,18 @@ const CSS = `
     .fd-res { padding: 20px; } .fd-res-v { font-size: 38px; }
     .fd .fd-a-res, .fd .fd-a-movs, .fd .fd-a-vend { height: 100%; box-sizing: border-box; }
   }
+
+  /* (4.29) gráfico por dia */
+  .fd-ct--fluxo { flex-wrap: nowrap; }
+  .fd-ct--fluxo > span:first-child { min-width: 0; }
+  .fd-ct--fluxo b { white-space: nowrap; }
+  .fd-ct--fluxo .fd-lg { flex: none; gap: 10px; font-size: 12px; white-space: nowrap; margin-top: 2px; }
+  .fd-ct--fluxo .fd-lg > span { display: inline-flex; align-items: center; gap: 4px; }
+  .fd-ct--fluxo .fd-lg i { border-radius: 50%; }
+  .fd-fl-dica { display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 44px; margin: 8px 0 6px; padding: 0 12px; border-radius: 12px; background: #F8F4F6; font-size: 13px; color: var(--ui-texto); white-space: nowrap; overflow: hidden; }
+  .fd-fl-dica.vazia { justify-content: center; color: var(--ui-texto-3); }
+  .fd-fl-dica b { font-weight: 600; } .fd-fl-dica em { font-style: normal; font-weight: 600; } .fd-fl-dica em.e { color: var(--ui-verde); } .fd-fl-dica em.s { color: var(--ui-vermelho); }
+  .fd-fluxo svg { display: block; overflow: visible; user-select: none; -webkit-tap-highlight-color: transparent; }
+  .fd-fl-res { flex-wrap: nowrap; margin-top: 8px; padding-top: 10px; border-top: 1px solid #F6F1F3; white-space: nowrap; }
+  .fd-fl-res b { font-weight: 600; }
 `;
