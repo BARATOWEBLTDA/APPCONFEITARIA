@@ -144,6 +144,10 @@ export default function Financeiro() {
   const maxRes = ok ? Math.max(ok.recebido, ok.despesas, 0.01) : 1;
   const pct = (v: number) => `${Math.max(v > 0 ? 3 : 0, Math.round((v / maxRes) * 100))}%`;
   const caixaOk = !!cx && !cx.erro && !cx.precisaSql && cx.configurado;
+  const caixaNeg = caixaOk && !!cx && cx.saldo < -0.004;
+  const mesNome = MESES[new Date().getMonth()].toLowerCase();
+  const quandoPer = tipo === "hoje" ? "hoje" : tipo === "7" ? "nos últimos 7 dias" : tipo === "30" ? "nos últimos 30 dias"
+    : tipo === "mes" ? `em ${mesNome} até hoje` : `de ${extenso(per.ini, per.ate)}`;
 
   return (
     <>
@@ -160,7 +164,7 @@ export default function Financeiro() {
         }
         infoContent={<>
           <p><strong>Saldo em caixa</strong>: o dinheiro que você tem agora (o saldo que você informou + o que recebeu − o que pagou).</p>
-          <p><strong>Recebido</strong> é o dinheiro que entrou no período. <strong>Despesas</strong> é o que você pagou. <strong>Resultado</strong> é o recebido menos as despesas. Aporte e retirada ficam de fora (são dinheiro seu, não do negócio).</p>
+          <p><strong>Entrou</strong> é o dinheiro que entrou no período. <strong>Saiu</strong> é o que você pagou. <strong>Sobrou</strong> é o que entrou menos o que saiu (ainda sem descontar o custo dos ingredientes de cada pedido). Aporte e retirada ficam de fora: são dinheiro seu, não do negócio.</p>
           <p>Pedido criado ou entregue <strong>não entra no caixa sozinho</strong>: só quando você registra o recebimento.</p>
         </>}
       />
@@ -188,11 +192,11 @@ export default function Financeiro() {
           <Botao variante="secundario" tamanho="m" onClick={depoisDeMudar}>Tentar de novo</Botao>
         </div>
       )}
-      <div className="fd">
+      <div className={`fd${caixaNeg ? " fd--neg" : ""}`}>
         {/* o cartão principal: como foi o período */}
         <div className="fd-a-res fd-card fd-res">
-          <small className="fd-res-rot">Resultado · {tituloPer.toLowerCase().replace(/^(\d)/, "$1")}</small>
-          <b className={`fd-res-v${ok && ok.resultado < 0 ? " s" : ""}`}>{ok ? brl(ok.resultado) : esp}</b>
+          <small className="fd-res-rot">{ok && ok.resultado < 0 ? "Saiu mais do que entrou" : "Sobrou"} {quandoPer}</small>
+          <b className={`fd-res-v${ok && ok.resultado < 0 ? " s" : ""}`}>{ok ? brl(Math.abs(ok.resultado)) : esp}</b>
           {ok ? <Variacao atual={ok.resultado} anterior={ant ? r2(ant.recebido - ant.despesas) : null} rotulo={per.rotuloAnt} /> : <span className="fd-var neu">&nbsp;</span>}
           <div className="fd-pilha" aria-hidden="true">
             {ok && ok.recebido + ok.despesas > 0
@@ -200,17 +204,17 @@ export default function Financeiro() {
               : <i className="z" />}
           </div>
           <div className="fd-leg">
-            <div><small><i className="e" />Recebido</small><b className="e">{ok ? brl(ok.recebido) : esp}</b><em>{ok ? `${ok.qtdRecebimentos} ${ok.qtdRecebimentos === 1 ? "recebimento" : "recebimentos"}` : "\u00a0"}</em></div>
-            <div><small><i className="s" />Despesas</small><b className="s">{ok ? brl(ok.despesas) : esp}</b><em>{ok ? (ok.recebido > 0 ? `${Math.round((ok.despesas / ok.recebido) * 100)}% do recebido` : `${ok.qtdDespesas} ${ok.qtdDespesas === 1 ? "saída" : "saídas"}`) : "\u00a0"}</em></div>
+            <div><small><i className="e" />Entrou</small><b className="e">{ok ? brl(ok.recebido) : esp}</b><em>{ok ? `${ok.qtdRecebimentos} ${ok.qtdRecebimentos === 1 ? "recebimento" : "recebimentos"}` : "\u00a0"}</em></div>
+            <div><small><i className="s" />Saiu</small><b className="s">{ok ? brl(ok.despesas) : esp}</b><em>{ok ? (ok.recebido > 0 ? `${Math.round((ok.despesas / ok.recebido) * 100)}% do que entrou` : `${ok.qtdDespesas} ${ok.qtdDespesas === 1 ? "saída" : "saídas"}`) : "\u00a0"}</em></div>
           </div>
         </div>
 
         {/* em caixa · a receber · a pagar */}
         <div className="fd-a-tres fd-tres">
-          <button type="button" className="fd-t esc" onClick={() => setDefinir(true)}>
+          <button type="button" className={`fd-t esc${caixaNeg ? " neg" : ""}`} onClick={() => setDefinir(true)}>
             <span><small><span className="fd-so-pc">Saldo em caixa</span><span className="fd-so-cel">Em caixa</span></small>
               <b>{!cx ? "…" : cx.erro ? "—" : cx.precisaSql ? "—" : cx.configurado ? brl(cx.saldo) : "Informar"}</b></span>
-            <em>{cx && cx.configurado && !cx.erro ? "agora" : cx && !cx.configurado && !cx.erro && !cx.precisaSql ? "toque aqui" : ""}</em>
+            <em>{caixaNeg ? "confira" : cx && cx.configurado && !cx.erro ? "agora" : cx && !cx.configurado && !cx.erro && !cx.precisaSql ? "toque aqui" : ""}</em>
           </button>
           <button type="button" className="fd-t" onClick={() => navigate("/financeiro/a-receber")}>
             <span><small>A receber</small><b>{!rec ? "…" : rec.erro ? "—" : brl(rec.total)}</b></span>
@@ -222,8 +226,16 @@ export default function Financeiro() {
           </button>
         </div>
 
+        {caixaNeg && (
+          <div className="fd-a-aviso fd-aviso" role="status">
+            <span className="fd-aviso-ic" aria-hidden="true">!</span>
+            <span className="fd-aviso-tx"><b>Caixa negativo.</b> Faltou lançar algo?</span>
+            <button type="button" onClick={() => setDefinir(true)}>Acertar</button>
+          </div>
+        )}
+
         <div className="fd-a-fluxo fd-card">
-          <div className="fd-ct fd-ct--fluxo"><span><b>Entradas e saídas por dia</b><small className="fd-ct-sub">{extenso(per.ini, per.ate)}</small></span>
+          <div className="fd-ct fd-ct--fluxo"><span><b>Entrou e saiu por dia</b><small className="fd-ct-sub">{extenso(per.ini, per.ate)}</small></span>
             <span className="fd-lg"><span><i className="e" />Entrou</span><span><i className="s" />Saiu</span></span></div>
           {ok ? <BarrasPorDia dias={ok.dias} /> : <div className="fd-ph" />}
         </div>
@@ -278,12 +290,13 @@ export default function Financeiro() {
         </div>
 
         <div className="fd-a-formas fd-card">
-          <div className="fd-ct"><span><b>Formas de pagamento</b><small className="fd-ct-sub">O que entrou no período</small></span></div>
+          <div className="fd-ct"><span><b>Como você recebeu</b><small className="fd-ct-sub">O que entrou no período</small></span></div>
           {!ok ? <div className="fd-ph fd-ph--p" /> : totalFormas <= 0 ? <p className="fd-vazio">Nenhum recebimento no período.</p> : (<>
             <ul className="fd-fp">
               {formas.map(f => (
-                <li key={f.chave}><span className="fd-fp-n">{f.nome}</span><span className="fd-fp-b"><i style={{ width: `${Math.round((f.valor / totalFormas) * 100)}%` }} /></span>
-                  <span className="fd-fp-v">{brl(f.valor)}</span><span className="fd-fp-p">{Math.round((f.valor / totalFormas) * 100)}%</span></li>
+                <li key={f.chave} className={f.chave === "outras" ? "sem" : ""}>
+                  <span className="fd-fp-l"><span className="fd-fp-n">{f.chave === "outras" ? "Sem forma informada" : f.nome}</span><span className="fd-fp-v">{brl(f.valor)}<em>{Math.round((f.valor / totalFormas) * 100)}%</em></span></span>
+                  <span className="fd-fp-b"><i style={{ width: `${Math.max(1, Math.round((f.valor / totalFormas) * 100))}%` }} /></span></li>
               ))}
             </ul>
             <p className="fd-fp-t"><span>Total</span><b>{brl(totalFormas)}</b></p>
@@ -291,12 +304,12 @@ export default function Financeiro() {
         </div>
 
         <div className="fd-a-vend fd-card">
-          <div className="fd-ct"><span><b>Mais vendidos</b><small className="fd-ct-sub">Pedidos com entrega no período, pelo valor</small></span></div>
+          <div className="fd-ct"><span><b>Mais vendidos</b><small className="fd-ct-sub">Pedidos com entrega no período</small></span></div>
           {!ok ? <div className="fd-ph fd-ph--p" /> : ok.maisVendidos.length === 0 ? <p className="fd-vazio">Nenhum pedido com entrega no período.</p> : (
             <ol className="fd-mv">
               {ok.maisVendidos.map((v, i) => (
-                <li key={v.nome}><span className="fd-mv-n">{i + 1}</span><span className="fd-mv-nm">{v.nome}</span>
-                  <span className="fd-mv-q">{v.pedidos} {v.pedidos === 1 ? "pedido" : "pedidos"}</span><b>{brl(v.valor)}</b></li>
+                <li key={v.nome}><span className="fd-mv-n">{i + 1}</span>
+                  <span className="fd-mv-tx"><span className="fd-mv-nm">{v.nome}</span><span className="fd-mv-q">{v.pedidos} {v.pedidos === 1 ? "pedido" : "pedidos"}</span></span><b>{brl(v.valor)}</b></li>
               ))}
             </ol>
           )}
@@ -424,7 +437,7 @@ function BarrasPorDia({ dias }: { dias: DiaFluxo[] }) {
       <div className="fd-fl-res">
         <span>Entrou <b className="e">{brl(total.e)}</b></span>
         <span>Saiu <b className="s">{brl(total.s)}</b></span>
-        <span>Resultado <b>{brl(total.e - total.s)}</b></span>
+        <span>Sobrou <b>{brl(total.e - total.s)}</b></span>
       </div>
     </div>
   );
@@ -583,6 +596,7 @@ const CSS = `
 
   /* ═══ (4.29 · resultado em destaque) ═══ */
   .fd { margin-top: -50px; padding-top: 0; padding-bottom: 150px; grid-template-areas: "res" "tres" "movs" "fluxo" "formas" "vend" "mais"; }
+  .fd.fd--neg { grid-template-areas: "res" "tres" "aviso" "movs" "fluxo" "formas" "vend" "mais"; }
   .fd-a-res { grid-area: res; } .fd-a-movs { grid-area: movs; } .fd-a-tres { grid-area: tres; }
   .fd-a-contas { display: none !important; }
   .fd-hero { background: var(--ui-rosa); width: 100vw; margin: 0 calc(50% - 50vw); padding: 2px 12px 62px; box-sizing: border-box; font-family: var(--font-base); }
@@ -639,6 +653,7 @@ const CSS = `
   @media (min-width: 768px) {
     .fdp-barra { display: none; }
     .fd { padding-bottom: 96px; grid-template-areas: "res" "tres" "listas" "fluxo" "movs" "formas" "vend" "mais"; }
+    .fd.fd--neg { grid-template-areas: "res" "tres" "aviso" "listas" "fluxo" "movs" "formas" "vend" "mais"; }
     .fd-hero-in { flex-direction: row; align-items: center; justify-content: space-between; }
     .fd-hero-per { width: 460px; }
     .fd-hero-datas { width: 340px; }
@@ -647,6 +662,8 @@ const CSS = `
   @media (min-width: 1024px) {
     .fd, .fd.fd--sem-caixa { grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: stretch;
       grid-template-areas: "res res res res res res res tres tres tres tres tres" "listas listas listas listas listas listas listas listas listas listas listas listas" "fluxo fluxo fluxo fluxo fluxo fluxo fluxo formas formas formas formas formas" "movs movs movs movs movs movs vend vend vend vend vend vend" "mais mais mais mais mais mais mais mais mais mais mais mais"; }
+    .fd.fd--neg { grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: stretch;
+      grid-template-areas: "res res res res res res res tres tres tres tres tres" "aviso aviso aviso aviso aviso aviso aviso aviso aviso aviso aviso aviso" "listas listas listas listas listas listas listas listas listas listas listas listas" "fluxo fluxo fluxo fluxo fluxo fluxo fluxo formas formas formas formas formas" "movs movs movs movs movs movs vend vend vend vend vend vend" "mais mais mais mais mais mais mais mais mais mais mais mais"; }
     .fd-tres { grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(3, minmax(0, 1fr)); }
     .fd-t { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; }
     .fd-t small { font-size: 12.5px; } .fd-t b { font-size: 19px; } .fd-t em { font-size: 12.5px; flex: none; }
@@ -667,4 +684,25 @@ const CSS = `
   .fd-fluxo svg { display: block; overflow: visible; user-select: none; -webkit-tap-highlight-color: transparent; }
   .fd-fl-res { flex-wrap: nowrap; margin-top: 8px; padding-top: 10px; border-top: 1px solid #F6F1F3; white-space: nowrap; }
   .fd-fl-res b { font-weight: 600; }
+
+  /* (4.29) caixa negativo */
+  .fd-a-aviso { grid-area: aviso; }
+  .fd-t.esc.neg { background: #3A1219; } .fd-t.esc.neg b, .fd-t.esc.neg em { color: #FCA5A5; }
+  .fd-aviso { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 10px 12px; border-radius: 12px; background: #FFF7ED; border: 1px solid #FED7AA; font-size: 13px; color: #9A3412; }
+  .fd-aviso-ic { flex: none; width: 20px; height: 20px; border-radius: 50%; background: #EA580C; color: var(--ui-branco); font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+  .fd-aviso-tx { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .fd-aviso-tx b { font-weight: 600; }
+  .fd-aviso button { flex: none; margin: 0; padding: 4px 2px; border: 0; background: none; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
+  /* (4.29) como você recebeu: nome e valor em cima, barra embaixo */
+  .fd .fd-fp li { display: block; padding: 9px 0; }
+  .fd-fp-l { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .fd .fd-fp-n { width: auto; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fd .fd-fp-v { width: auto; flex: none; font-weight: 600; white-space: nowrap; }
+  .fd-fp-v em { margin-left: 6px; font-style: normal; font-size: 12px; font-weight: 400; color: var(--ui-texto-3); }
+  .fd .fd-fp-b { display: block; height: 6px; margin-top: 6px; }
+  .fd .fd-fp li.sem .fd-fp-n { color: var(--ui-texto-2); } .fd .fd-fp li.sem .fd-fp-b i { background: #D9CDD3; }
+  /* (4.29) mais vendidos: nome na linha inteira, pedidos embaixo */
+  .fd-mv-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .fd .fd-mv-nm { flex: none; font-weight: 500; }
+  .fd .fd-mv-q { margin-top: 1px; font-size: 12px; }
+  .fd .fd-mv b { min-width: 0; }
 `;
