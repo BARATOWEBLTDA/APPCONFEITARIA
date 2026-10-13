@@ -102,7 +102,8 @@ export default function Lucratividade() {
   const ehMesAtual = mes.ano === h.getFullYear() && mes.m === h.getMonth();
   const mudar = (d: number) => setMes(x => { const n = new Date(x.ano, x.m + d, 1); return { ano: n.getFullYear(), m: n.getMonth() }; });
   const despesasSemInsumos = dados ? dados.despesasPagas - dados.despesasInsumos : 0;
-  const margemBruta = dados && dados.vendido > 0 ? (dados.vendido - dados.cmv) / dados.vendido : 0;
+  // (13/10) o que sobra de cada venda já tira as taxas da maquininha e a embalagem
+  const margemBruta = dados && dados.vendido > 0 ? (dados.vendido - dados.cmv - dados.custosVariaveis) / dados.vendido : 0;
   const metaEquilibrio = fixos && margemBruta > 0 ? (fixos.custos + fixos.salario) / margemBruta : 0;
   const semFicha = (produtos || []).filter(p => p.semFicha);
   // 10/10: produto vendido sem ficha (ou custo de ingredientes zerado) = lucro e margem maiores do que são: avisa
@@ -117,7 +118,8 @@ export default function Lucratividade() {
         onBack={() => navigate("/financeiro")}
         infoIcon="📈"
         infoContent={<>
-          <p>O lucro aqui é <strong>o mesmo do painel do Financeiro</strong>: o que você vendeu (pedidos entregues) menos o custo dos ingredientes (ficha técnica) e as despesas pagas do mês.</p>
+          <p>O lucro aqui é <strong>o mesmo do painel do Financeiro</strong>: o que você vendeu (pedidos entregues) menos o custo dos ingredientes (ficha técnica), as taxas da maquininha e a embalagem de cada pedido, e as despesas pagas do mês.</p>
+          <p>A taxa da maquininha entra só nos pedidos pagos no cartão, a do crédito ou a do débito. Pix e dinheiro não pagam taxa.</p>
           <p>As despesas de <strong>ingredientes</strong> não entram de novo, porque o custo deles já está na ficha técnica de cada produto.</p>
         </>}
       />
@@ -151,6 +153,8 @@ export default function Lucratividade() {
               <i>{dados.qtdVendidos} {dados.qtdVendidos === 1 ? "pedido entregue" : "pedidos entregues"}</i></div>
             <div className="lu-k"><span className="lu-ki s" aria-hidden="true"><Minus size={15} weight="bold" /></span><small>Custo dos ingredientes</small><b className="s">{brl(dados.cmv)}</b>
               <i>pela ficha técnica</i></div>
+            <div className="lu-k"><span className="lu-ki s" aria-hidden="true"><Minus size={15} weight="bold" /></span><small>Taxas e embalagem</small><b className="s">{brl(dados.custosVariaveis)}</b>
+              <i>{dados.custosVariaveis > 0 ? "maquininha e custos por pedido" : <button type="button" className="lu-link" onClick={() => navigate("/custos")}>cadastrar em Custos</button>}</i></div>
             <div className="lu-k"><span className="lu-ki s" aria-hidden="true"><Minus size={15} weight="bold" /></span><small>Despesas pagas</small><b className="s">{brl(despesasSemInsumos)}</b>
               <i>sem os ingredientes (já estão na ficha)</i></div>
             <div className={`lu-k lu-k--lucro${dados.lucro < 0 ? " ruim" : ""}`}><span className="lu-ki l" aria-hidden="true"><Equals size={15} weight="bold" /></span><small>Lucro do mês</small><b>{brl(dados.lucro)}</b>
@@ -242,7 +246,8 @@ const CSS = `
   .lu-cta { margin-top: 14px; border: none; border-radius: var(--ui-raio); padding: 12px 18px; background: var(--ui-vinho-escuro); color: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
   /* a conta em 4 cartões */
   .lu-conta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  @media (min-width: 1024px) { .lu-conta { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; } }
+  .lu-conta > .lu-k--lucro { grid-column: 1 / -1; }
+  @media (min-width: 1024px) { .lu-conta { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; } .lu-conta > .lu-k--lucro { grid-column: auto; } }
   .lu-k { position: relative; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 16px; padding: 14px; min-width: 0; }
   .lu-k small { display: block; padding-right: 32px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
   .lu-k > b { display: block; margin: 6px 0 4px; font-size: clamp(17px, 4.6vw, 26px); font-weight: 600; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

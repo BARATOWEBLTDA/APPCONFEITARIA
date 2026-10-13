@@ -282,7 +282,7 @@ function VariavelSheet({ uid, item, onClose, onFeito }: { uid: string; item: Cus
         </div>
       </>)}
       {v > 0 && <div className="fo-dica">Numa venda de <b>R$ 100,00</b>, este custo é <b>{brl(tipo === "percentual" ? v : v)}</b>{tipo === "percentual" ? "" : " (por pedido, qualquer valor)"}.</div>}
-      <Switch ligado={ativo} onToggle={() => setAtivo(a => !a)} titulo={ativo ? "Ativo" : "Pausado"} sub={ativo ? "Entra no cálculo dos seus preços" : "Não entra no cálculo enquanto estiver pausado"} />
+      <Switch ligado={ativo} onToggle={() => setAtivo(a => !a)} titulo={ativo ? "Ativo" : "Pausado"} sub={ativo ? "Entra no lucro do mês e na ficha técnica" : "Não entra nas contas enquanto estiver pausado"} />
       {erro && <p className="fo-erro">{erro}</p>}
       {excluir ? <Excluir nome={item?.nome || ""} ocupado={ocupado} onNao={() => setExcluir(false)} onSim={apagar} /> : (<>
         <button type="button" className="fo-cta" onClick={salvar} disabled={ocupado}>{ocupado ? "Salvando…" : item ? "Salvar" : "Cadastrar custo variável"}</button>
@@ -318,7 +318,7 @@ function MaquininhaSheet({ uid, onClose, onFeito }: { uid: string; onClose: () =
       <div className="fo-in"><input id="mq-d" inputMode="decimal" placeholder="Ex.: 1,99" value={deb} onChange={e => { setDeb(e.target.value); setErro(""); }} /><span>%</span></div>
       <label className="fo-lb" htmlFor="mq-c">No crédito à vista</label>
       <div className="fo-in"><input id="mq-c" inputMode="decimal" placeholder="Ex.: 4,99" value={cred} onChange={e => { setCred(e.target.value); setErro(""); }} /><span>%</span></div>
-      <div className="fo-dica">Pix e dinheiro não pagam taxa. Cada taxa entra só nas vendas pagas daquele jeito.</div>
+      <div className="fo-dica">Pix e dinheiro não pagam taxa. No lucro do mês, cada taxa entra só nos pedidos pagos daquele jeito. Na ficha técnica entra a do crédito, que é o pior caso.</div>
       {erro && <p className="fo-erro">{erro}</p>}
       <button type="button" className="fo-cta" onClick={salvar} disabled={ocupado}>{ocupado ? "Salvando…" : "Salvar taxas"}</button>
     </Folha>

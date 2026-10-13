@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo, useRef, ReactNode } from "react";
 import CampoNumero from "@/components/ui/CampoNumero";
 import { parseNumBR } from "@/lib/numeroBR";
 import { explicarErro } from "@/lib/erros";
-import { calcularCustoLucro, precoQueClientePaga } from "@/lib/produto-precificacao";
+import { calcularCustoLucro, precoQueClientePaga, type CustoDaVenda } from "@/lib/produto-precificacao";
+import { taxaPctDaForma, fixoPorPedido } from "@/lib/painelFinanceiro";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
@@ -187,8 +188,10 @@ const MODAL_TITLE_VARIANTS: ((nome: string) => ReactNode)[] = [
 type MaoConta = { salario: number; horasSemana: number; diasSemana: number } | null;
 
 // 10/10: a conta agora mora em produto-precificacao (a mesma em Produtos, aqui e no PDF) e considera promoção em %
+// 13/10: + a taxa da maquininha no crédito (pior caso) e o custo fixo por pedido (Custos → Custos variáveis)
+let VENDA: CustoDaVenda | null = null;
 function calcular(p: Produto, conta: MaoConta = null, cvConta: number | null = null) {
-  return calcularCustoLucro(p, conta, cvConta);
+  return calcularCustoLucro(p, conta, cvConta, VENDA);
 }
 
 export default function FichaTecnica() {
@@ -262,6 +265,15 @@ export default function FichaTecnica() {
   const [editarMao, setEditarMao] = useState(false);
   const [salvandoMao, setSalvandoMao] = useState(false);
   const [cvConta, setCvConta] = useState<number | null>(null);
+  // (13/10) custos da venda: taxa do crédito, taxa do Pix (impostos etc.) e o fixo por pedido
+  const [venda, setVenda] = useState<{ credito: number; pix: number; fixo: number }>({ credito: 0, pix: 0, fixo: 0 });
+  VENDA = { pct: venda.credito, fixo: venda.fixo };
+  const loadVenda = async (uid: string) => {
+    const { data, error } = await supabase.from("custos_variaveis").select("*").eq("user_id", uid);
+    if (error) return;
+    const vars = (data as any[]) || [];
+    setVenda({ credito: taxaPctDaForma("credito", vars), pix: taxaPctDaForma("pix", vars), fixo: fixoPorPedido(vars) });
+  };
   const [editarCv, setEditarCv] = useState(false);
   const [salvandoCv, setSalvandoCv] = useState(false);
   // Custos invisíveis salvos na conta (09/10): coluna nova, lida à parte pra não quebrar se o SQL ainda não rodou
@@ -338,7 +350,7 @@ export default function FichaTecnica() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setErroCarga("Tente de novo em instantes."); setLoading(false); return; }
       setUserId(user.id);
-      const [erroProdutos] = await Promise.all([loadProdutos(user.id), loadInsumos(user.id), loadMaoConta(user.id), loadCvConta(user.id)]);
+      const [erroProdutos] = await Promise.all([loadProdutos(user.id), loadInsumos(user.id), loadMaoConta(user.id), loadCvConta(user.id), loadVenda(user.id)]);
       if (erroProdutos) setErroCarga(explicarErro(erroProdutos, "Tente de novo em instantes."));
     } catch (e) {
       setErroCarga(explicarErro(e, "Tente de novo em instantes."));
@@ -550,8 +562,13 @@ export default function FichaTecnica() {
     const custoHora = horasSem > 0 ? salario / (horasSem * 4.33) : 0;
     const moLive = moAtivo ? custoHora * (tempoMin / 60) : 0;
 
+    // (13/10) taxa da maquininha no crédito (pior caso) + embalagem por pedido
+    const taxaLive = precoLive * (venda.credito / 100);
+    const fixoLive = venda.fixo;
+    const ganhoPix = precoLive * (Math.max(0, venda.credito - venda.pix) / 100);
+
     // Totais
-    const custoTotalLive = cmvLive + cvLive + moLive;
+    const custoTotalLive = cmvLive + cvLive + moLive + taxaLive + fixoLive;
     const lucroLive = precoLive - custoTotalLive;
     const margemLucroLive = precoLive > 0 ? (lucroLive / precoLive) * 100 : 0;
     const temFicha = ficha.length > 0;
@@ -569,8 +586,11 @@ export default function FichaTecnica() {
         <div><span>Ingredientes</span><span>R$ {fmt(cmvLive)}</span></div>
         <div><span>Custos invisíveis ({fmtPct(cvPct)}%)</span><span>R$ {fmt(cvLive)}</span></div>
         <div><span>Mão de obra{tempoMin > 0 && moAtivo ? ` (${tempoMin} min)` : ""}</span><span>R$ {fmt(moLive)}</span></div>
+        {venda.credito > 0 && <div><span>Taxa no crédito ({fmtPct(venda.credito)}%)</span><span>R$ {fmt(taxaLive)}</span></div>}
+        {fixoLive > 0 && <div><span>Por pedido (embalagem)</span><span>R$ {fmt(fixoLive)}</span></div>}
         <div className="fd-t"><span>Custo total</span><span>R$ {fmt(custoTotalLive)}</span></div>
         <div className="fd-pv"><span>Preço de venda</span><span>R$ {fmt(precoLive)}</span></div>
+        {ganhoPix >= 0.01 && <div className="fd-pix"><span>No Pix ou dinheiro, você ganha R$ {fmt(ganhoPix)} a mais</span></div>}
         {infoAtivo && rendeUn > 0 && <div><span>Custo de cada unidade (rende {extras.rendimento_qtd})</span><span>R$ {fmt(custoTotalLive / rendeUn)}</span></div>}
       </div>
     );
@@ -582,12 +602,14 @@ export default function FichaTecnica() {
             <i style={{ width: pc(cmvLive), background: "var(--ui-rosa)" }} />
             <i style={{ width: pc(cvLive), background: "#F59E0B" }} />
             {moLive > 0 && <i style={{ width: pc(moLive), background: "var(--ui-vinho)" }} />}
+            {taxaLive + fixoLive > 0 && <i style={{ width: pc(taxaLive + fixoLive), background: "#94A3B8" }} />}
             <i style={{ width: pc(Math.max(0, lucroLive)), background: "var(--ui-verde)" }} />
           </div>
           <div className="fd-leg">
             <span style={{ ["--c" as any]: "var(--ui-rosa)" }}>Ingredientes</span>
             <span style={{ ["--c" as any]: "#F59E0B" }}>Invisíveis</span>
             {moLive > 0 && <span style={{ ["--c" as any]: "var(--ui-vinho)" }}>Mão de obra</span>}
+            {taxaLive + fixoLive > 0 && <span style={{ ["--c" as any]: "#94A3B8" }}>Taxas</span>}
             <span style={{ ["--c" as any]: "var(--ui-verde)" }}>Lucro</span>
           </div>
         </>

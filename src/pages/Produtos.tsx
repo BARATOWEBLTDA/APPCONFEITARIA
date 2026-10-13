@@ -23,8 +23,8 @@ import {
   descontoPromocao,
   pesoKgDoNome,
   type MaoObraConta,
-  type RegraConflitoTamanho,
-} from "@/lib/produto-precificacao";
+  type RegraConflitoTamanho, type CustoDaVenda, } from "@/lib/produto-precificacao";
+import { taxaPctDaForma, fixoPorPedido } from "@/lib/painelFinanceiro";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import { gerarFichaProduto } from "@/lib/gerarFichaProduto";
 import { usePlano } from "@/hooks/usePlano";
@@ -3620,6 +3620,7 @@ export default function Produtos() {
   // Custos da conta (pra conta do lucro ser a mesma da Ficha técnica)
   const [maoConta, setMaoConta] = useState<MaoObraConta>(null);
   const [cvConta, setCvConta] = useState<number | null>(null);
+  const [vendaConta, setVendaConta] = useState<CustoDaVenda | null>(null);
   const [buscaInsumo, setBuscaInsumo] = useState("");
   // Modal dedicado da ficha técnica
   const [fichaModalOpen, setFichaModalOpen] = useState(false);
@@ -3717,10 +3718,13 @@ export default function Produtos() {
   // (cada um à parte: se a coluna ou a tabela não existir, vale o que está no produto)
   const loadCustosConta = async (uid: string) => {
     try {
-      const [cv, mao] = await Promise.all([
+      const [cv, mao, vars] = await Promise.all([
         supabase.from("profiles").select("custos_invisiveis_pct").eq("id", uid).maybeSingle(),
         supabase.from("config_mao_obra").select("salario_mensal, horas_dia, dias_semana").eq("user_id", uid).maybeSingle(),
+        supabase.from("custos_variaveis").select("*").eq("user_id", uid),
       ]);
+      // (13/10) a mesma conta da Ficha técnica: taxa do crédito (pior caso) + custo fixo por pedido
+      if (!vars.error) setVendaConta({ pct: taxaPctDaForma("credito", (vars.data as any[]) || []), fixo: fixoPorPedido((vars.data as any[]) || []) });
       const v = (cv.data as any)?.custos_invisiveis_pct;
       setCvConta(!cv.error && v != null ? Number(v) : null);
       const sal = Number((mao.data as any)?.salario_mensal) || 0;
@@ -3756,7 +3760,7 @@ export default function Produtos() {
   } => {
     // 10/10: mesma conta da Ficha técnica (ingredientes + custos invisíveis + mão de obra) e
     // preço com a promoção em valor ou em %. Antes aqui só saíam os ingredientes e o lucro aparecia maior.
-    const c = calcularCustoLucro(p, maoConta, cvConta);
+    const c = calcularCustoLucro(p, maoConta, cvConta, vendaConta);
     return { cmv: c.cmv, lucro: c.lucro, margem: c.margemLucro, temFicha: c.temFicha, precoEfetivo: c.preco };
   };
 

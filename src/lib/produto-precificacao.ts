@@ -305,6 +305,9 @@ export function custoIngrediente(qtd: number, unidadeUsada: string, insumo: { un
   return q * cu;
 }
 
+/** (13/10) Custos da venda: % que a maquininha cobra no crédito (o pior caso) + valor fixo por pedido (embalagem). */
+export type CustoDaVenda = { pct: number; fixo: number };
+
 /** Mão de obra salva na conta (Custos → Mão de obra): vale pra todos os produtos. */
 export type MaoObraConta = { salario: number; horasSemana: number } | null;
 
@@ -313,7 +316,7 @@ export type MaoObraConta = { salario: number; horasSemana: number } | null;
  * `p` vem com produto_insumos(quantidade, unidade_utilizada, insumos(custo_unitario, unidade)).
  * `mao` e `cvConta` são os valores salvos na conta; sem eles valem os do próprio produto (25% quando nunca mudou).
  */
-export function calcularCustoLucro(p: any, mao: MaoObraConta = null, cvConta: number | null = null) {
+export function calcularCustoLucro(p: any, mao: MaoObraConta = null, cvConta: number | null = null, venda: CustoDaVenda | null = null) {
   const itens: any[] = (p?.produto_insumos || []).filter((x: any) => x?.insumos);
   const cmv = itens.reduce((s, pi) => s + custoIngrediente(Number(pi.quantidade) || 0, pi.unidade_utilizada || pi.insumos?.unidade || "", pi.insumos), 0);
   const cvPct = cvConta != null ? Number(cvConta) || 0 : (p?.cv_percentual != null ? Number(p.cv_percentual) || 0 : 25);
@@ -325,12 +328,14 @@ export function calcularCustoLucro(p: any, mao: MaoObraConta = null, cvConta: nu
   const tempoMin = parseInt(String(p?.tempo_preparo_min || 0)) || 0;
   const custoHora = horasSem > 0 ? salario / (horasSem * 4.33) : 0;
   const mo = moAtivo ? custoHora * (tempoMin / 60) : 0;
-  const custoTotal = cmv + cv + mo;
   const preco = precoQueClientePaga(p);
+  // (13/10) taxa da maquininha (a do crédito, o pior caso) e custo fixo por pedido (embalagem)
+  const taxa = venda ? preco * ((Number(venda.pct) || 0) / 100) + (Number(venda.fixo) || 0) : 0;
+  const custoTotal = cmv + cv + mo + taxa;
   const lucro = preco - custoTotal;
   const margemCmv = preco > 0 ? (cmv / preco) * 100 : 0;
   const margemLucro = preco > 0 ? (lucro / preco) * 100 : 0;
-  return { cmv, cvPct, cv, mo, tempoMin, custoTotal, preco, lucro, margemCmv, margemLucro, temFicha: itens.length > 0 };
+  return { cmv, cvPct, cv, mo, taxa, tempoMin, custoTotal, preco, lucro, margemCmv, margemLucro, temFicha: itens.length > 0 };
 }
 
 // ─── Peso do tamanho pelo nome (10/10) ──────────────────────────────

@@ -117,3 +117,6 @@
   .fd-ing-qtd select, .fd-ing-qtd i { min-width: 48px; padding: 0 6px; font-size: 14px; }
   .fd-ing > .ui-bti, .fd-ing > button:last-child { align-self: center; width: 40px; }
 }
+/* (13/10) quanto sobra a mais quando o cliente paga no Pix ou em dinheiro (sem taxa da maquininha) */
+.fd-conta .fd-pix { justify-content: flex-start; padding-top: 6px; }
+.fd-conta > .fd-pix span:last-child { font-size: 13px; font-weight: 600; color: var(--ui-verde); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

@@ -2,7 +2,7 @@ import { ehDinheiroDaDona } from "@/lib/categoriasFinanceiro";
 import { supabase } from "@/lib/supabase";
 import { valorRecebidoPedido } from "@/lib/financeiroPedido";
 import { buscarTudo } from "@/lib/buscarTudo";
-import { faltaNoBanco } from "@/lib/pagamentos";
+import { faltaNoBanco, normalizarForma } from "@/lib/pagamentos";
 import { pesoDoTamanho } from "@/lib/itemSacola";
 
 /**
@@ -10,7 +10,10 @@ import { pesoDoTamanho } from "@/lib/itemSacola";
  *   Recebido ....... pagamentos com data de recebimento no mês + entradas avulsas (caixa: o que entrou)
  *   Despesas pagas . saídas do financeiro com data no mês, até hoje
  *   Vendido ........ pedidos ENTREGUES no mês (data de entrega), sem cancelados — o valor final
- *   Lucro .......... vendido − custo dos ingredientes (ficha técnica) − despesas pagas do mês,
+ *   Custos variáveis (13/10) taxa da maquininha de cada pedido entregue (pela forma em que foi pago: crédito, débito;
+ *                    Pix e dinheiro não pagam) + os custos "R$ por pedido" (embalagem). A taxa usada é a do dia
+ *                    do pagamento (pagamentos.taxa_pct, SQL 4.34); sem ela, a taxa cadastrada hoje.
+ *   Lucro .......... vendido − custo dos ingredientes (ficha técnica) − custos variáveis − despesas pagas do mês,
  *                    SEM as despesas de insumos (o ingrediente já está no custo da ficha; senão contaria 2x)
  * Sem a tabela de pagamentos (SQL do Passo 1 não rodado), o recebido usa a regra antiga (pelo mês da entrega).
  * 10/10: a regra antiga só vale quando a tabela ou a coluna não existe MESMO. Queda de internet ou outro erro
@@ -22,6 +25,8 @@ export type MesFinanceiro = {
   recebido: number; recebidoPedidos: number; entradasAvulsas: number; qtdRecebimentos: number;
   despesasPagas: number; despesasInsumos: number;
   vendido: number; qtdVendidos: number; cmv: number; semFicha: number;
+  /** (13/10) taxas da maquininha (pela forma de pagamento de cada pedido) e custos por pedido (embalagem) */
+  custosVariaveis: number;
   lucro: number; margem: number;
   semanas: Semana[]; fonteRecebido: "pagamentos" | "pedidos";
   /** não deu pra carregar: os números acima vêm zerados e NÃO devem ser mostrados (10/10) */
@@ -29,7 +34,7 @@ export type MesFinanceiro = {
 };
 const MES_COM_ERRO: MesFinanceiro = {
   recebido: 0, recebidoPedidos: 0, entradasAvulsas: 0, qtdRecebimentos: 0, despesasPagas: 0, despesasInsumos: 0,
-  vendido: 0, qtdVendidos: 0, cmv: 0, semFicha: 0, lucro: 0, margem: 0, semanas: [], fonteRecebido: "pagamentos", erro: true,
+  vendido: 0, qtdVendidos: 0, cmv: 0, semFicha: 0, custosVariaveis: 0, lucro: 0, margem: 0, semanas: [], fonteRecebido: "pagamentos", erro: true,
 };
 
 const r2 = (v: number) => Math.round((Number(v) || 0) * 100) / 100;
@@ -169,7 +174,7 @@ async function calcularMes(uid: string, ano: number, mes0: number): Promise<MesF
   const [pag, fin, vend] = await Promise.all([
     buscarPagamentos(uid, ini, ate),
     buscarLancamentos(uid, ini, ate),
-    buscarTudo<any>((de, a) => supabase.from("pedidos").select(`id, valor_total, status, data_entrega, pedido_itens(${CAMPOS_ITEM_CUSTO})`)
+    buscarTudo<any>((de, a) => supabase.from("pedidos").select(`id, valor_total, status, data_entrega, forma_pagamento, pedido_itens(${CAMPOS_ITEM_CUSTO})`)
       .eq("user_id", uid).eq("status", "entregue").gte("data_entrega", ini).lte("data_entrega", fim).order("id").range(de, a)),
   ]);
   if (fin.error || vend.error) return MES_COM_ERRO;
@@ -211,7 +216,8 @@ async function calcularMes(uid: string, ano: number, mes0: number): Promise<MesF
     if (faltou) semFicha++;
   }
   cmv = r2(cmv);
-  const lucro = r2(vendido - cmv - (despesasPagas - despesasInsumos));
+  const custosVariaveis = await custosVariaveisDosPedidos(uid, vendidos);
+  const lucro = r2(vendido - cmv - custosVariaveis - (despesasPagas - despesasInsumos));
   const margem = vendido > 0 ? Math.round((lucro / vendido) * 100) : 0;
 
   // ── Fluxo por semana (dias 1–7, 8–14, 15–21, 22–28, 29–fim) ──
@@ -229,8 +235,50 @@ async function calcularMes(uid: string, ano: number, mes0: number): Promise<MesF
 
   return {
     recebido: r2(recebidoPedidos + entradasAvulsas), recebidoPedidos, entradasAvulsas, qtdRecebimentos: recebimentos.length,
-    despesasPagas, despesasInsumos, vendido, qtdVendidos: vendidos.length, cmv, semFicha, lucro, margem, semanas, fonteRecebido,
+    despesasPagas, despesasInsumos, vendido, qtdVendidos: vendidos.length, cmv, semFicha, custosVariaveis, lucro, margem, semanas, fonteRecebido,
   };
+}
+
+/* ── Custos variáveis (13/10) ── */
+type Variavel = { nome: string; tipo: string; valor: number; ativo: boolean; forma?: string | null };
+/** % que incide num valor pago desta forma, pelos custos cadastrados HOJE (a mesma regra do gatilho do SQL 4.34).
+ *  Taxa antiga sem forma com "maquininha" no nome vale só no cartão (crédito e débito). */
+export function taxaPctDaForma(forma: string | null | undefined, vars: Variavel[]): number {
+  const f = forma || "";
+  const cartao = f === "credito" || f === "debito";
+  return vars.filter(v => v.ativo !== false && v.tipo === "percentual")
+    .filter(v => v.forma ? v.forma === f : (!/maquin/i.test(v.nome || "") || cartao))
+    .reduce((s, v) => s + (Number(v.valor) || 0), 0);
+}
+/** Valor fixo por pedido (embalagem etc.) */
+export const fixoPorPedido = (vars: Variavel[]) => vars.filter(v => v.ativo !== false && v.tipo === "fixo").reduce((s, v) => s + (Number(v.valor) || 0), 0);
+
+/** Taxas e custos por pedido dos pedidos entregues. Leitura que falha lança (o mês todo vira erro, sem lucro inflado). */
+async function custosVariaveisDosPedidos(uid: string, pedidos: any[]): Promise<number> {
+  if (!pedidos.length) return 0;
+  const vr = await supabase.from("custos_variaveis").select("*").eq("user_id", uid);
+  if (vr.error) { if (faltaNoBanco(vr.error)) return 0; throw vr.error; }
+  const vars = (vr.data as Variavel[]) || [];
+  if (!vars.length) return 0;
+  const ids = pedidos.map(p => p.id);
+  const pags: any[] = [];
+  for (let i = 0; i < ids.length; i += 100) {
+    const fatia = ids.slice(i, i + 100);
+    let r = await supabase.from("pagamentos").select("pedido_id, valor, forma, taxa_pct").in("pedido_id", fatia).is("estornado_em", null);
+    if (r.error && faltaNoBanco(r.error)) r = await supabase.from("pagamentos").select("pedido_id, valor, forma").in("pedido_id", fatia).is("estornado_em", null) as any;
+    if (r.error) { if (faltaNoBanco(r.error)) break; throw r.error; }
+    pags.push(...((r.data as any[]) || []));
+  }
+  const porPedido = new Map<string, any[]>();
+  for (const g of pags) { const l = porPedido.get(g.pedido_id) || []; l.push(g); porPedido.set(g.pedido_id, l); }
+  let total = 0;
+  for (const p of pedidos) {
+    const gs = porPedido.get(p.id);
+    if (gs?.length) for (const g of gs) total += (Number(g.valor) || 0) * ((g.taxa_pct != null ? Number(g.taxa_pct) : taxaPctDaForma(g.forma, vars)) / 100);
+    else total += (Number(p.valor_total) || 0) * (taxaPctDaForma(normalizarForma(p.forma_pagamento), vars) / 100);
+  }
+  total += fixoPorPedido(vars) * pedidos.length;
+  return r2(total);
 }
 
 /**
