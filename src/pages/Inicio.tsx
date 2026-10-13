@@ -929,12 +929,13 @@ export default function Inicio() {
             {/* ── Suas atualizações e Notícias (celular e tablet) ── */}
             <div className="ini-mobile-updates"><MinhasAtualizacoes /></div>
             <div className="ini-mobile-updates"><UpdatesFeed /></div>
-            {/* Conquistas por último (02/10) */}
-            <div className="ini-mobile-updates ini-mobile-conquistas"><ConquistasCard /></div>
           </>
         )}
 
       </div>
+
+      {/* (4.29) o cartão "Suas conquistas" saiu do Início; fica só o aviso da conquista nova (celular e computador) */}
+      <ConquistasCard semCartao />
 
       <style>{`
         .ini-root {

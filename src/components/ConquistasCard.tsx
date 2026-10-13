@@ -20,7 +20,8 @@ const proParaComemorar = (uid: string | undefined, isPro: boolean) => {
   try { return !localStorage.getItem(`doonly_pro_celebrado_${uid}`); } catch { return false; }
 };
 
-export default function ConquistasCard() {
+/** semCartao (4.29): só o aviso da conquista nova e os avisos do PRO, sem o cartão (o Início não mostra mais o cartão). */
+export default function ConquistasCard({ semCartao = false }: { semCartao?: boolean } = {}) {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const { isPro } = usePlano();
@@ -83,7 +84,7 @@ export default function ConquistasCard() {
 
   return (
     <>
-      <div className="cqc">
+      {!semCartao && <div className="cqc">
         <div className="cqc-h">
           <h2>Suas conquistas</h2>
           <button type="button" className="cqc-link" onClick={() => navigate("/conquistas")}>Ver todas <CaretRight size={16} weight="bold" aria-hidden="true" /></button>
@@ -103,7 +104,7 @@ export default function ConquistasCard() {
             </div>
           </div>
         )}
-      </div>
+      </div>}
 
       <Janela
         aberta={!!qCel} aoFechar={fecharCel}
