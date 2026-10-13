@@ -320,22 +320,30 @@ function FolhaLogo({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
     marcarLogoOk(uid);
     onSalvo();
   };
+  // (13/10) refeito: a prévia do topo do cardápio explica sozinha. Uma saída só ("Agora não", que segue com a letra)
+  const temFoto = !!perfil?.foto_url && !perfil?.logo_url;
+  const nomeLoja = String(perfil?.nome_loja || "Sua confeitaria").trim() || "Sua confeitaria";
+  const escolherFoto = () => ref.current?.click();
   return (
     <>
-      <Janelinha titulo="Coloque o logo da loja" onClose={onClose}
-        acoes={<><Botao variante="secundario" onClick={onDepois}>Fazer depois</Botao><Botao cheio carregando={enviando} onClick={() => ref.current?.click()}>Escolher foto</Botao></>}>
-        <PassoTopo k="logo" />
-        <p className="ppf-sub">Aparece no topo do cardápio, junto do nome.</p>
+      <Janelinha titulo="Logo da loja" onClose={onClose}
+        acoes={temFoto
+          ? <><Botao variante="secundario" onClick={escolherFoto}>Trocar</Botao><Botao cheio carregando={enviando} onClick={usarFoto}>Usar esta foto</Botao></>
+          : <><Botao variante="secundario" disabled={enviando} onClick={usarFoto}>Agora não</Botao><Botao cheio carregando={enviando} onClick={escolherFoto}>Escolher foto</Botao></>}>
         <input ref={ref} type="file" accept="image/*" hidden onChange={escolher} />
-        <div className="ppf-lg">
-          <button type="button" className="ppf-lgc" onClick={() => ref.current?.click()} aria-label="Escolher foto">
-            {atual ? <img src={atual} alt="" /> : <span>{String(perfil?.nome_loja || "D").charAt(0).toUpperCase()}</span>}
-            <i><Camera size={14} /></i>
-          </button>
-          <div><b>Escolha o seu logo</b><small>{perfil?.logo_url ? "Da galeria ou da câmera. Você ajusta o recorte antes de salvar." : atual ? "Hoje o cardápio mostra a sua foto de perfil. Envie o logo da loja pra trocar." : "Da galeria ou da câmera. Você ajusta o recorte antes de salvar."}</small></div>
+        <PassoTopo k="logo" />
+        <div className="ppf-lg2">
+          <div className="ppf-lg2-cap" />
+          <div className="ppf-lg2-corpo">
+            <button type="button" className={`ppf-lg2-logo${atual ? "" : " vazio"}`} onClick={escolherFoto} aria-label={atual ? "Trocar a foto" : "Escolher o logo"}>
+              {atual
+                ? <><img src={atual} alt="" /><i><Camera size={15} weight="fill" /></i></>
+                : <span><Camera size={28} weight="fill" /><small>Toque aqui</small></span>}
+            </button>
+            <b>{nomeLoja}</b>
+            <small>Assim aparece no seu cardápio</small>
+          </div>
         </div>
-        {/* (13/10) sem foto de perfil, "usar minha foto" mostrava só a letra: agora diz isso */}
-        {!perfil?.logo_url && <button type="button" className="pp-lnk" onClick={usarFoto}>{perfil?.foto_url ? "Usar minha foto de perfil por enquanto" : `Pular por enquanto (mostra a letra ${String(perfil?.nome_loja || "D").trim().charAt(0).toUpperCase()})`}</button>}
       </Janelinha>
       {crop && <ImageCropper imageSrc={crop} cropShape="round" aspect={1} onCancel={() => setCrop(null)} onCropDone={enviar} />}
     </>
@@ -487,6 +495,20 @@ const CSS = `
   @media (min-width: 1600px) { .pp--inicio { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
   @media (min-width: 768px) { .pp--fim .pp-btn { max-width: 340px; margin-left: auto; margin-right: auto; } }
 
+  .ppf-lg2 { margin-top: 18px; border: 1px solid var(--ui-borda); border-radius: 18px; overflow: hidden; }
+  .ppf-lg2-cap { height: 64px; background: linear-gradient(120deg, #F7B2CB, var(--ui-rosa)); }
+  .ppf-lg2-corpo { display: flex; flex-direction: column; align-items: center; padding: 0 16px 18px; margin-top: -48px; text-align: center; }
+  .ppf-lg2-corpo > b { margin-top: 10px; font-size: 16px; font-weight: 600; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ppf-lg2-corpo > small { margin-top: 2px; font-size: 13px; color: var(--ui-texto-3); }
+  .ppf-lg2-logo { position: relative; width: 104px; height: 104px; padding: 0; border: 4px solid var(--ui-branco); border-radius: 50%; background: var(--ui-branco);
+    box-shadow: 0 4px 14px rgba(44, 18, 25, .12); cursor: pointer; font-family: inherit; }
+  .ppf-lg2-logo img { display: block; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+  .ppf-lg2-logo.vazio span { width: 100%; height: 100%; border-radius: 50%; border: 2px dashed #F0A9C3; background: #FFF6FA; color: var(--ui-rosa-escuro);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+  .ppf-lg2-logo.vazio small { font-size: 12px; font-weight: 600; }
+  .ppf-lg2-logo i { position: absolute; right: -4px; bottom: 0; width: 32px; height: 32px; border: 3px solid var(--ui-branco); border-radius: 50%; background: var(--ui-rosa); color: var(--ui-branco);
+    display: flex; align-items: center; justify-content: center; }
+  .ppf-lg2-logo:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
   .ppf-topo { display: flex; align-items: center; gap: 12px; margin: 2px 0 0; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; }
   .ppf-topo b { font-weight: 600; color: var(--ui-rosa-escuro); }
   .ppf-barra { display: flex; gap: 4px; flex: 1; }
