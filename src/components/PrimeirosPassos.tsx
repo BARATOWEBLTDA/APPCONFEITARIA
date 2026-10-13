@@ -48,8 +48,6 @@ function PassoTopo({ k }: { k: Passo }) {
   );
 }
 
-const IDEIAS = ["Bolos e doces feitos com carinho", "Doces artesanais pra sua festa", "Encomendas pra aniversários e eventos"];
-
 const maskCep = (v: string) => { const d = v.replace(/\D/g, "").slice(0, 8); return d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d; };
 
 export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?: Local; onEstado?: (completo: boolean) => void }) {
@@ -179,12 +177,12 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   const I = (C: any) => <C size={20} weight="regular" />;
   const passos: { feito: boolean; ic: ReactNode; t: string; s: string; abrir: () => void }[] = [
     { feito: true, ic: I(Check), t: "Criar sua conta", s: "Pronto! Boas-vindas ao Doonly", abrir: () => {} },
-    { feito: estado.descricao, ic: I(PencilSimpleLine), t: "Contar sobre a sua confeitaria", s: "Uma frase que aparece no topo do cardápio", abrir: () => setFolha("descricao") },
-    { feito: estado.logo, ic: I(ImageSquare), t: "Colocar o logo da loja", s: "Sem logo? Usamos a sua foto de perfil", abrir: () => setFolha("logo") },
-    { feito: estado.endereco, ic: I(MapPin), t: "Endereço da loja", s: "Pra calcular a entrega e mostrar no mapa", abrir: () => setFolha("endereco") },
-    { feito: estado.horario, ic: I(Clock), t: "Horário de funcionamento", s: "Aparece como \"Aberto agora\" no cardápio", abrir: () => setFolha("horario") },
-    { feito: estado.pagamento, ic: I(Wallet), t: "Pagamento e entrega", s: "Como o cliente paga e recebe o pedido", abrir: () => abrirPasso("pagamento") },
-    { feito: estado.produto, ic: I(Basket), t: "Cadastrar seu primeiro produto", s: "Com foto e preço, do jeito que o cliente vai ver", abrir: () => navigate("/produtos", { state: { abrirCadastro: true } }) },
+    { feito: estado.descricao, ic: I(PencilSimpleLine), t: "Contar sobre a sua confeitaria", s: "Uma frase no topo do cardápio", abrir: () => setFolha("descricao") },
+    { feito: estado.logo, ic: I(ImageSquare), t: "Colocar o logo da loja", s: "Ou use a sua foto de perfil", abrir: () => setFolha("logo") },
+    { feito: estado.endereco, ic: I(MapPin), t: "Endereço da loja", s: "Pra calcular a entrega", abrir: () => setFolha("endereco") },
+    { feito: estado.horario, ic: I(Clock), t: "Horário de funcionamento", s: "Mostra \"Aberto agora\" no cardápio", abrir: () => setFolha("horario") },
+    { feito: estado.pagamento, ic: I(Wallet), t: "Pagamento e entrega", s: "Como o cliente paga e recebe", abrir: () => abrirPasso("pagamento") },
+    { feito: estado.produto, ic: I(Basket), t: "Cadastrar um produto", s: "Com foto e preço", abrir: () => navigate("/produtos", { state: { abrirCadastro: true } }) },
   ];
   const feitos = passos.filter(p => p.feito).length;
   const atual = passos.findIndex(p => !p.feito);
@@ -194,7 +192,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   return (
     <div ref={raiz} className={`pp pp--${local}${destaque ? " pp--destaque" : ""}`}>
       <b className="pp-t">Primeiros passos</b>
-      <p className="pp-sub">{passos.length - feitos === 1 ? "Falta 1 coisa pra começar a vender pelo cardápio." : `Faltam ${passos.length - feitos} coisas pra começar a vender pelo cardápio.`}</p>
+      <p className="pp-sub">{passos.length - feitos === 1 ? "Falta 1 passo pra abrir o cardápio." : `Faltam ${passos.length - feitos} passos pra abrir o cardápio.`}</p>
       <div className="pp-bar" aria-label={`${feitos} de ${passos.length} passos feitos`}><i style={{ width: `${(feitos / passos.length) * 100}%` }} /></div>
       {passos.map((p, i) => i === atual ? (
         <div key={p.t} className="pp-at">
@@ -242,7 +240,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
     setGerando(true);
     try {
       const res = await apiFetch("/api/gerar-descricao", { method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: `Crie uma descrição curta e atraente para uma confeitaria chamada "${String(perfil?.nome_loja || "minha confeitaria").trim()}". Máximo 150 caracteres, português brasileiro, transmita carinho e qualidade. Retorne APENAS a descrição, sem aspas.` }) });
+        body: JSON.stringify({ prompt: `Crie uma descrição curta e atraente para uma confeitaria chamada "${String(perfil?.nome_loja || "minha confeitaria").trim()}". Entre 110 e 160 caracteres (umas 3 linhas no celular), português brasileiro, diga o que a confeitaria faz e pra quais ocasiões, transmita carinho e qualidade. Retorne APENAS a descrição, sem aspas.` }) });
       const data = await res.json(); const t = data.content?.[0]?.text?.trim();
       if (t) setTxt(t.slice(0, 200));
     } catch { /* sem internet */ }
@@ -271,21 +269,12 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
       </div>
       <div className="ppf-wrap">
         <textarea id="pp-desc" className="ppf-in ppf-ta" value={txt} maxLength={200} aria-label="Frase sobre a sua confeitaria"
-          placeholder="Ex.: Bolos e doces feitos com carinho" onChange={e => setTxt(e.target.value)} />
+          placeholder="Ex.: Bolos e doces feitos com carinho, do jeito que a sua festa merece. Encomendas pra aniversários, casamentos e eventos." onChange={e => setTxt(e.target.value)} />
         <span className="ppf-cnt2">{txt.length}/200</span>
       </div>
+      {/* 13/10: no cardápio a descrição fica bonita com umas 3 linhas (as ideias prontas curtas saíram) */}
+      <p className="ppf-dica">O ideal são 2 ou 3 linhas.</p>
       <button type="button" className="ppf-doo" onClick={gerar} disabled={gerando}><Sparkle size={16} weight="fill" aria-hidden="true" />{gerando ? "Escrevendo…" : "Escrever com a Doo IA"}</button>
-      <p className="ppf-l">Ou toque numa ideia</p>
-      <div className="ppf-ideias">
-        {IDEIAS.map(ideia => {
-          const on = txt.trim() === ideia;
-          return (
-            <button type="button" key={ideia} className={on ? "on" : ""} aria-pressed={on} onClick={() => setTxt(ideia)}>
-              <span>{ideia}</span><em>{on ? <Check size={16} weight="bold" /> : "Usar"}</em>
-            </button>
-          );
-        })}
-      </div>
       {erro && <p className="ppf-erro">{erro}</p>}
     </Janelinha>
   );
@@ -507,19 +496,14 @@ const CSS = `
   .ppf-prev-logo img { width: 100%; height: 100%; object-fit: cover; }
   .ppf-prev-tx { min-width: 0; padding-top: 22px; }
   .ppf-prev-tx b { display: block; font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ppf-prev-tx small { display: block; margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); line-height: 1.35; overflow-wrap: anywhere; }
+  .ppf-prev-tx small { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); line-height: 1.35; overflow-wrap: anywhere; }
+  .ppf-dica { margin: 6px 2px 0; font-size: 13px; color: var(--ui-texto-3); }
   .ppf-prev-tx small.vazio { color: var(--ui-texto-3); font-style: italic; }
-  .ppf-wrap .ppf-ta { margin-top: 12px; min-height: 88px; padding-bottom: 24px; }
+  .ppf-wrap .ppf-ta { margin-top: 12px; min-height: 128px; padding-bottom: 26px; }
   .ppf-cnt2 { position: absolute; right: 12px; bottom: 8px; font-size: 12px; color: var(--ui-texto-3); }
   .ppf-doo { display: inline-flex; align-items: center; gap: 6px; height: 40px; margin-top: 10px; padding: 0 14px; border: 1px solid #F4C6D7; border-radius: var(--ui-raio);
     background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; }
   .ppf-doo:disabled { opacity: .6; cursor: progress; }
-  .ppf-ideias { display: flex; flex-direction: column; gap: 6px; }
-  .ppf-ideias button { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; padding: 0 12px; border: 1px solid var(--ui-borda); border-radius: 10px;
-    background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 500; color: var(--ui-texto); text-align: left; cursor: pointer; }
-  .ppf-ideias button span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ppf-ideias button em { flex: none; display: inline-flex; font-style: normal; font-size: 13.5px; font-weight: 600; color: var(--ui-rosa-escuro); }
-  .ppf-ideias button.on { border-color: var(--ui-rosa); background: #FFF5F9; }
   .ppf-l { display: block; font-size: 13px; font-weight: 700; color: var(--ui-cinza-texto); margin: 16px 0 6px; }
   .ppf-lrow { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; margin-bottom: 6px; }
   .ppf-lrow .ppf-l { margin: 0; }
