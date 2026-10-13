@@ -20,7 +20,7 @@ import { Botao, TelaVazia, confirmar, avisar as avisarBase } from "@/components/
  * lança a saída no financeiro e marca a conta como paga, tudo junto.
  * Custos fixos com dia de vencimento viram uma conta por mês (este mês e o próximo).
  */
-type Conta = {
+export type Conta = {
   id: string; descricao: string; categoria: string | null; valor: number; vencimento: string;
   status: "pendente" | "paga" | "cancelada"; pago_em: string | null; valor_pago: number | null; custo_fixo_id: string | null;
 };
@@ -198,7 +198,7 @@ export default function FinanceiroAPagar() {
   );
 }
 
-function PagarSheet({ conta, onClose, onFeito }: { conta: Conta; onClose: () => void; onFeito: () => void }) {
+export function PagarSheet({ conta, onClose, onFeito }: { conta: Conta; onClose: () => void; onFeito: () => void }) {
   const [valor, setValor] = useState(textoBRL(conta.valor));
   const [forma, setForma] = useState("pix");
   const [quandoPg, setQuandoPg] = useState<"hoje" | "ontem" | "outra">("hoje");

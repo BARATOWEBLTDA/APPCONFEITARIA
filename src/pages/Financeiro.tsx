@@ -3,17 +3,20 @@
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowUp, ArrowDown, CaretRight, ArrowsLeftRight, Calculator, CalendarBlank, ChartPieSlice, Equals } from "@phosphor-icons/react";
+import { ArrowUp, ArrowDown, CaretRight, ArrowsLeftRight, Calculator, CalendarBlank, ChartPieSlice, CurrencyCircleDollar, Equals, Plus } from "@phosphor-icons/react";
 import CampoData from "@/components/CampoData";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, avisar } from "@/components/base";
 import { useCaixa, SaldoCaixa, SaldoSheet, CaixaEstilos } from "@/components/financeiro/CaixaCard";
-import PrevistosCard from "@/components/financeiro/PrevistosCard";
+import ReceberPedidoSheet from "@/components/financeiro/ReceberPedidoSheet";
+import { PagarSheet, type Conta } from "@/pages/FinanceiroAPagar";
+import { supabase } from "@/lib/supabase";
+import { nomeCategoriaFin } from "@/lib/categoriasFinanceiro";
 import DespesaSheet from "@/components/financeiro/DespesaSheet";
 import { resumoAPagar, type ResumoAPagar } from "@/lib/painelFinanceiro";
 import { carregarPeriodo, totaisDoPeriodo, diasEntre, isoDe, type DiaFluxo, type Periodo as PeriodoDados } from "@/lib/painelPeriodo";
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
-import { carregarAReceber, isoDia } from "@/lib/contasReceber";
+import { carregarAReceber, isoDia, type ItemReceber } from "@/lib/contasReceber";
 
 const r2 = (v: number) => Math.round((Number(v) || 0) * 100) / 100;
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -53,20 +56,27 @@ function montarPeriodo(tipo: TipoPer, pIni: string, pAte: string): Per {
 
 /** "+18% que nos 7 dias anteriores" (verde quando é bom, vermelho quando é ruim) */
 function Variacao({ atual, anterior, rotulo, bomSubir = true }: { atual: number; anterior: number | null; rotulo: string; bomSubir?: boolean }) {
+  // (4.29) no celular só a parte curta ("+12%", "Igual"), pra não quebrar linha; o resto aparece no computador
+  const r = (t: string) => <span className="fd-var-r"> {t}</span>;
   if (anterior == null) return <span className="fd-var neu">&nbsp;</span>;
-  if (!anterior && !atual) return <span className="fd-var neu">Sem movimento {rotulo.replace(/^que /, "")}</span>;
-  if (!anterior) return <span className={`fd-var ${atual > 0 === bomSubir ? "up" : "dn"}`}>Nada {rotulo.replace(/^que /, "")}</span>;
+  if (!anterior && !atual) return <span className="fd-var neu">Sem movimento{r(rotulo.replace(/^que /, ""))}</span>;
+  if (!anterior) return <span className={`fd-var ${atual > 0 === bomSubir ? "up" : "dn"}`}>Nada{r(rotulo.replace(/^que /, ""))}</span>;
   const pct = Math.round(((atual - anterior) / Math.abs(anterior)) * 100);
-  if (pct === 0) return <span className="fd-var neu">Igual {rotulo.replace(/^que /, "a ")}</span>;
+  if (pct === 0) return <span className="fd-var neu">Igual{r(rotulo.replace(/^que nos /, "aos ").replace(/^que no /, "ao ").replace(/^que /, "a "))}</span>;
   const bom = pct > 0 === bomSubir;
-  return <span className={`fd-var ${bom ? "up" : "dn"}`}>{pct > 0 ? "+" : ""}{pct}% {rotulo}</span>;
+  return <span className={`fd-var ${bom ? "up" : "dn"}`}>{pct > 0 ? "+" : ""}{pct}%{r(rotulo)}</span>;
 }
 
 export default function Financeiro() {
   const navigate = useNavigate();
   const { uid, cx, recarregar } = useCaixa();
   const [definir, setDefinir] = useState(false);
-  const [nova, setNova] = useState<"entrada" | "saida" | null>(null);
+  const [nova, setNova] = useState<"entrada" | "saida" | "apagar" | null>(null);
+  // (4.29) receber e pagar direto do painel
+  const [receber, setReceber] = useState<{ item: ItemReceber | null } | null>(null);
+  const [pagar, setPagar] = useState<Conta | null>(null);
+  const [recItens, setRecItens] = useState<ItemReceber[] | null>(null);
+  const [contas, setContas] = useState<Conta[] | null>(null);
   // (4.29) período: Hoje · 7 dias · 30 dias · Este mês · Personalizado (lembra a última escolha neste aparelho)
   const [tipo, setTipo] = useState<TipoPer>(() => { try { const t = localStorage.getItem("doonly_fin_periodo"); return (["hoje", "7", "30", "mes"].includes(t || "") ? t : "mes") as TipoPer; } catch { return "mes"; } });
   const [pIni, setPIni] = useState(() => somar(isoDe(new Date()), -14));
@@ -106,8 +116,13 @@ export default function Financeiro() {
       if (cancelado) return;
       // 10/10: "nesta semana" é de hoje até o 7º dia, igual à tela A receber (antes contava também os atrasados)
       setRec({ total: l.reduce((s, x) => s + x.falta, 0), qtd: l.length, semana: l.filter(x => x.dataRef && x.dataRef >= dia0 && x.dataRef <= em7).length, erro });
+      setRecItens(erro ? null : l);
     }, () => { if (!cancelado) setRec({ total: 0, qtd: 0, semana: 0, erro: true }); });
     resumoAPagar(uid, dia0).then(r => { if (!cancelado) setPag(r); }, () => { if (!cancelado) setPag({ total: 0, qtd: 0, vencidas: 0, proxima: null, erro: true }); });
+    // as 3 próximas contas (lista do computador)
+    supabase.from("contas_pagar").select("id, descricao, categoria, valor, vencimento, status, pago_em, valor_pago, custo_fixo_id")
+      .eq("user_id", uid).eq("status", "pendente").order("vencimento", { ascending: true }).order("id").range(0, 2)
+      .then(({ data, error }) => { if (!cancelado) setContas(error ? null : (data as Conta[]) || []); });
     return () => { cancelado = true; };
   }, [uid, versao, dia]);
 
@@ -119,6 +134,10 @@ export default function Financeiro() {
   const esp = dados?.erro ? "—" : "…";
   const algumErro = !!(dados?.erro || rec?.erro || pag?.erro || cx?.erro);
   const totalFormas = ok ? ok.formas.reduce((s, f) => s + f.valor, 0) : 0;
+  const formas = ok ? ok.formas.filter(f => f.valor > 0) : []; // (4.29) só as formas que tiveram dinheiro
+  const qtdReceber = rec && !rec.erro ? rec.qtd : 0;
+  const aposLancar = async (aviso: string, continuar?: boolean) => { if (!continuar) setNova(null); avisar(aviso, { tipo: "ok" }); await depoisDeMudar(); };
+  const abrirReceber = (item: ItemReceber | null = null) => setReceber({ item });
 
   return (
     <>
@@ -128,8 +147,9 @@ export default function Financeiro() {
         infoIcon="💰"
         rightActions={
           <div className="fd-hd">
-            <button type="button" className="fd-hd-bt e" onClick={() => setNova("entrada")}><ArrowUp size={15} weight="bold" />Nova entrada</button>
-            <button type="button" className="fd-hd-bt s" onClick={() => setNova("saida")}><ArrowDown size={15} weight="bold" />Nova saída</button>
+            <button type="button" className="fd-hd-bt r" onClick={() => abrirReceber()}><CurrencyCircleDollar size={17} weight="bold" />Receber pedido{qtdReceber > 0 && <em>{qtdReceber}</em>}</button>
+            <button type="button" className="fd-hd-bt e" onClick={() => setNova("entrada")}><ArrowUp size={15} weight="bold" />Entrada</button>
+            <button type="button" className="fd-hd-bt s" onClick={() => setNova("saida")}><ArrowDown size={15} weight="bold" />Saída</button>
           </div>
         }
         infoContent={<>
@@ -149,6 +169,12 @@ export default function Financeiro() {
         </div>
       )}
       <div className={`fd${foco ? " fd--foco" : ""}${cx && !cx.configurado ? " fd--sem-caixa" : ""}`}>
+        {/* (4.29) saldo em caixa no topo: é o número que ela mais quer ver */}
+        <div className="fd-a-saldo">
+          <SaldoCaixa cx={cx} onAcertar={() => setDefinir(true)} destaque={foco}
+            onDepois={foco ? () => { setDepois(true); try { localStorage.setItem(chaveDepois, "1"); } catch { /* sem acesso */ } } : undefined} />
+        </div>
+
         <div className="fd-a-per fd-per">
           <div className="fd-per-tx"><span className="fd-per-ic" aria-hidden="true"><CalendarBlank size={20} /></span><span><b>Período</b><small>{per.texto}</small></span></div>
           <div className="fd-per-chips" role="tablist" aria-label="Período">
@@ -174,12 +200,13 @@ export default function Financeiro() {
             <i>{ok ? `${ok.qtdDespesas} ${ok.qtdDespesas === 1 ? "saída" : "saídas"}` : ""}</i></div>
           <div className="fd-k"><span className="fd-ki l" aria-hidden="true"><Equals size={14} weight="bold" /></span><small>Resultado</small><b className={ok && ok.resultado < 0 ? "s" : ""}>{ok ? brl(ok.resultado) : esp}</b>
             {ok && <Variacao atual={ok.resultado} anterior={ant ? r2(ant.recebido - ant.despesas) : null} rotulo={per.rotuloAnt} />}
-            <i>o que entrou menos o que saiu</i></div>
+            <i><span className="fd-so-pc">o que entrou menos o que saiu</span><span className="fd-so-cel">entrou − saiu</span></i></div>
         </div>
 
         <div className="fd-a-acoes fd-acoes">
-          <button type="button" className="fd-bt e" onClick={() => setNova("entrada")}><ArrowUp size={17} weight="bold" />Nova entrada</button>
-          <button type="button" className="fd-bt s" onClick={() => setNova("saida")}><ArrowDown size={17} weight="bold" />Nova saída</button>
+          <button type="button" className="fd-bt e" onClick={() => setNova("entrada")}><i><ArrowUp size={18} weight="bold" /></i>Entrou</button>
+          <button type="button" className="fd-bt s" onClick={() => setNova("saida")}><i><ArrowDown size={18} weight="bold" /></i>Saiu</button>
+          <button type="button" className="fd-bt r" onClick={() => abrirReceber()}>{qtdReceber > 0 && <em>{qtdReceber}</em>}<i><CurrencyCircleDollar size={20} weight="bold" /></i>Receber pedido</button>
         </div>
 
         <div className="fd-a-fluxo fd-card">
@@ -192,7 +219,7 @@ export default function Financeiro() {
           <div className="fd-ct"><span><b>Formas de pagamento</b><small className="fd-ct-sub">O que entrou no período</small></span></div>
           {!ok ? <div className="fd-ph fd-ph--p" /> : totalFormas <= 0 ? <p className="fd-vazio">Nenhum recebimento no período.</p> : (<>
             <ul className="fd-fp">
-              {ok.formas.map(f => (
+              {formas.map(f => (
                 <li key={f.chave}><span className="fd-fp-n">{f.nome}</span><span className="fd-fp-b"><i style={{ width: `${Math.round((f.valor / totalFormas) * 100)}%` }} /></span>
                   <span className="fd-fp-v">{brl(f.valor)}</span><span className="fd-fp-p">{Math.round((f.valor / totalFormas) * 100)}%</span></li>
               ))}
@@ -204,17 +231,47 @@ export default function Financeiro() {
         <div className="fd-a-contas fd-contas">
           <button type="button" className="fd-k2 rec" onClick={() => navigate("/financeiro/a-receber")}>
             <small>A receber</small><b>{!rec ? "…" : rec.erro ? "—" : brl(rec.total)}</b>
-            <i>{!rec ? "" : rec.erro ? "não deu pra carregar" : `${rec.qtd} ${rec.qtd === 1 ? "pedido" : "pedidos"}${rec.semana ? ` · ${rec.semana} nesta semana` : ""}`}<CaretRight size={13} weight="bold" /></i>
+            <i><span>{!rec ? "" : rec.erro ? "não carregou" : `${rec.qtd} ${rec.qtd === 1 ? "pedido" : "pedidos"}`}</span><CaretRight size={13} weight="bold" /></i>
           </button>
           <button type="button" className="fd-k2 pag" onClick={() => navigate("/financeiro/a-pagar")}>
             <small>A pagar</small><b>{pag === undefined ? "…" : pag && !pag.erro ? brl(pag.total) : "—"}</b>
-            <i>{pag === null ? "falta o SQL do Passo 5" : pag?.erro ? "não deu pra carregar" : pag ? <>{pag.qtd} {pag.qtd === 1 ? "conta" : "contas"}{pag.vencidas > 0
-              ? <> · <em className="fd-venc">{pag.vencidas} {pag.vencidas === 1 ? "vencida" : "vencidas"}</em></>
-              : pag.proxima ? ` · vence dia ${Number(pag.proxima.slice(8, 10))}` : ""}</> : ""}<CaretRight size={13} weight="bold" /></i>
+            <i><span>{pag === null ? "falta o SQL" : pag?.erro ? "não carregou" : pag ? (pag.vencidas > 0
+              ? <em className="fd-venc">{pag.vencidas} {pag.vencidas === 1 ? "vencida" : "vencidas"}</em>
+              : <>{pag.qtd} {pag.qtd === 1 ? "conta" : "contas"}{pag.proxima ? ` · dia ${Number(pag.proxima.slice(8, 10))}` : ""}</>) : ""}</span><CaretRight size={13} weight="bold" /></i>
           </button>
         </div>
 
-        <div className="fd-a-prev"><PrevistosCard versao={versao} /></div>
+        {/* (4.29) computador: o que tem pra receber e pra pagar, com o botão em cada linha */}
+        <div className="fd-a-listas fd-listas">
+          <div className="fd-card fd-lst">
+            <div className="fd-ct"><span><b>Pra receber</b><small className="fd-ct-sub">{!rec ? "…" : rec.erro ? "Não deu pra carregar" : rec.qtd ? `${brl(rec.total)} em ${rec.qtd} ${rec.qtd === 1 ? "pedido" : "pedidos"}` : "Tudo recebido"}</small></span>
+              <button type="button" className="fd-ct-lk" onClick={() => navigate("/financeiro/a-receber")}>Ver todos<CaretRight size={13} weight="bold" /></button></div>
+            {recItens && recItens.length === 0 && <p className="fd-vazio">Nenhum pedido com valor a receber.</p>}
+            {(recItens || []).slice(0, 3).map(it => (
+              <div key={it.id} className="fd-lst-it">
+                <span className="fd-lst-tx"><b>{it.cliente_nome || "Cliente sem nome"}{it.dataRef && <em className={it.dias !== null && it.dias < 0 ? "atr" : ""}>{dataTag(it.dataRef, it.dias)}</em>}</b>
+                  <small>{[it.numero != null ? `#${it.numero}` : "", it.recebido > 0 ? "sinal pago" : "falta tudo"].filter(Boolean).join(" · ")}</small></span>
+                <span className="fd-lst-v">{brl(it.falta)}{it.recebido > 0 && <small>de {brl(it.total)}</small>}</span>
+                <button type="button" className="fd-lst-bt v" onClick={() => abrirReceber(it)}>Receber</button>
+              </div>
+            ))}
+          </div>
+          <div className="fd-card fd-lst">
+            <div className="fd-ct"><span><b>Pra pagar</b><small className="fd-ct-sub">{pag === undefined ? "…" : pag === null ? "Falta o SQL das contas a pagar" : pag.erro ? "Não deu pra carregar" : pag.qtd ? `${brl(pag.total)} em ${pag.qtd} ${pag.qtd === 1 ? "conta" : "contas"}` : "Nenhuma conta pendente"}</small></span>
+              <button type="button" className="fd-ct-lk" onClick={() => navigate("/financeiro/a-pagar")}>Ver todas<CaretRight size={13} weight="bold" /></button></div>
+            {(contas || []).map(c => {
+              const venceu = c.vencimento < isoDia(0);
+              return (
+                <div key={c.id} className="fd-lst-it">
+                  <span className="fd-lst-tx"><b>{c.descricao}<em className={venceu ? "atr" : ""}>{venceu ? "venceu" : "vence"} {dm(c.vencimento)}</em></b><small>{nomeCategoriaFin(c.categoria) || "Conta"}</small></span>
+                  <span className={`fd-lst-v${venceu ? " s" : ""}`}>{brl(c.valor)}</span>
+                  <button type="button" className="fd-lst-bt p" onClick={() => setPagar(c)}>Pagar</button>
+                </div>
+              );
+            })}
+            {pag !== null && <button type="button" className="fd-lst-nova" onClick={() => setNova("apagar")}><Plus size={15} weight="bold" />Nova conta a pagar</button>}
+          </div>
+        </div>
 
         <div className="fd-a-vend fd-card">
           <div className="fd-ct"><span><b>Mais vendidos</b><small className="fd-ct-sub">Pedidos com entrega no período, pelo valor</small></span></div>
@@ -240,11 +297,6 @@ export default function Financeiro() {
           )}
         </div>
 
-        {/* saldo em caixa: depois dos números do período (no desenho ele não fica no topo) */}
-        <div className="fd-a-saldo">
-          <SaldoCaixa cx={cx} onAcertar={() => setDefinir(true)} destaque={foco}
-            onDepois={foco ? () => { setDepois(true); try { localStorage.setItem(chaveDepois, "1"); } catch { /* sem acesso */ } } : undefined} />
-        </div>
 
         <div className="fd-a-mais fd-mais">
           <p className="fd-mais-t">Mais</p>
@@ -257,15 +309,24 @@ export default function Financeiro() {
       </div>
 
       {definir && uid && cx && <SaldoSheet atual={cx.configurado ? cx.saldo : null} uid={uid} onClose={() => setDefinir(false)} onSalvo={async () => { setDefinir(false); await depoisDeMudar(); }} />}
-      {nova && <DespesaSheet tipo={nova} inicioCaixa={cx?.configurado && cx.inicio ? isoDe(new Date(cx.inicio)) : null} onClose={() => setNova(null)}
-        onSalvo={async aviso => { setNova(null); avisar(aviso, { tipo: "ok" }); await depoisDeMudar(); }}
-        onContaAPagar={() => navigate("/financeiro/a-pagar")} onReceberPedido={() => navigate("/financeiro/a-receber")} />}
+      {nova && <DespesaSheet tipo={nova === "entrada" ? "entrada" : "saida"} inicialAPagar={nova === "apagar"} inicioCaixa={cx?.configurado && cx.inicio ? isoDe(new Date(cx.inicio)) : null}
+        onClose={() => setNova(null)} onSalvo={aposLancar} onReceberPedido={() => { setNova(null); abrirReceber(); }} />}
+      {receber && <ReceberPedidoSheet itens={recItens} inicial={receber.item} onClose={() => setReceber(null)}
+        onFeito={async msg => { setReceber(null); avisar(msg, { tipo: "ok" }); await depoisDeMudar(); }} />}
+      {pagar && <PagarSheet conta={pagar} onClose={() => setPagar(null)} onFeito={async () => { setPagar(null); avisar("Conta paga.", { tipo: "ok" }); await depoisDeMudar(); }} />}
       <style>{CSS}</style>
     </>
   );
 }
 
 const SEMANA = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+/** "hoje" · "amanhã" · "atrasado" · "qui, 23/10" */
+function dataTag(iso: string, dias: number | null) {
+  if (dias === 0) return "hoje";
+  if (dias === 1) return "amanhã";
+  if (dias !== null && dias < 0) return "atrasado";
+  return `${SEMANA[deIso(iso).getDay()]}, ${dm(iso)}`;
+}
 /** (4.29) Barras de entradas e saídas por dia. Mais de 45 dias: junta de 7 em 7 dias. */
 function BarrasPorDia({ dias }: { dias: DiaFluxo[] }) {
   const caixa = useRef<HTMLDivElement>(null);
@@ -326,7 +387,7 @@ function BarrasPorDia({ dias }: { dias: DiaFluxo[] }) {
 
 const CSS = `
   .fd { max-width: 1160px; margin: 0 auto; padding: 22px 0 96px; display: grid; gap: 14px; font-family: var(--font-base);
-    grid-template-columns: minmax(0, 1fr); grid-template-areas: "per" "kpis" "acoes" "fluxo" "formas" "contas" "prev" "saldo" "vend" "ult" "mais"; position: relative; margin-top: -58px; }
+    grid-template-columns: minmax(0, 1fr); grid-template-areas: "saldo" "acoes" "per" "kpis" "contas" "listas" "fluxo" "formas" "vend" "ult" "mais"; position: relative; margin-top: -58px; }
   .fd-faixa { height: 58px; background: var(--ui-rosa); width: 100vw; margin: 0 calc(50% - 50vw); }
   .fd-faixa + .fd-erro { position: relative; margin-top: -40px; }
   .fd-faixa + .fd-erro + .fd { margin-top: 0; }
@@ -335,13 +396,17 @@ const CSS = `
   .fd-erro { max-width: 1160px; margin: 22px auto 0; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: 10px 12px; flex-wrap: wrap; background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: var(--ui-raio); padding: 10px 12px; font-family: var(--font-base); font-size: 13.5px; font-weight: 600; line-height: 1.45; }
   .fd-erro + .fd { padding-top: 14px; }
   .fd-a-per { grid-area: per; } .fd-a-saldo { grid-area: saldo; } .fd-a-kpis { grid-area: kpis; }
-  .fd-a-fluxo { grid-area: fluxo; } .fd-a-formas { grid-area: formas; } .fd-a-contas { grid-area: contas; } .fd-a-prev { grid-area: prev; }
+  .fd-a-fluxo { grid-area: fluxo; } .fd-a-formas { grid-area: formas; } .fd-a-contas { grid-area: contas; } .fd-a-listas { grid-area: listas; }
   .fd-a-vend { grid-area: vend; } .fd-a-ult { grid-area: ult; } .fd-a-mais { grid-area: mais; }
-  @media (min-width: 768px) { .fd-acoes { display: none !important; } }
+  @media (min-width: 768px) { .fd-acoes { display: none !important; } .fd-a-contas { display: none !important; } }
+  @media (max-width: 767px) { .fd-a-listas { display: none !important; } }
   @media (min-width: 901px) { .fd-faixa { width: auto; margin: 0 -2rem; } }
   @media (min-width: 1024px) {
-    .fd { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px; align-items: start;
-      grid-template-areas: "per per per per per per" "kpis kpis kpis kpis kpis kpis" "fluxo fluxo fluxo fluxo formas formas" "contas contas contas prev prev prev" "vend vend vend ult ult ult" "saldo saldo saldo saldo saldo saldo" "mais mais mais mais mais mais"; }
+    .fd { grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; align-items: stretch;
+      grid-template-areas: "saldo saldo saldo kpis kpis kpis kpis kpis kpis kpis kpis kpis" "per per per per per per per per per per per per" "listas listas listas listas listas listas listas listas listas listas listas listas" "fluxo fluxo fluxo fluxo fluxo fluxo fluxo fluxo formas formas formas formas" "vend vend vend vend vend vend ult ult ult ult ult ult" "mais mais mais mais mais mais mais mais mais mais mais mais"; }
+    .fd.fd--sem-caixa { grid-template-areas: "saldo saldo saldo saldo saldo saldo saldo saldo saldo saldo saldo saldo" "kpis kpis kpis kpis kpis kpis kpis kpis kpis kpis kpis kpis" "per per per per per per per per per per per per" "listas listas listas listas listas listas listas listas listas listas listas listas" "fluxo fluxo fluxo fluxo fluxo fluxo fluxo fluxo formas formas formas formas" "vend vend vend vend vend vend ult ult ult ult ult ult" "mais mais mais mais mais mais mais mais mais mais mais mais"; }
+    .fd .fd-a-saldo .cxc { height: 100%; box-sizing: border-box; }
+    .fd .fd-a-per, .fd .fd-a-mais { align-self: start; }
     .fd .fd-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); height: 100%; }
     .fd .fd-kpis .fd-k { display: flex; flex-direction: column; justify-content: center; grid-column: auto; }
     .fd .fd-k2 { display: flex; flex-direction: column; justify-content: center; }
@@ -398,12 +463,45 @@ const CSS = `
   .fd-hd-mes button::after { content: ""; position: absolute; inset: -4px; }
   .fd-hd-mes button:disabled { opacity: .35; cursor: default; }
   .fd-hd-bt { display: flex; align-items: center; gap: 6px; min-height: 44px; border: none; border-radius: var(--ui-raio-botao); padding: 0 14px; font-family: var(--font-base); font-size: 14px; font-weight: 700; color: var(--ui-branco); cursor: pointer; white-space: nowrap; }
+  .fd-hd-bt { font-weight: 600; }
   .fd-hd-bt.e { background: #16A34A; } .fd-hd-bt.s { background: var(--ui-vinho-escuro); }
+  .fd-hd-bt.r { background: var(--ui-branco); color: #B45309; }
+  .fd-hd-bt.r em { font-style: normal; min-width: 22px; padding: 1px 7px; border-radius: 11px; background: #B45309; color: var(--ui-branco); font-size: 12px; font-weight: 600; text-align: center; }
   /* foco no convite do saldo: o resto fica levemente apagado (sem bloquear) */
   .fd > * { transition: opacity .3s ease, filter .3s ease; }
-  .fd-acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .fd-bt { display: flex; align-items: center; justify-content: center; gap: 6px; border: none; border-radius: var(--ui-raio); padding: 12px; font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ui-branco); cursor: pointer; }
-  .fd-bt.e { background: #16A34A; } .fd-bt.s { background: var(--ui-vinho-escuro); }
+  /* (4.29) 3 botões grandes no celular: Entrou · Saiu · Receber pedido */
+  .fd-acoes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .fd-bt { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 84px; border: none; border-radius: 16px; padding: 10px 4px; font-family: inherit; font-size: clamp(11.5px, 3.4vw, 14px); font-weight: 600; white-space: nowrap; cursor: pointer; }
+  .fd-bt i { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; color: var(--ui-branco); font-style: normal; }
+  .fd-bt.e { background: #ECFDF3; color: var(--ui-verde); } .fd-bt.e i { background: #16A34A; }
+  .fd-bt.s { background: #FEF2F2; color: var(--ui-vermelho); } .fd-bt.s i { background: var(--ui-vermelho); }
+  .fd-bt.r { background: #FFFBEB; color: #B45309; } .fd-bt.r i { background: #B45309; }
+  .fd-bt em { position: absolute; top: 8px; right: 8px; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: #B45309; color: var(--ui-branco); font-style: normal; font-size: 11.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+  /* (4.29) textos curtos no celular, completos no computador */
+  .fd .fd-so-cel { display: none; }
+  @media (max-width: 767px) { .fd .fd-so-pc { display: none; } .fd .fd-so-cel { display: inline; } .fd-var-r { display: none; } }
+  .fd-var { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fd-k i, .fd-k2 i { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fd-k2 i span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  /* (4.29) listas Pra receber / Pra pagar (computador) */
+  .fd-listas { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+  .fd-lst { display: flex; flex-direction: column; }
+  .fd-lst-it { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 14px; align-items: center; padding: 10px 0; border-top: 1px solid #F6F1F3; }
+  .fd-lst .fd-ct + .fd-lst-it { border-top: 0; }
+  .fd-lst-tx { min-width: 0; }
+  .fd-lst-tx b, .fd-lst-tx small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fd-lst-tx b { font-size: 14px; font-weight: 600; color: var(--ui-texto); }
+  .fd-lst-tx b em { margin-left: 8px; padding: 2px 7px; border-radius: 6px; background: #FFFBEB; color: #B45309; font-style: normal; font-size: 11.5px; font-weight: 500; }
+  .fd-lst-tx b em.atr { background: #FEF2F2; color: var(--ui-vermelho); }
+  .fd-lst-tx small { margin-top: 2px; font-size: 12.5px; color: var(--ui-texto-2); }
+  .fd-lst-v { text-align: right; font-size: 14px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; }
+  .fd-lst-v.s { color: var(--ui-vermelho); }
+  .fd-lst-v small { display: block; font-size: 12px; font-weight: 400; color: var(--ui-texto-3); }
+  .fd-lst-bt { min-height: 36px; padding: 0 14px; border: 0; border-radius: 10px; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .fd-lst-bt.v { background: #ECFDF3; color: var(--ui-verde); } .fd-lst-bt.v:hover { background: #DCFCE7; }
+  .fd-lst-bt.p { background: #FEF2F2; color: var(--ui-vermelho); } .fd-lst-bt.p:hover { background: #FEE2E2; }
+  .fd-lst-nova { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; min-height: 40px; margin-top: 4px; padding: 0; border: 0; background: none; font-family: inherit; font-size: 13.5px; font-weight: 500; color: var(--ui-rosa-escuro); cursor: pointer; }
+  @media (max-width: 1023px) { .fd-listas { grid-template-columns: minmax(0, 1fr); } }
   .fd-mes { display: flex; justify-content: space-between; align-items: center; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio); padding: 6px; }
   .fd-mes b { font-size: 14.5px; font-weight: 700; color: var(--ui-texto); }
   .fd-mes button { width: 44px; height: 44px; border-radius: var(--ui-raio-p); border: none; background: #FFF1F6; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; cursor: pointer; }

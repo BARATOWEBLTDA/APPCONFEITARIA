@@ -179,7 +179,7 @@ export default function FinanceiroTransacoes() {
 
       {aberto && <DetalheSheet m={aberto} semEstorno={semEstorno} onClose={() => setAberto(null)} onAbrirPedido={id => navigate(`/pedidos/${id}/editar`)}
         onEstornado={msg => { setAberto(null); avisar(msg); carregar(); }} />}
-      {nova && uid && <DespesaSheet tipo={nova} onClose={() => setNova(null)} onSalvo={aviso => { setNova(null); avisar(aviso); carregar(); }} onContaAPagar={() => navigate("/financeiro/a-pagar")} onReceberPedido={() => navigate("/financeiro/a-receber")} />}
+      {nova && uid && <DespesaSheet tipo={nova} onClose={() => setNova(null)} onSalvo={(aviso, continuar) => { if (!continuar) setNova(null); avisar(aviso); carregar(); }} onContaAPagar={() => navigate("/financeiro/a-pagar")} onReceberPedido={() => navigate("/financeiro/a-receber")} />}
       <style>{CSS}{FOLHA_CSS}</style>
     </>
   );
