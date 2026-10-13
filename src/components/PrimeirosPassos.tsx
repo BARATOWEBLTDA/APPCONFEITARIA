@@ -386,21 +386,27 @@ function FolhaLogo({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
 
 function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
   const e0 = perfil?.endereco || {};
-  const [end, setEnd] = useState({ cep: e0.cep || "", rua: e0.rua || "", numero: e0.numero || "", bairro: e0.bairro || "", cidade: e0.cidade || "", estado: e0.estado || "" });
+  const [end, setEnd] = useState({ cep: e0.cep || "", rua: e0.rua || "", numero: e0.numero || "", complemento: e0.complemento || "", bairro: e0.bairro || "", cidade: e0.cidade || "", estado: e0.estado || "" });
   const [mostrar, setMostrar] = useState<"completo" | "cidade" | "nada">(perfil?.mostrar_apenas_cidade && !perfil?.mostrar_localizacao ? "cidade" : "completo"); // padrão: endereço completo (02/10)
   const [buscando, setBuscando] = useState(false);
-  const [achou, setAchou] = useState(!!e0.cidade);
+  // (13/10) começa só com o CEP; achou → quadrinho com rua/bairro/cidade e só falta o número; "Não sei o CEP" ou "Editar" → todos os campos
+  const [achou, setAchou] = useState(!!(e0.cep && e0.cidade));
+  const [manual, setManual] = useState(!!(e0.cidade && !e0.cep));
+  const [naoAchou, setNaoAchou] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
+  const nomeLoja = String(perfil?.nome_loja || "Sua confeitaria").trim() || "Sua confeitaria";
+  const logoPrev = perfil?.logo_url || perfil?.foto_url || "";
   const mudarCep = async (v: string) => {
-    const cep = maskCep(v); setEnd(e => ({ ...e, cep })); setAchou(false);
+    const cep = maskCep(v); setEnd(e => ({ ...e, cep })); setAchou(false); setNaoAchou(false);
     const d = cep.replace(/\D/g, "");
     if (d.length !== 8) return;
     setBuscando(true);
     try {
       const r = await fetch(`https://viacep.com.br/ws/${d}/json/`); const j = await r.json();
-      if (!j.erro) { setEnd(e => ({ ...e, rua: j.logradouro || e.rua, bairro: j.bairro || e.bairro, cidade: j.localidade || e.cidade, estado: j.uf || e.estado })); setAchou(true); }
-    } catch { /* sem internet: ela digita */ }
+      if (!j.erro) { setEnd(e => ({ ...e, rua: j.logradouro || "", bairro: j.bairro || "", cidade: j.localidade || "", estado: j.uf || "" })); setAchou(true); }
+      else { setNaoAchou(true); setManual(true); }
+    } catch { setNaoAchou(true); setManual(true); /* sem internet: ela digita */ }
     setBuscando(false);
   };
   const pronto = !!end.cidade.trim() && !!(end.rua.trim() || end.cep.trim());
@@ -412,24 +418,52 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
     if (e) { setErro("Não foi possível salvar agora. Confira a internet e tente de novo."); return; }
     onSalvo();
   };
+  // a linha da prévia, do jeito que o cardápio mostra
+  const ruaNum = end.rua.trim() ? `${end.rua.trim()}${end.numero.trim() ? `, ${end.numero.trim()}` : ""}${end.complemento.trim() ? `, ${end.complemento.trim()}` : ""}` : "";
+  const cidadeUf = [end.cidade.trim(), end.estado.trim()].filter(Boolean).join(", ");
+  const linhaPrev = mostrar === "nada" ? "Endereço escondido no cardápio" : mostrar === "cidade" ? cidadeUf : ([ruaNum, end.bairro.trim()].filter(Boolean).join(" · ") || cidadeUf);
   const campo = (k: keyof typeof end, rotulo: string, ph = "", extra: any = {}) => (
     <div className="ppf-f"><label className="ppf-l" htmlFor={`pp-${k}`}>{rotulo}</label>
       <input id={`pp-${k}`} className="ppf-in" value={end[k]} placeholder={ph} onChange={e => setEnd(x => ({ ...x, [k]: e.target.value }))} {...extra} /></div>
   );
   return (
     <Janelinha titulo="Endereço da loja" onClose={onClose}
-      acoes={<><Botao variante="secundario" onClick={onDepois}>Fazer depois</Botao><Botao cheio disabled={!pronto} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
+      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!pronto} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
       <PassoTopo k="endereco" />
-      <p className="ppf-sub">Pra calcular a entrega e mostrar no mapa.</p>
-      <div className="ppf-f"><label className="ppf-l" htmlFor="pp-cep">CEP</label>
-        <div className="ppf-wrap"><input id="pp-cep" className="ppf-in" inputMode="numeric" value={end.cep} placeholder="00000-000" onChange={e => mudarCep(e.target.value)} />
-          {(buscando || achou) && <small className="ppf-cep">{buscando ? "Procurando…" : "endereço encontrado"}</small>}</div></div>
-      {campo("rua", "Rua", "Nome da rua")}
-      <div className="ppf-row">{campo("numero", "Número", "Ex.: 500", { inputMode: "numeric" })}{campo("bairro", "Bairro")}</div>
-      <div className="ppf-row">{campo("cidade", "Cidade")}{campo("estado", "UF", "PR", { maxLength: 2, style: { } })}</div>
-      <p className="ppf-l" style={{ marginTop: 14 }}>No cardápio, mostrar</p>
-      <div className="ppf-seg">{([["completo", "Completo"], ["cidade", "Só a cidade"], ["nada", "Nada"]] as const).map(([v, l]) => (
-        <button type="button" key={v} className={mostrar === v ? "on" : ""} onClick={() => setMostrar(v)}>{l}</button>))}</div>
+      <div className="ppf-e-prev" aria-hidden="true">
+        <span className="ppf-d-logo">{logoPrev ? <img src={logoPrev} alt="" /> : nomeLoja.charAt(0).toUpperCase()}</span>
+        <span className="ppf-e-tx"><b>{nomeLoja}</b>
+          <small className={linhaPrev && mostrar !== "nada" ? "" : "vazio"}><MapPin size={13} weight="fill" />{linhaPrev || "Seu endereço aqui"}</small></span>
+      </div>
+
+      {!manual && (<>
+        <div className="ppf-f"><label className="ppf-l" htmlFor="pp-cep">CEP</label>
+          <div className="ppf-wrap"><input id="pp-cep" className="ppf-in ppf-in--g" inputMode="numeric" autoComplete="postal-code" value={end.cep} placeholder="00000-000" onChange={e => mudarCep(e.target.value)} />
+            {(buscando || achou) && <small className="ppf-cep">{buscando ? "Procurando…" : "✓ achamos"}</small>}</div></div>
+        {achou ? (<>
+          <div className="ppf-e-achado">
+            <span><b>{end.rua || "Rua"}</b><small>{[end.bairro, [end.cidade, end.estado].filter(Boolean).join(", ")].filter(Boolean).join(" · ")}</small></span>
+            <button type="button" onClick={() => setManual(true)}>Editar</button>
+          </div>
+          <div className="ppf-row">{campo("numero", "Número", "Ex.: 500", { inputMode: "numeric" })}{campo("complemento", "Complemento", "Opcional")}</div>
+        </>) : (
+          <button type="button" className="ppf-e-lnk" onClick={() => setManual(true)}>Não sei o CEP</button>
+        )}
+      </>)}
+
+      {manual && (<>
+        {naoAchou && <p className="ppf-e-aviso">Não achamos esse CEP. Escreva o endereço.</p>}
+        {campo("rua", "Rua", "Nome da rua")}
+        <div className="ppf-row">{campo("numero", "Número", "Ex.: 500", { inputMode: "numeric" })}{campo("bairro", "Bairro")}</div>
+        <div className="ppf-row ppf-row--uf">{campo("cidade", "Cidade")}{campo("estado", "UF", "SP", { maxLength: 2 })}</div>
+        {campo("complemento", "Complemento", "Opcional")}
+      </>)}
+
+      {(achou || manual) && (<>
+        <p className="ppf-l" style={{ marginTop: 14 }}>No cardápio, mostrar</p>
+        <div className="ppf-seg">{([["completo", "Completo"], ["cidade", "Só a cidade"], ["nada", "Nada"]] as const).map(([v, l]) => (
+          <button type="button" key={v} className={mostrar === v ? "on" : ""} onClick={() => setMostrar(v)}>{l}</button>))}</div>
+      </>)}
       {erro && <p className="ppf-erro">{erro}</p>}
     </Janelinha>
   );
@@ -562,6 +596,22 @@ const CSS = `
   .ppf-d-opc button.on { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-weight: 600; }
   .ppf-d-perg-pe { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
   .ppf-d-voltar { min-height: 40px; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-texto-2); cursor: pointer; }
+  .ppf-e-prev { display: flex; align-items: center; gap: 12px; margin: 14px 0 2px; padding: 12px; border: 1px solid var(--ui-borda); border-radius: 16px; }
+  .ppf-e-prev .ppf-d-logo { width: 48px; height: 48px; border-width: 2px; box-shadow: 0 2px 8px rgba(44, 18, 25, .1); font-size: 19px; }
+  .ppf-e-tx { min-width: 0; }
+  .ppf-e-tx b { display: block; font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ppf-e-tx small { display: flex; align-items: center; gap: 4px; margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ppf-e-tx small svg { flex: none; color: var(--ui-rosa); }
+  .ppf-e-tx small.vazio { color: var(--ui-texto-3); font-style: italic; }
+  .ppf-in--g { min-height: 52px; font-size: 17px; }
+  .ppf-e-lnk { min-height: 44px; margin-top: 4px; padding: 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
+  .ppf-e-achado { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: var(--ui-cinza); }
+  .ppf-e-achado span { min-width: 0; }
+  .ppf-e-achado b { display: block; font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ppf-e-achado small { display: block; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ppf-e-achado button { flex: none; min-height: 40px; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
+  .ppf-e-aviso { margin: 12px 0 0; font-size: 13.5px; font-weight: 600; color: var(--ui-laranja); }
+  .ppf-row--uf > .ppf-f:last-child { flex: 0 0 76px; }
   .ppf-lg2 { margin-top: 18px; border: 1px solid var(--ui-borda); border-radius: 18px; overflow: hidden; }
   .ppf-lg2-cap { height: 64px; background: linear-gradient(120deg, #F7B2CB, var(--ui-rosa)); }
   .ppf-lg2-corpo { display: flex; flex-direction: column; align-items: center; padding: 0 16px 18px; margin-top: -48px; text-align: center; }

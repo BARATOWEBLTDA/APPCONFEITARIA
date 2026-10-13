@@ -49,6 +49,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
   const cidade = endereco?.cidade || ''
   const enderecoCompleto = endereco ? [
     endereco.rua && endereco.numero ? `${endereco.rua}, ${endereco.numero}` : endereco.rua,
+    endereco.complemento, // 13/10
     endereco.bairro,
     endereco.cidade && endereco.estado ? `${endereco.cidade} - ${endereco.estado}` : endereco.cidade,
     endereco.cep

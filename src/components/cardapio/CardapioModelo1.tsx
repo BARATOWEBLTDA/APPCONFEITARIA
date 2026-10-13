@@ -48,7 +48,7 @@ export function getEnderecoData(config: Configuracoes | null): { linha: string; 
     const e = typeof config.endereco === 'string' ? JSON.parse(config.endereco) : config.endereco
     const cidadeUf = [e.cidade, e.estado].filter(Boolean).join(' - ')
     if (modo === 'cidade') return cidadeUf ? { linha: cidadeUf, completo: cidadeUf } : null
-    const rua = e.rua ? e.rua + (e.numero ? `, ${e.numero}` : '') : ''
+    const rua = e.rua ? e.rua + (e.numero ? `, ${e.numero}` : '') + (e.complemento ? `, ${e.complemento}` : '') : '' // 13/10: + complemento
     const linha = [rua, e.bairro].filter(Boolean).join(' · ') || cidadeUf
     const completo = [rua, e.bairro, cidadeUf, e.cep].filter(Boolean).join(', ')
     return linha ? { linha, completo } : null

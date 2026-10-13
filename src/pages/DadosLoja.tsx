@@ -73,7 +73,7 @@ export default function DadosLoja() {
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
   const [descricao, setDescricao] = useState("");
-  const [end, setEnd] = useState({ cep: "", rua: "", numero: "", bairro: "", cidade: "", estado: "" });
+  const [end, setEnd] = useState({ cep: "", rua: "", numero: "", complemento: "", bairro: "", cidade: "", estado: "" });
   const [mostrarLocal, setMostrarLocal] = useState<"completo" | "cidade" | "nada">("completo");
   // 02/10: "Recebo pedidos nesse endereço" — vira o endereço de retirada da Finalizar encomenda
   const [recebeAqui, setRecebeAqui] = useState(true);
@@ -111,7 +111,7 @@ export default function DadosLoja() {
         setDescricao(data.descricao_loja || "");
         let addr: any = {};
         try { addr = data.endereco ? (typeof data.endereco === "string" ? JSON.parse(data.endereco) : data.endereco) : {}; } catch { /* ignora */ }
-        setEnd({ cep: addr.cep || "", rua: addr.rua || "", numero: addr.numero || "", bairro: addr.bairro || "", cidade: addr.cidade || "", estado: addr.estado || "" });
+        setEnd({ cep: addr.cep || "", rua: addr.rua || "", numero: addr.numero || "", complemento: addr.complemento || "", bairro: addr.bairro || "", cidade: addr.cidade || "", estado: addr.estado || "" });
         if (addr.cep) setCepOk(true);
         // 02/10: sem endereço salvo ainda, já vem "Mostrar endereço completo"
         const jaTemEndereco = !!(addr.rua || addr.cep || addr.cidade);
@@ -234,7 +234,7 @@ export default function DadosLoja() {
       mostrar_localizacao: mostrarLocal === "completo",
       mostrar_apenas_cidade: mostrarLocal === "cidade",
       endereco_retirada: recebeAqui
-        ? [[end.rua, end.numero].filter(Boolean).join(", "), end.bairro, [end.cidade, end.estado].filter(Boolean).join("/")].filter(Boolean).join(" · ")
+        ? [[end.rua, end.numero, end.complemento].filter(Boolean).join(", "), end.bairro, [end.cidade, end.estado].filter(Boolean).join("/")].filter(Boolean).join(" · ")
         : "",
       horario: JSON.stringify(horario),
     }).eq("id", userId);
@@ -371,6 +371,7 @@ export default function DadosLoja() {
             <Campo id="dl-in-rua" rotulo="Rua" value={end.rua} onChange={(e) => setEnd((x) => ({ ...x, rua: e.target.value }))} />
             <Campo id="dl-in-num" rotulo="Número" inputMode="numeric" value={end.numero} onChange={(e) => setEnd((x) => ({ ...x, numero: e.target.value }))} />
           </div>
+          <Campo id="dl-in-comp" rotulo="Complemento" opcional placeholder="Ex.: sala 3, fundos" value={end.complemento} onChange={(e) => setEnd((x) => ({ ...x, complemento: e.target.value }))} />
           <div className="dl-g2">
             <Campo id="dl-in-bairro" rotulo="Bairro" value={end.bairro} onChange={(e) => setEnd((x) => ({ ...x, bairro: e.target.value }))} />
             <Campo id="dl-in-cidade" rotulo="Cidade" value={end.cidade} onChange={(e) => setEnd((x) => ({ ...x, cidade: e.target.value }))} />
