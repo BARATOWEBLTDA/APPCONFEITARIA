@@ -503,6 +503,14 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
   // a linha da prévia, do jeito que o cardápio mostra
   const ruaNum = end.rua.trim() ? `${end.rua.trim()}${end.numero.trim() ? `, ${end.numero.trim()}` : ""}${end.complemento.trim() ? `, ${end.complemento.trim()}` : ""}` : "";
   const cidadeUf = [end.cidade.trim(), end.estado.trim()].filter(Boolean).join(", ");
+  // (13/10) minimapa: o mesmo mapa do cardápio (Maps Embed do Google, sem custo). Espera ela parar de digitar pra não piscar.
+  const chaveMapa = (import.meta as any).env?.VITE_GOOGLE_MAPS_KEY as string | undefined;
+  const endMapa = [ruaNum ? `${end.rua.trim()}${end.numero.trim() ? `, ${end.numero.trim()}` : ""}` : "", end.bairro.trim(), cidadeUf, end.cep.trim()].filter(Boolean).join(", ");
+  const [mapaQ, setMapaQ] = useState("");
+  useEffect(() => {
+    const t = window.setTimeout(() => setMapaQ(end.cidade.trim() && (end.rua.trim() || end.cep.trim()) ? endMapa : ""), 700);
+    return () => window.clearTimeout(t);
+  }, [endMapa, end.cidade, end.rua, end.cep]);
   const linhaPrev = mostrar === "nada" ? "Endereço escondido no cardápio" : mostrar === "cidade" ? cidadeUf : ([ruaNum, end.bairro.trim()].filter(Boolean).join(" · ") || cidadeUf);
   const campo = (k: keyof typeof end, rotulo: string, ph = "", extra: any = {}) => (
     <div className="ppf-f"><label className="ppf-l" htmlFor={`pp-${k}`}>{rotulo}</label>
@@ -541,6 +549,12 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
         {campo("complemento", "Complemento", "Opcional")}
       </>)}
 
+      {chaveMapa && mapaQ && mostrar === "completo" && (achou || manual) && (
+        <div className="ppf-e-mapa">
+          <iframe title="Mapa da loja" loading="lazy" referrerPolicy="no-referrer-when-downgrade" tabIndex={-1}
+            src={`https://www.google.com/maps/embed/v1/place?key=${chaveMapa}&q=${encodeURIComponent(mapaQ)}&zoom=16`} />
+        </div>
+      )}
       {(achou || manual) && (<>
         <p className="ppf-l" style={{ marginTop: 14 }}>No cardápio, mostrar</p>
         <div className="ppf-seg">{([["completo", "Completo"], ["cidade", "Só a cidade"], ["nada", "Nada"]] as const).map(([v, l]) => (
@@ -715,6 +729,9 @@ const CSS = `
   .ppf-e-achado b { display: block; font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ppf-e-achado small { display: block; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ppf-e-achado button { flex: none; min-height: 40px; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
+  .ppf-e-mapa { margin-top: 12px; height: 128px; border-radius: 14px; overflow: hidden; border: 1px solid var(--ui-borda); background: var(--ui-cinza); }
+  .ppf-e-mapa iframe { display: block; width: 100%; height: 100%; border: 0; pointer-events: none; }
+  @media (max-height: 700px) { .ppf-e-mapa { height: 104px; } }
   .ppf-e-aviso { margin: 12px 0 0; font-size: 13.5px; font-weight: 600; color: var(--ui-laranja); }
   .ppf-row--uf > .ppf-f:last-child { flex: 0 0 76px; }
   .ppf-h-pill { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; padding: 3px 9px; border-radius: 999px; background: var(--ui-verde-fundo); color: var(--ui-verde);
