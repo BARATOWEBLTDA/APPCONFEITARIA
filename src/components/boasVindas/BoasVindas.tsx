@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode, TouchEvent } from 'react'
-import { ArrowLeft, Bell, BookOpen, CalendarDots, Check, CaretRight, CurrencyDollar, FolderSimple, Gear, House, Plus, Receipt, ShoppingBag } from '@phosphor-icons/react'
+import { ArrowLeft, Bell, BookOpen, CalendarDots, Check, CaretRight, CurrencyDollar, Gear, House, Package, Plus, Receipt, ShoppingBag, Sparkle, Users } from '@phosphor-icons/react'
 import { Botao, BotaoIcone } from '@/components/base'
 import { Mascote, NomeDoonly } from '@/components/marca/Mascote'
 import { CartaoPedido, LinhaPedido } from '@/components/pedidos/CartaoPedido'
@@ -389,7 +389,8 @@ function DemoPedidos() {
   )
 }
 
-const MENU_PC: [typeof House, string][] = [[House, 'Início'], [Plus, 'Nova Venda'], [FolderSimple, 'Cadastros'], [ShoppingBag, 'Cardápio Digital'], [Receipt, 'Pedidos'], [CalendarDots, 'Agenda'], [BookOpen, 'Receitas'], [CurrencyDollar, 'Financeiro'], [Gear, 'Configurações']]
+// 13/10: o mesmo menu do app de hoje (antes tinha "Cadastros", que saiu)
+const MENU_PC: [typeof House, string][] = [[House, 'Início'], [Plus, 'Nova venda'], [ShoppingBag, 'Cardápio digital'], [Receipt, 'Pedidos'], [CalendarDots, 'Agenda'], [Users, 'Clientes'], [Package, 'Ingredientes'], [BookOpen, 'Receitas'], [CurrencyDollar, 'Financeiro'], [Sparkle, 'Doo IA'], [Gear, 'Configurações']]
 
 /** Moldura de notebook: a tela do app é desenhada em 1040 x 650 e encolhe pra caber */
 function Notebook({ children }: { children: ReactNode }) {

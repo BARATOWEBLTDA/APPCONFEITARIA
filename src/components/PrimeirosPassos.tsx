@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, ShareNetwork, CaretRight, Camera, X, LockSimple } from "@phosphor-icons/react";
+import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, Wallet, ShareNetwork, CaretRight, Camera, X, LockSimple } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
@@ -15,7 +15,7 @@ import { LojaProntaConteudo } from "@/components/loja/LojaPronta";
 import { erroDeConexao, SEM_INTERNET } from "@/lib/erros";
 /**
  * "Primeiros passos" (aprovado 02/10) — o MESMO cartão no Início (celular) e no Cardápio digital.
- * 7 passos; os que dá pra preencher abrem numa janelinha que sobe de baixo, sem sair da tela:
+ * 7 passos (13/10: + "Pagamento e entrega"); os que dá pra preencher abrem numa janelinha que sobe de baixo, sem sair da tela:
  * descrição (com IA), logo (com recorte), endereço (CEP preenche sozinho) e horário.
  * Salva exatamente como os Dados da loja (endereço e horário em JSON no profiles).
  */
@@ -31,6 +31,12 @@ const HORARIO_PADRAO = {
   abre_sabado: false, sabado_abertura: "09:00", sabado_fechamento: "14:00",
   abre_domingo: false, domingo_abertura: "09:00", domingo_fechamento: "14:00",
 };
+// (13/10) ordem dos passos: "Salvar e continuar" abre o próximo que falta, e o "Configurar minha confeitaria" abre o primeiro
+const ORDEM = ["descricao", "logo", "endereco", "horario", "pagamento", "produto"] as const;
+type Passo = typeof ORDEM[number];
+const proximoPasso = (e: EstadoPassos, feitoAgora?: Passo): Passo | null =>
+  ORDEM.find(k => k !== feitoAgora && !e[k]) || null;
+
 const maskCep = (v: string) => { const d = v.replace(/\D/g, "").slice(0, 8); return d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d; };
 
 export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?: Local; onEstado?: (completo: boolean) => void }) {
@@ -43,18 +49,35 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   const [jaViuIncompleto, setJaViuIncompleto] = useState(false);
   const kFechado = uid ? `doonly_pp_fechado_${uid}` : "";
   const kIncompleto = uid ? `doonly_pp_incompleto_${uid}` : "";
+  const abrirPasso = useCallback((k: Passo) => {
+    if (k === "pagamento") navigate("/checkout-config");
+    else if (k === "produto") navigate("/produtos", { state: { abrirCadastro: true } });
+    else setFolha(k);
+  }, [navigate]);
 
   // Quem vem do "Configurar minha confeitaria" das boas-vindas: rola até aqui e destaca o passo da vez (09/10 · 3.67)
   const raiz = useRef<HTMLDivElement>(null);
   const [destaque, setDestaque] = useState(false);
+  // (13/10) o pedido é lido uma vez e os tempos não são cancelados quando o estado relê (antes uma releitura
+  // logo depois de abrir cancelava o destaque, e o pedido já tinha sido apagado: nada acontecia)
+  const pedidoDestaque = useRef<boolean | null>(null);
+  const montado = useRef(true);
+  useEffect(() => { montado.current = true; return () => { montado.current = false; }; }, []);
   useEffect(() => {
     if (local !== "inicio" || !estado || !raiz.current) return;
-    let pedir = false;
-    try { pedir = sessionStorage.getItem("doonly_pp_destacar") === "1"; if (pedir) sessionStorage.removeItem("doonly_pp_destacar"); } catch { /* nada */ }
-    if (!pedir) return;
-    const t1 = window.setTimeout(() => { raiz.current?.scrollIntoView({ behavior: "smooth", block: "center" }); setDestaque(true); }, 350);
-    const t2 = window.setTimeout(() => setDestaque(false), 2600);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    if (pedidoDestaque.current === null) {
+      try { pedidoDestaque.current = sessionStorage.getItem("doonly_pp_destacar") === "1"; sessionStorage.removeItem("doonly_pp_destacar"); } catch { pedidoDestaque.current = false; }
+    }
+    if (!pedidoDestaque.current) return;
+    pedidoDestaque.current = false;
+    // além de rolar e destacar, já abre o primeiro passo que falta (antes ela voltava pro Início sem saber por onde começar)
+    const prox = proximoPasso(estado);
+    window.setTimeout(() => {
+      if (!montado.current) return;
+      raiz.current?.scrollIntoView({ behavior: "smooth", block: "center" }); setDestaque(true);
+      if (prox && prox !== "produto" && prox !== "pagamento") setFolha(prox);
+    }, 350);
+    window.setTimeout(() => { if (montado.current) setDestaque(false); }, 2600);
   }, [local, estado]);
 
   // (10/10) leitura que falhou não conclui nada: fica o que já estava na tela (ou escondido) até ler com sucesso
@@ -101,7 +124,13 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
 
   const link = getCardapioUrl(profile);
   const fechar = () => { try { localStorage.setItem(kFechado, "1"); } catch {} setFechado(true); };
-  const salvo = () => { setFolha(null); avisarPassos(); };
+  // "Salvar e continuar": fecha e abre o próximo passo que falta
+  const salvo = () => {
+    const agora = folha as Passo | null;
+    setFolha(null); avisarPassos();
+    const prox = agora ? proximoPasso(estado, agora) : null;
+    if (prox) window.setTimeout(() => abrirPasso(prox), 250);
+  };
 
   const compartilhar = async () => {
     const texto = `Confira o cardápio da minha confeitaria: ${link}`;
@@ -135,6 +164,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
     { feito: estado.logo, ic: I(ImageSquare), t: "Colocar o logo da loja", s: "Sem logo? Usamos a sua foto de perfil", abrir: () => setFolha("logo") },
     { feito: estado.endereco, ic: I(MapPin), t: "Endereço da loja", s: "Pra calcular a entrega e mostrar no mapa", abrir: () => setFolha("endereco") },
     { feito: estado.horario, ic: I(Clock), t: "Horário de funcionamento", s: "Aparece como \"Aberto agora\" no cardápio", abrir: () => setFolha("horario") },
+    { feito: estado.pagamento, ic: I(Wallet), t: "Pagamento e entrega", s: "Como o cliente paga e recebe o pedido", abrir: () => abrirPasso("pagamento") },
     { feito: estado.produto, ic: I(Basket), t: "Cadastrar seu primeiro produto", s: "Com foto e preço, do jeito que o cliente vai ver", abrir: () => navigate("/produtos", { state: { abrirCadastro: true } }) },
   ];
   const feitos = passos.filter(p => p.feito).length;
@@ -264,7 +294,8 @@ function FolhaLogo({ uid, perfil, onClose, onSalvo }: FolhaProps) {
           </button>
           <div><b>Escolha o seu logo</b><small>{perfil?.logo_url ? "Da galeria ou da câmera. Você ajusta o recorte antes de salvar." : atual ? "Hoje o cardápio mostra a sua foto de perfil. Envie o logo da loja pra trocar." : "Da galeria ou da câmera. Você ajusta o recorte antes de salvar."}</small></div>
         </div>
-        {!perfil?.logo_url && <button type="button" className="pp-lnk" onClick={usarFoto}>Usar minha foto de perfil por enquanto</button>}
+        {/* (13/10) sem foto de perfil, "usar minha foto" mostrava só a letra: agora diz isso */}
+        {!perfil?.logo_url && <button type="button" className="pp-lnk" onClick={usarFoto}>{perfil?.foto_url ? "Usar minha foto de perfil por enquanto" : `Pular por enquanto (mostra a letra ${String(perfil?.nome_loja || "D").trim().charAt(0).toUpperCase()})`}</button>}
       </Janelinha>
       {crop && <ImageCropper imageSrc={crop} cropShape="round" aspect={1} onCancel={() => setCrop(null)} onCropDone={enviar} />}
     </>

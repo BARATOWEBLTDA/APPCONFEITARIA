@@ -808,6 +808,8 @@ export default function Inicio() {
         <PrimeirosPassos />
       </section>
 
+      {/* (13/10) no computador o menu da esquerda já tem tudo isso: a grade só repetia os mesmos atalhos */}
+      <style>{"@media (min-width: 901px) { .ini-main .ini-section--nav { display: none !important; } }"}</style>
       <section className="ini-section ini-section--nav">
         {/* Título da grade — muda de "Acesso rápido" pra "Explorar" durante onboarding */}
         <h2 className="ini-section-title">

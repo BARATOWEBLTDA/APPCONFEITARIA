@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { useProfile } from '@/hooks/useProfile'
 import { avisar } from '@/components/base'
 import { explicarErro } from '@/lib/erros'
+import { useLojaPronta } from '@/lib/primeirosPassos'
 import './loja.css'
 
 /**
@@ -14,7 +15,15 @@ export function PausarPedidos({ compacto = false, escuro = false }: { compacto?:
   const { profile, refetch } = useProfile()
   const [salvando, setSalvando] = useState(false)
   const [local, setLocal] = useState<boolean | null>(null)
+  const pronta = useLojaPronta(profile?.id)
   if (!profile?.id) return null
+  // (13/10) conta nova sem os primeiros passos: não diz "Loja aberta · Recebendo pedidos" com o cardápio vazio
+  if (pronta === false) return (
+    <div className={`lj-pausa lj-pausa--montando${compacto ? ' compacto' : ''}${escuro ? ' escuro' : ''}`}>
+      <span className="lj-pausa-luz" aria-hidden="true" />
+      <span className="lj-pausa-tx"><b>Loja em montagem</b><small>Termine os primeiros passos</small></span>
+    </div>
+  )
   const pausada = local ?? ((profile as any).loja_pausada === true)
   // (4.29) celular: o cartão inteiro em verde (aberta) ou vermelho (pausada)
   const cheio = !compacto && !escuro

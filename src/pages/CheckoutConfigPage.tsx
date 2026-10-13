@@ -9,6 +9,7 @@ import { useState, useEffect, useRef } from "react"
 import { supabase } from "@/lib/supabase"
 import { explicarErro } from "@/lib/erros"
 import { parseNumBR } from "@/lib/numeroBR"
+import { marcarPagamentoConferido } from "@/lib/primeirosPassos"
 import { useNavigate } from "react-router-dom"
 import AppPageHeader from "@/components/AppPageHeader"
 import { usePlano } from "@/hooks/usePlano"
@@ -68,6 +69,8 @@ export default function CheckoutConfigPage() {
       setUserId(user.id)
       const { data, error } = await supabase.from('profiles').select('formas_pagamento, formas_entrega, valor_entrega_propria, entrega_por_bairro, endereco_retirada, horario_retirada, exibir_campo_troco, cupons_desconto, aceita_agendamento, prazo_minimo_horas').eq('id', user.id).single()
       if (error || !data) { setErroCarga(true); return }
+      // (13/10) abriu e viu como o cliente vai pagar e receber: conta como o passo "Pagamento e entrega" (salva sozinho)
+      marcarPagamentoConferido(user.id)
       if (data) {
         setFormasPagamento(data.formas_pagamento || ['pix'])
         setFormasEntrega(data.formas_entrega || ['retirada'])

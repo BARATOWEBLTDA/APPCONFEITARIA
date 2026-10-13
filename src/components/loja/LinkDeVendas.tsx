@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ArrowSquareOut, Copy, Check, Storefront } from '@phosphor-icons/react'
 import { useProfile, getCardapioUrl } from '@/hooks/useProfile'
 import { avisar } from '@/components/base'
+import { useLojaPronta } from '@/lib/primeirosPassos'
 import './loja.css'
 
 /** Seu link de vendas (4.27) · no Início do computador: o link do cardápio sempre à mão, (o abrir/pausar fica no menu da esquerda). */
@@ -9,7 +10,9 @@ export function LinkDeVendas() {
   const { profile } = useProfile()
   const [copiado, setCopiado] = useState(false)
   const link = getCardapioUrl(profile)
-  if (!profile?.id || !link) return null
+  // (13/10) conta nova: o link só aparece quando o cardápio tem o que mostrar (antes abria um cardápio vazio)
+  const pronta = useLojaPronta(profile?.id)
+  if (!profile?.id || !link || pronta === false) return null
 
   const copiar = async () => {
     try { await navigator.clipboard.writeText(link); setCopiado(true); setTimeout(() => setCopiado(false), 2000) }

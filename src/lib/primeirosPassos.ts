@@ -9,6 +9,7 @@
  *   compartilhou ... enviou ou copiou o link (profiles.cardapio_compartilhado)
  */
 import { supabase } from "@/lib/supabase";
+import { useEffect, useState } from "react";
 import { erroDeConexao } from "@/lib/erros";
 
 /** Foto de perfil enviada pela própria confeiteira (não a que vem do login com Google). */
@@ -18,6 +19,8 @@ const chaveLocal = (uid: string) => `doonly_cardapio_compartilhado_${uid}`;
 
 export type EstadoPassos = {
   descricao: boolean; logo: boolean; endereco: boolean; horario: boolean; produto: boolean; compartilhou: boolean;
+  /** (13/10) conferiu as formas de pagamento e entrega (ou já tem produto: conta antiga não volta a ver os passos) */
+  pagamento: boolean;
   /** dados atuais, pra abrir as janelinhas já preenchidas */
   perfil: any;
   /**
@@ -62,6 +65,7 @@ export async function lerPassos(uid: string): Promise<EstadoPassos> {
     horario: !!hor && ((hor.dias?.length || 0) > 0 || !!hor.abre_sabado || !!hor.abre_domingo),
     produto: ((produtos.data as any[]) || []).some((x) => x.disponivel !== false),
     compartilhou: !!p.cardapio_compartilhado || local,
+    pagamento: pagamentoConferido(uid) || ((produtos.data as any[]) || []).length > 0,
     perfil: { ...p, endereco: end, horario: hor },
     falhou,
   };
@@ -69,7 +73,16 @@ export async function lerPassos(uid: string): Promise<EstadoPassos> {
 
 // 02/10: o "compartilhar o link" saiu dos passos — com o cardápio pronto, vai direto pra comemoração
 export const passosCompletos = (e: EstadoPassos | null) =>
-  !!e && e.descricao && e.logo && e.endereco && e.horario && e.produto;
+  !!e && e.descricao && e.logo && e.endereco && e.horario && e.pagamento && e.produto;
+
+/** (13/10) Passo "Pagamento e entrega": marca quando ela salva a tela Entrega e pagamento (neste aparelho). */
+const chavePagamento = (uid: string) => `doonly_pp_pagamento_${uid}`;
+export function pagamentoConferido(uid: string) { try { return localStorage.getItem(chavePagamento(uid)) === "1"; } catch { return false; } }
+export function marcarPagamentoConferido(uid: string | null | undefined) {
+  if (!uid) return;
+  try { localStorage.setItem(chavePagamento(uid), "1"); } catch {}
+  window.dispatchEvent(new Event("doonly:passos"));
+}
 
 export function marcarCompartilhado(uid: string | null | undefined) {
   if (!uid) return;
@@ -98,4 +111,21 @@ export async function atualizarPerfil(uid: string, campos: Record<string, unknow
     return r2.error.message;
   }
   return error.message;
+}
+
+/**
+ * (13/10) A loja já está pronta pra receber pedidos pelo cardápio? (todos os primeiros passos feitos)
+ * null enquanto lê (quem usa trata como pronta, pra conta antiga não piscar). Atualiza quando um passo muda.
+ */
+export function useLojaPronta(uid: string | null | undefined): boolean | null {
+  const [pronta, setPronta] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!uid) return;
+    let vivo = true;
+    const ler = () => lerPassos(uid).then(e => { if (vivo && !e.falhou) setPronta(passosCompletos(e)); }).catch(() => {});
+    ler();
+    window.addEventListener("doonly:passos", ler);
+    return () => { vivo = false; window.removeEventListener("doonly:passos", ler); };
+  }, [uid]);
+  return pronta;
 }

@@ -58,3 +58,4 @@
 .lj-pausa.cheio .lj-chave[aria-checked="true"] { background: rgba(255, 255, 255, .3); }
 .lj-pausa.cheio .lj-chave[aria-checked="true"] span { transform: translateX(22px); }
 .lj-pausa.cheio .lj-chave:focus-visible { outline-color: rgba(255, 255, 255, .7); }
+.lj-pausa--montando .lj-pausa-luz { background: #F59E0B; box-shadow: 0 0 0 4px rgba(245, 158, 11, .16); }

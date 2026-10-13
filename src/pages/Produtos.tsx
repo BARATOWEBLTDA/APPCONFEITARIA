@@ -4775,12 +4775,9 @@ export default function Produtos() {
             <div className="prod-hero-actions">
               <button className="prod-hero-btn-primary" onClick={openNovo}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
-                CADASTRAR PRODUTO
+                Cadastrar produto
               </button>
-              <button className="prod-hero-btn-ghost" onClick={() => avisar("O vídeo de explicação chega em breve.", { tipo: "info" })}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                Ver tutorial
-              </button>
+              {/* 13/10: o "Ver tutorial" saiu: o vídeo ainda não existe e o botão só avisava "chega em breve" */}
             </div>
             <div className="prod-hero-tip">
               <div className="prod-hero-tip-icon"><Lightbulb size={22} weight="duotone" /></div>
@@ -6828,10 +6825,10 @@ export default function Produtos() {
           padding: var(--space-4) var(--space-6);
           border-radius: var(--radius-md);
           font-size: var(--text-md);
-          font-weight: var(--fw-black);
+          font-weight: 700;
           cursor: pointer;
           font-family: var(--font-base) !important;
-          letter-spacing: 0.03em;
+          letter-spacing: 0;
           box-shadow: 0 4px 0 var(--primary-dark);
           transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
         }
