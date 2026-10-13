@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { carregarNotificacoes, marcarLidas, type Notif } from "@/lib/notificacoesUsuario";
-import { Bell, CaretRight, Checks, Clock, Crown, Newspaper, ShoppingBag, Trophy, WarningCircle } from "@phosphor-icons/react";
+import { Bell, CaretRight, Checks, Clock, Crown, Newspaper, ShoppingBag, Storefront, Trophy, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { quandoFoi } from "@/lib/noticias";
 
@@ -20,12 +20,12 @@ function tempoRelativo(iso: string): string {
   return mins < 60 ? `${mins} min` : `${Math.floor(mins / 60)}h`;
 }
 
-type Filtro = "todas" | "novas" | "pedido" | "plano" | "conquista" | "novidade";
-const GRUPO: Record<string, Exclude<Filtro, "todas" | "novas">> = { pedido: "pedido", pro: "plano", pro_vencendo: "plano", pro_atrasado: "plano", conquista: "conquista", noticia: "novidade" };
+type Filtro = "todas" | "novas" | "pedido" | "loja" | "plano" | "conquista" | "novidade";
+const GRUPO: Record<string, Exclude<Filtro, "todas" | "novas">> = { pedido: "pedido", aviso: "loja", pro: "plano", pro_vencendo: "plano", pro_atrasado: "plano", conquista: "conquista", noticia: "novidade" };
 const grupoDe = (n: Notif) => GRUPO[n.tipo || ""] || (n.user_id ? "plano" : "novidade");
-const ICONE: Record<string, typeof Bell> = { pedido: ShoppingBag, plano: Crown, conquista: Trophy, novidade: Newspaper };
+const ICONE: Record<string, typeof Bell> = { pedido: ShoppingBag, loja: Storefront, plano: Crown, conquista: Trophy, novidade: Newspaper };
 const ICONE_TIPO: Record<string, typeof Bell> = { pro_vencendo: Clock, pro_atrasado: WarningCircle };
-const FILTROS: [Filtro, string][] = [["todas", "Todas"], ["novas", "Não lidas"], ["pedido", "Pedidos"], ["plano", "Plano"], ["conquista", "Conquistas"], ["novidade", "Novidades"]];
+const FILTROS: [Filtro, string][] = [["todas", "Todas"], ["novas", "Não lidas"], ["pedido", "Pedidos"], ["loja", "Sua loja"], ["plano", "Plano"], ["conquista", "Conquistas"], ["novidade", "Novidades"]];
 
 /** Separa por dia: Hoje, Ontem, Esta semana, Antes (13/10) */
 function blocoDoDia(iso: string): string {
@@ -162,6 +162,7 @@ export default function Notificacoes() {
         .ntf-img { flex: none; width: 40px; height: 40px; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .ntf-img img { width: 100%; height: 100%; object-fit: cover; }
         .ntf-img--pedido { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+        .ntf-img--loja { background: #FFF1E6; color: #C2410C; }
         .ntf-img--plano { background: #FFF4E0; color: #B45309; }
         .ntf-img--conquista { background: var(--ui-verde-fundo); color: var(--ui-verde); }
         .ntf-img--novidade { background: #EAF1FF; color: #2F5BD3; }

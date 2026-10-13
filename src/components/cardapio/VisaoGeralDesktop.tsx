@@ -4,7 +4,7 @@ import QRCode from "qrcode";
 import { supabase } from "@/lib/supabase";
 import { isPro as ehPro } from "@/hooks/useProfile";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
-import { ArrowSquareOut, Camera, CaretRight, ChartBar, Crown, ImageSquare, LinkSimple, Package, TextAlignLeft, Ticket } from "@phosphor-icons/react";
+import { Truck, ArrowSquareOut, Camera, CaretRight, ChartBar, Crown, ImageSquare, LinkSimple, Package, TextAlignLeft, Ticket } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { Botao } from "@/components/base";
 import { situacaoDaLoja, horaTexto } from "@/lib/agendaCardapio";
@@ -116,6 +116,10 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
     const l: { e: Icon; t: string; s: string; cta: string; go: string }[] = [];
     if (semFoto) l.push({ e: Camera, t: `${semFoto} produto${semFoto > 1 ? "s" : ""} sem foto`, s: "Produto com foto vende muito mais.", cta: "Adicionar fotos", go: "/produtos" });
     if (semDesc) l.push({ e: TextAlignLeft, t: `${semDesc} produto${semDesc > 1 ? "s" : ""} sem descrição`, s: "Conte o sabor, o tamanho e quantas pessoas serve.", cta: "Escrever", go: "/produtos" });
+    // (13/10) marcou entrega e ainda não definiu a taxa: o cardápio mostra "Entrega grátis"
+    const fe: string[] = Array.isArray(profile?.formas_entrega) ? profile.formas_entrega : [];
+    const semTaxa = fe.includes("entrega_propria") && !(Number(profile?.valor_entrega_propria) > 0) && !(Array.isArray(profile?.entrega_por_bairro) && profile.entrega_por_bairro.length);
+    if (semTaxa) l.unshift({ e: Truck, t: "Defina a taxa de entrega", s: "Sem taxa, o cardápio mostra entrega grátis.", cta: "Definir", go: "/checkout-config" });
     if (!temBanner) l.push({ e: ImageSquare, t: "Nenhum banner de promoção", s: "Anuncie a promoção da semana antes dos produtos.", cta: "Criar banner", go: "/cardapio-design" });
     if (pro && !dados.temCupom) l.push({ e: Ticket, t: "Crie um cupom de boas-vindas", s: "Ex.: 10% de desconto no primeiro pedido.", cta: "Criar cupom", go: "/checkout-config" });
     if (!dados.produtos.length) l.unshift({ e: Package, t: "Nenhum produto no cardápio", s: "Cadastre o primeiro pra começar a vender.", cta: "Cadastrar", go: "/produtos" });

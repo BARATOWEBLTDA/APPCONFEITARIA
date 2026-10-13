@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { useNavigate } from "react-router-dom";
 import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, Wallet, Sparkle, ShareNetwork, CaretRight, Camera, X, LockSimple } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
-import { parseNumBR } from "@/lib/numeroBR";
 import { apiFetch } from "@/lib/apiFetch";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import { ImageCropper } from "@/components/ui/ImageCropper";
@@ -11,6 +10,7 @@ import Janelinha from "@/components/financeiro/Folha";
 import { Mascote } from "@/components/marca/Mascote";
 import { situacaoDaLoja, horaTexto } from "@/lib/agendaCardapio";
 import { marcarPagamentoConferido } from "@/lib/primeirosPassos";
+import { criarNotificacaoPessoal } from "@/lib/notificacoesUsuario";
 import { lerPassos, marcarCompartilhado, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk, type EstadoPassos } from "@/lib/primeirosPassos";
 
 import { Botao, Janela, avisar } from "@/components/base";
@@ -239,24 +239,29 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
 
 
 const PAGA: [string, string][] = [["pix", "Pix"], ["dinheiro", "Dinheiro"], ["credito", "Crédito"], ["debito", "Débito"]];
-const reaisPP = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-/** (13/10) Passo 5: o básico de como o cliente paga e recebe. O resto (bairros, cupons, motoboy…) fica em Entrega e pagamento. */
+/**
+ * (13/10) Passo 5: só as opções, já vindo tudo marcado (ela desmarca o que não usa).
+ * A taxa de entrega saiu daqui: com Entrega marcada e sem taxa, fica um aviso (notificação e "Pra vender mais") pra ela definir depois.
+ */
 function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
-  const [paga, setPaga] = useState<string[]>(["pix"]);
-  const [entrega, setEntrega] = useState<string[]>(["retirada"]);
-  const [taxa, setTaxa] = useState("");
+  const [paga, setPaga] = useState<string[]>(PAGA.map(([k]) => k));
+  const [entrega, setEntrega] = useState<string[]>(["retirada", "entrega_propria"]);
+  const [taxaAtual, setTaxaAtual] = useState(0);
   const [carregou, setCarregou] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
   useEffect(() => {
     let vivo = true;
-    supabase.from("profiles").select("formas_pagamento, formas_entrega, valor_entrega_propria").eq("id", uid).maybeSingle().then(({ data }) => {
+    supabase.from("profiles").select("formas_pagamento, formas_entrega, valor_entrega_propria, entrega_por_bairro").eq("id", uid).maybeSingle().then(({ data }) => {
       if (!vivo) return;
       const d: any = data || {};
-      if (Array.isArray(d.formas_pagamento) && d.formas_pagamento.length) setPaga(d.formas_pagamento);
-      if (Array.isArray(d.formas_entrega) && d.formas_entrega.length) setEntrega(d.formas_entrega);
-      if (Number(d.valor_entrega_propria) > 0) setTaxa(reaisPP(Number(d.valor_entrega_propria)));
+      // o padrão do banco (só Pix / só retirada) conta como "não escolheu ainda": fica tudo marcado
+      const fp: string[] = Array.isArray(d.formas_pagamento) ? d.formas_pagamento : [];
+      const fe: string[] = Array.isArray(d.formas_entrega) ? d.formas_entrega : [];
+      if (fp.length && !(fp.length === 1 && fp[0] === "pix")) setPaga(fp);
+      if (fe.length && !(fe.length === 1 && fe[0] === "retirada")) setEntrega(fe);
+      setTaxaAtual(Number(d.valor_entrega_propria) > 0 || (Array.isArray(d.entrega_por_bairro) && d.entrega_por_bairro.length) ? 1 : 0);
       setCarregou(true);
     }, () => { if (vivo) setCarregou(true); });
     return () => { vivo = false; };
@@ -269,17 +274,16 @@ function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
     return temEntrega ? l.filter(x => x === "retirada") : [...l, "entrega_propria"];
   });
   const pronto = paga.length > 0 && entrega.length > 0;
-  const taxaNum = taxa ? parseNumBR(taxa) : 0;
-  const nomes = (l: string[]) => { const m = l.map((x, k) => k ? x.toLowerCase() : x); return m.length <= 1 ? m.join("") : `${m.slice(0, -1).join(", ")} ou ${m[m.length - 1]}`; };
   const salvar = async () => {
     if (!pronto) return;
     setSalvando(true); setErro("");
-    const patch: any = { formas_pagamento: paga, formas_entrega: entrega };
-    if (entrega.includes("entrega_propria")) patch.valor_entrega_propria = taxaNum;
-    const { error } = await supabase.from("profiles").update(patch).eq("id", uid);
+    const { error } = await supabase.from("profiles").update({ formas_pagamento: paga, formas_entrega: entrega }).eq("id", uid);
     setSalvando(false);
     if (error) { setErro(erroDeConexao(error) ? SEM_INTERNET : "Não foi possível salvar agora. Tente de novo."); return; }
     marcarPagamentoConferido(uid);
+    if (entrega.includes("entrega_propria") && !taxaAtual) {
+      criarNotificacaoPessoal({ tipo: "aviso", titulo: "Defina a taxa de entrega", mensagem: "Você marcou entrega. Enquanto não tiver taxa, o cardápio mostra entrega grátis.", link: "/checkout-config", chave: "taxa_entrega_pendente" }).catch(() => {});
+    }
     onSalvo();
   };
   const opc = (on: boolean, rot: string, fn: () => void) => (
@@ -289,24 +293,11 @@ function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
     <Janelinha titulo="Pagamento e entrega" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!pronto || !carregou} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
       <PassoTopo k="pagamento" />
-      <div className="ppf-p-prev" aria-hidden="true">
-        <p>O cliente vê ao fechar o pedido</p>
-        <div><span>Pagamento</span><b>{paga.length ? nomes(PAGA.filter(([k]) => paga.includes(k)).map(([, n]) => n)) : "Escolha ao menos um"}</b></div>
-        <div><span>Como recebe</span><b>{!entrega.length ? "Escolha ao menos um" : entrega.includes("retirada") && temEntrega ? "Retirada ou entrega" : temEntrega ? "Entrega" : "Retirada"}</b></div>
-        {entrega.includes("entrega_propria") && <div><span>Taxa de entrega</span><b>{taxaNum > 0 ? `R$ ${reaisPP(taxaNum)}` : "Grátis"}</b></div>}
-      </div>
       <p className="ppf-l">Como o cliente paga?</p>
       <div className="ppf-p-opc">{PAGA.map(([k, n]) => opc(paga.includes(k), n, () => trocarPaga(k)))}</div>
       <p className="ppf-l">Como ele recebe?</p>
       <div className="ppf-p-opc">{opc(entrega.includes("retirada"), "Retirada", () => trocarEntrega("retirada"))}{opc(temEntrega, "Entrega", () => trocarEntrega("entrega"))}</div>
-      {entrega.includes("entrega_propria") && (
-        <div className="ppf-p-taxa">
-          <b>Taxa de entrega</b>
-          <span><small>R$</small><input inputMode="numeric" aria-label="Taxa de entrega" placeholder="0,00" value={taxa}
-            onChange={e => { const d = e.target.value.replace(/\D/g, ""); setTaxa(d ? reaisPP(parseInt(d, 10) / 100) : ""); }} /></span>
-        </div>
-      )}
-      <p className="ppf-p-dica">Cupons e taxa por bairro ficam no Cardápio digital.</p>
+      <p className="ppf-p-dica">Desmarque o que você não usa.</p>
       {erro && <p className="ppf-erro">{erro}</p>}
     </Janelinha>
   );
