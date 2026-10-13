@@ -39,16 +39,18 @@ const HORARIO_PADRAO = {
 // 13/10: o logo vem antes da descrição, assim a prévia da descrição já mostra o logo dela ao lado do nome
 const ORDEM = ["logo", "descricao", "endereco", "horario", "pagamento", "produto"] as const;
 type Passo = typeof ORDEM[number];
+// (13/10) a sequência guiada vai até o pagamento: o produto fica livre (ela cadastra quando quiser, navegando pelo app)
+const SEQ: Passo[] = ORDEM.filter(k => k !== "produto");
 const proximoPasso = (e: EstadoPassos, feitoAgora?: Passo, pulados: Set<Passo> = new Set()): Passo | null =>
-  ORDEM.find(k => k !== feitoAgora && !pulados.has(k) && !e[k]) || null;
+  SEQ.find(k => k !== feitoAgora && !pulados.has(k) && !e[k]) || null;
 
 /** (13/10) Topo de cada card: "Passo 2 de 6" e a barrinha */
 function PassoTopo({ k }: { k: Passo }) {
-  const n = ORDEM.indexOf(k) + 1;
+  const n = SEQ.indexOf(k) + 1;
   return (
-    <div className="ppf-topo" aria-label={`Passo ${n} de ${ORDEM.length}`}>
-      <span>Passo <b>{n} de {ORDEM.length}</b></span>
-      <div className="ppf-barra" aria-hidden="true">{ORDEM.map((x, i) => <i key={x} className={i < n ? "on" : ""} />)}</div>
+    <div className="ppf-topo" aria-label={`Passo ${n} de ${SEQ.length}`}>
+      <span>Passo <b>{n} de {SEQ.length}</b></span>
+      <div className="ppf-barra" aria-hidden="true">{SEQ.map((x, i) => <i key={x} className={i < n ? "on" : ""} />)}</div>
     </div>
   );
 }
@@ -152,6 +154,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
     setFolha(null); if (!pular) avisarPassos();
     const prox = agora ? proximoPasso(estado, agora, pulados.current) : null;
     if (prox) window.setTimeout(() => abrirPasso(prox), 250);
+    else if (agora) avisar(pulados.current.size ? "Pronto por agora!" : "Tudo configurado!", { tipo: "ok" });
   };
   const salvo = (patch?: Record<string, any>) => seguir(false, patch);
   const depois = () => seguir(true);

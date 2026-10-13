@@ -206,7 +206,7 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
               <p className="bv-sobre">Agora é com você</p>
               {/* fecha com o nome, como abriu (sem nome válido, fica só "Sua confeitaria começa aqui") */}
               <h1 className="bv-h">{nomeOk ? <>{nomeOk}, sua confeitaria <em>começa aqui</em></> : <>Sua confeitaria <em>começa aqui</em></>}</h1>
-              <p className="bv-p">São 6 passos rápidos pra deixar seu cardápio no ar, pronto pra mandar no WhatsApp.</p>
+              <p className="bv-p">São poucos passos rápidos pra deixar seu cardápio no ar, pronto pra mandar no WhatsApp.</p>
             </>)}
           </div>
           <div className="bv-base">
