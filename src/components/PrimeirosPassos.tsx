@@ -159,7 +159,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
 
   const I = (C: any) => <C size={20} weight="regular" />;
   const passos: { feito: boolean; ic: ReactNode; t: string; s: string; abrir: () => void }[] = [
-    { feito: true, ic: I(Check), t: "Criar sua conta", s: "Pronto! Bem-vinda ao Doonly", abrir: () => {} },
+    { feito: true, ic: I(Check), t: "Criar sua conta", s: "Pronto! Boas-vindas ao Doonly", abrir: () => {} },
     { feito: estado.descricao, ic: I(PencilSimpleLine), t: "Contar sobre a sua confeitaria", s: "Uma frase que aparece no topo do cardápio", abrir: () => setFolha("descricao") },
     { feito: estado.logo, ic: I(ImageSquare), t: "Colocar o logo da loja", s: "Sem logo? Usamos a sua foto de perfil", abrir: () => setFolha("logo") },
     { feito: estado.endereco, ic: I(MapPin), t: "Endereço da loja", s: "Pra calcular a entrega e mostrar no mapa", abrir: () => setFolha("endereco") },

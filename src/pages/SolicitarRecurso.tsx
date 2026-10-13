@@ -146,7 +146,7 @@ export default function SolicitarRecurso() {
             <section className="cl9-card aj-ok">
               <span className="aj-ok-ic" aria-hidden="true"><CheckCircle size={32} weight="fill" /></span>
               <h2>Ideia recebida!</h2>
-              <p>Obrigada! Acompanhe o andamento em "Minhas ideias".</p>
+              <p>Recebemos sua ideia! Acompanhe o andamento em "Minhas ideias".</p>
               <Botao onClick={novaIdeia}>Enviar outra ideia</Botao>
               <Botao variante="link" onClick={() => setAba("minhas")}>Ver minhas ideias</Botao>
             </section>

@@ -181,7 +181,7 @@ export default function Indicar() {
             <div className="in9-barra" role="progressbar" aria-valuemin={anterior} aria-valuemax={proximo.meta} aria-valuenow={conversoes} aria-label="Andamento até o próximo prêmio">
               <i style={{ width: `${Math.min(100, ((conversoes - anterior) / (proximo.meta - anterior)) * 100)}%` }} />
             </div>
-          </>) : <p>Você conquistou todos os prêmios. Obrigada!</p>}
+          </>) : <p>Você conquistou todos os prêmios!</p>}
         </section>
 
         {/* Quem entrou */}

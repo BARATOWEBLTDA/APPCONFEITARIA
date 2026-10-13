@@ -128,7 +128,7 @@ export async function gerarPedidoPDF(pedido: PedidoPDF, janelaAberta?: Window | 
       ["Pagar até", !cancelado && falta > 0.009 && pedido.data_prevista_pagamento ? esc(dataBR(pedido.data_prevista_pagamento)) : ""],
     ]) + (pedido.observacoes ? `<p class="obs">Obs.: ${esc(pedido.observacoes)}</p>` : ""));
 
-    const corpo = `<div class="g2">${cliente}${blocoEntrega}</div>${tabela}<div class="g2">${pagamento}${totais}</div>${prontaEntrega ? `<p class="thx">Obrigada pela preferência!</p>` : ""}`;
+    const corpo = `<div class="g2">${cliente}${blocoEntrega}</div>${tabela}<div class="g2">${pagamento}${totais}</div>${prontaEntrega ? `<p class="thx">Agradecemos a preferência!</p>` : ""}`;
     const feito = pedido.created_at ? new Date(pedido.created_at) : new Date();
     return {
       titulo: `${prontaEntrega ? "Venda" : "Pedido"} #${pedido.numero ?? ""}`,

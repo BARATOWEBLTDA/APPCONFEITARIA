@@ -29,7 +29,7 @@ export const CONQUISTAS: Conquista[] = [
   c("produto-50", "🍫", "50 produtos", "Um verdadeiro catálogo de doces.", "Cardápio e produtos", "produtos", 50),
   c("ficha-1", "🧮", "1ª ficha técnica", "Agora você sabe quanto cada doce custa.", "Cardápio e produtos", "fichas", 1),
   c("ficha-10", "📊", "10 fichas técnicas", "Precificação profissional de verdade.", "Cardápio e produtos", "fichas", 10),
-  c("pro", "💎", "Virou PRO", "Bem-vinda ao time PRO!", "PRO", "pro", 1),
+  c("pro", "💎", "Virou PRO", "Boas-vindas ao time PRO!", "PRO", "pro", 1),
   c("pro-3m", "📅", "3 meses PRO", "Três meses crescendo com o PRO.", "PRO", "mesesPro", 3),
   c("pro-6m", "🌟", "6 meses PRO", "Meio ano de PRO!", "PRO", "mesesPro", 6),
   c("pro-12m", "🎉", "1 ano PRO", "Um ano inteiro com o Doonly PRO.", "PRO", "mesesPro", 12),

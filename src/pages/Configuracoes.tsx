@@ -233,7 +233,7 @@ export default function Configuracoes() {
               </div>
             </div>
             <p>{pro
-              ? "Você tem acesso a tudo do Doonly. Obrigada por apoiar o app!"
+              ? "Você tem acesso a tudo do Doonly. Agradecemos o apoio!"
               : "Você já tem o essencial pra organizar sua confeitaria. No PRO, ganha a ficha técnica completa, relatórios de lucro, o Doo IA e muito mais."}</p>
             {pro
               ? <Botao variante="secundario" cheio onClick={() => navigate("/minha-assinatura")}>Ver minha assinatura</Botao>
