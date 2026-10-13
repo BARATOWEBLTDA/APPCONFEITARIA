@@ -134,10 +134,10 @@ export function saldoPedido(p: any): number {
   return Math.max(0, Math.round(((Number(p?.valor_total) || 0) - recebidoPedido(p)) * 100) / 100)
 }
 
-/** R$ 1.320,00 · com redondo=true, valor sem centavos fica "R$ 660" (linha resumida, como no guia) */
+/** R$ 1.320,00 (sempre com centavos; o parâmetro redondo ficou só por compatibilidade) */
 export function rs(v: number, redondo = false): string {
   const n = Number(v) || 0
-  if (redondo && Math.abs(n - Math.round(n)) < 0.005) return `R$ ${Math.round(n).toLocaleString('pt-BR')}`
+  void redondo // (4.29) dinheiro sempre com centavos, também na linha resumida
   return `R$ ${n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 

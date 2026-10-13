@@ -92,7 +92,8 @@ const REGRAS_NOME: [string, PeloNome][] = [
   ["sucos?|[aá]guas?|[oó]leos?|[aá]lcool|vinagre|licor|rum|conhaque|caf[eé] coado|refrigerantes?", { tipo: "volume", un: "ml" }],
   // contáveis
   ["ovos?", { tipo: "unidade", un: "un", ex: "bandeja com 30 un" }],
-  ["morangos?|lim[oõ](es)?|lim[aã]o|laranjas?|bananas?|ma[cç][aã]s?|abacaxis?|kiwis?|peras?|cocos?|maracuj[aá]s?", { tipo: "unidade", un: "un" }],
+  // frutas: vêm em bandeja/kg e a receita usa por unidade ou por peso. Sugere unidade, mas aceita peso sem alerta
+  ["morangos?|lim[oõ](es)?|lim[aã]o|laranjas?|bananas?|ma[cç][aã]s?|abacaxis?|kiwis?|peras?|cocos?|maracuj[aá]s?|uvas?", { tipo: "unidade", un: "un", ambos: true }],
   ["bombons?|biscoitos?|wafers?|pa[cç]ocas?|bis", { tipo: "unidade", un: "un" }],
   ["forminhas?|velas?|palitos?|saquinhos?|sacos?|etiquetas?|adesivos?|copos?|pratinhos?|colheres?|garfos?|tampas?|toppers?|topos?|bases?|cake boards?|caixas?|potes?|marmitas?|fitas?|la[cç]os?", { tipo: "unidade", un: "un" }],
 ];
@@ -131,7 +132,7 @@ function detectarInconsistencia(nome: string, unidade: string): string | null {
     return `${nm}: o mais comum é medir em ${emPeso}${ex}. Quer trocar?`;
   if (r.tipo === "volume" && (unidade === "un" || (peso && !r.ambos)))
     return `${nm}: o mais comum é medir em mililitros (ml) ou litros (L)${ex}. Quer trocar?`;
-  if (r.tipo === "unidade" && unidade !== "un")
+  if (r.tipo === "unidade" && unidade !== "un" && !r.ambos)
     return `${nm}: o mais comum é contar em unidades${ex}. Quer trocar?`;
   return null;
 }

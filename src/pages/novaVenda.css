@@ -77,6 +77,7 @@
 .nv3-sit { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .nv3-sit button { min-height: 48px; margin: 0; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto-2); font-family: inherit; font-size: 15px; font-weight: 700; }
 .nv3-sit button[aria-pressed="true"] { border-color: var(--ui-rosa); background: var(--ui-rosa); color: var(--ui-branco); }
+.nv3-sit button:disabled { opacity: .4; cursor: default; }
 .nv3-res .ui-linha > b { white-space: normal; }
 .nv3-contas { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--ui-linha); }
 .nv3-contas p { display: flex; justify-content: space-between; gap: 12px; margin: 0; font-size: 13.5px; font-weight: 500; line-height: 1.8; }

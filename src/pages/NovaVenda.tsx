@@ -250,6 +250,12 @@ export default function NovaVenda() {
     setTipoEntrega('retirada')
   }, [tipo])
 
+  // Pronta entrega com retirada: o cliente já levou, então o pedido entra como entregue
+  // (o criarPedido já força isso; aqui a tela mostra a mesma coisa). Pagamento começa em "Tudo agora".
+  const jaLevou = tipo === 'pronta_entrega' && tipoEntrega === 'retirada'
+  useEffect(() => { if (jaLevou) setStatusPedido('entregue') }, [jaLevou])
+  useEffect(() => { if (tipo === 'pronta_entrega') setSituacaoPag(s => s ?? 'total') }, [tipo])
+
   // Scroll pro topo quando muda de etapa ou entra na tela de sucesso
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
@@ -976,7 +982,7 @@ export default function NovaVenda() {
           <section className="nv3-card">
             <Titulo>Em que situação o pedido entra?</Titulo>
             <div className="nv3-sit" role="group" aria-label="Em que situação o pedido entra">
-              {COMECOS.map(c => <button key={c.chave} type="button" aria-pressed={statusPedido === c.chave} onClick={() => setStatusPedido(c.chave)}>{c.nome}</button>)}
+              {COMECOS.map(c => <button key={c.chave} type="button" aria-pressed={statusPedido === c.chave} disabled={jaLevou && c.chave !== 'entregue'} onClick={() => setStatusPedido(c.chave)}>{c.nome}</button>)}
             </div>
             <p className="nv3-dica"><b>{comeco.nome}:</b> {comeco.dica}</p>
           </section>

@@ -63,7 +63,7 @@ function Variacao({ atual, anterior, rotulo, bomSubir = true }: { atual: number;
   const antes = rotulo.replace(/^que /, "");
   if (anterior == null) return <span className="fd-var neu">&nbsp;</span>;
   if (!anterior && !atual) return <span className="fd-var neu">{dois(`Sem movimento ${antes}`, "Sem movimento")}</span>;
-  if (!anterior) return <span className="fd-var neu">{dois(`Nada ${antes}`, "Antes: R$ 0,00")}</span>;
+  if (!anterior) return <span className="fd-var neu">{dois(`${antes.charAt(0).toUpperCase()}${antes.slice(1)}: R$ 0,00`, "Antes: R$ 0,00")}</span>;
   const pct = Math.round(((atual - anterior) / Math.abs(anterior)) * 100);
   if (pct === 0) return <span className="fd-var neu">{dois(`Igual ${rotulo.replace(/^que nos /, "aos ").replace(/^que no /, "ao ").replace(/^que /, "a ")}`, "Igual ao anterior")}</span>;
   const bom = pct > 0 === bomSubir;

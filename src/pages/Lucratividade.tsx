@@ -159,7 +159,8 @@ export default function Lucratividade() {
                         <b className="lu-pc-nm">{p.nome}</b>
                         <small>{p.qtd} {p.qtd === 1 ? "vendido" : "vendidos"} · {brl(p.vendido)}</small>
                         <span className="lu-pc-l">Lucro</span>
-                        <strong className={p.lucro < 0 ? "ruim" : p.semFicha ? "sf" : ""}>{brl(p.lucro)}</strong>
+                        {/* sem ficha o custo é zero: mostrar "lucro = preço" engana, então fica um traço */}
+                        <strong className={p.semFicha ? "sf" : p.lucro < 0 ? "ruim" : ""}>{p.semFicha ? "—" : brl(p.lucro)}</strong>
                         {p.semFicha
                           ? <span className="lu-sf"><Warning size={12} weight="bold" /> sem ficha técnica</span>
                           : <span className="lu-pc-m"><span className="lu-p-bar"><i className={p.lucro < 0 ? "ruim" : ""} style={{ width: `${Math.max(2, Math.min(100, p.margem))}%` }} /></span>margem {p.margem}%</span>}
