@@ -127,15 +127,25 @@ export default function FinanceiroTransacoes() {
         infoContent={<>
           <p>Aqui aparece <strong>todo o dinheiro que entrou e saiu</strong>: os recebimentos de pedidos (na data em que você recebeu), as entradas avulsas e as despesas pagas.</p>
           <p>Lançou errado? Abra o item e use <strong>Estornar</strong>: ele sai das contas, mas continua no histórico, riscado.</p>
+          <p>Aqui entra <strong>todo</strong> o dinheiro, inclusive aporte e retirada. Por isso a <strong>diferença</strong> pode não bater com o Resultado do painel, que deixa esses dois de fora.</p>
         </>}
+        rightActions={
+          <div className="tx-hd">
+            <button type="button" className="tx-hd-bt e" onClick={() => setNova("entrada")}><ArrowUp size={15} weight="bold" />Entrada</button>
+            <button type="button" className="tx-hd-bt s" onClick={() => setNova("saida")}><ArrowDown size={15} weight="bold" />Saída</button>
+            <button type="button" className="tx-hd-bt n" onClick={exportar}><DownloadSimple size={16} weight="bold" />Exportar</button>
+          </div>
+        }
       />
+      {/* (4.29) mesma faixa rosa do painel: o período fica "pousado" nela */}
+      <div className="tx-faixa" aria-hidden="true" />
       <EstiloFinanceiro />
       <div className="tx">
         <div className="tx-topo">
-          <PeriodoFiltro valor={periodo} onChange={setPeriodo} />
+          <div className="tx-per"><PeriodoFiltro valor={periodo} onChange={setPeriodo} /></div>
           <div className="tx-bts">
-            <button type="button" className="tx-bt e" onClick={() => setNova("entrada")}><ArrowUp size={15} weight="bold" />Nova entrada</button>
-            <button type="button" className="tx-bt s" onClick={() => setNova("saida")}><ArrowDown size={15} weight="bold" />Nova saída</button>
+            <button type="button" className="tx-bt e" onClick={() => setNova("entrada")}><i><ArrowUp size={16} weight="bold" /></i>Entrou</button>
+            <button type="button" className="tx-bt s" onClick={() => setNova("saida")}><i><ArrowDown size={16} weight="bold" /></i>Saiu</button>
             <button type="button" className="tx-bt n" onClick={exportar} aria-label="Exportar planilha"><DownloadSimple size={16} weight="bold" /><span>Exportar</span></button>
           </div>
         </div>
@@ -143,7 +153,7 @@ export default function FinanceiroTransacoes() {
         <div className="tx-res">
           <div className="tx-k"><small>Entradas</small><b className="e">{erro ? "—" : brl(entradas)}</b></div>
           <div className="tx-k"><small>Saídas</small><b className="s">{erro ? "—" : brl(saidas)}</b></div>
-          <div className="tx-k"><small>Resultado</small><b>{erro ? "—" : brl(entradas - saidas)}</b></div>
+          <div className="tx-k"><small>Diferença</small><b>{erro ? "—" : brl(entradas - saidas)}</b></div>
         </div>
 
         <div className="tx-filtros">
@@ -179,7 +189,7 @@ export default function FinanceiroTransacoes() {
 
       {aberto && <DetalheSheet m={aberto} semEstorno={semEstorno} onClose={() => setAberto(null)} onAbrirPedido={id => navigate(`/pedidos/${id}/editar`)}
         onEstornado={msg => { setAberto(null); avisar(msg); carregar(); }} />}
-      {nova && uid && <DespesaSheet tipo={nova} onClose={() => setNova(null)} onSalvo={(aviso, continuar) => { if (!continuar) setNova(null); avisar(aviso); carregar(); }} onContaAPagar={() => navigate("/financeiro/a-pagar")} onReceberPedido={() => navigate("/financeiro/a-receber")} />}
+      {nova && uid && <DespesaSheet tipo={nova} onClose={() => setNova(null)} onSalvo={(aviso, continuar) => { if (!continuar) setNova(null); avisar(aviso); carregar(); }} onReceberPedido={() => navigate("/financeiro/a-receber")} />}
       <style>{CSS}{FOLHA_CSS}</style>
     </>
   );
@@ -222,28 +232,52 @@ function DetalheSheet({ m, semEstorno, onClose, onAbrirPedido, onEstornado }: { 
 }
 
 const CSS = `
-  .tx { max-width: 980px; margin: 0 auto; padding: 22px 0 96px; font-family: var(--font-base); color: var(--ui-texto); display: flex; flex-direction: column; gap: 14px; }
+  .tx-faixa { height: 58px; background: var(--ui-rosa); width: 100vw; margin: 0 calc(50% - 50vw); }
+  @media (min-width: 901px) { .tx-faixa { width: auto; margin: 0 -2rem; } }
+  .tx-per { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 16px; padding: 6px; box-shadow: 0 1px 3px rgba(42,21,32,.05); }
+  .tx-per .pf-seg { background: #F4EEF1; border-radius: 12px; }
+  .tx-per .pf-seg button { font-weight: 500; white-space: nowrap; }
+  .tx-per .pf-seg button.on { color: var(--ui-rosa-escuro); font-weight: 600; }
+  .tx-per .pf-mes { border: 0; padding: 2px; }
+  .tx-per .pf-mes b { font-weight: 600; }
+  .tx-hd { display: flex; align-items: center; gap: 8px; }
+  .tx-hd-bt { display: flex; align-items: center; gap: 6px; min-height: 44px; border: none; border-radius: var(--ui-raio-botao); padding: 0 14px; font-family: var(--font-base); font-size: 14px; font-weight: 600; color: var(--ui-branco); cursor: pointer; white-space: nowrap; }
+  .tx-hd-bt.e { background: #16A34A; } .tx-hd-bt.s { background: var(--ui-vinho-escuro); } .tx-hd-bt.n { background: var(--ui-branco); color: var(--ui-texto); }
+  @media (min-width: 768px) { .tx-bts { display: none !important; } }
+  @media (min-width: 900px) {
+    .tx-topo .tx-per { flex: 1; }
+    .tx-topo .tx-per .pf { max-width: none; }
+    .tx-per .pf { flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .tx-per .pf-seg { width: 420px; }
+    .tx-per .pf-mes { width: 300px; }
+    .tx-per .pf-datas { width: 360px; }
+  }
+  .tx { position: relative; max-width: 980px; margin: -58px auto 0; padding: 22px 0 96px; font-family: var(--font-base); color: var(--ui-texto); display: flex; flex-direction: column; gap: 14px; }
   .tx-topo { display: flex; flex-direction: column; gap: 10px; }
   @media (min-width: 900px) { .tx-topo { flex-direction: row; align-items: flex-start; justify-content: space-between; } .tx-topo .pf { flex: 1; max-width: 520px; } }
   .tx-bts { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; }
-  .tx-bt { display: flex; align-items: center; justify-content: center; gap: 6px; border: none; border-radius: var(--ui-raio); padding: 11px 14px; font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; white-space: nowrap; }
-  .tx-bt.e { background: #16A34A; color: var(--ui-branco); } .tx-bt.s { background: var(--ui-vinho-escuro); color: var(--ui-branco); } .tx-bt.n { background: var(--ui-branco); color: var(--ui-texto); border: 1.5px solid var(--ui-borda-campo); }
-  @media (max-width: 420px) { .tx-bt.n span { display: none; } .tx-bt { padding: 11px 8px; gap: 4px; font-size: 13px; } }
+  /* (4.29) mesmo jeito dos botões do painel no celular */
+  .tx-bt { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; border: none; border-radius: 14px; padding: 0 12px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .tx-bt i { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; color: var(--ui-branco); }
+  .tx-bt.e { background: #ECFDF3; color: var(--ui-verde); } .tx-bt.e i { background: #16A34A; }
+  .tx-bt.s { background: #FEF2F2; color: var(--ui-vermelho); } .tx-bt.s i { background: var(--ui-vermelho); }
+  .tx-bt.n { background: var(--ui-branco); color: var(--ui-texto); border: 1px solid #F0EBED; width: 52px; padding: 0; }
+  .tx-bt.n span { display: none; }
   .tx-res { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .tx-k { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 10px; min-width: 0; }
   .tx-k small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
-  .tx-k b { display: block; font-size: clamp(13.5px, 3.9vw, 19px); font-weight: 700; letter-spacing: -.02em; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tx-k b { display: block; font-size: clamp(13.5px, 3.9vw, 19px); font-weight: 600; letter-spacing: -.02em; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tx-k b.e { color: var(--ui-verde); } .tx-k b.s { color: var(--ui-vermelho); }
   .tx-filtros { display: flex; flex-direction: column; gap: 8px; }
   @media (min-width: 900px) { .tx-filtros { flex-direction: row; align-items: center; flex-wrap: wrap; } .tx-busca { flex: 1; min-width: 240px; } }
   .tx-seg { display: flex; background: #EFE9EC; border-radius: var(--ui-raio); padding: 3px; }
-  .tx-seg button { flex: 1; min-height: 44px; border: none; background: none; border-radius: var(--ui-raio-p); padding: 8px 12px; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--ui-texto-2); cursor: pointer; }
-  .tx-seg button.on { background: var(--ui-branco); color: var(--ui-texto); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .tx-seg button { flex: 1; min-height: 44px; border: none; background: none; border-radius: var(--ui-raio-p); padding: 8px 12px; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); cursor: pointer; white-space: nowrap; }
+  .tx-seg button.on { background: var(--ui-branco); color: var(--ui-texto); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
   .tx-busca { display: flex; align-items: center; gap: 8px; height: 48px; background: var(--ui-branco); border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); padding: 0 12px; color: var(--ui-texto-3); }
   .tx-busca input { flex: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 16px; color: var(--ui-texto); background: none; }
   .tx-chips { display: flex; gap: 6px; overflow-x: auto; }
-  .tx-chips button { flex-shrink: 0; min-height: 44px; border: 1.5px solid var(--ui-borda-campo); background: var(--ui-branco); border-radius: 99px; padding: 7px 14px; font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ui-cinza-texto); cursor: pointer; }
-  .tx-chips button.on { border-color: var(--ui-rosa); background: #FFF1F6; color: var(--ui-rosa-escuro); }
+  .tx-chips button { flex-shrink: 0; min-height: 42px; border: 1px solid var(--ui-borda-campo); background: var(--ui-branco); border-radius: 10px; padding: 0 14px; font-family: inherit; font-size: 13.5px; font-weight: 500; color: var(--ui-texto-2); cursor: pointer; white-space: nowrap; }
+  .tx-chips button.on { border-color: var(--ui-rosa); background: #FFF1F6; color: var(--ui-rosa-escuro); font-weight: 600; }
   .tx-ph { height: 220px; background: #FAF7F8; border-radius: var(--ui-raio-cartao); }
   .tx-vazio { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 26px 18px; text-align: center; }
   .tx-vazio b { display: block; font-size: 15.5px; font-weight: 700; } .tx-vazio p { margin: 6px auto 0; font-size: 13.5px; color: var(--ui-texto-2); max-width: 360px; line-height: 1.45; }
@@ -254,7 +288,7 @@ const CSS = `
   @media (min-width: 900px) { .tx-it { grid-template-columns: 34px minmax(0, 1fr) 140px 130px; } }
   .tx-ic { width: 34px; height: 34px; border-radius: var(--ui-raio-p); display: flex; align-items: center; justify-content: center; }
   .tx-ic.e { background: var(--ui-verde-fundo); color: var(--ui-verde); } .tx-ic.s { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); }
-  .tx-it-t b { display: block; font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tx-it-t b { display: block; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tx-it-t small { display: block; font-size: 12px; color: #888780; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
   .tx-it-c { display: none; font-size: 12.5px; color: var(--ui-texto-2); }
   @media (min-width: 900px) { .tx-it-c { display: block; } .tx-so-cel { display: none; } }

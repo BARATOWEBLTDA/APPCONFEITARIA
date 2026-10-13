@@ -80,7 +80,7 @@ export default function Custos() {
     <>
       <AppPageHeader
         title="Custos"
-        subtitle="O que a confeitaria gasta pra funcionar"
+        subtitle="O que a confeitaria gasta"
         onBack={() => navigate("/financeiro")}
         infoIcon="🧮"
         infoContent={<>
@@ -90,23 +90,25 @@ export default function Custos() {
         </>}
       />
       <EstiloFinanceiro />
+      {/* (4.29) mesma faixa rosa do Financeiro: os números ficam "pousados" nela */}
+      <div className="cu-faixa" aria-hidden="true" />
       <div className="cu">
         {erro ? (
           <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os custos" texto="Confira a internet e tente de novo."
             acao={<Botao variante="suave" tamanho="m" onClick={() => { setCarregando(true); carregar(); }}>Tentar de novo</Botao>} />
         ) : (<>
         <div className="cu-resumo">
-          <div className="cu-k"><small>Custos fixos por mês</small><b>{brl(totalFixos)}</b><i>{qtdFixosAtivos} {qtdFixosAtivos === 1 ? "ativo" : "ativos"}</i></div>
+          <div className="cu-k"><small>Fixos por mês</small><b>{brl(totalFixos)}</b><i>{qtdFixosAtivos} {qtdFixosAtivos === 1 ? "ativo" : "ativos"}</i></div>
           <div className="cu-k"><small>Seu salário</small><b>{brl(mo.salario_mensal)}</b><i>mão de obra</i></div>
           <div className="cu-k destaque"><small>Custo da sua hora</small><b>{brl(custoHora)}</b><i>fixos + salário</i></div>
-          <div className="cu-k"><small>Custos variáveis por pedido</small><b>{brl(varPorPedido)}</b><i>{varPct > 0 ? `+ ${String(varPct).replace(".", ",")}% da venda · ` : ""}{ativosVar.length} {ativosVar.length === 1 ? "ativo" : "ativos"}</i></div>
+          <div className="cu-k"><small>Variáveis por pedido</small><b>{brl(varPorPedido)}</b><i>{varPct > 0 ? `+ ${String(varPct).replace(".", ",")}% da venda · ` : ""}{ativosVar.length} {ativosVar.length === 1 ? "ativo" : "ativos"}</i></div>
         </div>
 
         <div className="cu-grid">
           <section className="cu-card cu-a-fixos">
             <div className="cu-ct"><span className="cu-ic"><Buildings size={18} weight="duotone" /></span><div><b>Custos fixos</b><small>Todo mês, o mesmo valor</small></div></div>
             {carregando ? <div className="cu-ph" /> : fixos.length === 0 ? (
-              <p className="cu-vazio">Nenhum custo fixo ainda. Aluguel, internet, gás, contador…</p>
+              <p className="cu-vazio">Nenhum ainda. Ex.: aluguel, internet, gás.</p>
             ) : fixos.map(f => (
               <button type="button" key={f.id} className={`cu-it ${f.ativo ? "" : "off"}`} onClick={() => setEditFixo(f)}>
                 <div className="cu-it-t"><b>{f.nome}</b>
@@ -131,7 +133,7 @@ export default function Custos() {
           <section className="cu-card cu-a-var">
             <div className="cu-ct"><span className="cu-ic"><Percent size={18} weight="duotone" /></span><div><b>Custos variáveis</b><small>Acompanham cada venda</small></div></div>
             {carregando ? <div className="cu-ph" /> : variaveis.length === 0 ? (
-              <p className="cu-vazio">Nenhum ainda. Ex.: taxa da maquininha (3,5% da venda), embalagem (R$ 4,00 por pedido).</p>
+              <p className="cu-vazio">Nenhum ainda. Ex.: maquininha, embalagem.</p>
             ) : variaveis.map(v => (
               <button type="button" key={v.id} className={`cu-it ${v.ativo ? "" : "off"}`} onClick={() => setEditVar(v)}>
                 <div className="cu-it-t"><b>{v.nome}</b><small>{!v.ativo ? "Pausado" : v.tipo === "percentual" ? "% de cada venda" : "Valor por pedido"}</small></div>
@@ -300,13 +302,17 @@ function MaoObraSheet({ uid, atual, totalFixos, onClose, onFeito }: { uid: strin
 }
 
 const CSS = `
+  .cu-faixa { height: 58px; background: var(--ui-rosa); width: 100vw; margin: 0 calc(50% - 50vw); }
+  @media (min-width: 901px) { .cu-faixa { width: auto; margin: 0 -2rem; } }
+  .cu-faixa + .cu { position: relative; margin-top: -58px; }
   .cu { max-width: 1120px; margin: 0 auto; padding: 22px 0 96px; font-family: var(--font-base); color: var(--ui-texto); display: flex; flex-direction: column; gap: 16px; }
   .cu-resumo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   @media (min-width: 900px) { .cu-resumo { grid-template-columns: repeat(4, 1fr); } }
   .cu-k { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px; padding: 12px; min-width: 0; }
   .cu-k small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
-  .cu-k b { display: block; font-size: clamp(16px, 4.6vw, 21px); font-weight: 700; letter-spacing: -.02em; margin: 3px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cu-k i { font-style: normal; font-size: 13px; color: #888780; }
+  .cu-k b { display: block; font-size: clamp(16px, 4.6vw, 21px); font-weight: 600; letter-spacing: -.02em; margin: 3px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cu-k i { display: block; font-style: normal; font-size: 13px; color: #888780; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cu-k small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cu-k.destaque { background: radial-gradient(130% 160% at 0 0, #6B2340, var(--ui-vinho-escuro) 70%); border: none; color: var(--ui-branco); }
   .cu-k.destaque small, .cu-k.destaque i { color: rgba(255,255,255,.72); }
   .cu-grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "fixos" "mo" "var"; }

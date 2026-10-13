@@ -56,15 +56,17 @@ function montarPeriodo(tipo: TipoPer, pIni: string, pAte: string): Per {
 
 /** "+18% que nos 7 dias anteriores" (verde quando é bom, vermelho quando é ruim) */
 function Variacao({ atual, anterior, rotulo, bomSubir = true }: { atual: number; anterior: number | null; rotulo: string; bomSubir?: boolean }) {
-  // (4.29) no celular só a parte curta ("+12%", "Igual"), pra não quebrar linha; o resto aparece no computador
-  const r = (t: string) => <span className="fd-var-r"> {t}</span>;
+  // (4.29) texto completo no computador; no celular uma versão curta que cabe numa linha e se entende sozinha
+  const dois = (pc: string, cel: string) => <><span className="fd-so-pc">{pc}</span><span className="fd-so-cel">{cel}</span></>;
+  const antes = rotulo.replace(/^que /, "");
   if (anterior == null) return <span className="fd-var neu">&nbsp;</span>;
-  if (!anterior && !atual) return <span className="fd-var neu">Sem movimento{r(rotulo.replace(/^que /, ""))}</span>;
-  if (!anterior) return <span className={`fd-var ${atual > 0 === bomSubir ? "up" : "dn"}`}>Nada{r(rotulo.replace(/^que /, ""))}</span>;
+  if (!anterior && !atual) return <span className="fd-var neu">{dois(`Sem movimento ${antes}`, "Sem movimento")}</span>;
+  if (!anterior) return <span className="fd-var neu">{dois(`Nada ${antes}`, "Antes: R$ 0,00")}</span>;
   const pct = Math.round(((atual - anterior) / Math.abs(anterior)) * 100);
-  if (pct === 0) return <span className="fd-var neu">Igual{r(rotulo.replace(/^que nos /, "aos ").replace(/^que no /, "ao ").replace(/^que /, "a "))}</span>;
+  if (pct === 0) return <span className="fd-var neu">{dois(`Igual ${rotulo.replace(/^que nos /, "aos ").replace(/^que no /, "ao ").replace(/^que /, "a ")}`, "Igual ao anterior")}</span>;
   const bom = pct > 0 === bomSubir;
-  return <span className={`fd-var ${bom ? "up" : "dn"}`}>{pct > 0 ? "+" : ""}{pct}%{r(rotulo)}</span>;
+  const n = `${pct > 0 ? "+" : ""}${pct}%`;
+  return <span className={`fd-var ${bom ? "up" : "dn"}`}>{dois(`${n} ${rotulo}`, `${n} que antes`)}</span>;
 }
 
 export default function Financeiro() {
@@ -200,7 +202,7 @@ export default function Financeiro() {
             <i>{ok ? `${ok.qtdDespesas} ${ok.qtdDespesas === 1 ? "saída" : "saídas"}` : ""}</i></div>
           <div className="fd-k"><span className="fd-ki l" aria-hidden="true"><Equals size={14} weight="bold" /></span><small>Resultado</small><b className={ok && ok.resultado < 0 ? "s" : ""}>{ok ? brl(ok.resultado) : esp}</b>
             {ok && <Variacao atual={ok.resultado} anterior={ant ? r2(ant.recebido - ant.despesas) : null} rotulo={per.rotuloAnt} />}
-            <i><span className="fd-so-pc">o que entrou menos o que saiu</span><span className="fd-so-cel">entrou − saiu</span></i></div>
+            <i><span className="fd-so-pc">o que entrou menos o que saiu</span><span className="fd-so-cel">recebido − despesas</span></i></div>
         </div>
 
         <div className="fd-a-acoes fd-acoes">
@@ -479,7 +481,7 @@ const CSS = `
   .fd-bt em { position: absolute; top: 8px; right: 8px; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: #B45309; color: var(--ui-branco); font-style: normal; font-size: 11.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
   /* (4.29) textos curtos no celular, completos no computador */
   .fd .fd-so-cel { display: none; }
-  @media (max-width: 767px) { .fd .fd-so-pc { display: none; } .fd .fd-so-cel { display: inline; } .fd-var-r { display: none; } }
+  @media (max-width: 767px) { .fd .fd-so-pc { display: none; } .fd .fd-so-cel { display: inline; } }
   .fd-var { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .fd-k i, .fd-k2 i { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .fd-k2 i span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
