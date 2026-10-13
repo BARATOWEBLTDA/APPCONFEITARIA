@@ -26,6 +26,36 @@ const GRUPOS: { titulo: string; itens: { label: string; Ic: Icon; path: string; 
   ] },
 ];
 
+/**
+ * (13/10) Abas do Cardápio digital no computador, dentro da faixa rosa do cabeçalho.
+ * Antes era um segundo menu lateral ao lado do menu do app (dois menus lado a lado, desalinhado da faixa).
+ * A faixa é presa no topo, então as abas ficam sempre à mão. No celular não aparecem.
+ */
+export function CardapioAbas() {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const { profile } = useProfile();
+  const link = profile ? getCardapioUrl(profile) : "";
+  const itens = GRUPOS.flatMap(g => g.itens);
+  return (
+    <nav className="cab-abas" aria-label="Telas do cardápio digital">
+      <div className="cab-abas-l">
+        {itens.map(({ label, path, tambem }) => {
+          const ativo = pathname === path || (tambem || []).includes(pathname);
+          return (
+            <button key={path} type="button" className={`cab-aba${ativo ? " on" : ""}`} onClick={() => navigate(path)} aria-current={ativo ? "page" : undefined}>{label}</button>
+          );
+        })}
+      </div>
+      {link && pathname !== "/cardapio" && (
+        <a className="cab-aba-ver" href={link} target="_blank" rel="noopener noreferrer">
+          Ver meu cardápio<ArrowSquareOut size={16} weight="bold" aria-hidden="true" />
+        </a>
+      )}
+    </nav>
+  );
+}
+
 export default function CardapioSubnav() {
   const navigate = useNavigate();
   const { pathname } = useLocation();

@@ -103,7 +103,9 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
     if (antes == null || periodo === "tudo") return null;
     if (antes === 0) return atual > 0 ? { txt: "▲ novo no período", up: true } : null;
     const pct = Math.round(((atual - antes) / antes) * 100);
-    return { txt: `${pct >= 0 ? "▲" : "▼"} ${Math.abs(pct)}% vs período anterior`, up: pct >= 0 };
+    // 13/10: diz com o que comparou ("vs ontem", "vs 7 dias antes") em vez de "vs período anterior"
+    const comQue = periodo === "hoje" ? "ontem" : periodo === "7d" ? "7 dias antes" : "30 dias antes";
+    return { txt: `${pct >= 0 ? "▲" : "▼"} ${Math.abs(pct)}% vs ${comQue}`, up: pct >= 0 };
   };
 
   const dicas = useMemo(() => {
@@ -184,15 +186,28 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
                 <div className="vgd-k" key={l}><small>{l}</small><b>{v}</b>{d && <em className={d.neutro ? "n" : d.up ? "" : "down"}>{d.txt}</em>}</div>
               ))}
             </div>
-            <div className={`vgd-bars${metr.porDia.length > 7 ? " vgd-bars--30" : ""}`}>
-              {metr.porDia.map(({ d, n }, i) => (
-                <div className="vgd-bar" key={i} title={`${d.toLocaleDateString("pt-BR")}: ${n} visita${n !== 1 ? "s" : ""}`}>
-                  {metr.porDia.length <= 7 && <em>{n}</em>}
-                  <i style={{ height: `${Math.max(3, Math.round((n / maxDia) * 100))}%` }} />
-                  <span>{metr.porDia.length <= 7 ? d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "") : (i % 5 === 0 ? d.getDate() : "")}</span>
-                </div>
-              ))}
-            </div>
+            {/* 13/10: gráfico com título, barras finas, dia sem visita como traço cinza e aviso quando não teve nenhuma */}
+            {periodo !== "hoje" && periodo !== "tudo" && (
+              <div className="vgd-gr">
+                <p className="vgd-gt">Visitas por dia</p>
+                {metr.porDia.every(x => x.n === 0) ? (
+                  <div className="vgd-gv">
+                    <span>Ninguém abriu o cardápio {periodo === "7d" ? "nos últimos 7 dias" : "nos últimos 30 dias"}. Mande o link pros seus clientes.</span>
+                    <button type="button" className="vgd-b vgd-bw" onClick={onShare}>Enviar no WhatsApp</button>
+                  </div>
+                ) : (
+                  <div className={`vgd-bars${metr.porDia.length > 7 ? " vgd-bars--30" : ""}`}>
+                    {metr.porDia.map(({ d, n }, i) => (
+                      <div className={`vgd-bar${n === 0 ? " zero" : ""}`} key={i} title={`${d.toLocaleDateString("pt-BR")}: ${n} visita${n !== 1 ? "s" : ""}`}>
+                        {metr.porDia.length <= 7 && <em>{n > 0 ? n : ""}</em>}
+                        <i style={{ height: n > 0 ? `${Math.max(6, Math.round((n / maxDia) * 100))}%` : undefined }} />
+                        <span>{metr.porDia.length <= 7 ? (i === metr.porDia.length - 1 ? "hoje" : d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")) : (i % 5 === 0 ? d.getDate() : "")}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
       </div>
@@ -259,12 +274,18 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         .vgd-kp { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 14px; }
         .vgd-k { border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 14px; }
         .vgd-k small { display: block; font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
-        .vgd-k b { display: block; font-size: 22px; font-weight: 700; margin-top: 2px; }
+        .vgd-k b { display: block; font-size: 22px; font-weight: 700; margin-top: 2px; white-space: nowrap; }
         .vgd-k em { font-style: normal; font-size: 13px; font-weight: 700; color: var(--ui-verde); } .vgd-k em.down { color: #B91C1C; } .vgd-k em.n { color: var(--ui-texto-3); font-weight: 500; }
-        .vgd-bars { display: flex; align-items: flex-end; gap: 12px; height: 120px; margin-top: 16px; }
+        .vgd-gr { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--ui-linha); }
+        .vgd-gt { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--ui-texto-2); }
+        .vgd-gv { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 10px; padding: 14px 16px; border-radius: var(--ui-raio); background: var(--ui-cinza, #F6F3F4); font-size: 14px; color: var(--ui-texto-2); }
+        .vgd-gv span { min-width: 0; }
+        .vgd-gv .vgd-b { flex: none; white-space: nowrap; }
+        .vgd-bars { display: flex; align-items: flex-end; gap: 12px; height: 128px; margin-top: 10px; }
         .vgd-bars--30 { gap: 3px; }
         .vgd-bar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 5px; min-width: 0; }
-        .vgd-bar i { width: 100%; border-radius: 7px 7px 3px 3px; background: linear-gradient(180deg, #F472B6, var(--ui-rosa-escuro)); }
+        .vgd-bar i { width: 100%; max-width: 40px; border-radius: 7px 7px 3px 3px; background: linear-gradient(180deg, #F472B6, var(--ui-rosa-escuro)); }
+        .vgd-bar.zero i { height: 3px; border-radius: 2px; background: var(--ui-linha); }
         .vgd-bars--30 .vgd-bar i { border-radius: 3px 3px 1px 1px; }
         .vgd-bar span { font-size: 12px; color: var(--ui-texto-3); height: 14px; } .vgd-bar em { font-style: normal; font-size: 12px; font-weight: 500; color: var(--ui-texto-2); }
         .vgd-lock { display: flex; align-items: center; gap: 14px; margin-top: 14px; padding: 16px; border-radius: 14px; background: #FFF6F9; border: 1px dashed #F3C9DA; }
@@ -298,7 +319,8 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         .vgd-qr button { min-height: 36px; font-size: 13px; }
         .vgd-tabs button { min-height: 40px; font-size: 13.5px; }
         .vgd-k small { font-size: 12.5px; letter-spacing: 0; text-transform: none; color: var(--ui-texto-2); }
-        .vgd-k em { font-size: 12.5px; }
+        .vgd-k em { display: block; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .vgd-k { background: #FBF9FA; border-color: transparent; }
         .vgd-bar span, .vgd-bar em { font-size: 12px; }
         .vgd-lock { border: 0; background: linear-gradient(150deg, #3B1620, #6B2340); color: var(--ui-branco); }
         .vgd-lock-ic { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex: none; border-radius: var(--ui-raio); background: rgba(255,255,255,.14); }

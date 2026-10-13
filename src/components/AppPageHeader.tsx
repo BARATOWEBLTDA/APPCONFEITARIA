@@ -10,6 +10,8 @@ import MenuConta from '@/components/MenuConta'
 import { ImageCropper } from '@/components/ui/ImageCropper'
 import { useProfile } from '@/hooks/useProfile'
 import { useAvatarUpload } from '@/hooks/useAvatarUpload'
+import { useLocation } from 'react-router-dom'
+import { CardapioAbas, ROTAS_CARDAPIO } from '@/components/CardapioSubnav'
 import './appPageHeader.css'
 
 /**
@@ -48,10 +50,12 @@ export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, in
   const { fileInputRef, uploading: enviandoFoto, handleFileSelected, cropSrc, cancelCrop, handleCropDone } = useAvatarUpload()
   const foto = useRef<HTMLButtonElement>(null)
   const IconeInfo = (infoIcon && ICONE_DO_EMOJI[infoIcon]) || Info
+  const { pathname } = useLocation()
+  const comAbas = ROTAS_CARDAPIO.includes(pathname)
 
   return (
     <>
-      <header className="cab">
+      <header className={`cab${comAbas ? ' cab--abas' : ''}`}>
         {onBack && (
           <BotaoIcone rotulo="Voltar" variante="claro" className="cab-voltar" onClick={onBack}><CaretLeft size={24} weight="bold" /></BotaoIcone>
         )}
@@ -86,6 +90,7 @@ export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, in
           )}
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelected} style={{ display: 'none' }} tabIndex={-1} aria-hidden="true" />
         </div>
+        {comAbas && <CardapioAbas />}
       </header>
 
       {infoContent && (

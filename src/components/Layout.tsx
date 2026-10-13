@@ -1,9 +1,10 @@
 import { useNotifications } from "@/context/NotificationContext";
+import { ROTAS_CARDAPIO } from "@/components/CardapioSubnav";
 import { PausarPedidos } from "@/components/loja/PausarPedidos";
 import { NavLink, Outlet, useNavigate, useLocation, useNavigationType } from "react-router-dom";
 // deploy: Proposta D - nova arquitetura de navegação (Entrega 1)
 import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
-import CardapioSubnav, { ROTAS_CARDAPIO } from "@/components/CardapioSubnav";
+
 import ParabensPro from "@/components/pro/ParabensPro";
 import DooIA from "@/components/DooIA";
 import MaisDrawer from "@/components/MaisDrawer";
@@ -111,8 +112,6 @@ export default function Layout() {
     return () => window.removeEventListener("doonly:abrir-doo", abrir);
   }, []);
   const location = useLocation();
-  // Telas do Cardápio digital: no computador ganham o menu lateral pra trocar de tela sem voltar
-  const comCdnav = ROTAS_CARDAPIO.includes(location.pathname);
   const isPrevia = location.pathname === "/cardapio-preview";
 
   // Scroll pro topo ao mudar de rota (fix: antes ficava na posição anterior)
@@ -125,8 +124,8 @@ export default function Layout() {
   }, [location.pathname]);
 
   return (
-    <div className={`layout-root${comCdnav ? " com-cdnav" : ""}`}>
-      {comCdnav && <CardapioSubnav />}
+    <div className="layout-root">
+      {/* (13/10) as telas do Cardápio digital agora têm abas na faixa rosa (AppPageHeader), não um 2º menu lateral */}
       {/* ── Sidebar Desktop ── */}
       <aside className="sidebar">
         <div className="sidebar-profile">
@@ -195,7 +194,7 @@ export default function Layout() {
           <ItemMenu to="/inicio" icone={House}>Início</ItemMenu>
           <ItemMenu to="/vendas/novo" icone={Plus}>Nova venda</ItemMenu>
           {/* (10/10) O grupo "Cadastros" saiu: Produtos, Categorias e Personalização já ficam no menu do
-              Cardápio digital (que abre ao lado). Clientes e Ingredientes viraram itens diretos. */}
+              Cardápio digital (abas na faixa rosa). Clientes e Ingredientes viraram itens diretos. */}
           <ItemMenu to="/cardapio" icone={ShoppingBag} tour="cardapio" ativoSe={c => ROTAS_CARDAPIO.includes(c) || c.startsWith("/cardapio") || c.startsWith("/checkout-config") || c.startsWith("/produtos")}>Cardápio digital</ItemMenu>
           <ItemMenu to="/pedidos" icone={Receipt}>Pedidos</ItemMenu>
           <ItemMenu to="/agenda" icone={CalendarDots}>Agenda</ItemMenu>
