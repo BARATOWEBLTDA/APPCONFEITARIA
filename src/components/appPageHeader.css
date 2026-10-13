@@ -64,6 +64,7 @@
   .cab-abas-l::-webkit-scrollbar { display: none; }
   .cab-aba { flex: none; height: 42px; margin: 0; padding: 0 16px; border: 0; border-radius: 10px 10px 0 0; background: none; color: rgba(255, 255, 255, .88);
     font-family: inherit; font-size: 14.5px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: background-color var(--dur-fast) linear, color var(--dur-fast) linear; }
+  .cab-aba-sep { flex: none; width: 1px; height: 18px; margin: 0 6px 12px; align-self: flex-end; background: rgba(255, 255, 255, .35); }
   .cab-aba:hover { background: rgba(255, 255, 255, .14); color: var(--ui-branco); }
   .cab-aba.on { background: #F6F3F4; color: var(--ui-rosa-escuro); }
   .cab-aba:focus-visible, .cab-aba-ver:focus-visible { outline: 3px solid rgba(255, 255, 255, .75); outline-offset: -3px; }

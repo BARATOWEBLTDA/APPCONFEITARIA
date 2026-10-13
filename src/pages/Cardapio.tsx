@@ -391,6 +391,16 @@ export default function Cardapio() {
             </div>
             <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
           </button>
+          <button className="cd-quick-item" onClick={() => navigate("/complementos")}>
+            <span className="cd-quick-ico cd-quick-ico--pink">
+              <Stack size={20} weight="bold" />
+            </span>
+            <div className="cd-quick-info">
+              <div className="cd-quick-name">Personalização</div>
+              <div className="cd-quick-desc">Sabores, recheios e adicionais</div>
+            </div>
+            <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
+          </button>
           <button className="cd-quick-item" onClick={() => navigate("/categorias")}>
             <span className="cd-quick-ico cd-quick-ico--pink">
               <SquaresFour size={20} weight="bold" />
@@ -405,16 +415,6 @@ export default function Cardapio() {
             </div>
             <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
           </button>
-          <button className="cd-quick-item" onClick={() => navigate("/complementos")}>
-            <span className="cd-quick-ico cd-quick-ico--pink">
-              <Stack size={20} weight="bold" />
-            </span>
-            <div className="cd-quick-info">
-              <div className="cd-quick-name">Personalização</div>
-              <div className="cd-quick-desc">Sabores, recheios e adicionais</div>
-            </div>
-            <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
-          </button>
         </div>
       </div>
 
@@ -424,16 +424,6 @@ export default function Cardapio() {
           <div className="cd-quick-title">Configuração da loja</div>
         </div>
         <div className="cd-quick-list">
-          <button className="cd-quick-item" onClick={() => navigate("/cardapio-config")}>
-            <span className="cd-quick-ico cd-quick-ico--pink">
-              <Sliders size={20} weight="bold" />
-            </span>
-            <div className="cd-quick-info">
-              <div className="cd-quick-name">Dados da loja</div>
-              <div className="cd-quick-desc">Nome, WhatsApp, endereço e horário</div>
-            </div>
-            <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
-          </button>
           <button className="cd-quick-item" onClick={() => navigate("/cardapio-design")}>
             <span className="cd-quick-ico cd-quick-ico--pink">
               <PaintBrush size={20} weight="bold" />
@@ -451,6 +441,16 @@ export default function Cardapio() {
             <div className="cd-quick-info">
               <div className="cd-quick-name">Entrega e pagamento</div>
               <div className="cd-quick-desc">Formas de pagar, entrega e cupons</div>
+            </div>
+            <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
+          </button>
+          <button className="cd-quick-item" onClick={() => navigate("/cardapio-config")}>
+            <span className="cd-quick-ico cd-quick-ico--pink">
+              <Sliders size={20} weight="bold" />
+            </span>
+            <div className="cd-quick-info">
+              <div className="cd-quick-name">Dados da loja</div>
+              <div className="cd-quick-desc">Nome, WhatsApp, endereço e horário</div>
             </div>
             <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
           </button>

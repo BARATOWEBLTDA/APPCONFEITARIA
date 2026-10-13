@@ -12,17 +12,18 @@ import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
  */
 export const ROTAS_CARDAPIO = ["/cardapio", "/cardapio-config", "/cardapio-design", "/checkout-config", "/produtos", "/produtos/categorias", "/categorias", "/complementos"];
 
+// (13/10) ordem pelo uso: o catálogo primeiro (produtos e o que vai neles), depois a loja (o visual, como ela vende e os dados que quase não mudam)
 const GRUPOS: { titulo: string; itens: { label: string; Ic: Icon; path: string; tambem?: string[] }[] }[] = [
   { titulo: "Cardápio digital", itens: [{ label: "Visão geral", Ic: ChartBar, path: "/cardapio" }] },
   { titulo: "Catálogo", itens: [
     { label: "Produtos", Ic: Package, path: "/produtos" },
-    { label: "Categorias", Ic: SquaresFour, path: "/categorias", tambem: ["/produtos/categorias"] },
     { label: "Personalização", Ic: Stack, path: "/complementos" },
+    { label: "Categorias", Ic: SquaresFour, path: "/categorias", tambem: ["/produtos/categorias"] },
   ] },
   { titulo: "Configuração da loja", itens: [
-    { label: "Dados da loja", Ic: Storefront, path: "/cardapio-config" },
     { label: "Aparência", Ic: Palette, path: "/cardapio-design" },
     { label: "Entrega e pagamento", Ic: Truck, path: "/checkout-config" },
+    { label: "Dados da loja", Ic: Storefront, path: "/cardapio-config" },
   ] },
 ];
 
@@ -36,16 +37,19 @@ export function CardapioAbas() {
   const { pathname } = useLocation();
   const { profile } = useProfile();
   const link = profile ? getCardapioUrl(profile) : "";
-  const itens = GRUPOS.flatMap(g => g.itens);
   return (
     <nav className="cab-abas" aria-label="Telas do cardápio digital">
       <div className="cab-abas-l">
-        {itens.map(({ label, path, tambem }) => {
-          const ativo = pathname === path || (tambem || []).includes(pathname);
-          return (
-            <button key={path} type="button" className={`cab-aba${ativo ? " on" : ""}`} onClick={() => navigate(path)} aria-current={ativo ? "page" : undefined}>{label}</button>
-          );
-        })}
+        {/* um tracinho separa os grupos: Visão geral | catálogo | loja */}
+        {GRUPOS.map((g, gi) => [
+          gi > 0 && <span key={`s${gi}`} className="cab-aba-sep" aria-hidden="true" />,
+          ...g.itens.map(({ label, path, tambem }) => {
+            const ativo = pathname === path || (tambem || []).includes(pathname);
+            return (
+              <button key={path} type="button" className={`cab-aba${ativo ? " on" : ""}`} onClick={() => navigate(path)} aria-current={ativo ? "page" : undefined}>{label}</button>
+            );
+          }),
+        ])}
       </div>
       {link && pathname !== "/cardapio" && (
         <a className="cab-aba-ver" href={link} target="_blank" rel="noopener noreferrer">
