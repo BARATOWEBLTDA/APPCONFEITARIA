@@ -8,6 +8,7 @@ import { ImageCropper } from "@/components/ui/ImageCropper";
 import HorarioSheet from "@/components/HorarioSheet";
 import Janelinha from "@/components/financeiro/Folha";
 import { Mascote } from "@/components/marca/Mascote";
+import { situacaoDaLoja, horaTexto } from "@/lib/agendaCardapio";
 import { lerPassos, marcarCompartilhado, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk, type EstadoPassos } from "@/lib/primeirosPassos";
 
 import { Botao, Janela, avisar } from "@/components/base";
@@ -23,9 +24,10 @@ type Local = "inicio" | "cardapio";
 type Folha = null | "descricao" | "logo" | "endereco" | "horario";
 
 const DIAS = [
-  { nome: "Segunda", letra: "S" }, { nome: "Terça", letra: "T" }, { nome: "Quarta", letra: "Q" },
-  { nome: "Quinta", letra: "Q" }, { nome: "Sexta", letra: "S" }, { nome: "Sábado", letra: "S" }, { nome: "Domingo", letra: "D" },
+  { nome: "Segunda", letra: "S", curto: "Seg" }, { nome: "Terça", letra: "T", curto: "Ter" }, { nome: "Quarta", letra: "Q", curto: "Qua" },
+  { nome: "Quinta", letra: "Q", curto: "Qui" }, { nome: "Sexta", letra: "S", curto: "Sex" }, { nome: "Sábado", letra: "S", curto: "Sáb" }, { nome: "Domingo", letra: "D", curto: "Dom" },
 ];
+const DIAS_CURTO = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"]; // índice do Date.getDay()
 const HORARIO_PADRAO = {
   dias: ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"], abertura: "08:00", fechamento: "18:00",
   abre_sabado: false, sabado_abertura: "09:00", sabado_fechamento: "14:00",
@@ -486,23 +488,46 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
     onSalvo();
   };
   const [campo, setCampo] = useState<null | { k: string; titulo: string }>(null);
-  const bloco = (titulo: string, a: string, f: string) => (
-    <div className="ppf-bl"><b>{titulo}</b><div className="ppf-row">
-      <button type="button" className="ppf-hr" onClick={() => setCampo({ k: a, titulo: `${titulo} · abre às` })}><Clock size={18} /><span><small>Abre</small>{h[a] || "--:--"}</span></button>
-      <button type="button" className="ppf-hr" onClick={() => setCampo({ k: f, titulo: `${titulo} · fecha às` })}><Clock size={18} /><span><small>Fecha</small>{h[f] || "--:--"}</span></button>
-    </div></div>
+  // (13/10) refeito: prévia com a etiqueta "Aberto agora" ao vivo, dias com nome e cada grupo numa linha só
+  const nomeLoja = String(perfil?.nome_loja || "Sua confeitaria").trim() || "Sua confeitaria";
+  const logoPrev = perfil?.logo_url || perfil?.foto_url || "";
+  const sit = temDia ? situacaoDaLoja(h) : null;
+  const sitTxt = !sit ? "Marque os dias que você atende" : sit.aberto ? `Aberto agora · fecha às ${horaTexto(sit.fecha)}`
+    : !sit.abre ? "Fechado" : `Fechado · abre ${sit.abre.dias === 0 ? "hoje" : sit.abre.dias === 1 ? "amanhã" : DIAS_CURTO[sit.abre.diaSemana].toLowerCase()} às ${horaTexto(sit.abre.minutos)}`;
+  const uteis = DIAS.slice(0, 5).map(d => d.nome).filter(n => h.dias.includes(n));
+  const idx = uteis.map(n => DIAS.findIndex(d => d.nome === n));
+  const seguidos = idx.length > 1 && idx.every((v, k) => k === 0 || v === idx[k - 1] + 1);
+  const curto = (n: string) => DIAS.find(d => d.nome === n)!.curto;
+  const rotUteis = uteis.length === 1 ? DIAS.find(d => d.nome === uteis[0])!.nome : seguidos ? `${curto(uteis[0])} a ${curto(uteis[uteis.length - 1]).toLowerCase()}` : "Na semana"; // dias soltos (Seg, Ter, Qui…): os botões de cima já mostram quais
+  const linha = (titulo: string, a: string, f: string) => (
+    <div className="ppf-h-l">
+      <b>{titulo}</b>
+      <span className="ppf-h-hh">
+        <button type="button" onClick={() => setCampo({ k: a, titulo: `${titulo} · abre às` })} aria-label={`${titulo}: abre às ${h[a] || "sem horário"}`}>{h[a] || "--:--"}</button>
+        <em>às</em>
+        <button type="button" onClick={() => setCampo({ k: f, titulo: `${titulo} · fecha às` })} aria-label={`${titulo}: fecha às ${h[f] || "sem horário"}`}>{h[f] || "--:--"}</button>
+      </span>
+    </div>
   );
   return (
     <Janelinha titulo="Horário de funcionamento" onClose={onClose}
-      acoes={<><Botao variante="secundario" onClick={onDepois}>Fazer depois</Botao><Botao cheio disabled={!temDia} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
+      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!temDia} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
       <PassoTopo k="horario" />
-      <p className="ppf-sub">Aparece como "Aberto agora" no cardápio.</p>
+      <div className="ppf-e-prev" aria-hidden="true">
+        <span className="ppf-d-logo">{logoPrev ? <img src={logoPrev} alt="" /> : nomeLoja.charAt(0).toUpperCase()}</span>
+        <span className="ppf-e-tx"><b>{nomeLoja}</b>
+          <span className={`ppf-h-pill${!sit ? " vazio" : sit.aberto ? "" : " off"}`}>{sit && <i />}{sitTxt}</span></span>
+      </div>
       <p className="ppf-l">Dias que você atende</p>
-      <div className="ppf-dias">{DIAS.map(d => (
-        <button type="button" key={d.nome} className={ligado(d.nome) ? "on" : ""} onClick={() => trocar(d.nome)} aria-pressed={ligado(d.nome)} aria-label={d.nome}>{d.letra}</button>))}</div>
-      {h.dias.length > 0 && bloco("Segunda a sexta", "abertura", "fechamento")}
-      {h.abre_sabado && bloco("Sábado", "sabado_abertura", "sabado_fechamento")}
-      {h.abre_domingo && bloco("Domingo", "domingo_abertura", "domingo_fechamento")}
+      <div className="ppf-h-dias">{DIAS.map(d => (
+        <button type="button" key={d.nome} className={ligado(d.nome) ? "on" : ""} onClick={() => trocar(d.nome)} aria-pressed={ligado(d.nome)} aria-label={d.nome}>{d.curto}</button>))}</div>
+      {temDia && (
+        <div className="ppf-h-lista">
+          {h.dias.length > 0 && linha(rotUteis, "abertura", "fechamento")}
+          {h.abre_sabado && linha("Sábado", "sabado_abertura", "sabado_fechamento")}
+          {h.abre_domingo && linha("Domingo", "domingo_abertura", "domingo_fechamento")}
+        </div>
+      )}
       {erro && <p className="ppf-erro">{erro}</p>}
       {campo && (
         <HorarioSheet titulo={campo.titulo} value={h[campo.k]} onChange={(v) => setH((x: any) => ({ ...x, [campo.k]: v }))} onClose={() => setCampo(null)} />
@@ -612,6 +637,24 @@ const CSS = `
   .ppf-e-achado button { flex: none; min-height: 40px; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
   .ppf-e-aviso { margin: 12px 0 0; font-size: 13.5px; font-weight: 600; color: var(--ui-laranja); }
   .ppf-row--uf > .ppf-f:last-child { flex: 0 0 76px; }
+  .ppf-h-pill { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; padding: 3px 9px; border-radius: 999px; background: var(--ui-verde-fundo); color: var(--ui-verde);
+    font-size: 12.5px; font-weight: 600; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  .ppf-h-pill i { flex: none; width: 7px; height: 7px; border-radius: 50%; background: #22C55E; }
+  .ppf-h-pill.off { background: var(--ui-laranja-fundo, #FFF4E0); color: var(--ui-laranja, #B45309); }
+  .ppf-h-pill.off i { background: #F59E0B; }
+  .ppf-h-pill.vazio { background: var(--ui-cinza); color: var(--ui-texto-3); font-style: italic; font-weight: 500; }
+  .ppf-h-dias { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; }
+  .ppf-h-dias button { min-height: 44px; padding: 0; border: 0; border-radius: 12px; background: var(--ui-cinza); color: var(--ui-texto-2); font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+  .ppf-h-dias button.on { background: var(--ui-rosa); color: var(--ui-branco); }
+  .ppf-h-lista { margin-top: 14px; border: 1px solid var(--ui-borda); border-radius: 16px; overflow: hidden; }
+  .ppf-h-l { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; }
+  .ppf-h-l + .ppf-h-l { border-top: 1px solid var(--ui-linha); }
+  .ppf-h-l > b { min-width: 0; font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ppf-h-hh { flex: none; display: flex; align-items: center; gap: 6px; }
+  .ppf-h-hh em { font-style: normal; font-size: 14px; color: var(--ui-texto-3); }
+  .ppf-h-hh button { min-height: 44px; padding: 0 12px; border: 1.5px solid var(--ui-borda-campo); border-radius: 12px; background: var(--ui-branco); font-family: inherit; font-size: 16px; font-weight: 600;
+    color: var(--ui-texto); font-variant-numeric: tabular-nums; cursor: pointer; }
+  .ppf-h-hh button:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .4); outline-offset: 1px; }
   .ppf-lg2 { margin-top: 18px; border: 1px solid var(--ui-borda); border-radius: 18px; overflow: hidden; }
   .ppf-lg2-cap { height: 64px; background: linear-gradient(120deg, #F7B2CB, var(--ui-rosa)); }
   .ppf-lg2-corpo { display: flex; flex-direction: column; align-items: center; padding: 0 16px 18px; margin-top: -48px; text-align: center; }
