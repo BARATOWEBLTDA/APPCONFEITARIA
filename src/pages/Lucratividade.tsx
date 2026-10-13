@@ -10,12 +10,36 @@ import { Botao, TelaVazia } from "@/components/base";
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { erroDeConexao } from "@/lib/erros";
+import { calcularCustoLucro } from "@/lib/produto-precificacao";
 import { carregarMes, custoPorProduto, multiplicadorDoItem, produtosPeloPeso, type MesFinanceiro } from "@/lib/painelFinanceiro";
 
 type Produto = { chave: string; nome: string; foto: string; qtd: number; vendido: number; custo: number; lucro: number; margem: number; semFicha: boolean };
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+/**
+ * Quanto o custo total da ficha é maior que só os ingredientes, por produto (13/10).
+ * Ex.: ingredientes R$ 14,60 e custo total R$ 18,25 → 1,25. Assim o lucro por produto bate com a ficha técnica.
+ * Se a busca falhar, fica 1 (só ingredientes, como era antes).
+ */
+async function fatorDaFicha(uid: string, ids: string[], mao: any): Promise<Record<string, number>> {
+  const out: Record<string, number> = {};
+  if (!ids.length) return out;
+  const [{ data: prods, error }, { data: perfil }] = await Promise.all([
+    supabase.from("produtos").select("id, cv_percentual, salario_desejado, tempo_preparo_min, horas_semanais, produto_insumos(quantidade, unidade_utilizada, insumos(*))").in("id", ids),
+    supabase.from("profiles").select("custos_invisiveis_pct").eq("id", uid).maybeSingle().then(r => r, () => ({ data: null } as any)),
+  ]);
+  if (error || !prods) return out;
+  const sal = Number(mao?.salario_mensal) || 0;
+  const conta = sal > 0 ? { salario: sal, horasSemana: (Number(mao?.horas_dia) || 8) * (Number(mao?.dias_semana) || 5) } : null;
+  const cvConta = (perfil as any)?.custos_invisiveis_pct;
+  for (const p of prods as any[]) {
+    const r = calcularCustoLucro(p, conta, cvConta != null ? Number(cvConta) : null);
+    if (r.cmv > 0) out[p.id] = r.custoTotal / r.cmv;
+  }
+  return out;
+}
 
 export default function Lucratividade() {
   const navigate = useNavigate();
@@ -43,7 +67,7 @@ export default function Lucratividade() {
         buscarTudo<any>((de, ate) => supabase.from("pedidos").select("status, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(id, nome, forma_venda, imagem_url))")
           .eq("user_id", user.id).eq("status", "entregue").gte("data_entrega", ini).lte("data_entrega", fim).order("id").range(de, ate)),
         supabase.from("custos_fixos").select("valor, ativo").eq("user_id", user.id),
-        supabase.from("config_mao_obra").select("salario_mensal").eq("user_id", user.id).maybeSingle(),
+        supabase.from("config_mao_obra").select("salario_mensal, horas_dia, dias_semana").eq("user_id", user.id).maybeSingle(),
       ]);
       if (cancelado) return;
       if (d.erro || peds.error || cf.error || mo.error) { setErro(true); return; }
@@ -52,7 +76,7 @@ export default function Lucratividade() {
       // lucro por produto
       const itens = peds.data.filter(p => p.status !== "cancelado").flatMap(p => p.pedido_itens || []);
       const ids = [...new Set(itens.map((it: any) => it.produtos?.id).filter(Boolean))] as string[];
-      const [custo, peloPeso] = await Promise.all([custoPorProduto(ids), produtosPeloPeso(itens)]);
+      const [custo, peloPeso, fator] = await Promise.all([custoPorProduto(ids), produtosPeloPeso(itens), fatorDaFicha(user.id, ids, mo.data)]);
       if (cancelado) return;
       const mapa: Record<string, Produto> = {};
       for (const it of itens) {
@@ -62,7 +86,8 @@ export default function Lucratividade() {
         p.qtd += q; p.vendido += (Number(it.valor_unitario) || 0) * q;
         const c = id ? custo[id] : 0;
         // 11/10: tamanho pelo peso ("M · 2 kg") e kit (50 un) custam o tamanho/kit inteiro, não 1 kg ou 1 unidade
-        if (c) p.custo += c * multiplicadorDoItem(it, peloPeso) * q; else p.semFicha = true;
+        // 13/10: custo total da ficha (ingredientes + custos invisíveis + mão de obra), igual à tela da ficha técnica
+        if (c) p.custo += c * (fator[id] || 1) * multiplicadorDoItem(it, peloPeso) * q; else p.semFicha = true;
       }
       const lista = Object.values(mapa).map(p => ({ ...p, lucro: p.vendido - p.custo, margem: p.vendido > 0 ? Math.round(((p.vendido - p.custo) / p.vendido) * 100) : 0 }))
         .sort((a, b) => b.lucro - a.lucro);
@@ -146,7 +171,7 @@ export default function Lucratividade() {
 
           <div className="lu-grid">
             <section className="lu-card lu-a-prod">
-              <p className="lu-ct">Lucro por produto <small>Antes das despesas, taxas e descontos do pedido</small></p>
+              <p className="lu-ct">Lucro por produto <small>Pela ficha técnica, antes das despesas do mês</small></p>
               {!produtos ? <div className="lu-ph" style={{ height: 120 }} /> : produtos.length === 0 ? (
                 <p className="lu-vz">Monte a <button type="button" className="lu-link" onClick={() => navigate("/ficha-tecnica")}>ficha técnica dos produtos</button> pra ver o lucro de cada um.</p>
               ) : (

@@ -148,8 +148,6 @@ const gerarId = () =>
     ? crypto.randomUUID()
     : `id_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 
-// Title Case pt-BR — "bolo de chocolate" → "Bolo de Chocolate"
-const MINUSCULAS_TITLE = new Set(["de", "da", "do", "das", "dos", "e", "a", "o", "os", "as", "com", "sem", "à", "ao", "aos", "às", "em", "para", "por"]);
 /**
  * Title Case inteligente — preserva capitalização intencional.
  *
@@ -159,8 +157,8 @@ const MINUSCULAS_TITLE = new Set(["de", "da", "do", "das", "dos", "e", "a", "o",
  * foi digitado.
  *
  * Exemplos:
- * - "bolo de chocolate" → "Bolo de Chocolate"    (tudo minúsculo → normaliza)
- * - "BOLO DE CHOCOLATE" → "Bolo de Chocolate"    (tudo maiúsculo → normaliza)
+ * - "bolo de chocolate" → "Bolo de chocolate"    (só a primeira letra)
+ * - "BOLO DE CHOCOLATE" → "Bolo de chocolate"    (tudo maiúsculo → normaliza)
  * - "M&M's Chocolate"   → "M&M's Chocolate"      (mista → preserva)
  * - "iFood Special"     → "iFood Special"        (mista → preserva)
  * - "KitKat"            → "KitKat"               (mista → preserva)
@@ -188,11 +186,11 @@ function titleCase(str: string): string {
 
   if (temCapitalizacaoIntencional) return trimmed;
 
-  // Caso "tudo minúsculo" ou "tudo maiúsculo": normaliza
-  return trimmed.toLowerCase().split(/\s+/).map((p, i) => {
-    if (i > 0 && MINUSCULAS_TITLE.has(p)) return p;
-    return p.charAt(0).toUpperCase() + p.slice(1);
-  }).join(" ");
+  // 13/10: só a primeira letra maiúscula ("brigadeiro gourmet" → "Brigadeiro gourmet").
+  // Quem escreveu "Brigadeiro Gourmet" continua assim: o resto do nome fica como foi digitado.
+  // Tudo em maiúsculo ("BOLO DE POTE") vira "Bolo de pote".
+  const base = trimmed === trimmed.toUpperCase() ? trimmed.toLowerCase() : trimmed;
+  return base.charAt(0).toUpperCase() + base.slice(1);
 }
 
 const GRUPO_VAZIO: GrupoPersonalizacao = {

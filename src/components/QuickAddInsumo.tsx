@@ -3,6 +3,9 @@ import { createPortal } from "react-dom";
 import { useRecorte } from "@/components/ui/useRecorte";
 import { Camera, Image as ImagemIc, MagnifyingGlass, Trash, WarningCircle, X } from "@phosphor-icons/react";
 import { parseNumBR } from "@/lib/numeroBR";
+
+// 13/10: "Quanto pagou" igual aos outros campos de dinheiro: digita 749 e aparece 7,49
+const reais = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
 import { Botao, BotaoIcone, Campo, Janela, Titulo, avisar, confirmar } from "@/components/base";
@@ -202,7 +205,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         categoria: editing.categoria || "Ingredientes",
         unidade: editing.unidade || "g",
         embalagem_tipo: editing.embalagem_tipo || "Avulso",
-        valor_compra: editing.valor_compra ? String(editing.valor_compra).replace(".", ",") : "",
+        valor_compra: editing.valor_compra ? reais(Number(editing.valor_compra)) : "",
         qtd_embalagem: editing.qtd_embalagem ? String(editing.qtd_embalagem).replace(".", ",") : "1",
         imagem_url: editing.imagem_url || "",
       };
@@ -508,8 +511,8 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         <Campo rotulo={rotuloQtd} inputMode="decimal" placeholder={precisaQtd ? "Ex.: 395" : "1"} value={form.qtd_embalagem} erro={erroQtd}
           onChange={e => setForm(f => ({ ...f, qtd_embalagem: e.target.value }))}
           depois={<span className="cl9-f-uf">{medidaTxt}</span>} />
-        <Campo rotulo="Quanto pagou" inputMode="decimal" prefixo="R$" placeholder="0,00" value={form.valor_compra} erro={erroValor}
-          onChange={e => setForm(f => ({ ...f, valor_compra: e.target.value }))} />
+        <Campo rotulo="Quanto pagou" inputMode="numeric" prefixo="R$" placeholder="0,00" value={form.valor_compra} erro={erroValor}
+          onChange={e => { const d = e.target.value.replace(/\D/g, ""); setForm(f => ({ ...f, valor_compra: d ? reais(parseInt(d, 10) / 100) : "" })) }} />
       </div>
 
       {custo ? (

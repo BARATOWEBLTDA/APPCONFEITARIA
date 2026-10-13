@@ -220,7 +220,7 @@ function CardapioContent() {
     const fetchFn = isRotaNova ? getCardapioByCodigo : getCardapioBySlug
 
     fetchFn(chave.toLowerCase()).then(({ design, config, produtos, isPro, categoryImages, categoriasList, slugCanonico, codigoPublico, cardapioModelo: modelo }) => {
-      if (!design) { setError('Cardápio não encontrado'); setLoading(false); return }
+      if (!design) { setError('Verifique o link e tente novamente.'); setLoading(false); return }
 
       // ── Redirect canônico ──
       // Rota antiga /cardapio/:uuid → redireciona pra nova /c/:codigo/:slug
