@@ -43,20 +43,17 @@ const validate = {
   },
   senha: (v: string) => {
     if (!v) return "Crie uma senha";
-    if (v.length < 6) return "Mínimo 6 caracteres";
-    if (!/[a-zA-Z]/.test(v)) return "A senha precisa ter ao menos uma letra";
-    if (!/\d/.test(v)) return "A senha precisa ter ao menos um número";
+    // 13/10: só o tamanho (8+). Letra e número obrigatórios saíram: travavam o cadastro e não deixavam a senha mais segura
+    if (v.length < 8) return "Mínimo 8 caracteres";
     return "";
   },
 };
 
 // Requisitos da senha: retorna quais critérios foram atendidos.
 // Substitui o antigo medidor de força por uma lista de checagem — mais claro,
-// sem "julgar" o usuário, e alinhado com a regra do produto (6+ chars, letra, número).
+// sem "julgar" o usuário, e alinhado com a regra do produto (8+ caracteres, 13/10).
 const getPasswordChecks = (senha: string) => ({
-  length: senha.length >= 6,
-  letter: /[a-zA-Z]/.test(senha),
-  number: /\d/.test(senha),
+  length: senha.length >= 8,
 });
 
 export default function Auth() {
@@ -486,7 +483,7 @@ export default function Auth() {
       if (/already registered|already exists|user already/i.test(msg)) {
         setCadastroError("Este e-mail já tem cadastro. Faça login.");
       } else if (/password/i.test(msg)) {
-        setCadastroError("Senha inválida. Use ao menos 6 caracteres.");
+        setCadastroError("Senha inválida. Use ao menos 8 caracteres.");
       } else if (/valid email|invalid email/i.test(msg)) {
         setCadastroError("E-mail em formato inválido.");
       } else if (/rate limit|too many/i.test(msg)) {
@@ -768,9 +765,7 @@ export default function Auth() {
           {/* Regras da senha: visíveis desde o início (antes só apareciam ao digitar) */}
           <ul className={`pw-req cad-a-regras ${cadastroTouched.senha && cadastroErrors.senha && cadastroForm.senha ? "pw-req--erro" : ""}`} aria-label="A senha precisa ter" aria-live="polite">
             {([
-              ["length", "6 caracteres ou mais"],
-              ["letter", "1 letra"],
-              ["number", "1 número"],
+              ["length", "8 caracteres ou mais"],
             ] as const).map(([k, txt]) => (
               <li key={k} className={passwordChecks[k] ? "ok" : ""}>
                 <span className="pw-req-dot" aria-hidden="true">{passwordChecks[k] ? <Check size={12} weight="bold" /> : "•"}</span>

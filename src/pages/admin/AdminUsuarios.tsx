@@ -135,8 +135,8 @@ export default function AdminUsuarios() {
   };
 
   const handleCreate = async () => {
-    if (!createForm.nome.trim() || !createForm.email.trim() || createForm.senha.length < 6) {
-      setCreateError("Preencha nome, e-mail e senha (mínimo 6 caracteres).");
+    if (!createForm.nome.trim() || !createForm.email.trim() || createForm.senha.length < 8) {
+      setCreateError("Preencha nome, e-mail e senha (mínimo 8 caracteres).");
       return;
     }
     setCreating(true);
@@ -298,7 +298,7 @@ export default function AdminUsuarios() {
         <div className="au-form">
           <Campo rotulo="Nome" obrigatorio placeholder="Nome completo" value={createForm.nome} onChange={e => setCreateForm({...createForm, nome: e.target.value})} />
           <Campo rotulo="E-mail" obrigatorio type="email" inputMode="email" autoComplete="off" placeholder="email@exemplo.com" value={createForm.email} onChange={e => setCreateForm({...createForm, email: e.target.value})} />
-          <Campo rotulo="Senha" obrigatorio type="password" autoComplete="new-password" placeholder="Mínimo 6 caracteres" dica="Mínimo 6 caracteres." value={createForm.senha} onChange={e => setCreateForm({...createForm, senha: e.target.value})} />
+          <Campo rotulo="Senha" obrigatorio type="password" autoComplete="new-password" placeholder="Mínimo 8 caracteres" dica="Mínimo 8 caracteres." value={createForm.senha} onChange={e => setCreateForm({...createForm, senha: e.target.value})} />
           <Campo rotulo="Telefone" opcional type="tel" inputMode="tel" placeholder="(00) 9 0000-0000" value={createForm.telefone} onChange={e => setCreateForm({...createForm, telefone: e.target.value})} />
           {createError && <p className="au-erro" role="alert">{createError}</p>}
         </div>

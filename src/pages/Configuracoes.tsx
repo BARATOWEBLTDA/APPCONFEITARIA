@@ -137,7 +137,7 @@ export default function Configuracoes() {
 
   const alterarSenha = async () => {
     if (!senhaAtual) return setSenhaMsg("Escreva sua senha atual.");
-    if (novaSenha.length < 6) return setSenhaMsg("A nova senha precisa ter pelo menos 6 letras ou números.");
+    if (novaSenha.length < 8) return setSenhaMsg("A nova senha precisa ter pelo menos 8 caracteres.");
     if (novaSenha !== confirmSenha) return setSenhaMsg("As duas senhas novas não são iguais.");
     if (novaSenha === senhaAtual) return setSenhaMsg("A nova senha precisa ser diferente da atual.");
     if (!userEmail) return setSenhaMsg("Entre de novo na conta e tente outra vez.");

@@ -26,12 +26,10 @@ export default function ResetPassword() {
 
   // Requisitos da senha em tempo real
   const checks = {
-    length: senha.length >= 6,
-    letter: /[a-zA-Z]/.test(senha),
-    number: /\d/.test(senha),
+    length: senha.length >= 8, // 13/10: só o tamanho, igual ao cadastro
     match: senha === confirmar && confirmar.length > 0,
   };
-  const senhaValida = checks.length && checks.letter && checks.number;
+  const senhaValida = checks.length;
 
   useEffect(() => {
     let subscription: { unsubscribe: () => void } | null = null;
@@ -105,9 +103,7 @@ export default function ResetPassword() {
     setError("");
     setTentou(true);
 
-    if (!checks.length) return setError("A senha precisa ter pelo menos 6 caracteres.");
-    if (!checks.letter) return setError("A senha precisa ter pelo menos 1 letra.");
-    if (!checks.number) return setError("A senha precisa ter pelo menos 1 número.");
+    if (!checks.length) return setError("A senha precisa ter pelo menos 8 caracteres.");
     if (senha !== confirmar) return setError("As duas senhas precisam ser iguais.");
 
     setLoading(true);
@@ -211,9 +207,7 @@ export default function ResetPassword() {
                 enterKeyHint="next"
               />
               <ul className="tc-req" aria-label="A senha precisa ter" style={{ marginTop: 8 }}>
-                <Req ok={checks.length}>6 caracteres ou mais</Req>
-                <Req ok={checks.letter}>1 letra</Req>
-                <Req ok={checks.number}>1 número</Req>
+                <Req ok={checks.length}>8 caracteres ou mais</Req>
               </ul>
             </div>
             <Campo
