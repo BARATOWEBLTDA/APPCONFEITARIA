@@ -103,7 +103,7 @@ export async function ajustarRecebido(opts: { pedidoId: string; alvo: number; fo
 : Promise<{ ok: boolean; legado: boolean }> {
   const alvo = r2(Math.max(0, opts.alvo));
   const { data: ativos, error } = await supabase.from("pagamentos")
-    .select("id, valor, created_at").eq("pedido_id", opts.pedidoId).is("estornado_em", null).order("created_at", { ascending: false });
+    .select("id, valor, created_at, recebido_em").eq("pedido_id", opts.pedidoId).is("estornado_em", null).order("created_at", { ascending: false });
   if (error) {
     if (tabelaNaoExiste(error)) { await gravarNoPedidoLegado(opts.pedidoId, alvo); return { ok: true, legado: true }; }
     console.error("[pagamentos] não consegui ajustar:", error);
@@ -114,14 +114,18 @@ export async function ajustarRecebido(opts: { pedidoId: string; alvo: number; fo
     const r = await registrarPagamento({ pedidoId: opts.pedidoId, userId: opts.userId, valor: alvo - soma, forma: opts.forma, tipo: "pagamento", observacao: "Ajuste no Editar pedido" });
     return { ok: r.ok, legado: r.legado };
   }
+  // (4.29) o que sobra depois de estornar SUBSTITUI o recebimento estornado: fica com a data dele, não com a de hoje
+  // (sinal de 160 no dia 8 corrigido pra 100 no dia 12 continua sendo dinheiro que entrou no dia 8)
+  let dataSubstituida: string | undefined;
   for (const p of (ativos || []) as any[]) {
     if (soma <= alvo + 0.009) break;
+    if (!dataSubstituida && p.recebido_em) dataSubstituida = String(p.recebido_em).slice(0, 10);
     const { error: e2 } = await supabase.from("pagamentos").update({ estornado_em: new Date().toISOString() }).eq("id", p.id);
     if (e2) { console.error("[pagamentos] não consegui estornar:", e2); return { ok: false, legado: false }; }
     soma = r2(soma - (Number(p.valor) || 0));
   }
   if (alvo > soma + 0.009) {
-    const r = await registrarPagamento({ pedidoId: opts.pedidoId, userId: opts.userId, valor: alvo - soma, forma: opts.forma, tipo: "pagamento", observacao: "Ajuste no Editar pedido" });
+    const r = await registrarPagamento({ pedidoId: opts.pedidoId, userId: opts.userId, valor: alvo - soma, forma: opts.forma, tipo: "pagamento", observacao: "Ajuste no Editar pedido", recebidoEm: dataSubstituida });
     return { ok: r.ok, legado: r.legado };
   }
   return { ok: true, legado: false };
