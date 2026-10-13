@@ -706,6 +706,25 @@ const CSS = `
     .pp--inicio > .pp-ps--ok { background: #FAF7F8; }
   }
   @media (min-width: 1600px) { .pp--inicio { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  /* (13/10) computador: o passo da vez numa faixa na largura toda, em cima; os outros viram etiquetas pequenas embaixo
+     (feitos em verde; os que faltam com contorno rosa, e tocar abre o passo). Some o buraco da grade. */
+  @media (min-width: 901px) {
+    .pp--inicio { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .pp--inicio > .pp-t, .pp--inicio > .pp-sub, .pp--inicio > .pp-bar { width: 100%; }
+    .pp--inicio > .pp-sub { margin-top: -6px; }
+    .pp--inicio > .pp-at { order: 1; width: 100%; display: flex; flex-direction: row; align-items: center; gap: 16px; margin: 4px 0 4px; padding: 12px 12px 12px 14px; }
+    .pp--inicio > .pp-at .pp-ps--sem { flex: 1; min-width: 0; }
+    .pp--inicio > .pp-at .pp-btn { flex: none; width: auto; margin: 0; padding: 0 28px; min-height: 44px; }
+    .pp--inicio > .pp-ps { order: 2; width: auto; min-height: 34px; margin: 0; padding: 4px 12px 4px 4px; gap: 6px; border: 1px solid #F3C9DA; border-radius: 999px; background: var(--ui-branco); }
+    .pp--inicio > .pp-ps .pp-ic { width: 26px; height: 26px; border-radius: 50%; }
+    .pp--inicio > .pp-ps .pp-ic svg { width: 15px; height: 15px; }
+    .pp--inicio > .pp-ps .pp-tx b { font-size: 13px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; }
+    .pp--inicio > .pp-ps .pp-tx small, .pp--inicio > .pp-ps .pp-seta { display: none; }
+    .pp--inicio > .pp-ps--ok { border-color: transparent; background: #EEF8F1; }
+    .pp--inicio > .pp-ps--ok .pp-ic { background: none; }
+    .pp--inicio > .pp-ps--ok .pp-tx b { color: #1F7A45; font-weight: 600; }
+    .pp--inicio > .pp-ps:not(:disabled):hover { border-color: var(--ui-rosa); }
+  }
   @media (min-width: 768px) { .pp--fim .pp-btn { max-width: 340px; margin-left: auto; margin-right: auto; } }
 
   .ppf-d-prev { margin-top: 16px; border: 1px solid var(--ui-borda); border-radius: 18px; overflow: hidden; }

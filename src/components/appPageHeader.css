@@ -57,8 +57,8 @@
   .cab { width: auto; min-height: 96px; margin: -3rem -2rem 0; padding: 16px 2rem; }
   /* (13/10) a logo da loja aparece no canto direito também no computador */
   .cab-foto { width: 44px; height: 44px; }
-  .cab-seja-pro { display: inline-flex; align-items: center; gap: 5px; height: 32px; padding: 0 12px; border: 0; border-radius: 999px; background: var(--ui-branco); color: var(--ui-rosa-escuro); font-family: inherit; font-size: 13px; font-weight: 700; white-space: nowrap; cursor: pointer; }
-  .cab-seja-pro:hover { transform: translateY(-1px); }
+  .cab-seja-pro { display: inline-flex; align-items: center; gap: 5px; height: 32px; padding: 0 12px; border: 1.5px solid rgba(255, 255, 255, .8); border-radius: 999px; background: transparent; color: var(--ui-branco); font-family: inherit; font-size: 13px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+  .cab-seja-pro:hover { background: rgba(255, 255, 255, .14); }
   .cab-foto-pro { display: flex; }
 }
 
