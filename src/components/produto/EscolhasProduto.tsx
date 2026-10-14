@@ -1,10 +1,10 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { ArrowDown, ArrowUp, Basket, Cake, Check, Drop, IceCream, PencilSimple, Plus, Ruler, Sparkle, Trash, X } from "@phosphor-icons/react";
 import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
 import { kitAtivo, presetKit, type KitQtdConfig } from "@/lib/kitQuantidade";
 import { mascaraBRL, lerBRL, textoBRL, selecionarValorAoFocar } from "@/lib/moeda";
-import { Botao, Janela } from "@/components/base";
+import { Botao, Janela, confirmar } from "@/components/base";
 import "./escolhas.css";
 
 /**
@@ -28,6 +28,9 @@ const CAMPO: Record<"massa" | "recheio" | "cobertura" | "sabor", string> = {
 };
 const ROTULO: Record<Chave, string> = {
   tamanho: "Tamanho", quantidade: "Quantidade", massa: "Massa", recheio: "Recheio", cobertura: "Cobertura", sabor: "Sabor",
+};
+const SALVAR: Record<Chave, string> = {
+  tamanho: "Salvar tamanhos", quantidade: "Salvar quantidade", massa: "Salvar massas", recheio: "Salvar recheios", cobertura: "Salvar coberturas", sabor: "Salvar sabores",
 };
 const PLURAL: Record<string, string> = { massa: "massas", recheio: "recheios", cobertura: "coberturas", sabor: "sabores" };
 const NOVA: Record<string, string> = { massa: "Outra massa…", recheio: "Outro recheio…", cobertura: "Outra cobertura…", sabor: "Outro sabor…" };
@@ -137,11 +140,20 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
   const chipsOutras = todas.filter(c => !sugeridas.includes(c) && !ativa(c) && !bloqueada(c));
 
   // (13/10) cada escolha abre numa janela própria. Ao abrir, guarda como estava: o X desfaz tudo o que mexeu ali.
-  const antes = useRef<{ chave: Chave; valor: any; kit: any; forma: any } | null>(null);
+  const antes = useRef<{ chave: Chave; valor: any; kit: any; forma: any; base?: string } | null>(null);
   const campoDe = (c: Chave) => (c === "tamanho" ? "grupo_tamanhos" : c === "quantidade" ? "kit_qtd" : CAMPO[c]);
   const guardar = (c: Chave) => { antes.current = { chave: c, valor: form[campoDe(c)] ?? null, kit: form.kit_qtd ?? null, forma: form.forma_venda }; };
   const abrir = (c: Chave) => { guardar(c); setAberto(c); };
   const salvar = () => { antes.current = null; setAberto(null); };
+  // (13/10) Voltar (ou X) com mudança não salva: pergunta antes de desfazer
+  // "como estava ao abrir a janela" (já com o que o ligar preencheu): só pergunta se ela mexeu depois disso
+  const retrato = () => { const a = antes.current; if (!a) return ""; return JSON.stringify([a.chave === "quantidade" ? form.kit_qtd ?? null : form[campoDe(a.chave)] ?? null, form.forma_venda]); };
+  useEffect(() => { if (aberto && antes.current && antes.current.base === undefined) antes.current.base = retrato(); });
+  const mudou = () => { const a = antes.current; return !!a && a.base !== undefined && retrato() !== a.base; };
+  const voltar = async () => {
+    if (mudou() && !(await confirmar({ titulo: "Sair sem salvar?", texto: "O que você mexeu aqui não fica.", rotulo: "Sair sem salvar", rotuloVoltar: "Ficar" }))) return;
+    cancelar();
+  };
   const cancelar = () => {
     const a = antes.current;
     if (a) {
@@ -211,16 +223,19 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
         })}
       </div>
 
-      <Janela aberta={!!aberto} aoFechar={cancelar} titulo={aberto ? ROTULO[aberto] : ""} tipo="conteudo" travada
+      <Janela aberta={!!aberto} aoFechar={voltar} titulo={aberto ? ROTULO[aberto] : ""} tipo="conteudo" travada
         acoes={aberto ? (<>
-          <Botao variante="secundario" icone={<Trash size={18} aria-hidden="true" />} onClick={() => aberto && desligar(aberto)}>Tirar</Botao>
-          <Botao onClick={salvar}>Salvar</Botao>
+          <Botao variante="secundario" onClick={voltar}>Voltar</Botao>
+          <Botao onClick={salvar}>{SALVAR[aberto]}</Botao>
         </>) : null}>
         {aberto && (
           <div className="esc esc-jan" onFocusCapture={selecionarValorAoFocar} onClickCapture={selecionarValorAoFocar}>
             {aberto === "quantidade" ? (kit ? <CartaoQuantidade kit={kit} onKitChange={onKitChange} nome={nome} /> : null)
               : aberto === "tamanho" ? <CartaoTamanho form={form} setForm={setForm} outros={outros} />
               : <CartaoGrupo chave={aberto} tipo={tipo} form={form} setForm={setForm} outros={outros} />}
+            <button type="button" className="esc-tirar-link" onClick={async () => {
+              if (await confirmar({ titulo: `Tirar ${ROTULO[aberto].toLowerCase()} deste produto?`, texto: "O cliente não vai mais escolher isso no cardápio.", rotulo: "Tirar", perigo: true })) desligar(aberto);
+            }}><Trash size={16} aria-hidden="true" />Tirar {ROTULO[aberto].toLowerCase()} deste produto</button>
           </div>
         )}
       </Janela>
@@ -426,7 +441,7 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
         <button type="button" role="radio" aria-checked={porPeso} className={porPeso ? "on" : ""}
           onClick={() => { set({ modo_preco_tamanho: "por_peso", opcoes: g.opcoes.length ? g.opcoes.map(o => ({ ...o, peso_kg: o.peso_kg ?? pesoDoNome(o.nome) })) : opcoesDePesos(PESOS_PADRAO) }); setForm(f => ({ ...f, forma_venda: "kg" })); }}>Por quilo</button>
       </div>
-      <p className="esc-dica">{porPeso ? "O preço sai do peso × preço do kg." : "Cada tamanho tem o seu preço."}</p>
+      {porPeso && <p className="esc-dica">O preço sai do peso × preço do kg.</p>}
 
       {porPeso && (<>
         <p className="esc-lbl">Quais pesos você faz?</p>
