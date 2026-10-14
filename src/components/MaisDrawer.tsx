@@ -3,12 +3,10 @@ import { INDICACAO_ATIVA } from "@/lib/recursos";
 import { createPortal } from "react-dom";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
-  CurrencyDollar, ChartLineUp,
-  Package, BookOpen, ClipboardText,
-  Gear, PaintBrush, Crown,
-  SquaresFour, UserPlus, CreditCard,
-  X, CaretRight,
-  Trophy, Megaphone, } from "@phosphor-icons/react";
+  ChartLineUp, Package, ClipboardText, Gear, PaintBrush, Crown, SquaresFour, UserPlus, X, CaretRight,
+  Trophy, Megaphone, Plus, CalendarDots, Users, Stack, Truck, Storefront, Eye, Basket, ArrowsDownUp,
+  HandCoins, CalendarCheck, Tag, Bell, ChatCircleText, Newspaper, Bug, Lightbulb,
+} from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { BotaoIcone } from "@/components/base";
 import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
@@ -32,38 +30,71 @@ interface MaisDrawerProps {
 interface Item { label: string; desc: string; path: string; Icone: Icon }
 interface Grupo { label: string; items: Item[] }
 
+// (13/10) TODAS as telas da confeiteira (as mesmas do menu do computador, na mesma ordem),
+// inclusive as que também abrem pelo Início. Só ficam fora as que já estão no menu de baixo (Início, Pedidos, Cardápio, Doo IA).
 const GRUPOS: Grupo[] = [
+  {
+    label: "Vendas",
+    items: [
+      { label: "Nova venda", desc: "Lance um pedido",          path: "/vendas/novo", Icone: Plus },
+      { label: "Agenda",     desc: "Entregas por dia",         path: "/agenda",      Icone: CalendarDots },
+      { label: "Clientes",   desc: "Quem compra e o que compra", path: "/clientes",  Icone: Users },
+    ],
+  },
+  {
+    label: "Cardápio digital",
+    items: [
+      { label: "Produtos",            desc: "O que aparece no cardápio", path: "/produtos",        Icone: Package },
+      { label: "Personalização",      desc: "Adicionais e opções",       path: "/complementos",    Icone: Stack },
+      { label: "Categorias",          desc: "Organize seus produtos",    path: "/categorias",      Icone: SquaresFour },
+      { label: "Aparência",           desc: "Cores, logo e modelo",      path: "/cardapio-design", Icone: PaintBrush },
+      { label: "Entrega e pagamento", desc: "Taxas, Pix e retirada",     path: "/checkout-config", Icone: Truck },
+      { label: "Dados da loja",       desc: "Endereço, horário e link",  path: "/cardapio-config", Icone: Storefront },
+      { label: "Ver meu cardápio",    desc: "Como o cliente vê",         path: "/cardapio-preview", Icone: Eye },
+    ],
+  },
   {
     label: "Cadastros",
     items: [
-      { label: "Categorias",    desc: "Organize seus produtos", path: "/categorias",    Icone: SquaresFour },
-      { label: "Ingredientes",  desc: "O que você compra",      path: "/insumos",       Icone: Package },
+      { label: "Ingredientes",  desc: "O que você compra",    path: "/insumos",       Icone: Basket },
       // 13/10: Receitas escondida até as fotos ficarem prontas
-      { label: "Ficha técnica", desc: "Calcule o custo real",   path: "/ficha-tecnica", Icone: ClipboardText },
+      { label: "Ficha técnica", desc: "Calcule o custo real", path: "/ficha-tecnica", Icone: ClipboardText },
     ],
   },
   {
-    label: "Análises",
+    label: "Financeiro",
     items: [
-      { label: "Lucratividade", desc: "Análise de margem",   path: "/lucratividade",         Icone: ChartLineUp },
-      { label: "Transações",    desc: "Histórico detalhado", path: "/financeiro/transacoes", Icone: CurrencyDollar },
-      { label: "Marketing",     desc: "Divulgue e venda mais", path: "/marketing",           Icone: Megaphone },
+      { label: "Visão geral",   desc: "Entradas, saídas e saldo", path: "/financeiro",            Icone: SquaresFour },
+      { label: "Transações",    desc: "Histórico detalhado",      path: "/financeiro/transacoes", Icone: ArrowsDownUp },
+      { label: "A receber",     desc: "O que os clientes devem",  path: "/financeiro/a-receber",  Icone: HandCoins },
+      { label: "A pagar",       desc: "Contas e vencimentos",     path: "/financeiro/a-pagar",    Icone: CalendarCheck },
+      { label: "Custos",        desc: "Fixos, taxas e embalagem", path: "/custos",                Icone: Tag },
+      { label: "Lucratividade", desc: "Quanto você lucra",        path: "/lucratividade",         Icone: ChartLineUp },
     ],
   },
   {
-    label: "Configuração",
+    label: "Divulgar",
     items: [
-      { label: "Aparência do cardápio", desc: "Personalize o cardápio", path: "/cardapio-design", Icone: PaintBrush },
-      { label: "Checkout",        desc: "Configure o pagamento",  path: "/checkout-config", Icone: CreditCard },
-      { label: "Configurações",   desc: "Ajustes gerais do app",  path: "/configuracoes",   Icone: Gear },
+      { label: "Marketing", desc: "Divulgue e venda mais", path: "/marketing", Icone: Megaphone },
+      ...(INDICACAO_ATIVA ? [{ label: "Indicar amigo", desc: "Ganhe indicando", path: "/indicar", Icone: UserPlus }] : []),
     ],
   },
   {
-    label: "Meu plano",
+    label: "Minha conta",
     items: [
-      { label: "Minhas conquistas", desc: "Suas medalhas",     path: "/conquistas", Icone: Trophy },
-      { label: "Assinatura",        desc: "Gerencie seu PRO",  path: "/assinar",    Icone: Crown },
-      ...(INDICACAO_ATIVA ? [{ label: "Indicar amigo",     desc: "Ganhe indicando",   path: "/indicar",    Icone: UserPlus }] : []),
+      { label: "Configurações",       desc: "Ajustes gerais do app",  path: "/configuracoes",              Icone: Gear },
+      { label: "Minha assinatura",    desc: "Gerencie seu PRO",       path: "/assinar",                    Icone: Crown },
+      { label: "Notificações e sons", desc: "O que avisa e como",     path: "/configuracoes/notificacoes", Icone: Bell },
+      { label: "Mensagens prontas",   desc: "Textos do WhatsApp",     path: "/configuracoes/mensagens",    Icone: ChatCircleText },
+      { label: "Minhas conquistas",   desc: "Suas medalhas",          path: "/conquistas",                 Icone: Trophy },
+    ],
+  },
+  {
+    label: "Ajuda",
+    items: [
+      { label: "Novidades",         desc: "O que mudou no Doonly", path: "/noticias",          Icone: Newspaper },
+      { label: "Relatar problema",  desc: "Algo não funcionou",    path: "/relatar-problema",  Icone: Bug },
+      { label: "Pedir um recurso",  desc: "Sugira uma ideia",      path: "/solicitar-recurso", Icone: Lightbulb },
     ],
   },
 ];
