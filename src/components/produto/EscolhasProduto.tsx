@@ -306,6 +306,7 @@ function CartaoGrupo({ chave, tipo, form, setForm, outros }: { chave: "massa" | 
   const g: Grupo = { ativo: true, min: 1, max: 1, distribuicao: "nenhuma", opcoes: [], ...(form[campo] || {}) };
   const [nova, setNova] = useState("");
   const [novoValor, setNovoValor] = useState("");
+  const [avancado, setAvancado] = useState(false); // (14/10) janela "Avançado" (quantos, obrigatório, preço por sabor)
   const set = (patch: Partial<Grupo>) => setForm(f => ({ ...f, [campo]: { ...g, ...(f[campo] || {}), ...patch } }));
   const sug = sugestoesDaChave(chave, tipo, form.categoria).filter(s => !g.opcoes.some(o => norm(o.nome) === norm(s)));
   const precoProprio = chave === "sabor" && !!g.sabor_tem_preco_proprio;
@@ -326,29 +327,6 @@ function CartaoGrupo({ chave, tipo, form, setForm, outros }: { chave: "massa" | 
 
   return (
     <div className="esc-corpo">
-      <p className="esc-lbl">Quantos o cliente escolhe</p>
-      <div className="esc-seg" role="radiogroup" aria-label="Quantos o cliente escolhe">
-        {QUANTOS.map(([r, v]) => (
-          <button key={r} type="button" role="radio" aria-checked={quantosAtual === v} className={quantosAtual === v ? "on" : ""}
-            onClick={() => set({ max: v, min: g.min >= 1 ? 1 : 0 })}>{r}</button>
-        ))}
-      </div>
-      <p className="esc-dica">No cardápio: {quantosAtual === 1 ? `"Escolha 1 ${chave}"` : quantosAtual >= 99 ? `"Escolha quantos ${plural} quiser"` : `"Escolha até ${quantosAtual} ${plural}"`}.</p>
-
-      {/* (14/10) no padrão do resto: caixinhas no lugar das chaves, tabelinha das opções, "Cadastrar" e dica tracejada */}
-      <div className="esc-cks">
-        <button type="button" className={`esc-ckl${g.min >= 1 ? " on" : ""}`} role="checkbox" aria-checked={g.min >= 1} onClick={() => set({ min: g.min >= 1 ? 0 : 1 })}>
-          <i aria-hidden="true">{g.min >= 1 && <Check size={14} weight="bold" />}</i>
-          <span><b>Obrigatório</b><small>{g.min >= 1 ? "Sem escolher, o cliente não consegue pedir" : "O cliente pode pedir sem escolher"}</small></span>
-        </button>
-        {chave === "sabor" && (
-          <button type="button" className={`esc-ckl${precoProprio ? " on" : ""}`} role="checkbox" aria-checked={precoProprio} onClick={() => set({ sabor_tem_preco_proprio: !precoProprio })}>
-            <i aria-hidden="true">{precoProprio && <Check size={14} weight="bold" />}</i>
-            <span><b>Cada sabor tem o seu preço</b><small>{precoProprio ? "Você coloca no último passo" : "Desmarcado: o sabor só soma, se custar a mais"}</small></span>
-          </button>
-        )}
-      </div>
-
       <p className="esc-lbl">Opções</p>
       {g.opcoes.length > 0 && (
         <div className={`esc-tab${precoProprio ? " esc-tab--1" : ""}`} role="table" aria-label={`Opções de ${chave}`}>
@@ -378,6 +356,42 @@ function CartaoGrupo({ chave, tipo, form, setForm, outros }: { chave: "massa" | 
         <button type="button" className="esc-nova-bt esc-nova-bt--txt" onClick={addDigitado} disabled={!nova.trim()}>Cadastrar</button>
       </div>
       <p className="esc-nota">{precoProprio ? "O preço de cada sabor você coloca no último passo." : "Sem valor: já vem no preço. Com valor: custa a mais."}</p>
+      {/* (14/10) regras no "Avançado" (como o Rendimento): a tela abre direto nas opções */}
+      <button type="button" className="esc-rend-linha esc-av-linha" onClick={() => setAvancado(true)}>
+        <span className="esc-tx"><b>Avançado</b>
+          <small>{quantosAtual === 1 ? "Escolhe 1" : quantosAtual >= 99 ? "À vontade" : `Escolhe até ${quantosAtual}`} · {g.min >= 1 ? "Obrigatório" : "Opcional"}{chave === "sabor" && precoProprio ? " · preço por sabor" : ""}</small></span>
+        <span className="esc-rend-bt">Editar</span>
+      </button>
+      <Janela aberta={avancado} aoFechar={() => setAvancado(false)} titulo="Avançado" tipo="conteudo" umaAcao
+        acoes={<Botao onClick={() => setAvancado(false)}>Pronto</Botao>}>
+        <div className="esc esc-jan">
+          <div className="esc-corpo">
+      <p className="esc-lbl">Quantos o cliente escolhe</p>
+            <div className="esc-seg" role="radiogroup" aria-label="Quantos o cliente escolhe">
+              {QUANTOS.map(([r, v]) => (
+                <button key={r} type="button" role="radio" aria-checked={quantosAtual === v} className={quantosAtual === v ? "on" : ""}
+                  onClick={() => set({ max: v, min: g.min >= 1 ? 1 : 0 })}>{r}</button>
+              ))}
+            </div>
+            <p className="esc-dica">No cardápio: {quantosAtual === 1 ? `"Escolha 1 ${chave}"` : quantosAtual >= 99 ? `"Escolha quantos ${plural} quiser"` : `"Escolha até ${quantosAtual} ${plural}"`}.</p>
+
+            {/* (14/10) no padrão do resto: caixinhas no lugar das chaves, tabelinha das opções, "Cadastrar" e dica tracejada */}
+            <div className="esc-cks">
+              <button type="button" className={`esc-ckl${g.min >= 1 ? " on" : ""}`} role="checkbox" aria-checked={g.min >= 1} onClick={() => set({ min: g.min >= 1 ? 0 : 1 })}>
+                <i aria-hidden="true">{g.min >= 1 && <Check size={14} weight="bold" />}</i>
+                <span><b>Obrigatório</b><small>{g.min >= 1 ? "Sem escolher, não dá pra pedir" : "Pode pedir sem escolher"}</small></span>
+              </button>
+              {chave === "sabor" && (
+                <button type="button" className={`esc-ckl${precoProprio ? " on" : ""}`} role="checkbox" aria-checked={precoProprio} onClick={() => set({ sabor_tem_preco_proprio: !precoProprio })}>
+                  <i aria-hidden="true">{precoProprio && <Check size={14} weight="bold" />}</i>
+                  <span><b>Cada sabor tem o seu preço</b><small>{precoProprio ? "Você coloca no último passo" : "Desmarcado: só soma se custar a mais"}</small></span>
+                </button>
+              )}
+            </div>
+
+          </div>
+        </div>
+      </Janela>
       <UsarDeOutro
         copias={copiasDe(outros, campo, gg => { const k = gg.opcoes.map((o: any) => norm(o.nome)).join("|"); return k === g.opcoes.map(o => norm(o.nome)).join("|") ? null : k; })}
         onUsar={c => set({ opcoes: c.opcoes.map((o: any) => ({ id: uid(), nome: o.nome, adicional: Number(o.adicional) || 0, ...(o.preco ? { preco: o.preco } : {}) })),
