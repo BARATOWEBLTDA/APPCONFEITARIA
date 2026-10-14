@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { ArrowDown, ArrowUp, Basket, Cake, Check, Drop, IceCream, PencilSimple, Plus, Ruler, Sparkle, Trash, X } from "@phosphor-icons/react";
 import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
 import { kitAtivo, presetKit, type KitQtdConfig } from "@/lib/kitQuantidade";
 import { mascaraBRL, lerBRL, textoBRL } from "@/lib/moeda";
+import { Botao, Janela } from "@/components/base";
 import "./escolhas.css";
 
 /**
@@ -101,7 +102,23 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange }: Pr
   const chipsSug = sugeridas.filter(c => !ativa(c) && !bloqueada(c));
   const chipsOutras = todas.filter(c => !sugeridas.includes(c) && !ativa(c) && !bloqueada(c));
 
+  // (13/10) cada escolha abre numa janela própria. Ao abrir, guarda como estava: o X desfaz tudo o que mexeu ali.
+  const antes = useRef<{ chave: Chave; valor: any; kit: any; forma: any } | null>(null);
+  const campoDe = (c: Chave) => (c === "tamanho" ? "grupo_tamanhos" : c === "quantidade" ? "kit_qtd" : CAMPO[c]);
+  const guardar = (c: Chave) => { antes.current = { chave: c, valor: form[campoDe(c)] ?? null, kit: form.kit_qtd ?? null, forma: form.forma_venda }; };
+  const abrir = (c: Chave) => { guardar(c); setAberto(c); };
+  const salvar = () => { antes.current = null; setAberto(null); };
+  const cancelar = () => {
+    const a = antes.current;
+    if (a) {
+      if (a.chave === "quantidade") onKitChange(a.kit ? a.kit : { ...(kit as KitQtdConfig), ativo: false });
+      else setForm(f => ({ ...f, [campoDe(a.chave)]: a.valor ?? { ...(f[campoDe(a.chave)] || {}), ativo: false }, forma_venda: a.forma }));
+    }
+    antes.current = null; setAberto(null);
+  };
+
   const ligar = (c: Chave) => {
+    guardar(c);
     if (c === "quantidade") {
       onKitChange({ ...presetKit(tipo === "salgados" || /salgad/.test(norm(form.categoria)) ? "salgados" : "docinhos", kit), ativo: true });
     } else if (c === "tamanho") {
@@ -123,7 +140,7 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange }: Pr
     if (c === "quantidade" && kit) onKitChange({ ...kit, ativo: false });
     else if (c === "tamanho") setForm(f => ({ ...f, grupo_tamanhos: { ...(f.grupo_tamanhos || {}), ativo: false } }));
     else setForm(f => ({ ...f, [CAMPO[c as "massa"]]: { ...(f[CAMPO[c as "massa"]] || {}), ativo: false } }));
-    setAberto(null);
+    antes.current = null; setAberto(null);
   };
 
   return (
@@ -146,30 +163,32 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange }: Pr
             <span className="esc-tx"><b>Vende como está</b><small>O cliente só escolhe a quantidade</small></span>
           </div>
         )}
-        {ativas.map(c => aberto === c ? (
-          <div key={c} className="esc-card" data-falta={c === "quantidade" ? undefined : c === "tamanho" ? "grupo_tamanhos" : CAMPO[c]}>
-            <div className="esc-card-h">
+        {ativas.map(c => {
+          const f = c === "quantidade" ? faltaKit(kit) : null;
+          return (
+            <button key={c} type="button" className="esc-linha" onClick={() => abrir(c)}
+              data-falta={c === "quantidade" ? undefined : c === "tamanho" ? "grupo_tamanhos" : CAMPO[c]}>
               <span className="esc-ic">{ICONE[c]}</span>
-              <span className="esc-tx"><b>{ROTULO[c]}</b>{nome && <small>{nome}</small>}</span>
-            </div>
-            {c === "quantidade" ? <CartaoQuantidade kit={kit!} onKitChange={onKitChange} nome={nome} />
-              : c === "tamanho" ? <CartaoTamanho form={form} setForm={setForm} />
-              : <CartaoGrupo chave={c} tipo={tipo} form={form} setForm={setForm} />}
-            <div className="esc-card-pe">
-              <button type="button" className="esc-tirar" onClick={() => desligar(c)}><Trash size={16} aria-hidden="true" />Tirar {ROTULO[c].toLowerCase()}</button>
-              <button type="button" className="esc-pronto" onClick={() => setAberto(null)}>Pronto</button>
-            </div>
-          </div>
-        ) : (
-          <button key={c} type="button" className="esc-linha" onClick={() => setAberto(c)}>
-            <span className="esc-ic">{ICONE[c]}</span>
-            {(() => { const f = c === "quantidade" ? faltaKit(kit) : null; return (
               <span className="esc-tx"><b>{ROTULO[c]}</b><small className={f ? "esc-falta" : undefined}>{f ? faltaCurta(f.msg) : resumo(c, form)}</small></span>
-            ); })()}
-            <span className="esc-editar"><PencilSimple size={16} aria-hidden="true" />Editar</span>
-          </button>
-        ))}
+              <span className="esc-editar"><PencilSimple size={16} aria-hidden="true" />Editar</span>
+            </button>
+          );
+        })}
       </div>
+
+      <Janela aberta={!!aberto} aoFechar={cancelar} titulo={aberto ? ROTULO[aberto] : ""} tipo="conteudo" travada
+        acoes={aberto ? (<>
+          <Botao variante="secundario" icone={<Trash size={18} aria-hidden="true" />} onClick={() => aberto && desligar(aberto)}>Tirar</Botao>
+          <Botao onClick={salvar}>Salvar</Botao>
+        </>) : null}>
+        {aberto && (
+          <div className="esc esc-jan">
+            {aberto === "quantidade" ? (kit ? <CartaoQuantidade kit={kit} onKitChange={onKitChange} nome={nome} /> : null)
+              : aberto === "tamanho" ? <CartaoTamanho form={form} setForm={setForm} />
+              : <CartaoGrupo chave={aberto} tipo={tipo} form={form} setForm={setForm} />}
+          </div>
+        )}
+      </Janela>
     </div>
   );
 }

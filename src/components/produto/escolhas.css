@@ -122,3 +122,9 @@
 .rev-avisos li { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px; border-radius: 8px; background: #FFF7ED; color: #9A4A0C; font-size: 13.5px; }
 .rev-avisos li svg { flex: none; color: var(--ui-laranja); }
 .rev-avisos li span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* (13/10) a janela de cada escolha: altura fixa (não pula quando entra uma opção) */
+.ui-janela:has(.esc-jan) { height: 90dvh; }
+@media (min-width: 768px) { .ui-veu--centro .ui-janela:has(.esc-jan) { height: min(82dvh, 680px); } }
+.esc-jan .esc-corpo { padding-top: 0; }
+.esc-jan .esc-corpo > .esc-lbl:first-child { margin-top: 2px; }
