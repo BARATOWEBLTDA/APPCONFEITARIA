@@ -210,8 +210,10 @@
 .esc-peso-novo { margin: 0; padding: 8px 10px; }
 
 /* (14/10) por quilo: peso | rendimento | preço numa linha; "Outro peso" com a tag kg | g */
-.esc-pesos-cab, .esc-peso-li { display: grid; grid-template-columns: minmax(0, 1fr) 118px 84px; gap: 6px; align-items: center; }
-.esc-pesos-cab { margin: 0 0 6px; padding: 0 12px 0 14px; font-size: 12.5px; font-weight: 600; color: var(--ui-texto-3); }
+/* (14/10) a coluna do peso só do tamanho do "1,5 kg": o rendimento fica perto do peso e o preço vai pra direita */
+.esc-pesos-cab, .esc-peso-li { display: grid; grid-template-columns: 96px 124px minmax(0, 1fr); gap: 6px; align-items: center; }
+.esc-pesos-cab span { white-space: nowrap; }
+.esc-pesos-cab { margin: 0 0 6px; padding: 0 13px 0 1px; font-size: 12.5px; font-weight: 600; color: var(--ui-texto-3); }
 .esc-pesos-cab span:last-child { text-align: right; }
 .esc-peso-li { min-height: 52px; padding-right: 12px; }
 .esc-peso-li .esc-peso { min-height: 52px; padding-right: 0; }
@@ -227,3 +229,4 @@
 .esc-peso-novo > input:focus { outline: none; border-color: var(--ui-rosa); }
 .esc-kgg { height: 44px; }
 .esc-kgg button { min-height: 38px; }
+.esc-pesos-cab span:first-child { padding-left: 14px; }

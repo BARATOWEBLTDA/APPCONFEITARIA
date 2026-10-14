@@ -459,7 +459,7 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
             onChange={e => { const v = lerBRL(mascaraBRL(e.target.value) || "0"); setForm(f => ({ ...f, preco_normal: v, ...(Number(f.preco_promocional) > 0 ? { promocao: Number(f.preco_promocional) < v } : {}) })); }} />
         </label>
         <p className="esc-lbl">Quais pesos você faz?</p>
-        <div className="esc-pesos-cab" aria-hidden="true"><span>Peso</span><span>Rendimento</span><span>Preço</span></div>
+        <div className="esc-pesos-cab" aria-hidden="true"><span>Peso</span><span>Rendimento/Serve</span><span>Preço</span></div>
         <ul className="esc-pesos" role="group" aria-label="Pesos">
           {pesos.map(kg => {
             const on = marcados.has(kg);
