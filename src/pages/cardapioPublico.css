@@ -99,3 +99,7 @@
 .cp-pausada i { flex: none; width: 9px; height: 9px; margin-top: 6px; border-radius: 50%; background: #ef4444; }
 .cp-pausada b { display: block; font-size: 15px; font-weight: 600; color: #B42318; }
 .cp-pausada small { display: block; margin-top: 2px; font-size: 13.5px; line-height: 1.45; color: var(--ui-texto-2); }
+
+/* (14/10) banner na coluna da direita, em cima do pedido */
+.cp-banner.cp-banner--lado { margin: 0; }
+.cp-banner.cp-banner--lado > div { padding: 0 !important; margin-bottom: 0 !important; }

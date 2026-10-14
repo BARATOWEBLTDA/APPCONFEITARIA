@@ -118,7 +118,7 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     // Estrelas de avaliação removidas (02/10): ficavam deslocadas ao lado do selo de verificado
     hide_stars: true,
     cor_botao: cores.cor_botao || '#ec4899',
-    cor_navbar: cores.cor_navbar || cores.cor_borda || '#ec4899',
+    cor_navbar: cores.cor_navbar || cores.cor_borda || '#BF6B84', // (14/10) topo padrão em rosa antigo, mais suave que o rosa forte
     cor_sacola: cores.cor_sacola || '#ec4899',
     cor_rodape: cores.cor_rodape || '#ec4899',
     ocultar_categorias: profile.ocultar_categorias || false,

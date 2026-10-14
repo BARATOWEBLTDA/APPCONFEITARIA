@@ -43,7 +43,7 @@ const corValida = (c: string | undefined | null): boolean => {
   const norm = c.trim().toLowerCase().replace(/\s/g, '')
   return !['', '#fff', '#ffffff', '#fefefe', 'white', 'transparent', 'rgb(255,255,255)', 'rgba(255,255,255,1)'].includes(norm)
 }
-const corDoTopo = (design: DesignSettings) => corValida(design.cor_navbar) ? design.cor_navbar! : (corValida(design.cor_borda) ? design.cor_borda! : '#E85A8C')
+const corDoTopo = (design: DesignSettings) => corValida(design.cor_navbar) ? design.cor_navbar! : (corValida(design.cor_borda) ? design.cor_borda! : '#BF6B84')
 
 /* ── Topo do computador ── */
 function DeskNav({ design, config, isPro = false }: { design: DesignSettings; config: Configuracoes | null; isPro?: boolean }) {
@@ -425,11 +425,6 @@ function CardapioContent() {
           {(config as any)?.loja_pausada && (
           <div className="cp-pausada" role="status"><i aria-hidden="true" /><span><b>Pedidos pausados no momento</b><small>Você pode olhar o cardápio. Pra encomendar, chame a loja no WhatsApp.</small></span></div>
         )}
-          {temBanner && (
-            <div className="desk-banner cp-banner">
-              <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
-            </div>
-          )}
           {produtos.length === 0 ? <EmptyState telefone={config?.telefone} /> : (<>
           <div className="cp-busca">
             <MagnifyingGlass size={20} weight="bold" aria-hidden="true" />
@@ -454,6 +449,12 @@ function CardapioContent() {
         </main>
 
         <aside className="cp-dir">
+          {/* (14/10) no computador o banner fica aqui, em cima de "Seu pedido" (no meio ele ocupava a tela toda) */}
+          {temBanner && (
+            <div className="desk-banner cp-banner cp-banner--lado">
+              <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
+            </div>
+          )}
           <DeskSacola cartCount={cartCount} cartTotal={cartTotal} design={design} items={cartItems} />
           {/* 10/10: saiu o aviso de "Programa de fidelidade" (a fidelidade ainda não existe no app) */}
         </aside>
