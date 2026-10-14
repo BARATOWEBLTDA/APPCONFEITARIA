@@ -72,8 +72,12 @@ export function resumoRevisao(form: any) {
   const avisos: string[] = [];
   if (!form.imagem_url) avisos.push("Sem foto: produto com foto vende mais");
   if (!String(form.descricao || "").trim()) avisos.push("Sem descrição: conte o que vem no produto");
-  if (temTam && !porPeso && tam!.opcoes!.some(o => !(Number(o.preco) > 0))) avisos.push("Tem tamanho sem preço");
-  if (!(aPartir > 0)) avisos.push("O produto está sem preço");
+  // (14/10) um aviso só, dizendo o que falta (antes vinham "Tem tamanho sem preço" e "O produto está sem preço" juntos)
+  const semPreco = temTam && !porPeso ? tam!.opcoes!.filter(o => !(Number(o.preco) > 0)) : [];
+  if (semPreco.length === 1) avisos.push(`Falta o preço do ${semPreco[0].nome}`);
+  else if (semPreco.length > 1) avisos.push(semPreco.length === tam!.opcoes!.length ? "Falta o preço dos tamanhos" : `Falta o preço de ${semPreco.length} tamanhos`);
+  else if (porPeso && !(Number(form.preco_normal) > 0)) avisos.push("Falta o preço do kg");
+  else if (!(aPartir > 0)) avisos.push("Falta o preço do produto");
 
   return { aPartir, escolhas, linhas, total, avisos };
 }

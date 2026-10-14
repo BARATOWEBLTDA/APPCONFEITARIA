@@ -310,6 +310,7 @@ export function carregarGruposDoBanco(produto: any): GrupoOpcoes[] {
         ...(cfg.temPeso ? { peso_kg: o.peso_kg ?? null } : {}),
         ...(o.serve ? { serve: o.serve } : {}),
         ...(o.foto ? { foto: o.foto } : {}),
+        ...(o.esgotado ? { esgotado: true } : {}), // (14/10) tamanho esgotado: aparece apagado no cardápio
       }));
     }
     grupos.push(g);

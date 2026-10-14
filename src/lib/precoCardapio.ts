@@ -54,7 +54,9 @@ export function comDesconto(valor: number, desconto: number): number {
 export function precoCardapio(p: any): { valor: number; aPartir: boolean } {
   if (kitAtivo(p?.kit_qtd)) return { valor: r2(precoMinKit(p.kit_qtd)), aPartir: true }
   const gt = p?.grupo_tamanhos
-  const ops: any[] = gt?.ativo ? (gt.opcoes || []) : []
+  const todas: any[] = gt?.ativo ? (gt.opcoes || []) : []
+  // (14/10) o "a partir de" conta só os tamanhos à venda (se todos estiverem esgotados, conta todos)
+  const ops: any[] = todas.some(o => !o?.esgotado) ? todas.filter(o => !o?.esgotado) : todas
   if (ops.length > 0) {
     if (gt.modo_preco_tamanho === 'por_peso') {
       const pesos = ops.map(o => pesoDoTamanho(o, true)).filter(x => x > 0) // (10/10) sem peso_kg, lê o peso do nome

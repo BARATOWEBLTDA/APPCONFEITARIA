@@ -143,7 +143,7 @@ export function faltaDaEscolha(form: any, c: Chave): { msg: string; alvo?: strin
   if (c === "tamanho") {
     const g = form.grupo_tamanhos;
     if (!(g?.opcoes?.length)) return { msg: "Coloque pelo menos 1 tamanho", alvo: 'input[aria-label="Outro tamanho"]' };
-    if (g.modo_preco_tamanho === "por_peso" && !(Number(form.preco_normal) > 0)) return { msg: "Coloque o preço do kg", alvo: 'input[aria-label="Preço do kg"]' };
+    // (14/10) o preço do kg agora vai no último passo (Preço e revisão), igual ao preço fixo
     return null;
   }
   const g = form[CAMPO[c]];
@@ -443,11 +443,6 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
       </div>
 
       {porPeso && (<>
-        <p className="esc-lbl">Preço do kg</p>
-        <label className="esc-kg-preco"><span>R$</span>
-          <input inputMode="numeric" placeholder="0,00" value={precoKg > 0 ? textoBRL(precoKg) : ""} aria-label="Preço do kg"
-            onChange={e => { const v = lerBRL(mascaraBRL(e.target.value) || "0"); setForm(f => ({ ...f, preco_normal: v, ...(Number(f.preco_promocional) > 0 ? { promocao: Number(f.preco_promocional) < v } : {}) })); }} />
-        </label>
         <p className="esc-lbl">Quais pesos você vende?</p>
         <ul className="esc-pesos" role="group" aria-label="Pesos">
           {pesos.map(kg => {
@@ -458,7 +453,7 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
                   <i className="esc-peso-ck" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
                   <b>{nomePeso(kg)}</b>
                 </button>
-                <span className="esc-peso-v">R$ {textoBRL(Math.round(kg * precoKg * 100) / 100) || "0,00"}</span>
+                {precoKg > 0 && <span className="esc-peso-v">R$ {textoBRL(Math.round(kg * precoKg * 100) / 100)}</span>}
               </li>
             );
           })}
@@ -489,7 +484,7 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
           </ul>
         )}
         <LinhaRendimento g={g} set={set} />
-        <p className="esc-nota">Quer dar desconto? Você coloca na próxima etapa.</p>
+        <p className="esc-nota">O preço do kg você coloca no último passo.</p>
       </>)}
 
       {!porPeso && g.opcoes.length === 0 && (<>

@@ -5632,21 +5632,42 @@ export default function Produtos() {
                 <div className="prod-section">
                   {/* o título "Qual o preço?" já diz; só o por quilo precisa do rótulo */}
                   {form.id && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" && <p className="prod-section-label prod-section-label--novo">Preço por kg</p>}
-                  {/* (14/10) no cadastro novo, o preço do kg já veio do Tamanho: aqui a conversa é sobre promoção */}
-                  {!form.id && form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" && (<>
-                    <p className="prod-section-label prod-section-label--novo">Promoção</p>
-                    <p className="prod-kg-promo-t">{primeiroNome ? `${primeiroNome}, você` : "Você"} definiu o preço do kg em <b>R$ {form.preco_normal > 0 ? formatPreco(form.preco_normal) : "0,00"}</b>. Gostaria de colocar uma promoção?</p>
-                    <button type="button" className={`prod-opc${kgPromo || (Number(form.preco_promocional) > 0) ? " on" : ""}`} role="checkbox" aria-checked={kgPromo || Number(form.preco_promocional) > 0}
-                      onClick={() => { const on = kgPromo || Number(form.preco_promocional) > 0; setKgPromo(!on); if (on) setForm(f => ({ ...f, preco_promocional: 0, promocao: false })); }}>
-                      <i aria-hidden="true">{(kgPromo || Number(form.preco_promocional) > 0) && <CheckIc size={14} weight="bold" />}</i>
-                      <span><b>Colocar em promoção</b><small>O cardápio mostra o preço antigo riscado</small></span>
-                    </button>
-                  </>)}
-                  {form.id && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" && (
-                    <p style={{margin:"0 0 10px", fontSize:12.5, color:"#6B5D64", lineHeight:1.5}}>
-                      Coloque o preço de <b>1 kg</b>. Cada tamanho sai sozinho.
-                    </p>
-                  )}
+                  {/* (14/10) no cadastro novo o preço do kg vem aqui no fim (igual ao preço fixo): preço, tabela dos pesos e promoção */}
+                  {!form.id && form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" && (() => {
+                    const kgCheio = Number(form.preco_normal) || 0;
+                    const kgPromoV = Number(form.preco_promocional) || 0;
+                    const promoOnKg = kgPromo || kgPromoV > 0;
+                    const comPromo = promoOnKg && kgPromoV > 0 && kgPromoV < kgCheio;
+                    const pesosT = (form.grupo_tamanhos!.opcoes || []).filter((o: any) => Number(o.peso_kg) > 0);
+                    const r = (v: number) => Math.round(v * 100) / 100;
+                    return (<>
+                      <p className="prod-section-label prod-section-label--novo">Preço do kg</p>
+                      <div className="prod-field"><div className="prod-preco-input prod-preco-input--big">
+                        <span>R$</span>
+                        <input type="text" inputMode="numeric" placeholder="0,00" aria-label="Preço cheio" value={kgCheio ? formatPreco(kgCheio) : ""}
+                          onChange={e => { const n = parsePreco(e.target.value); setForm(f => { const pp = Number(f.preco_promocional) || 0; return pp > 0 ? { ...f, preco_normal: n, promocao: pp < n } : { ...f, preco_normal: n }; }); }} />
+                      </div></div>
+                      {pesosT.length > 0 && (
+                        <div className="prod-dtab" role="table" aria-label="Preço de cada peso">
+                          <div className={`prod-dtab-l prod-dtab-h${comPromo ? "" : " prod-dtab-l--2"}`} role="row"><span role="columnheader">Peso</span><span role="columnheader">Preço</span>{comPromo && <span role="columnheader">Promoção</span>}</div>
+                          {pesosT.map((o: any) => (
+                            <div className={`prod-dtab-l${comPromo ? "" : " prod-dtab-l--2"}`} role="row" key={o.id}>
+                              <span role="cell">{o.nome}</span>
+                              <span role="cell">R$ {formatPreco(r(Number(o.peso_kg) * kgCheio))}</span>
+                              {comPromo && <b role="cell">R$ {formatPreco(r(Number(o.peso_kg) * kgPromoV))}</b>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <p className="prod-section-label prod-section-label--novo" style={{ marginTop: 22 }}>Promoção</p>
+                      <p className="prod-kg-promo-t">{primeiroNome ? `${primeiroNome}, gostaria` : "Gostaria"} de colocar uma promoção?</p>
+                      <button type="button" className={`prod-opc${promoOnKg ? " on" : ""}`} role="checkbox" aria-checked={promoOnKg}
+                        onClick={() => { setKgPromo(!promoOnKg); if (promoOnKg) setForm(f => ({ ...f, preco_promocional: 0, promocao: false })); }}>
+                        <i aria-hidden="true">{promoOnKg && <CheckIc size={14} weight="bold" />}</i>
+                        <span><b>Colocar em promoção</b><small>O cardápio mostra o preço antigo riscado</small></span>
+                      </button>
+                    </>);
+                  })()}
                   {/* (14/10) preço cheio e promocional lado a lado; "Vendido por" embaixo, numa linha só dele */}
                   <div className="prod-row-2">
                     {!(!form.id && form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") && <div className="prod-field">
@@ -5713,6 +5734,25 @@ export default function Produtos() {
                       title="Como esse produto é vendido?"
                       big
                     />
+                  </div>
+                </div>
+              )}
+
+              {/* (14/10) esgotar um tamanho só (na edição): no cardápio ele aparece apagado e não dá pra escolher */}
+              {form.id && editTab === "preco" && !kitAtivo((form as any).kit_qtd) && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && (
+                <div className="prod-section">
+                  <p className="prod-section-label prod-section-label--novo">Tamanhos à venda</p>
+                  <div className="prod-opcs">
+                    {form.grupo_tamanhos.opcoes.map((op: any) => {
+                      const aVenda = !op.esgotado;
+                      return (
+                        <button key={op.id} type="button" className={`prod-opc${aVenda ? " on" : ""}`} role="checkbox" aria-checked={aVenda}
+                          onClick={() => setForm(f => ({ ...f, grupo_tamanhos: { ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO), opcoes: (f.grupo_tamanhos?.opcoes || []).map((o: any) => o.id === op.id ? { ...o, esgotado: aVenda ? true : undefined } : o) } }))}>
+                          <i aria-hidden="true">{aVenda && <CheckIc size={14} weight="bold" />}</i>
+                          <span><b>{op.nome}</b><small>{aVenda ? "À venda" : "Esgotado: aparece apagado no cardápio"}</small></span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -6190,7 +6230,7 @@ export default function Produtos() {
                     if (temTamanhoAtivo) {
                       // Modo "por peso": preços dos tamanhos são calculados via preco_normal (R$/kg)
                       if (gt!.modo_preco_tamanho === "por_peso") {
-                        return (form.preco_normal || 0) > 0 ? promoMaior : { msg: form.id ? "Coloque o preço do kg" : "Volte em Escolhas › Tamanho e coloque o preço do kg", alvo: form.id ? 'input[aria-label="Preço cheio"]' : undefined };
+                        return (form.preco_normal || 0) > 0 ? promoMaior : { msg: "Coloque o preço do kg", alvo: 'input[aria-label="Preço cheio"]' };
                       }
                       // Modo "preço fixo": todos os tamanhos precisam ter preço próprio
                       const semPreco = gt!.opcoes.find(o => !(o.preco > 0));

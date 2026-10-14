@@ -143,11 +143,12 @@ function Grupo({ chave, g, multi, valor, aoMudar, secoes, faltou, emFatias, corB
           const peso = op.peso_kg && pesoDoNome(op.nome) !== Number(op.peso_kg) ? `${String(op.peso_kg).replace('.', ',')} kg` : '' // (10/10) não repete quando o nome já é o peso
           const un = String((g as any).rendimento_unidade || '').trim() // (13/10) além de pessoas e fatias, a unidade que ela escreveu (copos, potes…)
           const serve = op.serve ? (/^\d+$/.test(String(op.serve).trim()) ? (emFatias ? `${String(op.serve).trim()} fatias` : un && un !== 'pessoas' ? `Serve até ${String(op.serve).trim()} ${un}` : `Serve até ${String(op.serve).trim()} pessoas`) : `Serve até ${op.serve}`) : ''
-          const bloqueado = multi && !on && max > 1 && qtdMarcada >= max
+          const esgotado = !!op.esgotado // (14/10) a confeiteira marcou esse tamanho como esgotado
+          const bloqueado = esgotado || (multi && !on && max > 1 && qtdMarcada >= max)
           return (
             <button key={op.id} type="button" className="pm-op" role={multi ? 'checkbox' : 'radio'} aria-checked={on} disabled={bloqueado} onClick={() => tocar(op.id)}>
               <span className="pm-op-tx"><b>{peso && g.tipo === 'tamanho' ? `${op.nome} · ${peso}` : op.nome}</b>{serve && <small>{serve}</small>}</span>
-              {preco && <span className="pm-op-p">{preco}</span>}
+              {esgotado ? <span className="pm-op-p pm-op-esg">Esgotado</span> : preco && <span className="pm-op-p">{preco}</span>}
               <span className={`pm-ctl${multi ? ' cx' : ''}`} style={on ? { borderColor: corBotao, background: multi ? corBotao : '#fff' } : undefined} aria-hidden="true">
                 {on && (multi ? <Check size={14} weight="bold" color="#fff" /> : <i style={{ background: corBotao }} />)}
               </span>
