@@ -353,7 +353,12 @@ function CartaoTamanho({ form, setForm }: { form: any; setForm: Props["setForm"]
       <p className="esc-lbl">Como é o preço</p>
       <div className="esc-seg esc-seg--2" role="radiogroup" aria-label="Como é o preço dos tamanhos">
         <button type="button" role="radio" aria-checked={!porPeso} className={!porPeso ? "on" : ""}
-          onClick={() => { set({ modo_preco_tamanho: "preco_fixo" }); setForm(f => ({ ...f, forma_venda: f.forma_venda === "kg" ? "unidade" : f.forma_venda })); }}>Preço fixo</button>
+          onClick={() => {
+            // (13/10) os pesos (1 kg, 1,5 kg…) não servem de tamanho no preço fixo: a lista volta vazia e aparecem os modelos
+            const soPesos = g.opcoes.length > 0 && g.opcoes.every(o => Number(o.peso_kg) > 0 && norm(o.nome) === norm(nomePeso(Number(o.peso_kg))));
+            set({ modo_preco_tamanho: "preco_fixo", ...(soPesos ? { opcoes: [] } : {}) });
+            setForm(f => ({ ...f, forma_venda: f.forma_venda === "kg" ? "unidade" : f.forma_venda }));
+          }}>Preço fixo</button>
         <button type="button" role="radio" aria-checked={porPeso} className={porPeso ? "on" : ""}
           onClick={() => { set({ modo_preco_tamanho: "por_peso", opcoes: g.opcoes.length ? g.opcoes.map(o => ({ ...o, peso_kg: o.peso_kg ?? pesoDoNome(o.nome) })) : opcoesDePesos(PESOS_PADRAO) }); setForm(f => ({ ...f, forma_venda: "kg" })); }}>Por quilo</button>
       </div>
