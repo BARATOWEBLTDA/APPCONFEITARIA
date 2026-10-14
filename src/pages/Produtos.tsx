@@ -5176,65 +5176,66 @@ export default function Produtos() {
 
                 {/* 3. Descrição — com CTA IA (V3) — gera ou melhora */}
                 <div className="prod-field">
-                  <div className="prod-desc-header">
-                    <label className="prod-field-label-novo">Descrição</label>
-                    <button
-                      type="button"
-                      className="prod-btn-ia-novo"
+                  <label className="prod-field-label-novo" htmlFor="prod-desc-input">Descrição</label>
+                  {/* (13/10) o botão da IA fica dentro da caixa, no canto de baixo */}
+                  <div className="prod-desc-caixa">
+                    <textarea
+                      id="prod-desc-input"
+                      placeholder={"Ex.: Massa de baunilha, recheio de ninho com morango e cobertura de chantilly. Serve 15 fatias."}
+                      value={form.descricao}
+                      onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
+                      rows={5}
                       disabled={!!gerandoDesc}
-                      onClick={async () => {
-                        if (gerandoDesc) return;
-                        // (13/10) liberado no grátis também (limite por dia no servidor)
-                        if (!form.nome.trim()) { avisar("Dê um nome ao produto primeiro.", { tipo: "info" }); document.getElementById("prod-nome-input")?.focus(); return; }
-                        const textoAtual = (form.descricao || "").trim();
-                        const ehMelhorar = textoAtual.length > 0;
-                        // 11/10: o "gerando" fica num estado próprio e o campo continua com o texto dele.
-                        // Antes o campo virava "Melhorando..." e, salvando nessa hora, essa era a descrição gravada.
-                        // A resposta só entra se o cadastro ainda for o mesmo (não fechou nem abriu outro produto).
-                        const vez = abertura.current;
-                        setGerandoDesc(ehMelhorar ? "melhorar" : "gerar");
-                        try {
-                          const prompt = ehMelhorar
-                            ? `Melhore esta descrição de produto de confeitaria, mantendo a intenção e informações originais. Torne mais atraente, clara e profissional. Máximo 2 frases curtas (até 150 caracteres). Português brasileiro. Retorne APENAS a descrição melhorada, sem aspas, sem emojis, sem introdução.\n\nProduto: "${form.nome}"\nDescrição atual: "${textoAtual}"`
-                            : `Crie uma descrição MUITO curta e atraente para um produto de confeitaria chamado "${form.nome}". MÁXIMO 2 frases curtas (até 100 caracteres no total). Português brasileiro, transmita qualidade e sabor. Retorne APENAS a descrição, sem aspas, sem emojis.`;
-                          const res = await apiFetch("/api/gerar-descricao", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ prompt }),
-                            signal: AbortSignal.timeout(30000), // (11/10) a IA pendurada travava o Salvar
-                          });
-                          const data = await res.json();
-                          if (abertura.current !== vez) return;
-                          if (data?.error === "limite_diario") { avisar(data.message || "Você chegou ao limite de hoje. Amanhã libera de novo.", { tipo: "info" }); return; }
-                          const desc = data.content?.[0]?.text?.trim() || "";
-                          if (desc) setForm(f => ({ ...f, descricao: desc }));
-                          else avisar("Não deu pra gerar a descrição. Tente de novo.", { tipo: "erro" });
-                        } catch (e) {
-                          if (abertura.current === vez) avisar(explicarErro(e, "Não deu pra gerar a descrição. Tente de novo."), { tipo: "erro" });
-                        } finally {
-                          if (abertura.current === vez) setGerandoDesc(null);
-                        }
-                      }}
-                      title={!form.nome.trim() ? "Preencha o nome primeiro" : (form.descricao?.trim() ? "Melhorar descrição atual" : "Gerar descrição automaticamente")}
-                    >
-                      <SparkleIA size={16} weight="fill" className="prod-btn-ia-novo-crown" aria-hidden="true" />
-                      {gerandoDesc === "gerar"
-                        ? "Gerando..."
-                        : gerandoDesc === "melhorar"
-                        ? "Melhorando..."
-                        : (form.descricao?.trim() ? "Melhorar com IA" : "Gerar com IA")}
-                    </button>
+                      aria-busy={!!gerandoDesc}
+                      style={{fontFamily: 'inherit', resize: 'none'}}
+                    />
+                      <button
+                        type="button"
+                        className="prod-btn-ia-novo prod-btn-ia-dentro"
+                        disabled={!!gerandoDesc}
+                        onClick={async () => {
+                          if (gerandoDesc) return;
+                          // (13/10) liberado no grátis também (limite por dia no servidor)
+                          if (!form.nome.trim()) { avisar("Dê um nome ao produto primeiro.", { tipo: "info" }); document.getElementById("prod-nome-input")?.focus(); return; }
+                          const textoAtual = (form.descricao || "").trim();
+                          const ehMelhorar = textoAtual.length > 0;
+                          // 11/10: o "gerando" fica num estado próprio e o campo continua com o texto dele.
+                          // Antes o campo virava "Melhorando..." e, salvando nessa hora, essa era a descrição gravada.
+                          // A resposta só entra se o cadastro ainda for o mesmo (não fechou nem abriu outro produto).
+                          const vez = abertura.current;
+                          setGerandoDesc(ehMelhorar ? "melhorar" : "gerar");
+                          try {
+                            const prompt = ehMelhorar
+                              ? `Melhore esta descrição de produto de confeitaria, mantendo a intenção e informações originais. Torne mais atraente, clara e profissional. Máximo 2 frases curtas (até 150 caracteres). Português brasileiro. Retorne APENAS a descrição melhorada, sem aspas, sem emojis, sem introdução.\n\nProduto: "${form.nome}"\nDescrição atual: "${textoAtual}"`
+                              : `Crie uma descrição MUITO curta e atraente para um produto de confeitaria chamado "${form.nome}". MÁXIMO 2 frases curtas (até 100 caracteres no total). Português brasileiro, transmita qualidade e sabor. Retorne APENAS a descrição, sem aspas, sem emojis.`;
+                            const res = await apiFetch("/api/gerar-descricao", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ prompt }),
+                              signal: AbortSignal.timeout(30000), // (11/10) a IA pendurada travava o Salvar
+                            });
+                            const data = await res.json();
+                            if (abertura.current !== vez) return;
+                            if (data?.error === "limite_diario") { avisar(data.message || "Você chegou ao limite de hoje. Amanhã libera de novo.", { tipo: "info" }); return; }
+                            const desc = data.content?.[0]?.text?.trim() || "";
+                            if (desc) setForm(f => ({ ...f, descricao: desc }));
+                            else avisar("Não deu pra gerar a descrição. Tente de novo.", { tipo: "erro" });
+                          } catch (e) {
+                            if (abertura.current === vez) avisar(explicarErro(e, "Não deu pra gerar a descrição. Tente de novo."), { tipo: "erro" });
+                          } finally {
+                            if (abertura.current === vez) setGerandoDesc(null);
+                          }
+                        }}
+                        title={!form.nome.trim() ? "Preencha o nome primeiro" : (form.descricao?.trim() ? "Melhorar descrição atual" : "Gerar descrição automaticamente")}
+                      >
+                        <SparkleIA size={16} weight="fill" className="prod-btn-ia-novo-crown" aria-hidden="true" />
+                        {gerandoDesc === "gerar"
+                          ? "Gerando..."
+                          : gerandoDesc === "melhorar"
+                          ? "Melhorando..."
+                          : (form.descricao?.trim() ? "Melhorar com IA" : "Gerar com IA")}
+                      </button>
                   </div>
-                  <textarea
-                    id="prod-desc-input"
-                    placeholder={"Descreva como é seu produto\n\nEx.: 2 camadas de mousse de chocolate (massa pão de ló de chocolate)\ncobertura de mousse branco (tipo chantilly)"}
-                    value={form.descricao}
-                    onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
-                    rows={5}
-                    disabled={!!gerandoDesc}
-                    aria-busy={!!gerandoDesc}
-                    style={{fontFamily: 'inherit', resize: 'vertical'}}
-                  />
                 </div>
                 {/* (13/10) Como vende: dá sentido ao preço (do produto ou do kg) e aos tamanhos pelo peso */}
                 {!kitAtivo((form as any).kit_qtd) && (
