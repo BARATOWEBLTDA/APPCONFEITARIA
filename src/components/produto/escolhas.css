@@ -262,3 +262,22 @@
 .esc-rend-campo { gap: 10px; font-size: 15px; color: var(--ui-texto-2); }
 .esc-rend-campo input { width: 72px; height: 42px; font-size: 16px; }
 .esc-rend-campo em { width: auto; min-width: 64px; font-size: 15px; color: var(--ui-texto); }
+
+/* (14/10) checklist das escolhas e a tela de cada uma */
+.esc-chks { list-style: none; margin: 14px 0 0; padding: 0; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); overflow: hidden; }
+.esc-chks > li + li { border-top: 1px solid var(--ui-linha); }
+.esc-chk { display: flex; align-items: center; }
+.esc-chk-bt { flex: 1; min-width: 0; display: flex; align-items: center; gap: 14px; min-height: 64px; margin: 0; padding: 10px 14px; border: 0; background: none; font-family: inherit; text-align: left; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.esc-chk-ck { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid #D6CBD0; border-radius: 6px; color: var(--ui-branco); }
+.esc-chk.on { background: #FFF6F9; }
+.esc-chk.on .esc-chk-ck { border-color: var(--ui-rosa); background: var(--ui-rosa); }
+.esc-chk.on .esc-tx b { color: var(--ui-rosa-escuro); }
+.esc-chk.trava { opacity: .5; }
+.esc-chk.trava .esc-chk-bt { cursor: default; }
+.esc-chk-ed { flex: none; min-height: 44px; margin-right: 8px; padding: 0 10px; border: 0; background: none; font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
+.esc-chk-outras { font-weight: 500; color: var(--ui-texto-3); }
+.esc-s--n { margin-top: 2px; font-size: 13px; color: var(--ui-texto-3); }
+.esc-voltar-lista { min-height: 36px; margin: -4px 0 6px; padding: 0; border: 0; background: none; font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
+.esc-tela .esc-corpo { padding-top: 0; }
+.esc-chks .esc-peso-mais { white-space: nowrap; min-width: 0; }
+.esc-chks .esc-peso-mais .esc-chk-outras { min-width: 0; overflow: hidden; text-overflow: ellipsis; }

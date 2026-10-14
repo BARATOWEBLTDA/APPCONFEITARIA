@@ -9,7 +9,7 @@ import { Sparkle as SparkleIA } from "@phosphor-icons/react";
 import { selecionarValorAoFocar } from "@/lib/moeda";
 import PreviaCardapio from "@/components/produto/PreviaCardapio";
 import RevisaoProduto from "@/components/produto/RevisaoProduto";
-import EscolhasProduto from "@/components/produto/EscolhasProduto";
+import EscolhasProduto, { escolhasAtivas, faltaDaEscolha } from "@/components/produto/EscolhasProduto";
 import { kitAtivo, precoMinKit, kitsValidos, type KitQtdConfig } from "@/lib/kitQuantidade";
 import TipoProdutoTela, { type TipoProduto as TipoCadastro } from "@/components/produto/TipoProdutoTela";
 import SucessoProdutoTela from "@/components/produto/SucessoProdutoTela";
@@ -3527,6 +3527,8 @@ export default function Produtos() {
   // Cadastro fácil: 1ª tela "Que tipo de produto?" e a tela separada "Monte seu kit"
   const [tipoTela, setTipoTela] = useState(false);
   const [kitTela, setKitTela] = useState(false);
+  // (14/10) Escolhas em checklist: 0 = a lista; 1..n = a tela de cada escolha marcada
+  const [escTela, setEscTela] = useState(0);
   // Cadastro de bolo em 4 etapas (tipo "Bolos" no cadastro novo)
   const [tipoCadastro, setTipoCadastro] = useState<TipoCadastro | null>(null);
   const [boloTam, setBoloTam] = useState<BoloTam>(null);
@@ -3534,7 +3536,10 @@ export default function Produtos() {
   const [boloPrecoTela, setBoloPrecoTela] = useState(false);
   // Cadastro: tentou continuar com algo faltando → mostra o que falta acima do botão (some ao trocar de tela)
   const [mostrarFalta, setMostrarFalta] = useState(false);
-  useEffect(() => { setMostrarFalta(false); }, [wizardStep, kitTela, boloPrecoTela, mobilePersonaStep, modal, tipoTela]);
+  useEffect(() => { setMostrarFalta(false); }, [wizardStep, kitTela, boloPrecoTela, mobilePersonaStep, modal, tipoTela, escTela]);
+  useEffect(() => { if (!modal) setEscTela(0); }, [modal]);
+  // cada tela nova (passo ou escolha) começa do topo
+  useEffect(() => { document.querySelectorAll<HTMLElement>(".prod-modal--novo .prod-modal-body").forEach(el => { el.scrollTop = 0; }); }, [wizardStep, escTela]);
   const [isMobileMain, setIsMobileMain] = useState(false);
   useEffect(() => {
     const check = () => setIsMobileMain(window.innerWidth <= 720);
@@ -3545,6 +3550,7 @@ export default function Produtos() {
   const [wizardTipo, setWizardTipo] = useState<"simples" | "variacoes" | "personalizavel">("simples");
   const [wizardSubtipo, setWizardSubtipo] = useState<"sabores_e_tamanhos" | "so_sabores" | "so_tamanhos" | null>(null);
   const [editTab, setEditTab] = useState<"info" | "opcoes" | "tamanhos" | "kit" | "preco" | "fotos">("info");
+  useEffect(() => { setEscTela(0); }, [editTab]); // trocar de aba volta a lista das escolhas
   // Tela de sucesso depois de publicar um produto novo
   const [sucesso, setSucesso] = useState<null | { id?: string; nome: string; categoria?: string; imagem?: string; preco: number; aPartir: boolean; primeiro: boolean; tipoLabel: string }>(null);
   const [confirmMudaSubtipo, setConfirmMudaSubtipo] = useState<{
@@ -3554,6 +3560,7 @@ export default function Produtos() {
   } | null>(null);
   const [wizardOpts, setWizardOpts] = useState({ complementos: false, personalizacao: false, promocao: false });
   const [form, setForm] = useState<Produto>(EMPTY);
+  useEffect(() => { setEscTela(0); }, [form.id]); // (14/10) outro produto: as escolhas abrem na lista
 
   // Auto-sync: se modo do tamanho é por_peso, forma_venda vira kg automaticamente.
   // E se ela trocar de volta pra "Preço fixo por opção", desfaz (antes o produto ficava "por kg" pra sempre)
@@ -4594,6 +4601,9 @@ export default function Produtos() {
   // Voltar um passo no cadastro (o mesmo do botão do topo e do "Voltar" do rodapé · 08/10 · 3.22)
   const voltarPassoCadastro = () => {
                   if (wizardStep === 2) { setTipoTela(true); return; }
+                  // (14/10) dentro das escolhas: volta uma tela; do passo 4 volta pra última escolha marcada
+                  if (wizardStep === 3 && escTela > 0) { setEscTela(t => t - 1); return; }
+                  if (wizardStep === 4) { setEscTela(escolhasAtivas(form).length); setWizardStep(3); return; }
                   if (wizardStep === 3 && kitTela) {
                     setKitTela(false);
                     const outros = [form.grupo_massas, form.grupo_recheios, form.grupo_coberturas, form.grupo_sabores, form.grupo_tamanhos].some(g => g?.ativo);
@@ -4930,12 +4940,14 @@ export default function Produtos() {
                 {!form.id && (() => {
                   // Um tracinho por tela do cadastro (a tela de tipos é a 1ª)
                   // (13/10) o mesmo caminho pra todos os tipos: Tipo → Sobre o produto → Escolhas → Preço → Fotos e entrega
-                  const total = 5;
-                  const atual = wizardStep;
+                  // (14/10) cada escolha marcada conta como uma tela a mais
+                  const nEsc = escolhasAtivas(form).length;
+                  const total = 5 + nEsc;
+                  const atual = wizardStep <= 2 ? wizardStep : wizardStep === 3 ? 3 + escTela : wizardStep + nEsc;
                   const nomes = ["Tipo", "Sobre o produto", "Escolhas", "Fotos", "Preço e revisão"];
                   return (
                     // (14/10) topo enxuto: só a barra e "2 de 5" (o título grande da tela já diz o passo)
-                    <div className="prod-wiz-topo" aria-label={`Passo ${atual} de ${total}: ${nomes[atual - 1]}`}>
+                    <div className="prod-wiz-topo" aria-label={`Passo ${atual} de ${total}: ${nomes[Math.min(wizardStep, 5) - 1]}`}>
                       <div className="prod-wiz-barra" aria-hidden="true"><i style={{ width: `${Math.round((atual / total) * 100)}%` }} /></div>
                       <span className="prod-wiz-n" aria-hidden="true">{atual} de {total}</span>
                     </div>
@@ -5257,7 +5269,7 @@ export default function Produtos() {
             {/* (13/10) Escolhas: a mesma tela pra todos os tipos, no cadastro e na edição */}
             {((wizardStep === 3 && !form.id) || (form.id && (editTab === "opcoes" || editTab === "kit" || editTab === "tamanhos"))) && (
               <div className="prod-modal-body">
-                <EscolhasProduto form={form} setForm={setForm as any} tipo={form.id ? null : tipoCadastro} onKitChange={onKitChange} outros={produtos.filter(p => p.id !== form.id)} />
+                <EscolhasProduto form={form} setForm={setForm as any} tipo={form.id ? null : tipoCadastro} onKitChange={onKitChange} outros={produtos.filter(p => p.id !== form.id)} tela={escTela} setTela={setEscTela} edicao={!!form.id} />
               </div>
             )}
 
@@ -6051,12 +6063,10 @@ export default function Produtos() {
                   //   Se ativou algum grupo, precisa ter pelo menos 1 opção nele
                   //   Preço base é validado no step 4
                   if (wizardStep === 3) {
-                    // (13/10) kit ligado: precisa estar completo · escolha ligada: precisa ter pelo menos 1 opção
-                    if (kitAtivo((form as any).kit_qtd)) { const fk = faltaKit((form as any).kit_qtd); if (fk) return fk; }
-                    const grupos: [string, any][] = [["grupo_massas", form.grupo_massas], ["grupo_recheios", form.grupo_recheios], ["grupo_coberturas", form.grupo_coberturas], ["grupo_sabores", form.grupo_sabores], ["grupo_tamanhos", form.grupo_tamanhos]];
-                    const vazio = grupos.find(([, g]) => g?.ativo && (g?.opcoes.length || 0) === 0);
-                    if (vazio) return { msg: `Coloque pelo menos 1 ${NOME_GRUPO[vazio[0]] || "sabor"} (ou toque em Tirar)`, alvo: `[data-falta="${vazio[0]}"]` };
-                    return null;
+                    // (14/10) no checklist não falta nada; em cada tela, só o que é daquela escolha
+                    if (escTela === 0) return null;
+                    const c = escolhasAtivas(form)[escTela - 1];
+                    return c ? faltaDaEscolha(form, c) : null;
                   }
                   // (14/10) Preço é o último passo (5): valida preço base OU preços dos tamanhos
                   if (wizardStep === 5) {
@@ -6146,6 +6156,8 @@ export default function Produtos() {
                       // Bolo: depois dos tamanhos vem a tela de preço
                       // Kit ligado: depois das opções vem a tela "Monte seu kit"
                       void kitLigado; // (13/10) o kit agora é montado dentro de Escolhas
+                      // (14/10) escolhas: lista → cada escolha marcada → passo 4
+                      if (wizardStep === 3 && escTela < escolhasAtivas(form).length) { setEscTela(t => t + 1); return; }
                       setWizardStep(s => (s + 1) as 1 | 2 | 3 | 4 | 5);
                     }}
                   >

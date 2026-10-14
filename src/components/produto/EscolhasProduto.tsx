@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { ArrowDown, ArrowUp, Basket, Cake, Check, Drop, IceCream, PencilSimple, Plus, Ruler, Sparkle, Trash, X } from "@phosphor-icons/react";
 import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
@@ -120,54 +120,58 @@ type Props = {
   onKitChange: (k: KitQtdConfig) => void;
   /** os outros produtos da confeiteira (pra "Usar de outro produto") */
   outros?: any[];
+  /** (14/10) 0 = checklist; 1..n = a tela da escolha marcada número n */
+  tela?: number;
+  setTela?: (n: number) => void;
+  edicao?: boolean;
 };
 
-export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outros }: Props) {
-  const [aberto, setAberto] = useState<Chave | null>(null);
+/** (14/10) ordem das escolhas (a mesma do checklist e das telas) */
+export const TODAS_ESCOLHAS: Chave[] = ["tamanho", "quantidade", "massa", "recheio", "cobertura", "sabor"];
+export function escolhaAtiva(form: any, c: Chave): boolean {
+  if (c === "quantidade") return kitAtivo(form.kit_qtd);
+  if (c === "tamanho") return !!form.grupo_tamanhos?.ativo;
+  return !!form[CAMPO[c]]?.ativo;
+}
+export function escolhasAtivas(form: any): Chave[] { return TODAS_ESCOLHAS.filter(c => escolhaAtiva(form, c)); }
+/** O que falta numa escolha pra seguir (null = tudo certo) */
+export function faltaDaEscolha(form: any, c: Chave): { msg: string; alvo?: string } | null {
+  if (c === "quantidade") return faltaKit(form.kit_qtd);
+  if (c === "tamanho") {
+    const g = form.grupo_tamanhos;
+    if (!(g?.opcoes?.length)) return { msg: "Coloque pelo menos 1 tamanho", alvo: 'input[aria-label="Outro tamanho"]' };
+    if (g.modo_preco_tamanho === "por_peso" && !(Number(form.preco_normal) > 0)) return { msg: "Coloque o preço do kg", alvo: 'input[aria-label="Preço do kg"]' };
+    return null;
+  }
+  const g = form[CAMPO[c]];
+  if (!(g?.opcoes?.length)) return { msg: `Coloque pelo menos 1 ${ROTULO[c].toLowerCase()}`, alvo: ".esc-nova input" };
+  return null;
+}
+const EXEMPLO: Record<Chave, string> = {
+  tamanho: "Por quilo ou Pequeno · Médio · Grande",
+  quantidade: "Cento, kit de 50, de 100…",
+  massa: "Branca, chocolate, red velvet…",
+  recheio: "Ninho, brigadeiro, morango…",
+  cobertura: "Chantilly, ganache, pasta americana…",
+  sabor: "",
+};
+
+export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outros, tela = 0, setTela, edicao = false }: Props) {
   const [verOutras, setVerOutras] = useState(false);
   const nome = String(form.nome || "").trim();
   const sugeridas = useMemo(() => sugestoesDoProduto(tipo, nome, form.categoria || ""), [tipo, nome, form.categoria]);
-  const todas: Chave[] = ["tamanho", "quantidade", "massa", "recheio", "cobertura", "sabor"];
   const kit = form.kit_qtd as KitQtdConfig | null;
   const temKit = kitAtivo(kit);
-
-  const ativa = (c: Chave): boolean => {
-    if (c === "quantidade") return temKit;
-    if (c === "tamanho") return !!form.grupo_tamanhos?.ativo;
-    return !!form[CAMPO[c]]?.ativo;
-  };
+  const ativa = (c: Chave) => escolhaAtiva(form, c);
   // Kit e tamanho não andam juntos (o kit já é a "quantidade" do produto); sabor do kit fica dentro do kit
   const bloqueada = (c: Chave) => (c === "tamanho" && temKit) || (c === "quantidade" && !!form.grupo_tamanhos?.ativo) || (c === "sabor" && temKit);
-  const ativas = todas.filter(ativa);
-  const chipsSug = sugeridas.filter(c => !ativa(c) && !bloqueada(c));
-  const chipsOutras = todas.filter(c => !sugeridas.includes(c) && !ativa(c) && !bloqueada(c));
-
-  // (13/10) cada escolha abre numa janela própria. Ao abrir, guarda como estava: o X desfaz tudo o que mexeu ali.
-  const antes = useRef<{ chave: Chave; valor: any; kit: any; forma: any; base?: string } | null>(null);
-  const campoDe = (c: Chave) => (c === "tamanho" ? "grupo_tamanhos" : c === "quantidade" ? "kit_qtd" : CAMPO[c]);
-  const guardar = (c: Chave) => { antes.current = { chave: c, valor: form[campoDe(c)] ?? null, kit: form.kit_qtd ?? null, forma: form.forma_venda }; };
-  const abrir = (c: Chave) => { guardar(c); setAberto(c); };
-  const salvar = () => { antes.current = null; setAberto(null); };
-  // (13/10) Voltar (ou X) com mudança não salva: pergunta antes de desfazer
-  // "como estava ao abrir a janela" (já com o que o ligar preencheu): só pergunta se ela mexeu depois disso
-  const retrato = () => { const a = antes.current; if (!a) return ""; return JSON.stringify([a.chave === "quantidade" ? form.kit_qtd ?? null : form[campoDe(a.chave)] ?? null, form.forma_venda]); };
-  useEffect(() => { if (aberto && antes.current && antes.current.base === undefined) antes.current.base = retrato(); });
-  const mudou = () => { const a = antes.current; return !!a && a.base !== undefined && retrato() !== a.base; };
-  const voltar = async () => {
-    if (mudou() && !(await confirmar({ titulo: "Sair sem salvar?", texto: "O que você mexeu aqui não fica.", rotulo: "Sair sem salvar", rotuloVoltar: "Ficar" }))) return;
-    cancelar();
-  };
-  const cancelar = () => {
-    const a = antes.current;
-    if (a) {
-      if (a.chave === "quantidade") onKitChange(a.kit ? a.kit : { ...(kit as KitQtdConfig), ativo: false });
-      else setForm(f => ({ ...f, [campoDe(a.chave)]: a.valor ?? { ...(f[campoDe(a.chave)] || {}), ativo: false }, forma_venda: a.forma }));
-    }
-    antes.current = null; setAberto(null);
-  };
+  const ativas = TODAS_ESCOLHAS.filter(ativa);
+  // no checklist: as sugeridas (e as já ligadas) primeiro; o resto em "Outra escolha"
+  const principais = TODAS_ESCOLHAS.filter(c => sugeridas.includes(c) || ativa(c));
+  const outrasL = TODAS_ESCOLHAS.filter(c => !principais.includes(c));
+  const exemplo = (c: Chave) => c === "sabor" ? sugestoesDaChave("sabor", tipo, form.categoria).slice(0, 3).join(", ") + "…" : EXEMPLO[c];
 
   const ligar = (c: Chave) => {
-    guardar(c);
     if (c === "quantidade") {
       onKitChange({ ...presetKit(tipo === "salgados" || /salgad/.test(norm(form.categoria)) ? "salgados" : "docinhos", kit), ativo: true });
     } else if (c === "tamanho") {
@@ -178,70 +182,67 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
       const campo = CAMPO[c];
       setForm(f => {
         const g: Grupo = { ativo: false, min: 1, max: 1, distribuicao: "nenhuma", opcoes: [], ...(f[campo] || {}) };
-        // começa já com as 2 primeiras sugestões marcadas (é só tirar ou pôr): menos digitação
+        // começa já com as 2 primeiras sugestões (é só tirar ou pôr): menos digitação
         const sug = sugestoesDaChave(c, tipo, f.categoria);
         const opcoes = g.opcoes.length ? g.opcoes : sug.slice(0, 2).map(n => ({ id: uid(), nome: n, adicional: 0 }));
-        return { ...f, [campo]: { ...g, ativo: true, min: 1, max: c === "recheio" ? 2 : 1, opcoes } };
+        return { ...f, [campo]: { ...g, ativo: true, min: g.opcoes.length ? g.min : 1, max: g.opcoes.length ? g.max : (c === "recheio" ? 2 : 1), opcoes } };
       });
     }
-    setAberto(c); setVerOutras(false);
   };
   const desligar = (c: Chave) => {
     if (c === "quantidade" && kit) onKitChange({ ...kit, ativo: false });
     else if (c === "tamanho") setForm(f => ({ ...f, grupo_tamanhos: { ...(f.grupo_tamanhos || {}), ativo: false } }));
     else setForm(f => ({ ...f, [CAMPO[c as "massa"]]: { ...(f[CAMPO[c as "massa"]] || {}), ativo: false } }));
-    antes.current = null; setAberto(null);
   };
+  const alternar = (c: Chave) => { if (bloqueada(c)) return; if (ativa(c)) desligar(c); else ligar(c); };
 
+  // ── Tela de uma escolha (Tamanho 1 de 2…) ──
+  const atual = tela > 0 ? ativas[tela - 1] : null;
+  if (atual) {
+    return (
+      <div className="esc esc-tela" onFocusCapture={selecionarValorAoFocar} onClickCapture={selecionarValorAoFocar}>
+        {edicao && setTela && <button type="button" className="esc-voltar-lista" onClick={() => setTela(0)}>‹ Todas as escolhas</button>}
+        <h2 className="esc-h">{ROTULO[atual]}</h2>
+        {ativas.length > 1 && <p className="esc-s esc-s--n">Escolha {tela} de {ativas.length}</p>}
+        {atual === "quantidade" ? (kit ? <CartaoQuantidade kit={kit} onKitChange={onKitChange} nome={nome} /> : null)
+          : atual === "tamanho" ? <CartaoTamanho form={form} setForm={setForm} outros={outros} />
+          : <CartaoGrupo chave={atual} tipo={tipo} form={form} setForm={setForm} outros={outros} />}
+      </div>
+    );
+  }
+
+  // ── Checklist: só marcar ──
+  const linha = (c: Chave) => {
+    const on = ativa(c), trava = bloqueada(c) && !on;
+    const f = on ? faltaDaEscolha(form, c) : null;
+    return (
+      <li key={c} className={`esc-chk${on ? " on" : ""}${trava ? " trava" : ""}`}>
+        <button type="button" className="esc-chk-bt" role="checkbox" aria-checked={on} disabled={trava} onClick={() => alternar(c)}>
+          <i className="esc-chk-ck" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
+          <span className="esc-tx">
+            <b>{ROTULO[c]}</b>
+            <small className={f && edicao ? "esc-falta" : undefined}>
+              {trava ? (c === "tamanho" ? "Não junta com Quantidade" : c === "quantidade" ? "Não junta com Tamanho" : "Os sabores ficam na Quantidade")
+                : on && edicao ? (f ? faltaCurta(f.msg) : resumo(c, form)) : exemplo(c)}
+            </small>
+          </span>
+        </button>
+        {on && edicao && setTela && <button type="button" className="esc-chk-ed" onClick={() => setTela(ativas.indexOf(c) + 1)}>Editar</button>}
+      </li>
+    );
+  };
   return (
     <div className="esc">
-      <h2 className="esc-h">O cliente escolhe alguma coisa?</h2>
-      <p className="esc-s">Toque no que o cliente escolhe{nome ? <> em <b>{nome}</b></> : null}. Se não escolhe nada, é só continuar.</p>
-
-      {(chipsSug.length > 0 || chipsOutras.length > 0) && (
-        <div className="esc-chips" role="group" aria-label="Escolhas sugeridas">
-          {chipsSug.map(c => <button key={c} type="button" className="esc-chip" onClick={() => ligar(c)}><Plus size={14} weight="bold" aria-hidden="true" />{ROTULO[c]}</button>)}
-          {chipsOutras.length > 0 && !verOutras && <button type="button" className="esc-chip esc-chip--outras" onClick={() => setVerOutras(true)}>Outras</button>}
-          {verOutras && chipsOutras.map(c => <button key={c} type="button" className="esc-chip" onClick={() => ligar(c)}><Plus size={14} weight="bold" aria-hidden="true" />{ROTULO[c]}</button>)}
-        </div>
-      )}
-
-      <div className="esc-lista">
-        {ativas.length === 0 && (
-          <div className="esc-linha esc-linha--nada">
-            <span className="esc-ic esc-ic--ok"><Check size={20} weight="bold" /></span>
-            <span className="esc-tx"><b>Vende como está</b><small>O cliente só escolhe a quantidade</small></span>
-          </div>
+      <h2 className="esc-h">O que o cliente escolhe?</h2>
+      <p className="esc-s">Marque o que vale{nome ? <> pro <b>{nome}</b></> : null}. {edicao ? "Toque em Editar pra mudar." : "Você cadastra cada um em seguida."}</p>
+      <ul className="esc-chks" role="group" aria-label="Escolhas">
+        {principais.map(linha)}
+        {verOutras && outrasL.map(linha)}
+        {!verOutras && outrasL.length > 0 && (
+          <li><button type="button" className="esc-peso-mais" onClick={() => setVerOutras(true)}><Plus size={16} weight="bold" aria-hidden="true" />Outra escolha <span className="esc-chk-outras">· {outrasL.map(c => ROTULO[c]).join(", ")}</span></button></li>
         )}
-        {ativas.map(c => {
-          const f = c === "quantidade" ? faltaKit(kit) : null;
-          return (
-            <button key={c} type="button" className="esc-linha" onClick={() => abrir(c)}
-              data-falta={c === "quantidade" ? undefined : c === "tamanho" ? "grupo_tamanhos" : CAMPO[c]}>
-              <span className="esc-ic">{ICONE[c]}</span>
-              <span className="esc-tx"><b>{ROTULO[c]}</b><small className={f ? "esc-falta" : undefined}>{f ? faltaCurta(f.msg) : resumo(c, form)}</small></span>
-              <span className="esc-editar"><PencilSimple size={16} aria-hidden="true" />Editar</span>
-            </button>
-          );
-        })}
-      </div>
-
-      <Janela aberta={!!aberto} aoFechar={voltar} titulo={aberto ? ROTULO[aberto] : ""} tipo="conteudo" travada
-        acoes={aberto ? (<>
-          <Botao variante="secundario" onClick={voltar}>Voltar</Botao>
-          <Botao onClick={salvar}>{SALVAR[aberto]}</Botao>
-        </>) : null}>
-        {aberto && (
-          <div className="esc esc-jan" onFocusCapture={selecionarValorAoFocar} onClickCapture={selecionarValorAoFocar}>
-            {aberto === "quantidade" ? (kit ? <CartaoQuantidade kit={kit} onKitChange={onKitChange} nome={nome} /> : null)
-              : aberto === "tamanho" ? <CartaoTamanho form={form} setForm={setForm} outros={outros} />
-              : <CartaoGrupo chave={aberto} tipo={tipo} form={form} setForm={setForm} outros={outros} />}
-            <button type="button" className="esc-tirar-link" onClick={async () => {
-              if (await confirmar({ titulo: `Tirar ${ROTULO[aberto].toLowerCase()} deste produto?`, texto: "O cliente não vai mais escolher isso no cardápio.", rotulo: "Tirar", perigo: true })) desligar(aberto);
-            }}><Trash size={16} aria-hidden="true" />Tirar {ROTULO[aberto].toLowerCase()} deste produto</button>
-          </div>
-        )}
-      </Janela>
+      </ul>
+      <p className="esc-nota">{ativas.length === 0 ? "Sem marcar nada, o cliente só escolhe quantos quer." : `${ativas.length} ${ativas.length === 1 ? "escolha marcada" : "escolhas marcadas"}. ${edicao ? "" : "Continue pra cadastrar."}`}</p>
     </div>
   );
 }
