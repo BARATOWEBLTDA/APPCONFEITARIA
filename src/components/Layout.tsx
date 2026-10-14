@@ -1,5 +1,6 @@
 import { useNotifications } from "@/context/NotificationContext";
 import { ROTAS_CARDAPIO } from "@/components/CardapioSubnav";
+const ROTAS_CATALOGO = ["/produtos", "/produtos/categorias", "/categorias", "/complementos"];
 import { PausarPedidos } from "@/components/loja/PausarPedidos";
 import { NavLink, Outlet, useNavigate, useLocation, useNavigationType } from "react-router-dom";
 // deploy: Proposta D - nova arquitetura de navegação (Entrega 1)
@@ -12,7 +13,7 @@ import PerguntaSons from "@/components/PerguntaSons";
 import { useState, useEffect, type ReactNode } from "react";
 import { ClipboardText, ChartBar, Stack, Palette, Truck, Storefront, ArrowSquareOut, ArrowsDownUp, CalendarCheck, Tag, ChartLineUp, Megaphone, HandCoins, Trophy, CaretDoubleLeft, CaretDoubleRight,
   House, CalendarDots, ShoppingBag, Users, BookOpen,
-  Package, CurrencyDollar, Gear, CaretDown,
+  Package, CurrencyDollar, Gear, CaretDown, Cake,
   SquaresFour, Camera, Plus,
   Receipt, Sparkle, Crown, Bell,
 } from "@phosphor-icons/react";
@@ -185,20 +186,19 @@ export default function Layout() {
           <ItemMenu to="/pedidos" icone={Receipt}>Pedidos</ItemMenu>
           <ItemMenu to="/agenda" icone={CalendarDots}>Agenda</ItemMenu>
           {/* (13/10) as telas do Cardápio digital viraram um grupo do menu (antes eram abas na faixa rosa) */}
-          <GrupoMenu id="cardapio" rotulo="Cardápio digital" icone={ShoppingBag} tour="cardapio" rotas={[...ROTAS_CARDAPIO, "/cardapio-preview"]} recolhido={recolhido}>
+          {/* (14/10) Produtos, Categorias e Personalização foram pra Cadastros: aqui fica só o que é da loja online */}
+          <GrupoMenu id="cardapio" rotulo="Cardápio digital" icone={ShoppingBag} tour="cardapio" rotas={[...ROTAS_CARDAPIO.filter(r => !ROTAS_CATALOGO.includes(r)), "/cardapio-preview"]} recolhido={recolhido}>
             <SubitemMenu to="/cardapio" end icone={ChartBar}>Visão geral</SubitemMenu>
-            <p className="nav-sec">Catálogo</p>
-            <SubitemMenu to="/produtos" end icone={Package}>Produtos</SubitemMenu>
-            <SubitemMenu to="/complementos" icone={Stack}>Personalização</SubitemMenu>
-            <SubitemMenu to="/categorias" icone={SquaresFour} tambem={["/produtos/categorias"]}>Categorias</SubitemMenu>
-            <p className="nav-sec">Loja</p>
             <SubitemMenu to="/cardapio-design" icone={Palette}>Aparência</SubitemMenu>
             <SubitemMenu to="/checkout-config" icone={Truck}>Entrega e pagamento</SubitemMenu>
             <SubitemMenu to="/cardapio-config" icone={Storefront}>Dados da loja</SubitemMenu>
             {linkCardapio && <a className="nav-subitem" href={linkCardapio} target="_blank" rel="noopener noreferrer"><span className="nav-subicon" aria-hidden="true"><ArrowSquareOut size={16} weight="bold" /></span>Ver meu cardápio</a>}
           </GrupoMenu>
           {/* (13/10) grupos que abrem e fecham (ficam abertos quando a tela é deles; o que ela abrir ou fechar fica lembrado) */}
-          <GrupoMenu id="cadastros" rotulo="Cadastros" icone={Users} rotas={["/clientes", "/insumos", "/ficha-tecnica"]} recolhido={recolhido}>
+          <GrupoMenu id="cadastros" rotulo="Cadastros" icone={Users} rotas={[...ROTAS_CATALOGO, "/clientes", "/insumos", "/ficha-tecnica"]} recolhido={recolhido}>
+            <SubitemMenu to="/produtos" end icone={Cake}>Produtos</SubitemMenu>
+            <SubitemMenu to="/categorias" icone={SquaresFour} tambem={["/produtos/categorias"]}>Categorias</SubitemMenu>
+            <SubitemMenu to="/complementos" icone={Stack}>Personalização</SubitemMenu>
             <SubitemMenu to="/clientes" icone={Users}>Clientes</SubitemMenu>
             <SubitemMenu to="/insumos" icone={Package}>Ingredientes</SubitemMenu>
             <SubitemMenu to="/ficha-tecnica" icone={ClipboardText}>Ficha técnica</SubitemMenu>

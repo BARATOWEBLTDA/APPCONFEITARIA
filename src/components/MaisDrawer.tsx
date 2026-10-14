@@ -3,9 +3,9 @@ import { INDICACAO_ATIVA } from "@/lib/recursos";
 import { createPortal } from "react-dom";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
-  ChartLineUp, Package, ClipboardText, Gear, PaintBrush, Crown, SquaresFour, UserPlus, X, CaretRight,
+  ChartLineUp, ClipboardText, Gear, PaintBrush, Crown, SquaresFour, UserPlus, X, CaretRight,
   Trophy, Megaphone, Plus, CalendarDots, Users, Stack, Truck, Storefront, Eye, Basket, ArrowsDownUp,
-  HandCoins, CalendarCheck, Tag, Bell, ChatCircleText, Newspaper, Bug, Lightbulb,
+  HandCoins, CalendarCheck, Tag, Bell, Cake, ChatCircleText, Newspaper, Bug, Lightbulb,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { BotaoIcone } from "@/components/base";
@@ -38,15 +38,11 @@ const GRUPOS: Grupo[] = [
     items: [
       { label: "Nova venda", desc: "Lance um pedido",          path: "/vendas/novo", Icone: Plus },
       { label: "Agenda",     desc: "Entregas por dia",         path: "/agenda",      Icone: CalendarDots },
-      { label: "Clientes",   desc: "Quem compra e o que compra", path: "/clientes",  Icone: Users },
     ],
   },
   {
     label: "Cardápio digital",
     items: [
-      { label: "Produtos",            desc: "O que aparece no cardápio", path: "/produtos",        Icone: Package },
-      { label: "Personalização",      desc: "Adicionais e opções",       path: "/complementos",    Icone: Stack },
-      { label: "Categorias",          desc: "Organize seus produtos",    path: "/categorias",      Icone: SquaresFour },
       { label: "Aparência",           desc: "Cores, logo e modelo",      path: "/cardapio-design", Icone: PaintBrush },
       { label: "Entrega e pagamento", desc: "Taxas, Pix e retirada",     path: "/checkout-config", Icone: Truck },
       { label: "Dados da loja",       desc: "Endereço, horário e link",  path: "/cardapio-config", Icone: Storefront },
@@ -56,6 +52,10 @@ const GRUPOS: Grupo[] = [
   {
     label: "Cadastros",
     items: [
+      { label: "Produtos",       desc: "O que aparece no cardápio", path: "/produtos",      Icone: Cake },
+      { label: "Categorias",     desc: "Organize seus produtos",    path: "/categorias",    Icone: SquaresFour },
+      { label: "Personalização", desc: "Adicionais e opções",       path: "/complementos",  Icone: Stack },
+      { label: "Clientes",       desc: "Quem compra e o que compra", path: "/clientes",     Icone: Users },
       { label: "Ingredientes",  desc: "O que você compra",    path: "/insumos",       Icone: Basket },
       // 13/10: Receitas escondida até as fotos ficarem prontas
       { label: "Ficha técnica", desc: "Calcule o custo real", path: "/ficha-tecnica", Icone: ClipboardText },
