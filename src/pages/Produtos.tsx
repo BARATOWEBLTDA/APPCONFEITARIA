@@ -3581,7 +3581,7 @@ export default function Produtos() {
   const NOME_SECAO: Record<string, string> = { info: "Nome e descrição", opcoes: "Escolhas", tamanhos: "Escolhas", kit: "Escolhas", fotos: "Fotos", preco: "Preço e promoção", entrega: "Cardápio e entrega" };
   useEffect(() => { setEscTela(0); }, [editTab]); // trocar de aba volta a lista das escolhas
   // Tela de sucesso depois de publicar um produto novo
-  const [sucesso, setSucesso] = useState<null | { id?: string; nome: string; categoria?: string; imagem?: string; preco: number; aPartir: boolean; primeiro: boolean; tipoLabel: string }>(null);
+  const [sucesso, setSucesso] = useState<null | { id?: string; nome: string; categoria?: string; imagem?: string; preco: number; de?: number; aPartir: boolean; primeiro: boolean; tipoLabel: string }>(null);
   const [confirmMudaSubtipo, setConfirmMudaSubtipo] = useState<{
     novoSubtipo: "sabores_e_tamanhos" | "so_sabores" | "so_tamanhos";
     quantidade: number;
@@ -4498,12 +4498,13 @@ export default function Produtos() {
     // Cadastro novo: tela de sucesso com os próximos passos
     try { localStorage.removeItem(DRAFT_KEY); } catch {}
     const pc = precoCardapio({ ...form, ...(payload as any) });
+    const pcp = precoCardapioComPromocao({ ...form, ...(payload as any) }); // (14/10) o sucesso mostra o preço com a promoção
     const kitOn = kitAtivo((form as any).kit_qtd);
     const rotulos: Record<string, string> = { bolos: "Bolo", doces: "Doce", salgados: "Salgado", sobremesas: "Sobremesa", kitfesta: "Kit festa" };
     setSucesso({
       id: produtoId, nome: (payload as any).nome || form.nome, categoria: form.categoria,
       imagem: (form.imagem_url || "").split(",").map(x => x.trim()).filter(Boolean)[0],
-      preco: pc.valor, aPartir: pc.aPartir, primeiro: eraPrimeiro,
+      preco: pcp.final || pc.valor, de: pcp.de, aPartir: pc.aPartir, primeiro: eraPrimeiro,
       tipoLabel: kitOn ? "Kit" : (tipoCadastro && rotulos[tipoCadastro]) || "Produto",
     });
   };

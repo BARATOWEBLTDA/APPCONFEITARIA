@@ -10,6 +10,8 @@ interface Props {
   categoria?: string;
   imagem?: string;
   preco: number;
+  /** (14/10) preço cheio riscado quando está em promoção */
+  de?: number;
   aPartir: boolean;
   tipoLabel: string;        // "Bolo", "Doce", "Kit", "Produto"...
   onVerCardapio: () => void;
@@ -31,6 +33,17 @@ const CONFETE2: [number, string, number, number, number][] = Array.from({ length
   (i * 37) % 100, CORES_CONF[i % CORES_CONF.length], (i % 9) * 0.22, 2.6 + (i % 5) * 0.35, (i % 2 ? 1 : -1) * (360 + (i % 4) * 140),
 ]);
 
+/** (14/10) "Torta de Limão cadastrada", "Bolo de Morango cadastrado", "Trufas cadastradas": pela 1ª palavra do nome */
+const MASC_EM_A = new Set(["dia", "mapa", "clima", "sistema", "programa", "problema", "tema"]);
+const FEM_OUTRAS = new Set(["mousse", "musse", "charlotte", "fondue"]);
+function cadastrado(nome: string): string {
+  const w = String(nome || "").trim().split(/\s+/)[0]?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") || "";
+  const plural = /s$/.test(w) && w.length > 3;
+  const base = plural ? w.replace(/s$/, "") : w;
+  const fem = (/a$/.test(base) && !MASC_EM_A.has(base)) || FEM_OUTRAS.has(base) || /cao$|dade$|gem$/.test(base);
+  return `cadastrad${fem ? "a" : "o"}${plural ? "s" : ""}`;
+}
+
 export default function SucessoProdutoTela(p: Props) {
   useEffect(() => { tocarSom("sucesso"); }, []); // (14/10) som de sucesso (respeita os sons desligados)
   return (
@@ -50,7 +63,7 @@ export default function SucessoProdutoTela(p: Props) {
         )}
         <div className={`spt-ok${p.primeiro ? " spt-ok--festa" : ""}`} aria-hidden="true"><Check size={34} weight="bold" /></div>
         {/* (14/10) título só com o nome do produto */}
-        <h1 className="spt-h">{p.nome} cadastrado com sucesso</h1>
+        <h1 className="spt-h">{p.nome} {cadastrado(p.nome)} com sucesso</h1>
         <p className="spt-sub">
           {p.lojaPronta === false ? "Abra o cardápio pros clientes verem." : "Já aparece no seu cardápio."}
         </p>
@@ -60,7 +73,7 @@ export default function SucessoProdutoTela(p: Props) {
           <div>
             {p.categoria && <small>{p.categoria}</small>}
             <b>{p.nome}</b>
-            {p.preco > 0 && <span>{p.aPartir ? "a partir de " : ""}<em>{brl(p.preco)}</em></span>}
+            {p.preco > 0 && <span>{p.aPartir ? "a partir de " : ""}{(p.de || 0) > p.preco && <s>{brl(p.de!)}</s>}<em>{brl(p.preco)}</em></span>}
           </div>
         </div>
 
@@ -104,6 +117,7 @@ export default function SucessoProdutoTela(p: Props) {
         .spt-prev small { display: block; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
         .spt-prev b { display: block; font-size: 14.5px; margin: 2px 0 3px; }
         .spt-prev span { font-size: 13px; color: var(--ui-texto-2); } .spt-prev em { font-style: normal; font-weight: 700; color: var(--ui-texto); }
+        .spt-prev s { margin-right: 6px; font-size: 12px; color: var(--ui-texto-3); }
         .spt-acts { display: flex; flex-direction: column; gap: 8px; }
         .spt-a1 { min-height: 48px; border: none; background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-weight: 700; font-size: 15px; border-radius: var(--ui-raio-botao); padding: 0 14px; box-shadow: 0 3px 0 var(--ui-rosa-escuro); cursor: pointer; }
         .spt-a1:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ui-rosa-escuro); }

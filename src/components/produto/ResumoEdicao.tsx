@@ -34,7 +34,7 @@ export default function ResumoEdicao({ form, isPro = false, onEditar }: { form: 
       : `${ativas.length} escolhas: ${ativas.map(c => ROT[c].toLowerCase()).join(", ")}`;
   const faltaPreco = r.avisos.find(a => /^Falta o preço/.test(a));
   const promo = !!form.promocao && (form.tipo_promocao === "percentual" ? Number(form.desconto_percentual) > 0 : Number(form.preco_promocional) > 0);
-  const preco = faltaPreco || (promo ? `Em promoção por ${rs(pc.final)}` : `${pc.aPartir ? "A partir de" : "Custa"} ${rs(pc.final)}`);
+  const preco = faltaPreco || (promo ? (pc.aPartir ? `Promoção desde ${rs(pc.final)}` : `Em promoção por ${rs(pc.final)}`) : `${pc.aPartir ? "A partir de" : "Custa"} ${rs(pc.final)}`);
   const nFotos = fotos.length;
   const textoFotos = !nFotos ? "Sem foto, adicione uma"
     : isPro ? `${nFotos} de 3 fotos cadastradas`

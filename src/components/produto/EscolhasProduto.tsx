@@ -143,6 +143,12 @@ export function faltaDaEscolha(form: any, c: Chave): { msg: string; alvo?: strin
   if (c === "tamanho") {
     const g = form.grupo_tamanhos;
     if (!(g?.opcoes?.length)) return { msg: "Coloque pelo menos 1 tamanho", alvo: 'input[aria-label="Outro tamanho"]' };
+    // (14/10) tamanho sem nome ou com nome repetido não passa (antes seguia e só travava no fim)
+    const iVazio = g.opcoes.findIndex((o: any) => !String(o?.nome || "").trim());
+    if (iVazio >= 0) return { msg: "Tem um tamanho sem nome", alvo: `input[aria-label="Nome do tamanho ${iVazio + 1}"]` };
+    const nomes = g.opcoes.map((o: any) => String(o.nome).trim().toLowerCase());
+    const iRep = nomes.findIndex((n: string, i: number) => nomes.indexOf(n) !== i);
+    if (iRep >= 0) return { msg: `"${String(g.opcoes[iRep].nome).trim()}" está repetido`, alvo: `input[aria-label="Nome do tamanho ${iRep + 1}"]` };
     // (14/10) o preço do kg agora vai no último passo (Preço e revisão), igual ao preço fixo
     return null;
   }
