@@ -3529,6 +3529,7 @@ export default function Produtos() {
   const [kitTela, setKitTela] = useState(false);
   // (14/10) Escolhas em checklist: 0 = a lista; 1..n = a tela de cada escolha marcada
   const [escTela, setEscTela] = useState(0);
+  const [kgPromo, setKgPromo] = useState(false); // (14/10) "Colocar em promoção" no preço por kg
   // Cadastro de bolo em 4 etapas (tipo "Bolos" no cadastro novo)
   const [tipoCadastro, setTipoCadastro] = useState<TipoCadastro | null>(null);
   const [boloTam, setBoloTam] = useState<BoloTam>(null);
@@ -3537,7 +3538,7 @@ export default function Produtos() {
   // Cadastro: tentou continuar com algo faltando → mostra o que falta acima do botão (some ao trocar de tela)
   const [mostrarFalta, setMostrarFalta] = useState(false);
   useEffect(() => { setMostrarFalta(false); }, [wizardStep, kitTela, boloPrecoTela, mobilePersonaStep, modal, tipoTela, escTela]);
-  useEffect(() => { if (!modal) setEscTela(0); }, [modal]);
+  useEffect(() => { if (!modal) { setEscTela(0); setKgPromo(false); } }, [modal]);
   // cada tela nova (passo ou escolha) começa do topo
   useEffect(() => { document.querySelectorAll<HTMLElement>(".prod-modal--novo .prod-modal-body").forEach(el => { el.scrollTop = 0; }); }, [wizardStep, escTela]);
   const [isMobileMain, setIsMobileMain] = useState(false);
@@ -4332,6 +4333,9 @@ export default function Produtos() {
     // Kit por quantidade: o preço base é o menor preço do kit
     if (kitAtivo((form as any).kit_qtd) && precoMinKit((form as any).kit_qtd) > 0) precoBase = precoMinKit((form as any).kit_qtd);
 
+    // (14/10) SKU: só vai quando tem; se o banco ainda não tem a coluna (SQL 4.36), salva sem ele e avisa
+    if (!String(formLimpo.sku || "").trim()) delete formLimpo.sku;
+    const semColunaSku = (e: any) => /sku/i.test(String(e?.message || "")) && /column|coluna|schema/i.test(String(e?.message || ""));
     const payload = {
       ...formLimpo,
       ...gruposPayload,
@@ -4342,7 +4346,8 @@ export default function Produtos() {
     };
     let produtoId = form.id;
     if (form.id) {
-      const { error } = await supabase.from("produtos").update(payload).eq("id", form.id);
+      let { error } = await supabase.from("produtos").update(payload).eq("id", form.id);
+      if (error && semColunaSku(error)) { const { sku: _s, ...sem } = payload as any; void _s; ({ error } = await supabase.from("produtos").update(sem).eq("id", form.id)); if (!error) avisar("Salvo. O SKU fica guardado depois que o SQL 4.36 rodar.", { tipo: "info" }); }
       if (error) {
         console.error("Erro ao atualizar produto:", error);
         showToast("error", "Não deu pra salvar", explicarErro(error));
@@ -4351,7 +4356,8 @@ export default function Produtos() {
       }
     } else {
       if (passouDoLimite()) { setSaving(false); setLimiteAberto(true); return; }
-      const { data: novo, error } = await supabase.from("produtos").insert({ ...payload, user_id: userId }).select("id").single();
+      let { data: novo, error } = await supabase.from("produtos").insert({ ...payload, user_id: userId }).select("id").single();
+      if (error && semColunaSku(error)) { const { sku: _s, ...sem } = payload as any; void _s; ({ data: novo, error } = await supabase.from("produtos").insert({ ...sem, user_id: userId }).select("id").single()); if (!error) avisar("Salvo. O SKU fica guardado depois que o SQL 4.36 rodar.", { tipo: "info" }); }
       if (error) {
         console.error("Erro ao criar produto:", error);
         showToast("error", "Não deu pra criar", explicarErro(error));
@@ -4557,7 +4563,7 @@ export default function Produtos() {
     let lista = [...produtos];
     if (buscaTexto.trim()) {
       const t = buscaTexto.toLowerCase();
-      lista = lista.filter(p => p.nome.toLowerCase().includes(t) || p.descricao?.toLowerCase().includes(t));
+      lista = lista.filter(p => p.nome.toLowerCase().includes(t) || p.descricao?.toLowerCase().includes(t) || String((p as any).sku || "").toLowerCase().includes(t));
     }
     switch (ordenarPor) {
       case "alfabetica":
@@ -5249,6 +5255,20 @@ export default function Produtos() {
                       </button>
                   </div>
                 </div>
+                {/* (14/10) SKU: código pra organizar os produtos (opcional), com "Gerar" */}
+                <div className="prod-field">
+                  <label className="prod-field-label-novo" htmlFor="prod-sku-input">SKU <span className="prod-sku-opc">opcional</span></label>
+                  <div className="prod-sku">
+                    <input id="prod-sku-input" placeholder="Ex.: BOL-0427" value={(form as any).sku || ""} maxLength={24} autoCapitalize="characters"
+                      onChange={e => setForm(f => ({ ...(f as any), sku: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, "") }))} />
+                    <button type="button" onClick={() => {
+                      const pre = (String(form.categoria || form.nome || "PRD").normalize("NFD").replace(/[^A-Za-z]/g, "").slice(0, 3) || "PRD").toUpperCase().padEnd(3, "X");
+                      const usados = new Set(produtos.map((p: any) => String(p.sku || "")));
+                      let cod = ""; for (let t = 0; t < 50; t++) { cod = `${pre}-${String(Math.floor(1000 + Math.random() * 9000))}`; if (!usados.has(cod)) break; }
+                      setForm(f => ({ ...(f as any), sku: cod }));
+                    }}>Gerar</button>
+                  </div>
+                </div>
               </div>
               {/* (4.29) edição: Mostrar no cardápio, no fim da aba Info */}
               {form.id && (
@@ -5563,11 +5583,17 @@ export default function Produtos() {
               ) && (
                 <div className="prod-section">
                   {/* o título "Qual o preço?" já diz; só o por quilo precisa do rótulo */}
-                  {form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" && <p className="prod-section-label prod-section-label--novo">Preço por kg</p>}
-                  {/* (14/10) no cadastro novo, o preço do kg já foi posto na janela de Tamanho: aqui só mostra e deixa a promoção */}
-                  {!form.id && form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" && (
-                    <p className="prod-kg-info">R$ {form.preco_normal > 0 ? formatPreco(form.preco_normal) : "0,00"} o kg <small>(em Escolhas › Tamanho)</small></p>
-                  )}
+                  {form.id && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" && <p className="prod-section-label prod-section-label--novo">Preço por kg</p>}
+                  {/* (14/10) no cadastro novo, o preço do kg já veio do Tamanho: aqui a conversa é sobre promoção */}
+                  {!form.id && form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" && (<>
+                    <p className="prod-section-label prod-section-label--novo">Promoção</p>
+                    <p className="prod-kg-promo-t">{primeiroNome ? `${primeiroNome}, você` : "Você"} definiu o preço do kg em <b>R$ {form.preco_normal > 0 ? formatPreco(form.preco_normal) : "0,00"}</b>. Gostaria de colocar uma promoção?</p>
+                    <button type="button" className={`prod-opc${kgPromo || (Number(form.preco_promocional) > 0) ? " on" : ""}`} role="checkbox" aria-checked={kgPromo || Number(form.preco_promocional) > 0}
+                      onClick={() => { const on = kgPromo || Number(form.preco_promocional) > 0; setKgPromo(!on); if (on) setForm(f => ({ ...f, preco_promocional: 0, promocao: false })); }}>
+                      <i aria-hidden="true">{(kgPromo || Number(form.preco_promocional) > 0) && <CheckIc size={14} weight="bold" />}</i>
+                      <span><b>Colocar em promoção</b><small>O cardápio mostra o preço antigo riscado</small></span>
+                    </button>
+                  </>)}
                   {form.id && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" && (
                     <p style={{margin:"0 0 10px", fontSize:12.5, color:"#6B5D64", lineHeight:1.5}}>
                       Coloque o preço de <b>1 kg</b>. Cada tamanho sai sozinho.
@@ -5590,8 +5616,8 @@ export default function Produtos() {
                         }} />
                       </div>
                     </div>}
-                    <div className="prod-field">
-                      <label>Preço promocional</label>
+                    {(form.id || !(form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") || kgPromo || Number(form.preco_promocional) > 0) && <div className="prod-field">
+                      <label>{!form.id && form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" ? "Preço promocional do kg" : "Preço promocional"}</label>
                       <div className="prod-preco-input prod-preco-input--big prod-preco-input--promo">
                         <span>R$</span>
                         <input
@@ -5606,7 +5632,7 @@ export default function Produtos() {
                           }}
                         />
                       </div>
-                    </div>
+                    </div>}
                   </div>
                   {!(form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") && (
                     <div className="prod-field" style={{ marginTop: 14 }}>
@@ -5967,8 +5993,40 @@ export default function Produtos() {
             </>
             )}
 
+              {/* (14/10) cadastro novo: uma seção só com as opções, cada uma com caixinha e explicação */}
+              {wizardStep === 5 && !form.id && (() => {
+                const enc = !!(form as any).antecedencia;
+                const op = (on: boolean, t: string, sub: string, fn: () => void) => (
+                  <button type="button" className={`prod-opc${on ? " on" : ""}`} role="checkbox" aria-checked={on} onClick={fn}>
+                    <i aria-hidden="true">{on && <CheckIc size={14} weight="bold" />}</i>
+                    <span><b>{t}</b><small>{sub}</small></span>
+                  </button>
+                );
+                return (
+                  <div className="prod-section">
+                    <p className="prod-section-label prod-section-label--novo">Opções</p>
+                    <div className="prod-opcs">
+                      {op(form.disponivel !== false, "Mostrar no cardápio", form.disponivel !== false ? "Os clientes veem e podem pedir" : "Fica guardado só pra você", () => setForm(f => ({ ...f, disponivel: f.disponivel === false })))}
+                      {op(form.pronta_entrega === true, "Pronta entrega", "Tem feito, sai na hora", () => setForm(f => ({ ...(f as any), pronta_entrega: !(f as any).pronta_entrega, antecedencia: !(f as any).pronta_entrega ? null : (f as any).antecedencia ?? null })))}
+                      {op(enc, "Precisa encomendar antes", enc ? "O cardápio mostra \"Pedir antes\"" : "O cliente pede com antecedência", () => setForm(f => ({ ...(f as any), antecedencia: (f as any).antecedencia ? null : "48h", pronta_entrega: (f as any).antecedencia ? (f as any).pronta_entrega : false })))}
+                    </div>
+                    {enc && (
+                      <div className="prod-field" style={{ marginTop: 12 }}>
+                        <label>Quantos dias antes?</label>
+                        <div className="prod-antecedencia-grid">
+                          {[{ valor: "24h", label: "24 horas" }, { valor: "48h", label: "48 horas" }, { valor: "3d", label: "3 dias" }, { valor: "5d", label: "5 dias" }, { valor: "7d", label: "1 semana" }, { valor: "15d", label: "15 dias" }].map(opt => (
+                            <button key={opt.valor} type="button" className={`prod-antecedencia-chip ${(form as any).antecedencia === opt.valor ? "prod-antecedencia-chip--on" : ""}`}
+                              onClick={() => setForm(f => ({ ...(f as any), antecedencia: opt.valor }))}>{opt.label}</button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
               {/* (4.29) Mostrar no cardápio: no último passo do cadastro (na edição fica na aba Info) */}
-              {wizardStep === 5 && !form.id && (
+              {false && (
               <div className="prod-section">
                 <p className="prod-section-label">No cardápio</p>
                 <div className="prod-toggles prod-toggles--clean" style={{ flexDirection: "column", gap: "0.25rem" }}>
@@ -5985,8 +6043,8 @@ export default function Produtos() {
               </div>
               )}
 
-              {/* Status — só em step 5 (Fotos) ou tab Fotos na edição */}
-              {((wizardStep === 5 && !form.id) || (form.id && editTab === "fotos")) && (
+              {/* Status — na edição, aba Fotos (no cadastro novo está na seção Opções) */}
+              {(form.id && editTab === "fotos") && (
               <div className="prod-section">
                 <p className="prod-section-label">Como o cliente recebe</p>
                 <div className="prod-toggles prod-toggles--clean" style={{ flexDirection: "column", gap: "0.25rem" }}>

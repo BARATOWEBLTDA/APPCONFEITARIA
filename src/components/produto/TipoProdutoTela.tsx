@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Cake, Check, Confetti, Cookie, ForkKnife, IceCream, Info, PencilSimple, X } from "@phosphor-icons/react";
+import { Cake, Check, Confetti, Cookie, ForkKnife, IceCream, PencilSimple, X } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import "./escolhas.css";
 
@@ -64,7 +64,6 @@ export default function TipoProdutoTela({ onEscolher, onFechar }: Props) {
               );
             })}
           </div>
-          {tipo && <p className="tpp-dica"><Info size={18} aria-hidden="true" /><span>Já vem com sugestões pra <b>{tipo.titulo.toLowerCase()}</b>.</span></p>}
         </div>
       </div>
       <div className="prod-modal-footer prod-modal-footer--novo">
@@ -77,6 +76,9 @@ export default function TipoProdutoTela({ onEscolher, onFechar }: Props) {
         .tpp-linha + .tpp-linha { border-top: 1px solid var(--ui-linha); }
         /* (14/10) selecionado no rosa do projeto: borda rosa inteira, fundo rosa e nome em rosa escuro */
         .tpp-linha.sel { position: relative; background: #FDE4EE; box-shadow: inset 0 0 0 2px var(--ui-rosa); }
+        /* o destaque acompanha a curva da lista no primeiro e no último */
+        .tpp-linha:first-child { border-radius: 9px 9px 0 0; }
+        .tpp-linha:last-child { border-radius: 0 0 9px 9px; }
         .tpp-linha.sel .esc-tx b { color: var(--ui-rosa-escuro); font-weight: 700; }
         .tpp-linha.sel .esc-tx small { color: var(--ui-rosa-escuro); }
         @media (hover: hover) and (pointer: fine) { .tpp-linha:hover:not(.sel) { background: #FCFAFB; } }

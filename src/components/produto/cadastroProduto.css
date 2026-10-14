@@ -187,3 +187,27 @@ body .prod-modal--novo .prod-wiz-topo { display: flex; align-items: center; gap:
 body .prod-modal--novo .prod-wiz-topo .prod-wiz-barra { flex: 1; margin: 0; }
 body .prod-modal--novo .prod-wiz-n { flex: none; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); white-space: nowrap; }
 body .prod-modal--novo .esc-rec { margin-left: 6px; padding: 2px 6px; border-radius: 4px; background: #FFF0F5; font-size: 11.5px; font-weight: 600; color: var(--ui-rosa-escuro); vertical-align: 1px; }
+
+/* (14/10) opções com caixinha quadrada e explicação (último passo) e a pergunta da promoção no kg */
+body .prod-modal--novo .prod-opcs { border: 1px solid var(--ui-borda); border-radius: 12px; overflow: hidden; background: var(--ui-branco); }
+body .prod-modal--novo .prod-opc { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 62px; margin: 0; padding: 10px 14px; border: 0; background: none; font-family: inherit; text-align: left; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+body .prod-modal--novo .prod-opcs .prod-opc + .prod-opc { border-top: 1px solid var(--ui-linha); }
+body .prod-modal--novo .prod-opc > i { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid #D6CBD0; border-radius: 6px; color: var(--ui-branco); }
+body .prod-modal--novo .prod-opc.on > i { border-color: var(--ui-rosa); background: var(--ui-rosa); }
+body .prod-modal--novo .prod-opc > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+body .prod-modal--novo .prod-opc b { font-size: 15px; font-weight: 600; color: var(--ui-texto); }
+body .prod-modal--novo .prod-opc small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body .prod-modal--novo .prod-section > .prod-opc { border: 1px solid var(--ui-borda); border-radius: 12px; margin-bottom: 14px; }
+body .prod-modal--novo .prod-kg-promo-t { margin: 0 0 12px; font-size: 15px; line-height: 1.5; color: var(--ui-texto); }
+body .prod-modal--novo .prod-kg-promo-t b { font-weight: 700; }
+body .prod-modal--novo .prev-cardapio-box { display: flex; justify-content: center; padding: 14px; }
+body .prod-modal--novo .prev-cardapio-card { width: 190px; }
+
+/* (14/10) SKU com o botão Gerar dentro da linha */
+body .prod-modal--novo .prod-sku { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+body .prod-modal--novo .prod-sku input { min-width: 0; height: 52px; padding: 0 14px; border: 1.5px solid var(--ui-borda-campo); border-radius: 12px; font-family: inherit; font-size: 16px; font-weight: 600; letter-spacing: .04em; color: var(--ui-texto); background: var(--ui-branco); }
+body .prod-modal--novo .prod-sku input::placeholder { font-weight: 500; letter-spacing: 0; color: var(--ui-texto-3); }
+body .prod-modal--novo .prod-sku input:focus { outline: none; border-color: var(--ui-rosa); }
+body .prod-modal--novo .prod-sku button { height: 52px; padding: 0 18px; border: 0; border-radius: 12px; background: #EAE4E7; font-family: inherit; font-size: 15px; font-weight: 700; color: var(--ui-texto); cursor: pointer; }
+body .prod-modal--novo .prod-sku-opc { margin-left: 6px; font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
+body .prod-modal--novo .prod-row-2 > .prod-field:only-child { grid-column: 1 / -1; }
