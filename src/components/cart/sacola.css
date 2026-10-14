@@ -155,3 +155,8 @@
 @media (prefers-reduced-motion: reduce) { .sc-enviado-ic, .sc-bt-pri.treme { animation: none; } }
 /* (4.27) loja com os pedidos pausados */
 .sc-bt-pausada { background: #9C8F95 !important; box-shadow: none !important; }
+/* (14/10) o texto usa a largura toda (o "Grande · Sabor Nutella" quebrava ao lado do botão de quantidade); a quantidade fica embaixo, à direita */
+.sc-it { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; column-gap: 12px; row-gap: 4px; align-items: start; }
+.sc-it > .sc-it-ft { grid-row: 1 / span 2; }
+.sc-it > .sc-it-tx { grid-column: 2 / 4; }
+.sc-it > .sc-qtd { grid-column: 3; justify-self: end; align-self: end; }

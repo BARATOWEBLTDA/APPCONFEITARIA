@@ -29,13 +29,23 @@ export function resumoRevisao(form: any) {
   const tam = form.grupo_tamanhos as G | undefined;
   const temTam = !!tam?.ativo && (tam.opcoes?.length || 0) > 0;
   const porPeso = temTam && tam!.modo_preco_tamanho === "por_peso";
+  // (14/10) Tamanho + "só o sabor": o tamanho é só o nome, o preço vem dos sabores
+  const gsR = form.grupo_sabores as G & { regra_conflito_tamanho?: string } | undefined;
+  const soSabor = temTam && !porPeso && !!gsR?.ativo && !!gsR?.sabor_tem_preco_proprio && gsR?.regra_conflito_tamanho === "preco_sabor";
+  const precosSab = soSabor ? (gsR!.opcoes || []).map(o => Number(o.preco) || 0).filter(v => v > 0) : [];
   const base = precoBase(form);
 
   // "a partir de"
   let aPartir = base;
   if (kitAtivo(kit)) aPartir = precoMinKit(kit!);
   else if (porPeso) aPartir = Math.min(...tam!.opcoes!.map(o => pesoDe(o) * base).filter(v => v > 0), Infinity);
-  else if (temTam) aPartir = Math.min(...tam!.opcoes!.map(o => Number(o.preco) || 0).filter(v => v > 0), Infinity);
+  else if (soSabor) aPartir = Math.min(...precosSab, Infinity);
+  else if (temTam) {
+    aPartir = Math.min(...tam!.opcoes!.map(o => Number(o.preco) || 0).filter(v => v > 0), Infinity);
+    // (14/10) "tamanho + sabor": soma o sabor mais barato
+    const sabMin = gsR?.ativo && gsR?.sabor_tem_preco_proprio && gsR?.regra_conflito_tamanho === "tamanho_base_sabor_adicional" ? Math.min(...(gsR.opcoes || []).map(o => Number(o.preco) || 0).filter(v => v > 0), Infinity) : Infinity;
+    if (isFinite(aPartir) && isFinite(sabMin)) aPartir += sabMin;
+  }
   else if (precosDosSabores(form)) aPartir = Math.min(...precosDosSabores(form)!, Infinity); // (14/10) preço pelo sabor
   if (!isFinite(aPartir)) aPartir = 0;
 
@@ -57,7 +67,7 @@ export function resumoRevisao(form: any) {
     else { const k = kitsValidos(kit!)[0]; if (k) linhas.push({ nome: `Kit de ${k.qtd} un.`, valor: k.preco }); }
   } else if (temTam) {
     const o = tam!.opcoes![0];
-    linhas.push({ nome: o.nome, valor: porPeso ? pesoDe(o) * base : Number(o.preco) || 0 });
+    linhas.push({ nome: o.nome, valor: soSabor ? 0 : porPeso ? pesoDe(o) * base : Number(o.preco) || 0 });
   } else if (!precosDosSabores(form)) { // (14/10) no preço pelo sabor, a linha do sabor já é o preço
     linhas.push({ nome: String(form.nome || "Produto"), valor: base });
   }
@@ -65,7 +75,8 @@ export function resumoRevisao(form: any) {
     const g = form[campo] as G | undefined;
     if (!g?.ativo || !(g.opcoes?.length)) return;
     const o = g.opcoes![0];
-    const v = g.sabor_tem_preco_proprio ? Number(o.preco) || 0 : Number(o.adicional) || 0;
+    // (14/10) com tamanho e "só o tamanho", o sabor não muda o preço
+    const v = g.sabor_tem_preco_proprio ? (temTam && !porPeso && (g as any).regra_conflito_tamanho !== "preco_sabor" && (g as any).regra_conflito_tamanho !== "tamanho_base_sabor_adicional" ? 0 : Number(o.preco) || 0) : Number(o.adicional) || 0;
     linhas.push({ nome: o.nome, valor: v });
   });
   const total = linhas.reduce((s, l) => s + l.valor, 0);
@@ -75,7 +86,7 @@ export function resumoRevisao(form: any) {
   if (!form.imagem_url) avisos.push("Sem foto: produto com foto vende mais");
   if (!String(form.descricao || "").trim()) avisos.push("Sem descrição: conte o que vem no produto");
   // (14/10) um aviso só, dizendo o que falta (antes vinham "Tem tamanho sem preço" e "O produto está sem preço" juntos)
-  const semPreco = temTam && !porPeso ? tam!.opcoes!.filter(o => !(Number(o.preco) > 0)) : [];
+  const semPreco = temTam && !porPeso && !soSabor ? tam!.opcoes!.filter(o => !(Number(o.preco) > 0)) : [];
   if (semPreco.length === 1) avisos.push(`Falta o preço do ${semPreco[0].nome}`);
   else if (semPreco.length > 1) avisos.push(semPreco.length === tam!.opcoes!.length ? "Falta o preço dos tamanhos" : `Falta o preço de ${semPreco.length} tamanhos`);
   else if (porPeso && !(Number(form.preco_normal) > 0)) avisos.push("Falta o preço do kg");

@@ -113,3 +113,5 @@
 /* (14/10) banner na coluna da direita, em cima do pedido */
 .cp-banner.cp-banner--lado { margin: 0; }
 .cp-banner.cp-banner--lado > div { padding: 0 !important; margin-bottom: 0 !important; }
+.cp-it > span small { display: block; }
+.cp-it-det { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

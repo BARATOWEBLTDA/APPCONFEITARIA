@@ -9,7 +9,7 @@ import { BannerAd } from '@/components/cardapio/BannerAd'
 import { Logo } from '@/components/cardapio/Logo'
 import { ProductList } from '@/components/cardapio/ProductList'
 import { montarSecoes, SecaoCardapio, LinhaProduto } from '@/components/cardapio/ItensCardapio'
-import { contarItens, qtdItem, valorLinha } from '@/lib/itemSacola'
+import { contarItens, qtdItem, valorLinha, detalhesItem } from '@/lib/itemSacola'
 import { NavigationMenu } from '@/components/cardapio/NavigationMenu'
 import { definirLojaAtual } from '@/components/cardapio/lojaAtual'
 import { EmptyState } from '@/components/cardapio/EmptyState'
@@ -148,7 +148,7 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
           return (
             <div key={item.lineId ?? item.id} className="cp-it">
               {img ? <img src={img} alt="" /> : <span className="cp-it-sem"><ShoppingBag size={20} /></span>}
-              <span><b>{qtdItem(item)} {item.name}</b><small>{formatCurrency(valorLinha(item))}{unidadeItem(item) && (item.quantity === 1 ? ` ${unidadeItem(item)}` : ` · ${formatCurrency(item.price)} ${unidadeItem(item)}`)}</small></span>
+              <span><b>{qtdItem(item)} {item.name}</b>{detalhesItem(item).length > 0 && <small className="cp-it-det">{detalhesItem(item).join(' · ')}</small>}<small>{formatCurrency(valorLinha(item))}{unidadeItem(item) && (item.quantity === 1 ? ` ${unidadeItem(item)}` : ` · ${formatCurrency(item.price)} ${unidadeItem(item)}`)}</small></span>
             </div>
           )
         })}

@@ -3948,6 +3948,11 @@ export default function Produtos() {
   };
   // (14/10) sem a tela de tipo: a categoria é sugerida pelo nome e o tipo sai do nome/categoria ao continuar
   const sugCategoria = useMemo(() => categoriaSugerida(form.nome, categorias), [form.nome, categorias]);
+  // (14/10) Tamanho (preço fixo) + "cada sabor tem o seu preço": ela escolhe de onde vem o preço, antes das tabelas
+  const comboTamSabor = (f: any) => !kitAtivo(f.kit_qtd) && !!f.grupo_tamanhos?.ativo && (f.grupo_tamanhos.opcoes?.length || 0) > 0
+    && (f.grupo_tamanhos.modo_preco_tamanho || "preco_fixo") === "preco_fixo" && !!f.grupo_sabores?.ativo && !!f.grupo_sabores?.sabor_tem_preco_proprio && (f.grupo_sabores.opcoes?.length || 0) > 0;
+  const regraCombo = (f: any): RegraConflitoTamanho | null => !comboTamSabor(f) ? null
+    : (f.grupo_sabores?.regra_conflito_tamanho || (f.id ? REGRA_CONFLITO_DEFAULT : null)) as RegraConflitoTamanho | null;
   // (14/10) a categoria sugerida já entra sozinha (sem a linha "Usar"); se ela trocar na mão, o app não mexe mais
   const [catAuto, setCatAuto] = useState<string | null>(null);
   const usarCategoriaSugerida = async (sugArg?: { nome: string; existe: boolean; icone: number | string } | null) => {
@@ -4002,9 +4007,8 @@ export default function Produtos() {
     // Ao clicar em "Revisar e Publicar" (produto despublicado), remove a
     // tag "(cópia)" ou "(cópia N)" do nome pra a confeiteira digitar
     // o nome final antes de publicar.
-    if (limparCopiaTag) {
-      pMigrado.nome = pMigrado.nome.replace(/\s*\(cópia(?:\s*\d+)?\)\s*$/i, "").trim();
-    }
+    // (14/10) desligado: salvar qualquer parte renomeava a cópia igual ao original (ficavam 2 com o mesmo nome)
+    void limparCopiaTag;
     // Tamanhos ligados sem modo salvo = preço fixo (senão a tela de edição "sugere" pelo peso e muda os preços)
     const gtEd: any = (pMigrado as any).grupo_tamanhos;
     if (gtEd?.ativo && !gtEd.modo_preco_tamanho) (pMigrado as any).grupo_tamanhos = { ...gtEd, modo_preco_tamanho: "preco_fixo" };
@@ -4306,6 +4310,11 @@ export default function Produtos() {
         if (gt.modo_preco_tamanho === "por_peso") {
           if (!form.preco_normal || form.preco_normal <= 0) { if (form.id) setEditTab("preco"); return avisar("Defina o preço por kg", { tipo: "erro" }); }
           precoBase = form.preco_normal;
+        } else if (regraCombo(form) === "preco_sabor") {
+          // (14/10) Tamanho + "só o sabor": o preço vem dos sabores; o tamanho é só o nome
+          const precosS = (gs?.opcoes || []).map((o: any) => Number(o.preco) || 0).filter((p: number) => p > 0);
+          if (precosS.length === 0) { if (form.id) setEditTab("preco"); return avisar("Coloque o preço dos sabores", { tipo: "erro" }); }
+          precoBase = Math.min(...precosS);
         } else {
           const precosT = gt.opcoes.map(o => o.preco).filter(p => p > 0);
           if (precosT.length === 0) { if (form.id) setEditTab("preco"); return avisar("Adicione ao menos 1 preço nos tamanhos", { tipo: "erro" }); }
@@ -4335,10 +4344,14 @@ export default function Produtos() {
       if (ops.some(o => !String(o.nome || "").trim())) {
         return avisar("Tem um tamanho sem nome. Coloque o nome ou apague esse tamanho.", { tipo: "erro" });
       }
-      if (modoT === "preco_fixo") {
+      if (modoT === "preco_fixo" && regraCombo(form) === "preco_sabor") {
+        // (14/10) "só o sabor": preço que sobrou nos tamanhos sai (senão o cardápio mostrava o preço do tamanho)
+        ops = ops.map(o => ({ ...o, preco: 0 }));
+      } else if (modoT === "preco_fixo") {
         // Exceção: o preço vem só do sabor (nenhum tamanho tem preço) — aí o tamanho é só um rótulo
         const gsForm: any = form.grupo_sabores;
-        const saborDaPreco = !!gsForm?.ativo && !!gsForm.sabor_tem_preco_proprio && (gsForm.opcoes || []).some((o: any) => o?.preco > 0);
+        const saborDaPreco = !!gsForm?.ativo && !!gsForm.sabor_tem_preco_proprio && (gsForm.opcoes || []).some((o: any) => o?.preco > 0)
+          && gsForm.regra_conflito_tamanho !== "tamanho_base_sabor_adicional"; // (14/10) "tamanho + sabor": o tamanho precisa de preço
         const semPreco = ops.find(o => !(o.preco > 0));
         if (semPreco && !(saborDaPreco && ops.every(o => !(o.preco > 0)))) {
           // (14/10) na edição, leva pra parte do preço (antes avisava em Escolhas, onde não tem o campo)
@@ -5521,8 +5534,32 @@ export default function Produtos() {
 
               {/* Título e subtítulo (mesmo estilo do step 3) */}
 
+              {/* (14/10) de onde vem o preço quando tem Tamanho e cada sabor tem o seu preço (antes: caixa amarela de "conflito" depois das tabelas) */}
+              {((wizardStep === 5 && !form.id) || (form.id && editTab === "preco")) && comboTamSabor(form) && (() => {
+                const atual = regraCombo(form);
+                const OPC: [RegraConflitoTamanho, string, string][] = [
+                  ["preco_sabor", "Só o sabor", "O tamanho não muda o preço"],
+                  ["preco_tamanho", "Só o tamanho", "O sabor não muda o preço"],
+                  ["tamanho_base_sabor_adicional", "Tamanho + sabor", "Os dois preços somados"],
+                ];
+                return (
+                  <div className="prod-section">
+                    <p className="prod-section-label prod-section-label--novo">De onde vem o preço?</p>
+                    <div className="prod-opcs" role="radiogroup" aria-label="De onde vem o preço">
+                      {OPC.map(([k, t, sub]) => (
+                        <button key={k} type="button" role="radio" aria-checked={atual === k} className={`prod-opc${atual === k ? " on" : ""}`}
+                          onClick={() => setForm(f => ({ ...f, grupo_sabores: { ...(f.grupo_sabores as GrupoSabores), regra_conflito_tamanho: k } }))}>
+                          <i aria-hidden="true">{atual === k && <CheckIc size={14} weight="bold" />}</i>
+                          <span><b>{t}</b><small>{sub}</small></span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Preços por Tamanho — só se tem tamanhos ativos */}
-              {((wizardStep === 5 && !form.id) || (form.id && editTab === "preco")) && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && form.grupo_tamanhos.modo_preco_tamanho !== "sob_consulta" && form.grupo_tamanhos.modo_preco_tamanho !== "por_peso" && (
+              {((wizardStep === 5 && !form.id) || (form.id && editTab === "preco")) && !(comboTamSabor(form) && regraCombo(form) !== "preco_tamanho" && regraCombo(form) !== "tamanho_base_sabor_adicional") && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && form.grupo_tamanhos.modo_preco_tamanho !== "sob_consulta" && form.grupo_tamanhos.modo_preco_tamanho !== "por_peso" && (
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">
                     {/* 10/10: antes cortava a última letra do nome do grupo ("tamanhos e peso", "tamanhos do comb") */}
@@ -5591,7 +5628,7 @@ export default function Produtos() {
               )}
 
               {/* Preços por Sabor — só se tem sabores ativos E sabor_tem_preco_proprio */}
-              {((wizardStep === 5 && !form.id) || (form.id && editTab === "preco")) && form.grupo_sabores?.ativo && (form.grupo_sabores.opcoes.length || 0) > 0 && form.grupo_sabores.sabor_tem_preco_proprio && (
+              {((wizardStep === 5 && !form.id) || (form.id && editTab === "preco")) && !(comboTamSabor(form) && regraCombo(form) !== "preco_sabor" && regraCombo(form) !== "tamanho_base_sabor_adicional") && form.grupo_sabores?.ativo && (form.grupo_sabores.opcoes.length || 0) > 0 && form.grupo_sabores.sabor_tem_preco_proprio && (
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">Preço por sabor</p>
                   {precosDosSabores(form) && (
@@ -5898,94 +5935,6 @@ export default function Produtos() {
                 );
               })()}
 
-              {/* ══════ SEÇÃO 3: Regra de conflito Sabor × Tamanho ══════
-                  Aparece SÓ quando há conflito real de preço (Passo 4) */}
-              {((wizardStep === 5 && !form.id) || (form.id && editTab === "preco")) && (() => {
-                const gs = form.grupo_sabores;
-                const gt = form.grupo_tamanhos;
-                const conflito = existeConflitoSaborTamanho({
-                  sabor_ativo: !!gs?.ativo,
-                  sabor_tem_preco_proprio: !!gs?.sabor_tem_preco_proprio,
-                  sabor_tem_opcao_com_preco: !!gs?.opcoes?.some((o: any) => (o.preco || 0) > 0),
-                  tamanho_ativo: !!gt?.ativo,
-                  tamanho_tem_opcao_com_preco: !!gt?.opcoes?.some(o => (o.preco || 0) > 0),
-                });
-                if (!conflito) return null;
-
-                const regraAtual = (gs?.regra_conflito_tamanho || REGRA_CONFLITO_DEFAULT) as RegraConflitoTamanho;
-                const setRegra = (nova: RegraConflitoTamanho) => {
-                  setForm(f => ({
-                    ...f,
-                    grupo_sabores: { ...(f.grupo_sabores as GrupoSabores), regra_conflito_tamanho: nova },
-                  }));
-                };
-
-                return (
-                  <div className="prod-section">
-                    <div style={{
-                      background: "linear-gradient(135deg, #FEF3C7 0%, #FEF9E7 100%)",
-                      border: "1.5px solid #FCD34D",
-                      borderRadius: 12,
-                      padding: 16,
-                    }}>
-                      <div style={{display: "flex", alignItems: "center", gap: 8, marginBottom: 6}}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                          <line x1="12" y1="9" x2="12" y2="13"/>
-                          <line x1="12" y1="17" x2="12.01" y2="17"/>
-                        </svg>
-                        <div style={{fontSize: 12, fontWeight: 700, color: "#92400E", letterSpacing: "0.05em"}}>
-                          Conflito de preço detectado
-                        </div>
-                      </div>
-                      <div style={{fontSize: 13.5, fontWeight: 700, color: "#2D1F26", marginBottom: 4}}>
-                        Sabor e Tamanho estão com preço próprio
-                      </div>
-                      <div style={{fontSize: 12.5, color: "#6B5D64", marginBottom: 14, lineHeight: 1.4}}>
-                        Como o preço deve ser calculado quando o cliente escolher ambos?
-                      </div>
-                      <div style={{display: "flex", flexDirection: "column", gap: 8}}>
-                        {(["preco_tamanho", "preco_sabor", "tamanho_base_sabor_adicional"] as RegraConflitoTamanho[]).map(regra => {
-                          const ativo = regraAtual === regra;
-                          return (
-                            <label
-                              key={regra}
-                              style={{
-                                display: "flex",
-                                gap: 10,
-                                padding: 12,
-                                background: ativo ? "#fff" : "rgba(255,255,255,0.5)",
-                                border: `1.5px solid ${ativo ? "#E85A8C" : "#E5D8DE"}`,
-                                borderRadius: 10,
-                                cursor: "pointer",
-                                transition: "all 0.15s",
-                              }}
-                            >
-                              <input
-                                type="radio"
-                                name="regra_conflito_st"
-                                checked={ativo}
-                                onChange={() => setRegra(regra)}
-                                style={{marginTop: 2, accentColor: "#E85A8C"}}
-                              />
-                              <div style={{flex: 1}}>
-                                <div style={{fontSize: 13.5, fontWeight: 700, color: "#2D1F26"}}>
-                                  {REGRA_CONFLITO_LABEL[regra]}
-                                </div>
-                                <div style={{fontSize: 12, color: "#6B5D64", marginTop: 2, lineHeight: 1.35}}>
-                                  {REGRA_CONFLITO_HINT[regra]}
-                                </div>
-                              </div>
-                            </label>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
-
-
               {/* Kit Festa */}
               {form.forma_venda === "kit-festa" && (
                 <div className="prod-section">
@@ -6244,6 +6193,15 @@ export default function Produtos() {
                     const ppFalta = Number(form.preco_promocional) || 0;
                     const promoMaior: FaltaCampo = form.tipo_promocao !== "percentual" && ppFalta > 0 && ppFalta >= (form.preco_normal || 0)
                       ? { msg: "O preço promocional precisa ser menor que o preço cheio", alvo: 'input[aria-label="Preço promocional"]' } : null;
+                    // (14/10) Tamanho + preço por sabor: primeiro escolhe de onde vem o preço
+                    if (comboTamSabor(form)) {
+                      const r = regraCombo(form);
+                      if (!r) return { msg: "Escolha de onde vem o preço", alvo: '[aria-label="De onde vem o preço"]' };
+                      if (r === "preco_sabor") {
+                        const semS = (form.grupo_sabores?.opcoes || []).find((o: any) => !(Number(o.preco) > 0));
+                        return semS ? { msg: `Coloque o preço de ${semS.nome}`, alvo: `input[aria-label="Preço de ${String(semS.nome).replace(/(["\\])/g, "\\$1")}"]` } : null;
+                      }
+                    }
                     if (temTamanhoAtivo) {
                       // Modo "por peso": preços dos tamanhos são calculados via preco_normal (R$/kg)
                       if (gt!.modo_preco_tamanho === "por_peso") {
@@ -6564,7 +6522,7 @@ export default function Produtos() {
                           const fichaOk = !(id && data?.id) || await copiarFichaTecnica(id, data.id);
                           setPreviewProduto(null);
                           await loadProdutos(userId);
-                          if (fichaOk) showToast("success", "Cópia criada", "Está despublicada. Revise as informações antes de publicar no cardápio.");
+                          if (fichaOk) avisar("Cópia criada, fora do cardápio", { tipo: "ok" }); // (14/10) aviso rápido (a janela "Entendi" aparecia por cima da próxima tela)
                           else showToast("error", "Cópia criada, mas sem a ficha técnica.", "Está despublicada. Abra a cópia e monte a ficha técnica de novo.");
                         }}
                       >

@@ -478,7 +478,9 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
           onClick={() => {
             // (14/10) Pequeno/Médio/Grande não têm peso: no por quilo ficam só os que têm (ex.: "1,5 kg"); sem nenhum, vêm os pesos padrão
             const comPeso = g.opcoes.map(o => ({ ...o, peso_kg: Number(o.peso_kg) > 0 ? o.peso_kg : pesoDoNome(o.nome) })).filter(o => Number(o.peso_kg) > 0);
-            set({ modo_preco_tamanho: "por_peso", opcoes: comPeso.length ? comPeso : opcoesDePesos(PESOS_PADRAO) }); setForm(f => ({ ...f, forma_venda: "kg" }));
+            // (14/10) vindo do preço fixo, o "preço" guardado era o do menor tamanho: não serve de preço do kg (a edição salvava R$ 40,00 o kg sem perguntar)
+            const eraFixo = (g.modo_preco_tamanho || "preco_fixo") !== "por_peso";
+            set({ modo_preco_tamanho: "por_peso", opcoes: comPeso.length ? comPeso : opcoesDePesos(PESOS_PADRAO) }); setForm(f => ({ ...f, forma_venda: "kg", ...(eraFixo ? { preco_normal: 0, preco_promocional: 0 } : {}) }));
           }}>Por quilo</button>
       </div>
 

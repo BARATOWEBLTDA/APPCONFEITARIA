@@ -24,7 +24,8 @@ export function precoDoTamanho(op: any, porPeso: boolean, precoBase: number): nu
 export function precosDosSabores(p: any): number[] | null {
   if (kitAtivo(p?.kit_qtd)) return null
   const gt = p?.grupo_tamanhos
-  if (gt?.ativo && (gt.opcoes || []).length > 0) return null
+  // (14/10) tamanho só como nome (preço fixo sem preço nenhum): o preço também vem dos sabores
+  if (gt?.ativo && (gt.opcoes || []).length > 0 && (gt.modo_preco_tamanho === 'por_peso' || (gt.opcoes || []).some((o: any) => (Number(o?.preco) || 0) > 0))) return null
   const gs = p?.grupo_sabores
   if (!gs?.ativo || !gs.sabor_tem_preco_proprio || !(gs.opcoes || []).length) return null
   return (gs.opcoes || []).filter((o: any) => !o?.esgotado).map((o: any) => r2(Number(o?.preco) || 0)).filter((v: number) => v > 0)
@@ -84,6 +85,12 @@ export function precoCardapio(p: any): { valor: number; aPartir: boolean } {
       return { valor: r2((Number(p.preco_normal) || 0) * menor), aPartir: ops.length > 1 }
     }
     const precos = ops.map(o => Number(o.preco) || 0).filter(x => x > 0)
+    // (14/10) com "cada sabor tem o seu preço": "só o sabor" usa o sabor mais barato; "tamanho + sabor" soma os dois mais baratos
+    const gs = p?.grupo_sabores
+    const regra = gs?.regra_conflito_tamanho
+    const sab: number[] = gs?.ativo && gs?.sabor_tem_preco_proprio ? (gs.opcoes || []).filter((o: any) => !o?.esgotado).map((o: any) => Number(o?.preco) || 0).filter((x: number) => x > 0) : []
+    if (sab.length && regra === 'preco_sabor') return { valor: r2(Math.min(...sab)), aPartir: true }
+    if (sab.length && precos.length && regra === 'tamanho_base_sabor_adicional') return { valor: r2(Math.min(...precos) + Math.min(...sab)), aPartir: true }
     if (precos.length) return { valor: r2(Math.min(...precos)), aPartir: ops.length > 1 }
   }
   // (14/10) preço pelo sabor: o card mostra o sabor mais barato ("a partir de" quando os preços mudam)
