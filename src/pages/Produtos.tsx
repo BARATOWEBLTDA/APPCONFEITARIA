@@ -9,6 +9,7 @@ import { Sparkle as SparkleIA } from "@phosphor-icons/react";
 import { selecionarValorAoFocar } from "@/lib/moeda";
 import PreviaCardapio from "@/components/produto/PreviaCardapio";
 import { categoriaSugerida, tipoPeloNome, ehBoloNoPote } from "@/lib/tipoProduto";
+import { useLojaPronta } from "@/lib/primeirosPassos";
 import RevisaoProduto, { ResumoProduto } from "@/components/produto/RevisaoProduto";
 import EscolhasProduto, { escolhasAtivas, faltaDaEscolha } from "@/components/produto/EscolhasProduto";
 import { kitAtivo, precoMinKit, kitsValidos, type KitQtdConfig } from "@/lib/kitQuantidade";
@@ -3530,7 +3531,8 @@ export default function Produtos() {
   const [kitTela, setKitTela] = useState(false);
   // (14/10) Escolhas em checklist: 0 = a lista; 1..n = a tela de cada escolha marcada
   const [escTela, setEscTela] = useState(0);
-  const [infoPasso, setInfoPasso] = useState(false); // (14/10) (i) do header do cadastro
+  const [infoPasso, setInfoPasso] = useState(false);
+  const lojaPronta = useLojaPronta(userId); // (14/10) "Ver no cardápio" na tela de sucesso só com a loja configurada // (14/10) (i) do header do cadastro
   const [kgPromo, setKgPromo] = useState(false); // (14/10) "Colocar em promoção" no preço por kg
   // Cadastro de bolo em 4 etapas (tipo "Bolos" no cadastro novo)
   const [tipoCadastro, setTipoCadastro] = useState<TipoCadastro | null>(null);
@@ -4964,7 +4966,9 @@ export default function Produtos() {
                 onFechar={fecharModal}
                 onOutro={() => { setSucesso(null); openNovo(); }}
                 onCusto={() => { const id = sucesso.id; irDepoisDeFechar.current = () => { navigate("/ficha-tecnica", { state: { produtoId: id } }); setTimeout(() => window.scrollTo(0, 0), 0); }; fecharModal(); }}
-                onVerCardapio={verNoCardapio} />
+                onVerCardapio={verNoCardapio}
+                lojaPronta={lojaPronta}
+                onTerminarLoja={() => { irDepoisDeFechar.current = () => { navigate("/"); setTimeout(() => window.scrollTo(0, 0), 0); }; fecharModal(); }} />
             ) : tipoTela && !form.id ? (
               <TipoProdutoTela onEscolher={aplicarTipoProduto} onFechar={handleTryClose} />
             ) : (<>

@@ -95,9 +95,8 @@ async function _sincronizar(profile: any, isPro: boolean): Promise<ResultadoConq
     const { error } = await supabase.from("conquistas_usuario").upsert(linhas, { onConflict: "user_id,codigo", ignoreDuplicates: true });
     if (!error) {
       linhas.forEach(l => { feitas[l.codigo] = { codigo: l.codigo, conquistada_em: l.conquistada_em, vista: l.vista, celebrada: l.celebrada }; });
-      if (!primeiraVez) for (const q of novas) {
-        await criarNotificacaoPessoal({ tipo: "conquista", titulo: `Nova conquista: ${q.nome} 🏆`, mensagem: q.descricao, link: "/conquistas", chave: `conquista-${q.codigo}` });
-      }
+      // (14/10) conquista nova não vira mais aviso na tela nem notificação: fica só em Minhas conquistas
+      void primeiraVez;
     }
   }
   return { valores, feitas, novas: primeiraVez ? [] : novas };

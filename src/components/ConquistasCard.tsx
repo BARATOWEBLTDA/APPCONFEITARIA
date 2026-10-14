@@ -42,17 +42,8 @@ export default function ConquistasCard({ semCartao = false }: { semCartao?: bool
         res = { ...res, feitas: { ...res.feitas, pro: { ...res.feitas.pro, celebrada: true } } };
       }
       setR(res);
-      const pend = CONQUISTAS.filter(q => res!.feitas[q.codigo] && !res!.feitas[q.codigo].celebrada);
-      if (!pend.length) return;
-      const abrir = () => setCelebrar(pend[pend.length - 1].codigo);
-      if (proParaComemorar(profile?.id, isPro)) {
-        let feito = false;
-        const uma = () => { if (!feito) { feito = true; abrir(); } };
-        window.addEventListener("doonly:parabens-pro-fechou", uma, { once: true });
-        // se a janela do PRO não abrir (conta que não é PRO de verdade no banco), não fica esperando pra sempre
-        setTimeout(() => { if (!proParaComemorar(profile?.id, isPro)) return; uma(); }, 20000);
-      }
-      else abrir();
+      // (14/10) a janela "Nova conquista" não abre mais na tela: as medalhas ficam só em Minhas conquistas
+      void setCelebrar;
     }).catch(e => { console.error("[conquistas] não consegui carregar:", e); }); // 11/10: sem internet o cartão só não aparece (a tela "Minhas conquistas" avisa)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id, isPro]);

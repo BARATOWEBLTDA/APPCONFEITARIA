@@ -289,3 +289,11 @@ body .prod-modal--novo .prev-cardapio-box.prev-cardapio-box--promo { background:
 /* (14/10) Trocar / Remover foto centralizados na borda de baixo da foto principal (metade em cima da imagem) */
 .prod-foto-acoes { position: relative; z-index: 2; width: auto; justify-content: center; margin-top: -21px; }
 .prod-foto-acoes button { flex: none; min-height: 40px; padding: 0 14px; border: 1px solid var(--ui-borda); background: var(--ui-branco); box-shadow: 0 4px 12px rgba(44,18,25,.14); }
+
+/* (14/10) sugestão de categoria: caixa cinza mais escura (borda contínua); "Usar" rosa com texto branco */
+body .prod-modal--novo .prod-cat-sug { border: 1px solid #DCD3D7; background: #EFEAEC; color: var(--ui-texto-2); }
+body .prod-modal--novo .prod-cat-sug em { background: var(--ui-rosa); color: #fff; }
+
+/* (14/10) prévia: área cinza clara e o produto num cartão branco */
+body .prod-modal--novo .prev-cardapio-box, body .prod-modal--novo .prev-cardapio-box.prev-cardapio-box--promo { background: #F3EEF0; border-color: var(--ui-borda); }
+body .prod-modal--novo .prev-cardapio-box--promo .prev-cardapio-card { padding: 10px; border: 1px solid var(--ui-borda); border-radius: 14px; background: #fff; box-shadow: 0 2px 10px rgba(44,18,25,.06); }
