@@ -47,7 +47,7 @@ const QUANTOS: [string, number][] = [["Um", 1], ["Até 2", 2], ["Até 3", 3], ["
 
 // Tamanho: modelos prontos (um toque monta a escada)
 const MODELOS_UN: { nome: string; itens: string[] }[] = [
-  { nome: "por letra", itens: ["P", "M", "G"] },
+  { nome: "do menor pro maior", itens: ["Pequeno", "Médio", "Grande"] },
   { nome: "pelo aro", itens: ["Aro 15", "Aro 20", "Aro 25"] },
   { nome: "por pessoas", itens: ["Serve 10", "Serve 20", "Serve 30"] },
 ];
