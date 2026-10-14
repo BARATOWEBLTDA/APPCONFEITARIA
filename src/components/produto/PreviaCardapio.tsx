@@ -15,7 +15,8 @@ export default function PreviaCardapio({ form, cor = "#E85A8C" }: { form: any; c
       <p className="prod-section-label prev-cardapio-t">Assim aparece no cardápio</p>
       {/* sacola de mentira só pra prévia (o produto aberto pede uma): não mistura com a sacola de verdade */}
       <CartProvider>
-        <div className="prev-cardapio-box">
+        {/* (14/10) o cartão de Promoções não tem fundo próprio: a caixa fica branca, como a página do cardápio */}
+        <div className={`prev-cardapio-box${descontoCardapio(produto) > 0 ? " prev-cardapio-box--promo" : ""}`}>
           <div className="prev-cardapio-card" aria-hidden="true" onClickCapture={e => { e.preventDefault(); e.stopPropagation(); }} onKeyDownCapture={e => { e.preventDefault(); e.stopPropagation(); }}>
             {/* (14/10) em promoção usa o mesmo cartão da seção Promoções do cardápio (com o % e o -10%) */}
             {descontoCardapio(produto) > 0

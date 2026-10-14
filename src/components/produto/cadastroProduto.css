@@ -284,3 +284,4 @@ body .prod-modal--novo .prod-section > .prod-opc { margin-bottom: 0; }
 body .prod-modal--novo .prod-section > .kitp-pct { margin-top: 0; }
 /* tabelinha: as colunas de preço centralizadas */
 .prod-dtab-l > * + * { justify-content: center; }
+body .prod-modal--novo .prev-cardapio-box.prev-cardapio-box--promo { background: #fff; }
