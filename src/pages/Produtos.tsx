@@ -5272,7 +5272,7 @@ export default function Produtos() {
             {/* (13/10) Escolhas: a mesma tela pra todos os tipos, no cadastro e na edição */}
             {((wizardStep === 3 && !form.id) || (form.id && (editTab === "opcoes" || editTab === "kit" || editTab === "tamanhos"))) && (
               <div className="prod-modal-body">
-                <EscolhasProduto form={form} setForm={setForm as any} tipo={form.id ? null : tipoCadastro} onKitChange={onKitChange} />
+                <EscolhasProduto form={form} setForm={setForm as any} tipo={form.id ? null : tipoCadastro} onKitChange={onKitChange} outros={produtos.filter(p => p.id !== form.id)} />
               </div>
             )}
 

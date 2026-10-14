@@ -139,7 +139,8 @@ function Grupo({ chave, g, multi, valor, aoMudar, secoes, faltou, emFatias, corB
           const on = marcado(op.id)
           const preco = precoDaOpcao(g, op)
           const peso = op.peso_kg && pesoDoNome(op.nome) !== Number(op.peso_kg) ? `${String(op.peso_kg).replace('.', ',')} kg` : '' // (10/10) não repete quando o nome já é o peso
-          const serve = op.serve ? (/^\d+$/.test(String(op.serve).trim()) ? (emFatias ? `${String(op.serve).trim()} fatias` : `Serve ${String(op.serve).trim()} pessoas`) : `Serve ${op.serve}`) : ''
+          const un = String((g as any).rendimento_unidade || '').trim() // (13/10) além de pessoas e fatias, a unidade que ela escreveu (copos, potes…)
+          const serve = op.serve ? (/^\d+$/.test(String(op.serve).trim()) ? (emFatias ? `${String(op.serve).trim()} fatias` : un && un !== 'pessoas' ? `Serve ${String(op.serve).trim()} ${un}` : `Serve ${String(op.serve).trim()} pessoas`) : `Serve ${op.serve}`) : ''
           const bloqueado = multi && !on && max > 1 && qtdMarcada >= max
           return (
             <button key={op.id} type="button" className="pm-op" role={multi ? 'checkbox' : 'radio'} aria-checked={on} disabled={bloqueado} onClick={() => tocar(op.id)}>

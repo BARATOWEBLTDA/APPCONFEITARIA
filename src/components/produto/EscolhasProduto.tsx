@@ -21,7 +21,7 @@ type Chave = "tamanho" | "quantidade" | "massa" | "recheio" | "cobertura" | "sab
 type Opcao = { id: string; nome: string; adicional: number; preco?: number };
 type Grupo = { ativo: boolean; min: number; max: number; distribuicao?: string; opcoes: Opcao[]; sabor_tem_preco_proprio?: boolean };
 type OpTam = { id: string; nome: string; preco: number; peso_kg?: number | null; serve?: string };
-type GrupoTam = { ativo: boolean; min: number; max: number; distribuicao?: string; opcoes: OpTam[]; modo_preco_tamanho?: string; nome_exibicao?: string };
+type GrupoTam = { ativo: boolean; min: number; max: number; distribuicao?: string; opcoes: OpTam[]; modo_preco_tamanho?: string; nome_exibicao?: string; rendimento_unidade?: string };
 
 const CAMPO: Record<"massa" | "recheio" | "cobertura" | "sabor", string> = {
   massa: "grupo_massas", recheio: "grupo_recheios", cobertura: "grupo_coberturas", sabor: "grupo_sabores",
@@ -76,6 +76,22 @@ const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.r
 const primeiraMaiuscula = (s: string) => { const t = s.trim().replace(/\s+/g, " "); return t ? t.charAt(0).toUpperCase() + t.slice(1) : t; };
 const norm = (s: string) => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
+/** (13/10) "Usar de outro produto": os jeitos diferentes que ela já usou (sem repetir), pra copiar com um toque */
+type Copia = { de: string; resumo: string; opcoes: any[]; grupo: any };
+function copiasDe(outros: any[] | undefined, campo: string, chave: (g: any) => string | null): Copia[] {
+  const vistos = new Set<string>(); const lista: Copia[] = [];
+  for (const p of outros || []) {
+    const g = p?.[campo];
+    if (!g?.ativo || !(g.opcoes?.length)) continue;
+    const k = chave(g); if (!k || vistos.has(k)) continue;
+    vistos.add(k);
+    lista.push({ de: String(p.nome || "Produto"), resumo: g.opcoes.map((o: any) => o.nome).join(", "), opcoes: g.opcoes, grupo: g });
+    if (lista.length >= 3) break;
+  }
+  return lista;
+}
+const numeroServe = (v: unknown) => (String(v ?? "").match(/\d+/)?.[0] || "");
+
 /** O que sugerir pelo tipo escolhido no passo 1 e pelo nome (o nome ajusta: "cento de brigadeiro" pede Quantidade) */
 export function sugestoesDoProduto(tipo: string | null | undefined, nome: string, categoria: string): Chave[] {
   const n = norm(`${nome} ${categoria}`);
@@ -96,9 +112,11 @@ type Props = {
   /** tipo escolhido no passo 1 (bolos, doces…); na edição vem vazio e o nome/categoria decidem */
   tipo?: string | null;
   onKitChange: (k: KitQtdConfig) => void;
+  /** os outros produtos da confeiteira (pra "Usar de outro produto") */
+  outros?: any[];
 };
 
-export default function EscolhasProduto({ form, setForm, tipo, onKitChange }: Props) {
+export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outros }: Props) {
   const [aberto, setAberto] = useState<Chave | null>(null);
   const [verOutras, setVerOutras] = useState(false);
   const nome = String(form.nome || "").trim();
@@ -201,8 +219,8 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange }: Pr
         {aberto && (
           <div className="esc esc-jan">
             {aberto === "quantidade" ? (kit ? <CartaoQuantidade kit={kit} onKitChange={onKitChange} nome={nome} /> : null)
-              : aberto === "tamanho" ? <CartaoTamanho form={form} setForm={setForm} />
-              : <CartaoGrupo chave={aberto} tipo={tipo} form={form} setForm={setForm} />}
+              : aberto === "tamanho" ? <CartaoTamanho form={form} setForm={setForm} outros={outros} />
+              : <CartaoGrupo chave={aberto} tipo={tipo} form={form} setForm={setForm} outros={outros} />}
           </div>
         )}
       </Janela>
@@ -245,8 +263,23 @@ function resumo(c: Chave, form: any): string {
   return `${quantos}${g.min >= 1 ? "" : " · opcional"} · ${nomes}`;
 }
 
+function UsarDeOutro({ copias, onUsar }: { copias: Copia[]; onUsar: (c: Copia) => void }) {
+  if (!copias.length) return null;
+  return (<>
+    <p className="esc-lbl">Usar de outro produto</p>
+    <div className="esc-copias">
+      {copias.map((c, i) => (
+        <button key={i} type="button" className="esc-copia" onClick={() => onUsar(c)}>
+          <span className="esc-tx"><b>{c.de}</b><small>{c.resumo}</small></span>
+          <span className="esc-editar">Usar</span>
+        </button>
+      ))}
+    </div>
+  </>);
+}
+
 /* ── Massa, recheio, cobertura e sabor ── */
-function CartaoGrupo({ chave, tipo, form, setForm }: { chave: "massa" | "recheio" | "cobertura" | "sabor"; tipo?: string | null; form: any; setForm: Props["setForm"] }) {
+function CartaoGrupo({ chave, tipo, form, setForm, outros }: { chave: "massa" | "recheio" | "cobertura" | "sabor"; tipo?: string | null; form: any; setForm: Props["setForm"]; outros?: any[] }) {
   const campo = CAMPO[chave];
   const g: Grupo = { ativo: true, min: 1, max: 1, distribuicao: "nenhuma", opcoes: [], ...(form[campo] || {}) };
   const [nova, setNova] = useState("");
@@ -326,17 +359,30 @@ function CartaoGrupo({ chave, tipo, form, setForm }: { chave: "massa" | "recheio
         <button type="button" className="esc-nova-bt" onClick={addDigitado} disabled={!nova.trim()} aria-label="Pôr opção"><Plus size={20} weight="bold" /></button>
       </div>
       <p className="esc-dica">{precoProprio ? "O preço de cada sabor aparece no cardápio." : "Sem valor: já vem no preço. Com valor: custa a mais."}</p>
+      <UsarDeOutro
+        copias={copiasDe(outros, campo, gg => { const k = gg.opcoes.map((o: any) => norm(o.nome)).join("|"); return k === g.opcoes.map(o => norm(o.nome)).join("|") ? null : k; })}
+        onUsar={c => set({ opcoes: c.opcoes.map((o: any) => ({ id: uid(), nome: o.nome, adicional: Number(o.adicional) || 0, ...(o.preco ? { preco: o.preco } : {}) })),
+          max: Number(c.grupo.max) || g.max, min: c.grupo.min ?? g.min, ...(chave === "sabor" ? { sabor_tem_preco_proprio: !!c.grupo.sabor_tem_preco_proprio } : {}) })} />
     </div>
   );
 }
 
 /* ── Tamanho: modelos prontos e a lista (o preço de cada um fica no passo Preço) ── */
-function CartaoTamanho({ form, setForm }: { form: any; setForm: Props["setForm"] }) {
+function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["setForm"]; outros?: any[] }) {
   const g: GrupoTam = { ativo: true, min: 1, max: 1, opcoes: [], ...(form.grupo_tamanhos || {}) };
   const porPeso = g.modo_preco_tamanho === "por_peso";
   const [novo, setNovo] = useState("");
   const set = (patch: Partial<GrupoTam>) => setForm(f => ({ ...f, grupo_tamanhos: { ...g, ...(f.grupo_tamanhos || {}), ...patch } }));
-  const usarModeloUn = (itens: string[]) => set({ opcoes: itens.map(n => ({ id: uid(), nome: n, preco: 0, ...(n.startsWith("Serve") ? { serve: n.replace("Serve ", "") + " pessoas" } : {}) })) });
+  const usarModeloUn = (itens: string[]) => set({ opcoes: itens.map(n => ({ id: uid(), nome: n, preco: 0, ...(n.startsWith("Serve") ? { serve: n.replace("Serve ", "") } : {}) })),
+    ...(itens[0]?.startsWith("Serve") ? { rendimento_unidade: "pessoas" } : {}) });
+  // rendimento (opcional): a unidade vale pra todos os tamanhos; cada um tem só o número
+  const unidade = g.rendimento_unidade || "pessoas";
+  const outraUn = unidade !== "pessoas" && unidade !== "fatias";
+  const [verOutraUn, setVerOutraUn] = useState(outraUn);
+  const mudarServe = (id: string, txt: string) => set({ opcoes: g.opcoes.map(o => (o.id === id ? { ...o, serve: txt.replace(/\D/g, "").slice(0, 4) } : o)) });
+  const copiasTam = copiasDe(outros, "grupo_tamanhos", gg => (gg.modo_preco_tamanho === "por_peso" ? null : gg.opcoes.map((o: any) => `${norm(o.nome)}:${numeroServe(o.serve)}`).join("|")));
+  const usarCopiaTam = (c: Copia) => set({ opcoes: ordenarTamanhos(c.opcoes.map((o: any) => ({ id: uid(), nome: o.nome, preco: 0, ...(numeroServe(o.serve) ? { serve: numeroServe(o.serve) } : {}) }))),
+    rendimento_unidade: c.grupo.rendimento_unidade || "pessoas" });
   // por quilo: marcar e desmarcar um peso (a lista fica sempre do menor pro maior)
   const marcados = new Set(g.opcoes.map(o => Number(o.peso_kg) || 0).filter(Boolean));
   const semPeso = g.opcoes.filter(o => !(Number(o.peso_kg) > 0));
@@ -409,6 +455,11 @@ function CartaoTamanho({ form, setForm }: { form: any; setForm: Props["setForm"]
         )}
       </>)}
 
+      {!porPeso && g.opcoes.length === 0 && <UsarDeOutro copias={copiasTam.map(c => {
+        const nums = c.opcoes.map((o: any) => numeroServe(o.serve)).filter(Boolean);
+        const un = c.grupo.rendimento_unidade || "pessoas";
+        return { ...c, resumo: c.opcoes.map((o: any) => o.nome).join(" · ") + (nums.length ? ` · serve ${nums.join(", ")} ${un}` : "") };
+      })} onUsar={usarCopiaTam} />}
       {!porPeso && g.opcoes.length === 0 && (<>
         <p className="esc-lbl">Comece por um modelo</p>
         <div className="esc-modelos">
@@ -421,12 +472,25 @@ function CartaoTamanho({ form, setForm }: { form: any; setForm: Props["setForm"]
       </>)}
 
       {!porPeso && g.opcoes.length > 0 && (<>
+        <p className="esc-lbl">Quanto rende cada tamanho? <span className="esc-opc">opcional</span></p>
+        <div className="esc-seg esc-seg--3" role="radiogroup" aria-label="Unidade do rendimento">
+          <button type="button" role="radio" aria-checked={unidade === "pessoas" && !verOutraUn} className={unidade === "pessoas" && !verOutraUn ? "on" : ""} onClick={() => { setVerOutraUn(false); set({ rendimento_unidade: "pessoas" }); }}>Pessoas</button>
+          <button type="button" role="radio" aria-checked={unidade === "fatias" && !verOutraUn} className={unidade === "fatias" && !verOutraUn ? "on" : ""} onClick={() => { setVerOutraUn(false); set({ rendimento_unidade: "fatias" }); }}>Fatias</button>
+          <button type="button" role="radio" aria-checked={verOutraUn} className={verOutraUn ? "on" : ""} onClick={() => { setVerOutraUn(true); if (!outraUn) set({ rendimento_unidade: "" }); }}>Outro…</button>
+        </div>
+        {verOutraUn && (
+          <input className="esc-op-in esc-un-in" placeholder="Ex.: copos, potes, unidades" value={outraUn ? unidade : ""} maxLength={20}
+            onChange={e => set({ rendimento_unidade: e.target.value.toLowerCase() })} aria-label="Unidade do rendimento" />
+        )}
         <p className="esc-lbl">Tamanhos</p>
         <ul className="esc-ops">
           {g.opcoes.map((o, i) => (
             <li key={o.id} className="esc-op">
               {/* a ordem é automática (P, M, G… e os números): ao sair do campo, a lista se arruma */}
               <input className="esc-op-in" value={o.nome} onChange={e => renomear(o.id, e.target.value)} onBlur={() => set({ opcoes: ordenarTamanhos(g.opcoes) })} aria-label={`Nome do tamanho ${i + 1}`} />
+              <label className="esc-serve"><span>serve</span>
+                <input inputMode="numeric" placeholder="definir" value={numeroServe(o.serve)} onChange={e => mudarServe(o.id, e.target.value)} aria-label={`Quantas ${outraUn ? unidade || "unidades" : unidade} serve o ${o.nome}`} />
+              </label>
               <button type="button" className="esc-op-x" onClick={() => set({ opcoes: g.opcoes.filter(x => x.id !== o.id) })} aria-label={`Tirar ${o.nome}`}><X size={16} weight="bold" /></button>
             </li>
           ))}
