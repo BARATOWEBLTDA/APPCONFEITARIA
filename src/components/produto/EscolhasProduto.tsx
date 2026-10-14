@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { ArrowDown, ArrowUp, Basket, Cake, Check, Drop, IceCream, PencilSimple, Plus, Ruler, Sparkle, Trash, X } from "@phosphor-icons/react";
 import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
 import { kitAtivo, presetKit, type KitQtdConfig } from "@/lib/kitQuantidade";
-import { mascaraBRL, lerBRL, textoBRL } from "@/lib/moeda";
+import { mascaraBRL, lerBRL, textoBRL, selecionarValorAoFocar } from "@/lib/moeda";
 import { Botao, Janela } from "@/components/base";
 import "./escolhas.css";
 
@@ -217,7 +217,7 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
           <Botao onClick={salvar}>Salvar</Botao>
         </>) : null}>
         {aberto && (
-          <div className="esc esc-jan">
+          <div className="esc esc-jan" onFocusCapture={selecionarValorAoFocar} onClickCapture={selecionarValorAoFocar}>
             {aberto === "quantidade" ? (kit ? <CartaoQuantidade kit={kit} onKitChange={onKitChange} nome={nome} /> : null)
               : aberto === "tamanho" ? <CartaoTamanho form={form} setForm={setForm} outros={outros} />
               : <CartaoGrupo chave={aberto} tipo={tipo} form={form} setForm={setForm} outros={outros} />}
@@ -490,11 +490,11 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
             </li>
           ))}
         </ul>
-        <p className="esc-dica">Opcional, mas ajuda o cliente a escolher no cardápio.</p>
         <div className="esc-nova esc-nova--1">
           <input placeholder={porPeso ? "Ex.: 2,5 kg" : "Outro tamanho…"} value={novo} onChange={e => setNovo(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); add(); } }} aria-label="Outro tamanho" />
           <button type="button" className="esc-nova-bt" onClick={add} disabled={!novo.trim()} aria-label="Pôr tamanho"><Plus size={20} weight="bold" /></button>
         </div>
+        <p className="esc-nota">Rendimento é opcional, mas ajuda no cardápio.</p>
       </>)}
     </div>
   );

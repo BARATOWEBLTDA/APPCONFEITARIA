@@ -36,3 +36,16 @@ export const r2 = (v: number | null | undefined): number => {
 /** Soma valores em reais sem sujeira de ponto flutuante (soma em centavos inteiros). */
 export const somarReais = (valores: (number | null | undefined)[]): number =>
   valores.reduce<number>((s, v) => s + Math.round(r2(v) * 100), 0) / 100;
+
+/**
+ * (13/10) Campo de valor: ao tocar, o valor todo fica selecionado e o que for digitado entra no lugar.
+ * Antes o cursor caía no meio ("10,00" + 2 virava 102,00 ou 10,02) e o valor saía diferente a cada vez.
+ * Use no onFocusCapture de quem tem os campos (vale pra todos os inputs numéricos dentro).
+ */
+export function selecionarValorAoFocar(e: { target: EventTarget | null }) {
+  const t = e.target;
+  if (!(t instanceof HTMLInputElement)) return;
+  if (t.inputMode !== "numeric" && t.inputMode !== "decimal") return;
+  const sel = () => { try { t.setSelectionRange(0, t.value.length); } catch { /* campo sem seleção */ } };
+  sel(); setTimeout(sel, 0); setTimeout(sel, 60); // o toque do celular desfaz a seleção logo depois do foco
+}

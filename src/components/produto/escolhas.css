@@ -184,3 +184,6 @@
   background: var(--ui-branco) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236B5D64' stroke-width='1.6' fill='none'/%3E%3C/svg%3E") no-repeat right 6px center; }
 .esc-tam-n:focus, .esc-tam-u:focus { outline: none; border-color: var(--ui-rosa); }
 .esc-tam-li .esc-op-x { width: 28px; }
+
+/* (13/10) aviso em caixa tracejada (depois do campo de adicionar) */
+.esc-nota { margin: 12px 0 0; padding: 10px 12px; border: 1.5px dashed #E7C2D2; border-radius: 8px; background: #FFFBFC; font-size: 12.5px; line-height: 1.45; color: var(--ui-texto-2); }

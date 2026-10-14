@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
 import { sugerirPrecosTamanho } from "@/lib/sugestaoTamanho";
 import { Sparkle as SparkleIA } from "@phosphor-icons/react";
+import { selecionarValorAoFocar } from "@/lib/moeda";
 import RevisaoProduto from "@/components/produto/RevisaoProduto";
 import EscolhasProduto from "@/components/produto/EscolhasProduto";
 import { kitAtivo, precoMinKit, kitsValidos, type KitQtdConfig } from "@/lib/kitQuantidade";
@@ -4908,7 +4909,7 @@ export default function Produtos() {
       {modal && (
         <div className={`prod-modal-overlay${sucesso ? " prod-modal-overlay--sucesso" : ""}`} onClick={sucesso ? fecharModal : handleTryClose}>
           {/* a janela do limite do plano abre por cima sem entrar na pilha: nessa hora o foco não fica preso aqui */}
-          <div className="prod-modal prod-modal--novo" ref={limiteAberto || salvarBibliotecaAsk ? undefined : caixaCadastro} onClick={e => e.stopPropagation()}>
+          <div className="prod-modal prod-modal--novo" ref={limiteAberto || salvarBibliotecaAsk ? undefined : caixaCadastro} onClick={e => e.stopPropagation()} onFocusCapture={selecionarValorAoFocar} onClickCapture={selecionarValorAoFocar}>
             {sucesso ? (
               <SucessoProdutoTela {...sucesso}
                 onFechar={fecharModal}
@@ -5445,7 +5446,7 @@ export default function Produtos() {
                   <div className="prod-step-sub">
                     {kitAtivo((form as any).kit_qtd)
                       ? "Confira o preço de cada kit e, se quiser, coloque em promoção."
-                      : "Quanto o cliente paga. Se quiser, coloque em promoção."}
+                      : "Quanto o cliente paga."}
                   </div>
                 </div>
               )}
@@ -5455,10 +5456,7 @@ export default function Produtos() {
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">
                     {/* 10/10: antes cortava a última letra do nome do grupo ("tamanhos e peso", "tamanhos do comb") */}
-                    Preço por {form.grupo_tamanhos.nome_exibicao === "Quantidades" ? "quantidade" : "tamanho"} <ReqTag />
-                  </p>
-                  <p style={{fontSize: 12, color: "#6B5D64", margin: "0 0 12px"}}>
-                    Defina o preço de cada opção. No cardápio aparece a faixa do menor ao maior.
+                    Preço por {form.grupo_tamanhos.nome_exibicao === "Quantidades" ? "quantidade" : "tamanho"}
                   </p>
                   <div style={{display: "flex", flexDirection: "column", gap: 8}}>
                     {form.grupo_tamanhos.opcoes.map((op) => (
@@ -5592,7 +5590,7 @@ export default function Produtos() {
                       <label>Preço cheio</label>
                       <div className="prod-preco-input prod-preco-input--big">
                         <span>R$</span>
-                        <input type="text" placeholder="0,00" aria-label="Preço cheio" value={form.preco_normal ? formatPreco(form.preco_normal) : ""} onChange={e => {
+                        <input type="text" inputMode="numeric" placeholder="0,00" aria-label="Preço cheio" value={form.preco_normal ? formatPreco(form.preco_normal) : ""} onChange={e => {
                           const n = parsePreco(e.target.value);
                           // 10/10: a promoção em valor acompanha o preço cheio (antes só era conferida ao digitar o promocional)
                           setForm(f => {
@@ -5609,6 +5607,7 @@ export default function Produtos() {
                         <span>R$</span>
                         <input
                           type="text"
+                          inputMode="numeric"
                           placeholder="0,00"
                           aria-label="Preço promocional"
                           value={form.preco_promocional && form.preco_promocional > 0 ? formatPreco(form.preco_promocional) : ""}
@@ -5660,7 +5659,8 @@ export default function Produtos() {
 
               {/* 02/10: com tamanhos de preço próprio o bloco do preço base some — e o "Vendido por" sumia junto,
                   deixando o produto sempre como "unidade" (ex.: caixa P/M/G aparecia como unidade no cardápio) */}
-              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && !kitAtivo((form as any).kit_qtd)
+              {/* (13/10) no cadastro novo some: a forma de vender já veio do passo 2 (e os tamanhos explicam) */}
+              {(form.id && editTab === "preco") && !kitAtivo((form as any).kit_qtd)
                 && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && form.grupo_tamanhos?.modo_preco_tamanho !== "por_peso" && (
                 <div className="prod-section">
                   <div className="prod-field">
