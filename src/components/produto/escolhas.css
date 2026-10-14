@@ -98,6 +98,7 @@
   .esc-seg button { font-size: 13px; }
   .esc-op-v { width: 100px; }
   .esc-nova { grid-template-columns: minmax(0, 1fr) 92px 44px; }
+  .esc-nova.esc-nova--1 { grid-template-columns: minmax(0, 1fr) 44px; }
 }
 @media (min-width: 600px) { .esc-modelos { grid-template-columns: repeat(3, minmax(0, 1fr)); } .esc-modelo { grid-template-columns: minmax(0, 1fr); grid-template-rows: 34px auto auto; } .esc-bolas { grid-row: auto; align-self: end; margin-bottom: 6px; } }
 
@@ -134,3 +135,15 @@
 .esc-jan .esc-modelos { grid-template-columns: minmax(0, 1fr); }
 .esc-jan .esc-modelo { grid-template-columns: 52px minmax(0, 1fr); grid-template-rows: auto auto; }
 .esc-jan .esc-bolas { grid-row: 1 / span 2; align-self: center; margin: 0; }
+
+/* (13/10) Por quilo: cada peso é uma barrinha (mais alta = mais pesado). Toque marca/desmarca. */
+.esc-kgs { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(28px, 1fr); gap: 3px; overflow-x: auto; padding: 2px 0 4px; scrollbar-width: none; }
+.esc-kgs::-webkit-scrollbar { display: none; }
+.esc-kg { display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-width: 0; margin: 0; padding: 6px 2px; border: 0; border-radius: 8px; background: none; font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.esc-kg-a { display: flex; align-items: flex-end; justify-content: center; height: 72px; }
+.esc-kg-a i { display: block; width: 70%; max-width: 30px; border-radius: 3px 3px 0 0; background: #EDE4E8; transition: background .12s; }
+.esc-kg b { font-size: 13px; font-weight: 500; color: var(--ui-texto-3); text-align: center; white-space: nowrap; }
+.esc-kg.on .esc-kg-a i { background: var(--ui-rosa); }
+.esc-kg.on b { font-weight: 700; color: var(--ui-texto); }
+@media (hover: hover) { .esc-kg:hover:not(.on) .esc-kg-a i { background: #F6C6D7; } }
+.esc-kg:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 0; }
