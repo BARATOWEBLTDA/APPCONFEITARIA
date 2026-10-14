@@ -5,7 +5,6 @@ import { LIMITE_PRODUTOS_GRATIS } from "@/lib/limitesPlano";
 import CampoNumero from "@/components/ui/CampoNumero";
 import { useLocation, useNavigate } from "react-router-dom";
 import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
-import { sugerirPrecosTamanho } from "@/lib/sugestaoTamanho";
 import { Sparkle as SparkleIA } from "@phosphor-icons/react";
 import { selecionarValorAoFocar } from "@/lib/moeda";
 import RevisaoProduto from "@/components/produto/RevisaoProduto";
@@ -5486,16 +5485,6 @@ export default function Produtos() {
                       </div>
                     ))}
                   </div>
-                  {(() => {
-                    const sug = sugerirPrecosTamanho(form.grupo_tamanhos!.opcoes as any[]);
-                    if (!sug) return null;
-                    const base = form.grupo_tamanhos!.opcoes.find(o => o.preco > 0)!;
-                    return (
-                      <button type="button" className="prod-sug-tam" onClick={() => setForm(f => ({ ...f, grupo_tamanhos: { ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO), opcoes: sug as any } }))}>
-                        <span>Sugerir os outros pelo {base.nome}</span>
-                      </button>
-                    );
-                  })()}
                 </div>
               )}
 
