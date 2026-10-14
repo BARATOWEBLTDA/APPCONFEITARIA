@@ -244,7 +244,7 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
       <ul className="esc-chks" role="group" aria-label="Escolhas">
         {TODAS_ESCOLHAS.map(linha)}
       </ul>
-      <p className={`esc-nota${ativas.length === 0 ? " esc-nota--forte" : ""}`}>{ativas.length === 0 ? "Sem marcar, o cliente só diz quantos quer." : `${ativas.length} ${ativas.length === 1 ? "escolha marcada" : "escolhas marcadas"}. ${edicao ? "" : "Continue pra cadastrar."}`}</p>
+      {(ativas.length === 0 || !edicao) && <p className={`esc-nota${ativas.length === 0 ? " esc-nota--forte" : ""}`}>{ativas.length === 0 ? "Sem marcar, o cliente só diz quantos quer." : `${ativas.length} ${ativas.length === 1 ? "escolha marcada" : "escolhas marcadas"}. ${edicao ? "" : "Continue pra cadastrar."}`}</p>}
     </div>
   );
 }

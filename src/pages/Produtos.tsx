@@ -11,6 +11,7 @@ import PreviaCardapio from "@/components/produto/PreviaCardapio";
 import { categoriaSugerida, tipoPeloNome, ehBoloNoPote } from "@/lib/tipoProduto";
 import { useLojaPronta } from "@/lib/primeirosPassos";
 import RevisaoProduto, { ResumoProduto } from "@/components/produto/RevisaoProduto";
+import ResumoEdicao from "@/components/produto/ResumoEdicao";
 import EscolhasProduto, { escolhasAtivas, faltaDaEscolha } from "@/components/produto/EscolhasProduto";
 import { kitAtivo, precoMinKit, kitsValidos, type KitQtdConfig } from "@/lib/kitQuantidade";
 import TipoProdutoTela, { type TipoProduto as TipoCadastro } from "@/components/produto/TipoProdutoTela";
@@ -3554,7 +3555,10 @@ export default function Produtos() {
   }, []);
   const [wizardTipo, setWizardTipo] = useState<"simples" | "variacoes" | "personalizavel">("simples");
   const [wizardSubtipo, setWizardSubtipo] = useState<"sabores_e_tamanhos" | "so_sabores" | "so_tamanhos" | null>(null);
-  const [editTab, setEditTab] = useState<"info" | "opcoes" | "tamanhos" | "kit" | "preco" | "fotos">("info");
+  const [editTab, setEditTab] = useState<"resumo" | "info" | "opcoes" | "tamanhos" | "kit" | "preco" | "fotos" | "entrega">("resumo");
+  // (14/10) edição em resumo: guarda o produto como está salvo, pra saber se mudou algo e pra desfazer no "Voltar"
+  const formSalvo = useRef<any>(null);
+  const NOME_SECAO: Record<string, string> = { info: "Nome e descrição", opcoes: "Escolhas", tamanhos: "Escolhas", kit: "Escolhas", fotos: "Fotos", preco: "Preço e promoção", entrega: "Cardápio e entrega" };
   useEffect(() => { setEscTela(0); }, [editTab]); // trocar de aba volta a lista das escolhas
   // Tela de sucesso depois de publicar um produto novo
   const [sucesso, setSucesso] = useState<null | { id?: string; nome: string; categoria?: string; imagem?: string; preco: number; aPartir: boolean; primeiro: boolean; tipoLabel: string }>(null);
@@ -3981,7 +3985,7 @@ export default function Produtos() {
     // Tamanhos ligados sem modo salvo = preço fixo (senão a tela de edição "sugere" pelo peso e muda os preços)
     const gtEd: any = (pMigrado as any).grupo_tamanhos;
     if (gtEd?.ativo && !gtEd.modo_preco_tamanho) (pMigrado as any).grupo_tamanhos = { ...gtEd, modo_preco_tamanho: "preco_fixo" };
-    setForm(migrarAdicionaisLegacy({ ...EMPTY, ...pMigrado }));
+    { const fm = migrarAdicionaisLegacy({ ...EMPTY, ...pMigrado }); setForm(fm); formSalvo.current = fm; }
     setBoloTam((pMigrado as any).grupo_tamanhos?.ativo ? "sim" : "nao"); setBoloPrecoTela(false);
     setFichaTecnica([]);
     // Detecta tipo baseado nos dados salvos
@@ -3998,7 +4002,7 @@ export default function Produtos() {
       promocao: !!p.promocao,
     });
     setWizardStep(2);
-    setEditTab("info");
+    setEditTab("resumo");
     setModal(true);
     abertura.current++; setGerandoDesc(null); setUploading(false);
     fichaLida.current = null;
@@ -4040,8 +4044,9 @@ export default function Produtos() {
   // 11/10: a pergunta "Descartar?" usa o confirmar(): ele só responde depois que a janela dele saiu do histórico,
   // então o cadastro fecha depois (uma janela de cada vez; fechar as duas juntas pedia dois "voltar" ao mesmo tempo).
   const perguntandoDescartar = useRef(false);
+  const editMudou = () => !!form.id && JSON.stringify(form) !== JSON.stringify(formSalvo.current);
   const handleTryClose = async () => {
-    if (!hasProdData()) { fecharModal(); return; }
+    if (!hasProdData() || (form.id && !editMudou())) { fecharModal(); return; }
     if (perguntandoDescartar.current) return;
     perguntandoDescartar.current = true;
     const vez = abertura.current;
@@ -4052,6 +4057,17 @@ export default function Produtos() {
     perguntandoDescartar.current = false;
     if (!ok || abertura.current !== vez) return;
     limparDraft(); fecharModal();
+  };
+
+  // (14/10) "Voltar" de uma parte da edição: volta pro resumo (se mudou algo e não salvou, pergunta e desfaz)
+  const voltarDaSecao = async () => {
+    if ((editTab === "opcoes" || editTab === "kit" || editTab === "tamanhos") && escTela > 0) { setEscTela(0); return; }
+    if (editMudou()) {
+      const ok = await confirmar({ titulo: "Descartar as alterações?", texto: "O que você mudou aqui não vai ser salvo.", rotulo: "Descartar", rotuloVoltar: "Continuar", perigo: true, icone: "alerta" });
+      if (!ok) return;
+      setForm(formSalvo.current);
+    }
+    setEditTab("resumo");
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, slot: number = 0) => {
@@ -4239,7 +4255,7 @@ export default function Produtos() {
     if (!form.categoria.trim()) return avisar("Categoria é obrigatória", { tipo: "erro" });
     // (14/10) todo produto diz se é pronta entrega ou encomenda (na edição fica na aba Fotos, em "Como o cliente recebe")
     if (!((form as any).pronta_entrega === true || (form as any).antecedencia)) {
-      if (form.id) setEditTab("fotos");
+      if (form.id) setEditTab("entrega");
       return avisar("Marque se o produto é pronta entrega ou encomenda.", { tipo: "erro" });
     }
 
@@ -4449,8 +4465,10 @@ export default function Produtos() {
     }
     // Edição: aviso rápido e fecha
     if (form.id) {
-      fecharModal();
-      showToast("success", "Alterações salvas", (payload as any).nome || form.nome);
+      // (14/10) salvou uma parte: volta pro resumo (a janela continua aberta)
+      formSalvo.current = form;
+      setEditTab("resumo");
+      avisar("Alterações salvas", { tipo: "ok" }); // (14/10) aviso rápido (a janela "Entendi" a cada parte cansava)
       return;
     }
     // Cadastro novo: tela de sucesso com os próximos passos
@@ -4671,6 +4689,7 @@ export default function Produtos() {
     if (sucesso) { fecharModal(); return; }
     if (saving) return;
     if (!form.id && !tipoTela && wizardStep >= 2) { voltarPassoCadastro(); return; }
+    if (form.id && editTab !== "resumo") { voltarDaSecao(); return; }
     handleTryClose();
   };
   useSobreposicao(modal, aoVoltarNoCadastro, caixaCadastro);
@@ -4984,13 +5003,14 @@ export default function Produtos() {
               const foto = (form.imagem_url || "").split(",").map(x => x.trim()).filter(Boolean)[0];
               return (
               <div className="prod-modal-header-novo pcab">
-                {wizardStep >= 3 && !form.id && (
-                  <button type="button" className="pcab-bt" onClick={voltarPassoCadastro} aria-label="Voltar"><ArrowLeftIc size={22} weight="bold" aria-hidden="true" /></button>
+                {((wizardStep >= 3 && !form.id) || (form.id && editTab !== "resumo")) && (
+                  <button type="button" className="pcab-bt" onClick={form.id ? voltarDaSecao : voltarPassoCadastro} aria-label="Voltar"><ArrowLeftIc size={22} weight="bold" aria-hidden="true" /></button>
                 )}
-                <span className="pcab-foto" aria-hidden="true">{foto ? <img src={foto} alt="" /> : <Cake size={22} weight="bold" />}</span>
+                {/* numa parte da edição o título é maior ("Cardápio e entrega"): fica só a seta, sem a foto */}
+                {!(form.id && editTab !== "resumo") && <span className="pcab-foto" aria-hidden="true">{foto ? <img src={foto} alt="" /> : <Cake size={22} weight="bold" />}</span>}
                 <div className="pcab-txt">
                   <div className="pcab-linha">
-                    <h2 className="pcab-t">{form.id ? "Editar produto" : "Novo produto"}</h2>
+                    <h2 className="pcab-t">{form.id ? (editTab === "resumo" ? "Editar produto" : NOME_SECAO[editTab] || "Editar produto") : "Novo produto"}</h2>
                     <button type="button" className="pcab-i" onClick={() => setInfoPasso(true)} aria-label="Sobre este passo" aria-haspopup="dialog"><Info size={20} weight="bold" aria-hidden="true" /></button>
                   </div>
                   <p className="pcab-s" aria-label={form.id ? undefined : `Passo ${atual} de ${total}: ${nomePasso}`}>{form.id ? (form.nome || "Produto") : `${atual} de ${total} · ${nomePasso}`}</p>
@@ -5011,19 +5031,12 @@ export default function Produtos() {
               );
             })()}
 
-            {/* ══════ Tabs do MODO EDIÇÃO (V3 — 4 tabs espelhando o wizard) ══════ */}
-            {form.id && (() => {
-              // As abas espelham as etapas do cadastro de cada tipo
-              // (13/10) as mesmas abas pra todos: o kit e os tamanhos ficam dentro de Escolhas
-              const abas: { id: typeof editTab; label: string }[] = [{ id: "info", label: "Info" }, { id: "opcoes", label: "Escolhas" }, { id: "preco", label: "Preço" }, { id: "fotos", label: "Fotos" }];
-              return (
-                <div className="prod-edit-tabs">
-                  {abas.map(a => (
-                    <button key={a.id} className={`prod-edit-tab ${editTab === a.id ? "prod-edit-tab--ativo" : ""}`} onClick={() => setEditTab(a.id)}>{a.label}</button>
-                  ))}
-                </div>
-              );
-            })()}
+            {/* (14/10) edição: abre num resumo com "Editar" em cada parte (as abas saíram) */}
+            {form.id && editTab === "resumo" && (
+              <div className="prod-modal-body">
+                <ResumoEdicao form={form} onEditar={(t: any) => setEditTab(t)} />
+              </div>
+            )}
 
             {/* ══════ WIZARD STEP 1 — Escolha do tipo (TELA CHEIA ROSA) ══════ */}
             {wizardStep === 1 && (
@@ -5319,18 +5332,6 @@ export default function Produtos() {
                   </div>
                 </div>
               </div>
-              {/* (4.29) edição: Mostrar no cardápio, no fim da aba Info */}
-              {form.id && (
-                <div className="prod-section">
-                  <p className="prod-section-label">No cardápio</p>
-                  <div className="prod-toggles prod-toggles--clean" style={{ flexDirection: "column", gap: "0.25rem" }}>
-                    <Toggle label="Mostrar no cardápio" value={form.disponivel !== false} onChange={(v: boolean) => setForm(f => ({ ...f, disponivel: v }))} colorClass="active-green" />
-                  </div>
-                  <p style={{ margin: "6px 0 0", fontSize: 13, color: "#6B5D64" }}>{form.disponivel !== false
-                    ? "Os clientes veem e podem pedir este produto pelo cardápio."
-                    : "Fica guardado só pra você: não aparece no cardápio até ligar de novo."}</p>
-                </div>
-              )}
             </div>
             )}
 
@@ -5344,7 +5345,7 @@ export default function Produtos() {
 
             {/* ══════ WIZARD STEP 3 (SIMPLES) — VISUAL E PREÇO ══════ */}
             {/* Ou STEP 4 quando variações (visual + preço só de fotos) */}
-            {((wizardStep >= 4 && !form.id) || (form.id && (editTab === "fotos" || editTab === "preco" || editTab === "tamanhos"))) && (
+            {((wizardStep >= 4 && !form.id) || (form.id && (editTab === "fotos" || editTab === "preco" || editTab === "entrega"))) && (
             <div className="prod-modal-body">
 
 
@@ -5361,7 +5362,6 @@ export default function Produtos() {
                 };
                 return (
                   <div className="prod-section prod-fotos">
-                    {form.id && <p className="prod-section-label prod-section-label--novo">Fotos do produto</p>}
                     <div className={`prod-foto-pri${principal ? " tem" : ""}`}>
                       {principal ? (
                         <img src={principal} alt="Foto principal" />
@@ -5496,33 +5496,29 @@ export default function Produtos() {
                     {/* 10/10: antes cortava a última letra do nome do grupo ("tamanhos e peso", "tamanhos do comb") */}
                     Preço por {form.grupo_tamanhos.nome_exibicao === "Quantidades" ? "quantidade" : "tamanho"}
                   </p>
-                  <div style={{display: "flex", flexDirection: "column", gap: 8}}>
-                    {form.grupo_tamanhos.opcoes.map((op) => (
-                      <div key={op.id} style={{display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", background: "#FAF8F5", border: "1px solid #F0EBED", borderRadius: 10}}>
-                        <span style={{flex: 1, fontSize: 14, fontWeight: 700, color: "#2D1F26"}}>{op.nome}</span>
-                        <div style={{display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", border: "1.5px solid #E85A8C", borderRadius: 8, padding: "6px 12px"}}>
-                          <span style={{fontSize: 13, color: "#831843", fontWeight: 700}}>R$</span>
-                          <input
-                            type="text"
-                            inputMode="numeric"
-                            value={formatPreco(op.preco)}
-                            aria-label={`Preço de ${op.nome}`}
-                            onChange={e => {
-                              const preco = parsePreco(e.target.value);
-                              setForm(f => ({
-                                ...f,
-                                grupo_tamanhos: {
-                                  ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO),
-                                  opcoes: (f.grupo_tamanhos?.opcoes || []).map(o => o.id === op.id ? { ...o, preco } : o),
-                                },
-                              }));
-                            }}
-                            placeholder="0,00"
-                            style={{width: 80, border: "none", outline: "none", background: "transparent", fontSize: 15, fontWeight: 700, color: "#E85A8C", textAlign: "right", fontFamily: "inherit"}}
-                          />
+                  {/* (14/10) tabelinha: Tamanho | Preço (editável) | À venda (só na edição: desmarcado = esgotado) */}
+                  <div className={`prod-dtab prod-ptab${form.id ? " prod-ptab--3" : ""}`} role="table" aria-label="Preço por tamanho">
+                    <div className="prod-dtab-l prod-dtab-h" role="row"><span role="columnheader">Tamanho</span><span role="columnheader">Preço</span>{form.id && <span role="columnheader">À venda</span>}</div>
+                    {form.grupo_tamanhos.opcoes.map((op: any) => {
+                      const esg = !!op.esgotado;
+                      return (
+                        <div className={`prod-dtab-l${esg ? " esg" : ""}`} role="row" key={op.id}>
+                          <span role="cell">{op.nome}{esg && <small> · esgotado</small>}</span>
+                          <span role="cell">
+                            <label className="prod-ptab-in"><span>R$</span>
+                              <input type="text" inputMode="numeric" value={formatPreco(op.preco)} aria-label={`Preço de ${op.nome}`} placeholder="0,00"
+                                onChange={e => { const preco = parsePreco(e.target.value); setForm(f => ({ ...f, grupo_tamanhos: { ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO), opcoes: (f.grupo_tamanhos?.opcoes || []).map(o => o.id === op.id ? { ...o, preco } : o) } })); }} />
+                            </label>
+                          </span>
+                          {form.id && <span role="cell">
+                            <button type="button" className={`prod-ptab-ck${esg ? "" : " on"}`} role="checkbox" aria-checked={!esg} aria-label={`${op.nome} à venda`}
+                              onClick={() => setForm(f => ({ ...f, grupo_tamanhos: { ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO), opcoes: (f.grupo_tamanhos?.opcoes || []).map((o: any) => o.id === op.id ? { ...o, esgotado: esg ? undefined : true } : o) } }))}>
+                              {!esg && <CheckIc size={14} weight="bold" />}
+                            </button>
+                          </span>}
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 {/* (14/10) promoção em % pros tamanhos de preço fixo (antes não tinha onde pôr) */}
                 {!kitAtivo((form as any).kit_qtd) && (() => {
@@ -5729,27 +5725,8 @@ export default function Produtos() {
                 </div>
               )}
 
-              {/* 02/10: com tamanhos de preço próprio o bloco do preço base some — e o "Vendido por" sumia junto,
-                  deixando o produto sempre como "unidade" (ex.: caixa P/M/G aparecia como unidade no cardápio) */}
-              {/* (13/10) no cadastro novo some: a forma de vender já veio do passo 2 (e os tamanhos explicam) */}
-              {(form.id && editTab === "preco") && !kitAtivo((form as any).kit_qtd)
-                && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && form.grupo_tamanhos?.modo_preco_tamanho !== "por_peso" && (
-                <div className="prod-section">
-                  <div className="prod-field">
-                    <label>Vendido por</label>
-                    <SelectDoonly
-                      value={form.forma_venda}
-                      onChange={v => setForm(f => ({ ...f, forma_venda: v }))}
-                      options={FORMAS_VENDA.filter(fv => !["kg", "tamanho"].includes(fv.value)).map(fv => ({ value: fv.value, label: fv.label }))}
-                      title="Como esse produto é vendido?"
-                      big
-                    />
-                  </div>
-                </div>
-              )}
-
               {/* (14/10) esgotar um tamanho só (na edição): no cardápio ele aparece apagado e não dá pra escolher */}
-              {form.id && editTab === "preco" && !kitAtivo((form as any).kit_qtd) && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && (
+              {form.id && editTab === "preco" && !kitAtivo((form as any).kit_qtd) && form.grupo_tamanhos?.ativo && form.grupo_tamanhos.modo_preco_tamanho === "por_peso" && (form.grupo_tamanhos.opcoes.length || 0) > 0 && (
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">Tamanhos à venda</p>
                   <div className="prod-opcs">
@@ -6092,7 +6069,7 @@ export default function Produtos() {
             )}
 
               {/* (14/10) cadastro novo: uma seção só com as opções, cada uma com caixinha e explicação */}
-              {wizardStep === 5 && !form.id && (() => {
+              {((wizardStep === 5 && !form.id) || (form.id && editTab === "entrega")) && (() => {
                 const enc = !!(form as any).antecedencia;
                 const op = (on: boolean, t: string, sub: string, fn: () => void) => (
                   <button type="button" className={`prod-opc${on ? " on" : ""}`} role="checkbox" aria-checked={on} onClick={fn}>
@@ -6102,7 +6079,7 @@ export default function Produtos() {
                 );
                 return (
                   <div className="prod-section">
-                    <p className="prod-section-label prod-section-label--novo">Opções</p>
+                    {!form.id ? <p className="prod-section-label prod-section-label--novo">Opções</p> : null}
                     <div className="prod-opcs">
                       {op(form.disponivel !== false, "Mostrar no cardápio", form.disponivel !== false ? "Os clientes veem e podem pedir" : "Fica guardado só pra você", () => setForm(f => ({ ...f, disponivel: f.disponivel === false })))}
                       {op(form.pronta_entrega === true, "Pronta entrega", "Tem feito, sai na hora", () => setForm(f => ({ ...(f as any), pronta_entrega: !(f as any).pronta_entrega, antecedencia: !(f as any).pronta_entrega ? null : (f as any).antecedencia ?? null })))}
@@ -6141,58 +6118,6 @@ export default function Produtos() {
               </div>
               )}
 
-              {/* Status — na edição, aba Fotos (no cadastro novo está na seção Opções) */}
-              {(form.id && editTab === "fotos") && (
-              <div className="prod-section">
-                <p className="prod-section-label">Como o cliente recebe</p>
-                <div className="prod-toggles prod-toggles--clean" style={{ flexDirection: "column", gap: "0.25rem" }}>
-                  <Toggle
-                    label="Pronta entrega"
-                    value={form.pronta_entrega === true}
-                    // 10/10: false/null em vez de undefined (o banco ignora undefined e o desligar não gravava)
-                    onChange={(v: boolean) => setForm(f => ({ ...(f as any), pronta_entrega: v, antecedencia: v ? null : ((f as any).antecedencia ?? null) }))}
-                    colorClass="active-green"
-                  />
-                  <Toggle
-                    label="Precisa encomendar antes"
-                    value={!!(form as any).antecedencia}
-                    onChange={(v: boolean) => setForm(f => ({ ...(f as any), antecedencia: v ? "48h" : null, pronta_entrega: v ? false : (f as any).pronta_entrega }))}
-                    colorClass="active-pink"
-                  />
-                </div>
-
-                {/* Chips de dias — só se ativou "Necessário agendar" */}
-                {!!(form as any).antecedencia && (
-                  <div className="prod-field" style={{marginTop: 12}}>
-                    <label>Quantos dias antes?</label>
-                    <div className="prod-antecedencia-grid">
-                      {[
-                        { valor: "24h", label: "24 horas" },
-                        { valor: "48h", label: "48 horas" },
-                        { valor: "3d", label: "3 dias" },
-                        { valor: "5d", label: "5 dias" },
-                        { valor: "7d", label: "1 semana" },
-                        { valor: "15d", label: "15 dias" },
-                      ].map(opt => {
-                        const ativo = (form as any).antecedencia === opt.valor;
-                        return (
-                          <button
-                            key={opt.valor}
-                            type="button"
-                            className={`prod-antecedencia-chip ${ativo ? "prod-antecedencia-chip--on" : ""}`}
-                            onClick={() => setForm(f => ({ ...(f as any), antecedencia: opt.valor }))}
-                          >
-                            {opt.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <p style={{margin:"8px 0 0", fontSize:13, color:"#6B5D64"}}>No cardápio aparece "Pedir X antes" na foto do produto, e um aviso quando o cliente abre o produto.</p>
-                  </div>
-                )}
-              </div>
-              )}
-
               {/* (13/10) Revisão: como o cliente vê, pedido de exemplo e o que falta */}
               {/* (14/10) a prévia e, por último (colado no Publicar), o que falta arrumar */}
               {/* (14/10) passo 6 · Revisão: a prévia no topo, todas as informações e, por último, o que falta arrumar */}
@@ -6206,7 +6131,9 @@ export default function Produtos() {
             {/* ══════ RODAPÉ (steps 2, 3, 4) ══════ */}
             {wizardStep >= 2 && (
             <div className="prod-modal-footer prod-modal-footer--novo">
-              {wizardStep >= 3 && !form.id
+              {form.id
+                ? (editTab !== "resumo" ? <button className="prod-btn-cancelar-novo" onClick={voltarDaSecao}>Voltar</button> : null)
+                : wizardStep >= 3
                 ? <button className="prod-btn-cancelar-novo" onClick={voltarPassoCadastro}>Voltar</button>
                 : <button className="prod-btn-cancelar-novo" onClick={handleTryClose}>Cancelar</button>}
               {(() => {
@@ -6281,9 +6208,11 @@ export default function Produtos() {
                 if (isEdit) {
                   // Modo edição: salva direto em qualquer passo
                   return (
-                    <button className="prod-btn-avancar-novo" onClick={handleSalvar} disabled={saving || uploading || !!gerandoDesc}>
-                      {saving ? <span className="prod-spinner-sm" /> : "Salvar alterações"}
-                    </button>
+                    editTab === "resumo"
+                      ? <button className="prod-btn-cancelar-novo prod-btn-fechar-ed" onClick={handleTryClose}>Fechar</button>
+                      : <button className="prod-btn-avancar-novo" onClick={handleSalvar} disabled={saving || uploading || !!gerandoDesc}>
+                          {saving ? <span className="prod-spinner-sm" /> : "Salvar"}
+                        </button>
                   );
                 }
 
