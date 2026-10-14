@@ -490,7 +490,7 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
             </li>
           ))}
         </ul>
-        <p className="esc-dica">Rendimento é opcional.</p>
+        <p className="esc-dica">Opcional, mas ajuda o cliente a escolher no cardápio.</p>
         <div className="esc-nova esc-nova--1">
           <input placeholder={porPeso ? "Ex.: 2,5 kg" : "Outro tamanho…"} value={novo} onChange={e => setNovo(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); add(); } }} aria-label="Outro tamanho" />
           <button type="button" className="esc-nova-bt" onClick={add} disabled={!novo.trim()} aria-label="Pôr tamanho"><Plus size={20} weight="bold" /></button>
