@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
 import { Sparkle as SparkleIA } from "@phosphor-icons/react";
 import { selecionarValorAoFocar } from "@/lib/moeda";
+import PreviaCardapio from "@/components/produto/PreviaCardapio";
 import RevisaoProduto from "@/components/produto/RevisaoProduto";
 import EscolhasProduto from "@/components/produto/EscolhasProduto";
 import { kitAtivo, precoMinKit, kitsValidos, type KitQtdConfig } from "@/lib/kitQuantidade";
@@ -4931,7 +4932,7 @@ export default function Produtos() {
                   // (13/10) o mesmo caminho pra todos os tipos: Tipo → Sobre o produto → Escolhas → Preço → Fotos e entrega
                   const total = 5;
                   const atual = wizardStep;
-                  const nomes = ["Tipo", "Sobre o produto", "Escolhas", "Preço", "Fotos e entrega"];
+                  const nomes = ["Tipo", "Sobre o produto", "Escolhas", "Fotos", "Preço e revisão"];
                   return (
                     <>
                       <div className="prod-modal-title-novo">Novo produto</div>
@@ -5267,9 +5268,9 @@ export default function Produtos() {
             <div className="prod-modal-body">
 
               {/* Título e subtítulo (mesmo padrão dos steps 3 e 4) */}
-              {wizardStep === 5 && !form.id && (
+              {wizardStep === 4 && !form.id && (
                 <div className="prod-step-header">
-                  <div className="prod-step-title">Fotos e entrega</div>
+                  <div className="prod-step-title">Fotos</div>
                   <div className="prod-step-sub">
                     Produto com foto vende mais. A primeira é a que aparece no cardápio.
                   </div>
@@ -5277,10 +5278,10 @@ export default function Produtos() {
               )}
 
               {/* Fotos — só em step 5 (Fotos e finalização) ou tab Fotos na edição */}
-              {((wizardStep === 5 && !form.id) || (form.id && editTab === "fotos")) && (
+              {((wizardStep === 4 && !form.id) || (form.id && editTab === "fotos")) && (
               <>
               <div className="prod-section">
-                <p className="prod-section-label prod-section-label--novo">Fotos do produto</p>
+                {form.id && <p className="prod-section-label prod-section-label--novo">Fotos do produto</p>}
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "8px" }}>
                   {[0, 1, 2].map(slot => {
                     const imgs = (form.imagem_url || "").split(",").map(s => s.trim()).filter(Boolean);
@@ -5424,9 +5425,9 @@ export default function Produtos() {
               )}
 
               {/* Título e subtítulo (mesmo estilo do step 3) */}
-              {wizardStep === 4 && !form.id && (
+              {wizardStep === 5 && !form.id && (
                 <div className="prod-step-header">
-                  <div className="prod-step-title">Qual o preço?</div>
+                  <div className="prod-step-title">Preço e revisão</div>
                   <div className="prod-step-sub">
                     {kitAtivo((form as any).kit_qtd)
                       ? "Confira o preço de cada kit e, se quiser, coloque em promoção."
@@ -5435,8 +5436,11 @@ export default function Produtos() {
                 </div>
               )}
 
+              {/* (14/10) prévia real do cardápio, no topo do último passo (a foto já foi posta no passo 4) */}
+              {wizardStep === 5 && !form.id && <div className="prod-section"><PreviaCardapio form={form} /></div>}
+
               {/* Preços por Tamanho — só se tem tamanhos ativos */}
-              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && form.grupo_tamanhos.modo_preco_tamanho !== "sob_consulta" && form.grupo_tamanhos.modo_preco_tamanho !== "por_peso" && (
+              {((wizardStep === 5 && !form.id) || (form.id && editTab === "preco")) && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && form.grupo_tamanhos.modo_preco_tamanho !== "sob_consulta" && form.grupo_tamanhos.modo_preco_tamanho !== "por_peso" && (
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">
                     {/* 10/10: antes cortava a última letra do nome do grupo ("tamanhos e peso", "tamanhos do comb") */}
@@ -5474,7 +5478,7 @@ export default function Produtos() {
               )}
 
               {/* Preços por Sabor — só se tem sabores ativos E sabor_tem_preco_proprio */}
-              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && form.grupo_sabores?.ativo && (form.grupo_sabores.opcoes.length || 0) > 0 && form.grupo_sabores.sabor_tem_preco_proprio && (
+              {((wizardStep === 5 && !form.id) || (form.id && editTab === "preco")) && form.grupo_sabores?.ativo && (form.grupo_sabores.opcoes.length || 0) > 0 && form.grupo_sabores.sabor_tem_preco_proprio && (
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">
                     Preço por sabor <ReqTag />
@@ -5515,7 +5519,7 @@ export default function Produtos() {
               {/* ══════ SEÇÃO 1: Preço base + Forma de venda ══════ */}
               {/* Aparece quando: (a) não tem tamanho, OU (b) modo é por_peso (precisa do R$/kg) */}
               {/* Kit (02/10): sem "preço base" — o preço vem dos kits montados. Fica só a promoção. */}
-              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && kitAtivo((form as any).kit_qtd) && (() => {
+              {((wizardStep === 5 && !form.id) || (form.id && editTab === "preco")) && kitAtivo((form as any).kit_qtd) && (() => {
                 const kq: any = (form as any).kit_qtd;
                 const kits = kitsValidos(kq);
                 const pct = Number(form.desconto_percentual) || 0;
@@ -5546,7 +5550,7 @@ export default function Produtos() {
                 );
               })()}
 
-              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && !kitAtivo((form as any).kit_qtd) && (
+              {((wizardStep === 5 && !form.id) || (form.id && editTab === "preco")) && !kitAtivo((form as any).kit_qtd) && (
                 !(form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0) ||
                 form.grupo_tamanhos?.modo_preco_tamanho === "por_peso"
               ) && (
@@ -5562,10 +5566,10 @@ export default function Produtos() {
                       Coloque o preço de <b>1 kg</b>. Cada tamanho sai sozinho.
                     </p>
                   )}
-                  <div className="prod-row-2 prod-row-2--empilha">
+                  {/* (14/10) preço cheio e promocional lado a lado; "Vendido por" embaixo, numa linha só dele */}
+                  <div className="prod-row-2">
                     {!(!form.id && form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") && <div className="prod-field">
                       <label>Preço cheio</label>
-                      <div className="prod-preco-por">
                       <div className="prod-preco-input prod-preco-input--big">
                         <span>R$</span>
                         <input type="text" inputMode="numeric" placeholder="0,00" aria-label="Preço cheio" value={form.preco_normal ? formatPreco(form.preco_normal) : ""} onChange={e => {
@@ -5577,17 +5581,6 @@ export default function Produtos() {
                             return { ...f, preco_normal: n, promocao: pp < n };
                           });
                         }} />
-                      </div>
-                      {/* (13/10) a forma de vender fica junto do preço: "R$ 80,00 por quilo" (no lugar do "Vendido por" separado) */}
-                      {!(form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") && (<>
-                        <span className="prod-preco-por-t">por</span>
-                        <select className="prod-preco-por-s" value={form.forma_venda} aria-label="Por unidade, quilo, fatia…"
-                          onChange={e => setForm(f => ({ ...f, forma_venda: e.target.value }))}>
-                          {[["unidade", "unidade"], ["kg", "quilo"], ["fatia", "fatia"], ["cento", "cento"], ["caixa", "caixa"]]
-                            .concat(["unidade", "kg", "fatia", "cento", "caixa"].includes(form.forma_venda) ? [] : [[form.forma_venda, (FORMAS_VENDA.find(x => x.value === form.forma_venda)?.label || form.forma_venda).replace(/^Por /, "").toLowerCase()]])
-                            .map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                        </select>
-                      </>)}
                       </div>
                     </div>}
                     <div className="prod-field">
@@ -5608,30 +5601,18 @@ export default function Produtos() {
                       </div>
                     </div>
                   </div>
+                  {!(form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") && (
+                    <div className="prod-field" style={{ marginTop: 14 }}>
+                      <label>Vendido por</label>
+                      <select className="prod-vendido-s" value={form.forma_venda} aria-label="Vendido por"
+                          onChange={e => setForm(f => ({ ...f, forma_venda: e.target.value }))}>
+                          {[["unidade", "Por unidade"], ["kg", "Por quilo (kg)"], ["fatia", "Por fatia"], ["cento", "Por cento"], ["caixa", "Por caixa"]]
+                            .concat(["unidade", "kg", "fatia", "cento", "caixa"].includes(form.forma_venda) ? [] : [[form.forma_venda, FORMAS_VENDA.find(x => x.value === form.forma_venda)?.label || form.forma_venda]])
+                            .map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                        </select>
+                    </div>
+                  )}
 
-                  {/* Preview do preço no cardápio */}
-                  {form.preco_normal > 0 && form.preco_promocional && form.preco_promocional > 0 && form.preco_promocional < form.preco_normal && (() => {
-                    // Sufixo vem do "Vendido por" — é a fonte de verdade da unidade
-                    const sufixoMap: Record<string, string> = {
-                      kg: "/kg", fatia: "/fatia", cento: "/cento", caixa: "/cx",
-                    };
-                    const sufixo = sufixoMap[form.forma_venda] || "";
-                    return (
-                      <div className="prod-promo-preview">
-                        <span className="prod-promo-preview-label">Cliente verá no cardápio</span>
-                        <div className="prod-promo-preview-precos">
-                          <span className="prod-promo-preview-riscado">R$ {formatPreco(form.preco_normal)}</span>
-                          <span className="prod-promo-preview-final">
-                            R$ {formatPreco(form.preco_promocional)}
-                            {sufixo && <span className="prod-promo-preview-sufixo">{sufixo}</span>}
-                          </span>
-                          <span className="prod-promo-preview-desconto">
-                            -{Math.round((1 - form.preco_promocional / form.preco_normal) * 100)}%
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })()}
 
                 </div>
               )}
@@ -5656,7 +5637,7 @@ export default function Produtos() {
               )}
 
               {/* ══════ SEÇÃO 2: Adicionais das opções ══════ (13/10: os valores agora ficam nas Escolhas) */}
-              {false && ((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (() => {
+              {false && ((wizardStep === 5 && !form.id) || (form.id && editTab === "preco")) && (() => {
                 const gruposComOpcoes = [
                   { key: "massas", label: "Massas", grupo: form.grupo_massas },
                   { key: "recheios", label: "Recheios", grupo: form.grupo_recheios },
@@ -5735,7 +5716,7 @@ export default function Produtos() {
 
               {/* ══════ SEÇÃO 3: Regra de conflito Sabor × Tamanho ══════
                   Aparece SÓ quando há conflito real de preço (Passo 4) */}
-              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (() => {
+              {((wizardStep === 5 && !form.id) || (form.id && editTab === "preco")) && (() => {
                 const gs = form.grupo_sabores;
                 const gt = form.grupo_tamanhos;
                 const conflito = existeConflitoSaborTamanho({
@@ -5872,7 +5853,7 @@ export default function Produtos() {
               {/* ══════ Extras pagos (V3) — DESATIVADO temporariamente
                   Vai virar seção exclusiva de "Complementos" (já existe página /complementos)
                   Integração no cadastro de produto será feita em fase futura. ══════ */}
-              {false && ((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (
+              {false && ((wizardStep === 5 && !form.id) || (form.id && editTab === "preco")) && (
               <>
 
               {/* Adicionais */}
@@ -6082,8 +6063,8 @@ export default function Produtos() {
                     if (vazio) return { msg: `Coloque pelo menos 1 ${NOME_GRUPO[vazio[0]] || "sabor"} (ou toque em Tirar)`, alvo: `[data-falta="${vazio[0]}"]` };
                     return null;
                   }
-                  // Step 4: Preço e venda — valida preço base OU preços dos tamanhos
-                  if (wizardStep === 4) {
+                  // (14/10) Preço é o último passo (5): valida preço base OU preços dos tamanhos
+                  if (wizardStep === 5) {
                     // Kit por quantidade: o preço vem dos kits
                     if (kitAtivo((form as any).kit_qtd)) return precoMinKit((form as any).kit_qtd) > 0 ? null : { msg: 'Volte em Escolhas e coloque o preço dos kits' };
                     const gt = form.grupo_tamanhos;
@@ -6104,7 +6085,7 @@ export default function Produtos() {
                     }
                     return (form.preco_normal || 0) > 0 ? promoMaior : { msg: "Coloque o preço do produto", alvo: 'input[aria-label="Preço cheio"]' };
                   }
-                  // Step 5: Fotos — sempre pode avançar (fotos opcionais)
+                  // Passo 4: Fotos — sempre pode avançar (fotos opcionais)
                   return null;
                 })();
                 const canAdvance = !falta;
@@ -6136,8 +6117,9 @@ export default function Produtos() {
                 }
 
                 if (isLast) {
-                  return (
-                    <button className="prod-btn-avancar-novo" onClick={handleSalvar} disabled={saving || uploading || !!gerandoDesc}>
+                  return (<>
+                    {avisoFalta}
+                    <button className="prod-btn-avancar-novo" onClick={() => { if (!canAdvance) { irParaFalta(); return; } handleSalvar(); }} disabled={saving || uploading || !!gerandoDesc}>
                       {saving ? <span className="prod-spinner-sm" /> : (
                         <>
                           <CheckIc size={20} weight="bold" aria-hidden="true" />
@@ -6145,7 +6127,7 @@ export default function Produtos() {
                         </>
                       )}
                     </button>
-                  );
+                  </>);
                 }
 
                 return (<>

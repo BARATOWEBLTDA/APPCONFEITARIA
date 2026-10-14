@@ -1,4 +1,4 @@
-import { Camera, CheckCircle, Warning } from "@phosphor-icons/react";
+import { CheckCircle, Warning } from "@phosphor-icons/react";
 import { kitAtivo, kitsValidos, precoMinKit, precoLivre, type KitQtdConfig } from "@/lib/kitQuantidade";
 import { textoBRL } from "@/lib/moeda";
 import "./escolhas.css";
@@ -80,19 +80,8 @@ export function resumoRevisao(form: any) {
 
 export default function RevisaoProduto({ form }: { form: any }) {
   const r = resumoRevisao(form);
-  const nome = String(form.nome || "").trim() || "Seu produto";
   return (
     <div className="rev">
-      <p className="rev-tit">Como o cliente vê</p>
-      <div className="rev-card">
-        <span className="rev-foto">{form.imagem_url ? <img src={form.imagem_url} alt="" /> : <Camera size={22} aria-hidden="true" />}</span>
-        <span className="rev-tx">
-          <b>{nome}</b>
-          <small>{r.escolhas.length ? `Escolhe ${r.escolhas.join(", ")}` : "Sem escolhas, só a quantidade"}</small>
-          <em>{r.linhas.length > 1 || form.grupo_tamanhos?.ativo || form.kit_qtd?.ativo ? "a partir de " : ""}<strong>{rs(r.aPartir)}</strong></em>
-        </span>
-      </div>
-
       {r.linhas.length > 1 && (
         <>
           <p className="rev-tit">Um pedido de exemplo</p>

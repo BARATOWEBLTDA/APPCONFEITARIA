@@ -169,3 +169,14 @@ body .prod-modal--novo .prod-row-2--empilha { display: grid; grid-template-colum
 body .prod-modal--novo .prod-row-2--empilha .prod-preco-input--promo { max-width: calc(100% - 104px - 8px - 8px - 22px); }
 body .prod-modal--novo .prod-kg-info { margin: 0 0 14px; font-size: 15px; font-weight: 600; color: var(--ui-texto); }
 body .prod-modal--novo .prod-kg-info small { font-size: 12.5px; font-weight: 500; color: var(--ui-texto-3); }
+
+/* (14/10) "Vendido por" com a mesma altura das caixas de preço */
+body .prod-modal--novo .prod-vendido-s { width: 100%; height: 56px; padding: 0 40px 0 16px; border: 1.5px solid var(--ui-borda-campo); border-radius: 12px; font-family: inherit; font-size: 16px; font-weight: 600; color: var(--ui-texto); -webkit-appearance: none; appearance: none;
+  background: var(--ui-branco) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B5D64' stroke-width='1.8' fill='none'/%3E%3C/svg%3E") no-repeat right 16px center; }
+body .prod-modal--novo .prod-vendido-s:focus { outline: none; border-color: var(--ui-rosa); }
+
+/* (14/10) prévia real do cardápio no passo do preço */
+body .prod-modal--novo .prev-cardapio-t { display: flex; align-items: baseline; justify-content: space-between; margin: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
+body .prod-modal--novo .prev-cardapio-t span { font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
+body .prod-modal--novo .prev-cardapio-box { padding: 4px 12px; border: 1px solid var(--ui-borda); border-radius: 12px; background: #FAF7F8; }
+body .prod-modal--novo .prev-cardapio-box .ic-ln { background: transparent; }
