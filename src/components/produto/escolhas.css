@@ -393,3 +393,11 @@ body .prod-modal--novo .prod-section-label.red-t { margin-top: 24px !important; 
 .esc-tab-add .esc-nova-bt { flex: none; height: 44px; min-height: 44px; }
 .esc-av-linha { border: 1.5px solid #E4D7DD; background: #FCFAFB; }
 .esc-av-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 10px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+/* (14/10) aviso das opções (valor a mais / preço por sabor) */
+.esc-aviso { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 12px; padding: 12px; border: 1px solid #E6DCE1; border-radius: 8px; background: #F3EEF0; }
+.esc-aviso-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; margin-top: 1px; border-radius: 50%; background: var(--ui-texto-2); color: #fff; font-size: 13px; font-weight: 700; font-style: normal; }
+.esc-aviso p { margin: 0; min-width: 0; font-size: 13.5px; line-height: 1.45; color: var(--ui-texto-2); }
+.esc-aviso b { display: block; margin-bottom: 2px; font-size: 14px; color: var(--ui-texto); }
+.esc-aviso-ex { display: block; margin-top: 6px; padding: 6px 8px; border-radius: 6px; background: #fff; font-size: 12.5px; color: var(--ui-texto); }
+.esc-aviso-ex em { font-style: normal; font-weight: 700; color: #15803D; }
+.esc-lbl.esc-lbl--sub { margin-bottom: 10px; }

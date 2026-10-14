@@ -328,7 +328,22 @@ function CartaoGrupo({ chave, tipo, form, setForm, outros }: { chave: "massa" | 
   return (
     <div className="esc-corpo">
       <p className="esc-lbl esc-lbl--sub">Opções</p>
-      <p className="esc-sub">{precoProprio ? "O preço de cada um vai no último passo" : "Deixe 0,00 se já vem no preço"}</p>
+      {/* (14/10) aviso explicando o valor a mais, com um exemplo da conta */}
+      {(() => {
+        if (precoProprio) return (
+          <div className="esc-aviso"><span className="esc-aviso-ic" aria-hidden="true">i</span>
+            <p><b>Preço de cada sabor: no último passo</b>Aqui você só cadastra os sabores. No passo Preço, coloca quanto custa cada um.</p></div>
+        );
+        const EX: Record<string, string> = { recheio: "Nutella", massa: "Red velvet", cobertura: "Pasta americana", sabor: "Pistache" };
+        const precos = ((form.grupo_tamanhos?.ativo ? form.grupo_tamanhos.opcoes : []) || []).map((o: any) => Number(o.preco) || 0).filter((v: number) => v > 0);
+        const base = precos.length ? Math.min(...precos) : Number(form.preco_normal) > 0 ? Number(form.preco_normal) : 80;
+        const nomeP = String(form.nome || "").trim().split(/\s+/)[0]?.toLowerCase() || "bolo";
+        return (
+          <div className="esc-aviso"><span className="esc-aviso-ic" aria-hidden="true">i</span>
+            <p><b>Sem valor, já vem no preço.</b>Só coloque valor no que custa a mais pro cliente.
+              <span className="esc-aviso-ex">Ex.: {EX[chave]} + R$ 8,00 → {nomeP} de R$ {textoBRL(base)} sai por <em>R$ {textoBRL(base + 8)}</em></span></p></div>
+        );
+      })()}
       {(
         <div className={`esc-tab${precoProprio ? " esc-tab--1" : ""}`} role="table" aria-label={`Opções de ${chave}`}>
           <div className="esc-tab-l esc-tab-h" role="row"><span role="columnheader">{ROTULO[chave]}</span>{!precoProprio && <span role="columnheader">Custa a mais</span>}<span role="columnheader" aria-label="Tirar" /></div>
@@ -361,7 +376,7 @@ function CartaoGrupo({ chave, tipo, form, setForm, outros }: { chave: "massa" | 
       <button type="button" className="esc-rend-linha esc-av-linha" onClick={() => setAvancado(true)}>
         <span className="esc-av-ic" aria-hidden="true"><GearSix size={20} weight="bold" /></span>
         <span className="esc-tx"><b>Avançado</b>
-          <small>{quantosAtual === 1 ? "Escolhe 1" : quantosAtual >= 99 ? "À vontade" : `Escolhe até ${quantosAtual}`} · {g.min >= 1 ? "Obrigatório" : "Opcional"}{chave === "sabor" && precoProprio ? " · preço por sabor" : ""}</small></span>
+          <small>{quantosAtual === 1 ? "Escolhe 1" : quantosAtual >= 99 ? "À vontade" : `Escolhe até ${quantosAtual}`} · {g.min >= 1 ? "Obrigatório" : "Opcional"}</small></span>
         <span className="esc-rend-bt">Editar</span>
       </button>
       <Janela aberta={avancado} aoFechar={() => setAvancado(false)} titulo="Avançado" tipo="conteudo" umaAcao
