@@ -311,4 +311,4 @@ body .prod-modal--novo .prev-cardapio-box--promo .prev-cardapio-card { padding: 
 .prod-ptab-ck { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; margin: 0; padding: 0; border: 2px solid #D6CBD0; border-radius: 6px; background: #fff; color: #fff; cursor: pointer; }
 .prod-ptab-ck.on { border-color: var(--ui-rosa); background: var(--ui-rosa); }
 .prod-ptab-ck::after { content: ""; position: absolute; }
-body .prod-modal--novo .prod-btn-fechar-ed { flex: 1; width: 100%; background: #F1EEF0 !important; color: var(--ui-texto) !important; }
+body .prod-modal--novo .prod-btn-fechar-ed { grid-column: 1 / -1 !important; flex: 1 1 auto !important; width: 100% !important; max-width: none !important; background: #F1EEF0 !important; color: var(--ui-texto) !important; }
