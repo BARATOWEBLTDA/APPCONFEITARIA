@@ -165,5 +165,8 @@
 .esc-serve select:focus { outline: none; border-color: var(--ui-rosa); }
 /* na lista de tamanhos, o nome encolhe pra caber "serve [__] [pessoas]" numa linha a 360px */
 .esc-op:has(.esc-serve) { gap: 6px; padding-left: 8px; }
-.esc-op:has(.esc-serve) .esc-op-in { min-width: 52px; padding: 0 8px; }
+/* o nome tem a largura de "Pequeno" / "Aro 20"; o que sobra vai pro rendimento */
+.esc-op:has(.esc-serve) .esc-op-in { flex: 0 0 86px; width: 86px; min-width: 0; padding: 0 8px; }
+.esc-op:has(.esc-serve) .esc-serve { flex: 1; min-width: 0; }
+.esc-op:has(.esc-serve) .esc-serve select { flex: 1; width: auto; min-width: 86px; max-width: 108px; }
 .esc-op:has(.esc-serve) .esc-op-x { width: 30px; }
