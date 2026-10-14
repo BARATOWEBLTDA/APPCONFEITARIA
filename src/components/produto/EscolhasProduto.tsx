@@ -564,6 +564,8 @@ function JanelaRendimento({ g, set, onFechar }: { g: GrupoTam; set: (p: Partial<
   const [usada, setUsada] = useState<string>(g.rendimento_predef || "");
   const [perguntar, setPerguntar] = useState(false); // (14/10) "Salvar como predefinição?" ao salvar sem uma
   const [nomeAviso, setNomeAviso] = useState("");
+  // (14/10) só as predefinições que servem: pelo menos um tamanho com o mesmo nome (P/M/G não serve pra 1 kg, 2 kg…)
+  const uteis = predefs.filter(p => g.opcoes.some(o => p.itens[chaveTam(o.nome)] !== undefined));
   useEffect(() => { lerPredefs().then(setPredefs); }, []);
 
   const aplicar = (p: PredefRend) => {
@@ -600,12 +602,12 @@ function JanelaRendimento({ g, set, onFechar }: { g: GrupoTam; set: (p: Partial<
     <Janela aberta aoFechar={onFechar} titulo="Rendimento" tipo="conteudo" travada
       acoes={<><Botao variante="secundario" onClick={onFechar}>Voltar</Botao><Botao onClick={salvar}>Salvar rendimento</Botao></>}>
       <div className="esc esc-jan esc-rend" onFocusCapture={selecionarValorAoFocar} onClickCapture={selecionarValorAoFocar}>
-        {predefs.length > 0 && (<>
+        {uteis.length > 0 && (<>
           <p className="esc-lbl">Usar uma predefinição</p>
           {/* (14/10) até 4: botões; mais que isso vira uma lista pra escolher */}
-          {predefs.length <= 4 ? (
+          {uteis.length <= 4 ? (
             <div className="esc-chips" role="group" aria-label="Predefinições">
-              {predefs.map(p => (
+              {uteis.map(p => (
                 <button key={p.nome} type="button" className={`esc-chip esc-predef${usada === p.nome ? " on" : ""}`} onClick={() => aplicar(p)}>{usada === p.nome && <Check size={14} weight="bold" aria-hidden="true" />}{p.nome}</button>
               ))}
             </div>
@@ -613,7 +615,7 @@ function JanelaRendimento({ g, set, onFechar }: { g: GrupoTam; set: (p: Partial<
             <label className="esc-predef-sel">
               <select value={usada} aria-label="Escolher predefinição" onChange={e => { const p = predefs.find(x => x.nome === e.target.value); if (p) aplicar(p); }}>
                 <option value="" disabled>Escolher predefinição</option>
-                {predefs.map(p => <option key={p.nome} value={p.nome}>{p.nome}</option>)}
+                {uteis.map(p => <option key={p.nome} value={p.nome}>{p.nome}</option>)}
               </select>
               <CaretDown size={16} weight="bold" aria-hidden="true" />
             </label>

@@ -5519,7 +5519,7 @@ export default function Produtos() {
                   const pct = Number(form.desconto_percentual) || 0;
                   const on = !!form.promocao && form.tipo_promocao === "percentual";
                   return (<>
-                    <p className="prod-section-label prod-section-label--novo" style={{ marginTop: 22 }}>Promoção</p>
+                    <p className="prod-section-label prod-section-label--novo prod-lbl-sep">Promoção</p>
                     {!form.id && <p className="prod-kg-promo-t">{primeiroNome ? `${primeiroNome}, gostaria` : "Gostaria"} de colocar uma promoção?</p>}
                     <button type="button" className={`prod-opc${on ? " on" : ""}`} role="checkbox" aria-checked={on}
                       onClick={() => setForm(f => ({ ...f, promocao: !on, tipo_promocao: "percentual", desconto_percentual: !on ? (Number(f.desconto_percentual) || 10) : 0, preco_promocional: 0 }))}>
@@ -5659,7 +5659,7 @@ export default function Produtos() {
                           ))}
                         </div>
                       )}
-                      <p className="prod-section-label prod-section-label--novo" style={{ marginTop: 22 }}>Promoção</p>
+                      <p className="prod-section-label prod-section-label--novo prod-lbl-sep">Promoção</p>
                       <p className="prod-kg-promo-t">{primeiroNome ? `${primeiroNome}, gostaria` : "Gostaria"} de colocar uma promoção?</p>
                       <button type="button" className={`prod-opc${promoOnKg ? " on" : ""}`} role="checkbox" aria-checked={promoOnKg}
                         onClick={() => { setKgPromo(!promoOnKg); if (promoOnKg) setForm(f => ({ ...f, preco_promocional: 0, promocao: false })); }}>
@@ -6184,9 +6184,9 @@ export default function Produtos() {
               )}
 
               {/* (13/10) Revisão: como o cliente vê, pedido de exemplo e o que falta */}
-              {wizardStep === 5 && !form.id && <div className="prod-section"><RevisaoProduto form={form} /></div>}
-              {/* (14/10) a prévia vem por último, logo antes do Publicar */}
+              {/* (14/10) a prévia e, por último (colado no Publicar), o que falta arrumar */}
               {wizardStep === 5 && !form.id && <div className="prod-section"><PreviaCardapio form={form} /></div>}
+              {wizardStep === 5 && !form.id && <div className="prod-section"><RevisaoProduto form={form} /></div>}
             </div>
             )}
 

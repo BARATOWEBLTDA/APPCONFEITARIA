@@ -1,4 +1,6 @@
 import { ProductCard } from "@/components/cardapio/ProductCard";
+import { CartaoPromo } from "@/components/cardapio/ItensCardapio";
+import { descontoCardapio } from "@/lib/precoCardapio";
 import type { Produto } from "@/types/database";
 import { CartProvider } from "@/context/CartContext";
 
@@ -15,7 +17,10 @@ export default function PreviaCardapio({ form, cor = "#E85A8C" }: { form: any; c
       <CartProvider>
         <div className="prev-cardapio-box">
           <div className="prev-cardapio-card" aria-hidden="true" onClickCapture={e => { e.preventDefault(); e.stopPropagation(); }} onKeyDownCapture={e => { e.preventDefault(); e.stopPropagation(); }}>
-            <ProductCard product={produto} isFavorite={false} onToggleFavorite={() => {}} backgroundColor="#fff" corBotao={cor} />
+            {/* (14/10) em promoção usa o mesmo cartão da seção Promoções do cardápio (com o % e o -10%) */}
+            {descontoCardapio(produto) > 0
+              ? <CartaoPromo produto={produto} cor={cor} />
+              : <ProductCard product={produto} isFavorite={false} onToggleFavorite={() => {}} backgroundColor="#fff" corBotao={cor} />}
           </div>
         </div>
       </CartProvider>
