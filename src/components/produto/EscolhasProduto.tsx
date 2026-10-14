@@ -373,16 +373,21 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
   const porPeso = g.modo_preco_tamanho === "por_peso";
   const [novo, setNovo] = useState("");
   const set = (patch: Partial<GrupoTam>) => setForm(f => ({ ...f, grupo_tamanhos: { ...g, ...(f.grupo_tamanhos || {}), ...patch } }));
-  const usarModeloUn = (itens: string[]) => set({ opcoes: itens.map(n => ({ id: uid(), nome: n, preco: 0, ...(n.startsWith("Serve") ? { serve: n.replace("Serve ", "") } : {}) })),
-    ...(itens[0]?.startsWith("Serve") ? { rendimento_unidade: "pessoas" } : {}) });
-  // rendimento (opcional): a unidade vale pra todos os tamanhos; cada um tem só o número
-  const unidade = g.rendimento_unidade || "pessoas";
-  const outraUn = unidade !== "pessoas" && unidade !== "fatias";
-  const [verOutraUn, setVerOutraUn] = useState(outraUn);
-  const mudarServe = (id: string, txt: string) => set({ opcoes: g.opcoes.map(o => (o.id === id ? { ...o, serve: txt.replace(/\D/g, "").slice(0, 4) } : o)) });
+  const usarModeloUn = (itens: string[]) => set({ opcoes: itens.map(n => ({ id: uid(), nome: n, preco: 0, ...(n.startsWith("Serve") ? { serve: n.replace("Serve ", "") + " pessoas" } : {}) })) });
+  // rendimento (opcional), em cada tamanho: "serve [10] [pessoas]". Fica guardado como "10 pessoas" (o cardápio já mostra assim)
+  const [unLocal, setUnLocal] = useState<Record<string, string>>({});
+  const unDe = (o: OpTam) => {
+    const m = String(o.serve || "").match(/^\s*\d+\s*([^\d\s].*)$/);
+    if (m) return m[1].trim();
+    if (unLocal[o.id]) return unLocal[o.id];
+    const outra = g.opcoes.map(x => String(x.serve || "").match(/^\s*\d+\s*([^\d\s].*)$/)?.[1]).find(Boolean);
+    return outra?.trim() || (g.rendimento_unidade && g.rendimento_unidade !== "" ? g.rendimento_unidade : "pessoas");
+  };
+  const gravarServe = (o: OpTam, num: string, un: string) =>
+    set({ opcoes: g.opcoes.map(x => (x.id === o.id ? { ...x, serve: num ? `${num} ${un}` : "" } : x)) });
   const copiasTam = copiasDe(outros, "grupo_tamanhos", gg => (gg.modo_preco_tamanho === "por_peso" ? null : gg.opcoes.map((o: any) => `${norm(o.nome)}:${numeroServe(o.serve)}`).join("|")));
-  const usarCopiaTam = (c: Copia) => set({ opcoes: ordenarTamanhos(c.opcoes.map((o: any) => ({ id: uid(), nome: o.nome, preco: 0, ...(numeroServe(o.serve) ? { serve: numeroServe(o.serve) } : {}) }))),
-    rendimento_unidade: c.grupo.rendimento_unidade || "pessoas" });
+  const comUnidade = (serve: unknown, unGrupo?: string) => { const n = numeroServe(serve); if (!n) return ""; const m = String(serve).match(/^\s*\d+\s*([^\d\s].*)$/); return `${n} ${m ? m[1].trim() : unGrupo || "pessoas"}`; };
+  const usarCopiaTam = (c: Copia) => set({ opcoes: ordenarTamanhos(c.opcoes.map((o: any) => ({ id: uid(), nome: o.nome, preco: 0, ...(comUnidade(o.serve, c.grupo.rendimento_unidade) ? { serve: comUnidade(o.serve, c.grupo.rendimento_unidade) } : {}) }))) });
   // por quilo: marcar e desmarcar um peso (a lista fica sempre do menor pro maior)
   const marcados = new Set(g.opcoes.map(o => Number(o.peso_kg) || 0).filter(Boolean));
   const semPeso = g.opcoes.filter(o => !(Number(o.peso_kg) > 0));
@@ -456,9 +461,7 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
       </>)}
 
       {!porPeso && g.opcoes.length === 0 && <UsarDeOutro copias={copiasTam.map(c => {
-        const nums = c.opcoes.map((o: any) => numeroServe(o.serve)).filter(Boolean);
-        const un = c.grupo.rendimento_unidade || "pessoas";
-        return { ...c, resumo: c.opcoes.map((o: any) => o.nome).join(" · ") + (nums.length ? ` · serve ${nums.join(", ")} ${un}` : "") };
+        return { ...c, resumo: c.opcoes.map((o: any) => { const sv = comUnidade(o.serve, c.grupo.rendimento_unidade); return sv ? `${o.nome} (${sv})` : o.nome; }).join(" · ") };
       })} onUsar={usarCopiaTam} />}
       {!porPeso && g.opcoes.length === 0 && (<>
         <p className="esc-lbl">Comece por um modelo</p>
@@ -472,25 +475,18 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
       </>)}
 
       {!porPeso && g.opcoes.length > 0 && (<>
-        <p className="esc-lbl">Quanto rende cada tamanho? <span className="esc-opc">opcional</span></p>
-        <div className="esc-seg esc-seg--3" role="radiogroup" aria-label="Unidade do rendimento">
-          <button type="button" role="radio" aria-checked={unidade === "pessoas" && !verOutraUn} className={unidade === "pessoas" && !verOutraUn ? "on" : ""} onClick={() => { setVerOutraUn(false); set({ rendimento_unidade: "pessoas" }); }}>Pessoas</button>
-          <button type="button" role="radio" aria-checked={unidade === "fatias" && !verOutraUn} className={unidade === "fatias" && !verOutraUn ? "on" : ""} onClick={() => { setVerOutraUn(false); set({ rendimento_unidade: "fatias" }); }}>Fatias</button>
-          <button type="button" role="radio" aria-checked={verOutraUn} className={verOutraUn ? "on" : ""} onClick={() => { setVerOutraUn(true); if (!outraUn) set({ rendimento_unidade: "" }); }}>Outro…</button>
-        </div>
-        {verOutraUn && (
-          <input className="esc-op-in esc-un-in" placeholder="Ex.: copos, potes, unidades" value={outraUn ? unidade : ""} maxLength={20}
-            onChange={e => set({ rendimento_unidade: e.target.value.toLowerCase() })} aria-label="Unidade do rendimento" />
-        )}
-        <p className="esc-lbl">Tamanhos</p>
+        <p className="esc-lbl">Tamanhos <span className="esc-opc">quanto rende é opcional</span></p>
         <ul className="esc-ops">
           {g.opcoes.map((o, i) => (
             <li key={o.id} className="esc-op">
               {/* a ordem é automática (P, M, G… e os números): ao sair do campo, a lista se arruma */}
               <input className="esc-op-in" value={o.nome} onChange={e => renomear(o.id, e.target.value)} onBlur={() => set({ opcoes: ordenarTamanhos(g.opcoes) })} aria-label={`Nome do tamanho ${i + 1}`} />
-              <label className="esc-serve"><span>serve</span>
-                <input inputMode="numeric" placeholder="definir" value={numeroServe(o.serve)} onChange={e => mudarServe(o.id, e.target.value)} aria-label={`Quantas ${outraUn ? unidade || "unidades" : unidade} serve o ${o.nome}`} />
-              </label>
+              <span className="esc-serve"><span>serve</span>
+                <input inputMode="numeric" placeholder="definir" value={numeroServe(o.serve)} onChange={e => gravarServe(o, e.target.value.replace(/\D/g, "").slice(0, 4), unDe(o))} aria-label={`Quanto rende o ${o.nome}`} />
+                <select value={unDe(o)} onChange={e => { setUnLocal(u => ({ ...u, [o.id]: e.target.value })); if (numeroServe(o.serve)) gravarServe(o, numeroServe(o.serve), e.target.value); }} aria-label={`Unidade do rendimento do ${o.nome}`}>
+                  {Array.from(new Set(["pessoas", "fatias", "unidades", "copos", "potes", unDe(o)])).map(u => <option key={u} value={u}>{u}</option>)}
+                </select>
+              </span>
               <button type="button" className="esc-op-x" onClick={() => set({ opcoes: g.opcoes.filter(x => x.id !== o.id) })} aria-label={`Tirar ${o.nome}`}><X size={16} weight="bold" /></button>
             </li>
           ))}
