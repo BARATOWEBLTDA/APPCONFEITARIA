@@ -103,8 +103,9 @@
 @media (min-width: 600px) { .esc-modelos { grid-template-columns: repeat(3, minmax(0, 1fr)); } .esc-modelo { grid-template-columns: minmax(0, 1fr); grid-template-rows: 34px auto auto; } .esc-bolas { grid-row: auto; align-self: end; margin-bottom: 6px; } }
 
 /* (13/10) Revisão no fim do cadastro */
-.rev { margin-top: 8px; padding-top: 4px; border-top: 1px solid var(--ui-linha); font-family: var(--font-base); }
-.rev-tit { margin: 18px 0 8px; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
+/* (14/10) títulos no padrão das seções (16px/700) e sem espaço sobrando depois de Opções */
+.rev { margin: 0; padding: 0; font-family: var(--font-base); }
+body .prod-modal--novo .rev .rev-tit:not(:first-child) { margin-top: 22px !important; }
 .rev-card { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); }
 .rev-foto { flex: none; display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 8px; overflow: hidden; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
 .rev-foto img { width: 100%; height: 100%; object-fit: cover; }
@@ -299,3 +300,16 @@
 .esc-h--info { display: flex; align-items: center; gap: 6px; }
 .esc-info { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; margin: -6px 0; border: 0; border-radius: 8px; background: none; color: var(--ui-rosa-escuro); cursor: pointer; }
 @media (hover: hover) { .esc-info:hover { background: #FFF0F5; } }
+
+/* (14/10) Rendimento: a linha vertical alinhada em todas as linhas (coluna do nome = o nome mais comprido) */
+.esc-rend-lista { display: grid; grid-template-columns: fit-content(42%) minmax(0, 1fr); }
+.esc-rend-lista .esc-rend-li { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; padding: 0 10px 0 14px; }
+.esc-rend-li .esc-op-nm { min-width: 48px; padding-right: 12px; margin-right: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; line-height: 56px; }
+.esc-rend-campo { gap: 8px; white-space: nowrap; }
+.esc-rend-campo input { width: 58px; }
+.esc-rend-campo em { min-width: 0; }
+/* mais de 4 predefinições: lista pra escolher */
+.esc-predef-sel { position: relative; display: block; }
+.esc-predef-sel select { width: 100%; height: 48px; padding: 0 40px 0 14px; border: 1.5px solid var(--ui-borda-campo); border-radius: 10px; background: var(--ui-branco); font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ui-texto); -webkit-appearance: none; appearance: none; cursor: pointer; }
+.esc-predef-sel select:focus { outline: none; border-color: var(--ui-rosa); }
+.esc-predef-sel svg { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--ui-texto-2); }

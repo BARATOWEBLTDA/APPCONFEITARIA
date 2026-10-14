@@ -571,6 +571,7 @@ h1, h2, h3, h4, h5, h6, .balance-text {
   letter-spacing: 0;
   text-transform: none;
 }
+.req-tag--opt { color: var(--ui-texto-3, #9A8B93); font-weight: 500; }
 .req-tag svg {
   width: 12px;
   height: 12px;

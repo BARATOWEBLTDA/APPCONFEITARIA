@@ -84,7 +84,7 @@ export default function RevisaoProduto({ form }: { form: any }) {
     <div className="rev">
       {r.linhas.length > 1 && (
         <>
-          <p className="rev-tit">Um pedido de exemplo</p>
+          <p className="prod-section-label rev-tit">Um pedido de exemplo</p>
           <ul className="rev-ped">
             {r.linhas.map((l, i) => (
               <li key={i}><span>{l.nome}</span><b>{i === 0 ? rs(l.valor) : l.valor > 0 ? `+ ${rs(l.valor)}` : "incluso"}</b></li>
@@ -94,7 +94,7 @@ export default function RevisaoProduto({ form }: { form: any }) {
         </>
       )}
 
-      <p className="rev-tit">Antes de publicar</p>
+      <p className="prod-section-label rev-tit">Antes de publicar</p>
       {r.avisos.length === 0
         ? <p className="rev-ok"><CheckCircle size={18} weight="fill" aria-hidden="true" />Tudo certo pra ir pro cardápio</p>
         : <ul className="rev-avisos">{r.avisos.map(a => <li key={a}><Warning size={16} weight="fill" aria-hidden="true" /><span>{a}</span></li>)}</ul>}

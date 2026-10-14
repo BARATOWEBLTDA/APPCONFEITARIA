@@ -41,6 +41,8 @@ interface Props {
   /** Editar pedido (03/10): recebe o item escolhido em vez de colocar no carrinho */
   onAdicionar?: (item: any) => void
   rotuloAdicionar?: string
+  /** (14/10) Prévia do cadastro: janela menor no centro, sem foto de referência/observação, botão "Entendi" só fecha */
+  previa?: boolean
 }
 
 /**
@@ -140,7 +142,7 @@ function Grupo({ chave, g, multi, valor, aoMudar, secoes, faltou, emFatias, corB
           const preco = precoDaOpcao(g, op)
           const peso = op.peso_kg && pesoDoNome(op.nome) !== Number(op.peso_kg) ? `${String(op.peso_kg).replace('.', ',')} kg` : '' // (10/10) não repete quando o nome já é o peso
           const un = String((g as any).rendimento_unidade || '').trim() // (13/10) além de pessoas e fatias, a unidade que ela escreveu (copos, potes…)
-          const serve = op.serve ? (/^\d+$/.test(String(op.serve).trim()) ? (emFatias ? `${String(op.serve).trim()} fatias` : un && un !== 'pessoas' ? `Serve ${String(op.serve).trim()} ${un}` : `Serve ${String(op.serve).trim()} pessoas`) : `Serve ${op.serve}`) : ''
+          const serve = op.serve ? (/^\d+$/.test(String(op.serve).trim()) ? (emFatias ? `${String(op.serve).trim()} fatias` : un && un !== 'pessoas' ? `Serve até ${String(op.serve).trim()} ${un}` : `Serve até ${String(op.serve).trim()} pessoas`) : `Serve até ${op.serve}`) : ''
           const bloqueado = multi && !on && max > 1 && qtdMarcada >= max
           return (
             <button key={op.id} type="button" className="pm-op" role={multi ? 'checkbox' : 'radio'} aria-checked={on} disabled={bloqueado} onClick={() => tocar(op.id)}>
@@ -157,7 +159,7 @@ function Grupo({ chave, g, multi, valor, aoMudar, secoes, faltou, emFatias, corB
   )
 }
 
-export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', onAdicionar, rotuloAdicionar }: Props) {
+export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', onAdicionar, rotuloAdicionar, previa }: Props) {
   const { addItem } = useCart()
   const [quantity, setQuantity] = useState(1)
   // Kit por quantidade (docinhos/salgados): quantos de cada sabor
@@ -650,7 +652,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
         </section>
       )}
 
-      {!onAdicionar && (
+      {!onAdicionar && !previa && (
         <section className="pm-g">
           <header className="pm-g-cab"><span><b>Foto de referência</b><small>Mostre uma ideia do que você quer</small></span></header>
           <label className="pm-foto">
@@ -662,6 +664,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
         </section>
       )}
 
+      {!previa && (
       <section className="pm-g">
         <header className="pm-g-cab"><span><b>Alguma observação?</b></span><span className="pm-g-dir"><em>{observations.length}/140</em></span></header>
         <div className="pm-obs">
@@ -671,10 +674,15 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
             onChange={e => setObservations(cortarTexto(e.target.value, 140))} />
         </div>
       </section>
+      )}
     </>
   )
 
-  const pe = (
+  const pe = previa ? (
+    <footer className="pm-pe">
+      <button type="button" className="pm-add so-texto" style={{ background: corBotao }} onClick={onClose}><span>Entendi</span></button>
+    </footer>
+  ) : (
     <footer className="pm-pe">
       {!semQuantidade && (
         <div className="pm-qtd">
@@ -703,7 +711,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
   const pausar = () => { pausaAte.current = Date.now() + 8000 }
 
   return createPortal(
-    <div className="pm-veu" onClick={onClose}>
+    <div className={`pm-veu${previa ? ' pm-veu--previa' : ''}`} onClick={onClose}>
       <div ref={caixaRef} tabIndex={-1} className={`pm${images.length ? '' : ' pm--sem-foto'}`} role="dialog" aria-modal="true" aria-label={nome} onClick={e => e.stopPropagation()}>
         {/* celular: barra que aparece ao rolar · computador: topo com o nome */}
         <div className={`pm-barra${barra ? ' on' : ''}`}>

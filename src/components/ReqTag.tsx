@@ -5,3 +5,8 @@
 export default function ReqTag() {
   return <span className="req-tag">obrigatório</span>;
 }
+
+/** (14/10) a mesma marca, pro campo opcional: mesmo lugar e tamanho, em cinza (igual ao "opcional" dos campos do guia) */
+export function OptTag() {
+  return <span className="req-tag req-tag--opt">opcional</span>;
+}

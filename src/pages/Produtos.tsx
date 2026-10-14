@@ -39,7 +39,7 @@ import BtnNovo from "@/components/BtnNovo";
 import Categorias from "@/pages/Categorias";
 import QuickAddInsumo from "@/components/QuickAddInsumo";
 import AppPageHeader from "@/components/AppPageHeader";
-import { ArrowLeft as ArrowLeftIc, Camera, CaretDown, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, SortAscending, WarningCircle, Trash, X as XIc, DotsThreeVertical, Lightbulb, Cake, BookOpen, Egg, Crown } from "@phosphor-icons/react";
+import { ArrowLeft as ArrowLeftIc, Camera, CaretDown, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, SortAscending, WarningCircle, Trash, X as XIc, DotsThreeVertical, Lightbulb, Cake, BookOpen, Egg, Crown, Sun, FrameCorners, Crop, TextTSlash, ArrowsClockwise } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Janela, Linha as LinhaUi, TelaVazia, Titulo as TituloUi, avisar, confirmar } from "@/components/base";
 import { historicoAssentado, useSobreposicao } from "@/components/base/useSobreposicao";
 import { sufixoVenda } from "@/lib/formaVenda";
@@ -61,7 +61,7 @@ const precoDaLista = (prod: any) => {
   const unidade = pc.aPartir || prod?.grupo_tamanhos?.ativo ? "" : unidadeDoPreco(prod?.forma_venda);
   return { de: pc.de, final: pc.final, unidade, aPartir: pc.aPartir };
 };
-import ReqTag from "@/components/ReqTag";
+import ReqTag, { OptTag } from "@/components/ReqTag";
 import { apiFetch } from "@/lib/apiFetch";
 
 // ── Helpers de conversão de unidades (ficha técnica) ──
@@ -5257,7 +5257,7 @@ export default function Produtos() {
                 </div>
                 {/* (14/10) SKU: código pra organizar os produtos (opcional), com "Gerar" */}
                 <div className="prod-field">
-                  <label className="prod-field-label-novo" htmlFor="prod-sku-input">SKU <span className="prod-sku-opc">opcional</span></label>
+                  <label className="prod-field-label-novo" htmlFor="prod-sku-input">SKU <OptTag /></label>
                   <div className="prod-sku">
                     <input id="prod-sku-input" placeholder="Ex.: BOL-0427" value={(form as any).sku || ""} maxLength={24} autoCapitalize="characters"
                       onChange={e => setForm(f => ({ ...(f as any), sku: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, "") }))} />
@@ -5303,7 +5303,7 @@ export default function Produtos() {
                 <div className="prod-step-header">
                   <div className="prod-step-title">Fotos</div>
                   <div className="prod-step-sub">
-                    A primeira aparece no cardápio. Produto com foto vende mais.
+                    Produto com foto vende mais.
                   </div>
                 </div>
               )}
@@ -5311,76 +5311,68 @@ export default function Produtos() {
               {/* Fotos — só em step 5 (Fotos e finalização) ou tab Fotos na edição */}
               {((wizardStep === 4 && !form.id) || (form.id && editTab === "fotos")) && (
               <>
-              <div className="prod-section">
-                {form.id && <p className="prod-section-label prod-section-label--novo">Fotos do produto</p>}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "8px" }}>
-                  {[0, 1, 2].map(slot => {
-                    const imgs = (form.imagem_url || "").split(",").map(s => s.trim()).filter(Boolean);
-                    const imgUrl = imgs[slot];
-                    const isLocked = slot > 0 && !isPro;
-                    const ref = slot === 0 ? imgRef : slot === 1 ? img2Ref : img3Ref;
-                    // Foto principal: rosa. Extras (2 e 3) free: cinza claro. Locked (PRO): grafite Doonly.
-                    const bgExtra = "#F1EEF0";
-                    const borderExtra = "2px dashed #D8D1D5";
-                    return (
-                      <div key={slot} style={{ position: "relative" }}>
-                        {slot > 0 && <span style={{ fontSize: "12.5px", color: "var(--ui-texto-2)", fontWeight: 700, display: "block", marginBottom: "6px", textAlign: "center" }}>Foto {slot + 1}</span>}
-                        {slot === 0 && <span style={{ fontSize: "12.5px", color: "var(--ui-texto-2)", fontWeight: 700, display: "block", marginBottom: "6px", textAlign: "center" }}>Principal</span>}
-                        <div
-                          className={`prod-img-upload ${isLocked ? "prod-img-upload--locked" : ""}`}
-                          onClick={() => {
-                            if (isLocked) { avisar("Mais fotos por produto é do plano PRO.", { tipo: "info" }); return; }
-                            if (!uploading) ref.current?.click();
-                          }}
-                          style={{
-                            width: "100%",
-                            height: "130px",
-                            borderRadius: "14px",
-                            cursor: "pointer",
-                            position: "relative",
-                            overflow: "hidden",
-                            background: isLocked ? "var(--ui-cinza)" : (slot > 0 ? bgExtra : undefined),
-                            border: isLocked ? "1px solid var(--ui-borda)" : (slot > 0 ? borderExtra : undefined),
-                          }}
-                        >
-                          {imgUrl ? (
-                            <>
-                              <img src={imgUrl} alt={`foto ${slot + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                              {!isLocked && <button className="prod-img-remove" aria-label="Tirar a foto" onClick={e => { e.stopPropagation(); removeImage(slot); }}><XIc size={16} weight="bold" aria-hidden="true" /></button>}
-                            </>
-                          ) : isLocked ? (
-                            <>
-                              {/* Conteúdo central: cadeado rosa + texto */}
-                              <div className="prod-slot-locked-body">
-                                <div className="prod-slot-lock-circle">
-                                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E85A8C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <rect x="3" y="11" width="18" height="11" rx="2"/>
-                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                                  </svg>
-                                </div>
-                                <span className="prod-slot-lock-txt">
-                                  <b>Foto {slot + 1}</b>
-                                  <span className="prod-slot-lock-txt-rgb">No PRO</span>
-                                </span>
-                              </div>
-                            </>
-                          ) : (
-                            <div className="prod-img-placeholder">
-                              {uploading ? <span className="prod-spinner" /> : (
-                                <>
-                                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={slot === 0 ? "#C33A6E" : "#9A8B93"} strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                                  {slot === 0 && <span className="prod-img-cta">Escolher foto</span>}
-                                </>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                        <input ref={ref} type="file" accept="image/*" style={{ display: "none" }} onChange={e => handleImageUpload(e, slot)} />
+              {/* (14/10) Foto principal grande no formato do cardápio; 2 e 3 (PRO) menores embaixo; dicas no fim */}
+              {(() => {
+                const imgs = (form.imagem_url || "").split(",").map(s => s.trim()).filter(Boolean);
+                const principal = imgs[0];
+                const escolher = (slot: number) => {
+                  if (slot > 0 && !isPro) { avisar("Mais fotos por produto é do plano PRO.", { tipo: "info" }); return; }
+                  if (!uploading) (slot === 0 ? imgRef : slot === 1 ? img2Ref : img3Ref).current?.click();
+                };
+                return (
+                  <div className="prod-section prod-fotos">
+                    {form.id && <p className="prod-section-label prod-section-label--novo">Fotos do produto</p>}
+                    <div className={`prod-foto-pri${principal ? " tem" : ""}`}>
+                      {principal ? (
+                        <img src={principal} alt="Foto principal" />
+                      ) : (
+                        <button type="button" className="prod-foto-pri-vazia" onClick={() => escolher(0)} disabled={uploading}>
+                          {uploading ? <span className="prod-spinner" /> : <>
+                            <span className="prod-foto-pri-ic" aria-hidden="true"><Camera size={28} weight="bold" /></span>
+                            <b>Tirar foto ou escolher da galeria</b>
+                            <small>É a que aparece no cardápio</small>
+                          </>}
+                        </button>
+                      )}
+                    </div>
+                    {principal && (
+                      <div className="prod-foto-acoes">
+                        <button type="button" onClick={() => escolher(0)} disabled={uploading}><ArrowsClockwise size={16} weight="bold" aria-hidden="true" />{uploading ? "Carregando…" : "Trocar"}</button>
+                        <button type="button" onClick={() => removeImage(0)}><Trash size={16} weight="bold" aria-hidden="true" />Tirar</button>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
+                    )}
+                    <input ref={imgRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => handleImageUpload(e, 0)} />
+
+                    <div className="prod-foto-extras">
+                      {[1, 2].map(slot => {
+                        const url = imgs[slot];
+                        const trava = !isPro;
+                        return (
+                          <div key={slot} className={`prod-foto-ex${trava ? " trava" : ""}${url ? " tem" : ""}`}>
+                            <button type="button" onClick={() => escolher(slot)} aria-label={trava ? `Foto ${slot + 1}: no PRO` : `Foto ${slot + 1}`}>
+                              {url ? <img src={url} alt={`Foto ${slot + 1}`} />
+                                : trava ? <><Crown size={18} weight="fill" aria-hidden="true" /><b>Foto {slot + 1}</b><small>No PRO</small></>
+                                : <><PlusIc size={20} weight="bold" aria-hidden="true" /><b>Foto {slot + 1}</b></>}
+                            </button>
+                            {url && !trava && <button type="button" className="prod-img-remove" aria-label="Tirar a foto" onClick={() => removeImage(slot)}><XIc size={16} weight="bold" aria-hidden="true" /></button>}
+                            <input ref={slot === 1 ? img2Ref : img3Ref} type="file" accept="image/*" style={{ display: "none" }} onChange={e => handleImageUpload(e, slot)} />
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <p className="prod-section-label prod-dicas-t">Dicas pra foto que vende</p>
+                    <ul className="prod-dicas">
+                      <li><Sun size={18} weight="bold" aria-hidden="true" />Luz de janela, sem flash</li>
+                      <li><FrameCorners size={18} weight="bold" aria-hidden="true" />Fundo limpo, sem bagunça</li>
+                      <li><Camera size={18} weight="bold" aria-hidden="true" />Foto de cima ou de lado</li>
+                      <li><Cake size={18} weight="bold" aria-hidden="true" />Mostre o recheio: fatia cortada</li>
+                      <li><Crop size={18} weight="bold" aria-hidden="true" />Em pé ou quadrada, no centro</li>
+                      <li><TextTSlash size={18} weight="bold" aria-hidden="true" />Sem texto ou filtro por cima</li>
+                    </ul>
+                  </div>
+                );
+              })()}
 
               {/* Fotos das variações — só quando variações */}
               {wizardTipo === "variacoes" && (() => {
@@ -5688,7 +5680,7 @@ export default function Produtos() {
 
                 return (
                   <div className="prod-section">
-                    <p className="prod-section-label prod-section-label--novo">Adicionais das opções <span className="prod-field-req prod-field-req--opt">opcional</span></p>
+                    <p className="prod-section-label prod-section-label--novo">Adicionais das opções <OptTag /></p>
                     <p style={{fontSize: 12, color: "#6B5D64", margin: "0 0 12px"}}>
                       Deixe R$ 0,00 se a opção não custa a mais. Ex.: "ninho + R$ 5,00" cobra extra pelo recheio.
                     </p>

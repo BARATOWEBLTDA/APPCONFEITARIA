@@ -211,3 +211,30 @@ body .prod-modal--novo .prod-sku input:focus { outline: none; border-color: var(
 body .prod-modal--novo .prod-sku button { height: 52px; padding: 0 18px; border: 0; border-radius: 12px; background: #EAE4E7; font-family: inherit; font-size: 15px; font-weight: 700; color: var(--ui-texto); cursor: pointer; }
 body .prod-modal--novo .prod-sku-opc { margin-left: 6px; font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
 body .prod-modal--novo .prod-row-2 > .prod-field:only-child { grid-column: 1 / -1; }
+
+/* (14/10) Fotos: principal grande no formato do cardápio, 2 e 3 menores embaixo, dicas no fim */
+.prod-fotos { display: flex; flex-direction: column; align-items: center; }
+.prod-fotos > .prod-section-label { align-self: stretch; }
+.prod-foto-pri { position: relative; width: min(100%, 280px); aspect-ratio: 1; border-radius: 14px; overflow: hidden; background: #FFF6F9; border: 2px dashed #F2A9C4; }
+.prod-foto-pri.tem { border: 1px solid var(--ui-borda); background: #F3EEF0; }
+.prod-foto-pri img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.prod-foto-pri-vazia { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 100%; padding: 16px; border: 0; background: none; font-family: inherit; text-align: center; color: var(--ui-texto); cursor: pointer; }
+.prod-foto-pri-vazia b { font-size: 15px; font-weight: 700; color: var(--ui-rosa-escuro, #C33A6E); }
+.prod-foto-pri-vazia small { font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
+.prod-foto-pri-ic { display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 50%; background: #fff; color: var(--ui-rosa-escuro, #C33A6E); box-shadow: 0 2px 8px rgba(195,58,110,.12); }
+.prod-foto-acoes { display: flex; gap: 8px; width: min(100%, 280px); margin-top: 8px; }
+.prod-foto-acoes button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; border: 1.5px solid var(--ui-borda-campo); border-radius: 10px; background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-texto); cursor: pointer; }
+.prod-foto-extras { display: flex; justify-content: center; gap: 12px; margin-top: 12px; }
+.prod-foto-ex { position: relative; width: 96px; height: 96px; }
+.prod-foto-ex > button:first-child { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 100%; height: 100%; padding: 0; border: 2px dashed #D8D1D5; border-radius: 12px; background: #F7F4F5; overflow: hidden; font-family: inherit; color: var(--ui-texto-2); cursor: pointer; }
+.prod-foto-ex.tem > button:first-child { border: 1px solid var(--ui-borda); }
+.prod-foto-ex.trava > button:first-child { border: 1px solid var(--ui-borda); background: var(--ui-cinza, #F1EEF0); }
+.prod-foto-ex.trava svg { color: #E85A8C; }
+.prod-foto-ex b { font-size: 12.5px; font-weight: 700; }
+.prod-foto-ex small { font-size: 11.5px; font-weight: 600; color: var(--ui-texto-3); }
+.prod-foto-ex img { width: 100%; height: 100%; object-fit: cover; }
+.prod-dicas-t { margin-top: 20px; }
+.prod-dicas { align-self: stretch; display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 4px 12px; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); list-style: none; }
+.prod-dicas li { display: flex; align-items: center; gap: 10px; min-height: 36px; font-size: 14px; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.prod-dicas li + li { border-top: 1px solid var(--ui-linha, #F3EEF0); }
+.prod-dicas svg { flex: none; color: var(--ui-rosa-escuro, #C33A6E); }

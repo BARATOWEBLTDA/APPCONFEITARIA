@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { ArrowDown, ArrowUp, Basket, Cake, Check, Drop, IceCream, Info, PencilSimple, Plus, Ruler, Sparkle, Trash, X } from "@phosphor-icons/react";
+import { ArrowDown, ArrowUp, Basket, Cake, CaretDown, Check, Drop, IceCream, Info, PencilSimple, Plus, Ruler, Sparkle, Trash, X } from "@phosphor-icons/react";
 import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
 import { kitAtivo, presetKit, type KitQtdConfig } from "@/lib/kitQuantidade";
 import { mascaraBRL, lerBRL, textoBRL, selecionarValorAoFocar } from "@/lib/moeda";
-import { Botao, Janela, confirmar } from "@/components/base";
+import { Botao, Janela } from "@/components/base";
 import { lerPredefs, gravarPredefs, chaveTam, type PredefRend } from "@/lib/predefRendimento";
 import { ProductModal } from "@/components/cart/ProductModal";
 import { CartProvider } from "@/context/CartContext";
@@ -158,11 +158,12 @@ const EXEMPLO: Record<Chave, string> = {
   sabor: "",
 };
 
-/** Produto de exemplo pro (i): bolo com tamanho e recheio, quando ela ainda não marcou nada */
+/** (14/10) Produto de exemplo pro (i): mostra como o cliente escolhe. A foto fica em public/tutorial (dá pra trocar o arquivo). */
 const EXEMPLO_PRODUTO = {
-  id: "exemplo", nome: "Bolo de ninho com morango", descricao: "Exemplo de como o cliente escolhe no seu cardápio.", preco_normal: 0, forma_venda: "unidade", disponivel: true,
-  grupo_tamanhos: { ativo: true, min: 1, max: 1, modo_preco_tamanho: "preco_fixo", opcoes: [{ id: "t1", nome: "Pequeno", preco: 80, serve: "10 fatias" }, { id: "t2", nome: "Médio", preco: 120, serve: "20 fatias" }, { id: "t3", nome: "Grande", preco: 160, serve: "30 fatias" }] },
-  grupo_recheios: { ativo: true, min: 1, max: 2, distribuicao: "nenhuma", opcoes: [{ id: "r1", nome: "Ninho", adicional: 0 }, { id: "r2", nome: "Brigadeiro", adicional: 0 }, { id: "r3", nome: "Morango", adicional: 10 }] },
+  id: "exemplo", nome: "Pudim Gourmet", descricao: "Exemplo de como o cliente escolhe no seu cardápio.", preco_normal: 0, forma_venda: "unidade", disponivel: true,
+  imagem_url: "/tutorial/exemplo-pudim.jpg",
+  grupo_tamanhos: { ativo: true, min: 1, max: 1, modo_preco_tamanho: "preco_fixo", rendimento_unidade: "pessoas", opcoes: [{ id: "t1", nome: "Pequeno", preco: 29.9, serve: "6 pessoas" }, { id: "t2", nome: "Médio", preco: 39.9, serve: "10 pessoas" }, { id: "t3", nome: "Grande", preco: 49.9, serve: "15 pessoas" }] },
+  grupo_sabores: { ativo: true, min: 1, max: 1, distribuicao: "nenhuma", sabor_tem_preco_proprio: false, opcoes: [{ id: "s1", nome: "Ninho com Nutella", adicional: 10 }, { id: "s2", nome: "Tradicional de Leite Condensado", adicional: 0 }, { id: "s3", nome: "Pudim de Pistache", adicional: 10 }] },
 };
 
 export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outros, tela = 0, setTela, edicao = false }: Props) {
@@ -249,8 +250,7 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
       </h2>
       {verPrevia && (
         <CartProvider>
-          <ProductModal isOpen onClose={() => setVerPrevia(false)} rotuloAdicionar="Fechar prévia" onAdicionar={() => setVerPrevia(false)}
-            product={(ativas.length ? { ...form, id: form.id || "previa", disponivel: true } : EXEMPLO_PRODUTO) as any} />
+          <ProductModal isOpen previa onClose={() => setVerPrevia(false)} onAdicionar={() => setVerPrevia(false)} product={EXEMPLO_PRODUTO as any} />
         </CartProvider>
       )}
       <p className="esc-s">Marque o que vale{nome ? <> pro <b>{nome}</b></> : null}. {edicao ? "Toque em Editar pra mudar." : "Você cadastra cada um em seguida."}</p>
@@ -555,17 +555,17 @@ function CartaoQuantidade({ kit, onKitChange, nome }: { kit: KitQtdConfig; onKit
 function LinhaRendimento({ g, set }: { g: GrupoTam; set: (p: Partial<GrupoTam>) => void }) {
   const [aberta, setAberta] = useState(false);
   const comNum = g.opcoes.filter(o => numeroServe(o.serve));
-  const un = String(g.opcoes.map(o => String(o.serve || "").match(/^\s*\d+\s*([^\d\s].*)$/)?.[1]).find(Boolean) || g.rendimento_unidade || "fatias").trim();
+  const un = String(g.opcoes.map(o => String(o.serve || "").match(/^\s*\d+\s*([^\d\s].*)$/)?.[1]).find(Boolean) || g.rendimento_unidade || "pessoas").trim();
   const ok = comNum.length > 0;
-  // resumo curto que cabe numa linha: "Serve 10 a 50 fatias" (ou "Serve 10 fatias" se for um só)
+  // resumo curto que cabe numa linha: "Serve até 10 a 50 pessoas" (ou "Serve até 10 pessoas" se for um só)
   const nsR = comNum.map(o => Number(numeroServe(o.serve))).sort((x, y) => x - y);
-  const resumo = ok ? `Serve ${nsR.length > 1 && nsR[0] !== nsR[nsR.length - 1] ? `${nsR[0]} a ${nsR[nsR.length - 1]}` : nsR[0]} ${un}` : "";
+  const resumo = ok ? `Serve até ${nsR.length > 1 && nsR[0] !== nsR[nsR.length - 1] ? `${nsR[0]} a ${nsR[nsR.length - 1]}` : nsR[0]} ${un}` : "";
   return (<>
     <button type="button" className={`esc-rend-linha${ok ? " ok" : ""}`} onClick={() => setAberta(true)}>
       {ok && <span className="esc-ic esc-ic--ok"><Check size={18} weight="bold" /></span>}
       <span className="esc-tx">
         <b>{ok ? "Rendimento" : <>Rendimento <span className="esc-rec">Recomendado</span></>}</b>
-        <small>{ok ? resumo : "Fatias ou pessoas por tamanho"}</small>
+        <small>{ok ? resumo : "Pessoas ou fatias por tamanho"}</small>
       </span>
       <span className="esc-rend-bt">{ok ? "Editar" : "Definir"}</span>
     </button>
@@ -576,32 +576,18 @@ function LinhaRendimento({ g, set }: { g: GrupoTam; set: (p: Partial<GrupoTam>) 
 // "Agora não" vale pro cadastro inteiro (não pergunta de novo enquanto a tela estiver aberta)
 const jaPerguntou = { current: false };
 function JanelaRendimento({ g, set, onFechar }: { g: GrupoTam; set: (p: Partial<GrupoTam>) => void; onFechar: () => void }) {
-  const unAtual = String(g.opcoes.map(o => String(o.serve || "").match(/^\s*\d+\s*([^\d\s].*)$/)?.[1]).find(Boolean) || g.rendimento_unidade || "fatias").trim();
-  const [un, setUn] = useState<string>(["fatias", "pessoas", "unidades"].includes(unAtual) ? unAtual : "fatias");
+  const unAtual = String(g.opcoes.map(o => String(o.serve || "").match(/^\s*\d+\s*([^\d\s].*)$/)?.[1]).find(Boolean) || g.rendimento_unidade || "pessoas").trim();
+  const [un, setUn] = useState<string>(["fatias", "pessoas", "unidades"].includes(unAtual) ? unAtual : "pessoas");
   const [nums, setNums] = useState<Record<string, string>>(() => Object.fromEntries(g.opcoes.map(o => [o.id, numeroServe(o.serve)])));
   const [predefs, setPredefs] = useState<PredefRend[]>([]);
   const [usada, setUsada] = useState<string>("");
-  const [nomeNova, setNomeNova] = useState<string | null>(null);
-  const [gerir, setGerir] = useState(false);
   const [perguntar, setPerguntar] = useState(false); // (14/10) "Salvar como predefinição?" ao salvar sem uma
   const [nomeAviso, setNomeAviso] = useState("");
   useEffect(() => { lerPredefs().then(setPredefs); }, []);
 
   const aplicar = (p: PredefRend) => {
-    setUn(p.un || "fatias"); setUsada(p.nome);
+    setUn(p.un || "pessoas"); setUsada(p.nome);
     setNums(n => Object.fromEntries(g.opcoes.map(o => [o.id, p.itens[chaveTam(o.nome)] ?? n[o.id] ?? ""])));
-  };
-  const salvarPredef = async () => {
-    const nome = primeiraMaiuscula(nomeNova || ""); if (!nome) return;
-    const itens: Record<string, string> = {};
-    g.opcoes.forEach(o => { if (nums[o.id]) itens[chaveTam(o.nome)] = nums[o.id]; });
-    const lista = [...predefs.filter(p => norm(p.nome) !== norm(nome)), { nome, un, itens }];
-    if (await gravarPredefs(lista)) { setPredefs(lista); setUsada(nome); setNomeNova(null); }
-  };
-  const apagar = async (nome: string) => {
-    if (!(await confirmar({ titulo: `Apagar "${nome}"?`, texto: "Os produtos que já usaram continuam com o rendimento.", rotulo: "Apagar", perigo: true }))) return;
-    const lista = predefs.filter(p => p.nome !== nome);
-    if (await gravarPredefs(lista)) setPredefs(lista);
   };
   const gravar = () => {
     set({ rendimento_unidade: un, opcoes: g.opcoes.map(o => ({ ...o, serve: nums[o.id] ? `${nums[o.id]} ${un}` : "" })) });
@@ -626,15 +612,23 @@ function JanelaRendimento({ g, set, onFechar }: { g: GrupoTam; set: (p: Partial<
       acoes={<><Botao variante="secundario" onClick={onFechar}>Voltar</Botao><Botao onClick={salvar}>Salvar rendimento</Botao></>}>
       <div className="esc esc-jan esc-rend" onFocusCapture={selecionarValorAoFocar} onClickCapture={selecionarValorAoFocar}>
         {predefs.length > 0 && (<>
-          <p className="esc-lbl esc-rend-lbl"><span>Usar uma predefinição</span>
-            <button type="button" className="esc-rend-gerir" onClick={() => setGerir(v => !v)}>{gerir ? "Pronto" : "Gerenciar"}</button></p>
-          <div className="esc-chips" role="group" aria-label="Predefinições">
-            {predefs.map(p => gerir ? (
-              <button key={p.nome} type="button" className="esc-chip esc-chip--outras esc-predef" onClick={() => apagar(p.nome)} aria-label={`Apagar ${p.nome}`}>{p.nome}<X size={14} weight="bold" aria-hidden="true" /></button>
-            ) : (
-              <button key={p.nome} type="button" className={`esc-chip esc-predef${usada === p.nome ? " on" : ""}`} onClick={() => aplicar(p)}>{usada === p.nome && <Check size={14} weight="bold" aria-hidden="true" />}{p.nome}</button>
-            ))}
-          </div>
+          <p className="esc-lbl">Usar uma predefinição</p>
+          {/* (14/10) até 4: botões; mais que isso vira uma lista pra escolher */}
+          {predefs.length <= 4 ? (
+            <div className="esc-chips" role="group" aria-label="Predefinições">
+              {predefs.map(p => (
+                <button key={p.nome} type="button" className={`esc-chip esc-predef${usada === p.nome ? " on" : ""}`} onClick={() => aplicar(p)}>{usada === p.nome && <Check size={14} weight="bold" aria-hidden="true" />}{p.nome}</button>
+              ))}
+            </div>
+          ) : (
+            <label className="esc-predef-sel">
+              <select value={usada} aria-label="Escolher predefinição" onChange={e => { const p = predefs.find(x => x.nome === e.target.value); if (p) aplicar(p); }}>
+                <option value="" disabled>Escolher predefinição</option>
+                {predefs.map(p => <option key={p.nome} value={p.nome}>{p.nome}</option>)}
+              </select>
+              <CaretDown size={16} weight="bold" aria-hidden="true" />
+            </label>
+          )}
         </>)}
 
         <p className="esc-lbl">Conta em</p>
@@ -649,7 +643,7 @@ function JanelaRendimento({ g, set, onFechar }: { g: GrupoTam; set: (p: Partial<
           {g.opcoes.map(o => (
             <li key={o.id} className="esc-rend-li">
               <span className="esc-op-nm">{o.nome}</span>
-              <span className="esc-rend-campo">serve
+              <span className="esc-rend-campo">serve até
                 <input inputMode="numeric" placeholder="definir" value={nums[o.id] || ""} aria-label={`Quantas ${un} serve ${o.nome}`}
                   onChange={e => setNums(n => ({ ...n, [o.id]: e.target.value.replace(/\D/g, "").slice(0, 4) }))} />
                 <em>{un}</em>
@@ -658,22 +652,14 @@ function JanelaRendimento({ g, set, onFechar }: { g: GrupoTam; set: (p: Partial<
           ))}
         </ul>
 
-        {nomeNova === null ? (
-          <button type="button" className="esc-rend-salvar" onClick={() => setNomeNova(usada || "")}><Plus size={16} weight="bold" aria-hidden="true" />Salvar como predefinição</button>
-        ) : (
-          <div className="esc-nova esc-nova--1" style={{ marginTop: 12 }}>
-            <input autoFocus placeholder="Nome (ex.: Bolos de aniversário)" value={nomeNova} maxLength={40} onChange={e => setNomeNova(e.target.value)}
-              onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); salvarPredef(); } }} aria-label="Nome da predefinição" />
-            <button type="button" className="esc-nova-bt" onClick={salvarPredef} disabled={!nomeNova.trim()} aria-label="Salvar predefinição"><Check size={20} weight="bold" /></button>
-          </div>
-        )}
-        <p className="esc-nota">No cardápio aparece "Serve 10 {un}".</p>
+        <p className="esc-nota">No cardápio aparece "Serve até 10 {un}".</p>
       </div>
       <Janela aberta={perguntar} aoFechar={() => { setPerguntar(false); gravar(); }} titulo="Salvar como predefinição?" tipo="aviso"
         icone={<Sparkle size={32} />} texto="Dê um nome e, nos próximos produtos, é só tocar nele: o rendimento vem preenchido e o cadastro fica bem mais rápido."
         acoes={<><Botao variante="secundario" onClick={() => { setPerguntar(false); gravar(); }}>Agora não</Botao><Botao onClick={salvarComoPredefEGravar} disabled={!nomeAviso.trim()}>Salvar e usar</Botao></>}>
         <input className="esc-aviso-in" autoFocus placeholder="Ex.: Bolos de aniversário" value={nomeAviso} maxLength={40}
           onChange={e => setNomeAviso(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); salvarComoPredefEGravar(); } }} aria-label="Nome da predefinição" />
+        {predefs.some(p => norm(p.nome) === norm(nomeAviso.trim())) && nomeAviso.trim() && <p className="esc-nota">Já existe uma com esse nome: ela será substituída.</p>}
       </Janela>
     </Janela>
   );
