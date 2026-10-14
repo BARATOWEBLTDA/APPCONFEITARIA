@@ -414,13 +414,21 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
     if (marcados.has(kg)) set({ opcoes: g.opcoes.filter(o => Number(o.peso_kg) !== kg) });
     else set({ opcoes: [...g.opcoes, { id: uid(), nome: nomePeso(kg), preco: 0, peso_kg: kg }].sort((a, b) => (Number(a.peso_kg) || 99) - (Number(b.peso_kg) || 99)) });
   };
+  // (14/10) a unidade do "Outro peso" vem da tag kg | g (começa em kg), sem adivinhar pelo número
+  const [unNovo, setUnNovo] = useState<"kg" | "g">("kg");
   const lerPeso = (t: string): number | null => {
-    const m = t.replace(",", ".").match(/(\d+(?:\.\d+)?)\s*(kg|g)?/i);
+    const m = t.replace(",", ".").match(/(\d+(?:\.\d+)?)/);
     if (!m) return null;
-    const v = Number(m[1]); const g2 = (m[2] || "").toLowerCase() === "g" || (!m[2] && v >= 100);
-    const kg = g2 ? v / 1000 : v;
-    return kg > 0 && kg <= 50 ? Math.round(kg * 100) / 100 : null;
+    const v = Number(m[1]);
+    const kg = unNovo === "g" ? v / 1000 : v;
+    return kg > 0 && kg <= 50 ? Math.round(kg * 1000) / 1000 : null;
   };
+  // rendimento no por quilo: o número em cada peso, a unidade (fatias ou pessoas) vale pra todos
+  const unKg = g.rendimento_unidade === "pessoas" ? "pessoas" : "fatias";
+  const opDoPeso = (kg: number) => g.opcoes.find(o => Number(o.peso_kg) === kg);
+  const servePeso = (kg: number, num: string) => set({ opcoes: g.opcoes.map(o => (Number(o.peso_kg) === kg ? { ...o, serve: num ? `${num} ${unKg}` : "" } : o)) });
+  const trocarUnKg = () => { const nova = unKg === "fatias" ? "pessoas" : "fatias";
+    set({ rendimento_unidade: nova, opcoes: g.opcoes.map(o => (numeroServe(o.serve) ? { ...o, serve: `${numeroServe(o.serve)} ${nova}` } : o)) }); };
   const addPeso = () => { const kg = lerPeso(novo); if (!kg) return; if (!marcados.has(kg)) alternarPeso(kg); setNovo(""); setVerOutroPeso(false); };
   const pesoDoNome = (n: string) => { const m = n.replace(",", ".").match(/(\d+(?:\.\d+)?)\s*kg/i); return m ? Number(m[1]) : null; };
   const add = () => {
@@ -451,23 +459,35 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
             onChange={e => { const v = lerBRL(mascaraBRL(e.target.value) || "0"); setForm(f => ({ ...f, preco_normal: v, ...(Number(f.preco_promocional) > 0 ? { promocao: Number(f.preco_promocional) < v } : {}) })); }} />
         </label>
         <p className="esc-lbl">Quais pesos você faz?</p>
+        <div className="esc-pesos-cab" aria-hidden="true"><span>Peso</span><span>Rendimento</span><span>Preço</span></div>
         <ul className="esc-pesos" role="group" aria-label="Pesos">
           {pesos.map(kg => {
             const on = marcados.has(kg);
             return (
-              <li key={kg}>
+              <li key={kg} className={`esc-peso-li${on ? " on" : ""}`}>
                 <button type="button" className={`esc-peso${on ? " on" : ""}`} role="checkbox" aria-checked={on} onClick={() => alternarPeso(kg)}>
                   <i className="esc-peso-ck" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
                   <b>{nomePeso(kg)}</b>
-                  <span>R$ {textoBRL(Math.round(kg * precoKg * 100) / 100) || "0,00"}</span>
                 </button>
+                {on ? (
+                  <span className="esc-peso-rend">
+                    <input inputMode="numeric" placeholder="definir" value={numeroServe(opDoPeso(kg)?.serve)} aria-label={`Quantas ${unKg} rende ${nomePeso(kg)}`}
+                      onChange={e => servePeso(kg, e.target.value.replace(/\D/g, "").slice(0, 4))} />
+                    <button type="button" className="esc-peso-un" onClick={trocarUnKg} title="Trocar entre fatias e pessoas">{unKg}</button>
+                  </span>
+                ) : <span className="esc-peso-rend" aria-hidden="true" />}
+                <span className="esc-peso-v">R$ {textoBRL(Math.round(kg * precoKg * 100) / 100) || "0,00"}</span>
               </li>
             );
           })}
           <li>
             {verOutroPeso ? (
-              <div className="esc-nova esc-nova--1 esc-peso-novo">
-                <input autoFocus placeholder="Ex.: 1,5 kg ou 800 g" value={novo} inputMode="decimal" onChange={e => setNovo(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addPeso(); } }} aria-label="Outro peso" />
+              <div className="esc-peso-novo">
+                <input autoFocus placeholder={unNovo === "kg" ? "Ex.: 1,5" : "Ex.: 800"} value={novo} inputMode="decimal" onChange={e => setNovo(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addPeso(); } }} aria-label="Outro peso" />
+                <span className="esc-seg esc-seg--2 esc-kgg" role="radiogroup" aria-label="Unidade do peso">
+                  <button type="button" role="radio" aria-checked={unNovo === "kg"} className={unNovo === "kg" ? "on" : ""} onClick={() => setUnNovo("kg")}>kg</button>
+                  <button type="button" role="radio" aria-checked={unNovo === "g"} className={unNovo === "g" ? "on" : ""} onClick={() => setUnNovo("g")}>g</button>
+                </span>
                 <button type="button" className="esc-nova-bt" onClick={addPeso} disabled={!lerPeso(novo)} aria-label="Pôr peso"><Plus size={20} weight="bold" /></button>
               </div>
             ) : (
