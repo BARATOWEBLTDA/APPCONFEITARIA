@@ -238,3 +238,9 @@ body .prod-modal--novo .prod-row-2 > .prod-field:only-child { grid-column: 1 / -
 .prod-dicas li { display: flex; align-items: center; gap: 10px; min-height: 36px; font-size: 14px; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .prod-dicas li + li { border-top: 1px solid var(--ui-linha, #F3EEF0); }
 .prod-dicas svg { flex: none; color: var(--ui-rosa-escuro, #C33A6E); }
+
+/* (14/10) categoria sugerida pelo nome, embaixo do campo */
+body .prod-modal--novo .prod-cat-sug { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 44px; margin-top: 8px; padding: 0 6px 0 12px; border: 1.5px dashed #E7C2D2; border-radius: 10px; background: #FFFBFC; font-family: inherit; text-align: left; color: var(--ui-texto-2); cursor: pointer; }
+body .prod-modal--novo .prod-cat-sug span { min-width: 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body .prod-modal--novo .prod-cat-sug b { font-weight: 700; color: var(--ui-texto); }
+body .prod-modal--novo .prod-cat-sug em { flex: none; display: inline-flex; align-items: center; min-height: 32px; padding: 0 14px; border-radius: 8px; background: var(--ui-rosa); font-style: normal; font-size: 13.5px; font-weight: 700; color: #fff; }

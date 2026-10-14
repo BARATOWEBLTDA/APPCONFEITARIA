@@ -129,7 +129,8 @@ type Props = {
 };
 
 /** (14/10) ordem das escolhas (a mesma do checklist e das telas) */
-export const TODAS_ESCOLHAS: Chave[] = ["tamanho", "quantidade", "massa", "recheio", "cobertura", "sabor"];
+// (14/10) ordem fixa do checklist, todas sempre à mostra
+export const TODAS_ESCOLHAS: Chave[] = ["tamanho", "massa", "recheio", "cobertura", "sabor", "quantidade"];
 export function escolhaAtiva(form: any, c: Chave): boolean {
   if (c === "quantidade") return kitAtivo(form.kit_qtd);
   if (c === "tamanho") return !!form.grupo_tamanhos?.ativo;
@@ -149,14 +150,6 @@ export function faltaDaEscolha(form: any, c: Chave): { msg: string; alvo?: strin
   if (!(g?.opcoes?.length)) return { msg: `Coloque pelo menos 1 ${ROTULO[c].toLowerCase()}`, alvo: ".esc-nova input" };
   return null;
 }
-const EXEMPLO: Record<Chave, string> = {
-  tamanho: "Por quilo ou Pequeno · Médio · Grande",
-  quantidade: "Cento, kit de 50, de 100…",
-  massa: "Branca, chocolate, red velvet…",
-  recheio: "Ninho, brigadeiro, morango…",
-  cobertura: "Chantilly, ganache, pasta americana…",
-  sabor: "",
-};
 
 /** (14/10) Produto de exemplo pro (i): mostra como o cliente escolhe. A foto fica em public/tutorial (dá pra trocar o arquivo). */
 const EXEMPLO_PRODUTO = {
@@ -167,21 +160,15 @@ const EXEMPLO_PRODUTO = {
 };
 
 export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outros, tela = 0, setTela, edicao = false }: Props) {
-  const [verOutras, setVerOutras] = useState(false);
   const [verPrevia, setVerPrevia] = useState(false); // (14/10) (i): o produto aberto como o cliente vê
   useEffect(() => { jaPerguntou.current = false; }, []); // cada cadastro pergunta da predefinição uma vez
   const nome = String(form.nome || "").trim();
-  const sugeridas = useMemo(() => sugestoesDoProduto(tipo, nome, form.categoria || ""), [tipo, nome, form.categoria]);
   const kit = form.kit_qtd as KitQtdConfig | null;
   const temKit = kitAtivo(kit);
   const ativa = (c: Chave) => escolhaAtiva(form, c);
   // Kit e tamanho não andam juntos (o kit já é a "quantidade" do produto); sabor do kit fica dentro do kit
   const bloqueada = (c: Chave) => (c === "tamanho" && temKit) || (c === "quantidade" && !!form.grupo_tamanhos?.ativo) || (c === "sabor" && temKit);
   const ativas = TODAS_ESCOLHAS.filter(ativa);
-  // no checklist: as sugeridas (e as já ligadas) primeiro; o resto em "Outra escolha"
-  const principais = TODAS_ESCOLHAS.filter(c => sugeridas.includes(c) || ativa(c));
-  const outrasL = TODAS_ESCOLHAS.filter(c => !principais.includes(c));
-  const exemplo = (c: Chave) => c === "sabor" ? sugestoesDaChave("sabor", tipo, form.categoria).slice(0, 3).join(", ") + "…" : EXEMPLO[c];
 
   const ligar = (c: Chave) => {
     if (c === "quantidade") {
@@ -233,10 +220,11 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
           <i className="esc-chk-ck" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
           <span className="esc-tx">
             <b>{ROTULO[c]}</b>
-            <small className={f && edicao ? "esc-falta" : undefined}>
+            {/* (14/10) sem texto de exemplo: só o motivo da trava e, na edição, o que já foi cadastrado */}
+            {(trava || (on && edicao)) && <small className={f && edicao ? "esc-falta" : undefined}>
               {trava ? (c === "tamanho" ? "Não junta com Quantidade" : c === "quantidade" ? "Não junta com Tamanho" : "Os sabores ficam na Quantidade")
-                : on && edicao ? (f ? faltaCurta(f.msg) : resumo(c, form)) : exemplo(c)}
-            </small>
+                : f ? faltaCurta(f.msg) : resumo(c, form)}
+            </small>}
           </span>
         </button>
         {on && edicao && setTela && <button type="button" className="esc-chk-ed" onClick={() => setTela(ativas.indexOf(c) + 1)}>Editar</button>}
@@ -255,13 +243,9 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
       )}
       <p className="esc-s">Marque o que vale{nome ? <> pro <b>{nome}</b></> : null}. {edicao ? "Toque em Editar pra mudar." : "Você cadastra cada um em seguida."}</p>
       <ul className="esc-chks" role="group" aria-label="Escolhas">
-        {principais.map(linha)}
-        {verOutras && outrasL.map(linha)}
-        {!verOutras && outrasL.length > 0 && (
-          <li><button type="button" className="esc-peso-mais" onClick={() => setVerOutras(true)}><Plus size={16} weight="bold" aria-hidden="true" />Outra escolha <span className="esc-chk-outras">· {outrasL.map(c => ROTULO[c]).join(", ")}</span></button></li>
-        )}
+        {TODAS_ESCOLHAS.map(linha)}
       </ul>
-      <p className="esc-nota">{ativas.length === 0 ? "Sem marcar nada, o cliente só escolhe quantos quer." : `${ativas.length} ${ativas.length === 1 ? "escolha marcada" : "escolhas marcadas"}. ${edicao ? "" : "Continue pra cadastrar."}`}</p>
+      <p className={`esc-nota${ativas.length === 0 ? " esc-nota--forte" : ""}`}>{ativas.length === 0 ? "Sem marcar, o cliente só diz quantos quer." : `${ativas.length} ${ativas.length === 1 ? "escolha marcada" : "escolhas marcadas"}. ${edicao ? "" : "Continue pra cadastrar."}`}</p>
     </div>
   );
 }

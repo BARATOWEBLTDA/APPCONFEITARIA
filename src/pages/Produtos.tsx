@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { explicarErro } from "@/lib/erros";
 import LimitePlano from "@/components/billing/LimitePlano";
 import { LIMITE_PRODUTOS_GRATIS } from "@/lib/limitesPlano";
@@ -8,6 +8,7 @@ import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidad
 import { Sparkle as SparkleIA } from "@phosphor-icons/react";
 import { selecionarValorAoFocar } from "@/lib/moeda";
 import PreviaCardapio from "@/components/produto/PreviaCardapio";
+import { categoriaSugerida, tipoPeloNome, ehBoloNoPote } from "@/lib/tipoProduto";
 import RevisaoProduto from "@/components/produto/RevisaoProduto";
 import EscolhasProduto, { escolhasAtivas, faltaDaEscolha } from "@/components/produto/EscolhasProduto";
 import { kitAtivo, precoMinKit, kitsValidos, type KitQtdConfig } from "@/lib/kitQuantidade";
@@ -3821,7 +3822,7 @@ export default function Produtos() {
     try { localStorage.removeItem(DRAFT_KEY); } catch {}
     setShowDraftBanner(false);
     // Descartou o rascunho: começa do jeito certo, pela tela "Que tipo de produto?"
-    if (!form.id) { setForm(EMPTY); setWizardStep(2); setKitTela(false); setTipoCadastro(null); setBoloTam(null); setMobilePersonaStep("checklist"); setTipoTela(true); }
+    if (!form.id) { setForm(EMPTY); setWizardStep(2); setKitTela(false); setTipoCadastro(null); setBoloTam(null); setMobilePersonaStep("checklist"); setTipoTela(false); }
   };
 
   const restaurarDraft = () => {
@@ -3866,7 +3867,7 @@ export default function Produtos() {
       setShowDraftBanner(true);
       return;
     }
-    setForm(EMPTY); setFichaTecnica([]); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setMobilePersonaStep("checklist"); setKitTela(false); setTipoCadastro(null); setBoloTam(null); setBoloPrecoTela(false); setTipoTela(true); setModal(true);
+    setForm(EMPTY); setFichaTecnica([]); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setMobilePersonaStep("checklist"); setKitTela(false); setTipoCadastro(null); setBoloTam(null); setBoloPrecoTela(false); setTipoTela(false); setModal(true);
   };
   // "Que tipo de produto?" → prepara o cadastro (categoria, opções sugeridas, kit pronto)
   const aplicarTipoProduto = (tp: TipoCadastro) => {
@@ -3917,6 +3918,32 @@ export default function Produtos() {
         avisar(explicarErro(error, `Não deu pra criar a categoria ${nova.nome}. Escolha a categoria no cadastro.`), { tipo: "erro" });
       })();
     }
+  };
+  // (14/10) sem a tela de tipo: a categoria é sugerida pelo nome e o tipo sai do nome/categoria ao continuar
+  const sugCategoria = useMemo(() => categoriaSugerida(form.nome, categorias), [form.nome, categorias]);
+  const usarCategoriaSugerida = async () => {
+    const sug = sugCategoria; if (!sug) return;
+    if (sug.existe) { setForm(f => ({ ...f, categoria: sug.nome })); return; }
+    if (!userId) return;
+    setSavingCat(true);
+    const { error } = await supabase.from("categorias").insert({ nome: sug.nome, imagem_url: `/categoriaicones/icone (${sug.icone}).png`, ordem: categorias.length, user_id: userId })
+      .then(r => r, (e: unknown) => ({ error: e }));
+    setSavingCat(false);
+    // 23505 = o banco já tem essa categoria (outro aparelho): vale como criada
+    if (error && (error as { code?: string })?.code !== "23505") { avisar(explicarErro(error, `Não deu pra criar a categoria ${sug.nome}.`), { tipo: "erro" }); return; }
+    setCategorias(prev => (prev.includes(sug.nome) ? prev : [...prev, sug.nome].sort()));
+    setForm(f => ({ ...f, categoria: sug.nome }));
+  };
+  const aoSairDoSobre = () => {
+    if (form.id) return;
+    const tp = tipoPeloNome(form.nome, form.categoria);
+    setTipoCadastro(tp);
+    // bolo (menos o de pote) começa por kg no Tamanho; o resto, preço fixo. Só enquanto o tamanho e o kit estão vazios.
+    setForm(f => {
+      if (f.grupo_tamanhos?.opcoes?.length || kitAtivo((f as any).kit_qtd) || !["kg", "unidade"].includes(f.forma_venda)) return f;
+      const fv = tp === "bolos" && !ehBoloNoPote(f.nome) ? "kg" : "unidade";
+      return fv === f.forma_venda ? f : { ...f, forma_venda: fv };
+    });
   };
   // (13/10) o bolo usa o mesmo cadastro dos outros tipos (Escolhas → Preço): as telas próprias do bolo saíram
   const isKitEdit = !!form.id && kitAtivo((form as any).kit_qtd);
@@ -4606,7 +4633,7 @@ export default function Produtos() {
 
   // Voltar um passo no cadastro (o mesmo do botão do topo e do "Voltar" do rodapé · 08/10 · 3.22)
   const voltarPassoCadastro = () => {
-                  if (wizardStep === 2) { setTipoTela(true); return; }
+                  if (wizardStep === 2) { handleTryClose(); return; } // (14/10) sem a tela de tipo: o 1º passo é o "Sobre o produto"
                   // (14/10) dentro das escolhas: volta uma tela; do passo 4 volta pra última escolha marcada
                   if (wizardStep === 3 && escTela > 0) { setEscTela(t => t - 1); return; }
                   if (wizardStep === 4) { setEscTela(escolhasAtivas(form).length); setWizardStep(3); return; }
@@ -4937,7 +4964,7 @@ export default function Produtos() {
             ) : (<>
             {wizardStep >= 2 && (
             <div className="prod-modal-header-novo">
-              {wizardStep >= 2 && !form.id ? (
+              {wizardStep >= 3 && !form.id ? (
                 <button className="prod-modal-back-novo" onClick={voltarPassoCadastro} aria-label="Voltar">
                   <ArrowLeftIc size={20} weight="bold" aria-hidden="true" />
                 </button>
@@ -4948,9 +4975,10 @@ export default function Produtos() {
                   // (13/10) o mesmo caminho pra todos os tipos: Tipo → Sobre o produto → Escolhas → Preço → Fotos e entrega
                   // (14/10) cada escolha marcada conta como uma tela a mais
                   const nEsc = escolhasAtivas(form).length;
-                  const total = 5 + nEsc;
-                  const atual = wizardStep <= 2 ? wizardStep : wizardStep === 3 ? 3 + escTela : wizardStep + nEsc;
-                  const nomes = ["Tipo", "Sobre o produto", "Escolhas", "Fotos", "Preço e revisão"];
+                  // (14/10) a tela de tipo saiu: Sobre o produto → Escolhas (+1 por escolha) → Fotos → Preço e revisão
+                  const total = 4 + nEsc;
+                  const atual = wizardStep <= 2 ? 1 : wizardStep === 3 ? 2 + escTela : wizardStep - 1 + nEsc;
+                  const nomes = ["Sobre o produto", "Sobre o produto", "Escolhas", "Fotos", "Preço e revisão"];
                   return (
                     // (14/10) topo enxuto: só a barra e "2 de 5" (o título grande da tela já diz o passo)
                     <div className="prod-wiz-topo" aria-label={`Passo ${atual} de ${total}: ${nomes[Math.min(wizardStep, 5) - 1]}`}>
@@ -5189,6 +5217,13 @@ export default function Produtos() {
                         </button>
                       </div>
                     </div>
+                  )}
+                  {/* (14/10) categoria sugerida pelo nome ("Pudim" → Sobremesas; nome que não diz nada → Doces) */}
+                  {!form.id && !showCatInput && !form.categoria && sugCategoria && (
+                    <button type="button" className="prod-cat-sug" onClick={usarCategoriaSugerida} disabled={savingCat}>
+                      <span>Sugerida: <b>{sugCategoria.nome}</b></span>
+                      <em>{savingCat ? "Criando…" : "Usar"}</em>
+                    </button>
                   )}
                 </div>
 
@@ -6096,7 +6131,7 @@ export default function Produtos() {
             {/* ══════ RODAPÉ (steps 2, 3, 4) ══════ */}
             {wizardStep >= 2 && (
             <div className="prod-modal-footer prod-modal-footer--novo">
-              {wizardStep >= 2 && !form.id
+              {wizardStep >= 3 && !form.id
                 ? <button className="prod-btn-cancelar-novo" onClick={voltarPassoCadastro}>Voltar</button>
                 : <button className="prod-btn-cancelar-novo" onClick={handleTryClose}>Cancelar</button>}
               {(() => {
@@ -6208,6 +6243,7 @@ export default function Produtos() {
                       void kitLigado; // (13/10) o kit agora é montado dentro de Escolhas
                       // (14/10) escolhas: lista → cada escolha marcada → passo 4
                       if (wizardStep === 3 && escTela < escolhasAtivas(form).length) { setEscTela(t => t + 1); return; }
+                      if (wizardStep === 2) aoSairDoSobre();
                       setWizardStep(s => (s + 1) as 1 | 2 | 3 | 4 | 5);
                     }}
                   >
