@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { ArrowDown, ArrowUp, Basket, Cake, CaretDown, Check, Drop, IceCream, Info, PencilSimple, Plus, Ruler, Sparkle, Trash, X } from "@phosphor-icons/react";
+import { ArrowDown, ArrowUp, Basket, Cake, CaretDown, Check, GearSix, Drop, IceCream, Info, PencilSimple, Plus, Ruler, Sparkle, Trash, X } from "@phosphor-icons/react";
 import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
 import { kitAtivo, presetKit, type KitQtdConfig } from "@/lib/kitQuantidade";
 import { mascaraBRL, lerBRL, textoBRL, selecionarValorAoFocar } from "@/lib/moeda";
@@ -328,8 +328,8 @@ function CartaoGrupo({ chave, tipo, form, setForm, outros }: { chave: "massa" | 
   return (
     <div className="esc-corpo">
       <p className="esc-lbl esc-lbl--sub">Opções</p>
-      <p className="esc-sub">Os {plural} que o cliente vê no cardápio</p>
-      {g.opcoes.length > 0 && (
+      <p className="esc-sub">{precoProprio ? "O preço de cada um vai no último passo" : "Deixe 0,00 se já vem no preço"}</p>
+      {(
         <div className={`esc-tab${precoProprio ? " esc-tab--1" : ""}`} role="table" aria-label={`Opções de ${chave}`}>
           <div className="esc-tab-l esc-tab-h" role="row"><span role="columnheader">{ROTULO[chave]}</span>{!precoProprio && <span role="columnheader">Custa a mais</span>}<span role="columnheader" aria-label="Tirar" /></div>
           {g.opcoes.map(o => (
@@ -345,6 +345,11 @@ function CartaoGrupo({ chave, tipo, form, setForm, outros }: { chave: "massa" | 
               <span role="cell"><button type="button" className="esc-op-x" onClick={() => set({ opcoes: g.opcoes.filter(x => x.id !== o.id) })} aria-label={`Tirar ${o.nome}`}><X size={16} weight="bold" /></button></span>
             </div>
           ))}
+          {/* (14/10) cadastrar outra opção: última linha da própria tabela */}
+          <div className="esc-tab-add">
+            <input placeholder={NOVA[chave]} value={nova} onChange={e => setNova(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addDigitado(); } }} aria-label={NOVA[chave].replace("…", "")} />
+            <button type="button" className="esc-nova-bt esc-nova-bt--txt" onClick={addDigitado} disabled={!nova.trim()}>Cadastrar</button>
+          </div>
         </div>
       )}
       {sug.length > 0 && (
@@ -352,13 +357,9 @@ function CartaoGrupo({ chave, tipo, form, setForm, outros }: { chave: "massa" | 
           {sug.slice(0, 6).map(s => <button key={s} type="button" className="esc-chip esc-chip--sug" onClick={() => adicionar(s)}><Plus size={14} weight="bold" aria-hidden="true" />{s}</button>)}
         </div>
       )}
-      <div className="esc-nova esc-nova--1">
-        <input placeholder={NOVA[chave]} value={nova} onChange={e => setNova(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addDigitado(); } }} aria-label={NOVA[chave].replace("…", "")} />
-        <button type="button" className="esc-nova-bt esc-nova-bt--txt" onClick={addDigitado} disabled={!nova.trim()}>Cadastrar</button>
-      </div>
-      <p className="esc-nota">{precoProprio ? "O preço de cada sabor você coloca no último passo." : "Sem valor: já vem no preço. Com valor: custa a mais."}</p>
       {/* (14/10) regras no "Avançado" (como o Rendimento): a tela abre direto nas opções */}
       <button type="button" className="esc-rend-linha esc-av-linha" onClick={() => setAvancado(true)}>
+        <span className="esc-av-ic" aria-hidden="true"><GearSix size={20} weight="bold" /></span>
         <span className="esc-tx"><b>Avançado</b>
           <small>{quantosAtual === 1 ? "Escolhe 1" : quantosAtual >= 99 ? "À vontade" : `Escolhe até ${quantosAtual}`} · {g.min >= 1 ? "Obrigatório" : "Opcional"}{chave === "sabor" && precoProprio ? " · preço por sabor" : ""}</small></span>
         <span className="esc-rend-bt">Editar</span>
