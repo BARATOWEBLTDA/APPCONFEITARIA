@@ -327,7 +327,8 @@ function CartaoGrupo({ chave, tipo, form, setForm, outros }: { chave: "massa" | 
 
   return (
     <div className="esc-corpo">
-      <p className="esc-lbl">Opções</p>
+      <p className="esc-lbl esc-lbl--sub">Opções</p>
+      <p className="esc-sub">Os {plural} que o cliente vê no cardápio</p>
       {g.opcoes.length > 0 && (
         <div className={`esc-tab${precoProprio ? " esc-tab--1" : ""}`} role="table" aria-label={`Opções de ${chave}`}>
           <div className="esc-tab-l esc-tab-h" role="row"><span role="columnheader">{ROTULO[chave]}</span>{!precoProprio && <span role="columnheader">Custa a mais</span>}<span role="columnheader" aria-label="Tirar" /></div>
