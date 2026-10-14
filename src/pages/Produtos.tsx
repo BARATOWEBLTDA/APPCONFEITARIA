@@ -6,6 +6,7 @@ import CampoNumero from "@/components/ui/CampoNumero";
 import { useLocation, useNavigate } from "react-router-dom";
 import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
 import { sugerirPrecosTamanho } from "@/lib/sugestaoTamanho";
+import { Sparkle as SparkleIA } from "@phosphor-icons/react";
 import RevisaoProduto from "@/components/produto/RevisaoProduto";
 import EscolhasProduto from "@/components/produto/EscolhasProduto";
 import { kitAtivo, precoMinKit, kitsValidos, type KitQtdConfig } from "@/lib/kitQuantidade";
@@ -5119,22 +5120,6 @@ export default function Produtos() {
                   />
                 </div>
 
-                {/* (13/10) Como vende: dá sentido ao preço (do produto ou do kg) e aos tamanhos pelo peso */}
-                {!kitAtivo((form as any).kit_qtd) && (
-                  <div className="prod-field">
-                    <label className="prod-field-label-novo">Como você vende</label>
-                    <div className="esc-seg esc-seg--2 prod-como-vende" role="radiogroup" aria-label="Como você vende">
-                      <button type="button" role="radio" aria-checked={form.forma_venda !== "kg"} className={form.forma_venda !== "kg" ? "on" : ""}
-                        onClick={() => setForm(f => ({ ...f, forma_venda: f.forma_venda === "kg" ? "unidade" : f.forma_venda,
-                          ...(f.grupo_tamanhos?.modo_preco_tamanho === "por_peso" ? { grupo_tamanhos: { ...f.grupo_tamanhos, modo_preco_tamanho: "preco_fixo" } } : {}) }))}>Por unidade</button>
-                      <button type="button" role="radio" aria-checked={form.forma_venda === "kg"} className={form.forma_venda === "kg" ? "on" : ""}
-                        onClick={() => setForm(f => ({ ...f, forma_venda: "kg",
-                          ...(f.grupo_tamanhos?.ativo ? { grupo_tamanhos: { ...f.grupo_tamanhos, modo_preco_tamanho: "por_peso" } } : {}) }))}>Por quilo (kg)</button>
-                    </div>
-                    <p className="prod-como-vende-dica">{form.forma_venda === "kg" ? "O preço é do quilo. Os tamanhos saem pelo peso." : "O preço é de uma peça. Cento e kit você monta no próximo passo."}</p>
-                  </div>
-                )}
-
                 {/* 2. Categoria */}
                 <div className="prod-field" id="prod-categoria-campo">
                   <label className="prod-field-label-novo">Categoria <ReqTag /></label>
@@ -5195,12 +5180,11 @@ export default function Produtos() {
                     <label className="prod-field-label-novo">Descrição</label>
                     <button
                       type="button"
-                      className={`prod-btn-ia-novo${!isPro ? " prod-btn-ia-novo--pro" : ""}`}
+                      className="prod-btn-ia-novo"
                       disabled={!!gerandoDesc}
                       onClick={async () => {
                         if (gerandoDesc) return;
-                        // 10/10: o botão não fica apagado — explica o que falta (plano PRO ou o nome)
-                        if (!isPro) { avisar("Gerar a descrição com IA é do plano PRO.", { tipo: "info" }); return; }
+                        // (13/10) liberado no grátis também (limite por dia no servidor)
                         if (!form.nome.trim()) { avisar("Dê um nome ao produto primeiro.", { tipo: "info" }); document.getElementById("prod-nome-input")?.focus(); return; }
                         const textoAtual = (form.descricao || "").trim();
                         const ehMelhorar = textoAtual.length > 0;
@@ -5221,6 +5205,7 @@ export default function Produtos() {
                           });
                           const data = await res.json();
                           if (abertura.current !== vez) return;
+                          if (data?.error === "limite_diario") { avisar(data.message || "Você chegou ao limite de hoje. Amanhã libera de novo.", { tipo: "info" }); return; }
                           const desc = data.content?.[0]?.text?.trim() || "";
                           if (desc) setForm(f => ({ ...f, descricao: desc }));
                           else avisar("Não deu pra gerar a descrição. Tente de novo.", { tipo: "erro" });
@@ -5230,15 +5215,14 @@ export default function Produtos() {
                           if (abertura.current === vez) setGerandoDesc(null);
                         }
                       }}
-                      title={!form.nome.trim() ? "Preencha o nome primeiro" : !isPro ? "Disponível no plano PRO" : (form.descricao?.trim() ? "Melhorar descrição atual" : "Gerar descrição automaticamente")}
+                      title={!form.nome.trim() ? "Preencha o nome primeiro" : (form.descricao?.trim() ? "Melhorar descrição atual" : "Gerar descrição automaticamente")}
                     >
-                      <Crown size={16} weight="fill" className="prod-btn-ia-novo-crown" aria-hidden="true" />
+                      <SparkleIA size={16} weight="fill" className="prod-btn-ia-novo-crown" aria-hidden="true" />
                       {gerandoDesc === "gerar"
                         ? "Gerando..."
                         : gerandoDesc === "melhorar"
                         ? "Melhorando..."
                         : (form.descricao?.trim() ? "Melhorar com IA" : "Gerar com IA")}
-                      {!isPro && <span className="prod-btn-ia-pro">PRO</span>}
                     </button>
                   </div>
                   <textarea
@@ -5251,22 +5235,22 @@ export default function Produtos() {
                     aria-busy={!!gerandoDesc}
                     style={{fontFamily: 'inherit', resize: 'vertical'}}
                   />
-                  {!isPro && (
-                    <div className="prod-cta-pro-ia">
-                      <span className="prod-cta-pro-ia-txt">
-                        Com o <b>Doonly PRO</b>, você gera descrições que vendem com <b>IA em 1 clique</b>
-                        <button
-                          type="button"
-                          className="prod-cta-pro-ia-info"
-                          onClick={() => avisar("Gerar a descrição com IA é do plano PRO.", { tipo: "info" })}
-                          aria-label="Saiba mais"
-                        >
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                        </button>
-                      </span>
-                    </div>
-                  )}
                 </div>
+                {/* (13/10) Como vende: dá sentido ao preço (do produto ou do kg) e aos tamanhos pelo peso */}
+                {!kitAtivo((form as any).kit_qtd) && (
+                  <div className="prod-field">
+                    <label className="prod-field-label-novo">Como você vende</label>
+                    <div className="esc-seg esc-seg--2 prod-como-vende" role="radiogroup" aria-label="Como você vende">
+                      <button type="button" role="radio" aria-checked={form.forma_venda !== "kg"} className={form.forma_venda !== "kg" ? "on" : ""}
+                        onClick={() => setForm(f => ({ ...f, forma_venda: f.forma_venda === "kg" ? "unidade" : f.forma_venda,
+                          ...(f.grupo_tamanhos?.modo_preco_tamanho === "por_peso" ? { grupo_tamanhos: { ...f.grupo_tamanhos, modo_preco_tamanho: "preco_fixo" } } : {}) }))}>Por unidade</button>
+                      <button type="button" role="radio" aria-checked={form.forma_venda === "kg"} className={form.forma_venda === "kg" ? "on" : ""}
+                        onClick={() => setForm(f => ({ ...f, forma_venda: "kg",
+                          ...(f.grupo_tamanhos?.ativo ? { grupo_tamanhos: { ...f.grupo_tamanhos, modo_preco_tamanho: "por_peso" } } : {}) }))}>Por quilo (kg)</button>
+                    </div>
+                    <p className="prod-como-vende-dica">{form.forma_venda === "kg" ? "O preço é do quilo. Os tamanhos saem pelo peso." : "O preço é de uma peça. Cento e kit você monta no próximo passo."}</p>
+                  </div>
+                )}
               </div>
               {/* (4.29) edição: Mostrar no cardápio, no fim da aba Info */}
               {form.id && (

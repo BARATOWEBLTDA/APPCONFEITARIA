@@ -14,7 +14,7 @@ export default async function handler(req: Request) {
   const usuario = await usuarioDoToken(req);
   if (!usuario) return respostaNaoAutorizado();
 
-  // (4.23) limite de uso por dia (PRO 60, grátis 5)
+  // (4.23) limite de uso por dia (PRO 60, grátis 10 a partir do SQL 4.35)
   const cota = await usarCota(req, "descricao");
   if (!cota.ok) return respostaLimite(cota.limite);
 
@@ -37,7 +37,7 @@ export default async function handler(req: Request) {
     },
     body: JSON.stringify({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 1000,
+      max_tokens: 400, // (13/10) uma descrição usa bem menos; evita gasto se a IA se empolgar
       messages: [{ role: "user", content: prompt }]
     })
   });

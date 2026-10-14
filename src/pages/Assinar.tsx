@@ -24,7 +24,7 @@ const PRECO_1O_MES = "R$ 8,97"; // 70% de desconto no 1º mês (30% de R$ 29,90)
 const BENEFICIOS: [Icon, string, string][] = [
   [Calculator, "Preço certo em tudo que você vende", "Bolos, doces ou salgados: a precificação calcula custo, margem e lucro. Chega de vender no prejuízo."],
   [ChartLineUp, "Saiba quanto você lucra de verdade", "Relatórios de lucratividade por produto e por mês, pra decidir com segurança."],
-  [Robot, "Uma assistente que trabalha por você", "A Doo IA calcula preços, sugere receitas e escreve legendas, respostas e a descrição dos produtos."],
+  [Robot, "Uma assistente que trabalha por você", "A Doo IA calcula preços, sugere receitas e escreve legendas e respostas pros seus clientes."],
   [Bell, "Avisos no celular", "Receba os avisos do Doonly no celular, mesmo com o app fechado."],
   [Eye, "Veja quem visita e quem compra", "Visitas, pedidos pelo cardápio e conversão, de hoje e do mês."],
   [Tag, "Cupons que trazem cliente de volta", "Crie cupons de desconto pra atrair novos clientes e fazer os antigos voltarem."],
