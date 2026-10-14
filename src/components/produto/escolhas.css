@@ -211,7 +211,7 @@
 
 /* (14/10) por quilo: peso | rendimento | preço numa linha; "Outro peso" com a tag kg | g */
 /* (14/10) a coluna do peso só do tamanho do "1,5 kg": o rendimento fica perto do peso e o preço vai pra direita */
-.esc-pesos-cab, .esc-peso-li { display: grid; grid-template-columns: 96px 124px minmax(0, 1fr); gap: 6px; align-items: center; }
+.esc-pesos-cab, .esc-peso-li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; align-items: center; }
 .esc-pesos-cab span { white-space: nowrap; }
 .esc-pesos-cab { margin: 0 0 6px; padding: 0 13px 0 1px; font-size: 12.5px; font-weight: 600; color: var(--ui-texto-3); }
 .esc-pesos-cab span:last-child { text-align: right; }
@@ -230,3 +230,17 @@
 .esc-kgg { height: 44px; }
 .esc-kgg button { min-height: 38px; }
 .esc-pesos-cab span:first-child { padding-left: 14px; }
+
+/* (14/10) linha do rendimento (abre a janela própria) e a janela com as predefinições */
+.esc-rend-linha { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; margin: 12px 0 0; padding: 10px 14px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
+@media (hover: hover) { .esc-rend-linha:hover { background: #FCFAFB; } }
+.esc-rend-lbl { display: flex; align-items: center; justify-content: space-between; }
+.esc-rend-gerir { border: 0; background: none; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; min-height: 32px; }
+.esc-predef { border-style: solid; }
+.esc-predef.on { border-color: var(--ui-rosa); background: #FFF0F5; }
+.esc-rend-campo { flex: none; display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ui-texto-2); }
+.esc-rend-campo input { width: 64px; height: 40px; padding: 0 4px; border: 1.5px solid var(--ui-borda-campo); border-radius: 8px; background: var(--ui-branco); font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ui-texto); text-align: center; box-sizing: border-box; }
+.esc-rend-campo input::placeholder { font-size: 12.5px; font-weight: 500; color: var(--ui-texto-3); }
+.esc-rend-campo input:focus { outline: none; border-color: var(--ui-rosa); }
+.esc-rend-campo em { width: 62px; font-style: normal; color: var(--ui-texto-2); }
+.esc-rend-salvar { margin-top: 8px; padding: 0; }

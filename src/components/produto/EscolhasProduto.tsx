@@ -5,6 +5,7 @@ import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidad
 import { kitAtivo, presetKit, type KitQtdConfig } from "@/lib/kitQuantidade";
 import { mascaraBRL, lerBRL, textoBRL, selecionarValorAoFocar } from "@/lib/moeda";
 import { Botao, Janela, confirmar } from "@/components/base";
+import { lerPredefs, gravarPredefs, chaveTam, type PredefRend } from "@/lib/predefRendimento";
 import "./escolhas.css";
 
 /**
@@ -390,17 +391,6 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
   const [novo, setNovo] = useState("");
   const set = (patch: Partial<GrupoTam>) => setForm(f => ({ ...f, grupo_tamanhos: { ...g, ...(f.grupo_tamanhos || {}), ...patch } }));
   const usarModeloUn = (itens: string[]) => set({ opcoes: itens.map(n => ({ id: uid(), nome: n, preco: 0, ...(n.startsWith("Serve") ? { serve: n.replace("Serve ", "") + " pessoas" } : {}) })) });
-  // rendimento (opcional), em cada tamanho: "serve [10] [pessoas]". Fica guardado como "10 pessoas" (o cardápio já mostra assim)
-  const [unLocal, setUnLocal] = useState<Record<string, string>>({});
-  const unDe = (o: OpTam) => {
-    const m = String(o.serve || "").match(/^\s*\d+\s*([^\d\s].*)$/);
-    if (m) return m[1].trim();
-    if (unLocal[o.id]) return unLocal[o.id];
-    const outra = g.opcoes.map(x => String(x.serve || "").match(/^\s*\d+\s*([^\d\s].*)$/)?.[1]).find(Boolean);
-    return outra?.trim() || (g.rendimento_unidade && g.rendimento_unidade !== "" ? g.rendimento_unidade : "pessoas");
-  };
-  const gravarServe = (o: OpTam, num: string, un: string) =>
-    set({ opcoes: g.opcoes.map(x => (x.id === o.id ? { ...x, serve: num ? `${num} ${un}` : "" } : x)) });
   const copiasTam = copiasDe(outros, "grupo_tamanhos", gg => (gg.modo_preco_tamanho === "por_peso" ? null : gg.opcoes.map((o: any) => `${norm(o.nome)}:${numeroServe(o.serve)}`).join("|")));
   const comUnidade = (serve: unknown, unGrupo?: string) => { const n = numeroServe(serve); if (!n) return ""; const m = String(serve).match(/^\s*\d+\s*([^\d\s].*)$/); return `${n} ${m ? m[1].trim() : unGrupo || "pessoas"}`; };
   const usarCopiaTam = (c: Copia) => set({ opcoes: ordenarTamanhos(c.opcoes.map((o: any) => ({ id: uid(), nome: o.nome, preco: 0, ...(comUnidade(o.serve, c.grupo.rendimento_unidade) ? { serve: comUnidade(o.serve, c.grupo.rendimento_unidade) } : {}) }))) });
@@ -423,12 +413,6 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
     const kg = unNovo === "g" ? v / 1000 : v;
     return kg > 0 && kg <= 50 ? Math.round(kg * 1000) / 1000 : null;
   };
-  // rendimento no por quilo: o número em cada peso, a unidade (fatias ou pessoas) vale pra todos
-  const unKg = g.rendimento_unidade === "pessoas" ? "pessoas" : "fatias";
-  const opDoPeso = (kg: number) => g.opcoes.find(o => Number(o.peso_kg) === kg);
-  const servePeso = (kg: number, num: string) => set({ opcoes: g.opcoes.map(o => (Number(o.peso_kg) === kg ? { ...o, serve: num ? `${num} ${unKg}` : "" } : o)) });
-  const trocarUnKg = () => { const nova = unKg === "fatias" ? "pessoas" : "fatias";
-    set({ rendimento_unidade: nova, opcoes: g.opcoes.map(o => (numeroServe(o.serve) ? { ...o, serve: `${numeroServe(o.serve)} ${nova}` } : o)) }); };
   const addPeso = () => { const kg = lerPeso(novo); if (!kg) return; if (!marcados.has(kg)) alternarPeso(kg); setNovo(""); setVerOutroPeso(false); };
   const pesoDoNome = (n: string) => { const m = n.replace(",", ".").match(/(\d+(?:\.\d+)?)\s*kg/i); return m ? Number(m[1]) : null; };
   const add = () => {
@@ -459,7 +443,6 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
             onChange={e => { const v = lerBRL(mascaraBRL(e.target.value) || "0"); setForm(f => ({ ...f, preco_normal: v, ...(Number(f.preco_promocional) > 0 ? { promocao: Number(f.preco_promocional) < v } : {}) })); }} />
         </label>
         <p className="esc-lbl">Quais pesos você faz?</p>
-        <div className="esc-pesos-cab" aria-hidden="true"><span>Peso</span><span>Rendimento/Serve</span><span>Preço</span></div>
         <ul className="esc-pesos" role="group" aria-label="Pesos">
           {pesos.map(kg => {
             const on = marcados.has(kg);
@@ -469,13 +452,6 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
                   <i className="esc-peso-ck" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
                   <b>{nomePeso(kg)}</b>
                 </button>
-                {on ? (
-                  <span className="esc-peso-rend">
-                    <input inputMode="numeric" placeholder="definir" value={numeroServe(opDoPeso(kg)?.serve)} aria-label={`Quantas ${unKg} rende ${nomePeso(kg)}`}
-                      onChange={e => servePeso(kg, e.target.value.replace(/\D/g, "").slice(0, 4))} />
-                    <button type="button" className="esc-peso-un" onClick={trocarUnKg} title="Trocar entre fatias e pessoas">{unKg}</button>
-                  </span>
-                ) : <span className="esc-peso-rend" aria-hidden="true" />}
                 <span className="esc-peso-v">R$ {textoBRL(Math.round(kg * precoKg * 100) / 100) || "0,00"}</span>
               </li>
             );
@@ -506,6 +482,7 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
             ))}
           </ul>
         )}
+        <LinhaRendimento g={g} set={set} />
         <p className="esc-nota">Quer dar desconto? Você coloca na próxima etapa.</p>
       </>)}
 
@@ -524,17 +501,11 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
       </>)}
 
       {!porPeso && g.opcoes.length > 0 && (<>
-        {/* (13/10) colunas com título em cima: Tamanho · Rendimento · Tipo (sem o "serve" em cada linha) */}
-        <div className="esc-tam-cab" aria-hidden="true"><span>Tamanho</span><span>Rendimento</span><span>Tipo</span><span /></div>
-        <ul className="esc-ops esc-tam">
+        <ul className="esc-ops">
           {g.opcoes.map((o, i) => (
-            <li key={o.id} className="esc-tam-li">
+            <li key={o.id} className="esc-op">
               {/* a ordem é automática (P, M, G… e os números): ao sair do campo, a lista se arruma */}
               <input className="esc-op-in" value={o.nome} onChange={e => renomear(o.id, e.target.value)} onBlur={() => set({ opcoes: ordenarTamanhos(g.opcoes) })} aria-label={`Nome do tamanho ${i + 1}`} />
-              <input className="esc-tam-n" inputMode="numeric" placeholder="definir" value={numeroServe(o.serve)} onChange={e => gravarServe(o, e.target.value.replace(/\D/g, "").slice(0, 4), unDe(o))} aria-label={`Quanto rende o ${o.nome}`} />
-              <select className="esc-tam-u" value={unDe(o)} onChange={e => { setUnLocal(u => ({ ...u, [o.id]: e.target.value })); if (numeroServe(o.serve)) gravarServe(o, numeroServe(o.serve), e.target.value); }} aria-label={`Tipo do rendimento do ${o.nome}`}>
-                {Array.from(new Set(["pessoas", "fatias", "unidades", "copos", "potes", unDe(o)])).map(u => <option key={u} value={u}>{u}</option>)}
-              </select>
               <button type="button" className="esc-op-x" onClick={() => set({ opcoes: g.opcoes.filter(x => x.id !== o.id) })} aria-label={`Tirar ${o.nome}`}><X size={16} weight="bold" /></button>
             </li>
           ))}
@@ -543,7 +514,7 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
           <input placeholder={porPeso ? "Ex.: 2,5 kg" : "Outro tamanho…"} value={novo} onChange={e => setNovo(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); add(); } }} aria-label="Outro tamanho" />
           <button type="button" className="esc-nova-bt" onClick={add} disabled={!novo.trim()} aria-label="Pôr tamanho"><Plus size={20} weight="bold" /></button>
         </div>
-        <p className="esc-nota">Rendimento é opcional, mas ajuda no cardápio.</p>
+        <LinhaRendimento g={g} set={set} />
       </>)}
     </div>
   );
@@ -555,5 +526,103 @@ function CartaoQuantidade({ kit, onKitChange, nome }: { kit: KitQtdConfig; onKit
     <div className="esc-corpo esc-corpo--kit">
       <KitQuantidadeEditor modo="completo" kit={kit} onChange={onKitChange} nomeProduto={nome} />
     </div>
+  );
+}
+
+/* ── (14/10) Rendimento: uma linha na janela do tamanho que abre a sua própria janela, com predefinições por nome ── */
+function LinhaRendimento({ g, set }: { g: GrupoTam; set: (p: Partial<GrupoTam>) => void }) {
+  const [aberta, setAberta] = useState(false);
+  const comNum = g.opcoes.filter(o => numeroServe(o.serve));
+  const un = String(g.opcoes.map(o => String(o.serve || "").match(/^\s*\d+\s*([^\d\s].*)$/)?.[1]).find(Boolean) || g.rendimento_unidade || "fatias").trim();
+  const resumo = comNum.length ? `${comNum.map(o => numeroServe(o.serve)).join(", ")} ${un}` : "";
+  return (<>
+    <button type="button" className="esc-rend-linha" onClick={() => setAberta(true)}>
+      <span className="esc-tx"><b>Rendimento <span className="esc-opc">opcional</span></b><small>{resumo || "Fatias ou pessoas por tamanho"}</small></span>
+      <span className="esc-editar">{resumo ? "Editar" : "Definir"}</span>
+    </button>
+    {aberta && <JanelaRendimento g={g} set={set} onFechar={() => setAberta(false)} />}
+  </>);
+}
+
+function JanelaRendimento({ g, set, onFechar }: { g: GrupoTam; set: (p: Partial<GrupoTam>) => void; onFechar: () => void }) {
+  const unAtual = String(g.opcoes.map(o => String(o.serve || "").match(/^\s*\d+\s*([^\d\s].*)$/)?.[1]).find(Boolean) || g.rendimento_unidade || "fatias").trim();
+  const [un, setUn] = useState<string>(["fatias", "pessoas", "unidades"].includes(unAtual) ? unAtual : "fatias");
+  const [nums, setNums] = useState<Record<string, string>>(() => Object.fromEntries(g.opcoes.map(o => [o.id, numeroServe(o.serve)])));
+  const [predefs, setPredefs] = useState<PredefRend[]>([]);
+  const [usada, setUsada] = useState<string>("");
+  const [nomeNova, setNomeNova] = useState<string | null>(null);
+  const [gerir, setGerir] = useState(false);
+  useEffect(() => { lerPredefs().then(setPredefs); }, []);
+
+  const aplicar = (p: PredefRend) => {
+    setUn(p.un || "fatias"); setUsada(p.nome);
+    setNums(n => Object.fromEntries(g.opcoes.map(o => [o.id, p.itens[chaveTam(o.nome)] ?? n[o.id] ?? ""])));
+  };
+  const salvarPredef = async () => {
+    const nome = primeiraMaiuscula(nomeNova || ""); if (!nome) return;
+    const itens: Record<string, string> = {};
+    g.opcoes.forEach(o => { if (nums[o.id]) itens[chaveTam(o.nome)] = nums[o.id]; });
+    const lista = [...predefs.filter(p => norm(p.nome) !== norm(nome)), { nome, un, itens }];
+    if (await gravarPredefs(lista)) { setPredefs(lista); setUsada(nome); setNomeNova(null); }
+  };
+  const apagar = async (nome: string) => {
+    if (!(await confirmar({ titulo: `Apagar "${nome}"?`, texto: "Os produtos que já usaram continuam com o rendimento.", rotulo: "Apagar", perigo: true }))) return;
+    const lista = predefs.filter(p => p.nome !== nome);
+    if (await gravarPredefs(lista)) setPredefs(lista);
+  };
+  const salvar = () => {
+    set({ rendimento_unidade: un, opcoes: g.opcoes.map(o => ({ ...o, serve: nums[o.id] ? `${nums[o.id]} ${un}` : "" })) });
+    onFechar();
+  };
+
+  return (
+    <Janela aberta aoFechar={onFechar} titulo="Rendimento" tipo="conteudo" travada
+      acoes={<><Botao variante="secundario" onClick={onFechar}>Voltar</Botao><Botao onClick={salvar}>Salvar rendimento</Botao></>}>
+      <div className="esc esc-jan esc-rend" onFocusCapture={selecionarValorAoFocar} onClickCapture={selecionarValorAoFocar}>
+        {predefs.length > 0 && (<>
+          <p className="esc-lbl esc-rend-lbl"><span>Usar uma predefinição</span>
+            <button type="button" className="esc-rend-gerir" onClick={() => setGerir(v => !v)}>{gerir ? "Pronto" : "Gerenciar"}</button></p>
+          <div className="esc-chips" role="group" aria-label="Predefinições">
+            {predefs.map(p => gerir ? (
+              <button key={p.nome} type="button" className="esc-chip esc-chip--outras esc-predef" onClick={() => apagar(p.nome)} aria-label={`Apagar ${p.nome}`}>{p.nome}<X size={14} weight="bold" aria-hidden="true" /></button>
+            ) : (
+              <button key={p.nome} type="button" className={`esc-chip esc-predef${usada === p.nome ? " on" : ""}`} onClick={() => aplicar(p)}>{usada === p.nome && <Check size={14} weight="bold" aria-hidden="true" />}{p.nome}</button>
+            ))}
+          </div>
+        </>)}
+
+        <p className="esc-lbl">Conta em</p>
+        <div className="esc-seg esc-seg--3" role="radiogroup" aria-label="Unidade do rendimento">
+          {[["fatias", "Fatias"], ["pessoas", "Pessoas"], ["unidades", "Unidades"]].map(([v, l]) => (
+            <button key={v} type="button" role="radio" aria-checked={un === v} className={un === v ? "on" : ""} onClick={() => setUn(v)}>{l}</button>
+          ))}
+        </div>
+
+        <p className="esc-lbl">Quanto cada tamanho serve</p>
+        <ul className="esc-ops esc-rend-lista">
+          {g.opcoes.map(o => (
+            <li key={o.id} className="esc-op">
+              <span className="esc-op-nm">{o.nome}</span>
+              <span className="esc-rend-campo">serve
+                <input inputMode="numeric" placeholder="definir" value={nums[o.id] || ""} aria-label={`Quantas ${un} serve ${o.nome}`}
+                  onChange={e => setNums(n => ({ ...n, [o.id]: e.target.value.replace(/\D/g, "").slice(0, 4) }))} />
+                <em>{un}</em>
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        {nomeNova === null ? (
+          <button type="button" className="esc-peso-mais esc-rend-salvar" onClick={() => setNomeNova(usada || "")}><Plus size={16} weight="bold" aria-hidden="true" />Salvar como predefinição</button>
+        ) : (
+          <div className="esc-nova esc-nova--1" style={{ marginTop: 12 }}>
+            <input autoFocus placeholder="Nome (ex.: Bolos de aniversário)" value={nomeNova} maxLength={40} onChange={e => setNomeNova(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); salvarPredef(); } }} aria-label="Nome da predefinição" />
+            <button type="button" className="esc-nova-bt" onClick={salvarPredef} disabled={!nomeNova.trim()} aria-label="Salvar predefinição"><Check size={20} weight="bold" /></button>
+          </div>
+        )}
+        <p className="esc-nota">No cardápio aparece "Serve 10 {un}".</p>
+      </div>
+    </Janela>
   );
 }
