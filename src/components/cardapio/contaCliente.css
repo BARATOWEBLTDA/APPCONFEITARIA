@@ -71,3 +71,4 @@
 .cc-form { display: flex; flex-direction: column; gap: 12px; }
 .cc-form-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 @media (prefers-reduced-motion: reduce) { .cc-sit--and .cc-sit-pt, .cc-ped--esq, .cc-bt-ic.gira svg { animation: none; } }
+.cc-sem p .cc-tel { font-size: inherit; font-weight: 700; color: var(--ui-texto); white-space: nowrap; }

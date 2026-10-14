@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { MapPin } from '@phosphor-icons/react'
+import { MapPin, Package, Moped } from '@phosphor-icons/react'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { Janela } from '@/components/base'
 import { linkWhatsApp } from '@/lib/telefone'
@@ -49,7 +49,7 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
   useEffect(() => { if (aberta) setAba(abaInicial) }, [aberta, abaInicial])
 
   const cfg: any = config || {}
-  const cor = design.cor_botao || design.cor_borda || '#E85A8C'
+  const cor = design.cor_navbar || design.cor_borda || '#BF6B84' // (14/10) mesma cor do topo do cardápio
   const end = getEnderecoData(config)
   const zap = linkWhatsApp(config?.telefone)
   const insta = linkInstagram(cfg.instagram), face = linkFacebook(cfg.facebook)
@@ -93,8 +93,9 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
                 <h3>Endereço</h3>
                 <p className="sl-end"><MapPin size={18} aria-hidden="true" />{end.completo}</p>
                 <div className="sl-mapa">
-                  <a href={`https://maps.google.com/?q=${encodeURIComponent(end.completo)}`} target="_blank" rel="noopener noreferrer">Google Maps</a>
-                  <a href={`https://waze.com/ul?q=${encodeURIComponent(end.completo)}`} target="_blank" rel="noopener noreferrer">Waze</a>
+                  {/* (14/10) nas cores e com o ícone de cada app, igual no celular */}
+                  <a className="gmaps" href={`https://maps.google.com/?q=${encodeURIComponent(end.completo)}`} target="_blank" rel="noopener noreferrer"><img src="/google-maps.png" alt="" />Google Maps</a>
+                  <a className="waze" href={`https://waze.com/ul?q=${encodeURIComponent(end.completo)}`} target="_blank" rel="noopener noreferrer"><img src="/waze.png" alt="" />Waze</a>
                 </div>
               </div>
             )}
@@ -119,15 +120,15 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
           <div className="sl-corpo" role="tabpanel">
             <div className="sl-bloco">
               <h3>Formas de pagamento</h3>
-              <ul className="sl-lista">{(pagamentos.length ? pagamentos : ['pix']).map(k => <li key={k}>{PAGAMENTO[k]}</li>)}</ul>
+              <ul className="sl-lista sl-lista--2">{(pagamentos.length ? pagamentos : ['pix']).map(k => <li key={k}>{PAGAMENTO[k]}</li>)}</ul>
             </div>
             {(retira || entregaPropria || entregaOutra) && (
               <div className="sl-bloco">
                 <h3>Como receber</h3>
                 <ul className="sl-lista">
-                  {retira && <li>Retirada na loja{cfg.endereco_retirada && cfg.mostrar_localizacao ? <small>{cfg.endereco_retirada}</small> : null}</li>}
-                  {entregaPropria && <li>Entrega<small>{taxa}</small></li>}
-                  {!entregaPropria && entregaOutra && <li>Entrega<small>Taxa combinada pelo WhatsApp</small></li>}
+                  {retira && <li className="sl-ic"><Package size={22} weight="duotone" aria-hidden="true" /><span>Retirada na loja{cfg.endereco_retirada && cfg.mostrar_localizacao ? <small>{cfg.endereco_retirada}</small> : null}</span></li>}
+                  {entregaPropria && <li className="sl-ic"><Moped size={22} weight="duotone" aria-hidden="true" /><span>Entrega<small>{taxa}</small></span></li>}
+                  {!entregaPropria && entregaOutra && <li className="sl-ic"><Moped size={22} weight="duotone" aria-hidden="true" /><span>Entrega<small>Taxa combinada pelo WhatsApp</small></span></li>}
                 </ul>
               </div>
             )}

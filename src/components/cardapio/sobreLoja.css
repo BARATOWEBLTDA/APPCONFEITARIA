@@ -29,3 +29,20 @@
 .sl-lista li small { display: block; margin-top: 2px; font-size: 13px; font-weight: 400; color: var(--ui-texto-2); }
 .sl-nota { margin: 0; font-size: 13.5px; color: var(--ui-texto-2); }
 .sl-vazio { margin: 0; font-size: 14.5px; color: var(--ui-texto-2); }
+
+/* (14/10) logo redonda e sem borda (parecia quadrada) */
+.sl-apres img { border-radius: 50%; border: 0; }
+/* (14/10) Google Maps e Waze nas cores dos apps, igual ao celular */
+.sl-mapa a { gap: 8px; font-weight: 700; }
+.sl-mapa img { width: 22px; height: 22px; object-fit: contain; }
+.sl-mapa a.gmaps { background: #ECF3FF; color: #1A73E8; }
+.sl-mapa a.waze { background: #33CCFF; color: var(--ui-branco); }
+/* (14/10) horário mais baixo, cabe sem a janela crescer */
+.sl-dias li { padding: 7px 0; font-size: 14px; }
+.sl-dias li small { border-radius: 6px; }
+/* (14/10) formas de pagamento em 2 colunas */
+.sl-lista--2 { display: grid; grid-template-columns: 1fr 1fr; }
+.sl-lista--2 li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* (14/10) retirada (caixa) e entrega (moto) com ícone */
+.sl-lista li.sl-ic { display: flex; align-items: center; gap: 12px; }
+.sl-lista li.sl-ic svg { flex: none; color: var(--sl-cor); }

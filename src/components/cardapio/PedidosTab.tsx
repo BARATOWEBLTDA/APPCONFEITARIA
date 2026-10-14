@@ -3,9 +3,11 @@ import { useState } from 'react'
 import { ArrowClockwise, Receipt } from '@phosphor-icons/react'
 import { CartaoPedido, JanelaEntrar, SemConta, lerCliente, pedidoAberto, usePedidosCliente, type Cliente } from './contaCliente'
 
-export function PedidosTab({ accent, confeteiraUserId }: {
+export function PedidosTab({ accent, confeteiraUserId, onVerCardapio }: {
   accent: string
   confeteiraUserId: string
+  /** (14/10) sem pedidos: botão que fecha a janela e volta pros produtos */
+  onVerCardapio?: () => void
   /** (antigo: levava pra aba Perfil pra entrar; agora entra daqui mesmo) */
   onIrParaPerfil?: () => void
 }) {
@@ -35,7 +37,9 @@ export function PedidosTab({ accent, confeteiraUserId }: {
           <div className="cc-sem">
             <span className="cc-sem-ic"><Receipt size={36} weight="duotone" /></span>
             <b>Nenhum pedido ainda</b>
-            <p>Quando você fizer um pedido, ele aparece aqui.</p>
+            {/* (14/10) diz de onde vêm os pedidos: os feitos com o WhatsApp de quem entrou */}
+            <p>Os pedidos feitos com o WhatsApp {cliente.telefone ? <b className="cc-tel">{cliente.telefone}</b> : 'que você usou'} aparecem aqui.</p>
+            {onVerCardapio && <button type="button" className="cc-bt" style={{ background: accent }} onClick={onVerCardapio}>Ver o cardápio</button>}
           </div>
         ) : (
           <>

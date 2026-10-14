@@ -20,7 +20,7 @@ import { CartProvider } from '@/context/CartContext'
 import { DesignSettings, Configuracoes, Produto } from '@/types/database'
 import { PerfilTab } from '@/components/cardapio/PerfilTab'
 import { PedidosTab } from '@/components/cardapio/PedidosTab'
-import { House, MagnifyingGlass, ShoppingBag, Storefront, User, X } from '@phosphor-icons/react'
+import { MapPin, House, MagnifyingGlass, ShoppingBag, Storefront, User, X } from '@phosphor-icons/react'
 import { SobreLoja } from '@/components/cardapio/SobreLoja'
 import { useCart } from '@/hooks/useCart'
 import { formatCurrency } from '@/utils/helpers'
@@ -57,7 +57,7 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
   const status = (config as any)?.loja_pausada ? { aberto: false, msg: 'Pedidos pausados no momento', curto: 'Pedidos pausados' } : getStatusLoja((config as any)?.horario || null)
   let cidade = ''
   try { const e = config?.endereco ? (typeof config.endereco === 'string' ? JSON.parse(config.endereco) : config.endereco) : null; if (e?.cidade && ((config as any)?.mostrar_localizacao || (config as any)?.mostrar_apenas_cidade)) cidade = [e.cidade, e.estado].filter(Boolean).join(' - ') } catch {}
-  const sub = [status?.msg, cidade].filter(Boolean).join(' · ')
+  const sub = status?.msg || '' // (14/10) a cidade vai numa linha só dela
 
   return (
     <>
@@ -70,6 +70,7 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
             <div>
               <p className="cp-topo-nome" style={{ color: corNomeComputador(design.cor_nome) }}>{design.nome_loja}{isPro && <SeloVerificado tamanho={20} />}</p>
               {sub && <p className="cp-topo-sub">{status && <i className={status.aberto ? 'aberto' : ''} aria-hidden="true" />}{sub}</p>}
+              {cidade && <p className="cp-topo-cid"><MapPin size={15} weight="bold" aria-hidden="true" />{cidade}</p>}
             </div>
           </div>
           <nav className="cp-topo-nav" aria-label="Menu da loja">
@@ -88,19 +89,21 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
           <div onClick={() => setAba('inicio')} style={{ position: 'fixed', inset: 0, background: 'rgba(44,18,25,0.5)', zIndex: 200 }} />
           <div className="cp-conta" role="dialog" aria-modal="true" aria-label="Minha conta">
             <div className="cp-conta-topo">
-              <div className="cp-conta-abas">
-                {(['pedidos', 'perfil'] as const).map(a => (
-                  <button key={a} type="button" aria-pressed={contaAba === a} style={contaAba === a ? { background: accent, color: '#fff' } : undefined} onClick={() => setContaAba(a)}>
-                    {a === 'pedidos' ? 'Pedidos' : 'Perfil'}
-                  </button>
-                ))}
-              </div>
+              <h2 className="cp-conta-t">Minha conta</h2>
               <button type="button" className="cp-conta-x" aria-label="Fechar" onClick={() => setAba('inicio')}><X size={20} weight="bold" /></button>
             </div>
-            <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            {/* (14/10) abas com a linha embaixo, iguais às do "Sobre nós", na cor do topo */}
+            <div className="cp-conta-abas" role="tablist">
+              {(['pedidos', 'perfil'] as const).map(a => (
+                <button key={a} type="button" role="tab" aria-selected={contaAba === a} style={contaAba === a ? { color: navBg, borderBottomColor: navBg } : undefined} onClick={() => setContaAba(a)}>
+                  {a === 'pedidos' ? 'Pedidos' : 'Perfil'}
+                </button>
+              ))}
+            </div>
+            <div className="cp-conta-corpo">
               {contaAba === 'pedidos'
-                ? <PedidosTab accent={accent} confeteiraUserId={confeteiraUserId} onIrParaPerfil={() => setContaAba('perfil')} />
-                : <PerfilTab accent={accent} confeteiraUserId={confeteiraUserId} />}
+                ? <PedidosTab accent={navBg} confeteiraUserId={confeteiraUserId} onIrParaPerfil={() => setContaAba('perfil')} onVerCardapio={() => setAba('inicio')} />
+                : <PerfilTab accent={navBg} confeteiraUserId={confeteiraUserId} />}
             </div>
           </div>
         </>
