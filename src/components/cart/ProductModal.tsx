@@ -611,7 +611,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
         <div className="pm-preco">
           {!semTamanho && descPct > 0 && calculo.subtotal > valorTopo && <s>{formatCurrency(calculo.subtotal)}</s>}
           <strong>{semTamanho && pMax > pMin ? `${formatCurrency(pMin)} a ${formatCurrency(pMax)}` : formatCurrency(semTamanho ? pMin : valorTopo)}</strong>
-          <em>{semTamanho ? 'conforme o tamanho' : kitCfg ? 'o kit' : gTamanho ? '' : unidadeCliente(product.forma_venda)}</em>
+          <em>{semTamanho ? 'conforme o tamanho' : kitCfg ? 'o kit' : gTamanho ? '' : saborComPreco && !opSabor ? 'conforme o sabor' : unidadeCliente(product.forma_venda)}</em>
         </div>
         {selo?.tipo === 'encomenda' && (
           <div className="pm-aviso"><CalendarBlank size={20} weight="bold" aria-hidden="true" /><span><b>Encomende com {selo.prazo} de antecedência</b><small>Você escolhe o dia ao finalizar o pedido.</small></span></div>

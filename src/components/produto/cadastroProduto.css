@@ -328,3 +328,4 @@ body .prod-modal--novo .prod-promo-selo b { padding: 2px 7px; border-radius: 6px
 body .prod-modal--novo .prod-kg-sub { margin: -6px 0 12px; font-size: 13.5px; color: var(--ui-texto-2); }
 body .prod-modal--novo .prod-cat-auto { margin: 6px 0 0; font-size: 12.5px; font-style: italic; color: var(--ui-texto-3); }
 body .prod-modal--novo .prod-row-2:has(.prod-promo-selo) { align-items: start !important; }
+.prod-ptab.prod-ptab--promo .prod-dtab-l { grid-template-columns: minmax(0, 1fr) 118px 92px; }

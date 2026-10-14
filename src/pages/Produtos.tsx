@@ -4364,7 +4364,7 @@ export default function Produtos() {
     if (form.tipo_promocao !== "percentual") {
       const pp = Number(form.preco_promocional) || 0;
       const gtS: any = formSalvar.grupo_tamanhos;
-      const semPromoEmValor = kitAtivo((form as any).kit_qtd)
+      const semPromoEmValor = kitAtivo((form as any).kit_qtd) || !!precosDosSabores(formSalvar) // (14/10) preço pelo sabor: promoção só em %
         || (!!gtS?.ativo && (gtS.modo_preco_tamanho || "preco_fixo") === "preco_fixo" && (gtS.opcoes || []).some((o: any) => o?.preco > 0));
       if (semPromoEmValor) {
         if (pp > 0 || form.promocao) ajustePromo = { promocao: false, preco_promocional: 0 };
@@ -5594,9 +5594,13 @@ export default function Produtos() {
                     <div className="esc-aviso"><span className="esc-aviso-ic" aria-hidden="true">i</span>
                       <p><b>Aqui o preço é pelo sabor</b>Coloque todos os sabores que você vende e o preço de cada um. O cardápio mostra a partir do mais barato.</p></div>
                   )}
-                  {/* (14/10) tabelinha igual à dos tamanhos */}
-                  <div className="prod-dtab prod-ptab" role="table" aria-label="Preço por sabor">
-                    <div className="prod-dtab-l prod-dtab-h" role="row"><span role="columnheader">Sabor</span><span role="columnheader">Preço</span></div>
+                  {/* (14/10) tabelinha igual à dos tamanhos; com promoção em %, ganha a coluna "Com X%" */}
+                  {(() => {
+                    const pctS = Number(form.desconto_percentual) || 0;
+                    const promoS = !!precosDosSabores(form) && !!form.promocao && form.tipo_promocao === "percentual" && pctS > 0;
+                    return (
+                  <div className={`prod-dtab prod-ptab${promoS ? " prod-ptab--promo" : ""}`} role="table" aria-label="Preço por sabor">
+                    <div className="prod-dtab-l prod-dtab-h" role="row"><span role="columnheader">Sabor</span><span role="columnheader">Preço</span>{promoS && <span role="columnheader">Com {pctS}%</span>}</div>
                     {form.grupo_sabores.opcoes.map((op: any) => (
                       <div className="prod-dtab-l" role="row" key={op.id}>
                         <span role="cell">{op.nome}</span>
@@ -5604,9 +5608,34 @@ export default function Produtos() {
                           <input type="text" inputMode="numeric" placeholder="0,00" aria-label={`Preço de ${op.nome}`} value={op.preco ? formatPreco(op.preco) : ""}
                             onChange={e => { const preco = parsePreco(e.target.value); setForm(f => ({ ...f, grupo_sabores: { ...(f.grupo_sabores as GrupoSabores), opcoes: (f.grupo_sabores?.opcoes || []).map((o: any) => o.id === op.id ? { ...o, preco } : o) } })); }} />
                         </label></span>
+                        {promoS && <b role="cell">{op.preco > 0 ? `R$ ${formatPreco(Math.round(op.preco * (100 - pctS)) / 100)}` : "—"}</b>}
                       </div>
                     ))}
                   </div>
+                    );
+                  })()}
+                  {/* (14/10) promoção no preço pelo sabor: % em todos os sabores (o cardápio, a sacola e o pedido já fazem essa conta) */}
+                  {precosDosSabores(form) && (() => {
+                    const pct = Number(form.desconto_percentual) || 0;
+                    const on = !!form.promocao && form.tipo_promocao === "percentual";
+                    return (<>
+                      <p className="prod-section-label prod-section-label--novo prod-lbl-sep">Promoção</p>
+                      {!form.id && <p className="prod-kg-promo-t">{primeiroNome ? `${primeiroNome}, gostaria` : "Gostaria"} de colocar uma promoção?</p>}
+                      <button type="button" className={`prod-opc${on ? " on" : ""}`} role="checkbox" aria-checked={on}
+                        onClick={() => setForm(f => ({ ...f, promocao: !on, tipo_promocao: "percentual", desconto_percentual: !on ? (Number(f.desconto_percentual) || 10) : 0, preco_promocional: 0 }))}>
+                        <i aria-hidden="true">{on && <CheckIc size={14} weight="bold" />}</i>
+                        <span><b>Colocar em promoção</b><small>O cardápio mostra o preço antigo riscado</small></span>
+                      </button>
+                      {on && (
+                        <div className="kitp-pct">
+                          <span>Desconto de</span>
+                          <input inputMode="numeric" value={pct || ""} placeholder="10" aria-label="Desconto em porcentagem"
+                            onChange={e => { const n = Math.min(90, Math.max(0, parseInt(e.target.value.replace(/\D/g, "")) || 0)); setForm(f => ({ ...f, desconto_percentual: n })); }} />
+                          <span>% em todos</span>
+                        </div>
+                      )}
+                    </>);
+                  })()}
                 </div>
               )}
 
