@@ -57,6 +57,21 @@ const PESOS_PADRAO = [1, 1.5, 2, 3];
 const nomePeso = (kg: number) => (kg < 1 ? `${Math.round(kg * 1000)} g` : `${String(kg).replace(".", ",")} kg`);
 const opcoesDePesos = (pesos: number[]) => [...pesos].sort((a, b) => a - b).map(kg => ({ id: uid(), nome: nomePeso(kg), preco: 0, peso_kg: kg }));
 
+/** (13/10) ordem natural dos tamanhos: letras (PP, P, M, G, GG…), depois números (aro, serve, kg). O resto fica no fim, na ordem em que entrou. */
+const ORDEM_LETRA: Record<string, number> = { mini: 0.5, pp: 1, p: 2, pequeno: 2, m: 3, medio: 3, g: 4, grande: 4, gg: 5, xg: 6, familia: 7 };
+function chaveTamanho(nome: string): number {
+  const n = norm(nome).replace(/[()]/g, " ").trim();
+  const primeira = n.split(/\s+/)[0] || "";
+  if (primeira in ORDEM_LETRA) return ORDEM_LETRA[primeira];
+  const m = n.replace(",", ".").match(/(\d+(?:\.\d+)?)\s*(kg|g)?/);
+  if (m) { const v = Number(m[1]); return 100 + (m[2] === "g" ? v / 1000 : v); }
+  return Infinity;
+}
+export function ordenarTamanhos<T extends { nome: string; peso_kg?: number | null }>(lista: T[]): T[] {
+  return lista.map((o, i) => ({ o, i, k: Number(o.peso_kg) > 0 ? 100 + Number(o.peso_kg) : chaveTamanho(o.nome) }))
+    .sort((a, b) => (a.k === b.k ? a.i - b.i : a.k - b.k)).map(x => x.o);
+}
+
 const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `id_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`);
 const primeiraMaiuscula = (s: string) => { const t = s.trim().replace(/\s+/g, " "); return t ? t.charAt(0).toUpperCase() + t.slice(1) : t; };
 const norm = (s: string) => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
@@ -343,11 +358,9 @@ function CartaoTamanho({ form, setForm }: { form: any; setForm: Props["setForm"]
   const add = () => {
     const n = primeiraMaiuscula(novo);
     if (!n || g.opcoes.some(o => norm(o.nome) === norm(n))) return;
-    set({ opcoes: [...g.opcoes, { id: uid(), nome: n, preco: 0, ...(porPeso ? { peso_kg: pesoDoNome(n) } : {}) }] }); setNovo("");
+    set({ opcoes: ordenarTamanhos([...g.opcoes, { id: uid(), nome: n, preco: 0, ...(porPeso ? { peso_kg: pesoDoNome(n) } : {}) }]) }); setNovo("");
   };
   const renomear = (id: string, n: string) => set({ opcoes: g.opcoes.map(o => (o.id === id ? { ...o, nome: n, ...(porPeso ? { peso_kg: pesoDoNome(n) ?? o.peso_kg } : {}) } : o)) });
-  const mover = (i: number, d: number) => { const l = [...g.opcoes]; const j = i + d; if (j < 0 || j >= l.length) return; [l[i], l[j]] = [l[j], l[i]]; set({ opcoes: l }); };
-
   return (
     <div className="esc-corpo">
       <p className="esc-lbl">Como é o preço</p>
@@ -412,14 +425,8 @@ function CartaoTamanho({ form, setForm }: { form: any; setForm: Props["setForm"]
         <ul className="esc-ops">
           {g.opcoes.map((o, i) => (
             <li key={o.id} className="esc-op">
-              <input className="esc-op-in" value={o.nome} onChange={e => renomear(o.id, e.target.value)} aria-label={`Nome do tamanho ${i + 1}`} />
-              {porPeso && <span className={`esc-op-kg${o.peso_kg ? "" : " falta"}`}>{o.peso_kg ? `${String(o.peso_kg).replace(".", ",")} kg` : "sem peso"}</span>}
-              {g.opcoes.length > 1 && (
-                <span className="esc-op-mv">
-                  <button type="button" onClick={() => mover(i, -1)} disabled={i === 0} aria-label={`Subir ${o.nome}`}><ArrowUp size={14} weight="bold" /></button>
-                  <button type="button" onClick={() => mover(i, 1)} disabled={i === g.opcoes.length - 1} aria-label={`Descer ${o.nome}`}><ArrowDown size={14} weight="bold" /></button>
-                </span>
-              )}
+              {/* a ordem é automática (P, M, G… e os números): ao sair do campo, a lista se arruma */}
+              <input className="esc-op-in" value={o.nome} onChange={e => renomear(o.id, e.target.value)} onBlur={() => set({ opcoes: ordenarTamanhos(g.opcoes) })} aria-label={`Nome do tamanho ${i + 1}`} />
               <button type="button" className="esc-op-x" onClick={() => set({ opcoes: g.opcoes.filter(x => x.id !== o.id) })} aria-label={`Tirar ${o.nome}`}><X size={16} weight="bold" /></button>
             </li>
           ))}
