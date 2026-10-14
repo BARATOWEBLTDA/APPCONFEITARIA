@@ -81,8 +81,10 @@
 @media (hover: hover) { .esc-modelo:hover { border-color: var(--ui-rosa); background: #FFF6F9; } }
 .esc-modelo b { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .esc-modelo small { font-size: 12.5px; color: var(--ui-texto-2); }
-.esc-bolas { grid-row: 1 / span 2; display: flex; align-items: flex-end; gap: 4px; }
-.esc-bolas i { display: block; border-radius: 50%; border: 1.5px solid var(--ui-rosa); background: var(--ui-rosa-claro); }
+/* (13/10) escadinha: barrinhas subindo, do menor pro maior (no lugar das bolinhas) */
+.esc-bolas { grid-row: 1 / span 2; display: flex; align-items: flex-end; gap: 4px; height: 26px; }
+.esc-bolas i { display: block; width: 8px; border-radius: 2px; background: var(--ui-rosa); }
+.esc-bolas i:first-child { opacity: .45; } .esc-bolas i:nth-child(2) { opacity: .7; }
 
 .esc-card-pe { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--ui-linha); }
 .esc-tirar { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 6px; border: 0; background: none; color: var(--ui-texto-2); font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
@@ -97,7 +99,7 @@
   .esc-op-v { width: 100px; }
   .esc-nova { grid-template-columns: minmax(0, 1fr) 92px 44px; }
 }
-@media (min-width: 600px) { .esc-modelos { grid-template-columns: repeat(3, minmax(0, 1fr)); } .esc-modelo { grid-template-columns: minmax(0, 1fr); grid-template-rows: 34px auto auto; } .esc-bolas { grid-row: auto; } }
+@media (min-width: 600px) { .esc-modelos { grid-template-columns: repeat(3, minmax(0, 1fr)); } .esc-modelo { grid-template-columns: minmax(0, 1fr); grid-template-rows: 34px auto auto; } .esc-bolas { grid-row: auto; align-self: end; margin-bottom: 6px; } }
 
 /* (13/10) Revisão no fim do cadastro */
 .rev { margin-top: 8px; padding-top: 4px; border-top: 1px solid var(--ui-linha); font-family: var(--font-base); }
@@ -128,3 +130,7 @@
 @media (min-width: 768px) { .ui-veu--centro .ui-janela:has(.esc-jan) { height: min(82dvh, 680px); } }
 .esc-jan .esc-corpo { padding-top: 0; }
 .esc-jan .esc-corpo > .esc-lbl:first-child { margin-top: 2px; }
+/* dentro da janela (480px no computador) os modelos ficam um embaixo do outro, igual ao celular */
+.esc-jan .esc-modelos { grid-template-columns: minmax(0, 1fr); }
+.esc-jan .esc-modelo { grid-template-columns: 52px minmax(0, 1fr); grid-template-rows: auto auto; }
+.esc-jan .esc-bolas { grid-row: 1 / span 2; align-self: center; margin: 0; }

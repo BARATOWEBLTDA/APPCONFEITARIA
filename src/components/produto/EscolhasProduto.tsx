@@ -219,7 +219,7 @@ function resumo(c: Chave, form: any): string {
   if (c === "tamanho") {
     const g = form.grupo_tamanhos as GrupoTam;
     if (!g.opcoes.length) return "Toque pra escolher os tamanhos";
-    return g.opcoes.map(o => o.nome).join(" · ") + (g.modo_preco_tamanho === "por_peso" ? " · pelo peso" : "");
+    return g.opcoes.map(o => o.nome).join(" · ") + (g.modo_preco_tamanho === "por_peso" ? " · por quilo" : "");
   }
   const g = form[CAMPO[c as "massa"]] as Grupo;
   if (!g.opcoes.length) return "Toque pra pôr as opções";
@@ -335,11 +335,11 @@ function CartaoTamanho({ form, setForm }: { form: any; setForm: Props["setForm"]
       <p className="esc-lbl">Como é o preço</p>
       <div className="esc-seg esc-seg--2" role="radiogroup" aria-label="Como é o preço dos tamanhos">
         <button type="button" role="radio" aria-checked={!porPeso} className={!porPeso ? "on" : ""}
-          onClick={() => { set({ modo_preco_tamanho: "preco_fixo" }); setForm(f => ({ ...f, forma_venda: f.forma_venda === "kg" ? "unidade" : f.forma_venda })); }}>Cada um tem o seu</button>
+          onClick={() => { set({ modo_preco_tamanho: "preco_fixo" }); setForm(f => ({ ...f, forma_venda: f.forma_venda === "kg" ? "unidade" : f.forma_venda })); }}>Preço fixo</button>
         <button type="button" role="radio" aria-checked={porPeso} className={porPeso ? "on" : ""}
-          onClick={() => { set({ modo_preco_tamanho: "por_peso", opcoes: g.opcoes.map(o => ({ ...o, peso_kg: o.peso_kg ?? pesoDoNome(o.nome) })) }); setForm(f => ({ ...f, forma_venda: "kg" })); }}>Pelo peso (kg)</button>
+          onClick={() => { set({ modo_preco_tamanho: "por_peso", opcoes: g.opcoes.map(o => ({ ...o, peso_kg: o.peso_kg ?? pesoDoNome(o.nome) })) }); setForm(f => ({ ...f, forma_venda: "kg" })); }}>Por quilo</button>
       </div>
-      <p className="esc-dica">{porPeso ? "O preço sai sozinho: peso × preço do kg (no próximo passo)." : "O preço de cada tamanho você coloca no próximo passo."}</p>
+      <p className="esc-dica">{porPeso ? "O preço sai do peso × preço do kg." : "Cada tamanho tem o seu preço."}</p>
 
       {g.opcoes.length === 0 && (<>
         <p className="esc-lbl">Comece por um modelo</p>
@@ -347,12 +347,12 @@ function CartaoTamanho({ form, setForm }: { form: any; setForm: Props["setForm"]
           {porPeso
             ? MODELOS_KG.map(m => (
               <button key={m.nome} type="button" className="esc-modelo" onClick={() => usarModeloKg(m.itens)}>
-                <span className="esc-bolas" aria-hidden="true">{m.itens.map(([, kg], i) => <i key={i} style={{ width: 10 + kg * 6, height: 10 + kg * 6 }} />)}</span>
+                <span className="esc-bolas" aria-hidden="true">{m.itens.map(([, kg], i) => <i key={i} style={{ height: Math.round(8 + (kg / m.itens[m.itens.length - 1][1]) * 18) }} />)}</span>
                 <b>{m.itens.map(([n]) => n).join(" · ")}</b><small>{m.nome}</small>
               </button>))
             : MODELOS_UN.map(m => (
               <button key={m.nome} type="button" className="esc-modelo" onClick={() => usarModeloUn(m.itens)}>
-                <span className="esc-bolas" aria-hidden="true">{m.itens.map((_, i) => <i key={i} style={{ width: 12 + i * 6, height: 12 + i * 6 }} />)}</span>
+                <span className="esc-bolas" aria-hidden="true">{m.itens.map((_, i) => <i key={i} style={{ height: 10 + i * 8 }} />)}</span>
                 <b>{m.itens.join(" · ")}</b><small>{m.nome}</small>
               </button>))}
         </div>
