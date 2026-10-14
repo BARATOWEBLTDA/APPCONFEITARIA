@@ -430,6 +430,9 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
   const marcados = new Set(g.opcoes.map(o => Number(o.peso_kg) || 0).filter(Boolean));
   const semPeso = g.opcoes.filter(o => !(Number(o.peso_kg) > 0));
   const pesos = Array.from(new Set([...PESOS_KG, ...marcados])).sort((a, b) => a - b);
+  // (14/10) rendimento ligado: mostra em cada peso (só leitura)
+  const temRend = g.opcoes.some(o => numeroServe(o.serve));
+  const unRend = String(g.opcoes.map(o => String(o.serve || "").match(/^\s*\d+\s*([^\d\s].*)$/)?.[1]).find(Boolean) || g.rendimento_unidade || "pessoas").trim();
   const [verOutroPeso, setVerOutroPeso] = useState(false);
   const precoKg = Number(form.preco_normal) || 0;
   const alternarPeso = (kg: number) => {
@@ -474,9 +477,13 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
 
       {porPeso && (<>
         <p className="esc-lbl">Quais pesos você vende?</p>
-        <ul className="esc-pesos" role="group" aria-label="Pesos">
+        <ul className={`esc-pesos${temRend ? " esc-pesos--rend" : ""}`} role="group" aria-label="Pesos">
+          {/* (14/10) com rendimento: vira tabela Peso | Rendimento (pra mudar, "Editar" no rendimento) */}
+          {temRend && <li className="esc-peso-li esc-peso-cab" aria-hidden="true"><span>Peso</span>{precoKg > 0 && <span>Preço</span>}<span>Rendimento</span></li>}
           {pesos.map(kg => {
             const on = marcados.has(kg);
+            const op = g.opcoes.find(o => Math.abs(Number(o.peso_kg) - kg) < 1e-6);
+            const nServe = op ? numeroServe(op.serve) : null;
             return (
               <li key={kg} className={`esc-peso-li${on ? " on" : ""}`}>
                 <button type="button" className={`esc-peso${on ? " on" : ""}`} role="checkbox" aria-checked={on} onClick={() => alternarPeso(kg)}>
@@ -484,6 +491,7 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
                   <b>{nomePeso(kg)}</b>
                 </button>
                 {precoKg > 0 && <span className="esc-peso-v">R$ {textoBRL(Math.round(kg * precoKg * 100) / 100)}</span>}
+                {temRend && <span className="esc-peso-rd">{on && nServe ? `${nServe} ${unRend}` : "—"}</span>}
               </li>
             );
           })}

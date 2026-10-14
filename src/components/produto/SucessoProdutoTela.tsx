@@ -25,7 +25,11 @@ import { useEffect } from "react";
 import { Calculator, CaretRight, Check, Package, Plus, X } from "@phosphor-icons/react";
 import { tocarSom } from "@/hooks/useSom";
 const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-const CONFETE: [number, number, string, number][] = [[12, 30, "#E85A8C", 20], [25, 10, "#FCD34D", -30], [40, 40, "#86EFAC", 45], [60, 14, "#93C5FD", -15], [75, 36, "#F5B8CD", 60], [88, 12, "#C4B5FD", -40], [18, 70, "#FCD34D", 10], [82, 72, "#E85A8C", -60]];
+const CORES_CONF = ["#FCD34D", "#86EFAC", "#93C5FD", "#FFFFFF", "#C4B5FD", "#FDBA74"];
+// [left %, cor, atraso s, duração s, giro graus]
+const CONFETE2: [number, string, number, number, number][] = Array.from({ length: 34 }, (_, i) => [
+  (i * 37) % 100, CORES_CONF[i % CORES_CONF.length], (i % 9) * 0.22, 2.6 + (i % 5) * 0.35, (i % 2 ? 1 : -1) * (360 + (i % 4) * 140),
+]);
 
 export default function SucessoProdutoTela(p: Props) {
   useEffect(() => { tocarSom("sucesso"); }, []); // (14/10) som de sucesso (respeita os sons desligados)
@@ -40,7 +44,8 @@ export default function SucessoProdutoTela(p: Props) {
       <div className="spt-body">
         {p.primeiro && (
           <div className="spt-confete" aria-hidden="true">
-            {CONFETE.map(([l, t, c, r], i) => <i key={i} style={{ left: `${l}%`, top: t, background: c, transform: `rotate(${r}deg)`, animationDelay: `${i * 0.06}s` }} />)}
+            {/* (14/10) confete caindo por uns 4 segundos (antes parava em 1 segundo) */}
+            {CONFETE2.map(([l, c, d, dur, gira], i) => <i key={i} style={{ left: `${l}%`, background: c, animationDelay: `${d}s`, animationDuration: `${dur}s`, ['--gira' as any]: `${gira}deg` }} />)}
           </div>
         )}
         <div className={`spt-ok${p.primeiro ? " spt-ok--festa" : ""}`} aria-hidden="true"><Check size={34} weight="bold" /></div>
@@ -82,9 +87,11 @@ export default function SucessoProdutoTela(p: Props) {
         .spt-top { display: flex; justify-content: space-between; align-items: center; padding: 16px 18px 0; }
         .spt-x { width: 44px; height: 44px; border-radius: var(--ui-raio); display: flex; align-items: center; justify-content: center; border: none; background: var(--ui-linha); color: var(--ui-texto-2); font-size: 15px; cursor: pointer; }
         .spt-body { flex: 1; overflow-y: auto; padding: 0 22px 24px; text-align: center; position: relative; max-width: 460px; width: 100%; margin: 0 auto; }
-        .spt-confete { position: absolute; left: 0; right: 0; top: -20px; height: 110px; pointer-events: none; }
-        .spt-confete i { position: absolute; width: 8px; height: 14px; border-radius: 2px; opacity: 0; animation: spt-cai .9s ease-out forwards; }
-        @keyframes spt-cai { from { opacity: 0; translate: 0 -24px; } to { opacity: .9; translate: 0 0; } }
+        .spt-confete { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+        .spt-confete i { position: absolute; top: -20px; width: 8px; height: 13px; border-radius: 2px; opacity: 0; animation: spt-cai 3s linear forwards; }
+        @keyframes spt-cai { 0% { opacity: 0; transform: translateY(0) rotate(0deg); } 8% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; transform: translateY(620px) rotate(var(--gira)); } }
+        @media (prefers-reduced-motion: reduce) { .spt-confete { display: none; } }
+        .spt-body > *:not(.spt-confete) { position: relative; z-index: 1; }
         .spt-ok { width: 72px; height: 72px; border-radius: 50%; background: var(--ui-verde-fundo); color: var(--ui-verde); display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 700; margin: 18px auto 16px; box-shadow: 0 0 0 10px #F0FDF4; animation: spt-pop .45s cubic-bezier(.2,1.4,.4,1) both; }
         .spt-ok--festa { background: #FCE7F3; color: var(--ui-rosa-escuro); box-shadow: 0 0 0 10px #FFF1F6; margin-top: 30px; }
         @keyframes spt-pop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -129,8 +136,9 @@ export default function SucessoProdutoTela(p: Props) {
         .spt-custo-bt { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 46px; margin-top: 12px; border: 0; border-radius: var(--ui-raio-botao); background: #15803D; color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 0 #0F5F2D; }
         .spt-custo-bt:active { transform: translateY(2px); box-shadow: 0 1px 0 #0F5F2D; }
         /* (14/10) Fechar no rodapé, igual às outras telas do cadastro */
-        .spt-pe { flex: none; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--ui-branco); }
-        .spt-a3 { width: 100%; min-height: 48px; border: 0; border-radius: var(--ui-raio-botao); background: #F1EEF0; color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+        /* (14/10) rodapé rosa como o resto da tela (antes branco com botão cinza) */
+        .spt-pe { flex: none; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--ui-rosa); border-top: 1px solid rgba(255,255,255,.22); }
+        .spt-a3 { width: 100%; min-height: 48px; border: 1.5px solid rgba(255,255,255,.6); border-radius: var(--ui-raio-botao); background: rgba(255,255,255,.14); color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
       `}</style>
     </div>
   );

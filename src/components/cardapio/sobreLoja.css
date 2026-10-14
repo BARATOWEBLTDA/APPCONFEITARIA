@@ -46,3 +46,8 @@
 /* (14/10) retirada (caixa) e entrega (moto) com ícone */
 .sl-lista li.sl-ic { display: flex; align-items: center; gap: 12px; }
 .sl-lista li.sl-ic svg { flex: none; color: var(--sl-cor); }
+/* (14/10) abas empilhadas: a janela fica do tamanho da maior aba */
+.sl-paineis { display: grid; }
+.sl-paineis > .sl-corpo { grid-area: 1 / 1; align-self: start; }
+.sl-paineis > .sl-oculto { visibility: hidden; pointer-events: none; }
+.sl-cep { display: block; margin-top: 2px; font-size: 13.5px; color: var(--ui-texto-3); }

@@ -74,8 +74,10 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
           ))}
         </div>
 
-        {aba === 'sobre' && (
-          <div className="sl-corpo" role="tabpanel">
+        {/* (14/10) as 3 abas ficam empilhadas: a janela tem o tamanho da maior e não muda ao trocar */}
+        <div className="sl-paineis">
+        {(
+          <div className={`sl-corpo${aba === 'sobre' ? '' : ' sl-oculto'}`} role="tabpanel" aria-hidden={aba !== 'sobre'}>
             {(design.logo_url || design.descricao_loja) && (
               <div className="sl-apres">
                 {design.logo_url && <img src={design.logo_url} alt="" />}
@@ -91,7 +93,11 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
             {end && (
               <div className="sl-bloco">
                 <h3>Endereço</h3>
-                <p className="sl-end"><MapPin size={18} aria-hidden="true" />{end.completo}</p>
+                <p className="sl-end"><MapPin size={18} aria-hidden="true" />{(() => {
+                  // (14/10) o CEP vai numa linha só dele
+                  const m = end.completo.match(/^(.*?),\s*(\d{5}-?\d{3})\s*$/);
+                  return m ? <span>{m[1]}<small className="sl-cep">CEP {m[2]}</small></span> : end.completo;
+                })()}</p>
                 <div className="sl-mapa">
                   {/* (14/10) nas cores e com o ícone de cada app, igual no celular */}
                   <a className="gmaps" href={`https://maps.google.com/?q=${encodeURIComponent(end.completo)}`} target="_blank" rel="noopener noreferrer"><img src="/google-maps.png" alt="" />Google Maps</a>
@@ -103,8 +109,8 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
           </div>
         )}
 
-        {aba === 'horario' && (
-          <div className="sl-corpo" role="tabpanel">
+        {(
+          <div className={`sl-corpo${aba === 'horario' ? '' : ' sl-oculto'}`} role="tabpanel" aria-hidden={aba !== 'horario'}>
             {cfg.loja_pausada ? <p className="sl-status"><i aria-hidden="true" />Pedidos pausados no momento</p>
               : status && <p className={`sl-status${status.aberto ? ' aberto' : ''}`}><i aria-hidden="true" />{status.aberto ? 'Aberto agora' : 'Fechado agora'}</p>}
             {dias.length > 0 ? (
@@ -116,8 +122,8 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
           </div>
         )}
 
-        {aba === 'pagamento' && (
-          <div className="sl-corpo" role="tabpanel">
+        {(
+          <div className={`sl-corpo${aba === 'pagamento' ? '' : ' sl-oculto'}`} role="tabpanel" aria-hidden={aba !== 'pagamento'}>
             <div className="sl-bloco">
               <h3>Formas de pagamento</h3>
               <ul className="sl-lista sl-lista--2">{(pagamentos.length ? pagamentos : ['pix']).map(k => <li key={k}>{PAGAMENTO[k]}</li>)}</ul>
@@ -134,6 +140,7 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
             )}
           </div>
         )}
+        </div>
       </div>
     </Janela>
   )

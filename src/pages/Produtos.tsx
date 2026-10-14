@@ -3948,8 +3948,11 @@ export default function Produtos() {
   };
   // (14/10) sem a tela de tipo: a categoria é sugerida pelo nome e o tipo sai do nome/categoria ao continuar
   const sugCategoria = useMemo(() => categoriaSugerida(form.nome, categorias), [form.nome, categorias]);
-  const usarCategoriaSugerida = async () => {
-    const sug = sugCategoria; if (!sug) return;
+  // (14/10) a categoria sugerida já entra sozinha (sem a linha "Usar"); se ela trocar na mão, o app não mexe mais
+  const [catAuto, setCatAuto] = useState<string | null>(null);
+  const usarCategoriaSugerida = async (sugArg?: { nome: string; existe: boolean; icone: number | string } | null) => {
+    const sug = sugArg || sugCategoria; if (!sug) return;
+    setCatAuto(sug.nome);
     if (sug.existe) { setForm(f => ({ ...f, categoria: sug.nome })); return; }
     if (!userId) return;
     setSavingCat(true);
@@ -5210,7 +5213,14 @@ export default function Produtos() {
                     placeholder="Ex.: bolo de morango"
                     value={form.nome}
                     onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
-                    onBlur={e => setForm(f => ({ ...f, nome: nomeProduto(e.target.value) }))}
+                    onBlur={e => {
+                      setForm(f => ({ ...f, nome: nomeProduto(e.target.value) }));
+                      // (14/10) preenche a categoria pelo nome: só se estiver vazia ou se foi o próprio app que escolheu
+                      if (form.id || showCatInput) return;
+                      if (form.categoria && form.categoria !== catAuto) return;
+                      const sug = categoriaSugerida(e.target.value, categorias);
+                      if (sug && sug.nome !== form.categoria) void usarCategoriaSugerida(sug);
+                    }}
                   />
                 </div>
 
@@ -5220,7 +5230,7 @@ export default function Produtos() {
                   {!showCatInput ? (
                     <SelectDoonly
                       value={form.categoria}
-                      onChange={v => setForm(f => ({ ...f, categoria: v }))}
+                      onChange={v => { setCatAuto(null); setForm(f => ({ ...f, categoria: v })); }}
                       options={todasCategorias.map(cat => ({ value: cat, label: cat }))}
                       placeholder={todasCategorias.length > 0 ? "Selecione uma categoria..." : "Nenhuma categoria cadastrada"}
                       title="Escolha a categoria"
@@ -5266,12 +5276,9 @@ export default function Produtos() {
                       </div>
                     </div>
                   )}
-                  {/* (14/10) categoria sugerida pelo nome ("Pudim" → Sobremesas; nome que não diz nada → Doces) */}
-                  {!form.id && !showCatInput && !form.categoria && sugCategoria && (
-                    <button type="button" className="prod-cat-sug" onClick={usarCategoriaSugerida} disabled={savingCat}>
-                      <span>Sugerida: <b>{sugCategoria.nome}</b></span>
-                      <em>{savingCat ? "Criando…" : "Usar"}</em>
-                    </button>
+                  {/* (14/10) categoria escolhida sozinha pelo nome ("Pudim" → Sobremesas); um aviso pequeno diz que foi automático */}
+                  {!form.id && !showCatInput && catAuto && form.categoria === catAuto && (
+                    <p className="prod-cat-auto">Escolhida pelo nome do produto</p>
                   )}
                 </div>
 
@@ -5675,7 +5682,8 @@ export default function Produtos() {
                     const pesosT = (form.grupo_tamanhos!.opcoes || []).filter((o: any) => Number(o.peso_kg) > 0);
                     const r = (v: number) => Math.round(v * 100) / 100;
                     return (<>
-                      <p className="prod-section-label prod-section-label--novo">Preço do kg</p>
+                      <p className="prod-section-label prod-section-label--novo">Qual é o preço base do kg?</p>
+                      <p className="prod-kg-sub">Os pesos são calculados a partir dele.</p>
                       <div className="prod-field"><div className="prod-preco-input prod-preco-input--big">
                         <span>R$</span>
                         <input type="text" inputMode="numeric" placeholder="0,00" aria-label="Preço cheio" value={kgCheio ? formatPreco(kgCheio) : ""}
@@ -5736,6 +5744,12 @@ export default function Produtos() {
                           }}
                         />
                       </div>
+                      {/* (14/10) o selo de desconto do cardápio, com a % */}
+                      {(() => {
+                        const cheio = Number(form.preco_normal) || 0, pp = Number(form.preco_promocional) || 0;
+                        const pct = cheio > 0 && pp > 0 && pp < cheio ? Math.round((1 - pp / cheio) * 100) : 0;
+                        return pct > 0 ? <p className="prod-promo-selo"><i aria-hidden="true">%</i><b>-{pct}%</b><span>de desconto</span></p> : null;
+                      })()}
                     </div>}
                   </div>}
                   {!(form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") && (
