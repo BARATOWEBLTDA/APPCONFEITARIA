@@ -12,23 +12,40 @@ import "./escolhas.css";
  */
 type Parte = "info" | "opcoes" | "fotos" | "preco" | "entrega";
 const ROT: Record<string, string> = { tamanho: "Tamanho", massa: "Massa", recheio: "Recheio", cobertura: "Cobertura", sabor: "Sabor", quantidade: "Quantidade" };
+// (14/10) singular / plural pra "3 tamanhos cadastrados"
+const NOME: Record<string, [string, string]> = { tamanho: ["tamanho", "tamanhos"], massa: ["massa", "massas"], recheio: ["recheio", "recheios"], cobertura: ["cobertura", "coberturas"], sabor: ["sabor", "sabores"], quantidade: ["quantidade", "quantidades"] };
+const GRUPO: Record<string, string> = { tamanho: "grupo_tamanhos", massa: "grupo_massas", recheio: "grupo_recheios", cobertura: "grupo_coberturas", sabor: "grupo_sabores" };
+const ANTES: Record<string, string> = { "24h": "1 dia antes", "48h": "2 dias antes", "3d": "3 dias antes", "5d": "5 dias antes", "7d": "1 semana antes", "15d": "15 dias antes" };
 const rs = (v: number) => `R$ ${textoBRL(v) || "0,00"}`;
 
-export default function ResumoEdicao({ form, onEditar }: { form: any; onEditar: (p: Parte) => void }) {
+export default function ResumoEdicao({ form, isPro = false, onEditar }: { form: any; isPro?: boolean; onEditar: (p: Parte) => void }) {
   const fotos = String(form.imagem_url || "").split(",").map((x: string) => x.trim()).filter(Boolean);
   const pc = precoCardapioComPromocao(form);
   const r = resumoRevisao(form);
   const ativas = escolhasAtivas(form);
   const gt = form.grupo_tamanhos;
 
-  const escolhas = !ativas.length ? "Nenhuma"
-    : ativas.length === 1 && ativas[0] === "tamanho" && gt?.opcoes?.length ? `Tamanho: ${gt.opcoes.map((o: any) => o.nome).join(" · ")}`
-    : ativas.map(c => ROT[c]).join(", ");
+  // (14/10) textos que explicam, em vez de "1 foto" / "Aparece · Pronta entrega"
+  const qtdDe = (c: string) => c === "quantidade" ? 0 : (form[GRUPO[c]]?.opcoes?.length || 0);
+  const escolhas = !ativas.length ? "Sem escolhas, preço único"
+    : ativas.length === 1 && qtdDe(ativas[0]) > 0
+      ? (() => { const c = ativas[0], n = qtdDe(c), fem = c === "massa" || c === "cobertura"; return `${n} ${NOME[c][n === 1 ? 0 : 1]} ${fem ? "cadastrada" : "cadastrado"}${n === 1 ? "" : "s"}`; })()
+      : ativas.length === 1 ? (ativas[0] === "quantidade" ? "Vende por quantidade" : `${ROT[ativas[0]]}, sem opções ainda`)
+      : `${ativas.length} escolhas: ${ativas.map(c => ROT[c].toLowerCase()).join(", ")}`;
   const faltaPreco = r.avisos.find(a => /^Falta o preço/.test(a));
   const promo = !!form.promocao && (form.tipo_promocao === "percentual" ? Number(form.desconto_percentual) > 0 : Number(form.preco_promocional) > 0);
-  const preco = faltaPreco || `${pc.aPartir ? "a partir de " : ""}${rs(pc.final)}${promo ? " · em promoção" : ""}`;
+  const preco = faltaPreco || (promo ? `Em promoção por ${rs(pc.final)}` : `${pc.aPartir ? "A partir de" : "Custa"} ${rs(pc.final)}`);
+  const nFotos = fotos.length;
+  const textoFotos = !nFotos ? "Sem foto, adicione uma"
+    : isPro ? `${nFotos} de 3 fotos cadastradas`
+    : nFotos === 1 ? "1 foto cadastrada" : `${nFotos} fotos cadastradas`;
   const semEntrega = !(form.pronta_entrega === true || form.antecedencia);
-  const entrega = `${form.disponivel !== false ? "Aparece" : "Oculto"} · ${form.pronta_entrega === true ? "Pronta entrega" : form.antecedencia ? "Encomenda" : "Falta a entrega"}`;
+  const comoRecebe = form.pronta_entrega === true ? "É pronta entrega"
+    : form.antecedencia ? `Encomendar ${ANTES[form.antecedencia] || "antes"}`
+    : "Falta a forma de entrega";
+  const entrega = form.disponivel !== false ? comoRecebe : "Fora do cardápio";
+  const textoInfo = !form.categoria ? "Falta escolher a categoria"
+    : !String(form.descricao || "").trim() ? "Falta a descrição" : `Em ${form.categoria}, com descrição`;
 
   const linha = (parte: Parte, icone: ReactNode, nome: string, apoio: string, falta = false) => (
     <li className="red-it">
@@ -54,9 +71,9 @@ export default function ResumoEdicao({ form, onEditar }: { form: any; onEditar: 
 
       <p className="prod-section-label red-t">O que você quer mudar?</p>
       <ul className="red-lista">
-        {linha("info", <PencilSimple size={18} weight="bold" />, "Nome e descrição", `${form.categoria || "Sem categoria"} · ${String(form.descricao || "").trim() ? "com descrição" : "sem descrição"}`, !form.categoria)}
+        {linha("info", <PencilSimple size={18} weight="bold" />, "Nome e descrição", textoInfo, !form.categoria)}
         {linha("opcoes", <ListChecks size={18} weight="bold" />, "Escolhas", escolhas)}
-        {linha("fotos", <ImageIc size={18} weight="bold" />, "Fotos", fotos.length ? (fotos.length === 1 ? "1 foto" : `${fotos.length} fotos`) : "Sem foto", !fotos.length)}
+        {linha("fotos", <ImageIc size={18} weight="bold" />, "Fotos", textoFotos, !fotos.length)}
         {linha("preco", <CurrencyCircleDollar size={18} weight="bold" />, "Preço e promoção", preco, !!faltaPreco)}
         {linha("entrega", <Storefront size={18} weight="bold" />, "Cardápio e entrega", entrega, semEntrega)}
       </ul>

@@ -562,16 +562,17 @@ h1, h2, h3, h4, h5, h6, .balance-text {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--ui-rosa-escuro, #C33A6E);
+  color: var(--ui-texto-3, #9A8B93);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
+  font-style: italic; /* (14/10) obrigatório / opcional / recomendado: discretos, cinza e itálico em todo o app */
   font-family: 'Geist', sans-serif;
   vertical-align: middle;
   margin-left: 6px;
   letter-spacing: 0;
   text-transform: none;
 }
-.req-tag--opt { color: var(--ui-texto-3, #9A8B93); font-weight: 500; }
+.req-tag--opt { color: var(--ui-texto-3, #9A8B93); font-weight: 500; font-style: italic; }
 .req-tag svg {
   width: 12px;
   height: 12px;

@@ -16,7 +16,7 @@ import EscolhasProduto, { escolhasAtivas, faltaDaEscolha } from "@/components/pr
 import { kitAtivo, precoMinKit, kitsValidos, type KitQtdConfig } from "@/lib/kitQuantidade";
 import TipoProdutoTela, { type TipoProduto as TipoCadastro } from "@/components/produto/TipoProdutoTela";
 import SucessoProdutoTela from "@/components/produto/SucessoProdutoTela";
-import { precoCardapio, precoCardapioComPromocao } from "@/lib/precoCardapio";
+import { precoCardapio, precoCardapioComPromocao, precosDosSabores } from "@/lib/precoCardapio";
 import { type BoloTam, type FaltaCampo } from "@/components/produto/BoloWizard";
 import { supabase } from "@/lib/supabase";
 import { listarBiblioteca, salvarNaBiblioteca, type BibliotecaOpcao } from "@/lib/biblioteca";
@@ -199,6 +199,26 @@ function titleCase(str: string): string {
   // Tudo em maiúsculo ("BOLO DE POTE") vira "Bolo de pote".
   const base = trimmed === trimmed.toUpperCase() ? trimmed.toLowerCase() : trimmed;
   return base.charAt(0).toUpperCase() + base.slice(1);
+}
+
+/**
+ * (14/10) Nome do produto: primeira letra de cada palavra maiúscula, e o resto minúsculo
+ * ("BOLO DE MORANGO" e "bolo de morango" viram "Bolo de Morango"). "de", "com", "e"... ficam minúsculos
+ * (menos se forem a primeira palavra). Palavra com letra maiúscula no meio ("iFood", "KitKat") e sigla curta
+ * escrita em maiúscula num nome misto ficam como vieram. "2kg", "500g" ficam minúsculos.
+ */
+const MINUSCULAS_NOME = new Set(["a", "o", "as", "os", "e", "de", "da", "do", "das", "dos", "com", "sem", "em", "na", "no", "nas", "nos", "ao", "aos", "à", "às", "para", "pra", "por", "ou", "c/", "s/"]);
+function nomeProduto(str: string): string {
+  const t = String(str || "").trim().replace(/\s+/g, " ");
+  if (!t) return t;
+  const tudoMaiusculo = t === t.toUpperCase();
+  return t.split(" ").map((p, i) => {
+    if (!tudoMaiusculo && /[a-zà-ÿ].*[A-ZÀ-Ý]|^[A-ZÀ-Ý][a-zà-ÿ]+[A-ZÀ-Ý]/.test(p)) return p; // iFood, KitKat
+    const min = p.toLocaleLowerCase("pt-BR");
+    if (i > 0 && MINUSCULAS_NOME.has(min)) return min;
+    if (/^\d/.test(min)) return min;
+    return min.charAt(0).toLocaleUpperCase("pt-BR") + min.slice(1);
+  }).join(" ");
 }
 
 const GRUPO_VAZIO: GrupoPersonalizacao = {
@@ -4389,6 +4409,7 @@ export default function Produtos() {
     const semColunaSku = (e: any) => /sku/i.test(String(e?.message || "")) && /column|coluna|schema/i.test(String(e?.message || ""));
     const payload = {
       ...formLimpo,
+      nome: nomeProduto(String(formLimpo.nome || form.nome || "")),
       ...gruposPayload,
       ...ajustePromo,
       preco_normal: precoBase,
@@ -5034,7 +5055,7 @@ export default function Produtos() {
             {/* (14/10) edição: abre num resumo com "Editar" em cada parte (as abas saíram) */}
             {form.id && editTab === "resumo" && (
               <div className="prod-modal-body">
-                <ResumoEdicao form={form} onEditar={(t: any) => setEditTab(t)} />
+                <ResumoEdicao form={form} isPro={isPro} onEditar={(t: any) => setEditTab(t)} />
               </div>
             )}
 
@@ -5189,7 +5210,7 @@ export default function Produtos() {
                     placeholder="Ex.: bolo de morango"
                     value={form.nome}
                     onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
-                    onBlur={e => setForm(f => ({ ...f, nome: titleCase(e.target.value) }))}
+                    onBlur={e => setForm(f => ({ ...f, nome: nomeProduto(e.target.value) }))}
                   />
                 </div>
 
@@ -5256,7 +5277,7 @@ export default function Produtos() {
 
                 {/* 3. Descrição — com CTA IA (V3) — gera ou melhora */}
                 <div className="prod-field">
-                  <label className="prod-field-label-novo" htmlFor="prod-desc-input">Descrição <span className="esc-rec">Recomendado</span></label>
+                  <label className="prod-field-label-novo" htmlFor="prod-desc-input">Descrição <span className="esc-rec">recomendado</span></label>
                   {/* (13/10) o botão da IA fica dentro da caixa, no canto de baixo */}
                   <div className="prod-desc-caixa">
                     <textarea
@@ -5562,6 +5583,10 @@ export default function Produtos() {
               {((wizardStep === 5 && !form.id) || (form.id && editTab === "preco")) && form.grupo_sabores?.ativo && (form.grupo_sabores.opcoes.length || 0) > 0 && form.grupo_sabores.sabor_tem_preco_proprio && (
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">Preço por sabor</p>
+                  {precosDosSabores(form) && (
+                    <div className="esc-aviso"><span className="esc-aviso-ic" aria-hidden="true">i</span>
+                      <p><b>Aqui o preço é pelo sabor</b>Coloque todos os sabores que você vende e o preço de cada um. O cardápio mostra a partir do mais barato.</p></div>
+                  )}
                   {/* (14/10) tabelinha igual à dos tamanhos */}
                   <div className="prod-dtab prod-ptab" role="table" aria-label="Preço por sabor">
                     <div className="prod-dtab-l prod-dtab-h" role="row"><span role="columnheader">Sabor</span><span role="columnheader">Preço</span></div>
@@ -5678,7 +5703,8 @@ export default function Produtos() {
                     </>);
                   })()}
                   {/* (14/10) preço cheio e promocional lado a lado; "Vendido por" embaixo, numa linha só dele */}
-                  <div className="prod-row-2">
+                  {/* (14/10) preço pelo sabor: sem preço cheio; o preço de cada sabor vem na tabela abaixo */}
+                  {precosDosSabores(form) ? null : <div className="prod-row-2">
                     {!(!form.id && form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") && <div className="prod-field">
                       <label>Preço cheio</label>
                       <div className="prod-preco-input prod-preco-input--big">
@@ -5696,7 +5722,7 @@ export default function Produtos() {
                     </div>}
                     {(form.id || !(form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") || kgPromo || Number(form.preco_promocional) > 0) && <div className="prod-field">
                       <label>{!form.id && form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" ? "Preço promocional do kg" : "Preço promocional"}</label>
-                      <div className="prod-preco-input prod-preco-input--big prod-preco-input--promo">
+                      <div className={`prod-preco-input prod-preco-input--big prod-preco-input--promo${Number(form.preco_promocional) > 0 ? " prod-promo-tem" : ""}`}>
                         <span>R$</span>
                         <input
                           type="text"
@@ -5711,7 +5737,7 @@ export default function Produtos() {
                         />
                       </div>
                     </div>}
-                  </div>
+                  </div>}
                   {!(form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") && (
                     <div className="prod-field" style={{ marginTop: 14 }}>
                       <label>Vendido por</label>
@@ -6133,7 +6159,7 @@ export default function Produtos() {
 
             {/* ══════ RODAPÉ (steps 2, 3, 4) ══════ */}
             {wizardStep >= 2 && (
-            <div className="prod-modal-footer prod-modal-footer--novo">
+            <div className={`prod-modal-footer prod-modal-footer--novo${form.id && editTab === "resumo" ? " prod-modal-footer--resumo" : ""}`}>
               {form.id
                 ? (editTab !== "resumo" ? <button className="prod-btn-cancelar-novo" onClick={voltarDaSecao}>Voltar</button> : null)
                 : wizardStep >= 3
@@ -6179,6 +6205,11 @@ export default function Produtos() {
                       // Modo "preço fixo": todos os tamanhos precisam ter preço próprio
                       const semPreco = gt!.opcoes.find(o => !(o.preco > 0));
                       return semPreco ? { msg: `Coloque o preço de ${semPreco.nome}`, alvo: `input[aria-label="Preço de ${semPreco.nome.replace(/(["\\])/g, "\\$1")}"]` } : null;
+                    }
+                    // (14/10) preço pelo sabor: todo sabor precisa de preço; não pede preço cheio
+                    if (precosDosSabores(form)) {
+                      const semS = (form.grupo_sabores?.opcoes || []).find((o: any) => !(Number(o.preco) > 0));
+                      return semS ? { msg: `Coloque o preço de ${semS.nome}`, alvo: `input[aria-label="Preço de ${String(semS.nome).replace(/(["\\])/g, "\\$1")}"]` } : null;
                     }
                     return (form.preco_normal || 0) > 0 ? promoMaior : { msg: "Coloque o preço do produto", alvo: 'input[aria-label="Preço cheio"]' };
                     })();
@@ -6384,6 +6415,7 @@ export default function Produtos() {
                   <>
                     <div className="prod-preview-linhas">
                       <LinhaUi rotulo="Situação" tom={pv.disponivel !== false ? "verde" : "laranja"}>{pv.disponivel !== false ? "No cardápio" : "Fora do cardápio"}{promo ? " · em promoção" : ""}</LinhaUi>
+                      {cad && <LinhaUi rotulo="Cadastrado em">{cad.getDate()} de {MESES[cad.getMonth()]}{cad.getFullYear() !== new Date().getFullYear() ? ` de ${cad.getFullYear()}` : ""}</LinhaUi>}
                       <LinhaUi rotulo="Categoria" tom={catOk ? undefined : "laranja"}>{catOk ? pv.categoria : "Sem categoria"}</LinhaUi>
                       <LinhaUi rotulo="Preço">
                         {(() => { const pl = precoDaLista(pv); return <>{pl.de > 0 && <><s className="prod-preview-de">R$ {formatPreco(pl.de)}</s> </>}{pl.aPartir || (temVariacoes && !(pv as any).grupo_tamanhos?.ativo) ? "a partir de " : ""}R$ {formatPreco(pl.final)}{pl.unidade ? ` ${pl.unidade}` : ""}</>; })()}
@@ -6397,7 +6429,6 @@ export default function Produtos() {
                         Montar a ficha técnica
                       </Botao>
                     )}
-                    {cad && <p className="prod-preview-cad">Cadastrado em {cad.getDate()} de {MESES[cad.getMonth()]}{cad.getFullYear() !== new Date().getFullYear() ? ` de ${cad.getFullYear()}` : ""}</p>}
                   </>
                 );
               })()}

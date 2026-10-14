@@ -253,7 +253,7 @@ body .prod-modal--novo .rev .rev-tit:not(:first-child) { margin-top: 22px !impor
 .esc-nova.esc-nova--1:has(.esc-nova-bt--txt) { grid-template-columns: minmax(0, 1fr) auto; }
 .esc-nova-bt--txt { width: auto; padding: 0 16px; font-family: inherit; font-size: 14.5px; font-weight: 700; }
 .esc-peso-novo:has(.esc-nova-bt--txt) { grid-template-columns: minmax(0, 1fr) 84px auto; }
-.esc-rec { margin-left: 6px; padding: 2px 6px; border-radius: 4px; background: #FFF0F5; font-size: 11.5px; font-weight: 600; color: var(--ui-rosa-escuro); vertical-align: 2px; }
+.esc-rec { margin-left: 6px; padding: 0; background: none; font-size: 12px; font-weight: 500; font-style: italic; color: var(--ui-texto-3); }
 .esc-rend-linha.ok { border-color: #BFE3CB; background: #F6FCF8; }
 .esc-rend-linha .esc-ic { width: 34px; height: 34px; }
 /* janela do rendimento: nome | serve [__] unidade, com linha entre o nome e o "serve" */

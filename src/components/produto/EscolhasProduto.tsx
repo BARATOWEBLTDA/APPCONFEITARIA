@@ -405,6 +405,8 @@ function CartaoGrupo({ chave, tipo, form, setForm, outros }: { chave: "massa" | 
                 </button>
               )}
             </div>
+            {/* (14/10) ajuda a escolher o modo certo */}
+            {chave === "sabor" && <p className="esc-dica">Só um sabor é mais caro? Deixe desmarcado e use o "Custa a mais".</p>}
 
           </div>
         </div>
@@ -574,7 +576,7 @@ function LinhaRendimento({ g, set, nomeProduto = "" }: { g: GrupoTam; set: (p: P
     <button type="button" className={`esc-rend-linha${ok ? " ok" : ""}`} onClick={() => setAberta(true)}>
       {ok && <span className="esc-ic esc-ic--ok"><Check size={18} weight="bold" /></span>}
       <span className="esc-tx">
-        <b>{ok ? "Rendimento" : <>Rendimento <span className="esc-rec">Recomendado</span></>}</b>
+        <b>{ok ? "Rendimento" : <>Rendimento <span className="esc-rec">recomendado</span></>}</b>
         {/* (14/10) veio de uma predefinição: diz qual */}
         <small>{ok ? (g.rendimento_predef ? <>Predefinição ativada: <b>{g.rendimento_predef}</b></> : resumo) : "Pessoas ou fatias por tamanho"}</small>
       </span>

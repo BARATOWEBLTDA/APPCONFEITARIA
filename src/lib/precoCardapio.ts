@@ -17,6 +17,19 @@ export function precoDoTamanho(op: any, porPeso: boolean, precoBase: number): nu
   return r2(Math.max(0, Number(op?.preco) || 0))
 }
 
+/**
+ * (14/10) Produto sem tamanho e sem kit em que "cada sabor tem o seu preço": o preço vem dos sabores.
+ * Devolve os preços dos sabores (só os maiores que zero), ou null quando não é esse o caso.
+ */
+export function precosDosSabores(p: any): number[] | null {
+  if (kitAtivo(p?.kit_qtd)) return null
+  const gt = p?.grupo_tamanhos
+  if (gt?.ativo && (gt.opcoes || []).length > 0) return null
+  const gs = p?.grupo_sabores
+  if (!gs?.ativo || !gs.sabor_tem_preco_proprio || !(gs.opcoes || []).length) return null
+  return (gs.opcoes || []).filter((o: any) => !o?.esgotado).map((o: any) => r2(Number(o?.preco) || 0)).filter((v: number) => v > 0)
+}
+
 /** O produto tem tamanhos de preço fixo valendo (grupo ativo, com preço em alguma opção)? */
 function temTamanhoDePrecoFixo(p: any): boolean {
   const gt = p?.grupo_tamanhos
@@ -66,6 +79,9 @@ export function precoCardapio(p: any): { valor: number; aPartir: boolean } {
     const precos = ops.map(o => Number(o.preco) || 0).filter(x => x > 0)
     if (precos.length) return { valor: r2(Math.min(...precos)), aPartir: ops.length > 1 }
   }
+  // (14/10) preço pelo sabor: o card mostra o sabor mais barato ("a partir de" quando os preços mudam)
+  const ps = precosDosSabores(p)
+  if (ps && ps.length) return { valor: Math.min(...ps), aPartir: new Set(ps).size > 1 }
   return { valor: r2(Number(p?.preco_normal) || 0), aPartir: false }
 }
 

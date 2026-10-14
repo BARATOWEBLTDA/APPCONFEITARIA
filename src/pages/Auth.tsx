@@ -1091,7 +1091,7 @@ export default function Auth() {
         .cad-eye:hover { color: var(--primary); }
         .cad-error { font-size: 12.5px; color: var(--error); padding-left: 2px; font-weight: 700; }
         .cad-btn { margin-top: 0.5rem; }
-        .cad-opc { font-weight: 500; color: var(--ui-texto-2); font-size: 12.5px; margin-left: 2px; }
+        .cad-opc { font-weight: 500; font-style: italic; color: var(--ui-texto-3); font-size: 12px; margin-left: 2px; }
         .cad-par { display: flex; flex-direction: column; gap: 0.75rem; }
         .cad-par--senha .cad-a-regras { margin-top: calc(-0.75rem + 6px); } /* regras coladas na senha */
 

@@ -78,8 +78,8 @@
 /* ───────── Campo ───────── */
 .ui-campo { display: flex; flex-direction: column; gap: 6px; min-width: 0; font-family: var(--font-base); text-align: left; }
 .ui-campo-r { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 700; line-height: 1.3; color: var(--ui-cinza-texto); }
-.ui-campo-r small { flex: none; font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
-.ui-campo-r small.obr { color: var(--ui-rosa-escuro); }
+.ui-campo-r small { flex: none; font-size: 12px; font-weight: 500; font-style: italic; color: var(--ui-texto-3); }
+.ui-campo-r small.obr { color: var(--ui-texto-3); }
 .ui-campo-c {
   display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 12px;
   background: var(--ui-branco); border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio);

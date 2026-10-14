@@ -1,3 +1,4 @@
+import { precosDosSabores } from "@/lib/precoCardapio";
 import { CheckCircle, Warning } from "@phosphor-icons/react";
 import { kitAtivo, kitsValidos, precoMinKit, precoLivre, type KitQtdConfig } from "@/lib/kitQuantidade";
 import { textoBRL } from "@/lib/moeda";
@@ -35,6 +36,7 @@ export function resumoRevisao(form: any) {
   if (kitAtivo(kit)) aPartir = precoMinKit(kit!);
   else if (porPeso) aPartir = Math.min(...tam!.opcoes!.map(o => pesoDe(o) * base).filter(v => v > 0), Infinity);
   else if (temTam) aPartir = Math.min(...tam!.opcoes!.map(o => Number(o.preco) || 0).filter(v => v > 0), Infinity);
+  else if (precosDosSabores(form)) aPartir = Math.min(...precosDosSabores(form)!, Infinity); // (14/10) preço pelo sabor
   if (!isFinite(aPartir)) aPartir = 0;
 
   // o que o cliente escolhe
@@ -56,7 +58,7 @@ export function resumoRevisao(form: any) {
   } else if (temTam) {
     const o = tam!.opcoes![0];
     linhas.push({ nome: o.nome, valor: porPeso ? pesoDe(o) * base : Number(o.preco) || 0 });
-  } else {
+  } else if (!precosDosSabores(form)) { // (14/10) no preço pelo sabor, a linha do sabor já é o preço
     linhas.push({ nome: String(form.nome || "Produto"), valor: base });
   }
   GRUPOS.forEach(([campo]) => {
@@ -77,6 +79,12 @@ export function resumoRevisao(form: any) {
   if (semPreco.length === 1) avisos.push(`Falta o preço do ${semPreco[0].nome}`);
   else if (semPreco.length > 1) avisos.push(semPreco.length === tam!.opcoes!.length ? "Falta o preço dos tamanhos" : `Falta o preço de ${semPreco.length} tamanhos`);
   else if (porPeso && !(Number(form.preco_normal) > 0)) avisos.push("Falta o preço do kg");
+  else if (precosDosSabores(form)) {
+    const gs = form.grupo_sabores as G;
+    const sem = (gs.opcoes || []).filter(o => !(Number(o.preco) > 0));
+    if (sem.length === 1) avisos.push(`Falta o preço do sabor ${sem[0].nome}`);
+    else if (sem.length > 1) avisos.push(`Falta o preço de ${sem.length} sabores`);
+  }
   else if (!(aPartir > 0)) avisos.push("Falta o preço do produto");
 
   return { aPartir, escolhas, linhas, total, avisos };
@@ -122,6 +130,7 @@ export function ResumoProduto({ form }: { form: any }) {
   const preco = kitAtivo(kit) ? `A partir de ${rs(r.aPartir)}`
     : porPeso ? `${rs(Number(form.preco_normal) || 0)} o kg`
     : temTam ? (r.aPartir > 0 ? `A partir de ${rs(r.aPartir)}` : "Falta o preço")
+    : precosDosSabores(form) ? (r.aPartir > 0 ? `A partir de ${rs(r.aPartir)}` : "Falta o preço dos sabores")
     : rs(Number(form.preco_normal) || 0);
   const promo = promoPct ? `${pct}% de desconto` : promoValor > 0 && promoValor < (Number(form.preco_normal) || 0) ? `${rs(promoValor)}${porPeso ? " o kg" : ""}` : "Sem promoção";
   const entrega = form.pronta_entrega === true ? "Pronta entrega" : form.antecedencia ? `Encomenda: pedir ${PRAZO[form.antecedencia] || form.antecedencia} antes` : "Falta escolher";

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Buildings, CalendarCheck, CaretRight, ClipboardText, Coins, CreditCard, X } from "@phosphor-icons/react";
+import { Buildings, CalendarCheck, ClipboardText, Coins, CreditCard, X } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { useLojaPronta } from "@/lib/primeirosPassos";
 import { lerAvisosCadastro, notificarAvisosCadastro, type AvisoCadastro } from "@/lib/avisosCadastro";
@@ -48,8 +48,7 @@ export default function FaltaPouco() {
             <li key={a.chave} className="fp-it">
               <button type="button" className="fp-bt" onClick={() => navigate(a.link)}>
                 <span className="fp-ic" aria-hidden="true"><Ic size={20} /></span>
-                <span className="fp-tx"><b>{a.titulo}</b><small>{a.texto}</small></span>
-                <CaretRight size={16} weight="bold" className="fp-seta" aria-hidden="true" />
+                <span className="fp-tx"><b>{a.titulo}</b><small>{a.texto}</small><span className="fp-ver" aria-hidden="true">Ver</span></span>
               </button>
               <button type="button" className="fp-x" aria-label={`Agora não: ${a.titulo}`} title="Agora não" onClick={() => esconder(a.chave)}><X size={14} weight="bold" /></button>
             </li>
@@ -75,7 +74,9 @@ const CSS = `
   .fp-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
   .fp-tx b { font-size: 14.5px; font-weight: 600; line-height: 1.3; text-wrap: pretty; }
   .fp-tx small { font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); text-wrap: pretty; }
-  .fp-seta { display: none; }
+  /* (14/10) "Ver" com cara de botão (antes só a linha era clicável, sem dica) */
+  .fp-ver { align-self: flex-start; display: inline-flex; align-items: center; height: 32px; margin-top: 8px; padding: 0 18px; border-radius: 8px; background: var(--ui-rosa); color: #fff; font-size: 13.5px; font-weight: 700; box-shadow: 0 2px 0 var(--ui-rosa-escuro); }
+
   .fp-x { position: absolute; right: -6px; top: 10px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 8px; background: none; color: var(--ui-texto-3); cursor: pointer; }
   .fp-x::after { content: ""; position: absolute; inset: -6px; }
   @media (hover: hover) { .fp-x:hover { background: var(--ui-cinza); } .fp-bt:hover b { color: var(--ui-rosa-escuro); } }
