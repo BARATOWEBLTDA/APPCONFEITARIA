@@ -53,12 +53,14 @@ const QUANTOS: [string, number][] = [["Um", 1], ["Até 2", 2], ["Até 3", 3], ["
 const MODELOS_UN: { nome: string; itens: string[] }[] = [
   { nome: "do menor pro maior", itens: ["Pequeno", "Médio", "Grande"] },
   { nome: "pelo aro", itens: ["Aro 15", "Aro 20", "Aro 25"] },
-  { nome: "por pessoas", itens: ["Serve 10", "Serve 20", "Serve 30"] },
 ];
 // Por quilo (14/10): lista de pesos pra marcar, de 1 em 1 kg até 5 kg (todos já marcados), com o preço de cada um ao lado
 const PESOS_KG = [1, 2, 3, 4, 5];
 const PESOS_PADRAO = [1, 2, 3, 4, 5];
 const nomePeso = (kg: number) => (kg < 1 ? `${Math.round(kg * 1000)} g` : `${String(kg).replace(".", ",")} kg`);
+const PMG = ["Pequeno", "Médio", "Grande"];
+const ARO = ["Aro 15", "Aro 20", "Aro 25"];
+const opcoesDeNomes = (nomes: string[]) => nomes.map(n => ({ id: uid(), nome: n, preco: 0 }));
 const opcoesDePesos = (pesos: number[]) => [...pesos].sort((a, b) => a - b).map(kg => ({ id: uid(), nome: nomePeso(kg), preco: 0, peso_kg: kg }));
 
 /** (13/10) ordem natural dos tamanhos: letras (PP, P, M, G, GG…), depois números (aro, serve, kg). O resto fica no fim, na ordem em que entrou. */
@@ -170,7 +172,7 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
       onKitChange({ ...presetKit(tipo === "salgados" || /salgad/.test(norm(form.categoria)) ? "salgados" : "docinhos", kit), ativo: true });
     } else if (c === "tamanho") {
       setForm(f => ({ ...f, grupo_tamanhos: { ...(f.grupo_tamanhos || {}), ativo: true, min: 1, max: 1, distribuicao: "nenhuma",
-        opcoes: f.grupo_tamanhos?.opcoes?.length ? f.grupo_tamanhos.opcoes : (f.forma_venda === "kg" ? opcoesDePesos(PESOS_PADRAO) : []),
+        opcoes: f.grupo_tamanhos?.opcoes?.length ? f.grupo_tamanhos.opcoes : (f.forma_venda === "kg" ? opcoesDePesos(PESOS_PADRAO) : opcoesDeNomes(PMG)),
         modo_preco_tamanho: f.forma_venda === "kg" ? "por_peso" : (f.grupo_tamanhos?.modo_preco_tamanho === "por_peso" ? "preco_fixo" : (f.grupo_tamanhos?.modo_preco_tamanho || "preco_fixo")) } }));
     } else {
       const campo = CAMPO[c];
@@ -391,9 +393,6 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
   const [novo, setNovo] = useState("");
   const set = (patch: Partial<GrupoTam>) => setForm(f => ({ ...f, grupo_tamanhos: { ...g, ...(f.grupo_tamanhos || {}), ...patch } }));
   const usarModeloUn = (itens: string[]) => set({ opcoes: itens.map(n => ({ id: uid(), nome: n, preco: 0, ...(n.startsWith("Serve") ? { serve: n.replace("Serve ", "") + " pessoas" } : {}) })) });
-  const copiasTam = copiasDe(outros, "grupo_tamanhos", gg => (gg.modo_preco_tamanho === "por_peso" ? null : gg.opcoes.map((o: any) => `${norm(o.nome)}:${numeroServe(o.serve)}`).join("|")));
-  const comUnidade = (serve: unknown, unGrupo?: string) => { const n = numeroServe(serve); if (!n) return ""; const m = String(serve).match(/^\s*\d+\s*([^\d\s].*)$/); return `${n} ${m ? m[1].trim() : unGrupo || "pessoas"}`; };
-  const usarCopiaTam = (c: Copia) => set({ opcoes: ordenarTamanhos(c.opcoes.map((o: any) => ({ id: uid(), nome: o.nome, preco: 0, ...(comUnidade(o.serve, c.grupo.rendimento_unidade) ? { serve: comUnidade(o.serve, c.grupo.rendimento_unidade) } : {}) }))) });
   // por quilo: marcar e desmarcar um peso (a lista fica sempre do menor pro maior)
   const marcados = new Set(g.opcoes.map(o => Number(o.peso_kg) || 0).filter(Boolean));
   const semPeso = g.opcoes.filter(o => !(Number(o.peso_kg) > 0));
@@ -429,7 +428,7 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
           onClick={() => {
             // (13/10) os pesos (1 kg, 1,5 kg…) não servem de tamanho no preço fixo: a lista volta vazia e aparecem os modelos
             const soPesos = g.opcoes.length > 0 && g.opcoes.every(o => Number(o.peso_kg) > 0 && norm(o.nome) === norm(nomePeso(Number(o.peso_kg))));
-            set({ modo_preco_tamanho: "preco_fixo", ...(soPesos ? { opcoes: [] } : {}) });
+            set({ modo_preco_tamanho: "preco_fixo", ...(soPesos || !g.opcoes.length ? { opcoes: opcoesDeNomes(PMG) } : {}) });
             setForm(f => ({ ...f, forma_venda: f.forma_venda === "kg" ? "unidade" : f.forma_venda }));
           }}>Preço fixo</button>
         <button type="button" role="radio" aria-checked={porPeso} className={porPeso ? "on" : ""}
@@ -464,7 +463,7 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
                   <button type="button" role="radio" aria-checked={unNovo === "kg"} className={unNovo === "kg" ? "on" : ""} onClick={() => setUnNovo("kg")}>kg</button>
                   <button type="button" role="radio" aria-checked={unNovo === "g"} className={unNovo === "g" ? "on" : ""} onClick={() => setUnNovo("g")}>g</button>
                 </span>
-                <button type="button" className="esc-nova-bt" onClick={addPeso} disabled={!lerPeso(novo)} aria-label="Pôr peso"><Plus size={20} weight="bold" /></button>
+                <button type="button" className="esc-nova-bt esc-nova-bt--txt" onClick={addPeso} disabled={!lerPeso(novo)}>Cadastrar</button>
               </div>
             ) : (
               <button type="button" className="esc-peso-mais" onClick={() => setVerOutroPeso(true)}><Plus size={16} weight="bold" aria-hidden="true" />Outro peso</button>
@@ -486,9 +485,6 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
         <p className="esc-nota">Quer dar desconto? Você coloca na próxima etapa.</p>
       </>)}
 
-      {!porPeso && g.opcoes.length === 0 && <UsarDeOutro copias={copiasTam.map(c => {
-        return { ...c, resumo: c.opcoes.map((o: any) => { const sv = comUnidade(o.serve, c.grupo.rendimento_unidade); return sv ? `${o.nome} (${sv})` : o.nome; }).join(" · ") };
-      })} onUsar={usarCopiaTam} />}
       {!porPeso && g.opcoes.length === 0 && (<>
         <p className="esc-lbl">Comece por um modelo</p>
         <div className="esc-modelos">
@@ -501,6 +497,12 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
       </>)}
 
       {!porPeso && g.opcoes.length > 0 && (<>
+        {(() => { const nomes = g.opcoes.map(o => norm(o.nome)).join("|"); const eAro = nomes === ARO.map(norm).join("|"); const outro = eAro ? PMG : ARO;
+          return (
+            <p className="esc-trocar">Trocar por:
+              <button type="button" onClick={() => set({ opcoes: opcoesDeNomes(outro) })}>{eAro ? "Pequeno · Médio · Grande" : "Aro 15 · 20 · 25"}</button>
+            </p>
+          ); })()}
         <ul className="esc-ops">
           {g.opcoes.map((o, i) => (
             <li key={o.id} className="esc-op">
@@ -512,7 +514,7 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
         </ul>
         <div className="esc-nova esc-nova--1">
           <input placeholder={porPeso ? "Ex.: 2,5 kg" : "Outro tamanho…"} value={novo} onChange={e => setNovo(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); add(); } }} aria-label="Outro tamanho" />
-          <button type="button" className="esc-nova-bt" onClick={add} disabled={!novo.trim()} aria-label="Pôr tamanho"><Plus size={20} weight="bold" /></button>
+          <button type="button" className="esc-nova-bt esc-nova-bt--txt" onClick={add} disabled={!novo.trim()}>Cadastrar</button>
         </div>
         <LinhaRendimento g={g} set={set} />
       </>)}
@@ -534,11 +536,16 @@ function LinhaRendimento({ g, set }: { g: GrupoTam; set: (p: Partial<GrupoTam>) 
   const [aberta, setAberta] = useState(false);
   const comNum = g.opcoes.filter(o => numeroServe(o.serve));
   const un = String(g.opcoes.map(o => String(o.serve || "").match(/^\s*\d+\s*([^\d\s].*)$/)?.[1]).find(Boolean) || g.rendimento_unidade || "fatias").trim();
-  const resumo = comNum.length ? `${comNum.map(o => numeroServe(o.serve)).join(", ")} ${un}` : "";
+  const ok = comNum.length > 0;
+  const resumo = ok ? `Serve ${g.opcoes.filter(o => numeroServe(o.serve)).map(o => numeroServe(o.serve)).join(" · ")} ${un}` : "";
   return (<>
-    <button type="button" className="esc-rend-linha" onClick={() => setAberta(true)}>
-      <span className="esc-tx"><b>Rendimento <span className="esc-opc">opcional</span></b><small>{resumo || "Fatias ou pessoas por tamanho"}</small></span>
-      <span className="esc-editar">{resumo ? "Editar" : "Definir"}</span>
+    <button type="button" className={`esc-rend-linha${ok ? " ok" : ""}`} onClick={() => setAberta(true)}>
+      {ok && <span className="esc-ic esc-ic--ok"><Check size={18} weight="bold" /></span>}
+      <span className="esc-tx">
+        <b>{ok ? "Rendimento configurado" : <>Rendimento <span className="esc-rec">Recomendado</span></>}</b>
+        <small>{ok ? resumo : "Fatias ou pessoas por tamanho"}</small>
+      </span>
+      <span className="esc-editar">{ok ? "Editar" : "Definir"}</span>
     </button>
     {aberta && <JanelaRendimento g={g} set={set} onFechar={() => setAberta(false)} />}
   </>);
@@ -601,7 +608,7 @@ function JanelaRendimento({ g, set, onFechar }: { g: GrupoTam; set: (p: Partial<
         <p className="esc-lbl">Quanto cada tamanho serve</p>
         <ul className="esc-ops esc-rend-lista">
           {g.opcoes.map(o => (
-            <li key={o.id} className="esc-op">
+            <li key={o.id} className="esc-rend-li">
               <span className="esc-op-nm">{o.nome}</span>
               <span className="esc-rend-campo">serve
                 <input inputMode="numeric" placeholder="definir" value={nums[o.id] || ""} aria-label={`Quantas ${un} serve ${o.nome}`}
