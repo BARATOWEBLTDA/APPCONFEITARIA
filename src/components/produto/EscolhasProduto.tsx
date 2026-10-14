@@ -24,7 +24,7 @@ type Chave = "tamanho" | "quantidade" | "massa" | "recheio" | "cobertura" | "sab
 type Opcao = { id: string; nome: string; adicional: number; preco?: number };
 type Grupo = { ativo: boolean; min: number; max: number; distribuicao?: string; opcoes: Opcao[]; sabor_tem_preco_proprio?: boolean };
 type OpTam = { id: string; nome: string; preco: number; peso_kg?: number | null; serve?: string };
-type GrupoTam = { ativo: boolean; min: number; max: number; distribuicao?: string; opcoes: OpTam[]; modo_preco_tamanho?: string; nome_exibicao?: string; rendimento_unidade?: string };
+type GrupoTam = { ativo: boolean; min: number; max: number; distribuicao?: string; opcoes: OpTam[]; modo_preco_tamanho?: string; nome_exibicao?: string; rendimento_unidade?: string; rendimento_predef?: string };
 
 const CAMPO: Record<"massa" | "recheio" | "cobertura" | "sabor", string> = {
   massa: "grupo_massas", recheio: "grupo_recheios", cobertura: "grupo_coberturas", sabor: "grupo_sabores",
@@ -161,7 +161,6 @@ const EXEMPLO_PRODUTO = {
 
 export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outros, tela = 0, setTela, edicao = false }: Props) {
   const [verPrevia, setVerPrevia] = useState(false); // (14/10) (i): o produto aberto como o cliente vê
-  useEffect(() => { jaPerguntou.current = false; }, []); // cada cadastro pergunta da predefinição uma vez
   const nome = String(form.nome || "").trim();
   const kit = form.kit_qtd as KitQtdConfig | null;
   const temKit = kitAtivo(kit);
@@ -201,8 +200,8 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
     return (
       <div className="esc esc-tela" onFocusCapture={selecionarValorAoFocar} onClickCapture={selecionarValorAoFocar}>
         {edicao && setTela && <button type="button" className="esc-voltar-lista" onClick={() => setTela(0)}>‹ Todas as escolhas</button>}
-        <h2 className="esc-h">{ROTULO[atual]}</h2>
-        {ativas.length > 1 && <p className="esc-s esc-s--n">Escolha {tela} de {ativas.length}</p>}
+        {/* (14/10) no cadastro novo o header rosa já diz o passo ("3 de 5 · Tamanho") */}
+        {edicao && <h2 className="esc-h">{ROTULO[atual]}</h2>}
         {atual === "quantidade" ? (kit ? <CartaoQuantidade kit={kit} onKitChange={onKitChange} nome={nome} /> : null)
           : atual === "tamanho" ? <CartaoTamanho form={form} setForm={setForm} outros={outros} />
           : <CartaoGrupo chave={atual} tipo={tipo} form={form} setForm={setForm} outros={outros} />}
@@ -549,7 +548,8 @@ function LinhaRendimento({ g, set }: { g: GrupoTam; set: (p: Partial<GrupoTam>) 
       {ok && <span className="esc-ic esc-ic--ok"><Check size={18} weight="bold" /></span>}
       <span className="esc-tx">
         <b>{ok ? "Rendimento" : <>Rendimento <span className="esc-rec">Recomendado</span></>}</b>
-        <small>{ok ? resumo : "Pessoas ou fatias por tamanho"}</small>
+        {/* (14/10) veio de uma predefinição: diz qual */}
+        <small>{ok ? (g.rendimento_predef ? <>Predefinição ativada: <b>{g.rendimento_predef}</b></> : resumo) : "Pessoas ou fatias por tamanho"}</small>
       </span>
       <span className="esc-rend-bt">{ok ? "Editar" : "Definir"}</span>
     </button>
@@ -557,14 +557,12 @@ function LinhaRendimento({ g, set }: { g: GrupoTam; set: (p: Partial<GrupoTam>) 
   </>);
 }
 
-// "Agora não" vale pro cadastro inteiro (não pergunta de novo enquanto a tela estiver aberta)
-const jaPerguntou = { current: false };
 function JanelaRendimento({ g, set, onFechar }: { g: GrupoTam; set: (p: Partial<GrupoTam>) => void; onFechar: () => void }) {
   const unAtual = String(g.opcoes.map(o => String(o.serve || "").match(/^\s*\d+\s*([^\d\s].*)$/)?.[1]).find(Boolean) || g.rendimento_unidade || "pessoas").trim();
   const [un, setUn] = useState<string>(["fatias", "pessoas", "unidades"].includes(unAtual) ? unAtual : "pessoas");
   const [nums, setNums] = useState<Record<string, string>>(() => Object.fromEntries(g.opcoes.map(o => [o.id, numeroServe(o.serve)])));
   const [predefs, setPredefs] = useState<PredefRend[]>([]);
-  const [usada, setUsada] = useState<string>("");
+  const [usada, setUsada] = useState<string>(g.rendimento_predef || "");
   const [perguntar, setPerguntar] = useState(false); // (14/10) "Salvar como predefinição?" ao salvar sem uma
   const [nomeAviso, setNomeAviso] = useState("");
   useEffect(() => { lerPredefs().then(setPredefs); }, []);
@@ -573,22 +571,30 @@ function JanelaRendimento({ g, set, onFechar }: { g: GrupoTam; set: (p: Partial<
     setUn(p.un || "pessoas"); setUsada(p.nome);
     setNums(n => Object.fromEntries(g.opcoes.map(o => [o.id, p.itens[chaveTam(o.nome)] ?? n[o.id] ?? ""])));
   };
-  const gravar = () => {
-    set({ rendimento_unidade: un, opcoes: g.opcoes.map(o => ({ ...o, serve: nums[o.id] ? `${nums[o.id]} ${un}` : "" })) });
+  // (14/10) a predefinição em uso continua igual (mesma unidade e mesmos números)? então não precisa perguntar
+  const pUsada = predefs.find(p => p.nome === usada);
+  const predefIgual = !!pUsada && (pUsada.un || "pessoas") === un
+    && g.opcoes.every(o => (nums[o.id] || "") === (pUsada.itens[chaveTam(o.nome)] || ""));
+  const gravar = (predef: string) => {
+    set({ rendimento_unidade: un, rendimento_predef: predef, opcoes: g.opcoes.map(o => ({ ...o, serve: nums[o.id] ? `${nums[o.id]} ${un}` : "" })) });
     onFechar();
   };
-  // com números e sem predefinição usada/salva: pergunta uma vez se quer guardar pros próximos produtos
+  // com números: pergunta sempre se quer guardar como predefinição (menos quando a que está em uso não mudou)
   const salvar = () => {
     const temNum = g.opcoes.some(o => nums[o.id]);
-    if (temNum && !usada && !perguntar && !jaPerguntou.current) { jaPerguntou.current = true; setPerguntar(true); return; }
-    gravar();
+    if (!temNum) { gravar(""); return; }
+    if (predefIgual) { gravar(usada); return; }
+    setNomeAviso(usada || ""); setPerguntar(true);
   };
   const salvarComoPredefEGravar = async () => {
     const nome = primeiraMaiuscula(nomeAviso); if (!nome) return;
     const itens: Record<string, string> = {};
     g.opcoes.forEach(o => { if (nums[o.id]) itens[chaveTam(o.nome)] = nums[o.id]; });
-    await gravarPredefs([...predefs.filter(p => norm(p.nome) !== norm(nome)), { nome, un, itens }]);
-    setPerguntar(false); gravar();
+    const lista = [...predefs.filter(p => norm(p.nome) !== norm(nome)), { nome, un, itens }];
+    const ok = await gravarPredefs(lista);
+    setPerguntar(false);
+    if (!ok) { gravar(""); return; } // não gravou a predefinição: salva o rendimento mesmo assim
+    setPredefs(lista); gravar(nome);
   };
 
   return (
@@ -638,9 +644,10 @@ function JanelaRendimento({ g, set, onFechar }: { g: GrupoTam; set: (p: Partial<
 
         <p className="esc-nota">No cardápio aparece "Serve até 10 {un}".</p>
       </div>
-      <Janela aberta={perguntar} aoFechar={() => { setPerguntar(false); gravar(); }} titulo="Salvar como predefinição?" tipo="aviso"
+      {/* tocar fora ou no X só fecha a pergunta (volta pro rendimento, sem salvar nada) */}
+      <Janela aberta={perguntar} aoFechar={() => setPerguntar(false)} titulo="Salvar como predefinição?" tipo="aviso"
         icone={<Sparkle size={32} />} texto="Dê um nome e, nos próximos produtos, é só tocar nele: o rendimento vem preenchido e o cadastro fica bem mais rápido."
-        acoes={<><Botao variante="secundario" onClick={() => { setPerguntar(false); gravar(); }}>Agora não</Botao><Botao onClick={salvarComoPredefEGravar} disabled={!nomeAviso.trim()}>Salvar e usar</Botao></>}>
+        acoes={<><Botao variante="secundario" onClick={() => { setPerguntar(false); gravar(""); }}>Agora não</Botao><Botao onClick={salvarComoPredefEGravar} disabled={!nomeAviso.trim()}>Salvar e usar</Botao></>}>
         <input className="esc-aviso-in" autoFocus placeholder="Ex.: Bolos de aniversário" value={nomeAviso} maxLength={40}
           onChange={e => setNomeAviso(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); salvarComoPredefEGravar(); } }} aria-label="Nome da predefinição" />
         {predefs.some(p => norm(p.nome) === norm(nomeAviso.trim())) && nomeAviso.trim() && <p className="esc-nota">Já existe uma com esse nome: ela será substituída.</p>}

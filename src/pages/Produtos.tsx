@@ -40,7 +40,7 @@ import BtnNovo from "@/components/BtnNovo";
 import Categorias from "@/pages/Categorias";
 import QuickAddInsumo from "@/components/QuickAddInsumo";
 import AppPageHeader from "@/components/AppPageHeader";
-import { ArrowLeft as ArrowLeftIc, Camera, CaretDown, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, SortAscending, WarningCircle, Trash, X as XIc, DotsThreeVertical, Lightbulb, Cake, BookOpen, Egg, Crown, Sun, FrameCorners, Crop, TextTSlash, ArrowsClockwise } from "@phosphor-icons/react";
+import { ArrowLeft as ArrowLeftIc, Camera, CaretDown, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, SortAscending, WarningCircle, Trash, X as XIc, DotsThreeVertical, Lightbulb, Cake, BookOpen, Egg, Crown, Info, Sun, FrameCorners, Crop, TextTSlash, ArrowsClockwise } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Janela, Linha as LinhaUi, TelaVazia, Titulo as TituloUi, avisar, confirmar } from "@/components/base";
 import { historicoAssentado, useSobreposicao } from "@/components/base/useSobreposicao";
 import { sufixoVenda } from "@/lib/formaVenda";
@@ -3530,6 +3530,7 @@ export default function Produtos() {
   const [kitTela, setKitTela] = useState(false);
   // (14/10) Escolhas em checklist: 0 = a lista; 1..n = a tela de cada escolha marcada
   const [escTela, setEscTela] = useState(0);
+  const [infoPasso, setInfoPasso] = useState(false); // (14/10) (i) do header do cadastro
   const [kgPromo, setKgPromo] = useState(false); // (14/10) "Colocar em promoção" no preço por kg
   // Cadastro de bolo em 4 etapas (tipo "Bolos" no cadastro novo)
   const [tipoCadastro, setTipoCadastro] = useState<TipoCadastro | null>(null);
@@ -4962,39 +4963,43 @@ export default function Produtos() {
             ) : tipoTela && !form.id ? (
               <TipoProdutoTela onEscolher={aplicarTipoProduto} onFechar={handleTryClose} />
             ) : (<>
-            {wizardStep >= 2 && (
-            <div className="prod-modal-header-novo">
-              {wizardStep >= 3 && !form.id ? (
-                <button className="prod-modal-back-novo" onClick={voltarPassoCadastro} aria-label="Voltar">
-                  <ArrowLeftIc size={20} weight="bold" aria-hidden="true" />
-                </button>
-              ) : <div style={{width: 44, flex: "none"}} />}
-              <div className="prod-modal-title-wrap">
-                {!form.id && (() => {
-                  // Um tracinho por tela do cadastro (a tela de tipos é a 1ª)
-                  // (13/10) o mesmo caminho pra todos os tipos: Tipo → Sobre o produto → Escolhas → Preço → Fotos e entrega
-                  // (14/10) cada escolha marcada conta como uma tela a mais
-                  const nEsc = escolhasAtivas(form).length;
-                  // (14/10) a tela de tipo saiu: Sobre o produto → Escolhas (+1 por escolha) → Fotos → Preço e revisão
-                  const total = 4 + nEsc;
-                  const atual = wizardStep <= 2 ? 1 : wizardStep === 3 ? 2 + escTela : wizardStep - 1 + nEsc;
-                  const nomes = ["Sobre o produto", "Sobre o produto", "Escolhas", "Fotos", "Preço e revisão"];
-                  return (
-                    // (14/10) topo enxuto: só a barra e "2 de 5" (o título grande da tela já diz o passo)
-                    <div className="prod-wiz-topo" aria-label={`Passo ${atual} de ${total}: ${nomes[Math.min(wizardStep, 5) - 1]}`}>
-                      <div className="prod-wiz-barra" aria-hidden="true"><i style={{ width: `${Math.round((atual / total) * 100)}%` }} /></div>
-                      <span className="prod-wiz-n" aria-hidden="true">{atual} de {total}</span>
-                    </div>
-                  );
-                })()}
-                {form.id && <div className="prod-modal-title-novo">Editar produto</div>}
-                {form.id && form.nome && (
-                  <div className="prod-modal-edit-nome">{form.nome}</div>
+            {wizardStep >= 2 && (() => {
+              // (14/10) header rosa no padrão das telas: foto (ou ícone), título, (i) e o passo; barra fina embaixo
+              const ativasH = escolhasAtivas(form);
+              const nEsc = ativasH.length;
+              const total = 4 + nEsc;
+              const atual = wizardStep <= 2 ? 1 : wizardStep === 3 ? 2 + escTela : wizardStep - 1 + nEsc;
+              const ROT: Record<string, string> = { tamanho: "Tamanho", massa: "Massa", recheio: "Recheio", cobertura: "Cobertura", sabor: "Sabor", quantidade: "Quantidade" };
+              const escAtual = wizardStep === 3 && escTela > 0 ? ativasH[escTela - 1] : null;
+              const nomePasso = wizardStep <= 2 ? "Sobre o produto" : wizardStep === 3 ? (escAtual ? ROT[escAtual] : "Escolhas") : wizardStep === 4 ? "Fotos" : "Preço e revisão";
+              const foto = (form.imagem_url || "").split(",").map(x => x.trim()).filter(Boolean)[0];
+              return (
+              <div className="prod-modal-header-novo pcab">
+                {wizardStep >= 3 && !form.id && (
+                  <button type="button" className="pcab-bt" onClick={voltarPassoCadastro} aria-label="Voltar"><ArrowLeftIc size={22} weight="bold" aria-hidden="true" /></button>
                 )}
+                <span className="pcab-foto" aria-hidden="true">{foto ? <img src={foto} alt="" /> : <Cake size={22} weight="bold" />}</span>
+                <div className="pcab-txt">
+                  <div className="pcab-linha">
+                    <h2 className="pcab-t">{form.id ? "Editar produto" : "Novo produto"}</h2>
+                    <button type="button" className="pcab-i" onClick={() => setInfoPasso(true)} aria-label="Sobre este passo" aria-haspopup="dialog"><Info size={20} weight="bold" aria-hidden="true" /></button>
+                  </div>
+                  <p className="pcab-s" aria-label={form.id ? undefined : `Passo ${atual} de ${total}: ${nomePasso}`}>{form.id ? (form.nome || "Produto") : `${atual} de ${total} · ${nomePasso}`}</p>
+                </div>
+                <button type="button" className="pcab-bt" onClick={handleTryClose} aria-label="Fechar"><XIc size={22} weight="bold" aria-hidden="true" /></button>
+                {!form.id && <div className="pcab-barra" aria-hidden="true"><i style={{ width: `${Math.round((atual / total) * 100)}%` }} /></div>}
+                <Janela aberta={infoPasso} aoFechar={() => setInfoPasso(false)} titulo={form.id ? "Editar produto" : nomePasso}
+                  icone={<Info size={32} />} umaAcao acoes={<Botao onClick={() => setInfoPasso(false)} data-foco-inicial>Entendi</Botao>}>
+                  <p className="pcab-info">{form.id ? "Mude o que precisar em cada aba e toque em Salvar alterações. O cardápio atualiza na hora."
+                    : wizardStep <= 2 ? "O nome e a categoria são o que o cliente vê primeiro. A descrição ajuda a vender: conte o que vem no produto."
+                    : escAtual ? `Cadastre as opções de ${ROT[escAtual].toLowerCase()}. No cardápio, o cliente escolhe entre elas ao fazer o pedido.`
+                    : wizardStep === 3 ? "Marque o que o cliente escolhe ao pedir, como tamanho ou sabor. Cada escolha marcada vira uma tela pra você cadastrar as opções."
+                    : wizardStep === 4 ? "A foto principal é a que aparece no cardápio. Produto com foto vende mais."
+                    : "Confira o preço, coloque uma promoção se quiser e veja no fim como o produto aparece no cardápio antes de publicar."}</p>
+                </Janela>
               </div>
-              <button className="prod-modal-close-novo" onClick={handleTryClose} aria-label="Fechar"><XIc size={20} weight="bold" aria-hidden="true" /></button>
-            </div>
-            )}
+              );
+            })()}
 
             {/* ══════ Tabs do MODO EDIÇÃO (V3 — 4 tabs espelhando o wizard) ══════ */}
             {form.id && (() => {
@@ -5151,7 +5156,6 @@ export default function Produtos() {
                   </div>
                 </div>
               )}
-              {!form.id && <h2 className="cad-h2">Sobre o produto</h2>}
               <div className="prod-section">
                 {/* 1. Nome */}
                 <div className="prod-field">
@@ -5333,15 +5337,6 @@ export default function Produtos() {
             {(((wizardStep === 4 || wizardStep === 5) && !form.id) || (form.id && (editTab === "fotos" || editTab === "preco" || editTab === "tamanhos"))) && (
             <div className="prod-modal-body">
 
-              {/* Título e subtítulo (mesmo padrão dos steps 3 e 4) */}
-              {wizardStep === 4 && !form.id && (
-                <div className="prod-step-header">
-                  <div className="prod-step-title">Fotos</div>
-                  <div className="prod-step-sub">
-                    Produto com foto vende mais.
-                  </div>
-                </div>
-              )}
 
               {/* Fotos — só em step 5 (Fotos e finalização) ou tab Fotos na edição */}
               {((wizardStep === 4 && !form.id) || (form.id && editTab === "fotos")) && (
@@ -5483,15 +5478,6 @@ export default function Produtos() {
               )}
 
               {/* Título e subtítulo (mesmo estilo do step 3) */}
-              {wizardStep === 5 && !form.id && (
-                <div className="prod-step-header">
-                  <div className="prod-step-title">Preço e revisão</div>
-                  {kitAtivo((form as any).kit_qtd) && <div className="prod-step-sub">Confira o preço de cada kit e, se quiser, coloque em promoção.</div>}
-                </div>
-              )}
-
-              {/* (14/10) prévia real do cardápio, no topo do último passo (a foto já foi posta no passo 4) */}
-              {wizardStep === 5 && !form.id && <div className="prod-section"><PreviaCardapio form={form} /></div>}
 
               {/* Preços por Tamanho — só se tem tamanhos ativos */}
               {((wizardStep === 5 && !form.id) || (form.id && editTab === "preco")) && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && form.grupo_tamanhos.modo_preco_tamanho !== "sob_consulta" && form.grupo_tamanhos.modo_preco_tamanho !== "por_peso" && (
@@ -5528,6 +5514,31 @@ export default function Produtos() {
                       </div>
                     ))}
                   </div>
+                {/* (14/10) promoção em % pros tamanhos de preço fixo (antes não tinha onde pôr) */}
+                {!kitAtivo((form as any).kit_qtd) && (() => {
+                  const pct = Number(form.desconto_percentual) || 0;
+                  const on = !!form.promocao && form.tipo_promocao === "percentual";
+                  return (<>
+                    <p className="prod-section-label prod-section-label--novo" style={{ marginTop: 22 }}>Promoção</p>
+                    {!form.id && <p className="prod-kg-promo-t">{primeiroNome ? `${primeiroNome}, gostaria` : "Gostaria"} de colocar uma promoção?</p>}
+                    <button type="button" className={`prod-opc${on ? " on" : ""}`} role="checkbox" aria-checked={on}
+                      onClick={() => setForm(f => ({ ...f, promocao: !on, tipo_promocao: "percentual", desconto_percentual: !on ? (Number(f.desconto_percentual) || 10) : 0, preco_promocional: 0 }))}>
+                      <i aria-hidden="true">{on && <CheckIc size={14} weight="bold" />}</i>
+                      <span><b>Colocar em promoção</b><small>O cardápio mostra o preço antigo riscado</small></span>
+                    </button>
+                    {on && (<>
+                      <div className="kitp-pct">
+                        <span>Desconto de</span>
+                        <input inputMode="numeric" value={pct || ""} placeholder="10" aria-label="Desconto em porcentagem"
+                          onChange={e => { const n = Math.min(90, Math.max(0, parseInt(e.target.value.replace(/\D/g, "")) || 0)); setForm(f => ({ ...f, desconto_percentual: n })); }} />
+                        <span>% em todos</span>
+                      </div>
+                      {pct > 0 && form.grupo_tamanhos!.opcoes.map(op => (
+                        <div className="kitp-row" key={op.id}><span>{op.nome}</span><b>R$ {formatPreco(op.preco || 0)}<em> → R$ {formatPreco(Math.round((op.preco || 0) * (100 - pct)) / 100)}</em></b></div>
+                      ))}
+                    </>)}
+                  </>);
+                })()}
                 </div>
               )}
 
@@ -6124,6 +6135,8 @@ export default function Produtos() {
 
               {/* (13/10) Revisão: como o cliente vê, pedido de exemplo e o que falta */}
               {wizardStep === 5 && !form.id && <div className="prod-section"><RevisaoProduto form={form} /></div>}
+              {/* (14/10) a prévia vem por último, logo antes do Publicar */}
+              {wizardStep === 5 && !form.id && <div className="prod-section"><PreviaCardapio form={form} /></div>}
             </div>
             )}
 
