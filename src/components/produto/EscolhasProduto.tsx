@@ -475,22 +475,22 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
       </>)}
 
       {!porPeso && g.opcoes.length > 0 && (<>
-        <p className="esc-lbl">Tamanhos <span className="esc-opc">quanto rende é opcional</span></p>
-        <ul className="esc-ops">
+        {/* (13/10) colunas com título em cima: Tamanho · Rendimento · Tipo (sem o "serve" em cada linha) */}
+        <div className="esc-tam-cab" aria-hidden="true"><span>Tamanho</span><span>Rendimento</span><span>Tipo</span><span /></div>
+        <ul className="esc-ops esc-tam">
           {g.opcoes.map((o, i) => (
-            <li key={o.id} className="esc-op">
+            <li key={o.id} className="esc-tam-li">
               {/* a ordem é automática (P, M, G… e os números): ao sair do campo, a lista se arruma */}
               <input className="esc-op-in" value={o.nome} onChange={e => renomear(o.id, e.target.value)} onBlur={() => set({ opcoes: ordenarTamanhos(g.opcoes) })} aria-label={`Nome do tamanho ${i + 1}`} />
-              <span className="esc-serve"><span>serve</span>
-                <input inputMode="numeric" placeholder="definir" value={numeroServe(o.serve)} onChange={e => gravarServe(o, e.target.value.replace(/\D/g, "").slice(0, 4), unDe(o))} aria-label={`Quanto rende o ${o.nome}`} />
-                <select value={unDe(o)} onChange={e => { setUnLocal(u => ({ ...u, [o.id]: e.target.value })); if (numeroServe(o.serve)) gravarServe(o, numeroServe(o.serve), e.target.value); }} aria-label={`Unidade do rendimento do ${o.nome}`}>
-                  {Array.from(new Set(["pessoas", "fatias", "unidades", "copos", "potes", unDe(o)])).map(u => <option key={u} value={u}>{u}</option>)}
-                </select>
-              </span>
+              <input className="esc-tam-n" inputMode="numeric" placeholder="definir" value={numeroServe(o.serve)} onChange={e => gravarServe(o, e.target.value.replace(/\D/g, "").slice(0, 4), unDe(o))} aria-label={`Quanto rende o ${o.nome}`} />
+              <select className="esc-tam-u" value={unDe(o)} onChange={e => { setUnLocal(u => ({ ...u, [o.id]: e.target.value })); if (numeroServe(o.serve)) gravarServe(o, numeroServe(o.serve), e.target.value); }} aria-label={`Tipo do rendimento do ${o.nome}`}>
+                {Array.from(new Set(["pessoas", "fatias", "unidades", "copos", "potes", unDe(o)])).map(u => <option key={u} value={u}>{u}</option>)}
+              </select>
               <button type="button" className="esc-op-x" onClick={() => set({ opcoes: g.opcoes.filter(x => x.id !== o.id) })} aria-label={`Tirar ${o.nome}`}><X size={16} weight="bold" /></button>
             </li>
           ))}
         </ul>
+        <p className="esc-dica">Rendimento é opcional.</p>
         <div className="esc-nova esc-nova--1">
           <input placeholder={porPeso ? "Ex.: 2,5 kg" : "Outro tamanho…"} value={novo} onChange={e => setNovo(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); add(); } }} aria-label="Outro tamanho" />
           <button type="button" className="esc-nova-bt" onClick={add} disabled={!novo.trim()} aria-label="Pôr tamanho"><Plus size={20} weight="bold" /></button>

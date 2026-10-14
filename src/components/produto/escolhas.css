@@ -170,3 +170,17 @@
 .esc-op:has(.esc-serve) .esc-serve { flex: 1; min-width: 0; }
 .esc-op:has(.esc-serve) .esc-serve select { flex: 1; width: auto; min-width: 86px; max-width: 108px; }
 .esc-op:has(.esc-serve) .esc-op-x { width: 30px; }
+
+/* (13/10) lista de tamanhos em colunas: os títulos em cima e os campos alinhados embaixo (mesma grade) */
+.esc-tam-cab, .esc-tam-li { display: grid; grid-template-columns: minmax(0, 1fr) 78px 90px 28px; gap: 6px; align-items: center; }
+.esc-tam-cab { margin: 14px 0 6px; padding: 0 7px 0 9px; font-size: 12.5px; font-weight: 600; color: var(--ui-texto-3); }
+.esc-tam-cab span { white-space: nowrap; }
+.esc-tam-li { min-height: 52px; padding: 6px 6px 6px 8px; list-style: none; }
+.esc-tam-li + .esc-tam-li { border-top: 1px solid var(--ui-linha); }
+.esc-tam-li .esc-op-in { width: 100%; min-width: 0; padding: 0 10px; }
+.esc-tam-n { width: 100%; height: 40px; padding: 0 4px; border: 1.5px solid var(--ui-borda-campo); border-radius: 8px; background: var(--ui-branco); font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ui-texto); text-align: center; box-sizing: border-box; }
+.esc-tam-n::placeholder { font-size: 13px; font-weight: 500; color: var(--ui-texto-3); }
+.esc-tam-u { width: 100%; height: 40px; padding: 0 18px 0 8px; border: 1.5px solid var(--ui-borda-campo); border-radius: 8px; font-family: inherit; font-size: 13.5px; font-weight: 500; color: var(--ui-texto); -webkit-appearance: none; appearance: none; box-sizing: border-box;
+  background: var(--ui-branco) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236B5D64' stroke-width='1.6' fill='none'/%3E%3C/svg%3E") no-repeat right 6px center; }
+.esc-tam-n:focus, .esc-tam-u:focus { outline: none; border-color: var(--ui-rosa); }
+.esc-tam-li .esc-op-x { width: 28px; }
