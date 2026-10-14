@@ -157,3 +157,13 @@ body .prod-modal--novo .prod-como-vende-dica { margin: 6px 0 0; font-size: 12.5p
 body .prod-modal--novo .prod-desc-caixa { position: relative; margin-top: 8px; }
 body .prod-modal--novo .prod-desc-caixa textarea { display: block; width: 100%; min-height: 132px; padding-bottom: 56px !important; box-sizing: border-box; }
 body .prod-modal--novo .prod-btn-ia-dentro { position: absolute; right: 10px; bottom: 10px; min-height: 36px; padding: 0 12px; border-radius: 8px; font-size: 13px; }
+
+/* (13/10) preço com a unidade junto: [R$ 80,00] por [quilo ▾] */
+body .prod-modal--novo .prod-preco-por { display: flex; align-items: center; gap: 8px; }
+body .prod-modal--novo .prod-preco-por > .prod-preco-input { flex: 1; min-width: 0; }
+body .prod-modal--novo .prod-preco-por-t { flex: none; font-size: 14px; color: var(--ui-texto-2); }
+body .prod-modal--novo .prod-preco-por-s { flex: none; width: 104px; height: 52px; padding: 0 24px 0 12px; border: 1.5px solid var(--ui-borda-campo); border-radius: 10px; font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ui-texto); -webkit-appearance: none; appearance: none;
+  background: var(--ui-branco) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236B5D64' stroke-width='1.6' fill='none'/%3E%3C/svg%3E") no-repeat right 10px center; }
+body .prod-modal--novo .prod-preco-por-s:focus { outline: none; border-color: var(--ui-rosa); }
+body .prod-modal--novo .prod-row-2--empilha { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+body .prod-modal--novo .prod-row-2--empilha .prod-preco-input--promo { max-width: calc(100% - 104px - 8px - 8px - 22px); }

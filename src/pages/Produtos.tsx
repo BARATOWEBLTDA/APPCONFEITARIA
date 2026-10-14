@@ -5237,21 +5237,6 @@ export default function Produtos() {
                       </button>
                   </div>
                 </div>
-                {/* (13/10) Como vende: dá sentido ao preço (do produto ou do kg) e aos tamanhos pelo peso */}
-                {!kitAtivo((form as any).kit_qtd) && (
-                  <div className="prod-field">
-                    <label className="prod-field-label-novo">Como você vende</label>
-                    <div className="esc-seg esc-seg--2 prod-como-vende" role="radiogroup" aria-label="Como você vende">
-                      <button type="button" role="radio" aria-checked={form.forma_venda !== "kg"} className={form.forma_venda !== "kg" ? "on" : ""}
-                        onClick={() => setForm(f => ({ ...f, forma_venda: f.forma_venda === "kg" ? "unidade" : f.forma_venda,
-                          ...(f.grupo_tamanhos?.modo_preco_tamanho === "por_peso" ? { grupo_tamanhos: { ...f.grupo_tamanhos, modo_preco_tamanho: "preco_fixo" } } : {}) }))}>Por unidade</button>
-                      <button type="button" role="radio" aria-checked={form.forma_venda === "kg"} className={form.forma_venda === "kg" ? "on" : ""}
-                        onClick={() => setForm(f => ({ ...f, forma_venda: "kg",
-                          ...(f.grupo_tamanhos?.ativo ? { grupo_tamanhos: { ...f.grupo_tamanhos, modo_preco_tamanho: "por_peso" } } : {}) }))}>Por quilo (kg)</button>
-                    </div>
-                    <p className="prod-como-vende-dica">{form.forma_venda === "kg" ? "O preço é do quilo. Os tamanhos saem pelo peso." : "O preço é de uma peça. Cento e kit você monta no próximo passo."}</p>
-                  </div>
-                )}
               </div>
               {/* (4.29) edição: Mostrar no cardápio, no fim da aba Info */}
               {form.id && (
@@ -5566,17 +5551,17 @@ export default function Produtos() {
                 form.grupo_tamanhos?.modo_preco_tamanho === "por_peso"
               ) && (
                 <div className="prod-section">
-                  <p className="prod-section-label prod-section-label--novo">
-                    {form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" ? "Preço por kg" : "Preço base"} <ReqTag />
-                  </p>
+                  {/* o título "Qual o preço?" já diz; só o por quilo precisa do rótulo */}
+                  {form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" && <p className="prod-section-label prod-section-label--novo">Preço por kg</p>}
                   {form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" && (
                     <p style={{margin:"0 0 10px", fontSize:12.5, color:"#6B5D64", lineHeight:1.5}}>
                       Define o preço de <b>1 kg</b>. Cada tamanho vai ser calculado automaticamente: <b>peso × preço</b>.
                     </p>
                   )}
-                  <div className="prod-row-2">
+                  <div className="prod-row-2 prod-row-2--empilha">
                     <div className="prod-field">
                       <label>Preço cheio</label>
+                      <div className="prod-preco-por">
                       <div className="prod-preco-input prod-preco-input--big">
                         <span>R$</span>
                         <input type="text" inputMode="numeric" placeholder="0,00" aria-label="Preço cheio" value={form.preco_normal ? formatPreco(form.preco_normal) : ""} onChange={e => {
@@ -5588,6 +5573,17 @@ export default function Produtos() {
                             return { ...f, preco_normal: n, promocao: pp < n };
                           });
                         }} />
+                      </div>
+                      {/* (13/10) a forma de vender fica junto do preço: "R$ 80,00 por quilo" (no lugar do "Vendido por" separado) */}
+                      {!(form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") && (<>
+                        <span className="prod-preco-por-t">por</span>
+                        <select className="prod-preco-por-s" value={form.forma_venda} aria-label="Por unidade, quilo, fatia…"
+                          onChange={e => setForm(f => ({ ...f, forma_venda: e.target.value }))}>
+                          {[["unidade", "unidade"], ["kg", "quilo"], ["fatia", "fatia"], ["cento", "cento"], ["caixa", "caixa"]]
+                            .concat(["unidade", "kg", "fatia", "cento", "caixa"].includes(form.forma_venda) ? [] : [[form.forma_venda, (FORMAS_VENDA.find(x => x.value === form.forma_venda)?.label || form.forma_venda).replace(/^Por /, "").toLowerCase()]])
+                            .map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                        </select>
+                      </>)}
                       </div>
                     </div>
                     <div className="prod-field">
@@ -5633,16 +5629,6 @@ export default function Produtos() {
                     );
                   })()}
 
-                  {!(form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") && <div className="prod-field" style={{marginTop: 14}}>
-                    <label>Vendido por</label>
-                    <SelectDoonly
-                      value={form.forma_venda}
-                      onChange={v => setForm(f => ({ ...f, forma_venda: v }))}
-                      options={FORMAS_VENDA.map(fv => ({ value: fv.value, label: fv.label }))}
-                      title="Como esse produto é vendido?"
-                      big
-                    />
-                  </div>}
                 </div>
               )}
 
