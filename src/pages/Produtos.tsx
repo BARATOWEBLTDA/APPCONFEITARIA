@@ -4934,12 +4934,11 @@ export default function Produtos() {
                   const atual = wizardStep;
                   const nomes = ["Tipo", "Sobre o produto", "Escolhas", "Fotos", "Preço e revisão"];
                   return (
-                    <>
-                      <div className="prod-modal-title-novo">Novo produto</div>
-                      <div className="prod-wiz-passo">Passo {atual} de {total} · {nomes[atual - 1]}</div>
-                      {/* 10/10: barra contínua (igual à da tela de tipo) — o total depende do tipo, então não mostra tracinhos contados */}
+                    // (14/10) topo enxuto: só a barra e "2 de 5" (o título grande da tela já diz o passo)
+                    <div className="prod-wiz-topo" aria-label={`Passo ${atual} de ${total}: ${nomes[atual - 1]}`}>
                       <div className="prod-wiz-barra" aria-hidden="true"><i style={{ width: `${Math.round((atual / total) * 100)}%` }} /></div>
-                    </>
+                      <span className="prod-wiz-n" aria-hidden="true">{atual} de {total}</span>
+                    </div>
                   );
                 })()}
                 {form.id && <div className="prod-modal-title-novo">Editar produto</div>}
@@ -5177,7 +5176,7 @@ export default function Produtos() {
 
                 {/* 3. Descrição — com CTA IA (V3) — gera ou melhora */}
                 <div className="prod-field">
-                  <label className="prod-field-label-novo" htmlFor="prod-desc-input">Descrição</label>
+                  <label className="prod-field-label-novo" htmlFor="prod-desc-input">Descrição <span className="esc-rec">Recomendado</span></label>
                   {/* (13/10) o botão da IA fica dentro da caixa, no canto de baixo */}
                   <div className="prod-desc-caixa">
                     <textarea
@@ -5272,7 +5271,7 @@ export default function Produtos() {
                 <div className="prod-step-header">
                   <div className="prod-step-title">Fotos</div>
                   <div className="prod-step-sub">
-                    Produto com foto vende mais. A primeira é a que aparece no cardápio.
+                    A primeira aparece no cardápio. Produto com foto vende mais.
                   </div>
                 </div>
               )}
@@ -5428,11 +5427,7 @@ export default function Produtos() {
               {wizardStep === 5 && !form.id && (
                 <div className="prod-step-header">
                   <div className="prod-step-title">Preço e revisão</div>
-                  <div className="prod-step-sub">
-                    {kitAtivo((form as any).kit_qtd)
-                      ? "Confira o preço de cada kit e, se quiser, coloque em promoção."
-                      : "Quanto o cliente paga."}
-                  </div>
+                  {kitAtivo((form as any).kit_qtd) && <div className="prod-step-sub">Confira o preço de cada kit e, se quiser, coloque em promoção.</div>}
                 </div>
               )}
 

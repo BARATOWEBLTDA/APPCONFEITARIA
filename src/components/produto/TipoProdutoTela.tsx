@@ -35,16 +35,16 @@ export default function TipoProdutoTela({ onEscolher, onFechar }: Props) {
       <div className="prod-modal-header-novo">
         <div style={{ width: 44, flex: "none" }} />
         <div className="prod-modal-title-wrap">
-          <div className="prod-modal-title-novo">Novo produto</div>
-          <div className="prod-wiz-passo">Passo 1 de 5 · Tipo</div>
-          <div className="prod-wiz-barra" aria-hidden="true"><i style={{ width: "20%" }} /></div>
+          <div className="prod-wiz-topo" aria-label="Passo 1 de 5: Tipo">
+            <div className="prod-wiz-barra" aria-hidden="true"><i style={{ width: "20%" }} /></div>
+            <span className="prod-wiz-n" aria-hidden="true">1 de 5</span>
+          </div>
         </div>
         <button className="prod-modal-close-novo" onClick={onFechar} aria-label="Fechar"><X size={20} weight="bold" aria-hidden="true" /></button>
       </div>
       <div className="prod-modal-body">
         <div className="esc tpp">
           <h2 className="esc-h">Que tipo de produto é?</h2>
-          <p className="esc-s">A gente já prepara o cadastro certinho pra ele.</p>
           <div className="tpp-lista" role="radiogroup" aria-label="Tipo de produto">
             {TIPOS.map(t => {
               const Ic = ICONE_TIPO[t.id];
@@ -64,7 +64,7 @@ export default function TipoProdutoTela({ onEscolher, onFechar }: Props) {
               );
             })}
           </div>
-          {tipo && <p className="tpp-dica"><Info size={18} aria-hidden="true" /><span>Com <b>{tipo.titulo}</b>, {tipo.dica}. Dá pra mudar tudo depois.</span></p>}
+          {tipo && <p className="tpp-dica"><Info size={18} aria-hidden="true" /><span>Já vem com sugestões pra <b>{tipo.titulo.toLowerCase()}</b>.</span></p>}
         </div>
       </div>
       <div className="prod-modal-footer prod-modal-footer--novo">
@@ -72,11 +72,13 @@ export default function TipoProdutoTela({ onEscolher, onFechar }: Props) {
         <button className="prod-btn-avancar-novo" disabled={!sel} onClick={() => sel && onEscolher(sel)}>Continuar</button>
       </div>
       <style>{`
-        .tpp-lista { display: flex; flex-direction: column; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); overflow: hidden; }
+        .tpp-lista { margin-top: 14px; display: flex; flex-direction: column; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); overflow: hidden; }
         .tpp-linha { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 72px; margin: 0; padding: 10px 14px 10px 10px; border: 0; background: none; font-family: inherit; text-align: left; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; box-shadow: inset 3px 0 0 transparent; transition: background .12s, box-shadow .12s; }
         .tpp-linha + .tpp-linha { border-top: 1px solid var(--ui-linha); }
-        .tpp-linha.sel { background: #FFF6F9; box-shadow: inset 3px 0 0 var(--ui-rosa); }
-        .tpp-linha.sel .esc-tx b { color: var(--ui-rosa-escuro); }
+        /* (14/10) selecionado no rosa do projeto: borda rosa inteira, fundo rosa e nome em rosa escuro */
+        .tpp-linha.sel { position: relative; background: #FDE4EE; box-shadow: inset 0 0 0 2px var(--ui-rosa); }
+        .tpp-linha.sel .esc-tx b { color: var(--ui-rosa-escuro); font-weight: 700; }
+        .tpp-linha.sel .esc-tx small { color: var(--ui-rosa-escuro); }
         @media (hover: hover) and (pointer: fine) { .tpp-linha:hover:not(.sel) { background: #FCFAFB; } }
         .tpp-linha:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
         .tpp-img { flex: none; display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 8px; overflow: hidden; background: var(--ui-cinza); color: var(--ui-texto-2); }

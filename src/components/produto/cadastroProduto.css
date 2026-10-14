@@ -180,3 +180,10 @@ body .prod-modal--novo .prev-cardapio-t { display: flex; align-items: baseline; 
 body .prod-modal--novo .prev-cardapio-t span { font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
 body .prod-modal--novo .prev-cardapio-box { padding: 4px 12px; border: 1px solid var(--ui-borda); border-radius: 12px; background: #FAF7F8; }
 body .prod-modal--novo .prev-cardapio-box .ic-ln { background: transparent; }
+
+/* (14/10) topo enxuto do cadastro: voltar · barra + "2 de 5" · fechar, numa linha */
+body .prod-modal--novo .prod-modal-header-novo:has(.prod-wiz-topo) { align-items: center; }
+body .prod-modal--novo .prod-wiz-topo { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 4px; }
+body .prod-modal--novo .prod-wiz-topo .prod-wiz-barra { flex: 1; margin: 0; }
+body .prod-modal--novo .prod-wiz-n { flex: none; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); white-space: nowrap; }
+body .prod-modal--novo .esc-rec { margin-left: 6px; padding: 2px 6px; border-radius: 4px; background: #FFF0F5; font-size: 11.5px; font-weight: 600; color: var(--ui-rosa-escuro); vertical-align: 1px; }
