@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { mascaraBRL, lerBRL, textoBRL } from "@/lib/moeda";
-import { Basket, Cookie, ForkKnife, PencilSimple, X } from "@phosphor-icons/react";
+import { Basket, Cookie, ForkKnife, PencilSimple, Plus, X } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import KitPicker from "@/components/cardapio/KitPicker";
 import {
@@ -17,6 +17,8 @@ interface Props {
   kit?: KitQtdConfig | null;
   onChange: (k: KitQtdConfig) => void;
   modo: "compacto" | "completo";
+  /** (14/10) sem os campos de preço (o preço dos kits vai pro passo Preço) */
+  semPreco?: boolean;
   nomeProduto?: string;
 }
 
@@ -27,9 +29,22 @@ const ICONE_MODELO: Record<"docinhos" | "salgados" | "livre", Icon> = { docinhos
  * O que falta pra continuar na tela "Monte seu kit", na ordem em que aparece na tela,
  * com o seletor do campo pra rolar até ele. null = tudo certo.
  */
-export function faltaKit(kit?: KitQtdConfig | null): { msg: string; alvo?: string } | null {
+export function faltaKit(kit?: KitQtdConfig | null, opc: { semPreco?: boolean } = {}): { msg: string; alvo?: string } | null {
   const k: KitQtdConfig = { ...KIT_VAZIO, ...(kit || {}), livre: { ...KIT_VAZIO.livre, ...(kit?.livre || {}) } };
   if (!k.sabores.filter(s => s.nome.trim()).length) return { msg: "Adicione pelo menos 1 sabor", alvo: ".kq-addrow input" };
+  // (14/10) no cadastro o preço dos kits fica no passo Preço: aqui só confere quantidades e regras
+  if (opc.semPreco) {
+    if (k.modo === "fechado") { if (!k.kits.some(x => (x.qtd || 0) > 0)) return { msg: "Coloque quantas unidades vêm no kit", alvo: ".kq-link" }; }
+    else {
+      const l = k.livre;
+      if (!(l.min > 0)) return { msg: "Coloque o mínimo de unidades", alvo: 'input[aria-label="Mínimo"]' };
+      if (!(l.max >= l.min)) return { msg: "O máximo precisa ser maior que o mínimo", alvo: 'input[aria-label="Máximo"]' };
+      if (!(l.passo > 0)) return { msg: "Coloque de quanto em quanto o cliente pode pedir", alvo: 'input[aria-label="De quanto em quanto"]' };
+    }
+    if ((k.max_sabores || 0) < 1) return { msg: "Coloque até quantos sabores o cliente pode misturar", alvo: 'input[aria-label="Máximo de sabores"]' };
+    if ((k.passo_sabor || 0) < 1) return { msg: "Coloque de quanto em quanto cada sabor sobe", alvo: 'input[aria-label="De quanto em quanto cada sabor"]' };
+    return null;
+  }
   if (k.modo === "fechado") {
     if (!kitsValidos(k).length) {
       const semPreco = k.kits.find(x => (x.qtd || 0) > 0 && !(x.preco > 0));
@@ -54,7 +69,7 @@ export function faltaKit(kit?: KitQtdConfig | null): { msg: string; alvo?: strin
 // 10/10: parseNumBR entende ponto de milhar ("1.200,00" lia como 1,2)
 const num = (v: string) => parseNumBR(v);
 
-export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }: Props) {
+export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto, semPreco = false }: Props) {
   const k: KitQtdConfig = { ...KIT_VAZIO, ...(kit || {}), livre: { ...KIT_VAZIO.livre, ...(kit?.livre || {}) } };
   const set = (patch: Partial<KitQtdConfig>) => onChange({ ...k, ...patch });
   const [novoSabor, setNovoSabor] = useState("");
@@ -131,92 +146,77 @@ export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }
   // 11/10: no modo livre, (máximo − mínimo) que não é múltiplo do passo
   const maxQuebrado = k.modo === "livre" && k.livre.min > 0 && k.livre.passo > 0 && k.livre.max > k.livre.min && (k.livre.max - k.livre.min) % k.livre.passo !== 0;
 
+  // (14/10) no padrão das outras escolhas: títulos de seção, lista com linhas, sem cartões numerados.
+  // Sem preço aqui (semPreco): os preços dos kits ficam no passo Preço.
   return (
-    <div className="kq-tela">
-      <div className="kq-modelo-on"><span>Modelo</span><b><modeloInfo.Ic size={20} weight="bold" aria-hidden="true" />{modeloInfo.t}</b>
-        {k.sabores.length === 0 && <button type="button" className="kq-trocar" onClick={() => set({ modelo: undefined })}>Trocar</button>}
+    <div className="kq-tela kq-v2">
+      <p className="kq-lbl">Sabores do kit</p>
+      {sabores.length > 0 && (
+        <ul className="kq-lista">
+          {k.sabores.map(s => s.nome.trim() && (
+            <li key={s.id}><span>{s.nome}</span>
+              <button type="button" onClick={() => set({ sabores: k.sabores.filter(x => x.id !== s.id) })} aria-label={`Tirar ${s.nome}`}><X size={16} weight="bold" /></button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {sugestoes.length > 0 && (
+        <div className="kq-sug" role="group" aria-label="Sugestões">{sugestoes.slice(0, 8).map(n => <button type="button" key={n} onClick={() => addSabor(n)}><Plus size={14} weight="bold" aria-hidden="true" />{n}</button>)}</div>
+      )}
+      <div className="kq-addrow">
+        <input placeholder={k.modelo === "salgados" ? "Outro sabor… (ex.: coxinha)" : "Outro sabor…"} value={novoSabor} aria-label="Outro sabor"
+          onChange={e => setNovoSabor(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addSabor(novoSabor); } }} />
+        <button type="button" onClick={() => addSabor(novoSabor)} disabled={!novoSabor.trim()}>Cadastrar</button>
       </div>
+      {k.sabores.length === 0 && <button type="button" className="kq-link" onClick={() => set({ modelo: undefined })}>Trocar o modelo ({modeloInfo.t})</button>}
 
-      <div className="kq-grid2">
-        <div>
-          {/* 1 · Sabores */}
-          <section className="kq-st">
-            <div className="kq-sth"><span className={`kq-n${okSabores ? " ok" : ""}`}>1</span><div><b>Quais sabores entram no kit?</b></div></div>
-            {sabores.length > 0 && (
-              <div className="kq-chips">
-                {k.sabores.map(s => s.nome.trim() && (
-                  <span className="kq-chip" key={s.id}>{s.nome}
-                    <button type="button" onClick={() => set({ sabores: k.sabores.filter(x => x.id !== s.id) })} aria-label={`Tirar ${s.nome}`}><X size={14} weight="bold" /></button>
-                  </span>
-                ))}
-              </div>
-            )}
-            <div className="kq-addrow">
-              <input placeholder={k.modelo === "salgados" ? "Ex.: coxinha de frango" : "Ex.: brigadeiro de ninho"} value={novoSabor}
-                onChange={e => setNovoSabor(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addSabor(novoSabor); } }} />
-              <button type="button" onClick={() => addSabor(novoSabor)} disabled={!novoSabor.trim()}>Adicionar</button>
-            </div>
-            {sugestoes.length > 0 && (
-              <>
-                <p className="kq-sug-l">Sugestões</p>
-                <div className="kq-sug">{sugestoes.slice(0, 8).map(n => <button type="button" key={n} onClick={() => addSabor(n)}>+ {n}</button>)}</div>
-              </>
-            )}
-          </section>
-
-          {/* 2 · Como compra */}
-          <section className="kq-st">
-            <div className="kq-sth"><span className={`kq-n${okPreco ? " ok" : ""}`}>2</span><div><b>Como o cliente compra?</b></div></div>
-            <div className="kq-opts" role="radiogroup">
-              <button type="button" role="radio" aria-checked={k.modo === "fechado"} className={`kq-op${k.modo === "fechado" ? " on" : ""}`}
-                onClick={() => set({ modo: "fechado", kits: k.kits.length ? k.kits : [{ id: novoId(), qtd: 50, preco: 0 }, { id: novoId(), qtd: 100, preco: 0 }] })}>
-                <b><i />Pacotes prontos</b><small>Kit de 50, de 100… cada um com seu preço</small></button>
-              <button type="button" role="radio" aria-checked={k.modo === "livre"} className={`kq-op${k.modo === "livre" ? " on" : ""}`} onClick={() => set({ modo: "livre" })}>
-                <b><i />Ele escolhe a quantidade</b><small>Mínimo, de quanto em quanto e preço do cento</small></button>
-            </div>
-            {k.modo === "fechado" ? (
-              <>
-                {k.kits.map(x => (
-                  <div className="kq-frase kq-frase--kit" key={x.id}>
-                    <span className="kq-t">Kit de</span><input className="kq-box kq-box--qtd" data-falta={`kitqtd-${x.id}`} inputMode="numeric" value={x.qtd || ""} placeholder="50" aria-label="Unidades do kit"
-                      onChange={e => set({ kits: k.kits.map(y => y.id === x.id ? { ...y, qtd: Math.round(num(e.target.value)) } : y) })} />
-                    <span className="kq-t">un. por</span>
-                    <span data-falta={`kit-${x.id}`} className={`kq-box kq-box--rs${x.preco > 0 ? " ok" : " falta"}`}>R$ <input inputMode="numeric" value={textoBRL(x.preco)} placeholder="0,00" aria-label="Preço do kit"
-                      onChange={e => set({ kits: k.kits.map(y => y.id === x.id ? { ...y, preco: lerBRL(mascaraBRL(e.target.value)) } : y) })} /></span>
-                    <button type="button" className="kq-x" onClick={() => set({ kits: k.kits.filter(y => y.id !== x.id) })} aria-label="Remover kit"><X size={16} weight="bold" /></button>
-                  </div>
-                ))}
-                <button type="button" className="kq-link" onClick={() => set({ kits: [...k.kits, { id: novoId(), qtd: 0, preco: 0 }] })}>+ Outro tamanho de kit</button>
-              </>
-            ) : (
-              <>
-                <div className="kq-frase">O cliente pede de <input className="kq-box" inputMode="numeric" value={k.livre.min || ""} aria-label="Mínimo"
-                  onChange={e => set({ livre: { ...k.livre, min: Math.round(num(e.target.value)) } })} /> até <input className="kq-box" inputMode="numeric" value={k.livre.max || ""} aria-label="Máximo"
-                  onChange={e => set({ livre: { ...k.livre, max: Math.round(num(e.target.value)) } })} /> unidades</div>
-                <div className="kq-frase">Subindo de <input className="kq-box" inputMode="numeric" value={k.livre.passo || ""} aria-label="De quanto em quanto"
-                  onChange={e => set({ livre: { ...k.livre, passo: Math.round(num(e.target.value)) } })} /> em {k.livre.passo || "–"}</div>
-                {/* 11/10: o máximo não cai num passo (25 a 75 de 15 em 15): só avisa, o cardápio completa até o máximo */}
-                {maxQuebrado && <p className="kq-ex">O máximo de {k.livre.max} não fecha de {k.livre.passo} em {k.livre.passo}. O último passo vai até o máximo.</p>}
-                <div className="kq-frase">O cento custa <span className={`kq-box kq-box--rs${k.livre.preco_cento > 0 ? " ok" : " falta"}`}>R$ <input inputMode="numeric" value={textoBRL(k.livre.preco_cento)} placeholder="0,00" aria-label="Preço do cento"
-                  onChange={e => set({ livre: { ...k.livre, preco_cento: lerBRL(mascaraBRL(e.target.value)) } })} /></span></div>
-              </>
-            )}
-          </section>
-
-          {/* 3 · Regras */}
-          <section className="kq-st">
-            <div className="kq-sth"><span className={`kq-n${okRegras ? " ok" : ""}`}>3</span><div><b>Como ele pode montar?</b></div></div>
-            <div className="kq-frase">O cliente pode misturar até <input className="kq-box" inputMode="numeric" value={k.max_sabores || ""} aria-label="Máximo de sabores"
-              onChange={e => set({ max_sabores: Math.round(num(e.target.value)) })} /> sabores</div>
-            <div className="kq-frase">Cada sabor vem de <input className="kq-box" inputMode="numeric" value={k.passo_sabor || ""} aria-label="De quanto em quanto cada sabor"
-              onChange={e => set({ passo_sabor: Math.round(num(e.target.value)) })} /> em {k.passo_sabor || "–"}</div>
-            <p className="kq-ex">Exemplo no kit de {kitEx}: {exB > 0 && <><b>{exA} {ex1} + {exB} {ex2}</b>, ou </>}{kitEx} de um sabor só.</p>
-            {kitQuebrado ? <p className="kq-ex">O kit de {kitQuebrado} não fecha de {passoS} em {passoS}. O último passo completa o que faltar.</p>
-              : livreQuebrado ? <p className="kq-ex">Nem toda quantidade fecha de {passoS} em {passoS}. O último passo completa o que faltar.</p> : null}
-          </section>
-        </div>
-
+      <p className="kq-lbl">Como o cliente compra</p>
+      <div className="kq-seg" role="radiogroup" aria-label="Como o cliente compra">
+        <button type="button" role="radio" aria-checked={k.modo === "fechado"} className={k.modo === "fechado" ? "on" : ""}
+          onClick={() => set({ modo: "fechado", kits: k.kits.length ? k.kits : [{ id: novoId(), qtd: 50, preco: 0 }, { id: novoId(), qtd: 100, preco: 0 }] })}>Pacotes prontos</button>
+        <button type="button" role="radio" aria-checked={k.modo === "livre"} className={k.modo === "livre" ? "on" : ""} onClick={() => set({ modo: "livre" })}>Ele escolhe</button>
       </div>
+      <p className="kq-dica">{k.modo === "fechado" ? "Kit de 50, de 100… cada um com o seu preço." : "Ele escolhe quantos quer, entre um mínimo e um máximo."}</p>
+      {k.modo === "fechado" ? (
+        <>
+          <ul className="kq-lista">
+            {k.kits.map(x => (
+              <li key={x.id} className="kq-kit">
+                <span>Kit de</span>
+                <input className="kq-box" data-falta={`kitqtd-${x.id}`} inputMode="numeric" value={x.qtd || ""} placeholder="50" aria-label="Unidades do kit"
+                  onChange={e => set({ kits: k.kits.map(y => y.id === x.id ? { ...y, qtd: Math.round(num(e.target.value)) } : y) })} />
+                <span>unidades</span>
+                {!semPreco && (
+                  <span data-falta={`kit-${x.id}`} className={`kq-box kq-box--rs${x.preco > 0 ? " ok" : " falta"}`}>R$ <input inputMode="numeric" value={textoBRL(x.preco)} placeholder="0,00" aria-label="Preço do kit"
+                    onChange={e => set({ kits: k.kits.map(y => y.id === x.id ? { ...y, preco: lerBRL(mascaraBRL(e.target.value)) } : y) })} /></span>
+                )}
+                <button type="button" onClick={() => set({ kits: k.kits.filter(y => y.id !== x.id) })} aria-label="Remover kit"><X size={16} weight="bold" /></button>
+              </li>
+            ))}
+          </ul>
+          <button type="button" className="kq-link" onClick={() => set({ kits: [...k.kits, { id: novoId(), qtd: 0, preco: 0 }] })}>+ Outro tamanho de kit</button>
+        </>
+      ) : (
+        <ul className="kq-lista">
+          <li className="kq-reg"><span>Mínimo</span><input className="kq-box" inputMode="numeric" value={k.livre.min || ""} aria-label="Mínimo" onChange={e => set({ livre: { ...k.livre, min: Math.round(num(e.target.value)) } })} /><em>un.</em></li>
+          <li className="kq-reg"><span>Máximo</span><input className="kq-box" inputMode="numeric" value={k.livre.max || ""} aria-label="Máximo" onChange={e => set({ livre: { ...k.livre, max: Math.round(num(e.target.value)) } })} /><em>un.</em></li>
+          <li className="kq-reg"><span>Sobe de quanto em quanto</span><input className="kq-box" inputMode="numeric" value={k.livre.passo || ""} aria-label="De quanto em quanto" onChange={e => set({ livre: { ...k.livre, passo: Math.round(num(e.target.value)) } })} /><em>un.</em></li>
+          {!semPreco && (
+            <li className="kq-reg"><span>Preço do cento</span><span className={`kq-box kq-box--rs${k.livre.preco_cento > 0 ? " ok" : " falta"}`}>R$ <input inputMode="numeric" value={textoBRL(k.livre.preco_cento)} placeholder="0,00" aria-label="Preço do cento"
+              onChange={e => set({ livre: { ...k.livre, preco_cento: lerBRL(mascaraBRL(e.target.value)) } })} /></span></li>
+          )}
+        </ul>
+      )}
+      {maxQuebrado && <p className="kq-dica">O máximo de {k.livre.max} não fecha de {k.livre.passo} em {k.livre.passo}. O último passo vai até o máximo.</p>}
+
+      <p className="kq-lbl">Como ele pode montar</p>
+      <ul className="kq-lista">
+        <li className="kq-reg"><span>Sabores no mesmo kit</span><input className="kq-box" inputMode="numeric" value={k.max_sabores || ""} aria-label="Máximo de sabores" onChange={e => set({ max_sabores: Math.round(num(e.target.value)) })} /><em>no máx.</em></li>
+        <li className="kq-reg"><span>Cada sabor vem de</span><input className="kq-box" inputMode="numeric" value={k.passo_sabor || ""} aria-label="De quanto em quanto cada sabor" onChange={e => set({ passo_sabor: Math.round(num(e.target.value)) })} /><em>em {k.passo_sabor || "–"}</em></li>
+      </ul>
+      <p className="kq-nota">Exemplo no kit de {kitEx}: {exB > 0 && <><b>{exA} {ex1} + {exB} {ex2}</b>, ou </>}{kitEx} de um sabor só.
+        {kitQuebrado ? ` O kit de ${kitQuebrado} não fecha de ${passoS} em ${passoS}: o último passo completa o que faltar.` : livreQuebrado ? ` Nem toda quantidade fecha de ${passoS} em ${passoS}: o último passo completa o que faltar.` : ""}
+        {semPreco ? " O preço dos kits você coloca no último passo." : ""}</p>
       <style>{CSS}</style>
     </div>
   );
@@ -304,4 +304,30 @@ const CSS = `
   .kq-frase--kit .kq-box--rs { flex: 1; min-width: 0; max-width: 130px; }
   .kq-frase--kit .kq-box--rs input { width: 100%; min-width: 0; }
   @media (max-width: 767px) { .kq-opts { grid-template-columns: 1fr; } }
+  /* (14/10) kit no padrão das outras escolhas */
+  .kq-v2 .kq-lbl { margin: 22px 0 10px; font-size: 16px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); }
+  .kq-v2 .kq-lbl:first-child { margin-top: 4px; }
+  .kq-v2 .kq-lista { margin: 0; padding: 0; list-style: none; border: 1px solid var(--ui-borda); border-radius: 12px; overflow: hidden; background: var(--ui-branco); }
+  .kq-v2 .kq-lista > li { display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 6px 0 14px; font-size: 15px; }
+  .kq-v2 .kq-lista > li + li { border-top: 1px solid var(--ui-linha); }
+  .kq-v2 .kq-lista > li > span:first-child { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kq-v2 .kq-lista > li > button { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 0; background: none; color: var(--ui-texto-3); cursor: pointer; }
+  .kq-v2 .kq-kit > span:first-child { flex: none; }
+  .kq-v2 .kq-kit > span:nth-child(3) { flex: 1; color: var(--ui-texto-2); }
+  .kq-v2 .kq-reg { padding-right: 14px; }
+  .kq-v2 .kq-reg em { flex: none; min-width: 44px; font-style: normal; font-size: 13.5px; color: var(--ui-texto-2); }
+  .kq-v2 .kq-box { width: 64px; height: 40px; padding: 0 6px; border-radius: 8px; font-size: 16px; }
+  .kq-v2 .kq-box--rs { width: auto; height: 40px; }
+  .kq-v2 .kq-sug { margin: 12px 0 0; }
+  .kq-v2 .kq-sug button { display: inline-flex; align-items: center; gap: 4px; border-color: #D8D1D5; color: var(--ui-texto); font-weight: 600; }
+  .kq-v2 .kq-addrow { margin-top: 12px; }
+  .kq-v2 .kq-addrow input { height: 48px; padding: 0 14px; border-radius: 10px; }
+  .kq-v2 .kq-addrow button { min-height: 48px; padding: 0 16px; border-radius: 10px; background: var(--ui-rosa); }
+  .kq-v2 .kq-link { display: block; padding: 10px 0 0; }
+  .kq-v2 .kq-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 12px; background: #F1EEF0; }
+  .kq-v2 .kq-seg button { min-height: 44px; border: 0; border-radius: 9px; background: none; font-family: inherit; font-size: 14.5px; font-weight: 600; color: var(--ui-texto-2); cursor: pointer; }
+  .kq-v2 .kq-seg button.on { background: #fff; color: var(--ui-texto); box-shadow: 0 1px 3px rgba(44,18,25,.12); }
+  .kq-v2 .kq-dica { margin: 8px 0 10px; font-size: 13px; color: var(--ui-texto-2); }
+  .kq-v2 .kq-nota { margin: 12px 0 0; padding: 10px 12px; border: 1.5px dashed #E7C2D2; border-radius: 8px; background: #FFFBFC; font-size: 12.5px; line-height: 1.45; color: var(--ui-texto-2); }
+  .kq-v2 .kq-nota b { color: var(--ui-texto); }
 `;

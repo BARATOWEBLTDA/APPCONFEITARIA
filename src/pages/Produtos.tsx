@@ -5561,36 +5561,17 @@ export default function Produtos() {
               {/* Preços por Sabor — só se tem sabores ativos E sabor_tem_preco_proprio */}
               {((wizardStep === 5 && !form.id) || (form.id && editTab === "preco")) && form.grupo_sabores?.ativo && (form.grupo_sabores.opcoes.length || 0) > 0 && form.grupo_sabores.sabor_tem_preco_proprio && (
                 <div className="prod-section">
-                  <p className="prod-section-label prod-section-label--novo">
-                    Preço por sabor <ReqTag />
-                  </p>
-                  <p style={{fontSize: 12, color: "#6B5D64", margin: "0 0 12px"}}>
-                    Defina o preço de cada sabor. Ex.: pudim de chocolate, R$ 45,00.
-                  </p>
-                  <div style={{display: "flex", flexDirection: "column", gap: 8}}>
+                  <p className="prod-section-label prod-section-label--novo">Preço por sabor</p>
+                  {/* (14/10) tabelinha igual à dos tamanhos */}
+                  <div className="prod-dtab prod-ptab" role="table" aria-label="Preço por sabor">
+                    <div className="prod-dtab-l prod-dtab-h" role="row"><span role="columnheader">Sabor</span><span role="columnheader">Preço</span></div>
                     {form.grupo_sabores.opcoes.map((op: any) => (
-                      <div key={op.id} style={{display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", background: "#FAF8F5", border: "1px solid #F0EBED", borderRadius: 10}}>
-                        <span style={{flex: 1, fontSize: 14, fontWeight: 700, color: "#2D1F26"}}>{op.nome}</span>
-                        <div style={{display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", border: "1.5px solid #E85A8C", borderRadius: 8, padding: "6px 12px"}}>
-                          <span style={{fontSize: 13, color: "#831843", fontWeight: 700}}>R$</span>
-                          <input
-                            type="text"
-                            inputMode="numeric"
-                            value={op.preco ? formatPreco(op.preco) : ""}
-                            onChange={e => {
-                              const preco = parsePreco(e.target.value);
-                              setForm(f => ({
-                                ...f,
-                                grupo_sabores: {
-                                  ...(f.grupo_sabores as GrupoSabores),
-                                  opcoes: (f.grupo_sabores?.opcoes || []).map((o: any) => o.id === op.id ? { ...o, preco } : o),
-                                },
-                              }));
-                            }}
-                            placeholder="0,00"
-                            style={{width: 80, border: "none", outline: "none", background: "transparent", fontSize: 15, fontWeight: 700, color: "#E85A8C", textAlign: "right", fontFamily: "inherit"}}
-                          />
-                        </div>
+                      <div className="prod-dtab-l" role="row" key={op.id}>
+                        <span role="cell">{op.nome}</span>
+                        <span role="cell"><label className="prod-ptab-in"><span>R$</span>
+                          <input type="text" inputMode="numeric" placeholder="0,00" aria-label={`Preço de ${op.nome}`} value={op.preco ? formatPreco(op.preco) : ""}
+                            onChange={e => { const preco = parsePreco(e.target.value); setForm(f => ({ ...f, grupo_sabores: { ...(f.grupo_sabores as GrupoSabores), opcoes: (f.grupo_sabores?.opcoes || []).map((o: any) => o.id === op.id ? { ...o, preco } : o) } })); }} />
+                        </label></span>
                       </div>
                     ))}
                   </div>
@@ -5602,22 +5583,44 @@ export default function Produtos() {
               {/* Kit (02/10): sem "preço base" — o preço vem dos kits montados. Fica só a promoção. */}
               {((wizardStep === 5 && !form.id) || (form.id && editTab === "preco")) && kitAtivo((form as any).kit_qtd) && (() => {
                 const kq: any = (form as any).kit_qtd;
-                const kits = kitsValidos(kq);
                 const pct = Number(form.desconto_percentual) || 0;
                 const promoOn = !!form.promocao && form.tipo_promocao === "percentual";
                 return (
                   <div className="prod-section">
-                    <p className="prod-section-label prod-section-label--novo">Preço do kit</p>
-                    <div className="kitp-row"><span>Vendido por</span><b className="kitp-tag">Kit</b></div>
+                    {/* (14/10) o preço dos kits agora é aqui (antes ficava em Escolhas › Quantidade) */}
+                    <p className="prod-section-label prod-section-label--novo">{kq?.modo === "livre" ? "Preço do cento" : "Preço dos kits"}</p>
                     {kq?.modo === "livre" ? (
-                      <div className="kitp-row"><span>Cento ({kq.livre?.min || 0} a {kq.livre?.max || 0} un.)</span><b>R$ {formatPreco(kq.livre?.preco_cento || 0)}</b></div>
-                    ) : kits.map((x: any) => (
-                      <div className="kitp-row" key={x.id}><span>Kit de {x.qtd} un.</span><b>R$ {formatPreco(x.preco)}{promoOn && pct > 0 && <em> → R$ {formatPreco(x.preco * (1 - pct / 100))}</em>}</b></div>
-                    ))}
-                    <p className="kitp-dica">Pra mudar um preço, volte em Escolhas › Quantidade.</p>
-                    <div style={{ marginTop: 12 }}>
-                      <Toggle label="Colocar em promoção" value={promoOn} colorClass="active-pink"
-                        onChange={(v: boolean) => setForm(f => ({ ...f, promocao: v, tipo_promocao: "percentual", desconto_percentual: v ? (f.desconto_percentual || 10) : 0, preco_promocional: 0 }))} />
+                      <>
+                        <div className="prod-field"><div className="prod-preco-input prod-preco-input--big">
+                          <span>R$</span>
+                          <input type="text" inputMode="numeric" placeholder="0,00" aria-label="Preço do cento" value={kq.livre?.preco_cento ? formatPreco(kq.livre.preco_cento) : ""}
+                            onChange={e => { const v = parsePreco(e.target.value); onKitChange({ ...kq, livre: { ...kq.livre, preco_cento: v } }); }} />
+                        </div></div>
+                        <p className="kitp-dica">O cliente pede de {kq.livre?.min || 0} a {kq.livre?.max || 0} unidades. O preço sai pelo cento.</p>
+                      </>
+                    ) : (
+                      <div className="prod-dtab prod-ptab" role="table" aria-label="Preço dos kits">
+                        <div className="prod-dtab-l prod-dtab-h" role="row"><span role="columnheader">Kit</span><span role="columnheader">Preço</span></div>
+                        {(kq?.kits || []).filter((x: any) => (x.qtd || 0) > 0).sort((x: any, y: any) => x.qtd - y.qtd).map((x: any) => (
+                          <div className="prod-dtab-l" role="row" key={x.id}>
+                            <span role="cell">Kit de {x.qtd} un.</span>
+                            <span role="cell"><label className="prod-ptab-in"><span>R$</span>
+                              <input type="text" inputMode="numeric" placeholder="0,00" aria-label={`Preço do kit de ${x.qtd}`} value={x.preco ? formatPreco(x.preco) : ""}
+                                onChange={e => { const v = parsePreco(e.target.value); onKitChange({ ...kq, kits: kq.kits.map((y: any) => y.id === x.id ? { ...y, preco: v } : y) }); }} />
+                            </label></span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div>
+                      <p className="prod-section-label prod-section-label--novo prod-lbl-sep">Promoção</p>
+<div className="prod-opcs">
+                      <button type="button" className={`prod-opc${promoOn ? " on" : ""}`} role="checkbox" aria-checked={promoOn}
+                        onClick={() => setForm(f => ({ ...f, promocao: !promoOn, tipo_promocao: "percentual", desconto_percentual: !promoOn ? (f.desconto_percentual || 10) : 0, preco_promocional: 0 }))}>
+                        <i aria-hidden="true">{promoOn && <CheckIc size={14} weight="bold" />}</i>
+                        <span><b>Colocar em promoção</b><small>O cardápio mostra o preço antigo riscado</small></span>
+                      </button>
+                      </div>
                       {promoOn && (
                         <div className="kitp-pct">
                           <span>Desconto de</span>
@@ -6160,7 +6163,7 @@ export default function Produtos() {
                   if (wizardStep >= 5) {
                     const fPreco = ((): FaltaCampo => {
                     // Kit por quantidade: o preço vem dos kits
-                    if (kitAtivo((form as any).kit_qtd)) return precoMinKit((form as any).kit_qtd) > 0 ? null : { msg: 'Volte em Escolhas e coloque o preço dos kits' };
+                    if (kitAtivo((form as any).kit_qtd)) { const kq: any = (form as any).kit_qtd; const semP = kq.modo === "livre" ? !(kq.livre?.preco_cento > 0) : (kq.kits || []).find((x: any) => (x.qtd || 0) > 0 && !(x.preco > 0)); return !semP ? null : kq.modo === "livre" ? { msg: "Coloque o preço do cento", alvo: 'input[aria-label="Preço do cento"]' } : { msg: `Coloque o preço do kit de ${(semP as any).qtd}`, alvo: `input[aria-label="Preço do kit de ${(semP as any).qtd}"]` }; }
                     const gt = form.grupo_tamanhos;
                     const temTamanhoAtivo = gt?.ativo && gt.opcoes.length > 0;
                     // 11/10: preço promocional maior ou igual ao cheio não é promoção: avisa e não avança

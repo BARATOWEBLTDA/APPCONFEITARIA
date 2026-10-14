@@ -356,3 +356,27 @@ body .prod-modal--novo .prod-section-label.red-t { margin-top: 24px !important; 
 .red-tx small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .red-tx small.red-falta { color: #B45309; font-weight: 600; }
 .red-ed { flex: none; display: inline-flex; align-items: center; height: 34px; padding: 0 12px; border-radius: 8px; background: #EAE4E7; font-size: 13.5px; font-weight: 700; color: var(--ui-texto); }
+
+/* (14/10) massa, recheio, cobertura e sabor no padrão do resto */
+.esc-cks { margin-top: 14px; border: 1px solid var(--ui-borda); border-radius: 12px; overflow: hidden; background: var(--ui-branco); }
+.esc-ckl { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 60px; margin: 0; padding: 10px 14px; border: 0; background: none; font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
+.esc-ckl + .esc-ckl { border-top: 1px solid var(--ui-linha); }
+.esc-ckl > i { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid #D6CBD0; border-radius: 6px; color: #fff; }
+.esc-ckl.on > i { border-color: var(--ui-rosa); background: var(--ui-rosa); }
+.esc-ckl > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.esc-ckl b { font-size: 15px; font-weight: 600; color: var(--ui-texto); }
+.esc-ckl small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.esc-tab { border: 1px solid var(--ui-borda); border-radius: 10px; overflow: hidden; background: var(--ui-branco); }
+.esc-tab-l { display: grid; grid-template-columns: minmax(0, 1fr) 132px 44px; }
+.esc-tab--1 .esc-tab-l { grid-template-columns: minmax(0, 1fr) 44px; }
+.esc-tab-l + .esc-tab-l { border-top: 1px solid var(--ui-borda); }
+.esc-tab-l > span { display: flex; align-items: center; min-height: 52px; padding: 0 10px; font-size: 15px; overflow: hidden; }
+.esc-tab-l > span + span { justify-content: center; border-left: 1px solid var(--ui-borda); padding: 0 6px; }
+.esc-tab-l > span:last-child { padding: 0; }
+.esc-tab-h > span { min-height: 36px; background: #F7F3F5; font-size: 12.5px; font-weight: 700; color: var(--ui-texto-2); }
+.esc-tab-nm { white-space: nowrap; text-overflow: ellipsis; }
+.esc-tab-in { display: flex; align-items: center; gap: 4px; width: 100%; height: 36px; padding: 0 8px; border: 1.5px solid var(--ui-borda-campo); border-radius: 8px; background: #fff; }
+.esc-tab-in:focus-within { border-color: var(--ui-rosa); }
+.esc-tab-in span { font-size: 12.5px; font-weight: 600; color: var(--ui-texto-2); white-space: nowrap; }
+.esc-tab-in input { flex: 1; min-width: 0; width: 100%; border: 0; outline: 0; background: transparent; font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ui-texto); text-align: right; }
+.esc-tab-l .esc-op-x { width: 44px; height: 44px; }

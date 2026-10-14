@@ -139,7 +139,7 @@ export function escolhaAtiva(form: any, c: Chave): boolean {
 export function escolhasAtivas(form: any): Chave[] { return TODAS_ESCOLHAS.filter(c => escolhaAtiva(form, c)); }
 /** O que falta numa escolha pra seguir (null = tudo certo) */
 export function faltaDaEscolha(form: any, c: Chave): { msg: string; alvo?: string } | null {
-  if (c === "quantidade") return faltaKit(form.kit_qtd);
+  if (c === "quantidade") return faltaKit(form.kit_qtd, { semPreco: true }); // (14/10) o preço dos kits é no passo Preço
   if (c === "tamanho") {
     const g = form.grupo_tamanhos;
     if (!(g?.opcoes?.length)) return { msg: "Coloque pelo menos 1 tamanho", alvo: 'input[aria-label="Outro tamanho"]' };
@@ -316,8 +316,7 @@ function CartaoGrupo({ chave, tipo, form, setForm, outros }: { chave: "massa" | 
     if (!n || g.opcoes.some(o => norm(o.nome) === norm(n))) return;
     set({ opcoes: [...g.opcoes, precoProprio ? { id: uid(), nome: n, adicional: 0, preco: valor } : { id: uid(), nome: n, adicional: valor }] });
   };
-  const addDigitado = () => { adicionar(nova, lerBRL(novoValor || "0")); setNova(""); setNovoValor(""); };
-  const mover = (i: number, d: number) => { const l = [...g.opcoes]; const j = i + d; if (j < 0 || j >= l.length) return; [l[i], l[j]] = [l[j], l[i]]; set({ opcoes: l }); };
+  const addDigitado = () => { adicionar(nova, 0); setNova(""); setNovoValor(""); void novoValor; };
   const valorDe = (o: Opcao) => (precoProprio ? Number(o.preco) || 0 : Number(o.adicional) || 0);
   const mudarValor = (id: string, txt: string) => {
     const v = lerBRL(txt || "0");
@@ -336,51 +335,49 @@ function CartaoGrupo({ chave, tipo, form, setForm, outros }: { chave: "massa" | 
       </div>
       <p className="esc-dica">No cardápio: {quantosAtual === 1 ? `"Escolha 1 ${chave}"` : quantosAtual >= 99 ? `"Escolha quantos ${plural} quiser"` : `"Escolha até ${quantosAtual} ${plural}"`}.</p>
 
-      <button type="button" className="esc-sw" role="switch" aria-checked={g.min >= 1} onClick={() => set({ min: g.min >= 1 ? 0 : 1 })}>
-        <span><b>Obrigatório</b><small>{g.min >= 1 ? "Sem escolher, o cliente não consegue pedir." : "O cliente pode pedir sem escolher."}</small></span>
-        <i aria-hidden="true" />
-      </button>
-
-      {chave === "sabor" && (
-        <button type="button" className="esc-sw" role="switch" aria-checked={precoProprio} onClick={() => set({ sabor_tem_preco_proprio: !precoProprio })}>
-          <span><b>Cada sabor tem o seu preço</b><small>{precoProprio ? "O preço do sabor vale no lugar do preço do produto." : "Desligado: o sabor só soma, se tiver valor a mais."}</small></span>
-          <i aria-hidden="true" />
+      {/* (14/10) no padrão do resto: caixinhas no lugar das chaves, tabelinha das opções, "Cadastrar" e dica tracejada */}
+      <div className="esc-cks">
+        <button type="button" className={`esc-ckl${g.min >= 1 ? " on" : ""}`} role="checkbox" aria-checked={g.min >= 1} onClick={() => set({ min: g.min >= 1 ? 0 : 1 })}>
+          <i aria-hidden="true">{g.min >= 1 && <Check size={14} weight="bold" />}</i>
+          <span><b>Obrigatório</b><small>{g.min >= 1 ? "Sem escolher, o cliente não consegue pedir" : "O cliente pode pedir sem escolher"}</small></span>
         </button>
-      )}
+        {chave === "sabor" && (
+          <button type="button" className={`esc-ckl${precoProprio ? " on" : ""}`} role="checkbox" aria-checked={precoProprio} onClick={() => set({ sabor_tem_preco_proprio: !precoProprio })}>
+            <i aria-hidden="true">{precoProprio && <Check size={14} weight="bold" />}</i>
+            <span><b>Cada sabor tem o seu preço</b><small>{precoProprio ? "Você coloca no último passo" : "Desmarcado: o sabor só soma, se custar a mais"}</small></span>
+          </button>
+        )}
+      </div>
 
       <p className="esc-lbl">Opções</p>
       {g.opcoes.length > 0 && (
-        <ul className="esc-ops">
-          {g.opcoes.map((o, i) => (
-            <li key={o.id} className="esc-op">
-              <span className="esc-op-nm">{o.nome}</span>
-              <label className="esc-op-v" aria-label={`${precoProprio ? "Preço" : "Valor a mais"} de ${o.nome}`}>
-                <span>{precoProprio ? "R$" : "+ R$"}</span>
-                <input inputMode="numeric" placeholder="0,00" value={valorDe(o) > 0 ? textoBRL(valorDe(o)) : ""}
-                  onChange={e => mudarValor(o.id, mascaraBRL(e.target.value))} />
-              </label>
-              {g.opcoes.length > 1 && (
-                <span className="esc-op-mv">
-                  <button type="button" onClick={() => mover(i, -1)} disabled={i === 0} aria-label={`Subir ${o.nome}`}><ArrowUp size={14} weight="bold" /></button>
-                  <button type="button" onClick={() => mover(i, 1)} disabled={i === g.opcoes.length - 1} aria-label={`Descer ${o.nome}`}><ArrowDown size={14} weight="bold" /></button>
+        <div className={`esc-tab${precoProprio ? " esc-tab--1" : ""}`} role="table" aria-label={`Opções de ${chave}`}>
+          <div className="esc-tab-l esc-tab-h" role="row"><span role="columnheader">{ROTULO[chave]}</span>{!precoProprio && <span role="columnheader">Custa a mais</span>}<span role="columnheader" aria-label="Tirar" /></div>
+          {g.opcoes.map(o => (
+            <div key={o.id} className="esc-tab-l" role="row">
+              <span role="cell" className="esc-tab-nm">{o.nome}</span>
+              {!precoProprio && (
+                <span role="cell">
+                  <label className="esc-tab-in" aria-label={`Valor a mais de ${o.nome}`}><span>+ R$</span>
+                    <input inputMode="numeric" placeholder="0,00" value={valorDe(o) > 0 ? textoBRL(valorDe(o)) : ""} onChange={e => mudarValor(o.id, mascaraBRL(e.target.value))} />
+                  </label>
                 </span>
               )}
-              <button type="button" className="esc-op-x" onClick={() => set({ opcoes: g.opcoes.filter(x => x.id !== o.id) })} aria-label={`Tirar ${o.nome}`}><X size={16} weight="bold" /></button>
-            </li>
+              <span role="cell"><button type="button" className="esc-op-x" onClick={() => set({ opcoes: g.opcoes.filter(x => x.id !== o.id) })} aria-label={`Tirar ${o.nome}`}><X size={16} weight="bold" /></button></span>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
       {sug.length > 0 && (
         <div className="esc-chips esc-chips--sug" role="group" aria-label="Sugestões">
           {sug.slice(0, 6).map(s => <button key={s} type="button" className="esc-chip esc-chip--sug" onClick={() => adicionar(s)}><Plus size={14} weight="bold" aria-hidden="true" />{s}</button>)}
         </div>
       )}
-      <div className="esc-nova">
+      <div className="esc-nova esc-nova--1">
         <input placeholder={NOVA[chave]} value={nova} onChange={e => setNova(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addDigitado(); } }} aria-label={NOVA[chave].replace("…", "")} />
-        <label className="esc-nova-v"><span>R$</span><input inputMode="numeric" placeholder="0,00" value={novoValor} onChange={e => setNovoValor(mascaraBRL(e.target.value))} aria-label="Valor a mais" /></label>
-        <button type="button" className="esc-nova-bt" onClick={addDigitado} disabled={!nova.trim()} aria-label="Pôr opção"><Plus size={20} weight="bold" /></button>
+        <button type="button" className="esc-nova-bt esc-nova-bt--txt" onClick={addDigitado} disabled={!nova.trim()}>Cadastrar</button>
       </div>
-      <p className="esc-dica">{precoProprio ? "O preço de cada sabor aparece no cardápio." : "Sem valor: já vem no preço. Com valor: custa a mais."}</p>
+      <p className="esc-nota">{precoProprio ? "O preço de cada sabor você coloca no último passo." : "Sem valor: já vem no preço. Com valor: custa a mais."}</p>
       <UsarDeOutro
         copias={copiasDe(outros, campo, gg => { const k = gg.opcoes.map((o: any) => norm(o.nome)).join("|"); return k === g.opcoes.map(o => norm(o.nome)).join("|") ? null : k; })}
         onUsar={c => set({ opcoes: c.opcoes.map((o: any) => ({ id: uid(), nome: o.nome, adicional: Number(o.adicional) || 0, ...(o.preco ? { preco: o.preco } : {}) })),
@@ -528,7 +525,7 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
 function CartaoQuantidade({ kit, onKitChange, nome }: { kit: KitQtdConfig; onKitChange: (k: KitQtdConfig) => void; nome: string }) {
   return (
     <div className="esc-corpo esc-corpo--kit">
-      <KitQuantidadeEditor modo="completo" kit={kit} onChange={onKitChange} nomeProduto={nome} />
+      <KitQuantidadeEditor modo="completo" semPreco kit={kit} onChange={onKitChange} nomeProduto={nome} />
     </div>
   );
 }
