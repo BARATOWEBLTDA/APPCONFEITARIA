@@ -5553,13 +5553,17 @@ export default function Produtos() {
                 <div className="prod-section">
                   {/* o título "Qual o preço?" já diz; só o por quilo precisa do rótulo */}
                   {form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" && <p className="prod-section-label prod-section-label--novo">Preço por kg</p>}
-                  {form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" && (
+                  {/* (14/10) no cadastro novo, o preço do kg já foi posto na janela de Tamanho: aqui só mostra e deixa a promoção */}
+                  {!form.id && form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" && (
+                    <p className="prod-kg-info">R$ {form.preco_normal > 0 ? formatPreco(form.preco_normal) : "0,00"} o kg <small>(em Escolhas › Tamanho)</small></p>
+                  )}
+                  {form.id && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" && (
                     <p style={{margin:"0 0 10px", fontSize:12.5, color:"#6B5D64", lineHeight:1.5}}>
-                      Define o preço de <b>1 kg</b>. Cada tamanho vai ser calculado automaticamente: <b>peso × preço</b>.
+                      Coloque o preço de <b>1 kg</b>. Cada tamanho sai sozinho.
                     </p>
                   )}
                   <div className="prod-row-2 prod-row-2--empilha">
-                    <div className="prod-field">
+                    {!(!form.id && form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") && <div className="prod-field">
                       <label>Preço cheio</label>
                       <div className="prod-preco-por">
                       <div className="prod-preco-input prod-preco-input--big">
@@ -5585,7 +5589,7 @@ export default function Produtos() {
                         </select>
                       </>)}
                       </div>
-                    </div>
+                    </div>}
                     <div className="prod-field">
                       <label>Preço promocional</label>
                       <div className="prod-preco-input prod-preco-input--big prod-preco-input--promo">
@@ -6092,7 +6096,7 @@ export default function Produtos() {
                     if (temTamanhoAtivo) {
                       // Modo "por peso": preços dos tamanhos são calculados via preco_normal (R$/kg)
                       if (gt!.modo_preco_tamanho === "por_peso") {
-                        return (form.preco_normal || 0) > 0 ? promoMaior : { msg: "Coloque o preço do kg", alvo: 'input[aria-label="Preço cheio"]' };
+                        return (form.preco_normal || 0) > 0 ? promoMaior : { msg: form.id ? "Coloque o preço do kg" : "Volte em Escolhas › Tamanho e coloque o preço do kg", alvo: form.id ? 'input[aria-label="Preço cheio"]' : undefined };
                       }
                       // Modo "preço fixo": todos os tamanhos precisam ter preço próprio
                       const semPreco = gt!.opcoes.find(o => !(o.preco > 0));

@@ -54,9 +54,9 @@ const MODELOS_UN: { nome: string; itens: string[] }[] = [
   { nome: "pelo aro", itens: ["Aro 15", "Aro 20", "Aro 25"] },
   { nome: "por pessoas", itens: ["Serve 10", "Serve 20", "Serve 30"] },
 ];
-// Por quilo (13/10): os pesos viram barrinhas que ela marca; já vêm marcados os mais comuns
-const PESOS_KG = [1, 1.5, 2, 2.5, 3, 3.5, 4, 5];
-const PESOS_PADRAO = [1, 1.5, 2, 3];
+// Por quilo (14/10): lista de pesos pra marcar, de 1 em 1 kg até 5 kg (todos já marcados), com o preço de cada um ao lado
+const PESOS_KG = [1, 2, 3, 4, 5];
+const PESOS_PADRAO = [1, 2, 3, 4, 5];
 const nomePeso = (kg: number) => (kg < 1 ? `${Math.round(kg * 1000)} g` : `${String(kg).replace(".", ",")} kg`);
 const opcoesDePesos = (pesos: number[]) => [...pesos].sort((a, b) => a - b).map(kg => ({ id: uid(), nome: nomePeso(kg), preco: 0, peso_kg: kg }));
 
@@ -269,7 +269,8 @@ function resumo(c: Chave, form: any): string {
   if (c === "tamanho") {
     const g = form.grupo_tamanhos as GrupoTam;
     if (!g.opcoes.length) return "Toque pra escolher os tamanhos";
-    return g.opcoes.map(o => o.nome).join(" · ") + (g.modo_preco_tamanho === "por_peso" ? " · por quilo" : "");
+    if (g.modo_preco_tamanho === "por_peso") return `${Number(form.preco_normal) > 0 ? `R$ ${textoBRL(Number(form.preco_normal))} o kg` : "Falta o preço do kg"} · ${g.opcoes.map(o => o.nome).join(" · ")}`;
+    return g.opcoes.map(o => o.nome).join(" · ");
   }
   const g = form[CAMPO[c as "massa"]] as Grupo;
   if (!g.opcoes.length) return "Toque pra pôr as opções";
@@ -407,7 +408,8 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
   const marcados = new Set(g.opcoes.map(o => Number(o.peso_kg) || 0).filter(Boolean));
   const semPeso = g.opcoes.filter(o => !(Number(o.peso_kg) > 0));
   const pesos = Array.from(new Set([...PESOS_KG, ...marcados])).sort((a, b) => a - b);
-  const maior = Math.max(...pesos);
+  const [verOutroPeso, setVerOutroPeso] = useState(false);
+  const precoKg = Number(form.preco_normal) || 0;
   const alternarPeso = (kg: number) => {
     if (marcados.has(kg)) set({ opcoes: g.opcoes.filter(o => Number(o.peso_kg) !== kg) });
     else set({ opcoes: [...g.opcoes, { id: uid(), nome: nomePeso(kg), preco: 0, peso_kg: kg }].sort((a, b) => (Number(a.peso_kg) || 99) - (Number(b.peso_kg) || 99)) });
@@ -419,7 +421,7 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
     const kg = g2 ? v / 1000 : v;
     return kg > 0 && kg <= 50 ? Math.round(kg * 100) / 100 : null;
   };
-  const addPeso = () => { const kg = lerPeso(novo); if (!kg) return; if (!marcados.has(kg)) alternarPeso(kg); setNovo(""); };
+  const addPeso = () => { const kg = lerPeso(novo); if (!kg) return; if (!marcados.has(kg)) alternarPeso(kg); setNovo(""); setVerOutroPeso(false); };
   const pesoDoNome = (n: string) => { const m = n.replace(",", ".").match(/(\d+(?:\.\d+)?)\s*kg/i); return m ? Number(m[1]) : null; };
   const add = () => {
     const n = primeiraMaiuscula(novo);
@@ -441,27 +443,38 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
         <button type="button" role="radio" aria-checked={porPeso} className={porPeso ? "on" : ""}
           onClick={() => { set({ modo_preco_tamanho: "por_peso", opcoes: g.opcoes.length ? g.opcoes.map(o => ({ ...o, peso_kg: o.peso_kg ?? pesoDoNome(o.nome) })) : opcoesDePesos(PESOS_PADRAO) }); setForm(f => ({ ...f, forma_venda: "kg" })); }}>Por quilo</button>
       </div>
-      {porPeso && <p className="esc-dica">O preço sai do peso × preço do kg.</p>}
 
       {porPeso && (<>
+        <p className="esc-lbl">Preço do kg</p>
+        <label className="esc-kg-preco"><span>R$</span>
+          <input inputMode="numeric" placeholder="0,00" value={precoKg > 0 ? textoBRL(precoKg) : ""} aria-label="Preço do kg"
+            onChange={e => { const v = lerBRL(mascaraBRL(e.target.value) || "0"); setForm(f => ({ ...f, preco_normal: v, ...(Number(f.preco_promocional) > 0 ? { promocao: Number(f.preco_promocional) < v } : {}) })); }} />
+        </label>
         <p className="esc-lbl">Quais pesos você faz?</p>
-        <div className="esc-kgs" role="group" aria-label="Pesos">
+        <ul className="esc-pesos" role="group" aria-label="Pesos">
           {pesos.map(kg => {
             const on = marcados.has(kg);
             return (
-              <button key={kg} type="button" className={`esc-kg${on ? " on" : ""}`} aria-pressed={on} onClick={() => alternarPeso(kg)}
-                aria-label={`${nomePeso(kg)}${on ? ", marcado" : ""}`}>
-                <span className="esc-kg-a"><i style={{ height: `${Math.round(22 + (kg / maior) * 78)}%` }} /></span>
-                <b>{kg < 1 ? `${Math.round(kg * 1000)}g` : String(kg).replace(".", ",")}</b>
-              </button>
+              <li key={kg}>
+                <button type="button" className={`esc-peso${on ? " on" : ""}`} role="checkbox" aria-checked={on} onClick={() => alternarPeso(kg)}>
+                  <i className="esc-peso-ck" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
+                  <b>{nomePeso(kg)}</b>
+                  <span>R$ {textoBRL(Math.round(kg * precoKg * 100) / 100) || "0,00"}</span>
+                </button>
+              </li>
             );
           })}
-        </div>
-        <p className="esc-dica">Toque pra marcar ou desmarcar. Os números são em kg.</p>
-        <div className="esc-nova esc-nova--1">
-          <input placeholder="Outro peso (ex.: 6 kg)" value={novo} inputMode="decimal" onChange={e => setNovo(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addPeso(); } }} aria-label="Outro peso" />
-          <button type="button" className="esc-nova-bt" onClick={addPeso} disabled={!lerPeso(novo)} aria-label="Pôr peso"><Plus size={20} weight="bold" /></button>
-        </div>
+          <li>
+            {verOutroPeso ? (
+              <div className="esc-nova esc-nova--1 esc-peso-novo">
+                <input autoFocus placeholder="Ex.: 1,5 kg ou 800 g" value={novo} inputMode="decimal" onChange={e => setNovo(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addPeso(); } }} aria-label="Outro peso" />
+                <button type="button" className="esc-nova-bt" onClick={addPeso} disabled={!lerPeso(novo)} aria-label="Pôr peso"><Plus size={20} weight="bold" /></button>
+              </div>
+            ) : (
+              <button type="button" className="esc-peso-mais" onClick={() => setVerOutroPeso(true)}><Plus size={16} weight="bold" aria-hidden="true" />Outro peso</button>
+            )}
+          </li>
+        </ul>
         {semPeso.length > 0 && (
           <ul className="esc-ops" style={{ marginTop: 12 }}>
             {semPeso.map(o => (
@@ -473,6 +486,7 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
             ))}
           </ul>
         )}
+        <p className="esc-nota">Quer dar desconto? Você coloca na próxima etapa.</p>
       </>)}
 
       {!porPeso && g.opcoes.length === 0 && <UsarDeOutro copias={copiasTam.map(c => {

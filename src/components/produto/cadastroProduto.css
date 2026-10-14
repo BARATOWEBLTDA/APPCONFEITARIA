@@ -167,3 +167,5 @@ body .prod-modal--novo .prod-preco-por-s { flex: none; width: 104px; height: 52p
 body .prod-modal--novo .prod-preco-por-s:focus { outline: none; border-color: var(--ui-rosa); }
 body .prod-modal--novo .prod-row-2--empilha { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
 body .prod-modal--novo .prod-row-2--empilha .prod-preco-input--promo { max-width: calc(100% - 104px - 8px - 8px - 22px); }
+body .prod-modal--novo .prod-kg-info { margin: 0 0 14px; font-size: 15px; font-weight: 600; color: var(--ui-texto); }
+body .prod-modal--novo .prod-kg-info small { font-size: 12.5px; font-weight: 500; color: var(--ui-texto-3); }
