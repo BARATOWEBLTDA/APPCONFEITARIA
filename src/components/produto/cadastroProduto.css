@@ -262,3 +262,17 @@ body .prod-modal--novo .pcab-s { margin: 2px 0 0; overflow: hidden; text-overflo
 body .prod-modal--novo .pcab-barra { position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: rgba(255,255,255,.3); }
 body .prod-modal--novo .pcab-barra i { display: block; height: 100%; background: #fff; border-radius: 0 3px 3px 0; transition: width .25s ease; }
 .pcab-info { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ui-texto-2); }
+
+/* (14/10) prévia só pra ver (tocar não abre o produto); título no padrão das seções */
+body .prod-modal--novo .prev-cardapio-card { pointer-events: none; user-select: none; }
+body .prod-modal--novo .prev-cardapio-t { display: block; }
+
+/* (14/10) tabela do desconto com linhas em volta e entre as colunas (tipo planilha) */
+.prod-dtab { margin-top: 12px; border: 1px solid var(--ui-borda); border-radius: 10px; overflow: hidden; background: var(--ui-branco); font-family: var(--font-base); }
+.prod-dtab-l { display: grid; grid-template-columns: minmax(0, 1fr) 96px 96px; }
+.prod-dtab-l + .prod-dtab-l { border-top: 1px solid var(--ui-borda); }
+.prod-dtab-l > * { display: flex; align-items: center; min-height: 42px; padding: 0 10px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ui-texto); }
+.prod-dtab-l > * + * { justify-content: flex-end; border-left: 1px solid var(--ui-borda); }
+.prod-dtab-l > b { font-weight: 700; color: #15803D; }
+.prod-dtab-h { background: #F7F3F5; }
+.prod-dtab-h > * { min-height: 36px; font-size: 12.5px; font-weight: 700; color: var(--ui-texto-2); }

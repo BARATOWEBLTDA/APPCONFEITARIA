@@ -435,7 +435,11 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
             setForm(f => ({ ...f, forma_venda: f.forma_venda === "kg" ? "unidade" : f.forma_venda }));
           }}>Preço fixo</button>
         <button type="button" role="radio" aria-checked={porPeso} className={porPeso ? "on" : ""}
-          onClick={() => { set({ modo_preco_tamanho: "por_peso", opcoes: g.opcoes.length ? g.opcoes.map(o => ({ ...o, peso_kg: o.peso_kg ?? pesoDoNome(o.nome) })) : opcoesDePesos(PESOS_PADRAO) }); setForm(f => ({ ...f, forma_venda: "kg" })); }}>Por quilo</button>
+          onClick={() => {
+            // (14/10) Pequeno/Médio/Grande não têm peso: no por quilo ficam só os que têm (ex.: "1,5 kg"); sem nenhum, vêm os pesos padrão
+            const comPeso = g.opcoes.map(o => ({ ...o, peso_kg: Number(o.peso_kg) > 0 ? o.peso_kg : pesoDoNome(o.nome) })).filter(o => Number(o.peso_kg) > 0);
+            set({ modo_preco_tamanho: "por_peso", opcoes: comPeso.length ? comPeso : opcoesDePesos(PESOS_PADRAO) }); setForm(f => ({ ...f, forma_venda: "kg" }));
+          }}>Por quilo</button>
       </div>
 
       {porPeso && (<>

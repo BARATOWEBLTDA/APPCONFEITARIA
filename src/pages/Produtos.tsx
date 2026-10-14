@@ -5533,9 +5533,19 @@ export default function Produtos() {
                           onChange={e => { const n = Math.min(90, Math.max(0, parseInt(e.target.value.replace(/\D/g, "")) || 0)); setForm(f => ({ ...f, desconto_percentual: n })); }} />
                         <span>% em todos</span>
                       </div>
-                      {pct > 0 && form.grupo_tamanhos!.opcoes.map(op => (
-                        <div className="kitp-row" key={op.id}><span>{op.nome}</span><b>R$ {formatPreco(op.preco || 0)}<em> → R$ {formatPreco(Math.round((op.preco || 0) * (100 - pct)) / 100)}</em></b></div>
-                      ))}
+                      {/* (14/10) tabela com linhas em volta, tipo planilha */}
+                      {pct > 0 && (
+                        <div className="prod-dtab" role="table" aria-label="Preços com desconto">
+                          <div className="prod-dtab-l prod-dtab-h" role="row"><span role="columnheader">Tamanho</span><span role="columnheader">Preço</span><span role="columnheader">Com {pct}%</span></div>
+                          {form.grupo_tamanhos!.opcoes.map(op => (
+                            <div className="prod-dtab-l" role="row" key={op.id}>
+                              <span role="cell">{op.nome}</span>
+                              <span role="cell">R$ {formatPreco(op.preco || 0)}</span>
+                              <b role="cell">R$ {formatPreco(Math.round((op.preco || 0) * (100 - pct)) / 100)}</b>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </>)}
                   </>);
                 })()}
