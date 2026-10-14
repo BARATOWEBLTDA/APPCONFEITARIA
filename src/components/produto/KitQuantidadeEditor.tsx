@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { mascaraBRL, lerBRL, textoBRL } from "@/lib/moeda";
 import { Basket, Cookie, ForkKnife, PencilSimple, X } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import KitPicker from "@/components/cardapio/KitPicker";
@@ -52,7 +53,6 @@ export function faltaKit(kit?: KitQtdConfig | null): { msg: string; alvo?: strin
 
 // 10/10: parseNumBR entende ponto de milhar ("1.200,00" lia como 1,2)
 const num = (v: string) => parseNumBR(v);
-const moeda = (v: number) => v > 0 ? v.toFixed(2).replace(".", ",") : "";
 
 export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }: Props) {
   const k: KitQtdConfig = { ...KIT_VAZIO, ...(kit || {}), livre: { ...KIT_VAZIO.livre, ...(kit?.livre || {}) } };
@@ -181,8 +181,8 @@ export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }
                     <span className="kq-t">Kit de</span><input className="kq-box kq-box--qtd" data-falta={`kitqtd-${x.id}`} inputMode="numeric" value={x.qtd || ""} placeholder="50" aria-label="Unidades do kit"
                       onChange={e => set({ kits: k.kits.map(y => y.id === x.id ? { ...y, qtd: Math.round(num(e.target.value)) } : y) })} />
                     <span className="kq-t">un. por</span>
-                    <span data-falta={`kit-${x.id}`} className={`kq-box kq-box--rs${x.preco > 0 ? " ok" : " falta"}`}>R$ <input inputMode="decimal" defaultValue={moeda(x.preco)} placeholder="0,00" aria-label="Preço do kit"
-                      onChange={e => set({ kits: k.kits.map(y => y.id === x.id ? { ...y, preco: num(e.target.value) } : y) })} /></span>
+                    <span data-falta={`kit-${x.id}`} className={`kq-box kq-box--rs${x.preco > 0 ? " ok" : " falta"}`}>R$ <input inputMode="numeric" value={textoBRL(x.preco)} placeholder="0,00" aria-label="Preço do kit"
+                      onChange={e => set({ kits: k.kits.map(y => y.id === x.id ? { ...y, preco: lerBRL(mascaraBRL(e.target.value)) } : y) })} /></span>
                     <button type="button" className="kq-x" onClick={() => set({ kits: k.kits.filter(y => y.id !== x.id) })} aria-label="Remover kit"><X size={16} weight="bold" /></button>
                   </div>
                 ))}
@@ -197,8 +197,8 @@ export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto }
                   onChange={e => set({ livre: { ...k.livre, passo: Math.round(num(e.target.value)) } })} /> em {k.livre.passo || "–"}</div>
                 {/* 11/10: o máximo não cai num passo (25 a 75 de 15 em 15): só avisa, o cardápio completa até o máximo */}
                 {maxQuebrado && <p className="kq-ex">O máximo de {k.livre.max} não fecha de {k.livre.passo} em {k.livre.passo}. O último passo vai até o máximo.</p>}
-                <div className="kq-frase">O cento custa <span className={`kq-box kq-box--rs${k.livre.preco_cento > 0 ? " ok" : " falta"}`}>R$ <input inputMode="decimal" defaultValue={moeda(k.livre.preco_cento)} placeholder="0,00" aria-label="Preço do cento"
-                  onChange={e => set({ livre: { ...k.livre, preco_cento: num(e.target.value) } })} /></span></div>
+                <div className="kq-frase">O cento custa <span className={`kq-box kq-box--rs${k.livre.preco_cento > 0 ? " ok" : " falta"}`}>R$ <input inputMode="numeric" value={textoBRL(k.livre.preco_cento)} placeholder="0,00" aria-label="Preço do cento"
+                  onChange={e => set({ livre: { ...k.livre, preco_cento: lerBRL(mascaraBRL(e.target.value)) } })} /></span></div>
               </>
             )}
           </section>

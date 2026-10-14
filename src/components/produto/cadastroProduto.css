@@ -146,3 +146,9 @@ body .prod-modal--novo .kq-prev { position: static; }
 /* (13/10) "Como você vende" no Básico */
 body .prod-modal--novo .prod-como-vende { max-width: 420px; }
 body .prod-modal--novo .prod-como-vende-dica { margin: 6px 0 0; font-size: 12.5px; color: var(--ui-texto-3); }
+
+/* (13/10) "Preencher os outros pelo P" no preço por tamanho */
+.prod-sug-tam { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 48px; margin-top: 10px; padding: 0 14px; border: 1.5px dashed #E7C2D2; border-radius: 8px; background: #FFF9FB; color: var(--ui-rosa-escuro); font-family: inherit; cursor: pointer; text-align: left; }
+.prod-sug-tam span { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.prod-sug-tam small { flex: none; font-size: 12px; color: var(--ui-texto-3); }
+@media (max-width: 380px) { .prod-sug-tam small { display: none; } }

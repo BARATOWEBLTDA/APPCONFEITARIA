@@ -5,12 +5,14 @@ import { LIMITE_PRODUTOS_GRATIS } from "@/lib/limitesPlano";
 import CampoNumero from "@/components/ui/CampoNumero";
 import { useLocation, useNavigate } from "react-router-dom";
 import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
+import { sugerirPrecosTamanho } from "@/lib/sugestaoTamanho";
+import RevisaoProduto from "@/components/produto/RevisaoProduto";
 import EscolhasProduto from "@/components/produto/EscolhasProduto";
 import { kitAtivo, precoMinKit, kitsValidos, type KitQtdConfig } from "@/lib/kitQuantidade";
 import TipoProdutoTela, { type TipoProduto as TipoCadastro } from "@/components/produto/TipoProdutoTela";
 import SucessoProdutoTela from "@/components/produto/SucessoProdutoTela";
 import { precoCardapio, precoCardapioComPromocao } from "@/lib/precoCardapio";
-import { BoloOpcoesStep, BoloTamanhosStep, BoloPrecoStep, boloOpcoesFalta, boloTamanhosFalta, boloPrecoFalta, type BoloTam, type FaltaCampo } from "@/components/produto/BoloWizard";
+import { type BoloTam, type FaltaCampo } from "@/components/produto/BoloWizard";
 import { supabase } from "@/lib/supabase";
 import { listarBiblioteca, salvarNaBiblioteca, type BibliotecaOpcao } from "@/lib/biblioteca";
 import { carregarGruposDoBanco, salvarGruposParaBanco } from "@/lib/produto-grupos";
@@ -3906,12 +3908,8 @@ export default function Produtos() {
       })();
     }
   };
-  // (13/10) o bolo usa o mesmo cadastro dos outros tipos (Escolhas → Preço): as telas próprias do bolo saíram do caminho
-  const isBolo: boolean = false;
-  // Edição de bolo nas telas novas: só quando o produto usa o que essas telas cobrem
-  // (massa, recheio, cobertura e tamanhos por preço fixo ou pelo peso). Senão, abas antigas.
+  // (13/10) o bolo usa o mesmo cadastro dos outros tipos (Escolhas → Preço): as telas próprias do bolo saíram
   const isKitEdit = !!form.id && kitAtivo((form as any).kit_qtd);
-  const isBoloEdit: boolean = false; // (13/10) edição do bolo também na tela de Escolhas
   // Liga/desliga e edita o kit (Tamanhos e Sabores saem quando o kit liga)
   const onKitChange = (k: KitQtdConfig) => setForm(f => {
     const ligando = k.ativo && !kitAtivo((f as any).kit_qtd);
@@ -4268,9 +4266,7 @@ export default function Produtos() {
         ops = ops.map(o => ({ ...o, preco: 0, peso_kg: Number(o.peso_kg) > 0 ? o.peso_kg : pesoKgDoNome(o.nome) }));
         const semPeso = ops.find(o => !(Number(o.peso_kg) > 0));
         if (semPeso) {
-          return avisar(isBolo || isBoloEdit
-            ? `Coloque o peso do tamanho ${semPeso.nome}.`
-            : `Falta o peso do tamanho ${semPeso.nome}. Cadastre de novo com o peso no nome (ex.: 1 kg) ou use preço fixo.`, { tipo: "erro" });
+          return avisar(`Coloque o peso do tamanho ${semPeso.nome} em Escolhas › Tamanho.`, { tipo: "erro" });
         }
       }
       formSalvar = { ...form, grupo_tamanhos: { ...gtForm, modo_preco_tamanho: modoT, opcoes: ops } };
@@ -4292,7 +4288,7 @@ export default function Produtos() {
         // no cadastro de bolo a promoção tem um botão próprio: desligada, o valor antigo só sai
         // promoção desligada: o valor antigo só sai (produto antigo ficava sem salvar, às vezes com o campo fora da tela)
         if (!form.promocao) ajustePromo = { preco_promocional: 0 };
-        else { if (form.id && !isBoloEdit) setEditTab("preco"); return avisar("O preço promocional precisa ser menor que o preço cheio.", { tipo: "erro" }); }
+        else { if (form.id) setEditTab("preco"); return avisar("O preço promocional precisa ser menor que o preço cheio.", { tipo: "erro" }); }
       }
     }
 
@@ -4596,7 +4592,6 @@ export default function Produtos() {
   // Voltar um passo no cadastro (o mesmo do botão do topo e do "Voltar" do rodapé · 08/10 · 3.22)
   const voltarPassoCadastro = () => {
                   if (wizardStep === 2) { setTipoTela(true); return; }
-                  if (wizardStep === 4 && isBolo && boloPrecoTela) { setBoloPrecoTela(false); return; }
                   if (wizardStep === 3 && kitTela) {
                     setKitTela(false);
                     const outros = [form.grupo_massas, form.grupo_recheios, form.grupo_coberturas, form.grupo_sabores, form.grupo_tamanhos].some(g => g?.ativo);
@@ -5458,19 +5453,20 @@ export default function Produtos() {
               </>
               )}
 
+              {/* Título e subtítulo (mesmo estilo do step 3) */}
+              {wizardStep === 4 && !form.id && (
+                <div className="prod-step-header">
+                  <div className="prod-step-title">Qual o preço?</div>
+                  <div className="prod-step-sub">
+                    {kitAtivo((form as any).kit_qtd)
+                      ? "Confira o preço de cada kit e, se quiser, coloque em promoção."
+                      : "Quanto o cliente paga. Se quiser, coloque em promoção."}
+                  </div>
+                </div>
+              )}
+
               {/* Preços por Tamanho — só se tem tamanhos ativos */}
-              {wizardStep === 4 && isBolo && (!boloPrecoTela
-                ? <BoloTamanhosStep form={form} setForm={setForm as any} escolha={boloTam} setEscolha={setBoloTam} />
-                : <BoloPrecoStep form={form} setForm={setForm as any} escolha={boloTam} primeiroNome={primeiroNome} />
-              )}
-              {/* Edição de bolo: tamanhos e preço juntos na aba Preço */}
-              {form.id && editTab === "tamanhos" && isBoloEdit && (
-                <BoloTamanhosStep form={form} setForm={setForm as any} escolha={boloTam} setEscolha={setBoloTam} edicao />
-              )}
-              {form.id && editTab === "preco" && isBoloEdit && (
-                <BoloPrecoStep form={form} setForm={setForm as any} escolha={boloTam} primeiroNome={primeiroNome} edicao />
-              )}
-              {((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco" && !isBoloEdit)) && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && form.grupo_tamanhos.modo_preco_tamanho !== "sob_consulta" && form.grupo_tamanhos.modo_preco_tamanho !== "por_peso" && (
+              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && form.grupo_tamanhos.modo_preco_tamanho !== "sob_consulta" && form.grupo_tamanhos.modo_preco_tamanho !== "por_peso" && (
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">
                     {/* 10/10: antes cortava a última letra do nome do grupo ("tamanhos e peso", "tamanhos do comb") */}
@@ -5507,11 +5503,21 @@ export default function Produtos() {
                       </div>
                     ))}
                   </div>
+                  {(() => {
+                    const sug = sugerirPrecosTamanho(form.grupo_tamanhos!.opcoes as any[]);
+                    if (!sug) return null;
+                    const base = form.grupo_tamanhos!.opcoes.find(o => o.preco > 0)!;
+                    return (
+                      <button type="button" className="prod-sug-tam" onClick={() => setForm(f => ({ ...f, grupo_tamanhos: { ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO), opcoes: sug as any } }))}>
+                        <span>Sugerir os outros pelo {base.nome}</span>
+                      </button>
+                    );
+                  })()}
                 </div>
               )}
 
               {/* Preços por Sabor — só se tem sabores ativos E sabor_tem_preco_proprio */}
-              {((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco" && !isBoloEdit)) && form.grupo_sabores?.ativo && (form.grupo_sabores.opcoes.length || 0) > 0 && form.grupo_sabores.sabor_tem_preco_proprio && (
+              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && form.grupo_sabores?.ativo && (form.grupo_sabores.opcoes.length || 0) > 0 && form.grupo_sabores.sabor_tem_preco_proprio && (
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">
                     Preço por sabor <ReqTag />
@@ -5549,22 +5555,10 @@ export default function Produtos() {
                 </div>
               )}
 
-              {/* Título e subtítulo (mesmo estilo do step 3) */}
-              {wizardStep === 4 && !form.id && !isBolo && (
-                <div className="prod-step-header">
-                  <div className="prod-step-title">Qual o preço?</div>
-                  <div className="prod-step-sub">
-                    {kitAtivo((form as any).kit_qtd)
-                      ? "Confira o preço de cada kit e, se quiser, coloque em promoção."
-                      : "Quanto o cliente paga. Se quiser, coloque em promoção."}
-                  </div>
-                </div>
-              )}
-
               {/* ══════ SEÇÃO 1: Preço base + Forma de venda ══════ */}
               {/* Aparece quando: (a) não tem tamanho, OU (b) modo é por_peso (precisa do R$/kg) */}
               {/* Kit (02/10): sem "preço base" — o preço vem dos kits montados. Fica só a promoção. */}
-              {((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco" && !isBoloEdit)) && kitAtivo((form as any).kit_qtd) && (() => {
+              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && kitAtivo((form as any).kit_qtd) && (() => {
                 const kq: any = (form as any).kit_qtd;
                 const kits = kitsValidos(kq);
                 const pct = Number(form.desconto_percentual) || 0;
@@ -5595,7 +5589,7 @@ export default function Produtos() {
                 );
               })()}
 
-              {((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco" && !isBoloEdit)) && !kitAtivo((form as any).kit_qtd) && (
+              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && !kitAtivo((form as any).kit_qtd) && (
                 !(form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0) ||
                 form.grupo_tamanhos?.modo_preco_tamanho === "por_peso"
               ) && (
@@ -5681,7 +5675,7 @@ export default function Produtos() {
 
               {/* 02/10: com tamanhos de preço próprio o bloco do preço base some — e o "Vendido por" sumia junto,
                   deixando o produto sempre como "unidade" (ex.: caixa P/M/G aparecia como unidade no cardápio) */}
-              {((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco" && !isBoloEdit)) && !kitAtivo((form as any).kit_qtd)
+              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && !kitAtivo((form as any).kit_qtd)
                 && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && form.grupo_tamanhos?.modo_preco_tamanho !== "por_peso" && (
                 <div className="prod-section">
                   <div className="prod-field">
@@ -5698,7 +5692,7 @@ export default function Produtos() {
               )}
 
               {/* ══════ SEÇÃO 2: Adicionais das opções ══════ (13/10: os valores agora ficam nas Escolhas) */}
-              {false && ((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco" && !isBoloEdit)) && (() => {
+              {false && ((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (() => {
                 const gruposComOpcoes = [
                   { key: "massas", label: "Massas", grupo: form.grupo_massas },
                   { key: "recheios", label: "Recheios", grupo: form.grupo_recheios },
@@ -5777,7 +5771,7 @@ export default function Produtos() {
 
               {/* ══════ SEÇÃO 3: Regra de conflito Sabor × Tamanho ══════
                   Aparece SÓ quando há conflito real de preço (Passo 4) */}
-              {((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco" && !isBoloEdit)) && (() => {
+              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (() => {
                 const gs = form.grupo_sabores;
                 const gt = form.grupo_tamanhos;
                 const conflito = existeConflitoSaborTamanho({
@@ -5914,7 +5908,7 @@ export default function Produtos() {
               {/* ══════ Extras pagos (V3) — DESATIVADO temporariamente
                   Vai virar seção exclusiva de "Complementos" (já existe página /complementos)
                   Integração no cadastro de produto será feita em fase futura. ══════ */}
-              {false && ((wizardStep === 4 && !form.id && !isBolo) || (form.id && editTab === "preco" && !isBoloEdit)) && (
+              {false && ((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (
               <>
 
               {/* Adicionais */}
@@ -6091,6 +6085,8 @@ export default function Produtos() {
               </div>
               )}
 
+              {/* (13/10) Revisão: como o cliente vê, pedido de exemplo e o que falta */}
+              {wizardStep === 5 && !form.id && <div className="prod-section"><RevisaoProduto form={form} /></div>}
             </div>
             )}
 
@@ -6114,8 +6110,6 @@ export default function Produtos() {
                   // Step 3: Opções — valida só as personalizações
                   //   Se ativou algum grupo, precisa ter pelo menos 1 opção nele
                   //   Preço base é validado no step 4
-                  if (wizardStep === 3 && isBolo) return boloOpcoesFalta(form);
-                  if (wizardStep === 4 && isBolo) return boloPrecoTela ? boloPrecoFalta(form, boloTam) : boloTamanhosFalta(form, boloTam);
                   if (wizardStep === 3) {
                     // (13/10) kit ligado: precisa estar completo · escolha ligada: precisa ter pelo menos 1 opção
                     if (kitAtivo((form as any).kit_qtd)) { const fk = faltaKit((form as any).kit_qtd); if (fk) return fk; }
@@ -6199,7 +6193,7 @@ export default function Produtos() {
                       if (!canAdvance) { irParaFalta(); return; }
                       // Mobile: se está no checklist da personalização, primeiro avança pra fill (não pro próximo step)
                       const kitLigado = kitAtivo((form as any).kit_qtd);
-                      if (false && isMobileMain && !form.id && wizardStep === 3 && mobilePersonaStep === "checklist" && !isBolo && !kitTela) {
+                      if (false && isMobileMain && !form.id && wizardStep === 3 && mobilePersonaStep === "checklist" && !kitTela) {
                         const outros = [form.grupo_massas, form.grupo_recheios, form.grupo_coberturas, form.grupo_sabores, form.grupo_tamanhos].some(g => g?.ativo);
                         // Só o kit ligado: vai direto pra "Monte seu kit"
                         if (kitLigado && !outros) { setKitTela(true); return; }
@@ -6209,7 +6203,6 @@ export default function Produtos() {
                         return;
                       }
                       // Bolo: depois dos tamanhos vem a tela de preço
-                      if (!form.id && wizardStep === 4 && isBolo && !boloPrecoTela) { setBoloPrecoTela(true); return; }
                       // Kit ligado: depois das opções vem a tela "Monte seu kit"
                       void kitLigado; // (13/10) o kit agora é montado dentro de Escolhas
                       setWizardStep(s => (s + 1) as 1 | 2 | 3 | 4 | 5);
