@@ -4297,29 +4297,29 @@ export default function Produtos() {
       const grupos = [form.grupo_massas, form.grupo_recheios, form.grupo_coberturas, form.grupo_sabores, form.grupo_tamanhos];
       const algumAtivo = grupos.some(g => g?.ativo && (g.opcoes?.length || 0) > 0) || kitAtivo((form as any).kit_qtd);
       // Produto simples (sem opções) também pode ser publicado — só precisa do preço
-      if (!algumAtivo && !(form.preco_normal > 0) && !(tipoCadastro === "bolos" && !form.id)) return avisar("Informe o preço do produto", { tipo: "erro" });
+      if (!algumAtivo && !(form.preco_normal > 0) && !(tipoCadastro === "bolos" && !form.id)) { if (form.id) setEditTab("preco"); return avisar("Informe o preço do produto", { tipo: "erro" }); }
       // Se tem Tamanhos ativos, preço base vem do MENOR tamanho
       const gt = form.grupo_tamanhos;
       const gs = form.grupo_sabores;
       if (gt?.ativo && gt.opcoes.length > 0) {
         // Modo por_peso: preço vem do preco_normal (R$/kg), não dos tamanhos individuais
         if (gt.modo_preco_tamanho === "por_peso") {
-          if (!form.preco_normal || form.preco_normal <= 0) return avisar("Defina o preço por kg", { tipo: "erro" });
+          if (!form.preco_normal || form.preco_normal <= 0) { if (form.id) setEditTab("preco"); return avisar("Defina o preço por kg", { tipo: "erro" }); }
           precoBase = form.preco_normal;
         } else {
           const precosT = gt.opcoes.map(o => o.preco).filter(p => p > 0);
-          if (precosT.length === 0) return avisar("Adicione ao menos 1 preço nos tamanhos", { tipo: "erro" });
+          if (precosT.length === 0) { if (form.id) setEditTab("preco"); return avisar("Adicione ao menos 1 preço nos tamanhos", { tipo: "erro" }); }
           precoBase = Math.min(...precosT);
         }
       } else if (gs?.ativo && gs.opcoes.length > 0 && gs.sabor_tem_preco_proprio) {
         const precosS = gs.opcoes.map((o: any) => o.preco || 0).filter((p: number) => p > 0);
-        if (precosS.length === 0) return avisar("Adicione ao menos 1 preço nos sabores", { tipo: "erro" });
+        if (precosS.length === 0) { if (form.id) setEditTab("preco"); return avisar("Adicione ao menos 1 preço nos sabores", { tipo: "erro" }); }
         precoBase = Math.min(...precosS);
       } else {
-        if (!form.preco_normal || form.preco_normal <= 0) return avisar("Preço base deve ser maior que zero", { tipo: "erro" });
+        if (!form.preco_normal || form.preco_normal <= 0) { if (form.id) setEditTab("preco"); return avisar("Preço base deve ser maior que zero", { tipo: "erro" }); }
       }
     } else {
-      if (!form.preco_normal || form.preco_normal <= 0) return avisar("Preço deve ser maior que zero", { tipo: "erro" });
+      if (!form.preco_normal || form.preco_normal <= 0) { if (form.id) setEditTab("preco"); return avisar("Preço deve ser maior que zero", { tipo: "erro" }); }
     }
 
     // ─── Tamanhos (10/10): as mesmas regras na criação e na edição ───
@@ -4341,6 +4341,8 @@ export default function Produtos() {
         const saborDaPreco = !!gsForm?.ativo && !!gsForm.sabor_tem_preco_proprio && (gsForm.opcoes || []).some((o: any) => o?.preco > 0);
         const semPreco = ops.find(o => !(o.preco > 0));
         if (semPreco && !(saborDaPreco && ops.every(o => !(o.preco > 0)))) {
+          // (14/10) na edição, leva pra parte do preço (antes avisava em Escolhas, onde não tem o campo)
+          if (form.id) setEditTab("preco");
           return avisar(`Coloque o preço do tamanho ${semPreco.nome}.`, { tipo: "erro" });
         }
       } else if (modoT === "por_peso") {
@@ -4350,6 +4352,7 @@ export default function Produtos() {
         ops = ops.map(o => ({ ...o, preco: 0, peso_kg: Number(o.peso_kg) > 0 ? o.peso_kg : pesoKgDoNome(o.nome) }));
         const semPeso = ops.find(o => !(Number(o.peso_kg) > 0));
         if (semPeso) {
+          if (form.id) setEditTab("opcoes");
           return avisar(`Coloque o peso do tamanho ${semPeso.nome} em Escolhas › Tamanho.`, { tipo: "erro" });
         }
       }

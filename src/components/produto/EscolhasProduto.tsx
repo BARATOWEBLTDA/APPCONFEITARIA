@@ -452,9 +452,10 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
     if (!m) return null;
     const v = Number(m[1]);
     const kg = unNovo === "g" ? v / 1000 : v;
-    return kg > 0 && kg <= 50 ? Math.round(kg * 1000) / 1000 : null;
+    // (14/10) peso de verdade: de 50 g a 50 kg (antes "1,5" em g virava "2 g")
+    return kg >= 0.05 && kg <= 50 ? Math.round(kg * 1000) / 1000 : null;
   };
-  const addPeso = () => { const kg = lerPeso(novo); if (!kg) return; if (!marcados.has(kg)) alternarPeso(kg); setNovo(""); setVerOutroPeso(false); };
+  const addPeso = () => { const kg = lerPeso(novo); if (!kg) return; if (!marcados.has(kg)) alternarPeso(kg); setNovo(""); setVerOutroPeso(false); setUnNovo("kg"); };
   const pesoDoNome = (n: string) => { const m = n.replace(",", ".").match(/(\d+(?:\.\d+)?)\s*kg/i); return m ? Number(m[1]) : null; };
   const add = () => {
     const n = primeiraMaiuscula(novo);
@@ -592,7 +593,7 @@ function LinhaRendimento({ g, set, nomeProduto = "" }: { g: GrupoTam; set: (p: P
       <span className="esc-tx">
         <b>{ok ? "Rendimento" : <>Rendimento <span className="esc-rec">recomendado</span></>}</b>
         {/* (14/10) veio de uma predefinição: diz qual */}
-        <small>{ok ? (g.rendimento_predef ? <>Predefinição ativada: <b>{g.rendimento_predef}</b></> : resumo) : "Pessoas ou fatias por tamanho"}</small>
+        <small>{ok ? (g.rendimento_predef ? <>Predefinição: <b>{g.rendimento_predef}</b></> : resumo) : "Pessoas ou fatias por tamanho"}</small>
       </span>
       <span className="esc-rend-bt">{ok ? "Editar" : "Definir"}</span>
     </button>

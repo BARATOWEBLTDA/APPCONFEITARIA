@@ -61,3 +61,4 @@
 .ic-cp-ft { position: relative; }
 .ic-cp-nome { font-weight: 700; }
 .ic-cp-desc { margin: 0; font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ic-ent--esg { color: #B45309; font-weight: 600; }

@@ -5,7 +5,7 @@ import { ProductModal } from '@/components/cart/ProductModal'
 import { formatCurrency as fmtBRL } from '@/utils/helpers'
 import { seloEntrega, SeloEntregaFoto } from '@/lib/entregaProduto'
 import { precoDoCartao } from './ProductCard'
-import { descontoCardapio } from '@/lib/precoCardapio'
+import { tamanhosEsgotados, descontoCardapio } from '@/lib/precoCardapio'
 import './itensCardapio.css'
 
 /**
@@ -17,6 +17,7 @@ import './itensCardapio.css'
 const fotoDe = (p: Produto) => p.imagem_url?.split(',')[0]?.trim() || null
 
 function Entrega({ produto }: { produto: Produto }) {
+  if (tamanhosEsgotados(produto)) return <span className="ic-ent ic-ent--esg">Esgotado no momento</span> // (14/10)
   const s = seloEntrega(produto)
   if (!s) return null
   return s.tipo === 'pronta'

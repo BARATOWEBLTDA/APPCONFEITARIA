@@ -1,7 +1,7 @@
 import { seloEntrega } from "@/lib/entregaProduto";
 import { unidadeCliente } from '@/lib/formaVenda'
 import KitPicker from '@/components/cardapio/KitPicker'
-import { precoCardapio, precoDoTamanho, descontoCardapio, comDesconto } from '@/lib/precoCardapio'
+import { precoCardapio, precoDoTamanho, descontoCardapio, comDesconto, tamanhosEsgotados } from '@/lib/precoCardapio'
 import { pesoDoNome, pesoDoTamanho, cortarTexto } from '@/lib/itemSacola'
 import { r2 } from '@/lib/moeda'
 import { avisar } from '@/components/base'
@@ -693,10 +693,12 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
         </div>
       )}
       {/* Faltando escolha obrigatória o botão diz o que falta; sem tamanho/kit ainda não mostra preço (seria o do menor como se estivesse escolhido) */}
+      {/* (14/10) todos os tamanhos esgotados: o botão diz isso e não deixa pedir */}
+      {tamanhosEsgotados(product) ? <button type="button" className="pm-add so-texto" disabled style={{ background: '#B5AAB0', cursor: 'not-allowed' }}><span>Esgotado no momento</span></button> :
       <button type="button" className={`pm-add${faltou ? ' treme' : ''}${pendente === 'tamanho' || pendente === 'kit' ? ' so-texto' : ''}`} style={{ background: corBotao }} onClick={tentarAdicionar}>
         <span>{pendente ? TEXTO_FALTA[pendente] : (rotuloAdicionar || 'Adicionar')}</span>
         {pendente !== 'tamanho' && pendente !== 'kit' && <strong>{formatCurrency(totalDisplay)}</strong>}
-      </button>
+      </button>}
     </footer>
   )
 

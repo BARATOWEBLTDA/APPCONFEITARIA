@@ -30,6 +30,13 @@ export function precosDosSabores(p: any): number[] | null {
   return (gs.opcoes || []).filter((o: any) => !o?.esgotado).map((o: any) => r2(Number(o?.preco) || 0)).filter((v: number) => v > 0)
 }
 
+/** (14/10) todos os tamanhos marcados como esgotados: o produto não dá pra pedir agora */
+export function tamanhosEsgotados(p: any): boolean {
+  const gt = p?.grupo_tamanhos
+  const ops: any[] = gt?.ativo ? (gt.opcoes || []) : []
+  return ops.length > 0 && ops.every(o => !!o?.esgotado)
+}
+
 /** O produto tem tamanhos de preço fixo valendo (grupo ativo, com preço em alguma opção)? */
 function temTamanhoDePrecoFixo(p: any): boolean {
   const gt = p?.grupo_tamanhos

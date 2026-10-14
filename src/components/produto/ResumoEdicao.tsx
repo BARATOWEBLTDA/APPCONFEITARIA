@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Cake, CurrencyCircleDollar, Image as ImageIc, ListChecks, PencilSimple, Storefront } from "@phosphor-icons/react";
-import { precoCardapioComPromocao } from "@/lib/precoCardapio";
+import { precoCardapioComPromocao, tamanhosEsgotados } from "@/lib/precoCardapio";
 import { textoBRL } from "@/lib/moeda";
 import { escolhasAtivas } from "@/components/produto/EscolhasProduto";
 import { resumoRevisao } from "@/components/produto/RevisaoProduto";
@@ -72,7 +72,7 @@ export default function ResumoEdicao({ form, isPro = false, onEditar }: { form: 
       <p className="prod-section-label red-t">O que você quer mudar?</p>
       <ul className="red-lista">
         {linha("info", <PencilSimple size={18} weight="bold" />, "Nome e descrição", textoInfo, !form.categoria)}
-        {linha("opcoes", <ListChecks size={18} weight="bold" />, "Escolhas", escolhas)}
+        {linha("opcoes", <ListChecks size={18} weight="bold" />, "Escolhas", tamanhosEsgotados(form) ? "Tudo esgotado no momento" : escolhas, tamanhosEsgotados(form))}
         {linha("fotos", <ImageIc size={18} weight="bold" />, "Fotos", textoFotos, !fotos.length)}
         {linha("preco", <CurrencyCircleDollar size={18} weight="bold" />, "Preço e promoção", preco, !!faltaPreco)}
         {linha("entrega", <Storefront size={18} weight="bold" />, "Cardápio e entrega", entrega, semEntrega)}
