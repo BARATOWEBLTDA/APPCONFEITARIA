@@ -56,3 +56,8 @@
 .ic-aba.on { color: var(--ui-texto); border-bottom-color: var(--ui-texto); }
 .ic-presa .cl-busca { margin: 0; border-radius: 999px; background: var(--ui-branco); }
 .ic-presa .cl-cat-menu { top: calc(100% + 4px); left: 0; }
+
+/* (14/10) cartão de Promoções: foto com o selo, nome, descrição (2 linhas) e preço */
+.ic-cp-ft { position: relative; }
+.ic-cp-nome { font-weight: 700; }
+.ic-cp-desc { margin: 0; font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }

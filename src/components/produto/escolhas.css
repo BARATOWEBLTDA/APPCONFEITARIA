@@ -323,3 +323,11 @@ body .prod-modal--novo .rev .rev-tit:not(:first-child) { margin-top: 22px !impor
 /* (14/10) títulos das seções no padrão do guia (16px/700), igual a "Opções" e "Antes de publicar" */
 .esc-lbl { margin: 22px 0 10px; font-size: 16px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); }
 .esc-corpo > .esc-lbl:first-child, .esc-jan .esc-corpo > .esc-lbl:first-child, .esc-rend > .esc-lbl:first-child { margin-top: 4px; }
+
+/* (14/10) Revisão: tabelinha rótulo | valor */
+.rev-tab { margin-top: 0; }
+.prod-dtab-l.rev-tab-l { grid-template-columns: 104px minmax(0, 1fr); }
+.prod-dtab-l.rev-tab-l > * { white-space: normal; min-height: 42px; padding-top: 10px; padding-bottom: 10px; line-height: 1.35; }
+.prod-dtab-l.rev-tab-l > span:first-child { align-items: flex-start; background: #F7F3F5; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
+.prod-dtab-l.rev-tab-l > span + span { justify-content: flex-start; align-items: flex-start; text-wrap: pretty; overflow-wrap: anywhere; }
+.rev-tab-l .rev-falta { color: #B45309; font-weight: 600; }

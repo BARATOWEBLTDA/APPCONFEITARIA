@@ -47,7 +47,7 @@ export function SeloEntregaFoto({ produto }: { produto: any }) {
       style={{
         position: "absolute", left: 8, bottom: 8, zIndex: 5,
         display: "inline-flex", alignItems: "center", gap: 4,
-        padding: "3px 8px", borderRadius: 999,
+        padding: "3px 8px", borderRadius: 6, // (14/10) etiqueta retangular, padrão do app
         background: "rgba(255,255,255,0.96)", boxShadow: "0 2px 6px rgba(0,0,0,0.14)",
         fontSize: 12, fontWeight: 700, lineHeight: 1.2, whiteSpace: "nowrap",
         color: pronta ? "#15803D" : "#2C1219",

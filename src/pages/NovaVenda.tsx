@@ -549,7 +549,10 @@ export default function NovaVenda() {
         horarioEntrega,
       })
       setSucessoAberto(true)
-      recolherPassos() // os passos desta venda saem do histórico: o voltar não reabre uma venda já registrada
+      // os passos desta venda saem do histórico: o voltar não reabre uma venda já registrada.
+      // (14/10) voltar no histórico devolvia a rolagem do meio da tela: depois disso, sobe pro topo
+      const pTopo = () => { window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); document.scrollingElement?.scrollTo?.(0, 0) }
+      Promise.resolve(recolherPassos()).finally(() => { pTopo(); requestAnimationFrame(pTopo); setTimeout(pTopo, 120) })
       tocarSom('pedido')
     } catch (e) {
       avisar(explicarErro(e, 'Não deu pra registrar a venda. Tente de novo.'), { tipo: 'erro' })
@@ -769,7 +772,7 @@ export default function NovaVenda() {
           </section>
 
           <section className="nv3-card">
-            <Titulo contagem={itens.length} acao={itens.length > 0 ? <Botao variante="link" icone={<Plus size={16} weight="bold" />} onClick={() => setModalProduto(true)}>Adicionar</Botao> : undefined}>Produtos</Titulo>
+            <Titulo contagem={itens.length}>Produtos</Titulo>
             {itens.length === 0 ? (
               <div className="nv3-vz">
                 <span className="nv3-vz-ic" aria-hidden="true"><Package size={30} /></span>
@@ -788,8 +791,9 @@ export default function NovaVenda() {
                       <div className="nv3-it">
                         <span className="nv3-ft" aria-hidden="true"><Package size={20} weight="bold" />{foto && <img src={foto} alt="" onError={e => { e.currentTarget.style.display = 'none' }} />}</span>
                         <div className="nv3-it-tx">
-                          <b>{nome}{it.opcaoLabel ? ` · ${it.opcaoLabel}` : ''}</b>
-                          <span>{rs(r2(it.valor_unitario * it.quantidade))}{it.quantidade > 1 ? ` · ${rs(it.valor_unitario)} cada` : ''}</span>
+                          {/* (14/10) nome em cima; embaixo "Tamanho: Pequeno · R$ 15,00" */}
+                          <b>{nome}</b>
+                          <span>{it.opcaoLabel ? `${it.personalizacoes?.kit ? 'Kit' : 'Tamanho'}: ${it.opcaoLabel} · ` : ''}{rs(r2(it.valor_unitario * it.quantidade))}{it.quantidade > 1 ? ` (${rs(it.valor_unitario)} cada)` : ''}</span>
                         </div>
                       </div>
                       <div className="nv3-it-ctl">
@@ -807,6 +811,8 @@ export default function NovaVenda() {
                 })}
               </ul>
             )}
+            {/* (14/10) adicionar outro produto: embaixo dos produtos já escolhidos */}
+            {itens.length > 0 && <Botao variante="secundario" cheio className="nv3-add" icone={<Plus size={20} weight="bold" />} onClick={() => setModalProduto(true)}>Adicionar novo produto</Botao>}
           </section>
         </>
       )}
@@ -1040,14 +1046,30 @@ export default function NovaVenda() {
       {escolhaProduto && (
         <>
           <p className="tpj-txt">{escolhaProduto.p.kit_qtd?.ativo ? 'Qual kit o cliente levou?' : 'Qual tamanho?'}</p>
-          <div className="tpj-lista">
-            {escolhaProduto.opcoes.map(o => (
-              <button type="button" key={o.label} className="tpj-it" onClick={() => addProduto(escolhaProduto.p, o)}>
-                <span className="tpj-tx"><b>{o.label}</b>{o.pers?.tamanho?.peso_kg && o.pers.tamanho.peso_kg + '' !== o.label ? <small>{String(o.pers.tamanho.peso_kg).replace('.', ',')} kg</small> : null}</span>
-                <span className="tpj-preco">{rs(o.valor)}</span>
-              </button>
-            ))}
-          </div>
+          {/* (14/10) tabelinha com linhas (tipo planilha): toque na linha pra escolher */}
+          {(() => {
+            const kit = !!escolhaProduto.p.kit_qtd?.ativo
+            const ops: any[] = (escolhaProduto.p as any).grupo_tamanhos?.opcoes || []
+            const dados = (o: { label: string }) => ops.find(x => String(x?.nome || '').trim() === o.label) || {}
+            const serveDe = (o: { label: string }) => { const v = String(dados(o).serve || '').trim(); return /^\d+$/.test(v) ? `${v} pessoas` : v }
+            const comServe = !kit && escolhaProduto.opcoes.some(o => serveDe(o))
+            return (
+              <div className={`nv3-tab${comServe ? ' nv3-tab--3' : ''}`} role="table" aria-label={kit ? 'Kits' : 'Tamanhos'}>
+                <div className="nv3-tab-l nv3-tab-h" role="row"><span role="columnheader">{kit ? 'Kit' : 'Tamanho'}</span>{comServe && <span role="columnheader">Serve até</span>}<span role="columnheader">Preço</span></div>
+                {escolhaProduto.opcoes.map(o => {
+                  const esg = !!dados(o).esgotado
+                  const peso = o.pers?.tamanho?.peso_kg && o.pers.tamanho.peso_kg + '' !== o.label ? `${String(o.pers.tamanho.peso_kg).replace('.', ',')} kg` : ''
+                  return (
+                    <button type="button" role="row" key={o.label} className={`nv3-tab-l${esg ? ' esg' : ''}`} onClick={() => addProduto(escolhaProduto.p, o)}>
+                      <span role="cell"><b>{o.label}</b>{(peso || esg) && <small>{[peso, esg ? 'Esgotado' : ''].filter(Boolean).join(' · ')}</small>}</span>
+                      {comServe && <span role="cell">{serveDe(o) || '—'}</span>}
+                      <span role="cell" className="nv3-tab-p">{rs(o.valor)}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            )
+          })()}
         </>
       )}
     </Janela>

@@ -93,3 +93,6 @@
 .cab-dica { display: flex; align-items: flex-start; gap: 8px; margin-top: 16px; padding: 12px; border-radius: var(--ui-raio); background: var(--ui-cinza); text-align: left; font-size: 13.5px; font-weight: 500; line-height: 1.45; color: var(--ui-cinza-texto); }
 .cab-dica svg { flex: none; margin-top: 1px; color: var(--ui-rosa-escuro); }
 .cab-dica strong, .cab-dica b { font-weight: 700; color: var(--ui-texto); }
+
+/* (14/10) "Seja PRO" do computador menor */
+@media (min-width: 901px) { .cab-seja-pro { height: 26px !important; padding: 0 10px !important; gap: 4px !important; font-size: 12px !important; border-radius: 6px !important; } .cab-seja-pro svg { width: 12px; height: 12px; } }

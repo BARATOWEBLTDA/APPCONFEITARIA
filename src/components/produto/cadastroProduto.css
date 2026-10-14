@@ -285,3 +285,7 @@ body .prod-modal--novo .prod-section > .kitp-pct { margin-top: 0; }
 /* tabelinha: as colunas de preço centralizadas */
 .prod-dtab-l > * + * { justify-content: center; }
 body .prod-modal--novo .prev-cardapio-box.prev-cardapio-box--promo { background: #fff; }
+
+/* (14/10) Trocar / Remover foto centralizados na borda de baixo da foto principal (metade em cima da imagem) */
+.prod-foto-acoes { position: relative; z-index: 2; width: auto; justify-content: center; margin-top: -21px; }
+.prod-foto-acoes button { flex: none; min-height: 40px; padding: 0 14px; border: 1px solid var(--ui-borda); background: var(--ui-branco); box-shadow: 0 4px 12px rgba(44,18,25,.14); }

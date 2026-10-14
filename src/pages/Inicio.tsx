@@ -1683,6 +1683,10 @@ export default function Inicio() {
           .ini-root .ini-plan-tag--pro { background: rgba(var(--primary-rgb), .16); border: 1px solid rgba(var(--primary-rgb), .7); }
           .ini-root .ini-plan-tag--upgrade { background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .3); -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: background-color var(--dur-fast) linear, transform var(--dur-fast) var(--ease-out); }
           .ini-root .ini-plan-tag--upgrade::after { content: ""; position: absolute; inset: -10px -6px; } /* área de toque de 44px */
+          /* (14/10) etiqueta "Seja PRO" / "PRO" menor */
+          .ini-root .ini-plan-tag { height: 20px; padding: 0 6px 0 5px; gap: 3px; font-size: 11px; border-radius: 6px; }
+          .ini-root .ini-plan-tag svg { width: 11px; height: 11px; }
+          .ini-root .ini-plan-tag--upgrade::after { inset: -12px -6px; }
           .ini-root .ini-plan-tag--upgrade:hover { transform: none; background: rgba(255, 255, 255, .18); box-shadow: none; }
           .ini-root .ini-plan-tag--upgrade:active { transform: scale(.96); background: rgba(255, 255, 255, .2); }
           .ini-root .ini-plan-tag--upgrade:focus-visible, .ini-root .ini-profile-btn:focus-visible, .ini-root .ini-profile-cam:focus-visible { outline: 3px solid rgba(255, 255, 255, .75); outline-offset: 2px; }

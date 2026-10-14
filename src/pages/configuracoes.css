@@ -81,3 +81,13 @@
 .cf9-avanc-c { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 16px 12px; text-align: center; }
 .cf9-avanc-c p { margin: 0; font-size: 13px; color: var(--ui-texto-2); }
 .cf9-avanc-c .ui-bt { color: var(--ui-vermelho); }
+
+/* (14/10) lista única: nomes dos itens um pouco mais leves, títulos das seções no padrão do Mais */
+.cf9-tx b { font-weight: 600; }
+.cf9-sec { margin: 16px 8px 4px; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
+.cf9-lista > .cf9-sec:first-child { margin-top: 10px; }
+.cf9-ic-foto { width: 100%; height: 100%; border-radius: var(--ui-raio); object-fit: cover; }
+.cf9-avanc-c { align-items: stretch; padding: 0; text-align: left; gap: 16px; }
+.cf9-avanc-c p { font-size: 14px; line-height: 1.5; }
+.cf9-avanc-c .ui-bt { color: var(--ui-branco); }
+.ui-janela .ia-card { padding: 0; border: 0; box-shadow: none; }

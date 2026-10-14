@@ -9,7 +9,7 @@ import { Sparkle as SparkleIA } from "@phosphor-icons/react";
 import { selecionarValorAoFocar } from "@/lib/moeda";
 import PreviaCardapio from "@/components/produto/PreviaCardapio";
 import { categoriaSugerida, tipoPeloNome, ehBoloNoPote } from "@/lib/tipoProduto";
-import RevisaoProduto from "@/components/produto/RevisaoProduto";
+import RevisaoProduto, { ResumoProduto } from "@/components/produto/RevisaoProduto";
 import EscolhasProduto, { escolhasAtivas, faltaDaEscolha } from "@/components/produto/EscolhasProduto";
 import { kitAtivo, precoMinKit, kitsValidos, type KitQtdConfig } from "@/lib/kitQuantidade";
 import TipoProdutoTela, { type TipoProduto as TipoCadastro } from "@/components/produto/TipoProdutoTela";
@@ -3522,7 +3522,7 @@ export default function Produtos() {
   // (11/10) muda a cada abrir/fechar do cadastro: resposta atrasada (foto subindo, IA) de outra abertura é descartada
   const abertura = useRef(0);
   const [modal, setModal] = useState(false);
-  const [wizardStep, setWizardStep] = useState<1 | 2 | 3 | 4 | 5>(1);
+  const [wizardStep, setWizardStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
   // Mobile: divide step 3 (personalização) em 2 sub-etapas: 'checklist' (só marca as categorias) → 'fill' (preenche)
   const [mobilePersonaStep, setMobilePersonaStep] = useState<"checklist" | "fill">("checklist");
   // Cadastro fácil: 1ª tela "Que tipo de produto?" e a tela separada "Monte seu kit"
@@ -4235,6 +4235,11 @@ export default function Produtos() {
     const eraPrimeiro = !form.id && produtos.length === 0;
     if (!form.nome.trim()) return avisar("Nome é obrigatório", { tipo: "erro" });
     if (!form.categoria.trim()) return avisar("Categoria é obrigatória", { tipo: "erro" });
+    // (14/10) todo produto diz se é pronta entrega ou encomenda (na edição fica na aba Fotos, em "Como o cliente recebe")
+    if (!((form as any).pronta_entrega === true || (form as any).antecedencia)) {
+      if (form.id) setEditTab("fotos");
+      return avisar("Marque se o produto é pronta entrega ou encomenda.", { tipo: "erro" });
+    }
 
     // Validação específica pra variações
     const isVariacoes = wizardTipo === "variacoes" && !form.id;
@@ -4649,7 +4654,7 @@ export default function Produtos() {
                     setMobilePersonaStep("checklist");
                     return;
                   }
-                  setWizardStep(s => Math.max(2, s - 1) as 1 | 2 | 3 | 4 | 5);
+                  setWizardStep(s => Math.max(2, s - 1) as 1 | 2 | 3 | 4 | 5 | 6);
                 };
 
   // ═══ "Voltar" do Android/navegador e Esc (11/10) ═══
@@ -4967,11 +4972,11 @@ export default function Produtos() {
               // (14/10) header rosa no padrão das telas: foto (ou ícone), título, (i) e o passo; barra fina embaixo
               const ativasH = escolhasAtivas(form);
               const nEsc = ativasH.length;
-              const total = 4 + nEsc;
+              const total = 5 + nEsc; // (14/10) + a Revisão no fim
               const atual = wizardStep <= 2 ? 1 : wizardStep === 3 ? 2 + escTela : wizardStep - 1 + nEsc;
               const ROT: Record<string, string> = { tamanho: "Tamanho", massa: "Massa", recheio: "Recheio", cobertura: "Cobertura", sabor: "Sabor", quantidade: "Quantidade" };
               const escAtual = wizardStep === 3 && escTela > 0 ? ativasH[escTela - 1] : null;
-              const nomePasso = wizardStep <= 2 ? "Sobre o produto" : wizardStep === 3 ? (escAtual ? ROT[escAtual] : "Escolhas") : wizardStep === 4 ? "Fotos" : "Preço e revisão";
+              const nomePasso = wizardStep <= 2 ? "Sobre o produto" : wizardStep === 3 ? (escAtual ? ROT[escAtual] : "Escolhas") : wizardStep === 4 ? "Fotos" : wizardStep === 5 ? "Preço" : "Revisão";
               const foto = (form.imagem_url || "").split(",").map(x => x.trim()).filter(Boolean)[0];
               return (
               <div className="prod-modal-header-novo pcab">
@@ -4995,7 +5000,8 @@ export default function Produtos() {
                     : escAtual ? `Cadastre as opções de ${ROT[escAtual].toLowerCase()}. No cardápio, o cliente escolhe entre elas ao fazer o pedido.`
                     : wizardStep === 3 ? "Marque o que o cliente escolhe ao pedir, como tamanho ou sabor. Cada escolha marcada vira uma tela pra você cadastrar as opções."
                     : wizardStep === 4 ? "A foto principal é a que aparece no cardápio. Produto com foto vende mais."
-                    : "Confira o preço, coloque uma promoção se quiser e veja no fim como o produto aparece no cardápio antes de publicar."}</p>
+                    : wizardStep === 5 ? "Coloque o preço, uma promoção se quiser, e diga se o produto é pronta entrega ou encomenda."
+                    : "Veja como o produto aparece no cardápio e confira tudo antes de publicar."}</p>
                 </Janela>
               </div>
               );
@@ -5334,7 +5340,7 @@ export default function Produtos() {
 
             {/* ══════ WIZARD STEP 3 (SIMPLES) — VISUAL E PREÇO ══════ */}
             {/* Ou STEP 4 quando variações (visual + preço só de fotos) */}
-            {(((wizardStep === 4 || wizardStep === 5) && !form.id) || (form.id && (editTab === "fotos" || editTab === "preco" || editTab === "tamanhos"))) && (
+            {((wizardStep >= 4 && !form.id) || (form.id && (editTab === "fotos" || editTab === "preco" || editTab === "tamanhos"))) && (
             <div className="prod-modal-body">
 
 
@@ -5368,7 +5374,7 @@ export default function Produtos() {
                     {principal && (
                       <div className="prod-foto-acoes">
                         <button type="button" onClick={() => escolher(0)} disabled={uploading}><ArrowsClockwise size={16} weight="bold" aria-hidden="true" />{uploading ? "Carregando…" : "Trocar"}</button>
-                        <button type="button" onClick={() => removeImage(0)}><Trash size={16} weight="bold" aria-hidden="true" />Tirar</button>
+                        <button type="button" onClick={() => removeImage(0)}><Trash size={16} weight="bold" aria-hidden="true" />Remover foto</button>
                       </div>
                     )}
                     <input ref={imgRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => handleImageUpload(e, 0)} />
@@ -6185,8 +6191,10 @@ export default function Produtos() {
 
               {/* (13/10) Revisão: como o cliente vê, pedido de exemplo e o que falta */}
               {/* (14/10) a prévia e, por último (colado no Publicar), o que falta arrumar */}
-              {wizardStep === 5 && !form.id && <div className="prod-section"><PreviaCardapio form={form} /></div>}
-              {wizardStep === 5 && !form.id && <div className="prod-section"><RevisaoProduto form={form} /></div>}
+              {/* (14/10) passo 6 · Revisão: a prévia no topo, todas as informações e, por último, o que falta arrumar */}
+              {wizardStep === 6 && !form.id && <div className="prod-section"><PreviaCardapio form={form} /></div>}
+              {wizardStep === 6 && !form.id && <div className="prod-section"><ResumoProduto form={form} /></div>}
+              {wizardStep === 6 && !form.id && <div className="prod-section"><RevisaoProduto form={form} /></div>}
             </div>
             )}
 
@@ -6217,7 +6225,9 @@ export default function Produtos() {
                     return c ? faltaDaEscolha(form, c) : null;
                   }
                   // (14/10) Preço é o último passo (5): valida preço base OU preços dos tamanhos
-                  if (wizardStep === 5) {
+                  // (14/10) passo 5 (Preço) e 6 (Revisão): preço certo e "pronta entrega ou encomenda" marcado
+                  if (wizardStep >= 5) {
+                    const fPreco = ((): FaltaCampo => {
                     // Kit por quantidade: o preço vem dos kits
                     if (kitAtivo((form as any).kit_qtd)) return precoMinKit((form as any).kit_qtd) > 0 ? null : { msg: 'Volte em Escolhas e coloque o preço dos kits' };
                     const gt = form.grupo_tamanhos;
@@ -6237,6 +6247,10 @@ export default function Produtos() {
                       return semPreco ? { msg: `Coloque o preço de ${semPreco.nome}`, alvo: `input[aria-label="Preço de ${semPreco.nome.replace(/(["\\])/g, "\\$1")}"]` } : null;
                     }
                     return (form.preco_normal || 0) > 0 ? promoMaior : { msg: "Coloque o preço do produto", alvo: 'input[aria-label="Preço cheio"]' };
+                    })();
+                    if (fPreco) return fPreco;
+                    if (!((form as any).pronta_entrega === true || (form as any).antecedencia)) return { msg: "Marque pronta entrega ou encomenda", alvo: ".prod-opcs" };
+                    return null;
                   }
                   // Passo 4: Fotos — sempre pode avançar (fotos opcionais)
                   return null;
@@ -6257,7 +6271,7 @@ export default function Produtos() {
                 const avisoFalta = mostrarFalta && falta && !form.id ? (
                   <p className="prod-falta-aviso" role="alert"><WarningCircle size={18} weight="bold" aria-hidden="true" /><span>{falta.msg}</span></p>
                 ) : null;
-                const isLast = wizardStep === 5;
+                const isLast = wizardStep === 6; // (14/10) a Revisão é o último passo
                 const isEdit = !!form.id;
 
                 if (isEdit) {
@@ -6307,7 +6321,7 @@ export default function Produtos() {
                       // (14/10) escolhas: lista → cada escolha marcada → passo 4
                       if (wizardStep === 3 && escTela < escolhasAtivas(form).length) { setEscTela(t => t + 1); return; }
                       if (wizardStep === 2) aoSairDoSobre();
-                      setWizardStep(s => (s + 1) as 1 | 2 | 3 | 4 | 5);
+                      setWizardStep(s => (s + 1) as 1 | 2 | 3 | 4 | 5 | 6);
                     }}
                   >
                     Continuar

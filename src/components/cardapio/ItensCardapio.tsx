@@ -3,7 +3,7 @@ import { Cake } from '@phosphor-icons/react'
 import { Produto } from '@/types/database'
 import { ProductModal } from '@/components/cart/ProductModal'
 import { formatCurrency as fmtBRL } from '@/utils/helpers'
-import { seloEntrega } from '@/lib/entregaProduto'
+import { seloEntrega, SeloEntregaFoto } from '@/lib/entregaProduto'
 import { precoDoCartao } from './ProductCard'
 import { descontoCardapio } from '@/lib/precoCardapio'
 import './itensCardapio.css'
@@ -61,12 +61,14 @@ export function CartaoPromo({ produto, cor = '#E85A8C' }: { produto: Produto; co
   return (
     <>
       <article className="ic-cp" {...props}>
+        {/* (14/10) igual aos outros cartões: selo de entrega em cima da foto; depois nome, descrição e preço */}
         <div className="ic-cp-ft">
           {foto ? <img src={foto} alt="" loading="lazy" /> : <span className="ic-sem"><Cake size={32} aria-hidden="true" /></span>}
+          <SeloEntregaFoto produto={produto} />
         </div>
-        <PrecoPromo produto={produto} cor={cor} />
         <b className="ic-cp-nome">{produto.nome}</b>
-        <Entrega produto={produto} />
+        {produto.descricao && <p className="ic-cp-desc">{produto.descricao}</p>}
+        <PrecoPromo produto={produto} cor={cor} />
       </article>
       <ProductModal isOpen={aberto} onClose={fechar} product={produto} corBotao={cor} />
     </>

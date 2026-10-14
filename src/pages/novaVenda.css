@@ -122,3 +122,21 @@
 .nv3-carregando { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0; padding: 64px 16px; font-family: var(--font-base); font-size: 13.5px; font-weight: 500; color: var(--ui-texto-2); }
 .nv3-carregando .ui-gira { color: var(--ui-rosa); }
 .nv3-itens .ui-campo, .nv3-card > .ui-campo { margin-bottom: 0; }
+
+/* (14/10) "Adicionar novo produto" embaixo dos produtos */
+.nv3-add { margin-top: 12px; }
+/* (14/10) escolha do tamanho/kit em tabelinha (tipo planilha) */
+.nv3-tab { border: 1px solid var(--ui-borda); border-radius: 10px; overflow: hidden; background: var(--ui-branco); font-family: var(--font-base); }
+.nv3-tab-l { display: grid; grid-template-columns: minmax(0, 1fr) 104px; width: 100%; margin: 0; padding: 0; border: 0; background: none; font-family: inherit; text-align: left; color: var(--ui-texto); }
+.nv3-tab--3 .nv3-tab-l { grid-template-columns: minmax(0, 1fr) 96px 96px; }
+.nv3-tab-l + .nv3-tab-l { border-top: 1px solid var(--ui-borda); }
+.nv3-tab-l > span { display: flex; flex-direction: column; justify-content: center; min-height: 52px; padding: 6px 10px; font-size: 14px; overflow: hidden; }
+.nv3-tab-l > span + span { align-items: center; border-left: 1px solid var(--ui-borda); text-align: center; }
+.nv3-tab-l > span b { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nv3-tab-l > span small { font-size: 12px; color: var(--ui-texto-2); }
+.nv3-tab-l .nv3-tab-p { font-weight: 700; white-space: nowrap; }
+button.nv3-tab-l { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+@media (hover: hover) { button.nv3-tab-l:hover { background: #FFF6F9; } }
+button.nv3-tab-l:active { background: #FFE9F1; }
+.nv3-tab-l.esg { opacity: .55; }
+.nv3-tab-h > span { min-height: 36px; background: #F7F3F5; font-size: 12.5px; font-weight: 700; color: var(--ui-texto-2); }

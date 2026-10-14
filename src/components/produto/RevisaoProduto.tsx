@@ -105,3 +105,49 @@ export default function RevisaoProduto({ form }: { form: any }) {
     </div>
   );
 }
+
+/**
+ * (14/10) Revisão: todas as informações do produto numa tabelinha (rótulo | valor), antes de publicar.
+ */
+const PRAZO: Record<string, string> = { "24h": "24 horas", "48h": "48 horas", "3d": "3 dias", "5d": "5 dias", "7d": "1 semana", "15d": "15 dias" };
+export function ResumoProduto({ form }: { form: any }) {
+  const r = resumoRevisao(form);
+  const kit = form.kit_qtd as KitQtdConfig | null;
+  const tam = form.grupo_tamanhos as G | undefined;
+  const temTam = !!tam?.ativo && (tam.opcoes?.length || 0) > 0;
+  const porPeso = temTam && tam!.modo_preco_tamanho === "por_peso";
+  const pct = Number(form.desconto_percentual) || 0;
+  const promoPct = !!form.promocao && form.tipo_promocao === "percentual" && pct > 0;
+  const promoValor = Number(form.preco_promocional) || 0;
+  const preco = kitAtivo(kit) ? `A partir de ${rs(r.aPartir)}`
+    : porPeso ? `${rs(Number(form.preco_normal) || 0)} o kg`
+    : temTam ? (r.aPartir > 0 ? `A partir de ${rs(r.aPartir)}` : "Falta o preço")
+    : rs(Number(form.preco_normal) || 0);
+  const promo = promoPct ? `${pct}% de desconto` : promoValor > 0 && promoValor < (Number(form.preco_normal) || 0) ? `${rs(promoValor)}${porPeso ? " o kg" : ""}` : "Sem promoção";
+  const entrega = form.pronta_entrega === true ? "Pronta entrega" : form.antecedencia ? `Encomenda: pedir ${PRAZO[form.antecedencia] || form.antecedencia} antes` : "Falta escolher";
+  const linhas: [string, string][] = [
+    ["Nome", String(form.nome || "").trim() || "Sem nome"],
+    ["Categoria", String(form.categoria || "").trim() || "Sem categoria"],
+    ["Descrição", String(form.descricao || "").trim() || "Sem descrição"],
+    ...(String(form.sku || "").trim() ? [["SKU", String(form.sku).trim()] as [string, string]] : []),
+    ["Escolhas", r.escolhas.length ? (r.escolhas.join(", ").charAt(0).toUpperCase() + r.escolhas.join(", ").slice(1)) : "Nenhuma"],
+    ...(temTam ? [["Tamanhos", tam!.opcoes!.map(o => o.nome).join(", ")] as [string, string]] : []),
+    ["Preço", preco],
+    ["Promoção", promo],
+    ["No cardápio", form.disponivel !== false ? "Aparece" : "Guardado só pra você"],
+    ["Entrega", entrega],
+  ];
+  return (
+    <div className="rev-resumo">
+      <p className="prod-section-label rev-tit">Informações do produto</p>
+      <div className="prod-dtab rev-tab" role="table" aria-label="Informações do produto">
+        {linhas.map(([k, v]) => (
+          <div className="prod-dtab-l rev-tab-l" role="row" key={k}>
+            <span role="rowheader">{k}</span>
+            <span role="cell" className={/^(Falta|Sem nome|Sem categoria)/.test(v) ? "rev-falta" : undefined}>{v}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

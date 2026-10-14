@@ -483,7 +483,7 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
             ))}
           </ul>
         )}
-        <LinhaRendimento g={g} set={set} />
+        <LinhaRendimento g={g} set={set} nomeProduto={String(form.nome || "")} />
         <p className="esc-nota">O preço do kg você coloca no último passo.</p>
       </>)}
 
@@ -518,7 +518,7 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
           <input placeholder={porPeso ? "Ex.: 2,5 kg" : "Outro tamanho…"} value={novo} onChange={e => setNovo(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); add(); } }} aria-label="Outro tamanho" />
           <button type="button" className="esc-nova-bt esc-nova-bt--txt" onClick={add} disabled={!novo.trim()}>Cadastrar</button>
         </div>
-        <LinhaRendimento g={g} set={set} />
+        <LinhaRendimento g={g} set={set} nomeProduto={String(form.nome || "")} />
       </>)}
     </div>
   );
@@ -534,7 +534,7 @@ function CartaoQuantidade({ kit, onKitChange, nome }: { kit: KitQtdConfig; onKit
 }
 
 /* ── (14/10) Rendimento: uma linha na janela do tamanho que abre a sua própria janela, com predefinições por nome ── */
-function LinhaRendimento({ g, set }: { g: GrupoTam; set: (p: Partial<GrupoTam>) => void }) {
+function LinhaRendimento({ g, set, nomeProduto = "" }: { g: GrupoTam; set: (p: Partial<GrupoTam>) => void; nomeProduto?: string }) {
   const [aberta, setAberta] = useState(false);
   const comNum = g.opcoes.filter(o => numeroServe(o.serve));
   const un = String(g.opcoes.map(o => String(o.serve || "").match(/^\s*\d+\s*([^\d\s].*)$/)?.[1]).find(Boolean) || g.rendimento_unidade || "pessoas").trim();
@@ -552,11 +552,18 @@ function LinhaRendimento({ g, set }: { g: GrupoTam; set: (p: Partial<GrupoTam>) 
       </span>
       <span className="esc-rend-bt">{ok ? "Editar" : "Definir"}</span>
     </button>
-    {aberta && <JanelaRendimento g={g} set={set} onFechar={() => setAberta(false)} />}
+    {aberta && <JanelaRendimento g={g} set={set} nomeProduto={nomeProduto} onFechar={() => setAberta(false)} />}
   </>);
 }
 
-function JanelaRendimento({ g, set, onFechar }: { g: GrupoTam; set: (p: Partial<GrupoTam>) => void; onFechar: () => void }) {
+// (14/10) exemplo do nome da predefinição pelo produto: "Pudim Gourmet" → "Rendimentos do Pudim"
+function exemploPredef(nome: string): string {
+  const p = String(nome || "").trim().split(/\s+/)[0] || "";
+  if (!p) return "Rendimentos de Bolos de Aniversário";
+  const w = p.charAt(0).toUpperCase() + p.slice(1).toLowerCase();
+  return `Rendimentos ${/a$/i.test(w) ? "da" : "do"} ${w}`;
+}
+function JanelaRendimento({ g, set, onFechar, nomeProduto = "" }: { g: GrupoTam; set: (p: Partial<GrupoTam>) => void; onFechar: () => void; nomeProduto?: string }) {
   const unAtual = String(g.opcoes.map(o => String(o.serve || "").match(/^\s*\d+\s*([^\d\s].*)$/)?.[1]).find(Boolean) || g.rendimento_unidade || "pessoas").trim();
   const [un, setUn] = useState<string>(["fatias", "pessoas", "unidades"].includes(unAtual) ? unAtual : "pessoas");
   const [nums, setNums] = useState<Record<string, string>>(() => Object.fromEntries(g.opcoes.map(o => [o.id, numeroServe(o.serve)])));
@@ -649,7 +656,7 @@ function JanelaRendimento({ g, set, onFechar }: { g: GrupoTam; set: (p: Partial<
       <Janela aberta={perguntar} aoFechar={() => setPerguntar(false)} titulo="Salvar como predefinição?" tipo="aviso"
         icone={<Sparkle size={32} />} texto="Dê um nome e, nos próximos produtos, é só tocar nele: o rendimento vem preenchido e o cadastro fica bem mais rápido."
         acoes={<><Botao variante="secundario" onClick={() => { setPerguntar(false); gravar(""); }}>Agora não</Botao><Botao onClick={salvarComoPredefEGravar} disabled={!nomeAviso.trim()}>Salvar e usar</Botao></>}>
-        <input className="esc-aviso-in" autoFocus placeholder="Ex.: Bolos de aniversário" value={nomeAviso} maxLength={40}
+        <input className="esc-aviso-in" autoFocus placeholder={exemploPredef(nomeProduto)} value={nomeAviso} maxLength={40}
           onChange={e => setNomeAviso(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); salvarComoPredefEGravar(); } }} aria-label="Nome da predefinição" />
         {predefs.some(p => norm(p.nome) === norm(nomeAviso.trim())) && nomeAviso.trim() && <p className="esc-nota">Já existe uma com esse nome: ela será substituída.</p>}
       </Janela>

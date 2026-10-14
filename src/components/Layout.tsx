@@ -8,6 +8,7 @@ import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 import ParabensPro from "@/components/pro/ParabensPro";
 import DooIA from "@/components/DooIA";
 import MaisDrawer from "@/components/MaisDrawer";
+import PerguntaSons from "@/components/PerguntaSons";
 import { useState, useEffect, type ReactNode } from "react";
 import { ClipboardText, ChartBar, Stack, Palette, Truck, Storefront, ArrowSquareOut, ArrowsDownUp, CalendarCheck, Tag, ChartLineUp, Megaphone, HandCoins, Trophy, CaretDoubleLeft, CaretDoubleRight,
   House, CalendarDots, ShoppingBag, Users, BookOpen,
@@ -241,6 +242,7 @@ export default function Layout() {
 
       {/* ── Drawer "Mais" (Proposta D) ── */}
       <MaisDrawer open={maisOpen} onClose={() => setMaisOpen(false)} />
+      <PerguntaSons />
 
       {/* Modal de crop da foto de perfil (aberto pelo ícone câmera do sidebar) */}
       {cropSrc && (

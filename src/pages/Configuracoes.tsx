@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { INDICACAO_ATIVA } from "@/lib/recursos";
 import { useNavigate } from "react-router-dom";
-import { Bell, Camera, ChatCircleText, CaretRight, CaretDown, Crown, FileText, Gift, Lightbulb, PencilSimple, SignOut, Bug, Trophy, WarningCircle } from "@phosphor-icons/react";
+import { Bell, CaretRight, Crown, DownloadSimple, FileText, Gift, Lightbulb, SignOut, SlidersHorizontal, Bug, Trophy, User, WarningCircle } from "@phosphor-icons/react";
+import { isStandalone } from "@/lib/installPrompt";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
 import { explicarErro, erroDeConexao, SEM_INTERNET } from "@/lib/erros";
@@ -56,6 +57,8 @@ export default function Configuracoes() {
 
   const [termosOpen, setTermosOpen] = useState(false);
   const [editarOpen, setEditarOpen] = useState(false);
+  const [instalarOpen, setInstalarOpen] = useState(false); // (14/10) "Instalar o app" virou item da lista
+  const [avancadoOpen, setAvancadoOpen] = useState(false); // (14/10) "Avançado" virou item da lista
   const [excluirOpen, setExcluirOpen] = useState(false);
   const [excluirConfirm, setExcluirConfirm] = useState("");
   const [excluindo, setExcluindo] = useState(false);
@@ -205,79 +208,50 @@ export default function Configuracoes() {
             <TelaVazia caixa compacta icone={<WarningCircle size={30} />} titulo="Não deu pra carregar seu perfil" texto={erroCarregar}
               acao={<Botao tamanho="m" onClick={() => void carregar()}>Tentar de novo</Botao>} />
           )}
-          {/* (13/10) No computador: duas colunas. Esquerda: perfil, opções do app e ajuda. Direita: assinatura e instalar o app.
-              No celular continua uma coluna só, na ordem de antes. "Excluir minha conta" fica guardado em "Avançado". */}
-          <div className="cf9-grade">
-            <div className="cf9-col">
-              {!erroCarregar && <div className="cf9-o1">
-          <section className="cf9-card cf9-perfil">
-            <button type="button" className="cf9-av" onClick={() => !uploading && fileRef.current?.click()} aria-label={preview ? "Trocar a foto" : "Colocar uma foto"}>
-              <span>{preview ? <img src={preview} alt="" /> : <b>{inicial}</b>}</span>
-              <i aria-hidden="true">{uploading ? <span className="ui-gira" /> : <Camera size={14} weight="bold" />}</i>
-            </button>
-            <div className="cf9-perfil-tx">
-              <b>{form.nome || "Seu nome"}</b>
-              <small>{userEmail}</small>
-            </div>
-            <Botao variante="secundario" tamanho="m" icone={<PencilSimple size={18} weight="bold" />} onClick={() => { setError(""); setSenhaMsg(""); setRascunho({ nome: form.nome, telefone: form.telefone }); setEditarOpen(true); }}>
-              <span className="cf9-g">Editar perfil</span><span className="cf9-c">Editar</span>
-            </Botao>
-            <input ref={fileRef} type="file" accept="image/*" hidden onChange={recorte.escolher} />
-            {recorte.janela}
-          </section>
+          {/* (14/10) Uma lista só, sem cards: Conta (minha conta e assinatura), App, Ajuda e Avançado. Sair embaixo. */}
+          <section className="cf9-card cf9-lista" aria-label="Configurações">
+            <h2 className="cf9-sec">Conta</h2>
+            <ItemConfig icone={preview ? <img className="cf9-ic-foto" src={preview} alt="" /> : <User size={20} weight="bold" />} tom="rosa" nome="Minha conta"
+              apoio={userEmail || "Foto, nome, telefone e senha"}
+              onClick={() => { setError(""); setSenhaMsg(""); setRascunho({ nome: form.nome, telefone: form.telefone }); setEditarOpen(true); }} />
+            <ItemConfig icone={<Crown size={20} weight="fill" />} tom="amarelo" nome="Minha assinatura"
+              apoio={pro ? "Plano PRO · ativo" : "Plano grátis · conheça o PRO"} destaque={!pro}
+              onClick={() => navigate(pro ? "/minha-assinatura" : "/assinar")} />
 
-              </div>}
-              <div className="cf9-o4">
-          {/* App e ajuda */}
-          <section className="cf9-card cf9-lista" aria-label="App e ajuda">
             <h2 className="cf9-sec">App</h2>
             <ItemConfig icone={<Bell size={20} weight="bold" />} nome="Notificações e sons" apoio="Avisos e sons do app" onClick={() => navigate("/configuracoes/notificacoes")} />
-            <ItemConfig icone={<ChatCircleText size={20} weight="bold" />} tom="rosa" nome="Mensagens do WhatsApp" apoio="Troque o texto das mensagens prontas" onClick={() => navigate("/configuracoes/mensagens")} />
             <ItemConfig icone={<Trophy size={20} weight="bold" />} tom="amarelo" nome="Minhas conquistas" apoio="Suas medalhas e a próxima a ganhar" onClick={() => navigate("/conquistas")} />
             <AtualizarAppItem />
+            {!isStandalone() && <ItemConfig icone={<DownloadSimple size={20} weight="bold" />} tom="rosa" nome="Instalar o app" apoio="Abra o Doonly direto, como um app" onClick={() => setInstalarOpen(true)} />}
             {INDICACAO_ATIVA && <ItemConfig icone={<Gift size={20} weight="bold" />} tom="rosa" nome="Indique e ganhe" apoio="Ganhe prêmios por cada assinante que você indicar" onClick={() => navigate("/indicar")} />}
+
             <h2 className="cf9-sec">Ajuda</h2>
             <ItemConfig icone={<Lightbulb size={20} weight="bold" />} tom="amarelo" nome="Sugerir uma melhoria" apoio="Conte o que falta ou o que melhoraria" onClick={() => navigate("/solicitar-recurso")} />
             <ItemConfig icone={<Bug size={20} weight="bold" />} tom="vermelho" nome="Relatar um problema" apoio="Algo não funcionou? Conte pra equipe" onClick={() => navigate("/relatar-problema")} />
             <ItemConfig icone={<IconeWhatsApp size={20} />} tom="azul" nome="Fale com o suporte" apoio="Converse com a equipe pelo WhatsApp" onClick={() => window.open(`https://wa.me/5511978414991?text=${encodeURIComponent("Olá! Preciso de ajuda com o Doonly.")}`, "_blank", "noopener")} />
             <ItemConfig icone={<FileText size={20} weight="bold" />} nome="Termos e privacidade" apoio="Termos de uso e política de privacidade" onClick={() => setTermosOpen(true)} />
-          </section>
 
-              </div>
-              <div className="cf9-o5"><Botao variante="secundario" cheio icone={<SignOut size={20} weight="bold" />} onClick={sair}>Sair da conta</Botao></div>
-              <details className="cf9-avanc cf9-o6">
-                <summary>Avançado<CaretDown size={16} weight="bold" aria-hidden="true" /></summary>
-                <div className="cf9-avanc-c">
-                  <p>Não quer mais usar o Doonly? A conta e todos os dados são apagados.</p>
-                  <Botao variante="link" tamanho="p" onClick={() => { setExcluirConfirm(""); setExcluirOpen(true); }}>Excluir minha conta</Botao>
-                </div>
-              </details>
-            </div>
-            <div className="cf9-col cf9-col--lado">
-              {!erroCarregar && <div className="cf9-o2">
-          <section className={`cf9-card cf9-plano${pro ? " pro" : ""}`}>
-            <div className="cf9-plano-cab">
-              <span className="cf9-plano-ic" aria-hidden="true"><Crown size={24} weight="fill" /></span>
-              <div>
-                <small>Sua assinatura</small>
-                <b>{pro ? "Plano PRO" : "Plano grátis"}{pro && <em>Ativo</em>}</b>
-              </div>
-            </div>
-            <p>{pro
-              ? "Você tem acesso a tudo do Doonly. Agradecemos o apoio!"
-              : "Você já tem o essencial pra organizar sua confeitaria. No PRO, ganha a ficha técnica completa, relatórios de lucro, o Doo IA e muito mais."}</p>
-            {pro
-              ? <Botao variante="secundario" cheio onClick={() => navigate("/minha-assinatura")}>Ver minha assinatura</Botao>
-              : <Botao variante="vinho" cheio icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>}
+            <h2 className="cf9-sec">Outros</h2>
+            <ItemConfig icone={<SlidersHorizontal size={20} weight="bold" />} nome="Avançado" apoio="Excluir a conta" onClick={() => setAvancadoOpen(true)} />
           </section>
-              </div>}
-              <div className="cf9-o3"><InstalarAppCard /></div>
-            </div>
-          </div>
+          <Botao variante="secundario" cheio icone={<SignOut size={20} weight="bold" />} onClick={sair}>Sair da conta</Botao>
+          <input ref={fileRef} type="file" accept="image/*" hidden onChange={recorte.escolher} />
+          {recorte.janela}
         </>)}
       </div>
 
       <TermosModal open={termosOpen} onClose={() => setTermosOpen(false)} />
+
+      <Janela aberta={instalarOpen} aoFechar={() => setInstalarOpen(false)} tipo="conteudo" titulo="Instalar o app">
+        <InstalarAppCard />
+      </Janela>
+
+      <Janela aberta={avancadoOpen} aoFechar={() => setAvancadoOpen(false)} tipo="conteudo" titulo="Avançado">
+        <div className="cf9-avanc-c">
+          <p>Não quer mais usar o Doonly? A conta e todos os dados são apagados.</p>
+          <Botao variante="perigo" cheio onClick={() => { setAvancadoOpen(false); setExcluirConfirm(""); setExcluirOpen(true); }}>Excluir minha conta</Botao>
+        </div>
+      </Janela>
 
       <EditarPerfilModal
         open={editarOpen}
