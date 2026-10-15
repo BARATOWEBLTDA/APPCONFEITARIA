@@ -273,10 +273,20 @@ function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
     <Janelinha foco titulo="Pagamento e entrega" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!pronto || !carregou} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
       <PassoTopo k="pagamento" />
-      <p className="ppf-l">Como o cliente paga?</p>
+      <p className="ppf-l ppf-h-tit">Como o cliente paga?</p>
       <div className="ppf-p-opc">{PAGA.map(([k, n]) => opc(paga.includes(k), n, () => trocarPaga(k)))}</div>
-      <p className="ppf-l">Como ele recebe?</p>
-      <div className="ppf-p-opc">{opc(entrega.includes("retirada"), "Retirada", () => trocarEntrega("retirada"))}{opc(temEntrega, "Entrega", () => trocarEntrega("entrega"))}</div>
+      {/* (15/10) retirada e entrega em linhas, igual ao endereço e ao horário */}
+      <p className="ppf-l ppf-h-tit">Como ele recebe?</p>
+      <div className="ppf-mos ppf-mos--chk">
+        {([
+          ["retirada", "Retirada", "O cliente busca no seu endereço", entrega.includes("retirada")],
+          ["entrega", "Entrega", "Você leva até o cliente", temEntrega],
+        ] as const).map(([k, t, sub, on]) => (
+          <button type="button" role="checkbox" aria-checked={on} key={k} className={on ? "on" : ""} onClick={() => trocarEntrega(k)}>
+            <i aria-hidden="true">{on && <Check size={13} weight="bold" />}</i><span><b>{t}</b><small><em>{sub}</em></small></span>
+          </button>
+        ))}
+      </div>
       <p className="ppf-p-dica">Desmarque o que você não usa.</p>
       {erro && <p className="ppf-erro">{erro}</p>}
     </Janelinha>
@@ -781,24 +791,13 @@ const CSS = `
   .ppf-h-hh button { min-height: 44px; padding: 0 12px; border: 1.5px solid var(--ui-borda-campo); border-radius: 12px; background: var(--ui-branco); font-family: inherit; font-size: 16px; font-weight: 600;
     color: var(--ui-texto); font-variant-numeric: tabular-nums; cursor: pointer; }
   .ppf-h-hh button:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .4); outline-offset: 1px; }
-  .ppf-p-prev { margin-top: 16px; padding: 12px 14px; border: 1px solid var(--ui-borda); border-radius: 16px; }
-  .ppf-p-prev p { margin: 0; font-size: 12.5px; font-weight: 600; color: var(--ui-texto-3); }
-  .ppf-p-prev div { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; font-size: 13.5px; }
-  .ppf-p-prev span { color: var(--ui-texto-2); white-space: nowrap; }
-  .ppf-p-prev b { min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ppf-p-opc { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .ppf-p-opc button { display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 12px; border: 1.5px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco);
     font-family: inherit; font-size: 14.5px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; cursor: pointer; text-align: left; }
   .ppf-p-opc button i { flex: none; width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid #D7CBD0; display: flex; align-items: center; justify-content: center; color: var(--ui-branco); }
   .ppf-p-opc button.on { border-color: var(--ui-rosa); background: #FFF5F9; font-weight: 600; }
   .ppf-p-opc button.on i { background: var(--ui-rosa); border-color: var(--ui-rosa); }
-  .ppf-p-taxa { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; padding: 10px 12px; border-radius: 14px; background: var(--ui-cinza); }
-  .ppf-p-taxa b { font-size: 14px; font-weight: 600; white-space: nowrap; }
-  .ppf-p-taxa span { display: flex; align-items: center; width: 128px; height: 44px; padding: 0 12px; border: 1.5px solid var(--ui-borda-campo); border-radius: 12px; background: var(--ui-branco); }
-  .ppf-p-taxa span:focus-within { border-color: var(--ui-rosa); }
-  .ppf-p-taxa small { margin-right: 6px; font-size: 14px; color: var(--ui-texto-3); }
-  .ppf-p-taxa input { width: 100%; min-width: 0; border: 0; outline: none; background: none; font-family: inherit; font-size: 16px; font-weight: 600; color: var(--ui-texto); }
-  .ppf-p-dica { margin: 12px 0 0; font-size: 13px; color: var(--ui-texto-3); }
+  .ppf-p-dica { margin: 14px 0 0; font-size: 13px; color: var(--ui-texto-3); }
   .ppf-cx { display: flex; align-items: center; gap: 8px; height: 56px; padding: 0 16px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); }
   .ppf-cx:focus-within { border-color: var(--ui-rosa); }
   .ppf-cx span { font-size: 18px; font-weight: 600; color: var(--ui-texto-2); }
@@ -862,6 +861,8 @@ const CSS = `
   .ppf-mos b { display: block; font-size: 15px; font-weight: 700; }
   .ppf-mos small { display: flex; align-items: center; gap: 4px; margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ppf-mos small svg { flex: none; color: var(--ui-rosa); }
+  .ppf-mos--chk button i { display: flex; align-items: center; justify-content: center; border-radius: 6px; color: var(--ui-branco); }
+  .ppf-mos--chk button.on i { border: 0; background: var(--ui-rosa); }
   .ppf-mos small em { font-style: normal; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .ppf-dias { display: flex; gap: 6px; }
   .ppf-dias button { flex: 1; aspect-ratio: 1; min-height: 44px; max-width: 48px; border: none; border-radius: 50%; font-family: inherit; font-size: 15px; font-weight: 700; background: var(--ui-cinza); color: var(--ui-texto-2); cursor: pointer; }
