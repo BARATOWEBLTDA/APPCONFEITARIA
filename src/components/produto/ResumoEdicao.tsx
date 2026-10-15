@@ -16,7 +16,6 @@ const ROT: Record<string, string> = { tamanho: "Tamanho", massa: "Massa", rechei
 // (14/10) singular / plural pra "3 tamanhos cadastrados"
 const NOME: Record<string, [string, string]> = { tamanho: ["tamanho", "tamanhos"], massa: ["massa", "massas"], recheio: ["recheio", "recheios"], cobertura: ["cobertura", "coberturas"], sabor: ["sabor", "sabores"], quantidade: ["quantidade", "quantidades"] };
 const GRUPO: Record<string, string> = { tamanho: "grupo_tamanhos", massa: "grupo_massas", recheio: "grupo_recheios", cobertura: "grupo_coberturas", sabor: "grupo_sabores" };
-const ANTES: Record<string, string> = { "24h": "1 dia antes", "48h": "2 dias antes", "3d": "3 dias antes", "5d": "5 dias antes", "7d": "1 semana antes", "15d": "15 dias antes" };
 const rs = (v: number) => `R$ ${textoBRL(v) || "0,00"}`;
 
 export default function ResumoEdicao({ form, isPro = false, onEditar }: { form: any; isPro?: boolean; onEditar: (p: Parte) => void }) {

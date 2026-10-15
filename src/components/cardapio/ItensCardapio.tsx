@@ -4,8 +4,10 @@ import { Produto } from '@/types/database'
 import { ProductModal } from '@/components/cart/ProductModal'
 import { formatCurrency as fmtBRL } from '@/utils/helpers'
 import { seloEntrega, SeloEntregaFoto } from '@/lib/entregaProduto'
-import { precoDoCartao } from './ProductCard'
-import { tamanhosEsgotados, descontoCardapio } from '@/lib/precoCardapio'
+import { unidadeCliente } from '@/lib/formaVenda'
+import { tamanhosEsgotados, descontoCardapio, precoCardapioComPromocao } from '@/lib/precoCardapio'
+// (o cartão antigo ProductCard saiu; o CSS dele continua carregando por aqui, na mesma ordem)
+import './cardapioLista.css'
 import './itensCardapio.css'
 
 /**
@@ -13,6 +15,18 @@ import './itensCardapio.css'
  * - CartaoPromo: cartão de promoção, 2 por linha: foto, preço com o selo de %, preço antigo riscado + "-10%", nome e modo de entrega.
  * - LinhaProduto: produto em lista: nome, descrição, preço à esquerda e foto à direita.
  */
+
+/** Preço do cartão: o de antes riscado (promoção), o final, a unidade ("por kg") e se é "a partir de" */
+export function precoDoCartao(product: Produto) {
+  const p = product as any
+  // (11/10) a promoção e os centavos saem da mesma conta do produto aberto (lib/precoCardapio):
+  // promoção em valor não entra em produto com tamanhos de preço fixo nem em kit
+  const pc = precoCardapioComPromocao(product)
+  // Com tamanhos ou kit o preço é o do menor; aí a unidade não vale (não é "por kg")
+  const unidade = pc.aPartir || p?.grupo_tamanhos?.ativo ? '' : unidadeCliente(product.forma_venda)
+  // Com mais de um tamanho (ou kit) o valor é o menor: "a partir de R$ 120,00", como no produto aberto
+  return { de: pc.de, final: pc.final, unidade, aPartir: pc.aPartir }
+}
 
 const fotoDe = (p: Produto) => p.imagem_url?.split(',')[0]?.trim() || null
 

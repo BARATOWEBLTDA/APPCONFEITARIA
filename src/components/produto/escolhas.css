@@ -107,15 +107,6 @@
 .rev { margin: 0; padding: 0; font-family: var(--font-base); }
 body .prod-modal--novo .rev .rev-tit:not(:first-child) { margin-top: 22px !important; }
 body .prod-modal--novo .rev-resumo + .rev { margin-top: 20px; }
-.rev-card { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); }
-.rev-foto { flex: none; display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 8px; overflow: hidden; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
-.rev-foto img { width: 100%; height: 100%; object-fit: cover; }
-.rev-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.rev-tx b, .rev-tx small, .rev-tx em { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.rev-tx b { font-size: 15px; font-weight: 600; color: var(--ui-texto); }
-.rev-tx small { font-size: 12.5px; color: var(--ui-texto-2); }
-.rev-tx em { font-style: normal; font-size: 13px; color: var(--ui-texto-2); }
-.rev-tx em strong { font-weight: 600; color: var(--ui-texto); }
 .rev-ped { list-style: none; margin: 0; padding: 4px 12px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); }
 .rev-ped li { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 40px; font-size: 14px; }
 .rev-ped li + li { border-top: 1px solid var(--ui-linha); }

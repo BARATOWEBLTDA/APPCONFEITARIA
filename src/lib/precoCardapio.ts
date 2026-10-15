@@ -109,10 +109,3 @@ export function precoCardapioComPromocao(p: any): { de: number; final: number; a
   const final = comDesconto(pc.valor, d)
   return { de: d > 0 && final < pc.valor ? pc.valor : 0, final, aPartir: pc.aPartir }
 }
-
-/** "serve 20 pessoas" ou "20 fatias", conforme o que a confeiteira escolheu no bolo */
-export function textoRendimento(serve: any, unidade?: string): string {
-  const n = String(serve || '').replace(/\D/g, '')
-  if (!n) return ''
-  return unidade === 'fatias' ? `${n} fatias` : `serve ${n} ${n === '1' ? 'pessoa' : 'pessoas'}`
-}

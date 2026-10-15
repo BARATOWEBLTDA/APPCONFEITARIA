@@ -168,7 +168,6 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
   const kitCfg = kitAtivo((product as any)?.kit_qtd) ? (product as any).kit_qtd : null
   const kitInfo = kitCfg ? calcularKit(kitCfg, kitSel) : null
   const [observations, setObservations] = useState('')
-  const [showObs, setShowObs] = useState(false)
   const [imgIndex, setImgIndex] = useState(0)
 
   // ═══ V3 — escolhas por tipo de grupo ═══════════════════════════════
@@ -179,7 +178,6 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
   const [escolhaCobertura, setEscolhaCobertura] = useState<string | null>(null)
   const [escolhaSabor, setEscolhaSabor] = useState<string | null>(null)
   const [escolhaTamanho, setEscolhaTamanho] = useState<string | null>(null)
-  const [showTamanhoDropdown, setShowTamanhoDropdown] = useState(false)
 
   // ═══ Personalizações da biblioteca (aba /complementos) ══════════════
   // Buscamos direto no banco quando o modal abre. Se o dono cadastrou
@@ -187,7 +185,6 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
   const [extrasBiblioteca, setExtrasBiblioteca] = useState<ExtraBiblioteca[]>([])
   const [extrasMarcados, setExtrasMarcados] = useState<Set<string>>(new Set())
   const extrasDoProduto = useRef<string | null>(null)
-  const [rolagem, setRolagem] = useState(0)
   const [fotoRef, setFotoRef] = useState<string | null>(null)
   const [fotoRefUploading, setFotoRefUploading] = useState(false)
   const fotoVez = useRef(0)
@@ -198,7 +195,6 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
       fotoVez.current++ // foto que ainda estava sendo preparada não entra depois de fechar
       setFotoRefUploading(false)
       setFotoRef(null)
-      setRolagem(0)
       return
     }
     // (11/10) trocou de produto: a lista de adicionais do produto anterior sai da tela na hora
@@ -281,7 +277,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
   // Reset ao abrir/trocar produto (inclusive reabrindo o MESMO produto)
   useEffect(() => {
     if (product && isOpen) {
-      setQuantity(1); setObservations(''); setShowObs(false); setImgIndex(0)
+      setQuantity(1); setObservations(''); setImgIndex(0)
       setEscolhaMassa(null); setEscolhasRecheio([]); setEscolhaCobertura(null)
       setEscolhaSabor(null); setEscolhaTamanho(null)
       if (kitAtivo((product as any).kit_qtd)) setKitSel(selecaoInicial((product as any).kit_qtd))
@@ -294,10 +290,6 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
   // Autoplay removido — cliente controla clicando nas miniaturas
 
   const isKg = product?.forma_venda === 'kg'
-  const step = isKg ? 0.5 : 1
-  const minQtd = isKg ? 0.5 : 1
-  const inc = () => setQuantity(q => Math.min(q + step, 50))
-  const dec = () => setQuantity(q => Math.max(q - step, minQtd))
 
   // Preço base = preço CHEIO. A promoção entra uma vez só, pelo descPct lá embaixo
   // (antes usava o preço promocional E aplicava o desconto de novo: 52,90 → 47,61 → 42,85)

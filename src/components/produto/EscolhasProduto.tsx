@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import type { ReactNode } from "react";
-import { ArrowDown, ArrowUp, Basket, Cake, CaretDown, Check, GearSix, Drop, IceCream, Info, PencilSimple, Plus, Ruler, Sparkle, Trash, X } from "@phosphor-icons/react";
+import { useEffect, useState } from "react";
+import { CaretDown, Check, GearSix, Info, Plus, Sparkle, X } from "@phosphor-icons/react";
 import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
 import { kitAtivo, presetKit, type KitQtdConfig } from "@/lib/kitQuantidade";
 import { mascaraBRL, lerBRL, textoBRL, selecionarValorAoFocar } from "@/lib/moeda";
@@ -32,15 +31,8 @@ const CAMPO: Record<"massa" | "recheio" | "cobertura" | "sabor", string> = {
 const ROTULO: Record<Chave, string> = {
   tamanho: "Tamanho", quantidade: "Quantidade", massa: "Massa", recheio: "Recheio", cobertura: "Cobertura", sabor: "Sabor",
 };
-const SALVAR: Record<Chave, string> = {
-  tamanho: "Salvar tamanhos", quantidade: "Salvar quantidade", massa: "Salvar massas", recheio: "Salvar recheios", cobertura: "Salvar coberturas", sabor: "Salvar sabores",
-};
 const PLURAL: Record<string, string> = { massa: "massas", recheio: "recheios", cobertura: "coberturas", sabor: "sabores" };
 const NOVA: Record<string, string> = { massa: "Outra massa…", recheio: "Outro recheio…", cobertura: "Outra cobertura…", sabor: "Outro sabor…" };
-const ICONE: Record<Chave, ReactNode> = {
-  tamanho: <Ruler size={20} />, quantidade: <Basket size={20} />, massa: <Cake size={20} />,
-  recheio: <Drop size={20} />, cobertura: <Sparkle size={20} />, sabor: <IceCream size={20} />,
-};
 const SUGESTOES: Record<string, string[]> = {
   massa: ["Branca", "Chocolate", "Red velvet", "Cenoura", "Nozes", "Coco"],
   recheio: ["Ninho", "Brigadeiro", "Doce de leite", "Morango", "Nutella", "Prestígio", "Maracujá", "Abacaxi"],
@@ -58,7 +50,6 @@ const MODELOS_UN: { nome: string; itens: string[] }[] = [
 ];
 // Por quilo (14/10): lista de pesos pra marcar, de 1 em 1 kg até 5 kg (todos já marcados), com o preço de cada um ao lado
 const PESOS_KG = [1, 2, 3, 4, 5];
-const PESOS_PADRAO = [1, 2, 3, 4, 5];
 const nomePeso = (kg: number) => (kg < 1 ? `${Math.round(kg * 1000)} g` : `${String(kg).replace(".", ",")} kg`);
 const PMG = ["Pequeno", "Médio", "Grande"];
 const ARO = ["Aro 15", "Aro 20", "Aro 25"];
@@ -184,7 +175,7 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
       onKitChange({ ...presetKit(tipo === "salgados" || /salgad/.test(norm(form.categoria)) ? "salgados" : "docinhos", kit), ativo: true });
     } else if (c === "tamanho") {
       setForm(f => ({ ...f, grupo_tamanhos: { ...(f.grupo_tamanhos || {}), ativo: true, min: 1, max: 1, distribuicao: "nenhuma",
-        opcoes: f.grupo_tamanhos?.opcoes?.length ? f.grupo_tamanhos.opcoes : (f.forma_venda === "kg" ? opcoesDePesos(PESOS_PADRAO) : opcoesDeNomes(PMG)),
+        opcoes: f.grupo_tamanhos?.opcoes?.length ? f.grupo_tamanhos.opcoes : (f.forma_venda === "kg" ? opcoesDePesos(PESOS_KG) : opcoesDeNomes(PMG)),
         modo_preco_tamanho: f.forma_venda === "kg" ? "por_peso" : (f.grupo_tamanhos?.modo_preco_tamanho === "por_peso" ? "preco_fixo" : (f.grupo_tamanhos?.modo_preco_tamanho || "preco_fixo")) } }));
     } else {
       const campo = CAMPO[c];
@@ -212,9 +203,9 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
         {edicao && setTela && <button type="button" className="esc-voltar-lista" onClick={() => setTela(0)}>‹ Todas as escolhas</button>}
         {/* (14/10) no cadastro novo o header rosa já diz o passo ("3 de 5 · Tamanho") */}
         {edicao && <h2 className="esc-h">{ROTULO[atual]}</h2>}
-        {atual === "quantidade" ? (kit ? <CartaoQuantidade kit={kit} onKitChange={onKitChange} nome={nome} /> : null)
-          : atual === "tamanho" ? <CartaoTamanho form={form} setForm={setForm} outros={outros} />
-          : <CartaoGrupo chave={atual} tipo={tipo} form={form} setForm={setForm} outros={outros} />}
+        {atual === "quantidade" ? (kit ? <CartaoQuantidade kit={kit} onKitChange={onKitChange} /> : null)
+          : atual === "tamanho" ? <CartaoTamanho form={form} setForm={setForm} />
+          : <CartaoGrupo chave={atual} form={form} setForm={setForm} outros={outros} />}
       </div>
     );
   }
@@ -313,14 +304,12 @@ function UsarDeOutro({ copias, onUsar }: { copias: Copia[]; onUsar: (c: Copia) =
 }
 
 /* ── Massa, recheio, cobertura e sabor ── */
-function CartaoGrupo({ chave, tipo, form, setForm, outros }: { chave: "massa" | "recheio" | "cobertura" | "sabor"; tipo?: string | null; form: any; setForm: Props["setForm"]; outros?: any[] }) {
+function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "recheio" | "cobertura" | "sabor"; form: any; setForm: Props["setForm"]; outros?: any[] }) {
   const campo = CAMPO[chave];
   const g: Grupo = { ativo: true, min: 1, max: 1, distribuicao: "nenhuma", opcoes: [], ...(form[campo] || {}) };
   const [nova, setNova] = useState("");
-  const [novoValor, setNovoValor] = useState("");
   const [avancado, setAvancado] = useState(false); // (14/10) janela "Avançado" (quantos, obrigatório, preço por sabor)
   const set = (patch: Partial<Grupo>) => setForm(f => ({ ...f, [campo]: { ...g, ...(f[campo] || {}), ...patch } }));
-  const sug = sugestoesDaChave(chave, tipo, form.categoria).filter(s => !g.opcoes.some(o => norm(o.nome) === norm(s)));
   const precoProprio = chave === "sabor" && !!g.sabor_tem_preco_proprio;
   const plural = PLURAL[chave];
 
@@ -329,7 +318,7 @@ function CartaoGrupo({ chave, tipo, form, setForm, outros }: { chave: "massa" | 
     if (!n || g.opcoes.some(o => norm(o.nome) === norm(n))) return;
     set({ opcoes: [...g.opcoes, precoProprio ? { id: uid(), nome: n, adicional: 0, preco: valor } : { id: uid(), nome: n, adicional: valor }] });
   };
-  const addDigitado = () => { adicionar(nova, 0); setNova(""); setNovoValor(""); void novoValor; };
+  const addDigitado = () => { adicionar(nova, 0); setNova(""); };
   const valorDe = (o: Opcao) => (precoProprio ? Number(o.preco) || 0 : Number(o.adicional) || 0);
   const mudarValor = (id: string, txt: string) => {
     const v = lerBRL(txt || "0");
@@ -429,12 +418,12 @@ function CartaoGrupo({ chave, tipo, form, setForm, outros }: { chave: "massa" | 
 }
 
 /* ── Tamanho: modelos prontos e a lista (o preço de cada um fica no passo Preço) ── */
-function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["setForm"]; outros?: any[] }) {
+function CartaoTamanho({ form, setForm }: { form: any; setForm: Props["setForm"] }) {
   const g: GrupoTam = { ativo: true, min: 1, max: 1, opcoes: [], ...(form.grupo_tamanhos || {}) };
   const porPeso = g.modo_preco_tamanho === "por_peso";
   const [novo, setNovo] = useState("");
   const set = (patch: Partial<GrupoTam>) => setForm(f => ({ ...f, grupo_tamanhos: { ...g, ...(f.grupo_tamanhos || {}), ...patch } }));
-  const usarModeloUn = (itens: string[]) => set({ opcoes: itens.map(n => ({ id: uid(), nome: n, preco: 0, ...(n.startsWith("Serve") ? { serve: n.replace("Serve ", "") + " pessoas" } : {}) })) });
+  const usarModeloUn = (itens: string[]) => set({ opcoes: itens.map(n => ({ id: uid(), nome: n, preco: 0 })) });
   // por quilo: marcar e desmarcar um peso (a lista fica sempre do menor pro maior)
   const marcados = new Set(g.opcoes.map(o => Number(o.peso_kg) || 0).filter(Boolean));
   const semPeso = g.opcoes.filter(o => !(Number(o.peso_kg) > 0));
@@ -463,9 +452,9 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
   const add = () => {
     const n = primeiraMaiuscula(novo);
     if (!n || g.opcoes.some(o => norm(o.nome) === norm(n))) return;
-    set({ opcoes: ordenarTamanhos([...g.opcoes, { id: uid(), nome: n, preco: 0, ...(porPeso ? { peso_kg: pesoDoNome(n) } : {}) }]) }); setNovo("");
+    set({ opcoes: ordenarTamanhos([...g.opcoes, { id: uid(), nome: n, preco: 0 }]) }); setNovo("");
   };
-  const renomear = (id: string, n: string) => set({ opcoes: g.opcoes.map(o => (o.id === id ? { ...o, nome: n, ...(porPeso ? { peso_kg: pesoDoNome(n) ?? o.peso_kg } : {}) } : o)) });
+  const renomear = (id: string, n: string) => set({ opcoes: g.opcoes.map(o => (o.id === id ? { ...o, nome: n } : o)) });
   return (
     <div className="esc-corpo">
       <p className="esc-lbl">Como é o preço</p>
@@ -483,7 +472,7 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
             const comPeso = g.opcoes.map(o => ({ ...o, peso_kg: Number(o.peso_kg) > 0 ? o.peso_kg : pesoDoNome(o.nome) })).filter(o => Number(o.peso_kg) > 0);
             // (14/10) vindo do preço fixo, o "preço" guardado era o do menor tamanho: não serve de preço do kg (a edição salvava R$ 40,00 o kg sem perguntar)
             const eraFixo = (g.modo_preco_tamanho || "preco_fixo") !== "por_peso";
-            set({ modo_preco_tamanho: "por_peso", opcoes: comPeso.length ? comPeso : opcoesDePesos(PESOS_PADRAO) }); setForm(f => ({ ...f, forma_venda: "kg", ...(eraFixo ? { preco_normal: 0, preco_promocional: 0 } : {}) }));
+            set({ modo_preco_tamanho: "por_peso", opcoes: comPeso.length ? comPeso : opcoesDePesos(PESOS_KG) }); setForm(f => ({ ...f, forma_venda: "kg", ...(eraFixo ? { preco_normal: 0, preco_promocional: 0 } : {}) }));
           }}>Por quilo</button>
       </div>
 
@@ -575,7 +564,7 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
             ); })}
         </ul>
         <div className="esc-nova esc-nova--1">
-          <input placeholder={porPeso ? "Ex.: 2,5 kg" : "Outro tamanho…"} value={novo} onChange={e => setNovo(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); add(); } }} aria-label="Outro tamanho" />
+          <input placeholder="Outro tamanho…" value={novo} onChange={e => setNovo(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); add(); } }} aria-label="Outro tamanho" />
           <button type="button" className="esc-nova-bt esc-nova-bt--txt" onClick={add} disabled={!novo.trim()}>Cadastrar</button>
         </div>
         <LinhaRendimento g={g} set={set} nomeProduto={String(form.nome || "")} />
@@ -585,7 +574,7 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
 }
 
 /* ── Quantidade (cento, kit de 50, 100…) e os sabores que vão dentro: o editor de kit que já existe ── */
-function CartaoQuantidade({ kit, onKitChange, nome }: { kit: KitQtdConfig; onKitChange: (k: KitQtdConfig) => void; nome: string }) {
+function CartaoQuantidade({ kit, onKitChange }: { kit: KitQtdConfig; onKitChange: (k: KitQtdConfig) => void }) {
   return (
     <div className="esc-corpo esc-corpo--kit">
       <KitQuantidadeEditor semPreco kit={kit} onChange={onKitChange} />
