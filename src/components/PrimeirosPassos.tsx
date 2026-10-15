@@ -93,12 +93,10 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
     }
     if (!pedidoDestaque.current) return;
     pedidoDestaque.current = false;
-    // além de rolar e destacar, já abre o primeiro passo que falta (antes ela voltava pro Início sem saber por onde começar)
-    const prox = proximoPasso(estado);
+    // (15/10) só rola e destaca o passo da vez: não abre mais a janela sozinha. Ela toca em "Começar" e aí os passos vão abrindo um atrás do outro
     window.setTimeout(() => {
       if (!montado.current) return;
       raiz.current?.scrollIntoView({ behavior: "smooth", block: "center" }); setDestaque(true);
-      if (prox && prox !== "produto" && prox !== "pagamento") setFolha(prox);
     }, 350);
     window.setTimeout(() => { if (montado.current) setDestaque(false); }, 2600);
   }, [local, estado]);
@@ -197,7 +195,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
             <span className="pp-ic pp-ic--at">{p.ic}<i className="pp-n">{i + 1}</i></span>
             <span className="pp-tx"><b>{p.t}</b><small>{p.s}</small></span>
           </div>
-          <button type="button" className="pp-btn" onClick={p.abrir}>Fazer agora</button>
+          <button type="button" className="pp-btn" onClick={p.abrir}>{feitos <= 1 ? "Começar" : "Fazer agora"}</button>
         </div>
       ) : (
         <button type="button" key={p.t} className={`pp-ps${p.feito ? " pp-ps--ok" : ""}`} onClick={p.feito ? undefined : p.abrir} disabled={p.feito}>
@@ -436,7 +434,8 @@ function FolhaLogo({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
     marcarLogoOk(uid);
     onSalvo();
   };
-  // (13/10) refeito: a prévia do topo do cardápio explica sozinha. Uma saída só ("Agora não", que segue com a letra)
+  // (13/10) refeito: a prévia do topo do cardápio explica sozinha.
+  // (15/10) "Agora não" só pula (o passo fica pendente). Antes marcava o logo como feito
   const temFoto = !!perfil?.foto_url && !perfil?.logo_url;
   const nomeLoja = String(perfil?.nome_loja || "Sua confeitaria").trim() || "Sua confeitaria";
   const escolherFoto = () => ref.current?.click();
@@ -445,7 +444,7 @@ function FolhaLogo({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
       <Janelinha foco titulo="Logo da loja" onClose={onClose}
         acoes={temFoto
           ? <><Botao variante="secundario" onClick={escolherFoto}>Trocar</Botao><Botao cheio carregando={enviando} onClick={usarFoto}>Usar esta foto</Botao></>
-          : <><Botao variante="secundario" disabled={enviando} onClick={usarFoto}>Agora não</Botao><Botao cheio carregando={enviando} onClick={escolherFoto}>Escolher foto</Botao></>}>
+          : <><Botao variante="secundario" disabled={enviando} onClick={onDepois}>Agora não</Botao><Botao cheio carregando={enviando} onClick={escolherFoto}>Escolher foto</Botao></>}>
         <input ref={ref} type="file" accept="image/*" hidden onChange={escolher} />
         <PassoTopo k="logo" />
         <div className="ppf-lg2">
