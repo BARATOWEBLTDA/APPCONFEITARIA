@@ -140,3 +140,15 @@ button.nv3-tab-l { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 button.nv3-tab-l:active { background: #FFE9F1; }
 .nv3-tab-l.esg { opacity: .55; }
 .nv3-tab-h > span { min-height: 36px; background: #F7F3F5; font-size: 12.5px; font-weight: 700; color: var(--ui-texto-2); }
+/* (14/10) kit "ele escolhe": botões de quantidade + campo */
+.nv3-livre { display: flex; flex-direction: column; gap: 12px; }
+.nv3-livre-chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.nv3-livre-chips button { min-height: 44px; margin: 0; padding: 0 8px; border: 1.5px solid var(--ui-borda-campo); border-radius: 8px; background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.nv3-livre-chips button.on { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.nv3-livre-qtd { display: flex; align-items: center; gap: 8px; }
+.nv3-livre-qtd button { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; margin: 0; border: 1.5px solid var(--ui-borda-campo); border-radius: 8px; background: var(--ui-branco); color: var(--ui-texto); cursor: pointer; }
+.nv3-livre-qtd button:disabled { opacity: .4; cursor: default; }
+.nv3-livre-qtd input { width: 100px; min-width: 0; height: 48px; padding: 0 8px; border: 1.5px solid var(--ui-borda-campo); border-radius: 8px; font-family: inherit; font-size: 18px; font-weight: 700; text-align: center; color: var(--ui-texto); }
+.nv3-livre-qtd input:focus { outline: none; border-color: var(--ui-rosa); }
+.nv3-livre-qtd span { flex: 1; font-size: 14px; color: var(--ui-texto-2); }
+.nv3-livre-dica { margin: -4px 0 0; font-size: 13px; color: var(--ui-texto-2); }

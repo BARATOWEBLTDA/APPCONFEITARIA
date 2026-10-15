@@ -1,6 +1,6 @@
 import CalendarioSheet from '@/components/CalendarioSheet'
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { criarPedido, lerProdutosDeVenda, opcoesDoProduto as opcoesDoProdutoLib, precoDeVenda, totalDe, type DadosPedido } from '@/lib/pedidosDoo'
+import { criarPedido, lerProdutosDeVenda, opcoesDoProduto as opcoesDoProdutoLib, opcaoKitLivre, quantidadesSugeridas, precoDeVenda, totalDe, type DadosPedido } from '@/lib/pedidosDoo'
 import { gerarPedidoPDF } from '@/lib/gerarPedidoPDF'
 import { abrirJanela } from '@/lib/pdfDoonly'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -424,6 +424,7 @@ export default function NovaVenda() {
   // Produto com tamanhos (P/M/G, pelo peso) ou kits: pergunta qual antes de adicionar (30/09).
   // Antes entrava sempre com o menor preço, sem jeito de escolher.
   const opcoesDoProduto = (p: Produto) => opcoesDoProdutoLib(p) // mesma regra da Doo IA
+  const [qtdLivre, setQtdLivre] = useState<number | null>(null) // (14/10) kit "ele escolhe": quantidade escolhida
   const [escolhaProduto, setEscolhaProduto] = useState<{ p: Produto; opcoes: { label: string; valor: number; pers: any }[] } | null>(null)
   const addProduto = (p: Produto, escolha?: { label: string; valor: number; pers: any }) => {
     if (!escolha) {
@@ -1042,12 +1043,38 @@ export default function NovaVenda() {
     </div>
 
     {/* ═══ Escolher o tamanho ou o kit ═══ */}
-    <Janela aberta={!!escolhaProduto} aoFechar={() => setEscolhaProduto(null)} tipo="conteudo" titulo={escolhaProduto ? nomeDeProduto(escolhaProduto.p.nome) : ''}>
+    <Janela aberta={!!escolhaProduto} aoFechar={() => { setEscolhaProduto(null); setQtdLivre(null) }} tipo="conteudo" titulo={escolhaProduto ? nomeDeProduto(escolhaProduto.p.nome) : ''}>
       {escolhaProduto && (
         <>
-          <p className="tpj-txt">{escolhaProduto.p.kit_qtd?.ativo ? 'Qual kit o cliente levou?' : 'Qual tamanho?'}</p>
-          {/* (14/10) tabelinha com linhas (tipo planilha): toque na linha pra escolher */}
-          {(() => {
+          <p className="tpj-txt">{escolhaProduto.p.kit_qtd?.ativo ? (escolhaProduto.p.kit_qtd?.modo === 'livre' ? 'Quantas unidades o cliente levou?' : 'Qual kit o cliente levou?') : 'Qual tamanho?'}</p>
+          {/* (14/10) kit "ele escolhe": quantidades redondas em botões + campo pra qualquer outra (antes era uma lista de 100, 150, 200…) */}
+          {escolhaProduto.p.kit_qtd?.modo === 'livre' ? (() => {
+            const p = escolhaProduto.p
+            const kq: any = p.kit_qtd
+            const min = Number(kq.livre?.min) || 1, max = Number(kq.livre?.max) || 0, passo = Number(kq.livre?.passo) || 1
+            const q = qtdLivre ?? min
+            const op = opcaoKitLivre(p, q)
+            const valida = !!op && (q - min) % passo === 0
+            return (
+              <div className="nv3-livre">
+                <div className="nv3-livre-chips" role="group" aria-label="Quantidades">
+                  {quantidadesSugeridas(p).map(n => (
+                    <button key={n} type="button" className={n === q ? 'on' : ''} onClick={() => setQtdLivre(n)}>{n === 100 ? 'Cento' : `${n} un.`}</button>
+                  ))}
+                </div>
+                <div className="nv3-livre-qtd">
+                  <button type="button" aria-label="Menos" disabled={q - passo < min} onClick={() => setQtdLivre(Math.max(min, q - passo))}><Minus size={18} weight="bold" /></button>
+                  <input inputMode="numeric" aria-label="Quantidade" value={q || ''} onChange={e => setQtdLivre(parseInt(e.target.value.replace(/\D/g, '')) || 0)} />
+                  <span>unidades</span>
+                  <button type="button" aria-label="Mais" disabled={!!max && q + passo > max} onClick={() => setQtdLivre(q + passo)}><Plus size={18} weight="bold" /></button>
+                </div>
+                <p className="nv3-livre-dica">De {min} a {max || '…'}, de {passo} em {passo}.</p>
+                <Botao cheio disabled={!valida} onClick={() => { if (op && valida) { setQtdLivre(null); addProduto(p, op) } }}>
+                  {valida ? `Adicionar · ${rs(op!.valor)}` : 'Quantidade fora do que o kit aceita'}
+                </Botao>
+              </div>
+            )
+          })() : (() => {
             const kit = !!escolhaProduto.p.kit_qtd?.ativo
             const ops: any[] = (escolhaProduto.p as any).grupo_tamanhos?.opcoes || []
             const dados = (o: { label: string }) => ops.find(x => String(x?.nome || '').trim() === o.label) || {}

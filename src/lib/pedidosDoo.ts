@@ -28,6 +28,25 @@ const MAX_OPCOES_KIT_LIVRE = 8;
  * (11/10) O preço já sai com a promoção, pela mesma regra do cardápio (lib/precoCardapio):
  * em % vale pra tudo; em valor não vale pra tamanho de preço fixo nem pra kit.
  */
+/** (14/10) kit "ele escolhe": a opção de uma quantidade qualquer (válida pelo mínimo, máximo e passo) */
+export function opcaoKitLivre(p: any, q: number): { label: string; valor: number; pers: any } | null {
+  const kq = p?.kit_qtd;
+  if (!kq?.ativo || kq.modo !== "livre") return null;
+  const min = Number(kq.livre?.min) || 0, max = Number(kq.livre?.max) || 0;
+  if (!(q >= min) || (max > 0 && q > max)) return null;
+  const valor = comDesconto(precoLivre(kq, q), descontoCardapio(p));
+  return valor > 0 ? { label: `${q} unidades`, valor, pers: { kit: { modo: "livre", total: q, sabores: [] } } } : null;
+}
+
+/** (14/10) quantidades redondas que costumam vender (10, 25, 50, cento…), só as que o kit aceita */
+export function quantidadesSugeridas(p: any): number[] {
+  const kq = p?.kit_qtd;
+  if (!kq?.ativo || kq.modo !== "livre") return [];
+  const min = Number(kq.livre?.min) || 0, max = Number(kq.livre?.max) || 0, passo = Number(kq.livre?.passo) || 1;
+  const ok = (q: number) => q >= min && (!max || q <= max) && (q - min) % passo === 0;
+  return Array.from(new Set([min, 10, 25, 50, 100, 150, 200, 300, 500, 1000].filter(ok))).sort((a, b) => a - b).slice(0, 6);
+}
+
 export function opcoesDoProduto(p: any): { label: string; valor: number; pers: any }[] {
   const desc = descontoCardapio(p);
   const gt = p?.grupo_tamanhos;
