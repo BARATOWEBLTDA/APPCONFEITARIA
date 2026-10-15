@@ -329,3 +329,20 @@ body .prod-modal--novo .prod-kg-sub { margin: -6px 0 12px; font-size: 13.5px; co
 body .prod-modal--novo .prod-cat-auto { margin: 6px 0 0; font-size: 12.5px; font-style: italic; color: var(--ui-texto-3); }
 body .prod-modal--novo .prod-row-2:has(.prod-promo-selo) { align-items: start !important; }
 .prod-ptab.prod-ptab--promo .prod-dtab-l { grid-template-columns: minmax(0, 1fr) 118px 92px; }
+/* (14/10) prévia v2: linha da categoria + (promoção) grade com "Ver por dentro" */
+body .prod-modal--novo .prev-cardapio--v2 .prev-cardapio-box { display: block; padding: 12px; }
+body .prod-modal--novo .prev-linha { pointer-events: none; user-select: none; background: #fff; border-radius: 12px; padding: 0 12px; }
+body .prod-modal--novo .prev-linha .ic-ln { border: 0; }
+body .prod-modal--novo .prev-sub { margin: 14px 0 8px; font-size: 12.5px; font-weight: 600; color: var(--ui-texto-2); }
+body .prod-modal--novo .prev-grade { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: stretch; }
+body .prod-modal--novo .prev-cartao { pointer-events: none; user-select: none; min-width: 0; }
+body .prod-modal--novo .prev-cartao .ic-cp { background: #fff; border-radius: 12px; overflow: hidden; padding-bottom: 10px; }
+body .prod-modal--novo .prev-ver { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 0; margin: 0; padding: 12px 8px; border: 1.5px dashed #D9CBD2; border-radius: 12px; background: #fff; font-family: inherit; text-align: center; color: var(--ui-texto); cursor: pointer; }
+body .prod-modal--novo .prev-ver-ic { display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; margin-bottom: 4px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+body .prod-modal--novo .prev-ver b { font-size: 14px; font-weight: 700; }
+body .prod-modal--novo .prev-ver small { font-size: 12px; line-height: 1.35; color: var(--ui-texto-2); }
+body .prod-modal--novo .prev-ver-bt { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 44px; margin: 10px 0 0; border: 0; border-radius: 10px; background: #fff; font-family: inherit; font-size: 14.5px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
+body .prod-modal--novo .prod-promo-pct { flex: none; margin-left: auto; padding: 3px 8px; border-radius: 6px; background: rgba(255,255,255,.22); color: #fff; font-size: 13px; font-weight: 800; font-style: normal; }
+/* (14/10) a % fica no canto de cima do campo verde (no meio apertava o valor no celular) */
+body .prod-modal--novo .prod-preco-input--promo { position: relative; }
+body .prod-modal--novo .prod-promo-pct { position: absolute; top: 5px; right: 6px; margin: 0; padding: 1px 6px; font-size: 11.5px; line-height: 1.5; }

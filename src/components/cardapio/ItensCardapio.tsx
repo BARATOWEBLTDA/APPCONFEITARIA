@@ -32,14 +32,14 @@ function PrecoPromo({ produto, cor }: { produto: Produto; cor: string }) {
   return (
     <div className="ic-pp">
       <span className="ic-pp-novo">
-        {pct > 0 && <span className="ic-pct" style={{ background: cor }} aria-hidden="true">%</span>}
         {aPartir && <small>a partir de</small>}
         <b>{fmtBRL(final)}</b>{unidade && <small>{unidade}</small>}
       </span>
       {pct > 0 && (
         <span className="ic-pp-de">
           <s>{fmtBRL(de)}</s>
-          <span className="ic-off" style={{ background: cor }}>-{pct}%</span>
+          {/* (14/10) a bolinha "%" e o "-10%" numa etiqueta só (antes ficavam em linhas separadas) */}
+          <span className="ic-off" style={{ background: cor }}><i className="ic-off-pct" style={{ color: cor }} aria-hidden="true">%</i>-{pct}%</span>
         </span>
       )}
     </div>

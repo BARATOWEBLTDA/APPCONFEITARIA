@@ -5824,13 +5824,13 @@ export default function Produtos() {
                             setForm(f => ({ ...f, preco_promocional: v, promocao: v > 0 && v < f.preco_normal, tipo_promocao: 'fixo' }));
                           }}
                         />
+                        {/* (14/10) a % de desconto dentro do campo verde */}
+                        {(() => {
+                          const cheio = Number(form.preco_normal) || 0, pp = Number(form.preco_promocional) || 0;
+                          const pct = cheio > 0 && pp > 0 && pp < cheio ? Math.round((1 - pp / cheio) * 100) : 0;
+                          return pct > 0 ? <em className="prod-promo-pct">-{pct}%</em> : null;
+                        })()}
                       </div>
-                      {/* (14/10) o selo de desconto do cardápio, com a % */}
-                      {(() => {
-                        const cheio = Number(form.preco_normal) || 0, pp = Number(form.preco_promocional) || 0;
-                        const pct = cheio > 0 && pp > 0 && pp < cheio ? Math.round((1 - pp / cheio) * 100) : 0;
-                        return pct > 0 ? <p className="prod-promo-selo"><i aria-hidden="true">%</i><b>-{pct}%</b><span>de desconto</span></p> : null;
-                      })()}
                     </div>}
                   </div>}
                   {!(form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") && (
