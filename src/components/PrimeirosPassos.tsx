@@ -317,15 +317,13 @@ const FAZ = ["Bolos", "Doces", "Salgados", "Tortas", "Kit festa", "Outros"];
 function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
   const [txt, setTxt] = useState(String(perfil?.descricao_loja || ""));
   const nomeLoja = String(perfil?.nome_loja || "Sua confeitaria").trim() || "Sua confeitaria";
-  const logoPrev = perfil?.logo_url || perfil?.foto_url || "";
   const [gerando, setGerando] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
-  // (13/10) a Doo IA pergunta o que ela faz antes de escrever; com o teclado aberto a prévia encolhe
+  // (13/10) a Doo IA pergunta o que ela faz antes de escrever
   const [perguntando, setPerguntando] = useState(false);
   const [faz, setFaz] = useState<string[]>([]);
   const [escreveu, setEscreveu] = useState(false);
-  const [focado, setFocado] = useState(false);
   const gerar = async () => {
     setGerando(true); setErro("");
     const oQue = faz.filter(f => f !== "Outros").map(f => f.toLowerCase());
@@ -346,22 +344,20 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
     if (e) { setErro("Não foi possível salvar agora. Confira a internet e tente de novo."); return; }
     onSalvo();
   };
-  const logo = <span className="ppf-d-logo">{logoPrev ? <img src={logoPrev} alt="" /> : nomeLoja.charAt(0).toUpperCase()}</span>;
   return (
     <Janelinha foco titulo="Sobre a sua confeitaria" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!txt.trim()} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
-      <div className={`ppf-d${focado ? " ppf-d--foco" : ""}`}>
+      <div className="ppf-d">
         <PassoTopo k="descricao" />
-        {/* prévia igual à do logo; com o teclado aberto (celular) vira uma linha só */}
-        <div className="ppf-d-prev" aria-hidden="true">
-          <div className="ppf-d-cap" />
-          <div className="ppf-d-corpo">
-            {logo}
-            <b>{nomeLoja}</b>
-            <small className={txt.trim() ? "" : "vazio"}>{txt.trim() || "Sua descrição aparece aqui"}</small>
-          </div>
+        {/* (15/10) saiu a prévia do topo do cardápio (sem foto ficava estranha): no lugar, uma dica do que escrever */}
+        <div className="ppf-d-dica">
+          <p>O que escrever?</p>
+          <ul>
+            <li><b>O que você faz:</b> bolos, doces, salgados</li>
+            <li><b>Pra quando:</b> aniversário, festa, dia a dia</li>
+            <li><b>Seu diferencial:</b> receita da família</li>
+          </ul>
         </div>
-        <div className="ppf-d-mini" aria-hidden="true">{logo}<b>{nomeLoja}</b></div>
 
         {perguntando ? (
           <div className="ppf-d-perg">
@@ -381,8 +377,8 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
         ) : (
           <div className="ppf-d-campo">
             <textarea id="pp-desc" value={txt} maxLength={200} aria-label="Descrição da sua confeitaria"
-              placeholder="Ex.: Bolos e doces feitos com carinho, do jeito que a sua festa merece. Encomendas pra aniversários e eventos."
-              onChange={e => setTxt(e.target.value)} onFocus={() => setFocado(true)} onBlur={() => setFocado(false)} />
+              placeholder="Ex.: Bolos e doces feitos em casa, com receita de família. Encomendas pra aniversários e casamentos."
+              onChange={e => setTxt(e.target.value)} />
             <div className="ppf-d-pe">
               <button type="button" className="ppf-doo" onMouseDown={e => e.preventDefault()} onClick={() => setPerguntando(true)}>
                 <Sparkle size={16} weight="fill" aria-hidden="true" />{escreveu ? "Escrever de novo" : "Escrever com a Doo IA"}
@@ -709,23 +705,17 @@ const CSS = `
   }
   @media (min-width: 768px) { .pp--fim .pp-btn { max-width: 340px; margin-left: auto; margin-right: auto; } }
 
-  .ppf-d-prev { margin-top: 16px; border: 1px solid var(--ui-borda); border-radius: 18px; overflow: hidden; }
-  .ppf-d-cap { height: 56px; background: linear-gradient(120deg, #F7B2CB, var(--ui-rosa)); }
-  .ppf-d-corpo { display: flex; flex-direction: column; align-items: center; padding: 0 18px 16px; margin-top: -42px; text-align: center; }
   .ppf-d-logo { flex: none; width: 84px; height: 84px; border-radius: 50%; border: 4px solid var(--ui-branco); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro);
     box-shadow: 0 4px 14px rgba(44, 18, 25, .12); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 700; }
   .ppf-d-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .ppf-d-corpo > b { margin-top: 8px; font-size: 16px; font-weight: 600; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ppf-d-corpo > small { margin-top: 4px; font-size: 13px; color: var(--ui-texto-2); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
-  .ppf-d-corpo > small.vazio { color: var(--ui-texto-3); font-style: italic; }
-  .ppf-d-mini { display: none; align-items: center; gap: 10px; margin-top: 12px; padding: 8px 10px; border: 1px solid var(--ui-borda); border-radius: 14px; }
-  .ppf-d-mini .ppf-d-logo { width: 36px; height: 36px; border-width: 2px; box-shadow: none; font-size: 15px; }
-  .ppf-d-mini b { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  @media (max-width: 767px) {
-    .ppf-d--foco .ppf-d-prev, .ppf-d--foco .ppf-topo { display: none; }
-    .ppf-d--foco .ppf-d-mini { display: flex; }
-  }
-  .ppf-d-campo { margin-top: 14px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); overflow: hidden; background: var(--ui-branco); }
+  /* (15/10) dica do que escrever no lugar da prévia */
+  .ppf-d-dica { margin-top: 20px; padding: 16px 16px 14px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); }
+  .ppf-d-dica p { margin: 0 0 10px; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
+  .ppf-d-dica ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; }
+  .ppf-d-dica li { position: relative; padding-left: 14px; font-size: 14px; line-height: 1.35; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ppf-d-dica li::before { content: ""; position: absolute; left: 0; top: .5em; width: 6px; height: 6px; border-radius: 2px; background: var(--ui-rosa); }
+  .ppf-d-dica li b { font-weight: 600; color: var(--ui-texto); }
+  .ppf-d-campo { margin-top: 18px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); overflow: hidden; background: var(--ui-branco); }
   .ppf-d-campo:focus-within { border-color: var(--ui-rosa); }
   .ppf-d-campo textarea { display: block; width: 100%; box-sizing: border-box; height: 104px; resize: none; border: 0; outline: none; padding: 12px 12px 4px; background: none;
     font-family: inherit; font-size: 16px; font-weight: 500; line-height: 1.45; color: var(--ui-texto); }
