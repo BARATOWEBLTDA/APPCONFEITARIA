@@ -36,7 +36,8 @@ const validate = {
     return "";
   },
   telefone: (v: string) => {
-    if (!v.trim()) return "";
+    // (15/10) WhatsApp obrigatório no cadastro: é por onde o suporte fala com a confeiteira
+    if (!v.trim()) return "Coloque seu WhatsApp";
     const d = v.replace(/\D/g, "");
     if (d.length !== 10 && d.length !== 11) return "Telefone incompleto";
     return "";
@@ -665,7 +666,7 @@ export default function Auth() {
             )}
           </div>
 
-          {/* Nome da confeitaria + WhatsApp: opcionais no cadastro por e-mail (lado a lado no computador) */}
+          {/* Nome da confeitaria (opcional) + WhatsApp (obrigatório): lado a lado no computador */}
           <div className="cad-par cad-par--loja">
           <div className="cad-field-wrap">
             <label className="cad-lb" htmlFor="cad-confeitaria">Nome da confeitaria <span className="cad-opc">opcional</span></label>
@@ -686,7 +687,7 @@ export default function Auth() {
 
           {/* Telefone */}
           <div className="cad-field-wrap">
-            <label className="cad-lb" htmlFor="cad-whatsapp">WhatsApp <span className="cad-opc">opcional</span></label>
+            <label className="cad-lb" htmlFor="cad-whatsapp">WhatsApp</label>
             <div className={`cad-field ${cadastroTouched.telefone && cadastroErrors.telefone ? "has-error" : ""}`}>
               <input
                 id="cad-whatsapp"
