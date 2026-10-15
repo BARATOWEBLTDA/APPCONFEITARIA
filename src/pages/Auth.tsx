@@ -1007,7 +1007,8 @@ export default function Auth() {
         .google-btn:active { transform: scale(0.98); }
 
         /* ── Cadastro ─────────────────────────────────────── */
-        .cadastro-form { display: flex; flex-direction: column; gap: 0.75rem; padding-top: 0.5rem; }
+        /* (15/10) mais respiro entre os campos também no celular (era 12px) */
+        .cadastro-form { display: flex; flex-direction: column; gap: 1.125rem; padding-top: 0.5rem; }
 
         /* Banner de indicação (aparece na aba Cadastro se veio via ?ref=) */
         .ref-banner {
@@ -1061,7 +1062,7 @@ export default function Auth() {
         .ref-banner-desc b { font-weight: 700; }
         .cad-field-wrap { display: flex; flex-direction: column; gap: 0.3rem; }
         .cad-field { position: relative; display: flex; align-items: center; height: 48px; border: 1.5px solid var(--border); border-radius: var(--ui-raio); overflow: hidden; background: var(--ui-branco); transition: border-color 0.2s; }
-        .cad-lb { display: block; cursor: pointer; font-size: 13px; font-weight: 700; color: var(--ui-cinza-texto); margin: 0 0 5px 2px; }
+        .cad-lb { display: block; cursor: pointer; font-size: 13px; font-weight: 700; color: var(--ui-cinza-texto); margin: 0 0 7px 2px; }
         .cad-field:focus-within { border-color: var(--border-focus); }
         .cad-field.has-error { border-color: var(--error); }
         .cad-field.has-error:focus-within { border-color: var(--error); }
@@ -1101,8 +1102,8 @@ export default function Auth() {
         .cad-error { font-size: 12.5px; color: var(--error); padding-left: 2px; font-weight: 700; }
         .cad-btn { margin-top: 0.5rem; }
         .cad-opc { font-weight: 500; font-style: italic; color: var(--ui-texto-3); font-size: 12px; margin-left: 2px; }
-        .cad-par { display: flex; flex-direction: column; gap: 0.75rem; }
-        .cad-par--senha .cad-a-regras { margin-top: calc(-0.75rem + 6px); } /* regras coladas na senha */
+        .cad-par { display: flex; flex-direction: column; gap: 1.125rem; }
+        .cad-par--senha .cad-a-regras { margin-top: calc(-1.125rem + 6px); } /* regras coladas na senha */
 
         .cad-header {
           text-align: center;
