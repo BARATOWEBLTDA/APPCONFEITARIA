@@ -5,6 +5,7 @@ import TermosModal from '@/components/TermosModal'
 import { supabase } from '@/lib/supabase'
 import { explicarErro } from '@/lib/erros'
 import { TERMOS_VERSAO } from '@/lib/termos'
+import { Mascote } from '@/components/marca/Mascote'
 import './termos.css'
 
 /**
@@ -35,7 +36,8 @@ export function AceiteTermos({ userId, aoAceitar }: { userId: string; aoAceitar:
   return (
     <div className="tm-root" role="dialog" aria-modal="true" aria-labelledby="tm-titulo">
       <div className="tm-corpo">
-        <span className="tm-tag">Último passo</span>
+        {/* (15/10) sem a etiqueta "Último passo" (depois ainda vêm a conta ativa e a apresentação); mascote só no celular */}
+        <Mascote pose="acenando" className="tm-masc" />
         <h1 id="tm-titulo">Tudo combinado antes de começar</h1>
         <p className="tm-sub">As regras do Doonly em poucas palavras: sua loja, os pedidos e os seus dados.</p>
         <div className="tm-cards">
