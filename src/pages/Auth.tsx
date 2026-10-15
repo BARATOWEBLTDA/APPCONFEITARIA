@@ -943,7 +943,7 @@ export default function Auth() {
           .auth-card { padding-left: 18px !important; padding-right: 18px !important; }
         }
         @media (max-width: 340px) { .auth-root .auth-card .auth-h2 { font-size: 20px; } } /* exceção: celulares bem antigos (320px) */
-        .auth-masc { position: absolute; left: 50%; top: -96px; transform: translateX(-50%); width: 136px; height: auto; z-index: 3; filter: drop-shadow(0 0 16px rgba(255,157,196,.55)) drop-shadow(0 8px 10px rgba(0,0,0,.35)); /* brilho rosa: o contorno escuro não some no vinho */ pointer-events: none; }
+        .auth-masc { position: absolute; left: 50%; top: -96px; transform: translateX(-50%); width: 136px; height: auto; z-index: 3; filter: drop-shadow(0 0 12px rgba(255,157,196,.38)); /* (15/10) só o brilho rosa, mais fraco (saiu a sombra escura) */ pointer-events: none; }
         .auth-nome { display: block; width: 128px; height: auto; margin: 0 auto 6px; }
         .so-pc { display: none; }
         .auth-marca { display: none; }
