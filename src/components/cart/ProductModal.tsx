@@ -611,7 +611,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
         <div className="pm-preco">
           {!semTamanho && descPct > 0 && calculo.subtotal > valorTopo && <s>{formatCurrency(calculo.subtotal)}</s>}
           <strong>{semTamanho && pMax > pMin ? `${formatCurrency(pMin)} a ${formatCurrency(pMax)}` : formatCurrency(semTamanho ? pMin : valorTopo)}</strong>
-          <em>{semTamanho ? 'conforme o tamanho' : kitCfg ? 'o kit' : gTamanho ? '' : saborComPreco && !opSabor ? 'conforme o sabor' : unidadeCliente(product.forma_venda)}</em>
+          <em>{semTamanho ? 'conforme o tamanho' : kitCfg ? ((kitCfg as any).modo === 'livre' ? (Number((kitCfg as any).livre?.min) === 100 ? 'o cento' : `${(kitCfg as any).livre?.min} un.`) : 'o kit') : gTamanho ? '' : saborComPreco && !opSabor ? 'conforme o sabor' : unidadeCliente(product.forma_venda)}</em>
         </div>
         {selo?.tipo === 'encomenda' && (
           <div className="pm-aviso"><CalendarBlank size={20} weight="bold" aria-hidden="true" /><span><b>Encomende com {selo.prazo} de antecedência</b><small>Você escolhe o dia ao finalizar o pedido.</small></span></div>
@@ -694,10 +694,11 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
       )}
       {/* Faltando escolha obrigatória o botão diz o que falta; sem tamanho/kit ainda não mostra preço (seria o do menor como se estivesse escolhido) */}
       {/* (14/10) todos os tamanhos esgotados: o botão diz isso e não deixa pedir */}
+      {/* (14/10) faltando escolha: só o texto ("Escolha a massa" cortava em "Escolha…" ao lado do preço) */}
       {tamanhosEsgotados(product) ? <button type="button" className="pm-add so-texto" disabled style={{ background: '#B5AAB0', cursor: 'not-allowed' }}><span>Esgotado no momento</span></button> :
-      <button type="button" className={`pm-add${faltou ? ' treme' : ''}${pendente === 'tamanho' || pendente === 'kit' ? ' so-texto' : ''}`} style={{ background: corBotao }} onClick={tentarAdicionar}>
+      <button type="button" className={`pm-add${faltou ? ' treme' : ''}${pendente ? ' so-texto' : ''}`} style={{ background: corBotao }} onClick={tentarAdicionar}>
         <span>{pendente ? TEXTO_FALTA[pendente] : (rotuloAdicionar || 'Adicionar')}</span>
-        {pendente !== 'tamanho' && pendente !== 'kit' && <strong>{formatCurrency(totalDisplay)}</strong>}
+        {!pendente && <strong>{formatCurrency(totalDisplay)}</strong>}
       </button>}
     </footer>
   )

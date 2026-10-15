@@ -142,7 +142,7 @@ export function ResumoProduto({ form }: { form: any }) {
     : porPeso ? `${rs(Number(form.preco_normal) || 0)} o kg`
     : temTam ? (r.aPartir > 0 ? `A partir de ${rs(r.aPartir)}` : "Falta o preço")
     : precosDosSabores(form) ? (r.aPartir > 0 ? `A partir de ${rs(r.aPartir)}` : "Falta o preço dos sabores")
-    : rs(Number(form.preco_normal) || 0);
+    : `${rs(Number(form.preco_normal) || 0)}${form.forma_venda === "kg" ? " o kg" : ""}`; // (14/10) vendido por kg: diz
   const promo = promoPct ? `${pct}% de desconto` : promoValor > 0 && promoValor < (Number(form.preco_normal) || 0) ? `${rs(promoValor)}${porPeso ? " o kg" : ""}` : "Sem promoção";
   const entrega = form.pronta_entrega === true ? "Pronta entrega" : form.antecedencia ? `Encomenda: pedir ${PRAZO[form.antecedencia] || form.antecedencia} antes` : "Falta escolher";
   const linhas: [string, string][] = [

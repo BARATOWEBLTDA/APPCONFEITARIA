@@ -4291,6 +4291,15 @@ export default function Produtos() {
     const isPersonalizavel = wizardTipo === "personalizavel" && !form.id;
     let precoBase = form.preco_normal;
 
+    // (14/10) kit por quantidade: confere quantidades e preço também na edição (trocar pra "Ele escolhe" salvava o produto a R$ 0,00 no cardápio)
+    if (kitAtivo((form as any).kit_qtd)) {
+      const fk = faltaKit((form as any).kit_qtd);
+      if (fk) {
+        if (form.id) setEditTab(/preço/i.test(fk.msg) ? "preco" : "opcoes");
+        return avisar(fk.msg, { tipo: "erro" });
+      }
+    }
+
     if (isVariacoes) {
       const precos = form.precos_variacoes || {};
       const valores = Object.values(precos).filter(v => v > 0);
@@ -5742,6 +5751,8 @@ export default function Produtos() {
               ) && (
                 <div className="prod-section">
                   {/* o título "Qual o preço?" já diz; só o por quilo precisa do rótulo */}
+                  {/* (14/10) produto sem tamanho: título como nos outros passos (antes começava direto no "Preço cheio") */}
+                  {!form.id && !(form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes?.length || 0) > 0) && !precosDosSabores(form) && <p className="prod-section-label prod-section-label--novo">Qual é o preço?</p>}
                   {form.id && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" && <p className="prod-section-label prod-section-label--novo">Preço por kg</p>}
                   {/* (14/10) no cadastro novo o preço do kg vem aqui no fim (igual ao preço fixo): preço, tabela dos pesos e promoção */}
                   {!form.id && form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" && (() => {
@@ -6104,7 +6115,7 @@ export default function Produtos() {
                 );
                 return (
                   <div className="prod-section">
-                    {!form.id ? <p className="prod-section-label prod-section-label--novo">Opções</p> : null}
+                    {!form.id ? <p className="prod-section-label prod-section-label--novo">Cardápio e entrega</p> : null}
                     <div className="prod-opcs">
                       {op(form.disponivel !== false, "Mostrar no cardápio", form.disponivel !== false ? "Os clientes veem e podem pedir" : "Fica guardado só pra você", () => setForm(f => ({ ...f, disponivel: f.disponivel === false })))}
                       {op(form.pronta_entrega === true, "Pronta entrega", "Tem feito, sai na hora", () => setForm(f => ({ ...(f as any), pronta_entrega: !(f as any).pronta_entrega, antecedencia: !(f as any).pronta_entrega ? null : (f as any).antecedencia ?? null })))}
