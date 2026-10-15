@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Buildings, CalendarCheck, ClipboardText, Coins, CreditCard, X } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { useLojaPronta } from "@/lib/primeirosPassos";
+import { useAoVoltar } from "@/hooks/useAoVoltar";
 import { lerAvisosCadastro, notificarAvisosCadastro, type AvisoCadastro } from "@/lib/avisosCadastro";
 
 /**
@@ -21,12 +22,15 @@ export default function FaltaPouco() {
   const kOff = (chave: string) => `doonly_aviso_off_${uid}_${chave}`;
   const escondido = (chave: string) => { try { return Date.now() - Number(localStorage.getItem(kOff(chave)) || 0) < SETE_DIAS; } catch { return false; } };
 
+  // (15/10) ao voltar pro app, relê os avisos (antes ficava o que era na hora em que a tela abriu)
+  const [voltou, setVoltou] = useState(0);
+  useAoVoltar(() => setVoltou(v => v + 1));
   useEffect(() => {
     if (!uid || pronta !== true) return;
     let vivo = true;
     lerAvisosCadastro(uid).then(l => { if (!vivo) return; setAvisos(l); notificarAvisosCadastro(l); }).catch(() => {});
     return () => { vivo = false; };
-  }, [uid, pronta]);
+  }, [uid, pronta, voltou]);
 
   const lista = avisos.filter(a => !escondido(a.chave)).slice(0, 3);
   if (!lista.length) return null;

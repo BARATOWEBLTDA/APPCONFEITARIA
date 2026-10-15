@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { dataISO } from "@/lib/pedidoStatus";
-import { useDiaAtual } from "@/hooks/useAoVoltar";
+import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import { useNavigate } from "react-router-dom";
-import { CaretRight, Clock, Cake, Trophy, TrendUp, TrendDown, Camera, Moon } from "@phosphor-icons/react";
+import { CaretRight, Cake, Trophy, TrendUp, TrendDown, Camera, Moon } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
@@ -21,17 +21,8 @@ interface Update {
 }
 
 // Status atuais (+ antigos). Antes eram nomes que o app não usa mais, e nada aparecia (30/09)
-const STATUS_ATIVOS = ["aguardando_pagamento", "aguardando_aceite", "novo", "pendente", "agendado", "confirmado", "em_producao", "em_preparo", "finalizado", "pronto", "aguardando_retirada", "aguardando_entrega", "em_entrega", "a_caminho"];
 const STATUS_ENTREGUE = ["entregue", "concluido"];
 const MAX_VISIVEIS = 4;
-
-// (11/10) "Próximos 7 dias" = de hoje até hoje + 6, igual no app inteiro (A receber, A pagar, Início).
-// Antes era a semana de domingo a sábado: na sexta contava entregas de dias que já passaram e ignorava a segunda seguinte.
-function proximos7Dias() {
-  const hoje = new Date();
-  const fim = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 6);
-  return { inicio: dataISO(hoje), fim: dataISO(fim) };
-}
 
 /**
  * O MESMO trecho do mês anterior (11/10): do dia 1 até o mesmo dia e hora, limitado ao fim daquele mês.
@@ -84,6 +75,9 @@ export default function MinhasAtualizacoes() {
 
   // (11/10) app aberto de um dia pro outro: quando vira o dia, refaz os avisos (aniversário, entregas dos próximos 7 dias…)
   const diaAtual = useDiaAtual();
+  // (15/10) ao voltar pro app também refaz (antes só na virada do dia)
+  const [voltou, setVoltou] = useState(0);
+  useAoVoltar(() => setVoltou(v => v + 1));
   const contaCarregada = useRef<string | null>(null);
   useEffect(() => {
     if (!profile?.id) return;
@@ -93,8 +87,6 @@ export default function MinhasAtualizacoes() {
       if (contaCarregada.current !== profile.id) setLoading(true);
       const userId = profile.id;
       const hoje = new Date();
-      // (07/10 · 3.02) datas no horário do Brasil: antes, depois das 21h, a semana ganhava um dia
-      const semana = proximos7Dias();
       const trechoAnt = mesmoTrechoDoMesAnterior(hoje);
       // (11/10) faturamento comparado pela DATA DE ENTREGA (antes pela criação): último dia do trecho, inclusive
       const fimAntISO = dataISO(new Date(Math.min(
@@ -105,7 +97,6 @@ export default function MinhasAtualizacoes() {
       const dataLimite60d = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - 60);
 
       const [
-        entregasSemanaRes,
         clientesRes,
         produtosSemFotoRes,
         pedidosMesRes,
@@ -114,14 +105,6 @@ export default function MinhasAtualizacoes() {
         clientesComVendaRes,
         totalClientesRes,
       ] = await Promise.all([
-        // 2. Entregas nesta semana
-        supabase
-          .from("pedidos")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", userId)
-          .gte("data_entrega", semana.inicio)
-          .lte("data_entrega", semana.fim)
-          .in("status", STATUS_ATIVOS),
         // 3. Clientes com data_nascimento pra aniversariantes
         supabase
           .from("clientes")
@@ -170,29 +153,18 @@ export default function MinhasAtualizacoes() {
           .eq("user_id", userId),
       ]);
       if (cancelado) return;
+      // (15/10) alguma busca falhou (sem internet): mantém o que já estava (antes podia mostrar "faturamento caiu 100%")
+      if ([clientesRes, produtosSemFotoRes, pedidosMesRes, pedidosMesAntRes, totalPedidosRes, clientesComVendaRes, totalClientesRes].some(r => r.error)) {
+        if (contaCarregada.current !== userId) setLoading(false);
+        return;
+      }
       contaCarregada.current = userId;
 
       const lista: Update[] = [];
 
       // (07/10 · 3.07) Os pedidos atrasados saíram daqui: já aparecem no "Seu dia", no topo do Início, e estavam repetidos.
 
-      // 2️⃣ Entregas nos próximos 7 dias (hoje até hoje + 6)
-      const nEntregas = entregasSemanaRes.count || 0;
-      if (nEntregas > 0) {
-        lista.push({
-          key: "entregas-semana",
-          Icone: Clock,
-          categoria: "Próximos 7 dias",
-          categoriaCor: "azul",
-          titulo: `${nEntregas} ${nEntregas === 1 ? "entrega nos próximos 7 dias" : "entregas nos próximos 7 dias"}`,
-          descricao: nEntregas === 1
-            ? "Você tem uma entrega programada — se organize."
-            : "Se organize pra dar conta de todas as entregas.",
-          cta: "Ver agenda",
-          path: "/agenda",
-          prioridade: 80,
-        });
-      }
+      // (15/10) "N entregas nos próximos 7 dias" saiu: repetia o cartão Próximas entregas, logo acima
 
       // 3️⃣ Aniversariantes
       const aniv = calcularAniversariantesSemana(clientesRes.data || []);
@@ -318,7 +290,7 @@ export default function MinhasAtualizacoes() {
       setLoading(false);
     })();
     return () => { cancelado = true; };
-  }, [profile?.id, diaAtual]);
+  }, [profile?.id, diaAtual, voltou]);
 
   if (loading) return null;
   if (updates.length === 0) return null;

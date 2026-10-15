@@ -69,7 +69,8 @@
 .sd-pi-l1 b { font-size: 14.5px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sd-pi-l1 em { flex: none; font-style: normal; font-size: 12.5px; color: var(--ui-texto-2); }
 .sd-pi-pr { font-size: 13px; color: var(--ui-texto-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sd-pi-q { font-size: 12.5px; color: var(--ui-texto-2); }
+.sd-pi-q { font-size: 12.5px; color: var(--ui-texto-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } /* (15/10) numa linha só a 360px */
+.sd-pi--passou .sd-pi-q { color: var(--ui-vermelho-escuro, #B91C1C); font-weight: 500; }
 .sd-pi--agora .sd-pi-q { color: var(--ui-rosa-escuro); font-weight: 500; }
 .sd-pi-v { flex: none; font-size: 14px; font-weight: 500; color: var(--ui-texto); }
 .sd-pl { margin-top: 2px; }

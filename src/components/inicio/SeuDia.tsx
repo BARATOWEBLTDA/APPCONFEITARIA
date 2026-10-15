@@ -43,9 +43,11 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje }: P
   // As de hora já passada que ainda não foram entregues viram o aviso "N passaram do horário" e saem da lista.
   // Antes o destaque era sempre a mais cedo do dia: às 20h40 ainda mostrava "15:30 · agora".
   const agora = useAgora();
-  const { destaque, restantes } = separarEntregasDeHoje(proximas, hoje, agora);
+  const { destaque, passaram, restantes } = separarEntregasDeHoje(proximas, hoje, agora);
   // 4.29: uma lista só, um pedido por linha (a próxima de hoje primeiro, depois as outras), até 5
-  const lista = [...(destaque ? [destaque] : []), ...restantes].slice(0, 5);
+  // (15/10) as de hoje com o horário já passado (e ainda não entregues) voltam pra lista, no topo, marcadas
+  // "atrasado" — antes sumiam sem aviso (e o computador mostrava): agora os dois mostram igual
+  const lista = [...passaram, ...(destaque ? [destaque] : []), ...restantes].slice(0, 5);
   const quantoFalta = destaque?.hora ? faltaPara(hhmm(destaque.hora), agora) : "";
   const amanha = (() => { const d = new Date(hoje + "T12:00:00"); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10); })();
   const quando = (e: EntregaResumo) => {
@@ -88,12 +90,12 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje }: P
             <ul className="sd-pl">
               {lista.map(e => (
                 <li key={e.id}>
-                  <button type="button" className={`sd-pi${e === destaque ? " sd-pi--agora" : ""}`} onClick={() => navigate(`/pedidos/${e.id}`)}>
+                  <button type="button" className={`sd-pi${e === destaque ? " sd-pi--agora" : ""}${passaram.includes(e) ? " sd-pi--passou" : ""}`} onClick={() => navigate(`/pedidos/${e.id}`)}>
                     <span className="sd-pi-foto">{e.foto ? <img src={e.foto} alt="" loading="lazy" /> : <Cake size={22} aria-hidden="true" />}</span>
                     <span className="sd-pi-tx">
                       <span className="sd-pi-l1"><b>{e.cliente}</b>{e.numero ? <em>#{e.numero}</em> : null}</span>
                       {e.produto && <small className="sd-pi-pr">{e.produto}</small>}
-                      <small className="sd-pi-q">{quando(e)}{e === destaque && quantoFalta ? ` · ${quantoFalta}` : ""} · {e.tipo === "entrega" ? "Entrega" : "Retirada"}</small>
+                      <small className="sd-pi-q">{passaram.includes(e) ? `${quando(e)} · atrasado` : <>{quando(e)}{e === destaque && quantoFalta ? ` · ${quantoFalta}` : ""} · {e.tipo === "entrega" ? "Entrega" : "Retirada"}</>}</small>
                     </span>
                     <span className="sd-pi-v">{real(e.valor)}</span>
                   </button>

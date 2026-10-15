@@ -8,7 +8,7 @@ import { LinkDeVendas } from "@/components/loja/LinkDeVendas";
 import { PausarPedidos } from "@/components/loja/PausarPedidos";
 import { STATUS_AINDA_NAO_PRONTO, dataISO } from "@/lib/pedidoStatus";
 import { entradasNoPeriodo } from "@/lib/painelFinanceiro";
-import ConquistasCard from "@/components/ConquistasCard";
+import { verificarAvisosPro } from "@/lib/notificacoesUsuario";
 import SeuDia, { type EntregaResumo } from "@/components/inicio/SeuDia";
 import { minutosDoDia, separarEntregasDeHoje } from "@/components/inicio/entregasDeHoje";
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
@@ -65,6 +65,9 @@ export default function Inicio() {
     return () => mq.removeEventListener("change", ouvir);
   }, []);
   const { profile, loading: carregandoPerfil, refetch: refetchProfile } = useProfile();
+  // (15/10) aviso do PRO vencendo / mensalidade atrasada (vira notificação). Antes vinha junto do ConquistasCard, que
+  // buscava as conquistas toda vez pra uma janela que não abria mais: as medalhas ficam em Minhas conquistas.
+  useEffect(() => { if (profile) void verificarAvisosPro(profile); }, [profile?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [loading, setLoading] = useState(true);
   const [erroCarga, setErroCarga] = useState(false); // a busca do dia falhou (sem internet, por exemplo)
@@ -168,7 +171,7 @@ export default function Inicio() {
     "Por onde quer começar hoje?",
     "Bora deixar tudo redondo hoje?",
     "Como está sua confeitaria hoje?",
-    "Pronta pra um dia produtivo?",
+    "Bora fazer um dia produtivo?", // (15/10) sem gênero (era "Pronta pra…")
     "Algum pedido especial pra hoje?",
     "Um dia doce começa aqui",
     "Vamos doçar esse dia?",
@@ -880,6 +883,9 @@ export default function Inicio() {
         <div className="ini-chart-card">
           {(() => {
             const temDados = chartData.some(d => (d.valor || 0) > 0);
+            // (15/10) sem internet não mostra "Nada recebido ainda": avisa o erro; carregando também não
+            if (erroCarga) return <p className="ini-dk-vazio">Não deu pra carregar o gráfico. <button type="button" className="ini-dk-tentar" onClick={tentarDeNovo}>Tentar de novo</button></p>;
+            if (loading && !temDados) return <p className="ini-dk-vazio">Carregando…</p>;
             return temDados ? (
               <div className="ini-chart-inner" style={{ width: "100%", height: 220, minWidth: 0, minHeight: 200 }}>
                 {/* initialDimension: evita o aviso "width(-1) and height(-1)" no primeiro desenho, antes de medir o espaço */}
@@ -915,7 +921,12 @@ export default function Inicio() {
             {/* (4.28) Conquistas saiu da lateral do computador: fica em Configurações › Minhas conquistas */}
             <div className="ini-dk-card">
               <div className="ini-dk-ct"><span>Próximas entregas</span><button type="button" onClick={() => navigate("/agenda")}>Ver agenda <CaretRight size={16} weight="bold" aria-hidden="true" /></button></div>
-              {proximasEntregas.length === 0 ? (
+              {/* (15/10) carregando e erro não aparecem como "Nenhuma entrega" */}
+              {erroCarga ? (
+                <p className="ini-dk-vazio">Não deu pra carregar as entregas. <button type="button" className="ini-dk-tentar" onClick={tentarDeNovo}>Tentar de novo</button></p>
+              ) : loading && proximasEntregas.length === 0 ? (
+                <p className="ini-dk-vazio">Carregando…</p>
+              ) : proximasEntregas.length === 0 ? (
                 <p className="ini-dk-vazio">Nenhuma entrega marcada. Os próximos pedidos aparecem aqui.</p>
               ) : proximasEntregas.map(e => {
                 const d = new Date(e.data + "T12:00:00");
@@ -954,8 +965,6 @@ export default function Inicio() {
 
       </div>
 
-      {/* (4.29) o cartão "Suas conquistas" saiu do Início; fica só o aviso da conquista nova (celular e computador) */}
-      <ConquistasCard semCartao />
 
       <style>{`
         .ini-root {
@@ -1839,6 +1848,7 @@ export default function Inicio() {
           .ini-dk-ct { display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 700; color: var(--ui-texto); margin-bottom: 10px; }
           .ini-dk-ct button { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin: -12px -8px -12px 0; padding: 0 8px; border: none; border-radius: var(--ui-raio); background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
           .ini-dk-vazio { font-size: 13.5px; color: var(--ui-texto-3); margin: 0; line-height: 1.45; }
+          .ini-dk-tentar { margin: 0 0 0 4px; padding: 0; border: 0; background: none; font: inherit; font-weight: 600; color: var(--ui-rosa-escuro); text-decoration: underline; cursor: pointer; }
           .ini-dk-en { display: flex; align-items: center; gap: 12px; width: 100%; padding: 9px 0; border: none; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; text-align: left; cursor: pointer; }
           .ini-dk-ct + .ini-dk-en { border-top: none; padding-top: 0; }
           .ini-dk-dt { width: 48px; height: 48px; border-radius: var(--ui-raio-p); background: #FAF7F8; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }

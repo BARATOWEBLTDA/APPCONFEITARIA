@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useAoVoltar } from "@/hooks/useAoVoltar";
 import { useNavigate } from "react-router-dom";
 import { Newspaper, CaretRight } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
@@ -34,37 +35,32 @@ export default function UpdatesFeed() {
   const navigate = useNavigate();
   const [noticias, setNoticias] = useState<Noticia[]>([]);
   const [loading, setLoading] = useState(true);
+  // (15/10) sem internet não vira "Nenhuma notícia": o cartão some até conseguir ler
+  const [erro, setErro] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      const { data: fixadaData } = await supabase
-        .from("admin_noticias")
-        .select("id, emoji, titulo, descricao, imagem_capa, icone_url, slug, categoria, tempo_leitura, publicado_em, fixada")
-        .eq("ativo", true)
-        .eq("fixada", true)
-        .limit(1);
-
-      const fixada = (fixadaData?.[0] as Noticia | undefined) || null;
-
-      const limiteRecentes = fixada ? 2 : 3;
-      const { data: recentesData } = await supabase
-        .from("admin_noticias")
-        .select("id, emoji, titulo, descricao, imagem_capa, icone_url, slug, categoria, tempo_leitura, publicado_em, fixada")
-        .eq("ativo", true)
-        .eq("fixada", false)
-        .order("ordem", { ascending: false })
-        .order("publicado_em", { ascending: false })
-        .limit(limiteRecentes);
-
-      const recentes = (recentesData || []) as Noticia[];
-      const lista = fixada ? [fixada, ...recentes.filter(r => r.id !== fixada.id)] : recentes;
-
-      setNoticias(lista);
-      setLoading(false);
-    })();
+  // (15/10) uma busca só (antes eram 2, uma esperando a outra): a fixada vem primeiro, depois as mais recentes
+  const carregar = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("admin_noticias")
+      .select("id, emoji, titulo, descricao, imagem_capa, icone_url, slug, categoria, tempo_leitura, publicado_em, fixada")
+      .eq("ativo", true)
+      .order("fixada", { ascending: false })
+      .order("ordem", { ascending: false })
+      .order("publicado_em", { ascending: false })
+      .limit(3);
+    if (error) { setErro(true); setLoading(false); return; }
+    const todas = (data || []) as Noticia[];
+    // só 1 fixada no topo (igual antes)
+    const fixada = todas.find(n => n.fixada);
+    setNoticias(fixada ? [fixada, ...todas.filter(n => !n.fixada)] : todas);
+    setErro(false);
+    setLoading(false);
   }, []);
+  useEffect(() => { void carregar(); }, [carregar]);
+  // (15/10) ao voltar pro app, atualiza (antes ficava a notícia velha até recarregar a página)
+  useAoVoltar(() => { void carregar(); });
 
-  if (loading) return null;
+  if (loading || erro) return null;
 
   // (07/10 · 3.09) Sem notícia, o cartão fica numa frase só (antes era um bloco grande vazio) e some o "Ver todas".
   // Notícia sem imagem mostra um ícone desenhado, não o emoji.

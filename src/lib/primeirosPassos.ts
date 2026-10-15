@@ -1,3 +1,4 @@
+import { useAoVoltar } from "@/hooks/useAoVoltar";
 /**
  * Regra ÚNICA dos primeiros passos (02/10) — o mesmo cartão aparece no Início (celular) e no
  * Cardápio digital. Fazer o passo num lugar marca no outro. Tudo vem do banco.
@@ -125,6 +126,9 @@ export async function atualizarPerfil(uid: string, campos: Record<string, unknow
  */
 export function useLojaPronta(uid: string | null | undefined): boolean | null {
   const [pronta, setPronta] = useState<boolean | null>(null);
+  // (15/10) ao voltar pro app, confere de novo (antes só ao abrir a tela)
+  const [voltou, setVoltou] = useState(0);
+  useAoVoltar(() => setVoltou(v => v + 1));
   useEffect(() => {
     if (!uid) return;
     let vivo = true;
@@ -132,6 +136,6 @@ export function useLojaPronta(uid: string | null | undefined): boolean | null {
     ler();
     window.addEventListener("doonly:passos", ler);
     return () => { vivo = false; window.removeEventListener("doonly:passos", ler); };
-  }, [uid]);
+  }, [uid, voltou]);
   return pronta;
 }
