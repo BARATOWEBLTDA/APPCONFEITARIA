@@ -573,9 +573,18 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
     onSalvo();
   };
   const [campo, setCampo] = useState<null | { k: string; titulo: string }>(null);
-  // (13/10) refeito: prévia com a etiqueta "Aberto agora" ao vivo, dias com nome e cada grupo numa linha só
-  const nomeLoja = String(perfil?.nome_loja || "Sua confeitaria").trim() || "Sua confeitaria";
-  const logoPrev = perfil?.logo_url || perfil?.foto_url || "";
+  // (15/10) refeito: os dias viraram uma lista (seg a sex, seg a sáb, todos os dias, escolher) igual ao endereço;
+  // os botões de cada dia só aparecem em "Escolher os dias". Saiu a prévia com logo; ficou só a etiqueta do cardápio.
+  const UTEIS = DIAS.slice(0, 5).map(d => d.nome);
+  const todosUteis = UTEIS.every(n => h.dias.includes(n)) && h.dias.length === 5;
+  const padrao: "uteis" | "sabado" | "todos" | null = !todosUteis ? null : !h.abre_sabado && !h.abre_domingo ? "uteis" : h.abre_sabado && !h.abre_domingo ? "sabado" : h.abre_sabado && h.abre_domingo ? "todos" : null;
+  const [escolher, setEscolher] = useState(() => padrao === null);
+  const modo = escolher || padrao === null ? "escolher" : padrao;
+  const usar = (m: "uteis" | "sabado" | "todos" | "escolher") => {
+    if (m === "escolher") { setEscolher(true); return; }
+    setEscolher(false);
+    setH((x: any) => ({ ...x, dias: [...UTEIS], abre_sabado: m !== "uteis", abre_domingo: m === "todos" }));
+  };
   const sit = temDia ? situacaoDaLoja(h) : null;
   const sitTxt = !sit ? "Marque os dias que você atende" : sit.aberto ? `Aberto agora · fecha às ${horaTexto(sit.fecha)}`
     : !sit.abre ? "Fechado" : `Fechado · abre ${sit.abre.dias === 0 ? "hoje" : sit.abre.dias === 1 ? "amanhã" : DIAS_CURTO[sit.abre.diaSemana].toLowerCase()} às ${horaTexto(sit.abre.minutos)}`;
@@ -598,21 +607,35 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
     <Janelinha foco titulo="Horário de funcionamento" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!temDia} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
       <PassoTopo k="horario" />
-      <div className="ppf-e-prev" aria-hidden="true">
-        <span className="ppf-d-logo">{logoPrev ? <img src={logoPrev} alt="" /> : nomeLoja.charAt(0).toUpperCase()}</span>
-        <span className="ppf-e-tx"><b>{nomeLoja}</b>
-          <span className={`ppf-h-pill${!sit ? " vazio" : sit.aberto ? "" : " off"}`}>{sit && <i />}{sitTxt}</span></span>
+      <p className="ppf-l ppf-h-tit" id="pp-dias">Dias que você atende</p>
+      <div className="ppf-mos" role="radiogroup" aria-labelledby="pp-dias">
+        {([
+          ["uteis", "Segunda a sexta", "Seg, Ter, Qua, Qui, Sex"],
+          ["sabado", "Segunda a sábado", "Seg a Sáb"],
+          ["todos", "Todos os dias", "Seg a Dom"],
+          ["escolher", "Escolher os dias", "Marque só os que você atende"],
+        ] as const).map(([v, t, sub]) => (
+          <button type="button" role="radio" aria-checked={modo === v} key={v} className={modo === v ? "on" : ""} onClick={() => usar(v)}>
+            <i aria-hidden="true" /><span><b>{t}</b><small><em>{sub}</em></small></span>
+          </button>
+        ))}
       </div>
-      <p className="ppf-l">Dias que você atende</p>
-      <div className="ppf-h-dias">{DIAS.map(d => (
-        <button type="button" key={d.nome} className={ligado(d.nome) ? "on" : ""} onClick={() => trocar(d.nome)} aria-pressed={ligado(d.nome)} aria-label={d.nome}>{d.curto}</button>))}</div>
-      {temDia && (
+      {modo === "escolher" && (
+        <div className="ppf-h-dias">{DIAS.map(d => (
+          <button type="button" key={d.nome} className={ligado(d.nome) ? "on" : ""} onClick={() => trocar(d.nome)} aria-pressed={ligado(d.nome)} aria-label={d.nome}>{d.curto}</button>))}</div>
+      )}
+      {temDia && (<>
+        <p className="ppf-l ppf-h-tit">Horário</p>
         <div className="ppf-h-lista">
           {h.dias.length > 0 && linha(rotUteis, "abertura", "fechamento")}
           {h.abre_sabado && linha("Sábado", "sabado_abertura", "sabado_fechamento")}
           {h.abre_domingo && linha("Domingo", "domingo_abertura", "domingo_fechamento")}
         </div>
-      )}
+      </>)}
+      <div className="ppf-h-cv">
+        <small>Assim aparece no cardápio</small>
+        <span className={`ppf-h-pill${!sit ? " vazio" : sit.aberto ? "" : " off"}`}>{sit && <i />}{sitTxt}</span>
+      </div>
       {erro && <p className="ppf-erro">{erro}</p>}
       {campo && (
         <HorarioSheet titulo={campo.titulo} value={h[campo.k]} onChange={(v) => setH((x: any) => ({ ...x, [campo.k]: v }))} onClose={() => setCampo(null)} />
@@ -737,18 +760,21 @@ const CSS = `
   .ppf-e-achado button { flex: none; min-height: 40px; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
   .ppf-e-aviso { margin: 12px 0 0; font-size: 13.5px; font-weight: 600; color: var(--ui-laranja); }
   .ppf-row--uf > .ppf-f:last-child { flex: 0 0 76px; }
-  .ppf-h-pill { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; padding: 3px 9px; border-radius: 999px; background: var(--ui-verde-fundo); color: var(--ui-verde);
-    font-size: 12.5px; font-weight: 600; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  .ppf-h-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 6px; background: var(--ui-verde-fundo); color: var(--ui-verde);
+    font-size: 13.5px; font-weight: 700; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
   .ppf-h-pill i { flex: none; width: 7px; height: 7px; border-radius: 50%; background: #22C55E; }
   .ppf-h-pill.off { background: var(--ui-laranja-fundo, #FFF4E0); color: var(--ui-laranja, #B45309); }
   .ppf-h-pill.off i { background: #F59E0B; }
   .ppf-h-pill.vazio { background: var(--ui-cinza); color: var(--ui-texto-3); font-style: italic; font-weight: 500; }
-  .ppf-h-dias { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; }
-  .ppf-h-dias button { min-height: 44px; padding: 0; border: 0; border-radius: 12px; background: var(--ui-cinza); color: var(--ui-texto-2); font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+  .ppf-h-tit { margin-top: 24px !important; }
+  .ppf-h-tit:first-of-type { margin-top: 18px !important; }
+  .ppf-h-dias { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-top: 12px; }
+  .ppf-h-dias button { min-height: 48px; padding: 0; border: 0; border-radius: 8px; background: var(--ui-cinza); color: var(--ui-texto-2); font-family: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; }
   .ppf-h-dias button.on { background: var(--ui-rosa); color: var(--ui-branco); }
-  .ppf-h-lista { margin-top: 14px; border: 1px solid var(--ui-borda); border-radius: 16px; overflow: hidden; }
-  .ppf-h-l { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; }
-  .ppf-h-l + .ppf-h-l { border-top: 1px solid var(--ui-linha); }
+  .ppf-h-lista { display: flex; flex-direction: column; gap: 10px; }
+  .ppf-h-l { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px 10px 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); }
+  .ppf-h-cv { margin-top: 24px; padding: 14px 16px; border-radius: var(--ui-raio); background: #FAF7F8; }
+  .ppf-h-cv small { display: block; margin-bottom: 8px; font-size: 13px; color: var(--ui-texto-2); }
   .ppf-h-l > b { min-width: 0; font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ppf-h-hh { flex: none; display: flex; align-items: center; gap: 6px; }
   .ppf-h-hh em { font-style: normal; font-size: 14px; color: var(--ui-texto-3); }
