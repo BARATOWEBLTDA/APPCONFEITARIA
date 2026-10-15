@@ -536,9 +536,20 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
       </>)}
 
       {(achou || manual) && (<>
-        <p className="ppf-l" style={{ marginTop: 14 }}>No cardápio, mostrar</p>
-        <div className="ppf-seg">{([["completo", "Completo"], ["cidade", "Só a cidade"], ["nada", "Nada"]] as const).map(([v, l]) => (
-          <button type="button" key={v} className={mostrar === v ? "on" : ""} onClick={() => setMostrar(v)}>{l}</button>))}</div>
+        {/* (15/10) cada opção mostra o texto que a cliente vai ver no cardápio (antes era uma barra de abas) */}
+        <p className="ppf-l" style={{ marginTop: 18 }} id="pp-mostrar">O que aparece no cardápio</p>
+        <div className="ppf-mos" role="radiogroup" aria-labelledby="pp-mostrar">
+          {([
+            ["completo", "Endereço completo", [end.rua.trim() ? `${end.rua.trim()}${end.numero.trim() ? `, ${end.numero.trim()}` : ""}` : "", end.bairro.trim()].filter(Boolean).join(" · ") || cidadeUf, true],
+            ["cidade", "Só a cidade", cidadeUf, true],
+            ["nada", "Não mostrar", "Bom pra quem atende em casa", false],
+          ] as const).map(([v, t, sub, pino]) => (
+            <button type="button" role="radio" aria-checked={mostrar === v} key={v} className={mostrar === v ? "on" : ""} onClick={() => setMostrar(v)}>
+              <i aria-hidden="true" />
+              <span><b>{t}</b><small>{pino && <MapPin size={13} weight="fill" aria-hidden="true" />}<em>{sub}</em></small></span>
+            </button>
+          ))}
+        </div>
       </>)}
       {erro && <p className="ppf-erro">{erro}</p>}
     </Janelinha>
@@ -816,9 +827,16 @@ const CSS = `
   .ppf-row { display: flex; gap: 10px; }
   .ppf-wrap { position: relative; }
   .ppf-cep { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 12.5px; font-weight: 700; color: var(--ui-verde); }
-  .ppf-seg { display: flex; gap: 4px; background: var(--ui-cinza); border-radius: var(--ui-raio); padding: 4px; }
-  .ppf-seg button { flex: 1; min-height: 44px; border: none; background: none; padding: 0 4px; border-radius: var(--ui-raio-p); font-family: inherit; font-size: 15px; font-weight: 700; color: var(--ui-texto-2); cursor: pointer; }
-  .ppf-seg button.on { background: var(--ui-branco); color: var(--ui-texto); box-shadow: var(--ui-sombra-cartao); }
+  .ppf-mos { display: flex; flex-direction: column; gap: 8px; }
+  .ppf-mos button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; padding: 10px 14px; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
+  .ppf-mos button i { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #CFC2C7; box-sizing: border-box; transition: border .15s; }
+  .ppf-mos button.on { border-color: var(--ui-rosa); background: #FFF5F8; }
+  .ppf-mos button.on i { border: 6px solid var(--ui-rosa); }
+  .ppf-mos span { flex: 1; min-width: 0; }
+  .ppf-mos b { display: block; font-size: 15px; font-weight: 700; }
+  .ppf-mos small { display: flex; align-items: center; gap: 4px; margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ppf-mos small svg { flex: none; color: var(--ui-rosa); }
+  .ppf-mos small em { font-style: normal; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .ppf-dias { display: flex; gap: 6px; }
   .ppf-dias button { flex: 1; aspect-ratio: 1; min-height: 44px; max-width: 48px; border: none; border-radius: 50%; font-family: inherit; font-size: 15px; font-weight: 700; background: var(--ui-cinza); color: var(--ui-texto-2); cursor: pointer; }
   .ppf-dias button.on { background: var(--ui-rosa); color: var(--ui-branco); }
