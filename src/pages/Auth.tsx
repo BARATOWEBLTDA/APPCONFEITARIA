@@ -582,7 +582,7 @@ export default function Auth() {
                 value={form.senha}
                 onChange={handleChange}
                 required
-                autoComplete="current-password"
+                autoComplete="off"
                 enterKeyHint="done"
                 style={{ backgroundColor: "#fff", borderColor: "var(--border)" }}
               />
@@ -657,7 +657,7 @@ export default function Auth() {
                 onChange={e => handleCadastroChange("nome", e.target.value)}
                 onBlur={() => handleCadastroBlur("nome")}
                 required
-                autoComplete="name"
+                autoComplete="off"
                 autoCapitalize="words"
                 enterKeyHint="next"
                 aria-invalid={!!(cadastroTouched.nome && cadastroErrors.nome)}
@@ -704,7 +704,7 @@ export default function Auth() {
                 value={cadastroForm.telefone}
                 onChange={e => handleCadastroChange("telefone", e.target.value)}
                 onBlur={() => handleCadastroBlur("telefone")}
-                autoComplete="tel"
+                autoComplete="off"
                 inputMode="tel"
                 enterKeyHint="next"
                 aria-invalid={!!(cadastroTouched.telefone && cadastroErrors.telefone)}
@@ -757,7 +757,7 @@ export default function Auth() {
                 onChange={e => handleCadastroChange("senha", e.target.value)}
                 onBlur={() => handleCadastroBlur("senha")}
                 required
-                autoComplete="new-password"
+                autoComplete="off"
                 enterKeyHint="next"
                 aria-invalid={!!(cadastroTouched.senha && cadastroErrors.senha)}
               />
@@ -800,7 +800,7 @@ export default function Auth() {
                 onChange={e => handleCadastroChange("confirmarSenha", e.target.value)}
                 onBlur={() => handleCadastroBlur("confirmarSenha")}
                 required
-                autoComplete="new-password"
+                autoComplete="off"
                 enterKeyHint="done"
                 aria-invalid={!!(cadastroTouched.confirmarSenha && cadastroErrors.confirmarSenha)}
               />

@@ -53,11 +53,11 @@ export default function CompletarCadastro({ user, nomeInicial, lojaInicial = "",
         <p className="ccad-sub">Conta pra gente o nome da sua confeitaria e o WhatsApp onde você quer receber os pedidos.</p>
 
         <div className="ccad-form">
-          <Campo id="cc-nome" rotulo="Seu nome" value={nome} onChange={e => setNome(e.target.value)} placeholder="Como podemos te chamar?" autoComplete="name"
+          <Campo id="cc-nome" rotulo="Seu nome" value={nome} onChange={e => setNome(e.target.value)} placeholder="Como podemos te chamar?" autoComplete="off"
             dica={doGoogle ? "Veio do Google. Pode trocar." : undefined} />
-          <Campo id="cc-loja" rotulo="Nome da sua confeitaria" value={loja} onChange={e => setLoja(e.target.value)} placeholder="Ex.: Doce Encanto" autoComplete="organization"
+          <Campo id="cc-loja" rotulo="Nome da sua confeitaria" value={loja} onChange={e => setLoja(e.target.value)} placeholder="Ex.: Doce Encanto" autoComplete="off"
             dica="É o nome que aparece no seu cardápio." />
-          <Campo id="cc-tel" rotulo="WhatsApp que recebe os pedidos" value={tel} onChange={e => setTel(maskTel(e.target.value))} placeholder="(41) 99999-8888" inputMode="tel" autoComplete="tel"
+          <Campo id="cc-tel" rotulo="WhatsApp que recebe os pedidos" value={tel} onChange={e => setTel(maskTel(e.target.value))} placeholder="(41) 99999-8888" inputMode="tel" autoComplete="off"
             icone={<IconeWhatsApp size={20} className="ccad-zap" />} />
         </div>
 

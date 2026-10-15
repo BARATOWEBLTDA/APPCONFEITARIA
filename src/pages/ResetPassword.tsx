@@ -203,7 +203,7 @@ export default function ResetPassword() {
                 placeholder="Crie uma senha"
                 value={senha}
                 onChange={e => { setSenha(e.target.value); setError(""); }}
-                autoComplete="new-password"
+                autoComplete="off"
                 enterKeyHint="next"
               />
               <ul className="tc-req" aria-label="A senha precisa ter" style={{ marginTop: 8 }}>
@@ -218,7 +218,7 @@ export default function ResetPassword() {
               value={confirmar}
               onChange={e => { setConfirmar(e.target.value); setError(""); }}
               erro={(confirmar || tentou) && senhaValida && !checks.match ? "As duas senhas precisam ser iguais." : undefined}
-              autoComplete="new-password"
+              autoComplete="off"
               enterKeyHint="done"
             />
             {error && !(senhaValida && !checks.match) && <p className="tc-erro" role="alert"><WarningCircle size={16} weight="bold" aria-hidden="true" /><span>{error}</span></p>}
