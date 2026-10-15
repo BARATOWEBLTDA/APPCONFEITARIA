@@ -4,6 +4,7 @@
 import CampoData from '@/components/CampoData'
 import { CalendarBlank, CaretRight, Check, Crown, CurrencyCircleDollar, Plus, Tag, Ticket, Truck, Users, Wallet, WarningCircle } from "@phosphor-icons/react"
 import { Botao, Campo, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base"
+import "@/components/loja/editoresLoja.css"
 import "./entregaPagamento.css"
 import { useState, useEffect, useRef } from "react"
 import { supabase } from "@/lib/supabase"
@@ -15,19 +16,19 @@ import AppPageHeader from "@/components/AppPageHeader"
 import { usePlano } from "@/hooks/usePlano"
 
 const PAGAMENTOS = [
-  { key: 'pix',                label: 'Pix' },
-  { key: 'dinheiro',           label: 'Dinheiro' },
-  { key: 'credito',            label: 'Cartão de crédito' },
-  { key: 'debito',             label: 'Cartão de débito' },
+  { key: 'pix',                label: 'Pix', sub: 'Na hora, sem taxa' },
+  { key: 'dinheiro',           label: 'Dinheiro', sub: 'Na entrega ou na retirada' },
+  { key: 'credito',            label: 'Cartão de crédito', sub: 'Na maquininha' },
+  { key: 'debito',             label: 'Cartão de débito', sub: 'Na maquininha' },
   // 02/10: só as 4 formas (as mesmas que o cliente vê na finalização). As antigas continuam salvas, mas não aparecem.
 ]
 
 const ENTREGAS = [
-  { key: 'retirada',        label: 'Retirada no local' },
-  { key: 'entrega_propria', label: 'Entrega própria' },
-  { key: 'motoboy',         label: 'Motoboy' },
-  { key: 'uber_flash',      label: 'Uber Flash' },
-  { key: 'combinar',        label: 'Combinar pelo WhatsApp' },
+  { key: 'retirada',        label: 'Retirada no local', sub: 'O cliente busca no seu endereço' },
+  { key: 'entrega_propria', label: 'Entrega própria', sub: 'Você leva até o cliente' },
+  { key: 'motoboy',         label: 'Motoboy', sub: 'Um entregador leva pra você' },
+  { key: 'uber_flash',      label: 'Uber Flash', sub: 'Você chama pelo app da Uber' },
+  { key: 'combinar',        label: 'Combinar pelo WhatsApp', sub: 'Vocês acertam na conversa' },
 ]
 
 // Converte o que ela digita (10,50 · 1.250,00 · 10.5 · 1.000) em número.
@@ -268,9 +269,10 @@ export default function CheckoutConfigPage() {
   const Cabeca = ({ Ic, titulo, apoio, acao }: { Ic: typeof Wallet; titulo: string; apoio?: string; acao?: React.ReactNode }) => (
     <div className="ep-cab"><span className="ep-cab-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span><Titulo apoio={apoio} acao={acao}>{titulo}</Titulo></div>
   )
-  const Marcar = ({ on, rotulo, aoTocar }: { on: boolean; rotulo: string; aoTocar: () => void }) => (
-    <button type="button" role="checkbox" aria-checked={on} className="ep-op" onClick={aoTocar}>
-      <span>{rotulo}</span><span className="ep-cx" aria-hidden="true">{on && <Check size={16} weight="bold" />}</span>
+  // (15/10) mesmo visual dos primeiros passos: caixinha à esquerda, nome e uma linha explicando
+  const Marcar = ({ on, rotulo, sub, aoTocar }: { on: boolean; rotulo: string; sub?: string; aoTocar: () => void }) => (
+    <button type="button" role="checkbox" aria-checked={on} className={on ? "on" : ""} onClick={aoTocar}>
+      <i aria-hidden="true">{on && <Check size={13} weight="bold" />}</i><span><b>{rotulo}</b>{sub && <small><em>{sub}</em></small>}</span>
     </button>
   )
   const Chave = ({ on, rotulo, apoio, aoMudar }: { on: boolean; rotulo: string; apoio?: string; aoMudar: (v: boolean) => void }) => (
@@ -306,8 +308,8 @@ export default function CheckoutConfigPage() {
         {/* Pagamento */}
         <section className="ep-card">
           <Cabeca Ic={Wallet} titulo="Formas de pagamento" apoio="Marque só as que você aceita" />
-          <div className="ep-ops">
-            {PAGAMENTOS.map(p => <Marcar key={p.key} on={formasPagamento.includes(p.key)} rotulo={p.label} aoTocar={() => togglePagamento(p.key)} />)}
+          <div className="ppf-mos ppf-mos--chk">
+            {PAGAMENTOS.map(p => <Marcar key={p.key} on={formasPagamento.includes(p.key)} rotulo={p.label} sub={p.sub} aoTocar={() => togglePagamento(p.key)} />)}
           </div>
           {formasPagamento.includes('dinheiro') && (
             <Chave on={exibirCampoTroco} rotulo='Perguntar "Troco pra quanto?"' apoio="Quando o cliente pagar em dinheiro" aoMudar={setExibirCampoTroco} />
@@ -317,8 +319,8 @@ export default function CheckoutConfigPage() {
         {/* Entrega */}
         <section className="ep-card">
           <Cabeca Ic={Truck} titulo="Formas de entrega" apoio="Marque as que o cliente pode escolher" />
-          <div className="ep-ops">
-            {ENTREGAS.map(e => <Marcar key={e.key} on={formasEntrega.includes(e.key)} rotulo={e.label} aoTocar={() => toggleEntrega(e.key)} />)}
+          <div className="ppf-mos ppf-mos--chk">
+            {ENTREGAS.map(e => <Marcar key={e.key} on={formasEntrega.includes(e.key)} rotulo={e.label} sub={e.sub} aoTocar={() => toggleEntrega(e.key)} />)}
           </div>
           {formasEntrega.includes('entrega_propria') && (
             <div className="ep-taxa">

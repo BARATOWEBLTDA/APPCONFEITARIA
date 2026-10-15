@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { ArrowUp, ArrowDown, Wallet, PencilSimple } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { carregarCaixa, definirSaldoInicial, type EstadoCaixa } from "@/lib/caixa";
+import "@/components/loja/editoresLoja.css";
 import { erroDeConexao } from "@/lib/erros";
 
 /**
@@ -125,10 +126,10 @@ export function SaldoSheet({ atual, uid, onClose, onSalvo }: { atual: number | n
     onClose();
   };
   useSobreposicao(true, fechar, caixa); // trava a rolagem de trás, Esc e voltar
-  const salvar = async () => {
-    if (!txt.trim()) { setErro("Digite o valor (pode ser 0)"); return; }
+  const salvar = async (zero = false) => {
+    if (!zero && !txt.trim()) { setErro("Digite o valor (pode ser 0)"); return; }
     setSalvando(true);
-    const r = await definirSaldoInicial(uid, v);
+    const r = await definirSaldoInicial(uid, zero ? 0 : v);
     setSalvando(false);
     if (!r.ok) { setErro("Não foi possível salvar agora. Confira a internet e tente de novo."); return; }
     onSalvo();
@@ -137,14 +138,25 @@ export function SaldoSheet({ atual, uid, onClose, onSalvo }: { atual: number | n
     <div className="cxs-ov" onClick={fechar} role="dialog" aria-modal="true" aria-label="Saldo em caixa">
       <div ref={caixa} className="cxs" onClick={e => e.stopPropagation()}>
         <span className="cxs-alca" aria-hidden="true" />
-        <b className="cxs-t">{atual == null ? "Quanto você tem em caixa?" : "Acertar o saldo"}</b>
-        <p className="cxs-s">{atual == null
-          ? "Some o dinheiro da gaveta e o que está na conta da confeitaria agora. Daqui pra frente, o app atualiza sozinho."
-          : `O app calcula ${brl(atual)}. Se você contou e deu diferente, informe o valor certo: o caixa recomeça a partir de agora.`}</p>
+        <b className="cxs-t">{atual == null ? "Quanto tem hoje no caixa?" : "Acertar o saldo"}</b>
+        {atual != null && <p className="cxs-s">{`O app calcula ${brl(atual)}. Se você contou e deu diferente, informe o valor certo: o caixa recomeça a partir de agora.`}</p>}
         <label className="cxs-lb" htmlFor="cxs-v">Saldo agora</label>
-        <div className="cxs-in"><span>R$</span><input id="cxs-v" inputMode="numeric" placeholder="0,00" value={txt} onChange={e => { setTxt(mascaraBRL(e.target.value)); setErro(""); }} autoFocus data-foco-inicial /></div>
+        <div className="cxs-in"><span>R$</span><input id="cxs-v" inputMode="numeric" autoComplete="off" placeholder="0,00" value={txt} onChange={e => { setTxt(mascaraBRL(e.target.value)); setErro(""); }} autoFocus data-foco-inicial /></div>
         {erro && <p className="cxs-erro">{erro}</p>}
-        <button type="button" className="cxs-cta" onClick={salvar} disabled={salvando}>{salvando ? "Salvando…" : "Salvar saldo"}</button>
+        {/* (15/10) primeira vez: o mesmo do passo "Saldo do caixa" (Começo do zero, Por que isso e o aviso do sinal) */}
+        {atual == null && (<>
+          <button type="button" className="cxs-zero" disabled={salvando} onClick={() => salvar(true)}>Começo do zero</button>
+          <div className="ppf-d-dica cxs-dica">
+            <p>Por que isso?</p>
+            <ul>
+              <li>O app soma o que entra e tira o que sai</li>
+              <li>Você sabe quanto tem, todo dia</li>
+              <li>Dá pra mudar depois em Acertar</li>
+            </ul>
+          </div>
+          <div className="cxs-av"><b>Já recebeu sinal de alguma encomenda?</b>Ao cadastrar o pedido, coloque a data em que recebeu. Assim o app não conta duas vezes.</div>
+        </>)}
+        <button type="button" className="cxs-cta" onClick={() => salvar()} disabled={salvando}>{salvando ? "Salvando…" : "Salvar saldo"}</button>
       </div>
     </div>,
     document.body
@@ -152,6 +164,11 @@ export function SaldoSheet({ atual, uid, onClose, onSalvo }: { atual: number | n
 }
 
 const CSS = `
+  .cxs-zero { display: inline-flex; align-items: center; min-height: 40px; margin-top: 10px; padding: 0 14px; border: 1.5px solid var(--ui-borda); border-radius: 8px; background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-texto-2); cursor: pointer; }
+  .cxs-zero:disabled { opacity: .5; }
+  .cxs .cxs-dica { margin-top: 20px; }
+  .cxs-av { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); font-size: 13px; line-height: 1.45; color: var(--ui-texto-2); }
+  .cxs-av b { display: block; margin-bottom: 2px; font-size: 13.5px; color: var(--ui-texto); }
   .cxc { background: radial-gradient(130% 160% at 0 0, #6B2340, var(--ui-vinho-escuro) 70%); color: var(--ui-branco); border-radius: 18px; padding: 16px 18px; font-family: var(--font-base); }
   .cxc--carregando { height: 132px; background: #EFE9EC; border-radius: 18px; }
   .cxc-top { display: flex; justify-content: space-between; align-items: center; }

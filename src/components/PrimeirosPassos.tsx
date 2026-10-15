@@ -1,18 +1,17 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import MapaEndereco, { type BuscaMapa } from "@/components/MapaEndereco";
+import { DicaDescricao, EXEMPLO_DESCRICAO, EditorHorario, OpcoesMostrar, type Horario } from "@/components/loja/EditoresLoja";
 import { useNavigate } from "react-router-dom";
-import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, Wallet, Coins, Sparkle, ShareNetwork, CaretRight, Camera, X } from "@phosphor-icons/react";
+import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, Wallet, Coins, Sparkle, CaretRight, Camera } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
-import { useProfile, getCardapioUrl, refreshProfile } from "@/hooks/useProfile";
+import { useProfile, refreshProfile } from "@/hooks/useProfile";
 import { ImageCropper } from "@/components/ui/ImageCropper";
-import HorarioSheet from "@/components/HorarioSheet";
 import Janelinha from "@/components/financeiro/Folha";
 import { Mascote } from "@/components/marca/Mascote";
-import { situacaoDaLoja, horaTexto } from "@/lib/agendaCardapio";
 import { marcarPagamentoConferido } from "@/lib/primeirosPassos";
 import { criarNotificacaoPessoal } from "@/lib/notificacoesUsuario";
-import { lerPassos, marcarCompartilhado, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk, type EstadoPassos } from "@/lib/primeirosPassos";
+import { lerPassos, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk, type EstadoPassos } from "@/lib/primeirosPassos";
 
 import { Botao, avisar } from "@/components/base";
 import { LojaProntaConteudo } from "@/components/loja/LojaPronta";
@@ -28,11 +27,6 @@ import { mascaraBRL, lerBRL } from "@/lib/moeda";
 type Local = "inicio" | "cardapio";
 type Folha = null | "descricao" | "logo" | "endereco" | "horario" | "pagamento" | "caixa";
 
-const DIAS = [
-  { nome: "Segunda", letra: "S", curto: "Seg" }, { nome: "Terça", letra: "T", curto: "Ter" }, { nome: "Quarta", letra: "Q", curto: "Qua" },
-  { nome: "Quinta", letra: "Q", curto: "Qui" }, { nome: "Sexta", letra: "S", curto: "Sex" }, { nome: "Sábado", letra: "S", curto: "Sáb" }, { nome: "Domingo", letra: "D", curto: "Dom" },
-];
-const DIAS_CURTO = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"]; // índice do Date.getDay()
 const HORARIO_PADRAO = {
   dias: ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"], abertura: "08:00", fechamento: "18:00",
   abre_sabado: false, sabado_abertura: "09:00", sabado_fechamento: "14:00",
@@ -128,7 +122,6 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   // No Cardápio digital o cartão some quando está tudo pronto (a tela mostra o cartão do link)
   if (completo && (local === "cardapio" || fechado || !jaViuIncompleto)) return null;
 
-  const link = getCardapioUrl(profile);
   const fechar = () => { try { localStorage.setItem(kFechado, "1"); } catch {} setFechado(true); };
   // "Salvar e continuar": fecha e abre o próximo passo que falta.
   // "Fazer depois": pula este (fica pendente) e segue pro próximo, sem voltar nele nesta sequência.
@@ -144,15 +137,6 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   const salvo = (patch?: Record<string, any>) => seguir(false, patch);
   const depois = () => seguir(true);
 
-  const compartilhar = async () => {
-    const texto = `Confira o cardápio da minha confeitaria: ${link}`;
-    if (navigator.share) {
-      try { await navigator.share({ title: profile?.nome_loja || "Meu cardápio", text: texto, url: link }); marcarCompartilhado(uid); } catch { /* cancelou */ }
-      return;
-    }
-    window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank");
-    marcarCompartilhado(uid);
-  };
 
   if (completo) {
     return (
@@ -371,14 +355,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
       <div className="ppf-d">
         <PassoTopo k="descricao" />
         {/* (15/10) saiu a prévia do topo do cardápio (sem foto ficava estranha): no lugar, uma dica do que escrever */}
-        <div className="ppf-d-dica">
-          <p>O que escrever?</p>
-          <ul>
-            <li><b>O que você faz:</b> bolos, doces, salgados</li>
-            <li><b>Pra quando:</b> aniversário, festa, dia a dia</li>
-            <li><b>Seu diferencial:</b> receita da família</li>
-          </ul>
-        </div>
+        <DicaDescricao />
 
         {perguntando ? (
           <div className="ppf-d-perg">
@@ -398,7 +375,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
         ) : (
           <div className="ppf-d-campo">
             <textarea id="pp-desc" autoComplete="off" value={txt} maxLength={200} aria-label="Descrição da sua confeitaria"
-              placeholder="Ex.: Bolos e doces feitos em casa, com receita de família. Encomendas pra aniversários e casamentos."
+              placeholder={EXEMPLO_DESCRICAO}
               onChange={e => setTxt(e.target.value)} />
             <div className="ppf-d-pe">
               <button type="button" className="ppf-doo" onMouseDown={e => e.preventDefault()} onClick={() => setPerguntando(true)}>
@@ -556,20 +533,7 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
       </>)}
 
       {(achou || manual) && (<>
-        {/* (15/10) cada opção mostra o texto que a cliente vai ver no cardápio (antes era uma barra de abas) */}
-        <p className="ppf-l" style={{ marginTop: 18 }} id="pp-mostrar">O que aparece no cardápio</p>
-        <div className="ppf-mos" role="radiogroup" aria-labelledby="pp-mostrar">
-          {([
-            ["completo", "Endereço completo", [end.rua.trim() ? `${end.rua.trim()}${end.numero.trim() ? `, ${end.numero.trim()}` : ""}` : "", end.bairro.trim()].filter(Boolean).join(" · ") || cidadeUf, true],
-            ["cidade", "Só a cidade", cidadeUf, true],
-            ["nada", "Não mostrar", "Bom pra quem atende em casa", false],
-          ] as const).map(([v, t, sub, pino]) => (
-            <button type="button" role="radio" aria-checked={mostrar === v} key={v} className={mostrar === v ? "on" : ""} onClick={() => setMostrar(v)}>
-              <i aria-hidden="true" />
-              <span><b>{t}</b><small>{pino && <MapPin size={13} weight="fill" aria-hidden="true" />}<em>{sub}</em></small></span>
-            </button>
-          ))}
-        </div>
+        <OpcoesMostrar mostrar={mostrar} onMudar={setMostrar} end={end} tituloClasse="ppf-l ppf-h-tit" />
       </>)}
       {erro && <p className="ppf-erro">{erro}</p>}
     </Janelinha>
@@ -577,12 +541,9 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
 }
 
 function FolhaHorario({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
-  const [h, setH] = useState<any>({ ...HORARIO_PADRAO, ...(perfil?.horario || {}) });
+  const [h, setH] = useState<Horario>({ ...HORARIO_PADRAO, ...(perfil?.horario || {}) });
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
-  const ligado = (d: string) => d === "Sábado" ? h.abre_sabado : d === "Domingo" ? h.abre_domingo : h.dias.includes(d);
-  const trocar = (d: string) => setH((x: any) => d === "Sábado" ? { ...x, abre_sabado: !x.abre_sabado } : d === "Domingo" ? { ...x, abre_domingo: !x.abre_domingo }
-    : { ...x, dias: x.dias.includes(d) ? x.dias.filter((y: string) => y !== d) : DIAS.slice(0, 5).map(z => z.nome).filter(n => n === d || x.dias.includes(n)) });
   const temDia = h.dias.length > 0 || h.abre_sabado || h.abre_domingo;
   const salvar = async () => {
     if (!temDia) return;
@@ -592,74 +553,13 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
     if (e) { setErro("Não foi possível salvar agora. Confira a internet e tente de novo."); return; }
     onSalvo();
   };
-  const [campo, setCampo] = useState<null | { k: string; titulo: string }>(null);
-  // (15/10) refeito: os dias viraram uma lista (seg a sex, seg a sáb, todos os dias, escolher) igual ao endereço;
-  // os botões de cada dia só aparecem em "Escolher os dias". Saiu a prévia com logo; ficou só a etiqueta do cardápio.
-  const UTEIS = DIAS.slice(0, 5).map(d => d.nome);
-  const todosUteis = UTEIS.every(n => h.dias.includes(n)) && h.dias.length === 5;
-  const padrao: "uteis" | "sabado" | "todos" | null = !todosUteis ? null : !h.abre_sabado && !h.abre_domingo ? "uteis" : h.abre_sabado && !h.abre_domingo ? "sabado" : h.abre_sabado && h.abre_domingo ? "todos" : null;
-  const [escolher, setEscolher] = useState(() => padrao === null);
-  const modo = escolher || padrao === null ? "escolher" : padrao;
-  const usar = (m: "uteis" | "sabado" | "todos" | "escolher") => {
-    if (m === "escolher") { setEscolher(true); return; }
-    setEscolher(false);
-    setH((x: any) => ({ ...x, dias: [...UTEIS], abre_sabado: m !== "uteis", abre_domingo: m === "todos" }));
-  };
-  const sit = temDia ? situacaoDaLoja(h) : null;
-  const sitTxt = !sit ? "Marque os dias que você atende" : sit.aberto ? `Aberto agora · fecha às ${horaTexto(sit.fecha)}`
-    : !sit.abre ? "Fechado" : `Fechado · abre ${sit.abre.dias === 0 ? "hoje" : sit.abre.dias === 1 ? "amanhã" : DIAS_CURTO[sit.abre.diaSemana].toLowerCase()} às ${horaTexto(sit.abre.minutos)}`;
-  const uteis = DIAS.slice(0, 5).map(d => d.nome).filter(n => h.dias.includes(n));
-  const idx = uteis.map(n => DIAS.findIndex(d => d.nome === n));
-  const seguidos = idx.length > 1 && idx.every((v, k) => k === 0 || v === idx[k - 1] + 1);
-  const curto = (n: string) => DIAS.find(d => d.nome === n)!.curto;
-  const rotUteis = uteis.length === 1 ? DIAS.find(d => d.nome === uteis[0])!.nome : seguidos ? `${curto(uteis[0])} a ${curto(uteis[uteis.length - 1]).toLowerCase()}` : "Na semana"; // dias soltos (Seg, Ter, Qui…): os botões de cima já mostram quais
-  const linha = (titulo: string, a: string, f: string) => (
-    <div className="ppf-h-l">
-      <b>{titulo}</b>
-      <span className="ppf-h-hh">
-        <button type="button" onClick={() => setCampo({ k: a, titulo: `${titulo} · abre às` })} aria-label={`${titulo}: abre às ${h[a] || "sem horário"}`}>{h[a] || "--:--"}</button>
-        <em>às</em>
-        <button type="button" onClick={() => setCampo({ k: f, titulo: `${titulo} · fecha às` })} aria-label={`${titulo}: fecha às ${h[f] || "sem horário"}`}>{h[f] || "--:--"}</button>
-      </span>
-    </div>
-  );
+  // (15/10) o editor é o mesmo da tela Dados da loja (components/loja/EditoresLoja)
   return (
     <Janelinha foco titulo="Horário de funcionamento" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!temDia} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
       <PassoTopo k="horario" />
-      <p className="ppf-l ppf-h-tit" id="pp-dias">Dias que você atende</p>
-      <div className="ppf-mos" role="radiogroup" aria-labelledby="pp-dias">
-        {([
-          ["uteis", "Segunda a sexta", "Seg, Ter, Qua, Qui, Sex"],
-          ["sabado", "Segunda a sábado", "Seg a Sáb"],
-          ["todos", "Todos os dias", "Seg a Dom"],
-          ["escolher", "Escolher os dias", "Marque só os que você atende"],
-        ] as const).map(([v, t, sub]) => (
-          <button type="button" role="radio" aria-checked={modo === v} key={v} className={modo === v ? "on" : ""} onClick={() => usar(v)}>
-            <i aria-hidden="true" /><span><b>{t}</b><small><em>{sub}</em></small></span>
-          </button>
-        ))}
-      </div>
-      {modo === "escolher" && (
-        <div className="ppf-h-dias">{DIAS.map(d => (
-          <button type="button" key={d.nome} className={ligado(d.nome) ? "on" : ""} onClick={() => trocar(d.nome)} aria-pressed={ligado(d.nome)} aria-label={d.nome}>{d.curto}</button>))}</div>
-      )}
-      {temDia && (<>
-        <p className="ppf-l ppf-h-tit">Horário</p>
-        <div className="ppf-h-lista">
-          {h.dias.length > 0 && linha(rotUteis, "abertura", "fechamento")}
-          {h.abre_sabado && linha("Sábado", "sabado_abertura", "sabado_fechamento")}
-          {h.abre_domingo && linha("Domingo", "domingo_abertura", "domingo_fechamento")}
-        </div>
-      </>)}
-      <div className="ppf-h-cv">
-        <small>Assim aparece no cardápio</small>
-        <span className={`ppf-h-pill${!sit ? " vazio" : sit.aberto ? "" : " off"}`}>{sit && <i />}{sitTxt}</span>
-      </div>
+      <EditorHorario h={h} onMudar={setH} />
       {erro && <p className="ppf-erro">{erro}</p>}
-      {campo && (
-        <HorarioSheet titulo={campo.titulo} value={h[campo.k]} onChange={(v) => setH((x: any) => ({ ...x, [campo.k]: v }))} onClose={() => setCampo(null)} />
-      )}
     </Janelinha>
   );
 }
@@ -748,12 +648,6 @@ const CSS = `
     box-shadow: 0 4px 14px rgba(44, 18, 25, .12); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 700; }
   .ppf-d-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
   /* (15/10) dica do que escrever no lugar da prévia */
-  .ppf-d-dica { margin-top: 20px; padding: 16px 16px 14px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); }
-  .ppf-d-dica p { margin: 0 0 10px; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
-  .ppf-d-dica ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; }
-  .ppf-d-dica li { position: relative; padding-left: 14px; font-size: 14px; line-height: 1.35; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ppf-d-dica li::before { content: ""; position: absolute; left: 0; top: .5em; width: 6px; height: 6px; border-radius: 2px; background: var(--ui-rosa); }
-  .ppf-d-dica li b { font-weight: 600; color: var(--ui-texto); }
   .ppf-d-campo { margin-top: 18px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); overflow: hidden; background: var(--ui-branco); }
   .ppf-d-campo:focus-within { border-color: var(--ui-rosa); }
   .ppf-d-campo textarea { display: block; width: 100%; box-sizing: border-box; height: 104px; resize: none; border: 0; outline: none; padding: 12px 12px 4px; background: none;
@@ -780,27 +674,6 @@ const CSS = `
   .ppf-e-achado button { flex: none; min-height: 40px; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
   .ppf-e-aviso { margin: 12px 0 0; font-size: 13.5px; font-weight: 600; color: var(--ui-laranja); }
   .ppf-row--uf > .ppf-f:last-child { flex: 0 0 76px; }
-  .ppf-h-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 6px; background: var(--ui-verde-fundo); color: var(--ui-verde);
-    font-size: 13.5px; font-weight: 700; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
-  .ppf-h-pill i { flex: none; width: 7px; height: 7px; border-radius: 50%; background: #22C55E; }
-  .ppf-h-pill.off { background: var(--ui-laranja-fundo, #FFF4E0); color: var(--ui-laranja, #B45309); }
-  .ppf-h-pill.off i { background: #F59E0B; }
-  .ppf-h-pill.vazio { background: var(--ui-cinza); color: var(--ui-texto-3); font-style: italic; font-weight: 500; }
-  .ppf-h-tit { margin-top: 24px !important; }
-  .ppf-h-tit:first-of-type { margin-top: 18px !important; }
-  .ppf-h-dias { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-top: 12px; }
-  .ppf-h-dias button { min-height: 48px; padding: 0; border: 0; border-radius: 8px; background: var(--ui-cinza); color: var(--ui-texto-2); font-family: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; }
-  .ppf-h-dias button.on { background: var(--ui-rosa); color: var(--ui-branco); }
-  .ppf-h-lista { display: flex; flex-direction: column; gap: 10px; }
-  .ppf-h-l { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px 10px 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); }
-  .ppf-h-cv { margin-top: 24px; padding: 14px 16px; border-radius: var(--ui-raio); background: #FAF7F8; }
-  .ppf-h-cv small { display: block; margin-bottom: 8px; font-size: 13px; color: var(--ui-texto-2); }
-  .ppf-h-l > b { min-width: 0; font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ppf-h-hh { flex: none; display: flex; align-items: center; gap: 6px; }
-  .ppf-h-hh em { font-style: normal; font-size: 14px; color: var(--ui-texto-3); }
-  .ppf-h-hh button { min-height: 44px; padding: 0 12px; border: 1.5px solid var(--ui-borda-campo); border-radius: 12px; background: var(--ui-branco); font-family: inherit; font-size: 16px; font-weight: 600;
-    color: var(--ui-texto); font-variant-numeric: tabular-nums; cursor: pointer; }
-  .ppf-h-hh button:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .4); outline-offset: 1px; }
   .ppf-p-opc { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .ppf-p-opc button { display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 12px; border: 1.5px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco);
     font-family: inherit; font-size: 14.5px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; cursor: pointer; text-align: left; }
@@ -867,18 +740,6 @@ const CSS = `
   .ppf-row { display: flex; gap: 10px; }
   .ppf-wrap { position: relative; }
   .ppf-cep { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 12.5px; font-weight: 700; color: var(--ui-verde); }
-  .ppf-mos { display: flex; flex-direction: column; gap: 8px; }
-  .ppf-mos button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; padding: 10px 14px; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
-  .ppf-mos button i { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #CFC2C7; box-sizing: border-box; transition: border .15s; }
-  .ppf-mos button.on { border-color: var(--ui-rosa); background: #FFF5F8; }
-  .ppf-mos button.on i { border: 6px solid var(--ui-rosa); }
-  .ppf-mos span { flex: 1; min-width: 0; }
-  .ppf-mos b { display: block; font-size: 15px; font-weight: 700; }
-  .ppf-mos small { display: flex; align-items: center; gap: 4px; margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ppf-mos small svg { flex: none; color: var(--ui-rosa); }
-  .ppf-mos--chk button i { display: flex; align-items: center; justify-content: center; border-radius: 6px; color: var(--ui-branco); }
-  .ppf-mos--chk button.on i { border: 0; background: var(--ui-rosa); }
-  .ppf-mos small em { font-style: normal; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .ppf-dias { display: flex; gap: 6px; }
   .ppf-dias button { flex: 1; aspect-ratio: 1; min-height: 44px; max-width: 48px; border: none; border-radius: 50%; font-family: inherit; font-size: 15px; font-weight: 700; background: var(--ui-cinza); color: var(--ui-texto-2); cursor: pointer; }
   .ppf-dias button.on { background: var(--ui-rosa); color: var(--ui-branco); }

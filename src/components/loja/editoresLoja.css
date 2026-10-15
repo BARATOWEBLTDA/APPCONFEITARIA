@@ -1,0 +1,41 @@
+/* (15/10) Peças de formulário da loja usadas nos Primeiros passos e em Dados da loja / Entrega e pagamento:
+   lista de opções (ppf-mos), caixinha de dica (ppf-d-dica) e o editor de horário (ppf-h-*). */
+.ppf-d-dica { margin-top: 20px; padding: 16px 16px 14px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); }
+.ppf-d-dica p { margin: 0 0 10px; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
+.ppf-d-dica ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; }
+.ppf-d-dica li { position: relative; padding-left: 14px; font-size: 14px; line-height: 1.35; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ppf-d-dica li::before { content: ""; position: absolute; left: 0; top: .5em; width: 6px; height: 6px; border-radius: 2px; background: var(--ui-rosa); }
+.ppf-d-dica li b { font-weight: 600; color: var(--ui-texto); }
+.ppf-h-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 6px; background: var(--ui-verde-fundo); color: var(--ui-verde);
+  font-size: 13.5px; font-weight: 700; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.ppf-h-pill i { flex: none; width: 7px; height: 7px; border-radius: 50%; background: #22C55E; }
+.ppf-h-pill.off { background: var(--ui-laranja-fundo, #FFF4E0); color: var(--ui-laranja, #B45309); }
+.ppf-h-pill.off i { background: #F59E0B; }
+.ppf-h-pill.vazio { background: var(--ui-cinza); color: var(--ui-texto-3); font-style: italic; font-weight: 500; }
+.ppf-h-tit { margin-top: 24px !important; }
+.ppf-h-tit:first-of-type { margin-top: 18px !important; }
+.ppf-h-dias { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-top: 12px; }
+.ppf-h-dias button { min-height: 48px; padding: 0; border: 0; border-radius: 8px; background: var(--ui-cinza); color: var(--ui-texto-2); font-family: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; }
+.ppf-h-dias button.on { background: var(--ui-rosa); color: var(--ui-branco); }
+.ppf-h-lista { display: flex; flex-direction: column; gap: 10px; }
+.ppf-h-l { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px 10px 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); }
+.ppf-h-cv { margin-top: 24px; padding: 14px 16px; border-radius: var(--ui-raio); background: #FAF7F8; }
+.ppf-h-cv small { display: block; margin-bottom: 8px; font-size: 13px; color: var(--ui-texto-2); }
+.ppf-h-l > b { min-width: 0; font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ppf-h-hh { flex: none; display: flex; align-items: center; gap: 6px; }
+.ppf-h-hh em { font-style: normal; font-size: 14px; color: var(--ui-texto-3); }
+.ppf-h-hh button { min-height: 44px; padding: 0 12px; border: 1.5px solid var(--ui-borda-campo); border-radius: 12px; background: var(--ui-branco); font-family: inherit; font-size: 16px; font-weight: 600;
+  color: var(--ui-texto); font-variant-numeric: tabular-nums; cursor: pointer; }
+.ppf-h-hh button:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .4); outline-offset: 1px; }
+.ppf-mos { display: flex; flex-direction: column; gap: 8px; }
+.ppf-mos button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; padding: 10px 14px; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
+.ppf-mos button i { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #CFC2C7; box-sizing: border-box; transition: border .15s; }
+.ppf-mos button.on { border-color: var(--ui-rosa); background: #FFF5F8; }
+.ppf-mos button.on i { border: 6px solid var(--ui-rosa); }
+.ppf-mos span { flex: 1; min-width: 0; }
+.ppf-mos b { display: block; font-size: 15px; font-weight: 700; }
+.ppf-mos small { display: flex; align-items: center; gap: 4px; margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ppf-mos small svg { flex: none; color: var(--ui-rosa); }
+.ppf-mos--chk button i { display: flex; align-items: center; justify-content: center; border-radius: 6px; color: var(--ui-branco); }
+.ppf-mos--chk button.on i { border: 0; background: var(--ui-rosa); }
+.ppf-mos small em { font-style: normal; min-width: 0; overflow: hidden; text-overflow: ellipsis; }

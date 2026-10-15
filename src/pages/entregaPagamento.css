@@ -14,11 +14,6 @@
 @media (min-width: 768px) { .ep-g { display: inline; } .ep-c { display: none; } }
 
 /* opções de marcar */
-.ep-ops { display: flex; flex-direction: column; gap: 8px; }
-.ep-op { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 52px; margin: 0; padding: 0 12px 0 16px; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 500; text-align: left; cursor: pointer; }
-.ep-op[aria-checked="true"] { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-weight: 700; }
-.ep-cx { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid var(--ui-borda-campo); border-radius: 7px; background: var(--ui-branco); color: var(--ui-branco); }
-.ep-op[aria-checked="true"] .ep-cx { border-color: var(--ui-rosa); background: var(--ui-rosa); }
 
 /* chave liga/desliga */
 .ep-sw-l { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; margin: 0; padding: 8px 0; border: 0; border-top: 1px solid var(--ui-linha); background: none; color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; }

@@ -5,7 +5,8 @@ import { apiFetch } from "@/lib/apiFetch";
 import { Check, Clock, FacebookLogo, InstagramLogo, MapPin, ShareNetwork, Sparkle, Storefront, WarningCircle } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import AppPageHeader from "@/components/AppPageHeader";
-import HorarioSheet from "@/components/HorarioSheet";
+import MapaEndereco, { type BuscaMapa } from "@/components/MapaEndereco";
+import { DicaDescricao, EXEMPLO_DESCRICAO, EditorHorario, OpcoesMostrar } from "@/components/loja/EditoresLoja";
 import { Botao, Campo, CampoArea, TelaVazia, Titulo, avisar } from "@/components/base";
 import { digitosTelefone, digitosAoDigitar } from "@/lib/telefone";
 import { limparFacebook, limparInstagram } from "@/lib/redesSociais";
@@ -68,7 +69,6 @@ export default function DadosLoja() {
   const [gerando, setGerando] = useState(false);
   const [buscandoCep, setBuscandoCep] = useState(false);
   const [cepOk, setCepOk] = useState(false);
-  const [sheet, setSheet] = useState<CampoHora | null>(null);
 
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
@@ -193,8 +193,6 @@ export default function DadosLoja() {
     setGerando(false);
   };
 
-  const toggleDiaUtil = (diaNome: string) =>
-    setHorario((h) => ({ ...h, dias: h.dias.includes(diaNome) ? h.dias.filter((d) => d !== diaNome) : [...h.dias, diaNome] }));
 
   // (11/10) Confere o horário antes de salvar: fechar antes (ou na mesma hora) de abrir deixava o cardápio
   // sem nenhuma data pra agendar e a loja sempre "fechada". "00:00" no fechar vale como meia-noite.
@@ -250,30 +248,14 @@ export default function DadosLoja() {
     else mostrarAviso("Alterações salvas");
   };
 
-  // Rótulo do período dos dias úteis marcados
-  const ordem = DIAS_UTEIS.map((d) => d.nome);
-  const diasMarcados = ordem.filter((d) => horario.dias.includes(d));
-  const rotuloDiasUteis = diasMarcados.length === 5
-    ? "Segunda a sexta"
-    : diasMarcados.map((d) => DIAS_UTEIS.find((x) => x.nome === d)!.curto).join(", ");
-
-  const tituloSheet: Record<CampoHora, string> = {
-    abertura: "Abre às", fechamento: "Fecha às",
-    sabado_abertura: "Sábado · abre às", sabado_fechamento: "Sábado · fecha às",
-    domingo_abertura: "Domingo · abre às", domingo_fechamento: "Domingo · fecha às",
-  };
-
-
-  const BotoesHora = ({ abre, fecha }: { abre: CampoHora; fecha: CampoHora }) => (
-    <div className="dl-tbtns">
-      <button type="button" className="dl-tb" onClick={() => setSheet(abre)} aria-label={`${tituloSheet[abre]} ${horario[abre] || ""}`}>
-        <Clock size={20} weight="bold" aria-hidden="true" /><span><small>Abre</small>{horario[abre] || "--:--"}</span>
-      </button>
-      <button type="button" className="dl-tb" onClick={() => setSheet(fecha)} aria-label={`${tituloSheet[fecha]} ${horario[fecha] || ""}`}>
-        <Clock size={20} weight="bold" aria-hidden="true" /><span><small>Fecha</small>{horario[fecha] || "--:--"}</span>
-      </button>
-    </div>
-  );
+  // (15/10) minimapa grátis (o mesmo dos primeiros passos): começa no Brasil e voa até a rua
+  const [busca, setBusca] = useState<BuscaMapa>(null);
+  useEffect(() => {
+    const t = window.setTimeout(() => setBusca(end.cidade.trim() ? { rua: end.rua.trim(), numero: end.numero.trim(), cidade: end.cidade.trim(), estado: end.estado.trim() } : null), 700);
+    return () => window.clearTimeout(t);
+  }, [end.rua, end.numero, end.cidade, end.estado]);
+  const cidadeUf = [end.cidade.trim(), end.estado.trim()].filter(Boolean).join(", ");
+  const seloMapa = !busca ? "Digite o CEP pra achar sua loja" : mostrarLocal === "nada" ? "Endereço escondido no cardápio" : [mostrarLocal === "completo" ? end.bairro.trim() : "", cidadeUf].filter(Boolean).join(" · ");
 
   const Cabeca = ({ Ic, titulo, apoio }: { Ic: typeof Storefront; titulo: string; apoio: string }) => (
     <div className="dl-cab"><span className="dl-cab-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span><Titulo apoio={apoio}>{titulo}</Titulo></div>
@@ -332,9 +314,10 @@ export default function DadosLoja() {
             <Campo id="dl-in-whats" rotulo="WhatsApp que recebe os pedidos" inputMode="tel" value={telefone} placeholder="(41) 99999-8888"
               icone={<IconeWhatsApp size={20} className="dl-zap" />} onChange={(e) => setTelefone(formatPhone(e.target.value, true))} />
           </div>
+          <DicaDescricao />
           <div id="dl-desc" className="dl-desc">
-            <CampoArea id="dl-in-desc" rotulo="Descrição" value={descricao} maxLength={200} rows={4}
-              placeholder="Conte em uma frase o que sua confeitaria tem de especial"
+            <CampoArea id="dl-in-desc" rotulo="Descrição" value={descricao} maxLength={200} rows={4} autoComplete="off"
+              placeholder={EXEMPLO_DESCRICAO}
               dica={`${descricao.length} de 200 caracteres`} onChange={(e) => setDescricao(e.target.value)} />
             <Botao variante="suave" tamanho="p" className="dl-ia" icone={<Sparkle size={16} weight="bold" />} carregando={gerando} onClick={gerarDescricao}>
               {gerando ? "Escrevendo…" : "Escrever com IA"}
@@ -360,6 +343,7 @@ export default function DadosLoja() {
         {/* Endereço */}
         <section className="dl-card" id="dl-endereco">
           <Cabeca Ic={MapPin} titulo="Endereço" apoio="Pra calcular a entrega e mostrar no mapa" />
+          <MapaEndereco busca={busca} soCidade={mostrarLocal !== "completo"} selo={seloMapa} />
           <Campo id="dl-in-cep" rotulo="CEP" inputMode="numeric" value={end.cep} placeholder="00000-000" depois={statusCep}
             onChange={(e) => {
               const d = e.target.value.replace(/\D/g, "").slice(0, 8);
@@ -376,51 +360,22 @@ export default function DadosLoja() {
             <Campo id="dl-in-bairro" rotulo="Bairro" value={end.bairro} onChange={(e) => setEnd((x) => ({ ...x, bairro: e.target.value }))} />
             <Campo id="dl-in-cidade" rotulo="Cidade" value={end.cidade} onChange={(e) => setEnd((x) => ({ ...x, cidade: e.target.value }))} />
           </div>
-          <div className="ui-campo">
-            <span className="ui-campo-r" id="dl-mostrar"><span>No cardápio, mostrar</span></span>
-            <div className="dl-seg" role="radiogroup" aria-labelledby="dl-mostrar">
-              {([["completo", "Completo"], ["cidade", "Só a cidade"], ["nada", "Não mostrar"]] as const).map(([v, l]) => (
-                <button key={v} type="button" role="radio" aria-checked={mostrarLocal === v} onClick={() => setMostrarLocal(v)}>{l}</button>
-              ))}
-            </div>
+          <div className="dl-bloco">
+            <OpcoesMostrar mostrar={mostrarLocal} onMudar={setMostrarLocal} end={end} tituloClasse="dl-tit" />
           </div>
           <label className="dl-recebe">
             <input type="checkbox" checked={recebeAqui} onChange={(e) => setRecebeAqui(e.target.checked)} />
             <span className="dl-cx" aria-hidden="true">{recebeAqui && <Check size={16} weight="bold" />}</span>
-            <span><b>Recebo pedidos nesse endereço</b><small>O endereço completo aparece pro cliente só quando ele escolhe retirar a encomenda.</small></span>
+            <span><b>Recebo pedidos aqui</b><small>O endereço completo aparece pro cliente só quando ele escolhe retirar a encomenda.</small></span>
           </label>
         </section>
 
         {/* Horário */}
         <section className="dl-card" id="dl-horario">
           <Cabeca Ic={Clock} titulo="Horário de funcionamento" apoio="Aparece como “Aberto agora” no cardápio" />
-          <p className="dl-dias-t">Dias em que a loja abre</p>
-          <div className="dl-days">
-            {DIAS_UTEIS.map((d) => (
-              <button key={d.nome} type="button" className={horario.dias.includes(d.nome) ? "on" : ""} aria-pressed={horario.dias.includes(d.nome)} aria-label={d.nome} onClick={() => toggleDiaUtil(d.nome)}>
-                <span className="dl-bola">{d.curto}</span>
-              </button>
-            ))}
-            <button type="button" className={horario.abre_sabado ? "on" : ""} aria-pressed={horario.abre_sabado} aria-label="Sábado" onClick={() => setHorario((h) => ({ ...h, abre_sabado: !h.abre_sabado }))}>
-              <span className="dl-bola">Sáb</span>
-            </button>
-            <button type="button" className={horario.abre_domingo ? "on" : ""} aria-pressed={horario.abre_domingo} aria-label="Domingo" onClick={() => setHorario((h) => ({ ...h, abre_domingo: !h.abre_domingo }))}>
-              <span className="dl-bola">Dom</span>
-            </button>
+          <div className="dl-bloco">
+            <EditorHorario h={horario} onMudar={setHorario} tituloClasse="dl-tit" />
           </div>
-
-          {diasMarcados.length > 0 && (
-            <div className="dl-hr"><b>{rotuloDiasUteis}</b><BotoesHora abre="abertura" fecha="fechamento" /></div>
-          )}
-          {horario.abre_sabado && (
-            <div className="dl-hr"><b>Sábado</b><BotoesHora abre="sabado_abertura" fecha="sabado_fechamento" /></div>
-          )}
-          {horario.abre_domingo && (
-            <div className="dl-hr"><b>Domingo</b><BotoesHora abre="domingo_abertura" fecha="domingo_fechamento" /></div>
-          )}
-          {diasMarcados.length === 0 && !horario.abre_sabado && !horario.abre_domingo && (
-            <p className="dl-vazio">Escolha os dias em que a loja abre.</p>
-          )}
         </section>
       </div>
 
@@ -429,14 +384,6 @@ export default function DadosLoja() {
         <Botao cheio className="dl-save" carregando={salvando} onClick={salvar}>{salvando ? "Salvando…" : "Salvar alterações"}</Botao>
       </div>
 
-      {sheet && (
-        <HorarioSheet
-          titulo={tituloSheet[sheet]}
-          value={horario[sheet]}
-          onChange={(v) => setHorario((h) => ({ ...h, [sheet]: v }))}
-          onClose={() => setSheet(null)}
-        />
-      )}
     </>
   );
 }
