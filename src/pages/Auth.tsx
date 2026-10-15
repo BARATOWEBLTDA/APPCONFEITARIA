@@ -25,6 +25,8 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const validate = {
   nome: (v: string) => (v.trim().length < 2 ? "Informe seu nome" : ""),
+  // (15/10) nome da confeitaria obrigatório no cadastro (sem a tag "opcional")
+  nomeLoja: (v: string) => (v.trim().length < 2 ? "Coloque o nome da confeitaria" : ""),
   email: (v: string) => {
     const trimmed = v.trim();
     if (!trimmed) return "Informe seu e-mail";
@@ -316,13 +318,14 @@ export default function Auth() {
     // Roda todos os validators antes de submeter
     const nextErrors: Record<string, string> = {
       nome: validate.nome(cadastroForm.nome),
+      nomeLoja: validate.nomeLoja(cadastroForm.nomeLoja),
       email: validate.email(cadastroForm.email),
       telefone: validate.telefone(cadastroForm.telefone),
       senha: validate.senha(cadastroForm.senha),
       confirmarSenha: !cadastroForm.confirmarSenha ? "Repita a senha" : cadastroForm.confirmarSenha !== cadastroForm.senha ? "As senhas digitadas não são iguais" : "",
     };
     setCadastroErrors(nextErrors);
-    setCadastroTouched({ nome: true, email: true, telefone: true, senha: true, confirmarSenha: true });
+    setCadastroTouched({ nome: true, nomeLoja: true, email: true, telefone: true, senha: true, confirmarSenha: true });
 
     const hasError = Object.values(nextErrors).some(e => e);
     if (hasError) return;
@@ -666,23 +669,28 @@ export default function Auth() {
             )}
           </div>
 
-          {/* Nome da confeitaria (opcional) + WhatsApp (obrigatório): lado a lado no computador */}
+          {/* Nome da confeitaria + WhatsApp (obrigatórios): lado a lado no computador */}
           <div className="cad-par cad-par--loja">
           <div className="cad-field-wrap">
-            <label className="cad-lb" htmlFor="cad-confeitaria">Nome da confeitaria <span className="cad-opc">opcional</span></label>
-            <div className="cad-field">
+            <label className="cad-lb" htmlFor="cad-confeitaria">Nome da confeitaria</label>
+            <div className={`cad-field ${cadastroTouched.nomeLoja && cadastroErrors.nomeLoja ? "has-error" : ""}`}>
               <input
                 id="cad-confeitaria"
                 type="text"
                 placeholder="Ex.: Doce Formiga"
                 value={cadastroForm.nomeLoja}
                 onChange={e => handleCadastroChange("nomeLoja", e.target.value)}
+                onBlur={() => handleCadastroBlur("nomeLoja")}
+                aria-invalid={!!(cadastroTouched.nomeLoja && cadastroErrors.nomeLoja)}
                 autoComplete="organization"
                 autoCapitalize="words"
                 enterKeyHint="next"
               />
               
             </div>
+            {cadastroTouched.nomeLoja && cadastroErrors.nomeLoja && (
+              <span className="cad-error">{cadastroErrors.nomeLoja}</span>
+            )}
           </div>
 
           {/* Telefone */}
