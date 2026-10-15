@@ -22,11 +22,10 @@ export function ContaAtiva({ nome, aoContinuar }: { nome?: string; aoContinuar: 
   return (
     <div className="ca-veu">
       <div ref={caixa} tabIndex={-1} className="ca-jan" role="dialog" aria-modal="true" aria-labelledby="ca-titulo">
-        <span className="ca-alca" aria-hidden="true" />
+        {/* (15/10) sem a barrinha de arrastar (não arrasta) e sem "Tudo pronto" (ainda vêm a apresentação e os primeiros passos) */}
         <Mascote pose="acenando" className="ca-masc" />
-        <span className="ca-ok"><i aria-hidden="true" />Conta ativa</span>
-        <h2 id="ca-titulo">{nome ? `Tudo pronto, ${nome}!` : 'Tudo pronto!'}</h2>
-        <p>Já está tudo liberado pra você:</p>
+        <h2 id="ca-titulo"><i className="ca-pt" aria-hidden="true" />Sua conta está ativa!</h2>
+        <p>{nome ? `${nome}, já está tudo liberado pra você:` : 'Já está tudo liberado pra você:'}</p>
         <ul className="ca-lista">
           {RECURSOS.map(({ Ic, t }) => (
             <li key={t}><span className="ca-ic"><Ic size={20} aria-hidden="true" /></span>{t}<Check size={16} weight="bold" className="ca-v" aria-hidden="true" /></li>
