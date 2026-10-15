@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import MapaEndereco, { type BuscaMapa } from "@/components/MapaEndereco";
 import { useNavigate } from "react-router-dom";
 import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, Wallet, Coins, Sparkle, ShareNetwork, CaretRight, Camera, X } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
@@ -472,8 +473,6 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
   const [naoAchou, setNaoAchou] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
-  const nomeLoja = String(perfil?.nome_loja || "Sua confeitaria").trim() || "Sua confeitaria";
-  const logoPrev = perfil?.logo_url || perfil?.foto_url || "";
   const mudarCep = async (v: string) => {
     const cep = maskCep(v); setEnd(e => ({ ...e, cep })); setAchou(false); setNaoAchou(false);
     const d = cep.replace(/\D/g, "");
@@ -495,18 +494,14 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
     if (e) { setErro("Não foi possível salvar agora. Confira a internet e tente de novo."); return; }
     onSalvo();
   };
-  // a linha da prévia, do jeito que o cardápio mostra
-  const ruaNum = end.rua.trim() ? `${end.rua.trim()}${end.numero.trim() ? `, ${end.numero.trim()}` : ""}${end.complemento.trim() ? `, ${end.complemento.trim()}` : ""}` : "";
+  // (15/10) minimapa gratuito: começa no Brasil e voa até a rua. Espera ela parar de digitar pra não ficar buscando a cada letra.
   const cidadeUf = [end.cidade.trim(), end.estado.trim()].filter(Boolean).join(", ");
-  // (13/10) minimapa: o mesmo mapa do cardápio (Maps Embed do Google, sem custo). Espera ela parar de digitar pra não piscar.
-  const chaveMapa = (import.meta as any).env?.VITE_GOOGLE_MAPS_KEY as string | undefined;
-  const endMapa = [ruaNum ? `${end.rua.trim()}${end.numero.trim() ? `, ${end.numero.trim()}` : ""}` : "", end.bairro.trim(), cidadeUf, end.cep.trim()].filter(Boolean).join(", ");
-  const [mapaQ, setMapaQ] = useState("");
+  const [busca, setBusca] = useState<BuscaMapa>(null);
   useEffect(() => {
-    const t = window.setTimeout(() => setMapaQ(end.cidade.trim() && (end.rua.trim() || end.cep.trim()) ? endMapa : ""), 700);
+    const t = window.setTimeout(() => setBusca(end.cidade.trim() && (achou || manual) ? { rua: end.rua.trim(), numero: end.numero.trim(), cidade: end.cidade.trim(), estado: end.estado.trim() } : null), 700);
     return () => window.clearTimeout(t);
-  }, [endMapa, end.cidade, end.rua, end.cep]);
-  const linhaPrev = mostrar === "nada" ? "Endereço escondido no cardápio" : mostrar === "cidade" ? cidadeUf : ([ruaNum, end.bairro.trim()].filter(Boolean).join(" · ") || cidadeUf);
+  }, [end.rua, end.numero, end.cidade, end.estado, achou, manual]);
+  const selo = !busca ? "Digite o CEP pra achar sua loja" : mostrar === "nada" ? "Endereço escondido no cardápio" : [mostrar === "completo" ? end.bairro.trim() : "", cidadeUf].filter(Boolean).join(" · ");
   const campo = (k: keyof typeof end, rotulo: string, ph = "", extra: any = {}) => (
     <div className="ppf-f"><label className="ppf-l" htmlFor={`pp-${k}`}>{rotulo}</label>
       <input id={`pp-${k}`} className="ppf-in" value={end[k]} placeholder={ph} onChange={e => setEnd(x => ({ ...x, [k]: e.target.value }))} {...extra} /></div>
@@ -515,11 +510,7 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
     <Janelinha foco titulo="Endereço da loja" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!pronto} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
       <PassoTopo k="endereco" />
-      <div className="ppf-e-prev" aria-hidden="true">
-        <span className="ppf-d-logo">{logoPrev ? <img src={logoPrev} alt="" /> : nomeLoja.charAt(0).toUpperCase()}</span>
-        <span className="ppf-e-tx"><b>{nomeLoja}</b>
-          <small className={linhaPrev && mostrar !== "nada" ? "" : "vazio"}><MapPin size={13} weight="fill" />{linhaPrev || "Seu endereço aqui"}</small></span>
-      </div>
+      <MapaEndereco busca={busca} soCidade={mostrar !== "completo"} selo={selo} />
 
       {!manual && (<>
         <div className="ppf-f"><label className="ppf-l" htmlFor="pp-cep">CEP</label>
@@ -544,12 +535,6 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
         {campo("complemento", "Complemento", "Opcional")}
       </>)}
 
-      {chaveMapa && mapaQ && mostrar === "completo" && (achou || manual) && (
-        <div className="ppf-e-mapa">
-          <iframe title="Mapa da loja" loading="lazy" referrerPolicy="no-referrer-when-downgrade" tabIndex={-1}
-            src={`https://www.google.com/maps/embed/v1/place?key=${chaveMapa}&q=${encodeURIComponent(mapaQ)}&zoom=16`} />
-        </div>
-      )}
       {(achou || manual) && (<>
         <p className="ppf-l" style={{ marginTop: 14 }}>No cardápio, mostrar</p>
         <div className="ppf-seg">{([["completo", "Completo"], ["cidade", "Só a cidade"], ["nada", "Nada"]] as const).map(([v, l]) => (
@@ -732,13 +717,6 @@ const CSS = `
   .ppf-d-opc button.on { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-weight: 600; }
   .ppf-d-perg-pe { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
   .ppf-d-voltar { min-height: 40px; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-texto-2); cursor: pointer; }
-  .ppf-e-prev { display: flex; align-items: center; gap: 12px; margin: 14px 0 2px; padding: 12px; border: 1px solid var(--ui-borda); border-radius: 16px; }
-  .ppf-e-prev .ppf-d-logo { width: 48px; height: 48px; border-width: 2px; box-shadow: 0 2px 8px rgba(44, 18, 25, .1); font-size: 19px; }
-  .ppf-e-tx { min-width: 0; }
-  .ppf-e-tx b { display: block; font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ppf-e-tx small { display: flex; align-items: center; gap: 4px; margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ppf-e-tx small svg { flex: none; color: var(--ui-rosa); }
-  .ppf-e-tx small.vazio { color: var(--ui-texto-3); font-style: italic; }
   .ppf-in--g { min-height: 52px; font-size: 17px; }
   .ppf-e-lnk { min-height: 44px; margin-top: 4px; padding: 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
   .ppf-e-achado { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: var(--ui-cinza); }
@@ -746,9 +724,6 @@ const CSS = `
   .ppf-e-achado b { display: block; font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ppf-e-achado small { display: block; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ppf-e-achado button { flex: none; min-height: 40px; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
-  .ppf-e-mapa { margin-top: 12px; height: 128px; border-radius: 14px; overflow: hidden; border: 1px solid var(--ui-borda); background: var(--ui-cinza); }
-  .ppf-e-mapa iframe { display: block; width: 100%; height: 100%; border: 0; pointer-events: none; }
-  @media (max-height: 700px) { .ppf-e-mapa { height: 104px; } }
   .ppf-e-aviso { margin: 12px 0 0; font-size: 13.5px; font-weight: 600; color: var(--ui-laranja); }
   .ppf-row--uf > .ppf-f:last-child { flex: 0 0 76px; }
   .ppf-h-pill { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; padding: 3px 9px; border-radius: 999px; background: var(--ui-verde-fundo); color: var(--ui-verde);
