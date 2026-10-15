@@ -4,7 +4,7 @@
 
 // (10/10) Página "sem internet" do próprio Doonly: fica guardada no aparelho e aparece
 // quando o app é aberto sem conexão (antes aparecia a página de erro do navegador).
-const CACHE_OFFLINE = "doonly-offline-v1";
+const CACHE_OFFLINE = "doonly-offline-v2";
 const ARQUIVOS_OFFLINE = ["/offline.html", "/fonts/Geist-Medium.woff2", "/fonts/Geist-Bold.woff2", "/marca/leve/senha.webp", "/marca/leve/texto.webp"];
 
 self.addEventListener("install", (event) => {
@@ -17,7 +17,12 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
+  // (15/10) apaga a página "sem internet" antiga (era vinho) quando a versão muda
+  event.waitUntil(
+    caches.keys()
+      .then((nomes) => Promise.all(nomes.filter((n) => n.startsWith("doonly-offline-") && n !== CACHE_OFFLINE).map((n) => caches.delete(n))))
+      .then(() => self.clients.claim())
+  );
 });
 
 // Só entra em ação ao ABRIR uma página sem internet. Com internet, tudo segue direto pra rede, como antes.
