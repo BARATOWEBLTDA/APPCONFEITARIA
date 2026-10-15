@@ -298,10 +298,10 @@ function FolhaCaixa({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
   const [txt, setTxt] = useState("");
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
-  const salvar = async () => {
+  const salvar = async (zero = false) => {
     if (salvando) return;
     setSalvando(true); setErro("");
-    const r = await definirSaldoInicial(uid, lerBRL(txt || "0"));
+    const r = await definirSaldoInicial(uid, zero ? 0 : lerBRL(txt || "0"));
     setSalvando(false);
     if (!r.ok) { setErro(erroDeConexao(r.erro) ? SEM_INTERNET : "Não foi possível salvar agora. Tente de novo."); return; }
     supabase.auth.updateUser({ data: { pp_caixa: true } }).then(() => {}, () => {});
@@ -309,12 +309,22 @@ function FolhaCaixa({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
   };
   return (
     <Janelinha foco titulo="Saldo do caixa" onClose={onClose}
-      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
+      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio carregando={salvando} onClick={() => salvar()}>Salvar e continuar</Botao></>}>
       <PassoTopo k="caixa" />
-      <p className="ppf-l">Quanto você tem hoje no caixa da confeitaria?</p>
+      {/* (15/10) pergunta curta, "Começo do zero", o porquê numa caixinha e o aviso do sinal já recebido */}
+      <p className="ppf-l ppf-h-tit">Quanto tem hoje no caixa?</p>
       <div className="ppf-cx"><span>R$</span><input inputMode="numeric" autoComplete="off" placeholder="0,00" value={txt} aria-label="Saldo do caixa hoje"
         onChange={e => { setTxt(mascaraBRL(e.target.value)); setErro(""); }} onKeyDown={e => { if (e.key === "Enter") salvar(); }} /></div>
-      <p className="ppf-p-dica">Dinheiro e saldo da conta da loja. Daqui pra frente o app soma o que entra e tira o que sai. Se não tiver nada, deixe 0,00.</p>
+      <button type="button" className="ppf-cx-zero" disabled={salvando} onClick={() => salvar(true)}>Começo do zero</button>
+      <div className="ppf-d-dica ppf-cx-dica">
+        <p>Por que isso?</p>
+        <ul>
+          <li>O app soma o que entra e tira o que sai</li>
+          <li>Você sabe quanto tem, todo dia</li>
+          <li>Dá pra mudar depois no Financeiro</li>
+        </ul>
+      </div>
+      <div className="ppf-cx-av"><b>Já recebeu sinal de alguma encomenda?</b>Ao cadastrar o pedido, coloque a data em que recebeu. Assim o app não conta duas vezes.</div>
       {erro && <p className="ppf-erro">{erro}</p>}
     </Janelinha>
   );
@@ -798,10 +808,15 @@ const CSS = `
   .ppf-p-opc button.on { border-color: var(--ui-rosa); background: #FFF5F9; font-weight: 600; }
   .ppf-p-opc button.on i { background: var(--ui-rosa); border-color: var(--ui-rosa); }
   .ppf-p-dica { margin: 14px 0 0; font-size: 13px; color: var(--ui-texto-3); }
-  .ppf-cx { display: flex; align-items: center; gap: 8px; height: 56px; padding: 0 16px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); }
+  .ppf-cx { display: flex; align-items: center; gap: 8px; height: 60px; padding: 0 16px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); }
   .ppf-cx:focus-within { border-color: var(--ui-rosa); }
   .ppf-cx span { font-size: 18px; font-weight: 600; color: var(--ui-texto-2); }
   .ppf-cx input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font-family: inherit; font-size: 24px; font-weight: 600; color: var(--ui-texto); font-variant-numeric: tabular-nums; }
+  .ppf-cx-zero { display: inline-flex; align-items: center; min-height: 40px; margin-top: 10px; padding: 0 14px; border: 1.5px solid var(--ui-borda); border-radius: 8px; background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-texto-2); cursor: pointer; }
+  .ppf-cx-zero:disabled { opacity: .5; }
+  .ppf-cx-dica { margin-top: 24px; }
+  .ppf-cx-av { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); font-size: 13px; line-height: 1.45; color: var(--ui-texto-2); }
+  .ppf-cx-av b { display: block; margin-bottom: 2px; font-size: 13.5px; color: var(--ui-texto); }
   .ppf-lg2 { margin-top: 18px; border: 1px solid var(--ui-borda); border-radius: 18px; overflow: hidden; }
   .ppf-lg2-cap { height: 64px; background: linear-gradient(120deg, #F7B2CB, var(--ui-rosa)); }
   .ppf-lg2-corpo { display: flex; flex-direction: column; align-items: center; padding: 0 16px 18px; margin-top: -48px; text-align: center; }
