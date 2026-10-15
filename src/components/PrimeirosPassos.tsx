@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, Wallet, Coins, Sparkle, ShareNetwork, CaretRight, Camera, X, LockSimple } from "@phosphor-icons/react";
+import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, Wallet, Coins, Sparkle, ShareNetwork, CaretRight, Camera, X } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
 import { useProfile, getCardapioUrl, refreshProfile } from "@/hooks/useProfile";
@@ -185,8 +185,6 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   passos[passos.length - 1].s = ultimoQueFalta ? "Falta só isso pro cardápio ir pro ar" : "Seu primeiro doce no cardápio";
   const feitos = passos.filter(p => p.feito).length;
   const atual = passos.findIndex(p => !p.feito);
-  const ultimo = -1; // (o passo "compartilhar" saiu em 02/10)
-  const compartilharTravado = false;
 
   return (
     <div ref={raiz} className={`pp pp--${local}${destaque ? " pp--destaque" : ""}`}>
@@ -196,24 +194,17 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
       {passos.map((p, i) => i === atual ? (
         <div key={p.t} className="pp-at">
           <div className="pp-ps pp-ps--sem">
-            <span className="pp-ic pp-ic--at">{p.ic}</span>
+            <span className="pp-ic pp-ic--at">{p.ic}<i className="pp-n">{i + 1}</i></span>
             <span className="pp-tx"><b>{p.t}</b><small>{p.s}</small></span>
           </div>
           <button type="button" className="pp-btn" onClick={p.abrir}>Fazer agora</button>
         </div>
       ) : (
-        (i === ultimo && compartilharTravado) ? (
-          <div key={p.t} className="pp-ps pp-ps--trava" aria-disabled="true">
-            <span className="pp-ic pp-ic--trava">{I(LockSimple)}</span>
-            <span className="pp-tx"><b>{p.t}</b><small>Libera quando os passos acima estiverem prontos</small></span>
-          </div>
-        ) : (
         <button type="button" key={p.t} className={`pp-ps${p.feito ? " pp-ps--ok" : ""}`} onClick={p.feito ? undefined : p.abrir} disabled={p.feito}>
-          <span className={`pp-ic${p.feito ? " pp-ic--ok" : ""}`}>{p.feito ? I(Check) : p.ic}</span>
+          <span className={`pp-ic${p.feito ? " pp-ic--ok" : ""}`}>{p.feito ? I(Check) : <>{p.ic}<i className="pp-n">{i + 1}</i></>}</span>
           <span className="pp-tx"><b>{p.t}</b><small>{p.feito ? "Feito" : p.s}</small></span>
           {!p.feito && <span className="pp-seta"><CaretRight size={16} weight="bold" /></span>}
         </button>
-        )
       ))}
 
       {folha === "descricao" && <FolhaDescricao uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
@@ -658,9 +649,20 @@ const CSS = `
   .pp-tx small { display: block; font-size: 13px; color: var(--ui-texto-2); margin-top: 2px; line-height: 1.4; }
   .pp-ps--ok .pp-tx b { color: var(--ui-texto-2); font-weight: 500; }
   .pp-ps--ok .pp-tx small { color: var(--ui-verde); font-weight: 700; }
-  .pp-ps--trava { cursor: default; }
-  .pp-ic--trava { background: var(--ui-linha); color: #B5AAB0; }
-  .pp-ps--trava .pp-tx b { color: var(--ui-texto-3); font-weight: 500; }
+  .pp-n { display: none; font-style: normal; }
+  /* (15/10) celular: os passos viram checklist numerado (bolinha com número; feito = check verde e riscado),
+     pra não parecer com os atalhos do Início, que têm o quadrado rosa */
+  @media (max-width: 767px) {
+    .pp-ic { width: 28px; height: 28px; margin: 0 6px; border-radius: 50%; background: none; border: 2px solid #DCCBD1; color: #8F7C83; font-size: 13px; font-weight: 700; }
+    .pp-ic:not(.pp-ic--ok) svg { display: none; }
+    .pp-n { display: inline; }
+    .pp-ic--at { background: var(--ui-rosa); border-color: var(--ui-rosa); color: var(--ui-branco); }
+    .pp-ic--ok { background: var(--ui-verde); border-color: var(--ui-verde); color: var(--ui-branco); }
+    .pp-ic--ok svg { width: 14px; height: 14px; }
+    .pp-ps--ok { min-height: 44px; }
+    .pp-ps--ok .pp-tx b { text-decoration: line-through; text-decoration-color: #C9B9BF; }
+    .pp-ps--ok .pp-tx small { display: none; }
+  }
   .pp-seta { color: #B4B2A9; display: flex; }
   .pp-at { background: var(--ui-rosa-claro); border: 0; border-radius: var(--ui-raio); padding: 12px; margin: 4px 0 8px; }
   .pp-at + .pp-ps { border-top: none; }

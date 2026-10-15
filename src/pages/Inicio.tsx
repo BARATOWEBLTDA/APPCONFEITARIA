@@ -21,7 +21,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import {
-  Plus, CalendarDots, CurrencyDollar, ShoppingBag, Camera, Users, ChartLineUp,
+  Coins, Plus, CalendarDots, CurrencyDollar, Camera, Users, ChartLineUp,
   CaretRight, Cake, Receipt, Gear, ClipboardText,
   WarningCircle, Clock, Package, TrendUp, Confetti, RocketLaunch, Sparkle, Crown,
 } from "@phosphor-icons/react";
@@ -854,14 +854,14 @@ export default function Inicio() {
 
         <div className="ini-nav-grid">
           {[
-            { Icone: Receipt,        label: "Pedidos",       sub: "Suas encomendas",       path: "/pedidos",       key: "pedidos" },
+            { Icone: Coins,          label: "Custos",        sub: "Gastos fixos",          path: "/custos",        key: "custos" },
             { Icone: CalendarDots,   label: "Agenda",        sub: "Entregas por dia",      path: "/agenda",        key: "agenda" },
-            { Icone: ShoppingBag,    label: "Cardápio",      sub: "Sua loja online",       path: "/cardapio",      key: "cardapio" },
-            { Icone: Users,          label: "Clientes",      sub: "Quem compra de você",   path: "/clientes",      key: "clientes" },
-            { Icone: CurrencyDollar, label: "Financeiro",    sub: "Entradas e saídas",     path: "/financeiro",    key: "financeiro" },
-            { Icone: Cake,           label: "Produtos",      sub: "O que você vende",      path: "/produtos",      key: "produtos" },
+            { Icone: TrendUp,        label: "Lucratividade", sub: "Seu lucro real",     path: "/lucratividade", key: "lucro" },
+            { Icone: Users,          label: "Clientes",      sub: "Quem compra",   path: "/clientes",      key: "clientes" },
+            { Icone: CurrencyDollar, label: "Financeiro",    sub: "Seu caixa",     path: "/financeiro",    key: "financeiro" },
+            { Icone: Cake,           label: "Produtos",      sub: "Seus doces",      path: "/produtos",      key: "produtos" },
             { Icone: ClipboardText,  label: "Ficha técnica", sub: "Custo e lucro",         path: "/ficha-tecnica", key: "ficha" },
-            { Icone: Gear,           label: "Configurações", sub: "Conta e preferências",  path: "/configuracoes", key: "configuracoes" },
+            { Icone: Gear,           label: "Configurações", sub: "Conta e ajustes",  path: "/configuracoes", key: "configuracoes" },
           ].map((item) => (
             <button key={item.path} className="ini-nav-card" data-nav={item.key} onClick={() => navigate(item.path)}>
               <div className="ini-nav-icon"><item.Icone size={isMobile ? 24 : 20} weight="bold" /></div>
@@ -1783,8 +1783,8 @@ export default function Inicio() {
             flex-shrink: 0;
             width: 41px; height: 41px;
             border-radius: 11px;
-            background: #FFEEF3 !important;
-            color: #C2416D !important;
+            background: var(--ui-rosa) !important;
+            color: var(--ui-branco) !important;
           }
           .ini-root .ini-nav-icon svg { width: 24px; height: 24px; }
           /* celular pequeno: sem a setinha, pra "Configurações" caber inteiro */
@@ -1910,6 +1910,14 @@ export default function Inicio() {
           .ini-main { gap: 20px; }
           .ini-main > .ini-section { margin-top: 0 !important; margin-bottom: 0 !important; }
           .ini-mobile-conquistas { order: 5; }
+        }
+        /* (15/10) atalhos: ícone rosa forte (diferente dos primeiros passos) e textos numa linha */
+        .ini-root .ini-nav-label, .ini-root .ini-nav-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        @media (max-width: 389px) {
+          .ini-root .ini-nav-card .ini-nav-icon, .ini-root .ini-nav-card[data-nav] .ini-nav-icon { width: 36px; height: 36px; }
+          .ini-root .ini-nav-icon svg { width: 21px; height: 21px; }
+          .ini-root .ini-nav-meta { margin-left: 8px; }
+          .ini-root .ini-nav-sub { font-size: 12px; }
         }
 `}</style>
 
