@@ -151,24 +151,23 @@ export default function KitQuantidadeEditor({ kit, onChange, modo, nomeProduto, 
   return (
     <div className="kq-tela kq-v2">
       <p className="kq-lbl">Sabores do kit</p>
-      {sabores.length > 0 && (
-        <ul className="kq-lista">
-          {k.sabores.map(s => s.nome.trim() && (
-            <li key={s.id}><span>{s.nome}</span>
-              <button type="button" onClick={() => set({ sabores: k.sabores.filter(x => x.id !== s.id) })} aria-label={`Tirar ${s.nome}`}><X size={16} weight="bold" /></button>
-            </li>
-          ))}
-        </ul>
-      )}
-      {sugestoes.length > 0 && (
-        <div className="kq-sug" role="group" aria-label="Sugestões">{sugestoes.slice(0, 8).map(n => <button type="button" key={n} onClick={() => addSabor(n)}><Plus size={14} weight="bold" aria-hidden="true" />{n}</button>)}</div>
-      )}
-      <div className="kq-addrow">
-        <input placeholder={k.modelo === "salgados" ? "Outro sabor… (ex.: coxinha)" : "Outro sabor…"} value={novoSabor} aria-label="Outro sabor"
-          onChange={e => setNovoSabor(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addSabor(novoSabor); } }} />
-        <button type="button" onClick={() => addSabor(novoSabor)} disabled={!novoSabor.trim()}>Cadastrar</button>
+      {/* (14/10) no padrão das outras escolhas: aviso cinza + tabela com cabeçalho e "Cadastrar" na última linha (sem os botões de sugestão nem o "Trocar o modelo") */}
+      <div className="esc-aviso"><span className="esc-aviso-ic" aria-hidden="true">i</span>
+        <p>Os sabores que o cliente pode misturar no kit. O preço de cada kit fica no último passo.</p></div>
+      <div className="esc-tab esc-tab--1" role="table" aria-label="Sabores do kit">
+        <div className="esc-tab-l esc-tab-h" role="row"><span role="columnheader">Sabor</span><span role="columnheader" aria-label="Tirar" /></div>
+        {k.sabores.map(s => s.nome.trim() && (
+          <div key={s.id} className="esc-tab-l" role="row">
+            <span role="cell" className="esc-tab-nm">{s.nome}</span>
+            <span role="cell"><button type="button" className="esc-op-x" onClick={() => set({ sabores: k.sabores.filter(x => x.id !== s.id) })} aria-label={`Tirar ${s.nome}`}><X size={16} weight="bold" /></button></span>
+          </div>
+        ))}
+        <div className="esc-tab-add kq-addrow">
+          <input placeholder={k.modelo === "salgados" ? "Outro sabor… (ex.: coxinha)" : "Outro sabor…"} value={novoSabor} aria-label="Outro sabor"
+            onChange={e => setNovoSabor(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addSabor(novoSabor); } }} />
+          <button type="button" className="esc-nova-bt esc-nova-bt--txt" onClick={() => addSabor(novoSabor)} disabled={!novoSabor.trim()}>Cadastrar</button>
+        </div>
       </div>
-      {k.sabores.length === 0 && <button type="button" className="kq-link" onClick={() => set({ modelo: undefined })}>Trocar o modelo ({modeloInfo.t})</button>}
 
       <p className="kq-lbl">Como o cliente compra</p>
       <div className="kq-seg" role="radiogroup" aria-label="Como o cliente compra">

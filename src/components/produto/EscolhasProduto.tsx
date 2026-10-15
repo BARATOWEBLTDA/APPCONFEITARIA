@@ -373,11 +373,7 @@ function CartaoGrupo({ chave, tipo, form, setForm, outros }: { chave: "massa" | 
           </div>
         </div>
       )}
-      {sug.length > 0 && (
-        <div className="esc-chips esc-chips--sug" role="group" aria-label="Sugestões">
-          {sug.slice(0, 6).map(s => <button key={s} type="button" className="esc-chip esc-chip--sug" onClick={() => adicionar(s)}><Plus size={14} weight="bold" aria-hidden="true" />{s}</button>)}
-        </div>
-      )}
+      {/* (14/10) sem os botões de sugestão embaixo da tabela (poluíam): a escolha já começa com 2 opções e ela cadastra as outras */}
       {/* (14/10) regras no "Avançado" (como o Rendimento): a tela abre direto nas opções */}
       <button type="button" className="esc-rend-linha esc-av-linha" onClick={() => setAvancado(true)}>
         <span className="esc-av-ic" aria-hidden="true"><GearSix size={20} weight="bold" /></span>
