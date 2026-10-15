@@ -637,3 +637,10 @@ h1, h2, h3, h4, h5, h6, .balance-text {
   --ui-aviso-base:      88px;
 }
 @media (min-width: 900px) { :root { --ui-aviso-base: 28px; } }
+
+/* (15/10) campo preenchido pelo navegador/celular: não pinta de azul/cinza, fica com o fundo e a cor do próprio campo */
+input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus,
+textarea:-webkit-autofill, select:-webkit-autofill {
+  -webkit-text-fill-color: currentColor;
+  transition: background-color 600000s 0s, color 600000s 0s;
+}

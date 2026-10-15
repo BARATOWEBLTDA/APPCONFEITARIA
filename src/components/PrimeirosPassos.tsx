@@ -302,7 +302,7 @@ function FolhaCaixa({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
       <PassoTopo k="caixa" />
       <p className="ppf-l">Quanto você tem hoje no caixa da confeitaria?</p>
-      <div className="ppf-cx"><span>R$</span><input inputMode="numeric" placeholder="0,00" value={txt} aria-label="Saldo do caixa hoje"
+      <div className="ppf-cx"><span>R$</span><input inputMode="numeric" autoComplete="off" placeholder="0,00" value={txt} aria-label="Saldo do caixa hoje"
         onChange={e => { setTxt(mascaraBRL(e.target.value)); setErro(""); }} onKeyDown={e => { if (e.key === "Enter") salvar(); }} /></div>
       <p className="ppf-p-dica">Dinheiro e saldo da conta da loja. Daqui pra frente o app soma o que entra e tira o que sai. Se não tiver nada, deixe 0,00.</p>
       {erro && <p className="ppf-erro">{erro}</p>}
@@ -377,7 +377,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
           </div>
         ) : (
           <div className="ppf-d-campo">
-            <textarea id="pp-desc" value={txt} maxLength={200} aria-label="Descrição da sua confeitaria"
+            <textarea id="pp-desc" autoComplete="off" value={txt} maxLength={200} aria-label="Descrição da sua confeitaria"
               placeholder="Ex.: Bolos e doces feitos em casa, com receita de família. Encomendas pra aniversários e casamentos."
               onChange={e => setTxt(e.target.value)} />
             <div className="ppf-d-pe">
@@ -504,7 +504,7 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
   const selo = !busca ? "Digite o CEP pra achar sua loja" : mostrar === "nada" ? "Endereço escondido no cardápio" : [mostrar === "completo" ? end.bairro.trim() : "", cidadeUf].filter(Boolean).join(" · ");
   const campo = (k: keyof typeof end, rotulo: string, ph = "", extra: any = {}) => (
     <div className="ppf-f"><label className="ppf-l" htmlFor={`pp-${k}`}>{rotulo}</label>
-      <input id={`pp-${k}`} className="ppf-in" value={end[k]} placeholder={ph} onChange={e => setEnd(x => ({ ...x, [k]: e.target.value }))} {...extra} /></div>
+      <input id={`pp-${k}`} className="ppf-in" autoComplete="off" value={end[k]} placeholder={ph} onChange={e => setEnd(x => ({ ...x, [k]: e.target.value }))} {...extra} /></div>
   );
   return (
     <Janelinha foco titulo="Endereço da loja" onClose={onClose}
@@ -514,7 +514,7 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
 
       {!manual && (<>
         <div className="ppf-f"><label className="ppf-l" htmlFor="pp-cep">CEP</label>
-          <div className="ppf-wrap"><input id="pp-cep" className="ppf-in ppf-in--g" inputMode="numeric" autoComplete="postal-code" value={end.cep} placeholder="00000-000" onChange={e => mudarCep(e.target.value)} />
+          <div className="ppf-wrap"><input id="pp-cep" className="ppf-in ppf-in--g" inputMode="numeric" autoComplete="off" value={end.cep} placeholder="00000-000" onChange={e => mudarCep(e.target.value)} />
             {(buscando || achou) && <small className="ppf-cep">{buscando ? "Procurando…" : "✓ achamos"}</small>}</div></div>
         {achou ? (<>
           <div className="ppf-e-achado">
