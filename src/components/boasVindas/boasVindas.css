@@ -5,7 +5,7 @@
   --bv-rosa: #FF9DC4; /* o rosa claro da marca, o mesmo do lado rosa do login */
   position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; overflow: hidden;
   padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) 0 env(safe-area-inset-left, 0px);
-  background: var(--vinho-fundo, radial-gradient(1000px 640px at 50% 38%, var(--ui-vinho) 0%, var(--ui-vinho-escuro) 72%)); background-color: var(--vinho-escuro);
+  background: var(--vinho-fundo, radial-gradient(1000px 640px at 50% 38%, var(--ui-vinho) 0%, var(--ui-vinho-escuro) 72%)); background-color: var(--chocolate-escuro);
   color: var(--ui-branco); font-family: var(--font-base);
   -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; touch-action: pan-y; overscroll-behavior: contain;
   transition: opacity var(--dur-normal) linear;
@@ -36,7 +36,7 @@
 .bv-demo { order: 3; flex: none; width: 100%; max-width: 440px; margin-top: 18px; display: flex; justify-content: center; animation: bvEntra var(--dur-entrada) var(--ease-out) 60ms both; }
 .bv-corpo--marca .bv-demo { order: 2; margin-top: 0; }
 .bv-corpo--marca .bv-texto { order: 3; margin-top: 20px; }
-.bv-base { order: 5; flex: none; position: sticky; bottom: 0; z-index: 4; align-self: stretch; display: flex; justify-content: center; margin: 0 -20px; padding: 16px 20px calc(16px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(to bottom, rgba(44, 18, 25, 0) 0, var(--vinho-escuro) 34%); }
+.bv-base { order: 5; flex: none; position: sticky; bottom: 0; z-index: 4; align-self: stretch; display: flex; justify-content: center; margin: 0 -20px; padding: 16px 20px calc(16px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(to bottom, rgba(34, 19, 14, 0) 0, var(--chocolate-escuro) 34%); }
 .bv-botao { max-width: 440px; }
 @keyframes bvEntra { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 

@@ -20,7 +20,10 @@
   --vinho-profundo:   #1F0711; /* menus de navegação (lateral do computador e de baixo do celular): vinho bem escuro, puxado pro vinho e não pro marrom (08/10) */
   --vinho-claro:      #72243E;
   --vinho-rgb:        75, 21, 40;
-  --vinho-fundo:      radial-gradient(1000px 640px at 50% 38%, #4B1528 0%, #2C1219 72%); /* fundo de marca (login) */
+  /* (15/10) fundo de marca (login, criar conta, apresentação, termos): chocolate escuro no lugar do vinho (tinha cara de açaí) */
+  --chocolate-escuro: #22130E;
+  --chocolate:        #3A2219;
+  --vinho-fundo:      radial-gradient(1000px 640px at 50% 38%, #3A2219 0%, #22130E 72%);
 
   /* Secundária — Vinho (03/10: a marca tem duas famílias, rosa e vinho) — PRO, valores, ênfases */
   --accent:            #4B1528;

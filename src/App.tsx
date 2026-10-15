@@ -360,7 +360,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   }
   // conta nova: espera conferir os termos antes de abrir qualquer coisa (não pisca a apresentação)
   if (showFirstTutorial && termos === "conferindo") {
-    return <div style={{ position: "fixed", inset: 0, background: "var(--vinho-escuro, #2C1219)" }} aria-busy="true" />;
+    return <div style={{ position: "fixed", inset: 0, background: "var(--chocolate-escuro, #22130E)" }} aria-busy="true" />;
   }
   if (showFirstTutorial && contaAtivaPendente) {
     return <>{children}<ContaAtiva nome={primeiroNome} aoContinuar={() => setContaAtivaPendente(false)} /></>;
