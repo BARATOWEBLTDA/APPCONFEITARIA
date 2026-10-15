@@ -37,7 +37,8 @@ export const excluirNotificacao = (id: string) => salvarEstado([id], { excluida:
 
 /** Cria uma notificação só pra esta confeiteira (não repete se a chave já existir) */
 export async function criarNotificacaoPessoal(n: { tipo: string; titulo: string; mensagem: string; link?: string; chave: string }) {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession(); // (15/10) do aparelho, sem ir ao servidor
+  const user = session?.user;
   if (!user) return;
   const { data: existe } = await supabase.from("notificacoes").select("id").eq("user_id", user.id).eq("chave", n.chave).maybeSingle();
   if (existe) return;

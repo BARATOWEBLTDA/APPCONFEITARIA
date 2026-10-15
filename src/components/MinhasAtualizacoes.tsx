@@ -103,7 +103,7 @@ export default function MinhasAtualizacoes() {
         pedidosMesAntRes,
         totalPedidosRes,
         clientesComVendaRes,
-        totalClientesRes,
+        compraramAntesRes,
       ] = await Promise.all([
         // 3. Clientes com data_nascimento pra aniversariantes
         supabase
@@ -146,15 +146,19 @@ export default function MinhasAtualizacoes() {
           .eq("user_id", userId)
           .gte("created_at", dataLimite60d.toISOString())
           .not("cliente_id", "is", null),
-        // 9. Total de clientes cadastrados (11/10): a busca 3 traz só quem tem aniversário
+        // 9. (15/10) Quem comprou entre 1 ano e 60 dias atrás: só esses podem estar "sumidos"
+        //    (antes contava todos os clientes cadastrados, inclusive quem nunca comprou)
         supabase
-          .from("clientes")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", userId),
+          .from("pedidos")
+          .select("cliente_id")
+          .eq("user_id", userId)
+          .gte("created_at", new Date(hoje.getFullYear() - 1, hoje.getMonth(), hoje.getDate()).toISOString())
+          .lt("created_at", dataLimite60d.toISOString())
+          .not("cliente_id", "is", null),
       ]);
       if (cancelado) return;
       // (15/10) alguma busca falhou (sem internet): mantém o que já estava (antes podia mostrar "faturamento caiu 100%")
-      if ([clientesRes, produtosSemFotoRes, pedidosMesRes, pedidosMesAntRes, totalPedidosRes, clientesComVendaRes, totalClientesRes].some(r => r.error)) {
+      if ([clientesRes, produtosSemFotoRes, pedidosMesRes, pedidosMesAntRes, totalPedidosRes, clientesComVendaRes, compraramAntesRes].some(r => r.error)) {
         if (contaCarregada.current !== userId) setLoading(false);
         return;
       }
@@ -262,13 +266,10 @@ export default function MinhasAtualizacoes() {
         });
       }
 
-      // 7️⃣ Clientes sumidos (comparação: total de clientes vs ativos)
-      // Só faz sentido se tem base > 5
-      // 11/10: o total é o de TODOS os clientes (antes só os que têm aniversário cadastrado). Se a contagem falhar, não mostra.
-      const totalCli = totalClientesRes.error || clientesComVendaRes.error ? 0 : (totalClientesRes.count || 0);
-      if (totalCli >= 5) {
-        const clientesAtivos = new Set((clientesComVendaRes.data || []).map((v: any) => v.cliente_id));
-        const sumidos = totalCli - clientesAtivos.size;
+      // 7️⃣ Clientes sumidos: compraram no último ano, mas não nos últimos 60 dias
+      {
+        const ativos = new Set((clientesComVendaRes.data || []).map((v: any) => v.cliente_id));
+        const sumidos = new Set((compraramAntesRes.data || []).map((v: any) => v.cliente_id).filter((id: any) => !ativos.has(id))).size;
         if (sumidos >= 3) {
           lista.push({
             key: "clientes-sumidos",

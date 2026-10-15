@@ -17,6 +17,8 @@ export function PausarPedidos({ compacto = false, escuro = false }: { compacto?:
   const [local, setLocal] = useState<boolean | null>(null)
   const pronta = useLojaPronta(profile?.id)
   if (!profile?.id) return null
+  // (15/10) ainda não sabe se a loja está pronta (primeira vez neste aparelho): não mostra nada em vez de piscar "Recebendo pedidos"
+  if (pronta === null) return null
   // (13/10) conta nova sem os primeiros passos: não diz "Loja aberta · Recebendo pedidos" com o cardápio vazio
   if (pronta === false) return (
     <div className={`lj-pausa lj-pausa--montando${compacto ? ' compacto' : ''}${escuro ? ' escuro' : ''}`}>

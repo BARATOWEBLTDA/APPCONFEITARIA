@@ -102,17 +102,34 @@ function notifyListeners(profile: Profile | null) {
   listeners.forEach(fn => fn(profile));
 }
 
-export async function refreshProfile() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
-  if (globalProfile?.id && globalProfile.id !== user.id) notifyListeners(null); // trocou de conta
-  ligarTempoReal(user.id);
-  const { data } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
-  if (data) notifyListeners(data);
+// (15/10) velocidade: cada tela/componente que usa o perfil pedia ele de novo ao abrir (umas 12 vezes no Início).
+// Agora uma busca em andamento é repartida, e quem só está abrindo não busca de novo se buscou há menos de 5 s.
+// Quem acabou de mudar o perfil chama refreshProfile() normal (força a busca).
+let buscaPerfil: Promise<void> | null = null;
+let ultimaBuscaPerfil = 0;
+export function refreshProfile(forcar = true): Promise<void> {
+  if (buscaPerfil) return forcar ? buscaPerfil.then(() => buscarPerfil()) : buscaPerfil;
+  if (!forcar && globalProfile && Date.now() - ultimaBuscaPerfil < 5000) return Promise.resolve();
+  return buscarPerfil();
+}
+function buscarPerfil(): Promise<void> {
+  if (buscaPerfil) return buscaPerfil;
+  buscaPerfil = (async () => {
+    // a sessão vem do aparelho (getUser ia ao servidor toda vez); o banco confere a conta pela própria sessão
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
+    if (!user) return;
+    if (globalProfile?.id && globalProfile.id !== user.id) notifyListeners(null); // trocou de conta
+    ligarTempoReal(user.id);
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+    if (data) notifyListeners(data);
+    ultimaBuscaPerfil = Date.now();
+  })().finally(() => { buscaPerfil = null; });
+  return buscaPerfil;
 }
 
 // Tempo real só do perfil da conta logada (filtro no servidor) — 02/10
@@ -153,14 +170,14 @@ function ensureRealtimeChannel() {
   if (typeof window !== "undefined") {
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") {
-        refreshProfile();
+        refreshProfile(false);
       }
     });
     // Reserva (02/10): se o tempo real não estiver ligado no Supabase, o app ainda percebe
     // a mudança de plano em até 1 minuto, e na hora ao voltar pra janela ou à internet.
-    window.addEventListener("focus", () => refreshProfile());
-    window.addEventListener("online", () => refreshProfile());
-    setInterval(() => { if (document.visibilityState === "visible") refreshProfile(); }, 60_000);
+    window.addEventListener("focus", () => refreshProfile(false));
+    window.addEventListener("online", () => refreshProfile(false));
+    setInterval(() => { if (document.visibilityState === "visible") refreshProfile(false); }, 60_000);
   }
 }
 
@@ -176,7 +193,7 @@ export function useProfile() {
     // Sempre revalida do banco em background (mesmo com cache).
     // Se não temos cache, o loading termina aqui.
     // Se temos cache, o loading já era false — mas ainda atualizamos.
-    refreshProfile().then(() => {
+    refreshProfile(false).then(() => {
       if (loading) setLoading(false);
     });
 
@@ -189,7 +206,7 @@ export function useProfile() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { profile, loading, refetch: refreshProfile };
+  return { profile, loading, refetch: () => refreshProfile() };
 }
 
 /** O perfil já carregado (sem esperar a rede). Pra funções fora de componentes. */

@@ -14,12 +14,10 @@ import { minutosDoDia, separarEntregasDeHoje } from "@/components/inicio/entrega
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import { TelaVazia, informar } from "@/components/base";
 import MenuConta from "@/components/MenuConta";
-import { useState, useEffect, useLayoutEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
+// (15/10) o gráfico (recharts) só é baixado quando aparece
+const GraficoRecebido = lazy(() => import("@/components/inicio/GraficoRecebido"));
 import {
   Coins, Plus, CalendarDots, CurrencyDollar, Camera, Users, ChartLineUp,
   CaretRight, Cake, Receipt, Gear, ClipboardText,
@@ -52,6 +50,9 @@ const STATUS_ATIVOS = ["aguardando_pagamento", "aguardando_aceite", "novo", "pen
  *  - Resumo da semana (vendas, pedidos, variação %)
  *  - Gráfico do que entrou no caixa nos últimos 30 dias
  */
+/** (15/10) o que o Início mostrou por último (mesma sessão): volta na hora, sem "Carregando…" */
+let cacheInicio: { uid: string; dia: string; dados: any } | null = null;
+
 export default function Inicio() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -69,9 +70,12 @@ export default function Inicio() {
   // buscava as conquistas toda vez pra uma janela que não abria mais: as medalhas ficam em Minhas conquistas.
   useEffect(() => { if (profile) void verificarAvisosPro(profile); }, [profile?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const [loading, setLoading] = useState(true);
+  // (15/10) velocidade: ao voltar pro Início (ou trocar de tela e voltar), mostra na hora o que já tinha carregado hoje
+  // e atualiza por trás, sem "Carregando…". Vale só pra mesma conta e o mesmo dia.
+  const [c0] = useState(() => { const c = cacheInicio; const uid = perfilAtual()?.id; return c && uid && c.uid === uid && c.dia === dataISO(new Date()) ? c : null; });
+  const [loading, setLoading] = useState(!c0);
   const [erroCarga, setErroCarga] = useState(false); // a busca do dia falhou (sem internet, por exemplo)
-  const [counts, setCounts] = useState({
+  const [counts, setCounts] = useState(c0?.dados.counts ?? {
     pedidosPendentes: 0,
     entregasHoje: 0,
     valorEntregasHoje: 0,
@@ -80,14 +84,14 @@ export default function Inicio() {
     pedidosAtrasados: 0,
   });
   // 11/10: todas as entregas de hoje (a "próxima" é escolhida na hora de mostrar: a primeira com hora de agora em diante)
-  const [entregasDeHoje, setEntregasDeHoje] = useState<EntregaResumo[]>([]);
+  const [entregasDeHoje, setEntregasDeHoje] = useState<EntregaResumo[]>(c0?.dados.entregasDeHoje ?? []);
   // o dia a que os dados da tela se referem (AAAA-MM-DD): o "hoje" da tela anda junto com os dados
-  const [diaDosDados, setDiaDosDados] = useState<string | null>(null);
-  const [aniversariantesDetalhe, setAniversariantesDetalhe] = useState<{ nome: string; dias: number } | null>(null);
-  const [resumoSemana, setResumoSemana] = useState({ vendas: 0, pedidos: 0 });
-  const [resumoAnterior, setResumoAnterior] = useState({ vendas: 0, pedidos: 0 });
-  const [chartData, setChartData] = useState<ChartPoint[]>([]);
-  const [proximasEntregas, setProximasEntregas] = useState<Array<{ id: string; cliente: string; data: string; valor: number; hora?: string | null; produto?: string | null; tipo?: string | null }>>([]);
+  const [diaDosDados, setDiaDosDados] = useState<string | null>(c0?.dia ?? null);
+  const [aniversariantesDetalhe, setAniversariantesDetalhe] = useState<{ nome: string; dias: number } | null>(c0?.dados.aniversariantesDetalhe ?? null);
+  const [resumoSemana, setResumoSemana] = useState(c0?.dados.resumoSemana ?? { vendas: 0, pedidos: 0 });
+  const [resumoAnterior, setResumoAnterior] = useState(c0?.dados.resumoAnterior ?? { vendas: 0, pedidos: 0 });
+  const [chartData, setChartData] = useState<ChartPoint[]>(c0?.dados.chartData ?? []);
+  const [proximasEntregas, setProximasEntregas] = useState<Array<{ id: string; cliente: string; data: string; valor: number; hora?: string | null; produto?: string | null; tipo?: string | null }>>(c0?.dados.proximasEntregas ?? []);
   // Onboarding: se cliente novo, o card destaque muda pra empty state contextual
   const [onboarding, setOnboarding] = useState({
     produtosCount: 0,
@@ -348,8 +352,8 @@ export default function Inicio() {
   // Agora recarrega quando vira o dia e quando a pessoa volta pro app (por trás, sem trocar a tela por "Carregando…").
   const hoje = useDiaAtual();
   const numCarga = useRef(0);          // só vale a resposta da última busca
-  const contaNaTela = useRef<string | null>(null); // a conta que já tem dados na tela
-  const telaBoa = useRef<string | null>(null);     // "conta|dia" da última busca que deu certo (null: a tela está em erro ou carregando)
+  const contaNaTela = useRef<string | null>(c0?.uid ?? null); // a conta que já tem dados na tela
+  const telaBoa = useRef<string | null>(c0 ? `${c0.uid}|${c0.dia}` : null);     // "conta|dia" da última busca que deu certo (null: a tela está em erro ou carregando)
   useEffect(() => {
     if (!profile?.id) return;
     carregarTudo(contaNaTela.current === profile.id);
@@ -460,12 +464,12 @@ export default function Inicio() {
         // O que entrou no caixa (07/10 · 3.08): a mesma regra do "Recebido no mês" do Financeiro. Uma busca só serve
         // o número do mês e o gráfico de 30 dias; por isso começa no dia mais antigo dos dois.
         entradasNoPeriodo(userId, dataISO(inicio30d < inicioMes ? inicio30d : inicioMes), hojeISO),
-        // Próximas entregas (a partir de hoje, ordenadas por data)
+        // Próximas entregas DEPOIS de hoje (15/10): as de hoje já vêm na última busca; antes vinham duas vezes
         supabase
           .from("pedidos")
           .select("id, numero, cliente_nome, data_entrega, valor_total, horario_entrega, tipo_entrega, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(forma_venda, imagem_url))")
           .eq("user_id", userId)
-          .gte("data_entrega", hojeISO)
+          .gt("data_entrega", hojeISO)
           .in("status", STATUS_ATIVOS)
           .order("data_entrega", { ascending: true })
           .order("horario_entrega", { ascending: true, nullsFirst: false })
@@ -537,9 +541,20 @@ export default function Inicio() {
       setResumoSemana({ vendas: vendasSemana, pedidos: pedidosSemanaRes.data?.length || 0 });
       setResumoAnterior({ vendas: vendasAnt, pedidos: pedidosSemanaAntRes.data?.length || 0 });
       setChartData(chart);
-      setProximasEntregas((proximasEntregasRes.data || []).map(entregaDoPedido));
+      setProximasEntregas([...(proximaEntregaHojeRes.data || []), ...(proximasEntregasRes.data || [])].slice(0, 5).map(entregaDoPedido));
       setErroCarga(falhou);
       telaBoa.current = falhou ? null : chaveDaBusca;
+      if (!falhou) {
+        const entregasHojeLista = (proximaEntregaHojeRes.data || []).map(entregaDoPedido);
+        cacheInicio = { uid: userId, dia: hojeISO, dados: {
+          counts: { pedidosPendentes: pedidosPendentesRes.count || 0, entregasHoje: entregasHojeRes.count || 0,
+            valorEntregasHoje: (entregasHojeRes.data || []).reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0),
+            aniversariantes: aniversariantes.length, recebidoMes, pedidosAtrasados: pedidosAtrasadosRes.count || 0 },
+          entregasDeHoje: entregasHojeLista, aniversariantesDetalhe: proxAniv,
+          resumoSemana: { vendas: vendasSemana, pedidos: pedidosSemanaRes.data?.length || 0 },
+          resumoAnterior: { vendas: vendasAnt, pedidos: pedidosSemanaAntRes.data?.length || 0 },
+          chartData: chart, proximasEntregas: [...(proximaEntregaHojeRes.data || []), ...(proximasEntregasRes.data || [])].slice(0, 5).map(entregaDoPedido) } };
+      }
     } catch (err) {
       console.error("Erro ao carregar dados do início:", err);
       if (n !== numCarga.current || manterTela()) return;
@@ -889,18 +904,7 @@ export default function Inicio() {
             return temDados ? (
               <div className="ini-chart-inner" style={{ width: "100%", height: 220, minWidth: 0, minHeight: 200 }}>
                 {/* initialDimension: evita o aviso "width(-1) and height(-1)" no primeiro desenho, antes de medir o espaço */}
-                <ResponsiveContainer width="100%" height="100%" minHeight={200} initialDimension={{ width: 600, height: 220 }}>
-                  <LineChart data={chartData} margin={{ top: 8, right: 24, bottom: 0, left: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                    <XAxis dataKey="dia" tick={{ fontSize: 12.5, fill: "var(--ui-texto-2)" }} tickLine={false} axisLine={false} interval={4} padding={{ left: 4, right: 12 }} />
-                    <YAxis width={72} tick={{ fontSize: 12.5, fill: "var(--ui-texto-2)" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `R$ ${Number(v).toLocaleString("pt-BR")}`} />
-                    <Tooltip
-                      contentStyle={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 12, fontSize: 13.5, fontFamily: "Geist,sans-serif" }}
-                      formatter={(v: any) => [formatCurrency(Number(v)), "Recebido"]}
-                    />
-                    <Line type="monotone" dataKey="valor" stroke="var(--text-title)" strokeWidth={2.5} dot={false} activeDot={{ r: 4, fill: "var(--text-title)" }} />
-                  </LineChart>
-                </ResponsiveContainer>
+                <Suspense fallback={null}><GraficoRecebido dados={chartData as any} /></Suspense>
               </div>
             ) : (
               <TelaVazia compacta icone={<ChartLineUp size={30} />} titulo="Nada recebido ainda" texto="O gráfico aparece aqui quando entrar o primeiro pagamento." />
@@ -1788,7 +1792,7 @@ export default function Inicio() {
           }
           .ini-root .ini-nav-icon svg { width: 24px; height: 24px; }
           /* celular pequeno: sem a setinha, pra "Configurações" caber inteiro */
-          @media (max-width: 389px) { .ini-root .ini-nav-card, .ini-root .ini-nav-card[data-nav] { padding-right: 8px; } .ini-root .ini-nav-arrow { display: none; } }
+          @media (max-width: 439px) { .ini-root .ini-nav-card, .ini-root .ini-nav-card[data-nav] { padding-right: 8px; } .ini-root .ini-nav-arrow { display: none; } }
           .ini-root .ini-nav-meta { margin-left: 10px; gap: 0; }
           .ini-root .ini-nav-card .ini-nav-label {
             margin-top: 0;
@@ -1913,7 +1917,7 @@ export default function Inicio() {
         }
         /* (15/10) atalhos: ícone rosa forte (diferente dos primeiros passos) e textos numa linha */
         .ini-root .ini-nav-label, .ini-root .ini-nav-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        @media (max-width: 389px) {
+        @media (max-width: 439px) {
           .ini-root .ini-nav-card .ini-nav-icon, .ini-root .ini-nav-card[data-nav] .ini-nav-icon { width: 36px; height: 36px; }
           .ini-root .ini-nav-icon svg { width: 21px; height: 21px; }
           .ini-root .ini-nav-meta { margin-left: 8px; }
