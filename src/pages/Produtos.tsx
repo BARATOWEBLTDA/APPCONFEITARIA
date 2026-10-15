@@ -3581,7 +3581,7 @@ export default function Produtos() {
   const NOME_SECAO: Record<string, string> = { info: "Nome e descrição", opcoes: "Escolhas", tamanhos: "Escolhas", kit: "Escolhas", fotos: "Fotos", preco: "Preço e promoção", entrega: "Cardápio e entrega" };
   useEffect(() => { setEscTela(0); }, [editTab]); // trocar de aba volta a lista das escolhas
   // Tela de sucesso depois de publicar um produto novo
-  const [sucesso, setSucesso] = useState<null | { id?: string; nome: string; categoria?: string; imagem?: string; preco: number; de?: number; aPartir: boolean; primeiro: boolean; tipoLabel: string }>(null);
+  const [sucesso, setSucesso] = useState<null | { id?: string; nome: string; imagem?: string; primeiro: boolean }>(null);
   const [confirmMudaSubtipo, setConfirmMudaSubtipo] = useState<{
     novoSubtipo: "sabores_e_tamanhos" | "so_sabores" | "so_tamanhos";
     quantidade: number;
@@ -4522,28 +4522,21 @@ export default function Produtos() {
     }
     // Cadastro novo: tela de sucesso com os próximos passos
     try { localStorage.removeItem(DRAFT_KEY); } catch {}
-    const pc = precoCardapio({ ...form, ...(payload as any) });
-    const pcp = precoCardapioComPromocao({ ...form, ...(payload as any) }); // (14/10) o sucesso mostra o preço com a promoção
-    const kitOn = kitAtivo((form as any).kit_qtd);
-    const rotulos: Record<string, string> = { bolos: "Bolo", doces: "Doce", salgados: "Salgado", sobremesas: "Sobremesa", kitfesta: "Kit festa" };
+    // (15/10) o aviso de sucesso não mostra mais preço nem categoria: só o nome e o que falta (foto)
     setSucesso({
-      id: produtoId, nome: (payload as any).nome || form.nome, categoria: form.categoria,
+      id: produtoId, nome: (payload as any).nome || form.nome,
       imagem: (form.imagem_url || "").split(",").map(x => x.trim()).filter(Boolean)[0],
-      preco: pcp.final || pc.valor, de: pcp.de, aPartir: pc.aPartir, primeiro: eraPrimeiro,
-      tipoLabel: kitOn ? "Kit" : (tipoCadastro && rotulos[tipoCadastro]) || "Produto",
+      primeiro: eraPrimeiro,
     });
   };
-  // Abre a aba NA HORA do toque e só depois coloca o endereço: o Safari do iPhone bloqueia
-  // abas abertas depois de esperar o banco (o botão não fazia nada).
-  const verNoCardapio = async () => {
-    const aba = window.open("", "_blank");
-    try {
-      const { data } = await supabase.from("profiles").select("codigo_publico").eq("id", userId).single();
-      const cod = (data as any)?.codigo_publico;
-      if (cod && aba) { aba.location.href = `/c/${cod}`; return; }
-      if (cod) { window.location.href = `/c/${cod}`; return; }
-      aba?.close(); irFechandoJanela(() => navigate("/cardapio"));
-    } catch { aba?.close(); irFechandoJanela(() => navigate("/cardapio")); }
+  // (15/10) "Próximos passos" do aviso de sucesso: abre o produto recém-cadastrado direto na parte (fotos / informações)
+  const abrirParteDoNovo = (parte: "fotos" | "info") => {
+    const id = sucesso?.id;
+    const p = (id && produtos.find(x => x.id === id)) || (id ? ({ ...form, id } as Produto) : null);
+    setSucesso(null);
+    if (!p) { fecharModal(); return; }
+    void openEditar(p);
+    setEditTab(parte);
   };
 
   const handleDelete = async (id: string) => {
@@ -5029,13 +5022,16 @@ export default function Produtos() {
       {modal && (
         <div className={`prod-modal-overlay${sucesso ? " prod-modal-overlay--sucesso" : ""}`} onClick={sucesso ? fecharModal : handleTryClose}>
           {/* a janela do limite do plano abre por cima sem entrar na pilha: nessa hora o foco não fica preso aqui */}
-          <div className="prod-modal prod-modal--novo" ref={limiteAberto || salvarBibliotecaAsk ? undefined : caixaCadastro} onClick={e => e.stopPropagation()} onFocusCapture={selecionarValorAoFocar} onClickCapture={selecionarValorAoFocar}>
+          <div className={`prod-modal prod-modal--novo${sucesso ? " prod-modal--aviso" : ""}`} ref={limiteAberto || salvarBibliotecaAsk ? undefined : caixaCadastro} onClick={e => e.stopPropagation()} onFocusCapture={selecionarValorAoFocar} onClickCapture={selecionarValorAoFocar}>
             {sucesso ? (
-              <SucessoProdutoTela {...sucesso}
+              <SucessoProdutoTela primeiro={sucesso.primeiro} nome={sucesso.nome}
+                semFoto={!sucesso.imagem}
+                semDescricao={!(form.descricao || "").trim()}
                 onFechar={fecharModal}
                 onOutro={() => { setSucesso(null); openNovo(); }}
                 onCusto={() => { const id = sucesso.id; irDepoisDeFechar.current = () => { navigate("/ficha-tecnica", { state: { produtoId: id } }); setTimeout(() => window.scrollTo(0, 0), 0); }; fecharModal(); }}
-                onVerCardapio={verNoCardapio}
+                onFoto={() => abrirParteDoNovo("fotos")}
+                onDescricao={() => abrirParteDoNovo("info")}
                 lojaPronta={lojaPronta}
                 onTerminarLoja={() => { irDepoisDeFechar.current = () => { navigate("/"); setTimeout(() => window.scrollTo(0, 0), 0); }; fecharModal(); }} />
             ) : tipoTela && !form.id ? (
@@ -6158,8 +6154,8 @@ export default function Produtos() {
               {/* (14/10) a prévia e, por último (colado no Publicar), o que falta arrumar */}
               {/* (14/10) passo 6 · Revisão: a prévia no topo, todas as informações e, por último, o que falta arrumar */}
               {wizardStep === 6 && !form.id && <div className="prod-section"><PreviaCardapio form={form} /></div>}
-              {wizardStep === 6 && !form.id && <div className="prod-section"><ResumoProduto form={form} /></div>}
-              {wizardStep === 6 && !form.id && <div className="prod-section"><RevisaoProduto form={form} /></div>}
+              {/* (15/10) informações + "Antes de publicar" na mesma seção: o aviso fica logo embaixo da tabela */}
+              {wizardStep === 6 && !form.id && <div className="prod-section"><ResumoProduto form={form} /><RevisaoProduto form={form} /></div>}
             </div>
             )}
 
@@ -7666,13 +7662,13 @@ export default function Produtos() {
         }
 
         /* ── Modal de Produto ── */
-        /* Tela de sucesso no celular: o menu de navegação continua visível embaixo */
         @media (max-width: 767px) {
-          .prod-modal-overlay--sucesso { bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important; }
         /* iPhone com o teclado aberto: a janela encolhe até o teclado, e o "Avançar" do rodapé continua visível */
         html.teclado-aberto .prod-modal-overlay { bottom: var(--teclado, 0px); }
-          .prod-modal-overlay--sucesso .prod-modal--novo { height: 100% !important; max-height: 100% !important; border-radius: 0 !important; }
         }
+        /* (15/10) sucesso = aviso rosa no meio da tela (a caixa do cadastro some, fica só o aviso) */
+        body .prod-modal-overlay.prod-modal-overlay--sucesso { justify-content: center !important; align-items: center !important; padding: 16px max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)) !important; overflow-y: auto; }
+        body .prod-modal-overlay--sucesso .prod-modal.prod-modal--aviso { width: 100% !important; max-width: 400px !important; height: auto !important; max-height: none !important; margin: auto !important; padding: 0 !important; border: 0 !important; border-radius: 20px !important; background: transparent !important; box-shadow: none !important; overflow: visible !important; animation: none !important; }
         .prod-modal-overlay {
           position: fixed; inset: 0; z-index: 500;
           background: rgba(45, 31, 38, 0.55);

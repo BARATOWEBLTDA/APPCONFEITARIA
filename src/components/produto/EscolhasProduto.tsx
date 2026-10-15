@@ -548,14 +548,19 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
               <button type="button" onClick={() => set({ opcoes: opcoesDeNomes(outro) })}>{eAro ? "Pequeno · Médio · Grande" : "Aro 15 · 20 · 25"}</button>
             </p>
           ); })()}
-        <ul className="esc-ops">
-          {g.opcoes.map((o, i) => (
+        <ul className={`esc-ops${temRend ? " esc-ops--rend" : ""}`}>
+          {/* (15/10) com rendimento: tabela Tamanho | Rendimento, igual à do quilo (pra mudar, "Editar" no rendimento) */}
+          {temRend && <li className="esc-op esc-op-cab" aria-hidden="true"><span>Tamanho</span><span>Rendimento</span><span /></li>}
+          {g.opcoes.map((o, i) => {
+            const nServe = numeroServe(o.serve);
+            return (
             <li key={o.id} className="esc-op">
               {/* a ordem é automática (P, M, G… e os números): ao sair do campo, a lista se arruma */}
               <input className="esc-op-in" value={o.nome} onChange={e => renomear(o.id, e.target.value)} onBlur={() => set({ opcoes: ordenarTamanhos(g.opcoes) })} aria-label={`Nome do tamanho ${i + 1}`} />
+              {temRend && <span className="esc-op-rd">{nServe ? `${nServe} ${unRend}` : "—"}</span>}
               <button type="button" className="esc-op-x" onClick={() => set({ opcoes: g.opcoes.filter(x => x.id !== o.id) })} aria-label={`Tirar ${o.nome}`}><X size={16} weight="bold" /></button>
             </li>
-          ))}
+            ); })}
         </ul>
         <div className="esc-nova esc-nova--1">
           <input placeholder={porPeso ? "Ex.: 2,5 kg" : "Outro tamanho…"} value={novo} onChange={e => setNovo(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); add(); } }} aria-label="Outro tamanho" />

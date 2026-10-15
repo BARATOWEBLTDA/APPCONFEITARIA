@@ -1,158 +1,99 @@
 /**
- * Tela de sucesso depois de publicar um produto novo (aprovada 30/09).
- *  - Primeiro produto: comemoração (confete + 🎉)
- *  - Demais: confirmação sóbria (✓)
- * Próximos passos: Ver no cardápio · Cadastrar outro · Calcular o custo · Fechar
+ * (14/10) Sucesso depois de publicar um produto novo: um AVISO rosa por cima do app (antes era uma tela inteira).
+ * Texto branco, check em cima, "Próximos passos" conforme o que falta no produto (no máximo 2),
+ * "Cadastrar outro produto" e "Fechar". No primeiro produto, confete por cima.
  */
 interface Props {
   primeiro: boolean;
   nome: string;
-  categoria?: string;
-  imagem?: string;
-  preco: number;
-  /** (14/10) preço cheio riscado quando está em promoção */
-  de?: number;
-  aPartir: boolean;
-  tipoLabel: string;        // "Bolo", "Doce", "Kit", "Produto"...
-  onVerCardapio: () => void;
-  /** (14/10) loja toda configurada (primeiros passos completos): só então mostra "Ver no cardápio" */
+  /** loja toda configurada (primeiros passos completos)? false = ainda não abriu o cardápio */
   lojaPronta?: boolean | null;
+  semFoto?: boolean;
+  semDescricao?: boolean;
   onTerminarLoja?: () => void;
   onOutro: () => void;
   onCusto: () => void;
+  onFoto?: () => void;
+  onDescricao?: () => void;
   onFechar: () => void;
 }
 
-import { useEffect } from "react";
-import { Calculator, CaretRight, Check, Package, Plus, X } from "@phosphor-icons/react";
+import { useEffect, type ReactNode } from "react";
+import { Calculator, CaretRight, Check, Image as ImageIc, PencilSimple, Plus, Storefront } from "@phosphor-icons/react";
 import { tocarSom } from "@/hooks/useSom";
-const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
 const CORES_CONF = ["#FCD34D", "#86EFAC", "#93C5FD", "#FFFFFF", "#C4B5FD", "#FDBA74"];
 // [left %, cor, atraso s, duração s, giro graus]
-const CONFETE2: [number, string, number, number, number][] = Array.from({ length: 34 }, (_, i) => [
+const CONFETE: [number, string, number, number, number][] = Array.from({ length: 34 }, (_, i) => [
   (i * 37) % 100, CORES_CONF[i % CORES_CONF.length], (i % 9) * 0.22, 2.6 + (i % 5) * 0.35, (i % 2 ? 1 : -1) * (360 + (i % 4) * 140),
 ]);
 
-/** (14/10) "Torta de Limão cadastrada", "Bolo de Morango cadastrado", "Trufas cadastradas": pela 1ª palavra do nome */
-const MASC_EM_A = new Set(["dia", "mapa", "clima", "sistema", "programa", "problema", "tema"]);
-const FEM_OUTRAS = new Set(["mousse", "musse", "charlotte", "fondue"]);
-function cadastrado(nome: string): string {
-  const w = String(nome || "").trim().split(/\s+/)[0]?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") || "";
-  const plural = /s$/.test(w) && w.length > 3;
-  const base = plural ? w.replace(/s$/, "") : w;
-  const fem = (/a$/.test(base) && !MASC_EM_A.has(base)) || FEM_OUTRAS.has(base) || /cao$|dade$|gem$/.test(base);
-  return `cadastrad${fem ? "a" : "o"}${plural ? "s" : ""}`;
-}
-
 export default function SucessoProdutoTela(p: Props) {
-  useEffect(() => { tocarSom("sucesso"); }, []); // (14/10) som de sucesso (respeita os sons desligados)
+  useEffect(() => { tocarSom("sucesso"); }, []); // som de sucesso (respeita os sons desligados)
+
+  // próximos passos: o que falta, na ordem de importância (no máximo 2)
+  const passos: { k: string; ic: ReactNode; t: string; s: string; on: () => void }[] = [];
+  if (p.lojaPronta === false && p.onTerminarLoja) passos.push({ k: "loja", ic: <Storefront size={18} weight="bold" />, t: "Terminar de abrir o cardápio", s: "Pros clientes verem seus produtos", on: p.onTerminarLoja });
+  passos.push({ k: "custo", ic: <Calculator size={18} weight="bold" />, t: "Definir custo e lucro", s: "Monte a ficha técnica", on: p.onCusto });
+  if (p.semFoto && p.onFoto) passos.push({ k: "foto", ic: <ImageIc size={18} weight="bold" />, t: "Adicionar foto", s: "Produto com foto vende mais", on: p.onFoto });
+  if (p.semDescricao && p.onDescricao) passos.push({ k: "desc", ic: <PencilSimple size={18} weight="bold" />, t: "Escrever a descrição", s: "Conte o que vem no produto", on: p.onDescricao });
+  const mostrar = passos.slice(0, 2);
+
   return (
-    <div className="spt">
-      {/* (14/10) header rosa no padrão do cadastro; a tela inteira fica rosa */}
-      {/* (14/10) header mais forte que o fundo; sem o check aqui (ele já aparece grande embaixo) */}
-      <div className="spt-cab">
-        <div className="spt-cab-tx"><b>{p.primeiro ? "Primeiro produto" : "Novo produto"}</b><small>Cadastro concluído</small></div>
-        <button type="button" className="spt-x" onClick={p.onFechar} aria-label="Fechar"><X size={22} weight="bold" /></button>
-      </div>
-      <div className="spt-body">
-        {p.primeiro && (
-          <div className="spt-confete" aria-hidden="true">
-            {/* (14/10) confete caindo por uns 4 segundos (antes parava em 1 segundo) */}
-            {CONFETE2.map(([l, c, d, dur, gira], i) => <i key={i} style={{ left: `${l}%`, background: c, animationDelay: `${d}s`, animationDuration: `${dur}s`, ['--gira' as any]: `${gira}deg` }} />)}
-          </div>
-        )}
-        <div className={`spt-ok${p.primeiro ? " spt-ok--festa" : ""}`} aria-hidden="true"><Check size={34} weight="bold" /></div>
-        {/* (14/10) título só com o nome do produto */}
-        <h1 className="spt-h">{p.nome} {cadastrado(p.nome)} com sucesso</h1>
-        <p className="spt-sub">
-          {p.lojaPronta === false ? "Abra o cardápio pros clientes verem." : "Já aparece no seu cardápio."}
-        </p>
-
-        <div className="spt-prev">
-          {p.imagem ? <img src={p.imagem} alt="" /> : <span className="spt-prev-sem" aria-hidden="true"><Package size={28} weight="bold" /></span>}
-          <div>
-            {p.categoria && <small>{p.categoria}</small>}
-            <b>{p.nome}</b>
-            {p.preco > 0 && <span>{p.aPartir ? "a partir de " : ""}{(p.de || 0) > p.preco && <s>{brl(p.de!)}</s>}<em>{brl(p.preco)}</em></span>}
-          </div>
+    <div className="spa" role="alertdialog" aria-modal="true" aria-labelledby="spa-t">
+      {p.primeiro && (
+        <div className="spa-confete" aria-hidden="true">
+          {CONFETE.map(([l, c, d, dur, gira], i) => <i key={i} style={{ left: `${l}%`, background: c, animationDelay: `${d}s`, animationDuration: `${dur}s`, ['--gira' as any]: `${gira}deg` }} />)}
         </div>
+      )}
+      <div className="spa-ok" aria-hidden="true"><Check size={30} weight="bold" /></div>
+      <h2 className="spa-t" id="spa-t">{p.primeiro ? "Primeiro produto cadastrado!" : "Produto cadastrado!"}</h2>
+      <p className="spa-x">
+        {p.lojaPronta === false
+          ? <>O produto <b>{p.nome}</b> foi cadastrado com sucesso. Termine de abrir o cardápio pros clientes verem.</>
+          : <>O produto <b>{p.nome}</b> foi cadastrado com sucesso e já está disponível no seu cardápio.</>}
+      </p>
 
-        <div className="spt-acts">
-          {/* (14/10) o principal é cadastrar outro; ver no cardápio fica em segundo */}
-          <button type="button" className="spt-a1" onClick={p.onOutro}><Plus size={18} weight="bold" aria-hidden="true" />Cadastrar outro produto</button>
-          {p.lojaPronta !== false
-            ? <button type="button" className="spt-a2" onClick={p.onVerCardapio}>Ver no cardápio</button>
-            : <button type="button" className="spt-a2" onClick={p.onTerminarLoja}>Terminar de abrir o cardápio</button>}
+      {mostrar.length > 0 && (<>
+        <p className="spa-pp">Próximos passos</p>
+        <div className="spa-passos">
+          {mostrar.map(x => (
+            <button key={x.k} type="button" className="spa-ps" onClick={x.on}>
+              <span className="spa-pi" aria-hidden="true">{x.ic}</span>
+              <span className="spa-pt"><b>{x.t}</b><small>{x.s}</small></span>
+              <CaretRight size={18} weight="bold" aria-hidden="true" />
+            </button>
+          ))}
         </div>
+      </>)}
 
-        {/* (14/10) custo em destaque: cartão branco com chamada própria */}
-        <div className="spt-custo">
-          <div className="spt-custo-t">
-            <span className="spt-ft-ic" aria-hidden="true"><Calculator size={22} weight="bold" /></span>
-            <span><b>Quanto você lucra?</b><small>Monte a ficha técnica e veja o lucro</small></span>
-          </div>
-          <button type="button" className="spt-custo-bt" onClick={p.onCusto}>Calcular o custo<CaretRight size={16} weight="bold" aria-hidden="true" /></button>
-        </div>
-      </div>
-      <div className="spt-pe"><button type="button" className="spt-a3" onClick={p.onFechar}>Fechar</button></div>
+      <button type="button" className="spa-b1" onClick={p.onOutro}><Plus size={18} weight="bold" aria-hidden="true" />Cadastrar outro produto</button>
+      <button type="button" className="spa-fe" onClick={p.onFechar}>Fechar</button>
+
       <style>{`
-        .spt { font-family: var(--font-base); color: var(--ui-texto); display: flex; flex-direction: column; height: 100%; min-height: 0; }
-        .spt-top { display: flex; justify-content: space-between; align-items: center; padding: 16px 18px 0; }
-        .spt-x { width: 44px; height: 44px; border-radius: var(--ui-raio); display: flex; align-items: center; justify-content: center; border: none; background: var(--ui-linha); color: var(--ui-texto-2); font-size: 15px; cursor: pointer; }
-        .spt-body { flex: 1; overflow-y: auto; padding: 0 22px 24px; text-align: center; position: relative; max-width: 460px; width: 100%; margin: 0 auto; }
-        .spt-confete { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
-        .spt-confete i { position: absolute; top: -20px; width: 8px; height: 13px; border-radius: 2px; opacity: 0; animation: spt-cai 3s linear forwards; }
-        @keyframes spt-cai { 0% { opacity: 0; transform: translateY(0) rotate(0deg); } 8% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; transform: translateY(620px) rotate(var(--gira)); } }
-        @media (prefers-reduced-motion: reduce) { .spt-confete { display: none; } }
-        .spt-body > *:not(.spt-confete) { position: relative; z-index: 1; }
-        .spt-ok { width: 72px; height: 72px; border-radius: 50%; background: var(--ui-verde-fundo); color: var(--ui-verde); display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 700; margin: 18px auto 16px; box-shadow: 0 0 0 10px #F0FDF4; animation: spt-pop .45s cubic-bezier(.2,1.4,.4,1) both; }
-        .spt-ok--festa { background: #FCE7F3; color: var(--ui-rosa-escuro); box-shadow: 0 0 0 10px #FFF1F6; margin-top: 30px; }
-        @keyframes spt-pop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .spt-h { font-size: 23px; font-weight: 700; line-height: 1.2; margin: 0; color: var(--ui-texto); }
-        .spt-sub { font-size: 14px; color: var(--ui-texto-2); line-height: 1.5; margin: 8px auto 0; max-width: 300px; }
-        .spt-sub b { color: var(--ui-texto); }
-        .spt-prev { display: flex; gap: 12px; align-items: center; text-align: left; border: 1px solid #F0EBED; border-radius: 14px; padding: 10px; margin: 22px 0 18px; box-shadow: 0 6px 18px rgba(60,20,35,.06); }
-        .spt-prev img, .spt-prev-sem { width: 68px; height: 68px; border-radius: var(--ui-raio-p); object-fit: cover; flex-shrink: 0; }
-        .spt-prev-sem { background: #FCE7F3; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; }
-        .spt-prev small { display: block; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
-        .spt-prev b { display: block; font-size: 14.5px; margin: 2px 0 3px; }
-        .spt-prev span { font-size: 13px; color: var(--ui-texto-2); } .spt-prev em { font-style: normal; font-weight: 700; color: var(--ui-texto); }
-        .spt-prev s { margin-right: 6px; font-size: 12px; color: var(--ui-texto-3); }
-        .spt-acts { display: flex; flex-direction: column; gap: 8px; }
-        .spt-a1 { min-height: 48px; border: none; background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-weight: 700; font-size: 15px; border-radius: var(--ui-raio-botao); padding: 0 14px; box-shadow: 0 3px 0 var(--ui-rosa-escuro); cursor: pointer; }
-        .spt-a1:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ui-rosa-escuro); }
-        .spt-a2 { min-height: 48px; border: 0; background: var(--ui-cinza); color: var(--ui-texto); font-family: inherit; font-weight: 700; font-size: 15px; border-radius: var(--ui-raio-botao); padding: 0 13px; cursor: pointer; }
-        .spt-ft { display: flex; align-items: center; gap: 12px; text-align: left; background: #FAF7F8; border: none; border-radius: var(--ui-raio); padding: 12px; margin-top: 4px; font-family: inherit; cursor: pointer; color: var(--ui-texto); }
-        .spt-ft-ic { width: 40px; height: 40px; border-radius: var(--ui-raio); background: #FCE7F3; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .spt-ft-tx { flex: 1; min-width: 0; } .spt-ft-tx b { display: block; font-size: 15px; } .spt-ft-tx small { display: block; font-size: 13px; color: var(--ui-texto-2); margin-top: 2px; line-height: 1.4; }
-        .spt-ft-ar { color: var(--ui-texto-3); display: flex; }
-        .spt-a3 { min-height: 44px; border: none; background: none; font-family: inherit; font-size: 15px; font-weight: 700; color: var(--ui-texto-2); padding: 0 10px; cursor: pointer; }
-        /* (14/10) tela toda rosa; header mais forte que o fundo */
-        .spt { background: var(--ui-rosa); color: #fff; }
-        .spt-cab { display: flex; align-items: center; gap: 10px; min-height: 76px; padding: calc(env(safe-area-inset-top, 0px) + 14px) 8px 14px 20px; background: var(--ui-rosa-escuro); }
-        .spt-cab-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; text-align: left; }
-        .spt-cab-tx b { font-size: 20px; font-weight: 700; line-height: 1.2; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .spt-cab-tx small { font-size: 13px; font-weight: 500; color: rgba(255,255,255,.92); }
-        .spt-x { width: 40px; height: 40px; background: none; color: #fff; }
-        .spt-ok, .spt-ok--festa { background: #fff; color: var(--ui-rosa-escuro); box-shadow: 0 0 0 10px rgba(255,255,255,.22); }
-        .spt-h { color: #fff; font-size: 22px; text-wrap: balance; }
-        .spt-sub { color: rgba(255,255,255,.95); }
-        .spt-prev { background: #fff; border: 0; color: var(--ui-texto); box-shadow: 0 8px 24px rgba(60,20,35,.18); }
-        .spt-a1 { display: flex; align-items: center; justify-content: center; gap: 8px; background: #fff; color: var(--ui-rosa-escuro); box-shadow: 0 3px 0 rgba(120,20,60,.35); white-space: nowrap; }
-        .spt-a1:active { box-shadow: 0 1px 0 rgba(120,20,60,.35); }
-        .spt-a2 { background: none; color: #fff; border: 1.5px solid rgba(255,255,255,.6); white-space: nowrap; }
-        .spt-custo { margin-top: 18px; padding: 14px; border-radius: 14px; background: #fff; color: var(--ui-texto); text-align: left; box-shadow: 0 8px 24px rgba(60,20,35,.18); }
-        .spt-custo-t { display: flex; align-items: center; gap: 12px; }
-        .spt-custo-t > span:last-child { flex: 1; min-width: 0; }
-        .spt-custo-t b { display: block; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .spt-custo-t small { display: block; margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .spt-ft-ic { width: 44px; height: 44px; border-radius: var(--ui-raio); background: #FCE7F3; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .spt-custo-bt { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 46px; margin-top: 12px; border: 0; border-radius: var(--ui-raio-botao); background: #15803D; color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 0 #0F5F2D; }
-        .spt-custo-bt:active { transform: translateY(2px); box-shadow: 0 1px 0 #0F5F2D; }
-        /* (14/10) Fechar no rodapé, igual às outras telas do cadastro */
-        /* (14/10) rodapé rosa como o resto da tela (antes branco com botão cinza) */
-        .spt-pe { flex: none; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--ui-rosa); border-top: 1px solid rgba(255,255,255,.22); }
-        .spt-a3 { width: 100%; min-height: 48px; border: 1.5px solid rgba(255,255,255,.6); border-radius: var(--ui-raio-botao); background: rgba(255,255,255,.14); color: #fff; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+        .spa { position: relative; width: 100%; max-width: 400px; margin: 0 auto; padding: 26px 18px 12px; border-radius: 20px; background: var(--ui-rosa); color: #fff; text-align: center; font-family: var(--font-base); box-shadow: 0 20px 50px rgba(0,0,0,.3); overflow: hidden; animation: spa-pop .3s cubic-bezier(.2,1.3,.4,1) both; }
+        @keyframes spa-pop { from { transform: scale(.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .spa-ok { display: flex; align-items: center; justify-content: center; width: 62px; height: 62px; margin: 0 auto 14px; border-radius: 50%; background: #fff; color: var(--ui-rosa-escuro); box-shadow: 0 0 0 8px rgba(255,255,255,.22); }
+        .spa-t { margin: 0 0 6px; font-size: 20px; font-weight: 700; line-height: 1.25; color: #fff; }
+        .spa-x { margin: 0 0 18px; font-size: 15px; line-height: 1.5; color: rgba(255,255,255,.95); text-wrap: pretty; }
+        .spa-x b { color: #fff; }
+        .spa-pp { margin: 0 0 8px; text-align: left; font-size: 13px; font-weight: 700; color: #fff; }
+        .spa-passos { margin-bottom: 12px; border-radius: 12px; background: rgba(255,255,255,.14); overflow: hidden; text-align: left; }
+        .spa-ps { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; margin: 0; padding: 10px 12px; border: 0; background: none; font-family: inherit; text-align: left; color: #fff; cursor: pointer; }
+        .spa-ps + .spa-ps { border-top: 1px solid rgba(255,255,255,.2); }
+        @media (hover: hover) { .spa-ps:hover { background: rgba(255,255,255,.08); } }
+        .spa-pi { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: #fff; color: var(--ui-rosa-escuro); }
+        .spa-pt { flex: 1; min-width: 0; }
+        .spa-pt b { display: block; font-size: 14.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .spa-pt small { display: block; font-size: 12.5px; color: rgba(255,255,255,.88); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .spa-b1 { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 50px; margin: 0; border: 0; border-radius: var(--ui-raio-botao); background: #fff; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 15.5px; font-weight: 700; box-shadow: 0 3px 0 rgba(120,20,60,.35); cursor: pointer; white-space: nowrap; }
+        .spa-b1:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(120,20,60,.35); }
+        .spa-fe { display: block; width: 100%; min-height: 44px; margin: 6px 0 0; border: 0; background: none; font-family: inherit; font-size: 15px; font-weight: 700; color: rgba(255,255,255,.92); cursor: pointer; }
+        .spa-confete { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+        .spa-confete i { position: absolute; top: -20px; width: 8px; height: 13px; border-radius: 2px; opacity: 0; animation: spa-cai 3s linear forwards; }
+        @keyframes spa-cai { 0% { opacity: 0; transform: translateY(0) rotate(0deg); } 8% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; transform: translateY(560px) rotate(var(--gira)); } }
+        @media (prefers-reduced-motion: reduce) { .spa-confete { display: none; } .spa { animation: none; } }
+        .spa > *:not(.spa-confete) { position: relative; }
       `}</style>
     </div>
   );
