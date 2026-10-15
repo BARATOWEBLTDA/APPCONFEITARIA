@@ -545,7 +545,7 @@ export default function Auth() {
 
         <div className="auth-text-hdr">
           <h2 className="auth-h2"><span className="so-cel">Seus pedidos te esperam</span><span className="so-pc">Entrar na conta</span></h2>
-          <p className="auth-p so-cel-bloco">Entre na sua conta pra continuar.</p>
+          <p className="auth-p so-cel-bloco">Pedidos, agenda e financeiro num só lugar.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form" noValidate>
@@ -555,7 +555,7 @@ export default function Auth() {
               id="login-email"
               type="email"
               name="email"
-              placeholder="Digite seu e-mail"
+              placeholder="seu@email.com"
               value={form.email}
               onChange={handleChange}
               onBlur={handleLoginEmailBlur}
@@ -578,7 +578,7 @@ export default function Auth() {
                 id="login-senha"
                 type={showPassword ? "text" : "password"}
                 name="senha"
-                placeholder="Digite sua senha"
+                placeholder="Sua senha"
                 value={form.senha}
                 onChange={handleChange}
                 required
@@ -682,7 +682,7 @@ export default function Auth() {
                 onChange={e => handleCadastroChange("nomeLoja", e.target.value)}
                 onBlur={() => handleCadastroBlur("nomeLoja")}
                 aria-invalid={!!(cadastroTouched.nomeLoja && cadastroErrors.nomeLoja)}
-                autoComplete="organization"
+                autoComplete="off"
                 autoCapitalize="words"
                 enterKeyHint="next"
               />

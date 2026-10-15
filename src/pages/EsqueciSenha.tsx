@@ -100,7 +100,7 @@ export default function EsqueciSenha() {
               id="reset-email"
               rotulo="E-mail"
               type="email"
-              placeholder="Digite seu e-mail"
+              placeholder="seu@email.com"
               value={email}
               onChange={e => handleEmailChange(e.target.value)}
               onBlur={handleEmailBlur}

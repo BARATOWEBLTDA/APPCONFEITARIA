@@ -185,7 +185,7 @@ export default function VerificarEmail() {
                 id="reenviar-email"
                 rotulo="E-mail"
                 type="email"
-                placeholder="Digite seu e-mail"
+                placeholder="seu@email.com"
                 value={emailDigitado}
                 onChange={e => { setEmailDigitado(e.target.value); setEmailErro(""); setReenvioErro(""); }}
                 erro={emailErro || undefined}
