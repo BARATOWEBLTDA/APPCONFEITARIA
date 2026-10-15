@@ -13,7 +13,7 @@ const RECURSOS = [
   { Ic: ListBullets, t: 'Cardápio online com seu link' },
   { Ic: CalendarDots, t: 'Pedidos e entregas na agenda' },
   { Ic: Users, t: 'Clientes e o que compraram' },
-  { Ic: CurrencyDollar, t: 'Lucro e preço certo dos doces' },
+  { Ic: CurrencyDollar, t: 'Lucro e preço de cada produto' },
 ]
 
 export function ContaAtiva({ nome, aoContinuar }: { nome?: string; aoContinuar: () => void }) {
