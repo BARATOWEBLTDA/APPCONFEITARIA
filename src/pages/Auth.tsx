@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { definirSessaoTemporaria } from "@/lib/sessaoTemporaria";
 import { mascaraTelefone } from "@/lib/telefone";
 import { explicarErro, erroDeConexao } from "@/lib/erros";
-import { User, Storefront, Phone, Envelope, Eye, EyeSlash, Check } from "@phosphor-icons/react";
+import { Eye, EyeSlash, Check } from "@phosphor-icons/react";
 
 // ───────────────────────────────────────────────────────────────
 // Links de download do app (desktop ≥1200px)
@@ -84,16 +84,6 @@ export default function Auth() {
   };
   // ao trocar entre login e cadastro, volta pro topo (senão o cadastro abre rolado, com o mascote cortado)
   useEffect(() => { document.querySelector('.auth-root')?.scrollTo(0, 0) }, [showCadastro]);
-  const [isDesktop, setIsDesktop] = useState(() =>
-    typeof window !== "undefined" ? window.matchMedia("(min-width: 900px)").matches : false
-  );
-
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 900px)");
-    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
 
   // (10/10) Sem ninguém conectado neste aparelho, a marca da sessão temporária acompanha a caixinha "Lembrar de mim".
   // Assim vale também pra quem entra pelo Google ou cria a conta (antes só o login por senha mexia nela,
@@ -175,7 +165,6 @@ export default function Auth() {
   const mouseRef = useRef({ x: 50, y: 50 });
   const currentRef = useRef({ x: 50, y: 50 });
   const rafRef = useRef<number>(0);
-  const timeRef = useRef(0);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -510,16 +499,6 @@ export default function Auth() {
       <div ref={bgRef} className="auth-bg" />
       <div ref={glowRef} className="mouse-glow" />
 
-      {/* Botão "Fazer login" flutuante no topo (só aparece no cadastro) */}
-      {showCadastro && (
-        <button type="button" className="auth-topbar-login" onClick={() => setShowCadastro(false)}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-          <span>Já tem conta? <b>Entrar</b></span>
-        </button>
-      )}
-
       <div className="auth-layout">
 
       {/* Lado da marca: só no computador e no tablet deitado (03/10) */}
@@ -529,11 +508,6 @@ export default function Auth() {
         <NomeDoonly cor="branco" className="auth-marca-nome" />
         <p className="auth-marca-frase">{showCadastro ? 'Vamos começar!' : 'Seus pedidos te esperam'}</p>
         <p className="auth-marca-sub">{showCadastro ? 'Leva menos de 1 minuto.' : 'Pedidos, agenda e financeiro num só lugar.'}</p>
-        <ul className="auth-marca-lista">
-          {['Pedidos e agenda num lugar só', 'Cardápio digital com seu link', 'Financeiro sem planilha'].map(x => (
-            <li key={x}><span><Check size={14} weight="bold" /></span>{x}</li>
-          ))}
-        </ul>
         </div>
       </div>
 
@@ -885,51 +859,15 @@ export default function Auth() {
           font-family: inherit;
           padding: calc(env(safe-area-inset-top, 0px) + 24px) 1.25rem calc(env(safe-area-inset-bottom, 0px) + 24px); /* a folga SOMA com a barra do celular */
         }
-        .auth-layout { position: relative; z-index: 2; width: 100%; max-width: 440px; display: flex; flex-direction: column; margin: auto 0; flex-shrink: 0; } /* não encolhe: em tela baixa a página rola */ /* margin auto: centraliza quando cabe, rola quando não */
-        .auth-side { display: none; }
+        .auth-layout { position: relative; z-index: 2; width: 100%; max-width: 440px; display: flex; flex-direction: column; margin: auto 0; flex-shrink: 0; }
 
         /* ── Botão "Fazer login" flutuante no topo (só desktop) ── */
-        .auth-topbar-login {
-          display: none !important;
-          position: fixed;
-          top: max(1.1rem, env(safe-area-inset-top));
-          left: max(1.1rem, env(safe-area-inset-left));
-          z-index: 10;
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 0.55rem 1rem 0.55rem 0.75rem;
-          background: var(--ui-branco);
-          border: none;
-          border-radius: 999px;
-          color: var(--primary);
-          font-family: inherit;
-          font-size: 0.82rem;
-          font-weight: 500;
-          cursor: pointer;
-          transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-          box-shadow: 0 4px 14px rgba(60, 15, 40, 0.2);
-          -webkit-tap-highlight-color: transparent;
-          -webkit-appearance: none;
-          appearance: none;
-        }
-        .auth-topbar-login:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 18px rgba(60, 15, 40, 0.28);
-        }
-        .auth-topbar-login:active { transform: scale(0.97); }
-        .auth-topbar-login b { font-weight: 700; }
         .fade-overlay { position: fixed; inset: 0; z-index: 100; background: var(--bg-card); opacity: 0; pointer-events: none; transition: opacity 0.7s ease; }
         .fade-overlay.fade-in { opacity: 1; pointer-events: all; }
         .auth-bg {
           position: fixed; inset: 0; z-index: 0;
           background: var(--vinho-fundo, radial-gradient(1000px 640px at 50% 38%, var(--ui-vinho) 0%, var(--ui-vinho-escuro) 72%)); /* vinho escuro (themes.css) */
         }
-        .auth-rodape { position: relative; z-index: 3; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding-top: 18px; color: rgba(255,255,255,.72); font-size: 12.5px; white-space: nowrap; }
-        .auth-rodape div { display: flex; gap: 8px; align-items: center; }
-        .auth-rodape a { display: inline-flex; align-items: center; min-height: 44px; color: inherit; font-weight: 500; text-decoration: none; padding: 0 2px; -webkit-tap-highlight-color: transparent; }
-        .auth-rodape a:hover { color: var(--ui-branco); text-decoration: underline; }
-        .auth-rodape em { font-style: normal; font-size: 12px; opacity: .8; }
         .mouse-glow { position: fixed; z-index: 1; width: 350px; height: 350px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%); transform: translate(-50%, -50%); pointer-events: none; will-change: transform; opacity: 0; transition: opacity .4s ease; }
         @media (hover: none), (prefers-reduced-motion: reduce) { .mouse-glow { display: none; } }
         .auth-card {
@@ -949,8 +887,6 @@ export default function Auth() {
         .auth-marca { display: none; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes promoFadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .auth-logo-wrap { display: flex; justify-content: center; margin-bottom: 0.75rem; }
-        .auth-logo-img { height: 84px; max-width: 100%; object-fit: contain; }
         .auth-text-hdr {
           text-align: center;
           margin-bottom: 1rem;
@@ -985,7 +921,7 @@ export default function Auth() {
         .password-wrap { position: relative; }
         .password-wrap input { padding-right: 3rem; }
         .eye-btn { position: absolute; right: 3px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; background: none; border: none; border-radius: var(--ui-raio-p); cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; padding: 0; -webkit-tap-highlight-color: transparent; }
-        .eye-btn:focus-visible, .cad-eye:focus-visible, .cadastro-link:focus-visible, .forgot-link:focus-visible, .auth-rodape a:focus-visible { outline: 3px solid rgba(232,90,140,.45); outline-offset: 1px; border-radius: 8px; }
+        .eye-btn:focus-visible, .cad-eye:focus-visible, .cadastro-link:focus-visible, .forgot-link:focus-visible { outline: 3px solid rgba(232,90,140,.45); outline-offset: 1px; border-radius: 8px; }
         .keep-connected input[type="checkbox"]:focus-visible { outline: 3px solid rgba(232,90,140,.45) !important; outline-offset: 2px; }
         .eye-btn:hover { color: var(--primary); }
         .login-bottom-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap; gap: 0.5rem; }
@@ -998,7 +934,6 @@ export default function Auth() {
         .auth-error { background: #fff1f2; border: 1px solid #fecdd3; color: var(--error); border-radius: var(--radius-sm); padding: 0.6rem 0.9rem; font-size: var(--font-button); }
         .cadastro-link-wrap { text-align: center; font-size: var(--font-button); color: var(--text-secondary); }
         .cadastro-link { background: none; border: none; color: var(--primary); font-weight: 700; cursor: pointer; font-family: inherit; font-size: var(--font-button); text-decoration: underline; -webkit-tap-highlight-color: transparent;  padding: 0 4px; min-height: 44px; font-weight: 700; color: var(--ui-rosa-escuro); }
-        .spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .auth-divider { display: flex; align-items: center; gap: 0.75rem; color: var(--text-muted); font-size: var(--font-helper); }
         .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
@@ -1096,40 +1031,12 @@ export default function Auth() {
           box-shadow: 0 0 0px 1000px var(--primary-light) inset;
           transition: background-color 5000s ease-in-out 0s;
         }
-        .cad-icon { margin-right: 1.5rem; flex-shrink: 0; color: var(--text-muted); }
         .cad-eye { background: none; border: none; cursor: pointer; padding: 0 0.85rem; height: 46px; min-width: 44px; justify-content: center; display: flex; align-items: center; color: var(--text-muted); flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
         .cad-eye:hover { color: var(--primary); }
         .cad-error { font-size: 12.5px; color: var(--error); padding-left: 2px; font-weight: 700; }
         .cad-btn { margin-top: 0.5rem; }
-        .cad-opc { font-weight: 500; font-style: italic; color: var(--ui-texto-3); font-size: 12px; margin-left: 2px; }
         .cad-par { display: flex; flex-direction: column; gap: 1.125rem; }
-        .cad-par--senha .cad-a-regras { margin-top: calc(-1.125rem + 6px); } /* regras coladas na senha */
-
-        .cad-header {
-          text-align: center;
-          margin-bottom: 1rem;
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-        }
-        .cad-title {
-          font-family: var(--font-base);
-          font-size: var(--text-2xl);
-          font-weight: var(--fw-black);
-          color: var(--text-title);
-          letter-spacing: -0.01em;
-          line-height: 1.1;
-          margin: 0;
-        }
-        .cad-subtitle {
-          font-family: var(--font-base);
-          font-size: var(--font-button);
-          color: var(--text-secondary);
-          line-height: 1.5;
-          margin: 0;
-          text-wrap: balance;
-          text-align: center;
-        }
+        .cad-par--senha .cad-a-regras { margin-top: calc(-1.125rem + 6px); }
 
         /* Link "Já tem conta? Fazer login" — só mobile no fim do form */
         .cad-mobile-login-link {
@@ -1138,40 +1045,6 @@ export default function Auth() {
           color: var(--text-secondary);
           padding-top: 0.5rem;
         }
-
-        /* ── Header do cadastro (só social proof pill) ─── */
-        .cad-hero {
-          display: flex; flex-direction: column; align-items: center;
-          gap: 0.6rem;
-          margin-bottom: 1rem;
-        }
-        .cad-proof-pill {
-          display: inline-flex; align-items: center; gap: 8px;
-          padding: 4px 12px 4px 5px;
-          background: #FEF4E7;
-          border: 1px solid #FCD9A1;
-          border-radius: var(--radius-full);
-        }
-        .cad-proof-avatars { display: flex; }
-        .cad-proof-av {
-          width: 22px; height: 22px; border-radius: 50%;
-          border: 2px solid #FEF4E7;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 12px; font-weight: var(--fw-black); color: var(--ui-branco);
-          margin-left: -7px;
-        }
-        .cad-proof-av:first-child { margin-left: 0; }
-        .cad-proof-pill-txt {
-          font-size: var(--text-xs);
-          font-weight: var(--fw-bold);
-          color: #854F0B;
-          white-space: nowrap;
-        }
-        .cad-proof-pill-txt b { color: var(--text-title); font-weight: var(--fw-black); }
-
-        .cad-header { text-align: center; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.35rem; }
-        .cad-title { font-size: 1.85rem; font-weight: var(--fw-black, 900); color: var(--text-title); margin: 0; letter-spacing: -0.025em; line-height: 1.15; }
-        .cad-subtitle { font-size: 0.9rem; color: var(--text-secondary); margin: 0; line-height: 1.4; }
 
         /* ── Requisitos da senha (substitui medidor) ──────── */
         .pw-req { list-style: none; padding: 0 0 0 2px; margin: 0; display: flex; flex-wrap: wrap; column-gap: 14px; row-gap: 2px; }
@@ -1218,11 +1091,9 @@ export default function Auth() {
            Promo card (desktop only ≥1200px).
            Mobile/tablet: display: none — comportamento atual preservado.
            ────────────────────────────────────────────────────────── */
-        .auth-promo { display: none !important; }
 
         @media (min-width: 900px) {
           /* um cartão só, dividido: marca (rosa) | formulário (branco) — 03/10 */
-          .auth-rodape { flex-direction: row; gap: 8px; } .auth-rodape em::before { content: '·'; margin-right: 8px; }
           .auth-layout { max-width: 960px !important; display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 0 !important; align-items: stretch;
             background: var(--ui-branco); border-radius: 28px; box-shadow: 0 30px 70px -30px rgba(80,20,45,.45); }
           .auth-marca { display: block; text-align: center; color: var(--ui-branco); padding: 0 40px; border-radius: 28px 0 0 28px;
@@ -1233,16 +1104,13 @@ export default function Auth() {
           .auth-marca-nome { display: block; width: 210px; max-width: 100%; height: auto; margin-top: 14px; }
           .auth-marca-frase { font-size: 24px; font-weight: 700; margin: 22px 0 6px; letter-spacing: -0.01em; } /* guia: 24px, o maior da escala */
           .auth-marca-sub { font-size: 15px; opacity: .92; margin: 0; }
-          .auth-marca-lista { display: none; }
           .auth-card { margin: 0 !important; padding: 48px 44px !important; box-shadow: none !important; border-radius: 0 28px 28px 0 !important; display: flex; flex-direction: column; justify-content: center; animation: none; }
           .auth-masc, .auth-nome { display: none !important; }
           .so-cel { display: none; } .so-pc { display: inline; }
           .so-cel-bloco { display: none !important; } /* computador: o cartão tem só o título */
-          .auth-card .auth-text-hdr { margin-bottom: 1.25rem; }
-          .auth-topbar-login { display: none !important; } /* o cartão já tem "Já tem conta? Entrar" no fim */
+          .auth-card .auth-text-hdr { margin-bottom: 1.25rem; } /* o cartão já tem "Já tem conta? Entrar" no fim */
           /* Cadastro no computador (10/10): cabe inteiro em 800px de altura (antes o "Criar conta com Google" ficava cortado) */
           .auth-root { padding-top: 16px; padding-bottom: 16px; }
-          .auth-rodape { padding-top: 6px; }
           /* (15/10) mais respiro entre os campos (antes ficava apertado pra caber em 800px de altura) */
           .cadastro-form { gap: 16px; padding-top: 0; }
           .auth-card:has(.cadastro-form) { padding: 36px 44px !important; max-width: none; } /* 13/10: ocupa a metade toda (antes ficava em 360px e os campos lado a lado cortavam o texto) */
@@ -1268,7 +1136,6 @@ export default function Auth() {
              - Mobile: só o form */
           /* (grid antigo de 1 coluna removido: agora são 2 colunas, acima) */
           /* Esconde coluna esquerda antiga (mascote lado) */
-          .auth-side { display: none !important; }
           .auth-card { margin: 0; }
           /* (07/10) o link "Já tem conta? Entrar" aparece também no computador: sem ele não tinha como voltar pro login */
           /* Restaura o topbar no desktop */

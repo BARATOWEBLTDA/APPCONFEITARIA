@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode, TouchEvent } from 'react'
-import { ArrowLeft, Bell, BookOpen, ClipboardText, CalendarDots, Check, CaretRight, CurrencyDollar, Gear, House, Package, Plus, Receipt, ShoppingBag, Sparkle, Users } from '@phosphor-icons/react'
+import { ArrowLeft, Bell, ClipboardText, CalendarDots, Check, CaretRight, CurrencyDollar, Gear, House, Package, Plus, Receipt, ShoppingBag, Sparkle, Users } from '@phosphor-icons/react'
 import { Botao, BotaoIcone } from '@/components/base'
 import { Mascote, NomeDoonly } from '@/components/marca/Mascote'
 import { CartaoPedido, LinhaPedido } from '@/components/pedidos/CartaoPedido'
