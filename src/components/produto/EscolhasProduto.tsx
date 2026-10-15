@@ -62,6 +62,7 @@ const PESOS_PADRAO = [1, 2, 3, 4, 5];
 const nomePeso = (kg: number) => (kg < 1 ? `${Math.round(kg * 1000)} g` : `${String(kg).replace(".", ",")} kg`);
 const PMG = ["Pequeno", "Médio", "Grande"];
 const ARO = ["Aro 15", "Aro 20", "Aro 25"];
+const TITULO_GRUPO: Record<string, string> = { massa: "Massas", recheio: "Recheios", cobertura: "Coberturas", sabor: "Sabores" };
 const opcoesDeNomes = (nomes: string[]) => nomes.map(n => ({ id: uid(), nome: n, preco: 0 }));
 const opcoesDePesos = (pesos: number[]) => [...pesos].sort((a, b) => a - b).map(kg => ({ id: uid(), nome: nomePeso(kg), preco: 0, peso_kg: kg }));
 
@@ -142,7 +143,10 @@ export function faltaDaEscolha(form: any, c: Chave): { msg: string; alvo?: strin
   if (c === "quantidade") return faltaKit(form.kit_qtd, { semPreco: true }); // (14/10) o preço dos kits é no passo Preço
   if (c === "tamanho") {
     const g = form.grupo_tamanhos;
-    if (!(g?.opcoes?.length)) return { msg: "Coloque pelo menos 1 tamanho", alvo: 'input[aria-label="Outro tamanho"]' };
+    // (15/10) por quilo não tem campo "Outro tamanho": fala em peso e leva pra lista dos pesos
+    if (!(g?.opcoes?.length)) return g?.modo_preco_tamanho === "por_peso"
+      ? { msg: "Marque pelo menos 1 peso", alvo: ".esc-pesos" }
+      : { msg: "Coloque pelo menos 1 tamanho", alvo: 'input[aria-label="Outro tamanho"]' };
     // (14/10) tamanho sem nome ou com nome repetido não passa (antes seguia e só travava no fim)
     const iVazio = g.opcoes.findIndex((o: any) => !String(o?.nome || "").trim());
     if (iVazio >= 0) return { msg: "Tem um tamanho sem nome", alvo: `input[aria-label="Nome do tamanho ${iVazio + 1}"]` };
@@ -153,7 +157,7 @@ export function faltaDaEscolha(form: any, c: Chave): { msg: string; alvo?: strin
     return null;
   }
   const g = form[CAMPO[c]];
-  if (!(g?.opcoes?.length)) return { msg: `Coloque pelo menos 1 ${ROTULO[c].toLowerCase()}`, alvo: ".esc-nova input" };
+  if (!(g?.opcoes?.length)) return { msg: `Coloque pelo menos 1 ${ROTULO[c].toLowerCase()}`, alvo: ".esc-tab-add input" };
   return null;
 }
 
@@ -269,23 +273,25 @@ function faltaCurta(msg: string): string {
   if (m) return `Falta o preço do kit de ${m[1]}`;
   if (/sabor/i.test(msg) && /Adicione/.test(msg)) return "Falta pôr os sabores";
   if (/cento/.test(msg)) return "Falta o preço do cento";
-  return "Falta completar · toque pra ver";
+  return "Falta completar · veja em Editar"; // (15/10) tocar na linha desmarca: quem abre é o Editar
 }
 
 function resumo(c: Chave, form: any): string {
   if (c === "quantidade") {
     const k = form.kit_qtd as KitQtdConfig;
-    const qts = k.modo === "livre" ? `de ${k.livre.min} em diante` : (k.kits || []).map(x => x.qtd).filter(Boolean).join(" · ") + " un";
+    const lista = (k.kits || []).map(x => x.qtd).filter(Boolean);
+    // (15/10) kits sem quantidade não viram " un · 3 sabores"
+    const qts = k.modo === "livre" ? `de ${k.livre.min} em diante` : lista.length ? `${lista.join(" · ")} un` : "Falta a quantidade";
     return `${qts} · ${k.sabores.length} ${k.sabores.length === 1 ? "sabor" : "sabores"}`;
   }
   if (c === "tamanho") {
     const g = form.grupo_tamanhos as GrupoTam;
-    if (!g.opcoes.length) return "Toque pra escolher os tamanhos";
+    if (!g.opcoes.length) return "Sem tamanhos ainda";
     if (g.modo_preco_tamanho === "por_peso") return `${Number(form.preco_normal) > 0 ? `R$ ${textoBRL(Number(form.preco_normal))} o kg` : "Falta o preço do kg"} · ${g.opcoes.map(o => o.nome).join(" · ")}`;
     return g.opcoes.map(o => o.nome).join(" · ");
   }
   const g = form[CAMPO[c as "massa"]] as Grupo;
-  if (!g.opcoes.length) return "Toque pra pôr as opções";
+  if (!g.opcoes.length) return "Sem opções ainda";
   const quantos = g.max >= 99 ? "À vontade" : g.max === 1 ? "Escolhe 1" : `Até ${g.max}`;
   const nomes = g.opcoes.map(o => (o.adicional > 0 ? `${o.nome} +R$ ${textoBRL(o.adicional)}` : o.nome)).join(", ");
   return `${quantos}${g.min >= 1 ? "" : " · opcional"} · ${nomes}`;
@@ -333,7 +339,8 @@ function CartaoGrupo({ chave, tipo, form, setForm, outros }: { chave: "massa" | 
 
   return (
     <div className="esc-corpo">
-      <p className="esc-lbl esc-lbl--sub">Opções</p>
+      {/* (15/10) título com o nome da escolha (antes era só "Opções") */}
+      <p className="esc-lbl esc-lbl--sub">{TITULO_GRUPO[chave] || "Opções"}</p>
       {/* (14/10) aviso explicando o valor a mais, com um exemplo da conta */}
       {(() => {
         if (precoProprio) return (
@@ -527,7 +534,7 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
           </ul>
         )}
         <LinhaRendimento g={g} set={set} nomeProduto={String(form.nome || "")} />
-        <p className="esc-nota">O preço do kg você coloca no último passo.</p>
+        <div className="esc-aviso esc-aviso--nota"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>O preço do kg você coloca no último passo.</p></div>
       </>)}
 
       {!porPeso && g.opcoes.length === 0 && (<>
@@ -542,10 +549,15 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
       </>)}
 
       {!porPeso && g.opcoes.length > 0 && (<>
-        {(() => { const nomes = g.opcoes.map(o => norm(o.nome)).join("|"); const eAro = nomes === ARO.map(norm).join("|"); const outro = eAro ? PMG : ARO;
+        {(() => {
+          // (15/10) só troca um modelo pelo outro (P/M/G ⇄ Aro): lista própria não aparece aqui, pra não apagar sem querer.
+          // A troca mantém o rendimento de cada posição.
+          const nomes = g.opcoes.map(o => norm(o.nome)).join("|"); const eAro = nomes === ARO.map(norm).join("|"); const ePmg = nomes === PMG.map(norm).join("|");
+          if (!eAro && !ePmg) return null;
+          const outro = eAro ? PMG : ARO;
           return (
             <p className="esc-trocar">Trocar por:
-              <button type="button" onClick={() => set({ opcoes: opcoesDeNomes(outro) })}>{eAro ? "Pequeno · Médio · Grande" : "Aro 15 · 20 · 25"}</button>
+              <button type="button" onClick={() => set({ opcoes: opcoesDeNomes(outro).map((o, i) => ({ ...o, preco: g.opcoes[i]?.preco || 0, serve: g.opcoes[i]?.serve })) })}>{eAro ? "Pequeno · Médio · Grande" : "Aro 15 · 20 · 25"}</button>
             </p>
           ); })()}
         <ul className={`esc-ops${temRend ? " esc-ops--rend" : ""}`}>
@@ -576,7 +588,7 @@ function CartaoTamanho({ form, setForm, outros }: { form: any; setForm: Props["s
 function CartaoQuantidade({ kit, onKitChange, nome }: { kit: KitQtdConfig; onKitChange: (k: KitQtdConfig) => void; nome: string }) {
   return (
     <div className="esc-corpo esc-corpo--kit">
-      <KitQuantidadeEditor modo="completo" semPreco kit={kit} onChange={onKitChange} nomeProduto={nome} />
+      <KitQuantidadeEditor semPreco kit={kit} onChange={onKitChange} />
     </div>
   );
 }
@@ -587,9 +599,9 @@ function LinhaRendimento({ g, set, nomeProduto = "" }: { g: GrupoTam; set: (p: P
   const comNum = g.opcoes.filter(o => numeroServe(o.serve));
   const un = String(g.opcoes.map(o => String(o.serve || "").match(/^\s*\d+\s*([^\d\s].*)$/)?.[1]).find(Boolean) || g.rendimento_unidade || "pessoas").trim();
   const ok = comNum.length > 0;
-  // resumo curto que cabe numa linha: "Serve até 10 a 50 pessoas" (ou "Serve até 10 pessoas" se for um só)
+  // resumo curto que cabe numa linha: "Serve de 10 a 50 pessoas" (ou "Serve até 10 pessoas" se for um só)
   const nsR = comNum.map(o => Number(numeroServe(o.serve))).sort((x, y) => x - y);
-  const resumo = ok ? `Serve até ${nsR.length > 1 && nsR[0] !== nsR[nsR.length - 1] ? `${nsR[0]} a ${nsR[nsR.length - 1]}` : nsR[0]} ${un}` : "";
+  const resumo = ok ? (nsR.length > 1 && nsR[0] !== nsR[nsR.length - 1] ? `Serve de ${nsR[0]} a ${nsR[nsR.length - 1]} ${un}` : `Serve até ${nsR[0]} ${un}`) : "";
   return (<>
     <button type="button" className={`esc-rend-linha${ok ? " ok" : ""}`} onClick={() => setAberta(true)}>
       {ok && <span className="esc-ic esc-ic--ok"><Check size={18} weight="bold" /></span>}
@@ -698,7 +710,7 @@ function JanelaRendimento({ g, set, onFechar, nomeProduto = "" }: { g: GrupoTam;
           ))}
         </ul>
 
-        <p className="esc-nota">No cardápio aparece "Serve até 10 {un}".</p>
+        <div className="esc-aviso esc-aviso--nota"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>No cardápio aparece "Serve até 10 {un}".</p></div>
       </div>
       {/* tocar fora ou no X só fecha a pergunta (volta pro rendimento, sem salvar nada) */}
       <Janela aberta={perguntar} aoFechar={() => setPerguntar(false)} titulo="Salvar como predefinição?" tipo="aviso"
@@ -706,7 +718,7 @@ function JanelaRendimento({ g, set, onFechar, nomeProduto = "" }: { g: GrupoTam;
         acoes={<><Botao variante="secundario" onClick={() => { setPerguntar(false); gravar(""); }}>Agora não</Botao><Botao onClick={salvarComoPredefEGravar} disabled={!nomeAviso.trim()}>Salvar e usar</Botao></>}>
         <input className="esc-aviso-in" autoFocus placeholder={exemploPredef(nomeProduto)} value={nomeAviso} maxLength={40}
           onChange={e => setNomeAviso(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); salvarComoPredefEGravar(); } }} aria-label="Nome da predefinição" />
-        {predefs.some(p => norm(p.nome) === norm(nomeAviso.trim())) && nomeAviso.trim() && <p className="esc-nota">Já existe uma com esse nome: ela será substituída.</p>}
+        {predefs.some(p => norm(p.nome) === norm(nomeAviso.trim())) && nomeAviso.trim() && <div className="esc-aviso esc-aviso--nota"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>Já existe uma com esse nome: ela será substituída.</p></div>}
       </Janela>
     </Janela>
   );

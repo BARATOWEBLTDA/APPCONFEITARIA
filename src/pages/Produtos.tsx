@@ -4,7 +4,7 @@ import LimitePlano from "@/components/billing/LimitePlano";
 import { LIMITE_PRODUTOS_GRATIS } from "@/lib/limitesPlano";
 import CampoNumero from "@/components/ui/CampoNumero";
 import { useLocation, useNavigate } from "react-router-dom";
-import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
+import { faltaKit } from "@/components/produto/KitQuantidadeEditor";
 import { Sparkle as SparkleIA } from "@phosphor-icons/react";
 import { selecionarValorAoFocar } from "@/lib/moeda";
 import PreviaCardapio from "@/components/produto/PreviaCardapio";
@@ -3489,10 +3489,9 @@ export default function Produtos() {
   // Plano grátis: até 10 produtos (quem já tinha mais continua com tudo; só não cria novos)
   const [limiteAberto, setLimiteAberto] = useState(false);
   const [categorias, setCategorias] = useState<string[]>([]);
-  // Toast Doonly (substitui alerts nativos)
-  const [toast, setToast] = useState<{ tipo: "success" | "error" | "info"; titulo: string; sub?: string } | null>(null);
+  // (15/10) avisos no padrão do app (avisar): antes era uma janela própria com "Entendi"
   const showToast = (tipo: "success" | "error" | "info", titulo: string, sub?: string) => {
-    setToast({ tipo, titulo, sub });
+    avisar(tipo === "error" && sub ? `${titulo}. ${sub}` : titulo, { tipo: tipo === "success" ? "ok" : tipo === "error" ? "erro" : "info" });
   };
 
   // ═══ Bulk selection (desktop) ═══
@@ -3581,7 +3580,7 @@ export default function Produtos() {
   const NOME_SECAO: Record<string, string> = { info: "Nome e descrição", opcoes: "Escolhas", tamanhos: "Escolhas", kit: "Escolhas", fotos: "Fotos", preco: "Preço e promoção", entrega: "Cardápio e entrega" };
   useEffect(() => { setEscTela(0); }, [editTab]); // trocar de aba volta a lista das escolhas
   // Tela de sucesso depois de publicar um produto novo
-  const [sucesso, setSucesso] = useState<null | { id?: string; nome: string; imagem?: string; primeiro: boolean }>(null);
+  const [sucesso, setSucesso] = useState<null | { id?: string; nome: string; imagem?: string; primeiro: boolean; fora?: boolean }>(null);
   const [confirmMudaSubtipo, setConfirmMudaSubtipo] = useState<{
     novoSubtipo: "sabores_e_tamanhos" | "so_sabores" | "so_tamanhos";
     quantidade: number;
@@ -4278,8 +4277,8 @@ export default function Produtos() {
     // 11/10: nem com a IA ainda escrevendo a descrição
     if (gerandoDesc) return avisar("Espere a descrição ficar pronta.", { tipo: "info" });
     const eraPrimeiro = !form.id && produtos.length === 0;
-    if (!form.nome.trim()) return avisar("Nome é obrigatório", { tipo: "erro" });
-    if (!form.categoria.trim()) return avisar("Categoria é obrigatória", { tipo: "erro" });
+    if (!form.nome.trim()) return avisar("Dê um nome ao produto", { tipo: "erro" });
+    if (!form.categoria.trim()) return avisar("Escolha a categoria do produto", { tipo: "erro" });
     // (14/10) todo produto diz se é pronta entrega ou encomenda (na edição fica na aba Fotos, em "Como o cliente recebe")
     if (!((form as any).pronta_entrega === true || (form as any).antecedencia)) {
       if (form.id) setEditTab("entrega");
@@ -4288,7 +4287,8 @@ export default function Produtos() {
 
     // Validação específica pra variações
     const isVariacoes = wizardTipo === "variacoes" && !form.id;
-    const isPersonalizavel = wizardTipo === "personalizavel" && !form.id;
+    // (15/10) na edição também confere pelas escolhas (tamanho, sabor, kit): produto antigo com o preço só nos tamanhos não salvava
+    const isPersonalizavel = !isVariacoes && (wizardTipo === "personalizavel" || !!form.id);
     let precoBase = form.preco_normal;
 
     // (14/10) kit por quantidade: confere quantidades e preço também na edição (trocar pra "Ele escolhe" salvava o produto a R$ 0,00 no cardápio)
@@ -4310,14 +4310,14 @@ export default function Produtos() {
       const grupos = [form.grupo_massas, form.grupo_recheios, form.grupo_coberturas, form.grupo_sabores, form.grupo_tamanhos];
       const algumAtivo = grupos.some(g => g?.ativo && (g.opcoes?.length || 0) > 0) || kitAtivo((form as any).kit_qtd);
       // Produto simples (sem opções) também pode ser publicado — só precisa do preço
-      if (!algumAtivo && !(form.preco_normal > 0) && !(tipoCadastro === "bolos" && !form.id)) { if (form.id) setEditTab("preco"); return avisar("Informe o preço do produto", { tipo: "erro" }); }
+      if (!algumAtivo && !(form.preco_normal > 0) && !(tipoCadastro === "bolos" && !form.id)) { if (form.id) setEditTab("preco"); return avisar("Coloque o preço do produto", { tipo: "erro" }); }
       // Se tem Tamanhos ativos, preço base vem do MENOR tamanho
       const gt = form.grupo_tamanhos;
       const gs = form.grupo_sabores;
       if (gt?.ativo && gt.opcoes.length > 0) {
         // Modo por_peso: preço vem do preco_normal (R$/kg), não dos tamanhos individuais
         if (gt.modo_preco_tamanho === "por_peso") {
-          if (!form.preco_normal || form.preco_normal <= 0) { if (form.id) setEditTab("preco"); return avisar("Defina o preço por kg", { tipo: "erro" }); }
+          if (!form.preco_normal || form.preco_normal <= 0) { if (form.id) setEditTab("preco"); return avisar("Coloque o preço do kg", { tipo: "erro" }); }
           precoBase = form.preco_normal;
         } else if (regraCombo(form) === "preco_sabor") {
           // (14/10) Tamanho + "só o sabor": o preço vem dos sabores; o tamanho é só o nome
@@ -4326,18 +4326,18 @@ export default function Produtos() {
           precoBase = Math.min(...precosS);
         } else {
           const precosT = gt.opcoes.map(o => o.preco).filter(p => p > 0);
-          if (precosT.length === 0) { if (form.id) setEditTab("preco"); return avisar("Adicione ao menos 1 preço nos tamanhos", { tipo: "erro" }); }
+          if (precosT.length === 0) { if (form.id) setEditTab("preco"); return avisar("Coloque o preço dos tamanhos", { tipo: "erro" }); }
           precoBase = Math.min(...precosT);
         }
       } else if (gs?.ativo && gs.opcoes.length > 0 && gs.sabor_tem_preco_proprio) {
         const precosS = gs.opcoes.map((o: any) => o.preco || 0).filter((p: number) => p > 0);
-        if (precosS.length === 0) { if (form.id) setEditTab("preco"); return avisar("Adicione ao menos 1 preço nos sabores", { tipo: "erro" }); }
+        if (precosS.length === 0) { if (form.id) setEditTab("preco"); return avisar("Coloque o preço dos sabores", { tipo: "erro" }); }
         precoBase = Math.min(...precosS);
-      } else {
-        if (!form.preco_normal || form.preco_normal <= 0) { if (form.id) setEditTab("preco"); return avisar("Preço base deve ser maior que zero", { tipo: "erro" }); }
+      } else if (!kitAtivo((form as any).kit_qtd)) { // o kit já foi conferido acima (preço de cada kit)
+        if (!form.preco_normal || form.preco_normal <= 0) { if (form.id) setEditTab("preco"); return avisar("Coloque o preço do produto", { tipo: "erro" }); }
       }
     } else {
-      if (!form.preco_normal || form.preco_normal <= 0) { if (form.id) setEditTab("preco"); return avisar("Preço deve ser maior que zero", { tipo: "erro" }); }
+      if (!form.preco_normal || form.preco_normal <= 0) { if (form.id) setEditTab("preco"); return avisar("Coloque o preço do produto", { tipo: "erro" }); }
     }
 
     // ─── Tamanhos (10/10): as mesmas regras na criação e na edição ───
@@ -4526,7 +4526,7 @@ export default function Produtos() {
     setSucesso({
       id: produtoId, nome: (payload as any).nome || form.nome,
       imagem: (form.imagem_url || "").split(",").map(x => x.trim()).filter(Boolean)[0],
-      primeiro: eraPrimeiro,
+      primeiro: eraPrimeiro, fora: form.disponivel === false,
     });
   };
   // (15/10) "Próximos passos" do aviso de sucesso: abre o produto recém-cadastrado direto na parte (fotos / informações)
@@ -5024,7 +5024,7 @@ export default function Produtos() {
           {/* a janela do limite do plano abre por cima sem entrar na pilha: nessa hora o foco não fica preso aqui */}
           <div className={`prod-modal prod-modal--novo${sucesso ? " prod-modal--aviso" : ""}`} ref={limiteAberto || salvarBibliotecaAsk ? undefined : caixaCadastro} onClick={e => e.stopPropagation()} onFocusCapture={selecionarValorAoFocar} onClickCapture={selecionarValorAoFocar}>
             {sucesso ? (
-              <SucessoProdutoTela primeiro={sucesso.primeiro} nome={sucesso.nome}
+              <SucessoProdutoTela primeiro={sucesso.primeiro} nome={sucesso.nome} foraDoCardapio={sucesso.fora}
                 semFoto={!sucesso.imagem}
                 semDescricao={!(form.descricao || "").trim()}
                 onFechar={fecharModal}
@@ -5065,7 +5065,7 @@ export default function Produtos() {
                 {!form.id && <div className="pcab-barra" aria-hidden="true"><i style={{ width: `${Math.round((atual / total) * 100)}%` }} /></div>}
                 <Janela aberta={infoPasso} aoFechar={() => setInfoPasso(false)} titulo={form.id ? "Editar produto" : nomePasso}
                   icone={<Info size={32} />} umaAcao acoes={<Botao onClick={() => setInfoPasso(false)} data-foco-inicial>Entendi</Botao>}>
-                  <p className="pcab-info">{form.id ? "Mude o que precisar em cada aba e toque em Salvar alterações. O cardápio atualiza na hora."
+                  <p className="pcab-info">{form.id ? "Toque em Editar na parte que quer mudar e depois em Salvar. O cardápio atualiza na hora."
                     : wizardStep <= 2 ? "O nome e a categoria são o que o cliente vê primeiro. A descrição ajuda a vender: conte o que vem no produto."
                     : escAtual ? `Cadastre as opções de ${ROT[escAtual].toLowerCase()}. No cardápio, o cliente escolhe entre elas ao fazer o pedido.`
                     : wizardStep === 3 ? "Marque o que o cliente escolhe ao pedir, como tamanho ou sabor. Cada escolha marcada vira uma tela pra você cadastrar as opções."
@@ -5254,7 +5254,7 @@ export default function Produtos() {
                       value={form.categoria}
                       onChange={v => { setCatAuto(null); setForm(f => ({ ...f, categoria: v })); }}
                       options={todasCategorias.map(cat => ({ value: cat, label: cat }))}
-                      placeholder={todasCategorias.length > 0 ? "Selecione uma categoria..." : "Nenhuma categoria cadastrada"}
+                      placeholder={todasCategorias.length > 0 ? "Escolha uma categoria…" : "Nenhuma categoria cadastrada"}
                       title="Escolha a categoria"
                       extraOptionLabel={todasCategorias.length > 0 ? "Criar nova categoria" : "Criar primeira categoria"}
                       onExtraOption={() => setShowCatInput(true)}
@@ -5293,7 +5293,7 @@ export default function Produtos() {
                           disabled={!novaCategoria.trim() || savingCat}
                           className="prod-cat-criar-btn"
                         >
-                          {savingCat ? "Criando..." : "Criar categoria"}
+                          {savingCat ? "Criando…" : "Criar categoria"}
                         </button>
                       </div>
                     </div>
@@ -5360,9 +5360,9 @@ export default function Produtos() {
                       >
                         <SparkleIA size={16} weight="fill" className="prod-btn-ia-novo-crown" aria-hidden="true" />
                         {gerandoDesc === "gerar"
-                          ? "Gerando..."
+                          ? "Gerando…"
                           : gerandoDesc === "melhorar"
-                          ? "Melhorando..."
+                          ? "Melhorando…"
                           : (form.descricao?.trim() ? "Melhorar com IA" : "Gerar com IA")}
                       </button>
                   </div>
@@ -5572,7 +5572,7 @@ export default function Produtos() {
                   </p>
                   {/* (14/10) tabelinha: Tamanho | Preço (editável) | À venda (só na edição: desmarcado = esgotado) */}
                   <div className={`prod-dtab prod-ptab${form.id ? " prod-ptab--3" : ""}`} role="table" aria-label="Preço por tamanho">
-                    <div className="prod-dtab-l prod-dtab-h" role="row"><span role="columnheader">Tamanho</span><span role="columnheader">Preço</span>{form.id && <span role="columnheader">À venda</span>}</div>
+                    <div className="prod-dtab-l prod-dtab-h" role="row"><span role="columnheader">{form.grupo_tamanhos?.nome_exibicao === "Quantidades" ? "Quantidade" : "Tamanho"}</span><span role="columnheader">Preço</span>{form.id && <span role="columnheader">À venda</span>}</div>
                     {form.grupo_tamanhos.opcoes.map((op: any) => {
                       const esg = !!op.esgotado;
                       return (
@@ -5616,7 +5616,7 @@ export default function Produtos() {
                       {/* (14/10) tabela com linhas em volta, tipo planilha */}
                       {pct > 0 && (
                         <div className="prod-dtab" role="table" aria-label="Preços com desconto">
-                          <div className="prod-dtab-l prod-dtab-h" role="row"><span role="columnheader">Tamanho</span><span role="columnheader">Preço</span><span role="columnheader">Com {pct}%</span></div>
+                          <div className="prod-dtab-l prod-dtab-h" role="row"><span role="columnheader">{form.grupo_tamanhos?.nome_exibicao === "Quantidades" ? "Quantidade" : "Tamanho"}</span><span role="columnheader">Preço</span><span role="columnheader">Com {pct}%</span></div>
                           {form.grupo_tamanhos!.opcoes.map(op => (
                             <div className="prod-dtab-l" role="row" key={op.id}>
                               <span role="cell">{op.nome}</span>
@@ -6121,7 +6121,7 @@ export default function Produtos() {
                       <div className="prod-field" style={{ marginTop: 12 }}>
                         <label>Quantos dias antes?</label>
                         <div className="prod-antecedencia-grid">
-                          {[{ valor: "24h", label: "24 horas" }, { valor: "48h", label: "48 horas" }, { valor: "3d", label: "3 dias" }, { valor: "5d", label: "5 dias" }, { valor: "7d", label: "1 semana" }, { valor: "15d", label: "15 dias" }].map(opt => (
+                          {[{ valor: "24h", label: "1 dia" }, { valor: "48h", label: "2 dias" }, { valor: "3d", label: "3 dias" }, { valor: "5d", label: "5 dias" }, { valor: "7d", label: "1 semana" }, { valor: "15d", label: "15 dias" }].map(opt => (
                             <button key={opt.valor} type="button" className={`prod-antecedencia-chip ${(form as any).antecedencia === opt.valor ? "prod-antecedencia-chip--on" : ""}`}
                               onClick={() => setForm(f => ({ ...(f as any), antecedencia: opt.valor }))}>{opt.label}</button>
                           ))}
@@ -6216,7 +6216,7 @@ export default function Produtos() {
                       }
                       // Modo "preço fixo": todos os tamanhos precisam ter preço próprio
                       const semPreco = gt!.opcoes.find(o => !(o.preco > 0));
-                      return semPreco ? { msg: `Coloque o preço de ${semPreco.nome}`, alvo: `input[aria-label="Preço de ${semPreco.nome.replace(/(["\\])/g, "\\$1")}"]` } : null;
+                      return semPreco ? { msg: String(semPreco.nome || "").trim() ? `Coloque o preço de ${semPreco.nome}` : "Tem um tamanho sem preço", alvo: `input[aria-label="Preço de ${String(semPreco.nome || "").replace(/(["\\])/g, "\\$1")}"]` } : null;
                     }
                     // (14/10) preço pelo sabor: todo sabor precisa de preço; não pede preço cheio
                     if (precosDosSabores(form)) {
@@ -6269,7 +6269,7 @@ export default function Produtos() {
                       {saving ? <span className="prod-spinner-sm" /> : (
                         <>
                           <CheckIc size={20} weight="bold" aria-hidden="true" />
-                          {form.disponivel !== false ? "Publicar produto" : "Salvar fora do cardápio"}
+                          {form.disponivel !== false ? "Publicar produto" : "Guardar produto"}
                         </>
                       )}
                     </button>
@@ -7226,7 +7226,7 @@ export default function Produtos() {
           font-size: 0.75rem;
           font-weight: var(--fw-black);
           padding: 3px 8px;
-          border-radius: 999px;
+          border-radius: 6px;
           box-shadow: 0 2px 6px rgba(0,0,0,0.15);
         }
         .prod-card-badge-var {
@@ -12143,6 +12143,7 @@ export default function Produtos() {
           animation: doonly-toast-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
           font-family: var(--font-base);
         }
+        @keyframes doonly-toast-in { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: none; } }
         .bulk-confirm-icon {
           width: 60px; height: 60px;
           border-radius: 50%;
@@ -12192,86 +12193,6 @@ export default function Produtos() {
         .bulk-confirm-btn--excluir:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ui-vermelho-escuro); }
         .bulk-confirm-btn:disabled { opacity: 0.6; cursor: wait; }
 
-        /* ═══ TOAST DOONLY ═══ */
-        .doonly-toast-overlay {
-          position: fixed;
-          inset: 0;
-          z-index: 10000;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          pointer-events: none;
-          padding: 20px;
-          background: rgba(30, 15, 20, 0.35);
-          backdrop-filter: blur(3px);
-          -webkit-backdrop-filter: blur(3px);
-          animation: doonly-overlay-in 0.2s ease;
-        }
-        @keyframes doonly-overlay-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        .doonly-toast {
-          background: var(--ui-branco);
-          border-radius: 20px;
-          padding: 28px 24px 24px;
-          box-shadow: 0 24px 60px rgba(153, 53, 86, 0.22), 0 6px 16px rgba(0,0,0,0.10);
-          width: 100%;
-          max-width: 360px;
-          text-align: center;
-          animation: doonly-toast-in 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
-          border: 1px solid rgba(232, 90, 140, 0.08);
-          position: relative;
-          pointer-events: auto;
-        }
-        @keyframes doonly-toast-in {
-          from { opacity: 0; transform: translateY(-12px) scale(0.92); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .doonly-toast-icon-wrap {
-          width: 56px;
-          height: 56px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin: 0 auto 14px;
-        }
-        .doonly-toast-icon-wrap--success { background: linear-gradient(135deg, #FDF3F7 0%, var(--primary-light) 100%); color: var(--ui-rosa); }
-        .doonly-toast-icon-wrap--error   { background: #FEF2F2; color: var(--ui-vermelho); }
-        .doonly-toast-icon-wrap--info    { background: #EFF6FF; color: #2563EB; }
-        .doonly-toast-titulo {
-          font-family: var(--font-base);
-          font-size: 17px;
-          font-weight: 700;
-          color: #2D1F26;
-          line-height: 1.3;
-          margin: 0 0 6px;
-        }
-        .doonly-toast-sub {
-          font-family: var(--font-base);
-          font-size: 13.5px;
-          color: var(--ui-texto-2);
-          margin: 0;
-          line-height: 1.5;
-          padding: 0 6px;
-        }
-        .doonly-toast-btn {
-          margin-top: 18px;
-          padding: 10px 24px;
-          border: none;
-          background: var(--ui-rosa);
-          color: var(--ui-branco);
-          border-radius: var(--ui-raio-p);
-          font-family: var(--font-base);
-          font-size: 13.5px;
-          font-weight: 700;
-          cursor: pointer;
-          box-shadow: 0 3px 0 var(--ui-rosa-escuro);
-          transition: transform 0.1s ease, box-shadow 0.1s ease;
-        }
-        .doonly-toast-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 0 var(--ui-rosa-escuro); }
-        .doonly-toast-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ui-rosa-escuro); }
 
       
         /* Preço do kit (02/10) */
@@ -12351,37 +12272,6 @@ export default function Produtos() {
         </div>
       )}
 
-      {/* ═══ Toast Doonly ═══ */}
-      {toast && (
-        <div className="doonly-toast-overlay" onClick={() => setToast(null)}>
-          <div className="doonly-toast" onClick={e => e.stopPropagation()}>
-            <div className={`doonly-toast-icon-wrap doonly-toast-icon-wrap--${toast.tipo}`}>
-              {toast.tipo === "success" && (
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-              )}
-              {toast.tipo === "error" && (
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="15" y1="9" x2="9" y2="15"/>
-                  <line x1="9" y1="9" x2="15" y2="15"/>
-                </svg>
-              )}
-              {toast.tipo === "info" && (
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="12" y1="16" x2="12" y2="12"/>
-                  <line x1="12" y1="8" x2="12.01" y2="8"/>
-                </svg>
-              )}
-            </div>
-            <p className="doonly-toast-titulo">{toast.titulo}</p>
-            {toast.sub && <p className="doonly-toast-sub">{toast.sub}</p>}
-            <button className="doonly-toast-btn" onClick={() => setToast(null)}>Entendi</button>
-          </div>
-        </div>
-      )}
     </div>
     </>
   );

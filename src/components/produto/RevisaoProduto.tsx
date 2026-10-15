@@ -1,3 +1,4 @@
+import { ANTECEDENCIA } from "@/lib/entregaProduto";
 import { precosDosSabores } from "@/lib/precoCardapio";
 import { CheckCircle, Warning } from "@phosphor-icons/react";
 import { kitAtivo, kitsValidos, precoMinKit, precoLivre, type KitQtdConfig } from "@/lib/kitQuantidade";
@@ -18,9 +19,13 @@ const GRUPOS: [string, string, string][] = [
 const rs = (v: number) => `R$ ${textoBRL(v) || "0,00"}`;
 const pesoDe = (o: Op) => Number(o.peso_kg) || Number(String(o.nome).replace(",", ".").match(/(\d+(?:\.\d+)?)/)?.[1]) || 0;
 
+// (15/10) promoção só vale ligada; em % aplica o desconto (antes usava o preço promocional mesmo com a promoção desligada)
 function precoBase(form: any): number {
-  const promo = Number(form.preco_promocional) || 0;
   const cheio = Number(form.preco_normal) || 0;
+  if (!form.promocao) return cheio;
+  const pct = Number(form.desconto_percentual) || 0;
+  if (form.tipo_promocao === "percentual") return pct > 0 && pct < 100 ? Math.round(cheio * (100 - pct)) / 100 : cheio;
+  const promo = Number(form.preco_promocional) || 0;
   return promo > 0 && promo < cheio ? promo : cheio;
 }
 
@@ -128,7 +133,6 @@ export default function RevisaoProduto({ form }: { form: any }) {
 /**
  * (14/10) Revisão: todas as informações do produto numa tabelinha (rótulo | valor), antes de publicar.
  */
-const PRAZO: Record<string, string> = { "24h": "24 horas", "48h": "48 horas", "3d": "3 dias", "5d": "5 dias", "7d": "1 semana", "15d": "15 dias" };
 export function ResumoProduto({ form }: { form: any }) {
   const r = resumoRevisao(form);
   const kit = form.kit_qtd as KitQtdConfig | null;
@@ -143,8 +147,8 @@ export function ResumoProduto({ form }: { form: any }) {
     : temTam ? (r.aPartir > 0 ? `A partir de ${rs(r.aPartir)}` : "Falta o preço")
     : precosDosSabores(form) ? (r.aPartir > 0 ? `A partir de ${rs(r.aPartir)}` : "Falta o preço dos sabores")
     : `${rs(Number(form.preco_normal) || 0)}${form.forma_venda === "kg" ? " o kg" : ""}`; // (14/10) vendido por kg: diz
-  const promo = promoPct ? `${pct}% de desconto` : promoValor > 0 && promoValor < (Number(form.preco_normal) || 0) ? `${rs(promoValor)}${porPeso ? " o kg" : ""}` : "Sem promoção";
-  const entrega = form.pronta_entrega === true ? "Pronta entrega" : form.antecedencia ? `Encomenda: pedir ${PRAZO[form.antecedencia] || form.antecedencia} antes` : "Falta escolher";
+  const promo = !form.promocao ? "Sem promoção" : promoPct ? `${pct}% de desconto` : promoValor > 0 && promoValor < (Number(form.preco_normal) || 0) ? `${rs(promoValor)}${porPeso ? " o kg" : ""}` : "Sem promoção";
+  const entrega = form.pronta_entrega === true ? "Pronta entrega" : form.antecedencia ? `Pedir ${ANTECEDENCIA[form.antecedencia] || form.antecedencia} antes` : "Falta escolher";
   const linhas: [string, string][] = [
     ["Nome", String(form.nome || "").trim() || "Sem nome"],
     ["Categoria", String(form.categoria || "").trim() || "Sem categoria"],

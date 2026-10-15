@@ -8,6 +8,8 @@ interface Props {
   nome: string;
   /** loja toda configurada (primeiros passos completos)? false = ainda não abriu o cardápio */
   lojaPronta?: boolean | null;
+  /** salvo pelo "Salvar fora do cardápio": não diz que já está no cardápio */
+  foraDoCardapio?: boolean;
   semFoto?: boolean;
   semDescricao?: boolean;
   onTerminarLoja?: () => void;
@@ -49,7 +51,9 @@ export default function SucessoProdutoTela(p: Props) {
       <div className="spa-ok" aria-hidden="true"><Check size={30} weight="bold" /></div>
       <h2 className="spa-t" id="spa-t">{p.primeiro ? "Primeiro produto cadastrado!" : "Produto cadastrado!"}</h2>
       <p className="spa-x">
-        {p.lojaPronta === false
+        {p.foraDoCardapio
+          ? <>O produto <b>{p.nome}</b> foi cadastrado e ficou guardado só pra você. Ele não aparece no cardápio até você mostrar.</>
+          : p.lojaPronta === false
           ? <>O produto <b>{p.nome}</b> foi cadastrado com sucesso. Termine de abrir o cardápio pros clientes verem.</>
           : <>O produto <b>{p.nome}</b> foi cadastrado com sucesso e já está disponível no seu cardápio.</>}
       </p>

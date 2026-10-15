@@ -322,7 +322,7 @@ body .prod-modal--novo .prod-row-2:has(.prod-promo-selo) { align-items: start !i
 .prod-ptab.prod-ptab--promo .prod-dtab-l { grid-template-columns: minmax(0, 1fr) 118px 92px; }
 /* (15/10) prévia: o cartão do cardápio + "Ver por dentro" lado a lado */
 body .prod-modal--novo .prev-cardapio--v2 .prev-cardapio-box { display: block; padding: 12px; }
-body .prod-modal--novo .prev-grade { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: stretch; }
+body .prod-modal--novo .prev-grade { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: stretch; max-width: 420px; margin: 0 auto; }
 body .prod-modal--novo .prev-cartao { pointer-events: none; user-select: none; min-width: 0; }
 body .prod-modal--novo .prev-cartao .ic-cp { height: 100%; background: #fff; border-radius: 12px; overflow: hidden; padding-bottom: 12px; }
 body .prod-modal--novo .prev-cartao .ic-cp-ft { border-radius: 0; margin-bottom: 2px; }
@@ -331,7 +331,9 @@ body .prod-modal--novo .prev-cartao .ic-cp > :not(.ic-cp-ft) { margin-left: 10px
 body .prod-modal--novo .prev-ver { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 0; margin: 0; padding: 12px 8px; border: 1.5px dashed #D9CBD2; border-radius: 12px; background: #fff; font-family: inherit; text-align: center; color: var(--ui-texto); cursor: pointer; }
 body .prod-modal--novo .prev-ver-ic { display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; margin-bottom: 4px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
 body .prod-modal--novo .prev-ver b { font-size: 14px; font-weight: 700; }
-body .prod-modal--novo .prev-ver small { font-size: 12px; line-height: 1.35; color: var(--ui-texto-2); }
+body .prod-modal--novo .prev-ver small { font-size: 12px; line-height: 1.35; color: var(--ui-texto-2); white-space: nowrap; }
+/* (15/10) botões do rodapé numa linha só */
+body .prod-modal--novo .prod-btn-avancar-novo { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 body .prod-modal--novo .prod-promo-pct { flex: none; margin-left: auto; padding: 3px 8px; border-radius: 6px; background: rgba(255,255,255,.22); color: #fff; font-size: 13px; font-weight: 800; font-style: normal; }
 /* (14/10) a % fica no canto de cima do campo verde (no meio apertava o valor no celular) */
 body .prod-modal--novo .prod-preco-input--promo { position: relative; }

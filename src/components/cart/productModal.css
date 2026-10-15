@@ -22,7 +22,7 @@
 .pm-ft-trilho::-webkit-scrollbar { display: none; }
 .pm-ft-trilho img { flex: none; width: 100%; height: 100%; object-fit: cover; scroll-snap-align: start; }
 .pm-voltar { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 12px); left: 12px; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: 0; border: 0; border-radius: 50%; background: rgba(255,255,255,.95); color: var(--ui-texto); box-shadow: 0 2px 8px rgba(0,0,0,.18); cursor: pointer; }
-.pm-ft-n { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 20px); right: 12px; padding: 4px 10px; border-radius: 999px; background: rgba(44,18,25,.7); color: var(--ui-branco); font-size: 13px; font-weight: 700; }
+.pm-ft-n { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 20px); right: 12px; padding: 4px 10px; border-radius: 6px; background: rgba(44,18,25,.7); color: var(--ui-branco); font-size: 13px; font-weight: 700; }
 .pm-ft-pts { position: absolute; left: 0; right: 0; bottom: 12px; display: flex; justify-content: center; gap: 6px; pointer-events: none; }
 .pm-ft-pts i { width: 8px; height: 8px; border-radius: 4px; background: rgba(255,255,255,.6); box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: width .3s, background-color .3s; }
 .pm-ft-pts i.on { width: 20px; background: var(--ui-branco); }

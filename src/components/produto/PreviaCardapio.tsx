@@ -24,7 +24,7 @@ export default function PreviaCardapio({ form, cor = "#E85A8C" }: { form: any; c
             <div className="prev-cartao" aria-hidden="true" {...travar}><CartaoPromo produto={produto} cor={cor} /></div>
             <button type="button" className="prev-ver" onClick={() => setAberto(true)}>
               <span className="prev-ver-ic" aria-hidden="true"><Eye size={24} weight="bold" /></span>
-              <b>Ver por dentro</b><small>Toque pra ver o produto aberto</small>
+              <b>Ver por dentro</b><small>Como o cliente vê</small>
             </button>
           </div>
         </div>

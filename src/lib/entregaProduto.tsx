@@ -6,7 +6,8 @@
  * Sem nada marcado → nenhum selo (produto aparece como sempre).
  */
 
-const ANTECEDENCIA: Record<string, string> = {
+/** (15/10) o mesmo texto do prazo no app todo: chips, revisão, edição e cardápio */
+export const ANTECEDENCIA: Record<string, string> = {
   "24h": "1 dia",
   "48h": "2 dias",
   "3d": "3 dias",
