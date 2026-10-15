@@ -1242,14 +1242,15 @@ export default function Auth() {
           /* Cadastro no computador (10/10): cabe inteiro em 800px de altura (antes o "Criar conta com Google" ficava cortado) */
           .auth-root { padding-top: 16px; padding-bottom: 16px; }
           .auth-rodape { padding-top: 6px; }
-          .cadastro-form { gap: 10px; padding-top: 0; }
-          .auth-card:has(.cadastro-form) { padding: 28px 40px !important; max-width: none; } /* 13/10: ocupa a metade toda (antes ficava em 360px e os campos lado a lado cortavam o texto) */
-          .auth-card:has(.cadastro-form) .auth-text-hdr { margin-bottom: 12px; }
-          .cadastro-form .cad-field { height: 44px; }
-          .cadastro-form .cad-eye { height: 42px; }
-          .cadastro-form .cad-lb { margin-bottom: 2px; line-height: 1.3; }
-          .cadastro-form .cad-field-wrap { gap: 2px; }
-          .cad-par { display: grid; column-gap: 12px; row-gap: 6px; align-items: start; }
+          /* (15/10) mais respiro entre os campos (antes ficava apertado pra caber em 800px de altura) */
+          .cadastro-form { gap: 16px; padding-top: 0; }
+          .auth-card:has(.cadastro-form) { padding: 36px 44px !important; max-width: none; } /* 13/10: ocupa a metade toda (antes ficava em 360px e os campos lado a lado cortavam o texto) */
+          .auth-card:has(.cadastro-form) .auth-text-hdr { margin-bottom: 18px; }
+          .cadastro-form .cad-field { height: 46px; }
+          .cadastro-form .cad-eye { height: 44px; }
+          .cadastro-form .cad-lb { margin-bottom: 6px; line-height: 1.3; }
+          .cadastro-form .cad-field-wrap { gap: 4px; }
+          .cad-par { display: grid; column-gap: 14px; row-gap: 10px; align-items: start; }
           /* 13/10: minmax(0, …) e min-width 0: sem isso o campo da direita (WhatsApp, Confirmar a senha) passava pra fora do cartão */
           .cad-par--loja { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
           .cad-par--senha { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "senha conf" "regras regras"; }
@@ -1259,7 +1260,7 @@ export default function Auth() {
           .cad-par--senha .cad-a-senha { grid-area: senha; }
           .cad-par--senha .cad-a-conf { grid-area: conf; }
           .cad-par--senha .cad-a-regras { grid-area: regras; margin-top: 0; }
-          .cad-btn { margin-top: 2px; }
+          .cad-btn { margin-top: 6px; }
           .cad-mobile-login-link { padding-top: 0; }
           /* Grid layouts:
              - Desktop/tablet: form centralizado
