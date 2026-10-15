@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { CalendarDots, CurrencyDollar, Check, ListBullets, Users } from '@phosphor-icons/react'
+import { CalendarDots, CurrencyDollar, Check, ListBullets, Sparkle, Users } from '@phosphor-icons/react'
 import { Botao } from '@/components/base'
 import { Mascote } from '@/components/marca/Mascote'
 import { useSobreposicao } from '@/components/base/useSobreposicao'
@@ -10,11 +10,13 @@ import './termos.css'
  * Mostra o que já está liberado (tudo do plano grátis, sem falar do PRO) e leva pra apresentação.
  */
 const RECURSOS = [
-  { Ic: ListBullets, t: 'Cardápio online com seu link' },
-  { Ic: CalendarDots, t: 'Pedidos e entregas na agenda' },
-  { Ic: Users, t: 'Clientes e o que compraram' },
-  { Ic: CurrencyDollar, t: 'Lucro e preço de cada produto' },
+  { Ic: ListBullets, t: 'Cardápio digital vendendo 24h' },
+  { Ic: CalendarDots, t: 'Agenda que lembra cada entrega' },
+  { Ic: Users, t: 'Seus clientes num lugar só' },
+  { Ic: CurrencyDollar, t: 'Preço sem erro e lucro na mão' },
 ]
+// confete parado no cabeçalho: [left %, top px, cor, giro]
+const CONFETE: [number, number, string, number][] = [[44, 12, '#FCD34D', 25], [70, 20, '#FFFFFF', -30], [90, 9, '#86EFAC', 50], [94, 72, '#FCD34D', -15], [62, 98, '#93C5FD', 35]]
 
 export function ContaAtiva({ nome, aoContinuar }: { nome?: string; aoContinuar: () => void }) {
   const caixa = useRef<HTMLDivElement>(null)
@@ -22,16 +24,21 @@ export function ContaAtiva({ nome, aoContinuar }: { nome?: string; aoContinuar: 
   return (
     <div className="ca-veu">
       <div ref={caixa} tabIndex={-1} className="ca-jan" role="dialog" aria-modal="true" aria-labelledby="ca-titulo">
-        {/* (15/10) sem a barrinha de arrastar (não arrasta) e sem "Tudo pronto" (ainda vêm a apresentação e os primeiros passos) */}
-        <Mascote pose="acenando" className="ca-masc" />
-        <h2 id="ca-titulo"><i className="ca-pt" aria-hidden="true" />Sua conta está ativa!</h2>
-        <p>{nome ? `${nome}, já está tudo liberado pra você:` : 'Já está tudo liberado pra você:'}</p>
+        {/* (15/10) cabeçalho rosa com o mascote e confete; texto de venda (o que ela ganha), sem quebrar linha a 360px */}
+        <div className="ca-hd">
+          {CONFETE.map(([l, t, c, g], i) => <i key={i} className="ca-cf" aria-hidden="true" style={{ left: `${l}%`, top: t, background: c, transform: `rotate(${g}deg)` }} />)}
+          <Mascote pose="acenando" className="ca-masc" />
+          <span className="ca-tag"><i aria-hidden="true" />Conta ativa</span>
+          <h2 id="ca-titulo">Sua conta está ativa!</h2>
+          <p className="ca-sub">{nome ? `${nome}, tudo isso já é seu:` : 'Tudo isso já é seu:'}</p>
+        </div>
         <ul className="ca-lista">
           {RECURSOS.map(({ Ic, t }) => (
             <li key={t}><span className="ca-ic"><Ic size={20} aria-hidden="true" /></span>{t}<Check size={16} weight="bold" className="ca-v" aria-hidden="true" /></li>
           ))}
+          <li className="ca-mais"><span className="ca-ic"><Sparkle size={18} weight="fill" aria-hidden="true" /></span>+ 15 funcionalidades incríveis</li>
         </ul>
-        <Botao cheio onClick={aoContinuar}>Conhecer o Doonly</Botao>
+        <div className="ca-pe"><Botao cheio onClick={aoContinuar}>Ver como funciona</Botao></div>
       </div>
     </div>
   )

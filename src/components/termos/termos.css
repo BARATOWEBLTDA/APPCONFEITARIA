@@ -27,14 +27,22 @@
 .tm-nota { margin: 10px 0 0; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ui-texto-2); text-align: center; }
 @media (min-width: 900px) { .tm-root { justify-content: center; } .tm-base { margin-top: 0; } }
 
-.ca-veu { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: flex-end; justify-content: center; background: var(--vinho-fundo); background-color: var(--chocolate-escuro); /* (15/10) o mesmo fundo chocolate dos termos e da apresentação (antes: o Início borrado atrás) */ font-family: var(--font-base); animation: uiClareia var(--dur-normal) ease-out both; }
-.ca-jan { width: 100%; max-width: 480px; max-height: 100%; overflow-y: auto; padding: 14px 20px calc(22px + env(safe-area-inset-bottom, 0px)); border-radius: 24px 24px 0 0; background: var(--ui-branco); text-align: center; outline: 0; }
-@media (min-width: 600px) { .ca-veu { align-items: center; } .ca-jan { border-radius: 24px; } }
-.ca-masc { display: block; width: 120px; height: 120px; object-fit: contain; margin: 10px auto 0; }
-.ca-pt { display: inline-block; width: 10px; height: 10px; margin: 0 8px 3px 0; border-radius: 50%; background: #22c55e; vertical-align: middle; box-shadow: 0 0 0 4px #DCFCE7; }
-.ca-jan h2 { white-space: nowrap; margin: 8px 0 6px; font-size: 26px; font-weight: 700; letter-spacing: -.02em; color: var(--ui-texto); }
-.ca-jan p { margin: 0 0 16px; font-size: 15px; line-height: 1.5; color: var(--ui-texto-2); }
-.ca-lista { list-style: none; margin: 0 0 18px; padding: 0; text-align: left; }
-.ca-lista li { display: flex; align-items: center; gap: 12px; padding: 9px 4px; font-size: 15px; font-weight: 500; color: var(--ui-texto); }
+/* (15/10) Conta ativa: cabeçalho rosa com o mascote e confete + lista do que já está liberado (B + C aprovado) */
+.ca-veu { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: flex-end; justify-content: center; background: var(--vinho-fundo); background-color: var(--chocolate-escuro); font-family: var(--font-base); animation: uiClareia var(--dur-normal) ease-out both; }
+.ca-jan { width: 100%; max-width: 480px; max-height: 100%; overflow-y: auto; border-radius: 24px 24px 0 0; background: var(--ui-branco); outline: 0; }
+@media (min-width: 600px) { .ca-veu { align-items: center; padding: 20px; } .ca-jan { max-width: 440px; border-radius: 24px; } }
+.ca-hd { position: relative; overflow: hidden; min-height: 128px; padding: 24px 16px 20px 124px; background: linear-gradient(135deg, var(--ui-rosa) 0%, var(--ui-rosa-escuro) 100%); color: #fff; }
+.ca-masc { position: absolute; left: 12px; bottom: -6px; z-index: 2; width: 110px; height: auto; }
+.ca-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.ca-tag i { width: 8px; height: 8px; border-radius: 50%; background: #86EFAC; }
+.ca-jan h2 { margin: 6px 0 4px; font-size: 19px; line-height: 1.15; font-weight: 700; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
+.ca-sub { margin: 0; font-size: 13.5px; color: rgba(255, 255, 255, .92); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ca-cf { position: absolute; width: 6px; height: 10px; border-radius: 2px; }
+.ca-lista { list-style: none; margin: 0; padding: 10px 20px 0; }
+.ca-lista li { display: flex; align-items: center; gap: 12px; min-height: 56px; font-size: 15px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; }
+.ca-lista li + li { border-top: 1px solid var(--ui-linha, #F3EEF0); }
 .ca-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: #FCE0E9; color: var(--ui-rosa); }
 .ca-v { margin-left: auto; flex: none; color: var(--ui-verde); }
+.ca-lista li.ca-mais { min-height: 48px; font-weight: 700; color: var(--ui-rosa-escuro); }
+.ca-lista li.ca-mais .ca-ic { background: var(--ui-rosa); color: #fff; }
+.ca-pe { padding: 12px 20px calc(22px + env(safe-area-inset-bottom, 0px)); }
