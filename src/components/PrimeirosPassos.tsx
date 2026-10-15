@@ -69,7 +69,8 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   const [perfilNovo, setPerfilNovo] = useState<Record<string, any>>({});
   const abrirPasso = useCallback((k: Passo) => {
     // (13/10) pagamento e entrega virou um card como os outros (antes abria a tela inteira de Entrega e pagamento)
-    if (k === "produto") navigate("/produtos", { state: { abrirCadastro: true } });
+    // (15/10) abre a tela de produtos com a apresentação "Cadastre seu primeiro produto" (antes ia direto pro cadastro)
+    if (k === "produto") navigate("/produtos");
     else setFolha(k);
   }, [navigate]);
 
@@ -162,7 +163,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
     { feito: estado.pagamento, ic: I(Wallet), t: "Pagamento e entrega", s: "Como o cliente paga e recebe", abrir: () => abrirPasso("pagamento") },
     { feito: estado.caixa, ic: I(Coins), t: "Saldo do caixa", s: "Quanto tem em caixa hoje", abrir: () => setFolha("caixa") },
     // (13/10) quando só falta o produto, o texto chama pro cardápio ir pro ar
-    { feito: estado.produto, ic: I(Basket), t: "Cadastrar um produto", s: "", abrir: () => navigate("/produtos", { state: { abrirCadastro: true } }) },
+    { feito: estado.produto, ic: I(Basket), t: "Cadastrar um produto", s: "", abrir: () => navigate("/produtos") },
   ];
   const ultimoQueFalta = passos.filter(p => !p.feito).length === 1;
   passos[passos.length - 1].s = ultimoQueFalta ? "Falta só isso pro cardápio ir pro ar" : "Seu primeiro doce no cardápio";

@@ -23,12 +23,13 @@ import "./configuracoes.css";
  */
 
 /** Linha da lista (ícone, nome, apoio e a seta) */
-function ItemConfig({ icone, tom = "cinza", nome, apoio, onClick, destaque, children }: {
-  icone: ReactNode; tom?: "cinza" | "rosa" | "amarelo" | "vermelho" | "azul"; nome: string; apoio?: ReactNode; onClick: () => void; destaque?: boolean; children?: ReactNode;
+// (15/10) todos os ícones no mesmo fundo rosa (antes cada um tinha uma cor)
+function ItemConfig({ icone, nome, apoio, onClick, destaque, children }: {
+  icone: ReactNode; nome: string; apoio?: ReactNode; onClick: () => void; destaque?: boolean; children?: ReactNode;
 }) {
   return (
     <button type="button" className="cf9-item" onClick={onClick}>
-      <span className={`cf9-ic cf9-ic--${tom}`} aria-hidden="true">{icone}</span>
+      <span className="cf9-ic" aria-hidden="true">{icone}</span>
       <span className="cf9-tx"><b>{nome}</b>{apoio && <small className={destaque ? "on" : ""}>{apoio}</small>}</span>
       {children}
       <CaretRight size={18} weight="bold" className="cf9-seta" aria-hidden="true" />
@@ -211,25 +212,25 @@ export default function Configuracoes() {
           {/* (14/10) Uma lista só, sem cards: Conta (minha conta e assinatura), App, Ajuda e Avançado. Sair embaixo. */}
           <section className="cf9-card cf9-lista" aria-label="Configurações">
             <h2 className="cf9-sec">Conta</h2>
-            <ItemConfig icone={preview ? <img className="cf9-ic-foto" src={preview} alt="" /> : <User size={20} weight="bold" />} tom="rosa" nome="Minha conta"
+            <ItemConfig icone={preview ? <img className="cf9-ic-foto" src={preview} alt="" /> : <User size={20} weight="bold" />} nome="Minha conta"
               apoio={userEmail || "Foto, nome, telefone e senha"}
               onClick={() => { setError(""); setSenhaMsg(""); setRascunho({ nome: form.nome, telefone: form.telefone }); setEditarOpen(true); }} />
-            <ItemConfig icone={<Crown size={20} weight="fill" />} tom="amarelo" nome="Minha assinatura"
+            <ItemConfig icone={<Crown size={20} weight="fill" />} nome="Minha assinatura"
               apoio={pro ? "Plano PRO · ativo" : "Plano grátis · conheça o PRO"} destaque={!pro}
               onClick={() => navigate(pro ? "/minha-assinatura" : "/assinar")} />
 
             <h2 className="cf9-sec">App</h2>
             <ItemConfig icone={<Bell size={20} weight="bold" />} nome="Notificações e sons" apoio="Avisos e sons do app" onClick={() => navigate("/configuracoes/notificacoes")} />
-            <ItemConfig icone={<Trophy size={20} weight="bold" />} tom="amarelo" nome="Minhas conquistas" apoio="Suas medalhas e a próxima a ganhar" onClick={() => navigate("/conquistas")} />
+            <ItemConfig icone={<Trophy size={20} weight="bold" />} nome="Minhas conquistas" apoio="Suas medalhas" onClick={() => navigate("/conquistas")} />
             <AtualizarAppItem />
-            {!isStandalone() && <ItemConfig icone={<DownloadSimple size={20} weight="bold" />} tom="rosa" nome="Instalar o app" apoio="Abra o Doonly direto, como um app" onClick={() => setInstalarOpen(true)} />}
-            {INDICACAO_ATIVA && <ItemConfig icone={<Gift size={20} weight="bold" />} tom="rosa" nome="Indique e ganhe" apoio="Ganhe prêmios por cada assinante que você indicar" onClick={() => navigate("/indicar")} />}
+            {!isStandalone() && <ItemConfig icone={<DownloadSimple size={20} weight="bold" />} nome="Instalar o app" apoio="Abra direto, como um app" onClick={() => setInstalarOpen(true)} />}
+            {INDICACAO_ATIVA && <ItemConfig icone={<Gift size={20} weight="bold" />} nome="Indique e ganhe" apoio="Ganhe prêmios indicando" onClick={() => navigate("/indicar")} />}
 
             <h2 className="cf9-sec">Ajuda</h2>
-            <ItemConfig icone={<Lightbulb size={20} weight="bold" />} tom="amarelo" nome="Sugerir uma melhoria" apoio="Conte o que falta ou o que melhoraria" onClick={() => navigate("/solicitar-recurso")} />
-            <ItemConfig icone={<Bug size={20} weight="bold" />} tom="vermelho" nome="Relatar um problema" apoio="Algo não funcionou? Conte pra equipe" onClick={() => navigate("/relatar-problema")} />
-            <ItemConfig icone={<IconeWhatsApp size={20} />} tom="azul" nome="Fale com o suporte" apoio="Converse com a equipe pelo WhatsApp" onClick={() => window.open(`https://wa.me/5511978414991?text=${encodeURIComponent("Olá! Preciso de ajuda com o Doonly.")}`, "_blank", "noopener")} />
-            <ItemConfig icone={<FileText size={20} weight="bold" />} nome="Termos e privacidade" apoio="Termos de uso e política de privacidade" onClick={() => setTermosOpen(true)} />
+            <ItemConfig icone={<Lightbulb size={20} weight="bold" />} nome="Sugerir uma melhoria" apoio="Conte o que falta no app" onClick={() => navigate("/solicitar-recurso")} />
+            <ItemConfig icone={<Bug size={20} weight="bold" />} nome="Relatar um problema" apoio="Algo não funcionou?" onClick={() => navigate("/relatar-problema")} />
+            <ItemConfig icone={<IconeWhatsApp size={20} />} nome="Fale com o suporte" apoio="Pelo WhatsApp" onClick={() => window.open(`https://wa.me/5511978414991?text=${encodeURIComponent("Olá! Preciso de ajuda com o Doonly.")}`, "_blank", "noopener")} />
+            <ItemConfig icone={<FileText size={20} weight="bold" />} nome="Termos e privacidade" apoio="Termos de uso e privacidade" onClick={() => setTermosOpen(true)} />
 
             <h2 className="cf9-sec">Outros</h2>
             <ItemConfig icone={<SlidersHorizontal size={20} weight="bold" />} nome="Avançado" apoio="Excluir a conta" onClick={() => setAvancadoOpen(true)} />

@@ -35,7 +35,7 @@ export default function AtualizarAppItem() {
 
   return (
     <button type="button" className="cf9-item" onClick={atualizar} disabled={atualizando}>
-      <span className="cf9-ic cf9-ic--cinza" aria-hidden="true"><ArrowsClockwise size={20} weight="bold" className={atualizando ? "atz-girando" : undefined} /></span>
+      <span className="cf9-ic" aria-hidden="true"><ArrowsClockwise size={20} weight="bold" className={atualizando ? "atz-girando" : undefined} /></span>
       <span className="cf9-tx">
         <b>Atualizar app</b>
         <small className={temNova ? "on" : ""}>
