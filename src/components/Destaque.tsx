@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState, type RefObject } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { Mascote } from "@/components/marca/Mascote";
 
@@ -29,6 +29,8 @@ export default function Destaque({ alvo, toque, titulo, texto, acao, aoAcao, aoF
   passo?: string; naoTexto?: string;
 }) {
   const [r, setR] = useState<DOMRect | null>(null);
+  const [balH, setBalH] = useState(0); // altura do balão (medida depois de aparecer)
+  const balRef = useRef<HTMLDivElement>(null);
   const [livre, setLivre] = useState(false); // nenhuma outra janela aberta
   const medir = () => { const el = achar(alvo); if (el) setR(el.getBoundingClientRect()); };
 
@@ -47,23 +49,27 @@ export default function Destaque({ alvo, toque, titulo, texto, acao, aoAcao, aoF
     const el = achar(alvo);
     if (!el) return;
     const b = el.getBoundingClientRect();
-    if (b.top < 70 || b.bottom > window.innerHeight - 150) {
-      setR(null);
-      el.scrollIntoView({ block: b.height > window.innerHeight * 0.5 ? "start" : "center", behavior: "smooth" });
-      const t = window.setTimeout(medir, 450);
-      return () => window.clearTimeout(t);
+    const alto = window.innerHeight;
+    // (16/10) cartão alto (custos com vários itens): rola na hora pro topo dele ficar logo abaixo do cabeçalho.
+    // Antes rolava devagar e media no meio da rolagem: o contorno ficava fora do lugar.
+    if (b.top < 70 || b.bottom > alto - 260) {
+      const destino = b.height > alto - 340 ? b.top - 76 : b.top - (alto - b.height) / 2 + 60;
+      window.scrollTo({ top: window.scrollY + destino, behavior: "auto" });
     }
-    medir();
+    const raf = requestAnimationFrame(() => requestAnimationFrame(medir));
+    return () => cancelAnimationFrame(raf);
   }, [livre, alvo]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!livre) return;
     const travaAntes = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     window.addEventListener("resize", medir);
+    window.addEventListener("scroll", medir, { passive: true });
     const esc = (e: KeyboardEvent) => { if (e.key === "Escape") aoFechar(); };
     document.addEventListener("keydown", esc);
-    return () => { document.body.style.overflow = travaAntes; window.removeEventListener("resize", medir); document.removeEventListener("keydown", esc); };
+    return () => { document.body.style.overflow = travaAntes; window.removeEventListener("resize", medir); window.removeEventListener("scroll", medir); document.removeEventListener("keydown", esc); };
   }, [livre]); // eslint-disable-line react-hooks/exhaustive-deps
+  useLayoutEffect(() => { const h = balRef.current?.offsetHeight || 0; if (h && Math.abs(h - balH) > 1) setBalH(h); });
   if (!livre || !r) return null;
 
   const tocou = (e: React.MouseEvent) => {
@@ -73,15 +79,22 @@ export default function Destaque({ alvo, toque, titulo, texto, acao, aoAcao, aoF
   };
   const m = 6; // folga em volta do alvo
   const alto = window.innerHeight;
-  const emCima = alto - r.bottom < 220 && r.top > alto - r.bottom; // não cabe embaixo: abre em cima
-  const pos = emCima ? { bottom: alto - r.top + m + 16 } : { top: r.bottom + m + 16 };
+  const H = balH || 190, gap = m + 16, borda = 12;
+  // embaixo do alvo se cabe; senão em cima; senão (alvo maior que a tela) o balão fica no rodapé e o contorno
+  // mostra só a parte de cima do alvo, sem o balão tampar nada
+  const cabeEmbaixo = alto - (r.bottom + gap) - borda >= H;
+  const cabeEmCima = r.top - gap - H >= borda;
+  const modo: "baixo" | "cima" | "rodape" = cabeEmbaixo ? "baixo" : cabeEmCima ? "cima" : "rodape";
+  const emCima = modo === "cima";
+  const pos = modo === "baixo" ? { top: r.bottom + gap } : modo === "cima" ? { bottom: alto - r.top + gap } : { bottom: borda };
+  const furoAlt = modo === "rodape" ? Math.max(40, Math.min(r.height + m * 2, alto - borda - H - gap - (r.top - m))) : r.height + m * 2;
   // a setinha aponta pro meio do alvo
   const seta = Math.min(Math.max(r.left + r.width / 2 - 16, 24), window.innerWidth - 40);
 
   return createPortal(
     <div className="dsq" role="dialog" aria-modal="true" aria-label={titulo} onClick={tocou}>
-      <div className="dsq-furo" style={{ left: r.left - m, top: r.top - m, width: r.width + m * 2, height: r.height + m * 2, borderRadius: raio }} aria-hidden="true" />
-      <div className={`dsq-bal${emCima ? " dsq-bal--cima" : ""}${mascote ? " dsq-bal--masc" : ""}`} style={{ ...pos, ["--dsq-seta" as string]: `${seta - 16}px` }} onClick={e => e.stopPropagation()}>
+      <div className="dsq-furo" style={{ left: r.left - m, top: r.top - m, width: r.width + m * 2, height: furoAlt, borderRadius: raio }} aria-hidden="true" />
+      <div ref={balRef} className={`dsq-bal${emCima ? " dsq-bal--cima" : ""}${modo === "rodape" ? " dsq-bal--rodape" : ""}${mascote ? " dsq-bal--masc" : ""}`} style={{ ...pos, ["--dsq-seta" as string]: `${seta - 16}px` }} onClick={e => e.stopPropagation()}>
         {mascote && <Mascote pose="acenando" className="dsq-masc" />}
         {passo && <em className="dsq-passo">{passo}</em>}
         <b>{titulo}</b>
@@ -105,6 +118,8 @@ const CSS = `
   .dsq-bal { position: fixed; left: 16px; right: 16px; padding: 16px 16px 14px; border-radius: 16px; background: var(--ui-branco); box-shadow: 0 10px 30px rgba(0, 0, 0, .25); text-align: center; }
   .dsq-bal::before { content: ""; position: absolute; top: -8px; left: var(--dsq-seta, 50%); width: 16px; height: 16px; border-radius: 3px; background: var(--ui-branco); transform: rotate(45deg); }
   .dsq-bal--cima::before { top: auto; bottom: -8px; }
+  .dsq-bal--rodape { bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important; }
+  .dsq-bal--rodape::before { display: none; }
   .dsq-bal--masc { padding: 14px 14px 12px 88px; text-align: left; }
   .dsq-masc { position: absolute; left: 10px; bottom: 10px; width: 68px; height: auto; }
   .dsq-bal b { display: block; margin-bottom: 3px; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
