@@ -99,7 +99,7 @@ const CSS = `
   .pf-lista { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
   .pf-it { position: relative; border-radius: var(--ui-raio); }
   .pf-bt { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin: 0; padding: 12px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
-  .pf-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-rosa); color: var(--ui-branco); }
+  .pf-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--primary-light, #FCE0E9); color: var(--ui-rosa-escuro); }
   .pf-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
   .pf-tx b { font-size: 14.5px; font-weight: 700; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pf-tx small { font-size: 12.5px; line-height: 1.4; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

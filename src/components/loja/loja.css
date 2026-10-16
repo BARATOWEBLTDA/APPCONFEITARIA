@@ -59,3 +59,14 @@
 .lj-pausa.cheio .lj-chave[aria-checked="true"] span { transform: translateX(22px); }
 .lj-pausa.cheio .lj-chave:focus-visible { outline-color: rgba(255, 255, 255, .7); }
 .lj-pausa--montando .lj-pausa-luz { background: #F59E0B; box-shadow: 0 0 0 4px rgba(245, 158, 11, .16); }
+/* (16/10) celular: o cartão verde mais discreto (texto e ícone menores) */
+@media (max-width: 767px) {
+  .lj-pausa.cheio { gap: 12px; padding: 12px 14px; border-radius: 16px; }
+  .lj-pausa.cheio .lj-pausa-ic { width: 36px; height: 36px; border-radius: 10px; }
+  .lj-pausa.cheio .lj-pausa-ic svg { width: 20px; height: 20px; }
+  .lj-pausa.cheio .lj-pausa-tx b { font-size: 14px; gap: 6px; }
+  .lj-pausa.cheio .lj-pausa-tx small { margin-top: 1px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lj-pausa.cheio .lj-chave { width: 46px; height: 26px; }
+  .lj-pausa.cheio .lj-chave span { width: 20px; height: 20px; }
+  .lj-pausa.cheio .lj-chave[aria-checked="true"] span { transform: translateX(20px); }
+}

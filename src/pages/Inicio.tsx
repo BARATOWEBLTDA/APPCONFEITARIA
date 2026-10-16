@@ -10,6 +10,7 @@ import { STATUS_AINDA_NAO_PRONTO, dataISO } from "@/lib/pedidoStatus";
 import { entradasNoPeriodo } from "@/lib/painelFinanceiro";
 import { verificarAvisosPro } from "@/lib/notificacoesUsuario";
 import SeuDia, { type EntregaResumo } from "@/components/inicio/SeuDia";
+import PedidosNovosTopo, { type PedidoNovo } from "@/components/inicio/PedidosNovosTopo";
 import { minutosDoDia, separarEntregasDeHoje } from "@/components/inicio/entregasDeHoje";
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import { TelaVazia, informar } from "@/components/base";
@@ -36,6 +37,9 @@ interface ChartPoint { dia: string; valor: number; }
 // Status atuais do app (+ os antigos, pra pedidos velhos). Antes faltavam "agendado", "aguardando_aceite",
 // "finalizado"… e os pedidos sumiam de "Entregas hoje", "Próximas entregas" e "Atrasados" (30/09)
 const STATUS_PENDENTES = ["aguardando_aceite", "aguardando_pagamento", "novo", "pendente"];
+// (16/10) pedido que ela ainda não aceitou: novo do cardápio (ou do cardápio esperando o Pix). Não entra nas entregas.
+const naoAceito = (p: { status?: string | null; origem?: string | null }) =>
+  ["aguardando_aceite", "novo", "pendente"].includes(p.status || "") || (p.status === "aguardando_pagamento" && p.origem === "cardapio");
 const STATUS_ATIVOS = ["aguardando_pagamento", "aguardando_aceite", "novo", "pendente", "agendado", "confirmado", "em_producao", "em_preparo", "finalizado", "pronto", "aguardando_retirada", "aguardando_entrega", "em_entrega", "a_caminho"];
 
 /**
@@ -84,6 +88,7 @@ export default function Inicio() {
   });
   // 11/10: todas as entregas de hoje (a "próxima" é escolhida na hora de mostrar: a primeira com hora de agora em diante)
   const [entregasDeHoje, setEntregasDeHoje] = useState<EntregaResumo[]>(c0?.dados.entregasDeHoje ?? []);
+  const [pedidosNovos, setPedidosNovos] = useState<PedidoNovo[]>(c0?.dados.pedidosNovos ?? []);
   // o dia a que os dados da tela se referem (AAAA-MM-DD): o "hoje" da tela anda junto com os dados
   const [diaDosDados, setDiaDosDados] = useState<string | null>(c0?.dia ?? null);
   const [aniversariantesDetalhe, setAniversariantesDetalhe] = useState<{ nome: string; dias: number } | null>(c0?.dados.aniversariantesDetalhe ?? null);
@@ -425,17 +430,19 @@ export default function Inicio() {
         pedidosAtrasadosRes,
         proximaEntregaHojeRes,
       ] = await Promise.all([
-        // Pedidos pendentes (aguardando confirmação)
+        // Pedidos pendentes (aguardando confirmação). (16/10) Vem a lista: o cartão do topo mostra o pedido e aceita ali mesmo
         supabase
           .from("pedidos")
-          .select("id", { count: "exact", head: true })
+          .select("id, numero, cliente_nome, data_entrega, valor_total, created_at, status, origem, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(forma_venda, imagem_url))")
           .eq("user_id", userId)
-          .in("status", STATUS_PENDENTES),
+          .in("status", STATUS_PENDENTES)
+          .order("created_at", { ascending: true })
+          .limit(50),
         // Entregas de hoje (qualquer status ativo). (10/10) Traz também o valor de cada uma, pro "R$ X em entregas hoje"
         // do computador: antes ele somava só as 5 primeiras da lista "Próximas entregas".
         supabase
           .from("pedidos")
-          .select("valor_total", { count: "exact" })
+          .select("valor_total, status, origem")
           .eq("user_id", userId)
           .eq("data_entrega", hojeISO)
           .in("status", STATUS_ATIVOS),
@@ -466,13 +473,13 @@ export default function Inicio() {
         // Próximas entregas DEPOIS de hoje (15/10): as de hoje já vêm na última busca; antes vinham duas vezes
         supabase
           .from("pedidos")
-          .select("id, numero, cliente_nome, data_entrega, valor_total, horario_entrega, tipo_entrega, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(forma_venda, imagem_url))")
+          .select("id, numero, cliente_nome, data_entrega, valor_total, horario_entrega, tipo_entrega, status, origem, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(forma_venda, imagem_url))")
           .eq("user_id", userId)
           .gt("data_entrega", hojeISO)
           .in("status", STATUS_ATIVOS)
           .order("data_entrega", { ascending: true })
           .order("horario_entrega", { ascending: true, nullsFirst: false })
-          .limit(5),
+          .limit(15),
         // Pedidos atrasados: data passou e ainda não ficou pronto (regra única em lib/pedidoStatus)
         supabase
           .from("pedidos")
@@ -484,7 +491,7 @@ export default function Inicio() {
         // continuava como "próxima" depois da hora. Com todas, a tela escolhe a primeira de agora em diante.
         supabase
           .from("pedidos")
-          .select("id, numero, cliente_nome, data_entrega, valor_total, horario_entrega, tipo_entrega, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(forma_venda, imagem_url))")
+          .select("id, numero, cliente_nome, data_entrega, valor_total, horario_entrega, tipo_entrega, status, origem, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(forma_venda, imagem_url))")
           .eq("user_id", userId)
           .eq("data_entrega", hojeISO)
           .in("status", STATUS_ATIVOS)
@@ -526,33 +533,42 @@ export default function Inicio() {
       const inicioMesISO = dataISO(inicioMes);
       const recebidoMes = Math.round(entradasRes.itens.filter(e => e.data >= inicioMesISO).reduce((s, e) => s + e.valor, 0) * 100) / 100;
 
-      setCounts({
-        pedidosPendentes: pedidosPendentesRes.count || 0,
-        entregasHoje: entregasHojeRes.count || 0,
-        valorEntregasHoje: (entregasHojeRes.data || []).reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0),
+      // (16/10) as entregas (hoje e próximas) só com pedido aceito: o novo fica no cartão do topo, não aparece duas vezes
+      const aceitos = (l: any[] | null) => (l || []).filter(p => !naoAceito(p));
+      const hojeAceitos = aceitos(proximaEntregaHojeRes.data);
+      const entregasHojeAceitas = aceitos(entregasHojeRes.data);
+      const novosLista: PedidoNovo[] = (pedidosPendentesRes.data || []).filter(naoAceito).map((p: any) => {
+        const e = entregaDoPedido(p);
+        return { id: p.id, numero: p.numero ?? null, cliente: e.cliente, status: p.status, produto: e.produto ?? null, data: p.data_entrega || null, valor: e.valor, criado: p.created_at, foto: e.foto ?? null };
+      });
+      const novosCounts = {
+        pedidosPendentes: novosLista.length,
+        entregasHoje: entregasHojeAceitas.length,
+        valorEntregasHoje: entregasHojeAceitas.reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0),
         aniversariantes: aniversariantes.length,
         recebidoMes,
         pedidosAtrasados: pedidosAtrasadosRes.count || 0,
-      });
-      setEntregasDeHoje((proximaEntregaHojeRes.data || []).map(entregaDoPedido));
+      };
+      const entregasHojeLista = hojeAceitos.map(entregaDoPedido);
+      const proximasLista = [...hojeAceitos, ...aceitos(proximasEntregasRes.data)].slice(0, 5).map(entregaDoPedido);
+      setCounts(novosCounts);
+      setPedidosNovos(novosLista);
+      setEntregasDeHoje(entregasHojeLista);
       setDiaDosDados(hojeISO);
       setAniversariantesDetalhe(proxAniv);
       setResumoSemana({ vendas: vendasSemana, pedidos: pedidosSemanaRes.data?.length || 0 });
       setResumoAnterior({ vendas: vendasAnt, pedidos: pedidosSemanaAntRes.data?.length || 0 });
       setChartData(chart);
-      setProximasEntregas([...(proximaEntregaHojeRes.data || []), ...(proximasEntregasRes.data || [])].slice(0, 5).map(entregaDoPedido));
+      setProximasEntregas(proximasLista);
       setErroCarga(falhou);
       telaBoa.current = falhou ? null : chaveDaBusca;
       if (!falhou) {
-        const entregasHojeLista = (proximaEntregaHojeRes.data || []).map(entregaDoPedido);
         cacheInicio = { uid: userId, dia: hojeISO, dados: {
-          counts: { pedidosPendentes: pedidosPendentesRes.count || 0, entregasHoje: entregasHojeRes.count || 0,
-            valorEntregasHoje: (entregasHojeRes.data || []).reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0),
-            aniversariantes: aniversariantes.length, recebidoMes, pedidosAtrasados: pedidosAtrasadosRes.count || 0 },
+          counts: novosCounts, pedidosNovos: novosLista,
           entregasDeHoje: entregasHojeLista, aniversariantesDetalhe: proxAniv,
           resumoSemana: { vendas: vendasSemana, pedidos: pedidosSemanaRes.data?.length || 0 },
           resumoAnterior: { vendas: vendasAnt, pedidos: pedidosSemanaAntRes.data?.length || 0 },
-          chartData: chart, proximasEntregas: [...(proximaEntregaHojeRes.data || []), ...(proximasEntregasRes.data || [])].slice(0, 5).map(entregaDoPedido) } };
+          chartData: chart, proximasEntregas: proximasLista } };
       }
     } catch (err) {
       console.error("Erro ao carregar dados do início:", err);
@@ -816,23 +832,16 @@ export default function Inicio() {
         {/* ── Coluna principal ── */}
         <div className="ini-main">
 
+      {/* (16/10) celular: pedido novo pra aceitar e atrasados no topo, logo embaixo do "Olá" (antes uma faixa embaixo do Acesso rápido) */}
+      {!loading && !erroCarga && (pedidosNovos.length > 0 || counts.pedidosAtrasados > 0) && (
+        <section className="ini-section ini-section--novos">
+          <PedidosNovosTopo novos={pedidosNovos} atrasados={counts.pedidosAtrasados}
+            aoAceitar={(id) => { cacheInicio = null; setPedidosNovos(l => l.filter(p => p.id !== id)); void carregarTudo(true); }} />
+        </section>
+      )}
+
       {/* ── Seu dia (07/10 · 3.04): o resumo do dia no celular e no tablet. No computador ele já está no topo rosa. ── */}
       <section className="ini-section ini-section--dia">
-        {/* (15/10) celular: pedidos atrasados e novos pra aceitar (só quando tem). No computador já ficam no topo. */}
-        {!loading && !erroCarga && (counts.pedidosAtrasados > 0 || counts.pedidosPendentes > 0) && (
-          <div className="ini-fx">
-            {counts.pedidosAtrasados > 0 && (
-              <button type="button" className="ini-fx-b ini-fx-b--atr" onClick={() => navigate("/pedidos?filtro=atrasados")}>
-                <b>{counts.pedidosAtrasados}</b><span>{counts.pedidosAtrasados === 1 ? "pedido" : "pedidos"}<br />{counts.pedidosAtrasados === 1 ? "atrasado" : "atrasados"}</span>
-              </button>
-            )}
-            {counts.pedidosPendentes > 0 && (
-              <button type="button" className="ini-fx-b ini-fx-b--novo" onClick={() => navigate("/pedidos?filtro=aguardando")}>
-                <b>{counts.pedidosPendentes}</b><span>{counts.pedidosPendentes === 1 ? "pedido novo" : "pedidos novos"}<br />pra aceitar</span>
-              </button>
-            )}
-          </div>
-        )}
         <SeuDia
           carregando={loading} erro={erroCarga} aoTentar={tentarDeNovo}
           entregasHoje={counts.entregasHoje} atrasados={counts.pedidosAtrasados} novos={counts.pedidosPendentes}
@@ -905,6 +914,9 @@ export default function Inicio() {
         </div>
       </section>
 
+      {/* ── Banner promocional (admin configura). (16/10) no celular, logo depois do Acesso rápido: quebra a parte só de texto ── */}
+      {!computador && <div className="ini-mobile-banner"><AdminBannerMobile /></div>}
+
       {/* ── Recebido nos últimos 30 dias (o que entrou no caixa, igual ao Financeiro) ── */}
       <section className="ini-section ini-section--chart">
         <div className="ini-chart-header">
@@ -972,9 +984,6 @@ export default function Inicio() {
 
         {!computador && (
           <>
-            {/* ── Banner promocional (admin configura) ── */}
-            <div className="ini-mobile-banner"><AdminBannerMobile /></div>
-
             {/* ── Suas atualizações e Notícias (celular e tablet) ── */}
             <div className="ini-mobile-updates"><UpdatesFeed /></div>
           </>
@@ -1381,18 +1390,11 @@ export default function Inicio() {
         /* Nível 1: filhos diretos de .ini-content */
         .ini-aside          { order: 99; }
         .ini-main           { order: 2; display: flex; flex-direction: column; }
-        .ini-mobile-banner  { order: 3; }
         .ini-mobile-updates { order: 4; }
 
         /* Nível 2: seções dentro de .ini-main */
         /* (4.29) ordem do celular: topo · Acesso rápido · Próximas entregas · abrir/pausar a loja · banner */
         .ini-section--dia { order: 3; }
-        .ini-fx { display: flex; gap: 8px; margin-bottom: 12px; }
-        .ini-fx-b { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 10px 12px; border: 0; border-radius: var(--ui-raio); font-family: inherit; text-align: left; cursor: pointer; white-space: nowrap; }
-        .ini-fx-b b { font-size: 22px; font-weight: 700; line-height: 1; }
-        .ini-fx-b span { font-size: 13px; font-weight: 600; line-height: 1.25; }
-        .ini-fx-b--atr { background: #FDECEC; color: #B42318; }
-        .ini-fx-b--novo { background: #FFF4D6; color: #8A5A00; }
         .ini-root .ini-section.ini-section--dia { margin-top: var(--space-3) !important; }
         @media (min-width: 901px) { .ini-section--dia { display: none; } }
         .ini-section--pausa { order: 4; margin-top: var(--space-3); }
@@ -1400,6 +1402,10 @@ export default function Inicio() {
         .ini-pp:empty { display: none; }
 
         .ini-section--nav     { order: 2; }
+        .ini-main > .ini-mobile-banner { order: 2; margin-top: var(--space-3); }
+        .ini-section--novos { order: -1; }
+        .ini-root .ini-section.ini-section--novos { margin-top: var(--space-3) !important; }
+        @media (min-width: 901px) { .ini-section--novos { display: none; } }
 
         /* ═════ Hero Nova Venda (CTA de destaque) ═════ */
         .ini-hero-cta {
