@@ -1979,6 +1979,9 @@ export default function Inicio() {
           .ini-content { gap: 24px !important; }
           .ini-main { gap: 20px; }
           .ini-main > .ini-section { margin-top: 0 !important; margin-bottom: 0 !important; }
+          /* (16/10) espaço do topo no próprio bloco: o primeiro cartão (seja qual for) não gruda no cabeçalho */
+          .ini-root .ini-main { padding-top: var(--space-3); }
+          .ini-root .ini-main > .ini-section.ini-section--novos { margin-top: 0 !important; }
           .ini-mobile-conquistas { order: 5; }
         }
         /* (15/10) atalhos: ícone rosa forte (diferente dos primeiros passos) e textos numa linha */
