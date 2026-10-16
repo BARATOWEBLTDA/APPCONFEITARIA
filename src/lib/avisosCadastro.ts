@@ -7,7 +7,7 @@ import { criarNotificacaoPessoal } from "@/lib/notificacoesUsuario";
  * Leitura que falha não vira aviso: o item só aparece quando dá pra ter certeza que falta.
  */
 export type AvisoCadastro = {
-  chave: string; titulo: string; texto: string; link: string; icone: "custos" | "maquininha" | "ficha" | "caixa" | "conta";
+  chave: string; titulo: string; texto: string; link: string; estado?: { abrir: string }; icone: "custos" | "maquininha" | "ficha" | "caixa" | "conta";
   /** (15/10) pro cartão "Pra fazer": urgência e a linha curta (cabe numa linha no celular) */
   nivel: "urgente" | "atencao" | "normal"; curto: { t: string; s: string };
 };
@@ -30,7 +30,7 @@ export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
     const sit = v < diaISO(0) ? "atrasada" : v === diaISO(0) ? "hoje" : "amanha";
     l.push({ chave: sit === "amanha" ? `conta_vence_${c.id}` : `conta_${sit}_${c.id}`, icone: "conta",
       titulo: `${sit === "atrasada" ? "Atrasada" : sit === "hoje" ? "Vence hoje" : "Vence amanhã"}: ${c.descricao}`,
-      texto: "Pague ou marque como paga em A pagar pro seu caixa ficar sempre certo.", link: "/financeiro/a-pagar",
+      texto: "Pague ou marque como paga em A pagar pro seu caixa ficar sempre certo.", link: "/financeiro/a-pagar", estado: { abrir: `pagar:${c.id}` },
       nivel: sit === "amanha" ? "atencao" : "urgente",
       curto: { t: sit === "atrasada" ? `${c.descricao} atrasado` : String(c.descricao), s: sit === "atrasada" ? "Já venceu" : sit === "hoje" ? "Vence hoje" : "Vence amanhã" } });
   }
@@ -42,14 +42,14 @@ export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
   if (faltaFixos || faltaTaxa) {
     const s = faltaFixos && faltaTaxa ? "Aluguel, luz e a maquininha" : faltaFixos ? "Aluguel, luz, internet" : "Taxa da maquininha";
     l.push({ chave: "falta_custos", icone: "custos", titulo: faltaFixos && faltaTaxa ? "Cadastre seus custos e a taxa da maquininha" : faltaFixos ? "Cadastre seus custos fixos" : "Cadastre a taxa da maquininha",
-      texto: faltaFixos && faltaTaxa ? "Aluguel, luz e a taxa da maquininha entram no custo de cada produto." : faltaFixos ? "Aluguel, luz e internet entram no custo. Sem eles, o lucro parece maior." : "A taxa muda no débito e no crédito. Cadastre pra ver o lucro de cada venda.", link: "/custos", nivel: "normal",
+      texto: faltaFixos && faltaTaxa ? "Aluguel, luz e a taxa da maquininha entram no custo de cada produto." : faltaFixos ? "Aluguel, luz e internet entram no custo. Sem eles, o lucro parece maior." : "A taxa muda no débito e no crédito. Cadastre pra ver o lucro de cada venda.", link: "/custos", estado: { abrir: faltaFixos ? "fixo" : "maquininha" }, nivel: "normal",
       curto: { t: faltaFixos ? "Custos e taxas" : "Taxa da maquininha", s } });
   }
   const semFicha = !produtos.error ? ((produtos.data as any[]) || []).filter(p => !(p.produto_insumos || []).length).length : 0;
   if (semFicha > 0)
-    l.push({ chave: "falta_ficha_tecnica", icone: "ficha", titulo: semFicha === 1 ? "1 produto sem ficha técnica" : `${semFicha} produtos sem ficha técnica`, texto: "Monte a receita de cada produto pra saber o custo e o lucro de verdade.", link: "/ficha-tecnica", nivel: "normal", curto: { t: `${semFicha} sem ficha técnica`, s: "Pro app saber o lucro" } });
+    l.push({ chave: "falta_ficha_tecnica", icone: "ficha", titulo: semFicha === 1 ? "1 produto sem ficha técnica" : `${semFicha} produtos sem ficha técnica`, texto: "Monte a receita de cada produto pra saber o custo e o lucro de verdade.", link: "/ficha-tecnica", estado: { abrir: "sem-ficha" }, nivel: "normal", curto: { t: `${semFicha} sem ficha técnica`, s: "Pro app saber o lucro" } });
   if (!perfil.error && perfil.data && (perfil.data as any).caixa_inicio_em == null)
-    l.push({ chave: "falta_saldo_caixa", icone: "caixa", titulo: "Informe o saldo do caixa", texto: "Diga quanto tem hoje na gaveta e no banco pro Financeiro bater certinho.", link: "/financeiro", nivel: "normal", curto: { t: "Saldo do caixa", s: "Quanto tem hoje" } });
+    l.push({ chave: "falta_saldo_caixa", icone: "caixa", titulo: "Informe o saldo do caixa", texto: "Diga quanto tem hoje na gaveta e no banco pro Financeiro bater certinho.", link: "/financeiro", estado: { abrir: "saldo" }, nivel: "normal", curto: { t: "Saldo do caixa", s: "Quanto tem hoje" } });
   return l;
 }
 

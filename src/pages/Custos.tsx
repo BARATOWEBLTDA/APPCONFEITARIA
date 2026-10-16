@@ -1,6 +1,7 @@
 // Custos — refeita no padrão novo do financeiro (03/10). Mesma lógica de antes:
 // custos fixos (com dia de vencimento → viram conta em "A pagar"), custos variáveis
 // (% de cada venda ou R$ por pedido) e mão de obra (salário, horas e dias).
+import { useAbrirPedido } from "@/hooks/useAbrirPedido";
 import TourPrimeiraVez from "@/components/TourPrimeiraVez";
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
@@ -80,6 +81,8 @@ export default function Custos() {
   }, []);
   useEffect(() => { carregar(); }, [carregar]);
 
+  // (16/10) veio do "Ver" do Seus próximos passos: abre direto a janela que resolve
+  useAbrirPedido(!carregando && !!uid, p => { if (p === "maquininha") setEditMaq(true); else if (p === "fixo") setEditFixo("novo"); });
   const totalFixos = useMemo(() => fixos.filter(f => f.ativo).reduce((s, f) => s + f.valor, 0), [fixos]);
   const horasMes = mo.horas_dia * mo.dias_semana_array.length * 4.345;
   const custoHora = horasMes > 0 ? (totalFixos + mo.salario_mensal) / horasMes : 0;

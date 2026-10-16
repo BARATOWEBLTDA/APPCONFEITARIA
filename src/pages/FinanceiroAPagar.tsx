@@ -1,4 +1,5 @@
 import CampoData from '@/components/CampoData'
+import { useAbrirPedido } from "@/hooks/useAbrirPedido";
 import TourPrimeiraVez from "@/components/TourPrimeiraVez";
 import { useTravarRolagem } from "@/hooks/useTravarRolagem";
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
@@ -49,6 +50,8 @@ export default function FinanceiroAPagar() {
   const [precisaSql, setPrecisaSql] = useState(false);
   const [erro, setErro] = useState(false); // não deu pra carregar (10/10)
   const [pagar, setPagar] = useState<Conta | null>(null);
+  // (16/10) veio do "Ver"/"Pagar" do Seus próximos passos: abre a janela de pagar aquela conta
+  useAbrirPedido(!carregando && contas.length > 0, p => { const id = p.startsWith("pagar:") ? p.slice(6) : ""; const c = contas.find(x => x.id === id); if (c) setPagar(c); });
   const [nova, setNova] = useState(false);
 
   const numBusca = useRef(0); // 10/10: só vale a resposta da última busca

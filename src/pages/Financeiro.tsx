@@ -1,5 +1,6 @@
 // Financeiro — painel (Passo 7, 03/10; 4.29: por período, com comparação, formas de pagamento e mais vendidos). Junta o que antes ficava na Visão Geral e no menu:
 // saldo em caixa, os números do mês, a receber, a pagar, previstos, fluxo e últimas movimentações.
+import { useAbrirPedido } from "@/hooks/useAbrirPedido";
 import TourPrimeiraVez from "@/components/TourPrimeiraVez";
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { useEffect, useRef, useState } from "react";
@@ -76,6 +77,8 @@ export default function Financeiro() {
   const navigate = useNavigate();
   const { uid, cx, recarregar } = useCaixa();
   const [definir, setDefinir] = useState(false);
+  // (16/10) veio do "Ver" do Seus próximos passos: já abre o "quanto tem hoje"
+  useAbrirPedido(true, p => { if (p === "saldo") setDefinir(true); });
   const [nova, setNova] = useState<"entrada" | "saida" | "apagar" | null>(null);
   // (4.29) receber e pagar direto do painel
   const [receber, setReceber] = useState<{ item: ItemReceber | null } | null>(null);

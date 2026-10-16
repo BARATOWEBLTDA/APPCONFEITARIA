@@ -16,7 +16,7 @@ import { useAtualizacoes } from "@/components/MinhasAtualizacoes";
  * e o botão da ação embaixo do texto (antes um X no canto). Conta a pagar não tem "Agora não".
  * O que falta cadastrar só aparece depois dos primeiros passos. Conta nova (sem nada) não vê o cartão.
  */
-type Item = { chave: string; nivel: "urgente" | "atencao" | "normal"; Ic: Icon; t: string; s: string; acao: string; link: string; fechar?: boolean; ordem: number };
+type Item = { chave: string; nivel: "urgente" | "atencao" | "normal"; Ic: Icon; t: string; s: string; acao: string; link: string; estado?: { abrir: string }; fechar?: boolean; ordem: number };
 
 const ICONE: Record<AvisoCadastro["icone"], Icon> = { custos: Buildings, maquininha: CreditCard, ficha: ClipboardText, caixa: Coins, conta: CalendarCheck };
 const DIA = 86400000;
@@ -73,7 +73,7 @@ export default function PraFazer() {
 
   const itens: Item[] = [
     ...avisos.map((a, i): Item => ({
-      chave: a.chave, nivel: a.nivel, Ic: ICONE[a.icone], t: a.curto.t, s: a.texto, link: a.link, ordem: i,
+      chave: a.chave, nivel: a.nivel, Ic: ICONE[a.icone], t: a.curto.t, s: a.texto, link: a.link, estado: a.estado, ordem: i,
       acao: a.icone === "conta" ? "Pagar" : "Ver", fechar: a.icone !== "conta",
     })),
     ...updates.map((u): Item => ({
@@ -116,7 +116,7 @@ export default function PraFazer() {
                     )}
                   </div>
                 )}
-                <button type="button" className="pf-acao" onClick={() => navigate(x.link)}>{x.acao}</button>
+                <button type="button" className="pf-acao" onClick={() => navigate(x.link, x.estado ? { state: x.estado } : undefined)}>{x.acao}</button>
               </div>
             </div>
           </li>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef, ReactNode } from "react";
+import { useAbrirPedido } from "@/hooks/useAbrirPedido";
 import TourPrimeiraVez from "@/components/TourPrimeiraVez";
 import CampoNumero from "@/components/ui/CampoNumero";
 import { parseNumBR } from "@/lib/numeroBR";
@@ -324,6 +325,13 @@ export default function FichaTecnica() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, produtos, location.state]);
+
+  // (16/10) veio do "Ver" do Seus próximos passos: abre a ficha do primeiro produto sem ficha
+  useAbrirPedido(!loading && produtos.length > 0, p => {
+    if (p !== "sem-ficha") return;
+    const sem = produtos.find(x => !calcular(x, maoConta, cvConta).temFicha);
+    if (sem) { abrirFicha(sem); window.scrollTo(0, 0); }
+  });
 
   // (11/10) Retrato da ficha como foi aberta (ou salva pela última vez): a seta de voltar pergunta antes de descartar mudanças.
   const retrato = useRef<{ ficha: string; extras: typeof extras; mo: boolean; info: boolean } | null>(null);
