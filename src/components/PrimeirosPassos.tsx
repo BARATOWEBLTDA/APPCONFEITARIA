@@ -9,6 +9,7 @@ import { useProfile, refreshProfile } from "@/hooks/useProfile";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import Janelinha from "@/components/financeiro/Folha";
 import { Mascote } from "@/components/marca/Mascote";
+import DestaqueComecar from "@/components/inicio/DestaqueComecar";
 import { marcarPagamentoConferido } from "@/lib/primeirosPassos";
 import { criarNotificacaoPessoal } from "@/lib/notificacoesUsuario";
 import { lerPassos, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk, type EstadoPassos } from "@/lib/primeirosPassos";
@@ -77,6 +78,9 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   // Quem vem do "Configurar minha confeitaria" das boas-vindas: rola até aqui e destaca o passo da vez (09/10 · 3.67)
   const raiz = useRef<HTMLDivElement>(null);
   const [destaque, setDestaque] = useState(false);
+  const [spot, setSpot] = useState(false);
+  const atRef = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
   // (13/10) o pedido é lido uma vez e os tempos não são cancelados quando o estado relê (antes uma releitura
   // logo depois de abrir cancelava o destaque, e o pedido já tinha sido apagado: nada acontecia)
   const pedidoDestaque = useRef<boolean | null>(null);
@@ -89,12 +93,24 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
     }
     if (!pedidoDestaque.current) return;
     pedidoDestaque.current = false;
-    // (15/10) só rola e destaca o passo da vez: não abre mais a janela sozinha. Ela toca em "Começar" e aí os passos vão abrindo um atrás do outro
-    window.setTimeout(() => {
+    // (15/10) o Início abre no topo (o cartão já fica logo ali; rolar até ele empurrava a tela pra baixo).
+    // Celular, primeira vez: o destaque do "Começar". Senão: o passo da vez pisca.
+    window.scrollTo(0, 0);
+    const kSpot = uid ? `doonly_pp_destaque_visto_${uid}` : "";
+    let viu = true;
+    try { viu = !kSpot || localStorage.getItem(kSpot) === "1"; } catch {}
+    const celular = window.matchMedia("(max-width: 767px)").matches;
+    // espera outra janela (boas-vindas, conta ativa) fechar antes de mostrar o destaque
+    let tentativas = 0;
+    const mostrar = () => {
       if (!montado.current) return;
-      raiz.current?.scrollIntoView({ behavior: "smooth", block: "center" }); setDestaque(true);
-    }, 350);
-    window.setTimeout(() => { if (montado.current) setDestaque(false); }, 2600);
+      if (document.querySelector('[role="dialog"][aria-modal="true"]') && tentativas++ < 40) { window.setTimeout(mostrar, 500); return; }
+      window.scrollTo(0, 0);
+      if (celular && !viu) { try { localStorage.setItem(kSpot, "1"); } catch {} setSpot(true); return; }
+      setDestaque(true);
+      window.setTimeout(() => { if (montado.current) setDestaque(false); }, 2300);
+    };
+    window.setTimeout(mostrar, 450);
   }, [local, estado]);
 
   // (10/10) leitura que falhou não conclui nada: fica o que já estava na tela (ou escondido) até ler com sucesso
@@ -176,12 +192,13 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
       <p className="pp-sub">{passos.length - feitos === 1 ? "Falta 1 passo pra abrir o cardápio." : `Faltam ${passos.length - feitos} passos pra abrir o cardápio.`}</p>
       <div className="pp-bar" aria-label={`${feitos} de ${passos.length} passos feitos`}><i style={{ width: `${(feitos / passos.length) * 100}%` }} /></div>
       {passos.map((p, i) => i === atual ? (
-        <div key={p.t} className="pp-at">
+        <div key={p.t} className="pp-at" ref={atRef}>
           <div className="pp-ps pp-ps--sem">
             <span className="pp-ic pp-ic--at">{p.ic}<i className="pp-n">{i + 1}</i></span>
             <span className="pp-tx"><b>{p.t}</b><small>{p.s}</small></span>
           </div>
-          <button type="button" className="pp-btn" onClick={p.abrir}>{feitos <= 1 ? "Começar" : "Fazer agora"}</button>
+          <button type="button" className="pp-btn" ref={btnRef} onClick={p.abrir}>{feitos <= 1 ? "Começar" : "Fazer agora"}</button>
+          {spot && <DestaqueComecar alvo={atRef} botao={btnRef} aoComecar={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
         </div>
       ) : (
         <button type="button" key={p.t} className={`pp-ps${p.feito ? " pp-ps--ok" : ""}`} onClick={p.feito ? undefined : p.abrir} disabled={p.feito}>

@@ -3,6 +3,7 @@ import { CalendarDots, CurrencyDollar, Check, ListBullets, Sparkle, Users } from
 import { Botao } from '@/components/base'
 import { Mascote } from '@/components/marca/Mascote'
 import { useSobreposicao } from '@/components/base/useSobreposicao'
+import { nomeApresentavel } from '@/lib/nomeApresentavel'
 import './termos.css'
 
 /**
@@ -19,6 +20,7 @@ const RECURSOS = [
 const CONFETE: [number, number, string, number][] = [[44, 12, '#FCD34D', 25], [70, 20, '#FFFFFF', -30], [90, 9, '#86EFAC', 50], [94, 72, '#FCD34D', -15], [62, 98, '#93C5FD', 35]]
 
 export function ContaAtiva({ nome, aoContinuar }: { nome?: string; aoContinuar: () => void }) {
+  const primeiro = nomeApresentavel(nome) // "bruno" vira "Bruno"; nome que não parece nome fica de fora
   const caixa = useRef<HTMLDivElement>(null)
   useSobreposicao(true, aoContinuar, caixa)
   return (
@@ -29,8 +31,9 @@ export function ContaAtiva({ nome, aoContinuar }: { nome?: string; aoContinuar: 
           {CONFETE.map(([l, t, c, g], i) => <i key={i} className="ca-cf" aria-hidden="true" style={{ left: `${l}%`, top: t, background: c, transform: `rotate(${g}deg)` }} />)}
           <Mascote pose="acenando" className="ca-masc" />
           <span className="ca-tag"><i aria-hidden="true" />Conta ativa</span>
-          <h2 id="ca-titulo">Sua conta está ativa!</h2>
-          <p className="ca-sub">{nome ? `${nome}, tudo isso já é seu:` : 'Tudo isso já é seu:'}</p>
+          {/* (15/10) o título não repete a etiqueta "Conta ativa"; o nome sempre com a primeira letra maiúscula */}
+          <h2 id="ca-titulo">{primeiro ? `Tudo pronto, ${primeiro}!` : 'Tudo pronto!'}</h2>
+          <p className="ca-sub">Isso tudo já é seu:</p>
         </div>
         <ul className="ca-lista">
           {RECURSOS.map(({ Ic, t }) => (
