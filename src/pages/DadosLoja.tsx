@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
-import { Check, Clock, FacebookLogo, InstagramLogo, MapPin, ShareNetwork, Sparkle, Storefront, WarningCircle } from "@phosphor-icons/react";
+import { Check, Clock, FacebookLogo, PencilSimple, InstagramLogo, MapPin, ShareNetwork, Sparkle, Storefront, WarningCircle } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import AppPageHeader from "@/components/AppPageHeader";
 import MapaEndereco, { type BuscaMapa } from "@/components/MapaEndereco";
-import { DicaDescricao, EXEMPLO_DESCRICAO, EditorHorario, OpcoesMostrar } from "@/components/loja/EditoresLoja";
+import { EXEMPLO_DESCRICAO, EditorHorario, OpcoesMostrar } from "@/components/loja/EditoresLoja";
 import { Botao, Campo, CampoArea, TelaVazia, Titulo, avisar } from "@/components/base";
 import { digitosTelefone, digitosAoDigitar } from "@/lib/telefone";
 import { limparFacebook, limparInstagram } from "@/lib/redesSociais";
@@ -146,6 +146,18 @@ export default function DadosLoja() {
   const [resumoVisivel, setResumoVisivel] = useState<boolean | null>(null);
   useEffect(() => { if (!loading && resumoVisivel === null) setResumoVisivel(feitos < itens.length); }, [loading, feitos, itens.length, resumoVisivel]);
   const faltando = itens.filter((i) => !i.ok).map((i) => i.nome);
+
+  // (16/10) WhatsApp já preenchido vira um cartão verde em destaque (com Editar); vazio, já abre o campo
+  const [zapAberto, setZapAberto] = useState<boolean | null>(null);
+  useEffect(() => { if (!loading && zapAberto === null) setZapAberto(digitosTelefone(telefone).length < 10); }, [loading, zapAberto, telefone]);
+  // (16/10) a descrição cresce com o texto (antes cortava num campo de 4 linhas)
+  const descRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const t = descRef.current?.querySelector("textarea");
+    if (!t) return;
+    t.style.height = "auto";
+    t.style.height = `${t.scrollHeight + 2}px`;
+  }, [descricao, loading]);
 
   const irPara = (id: string) => {
     const el = document.getElementById(id);
@@ -308,22 +320,29 @@ export default function DadosLoja() {
 
         {/* Sua loja */}
         <section className="dl-card dl-loja">
-          <Cabeca Ic={Storefront} titulo="Sua loja" apoio="Nome, WhatsApp e a frase que aparecem no cardápio" />
+          <Cabeca Ic={Storefront} titulo="Sua loja" apoio="Nome, WhatsApp e descrição" />
           <div id="dl-nome">
             <Campo id="dl-in-nome" rotulo="Nome da loja" value={nome} maxLength={60} placeholder="Ex.: Doce Formiga Confeitaria" onChange={(e) => setNome(e.target.value)} />
           </div>
           <div id="dl-whats">
-            <Campo id="dl-in-whats" rotulo="WhatsApp que recebe os pedidos" inputMode="tel" value={telefone} placeholder="(41) 99999-8888"
-              icone={<IconeWhatsApp size={20} className="dl-zap" />} onChange={(e) => setTelefone(formatPhone(e.target.value, true))} />
+            {zapAberto === false ? (
+              <div className="dl-zapc">
+                <span className="dl-zapc-ic" aria-hidden="true"><IconeWhatsApp size={22} /></span>
+                <span className="dl-zapc-tx"><small>Recebe os pedidos</small><b>{telefone}</b></span>
+                <button type="button" className="dl-zapc-bt" onClick={() => setZapAberto(true)} aria-label="Editar o WhatsApp" title="Editar"><PencilSimple size={18} weight="bold" aria-hidden="true" /></button>
+              </div>
+            ) : (
+              <Campo id="dl-in-whats" rotulo="WhatsApp que recebe os pedidos" inputMode="tel" value={telefone} placeholder="(41) 99999-8888"
+                icone={<IconeWhatsApp size={20} className="dl-zap" />} onChange={(e) => setTelefone(formatPhone(e.target.value, true))} />
+            )}
           </div>
-          <DicaDescricao />
-          <div id="dl-desc" className="dl-desc">
-            <CampoArea id="dl-in-desc" rotulo="Descrição" value={descricao} maxLength={200} rows={4} autoComplete="off"
-              placeholder={EXEMPLO_DESCRICAO}
-              dica={`${descricao.length} de 200 caracteres`} onChange={(e) => setDescricao(e.target.value)} />
-            <Botao variante="suave" tamanho="p" className="dl-ia" icone={<Sparkle size={16} weight="bold" />} carregando={gerando} onClick={gerarDescricao}>
-              {gerando ? "Escrevendo…" : "Escrever com IA"}
-            </Botao>
+          <div id="dl-desc" className="dl-desc" ref={descRef}>
+            <CampoArea id="dl-in-desc" rotulo="Descrição" value={descricao} maxLength={200} rows={3} autoComplete="off"
+              placeholder={EXEMPLO_DESCRICAO} onChange={(e) => setDescricao(e.target.value)} />
+            <div className="dl-desc-pe">
+              <small>{descricao.length} de 200 caracteres</small>
+              <button type="button" className="dl-ia" onClick={gerarDescricao} disabled={gerando}><Sparkle size={15} weight="fill" aria-hidden="true" />{gerando ? "Escrevendo…" : "Escrever com IA"}</button>
+            </div>
           </div>
         </section>
 

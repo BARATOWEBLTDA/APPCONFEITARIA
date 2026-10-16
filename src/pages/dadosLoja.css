@@ -24,8 +24,20 @@
 
 /* campos */
 .dl-zap { color: #16a34a; }
-.dl-desc { position: relative; }
-.dl-desc .dl-ia { position: absolute; top: -8px; right: 0; }
+.dl-desc textarea { resize: none; overflow: hidden; min-height: 84px; }
+/* (16/10) contador e "Escrever com IA" na mesma linha, embaixo do campo (antes o botão flutuava em cima) */
+.dl-desc-pe { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
+.dl-desc-pe small { font-size: 12.5px; color: var(--ui-texto-3); white-space: nowrap; }
+.dl-ia { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; margin-right: -8px; padding: 0 8px; border: 0; border-radius: 8px; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 13.5px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.dl-ia:disabled { opacity: .6; }
+/* (16/10) WhatsApp que recebe os pedidos: cartão verde em destaque */
+.dl-zapc { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 14px; background: linear-gradient(135deg, #22B35E, #179A4E); color: #fff; box-shadow: 0 6px 16px -8px rgba(23, 154, 78, .7); }
+.dl-zapc-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 12px; background: rgba(255, 255, 255, .2); color: #fff; }
+.dl-zapc-ic svg, .dl-zapc-ic svg * { fill: currentColor; color: #fff; }
+.dl-zapc-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.dl-zapc-tx small { font-size: 12.5px; color: rgba(255, 255, 255, .9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dl-zapc-tx b { font-size: 17px; font-weight: 700; white-space: nowrap; }
+.dl-zapc-bt { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 10px; background: #fff; color: #179A4E; cursor: pointer; }
 .dl-cep { flex: none; display: inline-flex; align-items: center; gap: 4px; padding-right: 4px; font-size: 13px; font-weight: 700; color: var(--ui-texto-3); white-space: nowrap; }
 .dl-cep.ok { color: var(--ui-verde); }
 .dl-g2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
