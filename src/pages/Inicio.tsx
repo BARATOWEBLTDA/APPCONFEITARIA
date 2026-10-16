@@ -1438,7 +1438,7 @@ export default function Inicio() {
         .ini-root .ini-section.ini-section--dia { margin-top: var(--space-3) !important; }
         @media (min-width: 901px) { .ini-section--dia { display: none; } }
         .ini-section--pausa { order: 4; margin-top: var(--space-3); }
-        .ini-section--fixos { order: 3; margin-top: var(--space-3); }
+        .ini-section--fixos { order: 5; margin-top: var(--space-3); } /* (16/10) depois do "Recebendo pedidos": é do mês, não do dia */
         .ini-section--checklist-top { order: 0; margin-top: var(--space-3); }
         .ini-pp:empty { display: none; }
 

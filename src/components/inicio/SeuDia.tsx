@@ -108,7 +108,13 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, sem
         </div>
       ) : (
         <>
-          {doDia && lista.length === 0 && <p className="sd-x">Nenhum pedido neste dia.</p>}
+          {/* (16/10) dia vazio com a altura de uma entrega: o cartão não encolhe (antes o de baixo subia e parecia abrir) */}
+          {doDia && lista.length === 0 && (
+            <div className="sd-dvazio">
+              <span>Nada marcado pro dia {Number(diaSel!.slice(8, 10))}</span>
+              <button type="button" onClick={() => setDiaSel(null)}>Ver todas</button>
+            </div>
+          )}
           {lista.length > 0 && (
             <ul className="sd-pl">
               {lista.map(e => (
