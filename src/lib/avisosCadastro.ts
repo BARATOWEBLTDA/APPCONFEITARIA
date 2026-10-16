@@ -42,7 +42,7 @@ export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
   if (faltaFixos || faltaTaxa) {
     const s = faltaFixos && faltaTaxa ? "Aluguel, luz e a maquininha" : faltaFixos ? "Aluguel, luz, internet" : "Taxa da maquininha";
     l.push({ chave: "falta_custos", icone: "custos", titulo: faltaFixos && faltaTaxa ? "Cadastre seus custos e a taxa da maquininha" : faltaFixos ? "Cadastre seus custos fixos" : "Cadastre a taxa da maquininha",
-      texto: faltaFixos ? "Aluguel, luz, internet: sem eles o lucro parece maior do que é." : "Ela muda no débito e no crédito. Leva 1 minuto.", link: "/custos", nivel: "normal",
+      texto: faltaFixos && faltaTaxa ? "Aluguel, luz e a taxa da maquininha: sem eles o lucro parece maior do que é." : faltaFixos ? "Aluguel, luz, internet: sem eles o lucro parece maior do que é." : "Ela muda no débito e no crédito. Leva 1 minuto.", link: "/custos", nivel: "normal",
       curto: { t: faltaFixos ? "Custos e taxas" : "Taxa da maquininha", s } });
   }
   const semFicha = !produtos.error ? ((produtos.data as any[]) || []).filter(p => !(p.produto_insumos || []).length).length : 0;

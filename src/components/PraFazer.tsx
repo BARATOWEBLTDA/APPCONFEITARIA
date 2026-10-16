@@ -65,12 +65,12 @@ export default function PraFazer() {
 
   const itens: Item[] = [
     ...avisos.map((a, i): Item => ({
-      chave: a.chave, nivel: a.nivel, Ic: ICONE[a.icone], t: a.curto.t, s: a.curto.s, link: a.link, ordem: i,
+      chave: a.chave, nivel: a.nivel, Ic: ICONE[a.icone], t: a.curto.t, s: a.texto, link: a.link, ordem: i,
       acao: a.icone === "conta" ? "Pagar" : "Ver", fechar: a.icone !== "conta",
     })),
     ...updates.map((u): Item => ({
       chave: u.key, nivel: u.key === "faturamento-down" || u.key === "aniversarios" ? "atencao" : "normal",
-      Ic: u.Icone, t: u.curto.t, s: u.curto.s, link: u.path, ordem: 100 - u.prioridade, acao: "Ver", fechar: true,
+      Ic: u.Icone, t: u.curto.t, s: u.descricao || u.curto.s, link: u.path, ordem: 100 - u.prioridade, acao: "Ver", fechar: true,
     })),
   ].filter(x => !x.fechar || !escondido(x.chave))
    .sort((a, b) => PESO[a.nivel] - PESO[b.nivel] || a.ordem - b.ordem);
@@ -136,7 +136,8 @@ const CSS = `
   .pf-cx { flex: 1; min-width: 0; }
   .pf-tx { display: flex; flex-direction: column; gap: 1px; }
   .pf-tx b { font-size: 14.5px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .pf-tx small { font-size: 12.5px; line-height: 1.4; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* (16/10) explicação de verdade (até 2 linhas), pra os botões embaixo fazerem sentido */
+  .pf-tx small { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-top: 2px; font-size: 13px; line-height: 1.45; color: var(--ui-texto-2); overflow: hidden; }
   .pf-bts { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-top: 8px; }
   .pf-adiar { position: relative; }
   .pf-nao { display: flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 10px; border: 0; border-radius: 8px; background: none; color: var(--ui-texto-3); font-family: inherit; font-size: 13.5px; font-weight: 600; white-space: nowrap; cursor: pointer; }
