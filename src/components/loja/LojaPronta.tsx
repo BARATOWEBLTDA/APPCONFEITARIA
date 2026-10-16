@@ -1,35 +1,40 @@
-import { useState } from 'react'
-import { ArrowSquareOut, Check, Copy } from '@phosphor-icons/react'
+import { useNavigate } from 'react-router-dom'
+import { Check, Eye, ShareNetwork, X } from '@phosphor-icons/react'
 import { getCardapioUrl } from '@/hooks/useProfile'
 import { avisar } from '@/components/base'
-import IconeWhatsApp from '@/components/IconeWhatsApp'
 import './loja.css'
 
 /**
- * Loja pronta (4.27) · o fim dos Primeiros passos: o link do cardápio com Copiar e Abrir,
- * e o botão pra mandar o link no WhatsApp. Usado no cartão do Início e na janela que abre uma vez quando ela termina.
+ * (16/10) Loja pronta: cartão pequeno no topo do Início (antes ocupava quase a tela toda, com mascote, link,
+ * Copiar, Abrir e WhatsApp). "Compartilhar" abre o compartilhar do celular (WhatsApp, Instagram...);
+ * onde ele não existe (computador), copia o link. "Ver cardápio" mostra como o cliente vê. O X fecha de vez.
  */
-export function LojaProntaConteudo({ profile }: { profile: any }) {
-  const [copiado, setCopiado] = useState(false)
+export function LojaProntaCartao({ profile, onFechar }: { profile: any; onFechar: () => void }) {
+  const navigate = useNavigate()
   const link = getCardapioUrl(profile)
+  const texto = 'Oi! Agora você pode fazer sua encomenda pelo meu cardápio:'
 
-  const texto = `Oi! Agora você pode fazer sua encomenda pelo meu cardápio: ${link}`
-
-  const copiar = async () => {
-    try { await navigator.clipboard.writeText(link); setCopiado(true); setTimeout(() => setCopiado(false), 2000) }
-    catch { avisar('Não deu pra copiar. Segure no link pra copiar.', { tipo: 'erro' }) }
+  const compartilhar = async () => {
+    const nav = navigator as Navigator & { share?: (d: ShareData) => Promise<void> }
+    if (nav.share) {
+      try { await nav.share({ title: profile?.nome_loja || 'Meu cardápio', text: texto, url: link }); return }
+      catch (e: any) { if (e?.name === 'AbortError') return } // ela fechou a janela: nada a fazer
+    }
+    try { await navigator.clipboard.writeText(link); avisar('Link do cardápio copiado', { tipo: 'ok' }) }
+    catch { avisar('Não deu pra copiar. Abra o cardápio e copie o link de lá.', { tipo: 'erro' }) }
   }
 
   return (
-    <div className="lp">
-      <p className="lp-url" title={link}>{link.replace(/^https?:\/\//, '')}</p>
-      <div className="lj-link-bts">
-        <button type="button" className="lj-bt" onClick={copiar}>{copiado ? <Check size={18} aria-hidden="true" /> : <Copy size={18} aria-hidden="true" />}{copiado ? 'Copiado' : 'Copiar'}</button>
-        <a className="lj-bt" href={link} target="_blank" rel="noopener noreferrer"><ArrowSquareOut size={18} aria-hidden="true" />Abrir</a>
+    <div className="lpc">
+      <button type="button" className="lpc-x" onClick={onFechar} aria-label="Fechar"><X size={14} weight="bold" /></button>
+      <div className="lpc-top">
+        <span className="lpc-ic" aria-hidden="true"><Check size={22} weight="bold" /></span>
+        <span className="lpc-tx"><b>Seu cardápio está no ar!</b><small>Mande o link pros seus clientes</small></span>
       </div>
-      <a className="lp-zap" href={`https://wa.me/?text=${encodeURIComponent(texto)}`} target="_blank" rel="noopener noreferrer">
-        <IconeWhatsApp size={20} />Mandar o link no WhatsApp
-      </a>
+      <div className="lpc-bts">
+        <button type="button" className="lpc-b lpc-b--pri" onClick={compartilhar}><ShareNetwork size={18} weight="bold" aria-hidden="true" />Compartilhar</button>
+        <button type="button" className="lpc-b" onClick={() => navigate('/cardapio-preview')}><Eye size={18} weight="bold" aria-hidden="true" />Ver cardápio</button>
+      </div>
     </div>
   )
 }

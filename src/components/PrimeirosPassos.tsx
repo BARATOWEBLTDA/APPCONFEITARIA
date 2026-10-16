@@ -8,14 +8,13 @@ import { apiFetch } from "@/lib/apiFetch";
 import { useProfile, refreshProfile } from "@/hooks/useProfile";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import Janelinha from "@/components/financeiro/Folha";
-import { Mascote } from "@/components/marca/Mascote";
 import Destaque from "@/components/Destaque";
 import { marcarPagamentoConferido } from "@/lib/primeirosPassos";
 import { criarNotificacaoPessoal } from "@/lib/notificacoesUsuario";
 import { lerPassos, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk, type EstadoPassos } from "@/lib/primeirosPassos";
 
 import { Botao, avisar } from "@/components/base";
-import { LojaProntaConteudo } from "@/components/loja/LojaPronta";
+import { LojaProntaCartao } from "@/components/loja/LojaPronta";
 import { erroDeConexao, SEM_INTERNET } from "@/lib/erros";
 import { definirSaldoInicial } from "@/lib/caixa";
 import { mascaraBRL, lerBRL } from "@/lib/moeda";
@@ -157,15 +156,11 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
 
   if (completo) {
     return (
-      <div className="pp pp--fim">
-        {/* (07/10 · 2.94) o mascote no lugar dos emojis */}
-        <Mascote pose="acenando" className="pp-masc" />
-        <b className="pp-ft">Sua confeitaria está pronta pra vender!</b>
-        <p className="pp-fs">Agora é só mandar o link do cardápio pros seus clientes.</p>
-        <LojaProntaConteudo profile={profile} />
-        <button type="button" className="pp-lnk pp-lnk--cinza" onClick={fechar}>Fechar</button>
+      <>
+        {/* (16/10) cartão pequeno: antes ocupava quase a tela toda */}
+        <LojaProntaCartao profile={profile} onFechar={fechar} />
         <style>{CSS}</style>
-      </div>
+      </>
     );
   }
 
@@ -583,7 +578,6 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
 }
 
 const CSS = `
-.pp--fim .lp { margin-top: 12px; }
 
   .pp { background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); padding: 16px 16px 8px; box-shadow: var(--ui-sombra-cartao); font-family: var(--font-base); color: var(--ui-texto); }
   .pp-t { display: block; font-size: 18px; font-weight: 700; line-height: 1.3; }
@@ -628,10 +622,6 @@ const CSS = `
   .pp-at .pp-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--chocolate-escuro); }
   .pp-lnk { display: block; width: 100%; min-height: 44px; margin-top: 8px; padding: 10px; border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
   .pp-lnk--cinza { color: var(--ui-texto-3); font-weight: 500; }
-  .pp--fim { text-align: center; background: linear-gradient(180deg, #FFF1F6, var(--ui-branco) 70%); padding-bottom: 12px; }
-  .pp-masc { display: block; width: 120px; height: auto; margin: 0 auto; }
-  .pp-ft { display: block; font-size: 18px; font-weight: 700; margin: 6px auto 0; max-width: 260px; line-height: 1.25; text-wrap: balance; }
-  .pp-fs { font-size: 13.5px; color: var(--ui-texto-2); margin: 6px auto 4px; max-width: 290px; line-height: 1.45; text-wrap: balance; }
 
   /* (07/10 · 2.94) No Início, em tela larga (tablet e computador), os passos viram blocos lado a lado:
      o cartão fica com metade da altura e não empurra o resto da tela pra baixo. */
@@ -663,7 +653,6 @@ const CSS = `
     .pp--inicio > .pp-ps--ok .pp-tx b { color: #1F7A45; font-weight: 600; }
     .pp--inicio > .pp-ps:not(:disabled):hover { border-color: var(--ui-rosa); }
   }
-  @media (min-width: 768px) { .pp--fim .pp-btn { max-width: 340px; margin-left: auto; margin-right: auto; } }
 
   .ppf-d-logo { flex: none; width: 84px; height: 84px; border-radius: 50%; border: 4px solid var(--ui-branco); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro);
     box-shadow: 0 4px 14px rgba(44, 18, 25, .12); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 700; }
