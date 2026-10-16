@@ -19,8 +19,8 @@ import { useNavigate } from "react-router-dom";
 // (15/10) o gráfico (recharts) só é baixado quando aparece
 const GraficoRecebido = lazy(() => import("@/components/inicio/GraficoRecebido"));
 import {
-  Coins, Plus, CalendarDots, CurrencyDollar, Camera, Users, ChartLineUp,
-  CaretRight, Cake, Receipt, Gear, ClipboardText,
+  HandCoins, Eye, Plus, CalendarDots, CurrencyDollar, Camera, Users, ChartLineUp,
+  CaretRight, Cake, Receipt, ClipboardText,
   WarningCircle, Clock, Package, TrendUp, Confetti, RocketLaunch, Sparkle, Crown,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
@@ -863,20 +863,20 @@ export default function Inicio() {
             <div className="ini-hero-cta-t">Nova venda</div>
             <div className="ini-hero-cta-d">Comece um pedido em segundos</div>
           </div>
-          {isMobile && <img src="/nova-venda-sacola.svg" alt="" aria-hidden="true" className="ini-hero-cta-bag" />}
+          {isMobile && <img src="/nova-venda-bolo.svg" alt="" aria-hidden="true" className="ini-hero-cta-bag" />}
           <CaretRight size={20} weight="bold" className="ini-hero-cta-arr" />
         </button>
 
         <div className="ini-nav-grid">
           {[
-            { Icone: Coins,          label: "Custos",        sub: "Gastos fixos",          path: "/custos",        key: "custos" },
+            { Icone: HandCoins,      label: "A receber",     sub: "Quem ainda deve",       path: "/financeiro/a-receber", key: "areceber" },
             { Icone: CalendarDots,   label: "Agenda",        sub: "Entregas por dia",      path: "/agenda",        key: "agenda" },
             { Icone: TrendUp,        label: "Lucratividade", sub: "Seu lucro real",     path: "/lucratividade", key: "lucro" },
             { Icone: Users,          label: "Clientes",      sub: "Quem compra",   path: "/clientes",      key: "clientes" },
             { Icone: CurrencyDollar, label: "Financeiro",    sub: "Seu caixa",     path: "/financeiro",    key: "financeiro" },
             { Icone: Cake,           label: "Produtos",      sub: "Seus doces",      path: "/produtos",      key: "produtos" },
             { Icone: ClipboardText,  label: "Ficha técnica", sub: "Custo e lucro",         path: "/ficha-tecnica", key: "ficha" },
-            { Icone: Gear,           label: "Configurações", sub: "Conta e ajustes",  path: "/configuracoes", key: "configuracoes" },
+            { Icone: Eye,            label: "Meu cardápio",  sub: "Como o cliente vê",     path: "/cardapio-preview", key: "vercardapio" },
           ].map((item) => (
             <button key={item.path} className="ini-nav-card" data-nav={item.key} onClick={() => navigate(item.path)}>
               <div className="ini-nav-icon"><item.Icone size={isMobile ? 24 : 20} weight="bold" /></div>
