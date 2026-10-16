@@ -264,9 +264,10 @@ export default function Layout() {
               { to: "/cardapio", Icone: ShoppingBag, label: "Cardápio", tour: "cardapio" },
               { to: "/pedidos",  Icone: Receipt,     label: "Pedidos",  tour: undefined },
             ] as { to: string; Icone: Icon; label: string; tour?: string }[]).map((item) => {
-              const isActive =
+              // com o Mais aberto, só ele fica aceso
+              const isActive = !maisOpen && (
                 location.pathname === item.to ||
-                location.pathname.startsWith(item.to + "/");
+                location.pathname.startsWith(item.to + "/"));
               return (
                 <NavLink
                   key={item.to}
@@ -274,6 +275,14 @@ export default function Layout() {
                   className={`bn-item${isActive ? " bn-item--active" : ""}`}
                   data-tour={item.tour}
                   aria-current={isActive ? "page" : undefined}
+                  onClick={(e) => {
+                    // (15/10) com o Mais aberto (o menu continua aparecendo), troca de tela e fecha o Mais.
+                    // A tela nova entra no lugar da entrada do Mais no histórico, igual a escolher um item dentro dele.
+                    if (!maisOpen) return;
+                    e.preventDefault();
+                    navigate(item.to, { replace: !!(window.history.state as { uiJanela?: boolean } | null)?.uiJanela });
+                    setMaisOpen(false);
+                  }}
                 >
                   <span className="bn-icon"><item.Icone size={24} weight={isActive ? "fill" : "bold"} /></span>
                   <span className="bn-label">{item.label}</span>
@@ -294,7 +303,7 @@ export default function Layout() {
               type="button"
               className={`bn-item${dooOpen ? " bn-item--active" : ""}`}
               data-tour="doo"
-              onClick={() => setDooOpen(true)}
+              onClick={() => { setMaisOpen(false); setDooOpen(true); }}
               aria-haspopup="dialog"
             >
               <span className="bn-icon"><Sparkle size={24} weight={dooOpen ? "fill" : "bold"} /></span>

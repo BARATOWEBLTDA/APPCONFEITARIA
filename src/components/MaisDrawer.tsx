@@ -129,7 +129,7 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
   };
 
   return createPortal(
-    <div className={`ui-veu ui-veu--centro${open ? "" : " ui-veu--saindo"}`} onClick={onClose}>
+    <div className={`ui-veu ui-veu--centro mais-veu${open ? "" : " ui-veu--saindo"}`} onClick={onClose}>
       <div
         ref={caixa} tabIndex={-1} className="ui-janela ui-janela--conteudo mais"
         role="dialog" aria-modal="true" aria-labelledby={idTitulo}

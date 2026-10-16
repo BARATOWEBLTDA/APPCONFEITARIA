@@ -33,3 +33,9 @@
 .mais-it--atual .mais-it-txt b { color: var(--ui-rosa-escuro); }
 
 @media (min-width: 768px) { .mais-cab { padding-top: 12px; } .mais-corpo { padding-bottom: 16px; } }
+
+/* (15/10) no celular e no tablet o menu de baixo continua aparecendo (com o "Mais" aceso): a gaveta para em cima dele */
+@media (max-width: 900px) {
+  .ui-veu.mais-veu { bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
+  .mais-veu .mais-corpo { padding-bottom: 16px; }
+}
