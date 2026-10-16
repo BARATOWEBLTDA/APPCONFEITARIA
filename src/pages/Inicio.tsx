@@ -11,6 +11,7 @@ import { entradasNoPeriodo } from "@/lib/painelFinanceiro";
 import { verificarAvisosPro } from "@/lib/notificacoesUsuario";
 import SeuDia, { type EntregaResumo } from "@/components/inicio/SeuDia";
 import PedidosNovosTopo, { type PedidoNovo } from "@/components/inicio/PedidosNovosTopo";
+import Destaque, { jaViuDestaque, marcarDestaque } from "@/components/Destaque";
 import { minutosDoDia, separarEntregasDeHoje } from "@/components/inicio/entregasDeHoje";
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import { TelaVazia, informar } from "@/components/base";
@@ -89,6 +90,7 @@ export default function Inicio() {
   // 11/10: todas as entregas de hoje (a "próxima" é escolhida na hora de mostrar: a primeira com hora de agora em diante)
   const [entregasDeHoje, setEntregasDeHoje] = useState<EntregaResumo[]>(c0?.dados.entregasDeHoje ?? []);
   const [pedidosNovos, setPedidosNovos] = useState<PedidoNovo[]>(c0?.dados.pedidosNovos ?? []);
+  const [destaquePedidos, setDestaquePedidos] = useState(false); // (16/10) 1º pedido aceito: mostra onde os pedidos ficam
   // o dia a que os dados da tela se referem (AAAA-MM-DD): o "hoje" da tela anda junto com os dados
   const [diaDosDados, setDiaDosDados] = useState<string | null>(c0?.dia ?? null);
   const [aniversariantesDetalhe, setAniversariantesDetalhe] = useState<{ nome: string; dias: number } | null>(c0?.dados.aniversariantesDetalhe ?? null);
@@ -836,8 +838,20 @@ export default function Inicio() {
       {!loading && !erroCarga && (pedidosNovos.length > 0 || counts.pedidosAtrasados > 0) && (
         <section className="ini-section ini-section--novos">
           <PedidosNovosTopo novos={pedidosNovos} atrasados={counts.pedidosAtrasados}
-            aoAceitar={(id) => { cacheInicio = null; setPedidosNovos(l => l.filter(p => p.id !== id)); void carregarTudo(true); }} />
+            aoAceitar={(id) => {
+              cacheInicio = null; setPedidosNovos(l => l.filter(p => p.id !== id)); void carregarTudo(true);
+              // celular, primeira vez: destaque no "Pedidos" do menu de baixo
+              const chave = `pedido_aceito_${profile?.id}`;
+              const menu = document.querySelector('.bottom-nav .bn-item[href="/pedidos"]');
+              if (!profile?.id || jaViuDestaque(chave) || !menu || !(menu as HTMLElement).offsetParent) return false;
+              marcarDestaque(chave); setDestaquePedidos(true); return true;
+            }} />
         </section>
+      )}
+
+      {destaquePedidos && (
+        <Destaque alvo='.bottom-nav .bn-item[href="/pedidos"]' raio={14} titulo="Pedido aceito!" texto="Todos os seus pedidos ficam aqui, em Pedidos."
+          acao="Ver pedidos" aoAcao={() => { setDestaquePedidos(false); navigate("/pedidos"); }} aoFechar={() => setDestaquePedidos(false)} />
       )}
 
       {/* ── Seu dia (07/10 · 3.04): o resumo do dia no celular e no tablet. No computador ele já está no topo rosa. ── */}

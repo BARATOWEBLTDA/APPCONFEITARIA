@@ -39,7 +39,7 @@ function diaCurto(data: string | null, agora: Date) {
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
 }
 
-export default function PedidosNovosTopo({ novos, atrasados, aoAceitar }: { novos: PedidoNovo[]; atrasados: number; aoAceitar: (id: string) => void }) {
+export default function PedidosNovosTopo({ novos, atrasados, aoAceitar }: { novos: PedidoNovo[]; atrasados: number; aoAceitar: (id: string) => boolean | void }) {
   const navigate = useNavigate();
   const agora = useAgora();
   const [aceitando, setAceitando] = useState(false);
@@ -54,8 +54,8 @@ export default function PedidosNovosTopo({ novos, atrasados, aoAceitar }: { novo
     setAceitando(false);
     if (error) { avisar("Não deu pra aceitar o pedido. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
     registrarEtapa(um.id, "agendado");
-    avisar(avisoDaMudanca({ numero: um.numero as any }, "agendado"));
-    aoAceitar(um.id);
+    // o Início mostra o destaque do "Pedidos" no 1º pedido aceito (aí o aviso curto não aparece por cima)
+    if (!aoAceitar(um.id)) avisar(avisoDaMudanca({ numero: um.numero as any }, "agendado"));
   };
   const maisAntigo = novos.reduce((a, p) => (!a || p.criado < a ? p.criado : a), "");
 

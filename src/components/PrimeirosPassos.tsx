@@ -9,7 +9,7 @@ import { useProfile, refreshProfile } from "@/hooks/useProfile";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import Janelinha from "@/components/financeiro/Folha";
 import { Mascote } from "@/components/marca/Mascote";
-import DestaqueComecar from "@/components/inicio/DestaqueComecar";
+import Destaque from "@/components/Destaque";
 import { marcarPagamentoConferido } from "@/lib/primeirosPassos";
 import { criarNotificacaoPessoal } from "@/lib/notificacoesUsuario";
 import { lerPassos, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk, type EstadoPassos } from "@/lib/primeirosPassos";
@@ -198,7 +198,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
             <span className="pp-tx"><b>{p.t}</b><small>{p.s}</small></span>
           </div>
           <button type="button" className="pp-btn" ref={btnRef} onClick={p.abrir}>{feitos <= 1 ? "Começar" : "Fazer agora"}</button>
-          {spot && <DestaqueComecar alvo={atRef} botao={btnRef} aoComecar={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
+          {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo="Comece por aqui" texto="Em poucos minutos seu cardápio fica pronto pra vender." acao="Começar" aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
         </div>
       ) : (
         <button type="button" key={p.t} className={`pp-ps${p.feito ? " pp-ps--ok" : ""}`} onClick={p.feito ? undefined : p.abrir} disabled={p.feito}>
