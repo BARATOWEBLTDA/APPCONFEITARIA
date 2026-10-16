@@ -606,6 +606,9 @@ const CSS = `
   @media (prefers-reduced-motion: reduce) { .pp--destaque .pp-at { animation: none; box-shadow: 0 0 0 3px rgba(232, 90, 140, .45); } }
   .pp-btn { display: block; width: 100%; min-height: 48px; margin-top: 12px; border: none; border-radius: var(--ui-raio-botao); padding: 13px; font-family: inherit; font-size: 15px; font-weight: 700; color: var(--ui-branco); background: var(--ui-rosa); box-shadow: 0 3px 0 var(--ui-rosa-escuro); cursor: pointer; text-align: center; text-decoration: none; }
   .pp-btn:disabled { background: #F3B6CB; box-shadow: none; cursor: default; }
+  /* (15/10) "Fazer agora"/"Começar" no chocolate do onboarding: não compete com o rosa da Nova venda */
+  .pp-at .pp-btn { background: var(--chocolate); box-shadow: 0 3px 0 var(--chocolate-escuro); }
+  .pp-at .pp-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--chocolate-escuro); }
   .pp-lnk { display: block; width: 100%; min-height: 44px; margin-top: 8px; padding: 10px; border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
   .pp-lnk--cinza { color: var(--ui-texto-3); font-weight: 500; }
   .pp--fim { text-align: center; background: linear-gradient(180deg, #FFF1F6, var(--ui-branco) 70%); padding-bottom: 12px; }
