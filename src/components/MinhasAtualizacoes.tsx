@@ -237,7 +237,7 @@ export function useAtualizacoes(): { updates: Update[]; loading: boolean } {
           titulo: nSemFoto === 1
             ? "1 produto sem foto"
             : `${nSemFoto} produtos sem foto`,
-          descricao: "Produto com foto vende mais. Adicione pra chamar a atenção no cardápio.",
+          descricao: "Produto com foto vende mais. Adicione pra chamar atenção no cardápio.",
           cta: "Ver produtos",
           path: "/produtos",
           prioridade: 30,

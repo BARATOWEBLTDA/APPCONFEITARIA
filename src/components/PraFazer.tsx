@@ -22,6 +22,14 @@ const ICONE: Record<AvisoCadastro["icone"], Icon> = { custos: Buildings, maquini
 const DIA = 86400000;
 const PESO = { urgente: 0, atencao: 1, normal: 2 };
 const VISIVEIS = 3;
+/** (16/10) texto de cada novidade aqui: do tamanho de 2 linhas cheias no celular (sem 1 palavra sobrando embaixo) */
+const TEXTO_NOVIDADE: Record<string, string> = {
+  "aniversarios": "Mande uma mensagem de parabéns e ofereça um bolo especial pro dia.",
+  "faturamento-up": "Você vendeu mais que nos mesmos dias do mês passado. Continue assim!",
+  "faturamento-down": "Vendeu menos que nos mesmos dias do mês passado. Que tal uma promoção?",
+  "produtos-sem-foto": "Produto com foto vende mais. Adicione pra chamar atenção no cardápio.",
+  "clientes-sumidos": "Sem comprar há mais de 60 dias. Mande uma mensagem pra chamar de volta.",
+};
 /** (16/10) "Agora não": em vez do X, ela escolhe até quando o item some */
 const ADIAR: [string, number | "nunca"][] = [["Lembrar amanhã", 1], ["Lembrar em 7 dias", 7], ["Não mostrar mais", "nunca"]];
 
@@ -70,7 +78,7 @@ export default function PraFazer() {
     })),
     ...updates.map((u): Item => ({
       chave: u.key, nivel: u.key === "faturamento-down" || u.key === "aniversarios" ? "atencao" : "normal",
-      Ic: u.Icone, t: u.curto.t, s: u.descricao || u.curto.s, link: u.path, ordem: 100 - u.prioridade, acao: "Ver", fechar: true,
+      Ic: u.Icone, t: u.curto.t, s: TEXTO_NOVIDADE[u.key] || u.descricao || u.curto.s, link: u.path, ordem: 100 - u.prioridade, acao: "Ver", fechar: true,
     })),
   ].filter(x => !x.fechar || !escondido(x.chave))
    .sort((a, b) => PESO[a.nivel] - PESO[b.nivel] || a.ordem - b.ordem);
@@ -137,7 +145,7 @@ const CSS = `
   .pf-tx { display: flex; flex-direction: column; gap: 1px; }
   .pf-tx b { font-size: 14.5px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* (16/10) explicação de verdade (até 2 linhas), pra os botões embaixo fazerem sentido */
-  .pf-tx small { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-top: 2px; font-size: 13px; line-height: 1.45; color: var(--ui-texto-2); overflow: hidden; }
+  .pf-tx small { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-top: 2px; font-size: 13px; line-height: 1.45; color: var(--ui-texto-2); overflow: hidden; text-wrap: balance; }
   .pf-bts { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-top: 8px; }
   .pf-adiar { position: relative; }
   .pf-nao { display: flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 10px; border: 0; border-radius: 8px; background: none; color: var(--ui-texto-3); font-family: inherit; font-size: 13.5px; font-weight: 600; white-space: nowrap; cursor: pointer; }
