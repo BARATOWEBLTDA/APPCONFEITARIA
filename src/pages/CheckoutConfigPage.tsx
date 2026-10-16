@@ -11,7 +11,7 @@ import { supabase } from "@/lib/supabase"
 import { explicarErro } from "@/lib/erros"
 import { parseNumBR } from "@/lib/numeroBR"
 import { marcarPagamentoConferido } from "@/lib/primeirosPassos"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import AppPageHeader from "@/components/AppPageHeader"
 import { usePlano } from "@/hooks/usePlano"
 
@@ -37,6 +37,8 @@ const numBR = parseNumBR
 
 export default function CheckoutConfigPage() {
   const navigate = useNavigate()
+  // (15/10) aberta por Configurações: o voltar leva de volta pra lá (senão, pro Cardápio)
+  const voltarPara = (useLocation().state as any)?.de === "/configuracoes" ? "/configuracoes" : "/cardapio"
   const { isPro } = usePlano()
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
@@ -286,13 +288,13 @@ export default function CheckoutConfigPage() {
   // com erro, "loading" continua ligado: o salvamento automático só arma depois de uma leitura que deu certo
   if (erroCarga) return (
     <>
-      <AppPageHeader title="Entrega e pagamento" subtitle="Pagamento, entrega e cupons" onBack={() => navigate("/cardapio")} />
+      <AppPageHeader title="Entrega e pagamento" subtitle="Pagamento, entrega e cupons" onBack={() => navigate(voltarPara)} />
       <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu pra carregar" texto="Confira a internet e tente de novo." acao={<Botao variante="suave" tamanho="m" onClick={() => setTentativa(t => t + 1)}>Tentar de novo</Botao>} />
     </>
   )
   if (loading) return (
     <>
-      <AppPageHeader title="Entrega e pagamento" subtitle="Pagamento, entrega e cupons" onBack={() => navigate("/cardapio")} />
+      <AppPageHeader title="Entrega e pagamento" subtitle="Pagamento, entrega e cupons" onBack={() => navigate(voltarPara)} />
       <div className="ep-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
     </>
   )
@@ -301,7 +303,7 @@ export default function CheckoutConfigPage() {
 
   return (
     <>
-      <AppPageHeader title="Entrega e pagamento" subtitle="Pagamento, entrega e cupons" onBack={() => navigate("/cardapio")} />
+      <AppPageHeader title="Entrega e pagamento" subtitle="Pagamento, entrega e cupons" onBack={() => navigate(voltarPara)} />
       <div className="ep">
         <p className="ep-salva"><Check size={16} weight="bold" aria-hidden="true" />Tudo aqui salva sozinho.</p>
 

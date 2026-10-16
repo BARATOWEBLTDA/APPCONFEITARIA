@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { INDICACAO_ATIVA } from "@/lib/recursos";
 import { useNavigate } from "react-router-dom";
-import { Bell, CaretRight, Crown, DownloadSimple, FileText, Gift, Lightbulb, SignOut, SlidersHorizontal, Bug, Trophy, User, WarningCircle } from "@phosphor-icons/react";
+import { Bell, CaretRight, Crown, DownloadSimple, FileText, Gift, Lightbulb, PaintBrush, SignOut, SlidersHorizontal, Storefront, Bug, Trophy, Truck, User, WarningCircle } from "@phosphor-icons/react";
 import { isStandalone } from "@/lib/installPrompt";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
@@ -220,17 +220,24 @@ export default function Configuracoes() {
               apoio={pro ? "Plano PRO · ativo" : "Plano grátis · conheça o PRO"} destaque={!pro}
               onClick={() => navigate(pro ? "/minha-assinatura" : "/assinar")} />
 
+            {/* (15/10) as telas da loja também por aqui (antes só pelo Cardápio e pelo menu) */}
+            <h2 className="cf9-sec">Minha loja</h2>
+            <ItemConfig icone={<Storefront size={20} weight="bold" />} nome="Dados da loja" apoio="Nome, endereço e horário" onClick={() => navigate("/cardapio-config", { state: { de: "/configuracoes" } })} />
+            <ItemConfig icone={<Truck size={20} weight="bold" />} nome="Entrega e pagamento" apoio="Formas de pagar e de receber" onClick={() => navigate("/checkout-config", { state: { de: "/configuracoes" } })} />
+            <ItemConfig icone={<PaintBrush size={20} weight="bold" />} nome="Aparência" apoio="Cores, logo e modelo" onClick={() => navigate("/cardapio-design", { state: { de: "/configuracoes" } })} />
+
+            {/* (15/10) ordem pelo uso: o mais usado primeiro */}
             <h2 className="cf9-sec">App</h2>
             <ItemConfig icone={<Bell size={20} weight="bold" />} nome="Notificações e sons" apoio="Avisos e sons do app" onClick={() => navigate("/configuracoes/notificacoes")} />
-            <ItemConfig icone={<Trophy size={20} weight="bold" />} nome="Minhas conquistas" apoio="Suas medalhas" onClick={() => navigate("/conquistas")} />
-            <AtualizarAppItem />
             {!isStandalone() && <ItemConfig icone={<DownloadSimple size={20} weight="bold" />} nome="Instalar o app" apoio="Abra direto, como um app" onClick={() => setInstalarOpen(true)} />}
+            <AtualizarAppItem />
+            <ItemConfig icone={<Trophy size={20} weight="bold" />} nome="Minhas conquistas" apoio="Suas medalhas" onClick={() => navigate("/conquistas")} />
             {INDICACAO_ATIVA && <ItemConfig icone={<Gift size={20} weight="bold" />} nome="Indique e ganhe" apoio="Ganhe prêmios indicando" onClick={() => navigate("/indicar")} />}
 
             <h2 className="cf9-sec">Ajuda</h2>
-            <ItemConfig icone={<Lightbulb size={20} weight="bold" />} nome="Sugerir uma melhoria" apoio="Conte o que falta no app" onClick={() => navigate("/solicitar-recurso")} />
-            <ItemConfig icone={<Bug size={20} weight="bold" />} nome="Relatar um problema" apoio="Algo não funcionou?" onClick={() => navigate("/relatar-problema")} />
             <ItemConfig icone={<IconeWhatsApp size={20} />} nome="Fale com o suporte" apoio="Pelo WhatsApp" onClick={() => window.open(`https://wa.me/5511978414991?text=${encodeURIComponent("Olá! Preciso de ajuda com o Doonly.")}`, "_blank", "noopener")} />
+            <ItemConfig icone={<Bug size={20} weight="bold" />} nome="Relatar um problema" apoio="Algo não funcionou?" onClick={() => navigate("/relatar-problema")} />
+            <ItemConfig icone={<Lightbulb size={20} weight="bold" />} nome="Sugerir uma melhoria" apoio="Conte o que falta no app" onClick={() => navigate("/solicitar-recurso")} />
             <ItemConfig icone={<FileText size={20} weight="bold" />} nome="Termos e privacidade" apoio="Termos de uso e privacidade" onClick={() => setTermosOpen(true)} />
 
             <h2 className="cf9-sec">Outros</h2>

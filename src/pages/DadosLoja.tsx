@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
 import { Check, Clock, FacebookLogo, InstagramLogo, MapPin, ShareNetwork, Sparkle, Storefront, WarningCircle } from "@phosphor-icons/react";
@@ -63,6 +63,8 @@ function formatPhone(v: string, digitando = false) {
 
 export default function DadosLoja() {
   const navigate = useNavigate();
+  // (15/10) aberta por Configurações: o voltar leva de volta pra lá (senão, pro Cardápio)
+  const voltarPara = (useLocation().state as any)?.de === "/configuracoes" ? "/configuracoes" : "/cardapio";
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
@@ -264,7 +266,7 @@ export default function DadosLoja() {
   if (loading) {
     return (
       <>
-        <AppPageHeader title="Dados da loja" subtitle="O que o cliente vê sobre sua confeitaria" onBack={() => navigate("/cardapio")} />
+        <AppPageHeader title="Dados da loja" subtitle="O que o cliente vê sobre sua confeitaria" onBack={() => navigate(voltarPara)} />
         <div className="dl-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
       </>
     );
@@ -272,7 +274,7 @@ export default function DadosLoja() {
   if (erroCarga) {
     return (
       <>
-        <AppPageHeader title="Dados da loja" subtitle="O que o cliente vê sobre sua confeitaria" onBack={() => navigate("/cardapio")} />
+        <AppPageHeader title="Dados da loja" subtitle="O que o cliente vê sobre sua confeitaria" onBack={() => navigate(voltarPara)} />
         <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os dados da loja" texto="Confira a internet e tente de novo." acao={<Botao variante="suave" tamanho="m" onClick={() => setTentativa(t => t + 1)}>Tentar de novo</Botao>} />
       </>
     );
@@ -283,7 +285,7 @@ export default function DadosLoja() {
 
   return (
     <>
-      <AppPageHeader title="Dados da loja" subtitle="O que o cliente vê sobre sua confeitaria" onBack={() => navigate("/cardapio")} />
+      <AppPageHeader title="Dados da loja" subtitle="O que o cliente vê sobre sua confeitaria" onBack={() => navigate(voltarPara)} />
 
       <div className="dl-root">
         {/* Resumo */}

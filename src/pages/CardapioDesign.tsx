@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { explicarErro } from "@/lib/erros";
 import { usePlano } from "@/hooks/usePlano";
@@ -20,6 +20,8 @@ import "./aparencia.css";
 
 export default function CardapioDesign({ identityCard, avaliacoesCard }: { identityCard?: React.ReactNode; avaliacoesCard?: React.ReactNode } = {}) {
   const navigate = useNavigate();
+  // (15/10) aberta por Configurações: o voltar leva de volta pra lá (senão, pro Cardápio)
+  const voltarPara = (useLocation().state as any)?.de === "/configuracoes" ? "/configuracoes" : "/cardapio";
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   // Marca o passo "Escolher design" do passo a passo (ignora erro se a coluna ainda não existir)
@@ -312,7 +314,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
 
   if (loading) return (
     <>
-      {!identityCard && <AppPageHeader title="Aparência" subtitle="Logo, banners, modelo e cores" onBack={() => navigate("/cardapio")} />}
+      {!identityCard && <AppPageHeader title="Aparência" subtitle="Logo, banners, modelo e cores" onBack={() => navigate(voltarPara)} />}
       <div className="ap-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
     </>
   );
@@ -332,7 +334,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     {/* (11/10) fora da seção "Foto do topo": no modelo Premium ela não existe e o recorte do banner não abria */}
     {recorteTopo.janela}{recorteBanner.janela}
     {!identityCard && (
-      <AppPageHeader title="Aparência" subtitle="Logo, banners, modelo e cores" onBack={() => navigate("/cardapio")}
+      <AppPageHeader title="Aparência" subtitle="Logo, banners, modelo e cores" onBack={() => navigate(voltarPara)}
         infoIcon="🎨"
         infoContent={<>
           <p>Aqui você deixa o <strong>cardápio com a cara da sua confeitaria</strong>: a logo, os banners de promoção e o modelo da página.</p>
