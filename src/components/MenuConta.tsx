@@ -58,7 +58,7 @@ export default function MenuConta({ aberto, aoFechar, ancora }: Props) {
   const itens: { nome: string; Icone: Icon; acao: () => void }[] = [
     { nome: "Notificações", Icone: Bell, acao: () => ir("/notificacoes") },
     { nome: "Configurações", Icone: Gear, acao: () => ir("/configuracoes") },
-    { nome: "Minha loja", Icone: Storefront, acao: () => ir("/cardapio-config") },
+    { nome: "Dados da loja", Icone: Storefront, acao: () => ir("/cardapio-config") },
     { nome: "Assistente virtual", Icone: Sparkle, acao: () => { if (isPro) { aoFechar(); abrirDooIA(); } else ir("/assistente-virtual"); } },
     { nome: "Sugerir uma melhoria", Icone: Lightbulb, acao: () => ir("/solicitar-recurso") },
     { nome: "Relatar um problema", Icone: WarningCircle, acao: () => ir("/relatar-problema") },

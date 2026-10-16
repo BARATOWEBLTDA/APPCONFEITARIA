@@ -1,11 +1,12 @@
 import { useId, useRef } from "react";
+import { abrirDooIA } from "@/components/MenuContaItens";
 import { INDICACAO_ATIVA } from "@/lib/recursos";
 import { createPortal } from "react-dom";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   ChartLineUp, ClipboardText, Gear, PaintBrush, Crown, SquaresFour, UserPlus, X, CaretRight,
-  Trophy, Megaphone, Plus, CalendarDots, Users, Stack, Truck, Storefront, Eye, Basket, ArrowsDownUp,
-  HandCoins, CalendarCheck, Tag, Bell, Cake, ChatCircleText, Newspaper, Bug, Lightbulb,
+  Megaphone, CalendarDots, Users, Stack, Truck, Storefront, Eye, Basket, ArrowsDownUp,
+  HandCoins, CalendarCheck, Tag, Cake, ChatCircleText, Newspaper, Bug, Lightbulb, Sparkle,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { BotaoIcone } from "@/components/base";
@@ -36,8 +37,8 @@ const GRUPOS: Grupo[] = [
   {
     label: "Vendas",
     items: [
-      { label: "Nova venda", desc: "Lance um pedido",          path: "/vendas/novo", Icone: Plus },
       { label: "Agenda",     desc: "Entregas por dia",         path: "/agenda",      Icone: CalendarDots },
+      { label: "Mensagens prontas", desc: "Textos do WhatsApp", path: "/configuracoes/mensagens", Icone: ChatCircleText },
     ],
   },
   {
@@ -79,19 +80,12 @@ const GRUPOS: Grupo[] = [
       ...(INDICACAO_ATIVA ? [{ label: "Indicar amigo", desc: "Ganhe indicando", path: "/indicar", Icone: UserPlus }] : []),
     ],
   },
+  // (16/10) mais curto: Nova venda foi pro menu de baixo; assinatura, notificações e conquistas ficam em
+  // Configurações (e na foto do perfil). Aqui fica só a entrada de Configurações, junto com a ajuda.
   {
-    label: "Minha conta",
+    label: "Conta e ajuda",
     items: [
-      { label: "Configurações",       desc: "Ajustes gerais do app",  path: "/configuracoes",              Icone: Gear },
-      { label: "Minha assinatura",    desc: "Gerencie seu PRO",       path: "/assinar",                    Icone: Crown },
-      { label: "Notificações e sons", desc: "O que avisa e como",     path: "/configuracoes/notificacoes", Icone: Bell },
-      { label: "Mensagens prontas",   desc: "Textos do WhatsApp",     path: "/configuracoes/mensagens",    Icone: ChatCircleText },
-      { label: "Minhas conquistas",   desc: "Suas medalhas",          path: "/conquistas",                 Icone: Trophy },
-    ],
-  },
-  {
-    label: "Ajuda",
-    items: [
+      { label: "Configurações",     desc: "Conta, loja e app",     path: "/configuracoes",     Icone: Gear },
       { label: "Novidades",         desc: "O que mudou no Doonly", path: "/noticias",          Icone: Newspaper },
       { label: "Relatar problema",  desc: "Algo não funcionou",    path: "/relatar-problema",  Icone: Bug },
       { label: "Pedir um recurso",  desc: "Sugira uma ideia",      path: "/solicitar-recurso", Icone: Lightbulb },
@@ -152,6 +146,12 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
         </div>
 
         <div className="mais-corpo">
+          {/* (16/10) o Doo IA saiu do menu de baixo (lá entrou o "+ Nova venda"): fica no topo do Mais */}
+          <button type="button" className="mais-doo" onClick={() => { onClose(); abrirDooIA(); }}>
+            <span className="mais-doo-ic" aria-hidden="true"><Sparkle size={20} weight="fill" /></span>
+            <span className="mais-it-txt"><b>Doo IA</b><small>Sua assistente de confeitaria</small></span>
+            <CaretRight size={16} weight="bold" className="mais-it-seta" aria-hidden="true" />
+          </button>
           {GRUPOS.map(grupo => (
             <section key={grupo.label} className="mais-grupo" aria-label={grupo.label}>
               <p className="mais-grupo-t">{grupo.label}</p>

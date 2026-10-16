@@ -259,11 +259,26 @@ export default function Layout() {
       {!isPrevia && (
         <nav className="bottom-nav" aria-label="Menu principal">
           <div className="bottom-nav-pill">
+            {/* (16/10) Início · Cardápio · [+ Nova venda] · Pedidos · Mais. O Doo IA foi pro topo do Início e pro menu da foto */}
             {([
               { to: "/inicio",   Icone: House,       label: "Início",   tour: undefined },
               { to: "/cardapio", Icone: ShoppingBag, label: "Cardápio", tour: "cardapio" },
+              { to: "/vendas/novo", Icone: Plus, label: "Nova venda", tour: undefined, mais: true },
               { to: "/pedidos",  Icone: Receipt,     label: "Pedidos",  tour: undefined },
-            ] as { to: string; Icone: Icon; label: string; tour?: string }[]).map((item) => {
+            ] as { to: string; Icone: Icon; label: string; tour?: string; mais?: boolean }[]).map((item) => {
+              const irPara = (e: React.MouseEvent) => {
+                // (15/10) com o Mais aberto (o menu continua aparecendo), troca de tela e fecha o Mais.
+                // A tela nova entra no lugar da entrada do Mais no histórico, igual a escolher um item dentro dele.
+                if (!maisOpen) return;
+                e.preventDefault();
+                navigate(item.to, { replace: !!(window.history.state as { uiJanela?: boolean } | null)?.uiJanela });
+                setMaisOpen(false);
+              };
+              if (item.mais) return (
+                <NavLink key={item.to} to={item.to} className="bn-item bn-novo" aria-label="Nova venda" title="Nova venda" onClick={irPara}>
+                  <span className="bn-novo-c"><Plus size={26} weight="bold" /></span>
+                </NavLink>
+              );
               // com o Mais aberto, só ele fica aceso
               const isActive = !maisOpen && (
                 location.pathname === item.to ||
@@ -275,14 +290,7 @@ export default function Layout() {
                   className={`bn-item${isActive ? " bn-item--active" : ""}`}
                   data-tour={item.tour}
                   aria-current={isActive ? "page" : undefined}
-                  onClick={(e) => {
-                    // (15/10) com o Mais aberto (o menu continua aparecendo), troca de tela e fecha o Mais.
-                    // A tela nova entra no lugar da entrada do Mais no histórico, igual a escolher um item dentro dele.
-                    if (!maisOpen) return;
-                    e.preventDefault();
-                    navigate(item.to, { replace: !!(window.history.state as { uiJanela?: boolean } | null)?.uiJanela });
-                    setMaisOpen(false);
-                  }}
+                  onClick={irPara}
                 >
                   <span className="bn-icon"><item.Icone size={24} weight={isActive ? "fill" : "bold"} /></span>
                   <span className="bn-label">{item.label}</span>
@@ -298,16 +306,6 @@ export default function Layout() {
             >
               <span className="bn-icon"><SquaresFour size={24} weight={maisOpen ? "fill" : "bold"} /></span>
               <span className="bn-label">Mais</span>
-            </button>
-            <button
-              type="button"
-              className={`bn-item${dooOpen ? " bn-item--active" : ""}`}
-              data-tour="doo"
-              onClick={() => { setMaisOpen(false); setDooOpen(true); }}
-              aria-haspopup="dialog"
-            >
-              <span className="bn-icon"><Sparkle size={24} weight={dooOpen ? "fill" : "bold"} /></span>
-              <span className="bn-label">Doo IA</span>
             </button>
           </div>
         </nav>
@@ -667,6 +665,10 @@ export default function Layout() {
             line-height: 1;
           }
           .bn-item--active .bn-label { font-weight: 700; }
+          /* (16/10) Nova venda no meio do menu: o círculo rosa sobe um pouco acima da barra */
+          .bn-novo { overflow: visible; }
+          .bn-novo-c { display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; margin-top: -18px; border-radius: 50%; background: var(--ui-rosa); color: var(--ui-branco); box-shadow: 0 6px 16px rgba(31, 7, 17, .45), 0 0 0 4px var(--vinho-profundo); transition: transform var(--dur-fast) var(--ease-out); }
+          .bn-novo:active .bn-novo-c { transform: scale(.92); }
 
 
           /* ── Gestão Drawer ── */

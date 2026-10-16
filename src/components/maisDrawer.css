@@ -39,3 +39,9 @@
   .ui-veu.mais-veu { bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
   .mais-veu .mais-corpo { padding-bottom: 16px; }
 }
+/* (16/10) Doo IA no topo do Mais */
+.mais-doo { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0 0 14px; padding: 12px 14px; border: 0; border-radius: var(--ui-raio-cartao, 16px); background: linear-gradient(135deg, var(--chocolate, #3A2219), var(--chocolate-escuro, #22130E)); color: #fff; font-family: inherit; text-align: left; cursor: pointer; }
+.mais-doo .mais-it-txt b { color: #fff; }
+.mais-doo .mais-it-txt small { color: rgba(255, 255, 255, .78); }
+.mais-doo .mais-it-seta { color: rgba(255, 255, 255, .7); }
+.mais-doo-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; background: rgba(255, 255, 255, .14); color: #FF9DC4; }

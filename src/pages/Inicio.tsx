@@ -17,12 +17,13 @@ import { minutosDoDia, separarEntregasDeHoje } from "@/components/inicio/entrega
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import { TelaVazia, informar } from "@/components/base";
 import MenuConta from "@/components/MenuConta";
+import { useNotifications } from "@/context/NotificationContext";
 import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 // (15/10) o gráfico (recharts) só é baixado quando aparece
 const GraficoRecebido = lazy(() => import("@/components/inicio/GraficoRecebido"));
 import {
-  HandCoins, Eye, Plus, CalendarDots, CurrencyDollar, Camera, Users, ChartLineUp,
+  HandCoins, Eye, Plus, Bell, CalendarDots, CurrencyDollar, Camera, Users, ChartLineUp,
   CaretRight, Cake, Receipt, ClipboardText,
   WarningCircle, Clock, Package, TrendUp, Confetti, RocketLaunch, Sparkle, Crown,
 } from "@phosphor-icons/react";
@@ -111,6 +112,8 @@ export default function Inicio() {
   });
   const [menuOpen, setMenuOpen] = useState(false);
   const fotoRef = useRef<HTMLButtonElement>(null); // o menu da conta abre embaixo da foto
+  // (16/10) sino com as não lidas no topo do celular (antes só pela foto › Notificações, sem aviso nenhum)
+  const { notifCount } = useNotifications();
 
   // Upload rápido de foto de perfil pelo ícone de câmera no header.
   // Fluxo: escolhe arquivo → abre cropper (círculo, com zoom) → confirma → upload.
@@ -719,6 +722,14 @@ export default function Inicio() {
           />
         </div>
 
+        {/* (16/10) celular: o sino com as não lidas (antes só pela foto › Notificações, sem aviso nenhum) */}
+        <div className="ini-hero-acoes">
+          <button type="button" className="ini-hero-ac" onClick={() => navigate("/notificacoes")} aria-label={notifCount > 0 ? `Notificações, ${notifCount} nova${notifCount > 1 ? "s" : ""}` : "Notificações"} title="Notificações">
+            <Bell size={20} weight={notifCount > 0 ? "fill" : "bold"} />
+            {notifCount > 0 && <i className="ini-hero-bolinha">{notifCount > 9 ? "9+" : notifCount}</i>}
+          </button>
+        </div>
+
         {/* Texto da saudação */}
         <div ref={saudacaoRef} className={`ini-hero-greeting${tagEmbaixo ? " ini-hero-greeting--apertado" : ""}`}>
           <h1>
@@ -1173,6 +1184,12 @@ export default function Inicio() {
 
         /* ── Foto de perfil grande à esquerda + dropdown ── */
         .ini-profile-wrapper { position: relative; flex-shrink: 0; z-index: 2; }
+          .ini-root .ini-hero-acoes { position: relative; z-index: 2; display: flex; gap: 6px; flex: none; }
+          .ini-root .ini-hero-ac { position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .12); color: var(--ui-branco); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+          .ini-root .ini-hero-ac:active { background: rgba(255, 255, 255, .22); }
+          .ini-root .ini-hero-bolinha { position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--ui-rosa); border: 2px solid var(--vinho-escuro); font-style: normal; font-size: 10.5px; font-weight: 700; line-height: 14px; text-align: center; color: var(--ui-branco); }
+          @media (min-width: 901px) { .ini-root .ini-hero-acoes { display: none; } }
+
         .ini-profile-btn {
           width: 56px; height: 56px; border-radius: var(--radius-full);
           border: 3px solid var(--ui-branco);
