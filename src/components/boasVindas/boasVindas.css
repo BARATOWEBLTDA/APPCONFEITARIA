@@ -313,3 +313,6 @@
   .bv-luc-barra i, .bv-luc-conta > div { transition: none; }
   .bv-root { transition: none; }
 }
+
+/* (15/10) foto fixa do cardápio no notebook (já cabe inteira, sem rolar) */
+.bv-pc-print { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top center; pointer-events: none; user-select: none; -webkit-user-drag: none; }

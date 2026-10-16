@@ -315,7 +315,8 @@ function DemoCardapio() {
       </div>
       <div className="bv-dup-wrap" aria-hidden="true">
         <div className="bv-dup">
-          <Notebook><PrintRolando src={PRINT_PC} velocidade={70} /></Notebook>
+          {/* (15/10) no notebook a tela cabe inteira (promoções e o banner): sem rolar */}
+          <Notebook><img className="bv-pc-print" src={PRINT_PC} alt="" /></Notebook>
           <Celular className="bv-cel--mini"><PrintRolando src={PRINT_CEL} menu={PRINT_CEL_MENU} /></Celular>
         </div>
       </div>
