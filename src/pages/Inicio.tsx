@@ -2,7 +2,7 @@
 import { resumoItens } from "@/components/pedidos/pedidoTexto";
 import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
-import FaltaPouco from "@/components/FaltaPouco";
+import PraFazer from "@/components/PraFazer";
 import { LogoDaLoja } from "@/components/AppPageHeader";
 import { LinkDeVendas } from "@/components/loja/LinkDeVendas";
 import { PausarPedidos } from "@/components/loja/PausarPedidos";
@@ -28,7 +28,6 @@ import { supabase } from "@/lib/supabase";
 import { useProfile, perfilAtual, avatarDaConta } from "@/hooks/useProfile";
 import { useIsMobile } from "@/hooks/use-mobile";
 import UpdatesFeed from "@/components/UpdatesFeed";
-import MinhasAtualizacoes from "@/components/MinhasAtualizacoes";
 import AdminBannerMobile from "@/components/AdminBannerMobile";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 
@@ -819,6 +818,21 @@ export default function Inicio() {
 
       {/* ── Seu dia (07/10 · 3.04): o resumo do dia no celular e no tablet. No computador ele já está no topo rosa. ── */}
       <section className="ini-section ini-section--dia">
+        {/* (15/10) celular: pedidos atrasados e novos pra aceitar (só quando tem). No computador já ficam no topo. */}
+        {!loading && !erroCarga && (counts.pedidosAtrasados > 0 || counts.pedidosPendentes > 0) && (
+          <div className="ini-fx">
+            {counts.pedidosAtrasados > 0 && (
+              <button type="button" className="ini-fx-b ini-fx-b--atr" onClick={() => navigate("/pedidos?filtro=atrasados")}>
+                <b>{counts.pedidosAtrasados}</b><span>{counts.pedidosAtrasados === 1 ? "pedido" : "pedidos"}<br />{counts.pedidosAtrasados === 1 ? "atrasado" : "atrasados"}</span>
+              </button>
+            )}
+            {counts.pedidosPendentes > 0 && (
+              <button type="button" className="ini-fx-b ini-fx-b--novo" onClick={() => navigate("/pedidos?filtro=aguardando")}>
+                <b>{counts.pedidosPendentes}</b><span>{counts.pedidosPendentes === 1 ? "pedido novo" : "pedidos novos"}<br />pra aceitar</span>
+              </button>
+            )}
+          </div>
+        )}
         <SeuDia
           carregando={loading} erro={erroCarga} aoTentar={tentarDeNovo}
           entregasHoje={counts.entregasHoje} atrasados={counts.pedidosAtrasados} novos={counts.pedidosPendentes}
@@ -840,8 +854,9 @@ export default function Inicio() {
       </section>
 
       {/* (13/10) depois dos passos: o que falta cadastrar pro lucro e o caixa ficarem certos */}
+      {/* (15/10) "Pra fazer": junta o "Complete seu app" e o "Suas atualizações" */}
       <section className="ini-section ini-falta">
-        <FaltaPouco />
+        <PraFazer />
       </section>
 
       {/* (13/10) no computador o menu da esquerda já tem tudo isso: a grade só repetia os mesmos atalhos */}
@@ -948,7 +963,6 @@ export default function Inicio() {
                 );
               })}
             </div>
-            <MinhasAtualizacoes />
             {/* (4.27) no computador também: o banner do admin e as notícias */}
             <AdminBannerMobile />
             <UpdatesFeed />
@@ -962,7 +976,6 @@ export default function Inicio() {
             <div className="ini-mobile-banner"><AdminBannerMobile /></div>
 
             {/* ── Suas atualizações e Notícias (celular e tablet) ── */}
-            <div className="ini-mobile-updates"><MinhasAtualizacoes /></div>
             <div className="ini-mobile-updates"><UpdatesFeed /></div>
           </>
         )}
@@ -1374,6 +1387,12 @@ export default function Inicio() {
         /* Nível 2: seções dentro de .ini-main */
         /* (4.29) ordem do celular: topo · Acesso rápido · Próximas entregas · abrir/pausar a loja · banner */
         .ini-section--dia { order: 3; }
+        .ini-fx { display: flex; gap: 8px; margin-bottom: 12px; }
+        .ini-fx-b { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 10px 12px; border: 0; border-radius: var(--ui-raio); font-family: inherit; text-align: left; cursor: pointer; white-space: nowrap; }
+        .ini-fx-b b { font-size: 22px; font-weight: 700; line-height: 1; }
+        .ini-fx-b span { font-size: 13px; font-weight: 600; line-height: 1.25; }
+        .ini-fx-b--atr { background: #FDECEC; color: #B42318; }
+        .ini-fx-b--novo { background: #FFF4D6; color: #8A5A00; }
         .ini-root .ini-section.ini-section--dia { margin-top: var(--space-3) !important; }
         @media (min-width: 901px) { .ini-section--dia { display: none; } }
         .ini-section--pausa { order: 4; margin-top: var(--space-3); }

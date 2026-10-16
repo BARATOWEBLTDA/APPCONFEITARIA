@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { dataISO } from "@/lib/pedidoStatus";
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
-import { useNavigate } from "react-router-dom";
-import { CaretRight, Cake, Trophy, TrendUp, TrendDown, Camera, Moon } from "@phosphor-icons/react";
+import { Cake, TrendUp, TrendDown, Camera, Moon } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
 
-interface Update {
+export interface Update {
   key: string;
   /** ícone desenhado (guia A14): sem emoji */
   Icone: Icon;
@@ -18,11 +17,12 @@ interface Update {
   cta: string;
   path: string;
   prioridade: number; // maior = mais no topo
+  /** (15/10) linha curta do "Pra fazer" (cabe numa linha no celular) */
+  curto: { t: string; s: string };
 }
 
 // Status atuais (+ antigos). Antes eram nomes que o app não usa mais, e nada aparecia (30/09)
 const STATUS_ENTREGUE = ["entregue", "concluido"];
-const MAX_VISIVEIS = 4;
 
 /**
  * O MESMO trecho do mês anterior (11/10): do dia 1 até o mesmo dia e hora, limitado ao fim daquele mês.
@@ -67,9 +67,12 @@ function calcularAniversariantesSemana(clientes: any[]): { total: number; primei
   return { total, primeiro, nomes, dias: menorDias };
 }
 
-export default function MinhasAtualizacoes() {
+/**
+ * (15/10) Os avisos do Início (aniversário, faturamento, produtos sem foto, clientes sumidos) viraram um gancho:
+ * quem mostra agora é o cartão "Pra fazer", junto com o que falta cadastrar.
+ */
+export function useAtualizacoes(): { updates: Update[]; loading: boolean } {
   const { profile } = useProfile();
-  const navigate = useNavigate();
   const [updates, setUpdates] = useState<Update[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -101,7 +104,6 @@ export default function MinhasAtualizacoes() {
         produtosSemFotoRes,
         pedidosMesRes,
         pedidosMesAntRes,
-        totalPedidosRes,
         clientesComVendaRes,
         compraramAntesRes,
       ] = await Promise.all([
@@ -133,12 +135,6 @@ export default function MinhasAtualizacoes() {
           .gte("data_entrega", dataISO(trechoAnt.inicio))
           .lte("data_entrega", fimAntISO)
           .in("status", STATUS_ENTREGUE),
-        // 7. Total de pedidos (marco)
-        supabase
-          .from("pedidos")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", userId)
-          .in("status", STATUS_ENTREGUE),
         // 8. Clientes que compraram nos últimos 60 dias
         supabase
           .from("pedidos")
@@ -158,7 +154,7 @@ export default function MinhasAtualizacoes() {
       ]);
       if (cancelado) return;
       // (15/10) alguma busca falhou (sem internet): mantém o que já estava (antes podia mostrar "faturamento caiu 100%")
-      if ([clientesRes, produtosSemFotoRes, pedidosMesRes, pedidosMesAntRes, totalPedidosRes, clientesComVendaRes, compraramAntesRes].some(r => r.error)) {
+      if ([clientesRes, produtosSemFotoRes, pedidosMesRes, pedidosMesAntRes, clientesComVendaRes, compraramAntesRes].some(r => r.error)) {
         if (contaCarregada.current !== userId) setLoading(false);
         return;
       }
@@ -189,28 +185,8 @@ export default function MinhasAtualizacoes() {
           cta: "Ver clientes",
           path: "/clientes",
           prioridade: 70,
-        });
-      }
-
-      // 4️⃣ Marco de pedidos
-      const totalPed = totalPedidosRes.count || 0;
-      const marcos = [1, 10, 50, 100, 250, 500, 1000, 2500, 5000];
-      const marcoAtingido = marcos.find(m => totalPed === m);
-      if (marcoAtingido && false) { // agora fica no cartão "Suas conquistas"
-        lista.push({
-          key: `marco-${marcoAtingido}`,
-          Icone: Trophy,
-          categoria: "Conquista",
-          categoriaCor: "amarelo",
-          titulo: marcoAtingido === 1
-            ? "Seu primeiro pedido concluído!"
-            : `${marcoAtingido} pedidos concluídos!`,
-          descricao: marcoAtingido === 1
-            ? "Parabéns! O começo de uma jornada incrível."
-            : `Marco importante. Continue crescendo!`,
-          cta: "Ver pedidos",
-          path: "/pedidos",
-          prioridade: 90,
+          curto: aniv.total === 1 ? { t: `Aniversário de ${primeiroNome}`, s: quando === "hoje" ? "É hoje" : quando === "amanhã" ? "É amanhã" : `Daqui ${aniv.dias} dias` }
+            : { t: `${aniv.total} aniversariantes`, s: "Nos próximos 7 dias" },
         });
       }
 
@@ -232,6 +208,7 @@ export default function MinhasAtualizacoes() {
             cta: "Ver financeiro",
             path: "/financeiro",
             prioridade: 60,
+            curto: { t: `Faturamento subiu ${diff.toFixed(0)}%`, s: "Em relação ao mês passado" },
           });
         } else if (diff <= -20) {
           lista.push({
@@ -244,6 +221,7 @@ export default function MinhasAtualizacoes() {
             cta: "Ver financeiro",
             path: "/financeiro",
             prioridade: 40,
+            curto: { t: `Faturamento caiu ${Math.abs(diff).toFixed(0)}%`, s: "Em relação ao mês passado" },
           });
         }
       }
@@ -263,6 +241,7 @@ export default function MinhasAtualizacoes() {
           cta: "Ver produtos",
           path: "/produtos",
           prioridade: 30,
+          curto: { t: nSemFoto === 1 ? "1 produto sem foto" : `${nSemFoto} produtos sem foto`, s: "Foto vende mais" },
         });
       }
 
@@ -281,65 +260,18 @@ export default function MinhasAtualizacoes() {
             cta: "Ver clientes",
             path: "/clientes",
             prioridade: 20,
+            curto: { t: `${sumidos} clientes sumidos`, s: "Sem comprar há 60 dias" },
           });
         }
       }
 
       // Ordena por prioridade decrescente
       lista.sort((a, b) => b.prioridade - a.prioridade);
-      setUpdates(lista.slice(0, MAX_VISIVEIS));
+      setUpdates(lista);
       setLoading(false);
     })();
     return () => { cancelado = true; };
   }, [profile?.id, diaAtual, voltou]);
 
-  if (loading) return null;
-  if (updates.length === 0) return null;
-
-  return (
-    <div className="mu-root">
-      {/* (07/10 · 3.05) no padrão do guia: ícone desenhado no lugar do emoji, rótulo em texto no lugar da etiqueta em maiúsculas,
-          letras de 12,5px pra cima e cores pelo themes.css */}
-      <div className="mu-header">
-        <h2>Suas atualizações</h2>
-      </div>
-      <div className="mu-list">
-        {updates.map((u) => (
-          <button key={u.key} type="button" className={`mu-item mu-item--${u.categoriaCor}`} onClick={() => navigate(u.path)}>
-            <span className="mu-ic" aria-hidden="true"><u.Icone size={20} weight="bold" /></span>
-            <div className="mu-body">
-              <span className="mu-cat">{u.categoria}</span>
-              <p className="mu-title">{u.titulo}</p>
-              <p className="mu-desc">{u.descricao}</p>
-              <span className="mu-cta">{u.cta} <CaretRight size={16} weight="bold" aria-hidden="true" /></span>
-            </div>
-          </button>
-        ))}
-      </div>
-
-      <style>{`
-        .mu-root { overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); font-family: var(--font-base); }
-        .mu-header { padding: 16px 16px 12px; color: var(--ui-texto); }
-        .mu-header h2 { margin: 0; font-family: var(--font-base); font-size: 16px; font-weight: 700; line-height: 1.3; }
-        .mu-list { display: flex; flex-direction: column; }
-        .mu-item { display: flex; align-items: flex-start; gap: 12px; box-sizing: border-box; width: 100%; min-height: 64px; margin: 0; padding: 12px 16px; background: transparent; border: 0; border-top: 1px solid var(--ui-linha); color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: background-color var(--dur-fast) linear; }
-        @media (hover: hover) { .mu-item:hover { background: var(--ui-linha); } }
-        .mu-item:active { background: var(--ui-cinza); }
-        .mu-item:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
-        .mu-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
-        .mu-body { flex: 1; min-width: 0; }
-        .mu-cat { display: block; font-size: 13px; font-weight: 500; line-height: 1.3; color: var(--ui-rosa-escuro); }
-        .mu-title { margin: 2px 0 0; font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); }
-        .mu-desc { margin: 2px 0 0; font-size: 13.5px; font-weight: 500; line-height: 1.45; color: var(--ui-texto-2); }
-        .mu-cta { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); }
-        /* a cor diz a situação: vermelho = atrasado, laranja = atenção, verde = deu certo; o resto fica no rosa */
-        .mu-item--vermelho .mu-ic { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); }
-        .mu-item--vermelho .mu-cat { color: var(--ui-vermelho); }
-        .mu-item--amarelo .mu-ic { background: var(--ui-laranja-fundo); color: var(--ui-laranja); }
-        .mu-item--amarelo .mu-cat { color: var(--ui-laranja); }
-        .mu-item--verde .mu-ic { background: var(--ui-verde-fundo); color: var(--ui-verde); }
-        .mu-item--verde .mu-cat { color: var(--ui-verde); }
-      `}</style>
-    </div>
-  );
+  return { updates, loading };
 }
