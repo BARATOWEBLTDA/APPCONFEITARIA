@@ -8,7 +8,7 @@ import { Sparkle as SparkleIA } from "@phosphor-icons/react";
 import { selecionarValorAoFocar } from "@/lib/moeda";
 import PreviaCardapio from "@/components/produto/PreviaCardapio";
 import { categoriaSugerida, tipoPeloNome, ehBoloNoPote, type TipoProduto as TipoCadastro } from "@/lib/tipoProduto";
-import { useLojaPronta } from "@/lib/primeirosPassos";
+import { avisarPassos, lerPassos, passosCompletos, useLojaPronta } from "@/lib/primeirosPassos";
 import RevisaoProduto, { ResumoProduto } from "@/components/produto/RevisaoProduto";
 import ResumoEdicao from "@/components/produto/ResumoEdicao";
 import EscolhasProduto, { escolhasAtivas, faltaDaEscolha } from "@/components/produto/EscolhasProduto";
@@ -726,7 +726,7 @@ export default function Produtos() {
   const NOME_SECAO: Record<string, string> = { info: "Nome e descrição", opcoes: "Escolhas", fotos: "Fotos", preco: "Preço e promoção", entrega: "Cardápio e entrega" };
   useEffect(() => { setEscTela(0); }, [editTab]); // trocar de aba volta a lista das escolhas
   // Tela de sucesso depois de publicar um produto novo
-  const [sucesso, setSucesso] = useState<null | { id?: string; nome: string; imagem?: string; primeiro: boolean; fora?: boolean }>(null);
+  const [sucesso, setSucesso] = useState<null | { id?: string; nome: string; imagem?: string; primeiro: boolean; fora?: boolean; pronta?: boolean | null; semExtras?: boolean }>(null);
   const [form, setForm] = useState<Produto>(EMPTY);
   useEffect(() => { setEscTela(0); }, [form.id]); // (14/10) outro produto: as escolhas abrem na lista
 
@@ -1454,8 +1454,17 @@ export default function Produtos() {
     }
     // Cadastro novo: tela de sucesso com os próximos passos
     try { localStorage.removeItem(DRAFT_KEY); } catch {}
+    // (16/10) confere de novo DEPOIS de salvar: se o produto era o último passo, o cardápio já abriu (antes usava o que
+    // sabia antes de salvar e mostrava "Terminar de abrir o cardápio" com a loja já pronta). E vê se ela já vende extras.
+    avisarPassos();
+    const [passosAgora, extras] = await Promise.all([
+      userId ? lerPassos(userId).catch(() => null) : Promise.resolve(null),
+      userId ? supabase.from("biblioteca_extras").select("id", { count: "exact", head: true }).eq("user_id", userId) : Promise.resolve(null),
+    ]);
     // (15/10) o aviso de sucesso não mostra mais preço nem categoria: só o nome e o que falta (foto)
     setSucesso({
+      pronta: passosAgora && !passosAgora.falhou ? passosCompletos(passosAgora) : null,
+      semExtras: !!extras && !(extras as any).error && ((extras as any).count ?? 0) === 0,
       id: produtoId, nome: (payload as any).nome || form.nome,
       imagem: (form.imagem_url || "").split(",").map(x => x.trim()).filter(Boolean)[0],
       primeiro: eraPrimeiro, fora: form.disponivel === false,
@@ -1868,7 +1877,9 @@ export default function Produtos() {
                 onCusto={() => { const id = sucesso.id; irDepoisDeFechar.current = () => { navigate("/ficha-tecnica", { state: { produtoId: id } }); setTimeout(() => window.scrollTo(0, 0), 0); }; fecharModal(); }}
                 onFoto={() => abrirParteDoNovo("fotos")}
                 onDescricao={() => abrirParteDoNovo("info")}
-                lojaPronta={lojaPronta}
+                lojaPronta={sucesso.pronta ?? lojaPronta}
+                semExtras={sucesso.semExtras}
+                onExtras={() => { irDepoisDeFechar.current = () => { navigate("/complementos"); setTimeout(() => window.scrollTo(0, 0), 0); }; fecharModal(); }}
                 onTerminarLoja={() => { irDepoisDeFechar.current = () => { navigate("/"); setTimeout(() => window.scrollTo(0, 0), 0); }; fecharModal(); }} />
             ) : (<>
             {wizardStep >= 2 && (() => {

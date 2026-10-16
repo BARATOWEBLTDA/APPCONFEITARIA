@@ -59,7 +59,7 @@ const PRODUTO = {
 const fotoCliente = (id: string) => `/tutorial/boas-vindas/clientes/${id}.webp`
 
 // Só as imagens que as telas usam
-const IMAGENS = ['/tutorial/cardapio-exemplo.jpg', '/tutorial/cardapio-exemplo-nav.jpg', ...Object.values(PRODUTO)]
+const IMAGENS = ['/tutorial/cardapio-exemplo.jpg?v=2', '/tutorial/cardapio-exemplo-nav.jpg', ...Object.values(PRODUTO)]
 
 export default function BoasVindas({ isOpen, onClose, nome }: Props) {
   const [tela, setTela] = useState(0)
@@ -303,9 +303,9 @@ function Encolhe({ largura, children }: { largura: number; children: ReactNode }
   )
 }
 
-const PRINT_CEL = '/tutorial/cardapio-exemplo.jpg'
+const PRINT_CEL = '/tutorial/cardapio-exemplo.jpg?v=2'
 const PRINT_CEL_MENU = '/tutorial/cardapio-exemplo-nav.jpg'
-const PRINT_PC = '/tutorial/cardapio-exemplo-pc.jpg'
+const PRINT_PC = '/tutorial/cardapio-exemplo-pc.jpg?v=2'
 
 function DemoCardapio() {
   return (

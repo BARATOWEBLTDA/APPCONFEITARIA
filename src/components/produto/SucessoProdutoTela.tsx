@@ -12,6 +12,9 @@ interface Props {
   foraDoCardapio?: boolean;
   semFoto?: boolean;
   semDescricao?: boolean;
+  /** ainda não vende extras (vela, topo de bolo): sugere cadastrar */
+  semExtras?: boolean;
+  onExtras?: () => void;
   onTerminarLoja?: () => void;
   onOutro: () => void;
   onCusto: () => void;
@@ -21,7 +24,7 @@ interface Props {
 }
 
 import { useEffect, type ReactNode } from "react";
-import { Calculator, CaretRight, Check, Image as ImageIc, PencilSimple, Plus, Storefront } from "@phosphor-icons/react";
+import { Cake, Calculator, CaretRight, Check, Image as ImageIc, PencilSimple, Plus, Storefront } from "@phosphor-icons/react";
 import { tocarSom } from "@/hooks/useSom";
 
 const CORES_CONF = ["#FCD34D", "#86EFAC", "#93C5FD", "#FFFFFF", "#C4B5FD", "#FDBA74"];
@@ -37,6 +40,8 @@ export default function SucessoProdutoTela(p: Props) {
   const passos: { k: string; ic: ReactNode; t: string; s: string; on: () => void }[] = [];
   if (p.lojaPronta === false && p.onTerminarLoja) passos.push({ k: "loja", ic: <Storefront size={18} weight="bold" />, t: "Terminar de abrir o cardápio", s: "Pros clientes verem seus produtos", on: p.onTerminarLoja });
   passos.push({ k: "custo", ic: <Calculator size={18} weight="bold" />, t: "Definir custo e lucro", s: "Monte a ficha técnica", on: p.onCusto });
+  // (16/10) quem ainda não vende extras: vela e topo de bolo aumentam o valor de cada pedido
+  if (p.semExtras && p.onExtras) passos.push({ k: "extras", ic: <Cake size={18} weight="bold" />, t: "Vender velas e topos", s: "Ganhe mais em cada pedido", on: p.onExtras });
   if (p.semFoto && p.onFoto) passos.push({ k: "foto", ic: <ImageIc size={18} weight="bold" />, t: "Adicionar foto", s: "Produto com foto vende mais", on: p.onFoto });
   if (p.semDescricao && p.onDescricao) passos.push({ k: "desc", ic: <PencilSimple size={18} weight="bold" />, t: "Escrever a descrição", s: "Conte o que vem no produto", on: p.onDescricao });
   const mostrar = passos.slice(0, 2);
