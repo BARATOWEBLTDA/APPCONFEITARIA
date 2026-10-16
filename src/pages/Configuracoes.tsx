@@ -24,12 +24,13 @@ import "./configuracoes.css";
 
 /** Linha da lista (ícone, nome, apoio e a seta) */
 // (15/10) todos os ícones no mesmo fundo rosa (antes cada um tinha uma cor)
-function ItemConfig({ icone, nome, apoio, onClick, destaque, children }: {
-  icone: ReactNode; nome: string; apoio?: ReactNode; onClick: () => void; destaque?: boolean; children?: ReactNode;
+// tom "pro": a assinatura pra quem está no grátis (vinho com a coroa dourada, como o "Seja PRO"); "neutro": o Avançado
+function ItemConfig({ icone, tom, nome, apoio, onClick, destaque, children }: {
+  icone: ReactNode; tom?: "pro" | "neutro"; nome: string; apoio?: ReactNode; onClick: () => void; destaque?: boolean; children?: ReactNode;
 }) {
   return (
     <button type="button" className="cf9-item" onClick={onClick}>
-      <span className="cf9-ic" aria-hidden="true">{icone}</span>
+      <span className={`cf9-ic${tom ? ` cf9-ic--${tom}` : ""}`} aria-hidden="true">{icone}</span>
       <span className="cf9-tx"><b>{nome}</b>{apoio && <small className={destaque ? "on" : ""}>{apoio}</small>}</span>
       {children}
       <CaretRight size={18} weight="bold" className="cf9-seta" aria-hidden="true" />
@@ -215,7 +216,7 @@ export default function Configuracoes() {
             <ItemConfig icone={preview ? <img className="cf9-ic-foto" src={preview} alt="" /> : <User size={20} weight="bold" />} nome="Minha conta"
               apoio={userEmail || "Foto, nome, telefone e senha"}
               onClick={() => { setError(""); setSenhaMsg(""); setRascunho({ nome: form.nome, telefone: form.telefone }); setEditarOpen(true); }} />
-            <ItemConfig icone={<Crown size={20} weight="fill" />} nome="Minha assinatura"
+            <ItemConfig icone={<Crown size={20} weight="fill" />} tom={pro ? undefined : "pro"} nome="Minha assinatura"
               apoio={pro ? "Plano PRO · ativo" : "Plano grátis · conheça o PRO"} destaque={!pro}
               onClick={() => navigate(pro ? "/minha-assinatura" : "/assinar")} />
 
@@ -233,7 +234,7 @@ export default function Configuracoes() {
             <ItemConfig icone={<FileText size={20} weight="bold" />} nome="Termos e privacidade" apoio="Termos de uso e privacidade" onClick={() => setTermosOpen(true)} />
 
             <h2 className="cf9-sec">Outros</h2>
-            <ItemConfig icone={<SlidersHorizontal size={20} weight="bold" />} nome="Avançado" apoio="Excluir a conta" onClick={() => setAvancadoOpen(true)} />
+            <ItemConfig icone={<SlidersHorizontal size={20} weight="bold" />} tom="neutro" nome="Avançado" apoio="Excluir a conta" onClick={() => setAvancadoOpen(true)} />
           </section>
           <Botao variante="secundario" cheio icone={<SignOut size={20} weight="bold" />} onClick={sair}>Sair da conta</Botao>
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={recorte.escolher} />
