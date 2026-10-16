@@ -98,10 +98,11 @@
   .fd-so-cel, .fd-fixo { display: none !important; }
 }
 /* Mão de obra salva na conta (09/10) */
-.fd-mo-conta { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
+.fd-mo-conta { display: flex; align-items: center; gap: 8px; padding: 12px 6px 12px 14px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
 .fd-mo-conta > span { flex: 1; min-width: 0; }
-.fd-mo-conta small { display: block; font-size: 13px; color: var(--ui-texto-2); }
-.fd-mo-conta b { display: block; font-size: 15px; font-weight: 700; }
+.fd-mo-conta small { display: block; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fd-mo-conta b { display: block; font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fd-mo-conta > button, .fd-mo-conta > .ui-bt { flex: none; }
 .fd-mo-acoes { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 /* 09/10: lista de ingredientes mais limpa no celular — nome e custo à esquerda, quantidade à direita */
 @media (max-width: 699px) {

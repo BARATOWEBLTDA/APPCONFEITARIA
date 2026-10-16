@@ -34,12 +34,17 @@ export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
       nivel: sit === "amanha" ? "atencao" : "urgente",
       curto: { t: sit === "atrasada" ? `${c.descricao} atrasado` : String(c.descricao), s: sit === "atrasada" ? "Já venceu" : sit === "hoje" ? "Vence hoje" : "Vence amanhã" } });
   }
-  if (!fixos.error && (fixos.data || []).length === 0)
-    l.push({ chave: "falta_custos_fixos", icone: "custos", titulo: "Cadastre seus custos fixos", texto: "Aluguel, luz, internet: sem eles o lucro parece maior do que é.", link: "/custos", nivel: "normal", curto: { t: "Custos fixos", s: "Aluguel, luz, internet" } });
+  // (16/10) custos fixos e taxa da maquininha ficam na mesma tela: viram um aviso só ("Custos e taxas")
+  const faltaFixos = !fixos.error && (fixos.data || []).length === 0;
   const vendeCartao = !perfil.error && ((perfil.data as any)?.formas_pagamento || []).some((f: string) => f === "credito" || f === "debito");
   const temTaxa = ((variaveis.data as any[]) || []).some(v => v.forma || /maquin/i.test(String(v.nome || "")));
-  if (vendeCartao && !variaveis.error && !temTaxa)
-    l.push({ chave: "falta_taxa_maquininha", icone: "maquininha", titulo: "Cadastre a taxa da maquininha", texto: "Ela muda no débito e no crédito. Leva 1 minuto.", link: "/custos", nivel: "normal", curto: { t: "Taxa da maquininha", s: "Débito e crédito" } });
+  const faltaTaxa = vendeCartao && !variaveis.error && !temTaxa;
+  if (faltaFixos || faltaTaxa) {
+    const s = faltaFixos && faltaTaxa ? "Aluguel, luz e a maquininha" : faltaFixos ? "Aluguel, luz, internet" : "Taxa da maquininha";
+    l.push({ chave: "falta_custos", icone: "custos", titulo: faltaFixos && faltaTaxa ? "Cadastre seus custos e a taxa da maquininha" : faltaFixos ? "Cadastre seus custos fixos" : "Cadastre a taxa da maquininha",
+      texto: faltaFixos ? "Aluguel, luz, internet: sem eles o lucro parece maior do que é." : "Ela muda no débito e no crédito. Leva 1 minuto.", link: "/custos", nivel: "normal",
+      curto: { t: faltaFixos ? "Custos e taxas" : "Taxa da maquininha", s } });
+  }
   const semFicha = !produtos.error ? ((produtos.data as any[]) || []).filter(p => !(p.produto_insumos || []).length).length : 0;
   if (semFicha > 0)
     l.push({ chave: "falta_ficha_tecnica", icone: "ficha", titulo: semFicha === 1 ? "1 produto sem ficha técnica" : `${semFicha} produtos sem ficha técnica`, texto: "Sem a ficha, o app não sabe o custo nem o lucro.", link: "/ficha-tecnica", nivel: "normal", curto: { t: `${semFicha} sem ficha técnica`, s: "Pro app saber o lucro" } });

@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactElement } from "react";
+import { textoCardapio } from "@/lib/compartilharCardapio";
 import { lerPassos, marcarCompartilhado as marcarCompartilhadoLib } from "@/lib/primeirosPassos";
 import { useNavigate } from "react-router-dom";
 import { Eye, Check, Copy, Storefront, PencilLine, ShoppingBag, Palette, ShareNetwork } from "@phosphor-icons/react";
@@ -232,7 +233,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
       onShareClick();
       return;
     }
-    const texto = encodeURIComponent(`Confira o cardápio da minha confeitaria: ${linkCardapio}`);
+    const texto = encodeURIComponent(textoCardapio(linkCardapio));
     window.open(`https://wa.me/?text=${texto}`, "_blank");
     marcarCompartilhado();
     // Força re-render pra atualizar o estado

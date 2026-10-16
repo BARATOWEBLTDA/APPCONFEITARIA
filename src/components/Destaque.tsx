@@ -17,7 +17,7 @@ const achar = (a: Alvo) => (typeof a === "string" ? document.querySelector<HTMLE
 export function jaViuDestaque(chave: string) { try { return localStorage.getItem(`doonly_destaque_${chave}`) === "1"; } catch { return true; } }
 export function marcarDestaque(chave: string) { try { localStorage.setItem(`doonly_destaque_${chave}`, "1"); } catch {} }
 
-export default function Destaque({ alvo, toque, titulo, texto, acao, aoAcao, aoFechar, mascote = false, raio = 16 }: {
+export default function Destaque({ alvo, toque, titulo, texto, acao, aoAcao, aoFechar, mascote = false, raio = 16, passo, naoTexto = "Agora não" }: {
   /** o que fica aceso (ref ou seletor) */
   alvo: Alvo;
   /** onde o toque vale como a ação (padrão: o próprio alvo) */
@@ -25,6 +25,8 @@ export default function Destaque({ alvo, toque, titulo, texto, acao, aoAcao, aoF
   titulo: string; texto: string; acao: string;
   aoAcao: () => void; aoFechar: () => void;
   mascote?: boolean; raio?: number;
+  /** (16/10) tour: "1 de 4" em cima do título; e o texto do botão de sair ("Sair do tour") */
+  passo?: string; naoTexto?: string;
 }) {
   const [r, setR] = useState<DOMRect | null>(null);
   const [livre, setLivre] = useState(false); // nenhuma outra janela aberta
@@ -39,7 +41,20 @@ export default function Destaque({ alvo, toque, titulo, texto, acao, aoAcao, aoF
     ver();
     return () => window.clearTimeout(t);
   }, []);
-  useLayoutEffect(() => { if (livre) medir(); }, [livre]); // eslint-disable-line react-hooks/exhaustive-deps
+  // (16/10) alvo fora da tela (tour numa página comprida): rola até ele antes de medir
+  useLayoutEffect(() => {
+    if (!livre) return;
+    const el = achar(alvo);
+    if (!el) return;
+    const b = el.getBoundingClientRect();
+    if (b.top < 70 || b.bottom > window.innerHeight - 150) {
+      setR(null);
+      el.scrollIntoView({ block: b.height > window.innerHeight * 0.5 ? "start" : "center", behavior: "smooth" });
+      const t = window.setTimeout(medir, 450);
+      return () => window.clearTimeout(t);
+    }
+    medir();
+  }, [livre, alvo]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!livre) return;
     const travaAntes = document.body.style.overflow;
@@ -68,11 +83,12 @@ export default function Destaque({ alvo, toque, titulo, texto, acao, aoAcao, aoF
       <div className="dsq-furo" style={{ left: r.left - m, top: r.top - m, width: r.width + m * 2, height: r.height + m * 2, borderRadius: raio }} aria-hidden="true" />
       <div className={`dsq-bal${emCima ? " dsq-bal--cima" : ""}${mascote ? " dsq-bal--masc" : ""}`} style={{ ...pos, ["--dsq-seta" as string]: `${seta - 16}px` }} onClick={e => e.stopPropagation()}>
         {mascote && <Mascote pose="acenando" className="dsq-masc" />}
+        {passo && <em className="dsq-passo">{passo}</em>}
         <b>{titulo}</b>
         <p>{texto}</p>
         <div className="dsq-acoes">
           <button type="button" className="dsq-sim" onClick={aoAcao}>{acao}</button>
-          <button type="button" className="dsq-nao" onClick={aoFechar}>Agora não</button>
+          <button type="button" className="dsq-nao" onClick={aoFechar}>{naoTexto}</button>
         </div>
       </div>
       <style>{CSS}</style>
@@ -92,6 +108,7 @@ const CSS = `
   .dsq-bal--masc { padding: 14px 14px 12px 88px; text-align: left; }
   .dsq-masc { position: absolute; left: 10px; bottom: 10px; width: 68px; height: auto; }
   .dsq-bal b { display: block; margin-bottom: 3px; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
+  .dsq-passo { display: block; margin-bottom: 2px; font-style: normal; font-size: 12px; font-weight: 700; color: var(--ui-rosa-escuro); }
   .dsq-bal p { margin: 0; font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
   .dsq-acoes { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 10px; }
   .dsq-bal--masc .dsq-acoes { justify-content: flex-start; margin-top: 8px; }

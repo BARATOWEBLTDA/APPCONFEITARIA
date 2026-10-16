@@ -89,3 +89,8 @@
 .cf9-avanc-c p { font-size: 14px; line-height: 1.5; }
 .cf9-avanc-c .ui-bt { color: var(--ui-branco); }
 .ui-janela .ia-card { padding: 0; border: 0; box-shadow: none; }
+/* (16/10) busca no topo das Configurações */
+.cf9-busca { display: flex; align-items: center; gap: 8px; min-height: 48px; margin-bottom: 12px; padding: 0 14px; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); color: var(--ui-texto-3); }
+.cf9-busca input { flex: 1; min-width: 0; height: 46px; border: 0; outline: 0; background: none; font-family: inherit; font-size: 15px; color: var(--ui-texto); }
+.cf9-busca:focus-within { border-color: var(--ui-rosa); }
+.cf9-nada { margin: 12px 8px; font-size: 14px; color: var(--ui-texto-2); }

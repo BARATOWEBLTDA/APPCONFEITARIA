@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CaretRight, Cake } from "@phosphor-icons/react";
 import { Botao } from "@/components/base";
@@ -31,13 +32,22 @@ interface Props {
   proximas: EntregaResumo[];
   /** hoje, em AAAA-MM-DD */
   hoje: string;
+  /** (16/10) pedidos aceitos dos próximos 7 dias (com hoje): a faixa da semana e a lista do dia tocado */
+  semana?: EntregaResumo[];
 }
 
 const real = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 const hhmm = (h?: string | null) => (h ? String(h).slice(0, 5) : "");
 
-export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje }: Props) {
+export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, semana }: Props) {
   const navigate = useNavigate();
+  const [diaSel, setDiaSel] = useState<string | null>(null);
+  // (16/10) faixa da semana: os 7 dias a partir de hoje, com quantos pedidos cada um tem
+  const dias7 = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(hoje + "T12:00:00"); d.setDate(d.getDate() + i);
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    return { iso, n: (semana || []).filter(e => e.data === iso).length, sem: i === 0 ? "Hoje" : d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "").slice(0, 3), dia: d.getDate() };
+  });
 
   // 11/10: destaque = a primeira entrega de hoje com hora de AGORA em diante (sem nenhuma, a primeira sem horário).
   // As de hora já passada que ainda não foram entregues viram o aviso "N passaram do horário" e saem da lista.
@@ -47,7 +57,9 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje }: P
   // 4.29: uma lista só, um pedido por linha (a próxima de hoje primeiro, depois as outras), até 5
   // (15/10) as de hoje com o horário já passado (e ainda não entregues) voltam pra lista, no topo, marcadas
   // "atrasado" — antes sumiam sem aviso (e o computador mostrava): agora os dois mostram igual
-  const lista = [...passaram, ...(destaque ? [destaque] : []), ...restantes].slice(0, 5);
+  const listaPadrao = [...passaram, ...(destaque ? [destaque] : []), ...restantes].slice(0, 5);
+  const doDia = diaSel ? (semana || []).filter(e => e.data === diaSel).sort((a, b) => String(a.hora || "99").localeCompare(String(b.hora || "99"))) : null;
+  const lista = doDia ?? listaPadrao;
   const quantoFalta = destaque?.hora ? faltaPara(hhmm(destaque.hora), agora) : "";
   const amanha = (() => { const d = new Date(hoje + "T12:00:00"); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10); })();
   const quando = (e: EntregaResumo) => {
@@ -58,7 +70,7 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje }: P
 
 
   // 4.29: sem etiquetas (pedido do dono): só o título, o link da Agenda e os pedidos
-  const nadaMarcado = lista.length === 0;
+  const nadaMarcado = !doDia && lista.length === 0;
 
   return (
     <div className="sd">
@@ -69,6 +81,16 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje }: P
         </button>
       </div>
 
+      {semana && !erro && !carregando && (
+        <div className="sd-sem" role="group" aria-label="Pedidos da semana">
+          {dias7.map(d => (
+            <button type="button" key={d.iso} className={`sd-sd${diaSel === d.iso ? " on" : ""}${d.n ? " tem" : ""}`} aria-pressed={diaSel === d.iso}
+              onClick={() => setDiaSel(x => x === d.iso ? null : d.iso)} aria-label={`${d.sem} ${d.dia}: ${d.n} ${d.n === 1 ? "pedido" : "pedidos"}`}>
+              <small>{d.sem}</small><b>{d.dia}</b><i>{d.n || ""}</i>
+            </button>
+          ))}
+        </div>
+      )}
       {erro ? (
         <div className="sd-erro" role="alert">
           <p>Não deu pra carregar o seu dia. Confira a internet e tente de novo.</p>
@@ -86,6 +108,7 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje }: P
         </div>
       ) : (
         <>
+          {doDia && lista.length === 0 && <p className="sd-x">Nenhum pedido neste dia.</p>}
           {lista.length > 0 && (
             <ul className="sd-pl">
               {lista.map(e => (

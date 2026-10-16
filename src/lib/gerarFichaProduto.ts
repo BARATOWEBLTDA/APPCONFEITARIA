@@ -4,7 +4,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { supabase } from "@/lib/supabase";
 import { gerarDocumento, abrirJanela, esc, brl, card, kv, kpis } from "@/lib/pdfDoonly";
-import { calcularCustoLucro } from "@/lib/produto-precificacao";
+import { calcularCustoLucro, lerMaoObraConta } from "@/lib/produto-precificacao";
 
 const UNIT: Record<string, { family: string; toBase: number }> = {
   kg: { family: "massa", toBase: 1 }, g: { family: "massa", toBase: 0.001 },
@@ -37,16 +37,15 @@ export async function gerarFichaProduto(produto: any, _userId?: string): Promise
     const cmv = linhas.reduce((s: number, l: any) => s + l.custo, 0);
     // Mesma conta da tela da ficha: custos invisíveis e mão de obra salvos na conta valem pra todos os produtos (09/10)
     const uid = p.user_id || _userId;
-    const [{ data: perfilCv }, { data: mao }] = uid ? await Promise.all([
+    const [{ data: perfilCv }, maoConta] = uid ? await Promise.all([
       supabase.from("profiles").select("custos_invisiveis_pct").eq("id", uid).maybeSingle().then(r => r, () => ({ data: null } as any)),
-      supabase.from("config_mao_obra").select("salario_mensal, horas_dia, dias_semana").eq("user_id", uid).maybeSingle().then(r => r, () => ({ data: null } as any)),
-    ]) : [{ data: null }, { data: null }] as any;
+      lerMaoObraConta(uid).catch(() => null),
+    ]) : [{ data: null }, null] as any;
     const cvConta = (perfilCv as any)?.custos_invisiveis_pct;
-    const salConta = Number((mao as any)?.salario_mensal) || 0;
     // 10/10: a conta é a mesma função da tela de Produtos e da Ficha técnica (promoção em % incluída)
     const conta = calcularCustoLucro(
       { ...p, produto_insumos: itens },
-      salConta > 0 ? { salario: salConta, horasSemana: (Number((mao as any).horas_dia) || 8) * (Number((mao as any).dias_semana) || 5) } : null,
+      maoConta,
       cvConta != null ? Number(cvConta) : null,
     );
     const { cvPct, cv, mo, preco, lucro } = conta;

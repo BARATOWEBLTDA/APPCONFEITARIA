@@ -1,12 +1,13 @@
 // Custos — refeita no padrão novo do financeiro (03/10). Mesma lógica de antes:
 // custos fixos (com dia de vencimento → viram conta em "A pagar"), custos variáveis
 // (% de cada venda ou R$ por pedido) e mão de obra (salário, horas e dias).
+import TourPrimeiraVez from "@/components/TourPrimeiraVez";
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import { parseNumBR } from "@/lib/numeroBR";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Buildings, Percent, Clock, Plus, CaretRight, Receipt, WarningCircle, CreditCard } from "@phosphor-icons/react";
+import { Buildings, Percent, Clock, Plus, CaretRight, Receipt, WarningCircle, CreditCard, Fire, PencilSimple } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, TelaVazia } from "@/components/base";
 import { erroDeConexao, explicarErro } from "@/lib/erros";
@@ -46,6 +47,9 @@ export default function Custos() {
   const [editVar, setEditVar] = useState<CustoVariavel | "novo" | null>(null);
   const [editMaq, setEditMaq] = useState(false);
   const [editMo, setEditMo] = useState(false);
+  // (16/10) custos invisíveis (% sobre os ingredientes): saíram da Ficha técnica e ficam aqui, com os outros custos
+  const [cv, setCv] = useState<number | null>(null);
+  const [editCv, setEditCv] = useState(false);
 
   const carregar = useCallback(async () => {
     // 11/10: leitura que falha avisa "Não deu pra carregar" (antes virava "Nenhum custo fixo ainda" e salário R$ 0,00)
@@ -53,6 +57,8 @@ export default function Custos() {
     const { data: { user }, error: eUser } = await supabase.auth.getUser().catch(e => ({ data: { user: null }, error: e }));
     if (!user) { if (erroDeConexao(eUser)) { setErro(true); setCarregando(false); } return; }
     setUid(user.id);
+    supabase.from("profiles").select("custos_invisiveis_pct").eq("id", user.id).maybeSingle()
+      .then(({ data, error }) => { const x = (data as any)?.custos_invisiveis_pct; setCv(!error && x != null ? Number(x) : null); }, () => {});
     const [f, v, m] = await Promise.all([
       supabase.from("custos_fixos").select("id, nome, valor, ativo, dia_vencimento").eq("user_id", user.id).order("nome"),
       supabase.from("custos_variaveis").select("*").eq("user_id", user.id).order("nome"),
@@ -99,6 +105,7 @@ export default function Custos() {
         infoContent={<>
           <p><strong>Custos fixos</strong> são os que vêm todo mês (aluguel, internet…). Com o <strong>dia de vencimento</strong>, eles viram uma conta em <strong>A pagar</strong> sozinhos.</p>
           <p><strong>Custos variáveis</strong> acompanham cada venda (taxa da maquininha, embalagem por pedido).</p>
+          <p><strong>Custos invisíveis</strong> são o que gasta a mais em cada produção (gás do forno, perdas, descartáveis): uma porcentagem sobre os ingredientes, em todas as fichas.</p>
           <p>A <strong>mão de obra</strong> é o seu salário: com ele e os custos fixos, o app calcula quanto custa cada hora sua.</p>
         </>}
       />
@@ -119,32 +126,34 @@ export default function Custos() {
 
         <div className="cu-grid">
           <section className="cu-card cu-a-fixos">
-            <div className="cu-ct"><span className="cu-ic"><Buildings size={18} weight="duotone" /></span><div><b>Custos fixos</b><small>Todo mês, o mesmo valor</small></div></div>
+            <div className="cu-ct"><span className="cu-ic"><Buildings size={18} weight="duotone" /></span><div><b>Custos fixos</b><small>Todo mês, vendendo ou não</small></div>
+              <button type="button" className="cu-add" onClick={() => setEditFixo("novo")}><Plus size={14} weight="bold" />Adicionar</button></div>
             {carregando ? <div className="cu-ph" /> : fixos.length === 0 ? (
-              <p className="cu-vazio">Nenhum ainda. Ex.: aluguel, internet, gás.</p>
+              <p className="cu-vazio">Nenhum ainda. Ex.: aluguel, internet, conta de luz.</p>
             ) : fixos.map(f => (
               <button type="button" key={f.id} className={`cu-it ${f.ativo ? "" : "off"}`} onClick={() => setEditFixo(f)}>
                 <div className="cu-it-t"><b>{f.nome}</b>
-                  <small>{!f.ativo ? "Pausado" : f.dia_vencimento ? <><Receipt size={12} weight="bold" /> Vence dia {f.dia_vencimento} · vira conta em A pagar</> : "Sem dia de vencimento"}</small></div>
+                  <small>{!f.ativo ? "Pausado" : f.dia_vencimento ? <><Receipt size={12} weight="bold" /><em>Vence dia {f.dia_vencimento} · vira conta em A pagar</em></> : "Sem dia de vencimento"}</small></div>
                 <span className="cu-it-v">{brl(f.valor)}</span><CaretRight size={14} weight="bold" className="cu-it-ar" />
               </button>
             ))}
-            <button type="button" className="cu-add" onClick={() => setEditFixo("novo")}><Plus size={15} weight="bold" />Novo custo fixo</button>
           </section>
 
           <section className="cu-card cu-a-mo">
             <div className="cu-ct"><span className="cu-ic"><Clock size={18} weight="duotone" /></span><div><b>Mão de obra</b><small>O seu trabalho também tem preço</small></div></div>
-            <button type="button" className="cu-mo" onClick={() => setEditMo(true)}>
+            <div className="cu-mo">
               <div className="cu-mo-l"><span>Salário</span><b>{brl(mo.salario_mensal)}</b></div>
               <div className="cu-mo-l"><span>Jornada</span><b>{mo.horas_dia}h por dia · {diasTxt(mo.dias_semana_array)}</b></div>
               <div className="cu-mo-l"><span>Salário por hora</span><b className="rosa">{brl(valorHora)}</b></div>
               <div className="cu-mo-l"><span>Salário por dia</span><b>{brl(valorHora * mo.horas_dia)}</b></div>
-              <i>Editar <CaretRight size={13} weight="bold" /></i>
-            </button>
+            </div>
+            {/* (16/10) botão de verdade (antes era um "Editar" pequeno no canto) */}
+            <button type="button" className="cu-bt" onClick={() => setEditMo(true)}><PencilSimple size={16} weight="bold" />Editar salário e jornada</button>
           </section>
 
           <section className="cu-card cu-a-var">
-            <div className="cu-ct"><span className="cu-ic"><Percent size={18} weight="duotone" /></span><div><b>Custos variáveis</b><small>Acompanham cada venda</small></div></div>
+            <div className="cu-ct"><span className="cu-ic"><Percent size={18} weight="duotone" /></span><div><b>Custos variáveis</b><small>Acompanham cada venda</small></div>
+              <button type="button" className="cu-add" onClick={() => setEditVar("novo")}><Plus size={14} weight="bold" />Adicionar</button></div>
             {carregando ? <div className="cu-ph" /> : variaveis.length === 0 ? (
               <p className="cu-vazio">Nenhum ainda. Ex.: maquininha, embalagem.</p>
             ) : variaveis.map(v => (
@@ -154,8 +163,25 @@ export default function Custos() {
               </button>
             ))}
             {/* (13/10) atalho: a taxa da maquininha com o débito e o crédito separados */}
-            {!carregando && !variaveis.some(v => v.forma) && <button type="button" className="cu-add" onClick={() => setEditMaq(true)}><CreditCard size={15} weight="bold" />Taxa da maquininha (débito e crédito)</button>}
-            <button type="button" className="cu-add" onClick={() => setEditVar("novo")}><Plus size={15} weight="bold" />Novo custo variável</button>
+            {/* (16/10) a maquininha que falta vira uma linha como as outras (antes um botão tracejado comprido) */}
+            {!carregando && !variaveis.some(v => v.forma) && (
+              <button type="button" className="cu-it cu-it--falta" onClick={() => setEditMaq(true)}>
+                <span className="cu-it-ic" aria-hidden="true"><CreditCard size={16} weight="bold" /></span>
+                <div className="cu-it-t"><b>Taxa da maquininha</b><small>Débito e crédito · falta cadastrar</small></div>
+                <CaretRight size={14} weight="bold" className="cu-it-ar" />
+              </button>
+            )}
+          </section>
+
+          {/* (16/10) custos invisíveis: antes só dava pra mudar dentro da Ficha técnica */}
+          <section className="cu-card cu-a-cv">
+            <div className="cu-ct"><span className="cu-ic"><Fire size={18} weight="duotone" /></span><div><b>Custos invisíveis</b><small>Gás do forno, perdas, descartáveis</small></div></div>
+            <div className="cu-mo">
+              <div className="cu-mo-l"><span>Sobre os ingredientes</span><b className="rosa">{String(cv ?? 25).replace(".", ",")}%</b></div>
+              <div className="cu-mo-l"><span>Ex.: R$ 100,00 de ingredientes</span><b>+ {brl((cv ?? 25))}</b></div>
+            </div>
+            <p className="cu-vazio">{cv == null ? "Usando o padrão de 25%. " : ""}A maioria das confeiteiras usa entre 20% e 30%. Entra em todas as fichas técnicas.</p>
+            <button type="button" className="cu-bt" onClick={() => setEditCv(true)}><PencilSimple size={16} weight="bold" />Editar porcentagem</button>
           </section>
         </div>
         </>)}
@@ -164,7 +190,16 @@ export default function Custos() {
       {editFixo && uid && <FixoSheet uid={uid} item={editFixo === "novo" ? null : editFixo} onClose={() => setEditFixo(null)} onFeito={() => { setEditFixo(null); carregar(); }} />}
       {editVar && uid && <VariavelSheet uid={uid} item={editVar === "novo" ? null : editVar} onClose={() => setEditVar(null)} onFeito={() => { setEditVar(null); carregar(); }} />}
       {editMaq && uid && <MaquininhaSheet uid={uid} onClose={() => setEditMaq(false)} onFeito={() => { setEditMaq(false); carregar(); }} />}
+      {editCv && uid && <InvisiveisSheet uid={uid} atual={cv ?? 25} onClose={() => setEditCv(false)} onFeito={v => { setCv(v); setEditCv(false); }} />}
       {editMo && uid && <MaoObraSheet uid={uid} atual={mo} totalFixos={totalFixos} onClose={() => setEditMo(false)} onFeito={() => { setEditMo(false); carregar(); }} />}
+      {/* (16/10) primeira vez aqui: convite pro tour */}
+      <TourPrimeiraVez chave="custos" tela="Custos" passos={[
+        { alvo: ".cu-a-fixos", titulo: "Custos fixos", texto: "O que você paga todo mês, vendendo ou não: aluguel, internet, a conta de luz. Com o dia de vencimento, vira uma conta em A pagar." },
+        { alvo: ".cu-a-mo", titulo: "Mão de obra", texto: "O salário que você quer tirar e quantas horas trabalha. Vale pra todos os produtos." },
+        { alvo: ".cu-resumo .cu-k.destaque", titulo: "Custo da sua hora", texto: "Fixos + salário, divididos pelas horas do mês. A Ficha técnica usa esse valor pelo tempo de cada receita." },
+        { alvo: ".cu-a-var", titulo: "Custos variáveis", texto: "Os que acompanham cada venda, como a taxa da maquininha (no débito e no crédito) e a embalagem." },
+        { alvo: ".cu-a-cv", titulo: "Custos invisíveis", texto: "Gás do forno, perdas e descartáveis: uma porcentagem sobre os ingredientes, em todas as fichas." },
+      ]} />
       <style>{CSS}{FOLHA_CSS}</style>
     </>
   );
@@ -325,6 +360,33 @@ function MaquininhaSheet({ uid, onClose, onFeito }: { uid: string; onClose: () =
   );
 }
 
+function InvisiveisSheet({ uid, atual, onClose, onFeito }: { uid: string; atual: number; onClose: () => void; onFeito: (v: number) => void }) {
+  const [pct, setPct] = useState(String(atual).replace(".", ","));
+  const [ocupado, setOcupado] = useState(false);
+  const [erro, setErro] = useState("");
+  const v = Number(pct.replace(",", ".")) || 0;
+  const salvar = async () => {
+    if (v < 0 || v > 100) { setErro("Coloque um valor de 0 a 100"); return; }
+    setOcupado(true);
+    const { error } = await supabase.from("profiles").update({ custos_invisiveis_pct: v }).eq("id", uid);
+    setOcupado(false);
+    if (error) {
+      const semColuna = error.code === "PGRST204" || error.code === "42703" || /custos_invisiveis_pct/i.test(String(error.message || ""));
+      setErro(semColuna ? "Falta um ajuste no banco pra salvar (SQL 4.30)." : "Não foi possível salvar agora."); return;
+    }
+    onFeito(v);
+  };
+  return (
+    <Folha titulo="Custos invisíveis" sub="O que gasta a mais em cada produção" onClose={onClose}>
+      <label className="fo-lb" htmlFor="cv-p">Porcentagem sobre os ingredientes</label>
+      <div className="fo-in"><input id="cv-p" inputMode="decimal" value={pct} onChange={e => { setPct(e.target.value); setErro(""); }} /><span>%</span></div>
+      <div className="fo-dica">Gás do forno, perdas e descartáveis (papel manteiga, luva, filme). A conta de luz e água da casa vai em <b>Custos fixos</b>. Com {String(v).replace(".", ",")}%, a cada R$ 100,00 de ingredientes entram <b>{brl(v)}</b>.</div>
+      {erro && <p className="fo-erro">{erro}</p>}
+      <button type="button" className="fo-cta" onClick={salvar} disabled={ocupado}>{ocupado ? "Salvando…" : "Salvar"}</button>
+    </Folha>
+  );
+}
+
 function MaoObraSheet({ uid, atual, totalFixos, onClose, onFeito }: { uid: string; atual: MaoObra; totalFixos: number; onClose: () => void; onFeito: () => void }) {
   const [salario, setSalario] = useState(textoBRL(atual.salario_mensal));
   const [horas, setHoras] = useState(String(atual.horas_dia || 8));
@@ -373,11 +435,12 @@ const CSS = `
   .cu-k small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cu-k.destaque { background: radial-gradient(130% 160% at 0 0, #6B2340, var(--ui-vinho-escuro) 70%); border: none; color: var(--ui-branco); }
   .cu-k.destaque small, .cu-k.destaque i { color: rgba(255,255,255,.72); }
-  .cu-grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "fixos" "mo" "var"; }
-  @media (min-width: 900px) { .cu-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "fixos mo" "fixos var"; align-items: start; } }
-  .cu-a-fixos { grid-area: fixos; } .cu-a-mo { grid-area: mo; } .cu-a-var { grid-area: var; }
+  .cu-grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "fixos" "mo" "var" "cv"; }
+  @media (min-width: 900px) { .cu-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "fixos mo" "var cv"; align-items: start; } }
+  .cu-a-fixos { grid-area: fixos; } .cu-a-mo { grid-area: mo; } .cu-a-var { grid-area: var; } .cu-a-cv { grid-area: cv; }
   .cu-card { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 14px; }
   .cu-ct { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .cu-ct > div { flex: 1; min-width: 0; }
   .cu-ct b { display: block; font-size: 15.5px; font-weight: 700; } .cu-ct small { font-size: 12.5px; color: #888780; }
   .cu-ic { width: 38px; height: 38px; border-radius: 11px; background: #FFF1F6; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .cu-ph { height: 90px; background: #FAF7F8; border-radius: var(--ui-raio-p); }
@@ -386,11 +449,17 @@ const CSS = `
   .cu-it:first-of-type { border-top: none; }
   .cu-it-t { flex: 1; min-width: 0; } .cu-it-t b { display: block; font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cu-it-t small { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #888780; margin-top: 2px; }
+  .cu-it-t small em { min-width: 0; font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cu-it-v { font-size: 14px; font-weight: 700; white-space: nowrap; } .cu-it-ar { color: #C9BEC3; flex-shrink: 0; }
   .cu-it.off { opacity: .55; }
-  .cu-add { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; margin-top: 8px; border: 1.5px dashed #F3C9DA; background: #FFF6F9; color: var(--ui-rosa-escuro); border-radius: var(--ui-raio); padding: 11px; font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; }
-  .cu-mo { display: block; width: 100%; text-align: left; background: #FAF7F8; border: none; border-radius: var(--ui-raio); padding: 4px 12px 10px; font-family: inherit; color: var(--ui-texto); cursor: pointer; }
+  /* (16/10) "+ Adicionar" discreto no título do bloco (antes um botão tracejado embaixo) */
+  .cu-add { flex: none; display: flex; align-items: center; gap: 4px; min-height: 36px; margin: 0 -6px 0 0; padding: 0 8px; border: 0; border-radius: 8px; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 13.5px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+  @media (hover: hover) { .cu-add:hover { background: #FFF1F6; } }
+  .cu-it-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: #FFF1F6; color: var(--ui-rosa-escuro); }
+  .cu-it--falta .cu-it-t small { color: var(--ui-rosa-escuro); }
+  .cu-bt { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 44px; margin-top: 10px; border: 1.5px solid #F3C9DA; border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+  .cu-mo { display: block; width: 100%; text-align: left; background: #FAF7F8; border: none; border-radius: var(--ui-raio); padding: 4px 12px 4px; font-family: inherit; color: var(--ui-texto); }
   .cu-mo-l { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid #F0EBED; font-size: 13.5px; }
   .cu-mo-l span { color: var(--ui-texto-2); } .cu-mo-l b { font-weight: 700; text-align: right; } .cu-mo-l b.rosa { color: var(--ui-rosa-escuro); }
-  .cu-mo i { display: flex; justify-content: flex-end; align-items: center; gap: 3px; margin-top: 8px; font-style: normal; font-size: 12.5px; font-weight: 700; color: var(--ui-rosa-escuro); }
+  .cu-mo-l:last-child { border-bottom: 0; }
 `;

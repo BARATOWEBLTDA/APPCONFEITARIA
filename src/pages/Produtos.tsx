@@ -20,6 +20,7 @@ import { carregarGruposDoBanco, salvarGruposParaBanco } from "@/lib/produto-grup
 import {
   REGRA_CONFLITO_DEFAULT,
   calcularCustoLucro,
+  lerMaoObraConta,
   descontoPromocao,
   pesoKgDoNome,
   type MaoObraConta,
@@ -852,17 +853,14 @@ export default function Produtos() {
     try {
       const [cv, mao, vars] = await Promise.all([
         supabase.from("profiles").select("custos_invisiveis_pct").eq("id", uid).maybeSingle(),
-        supabase.from("config_mao_obra").select("salario_mensal, horas_dia, dias_semana").eq("user_id", uid).maybeSingle(),
+        lerMaoObraConta(uid).catch(() => null),
         supabase.from("custos_variaveis").select("*").eq("user_id", uid),
       ]);
       // (13/10) a mesma conta da Ficha técnica: taxa do crédito (pior caso) + custo fixo por pedido
       if (!vars.error) setVendaConta({ pct: taxaPctDaForma("credito", (vars.data as any[]) || []), fixo: fixoPorPedido((vars.data as any[]) || []) });
       const v = (cv.data as any)?.custos_invisiveis_pct;
       setCvConta(!cv.error && v != null ? Number(v) : null);
-      const sal = Number((mao.data as any)?.salario_mensal) || 0;
-      setMaoConta(mao.data && sal > 0
-        ? { salario: sal, horasSemana: (Number((mao.data as any).horas_dia) || 8) * (Number((mao.data as any).dias_semana) || 5) }
-        : null);
+      setMaoConta(mao); // (16/10) fixos + salário, igual à tela Custos
     } catch { /* sem esses dados o lucro usa o que está salvo no produto */ }
   };
 

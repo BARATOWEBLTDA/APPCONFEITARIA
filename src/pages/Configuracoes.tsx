@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { INDICACAO_ATIVA } from "@/lib/recursos";
 import { useNavigate } from "react-router-dom";
-import { Bell, CaretRight, Crown, DownloadSimple, FileText, Gift, Lightbulb, PaintBrush, SignOut, SlidersHorizontal, Storefront, Bug, Trophy, Truck, User, WarningCircle } from "@phosphor-icons/react";
+import { Bell, CaretRight, Crown, DownloadSimple, FileText, Gift, Lightbulb, PaintBrush, SignOut, SlidersHorizontal, Storefront, Bug, Trophy, Truck, User, WarningCircle, MagnifyingGlass } from "@phosphor-icons/react";
 import { isStandalone } from "@/lib/installPrompt";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
@@ -41,8 +41,35 @@ function ItemConfig({ icone, tom, nome, apoio, onClick, destaque, children }: {
 // (11/10) máscara única do app: "+55 41 99999-0000" não vira mais "(55) 41999-9900"
 const formatPhone = mascaraTelefone;
 
+/** (16/10) busca das Configurações (ideia vista no Dora): acha o ajuste e diz onde ele fica */
+type Achado = { nome: string; onde: string; palavras: string; ir: string | "conta" | "termos" | "avancado" | "notif" | "instalar" | "suporte" };
+const INDICE: Achado[] = [
+  { nome: "Nome, telefone e senha", onde: "Conta › Minha conta", palavras: "foto perfil email e-mail celular trocar senha", ir: "conta" },
+  { nome: "Minha assinatura", onde: "Conta", palavras: "plano pro pagamento mensalidade cancelar", ir: "assinatura" },
+  { nome: "Nome e descrição da loja", onde: "Minha loja › Dados da loja", palavras: "sobre confeitaria texto", ir: "/cardapio-config" },
+  { nome: "Endereço", onde: "Minha loja › Dados da loja", palavras: "cep rua mapa cidade localização", ir: "/cardapio-config" },
+  { nome: "Horário de funcionamento", onde: "Minha loja › Dados da loja", palavras: "horario aberto fechado dias semana abrir fechar", ir: "/cardapio-config" },
+  { nome: "Formas de pagamento", onde: "Minha loja › Entrega e pagamento", palavras: "pix dinheiro cartão credito debito pagar", ir: "/checkout-config" },
+  { nome: "Entrega e retirada", onde: "Minha loja › Entrega e pagamento", palavras: "taxa de entrega frete retirar buscar delivery", ir: "/checkout-config" },
+  { nome: "Logo, cores e banner", onde: "Minha loja › Aparência", palavras: "logotipo cor tema modelo imagem capa visual", ir: "/cardapio-design" },
+  { nome: "Custos fixos", onde: "Financeiro › Custos", palavras: "aluguel luz internet agua conta mensal", ir: "/custos" },
+  { nome: "Salário e jornada", onde: "Financeiro › Custos", palavras: "mao de obra hora horas custo da hora trabalho", ir: "/custos" },
+  { nome: "Taxa da maquininha", onde: "Financeiro › Custos", palavras: "cartão credito debito custos variaveis embalagem", ir: "/custos" },
+  { nome: "Custos invisíveis", onde: "Financeiro › Custos", palavras: "gas forno perdas descartaveis porcentagem", ir: "/custos" },
+  { nome: "Saldo do caixa", onde: "Financeiro", palavras: "dinheiro gaveta banco quanto tenho", ir: "/financeiro" },
+  { nome: "Velas e topos de bolo", onde: "Cadastros › Personalização", palavras: "adicionais extras complementos escrita papel de arroz", ir: "/complementos" },
+  { nome: "Categorias do cardápio", onde: "Cadastros › Categorias", palavras: "grupos ordem secoes", ir: "/categorias" },
+  { nome: "Notificações e sons", onde: "App", palavras: "avisos som alerta pedido novo", ir: "notif" },
+  { nome: "Instalar o app", onde: "App", palavras: "tela inicial atalho celular", ir: "instalar" },
+  { nome: "Fale com o suporte", onde: "Ajuda", palavras: "whatsapp ajuda atendimento", ir: "suporte" },
+  { nome: "Termos e privacidade", onde: "Ajuda", palavras: "lgpd dados contrato", ir: "termos" },
+  { nome: "Excluir a conta", onde: "Outros › Avançado", palavras: "apagar deletar encerrar", ir: "avancado" },
+];
+const semAcento = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
 export default function Configuracoes() {
   const navigate = useNavigate();
+  const [busca, setBusca] = useState("");
   const [loading, setLoading] = useState(true);
   const [erroCarregar, setErroCarregar] = useState("");
   const [saving, setSaving] = useState(false);
@@ -211,6 +238,31 @@ export default function Configuracoes() {
               acao={<Botao tamanho="m" onClick={() => void carregar()}>Tentar de novo</Botao>} />
           )}
           {/* (14/10) Uma lista só, sem cards: Conta (minha conta e assinatura), App, Ajuda e Avançado. Sair embaixo. */}
+          <label className="cf9-busca">
+            <MagnifyingGlass size={18} weight="bold" aria-hidden="true" />
+            <input type="search" placeholder="Horário, pix, senha, custos…" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar nas configurações" autoComplete="off" />
+          </label>
+          {busca.trim() ? (() => {
+            const q = semAcento(busca.trim());
+            const achados = INDICE.filter(a => semAcento(`${a.nome} ${a.onde} ${a.palavras}`).includes(q));
+            const ir = (a: Achado) => {
+              if (a.ir === "conta") { setError(""); setSenhaMsg(""); setRascunho({ nome: form.nome, telefone: form.telefone }); setEditarOpen(true); }
+              else if (a.ir === "assinatura") navigate(pro ? "/minha-assinatura" : "/assinar");
+              else if (a.ir === "notif") navigate("/configuracoes/notificacoes");
+              else if (a.ir === "instalar") setInstalarOpen(true);
+              else if (a.ir === "termos") setTermosOpen(true);
+              else if (a.ir === "avancado") setAvancadoOpen(true);
+              else if (a.ir === "suporte") window.open(`https://wa.me/5511978414991?text=${encodeURIComponent("Olá! Preciso de ajuda com o Doonly.")}`, "_blank", "noopener");
+              else navigate(a.ir, { state: { de: "/configuracoes" } });
+            };
+            return (
+              <section className="cf9-card cf9-lista" aria-label="Resultados da busca">
+                {achados.length ? achados.map(a => (
+                  <ItemConfig key={a.nome} icone={<MagnifyingGlass size={18} weight="bold" />} nome={a.nome} apoio={`em ${a.onde}`} onClick={() => ir(a)} />
+                )) : <p className="cf9-nada">Nada com "{busca.trim()}". Tente outra palavra.</p>}
+              </section>
+            );
+          })() : (<>
           <section className="cf9-card cf9-lista" aria-label="Configurações">
             <h2 className="cf9-sec">Conta</h2>
             <ItemConfig icone={preview ? <img className="cf9-ic-foto" src={preview} alt="" /> : <User size={20} weight="bold" />} nome="Minha conta"
@@ -243,6 +295,7 @@ export default function Configuracoes() {
             <h2 className="cf9-sec">Outros</h2>
             <ItemConfig icone={<SlidersHorizontal size={20} weight="bold" />} tom="neutro" nome="Avançado" apoio="Excluir a conta" onClick={() => setAvancadoOpen(true)} />
           </section>
+          </>)}
           <Botao variante="secundario" cheio icone={<SignOut size={20} weight="bold" />} onClick={sair}>Sair da conta</Botao>
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={recorte.escolher} />
           {recorte.janela}

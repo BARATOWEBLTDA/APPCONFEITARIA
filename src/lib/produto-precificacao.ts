@@ -1,3 +1,4 @@
+import { supabase } from "@/lib/supabase";
 /**
  * ═══════════════════════════════════════════════════════════════════
  * PRODUTO PRECIFICAÇÃO — motor central de cálculo
@@ -308,8 +309,30 @@ export function custoIngrediente(qtd: number, unidadeUsada: string, insumo: { un
 /** (13/10) Custos da venda: % que a maquininha cobra no crédito (o pior caso) + valor fixo por pedido (embalagem). */
 export type CustoDaVenda = { pct: number; fixo: number };
 
-/** Mão de obra salva na conta (Custos → Mão de obra): vale pra todos os produtos. */
-export type MaoObraConta = { salario: number; horasSemana: number } | null;
+/** Mão de obra salva na conta (Custos → Mão de obra): vale pra todos os produtos.
+ *  (16/10) + os custos fixos do mês: a hora da Ficha técnica é a mesma da tela Custos (fixos + salário). */
+export type MaoObraConta = { salario: number; horasSemana: number; fixos?: number } | null;
+/** Semanas num mês (52 ÷ 12): a mesma conta na tela Custos, na Ficha técnica e no PDF */
+export const SEMANAS_MES = 4.345;
+/** Custo da sua hora = (custos fixos do mês + salário) ÷ horas trabalhadas no mês */
+export function custoDaHora(mao: MaoObraConta): number {
+  if (!mao) return 0;
+  const horas = (Number(mao.horasSemana) || 0) * SEMANAS_MES;
+  return horas > 0 ? ((Number(mao.salario) || 0) + (Number(mao.fixos) || 0)) / horas : 0;
+}
+/** Lê na conta o salário, a jornada e os custos fixos ativos (null quando não tem nada cadastrado) */
+export async function lerMaoObraConta(uid: string): Promise<MaoObraConta> {
+  const [m, f] = await Promise.all([
+    supabase.from("config_mao_obra").select("*").eq("user_id", uid).maybeSingle().then(r => r, () => ({ data: null } as any)),
+    supabase.from("custos_fixos").select("valor, ativo").eq("user_id", uid).then(r => r, () => ({ data: null } as any)),
+  ]);
+  const d: any = m.data || {};
+  const salario = Number(d.salario_mensal) || 0;
+  const fixos = ((f.data as any[]) || []).filter(x => x.ativo !== false).reduce((s, x) => s + (Number(x.valor) || 0), 0);
+  if (salario <= 0 && fixos <= 0) return null;
+  const dias = Array.isArray(d.dias_semana_array) && d.dias_semana_array.length ? d.dias_semana_array.length : (Number(d.dias_semana) || 5);
+  return { salario, horasSemana: (Number(d.horas_dia) || 8) * dias, fixos };
+}
 
 /**
  * Custo e lucro de um produto: ingredientes + custos invisíveis + mão de obra (a regra da Ficha técnica).
@@ -323,10 +346,9 @@ export function calcularCustoLucro(p: any, mao: MaoObraConta = null, cvConta: nu
   const cv = cmv * (cvPct / 100);
   // Mão de obra: liga quando a ficha tem salário ou tempo salvos
   const moAtivo = !!(p?.salario_desejado || p?.tempo_preparo_min);
-  const salario = mao ? mao.salario : (Number(p?.salario_desejado) || 0);
-  const horasSem = mao ? mao.horasSemana : (Number(p?.horas_semanais) || 40);
   const tempoMin = parseInt(String(p?.tempo_preparo_min || 0)) || 0;
-  const custoHora = horasSem > 0 ? salario / (horasSem * 4.33) : 0;
+  // (16/10) a hora vem da conta (fixos + salário); produto antigo sem nada na conta usa o que ficou salvo nele
+  const custoHora = custoDaHora(mao ?? { salario: Number(p?.salario_desejado) || 0, horasSemana: Number(p?.horas_semanais) || 40 });
   const mo = moAtivo ? custoHora * (tempoMin / 60) : 0;
   const preco = precoQueClientePaga(p);
   // (13/10) taxa da maquininha (a do crédito, o pior caso) e custo fixo por pedido (embalagem)

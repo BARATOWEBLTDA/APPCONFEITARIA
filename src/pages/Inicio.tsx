@@ -11,6 +11,7 @@ import { entradasNoPeriodo } from "@/lib/painelFinanceiro";
 import { verificarAvisosPro } from "@/lib/notificacoesUsuario";
 import SeuDia, { type EntregaResumo } from "@/components/inicio/SeuDia";
 import PedidosNovosTopo, { type PedidoNovo } from "@/components/inicio/PedidosNovosTopo";
+import CustosDoMes from "@/components/inicio/CustosDoMes";
 import Destaque, { jaViuDestaque, marcarDestaque } from "@/components/Destaque";
 import { minutosDoDia, separarEntregasDeHoje } from "@/components/inicio/entregasDeHoje";
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
@@ -90,6 +91,9 @@ export default function Inicio() {
   // 11/10: todas as entregas de hoje (a "próxima" é escolhida na hora de mostrar: a primeira com hora de agora em diante)
   const [entregasDeHoje, setEntregasDeHoje] = useState<EntregaResumo[]>(c0?.dados.entregasDeHoje ?? []);
   const [pedidosNovos, setPedidosNovos] = useState<PedidoNovo[]>(c0?.dados.pedidosNovos ?? []);
+  // (16/10) faixa da semana (pedidos aceitos de hoje a 6 dias) e o total dos custos fixos (cartão "quanto o mês já pagou")
+  const [semana, setSemana] = useState<EntregaResumo[]>(c0?.dados.semana ?? []);
+  const [totalFixos, setTotalFixos] = useState<number>(c0?.dados.totalFixos ?? 0);
   const [destaquePedidos, setDestaquePedidos] = useState(false); // (16/10) 1º pedido aceito: mostra onde os pedidos ficam
   // o dia a que os dados da tela se referem (AAAA-MM-DD): o "hoje" da tela anda junto com os dados
   const [diaDosDados, setDiaDosDados] = useState<string | null>(c0?.dia ?? null);
@@ -431,6 +435,8 @@ export default function Inicio() {
         proximasEntregasRes,
         pedidosAtrasadosRes,
         proximaEntregaHojeRes,
+        semanaRes,
+        fixosRes,
       ] = await Promise.all([
         // Pedidos pendentes (aguardando confirmação). (16/10) Vem a lista: o cartão do topo mostra o pedido e aceita ali mesmo
         supabase
@@ -499,6 +505,16 @@ export default function Inicio() {
           .in("status", STATUS_ATIVOS)
           .order("horario_entrega", { ascending: true, nullsFirst: false })
           .order("id"),
+        // (16/10) a semana: de hoje até daqui a 6 dias (a faixa conta os pedidos de cada dia)
+        supabase
+          .from("pedidos")
+          .select("id, numero, cliente_nome, data_entrega, valor_total, horario_entrega, tipo_entrega, status, origem, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(forma_venda, imagem_url))")
+          .eq("user_id", userId)
+          .gte("data_entrega", hojeISO)
+          .lte("data_entrega", dataISO(new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 6)))
+          .in("status", STATUS_ATIVOS)
+          .limit(300),
+        supabase.from("custos_fixos").select("valor, ativo").eq("user_id", userId),
       ]);
       if (n !== numCarga.current) return; // chegou uma busca mais nova
       // o Supabase não lança erro: ele devolve. Sem isso a tela ficava zerada, como se não houvesse pedido nenhum
@@ -554,6 +570,9 @@ export default function Inicio() {
       const entregasHojeLista = hojeAceitos.map(entregaDoPedido);
       const proximasLista = [...hojeAceitos, ...aceitos(proximasEntregasRes.data)].slice(0, 5).map(entregaDoPedido);
       setCounts(novosCounts);
+      const semanaLista = aceitos(semanaRes.data).map(entregaDoPedido);
+      const fixosMes = ((fixosRes.data as any[]) || []).filter(x => x.ativo !== false).reduce((s2, x) => s2 + (Number(x.valor) || 0), 0);
+      setSemana(semanaLista); setTotalFixos(fixosMes);
       setPedidosNovos(novosLista);
       setEntregasDeHoje(entregasHojeLista);
       setDiaDosDados(hojeISO);
@@ -566,7 +585,7 @@ export default function Inicio() {
       telaBoa.current = falhou ? null : chaveDaBusca;
       if (!falhou) {
         cacheInicio = { uid: userId, dia: hojeISO, dados: {
-          counts: novosCounts, pedidosNovos: novosLista,
+          counts: novosCounts, pedidosNovos: novosLista, semana: semanaLista, totalFixos: fixosMes,
           entregasDeHoje: entregasHojeLista, aniversariantesDetalhe: proxAniv,
           resumoSemana: { vendas: vendasSemana, pedidos: pedidosSemanaRes.data?.length || 0 },
           resumoAnterior: { vendas: vendasAnt, pedidos: pedidosSemanaAntRes.data?.length || 0 },
@@ -859,9 +878,16 @@ export default function Inicio() {
         <SeuDia
           carregando={loading} erro={erroCarga} aoTentar={tentarDeNovo}
           entregasHoje={counts.entregasHoje} atrasados={counts.pedidosAtrasados} novos={counts.pedidosPendentes}
-          proximas={entregasDoSeuDia} hoje={diaDaTela}
+          proximas={entregasDoSeuDia} hoje={diaDaTela} semana={semana}
         />
       </section>
+
+      {/* (16/10) quanto dos custos fixos o mês já pagou (só com custos fixos cadastrados) */}
+      {!loading && !erroCarga && totalFixos > 0 && (
+        <section className="ini-section ini-section--fixos">
+          <CustosDoMes recebido={counts.recebidoMes} fixos={totalFixos} />
+        </section>
+      )}
 
       {/* (4.27) Abrir e pausar os pedidos do cardápio na hora (no computador fica no cartão do link, na lateral) */}
       {!computador && (
@@ -1412,6 +1438,7 @@ export default function Inicio() {
         .ini-root .ini-section.ini-section--dia { margin-top: var(--space-3) !important; }
         @media (min-width: 901px) { .ini-section--dia { display: none; } }
         .ini-section--pausa { order: 4; margin-top: var(--space-3); }
+        .ini-section--fixos { order: 3; margin-top: var(--space-3); }
         .ini-section--checklist-top { order: 0; margin-top: var(--space-3); }
         .ini-pp:empty { display: none; }
 

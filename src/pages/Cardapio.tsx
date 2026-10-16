@@ -1,4 +1,5 @@
 import { PausarPedidos } from "@/components/loja/PausarPedidos";
+import { textoCardapio } from "@/lib/compartilharCardapio";
 import { useState, useEffect, useRef, type ReactElement } from "react";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
 import VisaoGeralDesktop from "@/components/cardapio/VisaoGeralDesktop";
@@ -299,10 +300,10 @@ export default function Cardapio() {
       navigate("/cardapio-config");
       return;
     }
-    const texto = `Confira o cardápio da minha confeitaria: ${linkCardapio}`;
+    const texto = textoCardapio(linkCardapio);
     if (navigator.share) {
       try {
-        await navigator.share({ title: "Meu Cardápio", text: texto, url: linkCardapio });
+        await navigator.share({ title: "Meu Cardápio", text: texto });
       } catch {
         // usuário cancelou - sem ação
       }

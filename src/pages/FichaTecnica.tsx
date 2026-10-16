@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo, useRef, ReactNode } from "react";
+import TourPrimeiraVez from "@/components/TourPrimeiraVez";
 import CampoNumero from "@/components/ui/CampoNumero";
 import { parseNumBR } from "@/lib/numeroBR";
 import { explicarErro } from "@/lib/erros";
-import { calcularCustoLucro, precoQueClientePaga, type CustoDaVenda } from "@/lib/produto-precificacao";
+import { calcularCustoLucro, custoDaHora, lerMaoObraConta, precoQueClientePaga, type CustoDaVenda, type MaoObraConta } from "@/lib/produto-precificacao";
 import { taxaPctDaForma, fixoPorPedido } from "@/lib/painelFinanceiro";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -185,7 +186,7 @@ const MODAL_TITLE_VARIANTS: ((nome: string) => ReactNode)[] = [
  * (Antes a lista só tirava os ingredientes e mostrava um lucro maior que o real.)
  */
 /** Mão de obra salva na conta (Custos → Mão de obra): vale pra todos os produtos (09/10) */
-type MaoConta = { salario: number; horasSemana: number; diasSemana: number } | null;
+type MaoConta = MaoObraConta;
 
 // 10/10: a conta agora mora em produto-precificacao (a mesma em Produtos, aqui e no PDF) e considera promoção em %
 // 13/10: + a taxa da maquininha no crédito (pior caso) e o custo fixo por pedido (Custos → Custos variáveis)
@@ -262,8 +263,6 @@ export default function FichaTecnica() {
   const [saving, setSaving] = useState(false);
 
   const [maoConta, setMaoConta] = useState<MaoConta>(null);
-  const [editarMao, setEditarMao] = useState(false);
-  const [salvandoMao, setSalvandoMao] = useState(false);
   const [cvConta, setCvConta] = useState<number | null>(null);
   // (13/10) custos da venda: taxa do crédito, taxa do Pix (impostos etc.) e o fixo por pedido
   const [venda, setVenda] = useState<{ credito: number; pix: number; fixo: number }>({ credito: 0, pix: 0, fixo: 0 });
@@ -274,58 +273,14 @@ export default function FichaTecnica() {
     const vars = (data as any[]) || [];
     setVenda({ credito: taxaPctDaForma("credito", vars), pix: taxaPctDaForma("pix", vars), fixo: fixoPorPedido(vars) });
   };
-  const [editarCv, setEditarCv] = useState(false);
-  const [salvandoCv, setSalvandoCv] = useState(false);
   // Custos invisíveis salvos na conta (09/10): coluna nova, lida à parte pra não quebrar se o SQL ainda não rodou
   const loadCvConta = async (uid: string) => {
     const { data, error } = await supabase.from("profiles").select("custos_invisiveis_pct").eq("id", uid).maybeSingle();
     const v = (data as any)?.custos_invisiveis_pct;
     setCvConta(!error && v != null ? Number(v) : null);
   };
-  const salvarCvConta = async () => {
-    if (!userId) return;
-    const v = parseNumBR(extras.cv_percentual);
-    if (!(v >= 0)) return;
-    setSalvandoCv(true);
-    const { error } = await supabase.from("profiles").update({ custos_invisiveis_pct: v }).eq("id", userId);
-    setSalvandoCv(false);
-    if (error) {
-      console.error(error);
-      // (4.29) sem a coluna no banco (SQL 3.51 não rodado) o erro era genérico: agora diz o que falta
-      const semColuna = error.code === "PGRST204" || error.code === "42703" || /custos_invisiveis_pct/i.test(String(error.message || ""));
-      avisar(semColuna ? "Falta um ajuste no banco pra salvar pra todos (SQL 4.30). Por enquanto, salve nesta ficha." : "Não deu pra salvar agora. Tente de novo.", { tipo: "erro" });
-      return;
-    }
-    setCvConta(v); setEditarCv(false);
-    // já ficou salvo na conta: não conta como mudança sem salvar desta ficha
-    if (retrato.current) retrato.current = { ...retrato.current, extras: { ...retrato.current.extras, cv_percentual: extras.cv_percentual } };
-    avisar("Salvo na sua conta: vale pra todos os produtos", { tipo: "ok" });
-  };
-  const loadMaoConta = async (uid: string) => {
-    const { data } = await supabase.from("config_mao_obra").select("salario_mensal, horas_dia, dias_semana").eq("user_id", uid).maybeSingle();
-    const sal = Number((data as any)?.salario_mensal) || 0;
-    if (data && sal > 0) {
-      const dias = Number((data as any).dias_semana) || 5;
-      setMaoConta({ salario: sal, horasSemana: (Number((data as any).horas_dia) || 8) * dias, diasSemana: dias });
-    } else setMaoConta(null);
-  };
-  /** Salva salário e horas na conta: passa a valer em todos os produtos */
-  const salvarMaoConta = async () => {
-    if (!userId) return;
-    const sal = parseNumBR(extras.salario_desejado) || 0;
-    const hs = parseNumBR(extras.horas_semanais) || 40;
-    if (sal <= 0) { avisar("Coloque quanto você quer ganhar por mês", { tipo: "erro" }); return; }
-    const dias = maoConta?.diasSemana || 5;
-    setSalvandoMao(true);
-    const { error } = await supabase.from("config_mao_obra").upsert({ user_id: userId, salario_mensal: sal, horas_dia: Math.round((hs / dias) * 100) / 100, dias_semana: dias, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
-    setSalvandoMao(false);
-    if (error) { avisar("Não deu pra salvar agora. Tente de novo.", { tipo: "erro" }); return; }
-    setMaoConta({ salario: sal, horasSemana: hs, diasSemana: dias });
-    setEditarMao(false); setEditarCv(false);
-    // já ficou salvo na conta: não conta como mudança sem salvar desta ficha
-    if (retrato.current) retrato.current = { ...retrato.current, extras: { ...retrato.current.extras, salario_desejado: extras.salario_desejado, horas_semanais: extras.horas_semanais } };
-    avisar("Salvo na sua conta: vale pra todos os produtos", { tipo: "ok" });
-  };
+  // (16/10) salário, jornada e custos fixos vêm da tela Custos (a mesma hora lá e aqui)
+  const loadMaoConta = async (uid: string) => { setMaoConta(await lerMaoObraConta(uid).catch(() => null)); };
   // Devolve o erro da leitura (null = leu). Se falhar, a lista que está na tela continua como estava.
   const loadProdutos = async (uid: string): Promise<unknown> => {
     const { data, error } = await supabase
@@ -405,7 +360,6 @@ export default function FichaTecnica() {
       horas_semanais: maoConta ? String(maoConta.horasSemana) : (p.horas_semanais ? String(p.horas_semanais) : "40"),
     };
     setExtras(extrasAbertos);
-    setEditarMao(false);
     setBuscaInsumo("");
     setShowQuickAdd(false);
     // Ativa as seções automaticamente se já houver dados salvos
@@ -559,7 +513,7 @@ export default function FichaTecnica() {
     const salario = parseNumBR(extras.salario_desejado) || 0;
     const horasSem = parseNumBR(extras.horas_semanais) || 40;
     const tempoMin = parseInt(extras.tempo_preparo_min) || 0;
-    const custoHora = horasSem > 0 ? salario / (horasSem * 4.33) : 0;
+    const custoHora = custoDaHora(maoConta ?? { salario, horasSemana: horasSem });
     const moLive = moAtivo ? custoHora * (tempoMin / 60) : 0;
 
     // (13/10) taxa da maquininha no crédito (pior caso) + embalagem por pedido
@@ -686,28 +640,17 @@ export default function FichaTecnica() {
           </section>
 
           <div className="fd-par">
-            {/* Custos invisíveis */}
+            {/* Custos invisíveis. (16/10) definidos em Custos: aqui só mostra quanto entra nesta receita */}
             <section className="cl9-card fd-sec">
               <Titulo>Custos invisíveis</Titulo>
-              <p className="fd-dica">Gás, luz, água, plástico filme e outros gastos difíceis de medir em cada receita.</p>
-              {cvConta != null && !editarCv ? (
-                <div className="fd-mo-conta">
-                  <span><small>Salvo na sua conta</small><b>{fmtPct(cvConta)}% sobre os ingredientes</b></span>
-                  <Botao variante="link" tamanho="m" onClick={() => setEditarCv(true)}>Alterar</Botao>
-                </div>
-              ) : (<>
-                <Campo rotulo="% sobre os ingredientes" inputMode="decimal" placeholder="25" value={extras.cv_percentual}
-                  onChange={e => setExtras(s => ({ ...s, cv_percentual: e.target.value }))} depois={<span className="cl9-f-uf">%</span>} />
-                <div className="fd-mo-acoes">
-                  <Botao variante="secundario" tamanho="m" carregando={salvandoCv} onClick={salvarCvConta}>Salvar pra todos os produtos</Botao>
-                  {cvConta != null && <Botao variante="link" tamanho="m" onClick={() => { setEditarCv(false); setExtras(s => ({ ...s, cv_percentual: String(cvConta) })); }}>Cancelar</Botao>}
-                </div>
-              </>)}
+              <div className="fd-mo-conta">
+                <span><small>{cvConta != null ? "Definido em Custos" : "Padrão do app"}</small><b>{String(Math.round(cvPct * 10) / 10).replace(".", ",")}% dos ingredientes</b></span>
+                <Botao variante="link" tamanho="m" onClick={() => navigate("/custos")}>Alterar</Botao>
+              </div>
               <p className="fd-mo">Nesta receita: <b>R$ {fmt(cvLive)}</b></p>
-              <p className="fd-dica">A maioria das confeiteiras usa entre 20% e 30%. Se não souber, deixe 25%.</p>
             </section>
 
-            {/* Mão de obra */}
+            {/* Mão de obra. (16/10) salário, jornada e custos fixos ficam em Custos; aqui só o tempo desta receita */}
             <section className="cl9-card fd-sec">
               <div className="fd-sec-cab">
                 <Titulo>Mão de obra</Titulo>
@@ -716,30 +659,15 @@ export default function FichaTecnica() {
               {!moAtivo ? (
                 <p className="fd-dica">Ligue pra colocar o valor do seu tempo no custo do produto.</p>
               ) : (<>
-                {maoConta && !editarMao ? (
-                  <div className="fd-mo-conta">
-                    <span><small>Salvo na sua conta</small><b>R$ {fmt(maoConta.salario)} por mês · {fmtQty(maoConta.horasSemana)} h por semana</b></span>
-                    <Botao variante="link" tamanho="m" onClick={() => setEditarMao(true)}>Alterar</Botao>
-                  </div>
-                ) : (<>
-                  <div className="cl9-f-2">
-                    <Campo rotulo="Quer ganhar por mês" inputMode="decimal" prefixo="R$" placeholder="3.000" value={extras.salario_desejado}
-                      onChange={e => setExtras(s => ({ ...s, salario_desejado: e.target.value }))} />
-                    <Campo rotulo="Horas por semana" inputMode="numeric" placeholder="40" value={extras.horas_semanais}
-                      onChange={e => setExtras(s => ({ ...s, horas_semanais: e.target.value }))} depois={<span className="cl9-f-uf">h</span>} />
-                  </div>
-                  <div className="fd-mo-acoes">
-                    <Botao variante="secundario" tamanho="m" carregando={salvandoMao} onClick={salvarMaoConta}>Salvar pra todos os produtos</Botao>
-                    {maoConta && <Botao variante="link" tamanho="m" onClick={() => { setEditarMao(false); setExtras(s => ({ ...s, salario_desejado: String(maoConta.salario), horas_semanais: String(maoConta.horasSemana) })); }}>Cancelar</Botao>}
-                  </div>
-                  {!maoConta && <p className="fd-dica">Salve uma vez e todos os produtos usam esse valor. Você também muda em Custos.</p>}
-                </>)}
+                <div className="fd-mo-conta">
+                  {maoConta
+                    ? <span><small>Sua hora, de Custos</small><b>R$ {fmt(custoHora)} por hora</b></span>
+                    : <span><small>Sem salário em Custos</small><b>Cadastre lá</b></span>}
+                  <Botao variante="link" tamanho="m" onClick={() => navigate("/custos")}>{maoConta ? "Alterar" : "Ir pra Custos"}</Botao>
+                </div>
                 <Campo rotulo="Tempo pra fazer esta receita" inputMode="numeric" placeholder="0" value={extras.tempo_preparo_min}
                   onChange={e => setExtras(s => ({ ...s, tempo_preparo_min: e.target.value }))} depois={<span className="cl9-f-uf">min</span>} />
-                <div className="fd-mo-par">
-                  <div><small>Sua hora</small><b>R$ {fmt(custoHora)}</b></div>
-                  <div><small>Nesta receita</small><b>R$ {fmt(moLive)}</b></div>
-                </div>
+                <p className="fd-mo">Nesta receita: <b>R$ {fmt(moLive)}</b></p>
               </>)}
             </section>
           </div>
@@ -1026,12 +954,17 @@ export default function FichaTecnica() {
       infoContent={
         <>
           <p>A ficha técnica mostra quanto custa fazer cada produto e quanto sobra de lucro no preço que você cobra.</p>
-          <p>O custo soma os ingredientes, os custos invisíveis (gás, luz, água) e a sua mão de obra, quando você coloca.</p>
+          <p>O custo soma os ingredientes, os custos invisíveis (gás do forno, perdas, descartáveis) e a sua mão de obra, que já inclui uma parte dos custos fixos.</p>
         </>
       }
       infoTip={<>Escolha um produto pra montar ou ajustar a ficha.</>}
     />
     <div className="cl9 fl">
+      <TourPrimeiraVez chave="ficha" tela="Ficha técnica" passos={[
+        { alvo: ".fl-l--sem", titulo: "Produto sem ficha", texto: "Toque pra montar: os ingredientes e quanto vai de cada um. Sem isso, o app não sabe o custo." },
+        { alvo: ".fl-lucro", titulo: "Lucro de verdade", texto: "Já desconta ingredientes, custos invisíveis, a sua hora e a taxa da maquininha." },
+        { alvo: ".cl9-chips", titulo: "Filtros", texto: "Veja só os produtos sem ficha ou os que estão dando prejuízo." },
+      ]} />
       {erroCarga ? (
         <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar as fichas técnicas" texto={erroCarga}
           acao={<Botao onClick={() => void carregar()}>Tentar de novo</Botao>} />

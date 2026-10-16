@@ -10,7 +10,7 @@ import { Botao, TelaVazia } from "@/components/base";
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { erroDeConexao } from "@/lib/erros";
-import { calcularCustoLucro } from "@/lib/produto-precificacao";
+import { calcularCustoLucro, lerMaoObraConta } from "@/lib/produto-precificacao";
 import { carregarMes, custoPorProduto, multiplicadorDoItem, produtosPeloPeso, type MesFinanceiro } from "@/lib/painelFinanceiro";
 
 type Produto = { chave: string; nome: string; foto: string; qtd: number; vendido: number; custo: number; lucro: number; margem: number; semFicha: boolean };
@@ -31,8 +31,8 @@ async function fatorDaFicha(uid: string, ids: string[], mao: any): Promise<Recor
     supabase.from("profiles").select("custos_invisiveis_pct").eq("id", uid).maybeSingle().then(r => r, () => ({ data: null } as any)),
   ]);
   if (error || !prods) return out;
-  const sal = Number(mao?.salario_mensal) || 0;
-  const conta = sal > 0 ? { salario: sal, horasSemana: (Number(mao?.horas_dia) || 8) * (Number(mao?.dias_semana) || 5) } : null;
+  void mao;
+  const conta = await lerMaoObraConta(uid).catch(() => null); // (16/10) a mesma hora da Ficha técnica: fixos + salário
   const cvConta = (perfil as any)?.custos_invisiveis_pct;
   for (const p of prods as any[]) {
     const r = calcularCustoLucro(p, conta, cvConta != null ? Number(cvConta) : null);

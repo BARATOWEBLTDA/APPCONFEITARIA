@@ -74,3 +74,13 @@
 .sd-pi--agora .sd-pi-q { color: var(--ui-rosa-escuro); font-weight: 500; }
 .sd-pi-v { flex: none; font-size: 14px; font-weight: 500; color: var(--ui-texto); }
 .sd-pl { margin-top: 2px; }
+/* (16/10) faixa da semana: toque num dia pra ver só os pedidos dele */
+.sd-sem { display: flex; gap: 4px; margin: 4px 16px 6px; }
+.sd-sd { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 6px 0 5px; border: 1px solid var(--ui-borda, #F0E6EA); border-radius: 8px; background: var(--ui-branco); font-family: inherit; color: var(--ui-texto); cursor: pointer; }
+.sd-sd small { font-size: 11px; font-weight: 600; color: var(--ui-texto-3); text-transform: capitalize; white-space: nowrap; }
+.sd-sd b { font-size: 15px; font-weight: 700; line-height: 1.2; }
+.sd-sd i { min-height: 16px; min-width: 16px; padding: 0 4px; border-radius: 6px; font-style: normal; font-size: 11px; font-weight: 700; line-height: 16px; color: transparent; }
+.sd-sd.tem i { background: var(--primary-light, #FCE0E9); color: var(--ui-rosa-escuro); }
+.sd-sd.on { border-color: var(--ui-rosa-escuro); background: var(--ui-rosa-escuro); color: var(--ui-branco); }
+.sd-sd.on small { color: rgba(255, 255, 255, .85); }
+.sd-sd.on.tem i { background: rgba(255, 255, 255, .25); color: var(--ui-branco); }
