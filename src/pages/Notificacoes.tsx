@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { carregarNotificacoes, marcarLidas, type Notif } from "@/lib/notificacoesUsuario";
-import { Bell, CaretRight, Checks, Clock, Crown, Newspaper, ShoppingBag, Storefront, Trophy, WarningCircle } from "@phosphor-icons/react";
+import { Bell, Buildings, CalendarCheck, Camera, CaretRight, Checks, ChartLineUp, ClipboardText, Clock, Coins, Crown, Gift, HandCoins, Newspaper, ShoppingBag, Storefront, Trophy, Users, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { quandoFoi } from "@/lib/noticias";
 
@@ -26,6 +26,18 @@ const GRUPO: Record<string, Grupo> = { pedido: "pedido", aviso: "loja", pro: "pl
 const grupoDe = (n: Notif): Grupo => GRUPO[n.tipo || ""] || (n.user_id ? "plano" : "novidade");
 const ICONE: Record<Grupo, typeof Bell> = { pedido: ShoppingBag, loja: Storefront, plano: Crown, conquista: Trophy, novidade: Newspaper };
 const ICONE_TIPO: Record<string, typeof Bell> = { pro_vencendo: Clock, pro_atrasado: WarningCircle };
+/** (16/10) o ícone diz o assunto: o mesmo do "Seus próximos passos" (antes todo aviso da loja era uma lojinha) */
+const ICONE_LINK: [RegExp, typeof Bell][] = [
+  [/^\/financeiro\/a-pagar/, CalendarCheck], [/^\/financeiro\/a-receber/, HandCoins], [/^\/custos/, Buildings], [/^\/ficha-tecnica/, ClipboardText],
+  [/^\/financeiro/, Coins], [/^\/lucratividade/, ChartLineUp], [/^\/(pedidos|vendas)/, ShoppingBag], [/^\/clientes/, Users],
+  [/^\/produtos/, Camera], [/^\/indicar/, Gift],
+];
+function iconeDe(n: Notif, g: Grupo): typeof Bell {
+  if (n.tipo && ICONE_TIPO[n.tipo]) return ICONE_TIPO[n.tipo];
+  if (g === "conquista" || g === "plano" || g === "novidade") return ICONE[g];
+  const l = String(n.link || "");
+  return ICONE_LINK.find(([re]) => re.test(l))?.[1] || ICONE[g] || Bell;
+}
 const ROTULO: Record<Grupo, string> = { pedido: "Pedido", loja: "Sua loja", plano: "Plano", conquista: "Conquista", novidade: "Novidade" };
 /** (16/10) sem emoji no app: avisos antigos vinham com troféu e afins no título */
 const semEmoji = (t?: string | null) => String(t || "").replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, "").replace(/\s{2,}/g, " ").trim();
@@ -108,7 +120,7 @@ export default function Notificacoes() {
               <div className="ntf-lista">
                 {lista.map(n => {
                   const g = grupoDe(n);
-                  const Ic = (n.tipo && ICONE_TIPO[n.tipo]) || ICONE[g] || Bell;
+                  const Ic = iconeDe(n, g);
                   const alerta = n.tipo === "pro_atrasado";
                   const titulo = semEmoji(n.titulo), msg = semEmoji(n.mensagem);
                   return (
