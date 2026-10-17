@@ -39,23 +39,18 @@ function Entrega({ produto }: { produto: Produto }) {
     : <span className="ic-ent">Pedir {s.prazo} antes</span>
 }
 
-/** Preço com desconto do jeito do delivery: selo de % + preço novo; embaixo o antigo riscado e o "-10%" */
-function PrecoPromo({ produto, cor }: { produto: Produto; cor: string }) {
+/** (17/10) Preço com desconto: só os dois valores na mesma linha, o antigo riscado e o novo (sem o selo de %).
+ *  "a partir de" e a unidade ("por kg") vão numa linha pequena em cima, pra os valores caberem sem quebrar. */
+function PrecoPromo({ produto }: { produto: Produto; cor?: string }) {
   const { de, final, unidade, aPartir } = precoDoCartao(produto)
-  const pct = de > 0 ? Math.round((1 - final / de) * 100) : 0
+  const rotulo = [aPartir ? 'a partir de' : '', unidade].filter(Boolean).join(' · ')
   return (
     <div className="ic-pp">
-      <span className="ic-pp-novo">
-        {aPartir && <small>a partir de</small>}
-        <b>{fmtBRL(final)}</b>{unidade && <small>{unidade}</small>}
+      {rotulo && <small className="ic-pp-rot">{rotulo}</small>}
+      <span className="ic-pp-linha">
+        {de > final && <s>{fmtBRL(de)}</s>}
+        <b>{fmtBRL(final)}</b>
       </span>
-      {pct > 0 && (
-        <span className="ic-pp-de">
-          <s>{fmtBRL(de)}</s>
-          {/* (14/10) a bolinha "%" e o "-10%" numa etiqueta só (antes ficavam em linhas separadas) */}
-          <span className="ic-off" style={{ background: cor }}><i className="ic-off-pct" style={{ color: cor }} aria-hidden="true">%</i>-{pct}%</span>
-        </span>
-      )}
     </div>
   )
 }
