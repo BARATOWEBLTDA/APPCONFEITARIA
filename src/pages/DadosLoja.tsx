@@ -10,6 +10,7 @@ import { EXEMPLO_DESCRICAO, EditorHorario, OpcoesMostrar } from "@/components/lo
 import { Botao, Campo, CampoArea, TelaVazia, Titulo, avisar } from "@/components/base";
 import { digitosTelefone, digitosAoDigitar } from "@/lib/telefone";
 import { limparFacebook, limparInstagram } from "@/lib/redesSociais";
+import CheckoutConfigPage from "./CheckoutConfigPage";
 import "./dadosLoja.css";
 
 /**
@@ -159,6 +160,14 @@ export default function DadosLoja() {
     t.style.height = `${t.scrollHeight + 2}px`;
   }, [descricao, loading]);
 
+  // (17/10) veio do antigo "Entrega e pagamento": desce direto pra essa parte
+  const irEntrega = (useLocation().state as any)?.secao === "entrega";
+  useEffect(() => {
+    if (loading || !irEntrega) return;
+    const t = window.setTimeout(() => document.getElementById("entrega-pagamento")?.scrollIntoView({ block: "start" }), 400);
+    return () => window.clearTimeout(t);
+  }, [loading, irEntrega]);
+
   const irPara = (id: string) => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -278,7 +287,7 @@ export default function DadosLoja() {
   if (loading) {
     return (
       <>
-        <AppPageHeader title="Dados da loja" subtitle="O que o cliente vê sobre sua confeitaria" onBack={() => navigate(voltarPara)} />
+        <AppPageHeader title="Dados da loja" subtitle="Loja, entrega e pagamento" onBack={() => navigate(voltarPara)} />
         <div className="dl-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
       </>
     );
@@ -286,7 +295,7 @@ export default function DadosLoja() {
   if (erroCarga) {
     return (
       <>
-        <AppPageHeader title="Dados da loja" subtitle="O que o cliente vê sobre sua confeitaria" onBack={() => navigate(voltarPara)} />
+        <AppPageHeader title="Dados da loja" subtitle="Loja, entrega e pagamento" onBack={() => navigate(voltarPara)} />
         <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os dados da loja" texto="Confira a internet e tente de novo." acao={<Botao variante="suave" tamanho="m" onClick={() => setTentativa(t => t + 1)}>Tentar de novo</Botao>} />
       </>
     );
@@ -297,7 +306,7 @@ export default function DadosLoja() {
 
   return (
     <>
-      <AppPageHeader title="Dados da loja" subtitle="O que o cliente vê sobre sua confeitaria" onBack={() => navigate(voltarPara)} />
+      <AppPageHeader title="Dados da loja" subtitle="Loja, entrega e pagamento" onBack={() => navigate(voltarPara)} />
 
       <div className="dl-root">
         {/* Resumo */}
@@ -400,9 +409,12 @@ export default function DadosLoja() {
         </section>
       </div>
 
+      {/* (17/10) Entrega e pagamento entrou nesta mesma tela (salva sozinha, separada do botão abaixo) */}
+      <div id="entrega-pagamento" className="dl-ep"><CheckoutConfigPage embutido /></div>
+
       {/* Salvar fixo */}
       <div className="dl-savebar">
-        <Botao cheio className="dl-save" carregando={salvando} onClick={salvar}>{salvando ? "Salvando…" : "Salvar alterações"}</Botao>
+        <Botao cheio className="dl-save" carregando={salvando} onClick={salvar}>{salvando ? "Salvando…" : "Salvar dados da loja"}</Botao>
       </div>
 
     </>

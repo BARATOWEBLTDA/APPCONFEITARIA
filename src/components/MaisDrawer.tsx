@@ -45,8 +45,7 @@ const GRUPOS: Grupo[] = [
     label: "Cardápio digital",
     items: [
       { label: "Aparência",           desc: "Cores, logo e modelo",      path: "/cardapio-design", Icone: PaintBrush },
-      { label: "Entrega e pagamento", desc: "Taxas, Pix e retirada",     path: "/checkout-config", Icone: Truck },
-      { label: "Dados da loja",       desc: "Endereço, horário e link",  path: "/cardapio-config", Icone: Storefront },
+      { label: "Dados da loja",       desc: "Loja, entrega e pagamento", path: "/cardapio-config", Icone: Storefront },
       { label: "Ver meu cardápio",    desc: "Como o cliente vê",         path: "/cardapio-preview", Icone: Eye },
     ],
   },

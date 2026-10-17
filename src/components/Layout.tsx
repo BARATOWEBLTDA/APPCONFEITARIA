@@ -190,7 +190,6 @@ export default function Layout() {
           <GrupoMenu id="cardapio" rotulo="Cardápio digital" icone={ShoppingBag} tour="cardapio" rotas={[...ROTAS_CARDAPIO.filter(r => !ROTAS_CATALOGO.includes(r)), "/cardapio-preview"]} recolhido={recolhido}>
             <SubitemMenu to="/cardapio" end icone={ChartBar}>Visão geral</SubitemMenu>
             <SubitemMenu to="/cardapio-design" icone={Palette}>Aparência</SubitemMenu>
-            <SubitemMenu to="/checkout-config" icone={Truck}>Entrega e pagamento</SubitemMenu>
             <SubitemMenu to="/cardapio-config" icone={Storefront}>Dados da loja</SubitemMenu>
             {linkCardapio && <a className="nav-subitem" href={linkCardapio} target="_blank" rel="noopener noreferrer"><span className="nav-subicon" aria-hidden="true"><ArrowSquareOut size={16} weight="bold" /></span>Ver meu cardápio</a>}
           </GrupoMenu>

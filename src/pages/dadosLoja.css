@@ -78,3 +78,10 @@
 .dl-bloco .ppf-h-dias { margin-top: 10px; }
 .dl-bloco .ppf-h-lista + .ppf-h-cv, .dl-bloco .ppf-h-cv { margin-top: 20px; }
 .dl-bloco .ppf-mos + .dl-tit, .dl-bloco .ppf-h-dias + .dl-tit { margin-top: 20px; }
+
+/* (17/10) Entrega e pagamento dentro de Dados da loja */
+.dl-root:has(+ .dl-ep) { padding-bottom: 8px; }
+.dl-ep { scroll-margin-top: 72px; }
+.dl-ep .ep--embutido { max-width: 640px; padding-top: 8px; }
+.ep-sec-tit { margin: 12px 4px 0; font-size: 20px; font-weight: 700; color: var(--ui-texto); }
+@media (min-width: 1024px) { .dl-ep .ep--embutido { max-width: 1120px; padding-left: 0; padding-right: 0; } }

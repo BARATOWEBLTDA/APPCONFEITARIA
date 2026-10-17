@@ -67,7 +67,11 @@ import Clientes from "@/pages/Clientes";
 import Complementos from "@/pages/Complementos";
 import ClientePerfil from "@/pages/ClientePerfil";
 import CardapioDesign from "@/pages/CardapioDesign";
-import CheckoutConfigPage from "@/pages/CheckoutConfigPage";
+/** (17/10) "Entrega e pagamento" agora fica dentro de Dados da loja: o link antigo abre lá, já nessa parte */
+function IrParaEntrega() {
+  const de = (useLocation().state as any)?.de;
+  return <Navigate to="/cardapio-config" replace state={{ secao: "entrega", ...(de ? { de } : {}) }} />;
+}
 import DadosLoja from "@/pages/DadosLoja";
 import CardapioPublico from "@/pages/CardapioPublico";
 import Cardapio from "@/pages/Cardapio";
@@ -469,7 +473,7 @@ export default function App() {
           <Route path="/cardapio-resumo" element={<CardapioResumo />} />
           <Route path="/cardapio-preview" element={<CardapioPrevia />} />
           <Route path="/cardapio-design" element={<CardapioDesign />} />
-          <Route path="/checkout-config" element={<CheckoutConfigPage />} />
+          <Route path="/checkout-config" element={<IrParaEntrega />} />
           <Route path="/estoque" element={<EmBreve tela="estoque" />} />
           <Route path="/marketing" element={<EmBreve tela="marketing" />} />
           <Route path="/arquivos" element={<Navigate to="/" replace />} />

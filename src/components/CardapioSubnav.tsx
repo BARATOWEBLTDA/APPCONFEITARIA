@@ -22,7 +22,6 @@ const GRUPOS: { titulo: string; itens: { label: string; Ic: Icon; path: string; 
   ] },
   { titulo: "Configuração da loja", itens: [
     { label: "Aparência", Ic: Palette, path: "/cardapio-design" },
-    { label: "Entrega e pagamento", Ic: Truck, path: "/checkout-config" },
     { label: "Dados da loja", Ic: Storefront, path: "/cardapio-config" },
   ] },
 ];

@@ -5,7 +5,7 @@ import PrimeirosPassos from "@/components/PrimeirosPassos";
 import VisaoGeralDesktop from "@/components/cardapio/VisaoGeralDesktop";
 import { useNavigate } from "react-router-dom";
 import {
-  ChartBar, Eye, Cake, Sliders, PaintBrush, Tag,
+  ChartBar, Eye, Cake, Storefront, Sliders, PaintBrush, Tag,
   Share, Percent, ForkKnife, Copy, CheckCircle, Warning, Lightbulb,
   TrendUp, TrendDown, ShoppingBag, Users as UsersIcon, CurrencyDollar,
   CaretRight, SquaresFour, Stack, Crown, Package, WarningCircle,
@@ -403,14 +403,21 @@ export default function Cardapio() {
             </div>
             <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
           </button>
+          <button className="cd-quick-item" onClick={() => navigate("/cardapio-config")}>
+            <span className="cd-quick-ico cd-quick-ico--pink">
+              <Storefront size={20} weight="bold" />
+            </span>
+            <div className="cd-quick-info">
+              <div className="cd-quick-name">Dados da loja</div>
+              <div className="cd-quick-desc cd-quick-desc--2l">Loja, entrega e pagamento</div>
+            </div>
+            <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
+          </button>
         </div>
       </div>
 
-      {/* Configuração da Loja — setup inicial, raramente muda */}
+      {/* (17/10) Aparência sozinha (Entrega e pagamento entrou em Dados da loja, que foi pro Catálogo) */}
       <div className="cd-card cd-quick">
-        <div className="cd-quick-hdr">
-          <div className="cd-quick-title">Configuração da loja</div>
-        </div>
         <div className="cd-quick-list">
           <button className="cd-quick-item" onClick={() => navigate("/cardapio-design")}>
             <span className="cd-quick-ico cd-quick-ico--pink">
@@ -418,27 +425,7 @@ export default function Cardapio() {
             </span>
             <div className="cd-quick-info">
               <div className="cd-quick-name">Aparência</div>
-              <div className="cd-quick-desc">Logo, banners e modelo</div>
-            </div>
-            <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
-          </button>
-          <button className="cd-quick-item" onClick={() => navigate("/checkout-config")}>
-            <span className="cd-quick-ico cd-quick-ico--pink">
-              <Tag size={20} weight="bold" />
-            </span>
-            <div className="cd-quick-info">
-              <div className="cd-quick-name">Entrega e pagamento</div>
-              <div className="cd-quick-desc">Pagamento, entrega e cupons</div>
-            </div>
-            <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
-          </button>
-          <button className="cd-quick-item" onClick={() => navigate("/cardapio-config")}>
-            <span className="cd-quick-ico cd-quick-ico--pink">
-              <Sliders size={20} weight="bold" />
-            </span>
-            <div className="cd-quick-info">
-              <div className="cd-quick-name">Dados da loja</div>
-              <div className="cd-quick-desc">Nome, WhatsApp e horário</div>
+              <div className="cd-quick-desc cd-quick-desc--2l">Logo, banners e modelo</div>
             </div>
             <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
           </button>

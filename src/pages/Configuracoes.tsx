@@ -49,8 +49,8 @@ const INDICE: Achado[] = [
   { nome: "Nome e descrição da loja", onde: "Minha loja › Dados da loja", palavras: "sobre confeitaria texto", ir: "/cardapio-config" },
   { nome: "Endereço", onde: "Minha loja › Dados da loja", palavras: "cep rua mapa cidade localização", ir: "/cardapio-config" },
   { nome: "Horário de funcionamento", onde: "Minha loja › Dados da loja", palavras: "horario aberto fechado dias semana abrir fechar", ir: "/cardapio-config" },
-  { nome: "Formas de pagamento", onde: "Minha loja › Entrega e pagamento", palavras: "pix dinheiro cartão credito debito pagar", ir: "/checkout-config" },
-  { nome: "Entrega e retirada", onde: "Minha loja › Entrega e pagamento", palavras: "taxa de entrega frete retirar buscar delivery", ir: "/checkout-config" },
+  { nome: "Formas de pagamento", onde: "Minha loja › Dados da loja", palavras: "pix dinheiro cartão credito debito pagar", ir: "/checkout-config" },
+  { nome: "Entrega e retirada", onde: "Minha loja › Dados da loja", palavras: "taxa de entrega frete retirar buscar delivery", ir: "/checkout-config" },
   { nome: "Logo, cores e banner", onde: "Minha loja › Aparência", palavras: "logotipo cor tema modelo imagem capa visual", ir: "/cardapio-design" },
   { nome: "Mensagens prontas", onde: "Minha loja", palavras: "whatsapp textos modelo resposta cliente", ir: "/configuracoes/mensagens" },
   { nome: "Custos fixos", onde: "Financeiro › Custos", palavras: "aluguel luz internet agua conta mensal", ir: "/custos" },
@@ -275,8 +275,7 @@ export default function Configuracoes() {
 
             {/* (15/10) as telas da loja também por aqui (antes só pelo Cardápio e pelo menu) */}
             <h2 className="cf9-sec">Minha loja</h2>
-            <ItemConfig icone={<Storefront size={20} weight="bold" />} nome="Dados da loja" apoio="Nome, endereço e horário" onClick={() => navigate("/cardapio-config", { state: { de: "/configuracoes" } })} />
-            <ItemConfig icone={<Truck size={20} weight="bold" />} nome="Entrega e pagamento" apoio="Formas de pagar e de receber" onClick={() => navigate("/checkout-config", { state: { de: "/configuracoes" } })} />
+            <ItemConfig icone={<Storefront size={20} weight="bold" />} nome="Dados da loja" apoio="Loja, entrega e pagamento" onClick={() => navigate("/cardapio-config", { state: { de: "/configuracoes" } })} />
             <ItemConfig icone={<PaintBrush size={20} weight="bold" />} nome="Aparência" apoio="Cores, logo e modelo" onClick={() => navigate("/cardapio-design", { state: { de: "/configuracoes" } })} />
             <ItemConfig icone={<ChatCircleText size={20} weight="bold" />} nome="Mensagens prontas" apoio="Textos do WhatsApp" onClick={() => navigate("/configuracoes/mensagens")} />
 

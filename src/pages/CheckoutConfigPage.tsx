@@ -35,7 +35,8 @@ const ENTREGAS = [
 // (11/10) Usa o leitor do app: o daqui lia "1.000" como 1 (pedido mínimo de R$ 1.000 virava R$ 1).
 const numBR = parseNumBR
 
-export default function CheckoutConfigPage() {
+/** (17/10) embutido: aparece dentro de Dados da loja (mesma tela), sem o cabeçalho próprio */
+export default function CheckoutConfigPage({ embutido = false }: { embutido?: boolean } = {}) {
   const navigate = useNavigate()
   // (15/10) aberta por Configurações: o voltar leva de volta pra lá (senão, pro Cardápio)
   const voltarPara = (useLocation().state as any)?.de === "/configuracoes" ? "/configuracoes" : "/cardapio"
@@ -288,13 +289,13 @@ export default function CheckoutConfigPage() {
   // com erro, "loading" continua ligado: o salvamento automático só arma depois de uma leitura que deu certo
   if (erroCarga) return (
     <>
-      <AppPageHeader title="Entrega e pagamento" subtitle="Pagamento, entrega e cupons" onBack={() => navigate(voltarPara)} />
+      {!embutido && <AppPageHeader title="Entrega e pagamento" subtitle="Pagamento, entrega e cupons" onBack={() => navigate(voltarPara)} />}
       <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu pra carregar" texto="Confira a internet e tente de novo." acao={<Botao variante="suave" tamanho="m" onClick={() => setTentativa(t => t + 1)}>Tentar de novo</Botao>} />
     </>
   )
   if (loading) return (
     <>
-      <AppPageHeader title="Entrega e pagamento" subtitle="Pagamento, entrega e cupons" onBack={() => navigate(voltarPara)} />
+      {!embutido && <AppPageHeader title="Entrega e pagamento" subtitle="Pagamento, entrega e cupons" onBack={() => navigate(voltarPara)} />}
       <div className="ep-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
     </>
   )
@@ -303,9 +304,10 @@ export default function CheckoutConfigPage() {
 
   return (
     <>
-      <AppPageHeader title="Entrega e pagamento" subtitle="Pagamento, entrega e cupons" onBack={() => navigate(voltarPara)} />
-      <div className="ep">
-        <p className="ep-salva"><Check size={16} weight="bold" aria-hidden="true" />Tudo aqui salva sozinho.</p>
+      {!embutido && <AppPageHeader title="Entrega e pagamento" subtitle="Pagamento, entrega e cupons" onBack={() => navigate(voltarPara)} />}
+      <div className={embutido ? "ep ep--embutido" : "ep"}>
+        {embutido && <h2 className="ep-sec-tit">Entrega e pagamento</h2>}
+        <p className="ep-salva"><Check size={16} weight="bold" aria-hidden="true" />{embutido ? "Esta parte salva sozinha." : "Tudo aqui salva sozinho."}</p>
 
         {/* Pagamento */}
         <section className="ep-card">
