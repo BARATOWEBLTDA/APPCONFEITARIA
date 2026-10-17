@@ -96,3 +96,9 @@
 
 /* (14/10) "Seja PRO" do computador menor */
 @media (min-width: 901px) { .cab-seja-pro { height: 26px !important; padding: 0 10px !important; gap: 4px !important; font-size: 12px !important; border-radius: 6px !important; } .cab-seja-pro svg { width: 12px; height: 12px; } }
+
+/* (17/10) teste: faixa mais baixa, só título e foto (sem o subtítulo) */
+.cab { min-height: calc(60px + env(safe-area-inset-top, 0px)); padding-top: calc(10px + env(safe-area-inset-top, 0px)); padding-bottom: 10px; }
+.cab-s { display: none; }
+.cab-t { font-size: 20px; }
+.cab-foto { width: 40px; height: 40px; }
