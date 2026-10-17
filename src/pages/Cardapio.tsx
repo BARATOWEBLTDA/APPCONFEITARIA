@@ -388,8 +388,8 @@ export default function Cardapio() {
               <Stack size={20} weight="bold" />
             </span>
             <div className="cd-quick-info">
-              <div className="cd-quick-name">Personalização</div>
-              <div className="cd-quick-desc">Sabores, recheios e adicionais</div>
+              <div className="cd-quick-name">Complementos</div>
+              <div className="cd-quick-desc cd-quick-desc--2l">Sabores, recheios e adicionais</div>
             </div>
             <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
           </button>
@@ -399,11 +399,7 @@ export default function Cardapio() {
             </span>
             <div className="cd-quick-info">
               <div className="cd-quick-name">Categorias</div>
-              <div className="cd-quick-desc">
-                {erroContadores ? "Ver suas categorias" : contadores.categorias === 0
-                  ? "Organize seus produtos em grupos"
-                  : `${contadores.categorias} categoria${contadores.categorias === 1 ? "" : "s"} cadastrada${contadores.categorias === 1 ? "" : "s"}`}
-              </div>
+              <div className="cd-quick-desc cd-quick-desc--2l">Organize seus produtos em grupos</div>
             </div>
             <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
           </button>

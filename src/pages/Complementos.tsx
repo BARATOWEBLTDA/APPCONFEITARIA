@@ -42,7 +42,7 @@ export default function Complementos() {
   const [tentou, setTentou] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // (11/10) a leitura falhou: mostra o erro com "Tentar de novo" em vez de "Cadastre um produto primeiro" ou "Nenhuma personalização ainda"
+  // (11/10) a leitura falhou: mostra o erro com "Tentar de novo" em vez de "Cadastre um produto primeiro" ou "Nenhum complemento ainda"
   const [erroCarga, setErroCarga] = useState("");
   const carregar = async () => {
     setLoading(true); setErroCarga("");
@@ -97,7 +97,7 @@ export default function Complementos() {
         if (data) setItems(prev => [...prev, data as Complemento].sort((a, b) => a.nome.localeCompare(b.nome)));
       }
       fechar();
-      avisar(editando ? "Personalização salva" : "Personalização criada", { tipo: "ok" });
+      avisar(editando ? "Complemento salvo" : "Complemento criado", { tipo: "ok" });
     } catch (err) {
       console.error(err);
       avisar("Não deu pra salvar. Confira a internet e tente de novo.", { tipo: "erro" });
@@ -112,7 +112,7 @@ export default function Complementos() {
     const { error } = await supabase.from("biblioteca_extras").delete().eq("id", c.id).eq("user_id", userId);
     if (error) { avisar("Não deu pra excluir. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
     setItems(prev => prev.filter(i => i.id !== c.id));
-    avisar("Personalização excluída", { tipo: "ok" });
+    avisar("Complemento excluído", { tipo: "ok" });
   };
 
   const alternarProduto = (id: string) => setForm(f => ({ ...f, produtos: f.produtos.includes(id) ? f.produtos.filter(x => x !== id) : [...f.produtos, id] }));
@@ -129,10 +129,10 @@ export default function Complementos() {
 
   const cabecalho = (
     <AppPageHeader
-      title="Personalização"
+      title="Complementos"
       subtitle={loading || items.length === 0 ? "Extras que o cliente escolhe no pedido" : `${items.length} ${items.length === 1 ? "cadastrada" : "cadastradas"}`}
       infoContent={<>
-        <p>Personalizações são opções que o cliente escolhe ao pedir um produto: topo de bolo, escrita, papel de arroz, tema.</p>
+        <p>Complementos são opções que o cliente escolhe ao pedir um produto: topo de bolo, escrita, papel de arroz, tema.</p>
         <p>Cadastre uma vez aqui e escolha em quais produtos aparece. Mudou o preço aqui, muda em todos.</p>
       </>}
     />
@@ -145,16 +145,16 @@ export default function Complementos() {
         {loading ? (
           <div className="ct-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
         ) : erroCarga ? (
-          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar as personalizações" texto={erroCarga}
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os complementos" texto={erroCarga}
             acao={<Botao onClick={() => void carregar()}>Tentar de novo</Botao>} />
         ) : produtos.length === 0 ? (
           <TelaVazia caixa icone={<Package size={30} />} titulo="Cadastre um produto primeiro"
-            texto="A personalização aparece dentro dos produtos do cardápio. Cadastre pelo menos um produto antes."
+            texto="O complemento aparece dentro dos produtos do cardápio. Cadastre pelo menos um produto antes."
             acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => navigate("/produtos")}>Cadastrar produto</Botao>} />
         ) : items.length === 0 ? (<>
-          <TelaVazia caixa icone={<PuzzlePiece size={30} />} titulo="Nenhuma personalização ainda"
+          <TelaVazia caixa icone={<PuzzlePiece size={30} />} titulo="Nenhum complemento ainda"
             texto="Cadastre extras como topo de bolo, escrita e papel de arroz. O cliente escolhe na hora de pedir e o valor soma no total."
-            acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}>Criar personalização</Botao>} />
+            acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}>Criar complemento</Botao>} />
           <section className="pz-ex" aria-label="Exemplo de como aparece no cardápio">
             <p className="pz-ex-t">Assim aparece pro cliente</p>
             <div className="pz-ex-l on"><i><Check size={14} weight="bold" /></i><span>Topo de bolo</span><b>+ R$ 15,00</b></div>
@@ -162,17 +162,17 @@ export default function Complementos() {
             <div className="pz-ex-l"><i /><span>Escrita no bolo</span><b className="g">Grátis</b></div>
           </section>
         </>) : (<>
-          <Titulo contagem={items.length} apoio="Escolha uma personalização pra editar."
-            acao={<Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}><span className="ct-g">Nova personalização</span><span className="ct-c">Nova</span></Botao>}>Suas personalizações</Titulo>
+          <Titulo contagem={items.length} apoio="Escolha um complemento pra editar."
+            acao={<Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}><span className="ct-g">Novo complemento</span><span className="ct-c">Novo</span></Botao>}>Seus complementos</Titulo>
           {items.length > 8 && (
             <label className="pz-busca">
               <MagnifyingGlass size={20} weight="bold" />
-              <input type="search" placeholder="Buscar personalização" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar personalização" autoComplete="off" />
+              <input type="search" placeholder="Buscar complemento" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar complemento" autoComplete="off" />
               {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={18} weight="bold" /></button>}
             </label>
           )}
           {filtrados.length === 0 ? (
-            <p className="pz-semres">Nenhuma personalização com esse nome.</p>
+            <p className="pz-semres">Nenhum complemento com esse nome.</p>
           ) : (
             <section className="ct-card">
               {filtrados.map(c => {
@@ -190,7 +190,7 @@ export default function Complementos() {
               })}
             </section>
           )}
-          <p className="ct-dica"><Info size={20} weight="bold" aria-hidden="true" />O cliente vê as personalizações na hora de escolher o produto no cardápio.</p>
+          <p className="ct-dica"><Info size={20} weight="bold" aria-hidden="true" />O cliente vê os complementos na hora de escolher o produto no cardápio.</p>
         </>)}
       </div>
 
@@ -206,7 +206,7 @@ export default function Complementos() {
       </Janela>
 
       {/* nova / editar */}
-      <Janela aberta={aberta} aoFechar={fechar} tipo="conteudo" travada titulo={editando ? "Editar personalização" : "Nova personalização"}
+      <Janela aberta={aberta} aoFechar={fechar} tipo="conteudo" travada titulo={editando ? "Editar complemento" : "Novo complemento"}
         acoes={<><Botao variante="secundario" onClick={fechar}>Cancelar</Botao><Botao onClick={salvar} carregando={saving}>{editando ? "Salvar" : "Criar"}</Botao></>}>
         <div className="pz-form">
           <Campo rotulo="Nome" obrigatorio placeholder="Ex.: topo de bolo, escrita, papel de arroz" value={form.nome} maxLength={50} erro={erroNome}

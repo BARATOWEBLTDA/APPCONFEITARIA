@@ -55,7 +55,7 @@ const GRUPOS: Grupo[] = [
     items: [
       { label: "Produtos",       desc: "O que aparece no cardápio", path: "/produtos",      Icone: Cake },
       { label: "Categorias",     desc: "Organize seus produtos",    path: "/categorias",    Icone: SquaresFour },
-      { label: "Personalização", desc: "Adicionais e opções",       path: "/complementos",  Icone: Stack },
+      { label: "Complementos", desc: "Sabores, recheios e adicionais",       path: "/complementos",  Icone: Stack },
       { label: "Clientes",       desc: "Quem compra e o que compra", path: "/clientes",     Icone: Users },
       { label: "Ingredientes",  desc: "O que você compra",    path: "/insumos",       Icone: Basket },
       // 13/10: Receitas escondida até as fotos ficarem prontas

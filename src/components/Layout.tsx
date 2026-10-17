@@ -198,7 +198,7 @@ export default function Layout() {
           <GrupoMenu id="cadastros" rotulo="Cadastros" icone={Users} rotas={[...ROTAS_CATALOGO, "/clientes", "/insumos", "/ficha-tecnica"]} recolhido={recolhido}>
             <SubitemMenu to="/produtos" end icone={Cake}>Produtos</SubitemMenu>
             <SubitemMenu to="/categorias" icone={SquaresFour} tambem={["/produtos/categorias"]}>Categorias</SubitemMenu>
-            <SubitemMenu to="/complementos" icone={Stack}>Personalização</SubitemMenu>
+            <SubitemMenu to="/complementos" icone={Stack}>Complementos</SubitemMenu>
             <SubitemMenu to="/clientes" icone={Users}>Clientes</SubitemMenu>
             <SubitemMenu to="/insumos" icone={Package}>Ingredientes</SubitemMenu>
             <SubitemMenu to="/ficha-tecnica" icone={ClipboardText}>Ficha técnica</SubitemMenu>

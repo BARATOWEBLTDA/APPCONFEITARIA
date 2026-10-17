@@ -17,7 +17,7 @@ const GRUPOS: { titulo: string; itens: { label: string; Ic: Icon; path: string; 
   { titulo: "Cardápio digital", itens: [{ label: "Visão geral", Ic: ChartBar, path: "/cardapio" }] },
   { titulo: "Catálogo", itens: [
     { label: "Produtos", Ic: Package, path: "/produtos" },
-    { label: "Personalização", Ic: Stack, path: "/complementos" },
+    { label: "Complementos", Ic: Stack, path: "/complementos" },
     { label: "Categorias", Ic: SquaresFour, path: "/categorias", tambem: ["/produtos/categorias"] },
   ] },
   { titulo: "Configuração da loja", itens: [
