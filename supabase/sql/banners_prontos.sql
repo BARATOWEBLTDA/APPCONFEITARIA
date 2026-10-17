@@ -21,16 +21,16 @@ create index if not exists banners_prontos_ativo_ordem on public.banners_prontos
 
 alter table public.banners_prontos enable row level security;
 
-drop policy if exists banners_prontos_ler on public.banners_prontos;
-create policy banners_prontos_ler on public.banners_prontos
-  for select to authenticated
-  using (ativo or public.eh_admin());
-
-drop policy if exists banners_prontos_admin on public.banners_prontos;
-create policy banners_prontos_admin on public.banners_prontos
-  for all to authenticated
-  using (public.eh_admin())
-  with check (public.eh_admin());
+-- (sem "drop": a regra só é criada se ainda não existir)
+do $$
+begin
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'banners_prontos' and policyname = 'banners_prontos_ler') then
+    create policy banners_prontos_ler on public.banners_prontos for select to authenticated using (ativo or public.eh_admin());
+  end if;
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'banners_prontos' and policyname = 'banners_prontos_admin') then
+    create policy banners_prontos_admin on public.banners_prontos for all to authenticated using (public.eh_admin()) with check (public.eh_admin());
+  end if;
+end $$;
 
 -- Primeiro banner (fica dentro do próprio app, em /banners/galeria/)
 insert into public.banners_prontos (titulo, categoria, imagem_url, ordem)
