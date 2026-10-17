@@ -50,6 +50,7 @@ import AdminPDFs from "@/pages/admin/AdminPDFs";
 import AdminNotificacoes from "@/pages/admin/AdminNotificacoes";
 import AdminNotifTemplates from "@/pages/admin/AdminNotifTemplates";
 import AdminBanner from "@/pages/admin/AdminBanner";
+import AdminBannersProntos from "@/pages/admin/AdminBannersProntos";
 import AdminNoticias from "@/pages/admin/AdminNoticias";
 import AdminIdeias from "@/pages/admin/AdminIdeias";
 import AdminAutores from "@/pages/admin/AdminAutores";
@@ -489,6 +490,7 @@ export default function App() {
           <Route path="notificacoes" element={<AdminNotificacoes />} />
           <Route path="notif-templates" element={<AdminNotifTemplates />} />
           <Route path="banner" element={<AdminBanner />} />
+          <Route path="banners-prontos" element={<AdminBannersProntos />} />
           <Route path="noticias" element={<AdminNoticias />} />
           <Route path="ideias" element={<AdminIdeias />} />
           <Route path="autores" element={<AdminAutores />} />

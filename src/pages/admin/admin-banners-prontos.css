@@ -1,0 +1,25 @@
+/* Admin · Banners prontos (17/10) */
+.abp-root { max-width: 1100px; margin: 0 auto; padding: 16px 12px 48px; font-family: var(--font-base); color: var(--ui-texto); text-align: left; }
+.abp-root > .ui-tit { margin-bottom: 16px; }
+.abp-root > .ui-tit .ui-tit-a { white-space: normal; }
+.abp-carregando { display: flex; justify-content: center; padding: 48px 0; color: var(--ui-rosa); }
+.abp-aviso { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 12px; border-radius: var(--ui-raio); background: var(--ui-laranja-fundo); color: var(--ui-laranja); font-size: 13.5px; line-height: 1.45; }
+.abp-aviso svg { flex: none; margin-top: 1px; }
+.abp-topo { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+.abp-conta { font-size: 13.5px; color: var(--ui-texto-2); white-space: nowrap; }
+.abp-vazio { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 40px 16px; border: 1px dashed var(--ui-borda); border-radius: var(--ui-raio-cartao); color: var(--ui-texto-2); text-align: center; }
+.abp-vazio b { color: var(--ui-texto); }
+.abp-grade { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+@media (min-width: 760px) { .abp-root { padding: 24px 24px 48px; } .abp-grade { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; } }
+.abp-card { display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 12px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
+.abp-card.off .abp-img { opacity: .5; }
+.abp-img { position: relative; aspect-ratio: 3 / 1; overflow: hidden; border-radius: var(--ui-raio); background: var(--ui-cinza); }
+.abp-img img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.abp-pro { position: absolute; top: 8px; left: 8px; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; background: var(--chocolate); color: var(--ui-branco); font-size: 12px; font-weight: 700; }
+.abp-cats { display: flex; flex-wrap: wrap; gap: 6px; }
+.abp-cats button { min-height: 36px; margin: 0; padding: 0 12px; border: 1px solid var(--ui-borda); border-radius: 8px; background: var(--ui-branco); color: var(--ui-texto-2); font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.abp-cats button.on { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.abp-opcoes { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 16px; }
+.abp-opcoes label { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.abp-opcoes input { width: 20px; height: 20px; margin: 0; accent-color: var(--ui-rosa); }
+.abp-acoes { display: inline-flex; margin-left: auto; }

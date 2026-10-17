@@ -9,6 +9,7 @@ import { useRecorte } from "@/components/ui/useRecorte";
 import { ArrowCounterClockwise, ArrowsClockwise, Check, Crown, Image as ImageIcon, Images, Layout, Lock, Palette, Storefront, UploadSimple, X } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, BotaoIcone, Janela, Titulo, avisar } from "@/components/base";
+import { lerBannersProntos, CATEGORIAS_BANNER, type BannerPronto } from "@/lib/bannersProntos";
 import "./aparencia.css";
 
 /**
@@ -38,6 +39,9 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
 
   const [fotoPerfil, setFotoPerfil] = useState(""); // sem logo, o cardápio usa a foto de perfil
   const [verExemplo, setVerExemplo] = useState(false);
+  // (17/10) galeria de banners prontos (montada pela equipe no admin)
+  const [galeria, setGaleria] = useState<{ aberta: boolean; lista: BannerPronto[] | null; erro: boolean; cat: string; slot: number }>({ aberta: false, lista: null, erro: false, cat: "", slot: 0 });
+  const [usandoGaleria, setUsandoGaleria] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState("");
   // Avaliação (veio de Dados da loja em 29/09)
   const [hideStars, setHideStars] = useState(false);
@@ -193,6 +197,30 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       }
     }
     setUploading(null);
+  };
+
+  const abrirGaleria = async () => {
+    const vazio = (isPro ? [0, 1, 2, 3] : [0]).find(i => !bannerValues[i]);
+    setGaleria(g => ({ ...g, aberta: true, slot: vazio ?? 0, cat: "" }));
+    if (galeria.lista) return;
+    const r = await lerBannersProntos();
+    setGaleria(g => ({ ...g, lista: r.ok ? r.lista : [], erro: !r.ok }));
+  };
+  const usarDaGaleria = async (b: BannerPronto) => {
+    if (!userId || usandoGaleria) return;
+    if (b.so_pro && !isPro) { avisar("Esse banner é do plano PRO.", { tipo: "info" }); return; }
+    const i = galeria.slot;
+    const fields = [setBannerUrl, setBanner1Url, setBanner2Url, setBanner3Url];
+    const keys = ["banner_url", "banner1_url", "banner2_url", "banner3_url"];
+    setUsandoGaleria(b.id);
+    const ok = await gravar({ [keys[i]]: b.imagem_url });
+    setUsandoGaleria(null);
+    if (!ok) return;
+    fields[i](b.imagem_url);
+    marcarDesignEscolhido(userId);
+    showSuccess();
+    setGaleria(g => ({ ...g, aberta: false }));
+    avisar(`Banner colocado no Banner ${i + 1}`, { tipo: "ok" });
   };
 
   const handleRemoveBanner = async (index: number) => {
@@ -415,6 +443,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
             <div key={n} className="ap-banner"><span className="ap-banner-r">Banner {n}</span><ProSlot n={n} /></div>
           ))}
         </div>
+        <Botao variante="secundario" cheio icone={<Images size={20} weight="bold" />} onClick={abrirGaleria}>Escolher um banner pronto</Botao>
       </section>
 
       {identityCard}
@@ -489,6 +518,49 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
           </div>
         )}
       </section>
+
+      {/* (17/10) galeria de banners prontos */}
+      <Janela aberta={galeria.aberta} aoFechar={() => setGaleria(g => ({ ...g, aberta: false }))} tipo="conteudo" titulo="Banners prontos"
+        acoes={<Botao variante="secundario" cheio onClick={() => setGaleria(g => ({ ...g, aberta: false }))}>Fechar</Botao>} umaAcao>
+        {isPro && (
+          <div className="ap-gal-slots" role="radiogroup" aria-label="Onde colocar">
+            <span>Colocar no</span>
+            {[0, 1, 2, 3].map(i => (
+              <button key={i} type="button" role="radio" aria-checked={galeria.slot === i} className={galeria.slot === i ? "on" : ""} onClick={() => setGaleria(g => ({ ...g, slot: i }))}>Banner {i + 1}</button>
+            ))}
+          </div>
+        )}
+        {galeria.lista === null ? (
+          <div className="ap-gal-vazio"><span className="ui-gira" aria-label="Carregando" /></div>
+        ) : galeria.erro || galeria.lista.length === 0 ? (
+          <p className="ap-gal-vazio">{galeria.erro ? "Não deu pra abrir a galeria agora. Tente de novo." : "Ainda não há banners prontos. Em breve teremos novidades."}</p>
+        ) : (() => {
+          const cats = CATEGORIAS_BANNER.filter(c => galeria.lista!.some(b => b.categoria === c));
+          const lista = galeria.lista!.filter(b => !galeria.cat || b.categoria === galeria.cat);
+          return (
+            <>
+              {cats.length > 1 && (
+                <div className="ap-gal-cats" role="group" aria-label="Categorias">
+                  <button type="button" aria-pressed={!galeria.cat} onClick={() => setGaleria(g => ({ ...g, cat: "" }))}>Todos</button>
+                  {cats.map(c => <button key={c} type="button" aria-pressed={galeria.cat === c} onClick={() => setGaleria(g => ({ ...g, cat: c }))}>{c}</button>)}
+                </div>
+              )}
+              <div className="ap-gal-lista">
+                {lista.map(b => {
+                  const bloqueado = b.so_pro && !isPro;
+                  return (
+                    <button key={b.id} type="button" className={`ap-gal-it${bloqueado ? " bloq" : ""}`} onClick={() => usarDaGaleria(b)} disabled={!!usandoGaleria}>
+                      <img src={b.imagem_url} alt={b.titulo} loading="lazy" />
+                      {bloqueado && <span className="ap-gal-pro"><Crown size={13} weight="fill" aria-hidden="true" />PRO</span>}
+                      {usandoGaleria === b.id && <span className="ap-gal-gira"><span className="ui-gira" aria-label="Salvando" /></span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          );
+        })()}
+      </Janela>
 
       <Janela aberta={verExemplo} aoFechar={() => setVerExemplo(false)} tipo="conteudo" titulo="Exemplo de banner"
         acoes={<Botao variante="secundario" cheio onClick={() => setVerExemplo(false)}>Fechar</Botao>} umaAcao>

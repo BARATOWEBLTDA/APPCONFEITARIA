@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import {
-  ChartLine, UsersThree, Newspaper, PenNib, Image as ImageIcon,
+  ChartLine, UsersThree, Newspaper, PenNib, Image as ImageIcon, Images,
   Cake, Medal, FilePdf, Bell, ChartBar, Lightbulb,
   ArrowLeft, SignOut, DotsThreeOutline, CaretRight, X,
 } from "@phosphor-icons/react";
@@ -31,6 +31,7 @@ const menuSections: MenuSection[] = [
       { path: "/admin/noticias", label: "Notícias", icon: <Newspaper size={20} weight="bold" /> },
       { path: "/admin/autores", label: "Autores", icon: <PenNib size={20} weight="bold" /> },
       { path: "/admin/banner", label: "Banner do celular", icon: <ImageIcon size={20} weight="bold" /> },
+      { path: "/admin/banners-prontos", label: "Banners prontos", icon: <Images size={20} weight="bold" /> },
     ],
   },
   {
