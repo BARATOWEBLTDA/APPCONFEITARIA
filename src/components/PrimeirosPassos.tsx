@@ -348,7 +348,9 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
     try {
       const res = await apiFetch("/api/gerar-descricao", { method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: `Crie uma descrição atraente para uma confeitaria chamada "${nomeLoja}"${oQue.length ? `, que faz ${oQue.join(", ")}` : ""}. Entre 110 e 160 caracteres (umas 3 linhas no celular), português brasileiro, diga o que a confeitaria faz e pra quais ocasiões, transmita carinho e qualidade. Sem emojis. Retorne APENAS a descrição, sem aspas.` }) });
-      const data = await res.json(); const t = data.content?.[0]?.text?.trim();
+      const data = await res.json();
+      if (data?.error === "limite_diario") { setErro(data.message || "Você chegou ao limite de hoje. Amanhã libera de novo."); setGerando(false); return; }
+      const t = data.content?.[0]?.text?.trim();
       if (t) { setTxt(t.replace(/^["“]|["”]$/g, "").slice(0, 200)); setEscreveu(true); setPerguntando(false); }
       else setErro("A Doo IA não conseguiu escrever agora. Tente de novo.");
     } catch { setErro("Sem internet agora. Tente de novo em instantes."); }

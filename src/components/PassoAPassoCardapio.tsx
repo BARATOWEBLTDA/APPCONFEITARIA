@@ -200,6 +200,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         }),
       });
       const data = await res.json();
+      if (data?.error === "limite_diario") { mostrarAviso(data.message || "Você chegou ao limite de hoje. Amanhã libera de novo.", "err"); setGerando(false); return; }
       const texto = data.content?.[0]?.text?.trim();
       if (texto) setDescDraft(texto.slice(0, 200));
       else mostrarAviso("A IA não respondeu. Tente de novo.", "err");

@@ -1,4 +1,4 @@
-import { usuarioDoToken, respostaNaoAutorizado, respostaJson, lerCorpo, chaveAnthropic } from "./_auth";
+import { usuarioDoToken, respostaNaoAutorizado, respostaJson, lerCorpo, chaveAnthropic, usarCota, respostaLimite } from "./_auth";
 
 const LIMITE_CORPO = 64 * 1024;
 const MAX_PROMPT = 8000; // (11/10) um pedido de descrição nunca chega perto disso
@@ -14,7 +14,10 @@ export default async function handler(req: Request) {
   const usuario = await usuarioDoToken(req);
   if (!usuario) return respostaNaoAutorizado();
 
-  // (14/10) descrição com IA sem limite de uso (só precisa estar logada). Os limites de chat e imagem continuam.
+  // (17/10 · R05) limite alto por dia (100, grátis e PRO): ninguém usa isso tudo escrevendo descrição,
+  // mas impede alguém de chamar sem parar e gastar a conta da IA
+  const cota = await usarCota(req, "descricao");
+  if (!cota.ok) return respostaLimite(cota.limite);
 
   const cru = await lerCorpo(req, LIMITE_CORPO);
   let prompt: unknown;
