@@ -194,3 +194,14 @@ export function rotuloCurto(d: Date): string {
   const s = d.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "2-digit" });
   return s;
 }
+
+// (16/10) texto da situação pro cartão do link (computador e celular): "Aberto agora · fecha às 23:59"
+const DIAS_LABEL = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+export function situacaoLoja(horario: any): { aberto: boolean; txt: string } | null {
+  const s = situacaoDaLoja(horario);
+  if (!s) return null;
+  if (s.aberto) return { aberto: true, txt: `Aberto agora · fecha às ${horaTexto(s.fecha)}` };
+  if (!s.abre) return { aberto: false, txt: "Fechado" };
+  const quando = s.abre.dias === 0 ? "hoje" : s.abre.dias === 1 ? "amanhã" : DIAS_LABEL[s.abre.diaSemana];
+  return { aberto: false, txt: `Fechado · abre ${quando} às ${horaTexto(s.abre.minutos)}` };
+}

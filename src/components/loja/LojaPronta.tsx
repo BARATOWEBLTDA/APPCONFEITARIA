@@ -1,8 +1,7 @@
 import { useNavigate } from 'react-router-dom'
-import { textoCardapio } from "@/lib/compartilharCardapio";
+import { compartilharCardapio } from "@/lib/compartilharCardapio";
 import { Check, Eye, ShareNetwork, X } from '@phosphor-icons/react'
 import { getCardapioUrl } from '@/hooks/useProfile'
-import { avisar } from '@/components/base'
 import './loja.css'
 
 /**
@@ -13,18 +12,8 @@ import './loja.css'
 export function LojaProntaCartao({ profile, onFechar }: { profile: any; onFechar: () => void }) {
   const navigate = useNavigate()
   const link = getCardapioUrl(profile)
-  // (16/10) texto novo e o link sozinho na linha de baixo (vai dentro do texto: cada celular junta texto e link de um jeito)
-  const texto = textoCardapio(link)
 
-  const compartilhar = async () => {
-    const nav = navigator as Navigator & { share?: (d: ShareData) => Promise<void> }
-    if (nav.share) {
-      try { await nav.share({ title: profile?.nome_loja || 'Meu cardápio', text: texto }); return }
-      catch (e: any) { if (e?.name === 'AbortError') return } // ela fechou a janela: nada a fazer
-    }
-    try { await navigator.clipboard.writeText(link); avisar('Link do cardápio copiado', { tipo: 'ok' }) }
-    catch { avisar('Não deu pra copiar. Abra o cardápio e copie o link de lá.', { tipo: 'erro' }) }
-  }
+  const compartilhar = () => { void compartilharCardapio(link, profile?.nome_loja) } // (16/10) nativo; no computador copia
 
   return (
     <div className="lpc">

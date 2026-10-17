@@ -4,6 +4,7 @@
  *  4. Os 4 prêmios (3/10/25/50)  5. Quem entrou pelo link  6. Como funciona
  */
 
+import { compartilharTexto } from "@/lib/compartilharCardapio";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { ShareNetwork, Copy, Check, Trophy, Lock, UsersThree } from "@phosphor-icons/react";
@@ -76,12 +77,11 @@ export default function Indicar() {
   }, []);
 
   const link = codigo ? `https://doonly.com.br/?ref=${codigo}` : "https://doonly.com.br";
-  const mensagemWpp = encodeURIComponent(
+  const mensagem =
     `Oi! Tô usando o Doonly pra organizar minha confeitaria e recomendo demais.\n\n` +
     `Se você entrar pelo meu link ganha:\n` +
     `70% de desconto no 1º mês do PRO\n\n` +
-    link
-  );
+    link;
 
   const copiarLink = async () => {
     try {
@@ -93,23 +93,8 @@ export default function Indicar() {
     }
   };
 
-  const abrirWhatsApp = () => {
-    window.open(`https://wa.me/?text=${mensagemWpp}`, "_blank");
-  };
-
-  const compartilharNativo = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "Doonly - Gestão pra confeiteiras",
-          text: `Tô usando o Doonly! Entra pelo meu link e ganha 70% de desconto no 1º mês do PRO`,
-          url: link,
-        });
-      } catch {}
-    } else {
-      abrirWhatsApp();
-    }
-  };
+  // (16/10) compartilhar nativo do celular (WhatsApp, Instagram...); no computador copia a mensagem
+  const compartilharNativo = () => { void compartilharTexto(mensagem, "Doonly"); };
 
   // Próximo prêmio (o primeiro com meta > conversoes)
   const proximoIdx = PREMIOS.findIndex(p => p.meta > conversoes);
@@ -131,8 +116,7 @@ export default function Indicar() {
               <span className="in9-link-tx" title={link}><span className="in9-link-in">{codigo ? <>doonly.com.br/?ref=<b>{codigo}</b></> : "doonly.com.br"}</span></span>
               <Botao variante="secundario" tamanho="m" icone={copiado ? <Check size={18} weight="bold" /> : <Copy size={18} weight="bold" />} onClick={copiarLink}>{copiado ? "Copiado" : "Copiar"}</Botao>
             </div>
-            <Botao cheio className="in9-zap" icone={<IconeWhatsApp size={20} />} onClick={abrirWhatsApp}>Mandar no WhatsApp</Botao>
-            <Botao variante="link" cheio icone={<ShareNetwork size={18} weight="bold" />} onClick={compartilharNativo}>Outras formas de mandar</Botao>
+            <Botao cheio icone={<ShareNetwork size={18} weight="bold" />} onClick={compartilharNativo}>Compartilhar meu link</Botao>
           </>)}
         </section>
 

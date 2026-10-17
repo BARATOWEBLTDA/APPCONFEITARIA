@@ -4,10 +4,9 @@ import QRCode from "qrcode";
 import { supabase } from "@/lib/supabase";
 import { isPro as ehPro } from "@/hooks/useProfile";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
-import { Truck, ArrowSquareOut, Camera, CaretRight, ChartBar, Crown, ImageSquare, LinkSimple, Package, TextAlignLeft, Ticket } from "@phosphor-icons/react";
-import type { Icon } from "@phosphor-icons/react";
+import { ArrowSquareOut, CaretRight, ChartBar, Crown, LinkSimple } from "@phosphor-icons/react";
 import { Botao } from "@/components/base";
-import { situacaoDaLoja, horaTexto } from "@/lib/agendaCardapio";
+import { situacaoLoja } from "@/lib/agendaCardapio";
 
 /**
  * Visão geral do Cardápio digital — COMPUTADOR (aprovada 02/10).
@@ -18,18 +17,9 @@ import { situacaoDaLoja, horaTexto } from "@/lib/agendaCardapio";
  * número do pedido aparecendo, botões de 44px e o PRO no cartão vinho.
  */
 type Periodo = "hoje" | "7d" | "30d" | "tudo";
-const DIAS_LABEL = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 // (11/10) a situação vem de UMA conta só (lib/agendaCardapio), a mesma do topo do cardápio
-function situacaoLoja(horario: any): { aberto: boolean; txt: string } | null {
-  const s = situacaoDaLoja(horario);
-  if (!s) return null;
-  if (s.aberto) return { aberto: true, txt: `Aberto agora · fecha às ${horaTexto(s.fecha)}` };
-  if (!s.abre) return { aberto: false, txt: "Fechado" };
-  const quando = s.abre.dias === 0 ? "hoje" : s.abre.dias === 1 ? "amanhã" : DIAS_LABEL[s.abre.diaSemana];
-  return { aberto: false, txt: `Fechado · abre ${quando} às ${horaTexto(s.abre.minutos)}` };
-}
 
 function inicioPeriodo(p: Periodo): Date | null {
   const d = new Date(); d.setHours(0, 0, 0, 0);
@@ -108,23 +98,6 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
     return { txt: `${pct >= 0 ? "▲" : "▼"} ${Math.abs(pct)}% vs ${comQue}`, up: pct >= 0 };
   };
 
-  const dicas = useMemo(() => {
-    if (!dados) return [];
-    const semFoto = dados.produtos.filter(p => !String(p.imagem_url || "").trim()).length;
-    const semDesc = dados.produtos.filter(p => !String(p.descricao || "").trim()).length;
-    const temBanner = !!(profile?.banner_url || profile?.banner1_url);
-    const l: { e: Icon; t: string; s: string; cta: string; go: string }[] = [];
-    if (semFoto) l.push({ e: Camera, t: `${semFoto} produto${semFoto > 1 ? "s" : ""} sem foto`, s: "Produto com foto vende muito mais.", cta: "Adicionar fotos", go: "/produtos" });
-    if (semDesc) l.push({ e: TextAlignLeft, t: `${semDesc} produto${semDesc > 1 ? "s" : ""} sem descrição`, s: "Conte o sabor, o tamanho e quantas pessoas serve.", cta: "Escrever", go: "/produtos" });
-    // (13/10) marcou entrega e ainda não definiu a taxa: o cardápio mostra "Entrega grátis"
-    const fe: string[] = Array.isArray(profile?.formas_entrega) ? profile.formas_entrega : [];
-    const semTaxa = fe.includes("entrega_propria") && !(Number(profile?.valor_entrega_propria) > 0) && !(Array.isArray(profile?.entrega_por_bairro) && profile.entrega_por_bairro.length);
-    if (semTaxa) l.unshift({ e: Truck, t: "Defina a taxa de entrega", s: "Sem taxa, o cardápio mostra entrega grátis.", cta: "Definir", go: "/checkout-config" });
-    if (!temBanner) l.push({ e: ImageSquare, t: "Nenhum banner de promoção", s: "Anuncie a promoção da semana antes dos produtos.", cta: "Criar banner", go: "/cardapio-design" });
-    if (pro && !dados.temCupom) l.push({ e: Ticket, t: "Crie um cupom de boas-vindas", s: "Ex.: 10% de desconto no primeiro pedido.", cta: "Criar cupom", go: "/checkout-config" });
-    if (!dados.produtos.length) l.unshift({ e: Package, t: "Nenhum produto no cardápio", s: "Cadastre o primeiro pra começar a vender.", cta: "Cadastrar", go: "/produtos" });
-    return l;
-  }, [dados, profile, pro]);
 
   const copiar = async () => {
     try { await navigator.clipboard.writeText(linkCardapio); setCopiado(true); setTimeout(() => setCopiado(false), 1800); } catch {}
@@ -240,18 +213,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
           })}
         </div>
 
-        <div className="vgd-card">
-          <div><p className="vgd-ct">Pra vender mais</p><p className="vgd-cs">O que ainda dá pra melhorar no seu cardápio</p></div>
-          {!dados ? <p className="vgd-vazio">Carregando…</p> : dicas.length === 0 ? (
-            <p className="vgd-vazio">Seu cardápio está caprichado. Todos os produtos têm foto e descrição.</p>
-          ) : dicas.map(d => (
-            <button type="button" className="vgd-di" key={d.t} onClick={() => navigate(d.go)}>
-              <span className="vgd-de" aria-hidden="true"><d.e size={20} weight="bold" /></span>
-              <span className="vgd-dt"><b>{d.t}</b><small>{d.s}</small></span>
-              <span className="vgd-db">{d.cta}<CaretRight size={14} weight="bold" aria-hidden="true" /></span>
-            </button>
-          ))}
-        </div>
+        {/* (16/10) o "Pra vender mais" foi pro "Seus próximos passos" do Início (as mesmas dicas, num lugar só) */}
       </div>
 
       <style>{`
@@ -295,7 +257,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         .vgd-lock { display: flex; align-items: center; gap: 14px; margin-top: 14px; padding: 16px; border-radius: 14px; background: #FFF6F9; border: 1px dashed #F3C9DA; }
         .vgd-lock img { width: 34px; height: 34px; object-fit: contain; }
         .vgd-lock div { flex: 1; } .vgd-lock b { display: block; font-size: 14.5px; } .vgd-lock small { font-size: 12.5px; color: var(--ui-texto-2); }
-        .vgd-g2 { display: grid; grid-template-columns: 1.25fr 1fr; gap: 16px; align-items: start; }
+        .vgd-g2 { display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
         .vgd-pe, .vgd-di { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 0; border: none; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; text-align: left; cursor: pointer; color: inherit; }
         .vgd-card > .vgd-pe:first-of-type, .vgd-card > .vgd-di:first-of-type { margin-top: 8px; }
         .vgd-pa { width: 36px; height: 36px; border-radius: 50%; background: #FCE7F3; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }

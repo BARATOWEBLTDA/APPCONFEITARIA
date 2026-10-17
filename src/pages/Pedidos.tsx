@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { compartilharTexto } from "@/lib/compartilharCardapio";
 import { montarMensagem, dadosDoPedido } from '@/lib/mensagens'
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'
 import { Cake, CalendarDots, Funnel, Kanban, Lightning, ListBullets, MagnifyingGlass, Plus, Receipt, WarningCircle, X } from '@phosphor-icons/react'
@@ -365,7 +366,8 @@ export default function Pedidos() {
         '',
         `*Total: ${rs(p.valor_total)}*`,
       ].filter(Boolean).join('\n')
-      window.open(`https://wa.me/?text=${encodeURIComponent(resumo)}`, '_blank')
+      // (16/10) compartilhar nativo do celular (WhatsApp, Telegram...); no computador copia o resumo
+      void compartilharTexto(resumo, `Pedido #${p.numero || ''}`)
       fechar(); return
     }
     if (acao === 'pdf') {

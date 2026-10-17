@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { textoCardapio } from "@/lib/compartilharCardapio";
+import { compartilharCardapio } from "@/lib/compartilharCardapio";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowSquareOut, Copy, Desktop, DeviceMobile, ShareNetwork } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
@@ -58,11 +58,7 @@ export default function CardapioPrevia() {
 
   const compartilhar = async () => {
     if (!url) return;
-    if (navigator.share) {
-      try { await navigator.share({ title: "Meu cardápio", text: textoCardapio(url) }); } catch { /* fechou */ }
-    } else {
-      await copiar();
-    }
+    await compartilharCardapio(url); // (16/10) nativo; no computador copia
   };
 
   const espera = !carregou && (

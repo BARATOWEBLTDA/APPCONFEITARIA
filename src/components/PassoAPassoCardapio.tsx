@@ -1,9 +1,8 @@
 import { useEffect, useState, type ReactElement } from "react";
-import { textoCardapio } from "@/lib/compartilharCardapio";
+import { compartilharCardapio } from "@/lib/compartilharCardapio";
 import { lerPassos, marcarCompartilhado as marcarCompartilhadoLib } from "@/lib/primeirosPassos";
 import { useNavigate } from "react-router-dom";
 import { Eye, Check, Copy, Storefront, PencilLine, ShoppingBag, Palette, ShareNetwork } from "@phosphor-icons/react";
-import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -233,8 +232,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
       onShareClick();
       return;
     }
-    const texto = encodeURIComponent(textoCardapio(linkCardapio));
-    window.open(`https://wa.me/?text=${texto}`, "_blank");
+    void compartilharCardapio(linkCardapio); // (16/10) compartilhar nativo do celular; no computador copia
     marcarCompartilhado();
     // Força re-render pra atualizar o estado
     setSteps((s) => s.map((st) => st.key === "share" ? { ...st, done: true } : st));
@@ -282,7 +280,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         </div>
         <div className="pap-done-actions">
           <button className="pap-done-btn pap-done-btn-wa" onClick={handleWhatsApp}>
-            <IconeWhatsApp size={16} /> WhatsApp
+            <ShareNetwork size={16} weight="bold" /> Compartilhar
           </button>
           <button className="pap-done-btn pap-done-btn-copy" onClick={handleCopy}>
             <Copy size={15} weight="bold" /> {copied ? "Copiado!" : "Copiar link"}
@@ -375,11 +373,11 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           <div className="pap-share-check"><Check size={11} weight="bold" /></div>
           <span className="pap-share-tag">Pronto</span>
         </div>
-        <p className="pap-share-t">Seu cardápio tá no ar</p>
+        <p className="pap-share-t">Seu cardápio está no ar</p>
         <p className="pap-share-s">Divulgue e comece a receber pedidos.</p>
         <div className="pap-share-actions">
           <button className="pap-share-btn pap-share-btn-wa" onClick={handleWhatsApp}>
-            <IconeWhatsApp size={16} /> WhatsApp
+            <ShareNetwork size={16} weight="bold" /> Compartilhar
           </button>
           <button className="pap-share-btn pap-share-btn-copy" onClick={handleCopy}>
             <Copy size={15} weight="bold" /> {copied ? "Copiado!" : "Copiar link"}

@@ -1,5 +1,5 @@
 import { PausarPedidos } from "@/components/loja/PausarPedidos";
-import { textoCardapio } from "@/lib/compartilharCardapio";
+import { compartilharCardapio } from "@/lib/compartilharCardapio";
 import { useState, useEffect, useRef, type ReactElement } from "react";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
 import VisaoGeralDesktop from "@/components/cardapio/VisaoGeralDesktop";
@@ -17,6 +17,7 @@ import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
 import AppPageHeader from "@/components/AppPageHeader";
 import PassoAPassoCardapio from "@/components/PassoAPassoCardapio";
+import CartaoLojaCelular from "@/components/cardapio/CartaoLojaCelular";
 
 type Periodo = "hoje" | "7d" | "30d" | "tudo";
 
@@ -300,16 +301,7 @@ export default function Cardapio() {
       navigate("/cardapio-config");
       return;
     }
-    const texto = textoCardapio(linkCardapio);
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: "Meu Cardápio", text: texto });
-      } catch {
-        // usuário cancelou - sem ação
-      }
-    } else {
-      handleCopiar();
-    }
+    await compartilharCardapio(linkCardapio, profile?.nome_loja); // (16/10) nativo; no computador copia
   };
 
   const handleCopiar = () => {
@@ -363,9 +355,11 @@ export default function Cardapio() {
     ) : (
     <div className="cardapio-hub">
       {/* Passo a passo único (02/10): o mesmo cartão do Início. Pronto → cartão do link */}
-      <PausarPedidos />
+      {/* (16/10) pronto: um cartão só com a situação, a chave de pausar, o link, Compartilhar, Ver e QR Code */}
+      {!passosOk && <PausarPedidos />}
       <PrimeirosPassos local="cardapio" onEstado={setPassosOk} />
-      {passosOk && (
+      {passosOk && publicado && linkCardapio && <CartaoLojaCelular link={linkCardapio} />}
+      {passosOk && !(publicado && linkCardapio) && (
         <PassoAPassoCardapio
           userId={profile?.id}
           publicado={publicado}
@@ -431,7 +425,7 @@ export default function Cardapio() {
             </span>
             <div className="cd-quick-info">
               <div className="cd-quick-name">Aparência</div>
-              <div className="cd-quick-desc">Logo, banners e modelo do cardápio</div>
+              <div className="cd-quick-desc">Logo, banners e modelo</div>
             </div>
             <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
           </button>
@@ -441,7 +435,7 @@ export default function Cardapio() {
             </span>
             <div className="cd-quick-info">
               <div className="cd-quick-name">Entrega e pagamento</div>
-              <div className="cd-quick-desc">Formas de pagar, entrega e cupons</div>
+              <div className="cd-quick-desc">Pagamento, entrega e cupons</div>
             </div>
             <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
           </button>
@@ -451,7 +445,7 @@ export default function Cardapio() {
             </span>
             <div className="cd-quick-info">
               <div className="cd-quick-name">Dados da loja</div>
-              <div className="cd-quick-desc">Nome, WhatsApp, endereço e horário</div>
+              <div className="cd-quick-desc">Nome, WhatsApp e horário</div>
             </div>
             <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
           </button>
@@ -587,12 +581,11 @@ export default function Cardapio() {
       )}
       </>
       ) : (
-      <section className="cd-pro">
-        <span className="cd-pro-ic" aria-hidden="true"><ChartBar size={24} weight="bold" /></span>
-        <h3>Métricas do cardápio</h3>
-        <p>Veja quem visitou, quantos pedidos chegaram pelo link e os produtos mais vendidos.</p>
-        <Botao cheio icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>
-      </section>
+      <button type="button" className="cd-pro" onClick={() => navigate("/assinar")}>
+        <span className="cd-pro-ic" aria-hidden="true"><ChartBar size={20} weight="bold" /></span>
+        <span className="cd-pro-tx"><b>Métricas do cardápio</b><small>Visitas e pedidos pelo link</small></span>
+        <span className="cd-pro-bt"><Crown size={14} weight="fill" aria-hidden="true" />PRO</span>
+      </button>
       )}
 
       {/* Alertas */}
@@ -1157,14 +1150,17 @@ export default function Cardapio() {
         .cardapio-hub .cd-quick-list { margin: 0 -8px; padding: 0; }
         .cardapio-hub .cd-quick-item { min-height: 56px; padding: 8px; border-radius: 0; gap: 12px; }
         .cardapio-hub .cd-quick-item + .cd-quick-item { border-top: 1px solid var(--ui-linha); }
-        .cardapio-hub .cd-quick-ico { width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro) !important; color: var(--ui-rosa-escuro) !important; }
+        .cardapio-hub .cd-quick-ico { width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-rosa) !important; color: var(--ui-branco) !important; } /* (16/10) rosa forte com ícone branco */
         .cardapio-hub .cd-quick-name { font-size: 15px; font-weight: 700; color: var(--ui-texto); }
         .cardapio-hub .cd-quick-desc { font-size: 13px; color: var(--ui-texto-2); margin-top: 2px; }
         .cardapio-hub .cd-quick-arrow { color: var(--ui-texto-3); }
-        .cd-pro { padding: 16px; border-radius: var(--ui-raio-cartao); background: linear-gradient(150deg, #3B1620, #6B2340); color: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); }
-        .cd-pro-ic { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-bottom: 12px; border-radius: var(--ui-raio); background: rgba(255,255,255,.14); }
-        .cd-pro h3 { margin: 0; font-size: 18px; font-weight: 700; color: var(--ui-branco); }
-        .cd-pro p { margin: 4px 0 16px; font-size: 13.5px; line-height: 1.5; color: rgba(255,255,255,.82); }
+        /* (16/10) PRO: uma faixa fina no fim, não um cartão grande */
+        .cd-pro { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); color: var(--ui-texto); font-family: var(--font-base); text-align: left; cursor: pointer; }
+        .cd-pro-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+        .cd-pro-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        .cd-pro-tx b { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cd-pro-tx small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cd-pro-bt { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 8px; background: var(--chocolate); color: var(--ui-branco); font-size: 12.5px; font-weight: 700; }
         .ch-metric-label { font-size: 12.5px !important; text-transform: none !important; letter-spacing: 0 !important; }
         .ch-live-badge, .ch-metric-pop { font-size: 12px !important; text-transform: none !important; letter-spacing: 0 !important; }
         .ch-periodo-tab { min-height: 44px; }
