@@ -1721,7 +1721,7 @@ export default function Inicio() {
           /* Topo (07/10 · 3.00, guia A1/A2/A14): vinho pelo nome do themes.css, nome da loja inteiro (até 2 linhas),
              etiqueta e câmera com área de toque de 44px, título 22px peso 900 */
           .ini-root .ini-hero {
-            background: var(--vinho-escuro) !important;
+            background: var(--chocolate) !important; /* (17/10) topo marrom em todas as telas */
             border-radius: 0 0 24px 24px;
             padding: calc(max(env(safe-area-inset-top, 0px), 12px) + 4px) max(16px, env(safe-area-inset-right, 0px)) 12px max(16px, env(safe-area-inset-left, 0px));
             gap: 8px;
@@ -1738,7 +1738,7 @@ export default function Inicio() {
             z-index: 0;
           }
           .ini-root .ini-hero-waves { display: block; width: 100%; height: 100%; }
-          .ini-root .ini-hero-waves path { fill: var(--vinho); }
+          .ini-root .ini-hero-waves path { fill: #4A2C21; }
           .ini-root .ini-hero-waves path:first-child { opacity: .55; }
           .ini-root .ini-hero-sparkles { display: none; }
           .ini-root .ini-hero-greeting h1 {
