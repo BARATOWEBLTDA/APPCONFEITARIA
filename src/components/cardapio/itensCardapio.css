@@ -91,3 +91,6 @@
 .ic-ln { gap: 12px; padding: 10px; }
 .ic-ln-ft { width: 84px; height: 84px; }
 .ic-sec--pc { padding: 0; }
+
+/* (17/10) preço em verde, como nos apps de delivery (iFood, 99Food) — o antigo riscado continua cinza */
+.ic-pp-linha b, .ic-ln-preco b { color: #3B9A60; }
