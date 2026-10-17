@@ -22,7 +22,7 @@
 @media (hover: hover) { .mc-it:hover { background: var(--ui-linha); } }
 .mc-it:active { background: var(--ui-cinza); }
 .mc-it:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
-.mc-it-ic { flex: none; width: 32px; height: 32px; border-radius: var(--ui-raio-p); display: flex; align-items: center; justify-content: center; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.mc-it-ic { flex: none; width: 32px; height: 32px; border-radius: var(--ui-raio-p); display: flex; align-items: center; justify-content: center; background: var(--ui-ic-fundo); color: var(--ui-ic-cor); } /* (16/10) ícone de lista: cinza quente */
 .mc-it-t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mc-it--sair { margin-top: 4px; border-top: 1px solid var(--ui-linha); color: var(--ui-vermelho); font-weight: 700; }
 .mc-it--sair .mc-it-ic { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); }

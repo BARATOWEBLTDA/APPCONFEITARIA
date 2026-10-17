@@ -44,6 +44,7 @@
 .nv3-dh { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); margin: 16px 0 0; }
 .nv3-cols .nv3-larga { grid-column: 1 / -1; }
 .nv3-dica { margin: 8px 0 0; font-size: 13.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
+.nv3-sub { margin: 16px 0 8px; font-size: 14px; font-weight: 700; color: var(--ui-texto); } /* (16/10) pergunta dentro do cartão (O cliente já levou?) */
 .nv3-centro { text-align: center; margin-top: 12px; }
 .nv3-cli { display: flex; align-items: center; gap: 12px; }
 .nv3-ini { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 15px; font-weight: 700; }
@@ -152,3 +153,14 @@ button.nv3-tab-l:active { background: #FFE9F1; }
 .nv3-livre-qtd input:focus { outline: none; border-color: var(--ui-rosa); }
 .nv3-livre-qtd span { flex: 1; font-size: 14px; color: var(--ui-texto-2); }
 .nv3-livre-dica { margin: -4px 0 0; font-size: 13px; color: var(--ui-texto-2); }
+
+/* (16/10) escolher o tamanho: bolinha à esquerda (parece tocável) e "Outro tamanho" no fim da lista */
+.nv3-tab-l > span.nv3-tab-n { flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; }
+.nv3-tab-n > span { min-width: 0; display: flex; flex-direction: column; }
+.nv3-radio { flex: none; width: 20px; height: 20px; border: 2px solid #CDBFC5; border-radius: 50%; background: var(--ui-branco); transition: border-color .15s linear; }
+button.nv3-tab-l:active .nv3-radio, .nv3-tab-outro.on .nv3-radio { border: 6px solid var(--ui-rosa); }
+.nv3-tab-outro { grid-template-columns: 1fr !important; }
+.nv3-tab-outro > span small { color: var(--ui-rosa-escuro); font-weight: 600; }
+.nv3-outro { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; padding: 12px; border: 1px solid var(--ui-borda); border-radius: 10px; background: #FBF8F9; }
+.nv3-outro .nv3-cols { margin: 0; }
+.nv3-kg { padding-right: 12px; font-size: 14px; font-weight: 600; color: var(--ui-texto-2); }

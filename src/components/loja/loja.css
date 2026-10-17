@@ -16,7 +16,7 @@
 
 .lj-link { padding: 18px; border-radius: 18px; background: var(--ui-branco); border: 1px solid #F0E6EA; font-family: var(--font-base); }
 .lj-link-cab { display: flex; gap: 12px; align-items: center; }
-.lj-link-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: #FCE0E9; color: var(--ui-rosa); }
+.lj-link-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: var(--ui-ic-fundo); color: var(--ui-ic-cor); } /* (16/10) ícone de lista: cinza quente */
 .lj-link-cab b { display: block; font-size: 16px; font-weight: 600; color: var(--ui-texto); }
 .lj-link-cab small { display: block; font-size: 13px; color: var(--ui-texto-2); }
 .lj-link-url { margin: 14px 0 10px; padding: 11px 12px; border-radius: 12px; background: #F8F5F6; font-size: 14px; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

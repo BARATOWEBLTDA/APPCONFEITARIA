@@ -140,6 +140,8 @@ export default function NovaVenda() {
   const clienteDoEnderecoRef = useRef<string | null>(null) // de qual cliente é o endereço que está na tela (pra troca de cliente)
 
   const [tipoEntrega, setTipoEntrega] = useState<TipoEntrega>('retirada')
+  // (16/10) pronta entrega com retirada: o cliente já levou (padrão) ou ainda vem buscar (pagou pelo WhatsApp e passa depois)
+  const [vemBuscar, setVemBuscar] = useState(false)
   const [dataEntrega, setDataEntrega] = useState('')
   const [horarioEntrega, setHorarioEntrega] = useState('')
   const [enderecoRua, setEnderecoRua] = useState('')
@@ -252,8 +254,12 @@ export default function NovaVenda() {
 
   // Pronta entrega com retirada: o cliente já levou, então o pedido entra como entregue
   // (o criarPedido já força isso; aqui a tela mostra a mesma coisa). Pagamento começa em "Tudo agora".
-  const jaLevou = tipo === 'pronta_entrega' && tipoEntrega === 'retirada'
+  const prontaRetirada = tipo === 'pronta_entrega' && tipoEntrega === 'retirada'
+  const buscaDepois = prontaRetirada && vemBuscar
+  const jaLevou = prontaRetirada && !vemBuscar
   useEffect(() => { if (jaLevou) setStatusPedido('entregue') }, [jaLevou])
+  // vem buscar: entra como "Pronto pra retirar", com a data de hoje já marcada
+  useEffect(() => { if (buscaDepois) { setStatusPedido('finalizado'); setDataEntrega(d => d && d >= hojeISO() ? d : hojeISO()) } }, [buscaDepois])
   useEffect(() => { if (tipo === 'pronta_entrega') setSituacaoPag(s => s ?? 'total') }, [tipo])
 
   // Scroll pro topo quando muda de etapa ou entra na tela de sucesso
@@ -425,6 +431,8 @@ export default function NovaVenda() {
   // Antes entrava sempre com o menor preço, sem jeito de escolher.
   const opcoesDoProduto = (p: Produto) => opcoesDoProdutoLib(p) // mesma regra da Doo IA
   const [qtdLivre, setQtdLivre] = useState<number | null>(null) // (14/10) kit "ele escolhe": quantidade escolhida
+  // (16/10) "Outro tamanho": vendeu um peso que não está na lista (o preço sai do preço do kg, e dá pra mudar)
+  const [outro, setOutro] = useState<{ aberto: boolean; peso: string; valor: number }>({ aberto: false, peso: '', valor: 0 })
   const [escolhaProduto, setEscolhaProduto] = useState<{ p: Produto; opcoes: { label: string; valor: number; pers: any }[] } | null>(null)
   const addProduto = (p: Produto, escolha?: { label: string; valor: number; pers: any }) => {
     if (!escolha) {
@@ -511,7 +519,7 @@ export default function NovaVenda() {
       const res = await criarPedido(userId, {
         tipo: (tipo || 'encomenda') as any, itens, semCliente, clienteId: clienteId || jaCriada, clienteNome, clienteTelefone,
         clienteNovo,
-        tipoEntrega: tipoEntrega as any, dataEntrega, horarioEntrega,
+        tipoEntrega: tipoEntrega as any, vemBuscar: buscaDepois, dataEntrega, horarioEntrega,
         endereco: { rua: enderecoRua, numero: enderecoNumero, bairro: enderecoBairro, cidade: enderecoCidade, complemento: enderecoComplemento },
         taxaEntrega, desconto, acrescimo, formaPagamento, situacaoPag, valorParcial, dataPrevistaPagamento,
         // "Pronto" de retirada entra como "Pronto pra retirar" (o mesmo caminho da lista e da tela do pedido)
@@ -614,7 +622,7 @@ export default function NovaVenda() {
     setItens([])
     clienteDoEnderecoRef.current = null
     setClienteId(null); setClienteNome(''); setClienteTelefone(''); setSemCliente(false); setModoNovoCli(false)
-    setTipoEntrega('retirada')
+    setTipoEntrega('retirada'); setVemBuscar(false)
     setDataEntrega(''); setHorarioEntrega('')
     setEnderecoRua(''); setEnderecoNumero(''); setEnderecoBairro(''); setEnderecoCidade(cidadeDaLoja.current); setEnderecoComplemento(''); setTaxaEntrega(0); setEnderecoCep('')
     setDesconto(0); setAcrescimo(0); setSituacaoPag(null); setValorParcial(0); setDataPrevistaPagamento(''); setFormaPagamento('PIX'); setStatusPedido('agendado')
@@ -643,7 +651,8 @@ export default function NovaVenda() {
   const enderecoTexto = [[enderecoRua, enderecoNumero].filter(Boolean).join(', '), enderecoBairro].filter(Boolean).join(' · ')
   // subtítulo (10/10): no passo 1 explica a escolha; depois mostra o tipo escolhido; no fim, que a venda foi registrada
   const subtituloTopo = sucessoAberto ? 'Venda registrada' : etapa === 1 || !tipo ? 'Encomenda ou pronta entrega' : tipo === 'pronta_entrega' ? 'Pronta entrega' : 'Encomenda'
-  const cabecalho = <AppPageHeader title="Nova venda" subtitle={subtituloTopo} onBack={sucessoAberto ? () => navigate('/pedidos') : sairDaVenda} />
+  // (16/10) a seta do topo volta um passo (no primeiro, pergunta antes de cancelar), igual ao "Voltar" de baixo
+  const cabecalho = <AppPageHeader title="Nova venda" subtitle={subtituloTopo} onBack={sucessoAberto ? () => navigate('/pedidos') : voltarEtapa} />
 
   // ═══ Venda registrada ═══
   if (sucessoAberto && pedidoCriado) {
@@ -665,7 +674,7 @@ export default function NovaVenda() {
             <p>{naAgenda ? 'Já está na sua lista de pedidos e na agenda.' : 'Já está na sua lista de pedidos.'}</p>
             <div className="nv3-res">
               <Linha rotulo="Cliente">{pc.clienteNome ? toTitleCase(pc.clienteNome) : 'Venda avulsa'}</Linha>
-              {pc.tipo === 'encomenda' && pc.dataEntrega && <Linha rotulo={ehEntrega ? 'Entrega' : 'Retirada'}>{dataLonga(pc.dataEntrega, pc.horarioEntrega)}</Linha>}
+              {(pc.tipo === 'encomenda' || buscaDepois) && pc.dataEntrega && <Linha rotulo={ehEntrega ? 'Entrega' : 'Retirada'}>{dataLonga(pc.dataEntrega, pc.horarioEntrega)}</Linha>}
               <Linha rotulo="Total">{rs(pc.total)}</Linha>
               <Linha rotulo="Pagamento" tom={pagoGravado ? 'verde' : 'laranja'}>{pagamentoGravado}</Linha>
               {!pagoGravado && pc.falta > 0.009 && <Linha rotulo="Falta receber" tom="laranja">{rs(pc.falta)}</Linha>}
@@ -766,7 +775,7 @@ export default function NovaVenda() {
                 <CalendarDots size={24} weight={tipo === 'encomenda' ? 'fill' : 'bold'} /><b>Encomenda</b><small>Pra entregar ou retirar em outro dia</small>
               </button>
               <button type="button" aria-pressed={tipo === 'pronta_entrega'} onClick={() => setTipo('pronta_entrega')}>
-                <Lightning size={24} weight={tipo === 'pronta_entrega' ? 'fill' : 'bold'} /><b>Pronta entrega</b><small>O cliente está levando agora</small>
+                <Lightning size={24} weight={tipo === 'pronta_entrega' ? 'fill' : 'bold'} /><b>Pronta entrega</b><small>Já está pronto, não precisa fazer</small>
               </button>
             </div>
             {!tipo && (itens.length > 0 || tentou) && <p className="nv3-dica nv3-falta">Escolha o tipo de venda pra continuar.</p>}
@@ -869,7 +878,17 @@ export default function NovaVenda() {
               <button type="button" aria-pressed={ehEntrega} onClick={() => setTipoEntrega('entrega')}><Truck size={20} weight={ehEntrega ? 'fill' : 'bold'} />Entrega</button>
             </div>
             <p className="nv3-dica">{ehEntrega ? 'Você leva o pedido até o cliente.' : 'O cliente vem buscar com você.'}</p>
-            {tipo === 'encomenda' && (
+            {prontaRetirada && (
+              <>
+                <p className="nv3-sub">O cliente já levou?</p>
+                <div className="nv3-seg" role="group" aria-label="O cliente já levou?">
+                  <button type="button" aria-pressed={!vemBuscar} onClick={() => setVemBuscar(false)}><Check size={20} weight="bold" />Já levou</button>
+                  <button type="button" aria-pressed={vemBuscar} onClick={() => setVemBuscar(true)}><Clock size={20} weight={vemBuscar ? 'fill' : 'bold'} />Vem buscar</button>
+                </div>
+                <p className="nv3-dica">{vemBuscar ? 'Entra como "Pronto pra retirar" e aparece nas suas entregas.' : 'Entra como entregue.'}</p>
+              </>
+            )}
+            {(tipo === 'encomenda' || buscaDepois) && (
               <div className="nv3-cols nv3-dh">
                 <div className="ui-campo">
                   <span className="ui-campo-r"><span>{ehEntrega ? 'Data da entrega' : 'Data da retirada'}</span></span>
@@ -939,7 +958,7 @@ export default function NovaVenda() {
               {([
                 { chave: 'total', nome: 'Tudo agora', dica: `Recebi ${rs(total)}` },
                 { chave: 'parcial', nome: 'Só uma parte (sinal)', dica: 'Você escreve quanto recebeu' },
-                ...(tipo === 'encomenda' ? [{ chave: 'na_entrega', nome: ehEntrega ? 'Paga na entrega' : 'Paga na retirada', dica: ehEntrega ? 'Ele paga quando receber o pedido' : 'Ele paga quando vier buscar' }] : []),
+                ...(tipo === 'encomenda' || buscaDepois ? [{ chave: 'na_entrega', nome: ehEntrega ? 'Paga na entrega' : 'Paga na retirada', dica: ehEntrega ? 'Ele paga quando receber o pedido' : 'Ele paga quando vier buscar' }] : []),
                 { chave: 'fiado', nome: 'Vai pagar depois', dica: 'Você escolhe a data combinada' },
               ] as { chave: SituacaoPag; nome: string; dica: string }[]).map(o => (
                 <div key={o.chave}>
@@ -1000,7 +1019,7 @@ export default function NovaVenda() {
               <Linha rotulo="Tipo">{tipo === 'pronta_entrega' ? 'Pronta entrega' : 'Encomenda'}</Linha>
               <Linha rotulo="Cliente">{nomeDaCliente}</Linha>
               {clienteTelefone && !semCliente && <Linha rotulo="Telefone">{telefoneBonito(clienteTelefone)}</Linha>}
-              {tipo === 'encomenda'
+              {tipo === 'encomenda' || buscaDepois
                 ? <Linha rotulo={ehEntrega ? 'Entrega' : 'Retirada'}>{dataLonga(dataEntrega, horarioEntrega)}</Linha>
                 : <Linha rotulo="Como chega">{ehEntrega ? 'Entrega' : 'Retirada'}</Linha>}
               {ehEntrega && enderecoTexto && <Linha rotulo="Endereço">{enderecoTexto}</Linha>}
@@ -1029,8 +1048,9 @@ export default function NovaVenda() {
       )}
     </div>
 
-    {/* Rodapé fixo: total sempre à vista + Voltar e Continuar */}
-    <div className="nv3-pe">
+    {/* Rodapé fixo: total sempre à vista + Voltar e Continuar.
+        (16/10) no passo 1 só aparece depois do tipo de venda e de um produto (antes cobria o cartão de produtos) */}
+    {!(etapa === 1 && !(tipo && itens.length > 0)) && <div className="nv3-pe">
       <div className="nv3-pe-in">
         <p className="nv3-pe-tot"><span>Total</span><b>{rs(total)}</b></p>
         <div className="nv3-pe-bts">
@@ -1040,10 +1060,10 @@ export default function NovaVenda() {
             : <Botao onClick={proximaEtapa}>Continuar</Botao>}
         </div>
       </div>
-    </div>
+    </div>}
 
     {/* ═══ Escolher o tamanho ou o kit ═══ */}
-    <Janela aberta={!!escolhaProduto} aoFechar={() => { setEscolhaProduto(null); setQtdLivre(null) }} tipo="conteudo" titulo={escolhaProduto ? nomeDeProduto(escolhaProduto.p.nome) : ''}>
+    <Janela aberta={!!escolhaProduto} aoFechar={() => { setEscolhaProduto(null); setQtdLivre(null); setOutro({ aberto: false, peso: '', valor: 0 }) }} tipo="conteudo" titulo={escolhaProduto ? nomeDeProduto(escolhaProduto.p.nome) : ''}>
       {escolhaProduto && (
         <>
           <p className="tpj-txt">{escolhaProduto.p.kit_qtd?.ativo ? (escolhaProduto.p.kit_qtd?.modo === 'livre' ? 'Quantas unidades o cliente levou?' : 'Qual kit o cliente levou?') : 'Qual tamanho?'}</p>
@@ -1080,7 +1100,16 @@ export default function NovaVenda() {
             const dados = (o: { label: string }) => ops.find(x => String(x?.nome || '').trim() === o.label) || {}
             const serveDe = (o: { label: string }) => { const v = String(dados(o).serve || '').trim(); return /^\d+$/.test(v) ? `${v} pessoas` : v }
             const comServe = !kit && escolhaProduto.opcoes.some(o => serveDe(o))
+            // preço do kg: produto vendido por kg, ou tamanhos com preço pelo peso
+            const precoKg = !kit && (escolhaProduto.p.forma_venda === 'kg' || (escolhaProduto.p as any).grupo_tamanhos?.modo_preco_tamanho === 'por_peso') ? precoDeVenda(escolhaProduto.p) : 0
+            const pesoNum = parseFloat(outro.peso.replace(',', '.')) || 0
+            const addOutro = () => {
+              const label = pesoNum > 0 ? `${String(pesoNum).replace('.', ',')} kg` : 'Outro tamanho'
+              addProduto(escolhaProduto.p, { label, valor: r2(outro.valor), pers: { tamanho: { nome: label, preco: r2(outro.valor), peso_kg: pesoNum || null } } })
+              setOutro({ aberto: false, peso: '', valor: 0 })
+            }
             return (
+              <>
               <div className={`nv3-tab${comServe ? ' nv3-tab--3' : ''}`} role="table" aria-label={kit ? 'Kits' : 'Tamanhos'}>
                 <div className="nv3-tab-l nv3-tab-h" role="row"><span role="columnheader">{kit ? 'Kit' : 'Tamanho'}</span>{comServe && <span role="columnheader">Serve até</span>}<span role="columnheader">Preço</span></div>
                 {escolhaProduto.opcoes.map(o => {
@@ -1088,13 +1117,29 @@ export default function NovaVenda() {
                   const peso = o.pers?.tamanho?.peso_kg && o.pers.tamanho.peso_kg + '' !== o.label ? `${String(o.pers.tamanho.peso_kg).replace('.', ',')} kg` : ''
                   return (
                     <button type="button" role="row" key={o.label} className={`nv3-tab-l${esg ? ' esg' : ''}`} onClick={() => addProduto(escolhaProduto.p, o)}>
-                      <span role="cell"><b>{o.label}</b>{(peso || esg) && <small>{[peso, esg ? 'Esgotado' : ''].filter(Boolean).join(' · ')}</small>}</span>
+                      <span role="cell" className="nv3-tab-n"><i className="nv3-radio" aria-hidden="true" /><span><b>{o.label}</b>{(peso || esg) && <small>{[peso, esg ? 'Esgotado' : ''].filter(Boolean).join(' · ')}</small>}</span></span>
                       {comServe && <span role="cell">{serveDe(o) || '—'}</span>}
                       <span role="cell" className="nv3-tab-p">{rs(o.valor)}</span>
                     </button>
                   )
                 })}
+                {!kit && (
+                  <button type="button" role="row" className={`nv3-tab-l nv3-tab-outro${outro.aberto ? ' on' : ''}`} aria-expanded={outro.aberto} onClick={() => setOutro(o => ({ ...o, aberto: !o.aberto }))}>
+                    <span role="cell" className="nv3-tab-n"><i className="nv3-radio" aria-hidden="true" /><span><b>Outro tamanho</b><small>{precoKg ? `${rs(precoKg)} o kg` : 'Você digita o preço'}</small></span></span>
+                  </button>
+                )}
               </div>
+              {outro.aberto && (
+                <div className="nv3-outro">
+                  <div className="nv3-cols">
+                    <Campo rotulo="Peso" opcional={!precoKg} inputMode="decimal" placeholder="Ex.: 2,3" depois={<span className="nv3-kg" aria-hidden="true">kg</span>} value={outro.peso}
+                      onChange={e => { const v = e.target.value.replace(/[^\d,.]/g, ''); const n = parseFloat(v.replace(',', '.')) || 0; setOutro(o => ({ ...o, peso: v, valor: precoKg && n > 0 ? r2(precoKg * n) : o.valor })) }} />
+                    <Campo rotulo="Preço" prefixo="R$" inputMode="numeric" placeholder="0,00" value={formatMaskMoney(outro.valor)} onChange={e => setOutro(o => ({ ...o, valor: parseMaskMoney(e.target.value) }))} />
+                  </div>
+                  <Botao cheio disabled={!(outro.valor > 0)} onClick={addOutro}>{outro.valor > 0 ? `Adicionar · ${rs(outro.valor)}` : 'Escreva o preço'}</Botao>
+                </div>
+              )}
+              </>
             )
           })()}
         </>

@@ -592,6 +592,9 @@ h1, h2, h3, h4, h5, h6, .balance-text {
   --ui-rosa:            var(--primary);
   --ui-rosa-escuro:     var(--primary-dark);
   --ui-rosa-claro:      #FDF2F6;
+  /* (16/10) fundo dos ícones de lista (Mais, Configurações, telas de dentro): cinza quente; rosa forte fica pra atalho principal e ativo */
+  --ui-ic-fundo:        #F1ECEE;
+  --ui-ic-cor:          #2C1219;
   --ui-rosa-rgb:        var(--primary-rgb);
   --ui-vinho:           var(--vinho);
   --ui-vinho-escuro:    var(--vinho-escuro);

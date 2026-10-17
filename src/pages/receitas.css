@@ -7,7 +7,7 @@
 .rv-sub { margin: 14px 2px 10px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
 .rv-pad { padding: 0; }
 .rv-salvas { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin: 12px 0 0; padding: 10px 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); text-align: left; color: var(--ui-texto); }
-.rv-salvas-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.rv-salvas-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--ui-ic-fundo); color: var(--ui-ic-cor); } /* (16/10) ícone de lista: cinza quente */
 .rv-salvas b { flex: 1; font-size: 15px; font-weight: 700; }
 .rv-salvas em { font-style: normal; min-width: 28px; padding: 2px 8px; border-radius: 999px; background: var(--ui-cinza); font-size: 13px; font-weight: 700; text-align: center; }
 .rv-salvas > svg { color: var(--ui-texto-3); }

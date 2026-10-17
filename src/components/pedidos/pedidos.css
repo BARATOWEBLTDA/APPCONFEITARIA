@@ -100,7 +100,7 @@
 @media (hover: hover) { .pdm-it:hover { background: var(--ui-linha); } }
 .pdm-it:active { background: var(--ui-cinza); }
 .pdm-it:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
-.pdm-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: var(--ui-raio-p); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.pdm-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: var(--ui-raio-p); background: var(--ui-ic-fundo); color: var(--ui-ic-cor); } /* (16/10) ícone de lista: cinza quente */
 .pdm-it--excluir { margin-top: 4px; border-top: 1px solid var(--ui-linha); border-radius: 0 0 var(--ui-raio) var(--ui-raio); color: var(--ui-vermelho); font-weight: 700; }
 .pdm-it--excluir .pdm-ic { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); }
 

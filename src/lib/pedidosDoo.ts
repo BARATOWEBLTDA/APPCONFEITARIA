@@ -93,6 +93,8 @@ export type DadosPedido = {
   /** cliente digitado que ainda não existe: cadastra em Clientes antes do pedido */
   clienteNovo: boolean;
   tipoEntrega: "retirada" | "entrega";
+  /** (16/10) pronta entrega com retirada em que o cliente ainda vem buscar (já pagou pelo WhatsApp, por exemplo) */
+  vemBuscar?: boolean;
   dataEntrega: string;
   horarioEntrega: string;
   endereco: { rua: string; numero: string; bairro: string; cidade: string; complemento: string };
@@ -142,7 +144,8 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
   let status: string = d.statusPedido || "agendado";
   let statusPag = "pago";
   let valorRecebido = total;
-  if (d.tipo === "pronta_entrega" && d.tipoEntrega === "retirada") status = "entregue";
+  // pronta entrega com retirada: o cliente já levou (entregue), a não ser que ele ainda venha buscar (pronto pra retirar)
+  if (d.tipo === "pronta_entrega" && d.tipoEntrega === "retirada") status = d.vemBuscar ? (status === "entregue" || status === "aguardando_aceite" ? "aguardando_retirada" : status) : "entregue";
   if (d.situacaoPag === "fiado" || d.situacaoPag === "na_entrega") { statusPag = "pendente"; valorRecebido = 0; }
   else if (d.situacaoPag === "parcial") { statusPag = "parcial"; valorRecebido = r2(d.valorParcial); }
 
@@ -176,8 +179,8 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
     taxa_entrega: d.tipoEntrega === "entrega" ? r2(d.taxaEntrega) : 0,
     forma_pagamento: d.formaPagamento,
     tipo_entrega: d.tipoEntrega,
-    data_entrega: d.tipo === "encomenda" ? d.dataEntrega : hojeISO(),
-    horario_entrega: d.tipo === "encomenda" ? d.horarioEntrega : null,
+    data_entrega: d.tipo === "encomenda" || d.vemBuscar ? (d.dataEntrega || hojeISO()) : hojeISO(),
+    horario_entrega: d.tipo === "encomenda" || d.vemBuscar ? (d.horarioEntrega || null) : null,
     endereco_rua: d.endereco.rua,
     endereco_numero: d.endereco.numero,
     endereco_bairro: d.endereco.bairro,

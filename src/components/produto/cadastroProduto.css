@@ -50,14 +50,14 @@ body .prod-modal--novo .prod-cat-nova-hint { font-size: 13.5px; }
 /* ── opções (massa, recheio, cobertura, tamanhos…) ── */
 body .prod-modal--novo .prod-mchk-item { min-height: 64px; border-radius: var(--ui-raio); border-width: 1.5px; }
 body .prod-modal--novo .prod-mchk-item--on { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); }
-body .prod-modal--novo .prod-mchk-ico { width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+body .prod-modal--novo .prod-mchk-ico { width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-ic-fundo); color: var(--ui-ic-cor); } /* (16/10) ícone de lista: cinza quente */
 body .prod-modal--novo .prod-mchk-item--on .prod-mchk-ico { background: var(--ui-branco); }
 body .prod-modal--novo .prod-mchk-check-visual { width: 24px; height: 24px; border-radius: 7px; }
 body .prod-modal--novo .prod-mchk-item-title { font-size: 15px; font-weight: 700; }
 body .prod-modal--novo .prod-mchk-item-sub { font-size: 13px; color: var(--ui-texto-2); }
 body .prod-modal--novo .bo-card { border-radius: var(--ui-raio); }
 body .prod-modal--novo .bo-h-main { min-height: 64px; }
-body .prod-modal--novo .bo-ic { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 0; }
+body .prod-modal--novo .bo-ic { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-ic-fundo); color: var(--ui-ic-cor); font-size: 0; } /* (16/10) ícone de lista: cinza quente */
 body .prod-modal--novo .bo-ck { position: relative; width: 24px; height: 24px; border-radius: 7px; display: flex; align-items: center; justify-content: center; }
 body .prod-modal--novo .bo-ck::after { content: ""; position: absolute; inset: -10px; }
 body .prod-modal--novo .bo-editar { min-height: 44px; }
@@ -135,7 +135,7 @@ body .prod-modal--novo .prod-preco-input--promo:not(:focus-within) input::placeh
 body .prod-modal--novo .prod-preco-input input::placeholder { color: var(--ui-texto-3); }
 
 /* (13/10) ícones dos cartões de opção iguais aos do bolo */
-body .prod-modal--novo .pv3-card-ico { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+body .prod-modal--novo .pv3-card-ico { background: var(--ui-ic-fundo); color: var(--ui-ic-cor); } /* (16/10) ícone de lista: cinza quente */
 /* (13/10) "Monte seu kit": a janela do cadastro é estreita, então fica uma coluna só (as 2 colunas espremiam tudo no computador) */
 :is(body .prod-modal--novo, body .esc-jan) .kq-grid2 { grid-template-columns: minmax(0, 1fr); }
 :is(body .prod-modal--novo, body .esc-jan) .kq-prev { position: static; }

@@ -3,7 +3,7 @@
 .aj .cl9-card { display: flex; flex-direction: column; gap: 16px; padding: 16px; }
 .aj .cl9-card + .cl9-card, .aj .aj-seg + .cl9-card, .aj .cl9-card + .aj-hist { margin-top: 12px; }
 .aj-intro { display: flex; align-items: flex-start; gap: 12px; }
-.aj-intro-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.aj-intro-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: var(--ui-ic-fundo); color: var(--ui-ic-cor); } /* (16/10) ícone de lista: cinza quente */
 .aj-intro b { display: block; font-size: 16px; font-weight: 700; }
 .aj-intro p { margin: 2px 0 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
 .aj-rot { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }

@@ -154,7 +154,7 @@
 .tpd-mi { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; margin: 0; padding: 8px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto); font-family: var(--font-base); font-size: 15px; font-weight: 500; text-align: left; cursor: pointer; }
 @media (hover: hover) { .tpd-mi:hover { background: var(--ui-linha); } }
 .tpd-mi:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
-.tpd-mi-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: var(--ui-raio-p); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.tpd-mi-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: var(--ui-raio-p); background: var(--ui-ic-fundo); color: var(--ui-ic-cor); } /* (16/10) ícone de lista: cinza quente */
 .tpd-mi-ic svg { width: 20px; height: 20px; }
 .tpd-mi.perigo { color: var(--ui-vermelho); font-weight: 700; }
 .tpd-mi.perigo .tpd-mi-ic { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); }

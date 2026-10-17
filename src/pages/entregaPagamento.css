@@ -8,7 +8,7 @@
 .ep-card { display: flex; flex-direction: column; gap: 16px; min-width: 0; padding: 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
 @media (min-width: 900px) { .ep-card { padding: 20px; } }
 .ep-cab { display: flex; align-items: flex-start; gap: 12px; }
-.ep-cab-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.ep-cab-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-ic-fundo); color: var(--ui-ic-cor); } /* (16/10) ícone de lista: cinza quente */
 .ep-cab .ui-tit { flex: 1; min-width: 0; padding-top: 2px; }
 .ep-g { display: none; }
 @media (min-width: 768px) { .ep-g { display: inline; } .ep-c { display: none; } }
@@ -37,7 +37,7 @@
 .ep-cupom { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin: 0; padding: 10px 12px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; }
 @media (hover: hover) { .ep-cupom:hover { background: var(--ui-linha); } }
 .ep-cupom.off { opacity: .7; }
-.ep-cupom-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.ep-cupom-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-ic-fundo); color: var(--ui-ic-cor); } /* (16/10) ícone de lista: cinza quente */
 .ep-cupom.off .ep-cupom-ic { background: var(--ui-cinza); color: var(--ui-texto-3); }
 .ep-cupom-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .ep-cupom-tx b { font-size: 15px; font-weight: 700; letter-spacing: .02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

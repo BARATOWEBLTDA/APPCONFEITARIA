@@ -19,7 +19,7 @@
 .esc-linha + .esc-linha, .esc-card + .esc-linha, .esc-linha + .esc-card { border-top: 1px solid var(--ui-linha); }
 .esc-linha--nada { cursor: default; }
 @media (hover: hover) { button.esc-linha:hover { background: #FCFAFB; } }
-.esc-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.esc-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; background: var(--ui-ic-fundo); color: var(--ui-ic-cor); } /* (16/10) ícone de lista: cinza quente */
 .esc-ic--ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
 .esc-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .esc-tx b { font-size: 15px; font-weight: 600; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -342,7 +342,7 @@ body .prod-modal--novo .prod-section-label.red-t { margin-top: 24px !important; 
 .red-it + .red-it { border-top: 1px solid var(--ui-linha); }
 .red-bt { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin: 0; padding: 10px 12px 10px 14px; border: 0; background: none; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
 @media (hover: hover) { .red-bt:hover { background: #FCFAFB; } }
-.red-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 10px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.red-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 10px; background: var(--ui-ic-fundo); color: var(--ui-ic-cor); } /* (16/10) ícone de lista: cinza quente */
 .red-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .red-tx b { font-size: 15px; font-weight: 600; }
 .red-tx small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -386,7 +386,7 @@ body .prod-modal--novo .prod-section-label.red-t { margin-top: 24px !important; 
 .esc-tab-add input:focus { outline: none; border-color: var(--ui-rosa); }
 .esc-tab-add .esc-nova-bt { flex: none; height: 44px; min-height: 44px; }
 .esc-av-linha { border: 1.5px solid #E4D7DD; background: #FCFAFB; }
-.esc-av-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 10px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.esc-av-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 10px; background: var(--ui-ic-fundo); color: var(--ui-ic-cor); } /* (16/10) ícone de lista: cinza quente */
 /* (14/10) aviso das opções (valor a mais / preço por sabor) */
 .esc-aviso { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 12px; padding: 12px; border: 1px solid #E6DCE1; border-radius: 8px; background: #F3EEF0; }
 .esc-aviso-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; margin-top: 1px; border-radius: 50%; background: var(--ui-texto-2); color: #fff; font-size: 13px; font-weight: 700; font-style: normal; }

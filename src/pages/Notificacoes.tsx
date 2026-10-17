@@ -166,7 +166,7 @@ export default function Notificacoes() {
         .ntf-item--link { cursor: pointer; }
         @media (hover: hover) { .ntf-item--link:hover { border-color: #EBB8CD; } }
         .ntf-item--link:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .4); outline-offset: 2px; }
-        .ntf-img { flex: none; width: 40px; height: 40px; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--primary-light, #FCE0E9); color: var(--ui-rosa-escuro); }
+        .ntf-img { flex: none; width: 40px; height: 40px; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--ui-ic-fundo); color: var(--ui-ic-cor); }
         .ntf-img img { width: 100%; height: 100%; object-fit: cover; }
         .ntf-img--plano { background: #F6E9EE; color: var(--ui-vinho, #6B2340); }
         .ntf-img--conquista { background: #FFF4D6; color: #A86B00; }

@@ -23,7 +23,7 @@
 .ct-row-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .ct-row-tx b { font-size: 15px; font-weight: 700; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ct-row-tx small { font-size: 13px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
-.ct-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); overflow: hidden; }
+.ct-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: var(--ui-raio); background: var(--ui-ic-fundo); color: var(--ui-ic-cor); overflow: hidden; } /* (16/10) ícone de lista: cinza quente */
 .ct-ic img { width: 38px; height: 38px; object-fit: contain; }
 .ct-ic.g { width: 72px; height: 72px; border-radius: var(--ui-raio-cartao); }
 .ct-ic.g img { width: 56px; height: 56px; }

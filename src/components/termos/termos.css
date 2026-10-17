@@ -41,7 +41,7 @@
 .ca-lista { list-style: none; margin: 0; padding: 10px 20px 0; }
 .ca-lista li { display: flex; align-items: center; gap: 12px; min-height: 56px; font-size: 15px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; }
 .ca-lista li + li { border-top: 1px solid var(--ui-linha, #F3EEF0); }
-.ca-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: #FCE0E9; color: var(--ui-rosa); }
+.ca-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--ui-ic-fundo); color: var(--ui-ic-cor); } /* (16/10) ícone de lista: cinza quente */
 .ca-v { margin-left: auto; flex: none; color: var(--ui-verde); }
 .ca-lista li.ca-mais { min-height: 48px; font-weight: 700; color: var(--ui-rosa-escuro); }
 .ca-lista li.ca-mais .ca-ic { background: var(--ui-rosa); color: #fff; }
