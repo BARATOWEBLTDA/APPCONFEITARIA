@@ -1810,10 +1810,6 @@ export default function Produtos() {
                     (15/10) "Fora do cardápio" entra na mesma pilha: no cartão estreito batia na "Encomenda" */}
                 <div className="prod-card-tags prod-card-tags--dir">
                   {!p.disponivel && <div className="prod-card-indisponivel">Fora do cardápio</div>}
-                  {p.promocao && <div className="prod-card-promo">Promoção</div>}
-                  {/* Mesma regra do cardápio: só é encomenda quando tem antecedência marcada
-                      (antes aparecia "Encomenda" em produto sem nada marcado) */}
-                  {!!(p as any).antecedencia && <div className="prod-card-encomenda">Encomenda</div>}
                 </div>
                 <div className="prod-card-tags prod-card-tags--esq">
                   {catInvalida && <div className="prod-card-semcat">Sem categoria</div>}
@@ -1827,15 +1823,19 @@ export default function Produtos() {
               <div className="prod-card-info">
                 <p className="prod-card-cat">{catInvalida ? "Sem categoria" : p.categoria}</p>
                 <p className="prod-card-nome">{p.nome}</p>
+                {/* (17/10) Fichinha: preço cheio, promoção e tipo em linhas (as etiquetas da foto saíram) */}
                 {(() => {
                   const pl = precoDaLista(p);
-                  return pl.de > 0 ? (
-                    <p className="prod-card-preco prod-card-preco--promo">
-                      <span className="prod-card-de">R$&nbsp;{formatPreco(pl.de)}</span>
-                      <span className="prod-card-por">{pl.aPartir && <small>a partir de </small>}R$&nbsp;{formatPreco(pl.final)}{pl.unidade && <> <small>{pl.unidade}</small></>}</span>
-                    </p>
-                  ) : (
-                    <p className="prod-card-preco"><span className="prod-card-por">{pl.aPartir && <small>a partir de </small>}R$&nbsp;{formatPreco(pl.final)}{pl.unidade && <> <small>{pl.unidade}</small></>}</span></p>
+                  // unidade vira o rótulo ("O kg", "O cento"…), pra o valor caber numa linha; "a unidade" fica só "Preço"
+                  const rotulo = pl.aPartir ? "A partir de" : !pl.unidade || pl.unidade === "a unidade" ? "Preço" : pl.unidade.replace(/^por /, "o ").replace(/^./, l => l.toUpperCase());
+                  const cheio = pl.de > 0 ? pl.de : pl.final;
+                  return (
+                    <dl className="pl-ficha">
+                      <div><dt>{rotulo}</dt><dd>R$&nbsp;{formatPreco(cheio)}</dd></div>
+                      {pl.de > 0 && <div><dt>Promoção</dt><dd className="pl-ficha-promo">R$&nbsp;{formatPreco(pl.final)}</dd></div>}
+                      {/* Mesma regra do cardápio: só é encomenda quando tem antecedência marcada */}
+                      <div><dt>Tipo</dt><dd>{(p as any).antecedencia ? "Encomenda" : "Pronta entrega"}</dd></div>
+                    </dl>
                   );
                 })()}
                 <div className="prod-card-bottom">
@@ -1843,7 +1843,10 @@ export default function Produtos() {
                   const { lucro, margem, temFicha } = calcularLucro(p);
                   if (!temFicha) {
                     return (
-                      <span className="pl-sem-ficha"><ListChecks size={16} weight="bold" aria-hidden="true" />Sem ficha técnica</span>
+                      <button type="button" className="pl-sem-ficha"
+                        onClick={e => { e.stopPropagation(); navigate("/ficha-tecnica", { state: { produtoId: p.id } }); }}>
+                        <ListChecks size={16} weight="bold" aria-hidden="true" />Criar ficha<span className="pl-sem-ficha-x">técnica</span>
+                      </button>
                     );
                   }
                   const tier = margem >= 50 ? "alto" : margem >= 25 ? "medio" : "baixo";
