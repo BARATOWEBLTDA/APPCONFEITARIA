@@ -54,7 +54,7 @@
 .cm1-sl-cid span { overflow: hidden; text-overflow: ellipsis; }
 
 /* (17/10) formas de entrega em quadradinhos com o nome embaixo */
-.cm1-modos { display: flex; gap: 8px; margin: 16px 0 0; padding: 0; list-style: none; }
+.cm1-modos { display: flex; justify-content: center; gap: 8px; margin: 16px 0 0; padding: 0; list-style: none; }
 .cm1-modos li { flex: 0 1 76px; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .cm1-modo-ic { display: flex; align-items: center; justify-content: center; width: 62px; height: 62px; border: 1px solid var(--ui-borda-campo); border-radius: 18px; background: var(--ui-branco); box-shadow: 0 2px 6px rgba(44, 18, 25, .05); }
 .cm1-modos small { max-width: 100%; font-size: 12.5px; font-weight: 600; line-height: 1.2; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
