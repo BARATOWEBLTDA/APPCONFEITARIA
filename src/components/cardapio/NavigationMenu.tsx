@@ -468,6 +468,9 @@ function CartContent({
       const msg = String((err as { message?: unknown } | null)?.message ?? '')
       if (/loja_pausada/.test(msg)) return avisar('A loja pausou os pedidos agora há pouco. Chame no WhatsApp pra combinar.', { tipo: 'erro' })
       if (/cupom_esgotado/.test(msg)) return avisar('Este cupom acabou de esgotar. Tire o cupom e envie de novo.', { tipo: 'erro' })
+      // (17/10) o servidor confere a data e a forma de entrega
+      if (/data_invalida/.test(msg)) return avisar('A data escolhida já passou. Escolha outra data e envie de novo.', { tipo: 'erro' })
+      if (/entrega_invalida/.test(msg)) return avisar('A forma de entrega mudou na loja. Escolha de novo como receber e envie.', { tipo: 'erro' })
       if (/item_invalido/.test(msg)) return avisar('Um produto da sacola mudou ou saiu do cardápio. Confira a sacola e envie de novo.', { tipo: 'erro' })
       avisar(explicarErro(err, 'Não deu pra enviar o pedido. Tente de novo.'), { tipo: 'erro' })
     }
@@ -515,7 +518,7 @@ function CartContent({
       // (4.22) O banco cria o pedido e os itens de uma vez (função cardapio_criar_pedido): confere a loja e os produtos,
       // refaz a soma, o cupom e o total, e não duplica numa nova tentativa. Sem a função no banco, grava como antes.
       const viaBanco = await supabase.rpc('cardapio_criar_pedido', {
-        p_loja: confeteiraUserId, p_pedido: { id: novoPedidoId, ...dadosPedido }, p_itens: itensDoPedido,
+        p_loja: confeteiraUserId, p_pedido: { id: novoPedidoId, ...dadosPedido, forma_entrega: formaEntrega, bairro_taxa: bairroSelecionado || null }, p_itens: itensDoPedido,
       })
       const semFuncao = !!viaBanco.error && (viaBanco.error.code === 'PGRST202' || viaBanco.error.code === '42883' || /could not find the function/i.test(String(viaBanco.error.message || '')))
       if (viaBanco.error && !semFuncao) return falhou(viaBanco.error)
