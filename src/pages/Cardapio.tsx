@@ -5,7 +5,7 @@ import PrimeirosPassos from "@/components/PrimeirosPassos";
 import VisaoGeralDesktop from "@/components/cardapio/VisaoGeralDesktop";
 import { useNavigate } from "react-router-dom";
 import {
-  ChartBar, Eye, Storefront, Sliders, PaintBrush, Tag,
+  ChartBar, Eye, Cake, Sliders, PaintBrush, Tag,
   Share, Percent, ForkKnife, Copy, CheckCircle, Warning, Lightbulb,
   TrendUp, TrendDown, ShoppingBag, Users as UsersIcon, CurrencyDollar,
   CaretRight, SquaresFour, Stack, Crown, Package, WarningCircle,
@@ -375,14 +375,11 @@ export default function Cardapio() {
         <div className="cd-quick-list">
           <button className="cd-quick-item" onClick={() => navigate("/produtos")}>
             <span className="cd-quick-ico cd-quick-ico--pink">
-              <Storefront size={20} weight="bold" />
+              <Cake size={20} weight="bold" />
             </span>
             <div className="cd-quick-info">
               <div className="cd-quick-name">Produtos</div>
-              <div className="cd-quick-desc">
-                {erroContadores ? "Ver seus produtos" : contadores.produtos === 0 ? "Nenhum produto ainda"
-                  : `${contadores.produtosAtivos} no cardápio${contadores.produtos !== contadores.produtosAtivos ? ` · ${contadores.produtos} cadastrado${contadores.produtos === 1 ? "" : "s"}` : ""}`}
-              </div>
+              <div className="cd-quick-desc cd-quick-desc--2l">Cadastre e gerencie seus produtos</div>
             </div>
             <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
           </button>
@@ -1153,6 +1150,8 @@ export default function Cardapio() {
         .cardapio-hub .cd-quick-ico { width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-rosa) !important; color: var(--ui-branco) !important; } /* (16/10) rosa forte com ícone branco */
         .cardapio-hub .cd-quick-name { font-size: 15px; font-weight: 700; color: var(--ui-texto); }
         .cardapio-hub .cd-quick-desc { font-size: 13px; color: var(--ui-texto-2); margin-top: 2px; }
+        /* (17/10) texto fixo: em tela estreita quebra em 2 linhas equilibradas, sem cortar */
+        .cardapio-hub .cd-quick-desc--2l { -webkit-line-clamp: 2; text-wrap: balance; }
         .cardapio-hub .cd-quick-arrow { color: var(--ui-texto-3); }
         /* (16/10) PRO: uma faixa fina no fim, não um cartão grande */
         .cd-pro { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); color: var(--ui-texto); font-family: var(--font-base); text-align: left; cursor: pointer; }
