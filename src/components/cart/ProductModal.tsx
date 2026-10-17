@@ -30,6 +30,7 @@ interface ExtraBiblioteca {
   id: string
   nome: string
   valor: number
+  descricao?: string | null
   categorias: string[] // IDs dos produtos vinculados (vazio = todos)
 }
 
@@ -210,7 +211,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
       const r = await supabase.rpc('cardapio_extras', { p_loja: uid })
       if (!r.error && Array.isArray(r.data)) data = r.data
       else {
-        const d = await supabase.from('biblioteca_extras').select('id, nome, valor, categorias').eq('user_id', uid)
+        const d = await supabase.from('biblioteca_extras').select('id, nome, valor, descricao, categorias').eq('user_id', uid)
         data = (d.data as any[]) || null
       }
       return { data }
@@ -635,7 +636,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
             const gratis = !e.valor || Number(e.valor) === 0
             return (
               <button key={e.id} type="button" className="pm-op" role="checkbox" aria-checked={on} onClick={() => toggleExtra(e.id)}>
-                <span className="pm-op-tx"><b>{e.nome}</b></span>
+                <span className="pm-op-tx"><b>{e.nome}</b>{e.descricao && <small>{e.descricao}</small>}</span>
                 {/* (11/10) com promoção, o adicional também entra com desconto no total: mostra o que é cobrado */}
                 <span className={`pm-op-p${gratis ? ' gratis' : ''}`}>{gratis ? 'Grátis' : `+ ${formatCurrency(comDesconto(Number(e.valor), descPct))}`}</span>
                 <span className="pm-ctl cx" style={on ? { borderColor: corBotao, background: corBotao } : undefined} aria-hidden="true">{on && <Check size={14} weight="bold" color="#fff" />}</span>
