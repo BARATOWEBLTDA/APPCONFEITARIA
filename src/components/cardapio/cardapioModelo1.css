@@ -29,19 +29,7 @@
 .cm1-nome .selo-verif { margin-left: 6px; }
 .cm1-descricao { margin: 6px 0 0; font-size: 15px; line-height: 1.45; color: var(--ui-texto-2); }
 
-/* etiquetas: um cartão dividido em partes iguais */
-.cm1-info { display: grid; margin-top: 14px; background: var(--ui-branco); border: 1px solid var(--ui-borda-campo); border-radius: var(--ui-raio-cartao); overflow: hidden; }
-.cm1-info span { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 0; min-height: 68px; padding: 8px 12px; text-align: center; }
-.cm1-info span + span { border-left: 1px solid #F3EEF0; }
-.cm1-info small { font-size: 13px; font-weight: 700; line-height: 1.25; color: var(--ui-texto); white-space: nowrap; }
-@media (max-width: 360px) { .cm1-info span { padding: 8px 8px; } .cm1-info small { font-size: 12.5px; } }
-@media (max-width: 330px) { .cm1-info span { padding: 8px 6px; } .cm1-info small { font-size: 12px; } }
 
-/* endereço numa linha + Ver no mapa */
-.cm1-endereco { display: flex; align-items: center; gap: 6px; min-height: 44px; margin: 8px 0 0; font-size: 14px; line-height: 1.4; color: var(--ui-texto-2); }
-.cm1-endereco svg { flex: none; }
-.cm1-endereco span { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cm1-endereco button { flex: none; margin: 0; padding: 12px 0 12px 4px; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; }
 
 /* janela do endereço (mapa + Waze + Google Maps) */
 .cm1-mapa-veu { position: fixed; inset: 0; z-index: 999; display: flex; align-items: flex-end; justify-content: center; background: rgba(44,18,25,.5); }
@@ -55,6 +43,19 @@
 .cm1-mapa-bts .waze { background: #33CCFF; color: var(--ui-branco); }
 .cm1-mapa-bts .gmaps { background: #ECF3FF; color: #1A73E8; }
 .cm1-mapa-fechar { width: 100%; min-height: 48px; margin: 0; border: 0; border-radius: var(--ui-raio); background: #F3EEF0; color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
-/* (4.25) Sobre a loja */
-.cm1-sobre { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin: 2px 0 0; padding: 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
-.cm1-sobre svg { flex: none; }
+
+/* (17/10) "Sobre a loja · cidade" numa linha embaixo do nome (no lugar do endereço + Sobre a loja) */
+.cm1-sl { display: flex; align-items: center; gap: 6px; min-width: 0; margin-top: 2px; padding-right: 118px; font-size: 14px; white-space: nowrap; }
+.cm1-sl button { display: inline-flex; align-items: center; gap: 3px; min-width: 0; min-height: 36px; margin: 0; padding: 0; border: 0; background: none; font-family: inherit; font-size: 14px; cursor: pointer; }
+.cm1-sl-sobre { flex: none; font-weight: 700; }
+.cm1-sl-dot { flex: none; color: var(--ui-texto-3); }
+.cm1-sl-cid { color: var(--ui-texto-2); }
+.cm1-sl-cid svg { flex: none; }
+.cm1-sl-cid span { overflow: hidden; text-overflow: ellipsis; }
+
+/* (17/10) formas de entrega em quadradinhos com o nome embaixo */
+.cm1-modos { display: flex; gap: 8px; margin: 16px 0 0; padding: 0; list-style: none; }
+.cm1-modos li { flex: 0 1 76px; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.cm1-modo-ic { display: flex; align-items: center; justify-content: center; width: 62px; height: 62px; border: 1px solid var(--ui-borda-campo); border-radius: 18px; background: var(--ui-branco); box-shadow: 0 2px 6px rgba(44, 18, 25, .05); }
+.cm1-modos small { max-width: 100%; font-size: 12.5px; font-weight: 600; line-height: 1.2; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 340px) { .cm1-modo-ic { width: 56px; height: 56px; border-radius: 16px; } .cm1-modos small { font-size: 12px; } }

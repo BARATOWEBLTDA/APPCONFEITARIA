@@ -64,3 +64,17 @@
 .ic-ent--esg { color: #B45309; font-weight: 600; }
 .ic-off { display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px 1px 3px; border-radius: 6px; }
 .ic-off-pct { display: inline-grid; place-items: center; width: 15px; height: 15px; border-radius: 50%; background: var(--ui-branco); font-size: 9px; font-weight: 800; font-style: normal; line-height: 1; }
+
+/* (17/10) produtos em cartão branco: Promoções (2 por linha) e lista (foto à direita) */
+.ic-cp { gap: 0; overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda-campo); border-radius: 16px; }
+.ic-cp-ft { margin-bottom: 0; border-radius: 0; aspect-ratio: 1.12; }
+.ic-cp > :not(.ic-cp-ft) { margin-left: 10px; margin-right: 10px; }
+.ic-cp-nome { margin-top: 8px; }
+.ic-cp-desc { margin-top: 2px; }
+.ic-cp > :last-child { margin-bottom: 10px; }
+.ic-cp .ic-pp { margin-top: 6px; }
+.ic-grade { gap: 10px; }
+.ic-lista { gap: 10px; }
+.ic-ln { padding: 12px; border: 1px solid var(--ui-borda-campo); border-radius: 16px; background: var(--ui-branco); }
+.ic-ln-ft { width: 96px; height: 96px; border-radius: 12px; }
+.ic-sec--pc .ic-lista { row-gap: 12px; column-gap: 16px; }

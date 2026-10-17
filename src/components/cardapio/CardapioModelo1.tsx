@@ -1,7 +1,7 @@
 import { SeloVerificado } from './SeloVerificado'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { MapPin, Lightning, CalendarBlank, Truck, Info, CaretRight } from '@phosphor-icons/react'
+import { MapPin, Lightning, CalendarBlank, Truck, Storefront } from '@phosphor-icons/react'
 import { DesignSettings, Configuracoes } from '@/types/database'
 import { seloEntrega } from '@/lib/entregaProduto'
 import { situacaoDaLoja, horaTexto } from '@/lib/agendaCardapio'
@@ -39,7 +39,7 @@ export function getStatusLoja(horarioJson: any): Status | null {
 }
 
 /** Endereço do jeito que a loja escolheu em Dados da loja (Completo · Só a cidade · Não mostrar) */
-export function getEnderecoData(config: Configuracoes | null): { linha: string; completo: string } | null {
+export function getEnderecoData(config: Configuracoes | null): { linha: string; completo: string; cidade: string } | null {
   if (!config?.endereco) return null
   const c: any = config
   const modo = c.mostrar_localizacao ? 'completo' : c.mostrar_apenas_cidade ? 'cidade' : 'nada'
@@ -47,26 +47,30 @@ export function getEnderecoData(config: Configuracoes | null): { linha: string; 
   try {
     const e = typeof config.endereco === 'string' ? JSON.parse(config.endereco) : config.endereco
     const cidadeUf = [e.cidade, e.estado].filter(Boolean).join(' - ')
-    if (modo === 'cidade') return cidadeUf ? { linha: cidadeUf, completo: cidadeUf } : null
+    const cidade = String(e.cidade || '').trim() || cidadeUf
+    if (modo === 'cidade') return cidadeUf ? { linha: cidadeUf, completo: cidadeUf, cidade } : null
     const rua = e.rua ? e.rua + (e.numero ? `, ${e.numero}` : '') + (e.complemento ? `, ${e.complemento}` : '') : '' // 13/10: + complemento
     const linha = [rua, e.bairro].filter(Boolean).join(' · ') || cidadeUf
     const completo = [rua, e.bairro, cidadeUf, e.cep].filter(Boolean).join(', ')
-    return linha ? { linha, completo } : null
+    return linha ? { linha, completo, cidade: cidade || linha } : null
   } catch { return null }
 }
 
-/** Etiquetas que o cliente vê: só o que a loja faz de verdade */
+/** Etiquetas que o cliente vê: só o que a loja faz de verdade.
+ *  (17/10) quadradinhos com nome curto (cabem 4 numa linha no celular de 360px): Entrega, Retirada, Encomenda, Pronta */
 export function etiquetasDaLoja(config: Configuracoes | null, produtos: any[] = []) {
   const formas: string[] = (config as any)?.formas_entrega || []
   const entrega = formas.some(f => f === 'entrega_propria' || f === 'motoboy' || f === 'uber_flash')
+  const retirada = formas.includes('retirada')
   const selos = produtos.map(p => seloEntrega(p))
   const pronta = selos.some(s => s?.tipo === 'pronta')
   const encomenda = selos.some(s => s?.tipo === 'encomenda')
   return [
-    entrega && { Ic: Truck, t: 'Entrega' },
-    pronta && { Ic: Lightning, t: 'Pronta entrega' },
-    encomenda && { Ic: CalendarBlank, t: 'Sob encomenda' },
-  ].filter(Boolean) as { Ic: typeof Truck; t: string }[]
+    entrega && { Ic: Truck, t: 'Entrega', d: 'Entrega' },
+    retirada && { Ic: Storefront, t: 'Retirada', d: 'Retirada no local' },
+    encomenda && { Ic: CalendarBlank, t: 'Encomenda', d: 'Sob encomenda' },
+    pronta && { Ic: Lightning, t: 'Pronta', d: 'Pronta entrega' },
+  ].filter(Boolean) as { Ic: typeof Truck; t: string; d: string }[]
 }
 
 export function CardapioModelo1({ design, config, verificada = false, produtos = [], aoAbrirSobre }: CardapioModeloProps & { aoAbrirSobre?: () => void }) {
@@ -116,27 +120,28 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
         <h1 className="cm1-nome" style={{ color: corNome }}>
           {design.nome_loja || 'Minha Confeitaria'}{verificada && <SeloVerificado tamanho={22} />}
         </h1>
-        {design.descricao_loja && <p className="cm1-descricao">{design.descricao_loja}</p>}
-
-        {etiquetas.length > 0 && (
-          <div className="cm1-info" style={{ gridTemplateColumns: `repeat(${etiquetas.length}, minmax(0, 1fr))` }}>
-            {etiquetas.map(({ Ic, t }) => <span key={t}><Ic size={22} weight="duotone" color={corIcone} /><small>{t}</small></span>)}
+        {/* (17/10) "Sobre a loja · cidade" numa linha só, embaixo do nome (antes: linha do endereço + linha do Sobre a loja).
+            Sobre a loja abre horário, pagamento e endereço completo; a cidade abre o mapa. */}
+        {(aoAbrirSobre || endereco) && (
+          <div className="cm1-sl">
+            {aoAbrirSobre && <button type="button" className="cm1-sl-sobre" onClick={aoAbrirSobre} style={{ color: corIcone }}>Sobre a loja</button>}
+            {aoAbrirSobre && endereco && <span className="cm1-sl-dot" aria-hidden="true">·</span>}
+            {endereco && (
+              <button type="button" className="cm1-sl-cid" onClick={() => setModalEndereco(true)} aria-label={`Ver no mapa: ${endereco.completo}`}>
+                <MapPin size={16} weight="bold" color={corIcone} aria-hidden="true" /><span>{endereco.cidade}</span>
+              </button>
+            )}
           </div>
         )}
+        {design.descricao_loja && <p className="cm1-descricao">{design.descricao_loja}</p>}
 
-        {endereco && (
-          <p className="cm1-endereco">
-            <MapPin size={18} weight="bold" aria-hidden="true" />
-            <span>{endereco.linha}</span>
-            <button type="button" onClick={() => setModalEndereco(true)} style={{ color: corIcone }}>Ver no mapa</button>
-          </p>
-        )}
-
-        {/* (4.25) Sobre a loja: horário da semana, pagamento, redes sociais */}
-        {aoAbrirSobre && (
-          <button type="button" className="cm1-sobre" onClick={aoAbrirSobre} style={{ color: corIcone }}>
-            <Info size={18} aria-hidden="true" />Sobre a loja · horário e pagamento<CaretRight size={14} aria-hidden="true" />
-          </button>
+        {/* (17/10) formas de entrega em quadradinhos (só informam; a escolha é no checkout) */}
+        {etiquetas.length > 0 && (
+          <ul className="cm1-modos" aria-label="Como a loja atende">
+            {etiquetas.map(({ Ic, t, d }) => (
+              <li key={t} title={d}><span className="cm1-modo-ic"><Ic size={26} weight="duotone" color={corIcone} aria-hidden="true" /></span><small>{t}</small></li>
+            ))}
+          </ul>
         )}
       </div>
 
