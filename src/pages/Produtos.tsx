@@ -1127,6 +1127,20 @@ export default function Produtos() {
     });
   };
 
+  // (17/10) Liga/desliga do cartão: um toque tira ou põe no cardápio, sem abrir o produto
+  const alternarNoCardapio = async (p: Produto) => {
+    if (!p.id) return;
+    const novo = p.disponivel === false;
+    setProdutos(l => l.map(x => (x.id === p.id ? { ...x, disponivel: novo } : x)));
+    const { error } = await supabase.from("produtos").update({ disponivel: novo }).eq("id", p.id);
+    if (error) {
+      setProdutos(l => l.map(x => (x.id === p.id ? { ...x, disponivel: !novo } : x)));
+      showToast("error", "Não deu certo", explicarErro(error));
+      return;
+    }
+    showToast("success", novo ? "Produto no cardápio" : "Produto fora do cardápio", novo ? "Os clientes já veem e podem pedir." : "Fica guardado só pra você.");
+  };
+
   // ═══ AÇÕES EM MASSA (bulk) ═══
   const handleBulkPublicar = async (publicar: boolean) => {
     if (selecionados.length === 0) return;
@@ -1771,7 +1785,7 @@ export default function Produtos() {
             return (
             <div
               key={p.id}
-              className={`prod-card ${p.id && isSelected(p.id) ? "prod-card--selected" : ""}`}
+              className={`prod-card${p.id && isSelected(p.id) ? " prod-card--selected" : ""}${p.disponivel === false ? " desativado" : ""}`}
               style={{ cursor: "pointer", position: "relative" }}
               onClick={() => {
                 // Se tem produtos selecionados, o clique adiciona/remove; senão, abre preview
@@ -1809,7 +1823,6 @@ export default function Produtos() {
                 {/* Etiquetas empilhadas (antes ficavam uma em cima da outra no mesmo canto).
                     (15/10) "Fora do cardápio" entra na mesma pilha: no cartão estreito batia na "Encomenda" */}
                 <div className="prod-card-tags prod-card-tags--dir">
-                  {!p.disponivel && <div className="prod-card-indisponivel">Fora do cardápio</div>}
                 </div>
                 <div className="prod-card-tags prod-card-tags--esq">
                   {catInvalida && <div className="prod-card-semcat">Sem categoria</div>}
@@ -1821,7 +1834,6 @@ export default function Produtos() {
                 </div>
               </div>
               <div className="prod-card-info">
-                <p className="prod-card-cat">{catInvalida ? "Sem categoria" : p.categoria}</p>
                 <p className="prod-card-nome">{p.nome}</p>
                 {/* (17/10) Fichinha: preço cheio, promoção e tipo em linhas (as etiquetas da foto saíram) */}
                 {(() => {
@@ -1835,6 +1847,10 @@ export default function Produtos() {
                       {pl.de > 0 && <div><dt>Promoção</dt><dd className="pl-ficha-promo">R$&nbsp;{formatPreco(pl.final)}</dd></div>}
                       {/* Mesma regra do cardápio: só é encomenda quando tem antecedência marcada */}
                       <div><dt>Tipo</dt><dd>{(p as any).antecedencia ? "Encomenda" : "Pronta entrega"}</dd></div>
+                      <div className="pl-ficha-on"><dt>Cardápio</dt><dd>
+                        <button type="button" role="switch" aria-checked={p.disponivel !== false} aria-label={`Mostrar ${p.nome} no cardápio`}
+                          className="pl-chave" onClick={e => { e.stopPropagation(); void alternarNoCardapio(p); }}><span /></button>
+                      </dd></div>
                     </dl>
                   );
                 })()}
