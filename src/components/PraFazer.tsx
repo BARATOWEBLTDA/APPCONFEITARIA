@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Buildings, CalendarCheck, CaretRight, ClipboardText, Coins, CreditCard, ImageSquare, TextAlignLeft, Truck, X } from "@phosphor-icons/react";
+import { Bell, Buildings, CalendarCheck, CaretRight, ClipboardText, Coins, CreditCard, ImageSquare, TextAlignLeft, Truck, X } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { useLojaPronta } from "@/lib/primeirosPassos";
 import { useAoVoltar } from "@/hooks/useAoVoltar";
 import { lerAvisosCadastro, notificarAvisosCadastro, type AvisoCadastro } from "@/lib/avisosCadastro";
 import { useAtualizacoes } from "@/components/MinhasAtualizacoes";
+import { usePushSubscription } from "@/hooks/usePushSubscription";
+import { avisar } from "@/components/base";
 
 /**
  * (15/10) "Pra fazer": um cartão só no Início, no lugar do "Complete seu app" e do "Suas atualizações".
@@ -18,7 +20,7 @@ import { useAtualizacoes } from "@/components/MinhasAtualizacoes";
  * (18/10) Lista compacta (estava com texto demais): ícone, título e uma linha curta; a linha toda abre;
  * o "Agora não" virou um × pequeno no canto (abre as mesmas opções).
  */
-type Item = { chave: string; nivel: "urgente" | "atencao" | "normal"; Ic: Icon; t: string; s: string; acao: string; link: string; estado?: { abrir: string }; fechar?: boolean; ordem: number };
+type Item = { chave: string; nivel: "urgente" | "atencao" | "normal"; Ic: Icon; t: string; s: string; acao: string; link: string; estado?: { abrir: string }; fechar?: boolean; ordem: number; aoTocar?: () => void };
 
 const ICONE: Record<AvisoCadastro["icone"], Icon> = { custos: Buildings, maquininha: CreditCard, ficha: ClipboardText, caixa: Coins, conta: CalendarCheck, entrega: Truck, descricao: TextAlignLeft, banner: ImageSquare };
 const DIA = 86400000;
@@ -73,7 +75,23 @@ export default function PraFazer() {
     return () => document.removeEventListener("pointerdown", fora);
   }, [menu]);
 
+  // (18/10) notificações: enquanto não estiverem ligadas neste aparelho, é o primeiro passo (toque já pede a permissão)
+  const push = usePushSubscription();
+  const ativarNotif = async () => {
+    if (push.permission === "denied") { navigate("/configuracoes/notificacoes"); return; }
+    const ok = await push.subscribe();
+    if (ok) { avisar("Notificações ligadas. Você vai saber na hora quando chegar pedido.", { tipo: "ok" }); setMexeu(n => n + 1); }
+    else if (Notification.permission === "denied") navigate("/configuracoes/notificacoes");
+  };
+  const itemNotif: Item[] = uid && push.isSupported && !push.isSubscribed ? [{
+    chave: "ativar_notificacoes", nivel: "atencao", Ic: Bell, ordem: -100, acao: "Ver", link: "/configuracoes/notificacoes", fechar: true,
+    t: push.permission === "denied" ? "Notificações bloqueadas" : "Ativar notificações",
+    s: push.permission === "denied" ? "Libere pra ver pedido novo" : "Pra não perder nenhum pedido",
+    aoTocar: () => { void ativarNotif(); },
+  }] : [];
+
   const itens: Item[] = [
+    ...itemNotif,
     ...avisos.map((a, i): Item => ({
       chave: a.chave, nivel: a.nivel, Ic: ICONE[a.icone], t: a.curto.t, s: a.curto.s, link: a.link, estado: a.estado, ordem: i,
       acao: a.icone === "conta" ? "Pagar" : "Ver", fechar: a.icone !== "conta",
@@ -102,7 +120,7 @@ export default function PraFazer() {
       <ul className="pf-lista">
         {mostrar.map(x => (
           <li key={x.chave} className={`pf-it pf-it--${x.nivel}`}>
-            <button type="button" className="pf-linha" onClick={() => navigate(x.link, x.estado ? { state: x.estado } : undefined)}>
+            <button type="button" className="pf-linha" disabled={x.aoTocar ? push.loading : false} onClick={() => x.aoTocar ? x.aoTocar() : navigate(x.link, x.estado ? { state: x.estado } : undefined)}>
               <span className="pf-ic" aria-hidden="true"><x.Ic size={20} weight="bold" /></span>
               <span className="pf-tx"><b>{x.t}</b><small>{x.s}</small></span>
               {x.acao === "Pagar" ? <span className="pf-pagar">Pagar</span> : <CaretRight size={16} weight="bold" className="pf-seta" aria-hidden="true" />}
