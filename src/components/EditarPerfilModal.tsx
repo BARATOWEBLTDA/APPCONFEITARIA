@@ -49,10 +49,10 @@ export default function EditarPerfilModal({
     <Janela aberta={open} aoFechar={onClose} tipo="conteudo" titulo="Editar perfil"
       acoes={<><Botao variante="secundario" onClick={onClose}>Cancelar</Botao><Botao onClick={() => onSave()} carregando={saving} disabled={uploading}>Salvar</Botao></>}>
       <div className="ep9">
-        <button type="button" className="ep9-foto" onClick={() => !uploading && onFotoClick()} aria-label={fotoPreview ? "Trocar a foto" : "Colocar uma foto"}>
+        <button type="button" className="ep9-foto" onClick={() => !uploading && onFotoClick()} aria-label={fotoPreview ? "Trocar a logo da loja" : "Colocar a logo da loja"}>
           <span className="ep9-av">{fotoPreview ? <img src={fotoPreview} alt="" /> : <b>{inicial}</b>}</span>
           <i aria-hidden="true">{uploading ? <span className="ui-gira" /> : <Camera size={16} weight="bold" />}</i>
-          <small>{fotoPreview ? "Trocar a foto" : "Colocar uma foto"}</small>
+          <small>{fotoPreview ? "Trocar a logo da loja" : "Colocar a logo da loja"}</small>
         </button>
 
         <Campo rotulo="Nome" placeholder="Seu nome" value={nome} autoComplete="name" onChange={e => onNomeChange(e.target.value)} />

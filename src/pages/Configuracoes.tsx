@@ -9,7 +9,7 @@ import { explicarErro, erroDeConexao, SEM_INTERNET } from "@/lib/erros";
 import { mascaraTelefone } from "@/lib/telefone";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, Campo, Janela, TelaVazia, avisar, informar } from "@/components/base";
-import { refreshProfile, sairDaConta } from "@/hooks/useProfile";
+import { fotoDaLoja, refreshProfile, sairDaConta } from "@/hooks/useProfile";
 import { useRecorte } from "@/components/ui/useRecorte";
 import TermosModal from "@/components/TermosModal";
 import EditarPerfilModal from "@/components/EditarPerfilModal";
@@ -115,7 +115,7 @@ export default function Configuracoes() {
     setPro(data?.plano === "pro" && (!proExpira || proExpira > new Date()));
     if (data) {
       setForm({ nome: data.nome || "", nome_loja: data.nome_loja || "", foto_url: data.foto_url || "", telefone: data.telefone || "" });
-      if (data.foto_url) setPreview(data.foto_url);
+      { const f = fotoDaLoja(data); if (f) setPreview(f); } // (18/10) a foto da conta é a logo do cardápio
     }
     setLoading(false);
   };
@@ -135,7 +135,7 @@ export default function Configuracoes() {
       const publicUrl = `${data.publicUrl}?t=${Date.now()}`;
       // (11/10) só diz "Foto trocada" se o perfil gravou (antes avisava mesmo quando falhava)
       let erroGravar: unknown = null;
-      try { erroGravar = (await supabase.from("profiles").update({ foto_url: publicUrl }).eq("id", userId)).error; } catch (e) { erroGravar = e; }
+      try { erroGravar = (await supabase.from("profiles").update({ logo_url: publicUrl, foto_url: publicUrl }).eq("id", userId)).error; } catch (e) { erroGravar = e; }
       if (erroGravar) {
         avisar(explicarErro(erroGravar, "Não deu pra salvar a foto. Tente de novo."), { tipo: "erro" });
         setPreview(form.foto_url || null);

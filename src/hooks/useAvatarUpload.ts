@@ -72,7 +72,7 @@ export function useAvatarUpload(options: Options = {}) {
 
       const { error: dbErr } = await supabase
         .from("profiles")
-        .update({ foto_url: publicUrl })
+        .update({ logo_url: publicUrl, foto_url: publicUrl }) // (18/10) a foto de perfil É a logo do cardápio
         .eq("id", profile.id);
       if (dbErr) throw dbErr;
 

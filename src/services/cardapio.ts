@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { fotoDaLoja } from '@/hooks/useProfile'
 import { Produto, DesignSettings, Configuracoes } from '@/types/database'
 
 export interface CardapioData {
@@ -118,7 +119,7 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     user_id: userId,
     nome_loja: profile.nome_loja || 'Minha Confeitaria',
     descricao_loja: profile.descricao_loja || '',
-    logo_url: profile.logo_url || profile.foto_url || '',
+    logo_url: fotoDaLoja(profile), // (18/10) a logo da loja; foto pessoal (Google) nunca aparece no cardápio
     banner_url: profile.banner_url || '',
     banner1_url: profile.banner1_url || '',
     banner2_url: profile.banner2_url || '',

@@ -211,8 +211,22 @@ export function useProfile() {
 
 /** O perfil já carregado (sem esperar a rede). Pra funções fora de componentes. */
 /** (13/10) Foto do círculo da conta: a foto de perfil, ou a logo da loja quando não tem foto. */
+/** (18/10) foto do Google/Facebook (pessoal) não conta como foto da loja */
+export const fotoPessoal = (url?: string | null) => !!url && /googleusercontent\.com|gravatar\.com|graph\.facebook|fbcdn\.net/i.test(url);
+
+/**
+ * (18/10) Toda foto de perfil do app é a logo do cardápio (não tem mais foto pessoal).
+ * Contas antigas sem logo: usa a foto que ela mesma enviou (nunca a do Google).
+ */
+export function fotoDaLoja(p: any): string {
+  const logo = String(p?.logo_url || "");
+  if (logo) return logo;
+  const foto = String(p?.foto_url || "");
+  return foto && !fotoPessoal(foto) ? foto : "";
+}
+
 export function avatarDaConta(p: Profile | null | undefined): string {
-  return String(p?.foto_url || (p as any)?.logo_url || "");
+  return fotoDaLoja(p);
 }
 
 export function perfilAtual(): Profile | null {

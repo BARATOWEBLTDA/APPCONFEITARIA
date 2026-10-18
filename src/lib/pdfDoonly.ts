@@ -7,6 +7,7 @@
 // navegador bloqueia como pop-up.
 // ─────────────────────────────────────────────────────────────────────────────
 import { supabase } from "@/lib/supabase";
+import { fotoDaLoja } from "@/hooks/useProfile";
 
 import { avisar } from "@/components/base";
 export type Loja = { nome: string; contato: string; logo: string | null; inicial: string; isPro: boolean };
@@ -37,7 +38,7 @@ export async function buscarLoja(): Promise<Loja> {
   const expira = p?.pro_expira_em ? new Date(p.pro_expira_em) : null;
   return {
     nome, contato: [telFmt, cidade].filter(Boolean).join(" · "),
-    logo: p?.logo_url || p?.foto_url || null, inicial: nome.charAt(0).toUpperCase() || "D",
+    logo: fotoDaLoja(p) || null, inicial: nome.charAt(0).toUpperCase() || "D",
     isPro: p?.plano === "pro" && (!expira || expira > new Date()),
   };
 }
