@@ -944,13 +944,14 @@ export default function Inicio() {
 
         <div className="ini-nav-grid">
           {[
-            { Icone: HandCoins,      label: "A receber",     sub: "Quem ainda deve",       path: "/financeiro/a-receber", key: "areceber" },
+            /* (18/10) pela prioridade do dia a dia: entregas, dinheiro, clientes e produtos primeiro */
             { Icone: CalendarDots,   label: "Agenda",        sub: "Entregas por dia",      path: "/agenda",        key: "agenda" },
-            { Icone: TrendUp,        label: "Lucratividade", sub: "Seu lucro real",     path: "/lucratividade", key: "lucro" },
+            { Icone: HandCoins,      label: "A receber",     sub: "Quem ainda deve",       path: "/financeiro/a-receber", key: "areceber" },
             { Icone: Users,          label: "Clientes",      sub: "Quem compra",   path: "/clientes",      key: "clientes" },
-            { Icone: CurrencyDollar, label: "Financeiro",    sub: "Seu caixa",     path: "/financeiro",    key: "financeiro" },
             { Icone: Cake,           label: "Produtos",      sub: "Seus doces",      path: "/produtos",      key: "produtos" },
+            { Icone: CurrencyDollar, label: "Financeiro",    sub: "Seu caixa",     path: "/financeiro",    key: "financeiro" },
             { Icone: ClipboardText,  label: "Ficha técnica", sub: "Custo e lucro",         path: "/ficha-tecnica", key: "ficha" },
+            { Icone: TrendUp,        label: "Lucratividade", sub: "Seu lucro real",     path: "/lucratividade", key: "lucro" },
             { Icone: Eye,            label: "Meu cardápio",  sub: "Como o cliente vê",     path: "/cardapio-preview", key: "vercardapio" },
           ].map((item) => (
             <button key={item.path} className="ini-nav-card" data-nav={item.key} onClick={() => navigate(item.path)}>
@@ -1754,8 +1755,12 @@ export default function Inicio() {
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
           }
           .ini-root .ini-hero-greeting .ini-plan-tag { flex-shrink: 0; }
-          .ini-root .ini-hero-greeting--apertado .ini-plan-tag--pc { display: none !important; }
-          .ini-root .ini-hero-greeting:not(.ini-hero-greeting--apertado) .ini-plan-tag--mob { display: none !important; }
+          /* (18/10) a etiqueta do plano fica SEMPRE na linha do nome (o nome diminui e, se precisar, ganha reticências) */
+          .ini-root .ini-hero-greeting .ini-plan-tag--pc { display: inline-flex !important; }
+          .ini-root .ini-hero-greeting .ini-plan-tag--mob { display: none !important; }
+          .ini-root .ini-hero-greeting h1 { font-size: 16px !important; gap: 4px 6px !important; }
+          .ini-root .ini-hero { gap: 8px !important; padding-left: max(16px, env(safe-area-inset-left, 0px)) !important; padding-right: max(16px, env(safe-area-inset-right, 0px)) !important; }
+          .ini-root .ini-profile-btn { width: 50px !important; height: 50px !important; }
           .ini-root .ini-hero-sub { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
           .ini-root .ini-hero-sub .ini-hero-data-mobile { margin-top: 0; }
           .ini-root .ini-hero-data-mobile {

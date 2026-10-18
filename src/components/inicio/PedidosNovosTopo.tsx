@@ -99,11 +99,14 @@ export default function PedidosNovosTopo({ novos, atrasados, aoAceitar }: { novo
 
 const CSS = `
   .pnt { display: flex; flex-direction: column; gap: 10px; font-family: var(--font-base); text-align: left; }
-  .pnt-novo { background: var(--ui-branco); border: 1.5px solid #F0C75E; border-radius: var(--ui-raio-cartao); overflow: hidden; }
-  .pnt-cab { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #FFF4D6; color: #8A5A00; white-space: nowrap; }
-  .pnt-cab i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: #F0A400; box-shadow: 0 0 0 4px rgba(240, 164, 0, .2); }
+  /* (18/10) faixa em degradê verde e bolinha piscando */
+  .pnt-novo { background: var(--ui-branco); border: 1.5px solid #7CCB9C; border-radius: var(--ui-raio-cartao); overflow: hidden; }
+  .pnt-cab { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: linear-gradient(90deg, #1F8A4C, #3FB873); color: var(--ui-branco); white-space: nowrap; }
+  .pnt-cab i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: #fff; animation: pntPisca 1.2s ease-in-out infinite; }
+  @keyframes pntPisca { 0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 255, 255, .7); } 50% { opacity: .45; box-shadow: 0 0 0 5px rgba(255, 255, 255, 0); } }
+  @media (prefers-reduced-motion: reduce) { .pnt-cab i { animation: none; } }
   .pnt-cab b { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 13.5px; font-weight: 700; }
-  .pnt-cab span { margin-left: auto; flex: none; font-size: 12.5px; font-weight: 600; color: #9A7A30; }
+  .pnt-cab span { margin-left: auto; flex: none; font-size: 12.5px; font-weight: 600; color: rgba(255, 255, 255, .88); }
   .pnt-it, .pnt-multi { display: flex; align-items: center; gap: 12px; padding: 14px; }
   .pnt-ft { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 10px; background: var(--primary-light, #FCE0E9); color: var(--ui-rosa-escuro); overflow: hidden; }
   .pnt-ft img { width: 100%; height: 100%; object-fit: cover; }
@@ -116,7 +119,7 @@ const CSS = `
   .pnt-ver { background: #F3EEF0; color: var(--ui-texto); }
   .pnt-ok { background: #2E9E5B; color: var(--ui-branco); box-shadow: 0 3px 0 #1F7A45; }
   .pnt-ok:disabled { opacity: .7; }
-  .pnt-num { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; background: #FFF4D6; color: #8A5A00; font-size: 22px; font-weight: 700; }
+  .pnt-num { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; background: #E7F6ED; color: #1F7A45; font-size: 22px; font-weight: 700; }
   .pnt-bt { flex: none; min-height: 44px; padding: 0 14px; border: 0; border-radius: 10px; background: var(--chocolate); color: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; }
   .pnt-atr { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0; padding: 12px 14px; border: 0; border-radius: var(--ui-raio-cartao); background: #FDECEC; font-family: inherit; text-align: left; cursor: pointer; }
   .pnt-an { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--ui-branco); color: #B42318; font-size: 18px; font-weight: 700; }

@@ -155,8 +155,7 @@ const CSS = `
   .pf-menu button:last-child { color: var(--ui-texto-2); }
   @media (hover: hover) { .pf-menu button:hover, .pf-x:hover { background: #F0E9EC; } }
   /* urgente: vermelho; atenção: amarelo */
-  .pf-it--urgente .pf-ic { background: #FDECEC; color: #B42318; }
   .pf-it--urgente small { color: #9A3A32; }
-  .pf-it--atencao .pf-ic { background: #FFF4D6; color: #8A5A00; }
+  /* (18/10) ícones numa cor só (rosinha); o urgente continua com o texto e o "Pagar" em vermelho */
   .pf-ver { display: block; width: 100%; min-height: 44px; margin: 0 0 -6px; border: 0; border-top: 1px solid var(--ui-linha, #F3ECEF); background: none; font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
 `;
