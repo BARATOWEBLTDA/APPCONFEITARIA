@@ -83,3 +83,6 @@
 .ep-res-li { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 14px; color: var(--ui-texto); white-space: nowrap; }
 .ep-res-li svg { flex: none; color: var(--ui-verde, #16A34A); }
 .ep-res-li em { margin-left: auto; font-style: normal; font-weight: 700; color: var(--ui-texto); }
+
+/* (17/10) ícones dos cards em rosa com desenho branco, igual à lista da aba Cardápio */
+.ep-cab-ic { background: var(--ui-rosa); color: var(--ui-branco); }
