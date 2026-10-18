@@ -64,7 +64,7 @@ const INDICE: Achado[] = [
   { nome: "Instalar o app", onde: "App", palavras: "tela inicial atalho celular", ir: "instalar" },
   { nome: "Fale com o suporte", onde: "Ajuda", palavras: "whatsapp ajuda atendimento", ir: "suporte" },
   { nome: "Termos e privacidade", onde: "Ajuda", palavras: "lgpd dados contrato", ir: "termos" },
-  { nome: "Excluir a conta", onde: "Outros › Avançado", palavras: "apagar deletar encerrar", ir: "avancado" },
+  { nome: "Excluir a conta", onde: "App › Avançado", palavras: "apagar deletar encerrar", ir: "avancado" },
 ];
 const semAcento = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
@@ -280,6 +280,8 @@ export default function Configuracoes() {
             <ItemConfig icone={<Bell size={20} weight="bold" />} nome="Notificações e sons" apoio="Avisos e sons do app" onClick={() => navigate("/configuracoes/notificacoes")} />
             {!isStandalone() && <ItemConfig icone={<DownloadSimple size={20} weight="bold" />} nome="Instalar o app" apoio="Abra direto, como um app" onClick={() => setInstalarOpen(true)} />}
             <AtualizarAppItem />
+            {/* (18/10) Avançado entrou no grupo App (a seção "Outros" saiu) */}
+            <ItemConfig icone={<SlidersHorizontal size={20} weight="bold" />} nome="Avançado" apoio="Excluir a conta" onClick={() => setAvancadoOpen(true)} />
             {/* (18/10) Minhas conquistas escondido por enquanto */}
             {INDICACAO_ATIVA && <ItemConfig icone={<Gift size={20} weight="bold" />} nome="Indique e ganhe" apoio="Ganhe prêmios indicando" onClick={() => navigate("/indicar")} />}
 
@@ -289,8 +291,6 @@ export default function Configuracoes() {
             <ItemConfig icone={<Lightbulb size={20} weight="bold" />} nome="Sugerir uma melhoria" apoio="Conte o que falta no app" onClick={() => navigate("/solicitar-recurso")} />
             <ItemConfig icone={<FileText size={20} weight="bold" />} nome="Termos e privacidade" apoio="Termos de uso e privacidade" onClick={() => setTermosOpen(true)} />
 
-            <h2 className="cf9-sec">Outros</h2>
-            <ItemConfig icone={<SlidersHorizontal size={20} weight="bold" />} nome="Avançado" apoio="Excluir a conta" onClick={() => setAvancadoOpen(true)} />
           </section>
           </>)}
           <Botao variante="secundario" cheio icone={<SignOut size={20} weight="bold" />} onClick={sair}>Sair da conta</Botao>
