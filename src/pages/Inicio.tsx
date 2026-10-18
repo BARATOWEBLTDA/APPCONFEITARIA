@@ -1471,7 +1471,7 @@ export default function Inicio() {
         .ini-pp:empty { display: none; }
 
         .ini-section--nav     { order: 2; }
-        .ini-main > .ini-mobile-banner { order: 2; margin-top: var(--space-3); }
+        .ini-main > .ini-mobile-banner { order: 3; margin-top: var(--space-3); } /* (18/10) depois das Próximas entregas (o calendário vem logo após o Acesso rápido) */
         .ini-section--novos { order: -1; }
         .ini-root .ini-section.ini-section--novos { margin-top: var(--space-3) !important; }
         @media (min-width: 901px) { .ini-section--novos { display: none; } }
