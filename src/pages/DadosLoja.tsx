@@ -148,6 +148,18 @@ export default function DadosLoja() {
   useEffect(() => { if (!loading && resumoVisivel === null) setResumoVisivel(feitos < itens.length); }, [loading, feitos, itens.length, resumoVisivel]);
   const faltando = itens.filter((i) => !i.ok).map((i) => i.nome);
 
+  // (17/10) Card já preenchido aparece resumido, com "Editar"; vazio (ou faltando algo) já abre o formulário
+  type Bloco = "loja" | "redes" | "endereco" | "horario";
+  const okDe = (b: Bloco) => b === "loja" ? itens[0].ok && itens[1].ok && itens[2].ok
+    : b === "redes" ? !redesNoBanco || !!(instagram.trim() || facebook.trim())
+    : b === "endereco" ? itens[3].ok : itens[4].ok;
+  const [aberto, setAberto] = useState<Record<Bloco, boolean> | null>(null);
+  useEffect(() => {
+    if (!loading && !erroCarga && aberto === null) setAberto({ loja: !okDe("loja"), redes: !okDe("redes"), endereco: !okDe("endereco"), horario: !okDe("horario") });
+  }, [loading, erroCarga, aberto]); // eslint-disable-line react-hooks/exhaustive-deps
+  const abrir = (b: Bloco) => setAberto((a) => ({ ...(a || { loja: true, redes: true, endereco: true, horario: true }), [b]: true }));
+  const estaAberto = (b: Bloco) => aberto?.[b] !== false;
+
   // (16/10) WhatsApp já preenchido vira um cartão verde em destaque (com Editar); vazio, já abre o campo
   const [zapAberto, setZapAberto] = useState<boolean | null>(null);
   useEffect(() => { if (!loading && zapAberto === null) setZapAberto(digitosTelefone(telefone).length < 10); }, [loading, zapAberto, telefone]);
@@ -169,6 +181,9 @@ export default function DadosLoja() {
   }, [loading, irEntrega]);
 
   const irPara = (id: string) => {
+    // (17/10) o card resumido abre antes (o campo só existe com o formulário aberto)
+    const bloco: Bloco | null = id === "dl-nome" || id === "dl-whats" || id === "dl-desc" ? "loja" : id === "dl-redes" ? "redes" : id === "dl-endereco" ? "endereco" : id === "dl-horario" ? "horario" : null;
+    if (bloco && !estaAberto(bloco)) { abrir(bloco); window.setTimeout(() => irPara(id), 60); return; }
     const el = document.getElementById(id);
     if (!el) return;
     el.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -269,7 +284,12 @@ export default function DadosLoja() {
     setSalvando(false);
     if (error) mostrarAviso("Não foi possível salvar. Tente de novo.", "err");
     else if (erroRedes) mostrarAviso("Salvou, menos as redes sociais. Tente de novo.", "err");
-    else mostrarAviso("Alterações salvas");
+    else {
+      mostrarAviso("Alterações salvas");
+      // (17/10) o que ficou completo volta a aparecer resumido
+      setAberto({ loja: !okDe("loja"), redes: !okDe("redes"), endereco: !okDe("endereco"), horario: !okDe("horario") });
+      setZapAberto(digitosTelefone(telefone).length < 10);
+    }
   };
 
   // (15/10) minimapa grátis (o mesmo dos primeiros passos): começa no Brasil e voa até a rua
@@ -281,9 +301,31 @@ export default function DadosLoja() {
   const cidadeUf = [end.cidade.trim(), end.estado.trim()].filter(Boolean).join(", ");
   const seloMapa = !busca ? "Digite o CEP pra achar sua loja" : mostrarLocal === "nada" ? "Endereço escondido no cardápio" : [mostrarLocal === "completo" ? end.bairro.trim() : "", cidadeUf].filter(Boolean).join(" · ");
 
-  const Cabeca = ({ Ic, titulo, apoio }: { Ic: typeof Storefront; titulo: string; apoio: string }) => (
-    <div className="dl-cab"><span className="dl-cab-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span><Titulo apoio={apoio}>{titulo}</Titulo></div>
-  );
+  // (17/10) resumido: sem o texto de apoio e com "Editar" ao lado do título (o botão nunca fica por cima de nada)
+  const Cabeca = ({ Ic, titulo, apoio, bloco }: { Ic: typeof Storefront; titulo: string; apoio: string; bloco?: Bloco }) => {
+    const resumido = !!bloco && !estaAberto(bloco);
+    return (
+      <div className="dl-cab"><span className="dl-cab-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span>
+        <Titulo apoio={resumido ? undefined : apoio}
+          acao={resumido ? <button type="button" className="dl-editar" onClick={() => abrir(bloco!)}><PencilSimple size={16} weight="bold" aria-hidden="true" />Editar</button> : undefined}>{titulo}</Titulo>
+      </div>
+    );
+  };
+  const DIA_CURTO: Record<string, string> = { Segunda: "Seg", "Terça": "Ter", Quarta: "Qua", Quinta: "Qui", Sexta: "Sex" };
+  const hh = (h: string) => (h || "").replace(/^0(\d)/, "$1").replace(":00", "h").replace(/:(\d\d)$/, "h$1");
+  const resumoHorario = (): string[] => {
+    const linhas: string[] = [];
+    const ord = DIAS_UTEIS.map((d) => d.nome).filter((n) => horario.dias.includes(n));
+    if (ord.length) {
+      const idx = ord.map((n) => DIAS_UTEIS.findIndex((d) => d.nome === n));
+      const seguidos = idx.every((v, i) => i === 0 || v === idx[i - 1] + 1);
+      const dias = ord.length === 1 ? DIA_CURTO[ord[0]] : seguidos ? `${DIA_CURTO[ord[0]]} a ${DIA_CURTO[ord[ord.length - 1]]}` : ord.map((n) => DIA_CURTO[n]).join(", ");
+      linhas.push(`${dias} · ${hh(horario.abertura)} às ${hh(horario.fechamento)}`);
+    }
+    if (horario.abre_sabado) linhas.push(`Sáb · ${hh(horario.sabado_abertura)} às ${hh(horario.sabado_fechamento)}`);
+    if (horario.abre_domingo) linhas.push(`Dom · ${hh(horario.domingo_abertura)} às ${hh(horario.domingo_fechamento)}`);
+    return linhas;
+  };
 
   if (loading) {
     return (
@@ -330,7 +372,14 @@ export default function DadosLoja() {
 
         {/* Sua loja */}
         <section className="dl-card dl-loja">
-          <Cabeca Ic={Storefront} titulo="Sua loja" apoio="Nome, WhatsApp e descrição" />
+          <Cabeca Ic={Storefront} titulo="Sua loja" apoio="Nome, WhatsApp e descrição" bloco="loja" />
+          {!estaAberto("loja") ? (
+            <div className="dl-res">
+              <b className="dl-res-t">{nome}</b>
+              <span className="dl-res-zap"><IconeWhatsApp size={16} />{telefone}</span>
+              <p className="dl-res-desc">{descricao}</p>
+            </div>
+          ) : (<>
           <div id="dl-nome">
             <Campo id="dl-in-nome" rotulo="Nome da loja" value={nome} maxLength={60} placeholder="Ex.: Doce Formiga Confeitaria" onChange={(e) => setNome(e.target.value)} />
           </div>
@@ -354,12 +403,18 @@ export default function DadosLoja() {
               <button type="button" className="dl-ia" onClick={gerarDescricao} disabled={gerando}><Sparkle size={15} weight="fill" aria-hidden="true" />{gerando ? "Escrevendo…" : "Escrever com IA"}</button>
             </div>
           </div>
+          </>)}
         </section>
 
         {/* (4.25) Redes sociais: aparecem em "Sobre a loja" no cardápio */}
         <section className="dl-card" id="dl-redes">
-          <Cabeca Ic={ShareNetwork} titulo="Redes sociais" apoio="Aparecem em Sobre a loja, no cardápio. Vazio não aparece" />
-          {redesNoBanco ? (
+          <Cabeca Ic={ShareNetwork} titulo="Redes sociais" apoio="Aparecem em Sobre a loja, no cardápio" bloco="redes" />
+          {redesNoBanco && !estaAberto("redes") ? (
+            <div className="dl-res">
+              {instagram.trim() && <span className="dl-res-li"><InstagramLogo size={18} aria-hidden="true" />{instagram.trim()}</span>}
+              {facebook.trim() && <span className="dl-res-li"><FacebookLogo size={18} aria-hidden="true" />{facebook.trim().replace(/^https?:\/\/(www\.)?/, "")}</span>}
+            </div>
+          ) : redesNoBanco ? (
             <>
               <Campo id="dl-in-insta" rotulo="Instagram" value={instagram} maxLength={80} placeholder="@suaconfeitaria" autoCapitalize="none" autoCorrect="off"
                 icone={<InstagramLogo size={20} />} onChange={(e) => setInstagram(e.target.value)} />
@@ -373,8 +428,15 @@ export default function DadosLoja() {
 
         {/* Endereço */}
         <section className="dl-card" id="dl-endereco">
-          <Cabeca Ic={MapPin} titulo="Endereço" apoio="Pra calcular a entrega e mostrar no mapa" />
-          <MapaEndereco busca={busca} soCidade={mostrarLocal !== "completo"} selo={seloMapa} />
+          <Cabeca Ic={MapPin} titulo="Endereço" apoio="Pra calcular a entrega e mostrar no mapa" bloco="endereco" />
+          <MapaEndereco busca={busca} soCidade={mostrarLocal !== "completo"} selo={estaAberto("endereco") ? seloMapa : undefined} />
+          {!estaAberto("endereco") ? (
+            <div className="dl-res">
+              <b className="dl-res-t">{[end.rua.trim(), end.numero.trim()].filter(Boolean).join(", ") || cidadeUf}</b>
+              <span className="dl-res-sub">{[end.complemento.trim(), end.bairro.trim(), cidadeUf, end.cep.trim()].filter(Boolean).join(" · ")}</span>
+              <span className="dl-res-tag">{mostrarLocal === "completo" ? "No cardápio: endereço completo" : mostrarLocal === "cidade" ? "No cardápio: só a cidade" : "Escondido no cardápio"}</span>
+            </div>
+          ) : (<>
           <Campo id="dl-in-cep" rotulo="CEP" inputMode="numeric" value={end.cep} placeholder="00000-000" depois={statusCep}
             onChange={(e) => {
               const d = e.target.value.replace(/\D/g, "").slice(0, 8);
@@ -399,14 +461,21 @@ export default function DadosLoja() {
             <span className="dl-cx" aria-hidden="true">{recebeAqui && <Check size={16} weight="bold" />}</span>
             <span><b>Recebo pedidos aqui</b><small>O endereço completo aparece pro cliente só quando ele escolhe retirar a encomenda.</small></span>
           </label>
+          </>)}
         </section>
 
         {/* Horário */}
         <section className="dl-card" id="dl-horario">
-          <Cabeca Ic={Clock} titulo="Horário de funcionamento" apoio="Aparece como “Aberto agora” no cardápio" />
-          <div className="dl-bloco">
-            <EditorHorario h={horario} onMudar={setHorario} tituloClasse="dl-tit" />
-          </div>
+          <Cabeca Ic={Clock} titulo="Horário" apoio="Aparece como “Aberto agora” no cardápio" bloco="horario" />
+          {!estaAberto("horario") ? (
+            <div className="dl-res">
+              {resumoHorario().map((l) => <span key={l} className="dl-res-li">{l}</span>)}
+            </div>
+          ) : (
+            <div className="dl-bloco">
+              <EditorHorario h={horario} onMudar={setHorario} tituloClasse="dl-tit" />
+            </div>
+          )}
         </section>
       </div>
 

@@ -85,3 +85,15 @@
 .dl-ep .ep--embutido { max-width: 640px; padding-top: 8px; }
 .ep-sec-tit { margin: 12px 4px 0; font-size: 20px; font-weight: 700; color: var(--ui-texto); }
 @media (min-width: 1024px) { .dl-ep .ep--embutido { max-width: 1120px; padding-left: 0; padding-right: 0; } }
+
+/* (17/10) card resumido (já preenchido) com "Editar" */
+.dl-editar { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; margin: 0; padding: 0 12px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); color: var(--ui-rosa-escuro); font: 700 13.5px var(--font-base); white-space: nowrap; cursor: pointer; }
+.dl-cab .ui-tit .ui-tit-t { min-width: 0; }
+.dl-res { display: flex; flex-direction: column; gap: 4px; min-width: 0; margin-top: 12px; }
+.dl-res-t { font-size: 15px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dl-res-sub { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dl-res-zap, .dl-res-li { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 14px; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dl-res-zap { color: var(--ui-texto-2); }
+.dl-res-desc { margin: 2px 0 0; font-size: 13.5px; line-height: 1.45; color: var(--ui-texto-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.dl-res-tag { align-self: flex-start; margin-top: 4px; padding: 4px 9px; border-radius: 7px; background: var(--ui-cinza, #F5EEF1); font-size: 12.5px; font-weight: 600; color: var(--ui-texto-2); white-space: nowrap; }
+#dl-endereco:has(.dl-res) .mpe { height: 130px; margin-top: 12px; }
