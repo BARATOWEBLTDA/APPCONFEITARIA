@@ -184,7 +184,7 @@ export function ReceberSheet({ item, onClose, onFeito }: { item: Item; onClose: 
       tipo: v >= item.falta - 0.009 ? (item.recebido > 0 ? "restante" : "total") : (item.recebido > 0 ? "parcial" : "sinal"), // o 1º valor antes de quitar é o sinal
     });
     setSalvando(false);
-    if (!r.ok) { setErro("Não foi possível registrar agora. Confira a internet e tente de novo."); return; }
+    if (!r.ok) { setErro(r.erro || "Não foi possível registrar agora. Confira a internet e tente de novo."); return; }
     onFeito(resta > 0 ? `Recebido ${brl(v)}. Ainda faltam ${brl(resta)}.` : item.numero ? `Pedido #${item.numero} quitado.` : "Pedido quitado.");
   };
 

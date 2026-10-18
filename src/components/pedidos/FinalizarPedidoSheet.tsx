@@ -121,7 +121,7 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
         pedidoId: pedido.id, valor: recebe, forma, recebidoEm: data,
         tipo: recebe >= saldo - 0.009 ? (jaRecebido > 0 ? "restante" : "total") : "parcial",
       });
-      if (!r.ok) { setSalvando(false); setErro("O pedido foi atualizado, mas o recebimento não foi registrado. Registre em Financeiro → A receber."); return; }
+      if (!r.ok) { setSalvando(false); setErro(r.erro || "O pedido foi atualizado, mas o recebimento não foi registrado. Registre em Financeiro → A receber."); return; }
       recebido = r.valor_recebido ?? r2(jaRecebido + recebe);
       statusPag = r.status_pagamento ?? (recebido >= total - 0.009 ? "pago" : "parcial");
     } else {

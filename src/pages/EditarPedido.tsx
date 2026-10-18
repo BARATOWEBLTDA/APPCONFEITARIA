@@ -429,7 +429,7 @@ export default function EditarPedido() {
   // Depois de receber, estornar ou finalizar: lê de novo o que o banco calculou (o recebido é do banco)
   const recarregarDinheiro = async () => {
     if (!pedido) return
-    const { data } = await supabase.from('pedidos').select('status, status_pagamento, valor_recebido, valor_total, desconto, acrescimo').eq('id', pedido.id).maybeSingle()
+    const { data } = await supabase.from('pedidos').select('status, status_pagamento, valor_recebido, valor_total, desconto, acrescimo, updated_at').eq('id', pedido.id).maybeSingle()
     if (data) {
       const d: any = data
       setPedido(p => p ? { ...p, ...d } : p)
@@ -894,6 +894,22 @@ export default function EditarPedido() {
         return
       }
 
+      // (17/10 · R09) o pedido mudou em outro aparelho depois que esta tela abriu: pergunta antes de salvar por cima
+      const versaoAberta = (pedido as any)?.updated_at
+      if (versaoAberta && pedido?.id) {
+        const { data: agora } = await supabase.from('pedidos').select('updated_at, status').eq('id', pedido.id).maybeSingle()
+        const versaoAgora = (agora as any)?.updated_at
+        if (versaoAgora && new Date(versaoAgora).getTime() !== new Date(versaoAberta).getTime()) {
+          const label = (STATUS_CONFIG[(agora as any).status] || {}).label || (agora as any).status
+          const seguir = await confirmar({
+            titulo: 'Este pedido mudou em outro aparelho',
+            texto: `Depois que você abriu, alguém alterou o pedido (agora está "${label}"). Salvar vai trocar pelo que está nesta tela.`,
+            rotulo: 'Salvar mesmo assim', rotuloVoltar: 'Voltar', icone: 'alerta',
+          })
+          if (!seguir) { setSalvando(false); return }
+        }
+      }
+
       // Derivar status_pagamento e valor_recebido.
       // Financeiro · Passo 0: só regrava o pagamento se ela MEXEU no pagamento. Se mudou só itens, data,
       // cliente…, preserva o que já foi recebido (antes, um pedido "pago" que aumentou de valor marcava
@@ -1218,6 +1234,12 @@ export default function EditarPedido() {
   })()
   // (11/10) Devolve se gravou. Antes qualquer erro virava só um aviso no console e a tela dizia "Quem retirou foi salvo".
   //   'ok' gravou · 'sem-coluna' o banco ainda não tem o campo (segue sem ele) · 'erro' não gravou (internet etc.)
+  // (17/10 · R09) depois de uma mudança feita AQUI, guarda a nova versão do pedido (senão o salvar acharia que foi outro aparelho)
+  const atualizarVersao = async () => {
+    if (!pedido) return
+    const { data } = await supabase.from('pedidos').select('updated_at').eq('id', pedido.id).maybeSingle()
+    if (data) setPedido(p => p ? ({ ...p, updated_at: (data as any).updated_at } as any) : p)
+  }
   const salvarQuemRetirou = async (nome: string): Promise<'ok' | 'sem-coluna' | 'erro'> => {
     if (!pedido) return 'erro'
     const limpo = nome.trim()
@@ -1225,6 +1247,7 @@ export default function EditarPedido() {
     if (error && faltaNoBanco(error)) { console.warn('retirado_por ainda não existe no banco (rode o SQL)', error.message); return 'sem-coluna' }
     if (error) { console.error('[Doonly] quem retirou', error); return 'erro' }
     setPedido(p => p ? ({ ...p, retirado_por: limpo || null } as any) : p)
+    void atualizarVersao()
     if (limpo) supabase.from('pedido_historico').insert({ pedido_id: pedido.id, evento: 'Retirado por', descricao: limpo }).then(() => {}, () => {})
     return 'ok'
   }
@@ -1261,6 +1284,7 @@ export default function EditarPedido() {
       const label = (STATUS_CONFIG[novo] || {}).label || novo
       supabase.from('pedido_historico').insert({ pedido_id: pedido.id, evento: label, descricao: `Status alterado para "${label}"` }).then(() => {}, () => {})
       setStatusPedido(novo); setPedido(p => p ? { ...p, status: novo } : p)
+      void atualizarVersao()
       avisar(avisoDaMudanca({ numero: pedido.numero, tipo_entrega: tipoEntrega }, novo))
       if (novo === 'entregue') tocarSom('sucesso')
     } finally { mudandoEtapaRef.current = false; setMudandoEtapa(false) }

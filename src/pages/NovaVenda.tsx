@@ -1,6 +1,6 @@
 import CalendarioSheet from '@/components/CalendarioSheet'
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { criarPedido, lerProdutosDeVenda, opcoesDoProduto as opcoesDoProdutoLib, opcaoKitLivre, quantidadesSugeridas, precoDeVenda, totalDe, type DadosPedido } from '@/lib/pedidosDoo'
+import { criarPedido, novoIdTentativa, lerProdutosDeVenda, opcoesDoProduto as opcoesDoProdutoLib, opcaoKitLivre, quantidadesSugeridas, precoDeVenda, totalDe, type DadosPedido } from '@/lib/pedidosDoo'
 import { gerarPedidoPDF } from '@/lib/gerarPedidoPDF'
 import { abrirJanela } from '@/lib/pdfDoonly'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -128,6 +128,7 @@ export default function NovaVenda() {
   const locNV = useLocation()
   const [origemDoo, setOrigemDoo] = useState(false)
   const preenchidaRef = useRef(false)
+  const idTentativaRef = useRef(novoIdTentativa()) // (17/10 · R07) mesmo id se ela tocar em salvar de novo
   const [userId, setUserId] = useState<string | null>(null)
 
   const [tipo, setTipo] = useState<TipoVenda>(null)
@@ -517,6 +518,7 @@ export default function NovaVenda() {
     try {
       // Salvar: a mesma função usada pela Doo IA (lib/pedidosDoo) — pedido igual nos dois caminhos
       const res = await criarPedido(userId, {
+        idTentativa: idTentativaRef.current,
         tipo: (tipo || 'encomenda') as any, itens, semCliente, clienteId: clienteId || jaCriada, clienteNome, clienteTelefone,
         clienteNovo,
         tipoEntrega: tipoEntrega as any, vemBuscar: buscaDepois, dataEntrega, horarioEntrega,
@@ -533,6 +535,7 @@ export default function NovaVenda() {
         return
       }
       clienteCriada.current = null
+      idTentativaRef.current = novoIdTentativa() // a próxima venda é outro pedido
       if (res.aviso) avisar(res.aviso, { tipo: 'info' })
       const novoPedido: any = res.pedido
       // a cliente nova entra na lista da tela (a próxima venda já acha ela na busca)

@@ -71,7 +71,7 @@ export async function registrarPagamento(opts: {
   tipo?: TipoPagamento; origem?: string; observacao?: string | null; recebidoEm?: string;
   /** criação do pedido: o pedido já nasce com o valor certo, então sem a tabela não precisa gravar de novo */
   pedidoJaTemOValor?: boolean;
-}): Promise<{ ok: boolean; legado: boolean; valor_recebido?: number; status_pagamento?: string }> {
+}): Promise<{ ok: boolean; legado: boolean; valor_recebido?: number; status_pagamento?: string; erro?: string }> {
   const valor = r2(opts.valor);
   if (!opts.pedidoId || valor <= 0) return { ok: true, legado: false };
   let uid = opts.userId || null;
@@ -84,6 +84,15 @@ export async function registrarPagamento(opts: {
   if (!error) {
     const { data: p } = await supabase.from("pedidos").select("valor_recebido, status_pagamento").eq("id", opts.pedidoId).maybeSingle();
     return { ok: true, legado: false, valor_recebido: Number((p as any)?.valor_recebido) || 0, status_pagamento: (p as any)?.status_pagamento };
+  }
+  // (17/10 · R06) o banco recusou porque esse mesmo recebimento acabou de entrar (dois toques, duas abas, nova tentativa):
+  // não é erro, o dinheiro já está registrado uma vez
+  if (/pagamento_repetido/.test(String(error.message || ""))) {
+    const { data: p } = await supabase.from("pedidos").select("valor_recebido, status_pagamento").eq("id", opts.pedidoId).maybeSingle();
+    return { ok: true, legado: false, valor_recebido: Number((p as any)?.valor_recebido) || 0, status_pagamento: (p as any)?.status_pagamento };
+  }
+  if (/recebido_acima_do_total/.test(String(error.message || ""))) {
+    return { ok: false, legado: false, erro: "Esse valor passa do total do pedido. Confira o que já foi recebido (talvez já tenha sido registrado em outra tela)." };
   }
   if (tabelaNaoExiste(error)) {
     if (opts.pedidoJaTemOValor) return { ok: true, legado: true };

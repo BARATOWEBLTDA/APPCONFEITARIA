@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { avisar } from "@/components/base";
 import { Receipt, Check, WarningCircle } from "@phosphor-icons/react";
-import { criarPedido, montarPedido, procurarClientesPorNome, subtotalDe, totalDe, type RascunhoPedido, type ProdutoCat, type ClienteCat, type DadosPedido } from "@/lib/pedidosDoo";
+import { criarPedido, novoIdTentativa, montarPedido, procurarClientesPorNome, subtotalDe, totalDe, type RascunhoPedido, type ProdutoCat, type ClienteCat, type DadosPedido } from "@/lib/pedidosDoo";
 import { explicarErro } from "@/lib/erros";
 import { r2 } from "@/lib/moeda";
 
@@ -44,6 +44,7 @@ export default function CartaoPedidoDoo({ uid, rascunho, catalogo, estado, numer
   // (11/10) cliente nova já cadastrada numa tentativa que falhou: a próxima tentativa usa a mesma (não cadastra de novo)
   const clienteCriada = useRef<string | null>(null);
   const travado = useRef(false); // dois toques seguidos não registram dois pedidos
+  const idTentativa = useRef(novoIdTentativa()); // (17/10 · R07) tocar de novo depois de a internet cair não duplica
   const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
   const total = totalDe(dados);
   const quando = dados.tipo === "pronta_entrega" ? "Hoje (pronta entrega)"
@@ -59,7 +60,7 @@ export default function CartaoPedidoDoo({ uid, rascunho, catalogo, estado, numer
     travado.current = true;
     setSalvando(true); setErro("");
     try {
-      const res = await criarPedido(uid, dados.clienteNovo && !dados.clienteId && clienteCriada.current ? { ...dados, clienteId: clienteCriada.current } : dados);
+      const res = await criarPedido(uid, { ...(dados.clienteNovo && !dados.clienteId && clienteCriada.current ? { ...dados, clienteId: clienteCriada.current } : dados), idTentativa: idTentativa.current });
       if (res.ok === false) {
         // (11/10) não gravou (ou gravou sem os produtos e foi desfeito): mostra o erro, em português, e o cartão continua aberto
         if (dados.clienteNovo && res.clienteId) clienteCriada.current = res.clienteId;

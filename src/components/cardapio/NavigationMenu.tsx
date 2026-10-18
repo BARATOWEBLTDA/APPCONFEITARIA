@@ -27,7 +27,16 @@ import '@/components/cart/sacola.css'
  * se a tentativa falha no meio, a próxima (com os mesmos dados) usa o MESMO id, e a loja não recebe pedido repetido nem pela metade.
  */
 type TentativaPedido = { id: string; assinatura: string; gravado: boolean; quando: number }
-let tentativaPedido: TentativaPedido | null = null
+// (17/10 · R08) a tentativa também fica guardada no aparelho: recarregou a página ou fechou e abriu o cardápio
+// no meio do envio, o próximo envio com os mesmos dados usa o MESMO id (antes gerava outro e a loja recebia 2 pedidos)
+const CHAVE_TENTATIVA = 'doonly:tentativaPedido'
+const lerTentativaSalva = (): TentativaPedido | null => {
+  try { const t = JSON.parse(localStorage.getItem(CHAVE_TENTATIVA) || 'null'); return t && typeof t.id === 'string' && typeof t.assinatura === 'string' ? t : null } catch { return null }
+}
+const salvarTentativa = (t: TentativaPedido | null) => {
+  try { if (t) localStorage.setItem(CHAVE_TENTATIVA, JSON.stringify(t)); else localStorage.removeItem(CHAVE_TENTATIVA) } catch { /* sem armazenamento: fica só na memória */ }
+}
+let tentativaPedido: TentativaPedido | null = lerTentativaSalva()
 /** Envio em andamento: fica fora do componente porque a sacola pode fechar e abrir no meio (a trava do componente zerava). */
 let enviandoPedido = false
 
@@ -50,10 +59,11 @@ async function abrirTentativa(assinatura: string): Promise<TentativaPedido> {
   // Os dados mudaram (ou passou muito tempo) depois de uma tentativa que ficou pela metade: tira a antiga, se o banco deixar
   if (t?.gravado) await desfazerPedido(t.id)
   tentativaPedido = { id: novoIdPedido(), assinatura, gravado: false, quando: Date.now() }
+  salvarTentativa(tentativaPedido)
   return tentativaPedido
 }
-const marcarGravada = (t: TentativaPedido) => { t.gravado = true }
-const fecharTentativa = () => { tentativaPedido = null }
+const marcarGravada = (t: TentativaPedido) => { t.gravado = true; if (t === tentativaPedido) salvarTentativa(t) }
+const fecharTentativa = () => { tentativaPedido = null; salvarTentativa(null) }
 
 interface CheckoutConfig {
   /** (4.27) a loja pausou os pedidos: dá pra montar a sacola, mas não enviar */

@@ -236,7 +236,7 @@ export default function Pedidos() {
         // relê o pedido: se o pagamento entrou e só a resposta se perdeu, a lista já mostra pago e o próximo toque não cobra de novo
         const { data: gravado } = await supabase.from('pedidos').select('valor_recebido, status_pagamento').eq('id', id).maybeSingle()
         if (gravado) mudarPedidos(prev => prev.map(p => p.id === id ? { ...p, ...(gravado as any) } : p))
-        avisar('Não deu pra registrar o recebimento. Confira a internet e tente de novo.', { tipo: 'erro' }); return
+        avisar(r.erro || 'Não deu pra registrar o recebimento. Confira a internet e tente de novo.', { tipo: 'erro' }); return
       }
       const novo = !r ? { valor_total: atual.valor_total, valor_recebido: atual.valor_recebido, status_pagamento: atual.status_pagamento } // já estava pago: fica o que está gravado
         : r.status_pagamento ? { valor_total: atual.valor_total, valor_recebido: r.valor_recebido ?? atual.valor_total, status_pagamento: r.status_pagamento }

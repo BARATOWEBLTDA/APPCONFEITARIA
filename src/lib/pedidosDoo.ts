@@ -83,7 +83,14 @@ export const precoDeVenda = (p: any): number => comDesconto(Number(p?.preco_norm
 
 export const hojeISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 
+/** (17/10 · R07) id novo pra uma tentativa de salvar pedido (o mesmo é reaproveitado se ela tocar de novo) */
+export const novoIdTentativa = (): string => (typeof crypto !== "undefined" && "randomUUID" in crypto)
+  ? crypto.randomUUID()
+  : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16); });
+
 export type DadosPedido = {
+  /** (17/10 · R07) id fixo da tentativa: tocar de novo depois de a internet cair não cria um segundo pedido */
+  idTentativa?: string;
   tipo: "encomenda" | "pronta_entrega";
   itens: ItemPedido[];
   semCliente: boolean;
@@ -193,11 +200,21 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
     // a data da entrega, e acompanha quando a entrega muda de dia (antes ficava preso na data antiga).
     data_prevista_pagamento: d.situacaoPag === "fiado" ? (d.dataPrevistaPagamento || null) : null,
   };
+  if (d.idTentativa) linhaPedido.id = d.idTentativa;
   let { data: novoPedido, error } = await supabase.from("pedidos").insert(linhaPedido).select().single();
   if (error && /acrescimo/i.test(error.message || "")) {
     // a coluna "acrescimo" não existe nessa conta: grava sem ela (mesmo plano B do Editar pedido)
     const { acrescimo: _semColuna, ...semAcrescimo } = linhaPedido;
     ({ data: novoPedido, error } = await supabase.from("pedidos").insert(semAcrescimo).select().single());
+  }
+  // (17/10 · R07) "esse id já existe": a tentativa anterior tinha gravado e só a resposta se perdeu no caminho
+  if (error && d.idTentativa && (error as any).code === "23505" && /pkey/i.test(String(error.message || ""))) {
+    const { data: jaGravado } = await supabase.from("pedidos").select("*, pedido_itens(id)").eq("id", d.idTentativa).maybeSingle();
+    if (jaGravado) {
+      const { pedido_itens: itensGravados, ...pedidoGravado } = jaGravado as any;
+      if (Array.isArray(itensGravados) && itensGravados.length > 0) return { ok: true, pedido: pedidoGravado, clienteId: clienteIdFinal };
+      novoPedido = pedidoGravado; error = null; // gravou sem os produtos: segue e grava os produtos agora
+    }
   }
   if (error || !novoPedido) return { ok: false, clienteId: clienteIdFinal, erro: explicarErro(error, "Não deu pra registrar a venda. Tente de novo.") };
   const pid = (novoPedido as any).id;
