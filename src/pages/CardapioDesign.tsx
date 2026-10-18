@@ -6,7 +6,9 @@ import { usePlano } from "@/hooks/usePlano";
 import { HexColorPicker } from "react-colorful";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import { useRecorte } from "@/components/ui/useRecorte";
-import { ArrowCounterClockwise, ArrowsClockwise, Camera, Check, Crown, Image as ImageIcon, Images, Layout, Lock, Palette, Sparkle, Storefront, UploadSimple, X } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, ArrowsClockwise, Camera, Check, Crown, Image as ImageIcon, Images, Layout, Lock, MapPin, Palette, Sparkle, Storefront, UploadSimple, X } from "@phosphor-icons/react";
+import { SeloVerificado } from "@/components/cardapio/SeloVerificado";
+import { situacaoLoja } from "@/lib/agendaCardapio";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, BotaoIcone, Janela, Titulo, avisar } from "@/components/base";
 import { lerBannersProntos, CATEGORIAS_BANNER, type BannerPronto } from "@/lib/bannersProntos";
@@ -68,6 +70,9 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     if (ok) showSuccess();
   };
   const [nomeLoja, setNomeLoja] = useState("");
+  // (18/10) prévia do topo: cidade da loja (sem endereço, uma capital de exemplo) e o aberto/fechado
+  const [cidade, setCidade] = useState("");
+  const [horario, setHorario] = useState<unknown>(null);
   const [bannerUrl, setBannerUrl] = useState("");
   const [banner1Url, setBanner1Url] = useState("");
   const [banner2Url, setBanner2Url] = useState("");
@@ -105,12 +110,14 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("logo_url, foto_url, nome_loja, banner_url, banner1_url, banner2_url, banner3_url, banner_topo_url, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo, hide_stars, avaliacao_media").eq("id", user.id).single();
+      const { data } = await supabase.from("profiles").select("logo_url, foto_url, nome_loja, banner_url, banner1_url, banner2_url, banner3_url, banner_topo_url, endereco, horario, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo, hide_stars, avaliacao_media").eq("id", user.id).single();
       if (data) {
         setLogoUrl(data.logo_url || ""); setFotoPerfil((data as any).foto_url || "");
         setHideStars(!!(data as any).hide_stars);
         setAvaliacaoMedia(Number((data as any).avaliacao_media) || 5.0);
         setNomeLoja(data.nome_loja || "");
+        try { const e: any = typeof (data as any).endereco === "string" ? JSON.parse((data as any).endereco) : (data as any).endereco; setCidade(String(e?.cidade || "").trim()); } catch { setCidade(""); }
+        setHorario((data as any).horario ?? null);
         setBannerUrl(data.banner_url || "");
         setBanner1Url(data.banner1_url || "");
         setBanner2Url(data.banner2_url || "");
@@ -380,27 +387,25 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         <input ref={logoRef} type="file" accept="image/*" hidden onChange={handleLogoUpload} />
         <input ref={bannerTopoRef} type="file" accept="image/*" hidden onChange={recorteTopo.escolher} />
         <div className="ap-topo">
-          <div className="ap-topo-cv">
-          {bannerTopoUrl ? (
-            <div className="ap-topo-capa">
-              <button type="button" className="ap-topo-capa-bt" onClick={() => !uploading && bannerTopoRef.current?.click()} aria-label="Trocar a foto do topo">
-                <img src={bannerTopoUrl} alt="" />
-              </button>
-              <BotaoIcone rotulo="Tirar a foto do topo" variante="neutro" tamanho="p" className="ap-tirar ap-topo-x" onClick={handleRemoveBannerTopo}><X size={18} weight="bold" /></BotaoIcone>
-              {uploading === "banner-topo" && <span className="ap-topo-gira"><span className="ui-gira" aria-label="Enviando" /></span>}
-            </div>
-          ) : (
-            <button type="button" className="ap-topo-capa ap-topo-capa--vazia" onClick={() => !uploading && bannerTopoRef.current?.click()} disabled={!!uploading}>
-              {uploading === "banner-topo" ? <span className="ui-gira" aria-label="Enviando" /> : <span className="ap-topo-pill"><ImageIcon size={16} weight="bold" aria-hidden="true" />Pôr foto do topo</span>}
+          <div className={`ap-topo-capa${bannerTopoUrl ? " ap-topo-capa--foto" : ""}`} style={bannerTopoUrl ? undefined : { backgroundColor: corBorda }}>
+            <button type="button" className="ap-topo-capa-bt" onClick={() => !uploading && bannerTopoRef.current?.click()} disabled={!!uploading} aria-label={bannerTopoUrl ? "Trocar a foto do topo" : "Pôr a foto do topo"}>
+              {bannerTopoUrl ? <img src={bannerTopoUrl} alt="" /> : <span className="ap-topo-pill"><ImageIcon size={16} weight="bold" aria-hidden="true" />Pôr foto do topo</span>}
             </button>
-          )}
-          <button type="button" className="ap-topo-logo" onClick={() => !uploading && logoRef.current?.click()} aria-label={logoUrl ? "Trocar a logo" : "Enviar a logo"}>
-            {uploading === "logo" ? <span className="ui-gira" aria-label="Enviando" />
-              : (logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : <b>{(nomeLoja || "?").trim().charAt(0).toUpperCase()}</b>}
-            <i aria-hidden="true"><Camera size={12} weight="bold" /></i>
-          </button>
+            {bannerTopoUrl && <BotaoIcone rotulo="Tirar a foto do topo" variante="neutro" tamanho="p" className="ap-tirar ap-topo-x" onClick={handleRemoveBannerTopo}><X size={18} weight="bold" /></BotaoIcone>}
+            {(() => { const sit = situacaoLoja(horario as any); const aberto = !sit || sit.aberto; return (
+              <span className={`ap-topo-st${aberto ? " aberto" : ""}`}><i aria-hidden="true" />{aberto ? "Aberto agora" : "Fechado"}</span>
+            ); })()}
+            {uploading === "banner-topo" && <span className="ap-topo-gira"><span className="ui-gira" aria-label="Enviando" /></span>}
           </div>
-          <b className="ap-topo-nome">{nomeLoja || "Nome da sua loja"}</b>
+          <div className="ap-topo-corpo">
+            <button type="button" className="ap-topo-logo" style={{ borderColor: corBorda }} onClick={() => !uploading && logoRef.current?.click()} aria-label={logoUrl ? "Trocar a logo" : "Enviar a logo"}>
+              {uploading === "logo" ? <span className="ui-gira" aria-label="Enviando" />
+                : (logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : <b>{(nomeLoja || "?").trim().charAt(0).toUpperCase()}</b>}
+              <i aria-hidden="true"><Camera size={12} weight="bold" /></i>
+            </button>
+            <b className="ap-topo-nome"><span>{nomeLoja || "Nome da sua loja"}</span><SeloVerificado tamanho={18} /></b>
+            <span className="ap-topo-sl"><b style={{ color: corBorda }}>Sobre a loja</b><em aria-hidden="true">·</em><MapPin size={14} weight="bold" color={corBorda} aria-hidden="true" /><span>{cidade || "São Paulo"}</span></span>
+          </div>
         </div>
         <div className="ap-topo-bts">
           <Botao variante="secundario" tamanho="m" icone={<ImageIcon size={18} weight="bold" />} disabled={!!uploading} onClick={() => bannerTopoRef.current?.click()}>{bannerTopoUrl ? "Trocar foto" : "Foto do topo"}</Botao>
