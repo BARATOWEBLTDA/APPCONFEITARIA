@@ -38,7 +38,7 @@ const GRUPOS: Grupo[] = [
     label: "Vendas",
     items: [
       { label: "Agenda",     desc: "Entregas por dia",         path: "/agenda",      Icone: CalendarDots },
-      { label: "Mensagens prontas", desc: "Textos do WhatsApp", path: "/configuracoes/mensagens", Icone: ChatCircleText },
+      { label: "Mensagens do WhatsApp", desc: "Textos prontos", path: "/configuracoes/mensagens", Icone: ChatCircleText },
     ],
   },
   {

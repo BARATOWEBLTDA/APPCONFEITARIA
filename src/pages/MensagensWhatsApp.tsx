@@ -1,5 +1,5 @@
 import { useRef, useState, type ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowCounterClockwise, CaretRight, ChatCircleText, Info } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { explicarErro } from "@/lib/erros";
@@ -26,6 +26,8 @@ function textoZap(t: string): ReactNode[] {
 
 export default function MensagensWhatsApp() {
   const navigate = useNavigate();
+  // (18/10) aberta pela aba Cardápio: o voltar leva pra lá (senão, pra Configurações)
+  const voltarPara = (useLocation().state as any)?.de === "/cardapio" ? "/cardapio" : "/configuracoes";
   const { profile } = useProfile();
   const salvas = profile?.mensagens_whatsapp || {};
   const [editando, setEditando] = useState<Modelo | null>(null);
@@ -89,7 +91,7 @@ export default function MensagensWhatsApp() {
 
   return (
     <>
-      <AppPageHeader title="Mensagens" subtitle="Os textos do WhatsApp que o app escreve por você" onBack={() => navigate("/configuracoes")} />
+      <AppPageHeader title="Mensagens" subtitle="Os textos do WhatsApp que o app escreve por você" onBack={() => navigate(voltarPara)} />
       <div className="mz">
         <p className="mz-intro"><Info size={20} weight="bold" aria-hidden="true" />O app abre o WhatsApp com a mensagem pronta. Aqui você troca o texto do seu jeito.</p>
         <section className="mz-lista">

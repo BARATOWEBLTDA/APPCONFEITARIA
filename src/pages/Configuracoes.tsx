@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { INDICACAO_ATIVA } from "@/lib/recursos";
 import { useNavigate } from "react-router-dom";
-import { Bell, CaretRight, Crown, DownloadSimple, FileText, Gift, Lightbulb, PaintBrush, SignOut, SlidersHorizontal, Storefront, Bug, Trophy, Truck, User, WarningCircle, MagnifyingGlass, ChatCircleText } from "@phosphor-icons/react";
+import { Bell, CaretRight, Crown, DownloadSimple, FileText, Gift, Lightbulb,  SignOut, SlidersHorizontal, Storefront, Bug, Trophy, Truck, User, WarningCircle, MagnifyingGlass } from "@phosphor-icons/react";
 import { isStandalone } from "@/lib/installPrompt";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
@@ -52,7 +52,7 @@ const INDICE: Achado[] = [
   { nome: "Formas de pagamento", onde: "Minha loja › Dados da loja", palavras: "pix dinheiro cartão credito debito pagar", ir: "/checkout-config" },
   { nome: "Entrega e retirada", onde: "Minha loja › Dados da loja", palavras: "taxa de entrega frete retirar buscar delivery", ir: "/checkout-config" },
   { nome: "Logo, cores e banner", onde: "Minha loja › Aparência", palavras: "logotipo cor tema modelo imagem capa visual", ir: "/cardapio-design" },
-  { nome: "Mensagens prontas", onde: "Minha loja", palavras: "whatsapp textos modelo resposta cliente", ir: "/configuracoes/mensagens" },
+  { nome: "Mensagens do WhatsApp", onde: "Cardápio", palavras: "whatsapp textos modelo resposta cliente", ir: "/configuracoes/mensagens" },
   { nome: "Custos fixos", onde: "Financeiro › Custos", palavras: "aluguel luz internet agua conta mensal", ir: "/custos" },
   { nome: "Salário e jornada", onde: "Financeiro › Custos", palavras: "mao de obra hora horas custo da hora trabalho", ir: "/custos" },
   { nome: "Taxa da maquininha", onde: "Financeiro › Custos", palavras: "cartão credito debito custos variaveis embalagem", ir: "/custos" },
@@ -275,9 +275,8 @@ export default function Configuracoes() {
 
             {/* (15/10) as telas da loja também por aqui (antes só pelo Cardápio e pelo menu) */}
             <h2 className="cf9-sec">Minha loja</h2>
-            <ItemConfig icone={<Storefront size={20} weight="bold" />} nome="Dados da loja" apoio="Loja, entrega e pagamento" onClick={() => navigate("/cardapio-config", { state: { de: "/configuracoes" } })} />
-            <ItemConfig icone={<PaintBrush size={20} weight="bold" />} nome="Aparência" apoio="Cores, logo e modelo" onClick={() => navigate("/cardapio-design", { state: { de: "/configuracoes" } })} />
-            <ItemConfig icone={<ChatCircleText size={20} weight="bold" />} nome="Mensagens prontas" apoio="Textos do WhatsApp" onClick={() => navigate("/configuracoes/mensagens")} />
+            {/* (18/10) um item só: leva pra aba Cardápio, onde ficam dados da loja, aparência e mensagens */}
+            <ItemConfig icone={<Storefront size={20} weight="bold" />} nome="Configurações da loja" apoio="Dados, aparência e mensagens" onClick={() => navigate("/cardapio")} />
 
             {/* (15/10) ordem pelo uso: o mais usado primeiro */}
             <h2 className="cf9-sec">App</h2>

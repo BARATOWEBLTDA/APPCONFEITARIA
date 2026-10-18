@@ -8,7 +8,7 @@ import {
   ChartBar, Eye, Cake, Storefront, Sliders, PaintBrush, Tag,
   Share, Percent, ForkKnife, Copy, CheckCircle, Warning, Lightbulb,
   TrendUp, TrendDown, ShoppingBag, Users as UsersIcon, CurrencyDollar,
-  CaretRight, SquaresFour, Stack, Crown, Package, WarningCircle,
+  CaretRight, SquaresFour, Stack, Crown, Package, WarningCircle, ChatCircleText,
 } from "@phosphor-icons/react";
 import { Botao, TelaVazia } from "@/components/base";
 import { useProfile, getCardapioUrl, isPro } from "@/hooks/useProfile";
@@ -410,6 +410,17 @@ export default function Cardapio() {
             <div className="cd-quick-info">
               <div className="cd-quick-name">Dados da loja</div>
               <div className="cd-quick-desc cd-quick-desc--2l">Loja, entrega e pagamento</div>
+            </div>
+            <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
+          </button>
+          {/* (18/10) Mensagens do WhatsApp também ficam aqui (saíram de Configurações) */}
+          <button className="cd-quick-item" onClick={() => navigate("/configuracoes/mensagens", { state: { de: "/cardapio" } })}>
+            <span className="cd-quick-ico cd-quick-ico--pink">
+              <ChatCircleText size={20} weight="bold" />
+            </span>
+            <div className="cd-quick-info">
+              <div className="cd-quick-name">Mensagens do WhatsApp</div>
+              <div className="cd-quick-desc cd-quick-desc--2l">Textos que o app escreve por você</div>
             </div>
             <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
           </button>
