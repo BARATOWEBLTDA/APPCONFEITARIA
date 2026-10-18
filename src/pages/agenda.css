@@ -107,3 +107,7 @@ i.atr { background: var(--ui-vermelho); }
 @media (min-width: 901px) {
   .ag3-d { min-height: 56px; }
 }
+
+/* (18/10) legenda em 2 + 2, centralizada (antes ficava 3 numa linha e 1 sozinho embaixo) */
+.ag3-leg { display: grid; grid-template-columns: repeat(2, max-content); justify-content: center; gap: 6px 28px; }
+@media (min-width: 560px) { .ag3-leg { grid-template-columns: repeat(4, max-content); gap: 6px 20px; } }
