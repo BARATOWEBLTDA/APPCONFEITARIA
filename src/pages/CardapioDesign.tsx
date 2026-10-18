@@ -6,7 +6,7 @@ import { usePlano } from "@/hooks/usePlano";
 import { HexColorPicker } from "react-colorful";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import { useRecorte } from "@/components/ui/useRecorte";
-import { ArrowCounterClockwise, ArrowsClockwise, Check, Crown, Image as ImageIcon, Images, Layout, Lock, Palette, Storefront, UploadSimple, X } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, ArrowsClockwise, Camera, Check, Crown, Image as ImageIcon, Images, Layout, Lock, Palette, Sparkle, Storefront, UploadSimple, X } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, BotaoIcone, Janela, Titulo, avisar } from "@/components/base";
 import { lerBannersProntos, CATEGORIAS_BANNER, type BannerPronto } from "@/lib/bannersProntos";
@@ -350,7 +350,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
 
   const modeloAtivo = modeloAtivoCalc(cardapioModelo);
   const ProSlot = ({ n }: { n: number }) => (
-    <button type="button" className="ap-slot ap-slot--pro" onClick={() => avisar("Os banners 2, 3 e 4 são do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } })} aria-label={`Banner ${n}, no plano PRO`}>
+    <button type="button" className="ap-slot ap-slot--pro" onClick={() => avisar("Os banners 2 a 4 são do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } })} aria-label={`Banners ${n} a 4, no plano PRO`}>
       <Lock size={20} weight="bold" aria-hidden="true" /><b>No PRO</b>
     </button>
   );
@@ -374,52 +374,44 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     )}
     <div className="ap">
 
-      {/* Logo */}
+      {/* (18/10) Topo do cardápio: foto do topo e logo numa prévia só, do jeito que o cliente vê */}
       <section className="ap-card ap-largo">
-        <Cabeca Ic={Storefront} titulo="Logo da loja" apoio="Aparece no topo do cardápio, junto do nome" />
+        <Cabeca Ic={Storefront} titulo="Topo do cardápio" apoio="É assim que o cliente vê" />
         <input ref={logoRef} type="file" accept="image/*" hidden onChange={handleLogoUpload} />
-        <div className="ap-logo">
-          <button type="button" className="ap-logo-circ" onClick={() => logoRef.current?.click()} aria-label={logoUrl ? "Trocar a logo" : "Enviar a logo"}>
-            {(logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : <span>{(nomeLoja || "?").trim().charAt(0).toUpperCase()}</span>}
-          </button>
-          <div className="ap-logo-tx">
-            <b>{logoUrl ? "Sua logo" : fotoPerfil ? "Usando a sua foto de perfil" : "Nenhuma logo ainda"}</b>
-            <span>{logoUrl ? "Pode trocar quando quiser." : fotoPerfil ? "Se tiver uma logo, envie aqui. Ela aparece no lugar da foto." : "Sem logo, o cardápio mostra a primeira letra do nome."}</span>
-            {!logoUrl && fotoPerfil && <em><Check size={14} weight="bold" aria-hidden="true" />Já aparece no seu cardápio</em>}
-          </div>
-          <Botao variante="secundario" tamanho="m" className="ap-logo-bt" icone={<UploadSimple size={20} weight="bold" />} carregando={uploading === "logo"} onClick={() => logoRef.current?.click()}>
-            {uploading === "logo" ? "Enviando…" : logoUrl ? "Trocar logo" : "Enviar logo"}
-          </Botao>
-        </div>
-      </section>
-
-      {/* Foto do topo (só no Modelo 1) */}
-      {modeloAtivo === "modelo1" && (
-        <section className="ap-card ap-largo">
-          <Cabeca Ic={ImageIcon} titulo="Foto do topo" apoio="Fica atrás da logo, no topo do cardápio. Use uma foto deitada, de 1200 × 400." />
+        <input ref={bannerTopoRef} type="file" accept="image/*" hidden onChange={recorteTopo.escolher} />
+        <div className="ap-topo">
+          <div className="ap-topo-cv">
           {bannerTopoUrl ? (
-            <div className="ap-img ap-img--topo">
-              <img src={bannerTopoUrl} alt="Foto do topo" />
-              <span className="ap-img-sombra" aria-hidden="true" />
-              <div className="ap-img-acoes">
-                <button type="button" className="ap-chip" onClick={() => bannerTopoRef.current?.click()}><ArrowsClockwise size={16} weight="bold" />Trocar</button>
-                <BotaoIcone rotulo="Tirar a foto do topo" variante="neutro" tamanho="p" className="ap-tirar" onClick={handleRemoveBannerTopo}><X size={18} weight="bold" /></BotaoIcone>
-              </div>
+            <div className="ap-topo-capa">
+              <button type="button" className="ap-topo-capa-bt" onClick={() => !uploading && bannerTopoRef.current?.click()} aria-label="Trocar a foto do topo">
+                <img src={bannerTopoUrl} alt="" />
+              </button>
+              <BotaoIcone rotulo="Tirar a foto do topo" variante="neutro" tamanho="p" className="ap-tirar ap-topo-x" onClick={handleRemoveBannerTopo}><X size={18} weight="bold" /></BotaoIcone>
+              {uploading === "banner-topo" && <span className="ap-topo-gira"><span className="ui-gira" aria-label="Enviando" /></span>}
             </div>
           ) : (
-            <button type="button" className="ap-enviar ap-img--topo" onClick={() => !uploading && bannerTopoRef.current?.click()} disabled={!!uploading}>
-              {uploading === "banner-topo" ? <span className="ui-gira" aria-label="Enviando" /> : <><UploadSimple size={24} weight="bold" /><b>Escolher foto do topo</b><small>Deitada, 1200 × 400</small></>}
+            <button type="button" className="ap-topo-capa ap-topo-capa--vazia" onClick={() => !uploading && bannerTopoRef.current?.click()} disabled={!!uploading}>
+              {uploading === "banner-topo" ? <span className="ui-gira" aria-label="Enviando" /> : <span className="ap-topo-pill"><ImageIcon size={16} weight="bold" aria-hidden="true" />Pôr foto do topo</span>}
             </button>
           )}
-          <input ref={bannerTopoRef} type="file" accept="image/*" hidden onChange={recorteTopo.escolher} />
-        </section>
-      )}
+          <button type="button" className="ap-topo-logo" onClick={() => !uploading && logoRef.current?.click()} aria-label={logoUrl ? "Trocar a logo" : "Enviar a logo"}>
+            {uploading === "logo" ? <span className="ui-gira" aria-label="Enviando" />
+              : (logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : <b>{(nomeLoja || "?").trim().charAt(0).toUpperCase()}</b>}
+            <i aria-hidden="true"><Camera size={12} weight="bold" /></i>
+          </button>
+          </div>
+          <b className="ap-topo-nome">{nomeLoja || "Nome da sua loja"}</b>
+        </div>
+        <div className="ap-topo-bts">
+          <Botao variante="secundario" tamanho="m" icone={<ImageIcon size={18} weight="bold" />} disabled={!!uploading} onClick={() => bannerTopoRef.current?.click()}>{bannerTopoUrl ? "Trocar foto" : "Foto do topo"}</Botao>
+          <Botao variante="secundario" tamanho="m" icone={<UploadSimple size={18} weight="bold" />} disabled={!!uploading} onClick={() => logoRef.current?.click()}>{logoUrl ? "Trocar logo" : "Enviar logo"}</Botao>
+        </div>
+      </section>
 
       {/* Banners de promoção */}
       <section className="ap-card ap-largo">
         <Cabeca Ic={Images} titulo="Banners de promoção"
-          apoio={(isPro ? "Rodam em carrossel no cardápio. Use pra promoções e novidades." : "Anuncie a promoção do mês. No PRO, até 4 banners rodam em carrossel.") + " Tamanho ideal: 1200 × 675, deitado."} />
-        <Botao variante="link" tamanho="p" className="ap-ex-bt" onClick={() => setVerExemplo(true)}>Ver um exemplo de banner</Botao>
+          apoio={isPro ? "Em carrossel · deitado, 1200 × 675" : "Deitado, 1200 × 675"} />
         <div className="ap-banners">
           {(isPro ? [0, 1, 2, 3] : [0]).map(i => (
             <div key={i} className="ap-banner">
@@ -440,11 +432,9 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
               <input ref={bannerRefs[i]} type="file" accept="image/*" hidden onChange={e => { bannerIdx.current = i; recorteBanner.escolher(e); }} />
             </div>
           ))}
-          {!isPro && [2, 3, 4].map(n => (
-            <div key={n} className="ap-banner"><span className="ap-banner-r">Banner {n}</span><ProSlot n={n} /></div>
-          ))}
+          {!isPro && <div className="ap-banner"><span className="ap-banner-r">Banners 2 a 4</span><ProSlot n={2} /></div>}
         </div>
-        <Botao variante="secundario" cheio icone={<Images size={20} weight="bold" />} onClick={abrirGaleria}>Escolher um banner pronto</Botao>
+        <button type="button" className="ap-gal-link" onClick={abrirGaleria}><Sparkle size={18} weight="bold" aria-hidden="true" />Usar um banner pronto</button>
       </section>
 
       {identityCard}

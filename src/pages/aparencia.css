@@ -117,3 +117,23 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-gal-pro { position: absolute; top: 8px; left: 8px; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; background: var(--chocolate); color: var(--ui-branco); font-size: 12px; font-weight: 700; }
 .ap-gal-gira { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.6); color: var(--ui-rosa); }
 .ap-gal-vazio { display: flex; justify-content: center; margin: 0; padding: 32px 8px; font-size: 14px; color: var(--ui-texto-2); text-align: center; }
+
+/* (18/10) Topo do cardápio: prévia com a foto do topo e a logo no canto direito */
+.ap-cab-ic { background: var(--ui-rosa); color: var(--ui-branco); }
+.ap-topo { padding-bottom: 4px; }
+.ap-topo-cv { position: relative; }
+.ap-topo-capa { position: relative; display: block; width: 100%; aspect-ratio: 3 / 1; min-height: 96px; margin: 0; padding: 0; border: 0; border-radius: var(--ui-raio); overflow: hidden; background: var(--ui-cinza); }
+.ap-topo-capa-bt { display: block; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; background: none; cursor: pointer; }
+.ap-topo-capa-bt img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ap-topo-capa--vazia { display: flex; align-items: center; justify-content: center; cursor: pointer; background: repeating-linear-gradient(135deg, var(--ui-rosa-claro) 0 10px, #FFFFFF 10px 20px); border: 1.5px dashed var(--ui-borda-campo); color: var(--ui-rosa-escuro); }
+.ap-topo-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; background: rgba(255,255,255,.92); color: var(--ui-rosa-escuro); font-size: 13.5px; font-weight: 700; white-space: nowrap; }
+.ap-topo-x { position: absolute; top: 8px; left: 8px; }
+.ap-topo-gira { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.6); color: var(--ui-rosa); }
+.ap-topo-logo { position: absolute; right: 12px; bottom: -30px; z-index: 2; width: 64px; height: 64px; margin: 0; padding: 0; border: 3px solid var(--ui-branco); border-radius: 50%; background: var(--ui-cinza); box-shadow: 0 2px 8px rgba(44,18,25,.18); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ui-rosa); }
+.ap-topo-logo img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+.ap-topo-logo b { font-size: 24px; font-weight: 700; color: var(--ui-texto-3); }
+.ap-topo-logo i { position: absolute; right: -3px; bottom: -3px; width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--ui-branco); background: var(--ui-rosa); color: var(--ui-branco); display: flex; align-items: center; justify-content: center; }
+.ap-topo-nome { display: block; margin-top: 10px; padding-right: 84px; font-size: 16px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ap-topo-bts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: -4px; }
+.ap-topo-bts .ui-bt { white-space: nowrap; }
+.ap-gal-link { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; margin: -4px 0; padding: 0; border: 0; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; }
