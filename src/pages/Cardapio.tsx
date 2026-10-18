@@ -413,25 +413,31 @@ export default function Cardapio() {
             </div>
             <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
           </button>
+          {/* (17/10) Aparência e Métricas viraram itens da lista, com o ícone em destaque */}
+          <button className="cd-quick-item" onClick={() => navigate("/cardapio-design")}>
+            <span className="cd-quick-ico cd-quick-ico--grad">
+              <PaintBrush size={20} weight="bold" />
+            </span>
+            <div className="cd-quick-info">
+              <div className="cd-quick-name">Aparência</div>
+              <div className="cd-quick-desc cd-quick-desc--2l">Logo, banners e modelo</div>
+            </div>
+            <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
+          </button>
+          {!isPro(profile) && (
+            <button className="cd-quick-item" onClick={() => navigate("/assinar")}>
+              <span className="cd-quick-ico cd-quick-ico--pro">
+                <ChartBar size={20} weight="bold" />
+              </span>
+              <div className="cd-quick-info">
+                <div className="cd-quick-name">Métricas</div>
+                <div className="cd-quick-desc cd-quick-desc--2l">Visitas e pedidos pelo link</div>
+              </div>
+              <span className="cd-quick-pro"><Crown size={13} weight="fill" aria-hidden="true" />PRO</span>
+            </button>
+          )}
         </div>
       </div>
-
-      {/* (17/10) Aparência em destaque: moldura em degradê, brilhinhos e o que tem dentro (chips fixos) */}
-      <button type="button" className="cd-ap" onClick={() => navigate("/cardapio-design")}>
-        <svg className="cd-ap-sp s1" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0c.8 6.4 5.6 11.2 12 12-6.4.8-11.2 5.6-12 12-.8-6.4-5.6-11.2-12-12C6.4 11.2 11.2 6.4 12 0z" /></svg><svg className="cd-ap-sp s2" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0c.8 6.4 5.6 11.2 12 12-6.4.8-11.2 5.6-12 12-.8-6.4-5.6-11.2-12-12C6.4 11.2 11.2 6.4 12 0z" /></svg><svg className="cd-ap-sp s3" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0c.8 6.4 5.6 11.2 12 12-6.4.8-11.2 5.6-12 12-.8-6.4-5.6-11.2-12-12C6.4 11.2 11.2 6.4 12 0z" /></svg>
-        <span className="cd-ap-in">
-          <span className="cd-ap-top">
-            <span className="cd-ap-ico"><PaintBrush size={24} weight="bold" /></span>
-            <span className="cd-ap-tx"><b>Aparência</b><small>Logo, banners e modelo</small></span>
-            <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
-          </span>
-          <span className="cd-ap-dica">Cardápio bonito passa confiança e vende mais</span>
-          <span className="cd-ap-chips">
-            <span>Logo</span><span>Foto do topo</span><span>Banners</span>
-            <span className={isPro(profile) ? "" : "pro"}>{!isPro(profile) && <Crown size={11} weight="fill" aria-hidden="true" />}Cores</span>
-          </span>
-        </span>
-      </button>
 
       {/* ── Métricas de performance (função PRO) ── */}
       {isPro(profile) ? (
@@ -561,13 +567,7 @@ export default function Cardapio() {
         </div>
       )}
       </>
-      ) : (
-      <button type="button" className="cd-pro" onClick={() => navigate("/assinar")}>
-        <span className="cd-pro-ic" aria-hidden="true"><ChartBar size={20} weight="bold" /></span>
-        <span className="cd-pro-tx"><b>Métricas do cardápio</b><small>Visitas e pedidos pelo link</small></span>
-        <span className="cd-pro-bt"><Crown size={14} weight="fill" aria-hidden="true" />PRO</span>
-      </button>
-      )}
+      ) : null /* (17/10) grátis: as Métricas aparecem como item da lista do Catálogo, com o selo PRO */}
 
       {/* Alertas */}
       {alertas.length > 0 && (
@@ -1136,24 +1136,10 @@ export default function Cardapio() {
         .cardapio-hub .cd-quick-desc { font-size: 13px; color: var(--ui-texto-2); margin-top: 2px; }
         /* (17/10) texto fixo: em tela estreita quebra em 2 linhas equilibradas, sem cortar */
         .cardapio-hub .cd-quick-desc--2l { -webkit-line-clamp: 2; text-wrap: balance; }
-        /* (17/10) card Aparência em destaque */
-        .cardapio-hub .cd-ap { position: relative; display: block; width: auto; margin: -16px 0 0; padding: 2px; border: 0; border-radius: 20px; background: linear-gradient(120deg, #F472B6, #C084FC 55%, #A855F7); box-shadow: 0 6px 18px rgba(168,85,247,.18); font-family: inherit; text-align: left; cursor: pointer; }
-        .cardapio-hub .cd-ap-in { display: block; padding: 16px 14px 14px; border-radius: 18px; background: linear-gradient(135deg, #FFF5FA, #F8F1FF); }
-        .cardapio-hub .cd-ap-top { display: flex; align-items: center; gap: 12px; }
-        .cardapio-hub .cd-ap-ico { flex: none; width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, #F472B6, #A855F7); color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(168,85,247,.3); }
-        .cardapio-hub .cd-ap-tx { flex: 1; min-width: 0; }
-        .cardapio-hub .cd-ap-tx b { display: block; font-size: 16px; color: var(--ui-texto); }
-        .cardapio-hub .cd-ap-tx small { display: block; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cardapio-hub .cd-ap-dica { display: block; margin: 10px 0; padding-top: 10px; border-top: 1px dashed #E9D5F5; font-size: 12.5px; color: #7A5A88; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cardapio-hub .cd-ap-chips { display: flex; gap: 5px; overflow: hidden; }
-        .cardapio-hub .cd-ap-chips > span { display: inline-flex; align-items: center; gap: 3px; flex: none; padding: 4px 7px; border-radius: 7px; background: #fff; border: 1px solid #EBDDF3; font-size: 11.5px; font-weight: 600; color: #4A3550; white-space: nowrap; }
-        .cardapio-hub .cd-ap-chips > span.pro { color: #6D28D9; }
-        .cardapio-hub .cd-ap-sp { position: absolute; z-index: 2; fill: #D46BD9; animation: cd-ap-pisca 2.6s ease-in-out infinite; }
-        .cardapio-hub .cd-ap-sp.s1 { top: -7px; right: 30px; width: 14px; height: 14px; }
-        .cardapio-hub .cd-ap-sp.s2 { top: 12px; right: 10px; width: 10px; height: 10px; animation-delay: .9s; }
-        .cardapio-hub .cd-ap-sp.s3 { bottom: -6px; left: 34px; width: 12px; height: 12px; animation-delay: 1.7s; }
-        @keyframes cd-ap-pisca { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.7); } }
-        @media (prefers-reduced-motion: reduce) { .cardapio-hub .cd-ap-sp { animation: none; } }
+        /* (17/10) ícones em destaque na lista: Aparência em degradê, Métricas com cara de PRO */
+        .cardapio-hub .cd-quick-ico--grad { background: linear-gradient(135deg, #F472B6, #A855F7) !important; color: #fff !important; box-shadow: 0 3px 8px rgba(168,85,247,.28); }
+        .cardapio-hub .cd-quick-ico--pro { background: linear-gradient(135deg, #3A2219, #6B3A28) !important; color: #F5C76B !important; box-shadow: 0 3px 8px rgba(58,34,25,.25); }
+        .cardapio-hub .cd-quick-pro { flex: none; display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; padding: 4px 9px; border-radius: 7px; background: var(--chocolate, #3A2219); color: #F5C76B; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
         .cardapio-hub .cd-quick-arrow { color: var(--ui-texto-3); }
         /* (16/10) PRO: uma faixa fina no fim, não um cartão grande */
         .cd-pro { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); color: var(--ui-texto); font-family: var(--font-base); text-align: left; cursor: pointer; }
