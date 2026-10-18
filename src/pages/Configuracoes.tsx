@@ -264,17 +264,24 @@ export default function Configuracoes() {
               </section>
             );
           })() : (<>
-          <section className="cf9-card cf9-lista" aria-label="Configurações">
-            <h2 className="cf9-sec">Conta</h2>
-            {/* (18/10) os 3 principais em destaque (chocolate): a loja primeiro, depois a conta e a assinatura */}
-            <ItemConfig icone={<Storefront size={20} weight="bold" />} tom="choco" nome="Configurações da loja" apoio="Dados, aparência e mensagens" onClick={() => navigate("/cardapio")} />
-            <ItemConfig icone={preview ? <img className="cf9-ic-foto" src={preview} alt="" /> : <User size={20} weight="bold" />} tom="choco" nome="Minha conta"
-              apoio={userEmail || "Foto, nome, telefone e senha"}
-              onClick={() => { setError(""); setSenhaMsg(""); setRascunho({ nome: form.nome, telefone: form.telefone }); setEditarOpen(true); }} />
-            <ItemConfig icone={<Crown size={20} weight="fill" />} tom="choco" nome="Minha assinatura"
-              apoio={pro ? "Plano PRO · ativo" : "Plano grátis · conheça o PRO"} destaque={!pro}
-              onClick={() => navigate(pro ? "/minha-assinatura" : "/assinar")} />
+          {/* (18/10) Conta em 3 quadradões lado a lado (loja, conta e assinatura); assinatura PRO ganha a coroa dourada */}
+          <h2 className="cf9-sec cf9-sec--fora">Conta</h2>
+          <div className="cf9-tiles">
+            <button type="button" className="cf9-tile" onClick={() => navigate("/cardapio")}>
+              <span className="cf9-tile-ic" aria-hidden="true"><Storefront size={24} weight="bold" /></span>
+              <b>Loja</b><small>Dados e visual</small>
+            </button>
+            <button type="button" className="cf9-tile" onClick={() => { setError(""); setSenhaMsg(""); setRascunho({ nome: form.nome, telefone: form.telefone }); setEditarOpen(true); }}>
+              <span className="cf9-tile-ic" aria-hidden="true"><User size={24} weight="bold" /></span>
+              <b>Conta</b><small>Nome e senha</small>
+            </button>
+            <button type="button" className={`cf9-tile${pro ? " cf9-tile--pro" : " cf9-tile--gratis"}`} onClick={() => navigate(pro ? "/minha-assinatura" : "/assinar")}>
+              <span className="cf9-tile-ic" aria-hidden="true"><Crown size={24} weight="fill" /></span>
+              <b>Assinatura</b><small>{pro ? "PRO ativo" : "Conheça o PRO"}</small>
+            </button>
+          </div>
 
+          <section className="cf9-card cf9-lista" aria-label="Configurações">
             {/* (15/10) ordem pelo uso: o mais usado primeiro */}
             <h2 className="cf9-sec">App</h2>
             <ItemConfig icone={<Bell size={20} weight="bold" />} nome="Notificações e sons" apoio="Avisos e sons do app" onClick={() => navigate("/configuracoes/notificacoes")} />
