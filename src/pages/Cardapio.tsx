@@ -431,7 +431,7 @@ export default function Cardapio() {
             </span>
             <div className="cd-quick-info">
               <div className="cd-quick-name">Aparência</div>
-              <div className="cd-quick-desc cd-quick-desc--2l">Logo, banners e modelo</div>
+              <div className="cd-quick-desc cd-quick-desc--2l">Logo, banners e cores</div>
             </div>
             <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
           </button>

@@ -238,7 +238,7 @@ function CardapioContent() {
       }
 
       setDesign(design); setConfig(config); setProdutos(produtos)
-      setIsPro(isPro || false); setCardapioModelo(modelo === 'padrao' && isPro ? 'padrao' : 'modelo1'); setCategoryImages(categoryImages || {})
+      setIsPro(isPro || false); void modelo; setCardapioModelo('modelo1') /* (18/10) só o Clássico por enquanto */; setCategoryImages(categoryImages || {})
       setCategoriasList(categoriasList || [])
       // 10/10: a loja fica guardada nesta aba (lojaAtual); o localStorage segue gravado, só de reserva
       const checkoutConfig = config ? {

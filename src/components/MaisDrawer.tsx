@@ -70,7 +70,7 @@ const GRUPOS: Grupo[] = [
     items: [
       { label: "Ver meu cardápio", desc: "Como o cliente vê",         path: "/cardapio-preview", Icone: Eye },
       { label: "Dados da loja",    desc: "Loja, entrega e pagamento", path: "/cardapio-config",  Icone: Storefront },
-      { label: "Aparência",        desc: "Logo, banners e modelo",    path: "/cardapio-design",  Icone: PaintBrush },
+      { label: "Aparência",        desc: "Logo, banners e cores",     path: "/cardapio-design",  Icone: PaintBrush },
     ],
   },
   {

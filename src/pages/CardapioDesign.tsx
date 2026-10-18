@@ -76,7 +76,8 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
   const [uploading, setUploading] = useState<string | null>(null);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const { isPro } = usePlano();
-  const modeloAtivoCalc = (m: string) => (m === "padrao" && isPro ? "padrao" : "modelo1");
+  // (18/10) Por enquanto só existe o Clássico (logo no canto direito). Novos modelos vêm depois.
+  const modeloAtivoCalc = (_m: string) => "modelo1" as "modelo1" | "padrao";
   const [cardapioModelo, setCardapioModelo] = useState("modelo1");
   // "Padrão" é exclusivo PRO: quem não é PRO usa o Modelo 1 (inclusive contas antigas que estavam no "Padrão")
   const [salvandoModelo, setSalvandoModelo] = useState(false);
@@ -342,7 +343,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
 
   if (loading) return (
     <>
-      {!identityCard && <AppPageHeader title="Aparência" subtitle="Logo, banners, modelo e cores" onBack={() => navigate(voltarPara)} />}
+      {!identityCard && <AppPageHeader title="Aparência" subtitle="Logo, banners e cores" onBack={() => navigate(voltarPara)} />}
       <div className="ap-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
     </>
   );
@@ -362,13 +363,13 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     {/* (11/10) fora da seção "Foto do topo": no modelo Premium ela não existe e o recorte do banner não abria */}
     {recorteTopo.janela}{recorteBanner.janela}
     {!identityCard && (
-      <AppPageHeader title="Aparência" subtitle="Logo, banners, modelo e cores" onBack={() => navigate(voltarPara)}
+      <AppPageHeader title="Aparência" subtitle="Logo, banners e cores" onBack={() => navigate(voltarPara)}
         infoIcon="🎨"
         infoContent={<>
-          <p>Aqui você deixa o <strong>cardápio com a cara da sua confeitaria</strong>: a logo, os banners de promoção e o modelo da página.</p>
+          <p>Aqui você deixa o <strong>cardápio com a cara da sua confeitaria</strong>: a logo, os banners de promoção e as cores.</p>
           <p>Tudo é salvo na hora e já aparece pros seus clientes. Use o <strong>"Ver meu cardápio"</strong> pra conferir como ficou.</p>
         </>}
-        infoTip={<>As <strong>cores</strong> e o modelo <strong>Premium</strong> são do plano PRO.</>}
+        infoTip={<>As <strong>cores</strong> são do plano PRO.</>}
       />
     )}
     <div className="ap">
@@ -448,7 +449,8 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
 
       {identityCard}
 
-      {/* Modelo */}
+      {/* (18/10) Modelo do cardápio oculto: só o Clássico por enquanto */}
+      {false && (
       <section className="ap-card ap-largo">
         <Cabeca Ic={Layout} titulo="Modelo do cardápio" apoio="Como o cliente vê a sua loja" />
         <div className="ap-modelos" role="radiogroup" aria-label="Modelo do cardápio">
@@ -475,6 +477,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
           </button>
         </div>
       </section>
+      )}
 
       {/* Cores */}
       <section className="ap-card ap-largo">
