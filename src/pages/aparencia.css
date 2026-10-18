@@ -146,3 +146,9 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-topo-bts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: -4px; }
 .ap-topo-bts .ui-bt { white-space: nowrap; }
 .ap-gal-link { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; margin: -4px 0; padding: 0; border: 0; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; }
+
+/* (18/10) cores prontas (a principal) */
+.ap-prontas { display: flex; flex-wrap: nowrap; gap: 10px; padding-left: 4px; }
+.ap-prontas button { display: flex; align-items: center; justify-content: center; flex: none; width: 36px; height: 36px; margin: 0; padding: 0; border: 0; border-radius: 50%; color: #fff; cursor: pointer; box-shadow: 0 0 0 3px var(--ui-branco), 0 0 0 4px var(--ui-borda); }
+.ap-prontas button.on { box-shadow: 0 0 0 3px var(--ui-branco), 0 0 0 5px var(--ui-texto); }
+.ap-cores-nota { display: flex; align-items: center; gap: 6px; margin: -4px 0 0; font-size: 13.5px; color: var(--ui-texto-2); white-space: nowrap; }

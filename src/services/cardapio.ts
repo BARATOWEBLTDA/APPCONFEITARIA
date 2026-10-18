@@ -1,3 +1,4 @@
+import { corPrincipal, corTopo } from '@/lib/coresCardapio'
 import { supabase } from '@/lib/supabase'
 import { fotoDaLoja } from '@/hooks/useProfile'
 import { Produto, DesignSettings, Configuracoes } from '@/types/database'
@@ -111,9 +112,9 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     ? profile.slug_personalizado
     : 'cardapio'
 
-  // Cores personalizadas são PRO (02/10): no grátis o cardápio usa o rosa do Doonly.
-  // As cores escolhidas ficam guardadas e voltam sozinhas se ela virar PRO.
-  const cores: any = isPro ? profile : {}
+  // (18/10) Duas cores: principal (grátis escolhe entre as prontas, PRO qualquer uma) e topo (só PRO).
+  const principal = corPrincipal(profile.cor_botao, isPro)
+  const topo = corTopo(profile.cor_navbar, isPro)
 
   const design: DesignSettings = {
     user_id: userId,
@@ -125,16 +126,16 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     banner2_url: profile.banner2_url || '',
     banner3_url: profile.banner3_url || '',
     banner_topo_url: profile.banner_topo_url || '',
-    cor_borda: cores.cor_borda || '#ec4899',
-    cor_background: cores.cor_background || '#fef2f2',
-    cor_nome: cores.cor_nome || '#1f2937',
+    cor_borda: principal,
+    cor_background: '#fef2f2', // fundo fixo (padrão)
+    cor_nome: '#1f2937', // nome automático
     banner_gradient: profile.banner_gradient || '',
     // Estrelas de avaliação removidas (02/10): ficavam deslocadas ao lado do selo de verificado
     hide_stars: true,
-    cor_botao: cores.cor_botao || '#ec4899',
-    cor_navbar: cores.cor_navbar || cores.cor_borda || '#BF6B84', // (14/10) topo padrão em rosa antigo, mais suave que o rosa forte
-    cor_sacola: cores.cor_sacola || '#ec4899',
-    cor_rodape: cores.cor_rodape || '#ec4899',
+    cor_botao: principal,
+    cor_navbar: topo,
+    cor_sacola: principal,
+    cor_rodape: principal,
     ocultar_categorias: profile.ocultar_categorias || false,
   }
 

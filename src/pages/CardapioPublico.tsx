@@ -24,6 +24,7 @@ import { MapPin, House, MagnifyingGlass, ShoppingBag, Storefront, User, X } from
 import { SobreLoja } from '@/components/cardapio/SobreLoja'
 import { useCart } from '@/hooks/useCart'
 import { formatCurrency } from '@/utils/helpers'
+import { corClara } from '@/lib/coresCardapio'
 import './cardapioPublico.css'
 
 /* ══════════════════════════════════════════════ */
@@ -36,7 +37,6 @@ import './cardapioPublico.css'
 // Cor do nome da loja (02/10): sem cor escolhida, branco no computador (faixa) e escuro no celular.
 const COR_NOME_PADRAO = ["", "#1f2937", "#000000", "#000", "#111111"];
 const corNomeEscolhida = (c?: string | null) => (c && !COR_NOME_PADRAO.includes(c.trim().toLowerCase()) ? c : null);
-const corNomeComputador = (c?: string | null) => corNomeEscolhida(c) || "#ffffff";
 const corNomeCelular = (c?: string | null) => corNomeEscolhida(c) || "#000000";
 const corValida = (c: string | undefined | null): boolean => {
   if (!c) return false
@@ -61,14 +61,14 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
 
   return (
     <>
-      <header className="cp-topo" style={{ background: navBg }}>
+      <header className={`cp-topo${corClara(navBg) ? ' cp-topo--clara' : ''}`} style={{ background: navBg }}>
         <div className="cp-topo-in">
           <div className="cp-topo-loja">
             <span className="cp-topo-logo" style={{ borderColor: corBorda }}>
               {design.logo_url ? <img src={design.logo_url} alt="" /> : <b style={{ background: corBorda }}>{design.nome_loja?.charAt(0)}</b>}
             </span>
             <div>
-              <p className="cp-topo-nome" style={{ color: corNomeComputador(design.cor_nome) }}>{design.nome_loja}{isPro && <SeloVerificado tamanho={20} />}</p>
+              <p className="cp-topo-nome" style={{ color: corClara(navBg) ? '#2C1219' : '#ffffff' }}>{design.nome_loja}{isPro && <SeloVerificado tamanho={20} />}</p>
               {sub && <p className="cp-topo-sub">{status && <i className={status.aberto ? 'aberto' : ''} aria-hidden="true" />}{sub}</p>}
               {cidade && <p className="cp-topo-cid"><MapPin size={15} weight="bold" aria-hidden="true" />{cidade}</p>}
             </div>
@@ -420,7 +420,7 @@ function CardapioContent() {
       <div className="cp-corpo">
         {!design.ocultar_categorias && categorias.length > 1 && (
           <aside className="cp-esq">
-            <DeskCategorias categories={categorias} counts={contagem} total={produtos.length} selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory} cor={corDoTopo(design)} />
+            <DeskCategorias categories={categorias} counts={contagem} total={produtos.length} selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory} cor={cor} />
           </aside>
         )}
 

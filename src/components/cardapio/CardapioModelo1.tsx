@@ -75,7 +75,7 @@ export function etiquetasDaLoja(config: Configuracoes | null, produtos: any[] = 
 
 export function CardapioModelo1({ design, config, verificada = false, produtos = [], aoAbrirSobre }: CardapioModeloProps & { aoAbrirSobre?: () => void }) {
   const [modalEndereco, setModalEndereco] = useState(false)
-  const accent = design.cor_borda || design.cor_botao || '#E85A8C'
+  const accent = design.cor_botao || design.cor_borda || '#E85A8C' // (18/10) a cor principal
   const ehBranco = (c?: string | null) => !c || ['#fff', '#ffffff', '#fefefe', 'white', 'transparent'].includes(c.trim().toLowerCase())
   const corFaixa = !ehBranco(design.cor_navbar) ? design.cor_navbar! : (!ehBranco(design.cor_borda) ? design.cor_borda! : '#BF6B84')
   const corIcone = !ehBranco(design.cor_botao) ? design.cor_botao! : accent

@@ -115,3 +115,8 @@
 .cp-banner.cp-banner--lado > div { padding: 0 !important; margin-bottom: 0 !important; }
 .cp-it > span small { display: block; }
 .cp-it-det { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* (18/10) topo em cor clara (PRO): textos e menu em chocolate pra continuar legível */
+.cp-topo--clara { color: #2C1219; }
+.cp-topo--clara .cp-topo-nav button { color: #2C1219 !important; }
+.cp-topo--clara .cp-topo-nav button:hover { background: rgba(44,18,25,.08); }

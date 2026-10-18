@@ -12,6 +12,7 @@ import { situacaoLoja } from "@/lib/agendaCardapio";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, BotaoIcone, Janela, Titulo, avisar } from "@/components/base";
 import { lerBannersProntos, CATEGORIAS_BANNER, type BannerPronto } from "@/lib/bannersProntos";
+import { CORES_PRONTAS, COR_PRINCIPAL_PADRAO, COR_TOPO_PADRAO, corClara, corPrincipal } from "@/lib/coresCardapio";
 import "./aparencia.css";
 
 /**
@@ -126,8 +127,8 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         setCorBorda(data.cor_borda || "#FF6FA9");
         setCorBackground(data.cor_background || "#FFF1F7");
         setCorNome(data.cor_nome || "#1f2937");
-        setCorBotao(data.cor_botao || "#FF6FA9");
-        setCorNavbar(data.cor_navbar || "#FF6FA9");
+        setCorBotao((data.cor_botao || COR_PRINCIPAL_PADRAO).toUpperCase());
+        setCorNavbar((data.cor_navbar || COR_TOPO_PADRAO).toUpperCase());
         setCorSacola(data.cor_sacola || "#FF6FA9");
         setCorRodape(data.cor_rodape || "#FF6FA9");
         // (11/10) as cores que estão no banco: é pra elas que a tela volta se uma gravação falhar
@@ -310,24 +311,17 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
 
   const bannerValues = [bannerUrl, banner1Url, banner2Url, banner3Url];
 
+  // (18/10) só duas cores: principal e topo (o resto ficou automático)
   const coresPro: { campo: string; rotulo: string; dica?: string; valor: string; set: React.Dispatch<React.SetStateAction<string>>; padrao: string }[] = [
-    { campo: "cor_borda", rotulo: "Borda da logo", valor: corBorda, set: setCorBorda, padrao: "#FF6FA9" },
-    { campo: "cor_nome", rotulo: "Nome da confeitaria", dica: "Sem cor escolhida: branco no computador e preto no celular", valor: corNome, set: setCorNome, padrao: "#1f2937" },
-    { campo: "cor_botao", rotulo: "Botões de comprar", valor: corBotao, set: setCorBotao, padrao: "#FF6FA9" },
-    { campo: "cor_navbar", rotulo: "Fundo atrás da logo e do nome", valor: corNavbar, set: setCorNavbar, padrao: "#FF6FA9" },
+    { campo: "cor_botao", rotulo: "Cor principal", dica: "Botões, ícones e borda da logo", valor: corBotao, set: setCorBotao, padrao: COR_PRINCIPAL_PADRAO },
+    { campo: "cor_navbar", rotulo: "Cor do topo", dica: "Faixa de cima, quando não tem foto", valor: corNavbar, set: setCorNavbar, padrao: COR_TOPO_PADRAO },
   ];
+  const principalAtual = corPrincipal(corBotao, isPro);
   const iniciais = (nomeLoja || "ML").trim().split(/\s+/).slice(0, 2).map(p => p[0]).join("").toUpperCase() || "ML";
 
   const PreviaCor = ({ campo, valor }: { campo: string; valor: string }) => {
-    if (campo === "cor_borda") return (
-      <div className="ap-previa" style={{ background: corBackground }}>
-        <span className="ap-previa-logo" style={{ borderColor: valor }}>{logoUrl ? <img src={logoUrl} alt="" /> : <b style={{ background: valor }}>{iniciais}</b>}</span>
-        <i style={{ background: valor }} />
-      </div>
-    );
-    if (campo === "cor_nome") return <div className="ap-previa" style={{ background: corBackground }}><b className="ap-previa-nome" style={{ color: valor }}>{nomeLoja || "Nome da sua loja"}</b></div>;
     if (campo === "cor_botao") return <div className="ap-previa"><span className="ap-previa-bt" style={{ background: valor }}>Adicionar · R$ 50,00</span></div>;
-    return <div className="ap-previa" style={{ background: valor }}><small>Fundo atrás da logo e do nome</small></div>;
+    return <div className="ap-previa" style={{ background: valor }}><b className="ap-previa-nome" style={{ color: corClara(valor) ? "#2C1219" : "#FFFFFF" }}>{nomeLoja || "Nome da sua loja"}</b></div>;
   };
 
   const Cabeca = ({ Ic, titulo, apoio, acao }: { Ic: typeof Palette; titulo: string; apoio?: React.ReactNode; acao?: React.ReactNode }) => (
@@ -397,13 +391,13 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
             {uploading === "banner-topo" && <span className="ap-topo-gira"><span className="ui-gira" aria-label="Enviando" /></span>}
           </div>
           <div className="ap-topo-corpo">
-            <button type="button" className="ap-topo-logo" style={{ borderColor: corBorda }} onClick={() => !uploading && logoRef.current?.click()} aria-label={logoUrl ? "Trocar a logo" : "Enviar a logo"}>
+            <button type="button" className="ap-topo-logo" style={{ borderColor: principalAtual }} onClick={() => !uploading && logoRef.current?.click()} aria-label={logoUrl ? "Trocar a logo" : "Enviar a logo"}>
               {uploading === "logo" ? <span className="ui-gira" aria-label="Enviando" />
                 : (logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : <b>{(nomeLoja || "?").trim().charAt(0).toUpperCase()}</b>}
               <i aria-hidden="true"><Camera size={12} weight="bold" /></i>
             </button>
             <b className="ap-topo-nome"><span>{nomeLoja || "Nome da sua loja"}</span><SeloVerificado tamanho={18} /></b>
-            <span className="ap-topo-sl"><b style={{ color: corBorda }}>Sobre a loja</b><em aria-hidden="true">·</em><MapPin size={14} weight="bold" color={corBorda} aria-hidden="true" /><span>{cidade || "São Paulo"}</span></span>
+            <span className="ap-topo-sl"><b style={{ color: principalAtual }}>Sobre a loja</b><em aria-hidden="true">·</em><MapPin size={14} weight="bold" color={principalAtual} aria-hidden="true" /><span>{cidade || "São Paulo"}</span></span>
           </div>
         </div>
         <div className="ap-topo-bts">
@@ -473,18 +467,22 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       </section>
       )}
 
-      {/* Cores */}
+      {/* Cores (18/10: principal e topo; grátis escolhe a principal entre as prontas) */}
       <section className="ap-card ap-largo">
-        <Cabeca Ic={Palette} titulo="Cores do cardápio" apoio={isPro ? "Escolha uma cor pra mudar. Salva sozinho." : "Botões, bordas e o nome da loja"} />
+        <Cabeca Ic={Palette} titulo="Cores do cardápio" apoio={isPro ? "Salva sozinho" : "Botões, ícones e borda da logo"} />
+        <div className="ap-prontas" role="radiogroup" aria-label="Cor principal">
+          {CORES_PRONTAS.map(p => {
+            const on = principalAtual === p.cor;
+            return (
+              <button key={p.cor} type="button" role="radio" aria-checked={on} aria-label={p.nome} className={on ? "on" : ""} style={{ background: p.cor }}
+                onClick={() => { setActivePicker(null); handleColorChange("cor_botao", p.cor, setCorBotao); }}>
+                {on && <Check size={16} weight="bold" aria-hidden="true" />}
+              </button>
+            );
+          })}
+        </div>
         {!isPro ? (
-          <div className="ap-cores-pro">
-            <div className="ap-cores-sw" role="img" aria-label="Rosa do Doonly em uso. As outras cores são do plano PRO.">
-              <span className="on" style={{ background: "#FF6FA9" }}><Check size={16} weight="bold" aria-hidden="true" /></span>
-              {["#7C3AED", "#0EA5E9", "#16A34A", "#F59E0B", "#2C1219"].map(c => <span key={c} style={{ background: c }}><Lock size={14} weight="bold" aria-hidden="true" /></span>)}
-            </div>
-            <p>Deixe o cardápio com as cores da sua marca. No plano grátis, ele usa o rosa do Doonly.</p>
-            <Botao variante="vinho" icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>
-          </div>
+          <p className="ap-cores-nota"><Lock size={14} weight="bold" aria-hidden="true" />Qualquer cor e a cor do topo são do PRO</p>
         ) : (
           <div className="ap-cores">
             {coresPro.map(c => {
