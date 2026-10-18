@@ -100,3 +100,16 @@
 
 /* (17/10) ícones dos cards em rosa com desenho branco, igual à lista da aba Cardápio */
 .dl-cab-ic { background: var(--ui-rosa); color: var(--ui-branco); }
+
+/* (17/10) redes sociais com logo oficial e chave liga/desliga */
+.dl-rede { display: flex; flex-direction: column; gap: 10px; padding: 10px 12px; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); }
+.dl-rede + .dl-rede { margin-top: 8px; }
+.dl-rede-l { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 44px; margin: 0; padding: 0; border: 0; background: none; font-family: inherit; text-align: left; cursor: pointer; }
+.dl-rede-n { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.dl-rede-n b { font-size: 15px; color: var(--ui-texto); }
+.dl-rede-n small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; }
+.dl-rede-sw { flex: none; position: relative; width: 44px; height: 26px; border-radius: 999px; background: #CFC4C9; transition: background .15s; }
+.dl-rede-sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .15s; }
+.dl-rede-l[aria-checked="true"] .dl-rede-sw { background: #16A34A; }
+.dl-rede-l[aria-checked="true"] .dl-rede-sw::after { transform: translateX(18px); }
+#dl-redes .dl-cab { margin-bottom: 12px; }

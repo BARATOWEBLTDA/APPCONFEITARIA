@@ -2,8 +2,9 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
-import { Check, Clock, FacebookLogo, PencilSimple, InstagramLogo, MapPin, ShareNetwork, Sparkle, Storefront, WarningCircle } from "@phosphor-icons/react";
+import { Check, Clock, PencilSimple, MapPin, ShareNetwork, Sparkle, Storefront, WarningCircle } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
+import { LogoFacebook, LogoInstagram } from "@/components/LogosRedes";
 import AppPageHeader from "@/components/AppPageHeader";
 import MapaEndereco, { type BuscaMapa } from "@/components/MapaEndereco";
 import { EXEMPLO_DESCRICAO, EditorHorario, OpcoesMostrar } from "@/components/loja/EditoresLoja";
@@ -85,6 +86,9 @@ export default function DadosLoja() {
   const [instagram, setInstagram] = useState("");
   const [facebook, setFacebook] = useState("");
   const [redesNoBanco, setRedesNoBanco] = useState(true);
+  // (17/10) cada rede tem a sua chave: desligada, não aparece no cardápio (o texto fica guardado neste aparelho e volta ao ligar)
+  const [instaOn, setInstaOn] = useState(false);
+  const [faceOn, setFaceOn] = useState(false);
 
   // (10/10) Se a leitura falhar, a tela NÃO abre: antes abria em branco e "Salvar alterações" gravava nome, WhatsApp,
   // endereço e horário vazios por cima dos dados da loja.
@@ -106,7 +110,14 @@ export default function DadosLoja() {
       {
         const r = await supabase.from("profiles").select("instagram, facebook").eq("id", user.id).maybeSingle();
         if (r.error) setRedesNoBanco(false);
-        else { setRedesNoBanco(true); setInstagram(((r.data as any)?.instagram) ? "@" + (r.data as any).instagram : ""); setFacebook((r.data as any)?.facebook || ""); }
+        else {
+          setRedesNoBanco(true);
+          const ig = (r.data as any)?.instagram ? "@" + (r.data as any).instagram : "", fb = (r.data as any)?.facebook || "";
+          let guardado: { instagram?: string; facebook?: string } = {};
+          try { guardado = JSON.parse(localStorage.getItem(`doonly:redes:${user.id}`) || "{}") || {}; } catch { /* sem armazenamento */ }
+          setInstagram(ig || guardado.instagram || ""); setFacebook(fb || guardado.facebook || "");
+          setInstaOn(!!ig); setFaceOn(!!fb);
+        }
       }
       if (data) {
         setNome(data.nome_loja || "");
@@ -151,7 +162,7 @@ export default function DadosLoja() {
   // (17/10) Card já preenchido aparece resumido, com "Editar"; vazio (ou faltando algo) já abre o formulário
   type Bloco = "loja" | "redes" | "endereco" | "horario";
   const okDe = (b: Bloco) => b === "loja" ? itens[0].ok && itens[1].ok && itens[2].ok
-    : b === "redes" ? !redesNoBanco || !!(instagram.trim() || facebook.trim())
+    : b === "redes" ? !redesNoBanco || (instaOn && !!instagram.trim()) || (faceOn && !!facebook.trim())
     : b === "endereco" ? itens[3].ok : itens[4].ok;
   const [aberto, setAberto] = useState<Record<Bloco, boolean> | null>(null);
   useEffect(() => {
@@ -258,9 +269,10 @@ export default function DadosLoja() {
     if (!nome.trim()) { mostrarAviso("Escreva o nome da loja.", "err"); irPara("dl-nome"); return; }
     const horarioRuim = problemaNoHorario();
     if (horarioRuim) { mostrarAviso(horarioRuim, "err"); irPara("dl-horario"); return; }
-    const insta = limparInstagram(instagram), face = limparFacebook(facebook);
-    if (instagram.trim() && !insta) { mostrarAviso("Confira o Instagram: escreva só o @ da loja, como @doceformiga.", "err"); irPara("dl-redes"); return; }
-    if (facebook.trim() && !face) { mostrarAviso("Confira o Facebook: cole o link da página, como facebook.com/doceformiga.", "err"); irPara("dl-redes"); return; }
+    const insta = instaOn ? limparInstagram(instagram) : "", face = faceOn ? limparFacebook(facebook) : "";
+    try { localStorage.setItem(`doonly:redes:${userId}`, JSON.stringify({ instagram: instagram.trim(), facebook: facebook.trim() })); } catch { /* sem armazenamento */ }
+    if (instaOn && instagram.trim() && !insta) { mostrarAviso("Confira o Instagram: escreva só o @ da loja, como @doceformiga.", "err"); irPara("dl-redes"); return; }
+    if (faceOn && facebook.trim() && !face) { mostrarAviso("Confira o Facebook: cole o link da página, como facebook.com/doceformiga.", "err"); irPara("dl-redes"); return; }
     setSalvando(true);
     const endereco = JSON.stringify(end);
     const { error } = await supabase.from("profiles").update({
@@ -279,7 +291,7 @@ export default function DadosLoja() {
     if (!error && redesNoBanco) {
       const r = await supabase.from("profiles").update({ instagram: insta || null, facebook: face || null }).eq("id", userId);
       erroRedes = !!r.error;
-      if (!r.error) { setInstagram(insta ? "@" + insta : ""); setFacebook(face); }
+      if (!r.error) { if (insta) setInstagram("@" + insta); if (face) setFacebook(face); if (!insta) setInstaOn(false); if (!face) setFaceOn(false); }
     }
     setSalvando(false);
     if (error) mostrarAviso("Não foi possível salvar. Tente de novo.", "err");
@@ -411,15 +423,25 @@ export default function DadosLoja() {
           <Cabeca Ic={ShareNetwork} titulo="Redes sociais" apoio="Aparecem em Sobre a loja, no cardápio" bloco="redes" />
           {redesNoBanco && !estaAberto("redes") ? (
             <div className="dl-res">
-              {instagram.trim() && <span className="dl-res-li"><InstagramLogo size={18} aria-hidden="true" />{instagram.trim()}</span>}
-              {facebook.trim() && <span className="dl-res-li"><FacebookLogo size={18} aria-hidden="true" />{facebook.trim().replace(/^https?:\/\/(www\.)?/, "")}</span>}
+              {instaOn && instagram.trim() && <span className="dl-res-li"><LogoInstagram tamanho={20} />{instagram.trim()}</span>}
+              {faceOn && facebook.trim() && <span className="dl-res-li"><LogoFacebook tamanho={20} />{facebook.trim().replace(/^https?:\/\/(www\.)?/, "")}</span>}
             </div>
           ) : redesNoBanco ? (
             <>
-              <Campo id="dl-in-insta" rotulo="Instagram" value={instagram} maxLength={80} placeholder="@suaconfeitaria" autoCapitalize="none" autoCorrect="off"
-                icone={<InstagramLogo size={20} />} onChange={(e) => setInstagram(e.target.value)} />
-              <Campo id="dl-in-face" rotulo="Facebook" value={facebook} maxLength={120} placeholder="facebook.com/suaconfeitaria" autoCapitalize="none" autoCorrect="off"
-                icone={<FacebookLogo size={20} />} onChange={(e) => setFacebook(e.target.value)} />
+              <div className={`dl-rede${instaOn ? " on" : ""}`}>
+                <button type="button" role="switch" aria-checked={instaOn} className="dl-rede-l" onClick={() => setInstaOn((v) => !v)}>
+                  <LogoInstagram tamanho={26} /><span className="dl-rede-n"><b>Instagram</b><small>{instaOn ? "Aparece no cardápio" : "Não aparece no cardápio"}</small></span><span className="dl-rede-sw" aria-hidden="true" />
+                </button>
+                {instaOn && <Campo id="dl-in-insta" rotulo="@ do Instagram" value={instagram} maxLength={80} placeholder="@suaconfeitaria" autoCapitalize="none" autoCorrect="off"
+                  onChange={(e) => setInstagram(e.target.value)} />}
+              </div>
+              <div className={`dl-rede${faceOn ? " on" : ""}`}>
+                <button type="button" role="switch" aria-checked={faceOn} className="dl-rede-l" onClick={() => setFaceOn((v) => !v)}>
+                  <LogoFacebook tamanho={26} /><span className="dl-rede-n"><b>Facebook</b><small>{faceOn ? "Aparece no cardápio" : "Não aparece no cardápio"}</small></span><span className="dl-rede-sw" aria-hidden="true" />
+                </button>
+                {faceOn && <Campo id="dl-in-face" rotulo="Link da página" value={facebook} maxLength={120} placeholder="facebook.com/suaconfeitaria" autoCapitalize="none" autoCorrect="off"
+                  onChange={(e) => setFacebook(e.target.value)} />}
+              </div>
             </>
           ) : (
             <p className="dl-aviso-redes">Falta um ajuste no banco pra usar as redes sociais (SQL 4.25).</p>
