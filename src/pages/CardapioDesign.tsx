@@ -387,10 +387,9 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         <input ref={logoRef} type="file" accept="image/*" hidden onChange={handleLogoUpload} />
         <input ref={bannerTopoRef} type="file" accept="image/*" hidden onChange={recorteTopo.escolher} />
         <div className="ap-topo">
-          <div className={`ap-topo-capa${bannerTopoUrl ? " ap-topo-capa--foto" : ""}`} style={bannerTopoUrl ? undefined : { backgroundColor: corBorda }}>
-            <button type="button" className="ap-topo-capa-bt" onClick={() => !uploading && bannerTopoRef.current?.click()} disabled={!!uploading} aria-label={bannerTopoUrl ? "Trocar a foto do topo" : "Pôr a foto do topo"}>
-              {bannerTopoUrl ? <img src={bannerTopoUrl} alt="" /> : <span className="ap-topo-pill"><ImageIcon size={16} weight="bold" aria-hidden="true" />Pôr foto do topo</span>}
-            </button>
+          {/* (18/10) a faixa não é clicável: quem troca a foto é o botão de baixo */}
+          <div className={`ap-topo-capa${bannerTopoUrl ? " ap-topo-capa--foto" : " ap-topo-capa--vazia"}`}>
+            {bannerTopoUrl ? <img className="ap-topo-capa-img" src={bannerTopoUrl} alt="" /> : <span className="ap-topo-pill"><ImageIcon size={16} weight="bold" aria-hidden="true" />Foto do topo · 1200 × 400</span>}
             {bannerTopoUrl && <BotaoIcone rotulo="Tirar a foto do topo" variante="neutro" tamanho="p" className="ap-tirar ap-topo-x" onClick={handleRemoveBannerTopo}><X size={18} weight="bold" /></BotaoIcone>}
             {(() => { const sit = situacaoLoja(horario as any); const aberto = !sit || sit.aberto; return (
               <span className={`ap-topo-st${aberto ? " aberto" : ""}`}><i aria-hidden="true" />{aberto ? "Aberto agora" : "Fechado"}</span>
@@ -408,7 +407,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
           </div>
         </div>
         <div className="ap-topo-bts">
-          <Botao variante="secundario" tamanho="m" icone={<ImageIcon size={18} weight="bold" />} disabled={!!uploading} onClick={() => bannerTopoRef.current?.click()}>{bannerTopoUrl ? "Trocar foto" : "Foto do topo"}</Botao>
+          <Botao variante="principal" tamanho="m" icone={<ImageIcon size={18} weight="bold" />} disabled={!!uploading} onClick={() => bannerTopoRef.current?.click()}>{bannerTopoUrl ? "Trocar foto" : "Pôr foto"}</Botao>
           <Botao variante="secundario" tamanho="m" icone={<UploadSimple size={18} weight="bold" />} disabled={!!uploading} onClick={() => logoRef.current?.click()}>{logoUrl ? "Trocar logo" : "Enviar logo"}</Botao>
         </div>
       </section>

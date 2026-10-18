@@ -123,9 +123,9 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-topo { overflow: hidden; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); }
 .ap-topo-capa { position: relative; height: 112px; overflow: hidden; }
 .ap-topo-capa--foto::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.05) 30%, rgba(0,0,0,.4)); pointer-events: none; }
-.ap-topo-capa-bt { position: absolute; inset: 0; display: flex; align-items: flex-start; justify-content: center; padding: 14px 0 0; width: 100%; height: 100%; margin: 0; border: 0; background: none; cursor: pointer; }
-.ap-topo-capa-bt img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
-.ap-topo-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; background: rgba(255,255,255,.92); color: var(--ui-rosa-escuro); font-size: 13.5px; font-weight: 700; white-space: nowrap; }
+.ap-topo-capa-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.ap-topo-capa--vazia { display: flex; align-items: flex-start; justify-content: center; padding-top: 14px; border: 1.5px dashed var(--ui-rosa); border-bottom: 0; border-radius: var(--ui-raio-cartao) var(--ui-raio-cartao) 0 0; background-color: #FFFFFF; background-image: linear-gradient(45deg, var(--ui-rosa-claro) 25%, transparent 25%, transparent 75%, var(--ui-rosa-claro) 75%), linear-gradient(45deg, var(--ui-rosa-claro) 25%, transparent 25%, transparent 75%, var(--ui-rosa-claro) 75%); background-size: 10px 10px; background-position: 0 0, 5px 5px; }
+.ap-topo-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 8px; background: rgba(255,255,255,.95); color: var(--ui-rosa-escuro); font-size: 12.5px; font-weight: 700; white-space: nowrap; box-shadow: 0 1px 4px rgba(44,18,25,.1); }
 .ap-topo-x { position: absolute; z-index: 2; top: 8px; left: 8px; }
 .ap-topo-st { position: absolute; z-index: 2; left: 12px; bottom: 26px; display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; background: rgba(255,255,255,.95); color: var(--ui-texto); font-size: 12.5px; font-weight: 700; white-space: nowrap; pointer-events: none; }
 .ap-topo-st i { width: 7px; height: 7px; border-radius: 50%; background: var(--ui-vermelho, #DC2626); }
