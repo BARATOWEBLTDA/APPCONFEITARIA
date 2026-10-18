@@ -124,7 +124,7 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-topo-capa { position: relative; height: 112px; overflow: hidden; }
 .ap-topo-capa--foto::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.05) 30%, rgba(0,0,0,.4)); pointer-events: none; }
 .ap-topo-capa-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
-.ap-topo-capa--vazia { display: flex; align-items: flex-start; justify-content: center; padding-top: 14px; border: 1.5px dashed var(--ui-rosa); border-bottom: 0; border-radius: var(--ui-raio-cartao) var(--ui-raio-cartao) 0 0; background-color: #FFFFFF; background-image: linear-gradient(45deg, var(--ui-rosa-claro) 25%, transparent 25%, transparent 75%, var(--ui-rosa-claro) 75%), linear-gradient(45deg, var(--ui-rosa-claro) 25%, transparent 25%, transparent 75%, var(--ui-rosa-claro) 75%); background-size: 10px 10px; background-position: 0 0, 5px 5px; }
+.ap-topo-capa--vazia { display: flex; align-items: flex-start; justify-content: center; padding-top: 14px; border: 1.5px dashed rgba(255,255,255,.8); border-bottom: 0; border-radius: var(--ui-raio-cartao) var(--ui-raio-cartao) 0 0; background-color: #FFFFFF; background-image: linear-gradient(45deg, rgba(255,255,255,.22) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.22) 75%), linear-gradient(45deg, rgba(255,255,255,.22) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.22) 75%); background-size: 10px 10px; background-position: 0 0, 5px 5px; }
 .ap-topo-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 8px; background: rgba(255,255,255,.95); color: var(--ui-rosa-escuro); font-size: 12.5px; font-weight: 700; white-space: nowrap; box-shadow: 0 1px 4px rgba(44,18,25,.1); }
 .ap-topo-x { position: absolute; z-index: 2; top: 8px; left: 8px; }
 .ap-topo-st { position: absolute; z-index: 2; left: 12px; bottom: 26px; display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; background: rgba(255,255,255,.95); color: var(--ui-texto); font-size: 12.5px; font-weight: 700; white-space: nowrap; pointer-events: none; }
@@ -148,13 +148,28 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-gal-link { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; margin: -4px 0; padding: 0; border: 0; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; }
 
 /* (18/10) cores prontas (a principal) */
-.ap-prontas { display: flex; flex-wrap: nowrap; gap: 10px; padding-left: 4px; }
-.ap-prontas button { display: flex; align-items: center; justify-content: center; flex: none; width: 36px; height: 36px; margin: 0; padding: 0; border: 0; border-radius: 50%; color: #fff; cursor: pointer; box-shadow: 0 0 0 3px var(--ui-branco), 0 0 0 4px var(--ui-borda); }
+.ap-prontas { display: flex; flex-wrap: nowrap; gap: 8px; padding-left: 4px; }
+.ap-prontas button { display: flex; align-items: center; justify-content: center; flex: none; width: 34px; height: 34px; margin: 0; padding: 0; border: 0; border-radius: 50%; color: #fff; cursor: pointer; box-shadow: 0 0 0 3px var(--ui-branco), 0 0 0 4px var(--ui-borda); }
 .ap-prontas button.on { box-shadow: 0 0 0 3px var(--ui-branco), 0 0 0 5px var(--ui-texto); }
 .ap-cgrupo { display: flex; flex-direction: column; gap: 10px; }
-.ap-crot { display: flex; align-items: baseline; gap: 8px; min-width: 0; white-space: nowrap; }
+.ap-crot { display: flex; align-items: center; gap: 8px; min-width: 0; white-space: nowrap; }
 .ap-crot b { font-size: 15px; font-weight: 700; color: var(--ui-texto); }
 .ap-crot small { font-size: 13px; color: var(--ui-texto-2); overflow: hidden; text-overflow: ellipsis; }
-.ap-cprev { align-self: flex-start; padding: 8px 16px; border-radius: var(--ui-raio); color: #fff; font-size: 14px; font-weight: 700; white-space: nowrap; transition: background-color .15s linear; }
-.ap-ctopo-pro { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 52px; margin: 0; padding: 12px 0 0; border: 0; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; text-align: left; cursor: pointer; }
+.ap-ctopo-pro-x { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 52px; margin: 0; padding: 12px 0 0; border: 0; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; text-align: left; cursor: pointer; }
 .ap-cpro { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; background: var(--ui-cinza); color: var(--ui-texto-2); font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+/* (18/10) cores do topo: mini topo numerado + 3 grupos */
+.ap-mini { position: relative; width: 100%; max-width: 300px; align-self: center; overflow: hidden; border: 1px solid var(--ui-borda); border-radius: 14px; background: #F7F4F5; }
+.ap-mini * { transition: background-color .15s linear, color .15s linear, border-color .15s linear; }
+.ap-mini-topo { position: relative; height: 60px; }
+.ap-mini-corpo { position: relative; margin-top: -12px; padding: 12px 10px 10px; border-radius: 12px 12px 0 0; background: #F7F4F5; }
+.ap-mini-logo { position: absolute; right: 12px; top: -30px; width: 52px; height: 52px; border: 4px solid; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px #F7F4F5; overflow: hidden; }
+.ap-mini-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ap-mini-nome { display: inline-flex; align-items: center; gap: 6px; max-width: calc(100% - 70px); font-size: 15px; font-weight: 700; white-space: nowrap; }
+.ap-mini-fixo { display: block; margin-top: 4px; font-size: 11.5px; color: var(--ui-texto-3); white-space: nowrap; }
+.ap-mini-n, .ap-crot-n { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--ui-texto); color: #fff; font-size: 11.5px; font-weight: 700; flex: none; }
+.ap-mini-n { position: absolute; z-index: 3; box-shadow: 0 0 0 2px #fff; }
+.ap-mini-n--in { position: static; }
+.ap-prontas .ap-outra { box-shadow: none; flex: none; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; margin: 0; padding: 0; border: 1.5px dashed var(--ui-borda-campo); border-radius: 50%; background: var(--ui-branco); color: var(--ui-texto-2); cursor: pointer; }
+.ap-prontas .ap-outra.on { border: 0; color: #fff; box-shadow: 0 0 0 3px var(--ui-branco), 0 0 0 5px var(--ui-texto); }
+.ap-prontas .ap-outra--pro { background: var(--ui-cinza); border-style: solid; color: var(--ui-texto-3); }
+.ap-cgrupo + .ap-cgrupo { padding-top: 12px; border-top: 1px solid var(--ui-linha); }

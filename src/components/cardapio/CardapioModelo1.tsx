@@ -75,10 +75,10 @@ export function etiquetasDaLoja(config: Configuracoes | null, produtos: any[] = 
 
 export function CardapioModelo1({ design, config, verificada = false, produtos = [], aoAbrirSobre }: CardapioModeloProps & { aoAbrirSobre?: () => void }) {
   const [modalEndereco, setModalEndereco] = useState(false)
-  const accent = design.cor_botao || design.cor_borda || '#E85A8C' // (18/10) a cor principal
+  const accent = design.cor_borda || '#E85A8C' // (18/10) borda da logo
   const ehBranco = (c?: string | null) => !c || ['#fff', '#ffffff', '#fefefe', 'white', 'transparent'].includes(c.trim().toLowerCase())
   const corFaixa = !ehBranco(design.cor_navbar) ? design.cor_navbar! : (!ehBranco(design.cor_borda) ? design.cor_borda! : '#BF6B84')
-  const corIcone = !ehBranco(design.cor_botao) ? design.cor_botao! : accent
+  const corIcone = !ehBranco(design.cor_botao) ? design.cor_botao! : '#EC4899'
   // (4.27) loja com os pedidos pausados aparece fechada, seja qual for o horário
   const status = (config as any)?.loja_pausada ? { aberto: false, msg: 'Pedidos pausados no momento', curto: 'Pedidos pausados' } : getStatusLoja(config?.horario || null)
   const endereco = getEnderecoData(config)
@@ -92,7 +92,7 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
   }
   const rawCorNome = design.cor_nome || '#1f2937'
   // Sem cor escolhida pela confeiteira: escuro (o fundo é claro); cor clara some no fundo claro
-  const corNome = rawCorNome && !['#1f2937', '#000000', '#000', '#111111'].includes(String(rawCorNome).trim().toLowerCase()) && !isColorLight(rawCorNome) ? rawCorNome : '#2C1219'
+  const corNome = rawCorNome && !isColorLight(rawCorNome) ? rawCorNome : '#2C1219' // (18/10) a cor do nome escolhida (clara demais vira chocolate)
   const fundo = design.cor_background && design.cor_background.toLowerCase() !== '#fef2f2' ? design.cor_background : '#F7F4F5'
 
   return (

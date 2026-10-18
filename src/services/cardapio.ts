@@ -1,4 +1,4 @@
-import { corPrincipal, corTopo } from '@/lib/coresCardapio'
+import { COR_BOTOES, corDoItem } from '@/lib/coresCardapio'
 import { supabase } from '@/lib/supabase'
 import { fotoDaLoja } from '@/hooks/useProfile'
 import { Produto, DesignSettings, Configuracoes } from '@/types/database'
@@ -112,9 +112,11 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     ? profile.slug_personalizado
     : 'cardapio'
 
-  // (18/10) Duas cores: principal (grátis escolhe entre as prontas, PRO qualquer uma) e topo (só PRO).
-  const principal = corPrincipal(profile.cor_botao, isPro)
-  const topo = corTopo(profile.cor_navbar, isPro)
+  // (18/10) Três cores, todas no topo: borda da logo, nome e faixa do topo (grátis: as prontas; PRO: qualquer uma).
+  // Botões e ícones ficam sempre no rosa do Doonly.
+  const borda = corDoItem('cor_borda', profile.cor_borda, isPro)
+  const nome = corDoItem('cor_nome', profile.cor_nome, isPro)
+  const topo = corDoItem('cor_navbar', profile.cor_navbar, isPro)
 
   const design: DesignSettings = {
     user_id: userId,
@@ -126,16 +128,16 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     banner2_url: profile.banner2_url || '',
     banner3_url: profile.banner3_url || '',
     banner_topo_url: profile.banner_topo_url || '',
-    cor_borda: principal,
+    cor_borda: borda,
     cor_background: '#fef2f2', // fundo fixo (padrão)
-    cor_nome: '#1f2937', // nome automático
+    cor_nome: nome,
     banner_gradient: profile.banner_gradient || '',
     // Estrelas de avaliação removidas (02/10): ficavam deslocadas ao lado do selo de verificado
     hide_stars: true,
-    cor_botao: principal,
+    cor_botao: COR_BOTOES,
     cor_navbar: topo,
-    cor_sacola: principal,
-    cor_rodape: principal,
+    cor_sacola: COR_BOTOES,
+    cor_rodape: COR_BOTOES,
     ocultar_categorias: profile.ocultar_categorias || false,
   }
 

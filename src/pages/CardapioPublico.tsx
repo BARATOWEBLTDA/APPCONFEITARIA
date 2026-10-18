@@ -24,7 +24,7 @@ import { MapPin, House, MagnifyingGlass, ShoppingBag, Storefront, User, X } from
 import { SobreLoja } from '@/components/cardapio/SobreLoja'
 import { useCart } from '@/hooks/useCart'
 import { formatCurrency } from '@/utils/helpers'
-import { corClara } from '@/lib/coresCardapio'
+import { corClara, nomeSobreTopo } from '@/lib/coresCardapio'
 import './cardapioPublico.css'
 
 /* ══════════════════════════════════════════════ */
@@ -68,7 +68,7 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
               {design.logo_url ? <img src={design.logo_url} alt="" /> : <b style={{ background: corBorda }}>{design.nome_loja?.charAt(0)}</b>}
             </span>
             <div>
-              <p className="cp-topo-nome" style={{ color: corClara(navBg) ? '#2C1219' : '#ffffff' }}>{design.nome_loja}{isPro && <SeloVerificado tamanho={20} />}</p>
+              <p className="cp-topo-nome" style={{ color: nomeSobreTopo(design.cor_nome, navBg) }}>{design.nome_loja}{isPro && <SeloVerificado tamanho={20} />}</p>
               {sub && <p className="cp-topo-sub">{status && <i className={status.aberto ? 'aberto' : ''} aria-hidden="true" />}{sub}</p>}
               {cidade && <p className="cp-topo-cid"><MapPin size={15} weight="bold" aria-hidden="true" />{cidade}</p>}
             </div>

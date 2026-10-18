@@ -28,7 +28,7 @@ const BENEFICIOS: [Icon, string, string][] = [
   [Bell, "Avisos no celular", "Receba os avisos do Doonly no celular, mesmo com o app fechado."],
   [Eye, "Veja quem visita e quem compra", "Visitas, pedidos pelo cardápio e conversão, de hoje e do mês."],
   [Tag, "Cupons que trazem cliente de volta", "Crie cupons de desconto pra atrair novos clientes e fazer os antigos voltarem."],
-  [Palette, "Cardápio com a cara da sua marca", "Qualquer cor nos botões e no topo, até 3 fotos por produto e um link com o nome da sua loja."],
+  [Palette, "Cardápio com a cara da sua marca", "Qualquer cor no topo da loja, até 3 fotos por produto e um link com o nome da sua loja."],
   [ImageSquare, "Banners que vendem", "Até 4 banners em carrossel pra destacar promoções e lançamentos."],
   [SealCheck, "Selo de loja verificada", "Mais confiança na hora em que o cliente decide comprar."],
   [Crown, "Sem marca d'água", "O cardápio só com a sua marca, sem o \"Feito com Doonly\"."],
