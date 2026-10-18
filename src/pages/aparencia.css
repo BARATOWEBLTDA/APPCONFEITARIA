@@ -151,4 +151,10 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-prontas { display: flex; flex-wrap: nowrap; gap: 10px; padding-left: 4px; }
 .ap-prontas button { display: flex; align-items: center; justify-content: center; flex: none; width: 36px; height: 36px; margin: 0; padding: 0; border: 0; border-radius: 50%; color: #fff; cursor: pointer; box-shadow: 0 0 0 3px var(--ui-branco), 0 0 0 4px var(--ui-borda); }
 .ap-prontas button.on { box-shadow: 0 0 0 3px var(--ui-branco), 0 0 0 5px var(--ui-texto); }
-.ap-cores-nota { display: flex; align-items: center; gap: 6px; margin: -4px 0 0; font-size: 13.5px; color: var(--ui-texto-2); white-space: nowrap; }
+.ap-cgrupo { display: flex; flex-direction: column; gap: 10px; }
+.ap-crot { display: flex; align-items: baseline; gap: 8px; min-width: 0; white-space: nowrap; }
+.ap-crot b { font-size: 15px; font-weight: 700; color: var(--ui-texto); }
+.ap-crot small { font-size: 13px; color: var(--ui-texto-2); overflow: hidden; text-overflow: ellipsis; }
+.ap-cprev { align-self: flex-start; padding: 8px 16px; border-radius: var(--ui-raio); color: #fff; font-size: 14px; font-weight: 700; white-space: nowrap; transition: background-color .15s linear; }
+.ap-ctopo-pro { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 52px; margin: 0; padding: 12px 0 0; border: 0; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; text-align: left; cursor: pointer; }
+.ap-cpro { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; background: var(--ui-cinza); color: var(--ui-texto-2); font-size: 12.5px; font-weight: 700; white-space: nowrap; }

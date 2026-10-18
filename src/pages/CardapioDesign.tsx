@@ -313,8 +313,8 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
 
   // (18/10) só duas cores: principal e topo (o resto ficou automático)
   const coresPro: { campo: string; rotulo: string; dica?: string; valor: string; set: React.Dispatch<React.SetStateAction<string>>; padrao: string }[] = [
-    { campo: "cor_botao", rotulo: "Cor principal", dica: "Botões, ícones e borda da logo", valor: corBotao, set: setCorBotao, padrao: COR_PRINCIPAL_PADRAO },
-    { campo: "cor_navbar", rotulo: "Cor do topo", dica: "Faixa de cima, quando não tem foto", valor: corNavbar, set: setCorNavbar, padrao: COR_TOPO_PADRAO },
+    { campo: "cor_botao", rotulo: "Outra cor principal", dica: "Escolha qualquer tom", valor: corBotao, set: setCorBotao, padrao: COR_PRINCIPAL_PADRAO },
+    { campo: "cor_navbar", rotulo: "Cor do topo", dica: "Faixa de cima do cardápio", valor: corNavbar, set: setCorNavbar, padrao: COR_TOPO_PADRAO },
   ];
   const principalAtual = corPrincipal(corBotao, isPro);
   const iniciais = (nomeLoja || "ML").trim().split(/\s+/).slice(0, 2).map(p => p[0]).join("").toUpperCase() || "ML";
@@ -467,22 +467,29 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       </section>
       )}
 
-      {/* Cores (18/10: principal e topo; grátis escolhe a principal entre as prontas) */}
+      {/* Cores (18/10: duas cores, cada uma com o seu nome; grátis escolhe a principal entre as prontas) */}
       <section className="ap-card ap-largo">
-        <Cabeca Ic={Palette} titulo="Cores do cardápio" apoio={isPro ? "Salva sozinho" : "Botões, ícones e borda da logo"} />
-        <div className="ap-prontas" role="radiogroup" aria-label="Cor principal">
-          {CORES_PRONTAS.map(p => {
-            const on = principalAtual === p.cor;
-            return (
-              <button key={p.cor} type="button" role="radio" aria-checked={on} aria-label={p.nome} className={on ? "on" : ""} style={{ background: p.cor }}
-                onClick={() => { setActivePicker(null); handleColorChange("cor_botao", p.cor, setCorBotao); }}>
-                {on && <Check size={16} weight="bold" aria-hidden="true" />}
-              </button>
-            );
-          })}
+        <Cabeca Ic={Palette} titulo="Cores do cardápio" apoio="Toque numa cor pra escolher" />
+        <div className="ap-cgrupo">
+          <div className="ap-crot"><b>Cor principal</b><small>Botões e ícones</small></div>
+          <div className="ap-prontas" role="radiogroup" aria-label="Cor principal">
+            {CORES_PRONTAS.map(p => {
+              const on = principalAtual === p.cor;
+              return (
+                <button key={p.cor} type="button" role="radio" aria-checked={on} aria-label={p.nome} className={on ? "on" : ""} style={{ background: p.cor }}
+                  onClick={() => { setActivePicker(null); handleColorChange("cor_botao", p.cor, setCorBotao); }}>
+                  {on && <Check size={16} weight="bold" aria-hidden="true" />}
+                </button>
+              );
+            })}
+          </div>
+          <span className="ap-cprev" style={{ background: principalAtual }}>Adicionar · R$ 50,00</span>
         </div>
         {!isPro ? (
-          <p className="ap-cores-nota"><Lock size={14} weight="bold" aria-hidden="true" />Qualquer cor e a cor do topo são do PRO</p>
+          <button type="button" className="ap-ctopo-pro" onClick={() => avisar("A cor do topo e qualquer outra cor são do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } })}>
+            <span className="ap-crot"><b>Cor do topo</b><small>Faixa de cima</small></span>
+            <span className="ap-cpro"><Lock size={14} weight="bold" aria-hidden="true" />No PRO</span>
+          </button>
         ) : (
           <div className="ap-cores">
             {coresPro.map(c => {
@@ -490,7 +497,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
               return (
                 <div key={c.campo} className={`ap-cor${aberta ? " aberta" : ""}`}>
                   <button type="button" className="ap-cor-l" aria-expanded={aberta} onClick={() => setActivePicker(aberta ? null : c.campo)}>
-                    <span className="ap-cor-tx"><b>{c.rotulo}</b>{c.dica && <small>{c.dica}</small>}<code>{c.valor.toUpperCase()}</code></span>
+                    <span className="ap-cor-tx"><b>{c.rotulo}</b>{c.dica && <small>{c.dica}</small>}</span>
                     <span className="ap-cor-sw" style={{ background: c.valor }} />
                   </button>
                   {aberta && (
