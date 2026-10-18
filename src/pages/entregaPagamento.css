@@ -73,3 +73,13 @@
 .ep-passos .ui-bt { flex: none; min-width: 140px; }
 .ep--passos { padding-bottom: 96px; }
 @media (min-width: 901px) { .ep-passos { left: var(--sidebar-w, 220px); bottom: 0; padding: 14px 32px; } }
+
+/* (17/10) resumido com "Editar" */
+.ep-editar { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; margin: 0; padding: 0 12px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); color: var(--ui-rosa-escuro); font: 700 13.5px var(--font-base); white-space: nowrap; cursor: pointer; }
+.ep-res { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ep-res-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.ep-res-chips span { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 7px; background: var(--ui-verde-fundo, #F3FBF6); color: var(--ui-verde, #166534); font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+.ep-res-obs { font-size: 12.5px; color: var(--ui-texto-2); }
+.ep-res-li { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 14px; color: var(--ui-texto); white-space: nowrap; }
+.ep-res-li svg { flex: none; color: var(--ui-verde, #16A34A); }
+.ep-res-li em { margin-left: auto; font-style: normal; font-weight: 700; color: var(--ui-texto); }

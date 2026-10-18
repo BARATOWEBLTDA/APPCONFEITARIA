@@ -2,7 +2,7 @@
 // O que salva continua igual (salva sozinho 2s depois de mexer; cupons na tabela loja_cupons).
 // Mudou o visual: campos e botões do app, cupom novo/editar numa janela, convite pro PRO sem borrão.
 import CampoData from '@/components/CampoData'
-import { CalendarBlank, CaretRight, Check, Crown, CurrencyCircleDollar, Plus, Tag, Ticket, Truck, Users, Wallet, WarningCircle } from "@phosphor-icons/react"
+import { CalendarBlank, CaretRight, Check, Crown, PencilSimple, CurrencyCircleDollar, Plus, Tag, Ticket, Truck, Users, Wallet, WarningCircle } from "@phosphor-icons/react"
 import { Botao, Campo, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base"
 import "@/components/loja/editoresLoja.css"
 import "./entregaPagamento.css"
@@ -269,6 +269,16 @@ export default function CheckoutConfigPage({ embutido = false }: { embutido?: bo
     return `${d}/${m}/${y.slice(2)}`
   }
 
+  // (17/10) já preenchido aparece resumido, com "Editar" (o mesmo padrão de Dados da loja). Tudo continua salvando sozinho.
+  const [resumido, setResumido] = useState<{ pag: boolean; ent: boolean } | null>(null)
+  useEffect(() => {
+    if (!loading && !erroCarga && resumido === null) setResumido({ pag: formasPagamento.length > 0, ent: formasEntrega.length > 0 })
+  }, [loading, erroCarga, resumido]) // eslint-disable-line react-hooks/exhaustive-deps
+  const botaoEditar = (b: 'pag' | 'ent') => resumido?.[b]
+    ? <button type="button" className="ep-editar" onClick={() => setResumido(r => r ? { ...r, [b]: false } : r)}><PencilSimple size={16} weight="bold" aria-hidden="true" />Editar</button>
+    : undefined
+  const CURTO_PAG: Record<string, string> = { pix: 'Pix', dinheiro: 'Dinheiro', credito: 'Crédito', debito: 'Débito' }
+
   const Cabeca = ({ Ic, titulo, apoio, acao }: { Ic: typeof Wallet; titulo: string; apoio?: string; acao?: React.ReactNode }) => (
     <div className="ep-cab"><span className="ep-cab-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span><Titulo apoio={apoio} acao={acao}>{titulo}</Titulo></div>
   )
@@ -311,18 +321,33 @@ export default function CheckoutConfigPage({ embutido = false }: { embutido?: bo
 
         {/* Pagamento */}
         <section className="ep-card">
-          <Cabeca Ic={Wallet} titulo="Formas de pagamento" apoio="Marque só as que você aceita" />
+          <Cabeca Ic={Wallet} titulo={resumido?.pag ? "Pagamento" : "Formas de pagamento"} apoio={resumido?.pag ? undefined : "Marque só as que você aceita"} acao={botaoEditar('pag')} />
+          {resumido?.pag ? (
+            <div className="ep-res">
+              <div className="ep-res-chips">{PAGAMENTOS.filter(p => formasPagamento.includes(p.key)).map(p => <span key={p.key}>{CURTO_PAG[p.key] || p.label}</span>)}</div>
+              {formasPagamento.includes('dinheiro') && exibirCampoTroco && <small className="ep-res-obs">Pergunta o troco no dinheiro</small>}
+            </div>
+          ) : (<>
           <div className="ppf-mos ppf-mos--chk">
             {PAGAMENTOS.map(p => <Marcar key={p.key} on={formasPagamento.includes(p.key)} rotulo={p.label} sub={p.sub} aoTocar={() => togglePagamento(p.key)} />)}
           </div>
           {formasPagamento.includes('dinheiro') && (
             <Chave on={exibirCampoTroco} rotulo='Perguntar "Troco pra quanto?"' apoio="Quando o cliente pagar em dinheiro" aoMudar={setExibirCampoTroco} />
           )}
+          </>)}
         </section>
 
         {/* Entrega */}
         <section className="ep-card">
-          <Cabeca Ic={Truck} titulo="Formas de entrega" apoio="Marque as que o cliente pode escolher" />
+          <Cabeca Ic={Truck} titulo={resumido?.ent ? "Entrega" : "Formas de entrega"} apoio={resumido?.ent ? undefined : "Marque as que o cliente pode escolher"} acao={botaoEditar('ent')} />
+          {resumido?.ent ? (
+            <div className="ep-res">
+              {ENTREGAS.filter(e => formasEntrega.includes(e.key)).map(e => (
+                <span key={e.key} className="ep-res-li"><Check size={16} weight="bold" aria-hidden="true" />{e.label}
+                  {e.key === 'entrega_propria' && <em>{numBR(valorEntregaPropria) > 0 ? `R$ ${dinheiroBR(valorEntregaPropria)}` : 'Grátis'}</em>}</span>
+              ))}
+            </div>
+          ) : (<>
           <div className="ppf-mos ppf-mos--chk">
             {ENTREGAS.map(e => <Marcar key={e.key} on={formasEntrega.includes(e.key)} rotulo={e.label} sub={e.sub} aoTocar={() => toggleEntrega(e.key)} />)}
           </div>
@@ -333,11 +358,12 @@ export default function CheckoutConfigPage({ embutido = false }: { embutido?: bo
                 onChange={e => setValorEntregaPropria(e.target.value.replace(/[^0-9.,]/g, ''))} />
             </div>
           )}
+          </>)}
         </section>
 
         {/* Cupons */}
         <section className="ep-card ep-largo">
-          <Cabeca Ic={Ticket} titulo="Cupons de desconto" apoio="Códigos que o cliente usa ao finalizar o pedido"
+          <Cabeca Ic={Ticket} titulo="Cupons de desconto" apoio="O cliente usa ao finalizar o pedido"
  />
           {!isPro ? (
             <div className="ep-pro">
