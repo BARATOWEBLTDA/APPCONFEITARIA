@@ -94,3 +94,8 @@
 .cf9-busca input { flex: 1; min-width: 0; height: 46px; border: 0; outline: 0; background: none; font-family: inherit; font-size: 15px; color: var(--ui-texto); }
 .cf9-busca:focus-within { border-color: var(--ui-rosa); }
 .cf9-nada { margin: 12px 8px; font-size: 14px; color: var(--ui-texto-2); }
+
+/* (18/10) ícones da lista em rosinha (igual ao Início); os 3 principais em chocolate */
+.cf9-ic { background: var(--primary-light, #FCE0E9); color: var(--ui-rosa-escuro); }
+.cf9-ic--choco { background: var(--chocolate, #3A2219); color: #F5C76B; box-shadow: 0 3px 8px rgba(58, 34, 25, .22); }
+.cf9-ic--choco .cf9-ic-foto { border: 2px solid var(--chocolate, #3A2219); }
