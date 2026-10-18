@@ -33,43 +33,44 @@ interface Grupo { label: string; items: Item[] }
 
 // (13/10) TODAS as telas da confeiteira (as mesmas do menu do computador, na mesma ordem),
 // inclusive as que também abrem pelo Início. Só ficam fora as que já estão no menu de baixo (Início, Pedidos, Cardápio, Doo IA).
+// (18/10) reorganizado pela prioridade do dia a dia: o que ela usa todo dia primeiro, o que mexe pouco no fim
 const GRUPOS: Grupo[] = [
   {
-    label: "Vendas",
+    label: "Dia a dia",
     items: [
-      { label: "Agenda",     desc: "Entregas por dia",         path: "/agenda",      Icone: CalendarDots },
-      { label: "Mensagens do WhatsApp", desc: "Textos prontos", path: "/configuracoes/mensagens", Icone: ChatCircleText },
-    ],
-  },
-  {
-    label: "Cardápio digital",
-    items: [
-      { label: "Aparência",           desc: "Cores, logo e modelo",      path: "/cardapio-design", Icone: PaintBrush },
-      { label: "Dados da loja",       desc: "Loja, entrega e pagamento", path: "/cardapio-config", Icone: Storefront },
-      { label: "Ver meu cardápio",    desc: "Como o cliente vê",         path: "/cardapio-preview", Icone: Eye },
-    ],
-  },
-  {
-    label: "Cadastros",
-    items: [
-      { label: "Produtos",       desc: "O que aparece no cardápio", path: "/produtos",      Icone: Cake },
-      { label: "Categorias",     desc: "Organize seus produtos",    path: "/categorias",    Icone: SquaresFour },
-      { label: "Complementos", desc: "Sabores, recheios e adicionais",       path: "/complementos",  Icone: Stack },
-      { label: "Clientes",       desc: "Quem compra e o que compra", path: "/clientes",     Icone: Users },
-      { label: "Ingredientes",  desc: "O que você compra",    path: "/insumos",       Icone: Basket },
-      // 13/10: Receitas escondida até as fotos ficarem prontas
-      { label: "Ficha técnica", desc: "Calcule o custo real", path: "/ficha-tecnica", Icone: ClipboardText },
+      { label: "Agenda",     desc: "Entregas por dia",            path: "/agenda",      Icone: CalendarDots },
+      { label: "Clientes",   desc: "Quem compra e o que compra",  path: "/clientes",    Icone: Users },
+      { label: "Mensagens do WhatsApp", desc: "Textos prontos",   path: "/configuracoes/mensagens", Icone: ChatCircleText },
     ],
   },
   {
     label: "Financeiro",
     items: [
       { label: "Visão geral",   desc: "Entradas, saídas e saldo", path: "/financeiro",            Icone: SquaresFour },
-      { label: "Transações",    desc: "Histórico detalhado",      path: "/financeiro/transacoes", Icone: ArrowsDownUp },
       { label: "A receber",     desc: "O que os clientes devem",  path: "/financeiro/a-receber",  Icone: HandCoins },
       { label: "A pagar",       desc: "Contas e vencimentos",     path: "/financeiro/a-pagar",    Icone: CalendarCheck },
-      { label: "Custos",        desc: "Fixos, taxas e embalagem", path: "/custos",                Icone: Tag },
+      { label: "Transações",    desc: "Histórico detalhado",      path: "/financeiro/transacoes", Icone: ArrowsDownUp },
       { label: "Lucratividade", desc: "Quanto você lucra",        path: "/lucratividade",         Icone: ChartLineUp },
+      { label: "Custos",        desc: "Fixos, taxas e embalagem", path: "/custos",                Icone: Tag },
+    ],
+  },
+  {
+    label: "Cadastros",
+    items: [
+      { label: "Produtos",      desc: "O que aparece no cardápio",      path: "/produtos",      Icone: Cake },
+      { label: "Complementos",  desc: "Sabores, recheios e adicionais", path: "/complementos",  Icone: Stack },
+      { label: "Categorias",    desc: "Organize seus produtos",         path: "/categorias",    Icone: SquaresFour },
+      { label: "Ficha técnica", desc: "Calcule o custo real",           path: "/ficha-tecnica", Icone: ClipboardText },
+      { label: "Ingredientes",  desc: "O que você compra",              path: "/insumos",       Icone: Basket },
+      // 13/10: Receitas escondida até as fotos ficarem prontas
+    ],
+  },
+  {
+    label: "Cardápio digital",
+    items: [
+      { label: "Ver meu cardápio", desc: "Como o cliente vê",         path: "/cardapio-preview", Icone: Eye },
+      { label: "Dados da loja",    desc: "Loja, entrega e pagamento", path: "/cardapio-config",  Icone: Storefront },
+      { label: "Aparência",        desc: "Logo, banners e modelo",    path: "/cardapio-design",  Icone: PaintBrush },
     ],
   },
   {

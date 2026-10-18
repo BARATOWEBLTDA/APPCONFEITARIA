@@ -45,3 +45,6 @@
 .mais-doo .mais-it-txt small { color: rgba(255, 255, 255, .78); }
 .mais-doo .mais-it-seta { color: rgba(255, 255, 255, .7); }
 .mais-doo-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; background: rgba(255, 255, 255, .14); color: #FF9DC4; }
+
+/* (18/10) ícones em rosa forte com desenho branco, igual ao resto do app */
+.mais-it-ic { background: var(--ui-rosa); color: var(--ui-branco); }
