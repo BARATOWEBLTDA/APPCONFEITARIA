@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Buildings, CalendarCheck, CaretDown, ClipboardText, Coins, CreditCard, ImageSquare, TextAlignLeft, Truck } from "@phosphor-icons/react";
+import { Buildings, CalendarCheck, CaretRight, ClipboardText, Coins, CreditCard, ImageSquare, TextAlignLeft, Truck, X } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { useLojaPronta } from "@/lib/primeirosPassos";
@@ -15,6 +15,8 @@ import { useAtualizacoes } from "@/components/MinhasAtualizacoes";
  * (16/10) Virou "Seus próximos passos": mostra 3, cada um com "Agora não" (amanhã, 7 dias ou não mostrar mais)
  * e o botão da ação embaixo do texto (antes um X no canto). Conta a pagar não tem "Agora não".
  * O que falta cadastrar só aparece depois dos primeiros passos. Conta nova (sem nada) não vê o cartão.
+ * (18/10) Lista compacta (estava com texto demais): ícone, título e uma linha curta; a linha toda abre;
+ * o "Agora não" virou um × pequeno no canto (abre as mesmas opções).
  */
 type Item = { chave: string; nivel: "urgente" | "atencao" | "normal"; Ic: Icon; t: string; s: string; acao: string; link: string; estado?: { abrir: string }; fechar?: boolean; ordem: number };
 
@@ -73,12 +75,12 @@ export default function PraFazer() {
 
   const itens: Item[] = [
     ...avisos.map((a, i): Item => ({
-      chave: a.chave, nivel: a.nivel, Ic: ICONE[a.icone], t: a.curto.t, s: a.texto, link: a.link, estado: a.estado, ordem: i,
+      chave: a.chave, nivel: a.nivel, Ic: ICONE[a.icone], t: a.curto.t, s: a.curto.s, link: a.link, estado: a.estado, ordem: i,
       acao: a.icone === "conta" ? "Pagar" : "Ver", fechar: a.icone !== "conta",
     })),
     ...updates.map((u): Item => ({
       chave: u.key, nivel: u.key === "faturamento-down" || u.key === "aniversarios" ? "atencao" : "normal",
-      Ic: u.Icone, t: u.curto.t, s: TEXTO_NOVIDADE[u.key] || u.descricao || u.curto.s, link: u.path, ordem: 100 - u.prioridade, acao: "Ver", fechar: true,
+      Ic: u.Icone, t: u.curto.t, s: u.curto.s || TEXTO_NOVIDADE[u.key] || u.descricao, link: u.path, ordem: 100 - u.prioridade, acao: "Ver", fechar: true,
     })),
   ].filter(x => !x.fechar || !escondido(x.chave))
    .sort((a, b) => PESO[a.nivel] - PESO[b.nivel] || a.ordem - b.ordem);
@@ -100,25 +102,23 @@ export default function PraFazer() {
       <ul className="pf-lista">
         {mostrar.map(x => (
           <li key={x.chave} className={`pf-it pf-it--${x.nivel}`}>
-            <span className="pf-ic" aria-hidden="true"><x.Ic size={20} weight="bold" /></span>
-            <div className="pf-cx">
+            <button type="button" className="pf-linha" onClick={() => navigate(x.link, x.estado ? { state: x.estado } : undefined)}>
+              <span className="pf-ic" aria-hidden="true"><x.Ic size={20} weight="bold" /></span>
               <span className="pf-tx"><b>{x.t}</b><small>{x.s}</small></span>
-              <div className="pf-bts">
-                {x.fechar && (
-                  <div className="pf-adiar">
-                    <button type="button" className="pf-nao" aria-haspopup="menu" aria-expanded={menu === x.chave} onClick={() => setMenu(m => m === x.chave ? null : x.chave)}>
-                      Agora não <CaretDown size={13} weight="bold" aria-hidden="true" />
-                    </button>
-                    {menu === x.chave && (
-                      <div className="pf-menu" role="menu">
-                        {ADIAR.map(([t, d]) => <button type="button" role="menuitem" key={t} onClick={() => adiar(x.chave, d)}>{t}</button>)}
-                      </div>
-                    )}
+              {x.acao === "Pagar" ? <span className="pf-pagar">Pagar</span> : <CaretRight size={16} weight="bold" className="pf-seta" aria-hidden="true" />}
+            </button>
+            {x.fechar && (
+              <div className="pf-adiar">
+                <button type="button" className="pf-x" aria-label={`Agora não: ${x.t}`} aria-haspopup="menu" aria-expanded={menu === x.chave} onClick={() => setMenu(m => m === x.chave ? null : x.chave)}>
+                  <X size={14} weight="bold" aria-hidden="true" />
+                </button>
+                {menu === x.chave && (
+                  <div className="pf-menu" role="menu">
+                    {ADIAR.map(([t, d]) => <button type="button" role="menuitem" key={t} onClick={() => adiar(x.chave, d)}>{t}</button>)}
                   </div>
                 )}
-                <button type="button" className="pf-acao" onClick={() => navigate(x.link, x.estado ? { state: x.estado } : undefined)}>{x.acao}</button>
               </div>
-            </div>
+            )}
           </li>
         ))}
       </ul>
@@ -138,27 +138,25 @@ const CSS = `
   .pf-t { font-size: 16px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); }
   .pf-n { flex: none; padding: 3px 8px; border-radius: 6px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 12px; font-weight: 700; }
   .pf-lista { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
-  .pf-it { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-top: 1px solid var(--ui-linha, #F3ECEF); }
+  .pf-it { display: flex; align-items: center; gap: 4px; border-top: 1px solid var(--ui-linha, #F3ECEF); }
   .pf-it:first-child { border-top: 0; }
+  .pf-linha { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 60px; margin: 0; padding: 8px 0; border: 0; background: none; font-family: inherit; text-align: left; cursor: pointer; }
   .pf-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--primary-light, #FCE0E9); color: var(--ui-rosa-escuro); }
-  .pf-cx { flex: 1; min-width: 0; }
-  .pf-tx { display: flex; flex-direction: column; gap: 1px; }
+  .pf-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
   .pf-tx b { font-size: 14.5px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  /* (16/10) explicação de verdade (até 2 linhas), pra os botões embaixo fazerem sentido */
-  .pf-tx small { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-top: 2px; font-size: 13px; line-height: 1.45; color: var(--ui-texto-2); overflow: hidden; text-wrap: balance; }
-  .pf-bts { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-top: 8px; }
-  .pf-adiar { position: relative; }
-  .pf-nao { display: flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 10px; border: 0; border-radius: 8px; background: none; color: var(--ui-texto-3); font-family: inherit; font-size: 13.5px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+  .pf-tx small { font-size: 13px; line-height: 1.35; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pf-seta { flex: none; color: var(--ui-texto-3); }
+  .pf-pagar { flex: none; padding: 6px 12px; border-radius: 8px; background: #D92D20; color: var(--ui-branco); font-size: 13px; font-weight: 700; }
+  .pf-adiar { position: relative; flex: none; }
+  .pf-x { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin: 0; padding: 0; border: 0; border-radius: 50%; background: #F5F0F2; color: var(--ui-texto-3); cursor: pointer; }
+  .pf-x::after { content: ""; position: absolute; inset: -6px; }
   .pf-menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 30; min-width: 190px; padding: 6px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); box-shadow: 0 10px 28px rgba(44, 18, 25, .16); }
   .pf-menu button { display: block; width: 100%; min-height: 40px; padding: 0 10px; border: 0; border-radius: 6px; background: none; font-family: inherit; font-size: 14px; text-align: left; color: var(--ui-texto); white-space: nowrap; cursor: pointer; }
   .pf-menu button:last-child { color: var(--ui-texto-2); }
-  @media (hover: hover) { .pf-menu button:hover, .pf-nao:hover { background: #FAF7F8; } }
-  .pf-acao { min-height: 36px; padding: 0 16px; border: 1.5px solid #F3C9DA; border-radius: 8px; background: var(--ui-branco); color: var(--ui-rosa-escuro); font-family: inherit; font-size: 13.5px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+  @media (hover: hover) { .pf-menu button:hover, .pf-x:hover { background: #F0E9EC; } }
   /* urgente: vermelho; atenção: amarelo */
   .pf-it--urgente .pf-ic { background: #FDECEC; color: #B42318; }
   .pf-it--urgente small { color: #9A3A32; }
-  .pf-it--urgente .pf-acao { border-color: #D92D20; background: #D92D20; color: var(--ui-branco); }
   .pf-it--atencao .pf-ic { background: #FFF4D6; color: #8A5A00; }
-  .pf-it--atencao .pf-acao { border-color: #F0C75E; color: #8A5A00; }
   .pf-ver { display: block; width: 100%; min-height: 44px; margin: 0 0 -6px; border: 0; border-top: 1px solid var(--ui-linha, #F3ECEF); background: none; font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
 `;
