@@ -1,5 +1,6 @@
 // Build marker: 2026-09-05T11:00 — mobile hero: fonte menor, PRO achatado, texto centralizado
 import { resumoItens } from "@/components/pedidos/pedidoTexto";
+import { avisar as avisarBase } from "@/components/base";
 import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
 import PraFazer from "@/components/PraFazer";
@@ -23,7 +24,7 @@ import { useNavigate } from "react-router-dom";
 // (15/10) o gráfico (recharts) só é baixado quando aparece
 const GraficoRecebido = lazy(() => import("@/components/inicio/GraficoRecebido"));
 import {
-  HandCoins, Basket, Plus, Bell, CalendarDots, CurrencyDollar, Camera, Users, ChartLineUp,
+  HandCoins, Basket, CookingPot, Plus, Bell, CalendarDots, CurrencyDollar, Camera, Users, ChartLineUp,
   CaretRight, Cake, Receipt, ClipboardText,
   WarningCircle, Clock, Package, TrendUp, Confetti, RocketLaunch, Sparkle, Crown,
 } from "@phosphor-icons/react";
@@ -951,7 +952,7 @@ export default function Inicio() {
             { Icone: Cake,           label: "Produtos",      sub: "Seus doces",      path: "/produtos",      key: "produtos" },
             { Icone: CurrencyDollar, label: "Financeiro",    sub: "Seu caixa",     path: "/financeiro",    key: "financeiro" },
             { Icone: ClipboardText,  label: "Ficha técnica", sub: "Custo e lucro",         path: "/ficha-tecnica", key: "ficha" },
-            { Icone: Basket,         label: "Ingredientes",  sub: "O que você compra",     path: "/insumos",       key: "ingredientes" },
+            { Icone: Basket,         label: "Ingredientes",  sub: "Seus insumos",     path: "/insumos",       key: "ingredientes" },
             { Icone: TrendUp,        label: "Lucratividade", sub: "Seu lucro real",     path: "/lucratividade", key: "lucro" },
           ].map((item) => (
             <button key={item.path} className="ini-nav-card" data-nav={item.key} onClick={() => navigate(item.path)}>
@@ -963,6 +964,15 @@ export default function Inicio() {
               <CaretRight size={16} weight="bold" className="ini-nav-arrow" />
             </button>
           ))}
+          {/* (18/10) Minhas receitas: ainda não existe, só o aviso "Em breve" */}
+          <button type="button" className="ini-nav-card ini-nav-card--breve" data-nav="receitas" aria-disabled="true"
+            onClick={() => avisarBase("Minhas receitas chega em breve. Estamos preparando!", { tipo: "info" })}>
+            <div className="ini-nav-icon"><CookingPot size={isMobile ? 24 : 20} weight="bold" /></div>
+            <div className="ini-nav-meta">
+              <span className="ini-nav-label">Minhas receitas</span>
+              <span className="ini-nav-breve">Em breve</span>
+            </div>
+          </button>
         </div>
       </section>
 
@@ -1975,6 +1985,10 @@ export default function Inicio() {
           .ini-dk-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); margin: -50px 0 0; }
           .ini-content { grid-template-columns: minmax(0, 1fr) !important; grid-template-areas: "main" "aside" !important; }
         }
+        /* (18/10) cartão "Em breve" (Minhas receitas): mais apagado, com etiqueta */
+        .ini-nav-card--breve { opacity: .75; grid-column: 1 / -1; } /* ocupa a linha toda: a grade fica par e o nome cabe */
+        .ini-nav-card--breve .ini-nav-icon { filter: grayscale(.4); }
+        .ini-nav-breve { align-self: flex-start; margin-top: 2px; padding: 2px 7px; border-radius: 6px; background: #F3EEF0; color: var(--ui-texto-2); font-size: 11.5px; font-weight: 700; white-space: nowrap; }
         /* (10/10) Acesso rápido no computador: todos os cartões iguais em qualquer largura — ícone em cima, nome embaixo,
            centralizados na altura, mesma altura, nome numa linha só e sem reticências (a descrição e a seta não cabiam e cortavam) */
         @media (min-width: 901px) {
