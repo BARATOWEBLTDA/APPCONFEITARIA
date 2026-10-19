@@ -17,7 +17,18 @@ export default class TelaDeErro extends Component<{ children: ReactNode }, Estad
 
   static getDerivedStateFromError(): Estado { return { quebrou: true }; }
 
-  componentDidCatch(erro: Error, info: ErrorInfo) { console.error("[Doonly] a tela quebrou:", erro, info.componentStack); }
+  componentDidCatch(erro: Error, info: ErrorInfo) {
+    console.error("[Doonly] a tela quebrou:", erro, info.componentStack);
+    // (19/10) parte do app que sumiu numa atualização: recarrega uma vez (no máximo a cada 30 s) pra pegar a versão nova
+    if (/dynamically imported module|Importing a module script failed|Failed to load module script|error loading dynamically/i.test(String(erro?.message || ""))) {
+      try {
+        const ult = Number(sessionStorage.getItem("doonly_recarga_arquivo") || 0);
+        if (Date.now() - ult < 30000) return;
+        sessionStorage.setItem("doonly_recarga_arquivo", String(Date.now()));
+      } catch { /* sem sessionStorage: recarrega mesmo assim */ }
+      window.location.reload();
+    }
+  }
 
   render() {
     if (!this.state.quebrou) return this.props.children;

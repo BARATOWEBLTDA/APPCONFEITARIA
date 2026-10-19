@@ -23,7 +23,7 @@
       "destination": "/api/og?c=:codigo"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!assets/).*)",
       "destination": "/index.html"
     }
   ],

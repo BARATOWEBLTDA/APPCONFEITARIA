@@ -64,6 +64,30 @@
       #plano-b button{min-height:48px;margin-top:16px;padding:0 24px;border:0;border-radius:12px;background:#222;color:#fff;font:inherit;font-weight:700;cursor:pointer}
     </style>
     <script>
+      // (19/10) arquivo do app que não existe mais (o app ficou aberto durante uma atualização): recarrega uma vez
+      // pra pegar a versão nova, em vez de ficar com a tela em branco. No máximo uma vez a cada 30 s.
+      (function () {
+        function recarregar() {
+          try {
+            var ult = Number(sessionStorage.getItem('doonly_recarga_arquivo') || 0);
+            if (Date.now() - ult < 30000) return;
+            sessionStorage.setItem('doonly_recarga_arquivo', String(Date.now()));
+          } catch (e) {}
+          window.location.reload();
+        }
+        window.addEventListener('error', function (e) {
+          var el = e && e.target;
+          var src = el && (el.src || el.href);
+          if (src && /\/assets\//.test(src) && (el.tagName === 'SCRIPT' || el.tagName === 'LINK')) recarregar();
+        }, true);
+        window.addEventListener('vite:preloadError', function (e) { e.preventDefault(); recarregar(); });
+        window.addEventListener('unhandledrejection', function (e) {
+          var m = String((e && e.reason && e.reason.message) || '');
+          if (/dynamically imported module|Importing a module script failed|Failed to load module script|error loading dynamically/i.test(m)) recarregar();
+        });
+      })();
+    </script>
+    <script>
       // Plano B da abertura (11/10): se o arquivo principal do app não carregar (internet caiu no meio, arquivo antigo
       // que não existe mais), a abertura ficava presa pra sempre, porque o limite de 8 s vive dentro desse arquivo.
       // Depois de 12 s sem o app na tela, aparece o aviso com "Tentar de novo". Se o app carregar depois, ele assume.
