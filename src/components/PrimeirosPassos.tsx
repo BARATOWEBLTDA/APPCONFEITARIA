@@ -625,6 +625,12 @@ const CSS = `
   .pp-lnk { display: block; width: 100%; min-height: 44px; margin-top: 8px; padding: 10px; border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
   .pp-lnk--cinza { color: var(--ui-texto-3); font-weight: 500; }
 
+  /* (19/10) computador: o passo da vez compacto, com o botão do tamanho do texto à direita (não esticado na largura toda) */
+  @media (min-width: 901px) {
+    .pp--inicio > .pp-at { display: flex; align-items: center; gap: 16px; padding: 12px 12px 12px 4px; }
+    .pp--inicio > .pp-at .pp-ps--sem { flex: 1; min-width: 0; }
+    .pp--inicio > .pp-at .pp-btn { flex: none; width: auto; min-height: 44px; margin: 0; padding: 0 28px; font-size: 14.5px; }
+  }
   /* (19/10) Início: os passos no mesmo checklist do celular em qualquer tela (antes viravam etiquetas no computador) */
   .pp--inicio .pp-ic { width: 28px; height: 28px; margin: 0 6px; border-radius: 50%; background: none; border: 2px solid #DCCBD1; color: #8F7C83; font-size: 13px; font-weight: 700; }
   .pp--inicio .pp-ic:not(.pp-ic--ok) svg { display: none; }
