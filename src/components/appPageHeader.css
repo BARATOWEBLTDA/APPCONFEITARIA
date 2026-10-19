@@ -102,3 +102,9 @@
 .cab-s { display: none; }
 .cab-t { font-size: 20px; }
 .cab-foto { width: 40px; height: 40px; }
+
+/* (19/10) computador: faixa de cima num chocolate mais escuro, que combina com o menu cinza-escuro da esquerda (celular igual) */
+@media (min-width: 901px) {
+  .cab { background: #24150F; }
+  .cab-foto-pro { border-color: #24150F; }
+}

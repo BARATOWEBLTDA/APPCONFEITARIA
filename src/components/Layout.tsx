@@ -504,6 +504,10 @@ export default function Layout() {
         .sb-plano--seja { background: var(--ui-branco); color: var(--primary); cursor: pointer; } .sb-plano--seja:hover { transform: translateY(-1px); }
         .sb-plano--skel { width: 56px; height: 17px; background: rgba(255,255,255,0.12); }
         .sb-linha2 { display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; }
+        /* (19/10) a linha embaixo do logo fecha na mesma altura da faixa de cima (60px) */
+        .sidebar:not(.x) .sb-topo { box-sizing: border-box; height: 60px; min-height: 60px; margin: -1rem -1rem 8px; padding: 0 1rem 0 calc(1rem + 4px); }
+        @media (max-height: 820px) { .sidebar:not(.x) .sb-topo { margin-top: -0.5rem; } }
+        .menu-recolhido .sidebar:not(.x) .sb-topo { height: auto; min-height: 52px; margin: 0 0 8px; padding: 2px 0 12px; }
         .sb-topo .sidebar-sino { position: relative; top: auto; right: auto; flex: none; width: 36px; height: 36px; border-radius: 10px; }
         .sb-topo .sidebar-sino .sidebar-sino-n { top: -4px; right: -5px; }
         .nav-item--grupo .nav-seta { margin-left: auto; transition: transform var(--dur-fast) linear; }
