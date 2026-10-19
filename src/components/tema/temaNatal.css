@@ -30,6 +30,13 @@
 
 /* touquinha vestida: caixa do tamanho da logo, svg passa pra cima e pros lados */
 .tn-touca-box { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
-.tn-touca { position: absolute; left: 0; top: -32%; width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 2px 2px rgba(0,0,0,.18)); }
+.tn-touca--tras { z-index: 1; }
+.tn-touca { position: absolute; left: -12.5%; top: -55.5%; width: 156.25%; height: auto; overflow: visible; filter: drop-shadow(0 2px 2px rgba(0,0,0,.15)); }
 .tn-touca-box.cm1-touca { inset: auto; top: -60px; right: 16px; width: 106px; height: 106px; z-index: 7; }
+.tn-touca-box.cm1-touca.tn-touca--tras { z-index: 5; }
 .tema-natal .cp-topo-in { padding-top: 18px; padding-bottom: 6px; }
+
+/* (19/10) logo entre as duas partes da touca; borda única dourada (sem o anel creme e o espaço branco) */
+.ctn-logo, .cp-topo-logo { position: relative; z-index: 2; }
+.tema-natal .cp-topo-logo { padding: 0; }
+.tema-natal .cp-topo-in { padding-top: 20px; }

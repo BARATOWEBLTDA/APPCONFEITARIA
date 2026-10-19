@@ -129,8 +129,9 @@ export default function CatalogoNatal({ design, config, isPro, produtos, categor
       </div>
       <div className="ctn-meio">
         <div className="ctn-logo-w">
+          <Touquinha parte="tras" />
           <div className="ctn-logo">{logo ? <img src={logo} alt={design.nome_loja || ""} /> : <b>{(design.nome_loja || "D").charAt(0).toUpperCase()}</b>}</div>
-          <Touquinha />
+          <Touquinha parte="frente" />
         </div>
         <p className="ctn-nome">{design.nome_loja}{isPro && <SeloVerificado tamanho={18} />}</p>
         <h1 className="ctn-titulo">Cardápio<em>Especial de Natal</em></h1>

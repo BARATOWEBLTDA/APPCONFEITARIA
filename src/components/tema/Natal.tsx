@@ -1,23 +1,48 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import "./temaNatal.css";
 
 /**
- * (18/10) Touquinha de Papai Noel "vestida" na logo: a aba branca acompanha a curva de cima da logo,
- * o gorro tomba pro lado e o pompom cai do lado direito.
- * Vai numa caixa do MESMO tamanho e posição da logo (a classe de quem usa cuida disso; o padrão é cobrir o pai).
- * Desenho num círculo de 100 de diâmetro (centro 50,100): a caixa = a logo, o svg passa um pouco pra cima e pros lados.
+ * (19/10) Touquinha clássica tombada, em 3D: o gorro (com a ponta e o pompom) fica ATRÁS da logo
+ * e só a aba de pelúcia passa NA FRENTE da borda de cima, com uma sombrinha na logo.
+ * Uso: <Touquinha parte="tras" /> antes da logo e <Touquinha parte="frente" /> depois (a logo com z-index 2).
+ * "toda" desenha tudo junto (pra lugares sem logo de verdade, como o círculo do Pedido enviado).
+ * A caixa tem o tamanho da logo; o desenho é feito num círculo de raio 64 (centro 0,0).
  */
-export function Touquinha({ className = "" }: { className?: string; tamanho?: number }) {
+export function Touquinha({ className = "", parte = "toda" }: { className?: string; parte?: "tras" | "frente" | "toda"; tamanho?: number }) {
+  const id = useId().replace(/:/g, "");
+  const tras = parte !== "frente", frente = parte !== "tras";
   return (
-    <span className={`tn-touca-box ${className}`} aria-hidden="true">
-      <svg className="tn-touca" viewBox="0 18 100 58">
-        <g transform="rotate(-10 50 100)">
-          <path d="M14 55 C18 36 34 24 54 24 C74 24 90 32 96 44 C90 40 84 39 79 41 C82 46 85 51 86 55 A58 58 0 0 0 14 55 Z" fill="#DC2626" />
-          <path d="M54 24 C74 24 90 32 96 44 C90 40 84 39 79 41 C72 33 64 28 54 24 Z" fill="#B91C1C" />
-          <path d="M23 49 C28 38 38 31 50 28" fill="none" stroke="#F87171" strokeWidth="2.5" strokeLinecap="round" opacity=".55" />
-          <path d="M12.7 55.6 A58 58 0 0 1 87.3 55.6 L79.6 64.8 A46 46 0 0 0 20.4 64.8 Z" fill="#FFFFFF" stroke="#E5E1E3" strokeWidth="1.2" strokeLinejoin="round" />
-          <circle cx="97" cy="45" r="6.5" fill="#FFFFFF" stroke="#E5E1E3" strokeWidth="1.2" />
-        </g>
+    <span className={`tn-touca-box tn-touca--${parte} ${className}`} aria-hidden="true">
+      <svg className="tn-touca" viewBox="-80 -135 200 165">
+        <defs>
+          <radialGradient id={`v${id}`} cx="35%" cy="30%" r="80%"><stop offset="0" stopColor="#F0423E" /><stop offset=".55" stopColor="#C8191C" /><stop offset="1" stopColor="#7E0D12" /></radialGradient>
+          <linearGradient id={`d${id}`} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#9E1217" /><stop offset="1" stopColor="#6A0A0E" /></linearGradient>
+          <radialGradient id={`p${id}`} cx="50%" cy="20%" r="90%"><stop offset="0" stopColor="#FFFFFF" /><stop offset=".7" stopColor="#F3EEEA" /><stop offset="1" stopColor="#D9D0CA" /></radialGradient>
+          <radialGradient id={`m${id}`} cx="38%" cy="35%" r="70%"><stop offset="0" stopColor="#FFFFFF" /><stop offset=".75" stopColor="#EEE7E2" /><stop offset="1" stopColor="#CFC4BD" /></radialGradient>
+          <linearGradient id={`s${id}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#3A1A10" stopOpacity=".38" /><stop offset="1" stopColor="#3A1A10" stopOpacity="0" /></linearGradient>
+          <clipPath id={`c${id}`}><circle r="62" /></clipPath>
+        </defs>
+        {tras && (
+          <g transform="translate(0,-64) scale(.74) translate(0,64) rotate(-12)">
+            <path d="M-58 -40 C-56 -96 -14 -126 30 -118 C62 -112 86 -86 96 -50 C102 -30 100 -10 92 4 C88 -14 80 -28 68 -36 C70 -44 70 -48 66 -50 Z" fill={`url(#v${id})`} />
+            <path d="M30 -118 C62 -112 86 -86 96 -50 C102 -30 100 -10 92 4 C88 -14 80 -28 68 -36 C64 -66 52 -96 30 -118 Z" fill={`url(#d${id})`} />
+            <path d="M-36 -72 C-24 -98 0 -110 22 -110" fill="none" stroke="#FF8A80" strokeWidth="6" strokeLinecap="round" opacity=".45" />
+            <path d="M6 -60 C20 -78 40 -90 58 -92" fill="none" stroke="#8C1015" strokeWidth="3" strokeLinecap="round" opacity=".6" />
+            <g transform="translate(94,10)"><circle r="15" fill={`url(#m${id})`} /><circle cx="-7" cy="-6" r="6" fill="#FFFFFF" opacity=".9" /><circle cx="7" cy="5" r="5" fill="#E6DED8" opacity=".8" /></g>
+          </g>
+        )}
+        {frente && (
+          <g clipPath={`url(#c${id})`}><g transform="translate(0,-64) scale(.74) translate(0,64) rotate(-12)">
+            <path d="M-62 -20 C-30 -38 30 -38 62 -20 L62 4 C30 -14 -30 -14 -62 4Z" fill={`url(#s${id})`} />
+          </g></g>
+        )}
+        {frente && (
+          <g transform="translate(0,-64) scale(.74) translate(0,64) rotate(-12)">
+            <path d="M-72 -30 C-72 -42 -64 -50 -55 -51 C-52 -61 -40 -64 -32 -59 C-26 -68 -12 -69 -5 -62 C2 -70 16 -70 22 -62 C30 -68 44 -64 47 -56 C56 -58 66 -50 66 -41 C74 -38 76 -26 70 -20 C64 -14 56 -16 50 -19 C26 -30 -26 -30 -52 -18 C-60 -15 -70 -18 -72 -30Z" fill={`url(#p${id})`} />
+            <path d="M-60 -36 C-56 -40 -50 -42 -46 -40 M-30 -46 C-26 -50 -20 -50 -16 -47 M2 -50 C6 -53 12 -53 16 -50 M30 -46 C34 -49 40 -48 44 -45" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" fill="none" opacity=".9" />
+            <path d="M-62 -24 C-34 -34 34 -34 64 -22" stroke="#D9D0CA" strokeWidth="2" fill="none" strokeLinecap="round" />
+          </g>
+        )}
       </svg>
     </span>
   );

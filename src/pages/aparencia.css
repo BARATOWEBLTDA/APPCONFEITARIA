@@ -218,3 +218,4 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-capa-bts .ui-bt { white-space: nowrap; }
 .ap-capa-lista { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .ap-capa-lista .ap-gal-it img { aspect-ratio: 4 / 5; object-fit: cover; }
+.ap-topo-logo, .ap-tema-lo { z-index: 2; }
