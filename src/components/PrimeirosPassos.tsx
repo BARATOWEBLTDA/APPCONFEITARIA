@@ -625,36 +625,16 @@ const CSS = `
   .pp-lnk { display: block; width: 100%; min-height: 44px; margin-top: 8px; padding: 10px; border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
   .pp-lnk--cinza { color: var(--ui-texto-3); font-weight: 500; }
 
-  /* (07/10 · 2.94) No Início, em tela larga (tablet e computador), os passos viram blocos lado a lado:
-     o cartão fica com metade da altura e não empurra o resto da tela pra baixo. */
-  @media (min-width: 768px) {
-    .pp--inicio { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 12px; padding: 20px 20px 20px; }
-    .pp--inicio > .pp-t, .pp--inicio > .pp-sub, .pp--inicio > .pp-bar { grid-column: 1 / -1; }
-    .pp--inicio > .pp-bar { margin-bottom: 4px; }
-    .pp--inicio > .pp-ps, .pp--inicio > .pp-at { margin: 10px 0 0; border: 1px solid #F0EBED; border-radius: 14px; padding: 12px; }
-    .pp--inicio > .pp-at { display: flex; flex-direction: column; justify-content: space-between; border: 0; padding: 12px; }
-    .pp--inicio > .pp-ps--ok { background: #FAF7F8; }
-  }
-  @media (min-width: 1600px) { .pp--inicio { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-  /* (13/10) computador: o passo da vez numa faixa na largura toda, em cima; os outros viram etiquetas pequenas embaixo
-     (feitos em verde; os que faltam com contorno rosa, e tocar abre o passo). Some o buraco da grade. */
-  @media (min-width: 901px) {
-    .pp--inicio { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-    .pp--inicio > .pp-t, .pp--inicio > .pp-sub, .pp--inicio > .pp-bar { width: 100%; }
-    .pp--inicio > .pp-sub { margin-top: -6px; }
-    .pp--inicio > .pp-at { order: 1; width: 100%; display: flex; flex-direction: row; align-items: center; gap: 16px; margin: 4px 0 4px; padding: 12px 12px 12px 14px; }
-    .pp--inicio > .pp-at .pp-ps--sem { flex: 1; min-width: 0; }
-    .pp--inicio > .pp-at .pp-btn { flex: none; width: auto; margin: 0; padding: 0 28px; min-height: 44px; }
-    .pp--inicio > .pp-ps { order: 2; width: auto; min-height: 34px; margin: 0; padding: 4px 12px 4px 4px; gap: 6px; border: 1px solid #F3C9DA; border-radius: 999px; background: var(--ui-branco); }
-    .pp--inicio > .pp-ps .pp-ic { width: 26px; height: 26px; border-radius: 50%; }
-    .pp--inicio > .pp-ps .pp-ic svg { width: 15px; height: 15px; }
-    .pp--inicio > .pp-ps .pp-tx b { font-size: 13px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; }
-    .pp--inicio > .pp-ps .pp-tx small, .pp--inicio > .pp-ps .pp-seta { display: none; }
-    .pp--inicio > .pp-ps--ok { border-color: transparent; background: #EEF8F1; }
-    .pp--inicio > .pp-ps--ok .pp-ic { background: none; }
-    .pp--inicio > .pp-ps--ok .pp-tx b { color: #1F7A45; font-weight: 600; }
-    .pp--inicio > .pp-ps:not(:disabled):hover { border-color: var(--ui-rosa); }
-  }
+  /* (19/10) Início: os passos no mesmo checklist do celular em qualquer tela (antes viravam etiquetas no computador) */
+  .pp--inicio .pp-ic { width: 28px; height: 28px; margin: 0 6px; border-radius: 50%; background: none; border: 2px solid #DCCBD1; color: #8F7C83; font-size: 13px; font-weight: 700; }
+  .pp--inicio .pp-ic:not(.pp-ic--ok) svg { display: none; }
+  .pp--inicio .pp-n { display: inline; }
+  .pp--inicio .pp-ic--at { background: var(--ui-rosa); border-color: var(--ui-rosa); color: var(--ui-branco); }
+  .pp--inicio .pp-ic--ok { background: var(--ui-verde); border-color: var(--ui-verde); color: var(--ui-branco); }
+  .pp--inicio .pp-ic--ok svg { width: 14px; height: 14px; }
+  .pp--inicio .pp-ps--ok { min-height: 44px; }
+  .pp--inicio .pp-ps--ok .pp-tx b { text-decoration: line-through; text-decoration-color: #C9B9BF; }
+  .pp--inicio .pp-ps--ok .pp-tx small { display: none; }
 
   .ppf-d-logo { flex: none; width: 84px; height: 84px; border-radius: 50%; border: 4px solid var(--ui-branco); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro);
     box-shadow: 0 4px 14px rgba(44, 18, 25, .12); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 700; }
