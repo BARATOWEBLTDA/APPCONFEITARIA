@@ -21,6 +21,9 @@ import { explicarErro } from '@/lib/erros'
 import { linkWhatsApp } from '@/lib/telefone'
 import { lojaAtualCheckout, lojaAtualId, lojaAtualNome, lojaAtualWhatsApp } from './lojaAtual'
 import { digitosAoDigitar } from './telefoneDigitado'
+import { ProductModal } from '@/components/cart/ProductModal'
+import { precoDoCartao } from './ItensCardapio'
+import type { Produto } from '@/types/database'
 import '@/components/cart/sacola.css'
 
 /**
@@ -139,11 +142,29 @@ function Cab({ t, sub, obr, opc, ok, falta, pendente }: { t: string; sub?: strin
   )
 }
 
+/** (19/10) "Peça também" na sacola: foto, nome e preço; tocar abre o produto (escolher tamanho etc.) */
+function SugestaoSacola({ produto, cor }: { produto: Produto; cor: string }) {
+  const [aberto, setAberto] = useState(false)
+  const foto = produto.imagem_url?.split(',')[0]?.trim()
+  const { final, aPartir } = precoDoCartao(produto)
+  return (
+    <>
+      <button type="button" className="sc-sug-it" onClick={() => setAberto(true)} aria-label={`Ver ${produto.nome}`}>
+        <span className="sc-sug-ft">{foto ? <img src={foto} alt="" loading="lazy" /> : null}<i style={{ background: cor }}><Plus size={14} weight="bold" /></i></span>
+        <b>{produto.nome}</b>
+        <small>{aPartir ? 'a partir de ' : ''}{formatCurrency(final)}</small>
+      </button>
+      <ProductModal isOpen={aberto} onClose={() => setAberto(false)} product={produto} corBotao={cor} />
+    </>
+  )
+}
+
 /* ─── Conteúdo interno do carrinho (reutilizado em mobile e desktop) ─── */
 function CartContent({
   step, setStep, items, totalPrice, updateQuantity, updateObservations, removeItem, clearCart,
-  config, onClose, corBotao,
+  config, onClose, corBotao, corTopo, logoUrl, sugestoes = [],
 }: any) {
+  const [limparPergunta, setLimparPergunta] = useState(false)
   const [dataEntrega, setDataEntrega] = useState('')
   const [horaEntrega, setHoraEntrega] = useState('')
   const [observacoes, setObservacoes] = useState('')
@@ -665,6 +686,24 @@ function CartContent({
     </div>
   )
 
+  // (19/10) sacola com a cara da loja: faixa na cor do topo, logo e nome; "Limpar" no canto
+  const topoSacola = (
+    <div className="sc-topo sc-topo--loja" style={{ background: corTopo || '#BF6B84' }}>
+      <button type="button" className="sc-bt" aria-label="Fechar" onClick={onClose}><ArrowLeft size={22} weight="bold" /></button>
+      <span className="sc-topo-loja">
+        <span className="sc-topo-logo" style={{ borderColor: accent }}>{logoUrl ? <img src={logoUrl} alt="" /> : <b>{(nomeLoja || 'D').charAt(0).toUpperCase()}</b>}</span>
+        <span><b>Sua sacola</b>{nomeLoja && <small>{nomeLoja}</small>}</span>
+      </span>
+      {items.length > 0
+        ? <button type="button" className={`sc-limpar${limparPergunta ? ' on' : ''}`} onClick={() => { if (limparPergunta) { clearCart(); setLimparPergunta(false) } else { setLimparPergunta(true); setTimeout(() => setLimparPergunta(false), 3000) } }}>{limparPergunta ? 'Limpar?' : 'Limpar'}</button>
+        : <span />}
+      <span className="sc-topo-curva" aria-hidden="true" />
+    </div>
+  )
+  const economia = Math.round(items.reduce((t: number, it: any) => t + (Number(it?.precoBreakdown?.desconto) || 0) * (Number(it?.quantity) || 0), 0) * 100) / 100
+  const naSacola = new Set(items.map((it: any) => it.id))
+  const pecaTambem = (sugestoes as Produto[]).filter(p => !naSacola.has(p.id)).slice(0, 8)
+
   const topo = (
     <div className="sc-topo">
       {step === 'finalizar'
@@ -678,7 +717,7 @@ function CartContent({
   /* ═══ Sacola ═══ */
   if (step !== 'finalizar') return (
     <>
-      {topo}
+      {topoSacola}
       <div className="sc-rolo">
         {items.length === 0 ? (
           <div className="sc-vazia">
@@ -689,10 +728,21 @@ function CartContent({
           </div>
         ) : (
           <>
-            <div className="sc-loja"><span>Seus itens</span><button type="button" style={{ color: accent }} onClick={onClose}>Adicionar mais itens</button></div>
-            {items.map((item: any) => (
-              <CartItemComponent key={item.lineId ?? item.id} item={item} cor={accent} onUpdateQuantity={updateQuantity} onUpdateObservations={updateObservations} onRemove={removeItem} />
-            ))}
+            <div className="sc-loja"><span>{count} {count === 1 ? 'item' : 'itens'}</span><button type="button" style={{ color: accent }} onClick={onClose}><Plus size={16} weight="bold" aria-hidden="true" />Adicionar mais</button></div>
+            <div className="sc-itens">
+              {items.map((item: any) => (
+                <CartItemComponent key={item.lineId ?? item.id} item={item} cor={accent} onUpdateQuantity={updateQuantity} onUpdateObservations={updateObservations} onRemove={removeItem} />
+              ))}
+            </div>
+            {economia > 0 && <p className="sc-eco"><Tag size={18} weight="bold" aria-hidden="true" />Você está economizando {formatCurrency(economia)}</p>}
+
+            {/* (19/10) Peça também: outros produtos da loja, como no iFood */}
+            {pecaTambem.length > 0 && (
+              <section className="sc-sug" aria-label="Peça também">
+                <b className="sc-sug-tit">Peça também</b>
+                <div className="sc-sug-lista">{pecaTambem.map(p => <SugestaoSacola key={p.id} produto={p} cor={accent} />)}</div>
+              </section>
+            )}
 
             {/* Cupom: só quando a loja tem cupom ativo */}
             {temCupom && (cupomAplicado ? (
@@ -716,7 +766,7 @@ function CartContent({
             ))}
 
             <div className="sc-valores">
-              <b>Resumo de valores</b>
+              <b>Resumo</b>
               <span>Subtotal<em>{formatCurrency(totalPrice)}</em></span>
               {desconto > 0 && <span className="ok">Cupom {cupomAplicado?.codigo}<em>− {formatCurrency(desconto)}</em></span>}
               {/* Ainda não escolheu retirar ou receber: o valor da entrega só sai no finalizar */}
@@ -914,7 +964,7 @@ function CartContent({
 
 /* ─── Componente principal ─── */
 /* ─── Componente principal ─── */
-export function NavigationMenu({ corBotao, celular }: { corBotao?: string; /** a página está no layout de celular? (10/10) */ celular?: boolean }) {
+export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes }: { corBotao?: string; /** a página está no layout de celular? (10/10) */ celular?: boolean; /** (19/10) a sacola com a cara da loja */ corTopo?: string; logoUrl?: string; sugestoes?: Produto[] }) {
   const { items, totalPrice, updateQuantity, updateObservations, removeItem, clearCart } = useCart()
   const [isOpen, setIsOpen] = useState(false)
   const [step, setStep] = useState<'cart' | 'finalizar'>('cart')
@@ -961,7 +1011,7 @@ export function NavigationMenu({ corBotao, celular }: { corBotao?: string; /** a
   const sharedProps = {
     step, setStep, items, totalPrice,
     updateQuantity, updateObservations, removeItem, clearCart,
-    config, onClose: handleClose, corBotao: accent,
+    config, onClose: handleClose, corBotao: accent, corTopo, logoUrl, sugestoes,
   }
 
   return (

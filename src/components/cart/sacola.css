@@ -160,3 +160,35 @@
 .sc-it > .sc-it-ft { grid-row: 1 / span 2; }
 .sc-it > .sc-it-tx { grid-column: 2 / 4; }
 .sc-it > .sc-qtd { grid-column: 3; justify-self: end; align-self: end; }
+
+/* (19/10) sacola com a cara da loja (como os apps de delivery, com o topo da loja) */
+.sc-topo--loja { position: relative; border-bottom: 0; padding-bottom: 22px; color: var(--ui-branco); text-align: left; }
+.sc-topo--loja .sc-bt { color: var(--ui-branco); background: rgba(255,255,255,.18); border-radius: 50%; width: 40px; height: 40px; }
+.sc-topo-loja { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.sc-topo-logo { flex: none; width: 40px; height: 40px; border: 2px solid; border-radius: 50%; background: var(--ui-branco); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.sc-topo-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sc-topo-logo b { font-size: 16px; font-weight: 700; color: var(--ui-texto); }
+.sc-topo--loja b { color: var(--ui-branco); font-size: 17px; }
+.sc-topo--loja small { color: rgba(255,255,255,.88); }
+.sc-topo--loja { grid-template-columns: 44px 1fr auto; }
+.sc-limpar { min-height: 36px; margin: 0; padding: 0 12px; border: 0; border-radius: 8px; background: rgba(255,255,255,.18); color: var(--ui-branco); font-family: inherit; font-size: 13.5px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.sc-limpar.on { background: var(--ui-branco); color: #B91C1C; }
+.sc-topo-curva { position: absolute; left: 0; right: 0; bottom: -1px; height: 16px; border-radius: 16px 16px 0 0; background: #F7F4F5; }
+.sc:has(.sc-topo--loja) .sc-rolo { background: #F7F4F5; }
+.sc-loja button { display: inline-flex; align-items: center; gap: 4px; }
+.sc-itens { display: flex; flex-direction: column; gap: 8px; padding: 0 12px; }
+.sc-itens .sc-it { margin: 0; padding: 10px; border: 1px solid #EFE6EA; border-radius: 14px; background: var(--ui-branco); }
+.sc-eco { display: flex; align-items: center; gap: 8px; margin: 10px 12px 0; padding: 9px 12px; border-radius: 10px; background: #EAF7EE; color: #166534; font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sc-sug { margin: 16px 0 4px; }
+.sc-sug-tit { display: block; padding: 0 16px; margin-bottom: 8px; font-size: 15px; font-weight: 700; }
+.sc-sug-lista { display: flex; gap: 10px; overflow-x: auto; padding: 0 16px 4px; scrollbar-width: none; }
+.sc-sug-lista::-webkit-scrollbar { display: none; }
+.sc-sug-it { flex: none; display: flex; flex-direction: column; gap: 2px; width: 112px; margin: 0; padding: 0; border: 0; background: none; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
+.sc-sug-ft { position: relative; display: block; width: 112px; height: 112px; overflow: hidden; border-radius: 12px; background: #EFE6EA; }
+.sc-sug-ft img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sc-sug-ft i { position: absolute; right: 6px; bottom: 6px; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; color: var(--ui-branco); box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+.sc-sug-it b { margin-top: 4px; font-size: 13px; font-weight: 700; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sc-sug-it small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; }
+.sc:has(.sc-topo--loja) .sc-linha { background: var(--ui-branco); }
+.sc:has(.sc-topo--loja) .sc-valores { margin: 12px; padding: 12px; border: 1px solid #EFE6EA; border-radius: 14px; background: var(--ui-branco); }
+.sc-topo--loja .sc-topo-logo b { color: var(--ui-texto); font-size: 16px; }
