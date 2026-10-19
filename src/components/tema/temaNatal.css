@@ -30,6 +30,6 @@
 
 /* touquinha vestida: caixa do tamanho da logo, svg passa pra cima e pros lados */
 .tn-touca-box { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
-.tn-touca { position: absolute; left: -10%; top: -40%; width: 124%; height: auto; overflow: visible; filter: drop-shadow(0 2px 2px rgba(0,0,0,.18)); }
+.tn-touca { position: absolute; left: 0; top: -32%; width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 2px 2px rgba(0,0,0,.18)); }
 .tn-touca-box.cm1-touca { inset: auto; top: -60px; right: 16px; width: 106px; height: 106px; z-index: 7; }
-.tema-natal .cp-topo-in { padding-top: 30px; padding-bottom: 8px; }
+.tema-natal .cp-topo-in { padding-top: 18px; padding-bottom: 6px; }

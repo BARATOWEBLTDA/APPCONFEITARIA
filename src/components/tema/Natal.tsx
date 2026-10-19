@@ -10,14 +10,13 @@ import "./temaNatal.css";
 export function Touquinha({ className = "" }: { className?: string; tamanho?: number }) {
   return (
     <span className={`tn-touca-box ${className}`} aria-hidden="true">
-      <svg className="tn-touca" viewBox="-10 10 124 85">
-        <g transform="rotate(-12 50 100)">
-          <path d="M1 70 C6 40 34 18 62 18 C88 18 104 34 108 54 C101 47 93 45 87 47 C93 54 97 62 99 70 A58 58 0 0 0 1 70 Z" fill="#DC2626" />
-          <path d="M62 18 C88 18 104 34 108 54 C101 47 93 45 87 47 C80 36 72 28 62 18 Z" fill="#B91C1C" />
-          <path d="M18 62 C24 42 40 28 58 24" fill="none" stroke="#F87171" strokeWidth="3" strokeLinecap="round" opacity=".55" />
-          <path d="M-0.2 71 A58 58 0 0 1 100.2 71 L88.1 78 A44 44 0 0 0 11.9 78 Z" fill="#FFFFFF" stroke="#E5E1E3" strokeWidth="1.5" strokeLinejoin="round" />
-          <path d="M8 70 A50 50 0 0 1 92 70" fill="none" stroke="#F1EEF0" strokeWidth="2" strokeDasharray="1 5" strokeLinecap="round" />
-          <circle cx="108" cy="56" r="8.5" fill="#FFFFFF" stroke="#E5E1E3" strokeWidth="1.5" />
+      <svg className="tn-touca" viewBox="0 18 100 58">
+        <g transform="rotate(-10 50 100)">
+          <path d="M14 55 C18 36 34 24 54 24 C74 24 90 32 96 44 C90 40 84 39 79 41 C82 46 85 51 86 55 A58 58 0 0 0 14 55 Z" fill="#DC2626" />
+          <path d="M54 24 C74 24 90 32 96 44 C90 40 84 39 79 41 C72 33 64 28 54 24 Z" fill="#B91C1C" />
+          <path d="M23 49 C28 38 38 31 50 28" fill="none" stroke="#F87171" strokeWidth="2.5" strokeLinecap="round" opacity=".55" />
+          <path d="M12.7 55.6 A58 58 0 0 1 87.3 55.6 L79.6 64.8 A46 46 0 0 0 20.4 64.8 Z" fill="#FFFFFF" stroke="#E5E1E3" strokeWidth="1.2" strokeLinejoin="round" />
+          <circle cx="97" cy="45" r="6.5" fill="#FFFFFF" stroke="#E5E1E3" strokeWidth="1.2" />
         </g>
       </svg>
     </span>
