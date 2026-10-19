@@ -1,3 +1,4 @@
+import { NeveNatal, Touquinha, temaNatalLigado } from '@/components/tema/Natal'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { montarMensagem as montarMensagemModelo } from '@/lib/mensagens'
 import { CalendarioSheet, HorariosSheet } from '@/components/cardapio/AgendaSheets'
@@ -633,12 +634,15 @@ function CartContent({
     : !rua.trim() || !numero.trim() ? 'Falta o endereço'
     : config.entrega_por_bairro.length > 0 && !bairroSelecionado ? 'Falta o bairro' : ''
 
+  const natal = temaNatalLigado() // (18/10) tema de Natal: neve e touquinha no Pedido enviado
   /* ═══ Pedido enviado ═══ */
   if (pedidoConfirmado) return (
     <div className="sc-enviado">
+      {natal && <NeveNatal />}
       <div className="sc-enviado-in">
-        <span className="sc-enviado-ic"><Check size={40} weight="bold" /></span>
+        <span className="sc-enviado-ic"><Check size={40} weight="bold" />{natal && <Touquinha className="sc-enviado-touca" tamanho={48} />}</span>
         <h2>Pedido enviado!</h2>
+        {natal && <p className="sc-enviado-festas">Boas festas!</p>}
         <p>{pedidoConfirmado.numero > 0 ? <>Pedido <b>#{pedidoConfirmado.numero}</b> · a </> : 'A '}<b>{pedidoConfirmado.storeName}</b> vai falar com você pelo WhatsApp.</p>
         <div className="sc-res">
           {pedidoConfirmado.itens.map((it: any, k: number) => {

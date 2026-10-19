@@ -25,6 +25,7 @@ import { SobreLoja } from '@/components/cardapio/SobreLoja'
 import { useCart } from '@/hooks/useCart'
 import { formatCurrency } from '@/utils/helpers'
 import { corClara, nomeSobreTopo } from '@/lib/coresCardapio'
+import { Touquinha, useClasseTema } from '@/components/tema/Natal'
 import './cardapioPublico.css'
 
 /* ══════════════════════════════════════════════ */
@@ -64,13 +65,17 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
       <header className={`cp-topo${corClara(navBg) ? ' cp-topo--clara' : ''}`} style={{ background: navBg }}>
         <div className="cp-topo-in">
           <div className="cp-topo-loja">
-            <span className="cp-topo-logo" style={{ borderColor: corBorda }}>
-              {design.logo_url ? <img src={design.logo_url} alt="" /> : <b style={{ background: corBorda }}>{design.nome_loja?.charAt(0)}</b>}
+            <span className="cp-topo-logo-w">
+              <span className="cp-topo-logo" style={{ borderColor: corBorda }}>
+                {design.logo_url ? <img src={design.logo_url} alt="" /> : <b style={{ background: corBorda }}>{design.nome_loja?.charAt(0)}</b>}
+              </span>
+              {design.tema === 'natal' && <Touquinha className="cp-touca" tamanho={46} />}
             </span>
             <div>
               <p className="cp-topo-nome" style={{ color: nomeSobreTopo(design.cor_nome, navBg) }}>{design.nome_loja}{isPro && <SeloVerificado tamanho={20} />}</p>
               {sub && <p className="cp-topo-sub">{status && <i className={status.aberto ? 'aberto' : ''} aria-hidden="true" />}{sub}</p>}
               {cidade && <p className="cp-topo-cid"><MapPin size={15} weight="bold" aria-hidden="true" />{cidade}</p>}
+              {design.tema === 'natal' && design.tema_aviso && <p className="cp-topo-aviso">{design.tema_aviso}</p>}
             </div>
           </div>
           <nav className="cp-topo-nav" aria-label="Menu da loja">
@@ -198,6 +203,7 @@ function CardapioContent() {
   const slugAtual = params.slug || ''
 
   const [design, setDesign] = useState<DesignSettings | null>(null)
+  useClasseTema(design?.tema) // (18/10) liga os enfeites do tema (Natal) na página
   const [config, setConfig] = useState<Configuracoes | null>(null)
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [isPro, setIsPro] = useState(false)

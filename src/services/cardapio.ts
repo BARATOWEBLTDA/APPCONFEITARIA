@@ -1,3 +1,4 @@
+import { temaAtivo, NATAL, AVISO_NATAL_PADRAO } from '@/lib/temaCardapio'
 import { COR_BOTOES, corDoItem } from '@/lib/coresCardapio'
 import { supabase } from '@/lib/supabase'
 import { fotoDaLoja } from '@/hooks/useProfile'
@@ -114,9 +115,11 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
 
   // (18/10) Três cores, todas no topo: borda da logo, nome e faixa do topo (grátis: as prontas; PRO: qualquer uma).
   // Botões e ícones ficam sempre no rosa do Doonly.
-  const borda = corDoItem('cor_borda', profile.cor_borda, isPro)
-  const nome = corDoItem('cor_nome', profile.cor_nome, isPro)
-  const topo = corDoItem('cor_navbar', profile.cor_navbar, isPro)
+  // (18/10) tema de Natal: usa as cores dele no topo
+  const tema = temaAtivo(profile)
+  const borda = tema === 'natal' ? NATAL.borda : corDoItem('cor_borda', profile.cor_borda, isPro)
+  const nome = tema === 'natal' ? NATAL.nome : corDoItem('cor_nome', profile.cor_nome, isPro)
+  const topo = tema === 'natal' ? NATAL.topo : corDoItem('cor_navbar', profile.cor_navbar, isPro)
 
   const design: DesignSettings = {
     user_id: userId,
@@ -139,6 +142,8 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     cor_sacola: COR_BOTOES,
     cor_rodape: COR_BOTOES,
     ocultar_categorias: profile.ocultar_categorias || false,
+    tema,
+    tema_aviso: tema === 'natal' ? String(profile.tema_aviso ?? AVISO_NATAL_PADRAO).trim() : '',
   }
 
   const config: Configuracoes = {

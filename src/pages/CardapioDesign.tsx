@@ -6,13 +6,15 @@ import { usePlano } from "@/hooks/usePlano";
 import { HexColorPicker } from "react-colorful";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import { useRecorte } from "@/components/ui/useRecorte";
-import { ArrowCounterClockwise, ArrowsClockwise, Camera, Check, Crown, Image as ImageIcon, Images, Layout, Lock, MapPin, Palette, Plus, Sparkle, Storefront, UploadSimple, X } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, ArrowsClockwise, CalendarBlank, Camera, Check, Eye, Info, Crown, Image as ImageIcon, Images, Layout, Lock, MapPin, Palette, Plus, Sparkle, Storefront, UploadSimple, X } from "@phosphor-icons/react";
 import { SeloVerificado } from "@/components/cardapio/SeloVerificado";
 import { situacaoLoja } from "@/lib/agendaCardapio";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, BotaoIcone, Janela, Titulo, avisar } from "@/components/base";
 import { lerBannersProntos, CATEGORIAS_BANNER, type BannerPronto } from "@/lib/bannersProntos";
 import { COR_BOTOES, PADRAO, PRONTAS, corDoItem, type CampoCor } from "@/lib/coresCardapio";
+import { AVISO_NATAL_PADRAO, NATAL, type Tema } from "@/lib/temaCardapio";
+import { Touquinha } from "@/components/tema/Natal";
 import "./aparencia.css";
 
 /**
@@ -73,6 +75,13 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
   const [nomeLoja, setNomeLoja] = useState("");
   // (18/10) prévia do topo: cidade da loja (sem endereço, uma capital de exemplo) e o aberto/fechado
   const [cidade, setCidade] = useState("");
+  // (18/10) tema do cardápio (Normal ou Natal), aviso de temporada e período automático
+  const [tema, setTema] = useState<Tema>("normal");
+  const [temaAviso, setTemaAviso] = useState(AVISO_NATAL_PADRAO);
+  const [temaAuto, setTemaAuto] = useState(false);
+  const [temaInicio, setTemaInicio] = useState("");
+  const [temaFim, setTemaFim] = useState("");
+  const avisoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [horario, setHorario] = useState<unknown>(null);
   const [bannerUrl, setBannerUrl] = useState("");
   const [banner1Url, setBanner1Url] = useState("");
@@ -111,7 +120,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("logo_url, foto_url, nome_loja, banner_url, banner1_url, banner2_url, banner3_url, banner_topo_url, endereco, horario, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo, hide_stars, avaliacao_media").eq("id", user.id).single();
+      const { data } = await supabase.from("profiles").select("logo_url, foto_url, nome_loja, banner_url, banner1_url, banner2_url, banner3_url, banner_topo_url, endereco, horario, tema_cardapio, tema_aviso, tema_auto, tema_inicio, tema_fim, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo, hide_stars, avaliacao_media").eq("id", user.id).single();
       if (data) {
         setLogoUrl(data.logo_url || ""); setFotoPerfil((data as any).foto_url || "");
         setHideStars(!!(data as any).hide_stars);
@@ -119,6 +128,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         setNomeLoja(data.nome_loja || "");
         try { const e: any = typeof (data as any).endereco === "string" ? JSON.parse((data as any).endereco) : (data as any).endereco; setCidade(String(e?.cidade || "").trim()); } catch { setCidade(""); }
         setHorario((data as any).horario ?? null);
+        { const d: any = data; setTema(d.tema_cardapio === "natal" ? "natal" : "normal"); setTemaAviso(d.tema_aviso ?? AVISO_NATAL_PADRAO); setTemaAuto(!!d.tema_auto); setTemaInicio(d.tema_inicio || ""); setTemaFim(d.tema_fim || ""); }
         setBannerUrl(data.banner_url || "");
         setBanner1Url(data.banner1_url || "");
         setBanner2Url(data.banner2_url || "");
@@ -154,6 +164,33 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     return `${data.publicUrl}?t=${Date.now()}`;
   };
 
+  const anoTema = () => { const d = new Date(); return d.getMonth() === 11 && d.getDate() > 26 ? d.getFullYear() + 1 : d.getFullYear(); };
+  const escolherTema = async (t: Tema) => {
+    if (t === tema || travas.current.has("tema")) return;
+    travas.current.add("tema");
+    const antes = tema; setTema(t);
+    const ok = await gravar({ tema_cardapio: t, ...(t === "natal" ? { tema_aviso: temaAviso } : {}) });
+    travas.current.delete("tema");
+    if (!ok) { setTema(antes); return; }
+    showSuccess();
+  };
+  const mudarAviso = (v: string) => {
+    const txt = v.slice(0, 40); setTemaAviso(txt);
+    if (avisoTimer.current) clearTimeout(avisoTimer.current);
+    avisoTimer.current = setTimeout(async () => { if (await gravar({ tema_aviso: txt.trim() || null })) showSuccess(); }, 700);
+  };
+  const mudarAuto = async (on: boolean) => {
+    const ano = anoTema();
+    const ini = temaInicio || `${ano}-12-01`, fim = temaFim || `${ano}-12-26`;
+    setTemaAuto(on); setTemaInicio(ini); setTemaFim(fim);
+    if (!(await gravar({ tema_auto: on, tema_inicio: ini, tema_fim: fim }))) { setTemaAuto(!on); return; }
+    showSuccess();
+  };
+  const mudarData = async (campo: "tema_inicio" | "tema_fim", v: string) => {
+    if (!v) return;
+    (campo === "tema_inicio" ? setTemaInicio : setTemaFim)(v);
+    if (await gravar({ [campo]: v })) showSuccess();
+  };
   const showSuccess = () => {
     // Notifica outros componentes (ex: preview do cardápio no CardapioConfigPage)
     // pra recarregar após save do Design
@@ -371,6 +408,41 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     )}
     <div className="ap">
 
+      {/* (18/10) Tema do cardápio: Normal ou Natal (outros temas depois) */}
+      <section className="ap-card ap-largo">
+        <Cabeca Ic={Sparkle} titulo="Tema do cardápio" apoio="Enfeita o cardápio nas datas especiais" />
+        <div className="ap-temas" role="radiogroup" aria-label="Tema do cardápio">
+          <button type="button" role="radio" aria-checked={tema === "normal"} className="ap-tema" onClick={() => escolherTema("normal")}>
+            <span className="ap-tema-th" style={{ background: corDoItem("cor_navbar", corNavbar, isPro) }}><span className="ap-tema-lo" style={{ borderColor: corDoItem("cor_borda", corBorda, isPro) }}>{(logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : null}</span></span>
+            <span className="ap-tema-pe"><b>Normal</b><small>Suas cores</small></span>
+            {tema === "normal" && <span className="ap-tema-ok" aria-hidden="true"><Check size={13} weight="bold" /></span>}
+          </button>
+          <button type="button" role="radio" aria-checked={tema === "natal"} className="ap-tema" onClick={() => escolherTema("natal")}>
+            <span className="ap-tema-th ap-tema-th--natal"><span className="ap-tema-lo" style={{ borderColor: NATAL.borda }}>{(logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : null}</span><Touquinha className="ap-tema-touca" tamanho={30} /></span>
+            <span className="ap-tema-pe"><b>Natal</b><small>Verde e dourado</small></span>
+            {tema === "natal" && <span className="ap-tema-ok" aria-hidden="true"><Check size={13} weight="bold" /></span>}
+          </button>
+        </div>
+        {tema === "natal" && (
+          <div className="ap-tema-cfg">
+            <label className="ap-tema-lb" htmlFor="ap-aviso">Aviso no topo do cardápio</label>
+            <div className="ui-campo-c"><input id="ap-aviso" value={temaAviso} maxLength={40} placeholder={AVISO_NATAL_PADRAO} onChange={e => mudarAviso(e.target.value)} /></div>
+            <small className="ap-tema-dica">Fica embaixo do nome. Vazio, não aparece.</small>
+            <div className="ap-tema-auto">
+              <span><b>Ligar e desligar sozinho</b><small>Fora dessas datas volta pro Normal</small></span>
+              <button type="button" role="switch" aria-checked={temaAuto} aria-label="Ligar e desligar sozinho" className="ap-chave" onClick={() => mudarAuto(!temaAuto)}><span /></button>
+            </div>
+            {temaAuto && (
+              <div className="ap-tema-datas">
+                <label><small>De</small><input type="date" value={temaInicio} onChange={e => mudarData("tema_inicio", e.target.value)} /></label>
+                <label><small>Até</small><input type="date" value={temaFim} min={temaInicio || undefined} onChange={e => mudarData("tema_fim", e.target.value)} /></label>
+              </div>
+            )}
+            <Botao variante="secundario" cheio icone={<Eye size={18} weight="bold" />} onClick={() => navigate("/cardapio-preview")}>Ver no meu cardápio</Botao>
+          </div>
+        )}
+      </section>
+
       {/* (18/10) Topo do cardápio: foto do topo e logo numa prévia só, do jeito que o cliente vê */}
       <section className="ap-card ap-largo">
         <Cabeca Ic={Storefront} titulo="Topo do cardápio" apoio="É assim que o cliente vê" />
@@ -378,7 +450,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         <input ref={bannerTopoRef} type="file" accept="image/*" hidden onChange={recorteTopo.escolher} />
         <div className="ap-topo">
           {/* (18/10) a faixa não é clicável: quem troca a foto é o botão de baixo */}
-          <div className={`ap-topo-capa${bannerTopoUrl ? " ap-topo-capa--foto" : " ap-topo-capa--vazia"}`} style={bannerTopoUrl ? undefined : { backgroundColor: corAtual("cor_navbar", corNavbar) }}>
+          <div className={`ap-topo-capa${bannerTopoUrl ? " ap-topo-capa--foto" : " ap-topo-capa--vazia"}${tema === "natal" ? " ap-topo-capa--natal" : ""}`} style={bannerTopoUrl ? undefined : { backgroundColor: tema === "natal" ? NATAL.topo : corAtual("cor_navbar", corNavbar) }}>
             {bannerTopoUrl ? <img className="ap-topo-capa-img" src={bannerTopoUrl} alt="" /> : <span className="ap-topo-pill"><ImageIcon size={16} weight="bold" aria-hidden="true" />Foto do topo · 1200 × 400</span>}
             {bannerTopoUrl && <BotaoIcone rotulo="Tirar a foto do topo" variante="neutro" tamanho="p" className="ap-tirar ap-topo-x" onClick={handleRemoveBannerTopo}><X size={18} weight="bold" /></BotaoIcone>}
             {(() => { const sit = situacaoLoja(horario as any); const aberto = !sit || sit.aberto; return (
@@ -387,13 +459,15 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
             {uploading === "banner-topo" && <span className="ap-topo-gira"><span className="ui-gira" aria-label="Enviando" /></span>}
           </div>
           <div className="ap-topo-corpo">
-            <button type="button" className="ap-topo-logo" style={{ borderColor: corAtual("cor_borda", corBorda) }} onClick={() => !uploading && logoRef.current?.click()} aria-label={logoUrl ? "Trocar a logo" : "Enviar a logo"}>
+            <button type="button" className="ap-topo-logo" style={{ borderColor: tema === "natal" ? NATAL.borda : corAtual("cor_borda", corBorda) }} onClick={() => !uploading && logoRef.current?.click()} aria-label={logoUrl ? "Trocar a logo" : "Enviar a logo"}>
               {uploading === "logo" ? <span className="ui-gira" aria-label="Enviando" />
                 : (logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : <b>{(nomeLoja || "?").trim().charAt(0).toUpperCase()}</b>}
               <i aria-hidden="true"><Camera size={12} weight="bold" /></i>
             </button>
-            <b className="ap-topo-nome"><span style={{ color: corAtual("cor_nome", corNome) }}>{nomeLoja || "Nome da sua loja"}</span><SeloVerificado tamanho={18} /></b>
+            {tema === "natal" && <Touquinha className="ap-topo-touca" tamanho={50} />}
+            <b className="ap-topo-nome"><span style={{ color: tema === "natal" ? NATAL.nome : corAtual("cor_nome", corNome) }}>{nomeLoja || "Nome da sua loja"}</span><SeloVerificado tamanho={18} /></b>
             <span className="ap-topo-sl"><b style={{ color: COR_BOTOES }}>Sobre a loja</b><em aria-hidden="true">·</em><MapPin size={14} weight="bold" color={COR_BOTOES} aria-hidden="true" /><span>{cidade || "São Paulo"}</span></span>
+            {tema === "natal" && temaAviso.trim() && <span className="ap-topo-aviso"><CalendarBlank size={14} weight="bold" aria-hidden="true" />{temaAviso.trim()}</span>}
           </div>
         </div>
         <div className="ap-topo-bts">
@@ -464,8 +538,9 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       )}
 
       {/* Cores (18/10): só as três do topo da loja. Grátis: cores prontas; PRO: qualquer cor */}
-      <section className="ap-card ap-largo">
+      <section className={`ap-card ap-largo${tema === "natal" ? " ap-cores-off" : ""}`}>
         <Cabeca Ic={Palette} titulo="Cores do topo" apoio="Os números mostram onde cada cor fica" />
+        {tema === "natal" && <p className="ap-cores-tema"><Info size={16} weight="bold" aria-hidden="true" />O tema de Natal está usando as cores dele</p>}
         <div className="ap-mini" aria-hidden="true">
           <div className="ap-mini-topo" style={{ background: corAtual("cor_navbar", corNavbar) }}><span className="ap-mini-n" style={{ left: 10, top: 10 }}>1</span></div>
           <div className="ap-mini-corpo">

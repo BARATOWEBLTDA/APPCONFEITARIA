@@ -1,3 +1,4 @@
+import { Touquinha } from '@/components/tema/Natal'
 import { SeloVerificado } from './SeloVerificado'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -111,6 +112,7 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
       </div>
 
       <div className="cm1-content" style={{ background: fundo, ['--cm1-fundo' as any]: fundo }}>
+        {design.tema === 'natal' && <Touquinha className="cm1-touca" tamanho={70} />}
         <div className="cm1-logo" style={{ borderColor: accent }}>
           {design.logo_url
             ? <img src={design.logo_url} alt={design.nome_loja || ''} />
@@ -133,6 +135,7 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
             )}
           </div>
         )}
+        {design.tema === 'natal' && design.tema_aviso && <p className="cm1-aviso-tema"><CalendarBlank size={16} weight="bold" aria-hidden="true" />{design.tema_aviso}</p>}
         {design.descricao_loja && <p className="cm1-descricao">{design.descricao_loja}</p>}
 
         {/* (17/10) formas de entrega em quadradinhos (só informam; a escolha é no checkout) */}

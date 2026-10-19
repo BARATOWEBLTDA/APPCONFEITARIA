@@ -43,6 +43,9 @@ export interface DesignSettings {
   texto_rodape?: string
   hide_stars?: boolean
   category_icons?: { [key: string]: string }
+  /** (18/10) tema que vale hoje e o aviso de temporada */
+  tema?: 'normal' | 'natal'
+  tema_aviso?: string
 }
 
 export interface Configuracoes {

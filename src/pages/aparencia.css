@@ -173,3 +173,39 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-prontas .ap-outra.on { border: 0; color: #fff; box-shadow: 0 0 0 3px var(--ui-branco), 0 0 0 5px var(--ui-texto); }
 .ap-prontas .ap-outra--pro { background: var(--ui-cinza); border-style: solid; color: var(--ui-texto-3); }
 .ap-cgrupo + .ap-cgrupo { padding-top: 12px; border-top: 1px solid var(--ui-linha); }
+
+/* (18/10) Tema do cardápio */
+.ap-temas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (min-width: 640px) { .ap-temas { grid-template-columns: repeat(2, minmax(0, 220px)); } }
+.ap-tema { position: relative; display: flex; flex-direction: column; margin: 0; padding: 0; overflow: hidden; border: 1.5px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); font-family: inherit; text-align: left; cursor: pointer; }
+.ap-tema[aria-checked="true"] { border: 2px solid var(--ui-texto); }
+.ap-tema-th { position: relative; display: block; height: 64px; }
+.ap-tema-th--natal { background: #14532D var(--tn-estrelas); background-size: 44px 38px; }
+.ap-tema-lo { position: absolute; right: 10px; bottom: -16px; width: 38px; height: 38px; border: 3px solid; border-radius: 50%; background: #fff; overflow: hidden; }
+.ap-tema-lo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ap-tema-touca { position: absolute; right: -1px; bottom: 10px; transform: rotate(14deg); }
+.ap-tema-pe { display: flex; flex-direction: column; padding: 20px 10px 10px; }
+.ap-tema-pe b { font-size: 14px; font-weight: 700; color: var(--ui-texto); }
+.ap-tema-pe small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; }
+.ap-tema-ok { position: absolute; top: 6px; left: 6px; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--ui-texto); color: #fff; }
+.ap-tema-cfg { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 1px solid var(--ui-linha); }
+.ap-tema-lb { font-size: 14px; font-weight: 700; color: var(--ui-texto); }
+.ap-tema-dica { margin-top: -4px; font-size: 12.5px; color: var(--ui-texto-2); }
+.ap-tema-auto { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; }
+.ap-tema-auto > span { display: flex; flex-direction: column; min-width: 0; }
+.ap-tema-auto b { font-size: 14px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; }
+.ap-tema-auto small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; }
+.ap-chave { flex: none; position: relative; width: 48px; height: 28px; margin: 0; padding: 0; border: 0; border-radius: 999px; background: var(--ui-borda-campo, #D6CBD0); cursor: pointer; transition: background-color .15s linear; }
+.ap-chave span { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .15s ease-out; }
+.ap-chave[aria-checked="true"] { background: #16A34A; }
+.ap-chave[aria-checked="true"] span { transform: translateX(20px); }
+.ap-tema-datas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.ap-tema-datas label { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.ap-tema-datas small { font-size: 12.5px; font-weight: 600; color: var(--ui-texto-2); }
+.ap-tema-datas input { width: 100%; min-width: 0; height: 44px; padding: 0 10px; border: 1px solid var(--ui-borda-campo, #D6CBD0); border-radius: var(--ui-raio); background: #fff; color: var(--ui-texto); font-family: inherit; font-size: 15px; }
+/* prévia do topo no Natal */
+.ap-topo-capa--natal.ap-topo-capa--vazia { background-image: var(--tn-estrelas); background-size: 60px 52px; }
+.ap-topo-touca { position: absolute; z-index: 3; right: -2px; top: -72px; transform: rotate(14deg); }
+.ap-topo-aviso { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; margin-top: 6px; padding: 3px 8px; border-radius: 7px; background: #FBF3DB; color: #7A5A06; font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ap-cores-tema { display: flex; align-items: center; gap: 6px; margin: -4px 0 0; padding: 7px 10px; border-radius: 8px; background: #FBF3DB; color: #7A5A06; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.ap-cores-off .ap-mini, .ap-cores-off .ap-cgrupo { opacity: .45; pointer-events: none; }
