@@ -39,6 +39,13 @@
 /* caixa do enfeite: mesmo tamanho e posição da logo */
 .tn-enfeite-box { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
 .tn-enfeite-box.cm1-enfeite { inset: auto; top: -60px; right: 16px; width: 106px; height: 106px; z-index: 7; }
-/* (19/10) laço de veludo na lateral direita da logo (em % da logo: vale pra qualquer tamanho) */
-.tn-laco-img { position: absolute; right: -10%; top: 4%; width: 34%; height: auto; transform: rotate(14deg); filter: drop-shadow(0 3px 4px rgba(0,0,0,.28)); pointer-events: none; user-select: none; }
-.cp-topo-logo-w .tn-laco-img { right: -8%; width: 32%; } /* no computador o nome fica logo ao lado */
+/* (19/10) laço no canto de cima à direita da logo (em % da logo: vale pra qualquer tamanho) */
+.tn-laco-img {
+  /* (19/10) laço do Bruno, com o nó em cima da borda, no canto de cima à direita (ângulo de 45°):
+     ponto da borda = (50% + 50%·cos45°, 50% − 50%·sen45°) = (85,36%; 14,64%) da logo.
+     O nó fica em 49,9% × 30,1% da imagem; largura 40% da logo (altura 33%, proporção 428×353).
+     left = 85,36 − 0,499·40 = 65,4%   top = 14,64 − 0,301·33 = 4,7%. Gira 40° em volta do nó, acompanhando a curva. */
+  position: absolute; left: 65.4%; top: 4.7%; width: 40%; height: auto;
+  transform: rotate(40deg); transform-origin: 49.9% 30.1%;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,.25)); pointer-events: none; user-select: none;
+}
