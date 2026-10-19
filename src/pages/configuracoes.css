@@ -101,13 +101,3 @@
 .cf9-ic--choco .cf9-ic-foto { border: 2px solid var(--chocolate, #3A2219); }
 
 /* (18/10) Conta: 3 quadradões lado a lado */
-.cf9-sec--fora { margin: 4px 4px 8px; }
-.cf9-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 16px; }
-.cf9-tile { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; margin: 0; padding: 14px 4px 12px; border: 1px solid var(--ui-borda); border-radius: 16px; background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); font-family: inherit; text-align: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.cf9-tile:active { transform: scale(.97); }
-.cf9-tile-ic { display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; margin-bottom: 4px; border-radius: 14px; background: var(--chocolate, #3A2219); color: #F5C76B; box-shadow: 0 4px 10px rgba(58, 34, 25, .25); }
-.cf9-tile b { font-size: 14px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; }
-.cf9-tile small { max-width: 100%; font-size: 11.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cf9-tile--gratis small { color: var(--ui-rosa-escuro); font-weight: 700; }
-.cf9-tile--pro .cf9-tile-ic { background: linear-gradient(135deg, #F7D774, #E0A82E); color: var(--chocolate, #3A2219); box-shadow: 0 4px 12px rgba(224, 168, 46, .45); }
-.cf9-tile--pro small { color: #1F7A45; font-weight: 700; }
