@@ -103,20 +103,26 @@ const Azevinho = ({ className }: { className: string }) => (
   <svg className={className} viewBox="0 0 32 32" aria-hidden="true"><path d="M16 17C10 8 3 10 3 10c3 2 2 5 4 6-2 2 0 5 2 4 1 3 5 1 7-3z" fill="#15803D" /><path d="M16 17c6-9 13-7 13-7-3 2-2 5-4 6 2 2 0 5-2 4-1 3-5 1-7-3z" fill="#166534" /><circle cx="13.5" cy="19" r="3" fill="#DC2626" /><circle cx="18.5" cy="19" r="3" fill="#B91C1C" /><circle cx="16" cy="22.5" r="3" fill="#DC2626" /></svg>
 );
 
-/** Card do catálogo: foto com o topo em arco e moldura dourada, nome, uma linha, preço na etiqueta e o "+" */
+/** Card do catálogo: foto com o topo em arco e moldura dourada, nome, descrição (até 3 linhas), preço na etiqueta e o "+" */
 function CardNatal({ produto, enfeite = false }: { produto: Produto; enfeite?: boolean }) {
   const { aberto, fechar, props } = useAbrirProduto();
-  const { de, final, aPartir } = precoDoCartao(produto);
+  const { de, final, aPartir, unidade } = precoDoCartao(produto);
   const foto = fotoDe(produto);
   const esgotado = tamanhosEsgotados(produto);
+  const desc = (produto.descricao || "").trim();
+  const rotulo = [aPartir ? "a partir de" : "", unidade].filter(Boolean).join(" · ");
   return (
     <>
       <article className={`ctn-card${esgotado ? " esg" : ""}`} aria-label={produto.nome} {...props}>
         <div className="ctn-card-ft">{foto ? <img src={foto} alt="" loading="lazy" /> : <Cake size={30} aria-hidden="true" />}</div>
         <b className="ctn-card-nome">{produto.nome}</b>
-        <small className="ctn-card-sub">{esgotado ? "Esgotado no momento" : linhaDe(produto)}</small>
+        {/* (19/10) descrição em até 3 linhas; a unidade e o "a partir de" vão junto do preço */}
+        {esgotado ? <small className="ctn-card-sub">Esgotado no momento</small> : desc && <p className="ctn-card-desc">{desc}</p>}
         <div className="ctn-card-pe">
-          <span className="ctn-preco">{de > final ? <s>{formatCurrency(de)}</s> : aPartir && <small>a partir de</small>}<em>{formatCurrency(final)}</em></span>
+          <span className="ctn-preco">
+            {(de > final || rotulo) && <span className="ctn-preco-rot">{de > final && <s>{formatCurrency(de)}</s>}{rotulo && <small>{rotulo}</small>}</span>}
+            <em>{formatCurrency(final)}</em>
+          </span>
           <span className="ctn-mais" aria-hidden="true"><Plus size={16} weight="bold" /></span>
         </div>
         {enfeite && <Azevinho className="ctn-azev" />}

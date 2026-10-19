@@ -119,3 +119,8 @@
 .ctn-dest-bt { margin-top: 6px; padding: 6px 14px; border-radius: 8px; background: linear-gradient(180deg, #F3D58A, #C9A227); color: #4A1A1F; font-size: 13px; font-weight: 700; }
 .ctn-caps { margin-top: 10px; }
 .ctn-preco small { font-size: 11px; color: #8B6E70; }
+/* (19/10) descrição no card do catálogo: até 3 linhas */
+.ctn-card-desc { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin: 3px 2px 8px; font-size: 12.5px; line-height: 1.35; color: #7A6264; }
+.ctn-card-nome + .ctn-card-pe { margin-top: 8px; }
+.ctn-preco-rot { display: flex; align-items: baseline; justify-content: center; gap: 4px; white-space: nowrap; }
+.ctn-preco-rot small { font-size: 11px; color: #8B6E70; }
