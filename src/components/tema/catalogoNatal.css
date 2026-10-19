@@ -1,0 +1,67 @@
+/* (18/10) Cardápio de Natal em catálogo (celular): bordô fechado, dourado e creme */
+.ctn { position: relative; min-height: 100svh; perspective: 1800px; background: #FFF8EE; font-family: var(--font-base); color: #4A1A1F; overflow-x: hidden; }
+.ctn-atual { position: relative; }
+.ctn-som { position: fixed; z-index: 60; top: 12px; right: 12px; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; margin: 0; padding: 0; border: 0; border-radius: 50%; background: rgba(255,248,238,.92); color: #4A1A1F; box-shadow: 0 2px 8px rgba(0,0,0,.18); cursor: pointer; }
+
+/* capa */
+.ctn-hero { position: relative; height: 50svh; min-height: 300px; max-height: 480px; overflow: hidden; background: #6E1F27 center / cover no-repeat; }
+.ctn-hero-padrao { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 28%, #93303B 0%, #6E1F27 58%, #4E141B 100%); }
+.ctn-bok { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(255,220,150,.5), rgba(255,220,150,0) 70%); }
+.ctn-bolas { position: absolute; inset: 0; width: 100%; height: 100%; animation: ctnBalanca 4s ease-in-out infinite alternate; transform-origin: 50% 0; }
+@keyframes ctnBalanca { from { transform: rotate(-1deg); } to { transform: rotate(1deg); } }
+.ctn-st { position: absolute; z-index: 2; left: 12px; top: 14px; display: inline-flex; align-items: center; gap: 6px; max-width: calc(100% - 76px); padding: 4px 10px; border-radius: 999px; background: rgba(255,248,238,.95); color: #4A1A1F; font-size: 12.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ctn-st i { flex: none; width: 7px; height: 7px; border-radius: 50%; background: #DC2626; }
+.ctn-st.aberto i { background: #16a34a; }
+.ctn-onda { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 40px; }
+.ctn-meio { position: relative; text-align: center; padding: 0 20px 24px; }
+.ctn-logo-w { position: relative; width: 108px; height: 108px; margin: -70px auto 0; z-index: 3; }
+.ctn-logo { width: 100%; height: 100%; padding: 2px; border: 3px solid #C9A227; border-radius: 50%; background: #fff; box-shadow: 0 0 0 5px #FFF8EE, 0 8px 22px rgba(110,31,39,.25); overflow: hidden; }
+.ctn-logo img, .ctn-logo b { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; font-size: 36px; font-weight: 700; color: #8B2332; }
+.ctn-nome { display: flex; align-items: center; justify-content: center; gap: 2px; margin: 12px 0 0; font-size: 16px; font-weight: 700; color: #4A1A1F; }
+.ctn-titulo { margin: 6px 0 0; font-family: "Playfair Display", Georgia, serif; font-size: 32px; font-weight: 600; line-height: 1.05; color: #8B2332; }
+.ctn-titulo em { display: block; margin-top: 2px; font-size: 25px; font-weight: 500; font-style: italic; color: #B8892E; }
+.ctn-aviso { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; margin: 14px 0 0; padding: 6px 12px; border-radius: 8px; background: #FBF0D9; color: #7A5A06; font-size: 13.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ctn-ver { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 360px; height: 52px; margin: 18px auto 0; border: 0; border-radius: 14px; background: linear-gradient(180deg, #9A2F3B, #7A2430); color: #FFF1DA; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 8px 18px rgba(122,36,48,.3); }
+.ctn-sl { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 14px; font-size: 14px; color: #8B6E70; white-space: nowrap; }
+.ctn-sl button { min-height: 36px; margin: 0; padding: 0; border: 0; background: none; color: #8B2332; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.ctn-cid { display: inline-flex; align-items: center; gap: 3px; overflow: hidden; text-overflow: ellipsis; }
+.ctn-pausa { margin: 12px 0 0; padding: 10px 12px; border-radius: 10px; background: #FDECEC; color: #991B1B; font-size: 13.5px; font-weight: 600; }
+
+/* páginas de produtos */
+.ctn-pag { padding: 14px 12px 8px; min-height: 100svh; background: #FFF8EE; }
+.ctn-cab { display: flex; align-items: center; padding-right: 48px; }
+.ctn-cab-loja { display: flex; align-items: center; gap: 10px; min-width: 0; margin: 0; padding: 0; border: 0; background: none; font-family: inherit; text-align: left; cursor: pointer; }
+.ctn-mini { flex: none; width: 40px; height: 40px; border: 2px solid #C9A227; border-radius: 50%; background: #fff; overflow: hidden; }
+.ctn-mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ctn-cab-loja b { display: block; font-size: 14.5px; font-weight: 700; color: #4A1A1F; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ctn-cab-loja small { display: block; font-size: 12.5px; color: #8B6E70; }
+.ctn-busca { display: flex; align-items: center; gap: 8px; height: 44px; margin-top: 12px; padding: 0 12px; border: 1px solid #E9D3A2; border-radius: 12px; background: #fff; color: #8B6E70; }
+.ctn-busca input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: none; color: #4A1A1F; font-family: inherit; font-size: 15px; }
+.ctn-busca button { display: flex; margin: 0; padding: 6px; border: 0; background: none; color: #8B6E70; cursor: pointer; }
+.ctn-caps { display: flex; gap: 6px; overflow-x: auto; margin: 12px -12px 0; padding: 0 12px; scrollbar-width: none; }
+.ctn-caps::-webkit-scrollbar { display: none; }
+.ctn-caps button { flex: none; min-height: 36px; margin: 0; padding: 0 12px; border: 1px solid #E9D3A2; border-radius: 8px; background: #fff; color: #6B4E50; font-family: inherit; font-size: 13.5px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.ctn-caps button.on { border-color: #8B2332; background: #8B2332; color: #FFF1DA; }
+.ctn-h2 { display: flex; align-items: baseline; gap: 8px; margin: 16px 0 8px; font-family: "Playfair Display", Georgia, serif; font-size: 25px; font-weight: 600; color: #8B2332; }
+.ctn-h2 small { font-family: var(--font-base); font-size: 13px; font-weight: 600; color: #B8892E; }
+.ctn .ic-sec { margin: 0; padding: 0; }
+.ctn .ic-sec > .ic-h2 { display: none; }
+.ctn .ic-cp, .ctn .ic-ln { background: #fff; border: 1.5px solid #E9D3A2; }
+.ctn .ic-pp-linha b, .ctn .ic-ln-preco b { color: #8B2332; }
+.ctn-nada { margin: 8px 0; color: #8B6E70; font-size: 14px; }
+.ctn-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 18px; }
+.ctn-nav button { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin: 0; padding: 0 14px; border: 1px solid #E9D3A2; border-radius: 12px; background: #fff; color: #4A1A1F; font-family: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.ctn-nav button.pri { border-color: #8B2332; background: #8B2332; color: #FFF1DA; }
+.ctn-nav span { font-size: 12.5px; color: #8B6E70; white-space: nowrap; }
+.ctn-festas { margin: 16px 0 4px; text-align: center; font-family: "Playfair Display", Georgia, serif; font-style: italic; font-size: 16px; color: #B8892E; }
+
+/* a folha virando */
+.ctn-folha { position: absolute; z-index: 40; top: 0; left: 0; right: 0; height: 100svh; overflow: hidden; background: #FFF8EE; backface-visibility: hidden; pointer-events: none; animation-duration: .8s; animation-timing-function: cubic-bezier(.45,.05,.25,1); animation-fill-mode: forwards; }
+.ctn-folha::after { content: ""; position: absolute; inset: 0; pointer-events: none; animation: inherit; animation-name: ctnSombra; }
+.ctn-folha--vai { transform-origin: left center; animation-name: ctnVai; }
+.ctn-folha--volta { transform-origin: right center; animation-name: ctnVolta; }
+@keyframes ctnVai { 0% { transform: rotateY(0); box-shadow: 0 0 0 rgba(0,0,0,0); } 100% { transform: rotateY(-105deg); box-shadow: -40px 0 60px rgba(0,0,0,.35); } }
+@keyframes ctnVolta { 0% { transform: rotateY(0); box-shadow: 0 0 0 rgba(0,0,0,0); } 100% { transform: rotateY(105deg); box-shadow: 40px 0 60px rgba(0,0,0,.35); } }
+@keyframes ctnSombra { 0% { background: rgba(0,0,0,0); } 100% { background: rgba(0,0,0,.35); } }
+@media (prefers-reduced-motion: reduce) { .ctn-folha { display: none; } .ctn-bolas { animation: none; } }
+.ctn-busca input::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }

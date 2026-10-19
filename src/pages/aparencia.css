@@ -180,7 +180,7 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-tema { position: relative; display: flex; flex-direction: column; margin: 0; padding: 0; overflow: hidden; border: 1.5px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); font-family: inherit; text-align: left; cursor: pointer; }
 .ap-tema[aria-checked="true"] { border: 2px solid var(--ui-texto); }
 .ap-tema-th { position: relative; display: block; height: 64px; }
-.ap-tema-th--natal { background: #14532D var(--tn-estrelas); background-size: 44px 38px; }
+.ap-tema-th--natal { background: #6E1F27 var(--tn-estrelas); background-size: 44px 38px; }
 .ap-tema-lo { position: absolute; right: 10px; bottom: -16px; width: 38px; height: 38px; border: 3px solid; border-radius: 50%; background: #fff; overflow: hidden; }
 .ap-tema-lo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .ap-tema-pe { display: flex; flex-direction: column; padding: 20px 10px 10px; }
@@ -209,3 +209,12 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-cores-off .ap-mini, .ap-cores-off .ap-cgrupo { opacity: .45; pointer-events: none; }
 .tn-touca-box.ap-tema-touca { inset: auto; right: 10px; bottom: -16px; width: 38px; height: 38px; }
 .tn-touca-box.ap-topo-touca { inset: auto; right: 12px; top: -44px; width: 76px; height: 76px; }
+/* (18/10) imagem da capa do catálogo de Natal */
+.ap-capa { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; align-items: center; }
+.ap-capa-img { position: relative; aspect-ratio: 4 / 5; border-radius: 10px; overflow: hidden; background: radial-gradient(ellipse at 50% 28%, #93303B 0%, #6E1F27 60%, #4E141B 100%) center / cover no-repeat; display: flex; align-items: flex-end; }
+.ap-capa-img > span:not(.ap-topo-gira) { padding: 6px; font-size: 11px; line-height: 1.25; color: #F3DCC0; }
+.ap-capa-x { position: absolute; top: 4px; right: 4px; }
+.ap-capa-bts { display: flex; flex-direction: column; gap: 8px; }
+.ap-capa-bts .ui-bt { white-space: nowrap; }
+.ap-capa-lista { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.ap-capa-lista .ap-gal-it img { aspect-ratio: 4 / 5; object-fit: cover; }

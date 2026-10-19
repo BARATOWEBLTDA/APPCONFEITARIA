@@ -11,7 +11,7 @@ import { SeloVerificado } from "@/components/cardapio/SeloVerificado";
 import { situacaoLoja } from "@/lib/agendaCardapio";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, BotaoIcone, Janela, Titulo, avisar } from "@/components/base";
-import { lerBannersProntos, CATEGORIAS_BANNER, type BannerPronto } from "@/lib/bannersProntos";
+import { lerBannersProntos, CATEGORIAS_BANNER, CATEGORIA_CAPA_NATAL, type BannerPronto } from "@/lib/bannersProntos";
 import { COR_BOTOES, PADRAO, PRONTAS, corDoItem, type CampoCor } from "@/lib/coresCardapio";
 import { AVISO_NATAL_PADRAO, NATAL, type Tema } from "@/lib/temaCardapio";
 import { Touquinha } from "@/components/tema/Natal";
@@ -82,6 +82,9 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
   const [temaInicio, setTemaInicio] = useState("");
   const [temaFim, setTemaFim] = useState("");
   const avisoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [temaCapa, setTemaCapa] = useState("");
+  const capaRef = useRef<HTMLInputElement>(null);
+  const [capaGal, setCapaGal] = useState<{ aberta: boolean; lista: BannerPronto[] | null; erro: boolean }>({ aberta: false, lista: null, erro: false });
   const [horario, setHorario] = useState<unknown>(null);
   const [bannerUrl, setBannerUrl] = useState("");
   const [banner1Url, setBanner1Url] = useState("");
@@ -120,7 +123,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("logo_url, foto_url, nome_loja, banner_url, banner1_url, banner2_url, banner3_url, banner_topo_url, endereco, horario, tema_cardapio, tema_aviso, tema_auto, tema_inicio, tema_fim, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo, hide_stars, avaliacao_media").eq("id", user.id).single();
+      const { data } = await supabase.from("profiles").select("logo_url, foto_url, nome_loja, banner_url, banner1_url, banner2_url, banner3_url, banner_topo_url, endereco, horario, tema_cardapio, tema_aviso, tema_auto, tema_inicio, tema_fim, tema_capa_url, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo, hide_stars, avaliacao_media").eq("id", user.id).single();
       if (data) {
         setLogoUrl(data.logo_url || ""); setFotoPerfil((data as any).foto_url || "");
         setHideStars(!!(data as any).hide_stars);
@@ -128,7 +131,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         setNomeLoja(data.nome_loja || "");
         try { const e: any = typeof (data as any).endereco === "string" ? JSON.parse((data as any).endereco) : (data as any).endereco; setCidade(String(e?.cidade || "").trim()); } catch { setCidade(""); }
         setHorario((data as any).horario ?? null);
-        { const d: any = data; setTema(d.tema_cardapio === "natal" ? "natal" : "normal"); setTemaAviso(d.tema_aviso ?? AVISO_NATAL_PADRAO); setTemaAuto(!!d.tema_auto); setTemaInicio(d.tema_inicio || ""); setTemaFim(d.tema_fim || ""); }
+        { const d: any = data; setTema(d.tema_cardapio === "natal" ? "natal" : "normal"); setTemaAviso(d.tema_aviso ?? AVISO_NATAL_PADRAO); setTemaAuto(!!d.tema_auto); setTemaInicio(d.tema_inicio || ""); setTemaFim(d.tema_fim || ""); setTemaCapa(d.tema_capa_url || ""); }
         setBannerUrl(data.banner_url || "");
         setBanner1Url(data.banner1_url || "");
         setBanner2Url(data.banner2_url || "");
@@ -191,6 +194,25 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     (campo === "tema_inicio" ? setTemaInicio : setTemaFim)(v);
     if (await gravar({ [campo]: v })) showSuccess();
   };
+  const salvarCapa = async (url: string) => {
+    const antes = temaCapa; setTemaCapa(url);
+    if (!(await gravar({ tema_capa_url: url || null }))) { setTemaCapa(antes); return false; }
+    showSuccess(); return true;
+  };
+  const enviarCapa = async (file: File) => {
+    if (!userId) return;
+    setUploading("capa");
+    const url = await uploadImage(file, `banners/${userId}-capa-natal`);
+    if (!url) avisar("Não deu pra enviar a imagem. Confira a internet e tente de novo.", { tipo: "erro" });
+    else await salvarCapa(url);
+    setUploading(null);
+  };
+  const abrirCapaGal = async () => {
+    setCapaGal(g => ({ ...g, aberta: true }));
+    if (capaGal.lista) return;
+    const r = await lerBannersProntos();
+    setCapaGal(g => ({ ...g, lista: r.ok ? r.lista.filter(b => b.categoria === CATEGORIA_CAPA_NATAL) : [], erro: !r.ok }));
+  };
   const showSuccess = () => {
     // Notifica outros componentes (ex: preview do cardápio no CardapioConfigPage)
     // pra recarregar após save do Design
@@ -250,7 +272,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     setGaleria(g => ({ ...g, aberta: true, slot: vazio ?? 0, cat: "" }));
     if (galeria.lista) return;
     const r = await lerBannersProntos();
-    setGaleria(g => ({ ...g, lista: r.ok ? r.lista : [], erro: !r.ok }));
+    setGaleria(g => ({ ...g, lista: r.ok ? r.lista.filter(b => b.categoria !== CATEGORIA_CAPA_NATAL) : [], erro: !r.ok }));
   };
   const usarDaGaleria = async (b: BannerPronto) => {
     if (!userId || usandoGaleria) return;
@@ -302,6 +324,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
   const recorteTopo = useRecorte(f => { void handleBannerTopoUpload(f); }, { aspect: 3, forma: "rect" });
   const bannerIdx = useRef(0);
   const recorteBanner = useRecorte(f => { void handleBannerUpload(f, bannerIdx.current); }, { aspect: 16 / 9, forma: "rect" });
+  const recorteCapa = useRecorte(f => { void enviarCapa(f); }, { aspect: 4 / 5, forma: "rect" });
   const handleRemoveBannerTopo = async () => {
     if (!userId || travas.current.has("tirar-topo")) return;
     travas.current.add("tirar-topo");
@@ -395,7 +418,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       <ImageCropper imageSrc={cropSrc} cropShape="round" aspect={1} onCancel={() => setCropSrc(null)} onCropDone={handleLogoCropDone} />
     )}
     {/* (11/10) fora da seção "Foto do topo": no modelo Premium ela não existe e o recorte do banner não abria */}
-    {recorteTopo.janela}{recorteBanner.janela}
+    {recorteTopo.janela}{recorteBanner.janela}{recorteCapa.janela}
     {!identityCard && (
       <AppPageHeader title="Aparência" subtitle="Logo, banners e cores" onBack={() => navigate(voltarPara)}
         infoIcon="🎨"
@@ -419,12 +442,25 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
           </button>
           <button type="button" role="radio" aria-checked={tema === "natal"} className="ap-tema" onClick={() => escolherTema("natal")}>
             <span className="ap-tema-th ap-tema-th--natal"><span className="ap-tema-lo" style={{ borderColor: NATAL.borda }}>{(logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : null}</span><Touquinha className="ap-tema-touca" /></span>
-            <span className="ap-tema-pe"><b>Natal</b><small>Verde e dourado</small></span>
+            <span className="ap-tema-pe"><b>Natal</b><small>Catálogo festivo</small></span>
             {tema === "natal" && <span className="ap-tema-ok" aria-hidden="true"><Check size={13} weight="bold" /></span>}
           </button>
         </div>
         {tema === "natal" && (
           <div className="ap-tema-cfg">
+            <span className="ap-tema-lb">Imagem da capa</span>
+            <input ref={capaRef} type="file" accept="image/*" hidden onChange={recorteCapa.escolher} />
+            <div className="ap-capa">
+              <div className="ap-capa-img" style={temaCapa ? { backgroundImage: `url(${temaCapa})` } : undefined}>
+                {!temaCapa && <span>Sem imagem: fica o fundo de Natal</span>}
+                {uploading === "capa" && <span className="ap-topo-gira"><span className="ui-gira" aria-label="Enviando" /></span>}
+                {temaCapa && <BotaoIcone rotulo="Tirar a imagem da capa" variante="neutro" tamanho="p" className="ap-tirar ap-capa-x" onClick={() => salvarCapa("")}><X size={18} weight="bold" /></BotaoIcone>}
+              </div>
+              <div className="ap-capa-bts">
+                <Botao variante="secundario" tamanho="m" icone={<UploadSimple size={18} weight="bold" />} disabled={!!uploading} onClick={() => capaRef.current?.click()}>Enviar a minha</Botao>
+                <Botao variante="secundario" tamanho="m" icone={<Images size={18} weight="bold" />} onClick={abrirCapaGal}>Biblioteca</Botao>
+              </div>
+            </div>
             <label className="ap-tema-lb" htmlFor="ap-aviso">Aviso no topo do cardápio</label>
             <div className="ui-campo-c"><input id="ap-aviso" value={temaAviso} maxLength={40} placeholder={AVISO_NATAL_PADRAO} onChange={e => mudarAviso(e.target.value)} /></div>
             <small className="ap-tema-dica">Fica embaixo do nome. Vazio, não aparece.</small>
@@ -634,6 +670,17 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
             </>
           );
         })()}
+      </Janela>
+
+      <Janela aberta={capaGal.aberta} aoFechar={() => setCapaGal(g => ({ ...g, aberta: false }))} tipo="conteudo" titulo="Imagens de Natal"
+        acoes={<Botao variante="secundario" cheio onClick={() => setCapaGal(g => ({ ...g, aberta: false }))}>Fechar</Botao>} umaAcao>
+        {capaGal.lista === null ? <div className="ap-gal-vazio"><span className="ui-gira" aria-label="Carregando" /></div>
+          : capaGal.erro || capaGal.lista.length === 0 ? <p className="ap-gal-vazio">{capaGal.erro ? "Não deu pra abrir agora. Tente de novo." : "Em breve teremos imagens de Natal aqui."}</p>
+          : <div className="ap-capa-lista">{capaGal.lista.map(b => (
+              <button key={b.id} type="button" className="ap-gal-it" onClick={async () => { if (b.so_pro && !isPro) { avisar("Essa imagem é do plano PRO.", { tipo: "info" }); return; } if (await salvarCapa(b.imagem_url)) setCapaGal(g => ({ ...g, aberta: false })); }}>
+                <img src={b.imagem_url} alt={b.titulo} loading="lazy" />
+                {b.so_pro && !isPro && <span className="ap-gal-pro"><Crown size={13} weight="fill" aria-hidden="true" />PRO</span>}
+              </button>))}</div>}
       </Janela>
 
       <Janela aberta={verExemplo} aoFechar={() => setVerExemplo(false)} tipo="conteudo" titulo="Exemplo de banner"

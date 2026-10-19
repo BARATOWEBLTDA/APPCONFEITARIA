@@ -1,0 +1,191 @@
+import { useEffect, useMemo, useState } from "react";
+import { BookOpenText, CaretLeft, CaretRight, MagnifyingGlass, MapPin, SpeakerHigh, SpeakerSlash, X, CalendarBlank } from "@phosphor-icons/react";
+import type { Configuracoes, DesignSettings, Produto } from "@/types/database";
+import { montarSecoes, SecaoCardapio, LinhaProduto, type Secao } from "@/components/cardapio/ItensCardapio";
+import { getStatusLoja, getEnderecoData } from "@/components/cardapio/CardapioModelo1";
+import { SeloVerificado } from "@/components/cardapio/SeloVerificado";
+import { Touquinha } from "./Natal";
+import "./catalogoNatal.css";
+
+/**
+ * (18/10) Cardápio de Natal em forma de catálogo (celular).
+ * Capa: imagem grande (da loja ou da biblioteca), logo com a touquinha, "Cardápio Especial de Natal", aviso e "Ver catálogo".
+ * Depois, uma página por categoria (categoria grande se divide em páginas de 8). A folha vira pro lado com som de papel;
+ * o alto-falante desliga o som (fica lembrado). Quem pede menos movimento vê a página só trocar.
+ */
+const POR_PAGINA = 8;
+const COR = "#8B2332";
+const CHAVE_SOM = "doonly:somCatalogo";
+
+type Pagina = { id: string; secaoId: string; titulo: string; parte: string; secao: Secao };
+
+function fonteFesta() {
+  if (document.getElementById("ctn-fonte")) return;
+  const l = document.createElement("link");
+  l.id = "ctn-fonte"; l.rel = "stylesheet";
+  l.href = "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,500&display=swap";
+  document.head.appendChild(l);
+}
+
+let ac: AudioContext | null = null;
+function somDePapel() {
+  try {
+    const C = window.AudioContext || (window as any).webkitAudioContext;
+    if (!C) return;
+    ac = ac || new C();
+    const d = 0.45, b = ac.createBuffer(1, Math.floor(ac.sampleRate * d), ac.sampleRate), x = b.getChannelData(0);
+    for (let i = 0; i < x.length; i++) { const t = i / x.length; x[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 1.6) * (0.4 + 0.6 * Math.sin(t * Math.PI)); }
+    const s = ac.createBufferSource(); s.buffer = b;
+    const f = ac.createBiquadFilter(); f.type = "bandpass";
+    f.frequency.setValueAtTime(1800, ac.currentTime); f.frequency.exponentialRampToValueAtTime(700, ac.currentTime + d); f.Q.value = 0.8;
+    const g = ac.createGain(); g.gain.value = 0.45;
+    s.connect(f).connect(g).connect(ac.destination); s.start();
+  } catch { /* sem som, segue */ }
+}
+
+function HeroPadrao() {
+  // Sem imagem: fundo bordô com brilhos e bolas douradas penduradas
+  const bola = (x: number, len: number, c: string) => (
+    <g key={x}><line x1={x} y1={0} x2={x} y2={len} stroke="#E7C46A" strokeWidth={1} /><rect x={x - 3} y={len - 2} width={6} height={4} fill="#E7C46A" />
+      <circle cx={x} cy={len + 11} r={11} fill={c} /><circle cx={x - 3.5} cy={len + 7.5} r={2.6} fill="#fff" opacity={0.5} /></g>
+  );
+  return (
+    <div className="ctn-hero-padrao" aria-hidden="true">
+      {Array.from({ length: 16 }, (_, i) => { const s = 10 + ((i * 37) % 30); return <span key={i} className="ctn-bok" style={{ left: `${(i * 53) % 100}%`, top: `${(i * 29) % 88}%`, width: s, height: s }} />; })}
+      <svg className="ctn-bolas" viewBox="0 0 360 300" preserveAspectRatio="xMidYMin slice">
+        {bola(38, 64, "#C9A227")}{bola(92, 30, "#E7C46A")}{bola(272, 46, "#C9A227")}{bola(322, 86, "#E7C46A")}
+      </svg>
+    </div>
+  );
+}
+
+export default function CatalogoNatal({ design, config, isPro, produtos, categorias, agrupar, aoAbrirSobre, espacoBaixo }: {
+  design: DesignSettings; config: Configuracoes | null; isPro: boolean; produtos: Produto[]; categorias: string[]; agrupar: boolean;
+  aoAbrirSobre: () => void; espacoBaixo: number;
+}) {
+  useEffect(fonteFesta, []);
+  const [atual, setAtual] = useState(0); // 0 = capa
+  const [virando, setVirando] = useState<{ de: number; dir: 1 | -1 } | null>(null);
+  const [som, setSom] = useState(() => { try { return localStorage.getItem(CHAVE_SOM) !== "0"; } catch { return true; } });
+  const [busca, setBusca] = useState("");
+
+  const paginas: Pagina[] = useMemo(() => {
+    const cats = categorias.filter(c => c && c !== "Todos");
+    return montarSecoes(produtos, cats, agrupar && cats.length > 0).flatMap(sec => {
+      const partes: Produto[][] = [];
+      for (let i = 0; i < sec.produtos.length; i += POR_PAGINA) partes.push(sec.produtos.slice(i, i + POR_PAGINA));
+      return partes.map((ps, i) => ({ id: `${sec.id}-${i}`, secaoId: sec.id, titulo: sec.nome, parte: partes.length > 1 ? `${i + 1} de ${partes.length}` : "", secao: { ...sec, produtos: ps } }));
+    });
+  }, [produtos, categorias.join("|"), agrupar]); // eslint-disable-line react-hooks/exhaustive-deps
+  const total = paginas.length;
+  const capitulos = paginas.filter((p, i) => i === 0 || paginas[i - 1].secaoId !== p.secaoId);
+
+  const pouco = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  const ir = (n: number) => {
+    if (n < 0 || n > total || n === atual || virando) return;
+    window.scrollTo({ top: 0 });
+    setBusca("");
+    if (som) somDePapel();
+    if (!pouco) setVirando({ de: atual, dir: n > atual ? 1 : -1 });
+    setAtual(n);
+  };
+  const alternarSom = () => { const v = !som; setSom(v); try { localStorage.setItem(CHAVE_SOM, v ? "1" : "0"); } catch { /* ok */ } };
+
+  const status = (config as any)?.loja_pausada ? { aberto: false, msg: "Pedidos pausados no momento" } : getStatusLoja((config as any)?.horario || null);
+  const endereco = getEnderecoData(config);
+  const logo = design.logo_url;
+  const capa = design.tema_capa_url;
+  const termo = busca.trim().toLowerCase();
+  const achados = termo ? produtos.filter(p => p.nome.toLowerCase().includes(termo) || p.descricao?.toLowerCase().includes(termo)) : [];
+
+  const renderCapa = () => (
+    <div className="ctn-capa">
+      <div className="ctn-hero" style={capa ? { backgroundImage: `url(${capa})` } : undefined}>
+        {!capa && <HeroPadrao />}
+        {status && <span className={`ctn-st${status.aberto ? " aberto" : ""}`}><i aria-hidden="true" />{status.msg}</span>}
+        <svg className="ctn-onda" viewBox="0 0 360 40" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 18 C30 6 50 30 80 22 C105 15 110 34 130 34 C150 34 150 14 180 16 C215 18 220 36 250 30 C275 25 285 8 315 14 C335 18 348 28 360 22 L360 40 L0 40Z" fill="#FFF8EE" />
+        </svg>
+      </div>
+      <div className="ctn-meio">
+        <div className="ctn-logo-w">
+          <div className="ctn-logo">{logo ? <img src={logo} alt={design.nome_loja || ""} /> : <b>{(design.nome_loja || "D").charAt(0).toUpperCase()}</b>}</div>
+          <Touquinha />
+        </div>
+        <p className="ctn-nome">{design.nome_loja}{isPro && <SeloVerificado tamanho={18} />}</p>
+        <h1 className="ctn-titulo">Cardápio<em>Especial de Natal</em></h1>
+        {design.tema_aviso && <p className="ctn-aviso"><CalendarBlank size={16} weight="bold" aria-hidden="true" />{design.tema_aviso}</p>}
+        {total > 0 && <button type="button" className="ctn-ver" onClick={() => ir(1)}><BookOpenText size={22} weight="bold" aria-hidden="true" />Ver catálogo</button>}
+        <div className="ctn-sl">
+          <button type="button" onClick={aoAbrirSobre}>Sobre a loja</button>
+          {endereco && <><span aria-hidden="true">·</span><span className="ctn-cid"><MapPin size={15} weight="bold" aria-hidden="true" />{endereco.cidade}</span></>}
+        </div>
+        {(config as any)?.loja_pausada && <p className="ctn-pausa">Pedidos pausados no momento. Pra encomendar, chame a loja no WhatsApp.</p>}
+      </div>
+    </div>
+  );
+
+  const renderPagina = (i: number) => {
+    const p = paginas[i - 1];
+    if (!p) return null;
+    const ultima = i === total;
+    return (
+      <div className="ctn-pag">
+        <header className="ctn-cab">
+          <button type="button" className="ctn-cab-loja" onClick={() => ir(0)} aria-label="Voltar pra capa">
+            <span className="ctn-mini">{logo ? <img src={logo} alt="" /> : null}</span>
+            <span><b>{design.nome_loja}</b><small>Cardápio de Natal</small></span>
+          </button>
+        </header>
+        <div className="ctn-busca">
+          <MagnifyingGlass size={18} weight="bold" aria-hidden="true" />
+          <input type="search" placeholder="Buscar no cardápio" aria-label="Buscar no cardápio" value={busca} onChange={e => setBusca(e.target.value)} />
+          {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={16} weight="bold" /></button>}
+        </div>
+        {termo ? (
+          <section className="ctn-res">
+            <h2 className="ctn-h2">{achados.length === 1 ? "1 produto" : `${achados.length} produtos`}</h2>
+            {achados.length ? <div className="ic-lista">{achados.map(pr => <LinhaProduto key={pr.id} produto={pr} cor={COR} />)}</div>
+              : <p className="ctn-nada">Nenhum produto com “{busca.trim()}”.</p>}
+          </section>
+        ) : (<>
+          {capitulos.length > 1 && (
+            <div className="ctn-caps" role="tablist" aria-label="Páginas do catálogo">
+              {capitulos.map(c => {
+                const n = paginas.indexOf(c) + 1;
+                const on = p.secaoId === c.secaoId;
+                return <button key={c.id} type="button" role="tab" aria-selected={on} className={on ? "on" : ""} onClick={() => ir(n)}>{c.titulo}</button>;
+              })}
+            </div>
+          )}
+          <h2 className="ctn-h2">{p.titulo}{p.parte && <small>{p.parte}</small>}</h2>
+          <SecaoCardapio secao={p.secao} cor={COR} />
+          <nav className="ctn-nav" aria-label="Folhear o catálogo">
+            <button type="button" onClick={() => ir(i - 1)}><CaretLeft size={16} weight="bold" aria-hidden="true" />{i === 1 ? "Capa" : "Voltar"}</button>
+            <span>Página {i} de {total}</span>
+            {ultima
+              ? <button type="button" onClick={() => ir(0)}>Início</button>
+              : <button type="button" className="pri" onClick={() => ir(i + 1)}>Próxima<CaretRight size={16} weight="bold" aria-hidden="true" /></button>}
+          </nav>
+          <p className="ctn-festas">Boas festas!</p>
+        </>)}
+      </div>
+    );
+  };
+
+  const pag = (i: number) => (i === 0 ? renderCapa() : renderPagina(i));
+
+  return (
+    <div className="ctn" style={{ paddingBottom: espacoBaixo }}>
+      <button type="button" className="ctn-som" onClick={alternarSom} aria-label={som ? "Desligar o som das páginas" : "Ligar o som das páginas"}>
+        {som ? <SpeakerHigh size={18} weight="bold" /> : <SpeakerSlash size={18} weight="bold" />}
+      </button>
+      <div key={atual} className="ctn-atual">{pag(atual)}</div>
+      {virando && (
+        <div className={`ctn-folha ctn-folha--${virando.dir > 0 ? "vai" : "volta"}`} aria-hidden="true" onAnimationEnd={() => setVirando(null)}>
+          {pag(virando.de)}
+        </div>
+      )}
+    </div>
+  );
+}

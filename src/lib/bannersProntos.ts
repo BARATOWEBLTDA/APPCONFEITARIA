@@ -14,7 +14,9 @@ export type BannerPronto = {
   ordem: number;
 };
 
-export const CATEGORIAS_BANNER = ["Bolos", "Doces", "Salgados", "Festas", "Datas"] as const;
+export const CATEGORIAS_BANNER = ["Bolos", "Doces", "Salgados", "Festas", "Datas", "Capa de Natal"] as const;
+/** (18/10) imagens da capa do catálogo de Natal (não entram na galeria de banners) */
+export const CATEGORIA_CAPA_NATAL = "Capa de Natal";
 
 /** Tamanho padrão dos banners da galeria (o mesmo pra todos, pra o carrossel não pular) */
 export const TAMANHO_BANNER = "1500 × 500";

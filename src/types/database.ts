@@ -46,6 +46,7 @@ export interface DesignSettings {
   /** (18/10) tema que vale hoje e o aviso de temporada */
   tema?: 'normal' | 'natal'
   tema_aviso?: string
+  tema_capa_url?: string
 }
 
 export interface Configuracoes {

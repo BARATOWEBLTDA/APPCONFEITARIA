@@ -26,6 +26,7 @@ import { useCart } from '@/hooks/useCart'
 import { formatCurrency } from '@/utils/helpers'
 import { corClara, nomeSobreTopo } from '@/lib/coresCardapio'
 import { Touquinha, useClasseTema } from '@/components/tema/Natal'
+import CatalogoNatal from '@/components/tema/CatalogoNatal'
 import './cardapioPublico.css'
 
 /* ══════════════════════════════════════════════ */
@@ -360,6 +361,16 @@ function CardapioContent() {
 
   /* ═══ CELULAR ═══ */
   if (!isDesktop) {
+    // (18/10) Natal: o cardápio vira um catálogo (capa grande + páginas que viram como folha)
+    if (design.tema === 'natal' && produtos.length > 0) return (
+      <div className="min-h-screen relative" style={{ backgroundColor: '#FFF8EE' }}>
+        <NavigationMenu celular corBotao="#8B2332" />
+        <SobreLoja aberta={sobreAberta} fechar={() => setSobreAberta(false)} design={design} config={config} />
+        <CatalogoNatal design={design} config={config} isPro={isPro} produtos={produtos}
+          categorias={!design.ocultar_categorias ? categorias.map((c: any) => c.name) : []} agrupar={!design.ocultar_categorias}
+          aoAbrirSobre={() => setSobreAberta(true)} espacoBaixo={cartCount > 0 ? 148 : 84} />
+      </div>
+    )
     return (
       <div className="min-h-screen relative" style={{ backgroundColor: '#F7F4F5' }}>
         {/* Caixa dos banners: some quando a loja não tem banner */}

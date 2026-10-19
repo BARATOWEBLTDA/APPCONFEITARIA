@@ -21,3 +21,6 @@ begin
     alter table public.profiles add constraint profiles_tema_aviso_tam check (tema_aviso is null or char_length(tema_aviso) <= 60);
   end if;
 end $$;
+
+-- (18/10) Natal vira "catálogo": imagem grande da capa (da loja ou da biblioteca do admin, categoria "Capa de Natal")
+alter table public.profiles add column if not exists tema_capa_url text;

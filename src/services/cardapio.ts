@@ -144,6 +144,7 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     ocultar_categorias: profile.ocultar_categorias || false,
     tema,
     tema_aviso: tema === 'natal' ? String(profile.tema_aviso ?? AVISO_NATAL_PADRAO).trim() : '',
+    tema_capa_url: tema === 'natal' ? (profile.tema_capa_url || '') : '',
   }
 
   const config: Configuracoes = {

@@ -8,8 +8,8 @@ export type Tema = "normal" | "natal";
 
 export const AVISO_NATAL_PADRAO = "Encomendas de Natal até 20/12";
 
-/** Cores do Natal (verde e dourado). */
-export const NATAL = { topo: "#14532D", borda: "#C9A227", nome: "#14532D", aviso: "#7A5A06", avisoFundo: "#FBF3DB" };
+/** Cores do Natal (bordô, dourado e creme; vermelho fechado, que não cansa a vista). */
+export const NATAL = { topo: "#6E1F27", borda: "#C9A227", nome: "#8B2332", aviso: "#7A5A06", avisoFundo: "#FBF3DB" };
 
 const hojeISO = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
