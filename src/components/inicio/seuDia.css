@@ -81,9 +81,10 @@
 .sd-sd b { font-size: 15px; font-weight: 700; line-height: 1.2; }
 .sd-sd i { min-height: 16px; min-width: 16px; padding: 0 4px; border-radius: 6px; font-style: normal; font-size: 11px; font-weight: 700; line-height: 16px; color: transparent; }
 .sd-sd.tem i { background: var(--primary-light, #FCE0E9); color: var(--ui-rosa-escuro); }
-.sd-sd.on { border-color: var(--ui-rosa-escuro); background: var(--ui-rosa-escuro); color: var(--ui-branco); }
-.sd-sd.on small { color: rgba(255, 255, 255, .85); }
-.sd-sd.on.tem i { background: rgba(255, 255, 255, .25); color: var(--ui-branco); }
+/* (19/10) dia escolhido: todo rosa, texto branco e a quantidade de pedidos (até 0) num selinho branco */
+.sd-sd.on { border-color: var(--ui-rosa); background: var(--ui-rosa); color: var(--ui-branco); }
+.sd-sd.on small, .sd-sd.on b { color: var(--ui-branco); }
+.sd-sd.on i { background: var(--ui-branco); color: var(--ui-rosa-escuro); }
 .sd-dvazio { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 68px; margin: 6px 16px 10px; padding: 0 6px 0 14px; border-radius: 12px; background: #FAF7F8; }
 .sd-dvazio span { min-width: 0; font-size: 14px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sd-dvazio button { flex: none; min-height: 40px; padding: 0 10px; border: 0; border-radius: 8px; background: none; font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }

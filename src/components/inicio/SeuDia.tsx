@@ -86,7 +86,7 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, sem
           {dias7.map(d => (
             <button type="button" key={d.iso} className={`sd-sd${diaSel === d.iso ? " on" : ""}${d.n ? " tem" : ""}`} aria-pressed={diaSel === d.iso}
               onClick={() => setDiaSel(x => x === d.iso ? null : d.iso)} aria-label={`${d.sem} ${d.dia}: ${d.n} ${d.n === 1 ? "pedido" : "pedidos"}`}>
-              <small>{d.sem}</small><b>{d.dia}</b><i>{d.n || ""}</i>
+              <small>{d.sem}</small><b>{d.dia}</b><i>{d.n || (diaSel === d.iso ? "0" : "")}</i>
             </button>
           ))}
         </div>
