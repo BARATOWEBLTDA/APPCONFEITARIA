@@ -25,6 +25,7 @@ import { ProductModal } from '@/components/cart/ProductModal'
 import { precoDoCartao } from './ItensCardapio'
 import { SeloVerificado } from './SeloVerificado'
 import type { Produto } from '@/types/database'
+import { corClara } from '@/lib/coresCardapio'
 import '@/components/cart/sacola.css'
 
 /**
@@ -1004,6 +1005,8 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
 
   const count = contarItens(items)
   const accent = corBotao || '#ea1d2c'
+  // (19/10) menu de baixo branco: a aba ativa vai na cor do topo da loja (cor clara demais não dá pra ler no branco)
+  const corAtiva = corTopo && /^#[0-9a-f]{6}$/i.test(corTopo) && !corClara(corTopo) ? corTopo : '#2C1219'
 
   const handleClose = () => { setIsOpen(false); setStep('cart') }
 
@@ -1024,26 +1027,28 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
         /* 08/10 · 3.28: menu de baixo (vinho, igual ao do app) e o botão do pedido na cor da loja */
         .cpn-pe { pointer-events: none; }
         .cpn-pe > * { pointer-events: auto; }
-        .cpn-pedido { display: flex; align-items: center; gap: 12px; width: calc(100% - 16px); min-height: 56px; margin: 0 8px 8px; padding: 8px 12px; border: 0; border-radius: var(--ui-raio-cartao); color: var(--ui-branco); font-family: inherit; text-align: left; box-shadow: 0 8px 24px rgba(44,18,25,.22); cursor: pointer; }
-        .cpn-pedido-ic { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: rgba(255,255,255,.2); flex: none; }
+        .cpn-pedido { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 50px; margin: 0; padding: 6px 16px; border: 0; border-radius: 0; color: var(--ui-branco); font-family: inherit; text-align: left; white-space: nowrap; cursor: pointer; }
+        .cpn-pedido-ic { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--ui-raio); background: rgba(255,255,255,.2); flex: none; }
         .cpn-pedido-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
         .cpn-pedido-tx b { font-size: 15px; font-weight: 700; line-height: 1.25; }
         .cpn-pedido-tx small { font-size: 13px; opacity: .9; }
         .cpn-pedido strong { font-size: 16px; font-weight: 700; }
-        .cpn-menu { display: flex; padding-bottom: env(safe-area-inset-bottom, 0px); background: var(--ui-vinho-escuro); box-shadow: 0 -2px 12px rgba(0,0,0,.12); }
-        .cpn-menu button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 60px; margin: 0; border: 0; background: none; color: rgba(255,255,255,.62); font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+        /* (19/10) menu branco (padrão iFood/99): parada em cinza, ativa na cor do topo da loja */
+        .cpn-pe { box-shadow: 0 -2px 12px rgba(44,18,25,.08); }
+        .cpn-menu { display: flex; padding-bottom: env(safe-area-inset-bottom, 0px); background: #fff; border-top: 1px solid #EFE7E3; }
+        .cpn-menu button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 60px; margin: 0; border: 0; background: none; color: #8A7F82; font-family: inherit; font-size: 12.5px; font-weight: 500; white-space: nowrap; cursor: pointer; }
         .cpn-ic { display: flex; align-items: center; justify-content: center; width: 52px; height: 30px; border-radius: var(--ui-raio); }
-        .cpn-menu button[aria-current="page"] { color: var(--ui-branco); font-weight: 700; }
-        .cpn-menu button[aria-current="page"] .cpn-ic { background: rgba(255,255,255,.16); }
+        .cpn-menu button[aria-current="page"] { color: var(--cpn-ativa); font-weight: 700; }
+        .cpn-menu button[aria-current="page"] .cpn-ic { background: color-mix(in srgb, var(--cpn-ativa) 12%, #fff); }
         /* (19/10) bolinha com a quantidade da sacola no "Pedidos" */
         .cpn-ic { position: relative; }
-        .cpn-bolinha { position: absolute; top: -3px; right: 6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: #EF4444; color: #fff; font: 700 11px/18px system-ui, sans-serif; font-style: normal; text-align: center; box-shadow: 0 0 0 2px rgba(0,0,0,.15); }
+        .cpn-bolinha { position: absolute; top: -3px; right: 6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: #EF4444; color: #fff; font: 700 11px/18px system-ui, sans-serif; font-style: normal; text-align: center; box-shadow: 0 0 0 2px #fff; }
       `}</style>
 
       {/* ═══ MOBILE: tab bar + cart vindo de baixo ═══ */}
       {isMobile && (
         <>
-          <div ref={rodapeRef} className="cpn-pe fixed bottom-0 left-0 right-0 z-30">
+          <div ref={rodapeRef} className="cpn-pe fixed bottom-0 left-0 right-0 z-30" style={{ ['--cpn-ativa' as any]: corAtiva }}>
             {count > 0 && (
               <button type="button" className="cpn-pedido" style={{ background: accent }} onClick={() => setIsOpen(true)}>
                 <span className="cpn-pedido-ic"><Sacola size={20} weight="fill" color="white" /></span>
@@ -1060,7 +1065,7 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
                 { id: 'perfil',   label: 'Minha conta',  Icone: User },
               ].map(({ id, label, Icone }) => (
                 <button key={id} type="button" aria-current={activeTab === id ? 'page' : undefined} onClick={() => setActiveTab(id)}>
-                  <span className="cpn-ic"><Icone size={24} weight={activeTab === id ? "fill" : "bold"} />{id === 'pedidos' && count > 0 && <i className="cpn-bolinha" aria-label={`${count} na sacola`}>{count > 9 ? '9+' : count}</i>}</span>{label}
+                  <span className="cpn-ic"><Icone size={24} weight={activeTab === id ? "fill" : "regular"} />{id === 'pedidos' && count > 0 && <i className="cpn-bolinha" aria-label={`${count} na sacola`}>{count > 9 ? '9+' : count}</i>}</span>{label}
                 </button>
               ))}
             </nav>
