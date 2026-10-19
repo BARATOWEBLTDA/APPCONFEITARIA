@@ -603,8 +603,10 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
         {product.descricao && <p>{product.descricao}</p>}
         <div className="pm-preco">
           {!semTamanho && descPct > 0 && calculo.subtotal > valorTopo && <s>{formatCurrency(calculo.subtotal)}</s>}
-          <strong>{semTamanho && pMax > pMin ? `${formatCurrency(pMin)} a ${formatCurrency(pMax)}` : formatCurrency(semTamanho ? pMin : valorTopo)}</strong>
-          <em>{semTamanho ? 'conforme o tamanho' : kitCfg ? ((kitCfg as any).modo === 'livre' ? (Number((kitCfg as any).livre?.min) === 100 ? 'o cento' : `${(kitCfg as any).livre?.min} un.`) : 'o kit') : gTamanho ? '' : saborComPreco && !opSabor ? 'conforme o sabor' : unidadeCliente(product.forma_venda)}</em>
+          {/* (19/10) com tamanhos: "a partir de R$ X" (o menor), em vez de "R$ X a R$ Y" */}
+          {semTamanho && pMax > pMin && <small className="pm-apartir">a partir de</small>}
+          <strong>{formatCurrency(semTamanho ? pMin : valorTopo)}</strong>
+          <em>{semTamanho ? ((product as any).forma_venda === 'kg' ? unidadeCliente(product.forma_venda) : '') : kitCfg ? ((kitCfg as any).modo === 'livre' ? (Number((kitCfg as any).livre?.min) === 100 ? 'o cento' : `${(kitCfg as any).livre?.min} un.`) : 'o kit') : gTamanho ? '' : saborComPreco && !opSabor ? 'conforme o sabor' : unidadeCliente(product.forma_venda)}</em>
         </div>
         {selo?.tipo === 'encomenda' && (
           <div className="pm-aviso"><CalendarBlank size={20} weight="bold" aria-hidden="true" /><span><b>Encomende com {selo.prazo} de antecedência</b><small>Você escolhe o dia ao finalizar o pedido.</small></span></div>
@@ -646,7 +648,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
         </section>
       )}
 
-      {!onAdicionar && !previa && (
+      {!onAdicionar && !previa && (product as any).aceita_referencia === true && (
         <section className="pm-g">
           <header className="pm-g-cab"><span><b>Foto de referência</b><small>Mostre uma ideia do que você quer</small></span></header>
           <label className="pm-foto">

@@ -1035,6 +1035,9 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
         .cpn-ic { display: flex; align-items: center; justify-content: center; width: 52px; height: 30px; border-radius: var(--ui-raio); }
         .cpn-menu button[aria-current="page"] { color: var(--ui-branco); font-weight: 700; }
         .cpn-menu button[aria-current="page"] .cpn-ic { background: rgba(255,255,255,.16); }
+        /* (19/10) bolinha com a quantidade da sacola no "Pedidos" */
+        .cpn-ic { position: relative; }
+        .cpn-bolinha { position: absolute; top: -3px; right: 6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: #EF4444; color: #fff; font: 700 11px/18px system-ui, sans-serif; font-style: normal; text-align: center; box-shadow: 0 0 0 2px rgba(0,0,0,.15); }
       `}</style>
 
       {/* ═══ MOBILE: tab bar + cart vindo de baixo ═══ */}
@@ -1057,7 +1060,7 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
                 { id: 'perfil',   label: 'Minha conta',  Icone: User },
               ].map(({ id, label, Icone }) => (
                 <button key={id} type="button" aria-current={activeTab === id ? 'page' : undefined} onClick={() => setActiveTab(id)}>
-                  <span className="cpn-ic"><Icone size={24} weight={activeTab === id ? "fill" : "bold"} /></span>{label}
+                  <span className="cpn-ic"><Icone size={24} weight={activeTab === id ? "fill" : "bold"} />{id === 'pedidos' && count > 0 && <i className="cpn-bolinha" aria-label={`${count} na sacola`}>{count > 9 ? '9+' : count}</i>}</span>{label}
                 </button>
               ))}
             </nav>
