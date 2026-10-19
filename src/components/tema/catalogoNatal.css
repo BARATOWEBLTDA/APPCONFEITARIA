@@ -5,7 +5,7 @@
 
 /* capa */
 .ctn-capa { display: flex; flex-direction: column; min-height: 520px; }
-.ctn-hero { position: relative; flex: 1 1 auto; min-height: 150px; max-height: 50svh; overflow: hidden; background: #6E1F27 center / cover no-repeat; }
+.ctn-hero { position: relative; flex: 1 1 auto; min-height: 150px; max-height: 50svh; overflow: hidden; background: #6E1F27 50% 38% / cover no-repeat; /* um pouco acima do meio: a parte de baixo fica atrás da onda e da logo */ }
 .ctn-hero-padrao { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 28%, #93303B 0%, #6E1F27 58%, #4E141B 100%); }
 .ctn-bok { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(255,220,150,.5), rgba(255,220,150,0) 70%); }
 .ctn-bolas { position: absolute; inset: 0; width: 100%; height: 100%; animation: ctnBalanca 4s ease-in-out infinite alternate; transform-origin: 50% 0; }
