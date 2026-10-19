@@ -103,10 +103,12 @@ function GrupoMenu({ id, rotulo, icone: Icone, rotas, recolhido, children, tour 
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const dentro = rotas.some(r => pathname === r || pathname.startsWith(r + "/"));
-  const chave = `doonly_menu_grupo_${id}`;
-  const [aberto, setAberto] = useState<boolean>(() => { try { const v = localStorage.getItem(chave); return v === null ? dentro : v === "1"; } catch { return dentro; } });
+  // (19/10) ao abrir ou recarregar (F5) os grupos começam fechados; só abre o grupo da tela em que você está.
+  // Abrir e fechar vale enquanto usa, sem ficar lembrado (antes voltava aberto depois do F5).
+  const [aberto, setAberto] = useState<boolean>(dentro);
   useEffect(() => { if (dentro) setAberto(true); }, [dentro]);
-  const alternar = () => setAberto(a => { const n = !a; try { localStorage.setItem(chave, n ? "1" : "0"); } catch {} return n; });
+  useEffect(() => { try { localStorage.removeItem(`doonly_menu_grupo_${id}`); } catch {} }, [id]);
+  const alternar = () => setAberto(a => !a);
   if (recolhido) {
     return (
       <button type="button" className={`nav-item${dentro ? " active" : ""}`} data-tour={tour} onClick={() => navigate(rotas[0])} title={rotulo} aria-label={rotulo}>
