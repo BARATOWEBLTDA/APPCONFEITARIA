@@ -13,7 +13,7 @@ import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, BotaoIcone, Janela, Titulo, avisar } from "@/components/base";
 import { lerBannersProntos, CATEGORIAS_BANNER, CATEGORIA_CAPA_NATAL, type BannerPronto } from "@/lib/bannersProntos";
 import { COR_BOTOES, PADRAO, PRONTAS, corDoItem, type CampoCor } from "@/lib/coresCardapio";
-import { AVISO_NATAL_PADRAO, NATAL, type Tema } from "@/lib/temaCardapio";
+import { AVISO_NATAL_PADRAO, CAPA_NATAL_PADRAO, NATAL, type Tema } from "@/lib/temaCardapio";
 import { Touquinha } from "@/components/tema/Natal";
 import "./aparencia.css";
 
@@ -451,10 +451,10 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
             <span className="ap-tema-lb">Imagem da capa</span>
             <input ref={capaRef} type="file" accept="image/*" hidden onChange={recorteCapa.escolher} />
             <div className="ap-capa">
-              <div className="ap-capa-img" style={temaCapa ? { backgroundImage: `url(${temaCapa})` } : undefined}>
-                {!temaCapa && <span>Sem imagem: fica o fundo de Natal</span>}
+              <div className="ap-capa-img" style={{ backgroundImage: `url(${temaCapa || CAPA_NATAL_PADRAO})` }}>
+                {!temaCapa && <span>Imagem padrão do tema</span>}
                 {uploading === "capa" && <span className="ap-topo-gira"><span className="ui-gira" aria-label="Enviando" /></span>}
-                {temaCapa && <BotaoIcone rotulo="Tirar a imagem da capa" variante="neutro" tamanho="p" className="ap-tirar ap-capa-x" onClick={() => salvarCapa("")}><X size={18} weight="bold" /></BotaoIcone>}
+                {temaCapa && <BotaoIcone rotulo="Voltar pra imagem padrão" variante="neutro" tamanho="p" className="ap-tirar ap-capa-x" onClick={() => salvarCapa("")}><X size={18} weight="bold" /></BotaoIcone>}
               </div>
               <div className="ap-capa-bts">
                 <Botao variante="secundario" tamanho="m" icone={<UploadSimple size={18} weight="bold" />} disabled={!!uploading} onClick={() => capaRef.current?.click()}>Enviar a minha</Botao>

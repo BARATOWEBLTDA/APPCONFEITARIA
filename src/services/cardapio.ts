@@ -1,4 +1,4 @@
-import { temaAtivo, NATAL, AVISO_NATAL_PADRAO } from '@/lib/temaCardapio'
+import { temaAtivo, NATAL, AVISO_NATAL_PADRAO, CAPA_NATAL_PADRAO } from '@/lib/temaCardapio'
 import { COR_BOTOES, corDoItem } from '@/lib/coresCardapio'
 import { supabase } from '@/lib/supabase'
 import { fotoDaLoja } from '@/hooks/useProfile'
@@ -144,7 +144,7 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     ocultar_categorias: profile.ocultar_categorias || false,
     tema,
     tema_aviso: tema === 'natal' ? String(profile.tema_aviso ?? AVISO_NATAL_PADRAO).trim() : '',
-    tema_capa_url: tema === 'natal' ? (profile.tema_capa_url || '') : '',
+    tema_capa_url: tema === 'natal' ? (profile.tema_capa_url || CAPA_NATAL_PADRAO) : '',
   }
 
   const config: Configuracoes = {
