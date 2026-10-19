@@ -2,14 +2,14 @@
 // lucro = vendido (pedidos entregues no mês) − custo dos ingredientes (ficha técnica) − despesas pagas
 // (sem as de insumos, que já estão no custo da ficha). Mais: ponto de equilíbrio e lucro por produto.
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useProfile } from "@/hooks/useProfile";
 import { useNavigate } from "react-router-dom";
 import { CalendarBlank, CaretLeft, CaretRight, ChartLineUp, Equals, Minus, ShoppingBagOpen, Warning, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, TelaVazia } from "@/components/base";
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
-import { erroDeConexao } from "@/lib/erros";
 import { calcularCustoLucro, lerMaoObraConta } from "@/lib/produto-precificacao";
 import { carregarMes, custoPorProduto, multiplicadorDoItem, produtosPeloPeso, type MesFinanceiro } from "@/lib/painelFinanceiro";
 
@@ -50,16 +50,28 @@ export default function Lucratividade() {
   const [fixos, setFixos] = useState<{ custos: number; salario: number } | null>(null);
   const [erro, setErro] = useState(false); // não deu pra carregar (10/10)
   const [tentativa, setTentativa] = useState(0);
+  // (19/10) o id da conta que já está na memória: trocar de mês não pede o usuário de novo ao Supabase
+  // (duas buscas seguidas do usuário podiam travar e a tela ficava em branco pra sempre)
+  const { profile } = useProfile();
+  const uidRef = useRef<string | null>(null);
+  uidRef.current = profile?.id || uidRef.current;
 
   useEffect(() => {
     // 10/10: ao trocar de mês rápido, só vale a resposta da última busca (a atrasada era aplicada por cima da nova).
     // E se alguma busca falhar, a tela avisa em vez de mostrar "nenhum pedido entregue" ou um lucro errado.
     let cancelado = false;
+    // (19/10) se nada voltar em 20 s, a tela mostra "Tentar de novo" em vez de ficar em branco
+    const relogio = setTimeout(() => { if (!cancelado) setErro(true); }, 20000);
     (async () => {
       setDados(null); setProdutos(null); setErro(false);
-      const { data: { user }, error: eUser } = await supabase.auth.getUser();
-      if (cancelado) return;
-      if (!user) { if (erroDeConexao(eUser)) setErro(true); return; }
+      let uid = uidRef.current;
+      if (!uid) {
+        const { data: { user }, error: eUser } = await supabase.auth.getUser();
+        if (cancelado) return;
+        if (!user) { setErro(true); void eUser; return; }
+        uid = user.id;
+      }
+      const user = { id: uid };
       const ini = iso(new Date(mes.ano, mes.m, 1)), fim = iso(new Date(mes.ano, mes.m + 1, 0));
       const [d, peds, cf, mo] = await Promise.all([
         carregarMes(user.id, mes.ano, mes.m),
@@ -70,7 +82,7 @@ export default function Lucratividade() {
         supabase.from("config_mao_obra").select("salario_mensal, horas_dia, dias_semana").eq("user_id", user.id).maybeSingle(),
       ]);
       if (cancelado) return;
-      if (d.erro || peds.error || cf.error || mo.error) { setErro(true); return; }
+      if (d.erro || peds.error || cf.error || mo.error) { clearTimeout(relogio); setErro(true); return; }
       setDados(d);
       setFixos({ custos: ((cf.data as any[]) || []).filter(x => x.ativo !== false).reduce((s, x) => s + (Number(x.valor) || 0), 0), salario: Number((mo.data as any)?.salario_mensal) || 0 });
       // lucro por produto
@@ -92,11 +104,12 @@ export default function Lucratividade() {
       const lista = Object.values(mapa).map(p => ({ ...p, lucro: p.vendido - p.custo, margem: p.vendido > 0 ? Math.round(((p.vendido - p.custo) / p.vendido) * 100) : 0 }))
         .sort((a, b) => b.lucro - a.lucro);
       setProdutos(lista);
+      clearTimeout(relogio);
     })().catch(e => {
       console.error("[lucratividade] não consegui carregar:", e);
       if (!cancelado) { setDados(null); setErro(true); }
     });
-    return () => { cancelado = true; };
+    return () => { cancelado = true; clearTimeout(relogio); };
   }, [mes, tentativa]);
 
   const ehMesAtual = mes.ano === h.getFullYear() && mes.m === h.getMonth();
@@ -182,7 +195,10 @@ export default function Lucratividade() {
                 // (4.29) em cartões, como no cardápio: foto, nome e o lucro embaixo
                 <ul className="lu-pg">
                   {produtos.map(p => (
-                    <li key={p.chave} className="lu-pc">
+                    <li key={p.chave} className={`lu-pc${p.chave.startsWith("nome:") ? "" : " lu-pc--bt"}`}
+                      {...(p.chave.startsWith("nome:") ? {} : { role: "button", tabIndex: 0, "aria-label": `${p.nome}: ${p.semFicha ? "montar a ficha técnica" : "ver a ficha técnica"}`,
+                        onClick: () => navigate("/ficha-tecnica", { state: { produtoId: p.chave } }),
+                        onKeyDown: (e: React.KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate("/ficha-tecnica", { state: { produtoId: p.chave } }); } } })}>
                       <span className="lu-pc-foto">{p.foto ? <img src={p.foto} alt="" loading="lazy" /> : <ShoppingBagOpen size={28} aria-hidden="true" />}</span>
                       <span className="lu-pc-tx">
                         <b className="lu-pc-nm">{p.nome}</b>
@@ -191,7 +207,7 @@ export default function Lucratividade() {
                         {/* sem ficha o custo é zero: mostrar "lucro = preço" engana, então fica um traço */}
                         <strong className={p.semFicha ? "sf" : p.lucro < 0 ? "ruim" : ""}>{p.semFicha ? "—" : brl(p.lucro)}</strong>
                         {p.semFicha
-                          ? <span className="lu-sf"><Warning size={12} weight="bold" /> sem ficha técnica</span>
+                          ? <span className="lu-sf"><Warning size={12} weight="bold" /> sem ficha técnica{!p.chave.startsWith("nome:") && <b className="lu-sf-bt">Montar ficha <CaretRight size={12} weight="bold" /></b>}</span>
                           : <span className="lu-pc-m"><span className="lu-p-bar"><i className={p.lucro < 0 ? "ruim" : ""} style={{ width: `${Math.max(2, Math.min(100, p.margem))}%` }} /></span>margem {p.margem}%</span>}
                       </span>
                     </li>
@@ -286,7 +302,10 @@ const CSS = `
   .lu-pc-m { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ui-texto-2); }
   .lu-pc-m .lu-p-bar { flex: 1; margin: 0; }
   .lu-p-bar { display: block; height: 5px; border-radius: 9px; background: var(--ui-linha); overflow: hidden; } .lu-p-bar i { display: block; height: 100%; background: #22C55E; border-radius: 9px; } .lu-p-bar i.ruim { background: #F87171; }
-  .lu-sf { color: var(--ui-laranja); font-weight: 600; display: inline-flex; align-items: center; gap: 3px; font-size: 12px; }
+  .lu-sf { color: var(--ui-laranja); font-weight: 600; display: flex; flex-wrap: wrap; align-items: center; gap: 3px; font-size: 12px; }
+  .lu-sf-bt { display: inline-flex; align-items: center; gap: 2px; width: 100%; margin-top: 6px; color: var(--ui-rosa-escuro); font-size: 13px; font-weight: 700; white-space: nowrap; }
+  .lu-pc--bt { cursor: pointer; transition: border-color .15s; } .lu-pc--bt:hover { border-color: #F7C9DA; }
+  .lu-pc--bt:focus-visible { outline: 3px solid rgba(236, 72, 153, .4); outline-offset: 2px; }
   .lu-eq-v { display: block; font-size: 26px; font-weight: 600; letter-spacing: -.02em; } .lu-eq-v small { font-size: 13px; font-weight: 400; color: var(--ui-texto-2); }
   .lu-eq-t { margin: 4px 0 0; font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; }
   .lu-eq-s { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--ui-texto); } .lu-nota { margin: 6px 0 0; font-size: 12px; color: var(--ui-texto-3); }
