@@ -75,11 +75,12 @@
 .sd-pi-v { flex: none; font-size: 14px; font-weight: 500; color: var(--ui-texto); }
 .sd-pl { margin-top: 2px; }
 /* (16/10) faixa da semana: toque num dia pra ver só os pedidos dele */
-.sd-sem { display: flex; gap: 4px; margin: 4px 16px 6px; }
-.sd-sd { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 6px 0 5px; border: 1px solid var(--ui-borda, #F0E6EA); border-radius: 8px; background: var(--ui-branco); font-family: inherit; color: var(--ui-texto); cursor: pointer; }
-.sd-sd small { font-size: 11px; font-weight: 600; color: var(--ui-texto-3); text-transform: capitalize; white-space: nowrap; }
-.sd-sd b { font-size: 15px; font-weight: 700; line-height: 1.2; }
-.sd-sd i { min-height: 16px; min-width: 16px; padding: 0 4px; border-radius: 6px; font-style: normal; font-size: 11px; font-weight: 700; line-height: 16px; color: transparent; }
+.sd-sem { display: flex; gap: 8px; margin: 4px 0 8px; padding: 2px 16px; overflow-x: auto; scroll-snap-type: x proximity; scroll-padding: 0 16px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.sd-sem::-webkit-scrollbar { display: none; }
+.sd-sd { flex: 1 0 64px; min-width: 64px; scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 0 8px; border: 1px solid var(--ui-borda, #F0E6EA); border-radius: 12px; background: var(--ui-branco); font-family: inherit; color: var(--ui-texto); cursor: pointer; }
+.sd-sd small { font-size: 12.5px; font-weight: 600; color: var(--ui-texto-3); text-transform: capitalize; white-space: nowrap; }
+.sd-sd b { font-size: 20px; font-weight: 700; line-height: 1.2; }
+.sd-sd i { min-height: 20px; min-width: 20px; padding: 0 6px; border-radius: 10px; font-style: normal; font-size: 12px; font-weight: 700; line-height: 20px; color: transparent; }
 .sd-sd.tem i { background: var(--primary-light, #FCE0E9); color: var(--ui-rosa-escuro); }
 /* (19/10) dia escolhido: todo rosa, texto branco e a quantidade de pedidos (até 0) num selinho branco */
 .sd-sd.on { border-color: var(--ui-rosa); background: var(--ui-rosa); color: var(--ui-branco); }
