@@ -3,7 +3,7 @@ import { resumoItens } from "@/components/pedidos/pedidoTexto";
 import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
 import PraFazer from "@/components/PraFazer";
-import { LogoDaLoja } from "@/components/AppPageHeader";
+import AppPageHeader from "@/components/AppPageHeader";
 import { LinkDeVendas } from "@/components/loja/LinkDeVendas";
 import { PausarPedidos } from "@/components/loja/PausarPedidos";
 import { STATUS_AINDA_NAO_PRONTO, dataISO } from "@/lib/pedidoStatus";
@@ -654,7 +654,8 @@ export default function Inicio() {
 
   return (
     <>
-    {/* AppPageHeader removido — hero rosa já é suficiente como saudação */}
+    {/* (19/10) computador: a mesma barra de cima das outras telas (no celular fica o hero rosa) */}
+    <div className="ini-dk-cab"><AppPageHeader title="Início" subtitle="O resumo do seu dia" /></div>
     <div className="ini-root">
       {/* ── Hero wine com foto da confeiteira, coroinha (PRO) e sparkles ── */}
       <div className="ini-hero">
@@ -833,8 +834,6 @@ export default function Inicio() {
                 <button type="button" className="ini-dk-bt ini-dk-bt--1" onClick={() => navigate("/vendas/novo")}><Plus size={16} weight="bold" /> Nova venda</button>
                 {/* (13/10) o "Ver agenda" saiu daqui (fica no cartão Próximas entregas e no menu): a Nova venda é a ação do topo.
                     A linha separa a ação da conta (Seja PRO e a logo da loja, no canto, como nas outras telas). */}
-                <span className="ini-dk-sep" aria-hidden="true" />
-                <LogoDaLoja className="ini-dk-logo" />
               </div>
             </div>
             <div className="ini-dk-kpis">
@@ -1918,24 +1917,27 @@ export default function Inicio() {
         }
 
         /* ══════ Início no computador (de 901px pra cima) — redesenho 30/09 ══════ */
-        .ini-dk, .ini-dk-side { display: none; }
+        .ini-dk, .ini-dk-side, .ini-dk-cab { display: none; }
         @media (min-width: 901px) {
           .ini-dk { display: block; margin: 0 0 4px; }
+          .ini-dk-cab { display: contents; }
           /* rosa encostado no topo e nas laterais da área do app (sem mexer nos cartões) */
-          .ini-dk-top { background: linear-gradient(120deg, var(--ui-rosa) 0%, var(--ui-rosa-escuro) 60%, #8E2350 100%); color: var(--ui-branco); border-radius: 0; margin: -72px -112px 0 -68px; padding: 48px 32px 74px 96px; display: flex; align-items: center; justify-content: space-between; gap: 20px; position: relative; overflow: hidden; }
-          .ini-dk-top::after { content: ""; position: absolute; left: 44%; top: -150px; width: 260px; height: 260px; border-radius: 50%; background: rgba(255,255,255,.08); pointer-events: none; }
-          .ini-dk-txt h1 { font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin: 0; color: var(--ui-branco); }
-          .ini-dk-txt p { font-size: 14.5px; margin: 6px 0 0; color: rgba(255,255,255,.92); }
+          /* (19/10) sem a faixa rosa: a saudação no fundo da página, como o título das outras telas */
+          .ini-dk-top { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin: 0 0 16px; }
+          .ini-dk-txt { min-width: 0; }
+          .ini-dk-txt h1 { font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin: 0; color: var(--ui-texto); white-space: nowrap; }
+          .ini-dk-txt p { font-size: 14.5px; margin: 4px 0 0; color: var(--ui-texto-2); }
           .ini-dk-atr { position: relative; z-index: 1; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
           .ini-dk-atr::after { content: ""; position: absolute; inset: -12px -4px; } /* área de toque de 44px */
-          .ini-dk-atr:focus-visible { outline: 3px solid rgba(255, 255, 255, .75); outline-offset: 2px; border-radius: 4px; }
+          .ini-dk-atr { color: var(--ui-rosa-escuro); }
+          .ini-dk-atr:focus-visible { outline: 3px solid rgba(236, 72, 153, .4); outline-offset: 2px; border-radius: 4px; }
           .ini-dk-bts { display: flex; align-items: center; gap: 10px; position: relative; z-index: 1; }
           .ini-dk-sep { width: 1px; height: 28px; margin: 0 6px; background: rgba(255,255,255,.35); }
           .ini-dk-bt { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: var(--ui-raio); font-family: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; white-space: nowrap; }
-          .ini-dk-bt--1 { border: none; background: var(--ui-branco); color: var(--ui-rosa-escuro); box-shadow: 0 4px 12px rgba(0,0,0,.12); }
+          .ini-dk-bt--1 { border: none; background: var(--ui-rosa); color: var(--ui-branco); box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
           .ini-dk-bt--2 { border: 1.5px solid rgba(255,255,255,.7); background: transparent; color: var(--ui-branco); }
           .ini-dk-bt:hover { transform: translateY(-1px); }
-          .ini-dk-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: -50px 20px 0; position: relative; z-index: 2; }
+          .ini-dk-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 0; }
           .ini-dk-kpi { background: var(--ui-branco); border-radius: var(--ui-raio-cartao); padding: 16px; box-shadow: 0 8px 22px rgba(60,20,35,.08); border: 1px solid #F3ECEF; }
           .ini-dk-kpi--dest { background: linear-gradient(150deg, #3B1620, #6B2340); border-color: transparent; }
           .ini-dk-kh { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
