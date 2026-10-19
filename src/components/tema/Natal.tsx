@@ -2,17 +2,13 @@ import { useEffect, useState } from "react";
 import "./temaNatal.css";
 
 /**
- * (19/10) Enfeite da logo no Natal: agora é o laço de veludo (PNG transparente) na lateral direita. Antes: touca (public/temas/touca-natal.png), pequena e inclinada pra esquerda,
- * apoiada na borda de cima da logo. Vai numa caixa do tamanho da logo (posição absoluta); a logo não muda.
- * "tras" não desenha nada (ficou só pra compatibilidade com quem ainda passa as duas partes).
+ * (19/10) Enfeite da logo no Natal: laço de veludo com ponta de pelúcia (PNG transparente) na lateral direita.
+ * Vai numa caixa do tamanho da logo (posição absoluta); a logo não muda. Vem ligado; a confeitaria desliga na Aparência.
  */
-export const TOUCA_NATAL_URL = "/temas/touca-natal.png";
-/** (19/10) laço de veludo com ponta de pelúcia: o enfeite da logo no Natal (na lateral direita) */
 export const LACO_NATAL_URL = "/temas/laco-natal.png";
-export function Touquinha({ className = "", parte = "toda" }: { className?: string; parte?: "tras" | "frente" | "toda"; tamanho?: number }) {
-  if (parte === "tras") return null;
+export function LacoNatal({ className = "" }: { className?: string }) {
   return (
-    <span className={`tn-touca-box ${className}`} aria-hidden="true">
+    <span className={`tn-enfeite-box ${className}`} aria-hidden="true">
       <img className="tn-laco-img" src={LACO_NATAL_URL} alt="" decoding="async" />
     </span>
   );

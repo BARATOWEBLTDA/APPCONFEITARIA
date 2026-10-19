@@ -24,3 +24,6 @@ end $$;
 
 -- (18/10) Natal vira "catálogo": imagem grande da capa (da loja ou da biblioteca do admin, categoria "Capa de Natal")
 alter table public.profiles add column if not exists tema_capa_url text;
+
+-- (19/10) laço de veludo na logo no Natal: vem ligado, a confeitaria pode desligar
+alter table public.profiles add column if not exists tema_laco boolean not null default true;

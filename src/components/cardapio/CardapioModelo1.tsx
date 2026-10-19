@@ -1,4 +1,4 @@
-import { Touquinha } from '@/components/tema/Natal'
+import { LacoNatal } from '@/components/tema/Natal'
 import { SeloVerificado } from './SeloVerificado'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -112,13 +112,12 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
       </div>
 
       <div className="cm1-content" style={{ background: fundo, ['--cm1-fundo' as any]: fundo }}>
-        {design.tema === 'natal' && <Touquinha className="cm1-touca" parte="tras" />}
         <div className="cm1-logo" style={{ borderColor: accent }}>
           {design.logo_url
             ? <img src={design.logo_url} alt={design.nome_loja || ''} />
             : <span style={{ background: design.cor_background || '#FCE0E9', color: accent }}>{(design.nome_loja || 'D').charAt(0).toUpperCase()}</span>}
         </div>
-        {design.tema === 'natal' && <Touquinha className="cm1-touca" parte="frente" />}
+        {design.tema === 'natal' && design.tema_laco !== false && <LacoNatal className="cm1-enfeite" />}
 
         <h1 className="cm1-nome" style={{ color: corNome }}>
           {design.nome_loja || 'Minha Confeitaria'}{verificada && <SeloVerificado tamanho={22} />}

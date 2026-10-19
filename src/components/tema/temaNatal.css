@@ -28,20 +28,17 @@
 .tema-natal .sc-enviado-ic { position: relative; background: #6E1F27 !important; color: #E7C46A !important; }
 .sc-enviado-in > p.sc-enviado-festas { margin: -4px 0 8px; font-size: 14px; font-weight: 700; color: #6E1F27; }
 
-/* touquinha vestida: caixa do tamanho da logo, svg passa pra cima e pros lados */
-.tn-touca-box { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
-.tn-touca-box.cm1-touca { inset: auto; top: -60px; right: 16px; width: 106px; height: 106px; z-index: 7; }
-.tn-touca-box.cm1-touca.tn-touca--tras { z-index: 5; }
 .tema-natal .cp-topo-in { padding-top: 18px; padding-bottom: 6px; }
 
-/* (19/10) logo entre as duas partes da touca; borda única dourada (sem o anel creme e o espaço branco) */
+/* (19/10) logo acima do fundo; borda única dourada (sem o anel creme e o espaço branco) */
 .ctn-logo, .cp-topo-logo { position: relative; z-index: 2; }
 .tema-natal .cp-topo-logo { padding: 0; }
 .tema-natal .cp-topo-in { padding-top: 20px; }
 
-/* (19/10) touca PNG apoiada no canto de cima à esquerda da logo (medidas em % da logo: vale pra qualquer tamanho) */
-.tn-touca-img { position: absolute; left: -7%; top: -14%; width: 60%; height: auto; transform: rotate(-12deg); transform-origin: 70% 85%; filter: drop-shadow(0 2px 3px rgba(0,0,0,.2)); pointer-events: none; user-select: none; }
 
+/* caixa do enfeite: mesmo tamanho e posição da logo */
+.tn-enfeite-box { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.tn-enfeite-box.cm1-enfeite { inset: auto; top: -60px; right: 16px; width: 106px; height: 106px; z-index: 7; }
 /* (19/10) laço de veludo na lateral direita da logo (em % da logo: vale pra qualquer tamanho) */
-.tn-laco-img { position: absolute; right: -24%; top: 2%; width: 56%; height: auto; transform: rotate(14deg); filter: drop-shadow(0 3px 4px rgba(0,0,0,.28)); pointer-events: none; user-select: none; }
-.cp-topo-logo-w .tn-laco-img { right: -16%; width: 46%; } /* no computador o nome fica logo ao lado */
+.tn-laco-img { position: absolute; right: -10%; top: 4%; width: 34%; height: auto; transform: rotate(14deg); filter: drop-shadow(0 3px 4px rgba(0,0,0,.28)); pointer-events: none; user-select: none; }
+.cp-topo-logo-w .tn-laco-img { right: -8%; width: 32%; } /* no computador o nome fica logo ao lado */

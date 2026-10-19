@@ -25,7 +25,7 @@ import { SobreLoja } from '@/components/cardapio/SobreLoja'
 import { useCart } from '@/hooks/useCart'
 import { formatCurrency } from '@/utils/helpers'
 import { corClara, nomeSobreTopo } from '@/lib/coresCardapio'
-import { Touquinha, useClasseTema } from '@/components/tema/Natal'
+import { LacoNatal, useClasseTema } from '@/components/tema/Natal'
 import CatalogoNatal from '@/components/tema/CatalogoNatal'
 import './cardapioPublico.css'
 
@@ -67,11 +67,10 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
         <div className="cp-topo-in">
           <div className="cp-topo-loja">
             <span className="cp-topo-logo-w">
-              {design.tema === 'natal' && <Touquinha parte="tras" />}
               <span className="cp-topo-logo" style={{ borderColor: corBorda }}>
                 {design.logo_url ? <img src={design.logo_url} alt="" /> : <b style={{ background: corBorda }}>{design.nome_loja?.charAt(0)}</b>}
               </span>
-              {design.tema === 'natal' && <Touquinha parte="frente" />}
+              {design.tema === 'natal' && design.tema_laco !== false && <LacoNatal />}
             </span>
             <div>
               <p className="cp-topo-nome" style={{ color: nomeSobreTopo(design.cor_nome, navBg) }}>{design.nome_loja}{isPro && <SeloVerificado tamanho={20} />}</p>

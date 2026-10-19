@@ -14,7 +14,7 @@ import { Botao, BotaoIcone, Janela, Titulo, avisar } from "@/components/base";
 import { lerBannersProntos, CATEGORIAS_BANNER, CATEGORIA_CAPA_NATAL, type BannerPronto } from "@/lib/bannersProntos";
 import { COR_BOTOES, PADRAO, PRONTAS, corDoItem, type CampoCor } from "@/lib/coresCardapio";
 import { AVISO_NATAL_PADRAO, CAPA_NATAL_PADRAO, NATAL, type Tema } from "@/lib/temaCardapio";
-import { Touquinha } from "@/components/tema/Natal";
+import { LacoNatal } from "@/components/tema/Natal";
 import "./aparencia.css";
 
 /**
@@ -83,6 +83,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
   const [temaFim, setTemaFim] = useState("");
   const avisoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [temaCapa, setTemaCapa] = useState("");
+  const [temaLaco, setTemaLaco] = useState(true);
   const capaRef = useRef<HTMLInputElement>(null);
   const [capaGal, setCapaGal] = useState<{ aberta: boolean; lista: BannerPronto[] | null; erro: boolean }>({ aberta: false, lista: null, erro: false });
   const [horario, setHorario] = useState<unknown>(null);
@@ -123,7 +124,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("logo_url, foto_url, nome_loja, banner_url, banner1_url, banner2_url, banner3_url, banner_topo_url, endereco, horario, tema_cardapio, tema_aviso, tema_auto, tema_inicio, tema_fim, tema_capa_url, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo, hide_stars, avaliacao_media").eq("id", user.id).single();
+      const { data } = await supabase.from("profiles").select("logo_url, foto_url, nome_loja, banner_url, banner1_url, banner2_url, banner3_url, banner_topo_url, endereco, horario, tema_cardapio, tema_aviso, tema_auto, tema_inicio, tema_fim, tema_capa_url, tema_laco, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo, hide_stars, avaliacao_media").eq("id", user.id).single();
       if (data) {
         setLogoUrl(data.logo_url || ""); setFotoPerfil((data as any).foto_url || "");
         setHideStars(!!(data as any).hide_stars);
@@ -131,7 +132,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         setNomeLoja(data.nome_loja || "");
         try { const e: any = typeof (data as any).endereco === "string" ? JSON.parse((data as any).endereco) : (data as any).endereco; setCidade(String(e?.cidade || "").trim()); } catch { setCidade(""); }
         setHorario((data as any).horario ?? null);
-        { const d: any = data; setTema(d.tema_cardapio === "natal" ? "natal" : "normal"); setTemaAviso(d.tema_aviso ?? AVISO_NATAL_PADRAO); setTemaAuto(!!d.tema_auto); setTemaInicio(d.tema_inicio || ""); setTemaFim(d.tema_fim || ""); setTemaCapa(d.tema_capa_url || ""); }
+        { const d: any = data; setTema(d.tema_cardapio === "natal" ? "natal" : "normal"); setTemaAviso(d.tema_aviso ?? AVISO_NATAL_PADRAO); setTemaAuto(!!d.tema_auto); setTemaInicio(d.tema_inicio || ""); setTemaFim(d.tema_fim || ""); setTemaCapa(d.tema_capa_url || ""); setTemaLaco(d.tema_laco !== false); }
         setBannerUrl(data.banner_url || "");
         setBanner1Url(data.banner1_url || "");
         setBanner2Url(data.banner2_url || "");
@@ -193,6 +194,11 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     if (!v) return;
     (campo === "tema_inicio" ? setTemaInicio : setTemaFim)(v);
     if (await gravar({ [campo]: v })) showSuccess();
+  };
+  const mudarLaco = async (on: boolean) => {
+    setTemaLaco(on);
+    if (!(await gravar({ tema_laco: on }))) { setTemaLaco(!on); return; }
+    showSuccess();
   };
   const salvarCapa = async (url: string) => {
     const antes = temaCapa; setTemaCapa(url);
@@ -441,7 +447,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
             {tema === "normal" && <span className="ap-tema-ok" aria-hidden="true"><Check size={13} weight="bold" /></span>}
           </button>
           <button type="button" role="radio" aria-checked={tema === "natal"} className="ap-tema" onClick={() => escolherTema("natal")}>
-            <span className="ap-tema-th ap-tema-th--natal"><Touquinha className="ap-tema-touca" parte="tras" /><span className="ap-tema-lo" style={{ borderColor: NATAL.borda }}>{(logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : null}</span><Touquinha className="ap-tema-touca" parte="frente" /></span>
+            <span className="ap-tema-th ap-tema-th--natal"><span className="ap-tema-lo" style={{ borderColor: NATAL.borda }}>{(logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : null}</span>{temaLaco && <LacoNatal className="ap-tema-enfeite" />}</span>
             <span className="ap-tema-pe"><b>Natal</b><small>Catálogo festivo</small></span>
             {tema === "natal" && <span className="ap-tema-ok" aria-hidden="true"><Check size={13} weight="bold" /></span>}
           </button>
@@ -460,6 +466,10 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
                 <Botao variante="secundario" tamanho="m" icone={<UploadSimple size={18} weight="bold" />} disabled={!!uploading} onClick={() => capaRef.current?.click()}>Enviar a minha</Botao>
                 <Botao variante="secundario" tamanho="m" icone={<Images size={18} weight="bold" />} onClick={abrirCapaGal}>Biblioteca</Botao>
               </div>
+            </div>
+            <div className="ap-tema-auto">
+              <span><b>Laço na logo</b><small>Laço de veludo do lado direito</small></span>
+              <button type="button" role="switch" aria-checked={temaLaco} aria-label="Laço na logo" className="ap-chave" onClick={() => mudarLaco(!temaLaco)}><span /></button>
             </div>
             <label className="ap-tema-lb" htmlFor="ap-aviso">Aviso no topo do cardápio</label>
             <div className="ui-campo-c"><input id="ap-aviso" value={temaAviso} maxLength={40} placeholder={AVISO_NATAL_PADRAO} onChange={e => mudarAviso(e.target.value)} /></div>
@@ -495,13 +505,12 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
             {uploading === "banner-topo" && <span className="ap-topo-gira"><span className="ui-gira" aria-label="Enviando" /></span>}
           </div>
           <div className="ap-topo-corpo">
-            {tema === "natal" && <Touquinha className="ap-topo-touca" parte="tras" />}
             <button type="button" className="ap-topo-logo" style={{ borderColor: tema === "natal" ? NATAL.borda : corAtual("cor_borda", corBorda) }} onClick={() => !uploading && logoRef.current?.click()} aria-label={logoUrl ? "Trocar a logo" : "Enviar a logo"}>
               {uploading === "logo" ? <span className="ui-gira" aria-label="Enviando" />
                 : (logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : <b>{(nomeLoja || "?").trim().charAt(0).toUpperCase()}</b>}
               <i aria-hidden="true"><Camera size={12} weight="bold" /></i>
             </button>
-            {tema === "natal" && <Touquinha className="ap-topo-touca" parte="frente" />}
+            {tema === "natal" && temaLaco && <LacoNatal className="ap-topo-enfeite" />}
             <b className="ap-topo-nome"><span style={{ color: tema === "natal" ? NATAL.nome : corAtual("cor_nome", corNome) }}>{nomeLoja || "Nome da sua loja"}</span><SeloVerificado tamanho={18} /></b>
             <span className="ap-topo-sl"><b style={{ color: COR_BOTOES }}>Sobre a loja</b><em aria-hidden="true">·</em><MapPin size={14} weight="bold" color={COR_BOTOES} aria-hidden="true" /><span>{cidade || "São Paulo"}</span></span>
             {tema === "natal" && temaAviso.trim() && <span className="ap-topo-aviso"><CalendarBlank size={14} weight="bold" aria-hidden="true" />{temaAviso.trim()}</span>}

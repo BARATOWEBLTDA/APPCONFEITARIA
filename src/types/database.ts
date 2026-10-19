@@ -47,6 +47,7 @@ export interface DesignSettings {
   tema?: 'normal' | 'natal'
   tema_aviso?: string
   tema_capa_url?: string
+  tema_laco?: boolean
 }
 
 export interface Configuracoes {
