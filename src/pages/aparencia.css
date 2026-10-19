@@ -219,3 +219,4 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-topo-logo, .ap-tema-lo { z-index: 2; }
 .tn-enfeite-box.ap-tema-enfeite { inset: auto; right: 10px; bottom: -16px; width: 38px; height: 38px; }
 .tn-enfeite-box.ap-topo-enfeite { inset: auto; right: 12px; top: -44px; width: 76px; height: 76px; }
+.ap-tema-cfg .ui-campo-c select { flex: 1; min-width: 0; height: 45px; border: 0; outline: 0; background: transparent; color: var(--ui-texto); font-family: inherit; font-size: 15px; }

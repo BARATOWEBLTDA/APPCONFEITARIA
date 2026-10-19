@@ -27,3 +27,6 @@ alter table public.profiles add column if not exists tema_capa_url text;
 
 -- (19/10) laço de veludo na logo no Natal: vem ligado, a confeitaria pode desligar
 alter table public.profiles add column if not exists tema_laco boolean not null default true;
+
+-- (19/10) produto em destaque no catálogo de Natal ("Mais pedido"); vazio = a primeira promoção
+alter table public.profiles add column if not exists tema_destaque uuid;

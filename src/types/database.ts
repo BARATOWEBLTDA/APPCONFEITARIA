@@ -48,6 +48,7 @@ export interface DesignSettings {
   tema_aviso?: string
   tema_capa_url?: string
   tema_laco?: boolean
+  tema_destaque?: string
 }
 
 export interface Configuracoes {

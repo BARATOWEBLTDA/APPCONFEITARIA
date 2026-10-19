@@ -84,6 +84,8 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
   const avisoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [temaCapa, setTemaCapa] = useState("");
   const [temaLaco, setTemaLaco] = useState(true);
+  const [temaDestaque, setTemaDestaque] = useState("");
+  const [meusProdutos, setMeusProdutos] = useState<{ id: string; nome: string }[]>([]);
   const capaRef = useRef<HTMLInputElement>(null);
   const [capaGal, setCapaGal] = useState<{ aberta: boolean; lista: BannerPronto[] | null; erro: boolean }>({ aberta: false, lista: null, erro: false });
   const [horario, setHorario] = useState<unknown>(null);
@@ -124,7 +126,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("logo_url, foto_url, nome_loja, banner_url, banner1_url, banner2_url, banner3_url, banner_topo_url, endereco, horario, tema_cardapio, tema_aviso, tema_auto, tema_inicio, tema_fim, tema_capa_url, tema_laco, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo, hide_stars, avaliacao_media").eq("id", user.id).single();
+      const { data } = await supabase.from("profiles").select("logo_url, foto_url, nome_loja, banner_url, banner1_url, banner2_url, banner3_url, banner_topo_url, endereco, horario, tema_cardapio, tema_aviso, tema_auto, tema_inicio, tema_fim, tema_capa_url, tema_laco, tema_destaque, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo, hide_stars, avaliacao_media").eq("id", user.id).single();
       if (data) {
         setLogoUrl(data.logo_url || ""); setFotoPerfil((data as any).foto_url || "");
         setHideStars(!!(data as any).hide_stars);
@@ -132,7 +134,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         setNomeLoja(data.nome_loja || "");
         try { const e: any = typeof (data as any).endereco === "string" ? JSON.parse((data as any).endereco) : (data as any).endereco; setCidade(String(e?.cidade || "").trim()); } catch { setCidade(""); }
         setHorario((data as any).horario ?? null);
-        { const d: any = data; setTema(d.tema_cardapio === "natal" ? "natal" : "normal"); setTemaAviso(d.tema_aviso ?? AVISO_NATAL_PADRAO); setTemaAuto(!!d.tema_auto); setTemaInicio(d.tema_inicio || ""); setTemaFim(d.tema_fim || ""); setTemaCapa(d.tema_capa_url || ""); setTemaLaco(d.tema_laco !== false); }
+        { const d: any = data; setTema(d.tema_cardapio === "natal" ? "natal" : "normal"); setTemaAviso(d.tema_aviso ?? AVISO_NATAL_PADRAO); setTemaAuto(!!d.tema_auto); setTemaInicio(d.tema_inicio || ""); setTemaFim(d.tema_fim || ""); setTemaCapa(d.tema_capa_url || ""); setTemaLaco(d.tema_laco !== false); setTemaDestaque(d.tema_destaque || ""); }
         setBannerUrl(data.banner_url || "");
         setBanner1Url(data.banner1_url || "");
         setBanner2Url(data.banner2_url || "");
@@ -194,6 +196,16 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     if (!v) return;
     (campo === "tema_inicio" ? setTemaInicio : setTemaFim)(v);
     if (await gravar({ [campo]: v })) showSuccess();
+  };
+  // (19/10) lista dos produtos pra escolher o destaque do catálogo de Natal (só quando o Natal está escolhido)
+  useEffect(() => {
+    if (tema !== "natal" || !userId || meusProdutos.length) return;
+    supabase.from("produtos").select("id, nome").eq("user_id", userId).eq("disponivel", true).order("nome").then(({ data }) => setMeusProdutos((data as any[]) || []), () => {});
+  }, [tema, userId]); // eslint-disable-line react-hooks/exhaustive-deps
+  const mudarDestaque = async (id: string) => {
+    const antes = temaDestaque; setTemaDestaque(id);
+    if (!(await gravar({ tema_destaque: id || null }))) { setTemaDestaque(antes); return; }
+    showSuccess();
   };
   const mudarLaco = async (on: boolean) => {
     setTemaLaco(on);
@@ -471,6 +483,12 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
               <span><b>Laço na logo</b><small>Laço de veludo do lado direito</small></span>
               <button type="button" role="switch" aria-checked={temaLaco} aria-label="Laço na logo" className="ap-chave" onClick={() => mudarLaco(!temaLaco)}><span /></button>
             </div>
+            <label className="ap-tema-lb" htmlFor="ap-destaque">Produto em destaque</label>
+            <div className="ui-campo-c"><select id="ap-destaque" value={temaDestaque} onChange={e => mudarDestaque(e.target.value)}>
+              <option value="">Automático (a primeira promoção)</option>
+              {meusProdutos.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
+            </select></div>
+            <small className="ap-tema-dica">Aparece em destaque com a etiqueta "Mais pedido".</small>
             <label className="ap-tema-lb" htmlFor="ap-aviso">Aviso no topo do cardápio</label>
             <div className="ui-campo-c"><input id="ap-aviso" value={temaAviso} maxLength={40} placeholder={AVISO_NATAL_PADRAO} onChange={e => mudarAviso(e.target.value)} /></div>
             <small className="ap-tema-dica">Fica embaixo do nome. Vazio, não aparece.</small>

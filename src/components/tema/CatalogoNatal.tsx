@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { flushSync } from "react-dom";
-import { BookOpenText, CaretLeft, CaretRight, MagnifyingGlass, MapPin, SpeakerHigh, SpeakerSlash, X, CalendarBlank } from "@phosphor-icons/react";
+import { BookOpenText, Cake, CaretLeft, CaretRight, MagnifyingGlass, MapPin, Plus, SpeakerHigh, SpeakerSlash, Star, X, CalendarBlank } from "@phosphor-icons/react";
 import type { Configuracoes, DesignSettings, Produto } from "@/types/database";
-import { montarSecoes, SecaoCardapio, LinhaProduto, type Secao } from "@/components/cardapio/ItensCardapio";
+import { montarSecoes, precoDoCartao, type Secao } from "@/components/cardapio/ItensCardapio";
+import { ProductModal } from "@/components/cart/ProductModal";
+import { descontoCardapio, tamanhosEsgotados } from "@/lib/precoCardapio";
+import { formatCurrency } from "@/utils/helpers";
 import { getStatusLoja, getEnderecoData } from "@/components/cardapio/CardapioModelo1";
 import { SeloVerificado } from "@/components/cardapio/SeloVerificado";
 import { LacoNatal } from "./Natal";
@@ -80,6 +83,72 @@ function HeroPadrao() {
   );
 }
 
+const SUBTITULOS = ["Combos exclusivos para celebrar", "Perfeitos para presentear", "Feitos com carinho pra sua ceia", "Pra adoçar as festas", "Escolhidos a dedo pro Natal"];
+
+function useAbrirProduto() {
+  const [aberto, setAberto] = useState(false);
+  const props = {
+    role: "button" as const, tabIndex: 0,
+    onClick: () => setAberto(true),
+    onKeyDown: (e: React.KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAberto(true); } },
+  };
+  return { aberto, fechar: () => setAberto(false), props };
+}
+const fotoDe = (p: Produto) => p.imagem_url?.split(",")[0]?.trim() || "";
+const linhaDe = (p: Produto) => {
+  const { unidade } = precoDoCartao(p);
+  return unidade || (p.descricao || "").split(/[.\n]/)[0];
+};
+const Azevinho = ({ className }: { className: string }) => (
+  <svg className={className} viewBox="0 0 32 32" aria-hidden="true"><path d="M16 17C10 8 3 10 3 10c3 2 2 5 4 6-2 2 0 5 2 4 1 3 5 1 7-3z" fill="#15803D" /><path d="M16 17c6-9 13-7 13-7-3 2-2 5-4 6 2 2 0 5-2 4-1 3-5 1-7-3z" fill="#166534" /><circle cx="13.5" cy="19" r="3" fill="#DC2626" /><circle cx="18.5" cy="19" r="3" fill="#B91C1C" /><circle cx="16" cy="22.5" r="3" fill="#DC2626" /></svg>
+);
+
+/** Card do catálogo: foto com o topo em arco e moldura dourada, nome, uma linha, preço na etiqueta e o "+" */
+function CardNatal({ produto, enfeite = false }: { produto: Produto; enfeite?: boolean }) {
+  const { aberto, fechar, props } = useAbrirProduto();
+  const { de, final, aPartir } = precoDoCartao(produto);
+  const foto = fotoDe(produto);
+  const esgotado = tamanhosEsgotados(produto);
+  return (
+    <>
+      <article className={`ctn-card${esgotado ? " esg" : ""}`} aria-label={produto.nome} {...props}>
+        <div className="ctn-card-ft">{foto ? <img src={foto} alt="" loading="lazy" /> : <Cake size={30} aria-hidden="true" />}</div>
+        <b className="ctn-card-nome">{produto.nome}</b>
+        <small className="ctn-card-sub">{esgotado ? "Esgotado no momento" : linhaDe(produto)}</small>
+        <div className="ctn-card-pe">
+          <span className="ctn-preco">{de > final ? <s>{formatCurrency(de)}</s> : aPartir && <small>a partir de</small>}<em>{formatCurrency(final)}</em></span>
+          <span className="ctn-mais" aria-hidden="true"><Plus size={16} weight="bold" /></span>
+        </div>
+        {enfeite && <Azevinho className="ctn-azev" />}
+      </article>
+      <ProductModal isOpen={aberto} onClose={fechar} product={produto} corBotao={COR} />
+    </>
+  );
+}
+
+/** Destaque da primeira página: card bordô com moldura dourada, etiqueta e preço "de / por" */
+function DestaqueNatal({ produto, rotulo }: { produto: Produto; rotulo: string }) {
+  const { aberto, fechar, props } = useAbrirProduto();
+  const { de, final } = precoDoCartao(produto);
+  const foto = fotoDe(produto);
+  return (
+    <>
+      <article className="ctn-dest" aria-label={`${rotulo}: ${produto.nome}`} {...props}>
+        <span className="ctn-dest-tag">{rotulo}</span>
+        <div className="ctn-dest-ft">{foto ? <img src={foto} alt="" loading="lazy" /> : <Cake size={34} aria-hidden="true" />}</div>
+        <div className="ctn-dest-tx">
+          <b>{produto.nome}</b>
+          <small>{linhaDe(produto)}</small>
+          <span className="ctn-dest-preco">{de > final && <s>{formatCurrency(de)}</s>}<em>{formatCurrency(final)}</em></span>
+          <span className="ctn-dest-bt">Adicionar</span>
+        </div>
+        <Azevinho className="ctn-azev ctn-azev--dest" />
+      </article>
+      <ProductModal isOpen={aberto} onClose={fechar} product={produto} corBotao={COR} />
+    </>
+  );
+}
+
 export default function CatalogoNatal({ design, config, isPro, produtos, categorias, agrupar, aoAbrirSobre, espacoBaixo }: {
   design: DesignSettings; config: Configuracoes | null; isPro: boolean; produtos: Produto[]; categorias: string[]; agrupar: boolean;
   aoAbrirSobre: () => void; espacoBaixo: number;
@@ -89,6 +158,11 @@ export default function CatalogoNatal({ design, config, isPro, produtos, categor
   const [virando, setVirando] = useState<{ de: number; dir: 1 | -1 } | null>(null);
   const [som, setSom] = useState(() => { try { return localStorage.getItem(CHAVE_SOM) !== "0"; } catch { return true; } });
   const [busca, setBusca] = useState("");
+  const [buscaAberta, setBuscaAberta] = useState(false);
+  // (19/10) destaque da 1ª página: o produto escolhido na Aparência ("Mais pedido") ou, sem escolha, a primeira promoção ("Destaque")
+  const escolhido = design.tema_destaque ? produtos.find(p => p.id === design.tema_destaque) : undefined;
+  const destaque = escolhido || produtos.find(p => descontoCardapio(p) > 0);
+  const destaqueRotulo = escolhido ? "Mais pedido" : "Destaque";
 
   const paginas: Pagina[] = useMemo(() => {
     const cats = categorias.filter(c => c && c !== "Todos");
@@ -185,23 +259,29 @@ export default function CatalogoNatal({ design, config, isPro, produtos, categor
     const p = paginas[i - 1];
     if (!p) return null;
     const ultima = i === total;
+    const primeiraDaSecao = paginas.findIndex(x => x.secaoId === p.secaoId) === i - 1;
+    const sub = SUBTITULOS[p.secao.tipo === "promo" ? 0 : 1 + (capitulos.findIndex(c => c.secaoId === p.secaoId) % (SUBTITULOS.length - 1))];
     return (
       <div className="ctn-pag">
-        <header className="ctn-cab">
+        <header className="ctn-faixa">
           <button type="button" className="ctn-cab-loja" onClick={() => ir(0)} aria-label="Voltar pra capa">
             <span className="ctn-mini">{logo ? <img src={logo} alt="" /> : null}</span>
             <span><b>{design.nome_loja}</b><small>Cardápio de Natal</small></span>
           </button>
+          <button type="button" className="ctn-lupa" aria-label="Buscar no cardápio" aria-expanded={buscaAberta} onClick={() => { setBuscaAberta(v => !v); if (buscaAberta) setBusca(""); }}><MagnifyingGlass size={18} weight="bold" /></button>
+          <svg className="ctn-faixa-onda" viewBox="0 0 360 18" preserveAspectRatio="none" aria-hidden="true"><path d="M0 8 C30 2 50 16 80 11 C105 7 110 17 130 17 C150 17 150 7 180 8 C215 9 220 18 250 15 C275 12 285 4 315 7 C335 9 348 14 360 11 L360 18 L0 18Z" fill="#FFF8EE" /></svg>
         </header>
-        <div className="ctn-busca">
-          <MagnifyingGlass size={18} weight="bold" aria-hidden="true" />
-          <input type="search" placeholder="Buscar no cardápio" aria-label="Buscar no cardápio" value={busca} onChange={e => setBusca(e.target.value)} />
-          {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={16} weight="bold" /></button>}
-        </div>
+        {buscaAberta && (
+          <div className="ctn-busca">
+            <MagnifyingGlass size={18} weight="bold" aria-hidden="true" />
+            <input type="search" autoFocus placeholder="Buscar no cardápio" aria-label="Buscar no cardápio" value={busca} onChange={e => setBusca(e.target.value)} />
+            {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={16} weight="bold" /></button>}
+          </div>
+        )}
         {termo ? (
           <section className="ctn-res">
-            <h2 className="ctn-h2">{achados.length === 1 ? "1 produto" : `${achados.length} produtos`}</h2>
-            {achados.length ? <div className="ic-lista">{achados.map(pr => <LinhaProduto key={pr.id} produto={pr} cor={COR} />)}</div>
+            <h2 className="ctn-h2 ctn-h2--esq">{achados.length === 1 ? "1 produto" : `${achados.length} produtos`}</h2>
+            {achados.length ? <div className="ctn-grade">{achados.map(pr => <CardNatal key={pr.id} produto={pr} />)}</div>
               : <p className="ctn-nada">Nenhum produto com “{busca.trim()}”.</p>}
           </section>
         ) : (<>
@@ -214,8 +294,15 @@ export default function CatalogoNatal({ design, config, isPro, produtos, categor
               })}
             </div>
           )}
-          <h2 className="ctn-h2">{p.titulo}{p.parte && <small>{p.parte}</small>}</h2>
-          <SecaoCardapio secao={p.secao} cor={COR} />
+          <div className="ctn-sec">
+            <span className="ctn-orn" aria-hidden="true"><Star size={14} weight="fill" /></span>
+            <h2 className="ctn-h2">{p.secao.tipo === "promo" ? "Promoções especiais" : p.titulo}</h2>
+            <p className="ctn-h2s">{p.parte ? `${sub} · ${p.parte}` : sub}</p>
+          </div>
+          {i === 1 && destaque && <DestaqueNatal produto={destaque} rotulo={destaqueRotulo} />}
+          <div className="ctn-grade">
+            {p.secao.produtos.filter(pr => !(i === 1 && destaque && pr.id === destaque.id)).map((pr, k) => <CardNatal key={pr.id} produto={pr} enfeite={k === 0 && primeiraDaSecao} />)}
+          </div>
           <nav className="ctn-nav" aria-label="Folhear o catálogo">
             <button type="button" onClick={() => ir(i - 1)}><CaretLeft size={16} weight="bold" aria-hidden="true" />{i === 1 ? "Capa" : "Voltar"}</button>
             <span>Página {i} de {total}</span>
