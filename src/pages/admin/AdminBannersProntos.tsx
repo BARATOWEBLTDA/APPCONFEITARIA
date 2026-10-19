@@ -79,7 +79,7 @@ export default function AdminBannersProntos() {
 
   return (
     <div className="abp-root">
-      <Titulo nivel="tela" apoio={`A galeria que as confeiteiras escolhem em Aparência. Tamanho: ${TAMANHO_BANNER}, deitado, mesmo tamanho pra todos.`}>Banners prontos</Titulo>
+      <Titulo nivel="tela" apoio={`A galeria que as confeiteiras escolhem em Aparência. Tamanho: ${TAMANHO_BANNER}, deitado, mesmo tamanho pra todos. Capa de Natal: em pé, 1080 × 1350.`}>Banners prontos</Titulo>
 
       {semTabela ? (
         <p className="abp-aviso"><WarningCircle size={18} weight="bold" aria-hidden="true" /><span>A tabela de banners ainda não existe. Rode o SQL banners_prontos.sql no Supabase.</span></p>
