@@ -55,6 +55,13 @@ function PassoTopo({ k }: { k: Passo }) {
 const maskCep = (v: string) => { const d = v.replace(/\D/g, "").slice(0, 8); return d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d; };
 
 export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?: Local; onEstado?: (completo: boolean) => void }) {
+  // (19/10) computador no Início: duas colunas (o passo da vez à esquerda, a lista à direita), nada esticado
+  const [largo, setLargo] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 901px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 901px)");
+    const f = () => setLargo(mq.matches);
+    mq.addEventListener("change", f); return () => mq.removeEventListener("change", f);
+  }, []);
   const navigate = useNavigate();
   const { profile } = useProfile();
   const uid = profile?.id as string | undefined;
@@ -180,28 +187,40 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   passos[passos.length - 1].s = ultimoQueFalta ? "Falta só isso pro cardápio ir pro ar" : "Seu primeiro doce no cardápio";
   const feitos = passos.filter(p => p.feito).length;
   const atual = passos.findIndex(p => !p.feito);
+  const colunas = largo && local === "inicio";
 
   return (
     <div ref={raiz} className={`pp pp--${local}${destaque ? " pp--destaque" : ""}`}>
-      <b className="pp-t">Primeiros passos</b>
-      <p className="pp-sub">{passos.length - feitos === 1 ? "Falta 1 passo pra abrir o cardápio." : `Faltam ${passos.length - feitos} passos pra abrir o cardápio.`}</p>
-      <div className="pp-bar" aria-label={`${feitos} de ${passos.length} passos feitos`}><i style={{ width: `${(feitos / passos.length) * 100}%` }} /></div>
-      {passos.map((p, i) => i === atual ? (
-        <div key={p.t} className="pp-at" ref={atRef}>
-          <div className="pp-ps pp-ps--sem">
-            <span className="pp-ic pp-ic--at">{p.ic}<i className="pp-n">{i + 1}</i></span>
-            <span className="pp-tx"><b>{p.t}</b><small>{p.s}</small></span>
+      {(() => {
+        const cab = <>
+          <b className="pp-t">Primeiros passos</b>
+          <p className="pp-sub">{passos.length - feitos === 1 ? "Falta 1 passo pra abrir o cardápio." : `Faltam ${passos.length - feitos} passos pra abrir o cardápio.`}</p>
+          <div className="pp-bar" aria-label={`${feitos} de ${passos.length} passos feitos`}><i style={{ width: `${(feitos / passos.length) * 100}%` }} /></div>
+        </>;
+        const item = (p: typeof passos[number], i: number) => i === atual ? (
+          <div key={p.t} className="pp-at" ref={atRef}>
+            <div className="pp-ps pp-ps--sem">
+              <span className="pp-ic pp-ic--at">{p.ic}<i className="pp-n">{i + 1}</i></span>
+              <span className="pp-tx"><b>{p.t}</b><small>{p.s}</small></span>
+            </div>
+            <button type="button" className="pp-btn" ref={btnRef} onClick={p.abrir}>{feitos <= 1 ? "Começar" : "Fazer agora"}</button>
+            {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo="Comece por aqui" texto="Em poucos minutos seu cardápio fica pronto pra vender." acao="Começar" aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
           </div>
-          <button type="button" className="pp-btn" ref={btnRef} onClick={p.abrir}>{feitos <= 1 ? "Começar" : "Fazer agora"}</button>
-          {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo="Comece por aqui" texto="Em poucos minutos seu cardápio fica pronto pra vender." acao="Começar" aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
-        </div>
-      ) : (
-        <button type="button" key={p.t} className={`pp-ps${p.feito ? " pp-ps--ok" : ""}`} onClick={p.feito ? undefined : p.abrir} disabled={p.feito}>
-          <span className={`pp-ic${p.feito ? " pp-ic--ok" : ""}`}>{p.feito ? I(Check) : <>{p.ic}<i className="pp-n">{i + 1}</i></>}</span>
-          <span className="pp-tx"><b>{p.t}</b><small>{p.feito ? "Feito" : p.s}</small></span>
-          {!p.feito && <span className="pp-seta"><CaretRight size={16} weight="bold" /></span>}
-        </button>
-      ))}
+        ) : (
+          <button type="button" key={p.t} className={`pp-ps${p.feito ? " pp-ps--ok" : ""}`} onClick={p.feito ? undefined : p.abrir} disabled={p.feito}>
+            <span className={`pp-ic${p.feito ? " pp-ic--ok" : ""}`}>{p.feito ? I(Check) : <>{p.ic}<i className="pp-n">{i + 1}</i></>}</span>
+            <span className="pp-tx"><b>{p.t}</b><small>{p.feito ? "Feito" : p.s}</small></span>
+            {!p.feito && <span className="pp-seta"><CaretRight size={16} weight="bold" /></span>}
+          </button>
+        );
+        if (!colunas) return <>{cab}{passos.map(item)}</>;
+        return (
+          <div className="pp-cols">
+            <div className="pp-col-a">{cab}{atual >= 0 && item(passos[atual], atual)}</div>
+            <div className="pp-col-b">{passos.map((p, i) => i === atual ? null : item(p, i))}</div>
+          </div>
+        );
+      })()}
 
       {folha === "descricao" && <FolhaDescricao uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
       {folha === "logo" && <FolhaLogo uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
@@ -625,12 +644,11 @@ const CSS = `
   .pp-lnk { display: block; width: 100%; min-height: 44px; margin-top: 8px; padding: 10px; border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
   .pp-lnk--cinza { color: var(--ui-texto-3); font-weight: 500; }
 
-  /* (19/10) computador: o passo da vez compacto, com o botão do tamanho do texto à direita (não esticado na largura toda) */
-  @media (min-width: 901px) {
-    .pp--inicio > .pp-at { display: flex; align-items: center; gap: 16px; padding: 12px 12px 12px 4px; }
-    .pp--inicio > .pp-at .pp-ps--sem { flex: 1; min-width: 0; }
-    .pp--inicio > .pp-at .pp-btn { flex: none; width: auto; min-height: 44px; margin: 0; padding: 0 28px; font-size: 14.5px; }
-  }
+  /* (19/10) computador: duas colunas pra não esticar. Esquerda: título, barra e o passo da vez (igual ao celular);
+     direita: a lista dos passos. Cada coluna com a largura de um celular. */
+  .pp-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+  .pp-col-a .pp-at { margin-top: 16px; }
+  .pp-col-b > .pp-ps:first-child { border-top: none; }
   /* (19/10) Início: os passos no mesmo checklist do celular em qualquer tela (antes viravam etiquetas no computador) */
   .pp--inicio .pp-ic { width: 28px; height: 28px; margin: 0 6px; border-radius: 50%; background: none; border: 2px solid #DCCBD1; color: #8F7C83; font-size: 13px; font-weight: 700; }
   .pp--inicio .pp-ic:not(.pp-ic--ok) svg { display: none; }
