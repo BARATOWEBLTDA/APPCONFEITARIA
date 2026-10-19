@@ -69,7 +69,7 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
               <span className="cp-topo-logo" style={{ borderColor: corBorda }}>
                 {design.logo_url ? <img src={design.logo_url} alt="" /> : <b style={{ background: corBorda }}>{design.nome_loja?.charAt(0)}</b>}
               </span>
-              {design.tema === 'natal' && <Touquinha className="cp-touca" tamanho={46} />}
+              {design.tema === 'natal' && <Touquinha />}
             </span>
             <div>
               <p className="cp-topo-nome" style={{ color: nomeSobreTopo(design.cor_nome, navBg) }}>{design.nome_loja}{isPro && <SeloVerificado tamanho={20} />}</p>

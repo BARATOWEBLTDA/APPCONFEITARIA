@@ -112,7 +112,7 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
       </div>
 
       <div className="cm1-content" style={{ background: fundo, ['--cm1-fundo' as any]: fundo }}>
-        {design.tema === 'natal' && <Touquinha className="cm1-touca" tamanho={70} />}
+        {design.tema === 'natal' && <Touquinha className="cm1-touca" />}
         <div className="cm1-logo" style={{ borderColor: accent }}>
           {design.logo_url
             ? <img src={design.logo_url} alt={design.nome_loja || ''} />

@@ -5,14 +5,11 @@
 .tema-natal .cm1-hero-faixa { background-color: #14532D !important; background-image: var(--tn-estrelas) !important; background-size: 60px 52px !important; }
 .tema-natal .cm1-hero-pontos { display: none; }
 .tema-natal .cm1-hero--foto { box-shadow: inset 0 -30px 0 -26px #C9A227; }
-.tn-touca { display: block; filter: drop-shadow(0 2px 3px rgba(0,0,0,.18)); pointer-events: none; }
-.cm1-touca { position: absolute; z-index: 7; top: -84px; right: 2px; transform: rotate(14deg); }
 .cm1-aviso-tema { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; margin: 8px 0 0; padding: 5px 10px; border-radius: 8px; background: #FBF3DB; color: #7A5A06; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* topo do computador */
 .tema-natal .cp-topo { background-image: var(--tn-estrelas) !important; background-size: 60px 52px !important; }
 .cp-topo-logo-w { position: relative; flex: none; display: inline-flex; }
-.cp-touca { position: absolute; z-index: 2; top: -12px; right: -16px; transform: rotate(14deg); }
 .cp-topo-aviso { display: inline-flex; align-items: center; gap: 6px; margin: 6px 0 0; padding: 3px 9px; border-radius: 7px; background: #FBF3DB; color: #7A5A06; font-size: 13px; font-weight: 700; white-space: nowrap; }
 
 /* enfeite nos produtos: raminho de azevinho no canto da foto */
@@ -29,5 +26,10 @@
 @keyframes tnCai { 0% { transform: translateY(0) rotate(0); opacity: 0; } 10% { opacity: 1; } 100% { transform: translateY(105vh) rotate(220deg); opacity: .9; } }
 @media (prefers-reduced-motion: reduce) { .tn-neve { display: none; } }
 .tema-natal .sc-enviado-ic { position: relative; background: #14532D !important; color: #E7C46A !important; }
-.sc-enviado-touca { position: absolute; top: -26px; right: -20px; transform: rotate(14deg); }
 .sc-enviado-in > p.sc-enviado-festas { margin: -4px 0 8px; font-size: 14px; font-weight: 700; color: #14532D; }
+
+/* touquinha vestida: caixa do tamanho da logo, svg passa pra cima e pros lados */
+.tn-touca-box { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.tn-touca { position: absolute; left: -10%; top: -40%; width: 124%; height: auto; overflow: visible; filter: drop-shadow(0 2px 2px rgba(0,0,0,.18)); }
+.tn-touca-box.cm1-touca { inset: auto; top: -60px; right: 16px; width: 106px; height: 106px; z-index: 7; }
+.tema-natal .cp-topo-in { padding-top: 30px; padding-bottom: 8px; }

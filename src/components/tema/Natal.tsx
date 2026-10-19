@@ -1,15 +1,26 @@
 import { useEffect, useState } from "react";
 import "./temaNatal.css";
 
-/** (18/10) Touquinha de Papai Noel: vai pendurada no canto da logo. */
-export function Touquinha({ className = "", tamanho = 64 }: { className?: string; tamanho?: number }) {
+/**
+ * (18/10) Touquinha de Papai Noel "vestida" na logo: a aba branca acompanha a curva de cima da logo,
+ * o gorro tomba pro lado e o pompom cai do lado direito.
+ * Vai numa caixa do MESMO tamanho e posição da logo (a classe de quem usa cuida disso; o padrão é cobrir o pai).
+ * Desenho num círculo de 100 de diâmetro (centro 50,100): a caixa = a logo, o svg passa um pouco pra cima e pros lados.
+ */
+export function Touquinha({ className = "" }: { className?: string; tamanho?: number }) {
   return (
-    <svg className={`tn-touca ${className}`} width={tamanho} height={Math.round(tamanho * 46 / 56)} viewBox="0 0 56 46" aria-hidden="true">
-      <path d="M6 36 C14 10 34 2 46 12 C40 14 36 22 36 34 Z" fill="#DC2626" />
-      <path d="M12 33 C18 16 30 9 40 12" fill="none" stroke="#B91C1C" strokeWidth="2" strokeLinecap="round" opacity=".6" />
-      <rect x="2" y="31" width="38" height="12" rx="6" fill="#FFFFFF" stroke="#E5E1E3" />
-      <circle cx="47" cy="12" r="6.5" fill="#FFFFFF" stroke="#E5E1E3" />
-    </svg>
+    <span className={`tn-touca-box ${className}`} aria-hidden="true">
+      <svg className="tn-touca" viewBox="-10 10 124 85">
+        <g transform="rotate(-12 50 100)">
+          <path d="M1 70 C6 40 34 18 62 18 C88 18 104 34 108 54 C101 47 93 45 87 47 C93 54 97 62 99 70 A58 58 0 0 0 1 70 Z" fill="#DC2626" />
+          <path d="M62 18 C88 18 104 34 108 54 C101 47 93 45 87 47 C80 36 72 28 62 18 Z" fill="#B91C1C" />
+          <path d="M18 62 C24 42 40 28 58 24" fill="none" stroke="#F87171" strokeWidth="3" strokeLinecap="round" opacity=".55" />
+          <path d="M-0.2 71 A58 58 0 0 1 100.2 71 L88.1 78 A44 44 0 0 0 11.9 78 Z" fill="#FFFFFF" stroke="#E5E1E3" strokeWidth="1.5" strokeLinejoin="round" />
+          <path d="M8 70 A50 50 0 0 1 92 70" fill="none" stroke="#F1EEF0" strokeWidth="2" strokeDasharray="1 5" strokeLinecap="round" />
+          <circle cx="108" cy="56" r="8.5" fill="#FFFFFF" stroke="#E5E1E3" strokeWidth="1.5" />
+        </g>
+      </svg>
+    </span>
   );
 }
 

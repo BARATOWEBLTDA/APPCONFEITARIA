@@ -418,7 +418,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
             {tema === "normal" && <span className="ap-tema-ok" aria-hidden="true"><Check size={13} weight="bold" /></span>}
           </button>
           <button type="button" role="radio" aria-checked={tema === "natal"} className="ap-tema" onClick={() => escolherTema("natal")}>
-            <span className="ap-tema-th ap-tema-th--natal"><span className="ap-tema-lo" style={{ borderColor: NATAL.borda }}>{(logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : null}</span><Touquinha className="ap-tema-touca" tamanho={30} /></span>
+            <span className="ap-tema-th ap-tema-th--natal"><span className="ap-tema-lo" style={{ borderColor: NATAL.borda }}>{(logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : null}</span><Touquinha className="ap-tema-touca" /></span>
             <span className="ap-tema-pe"><b>Natal</b><small>Verde e dourado</small></span>
             {tema === "natal" && <span className="ap-tema-ok" aria-hidden="true"><Check size={13} weight="bold" /></span>}
           </button>
@@ -464,7 +464,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
                 : (logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : <b>{(nomeLoja || "?").trim().charAt(0).toUpperCase()}</b>}
               <i aria-hidden="true"><Camera size={12} weight="bold" /></i>
             </button>
-            {tema === "natal" && <Touquinha className="ap-topo-touca" tamanho={50} />}
+            {tema === "natal" && <Touquinha className="ap-topo-touca" />}
             <b className="ap-topo-nome"><span style={{ color: tema === "natal" ? NATAL.nome : corAtual("cor_nome", corNome) }}>{nomeLoja || "Nome da sua loja"}</span><SeloVerificado tamanho={18} /></b>
             <span className="ap-topo-sl"><b style={{ color: COR_BOTOES }}>Sobre a loja</b><em aria-hidden="true">·</em><MapPin size={14} weight="bold" color={COR_BOTOES} aria-hidden="true" /><span>{cidade || "São Paulo"}</span></span>
             {tema === "natal" && temaAviso.trim() && <span className="ap-topo-aviso"><CalendarBlank size={14} weight="bold" aria-hidden="true" />{temaAviso.trim()}</span>}
