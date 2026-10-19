@@ -71,3 +71,8 @@
 .ctn-hero::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(180deg, rgba(26,6,10,.30) 0%, rgba(26,6,10,.38) 45%, rgba(26,6,10,.62) 100%); }
 .ctn-hero-padrao, .ctn-bolas { z-index: 0; }
 .ctn-onda { z-index: 2; }
+
+/* (19/10) folha de verdade da capa pra página 1 (StPageFlip) */
+.ctn-pf { position: fixed; z-index: 70; top: 0; left: 0; right: 0; overflow: hidden; pointer-events: none; }
+.ctn-pf-pg { overflow: hidden; background: #FFF8EE; font-family: var(--font-base); color: #4A1A1F; }
+.ctn-pf-pg > * { width: 100%; }

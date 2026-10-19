@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { flushSync } from "react-dom";
 import { BookOpenText, CaretLeft, CaretRight, MagnifyingGlass, MapPin, SpeakerHigh, SpeakerSlash, X, CalendarBlank } from "@phosphor-icons/react";
 import type { Configuracoes, DesignSettings, Produto } from "@/types/database";
 import { montarSecoes, SecaoCardapio, LinhaProduto, type Secao } from "@/components/cardapio/ItensCardapio";
@@ -109,6 +110,41 @@ export default function CatalogoNatal({ design, config, isPro, produtos, categor
     if (!pouco) setVirando({ de: atual, dir: n > atual ? 1 : -1 });
     setAtual(n);
   };
+  /**
+   * (19/10) Da capa pra primeira página: folha de verdade (StPageFlip), com a ponta dobrando.
+   * Tira uma "foto" (cópia) da capa e da página 1, folheia por cima e some quando termina.
+   * Se a biblioteca não carregar, cai no virar simples.
+   */
+  const abrirCatalogo = async () => {
+    if (virando || atual !== 0 || total === 0) return;
+    if (pouco) { ir(1); return; }
+    const atualEl = document.querySelector<HTMLElement>(".ctn-atual");
+    if (!atualEl) { ir(1); return; }
+    window.scrollTo({ top: 0 });
+    const capaCopia = atualEl.cloneNode(true) as HTMLElement;
+    let PageFlip: typeof import("page-flip").PageFlip;
+    try { ({ PageFlip } = await import("page-flip")); } catch { ir(1); return; }
+    flushSync(() => { setBusca(""); setAtual(1); });
+    const pagCopia = (document.querySelector<HTMLElement>(".ctn-atual")?.cloneNode(true) as HTMLElement) || document.createElement("div");
+    const w = Math.round(window.innerWidth), h = Math.round(window.innerHeight - espacoBaixo);
+    const veu = document.createElement("div");
+    veu.className = "ctn-pf";
+    veu.style.height = `${h}px`;
+    const livro = document.createElement("div");
+    [capaCopia, pagCopia].forEach(c => { const pg = document.createElement("div"); pg.className = "ctn-pf-pg"; const ctx = document.createElement("div"); ctx.className = "ctn"; ctx.appendChild(c); pg.appendChild(ctx); livro.appendChild(pg); }); // dentro de .ctn: os estilos do catálogo valem na cópia
+    veu.appendChild(livro);
+    document.body.appendChild(veu);
+    let pf: InstanceType<typeof PageFlip> | null = null;
+    const acabar = () => { try { pf?.destroy(); } catch { /* ok */ } veu.remove(); };
+    const seguranca = setTimeout(acabar, 2600);
+    try {
+      pf = new PageFlip(livro, { width: w, height: h, size: "fixed", usePortrait: true, showCover: false, drawShadow: true, maxShadowOpacity: 0.45, flippingTime: 950, useMouseEvents: false, disableFlipByClick: true, mobileScrollSupport: false, startZIndex: 0 });
+      pf.loadFromHTML(livro.querySelectorAll<HTMLElement>(".ctn-pf-pg"));
+      pf.on("flip", () => { clearTimeout(seguranca); setTimeout(acabar, 60); });
+      if (som) somDePapel();
+      requestAnimationFrame(() => pf?.flipNext("bottom"));
+    } catch { clearTimeout(seguranca); acabar(); }
+  };
   const alternarSom = () => { const v = !som; setSom(v); try { localStorage.setItem(CHAVE_SOM, v ? "1" : "0"); } catch { /* ok */ } };
 
   const status = (config as any)?.loja_pausada ? { aberto: false, msg: "Pedidos pausados no momento" } : getStatusLoja((config as any)?.horario || null);
@@ -136,7 +172,7 @@ export default function CatalogoNatal({ design, config, isPro, produtos, categor
         <p className="ctn-nome">{design.nome_loja}{isPro && <SeloVerificado tamanho={18} />}</p>
         <h1 className="ctn-titulo">Cardápio<em>Especial de Natal</em></h1>
         {design.tema_aviso && <p className="ctn-aviso"><CalendarBlank size={16} weight="bold" aria-hidden="true" />{design.tema_aviso}</p>}
-        {total > 0 && <button type="button" className="ctn-ver" onClick={() => ir(1)}><BookOpenText size={22} weight="bold" aria-hidden="true" />Ver catálogo</button>}
+        {total > 0 && <button type="button" className="ctn-ver" onClick={() => { void abrirCatalogo(); }}><BookOpenText size={22} weight="bold" aria-hidden="true" />Ver catálogo</button>}
         <div className="ctn-sl">
           <button type="button" onClick={aoAbrirSobre}>Sobre a loja</button>
           {endereco && <><span aria-hidden="true">·</span><span className="ctn-cid"><MapPin size={15} weight="bold" aria-hidden="true" />{endereco.cidade}</span></>}
