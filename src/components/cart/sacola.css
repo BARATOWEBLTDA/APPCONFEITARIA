@@ -170,9 +170,10 @@
 .sc-topo-logo b { font-size: 16px; font-weight: 700; color: var(--ui-texto); }
 .sc-topo--loja b { color: var(--ui-branco); font-size: 17px; }
 .sc-topo--loja small { color: rgba(255,255,255,.88); }
-.sc-topo--loja { grid-template-columns: 44px 1fr auto; }
-.sc-limpar { min-height: 36px; margin: 0; padding: 0 12px; border: 0; border-radius: 8px; background: rgba(255,255,255,.18); color: var(--ui-branco); font-family: inherit; font-size: 13.5px; font-weight: 700; white-space: nowrap; cursor: pointer; }
-.sc-limpar.on { background: var(--ui-branco); color: #B91C1C; }
+.sc-topo--loja { grid-template-columns: 44px 1fr 44px; }
+.sc-loja-qtd { display: inline-flex; align-items: center; gap: 8px; }
+.sc-loja .sc-limpar { min-height: 30px; padding: 0 8px; border-radius: 6px; background: transparent; color: var(--ui-texto-3, #9A8A8F); font-size: 13px; font-weight: 600; }
+.sc-loja .sc-limpar.on { background: #FDECEC; color: #B91C1C; }
 .sc-topo-curva { position: absolute; left: 0; right: 0; bottom: -1px; height: 16px; border-radius: 16px 16px 0 0; background: #F7F4F5; }
 .sc:has(.sc-topo--loja) .sc-rolo { background: #F7F4F5; }
 .sc-loja button { display: inline-flex; align-items: center; gap: 4px; }
@@ -192,3 +193,9 @@
 .sc:has(.sc-topo--loja) .sc-linha { background: var(--ui-branco); }
 .sc:has(.sc-topo--loja) .sc-valores { margin: 12px; padding: 12px; border: 1px solid #EFE6EA; border-radius: 14px; background: var(--ui-branco); }
 .sc-topo--loja .sc-topo-logo b { color: var(--ui-texto); font-size: 16px; }
+.sc-topo-nome { display: flex !important; align-items: center; gap: 2px; }
+.sc-topo-nome .selo-verif { margin-left: 3px !important; }
+/* (19/10) escolhas do item, uma por linha */
+.sc-it-det { margin: 2px 0 0; padding: 0; list-style: none; }
+.sc-it-det li { font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
+.sc-it-add li { color: var(--ui-texto); font-weight: 600; }

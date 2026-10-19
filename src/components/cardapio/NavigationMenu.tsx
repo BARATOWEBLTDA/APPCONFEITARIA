@@ -23,6 +23,7 @@ import { lojaAtualCheckout, lojaAtualId, lojaAtualNome, lojaAtualWhatsApp } from
 import { digitosAoDigitar } from './telefoneDigitado'
 import { ProductModal } from '@/components/cart/ProductModal'
 import { precoDoCartao } from './ItensCardapio'
+import { SeloVerificado } from './SeloVerificado'
 import type { Produto } from '@/types/database'
 import '@/components/cart/sacola.css'
 
@@ -162,7 +163,7 @@ function SugestaoSacola({ produto, cor }: { produto: Produto; cor: string }) {
 /* ─── Conteúdo interno do carrinho (reutilizado em mobile e desktop) ─── */
 function CartContent({
   step, setStep, items, totalPrice, updateQuantity, updateObservations, removeItem, clearCart,
-  config, onClose, corBotao, corTopo, logoUrl, sugestoes = [],
+  config, onClose, corBotao, corTopo, logoUrl, sugestoes = [], verificada = false,
 }: any) {
   const [limparPergunta, setLimparPergunta] = useState(false)
   const [dataEntrega, setDataEntrega] = useState('')
@@ -692,11 +693,9 @@ function CartContent({
       <button type="button" className="sc-bt" aria-label="Fechar" onClick={onClose}><ArrowLeft size={22} weight="bold" /></button>
       <span className="sc-topo-loja">
         <span className="sc-topo-logo" style={{ borderColor: accent }}>{logoUrl ? <img src={logoUrl} alt="" /> : <b>{(nomeLoja || 'D').charAt(0).toUpperCase()}</b>}</span>
-        <span><b>Sua sacola</b>{nomeLoja && <small>{nomeLoja}</small>}</span>
+        <span><b>Sacola</b>{nomeLoja && <small className="sc-topo-nome">{nomeLoja}{verificada && <SeloVerificado tamanho={14} />}</small>}</span>
       </span>
-      {items.length > 0
-        ? <button type="button" className={`sc-limpar${limparPergunta ? ' on' : ''}`} onClick={() => { if (limparPergunta) { clearCart(); setLimparPergunta(false) } else { setLimparPergunta(true); setTimeout(() => setLimparPergunta(false), 3000) } }}>{limparPergunta ? 'Limpar?' : 'Limpar'}</button>
-        : <span />}
+      <span />
       <span className="sc-topo-curva" aria-hidden="true" />
     </div>
   )
@@ -728,7 +727,12 @@ function CartContent({
           </div>
         ) : (
           <>
-            <div className="sc-loja"><span>{count} {count === 1 ? 'item' : 'itens'}</span><button type="button" style={{ color: accent }} onClick={onClose}><Plus size={16} weight="bold" aria-hidden="true" />Adicionar mais</button></div>
+            <div className="sc-loja">
+              <span className="sc-loja-qtd">{count} {count === 1 ? 'item' : 'itens'}
+                <button type="button" className={`sc-limpar${limparPergunta ? ' on' : ''}`} onClick={() => { if (limparPergunta) { clearCart(); setLimparPergunta(false) } else { setLimparPergunta(true); setTimeout(() => setLimparPergunta(false), 3000) } }}>{limparPergunta ? 'Limpar tudo?' : 'Limpar'}</button>
+              </span>
+              <button type="button" style={{ color: accent }} onClick={onClose}><Plus size={16} weight="bold" aria-hidden="true" />Adicionar mais</button>
+            </div>
             <div className="sc-itens">
               {items.map((item: any) => (
                 <CartItemComponent key={item.lineId ?? item.id} item={item} cor={accent} onUpdateQuantity={updateQuantity} onUpdateObservations={updateObservations} onRemove={removeItem} />
@@ -964,7 +968,7 @@ function CartContent({
 
 /* ─── Componente principal ─── */
 /* ─── Componente principal ─── */
-export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes }: { corBotao?: string; /** a página está no layout de celular? (10/10) */ celular?: boolean; /** (19/10) a sacola com a cara da loja */ corTopo?: string; logoUrl?: string; sugestoes?: Produto[] }) {
+export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes, verificada }: { corBotao?: string; /** a página está no layout de celular? (10/10) */ celular?: boolean; /** (19/10) a sacola com a cara da loja */ corTopo?: string; logoUrl?: string; sugestoes?: Produto[]; verificada?: boolean }) {
   const { items, totalPrice, updateQuantity, updateObservations, removeItem, clearCart } = useCart()
   const [isOpen, setIsOpen] = useState(false)
   const [step, setStep] = useState<'cart' | 'finalizar'>('cart')
@@ -1011,7 +1015,7 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes 
   const sharedProps = {
     step, setStep, items, totalPrice,
     updateQuantity, updateObservations, removeItem, clearCart,
-    config, onClose: handleClose, corBotao: accent, corTopo, logoUrl, sugestoes,
+    config, onClose: handleClose, corBotao: accent, corTopo, logoUrl, sugestoes, verificada,
   }
 
   return (

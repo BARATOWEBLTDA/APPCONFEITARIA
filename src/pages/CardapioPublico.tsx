@@ -364,7 +364,7 @@ function CardapioContent() {
     // (18/10) Natal: o cardápio vira um catálogo (capa grande + páginas que viram como folha)
     if (design.tema === 'natal' && produtos.length > 0) return (
       <div className="min-h-screen relative" style={{ backgroundColor: '#FFF8EE' }}>
-        <NavigationMenu celular corBotao="#8B2332" corTopo="#6E1F27" logoUrl={design.logo_url} sugestoes={produtos} />
+        <NavigationMenu celular corBotao="#8B2332" corTopo="#6E1F27" logoUrl={design.logo_url} sugestoes={produtos} verificada={isPro} />
         <SobreLoja aberta={sobreAberta} fechar={() => setSobreAberta(false)} design={design} config={config} />
         <CatalogoNatal design={design} config={config} isPro={isPro} produtos={produtos}
           categorias={!design.ocultar_categorias ? categorias.map((c: any) => c.name) : []} agrupar={!design.ocultar_categorias}
@@ -375,7 +375,7 @@ function CardapioContent() {
       <div className="min-h-screen relative" style={{ backgroundColor: '#F7F4F5' }}>
         {/* Caixa dos banners: some quando a loja não tem banner */}
         <style>{`.cp-banner-wrap { margin-top: 16px; } .cp-banner-wrap:empty { display: none; }`}</style>
-        <NavigationMenu celular corBotao={design.cor_botao || design.cor_borda || '#E85A8C'} corTopo={corDoTopo(design)} logoUrl={design.logo_url} sugestoes={produtos} />
+        <NavigationMenu celular corBotao={design.cor_botao || design.cor_borda || '#E85A8C'} corTopo={corDoTopo(design)} logoUrl={design.logo_url} sugestoes={produtos} verificada={isPro} />
         <SobreLoja aberta={sobreAberta} fechar={() => setSobreAberta(false)} design={design} config={config} />
 
         {cardapioModelo === 'modelo1' ? (
@@ -431,7 +431,7 @@ function CardapioContent() {
   const cor = design.cor_botao || design.cor_borda || '#E85A8C'
   return (
     <div className="cp-pc">
-      <NavigationMenu celular={false} corBotao={cor} corTopo={corDoTopo(design)} logoUrl={design.logo_url} sugestoes={produtos} />
+      <NavigationMenu celular={false} corBotao={cor} corTopo={corDoTopo(design)} logoUrl={design.logo_url} sugestoes={produtos} verificada={isPro} />
       <DeskNav isPro={isPro} design={design} config={config} />
 
       <div className="cp-corpo">
