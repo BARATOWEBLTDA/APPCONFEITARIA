@@ -11,7 +11,7 @@ import DooIA from "@/components/DooIA";
 import MaisDrawer from "@/components/MaisDrawer";
 import PerguntaSons from "@/components/PerguntaSons";
 import { useState, useEffect, type ReactNode } from "react";
-import { ClipboardText, ChartBar, Stack, Palette, Truck, Storefront, ArrowSquareOut, ArrowsDownUp, CalendarCheck, Tag, ChartLineUp, Megaphone, HandCoins, Trophy, CaretDoubleLeft, CaretDoubleRight,
+import { ClipboardText, ChartBar, Stack, Palette, Truck, Storefront, ArrowSquareOut, ArrowsDownUp, CalendarCheck, Tag, ChartLineUp, Megaphone, HandCoins, CaretDoubleLeft, CaretDoubleRight,
   House, CalendarDots, ShoppingBag, Users, BookOpen,
   Package, CurrencyDollar, Gear, CaretDown, Cake,
   SquaresFour, Camera, Plus,
@@ -219,12 +219,11 @@ export default function Layout() {
           <GrupoMenu id="conta" rotulo="Minha conta" icone={Gear} rotas={["/configuracoes", "/minha-assinatura", "/assinar", "/conquistas"]} recolhido={recolhido}>
             <SubitemMenu to="/configuracoes" end icone={Gear}>Configurações</SubitemMenu>
             <SubitemMenu to={isPro ? "/minha-assinatura" : "/assinar"} icone={Crown}>Minha assinatura</SubitemMenu>
-            <SubitemMenu to="/configuracoes/notificacoes" icone={Bell}>Notificações e sons</SubitemMenu>
-            <SubitemMenu to="/conquistas" icone={Trophy}>Minhas conquistas</SubitemMenu>
           </GrupoMenu>
+          {/* (19/10) Notificações (já está em Configurações) e Conquistas (escondida nas Configurações) saíram do menu.
+              "Loja em montagem" (abrir e pausar os pedidos) por último, dentro do menu: rola junto e não come o espaço dos grupos */}
+          {!recolhido && <div className="sb-pausar"><PausarPedidos escuro /></div>}
         </nav>
-        {/* (4.27) abrir e pausar os pedidos do cardápio na hora */}
-        {!recolhido && <PausarPedidos escuro />}
         <div className="sb-pe">
           {!recolhido && <span className="sb-versao">v{VERSAO_APP}</span>}
           <button type="button" className="sb-recolher" onClick={alternarRecolhido} aria-label={recolhido ? "Abrir o menu" : "Recolher o menu"} title={recolhido ? "Abrir o menu" : "Recolher o menu"}>
@@ -504,6 +503,7 @@ export default function Layout() {
         .sb-plano--seja { background: var(--ui-branco); color: var(--primary); cursor: pointer; } .sb-plano--seja:hover { transform: translateY(-1px); }
         .sb-plano--skel { width: 56px; height: 17px; background: rgba(255,255,255,0.12); }
         .sb-linha2 { display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; }
+        .sb-pausar { margin: 12px 0 28px; flex-shrink: 0; } /* o 28px é o espaço da sombra do fim do menu, que não pode apagar o cartão */
         /* (19/10) a linha embaixo do logo fecha na mesma altura da faixa de cima (60px) */
         .sidebar:not(.x) .sb-topo { box-sizing: border-box; height: 60px; min-height: 60px; margin: -1rem -1rem 8px; padding: 0 1rem 0 calc(1rem + 4px); }
         @media (max-height: 820px) { .sidebar:not(.x) .sb-topo { margin-top: -0.5rem; } }
