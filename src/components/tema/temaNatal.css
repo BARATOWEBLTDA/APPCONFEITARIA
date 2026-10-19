@@ -30,8 +30,6 @@
 
 /* touquinha vestida: caixa do tamanho da logo, svg passa pra cima e pros lados */
 .tn-touca-box { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
-.tn-touca--tras { z-index: 1; }
-.tn-touca { position: absolute; left: -12.5%; top: -55.5%; width: 156.25%; height: auto; overflow: visible; filter: drop-shadow(0 2px 2px rgba(0,0,0,.15)); }
 .tn-touca-box.cm1-touca { inset: auto; top: -60px; right: 16px; width: 106px; height: 106px; z-index: 7; }
 .tn-touca-box.cm1-touca.tn-touca--tras { z-index: 5; }
 .tema-natal .cp-topo-in { padding-top: 18px; padding-bottom: 6px; }
@@ -40,3 +38,6 @@
 .ctn-logo, .cp-topo-logo { position: relative; z-index: 2; }
 .tema-natal .cp-topo-logo { padding: 0; }
 .tema-natal .cp-topo-in { padding-top: 20px; }
+
+/* (19/10) touca PNG apoiada no canto de cima à esquerda da logo (medidas em % da logo: vale pra qualquer tamanho) */
+.tn-touca-img { position: absolute; left: -15%; top: -17%; width: 62%; height: auto; transform: rotate(-12deg); transform-origin: 70% 85%; filter: drop-shadow(0 2px 3px rgba(0,0,0,.2)); pointer-events: none; user-select: none; }
