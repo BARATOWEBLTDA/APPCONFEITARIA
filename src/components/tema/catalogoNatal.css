@@ -1,10 +1,11 @@
 /* (18/10) Cardápio de Natal em catálogo (celular): bordô fechado, dourado e creme */
-.ctn { position: relative; min-height: 100svh; perspective: 1800px; background: #FFF8EE; font-family: var(--font-base); color: #4A1A1F; overflow-x: hidden; }
+.ctn { position: relative; perspective: 1800px; background: #FFF8EE; font-family: var(--font-base); color: #4A1A1F; overflow-x: hidden; }
 .ctn-atual { position: relative; }
 .ctn-som { position: fixed; z-index: 60; top: 12px; right: 12px; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; margin: 0; padding: 0; border: 0; border-radius: 50%; background: rgba(255,248,238,.92); color: #4A1A1F; box-shadow: 0 2px 8px rgba(0,0,0,.18); cursor: pointer; }
 
 /* capa */
-.ctn-hero { position: relative; height: 50svh; min-height: 300px; max-height: 480px; overflow: hidden; background: #6E1F27 center / cover no-repeat; }
+.ctn-capa { display: flex; flex-direction: column; min-height: 520px; }
+.ctn-hero { position: relative; flex: 1 1 auto; min-height: 150px; max-height: 50svh; overflow: hidden; background: #6E1F27 center / cover no-repeat; }
 .ctn-hero-padrao { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 28%, #93303B 0%, #6E1F27 58%, #4E141B 100%); }
 .ctn-bok { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(255,220,150,.5), rgba(255,220,150,0) 70%); }
 .ctn-bolas { position: absolute; inset: 0; width: 100%; height: 100%; animation: ctnBalanca 4s ease-in-out infinite alternate; transform-origin: 50% 0; }
@@ -13,16 +14,16 @@
 .ctn-st i { flex: none; width: 7px; height: 7px; border-radius: 50%; background: #DC2626; }
 .ctn-st.aberto i { background: #16a34a; }
 .ctn-onda { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 40px; }
-.ctn-meio { position: relative; text-align: center; padding: 0 20px 24px; }
-.ctn-logo-w { position: relative; width: 108px; height: 108px; margin: -70px auto 0; z-index: 3; }
+.ctn-meio { flex: none; position: relative; text-align: center; padding: 0 20px 14px; }
+.ctn-logo-w { position: relative; width: 100px; height: 100px; margin: -64px auto 0; z-index: 3; }
 .ctn-logo { width: 100%; height: 100%; padding: 2px; border: 3px solid #C9A227; border-radius: 50%; background: #fff; box-shadow: 0 0 0 5px #FFF8EE, 0 8px 22px rgba(110,31,39,.25); overflow: hidden; }
 .ctn-logo img, .ctn-logo b { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; font-size: 36px; font-weight: 700; color: #8B2332; }
-.ctn-nome { display: flex; align-items: center; justify-content: center; gap: 2px; margin: 12px 0 0; font-size: 16px; font-weight: 700; color: #4A1A1F; }
-.ctn-titulo { margin: 6px 0 0; font-family: "Playfair Display", Georgia, serif; font-size: 32px; font-weight: 600; line-height: 1.05; color: #8B2332; }
+.ctn-nome { display: flex; align-items: center; justify-content: center; gap: 2px; margin: 10px 0 0; font-size: 16px; font-weight: 700; color: #4A1A1F; }
+.ctn-titulo { margin: 6px 0 0; font-family: "Playfair Display", Georgia, serif; font-size: 30px; font-weight: 600; line-height: 1.05; color: #8B2332; }
 .ctn-titulo em { display: block; margin-top: 2px; font-size: 25px; font-weight: 500; font-style: italic; color: #B8892E; }
-.ctn-aviso { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; margin: 14px 0 0; padding: 6px 12px; border-radius: 8px; background: #FBF0D9; color: #7A5A06; font-size: 13.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ctn-ver { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 360px; height: 52px; margin: 18px auto 0; border: 0; border-radius: 14px; background: linear-gradient(180deg, #9A2F3B, #7A2430); color: #FFF1DA; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 8px 18px rgba(122,36,48,.3); }
-.ctn-sl { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 14px; font-size: 14px; color: #8B6E70; white-space: nowrap; }
+.ctn-aviso { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; margin: 12px 0 0; padding: 6px 12px; border-radius: 8px; background: #FBF0D9; color: #7A5A06; font-size: 13.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ctn-ver { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 360px; height: 52px; margin: 14px auto 0; border: 0; border-radius: 14px; background: linear-gradient(180deg, #9A2F3B, #7A2430); color: #FFF1DA; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 8px 18px rgba(122,36,48,.3); }
+.ctn-sl { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 8px; font-size: 14px; color: #8B6E70; white-space: nowrap; }
 .ctn-sl button { min-height: 36px; margin: 0; padding: 0; border: 0; background: none; color: #8B2332; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
 .ctn-cid { display: inline-flex; align-items: center; gap: 3px; overflow: hidden; text-overflow: ellipsis; }
 .ctn-pausa { margin: 12px 0 0; padding: 10px 12px; border-radius: 10px; background: #FDECEC; color: #991B1B; font-size: 13.5px; font-weight: 600; }

@@ -28,18 +28,38 @@ function fonteFesta() {
 }
 
 let ac: AudioContext | null = null;
+/**
+ * Som de folha virando, suave: ruído "rosa" (mais grave que o chiado), entra devagar, passa por um filtro
+ * que sobe e desce (o "fffuu" do papel) e some no mesmo tempo da animação (0,8 s). Volume baixo.
+ */
 function somDePapel() {
   try {
     const C = window.AudioContext || (window as any).webkitAudioContext;
     if (!C) return;
     ac = ac || new C();
-    const d = 0.45, b = ac.createBuffer(1, Math.floor(ac.sampleRate * d), ac.sampleRate), x = b.getChannelData(0);
-    for (let i = 0; i < x.length; i++) { const t = i / x.length; x[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 1.6) * (0.4 + 0.6 * Math.sin(t * Math.PI)); }
+    if (ac.state === "suspended") void ac.resume();
+    const d = 0.75, sr = ac.sampleRate, n = Math.floor(sr * d);
+    const b = ac.createBuffer(1, n, sr), x = b.getChannelData(0);
+    // ruído rosa (Paul Kellet, versão curta) com leve "textura" de papel
+    let b0 = 0, b1 = 0, b2 = 0;
+    for (let i = 0; i < n; i++) {
+      const w = Math.random() * 2 - 1;
+      b0 = 0.99765 * b0 + w * 0.099046; b1 = 0.963 * b1 + w * 0.2965164; b2 = 0.57 * b2 + w * 1.0526913;
+      const rosa = (b0 + b1 + b2 + w * 0.1848) * 0.18;
+      const t = i / n;
+      const env = t < 0.25 ? Math.pow(t / 0.25, 2) : Math.pow(1 - (t - 0.25) / 0.75, 2.2); // sobe macio e cai devagar
+      const textura = 0.85 + 0.15 * Math.sin(i / sr * 2 * Math.PI * 23) * Math.random();
+      x[i] = rosa * env * textura;
+    }
     const s = ac.createBufferSource(); s.buffer = b;
-    const f = ac.createBiquadFilter(); f.type = "bandpass";
-    f.frequency.setValueAtTime(1800, ac.currentTime); f.frequency.exponentialRampToValueAtTime(700, ac.currentTime + d); f.Q.value = 0.8;
-    const g = ac.createGain(); g.gain.value = 0.45;
-    s.connect(f).connect(g).connect(ac.destination); s.start();
+    const f = ac.createBiquadFilter(); f.type = "bandpass"; f.Q.value = 0.55;
+    const t0 = ac.currentTime;
+    f.frequency.setValueAtTime(700, t0);
+    f.frequency.linearRampToValueAtTime(2200, t0 + d * 0.3);
+    f.frequency.exponentialRampToValueAtTime(900, t0 + d);
+    const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 4200;
+    const g = ac.createGain(); g.gain.value = 0.32;
+    s.connect(f).connect(lp).connect(g).connect(ac.destination); s.start(t0);
   } catch { /* sem som, segue */ }
 }
 
@@ -99,7 +119,7 @@ export default function CatalogoNatal({ design, config, isPro, produtos, categor
   const achados = termo ? produtos.filter(p => p.nome.toLowerCase().includes(termo) || p.descricao?.toLowerCase().includes(termo)) : [];
 
   const renderCapa = () => (
-    <div className="ctn-capa">
+    <div className="ctn-capa" style={{ height: `calc(100svh - ${espacoBaixo}px)` }}>
       <div className="ctn-hero" style={capa ? { backgroundImage: `url(${capa})` } : undefined}>
         {!capa && <HeroPadrao />}
         {status && <span className={`ctn-st${status.aberto ? " aberto" : ""}`}><i aria-hidden="true" />{status.msg}</span>}
@@ -176,7 +196,7 @@ export default function CatalogoNatal({ design, config, isPro, produtos, categor
   const pag = (i: number) => (i === 0 ? renderCapa() : renderPagina(i));
 
   return (
-    <div className="ctn" style={{ paddingBottom: espacoBaixo }}>
+    <div className="ctn" style={{ paddingBottom: atual === 0 ? 0 : espacoBaixo }}>
       <button type="button" className="ctn-som" onClick={alternarSom} aria-label={som ? "Desligar o som das páginas" : "Ligar o som das páginas"}>
         {som ? <SpeakerHigh size={18} weight="bold" /> : <SpeakerSlash size={18} weight="bold" />}
       </button>
