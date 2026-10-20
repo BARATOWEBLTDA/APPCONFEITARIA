@@ -99,8 +99,9 @@
   .pm-veu { align-items: center; padding: 24px; }
   .pm { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); width: 100%; max-width: 960px; height: min(720px, calc(100vh - 48px)); border-radius: var(--ui-raio-janela); box-shadow: 0 24px 64px rgba(0,0,0,.25); }
   .pm--sem-foto { grid-template-columns: minmax(0, 1fr); max-width: 560px; }
-  .pm-lado { display: flex; flex-direction: column; gap: 12px; grid-column: 1; grid-row: 1 / span 2; min-height: 0; padding: 24px; }
-  .pm-ft-pc { position: relative; flex: 1; min-height: 0; border-radius: var(--ui-raio-cartao); overflow: hidden; background: #F3EEF0; }
+  .pm-lado { display: flex; flex-direction: column; justify-content: center; gap: 12px; grid-column: 1; grid-row: 1 / span 2; min-height: 0; padding: 24px; background: #FAF6F8; }
+  /* (20/10) a foto no formato dela (4:3), no topo, sem as faixas borradas em cima e embaixo */
+  .pm-ft-pc { position: relative; flex: none; width: 100%; aspect-ratio: 4 / 3; border-radius: var(--ui-raio-cartao); overflow: hidden; background: #F3EEF0; }
   .pm-ft-pc img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .8s ease; }
   .pm-ft-pc img.on { opacity: 1; }
   .pm-mini { display: flex; gap: 8px; }
