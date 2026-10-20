@@ -36,7 +36,9 @@ const ENTREGAS = [
 const numBR = parseNumBR
 
 /** (17/10) embutido: aparece dentro de Dados da loja (mesma tela), sem o cabeçalho próprio */
-export default function CheckoutConfigPage({ embutido = false }: { embutido?: boolean } = {}) {
+/** (19/10) parte: "entrega" (Dados da loja, sem cupons) ou "cupons" (Marketing › Cupons, só os cupons) */
+export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }: { embutido?: boolean; parte?: "tudo" | "entrega" | "cupons" } = {}) {
+  const verEntrega = parte !== "cupons", verCupons = parte !== "entrega"
   const navigate = useNavigate()
   // (15/10) aberta por Configurações: o voltar leva de volta pra lá (senão, pro Cardápio)
   const voltarPara = (useLocation().state as any)?.de === "/configuracoes" ? "/configuracoes" : "/cardapio"
@@ -316,9 +318,10 @@ export default function CheckoutConfigPage({ embutido = false }: { embutido?: bo
     <>
       {!embutido && <AppPageHeader title="Entrega e pagamento" subtitle="Pagamento, entrega e cupons" onBack={() => navigate(voltarPara)} />}
       <div className={embutido ? "ep ep--embutido" : "ep"}>
-        {embutido && <h2 className="ep-sec-tit">Entrega e pagamento</h2>}
-        <p className="ep-salva"><Check size={16} weight="bold" aria-hidden="true" />{embutido ? "Esta parte salva sozinha." : "Tudo aqui salva sozinho."}</p>
+        {embutido && verEntrega && <h2 className="ep-sec-tit">Entrega e pagamento</h2>}
+        {verEntrega && <p className="ep-salva"><Check size={16} weight="bold" aria-hidden="true" />{embutido ? "Esta parte salva sozinha." : "Tudo aqui salva sozinho."}</p>}
 
+        {verEntrega && <>
         {/* Pagamento */}
         <section className="ep-card">
           <Cabeca Ic={Wallet} titulo={resumido?.pag ? "Pagamento" : "Formas de pagamento"} apoio={resumido?.pag ? undefined : "Marque só as que você aceita"} acao={botaoEditar('pag')} />
@@ -361,8 +364,10 @@ export default function CheckoutConfigPage({ embutido = false }: { embutido?: bo
           </>)}
         </section>
 
+        </>}
+
         {/* Cupons */}
-        <section className="ep-card ep-largo">
+        {verCupons && <section className="ep-card ep-largo">
           <Cabeca Ic={Ticket} titulo="Cupons de desconto" apoio="O cliente usa ao finalizar o pedido"
  />
           {!isPro ? (
@@ -403,7 +408,7 @@ export default function CheckoutConfigPage({ embutido = false }: { embutido?: bo
               </div>
             </>
           )}
-        </section>
+        </section>}
       </div>
 
       {/* Novo / editar cupom */}

@@ -502,7 +502,7 @@ export default function DadosLoja() {
       </div>
 
       {/* (17/10) Entrega e pagamento entrou nesta mesma tela (salva sozinha, separada do botão abaixo) */}
-      <div id="entrega-pagamento" className="dl-ep"><CheckoutConfigPage embutido /></div>
+      <div id="entrega-pagamento" className="dl-ep"><CheckoutConfigPage embutido parte="entrega" /></div>
 
       {/* Salvar fixo */}
       <div className="dl-savebar">

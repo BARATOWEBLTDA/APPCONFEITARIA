@@ -26,3 +26,5 @@
 .mk-dica svg { flex: none; margin-top: 1px; }
 .mk-passos > .ui-botao, .mk-passos > button:last-child { align-self: flex-start; }
 .mk-passos li::marker { font-weight: 700; color: var(--ui-rosa-escuro); }
+.mk-cupons .ep--embutido { padding: 0; max-width: none; }
+@media (max-width: 640px) { .mk-aba-breve { display: none; } }

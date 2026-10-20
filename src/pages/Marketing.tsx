@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle, FacebookLogo, Lightbulb, Megaphone } from "@phosphor-icons/react";
+import { CheckCircle, FacebookLogo, Lightbulb, Megaphone, Ticket } from "@phosphor-icons/react";
+import CheckoutConfigPage from "./CheckoutConfigPage";
+import { useLocation } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, Campo, avisar } from "@/components/base";
 import { supabase } from "@/lib/supabase";
@@ -12,12 +14,14 @@ import "./marketing.css";
  * Marketing (19/10): ferramentas pra divulgar a loja. Primeira aba: Pixel do Facebook.
  * O ID fica em profiles.facebook_pixel_id; o cardápio público carrega o pixel com ele (lib/facebookPixel).
  */
-type Aba = "pixel";
+type Aba = "cupons" | "pixel";
 
 export default function Marketing() {
   const navigate = useNavigate();
   const { profile } = useProfile();
-  const [aba, setAba] = useState<Aba>("pixel");
+  // (19/10) Cupons vieram de Dados da loja pra cá (primeira aba)
+  const loc = useLocation();
+  const [aba, setAba] = useState<Aba>(new URLSearchParams(loc.search).get("aba") === "pixel" ? "pixel" : "cupons");
   const salvo = String((profile as any)?.facebook_pixel_id || "");
   const [id, setId] = useState(salvo);
   const [tentou, setTentou] = useState(false);
@@ -45,9 +49,12 @@ export default function Marketing() {
         infoContent={<><p>Aqui ficam as ferramentas pra divulgar sua confeitaria.</p><p>O <strong>Pixel do Facebook</strong> conta pro Facebook e pro Instagram quem visitou o seu cardápio e quem fez pedido. Com isso os anúncios chegam em quem tem mais chance de comprar.</p></>} />
       <div className="mk">
         <div className="mk-abas" role="tablist" aria-label="Ferramentas de marketing">
+          <button type="button" role="tab" aria-selected={aba === "cupons"} onClick={() => setAba("cupons")}><Ticket size={18} weight="bold" aria-hidden="true" />Cupons</button>
           <button type="button" role="tab" aria-selected={aba === "pixel"} onClick={() => setAba("pixel")}><FacebookLogo size={18} weight="fill" aria-hidden="true" />Pixel do Facebook</button>
           <span className="mk-aba-breve" aria-hidden="true"><Megaphone size={18} weight="bold" />Mais em breve</span>
         </div>
+
+        {aba === "cupons" && <div className="mk-cupons"><CheckoutConfigPage embutido parte="cupons" /></div>}
 
         {aba === "pixel" && (
           <div className="mk-grid">
