@@ -38,3 +38,19 @@
 .pz-prod-n { flex: 1; min-width: 0; font-size: 15px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pz-prods-l .pz-semres { margin: 12px; }
 .pz-erro { margin-top: 6px; color: var(--ui-vermelho); }
+
+/* (19/10) sugestões prontas (um toque abre o cadastro preenchido) */
+.pz-sug { margin-top: 12px; }
+.pz-sug-l { display: flex; flex-wrap: wrap; gap: 8px; }
+.pz-sug-l button { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 12px; border: 1px solid #F3C9DA; border-radius: 999px; background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; cursor: pointer; }
+.pz-sug-l button:hover { border-color: var(--ui-rosa); }
+.pz-sug-l button svg { color: var(--ui-rosa-escuro); }
+.pz-sug-l button b { font-size: 13px; font-weight: 700; color: var(--ui-rosa-escuro); }
+.pz-sug-l button b.g { color: var(--ui-verde, #16803C); }
+/* prévia ao vivo dentro do cadastro */
+.pz-prev { border: 1px solid #F0E6EA; border-radius: 12px; background: #FFF8FB; padding: 10px 12px 4px; }
+.pz-prev small { display: block; font-size: 12px; font-weight: 600; color: var(--ui-texto-3); margin-bottom: 2px; }
+.pz-prev .pz-ex-l { border-top: 0; }
+.pz-prev-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pz-prev-tx > span, .pz-prev-tx em { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pz-prev-tx em { font-style: normal; font-size: 12.5px; color: var(--ui-texto-2); }

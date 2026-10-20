@@ -64,6 +64,21 @@ export default function Complementos() {
   };
   useEffect(() => { void carregar(); }, []);
 
+  // (19/10) sugestões prontas: um toque abre o cadastro já preenchido
+  const SUGESTOES: { nome: string; descricao: string; valor: number }[] = [
+    { nome: "Topo de bolo", descricao: "Escolha o tema ou mande uma foto de referência", valor: 15 },
+    { nome: "Escrita no bolo", descricao: "Escreva a frase no campo de observação", valor: 0 },
+    { nome: "Papel de arroz", descricao: "Com a foto que você quiser", valor: 10 },
+    { nome: "Vela de número", descricao: "", valor: 8 },
+    { nome: "Embalagem para presente", descricao: "", valor: 6 },
+  ];
+  const usarSugestao = (sg: { nome: string; descricao: string; valor: number }) => {
+    setEditando(null); setTentou(false); setBuscaProd("");
+    setForm({ ...FORM_VAZIO, nome: sg.nome, descricao: sg.descricao, valor: sg.valor, gratis: sg.valor <= 0 });
+    setAberta(true);
+  };
+  const sugestoesLivres = SUGESTOES.filter(sg => !items.some(i => i.nome.trim().toLowerCase() === sg.nome.toLowerCase()));
+
   const abrir = (c: Complemento | null, escolherProdutos = false) => {
     setEditando(c);
     setTentou(false);
@@ -107,7 +122,7 @@ export default function Complementos() {
   };
 
   const excluir = async (c: Complemento) => {
-    const ok = await confirmar({ titulo: `Excluir ${c.nome}?`, texto: "Ela some de todos os produtos do cardápio. Pedidos antigos não mudam.", rotulo: "Excluir", perigo: true });
+    const ok = await confirmar({ titulo: `Excluir ${c.nome}?`, texto: "Ele some de todos os produtos do cardápio. Pedidos antigos não mudam.", rotulo: "Excluir", perigo: true });
     if (!ok) return;
     const { error } = await supabase.from("biblioteca_extras").delete().eq("id", c.id).eq("user_id", userId);
     if (error) { avisar("Não deu pra excluir. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
@@ -130,7 +145,7 @@ export default function Complementos() {
   const cabecalho = (
     <AppPageHeader
       title="Complementos"
-      subtitle={loading || items.length === 0 ? "Extras que o cliente escolhe no pedido" : `${items.length} ${items.length === 1 ? "cadastrada" : "cadastradas"}`}
+      subtitle={loading || items.length === 0 ? "Extras que o cliente escolhe no pedido" : `${items.length} ${items.length === 1 ? "cadastrado" : "cadastrados"}`}
       infoContent={<>
         <p>Complementos são opções que o cliente escolhe ao pedir um produto: topo de bolo, escrita, papel de arroz, tema.</p>
         <p>Cadastre uma vez aqui e escolha em quais produtos aparece. Mudou o preço aqui, muda em todos.</p>
@@ -155,6 +170,16 @@ export default function Complementos() {
           <TelaVazia caixa icone={<PuzzlePiece size={30} />} titulo="Nenhum complemento ainda"
             texto="Cadastre extras como topo de bolo, escrita e papel de arroz. O cliente escolhe na hora de pedir e o valor soma no total."
             acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}>Criar complemento</Botao>} />
+          <section className="pz-sug" aria-label="Sugestões pra começar">
+            <p className="pz-ex-t">Comece por uma destas</p>
+            <div className="pz-sug-l">
+              {SUGESTOES.map(sg => (
+                <button key={sg.nome} type="button" onClick={() => usarSugestao(sg)}>
+                  <Plus size={16} weight="bold" aria-hidden="true" /><span>{sg.nome}</span><b className={sg.valor > 0 ? "" : "g"}>{sg.valor > 0 ? `+ R$ ${brl(sg.valor)}` : "Grátis"}</b>
+                </button>
+              ))}
+            </div>
+          </section>
           <section className="pz-ex" aria-label="Exemplo de como aparece no cardápio">
             <p className="pz-ex-t">Assim aparece pro cliente</p>
             <div className="pz-ex-l on"><i><Check size={14} weight="bold" /></i><span>Topo de bolo</span><b>+ R$ 15,00</b></div>
@@ -188,6 +213,18 @@ export default function Complementos() {
                   </div>
                 );
               })}
+            </section>
+          )}
+          {sugestoesLivres.length > 0 && !termo && (
+            <section className="pz-sug" aria-label="Sugestões">
+              <p className="pz-ex-t">Ideias pra adicionar</p>
+              <div className="pz-sug-l">
+                {sugestoesLivres.map(sg => (
+                  <button key={sg.nome} type="button" onClick={() => usarSugestao(sg)}>
+                    <Plus size={16} weight="bold" aria-hidden="true" /><span>{sg.nome}</span><b className={sg.valor > 0 ? "" : "g"}>{sg.valor > 0 ? `+ R$ ${brl(sg.valor)}` : "Grátis"}</b>
+                  </button>
+                ))}
+              </div>
             </section>
           )}
           <p className="ct-dica"><Info size={20} weight="bold" aria-hidden="true" />O cliente vê os complementos na hora de escolher o produto no cardápio.</p>
@@ -225,6 +262,14 @@ export default function Complementos() {
             <Campo rotulo="Quanto soma no pedido" prefixo="R$" inputMode="numeric" placeholder="0,00" erro={erroValor}
               value={form.valor > 0 ? brl(form.valor) : ""} onChange={e => setForm(f => ({ ...f, valor: lerPreco(e.target.value) }))} />
           )}
+
+          {/* (19/10) prévia ao vivo: como o cliente vê no cardápio */}
+          <div className="pz-prev" aria-hidden="true">
+            <small>Assim aparece pro cliente</small>
+            <div className="pz-ex-l on"><i><Check size={14} weight="bold" /></i>
+              <span className="pz-prev-tx"><span>{form.nome.trim() || "Nome do complemento"}</span>{form.descricao.trim() && <em>{form.descricao.trim()}</em>}</span>
+              <b className={form.gratis ? "g" : ""}>{form.gratis ? "Grátis" : `+ R$ ${brl(form.valor || 0)}`}</b></div>
+          </div>
 
           <div className="ui-campo">
             <span className="ui-campo-r"><span>Em quais produtos aparece</span></span>

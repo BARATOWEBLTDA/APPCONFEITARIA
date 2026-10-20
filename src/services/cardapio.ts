@@ -147,6 +147,7 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     tema_capa_url: tema === 'natal' ? (profile.tema_capa_url || CAPA_NATAL_PADRAO) : '',
     tema_laco: profile.tema_laco !== false,
     tema_destaque: profile.tema_destaque || '',
+    facebook_pixel_id: profile.facebook_pixel_id || '', // (19/10) Marketing › Pixel do Facebook
   }
 
   const config: Configuracoes = {

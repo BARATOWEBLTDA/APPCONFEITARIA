@@ -26,6 +26,7 @@ import { precoDoCartao } from './ItensCardapio'
 import { SeloVerificado } from './SeloVerificado'
 import type { Produto } from '@/types/database'
 import { corClara } from '@/lib/coresCardapio'
+import { pixelEvento } from '@/lib/facebookPixel'
 import '@/components/cart/sacola.css'
 
 /**
@@ -623,6 +624,7 @@ function CartContent({
     // Mostra tela de sucesso em vez de fechar
     // (11/10) "meio emoji" em qualquer texto (observação, recado, nome) fazia o link dar erro e o WhatsApp abria sem a mensagem
     const whatsappUrl = (() => { try { return linkWhatsApp(whatsapp, semMeioEmoji(montarMensagem(numeroPedido))) } catch { return linkWhatsApp(whatsapp) } })()
+    pixelEvento('Purchase', { value: totalFinal, num_items: items.length }) // (19/10) Pixel do Facebook: pedido enviado
     clearCart()
     setStep('cart')
     const quandoTxt = dataEntrega ? `${formaEntrega === 'retirada' ? 'Retirada' : 'Entrega'} ${rotuloData(dataEntrega).toLowerCase()}${horaEntrega ? ` às ${horaEntrega}` : ''}` : ''
@@ -786,7 +788,7 @@ function CartContent({
           <span className="sc-pe-tot"><small>{rotuloTotal}</small><b>{formatCurrency(subtotalCupom)}</b><em>{count} {count === 1 ? 'item' : 'itens'}</em></span>
           {config.loja_pausada
             ? <button type="button" className="sc-bt-pri sc-bt-pausada" onClick={() => avisar('A loja pausou os pedidos por enquanto. Chame no WhatsApp pra combinar.', { tipo: 'info' })}>Pedidos pausados</button>
-            : <button type="button" className="sc-bt-pri" style={{ background: accent }} onClick={() => setStep('finalizar')}>Continuar</button>}
+            : <button type="button" className="sc-bt-pri" style={{ background: accent }} onClick={() => { pixelEvento('InitiateCheckout', { value: totalPrice, num_items: items.length }); setStep('finalizar') }}>Continuar</button>}
         </footer>
       )}
     </>

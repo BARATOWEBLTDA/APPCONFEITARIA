@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback, ReactNode 
 import { CartItem } from '@/types/cart'
 import { subtotalSacola } from '@/lib/itemSacola'
 import { avisar } from '@/components/base'
+import { pixelEvento } from '@/lib/facebookPixel'
 
 interface CartContextType {
   items: CartItem[]
@@ -128,6 +129,8 @@ export function CartProvider({ children, loja }: { children: ReactNode; loja?: s
         )
       }
 
+      // (19/10) Pixel do Facebook: produto na sacola
+      pixelEvento('AddToCart', { content_name: newItem.name, value: Number(newItem.price) * Number(newItem.quantity || 1), content_ids: [newItem.id], content_type: 'product' })
       // Item novo: adiciona ao carrinho e dispara evento
       const updated = [...prev, { ...newItem, lineId }]
       window.dispatchEvent(new CustomEvent('cartUpdated', { detail: updated }))

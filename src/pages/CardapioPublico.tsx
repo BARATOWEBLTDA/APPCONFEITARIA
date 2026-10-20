@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { iniciarPixel } from '@/lib/facebookPixel'
 import { explicarErro } from '@/lib/erros'
 import { SeloVerificado } from '@/components/cardapio/SeloVerificado'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
@@ -231,6 +232,8 @@ function CardapioContent() {
 
     fetchFn(chave.toLowerCase()).then(({ design, config, produtos, isPro, categoryImages, categoriasList, slugCanonico, codigoPublico, cardapioModelo: modelo }) => {
       if (!design) { setError('Verifique o link e tente novamente.'); setLoading(false); return }
+      // (19/10) Pixel do Facebook da loja (Marketing)
+      iniciarPixel(design.facebook_pixel_id)
 
       // ── Redirect canônico ──
       // Rota antiga /cardapio/:uuid → redireciona pra nova /c/:codigo/:slug

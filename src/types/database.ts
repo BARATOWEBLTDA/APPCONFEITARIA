@@ -49,6 +49,7 @@ export interface DesignSettings {
   tema_capa_url?: string
   tema_laco?: boolean
   tema_destaque?: string
+  facebook_pixel_id?: string
 }
 
 export interface Configuracoes {

@@ -65,6 +65,7 @@ import Produtos from "@/pages/Produtos";
 import Categorias from "@/pages/Categorias";
 import Clientes from "@/pages/Clientes";
 import Complementos from "@/pages/Complementos";
+import Marketing from "@/pages/Marketing";
 import ClientePerfil from "@/pages/ClientePerfil";
 import CardapioDesign from "@/pages/CardapioDesign";
 /** (17/10) "Entrega e pagamento" agora fica dentro de Dados da loja: o link antigo abre lá, já nessa parte */
@@ -475,7 +476,7 @@ export default function App() {
           <Route path="/cardapio-design" element={<CardapioDesign />} />
           <Route path="/checkout-config" element={<IrParaEntrega />} />
           <Route path="/estoque" element={<EmBreve tela="estoque" />} />
-          <Route path="/marketing" element={<EmBreve tela="marketing" />} />
+          <Route path="/marketing" element={<Marketing />} />
           <Route path="/arquivos" element={<Navigate to="/" replace />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/configuracoes/notificacoes" element={<NotificacoesSons />} />
