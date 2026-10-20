@@ -442,10 +442,7 @@ export default function Pedidos() {
     if (estado === 'carregando') return demorou ? <p className="pd-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando os pedidos…</p> : null
     if (estado === 'erro') return <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os pedidos" texto="Confira a internet e tente de novo." acao={<Botao variante="suave" tamanho="m" onClick={() => userId && fetchPedidos(userId)}>Tentar de novo</Botao>} />
     if (totalProdutos === 0 && pedidos.length === 0) return <TelaVazia icone={<Cake size={30} />} titulo="Cadastre um produto primeiro" texto="Pra registrar um pedido, você precisa ter pelo menos um produto." acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => navigate('/produtos', { state: { abrirCadastro: true } })}>Cadastrar produto</Botao>} />
-    if (pedidos.length === 0) return (
-      <TelaVazia icone={<Receipt size={30} />} titulo="Nenhum pedido ainda" texto="Quando chegar uma encomenda, ela aparece aqui."
-        acao={<div className="pd-vazio-acoes"><Botao icone={<Plus size={20} weight="bold" />} onClick={handleNovoPedido}>Nova venda</Botao><Botao variante="link" onClick={() => navigate('/cardapio')}>Divulgar o cardápio</Botao></div>} />
-    )
+    // (19/10) sem pedido nenhum, a barra de cima (abas, busca, Lista/Quadro, Nova venda) fica: antes ela sumia e a tela "pulava"
     return null
   }
   const parada = conteudo()
@@ -507,7 +504,10 @@ export default function Pedidos() {
               </div>
             )}
 
-            {pedidosFiltrados.length === 0 ? (
+            {pedidos.length === 0 ? (
+              <TelaVazia icone={<Receipt size={30} />} titulo="Nenhum pedido ainda" texto="Quando chegar uma encomenda, ela aparece aqui."
+                acao={<Botao variante="link" onClick={() => navigate('/cardapio')}>Divulgar o cardápio</Botao>} />
+            ) : pedidosFiltrados.length === 0 ? (
               filtrando
                 ? <TelaVazia icone={<MagnifyingGlass size={30} />} titulo="Nenhum pedido encontrado" texto={busca.trim() ? `Não achamos nada com “${busca.trim()}”.` : 'Nenhum pedido com esses filtros.'} acao={<Botao variante="suave" tamanho="m" onClick={limparTudo}>Ver todos os pedidos</Botao>} />
                 : <TelaVazia icone={aba === 'pronta_entrega' ? <Lightning size={30} /> : <Receipt size={30} />} titulo={aba === 'pronta_entrega' ? 'Nenhuma venda de pronta entrega' : 'Nenhum pedido aqui'} texto={aba === 'pronta_entrega' ? 'As vendas do balcão aparecem aqui.' : 'Quando chegar uma encomenda, ela aparece aqui.'} />
