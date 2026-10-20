@@ -333,13 +333,10 @@ body .prod-modal--novo .prod-promo-pct { flex: none; margin-left: auto; padding:
 body .prod-modal--novo .prod-preco-input--promo { position: relative; }
 body .prod-modal--novo .prod-promo-pct { position: absolute; top: 5px; right: 6px; margin: 0; padding: 1px 6px; font-size: 11.5px; line-height: 1.5; }
 
-/* (19/10) computador: foto à esquerda e dicas à direita, cabe tudo sem rolar */
-@media (min-width: 901px) {
-  .prod-section.prod-fotos { display: grid; gap: 0 24px; grid-template-columns: 240px minmax(0, 1fr); grid-template-rows: auto 1fr auto auto; grid-template-areas: "foto dicat" "foto dicas" "acoes dicas" "extras dicas"; column-gap: 24px; align-items: start; }
-  .prod-fotos > .prod-foto-pri { grid-area: foto; width: 240px; }
-  .prod-fotos > .prod-foto-acoes { grid-area: acoes; width: 240px; margin-top: 10px; }
-  .prod-fotos > .prod-foto-extras { grid-area: extras; justify-content: flex-start; }
-  .prod-fotos > .prod-foto-extras .prod-foto-ex { width: 114px; height: 114px; }
-  .prod-fotos > .prod-dicas-t { grid-area: dicat; margin-top: 0; }
-  .prod-fotos > .prod-dicas { grid-area: dicas; align-self: start; }
+
+/* (19/10) computador, passo Preço: janela mais larga e duas colunas (preço e promoção à esquerda, cardápio e entrega à direita), sem rolar */
+@media (min-width: 1024px) {
+  body .prod-modal.prod-modal--novo.prod-modal--largo { max-width: 960px !important; width: 960px !important; }
+  .prod-modal-body.prod-body--2col { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 40px; align-items: start; }
+  .prod-modal-body.prod-body--2col > .prod-section + .prod-section { padding-top: 0; }
 }

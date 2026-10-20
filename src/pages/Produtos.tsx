@@ -1884,7 +1884,7 @@ export default function Produtos() {
       {modal && (
         <div className={`prod-modal-overlay${sucesso ? " prod-modal-overlay--sucesso" : ""}`} onClick={sucesso ? fecharModal : handleTryClose}>
           {/* a janela do limite do plano abre por cima sem entrar na pilha: nessa hora o foco não fica preso aqui */}
-          <div className={`prod-modal prod-modal--novo${sucesso ? " prod-modal--aviso" : ""}`} ref={limiteAberto ? undefined : caixaCadastro} onClick={e => e.stopPropagation()} onFocusCapture={selecionarValorAoFocar} onClickCapture={selecionarValorAoFocar}>
+          <div className={`prod-modal prod-modal--novo${sucesso ? " prod-modal--aviso" : ""}${!form.id && wizardStep === 5 && !sucesso ? " prod-modal--largo" : ""}`} ref={limiteAberto ? undefined : caixaCadastro} onClick={e => e.stopPropagation()} onFocusCapture={selecionarValorAoFocar} onClickCapture={selecionarValorAoFocar}>
             {sucesso ? (
               <SucessoProdutoTela primeiro={sucesso.primeiro} nome={sucesso.nome} foraDoCardapio={sucesso.fora}
                 semFoto={!sucesso.imagem}
@@ -1971,64 +1971,6 @@ export default function Produtos() {
                   />
                 </div>
 
-                {/* 2. Categoria */}
-                <div className="prod-field" id="prod-categoria-campo">
-                  <label className="prod-field-label-novo">Categoria <ReqTag /></label>
-                  {!showCatInput ? (
-                    <SelectDoonly
-                      value={form.categoria}
-                      onChange={v => { setCatAuto(null); setForm(f => ({ ...f, categoria: v })); }}
-                      options={todasCategorias.map(cat => ({ value: cat, label: cat }))}
-                      placeholder={todasCategorias.length > 0 ? "Escolha uma categoria…" : "Nenhuma categoria cadastrada"}
-                      title="Escolha a categoria"
-                      extraOptionLabel={todasCategorias.length > 0 ? "Criar nova categoria" : "Criar primeira categoria"}
-                      onExtraOption={() => setShowCatInput(true)}
-                    />
-                  ) : (
-                    <div className="prod-cat-nova-form">
-                      <p className="prod-cat-nova-hint">Criar nova categoria</p>
-                      <input
-                        type="text"
-                        placeholder="Ex.: bolos, doces, salgados"
-                        value={novaCategoria}
-                        onChange={e => setNovaCategoria(e.target.value)}
-                        autoFocus
-                        onKeyDown={e => {
-                          if (e.key === "Enter" && novaCategoria.trim()) {
-                            const icone = novaCategoriaIcone || SYSTEM_ICONS[0];
-                            if (!novaCategoriaIcone) setNovaCategoriaIcone(icone);
-                            handleAdicionarCategoria(icone);
-                          }
-                        }}
-                      />
-                      <div style={{display:'flex', gap:8, marginTop: 8}}>
-                        <button
-                          type="button"
-                          onClick={() => { setShowCatInput(false); setNovaCategoria(""); setNovaCategoriaIcone(""); }}
-                          className="prod-cat-cancel-btn"
-                        >Cancelar</button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (!novaCategoria.trim()) return;
-                            const icone = novaCategoriaIcone || SYSTEM_ICONS[0];
-                            if (!novaCategoriaIcone) setNovaCategoriaIcone(icone);
-                            handleAdicionarCategoria(icone);
-                          }}
-                          disabled={!novaCategoria.trim() || savingCat}
-                          className="prod-cat-criar-btn"
-                        >
-                          {savingCat ? "Criando…" : "Criar categoria"}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  {/* (14/10) categoria escolhida sozinha pelo nome ("Pudim" → Sobremesas); um aviso pequeno diz que foi automático */}
-                  {!form.id && !showCatInput && catAuto && form.categoria === catAuto && (
-                    <p className="prod-cat-auto">Escolhida pelo nome do produto</p>
-                  )}
-                </div>
-
                 {/* 3. Descrição — com CTA IA (V3) — gera ou melhora */}
                 <div className="prod-field">
                   <label className="prod-field-label-novo" htmlFor="prod-desc-input">Descrição <span className="esc-rec">recomendado</span></label>
@@ -2092,6 +2034,63 @@ export default function Produtos() {
                       </button>
                   </div>
                 </div>
+                {/* 2. Categoria */}
+                <div className="prod-field" id="prod-categoria-campo">
+                  <label className="prod-field-label-novo">Categoria <ReqTag /></label>
+                  {!showCatInput ? (
+                    <SelectDoonly
+                      value={form.categoria}
+                      onChange={v => { setCatAuto(null); setForm(f => ({ ...f, categoria: v })); }}
+                      options={todasCategorias.map(cat => ({ value: cat, label: cat }))}
+                      placeholder={todasCategorias.length > 0 ? "Escolha uma categoria…" : "Nenhuma categoria cadastrada"}
+                      title="Escolha a categoria"
+                      extraOptionLabel={todasCategorias.length > 0 ? "Criar nova categoria" : "Criar primeira categoria"}
+                      onExtraOption={() => setShowCatInput(true)}
+                    />
+                  ) : (
+                    <div className="prod-cat-nova-form">
+                      <p className="prod-cat-nova-hint">Criar nova categoria</p>
+                      <input
+                        type="text"
+                        placeholder="Ex.: bolos, doces, salgados"
+                        value={novaCategoria}
+                        onChange={e => setNovaCategoria(e.target.value)}
+                        autoFocus
+                        onKeyDown={e => {
+                          if (e.key === "Enter" && novaCategoria.trim()) {
+                            const icone = novaCategoriaIcone || SYSTEM_ICONS[0];
+                            if (!novaCategoriaIcone) setNovaCategoriaIcone(icone);
+                            handleAdicionarCategoria(icone);
+                          }
+                        }}
+                      />
+                      <div style={{display:'flex', gap:8, marginTop: 8}}>
+                        <button
+                          type="button"
+                          onClick={() => { setShowCatInput(false); setNovaCategoria(""); setNovaCategoriaIcone(""); }}
+                          className="prod-cat-cancel-btn"
+                        >Cancelar</button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!novaCategoria.trim()) return;
+                            const icone = novaCategoriaIcone || SYSTEM_ICONS[0];
+                            if (!novaCategoriaIcone) setNovaCategoriaIcone(icone);
+                            handleAdicionarCategoria(icone);
+                          }}
+                          disabled={!novaCategoria.trim() || savingCat}
+                          className="prod-cat-criar-btn"
+                        >
+                          {savingCat ? "Criando…" : "Criar categoria"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {/* (14/10) categoria escolhida sozinha pelo nome ("Pudim" → Sobremesas); um aviso pequeno diz que foi automático */}
+                  {!form.id && !showCatInput && catAuto && form.categoria === catAuto && (
+                    <p className="prod-cat-auto">Escolhida pelo nome do produto</p>
+                  )}
+                </div>
                 {/* (14/10) SKU: código pra organizar os produtos (opcional), com "Gerar" */}
                 <div className="prod-field">
                   <label className="prod-field-label-novo" htmlFor="prod-sku-input">SKU <OptTag /></label>
@@ -2121,7 +2120,7 @@ export default function Produtos() {
             {/* ══════ WIZARD STEP 3 (SIMPLES) — VISUAL E PREÇO ══════ */}
             {/* Ou STEP 4 quando variações (visual + preço só de fotos) */}
             {((wizardStep >= 4 && !form.id) || (form.id && (editTab === "fotos" || editTab === "preco" || editTab === "entrega"))) && (
-            <div className="prod-modal-body">
+            <div className={`prod-modal-body${!form.id && wizardStep === 5 ? " prod-body--2col" : ""}`}>
 
 
               {/* Fotos — só em step 5 (Fotos e finalização) ou tab Fotos na edição */}
