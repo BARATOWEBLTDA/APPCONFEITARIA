@@ -45,7 +45,7 @@
 .cm1-mapa-fechar { width: 100%; min-height: 48px; margin: 0; border: 0; border-radius: var(--ui-raio); background: #F3EEF0; color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
 
 /* (17/10) "Sobre a loja · cidade" numa linha embaixo do nome (no lugar do endereço + Sobre a loja) */
-.cm1-sl { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; margin-top: 4px; font-size: 14px; white-space: nowrap; }
+.cm1-sl { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; margin-top: -6px; /* (20/10) mais perto do nome */ font-size: 14px; white-space: nowrap; }
 /* (20/10) status da loja embaixo do nome */
 .cm1-sl-st { display: inline-flex; align-items: center; gap: 6px; min-width: 0; color: var(--ui-texto-2); }
 .cm1-sl-st .c { display: none; }
