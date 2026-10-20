@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Destaque, { jaViuDestaque, marcarDestaque } from "@/components/Destaque";
 import { CaretDown, Check, GearSix, Info, Plus, Sparkle, X } from "@phosphor-icons/react";
 import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
 import { kitAtivo, presetKit, type KitQtdConfig } from "@/lib/kitQuantidade";
@@ -591,8 +592,26 @@ function LinhaRendimento({ g, set, nomeProduto = "" }: { g: GrupoTam; set: (p: P
   // resumo curto que cabe numa linha: "Serve de 10 a 50 pessoas" (ou "Serve até 10 pessoas" se for um só)
   const nsR = comNum.map(o => Number(numeroServe(o.serve))).sort((x, y) => x - y);
   const resumo = ok ? (nsR.length > 1 && nsR[0] !== nsR[nsR.length - 1] ? `Serve de ${nsR[0]} a ${nsR[nsR.length - 1]} ${un}` : `Serve até ${nsR[0]} ${un}`) : "";
+  // (19/10) primeira vez cadastrando tamanhos sem rendimento: balão mostrando que dá pra definir (e salvar pra usar de novo)
+  const linhaRef = useRef<HTMLButtonElement>(null);
+  const [dica, setDica] = useState(false);
+  useEffect(() => {
+    if (ok || jaViuDestaque("rendimento")) return;
+    const t = window.setTimeout(() => { marcarDestaque("rendimento"); setDica(true); }, 600);
+    return () => window.clearTimeout(t);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const exemplo = g.opcoes.slice(0, 2).map((o, i) => ({ nome: `${o.nome || (i ? "Grande" : "Pequeno")}${Number((o as any).peso_kg) > 0 ? ` · ${String((o as any).peso_kg).replace(".", ",")} kg` : ""}`, serve: i ? "Serve até 20 pessoas" : "Serve até 10 pessoas" }));
   return (<>
-    <button type="button" className={`esc-rend-linha${ok ? " ok" : ""}`} onClick={() => setAberta(true)}>
+    {dica && (
+      <Destaque alvo={linhaRef} sobreJanela mascote raio={14} semNao titulo="Defina o rendimento" acao="Entendi"
+        texto="Mostre quantas pessoas cada tamanho serve. Você salva uma vez e usa nos outros produtos."
+        aoAcao={() => setDica(false)} aoFechar={() => setDica(false)}
+        extra={<div className="esc-dica-prev" aria-hidden="true">
+          <small>No cardápio fica assim:</small>
+          {exemplo.map(e => <div key={e.nome} className="esc-dica-l"><span><b>{e.nome}</b><em>{e.serve}</em></span><i /></div>)}
+        </div>} />
+    )}
+    <button ref={linhaRef} type="button" className={`esc-rend-linha${ok ? " ok" : ""}`} onClick={() => setAberta(true)}>
       {ok && <span className="esc-ic esc-ic--ok"><Check size={18} weight="bold" /></span>}
       <span className="esc-tx">
         <b>{ok ? "Rendimento" : <>Rendimento <span className="esc-rec">recomendado</span></>}</b>

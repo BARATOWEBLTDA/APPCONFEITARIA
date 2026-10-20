@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { Mascote } from "@/components/marca/Mascote";
 
@@ -17,7 +17,7 @@ const achar = (a: Alvo) => (typeof a === "string" ? document.querySelector<HTMLE
 export function jaViuDestaque(chave: string) { try { return localStorage.getItem(`doonly_destaque_${chave}`) === "1"; } catch { return true; } }
 export function marcarDestaque(chave: string) { try { localStorage.setItem(`doonly_destaque_${chave}`, "1"); } catch {} }
 
-export default function Destaque({ alvo, toque, titulo, texto, acao, aoAcao, aoFechar, mascote = false, raio = 16, passo, naoTexto = "Agora não" }: {
+export default function Destaque({ alvo, toque, titulo, texto, acao, aoAcao, aoFechar, mascote = false, raio = 16, passo, naoTexto = "Agora não", extra, sobreJanela = false, semNao = false }: {
   /** o que fica aceso (ref ou seletor) */
   alvo: Alvo;
   /** onde o toque vale como a ação (padrão: o próprio alvo) */
@@ -27,6 +27,12 @@ export default function Destaque({ alvo, toque, titulo, texto, acao, aoAcao, aoF
   mascote?: boolean; raio?: number;
   /** (16/10) tour: "1 de 4" em cima do título; e o texto do botão de sair ("Sair do tour") */
   passo?: string; naoTexto?: string;
+  /** (19/10) algo a mais embaixo do texto (ex.: a prévia de como fica no cardápio) */
+  extra?: ReactNode;
+  /** (19/10) o alvo está dentro de uma janela: aparece por cima dela, sem esperar ela fechar */
+  sobreJanela?: boolean;
+  /** (19/10) só o botão principal (sem o "Agora não") */
+  semNao?: boolean;
 }) {
   const [r, setR] = useState<DOMRect | null>(null);
   const [balH, setBalH] = useState(0); // altura do balão (medida depois de aparecer)
@@ -37,7 +43,7 @@ export default function Destaque({ alvo, toque, titulo, texto, acao, aoAcao, aoF
   useEffect(() => {
     let n = 0, t = 0;
     const ver = () => {
-      if (document.querySelector('[role="dialog"][aria-modal="true"]:not(.dsq)') && n++ < 40) { t = window.setTimeout(ver, 500); return; }
+      if (!sobreJanela && document.querySelector('[role="dialog"][aria-modal="true"]:not(.dsq)') && n++ < 40) { t = window.setTimeout(ver, 500); return; }
       setLivre(true);
     };
     ver();
@@ -88,20 +94,25 @@ export default function Destaque({ alvo, toque, titulo, texto, acao, aoAcao, aoF
   const emCima = modo === "cima";
   const pos = modo === "baixo" ? { top: r.bottom + gap } : modo === "cima" ? { bottom: alto - r.top + gap } : { bottom: borda };
   const furoAlt = modo === "rodape" ? Math.max(40, Math.min(r.height + m * 2, alto - borda - H - gap - (r.top - m))) : r.height + m * 2;
+  // (19/10) balão com no máximo 400px, centralizado no alvo (no computador ocupava a tela de ponta a ponta)
+  const larg = window.innerWidth;
+  const balW = Math.min(400, larg - 32);
+  const balL = Math.min(Math.max(r.left + r.width / 2 - balW / 2, 16), larg - balW - 16);
   // a setinha aponta pro meio do alvo
-  const seta = Math.min(Math.max(r.left + r.width / 2 - 16, 24), window.innerWidth - 40);
+  const seta = Math.min(Math.max(r.left + r.width / 2 - balL, 24), balW - 24);
 
   return createPortal(
     <div className="dsq" role="dialog" aria-modal="true" aria-label={titulo} onClick={tocou}>
       <div className="dsq-furo" style={{ left: r.left - m, top: r.top - m, width: r.width + m * 2, height: furoAlt, borderRadius: raio }} aria-hidden="true" />
-      <div ref={balRef} className={`dsq-bal${emCima ? " dsq-bal--cima" : ""}${modo === "rodape" ? " dsq-bal--rodape" : ""}${mascote ? " dsq-bal--masc" : ""}`} style={{ ...pos, ["--dsq-seta" as string]: `${seta - 16}px` }} onClick={e => e.stopPropagation()}>
+      <div ref={balRef} className={`dsq-bal${emCima ? " dsq-bal--cima" : ""}${modo === "rodape" ? " dsq-bal--rodape" : ""}${mascote ? " dsq-bal--masc" : ""}`} style={{ ...pos, left: balL, right: "auto", width: balW, ["--dsq-seta" as string]: `${seta - 8}px` }} onClick={e => e.stopPropagation()}>
         {mascote && <Mascote pose="acenando" className="dsq-masc" />}
         {passo && <em className="dsq-passo">{passo}</em>}
         <b>{titulo}</b>
         <p>{texto}</p>
+        {extra && <div className="dsq-extra">{extra}</div>}
         <div className="dsq-acoes">
           <button type="button" className="dsq-sim" onClick={aoAcao}>{acao}</button>
-          <button type="button" className="dsq-nao" onClick={aoFechar}>{naoTexto}</button>
+          {!semNao && <button type="button" className="dsq-nao" onClick={aoFechar}>{naoTexto}</button>}
         </div>
       </div>
       <style>{CSS}</style>
@@ -125,6 +136,7 @@ const CSS = `
   .dsq-bal b { display: block; margin-bottom: 3px; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
   .dsq-passo { display: block; margin-bottom: 2px; font-style: normal; font-size: 12px; font-weight: 700; color: var(--ui-rosa-escuro); }
   .dsq-bal p { margin: 0; font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
+  .dsq-extra { margin-top: 10px; }
   .dsq-acoes { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 10px; }
   .dsq-bal--masc .dsq-acoes { justify-content: flex-start; margin-top: 8px; }
   .dsq-sim, .dsq-nao { min-height: 40px; padding: 0 12px; border: 0; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; }
