@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { MapPin, Lightning, CalendarBlank, Truck, Storefront, CaretRight } from '@phosphor-icons/react'
 import { DesignSettings, Configuracoes } from '@/types/database'
-import { seloEntrega } from '@/lib/entregaProduto'
+import { seloEntrega, ANTECEDENCIA } from '@/lib/entregaProduto'
 import { situacaoDaLoja, horaTexto } from '@/lib/agendaCardapio'
 import './cardapioModelo1.css'
 import { topoEscurecido } from '@/lib/coresCardapio'
@@ -58,22 +58,27 @@ export function getEnderecoData(config: Configuracoes | null): { linha: string; 
   } catch { return null }
 }
 
-/** Etiquetas que o cliente vê: só o que a loja faz de verdade.
- *  (17/10) quadradinhos com nome curto (cabem 4 numa linha no celular de 360px): Entrega, Retirada, Encomenda, Pronta */
-export function etiquetasDaLoja(config: Configuracoes | null, produtos: any[] = []) {
-  const formas: string[] = (config as any)?.formas_entrega || []
-  const entrega = formas.some(f => f === 'entrega_propria' || f === 'motoboy' || f === 'uber_flash')
+/** (20/10) Faixa com o que o cliente quer saber antes de pedir, com os dados que a loja já cadastrou:
+ *  quanto custa a entrega, o menor prazo das encomendas e se tem pronta entrega. */
+const ORDEM_PRAZO = ['24h', '48h', '3d', '5d', '7d', '15d']
+export function faixaDaLoja(config: Configuracoes | null, produtos: any[] = []) {
+  const c: any = config || {}
+  const formas: string[] = c.formas_entrega || []
+  const propria = formas.includes('entrega_propria')
+  const outra = formas.some(f => f === 'motoboy' || f === 'uber_flash')
   const retirada = formas.includes('retirada')
-  const selos = produtos.map(p => seloEntrega(p))
-  const pronta = selos.some(s => s?.tipo === 'pronta')
-  const encomenda = selos.some(s => s?.tipo === 'encomenda')
-  return [
-    entrega && { Ic: Truck, t: 'Entrega', d: 'Entrega' },
-    retirada && { Ic: Storefront, t: 'Retirada', d: 'Retirada no local' },
-    encomenda && { Ic: CalendarBlank, t: 'Encomenda', d: 'Sob encomenda' },
-    pronta && { Ic: Lightning, t: 'Pronta', d: 'Pronta entrega' },
-  ].filter(Boolean) as { Ic: typeof Truck; t: string; d: string }[]
+  const porBairro = Array.isArray(c.entrega_por_bairro) && c.entrega_por_bairro.length > 0
+  const valor = Number(c.valor_entrega_propria) || 0
+  const itens: { Ic: typeof Truck; v: string; t: string; ok?: boolean }[] = []
+  if (propria) itens.push(porBairro ? { Ic: Truck, v: 'Por bairro', t: 'entrega' } : valor > 0 ? { Ic: Truck, v: formatarReais(valor), t: 'entrega' } : { Ic: Truck, v: 'Grátis', t: 'entrega', ok: true })
+  else if (outra) itens.push({ Ic: Truck, v: 'A combinar', t: 'entrega' })
+  else if (retirada) itens.push({ Ic: Storefront, v: 'Retirada', t: 'no local' })
+  const prazos = produtos.map(p => String(p?.antecedencia || '')).filter(a => ORDEM_PRAZO.includes(a)).sort((x, y) => ORDEM_PRAZO.indexOf(x) - ORDEM_PRAZO.indexOf(y))
+  if (prazos.length) itens.push({ Ic: CalendarBlank, v: ANTECEDENCIA[prazos[0]], t: 'encomendas' })
+  if (produtos.some(p => seloEntrega(p)?.tipo === 'pronta')) itens.push({ Ic: Lightning, v: 'Hoje', t: 'pronta entrega' })
+  return itens
 }
+const formatarReais = (v: number) => 'R$ ' + v.toFixed(2).replace('.', ',')
 
 export function CardapioModelo1({ design, config, verificada = false, produtos = [], aoAbrirSobre }: CardapioModeloProps & { aoAbrirSobre?: () => void }) {
   const [modalEndereco, setModalEndereco] = useState(false)
@@ -84,7 +89,7 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
   // (4.27) loja com os pedidos pausados aparece fechada, seja qual for o horário
   const status = (config as any)?.loja_pausada ? { aberto: false, msg: 'Pedidos pausados no momento', curto: 'Pedidos pausados' } : getStatusLoja(config?.horario || null)
   const endereco = getEnderecoData(config)
-  const etiquetas = etiquetasDaLoja(config, produtos)
+  const faixa = faixaDaLoja(config, produtos)
 
   const isColorLight = (hex: string): boolean => {
     const c = hex.replace('#', '')
@@ -138,11 +143,14 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
         {design.tema === 'natal' && design.tema_aviso && <p className="cm1-aviso-tema"><CalendarBlank size={16} weight="bold" aria-hidden="true" />{design.tema_aviso}</p>}
         {design.descricao_loja && <p className="cm1-descricao">{design.descricao_loja}</p>}
 
-        {/* (17/10) formas de entrega em quadradinhos (só informam; a escolha é no checkout) */}
-        {etiquetas.length > 0 && (
-          <ul className="cm1-modos" aria-label="Como a loja atende">
-            {etiquetas.map(({ Ic, t, d }) => (
-              <li key={t} title={d}><span className="cm1-modo-ic"><Ic size={26} weight="duotone" color={corIcone} aria-hidden="true" /></span><small>{t}</small></li>
+        {/* (20/10) faixa com entrega, prazo das encomendas e pronta entrega (antes: quadradinhos só com o nome) */}
+        {faixa.length > 0 && (
+          <ul className="cm1-faixa" aria-label="Como a loja atende">
+            {faixa.map(({ Ic, v, t, ok }) => (
+              <li key={t}>
+                <b className={ok ? 'ok' : undefined}><Ic size={16} weight="bold" color={ok ? '#16803C' : corIcone} aria-hidden="true" />{v}</b>
+                <small>{t}</small>
+              </li>
             ))}
           </ul>
         )}

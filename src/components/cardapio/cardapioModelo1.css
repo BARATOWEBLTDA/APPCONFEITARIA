@@ -76,3 +76,13 @@
 @media (max-width: 340px) { .cm1-modo-ic { width: 50px; height: 50px; border-radius: 14px; } .cm1-modos small { font-size: 11.5px; } }
 .cm1-sl-st.aberto i::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; background: #16a34a; animation: cm1Pulsa 1.8s ease-out infinite; }
 @media (prefers-reduced-motion: reduce) { .cm1-sl-st.aberto i::after { display: none; } }
+
+/* (20/10) faixa: entrega, prazo das encomendas e pronta entrega, em colunas com divisória */
+.cm1-faixa { display: flex; margin: 14px 0 0; padding: 0; list-style: none; border: 1px solid var(--ui-borda-campo); border-radius: 14px; background: var(--ui-branco); }
+.cm1-faixa li { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 4px; }
+.cm1-faixa li + li { border-left: 1px solid var(--ui-borda-campo); }
+.cm1-faixa b { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; font-size: 15px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; }
+.cm1-faixa b svg { flex: none; }
+.cm1-faixa b.ok { color: #16803C; }
+.cm1-faixa small { max-width: 100%; font-size: 12px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 360px) { .cm1-faixa b { font-size: 14px; gap: 4px; } .cm1-faixa small { font-size: 11.5px; } }
