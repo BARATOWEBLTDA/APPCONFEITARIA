@@ -6,7 +6,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import {
   ChartLineUp, ClipboardText, Gear, PaintBrush, Crown, SquaresFour, UserPlus, X, CaretRight,
   Megaphone, CalendarDots, Users, Stack, Truck, Storefront, Eye, Basket, ArrowsDownUp,
-  HandCoins, CalendarCheck, Tag, Cake, ChatCircleText, Newspaper, Bug, Lightbulb, Sparkle,
+  HandCoins, CalendarCheck, Tag, Cake, ChatCircleText, Newspaper, Sparkle,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { BotaoIcone } from "@/components/base";
@@ -58,7 +58,7 @@ const GRUPOS: Grupo[] = [
     label: "Cadastros",
     items: [
       { label: "Produtos",      desc: "O que aparece no cardápio",      path: "/produtos",      Icone: Cake },
-      { label: "Complementos",  desc: "Sabores, recheios e adicionais", path: "/complementos",  Icone: Stack },
+      { label: "Complementos",  desc: "Topo, velas e outros extras", path: "/complementos",  Icone: Stack },
       { label: "Categorias",    desc: "Organize seus produtos",         path: "/categorias",    Icone: SquaresFour },
       { label: "Ficha técnica", desc: "Calcule o custo real",           path: "/ficha-tecnica", Icone: ClipboardText },
       { label: "Ingredientes",  desc: "O que você compra",              path: "/insumos",       Icone: Basket },
@@ -87,8 +87,7 @@ const GRUPOS: Grupo[] = [
     items: [
       { label: "Configurações",     desc: "Conta, loja e app",     path: "/configuracoes",     Icone: Gear },
       { label: "Novidades",         desc: "O que mudou no Doonly", path: "/noticias",          Icone: Newspaper },
-      { label: "Relatar problema",  desc: "Algo não funcionou",    path: "/relatar-problema",  Icone: Bug },
-      { label: "Pedir um recurso",  desc: "Sugira uma ideia",      path: "/solicitar-recurso", Icone: Lightbulb },
+      // (20/10) Relatar problema e Pedir um recurso saíram daqui: ficam só no grupo Ajuda das Configurações
     ],
   },
 ];
