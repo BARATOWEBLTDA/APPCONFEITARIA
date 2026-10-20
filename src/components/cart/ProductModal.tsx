@@ -2,7 +2,7 @@ import { seloEntrega } from "@/lib/entregaProduto";
 import { unidadeCliente } from '@/lib/formaVenda'
 import KitPicker from '@/components/cardapio/KitPicker'
 import { precoCardapio, precoDoTamanho, descontoCardapio, comDesconto, tamanhosEsgotados } from '@/lib/precoCardapio'
-import { pesoDoNome, pesoDoTamanho, cortarTexto } from '@/lib/itemSacola'
+import { pesoDoNome, pesoDoTamanho } from '@/lib/itemSacola'
 import { r2 } from '@/lib/moeda'
 import { avisar } from '@/components/base'
 import { kitAtivo, calcularKit, selecaoInicial, type KitSelecao } from '@/lib/kitQuantidade'
@@ -616,13 +616,13 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
           <button type="button" className="pm-x-pc" aria-label="Fechar" onClick={onClose}><X size={22} weight="bold" /></button></div>
         {product.descricao && <p className="pm-desc">{product.descricao}</p>}
         <div className="pm-preco">
-          {!semTamanho && descPct > 0 && calculo.subtotal > valorTopo && <s>{formatCurrency(calculo.subtotal)}</s>}
           {/* (19/10) com tamanhos: "a partir de R$ X" (o menor), em vez de "R$ X a R$ Y" */}
           {semTamanho && pMax > pMin && <small className="pm-apartir">a partir de</small>}
-          {semTamanho && pMinCheio > pMin && <s>{formatCurrency(pMinCheio)}</s>}
-          <strong>{formatCurrency(semTamanho ? pMin : valorTopo)}</strong>
+          {/* (20/10) "a partir de" numa linha só dele; o preço cheio riscado vem depois do preço */}
+          <strong className={descPct > 0 ? 'pm-preco-promo' : undefined}>{formatCurrency(semTamanho ? pMin : valorTopo)}</strong>
           <em>{semTamanho ? ((product as any).forma_venda === 'kg' ? unidadeCliente(product.forma_venda) : '') : kitCfg ? ((kitCfg as any).modo === 'livre' ? (Number((kitCfg as any).livre?.min) === 100 ? 'o cento' : `${(kitCfg as any).livre?.min} un.`) : 'o kit') : gTamanho ? '' : saborComPreco && !opSabor ? 'conforme o sabor' : unidadeCliente(product.forma_venda)}</em>
-          {descPct > 0 && <span className="pm-off">{Math.round(descPct * 100)}% off</span>}
+          {semTamanho ? (pMinCheio > pMin && <s>{formatCurrency(pMinCheio)}</s>) : (descPct > 0 && calculo.subtotal > valorTopo && <s>{formatCurrency(calculo.subtotal)}</s>)}
+          {descPct > 0 && <span className="pm-off">-{Math.round(descPct * 100)}%</span>}
         </div>
         {aviso}
       </div>
@@ -674,17 +674,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
         </section>
       )}
 
-      {!previa && (
-      <section className="pm-g">
-        <header className="pm-g-cab"><span><b>Alguma observação?</b></span><span className="pm-g-dir"><em>{observations.length}/140</em></span></header>
-        <div className="pm-obs">
-          <textarea value={observations} maxLength={140} rows={3} aria-label="Alguma observação?"
-            placeholder={gTamanho || gMassa || gRecheio ? 'Ex.: escrever "Parabéns, Lia!" no bolo' : 'Ex.: deixar sem açúcar por cima'}
-            // (11/10) corta por caracteres inteiros: metade de emoji quebrava o link do WhatsApp do pedido
-            onChange={e => setObservations(cortarTexto(e.target.value, 140))} />
-        </div>
-      </section>
-      )}
+      {/* (20/10) a observação saiu daqui: o recado vai no fim do pedido, antes de pagar */}
     </>
   )
 

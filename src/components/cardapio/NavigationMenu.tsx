@@ -938,7 +938,7 @@ function CartContent({
         <section>
           <Cab t="Recado pra loja" opc />
           <div className="sc-campos sc-recado">
-            <CampoArea rotulo="" aria-label="Recado pra loja" value={observacoes} onChange={e => setObservacoes(e.target.value)} placeholder={ehEntrega ? 'Ex.: tocar a campainha do portão' : 'Ex.: vou mandar outra pessoa buscar'} rows={3} />
+            <CampoArea rotulo="" aria-label="Recado pra loja" value={observacoes} onChange={e => setObservacoes(e.target.value)} placeholder='Ex.: escrever "Parabéns, Lia!" no bolo' rows={3} />
           </div>
         </section>
 

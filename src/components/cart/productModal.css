@@ -32,7 +32,8 @@
 .pm-tit { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .pm-x-pc { display: none; }
 .pm-off { align-self: center; padding: 3px 9px; border-radius: 999px; background: #EAF7EE; color: #16803C; font-size: 13px; font-weight: 700; white-space: nowrap; }
-.pm-preco s ~ strong { color: #16803C; }
+.pm-preco strong.pm-preco-promo { color: #16803C; }
+.pm-preco .pm-apartir { flex-basis: 100%; margin-bottom: -6px; font-size: 13.5px; color: var(--ui-texto-2); }
 .pm-info h2 { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.25; }
 .pm-info > p { margin: 6px 0 0; font-size: 15px; line-height: 1.5; color: var(--ui-texto-2); white-space: pre-line; }
 .pm-preco { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; margin-top: 12px; }
