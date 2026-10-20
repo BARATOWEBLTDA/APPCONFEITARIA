@@ -159,7 +159,7 @@ const CSS = `
   .pf-it { display: flex; align-items: center; gap: 4px; border-top: 1px solid var(--ui-linha, #F3ECEF); }
   .pf-it:first-child { border-top: 0; }
   .pf-linha { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 60px; margin: 0; padding: 8px 0; border: 0; background: none; font-family: inherit; text-align: left; cursor: pointer; }
-  .pf-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--primary-light, #FCE0E9); color: var(--ui-rosa-escuro); }
+  .pf-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: #F3F0F1; color: #8F8589; } /* (19/10) cinza claro (antes rosinha) */
   .pf-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
   .pf-tx b { font-size: 14.5px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pf-tx small { font-size: 13px; line-height: 1.35; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
