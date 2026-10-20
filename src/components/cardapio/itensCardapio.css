@@ -102,3 +102,10 @@
 .ic-sec--pc .ic-cp > :not(.ic-cp-ft) { margin-left: 14px; margin-right: 14px; }
 .ic-sec--pc .ic-cp > :last-child { margin-bottom: 14px; }
 .ic-sec--pc .ic-ln-tx > b { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* (20/10) computador: as partes do cartão (foto, nome, descrição, preço) alinham entre os cartões da mesma linha,
+   mesmo quando um nome ocupa 2 linhas e o vizinho 1 */
+@supports (grid-template-rows: subgrid) {
+  .ic-sec--pc .ic-cp { display: grid; grid-row: span 4; grid-template-rows: subgrid; row-gap: 0; align-content: start; }
+  .ic-sec--pc .ic-cp .ic-pp { align-self: end; }
+}

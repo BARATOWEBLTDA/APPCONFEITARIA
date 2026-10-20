@@ -78,7 +78,7 @@ export function CartaoPromo({ produto, cor = '#E85A8C', pc = false }: { produto:
           {!pc && <SeloEntregaFoto produto={produto} />}
         </div>
         <b className="ic-cp-nome">{produto.nome}</b>
-        {produto.descricao && <p className="ic-cp-desc">{produto.descricao}</p>}
+        {produto.descricao ? <p className="ic-cp-desc">{produto.descricao}</p> : pc ? <p className="ic-cp-desc" aria-hidden="true" /> : null}
         <PrecoPromo produto={produto} cor={cor} />
       </article>
       <ProductModal isOpen={aberto} onClose={fechar} product={produto} corBotao={cor} />
