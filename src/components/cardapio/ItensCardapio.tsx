@@ -73,7 +73,8 @@ export function CartaoPromo({ produto, cor = '#E85A8C', pc = false }: { produto:
       <article className="ic-cp" {...props}>
         {/* (14/10) igual aos outros cartões: selo de entrega em cima da foto; depois nome, descrição e preço */}
         <div className="ic-cp-ft">
-          {foto ? <img src={foto} alt="" loading="lazy" /> : <span className="ic-sem"><Cake size={32} aria-hidden="true" /></span>}
+          {/* (20/10) computador: a foto aparece inteira (sem corte), com a própria foto borrada preenchendo as sobras */}
+          {foto ? (pc ? <><img className="ic-fundo" src={foto} alt="" aria-hidden="true" loading="lazy" /><img className="ic-inteira" src={foto} alt="" loading="lazy" /></> : <img src={foto} alt="" loading="lazy" />) : <span className="ic-sem"><Cake size={32} aria-hidden="true" /></span>}
           {/* (20/10) no computador o prazo aparece só dentro do produto (e no filtro de entrega) */}
           {!pc && <SeloEntregaFoto produto={produto} />}
         </div>
@@ -105,7 +106,7 @@ export function LinhaProduto({ produto, cor = '#E85A8C', pc = false }: { produto
           {(!pc || tamanhosEsgotados(produto)) && <Entrega produto={produto} />}
         </div>
         <div className="ic-ln-ft">
-          {foto ? <img src={foto} alt="" loading="lazy" /> : <span className="ic-sem"><Cake size={28} aria-hidden="true" /></span>}
+          {foto ? (pc ? <><img className="ic-fundo" src={foto} alt="" aria-hidden="true" loading="lazy" /><img className="ic-inteira" src={foto} alt="" loading="lazy" /></> : <img src={foto} alt="" loading="lazy" />) : <span className="ic-sem"><Cake size={28} aria-hidden="true" /></span>}
         </div>
       </article>
       <ProductModal isOpen={aberto} onClose={fechar} product={produto} corBotao={cor} />

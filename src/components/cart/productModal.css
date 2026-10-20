@@ -137,3 +137,9 @@
 /* (19/10) foto do produto mais baixa (sobra espaço pra descrição e escolhas) */
 @media (max-width: 899px) { .pm-ft { aspect-ratio: 16 / 10; max-height: 240px; } }
 .pm-apartir { align-self: center; font-size: 14px; font-weight: 500; color: var(--ui-texto-2); }
+
+/* (20/10) computador: foto do produto inteira (contain) com o fundo borrado */
+@media (min-width: 768px) {
+  .pm-ft-pc img:not(.pm-ft-fundo) { object-fit: contain; }
+  .pm-ft-pc img.pm-ft-fundo { inset: -8%; width: 116%; height: 116%; object-fit: cover; filter: blur(22px) saturate(1.1); opacity: .55; }
+}

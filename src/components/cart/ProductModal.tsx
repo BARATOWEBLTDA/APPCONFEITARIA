@@ -727,6 +727,8 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
         {images.length > 0 && (
           <div className="pm-lado">
             <div className="pm-ft-pc">
+              {/* (20/10) a foto inteira, sem corte; atrás, ela mesma borrada preenche as sobras */}
+              <img className="pm-ft-fundo" src={images[imgIndex] || images[0]} alt="" aria-hidden="true" />
               {images.map((src, i) => <img key={src + i} src={src} alt={i === imgIndex ? nome : ''} className={i === imgIndex ? 'on' : ''} />)}
             </div>
             {images.length > 1 && (

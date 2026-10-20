@@ -113,3 +113,9 @@
 /* (20/10) computador: promoções em 3 por linha no notebook e 4 em tela grande */
 .ic-sec--pc .ic-grade { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @media (min-width: 1600px) { .ic-sec--pc .ic-grade { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+/* (20/10) computador: foto inteira, sem o zoom do recorte. As sobras ficam com a própria foto borrada atrás */
+.ic-sec--pc .ic-cp-ft, .ic-sec--pc .ic-ln-ft { position: relative; overflow: hidden; }
+.ic-sec--pc .ic-cp-ft img.ic-fundo, .ic-sec--pc .ic-ln-ft img.ic-fundo { position: absolute; inset: -12%; width: 124%; height: 124%; object-fit: cover; filter: blur(16px) saturate(1.1); opacity: .6; transform: none; }
+.ic-sec--pc .ic-cp-ft img.ic-inteira, .ic-sec--pc .ic-ln-ft img.ic-inteira { position: relative; width: 100%; height: 100%; object-fit: contain; }
+@media (hover: hover) { .ic-sec--pc .ic-cp:hover .ic-cp-ft img { transform: none; } }
