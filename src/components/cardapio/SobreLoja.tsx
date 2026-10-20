@@ -10,6 +10,7 @@ import { getEnderecoData } from '@/components/cardapio/CardapioModelo1'
 import { linkInstagram, linkFacebook, arrobaInstagram, nomeFacebook } from '@/lib/redesSociais'
 import type { Configuracoes, DesignSettings } from '@/types/database'
 import './sobreLoja.css'
+import { topoEscurecido } from '@/lib/coresCardapio'
 
 /**
  * Sobre a loja (4.25) · janela com 3 abas, no celular e no computador:
@@ -43,7 +44,7 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
   useEffect(() => { if (aberta) setAba(abaInicial) }, [aberta, abaInicial])
 
   const cfg: any = config || {}
-  const cor = design.cor_navbar || design.cor_borda || '#BF6B84' // (14/10) mesma cor do topo do cardápio
+  const cor = topoEscurecido(design.cor_navbar || design.cor_borda || '#BF6B84') // (14/10) mesma cor do topo do cardápio (20/10: escurecida)
   const end = getEnderecoData(config)
   const zap = linkWhatsApp(config?.telefone)
   const insta = linkInstagram(cfg.instagram), face = linkFacebook(cfg.facebook)

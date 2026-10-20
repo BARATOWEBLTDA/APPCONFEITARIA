@@ -25,7 +25,7 @@ import { MapPin, House, MagnifyingGlass, ShoppingBag, Storefront, User, X } from
 import { SobreLoja } from '@/components/cardapio/SobreLoja'
 import { useCart } from '@/hooks/useCart'
 import { formatCurrency } from '@/utils/helpers'
-import { corClara, nomeSobreTopo } from '@/lib/coresCardapio'
+import { corClara, nomeSobreTopo, topoEscurecido } from '@/lib/coresCardapio'
 import { LacoNatal, useClasseTema } from '@/components/tema/Natal'
 import CatalogoNatal from '@/components/tema/CatalogoNatal'
 import './cardapioPublico.css'
@@ -46,7 +46,8 @@ const corValida = (c: string | undefined | null): boolean => {
   const norm = c.trim().toLowerCase().replace(/\s/g, '')
   return !['', '#fff', '#ffffff', '#fefefe', 'white', 'transparent', 'rgb(255,255,255)', 'rgba(255,255,255,1)'].includes(norm)
 }
-const corDoTopo = (design: DesignSettings) => corValida(design.cor_navbar) ? design.cor_navbar! : (corValida(design.cor_borda) ? design.cor_borda! : '#BF6B84')
+// (20/10) a faixa do topo usa a cor da loja escurecida (mais legível e com cara premium)
+const corDoTopo = (design: DesignSettings) => topoEscurecido(corValida(design.cor_navbar) ? design.cor_navbar! : (corValida(design.cor_borda) ? design.cor_borda! : '#BF6B84'))
 
 /* ── Topo do computador ── */
 function DeskNav({ design, config, isPro = false }: { design: DesignSettings; config: Configuracoes | null; isPro?: boolean }) {

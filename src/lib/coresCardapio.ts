@@ -44,3 +44,34 @@ export const corClara = (c: string) => lum(c) > 170;
 export function nomeSobreTopo(nome: string, topo: string): string {
   return Math.abs(lum(nome) - lum(topo)) >= 90 ? nome : (corClara(topo) ? "#2C1219" : "#FFFFFF");
 }
+
+/* (20/10) Faixa do topo "premium": a cor da loja escurecida pelo app, no mesmo tom,
+ * até o texto branco ficar bem legível (contraste 8,5 : 1). Cor já escura fica como está.
+ * Amarelo e bege viram marrom feio quando escurecem: nesses casos usa o chocolate do Doonly. */
+const canal = (v: number) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+const contrasteBranco = (r: number, g: number, b: number) => 1.05 / (0.2126 * canal(r) + 0.7152 * canal(g) + 0.0722 * canal(b) + 0.05);
+const hslParaRgb = (h: number, s: number, l: number): [number, number, number] => {
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+  const f = (t: number) => { t = (t + 1) % 1; return t < 1 / 6 ? p + (q - p) * 6 * t : t < 1 / 2 ? q : t < 2 / 3 ? p + (q - p) * (2 / 3 - t) * 6 : p; };
+  return [Math.round(f(h + 1 / 3) * 255), Math.round(f(h) * 255), Math.round(f(h - 1 / 3) * 255)];
+};
+const paraHex = (r: number, g: number, b: number) => "#" + [r, g, b].map(v => v.toString(16).padStart(2, "0")).join("").toUpperCase();
+export function topoEscurecido(cor: string, alvo = 8.5): string {
+  const h6 = hex6(cor);
+  if (!h6) return cor;
+  const n = parseInt(h6.slice(1), 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  if (contrasteBranco(r, g, b) >= alvo) return h6;
+  const R = r / 255, G = g / 255, B = b / 255, mx = Math.max(R, G, B), mn = Math.min(R, G, B), d = mx - mn;
+  let l = (mx + mn) / 2, s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1)), h = 0;
+  if (d) h = (mx === R ? ((G - B) / d) % 6 : mx === G ? (B - R) / d + 2 : (R - G) / d + 4) / 6;
+  if (h < 0) h += 1;
+  if (h * 360 >= 40 && h * 360 <= 75 && s > 0.3) return "#3A2219";
+  if (s > 0.08) s = Math.max(Math.min(s, 0.7), 0.3);
+  l = Math.min(l, 0.5);
+  while (l > 0.16) {
+    const [rr, gg, bb] = hslParaRgb(h, s, l);
+    if (contrasteBranco(rr, gg, bb) >= alvo) return paraHex(rr, gg, bb);
+    l -= 0.01;
+  }
+  return paraHex(...hslParaRgb(h, s, 0.16));
+}

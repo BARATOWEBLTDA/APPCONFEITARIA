@@ -12,7 +12,7 @@ import { situacaoLoja } from "@/lib/agendaCardapio";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, BotaoIcone, Janela, Titulo, avisar } from "@/components/base";
 import { lerBannersProntos, CATEGORIAS_BANNER, CATEGORIA_CAPA_NATAL, type BannerPronto } from "@/lib/bannersProntos";
-import { COR_BOTOES, PADRAO, PRONTAS, corDoItem, type CampoCor } from "@/lib/coresCardapio";
+import { COR_BOTOES, PADRAO, PRONTAS, corDoItem, topoEscurecido, type CampoCor } from "@/lib/coresCardapio";
 import { AVISO_NATAL_PADRAO, CAPA_NATAL_PADRAO, NATAL, type Tema } from "@/lib/temaCardapio";
 import { LacoNatal } from "@/components/tema/Natal";
 import "./aparencia.css";
@@ -454,7 +454,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         <Cabeca Ic={Sparkle} titulo="Tema do cardápio" apoio="Enfeita o cardápio nas datas especiais" />
         <div className="ap-temas" role="radiogroup" aria-label="Tema do cardápio">
           <button type="button" role="radio" aria-checked={tema === "normal"} className="ap-tema" onClick={() => escolherTema("normal")}>
-            <span className="ap-tema-th" style={{ background: corDoItem("cor_navbar", corNavbar, isPro) }}><span className="ap-tema-lo" style={{ borderColor: corDoItem("cor_borda", corBorda, isPro) }}>{(logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : null}</span></span>
+            <span className="ap-tema-th" style={{ background: topoEscurecido(corDoItem("cor_navbar", corNavbar, isPro)) }}><span className="ap-tema-lo" style={{ borderColor: corDoItem("cor_borda", corBorda, isPro) }}>{(logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : null}</span></span>
             <span className="ap-tema-pe"><b>Normal</b><small>Suas cores</small></span>
             {tema === "normal" && <span className="ap-tema-ok" aria-hidden="true"><Check size={13} weight="bold" /></span>}
           </button>
@@ -514,7 +514,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         <input ref={bannerTopoRef} type="file" accept="image/*" hidden onChange={recorteTopo.escolher} />
         <div className="ap-topo">
           {/* (18/10) a faixa não é clicável: quem troca a foto é o botão de baixo */}
-          <div className={`ap-topo-capa${bannerTopoUrl ? " ap-topo-capa--foto" : " ap-topo-capa--vazia"}${tema === "natal" ? " ap-topo-capa--natal" : ""}`} style={bannerTopoUrl ? undefined : { backgroundColor: tema === "natal" ? NATAL.topo : corAtual("cor_navbar", corNavbar) }}>
+          <div className={`ap-topo-capa${bannerTopoUrl ? " ap-topo-capa--foto" : " ap-topo-capa--vazia"}${tema === "natal" ? " ap-topo-capa--natal" : ""}`} style={bannerTopoUrl ? undefined : { backgroundColor: tema === "natal" ? NATAL.topo : topoEscurecido(corAtual("cor_navbar", corNavbar)) }}>
             {bannerTopoUrl ? <img className="ap-topo-capa-img" src={bannerTopoUrl} alt="" /> : <span className="ap-topo-pill"><ImageIcon size={16} weight="bold" aria-hidden="true" />Foto do topo · 1200 × 400</span>}
             {bannerTopoUrl && <BotaoIcone rotulo="Tirar a foto do topo" variante="neutro" tamanho="p" className="ap-tirar ap-topo-x" onClick={handleRemoveBannerTopo}><X size={18} weight="bold" /></BotaoIcone>}
             {(() => { const sit = situacaoLoja(horario as any); const aberto = !sit || sit.aberto; return (
@@ -606,7 +606,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         <Cabeca Ic={Palette} titulo="Cores do topo" apoio="Os números mostram onde cada cor fica" />
         {tema === "natal" && <p className="ap-cores-tema"><Info size={16} weight="bold" aria-hidden="true" />O tema de Natal está usando as cores dele</p>}
         <div className="ap-mini" aria-hidden="true">
-          <div className="ap-mini-topo" style={{ background: corAtual("cor_navbar", corNavbar) }}><span className="ap-mini-n" style={{ left: 10, top: 10 }}>1</span></div>
+          <div className="ap-mini-topo" style={{ background: topoEscurecido(corAtual("cor_navbar", corNavbar)) }}><span className="ap-mini-n" style={{ left: 10, top: 10 }}>1</span></div>
           <div className="ap-mini-corpo">
             <span className="ap-mini-logo" style={{ borderColor: corAtual("cor_borda", corBorda) }}>{(logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : null}</span>
             <span className="ap-mini-n" style={{ right: 4, top: -34 }}>2</span>

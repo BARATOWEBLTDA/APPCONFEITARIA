@@ -7,6 +7,7 @@ import { DesignSettings, Configuracoes } from '@/types/database'
 import { seloEntrega } from '@/lib/entregaProduto'
 import { situacaoDaLoja, horaTexto } from '@/lib/agendaCardapio'
 import './cardapioModelo1.css'
+import { topoEscurecido } from '@/lib/coresCardapio'
 
 // ─────────────────────────────────────────────────────────────
 // CardapioModelo1 — topo do cardápio no celular (o padrão de todas as lojas)
@@ -78,7 +79,7 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
   const [modalEndereco, setModalEndereco] = useState(false)
   const accent = design.cor_borda || '#E85A8C' // (18/10) borda da logo
   const ehBranco = (c?: string | null) => !c || ['#fff', '#ffffff', '#fefefe', 'white', 'transparent'].includes(c.trim().toLowerCase())
-  const corFaixa = !ehBranco(design.cor_navbar) ? design.cor_navbar! : (!ehBranco(design.cor_borda) ? design.cor_borda! : '#BF6B84')
+  const corFaixa = topoEscurecido(!ehBranco(design.cor_navbar) ? design.cor_navbar! : (!ehBranco(design.cor_borda) ? design.cor_borda! : '#BF6B84')) // (20/10) escurecida
   const corIcone = !ehBranco(design.cor_botao) ? design.cor_botao! : '#EC4899'
   // (4.27) loja com os pedidos pausados aparece fechada, seja qual for o horário
   const status = (config as any)?.loja_pausada ? { aberto: false, msg: 'Pedidos pausados no momento', curto: 'Pedidos pausados' } : getStatusLoja(config?.horario || null)
