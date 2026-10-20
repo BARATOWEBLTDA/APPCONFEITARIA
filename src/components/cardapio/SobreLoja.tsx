@@ -11,6 +11,7 @@ import { linkInstagram, linkFacebook, arrobaInstagram, nomeFacebook } from '@/li
 import type { Configuracoes, DesignSettings } from '@/types/database'
 import './sobreLoja.css'
 import { topoEscurecido } from '@/lib/coresCardapio'
+import MapaEndereco, { type BuscaMapa } from '@/components/MapaEndereco'
 
 /**
  * Sobre a loja (4.25) · janela com 3 abas, no celular e no computador:
@@ -118,11 +119,20 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
             )}
 </>)
 
+  // (20/10) computador: o mapa do endereço (o mesmo do cadastro) preenche a coluna da esquerda
+  const soCidade = !cfg.mostrar_localizacao
+  const buscaMapa: BuscaMapa = (() => {
+    try {
+      const e = cfg.endereco ? (typeof cfg.endereco === 'string' ? JSON.parse(cfg.endereco) : cfg.endereco) : null
+      return e?.cidade ? { rua: e.rua || '', numero: e.numero || '', cidade: e.cidade, estado: e.estado || '' } : null
+    } catch { return null }
+  })()
+
   if (largo) return (
     <Janela aberta={aberta} aoFechar={fechar} tipo="conteudo" titulo={design.nome_loja || 'Sobre a loja'} umaAcao={!!zap}
       acoes={zap ? <a className="cp-zap" href={zap} target="_blank" rel="noopener noreferrer"><IconeWhatsApp size={20} />Chamar no WhatsApp</a> : undefined}>
       <div className="sl sl--largo" style={{ ['--sl-cor' as any]: cor }}>
-        <div className="sl-col sl-corpo">{blocoSobre}</div>
+        <div className="sl-col sl-corpo">{blocoSobre}{largo && end && aberta && buscaMapa && <MapaEndereco busca={buscaMapa} soCidade={soCidade} selo="" />}</div>
         <div className="sl-col sl-corpo"><div className="sl-bloco sl-hor"><h3>Horário</h3>{blocoHorario}</div>{blocoPagamento}</div>
       </div>
     </Janela>

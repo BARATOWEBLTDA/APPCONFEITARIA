@@ -59,3 +59,5 @@
 .sl--largo .sl-hor { display: flex; flex-direction: column; gap: 8px; }
 .sl--largo .sl-hor h3 { margin: 0; }
 .sl--largo .sl-col + .sl-col { padding-left: 28px; border-left: 1px solid #F0EBED; }
+/* (20/10) mapa embaixo do endereço, ocupando o espaço da coluna */
+.sl--largo .mpe { margin-top: 0; height: 230px; }
