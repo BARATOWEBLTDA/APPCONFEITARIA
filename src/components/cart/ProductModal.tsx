@@ -8,7 +8,7 @@ import { avisar } from '@/components/base'
 import { kitAtivo, calcularKit, selecaoInicial, type KitSelecao } from '@/lib/kitQuantidade'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { ArrowLeft, CalendarBlank, Camera, Check, Minus, Plus, X } from '@phosphor-icons/react'
+import { ArrowLeft, CalendarBlank, Camera, CaretLeft, CaretRight, Check, Minus, Plus, X } from '@phosphor-icons/react'
 import { useSobreposicao } from '@/components/base/useSobreposicao'
 import './productModal.css'
 import { useCart } from '@/hooks/useCart'
@@ -117,6 +117,15 @@ function Grupo({ chave, g, multi, valor, aoMudar, secoes, faltou, emFatias, corB
     : g.min_selecionavel > 0 ? `Escolha de ${g.min_selecionavel} a ${max} opções`
     : `Escolha até ${max} ${max === 1 ? 'opção' : 'opções'}`
   const falta = faltou === chave
+  const unG = String((g as any).rendimento_unidade || '').trim() // (13/10) além de pessoas e fatias, a unidade que ela escreveu (copos, potes…)
+  const nomeOp = (op: any) => {
+    const peso = op.peso_kg && pesoDoNome(op.nome) !== Number(op.peso_kg) ? `${String(op.peso_kg).replace('.', ',')} kg` : '' // (10/10) não repete quando o nome já é o peso
+    return peso && g.tipo === 'tamanho' ? `${op.nome} · ${peso}` : op.nome
+  }
+  const serveOp = (op: any) => op.serve ? (/^\d+$/.test(String(op.serve).trim()) ? (emFatias ? `${String(op.serve).trim()} fatias` : unG && unG !== 'pessoas' ? `Serve até ${String(op.serve).trim()} ${unG}` : `Serve até ${String(op.serve).trim()} pessoas`) : `Serve até ${op.serve}`) : ''
+  // (20/10) escolha única feita: o subtítulo mostra o que foi escolhido ("5 kg · serve até 50 pessoas")
+  const opEscolhida = !multi && valor ? g.opcoes.find((o: any) => o.id === valor) : null
+  const resumo = opEscolhida ? [nomeOp(opEscolhida), serveOp(opEscolhida).replace(/^Serve/, 'serve')].filter(Boolean).join(' · ') : ''
   const tocar = (id: string) => {
     if (multi) {
       const arr = Array.isArray(valor) ? [...valor] : []
@@ -132,7 +141,7 @@ function Grupo({ chave, g, multi, valor, aoMudar, secoes, faltou, emFatias, corB
   return (
     <section ref={el => { secoes.current[chave] = el }} className={`pm-g${falta ? ' falta' : ''}`}>
       <header className="pm-g-cab">
-        <span><b>{titulo}</b><small>{falta ? `${regra} pra continuar` : regra}</small></span>
+        <span><b>{titulo}</b><small className={resumo && !falta ? 'pm-g-resumo' : undefined}>{falta ? `${regra} pra continuar` : resumo || regra}</small></span>
         <span className="pm-g-dir">
           {multi && max > 1 && <em>{qtdMarcada}/{max}</em>}
           {obrig && (ok ? <i className="pm-ok" aria-label="Escolhido"><Check size={14} weight="bold" /></i> : <i className="pm-obr">Obrigatório</i>)}
@@ -142,14 +151,12 @@ function Grupo({ chave, g, multi, valor, aoMudar, secoes, faltou, emFatias, corB
         {g.opcoes.map((op: any) => {
           const on = marcado(op.id)
           const preco = precoDaOpcao(g, op)
-          const peso = op.peso_kg && pesoDoNome(op.nome) !== Number(op.peso_kg) ? `${String(op.peso_kg).replace('.', ',')} kg` : '' // (10/10) não repete quando o nome já é o peso
-          const un = String((g as any).rendimento_unidade || '').trim() // (13/10) além de pessoas e fatias, a unidade que ela escreveu (copos, potes…)
-          const serve = op.serve ? (/^\d+$/.test(String(op.serve).trim()) ? (emFatias ? `${String(op.serve).trim()} fatias` : un && un !== 'pessoas' ? `Serve até ${String(op.serve).trim()} ${un}` : `Serve até ${String(op.serve).trim()} pessoas`) : `Serve até ${op.serve}`) : ''
+          const serve = serveOp(op)
           const esgotado = !!op.esgotado // (14/10) a confeiteira marcou esse tamanho como esgotado
           const bloqueado = esgotado || (multi && !on && max > 1 && qtdMarcada >= max)
           return (
             <button key={op.id} type="button" className="pm-op" role={multi ? 'checkbox' : 'radio'} aria-checked={on} disabled={bloqueado} onClick={() => tocar(op.id)}>
-              <span className="pm-op-tx"><b>{peso && g.tipo === 'tamanho' ? `${op.nome} · ${peso}` : op.nome}</b>{serve && <small>{serve}</small>}</span>
+              <span className="pm-op-tx"><b>{nomeOp(op)}</b>{serve && <small>{serve}</small>}</span>
               {esgotado ? <span className="pm-op-p pm-op-esg">Esgotado</span> : preco && <span className="pm-op-p">{preco}</span>}
               <span className={`pm-ctl${multi ? ' cx' : ''}`} style={on ? { borderColor: corBotao, background: multi ? corBotao : '#fff' } : undefined} aria-hidden="true">
                 {on && (multi ? <Check size={14} weight="bold" color="#fff" /> : <i style={{ background: corBotao }} />)}
@@ -434,6 +441,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
   const secoes = useRef<Record<string, HTMLElement | null>>({})
   const [faltou, setFaltou] = useState<string | null>(null)
   const [barra, setBarra] = useState(false)
+  const [zoom, setZoom] = useState(false) // (20/10) computador: zoom na foto ao passar o mouse
   const pausaAte = useRef(0)
   useSobreposicao(isOpen && !!product, onClose, caixaRef)
   useEffect(() => { if (isOpen) { setFaltou(null); setBarra(false) } }, [isOpen, product?.id])
@@ -712,10 +720,20 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
     if (i !== imgIndex) setImgIndex(i)
   }
   const pausar = () => { pausaAte.current = Date.now() + 8000 }
+  // (20/10) zoom como em marketplace: a foto aumenta dentro do quadro e segue o mouse (sem biblioteca)
+  const zoomFoto = (e: React.MouseEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest('button')) { if (zoom) setZoom(false); return }
+    const r = e.currentTarget.getBoundingClientRect()
+    e.currentTarget.style.setProperty('--zx', `${Math.round(((e.clientX - r.left) / r.width) * 1000) / 10}%`)
+    e.currentTarget.style.setProperty('--zy', `${Math.round(((e.clientY - r.top) / r.height) * 1000) / 10}%`)
+    pausar()
+    if (!zoom) setZoom(true)
+  }
+  const irFoto = (d: number) => { pausar(); setImgIndex(i => (i + d + images.length) % images.length) }
 
   return createPortal(
     <div className={`pm-veu${previa ? ' pm-veu--previa' : ''}`} onClick={onClose}>
-      <div ref={caixaRef} tabIndex={-1} className={`pm${temFoto ? '' : ' pm--sem-foto'}`} role="dialog" aria-modal="true" aria-label={nome} onClick={e => e.stopPropagation()}>
+      <div ref={caixaRef} tabIndex={-1} className={`pm${temFoto ? '' : ' pm--sem-foto'}`} style={{ ['--pm-cor' as any]: corBotao }} role="dialog" aria-modal="true" aria-label={nome} onClick={e => e.stopPropagation()}>
         {/* celular: barra que aparece ao rolar · computador: topo com o nome */}
         <div className={`pm-barra${barra ? ' on' : ''}`}>
           <button type="button" className="pm-bt" aria-label="Voltar" onClick={onClose}><ArrowLeft size={22} weight="bold" /></button>
@@ -725,13 +743,18 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
 
         {images.length > 0 && (
           <div className="pm-lado">
-            <div className="pm-ft-pc">
+            <div className={`pm-ft-pc${zoom ? ' zoom' : ''}`} onMouseMove={zoomFoto} onMouseLeave={() => setZoom(false)}>
               {/* (20/10) a foto inteira, sem corte; atrás, ela mesma borrada preenche as sobras */}
               <img className="pm-ft-fundo" src={images[imgIndex] || images[0]} alt="" aria-hidden="true" />
               {images.map((src, i) => <img key={src + i} src={src} alt={i === imgIndex ? nome : ''} className={i === imgIndex ? 'on' : ''} />)}
+              {images.length > 1 && (<>
+                <button type="button" className="pm-ft-seta esq" aria-label="Foto anterior" onClick={() => irFoto(-1)}><CaretLeft size={20} weight="bold" /></button>
+                <button type="button" className="pm-ft-seta dir" aria-label="Próxima foto" onClick={() => irFoto(1)}><CaretRight size={20} weight="bold" /></button>
+                <span className="pm-ft-cont">{imgIndex + 1}/{images.length}</span>
+              </>)}
             </div>
             {images.length > 1 && (
-              <div className="pm-mini">
+              <div className="pm-mini" style={{ ['--n' as any]: Math.min(images.length, 4) }}>
                 {images.map((src, i) => (
                   <button key={src + i} type="button" aria-label={`Foto ${i + 1}`} aria-pressed={i === imgIndex} style={i === imgIndex ? { borderColor: corBotao } : undefined}
                     onClick={() => { pausar(); setImgIndex(i) }}><img src={src} alt="" /></button>
