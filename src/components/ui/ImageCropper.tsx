@@ -18,8 +18,6 @@ interface Props {
   cropShape?: 'rect' | 'round'
   onCancel: () => void
   onCropDone: (croppedBlob: Blob) => void
-  /** (20/10) mostra "Usar a foto inteira" (sem recorte), pra foto do produto */
-  inteira?: boolean
 }
 
 const createImage = (url: string): Promise<HTMLImageElement> =>
@@ -56,7 +54,7 @@ async function getCroppedImg(imageSrc: string, pixelCrop: any): Promise<Blob> {
   ))
 }
 
-export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCancel, onCropDone, inteira = false }: Props) {
+export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCancel, onCropDone }: Props) {
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null)
@@ -70,21 +68,6 @@ export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCanc
   }, [])
 
   const mudarZoom = (d: number) => setZoom(z => Math.min(3, Math.max(1, Math.round((z + d) * 100) / 100)))
-
-  // (20/10) a foto inteira, sem recorte (só reduz pra no máximo 1600 px no lado maior)
-  const usarInteira = async () => {
-    if (loading) return
-    setLoading(true)
-    try {
-      const img = await createImage(imageSrc)
-      const blob = await getCroppedImg(imageSrc, { x: 0, y: 0, width: img.naturalWidth, height: img.naturalHeight })
-      onCropDone(blob)
-    } catch (e) {
-      console.error(e)
-      avisar('Não deu pra preparar a foto. Tente outra imagem.', { tipo: 'erro' })
-    }
-    setLoading(false)
-  }
 
   const handleDone = async () => {
     if (!croppedAreaPixels || loading) return
@@ -140,9 +123,6 @@ export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCanc
           <BotaoIcone rotulo="Aproximar" onClick={() => mudarZoom(0.2)} disabled={zoom >= 3}><MagnifyingGlassPlus size={20} weight="bold" /></BotaoIcone>
         </div>
 
-        {inteira && (
-          <button type="button" className="rf-inteira" onClick={usarInteira} disabled={loading}>Usar a foto inteira, sem cortar</button>
-        )}
         <div className="rf-pe">
           <Botao variante="secundario" onClick={cancelar} disabled={loading}>Cancelar</Botao>
           <Botao onClick={handleDone} carregando={loading}>Usar esta foto</Botao>
