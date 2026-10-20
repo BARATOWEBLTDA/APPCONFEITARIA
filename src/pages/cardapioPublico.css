@@ -134,3 +134,6 @@
 .cp-filtro button:hover:not([aria-pressed="true"]) { background: #F7F4F5; }
 .cp-filtro button[aria-pressed="true"] { background: var(--ui-texto); color: var(--ui-branco); }
 .cp-nada-bt { margin: 0; padding: 0; border: 0; background: none; color: var(--ui-rosa); font-family: inherit; font-size: inherit; font-weight: 700; cursor: pointer; }
+/* (20/10) categorias: um respiro entre os itens pra o cinza do mouse não encostar no item escolhido */
+.cp-cats { display: flex; flex-direction: column; gap: 4px; }
+.cp-cats p { margin-bottom: 2px; }
