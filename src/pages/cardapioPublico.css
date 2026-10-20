@@ -22,7 +22,7 @@
 .cp-topo-nav button[aria-current="page"] { background: var(--ui-branco); }
 
 /* corpo em 3 colunas */
-.cp-corpo { flex: 1; display: grid; grid-template-columns: 220px minmax(0, 1fr) 320px; gap: 24px; width: 100%; max-width: 1600px; margin: 0 auto; padding: 24px 32px 48px; box-sizing: border-box; align-items: start; }
+.cp-corpo { flex: 1; display: grid; grid-template-columns: 220px minmax(0, 1fr) 320px; gap: 24px; width: 100%; max-width: 1840px; margin: 0 auto; padding: 24px 32px 48px; box-sizing: border-box; align-items: start; }
 .cp-corpo:not(:has(.cp-esq)) { grid-template-columns: minmax(0, 1fr) 320px; }
 /* (20/10) tela larga: tudo um pouco mais pra esquerda e a sacola maior */
 @media (min-width: 1400px) {
@@ -76,7 +76,7 @@
 .cp-finalizar:hover { filter: brightness(.96); }
 
 /* rodapé */
-.cp-rod { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; width: 100%; max-width: 1600px; margin: 0 auto; padding: 20px 32px; box-sizing: border-box; font-size: 13px; color: var(--ui-texto-2); }
+.cp-rod { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; width: 100%; max-width: 1840px; margin: 0 auto; padding: 20px 32px; box-sizing: border-box; font-size: 13px; color: var(--ui-texto-2); }
 .cp-rod b, .cp-rod a { color: var(--ui-texto); font-weight: 700; text-decoration: none; }
 
 /* sobre a loja */
