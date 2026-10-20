@@ -10,7 +10,7 @@ import { BannerAd } from '@/components/cardapio/BannerAd'
 import { Logo } from '@/components/cardapio/Logo'
 import { ProductList } from '@/components/cardapio/ProductList'
 import { montarSecoes, SecaoCardapio, LinhaProduto } from '@/components/cardapio/ItensCardapio'
-import { contarItens, qtdItem, valorLinha, detalhesItem } from '@/lib/itemSacola'
+import { contarItens, qtdItem, valorLinha, detalhesItem, kgLivre } from '@/lib/itemSacola'
 import { NavigationMenu } from '@/components/cardapio/NavigationMenu'
 import { definirLojaAtual } from '@/components/cardapio/lojaAtual'
 import { EmptyState } from '@/components/cardapio/EmptyState'
@@ -21,7 +21,8 @@ import { CartProvider } from '@/context/CartContext'
 import { DesignSettings, Configuracoes, Produto } from '@/types/database'
 import { PerfilTab } from '@/components/cardapio/PerfilTab'
 import { PedidosTab } from '@/components/cardapio/PedidosTab'
-import { MapPin, House, MagnifyingGlass, ShoppingBag, Storefront, User, X, Lightning, CalendarBlank } from '@phosphor-icons/react'
+import { MapPin, House, MagnifyingGlass, ShoppingBag, Storefront, User, X, Lightning, CalendarBlank, Minus, Plus, Trash } from '@phosphor-icons/react'
+import { lerCliente } from '@/components/cardapio/contaCliente'
 import { seloEntrega } from '@/lib/entregaProduto'
 import { SobreLoja } from '@/components/cardapio/SobreLoja'
 import { useCart } from '@/hooks/useCart'
@@ -63,6 +64,13 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
   let cidade = ''
   try { const e = config?.endereco ? (typeof config.endereco === 'string' ? JSON.parse(config.endereco) : config.endereco) : null; if (e?.cidade && ((config as any)?.mostrar_localizacao || (config as any)?.mostrar_apenas_cidade)) cidade = [e.cidade, e.estado].filter(Boolean).join(' - ') } catch {}
   const sub = status?.msg || '' // (14/10) a cidade vai numa linha só dela
+  // (20/10) com a cliente conectada, o topo mostra o nome dela; sem conta, continua "Minha conta"
+  const [nomeCliente, setNomeCliente] = useState(() => (lerCliente(confeteiraUserId)?.nome || '').trim().split(/\s+/)[0] || '')
+  useEffect(() => {
+    const ler = () => setNomeCliente((lerCliente(confeteiraUserId)?.nome || '').trim().split(/\s+/)[0] || '')
+    ler(); window.addEventListener('doonly:cliente', ler); window.addEventListener('storage', ler)
+    return () => { window.removeEventListener('doonly:cliente', ler); window.removeEventListener('storage', ler) }
+  }, [confeteiraUserId])
 
   return (
     <>
@@ -84,13 +92,15 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
           </div>
           <nav className="cp-topo-nav" aria-label="Menu da loja">
             <button type="button" aria-current={aba === 'inicio' ? 'page' : undefined} style={aba === 'inicio' ? { color: navBg } : undefined} onClick={() => setAba('inicio')}><House size={20} weight="bold" />Início</button>
-            <button type="button" aria-current={aba === 'sobre' ? 'page' : undefined} style={aba === 'sobre' ? { color: navBg } : undefined} onClick={() => setAba('sobre')}><Storefront size={20} weight="bold" />Sobre nós</button>
-            <button type="button" aria-current={aba === 'conta' ? 'page' : undefined} style={aba === 'conta' ? { color: navBg } : undefined} onClick={() => setAba('conta')}><User size={20} weight="bold" />Minha conta</button>
+            <button type="button" aria-current={aba === 'sobre' ? 'page' : undefined} style={aba === 'sobre' ? { color: navBg } : undefined} onClick={() => setAba('sobre')}><Storefront size={20} weight="bold" />Sobre a loja</button>
+            <button type="button" aria-current={aba === 'conta' ? 'page' : undefined} style={aba === 'conta' ? { color: navBg } : undefined} onClick={() => setAba('conta')} aria-label={nomeCliente ? `Minha conta (${nomeCliente})` : undefined}>
+              {nomeCliente ? <><span className="cp-topo-av" style={aba === 'conta' ? { background: navBg, color: '#fff' } : { color: navBg }}>{nomeCliente.charAt(0).toUpperCase()}</span>{nomeCliente}</> : <><User size={20} weight="bold" />Minha conta</>}
+            </button>
           </nav>
         </div>
       </header>
 
-      <SobreLoja aberta={aba === 'sobre'} fechar={() => setAba('inicio')} design={design} config={config} />
+      <SobreLoja largo aberta={aba === 'sobre'} fechar={() => setAba('inicio')} design={design} config={config} />
 
       {/* Minha conta (pedidos e perfil do cliente — revisão na 8.4) */}
       {aba === 'conta' && (
@@ -141,34 +151,49 @@ function DeskCategorias({ categories, counts, total, selectedCategory, onSelectC
   )
 }
 
-/* ── Seu pedido (coluna da direita) ── */
+/* ── Sua sacola (coluna da direita) ── */
+// (20/10) a coluna é a sacola de verdade: muda a quantidade aqui e "Finalizar pedido" vai direto pro finalizar
 function DeskSacola({ cartCount, cartTotal, design, items }: any) {
+  const { updateQuantity, removeItem } = useCart()
   // Desconto da promoção (02/10): o preço do item já vem com desconto; aqui mostra quanto ela economiza
   const economia = Math.round((items || []).reduce((s: number, it: any) => s + (Number(it?.precoBreakdown?.desconto) || 0) * (Number(it?.quantity) || 0), 0) * 100) / 100
   const cor = design.cor_botao || design.cor_borda || '#E85A8C'
   return (
-    <section className="cp-box">
-      <h3>Seu pedido</h3>
+    <section className="cp-box cp-sacola">
+      <h3>{cartCount === 0 ? 'Seu pedido' : `Sua sacola · ${cartCount} ${cartCount === 1 ? 'item' : 'itens'}`}</h3>
       {cartCount === 0 ? (
         <div className="cp-vazio"><ShoppingBag size={32} aria-hidden="true" /><b>Seu pedido está vazio</b><small>Escolha um produto pra começar.</small></div>
       ) : (<>
-        {items.slice(0, 4).map((item: any) => {
+        <div className="cp-sac-lista">
+        {items.map((item: any) => {
           const img = item.imageUrl?.split(',')[0]?.trim()
+          const linha = item.lineId ?? item.id
+          const livre = kgLivre(item)
+          const passo = livre ? 0.5 : 1
+          const ultimo = item.quantity <= passo
+          const qtd = livre ? `${String(item.quantity).replace('.', ',')} kg` : String(item.quantity)
           return (
-            <div key={item.lineId ?? item.id} className="cp-it">
+            <div key={linha} className="cp-it">
               {img ? <img src={img} alt="" /> : <span className="cp-it-sem"><ShoppingBag size={20} /></span>}
-              <span><b>{qtdItem(item)} {item.name}</b>{detalhesItem(item).length > 0 && <small className="cp-it-det">{detalhesItem(item).join(' · ')}</small>}<small>{formatCurrency(valorLinha(item))}{unidadeItem(item) && (item.quantity === 1 ? ` ${unidadeItem(item)}` : ` · ${formatCurrency(item.price)} ${unidadeItem(item)}`)}</small></span>
+              <span><b>{item.name}</b>{detalhesItem(item).length > 0 && <small className="cp-it-det">{detalhesItem(item).join(' · ')}</small>}<small>{formatCurrency(valorLinha(item))}{unidadeItem(item) && (item.quantity === 1 ? ` ${unidadeItem(item)}` : ` · ${formatCurrency(item.price)} ${unidadeItem(item)}`)}</small></span>
+              <span className="cp-qtd">
+                <button type="button" aria-label={ultimo ? `Tirar ${item.name} da sacola` : `Diminuir ${item.name}`} onClick={() => (ultimo ? removeItem(linha) : updateQuantity(linha, Math.round((item.quantity - passo) * 10) / 10))}>
+                  {ultimo ? <Trash size={16} weight="bold" /> : <Minus size={16} weight="bold" />}
+                </button>
+                <b>{qtd}</b>
+                <button type="button" aria-label={`Aumentar ${item.name}`} style={{ color: cor }} disabled={item.quantity >= 50} onClick={() => updateQuantity(linha, Math.round((item.quantity + passo) * 10) / 10)}><Plus size={16} weight="bold" /></button>
+              </span>
             </div>
           )
         })}
-        {items.length > 4 && <p className="cp-mais">+ {items.length - 4} {items.length - 4 === 1 ? 'item' : 'itens'}</p>}
+        </div>
         <div className="cp-contas">
           <span>Subtotal<b>{formatCurrency(cartTotal + economia)}</b></span>
           {economia > 0 && <span className="ok">Promoção<b>− {formatCurrency(economia)}</b></span>}
           <span>Entrega<b>Calculada ao finalizar</b></span>
           <span className="t">Total<b>{formatCurrency(cartTotal)}</b></span>
         </div>
-        <button type="button" className="cp-finalizar" style={{ background: cor }} onClick={() => window.dispatchEvent(new Event('open-cart'))}>Finalizar pedido</button>
+        <button type="button" className="cp-finalizar" style={{ background: cor }} onClick={() => window.dispatchEvent(new Event('open-checkout'))}>Finalizar pedido</button>
       </>)}
     </section>
   )

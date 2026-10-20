@@ -37,8 +37,10 @@ function semana(horario: any): { dia: string; texto: string; hoje: boolean }[] {
 const IconeInstagram = () => <LogoInstagram tamanho={20} />
 const IconeFacebook = () => <LogoFacebook tamanho={20} />
 
-export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre' }: {
+export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre', largo = false }: {
   aberta: boolean; fechar: () => void; design: DesignSettings; config: Configuracoes | null; abaInicial?: Aba
+  /** (20/10) computador: janela larga, sem abas, tudo à vista em duas colunas */
+  largo?: boolean
 }) {
   const [aba, setAba] = useState<Aba>(abaInicial)
   useEffect(() => { if (aberta) setAba(abaInicial) }, [aberta, abaInicial])
@@ -59,20 +61,7 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
   const taxa = (cfg.entrega_por_bairro || []).length > 0 ? 'Taxa conforme o bairro'
     : Number(cfg.valor_entrega_propria) > 0 ? `Taxa de ${formatCurrency(Number(cfg.valor_entrega_propria))}` : 'Entrega grátis'
 
-  return (
-    <Janela aberta={aberta} aoFechar={fechar} tipo="conteudo" titulo={design.nome_loja || 'Sobre a loja'} umaAcao={!!zap}
-      acoes={zap ? <a className="cp-zap" href={zap} target="_blank" rel="noopener noreferrer"><IconeWhatsApp size={20} />Chamar no WhatsApp</a> : undefined}>
-      <div className="sl" style={{ ['--sl-cor' as any]: cor }}>
-        <div className="sl-abas" role="tablist">
-          {([['sobre', 'Sobre'], ['horario', 'Horário'], ['pagamento', 'Pagamento']] as const).map(([k, t]) => (
-            <button key={k} type="button" role="tab" aria-selected={aba === k} onClick={() => setAba(k)}>{t}</button>
-          ))}
-        </div>
-
-        {/* (14/10) as 3 abas ficam empilhadas: a janela tem o tamanho da maior e não muda ao trocar */}
-        <div className="sl-paineis">
-        {(
-          <div className={`sl-corpo${aba === 'sobre' ? '' : ' sl-oculto'}`} role="tabpanel" aria-hidden={aba !== 'sobre'}>
+  const blocoSobre = (<>
             {(design.logo_url || design.descricao_loja) && (
               <div className="sl-apres">
                 {design.logo_url && <img src={design.logo_url} alt="" />}
@@ -101,11 +90,8 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
               </div>
             )}
             {!design.descricao_loja && !insta && !face && !end && <p className="sl-vazio">A loja ainda não contou mais sobre ela.</p>}
-          </div>
-        )}
-
-        {(
-          <div className={`sl-corpo${aba === 'horario' ? '' : ' sl-oculto'}`} role="tabpanel" aria-hidden={aba !== 'horario'}>
+</>)
+  const blocoHorario = (<>
             {cfg.loja_pausada ? <p className="sl-status"><i aria-hidden="true" />Pedidos pausados no momento</p>
               : status && <p className={`sl-status${status.aberto ? ' aberto' : ''}`}><i aria-hidden="true" />{status.aberto ? 'Aberto agora' : 'Fechado agora'}</p>}
             {dias.length > 0 ? (
@@ -114,11 +100,8 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
               </ul>
             ) : <p className="sl-vazio">A loja não informou o horário. Chame no WhatsApp pra combinar.</p>}
             {cfg.horario_retirada && <p className="sl-nota">Retirada: {cfg.horario_retirada}</p>}
-          </div>
-        )}
-
-        {(
-          <div className={`sl-corpo${aba === 'pagamento' ? '' : ' sl-oculto'}`} role="tabpanel" aria-hidden={aba !== 'pagamento'}>
+</>)
+  const blocoPagamento = (<>
             <div className="sl-bloco">
               <h3>Formas de pagamento</h3>
               <ul className="sl-lista sl-lista--2">{(pagamentos.length ? pagamentos : ['pix']).map(k => <li key={k}>{PAGAMENTO[k]}</li>)}</ul>
@@ -133,6 +116,45 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
                 </ul>
               </div>
             )}
+</>)
+
+  if (largo) return (
+    <Janela aberta={aberta} aoFechar={fechar} tipo="conteudo" titulo={design.nome_loja || 'Sobre a loja'} umaAcao={!!zap}
+      acoes={zap ? <a className="cp-zap" href={zap} target="_blank" rel="noopener noreferrer"><IconeWhatsApp size={20} />Chamar no WhatsApp</a> : undefined}>
+      <div className="sl sl--largo" style={{ ['--sl-cor' as any]: cor }}>
+        <div className="sl-col sl-corpo">{blocoSobre}</div>
+        <div className="sl-col sl-corpo"><div className="sl-bloco sl-hor"><h3>Horário</h3>{blocoHorario}</div>{blocoPagamento}</div>
+      </div>
+    </Janela>
+  )
+
+  return (
+    <Janela aberta={aberta} aoFechar={fechar} tipo="conteudo" titulo={design.nome_loja || 'Sobre a loja'} umaAcao={!!zap}
+      acoes={zap ? <a className="cp-zap" href={zap} target="_blank" rel="noopener noreferrer"><IconeWhatsApp size={20} />Chamar no WhatsApp</a> : undefined}>
+      <div className="sl" style={{ ['--sl-cor' as any]: cor }}>
+        <div className="sl-abas" role="tablist">
+          {([['sobre', 'Sobre'], ['horario', 'Horário'], ['pagamento', 'Pagamento']] as const).map(([k, t]) => (
+            <button key={k} type="button" role="tab" aria-selected={aba === k} onClick={() => setAba(k)}>{t}</button>
+          ))}
+        </div>
+
+        {/* (14/10) as 3 abas ficam empilhadas: a janela tem o tamanho da maior e não muda ao trocar */}
+        <div className="sl-paineis">
+        {(
+          <div className={`sl-corpo${aba === 'sobre' ? '' : ' sl-oculto'}`} role="tabpanel" aria-hidden={aba !== 'sobre'}>
+            {blocoSobre}
+          </div>
+        )}
+
+        {(
+          <div className={`sl-corpo${aba === 'horario' ? '' : ' sl-oculto'}`} role="tabpanel" aria-hidden={aba !== 'horario'}>
+            {blocoHorario}
+          </div>
+        )}
+
+        {(
+          <div className={`sl-corpo${aba === 'pagamento' ? '' : ' sl-oculto'}`} role="tabpanel" aria-hidden={aba !== 'pagamento'}>
+            {blocoPagamento}
           </div>
         )}
         </div>

@@ -38,6 +38,7 @@ export function lerCliente(loja: string): Cliente | null {
 }
 export function guardarCliente(loja: string, c: Cliente | null) {
   try { if (c) localStorage.setItem(chave(loja), JSON.stringify(c)); else localStorage.removeItem(chave(loja)) } catch { /* sem localStorage */ }
+  try { window.dispatchEvent(new Event('doonly:cliente')) } catch { /* sem window */ } // (20/10) o topo do computador mostra o nome
 }
 
 /** A função nova ainda não existe no banco (SQL 4.23 não rodado) */

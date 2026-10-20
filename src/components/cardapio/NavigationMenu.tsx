@@ -165,7 +165,7 @@ function SugestaoSacola({ produto, cor }: { produto: Produto; cor: string }) {
 /* ─── Conteúdo interno do carrinho (reutilizado em mobile e desktop) ─── */
 function CartContent({
   step, setStep, items, totalPrice, updateQuantity, updateObservations, removeItem, clearCart,
-  config, onClose, corBotao, corTopo, logoUrl, sugestoes = [], verificada = false,
+  config, onClose, corBotao, corTopo, logoUrl, sugestoes = [], verificada = false, direto = false,
 }: any) {
   const [limparPergunta, setLimparPergunta] = useState(false)
   const [dataEntrega, setDataEntrega] = useState('')
@@ -709,7 +709,9 @@ function CartContent({
   const topo = (
     <div className="sc-topo">
       {step === 'finalizar'
-        ? <button type="button" className="sc-bt" aria-label="Voltar pra sacola" onClick={() => { setStep('cart'); setFeErro('') }}><ArrowLeft size={22} weight="bold" /></button>
+        ? (direto
+          ? <button type="button" className="sc-bt" aria-label="Fechar" onClick={onClose}><X size={22} weight="bold" /></button>
+          : <button type="button" className="sc-bt" aria-label="Voltar pra sacola" onClick={() => { setStep('cart'); setFeErro('') }}><ArrowLeft size={22} weight="bold" /></button>)
         : <button type="button" className="sc-bt" aria-label="Fechar" onClick={onClose}><X size={22} weight="bold" /></button>}
       <span><b>{step === 'finalizar' ? 'Finalizar pedido' : 'Sacola'}</b>{nomeLoja && <small>{nomeLoja}</small>}</span>
       <span />
@@ -975,6 +977,8 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
   const { items, totalPrice, updateQuantity, updateObservations, removeItem, clearCart } = useCart()
   const [isOpen, setIsOpen] = useState(false)
   const [step, setStep] = useState<'cart' | 'finalizar'>('cart')
+  // (20/10) computador: a coluna da direita já é a sacola, então "Finalizar pedido" abre direto no finalizar
+  const [direto, setDireto] = useState(false)
   const [activeTab, setActiveTab] = useState('inicio')
   // Altura real do rodapé (menu + faixa "Meu pedido") — as abas Pedidos/Perfil param em cima dele
   const rodapeRef = useRef<HTMLDivElement>(null)
@@ -1001,8 +1005,10 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
 
   useEffect(() => {
     const handler = () => setIsOpen(true)
+    const finalizar = () => { setDireto(true); setStep('finalizar'); setIsOpen(true) }
     window.addEventListener('open-cart', handler)
-    return () => window.removeEventListener('open-cart', handler)
+    window.addEventListener('open-checkout', finalizar)
+    return () => { window.removeEventListener('open-cart', handler); window.removeEventListener('open-checkout', finalizar) }
   }, [])
 
   const count = contarItens(items)
@@ -1010,17 +1016,17 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
   // (19/10) menu de baixo branco: a aba ativa vai na cor do topo da loja (cor clara demais não dá pra ler no branco)
   const corAtiva = corTopo && /^#[0-9a-f]{6}$/i.test(corTopo) && !corClara(corTopo) ? corTopo : '#2C1219'
 
-  const handleClose = () => { setIsOpen(false); setStep('cart') }
+  const handleClose = () => { setIsOpen(false); setStep('cart'); setDireto(false) }
 
   // Sacola (08/10 · 3.30): Esc e o voltar do Android fecham; no finalizar, o voltar volta pra sacola
   const caixaRef = useRef<HTMLDivElement>(null)
   useSobreposicao(isOpen, handleClose, caixaRef)
-  useSobreposicao(isOpen && step === 'finalizar', () => setStep('cart'), caixaRef)
+  useSobreposicao(isOpen && step === 'finalizar' && !direto, () => setStep('cart'), caixaRef)
 
   const sharedProps = {
     step, setStep, items, totalPrice,
     updateQuantity, updateObservations, removeItem, clearCart,
-    config, onClose: handleClose, corBotao: accent, corTopo, logoUrl, sugestoes, verificada,
+    config, onClose: handleClose, corBotao: accent, corTopo, logoUrl, sugestoes, verificada, direto,
   }
 
   return (

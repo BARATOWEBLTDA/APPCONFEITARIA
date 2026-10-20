@@ -137,3 +137,18 @@
 /* (20/10) categorias: um respiro entre os itens pra o cinza do mouse não encostar no item escolhido */
 .cp-cats { display: flex; flex-direction: column; gap: 4px; }
 .cp-cats p { margin-bottom: 2px; }
+
+/* (20/10) a coluna da direita é a sacola: quantidade em cada item e a lista rola dentro quando passa da tela */
+.cp-sacola { display: flex; flex-direction: column; max-height: calc(100vh - 156px); }
+.cp-sac-lista { min-height: 0; overflow-y: auto; margin: 0 -4px; padding: 0 4px; }
+.cp-sacola .cp-it { padding: 8px 0; border-bottom: 1px solid #F5F0F2; }
+.cp-sacola .cp-it:last-child { border-bottom: 0; }
+.cp-sacola .cp-it > span:not(.cp-qtd) { flex: 1; }
+.cp-qtd { display: inline-flex; align-items: center; gap: 6px; flex: none; height: 34px; padding: 0 4px; border: 1px solid #E5DDE1; border-radius: 10px; background: #fff; }
+.cp-qtd button { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; margin: 0; padding: 0; border: 0; border-radius: 7px; background: none; color: var(--ui-texto-2); cursor: pointer; }
+.cp-qtd button:hover:not(:disabled) { background: #F7F4F5; }
+.cp-qtd button:disabled { opacity: .35; cursor: default; }
+.cp-qtd b { min-width: 18px; font-size: 13.5px; font-weight: 700; text-align: center; white-space: nowrap; color: var(--ui-texto); }
+.cp-sacola .cp-contas, .cp-sacola .cp-finalizar { flex: none; }
+/* nome da cliente no topo */
+.cp-topo-av { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #fff; font-size: 13px; font-weight: 700; }
