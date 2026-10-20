@@ -94,3 +94,11 @@
 
 /* (17/10) preço em verde, como nos apps de delivery (iFood, 99Food) — o antigo riscado continua cinza */
 .ic-pp-linha b, .ic-ln-preco b { color: #3B9A60; }
+
+/* (20/10) computador: cartões de promoção mais largos, nome inteiro (até 3 linhas) e descrição com mais espaço */
+.ic-sec--pc .ic-grade { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.ic-sec--pc .ic-cp-nome { font-size: 15.5px; -webkit-line-clamp: 3; }
+.ic-sec--pc .ic-cp-desc { font-size: 13.5px; }
+.ic-sec--pc .ic-cp > :not(.ic-cp-ft) { margin-left: 14px; margin-right: 14px; }
+.ic-sec--pc .ic-cp > :last-child { margin-bottom: 14px; }
+.ic-sec--pc .ic-ln-tx > b { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }

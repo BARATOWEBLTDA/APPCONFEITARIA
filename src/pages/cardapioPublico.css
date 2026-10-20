@@ -22,8 +22,13 @@
 .cp-topo-nav button[aria-current="page"] { background: var(--ui-branco); }
 
 /* corpo em 3 colunas */
-.cp-corpo { flex: 1; display: grid; grid-template-columns: 220px minmax(0, 1fr) 320px; gap: 24px; width: 100%; max-width: 1440px; margin: 0 auto; padding: 24px 32px 48px; box-sizing: border-box; align-items: start; }
+.cp-corpo { flex: 1; display: grid; grid-template-columns: 220px minmax(0, 1fr) 320px; gap: 24px; width: 100%; max-width: 1600px; margin: 0 auto; padding: 24px 32px 48px; box-sizing: border-box; align-items: start; }
 .cp-corpo:not(:has(.cp-esq)) { grid-template-columns: minmax(0, 1fr) 320px; }
+/* (20/10) tela larga: tudo um pouco mais pra esquerda e a sacola maior */
+@media (min-width: 1400px) {
+  .cp-corpo { grid-template-columns: 220px minmax(0, 1fr) 380px; gap: 28px; }
+  .cp-corpo:not(:has(.cp-esq)) { grid-template-columns: minmax(0, 1fr) 380px; }
+}
 .cp-esq, .cp-dir { position: sticky; top: 132px; }
 .cp-dir { display: flex; flex-direction: column; gap: 12px; }
 .cp-cats { padding: 8px; background: var(--ui-branco); border: 1px solid var(--ui-borda-campo); border-radius: var(--ui-raio-cartao); }
@@ -71,7 +76,7 @@
 .cp-finalizar:hover { filter: brightness(.96); }
 
 /* rodapé */
-.cp-rod { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; width: 100%; max-width: 1440px; margin: 0 auto; padding: 20px 32px; box-sizing: border-box; font-size: 13px; color: var(--ui-texto-2); }
+.cp-rod { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; width: 100%; max-width: 1600px; margin: 0 auto; padding: 20px 32px; box-sizing: border-box; font-size: 13px; color: var(--ui-texto-2); }
 .cp-rod b, .cp-rod a { color: var(--ui-texto); font-weight: 700; text-decoration: none; }
 
 /* sobre a loja */
@@ -120,3 +125,12 @@
 .cp-topo--clara { color: #2C1219; }
 .cp-topo--clara .cp-topo-nav button { color: #2C1219 !important; }
 .cp-topo--clara .cp-topo-nav button:hover { background: rgba(44,18,25,.08); }
+
+/* (20/10) busca + filtro de entrega na mesma linha */
+.cp-busca-linha { display: flex; align-items: center; gap: 12px; }
+.cp-busca-linha .cp-busca { flex: 1; min-width: 0; }
+.cp-filtro { display: inline-flex; flex: none; padding: 3px; background: var(--ui-branco); border: 1px solid #E5DDE1; border-radius: var(--ui-raio); white-space: nowrap; }
+.cp-filtro button { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; margin: 0; padding: 0 14px; border: 0; border-radius: 9px; background: none; color: var(--ui-texto-2); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.cp-filtro button:hover:not([aria-pressed="true"]) { background: #F7F4F5; }
+.cp-filtro button[aria-pressed="true"] { background: var(--ui-texto); color: var(--ui-branco); }
+.cp-nada-bt { margin: 0; padding: 0; border: 0; background: none; color: var(--ui-rosa); font-family: inherit; font-size: inherit; font-weight: 700; cursor: pointer; }

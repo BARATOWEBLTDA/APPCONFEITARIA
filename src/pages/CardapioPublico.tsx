@@ -21,7 +21,8 @@ import { CartProvider } from '@/context/CartContext'
 import { DesignSettings, Configuracoes, Produto } from '@/types/database'
 import { PerfilTab } from '@/components/cardapio/PerfilTab'
 import { PedidosTab } from '@/components/cardapio/PedidosTab'
-import { MapPin, House, MagnifyingGlass, ShoppingBag, Storefront, User, X } from '@phosphor-icons/react'
+import { MapPin, House, MagnifyingGlass, ShoppingBag, Storefront, User, X, Lightning, CalendarBlank } from '@phosphor-icons/react'
+import { seloEntrega } from '@/lib/entregaProduto'
 import { SobreLoja } from '@/components/cardapio/SobreLoja'
 import { useCart } from '@/hooks/useCart'
 import { formatCurrency } from '@/utils/helpers'
@@ -217,6 +218,8 @@ function CardapioContent() {
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  // (20/10) computador: filtro de entrega (o prazo saiu dos cartões e fica só dentro do produto)
+  const [filtroEntrega, setFiltroEntrega] = useState<'tudo' | 'pronta' | 'encomenda'>('tudo')
   const [favorites, setFavorites] = useState<string[]>([])
   const [sobreAberta, setSobreAberta] = useState(false) // (4.25) Sobre a loja no celular
   const device = useDeviceDetection()
@@ -328,8 +331,11 @@ function CardapioContent() {
   const filteredProdutos = produtos.filter(p => {
     const s = p.nome.toLowerCase().includes(searchTerm.toLowerCase()) || p.descricao?.toLowerCase().includes(searchTerm.toLowerCase())
     const c = !selectedCategory || p.categoria === selectedCategory
-    return s && c
+    const e = filtroEntrega === 'tudo' || seloEntrega(p)?.tipo === filtroEntrega
+    return s && c && e
   })
+  const temPronta = produtos.some(p => seloEntrega(p)?.tipo === 'pronta')
+  const temEncomenda = produtos.some(p => seloEntrega(p)?.tipo === 'encomenda')
 
   if (loading) return (
     <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -450,24 +456,36 @@ function CardapioContent() {
           <div className="cp-pausada" role="status"><i aria-hidden="true" /><span><b>Pedidos pausados no momento</b><small>Você pode olhar o cardápio. Pra encomendar, chame a loja no WhatsApp.</small></span></div>
         )}
           {produtos.length === 0 ? <EmptyState telefone={config?.telefone} /> : (<>
+          <div className="cp-busca-linha">
           <div className="cp-busca">
             <MagnifyingGlass size={20} weight="bold" aria-hidden="true" />
             <input type="search" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Buscar no cardápio" aria-label="Buscar no cardápio" />
             {searchTerm && <button type="button" aria-label="Limpar a busca" onClick={() => setSearchTerm('')}><X size={18} weight="bold" /></button>}
+          </div>
+          {/* (20/10) só aparece quando a loja tem os dois tipos */}
+          {temPronta && temEncomenda && (
+            <div className="cp-filtro" role="group" aria-label="Filtrar por entrega">
+              {([['tudo', 'Tudo'], ['pronta', 'Pronta entrega'], ['encomenda', 'Encomenda']] as const).map(([v, r]) => (
+                <button key={v} type="button" aria-pressed={filtroEntrega === v} onClick={() => setFiltroEntrega(v)}>
+                  {v === 'pronta' && <Lightning size={15} weight="bold" aria-hidden="true" />}{v === 'encomenda' && <CalendarBlank size={15} weight="bold" aria-hidden="true" />}{r}
+                </button>
+              ))}
+            </div>
+          )}
           </div>
           {/* 4.05: promoções em cartões com o selo de desconto e as categorias em lista, como nos apps de delivery */}
           {filteredProdutos.length > 0 ? (
             searchTerm.trim() ? (
               <section className="ic-sec ic-sec--pc">
                 <h2 className="ic-h2">{filteredProdutos.length === 1 ? '1 produto' : `${filteredProdutos.length} produtos`}</h2>
-                <div className="ic-lista">{filteredProdutos.map((p: Produto) => <LinhaProduto key={p.id} produto={p} cor={cor} />)}</div>
+                <div className="ic-lista">{filteredProdutos.map((p: Produto) => <LinhaProduto key={p.id} produto={p} cor={cor} pc />)}</div>
               </section>
             ) : montarSecoes(filteredProdutos, selectedCategory ? [selectedCategory] : (!design.ocultar_categorias ? categorias.map((c: any) => c.name).filter((n: string) => n !== 'Todos') : []), !design.ocultar_categorias)
                 .map(sec => <SecaoCardapio key={sec.id} secao={sec} cor={cor} pc />)
           ) : (
             <div className="cp-nada"><MagnifyingGlass size={32} aria-hidden="true" />
-              <b>{searchTerm.trim() ? `Nenhum produto com “${searchTerm.trim()}”` : 'Nenhum produto nessa categoria'}</b>
-              <span>{searchTerm.trim() ? 'Tente buscar com outra palavra.' : 'Escolha outra categoria.'}</span></div>
+              <b>{searchTerm.trim() ? `Nenhum produto com “${searchTerm.trim()}”` : filtroEntrega !== 'tudo' ? `Nenhum produto ${filtroEntrega === 'pronta' ? 'de pronta entrega' : 'por encomenda'} aqui` : 'Nenhum produto nessa categoria'}</b>
+              <span>{searchTerm.trim() ? 'Tente buscar com outra palavra.' : filtroEntrega !== 'tudo' ? <button type="button" className="cp-nada-bt" onClick={() => setFiltroEntrega('tudo')}>Ver tudo</button> : 'Escolha outra categoria.'}</span></div>
           )}
           </>)}
         </main>
