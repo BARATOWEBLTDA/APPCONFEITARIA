@@ -30,7 +30,7 @@
 .sc-it-tx small { font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
 .sc-it-tx .sc-it-obs { font-style: italic; }
 .sc-it-tx strong { margin-top: 4px; font-size: 15px; font-weight: 700; }
-.sc-it-tx .sc-it-un { font-style: normal; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
+.sc-it-un { font-style: normal; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
 .sc-qtd { flex: none; align-self: flex-end; display: flex; align-items: center; height: 46px; border: 1px solid #E5DDE1; border-radius: var(--ui-raio); }
 .sc-qtd button { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: 0; border: 0; background: none; color: var(--ui-texto); }
 .sc-qtd button:disabled { color: #CFC3C9; cursor: default; }
@@ -159,7 +159,11 @@
 .sc-it { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; column-gap: 12px; row-gap: 4px; align-items: start; }
 .sc-it > .sc-it-ft { grid-row: 1 / span 2; }
 .sc-it > .sc-it-tx { grid-column: 2 / 4; }
-.sc-it > .sc-qtd { grid-column: 3; justify-self: end; align-self: end; }
+/* (20/10) preço e seletor de quantidade na mesma linha */
+.sc-it > .sc-it-pr { grid-column: 2; grid-row: 2; align-self: center; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.sc-it > .sc-qtd { grid-column: 3; grid-row: 2; justify-self: end; align-self: end; }
+.sc-it-pr small { font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); white-space: nowrap; }
+.sc-it-pr strong { font-size: 15px; font-weight: 700; white-space: nowrap; }
 
 /* (19/10) sacola com a cara da loja (como os apps de delivery, com o topo da loja) */
 .sc-topo--loja { position: relative; border-bottom: 0; padding-bottom: 22px; color: var(--ui-branco); text-align: left; }

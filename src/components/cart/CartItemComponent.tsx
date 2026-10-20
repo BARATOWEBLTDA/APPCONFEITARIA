@@ -54,6 +54,7 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove, cor = '#E8
   const adicionais: any[] = Array.isArray((item as any).extrasBiblioteca) ? (item as any).extrasBiblioteca : []
   const escolhasLinhas = detalhes.slice(0, detalhes.length - adicionais.length)
   const unidade = unidadeItem(item)
+  const total = valorLinha(item)
 
   return (
     <div className="sc-it">
@@ -67,9 +68,12 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove, cor = '#E8
         {escolhasLinhas.length > 0 && <ul className="sc-it-det">{escolhasLinhas.map((d, k) => <li key={k}>{d}</li>)}</ul>}
         {adicionais.length > 0 && <ul className="sc-it-det sc-it-add">{adicionais.map((x: any, k: number) => <li key={k}>+ {x.nome}</li>)}</ul>}
         {item.observations && <small className="sc-it-obs">Obs.: {item.observations}</small>}
-        <strong>{formatCurrency(valorLinha(item))}{unidade && item.quantity === 1 && <em className="sc-it-un"> {unidade}</em>}</strong>
-        {livre && <small>{formatCurrency(item.price)} por kg</small>}
+      </div>
+      {/* (20/10) o preço aparece uma vez só, com o seletor ao lado; o preço do kg/unidade só quando a quantidade não é 1 */}
+      <div className="sc-it-pr">
+        {livre && item.quantity !== 1 && <small>{formatCurrency(item.price)} o kg</small>}
         {unidade && item.quantity !== 1 && <small>{formatCurrency(item.price)} {unidade}</small>}
+        <strong>{formatCurrency(total)}{unidade && item.quantity === 1 && <em className="sc-it-un"> {unidade}</em>}</strong>
       </div>
       <div className="sc-qtd">
         <button type="button" aria-label={ultimo ? 'Tirar da sacola' : 'Diminuir'} onClick={dec}>

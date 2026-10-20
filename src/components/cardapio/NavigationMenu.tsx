@@ -882,7 +882,8 @@ function CartContent({
 
         {/* Quando */}
         <section ref={refAgenda}>
-          <Cab t={`Quando? (${tipo})`} sub={regras.horas > 0 ? `Esse pedido precisa de ${antTexto} de antecedência` : `Escolha o dia e o horário da ${tipo}`} obr ok={okQuando}
+          {/* (20/10) título curto e o prazo numa linha só (antes quebrava em duas) */}
+          <Cab t={tipo === 'retirada' ? 'Quando busca?' : 'Quando chega?'} sub={regras.horas > 0 ? `${antTexto} de antecedência` : `Escolha o dia e o horário da ${tipo}`} obr ok={okQuando}
             falta={feErro === 'agenda' ? 'Escolha a data e o horário pra continuar' : undefined} />
           <div className="sc-quando">
             <button type="button" className={`sc-campo${feErro === 'agenda' && !dataEntrega ? ' err' : ''}`} onClick={() => { acertarRelogio(); setCalAberto(true) }}>
