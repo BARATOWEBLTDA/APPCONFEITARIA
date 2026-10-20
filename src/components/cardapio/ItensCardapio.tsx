@@ -3,7 +3,7 @@ import { Cake } from '@phosphor-icons/react'
 import { Produto } from '@/types/database'
 import { ProductModal } from '@/components/cart/ProductModal'
 import { formatCurrency as fmtBRL } from '@/utils/helpers'
-import { seloEntrega, SeloEntregaFoto } from '@/lib/entregaProduto'
+import { seloEntrega } from '@/lib/entregaProduto'
 import { unidadePreco } from '@/lib/formaVenda'
 import { tamanhosEsgotados, descontoCardapio, precoCardapioComPromocao } from '@/lib/precoCardapio'
 // (o cartão antigo ProductCard saiu; o CSS dele continua carregando por aqui, na mesma ordem)
@@ -75,8 +75,7 @@ export function CartaoPromo({ produto, cor = '#E85A8C', pc = false }: { produto:
         <div className="ic-cp-ft">
           {/* (20/10) computador: a foto aparece inteira (sem corte), com a própria foto borrada preenchendo as sobras */}
           {foto ? (pc ? <><img className="ic-fundo" src={foto} alt="" aria-hidden="true" loading="lazy" /><img className="ic-inteira" src={foto} alt="" loading="lazy" /></> : <img src={foto} alt="" loading="lazy" />) : <span className="ic-sem"><Cake size={32} aria-hidden="true" /></span>}
-          {/* (20/10) no computador o prazo aparece só dentro do produto (e no filtro de entrega) */}
-          {!pc && <SeloEntregaFoto produto={produto} />}
+          {/* (20/10) o prazo aparece só dentro do produto, no celular e no computador */}
         </div>
         <b className="ic-cp-nome">{produto.nome}</b>
         {produto.descricao ? <p className="ic-cp-desc">{produto.descricao}</p> : pc ? <p className="ic-cp-desc" aria-hidden="true" /> : null}
@@ -103,7 +102,7 @@ export function LinhaProduto({ produto, cor = '#E85A8C', pc = false }: { produto
               <b>{fmtBRL(final)}</b>{unidade && <small>{unidade}</small>}
             </span>
           )}
-          {(!pc || tamanhosEsgotados(produto)) && <Entrega produto={produto} />}
+          {tamanhosEsgotados(produto) && <Entrega produto={produto} />}
         </div>
         <div className="ic-ln-ft">
           {foto ? (pc ? <><img className="ic-fundo" src={foto} alt="" aria-hidden="true" loading="lazy" /><img className="ic-inteira" src={foto} alt="" loading="lazy" /></> : <img src={foto} alt="" loading="lazy" />) : <span className="ic-sem"><Cake size={28} aria-hidden="true" /></span>}
