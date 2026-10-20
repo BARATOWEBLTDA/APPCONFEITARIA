@@ -20,3 +20,6 @@
   .rf-veu { align-items: center; padding: 24px; }
   .rf { max-width: 480px; padding: 24px; border-radius: var(--ui-raio-janela); }
 }
+/* (20/10) foto do produto: atalho pra usar a foto inteira */
+.rf-inteira { display: block; margin: 4px auto 0; padding: 8px 12px; border: 0; background: none; color: var(--ui-rosa); font-family: inherit; font-size: 14.5px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.rf-inteira:disabled { opacity: .5; cursor: default; }

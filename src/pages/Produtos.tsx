@@ -1634,7 +1634,8 @@ export default function Produtos() {
       <ImageCropper
         imageSrc={cropSrc}
         cropShape="rect"
-        aspect={1}
+        aspect={4 / 3}
+        inteira
         onCancel={() => setCropSrc(null)}
         onCropDone={handleProductCropDone}
       />

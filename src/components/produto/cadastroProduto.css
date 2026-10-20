@@ -357,3 +357,5 @@ body .prod-modal--novo .prod-promo-pct { position: absolute; top: 5px; right: 6p
   body .prod-modal--novo .prod-prev-col .prev-ver-ic svg { width: 16px; height: 16px; }
   body .prod-modal--novo .prod-prev-col .prev-ver small { display: none; }
 }
+/* (20/10) a foto do produto aparece inteira na prévia do cadastro (4:3 ou a foto sem recorte) */
+.prod-foto-pri.tem img { object-fit: contain; }
