@@ -1048,9 +1048,10 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
         .cpn-ic { display: flex; align-items: center; justify-content: center; width: 52px; height: 30px; border-radius: var(--ui-raio); }
         .cpn-menu button[aria-current="page"] { color: var(--cpn-ativa); font-weight: 700; }
         .cpn-menu button[aria-current="page"] .cpn-ic { background: color-mix(in srgb, var(--cpn-ativa) 12%, #fff); }
-        /* (19/10) bolinha com a quantidade da sacola no "Pedidos" */
-        .cpn-ic { position: relative; }
+        /* (20/10) bolinha com a quantidade, no ícone da sacola */
+        .cpn-ic, .cpn-pedido-ic { position: relative; }
         .cpn-bolinha { position: absolute; top: -3px; right: 6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: #EF4444; color: #fff; font: 700 11px/18px system-ui, sans-serif; font-style: normal; text-align: center; box-shadow: 0 0 0 2px #fff; }
+        .cpn-bolinha--sacola { top: -6px; right: -7px; background: #fff; box-shadow: 0 0 0 2px rgba(0,0,0,.08); }
       `}</style>
 
       {/* ═══ MOBILE: tab bar + cart vindo de baixo ═══ */}
@@ -1059,7 +1060,8 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
           <div ref={rodapeRef} className="cpn-pe fixed bottom-0 left-0 right-0 z-30" style={{ ['--cpn-ativa' as any]: corAtiva }}>
             {count > 0 && (
               <button type="button" className="cpn-pedido" style={{ background: accent }} onClick={() => setIsOpen(true)}>
-                <span className="cpn-pedido-ic"><Sacola size={20} weight="fill" color="white" /></span>
+                {/* (20/10) a quantidade fica no ícone da sacola (antes ia em "Pedidos" e parecia pedido feito) */}
+                <span className="cpn-pedido-ic"><Sacola size={20} weight="fill" color="white" /><i className="cpn-bolinha cpn-bolinha--sacola" style={{ color: accent }} aria-hidden="true">{count > 9 ? '9+' : count}</i></span>
                 <span className="cpn-pedido-tx"><b>Ver seu pedido</b><small>{count} {count === 1 ? 'item' : 'itens'}</small></span>
                 <strong>{formatCurrency(totalPrice)}</strong>
                 <CaretRight size={18} weight="bold" color="rgba(255,255,255,0.8)" />
@@ -1073,7 +1075,7 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
                 { id: 'perfil',   label: 'Minha conta',  Icone: User },
               ].map(({ id, label, Icone }) => (
                 <button key={id} type="button" aria-current={activeTab === id ? 'page' : undefined} onClick={() => setActiveTab(id)}>
-                  <span className="cpn-ic"><Icone size={24} weight={activeTab === id ? "fill" : "regular"} />{id === 'pedidos' && count > 0 && <i className="cpn-bolinha" aria-label={`${count} na sacola`}>{count > 9 ? '9+' : count}</i>}</span>{label}
+                  <span className="cpn-ic"><Icone size={24} weight={activeTab === id ? "fill" : "regular"} /></span>{label}
                 </button>
               ))}
             </nav>
