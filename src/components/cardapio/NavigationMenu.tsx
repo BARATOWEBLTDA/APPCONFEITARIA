@@ -155,7 +155,9 @@ function SugestaoSacola({ produto, cor }: { produto: Produto; cor: string }) {
       <button type="button" className="sc-sug-it" onClick={() => setAberto(true)} aria-label={`Ver ${produto.nome}`}>
         <span className="sc-sug-ft">{foto ? <img src={foto} alt="" loading="lazy" /> : null}<i style={{ background: cor }}><Plus size={14} weight="bold" /></i></span>
         <b>{produto.nome}</b>
-        <small>{aPartir ? 'a partir de ' : ''}{formatCurrency(final)}</small>
+        {/* (20/10) "a partir de" numa linha própria, acima do preço (antes encostava no cartão do lado) */}
+        <small>{aPartir ? 'a partir de' : '\u00a0'}</small>
+        <strong>{formatCurrency(final)}</strong>
       </button>
       <ProductModal isOpen={aberto} onClose={() => setAberto(false)} product={produto} corBotao={cor} />
     </>
@@ -776,10 +778,11 @@ function CartContent({
 
             <div className="sc-valores">
               <b>Resumo</b>
-              <span>Subtotal<em>{formatCurrency(totalPrice)}</em></span>
+              {/* (20/10) resumo aberto: subtotal sem desconto, a promoção em verde e a entrega que a loja já definiu */}
+              <span>Subtotal<em>{formatCurrency(somarReais([totalPrice, economia]))}</em></span>
+              {economia > 0 && <span className="ok">Promoção<em>− {formatCurrency(economia)}</em></span>}
               {desconto > 0 && <span className="ok">Cupom {cupomAplicado?.codigo}<em>− {formatCurrency(desconto)}</em></span>}
-              {/* Ainda não escolheu retirar ou receber: o valor da entrega só sai no finalizar */}
-              {opsEntrega.ent && <span>Entrega<em>Calculada ao finalizar</em></span>}
+              {opsEntrega.ent && <span>Entrega<em className={entregaGratis ? 'ok' : ''}>{entregaTexto}</em></span>}
               <span className="t">{rotuloTotal}<em>{formatCurrency(subtotalCupom)}</em></span>
             </div>
           </>
@@ -1099,6 +1102,7 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
                 accent={accent}
                 confeteiraUserId={lojaAtualId()}
                 onIrParaPerfil={() => setActiveTab('perfil')}
+                onVerCardapio={() => setActiveTab('inicio')}
               />
             </div>
           )}

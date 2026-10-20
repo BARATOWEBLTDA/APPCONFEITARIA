@@ -35,3 +35,5 @@ export const rotuloPrecoVenda = (fv?: string | null) => {
 
 /** Unidade do preço pro cliente (08/10): "por kg", "o cento", "a caixa", "a unidade"… */
 export const unidadeCliente = (fv?: string | null) => ({ un: "a unidade", fatia: "a fatia", kg: "por kg", cento: "o cento", caixa: "a caixa", kit: "o kit" } as Record<string, string>)[sufixoVenda(fv)] || "a unidade";
+/** (20/10) A unidade ao lado do preço: vazia quando é por unidade ("R$ 650,00", sem o "a unidade", que soava estranho num kit) */
+export const unidadePreco = (fv?: string | null) => (sufixoVenda(fv) === "un" ? "" : unidadeCliente(fv));

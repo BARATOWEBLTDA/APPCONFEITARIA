@@ -93,7 +93,9 @@
 .ic-sec--pc { padding: 0; }
 
 /* (17/10) preço em verde, como nos apps de delivery (iFood, 99Food) — o antigo riscado continua cinza */
-.ic-pp-linha b, .ic-ln-preco b { color: #3B9A60; }
+/* (20/10) verde só no preço com desconto; o preço normal fica escuro */
+.ic-pp-linha b, .ic-ln-preco b { color: var(--ui-texto); }
+.ic-pp-linha s + b { color: #3B9A60; }
 
 /* (20/10) computador: cartões de promoção mais largos, nome inteiro (até 3 linhas) e descrição com mais espaço */
 .ic-sec--pc .ic-grade { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
@@ -119,3 +121,10 @@
 .ic-sec--pc .ic-cp-ft img.ic-fundo, .ic-sec--pc .ic-ln-ft img.ic-fundo { position: absolute; inset: -12%; width: 124%; height: 124%; object-fit: cover; filter: blur(16px) saturate(1.1); opacity: .6; transform: none; }
 .ic-sec--pc .ic-cp-ft img.ic-inteira, .ic-sec--pc .ic-ln-ft img.ic-inteira { position: relative; width: 100%; height: 100%; object-fit: contain; }
 @media (hover: hover) { .ic-sec--pc .ic-cp:hover .ic-cp-ft img { transform: none; } }
+
+/* (20/10) celular estreito (360 px): preço antigo e novo da promoção cabem lado a lado no cartão */
+@media (max-width: 374px) {
+  .ic-cp .ic-pp-linha { gap: 4px; }
+  .ic-cp .ic-pp-linha s { font-size: 11.5px; }
+  .ic-cp .ic-pp-linha b { font-size: 14.5px; }
+}

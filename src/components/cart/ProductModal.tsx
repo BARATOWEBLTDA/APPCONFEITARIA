@@ -1,5 +1,5 @@
 import { seloEntrega } from "@/lib/entregaProduto";
-import { unidadeCliente } from '@/lib/formaVenda'
+import { unidadePreco } from '@/lib/formaVenda'
 import KitPicker from '@/components/cardapio/KitPicker'
 import { precoCardapio, precoDoTamanho, descontoCardapio, comDesconto, tamanhosEsgotados } from '@/lib/precoCardapio'
 import { pesoDoNome, pesoDoTamanho } from '@/lib/itemSacola'
@@ -632,7 +632,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
           {gTamanho && !kitInfo && precoTamVaria && <small className="pm-apartir" style={semTamanho ? undefined : { visibility: 'hidden' }}>a partir de</small>}
           {/* (20/10) "a partir de" numa linha só dele; o preço cheio riscado vem depois do preço */}
           <strong className={descPct > 0 ? 'pm-preco-promo' : undefined}>{formatCurrency(semTamanho ? pMin : valorTopo)}</strong>
-          <em>{semTamanho ? ((product as any).forma_venda === 'kg' ? unidadeCliente(product.forma_venda) : '') : kitCfg ? ((kitCfg as any).modo === 'livre' ? (Number((kitCfg as any).livre?.min) === 100 ? 'o cento' : `${(kitCfg as any).livre?.min} un.`) : 'o kit') : gTamanho ? '' : saborComPreco && !opSabor ? 'conforme o sabor' : unidadeCliente(product.forma_venda)}</em>
+          <em>{semTamanho ? '' /* (20/10) com tamanhos o bolo é vendido por tamanho: sem "por kg" */ : kitCfg ? ((kitCfg as any).modo === 'livre' ? (Number((kitCfg as any).livre?.min) === 100 ? 'o cento' : `${(kitCfg as any).livre?.min} un.`) : 'o kit') : gTamanho ? '' : saborComPreco && !opSabor ? 'conforme o sabor' : unidadePreco(product.forma_venda)}</em>
           {semTamanho ? (pMinCheio > pMin && <s>{formatCurrency(pMinCheio)}</s>) : (descPct > 0 && calculo.subtotal > valorTopo && <s>{formatCurrency(calculo.subtotal)}</s>)}
           {descPct > 0 && <span className="pm-off">-{Math.round(descPct * 100)}%</span>}
         </div>
