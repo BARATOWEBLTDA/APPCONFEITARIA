@@ -2,7 +2,7 @@ import { LacoNatal } from '@/components/tema/Natal'
 import { SeloVerificado } from './SeloVerificado'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { MapPin, Lightning, CalendarBlank, Truck, Storefront } from '@phosphor-icons/react'
+import { MapPin, Lightning, CalendarBlank, Truck, Storefront, CaretRight } from '@phosphor-icons/react'
 import { DesignSettings, Configuracoes } from '@/types/database'
 import { seloEntrega } from '@/lib/entregaProduto'
 import { situacaoDaLoja, horaTexto } from '@/lib/agendaCardapio'
@@ -103,13 +103,6 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
         {design.banner_topo_url
           ? <div className="cm1-hero-img" style={{ backgroundImage: `url(${design.banner_topo_url})` }} />
           : <div className="cm1-hero-faixa" style={{ backgroundColor: corFaixa }}><span className="cm1-hero-pontos" /></div>}
-        {status && (
-          <div className={`cm1-status${status.aberto ? ' aberto' : ''}`}>
-            <i aria-hidden="true" />
-            <span className="cm1-st-g">{status.msg}</span>
-            <span className="cm1-st-c">{status.curto}</span>
-          </div>
-        )}
       </div>
 
       <div className="cm1-content" style={{ background: fundo, ['--cm1-fundo' as any]: fundo }}>
@@ -123,17 +116,23 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
         <h1 className="cm1-nome" style={{ color: corNome }}>
           {design.nome_loja || 'Minha Confeitaria'}{verificada && <SeloVerificado tamanho={22} />}
         </h1>
-        {/* (17/10) "Sobre a loja · cidade" numa linha só, embaixo do nome (antes: linha do endereço + linha do Sobre a loja).
-            Sobre a loja abre horário, pagamento e endereço completo; a cidade abre o mapa. */}
-        {(aoAbrirSobre || endereco) && (
+        {/* (20/10) embaixo do nome: "● Aberto agora · até 18:00" à esquerda e "Sobre a loja ›" à direita.
+            Sem horário cadastrado, a cidade fica no lugar do status (abre o mapa). */}
+        {(status || aoAbrirSobre || endereco) && (
           <div className="cm1-sl">
-            {aoAbrirSobre && <button type="button" className="cm1-sl-sobre" onClick={aoAbrirSobre} style={{ color: corIcone }}>Sobre a loja</button>}
-            {aoAbrirSobre && endereco && <span className="cm1-sl-dot" aria-hidden="true">·</span>}
-            {endereco && (
+            {status ? (
+              <span className={`cm1-sl-st${status.aberto ? ' aberto' : ''}`}>
+                <i aria-hidden="true" /><b>{status.msg.split(' · ')[0]}</b>
+                {/* no celular estreito, a versão curta ("abre sábado 9h") pra não cortar */}
+                {status.msg.includes(' · ') && <span className="g"> · {status.msg.split(' · ').slice(1).join(' · ')}</span>}
+                {status.curto.includes(' · ') && <span className="c"> · {status.curto.split(' · ').slice(1).join(' · ')}</span>}
+              </span>
+            ) : endereco ? (
               <button type="button" className="cm1-sl-cid" onClick={() => setModalEndereco(true)} aria-label={`Ver no mapa: ${endereco.completo}`}>
                 <MapPin size={16} weight="bold" color={corIcone} aria-hidden="true" /><span>{endereco.cidade}</span>
               </button>
-            )}
+            ) : <span />}
+            {aoAbrirSobre && <button type="button" className="cm1-sl-sobre" onClick={aoAbrirSobre} style={{ color: corIcone }}>Sobre a loja<CaretRight size={14} weight="bold" aria-hidden="true" /></button>}
           </div>
         )}
         {design.tema === 'natal' && design.tema_aviso && <p className="cm1-aviso-tema"><CalendarBlank size={16} weight="bold" aria-hidden="true" />{design.tema_aviso}</p>}
