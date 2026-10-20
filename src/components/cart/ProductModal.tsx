@@ -32,6 +32,7 @@ interface ExtraBiblioteca {
   valor: number
   descricao?: string | null
   categorias: string[] // IDs dos produtos vinculados (vazio = todos)
+  pede_referencia?: boolean // (19/10) marcado no cardápio, abre o anexo da foto de referência (ex.: Topo de bolo)
 }
 
 interface Props {
@@ -208,10 +209,12 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
     let valendo = true
     ;(async () => {
       let data: any[] | null = null
-      const r = await supabase.rpc('cardapio_extras', { p_loja: uid })
+      // (19/10) a v2 também diz se o complemento pede foto de referência; sem ela, a antiga
+      const r2 = await supabase.rpc('cardapio_extras_v2', { p_loja: uid })
+      const r = !r2.error && Array.isArray(r2.data) ? r2 : await supabase.rpc('cardapio_extras', { p_loja: uid })
       if (!r.error && Array.isArray(r.data)) data = r.data
       else {
-        const d = await supabase.from('biblioteca_extras').select('id, nome, valor, descricao, categorias').eq('user_id', uid)
+        const d = await supabase.from('biblioteca_extras').select('id, nome, valor, descricao, categorias, pede_referencia').eq('user_id', uid)
         data = (d.data as any[]) || null
       }
       return { data }
@@ -227,6 +230,8 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
       }).catch(() => { /* sem internet: fica sem os adicionais */ })
     return () => { valendo = false }
   }, [isOpen, product?.id])
+  // (19/10) complemento marcado que pede foto de referência (ex.: Topo de bolo)
+  const refDoExtra = extrasBiblioteca.find(e => e.pede_referencia && extrasMarcados.has(e.id)) || null
 
   const toggleExtra = (id: string) => {
     setExtrasMarcados(prev => {
@@ -648,9 +653,9 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
         </section>
       )}
 
-      {!onAdicionar && !previa && (product as any).aceita_referencia === true && (
+      {!onAdicionar && !previa && ((product as any).aceita_referencia === true || refDoExtra) && (
         <section className="pm-g">
-          <header className="pm-g-cab"><span><b>Foto de referência</b><small>Mostre uma ideia do que você quer</small></span></header>
+          <header className="pm-g-cab"><span><b>{refDoExtra && (product as any).aceita_referencia !== true ? `Foto de referência · ${refDoExtra.nome}` : 'Foto de referência'}</b><small>Mostre uma ideia do que você quer</small></span></header>
           <label className="pm-foto">
             {fotoRef ? <img src={fotoRef} alt="Foto de referência" /> : <span className="pm-foto-ic"><Camera size={20} weight="bold" /></span>}
             <span className="pm-foto-tx"><b>{fotoRefUploading ? 'Carregando…' : fotoRef ? 'Foto anexada' : 'Enviar uma foto'}</b><small>{fotoRef ? 'Escolha outra pra trocar' : 'Opcional'}</small></span>

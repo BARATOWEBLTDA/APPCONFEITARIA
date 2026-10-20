@@ -55,3 +55,13 @@
 .pz-prev-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .pz-prev-tx > span, .pz-prev-tx em { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pz-prev-tx em { font-style: normal; font-size: 12.5px; color: var(--ui-texto-2); }
+
+/* (19/10) pedir foto de referência */
+.pz-ref { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 8px 12px; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
+.pz-ref[aria-checked="true"] { border-color: #F3B3CA; background: #FFF8FB; }
+.pz-ref > span { display: flex; flex-direction: column; min-width: 0; }
+.pz-ref b { font-size: 14.5px; font-weight: 600; }
+.pz-ref small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; }
+.pz-ref .pz-chk { flex: none; }
+.pz-prev-ref { display: flex; align-items: center; gap: 8px; margin: 2px 0 8px 34px; padding: 8px 10px; border: 1.5px dashed #E7C2D2; border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--ui-rosa-escuro); background: #fff; }
+.pz-ref[aria-checked="true"] .pz-chk { border-color: var(--ui-rosa); background: var(--ui-rosa); }

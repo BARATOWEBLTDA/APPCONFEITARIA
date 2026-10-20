@@ -13,10 +13,10 @@ import "./complementos.css";
  * Extras que o cliente escolhe ao pedir (topo de bolo, escrita, papel de arroz). Cadastra uma vez e escolhe em quais produtos aparece.
  * Na tabela biblioteca_extras, "categorias" guarda os IDs dos produtos (vazio = aparece em todos).
  */
-type Complemento = { id: string; nome: string; descricao?: string; valor: number; categorias: string[] };
+type Complemento = { id: string; nome: string; descricao?: string; valor: number; categorias: string[]; pede_referencia?: boolean };
 type ProdutoLite = { id: string; nome: string; categoria?: string; imagem_url?: string | null };
-type Form = { nome: string; descricao: string; valor: number; gratis: boolean; todos: boolean; produtos: string[] };
-const FORM_VAZIO: Form = { nome: "", descricao: "", valor: 0, gratis: false, todos: true, produtos: [] };
+type Form = { nome: string; descricao: string; valor: number; gratis: boolean; todos: boolean; produtos: string[]; pedeRef: boolean };
+const FORM_VAZIO: Form = { nome: "", descricao: "", valor: 0, gratis: false, todos: true, produtos: [], pedeRef: false };
 
 /** "BOLO DE PAÇOCA" → "Bolo de Paçoca" */
 function nomeBonito(nome: string): string {
@@ -65,16 +65,15 @@ export default function Complementos() {
   useEffect(() => { void carregar(); }, []);
 
   // (19/10) sugestões prontas: um toque abre o cadastro já preenchido
-  const SUGESTOES: { nome: string; descricao: string; valor: number }[] = [
-    { nome: "Topo de bolo", descricao: "Escolha o tema ou mande uma foto de referência", valor: 15 },
-    { nome: "Escrita no bolo", descricao: "Escreva a frase no campo de observação", valor: 0 },
-    { nome: "Papel de arroz", descricao: "Com a foto que você quiser", valor: 10 },
-    { nome: "Vela de número", descricao: "", valor: 8 },
-    { nome: "Embalagem para presente", descricao: "", valor: 6 },
+  const SUGESTOES: Sugestao[] = [
+    { nome: "Topo de bolo", descricao: "Anexe uma foto de referência", valor: 15, pedeRef: true },
+    { nome: "Velas decorativas", descricao: "", valor: 5 },
+    { nome: "Balões personalizados", descricao: "", valor: 25 },
+    { nome: "Decoração simples", descricao: "", valor: 0 },
   ];
-  const usarSugestao = (sg: { nome: string; descricao: string; valor: number }) => {
+  const usarSugestao = (sg: Sugestao) => {
     setEditando(null); setTentou(false); setBuscaProd("");
-    setForm({ ...FORM_VAZIO, nome: sg.nome, descricao: sg.descricao, valor: sg.valor, gratis: sg.valor <= 0 });
+    setForm({ ...FORM_VAZIO, nome: sg.nome, descricao: sg.descricao, valor: sg.valor, gratis: sg.valor <= 0, pedeRef: !!sg.pedeRef });
     setAberta(true);
   };
   const sugestoesLivres = SUGESTOES.filter(sg => !items.some(i => i.nome.trim().toLowerCase() === sg.nome.toLowerCase()));
@@ -85,7 +84,7 @@ export default function Complementos() {
     setBuscaProd("");
     setForm(c ? {
       nome: c.nome, descricao: c.descricao || "", valor: Number(c.valor) || 0, gratis: !(Number(c.valor) > 0),
-      todos: escolherProdutos ? false : !(c.categorias || []).length, produtos: c.categorias || [],
+      todos: escolherProdutos ? false : !(c.categorias || []).length, produtos: c.categorias || [], pedeRef: c.pede_referencia === true,
     } : FORM_VAZIO);
     setAberta(true);
   };
@@ -99,7 +98,7 @@ export default function Complementos() {
     setTentou(true);
     const nome = form.nome.trim();
     if (!nome || (!form.gratis && form.valor <= 0) || (!form.todos && form.produtos.length === 0)) return;
-    const dados = { nome, descricao: form.descricao.trim() || null, valor: form.gratis ? 0 : form.valor, categorias: form.todos ? [] : form.produtos };
+    const dados = { nome, descricao: form.descricao.trim() || null, valor: form.gratis ? 0 : form.valor, categorias: form.todos ? [] : form.produtos, pede_referencia: form.pedeRef };
     setSaving(true);
     try {
       if (editando) {
@@ -244,7 +243,14 @@ export default function Complementos() {
             <div className="pz-ex-l on"><i><Check size={14} weight="bold" /></i>
               <span className="pz-prev-tx"><span>{form.nome.trim() || "Nome do complemento"}</span>{form.descricao.trim() && <em>{form.descricao.trim()}</em>}</span>
               <b className={form.gratis ? "g" : ""}>{form.gratis ? "Grátis" : `+ R$ ${brl(form.valor || 0)}`}</b></div>
+            {form.pedeRef && <div className="pz-prev-ref"><Camera size={16} weight="bold" aria-hidden="true" />Enviar foto de referência</div>}
           </div>
+
+          {/* (19/10) complemento que pede foto (ex.: Topo de bolo): no cardápio, ao marcar, o cliente anexa a referência */}
+          <button type="button" role="checkbox" aria-checked={form.pedeRef} className="pz-ref" onClick={() => setForm(f => ({ ...f, pedeRef: !f.pedeRef }))}>
+            <i className="pz-chk" aria-hidden="true">{form.pedeRef && <Check size={14} weight="bold" />}</i>
+            <span><b>Pedir foto de referência</b><small>Ao marcar, o cliente anexa uma foto</small></span>
+          </button>
 
           <div className="ui-campo">
             <span className="ui-campo-r"><span>Em quais produtos aparece</span></span>
@@ -288,7 +294,8 @@ export default function Complementos() {
 }
 
 /** (19/10) As sugestões no mesmo desenho da escolha de complementos do cardápio (caixinha, nome, explicação e preço). */
-function ListaSugestoes({ titulo, lista, aoEscolher }: { titulo: string; lista: { nome: string; descricao: string; valor: number }[]; aoEscolher: (sg: { nome: string; descricao: string; valor: number }) => void }) {
+type Sugestao = { nome: string; descricao: string; valor: number; pedeRef?: boolean };
+function ListaSugestoes({ titulo, lista, aoEscolher }: { titulo: string; lista: Sugestao[]; aoEscolher: (sg: Sugestao) => void }) {
   return (
     <section className="pz-ex pz-sg" aria-label={titulo}>
       <div className="pz-sg-cab"><p className="pz-ex-t">{titulo}</p><small>Assim o cliente vê. Toque pra adicionar.</small></div>
