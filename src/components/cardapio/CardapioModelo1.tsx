@@ -70,7 +70,8 @@ export function faixaDaLoja(config: Configuracoes | null, produtos: any[] = []) 
   const porBairro = Array.isArray(c.entrega_por_bairro) && c.entrega_por_bairro.length > 0
   const valor = Number(c.valor_entrega_propria) || 0
   const itens: { Ic: typeof Truck; v: string; t: string; ok?: boolean }[] = []
-  if (propria) itens.push(porBairro ? { Ic: Truck, v: 'Por bairro', t: 'entrega' } : valor > 0 ? { Ic: Truck, v: formatarReais(valor), t: 'entrega' } : { Ic: Truck, v: 'Grátis', t: 'entrega', ok: true })
+  // (20/10) com taxa (fixa ou por bairro) não mostra o valor: só "Realiza entregas"; grátis continua "Grátis"
+  if (propria) itens.push(!porBairro && valor <= 0 ? { Ic: Truck, v: 'Grátis', t: 'entrega', ok: true } : { Ic: Truck, v: 'Realiza', t: 'entregas' })
   else if (outra) itens.push({ Ic: Truck, v: 'A combinar', t: 'entrega' })
   else if (retirada) itens.push({ Ic: Storefront, v: 'Retirada', t: 'no local' })
   const prazos = produtos.map(p => String(p?.antecedencia || '')).filter(a => ORDEM_PRAZO.includes(a)).sort((x, y) => ORDEM_PRAZO.indexOf(x) - ORDEM_PRAZO.indexOf(y))
@@ -78,7 +79,6 @@ export function faixaDaLoja(config: Configuracoes | null, produtos: any[] = []) 
   if (produtos.some(p => seloEntrega(p)?.tipo === 'pronta')) itens.push({ Ic: Lightning, v: 'Hoje', t: 'pronta entrega' })
   return itens
 }
-const formatarReais = (v: number) => 'R$ ' + v.toFixed(2).replace('.', ',')
 
 export function CardapioModelo1({ design, config, verificada = false, produtos = [], aoAbrirSobre }: CardapioModeloProps & { aoAbrirSobre?: () => void }) {
   const [modalEndereco, setModalEndereco] = useState(false)
