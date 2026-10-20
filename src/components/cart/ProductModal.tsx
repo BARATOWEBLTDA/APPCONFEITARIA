@@ -565,6 +565,9 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
   const valorTopo = semTamanho ? comDesconto(precoCardapio(product).valor, descPct) : calculo.final
   const pMin = precosTam.length ? Math.min(...precosTam) : valorTopo
   const pMax = precosTam.length ? Math.max(...precosTam) : valorTopo
+  // (20/10) os tamanhos têm preços diferentes? (decide se a linha do "a partir de" existe, escolhido ou não)
+  const precosTodos = gTamanho ? (gTamanho.opcoes || []).map((o: any) => precoDoTamanho(o, tamanhoPorPeso, porKg)).filter((v: number) => v > 0) : []
+  const precoTamVaria = precosTodos.length > 1 && Math.max(...precosTodos) > Math.min(...precosTodos)
   // (20/10) "a partir de" com promoção: o menor preço sem desconto, riscado
   const cheios = semTamanho && descPct > 0 ? (gTamanho!.opcoes || []).map((o: any) => precoDoTamanho(o, tamanhoPorPeso, porKg)).filter((v: number) => v > 0) : []
   const pMinCheio = cheios.length ? Math.min(...cheios) : 0
@@ -625,7 +628,8 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
         {product.descricao && <p className="pm-desc">{product.descricao}</p>}
         <div className="pm-preco">
           {/* (19/10) com tamanhos: "a partir de R$ X" (o menor), em vez de "R$ X a R$ Y" */}
-          {semTamanho && pMax > pMin && <small className="pm-apartir">a partir de</small>}
+          {/* (20/10) a linha do "a partir de" fica reservada depois de escolher: a lista não sobe */}
+          {gTamanho && !kitInfo && precoTamVaria && <small className="pm-apartir" style={semTamanho ? undefined : { visibility: 'hidden' }}>a partir de</small>}
           {/* (20/10) "a partir de" numa linha só dele; o preço cheio riscado vem depois do preço */}
           <strong className={descPct > 0 ? 'pm-preco-promo' : undefined}>{formatCurrency(semTamanho ? pMin : valorTopo)}</strong>
           <em>{semTamanho ? ((product as any).forma_venda === 'kg' ? unidadeCliente(product.forma_venda) : '') : kitCfg ? ((kitCfg as any).modo === 'livre' ? (Number((kitCfg as any).livre?.min) === 100 ? 'o cento' : `${(kitCfg as any).livre?.min} un.`) : 'o kit') : gTamanho ? '' : saborComPreco && !opSabor ? 'conforme o sabor' : unidadeCliente(product.forma_venda)}</em>

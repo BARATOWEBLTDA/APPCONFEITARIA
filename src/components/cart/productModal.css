@@ -126,7 +126,7 @@
   /* (20/10) zoom ao passar o mouse: a foto aumenta no próprio quadro e segue o cursor */
   .pm-ft-pc { cursor: zoom-in; }
   .pm-ft-pc img:not(.pm-ft-fundo) { transform-origin: var(--zx, 50%) var(--zy, 50%); transition: opacity .8s ease, transform .25s ease; }
-  .pm-ft-pc.zoom img.on { transform: scale(2.2); }
+  .pm-ft-pc.zoom img.on { transform: scale(1.6); }
   .pm-ft-seta { position: absolute; top: 50%; z-index: 2; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; margin: -20px 0 0; padding: 0; border: 0; border-radius: 50%; background: rgba(255,255,255,.92); color: var(--ui-texto); box-shadow: 0 2px 8px rgba(0,0,0,.18); cursor: pointer; }
   .pm-ft-seta.esq { left: 12px; }
   .pm-ft-seta.dir { right: 12px; }
