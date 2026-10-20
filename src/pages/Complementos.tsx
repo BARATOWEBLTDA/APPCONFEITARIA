@@ -170,22 +170,8 @@ export default function Complementos() {
           <TelaVazia caixa icone={<PuzzlePiece size={30} />} titulo="Nenhum complemento ainda"
             texto="Cadastre extras como topo de bolo, escrita e papel de arroz. O cliente escolhe na hora de pedir e o valor soma no total."
             acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}>Criar complemento</Botao>} />
-          <section className="pz-sug" aria-label="Sugestões pra começar">
-            <p className="pz-ex-t">Comece por uma destas</p>
-            <div className="pz-sug-l">
-              {SUGESTOES.map(sg => (
-                <button key={sg.nome} type="button" onClick={() => usarSugestao(sg)}>
-                  <Plus size={16} weight="bold" aria-hidden="true" /><span>{sg.nome}</span><b className={sg.valor > 0 ? "" : "g"}>{sg.valor > 0 ? `+ R$ ${brl(sg.valor)}` : "Grátis"}</b>
-                </button>
-              ))}
-            </div>
-          </section>
-          <section className="pz-ex" aria-label="Exemplo de como aparece no cardápio">
-            <p className="pz-ex-t">Assim aparece pro cliente</p>
-            <div className="pz-ex-l on"><i><Check size={14} weight="bold" /></i><span>Topo de bolo</span><b>+ R$ 15,00</b></div>
-            <div className="pz-ex-l"><i /><span>Papel de arroz</span><b>+ R$ 10,00</b></div>
-            <div className="pz-ex-l"><i /><span>Escrita no bolo</span><b className="g">Grátis</b></div>
-          </section>
+          {/* (19/10) sugestões do jeito que aparecem no cardápio: tocar abre o cadastro já preenchido */}
+          <ListaSugestoes titulo="Comece por uma destas" lista={SUGESTOES} aoEscolher={usarSugestao} />
         </>) : (<>
           <Titulo contagem={items.length} apoio="Escolha um complemento pra editar."
             acao={<Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}><span className="ct-g">Novo complemento</span><span className="ct-c">Novo</span></Botao>}>Seus complementos</Titulo>
@@ -215,18 +201,7 @@ export default function Complementos() {
               })}
             </section>
           )}
-          {sugestoesLivres.length > 0 && !termo && (
-            <section className="pz-sug" aria-label="Sugestões">
-              <p className="pz-ex-t">Ideias pra adicionar</p>
-              <div className="pz-sug-l">
-                {sugestoesLivres.map(sg => (
-                  <button key={sg.nome} type="button" onClick={() => usarSugestao(sg)}>
-                    <Plus size={16} weight="bold" aria-hidden="true" /><span>{sg.nome}</span><b className={sg.valor > 0 ? "" : "g"}>{sg.valor > 0 ? `+ R$ ${brl(sg.valor)}` : "Grátis"}</b>
-                  </button>
-                ))}
-              </div>
-            </section>
-          )}
+          {sugestoesLivres.length > 0 && !termo && <ListaSugestoes titulo="Ideias pra adicionar" lista={sugestoesLivres} aoEscolher={usarSugestao} />}
           <p className="ct-dica"><Info size={20} weight="bold" aria-hidden="true" />O cliente vê os complementos na hora de escolher o produto no cardápio.</p>
         </>)}
       </div>
@@ -309,5 +284,21 @@ export default function Complementos() {
         </div>
       </Janela>
     </>
+  );
+}
+
+/** (19/10) As sugestões no mesmo desenho da escolha de complementos do cardápio (caixinha, nome, explicação e preço). */
+function ListaSugestoes({ titulo, lista, aoEscolher }: { titulo: string; lista: { nome: string; descricao: string; valor: number }[]; aoEscolher: (sg: { nome: string; descricao: string; valor: number }) => void }) {
+  return (
+    <section className="pz-ex pz-sg" aria-label={titulo}>
+      <div className="pz-sg-cab"><p className="pz-ex-t">{titulo}</p><small>Assim o cliente vê. Toque pra adicionar.</small></div>
+      {lista.map(sg => (
+        <button key={sg.nome} type="button" className="pz-ex-l pz-sg-l" onClick={() => aoEscolher(sg)} aria-label={`Adicionar ${sg.nome}`}>
+          <i aria-hidden="true" />
+          <span className="pz-prev-tx"><span>{sg.nome}</span>{sg.descricao && <em>{sg.descricao}</em>}</span>
+          <b className={sg.valor > 0 ? "" : "g"}>{sg.valor > 0 ? `+ R$ ${brl(sg.valor)}` : "Grátis"}</b>
+        </button>
+      ))}
+    </section>
   );
 }
