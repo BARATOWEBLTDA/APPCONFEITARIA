@@ -337,6 +337,23 @@ body .prod-modal--novo .prod-promo-pct { position: absolute; top: 5px; right: 6p
 /* (19/10) computador, passo Preço: janela mais larga e duas colunas (preço e promoção à esquerda, cardápio e entrega à direita), sem rolar */
 @media (min-width: 1024px) {
   body .prod-modal.prod-modal--novo.prod-modal--largo { max-width: 960px !important; width: 960px !important; }
-  .prod-modal-body.prod-body--2col { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 40px; align-items: start; }
-  .prod-modal-body.prod-body--2col > .prod-section + .prod-section { padding-top: 0; }
+  .prod-modal-body.prod-body--2col { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); grid-auto-rows: min-content; column-gap: 0; align-items: start; }
+  .prod-modal-body.prod-body--2col > .prod-section { grid-column: 1; padding-right: 32px; }
+  .prod-modal-body.prod-body--2col > .prod-section + .prod-section { padding-top: 20px; }
+  /* direita: a prévia do cardápio, separada por uma linha fininha */
+  .prod-modal-body.prod-body--2col > .prod-prev-col { grid-column: 2; grid-row: 1 / span 20; align-self: stretch; padding-left: 32px; border-left: 1px solid var(--ui-linha, #F1E7EB); }
+  /* opções de cardápio e entrega em grade 2×2 */
+  body .prod-modal--novo .prod-body--2col .prod-opcs { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--ui-linha, #F1E7EB); }
+  body .prod-modal--novo .prod-body--2col .prod-opcs .prod-opc { background: var(--ui-branco); border-top: 0; min-height: 58px; padding: 8px 12px; gap: 10px; }
+  body .prod-modal--novo .prod-body--2col .prod-opcs .prod-opc b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  body .prod-modal--novo .prod-body--2col .prod-opcs .prod-opc small { font-size: 12px; }
+}
+@media (max-width: 1023px) { .prod-prev-col { display: none; } }
+/* na coluna da direita: o cartão do tamanho do cardápio em cima e o "Ver por dentro" numa linha embaixo */
+@media (min-width: 1024px) {
+  body .prod-modal--novo .prod-prev-col .prev-grade { grid-template-columns: 200px; justify-content: center; }
+  body .prod-modal--novo .prod-prev-col .prev-ver { flex-direction: row; justify-content: center; gap: 8px; min-height: 44px; padding: 6px 12px; }
+  body .prod-modal--novo .prod-prev-col .prev-ver-ic { width: 28px; height: 28px; margin: 0; }
+  body .prod-modal--novo .prod-prev-col .prev-ver-ic svg { width: 16px; height: 16px; }
+  body .prod-modal--novo .prod-prev-col .prev-ver small { display: none; }
 }

@@ -2653,7 +2653,7 @@ export default function Produtos() {
                       {op(form.pronta_entrega === true, "Pronta entrega", "Tem feito, sai na hora", () => setForm(f => ({ ...(f as any), pronta_entrega: !(f as any).pronta_entrega, antecedencia: !(f as any).pronta_entrega ? null : (f as any).antecedencia ?? null })))}
                       {op(enc, "Precisa encomendar antes", enc ? "O cardápio mostra \"Pedir antes\"" : "O cliente pede com antecedência", () => setForm(f => ({ ...(f as any), antecedencia: (f as any).antecedencia ? null : "48h", pronta_entrega: (f as any).antecedencia ? (f as any).pronta_entrega : false })))}
                       {/* (19/10) foto de referência só nos produtos que pedem (personalizados, topos de bolo) */}
-                      {op((form as any).aceita_referencia === true, "Cliente pode mandar foto de referência", "Bom pra bolos personalizados e topos", () => setForm(f => ({ ...(f as any), aceita_referencia: !(f as any).aceita_referencia })))}
+                      {op((form as any).aceita_referencia === true, "Aceita foto de referência", "Pra bolos personalizados e topos", () => setForm(f => ({ ...(f as any), aceita_referencia: !(f as any).aceita_referencia })))}
                     </div>
                     {enc && (
                       <div className="prod-field" style={{ marginTop: 12 }}>
@@ -2670,6 +2670,8 @@ export default function Produtos() {
                 );
               })()}
 
+              {/* (19/10) computador, passo Preço: a prévia do cardápio ao vivo na coluna da direita (no celular ela fica só na Revisão) */}
+              {wizardStep === 5 && !form.id && <div className="prod-prev-col"><PreviaCardapio form={form} /></div>}
               {/* (13/10) Revisão: como o cliente vê, pedido de exemplo e o que falta */}
               {/* (14/10) a prévia e, por último (colado no Publicar), o que falta arrumar */}
               {/* (14/10) passo 6 · Revisão: a prévia no topo, todas as informações e, por último, o que falta arrumar */}
