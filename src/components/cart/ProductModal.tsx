@@ -557,6 +557,13 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
   const valorTopo = semTamanho ? comDesconto(precoCardapio(product).valor, descPct) : calculo.final
   const pMin = precosTam.length ? Math.min(...precosTam) : valorTopo
   const pMax = precosTam.length ? Math.max(...precosTam) : valorTopo
+  // (20/10) "a partir de" com promoção: o menor preço sem desconto, riscado
+  const cheios = semTamanho && descPct > 0 ? (gTamanho!.opcoes || []).map((o: any) => precoDoTamanho(o, tamanhoPorPeso, porKg)).filter((v: number) => v > 0) : []
+  const pMinCheio = cheios.length ? Math.min(...cheios) : 0
+  const temFoto = images.length > 0
+  const aviso = selo?.tipo === 'encomenda' ? (
+    <div className="pm-aviso"><CalendarBlank size={20} weight="bold" aria-hidden="true" /><span><b>Encomende com {selo.prazo} de antecedência</b><small>Você escolhe o dia ao finalizar o pedido.</small></span></div>
+  ) : null
 
   // ═══ Preço ao lado de cada opção (11/10): sai da mesma conta do total, já com a promoção ═══
   // Antes mostrava o preço cheio (o botão cobrava com desconto) e, pelo peso, o `preco` antigo da opção.
@@ -604,18 +611,20 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
   const corpo = (
     <>
       <div className="pm-info">
-        <h2>{nome}</h2>
-        {product.descricao && <p>{product.descricao}</p>}
+        <div className="pm-tit"><h2>{nome}</h2>
+          {/* (20/10) computador: o X ao lado do nome (sai a faixa de cima que repetia o nome) */}
+          <button type="button" className="pm-x-pc" aria-label="Fechar" onClick={onClose}><X size={22} weight="bold" /></button></div>
+        {product.descricao && <p className="pm-desc">{product.descricao}</p>}
         <div className="pm-preco">
           {!semTamanho && descPct > 0 && calculo.subtotal > valorTopo && <s>{formatCurrency(calculo.subtotal)}</s>}
           {/* (19/10) com tamanhos: "a partir de R$ X" (o menor), em vez de "R$ X a R$ Y" */}
           {semTamanho && pMax > pMin && <small className="pm-apartir">a partir de</small>}
+          {semTamanho && pMinCheio > pMin && <s>{formatCurrency(pMinCheio)}</s>}
           <strong>{formatCurrency(semTamanho ? pMin : valorTopo)}</strong>
           <em>{semTamanho ? ((product as any).forma_venda === 'kg' ? unidadeCliente(product.forma_venda) : '') : kitCfg ? ((kitCfg as any).modo === 'livre' ? (Number((kitCfg as any).livre?.min) === 100 ? 'o cento' : `${(kitCfg as any).livre?.min} un.`) : 'o kit') : gTamanho ? '' : saborComPreco && !opSabor ? 'conforme o sabor' : unidadeCliente(product.forma_venda)}</em>
+          {descPct > 0 && <span className="pm-off">{Math.round(descPct * 100)}% off</span>}
         </div>
-        {selo?.tipo === 'encomenda' && (
-          <div className="pm-aviso"><CalendarBlank size={20} weight="bold" aria-hidden="true" /><span><b>Encomende com {selo.prazo} de antecedência</b><small>Você escolhe o dia ao finalizar o pedido.</small></span></div>
-        )}
+        {aviso}
       </div>
 
       {kitCfg && (
@@ -696,7 +705,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
       {/* (14/10) todos os tamanhos esgotados: o botão diz isso e não deixa pedir */}
       {/* (14/10) faltando escolha: só o texto ("Escolha a massa" cortava em "Escolha…" ao lado do preço) */}
       {tamanhosEsgotados(product) ? <button type="button" className="pm-add so-texto" disabled style={{ background: '#B5AAB0', cursor: 'not-allowed' }}><span>Esgotado no momento</span></button> :
-      <button type="button" className={`pm-add${faltou ? ' treme' : ''}${pendente ? ' so-texto' : ''}`} style={{ background: corBotao }} onClick={tentarAdicionar}>
+      <button type="button" className={`pm-add${faltou ? ' treme' : ''}${pendente ? ' so-texto pm-add--falta' : ''}`} style={{ background: corBotao }} onClick={tentarAdicionar}>
         <span>{pendente ? TEXTO_FALTA[pendente] : (rotuloAdicionar || 'Adicionar')}</span>
         {!pendente && <strong>{formatCurrency(totalDisplay)}</strong>}
       </button>}
@@ -716,7 +725,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
 
   return createPortal(
     <div className={`pm-veu${previa ? ' pm-veu--previa' : ''}`} onClick={onClose}>
-      <div ref={caixaRef} tabIndex={-1} className={`pm${images.length ? '' : ' pm--sem-foto'}`} role="dialog" aria-modal="true" aria-label={nome} onClick={e => e.stopPropagation()}>
+      <div ref={caixaRef} tabIndex={-1} className={`pm${temFoto ? '' : ' pm--sem-foto'}`} role="dialog" aria-modal="true" aria-label={nome} onClick={e => e.stopPropagation()}>
         {/* celular: barra que aparece ao rolar · computador: topo com o nome */}
         <div className={`pm-barra${barra ? ' on' : ''}`}>
           <button type="button" className="pm-bt" aria-label="Voltar" onClick={onClose}><ArrowLeft size={22} weight="bold" /></button>
@@ -739,6 +748,9 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
                 ))}
               </div>
             )}
+            {/* (20/10) computador: descrição e prazo embaixo da foto */}
+            {product.descricao && <p className="pm-lado-desc">{product.descricao}</p>}
+            {aviso}
           </div>
         )}
 
