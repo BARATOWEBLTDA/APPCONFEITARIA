@@ -88,3 +88,14 @@
 .ep-cab-ic { background: var(--ui-rosa); color: var(--ui-branco); }
 /* (20/10) linha de ajuda embaixo do "Para quem" do cupom */
 .ep-dica { display: block; margin-top: 6px; font-size: 13px; color: var(--ui-texto-2); }
+
+/* (20/10) Pix pelo cardápio */
+.ep-pix { display: flex; flex-direction: column; gap: 16px; padding-top: 16px; border-top: 1px solid var(--ui-linha); }
+.ep-seg--4 button { font-size: 13px; padding: 0 2px; }
+.ep-pix-modo { display: flex; flex-direction: column; }
+.ep-pix-pct { max-width: 200px; margin-top: 12px; }
+.ep-pix-aviso, .ep-pix-ok { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 12px; border-radius: var(--ui-raio); font-size: 14px; line-height: 1.4; }
+.ep-pix-aviso { background: var(--ui-laranja-fundo, #FFF4E5); color: var(--ui-texto); }
+.ep-pix-aviso svg { flex: none; color: var(--ui-laranja, #C2620A); }
+.ep-pix-ok { background: var(--ui-verde-fundo, #EAF6EE); color: var(--ui-texto); }
+.ep-pix-ok svg { flex: none; color: var(--ui-verde); }

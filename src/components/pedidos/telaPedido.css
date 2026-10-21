@@ -264,3 +264,10 @@
 .tpd-ret-bt { margin: -8px 0 -8px 6px; padding: 8px 0; border: 0; background: none; font: inherit; line-height: inherit; vertical-align: baseline; font-weight: 600; color: var(--ui-rosa-escuro); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; min-height: 0; }
 .tpj-ret { display: flex; flex-direction: column; gap: 8px; padding-bottom: 8px; }
 .tpj-ret p { margin: 0; font-size: 13px; color: var(--ui-texto-2); }
+
+/* (20/10) Pix pelo cardápio: aguardando / a conferir */
+.ep2-pix { display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: var(--ui-raio); background: var(--ui-laranja-fundo); }
+.ep2-pix p { display: flex; justify-content: space-between; gap: 8px; margin: 0; }
+.ep2-pix b { font-size: 15px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; }
+.ep2-pix small { font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
+.ep2-pix .ui-bt { margin-top: 8px; }

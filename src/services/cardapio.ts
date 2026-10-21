@@ -174,6 +174,10 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     tem_cupom: cupomDisponivel(isPro) && (temCupom === true || (Array.isArray(profile.cupons_desconto) && profile.cupons_desconto.some((c: any) => c?.ativo))),
     cupons_vitrine: cupomDisponivel(isPro) && Array.isArray(rVitrine?.data) ? rVitrine.data : [],
     aceita_agendamento: profile.aceita_agendamento !== false,
+    // (20/10) Pix pelo cardápio: só quando a loja ligou, aceita Pix e preencheu chave, nome e cidade
+    pix: profile.pix_online === true && (profile.formas_pagamento || ['pix']).includes('pix') && profile.pix_chave && profile.pix_nome && profile.pix_cidade
+      ? { chave: profile.pix_chave, nome: profile.pix_nome, cidade: profile.pix_cidade, modo: ['sinal', 'total'].includes(profile.pix_modo) ? profile.pix_modo : 'escolha', pct: Number(profile.pix_sinal_pct) || 50 }
+      : null,
     prazo_minimo_horas: profile.prazo_minimo_horas ?? 24,
     msg_pedido: profile.mensagens_whatsapp?.pedido_cardapio || null,
     instagram: profile.instagram || null,

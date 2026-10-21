@@ -295,6 +295,7 @@ function CardapioContent() {
         prazo_minimo_horas: config.prazo_minimo_horas ?? 24,
         msg_pedido: (config as any).msg_pedido || null,
         loja_pausada: (config as any).loja_pausada === true,
+        pix: config.pix || null,
         // Finalizar encomenda (02/10): horário da loja e antecedência de cada produto, pro agendamento
         horario: (config as any).horario || null,
         antecedencias: Object.fromEntries((produtos || []).map((p: any) => [p.id, { ant: p.antecedencia || null, pronta: p.pronta_entrega ?? null }])),

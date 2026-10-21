@@ -91,4 +91,6 @@ export interface Configuracoes {
   cupons_vitrine?: import('@/lib/cupons').CupomVitrine[]
   aceita_agendamento?: boolean
   prazo_minimo_horas?: number
+  /** (20/10) Pix pelo cardápio (null = paga como hoje, pelo WhatsApp) */
+  pix?: import('@/lib/pix').PixLoja | null
 }

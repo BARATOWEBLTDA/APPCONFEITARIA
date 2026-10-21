@@ -29,6 +29,26 @@ export type Pedido = {
   cliente_id?: string | null
   clientes?: { foto_url?: string | null } | null
   pedido_itens?: PedidoItem[]
+  /** (20/10) Pix pelo cardápio */
+  pix_online?: boolean | null
+  pix_informado_valor?: number | null
+  pix_informado_tipo?: string | null
+  pix_informado_em?: string | null
+}
+
+/**
+ * Pix pelo cardápio (20/10): em que pé está, enquanto nada foi recebido.
+ *   aguardando: o pedido veio com Pix pelo cardápio e o cliente ainda não disse que pagou
+ *   conferir:   o cliente tocou em "Já paguei" (sinal ou total); falta ela conferir no banco e confirmar
+ * Depois de confirmado vira um recebimento normal (Sinal pago / Pago) e isto devolve null.
+ */
+export function pixDoPedido(p: Pedido): { estado: 'aguardando' | 'conferir'; valor: number; tipo: 'sinal' | 'total' } | null {
+  if (!p?.pix_online || grupoDoStatus(p.status) === 'cancelado') return null
+  if ((p.status_pagamento || 'pendente') !== 'pendente') return null
+  if (p.pix_informado_em && Number(p.pix_informado_valor) > 0) {
+    return { estado: 'conferir', valor: Number(p.pix_informado_valor), tipo: p.pix_informado_tipo === 'sinal' ? 'sinal' : 'total' }
+  }
+  return { estado: 'aguardando', valor: 0, tipo: 'total' }
 }
 
 export type Tom = 'azul' | 'laranja' | 'verde' | 'vermelho' | 'rosa'

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { DragEvent } from 'react'
 import { Botao, Linha, Titulo } from '@/components/base'
 import type { Pedido } from './pedidoTexto'
-import { SITUACOES, acaoDe, precisaAceitar, atrasado, dataCurta, grupoDoStatus, nomeCliente, resumoItens, rs, saldoPedido } from './pedidoTexto'
+import { SITUACOES, pixDoPedido, acaoDe, precisaAceitar, atrasado, dataCurta, grupoDoStatus, nomeCliente, resumoItens, rs, saldoPedido } from './pedidoTexto'
 
 /**
  * Quadro (08/10 · 3.11 — antes "Kanban"): uma coluna por situação, só no tablet e no computador.
@@ -68,7 +68,7 @@ export default function QuadroPedidos({ pedidos, aoAbrir, aoAvancar, aoMover, mu
                   <p className="pdc-res">{resumoItens(p)}</p>
                   <div className="pdq-linhas">
                     <Linha rotulo={p.tipo_entrega === 'entrega' ? 'Entrega' : 'Retirada'} tom={atr ? 'vermelho' : undefined}>{dataCurta(p.data_entrega, p.horario_entrega)}</Linha>
-                    {!cancelado && (falta > 0.009 ? <Linha rotulo="Pagamento" tom="laranja">Falta {rs(falta, true)}</Linha> : <Linha rotulo="Pagamento" tom="verde">Pago</Linha>)}
+                    {!cancelado && (() => { const px = pixDoPedido(p); return px ? <Linha rotulo="Pagamento" tom="laranja">{px.estado === 'conferir' ? 'Pix a conferir' : 'Aguardando Pix'}</Linha> : falta > 0.009 ? <Linha rotulo="Pagamento" tom="laranja">Falta {rs(falta, true)}</Linha> : <Linha rotulo="Pagamento" tom="verde">Pago</Linha> })()}
                   </div>
                   {acao && <Botao className={precisaAceitar(p) ? undefined : 'pd-passo'} tamanho="p" cheio carregando={mudando === p.id} onClick={e => { e.stopPropagation(); aoAvancar(p) }}>{acao.rotulo}</Botao>}
                 </article>

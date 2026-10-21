@@ -28,6 +28,7 @@ import { SeloVerificado } from './SeloVerificado'
 import type { Produto } from '@/types/database'
 import { corClara } from '@/lib/coresCardapio'
 import { pixelEvento } from '@/lib/facebookPixel'
+import { PixPagamento } from './PixPagamento'
 import '@/components/cart/sacola.css'
 
 /**
@@ -89,6 +90,8 @@ interface CheckoutConfig {
   tem_cupom?: boolean
   aceita_agendamento: boolean
   prazo_minimo_horas: number
+  /** (20/10) Pix pelo cardápio */
+  pix?: import('@/lib/pix').PixLoja | null
   /** Finalizar encomenda (02/10) */
   horario?: any
   antecedencias?: Record<string, { ant?: string | null; pronta?: boolean | null }>
@@ -188,7 +191,10 @@ function CartContent({
   const [bairro, setBairro] = useState('')
   const [cidade, setCidade] = useState('')
   const [cepLoading, setCepLoading] = useState(false)
-  const [pedidoConfirmado, setPedidoConfirmado] = useState<{numero: number; itens: any[]; whatsapp: string; storeName: string; total: number; quando: string} | null>(null)
+  const [pedidoConfirmado, setPedidoConfirmado] = useState<{numero: number; itens: any[]; whatsapp: string; storeName: string; total: number; quando: string; zap?: string; mensagem?: string} | null>(null)
+  // (20/10) Pix pelo cardápio: o pedido já foi criado e falta pagar (pixPara); depois de "Já paguei" (pixFeito) ou "Pagar depois"
+  const [pixPara, setPixPara] = useState<{ pedidoId: string; total: number; retirada: boolean } | null>(null)
+  const [pixFeito, setPixFeito] = useState<{ tipo: 'sinal' | 'total'; valor: number } | 'depois' | null>(null)
   // 08/10 · 3.30: cupom abre na sacola, endereço salvo já vem marcado, botão treme quando falta algo
   const [cupomAberto, setCupomAberto] = useState(false)
   const [endNovo, setEndNovo] = useState(false)
@@ -285,7 +291,7 @@ function CartContent({
         tocarNota(1175, 0.12, 0.25)
       } catch {}
     }
-  }, [pedidoConfirmado])
+  }, [!!pedidoConfirmado]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Pegar dados do cliente logado
   const clienteLogado = (() => {
@@ -498,7 +504,7 @@ function CartContent({
       if (desconto > 0) m += `${cupomAplicado ? `Cupom ${cupomAplicado.codigo}` : 'Desconto'}: − ${formatCurrency(desconto)}\n`
       m += `*Total: ${formatCurrency(totalFinal)}*\n\n`
 
-      const pgtoLabel = LABEL_PAGAMENTO[formaPagamento]?.label || formaPagamento
+      const pgtoLabel = config.pix && formaPagamento === 'pix' ? 'Pix pelo cardápio' : (LABEL_PAGAMENTO[formaPagamento]?.label || formaPagamento)
       m += `*Pagamento:* ${pgtoLabel}`
       if (formaPagamento === 'dinheiro' && trocoParaStr) m += ` (troco pra R$ ${trocoParaStr})`
       m += `\n\n`
@@ -536,6 +542,8 @@ function CartContent({
     if (!confeteiraUserId) return falhou(null)
     if (items.length === 0) return avisar('Sua sacola está vazia', { tipo: 'erro' })
     let numeroPedido = 0
+    let pedidoIdCriado = ''
+    let totalCriado = totalFinal
     try {
       let clienteId: string | null = null
       // Função segura no banco: acha o cliente pelo telefone ou cria (sem ler a tabela direto)
@@ -581,6 +589,9 @@ function CartContent({
       })
       const semFuncao = !!viaBanco.error && (viaBanco.error.code === 'PGRST202' || viaBanco.error.code === '42883' || /could not find the function/i.test(String(viaBanco.error.message || '')))
       if (viaBanco.error && !semFuncao) return falhou(viaBanco.error)
+      pedidoIdCriado = novoPedidoId
+      // o Pix sai com o total que o banco calculou (é o que fica no pedido)
+      if (Number((viaBanco.data as any)?.valor_total) > 0) totalCriado = r2(Number((viaBanco.data as any).valor_total))
 
       if (semFuncao) {
         if (!tentativa.gravado) {
@@ -647,16 +658,21 @@ function CartContent({
 
     // Mostra tela de sucesso em vez de fechar
     // (11/10) "meio emoji" em qualquer texto (observação, recado, nome) fazia o link dar erro e o WhatsApp abria sem a mensagem
-    const whatsappUrl = (() => { try { return linkWhatsApp(whatsapp, semMeioEmoji(montarMensagem(numeroPedido))) } catch { return linkWhatsApp(whatsapp) } })()
+    const mensagem = (() => { try { return montarMensagem(numeroPedido) } catch { return '' } })()
+    const whatsappUrl = (() => { try { return linkWhatsApp(whatsapp, semMeioEmoji(mensagem)) } catch { return linkWhatsApp(whatsapp) } })()
     pixelEvento('Purchase', { value: totalFinal, num_items: items.length }) // (19/10) Pixel do Facebook: pedido enviado
     clearCart()
     setStep('cart')
     const quandoTxt = dataEntrega ? `${formaEntrega === 'retirada' ? 'Retirada' : 'Entrega'} ${rotuloData(dataEntrega).toLowerCase()}${horaEntrega ? ` às ${horaEntrega}` : ''}` : ''
-    setPedidoConfirmado({ numero: numeroPedido, itens: items, whatsapp: whatsappUrl, storeName, total: totalFinal, quando: quandoTxt })
+    setPixFeito(null)
+    setPixPara(config.pix && formaPagamento === 'pix' && pedidoIdCriado ? { pedidoId: pedidoIdCriado, total: totalCriado, retirada: formaEntrega === 'retirada' } : null)
+    setPedidoConfirmado({ numero: numeroPedido, itens: items, whatsapp: whatsappUrl, storeName, total: totalFinal, quando: quandoTxt, zap: whatsapp, mensagem })
   }
 
 
   const accent = corBotao || '#E85A8C'
+  // (20/10) a loja recebe Pix pelo cardápio e o cliente escolheu Pix: o botão leva pro pagamento
+  const pixOnline = !!config.pix && formaPagamento === 'pix'
   const nomeLoja = lojaAtualNome()
   const temCupom = !!(config.tem_cupom || config.cupons_desconto.length > 0)
 
@@ -684,6 +700,23 @@ function CartContent({
     : config.entrega_por_bairro.length > 0 && !bairroSelecionado ? 'Falta o bairro' : ''
 
   const natal = temaNatalLigado() // (18/10) tema de Natal: neve e touquinha no Pedido enviado
+  /* ═══ Pagar com Pix (20/10) ═══ */
+  if (pedidoConfirmado && pixPara && !pixFeito && config.pix) return (
+    <PixPagamento pix={config.pix} pedidoId={pixPara.pedidoId} numero={pedidoConfirmado.numero} total={pixPara.total}
+      loja={pedidoConfirmado.storeName} cor={accent} quando={pixPara.retirada ? 'retirada' : 'entrega'}
+      aoPagar={info => setPixFeito(info)} aoDepois={() => setPixFeito('depois')} />
+  )
+
+  // A mensagem do WhatsApp leva o que aconteceu com o Pix
+  const linhaPix = !pixFeito ? '' : pixFeito === 'depois' ? '\n\n*Pix:* vou pagar depois'
+    : `\n\n*Pix:* paguei ${pixFeito.tipo === 'sinal' ? 'o sinal de' : ''} ${formatCurrency(pixFeito.valor)} pelo cardápio`.replace('  ', ' ')
+  const linkDoPedido = () => {
+    if (!pedidoConfirmado) return ''
+    if (!linhaPix || !pedidoConfirmado.zap) return pedidoConfirmado.whatsapp
+    try { return linkWhatsApp(pedidoConfirmado.zap, semMeioEmoji(`${pedidoConfirmado.mensagem || ''}${linhaPix}`)) } catch { return pedidoConfirmado.whatsapp }
+  }
+  const pixPago = pixFeito && pixFeito !== 'depois' ? pixFeito : null
+
   /* ═══ Pedido enviado ═══ */
   if (pedidoConfirmado) return (
     <div className="sc-enviado">
@@ -692,7 +725,7 @@ function CartContent({
         <span className="sc-enviado-ic"><Check size={40} weight="bold" /></span>
         <h2>Pedido enviado!</h2>
         {natal && <p className="sc-enviado-festas">Boas festas!</p>}
-        <p>{pedidoConfirmado.numero > 0 ? <>Pedido <b>#{pedidoConfirmado.numero}</b> · a </> : 'A '}<b>{pedidoConfirmado.storeName}</b> vai falar com você pelo WhatsApp.</p>
+        <p>{pedidoConfirmado.numero > 0 ? <>Pedido <b>#{pedidoConfirmado.numero}</b> · a </> : 'A '}<b>{pedidoConfirmado.storeName}</b> {pixPago ? 'confere o Pix e fala com você pelo WhatsApp.' : 'vai falar com você pelo WhatsApp.'}</p>
         <div className="sc-res">
           {pedidoConfirmado.itens.map((it: any, k: number) => {
             const det = detalhesItem(it)
@@ -706,10 +739,11 @@ function CartContent({
             )
           })}
           <span className="t"><span><b>Total</b></span><em>{formatCurrency(pedidoConfirmado.total)}</em></span>
+          {pixPago && <span className="px-inf"><span><b>{pixPago.tipo === 'sinal' ? 'Sinal no Pix' : 'Pago no Pix'}</b><small>A loja confere e confirma</small></span><em>{formatCurrency(pixPago.valor)}</em></span>}
           {pedidoConfirmado.quando && <span className="q"><CalendarBlank size={18} weight="bold" />{pedidoConfirmado.quando}</span>}
         </div>
-        {pedidoConfirmado.whatsapp && <button type="button" className="sc-zap" onClick={() => window.open(pedidoConfirmado.whatsapp, '_blank')}><IconeWhatsApp size={22} />Mandar mensagem pra loja</button>}
-        <button type="button" className="sc-bt-sec" onClick={() => { setPedidoConfirmado(null); onClose() }}>Voltar ao cardápio</button>
+        {pedidoConfirmado.whatsapp && <button type="button" className="sc-zap" onClick={() => window.open(linkDoPedido(), '_blank')}><IconeWhatsApp size={22} />{pixPago ? 'Mandar o comprovante' : 'Mandar mensagem pra loja'}</button>}
+        <button type="button" className="sc-bt-sec" onClick={() => { setPedidoConfirmado(null); setPixPara(null); setPixFeito(null); onClose() }}>Voltar ao cardápio</button>
       </div>
     </div>
   )
@@ -928,7 +962,7 @@ function CartContent({
 
         {/* Pagamento */}
         <section ref={refPagamento}>
-          <Cab t="Pagamento" sub={`Você paga na ${tipo}`} obr ok={!!formaPagamento} falta={feErro === 'pagamento' ? 'Escolha como vai pagar' : undefined} />
+          <Cab t="Pagamento" sub={pixOnline ? 'Pix: você paga no próximo passo' : `Você paga na ${tipo}`} obr ok={!!formaPagamento} falta={feErro === 'pagamento' ? 'Escolha como vai pagar' : undefined} />
           <div role="radiogroup" aria-label="Forma de pagamento">
             {metodosPag.map((k: string) => {
               const on = formaPagamento === k
@@ -979,7 +1013,7 @@ function CartContent({
 
       <footer className="sc-pe">
         <button type="button" className={`sc-bt-pri cheio${treme ? ' treme' : ''}`} style={{ background: accent }} disabled={enviando} onClick={enviarFinalizar}>
-          <span>{enviando ? 'Enviando…' : 'Enviar pedido'}</span><b>{formatCurrency(totalFinal)}</b>
+          <span>{enviando ? 'Enviando…' : pixOnline ? 'Ir para o pagamento' : 'Enviar pedido'}</span><b>{formatCurrency(totalFinal)}</b>
         </button>
       </footer>
 

@@ -159,3 +159,4 @@
 }
 @media (min-width: 901px) and (hover: hover) { .pdl:hover { background: var(--ui-rosa-claro); } }
 @media (prefers-reduced-motion: reduce) { .pdc-seta svg { transition: none; } }
+.pdc-pix { margin-top: 12px; }

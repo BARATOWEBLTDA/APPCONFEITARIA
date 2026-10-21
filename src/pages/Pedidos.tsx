@@ -12,7 +12,7 @@ import MenuPedido from '@/components/pedidos/MenuPedido'
 import type { AcaoMenu } from '@/components/pedidos/MenuPedido'
 import QuadroPedidos from '@/components/pedidos/QuadroPedidos'
 import type { Pedido } from '@/components/pedidos/pedidoTexto'
-import { acaoDe, avisoDaMudanca, formaDoItem, itemComQtd, precisaAceitar, dataISO, grupoDoStatus, nomeCliente, nomeDaSituacao, nomeDoItem, recebidoPedido, rs, saldoPedido, terminou } from '@/components/pedidos/pedidoTexto'
+import { pixDoPedido, acaoDe, avisoDaMudanca, formaDoItem, itemComQtd, precisaAceitar, dataISO, grupoDoStatus, nomeCliente, nomeDaSituacao, nomeDoItem, recebidoPedido, rs, saldoPedido, terminou } from '@/components/pedidos/pedidoTexto'
 import { registrarPagamento } from '@/lib/pagamentos'
 import { duplicarPedido } from '@/lib/duplicarPedido'
 import { excluirPedido as excluirPedidoNoBanco } from '@/lib/pedidosDoo'
@@ -326,10 +326,32 @@ export default function Pedidos() {
     } finally { excluindo.current = false }
   }
 
+  // (20/10) Pix pelo cardápio: ela confere no banco e confirma. Vira um recebimento normal (financeiro, "falta pagar").
+  const confirmandoPix = useRef(false)
+  const confirmarPix = async (p: Pedido) => {
+    const px = pixDoPedido(p)
+    if (!px || px.estado !== 'conferir' || confirmandoPix.current) return
+    const ok = await confirmar({
+      titulo: `Confirmar o Pix de ${rs(px.valor)}?`,
+      texto: `Confira no app do banco se o Pix de ${nomeCliente(p)} entrou. ${px.tipo === 'sinal' ? 'Fica como sinal pago do pedido.' : 'O pedido fica pago.'}`,
+      rotulo: 'Confirmar', rotuloVoltar: 'Ainda não',
+    })
+    if (!ok) return
+    confirmandoPix.current = true
+    try {
+      const r = await registrarPagamento({ pedidoId: p.id, userId, valor: px.valor, forma: 'pix', tipo: px.tipo, origem: 'cardapio', observacao: 'Pix pelo cardápio' })
+      if (!r.ok) { avisar(r.erro || 'Não deu pra confirmar o Pix. Tente de novo.', { tipo: 'erro' }); return }
+      const { data } = await supabase.from('pedidos').select('valor_recebido, status_pagamento').eq('id', p.id).maybeSingle()
+      mudarPedidos(prev => prev.map(x => x.id === p.id ? { ...x, ...((data as any) || { valor_recebido: px.valor, status_pagamento: px.tipo === 'sinal' ? 'parcial' : 'pago' }) } : x))
+      avisar(px.tipo === 'sinal' ? 'Sinal confirmado.' : 'Pix confirmado. Pedido pago.', { tipo: 'ok' })
+    } finally { confirmandoPix.current = false }
+  }
+
   // ── "Mais ações" do pedido: faz a ação e depois fecha a janela ──
   const duplicando = useRef(false) // (10/10) trava: dois toques seguidos criavam duas cópias
   const handleMenuAcao = async (p: Pedido, acao: AcaoMenu) => {
     const fechar = () => setMenuDe(null)
+    if (acao === 'confirmar_pix') { fechar(); await confirmarPix(p); return }
     if (acao === 'editar') { irDaJanela(`/pedidos/${p.id}/editar`); fechar(); return }
     if (acao === 'duplicar') {
       if (duplicando.current) return
@@ -436,7 +458,7 @@ export default function Pedidos() {
   const sairDoFiltroRapido = () => { setFiltroAguardando(false); setFiltroAtrasados(false); navigate('/pedidos', { replace: true }) }
   const quadro = largo && modo === 'quadro'
 
-  const props = (p: Pedido) => ({ p, aoAbrir: abrirPedido, aoAvancar: avancar, aoMenu: setMenuDe, aoEndereco: verEndereco, mudando: mudando.has(p.id) })
+  const props = (p: Pedido) => ({ p, aoAbrir: abrirPedido, aoAvancar: avancar, aoMenu: setMenuDe, aoEndereco: verEndereco, mudando: mudando.has(p.id), aoConfirmarPix: confirmarPix })
 
   const conteudo = () => {
     if (estado === 'carregando') return demorou ? <p className="pd-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando os pedidos…</p> : null

@@ -3,7 +3,7 @@ import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { ArrowRight, Bag, CaretDown, DotsThreeVertical } from '@phosphor-icons/react'
 import { Botao, BotaoIcone, Linha } from '@/components/base'
 import type { Pedido } from './pedidoTexto'
-import { acaoDe, atrasado, precisaAceitar, criadoEm, dataLonga, enderecoCurto, formaDoItem, fotoDoPedido, horaCurta, itensOrdenados, nomeCliente, nomeDoItem, partesDaQtd, recebidoPedido, resumoItens, rs, saldoPedido, situacaoDe, telefoneBonito, grupoDoStatus } from './pedidoTexto'
+import { pixDoPedido, acaoDe, atrasado, precisaAceitar, criadoEm, dataLonga, enderecoCurto, formaDoItem, fotoDoPedido, horaCurta, itensOrdenados, nomeCliente, nomeDoItem, partesDaQtd, recebidoPedido, resumoItens, rs, saldoPedido, situacaoDe, telefoneBonito, grupoDoStatus } from './pedidoTexto'
 import { r2 } from '@/lib/moeda'
 
 /**
@@ -24,6 +24,8 @@ type Props = {
   /** (09/10 · 3.72) as boas-vindas abrem o cartão sozinhas e mostram o recado do item dentro dele */
   abertoFixo?: boolean
   extra?: ReactNode
+  /** (20/10) "Confirmar Pix": o cliente disse que pagou pelo cardápio */
+  aoConfirmarPix?: (p: Pedido) => void
 }
 
 const parar = (fn: () => void) => (e: MouseEvent) => { e.stopPropagation(); fn() }
@@ -48,7 +50,15 @@ function Foto({ p }: { p: Pedido }) {
   )
 }
 
-export function CartaoPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudando, abertoFixo, extra }: Props) {
+/** Pagamento na lista: o Pix pelo cardápio tem os passos dele (Aguardando Pix → Pix a conferir); o resto é Falta / Pago */
+function textoPagamento(p: Pedido, falta: number): { texto: string; tom: 'laranja' | 'verde' } {
+  const px = pixDoPedido(p)
+  if (px?.estado === 'conferir') return { texto: px.tipo === 'sinal' ? 'Sinal no Pix a conferir' : 'Pix a conferir', tom: 'laranja' }
+  if (px?.estado === 'aguardando') return { texto: 'Aguardando Pix', tom: 'laranja' }
+  return falta > 0.009 ? { texto: `Falta ${rs(falta, true)}`, tom: 'laranja' } : { texto: 'Pago', tom: 'verde' }
+}
+
+export function CartaoPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudando, abertoFixo, extra, aoConfirmarPix }: Props) {
   const [abertoAqui, setAberto] = useState(false)
   const aberto = abertoFixo ?? abertoAqui
   const sit = situacaoDe(p)
@@ -61,6 +71,8 @@ export function CartaoPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudand
   const cancelado = grupoDoStatus(p.status) === 'cancelado'
   const tel = telefoneBonito(p.cliente_telefone)
   const end = enderecoCurto(p)
+  const px = pixDoPedido(p)
+  const pixConferir = px?.estado === 'conferir' ? px : null
   return (
     <article className={`pdc${atr ? ' atr' : ''}${aceitar ? ' aceitar' : ''}`} tabIndex={0} aria-label={`Pedido #${p.numero || ''} de ${nomeCliente(p)}`} onClick={() => aoAbrir(p)} onKeyDown={teclaAbre(() => aoAbrir(p))}>
       <div className="pdc-topo">
@@ -76,9 +88,11 @@ export function CartaoPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudand
           <Linha rotulo="Situação" tom={sit.tom}>{sit.nome}</Linha>
           {acao && <Botao className={aceitar ? undefined : 'pd-passo'} tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{acao.rotulo}</Botao>}
         </div>
-        {!cancelado && (falta > 0.009 ? <Linha rotulo="Pagamento" tom="laranja">Falta {rs(falta, true)}</Linha> : <Linha rotulo="Pagamento" tom="verde">Pago</Linha>)}
+        {!cancelado && <Linha rotulo="Pagamento" tom={textoPagamento(p, falta).tom}>{textoPagamento(p, falta).texto}</Linha>}
         <Linha rotulo={entrega ? 'Entrega' : 'Retirada'} tom={atr ? 'vermelho' : undefined}>{dataLonga(p.data_entrega, p.horario_entrega)}</Linha>
         {entrega && <button type="button" className="pdc-end" onClick={parar(() => aoEndereco(p))}>Ver endereço</button>}
+        {/* (20/10) o cliente disse que pagou o Pix do cardápio: ela confere no banco e confirma aqui */}
+        {pixConferir && aoConfirmarPix && <Botao className="pdc-pix" variante="suave" tamanho="m" cheio onClick={parar(() => aoConfirmarPix(p))}>Confirmar Pix de {rs(pixConferir.valor)}</Botao>}
       </div>
       {aberto && (
         <div className="pdc-det" onClick={e => e.stopPropagation()}>
@@ -127,8 +141,8 @@ export function LinhaPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudando
         </div>
       </div>
       <p className={`pdl-cel${sit.tom ? ` t-${sit.tom}` : ''}`} role="cell"><b>{sit.nome}</b></p>
-      <p className={`pdl-cel ${cancelado ? '' : falta > 0.009 ? 't-laranja' : 't-verde'}`} role="cell">
-        <b>{cancelado ? '—' : falta > 0.009 ? `Falta ${rs(falta, true)}` : 'Pago'}</b>
+      <p className={`pdl-cel ${cancelado ? '' : `t-${textoPagamento(p, falta).tom}`}`} role="cell">
+        <b>{cancelado ? '—' : textoPagamento(p, falta).texto}</b>
         <small>de {rs(p.valor_total)}</small>
       </p>
       <p className={`pdl-cel${atr ? ' t-vermelho' : ''}`} role="cell">

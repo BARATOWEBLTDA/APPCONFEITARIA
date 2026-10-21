@@ -2,7 +2,8 @@
 // O que salva continua igual (salva sozinho 2s depois de mexer; cupons na tabela loja_cupons).
 // Mudou o visual: campos e botões do app, cupom novo/editar numa janela, convite pro PRO sem borrão.
 import CampoData from '@/components/CampoData'
-import { CalendarBlank, CaretRight, Check, Crown, PencilSimple, CurrencyCircleDollar, Plus, Tag, Ticket, Truck, UserPlus, Users, Wallet, WarningCircle } from "@phosphor-icons/react"
+import { CalendarBlank, CaretRight, Check, Crown, PencilSimple, CurrencyCircleDollar, Plus, QrCode, Tag, Ticket, Truck, UserPlus, Users, Wallet, WarningCircle } from "@phosphor-icons/react"
+import { normalizarChave, problemaNaChave, tipoDaChave, type TipoChave } from '@/lib/pix'
 import { cupomDisponivel, MAX_CUPONS_ATIVOS } from '@/lib/cupons'
 import { Botao, Campo, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base"
 import "@/components/loja/editoresLoja.css"
@@ -36,6 +37,19 @@ const ENTREGAS = [
 // (11/10) Usa o leitor do app: o daqui lia "1.000" como 1 (pedido mínimo de R$ 1.000 virava R$ 1).
 const numBR = parseNumBR
 
+type PixTela = { pixOnline: boolean; pixTipo: TipoChave; pixChave: string; pixNome: string; pixCidade: string; pixModo: string; pixPct: string }
+const pctDoSinal = (v: string) => Math.min(90, Math.max(10, Math.round(Number(String(v).replace(',', '.')) || 50)))
+/** O que falta pra ligar o Pix pelo cardápio ('' = está tudo certo) */
+const faltaNoPix = (x: PixTela) => problemaNaChave(x.pixChave, x.pixTipo) || (!x.pixNome.trim() ? 'Escreva o nome de quem recebe' : !x.pixCidade.trim() ? 'Escreva a cidade' : '')
+const pixParaSalvar = (x: PixTela) => ({
+  pix_online: x.pixOnline && !faltaNoPix(x),
+  pix_chave: normalizarChave(x.pixChave, x.pixTipo) || null,
+  pix_nome: x.pixNome.trim() || null,
+  pix_cidade: x.pixCidade.trim() || null,
+  pix_modo: x.pixModo === 'sinal' || x.pixModo === 'total' ? x.pixModo : 'escolha',
+  pix_sinal_pct: pctDoSinal(x.pixPct),
+})
+
 /** (17/10) embutido: aparece dentro de Dados da loja (mesma tela), sem o cabeçalho próprio */
 /** (19/10) parte: "entrega" (Dados da loja, sem cupons) ou "cupons" (Marketing › Cupons, só os cupons) */
 export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }: { embutido?: boolean; parte?: "tudo" | "entrega" | "cupons" } = {}) {
@@ -62,6 +76,14 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
   const [cupomForm, setCupomForm] = useState<typeof cupomVazio>(cupomVazio)
   const [aceitaAgendamento, setAceitaAgendamento] = useState(true)
   const [prazoMinimo, setPrazoMinimo] = useState('24')
+  // (20/10) Pix pelo cardápio: desligado = tudo como antes (o cliente combina no WhatsApp)
+  const [pixOnline, setPixOnline] = useState(false)
+  const [pixTipo, setPixTipo] = useState<TipoChave>('cpf')
+  const [pixChave, setPixChave] = useState('')
+  const [pixNome, setPixNome] = useState('')
+  const [pixCidade, setPixCidade] = useState('')
+  const [pixModo, setPixModo] = useState<'escolha' | 'sinal' | 'total'>('escolha')
+  const [pixPct, setPixPct] = useState('50')
 
   // (10/10) Se a leitura do perfil ou dos cupons falhar, a tela NÃO abre: antes abria com os valores padrão e o
   // salvamento automático gravava isso por cima (formas de entrega, taxas por bairro e todos os cupons sumiam).
@@ -74,7 +96,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
       const user = session?.user
       if (!user) { setErroCarga(true); return }
       setUserId(user.id)
-      const { data, error } = await supabase.from('profiles').select('formas_pagamento, formas_entrega, valor_entrega_propria, entrega_por_bairro, endereco_retirada, horario_retirada, exibir_campo_troco, cupons_desconto, aceita_agendamento, prazo_minimo_horas').eq('id', user.id).single()
+      const { data, error } = await supabase.from('profiles').select('formas_pagamento, formas_entrega, valor_entrega_propria, entrega_por_bairro, endereco_retirada, horario_retirada, exibir_campo_troco, cupons_desconto, aceita_agendamento, prazo_minimo_horas, pix_online, pix_chave, pix_nome, pix_cidade, pix_modo, pix_sinal_pct, nome_loja, endereco').eq('id', user.id).single()
       if (error || !data) { setErroCarga(true); return }
       // (13/10) abriu e viu como o cliente vai pagar e receber: conta como o passo "Pagamento e entrega" (salva sozinho)
       marcarPagamentoConferido(user.id)
@@ -104,6 +126,16 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
         })))
         setAceitaAgendamento(data.aceita_agendamento !== false)
         setPrazoMinimo(data.prazo_minimo_horas != null ? data.prazo_minimo_horas.toString() : '24')
+        const d: any = data
+        setPixOnline(d.pix_online === true)
+        const tipo = tipoDaChave(d.pix_chave || '')
+        setPixTipo(tipo)
+        setPixChave(tipo === 'celular' ? String(d.pix_chave || '').replace(/^\+55/, '') : (d.pix_chave || ''))
+        // nome e cidade já vêm da loja (dá pra trocar)
+        setPixNome(d.pix_nome || d.nome_loja || '')
+        setPixCidade(d.pix_cidade || d.endereco?.cidade || '')
+        setPixModo(d.pix_modo === 'sinal' || d.pix_modo === 'total' ? d.pix_modo : 'escolha')
+        setPixPct(String(d.pix_sinal_pct || 50))
       }
       setLoading(false)
     }
@@ -111,11 +143,12 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
   }, [tentativa])
 
   // 09/10: não salva (nem mostra "Salvo") só por ter aberto a tela; salva depois que algo muda
-  const foto = JSON.stringify([formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, enderecoRetirada, horarioRetirada, exibirCampoTroco, cupons, aceitaAgendamento, prazoMinimo])
+  const foto = JSON.stringify([formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, enderecoRetirada, horarioRetirada, exibirCampoTroco, cupons, aceitaAgendamento, prazoMinimo, pixOnline, pixTipo, pixChave, pixNome, pixCidade, pixModo, pixPct])
   const salvoRef = useRef<string | null>(null)
   useEffect(() => { if (!loading) salvoRef.current = foto }, [loading]) // eslint-disable-line react-hooks/exhaustive-deps
   // 10/10: o que está na tela agora (o salvamento sempre grava o mais novo, inclusive ao sair da tela)
-  const telaRef = useRef({ userId, formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, exibirCampoTroco, cupons })
+  const pixTela = { pixOnline, pixTipo, pixChave, pixNome, pixCidade, pixModo, pixPct }
+  const telaRef = useRef({ userId, formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, exibirCampoTroco, cupons, pix: pixTela })
   const pendenteRef = useRef(false)
 
   /**
@@ -134,6 +167,8 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
         valor_entrega_propria: t.valorEntregaPropria ? numBR(t.valorEntregaPropria) : 0,
         entrega_por_bairro: t.entregaPorBairro.filter(b => b.bairro.trim()).map(b => ({ bairro: b.bairro, valor: numBR(b.valor) })),
         exibir_campo_troco: t.exibirCampoTroco,
+        // (20/10) Pix pelo cardápio: só fica ligado com a chave, o nome e a cidade certos (senão o cardápio paga como antes)
+        ...pixParaSalvar(t.pix),
       }).eq('id', t.userId)
       if (erroPerfil) throw erroPerfil
       const usosNoBanco: Record<string, number> = {}
@@ -172,7 +207,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
   const salvarTudoRef = useRef(salvarTudo)
   // Roda a cada mudança, antes dos efeitos de baixo: deixa nas refs o que está na tela agora
   useEffect(() => {
-    telaRef.current = { userId, formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, exibirCampoTroco, cupons }
+    telaRef.current = { userId, formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, exibirCampoTroco, cupons, pix: pixTela }
     salvarTudoRef.current = salvarTudo
   })
 
@@ -183,7 +218,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
     pendenteRef.current = true
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => { timerRef.current = null; salvarTudoRef.current() }, 2000)
-  }, [formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, enderecoRetirada, horarioRetirada, exibirCampoTroco, cupons, aceitaAgendamento, prazoMinimo]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, enderecoRetirada, horarioRetirada, exibirCampoTroco, cupons, aceitaAgendamento, prazoMinimo, pixOnline, pixTipo, pixChave, pixNome, pixCidade, pixModo, pixPct]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 10/10: saiu da tela antes dos 2 s → salva na hora (antes a mudança era descartada em silêncio)
   useEffect(() => () => {
@@ -346,6 +381,64 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
           )}
           </>)}
         </section>
+
+        {/* (20/10) Pix pelo cardápio */}
+        {formasPagamento.includes('pix') && (
+        <section className="ep-card">
+          <Cabeca Ic={QrCode} titulo="Pix pelo cardápio" apoio="O cliente paga com QR Code" />
+          <Chave on={pixOnline} rotulo="Receber Pix pelo cardápio" apoio={pixOnline ? 'Você confirma em Pedidos' : 'Desligado: paga pelo WhatsApp'} aoMudar={setPixOnline} />
+          {pixOnline && (
+            <div className="ep-pix">
+              <div className="ui-campo">
+                <span className="ui-campo-r" id="ep-pix-tipo"><span>Tipo da chave</span></span>
+                <div className="ep-seg ep-seg--4" role="radiogroup" aria-labelledby="ep-pix-tipo">
+                  {([['cpf', 'CPF/CNPJ'], ['celular', 'Celular'], ['email', 'E-mail'], ['aleatoria', 'Aleatória']] as [TipoChave, string][]).map(([k, n]) => (
+                    <button key={k} type="button" role="radio" aria-checked={pixTipo === k} onClick={() => { if (pixTipo !== k) { setPixTipo(k); setPixChave('') } }}>{n}</button>
+                  ))}
+                </div>
+              </div>
+              <Campo rotulo="Chave Pix" value={pixChave}
+                inputMode={pixTipo === 'cpf' || pixTipo === 'celular' ? 'numeric' : pixTipo === 'email' ? 'email' : 'text'}
+                prefixo={pixTipo === 'celular' ? '+55' : undefined}
+                placeholder={pixTipo === 'cpf' ? 'Só os números' : pixTipo === 'celular' ? '(41) 9 9999-0000' : pixTipo === 'email' ? 'voce@email.com' : 'Cole a chave aqui'}
+                erro={pixChave.trim() && problemaNaChave(pixChave, pixTipo) ? problemaNaChave(pixChave, pixTipo) : undefined}
+                onChange={e => setPixChave(e.target.value)} />
+              <div className="ep-g2">
+                <Campo rotulo="Nome de quem recebe" value={pixNome} maxLength={25} onChange={e => setPixNome(e.target.value)} />
+                <Campo rotulo="Cidade" value={pixCidade} maxLength={15} onChange={e => setPixCidade(e.target.value)} />
+              </div>
+              <div className="ui-campo">
+                <span className="ui-campo-r" id="ep-pix-modo"><span>Quanto o cliente paga no Pix</span></span>
+                <div className="ppf-mos ppf-mos--chk ep-pix-modo" role="radiogroup" aria-labelledby="ep-pix-modo">
+                  {([['escolha', 'O cliente escolhe', 'Sinal ou o total, na hora de pagar'], ['sinal', 'Só o sinal', 'O resto ele paga na entrega'], ['total', 'Só o total', 'Paga tudo antes']] as const).map(([k, n, sub]) => (
+                    <button key={k} type="button" role="radio" aria-checked={pixModo === k} className={pixModo === k ? 'on' : ''} onClick={() => setPixModo(k)}>
+                      <i aria-hidden="true">{pixModo === k && <Check size={13} weight="bold" />}</i><span><b>{n}</b><small><em>{sub}</em></small></span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {pixModo !== 'total' && (
+                <div className="ui-campo">
+                  <span className="ui-campo-r" id="ep-pix-pct"><span>Valor do sinal</span></span>
+                  <div className="ep-seg" role="radiogroup" aria-labelledby="ep-pix-pct">
+                    {['30', '50'].map(v => <button key={v} type="button" role="radio" aria-checked={pixPct === v} onClick={() => setPixPct(v)}>{v}%</button>)}
+                    <button type="button" role="radio" aria-checked={pixPct !== '30' && pixPct !== '50'} onClick={() => { if (pixPct === '30' || pixPct === '50') setPixPct('40') }}>Outro</button>
+                  </div>
+                  {pixPct !== '30' && pixPct !== '50' && (
+                    <div className="ep-pix-pct">
+                      <Campo rotulo="Porcentagem do sinal" depois={<span className="ui-campo-pre" aria-hidden="true">%</span>} inputMode="numeric" value={pixPct} maxLength={2} dica="De 10% a 90% do total"
+                        onChange={e => setPixPct(e.target.value.replace(/\D/g, '').slice(0, 2))} />
+                    </div>
+                  )}
+                </div>
+              )}
+              {faltaNoPix(pixTela)
+                ? <p className="ep-pix-aviso"><WarningCircle size={18} weight="bold" aria-hidden="true" />{faltaNoPix(pixTela)} pra ligar.</p>
+                : <p className="ep-pix-ok"><Check size={18} weight="bold" aria-hidden="true" />Pronto: o cliente já vê o Pix.</p>}
+            </div>
+          )}
+        </section>
+        )}
 
         {/* Entrega */}
         <section className="ep-card">

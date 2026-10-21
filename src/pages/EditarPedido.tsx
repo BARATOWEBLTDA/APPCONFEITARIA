@@ -7,7 +7,7 @@ import { type DialogoOpcoes, type IconeDialogo } from '@/components/DialogoApp'
 import AppPageHeader from '@/components/AppPageHeader'
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, Linha, Titulo, avisar as avisarBase, confirmar, informar } from '@/components/base'
 import { ArrowsLeftRight, Clock, CreditCard, DotsThreeVertical, MagnifyingGlass, Package, Truck } from '@phosphor-icons/react'
-import { SITUACOES, VERBOS, avisoDaMudanca, dataLonga, grupoDoStatus, nomeDaSituacao, nomeDeProduto, itemComQtd, proximoPasso, telefoneValido } from '@/components/pedidos/pedidoTexto'
+import { pixDoPedido, SITUACOES, VERBOS, avisoDaMudanca, dataLonga, grupoDoStatus, nomeDaSituacao, nomeDeProduto, itemComQtd, proximoPasso, telefoneValido } from '@/components/pedidos/pedidoTexto'
 import { NomeComQtd } from '@/components/pedidos/CartaoPedido'
 import { tocarSom } from '@/hooks/useSom'
 import '@/components/pedidos/telaPedido.css'
@@ -24,7 +24,7 @@ import { mascaraBRL, textoBRL, lerBRL, r2, somarReais } from '@/lib/moeda'
 import { valorRecebidoPedido } from '@/lib/financeiroPedido'
 import { useTravarRolagem } from '@/hooks/useTravarRolagem'
 // ── EditarPedido.tsx ─────────────────────────────────────────────────────────
-import { ajustarRecebido, faltaNoBanco } from '@/lib/pagamentos'
+import { ajustarRecebido, faltaNoBanco, registrarPagamento } from '@/lib/pagamentos'
 import { excluirPedido as excluirPedidoNoBanco } from '@/lib/pedidosDoo'
 import { digitosTelefone, linkWhatsApp, mascaraTelefone } from '@/lib/telefone'
 import { pesoLivre } from '@/lib/itemPedido'
@@ -426,6 +426,22 @@ export default function EditarPedido() {
     if (!a.error) setAjustesHist((a.data as any[]) || [])
     else if (faltaNoBanco(a.error)) setAjustesHist([])
   }
+  // (20/10) Pix pelo cardápio: o cliente tocou em "Já paguei"; ela confere no banco e confirma (vira recebimento)
+  const [confirmandoPix, setConfirmandoPix] = useState(false)
+  const confirmarPixDoCardapio = async () => {
+    const px = pedido ? pixDoPedido(pedido as any) : null
+    if (!pedido || !px || px.estado !== 'conferir' || confirmandoPix) return
+    const ok = await confirmar({ titulo: `Confirmar o Pix de ${formatMoney(px.valor)}?`, texto: `Confira no app do banco se o Pix entrou. ${px.tipo === 'sinal' ? 'Fica como sinal pago do pedido.' : 'O pedido fica pago.'}`, rotulo: 'Confirmar', rotuloVoltar: 'Ainda não' })
+    if (!ok) return
+    setConfirmandoPix(true)
+    try {
+      const r = await registrarPagamento({ pedidoId: pedido.id, valor: px.valor, forma: 'pix', tipo: px.tipo, origem: 'cardapio', observacao: 'Pix pelo cardápio' })
+      if (!r.ok) { avisarBase(r.erro || 'Não deu pra confirmar o Pix. Tente de novo.', { tipo: 'erro' }); return }
+      await recarregarDinheiro(); await carregarPagamentos(pedido.id)
+      avisarBase(px.tipo === 'sinal' ? 'Sinal confirmado.' : 'Pix confirmado. Pedido pago.', { tipo: 'ok' })
+    } finally { setConfirmandoPix(false) }
+  }
+
   // Depois de receber, estornar ou finalizar: lê de novo o que o banco calculou (o recebido é do banco)
   const recarregarDinheiro = async () => {
     if (!pedido) return
@@ -1592,6 +1608,13 @@ export default function EditarPedido() {
 
           <div className="ep2-card">
             <Titulo>Pagamentos</Titulo>
+            {(() => {
+              const px = pixDoPedido(pedido as any)
+              if (!px) return null
+              return px.estado === 'conferir'
+                ? <div className="ep2-pix"><p><b>{px.tipo === 'sinal' ? 'Sinal no Pix a conferir' : 'Pix a conferir'}</b><b>{formatMoney(px.valor)}</b></p><small>Confira no app do banco e confirme.</small><Botao tamanho="m" cheio carregando={confirmandoPix} onClick={confirmarPixDoCardapio}>Confirmar Pix</Botao></div>
+                : <div className="ep2-pix"><p><b>Aguardando Pix</b></p><small>O cliente ainda não pagou pelo cardápio.</small></div>
+            })()}
             {pagamentosFalhou ? (
               <p className="ep2-vazio">Não deu pra carregar os recebimentos. Recebido até agora: <b>{formatMoney(recebidoAtual)}</b>. <button type="button" className="ep2-lk" onClick={() => carregarPagamentos(pedido.id)}>Tentar de novo</button></p>
             ) : pagamentosOk ? (pagamentos.length === 0 ? <p className="ep2-vazio">Nenhum recebimento ainda.</p> : pagamentos.map(g => (
