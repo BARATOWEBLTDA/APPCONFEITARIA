@@ -30,9 +30,14 @@ export const PRONTAS: Record<CampoCor, { nome: string; cor: string }[]> = {
 
 const hex6 = (c?: string | null) => (c && /^#[0-9a-fA-F]{6}$/.test(c.trim()) ? c.trim().toUpperCase() : null);
 
+/* (21/10) o que o banco grava sozinho numa conta nova (o padrão antigo das colunas): não é escolha da loja.
+ * Antes o PRO usava esse valor (topo branco caía na cor da borda e virava um roxo forte do nada ao ativar o PRO). */
+const DO_BANCO: Record<CampoCor, string[]> = { cor_navbar: ["#FFFFFF", "#FEFEFE"], cor_nome: ["#1F2937"], cor_borda: [] };
+
 /** A cor que vale no cardápio: PRO usa a que escolheu; grátis só se for uma das prontas daquele item. */
 export function corDoItem(campo: CampoCor, salva: string | null | undefined, isPro: boolean): string {
   const h = hex6(salva);
+  if (h && DO_BANCO[campo].includes(h)) return PADRAO[campo];
   if (h && (isPro || PRONTAS[campo].some(p => p.cor === h))) return h;
   return PADRAO[campo];
 }
