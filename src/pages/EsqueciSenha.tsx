@@ -139,6 +139,8 @@ export default function EsqueciSenha() {
               ? <p className="tc-conta">Você pode pedir de novo em {falta}s</p>
               : <Botao variante="link" disabled={loading} onClick={enviar}>{loading ? "Enviando…" : "Enviar de novo"}</Botao>}
           </div>
+          {/* (21/10) digitou errado: volta pro campo com o e-mail preenchido, pra só corrigir */}
+          <p className="tc-ajuda tc-ajuda--trocar">Digitou errado? <button type="button" onClick={() => { setSent(false); setError(""); setFalta(0) }}>Trocar o e-mail</button></p>
         </div>
       )}
     </TelaConta>
