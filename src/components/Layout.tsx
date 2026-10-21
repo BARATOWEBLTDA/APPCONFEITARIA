@@ -222,7 +222,7 @@ export default function Layout() {
           </button>
           <GrupoMenu id="conta" rotulo="Minha conta" icone={Gear} rotas={["/configuracoes", "/minha-assinatura", "/assinar", "/conquistas"]} recolhido={recolhido}>
             <SubitemMenu to="/configuracoes" end icone={Gear}>Configurações</SubitemMenu>
-            <SubitemMenu to={isPro ? "/minha-assinatura" : "/assinar"} icone={Crown}>Minha assinatura</SubitemMenu>
+            <SubitemMenu to={isPro ? "/minha-assinatura" : "/assinar"} icone={Crown} tambem={["/assinar", "/minha-assinatura"]}>Minha assinatura</SubitemMenu>
           </GrupoMenu>
           {/* (19/10) Notificações (já está em Configurações) e Conquistas (escondida nas Configurações) saíram do menu.
               "Loja em montagem" (abrir e pausar os pedidos) por último, dentro do menu: rola junto e não come o espaço dos grupos */}
