@@ -595,7 +595,8 @@ export default function Auth() {
         <NomeDoonly className="auth-nome" />
 
         <div className="auth-text-hdr">
-          <h2 className="auth-h2"><span className="so-cel">Vamos começar!</span><span className="so-pc">Criar conta</span></h2>
+          {/* (21/10) "grátis" no título e no botão: deixa claro que não cobra nada */}
+          <h2 className="auth-h2">Crie sua conta grátis</h2>
           <p className="auth-p so-cel-bloco">Leva menos de 1 minuto.</p>
         </div>
 
@@ -618,6 +619,12 @@ export default function Auth() {
               </div>
             </div>
           )}
+
+          {/* (21/10) Google no topo (o caminho mais rápido), com "ou com seu e-mail" embaixo. No iPhone não aparece. */}
+          {!IS_IOS && (<>
+          <BotaoGoogle modo="signup_with" textoReserva="Criar conta com Google" desativado={cadastroLoading} />
+          <div className="auth-divider cad-ou"><span>ou com seu e-mail</span></div>
+          </>)}
 
           {/* Nome */}
           <div className="cad-field-wrap">
@@ -823,11 +830,7 @@ export default function Auth() {
               <p className="auth-error" role="alert">{cadastroError}</p>
             )
           )}
-          <Botao type="submit" cheio className="cad-btn" carregando={cadastroLoading}>{cadastroLoading ? "Criando conta…" : "Criar conta"}</Botao>
-          {!IS_IOS && (<>
-          <div className="auth-divider"><span>ou</span></div>
-          <BotaoGoogle modo="signup_with" textoReserva="Criar conta com Google" desativado={cadastroLoading} />
-          </>)}
+          <Botao type="submit" cheio className="cad-btn" carregando={cadastroLoading}>{cadastroLoading ? "Criando conta…" : "Criar conta grátis"}</Botao>
           <p className="cad-termos" style={{ fontSize: '12.5px', color: 'var(--text-secondary)', textAlign: 'center', lineHeight: '1.5', margin: '0' }}>
             Ao criar sua conta, você concorda com nossos{' '}
             <a href="/termos" onClick={abrirDoc("termos")} style={{ color: '#C33A6E', fontWeight: 700, whiteSpace: 'nowrap' }}>Termos de uso</a>
