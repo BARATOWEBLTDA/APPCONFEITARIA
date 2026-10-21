@@ -17,7 +17,6 @@ import { TERMOS_VERSAO } from "@/lib/termos";
 import Auth from "@/pages/Auth";
 import EsqueciSenha from "@/pages/EsqueciSenha";
 import ResetPassword from "@/pages/ResetPassword";
-import VerificarEmail from "@/pages/VerificarEmail";
 import Termos from "@/pages/Termos";
 import Privacidade from "@/pages/Privacidade";
 import Layout from "@/components/Layout";
@@ -428,7 +427,8 @@ export default function App() {
         <Route path="/redefinir-senha" element={<ResetPassword />} />
         <Route path="/nova-senha" element={<ResetPassword />} />
         <Route path="/alterar-senha" element={<ResetPassword />} />
-        <Route path="/verificar-email" element={<VerificarEmail />} />
+        {/* (21/10) a tela de confirmar e-mail saiu (o Doonly não pede confirmação): link antigo cai no login */}
+        <Route path="/verificar-email" element={<Navigate to="/login" replace />} />
 
         <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
           {/* o "Dashboard" antigo saiu: o painel do Financeiro substitui */}
