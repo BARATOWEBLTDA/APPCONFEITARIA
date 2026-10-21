@@ -2029,6 +2029,9 @@ export default function Inicio() {
           .ini-main > * { grid-column: 1 / -1; min-width: 0; margin: 0 !important; }
           .ini-main > .ini-section--checklist-top { order: 1; }
           .ini-main > .ini-section--fixos, .ini-main > .ini-section--chart { grid-column: auto; order: 2; }
+          /* (21/10) sem os custos fixos o gráfico ocupa a linha toda; seção vazia (passos concluídos, nada pra fazer) não ocupa lugar nem espaço */
+          .ini-main:not(:has(> .ini-section--fixos)) > .ini-section--chart { grid-column: 1 / -1; }
+          .ini-main > .ini-section:empty, .ini-dk-side > .ini-falta:empty { display: none; }
           .ini-main > .ini-section--fixos > .cdm { flex: 1; }
           .ini-main > .ini-section--fixos .cdm-top > svg { width: 84px; height: auto; flex: none; } /* o título "Custos fixos pagos no mês" cabe numa linha em 1280px */
           .ini-dk-side > .ini-falta { margin: 0; }
