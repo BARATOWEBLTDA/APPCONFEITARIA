@@ -48,6 +48,17 @@ const unidadeDoPreco = (fv?: string | null) => {
  * Preço do cartão na lista — mesma regra do cardápio (10/10): com tamanhos ou kit mostra
  * "a partir de R$ X" (o menor) e sem "por kg"; sem tamanhos mostra o preço e a unidade.
  */
+/** (21/10) SKU que ainda não existe na loja: mesmo prefixo + 4 números (ex.: BOL-0427 → BOL-5812). */
+const skuLivre = (base: string, usados: Set<string>): string => {
+  const pre = (String(base || "PRD").toUpperCase().split("-")[0].replace(/[^A-Z0-9]/g, "").slice(0, 6) || "PRD");
+  for (let t = 0; t < 200; t++) {
+    const cod = `${pre}-${String(Math.floor(1000 + Math.random() * 9000))}`;
+    if (!usados.has(cod)) return cod;
+  }
+  return `${pre}-${Date.now().toString().slice(-6)}`;
+};
+const skusDe = (lista: any[]) => new Set(lista.map(p => String(p?.sku || "").trim().toUpperCase()).filter(Boolean));
+
 const precoDaLista = (prod: any) => {
   // (11/10) pela função única do cardápio: mesma regra de promoção e mesmo arredondamento do cartão da cliente
   const pc = precoCardapioComPromocao(prod);
@@ -1185,9 +1196,12 @@ export default function Produtos() {
     if (passouDoLimite(selecionados.length)) { setLimiteAberto(true); return; }
     setBulkLoading(true);
     let ok = 0, falhas = 0, semFicha = 0;
+    const usadosSku = skusDe(produtos); // (21/10) a cópia ganha um SKU novo (nunca repete)
     for (const p of selecionados) {
       const { id, created_at, updated_at, produto_insumos, user_id, ...limpo } = p as any;
-      const novo = { ...limpo, nome: proximoNomeCopia(p.nome), user_id: userId, disponivel: false };
+      const sku = limpo.sku ? skuLivre(limpo.sku, usadosSku) : null;
+      if (sku) usadosSku.add(sku);
+      const novo = { ...limpo, sku, nome: proximoNomeCopia(p.nome), user_id: userId, disponivel: false };
       const { data, error } = await supabase.from("produtos").insert(novo).select("id").single();
       if (error) { falhas++; continue; }
       // Duplica ficha técnica também (11/10: confere a leitura e a gravação; antes dizia "cópia criada" sem a ficha)
@@ -1382,6 +1396,17 @@ export default function Produtos() {
 
     // (14/10) SKU: só vai quando tem; se o banco ainda não tem a coluna (SQL 4.36), salva sem ele e avisa
     if (!String(formLimpo.sku || "").trim()) delete formLimpo.sku;
+    else {
+      // (21/10) o SKU não pode repetir na loja
+      formLimpo.sku = String(formLimpo.sku).trim().toUpperCase();
+      const dono = produtos.find((p: any) => p.id !== form.id && String(p.sku || "").trim().toUpperCase() === formLimpo.sku);
+      if (dono) {
+        showToast("error", "Esse SKU já está em uso", `O código ${formLimpo.sku} já está no produto "${dono.nome}". Escreva outro ou toque em Gerar.`);
+        setSaving(false);
+        return;
+      }
+    }
+    const skuRepetido = (e: any) => /sku_repetido|SKU repetido/i.test(`${e?.message || ""} ${e?.hint || ""}`);
     const semColunaSku = (e: any) => /sku/i.test(String(e?.message || "")) && /column|coluna|schema/i.test(String(e?.message || ""));
     const payload = {
       ...formLimpo,
@@ -1396,6 +1421,7 @@ export default function Produtos() {
     if (form.id) {
       let { error } = await supabase.from("produtos").update(payload).eq("id", form.id);
       if (error && semColunaSku(error)) { const { sku: _s, ...sem } = payload as any; void _s; ({ error } = await supabase.from("produtos").update(sem).eq("id", form.id)); if (!error) avisar("Salvo. O SKU fica guardado depois que o SQL 4.36 rodar.", { tipo: "info" }); }
+      if (error && skuRepetido(error)) { showToast("error", "Esse SKU já está em uso", "Esse código já está em outro produto. Escreva outro ou toque em Gerar."); setSaving(false); return; }
       if (error) {
         console.error("Erro ao atualizar produto:", error);
         showToast("error", "Não deu pra salvar", explicarErro(error));
@@ -1406,6 +1432,7 @@ export default function Produtos() {
       if (passouDoLimite()) { setSaving(false); setLimiteAberto(true); return; }
       let { data: novo, error } = await supabase.from("produtos").insert({ ...payload, user_id: userId }).select("id").single();
       if (error && semColunaSku(error)) { const { sku: _s, ...sem } = payload as any; void _s; ({ data: novo, error } = await supabase.from("produtos").insert({ ...sem, user_id: userId }).select("id").single()); if (!error) avisar("Salvo. O SKU fica guardado depois que o SQL 4.36 rodar.", { tipo: "info" }); }
+      if (error && skuRepetido(error)) { showToast("error", "Esse SKU já está em uso", "Esse código já está em outro produto. Escreva outro ou toque em Gerar."); setSaving(false); return; }
       if (error) {
         console.error("Erro ao criar produto:", error);
         showToast("error", "Não deu pra criar", explicarErro(error));
@@ -2133,9 +2160,7 @@ export default function Produtos() {
                       onChange={e => setForm(f => ({ ...(f as any), sku: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, "") }))} />
                     <button type="button" onClick={() => {
                       const pre = (String(form.categoria || form.nome || "PRD").normalize("NFD").replace(/[^A-Za-z]/g, "").slice(0, 3) || "PRD").toUpperCase().padEnd(3, "X");
-                      const usados = new Set(produtos.map((p: any) => String(p.sku || "")));
-                      let cod = ""; for (let t = 0; t < 50; t++) { cod = `${pre}-${String(Math.floor(1000 + Math.random() * 9000))}`; if (!usados.has(cod)) break; }
-                      setForm(f => ({ ...(f as any), sku: cod }));
+                      setForm(f => ({ ...(f as any), sku: skuLivre(pre, skusDe(produtos)) }));
                     }}>Gerar</button>
                   </div>
                 </div>
@@ -2993,6 +3018,7 @@ export default function Produtos() {
                           } = previewProduto as any;
                           const novo = {
                             ...limpo,
+                            sku: limpo.sku ? skuLivre(limpo.sku, skusDe(produtos)) : null, // (21/10) a cópia ganha um SKU novo
                             nome: proximoNomeCopia(previewProduto.nome),
                             user_id: userId,
                             disponivel: false, // Cópia começa despublicada pra revisar antes
