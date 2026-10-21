@@ -12,7 +12,9 @@ import './contaCliente.css'
 
 /** token: código de acesso que o banco dá depois de um pedido ou de entrar com o número de um pedido (4.23) */
 export type Cliente = { id: string; nome: string; telefone: string; token?: string }
-export type ItemPedido = { nome_produto: string; quantidade: number; valor_unitario: number; produtos?: { imagem_url?: string; forma_venda?: string | null } }
+export type ItemPedido = { nome_produto: string; quantidade: number; valor_unitario: number; produtos?: { imagem_url?: string; forma_venda?: string | null }
+  /** (21/10) escolhas e adicionais (sem a foto de referência, que vem só como sim/não) */
+  personalizacoes?: any; tem_foto_referencia?: boolean; snapshot_version?: number | null; observacoes?: string | null }
 export type Pedido = {
   id: string; numero: number; status: string; created_at: string; valor_total: number
   forma_pagamento: string; status_pagamento: string; tipo_entrega: string
@@ -56,20 +58,31 @@ export const semFuncaoNova = (e: any) => !!e && (e.code === 'PGRST202' || e.code
 export function usePedidosCliente(loja: string, cliente: Cliente | null) {
   const [pedidos, setPedidos] = useState<Pedido[]>([])
   const [carregando, setCarregando] = useState(false)
-  const buscar = async () => {
+  // quieto (21/10): atualização sozinha, sem "carregando" e sem apagar a lista se a internet falhar
+  const buscar = async (quieto = false) => {
     if (!cliente?.telefone || !loja) { setPedidos([]); return }
-    setCarregando(true)
+    if (!quieto) setCarregando(true)
     try {
       // (4.23) com o código de acesso; sem a função nova no banco, busca do jeito antigo
       let { data, error } = await supabase.rpc('cardapio_pedidos_do_cliente', { p_loja: loja, p_telefone: cliente.telefone, p_token: cliente.token || '' })
       if (error && semFuncaoNova(error)) ({ data, error } = await supabase.rpc('cardapio_pedidos_do_cliente', { p_loja: loja, p_telefone: cliente.telefone }))
       if (error) console.error('Erro ao buscar pedidos:', error)
-      setPedidos(Array.isArray(data) ? data : [])
+      if (!(quieto && (error || !Array.isArray(data)))) setPedidos(Array.isArray(data) ? data : [])
     } catch (err) { console.error('Erro ao buscar pedidos:', err) }
-    setCarregando(false)
+    if (!quieto) setCarregando(false)
   }
   useEffect(() => { buscar() }, [loja, cliente?.telefone]) // eslint-disable-line react-hooks/exhaustive-deps
-  return { pedidos, carregando, buscar }
+
+  // (21/10) com pedido em andamento, a situação se atualiza sozinha a cada 20 s (só com a tela à vista)
+  const temAberto = pedidos.some(pedidoAberto)
+  useEffect(() => {
+    if (!temAberto) return
+    const t = setInterval(() => { if (document.visibilityState === 'visible') buscar(true) }, 20000)
+    const voltou = () => { if (document.visibilityState === 'visible') buscar(true) }
+    document.addEventListener('visibilitychange', voltou)
+    return () => { clearInterval(t); document.removeEventListener('visibilitychange', voltou) }
+  }, [temAberto, loja, cliente?.telefone]) // eslint-disable-line react-hooks/exhaustive-deps
+  return { pedidos, carregando, buscar: () => buscar() }
 }
 
 /* ─── Entrar (4.23): o WhatsApp; quem já pediu confirma com o número de um pedido; quem nunca pediu diz o nome ─── */

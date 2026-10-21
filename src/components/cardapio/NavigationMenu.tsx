@@ -4,7 +4,7 @@ import { montarMensagem as montarMensagemModelo } from '@/lib/mensagens'
 import { CalendarioSheet, HorariosSheet } from '@/components/cardapio/AgendaSheets'
 import { antecedenciaHoras, calcularRegras, deIso, horarioPermitido, primeiraData } from '@/lib/agendaCardapio'
 import { supabase } from '@/lib/supabase'
-import { ArrowLeft, Cake, CalendarBlank, CaretRight, Check, ChatCircleDots, Clock, CreditCard, Money, PixLogo, Plus, ClipboardText, House, ShoppingBag as Sacola, Storefront, Tag, Truck, User, X } from '@phosphor-icons/react'
+import { ArrowLeft, Cake, CalendarBlank, CaretRight, Check, ImageSquare, ChatCircleDots, Clock, CreditCard, Money, PixLogo, Plus, ClipboardText, House, ShoppingBag as Sacola, Storefront, Tag, Truck, User, X } from '@phosphor-icons/react'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { useCart } from '@/hooks/useCart'
 import { CartItemComponent, unidadeItem } from '@/components/cart/CartItemComponent'
@@ -172,7 +172,7 @@ function SugestaoSacola({ produto, cor }: { produto: Produto; cor: string }) {
 /* ─── Conteúdo interno do carrinho (reutilizado em mobile e desktop) ─── */
 function CartContent({
   step, setStep, items, totalPrice, updateQuantity, updateObservations, removeItem, clearCart,
-  config, onClose, corBotao, corTopo, logoUrl, sugestoes = [], verificada = false, direto = false,
+  config, onClose, corBotao, corTopo, logoUrl, sugestoes = [], verificada = false, direto = false, aoMostrarMenu,
 }: any) {
   const [limparPergunta, setLimparPergunta] = useState(false)
   const [dataEntrega, setDataEntrega] = useState('')
@@ -296,6 +296,10 @@ function CartContent({
       } catch {}
     }
   }, [!!pedidoConfirmado]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // (21/10) Pedido enviado (depois do Pix): o menu de baixo aparece no celular (Início, Pedidos, Minha conta)
+  const mostrarMenu = !!pedidoConfirmado && !(pixPara && !pixFeito)
+  useEffect(() => { aoMostrarMenu?.(mostrarMenu); return () => aoMostrarMenu?.(false) }, [mostrarMenu]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Pegar dados do cliente logado
   const clienteLogado = (() => {
@@ -756,23 +760,36 @@ function CartContent({
         <div className="px">
           <section className="px-card scf-ok">
             <span className="scf-ic"><Check size={30} weight="bold" /></span>
-            <h2>{pixPago ? 'Pix enviado!' : 'Pedido enviado!'}</h2>
+            <h2>Pedido enviado!</h2>
             {natal && <p className="sc-enviado-festas">Boas festas!</p>}
-            <p>{pixPago ? 'A loja confere o Pix e confirma seu pedido.' : pixFeito === 'depois' ? 'Falta o Pix: combine com a loja.' : 'A loja confirma pelo WhatsApp.'}</p>
             {pc.numero > 0 && <span className="scf-num">Pedido #{pc.numero}</span>}
+            {/* (21/10) o que acontece agora, em passos curtos (cada um numa linha) */}
+            <ol className="scf-passos">
+              <li className="ok"><i><Check size={12} weight="bold" /></i><span>{pixPago ? <>Pix de <b>{formatCurrency(pixPago.valor)}</b> enviado</> : 'Pedido enviado pra loja'}</span></li>
+              <li><i>2</i><span>{pixPago ? 'A loja confere o Pix e confirma' : pixFeito === 'depois' ? 'Combine o Pix com a loja no WhatsApp' : 'A loja confirma pelo WhatsApp'}</span></li>
+              <li><i>3</i><span>Você acompanha cada etapa por aqui</span></li>
+            </ol>
           </section>
 
           <section className="px-card scf-res">
             {pc.quando && <p className="scf-quando"><CalendarBlank size={18} weight="bold" />{pc.quando}</p>}
             <ul className="scf-itens">
               {pc.itens.map((it: any, k: number) => {
-                const det = detalhesItem(it)
+                const extras: any[] = Array.isArray(it.extrasBiblioteca) ? it.extrasBiblioteca : []
+                const escolhas = detalhesItem(it).slice(0, detalhesItem(it).length - extras.length)
+                const kit = it.escolhas?.kit
+                if (kit?.sabores?.length) escolhas.push(`${kit.total} un: ${kit.sabores.map((x: any) => `${x.qtd} ${x.nome}`).join(', ')}`)
                 const foto = it.imageUrl ? String(it.imageUrl).split(',')[0] : ''
                 return (
                   <li key={k}>
                     <span className="scf-foto">{foto ? <img src={foto} alt="" /> : <Cake size={22} weight="duotone" />}</span>
-                    <span className="scf-it"><b>{qtdItem(it)} {it.name}</b>{det.length > 0 && <small>{det.join(' · ')}</small>}</span>
-                    <em>{formatCurrency(valorLinha(it))}</em>
+                    <div className="scf-it">
+                      <p className="scf-it-l1"><b>{qtdItem(it)} {it.name}</b><em>{formatCurrency(valorLinha(it))}</em></p>
+                      {escolhas.map((t, n) => <small key={n}>{t}</small>)}
+                      {extras.map((x, n) => <span key={`x${n}`} className="scf-extra"><span>+ {x.nome}</span>{Number(x.valor) > 0 && <em>{formatCurrency(Number(x.valor))}</em>}</span>)}
+                      {it.fotoReferencia && <small className="scf-ref"><ImageSquare size={14} weight="bold" />Foto de referência enviada</small>}
+                      {it.observations && <small className="scf-obs">Obs.: {it.observations}</small>}
+                    </div>
                   </li>
                 )
               })}
@@ -788,7 +805,8 @@ function CartContent({
             <span>Acompanhar meu pedido</span>
           </button>
           {pc.whatsapp && <button type="button" className="scf-zap" onClick={() => window.open(linkDoPedido(), '_blank')}><IconeWhatsApp size={20} />{pixPago ? 'Mandar o comprovante' : 'Falar com a loja'}</button>}
-          <button type="button" className="px-depois" onClick={fecharEnviado}>Voltar ao cardápio</button>
+          {/* no celular o menu de baixo (Início) volta pro cardápio; no computador fica o link */}
+          {!aoMostrarMenu && <button type="button" className="px-depois" onClick={fecharEnviado}>Voltar ao cardápio</button>}
         </footer>
       </div>
     )
@@ -1102,6 +1120,8 @@ function CartContent({
 export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes, verificada }: { corBotao?: string; /** a página está no layout de celular? (10/10) */ celular?: boolean; /** (19/10) a sacola com a cara da loja */ corTopo?: string; logoUrl?: string; sugestoes?: Produto[]; verificada?: boolean }) {
   const { items, totalPrice, updateQuantity, updateObservations, removeItem, clearCart } = useCart()
   const [isOpen, setIsOpen] = useState(false)
+  // (21/10) Pedido enviado: o menu de baixo fica visível por baixo da tela (só no celular)
+  const [menuNaSacola, setMenuNaSacola] = useState(false)
   const [step, setStep] = useState<'cart' | 'finalizar'>('cart')
   // (20/10) computador: a coluna da direita já é a sacola, então "Finalizar pedido" abre direto no finalizar
   const [direto, setDireto] = useState(false)
@@ -1160,6 +1180,7 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
     step, setStep, items, totalPrice,
     updateQuantity, updateObservations, removeItem, clearCart,
     config, onClose: handleClose, corBotao: accent, corTopo, logoUrl, sugestoes, verificada, direto,
+    aoMostrarMenu: isMobile ? setMenuNaSacola : undefined,
   }
 
   return (
@@ -1207,7 +1228,7 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
                 { id: 'pedidos',  label: 'Pedidos', Icone: ClipboardText },
                 { id: 'perfil',   label: 'Minha conta',  Icone: User },
               ].map(({ id, label, Icone }) => (
-                <button key={id} type="button" aria-current={activeTab === id ? 'page' : undefined} onClick={() => setActiveTab(id)}>
+                <button key={id} type="button" aria-current={activeTab === id ? 'page' : undefined} onClick={() => { if (isOpen) handleClose(); setActiveTab(id) }}>
                   <span className="cpn-ic"><Icone size={24} weight={activeTab === id ? "fill" : "regular"} /></span>{label}
                 </button>
               ))}
@@ -1241,7 +1262,7 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
 
       {/* ═══ Sacola e finalizar (celular e computador) ═══ */}
       {isOpen && (
-        <div className="sc-veu" onClick={handleClose}>
+        <div className="sc-veu" style={isMobile && menuNaSacola ? { bottom: alturaRodape } : undefined} onClick={handleClose}>
           <div ref={caixaRef} className="sc" role="dialog" aria-modal="true" aria-label={step === 'finalizar' ? 'Finalizar pedido' : 'Sacola'} tabIndex={-1} onClick={e => e.stopPropagation()}>
             <CartContent key={`sacola-${isOpen}`} {...sharedProps} />
           </div>

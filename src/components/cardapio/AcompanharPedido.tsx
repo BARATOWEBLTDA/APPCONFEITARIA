@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
-import { Cake, Check } from '@phosphor-icons/react'
+import { Cake, Check, ImageSquare } from '@phosphor-icons/react'
+import { renderItemFromSnapshot } from '@/lib/pedido-snapshot'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { linkWhatsApp } from '@/lib/telefone'
 import { lojaAtualNome, lojaAtualWhatsApp } from './lojaAtual'
@@ -71,7 +72,7 @@ function etapasDo(p: Pedido): Etapa[] {
       : { titulo: `Sinal pago · ${dinheiro(recebido)}`, sub: `Falta ${dinheiro(falta)} na ${lugar}`, estado: 'feito' })
   } else if (p.pix_online) {
     e.push(p.pix_informado_em && Number(p.pix_informado_valor) > 0
-      ? { titulo: `Pix a conferir · ${dinheiro(Number(p.pix_informado_valor))}`, sub: 'A loja confere no banco', estado: 'atencao' }
+      ? { titulo: `Pix enviado · ${dinheiro(Number(p.pix_informado_valor))}`, sub: 'A loja está conferindo', estado: 'feito' }
       : { titulo: 'Aguardando o Pix', sub: 'Pague pra confirmar o pedido', estado: 'atencao' })
   }
 
@@ -124,13 +125,26 @@ export function AcompanharPedido({ p, cor, corTopo }: { p: Pedido; cor: string; 
       </ol>
 
       <ul className="acp-itens">
-        {itens.map((it, i) => (
-          <li key={i}>
-            <span className="acp-foto">{it.produtos?.imagem_url ? <img src={it.produtos.imagem_url} alt="" loading="lazy" /> : <Cake size={22} weight="duotone" />}</span>
-            <span className="acp-it-nome"><b>{it.nome_produto}</b><small>{qtdTexto(Number(it.quantidade) || 1, it.produtos?.forma_venda)}</small></span>
-            <em>{dinheiro((Number(it.valor_unitario) || 0) * (Number(it.quantidade) || 1))}</em>
-          </li>
-        ))}
+        {itens.map((it, i) => {
+          const r = renderItemFromSnapshot({ ...it, snapshot_version: it.snapshot_version ?? 1 } as any)
+          const pz = it.personalizacoes || {}
+          const extras: any[] = Array.isArray(pz.extras) ? pz.extras : []
+          const linhas = r.personalizacoesRender.map(l => `${l.label} ${l.valor}`)
+          if (pz.kit?.sabores?.length) linhas.push(`${pz.kit.total} un: ${pz.kit.sabores.map((x: any) => `${x.qtd} ${x.nome}`).join(', ')}`)
+          return (
+            <li key={i}>
+              <span className="acp-foto">{it.produtos?.imagem_url ? <img src={String(it.produtos.imagem_url).split(',')[0]} alt="" loading="lazy" /> : <Cake size={22} weight="duotone" />}</span>
+              <span className="acp-it-nome">
+                <span className="acp-it-l1"><b>{it.nome_produto}</b><em>{dinheiro((Number(it.valor_unitario) || 0) * (Number(it.quantidade) || 1))}</em></span>
+                {(Number(it.quantidade) !== 1 || it.produtos?.forma_venda === 'kg') && <small>{qtdTexto(Number(it.quantidade) || 1, it.produtos?.forma_venda)}</small>}
+                {linhas.map((t, n) => <small key={n}>{t}</small>)}
+                {extras.map((x, n) => <span key={`x${n}`} className="acp-extra"><span>+ {x.nome}</span></span>)}
+                {it.tem_foto_referencia && <small className="acp-ref"><ImageSquare size={14} weight="bold" />Foto de referência enviada</small>}
+                {it.observacoes && <small className="acp-obs">Obs.: {it.observacoes}</small>}
+              </span>
+            </li>
+          )
+        })}
         <li className="acp-total"><b>Total</b><em>{dinheiro(p.valor_total)}</em></li>
       </ul>
 

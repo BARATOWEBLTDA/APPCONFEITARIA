@@ -41,6 +41,10 @@ begin
                select json_agg(json_build_object(
                  'nome_produto', i.nome_produto, 'quantidade', i.quantidade,
                  'valor_unitario', i.valor_unitario,
+                 -- (21/10) escolhas e adicionais pro cliente ver; a foto de referência fica só como "tem foto"
+                 'personalizacoes', coalesce(i.personalizacoes, '{}'::jsonb) - 'foto_referencia',
+                 'tem_foto_referencia', coalesce(i.personalizacoes ? 'foto_referencia', false),
+                 'snapshot_version', i.snapshot_version, 'observacoes', i.observacoes,
                  'produtos', json_build_object('imagem_url', pr.imagem_url, 'forma_venda', pr.forma_venda)))
                from pedido_itens i left join produtos pr on pr.id = i.produto_id
                where i.pedido_id = p.id
@@ -49,7 +53,7 @@ begin
       where p.user_id = p_loja
         and (public.tel_digitos(p.cliente_telefone) = v_tel or public.tel_digitos(p.cliente_whatsapp) = v_tel)
       order by p.created_at desc
-      limit 20
+      limit 60
     ) x
   ), '[]'::json);
 end $function$;
