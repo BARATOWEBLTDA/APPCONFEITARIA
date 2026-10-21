@@ -18,11 +18,11 @@ export function PedidosTab({ accent, corTopo, confeteiraUserId, onVerCardapio }:
   const [cliente, setCliente] = useState<Cliente | null>(() => lerCliente(confeteiraUserId))
   const [entrar, setEntrar] = useState(false)
   const { pedidos, carregando, buscar } = usePedidosCliente(confeteiraUserId, cliente)
-  const andamento = pedidos.filter(pedidoAberto)
-  // (21/10) filtro por data nos anteriores (o mesmo do app: Hoje · 7 dias · Mês ‹ › · Período); os em andamento aparecem sempre
+  // (21/10) filtro por data no topo, o mesmo do app (Hoje · 7 dias · Mês ‹ › · Período), pelo dia em que o pedido foi feito
   const [periodo, setPeriodo] = useState<Periodo>(periodoInicial)
-  const todosAnteriores = pedidos.filter(p => !pedidoAberto(p))
-  const anteriores = todosAnteriores.filter(p => { const d = p.created_at ? iso(new Date(p.created_at)) : ''; return !d || (d >= periodo.ini && d <= periodo.fim) })
+  const noPeriodo = pedidos.filter(p => { const d = p.created_at ? iso(new Date(p.created_at)) : ''; return !d || (d >= periodo.ini && d <= periodo.fim) })
+  const andamento = noPeriodo.filter(pedidoAberto)
+  const anteriores = noPeriodo.filter(p => !pedidoAberto(p))
 
   return (
     <div className="cc">
@@ -50,13 +50,11 @@ export function PedidosTab({ accent, corTopo, confeteiraUserId, onVerCardapio }:
           </div>
         ) : (
           <>
+            <div className="cc-periodo"><PeriodoFiltro valor={periodo} onChange={setPeriodo} /></div>
+            {noPeriodo.length === 0 && <p className="cc-filtro-vazio">Nenhum pedido {rotuloPeriodo(periodo)}.</p>}
             {andamento.length > 0 && <h3 className="cc-sec">Em andamento</h3>}
             {andamento.map(p => <AcompanharPedido key={p.id} p={p} cor={accent} corTopo={corTopo} />)}
-            {todosAnteriores.length > 0 && <>
-              <h3 className="cc-sec">Anteriores</h3>
-              <div className="cc-periodo"><PeriodoFiltro valor={periodo} onChange={setPeriodo} /></div>
-              {anteriores.length === 0 && <p className="cc-filtro-vazio">Nenhum pedido {rotuloPeriodo(periodo)}.</p>}
-            </>}
+            {anteriores.length > 0 && <h3 className="cc-sec">Anteriores</h3>}
             {anteriores.map(p => <CartaoPedido key={p.id} p={p} cor={accent} />)}
           </>
         )}
