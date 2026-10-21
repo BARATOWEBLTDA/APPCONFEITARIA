@@ -71,6 +71,15 @@ export default function Inicio() {
     mq.addEventListener("change", ouvir);
     return () => mq.removeEventListener("change", ouvir);
   }, []);
+  // (21/10) de 1280px pra cima: duas colunas, com o "Pra fazer" no alto da direita
+  const [largo, setLargo] = useState(() => window.matchMedia("(min-width: 1280px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1280px)");
+    const ouvir = () => setLargo(mq.matches);
+    ouvir();
+    mq.addEventListener("change", ouvir);
+    return () => mq.removeEventListener("change", ouvir);
+  }, []);
   const { profile, loading: carregandoPerfil, refetch: refetchProfile } = useProfile();
   // (15/10) aviso do PRO vencendo / mensalidade atrasada (vira notificação). Antes vinha junto do ConquistasCard, que
   // buscava as conquistas toda vez pra uma janela que não abria mais: as medalhas ficam em Minhas conquistas.
@@ -918,9 +927,12 @@ export default function Inicio() {
 
       {/* (13/10) depois dos passos: o que falta cadastrar pro lucro e o caixa ficarem certos */}
       {/* (15/10) "Pra fazer": junta o "Complete seu app" e o "Suas atualizações" */}
-      <section className="ini-section ini-falta">
-        <PraFazer />
-      </section>
+      {/* (21/10) de 1280px pra cima ele vai pro alto da coluna da direita */}
+      {!largo && (
+        <section className="ini-section ini-falta">
+          <PraFazer />
+        </section>
+      )}
 
       {/* (13/10) no computador o menu da esquerda já tem tudo isso: a grade só repetia os mesmos atalhos */}
       <style>{"@media (min-width: 901px) { .ini-main .ini-section--nav { display: none !important; } } .ini-falta:empty { display: none !important; }"}</style>
@@ -1019,6 +1031,11 @@ export default function Inicio() {
         <aside className="ini-aside">
           {/* Computador: conquistas, próximas entregas e atualizações (30/09) */}
           <div className="ini-dk-side">
+            {largo && (
+              <section className="ini-section ini-falta">
+                <PraFazer />
+              </section>
+            )}
             <LinkDeVendas />
             {/* (4.28) Conquistas saiu da lateral do computador: fica em Configurações › Minhas conquistas */}
             <div className="ini-dk-card">
@@ -2002,6 +2019,19 @@ export default function Inicio() {
           .ini-dk-top { margin: -72px -32px 0; padding: 40px 32px 74px; }
           .ini-dk-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); margin: -50px 0 0; }
           .ini-content { grid-template-columns: minmax(0, 1fr) !important; grid-template-areas: "main" "aside" !important; }
+        }
+        /* (21/10) de 1280px pra cima: ocupa a largura toda da área, "Pra fazer" no alto da direita (vem pelo JSX)
+           e os custos fixos lado a lado com o gráfico, embaixo dos passos. Sem os passos, os dois sobem. */
+        @media (min-width: 1280px) {
+          .ini-root { padding-left: 0; padding-right: 0; }
+          .ini-content { grid-template-columns: minmax(0, 1fr) 360px !important; }
+          .ini-main { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: stretch; }
+          .ini-main > * { grid-column: 1 / -1; min-width: 0; margin: 0 !important; }
+          .ini-main > .ini-section--checklist-top { order: 1; }
+          .ini-main > .ini-section--fixos, .ini-main > .ini-section--chart { grid-column: auto; order: 2; }
+          .ini-main > .ini-section--fixos > .cdm { flex: 1; }
+          .ini-main > .ini-section--fixos .cdm-top > svg { width: 84px; height: auto; flex: none; } /* o título "Custos fixos pagos no mês" cabe numa linha em 1280px */
+          .ini-dk-side > .ini-falta { margin: 0; }
         }
         /* (18/10) Minhas receitas: igual aos outros, só não reage ao toque */
         .ini-nav-card--off { cursor: default; pointer-events: none; }
