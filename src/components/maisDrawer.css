@@ -48,3 +48,21 @@
 
 /* (18/10) ícones em rosa forte com desenho branco, igual ao resto do app */
 .mais-it-ic { background: var(--ui-rosa); color: var(--ui-branco); }
+
+/* (21/10) celular: atalhos no topo e as telas em grade de 3 colunas (ícone e nome; a explicação some) */
+.mais-at { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
+.mais-at button { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 64px; margin: 0; padding: 10px 4px; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--ui-texto); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.mais-at button svg { color: var(--ui-rosa-escuro); }
+.mais-at i { position: absolute; top: 6px; right: calc(50% - 26px); min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: var(--ui-rosa); color: var(--ui-branco); font-style: normal; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
+.mais-corpo { gap: 16px; }
+.mais-at + .mais-doo { margin-bottom: 0; }
+.mais-lista { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; overflow: visible; border: 0; background: none; box-shadow: none; }
+.mais-it { flex-direction: column; justify-content: center; gap: 6px; min-height: 84px; padding: 12px 4px 10px; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); text-align: center; }
+.mais-it + .mais-it { border-top: 1px solid var(--ui-borda); }
+.mais-it-ic { width: 36px; height: 36px; border-radius: 10px; }
+.mais-it .mais-it-txt { align-items: center; width: 100%; }
+.mais-it .mais-it-txt b { max-width: 100%; font-size: 12.5px; font-weight: 600; }
+.mais-it .mais-it-txt small { display: none; }
+.mais-it--atual { border-color: var(--ui-rosa); }
+.mais-it--atual .mais-it-txt b { font-weight: 700; }
+.mais-doo { margin: 0; }

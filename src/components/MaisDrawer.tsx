@@ -6,13 +6,14 @@ import { NavLink, useNavigate } from "react-router-dom";
 import {
   ChartLineUp, ClipboardText, Gear, PaintBrush, Crown, SquaresFour, UserPlus, X, CaretRight,
   Megaphone, CalendarDots, Users, Stack, Truck, Storefront, Eye, Basket, ArrowsDownUp,
-  HandCoins, CalendarCheck, Tag, Cake, ChatCircleText, Newspaper, Sparkle,
+  HandCoins, CalendarCheck, Tag, Cake, ChatCircleText, Newspaper, Sparkle, Bell, ChartPieSlice, Shapes,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { BotaoIcone } from "@/components/base";
 import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
 import { useProfile, avatarDaConta } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
+import { useNotifications } from "@/context/NotificationContext";
 import "./maisDrawer.css";
 
 /**
@@ -40,13 +41,13 @@ const GRUPOS: Grupo[] = [
     items: [
       { label: "Agenda",     desc: "Entregas por dia",            path: "/agenda",      Icone: CalendarDots },
       { label: "Clientes",   desc: "Quem compra e o que compra",  path: "/clientes",    Icone: Users },
-      { label: "Mensagens do WhatsApp", desc: "Textos prontos",   path: "/configuracoes/mensagens", Icone: ChatCircleText },
+      { label: "Mensagens", desc: "Textos prontos do WhatsApp",   path: "/configuracoes/mensagens", Icone: ChatCircleText },
     ],
   },
   {
     label: "Financeiro",
     items: [
-      { label: "Visão geral",   desc: "Entradas, saídas e saldo", path: "/financeiro",            Icone: SquaresFour },
+      { label: "Visão geral",   desc: "Entradas, saídas e saldo", path: "/financeiro",            Icone: ChartPieSlice },
       { label: "A receber",     desc: "O que os clientes devem",  path: "/financeiro/a-receber",  Icone: HandCoins },
       { label: "A pagar",       desc: "Contas e vencimentos",     path: "/financeiro/a-pagar",    Icone: CalendarCheck },
       { label: "Transações",    desc: "Histórico detalhado",      path: "/financeiro/transacoes", Icone: ArrowsDownUp },
@@ -59,7 +60,7 @@ const GRUPOS: Grupo[] = [
     items: [
       { label: "Produtos",      desc: "O que aparece no cardápio",      path: "/produtos",      Icone: Cake },
       { label: "Complementos",  desc: "Topo, velas e outros extras", path: "/complementos",  Icone: Stack },
-      { label: "Categorias",    desc: "Organize seus produtos",         path: "/categorias",    Icone: SquaresFour },
+      { label: "Categorias",    desc: "Organize seus produtos",         path: "/categorias",    Icone: Shapes },
       { label: "Ficha técnica", desc: "Calcule o custo real",           path: "/ficha-tecnica", Icone: ClipboardText },
       { label: "Ingredientes",  desc: "O que você compra",              path: "/insumos",       Icone: Basket },
       // 13/10: Receitas escondida até as fotos ficarem prontas
@@ -68,26 +69,18 @@ const GRUPOS: Grupo[] = [
   {
     label: "Cardápio digital",
     items: [
-      { label: "Ver meu cardápio", desc: "Como o cliente vê",         path: "/cardapio-preview", Icone: Eye },
+      { label: "Ver cardápio", desc: "Como o cliente vê",         path: "/cardapio-preview", Icone: Eye },
       { label: "Dados da loja",    desc: "Loja, entrega e pagamento", path: "/cardapio-config",  Icone: Storefront },
       { label: "Aparência",        desc: "Logo, banners e cores",     path: "/cardapio-design",  Icone: PaintBrush },
     ],
   },
+  // (21/10) "Divulgar" e "Conta e ajuda" num grupo só (não sobra grupo de 1 ou 2); Novidades foi pros atalhos do topo
   {
-    label: "Divulgar",
+    label: "Mais",
     items: [
       { label: "Marketing", desc: "Divulgue e venda mais", path: "/marketing", Icone: Megaphone },
       ...(INDICACAO_ATIVA ? [{ label: "Indicar amigo", desc: "Ganhe indicando", path: "/indicar", Icone: UserPlus }] : []),
-    ],
-  },
-  // (16/10) mais curto: Nova venda foi pro menu de baixo; assinatura, notificações e conquistas ficam em
-  // Configurações (e na foto do perfil). Aqui fica só a entrada de Configurações, junto com a ajuda.
-  {
-    label: "Conta e ajuda",
-    items: [
-      { label: "Configurações",     desc: "Conta, loja e app",     path: "/configuracoes",     Icone: Gear },
-      { label: "Novidades",         desc: "O que mudou no Doonly", path: "/noticias",          Icone: Newspaper },
-      // (20/10) Relatar problema e Pedir um recurso saíram daqui: ficam só no grupo Ajuda das Configurações
+      { label: "Configurações", desc: "Conta, loja e app", path: "/configuracoes", Icone: Gear },
     ],
   },
 ];
@@ -103,6 +96,7 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const { isPro } = usePlano();
+  const { notifCount } = useNotifications();
   const caixa = useRef<HTMLDivElement>(null);
   const idTitulo = useId();
   const fase = useFase(open);
@@ -139,12 +133,20 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
               <span>{saudacao()}{primeiroNome ? `, ${primeiroNome}` : ""}</span>
               {isPro && <span className="mais-pro"><Crown size={12} weight="fill" aria-hidden="true" />PRO</span>}
             </h2>
-            <p className="mais-ola-s">O que quer fazer hoje?</p>
+            {(profile as any)?.nome_loja && <p className="mais-ola-s">{(profile as any).nome_loja}</p>}
           </div>
           <BotaoIcone rotulo="Fechar" variante="limpo" onClick={onClose}><X size={20} weight="bold" /></BotaoIcone>
         </div>
 
         <div className="mais-corpo">
+          {/* (21/10) atalhos: avisos (com os não lidos), novidades e assinatura */}
+          <div className="mais-at">
+            <button type="button" onClick={() => ir("/notificacoes")} aria-label={notifCount > 0 ? `Avisos, ${notifCount} não lidos` : "Avisos"}>
+              <Bell size={20} weight="fill" aria-hidden="true" />Avisos{notifCount > 0 && <i>{notifCount > 9 ? "9+" : notifCount}</i>}
+            </button>
+            <button type="button" onClick={() => ir("/noticias")}><Newspaper size={20} weight="fill" aria-hidden="true" />Novidades</button>
+            <button type="button" onClick={() => ir(isPro ? "/minha-assinatura" : "/assinar")}><Crown size={20} weight="fill" aria-hidden="true" />Assinatura</button>
+          </div>
           {/* (16/10) o Doo IA saiu do menu de baixo (lá entrou o "+ Nova venda"): fica no topo do Mais */}
           <button type="button" className="mais-doo" onClick={() => { onClose(); abrirDooIA(); }}>
             <span className="mais-doo-ic" aria-hidden="true"><Sparkle size={20} weight="fill" /></span>
@@ -166,7 +168,6 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
                       {({ isActive }) => (<>
                         <span className="mais-it-ic" aria-hidden="true"><item.Icone size={20} weight={isActive ? "fill" : "bold"} /></span>
                         <span className="mais-it-txt"><b>{item.label}</b><small>{item.desc}</small></span>
-                        <CaretRight size={16} weight="bold" className="mais-it-seta" aria-hidden="true" />
                       </>)}
                     </NavLink>
                   );
