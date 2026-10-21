@@ -4,12 +4,12 @@ import { guardarCupomEscolhido, regraCupom, textoDesconto, type CupomVitrine } f
 import './vouchers.css'
 
 /**
- * (20/10) Cupons da loja no topo do cardápio, em estilo voucher (até 3; 2 lado a lado, o 3º aparece ao arrastar).
+ * (20/10) Cupons da loja no topo do cardápio, em estilo voucher (até 2, lado a lado).
  * Tocar copia o código e deixa o cupom pronto: ele já vai aplicado na sacola.
  */
 export function Vouchers({ cupons, cor = '#EC4899' }: { cupons: CupomVitrine[]; cor?: string }) {
   if (!cupons?.length) return null
-  const lista = cupons.slice(0, 3)
+  const lista = cupons.slice(0, 2)
   const um = lista.length === 1
   const usar = async (c: CupomVitrine) => {
     try { await navigator.clipboard?.writeText(c.codigo) } catch { /* sem permissão: o cupom vai aplicado do mesmo jeito */ }

@@ -85,7 +85,7 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     supabase.rpc('cardapio_categorias', { p_loja: userId }),
     // Só sim/não — os códigos dos cupons não vêm mais pro navegador do cliente
     supabase.rpc('cardapio_tem_cupom', { p_loja: userId }),
-    // (20/10) até 3 cupons ativos pra vitrine do cardápio (esses códigos são públicos de propósito)
+    // (20/10) até 2 cupons ativos pra vitrine do cardápio (esses códigos são públicos de propósito)
     supabase.rpc('cardapio_cupons_vitrine', { p_loja: userId }),
   ])
   let produtos: any[] | null = Array.isArray(rProd.data) ? rProd.data : null

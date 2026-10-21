@@ -523,7 +523,7 @@ function CardapioContent() {
               <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
             </div>
           )}
-          {/* (20/10) cupons da loja (até 3), entre o banner e a sacola */}
+          {/* (20/10) cupons da loja (até 2), entre o banner e a sacola */}
           {(config?.cupons_vitrine?.length || 0) > 0 && <div className="cp-vouchers"><Vouchers cupons={config!.cupons_vitrine!} cor={design?.cor_botao && !/^#?f{3,6}$/i.test(design.cor_botao) ? design.cor_botao : '#EC4899'} /></div>}
           <DeskSacola cartCount={cartCount} cartTotal={cartTotal} design={design} items={cartItems} />
           {/* 10/10: saiu o aviso de "Programa de fidelidade" (a fidelidade ainda não existe no app) */}

@@ -2,7 +2,7 @@
 -- 1) cardapio_validar_cupom ganha o telefone do cliente (cupom "primeiro pedido") e devolve o público.
 --    Liberado pra loja grátis por enquanto (teste); pra voltar a exigir o PRO, descomente o bloco marcado.
 -- 2) cardapio_criar_pedido passa o telefone pra validação.
--- 3) cardapio_cupons_vitrine: até 3 cupons ativos e valendo hoje, pra mostrar no cardápio.
+-- 3) cardapio_cupons_vitrine: até 2 cupons ativos e valendo hoje, pra mostrar no cardápio.
 
 begin;
 
@@ -110,7 +110,7 @@ as $function$
             select count(*) from pedidos pe where pe.user_id = p_loja and coalesce(pe.status, '') <> 'cancelado'
               and upper(coalesce(pe.cupom_codigo, '')) = upper(x->>'codigo')) < (x->>'limite_uso')::int)
     order by ord desc
-    limit 3
+    limit 2
   ) s
 $function$;
 
