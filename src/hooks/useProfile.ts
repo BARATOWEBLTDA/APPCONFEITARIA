@@ -24,6 +24,7 @@ export interface Profile {
   slug?: string;
   plano?: string | null;
   pro_expira_em?: string | null;
+  pro_desde?: string | null; // (21/10) quando o PRO ligou pela primeira vez
   /** Mensagens do WhatsApp personalizadas (09/10 · 3.59). Chave → texto. Vazio = padrão. */
   mensagens_whatsapp?: Record<string, string> | null;
 }
