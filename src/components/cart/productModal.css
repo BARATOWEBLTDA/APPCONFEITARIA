@@ -194,3 +194,25 @@
   .pm-info > p { order: 2; margin-top: 14px; }
   .pm-info > .pm-aviso { order: 3; margin-top: 16px; background: var(--ui-branco); border: 1px solid #F0E6EA; }
 }
+
+/* (21/10) computador: prova social, Peça também e pronta entrega embaixo da foto */
+.pm-aviso--pronta { display: none; }
+.pm-social, .pm-tambem { display: none; }
+@media (min-width: 768px) {
+  .pm-aviso--pronta { display: flex; border-color: #CDEBD6 !important; }
+  .pm-aviso--pronta svg { color: #15803D; }
+  .pm-social { display: flex; align-items: center; gap: 10px; margin: 0; padding: 12px 14px; border: 1px solid #F9D1E0; border-radius: 12px; background: #FFF1F6; font-size: 14.5px; color: var(--ui-texto); }
+  .pm-social svg { flex: none; color: var(--pm-cor, var(--ui-rosa)); }
+  .pm-tambem { display: block; margin-top: 4px; }
+  .pm-tambem h3 { margin: 0 0 10px; font-size: 16px; font-weight: 700; color: var(--ui-texto); }
+  .pm-tambem-l { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .pm-tambem-l button { display: flex; flex-direction: column; min-width: 0; margin: 0; padding: 0; overflow: hidden; border: 1px solid #F0E6EA; border-radius: 12px; background: var(--ui-branco); font-family: inherit; text-align: left; cursor: pointer; transition: box-shadow .15s, transform .15s; }
+  .pm-tambem-l button:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(40, 20, 25, .1); }
+  .pm-tambem-l button:focus-visible { outline: 3px solid var(--pm-cor, var(--ui-rosa)); outline-offset: 2px; }
+  .pm-tambem-ft { position: relative; display: block; overflow: hidden; aspect-ratio: 4 / 3; background: #F3EEF0; }
+  .pm-tambem-ft img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
+  .pm-tambem-tx { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px 10px; }
+  .pm-tambem-tx b { overflow: hidden; font-size: 13.5px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; text-overflow: ellipsis; }
+  .pm-tambem-tx em { font-style: normal; font-size: 13.5px; font-weight: 700; color: #15803D; white-space: nowrap; }
+  .pm-tambem-tx em small { display: block; font-size: 12px; font-weight: 500; color: var(--ui-texto-2); }
+}

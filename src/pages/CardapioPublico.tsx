@@ -12,7 +12,7 @@ import { ProductList } from '@/components/cardapio/ProductList'
 import { montarSecoes, SecaoCardapio, LinhaProduto } from '@/components/cardapio/ItensCardapio'
 import { contarItens, qtdItem, valorLinha, detalhesItem, kgLivre } from '@/lib/itemSacola'
 import { NavigationMenu } from '@/components/cardapio/NavigationMenu'
-import { definirLojaAtual } from '@/components/cardapio/lojaAtual'
+import { definirLojaAtual, definirProdutosDaLoja } from '@/components/cardapio/lojaAtual'
 import { EmptyState } from '@/components/cardapio/EmptyState'
 import { Footer } from '@/components/cardapio/Footer'
 import { CardapioModelo1, getStatusLoja } from '@/components/cardapio/CardapioModelo1'
@@ -295,7 +295,7 @@ function CardapioContent() {
         return
       }
 
-      setDesign(design); setConfig(config); setProdutos(produtos)
+      setDesign(design); setConfig(config); setProdutos(produtos); definirProdutosDaLoja(produtos || [])
       setIsPro(isPro || false); void modelo; setCardapioModelo('modelo1') /* (18/10) só o Clássico por enquanto */; setCategoryImages(categoryImages || {})
       setCategoriasList(categoriasList || [])
       // 10/10: a loja fica guardada nesta aba (lojaAtual); o localStorage segue gravado, só de reserva

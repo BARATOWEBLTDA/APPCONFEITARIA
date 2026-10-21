@@ -28,3 +28,8 @@ export function lojaAtualCheckout(): Record<string, unknown> | null {
   if (atual) return atual.checkout
   try { const raw = localStorage.getItem('cardapio_checkout_config'); return raw ? JSON.parse(raw) : null } catch { return null }
 }
+
+/* (21/10) Produtos da loja desta aba: a janela do produto usa pro "Peça também" (sem buscar de novo) */
+let produtosDaLoja: any[] = []
+export function definirProdutosDaLoja(lista: any[]) { produtosDaLoja = Array.isArray(lista) ? lista : [] }
+export const produtosDaLojaAtual = (): any[] => produtosDaLoja

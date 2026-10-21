@@ -1,14 +1,15 @@
 import { seloEntrega } from "@/lib/entregaProduto";
 import { unidadePreco } from '@/lib/formaVenda'
 import KitPicker from '@/components/cardapio/KitPicker'
-import { precoCardapio, precoDoTamanho, descontoCardapio, comDesconto, tamanhosEsgotados } from '@/lib/precoCardapio'
+import { precoCardapio, precoDoTamanho, descontoCardapio, comDesconto, tamanhosEsgotados, precoCardapioComPromocao } from '@/lib/precoCardapio'
+import { produtosDaLojaAtual, lojaAtualId } from '@/components/cardapio/lojaAtual'
 import { pesoDoNome, pesoDoTamanho } from '@/lib/itemSacola'
 import { r2 } from '@/lib/moeda'
 import { avisar } from '@/components/base'
 import { kitAtivo, calcularKit, selecaoInicial, kitUnico, kitsValidos, palavraKit, type KitSelecao } from '@/lib/kitQuantidade'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { ArrowLeft, CalendarBlank, Camera, CaretLeft, CaretRight, Check, Minus, Plus, X } from '@phosphor-icons/react'
+import { ArrowLeft, CalendarBlank, Camera, CaretLeft, CaretRight, Check, Fire, Lightning, Minus, Plus, X } from '@phosphor-icons/react'
 import { useSobreposicao } from '@/components/base/useSobreposicao'
 import './productModal.css'
 import { useCart } from '@/hooks/useCart'
@@ -169,7 +170,11 @@ function Grupo({ chave, g, multi, valor, aoMudar, secoes, faltou, emFatias, corB
   )
 }
 
-export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', onAdicionar, rotuloAdicionar, previa }: Props) {
+export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao = '#ec4899', onAdicionar, rotuloAdicionar, previa }: Props) {
+  // (21/10) "Peça também": o cliente troca de produto sem fechar a janela
+  const [outro, setOutro] = useState<Produto | null>(null)
+  useEffect(() => { setOutro(null) }, [produtoAberto, isOpen])
+  const product = outro || produtoAberto
   const { addItem } = useCart()
   const [quantity, setQuantity] = useState(1)
   // Kit por quantidade (docinhos/salgados): quantos de cada sabor
@@ -475,6 +480,24 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
     return () => window.clearInterval(t)
   }, [isOpen, imagensMemo.length])
 
+  // (21/10) Prova social de verdade: quantos pedidos levaram este produto nos últimos 30 dias (só o número)
+  const [pedidos30, setPedidos30] = useState(0)
+  useEffect(() => {
+    setPedidos30(0)
+    const loja = (product as any)?.user_id || lojaAtualId(), id = product?.id
+    if (!isOpen || !loja || !id || previa || onAdicionar) return
+    let vivo = true
+    void supabase.rpc('cardapio_pedidos_do_produto', { p_loja: loja, p_produto: id }).then(({ data }) => { if (vivo && typeof data === 'number') setPedidos30(data) })
+    return () => { vivo = false }
+  }, [product?.id, isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
+  // (21/10) Peça também: 3 da mesma categoria (completa com outras), disponíveis e com foto
+  const sugestoes = useMemo(() => {
+    if (!product || previa || onAdicionar) return [] as Produto[]
+    const todos = produtosDaLojaAtual().filter((p: any) => p.id !== product.id && p.disponivel !== false && p.imagem_url && !tamanhosEsgotados(p)) as Produto[]
+    const cat = (product as any).categoria
+    return [...todos.filter((p: any) => p.categoria === cat), ...todos.filter((p: any) => p.categoria !== cat)].slice(0, 3)
+  }, [product?.id, isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // ═══ Early return DEPOIS de todos os hooks (regra do React) ══════
   if (!isOpen || !product) return null
 
@@ -593,6 +616,9 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
   const temFoto = images.length > 0
   const aviso = selo?.tipo === 'encomenda' ? (
     <div className="pm-aviso"><CalendarBlank size={20} weight="bold" aria-hidden="true" /><span><b>Encomende com {selo.prazo} de antecedência</b><small>Você escolhe o dia ao finalizar o pedido.</small></span></div>
+  ) : !previa && !tamanhosEsgotados(product) ? (
+    // (21/10) sem prazo de encomenda = pronta entrega (computador; o celular segue como estava)
+    <div className="pm-aviso pm-aviso--pronta"><Lightning size={20} weight="fill" aria-hidden="true" /><span><b>Pronta entrega</b><small>Não precisa agendar com antecedência.</small></span></div>
   ) : null
 
   // ═══ Preço ao lado de cada opção (11/10): sai da mesma conta do total, já com a promoção ═══
@@ -784,6 +810,25 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
                   <button key={x.src + x.i} type="button" aria-label={`Ver a foto ${x.i + 1}`} onClick={() => verFoto(x.i)}><img src={x.src} alt="" /></button>
                 ))}
               </div>
+            )}
+            {pedidos30 >= 5 && (
+              <p className="pm-social"><Fire size={18} weight="fill" aria-hidden="true" /><span><b>Pedido {pedidos30} vezes</b> nos últimos 30 dias</span></p>
+            )}
+            {sugestoes.length > 0 && (
+              <section className="pm-tambem" aria-label="Peça também">
+                <h3>Peça também</h3>
+                <div className="pm-tambem-l">
+                  {sugestoes.map(p => {
+                    const pc = precoCardapioComPromocao(p)
+                    return (
+                      <button key={p.id} type="button" onClick={() => { setOutro(p); roloRef.current?.scrollTo({ top: 0 }) }}>
+                        <span className="pm-tambem-ft"><img src={p.imagem_url!.split(',')[0].trim()} alt="" loading="lazy" /></span>
+                        <span className="pm-tambem-tx"><b>{p.nome}</b><em>{pc.aPartir && <small>a partir de</small>}{formatCurrency(pc.final)}</em></span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </section>
             )}
           </div>
         )}
