@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
-import { Bell, Gear, Lightbulb, SignOut, Sparkle, WarningCircle } from "@phosphor-icons/react";
+import { Bell, Gear, Lightbulb, Newspaper, SignOut, Sparkle, WarningCircle } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { Botao, Janela, avisar } from "@/components/base";
 import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
@@ -57,6 +57,7 @@ export default function MenuConta({ aberto, aoFechar, ancora }: Props) {
 
   const itens: { nome: string; Icone: Icon; acao: () => void }[] = [
     { nome: "Notificações", Icone: Bell, acao: () => ir("/notificacoes") },
+    { nome: "Novidades", Icone: Newspaper, acao: () => ir("/noticias") }, // (21/10) caminho fixo pras novidades do Doonly
     { nome: "Configurações", Icone: Gear, acao: () => ir("/configuracoes") },
     { nome: "Assistente virtual", Icone: Sparkle, acao: () => { if (isPro) { aoFechar(); abrirDooIA(); } else ir("/assistente-virtual"); } },
     { nome: "Sugerir uma melhoria", Icone: Lightbulb, acao: () => ir("/solicitar-recurso") },

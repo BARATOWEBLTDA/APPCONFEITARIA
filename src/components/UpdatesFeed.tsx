@@ -85,9 +85,9 @@ export default function UpdatesFeed({ linha = false }: { linha?: boolean }) {
   if (vazio) return null;
 
   if (linha) return (
-    <section className="ufl" aria-label="Notícias">
+    <section className="ufl" aria-label="Novidades">
       <div className="ufl-cab">
-        <h2>Notícias</h2>
+        <h2>Novidades</h2>
         <button type="button" className="uf-ver-todas" onClick={() => navigate("/noticias")}>
           Ver todas <CaretRight size={16} weight="bold" aria-hidden="true" />
         </button>
@@ -116,7 +116,7 @@ export default function UpdatesFeed({ linha = false }: { linha?: boolean }) {
   return (
     <div className={`uf-root${vazio ? " uf-root--vazio" : ""}`}>
       <div className="uf-header">
-        <h2>Notícias</h2>
+        <h2>Novidades</h2>
         {!vazio && (
           <button type="button" className="uf-ver-todas" onClick={() => navigate("/noticias")}>
             Ver todas <CaretRight size={16} weight="bold" aria-hidden="true" />
@@ -124,7 +124,7 @@ export default function UpdatesFeed({ linha = false }: { linha?: boolean }) {
         )}
       </div>
       {vazio ? (
-        <p className="uf-nada">Nenhuma notícia por enquanto. As dicas e novidades do Doonly aparecem aqui.</p>
+        <p className="uf-nada">Nenhuma novidade por enquanto. As dicas e novidades do Doonly aparecem aqui.</p>
       ) : (
         <div className="uf-list">
           {noticias.map((n) => (

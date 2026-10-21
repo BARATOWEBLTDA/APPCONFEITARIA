@@ -93,6 +93,8 @@ export default function NoticiaDetalhe() {
       }
       // conta a leitura (não espera a resposta)
       supabase.rpc("incrementar_view_noticia", { noticia_slug: slug }).then(() => {});
+      // (21/10) marca como lida pra ela (some a bolinha na lista de Novidades)
+      if (user) supabase.from("noticias_lidas").upsert({ user_id: user.id, noticia_id: n.id }, { onConflict: "user_id,noticia_id" }).then(() => {});
       setEstado("pronto");
       window.scrollTo(0, 0);
     } catch {
@@ -154,23 +156,23 @@ export default function NoticiaDetalhe() {
 
   return (
     <>
-      <AppPageHeader title="Notícias" subtitle="Dicas, novidades e tutoriais do Doonly" onBack={voltar} />
+      <AppPageHeader title="Novidades" subtitle="Dicas, novidades e tutoriais do Doonly" onBack={voltar} />
       <div className="nd">
         {estado === "carregando" ? (
-          demorou ? <p className="nl-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Abrindo a notícia…</p> : null
+          demorou ? <p className="nl-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Abrindo…</p> : null
         ) : estado === "erro" ? (
           <TelaVazia
             icone={<WarningCircle size={30} />}
-            titulo="Não deu pra abrir a notícia"
+            titulo="Não deu pra abrir"
             texto="Confira a internet e tente de novo."
             acao={<Botao variante="suave" tamanho="m" onClick={carregar}>Tentar de novo</Botao>}
           />
         ) : estado === "sumiu" || !noticia ? (
           <TelaVazia
             icone={<Newspaper size={30} />}
-            titulo="Essa notícia não está mais aqui"
+            titulo="Essa novidade não está mais aqui"
             texto="Ela pode ter saído do ar. As outras continuam na lista."
-            acao={<Botao variante="suave" tamanho="m" onClick={() => navigate("/noticias", { replace: true })}>Ver todas as notícias</Botao>}
+            acao={<Botao variante="suave" tamanho="m" onClick={() => navigate("/noticias", { replace: true })}>Ver todas as novidades</Botao>}
           />
         ) : (
           <>
@@ -219,7 +221,7 @@ export default function NoticiaDetalhe() {
             </article>
 
             <div className="nd-fim">
-              <Botao variante="link" icone={<CaretLeft size={16} weight="bold" />} onClick={() => navigate("/noticias")}>Ver todas as notícias</Botao>
+              <Botao variante="link" icone={<CaretLeft size={16} weight="bold" />} onClick={() => navigate("/noticias")}>Ver todas as novidades</Botao>
             </div>
           </>
         )}
