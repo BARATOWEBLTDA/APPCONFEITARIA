@@ -32,7 +32,7 @@ import { usePlano } from "@/hooks/usePlano";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import Categorias from "@/pages/Categorias";
 import AppPageHeader from "@/components/AppPageHeader";
-import { ArrowLeft as ArrowLeftIc, Camera, CaretDown, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, SortAscending, WarningCircle, Trash, X as XIc, DotsThreeVertical, Lightbulb, Cake, Crown, Info, Sun, FrameCorners, Crop, TextTSlash, ArrowsClockwise } from "@phosphor-icons/react";
+import { ArrowLeft as ArrowLeftIc, Camera, CaretDown, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, SortAscending, WarningCircle, Trash, X as XIc, DotsThreeVertical, Lightbulb, Cake, Crown, Info, Sun, FrameCorners, Crop, TextTSlash, ArrowsClockwise, SealPercent } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Janela, Linha as LinhaUi, TelaVazia, Titulo as TituloUi, avisar, confirmar } from "@/components/base";
 import { historicoAssentado, useSobreposicao } from "@/components/base/useSobreposicao";
 import { sufixoVenda } from "@/lib/formaVenda";
@@ -659,6 +659,9 @@ export default function Produtos() {
 
   // ═══ Bulk selection (desktop) ═══
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  // (21/10) celular: o símbolo de promoção ao lado do preço mostra uma frase curta ao tocar
+  const [dicaPromo, setDicaPromo] = useState<string | null>(null);
+  useEffect(() => { if (!dicaPromo) return; const t = window.setTimeout(() => setDicaPromo(null), 2600); return () => window.clearTimeout(t); }, [dicaPromo]);
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
   const isSelected = (id: string) => selectedIds.has(id);
@@ -1836,6 +1839,36 @@ export default function Produtos() {
               </div>
               <div className="prod-card-info">
                 <p className="prod-card-nome">{p.nome}</p>
+                {/* (21/10) celular: lista, uma informação por linha (preço ativo, tipo, lucro estimado ou Criar ficha) */}
+                {(() => {
+                  const pl = precoDaLista(p);
+                  const unid = pl.aPartir || !pl.unidade || pl.unidade === "a unidade" ? "" : pl.unidade.replace(/^por /, "o ");
+                  const promo = pl.de > 0;
+                  const { lucro, margem, temFicha } = calcularLucro(p);
+                  const tier = margem >= 50 ? "alto" : margem >= 25 ? "medio" : "baixo";
+                  return (
+                    <div className="pl-lin">
+                      <div className="pl-lin-preco">
+                        {pl.aPartir && <small>a partir de</small>}
+                        <b className={promo ? "promo" : ""}>R$&nbsp;{formatPreco(pl.final)}</b>
+                        {unid && <small>{unid}</small>}
+                        {promo && (
+                          <button type="button" className="pl-cupom" aria-label="Esse produto está em promoção atualmente"
+                            onClick={e => { e.stopPropagation(); setDicaPromo(d => d === p.id ? null : (p.id || null)); }}>
+                            <SealPercent size={18} weight="fill" aria-hidden="true" />
+                          </button>
+                        )}
+                        {dicaPromo === p.id && <span className="pl-dica" role="status">Esse produto está em promoção atualmente</span>}
+                        <button type="button" role="switch" aria-checked={p.disponivel !== false} aria-label={`Mostrar ${p.nome} no cardápio`}
+                          className="pl-chave pl-lin-chave" onClick={e => { e.stopPropagation(); void alternarNoCardapio(p); }}><span /></button>
+                      </div>
+                      <p className="pl-lin-tipo">{(p as any).antecedencia ? "Encomenda" : "Pronta entrega"}</p>
+                      {temFicha
+                        ? <p className={`pl-lin-lucro pl-lin-lucro--${tier}`}>Lucro estimado R$&nbsp;{formatPreco(lucro)} ({margem.toFixed(0)}%)</p>
+                        : <button type="button" className="pl-lin-ficha" onClick={e => { e.stopPropagation(); navigate("/ficha-tecnica", { state: { produtoId: p.id } }); }}>Criar ficha técnica</button>}
+                    </div>
+                  );
+                })()}
                 {/* (17/10) Fichinha: preço cheio, promoção e tipo em linhas (as etiquetas da foto saíram) */}
                 {(() => {
                   const pl = precoDaLista(p);

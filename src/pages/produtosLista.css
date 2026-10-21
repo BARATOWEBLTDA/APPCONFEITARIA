@@ -85,3 +85,32 @@ body .prod-preview-btn-editar { min-height: 48px; gap: 8px; padding: 0 16px; bor
 body .prod-preview-btn-icon { min-height: 48px; gap: 6px; padding: 0 16px; border-radius: var(--ui-raio-botao); background: var(--ui-cinza); color: var(--ui-texto); font-size: 15px; font-weight: 700; }
 body .prod-preview-menu-item { min-height: 48px; }
 body .prod-preview-menu-sub { font-size: 12.5px; }
+
+/* (21/10) celular: lista (foto pequena + uma informação por linha). No computador ficam os cartões. */
+.pl-lin { display: none; }
+@media (max-width: 767px) {
+  body .prod-grid { grid-template-columns: minmax(0, 1fr) !important; gap: 8px !important; }
+  body .prod-card { display: flex !important; flex-direction: row !important; align-items: center !important; gap: 12px; padding: 10px 12px 10px 10px; text-align: left !important; }
+  body .prod-card-img { flex: none; width: 64px; height: 64px; aspect-ratio: auto; border-radius: 10px; overflow: hidden; }
+  body .prod-card-img img { width: 100%; height: 100%; object-fit: cover; }
+  body .prod-card-sem-foto-title, body .prod-card-tags, body .prod-card-check { display: none !important; }
+  body .prod-card-info { flex: 1; min-width: 0; padding: 0 !important; text-align: left !important; }
+  body .prod-card-nome { display: block; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; -webkit-line-clamp: unset; }
+  body .prod-card .pl-ficha, body .prod-card .prod-card-bottom, body .prod-card-cat { display: none; }
+  .pl-lin { display: block; }
+  .pl-lin-preco { position: relative; display: flex; align-items: center; gap: 5px; min-height: 28px; white-space: nowrap; }
+  .pl-lin-preco small { font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
+  .pl-lin-preco b { font-size: 15px; font-weight: 700; color: var(--ui-texto); font-variant-numeric: tabular-nums; }
+  .pl-lin-preco b.promo { color: #15803D; }
+  .pl-cupom { position: relative; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin: 0; padding: 0; border: 0; background: none; color: #15803D; cursor: pointer; }
+  .pl-cupom::after { content: ""; position: absolute; inset: -10px -6px; }
+  .pl-dica { position: absolute; right: 0; top: calc(100% + 4px); z-index: 5; padding: 6px 10px; border-radius: 8px; background: #2A1418; color: #fff; font-size: 12.5px; font-weight: 600; white-space: nowrap; box-shadow: 0 4px 12px rgba(44, 18, 25, .25); }
+  .pl-lin-chave { margin-left: auto; }
+  .pl-lin-tipo { margin: 0; font-size: 12.5px; font-weight: 500; line-height: 1.5; color: var(--ui-texto-2); }
+  .pl-lin-lucro { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; font-weight: 700; line-height: 1.5; }
+  .pl-lin-lucro--alto { color: #15803D; }
+  .pl-lin-lucro--medio { color: var(--ui-laranja); }
+  .pl-lin-lucro--baixo { color: var(--ui-vermelho); }
+  .pl-lin-ficha { position: relative; display: inline-block; margin: 0; padding: 0; border: 0; background: none; color: var(--ui-laranja); font-family: inherit; font-size: 12.5px; font-weight: 700; line-height: 1.5; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+  .pl-lin-ficha::after { content: ""; position: absolute; inset: -8px -4px; }
+}
