@@ -1,10 +1,13 @@
 /* Pedidos do cliente (08/10 · 3.31): em andamento com o passo a passo, depois os anteriores */
 import { useState } from 'react'
 import { ArrowClockwise, Receipt } from '@phosphor-icons/react'
+import { AcompanharPedido } from './AcompanharPedido'
 import { CartaoPedido, JanelaEntrar, SemConta, lerCliente, pedidoAberto, usePedidosCliente, type Cliente } from './contaCliente'
 
-export function PedidosTab({ accent, confeteiraUserId, onVerCardapio }: {
+export function PedidosTab({ accent, corTopo, confeteiraUserId, onVerCardapio }: {
   accent: string
+  /** (21/10) cor do topo da loja (topo do pedido em andamento) */
+  corTopo?: string
   confeteiraUserId: string
   /** (14/10) sem pedidos: botão que fecha a janela e volta pros produtos */
   onVerCardapio?: () => void
@@ -44,7 +47,7 @@ export function PedidosTab({ accent, confeteiraUserId, onVerCardapio }: {
         ) : (
           <>
             {andamento.length > 0 && <h3 className="cc-sec">Em andamento</h3>}
-            {andamento.map(p => <CartaoPedido key={p.id} p={p} cor={accent} />)}
+            {andamento.map(p => <AcompanharPedido key={p.id} p={p} cor={accent} corTopo={corTopo} />)}
             {anteriores.length > 0 && <h3 className="cc-sec">Anteriores</h3>}
             {anteriores.map(p => <CartaoPedido key={p.id} p={p} cor={accent} />)}
           </>

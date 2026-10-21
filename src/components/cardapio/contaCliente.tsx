@@ -12,12 +12,20 @@ import './contaCliente.css'
 
 /** token: código de acesso que o banco dá depois de um pedido ou de entrar com o número de um pedido (4.23) */
 export type Cliente = { id: string; nome: string; telefone: string; token?: string }
-export type ItemPedido = { nome_produto: string; quantidade: number; valor_unitario: number; produtos?: { imagem_url?: string } }
+export type ItemPedido = { nome_produto: string; quantidade: number; valor_unitario: number; produtos?: { imagem_url?: string; forma_venda?: string | null } }
 export type Pedido = {
   id: string; numero: number; status: string; created_at: string; valor_total: number
   forma_pagamento: string; status_pagamento: string; tipo_entrega: string
   data_entrega?: string; horario_entrega?: string
   pedido_itens?: ItemPedido[]
+  /** (21/10) o que já entrou, Pix pelo cardápio e a hora de cada situação (SQL acompanhar_pedido) */
+  valor_recebido?: number | null
+  pix_online?: boolean | null
+  pix_informado_valor?: number | null
+  pix_informado_tipo?: string | null
+  pix_informado_em?: string | null
+  status_tempos?: Record<string, string> | null
+  pago_em?: string | null
 }
 
 export const dinheiro = (v: number) => (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -198,6 +206,7 @@ export function CartaoPedido({ p, cor }: { p: Pedido; cor: string }) {
   // 10/10: o WhatsApp é o da loja desta aba, e o link trata o +55 e o DDD 55 (lib/telefone)
   const zap = linkWhatsApp(lojaAtualWhatsApp(), `Oi! Queria saber do meu pedido #${p.numero}`)
   const pago = p.status_pagamento === 'pago'
+  const sinal = !pago && p.status_pagamento === 'parcial' && Number(p.valor_recebido) > 0
   const pag = PAGAMENTO[p.forma_pagamento] || p.forma_pagamento || ''
 
   return (
@@ -226,7 +235,7 @@ export function CartaoPedido({ p, cor }: { p: Pedido; cor: string }) {
 
       <div className="cc-ped-pe">
         <span>{ret ? <Storefront size={18} weight="bold" /> : <Truck size={18} weight="bold" />}{ret ? 'Retirada' : 'Entrega'}{quando ? ` · ${quando}` : ''}</span>
-        {pag && <span><Wallet size={18} weight="bold" />{pag} · {pago ? <em className="ok">pago</em> : `paga na ${ret ? 'retirada' : 'entrega'}`}</span>}
+        {pag && <span><Wallet size={18} weight="bold" />{pag} · {pago ? <em className="ok">pago</em> : sinal ? <em className="ok">sinal de {dinheiro(Number(p.valor_recebido))}</em> : p.pix_online ? (p.pix_informado_em ? 'a conferir' : 'não pago') : `paga na ${ret ? 'retirada' : 'entrega'}`}</span>}
       </div>
 
       {aberto && zap && (

@@ -1186,6 +1186,7 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
               <div style={{flexShrink:0,height:'env(safe-area-inset-top, 0px)'}} />
               <PedidosTab
                 accent={accent}
+                corTopo={corAtiva}
                 confeteiraUserId={lojaAtualId()}
                 onIrParaPerfil={() => setActiveTab('perfil')}
                 onVerCardapio={() => setActiveTab('inicio')}
