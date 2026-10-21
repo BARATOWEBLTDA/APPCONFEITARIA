@@ -1029,7 +1029,7 @@ export default function Inicio() {
               ) : loading && proximasEntregas.length === 0 ? (
                 <p className="ini-dk-vazio">Carregando…</p>
               ) : proximasEntregas.length === 0 ? (
-                <p className="ini-dk-vazio">Nenhuma entrega marcada. Os próximos pedidos aparecem aqui.</p>
+                <p className="ini-dk-vazio">{counts.pedidosPendentes > 0 ? `Nada marcado. Aceite ${counts.pedidosPendentes === 1 ? "o pedido" : `os ${counts.pedidosPendentes} pedidos`} pra ${counts.pedidosPendentes === 1 ? "ele entrar" : "eles entrarem"} aqui.` : "Nada marcado. Os pedidos aceitos aparecem aqui."}</p>
               ) : proximasEntregas.map(e => {
                 const d = new Date(e.data + "T12:00:00");
                 const mes = d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "");

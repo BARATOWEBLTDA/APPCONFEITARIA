@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Buildings, CalendarCheck, CaretRight, ClipboardText, Coins, CreditCard, ImageSquare, TextAlignLeft, Truck, X } from "@phosphor-icons/react";
+import { Bell, Buildings, CalendarCheck, ClipboardText, Coins, CreditCard, ImageSquare, TextAlignLeft, Truck } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { useLojaPronta } from "@/lib/primeirosPassos";
@@ -19,9 +19,14 @@ import { avisar } from "@/components/base";
  * O que falta cadastrar só aparece depois dos primeiros passos. Conta nova (sem nada) não vê o cartão.
  * (18/10) Lista compacta (estava com texto demais): ícone, título e uma linha curta; a linha toda abre;
  * o "Agora não" virou um × pequeno no canto (abre as mesmas opções).
+ * (21/10) Voltou a se chamar "Pra fazer" (era quase igual a "Primeiros passos"). Cada linha tem um botão curto que
+ * já diz a ação (Pagar, Liberar, Definir…) no lugar da seta e do ×; a conta mostra o valor ("Vence hoje · R$ 380,00").
  */
 type Item = { chave: string; nivel: "urgente" | "atencao" | "normal"; Ic: Icon; t: string; s: string; acao: string; link: string; estado?: { abrir: string }; fechar?: boolean; ordem: number; aoTocar?: () => void };
 
+/** (21/10) o botão de cada linha diz o que fazer */
+const ACAO: Record<AvisoCadastro["icone"], string> = { custos: "Definir", maquininha: "Definir", ficha: "Fazer", caixa: "Informar", conta: "Pagar", entrega: "Definir", descricao: "Escrever", banner: "Colocar" };
+const ACAO_NOVIDADE: Record<string, string> = { "aniversarios": "Ver", "produtos-sem-foto": "Pôr foto", "clientes-sumidos": "Chamar" };
 const ICONE: Record<AvisoCadastro["icone"], Icon> = { custos: Buildings, maquininha: CreditCard, ficha: ClipboardText, caixa: Coins, conta: CalendarCheck, entrega: Truck, descricao: TextAlignLeft, banner: ImageSquare };
 const DIA = 86400000;
 const PESO = { urgente: 0, atencao: 1, normal: 2 };
@@ -34,8 +39,6 @@ const TEXTO_NOVIDADE: Record<string, string> = {
   "produtos-sem-foto": "Produto com foto vende mais. Adicione pra chamar atenção no cardápio.",
   "clientes-sumidos": "Sem comprar há mais de 60 dias. Mande uma mensagem pra chamar de volta.",
 };
-/** (16/10) "Agora não": em vez do X, ela escolhe até quando o item some */
-const ADIAR: [string, number | "nunca"][] = [["Lembrar amanhã", 1], ["Lembrar em 7 dias", 7], ["Não mostrar mais", "nunca"]];
 
 export default function PraFazer() {
   const navigate = useNavigate();
@@ -45,7 +48,6 @@ export default function PraFazer() {
   const { updates } = useAtualizacoes();
   const [avisos, setAvisos] = useState<AvisoCadastro[]>([]);
   const [aberto, setAberto] = useState(false);
-  const [menu, setMenu] = useState<string | null>(null); // item com o "Agora não" aberto
   const [, setMexeu] = useState(0);
   const kAte = (chave: string) => `doonly_aviso_ate_${uid}_${chave}`;
   const kOff = (chave: string) => `doonly_aviso_off_${uid}_${chave}`; // o X antigo (escondia por 7 dias)
@@ -67,14 +69,6 @@ export default function PraFazer() {
     return () => { vivo = false; };
   }, [uid, pronta, voltou]);
 
-  // fecha o menu do "Agora não" ao tocar fora
-  useEffect(() => {
-    if (!menu) return;
-    const fora = (e: PointerEvent) => { if (!(e.target as HTMLElement)?.closest?.(".pf-adiar")) setMenu(null); };
-    document.addEventListener("pointerdown", fora);
-    return () => document.removeEventListener("pointerdown", fora);
-  }, [menu]);
-
   // (18/10) notificações: enquanto não estiverem ligadas neste aparelho, é o primeiro passo (toque já pede a permissão)
   const push = usePushSubscription();
   const ativarNotif = async () => {
@@ -84,7 +78,7 @@ export default function PraFazer() {
     else if (Notification.permission === "denied") navigate("/configuracoes/notificacoes");
   };
   const itemNotif: Item[] = uid && push.isSupported && !push.isSubscribed ? [{
-    chave: "ativar_notificacoes", nivel: "atencao", Ic: Bell, ordem: -100, acao: "Ver", link: "/configuracoes/notificacoes", fechar: true,
+    chave: "ativar_notificacoes", nivel: "atencao", Ic: Bell, ordem: -100, acao: push.permission === "denied" ? "Liberar" : "Ativar", link: "/configuracoes/notificacoes", fechar: true,
     t: push.permission === "denied" ? "Notificações bloqueadas" : "Ativar notificações",
     s: push.permission === "denied" ? "Libere pra ver pedido novo" : "Pra não perder nenhum pedido",
     aoTocar: () => { void ativarNotif(); },
@@ -94,11 +88,11 @@ export default function PraFazer() {
     ...itemNotif,
     ...avisos.map((a, i): Item => ({
       chave: a.chave, nivel: a.nivel, Ic: ICONE[a.icone], t: a.curto.t, s: a.curto.s, link: a.link, estado: a.estado, ordem: i,
-      acao: a.icone === "conta" ? "Pagar" : "Ver", fechar: a.icone !== "conta",
+      acao: ACAO[a.icone] || "Ver", fechar: a.icone !== "conta",
     })),
     ...updates.map((u): Item => ({
       chave: u.key, nivel: u.key === "faturamento-down" || u.key === "aniversarios" ? "atencao" : "normal",
-      Ic: u.Icone, t: u.curto.t, s: u.curto.s || TEXTO_NOVIDADE[u.key] || u.descricao, link: u.path, ordem: 100 - u.prioridade, acao: "Ver", fechar: true,
+      Ic: u.Icone, t: u.curto.t, s: u.curto.s || TEXTO_NOVIDADE[u.key] || u.descricao, link: u.path, ordem: 100 - u.prioridade, acao: ACAO_NOVIDADE[u.key] || "Ver", fechar: true,
     })),
   ].filter(x => !x.fechar || !escondido(x.chave))
    .sort((a, b) => PESO[a.nivel] - PESO[b.nivel] || a.ordem - b.ordem);
@@ -106,15 +100,10 @@ export default function PraFazer() {
   if (!itens.length) return null;
   const mostrar = aberto ? itens : itens.slice(0, VISIVEIS);
   const resto = itens.length - VISIVEIS;
-  const adiar = (chave: string, d: number | "nunca") => {
-    try { localStorage.setItem(kAte(chave), d === "nunca" ? "nunca" : String(Date.now() + d * DIA)); } catch {}
-    setMenu(null); setMexeu(n => n + 1);
-  };
-
   return (
-    <section className="pf" aria-label="Seus próximos passos">
+    <section className="pf" aria-label="Pra fazer">
       <div className="pf-cab">
-        <b className="pf-t">Seus próximos passos</b>
+        <b className="pf-t">Pra fazer</b>
         <span className="pf-n">{itens.length === 1 ? "1 item" : `${itens.length} itens`}</span>
       </div>
       <ul className="pf-lista">
@@ -123,20 +112,8 @@ export default function PraFazer() {
             <button type="button" className="pf-linha" disabled={x.aoTocar ? push.loading : false} onClick={() => x.aoTocar ? x.aoTocar() : navigate(x.link, x.estado ? { state: x.estado } : undefined)}>
               <span className="pf-ic" aria-hidden="true"><x.Ic size={20} weight="bold" /></span>
               <span className="pf-tx"><b>{x.t}</b><small>{x.s}</small></span>
-              {x.acao === "Pagar" ? <span className="pf-pagar">Pagar</span> : <CaretRight size={16} weight="bold" className="pf-seta" aria-hidden="true" />}
+              <span className={x.acao === "Pagar" ? "pf-bt pf-bt--pagar" : "pf-bt"}>{x.acao}</span>
             </button>
-            {x.fechar && (
-              <div className="pf-adiar">
-                <button type="button" className="pf-x" aria-label={`Agora não: ${x.t}`} aria-haspopup="menu" aria-expanded={menu === x.chave} onClick={() => setMenu(m => m === x.chave ? null : x.chave)}>
-                  <X size={14} weight="bold" aria-hidden="true" />
-                </button>
-                {menu === x.chave && (
-                  <div className="pf-menu" role="menu">
-                    {ADIAR.map(([t, d]) => <button type="button" role="menuitem" key={t} onClick={() => adiar(x.chave, d)}>{t}</button>)}
-                  </div>
-                )}
-              </div>
-            )}
           </li>
         ))}
       </ul>
@@ -158,20 +135,14 @@ const CSS = `
   .pf-lista { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
   .pf-it { display: flex; align-items: center; gap: 4px; border-top: 1px solid var(--ui-linha, #F3ECEF); }
   .pf-it:first-child { border-top: 0; }
-  .pf-linha { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 60px; margin: 0; padding: 8px 0; border: 0; background: none; font-family: inherit; text-align: left; cursor: pointer; }
-  .pf-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: #F3F0F1; color: #8F8589; } /* (19/10) cinza claro (antes rosinha) */
+  .pf-linha { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; min-height: 60px; margin: 0; padding: 8px 0; border: 0; background: none; font-family: inherit; text-align: left; cursor: pointer; }
+  .pf-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--ui-raio); background: #F3F0F1; color: #8F8589; } /* (19/10) cinza claro (antes rosinha) */
   .pf-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
   .pf-tx b { font-size: 14.5px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pf-tx small { font-size: 13px; line-height: 1.35; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pf-seta { flex: none; color: var(--ui-texto-3); }
-  .pf-pagar { flex: none; padding: 6px 12px; border-radius: 8px; background: #D92D20; color: var(--ui-branco); font-size: 13px; font-weight: 700; }
-  .pf-adiar { position: relative; flex: none; }
-  .pf-x { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin: 0; padding: 0; border: 0; border-radius: 50%; background: #F5F0F2; color: var(--ui-texto-3); cursor: pointer; }
-  .pf-x::after { content: ""; position: absolute; inset: -6px; }
-  .pf-menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 30; min-width: 190px; padding: 6px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); box-shadow: 0 10px 28px rgba(44, 18, 25, .16); }
-  .pf-menu button { display: block; width: 100%; min-height: 40px; padding: 0 10px; border: 0; border-radius: 6px; background: none; font-family: inherit; font-size: 14px; text-align: left; color: var(--ui-texto); white-space: nowrap; cursor: pointer; }
-  .pf-menu button:last-child { color: var(--ui-texto-2); }
-  @media (hover: hover) { .pf-menu button:hover, .pf-x:hover { background: #F0E9EC; } }
+  .pf-bt { flex: none; padding: 8px 10px; border-radius: 8px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 13px; font-weight: 700; text-align: center; white-space: nowrap; }
+  .pf-bt--pagar { background: #D92D20; color: var(--ui-branco); }
   /* urgente: vermelho; atenção: amarelo */
   .pf-it--urgente small { color: #9A3A32; }
   /* (18/10) ícones numa cor só (rosinha); o urgente continua com o texto e o "Pagar" em vermelho */

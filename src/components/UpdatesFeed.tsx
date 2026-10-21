@@ -65,6 +65,8 @@ export default function UpdatesFeed() {
   // (07/10 · 3.09) Sem notícia, o cartão fica numa frase só (antes era um bloco grande vazio) e some o "Ver todas".
   // Notícia sem imagem mostra um ícone desenhado, não o emoji.
   const vazio = noticias.length === 0;
+  // (21/10) sem notícia, o cartão some (no celular e no computador)
+  if (vazio) return null;
 
   return (
     <div className={`uf-root${vazio ? " uf-root--vazio" : ""}`}>

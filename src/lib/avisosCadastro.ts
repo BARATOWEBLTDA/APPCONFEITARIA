@@ -23,7 +23,7 @@ export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
     supabase.from("profiles").select("*").eq("id", uid).maybeSingle(),
     supabase.from("produtos").select("id, descricao, produto_insumos(id)").eq("user_id", uid).eq("disponivel", true),
     // (15/10) também as que vencem hoje e as atrasadas (antes só as de amanhã)
-    supabase.from("contas_pagar").select("id, descricao, vencimento").eq("user_id", uid).eq("status", "pendente").lte("vencimento", diaISO(1)).order("vencimento"),
+    supabase.from("contas_pagar").select("id, descricao, vencimento, valor").eq("user_id", uid).eq("status", "pendente").lte("vencimento", diaISO(1)).order("vencimento"),
   ]);
   const l: AvisoCadastro[] = [];
   // contas primeiro (são as mais urgentes): atrasada, hoje, amanhã. A chave muda com a situação, pra avisar de novo quando vira "hoje"
@@ -34,7 +34,7 @@ export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
       titulo: `${sit === "atrasada" ? "Atrasada" : sit === "hoje" ? "Vence hoje" : "Vence amanhã"}: ${c.descricao}`,
       texto: "Pague ou marque como paga em A pagar pro seu caixa ficar sempre certo.", link: "/financeiro/a-pagar", estado: { abrir: `pagar:${c.id}` },
       nivel: sit === "amanha" ? "atencao" : "urgente",
-      curto: { t: sit === "atrasada" ? `${c.descricao} atrasado` : String(c.descricao), s: sit === "atrasada" ? "Já venceu" : sit === "hoje" ? "Vence hoje" : "Vence amanhã" } });
+      curto: { t: String(c.descricao), s: `${sit === "atrasada" ? "Já venceu" : sit === "hoje" ? "Vence hoje" : "Vence amanhã"}${Number(c.valor) > 0 ? ` · ${Number(c.valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}` : ""}` } });
   }
   // (16/10) custos fixos e taxa da maquininha ficam na mesma tela: viram um aviso só ("Custos e taxas")
   const faltaFixos = !fixos.error && (fixos.data || []).length === 0;

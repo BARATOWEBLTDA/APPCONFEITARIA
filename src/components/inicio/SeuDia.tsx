@@ -39,7 +39,7 @@ interface Props {
 const real = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 const hhmm = (h?: string | null) => (h ? String(h).slice(0, 5) : "");
 
-export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, semana }: Props) {
+export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, semana, novos = 0 }: Props) {
   const navigate = useNavigate();
   const [diaSel, setDiaSel] = useState<string | null>(null);
   // (16/10) faixa da semana: os 7 dias a partir de hoje, com quantos pedidos cada um tem
@@ -102,8 +102,9 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, sem
         <div className="sd-vazio">
           <img src="/marca/leve/acenando.webp" alt="" width={56} height={56} />
           <div>
-            <b>Sua agenda está livre</b>
-            <span>Quando chegar um pedido, ele aparece aqui.</span>
+            {/* (21/10) com pedido esperando, a frase diz o que fazer (antes "Sua agenda está livre" com 3 pedidos lá em cima) */}
+            <b>Nada marcado nos próximos dias</b>
+            <span>{novos > 0 ? `Aceite ${novos === 1 ? "o pedido" : `os ${novos} pedidos`} pra ${novos === 1 ? "ele entrar" : "eles entrarem"} aqui` : "Os pedidos aceitos aparecem aqui"}</span>
           </div>
         </div>
       ) : (
