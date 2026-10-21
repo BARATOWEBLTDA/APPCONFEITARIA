@@ -172,10 +172,10 @@ export default function NovaVenda() {
   const [buscaProduto, setBuscaProduto] = useState('')
   const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null)
 
-  // Modal cliente
-  const [modalCliente, setModalCliente] = useState(false)
+  // Clientes (21/10: escolhidos na própria tela, sem janela)
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [buscaCliente, setBuscaCliente] = useState('')
+  const [recentes, setRecentes] = useState<string[]>([]) // ids dos clientes dos últimos pedidos
 
   const [salvando, setSalvando] = useState(false)
   const salvandoRef = useRef(false)
@@ -236,6 +236,10 @@ export default function NovaVenda() {
       if (cidadeDaLoja.current) setEnderecoCidade(atual => atual || cidadeDaLoja.current)
       setProdutos((prds || []) as Produto[])
       setClientes(cls || [])
+      // (21/10) "Últimos clientes": os dos pedidos mais recentes (se a leitura falhar, a lista mostra os primeiros por nome)
+      supabase.from('pedidos').select('cliente_id').eq('user_id', user.id).not('cliente_id', 'is', null)
+        .order('created_at', { ascending: false }).limit(60)
+        .then(({ data }) => { if (vivo && data) setRecentes([...new Set((data as any[]).map(r => r.cliente_id).filter(Boolean))].slice(0, 5)) }, () => {})
       setErroCarga('')
       setProdutosLoaded(true)
       // Veio da página da cliente ("Novo pedido"): já começa com ela escolhida (08/10 · 3.34)
@@ -494,7 +498,6 @@ export default function NovaVenda() {
       setEnderecoCep('') // o CEP era do endereço anterior
     }
     clienteDoEnderecoRef.current = c.id
-    setModalCliente(false)
     setBuscaCliente('')
   }
 
@@ -768,6 +771,10 @@ export default function NovaVenda() {
         </ol>
       </div>
 
+      {/* (21/10) no computador: os passos à esquerda e o resumo da venda fixo à direita */}
+      <div className="nv3-grade">
+      <div className="nv3-col">
+
       {/* ═══ PASSO 1: tipo + produtos ═══ */}
       {etapaLabelAtual === 'Venda' && (
         <>
@@ -842,32 +849,62 @@ export default function NovaVenda() {
                   <Campo className="nv3-larga" rotulo="Telefone ou WhatsApp" opcional type="tel" inputMode="tel" placeholder="(41) 99999-0000" value={clienteTelefone} onChange={e => setClienteTelefone(e.target.value)} />
                 </div>
                 <p className="nv3-dica">Ele fica salvo nos seus clientes quando você registrar a venda.</p>
-                <Botao variante="link" icone={<X size={16} weight="bold" />} onClick={() => { setModoNovoCli(false); setClienteNome(''); setClienteTelefone('') }}>Voltar pra busca</Botao>
-              </>
-            ) : clienteId ? (
-              <>
-                <div className="nv3-cli">
-                  <span className="nv3-ini" aria-hidden="true">{clienteEscolhida?.foto_url ? <img src={clienteEscolhida.foto_url} alt="" /> : initialsOf(clienteNome)}</span>
-                  <div className="nv3-cli-tx">
-                    <b>{toTitleCase(clienteNome)}</b>
-                    <span>{clienteTelefone ? telefoneBonito(clienteTelefone) : 'Sem telefone'}</span>
-                    {enderecoTexto && <small>{enderecoTexto}</small>}
-                  </div>
-                  <BotaoIcone rotulo="Tirar o cliente" variante="limpo" tamanho="p" onClick={tirarCliente}><X size={20} weight="bold" /></BotaoIcone>
-                </div>
-                <div className="nv3-cli-acoes">
-                  <Botao variante="secundario" tamanho="m" icone={<MagnifyingGlass size={20} weight="bold" />} onClick={() => setModalCliente(true)}>Trocar cliente</Botao>
-                  <Botao variante="secundario" tamanho="m" icone={<UserPlus size={20} weight="bold" />} onClick={() => { tirarCliente(); setModoNovoCli(true) }}>Novo cliente</Botao>
-                </div>
+                <Botao variante="link" icone={<X size={16} weight="bold" />} onClick={() => { setModoNovoCli(false); setClienteNome(''); setClienteTelefone('') }}>Voltar pra lista</Botao>
               </>
             ) : (
-              <div className="nv3-cli-acoes nv3-cli-acoes--so">
-                <Botao variante="secundario" tamanho="m" icone={<MagnifyingGlass size={20} weight="bold" />} onClick={() => setModalCliente(true)}>Escolher cliente</Botao>
-                <Botao variante="secundario" tamanho="m" icone={<UserPlus size={20} weight="bold" />} onClick={() => { setModoNovoCli(true); setClienteId(null); setClienteNome(''); setClienteTelefone('') }}>Novo cliente</Botao>
-              </div>
+              <>
+                {/* (21/10) busca e lista na própria tela; "Sem cliente" vem marcado */}
+                <div className="ui-campo-c nv3-cbusca">
+                  <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
+                  <input type="search" inputMode="search" autoComplete="off" aria-label="Buscar cliente pelo nome ou telefone" placeholder="Buscar pelo nome ou telefone" value={buscaCliente} onChange={e => setBuscaCliente(e.target.value)} />
+                  {buscaCliente && <BotaoIcone variante="limpo" tamanho="p" rotulo="Limpar a busca" onClick={() => setBuscaCliente('')}><X size={20} weight="bold" /></BotaoIcone>}
+                </div>
+                <Botao cheio className="nv3-cnovo" icone={<UserPlus size={20} weight="bold" />} onClick={() => { tirarCliente(); setModoNovoCli(true) }}>Cadastrar novo cliente</Botao>
+                {(() => {
+                  const q = buscaCliente.trim().toLowerCase()
+                  // (11/10) o telefone é procurado nos dois campos e só pelos números ("41 9999" acha "(41) 99999-0000")
+                  const qTel = buscaCliente.replace(/\D/g, '')
+                  const qSem55 = digitosTelefone(buscaCliente)
+                  const acha = (c: Cliente) => (c.nome || '').toLowerCase().includes(q)
+                    || (qTel.length >= 3 && [c.telefone, c.whatsapp].some(t => String(t || '').replace(/\D/g, '').includes(qTel) || (qSem55.length >= 3 && digitosTelefone(t).includes(qSem55))))
+                  let lista: Cliente[]
+                  if (q) lista = clientes.filter(acha).slice(0, 30)
+                  else {
+                    const ult = recentes.map(id => clientes.find(c => c.id === id)).filter(Boolean) as Cliente[]
+                    lista = ult.length ? ult : clientes.slice(0, 5)
+                    if (clienteEscolhida && !lista.some(c => c.id === clienteEscolhida.id)) lista = [clienteEscolhida, ...lista.slice(0, 4)]
+                  }
+                  const linha = (c: Cliente) => {
+                    const on = clienteId === c.id
+                    return (
+                      <button key={c.id} type="button" className={`nv3-cl${on ? ' on' : ''}`} aria-pressed={on} onClick={() => selecionarCliente(c)}>
+                        <span className="nv3-ini" aria-hidden="true">{c.foto_url ? <img src={c.foto_url} alt="" /> : initialsOf(c.nome || '?')}</span>
+                        <span className="nv3-cl-tx"><b>{toTitleCase(c.nome || 'Sem nome')}</b><small>{(c.telefone || c.whatsapp) ? telefoneBonito(c.telefone || c.whatsapp || '') : 'Sem telefone'}</small></span>
+                        <i className="nv3-radio" aria-hidden="true" />
+                      </button>
+                    )
+                  }
+                  return (
+                    <>
+                      <p className="nv3-cl-t">{q ? 'Clientes encontrados' : 'Últimos clientes'}</p>
+                      <div className="nv3-cls">
+                        {!q && (
+                          <button type="button" className={`nv3-cl${!clienteId ? ' on' : ''}`} aria-pressed={!clienteId} onClick={tirarCliente}>
+                            <span className="nv3-ini nv3-ini--sem" aria-hidden="true"><Minus size={20} weight="bold" /></span>
+                            <span className="nv3-cl-tx"><b>Sem cliente</b><small>Fica como Venda avulsa</small></span>
+                            <i className="nv3-radio" aria-hidden="true" />
+                          </button>
+                        )}
+                        {lista.map(linha)}
+                      </div>
+                      {q && lista.length === 0 && <p className="nv3-dica">Nenhum cliente com “{buscaCliente.trim()}”.</p>}
+                      {clienteId && enderecoTexto && <p className="nv3-dica">Endereço: {enderecoTexto}</p>}
+                    </>
+                  )
+                })()}
+              </>
             )}
           </section>
-          <p className="nv3-dica nv3-centro">O cliente é opcional. Sem ele, a venda fica como "Venda avulsa".</p>
         </>
       )}
 
@@ -945,17 +982,6 @@ export default function NovaVenda() {
       {etapaLabelAtual === 'Pagamento' && (
         <>
           <section className="nv3-card">
-            <Titulo>Como ele pagou?</Titulo>
-            <div className="nv3-formas" role="group" aria-label="Forma de pagamento">
-              {([['PIX', 'Pix', QrCode], ['Dinheiro', 'Dinheiro', Money], ['Crédito', 'Crédito', CreditCard], ['Débito', 'Débito', Bank]] as const).map(([chave, nome, Icone]) => (
-                <button key={chave} type="button" aria-pressed={formaPagamento === chave} onClick={() => setFormaPagamento(chave)}>
-                  <Icone size={24} weight={formaPagamento === chave ? 'fill' : 'bold'} />{nome}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="nv3-card">
             <Titulo>Quanto já entrou?</Titulo>
             <div role="radiogroup" aria-label="Quanto já entrou">
               {([
@@ -995,6 +1021,18 @@ export default function NovaVenda() {
             {!situacaoPag && <p className={`nv3-dica${tentou ? ' nv3-falta' : ''}`}>Escolha quanto já entrou pra continuar.</p>}
           </section>
 
+          {/* (21/10) "Como ele pagou?" só quando entrou dinheiro (antes vinha primeiro, com o Pix marcado, até pra quem vai pagar depois) */}
+          {(situacaoPag === 'total' || situacaoPag === 'parcial') && <section className="nv3-card">
+            <Titulo>Como ele pagou?</Titulo>
+            <div className="nv3-formas" role="group" aria-label="Forma de pagamento">
+              {([['PIX', 'Pix', QrCode], ['Dinheiro', 'Dinheiro', Money], ['Crédito', 'Crédito', CreditCard], ['Débito', 'Débito', Bank]] as const).map(([chave, nome, Icone]) => (
+                <button key={chave} type="button" aria-pressed={formaPagamento === chave} onClick={() => setFormaPagamento(chave)}>
+                  <Icone size={24} weight={formaPagamento === chave ? 'fill' : 'bold'} />{nome}
+                </button>
+              ))}
+            </div>
+          </section>}
+
           <section className="nv3-card">
             <Titulo>Desconto ou acréscimo</Titulo>
             <div className="nv3-cols nv3-cols--fim">
@@ -1016,7 +1054,7 @@ export default function NovaVenda() {
             <p className="nv3-dica"><b>{comeco.nome}:</b> {comeco.dica}</p>
           </section>
 
-          <section className="nv3-card">
+          <section className="nv3-card nv3-res-card">
             <Titulo acao={<Botao variante="link" onClick={() => irParaPasso(1)}>Editar</Botao>}>Resumo</Titulo>
             <div className="nv3-res">
               <Linha rotulo="Tipo">{tipo === 'pronta_entrega' ? 'Pronta entrega' : 'Encomenda'}</Linha>
@@ -1049,6 +1087,45 @@ export default function NovaVenda() {
           </section>
         </>
       )}
+      </div>
+
+      {/* ═══ Resumo da venda (computador largo) ═══ */}
+      <aside className="nv3-lado" aria-label="Resumo da venda">
+        <h2>Resumo da venda</h2>
+        {itens.length === 0
+          ? <p className="nv3-lado-vz">Nenhum produto ainda.</p>
+          : (
+            <div className="nv3-lado-its">
+              {itens.map((it, idx) => (
+                <div key={idx}>
+                  <p><span>{itemComQtd(`${nomeDeProduto(it.nome_produto)}${it.opcaoLabel ? ` · ${it.opcaoLabel}` : ''}`, it.quantidade, it.forma_venda === 'kg' && !pesoLivre(it, 'kg') ? null : it.forma_venda)}</span><span>{rs(r2(it.valor_unitario * it.quantidade))}</span></p>
+                  {it.observacoes && <p className="rec"><span>Recado: {it.observacoes}</span></p>}
+                </div>
+              ))}
+              {taxaConta > 0 && <p className="dim"><span>Taxa de entrega</span><span>{rs(taxaConta)}</span></p>}
+              {desconto > 0 && <p className="dim"><span>Desconto</span><span>− {rs(desconto)}</span></p>}
+              {acrescimo > 0 && <p className="dim"><span>Acréscimo</span><span>{rs(acrescimo)}</span></p>}
+            </div>
+          )}
+        <div className="nv3-lado-inf">
+          <p><span>Tipo</span><b className={tipo ? '' : 'falta'}>{tipo === 'pronta_entrega' ? 'Pronta entrega' : tipo === 'encomenda' ? 'Encomenda' : 'Falta escolher'}</b></p>
+          <p><span>Cliente</span><b className={etapa < 2 ? 'falta' : ''}>{etapa < 2 ? 'Falta escolher' : nomeDaCliente}</b></p>
+          <p><span>{ehEntrega ? 'Entrega' : 'Retirada'}</span><b className={etapa < 3 || ((tipo === 'encomenda' || buscaDepois) && !dataEntrega) ? 'falta' : ''}>{
+            etapa < 3 ? 'Falta escolher'
+            : tipo === 'encomenda' || buscaDepois ? (dataEntrega ? dataLonga(dataEntrega, horarioEntrega) : 'Falta escolher')
+            : jaLevou ? 'Já levou' : ehEntrega ? 'Entrega' : 'Retirada'}</b></p>
+          <p><span>Pagamento</span><b className={!situacaoPag ? 'falta' : situacaoPag === 'total' ? 'ok' : 'lar'}>{textoPagamento}</b></p>
+        </div>
+        <p className="nv3-lado-tot"><span>Total</span><b>{rs(total)}</b></p>
+        {situacaoPag && situacaoPag !== 'total' && itens.length > 0 && <p className="nv3-lado-falta"><span>Falta receber</span><b>{rs(falta)}</b></p>}
+        <div className="nv3-lado-bts">
+          {isUltima
+            ? <Botao cheio onClick={finalizarVenda} carregando={salvando}>Registrar venda</Botao>
+            : <Botao cheio onClick={proximaEtapa}>Continuar</Botao>}
+          <Botao cheio variante="secundario" onClick={voltarEtapa} disabled={salvando}>{etapa === 1 ? 'Cancelar' : 'Voltar'}</Botao>
+        </div>
+      </aside>
+      </div>
     </div>
 
     {/* Rodapé fixo: total sempre à vista + Voltar e Continuar.
@@ -1178,35 +1255,6 @@ export default function NovaVenda() {
               )
             })}
             {lista.length === 0 && <p className="tpj-vz">Nenhum produto{q ? ` com “${buscaProduto.trim()}”` : ' nessa categoria'}.</p>}
-          </div>
-        </Janela>
-      )
-    })()}
-
-    {/* ═══ Escolher cliente (janela padrão) ═══ */}
-    {(() => {
-      const q = buscaCliente.trim().toLowerCase()
-      // (11/10) o telefone é procurado nos dois campos (os clientes novos ficam em "whatsapp") e só pelos números,
-      // então "41 9999" acha "(41) 99999-0000"
-      const qTel = buscaCliente.replace(/\D/g, '')
-      const qSem55 = digitosTelefone(buscaCliente) // colou com +55: procura sem o código do país
-      const lista = clientes.filter(c => (c.nome || '').toLowerCase().includes(q)
-        || (qTel.length >= 3 && [c.telefone, c.whatsapp].some(t => String(t || '').replace(/\D/g, '').includes(qTel) || (qSem55.length >= 3 && digitosTelefone(t).includes(qSem55)))))
-      return (
-        <Janela aberta={modalCliente} aoFechar={() => setModalCliente(false)} tipo="conteudo" titulo="Escolher cliente">
-          <div className="ui-campo-c tpj-busca">
-            <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
-            <input type="search" inputMode="search" autoComplete="off" aria-label="Buscar cliente por nome ou telefone" placeholder="Nome ou telefone" value={buscaCliente} onChange={e => setBuscaCliente(e.target.value)} />
-          </div>
-          <div className="tpj-lista">
-            {lista.map(c => (
-              <button key={c.id} type="button" className="tpj-it" onClick={() => selecionarCliente(c)}>
-                <span className="tpj-ini" aria-hidden="true">{initialsOf(c.nome || '?')}</span>
-                <span className="tpj-tx"><b>{toTitleCase(c.nome || 'Sem nome')}</b>{(c.telefone || c.whatsapp) && <small>{telefoneBonito(c.telefone || c.whatsapp || '')}</small>}</span>
-              </button>
-            ))}
-            {clientes.length === 0 && <p className="tpj-vz">Nenhum cliente cadastrado ainda.</p>}
-            {clientes.length > 0 && lista.length === 0 && <p className="tpj-vz">Nenhum cliente com “{buscaCliente.trim()}”.</p>}
           </div>
         </Janela>
       )
