@@ -105,7 +105,7 @@ export default function Notificacoes() {
                 Não lidas{naoLidas.length > 0 && <i>{naoLidas.length}</i>}
               </button>
             </div>
-            {naoLidas.length > 0 && <button type="button" className="ntf-todas" onClick={todas}><Checks size={16} weight="bold" aria-hidden="true" />Ler todas</button>}
+            {naoLidas.length > 0 && <button type="button" className="ntf-todas" onClick={todas}><Checks size={16} weight="bold" aria-hidden="true" />Marcar todas como lidas</button>}
           </div>
 
           {visiveis.length === 0 ? (
@@ -114,9 +114,13 @@ export default function Notificacoes() {
               <p className="ntf-empty-t">Tudo lido por aqui</p>
               <button type="button" className="ntf-lnk" onClick={() => setFiltro("todas")}>Ver todas</button>
             </div>
-          ) : blocos.map(([titulo, lista]) => (
+          ) : blocos.map(([titulo, lista], bi) => (
             <section key={titulo} className="ntf-bloco">
-              <p className="ntf-dia">{titulo}</p>
+              <div className="ntf-dia-l">
+                <p className="ntf-dia">{titulo}</p>
+                {/* (21/10) celular: "Marcar todas como lidas" desce pra linha do primeiro dia (ao lado das abas não cabia) */}
+                {bi === 0 && naoLidas.length > 0 && <button type="button" className="ntf-todas ntf-todas--cel" onClick={todas}><Checks size={16} weight="bold" aria-hidden="true" />Marcar todas como lidas</button>}
+              </div>
               <div className="ntf-lista">
                 {lista.map(n => {
                   const g = grupoDe(n);
@@ -158,6 +162,11 @@ export default function Notificacoes() {
         .ntf-seg i { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 6px; background: var(--ui-rosa); color: var(--ui-branco); font-style: normal; font-size: 11.5px; font-weight: 700; line-height: 20px; text-align: center; }
         .ntf-todas { display: inline-flex; align-items: center; gap: 5px; min-height: 40px; margin-right: -8px; padding: 0 8px; border: 0; border-radius: 8px; background: none; font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ui-rosa-escuro); white-space: nowrap; cursor: pointer; }
         @media (hover: hover) { .ntf-todas:hover { background: #FFF1F6; } }
+        /* (21/10) "Ler todas" virou "Marcar todas como lidas": no celular fica na linha do primeiro dia (ao lado das abas não cabia) */
+        .ntf-dia-l { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+        .ntf-dia-l .ntf-dia { margin-bottom: 0; }
+        .ntf-todas--cel { display: none; min-height: 32px; }
+        @media (max-width: 599px) { .ntf-barra .ntf-todas { display: none; } .ntf-todas--cel { display: inline-flex; } }
         .ntf-bloco { margin-top: 20px; }
         .ntf-dia { margin: 0 0 8px 2px; font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
         .ntf-lista { display: flex; flex-direction: column; gap: 8px; }

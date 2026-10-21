@@ -20,9 +20,16 @@ export async function carregarNotificacoes(limite = 100): Promise<Notif[]> {
   const mapa = new Map<string, any>((est || []).map((e: any) => [e.notificacao_id, e]));
   // Compatibilidade: o que foi visto antes desta versão (data salva no aparelho) conta como lido
   const antigo = Number(localStorage.getItem("notif_last_seen_ms") || 0) || (localStorage.getItem("notif_last_seen") ? new Date(localStorage.getItem("notif_last_seen")!).getTime() : 0);
+  // (21/10) conta a pagar: cada situação era um aviso novo e os antigos ficavam ("Vence amanhã" + "Vence hoje" + "Atrasada"
+  // da mesma conta). Agora fica só o mais recente de cada conta.
+  const SIT = ["vence", "hoje", "atrasada"]
+  const daConta = (ch: string) => { const m = /^conta_(vence|hoje|atrasada)_(.+)$/.exec(ch || ""); return m ? { sit: SIT.indexOf(m[1]), id: m[2] } : null }
+  const maisNova = new Map<string, number>()
+  for (const n of (ns || []) as any[]) { const c = daConta(n.chave); if (c && c.sit > (maisNova.get(c.id) ?? -1)) maisNova.set(c.id, c.sit) }
   return (ns || [])
     .filter((n: any) => !(n.user_id && n.user_id !== user.id))
     .filter((n: any) => !mapa.get(n.id)?.excluida)
+    .filter((n: any) => { const c = daConta(n.chave); return !c || c.sit === maisNova.get(c.id) })
     .map((n: any) => ({ ...n, lida: !!mapa.get(n.id)?.lida_em || (antigo > 0 && new Date(n.created_at).getTime() <= antigo && !n.user_id) }));
 }
 
