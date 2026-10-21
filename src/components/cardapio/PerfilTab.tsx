@@ -1,6 +1,10 @@
 /* Perfil do cliente (08/10 · 3.31): dados, endereços e sair. Os pedidos ficam só na aba Pedidos. */
 import { useEffect, useState } from 'react'
-import { MapPin, Plus, SignOut, Trash } from '@phosphor-icons/react'
+import { CaretRight, Clock, MapPin, PencilSimple, Plus, SignOut, Trash } from '@phosphor-icons/react'
+import IconeWhatsApp from '@/components/IconeWhatsApp'
+import { linkWhatsApp } from '@/lib/telefone'
+import { lojaAtualCheckout, lojaAtualNome, lojaAtualWhatsApp } from './lojaAtual'
+import { getStatusLoja } from './CardapioModelo1'
 import { Campo, Janela, avisar, confirmar } from '@/components/base'
 import { JanelaEntrar, SemConta, guardarCliente, lerCliente, mascaraTel, type Cliente } from './contaCliente'
 import { digitosTelefone } from '@/lib/telefone'
@@ -19,6 +23,20 @@ export function PerfilTab({ accent, confeteiraUserId }: { accent: string; confet
   const [novo, setNovo] = useState<EnderecoSalvo>(VAZIO)
   const [falta, setFalta] = useState(false)
   const [cepBuscando, setCepBuscando] = useState(false)
+  // (21/10) editar o nome (o WhatsApp é a conta: pra trocar, sai e entra com o outro número)
+  const [editando, setEditando] = useState(false)
+  const [nomeNovo, setNomeNovo] = useState('')
+  const salvarNome = () => {
+    if (!cliente) return
+    const n = nomeNovo.trim()
+    if (!n) return avisar('Escreva o seu nome', { tipo: 'erro' })
+    const c = { ...cliente, nome: n }
+    guardarCliente(confeteiraUserId, c); setCliente(c); setEditando(false); avisar('Nome salvo', { tipo: 'ok' })
+  }
+  // (21/10) a loja: WhatsApp e horário (Sobre a loja)
+  const loja = lojaAtualNome()
+  const zapLoja = linkWhatsApp(lojaAtualWhatsApp(), 'Oi! Vim pelo cardápio.')
+  const status = getStatusLoja((lojaAtualCheckout() as any)?.horario || null)
 
   // Os endereços ficam no aparelho, por loja e telefone (a sacola usa a mesma lista)
   const chaveEnd = (tel: string) => `enderecos_${confeteiraUserId}_${tel.replace(/\D/g, '')}`
@@ -48,6 +66,13 @@ export function PerfilTab({ accent, confeteiraUserId }: { accent: string; confet
     const e = { ...novo, rua: novo.rua.trim(), numero: novo.numero.trim() }
     salvarLista([e, ...enderecos.filter(x => x.rua !== e.rua || x.numero !== e.numero)].slice(0, 5))
     setNovoAberto(false); avisar('Endereço salvo', { tipo: 'ok' })
+  }
+
+  // o primeiro da lista é o principal (a finalizar já usa ele); tocar em outro passa ele pra principal
+  const tornarPrincipal = (i: number) => {
+    if (i === 0) return
+    salvarLista([enderecos[i], ...enderecos.filter((_, j) => j !== i)])
+    avisar('Endereço principal trocado', { tipo: 'ok' })
   }
 
   const tirar = async (i: number) => {
@@ -83,29 +108,62 @@ export function PerfilTab({ accent, confeteiraUserId }: { accent: string; confet
             <div className="cc-eu">
               <span className="cc-av" style={{ background: accent }}>{(cliente.nome || '?').trim().charAt(0).toUpperCase()}</span>
               <span><b>{cliente.nome}</b><small>{mascaraTel(cliente.telefone || '')}</small></span>
+              <button type="button" className="cc-editar" style={{ color: accent }} onClick={() => { setNomeNovo(cliente.nome || ''); setEditando(true) }}><PencilSimple size={16} weight="bold" />Editar</button>
             </div>
 
-            <h3 className="cc-sec">Endereços de entrega</h3>
-            {enderecos.length === 0 && <p className="cc-nada">Nenhum endereço salvo. Os endereços dos seus pedidos com entrega aparecem aqui.</p>}
-            {enderecos.map((e, i) => (
-              <div key={i} className="cc-end">
-                <MapPin size={22} weight="bold" />
-                <span><b>{e.rua}{e.numero ? `, ${e.numero}` : ''}</b><small>{[e.complemento, e.bairro, e.cidade].filter(Boolean).join(' · ')}</small></span>
-                <button type="button" className="cc-bt-ic" aria-label={`Tirar o endereço ${e.rua}, ${e.numero}`} onClick={() => tirar(i)}><Trash size={20} weight="bold" /></button>
+            <h3 className="cc-grupo">Endereços de entrega</h3>
+            <div className="cc-cartao">
+              {enderecos.length === 0 && <p className="cc-nada">Os endereços dos seus pedidos com entrega aparecem aqui.</p>}
+              {enderecos.map((e, i) => (
+                <div key={i} className="cc-lin">
+                  <button type="button" className="cc-lin-bt" onClick={() => tornarPrincipal(i)} aria-label={i === 0 ? `${e.rua}, ${e.numero} (principal)` : `Usar ${e.rua}, ${e.numero} como principal`}>
+                    <span className="cc-lin-ic" style={{ color: accent, background: `${accent}14` }}><MapPin size={20} weight="bold" /></span>
+                    <span className="cc-lin-tx"><b><span className="cc-lin-nome">{e.rua}{e.numero ? `, ${e.numero}` : ''}</span></b><small>{i === 0 && <em className="cc-principal">Principal</em>}<span className="cc-lin-nome">{[e.complemento, e.bairro, e.cidade].filter(Boolean).join(' · ')}</span></small></span>
+                  </button>
+                  <button type="button" className="cc-bt-ic" aria-label={`Tirar o endereço ${e.rua}, ${e.numero}`} onClick={() => tirar(i)}><Trash size={20} weight="bold" /></button>
+                </div>
+              ))}
+              {enderecos.length < 5 && (
+                <button type="button" className="cc-lin cc-lin-bt cc-lin--add" onClick={() => { setNovo(VAZIO); setFalta(false); setNovoAberto(true) }}>
+                  <span className="cc-lin-ic cc-lin-ic--add" style={{ color: accent, borderColor: `${accent}66` }}><Plus size={20} weight="bold" /></span>
+                  <span className="cc-lin-tx"><b style={{ color: accent }}>Adicionar endereço</b><small>Até 5 endereços salvos</small></span>
+                </button>
+              )}
+            </div>
+
+            {(zapLoja || status) && <>
+              <h3 className="cc-grupo">{loja || 'A loja'}</h3>
+              <div className="cc-cartao">
+                {zapLoja && (
+                  <a className="cc-lin cc-lin-bt" href={zapLoja} target="_blank" rel="noreferrer">
+                    <span className="cc-lin-ic cc-lin-ic--zap"><IconeWhatsApp size={20} /></span>
+                    <span className="cc-lin-tx"><b>Falar com a loja</b><small>Chamar no WhatsApp</small></span>
+                    <CaretRight size={18} weight="bold" className="cc-lin-seta" />
+                  </a>
+                )}
+                <button type="button" className="cc-lin cc-lin-bt" onClick={() => window.dispatchEvent(new Event('doonly:sobre-loja'))}>
+                  <span className="cc-lin-ic" style={{ color: accent, background: `${accent}14` }}><Clock size={20} weight="bold" /></span>
+                  <span className="cc-lin-tx"><b>Horário e pagamento</b><small>{status?.msg || 'Dias, horários e formas de pagamento'}</small></span>
+                  <CaretRight size={18} weight="bold" className="cc-lin-seta" />
+                </button>
               </div>
-            ))}
-            {enderecos.length < 5 && (
-              <button type="button" className="cc-add" style={{ color: accent }} onClick={() => { setNovo(VAZIO); setFalta(false); setNovoAberto(true) }}>
-                <Plus size={20} weight="bold" />Adicionar endereço
-              </button>
-            )}
+            </>}
 
             <button type="button" className="cc-sair" onClick={sair}><SignOut size={20} weight="bold" />Sair da conta</button>
+            <p className="cc-sair-dica">Seus pedidos continuam salvos ao sair.</p>
           </>
         )}
       </div>
 
       <JanelaEntrar aberta={entrar} aoFechar={() => setEntrar(false)} loja={confeteiraUserId} cor={accent} aoEntrar={setCliente} />
+
+      <Janela aberta={editando} aoFechar={() => setEditando(false)} tipo="conteudo" titulo="Seus dados" umaAcao
+        acoes={<button type="button" className="cc-bt" style={{ background: accent }} onClick={salvarNome}>Salvar</button>}>
+        <div className="cc-form">
+          <Campo rotulo="Nome" autoComplete="name" value={nomeNovo} onChange={ev => setNomeNovo(ev.target.value)} />
+          <div className="cc-zap-fixo"><span>WhatsApp</span><b>{mascaraTel(cliente?.telefone || '')}</b><small>Pra usar outro número, saia e entre com ele.</small></div>
+        </div>
+      </Janela>
 
       <Janela aberta={novoAberto} aoFechar={() => setNovoAberto(false)} tipo="conteudo" titulo="Novo endereço" umaAcao
         acoes={<button type="button" className="cc-bt" style={{ background: accent }} onClick={salvarNovo}>Salvar endereço</button>}>

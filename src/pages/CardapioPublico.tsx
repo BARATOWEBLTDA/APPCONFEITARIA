@@ -57,6 +57,7 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
   const navBg = corDoTopo(design)
   const corBorda = design.cor_borda || '#E85A8C'
   const [aba, setAba] = useState<'inicio' | 'sobre' | 'conta'>('inicio')
+  const [sobreAbaDesk, setSobreAbaDesk] = useState<'sobre' | 'horario'>('sobre')
   const [contaAba, setContaAba] = useState<'pedidos' | 'perfil'>('pedidos')
   // 10/10: a loja desta página (antes vinha do localStorage, que é do navegador inteiro)
   const confeteiraUserId = design.user_id || ''
@@ -74,10 +75,13 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
   }, [confeteiraUserId])
 
   // (21/10) "Acompanhar meu pedido" (tela de pedido enviado): no computador abre Minha conta › Pedidos
+  // e "Horário e pagamento" (Minha conta) abre o Sobre a loja
   useEffect(() => {
     const ver = () => { setContaAba('pedidos'); setAba('conta') }
+    const sobre = () => { setSobreAbaDesk('horario'); setAba('sobre') }
     window.addEventListener('doonly:ver-pedidos', ver)
-    return () => window.removeEventListener('doonly:ver-pedidos', ver)
+    window.addEventListener('doonly:sobre-loja', sobre)
+    return () => { window.removeEventListener('doonly:ver-pedidos', ver); window.removeEventListener('doonly:sobre-loja', sobre) }
   }, [])
 
   return (
@@ -108,7 +112,7 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
         </div>
       </header>
 
-      <SobreLoja largo aberta={aba === 'sobre'} fechar={() => setAba('inicio')} design={design} config={config} />
+      <SobreLoja largo aberta={aba === 'sobre'} fechar={() => { setAba('inicio'); setSobreAbaDesk('sobre') }} design={design} config={config} abaInicial={sobreAbaDesk} />
 
       {/* Minha conta (pedidos e perfil do cliente — revisão na 8.4) */}
       {aba === 'conta' && (
@@ -255,6 +259,13 @@ function CardapioContent() {
   const [filtroEntrega, setFiltroEntrega] = useState<'tudo' | 'pronta' | 'encomenda'>('tudo')
   const [favorites, setFavorites] = useState<string[]>([])
   const [sobreAberta, setSobreAberta] = useState(false) // (4.25) Sobre a loja no celular
+  const [sobreAba, setSobreAba] = useState<'sobre' | 'horario'>('sobre')
+  // (21/10) "Horário e pagamento" na Minha conta (celular) abre o Sobre a loja
+  useEffect(() => {
+    const abrir = () => { setSobreAba('horario'); setSobreAberta(true) }
+    window.addEventListener('doonly:sobre-loja', abrir)
+    return () => window.removeEventListener('doonly:sobre-loja', abrir)
+  }, [])
   const device = useDeviceDetection()
   const { items: cartItems, totalPrice: cartTotal } = useCart()
   const cartCount = contarItens(cartItems)
@@ -409,7 +420,7 @@ function CardapioContent() {
     if (design.tema === 'natal' && produtos.length > 0) return (
       <div className="min-h-screen relative" style={{ backgroundColor: '#FFF8EE' }}>
         <NavigationMenu celular corBotao="#8B2332" corTopo="#6E1F27" logoUrl={design.logo_url} sugestoes={produtos} verificada={isPro} />
-        <SobreLoja aberta={sobreAberta} fechar={() => setSobreAberta(false)} design={design} config={config} />
+        <SobreLoja aberta={sobreAberta} fechar={() => { setSobreAberta(false); setSobreAba('sobre') }} design={design} config={config} abaInicial={sobreAba} />
         <CatalogoNatal design={design} config={config} isPro={isPro} produtos={produtos}
           categorias={!design.ocultar_categorias ? categorias.map((c: any) => c.name) : []} agrupar={!design.ocultar_categorias}
           aoAbrirSobre={() => setSobreAberta(true)} espacoBaixo={cartCount > 0 ? 148 : 84} />
@@ -420,7 +431,7 @@ function CardapioContent() {
         {/* Caixa dos banners: some quando a loja não tem banner */}
         <style>{`.cp-banner-wrap { margin-top: 16px; } .cp-banner-wrap:empty { display: none; }`}</style>
         <NavigationMenu celular corBotao={design.cor_botao || design.cor_borda || '#E85A8C'} corTopo={corDoTopo(design)} logoUrl={design.logo_url} sugestoes={produtos} verificada={isPro} />
-        <SobreLoja aberta={sobreAberta} fechar={() => setSobreAberta(false)} design={design} config={config} />
+        <SobreLoja aberta={sobreAberta} fechar={() => { setSobreAberta(false); setSobreAba('sobre') }} design={design} config={config} abaInicial={sobreAba} />
 
         {cardapioModelo === 'modelo1' ? (
           <>
