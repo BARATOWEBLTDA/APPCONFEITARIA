@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
 import QRCode from 'qrcode'
-import { CaretDown, Check, Copy, PixLogo, QrCode } from '@phosphor-icons/react'
+import { Check, Copy, PixLogo } from '@phosphor-icons/react'
 import { supabase } from '@/lib/supabase'
 import { avisar } from '@/components/base'
 import { formatCurrency } from '@/utils/helpers'
@@ -33,7 +33,6 @@ type Props = {
 }
 
 const NOME_CHAVE = { cpf: 'CPF/CNPJ', celular: 'celular', email: 'e-mail', aleatoria: 'aleatória' } as const
-const computador = () => { try { return window.matchMedia('(min-width: 700px)').matches } catch { return false } }
 
 export function PixPagamento({ pix, pedidoId, numero, total, tipo, loja, cor, corTopo, logoUrl, verificada, quando, aoPagar, aoDepois }: Props) {
   const sinal = valorDoSinal(total, pix.pct)
@@ -41,17 +40,15 @@ export function PixPagamento({ pix, pedidoId, numero, total, tipo, loja, cor, co
   const resto = Math.round((total - sinal) * 100) / 100
   const codigo = useMemo(() => codigoPix({ chave: pix.chave, nome: pix.nome, cidade: pix.cidade, valor, identificador: numero ? `PED${numero}` : '' }), [pix, valor, numero])
   const [qr, setQr] = useState('')
-  const [verQr, setVerQr] = useState(computador)
   const [copiado, setCopiado] = useState(false)
   const [enviando, setEnviando] = useState(false)
 
   useEffect(() => {
-    if (!verQr || qr) return
     let vivo = true
     // correção alta (H): o símbolo do Pix no meio não atrapalha a leitura
     QRCode.toDataURL(codigo, { width: 440, margin: 1, errorCorrectionLevel: 'H', color: { dark: '#2C1219', light: '#FFFFFF' } }).then(u => { if (vivo) setQr(u) }, () => { if (vivo) setQr('') })
     return () => { vivo = false }
-  }, [codigo, verQr, qr])
+  }, [codigo])
 
   // plano B: navegador de dentro do Instagram/Facebook às vezes bloqueia a cópia moderna
   const copiarTexto = async (t: string) => {
@@ -65,7 +62,7 @@ export function PixPagamento({ pix, pedidoId, numero, total, tipo, loja, cor, co
   }
   const copiar = async () => {
     if (await copiarTexto(codigo)) { setCopiado(true); avisar('Código copiado. Cole no app do seu banco.', { tipo: 'ok' }) }
-    else { setVerQr(true); avisar('Não deu pra copiar. Segure o código e copie, ou use o QR Code.', { tipo: 'erro' }) }
+    else { avisar('Não deu pra copiar. Segure o código e copie, ou use o QR Code.', { tipo: 'erro' }) }
   }
 
   const jaPaguei = async () => {
@@ -101,7 +98,14 @@ export function PixPagamento({ pix, pedidoId, numero, total, tipo, loja, cor, co
           {tipo === 'sinal' && resto > 0.009 && <em>Falta {formatCurrency(resto)} na {quando}</em>}
         </section>
 
-        <section className="px-card px-cc">
+        {/* (21/10) QR sempre aberto (fechado ficava escondido); embaixo, o copia e cola */}
+        <section className="px-card px-pagar">
+          <div className="px-qr">
+            {qr ? <img src={qr} alt="QR Code do Pix" width={190} height={190} /> : <span className="ui-gira" aria-label="Gerando o QR Code" />}
+            {qr && <span className="px-qr-logo" aria-hidden="true"><PixLogo size={22} weight="fill" /></span>}
+          </div>
+          <small className="px-qr-dica">Leia o QR Code com o app do banco</small>
+          <span className="px-ou" aria-hidden="true">ou</span>
           <button type="button" className={`px-copiar${copiado ? ' ok' : ''}`} onClick={copiar}>
             {copiado ? <Check size={20} weight="bold" /> : <Copy size={20} weight="bold" />}{copiado ? 'Código copiado' : 'Copiar código Pix'}
           </button>
@@ -111,21 +115,6 @@ export function PixPagamento({ pix, pedidoId, numero, total, tipo, loja, cor, co
             <li><i>2</i><span>No banco, use <b>Pix copia e cola</b></span></li>
             <li><i>3</i><span>Volte e toque em <b>Já paguei</b></span></li>
           </ol>
-        </section>
-
-        <section className="px-card px-qr-c">
-          <button type="button" className="px-qr-bt" aria-expanded={verQr} onClick={() => setVerQr(v => !v)}>
-            <QrCode size={20} weight="bold" /><span>{verQr ? 'QR Code' : 'Mostrar QR Code'}</span><CaretDown size={18} weight="bold" className={verQr ? 'virada' : undefined} />
-          </button>
-          {verQr && (
-            <>
-              <div className="px-qr">
-                {qr ? <img src={qr} alt="QR Code do Pix" width={200} height={200} /> : <span className="ui-gira" aria-label="Gerando o QR Code" />}
-                {qr && <span className="px-qr-logo" aria-hidden="true"><PixLogo size={22} weight="fill" /></span>}
-              </div>
-              <small className="px-qr-dica">Leia com a câmera do app do banco</small>
-            </>
-          )}
         </section>
 
         <p className="px-para"><span>Para</span><b>{pix.nome}</b><small>Chave {NOME_CHAVE[tipoDaChave(pix.chave)]}</small></p>

@@ -73,6 +73,13 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
     return () => { window.removeEventListener('doonly:cliente', ler); window.removeEventListener('storage', ler) }
   }, [confeteiraUserId])
 
+  // (21/10) "Acompanhar meu pedido" (tela de pedido enviado): no computador abre Minha conta › Pedidos
+  useEffect(() => {
+    const ver = () => { setContaAba('pedidos'); setAba('conta') }
+    window.addEventListener('doonly:ver-pedidos', ver)
+    return () => window.removeEventListener('doonly:ver-pedidos', ver)
+  }, [])
+
   return (
     <>
       <header className={`cp-topo${corClara(navBg) ? ' cp-topo--clara' : ''}`} style={{ background: navBg }}>
@@ -122,7 +129,7 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
             </div>
             <div className="cp-conta-corpo">
               {contaAba === 'pedidos'
-                ? <PedidosTab accent={navBg} confeteiraUserId={confeteiraUserId} onIrParaPerfil={() => setContaAba('perfil')} onVerCardapio={() => setAba('inicio')} />
+                ? <PedidosTab accent={navBg} corTopo={corClara(navBg) ? undefined : navBg} confeteiraUserId={confeteiraUserId} onIrParaPerfil={() => setContaAba('perfil')} onVerCardapio={() => setAba('inicio')} />
                 : <PerfilTab accent={navBg} confeteiraUserId={confeteiraUserId} />}
             </div>
           </div>

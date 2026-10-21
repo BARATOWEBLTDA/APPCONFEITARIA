@@ -1,10 +1,10 @@
 import { NeveNatal, temaNatalLigado } from '@/components/tema/Natal'
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, type CSSProperties } from 'react'
 import { montarMensagem as montarMensagemModelo } from '@/lib/mensagens'
 import { CalendarioSheet, HorariosSheet } from '@/components/cardapio/AgendaSheets'
-import { antecedenciaHoras, calcularRegras, deIso, horarioPermitido, primeiraData, rotuloData } from '@/lib/agendaCardapio'
+import { antecedenciaHoras, calcularRegras, deIso, horarioPermitido, primeiraData } from '@/lib/agendaCardapio'
 import { supabase } from '@/lib/supabase'
-import { ArrowLeft, CalendarBlank, CaretRight, Check, ChatCircleDots, Clock, CreditCard, Money, PixLogo, Plus, ClipboardText, House, ShoppingBag as Sacola, Storefront, Tag, Truck, User, X } from '@phosphor-icons/react'
+import { ArrowLeft, Cake, CalendarBlank, CaretRight, Check, ChatCircleDots, Clock, CreditCard, Money, PixLogo, Plus, ClipboardText, House, ShoppingBag as Sacola, Storefront, Tag, Truck, User, X } from '@phosphor-icons/react'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { useCart } from '@/hooks/useCart'
 import { CartItemComponent, unidadeItem } from '@/components/cart/CartItemComponent'
@@ -669,7 +669,14 @@ function CartContent({
     pixelEvento('Purchase', { value: totalFinal, num_items: items.length }) // (19/10) Pixel do Facebook: pedido enviado
     clearCart()
     setStep('cart')
-    const quandoTxt = dataEntrega ? `${formaEntrega === 'retirada' ? 'Retirada' : 'Entrega'} ${rotuloData(dataEntrega).toLowerCase()}${horaEntrega ? ` às ${horaEntrega}` : ''}` : ''
+    // (21/10) curto pra caber numa linha: "Retirada qua, 28/10 às 20:00"
+    const quandoTxt = (() => {
+      if (!dataEntrega) return ''
+      const d = new Date(dataEntrega + 'T12:00:00')
+      if (isNaN(d.getTime())) return ''
+      const dia = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'][d.getDay()]
+      return `${formaEntrega === 'retirada' ? 'Retirada' : 'Entrega'} ${dia}, ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}${horaEntrega ? ` às ${horaEntrega}` : ''}`
+    })()
     setPixFeito(null)
     setPixPara(config.pix && formaPagamento === 'pix' && pedidoIdCriado ? { pedidoId: pedidoIdCriado, total: totalCriado, retirada: formaEntrega === 'retirada', tipo: pixTipo } : null)
     setPedidoConfirmado({ numero: numeroPedido, itens: items, whatsapp: whatsappUrl, storeName, total: totalFinal, quando: quandoTxt, zap: whatsapp, mensagem })
@@ -727,36 +734,65 @@ function CartContent({
   }
   const pixPago = pixFeito && pixFeito !== 'depois' ? pixFeito : null
 
-  /* ═══ Pedido enviado ═══ */
-  if (pedidoConfirmado) return (
-    <div className="sc-enviado">
-      {natal && <NeveNatal />}
-      <div className="sc-enviado-in">
-        <span className="sc-enviado-ic"><Check size={40} weight="bold" /></span>
-        <h2>Pedido enviado!</h2>
-        {natal && <p className="sc-enviado-festas">Boas festas!</p>}
-        <p>{pedidoConfirmado.numero > 0 ? <>Pedido <b>#{pedidoConfirmado.numero}</b> · a </> : 'A '}<b>{pedidoConfirmado.storeName}</b> {pixPago ? 'confere o Pix e fala com você pelo WhatsApp.' : 'vai falar com você pelo WhatsApp.'}</p>
-        <div className="sc-res">
-          {pedidoConfirmado.itens.map((it: any, k: number) => {
-            const det = detalhesItem(it)
-            return (
-              <span key={k}>
-                <span><b>{qtdItem(it)} {it.name}</b>{det.length > 0 && <small>{det.join(' · ')}</small>}{it.observations && <small>Obs.: {it.observations}</small>}</span>
-                <em>{formatCurrency(valorLinha(it))}{unidadeItem(it) && (it.quantity === 1
-                  ? <small>{unidadeItem(it)}</small>
-                  : <small>{formatCurrency(it.price)} {unidadeItem(it)}</small>)}</em>
-              </span>
-            )
-          })}
-          <span className="t"><span><b>Total</b></span><em>{formatCurrency(pedidoConfirmado.total)}</em></span>
-          {pixPago && <span className="px-inf"><span><b>{pixPago.tipo === 'sinal' ? 'Sinal no Pix' : 'Pago no Pix'}</b><small>A loja confere e confirma</small></span><em>{formatCurrency(pixPago.valor)}</em></span>}
-          {pedidoConfirmado.quando && <span className="q"><CalendarBlank size={18} weight="bold" />{pedidoConfirmado.quando}</span>}
+  /* ═══ Pedido enviado (21/10: com a cara da loja, resumo em cartão e "Acompanhar meu pedido") ═══ */
+  const fecharEnviado = () => { setPedidoConfirmado(null); setPixPara(null); setPixFeito(null); onClose() }
+  if (pedidoConfirmado) {
+    const pc = pedidoConfirmado
+    const faltaPix = pixPago && pixPago.tipo === 'sinal' ? r2(pc.total - pixPago.valor) : 0
+    const lugar = pixPara?.retirada ? 'retirada' : (pc.quando.startsWith('Retirada') ? 'retirada' : 'entrega')
+    return (
+      <div className="px-tela scf" style={{ '--px-cor': accent } as CSSProperties}>
+        {natal && <NeveNatal />}
+        <div className="sc-topo sc-topo--loja" style={{ background: corTopo || '#BF6B84' }}>
+          <span />
+          <span className="sc-topo-loja">
+            <span className="sc-topo-logo" style={{ borderColor: accent }}>{logoUrl ? <img src={logoUrl} alt="" /> : <b>{(pc.storeName || 'D').charAt(0).toUpperCase()}</b>}</span>
+            <span><b>Pedido enviado</b><small className="sc-topo-nome">{pc.storeName}{verificada && <SeloVerificado tamanho={14} />}</small></span>
+          </span>
+          <span />
+          <span className="sc-topo-curva" aria-hidden="true" />
         </div>
-        {pedidoConfirmado.whatsapp && <button type="button" className="sc-zap" onClick={() => window.open(linkDoPedido(), '_blank')}><IconeWhatsApp size={22} />{pixPago ? 'Mandar o comprovante' : 'Mandar mensagem pra loja'}</button>}
-        <button type="button" className="sc-bt-sec" onClick={() => { setPedidoConfirmado(null); setPixPara(null); setPixFeito(null); onClose() }}>Voltar ao cardápio</button>
+
+        <div className="px">
+          <section className="px-card scf-ok">
+            <span className="scf-ic"><Check size={30} weight="bold" /></span>
+            <h2>{pixPago ? 'Pix enviado!' : 'Pedido enviado!'}</h2>
+            {natal && <p className="sc-enviado-festas">Boas festas!</p>}
+            <p>{pixPago ? 'A loja confere o Pix e confirma seu pedido.' : pixFeito === 'depois' ? 'Falta o Pix: combine com a loja.' : 'A loja confirma pelo WhatsApp.'}</p>
+            {pc.numero > 0 && <span className="scf-num">Pedido #{pc.numero}</span>}
+          </section>
+
+          <section className="px-card scf-res">
+            {pc.quando && <p className="scf-quando"><CalendarBlank size={18} weight="bold" />{pc.quando}</p>}
+            <ul className="scf-itens">
+              {pc.itens.map((it: any, k: number) => {
+                const det = detalhesItem(it)
+                const foto = it.imageUrl ? String(it.imageUrl).split(',')[0] : ''
+                return (
+                  <li key={k}>
+                    <span className="scf-foto">{foto ? <img src={foto} alt="" /> : <Cake size={22} weight="duotone" />}</span>
+                    <span className="scf-it"><b>{qtdItem(it)} {it.name}</b>{det.length > 0 && <small>{det.join(' · ')}</small>}</span>
+                    <em>{formatCurrency(valorLinha(it))}</em>
+                  </li>
+                )
+              })}
+            </ul>
+            <p className="scf-lin scf-tot"><span>Total</span><b>{formatCurrency(pc.total)}</b></p>
+            {pixPago && <p className="scf-lin scf-pix"><span>{pixPago.tipo === 'sinal' ? 'Sinal no Pix' : 'Pago no Pix'} <small>a conferir</small></span><b>{formatCurrency(pixPago.valor)}</b></p>}
+            {faltaPix > 0.009 && <p className="scf-lin"><span>Falta na {lugar}</span><b>{formatCurrency(faltaPix)}</b></p>}
+          </section>
+        </div>
+
+        <footer className="sc-pe px-pe scf-pe">
+          <button type="button" className="sc-bt-pri cheio px-pago" style={{ background: accent }} onClick={() => { fecharEnviado(); window.dispatchEvent(new Event('doonly:ver-pedidos')) }}>
+            <span>Acompanhar meu pedido</span>
+          </button>
+          {pc.whatsapp && <button type="button" className="scf-zap" onClick={() => window.open(linkDoPedido(), '_blank')}><IconeWhatsApp size={20} />{pixPago ? 'Mandar o comprovante' : 'Falar com a loja'}</button>}
+          <button type="button" className="px-depois" onClick={fecharEnviado}>Voltar ao cardápio</button>
+        </footer>
       </div>
-    </div>
-  )
+    )
+  }
 
   // (19/10) sacola com a cara da loja: faixa na cor do topo, logo e nome; "Limpar" no canto
   const topoSacola = (
@@ -1084,6 +1120,13 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
   // Antes usava 768: no tablet em pé (768 a 1023) a página era a de celular, mas sem a barra não dava pra abrir a sacola.
   const aparelho = useDeviceDetection()
   const isMobile = celular ?? aparelho !== 'desktop'
+  // (21/10) "Acompanhar meu pedido" (tela de pedido enviado): no celular abre a aba Pedidos
+  useEffect(() => {
+    if (!isMobile) return
+    const ver = () => setActiveTab('pedidos')
+    window.addEventListener('doonly:ver-pedidos', ver)
+    return () => window.removeEventListener('doonly:ver-pedidos', ver)
+  }, [isMobile])
 
   const [config, setConfig] = useState<CheckoutConfig>(DEFAULT_CONFIG)
 
