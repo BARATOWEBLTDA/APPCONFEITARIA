@@ -1,4 +1,5 @@
 import { temaAtivo, NATAL, AVISO_NATAL_PADRAO, CAPA_NATAL_PADRAO } from '@/lib/temaCardapio'
+import { cupomDisponivel } from '@/lib/cupons'
 import { COR_BOTOES, corDoItem } from '@/lib/coresCardapio'
 import { supabase } from '@/lib/supabase'
 import { fotoDaLoja } from '@/hooks/useProfile'
@@ -79,11 +80,13 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
   // (17/10) Produtos e categorias pelas funções do banco (SQL cardapio_produtos): o cliente sem login
   // não conseguia ler as tabelas direto e o cardápio aparecia vazio. As funções também não entregam
   // os campos internos da ficha técnica (custo, salário desejado…). Sem o SQL rodado, lê como antes.
-  const [rProd, rCat, { data: temCupom }] = await Promise.all([
+  const [rProd, rCat, { data: temCupom }, rVitrine] = await Promise.all([
     supabase.rpc('cardapio_produtos', { p_loja: userId }),
     supabase.rpc('cardapio_categorias', { p_loja: userId }),
     // Só sim/não — os códigos dos cupons não vêm mais pro navegador do cliente
     supabase.rpc('cardapio_tem_cupom', { p_loja: userId }),
+    // (20/10) até 3 cupons ativos pra vitrine do cardápio (esses códigos são públicos de propósito)
+    supabase.rpc('cardapio_cupons_vitrine', { p_loja: userId }),
   ])
   let produtos: any[] | null = Array.isArray(rProd.data) ? rProd.data : null
   if (rProd.error && funcaoFaltando(rProd.error)) {
@@ -167,8 +170,9 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     horario_retirada: profile.horario_retirada || '',
     exibir_campo_troco: profile.exibir_campo_troco !== false,
     cupons_desconto: [],
-    // Cupons são recurso PRO: loja grátis não mostra o campo de cupom no cardápio
-    tem_cupom: isPro && (temCupom === true || (Array.isArray(profile.cupons_desconto) && profile.cupons_desconto.some((c: any) => c?.ativo))),
+    // Cupons são recurso PRO (liberado pra loja grátis enquanto testa: lib/cupons)
+    tem_cupom: cupomDisponivel(isPro) && (temCupom === true || (Array.isArray(profile.cupons_desconto) && profile.cupons_desconto.some((c: any) => c?.ativo))),
+    cupons_vitrine: cupomDisponivel(isPro) && Array.isArray(rVitrine?.data) ? rVitrine.data : [],
     aceita_agendamento: profile.aceita_agendamento !== false,
     prazo_minimo_horas: profile.prazo_minimo_horas ?? 24,
     msg_pedido: profile.mensagens_whatsapp?.pedido_cardapio || null,

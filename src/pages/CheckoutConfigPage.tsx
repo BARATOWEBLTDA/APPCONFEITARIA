@@ -2,7 +2,8 @@
 // O que salva continua igual (salva sozinho 2s depois de mexer; cupons na tabela loja_cupons).
 // Mudou o visual: campos e botões do app, cupom novo/editar numa janela, convite pro PRO sem borrão.
 import CampoData from '@/components/CampoData'
-import { CalendarBlank, CaretRight, Check, Crown, PencilSimple, CurrencyCircleDollar, Plus, Tag, Ticket, Truck, Users, Wallet, WarningCircle } from "@phosphor-icons/react"
+import { CalendarBlank, CaretRight, Check, Crown, PencilSimple, CurrencyCircleDollar, Plus, Tag, Ticket, Truck, UserPlus, Users, Wallet, WarningCircle } from "@phosphor-icons/react"
+import { cupomDisponivel, MAX_CUPONS_ATIVOS } from '@/lib/cupons'
 import { Botao, Campo, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base"
 import "@/components/loja/editoresLoja.css"
 import "./entregaPagamento.css"
@@ -55,9 +56,9 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
   const [enderecoRetirada, setEnderecoRetirada] = useState('')
   const [horarioRetirada, setHorarioRetirada] = useState('')
   const [exibirCampoTroco, setExibirCampoTroco] = useState(true)
-  const [cupons, setCupons] = useState<{ codigo: string; tipo: string; valor: string; ativo: boolean; data_inicio?: string; data_fim?: string; limite_uso?: string; valor_minimo?: string; usos?: number }[]>([])
+  const [cupons, setCupons] = useState<{ codigo: string; tipo: string; valor: string; ativo: boolean; data_inicio?: string; data_fim?: string; limite_uso?: string; valor_minimo?: string; usos?: number; publico?: string }[]>([])
   const [editandoIndex, setEditandoIndex] = useState<number | null>(null) // null = lista | -1 = novo | >=0 = editando
-  const cupomVazio = { codigo: '', tipo: 'percentual', valor: '', ativo: true, data_inicio: '', data_fim: '', limite_uso: '', valor_minimo: '' }
+  const cupomVazio = { codigo: '', tipo: 'percentual', valor: '', ativo: true, data_inicio: '', data_fim: '', limite_uso: '', valor_minimo: '', publico: 'todos' }
   const [cupomForm, setCupomForm] = useState<typeof cupomVazio>(cupomVazio)
   const [aceitaAgendamento, setAceitaAgendamento] = useState(true)
   const [prazoMinimo, setPrazoMinimo] = useState('24')
@@ -99,6 +100,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
           limite_uso: c.limite_uso?.toString() || '',
           valor_minimo: c.valor_minimo?.toString() || '',
           usos: c.usos || 0,
+          publico: c.publico === 'primeiro_pedido' ? 'primeiro_pedido' : 'todos',
         })))
         setAceitaAgendamento(data.aceita_agendamento !== false)
         setPrazoMinimo(data.prazo_minimo_horas != null ? data.prazo_minimo_horas.toString() : '24')
@@ -147,6 +149,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
         data_fim: c.data_fim || null,
         limite_uso: c.limite_uso ? parseInt(c.limite_uso) : null,
         valor_minimo: c.valor_minimo ? numBR(c.valor_minimo) : null,
+        publico: c.publico === 'primeiro_pedido' ? 'primeiro_pedido' : 'todos',
         usos: Math.max(c.usos || 0, usosNoBanco[c.codigo.toUpperCase()] || 0),
       }))
       const { error: erroCupons } = await supabase.from('loja_cupons').upsert({ user_id: t.userId, cupons: cuponsParaSalvar, updated_at: new Date().toISOString() })
@@ -225,6 +228,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
       data_fim: cupons[i].data_fim || '',
       limite_uso: cupons[i].limite_uso || '',
       valor_minimo: cupons[i].valor_minimo || '',
+      publico: cupons[i].publico === 'primeiro_pedido' ? 'primeiro_pedido' : 'todos',
     })
     setEditandoIndex(i)
   }
@@ -240,6 +244,9 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
     if (cupomForm.data_inicio && cupomForm.data_fim && cupomForm.data_fim < cupomForm.data_inicio) {
       return avisar('A data do fim tem que ser depois da do começo', { tipo: 'erro' })
     }
+    // (20/10) até 3 cupons ativos por vez (o cliente usa 1 por pedido)
+    const outrosAtivos = cupons.filter((c, idx) => c.ativo && idx !== editandoIndex).length
+    if (cupomForm.ativo && outrosAtivos >= MAX_CUPONS_ATIVOS) return avisar(`Você já tem ${MAX_CUPONS_ATIVOS} cupons ativos. Pause um deles ou salve este pausado.`, { tipo: 'erro' })
     setCupons(prev => {
       if (editandoIndex === -1) return [...prev, { ...cupomForm, usos: 0 }]
       return prev.map((c, idx) => idx === editandoIndex ? { ...cupomForm, usos: c.usos || 0 } : c)
@@ -295,8 +302,8 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
       <span className="ep-sw-tx"><b>{rotulo}</b>{apoio && <small>{apoio}</small>}</span><span className="ep-sw" aria-hidden="true" />
     </button>
   )
-  const descontoDe = (c: { tipo: string; valor: string }) => c.tipo === 'percentual' ? `${c.valor}% de desconto` : `R$ ${c.valor} de desconto`
   const dinheiroBR = (v: string) => { const n = numBR(v); return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
+  const descontoDe = (c: { tipo: string; valor: string }) => c.tipo === 'percentual' ? `${c.valor}% de desconto` : `R$ ${dinheiroBR(c.valor)} de desconto`
 
   // com erro, "loading" continua ligado: o salvamento automático só arma depois de uma leitura que deu certo
   if (erroCarga) return (
@@ -368,9 +375,9 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
 
         {/* Cupons */}
         {verCupons && <section className="ep-card ep-largo">
-          <Cabeca Ic={Ticket} titulo="Cupons de desconto" apoio="O cliente usa ao finalizar o pedido"
+          <Cabeca Ic={Ticket} titulo="Cupons de desconto" apoio={`Até ${MAX_CUPONS_ATIVOS} ativos por vez. Os ativos aparecem no topo do cardápio, e o cliente usa 1 por pedido.`}
  />
-          {!isPro ? (
+          {!cupomDisponivel(isPro) ? (
             <div className="ep-pro">
               <p>Crie cupons pra atrair clientes novos e trazer de volta quem já comprou.</p>
               <Botao variante="vinho" icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>
@@ -389,8 +396,9 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
                     <span className="ep-cupom-tx">
                       <b>{c.codigo}</b>
                       <span className="ep-cupom-d">{descontoDe(c)}</span>
-                      {(c.data_inicio || c.data_fim || c.limite_uso || c.valor_minimo) && (
+                      {(c.publico === 'primeiro_pedido' || c.data_inicio || c.data_fim || c.limite_uso || c.valor_minimo) && (
                         <span className="ep-cupom-tags">
+                          {c.publico === 'primeiro_pedido' && <small><UserPlus size={14} weight="bold" />Só no 1º pedido</small>}
                           {(c.data_inicio || c.data_fim) && <small><CalendarBlank size={14} weight="bold" />{c.data_inicio && c.data_fim ? `${formatDate(c.data_inicio)} a ${formatDate(c.data_fim)}` : c.data_fim ? `Até ${formatDate(c.data_fim)}` : `A partir de ${formatDate(c.data_inicio!)}`}</small>}
                           {c.limite_uso && <small><Users size={14} weight="bold" />{c.usos || 0} de {c.limite_uso} usos</small>}
                           {c.valor_minimo && <small><CurrencyCircleDollar size={14} weight="bold" />Mínimo R$ {dinheiroBR(c.valor_minimo)}</small>}
@@ -429,6 +437,16 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
             <Campo rotulo="Desconto" obrigatorio inputMode="decimal" placeholder="0" value={cupomForm.valor}
               prefixo={cupomForm.tipo === 'percentual' ? undefined : 'R$'} depois={cupomForm.tipo === 'percentual' ? <span className="ep-depois">%</span> : undefined}
               onChange={e => setCupomForm({ ...cupomForm, valor: e.target.value.replace(/[^0-9.,]/g, '') })} />
+
+            {/* (20/10) para quem: todos ou só cliente novo (1º pedido, pelo WhatsApp) */}
+            <div className="ui-campo">
+              <span className="ui-campo-r" id="ep-publico"><span>Para quem</span></span>
+              <div className="ep-seg" role="radiogroup" aria-labelledby="ep-publico">
+                <button type="button" role="radio" aria-checked={cupomForm.publico !== 'primeiro_pedido'} onClick={() => setCupomForm({ ...cupomForm, publico: 'todos' })}>Todos os clientes</button>
+                <button type="button" role="radio" aria-checked={cupomForm.publico === 'primeiro_pedido'} onClick={() => setCupomForm({ ...cupomForm, publico: 'primeiro_pedido' })}>Cliente novo</button>
+              </div>
+              <small className="ep-dica">{cupomForm.publico === 'primeiro_pedido' ? 'Vale só no 1º pedido de cada WhatsApp na sua loja.' : 'Qualquer cliente pode usar.'}</small>
+            </div>
 
             <p className="ep-sep">Se quiser, limite o cupom</p>
             <div className="ep-g2">

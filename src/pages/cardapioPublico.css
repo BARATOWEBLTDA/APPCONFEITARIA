@@ -152,3 +152,9 @@
 .cp-sacola .cp-contas, .cp-sacola .cp-finalizar { flex: none; }
 /* nome da cliente no topo */
 .cp-topo-av { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #fff; font-size: 13px; font-weight: 700; }
+
+/* (20/10) cupons no computador: entre o banner e a sacola */
+.cp-vouchers { margin-bottom: 16px; }
+.cp-vouchers .vc-l { margin-top: 0; }
+.cp-vouchers .vc::before, .cp-vouchers .vc::after { background: var(--cp-fundo, #F7F4F5); }
+.cp-vouchers .vc-l--rola { margin-right: 0; padding-right: 0; }

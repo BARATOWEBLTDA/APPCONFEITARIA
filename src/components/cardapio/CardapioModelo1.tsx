@@ -7,6 +7,7 @@ import { DesignSettings, Configuracoes } from '@/types/database'
 import { seloEntrega, ANTECEDENCIA } from '@/lib/entregaProduto'
 import { situacaoDaLoja, horaTexto } from '@/lib/agendaCardapio'
 import './cardapioModelo1.css'
+import { Vouchers } from './Vouchers'
 import { topoEscurecido } from '@/lib/coresCardapio'
 
 // ─────────────────────────────────────────────────────────────
@@ -143,7 +144,8 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
         {design.descricao_loja && <p className="cm1-descricao">{design.descricao_loja}</p>}
 
         {/* (20/10) faixa com entrega, prazo das encomendas e pronta entrega (antes: quadradinhos só com o nome) */}
-        {faixa.length > 0 && (
+        {/* (20/10) com cupom ativo, os cupons (vouchers) ficam no lugar da faixa */}
+        {(config?.cupons_vitrine?.length || 0) > 0 ? <Vouchers cupons={config!.cupons_vitrine!} cor={corIcone} /> : faixa.length > 0 && (
           <ul className="cm1-faixa" aria-label="Como a loja atende">
             {faixa.map(({ Ic, v, t, ok, igual }) => (
               <li key={t}>

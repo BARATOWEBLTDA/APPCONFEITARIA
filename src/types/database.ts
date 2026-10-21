@@ -87,6 +87,8 @@ export interface Configuracoes {
   cupons_desconto?: { codigo: string; tipo: string; valor: number; ativo: boolean }[]
   /** A loja tem cupom ativo? (os códigos ficam privados, validados no banco) */
   tem_cupom?: boolean
+  /** (20/10) até 3 cupons ativos, pra mostrar no topo do cardápio */
+  cupons_vitrine?: import('@/lib/cupons').CupomVitrine[]
   aceita_agendamento?: boolean
   prazo_minimo_horas?: number
 }

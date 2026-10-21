@@ -16,6 +16,7 @@ import { itemDoCarrinhoParaPedido } from '@/lib/itemDoCarrinho'
 import { contarItens, detalhesItem, qtdItem, semMeioEmoji, valorLinha } from '@/lib/itemSacola'
 import { r2, somarReais } from '@/lib/moeda'
 import { Campo, CampoArea, avisar } from '@/components/base'
+import { esquecerCupomEscolhido, lerCupomEscolhido } from '@/lib/cupons'
 import { useSobreposicao } from '@/components/base/useSobreposicao'
 import { explicarErro } from '@/lib/erros'
 import { linkWhatsApp } from '@/lib/telefone'
@@ -362,15 +363,16 @@ function CartContent({
   const [validandoCupom, setValidandoCupom] = useState(false)
   // Subtotal com que o cupom foi conferido (se a sacola mudar, confere de novo)
   const subtotalDoCupom = useRef(0)
-  const aplicarCupom = async () => {
+  const aplicarCupom = async (codigo?: string) => {
     setCupomErro('')
-    const code = cupomDigitado.trim().toUpperCase()
+    const code = (codigo ?? cupomDigitado).trim().toUpperCase()
     if (!code) return
     const loja = lojaAtualId()
     setValidandoCupom(true)
     try {
       // Validação no banco: ativo, período, valor mínimo e limite de usos
-      const { data, error } = await supabase.rpc('cardapio_validar_cupom', { p_loja: loja, p_codigo: code, p_subtotal: totalPrice })
+      // (20/10) com o WhatsApp já preenchido, confere também o cupom "só no primeiro pedido"
+      const { data, error } = await supabase.rpc('cardapio_validar_cupom', { p_loja: loja, p_codigo: code, p_subtotal: totalPrice, p_telefone: telefone.replace(/\D/g, '') || null })
       const r: any = data
       if (!error && r?.ok) {
         subtotalDoCupom.current = totalPrice
@@ -386,7 +388,19 @@ function CartContent({
     setValidandoCupom(false)
   }
 
-  const removerCupom = () => { setCupomAplicado(null); setCupomDigitado(''); setCupomErro('') }
+  const removerCupom = () => { setCupomAplicado(null); setCupomDigitado(''); setCupomErro(''); esquecerCupomEscolhido() }
+
+  // (20/10) cupom que o cliente tocou no topo do cardápio: já entra aplicado na sacola (1 cupom por pedido)
+  useEffect(() => {
+    const usarEscolhido = () => {
+      const code = lerCupomEscolhido()
+      if (!code || !temCupom || items.length === 0 || cupomAplicado?.codigo === code) return
+      setCupomDigitado(code); setCupomAberto(true); void aplicarCupom(code)
+    }
+    usarEscolhido()
+    window.addEventListener('doonly:cupom', usarEscolhido)
+    return () => window.removeEventListener('doonly:cupom', usarEscolhido)
+  }, [items.length > 0]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 10/10: a sacola mudou com o cupom aplicado → confere o cupom de novo com o subtotal novo (pedido mínimo etc.).
   // Se a conferência falhar por falta de internet, o cupom fica como está.
@@ -410,6 +424,14 @@ function CartContent({
 
   const enviarPedido = async () => {
     if (!nome.trim() || !telefone.trim()) return avisar('Preencha o seu nome e o WhatsApp', { tipo: 'erro' })
+    // (20/10) confere o cupom com o WhatsApp antes de enviar (cupom só pro primeiro pedido); se não valer, avisa e tira
+    if (cupomAplicado) {
+      try {
+        const { data, error } = await supabase.rpc('cardapio_validar_cupom', { p_loja: lojaAtualId(), p_codigo: cupomAplicado.codigo, p_subtotal: totalPrice, p_telefone: telefone.replace(/\D/g, '') })
+        const r: any = data
+        if (!error && r && !r.ok) { setCupomAplicado(null); esquecerCupomEscolhido(); return avisar(`${r.erro || 'O cupom não vale pra esse pedido'}. Tiramos o cupom: confira o total e envie de novo.`, { tipo: 'erro' }) }
+      } catch { /* sem internet: o banco confere ao criar o pedido */ }
+    }
     if (!formaEntrega) return avisar('Escolha como vai receber', { tipo: 'erro' })
     if (!formaPagamento) return avisar('Escolha como vai pagar', { tipo: 'erro' })
     // Endereço vai junto em toda entrega com endereço (antes o do motoboy/Uber Flash ficava de fora)
@@ -766,7 +788,7 @@ function CartContent({
                   <Campo rotulo="Código do cupom" value={cupomDigitado} autoFocus autoCapitalize="characters" placeholder="Ex.: DOCE10"
                     onChange={e => { setCupomDigitado(e.target.value.toUpperCase()); setCupomErro('') }}
                     onKeyDown={e => { if (e.key === 'Enter') aplicarCupom() }} />
-                  <button type="button" className="sc-cupom-bt" style={{ alignSelf: 'flex-end' }} onClick={aplicarCupom} disabled={!cupomDigitado.trim() || validandoCupom}>{validandoCupom ? '…' : 'Aplicar'}</button>
+                  <button type="button" className="sc-cupom-bt" style={{ alignSelf: 'flex-end' }} onClick={() => aplicarCupom()} disabled={!cupomDigitado.trim() || validandoCupom}>{validandoCupom ? '…' : 'Aplicar'}</button>
                 </div>
                 {cupomErro && <p className="sc-erro" role="alert">{cupomErro}</p>}
               </>

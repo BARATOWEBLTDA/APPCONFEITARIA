@@ -86,3 +86,5 @@
 
 /* (17/10) ícones dos cards em rosa com desenho branco, igual à lista da aba Cardápio */
 .ep-cab-ic { background: var(--ui-rosa); color: var(--ui-branco); }
+/* (20/10) linha de ajuda embaixo do "Para quem" do cupom */
+.ep-dica { display: block; margin-top: 6px; font-size: 13px; color: var(--ui-texto-2); }

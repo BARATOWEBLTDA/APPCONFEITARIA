@@ -1,0 +1,19 @@
+/* (20/10) Cupons em estilo voucher: desconto em cima, linha tracejada, código e copiar embaixo */
+.vc-l { display: flex; gap: 10px; margin: 14px 0 0; }
+.vc-l--rola { overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin-right: -16px; padding-right: 16px; }
+.vc-l--rola::-webkit-scrollbar { display: none; }
+.vc { position: relative; flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; margin: 0; padding: 0; border: 1.5px solid #F6C6D8; border-radius: 14px; background: #FFF5F9; color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; }
+.vc-l--rola .vc { flex: 0 0 46%; scroll-snap-align: start; }
+.vc-l--rola .vc-c > b { font-size: 12.5px; letter-spacing: .2px; }
+/* recortes nas laterais, na altura da linha tracejada */
+.vc::before, .vc::after { content: ""; position: absolute; top: 49px; width: 14px; height: 14px; border-radius: 50%; background: var(--cm1-fundo, #F7F4F5); border: 1.5px solid #F6C6D8; }
+.vc::before { left: -8px; border-left-color: transparent; border-bottom-color: transparent; transform: rotate(45deg); }
+.vc::after { right: -8px; border-right-color: transparent; border-top-color: transparent; transform: rotate(45deg); }
+.vc-t { display: block; height: 56px; padding: 10px 12px 0; }
+.vc-t b { display: block; font-size: 18px; font-weight: 800; line-height: 1.15; color: var(--vc-cor); white-space: nowrap; }
+.vc-t small { display: block; margin-top: 2px; font-size: 12px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vc-c { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin: 0 10px; padding: 9px 2px 10px; border-top: 1.5px dashed #F1AFC7; }
+.vc-c > b { min-width: 0; font-size: 13px; font-weight: 700; letter-spacing: .4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vc-cp { flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: 24px; min-height: 24px; font-size: 12.5px; font-weight: 700; color: var(--vc-cor); }
+.vc:active { transform: scale(.98); }
+@media (max-width: 360px) { .vc-t b { font-size: 17px; } }
