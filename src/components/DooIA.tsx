@@ -1,3 +1,4 @@
+import { pegarPedidoDoo } from '@/components/MenuContaItens'
 import { useState, useRef, useEffect } from 'react'
 import { CaretLeft, X, Check, Copy, ImageSquare, ArrowRight, CurrencyCircleDollar, BookOpenText, InstagramLogo, CalendarCheck, Receipt, Package, NotePencil, DownloadSimple } from '@phosphor-icons/react'
 import { useNavigate as useNavigateDoo } from 'react-router-dom'
@@ -718,6 +719,13 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
     setLoading(false)
     setGeneratingImage(false)
   }
+  // (21/10) aberta por um atalho (tela da Doo IA): já manda o pedido escrito
+  useEffect(() => {
+    if (!open || loading || generatingImage) return
+    const pedido = pegarPedidoDoo()
+    if (pedido) void sendMessage(pedido)
+  }, [open, forceOpen]) // eslint-disable-line react-hooks/exhaustive-deps
+
 
   const handleKey = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
