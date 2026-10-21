@@ -67,10 +67,10 @@ export function faixaDaLoja(config: Configuracoes | null, produtos: any[] = []) 
   const propria = formas.includes('entrega_propria')
   const outra = formas.some(f => f === 'motoboy' || f === 'uber_flash')
   const retirada = formas.includes('retirada')
-  const itens: { Ic: typeof Truck; v: string; t: string; ok?: boolean }[] = []
+  const itens: { Ic: typeof Truck; v: string; t: string; ok?: boolean; igual?: boolean }[] = []
   // (20/10) entrega e retirada no mesmo card (sem valor nem "Grátis"); se a loja faz só uma, mostra só ela
   const entrega = propria || outra
-  if (entrega && retirada) itens.push({ Ic: Truck, v: 'Entrega', t: 'e retirada' })
+  if (entrega && retirada) itens.push({ Ic: Truck, v: 'Entrega', t: 'e retirada', igual: true }) // as 2 linhas na mesma fonte e cor
   else if (entrega) itens.push({ Ic: Truck, v: 'Realiza', t: 'entregas' })
   else if (retirada) itens.push({ Ic: Storefront, v: 'Retirada', t: 'no local' })
   const prazos = produtos.map(p => String(p?.antecedencia || '')).filter(a => ORDEM_PRAZO.includes(a)).sort((x, y) => ORDEM_PRAZO.indexOf(x) - ORDEM_PRAZO.indexOf(y))
@@ -145,10 +145,10 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
         {/* (20/10) faixa com entrega, prazo das encomendas e pronta entrega (antes: quadradinhos só com o nome) */}
         {faixa.length > 0 && (
           <ul className="cm1-faixa" aria-label="Como a loja atende">
-            {faixa.map(({ Ic, v, t, ok }) => (
+            {faixa.map(({ Ic, v, t, ok, igual }) => (
               <li key={t}>
                 <b className={ok ? 'ok' : undefined}><Ic size={16} weight="bold" color={ok ? '#16803C' : corIcone} aria-hidden="true" />{v}</b>
-                <small>{t}</small>
+                <small className={igual ? 'igual' : undefined}>{t}</small>
               </li>
             ))}
           </ul>
