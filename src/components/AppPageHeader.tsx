@@ -1,14 +1,15 @@
 import { useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
-  Bell, Cake, CalendarDots, Calculator, Camera, CaretLeft, ChartLineUp, Crown, CurrencyDollar, Info, Invoice, Lightbulb,
+  ArrowSquareOut, Bell, Cake, CalendarDots, Calculator, Camera, CaretLeft, ChartLineUp, Crown, CurrencyDollar, Info, Invoice, Lightbulb,
   ListDashes, Newspaper, Package, PaintBrush, Receipt, ShoppingBag, ShoppingCart, SquaresFour, User, Users,
 } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
 import { Botao, BotaoIcone, Janela } from '@/components/base'
 import MenuConta from '@/components/MenuConta'
 import { ImageCropper } from '@/components/ui/ImageCropper'
-import { useProfile, avatarDaConta } from '@/hooks/useProfile'
+import { useProfile, avatarDaConta, getCardapioUrl } from '@/hooks/useProfile'
+import { useLojaPronta } from '@/lib/primeirosPassos'
 import { useAvatarUpload } from '@/hooks/useAvatarUpload'
 import { useNavigate } from 'react-router-dom'
 import { usePlano } from '@/hooks/usePlano'
@@ -101,9 +102,15 @@ export function LogoDaLoja({ className = '' }: { className?: string }) {
   const navigate = useNavigate()
   const { fileInputRef, uploading: enviandoFoto, handleFileSelected, cropSrc, cancelCrop, handleCropDone } = useAvatarUpload()
   const foto = useRef<HTMLButtonElement>(null)
+  // (21/10) computador: atalho pro cardápio da loja (só quando ele tem o que mostrar, igual ao link de vendas)
+  const linkCardapio = profile ? getCardapioUrl(profile) : ''
+  const pronta = useLojaPronta(profile?.id)
   return (
     <>
       <div className={`cab-foto-area ${className}`}>
+        {linkCardapio && pronta && (
+          <a className="cab-ver-cardapio" href={linkCardapio} target="_blank" rel="noopener noreferrer"><ArrowSquareOut size={12} weight="bold" aria-hidden="true" />Ver cardápio</a>
+        )}
         {!carregandoPlano && !isPro && (
           <button type="button" className="cab-seja-pro" onClick={() => navigate('/assinar')}><Crown size={13} weight="fill" aria-hidden="true" />Seja PRO</button>
         )}

@@ -14,15 +14,18 @@
 .lj-chave:disabled { opacity: .6; }
 .lj-chave:focus-visible { outline: 3px solid rgba(22, 163, 74, .35); outline-offset: 2px; }
 
-.lj-link { padding: 18px; border-radius: 18px; background: var(--ui-branco); border: 1px solid #F0E6EA; font-family: var(--font-base); }
-.lj-link-cab { display: flex; gap: 12px; align-items: center; }
-.lj-link-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: var(--ui-ic-fundo); color: var(--ui-ic-cor); } /* (16/10) ícone de lista: cinza quente */
-.lj-link-cab b { display: block; font-size: 16px; font-weight: 600; color: var(--ui-texto); }
-.lj-link-cab small { display: block; font-size: 13px; color: var(--ui-texto-2); }
-.lj-link-url { margin: 14px 0 10px; padding: 11px 12px; border-radius: 12px; background: #F8F5F6; font-size: 14px; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.lj-link-bts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.lj-bt { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; border-radius: 12px; border: 1px solid #EADFE3; background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; font-size: 14.5px; font-weight: 500; text-decoration: none; cursor: pointer; }
-.lj-bt--pri { border-color: transparent; background: var(--ui-rosa); color: #fff; }
+.lj-link { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-radius: 16px; background: #3F3A3B; color: #fff; font-family: var(--font-base); box-shadow: 0 6px 18px rgba(40, 30, 32, .14); }
+.lj-link-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 14px; background: rgba(255, 255, 255, .12); color: #fff; }
+.lj-link-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.lj-link-tx small { font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, .72); }
+.lj-link-tx b { font-size: 18px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lj-link-tx em { font-style: normal; font-size: 13px; color: rgba(255, 255, 255, .72); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lj-link-bts { flex: none; display: flex; gap: 10px; }
+.lj-bt { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .35); background: rgba(255, 255, 255, .1); color: #fff; font-family: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; text-decoration: none; cursor: pointer; }
+.lj-bt:hover { background: rgba(255, 255, 255, .18); }
+.lj-bt--pri { border-color: transparent; background: #fff; color: #3F3A3B; }
+.lj-bt--pri:hover { background: #F1EEEE; }
+.lj-bt:focus-visible { outline: 3px solid rgba(255, 255, 255, .6); outline-offset: 2px; }
 
 
 /* (4.27) Loja pronta */

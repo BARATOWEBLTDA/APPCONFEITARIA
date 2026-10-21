@@ -22,6 +22,7 @@
 .cab-foto-area { position: relative; flex: none; display: flex; align-items: center; gap: 12px; }
 .cab-foto-caixa { position: relative; }
 .cab-seja-pro { display: none; }
+.cab-ver-cardapio { display: none; }
 .cab-foto-pro { position: absolute; right: -3px; bottom: -3px; display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border: 2px solid var(--chocolate); border-radius: 50%; background: #2D1F26; color: #FF9DC4; pointer-events: none; display: none; }
 .cab-foto { display: flex; align-items: center; justify-content: center; box-sizing: border-box; width: 48px; height: 48px; margin: 0; padding: 0; overflow: hidden; border: 2px solid rgba(255, 255, 255, .6); border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; -webkit-appearance: none; appearance: none; transition: transform var(--dur-fast) var(--ease-out); }
 .cab-foto:active:not(:disabled) { transform: scale(.94); }
@@ -107,4 +108,11 @@
 @media (min-width: 901px) {
   .cab { background: #24150F; }
   .cab-foto-pro { border-color: #24150F; }
+}
+
+/* (21/10) "Ver cardápio" ao lado do Seja PRO, só no computador */
+@media (min-width: 901px) {
+  .cab-ver-cardapio { display: inline-flex; align-items: center; gap: 4px; height: 26px; padding: 0 10px; border: 1.5px solid rgba(255, 255, 255, .8); border-radius: 6px; color: var(--ui-branco); font-size: 12px; font-weight: 700; white-space: nowrap; text-decoration: none; }
+  .cab-ver-cardapio:hover { background: rgba(255, 255, 255, .14); }
+  .cab-ver-cardapio:focus-visible { outline: 3px solid rgba(255, 255, 255, .6); outline-offset: 2px; }
 }

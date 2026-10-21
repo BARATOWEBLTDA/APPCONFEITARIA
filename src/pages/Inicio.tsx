@@ -71,15 +71,6 @@ export default function Inicio() {
     mq.addEventListener("change", ouvir);
     return () => mq.removeEventListener("change", ouvir);
   }, []);
-  // (21/10) de 1280px pra cima: duas colunas, com o "Pra fazer" no alto da direita
-  const [largo, setLargo] = useState(() => window.matchMedia("(min-width: 1280px)").matches);
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1280px)");
-    const ouvir = () => setLargo(mq.matches);
-    ouvir();
-    mq.addEventListener("change", ouvir);
-    return () => mq.removeEventListener("change", ouvir);
-  }, []);
   const { profile, loading: carregandoPerfil, refetch: refetchProfile } = useProfile();
   // (15/10) aviso do PRO vencendo / mensalidade atrasada (vira notificação). Antes vinha junto do ConquistasCard, que
   // buscava as conquistas toda vez pra uma janela que não abria mais: as medalhas ficam em Minhas conquistas.
@@ -850,7 +841,7 @@ export default function Inicio() {
               </div>
             </div>
             <div className="ini-dk-kpis">
-              <div className="ini-dk-kpi ini-dk-kpi--dest">
+              <div className="ini-dk-kpi">
                 <div className="ini-dk-kh"><span><CurrencyDollar size={20} weight="bold" /></span>Recebido no mês</div>
                 {/* sem centavos, igual ao Financeiro mostra: os dois lugares têm que exibir o mesmo número */}
                 <b>{loading ? "—" : counts.recebidoMes.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</b><small>dinheiro que entrou</small>
@@ -872,6 +863,7 @@ export default function Inicio() {
         );
       })()}
 
+      {!computador && (
       <div className="ini-content">
         {/* ── Coluna principal ── */}
         <div className="ini-main">
@@ -906,7 +898,7 @@ export default function Inicio() {
       </section>
 
       {/* (16/10) quanto dos custos fixos o mês já pagou (só com custos fixos cadastrados) */}
-      {!loading && !erroCarga && totalFixos > 0 && (
+      {!computador && !loading && !erroCarga && totalFixos > 0 && (
         <section className="ini-section ini-section--fixos">
           <CustosDoMes recebido={counts.recebidoMes} fixos={totalFixos} />
         </section>
@@ -921,14 +913,15 @@ export default function Inicio() {
 
       {/* ── Primeiros passos (02/10) — some quando ela termina.
              (07/10 · 2.94) Passou a aparecer em todos os aparelhos: é o único guia depois das boas-vindas (o tour saiu). ── */}
-      <section className="ini-section ini-section--checklist-top ini-pp">
-        <PrimeirosPassos />
-      </section>
+      {!computador && (
+        <section className="ini-section ini-section--checklist-top ini-pp">
+          <PrimeirosPassos />
+        </section>
+      )}
 
       {/* (13/10) depois dos passos: o que falta cadastrar pro lucro e o caixa ficarem certos */}
       {/* (15/10) "Pra fazer": junta o "Complete seu app" e o "Suas atualizações" */}
-      {/* (21/10) de 1280px pra cima ele vai pro alto da coluna da direita */}
-      {!largo && (
+      {!computador && (
         <section className="ini-section ini-falta">
           <PraFazer />
         </section>
@@ -1001,74 +994,30 @@ export default function Inicio() {
       {!computador && <div className="ini-mobile-banner"><AdminBannerMobile /></div>}
 
       {/* ── Recebido nos últimos 30 dias (o que entrou no caixa, igual ao Financeiro) ── */}
-      <section className="ini-section ini-section--chart">
-        <div className="ini-chart-header">
-          <h2 className="ini-section-title">Recebido (30 dias)</h2>
-        </div>
-        <div className="ini-chart-card">
-          {(() => {
-            const temDados = chartData.some(d => (d.valor || 0) > 0);
-            // (15/10) sem internet não mostra "Nada recebido ainda": avisa o erro; carregando também não
-            if (erroCarga) return <p className="ini-dk-vazio">Não deu pra carregar o gráfico. <button type="button" className="ini-dk-tentar" onClick={tentarDeNovo}>Tentar de novo</button></p>;
-            if (loading && !temDados) return <p className="ini-dk-vazio">Carregando…</p>;
-            return temDados ? (
-              <div className="ini-chart-inner" style={{ width: "100%", height: 220, minWidth: 0, minHeight: 200 }}>
-                {/* initialDimension: evita o aviso "width(-1) and height(-1)" no primeiro desenho, antes de medir o espaço */}
-                <Suspense fallback={null}><GraficoRecebido dados={chartData as any} /></Suspense>
-              </div>
-            ) : (
-              <TelaVazia compacta icone={<ChartLineUp size={30} />} titulo="Nada recebido ainda" texto="O gráfico aparece aqui quando entrar o primeiro pagamento." />
-            );
-          })()}
-        </div>
-      </section>
-        </div>
-
-        {/* ── Lateral (computador) ──
-            (07/10 · 3.09) Conquistas e Suas atualizações eram montadas duas vezes (uma pro computador, outra pro celular) e só
-            uma aparecia. As duas buscavam os dados, e o aviso de conquista nova abria dobrado. Agora monta só a do aparelho. */}
-        {computador && (
-        <aside className="ini-aside">
-          {/* Computador: conquistas, próximas entregas e atualizações (30/09) */}
-          <div className="ini-dk-side">
-            {largo && (
-              <section className="ini-section ini-falta">
-                <PraFazer />
-              </section>
-            )}
-            <LinkDeVendas />
-            {/* (4.28) Conquistas saiu da lateral do computador: fica em Configurações › Minhas conquistas */}
-            <div className="ini-dk-card">
-              <div className="ini-dk-ct"><span>Próximas entregas</span><button type="button" onClick={() => navigate("/agenda")}>Ver agenda <CaretRight size={16} weight="bold" aria-hidden="true" /></button></div>
-              {/* (15/10) carregando e erro não aparecem como "Nenhuma entrega" */}
-              {erroCarga ? (
-                <p className="ini-dk-vazio">Não deu pra carregar as entregas. <button type="button" className="ini-dk-tentar" onClick={tentarDeNovo}>Tentar de novo</button></p>
-              ) : loading && proximasEntregas.length === 0 ? (
-                <p className="ini-dk-vazio">Carregando…</p>
-              ) : proximasEntregas.length === 0 ? (
-                <p className="ini-dk-vazio">{counts.pedidosPendentes > 0 ? `Nada marcado. Aceite ${counts.pedidosPendentes === 1 ? "o pedido" : `os ${counts.pedidosPendentes} pedidos`} pra ${counts.pedidosPendentes === 1 ? "ele entrar" : "eles entrarem"} aqui.` : "Nada marcado. Os pedidos aceitos aparecem aqui."}</p>
-              ) : proximasEntregas.map(e => {
-                const d = new Date(e.data + "T12:00:00");
-                const mes = d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "");
-                // mesmo formato do celular: "Hoje às 23:30", "Amanhã às 10:00", "Terça às 10:00" (o dia já está no quadradinho)
-                const dias = Math.round((d.getTime() - new Date(dataISO(new Date()) + "T12:00:00").getTime()) / 86400000);
-                const semana = d.toLocaleDateString("pt-BR", { weekday: "long" }).replace("-feira", "");
-                const quando = dias === 0 ? "Hoje" : dias === 1 ? "Amanhã" : semana.charAt(0).toUpperCase() + semana.slice(1);
-                return (
-                  <button type="button" key={e.id} className="ini-dk-en" onClick={() => navigate(`/pedidos/${e.id}`)}>
-                    <span className="ini-dk-dt"><b>{String(d.getDate()).padStart(2, "0")}</b><small>{mes}</small></span>
-                    <span className="ini-dk-ei"><b>{e.cliente}</b><small>{quando}{e.hora ? ` às ${String(e.hora).slice(0, 5)}` : ""}</small></span>
-                    <span className="ini-dk-ev">{formatCurrency(e.valor)}</span>
-                  </button>
-                );
-              })}
-            </div>
-            {/* (4.27) no computador também: o banner do admin e as notícias */}
-            <AdminBannerMobile />
-            <UpdatesFeed />
+      {!computador && (
+        <section className="ini-section ini-section--chart">
+          <div className="ini-chart-header">
+            <h2 className="ini-section-title">Recebido (30 dias)</h2>
           </div>
-        </aside>
-        )}
+          <div className="ini-chart-card">
+            {(() => {
+              const temDados = chartData.some(d => (d.valor || 0) > 0);
+              // (15/10) sem internet não mostra "Nada recebido ainda": avisa o erro; carregando também não
+              if (erroCarga) return <p className="ini-dk-vazio">Não deu pra carregar o gráfico. <button type="button" className="ini-dk-tentar" onClick={tentarDeNovo}>Tentar de novo</button></p>;
+              if (loading && !temDados) return <p className="ini-dk-vazio">Carregando…</p>;
+              return temDados ? (
+                <div className="ini-chart-inner" style={{ width: "100%", height: 220, minWidth: 0, minHeight: 200 }}>
+                  {/* initialDimension: evita o aviso "width(-1) and height(-1)" no primeiro desenho, antes de medir o espaço */}
+                  <Suspense fallback={null}><GraficoRecebido dados={chartData as any} /></Suspense>
+                </div>
+              ) : (
+                <TelaVazia compacta icone={<ChartLineUp size={30} />} titulo="Nada recebido ainda" texto="O gráfico aparece aqui quando entrar o primeiro pagamento." />
+              );
+            })()}
+          </div>
+        </section>
+      )}
+        </div>
 
         {!computador && (
           <>
@@ -1078,6 +1027,75 @@ export default function Inicio() {
         )}
 
       </div>
+      )}
+
+      {/* ══ (21/10) Computador: uma grade só. Passos (conta nova) ou o link de vendas em destaque; gráfico com os custos
+             fixos do lado; próximas entregas com o Pra fazer do lado; notícias numa linha na largura toda. ══ */}
+      {computador && (
+        <div className="ini-dkg">
+          <section className="ini-section ini-pp dkg-cheio">
+            <PrimeirosPassos />
+          </section>
+          <div className="dkg-cheio dkg-link"><LinkDeVendas /></div>
+          {/* Recebido nos últimos 30 dias (o que entrou no caixa, igual ao Financeiro) */}
+          <section className="ini-section ini-section--chart dkg-graf">
+            <div className="ini-chart-header">
+              <h2 className="ini-section-title">Recebido (30 dias)</h2>
+            </div>
+            <div className="ini-chart-card">
+              {(() => {
+                const temDados = chartData.some(d => (d.valor || 0) > 0);
+                // (15/10) sem internet não mostra "Nada recebido ainda": avisa o erro; carregando também não
+                if (erroCarga) return <p className="ini-dk-vazio">Não deu pra carregar o gráfico. <button type="button" className="ini-dk-tentar" onClick={tentarDeNovo}>Tentar de novo</button></p>;
+                if (loading && !temDados) return <p className="ini-dk-vazio">Carregando…</p>;
+                return temDados ? (
+                  <div className="ini-chart-inner" style={{ width: "100%", height: 220, minWidth: 0, minHeight: 200 }}>
+                    {/* initialDimension: evita o aviso "width(-1) and height(-1)" no primeiro desenho, antes de medir o espaço */}
+                    <Suspense fallback={null}><GraficoRecebido dados={chartData as any} /></Suspense>
+                  </div>
+                ) : (
+                  <TelaVazia compacta icone={<ChartLineUp size={30} />} titulo="Nada recebido ainda" texto="O gráfico aparece aqui quando entrar o primeiro pagamento." />
+                );
+              })()}
+            </div>
+          </section>
+          {!erroCarga && (
+            <section className="dkg-custos">
+              {loading ? <div className="cdm dkg-carregando" /> : <CustosDoMes recebido={counts.recebidoMes} fixos={totalFixos} mostrarVazio />}
+            </section>
+          )}
+          <div className="ini-dk-card dkg-entregas">
+            <div className="ini-dk-ct"><span>Próximas entregas</span><button type="button" onClick={() => navigate("/agenda")}>Ver agenda <CaretRight size={16} weight="bold" aria-hidden="true" /></button></div>
+            {/* (15/10) carregando e erro não aparecem como "Nenhuma entrega" */}
+            {erroCarga ? (
+              <p className="ini-dk-vazio">Não deu pra carregar as entregas. <button type="button" className="ini-dk-tentar" onClick={tentarDeNovo}>Tentar de novo</button></p>
+            ) : loading && proximasEntregas.length === 0 ? (
+              <p className="ini-dk-vazio">Carregando…</p>
+            ) : proximasEntregas.length === 0 ? (
+              <p className="ini-dk-vazio">{counts.pedidosPendentes > 0 ? `Nada marcado. Aceite ${counts.pedidosPendentes === 1 ? "o pedido" : `os ${counts.pedidosPendentes} pedidos`} pra ${counts.pedidosPendentes === 1 ? "ele entrar" : "eles entrarem"} aqui.` : "Nada marcado. Os pedidos aceitos aparecem aqui."}</p>
+            ) : proximasEntregas.map(e => {
+              const d = new Date(e.data + "T12:00:00");
+              const mes = d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "");
+              // mesmo formato do celular: "Hoje às 23:30", "Amanhã às 10:00", "Terça às 10:00" (o dia já está no quadradinho)
+              const dias = Math.round((d.getTime() - new Date(dataISO(new Date()) + "T12:00:00").getTime()) / 86400000);
+              const semana = d.toLocaleDateString("pt-BR", { weekday: "long" }).replace("-feira", "");
+              const quando = dias === 0 ? "Hoje" : dias === 1 ? "Amanhã" : semana.charAt(0).toUpperCase() + semana.slice(1);
+              return (
+                <button type="button" key={e.id} className="ini-dk-en" onClick={() => navigate(`/pedidos/${e.id}`)}>
+                  <span className="ini-dk-dt"><b>{String(d.getDate()).padStart(2, "0")}</b><small>{mes}</small></span>
+                  <span className="ini-dk-ei"><b>{e.cliente}</b><small>{e.produto ? `${e.produto} · ` : ""}{quando}{e.hora ? ` às ${String(e.hora).slice(0, 5)}` : ""}</small></span>
+                  <span className="ini-dk-ev">{formatCurrency(e.valor)}</span>
+                </button>
+              );
+            })}
+          </div>
+          <section className="ini-section ini-falta dkg-fazer">
+            <PraFazer />
+          </section>
+          <div className="dkg-cheio dkg-banner"><AdminBannerMobile /></div>
+          <div className="dkg-cheio dkg-news"><UpdatesFeed linha /></div>
+        </div>
+      )}
 
 
       <style>{`
@@ -1652,7 +1670,7 @@ export default function Inicio() {
           .ini-mobile-banner { display: none; }
 
           /* Seções: o que mostra/esconde no desktop */
-          .ini-main .ini-section--chart    { display: block; }
+          .ini-main .ini-section--chart, .ini-dkg .ini-section--chart { display: block; }
 
           /* Respiro vertical entre seções */
           .ini-main .ini-section { margin-top: var(--space-6); order: 0; }
@@ -1714,16 +1732,16 @@ export default function Inicio() {
           /* ────────────────────────────────────────────
              GRÁFICO — faturamento 30 dias, largura total
              ──────────────────────────────────────────── */
-          .ini-main .ini-section--chart {
+          .ini-main .ini-section--chart, .ini-dkg .ini-section--chart {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--ui-raio-cartao);
             padding: var(--space-5);
             box-sizing: border-box;
           }
-          .ini-main .ini-chart-card { max-width: none; margin: 0; border: none; padding: 0; }
-          .ini-main .ini-chart-card > div { width: 100% !important; min-width: 0; }
-          .ini-main .ini-chart-inner { height: 240px !important; }
+          .ini-main .ini-chart-card, .ini-dkg .ini-chart-card { max-width: none; margin: 0; border: none; padding: 0; }
+          .ini-main .ini-chart-card > div, .ini-dkg .ini-chart-card > div { width: 100% !important; min-width: 0; }
+          .ini-main .ini-chart-inner, .ini-dkg .ini-chart-inner { height: 240px !important; }
 
 }
 
@@ -2020,22 +2038,32 @@ export default function Inicio() {
           .ini-dk-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); margin: -50px 0 0; }
           .ini-content { grid-template-columns: minmax(0, 1fr) !important; grid-template-areas: "main" "aside" !important; }
         }
-        /* (21/10) de 1280px pra cima: ocupa a largura toda da área, "Pra fazer" no alto da direita (vem pelo JSX)
-           e os custos fixos lado a lado com o gráfico, embaixo dos passos. Sem os passos, os dois sobem. */
-        @media (min-width: 1280px) {
-          .ini-root { padding-left: 0; padding-right: 0; }
-          .ini-content { grid-template-columns: minmax(0, 1fr) 360px !important; }
-          .ini-main { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: stretch; }
-          .ini-main > * { grid-column: 1 / -1; min-width: 0; margin: 0 !important; }
-          .ini-main > .ini-section--checklist-top { order: 1; }
-          .ini-main > .ini-section--fixos, .ini-main > .ini-section--chart { grid-column: auto; order: 2; }
-          /* (21/10) sem os custos fixos o gráfico ocupa a linha toda; seção vazia (passos concluídos, nada pra fazer) não ocupa lugar nem espaço */
-          .ini-main:not(:has(> .ini-section--fixos)) > .ini-section--chart { grid-column: 1 / -1; }
-          .ini-main > .ini-section:empty, .ini-dk-side > .ini-falta:empty { display: none; }
-          .ini-main > .ini-section--fixos > .cdm { flex: 1; }
-          .ini-main > .ini-section--fixos .cdm-top > svg { width: 84px; height: auto; flex: none; } /* o título "Custos fixos pagos no mês" cabe numa linha em 1280px */
-          .ini-dk-side > .ini-falta { margin: 0; }
-        }
+        /* (21/10) grade do Início no computador */
+        .ini-dkg { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 24px; margin-top: 18px; align-items: stretch; }
+        .ini-dkg > * { min-width: 0; margin: 0 !important; }
+        .ini-dkg > .dkg-cheio { grid-column: 1 / -1; }
+        .ini-dkg > .dkg-graf { grid-column: span 4; }
+        .ini-dkg > .dkg-custos { grid-column: span 2; display: flex; flex-direction: column; }
+        .ini-dkg > .dkg-custos > .cdm { flex: 1; }
+        .ini-dkg .dkg-carregando { min-height: 200px; }
+        .ini-dkg > .dkg-entregas { grid-column: span 3; }
+        .ini-dkg > .dkg-fazer { grid-column: span 3; }
+        .ini-dkg > :empty { display: none; }
+        /* sem custos (erro) o gráfico ocupa a linha; sem nada pra fazer, as entregas ocupam a linha */
+        .ini-dkg:not(:has(> .dkg-custos)) > .dkg-graf, .ini-dkg:has(> .dkg-fazer:empty) > .dkg-entregas { grid-column: 1 / -1; }
+        .ini-dkg .dkg-graf .ini-chart-card { max-width: none; margin: 0; }
+        /* próximas entregas maior */
+        .ini-dkg .dkg-entregas { padding: 18px 20px; }
+        .ini-dkg .dkg-entregas .ini-dk-ct { font-size: 17px; }
+        .ini-dkg .dkg-entregas .ini-dk-en { padding: 12px 0; gap: 14px; }
+        .ini-dkg .dkg-entregas .ini-dk-dt { width: 56px; height: 56px; }
+        .ini-dkg .dkg-entregas .ini-dk-dt b { font-size: 19px; }
+        .ini-dkg .dkg-entregas .ini-dk-ei b { font-size: 16px; }
+        .ini-dkg .dkg-entregas .ini-dk-ei small { font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ini-dkg .dkg-entregas .ini-dk-ev { font-size: 15px; }
+        @media (min-width: 1280px) { .ini-root { padding-left: 0; padding-right: 0; } }
+        /* de 901 a 1279px: uma coluna só */
+        @media (max-width: 1279px) { .ini-dkg { grid-template-columns: minmax(0, 1fr); } .ini-dkg > * { grid-column: 1 / -1 !important; } }
         /* (18/10) Minhas receitas: igual aos outros, só não reage ao toque */
         .ini-nav-card--off { cursor: default; pointer-events: none; }
         /* (10/10) Acesso rápido no computador: todos os cartões iguais em qualquer largura — ícone em cima, nome embaixo,

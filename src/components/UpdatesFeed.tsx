@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAoVoltar } from "@/hooks/useAoVoltar";
 import { useNavigate } from "react-router-dom";
 import { Newspaper, CaretRight } from "@phosphor-icons/react";
@@ -31,7 +31,11 @@ interface Noticia {
   fixada: boolean;
 }
 
-export default function UpdatesFeed() {
+/** (21/10) Início do computador: notícias numa linha só, na largura toda. Cabem tantas quanto a largura deixa
+ *  (cartão de 240px pra cima); a fixada fica sempre na frente e as outras entram ou saem conforme o espaço. */
+const CARTAO_MIN = 240, VAO = 16;
+
+export default function UpdatesFeed({ linha = false }: { linha?: boolean }) {
   const navigate = useNavigate();
   const [noticias, setNoticias] = useState<Noticia[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,7 +51,7 @@ export default function UpdatesFeed() {
       .order("fixada", { ascending: false })
       .order("ordem", { ascending: false })
       .order("publicado_em", { ascending: false })
-      .limit(3);
+      .limit(linha ? 8 : 3);
     if (error) { setErro(true); setLoading(false); return; }
     const todas = (data || []) as Noticia[];
     // só 1 fixada no topo (igual antes)
@@ -55,8 +59,20 @@ export default function UpdatesFeed() {
     setNoticias(fixada ? [fixada, ...todas.filter(n => !n.fixada)] : todas);
     setErro(false);
     setLoading(false);
-  }, []);
+  }, [linha]);
   useEffect(() => { void carregar(); }, [carregar]);
+  // (21/10) quantas notícias cabem na linha
+  const grade = useRef<HTMLDivElement>(null);
+  const [cabem, setCabem] = useState(3);
+  useEffect(() => {
+    if (!linha || !grade.current) return;
+    const el = grade.current;
+    const medir = () => setCabem(Math.max(1, Math.floor((el.clientWidth + VAO) / (CARTAO_MIN + VAO))));
+    medir();
+    const ro = new ResizeObserver(medir);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [linha, noticias.length]);
   // (15/10) ao voltar pro app, atualiza (antes ficava a notícia velha até recarregar a página)
   useAoVoltar(() => { void carregar(); });
 
@@ -67,6 +83,35 @@ export default function UpdatesFeed() {
   const vazio = noticias.length === 0;
   // (21/10) sem notícia, o cartão some (no celular e no computador)
   if (vazio) return null;
+
+  if (linha) return (
+    <section className="ufl" aria-label="Notícias">
+      <div className="ufl-cab">
+        <h2>Notícias</h2>
+        <button type="button" className="uf-ver-todas" onClick={() => navigate("/noticias")}>
+          Ver todas <CaretRight size={16} weight="bold" aria-hidden="true" />
+        </button>
+      </div>
+      <div ref={grade} className="ufl-grade" style={{ gridTemplateColumns: `repeat(${cabem}, minmax(0, 1fr))` }}>
+        {noticias.slice(0, cabem).map((n) => {
+          const capa = n.imagem_capa || n.icone_url;
+          return (
+            <button key={n.id} type="button" className="ufl-card" onClick={() => navigate(`/noticias/${n.slug}`)}>
+              <span className="ufl-capa" style={capa ? { backgroundImage: `url(${capa})` } : undefined} aria-hidden="true">
+                {!capa && <Newspaper size={32} weight="bold" />}
+              </span>
+              <span className="ufl-corpo">
+                {n.categoria && <span className="uf-cat">{n.categoria}</span>}
+                <b>{tituloSemCategoria(n.titulo, n.categoria)}</b>
+                {n.descricao && <small>{n.descricao}</small>}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      <style>{CSS_LINHA}</style>
+    </section>
+  );
 
   return (
     <div className={`uf-root${vazio ? " uf-root--vazio" : ""}`}>
@@ -121,3 +166,20 @@ export default function UpdatesFeed() {
     </div>
   );
 }
+
+const CSS_LINHA = `
+  .ufl { padding: 16px 20px 20px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); font-family: var(--font-base); }
+  .ufl-cab { display: flex; align-items: center; justify-content: space-between; margin: 0 -8px 10px 0; }
+  .ufl-cab h2 { margin: 0; font-size: 17px; font-weight: 700; color: var(--ui-texto); }
+  .ufl .uf-ver-todas { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin: 0; padding: 0 8px; background: none; border: 0; border-radius: var(--ui-raio); font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; white-space: nowrap; }
+  .ufl .uf-ver-todas:hover { background: var(--ui-rosa-claro); }
+  .ufl .uf-cat { font-size: 12.5px; font-weight: 700; line-height: 1.3; color: var(--ui-rosa-escuro); }
+  .ufl-grade { display: grid; gap: ${VAO}px; }
+  .ufl-card { display: flex; flex-direction: column; min-width: 0; margin: 0; padding: 0; overflow: hidden; border: 1px solid var(--ui-linha); border-radius: 12px; background: var(--ui-branco); font-family: inherit; text-align: left; cursor: pointer; transition: box-shadow .15s, transform .15s; }
+  .ufl-card:hover { box-shadow: 0 6px 16px rgba(40, 20, 25, .08); transform: translateY(-1px); }
+  .ufl-card:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
+  .ufl-capa { display: flex; align-items: center; justify-content: center; height: 120px; background: var(--ui-rosa-claro) center / cover no-repeat; color: var(--ui-rosa-escuro); }
+  .ufl-corpo { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px 14px; }
+  .ufl-corpo b { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); }
+  .ufl-corpo small { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
+`;

@@ -7,14 +7,16 @@ import { CaretRight } from "@phosphor-icons/react";
  */
 const real = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-export default function CustosDoMes({ recebido, fixos }: { recebido: number; fixos: number }) {
+export default function CustosDoMes({ recebido, fixos, mostrarVazio = false }: { recebido: number; fixos: number; mostrarVazio?: boolean }) {
   const navigate = useNavigate();
-  if (!(fixos > 0)) return null;
+  // (21/10) no computador aparece mesmo sem custos cadastrados (no mesmo desenho, em 0%), chamando pra cadastrar
+  const vazio = !(fixos > 0);
+  if (vazio && !mostrarVazio) return null;
   const hoje = new Date();
   const diasMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate();
   const esperado = Math.round((hoje.getDate() / diasMes) * 100);
-  const pago = Math.min(100, Math.round((recebido / fixos) * 100));
-  const falta = Math.max(0, (fixos * esperado) / 100 - recebido);
+  const pago = vazio ? 0 : Math.min(100, Math.round((recebido / fixos) * 100));
+  const falta = vazio ? 0 : Math.max(0, (fixos * esperado) / 100 - recebido);
   const tom = pago >= 100 ? "ok" : pago >= esperado ? "ok" : "atras";
 
   // meia-lua: 0% à esquerda, 100% à direita
@@ -27,8 +29,8 @@ export default function CustosDoMes({ recebido, fixos }: { recebido: number; fix
       <div className="cdm-top">
         <svg className="cdm-g" viewBox="0 0 100 56" aria-hidden="true">
           <path d="M10 50 A40 40 0 0 1 90 50" fill="none" stroke="#F3ECEF" strokeWidth="9" strokeLinecap="round" />
-          <path d="M10 50 A40 40 0 0 1 90 50" fill="none" stroke={tom === "ok" ? "#2E9E5B" : "var(--ui-rosa)"} strokeWidth="9" strokeLinecap="round"
-            strokeDasharray={`${(C * pago) / 100} ${C}`} />
+          {pago > 0 && <path d="M10 50 A40 40 0 0 1 90 50" fill="none" stroke={tom === "ok" ? "#2E9E5B" : "var(--ui-rosa)"} strokeWidth="9" strokeLinecap="round"
+            strokeDasharray={`${(C * pago) / 100} ${C}`} />}
           <circle cx={m.x} cy={m.y} r="3.2" fill="var(--ui-branco)" stroke="var(--ui-texto-2)" strokeWidth="1.6" />
         </svg>
         <div className="cdm-tx">
@@ -38,13 +40,15 @@ export default function CustosDoMes({ recebido, fixos }: { recebido: number; fix
         </div>
       </div>
       <p className="cdm-p">
-        {pago >= 100
+        {vazio
+          ? <>Cadastre aluguel, luz, gás e internet pra ver quanto as entradas do mês já pagaram deles.</>
+          : pago >= 100
           ? <>As entradas do mês já cobrem todos os custos fixos ({real(fixos)}). Daqui pra frente, é lucro.</>
           : falta > 0.009
           ? <>As entradas cobrem <b>{pago}%</b> dos custos fixos ({real(fixos)}). Pra chegar no esperado de hoje, faltam <b>{real(falta)}</b>.</>
           : <>As entradas cobrem <b>{pago}%</b> dos custos fixos ({real(fixos)}). Você está em dia com o mês.</>}
       </p>
-      <button type="button" className="cdm-ver" onClick={() => navigate("/custos")}>Ver custos <CaretRight size={14} weight="bold" aria-hidden="true" /></button>
+      <button type="button" className="cdm-ver" onClick={() => navigate("/custos")}>{vazio ? "Cadastrar custos" : "Ver custos"} <CaretRight size={14} weight="bold" aria-hidden="true" /></button>
       <style>{CSS}</style>
     </div>
   );
