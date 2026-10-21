@@ -67,12 +67,11 @@ export function faixaDaLoja(config: Configuracoes | null, produtos: any[] = []) 
   const propria = formas.includes('entrega_propria')
   const outra = formas.some(f => f === 'motoboy' || f === 'uber_flash')
   const retirada = formas.includes('retirada')
-  const porBairro = Array.isArray(c.entrega_por_bairro) && c.entrega_por_bairro.length > 0
-  const valor = Number(c.valor_entrega_propria) || 0
   const itens: { Ic: typeof Truck; v: string; t: string; ok?: boolean }[] = []
-  // (20/10) com taxa (fixa ou por bairro) não mostra o valor: só "Realiza entregas"; grátis continua "Grátis"
-  if (propria) itens.push(!porBairro && valor <= 0 ? { Ic: Truck, v: 'Grátis', t: 'entrega', ok: true } : { Ic: Truck, v: 'Realiza', t: 'entregas' })
-  else if (outra) itens.push({ Ic: Truck, v: 'A combinar', t: 'entrega' })
+  // (20/10) entrega e retirada no mesmo card (sem valor nem "Grátis"); se a loja faz só uma, mostra só ela
+  const entrega = propria || outra
+  if (entrega && retirada) itens.push({ Ic: Truck, v: 'Entrega', t: 'e retirada' })
+  else if (entrega) itens.push({ Ic: Truck, v: 'Realiza', t: 'entregas' })
   else if (retirada) itens.push({ Ic: Storefront, v: 'Retirada', t: 'no local' })
   const prazos = produtos.map(p => String(p?.antecedencia || '')).filter(a => ORDEM_PRAZO.includes(a)).sort((x, y) => ORDEM_PRAZO.indexOf(x) - ORDEM_PRAZO.indexOf(y))
   if (prazos.length) itens.push({ Ic: CalendarBlank, v: ANTECEDENCIA[prazos[0]], t: 'encomendas' })
