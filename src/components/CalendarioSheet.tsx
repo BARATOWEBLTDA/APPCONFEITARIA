@@ -45,7 +45,7 @@ export default function CalendarioSheet({ valor, titulo = 'Escolha a data', min,
           <BotaoIcone rotulo="Próximo mês" onClick={() => mudar(1)} disabled={!podeAvancar}><CaretRight size={20} weight="bold" /></BotaoIcone>
         </div>
         <div className="dh-grade" role="grid" aria-label={`${MESES[mes.m]} de ${mes.a}`}>
-          {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((x, i) => <i key={i} aria-hidden="true">{x}</i>)}
+          {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(x => <i key={x} aria-hidden="true">{x}</i>)}
           {Array.from({ length: vazios }, (_, i) => <span key={'v' + i} />)}
           {Array.from({ length: totalDias }, (_, i) => {
             const d = i + 1, s = iso(d)
