@@ -5,7 +5,7 @@ import { precoCardapio, precoDoTamanho, descontoCardapio, comDesconto, tamanhosE
 import { pesoDoNome, pesoDoTamanho } from '@/lib/itemSacola'
 import { r2 } from '@/lib/moeda'
 import { avisar } from '@/components/base'
-import { kitAtivo, calcularKit, selecaoInicial, type KitSelecao } from '@/lib/kitQuantidade'
+import { kitAtivo, calcularKit, selecaoInicial, kitUnico, kitsValidos, palavraKit, type KitSelecao } from '@/lib/kitQuantidade'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { ArrowLeft, CalendarBlank, Camera, CaretLeft, CaretRight, Check, Minus, Plus, X } from '@phosphor-icons/react'
@@ -460,7 +460,8 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
   // Fotos: trocam sozinhas a cada 4 s, bem suave (para quando o cliente mexe; não roda com "reduzir movimento")
   const imagensMemo = useMemo(() => product?.imagem_url?.split(',').map((x: string) => x.trim()).filter(Boolean) || [], [product?.imagem_url])
   useEffect(() => {
-    if (!isOpen || imagensMemo.length < 2) return
+    // (21/10) só com 2 fotos: de 3 pra cima o cliente escolhe nas miniaturas (a grande não troca sozinha)
+    if (!isOpen || imagensMemo.length !== 2) return
     if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
     const t = window.setInterval(() => {
       if (Date.now() < pausaAte.current) return
@@ -546,9 +547,27 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
   const semQuantidade = isKg && !kgLivre
   const passo = kgLivre ? 0.5 : 1
   const minimo = kgLivre ? 0.5 : 1
-  const qtdTexto = kgLivre ? `${String(quantity).replace('.', ',')} kg` : String(quantity)
+  // (21/10) kit: "1 kit" (antes só "1": não dava pra saber se era 1 kit ou 1 doce)
+  const qtdTexto = kgLivre ? `${String(quantity).replace('.', ',')} kg` : kitCfg ? `${quantity} ${quantity === 1 ? 'kit' : 'kits'}` : String(quantity)
+  // (21/10) kit faltando: o botão diz quantos faltam ("Faltam 75 doces")
+  const textoFalta = (p: string) => {
+    if (p !== 'kit' || !kitInfo || !kitCfg) return TEXTO_FALTA[p]
+    const palavra = palavraKit(kitCfg as any)
+    if (kitInfo.restante > 0) return `Faltam ${kitInfo.restante} ${palavra}`
+    if (kitInfo.restante < 0) return `Passou ${-kitInfo.restante} ${palavra}`
+    return TEXTO_FALTA.kit
+  }
 
   const images = imagensMemo
+  // (21/10) de 3 fotos pra cima: a principal grande e as outras em quadrados (computador embaixo dela; celular no meio,
+  // entre a foto e o fundo). Com 2, continua passando de lado.
+  const grade = images.length >= 3
+  const outras = images.map((src, i) => ({ src, i })).filter(x => x.i !== imgIndex)
+  const verFoto = (i: number) => {
+    pausar(); setImgIndex(i)
+    const tr = trilhoRef.current
+    if (tr && tr.offsetParent !== null) tr.scrollTo({ left: i * tr.clientWidth, behavior: 'smooth' })
+  }
   const nome = product.nome
   const selo = seloEntrega(product)
 
@@ -632,7 +651,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
           {gTamanho && !kitInfo && precoTamVaria && <small className="pm-apartir" style={semTamanho ? undefined : { visibility: 'hidden' }}>a partir de</small>}
           {/* (20/10) "a partir de" numa linha só dele; o preço cheio riscado vem depois do preço */}
           <strong className={descPct > 0 ? 'pm-preco-promo' : undefined}>{formatCurrency(semTamanho ? pMin : valorTopo)}</strong>
-          <em>{semTamanho ? '' /* (20/10) com tamanhos o bolo é vendido por tamanho: sem "por kg" */ : kitCfg ? ((kitCfg as any).modo === 'livre' ? (Number((kitCfg as any).livre?.min) === 100 ? 'o cento' : `${(kitCfg as any).livre?.min} un.`) : 'o kit') : gTamanho ? '' : saborComPreco && !opSabor ? 'conforme o sabor' : unidadePreco(product.forma_venda)}</em>
+          <em>{semTamanho ? '' /* (20/10) com tamanhos o bolo é vendido por tamanho: sem "por kg" */ : kitCfg ? ((kitCfg as any).modo === 'livre' ? (Number((kitCfg as any).livre?.min) === 100 ? 'o cento' : `${(kitCfg as any).livre?.min} un.`) : kitUnico(kitCfg as any) ? `o kit · ${kitsValidos(kitCfg as any)[0].qtd} ${palavraKit(kitCfg as any)}` : 'o kit') : gTamanho ? '' : saborComPreco && !opSabor ? 'conforme o sabor' : unidadePreco(product.forma_venda)}</em>
           {semTamanho ? (pMinCheio > pMin && <s>{formatCurrency(pMinCheio)}</s>) : (descPct > 0 && calculo.subtotal > valorTopo && <s>{formatCurrency(calculo.subtotal)}</s>)}
           {descPct > 0 && <span className="pm-off">-{Math.round(descPct * 100)}%</span>}
         </div>
@@ -641,8 +660,9 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
 
       {kitCfg && (
         <section ref={el => { secoes.current['kit'] = el }} className={`pm-g${faltou === 'kit' ? ' falta' : ''}`}>
-          <header className="pm-g-cab"><span><b>Monte o seu kit</b><small>{faltou === 'kit' ? 'Complete o kit pra continuar' : 'Escolha quantos de cada sabor'}</small></span>
-            <span className="pm-g-dir">{kitInfo?.completo ? <i className="pm-ok"><Check size={14} weight="bold" /></i> : <i className="pm-obr">Obrigatório</i>}</span></header>
+          <header className="pm-g-cab"><span><b>Monte o seu kit</b><small>{faltou === 'kit' ? 'Complete o kit pra continuar' : `Até ${(kitCfg as any).max_sabores || 1} ${((kitCfg as any).max_sabores || 1) === 1 ? 'sabor' : 'sabores'}, de ${Math.max(1, (kitCfg as any).passo_sabor || 1)} em ${Math.max(1, (kitCfg as any).passo_sabor || 1)}`}</small></span>
+            {/* (21/10) "Obrigatório" discreto no kit: o botão de baixo já não deixa avançar sem montar */}
+            <span className="pm-g-dir">{kitInfo?.completo ? <i className="pm-ok"><Check size={14} weight="bold" /></i> : <i className="pm-obr pm-obr--leve">Obrigatório</i>}</span></header>
           <div className="pm-kit"><KitPicker kit={kitCfg} sel={kitSel} onChange={setKitSel} desconto={descPct} /></div>
         </section>
       )}
@@ -708,7 +728,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
       {/* (14/10) faltando escolha: só o texto ("Escolha a massa" cortava em "Escolha…" ao lado do preço) */}
       {tamanhosEsgotados(product) ? <button type="button" className="pm-add so-texto" disabled style={{ background: '#B5AAB0', cursor: 'not-allowed' }}><span>Esgotado no momento</span></button> :
       <button type="button" className={`pm-add${faltou ? ' treme' : ''}${pendente ? ' so-texto pm-add--falta' : ''}`} style={{ background: corBotao }} onClick={tentarAdicionar}>
-        <span>{pendente ? TEXTO_FALTA[pendente] : (rotuloAdicionar || 'Adicionar')}</span>
+        <span>{pendente ? textoFalta(pendente) : (rotuloAdicionar || 'Adicionar')}</span>
         {!pendente && <strong>{formatCurrency(totalDisplay)}</strong>}
       </button>}
     </footer>
@@ -757,32 +777,36 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899', o
                 <span className="pm-ft-cont">{imgIndex + 1}/{images.length}</span>
               </>)}
             </div>
-            {images.length > 1 && (
-              <div className="pm-mini" style={{ ['--n' as any]: Math.min(images.length, 4) }}>
-                {images.map((src, i) => (
-                  <button key={src + i} type="button" aria-label={`Foto ${i + 1}`} aria-pressed={i === imgIndex} style={i === imgIndex ? { borderColor: corBotao } : undefined}
-                    onClick={() => { pausar(); setImgIndex(i) }}><img src={src} alt="" /></button>
+            {/* (21/10) as outras fotos em quadrados, juntos na largura da grande. A descrição e o prazo foram pra direita. */}
+            {grade && (
+              <div className="pm-mini">
+                {outras.map(x => (
+                  <button key={x.src + x.i} type="button" aria-label={`Ver a foto ${x.i + 1}`} onClick={() => verFoto(x.i)}><img src={x.src} alt="" /></button>
                 ))}
               </div>
             )}
-            {/* (20/10) computador: descrição e prazo embaixo da foto */}
-            {product.descricao && <p className="pm-lado-desc">{product.descricao}</p>}
-            {aviso}
           </div>
         )}
 
         <div className="pm-dir">
           <div ref={roloRef} className="pm-rolo" onScroll={aoRolar}>
             {images.length > 0 && (
-              <div className="pm-ft">
+              <div className={`pm-ft${grade ? ' pm-ft--grade' : ''}`}>
                 <div ref={trilhoRef} className="pm-ft-trilho" onScroll={aoArrastarFoto} onTouchStart={pausar} onPointerDown={pausar}>
                   {images.map((src, i) => <img key={src + i} src={src} alt={i === 0 ? nome : ''} />)}
                 </div>
                 <button type="button" className="pm-voltar" aria-label="Voltar" onClick={onClose}><ArrowLeft size={22} weight="bold" /></button>
                 {images.length > 1 && (<>
                   <span className="pm-ft-n">{imgIndex + 1}/{images.length}</span>
-                  <span className="pm-ft-pts" aria-hidden="true">{images.map((_, i) => <i key={i} className={i === imgIndex ? 'on' : ''} />)}</span>
+                  {!grade && <span className="pm-ft-pts" aria-hidden="true">{images.map((_, i) => <i key={i} className={i === imgIndex ? 'on' : ''} />)}</span>}
                 </>)}
+                {grade && (
+                  <div className="pm-ft-outras">
+                    {outras.map(x => (
+                      <button key={x.src + x.i} type="button" aria-label={`Ver a foto ${x.i + 1}`} onClick={() => verFoto(x.i)}><img src={x.src} alt="" /></button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
             {!images.length && <div className="pm-espaco" />}

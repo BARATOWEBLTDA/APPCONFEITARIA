@@ -1,6 +1,6 @@
 import { Heart } from '@phosphor-icons/react'
 import { formatCurrency } from '@/utils/helpers'
-import { KitQtdConfig, KitSelecao, calcularKit, kitsValidos, precoLivre, proximaQtdLivre, anteriorQtdLivre } from '@/lib/kitQuantidade'
+import { KitQtdConfig, KitSelecao, calcularKit, kitsValidos, kitUnico, palavraKit, precoLivre, proximaQtdLivre, anteriorQtdLivre } from '@/lib/kitQuantidade'
 import { comDesconto } from '@/lib/precoCardapio'
 
 /**
@@ -19,10 +19,13 @@ export default function KitPicker({ kit, sel, onChange, desconto = 0 }: Props) {
   const pct = c.alvo > 0 ? Math.min(100, (c.soma / c.alvo) * 100) : 0
   const passou = c.soma > c.alvo
   const setQtd = (id: string, v: number) => onChange({ ...sel, qtds: { ...sel.qtds, [id]: Math.max(0, v) } })
+  const palavra = palavraKit(kit)
+  const muitos = c.usados > (kit.max_sabores || 1)
 
   return (
     <div className="kp">
-      {kit.modo === 'fechado' ? (
+      {/* (21/10) um tamanho só: o cartão some (a quantidade aparece do lado do preço) */}
+      {kit.modo === 'fechado' ? (kitUnico(kit) ? null : (
         <div className="kp-kits" role="radiogroup" aria-label="Tamanho do kit">
           {kits.map(k => (
             <button key={k.id} type="button" role="radio" aria-checked={sel.kitId === k.id}
@@ -34,7 +37,7 @@ export default function KitPicker({ kit, sel, onChange, desconto = 0 }: Props) {
             </button>
           ))}
         </div>
-      ) : (
+      )) : (
         <div className="kp-livre">
           <span>Quantidade</span>
           <div className="kp-stp">
@@ -48,14 +51,13 @@ export default function KitPicker({ kit, sel, onChange, desconto = 0 }: Props) {
         </div>
       )}
 
-      <div className="kp-regra">
-        {kit.modo === 'livre' && <>Mínimo <b>{l.min}</b>, de {l.passo} em {l.passo}, até {l.max}. </>}
-        Escolha até <b>{kit.max_sabores} sabor{kit.max_sabores === 1 ? '' : 'es'}</b>, de {passo} em {passo}.
-      </div>
+      {/* (21/10) as regras dos sabores foram pro título da seção; aqui fica só o kit livre (mínimo e de quanto em quanto) */}
+      {kit.modo === 'livre' && <div className="kp-regra">Mínimo <b>{l.min}</b>, de {l.passo} em {l.passo}, até {l.max}.</div>}
 
+      {/* (21/10) um contador só (antes: regra, "Total do kit" e "Faltam X unidades") */}
       <div className="kp-tot">
-        <span>Total do kit</span>
-        <b className={c.completo ? 'ok' : passou ? 'erro' : ''}>{c.soma} <small>/ {c.alvo} un</small></b>
+        <span>Sabores escolhidos</span>
+        <span className={c.completo ? 'ok' : passou ? 'erro' : ''}><b>{c.soma}</b> de {c.alvo} {palavra}</span>
       </div>
       <div className="kp-barra"><i className={c.completo ? 'ok' : passou ? 'erro' : ''} style={{ width: `${pct}%` }} /></div>
 
@@ -72,19 +74,20 @@ export default function KitPicker({ kit, sel, onChange, desconto = 0 }: Props) {
             <span className="kp-sab-nome"><Heart size={16} weight="duotone" aria-hidden="true" />{s.nome}</span>
             <div className="kp-stp">
               <button type="button" aria-label={`Menos ${s.nome}`} disabled={q <= 0} onClick={() => setQtd(s.id, q - menos)}>−</button>
-              <b>{q}</b>
-              <button type="button" aria-label={`Mais ${s.nome}`} disabled={!podeMais} onClick={() => setQtd(s.id, q + mais)}>+</button>
+              <b>{q} un</b>
+              {/* (21/10) o botão mostra de quanto ele soma */}
+              <button type="button" className="kp-mais" aria-label={`Mais ${mais > 0 ? mais : passo} de ${s.nome}`} disabled={!podeMais} onClick={() => setQtd(s.id, q + mais)}>+{mais > 0 ? mais : passo}</button>
             </div>
           </div>
         )
       })}
 
-      <p className={`kp-status${c.completo ? ' ok' : passou ? ' erro' : ''}`}>
-        {c.completo ? '✓ Kit completo'
-          : passou ? `Passou ${c.soma - c.alvo} unidades — tire um pouco de algum sabor`
-          : c.usados > (kit.max_sabores || 1) ? `Escolha no máximo ${kit.max_sabores} sabores`
-          : `Faltam ${c.restante} unidades`}
-      </p>
+      {/* (21/10) o aviso só aparece quando tem algo errado; o que falta vai no botão de baixo */}
+      {(passou || muitos) && (
+        <p className="kp-status erro">
+          {passou ? `Passou ${c.soma - c.alvo} ${palavra}. Tire um pouco de algum sabor` : `Escolha no máximo ${kit.max_sabores} sabores`}
+        </p>
+      )}
 
       <style>{`
         .kp { display: flex; flex-direction: column; gap: 8px; font-family: var(--font-base); }
@@ -95,9 +98,9 @@ export default function KitPicker({ kit, sel, onChange, desconto = 0 }: Props) {
         .kp-livre { display: flex; align-items: center; gap: 10px; }
         .kp-livre > span { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); } .kp-livre em { font-style: normal; margin-left: auto; font-weight: 700; color: var(--ui-texto); }
         .kp-regra { background: #FFF5F9; border: 1px solid #F9D1E0; border-radius: var(--ui-raio-p); padding: 9px 11px; font-size: 12.5px; color: var(--ui-cinza-texto); line-height: 1.4; }
-        .kp-tot { display: flex; justify-content: space-between; align-items: baseline; font-size: 12.5px; font-weight: 700; color: var(--ui-texto-2); margin-top: 2px; }
-        .kp-tot b { font-size: 22px; color: var(--ui-texto); } .kp-tot b small { font-size: 12px; color: var(--ui-texto-2); }
-        .kp-tot b.ok { color: #16a34a; } .kp-tot b.erro { color: var(--ui-vermelho); }
+        .kp-tot { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 14px; color: var(--ui-texto-2); margin-top: 2px; white-space: nowrap; }
+        .kp-tot b { font-size: 20px; color: var(--ui-texto); }
+        .kp-tot .ok, .kp-tot .ok b { color: #16a34a; } .kp-tot .erro, .kp-tot .erro b { color: var(--ui-vermelho); }
         .kp-barra { height: 6px; background: #EFE9EB; border-radius: 3px; overflow: hidden; }
         .kp-barra i { display: block; height: 100%; background: var(--ui-rosa); transition: width .15s; } .kp-barra i.ok { background: #16a34a; } .kp-barra i.erro { background: var(--ui-vermelho); }
         .kp-sabor { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--ui-linha); }
@@ -110,7 +113,8 @@ export default function KitPicker({ kit, sel, onChange, desconto = 0 }: Props) {
         .kp-stp { display: flex; align-items: center; border: 1px solid #EAE3E6; border-radius: 9px; overflow: hidden; background: var(--ui-branco); }
         .kp-stp button { width: 34px; height: 34px; border: none; background: none; font-size: 18px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
         .kp-stp button:last-child { color: #16a34a; } .kp-stp button:disabled { color: #D6CBD0; cursor: default; }
-        .kp-stp b { min-width: 40px; text-align: center; font-size: 14px; }
+        .kp-stp b { min-width: 48px; text-align: center; font-size: 14px; white-space: nowrap; }
+        .kp-stp .kp-mais { width: auto; min-width: 44px; padding: 0 10px; font-size: 14px; }
         .kp-status { font-size: 12.5px; font-weight: 700; color: var(--ui-laranja); margin: 2px 0 0; } .kp-status.ok { color: #16a34a; } .kp-status.erro { color: var(--ui-vermelho); }
       `}</style>
     </div>

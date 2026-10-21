@@ -788,6 +788,7 @@ export default function Produtos() {
   const imgRef = useRef<HTMLInputElement>(null);
   const img2Ref = useRef<HTMLInputElement>(null);
   const img3Ref = useRef<HTMLInputElement>(null);
+  const img4Ref = useRef<HTMLInputElement>(null); // (21/10) PRO: até 4 fotos por produto
   const { isPro } = usePlano();
   const { profile } = useProfile();
 
@@ -2126,13 +2127,13 @@ export default function Produtos() {
               {/* Fotos — só em step 5 (Fotos e finalização) ou tab Fotos na edição */}
               {((wizardStep === 4 && !form.id) || (form.id && editTab === "fotos")) && (
               <>
-              {/* (14/10) Foto principal grande no formato do cardápio; 2 e 3 (PRO) menores embaixo; dicas no fim */}
+              {/* (14/10) Foto principal grande no formato do cardápio; 2, 3 e 4 (PRO, 21/10) menores embaixo; dicas no fim */}
               {(() => {
                 const imgs = (form.imagem_url || "").split(",").map(s => s.trim()).filter(Boolean);
                 const principal = imgs[0];
                 const escolher = (slot: number) => {
                   if (slot > 0 && !isPro) { avisar("Mais fotos por produto é do plano PRO.", { tipo: "info" }); return; }
-                  if (!uploading) (slot === 0 ? imgRef : slot === 1 ? img2Ref : img3Ref).current?.click();
+                  if (!uploading) (slot === 0 ? imgRef : slot === 1 ? img2Ref : slot === 2 ? img3Ref : img4Ref).current?.click();
                 };
                 return (
                   <div className="prod-section prod-fotos">
@@ -2158,7 +2159,7 @@ export default function Produtos() {
                     <input ref={imgRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => handleImageUpload(e, 0)} />
 
                     <div className="prod-foto-extras">
-                      {[1, 2].map(slot => {
+                      {[1, 2, 3].map(slot => {
                         const url = imgs[slot];
                         const trava = !isPro;
                         return (
@@ -2169,7 +2170,7 @@ export default function Produtos() {
                                 : <><PlusIc size={20} weight="bold" aria-hidden="true" /><b>Foto {slot + 1}</b></>}
                             </button>
                             {url && !trava && <button type="button" className="prod-img-remove" aria-label="Tirar a foto" onClick={() => removeImage(slot)}><XIc size={16} weight="bold" aria-hidden="true" /></button>}
-                            <input ref={slot === 1 ? img2Ref : img3Ref} type="file" accept="image/*" style={{ display: "none" }} onChange={e => handleImageUpload(e, slot)} />
+                            <input ref={slot === 1 ? img2Ref : slot === 2 ? img3Ref : img4Ref} type="file" accept="image/*" style={{ display: "none" }} onChange={e => handleImageUpload(e, slot)} />
                           </div>
                         );
                       })}

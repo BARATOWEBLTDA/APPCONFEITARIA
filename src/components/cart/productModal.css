@@ -57,6 +57,8 @@
 .pm-g.falta .pm-g-cab { background: var(--ui-vermelho-fundo); box-shadow: inset 4px 0 0 var(--ui-vermelho); }
 .pm-g.falta .pm-g-cab small { color: #B91C1C; font-weight: 700; }
 .pm-g.falta .pm-obr { background: var(--ui-vermelho); }
+.pm-obr--leve { background: none; border: 1px solid #E4DCDD; color: var(--ui-texto-2); font-weight: 600; }
+.pm-g.falta .pm-obr--leve { border-color: var(--ui-vermelho); color: var(--ui-branco); }
 .pm-op { display: flex; align-items: center; gap: 12px; width: calc(100% - 32px); min-height: 60px; margin: 0 16px; padding: 10px 0; border: 0; border-bottom: 1px solid #F3EEF0; background: none; color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; }
 .pm-op:last-child { border-bottom: 0; }
 .pm-op:disabled { opacity: .45; cursor: default; }
@@ -115,13 +117,13 @@
   /* (20/10) descrição e prazo embaixo da foto; à direita ficam nome, preço e as escolhas */
   .pm-lado-desc { margin: 6px 2px 0; font-size: 15px; line-height: 1.6; color: var(--ui-texto-2); white-space: pre-line; }
   .pm-lado .pm-aviso { margin-top: 2px; background: var(--ui-branco); border: 1px solid #F0E6EA; }
-  .pm:not(.pm--sem-foto) .pm-info .pm-desc, .pm:not(.pm--sem-foto) .pm-info .pm-aviso { display: none; }
+  /* (21/10) a descrição e o prazo voltaram pra direita, embaixo do preço (a coluna da direita ficava vazia) */
   .pm-x-pc { display: flex; align-items: center; justify-content: center; flex: none; width: 40px; height: 40px; margin: -4px -8px 0 0; padding: 0; border: 0; border-radius: 12px; background: #F7F2F4; color: var(--ui-texto); cursor: pointer; }
   .pm-x-pc:hover { background: #F0E8EC; }
   .pm-info h2 { font-size: 26px; }
   .pm-preco strong { font-size: 22px; }
   /* (20/10) a foto no formato dela (4:3), no topo, sem as faixas borradas em cima e embaixo */
-  .pm-ft-pc { position: relative; flex: none; width: 100%; aspect-ratio: 4 / 3; border-radius: var(--ui-raio-cartao); overflow: hidden; background: #F3EEF0; }
+  .pm-ft-pc { position: relative; flex: none; width: 100%; aspect-ratio: 1 / 1; border-radius: var(--ui-raio-cartao); overflow: hidden; background: #F3EEF0; }
   .pm-ft-pc img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .8s ease; }
   .pm-ft-pc img.on { opacity: 1; }
   /* (20/10) zoom ao passar o mouse: a foto aumenta no próprio quadro e segue o cursor */
@@ -133,11 +135,11 @@
   .pm-ft-seta.dir { right: 12px; }
   .pm-ft-seta:hover { background: #fff; }
   .pm-ft-cont { position: absolute; top: 12px; right: 12px; z-index: 2; padding: 4px 9px; border-radius: 6px; background: rgba(44,18,25,.7); color: #fff; font-size: 13px; font-weight: 700; pointer-events: none; }
-  /* (20/10) miniaturas no formato da foto, dividindo a largura (até 4 por linha) */
-  .pm-mini { display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 8px; }
-  .pm-mini button { width: 100%; height: auto; aspect-ratio: 4 / 3; margin: 0; padding: 0; border: 2px solid transparent; border-radius: var(--ui-raio); overflow: hidden; background: none; cursor: pointer; }
-  .pm-mini button[aria-pressed="false"] { opacity: .7; }
-  .pm-mini button:hover { opacity: 1; }
+  /* (21/10) de 3 fotos pra cima: as outras em quadrados, os 3 juntos na largura da grande */
+  .pm-mini { display: flex; justify-content: center; gap: 12px; }
+  .pm-mini button { flex: 0 0 calc((100% - 24px) / 3); aspect-ratio: 1 / 1; margin: 0; padding: 0; border: 0; border-radius: var(--ui-raio-cartao); overflow: hidden; background: #F3EEF0; cursor: pointer; transition: transform .15s, box-shadow .15s; }
+  .pm-mini button:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(40, 20, 25, .14); }
+  .pm-mini button:focus-visible { outline: 3px solid var(--pm-cor, var(--ui-rosa)); outline-offset: 2px; }
   .pm-mini img { width: 100%; height: 100%; object-fit: cover; }
   /* (20/10) sem a faixa de cima: o X fica ao lado do nome */
   .pm-barra { display: none !important; }
@@ -173,4 +175,21 @@
 @media (min-width: 768px) {
   .pm-ft-pc img:not(.pm-ft-fundo) { object-fit: contain; }
   .pm-ft-pc img.pm-ft-fundo { inset: -8%; width: 116%; height: 116%; object-fit: cover; filter: blur(22px) saturate(1.1); opacity: .55; }
+}
+
+/* (21/10) celular com 3 fotos ou mais: a principal mais alta e as outras no meio, metade na foto e metade no fundo */
+@media (max-width: 767px) {
+  .pm-ft.pm-ft--grade { height: 300px; max-height: none; aspect-ratio: auto; overflow: visible; margin-bottom: 56px; }
+  .pm-ft-outras { position: absolute; left: 50%; bottom: -48px; z-index: 3; display: flex; gap: 12px; transform: translateX(-50%); }
+  .pm-ft-outras button { flex: none; width: 96px; height: 96px; margin: 0; padding: 0; overflow: hidden; border: 3px solid var(--ui-branco); border-radius: 16px; background: #F3EEF0; box-shadow: 0 4px 14px rgba(40, 20, 25, .2); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .pm-ft-outras button:active { transform: scale(.96); }
+  .pm-ft-outras img { display: block; width: 100%; height: 100%; object-fit: cover; }
+}
+@media (min-width: 768px) { .pm-ft-outras { display: none; } }
+/* (21/10) computador: nome, preço, descrição e prazo nessa ordem (como no desenho aprovado) */
+@media (min-width: 768px) {
+  .pm-info { display: flex; flex-direction: column; }
+  .pm-info .pm-preco { order: 1; }
+  .pm-info > p { order: 2; margin-top: 14px; }
+  .pm-info > .pm-aviso { order: 3; margin-top: 16px; background: var(--ui-branco); border: 1px solid #F0E6EA; }
 }

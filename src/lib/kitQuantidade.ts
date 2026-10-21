@@ -131,6 +131,15 @@ export function calcularKit(k: KitQtdConfig, sel: KitSelecao): KitCalculo {
   return { alvo, soma, usados, preco, completo, restante: alvo - soma, escolha: { modo: k.modo, total: alvo, sabores: sabores.filter(s => s.qtd > 0) } }
 }
 
+/** (21/10) Como chamar as unidades do kit pro cliente: "doces", "salgados" ou "un" */
+export function palavraKit(k: KitQtdConfig): string {
+  return k.modelo === "docinhos" ? "doces" : k.modelo === "salgados" ? "salgados" : "un"
+}
+/** (21/10) Kit fechado com um tamanho só: não tem o que escolher (o cartão do tamanho some) */
+export function kitUnico(k: KitQtdConfig): boolean {
+  return k.modo === "fechado" && kitsValidos(k).length === 1
+}
+
 // ═══ Modelos prontos (cadastro fácil) ═══
 export function presetKit(modelo: "docinhos" | "salgados" | "livre", atual?: KitQtdConfig | null): KitQtdConfig {
   const sabores = atual?.sabores || []

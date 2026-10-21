@@ -37,7 +37,7 @@ export default function ResumoEdicao({ form, isPro = false, onEditar }: { form: 
   const preco = faltaPreco || (promo ? (pc.aPartir ? `Promoção desde ${rs(pc.final)}` : `Em promoção por ${rs(pc.final)}`) : `${pc.aPartir ? "A partir de" : "Custa"} ${rs(pc.final)}${form.forma_venda === "kg" && !(gt?.ativo && gt?.opcoes?.length) ? " o kg" : ""}`);
   const nFotos = fotos.length;
   const textoFotos = !nFotos ? "Sem foto, adicione uma"
-    : isPro ? `${nFotos} de 3 fotos cadastradas`
+    : isPro ? `${nFotos} de 4 fotos cadastradas`
     : nFotos === 1 ? "1 foto cadastrada" : `${nFotos} fotos cadastradas`;
   const semEntrega = !(form.pronta_entrega === true || form.antecedencia);
   const comoRecebe = form.pronta_entrega === true ? "É pronta entrega"
