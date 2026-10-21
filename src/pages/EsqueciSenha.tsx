@@ -3,6 +3,8 @@ import type { FormEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, EnvelopeSimple, WarningCircle } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
+import { linkWhatsApp } from "@/lib/telefone";
+import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { Botao, Campo } from "@/components/base";
 import { TelaConta } from "@/components/conta/TelaConta";
 
@@ -12,6 +14,8 @@ import { TelaConta } from "@/components/conta/TelaConta";
  * A lógica é a de antes (supabase.auth.resetPasswordForEmail); mudaram a aparência e os textos.
  */
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// (21/10) WhatsApp da equipe Doonly (o mesmo das boas-vindas), pra quem não lembra o e-mail
+const ZAP_SUPORTE = linkWhatsApp("11978414991", "Oi! Não lembro qual e-mail usei pra criar minha conta no Doonly.");
 const ESPERA = 60; // segundos até poder pedir o e-mail de novo (o servidor recusa antes disso)
 
 const validarEmail = (v: string) => {
@@ -98,7 +102,8 @@ export default function EsqueciSenha() {
           <form onSubmit={handleSubmit} className="tc-form" noValidate>
             <Campo
               id="reset-email"
-              rotulo="E-mail"
+              rotulo="E-mail da conta"
+              dica={emailError ? undefined : "O mesmo e-mail que você usou pra criar a conta"}
               type="email"
               placeholder="seu@email.com"
               value={email}
@@ -118,14 +123,15 @@ export default function EsqueciSenha() {
               <Botao variante="link" icone={<ArrowLeft size={16} weight="bold" />} onClick={voltarProLogin}>Voltar pro login</Botao>
             </div>
           </form>
+          {ZAP_SUPORTE && <p className="tc-ajuda">Não lembra o e-mail? <a href={ZAP_SUPORTE} target="_blank" rel="noreferrer"><IconeWhatsApp size={16} />Fale com a gente</a></p>}
         </>
       ) : (
         <div role="status">
           <span className="tc-ic" aria-hidden="true"><EnvelopeSimple size={32} /></span>
           <h1 className="tc-h">Confira seu e-mail</h1>
-          <p className="tc-p">Mandamos um link pra <b>{email.trim()}</b></p>
-          <p className="tc-p tc-p--2"><span className="tc-bl">Se esse e-mail tiver conta no Doonly,</span> <span className="tc-bl">o link chega em instantes.</span></p>
-          <p className="tc-dica">Não chegou? Olhe também a caixa de spam.</p>
+          {/* (21/10) uma frase só; a dica lembra da aba Promoções e de usar o link logo */}
+          <p className="tc-p">Se existir uma conta com <b>{email.trim()}</b>, o link chega em instantes.</p>
+          <p className="tc-dica">Não chegou? Olhe a caixa de spam e a aba Promoções do Gmail. Use o link assim que chegar: ele vale por pouco tempo.</p>
           {error && <p className="tc-erro" role="alert" style={{ marginTop: 14, textAlign: "left" }}><WarningCircle size={16} weight="bold" aria-hidden="true" /><span>{error}</span></p>}
           <div className="tc-acoes">
             <Botao cheio onClick={voltarProLogin}>Voltar pro login</Botao>

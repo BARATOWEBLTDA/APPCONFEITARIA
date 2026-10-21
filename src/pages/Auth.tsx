@@ -1100,7 +1100,8 @@ export default function Auth() {
 
         @media (min-width: 900px) {
           /* um cartão só, dividido: marca (rosa) | formulário (branco) — 03/10 */
-          .auth-layout { max-width: 960px !important; display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 0 !important; align-items: stretch;
+          /* (21/10) a mesma altura em todas as telas de conta (658px, a do cadastro) */
+          .auth-layout { max-width: 960px !important; display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 0 !important; align-items: stretch; min-height: min(658px, calc(100dvh - 32px));
             background: var(--ui-branco); border-radius: 28px; box-shadow: 0 30px 70px -30px rgba(80,20,45,.45); }
           .auth-marca { display: block; text-align: center; color: var(--ui-branco); padding: 0 40px; border-radius: 28px 0 0 28px;
             background: linear-gradient(160deg, #FF9DC4 0%, var(--ui-rosa) 55%, var(--ui-rosa-escuro) 100%); position: relative; }
