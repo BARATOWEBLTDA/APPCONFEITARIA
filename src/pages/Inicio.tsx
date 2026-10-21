@@ -815,23 +815,23 @@ export default function Inicio() {
         const partes: string[] = [];
         if (counts.entregasHoje > 0) partes.push(`${counts.entregasHoje} ${counts.entregasHoje === 1 ? "entrega" : "entregas"} hoje`);
         const txtAtrasados = counts.pedidosAtrasados > 0 ? `${counts.pedidosAtrasados} ${counts.pedidosAtrasados === 1 ? "pedido atrasado" : "pedidos atrasados"}` : "";
-        if (txtAtrasados) partes.push(txtAtrasados);
+        // (21/10) o atraso saiu da frase: virou um selo vermelho ao lado do "Bom dia"
         if (aReceberHoje > 0) partes.push(`${formatCurrency(aReceberHoje)} em entregas hoje`);
         return (
           <div className="ini-dk">
             <div className="ini-dk-top">
               <div className="ini-dk-txt">
-                <h1>{saudacao}</h1>
+                <div className="ini-dk-ola">
+                  <h1>{saudacao}</h1>
+                  {!loading && !erroCarga && txtAtrasados && (
+                    <button type="button" className="ini-dk-selo" onClick={() => navigate("/pedidos?filtro=atrasados")}>
+                      <i aria-hidden="true" />{txtAtrasados} · <u>Ver</u>
+                    </button>
+                  )}
+                </div>
                 <p>
-                  {loading ? "Carregando…" : erroCarga ? <>Não deu pra carregar o seu dia. Confira a internet. <button type="button" className="ini-dk-atr" onClick={tentarDeNovo}>Tentar de novo</button></> : !partes.length ? "Nenhuma entrega hoje · aproveite pra divulgar seu cardápio"
-                    : partes.map((t, i) => (
-                      <span key={t}>
-                        {i > 0 && " · "}
-                        {t === txtAtrasados
-                          ? <button type="button" className="ini-dk-atr" onClick={() => navigate("/pedidos?filtro=atrasados")}>{t}</button>
-                          : t}
-                      </span>
-                    ))}
+                  {loading ? "Carregando…" : erroCarga ? <>Não deu pra carregar o seu dia. Confira a internet. <button type="button" className="ini-dk-atr" onClick={tentarDeNovo}>Tentar de novo</button></> : !partes.length ? (txtAtrasados ? "Nenhuma entrega hoje" : "Nenhuma entrega hoje · aproveite pra divulgar seu cardápio")
+                    : partes.join(" · ")}
                 </p>
               </div>
               <div className="ini-dk-bts">
@@ -1931,6 +1931,12 @@ export default function Inicio() {
           .ini-dk-txt { min-width: 0; }
           .ini-dk-txt h1 { font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin: 0; color: var(--ui-texto); white-space: nowrap; }
           .ini-dk-txt p { font-size: 14.5px; margin: 4px 0 0; color: var(--ui-texto-2); }
+          .ini-dk-ola { display: flex; align-items: center; gap: 12px; min-width: 0; }
+          .ini-dk-selo { display: inline-flex; align-items: center; gap: 6px; flex: none; padding: 5px 12px; border-radius: 999px; border: 1px solid #F6C4C0; background: #FDE8E7; color: #B42318; font: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+          .ini-dk-selo i { width: 8px; height: 8px; border-radius: 50%; background: #D92D20; }
+          .ini-dk-selo u { text-underline-offset: 3px; }
+          .ini-dk-selo:hover { background: #FBD5D2; }
+          .ini-dk-selo:focus-visible { outline: 3px solid rgba(217, 45, 32, .35); outline-offset: 2px; }
           .ini-dk-atr { position: relative; z-index: 1; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
           .ini-dk-atr::after { content: ""; position: absolute; inset: -12px -4px; } /* área de toque de 44px */
           .ini-dk-atr { color: var(--ui-rosa-escuro); }
