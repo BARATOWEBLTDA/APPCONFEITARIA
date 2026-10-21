@@ -1855,7 +1855,7 @@ export default function Produtos() {
                         {promo && (
                           <button type="button" className="pl-cupom" aria-label="Esse produto está em promoção atualmente"
                             onClick={e => { e.stopPropagation(); setDicaPromo(d => d === p.id ? null : (p.id || null)); }}>
-                            <SealPercent size={18} weight="fill" aria-hidden="true" />
+                            <SealPercent size={18} weight="regular" aria-hidden="true" />
                           </button>
                         )}
                         {dicaPromo === p.id && <span className="pl-dica" role="status">Esse produto está em promoção atualmente</span>}
