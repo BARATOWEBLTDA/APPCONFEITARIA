@@ -1,6 +1,6 @@
 /* Pedidos do cliente (08/10 · 3.31): em andamento com o passo a passo, depois os anteriores */
 import { useState } from 'react'
-import CampoData from '@/components/CampoData'
+import PeriodoFiltro, { iso, periodoInicial, rotuloPeriodo, type Periodo } from '@/components/financeiro/PeriodoFiltro'
 import { ArrowClockwise, Receipt } from '@phosphor-icons/react'
 import { AcompanharPedido } from './AcompanharPedido'
 import { CartaoPedido, JanelaEntrar, SemConta, lerCliente, pedidoAberto, usePedidosCliente, type Cliente } from './contaCliente'
@@ -19,18 +19,10 @@ export function PedidosTab({ accent, corTopo, confeteiraUserId, onVerCardapio }:
   const [entrar, setEntrar] = useState(false)
   const { pedidos, carregando, buscar } = usePedidosCliente(confeteiraUserId, cliente)
   const andamento = pedidos.filter(pedidoAberto)
-  // (21/10) filtro por data (dia em que o pedido foi feito) nos anteriores; os em andamento aparecem sempre
-  const [filtro, setFiltro] = useState<'todos' | '30' | 'mes' | 'datas'>('todos')
-  const [de, setDe] = useState('')
-  const [ate, setAte] = useState('')
-  const isoLocal = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-  const hoje = new Date()
-  const faixa: [string, string] = filtro === '30' ? [isoLocal(new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - 29)), isoLocal(hoje)]
-    : filtro === 'mes' ? [isoLocal(new Date(hoje.getFullYear(), hoje.getMonth(), 1)), isoLocal(hoje)]
-    : filtro === 'datas' ? [de || '0000-01-01', ate || '9999-12-31'] : ['0000-01-01', '9999-12-31']
+  // (21/10) filtro por data nos anteriores (o mesmo do app: Hoje · 7 dias · Mês ‹ › · Período); os em andamento aparecem sempre
+  const [periodo, setPeriodo] = useState<Periodo>(periodoInicial)
   const todosAnteriores = pedidos.filter(p => !pedidoAberto(p))
-  const anteriores = todosAnteriores.filter(p => { const d = p.created_at ? isoLocal(new Date(p.created_at)) : ''; return !d || (d >= faixa[0] && d <= faixa[1]) })
-  const FILTROS: [typeof filtro, string][] = [['todos', 'Todos'], ['30', 'Últimos 30 dias'], ['mes', 'Este mês'], ['datas', 'Escolher datas']]
+  const anteriores = todosAnteriores.filter(p => { const d = p.created_at ? iso(new Date(p.created_at)) : ''; return !d || (d >= periodo.ini && d <= periodo.fim) })
 
   return (
     <div className="cc">
@@ -62,18 +54,8 @@ export function PedidosTab({ accent, corTopo, confeteiraUserId, onVerCardapio }:
             {andamento.map(p => <AcompanharPedido key={p.id} p={p} cor={accent} corTopo={corTopo} />)}
             {todosAnteriores.length > 0 && <>
               <h3 className="cc-sec">Anteriores</h3>
-              <div className="cc-filtros" role="radiogroup" aria-label="Filtrar por data">
-                {FILTROS.map(([k, n]) => (
-                  <button key={k} type="button" role="radio" aria-checked={filtro === k} style={filtro === k ? { background: accent, borderColor: accent } : undefined} onClick={() => setFiltro(k)}>{n}</button>
-                ))}
-              </div>
-              {filtro === 'datas' && (
-                <div className="cc-datas">
-                  <CampoData valor={de} onChange={setDe} max={ate || undefined} titulo="Pedidos a partir de" placeholder="De" curto cor={accent} />
-                  <CampoData valor={ate} onChange={setAte} min={de || undefined} titulo="Pedidos até" placeholder="Até" curto cor={accent} />
-                </div>
-              )}
-              {anteriores.length === 0 && <p className="cc-filtro-vazio">Nenhum pedido nessas datas.</p>}
+              <div className="cc-periodo"><PeriodoFiltro valor={periodo} onChange={setPeriodo} /></div>
+              {anteriores.length === 0 && <p className="cc-filtro-vazio">Nenhum pedido {rotuloPeriodo(periodo)}.</p>}
             </>}
             {anteriores.map(p => <CartaoPedido key={p.id} p={p} cor={accent} />)}
           </>
