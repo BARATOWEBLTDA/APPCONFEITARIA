@@ -60,3 +60,5 @@
 .tc-ajuda a { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; color: var(--ui-rosa-escuro); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 .tc-ajuda button { min-height: 44px; margin: 0; padding: 0; border: 0; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .tc-ajuda--trocar { margin-top: 2px; }
+.tc-selo { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; margin: 8px auto 0; padding: 6px 12px; border-radius: 999px; background: var(--ui-cinza); font-size: 13.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; }
+.tc-selo b { min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--ui-texto); font-weight: 700; }

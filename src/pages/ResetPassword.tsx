@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import type { FormEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Check, CheckCircle, Circle, ClockCountdown, LinkBreak, WarningCircle } from "@phosphor-icons/react";
+import { ArrowLeft, Check, Circle, ClockCountdown, LinkBreak, WarningCircle } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
-import { Botao, Campo } from "@/components/base";
+import { Botao, Campo, avisar } from "@/components/base";
 import { TelaConta } from "@/components/conta/TelaConta";
 
 /**
  * Criar nova senha (refeita em 07/10 no desenho do login) — a tela que abre pelo link do e-mail.
- * A lógica é a de antes (confere o link, salva a senha, sai e leva pro login); mudaram a aparência e os textos.
+ * (21/10) um campo só de senha (com o olho), a conta num selo embaixo do título, "Salvar e entrar" leva
+ * direto pro Início (sem passar pelo login), endereço sem link mostra na hora "Esse link não funciona mais"
+ * e o cartão fica sempre na altura padrão.
  */
 type Status = "processing" | "ready" | "invalid" | "expired";
 
@@ -18,18 +20,15 @@ export default function ResetPassword() {
 
   const [status, setStatus] = useState<Status>("processing");
   const [senha, setSenha] = useState("");
-  const [confirmar, setConfirmar] = useState("");
+  const [emailConta, setEmailConta] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
-  const [tentou, setTentou] = useState(false);
 
   // Requisitos da senha em tempo real
   const checks = {
     length: senha.length >= 8, // 13/10: só o tamanho, igual ao cadastro
-    match: senha === confirmar && confirmar.length > 0,
   };
-  const senhaValida = checks.length;
 
   useEffect(() => {
     let subscription: { unsubscribe: () => void } | null = null;
@@ -69,6 +68,12 @@ export default function ResetPassword() {
           return;
         }
 
+        // (21/10) endereço sem nenhum link (sem código e sem token no #): mostra na hora, sem os 8 s de espera
+        if (!/access_token|type=recovery/.test(window.location.hash || "")) {
+          if (mounted) setStatus("invalid");
+          return;
+        }
+
         const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
           if (!mounted) return;
           if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
@@ -97,14 +102,18 @@ export default function ResetPassword() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // a conta que vai ganhar a senha nova (o link já identificou)
+  useEffect(() => {
+    if (status !== "ready") return;
+    supabase.auth.getUser().then(({ data }) => setEmailConta(data.user?.email || "")).catch(() => {});
+  }, [status]);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (loading || success) return; // já está salvando
     setError("");
-    setTentou(true);
 
     if (!checks.length) return setError("A senha precisa ter pelo menos 8 caracteres.");
-    if (senha !== confirmar) return setError("As duas senhas precisam ser iguais.");
 
     setLoading(true);
     let err: { message?: string } | null = null;
@@ -128,16 +137,14 @@ export default function ResetPassword() {
       }
       return;
     }
+    // (21/10) "Salvar e entrar": já está conectada pelo link, vai direto pro Início
     setSuccess(true);
-    setTimeout(async () => {
-      await supabase.auth.signOut();
-      navigate("/login");
-    }, 3500);
+    avisar("Senha nova salva", { tipo: "ok" });
+    navigate("/inicio", { replace: true });
   };
 
   const handlePedirNovoLink = () => navigate("/esqueci-senha");
   const handleVoltarLogin = () => navigate("/login");
-  const irProLoginAgora = async () => { await supabase.auth.signOut(); navigate("/login"); };
 
   const Req = ({ ok, children }: { ok: boolean; children: string }) => (
     <li className={ok ? "ok" : ""}>{ok ? <Check size={14} weight="bold" aria-hidden="true" /> : <Circle size={14} weight="bold" aria-hidden="true" />}<span>{children}</span></li>
@@ -146,7 +153,6 @@ export default function ResetPassword() {
 
   return (
     <TelaConta
-      compacto={status === "processing"}
       pose={status === "invalid" || status === "expired" ? "senha" : "acenando"}
       frase={success ? "Tudo certo" : "Senha nova, vida nova"}
       sub={success ? "Sua conta está protegida de novo." : "Escolha uma senha que só você sabe."}
@@ -183,17 +189,10 @@ export default function ResetPassword() {
         </div>
       )}
 
-      {status === "ready" && (success ? (
-        <div role="status">
-          <span className="tc-ic tc-ic--verde" aria-hidden="true"><CheckCircle size={32} /></span>
-          <h1 className="tc-h">Senha nova salva</h1>
-          <p className="tc-p">Agora é só entrar com ela. Estamos te levando pro login…</p>
-          <div className="tc-acoes"><Botao cheio onClick={irProLoginAgora}>Ir pro login</Botao></div>
-        </div>
-      ) : (
+      {status === "ready" && (
         <>
           <h1 className="tc-h">Criar nova senha</h1>
-          <p className="tc-p">Escolha uma senha nova pra sua conta.</p>
+          {emailConta ? <p className="tc-selo"><span>Conta:</span> <b>{emailConta}</b></p> : <p className="tc-p">Escolha uma senha nova pra sua conta.</p>}
           <form onSubmit={handleSubmit} className="tc-form" noValidate>
             <div>
               <Campo
@@ -204,31 +203,20 @@ export default function ResetPassword() {
                 value={senha}
                 onChange={e => { setSenha(e.target.value); setError(""); }}
                 autoComplete="off"
-                enterKeyHint="next"
+                enterKeyHint="done"
               />
               <ul className="tc-req" aria-label="A senha precisa ter" style={{ marginTop: 8 }}>
                 <Req ok={checks.length}>8 caracteres ou mais</Req>
               </ul>
             </div>
-            <Campo
-              id="confirmar-senha"
-              rotulo="Confirmar a senha"
-              type="password"
-              placeholder="Repita a senha"
-              value={confirmar}
-              onChange={e => { setConfirmar(e.target.value); setError(""); }}
-              erro={(confirmar || tentou) && senhaValida && !checks.match ? "As duas senhas precisam ser iguais." : undefined}
-              autoComplete="off"
-              enterKeyHint="done"
-            />
-            {error && !(senhaValida && !checks.match) && <p className="tc-erro" role="alert"><WarningCircle size={16} weight="bold" aria-hidden="true" /><span>{error}</span></p>}
+            {error && <p className="tc-erro" role="alert"><WarningCircle size={16} weight="bold" aria-hidden="true" /><span>{error}</span></p>}
             <div className="tc-acoes">
-              <Botao type="submit" cheio carregando={loading}>{loading ? "Salvando…" : "Salvar senha nova"}</Botao>
+              <Botao type="submit" cheio carregando={loading}>{loading || success ? "Salvando…" : "Salvar e entrar"}</Botao>
               {voltar}
             </div>
           </form>
         </>
-      ))}
+      )}
     </TelaConta>
   );
 }
