@@ -21,6 +21,7 @@ import type { Icon } from "@phosphor-icons/react";
 import { useProfile, avatarDaConta, getCardapioUrl } from "@/hooks/useProfile";
 import { reativarPushSeSaiu } from "@/hooks/usePushSubscription";
 import { usePlano } from "@/hooks/usePlano";
+import { usePedidosParaAceitar } from "@/hooks/usePedidosParaAceitar";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import { supabase } from "@/lib/supabase";
@@ -132,6 +133,7 @@ function GrupoMenu({ id, rotulo, icone: Icone, rotas, recolhido, children, tour 
 export default function Layout() {
   const navigate = useNavigate();
   const { profile } = useProfile();
+  const paraAceitar = usePedidosParaAceitar(profile?.id);
   const { isPro, loading: loadingPlano } = usePlano();
   // (11/10) saiu e entrou de novo neste aparelho: os avisos de pedido voltam a ligar sozinhos
   useEffect(() => { void reativarPushSeSaiu(); }, []);
@@ -290,9 +292,13 @@ export default function Layout() {
                   className={`bn-item${isActive ? " bn-item--active" : ""}`}
                   data-tour={item.tour}
                   aria-current={isActive ? "page" : undefined}
+                  aria-label={item.to === "/pedidos" && paraAceitar > 0 ? `Pedidos, ${paraAceitar} para aceitar` : undefined}
                   onClick={irPara}
                 >
-                  <span className="bn-icon"><item.Icone size={24} weight={isActive ? "fill" : "bold"} /></span>
+                  <span className="bn-icon"><item.Icone size={24} weight={isActive ? "fill" : "bold"} />
+                    {/* (21/10) bolinha com os pedidos esperando aceite */}
+                    {item.to === "/pedidos" && paraAceitar > 0 && <span className="bn-bolinha">{paraAceitar > 9 ? "9+" : paraAceitar}</span>}
+                  </span>
                   <span className="bn-label">{item.label}</span>
                 </NavLink>
               );
@@ -662,6 +668,8 @@ export default function Layout() {
             transition: transform var(--dur-fast) var(--ease-out);
           }
           .bn-item:active .bn-icon { transform: scale(0.9); }
+          .bn-icon { position: relative; }
+          .bn-bolinha { position: absolute; top: -6px; left: 14px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--primary, #E8578E); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; box-shadow: 0 0 0 2px var(--vinho-profundo); }
           .bn-label {
             font-size: 12px;
             font-weight: 500; /* (09/10 · 3.97) era 600: o guia usa 500 no texto de apoio e 700 no que está marcado */

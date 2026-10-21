@@ -141,8 +141,8 @@ const CSS = `
   .pf-tx b { font-size: 14.5px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pf-tx small { font-size: 13px; line-height: 1.35; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pf-seta { flex: none; color: var(--ui-texto-3); }
-  .pf-bt { flex: none; padding: 8px 10px; border-radius: 8px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 13px; font-weight: 700; text-align: center; white-space: nowrap; }
-  .pf-bt--pagar { background: #D92D20; color: var(--ui-branco); }
+  .pf-bt { flex: none; padding: 7px 10px; border-radius: 8px; background: var(--ui-branco, #fff); border: 1px solid #E4DCDD; color: #3D2420; font-size: 13px; font-weight: 700; text-align: center; white-space: nowrap; }
+  .pf-bt--pagar { background: #D92D20; border-color: #D92D20; color: var(--ui-branco); }
   /* urgente: vermelho; atenção: amarelo */
   .pf-it--urgente small { color: #9A3A32; }
   /* (18/10) ícones numa cor só (rosinha); o urgente continua com o texto e o "Pagar" em vermelho */
