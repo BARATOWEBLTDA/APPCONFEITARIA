@@ -626,6 +626,8 @@ export default function Auth() {
           <div className="auth-divider cad-ou"><span>ou com seu e-mail</span></div>
           </>)}
 
+          {/* (21/10) computador: Seu nome ao lado do Nome da confeitaria; WhatsApp ao lado do E-mail */}
+          <div className="cad-par cad-par--loja">
           {/* Nome */}
           <div className="cad-field-wrap">
             <label className="cad-lb" htmlFor="cad-nome">Seu nome</label>
@@ -650,8 +652,6 @@ export default function Auth() {
             )}
           </div>
 
-          {/* Nome da confeitaria + WhatsApp (obrigatórios): lado a lado no computador */}
-          <div className="cad-par cad-par--loja">
           <div className="cad-field-wrap">
             <label className="cad-lb" htmlFor="cad-confeitaria">Nome da confeitaria</label>
             <div className={`cad-field ${cadastroTouched.nomeLoja && cadastroErrors.nomeLoja ? "has-error" : ""}`}>
@@ -673,6 +673,9 @@ export default function Auth() {
               <span className="cad-error">{cadastroErrors.nomeLoja}</span>
             )}
           </div>
+          </div>
+
+          <div className="cad-par cad-par--loja">
 
           {/* Telefone */}
           <div className="cad-field-wrap">
@@ -695,7 +698,6 @@ export default function Auth() {
             {cadastroTouched.telefone && cadastroErrors.telefone && (
               <span className="cad-error">{cadastroErrors.telefone}</span>
             )}
-          </div>
           </div>
 
           {/* E-mail */}
@@ -723,6 +725,7 @@ export default function Auth() {
             {cadastroTouched.email && cadastroErrors.email && (
               <span className="cad-error">{cadastroErrors.email}</span>
             )}
+          </div>
           </div>
 
           {/* Senha + confirmação (lado a lado no computador; as regras ficam logo abaixo da senha) */}
@@ -1115,8 +1118,8 @@ export default function Auth() {
           /* Cadastro no computador (10/10): cabe inteiro em 800px de altura (antes o "Criar conta com Google" ficava cortado) */
           .auth-root { padding-top: 16px; padding-bottom: 16px; }
           /* (15/10) mais respiro entre os campos (antes ficava apertado pra caber em 800px de altura) */
-          .cadastro-form { gap: 16px; padding-top: 0; }
-          .auth-card:has(.cadastro-form) { padding: 36px 44px !important; max-width: none; } /* 13/10: ocupa a metade toda (antes ficava em 360px e os campos lado a lado cortavam o texto) */
+          .cadastro-form { gap: 14px; padding-top: 0; }
+          .auth-card:has(.cadastro-form) { padding: 28px 44px !important; max-width: none; } /* 13/10: ocupa a metade toda (antes ficava em 360px e os campos lado a lado cortavam o texto) */
           .auth-card:has(.cadastro-form) .auth-text-hdr { margin-bottom: 18px; }
           .cadastro-form .cad-field { height: 46px; }
           .cadastro-form .cad-eye { height: 44px; }
