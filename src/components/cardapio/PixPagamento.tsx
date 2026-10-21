@@ -1,49 +1,71 @@
 import { useEffect, useMemo, useState } from 'react'
+import type { CSSProperties } from 'react'
 import QRCode from 'qrcode'
-import { Check, Copy, PixLogo } from '@phosphor-icons/react'
+import { CaretDown, Check, Copy, PixLogo, QrCode } from '@phosphor-icons/react'
 import { supabase } from '@/lib/supabase'
 import { avisar } from '@/components/base'
 import { formatCurrency } from '@/utils/helpers'
-import { codigoPix, valorDoSinal, type PixLoja } from '@/lib/pix'
+import { codigoPix, tipoDaChave, valorDoSinal, type PixLoja } from '@/lib/pix'
+import { SeloVerificado } from './SeloVerificado'
 import './pixPagamento.css'
 
 /**
- * Pagar com Pix (20/10). Aparece depois que o pedido foi criado, quando a loja recebe Pix pelo cardápio.
- * QR Code e "copia e cola" feitos aqui no navegador (sem intermediário). "Já paguei" avisa a loja
- * (o pedido fica "Pix a conferir"); a confeiteira confere no banco e confirma em Pedidos.
+ * Pagar com Pix (20/10 · 21/10 com a cara da loja).
+ * Aparece depois que o pedido foi criado. Sinal ou tudo já foi escolhido na Finalizar.
+ * No celular o principal é "Copiar código Pix" (não dá pra ler o QR da própria tela); o QR fica em "Mostrar QR Code".
+ * No computador o QR já vem aberto. "Já paguei" avisa a loja (o pedido fica "Pix a conferir").
  */
 type Props = {
   pix: PixLoja
   pedidoId: string
   numero: number
   total: number
+  tipo: 'sinal' | 'total'
   loja: string
   cor: string
-  /** "entrega" ou "retirada" (pro "Falta R$ X na entrega") */
+  corTopo?: string
+  logoUrl?: string | null
+  verificada?: boolean
+  /** "entrega" ou "retirada" (pro "Falta R$ X na retirada") */
   quando: string
   aoPagar: (info: { tipo: 'sinal' | 'total'; valor: number }) => void
   aoDepois: () => void
 }
 
-export function PixPagamento({ pix, pedidoId, numero, total, loja, cor, quando, aoPagar, aoDepois }: Props) {
+const NOME_CHAVE = { cpf: 'CPF/CNPJ', celular: 'celular', email: 'e-mail', aleatoria: 'aleatória' } as const
+const computador = () => { try { return window.matchMedia('(min-width: 700px)').matches } catch { return false } }
+
+export function PixPagamento({ pix, pedidoId, numero, total, tipo, loja, cor, corTopo, logoUrl, verificada, quando, aoPagar, aoDepois }: Props) {
   const sinal = valorDoSinal(total, pix.pct)
-  const [tipo, setTipo] = useState<'sinal' | 'total'>(pix.modo === 'total' ? 'total' : 'sinal')
   const valor = tipo === 'sinal' ? sinal : total
+  const resto = Math.round((total - sinal) * 100) / 100
   const codigo = useMemo(() => codigoPix({ chave: pix.chave, nome: pix.nome, cidade: pix.cidade, valor, identificador: numero ? `PED${numero}` : '' }), [pix, valor, numero])
   const [qr, setQr] = useState('')
+  const [verQr, setVerQr] = useState(computador)
   const [copiado, setCopiado] = useState(false)
   const [enviando, setEnviando] = useState(false)
 
   useEffect(() => {
+    if (!verQr || qr) return
     let vivo = true
-    QRCode.toDataURL(codigo, { width: 440, margin: 1, color: { dark: '#2C1219', light: '#FFFFFF' } }).then(u => { if (vivo) setQr(u) }, () => { if (vivo) setQr('') })
+    // correção alta (H): o símbolo do Pix no meio não atrapalha a leitura
+    QRCode.toDataURL(codigo, { width: 440, margin: 1, errorCorrectionLevel: 'H', color: { dark: '#2C1219', light: '#FFFFFF' } }).then(u => { if (vivo) setQr(u) }, () => { if (vivo) setQr('') })
     return () => { vivo = false }
-  }, [codigo])
-  useEffect(() => { setCopiado(false) }, [codigo])
+  }, [codigo, verQr, qr])
 
+  // plano B: navegador de dentro do Instagram/Facebook às vezes bloqueia a cópia moderna
+  const copiarTexto = async (t: string) => {
+    try { await navigator.clipboard.writeText(t); return true } catch { /* tenta o jeito antigo */ }
+    try {
+      const ta = document.createElement('textarea')
+      ta.value = t; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0'
+      document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, t.length)
+      const ok = document.execCommand('copy'); ta.remove(); return ok
+    } catch { return false }
+  }
   const copiar = async () => {
-    try { await navigator.clipboard.writeText(codigo); setCopiado(true); avisar('Código Pix copiado. Cole no app do seu banco.', { tipo: 'ok' }) }
-    catch { avisar('Não deu pra copiar. Segure o código e copie.', { tipo: 'erro' }) }
+    if (await copiarTexto(codigo)) { setCopiado(true); avisar('Código copiado. Cole no app do seu banco.', { tipo: 'ok' }) }
+    else { setVerQr(true); avisar('Não deu pra copiar. Segure o código e copie, ou use o QR Code.', { tipo: 'erro' }) }
   }
 
   const jaPaguei = async () => {
@@ -60,45 +82,61 @@ export function PixPagamento({ pix, pedidoId, numero, total, loja, cor, quando, 
   }
 
   return (
-    <div className="px">
-      <div className="px-in">
-        <span className="px-ic" aria-hidden="true"><PixLogo size={30} weight="fill" /></span>
-        <h2>Pague com Pix</h2>
-        <p className="px-sub">{numero > 0 ? <>Pedido <b>#{numero}</b> · </> : null}{loja}</p>
+    <div className="px-tela" style={{ '--px-cor': cor } as CSSProperties}>
+      <div className="sc-topo sc-topo--loja" style={{ background: corTopo || '#BF6B84' }}>
+        <span />
+        <span className="sc-topo-loja">
+          <span className="sc-topo-logo" style={{ borderColor: cor }}>{logoUrl ? <img src={logoUrl} alt="" /> : <b>{(loja || 'D').charAt(0).toUpperCase()}</b>}</span>
+          <span><b>Pagamento</b><small className="sc-topo-nome">{loja}{verificada && <SeloVerificado tamanho={14} />}</small></span>
+        </span>
+        <span />
+        <span className="sc-topo-curva" aria-hidden="true" />
+      </div>
 
-        {pix.modo === 'escolha' && (
-          <div className="px-seg" role="radiogroup" aria-label="Quanto vai pagar agora">
-            <button type="button" role="radio" aria-checked={tipo === 'sinal'} style={tipo === 'sinal' ? { borderColor: cor } : undefined} onClick={() => setTipo('sinal')}>
-              <small>Sinal ({pix.pct}%)</small><b>{formatCurrency(sinal)}</b>
-            </button>
-            <button type="button" role="radio" aria-checked={tipo === 'total'} style={tipo === 'total' ? { borderColor: cor } : undefined} onClick={() => setTipo('total')}>
-              <small>Tudo</small><b>{formatCurrency(total)}</b>
-            </button>
-          </div>
-        )}
-
-        <div className="px-valor">
-          <small>{tipo === 'sinal' ? `Sinal de ${pix.pct}%` : 'Valor do Pix'}</small>
+      <div className="px">
+        <section className="px-card px-valor">
+          {numero > 0 && <small>Pedido #{numero}</small>}
+          <span>{tipo === 'sinal' ? `Sinal de ${pix.pct}% no Pix` : 'Total no Pix'}</span>
           <b>{formatCurrency(valor)}</b>
-          {tipo === 'sinal' && <span>Falta {formatCurrency(Math.round((total - sinal) * 100) / 100)} na {quando}</span>}
-        </div>
+          {tipo === 'sinal' && resto > 0.009 && <em>Falta {formatCurrency(resto)} na {quando}</em>}
+        </section>
 
-        <div className="px-qr">{qr ? <img src={qr} alt="QR Code do Pix" width={220} height={220} /> : <span className="ui-gira" aria-label="Gerando o QR Code" />}</div>
+        <section className="px-card px-cc">
+          <button type="button" className={`px-copiar${copiado ? ' ok' : ''}`} onClick={copiar}>
+            {copiado ? <Check size={20} weight="bold" /> : <Copy size={20} weight="bold" />}{copiado ? 'Código copiado' : 'Copiar código Pix'}
+          </button>
+          <code className="px-cod">{codigo}</code>
+          <ol className="px-passos">
+            <li><i>1</i><span>Copie o código Pix</span></li>
+            <li><i>2</i><span>No banco, use <b>Pix copia e cola</b></span></li>
+            <li><i>3</i><span>Volte e toque em <b>Já paguei</b></span></li>
+          </ol>
+        </section>
 
-        <div className="px-cc">
-          <small>Pix copia e cola</small>
-          <div className="px-cc-l">
-            <code>{codigo}</code>
-            <button type="button" onClick={copiar} style={{ color: cor }}>{copiado ? <Check size={18} weight="bold" /> : <Copy size={18} weight="bold" />}{copiado ? 'Copiado' : 'Copiar'}</button>
-          </div>
-        </div>
-        <p className="px-dica">Abra o app do banco, escolha Pix e leia o QR Code ou cole o código. Quem recebe: <b>{pix.nome}</b></p>
+        <section className="px-card px-qr-c">
+          <button type="button" className="px-qr-bt" aria-expanded={verQr} onClick={() => setVerQr(v => !v)}>
+            <QrCode size={20} weight="bold" /><span>{verQr ? 'QR Code' : 'Mostrar QR Code'}</span><CaretDown size={18} weight="bold" className={verQr ? 'virada' : undefined} />
+          </button>
+          {verQr && (
+            <>
+              <div className="px-qr">
+                {qr ? <img src={qr} alt="QR Code do Pix" width={200} height={200} /> : <span className="ui-gira" aria-label="Gerando o QR Code" />}
+                {qr && <span className="px-qr-logo" aria-hidden="true"><PixLogo size={22} weight="fill" /></span>}
+              </div>
+              <small className="px-qr-dica">Leia com a câmera do app do banco</small>
+            </>
+          )}
+        </section>
 
+        <p className="px-para"><span>Para</span><b>{pix.nome}</b><small>Chave {NOME_CHAVE[tipoDaChave(pix.chave)]}</small></p>
+      </div>
+
+      <footer className="sc-pe px-pe">
         <button type="button" className="sc-bt-pri cheio px-pago" style={{ background: cor }} disabled={enviando} onClick={jaPaguei}>
           <span>{enviando ? 'Avisando a loja…' : 'Já paguei'}</span>
         </button>
         <button type="button" className="px-depois" onClick={aoDepois}>Pagar depois, pelo WhatsApp</button>
-      </div>
+      </footer>
     </div>
   )
 }

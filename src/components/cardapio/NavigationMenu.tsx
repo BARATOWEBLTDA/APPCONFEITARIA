@@ -29,6 +29,7 @@ import type { Produto } from '@/types/database'
 import { corClara } from '@/lib/coresCardapio'
 import { pixelEvento } from '@/lib/facebookPixel'
 import { PixPagamento } from './PixPagamento'
+import { valorDoSinal } from '@/lib/pix'
 import '@/components/cart/sacola.css'
 
 /**
@@ -183,6 +184,9 @@ function CartContent({
   const [formaEntrega, setFormaEntrega] = useState('')
   const [bairroSelecionado, setBairroSelecionado] = useState('')
   const [formaPagamento, setFormaPagamento] = useState('')
+  // (21/10) Pix pelo cardápio: sinal ou tudo é escolhido aqui na Finalizar (a tela do Pix só mostra)
+  const [pixEscolha, setPixEscolha] = useState<'sinal' | 'total'>('sinal')
+  const pixTipo: 'sinal' | 'total' = config.pix?.modo === 'total' ? 'total' : config.pix?.modo === 'sinal' ? 'sinal' : pixEscolha
   const [trocoParaStr, setTrocoParaStr] = useState('')
   const [cep, setCep] = useState('')
   const [rua, setRua] = useState('')
@@ -193,7 +197,7 @@ function CartContent({
   const [cepLoading, setCepLoading] = useState(false)
   const [pedidoConfirmado, setPedidoConfirmado] = useState<{numero: number; itens: any[]; whatsapp: string; storeName: string; total: number; quando: string; zap?: string; mensagem?: string} | null>(null)
   // (20/10) Pix pelo cardápio: o pedido já foi criado e falta pagar (pixPara); depois de "Já paguei" (pixFeito) ou "Pagar depois"
-  const [pixPara, setPixPara] = useState<{ pedidoId: string; total: number; retirada: boolean } | null>(null)
+  const [pixPara, setPixPara] = useState<{ pedidoId: string; total: number; retirada: boolean; tipo: 'sinal' | 'total' } | null>(null)
   const [pixFeito, setPixFeito] = useState<{ tipo: 'sinal' | 'total'; valor: number } | 'depois' | null>(null)
   // 08/10 · 3.30: cupom abre na sacola, endereço salvo já vem marcado, botão treme quando falta algo
   const [cupomAberto, setCupomAberto] = useState(false)
@@ -504,7 +508,9 @@ function CartContent({
       if (desconto > 0) m += `${cupomAplicado ? `Cupom ${cupomAplicado.codigo}` : 'Desconto'}: − ${formatCurrency(desconto)}\n`
       m += `*Total: ${formatCurrency(totalFinal)}*\n\n`
 
-      const pgtoLabel = config.pix && formaPagamento === 'pix' ? 'Pix pelo cardápio' : (LABEL_PAGAMENTO[formaPagamento]?.label || formaPagamento)
+      const pgtoLabel = config.pix && formaPagamento === 'pix'
+        ? `Pix pelo cardápio (${pixTipo === 'sinal' ? `sinal de ${formatCurrency(valorDoSinal(totalFinal, config.pix.pct))}` : 'tudo'})`
+        : (LABEL_PAGAMENTO[formaPagamento]?.label || formaPagamento)
       m += `*Pagamento:* ${pgtoLabel}`
       if (formaPagamento === 'dinheiro' && trocoParaStr) m += ` (troco pra R$ ${trocoParaStr})`
       m += `\n\n`
@@ -665,7 +671,7 @@ function CartContent({
     setStep('cart')
     const quandoTxt = dataEntrega ? `${formaEntrega === 'retirada' ? 'Retirada' : 'Entrega'} ${rotuloData(dataEntrega).toLowerCase()}${horaEntrega ? ` às ${horaEntrega}` : ''}` : ''
     setPixFeito(null)
-    setPixPara(config.pix && formaPagamento === 'pix' && pedidoIdCriado ? { pedidoId: pedidoIdCriado, total: totalCriado, retirada: formaEntrega === 'retirada' } : null)
+    setPixPara(config.pix && formaPagamento === 'pix' && pedidoIdCriado ? { pedidoId: pedidoIdCriado, total: totalCriado, retirada: formaEntrega === 'retirada', tipo: pixTipo } : null)
     setPedidoConfirmado({ numero: numeroPedido, itens: items, whatsapp: whatsappUrl, storeName, total: totalFinal, quando: quandoTxt, zap: whatsapp, mensagem })
   }
 
@@ -673,6 +679,9 @@ function CartContent({
   const accent = corBotao || '#E85A8C'
   // (20/10) a loja recebe Pix pelo cardápio e o cliente escolheu Pix: o botão leva pro pagamento
   const pixOnline = !!config.pix && formaPagamento === 'pix'
+  const pixSinal = config.pix ? valorDoSinal(totalFinal, config.pix.pct) : 0
+  const pixResto = r2(totalFinal - pixSinal)
+  const pagarAgora = pixOnline && pixTipo === 'sinal' ? pixSinal : totalFinal
   const nomeLoja = lojaAtualNome()
   const temCupom = !!(config.tem_cupom || config.cupons_desconto.length > 0)
 
@@ -703,6 +712,7 @@ function CartContent({
   /* ═══ Pagar com Pix (20/10) ═══ */
   if (pedidoConfirmado && pixPara && !pixFeito && config.pix) return (
     <PixPagamento pix={config.pix} pedidoId={pixPara.pedidoId} numero={pedidoConfirmado.numero} total={pixPara.total}
+      tipo={pixPara.tipo} corTopo={corTopo} logoUrl={logoUrl} verificada={verificada}
       loja={pedidoConfirmado.storeName} cor={accent} quando={pixPara.retirada ? 'retirada' : 'entrega'}
       aoPagar={info => setPixFeito(info)} aoDepois={() => setPixFeito('depois')} />
   )
@@ -975,6 +985,22 @@ function CartContent({
               )
             })}
           </div>
+          {pixOnline && config.pix && (
+            <div className="sc-pixq">
+              {config.pix.modo === 'escolha' ? (<>
+                <span className="sc-pixq-tit" id="sc-pixq">Quanto você paga agora?</span>
+                <div className="sc-pixq-ops" role="radiogroup" aria-labelledby="sc-pixq">
+                  <button type="button" role="radio" aria-checked={pixTipo === 'sinal'} style={pixTipo === 'sinal' ? { borderColor: accent } : undefined} onClick={() => setPixEscolha('sinal')}>
+                    <small>Sinal ({config.pix.pct}%)</small><b>{formatCurrency(pixSinal)}</b>
+                  </button>
+                  <button type="button" role="radio" aria-checked={pixTipo === 'total'} style={pixTipo === 'total' ? { borderColor: accent } : undefined} onClick={() => setPixEscolha('total')}>
+                    <small>Tudo</small><b>{formatCurrency(totalFinal)}</b>
+                  </button>
+                </div>
+              </>) : null}
+              <p className="sc-pixq-info">{pixTipo === 'sinal' ? <>Sinal agora no Pix, <b>{formatCurrency(pixResto)}</b> na {tipo}</> : <>Você paga <b>tudo agora</b> no Pix</>}</p>
+            </div>
+          )}
           {formaPagamento === 'dinheiro' && config.exibir_campo_troco && (
             <div className="sc-troco">
               <Campo rotulo="Troco pra quanto?" dica="Deixe em branco se não precisar de troco." prefixo="R$" inputMode="decimal" value={trocoParaStr} onChange={e => setTrocoParaStr(e.target.value.replace(/[^0-9.,]/g, ''))} />
@@ -1008,12 +1034,16 @@ function CartContent({
           {ehEntrega && <span>Entrega<em className={freteTexto === 'Grátis' ? 'ok' : ''}>{freteTexto}</em></span>}
           {desconto > 0 && <span className="ok">Cupom {cupomAplicado?.codigo}<em>− {formatCurrency(desconto)}</em></span>}
           <span className="t">Total<em>{formatCurrency(totalFinal)}</em></span>
+          {pixOnline && pixTipo === 'sinal' && <>
+            <span>Sinal agora no Pix<em>{formatCurrency(pixSinal)}</em></span>
+            <span>Na {tipo}<em>{formatCurrency(pixResto)}</em></span>
+          </>}
         </div>
       </div>
 
       <footer className="sc-pe">
         <button type="button" className={`sc-bt-pri cheio${treme ? ' treme' : ''}`} style={{ background: accent }} disabled={enviando} onClick={enviarFinalizar}>
-          <span>{enviando ? 'Enviando…' : pixOnline ? 'Ir para o pagamento' : 'Enviar pedido'}</span><b>{formatCurrency(totalFinal)}</b>
+          <span>{enviando ? 'Enviando…' : pixOnline ? 'Ir para o pagamento' : 'Enviar pedido'}</span><b>{formatCurrency(pagarAgora)}</b>
         </button>
       </footer>
 

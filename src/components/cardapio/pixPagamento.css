@@ -1,35 +1,59 @@
-/* Pagar com Pix (20/10) */
-.px { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; align-items: center; padding: 24px 16px calc(24px + env(safe-area-inset-bottom, 0px)); text-align: center; color: var(--ui-texto); }
-.px-in { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; max-width: 400px; margin: 0 auto; }
-.px-ic { display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 50%; background: #E6F6F3; color: #32BCAD; }
-.px h2 { margin: 0; font-size: 22px; font-weight: 700; }
-.px-sub { margin: -6px 0 0; font-size: 14px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-.px-sub b { color: var(--ui-texto); }
+/* Pagar com Pix (20/10 · 21/10 com a cara da loja: topo da sacola, cor da loja, copiar em destaque) */
+.px-tela { flex: 1; min-height: 0; display: flex; flex-direction: column; background: #F7F4F5; color: var(--ui-texto); }
+.px { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 10px; padding: 4px 12px 16px; }
+.px-card { display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid #EFE6EA; border-radius: 14px; background: var(--ui-branco); }
 
-.px-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
-.px-seg button { display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; margin: 0; padding: 8px 4px; border: 2px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; cursor: pointer; }
-.px-seg button small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; }
-.px-seg button b { font-size: 16px; font-weight: 700; white-space: nowrap; }
-.px-seg button[aria-checked="true"] { background: #FFF7FA; }
+.px-valor { align-items: center; gap: 2px; text-align: center; }
+.px-valor small { font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
+.px-valor > span { font-size: 14px; color: var(--ui-texto-2); }
+.px-valor b { font-size: 32px; font-weight: 800; line-height: 1.15; color: var(--px-cor); white-space: nowrap; }
+.px-valor em { margin-top: 6px; padding: 4px 10px; border-radius: 999px; background: #F7F4F5; font-style: normal; font-size: 13px; font-weight: 700; color: var(--ui-texto-2); white-space: nowrap; }
 
-.px-valor { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.px-valor small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
-.px-valor b { font-size: 28px; font-weight: 700; line-height: 1.2; white-space: nowrap; }
-.px-valor span { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; }
+.px-copiar { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 52px; margin: 0; border: 1.5px solid var(--px-cor); border-radius: var(--ui-raio); background: color-mix(in srgb, var(--px-cor) 9%, #fff); color: var(--px-cor); font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
+.px-copiar.ok { border-color: #16a34a; background: #EAF7EE; color: #166534; }
+.px-cod { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; margin-top: -4px; font-family: ui-monospace, monospace; font-size: 12px; color: var(--ui-texto-3, #9A8A8F); text-align: center; user-select: all; }
+.px-passos { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 12px 0 0; border-top: 1px solid #F3EEF0; list-style: none; }
+.px-passos li { display: flex; align-items: center; gap: 10px; font-size: 14px; white-space: nowrap; }
+.px-passos li span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.px-passos i { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: color-mix(in srgb, var(--px-cor) 12%, #fff); color: var(--px-cor); font-style: normal; font-size: 13px; font-weight: 800; }
 
-.px-qr { display: flex; align-items: center; justify-content: center; width: 220px; height: 220px; padding: 0; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: #fff; overflow: hidden; }
+.px-qr-c { align-items: center; gap: 10px; padding: 4px 16px; }
+.px-qr-c:has(.px-qr) { padding-bottom: 16px; }
+.px-qr-bt { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; margin: 0; padding: 0; border: 0; background: none; color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 700; text-align: left; cursor: pointer; }
+.px-qr-bt span { flex: 1; }
+.px-qr-bt svg:first-child { color: var(--px-cor); }
+.px-qr-bt .virada { transform: rotate(180deg); }
+.px-qr { position: relative; display: flex; align-items: center; justify-content: center; width: 200px; height: 200px; }
 .px-qr img { display: block; width: 100%; height: 100%; }
+.px-qr-logo { position: absolute; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; background: #fff; box-shadow: 0 0 0 3px #fff; color: #32BCAD; }
+.px-qr-dica { font-size: 13px; color: var(--ui-texto-2); }
 
-.px-cc { display: flex; flex-direction: column; gap: 6px; width: 100%; text-align: left; }
-.px-cc > small { font-size: 13px; font-weight: 700; color: var(--ui-texto); }
-.px-cc-l { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 4px 4px 4px 12px; border: 1px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: #F7F4F5; }
-.px-cc-l code { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-family: ui-monospace, monospace; font-size: 13px; color: var(--ui-texto-2); user-select: all; }
-.px-cc-l button { flex: none; display: flex; align-items: center; gap: 6px; min-height: 40px; margin: 0; padding: 0 12px; border: 0; border-radius: var(--ui-raio); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.px-para { display: flex; align-items: baseline; gap: 6px; margin: 2px 4px 0; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; }
+.px-para b { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 14px; color: var(--ui-texto); }
+.px-para small { flex: none; font-size: 13px; }
+.px-para small::before { content: "·"; margin-right: 6px; }
 
-.px-dica { margin: 0; font-size: 13px; line-height: 1.5; color: var(--ui-texto-2); }
-.px-dica b { color: var(--ui-texto); }
-.px-pago.sc-bt-pri.cheio { flex: none; width: 100%; justify-content: center; margin-top: 4px; }
-.px-depois { min-height: 44px; margin: 0; padding: 0 12px; border: 0; background: none; color: var(--ui-texto-2); font-family: inherit; font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.px-pe { flex-direction: column; gap: 4px; padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)); }
+.px-pago.sc-bt-pri.cheio { flex: none; width: 100%; justify-content: center; }
+.px-depois { min-height: 40px; margin: 0; padding: 0 12px; border: 0; background: none; color: var(--ui-texto-2); font-family: inherit; font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 
 /* Pedido enviado: linha do Pix */
 .sc-res .px-inf em { color: #16794A; }
+
+/* Finalizar: quanto paga agora no Pix (sinal ou tudo) */
+.sc-pixq { display: flex; flex-direction: column; gap: 8px; margin: 4px 16px 16px; padding: 12px; border-radius: 14px; background: #F7F4F5; }
+.sc-pixq-tit { font-size: 14px; font-weight: 700; color: var(--ui-texto); }
+.sc-pixq-ops { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sc-pixq-ops button { display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; margin: 0; padding: 8px 4px; border: 2px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; cursor: pointer; }
+.sc-pixq-ops small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; }
+.sc-pixq-ops b { font-size: 16px; font-weight: 700; white-space: nowrap; }
+.sc-pixq-info { margin: 0; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sc-pixq-info b { color: var(--ui-texto); }
+
+/* Computador: quem está no computador paga lendo o QR com o celular, então o QR vem antes do copiar */
+@media (min-width: 700px) {
+  .px-valor { order: 0; }
+  .px-qr-c { order: 1; }
+  .px-cc { order: 2; }
+  .px-para { order: 3; }
+}
