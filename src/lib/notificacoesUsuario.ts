@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase";
  */
 export interface Notif {
   id: string; titulo: string; mensagem?: string; tag?: string; imagem_url?: string; created_at: string;
-  user_id?: string | null; tipo?: string | null; link?: string | null; lida: boolean;
+  user_id?: string | null; tipo?: string | null; link?: string | null; lida: boolean; chave?: string | null;
 }
 
 export async function carregarNotificacoes(limite = 100): Promise<Notif[]> {
