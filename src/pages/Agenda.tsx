@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { montarMensagem, dadosDoPedido } from "@/lib/mensagens";
 import { useNavigate, useNavigationType } from "react-router-dom";
-import { CalendarBlank, CaretLeft, CaretRight, Check, Copy, FilePdf, Funnel, MagnifyingGlass, Package, PencilSimple, Plus, Printer, Trash, WarningCircle, X } from "@phosphor-icons/react";
+import { CalendarBlank, CaretLeft, CaretRight, Check, Copy, FilePdf, Funnel, MagnifyingGlass, Package, PencilSimple, Printer, Trash, WarningCircle, X } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { pedidoAtrasado, STATUS_AINDA_NAO_PRONTO } from "@/lib/pedidoStatus";
 import { duplicarPedido as duplicarPedidoLib } from "@/lib/duplicarPedido";
@@ -20,7 +20,7 @@ import { registrarEtapa } from "@/lib/historicoPedido";
 import AppPageHeader from "@/components/AppPageHeader";
 import CalendarioSheet from "@/components/CalendarioSheet";
 import { Botao, BotaoIcone, Janela, Linha, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
-import { avisoDaMudanca, formaDoItem, itemComQtd, nomeDaSituacao, nomeDeGente, nomeDeProduto, nomeDoItem, qtdCurta, recebidoPedido, rs, saldoPedido, situacaoDe, telefoneValido } from "@/components/pedidos/pedidoTexto";
+import { avisoDaMudanca, formaDoItem, itemComQtd, nomeDaSituacao, nomeDeGente, nomeDeProduto, nomeDoItem, precisaAceitar, qtdCurta, recebidoPedido, rs, saldoPedido, situacaoDe, telefoneValido } from "@/components/pedidos/pedidoTexto";
 import { NomeComQtd } from "@/components/pedidos/CartaoPedido";
 import "@/components/pedidos/pedidos.css";
 import "./agenda.css";
@@ -44,6 +44,24 @@ const GRUPO_DO_STATUS: Record<string, Grupo> = {
   cancelado: "cancelado",
 };
 const grupoDe = (s: string): Grupo => GRUPO_DO_STATUS[s] || "agendado";
+
+/* (21/10) Situação no calendário: as 4 cores da legenda. "Pra aceitar" é o mesmo critério da bolinha do Pedidos
+   (pedido novo, ou pedido do cardápio esperando o pagamento). Em produção entra em "Na agenda". */
+type Sit = "atr" | "ace" | "age" | "ok";
+const ORDEM_SIT: Sit[] = ["atr", "ace", "age", "ok"];
+const praAceitar = (p: any) => ["aguardando_aceite", "novo", "pendente"].includes(p.status) || (p.status === "aguardando_pagamento" && p.origem === "cardapio");
+const sitDoPedido = (p: any, hoje?: string): Sit | null => {
+  if (p.status === "cancelado") return null;
+  if (pedidoAtrasado(p, hoje)) return "atr";
+  if (praAceitar(p)) return "ace";
+  return grupoDe(p.status) === "concluido" ? "ok" : "age";
+};
+/** "20h", "9h30" ou "" */
+const horaCurta = (h?: string | null) => {
+  const m = String(h || "").match(/^(\d{1,2}):(\d{2})/);
+  if (!m) return "";
+  return `${Number(m[1])}h${m[2] === "00" ? "" : m[2]}`;
+};
 
 /* Filtro por situação: os mesmos nomes da lista de Pedidos ("novo" e "aguardando_aceite" são o mesmo "Novo pedido") */
 const FILTROS: { nome: string; chaves: string[] }[] = [
@@ -290,18 +308,19 @@ export default function Agenda() {
 
   /* Mapa por dia com contagens por grupo + atrasado */
   const dayStats = useMemo(() => {
-    const m: Record<string, { total: number; agendado: number; producao: number; concluido: number; atrasado: number }> = {};
+    const m: Record<string, { total: number; atr: number; ace: number; age: number; ok: number; etq: { sit: Sit; t: string; h: string }[] }> = {};
     pedidosBuscados.forEach(p => {
       const dia = p._diaAgenda; // o dia em que o pedido aparece (o da entrega; sem data, o dia em que foi feito)
-      if (!dia || p.status === "cancelado") return;
-      if (!m[dia]) m[dia] = { total: 0, agendado: 0, producao: 0, concluido: 0, atrasado: 0 };
+      const sit = dia ? sitDoPedido(p, hoje) : null; // atrasado é pela data de ENTREGA: pedido sem data não é atrasado
+      if (!dia || !sit) return;
+      if (!m[dia]) m[dia] = { total: 0, atr: 0, ace: 0, age: 0, ok: 0, etq: [] };
       m[dia].total++;
-      const g = grupoDe(p.status);
-      if (g === "agendado") m[dia].agendado++;
-      else if (g === "producao") m[dia].producao++;
-      else if (g === "concluido") m[dia].concluido++;
-      if (pedidoAtrasado(p, hoje)) m[dia].atrasado++; // pela data de ENTREGA: pedido sem data não é atrasado
+      m[dia][sit]++;
+      const nome = p.cliente_nome ? nomeDeGente(p.cliente_nome).split(" ")[0] : `#${p.numero ?? ""}`;
+      m[dia].etq.push({ sit, t: [horaCurta(p.horario_entrega), nome].filter(Boolean).join(" "), h: p.horario_entrega || "99" });
     });
+    // no computador, as etiquetas do dia vêm pela urgência e depois pelo horário
+    Object.values(m).forEach(d => d.etq.sort((a, b) => ORDEM_SIT.indexOf(a.sit) - ORDEM_SIT.indexOf(b.sit) || a.h.localeCompare(b.h)));
     return m;
   }, [pedidosBuscados, hoje]);
 
@@ -338,6 +357,19 @@ export default function Agenda() {
     try {
       // o mesmo caminho da lista e da tela do pedido (10/10): retirada vai pra "Pronto pra retirar"; entrega, pra "Pronto"
       const novo = p.tipo_entrega === "entrega" ? "finalizado" : "aguardando_retirada";
+      const { error } = await supabase.from("pedidos").update({ status: novo }).eq("id", p.id);
+      if (error) { avisar("Não deu pra mudar a situação. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
+      registrarEtapa(p.id, novo);
+      mudarPedidos(prev => prev.map(x => x.id === p.id ? { ...x, status: novo } : x));
+      avisar(avisoDaMudanca(p, novo));
+    } finally { ocupar(p.id, false); }
+  };
+
+  /* (21/10) Aceitar e Produzir, nos atalhos do dia vazio (o mesmo update da lista de Pedidos) */
+  const mudarSituacao = async (p: any, novo: string) => {
+    if (ocupadosRef.current.has(p.id)) return;
+    ocupar(p.id, true);
+    try {
       const { error } = await supabase.from("pedidos").update({ status: novo }).eq("id", p.id);
       if (error) { avisar("Não deu pra mudar a situação. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
       registrarEtapa(p.id, novo);
@@ -460,6 +492,35 @@ export default function Agenda() {
   const relDia = relativo(diaSel);
   const diaVazio = diaCarregado && stDia.total === 0; // só diz "Nenhum pedido" depois de buscar
 
+  /* (21/10) Dia sem pedido: em vez do quadro vazio, o que precisa de atenção (atrasados) e os próximos dias.
+     Busca à parte (os atrasados podem ser de meses que o calendário não carregou). Só quando o dia está vazio e sem busca. */
+  const mostrarAtencao = diaVazio && !busca.trim();
+  const [atencao, setAtencao] = useState<{ atr: any[]; prox: any[] } | null>(null);
+  useEffect(() => {
+    if (!userId || !mostrarAtencao) return;
+    let vale = true;
+    (async () => {
+      const C = "id, numero, status, origem, cliente_nome, data_entrega, horario_entrega, tipo_entrega, pedido_itens(imagem_url, produtos(imagem_url))";
+      const [a, b] = await Promise.all([
+        supabase.from("pedidos").select(C).eq("user_id", userId).lt("data_entrega", hoje).in("status", STATUS_AINDA_NAO_PRONTO)
+          .order("data_entrega", { ascending: false }).limit(3),
+        supabase.from("pedidos").select(C).eq("user_id", userId).gte("data_entrega", hoje).in("status", STATUS_AINDA_NAO_PRONTO)
+          .order("data_entrega", { ascending: true }).order("horario_entrega", { ascending: true, nullsFirst: false }).limit(3),
+      ]);
+      if (!vale || !naTela.current) return;
+      setAtencao({ atr: a.error ? [] : (a.data || []), prox: b.error ? [] : (b.data || []) });
+    })();
+    return () => { vale = false; };
+  }, [userId, mostrarAtencao, hoje, pedidos]); // eslint-disable-line react-hooks/exhaustive-deps
+  const temAtencao = !!atencao && (atencao.atr.length > 0 || atencao.prox.length > 0);
+  const irParaDia = (iso: string) => { setRefDate(parseISO(iso)); setDiaSel(iso); };
+  const acaoAtencao = (p: any, atr: boolean) => {
+    if (atr || p.status === "em_producao") return { t: "Pronto", fn: () => marcarComoPronto(p) };
+    if (precisaAceitar(p)) return { t: "Aceitar", fn: () => mudarSituacao(p, "agendado"), principal: true };
+    if (grupoDe(p.status) === "agendado" && p.status !== "aguardando_pagamento") return { t: "Produzir", fn: () => mudarSituacao(p, "em_producao") };
+    return null;
+  };
+
   /* ═══ Render ═══ */
   return (
     <>
@@ -480,15 +541,13 @@ export default function Agenda() {
       <div className="ag3-topo">
         <div className="ui-campo-c ag3-busca" onClick={e => { if (e.target === e.currentTarget) (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.focus(); }}>
           <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
-          <input type="search" inputMode="search" enterKeyHint="search" autoComplete="off" aria-label="Buscar pedido por cliente ou número" placeholder="Buscar" value={busca} onChange={e => setBusca(e.target.value)} />
+          <input type="search" inputMode="search" enterKeyHint="search" autoComplete="off" aria-label="Buscar pedido por cliente ou número" placeholder="Buscar cliente ou número" value={busca} onChange={e => setBusca(e.target.value)} />
           {busca && <BotaoIcone variante="limpo" tamanho="p" rotulo="Limpar a busca" onClick={() => setBusca("")}><X size={20} weight="bold" /></BotaoIcone>}
         </div>
         <BotaoIcone className={"ag3-filtro" + (filtrosDesligados > 0 ? " on" : "")} rotulo={filtrosDesligados > 0 ? `Filtrar por situação (${filtrosDesligados} escondida${filtrosDesligados > 1 ? "s" : ""})` : "Filtrar por situação"} onClick={() => setFiltroAberto(true)}>
           <Funnel size={20} weight={filtrosDesligados > 0 ? "fill" : "bold"} />
           {filtrosDesligados > 0 && <span className="ag3-filtro-n" aria-hidden="true">{filtrosDesligados}</span>}
         </BotaoIcone>
-        {/* Nova venda no topo, igual à lista de Pedidos (antes era um botão flutuante que cobria o primeiro cartão) */}
-        <Botao className="ag3-novo-g" icone={<Plus size={20} weight="bold" />} onClick={() => navigate("/vendas/novo")}>Nova venda</Botao>
       </div>
 
       <div className="ag3-grade">
@@ -517,7 +576,12 @@ export default function Agenda() {
           ) : !diaCarregado ? (
             demorou ? <p className="ag3-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando os pedidos…</p> : null
           ) : pedidosDoDia.length === 0 ? (
-            <TelaVazia icone={<CalendarBlank size={30} />} titulo="Nenhum pedido nesse dia" texto={busca.trim() ? `Nada com “${busca.trim()}” nesse dia.` : "Os pedidos com entrega nesse dia aparecem aqui."} acao={<Botao variante="suave" tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => navigate("/vendas/novo")}>Nova venda</Botao>} />
+            mostrarAtencao && !atencao ? null
+            : mostrarAtencao && temAtencao ? (
+              <Atencao atr={atencao!.atr} prox={atencao!.prox} hoje={hoje} ocupados={ocupados} acaoDe={acaoAtencao} aoAbrir={(p: any) => abrirEditar(p.id)} aoVerDia={irParaDia} />
+            ) : (
+              <TelaVazia icone={<CalendarBlank size={30} />} titulo="Nenhum pedido nesse dia" texto={busca.trim() ? `Nada com “${busca.trim()}” nesse dia.` : "Os pedidos com entrega nesse dia aparecem aqui."} />
+            )
           ) : pedidosDiaFiltrados.length === 0 ? (
             <TelaVazia icone={<Funnel size={30} />} titulo="Nenhum pedido com esse filtro" texto="Tem pedido nesse dia, mas as situações dele estão escondidas." acao={<Botao variante="suave" tamanho="m" onClick={mostrarTodas}>Mostrar todas as situações</Botao>} />
           ) : (
@@ -597,12 +661,15 @@ function Calendario({ refDate, setRefDate, diaSel, setDiaSel, dayStats, irParaHo
   const hojeISO = isoDate(new Date());
   const mesNome = MESES[refDate.getMonth()];
   const ehMesDeHoje = refDate.getMonth() === new Date().getMonth() && refDate.getFullYear() === new Date().getFullYear();
+  const NOME_SIT: Record<Sit, string> = { atr: "atrasado", ace: "pra aceitar", age: "na agenda", ok: "concluído" };
 
   return (
     <section className="ag3-card ag3-cal" aria-label="Calendário">
+      {/* (21/10) mês à esquerda; setas e "Hoje" juntos à direita */}
       <div className="ag3-cal-nav">
+        <h2 className="ag3-cal-t">{mesNome.charAt(0).toUpperCase() + mesNome.slice(1)} {refDate.getFullYear()}</h2>
         <BotaoIcone rotulo="Mês anterior" onClick={() => setRefDate(new Date(refDate.getFullYear(), refDate.getMonth() - 1, 1))}><CaretLeft size={20} weight="bold" /></BotaoIcone>
-        <h2 className="ag3-cal-t">{mesNome.charAt(0).toUpperCase() + mesNome.slice(1)} de {refDate.getFullYear()}</h2>
+        <button type="button" className={"ag3-hoje-bt" + (ehMesDeHoje && diaSel === hojeISO ? " on" : "")} onClick={irParaHoje}>Hoje</button>
         <BotaoIcone rotulo="Próximo mês" onClick={() => setRefDate(new Date(refDate.getFullYear(), refDate.getMonth() + 1, 1))}><CaretRight size={20} weight="bold" /></BotaoIcone>
       </div>
 
@@ -613,37 +680,94 @@ function Calendario({ refDate, setRefDate, diaSel, setDiaSel, dayStats, irParaHo
           const st = dayStats[c.iso];
           const sel = c.iso === diaSel;
           const hoje = c.iso === hojeISO;
-          const atr = st?.atrasado || 0;
           const qtd = st?.total || 0;
+          const partes = st ? ORDEM_SIT.filter(k => st[k] > 0).map(k => `${st[k]} ${NOME_SIT[k]}`) : [];
+          const etq: { sit: Sit; t: string }[] = st?.etq || [];
+          const cabem = etq.length > 3 ? 2 : 3;
           return (
             <button
               key={c.iso + (c.outroMes ? "-o" : "")}
               type="button"
-              className={"ag3-d" + (c.outroMes ? " fora" : "") + (sel ? " sel" : "") + (hoje ? " hoje" : "")}
+              className={"ag3-d" + (c.outroMes ? " fora" : "") + (sel ? " sel" : "") + (hoje ? " hoje" : "") + (qtd ? " tem" : "")}
               aria-pressed={sel}
               aria-current={hoje ? "date" : undefined}
-              aria-label={`${c.date.getDate()} de ${MESES[c.date.getMonth()]}${hoje ? ", hoje" : ""}${qtd ? `, ${qtd} pedido${qtd > 1 ? "s" : ""}` : ""}${atr ? `, ${atr} atrasado${atr > 1 ? "s" : ""}` : ""}`}
+              aria-label={`${c.date.getDate()} de ${MESES[c.date.getMonth()]}${hoje ? ", hoje" : ""}${qtd ? `, ${qtd} pedido${qtd > 1 ? "s" : ""}: ${partes.join(", ")}` : ""}`}
               onClick={() => setDiaSel(c.iso)}
             >
               <span className="ag3-d-n">{c.date.getDate()}</span>
+              {/* celular: bolinhas (uma por situação) */}
               <span className="ag3-d-b" aria-hidden="true">
-                {atr > 0 && <i className="atr" />}
-                {st?.agendado > 0 && <i className="age" />}
-                {st?.producao > 0 && <i className="pro" />}
-                {st?.concluido > 0 && <i className="ok" />}
+                {ORDEM_SIT.map(k => st?.[k] > 0 ? <i key={k} className={k} /> : null)}
               </span>
+              {/* computador: uma etiqueta por pedido, na cor da situação */}
+              {etq.length > 0 && (
+                <span className="ag3-d-e" aria-hidden="true">
+                  {etq.slice(0, cabem).map((e, i) => <em key={i} className={e.sit}>{e.t}</em>)}
+                  {etq.length > cabem && <em className="mais">+{etq.length - cabem} mais</em>}
+                </span>
+              )}
             </button>
           );
         })}
       </div>
 
       <div className="ag3-leg" aria-hidden="true">
-        <span><i className="age" />Agendado</span>
-        <span><i className="pro" />Em produção</span>
-        <span><i className="ok" />Pronto</span>
         <span><i className="atr" />Atrasado</span>
+        <span><i className="ace" />Pra aceitar</span>
+        <span><i className="age" />Na agenda</span>
+        <span><i className="ok" />Concluído</span>
       </div>
     </section>
+  );
+}
+
+/* ═══ Dia vazio: "Precisa de atenção" e "Próximos dias" (21/10) ═══ */
+function Atencao({ atr, prox, hoje, ocupados, acaoDe, aoAbrir, aoVerDia }: any) {
+  const diaMes = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
+  const quando = (p: any, semSemana = false) => {
+    const iso = String(p.data_entrega || "").slice(0, 10);
+    const rel = relativo(iso);
+    const dia = rel || (semSemana ? diaMes(iso) : `${SEMANA_CURTA[parseISO(iso).getDay()]} ${diaMes(iso)}`);
+    return [dia, p.horario_entrega ? String(p.horario_entrega).slice(0, 5) : ""].filter(Boolean).join(" · ");
+  };
+  const item = (p: any, ehAtr: boolean) => {
+    const it = (p.pedido_itens || [])[0];
+    const foto = primeiraFoto(it?.imagem_url || it?.produtos?.imagem_url);
+    const nome = p.cliente_nome ? nomeDeGente(p.cliente_nome) : "Cliente";
+    const ac = acaoDe(p, ehAtr);
+    return (
+      <div key={p.id} className={"ag3-at-it" + (ehAtr ? " atr" : "")}>
+        <button type="button" className="ag3-at-abre" onClick={() => aoAbrir(p)} aria-label={`Abrir o pedido #${p.numero || ""} de ${nome}`}>
+          <span className="ag3-pc-ft" aria-hidden="true">
+            <Package size={20} weight="bold" />
+            {foto && <img src={foto} alt="" loading="lazy" onError={e => { e.currentTarget.style.display = "none"; }} />}
+          </span>
+          <span className="ag3-at-tx">
+            <b>{nome} <small>#{p.numero ?? "—"}</small></b>
+            <span>{ehAtr ? `Atrasado · ${quando(p, true)}` : quando(p)}</span>
+          </span>
+        </button>
+        {ac && <Botao variante={ac.principal ? "principal" : "vinho"} tamanho="p" carregando={ocupados.has(p.id)} onClick={ac.fn}>{ac.t}</Botao>}
+      </div>
+    );
+  };
+  const diaProx = prox[0] ? String(prox[0].data_entrega).slice(0, 10) : "";
+  return (
+    <>
+      {atr.length > 0 && (
+        <section className="ag3-at">
+          <h3 className="ag3-at-t atr">Precisa de atenção</h3>
+          {atr.map((p: any) => item(p, true))}
+        </section>
+      )}
+      {prox.length > 0 && (
+        <section className="ag3-at">
+          <h3 className="ag3-at-t">Próximos dias</h3>
+          {prox.map((p: any) => item(p, pedidoAtrasado(p, hoje)))}
+          {diaProx && <Botao variante="link" className="ag3-at-ver" onClick={() => aoVerDia(diaProx)}>Ver os pedidos de {relativo(diaProx).toLowerCase() || diaMes(diaProx)}</Botao>}
+        </section>
+      )}
+    </>
   );
 }
 
