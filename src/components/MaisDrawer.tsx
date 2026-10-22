@@ -6,7 +6,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import {
   ChartLineUp, ClipboardText, Gear, PaintBrush, Crown, SquaresFour, UserPlus, X, CaretRight,
   Megaphone, CalendarDots, Users, Stack, Truck, Storefront, Eye, Basket, ArrowsDownUp,
-  HandCoins, CalendarCheck, Tag, Cake, ChatCircleText, Newspaper, Sparkle, Bell, ChartPieSlice, Shapes,
+  HandCoins, CalendarCheck, Tag, Cake, ChatCircleText, Newspaper, Sparkle, Bell, ChartPieSlice, Shapes, Notebook,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { BotaoIcone } from "@/components/base";
@@ -36,45 +36,16 @@ interface Grupo { label: string; items: Item[] }
 // inclusive as que também abrem pelo Início. Só ficam fora as que já estão no menu de baixo (Início, Pedidos, Cardápio, Doo IA).
 // (18/10) reorganizado pela prioridade do dia a dia: o que ela usa todo dia primeiro, o que mexe pouco no fim
 const GRUPOS: Grupo[] = [
+  // (21/10) o Financeiro foi pro menu de baixo e os cadastros (produtos, clientes, mensagens, cardápio digital) moram em Cadastros:
+  // aqui fica só o que não está em outro lugar, sem repetir
   {
     label: "Dia a dia",
     items: [
-      { label: "Agenda",     desc: "Entregas por dia",            path: "/agenda",      Icone: CalendarDots },
-      { label: "Clientes",   desc: "Quem compra e o que compra",  path: "/clientes",    Icone: Users },
-      { label: "Mensagens", desc: "Textos prontos do WhatsApp",   path: "/configuracoes/mensagens", Icone: ChatCircleText },
+      { label: "Agenda",       desc: "Entregas por dia",              path: "/agenda",           Icone: CalendarDots },
+      { label: "Cadastros",    desc: "Produtos, clientes e cardápio", path: "/cadastros",        Icone: Notebook },
+      { label: "Ver cardápio", desc: "Como o cliente vê",             path: "/cardapio-preview", Icone: Eye },
     ],
   },
-  {
-    label: "Financeiro",
-    items: [
-      { label: "Visão geral",   desc: "Entradas, saídas e saldo", path: "/financeiro",            Icone: ChartPieSlice },
-      { label: "A receber",     desc: "O que os clientes devem",  path: "/financeiro/a-receber",  Icone: HandCoins },
-      { label: "A pagar",       desc: "Contas e vencimentos",     path: "/financeiro/a-pagar",    Icone: CalendarCheck },
-      { label: "Transações",    desc: "Histórico detalhado",      path: "/financeiro/transacoes", Icone: ArrowsDownUp },
-      { label: "Lucratividade", desc: "Quanto você lucra",        path: "/lucratividade",         Icone: ChartLineUp },
-      { label: "Custos",        desc: "Fixos, taxas e embalagem", path: "/custos",                Icone: Tag },
-    ],
-  },
-  {
-    label: "Cadastros",
-    items: [
-      { label: "Produtos",      desc: "O que aparece no cardápio",      path: "/produtos",      Icone: Cake },
-      { label: "Complementos",  desc: "Topo, velas e outros extras", path: "/complementos",  Icone: Stack },
-      { label: "Categorias",    desc: "Organize seus produtos",         path: "/categorias",    Icone: Shapes },
-      { label: "Ficha técnica", desc: "Calcule o custo real",           path: "/ficha-tecnica", Icone: ClipboardText },
-      { label: "Ingredientes",  desc: "O que você compra",              path: "/insumos",       Icone: Basket },
-      // 13/10: Receitas escondida até as fotos ficarem prontas
-    ],
-  },
-  {
-    label: "Cardápio digital",
-    items: [
-      { label: "Ver cardápio", desc: "Como o cliente vê",         path: "/cardapio-preview", Icone: Eye },
-      { label: "Dados da loja",    desc: "Loja, entrega e pagamento", path: "/cardapio-config",  Icone: Storefront },
-      { label: "Aparência",        desc: "Logo, banners e cores",     path: "/cardapio-design",  Icone: PaintBrush },
-    ],
-  },
-  // (21/10) "Divulgar" e "Conta e ajuda" num grupo só (não sobra grupo de 1 ou 2); Novidades foi pros atalhos do topo
   {
     label: "Mais",
     items: [
