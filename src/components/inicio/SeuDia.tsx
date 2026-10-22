@@ -39,7 +39,7 @@ interface Props {
 const real = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 const hhmm = (h?: string | null) => (h ? String(h).slice(0, 5) : "");
 
-export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, semana, novos = 0 }: Props) {
+export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, semana, novos = 0, atrasados = 0 }: Props) {
   const navigate = useNavigate();
   const [diaSel, setDiaSel] = useState<string | null>(null);
   // (16/10) faixa da semana: os 7 dias a partir de hoje, com quantos pedidos cada um tem
@@ -85,8 +85,13 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, sem
         <div className="sd-sem" role="group" aria-label="Pedidos da semana">
           {dias7.map(d => (
             <button type="button" key={d.iso} className={`sd-sd${diaSel === d.iso ? " on" : ""}${d.n ? " tem" : ""}`} aria-pressed={diaSel === d.iso}
-              onClick={() => setDiaSel(x => x === d.iso ? null : d.iso)} aria-label={`${d.sem} ${d.dia}: ${d.n} ${d.n === 1 ? "pedido" : "pedidos"}`}>
+              onClick={() => setDiaSel(x => x === d.iso ? null : d.iso)} aria-label={`${d.sem} ${d.dia}: ${d.n} ${d.n === 1 ? "pedido" : "pedidos"}${d.iso === hoje && (atrasados > 0 || passaram.length > 0) ? ", com atraso" : ""}`}>
               <small>{d.sem}</small><b>{d.dia}</b>
+              {/* (22/10) bolinhas como na Agenda: vermelha = tem atraso (só no Hoje), amarela = tem pedido marcado */}
+              <span className="sd-pts" aria-hidden="true">
+                {d.iso === hoje && (atrasados > 0 || passaram.length > 0) && <i className="atr" />}
+                {(d.iso === hoje ? d.n - passaram.length : d.n) > 0 && <i className="prox" />}
+              </span>
             </button>
           ))}
         </div>
