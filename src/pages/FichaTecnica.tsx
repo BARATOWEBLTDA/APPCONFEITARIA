@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useRef, ReactNode } from "react";
 import { useAbrirPedido } from "@/hooks/useAbrirPedido";
-import TourPrimeiraVez from "@/components/TourPrimeiraVez";
 import CampoNumero from "@/components/ui/CampoNumero";
 import { parseNumBR } from "@/lib/numeroBR";
 import { explicarErro } from "@/lib/erros";
@@ -968,11 +967,6 @@ export default function FichaTecnica() {
       infoTip={<>Escolha um produto pra montar ou ajustar a ficha.</>}
     />
     <div className="cl9 fl">
-      <TourPrimeiraVez chave="ficha" tela="Ficha técnica" passos={[
-        { alvo: ".fl-l--sem", titulo: "Produto sem ficha", texto: "Toque pra montar: os ingredientes e quanto vai de cada um. Sem isso, o app não sabe o custo." },
-        { alvo: ".fl-lucro", titulo: "Lucro de verdade", texto: "Já desconta ingredientes, custos invisíveis, a sua hora e a taxa da maquininha." },
-        { alvo: ".cl9-chips", titulo: "Filtros", texto: "Veja só os produtos sem ficha ou os que estão dando prejuízo." },
-      ]} />
       {erroCarga ? (
         <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar as fichas técnicas" texto={erroCarga}
           acao={<Botao onClick={() => void carregar()}>Tentar de novo</Botao>} />

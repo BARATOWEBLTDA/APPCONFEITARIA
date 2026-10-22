@@ -1,6 +1,5 @@
 import CampoData from '@/components/CampoData'
 import { useAbrirPedido } from "@/hooks/useAbrirPedido";
-import TourPrimeiraVez from "@/components/TourPrimeiraVez";
 import { useTravarRolagem } from "@/hooks/useTravarRolagem";
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
@@ -141,11 +140,6 @@ export default function FinanceiroAPagar() {
       />
       <EstiloFinanceiro />
 
-      <TourPrimeiraVez chave="a_pagar" tela="A pagar" passos={[
-        { alvo: ".fap-seg", titulo: "Suas contas", texto: "Separadas por quando vencem. As atrasadas ficam em vermelho." },
-        { alvo: ".fap-nova-bt", titulo: "Nova conta", texto: "Cadastre uma conta avulsa. As dos custos fixos já entram sozinhas todo mês." },
-        { alvo: ".fap-it .fap-bts", titulo: "Pagar", texto: "Ao pagar, o valor sai do seu caixa e a conta vai pro histórico." },
-      ]} />
       <div className="fap-wrap">
         {precisaSql ? (
           <div className="fap-vazio"><b>Falta um ajuste no banco</b><p>Rode o SQL do Passo 5 (contas a pagar) no Supabase pra ativar esta tela.</p></div>

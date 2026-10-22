@@ -1,7 +1,6 @@
 // Financeiro — painel (Passo 7, 03/10; 4.29: por período, com comparação, formas de pagamento e mais vendidos). Junta o que antes ficava na Visão Geral e no menu:
 // saldo em caixa, os números do mês, a receber, a pagar, previstos, fluxo e últimas movimentações.
 import { useAbrirPedido } from "@/hooks/useAbrirPedido";
-import TourPrimeiraVez from "@/components/TourPrimeiraVez";
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -199,12 +198,6 @@ export default function Financeiro() {
           <Botao variante="secundario" tamanho="m" onClick={depoisDeMudar}>Tentar de novo</Botao>
         </div>
       )}
-      <TourPrimeiraVez chave="financeiro" tela="Financeiro" passos={[
-        { alvo: ".fd-a-res", titulo: "Quanto sobrou", texto: "O que entrou menos o que saiu no período. Troque o período no topo." },
-        { alvo: ".fd-a-tres .fd-t.esc", titulo: "Saldo em caixa", texto: "Quanto você tem hoje, na gaveta e no banco. Toque pra informar ou acertar." },
-        { alvo: ".fd-a-tres .fd-t:nth-child(2)", titulo: "A receber", texto: "O que os clientes ainda vão te pagar, como o resto de um sinal." },
-        { alvo: ".fd-a-tres .fd-t:nth-child(3)", titulo: "A pagar", texto: "Suas contas com vencimento. Os custos fixos entram aqui sozinhos todo mês." },
-      ]} />
       <div className={`fd${caixaNeg ? " fd--neg" : ""}${semMov ? " fd--nada" : ""}`}>
         {/* o cartão principal: como foi o período */}
         <div className="fd-a-res fd-card fd-res">

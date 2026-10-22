@@ -2,7 +2,6 @@
 // custos fixos (com dia de vencimento → viram conta em "A pagar"), custos variáveis
 // (% de cada venda ou R$ por pedido) e mão de obra (salário, horas e dias).
 import { useAbrirPedido } from "@/hooks/useAbrirPedido";
-import TourPrimeiraVez from "@/components/TourPrimeiraVez";
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import { parseNumBR } from "@/lib/numeroBR";
@@ -194,13 +193,6 @@ export default function Custos() {
       {editCv && uid && <InvisiveisSheet uid={uid} atual={cv ?? 25} onClose={() => setEditCv(false)} onFeito={v => { setCv(v); setEditCv(false); }} />}
       {editMo && uid && <MaoObraSheet uid={uid} atual={mo} totalFixos={totalFixos} onClose={() => setEditMo(false)} onFeito={() => { setEditMo(false); carregar(); }} />}
       {/* (16/10) primeira vez aqui: convite pro tour */}
-      <TourPrimeiraVez chave="custos" tela="Custos" passos={[
-        { alvo: ".cu-a-fixos", titulo: "Custos fixos", texto: "O que você paga todo mês, vendendo ou não: aluguel, internet, a conta de luz. Com o dia de vencimento, vira uma conta em A pagar." },
-        { alvo: ".cu-a-mo", titulo: "Mão de obra", texto: "O salário que você quer tirar e quantas horas trabalha. Vale pra todos os produtos." },
-        { alvo: ".cu-resumo .cu-k.destaque", titulo: "Custo da sua hora", texto: "Fixos + salário, divididos pelas horas do mês. A Ficha técnica usa esse valor pelo tempo de cada receita." },
-        { alvo: ".cu-a-var", titulo: "Custos variáveis", texto: "Os que acompanham cada venda, como a taxa da maquininha (no débito e no crédito) e a embalagem." },
-        { alvo: ".cu-a-cv", titulo: "Custos invisíveis", texto: "Gás do forno, perdas e descartáveis: uma porcentagem sobre os ingredientes, em todas as fichas." },
-      ]} />
       <style>{CSS}{FOLHA_CSS}</style>
     </>
   );
