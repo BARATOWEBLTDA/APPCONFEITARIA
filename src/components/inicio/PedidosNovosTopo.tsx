@@ -59,38 +59,35 @@ export default function PedidosNovosTopo({ novos, atrasados, aoAceitar }: { novo
   };
   const maisAntigo = novos.reduce((a, p) => (!a || p.criado < a ? p.criado : a), "");
 
+  // (22/10) um cartão só, em linhas: cor só na bolinha (laranja = pra aceitar, vermelho = atrasado)
+  const plural = (n: number, um: string, varios: string) => (n === 1 ? um : varios);
   return (
     <div className="pnt">
       {um && (
-        <div className="pnt-novo">
-          <div className="pnt-cab"><i aria-hidden="true" /><b>{podeAceitar ? "Pedido novo pra aceitar" : "Pedido novo · falta pagar"}</b><span>{ha(um.criado, agora)}</span></div>
-          <div className="pnt-it">
-            <span className="pnt-ft" aria-hidden="true">{um.foto ? <img src={um.foto} alt="" /> : <Cake size={24} weight="bold" />}</span>
-            <span className="pnt-tx"><b>{um.cliente}</b><small>{[um.produto, diaCurto(um.data, agora)].filter(Boolean).join(" · ")}</small></span>
-            <span className="pnt-vl">{real(um.valor)}</span>
-          </div>
-          <div className="pnt-acoes">
-            <button type="button" className="pnt-ver" onClick={() => navigate(`/pedidos/${um.id}`)}>Ver pedido</button>
-            {podeAceitar && <button type="button" className="pnt-ok" onClick={aceitar} disabled={aceitando}>{aceitando ? "Aceitando…" : "Aceitar"}</button>}
-          </div>
+        <div className="pnt-l">
+          <span className="pnt-dot pnt-dot--ace" aria-hidden="true" />
+          <button type="button" className="pnt-tx pnt-abre" onClick={() => navigate(`/pedidos/${um.id}`)}>
+            <b>{podeAceitar ? `Pedido novo de ${um.cliente}` : `${um.cliente} · falta pagar`}</b>
+            <small>{[um.produto, diaCurto(um.data, agora), real(um.valor)].filter(Boolean).join(" · ")}</small>
+          </button>
+          {podeAceitar
+            ? <button type="button" className="pnt-bt" onClick={aceitar} disabled={aceitando}>{aceitando ? "Aceitando…" : "Aceitar"}</button>
+            : <button type="button" className="pnt-bt2" onClick={() => navigate(`/pedidos/${um.id}`)}>Ver</button>}
         </div>
       )}
       {novos.length > 1 && (
-        <div className="pnt-novo">
-          <div className="pnt-cab"><i aria-hidden="true" /><b>Pedidos novos pra aceitar</b></div>
-          <div className="pnt-multi">
-            <span className="pnt-num">{novos.length}</span>
-            <span className="pnt-tx"><b>{novos.length} esperando</b><small>Mais antigo {ha(maisAntigo, agora)}</small></span>
-            <button type="button" className="pnt-bt" onClick={() => navigate("/pedidos?filtro=aguardando")}>Ver pedidos</button>
-          </div>
+        <div className="pnt-l">
+          <span className="pnt-dot pnt-dot--ace" aria-hidden="true" />
+          <span className="pnt-tx"><b>{novos.length} pedidos pra aceitar</b><small>O mais antigo chegou {ha(maisAntigo, agora)}</small></span>
+          <button type="button" className="pnt-bt" onClick={() => navigate("/pedidos?filtro=aguardando")}>Ver</button>
         </div>
       )}
       {atrasados > 0 && (
-        <button type="button" className="pnt-atr" onClick={() => navigate("/pedidos?filtro=atrasados")}>
-          <span className="pnt-an">{atrasados}</span>
-          <span className="pnt-tx"><b>{atrasados === 1 ? "Pedido atrasado" : "Pedidos atrasados"}</b><small>A entrega já passou</small></span>
-          <span className="pnt-av">Ver <CaretRight size={14} weight="bold" aria-hidden="true" /></span>
-        </button>
+        <div className="pnt-l">
+          <span className="pnt-dot pnt-dot--atr" aria-hidden="true" />
+          <span className="pnt-tx"><b>{atrasados} {plural(atrasados, "pedido atrasado", "pedidos atrasados")}</b><small>A entrega já passou</small></span>
+          <button type="button" className="pnt-bt2" onClick={() => navigate("/pedidos?filtro=atrasados")}>Ver</button>
+        </div>
       )}
       <style>{CSS}</style>
     </div>
@@ -98,33 +95,18 @@ export default function PedidosNovosTopo({ novos, atrasados, aoAceitar }: { novo
 }
 
 const CSS = `
-  .pnt { display: flex; flex-direction: column; gap: 10px; font-family: var(--font-base); text-align: left; }
-  /* (18/10) faixa em degradê verde e bolinha piscando */
-  .pnt-novo { background: var(--ui-branco); border: 1.5px solid #7CCB9C; border-radius: var(--ui-raio-cartao); overflow: hidden; }
-  .pnt-cab { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: linear-gradient(90deg, #1F8A4C, #3FB873); color: var(--ui-branco); white-space: nowrap; }
-  .pnt-cab i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: #fff; animation: pntPisca 1.2s ease-in-out infinite; }
-  @keyframes pntPisca { 0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 255, 255, .7); } 50% { opacity: .45; box-shadow: 0 0 0 5px rgba(255, 255, 255, 0); } }
-  @media (prefers-reduced-motion: reduce) { .pnt-cab i { animation: none; } }
-  .pnt-cab b { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 13.5px; font-weight: 700; }
-  .pnt-cab span { margin-left: auto; flex: none; font-size: 12.5px; font-weight: 600; color: rgba(255, 255, 255, .88); }
-  .pnt-it, .pnt-multi { display: flex; align-items: center; gap: 12px; padding: 14px; }
-  .pnt-ft { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 10px; background: var(--primary-light, #FCE0E9); color: var(--ui-rosa-escuro); overflow: hidden; }
-  .pnt-ft img { width: 100%; height: 100%; object-fit: cover; }
+  .pnt { overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); font-family: var(--font-base); text-align: left; }
+  .pnt-l { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 10px 12px 10px 16px; }
+  .pnt-l + .pnt-l { border-top: 1px solid var(--ui-linha); }
+  .pnt-dot { flex: none; width: 10px; height: 10px; border-radius: 50%; }
+  .pnt-dot--ace { background: #EA8A1A; }
+  .pnt-dot--atr { background: var(--ui-vermelho); }
   .pnt-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .pnt-abre { margin: 0; padding: 0; border: 0; background: none; font-family: inherit; text-align: left; cursor: pointer; }
   .pnt-tx b { font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pnt-tx small { font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .pnt-vl { flex: none; font-size: 15px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; }
-  .pnt-acoes { display: flex; gap: 8px; padding: 0 14px 14px; }
-  .pnt-ver, .pnt-ok { flex: 1; min-height: 46px; border: 0; border-radius: 10px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; white-space: nowrap; }
-  .pnt-ver { background: #F3EEF0; color: var(--ui-texto); }
-  .pnt-ok { background: #2E9E5B; color: var(--ui-branco); box-shadow: 0 3px 0 #1F7A45; }
-  .pnt-ok:disabled { opacity: .7; }
-  .pnt-num { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; background: #E7F6ED; color: #1F7A45; font-size: 22px; font-weight: 700; }
-  .pnt-bt { flex: none; min-height: 44px; padding: 0 14px; border: 0; border-radius: 10px; background: var(--chocolate); color: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; }
-  .pnt-atr { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0; padding: 12px 14px; border: 0; border-radius: var(--ui-raio-cartao); background: #FDECEC; font-family: inherit; text-align: left; cursor: pointer; }
-  .pnt-an { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--ui-branco); color: #B42318; font-size: 18px; font-weight: 700; }
-  .pnt-atr .pnt-tx b { color: #7A1A12; }
-  .pnt-atr .pnt-tx small { color: #9A3A32; font-size: 12.5px; }
-  .pnt-av { flex: none; display: flex; align-items: center; gap: 2px; font-size: 14px; font-weight: 700; color: #B42318; }
-  @media (max-width: 374px) { .pnt-vl { font-size: 14px; } .pnt-it, .pnt-multi { gap: 10px; } .pnt-bt { padding: 0 12px; } }
+  .pnt-bt, .pnt-bt2 { flex: none; min-height: 40px; padding: 0 16px; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+  .pnt-bt { border: 0; background: var(--ui-rosa); color: var(--ui-branco); }
+  .pnt-bt:disabled { opacity: .7; }
+  .pnt-bt2 { border: 1px solid var(--ui-borda); background: var(--ui-branco); color: var(--ui-texto); }
 `;

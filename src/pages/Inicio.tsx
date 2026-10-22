@@ -23,7 +23,7 @@ import { useNavigate } from "react-router-dom";
 // (15/10) o gráfico (recharts) só é baixado quando aparece
 const GraficoRecebido = lazy(() => import("@/components/inicio/GraficoRecebido"));
 import {
-  HandCoins, Basket, CookingPot, Gear, Plus, Bell, CalendarDots, CurrencyDollar, Camera, Users, ChartLineUp,
+  HandCoins, Plus, Bell, CalendarDots, CurrencyDollar, Camera, Users, ChartLineUp,
   CaretRight, Cake, Receipt, ClipboardText,
   WarningCircle, Clock, Package, TrendUp, Confetti, RocketLaunch, Sparkle, Crown,
 } from "@phosphor-icons/react";
@@ -905,11 +905,7 @@ export default function Inicio() {
       )}
 
       {/* (4.27) Abrir e pausar os pedidos do cardápio na hora (no computador fica no cartão do link, na lateral) */}
-      {!computador && (
-        <section className="ini-section ini-section--pausa">
-          <PausarPedidos />
-        </section>
-      )}
+      {/* (22/10) abrir e pausar a loja saiu do Início no celular: fica no Cardápio digital */}
 
       {/* ── Primeiros passos (02/10) — some quando ela termina.
              (07/10 · 2.94) Passou a aparecer em todos os aparelhos: é o único guia depois das boas-vindas (o tour saiu). ── */}
@@ -935,31 +931,15 @@ export default function Inicio() {
           {!onboarding.loading && onboarding.produtosCount === 0 ? "Explorar" : "Acesso rápido"}
         </h2>
 
-        {/* Hero Nova Venda — destaque principal */}
-        <button className="ini-hero-cta" onClick={() => navigate("/vendas/novo")}>
-          <div className="ini-hero-cta-ic">
-            {isMobile
-              ? <span className="ini-hero-cta-plus"><Plus size={16} weight="bold" /></span>
-              : <Plus size={24} weight="bold" />}
-          </div>
-          <div className="ini-hero-cta-txt">
-            <div className="ini-hero-cta-t">Nova venda</div>
-            <div className="ini-hero-cta-d">Comece um pedido em segundos</div>
-          </div>
-          {isMobile && <img src="/nova-venda-bolo.svg" alt="" aria-hidden="true" className="ini-hero-cta-bag" />}
-          <CaretRight size={20} weight="bold" className="ini-hero-cta-arr" />
-        </button>
-
         <div className="ini-nav-grid">
           {[
-            /* (18/10) pela prioridade do dia a dia: entregas, dinheiro, clientes e produtos primeiro */
+            /* (22/10) só o que não está à mão em outro lugar: Nova venda é o "+", Financeiro está no menu de baixo,
+               Configurações no Menu, Ingredientes em Cadastros e Minhas receitas ainda não existe */
             { Icone: CalendarDots,   label: "Agenda",        sub: "Entregas por dia",      path: "/agenda",        key: "agenda" },
             { Icone: HandCoins,      label: "A receber",     sub: "Quem ainda deve",       path: "/financeiro/a-receber", key: "areceber" },
             { Icone: Users,          label: "Clientes",      sub: "Quem compra",   path: "/clientes",      key: "clientes" },
             { Icone: Cake,           label: "Produtos",      sub: "Seus doces",      path: "/produtos",      key: "produtos" },
-            { Icone: CurrencyDollar, label: "Financeiro",    sub: "Seu caixa",     path: "/financeiro",    key: "financeiro" },
             { Icone: ClipboardText,  label: "Ficha técnica", sub: "Custo e lucro",         path: "/ficha-tecnica", key: "ficha" },
-            { Icone: Basket,         label: "Ingredientes",  sub: "Seus insumos",     path: "/insumos",       key: "ingredientes" },
             { Icone: TrendUp,        label: "Lucratividade", sub: "Seu lucro real",     path: "/lucratividade", key: "lucro" },
           ].map((item) => (
             <button key={item.path} className="ini-nav-card" data-nav={item.key} onClick={() => navigate(item.path)}>
@@ -971,22 +951,6 @@ export default function Inicio() {
               <CaretRight size={16} weight="bold" className="ini-nav-arrow" />
             </button>
           ))}
-          {/* (18/10) Minhas receitas: com cara de pronto, mas ainda não abre (o sistema vem depois) */}
-          <div className="ini-nav-card ini-nav-card--off" data-nav="receitas" aria-disabled="true">
-            <div className="ini-nav-icon"><CookingPot size={isMobile ? 24 : 20} weight="bold" /></div>
-            <div className="ini-nav-meta">
-              <span className="ini-nav-label">Minhas receitas</span>
-              <span className="ini-nav-sub">Suas receitas</span>
-            </div>
-          </div>
-          <button className="ini-nav-card" data-nav="config" onClick={() => navigate("/configuracoes")}>
-            <div className="ini-nav-icon"><Gear size={isMobile ? 24 : 20} weight="bold" /></div>
-            <div className="ini-nav-meta">
-              <span className="ini-nav-label">Configurações</span>
-              <span className="ini-nav-sub">Conta, loja e app</span>
-            </div>
-            <CaretRight size={16} weight="bold" className="ini-nav-arrow" />
-          </button>
         </div>
       </section>
 
@@ -1019,12 +983,7 @@ export default function Inicio() {
       )}
         </div>
 
-        {!computador && (
-          <>
-            {/* ── Suas atualizações e Notícias (celular e tablet) ── */}
-            <div className="ini-mobile-updates"><UpdatesFeed /></div>
-          </>
-        )}
+        {/* (22/10) Novidades saíram do Início no celular: ficam no Menu, com a bolinha de não lida */}
 
       </div>
       )}
