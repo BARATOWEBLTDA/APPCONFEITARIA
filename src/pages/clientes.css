@@ -246,3 +246,18 @@
 .cl9-imp-l.off .cl9-imp-cx { border-color: var(--ui-linha); background: var(--ui-cinza); }
 .cl9-imp-tag { flex: none; padding: 2px 8px; border-radius: 6px; background: var(--ui-cinza); color: var(--ui-cinza-texto); font-size: 12px; font-style: normal; font-weight: 700; }
 .cl9-imp-tag--falta { background: var(--ui-laranja-fundo); color: var(--ui-laranja); }
+
+/* (22/10) celular: faixa de 3 números no lugar dos 4 quadros (os quadros quebravam o título em 2 linhas e ocupavam meia tela) */
+.cl9-faixa { display: none; }
+@media (max-width: 900px) {
+  .cl9-nums { display: none !important; }
+  .cl9-faixa { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0 0 12px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); font-family: var(--font-base); }
+  .cl9-faixa > * { min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 12px 6px; margin: 0; border: 0; background: none; font-family: inherit; color: var(--ui-texto); text-align: center; }
+  .cl9-faixa > * + * { border-left: 1px solid var(--ui-linha); }
+  .cl9-faixa b { font-size: 20px; font-weight: 700; line-height: 1.2; }
+  .cl9-faixa small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--ui-texto-2); }
+  .cl9-faixa-bt { cursor: pointer; -webkit-tap-highlight-color: transparent; border-radius: 0 var(--ui-raio-cartao) var(--ui-raio-cartao) 0; }
+  .cl9-faixa-bt b, .cl9-faixa-bt small { color: var(--ui-rosa-escuro); }
+  .cl9-faixa-bt:active { background: #FBF3F6; }
+  .cl9-faixa-bt:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
+}

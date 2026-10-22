@@ -848,6 +848,16 @@ export default function Clientes() {
 
         return (
           <div className="cl9">
+            {/* (22/10) celular: os números numa faixa só (3 lado a lado, rótulo curto). O ticket médio fica no Financeiro */}
+            <div className="cl9-faixa" role="list">
+              <div role="listitem"><b>{clientes.length}</b><small>{clientes.length === 1 ? "cliente" : "clientes"}</small></div>
+              <div role="listitem"><b>{compraram30}</b><small>compraram</small></div>
+              {aniversariantes.length > 0 ? (
+                <button type="button" role="listitem" className="cl9-faixa-bt" onClick={() => setShowNiver(true)} aria-label={`${aniversariantes.length} aniversários nos próximos 30 dias, ver a lista`}><b>{aniversariantes.length}</b><small>aniversários</small></button>
+              ) : (
+                <div role="listitem"><b>0</b><small>aniversários</small></div>
+              )}
+            </div>
             <div className="cl9-nums" role="list">
               <div role="listitem"><small>Clientes</small><b>{clientes.length}</b><em className={novosMes > 0 ? "ok" : ""}>{novosMes > 0 ? `+${novosMes} este mês` : "nenhum novo este mês"}</em></div>
               <div role="listitem"><small>Compraram em 30 dias</small><b>{compraram30}</b><em>{parteTxt}</em></div>
