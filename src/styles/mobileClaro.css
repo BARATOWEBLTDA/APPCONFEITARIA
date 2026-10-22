@@ -43,3 +43,15 @@
   html body .lpc-b--pri { background: var(--ui-rosa); color: var(--ui-branco); box-shadow: 0 2px 0 var(--ui-rosa-escuro); }
   html body .lpc-b--pri:active { background: var(--ui-rosa-escuro); }
 }
+
+/* (22/10) Revisão 2 · item 1: margem lateral de 16 px em todas as telas e um fundo só.
+   O layout já dá 8 px; cada tela completa com mais 8 (antes ia de 8 a 33 px conforme a tela) */
+@media (max-width: 900px) {
+  html body, html body .layout-root, html body .layout-main { background-color: var(--bg-body, #FEFCFD) !important; }
+  html body .fdp-barra { background: linear-gradient(rgba(254, 252, 253, 0), var(--bg-body, #FEFCFD) 35%); }
+  html body .ini-root { padding-left: 8px !important; padding-right: 8px !important; }
+  html body .fd-hero, html body .fd, html body .fd-erro,
+  html body .tx, html body .far-root, html body .fap-root, html body .cu, html body .lu { padding-left: 8px !important; padding-right: 8px !important; }
+  html body .cad, html body .prod-root, html body .dl-lista, html body .ntf-root, html body .mk, html body .mas-wrap,
+  html body .cl9, html body .ns-root { padding-left: 8px !important; padding-right: 8px !important; }
+}
