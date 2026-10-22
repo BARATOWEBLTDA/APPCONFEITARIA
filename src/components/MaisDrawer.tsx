@@ -47,7 +47,7 @@ const GRUPOS: Grupo[] = [
     ],
   },
   {
-    label: "Mais",
+    label: "Outros",
     items: [
       { label: "Marketing", desc: "Divulgue e venda mais", path: "/marketing", Icone: Megaphone },
       ...(INDICACAO_ATIVA ? [{ label: "Indicar amigo", desc: "Ganhe indicando", path: "/indicar", Icone: UserPlus }] : []),

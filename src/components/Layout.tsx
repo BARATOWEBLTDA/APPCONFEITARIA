@@ -264,10 +264,10 @@ export default function Layout() {
             {/* (16/10) Início · Cardápio · [+ Nova venda] · Pedidos · Mais. O Doo IA foi pro topo do Início e pro menu da foto */}
             {([
               { to: "/inicio",   Icone: House,       label: "Início",   tour: undefined },
-              // (21/10) Início · Financeiro · [+] · Pedidos · Mais. Cadastros (com o cardápio digital dentro) fica no Mais
-              { to: "/financeiro", Icone: CurrencyDollar, label: "Financeiro", tour: undefined },
-              { to: "/vendas/novo", Icone: Plus, label: "Nova venda", tour: undefined, mais: true },
+              // (21/10) Início · Pedidos · [+] · Financeiro · Menu. Cadastros (com o cardápio digital dentro) fica no Menu
               { to: "/pedidos",  Icone: Receipt,     label: "Pedidos",  tour: undefined },
+              { to: "/vendas/novo", Icone: Plus, label: "Nova venda", tour: undefined, mais: true },
+              { to: "/financeiro", Icone: CurrencyDollar, label: "Financeiro", tour: undefined },
             ] as { to: string; Icone: Icon; label: string; tour?: string; mais?: boolean }[]).map((item) => {
               const irPara = (e: React.MouseEvent) => {
                 // (15/10) com o Mais aberto (o menu continua aparecendo), troca de tela e fecha o Mais.
@@ -313,7 +313,7 @@ export default function Layout() {
               aria-haspopup="dialog"
             >
               <span className="bn-icon"><SquaresFour size={24} weight={maisOpen ? "fill" : "bold"} /></span>
-              <span className="bn-label">Mais</span>
+              <span className="bn-label">Menu</span>
             </button>
           </div>
         </nav>
