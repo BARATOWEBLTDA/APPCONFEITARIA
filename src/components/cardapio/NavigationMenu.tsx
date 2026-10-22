@@ -1140,6 +1140,13 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
   // Antes usava 768: no tablet em pé (768 a 1023) a página era a de celular, mas sem a barra não dava pra abrir a sacola.
   const aparelho = useDeviceDetection()
   const isMobile = celular ?? aparelho !== 'desktop'
+  // (22/10) B10: os avisos do cardápio sobem acima do rodapé (menu + "Ver seu pedido"); antes cobriam a barra da sacola
+  useEffect(() => {
+    if (!isMobile) return
+    const raiz = document.documentElement
+    raiz.style.setProperty('--ui-aviso-base', `${Math.round(alturaRodape) + 10}px`)
+    return () => { raiz.style.removeProperty('--ui-aviso-base') }
+  }, [isMobile, alturaRodape])
   // (21/10) "Acompanhar meu pedido" (tela de pedido enviado): no celular abre a aba Pedidos
   useEffect(() => {
     if (!isMobile) return
