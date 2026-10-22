@@ -1,4 +1,4 @@
-import { useId, useRef } from "react";
+import { useId, useRef, useState } from "react";
 import { abrirDooIA } from "@/components/MenuContaItens";
 import { INDICACAO_ATIVA } from "@/lib/recursos";
 import { createPortal } from "react-dom";
@@ -6,7 +6,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import {
   ChartLineUp, ClipboardText, Gear, PaintBrush, Crown, SquaresFour, UserPlus, X, CaretRight,
   Megaphone, CalendarDots, Users, Stack, Truck, Storefront, Eye, Basket, ArrowsDownUp,
-  HandCoins, CalendarCheck, Tag, Cake, ChatCircleText, Newspaper, Sparkle, Bell, ChartPieSlice, Shapes, Notebook,
+  HandCoins, CalendarCheck, Tag, Cake, ChatCircleText, Newspaper, Sparkle, Bell, ChartPieSlice, Shapes, Notebook, PaperPlaneRight,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { BotaoIcone } from "@/components/base";
@@ -67,6 +67,8 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const { isPro } = usePlano();
+  const [pergunta, setPergunta] = useState("");
+  const perguntarDoo = (texto: string) => { const t = texto.trim(); if (!t) return; setPergunta(""); onClose(); abrirDooIA(t); };
   const { notifCount } = useNotifications();
   const caixa = useRef<HTMLDivElement>(null);
   const idTitulo = useId();
@@ -119,11 +121,25 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
             <button type="button" onClick={() => ir(isPro ? "/minha-assinatura" : "/assinar")}><Crown size={20} weight="fill" aria-hidden="true" />Assinatura</button>
           </div>
           {/* (16/10) o Doo IA saiu do menu de baixo (lá entrou o "+ Nova venda"): fica no topo do Mais */}
-          <button type="button" className="mais-doo" onClick={() => { onClose(); abrirDooIA(); }}>
-            <span className="mais-doo-ic" aria-hidden="true"><Sparkle size={20} weight="fill" /></span>
-            <span className="mais-it-txt"><b>Doo IA</b><small>Sua assistente de confeitaria</small></span>
-            <CaretRight size={16} weight="bold" className="mais-it-seta" aria-hidden="true" />
-          </button>
+          {/* (21/10) PRO: a Doo já vem como campo de pergunta (jeito busca do Google); sem PRO, o cartão que leva pra ela */}
+          {isPro ? (
+            <div className="mais-doo-bx">
+              <form className="mais-doo-q" role="search" onSubmit={e => { e.preventDefault(); perguntarDoo(pergunta); }}>
+                <Sparkle size={20} weight="fill" className="mais-doo-q-ic" aria-hidden="true" />
+                <input type="text" enterKeyHint="send" autoComplete="off" aria-label="Pergunte ou peça algo à Doo IA" placeholder="Pergunte à Doo IA…" value={pergunta} onChange={e => setPergunta(e.target.value)} />
+                <button type="submit" className="mais-doo-q-env" aria-label="Enviar pra Doo IA" disabled={!pergunta.trim()}><PaperPlaneRight size={18} weight="fill" /></button>
+              </form>
+              <div className="mais-doo-ch">
+                {["Registrar pedido", "Quanto vendi hoje?"].map(t => <button key={t} type="button" onClick={() => perguntarDoo(t)}>{t}</button>)}
+              </div>
+            </div>
+          ) : (
+            <button type="button" className="mais-doo" onClick={() => { onClose(); abrirDooIA(); }}>
+              <span className="mais-doo-ic" aria-hidden="true"><Sparkle size={20} weight="fill" /></span>
+              <span className="mais-it-txt"><b>Doo IA</b><small>Sua assistente de confeitaria</small></span>
+              <CaretRight size={16} weight="bold" className="mais-it-seta" aria-hidden="true" />
+            </button>
+          )}
           {/* (21/10) uma lista só, sem título de grupo (sobraram poucos itens) */}
           {[{ label: "Telas", items: GRUPOS.flatMap(g => g.items) }].map(grupo => (
             <section key={grupo.label} className="mais-grupo" aria-label="Telas do app">

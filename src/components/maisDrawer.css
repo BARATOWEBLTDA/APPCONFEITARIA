@@ -59,3 +59,16 @@
 /* (21/10) as telas voltaram a ser uma lista única (ícone rosa, nome e explicação), igual à tela de Cadastros */
 .mais-it { min-height: 60px; padding: 10px 12px; }
 .mais-doo { margin: 0; }
+
+/* (21/10) PRO: Doo IA como campo de pergunta, leve como a busca do Google */
+.mais-doo-bx { display: flex; flex-direction: column; gap: 8px; }
+.mais-doo-q { display: flex; align-items: center; gap: 10px; height: 52px; margin: 0; padding: 0 6px 0 16px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); box-shadow: 0 1px 6px rgba(44, 18, 25, .08); }
+.mais-doo-q:focus-within { border-color: var(--ui-rosa); box-shadow: 0 1px 8px rgba(var(--ui-rosa-rgb), .22); }
+.mais-doo-q-ic { flex: none; color: var(--ui-rosa); }
+.mais-doo-q input { flex: 1; min-width: 0; height: 100%; margin: 0; padding: 0; border: 0; outline: 0; background: none; font-family: inherit; font-size: 16px; color: var(--ui-texto); }
+.mais-doo-q input::placeholder { color: var(--ui-texto-3); }
+.mais-doo-q-env { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; margin: 0; padding: 0; border: 0; border-radius: 50%; background: var(--ui-rosa); color: var(--ui-branco); cursor: pointer; transition: opacity .15s; }
+.mais-doo-q-env:disabled { background: var(--ui-cinza); color: var(--ui-texto-3); cursor: default; }
+.mais-doo-ch { display: flex; gap: 8px; padding-left: 4px; }
+.mais-doo-ch button { min-height: 34px; margin: 0; padding: 0 12px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+@media (hover: hover) { .mais-doo-ch button:hover { background: var(--ui-linha); } }
