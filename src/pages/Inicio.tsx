@@ -924,13 +924,6 @@ export default function Inicio() {
         </section>
       )}
 
-      {/* (13/10) depois dos passos: o que falta cadastrar pro lucro e o caixa ficarem certos */}
-      {/* (15/10) "Pra fazer": junta o "Complete seu app" e o "Suas atualizações" */}
-      {!computador && (
-        <section className="ini-section ini-falta">
-          <PraFazer />
-        </section>
-      )}
 
       {/* (13/10) no computador o menu da esquerda já tem tudo isso: a grade só repetia os mesmos atalhos */}
       <style>{"@media (min-width: 901px) { .ini-main .ini-section--nav { display: none !important; } } .ini-falta:empty { display: none !important; }"}</style>
@@ -962,6 +955,14 @@ export default function Inicio() {
           ))}
         </div>
       </section>
+
+      {/* (13/10) "Pra fazer": o que falta cadastrar pro lucro e o caixa ficarem certos (junta "Complete seu app" e "Suas atualizações").
+             (22/10) desceu pra depois do Acesso rápido: os atalhos ficam mais perto do topo */}
+      {!computador && (
+        <section className="ini-section ini-falta">
+          <PraFazer />
+        </section>
+      )}
 
       {/* ── Banner promocional (admin configura). (16/10) no celular, logo depois do Acesso rápido: quebra a parte só de texto ── */}
       {!computador && <div className="ini-mobile-banner"><AdminBannerMobile /></div>}
@@ -1485,6 +1486,8 @@ export default function Inicio() {
         .ini-pp:empty { display: none; }
 
         .ini-section--nav     { order: 2; }
+        /* (22/10) celular: o Pra fazer vem logo depois do Acesso rápido (antes ficava em cima dele) */
+        @media (max-width: 900px) { .ini-main > .ini-section.ini-falta { order: 2; } }
         .ini-main > .ini-mobile-banner { order: 3; margin-top: var(--space-3); } /* (18/10) depois das Próximas entregas (o calendário vem logo após o Acesso rápido) */
         .ini-section--novos { order: -1; }
         .ini-root .ini-section.ini-section--novos { margin-top: var(--space-3) !important; }
