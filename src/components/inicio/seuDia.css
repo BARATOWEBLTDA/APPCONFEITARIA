@@ -106,3 +106,9 @@
 .sd-sd--passado { border-color: transparent; background: #F1F2F2; }
 .sd-sd--passado b, .sd-sd--passado small, .sd-sd--passado .sd-sd-mes { color: #A3A6A8; }
 .sd-sd.on .sd-sd-mes { color: var(--ui-branco); }
+
+/* (22/10) lista agrupada por dia: título do grupo e nome em negrito */
+.sd-pg-t { margin: 10px 16px 0; font-size: 13px; font-weight: 600; line-height: 1.3; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sd-pg + .sd-pg .sd-pg-t { margin-top: 8px; }
+.sd-pg .sd-pl { margin-top: 0; }
+.sd-pi-l1 b { font-weight: 600; }

@@ -71,12 +71,27 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, sem
   const lista = doDia ?? listaPadrao;
   const quantoFalta = destaque?.hora ? faltaPara(hhmm(destaque.hora), agora) : "";
   const amanha = (() => { const d = new Date(hoje + "T12:00:00"); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10); })();
-  const quando = (e: EntregaResumo) => {
-    const d = new Date(e.data + "T12:00:00");
-    const dia = e.data === hoje ? "Hoje" : e.data === amanha ? "Amanhã" : `${d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")}, ${d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}`;
-    return `${dia.charAt(0).toUpperCase()}${dia.slice(1)}${e.hora ? ` às ${hhmm(e.hora)}` : ""}`;
+  const tituloDia = (iso: string) => {
+    if (iso === hoje) return "Hoje";
+    if (iso === amanha) return "Amanhã";
+    const d = new Date(iso + "T12:00:00");
+    return `${["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"][d.getDay()]}, ${d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}`;
+  };
+  const linhaHora = (e: EntregaResumo) => {
+    const h = hhmm(e.hora);
+    if (passaram.includes(e)) return [h, "atrasado"].filter(Boolean).join(" · ");
+    return [h, e === destaque ? quantoFalta : "", e.tipo === "entrega" ? "Entrega" : "Retirada"].filter(Boolean).join(" · ");
   };
 
+
+  // o total do dia vem da faixa (a lista mostra até 5)
+  const grupos: { data: string; titulo: string; itens: EntregaResumo[]; total: number }[] = [];
+  for (const e of lista) {
+    const g = grupos.find(x => x.data === e.data);
+    if (g) g.itens.push(e); else grupos.push({ data: e.data, titulo: tituloDia(e.data), itens: [e], total: 0 });
+  }
+
+  grupos.forEach(g => { g.total = Math.max(g.itens.length, (semana || []).filter(e => e.data === g.data).length); });
 
   // 4.29: sem etiquetas (pedido do dono): só o título, o link da Agenda e os pedidos
   const nadaMarcado = !doDia && lista.length === 0;
@@ -128,23 +143,27 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, sem
               <button type="button" onClick={() => setDiaSel(null)}>Ver todas</button>
             </div>
           )}
-          {lista.length > 0 && (
-            <ul className="sd-pl">
-              {lista.map(e => (
-                <li key={e.id}>
-                  <button type="button" className={`sd-pi${e === destaque ? " sd-pi--agora" : ""}${passaram.includes(e) ? " sd-pi--passou" : ""}`} onClick={() => navigate(`/pedidos/${e.id}`)}>
-                    <span className="sd-pi-foto">{e.foto ? <img src={e.foto} alt="" loading="lazy" /> : <Cake size={22} aria-hidden="true" />}</span>
-                    <span className="sd-pi-tx">
-                      <span className="sd-pi-l1"><b>{e.cliente}</b>{e.numero ? <em>#{e.numero}</em> : null}</span>
-                      {e.produto && <small className="sd-pi-pr">{e.produto}</small>}
-                      <small className="sd-pi-q">{passaram.includes(e) ? `${quando(e)} · atrasado` : <>{quando(e)}{e === destaque && quantoFalta ? ` · ${quantoFalta}` : ""} · {e.tipo === "entrega" ? "Entrega" : "Retirada"}</>}</small>
-                    </span>
-                    <span className="sd-pi-v">{real(e.valor)}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
+          {/* (22/10) agrupada por dia: a data vira título do grupo ("Hoje · 2 entregas") e a linha de baixo fica só com hora e tipo (antes cortava "Retir…") */}
+          {grupos.map(g => (
+            <div key={g.data} className="sd-pg">
+              <p className="sd-pg-t">{g.titulo} · {g.total} {g.total === 1 ? "entrega" : "entregas"}</p>
+              <ul className="sd-pl">
+                {g.itens.map(e => (
+                  <li key={e.id}>
+                    <button type="button" className={`sd-pi${e === destaque ? " sd-pi--agora" : ""}${passaram.includes(e) ? " sd-pi--passou" : ""}`} onClick={() => navigate(`/pedidos/${e.id}`)}>
+                      <span className="sd-pi-foto">{e.foto ? <img src={e.foto} alt="" loading="lazy" /> : <Cake size={22} aria-hidden="true" />}</span>
+                      <span className="sd-pi-tx">
+                        <span className="sd-pi-l1"><b>{e.cliente}</b>{e.numero ? <em>#{e.numero}</em> : null}</span>
+                        {e.produto && <small className="sd-pi-pr">{e.produto}</small>}
+                        <small className="sd-pi-q">{linhaHora(e)}</small>
+                      </span>
+                      <span className="sd-pi-v">{real(e.valor)}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </>
       )}
     </div>
