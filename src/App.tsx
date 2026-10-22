@@ -75,6 +75,7 @@ function IrParaEntrega() {
 }
 import DadosLoja from "@/pages/DadosLoja";
 import CardapioPublico from "@/pages/CardapioPublico";
+import FaixaComoCliente from "@/components/cardapio/FaixaComoCliente";
 import Cardapio from "@/pages/Cardapio";
 import Financeiro from "@/pages/Financeiro";
 import FinanceiroTransacoes from "@/pages/FinanceiroTransacoes";
@@ -418,8 +419,8 @@ export default function App() {
         <Route path="/termos" element={<Termos />} />
         <Route path="/privacidade" element={<Privacidade />} />
         {/* Rota pública do cardápio — nova estrutura: /c/[codigo]/[slug?] */}
-        <Route path="/c/:codigo" element={<CardapioPublico />} />
-        <Route path="/c/:codigo/:slug" element={<CardapioPublico />} />
+        <Route path="/c/:codigo" element={<><FaixaComoCliente /><CardapioPublico /></>} />
+        <Route path="/c/:codigo/:slug" element={<><FaixaComoCliente /><CardapioPublico /></>} />
         {/* Fallback: rota antiga /cardapio/:slug — mantida por compat, redireciona internamente */}
         <Route path="/cardapio/:slug" element={<CardapioPublico />} />
         <Route path="/esqueci-senha" element={<EsqueciSenha />} />

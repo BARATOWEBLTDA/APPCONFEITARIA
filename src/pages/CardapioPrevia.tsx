@@ -32,6 +32,15 @@ export default function CardapioPrevia() {
     });
   }, [profile?.id, (profile as any)?.codigo_publico]);
 
+  // (22/10) B11 · celular: abre o cardápio de verdade em tela cheia, com a faixa "Você está vendo como cliente"
+  const celular = typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches;
+  useEffect(() => {
+    if (!celular || !url) return;
+    let caminho = url;
+    try { const u = new URL(url, window.location.origin); caminho = u.pathname + u.search; } catch { /* usa como veio */ }
+    navigate(caminho + (caminho.includes("?") ? "&" : "?") + "comocliente=1", { replace: true });
+  }, [celular, url]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!url) return;
     setCarregou(false); setDemorou(false);
@@ -72,6 +81,8 @@ export default function CardapioPrevia() {
       ) : <p>Carregando a prévia…</p>}
     </div>
   );
+
+  if (celular) return <div className="pv-carregando"><span className="ui-gira" aria-hidden="true" /><p>Abrindo seu cardápio…</p></div>;
 
   return (
     <div className="pv">
