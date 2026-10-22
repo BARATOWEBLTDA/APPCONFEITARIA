@@ -69,6 +69,8 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   const [folha, setFolha] = useState<Folha>(null);
   const [fechado, setFechado] = useState(false);
   const [jaViuIncompleto, setJaViuIncompleto] = useState(false);
+  // (22/10) celular, no Início: cartão-banner com só o próximo passo; "Ver todos" abre a lista
+  const [verTodos, setVerTodos] = useState(false);
   const kFechado = uid ? `doonly_pp_fechado_${uid}` : "";
   const kIncompleto = uid ? `doonly_pp_incompleto_${uid}` : "";
   const pulados = useRef<Set<Passo>>(new Set());
@@ -188,6 +190,44 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   const feitos = passos.filter(p => p.feito).length;
   const atual = passos.findIndex(p => !p.feito);
   const colunas = largo && local === "inicio";
+
+  const banner = local === "inicio" && !largo;
+  if (banner && atual >= 0) {
+    const p = passos[atual];
+    const faltam = passos.length - feitos;
+    return (
+      <div ref={raiz} className={`pp pp--inicio pp--banner${destaque ? " pp--destaque" : ""}`}>
+        <div className="ppb-topo">
+          <img src="/Sistema/banner-passos.webp" alt="" aria-hidden="true" className="ppb-img" />
+          <b className="ppb-t">{faltam === 1 ? "Falta só 1 passo" : "Seu cardápio quase no ar"}</b>
+          <small className="ppb-sub">{faltam === 1 ? "Pro cardápio ir pro ar" : `Faltam ${faltam} passos`} · {feitos} de {passos.length} prontos</small>
+          <div className="ppb-bar" aria-label={`${feitos} de ${passos.length} passos feitos`}><i style={{ width: `${(feitos / passos.length) * 100}%` }} /></div>
+        </div>
+        <div className="ppb-at" ref={atRef}>
+          <span className="ppb-n" aria-hidden="true">{atual + 1}</span>
+          <span className="ppb-tx"><b>{p.t}</b><small>{p.s}</small></span>
+          <button type="button" className="ppb-btn" ref={btnRef} onClick={p.abrir}>{feitos <= 1 ? "Começar" : "Fazer agora"}</button>
+          {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo="Comece por aqui" texto="Em poucos minutos seu cardápio fica pronto pra vender." acao="Começar" aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
+        </div>
+        {verTodos && <div className="ppb-lista">{passos.map((q, i) => i === atual ? null : (
+          <button type="button" key={q.t} className={`pp-ps${q.feito ? " pp-ps--ok" : ""}`} onClick={q.feito ? undefined : q.abrir} disabled={q.feito}>
+            <span className={`pp-ic${q.feito ? " pp-ic--ok" : ""}`}>{q.feito ? I(Check) : <>{q.ic}<i className="pp-n">{i + 1}</i></>}</span>
+            <span className="pp-tx"><b>{q.t}</b><small>{q.feito ? "Feito" : q.s}</small></span>
+            {!q.feito && <span className="pp-seta"><CaretRight size={16} weight="bold" /></span>}
+          </button>
+        ))}</div>}
+        <button type="button" className="ppb-ver" aria-expanded={verTodos} onClick={() => setVerTodos(v => !v)}>{verTodos ? "Esconder os passos" : `Ver todos os ${passos.length} passos`}</button>
+
+        {folha === "descricao" && <FolhaDescricao uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
+        {folha === "logo" && <FolhaLogo uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
+        {folha === "endereco" && <FolhaEndereco uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
+        {folha === "pagamento" && <FolhaPagamento uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
+        {folha === "caixa" && <FolhaCaixa uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
+        {folha === "horario" && <FolhaHorario uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
+        <style>{CSS}</style>
+      </div>
+    );
+  }
 
   return (
     <div ref={raiz} className={`pp pp--${local}${destaque ? " pp--destaque" : ""}`}>
@@ -599,6 +639,26 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
 }
 
 const CSS = `
+  /* (22/10) celular, Início: cartão-banner (arte com o Doo acenando à direita, texto à esquerda) */
+  .pp.pp--banner { padding: 0; overflow: hidden; }
+  .ppb-topo { position: relative; aspect-ratio: 10 / 3; min-height: 96px; padding: 14px 16px 0; box-sizing: border-box; background: #FFE3EE; overflow: hidden; }
+  .ppb-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: right center; pointer-events: none; }
+  .ppb-t, .ppb-sub, .ppb-bar { position: relative; }
+  .ppb-t { display: block; max-width: 72%; font-size: 17px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ppb-sub { display: block; max-width: 72%; margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ppb-bar { width: 58%; height: 8px; margin-top: 10px; border-radius: 4px; background: rgba(214, 63, 117, .15); overflow: hidden; }
+  .ppb-bar i { display: block; height: 100%; border-radius: 4px; background: var(--ui-rosa); transition: width .4s ease; }
+  .ppb-at { position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 0; }
+  .ppb-n { flex: none; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: var(--ui-rosa); color: var(--ui-branco); font-size: 14px; font-weight: 700; }
+  .ppb-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .ppb-tx b { font-size: 15px; font-weight: 700; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ppb-tx small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ppb-btn { flex: none; min-height: 44px; padding: 0 14px; border: 0; border-radius: var(--ui-raio-botao); background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .ppb-btn:active { background: var(--ui-rosa-escuro); }
+  .pp--destaque .ppb-at { animation: ppDestaque 1.1s ease-in-out 2; }
+  .ppb-lista { padding: 0 14px; border-top: 1px solid var(--ui-linha); }
+  .ppb-ver { display: block; width: 100%; min-height: 44px; border: 0; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .ppb-btn:focus-visible, .ppb-ver:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
 
   .pp { background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); padding: 16px 16px 8px; box-shadow: var(--ui-sombra-cartao); font-family: var(--font-base); color: var(--ui-texto); }
   .pp-t { display: block; font-size: 18px; font-weight: 700; line-height: 1.3; }
