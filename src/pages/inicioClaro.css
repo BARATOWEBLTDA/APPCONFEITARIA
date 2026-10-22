@@ -20,7 +20,8 @@
   html body .ini-root .ini-hero-acoes { gap: 8px !important; }
   html body .ini-root .ini-hero-ac { width: 44px !important; height: 44px !important; background: #F2EFF0 !important; color: var(--ui-texto) !important; }
   html body .ini-root .ini-hero-ac:active { background: #E8E3E5 !important; }
-  html body .ini-root .ini-hero-ac--pro { background: var(--ui-rosa-claro) !important; }
+  html body .ini-root .ini-hero-ac--pro { background: #FFF1C7 !important; }
+  html body .ini-root .ini-hero-ac--pro:active { background: #FCE6A4 !important; }
   html body .ini-root .ini-hero-ac--pro img { display: block; width: 26px; height: 20px; object-fit: contain; }
   /* número das notificações: bolinha vermelha com borda branca */
   html body .ini-root .ini-hero-bolinha { top: -3px !important; right: -3px !important; background: var(--ui-vermelho) !important; }
