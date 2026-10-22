@@ -46,20 +46,20 @@ type Achado = { nome: string; onde: string; palavras: string; ir: string | "cont
 const INDICE: Achado[] = [
   { nome: "Nome, telefone e senha", onde: "Conta › Minha conta", palavras: "foto perfil logo email e-mail celular trocar senha", ir: "conta" },
   { nome: "Minha assinatura", onde: "Conta", palavras: "plano pro pagamento mensalidade cancelar", ir: "assinatura" },
-  { nome: "Nome e descrição da loja", onde: "Configurações da loja › Dados da loja", palavras: "sobre confeitaria texto", ir: "/cardapio-config" },
-  { nome: "Endereço", onde: "Configurações da loja › Dados da loja", palavras: "cep rua mapa cidade localização", ir: "/cardapio-config" },
-  { nome: "Horário de funcionamento", onde: "Configurações da loja › Dados da loja", palavras: "horario aberto fechado dias semana abrir fechar", ir: "/cardapio-config" },
-  { nome: "Formas de pagamento", onde: "Configurações da loja › Dados da loja", palavras: "pix dinheiro cartão credito debito pagar", ir: "/checkout-config" },
-  { nome: "Entrega e retirada", onde: "Configurações da loja › Dados da loja", palavras: "taxa de entrega frete retirar buscar delivery", ir: "/checkout-config" },
-  { nome: "Logo, cores e banner", onde: "Configurações da loja › Aparência", palavras: "logotipo cor tema modelo imagem capa visual", ir: "/cardapio-design" },
-  { nome: "Mensagens do WhatsApp", onde: "Configurações da loja", palavras: "whatsapp textos modelo resposta cliente", ir: "/configuracoes/mensagens" },
+  { nome: "Nome e descrição da loja", onde: "Cadastros › Dados da loja", palavras: "sobre confeitaria texto", ir: "/cardapio-config" },
+  { nome: "Endereço", onde: "Cadastros › Dados da loja", palavras: "cep rua mapa cidade localização", ir: "/cardapio-config" },
+  { nome: "Horário de funcionamento", onde: "Cadastros › Dados da loja", palavras: "horario aberto fechado dias semana abrir fechar", ir: "/cardapio-config" },
+  { nome: "Formas de pagamento", onde: "Cadastros › Dados da loja", palavras: "pix dinheiro cartão credito debito pagar", ir: "/checkout-config" },
+  { nome: "Entrega e retirada", onde: "Cadastros › Dados da loja", palavras: "taxa de entrega frete retirar buscar delivery", ir: "/checkout-config" },
+  { nome: "Logo, cores e banner", onde: "Cadastros › Cardápio digital › Aparência", palavras: "logotipo cor tema modelo imagem capa visual", ir: "/cardapio-design" },
+  { nome: "Mensagens do WhatsApp", onde: "Cadastros", palavras: "whatsapp textos modelo resposta cliente", ir: "/configuracoes/mensagens" },
   { nome: "Custos fixos", onde: "Financeiro › Custos", palavras: "aluguel luz internet agua conta mensal", ir: "/custos" },
   { nome: "Salário e jornada", onde: "Financeiro › Custos", palavras: "mao de obra hora horas custo da hora trabalho", ir: "/custos" },
   { nome: "Taxa da maquininha", onde: "Financeiro › Custos", palavras: "cartão credito debito custos variaveis embalagem", ir: "/custos" },
   { nome: "Custos invisíveis", onde: "Financeiro › Custos", palavras: "gas forno perdas descartaveis porcentagem", ir: "/custos" },
   { nome: "Saldo do caixa", onde: "Financeiro", palavras: "dinheiro gaveta banco quanto tenho", ir: "/financeiro" },
-  { nome: "Velas e topos de bolo", onde: "Cardápio › Complementos", palavras: "adicionais extras complementos escrita papel de arroz", ir: "/complementos" },
-  { nome: "Categorias do cardápio", onde: "Cardápio › Categorias", palavras: "grupos ordem secoes", ir: "/categorias" },
+  { nome: "Velas e topos de bolo", onde: "Cadastros › Complementos", palavras: "adicionais extras complementos escrita papel de arroz", ir: "/complementos" },
+  { nome: "Categorias do cardápio", onde: "Cadastros › Categorias", palavras: "grupos ordem secoes", ir: "/categorias" },
   { nome: "Notificações e sons", onde: "App", palavras: "avisos som alerta pedido novo", ir: "notif" },
   { nome: "Instalar o app", onde: "App", palavras: "tela inicial atalho celular", ir: "instalar" },
   { nome: "Fale com o suporte", onde: "Ajuda", palavras: "whatsapp ajuda atendimento", ir: "suporte" },
@@ -267,7 +267,7 @@ export default function Configuracoes() {
           <section className="cf9-card cf9-lista" aria-label="Configurações">
             {/* (19/10) Conta de volta em lista, todos os itens iguais (sem os quadradões nem o chocolate) */}
             <h2 className="cf9-sec">Conta</h2>
-            <ItemConfig icone={<Storefront size={20} weight="bold" />} nome="Configurações da loja" apoio="Dados, aparência e mensagens" onClick={() => navigate("/cardapio")} />
+            {/* (21/10) "Configurações da loja" saiu: dados da loja, mensagens e o cardápio digital ficam em Cadastros */}
             <ItemConfig icone={<User size={20} weight="bold" />} nome="Minha conta"
               apoio={userEmail || "Foto, nome, telefone e senha"}
               onClick={() => { setError(""); setSenhaMsg(""); setRascunho({ nome: form.nome, telefone: form.telefone }); setEditarOpen(true); }} />
