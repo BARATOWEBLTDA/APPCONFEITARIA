@@ -30,13 +30,7 @@
   /* atalhos com borda fina (no fundo branco sem ela somem) */
   html body .ini-root .ini-nav-card { background: var(--ui-branco) !important; border: 1px solid var(--ui-borda) !important; box-shadow: none !important; }
 
-  /* menu de baixo claro (o Layout põe a classe só quando a tela é o Início) */
-  .bottom-nav.bottom-nav--claro { background: var(--ui-branco) !important; border-top: 1px solid var(--ui-borda); box-shadow: 0 -2px 10px rgba(44, 18, 25, .05) !important; }
-  .bottom-nav--claro .bn-item { color: var(--ui-texto-3) !important; }
-  .bottom-nav--claro .bn-item--active { color: var(--ui-rosa-escuro) !important; }
-  .bottom-nav--claro .bn-bolinha { box-shadow: 0 0 0 2px var(--ui-branco) !important; }
-  .bottom-nav--claro .bn-novo-c { box-shadow: 0 4px 12px rgba(214, 63, 117, .35), 0 0 0 4px var(--ui-branco) !important; }
-  .bottom-nav--claro .bn-item:focus-visible { outline-color: rgba(var(--ui-rosa-rgb), .45); }
+
 }
 
 /* (22/10) nome e data mais juntos no topo (como o iFood: saudação e endereço colados) */
@@ -48,7 +42,7 @@
 
 /* (22/10) topo mais baixo: letra e círculos um pouco menores */
 @media (max-width: 900px) {
-  html body .ini-root .ini-hero { min-height: 0 !important; padding-top: 10px !important; padding-bottom: 10px !important; }
+  html body .ini-root .ini-hero { min-height: 0 !important; padding-top: calc(10px + env(safe-area-inset-top, 0px)) !important; padding-bottom: 10px !important; background: linear-gradient(var(--chocolate) 0 env(safe-area-inset-top, 0px), var(--ui-branco) env(safe-area-inset-top, 0px)) !important; }
   html body .ini-root .ini-hero-greeting h1 { font-size: 15px !important; }
   html body .ini-root .ini-hero-sub .ini-hero-data-mobile { font-size: 12px !important; }
   html body .ini-root .ini-hero-acoes { gap: 6px !important; }

@@ -11,6 +11,7 @@ import DooIA from "@/components/DooIA";
 import MaisDrawer from "@/components/MaisDrawer";
 import PerguntaSons from "@/components/PerguntaSons";
 import { useState, useEffect, type ReactNode } from "react";
+import "@/styles/mobileClaro.css";
 import { ClipboardText, ChartBar, Stack, Palette, Truck, Storefront, ArrowSquareOut, ArrowsDownUp, CalendarCheck, Tag, ChartLineUp, Megaphone, HandCoins, CaretDoubleLeft, CaretDoubleRight,
   House, CalendarDots, ShoppingBag, Users, BookOpen,
   Package, CurrencyDollar, Gear, CaretDown, Cake,
@@ -160,6 +161,17 @@ export default function Layout() {
     return () => window.removeEventListener("doonly:abrir-doo", abrir);
   }, []);
   const location = useLocation();
+  // (22/10) celular: topo branco, então a barra do navegador/Android também fica branca (volta ao sair do app da confeiteira)
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) return;
+    const antes = meta.getAttribute("content") || "";
+    const mq = window.matchMedia("(max-width: 900px)");
+    const aplicar = () => meta.setAttribute("content", mq.matches ? "#FFFFFF" : antes);
+    aplicar();
+    mq.addEventListener("change", aplicar);
+    return () => { mq.removeEventListener("change", aplicar); meta.setAttribute("content", antes); };
+  }, []);
   const isPrevia = location.pathname === "/cardapio-preview";
 
   // Scroll pro topo ao mudar de rota (fix: antes ficava na posição anterior)
@@ -259,7 +271,7 @@ export default function Layout() {
 
       {/* ── Bottom nav Mobile ── */}
       {!isPrevia && (
-        <nav className={`bottom-nav${location.pathname === "/inicio" || location.pathname === "/" ? " bottom-nav--claro" : ""}`} aria-label="Menu principal">
+        <nav className="bottom-nav bottom-nav--claro" aria-label="Menu principal">
           <div className="bottom-nav-pill">
             {/* (16/10) Início · Cardápio · [+ Nova venda] · Pedidos · Mais. O Doo IA foi pro topo do Início e pro menu da foto */}
             {([
