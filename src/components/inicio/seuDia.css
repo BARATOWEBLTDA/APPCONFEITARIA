@@ -92,3 +92,8 @@
 .sd-dvazio { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 68px; margin: 6px 16px 10px; padding: 0 6px 0 14px; border-radius: 12px; background: #FAF7F8; }
 .sd-dvazio span { min-width: 0; font-size: 14px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sd-dvazio button { flex: none; min-height: 40px; padding: 0 10px; border: 0; border-radius: 8px; background: none; font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
+
+/* (22/10) número em cima, bolinhas e o dia da semana por extenso embaixo */
+.sd-sd small { text-transform: none; font-size: 12px; font-weight: 500; }
+.sd-sd .sd-pts { margin: 2px 0 1px; height: 7px; }
+.sd-sd .sd-pts i { width: 6px; height: 6px; }

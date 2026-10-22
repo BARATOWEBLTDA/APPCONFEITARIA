@@ -46,7 +46,7 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, sem
   const dias7 = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(hoje + "T12:00:00"); d.setDate(d.getDate() + i);
     const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    return { iso, n: (semana || []).filter(e => e.data === iso).length, sem: i === 0 ? "Hoje" : d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "").slice(0, 3), dia: d.getDate() };
+    return { iso, n: (semana || []).filter(e => e.data === iso).length, sem: i === 0 ? "Hoje" : ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"][d.getDay()], dia: d.getDate() };
   });
 
   // 11/10: destaque = a primeira entrega de hoje com hora de AGORA em diante (sem nenhuma, a primeira sem horário).
@@ -86,12 +86,13 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, sem
           {dias7.map(d => (
             <button type="button" key={d.iso} className={`sd-sd${diaSel === d.iso ? " on" : ""}${d.n ? " tem" : ""}`} aria-pressed={diaSel === d.iso}
               onClick={() => setDiaSel(x => x === d.iso ? null : d.iso)} aria-label={`${d.sem} ${d.dia}: ${d.n} ${d.n === 1 ? "pedido" : "pedidos"}${d.iso === hoje && (atrasados > 0 || passaram.length > 0) ? ", com atraso" : ""}`}>
-              <small>{d.sem}</small><b>{d.dia}</b>
-              {/* (22/10) bolinhas como na Agenda: vermelha = tem atraso (só no Hoje), amarela = tem pedido marcado */}
+              <b>{d.dia}</b>
+              {/* (22/10) bolinhas como na Agenda: vermelha = tem atraso (só no Hoje), amarela = tem pedido marcado. Embaixo, o dia da semana por extenso (como na Dora) */}
               <span className="sd-pts" aria-hidden="true">
                 {d.iso === hoje && (atrasados > 0 || passaram.length > 0) && <i className="atr" />}
                 {(d.iso === hoje ? d.n - passaram.length : d.n) > 0 && <i className="prox" />}
               </span>
+              <small>{d.sem}</small>
             </button>
           ))}
         </div>
