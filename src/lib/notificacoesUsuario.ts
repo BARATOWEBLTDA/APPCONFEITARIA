@@ -29,6 +29,8 @@ export async function carregarNotificacoes(limite = 100): Promise<Notif[]> {
   return (ns || [])
     .filter((n: any) => !(n.user_id && n.user_id !== user.id))
     .filter((n: any) => !mapa.get(n.id)?.excluida)
+    // (22/10) B4: a tela de Conquistas saiu do menu; os avisos antigos de conquista não aparecem mais (continuam no banco)
+    .filter((n: any) => n.tipo !== "conquista")
     .filter((n: any) => { const c = daConta(n.chave); return !c || c.sit === maisNova.get(c.id) })
     .map((n: any) => ({ ...n, lida: !!mapa.get(n.id)?.lida_em || (antigo > 0 && new Date(n.created_at).getTime() <= antigo && !n.user_id) }));
 }
