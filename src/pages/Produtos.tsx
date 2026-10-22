@@ -2707,15 +2707,37 @@ export default function Produtos() {
                 return (
                   <div className="prod-section">
                     {!form.id ? <p className="prod-section-label prod-section-label--novo">Cardápio e entrega</p> : null}
+                    {/* (22/10) celular: escolha única Pronta entrega | Sob encomenda (antes eram duas caixinhas e dava pra desmarcar as duas, B6) */}
+                    <div className="prod-so-cel">
+                      <div className="prod-tipo" role="radiogroup" aria-label="Como você vende este produto">
+                        <button type="button" role="radio" aria-checked={form.pronta_entrega === true} className={form.pronta_entrega === true ? "on" : ""}
+                          onClick={() => setForm(f => ({ ...(f as any), pronta_entrega: true, antecedencia: null }))}><b>Pronta entrega</b><small>Tem feito, sai na hora</small></button>
+                        <button type="button" role="radio" aria-checked={form.pronta_entrega !== true} className={form.pronta_entrega !== true ? "on" : ""}
+                          onClick={() => setForm(f => ({ ...(f as any), pronta_entrega: false, antecedencia: (f as any).pronta_entrega ? "48h" : (f as any).antecedencia ?? null }))}><b>Sob encomenda</b><small>O cliente pede antes</small></button>
+                      </div>
+                      {form.pronta_entrega !== true && (
+                        <div className="prod-field" style={{ marginTop: 12 }}>
+                          <label>Quantos dias antes?</label>
+                          <div className="prod-antecedencia-grid">
+                            {[{ valor: null as string | null, label: "Sem prazo" }, { valor: "24h", label: "1 dia" }, { valor: "48h", label: "2 dias" }, { valor: "3d", label: "3 dias" }, { valor: "5d", label: "5 dias" }, { valor: "7d", label: "1 semana" }, { valor: "15d", label: "15 dias" }].map(opt => (
+                              <button key={opt.label} type="button" className={`prod-antecedencia-chip ${((form as any).antecedencia ?? null) === opt.valor ? "prod-antecedencia-chip--on" : ""}`}
+                                onClick={() => setForm(f => ({ ...(f as any), antecedencia: opt.valor }))}>{opt.label}</button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                     <div className="prod-opcs">
                       {op(form.disponivel !== false, "Mostrar no cardápio", form.disponivel !== false ? "Os clientes veem e podem pedir" : "Fica guardado só pra você", () => setForm(f => ({ ...f, disponivel: f.disponivel === false })))}
+                      <div className="prod-so-pc">
                       {op(form.pronta_entrega === true, "Pronta entrega", "Tem feito, sai na hora", () => setForm(f => ({ ...(f as any), pronta_entrega: !(f as any).pronta_entrega, antecedencia: !(f as any).pronta_entrega ? null : (f as any).antecedencia ?? null })))}
                       {op(enc, "Precisa encomendar antes", enc ? "O cardápio mostra \"Pedir antes\"" : "O cliente pede com antecedência", () => setForm(f => ({ ...(f as any), antecedencia: (f as any).antecedencia ? null : "48h", pronta_entrega: (f as any).antecedencia ? (f as any).pronta_entrega : false })))}
+                      </div>
                       {/* (19/10) foto de referência só nos produtos que pedem (personalizados, topos de bolo) */}
                       {op((form as any).aceita_referencia === true, "Aceita foto de referência", "Pra bolos personalizados e topos", () => setForm(f => ({ ...(f as any), aceita_referencia: !(f as any).aceita_referencia })))}
                     </div>
                     {enc && (
-                      <div className="prod-field" style={{ marginTop: 12 }}>
+                      <div className="prod-field prod-so-pc" style={{ marginTop: 12 }}>
                         <label>Quantos dias antes?</label>
                         <div className="prod-antecedencia-grid">
                           {[{ valor: "24h", label: "1 dia" }, { valor: "48h", label: "2 dias" }, { valor: "3d", label: "3 dias" }, { valor: "5d", label: "5 dias" }, { valor: "7d", label: "1 semana" }, { valor: "15d", label: "15 dias" }].map(opt => (
