@@ -731,8 +731,15 @@ export default function Inicio() {
 
         {/* (16/10) celular: o sino com as não lidas (antes só pela foto › Notificações, sem aviso nenhum) */}
         <div className="ini-hero-acoes">
+          {/* (22/10) a coroa do PRO do lado do sino (como o Clube do iFood): leva pra assinatura */}
+          {profile && (
+            <button type="button" className="ini-hero-ac ini-hero-ac--pro" onClick={() => navigate(isPro ? "/minha-assinatura" : "/assinar")}
+              aria-label={isPro ? "Minha assinatura PRO" : "Assinar o plano PRO"} title={isPro ? "Minha assinatura" : "Seja PRO"}>
+              <img src="/coroa.png" alt="" aria-hidden="true" />
+            </button>
+          )}
           <button type="button" className={`ini-hero-ac${notifCount > 0 ? " ini-hero-ac--tem" : ""}`} onClick={() => navigate("/notificacoes")} aria-label={notifCount > 0 ? `Notificações, ${notifCount} nova${notifCount > 1 ? "s" : ""}` : "Notificações"} title="Notificações">
-            <Bell size={20} weight={notifCount > 0 ? "fill" : "bold"} />
+            <Bell size={24} weight="regular" />
             {notifCount > 0 && <i className="ini-hero-bolinha">{notifCount > 9 ? "9+" : notifCount}</i>}
           </button>
         </div>

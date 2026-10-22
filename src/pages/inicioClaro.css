@@ -13,9 +13,17 @@
   html body .ini-root .ini-plan-tag--upgrade { background: var(--chocolate, #3A2219) !important; border-color: var(--chocolate, #3A2219) !important; color: var(--ui-branco) !important; }
   html body .ini-root .ini-plan-tag--upgrade:active { background: var(--chocolate-escuro, #2A1812) !important; }
   html body .ini-root .ini-plan-tag--upgrade:focus-visible { outline-color: rgba(var(--ui-rosa-rgb), .45) !important; }
-  /* sino: cinza quando não tem nada; amarelinho quando tem notificação nova */
-  html body .ini-root .ini-hero-ac { background: var(--ui-cinza, #F2EEF0) !important; color: var(--ui-texto-2) !important; }
-  html body .ini-root .ini-hero-ac.ini-hero-ac--tem { background: #FFF3C4 !important; color: #B7791F !important; }
+  /* (22/10) topo como o do iFood: sem a foto; à direita a coroa do PRO e o sino, em círculos; o topo fica preso ao rolar */
+  html body .ini-root .ini-hero { position: sticky !important; top: 0 !important; z-index: 40 !important; }
+  html body .ini-root .ini-profile-wrapper { display: none !important; }
+  html body .ini-root .ini-hero-greeting .ini-plan-tag { display: none !important; }
+  html body .ini-root .ini-hero-acoes { gap: 8px !important; }
+  html body .ini-root .ini-hero-ac { width: 44px !important; height: 44px !important; background: #F2EFF0 !important; color: var(--ui-texto) !important; }
+  html body .ini-root .ini-hero-ac:active { background: #E8E3E5 !important; }
+  html body .ini-root .ini-hero-ac--pro { background: var(--ui-rosa-claro) !important; }
+  html body .ini-root .ini-hero-ac--pro img { display: block; width: 26px; height: 20px; object-fit: contain; }
+  /* número das notificações: bolinha vermelha com borda branca */
+  html body .ini-root .ini-hero-bolinha { top: -3px !important; right: -3px !important; background: var(--ui-vermelho) !important; }
   html body .ini-root .ini-hero-bolinha { border-color: var(--ui-branco) !important; }
   html body .ini-root .ini-profile-btn { box-shadow: 0 0 0 1px var(--ui-borda) !important; }
   /* atalhos com borda fina (no fundo branco sem ela somem) */
