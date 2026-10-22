@@ -12,3 +12,8 @@
   html body .ini-root .ini-section--nav .ini-nav-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap !important; font-size: 13.5px !important; font-weight: 500 !important; color: var(--ui-texto) !important; }
   html body .ini-root .ini-section--nav .ini-nav-sub, html body .ini-root .ini-section--nav .ini-nav-arrow { display: none !important; }
 }
+
+/* (22/10) fim do Início: o espaço pro menu de baixo já vem do layout (104 px); o Início somava mais 96 px em branco */
+@media (max-width: 900px) {
+  html body .ini-root { padding-bottom: 0 !important; }
+}

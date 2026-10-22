@@ -1487,7 +1487,7 @@ export default function Inicio() {
 
         .ini-section--nav     { order: 2; }
         /* (22/10) celular: o Pra fazer vem logo depois do Acesso rápido (antes ficava em cima dele) */
-        @media (max-width: 900px) { .ini-main > .ini-section.ini-falta { order: 2; } }
+        @media (max-width: 900px) { .ini-main > .ini-section.ini-falta { order: 3; } } /* (22/10) e depois das Próximas entregas (o dia vem antes das tarefas) */
         .ini-main > .ini-mobile-banner { order: 3; margin-top: var(--space-3); } /* (18/10) depois das Próximas entregas (o calendário vem logo após o Acesso rápido) */
         .ini-section--novos { order: -1; }
         .ini-root .ini-section.ini-section--novos { margin-top: var(--space-3) !important; }

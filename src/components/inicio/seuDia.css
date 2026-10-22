@@ -77,15 +77,13 @@
 /* (16/10) faixa da semana: toque num dia pra ver só os pedidos dele */
 .sd-sem { display: flex; gap: 8px; margin: 4px 0 8px; padding: 2px 16px; overflow-x: auto; scroll-snap-type: x proximity; scroll-padding: 0 16px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .sd-sem::-webkit-scrollbar { display: none; }
-.sd-sd { flex: 1 0 64px; min-width: 64px; scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 0 8px; border: 1px solid var(--ui-borda, #F0E6EA); border-radius: 12px; background: var(--ui-branco); font-family: inherit; color: var(--ui-texto); cursor: pointer; }
+.sd-sd { flex: 1 0 64px; min-width: 64px; scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 0; border: 1px solid var(--ui-borda, #F0E6EA); border-radius: 12px; background: var(--ui-branco); font-family: inherit; color: var(--ui-texto); cursor: pointer; }
 .sd-sd small { font-size: 12.5px; font-weight: 600; color: var(--ui-texto-3); text-transform: capitalize; white-space: nowrap; }
 .sd-sd b { font-size: 20px; font-weight: 700; line-height: 1.2; }
-.sd-sd i { min-height: 20px; min-width: 20px; padding: 0 6px; border-radius: 10px; font-style: normal; font-size: 12px; font-weight: 700; line-height: 20px; color: transparent; }
-.sd-sd.tem i { background: var(--primary-light, #FCE0E9); color: var(--ui-rosa-escuro); }
+/* (22/10) sem o número de pedidos embaixo do dia: todos os quadradinhos iguais (a lista embaixo mostra os pedidos do dia tocado) */
 /* (19/10) dia escolhido: todo rosa, texto branco e a quantidade de pedidos (até 0) num selinho branco */
 .sd-sd.on { border-color: var(--ui-rosa); background: var(--ui-rosa); color: var(--ui-branco); }
 .sd-sd.on small, .sd-sd.on b { color: var(--ui-branco); }
-.sd-sd.on i { background: var(--ui-branco); color: var(--ui-rosa-escuro); }
 .sd-dvazio { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 68px; margin: 6px 16px 10px; padding: 0 6px 0 14px; border-radius: 12px; background: #FAF7F8; }
 .sd-dvazio span { min-width: 0; font-size: 14px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sd-dvazio button { flex: none; min-height: 40px; padding: 0 10px; border: 0; border-radius: 8px; background: none; font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
