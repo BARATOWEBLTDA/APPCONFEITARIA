@@ -5,10 +5,10 @@ import PrimeirosPassos from "@/components/PrimeirosPassos";
 import VisaoGeralDesktop from "@/components/cardapio/VisaoGeralDesktop";
 import { useNavigate } from "react-router-dom";
 import {
-  ChartBar, Eye, Cake, Storefront, Sliders, PaintBrush, Tag,
+  ChartBar, Eye, Storefront, Sliders, PaintBrush, Tag,
   Share, Percent, ForkKnife, Copy, CheckCircle, Warning, Lightbulb,
   TrendUp, TrendDown, ShoppingBag, Users as UsersIcon, CurrencyDollar,
-  CaretRight, SquaresFour, Stack, Crown, Package, WarningCircle, ChatCircleText,
+  CaretRight, Crown, Package, WarningCircle,
 } from "@phosphor-icons/react";
 import { Botao, TelaVazia } from "@/components/base";
 import { useProfile, getCardapioUrl, isPro } from "@/hooks/useProfile";
@@ -367,60 +367,19 @@ export default function Cardapio() {
           onShareClick={handleShare}
         />
       )}
-      {/* Meu Catálogo — ações do dia-a-dia */}
+      {/* (22/10) "Sua loja online": só o que é da loja (Produtos, Complementos, Categorias e Mensagens já estão em Cadastros) */}
       <div className="cd-card cd-quick">
         <div className="cd-quick-hdr">
-          <div className="cd-quick-title">Catálogo</div>
+          <div className="cd-quick-title">Sua loja online</div>
         </div>
         <div className="cd-quick-list">
-          <button className="cd-quick-item" onClick={() => navigate("/produtos")}>
-            <span className="cd-quick-ico cd-quick-ico--pink">
-              <Cake size={20} weight="bold" />
-            </span>
-            <div className="cd-quick-info">
-              <div className="cd-quick-name">Produtos</div>
-              <div className="cd-quick-desc cd-quick-desc--2l">Cadastre e gerencie seus produtos</div>
-            </div>
-            <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
-          </button>
-          <button className="cd-quick-item" onClick={() => navigate("/complementos")}>
-            <span className="cd-quick-ico cd-quick-ico--pink">
-              <Stack size={20} weight="bold" />
-            </span>
-            <div className="cd-quick-info">
-              <div className="cd-quick-name">Complementos</div>
-              <div className="cd-quick-desc cd-quick-desc--2l">Sabores, recheios e adicionais</div>
-            </div>
-            <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
-          </button>
-          <button className="cd-quick-item" onClick={() => navigate("/categorias")}>
-            <span className="cd-quick-ico cd-quick-ico--pink">
-              <SquaresFour size={20} weight="bold" />
-            </span>
-            <div className="cd-quick-info">
-              <div className="cd-quick-name">Categorias</div>
-              <div className="cd-quick-desc cd-quick-desc--2l">Organize seus produtos em grupos</div>
-            </div>
-            <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
-          </button>
           <button className="cd-quick-item" onClick={() => navigate("/cardapio-config")}>
             <span className="cd-quick-ico cd-quick-ico--pink">
               <Storefront size={20} weight="bold" />
             </span>
             <div className="cd-quick-info">
-              <div className="cd-quick-name">Dados da loja</div>
-              <div className="cd-quick-desc cd-quick-desc--2l">Loja, entrega e pagamento</div>
-            </div>
-            <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
-          </button>
-          {/* (18/10) Mensagens do WhatsApp também ficam aqui (saíram de Configurações) */}
-          <button className="cd-quick-item" onClick={() => navigate("/configuracoes/mensagens", { state: { de: "/cardapio" } })}>
-            <span className="cd-quick-ico cd-quick-ico--pink">
-              <ChatCircleText size={20} weight="bold" />
-            </span>
-            <div className="cd-quick-info">
-              <div className="cd-quick-name">Mensagens do WhatsApp</div>
-              <div className="cd-quick-desc cd-quick-desc--2l">Textos que o app escreve por você</div>
+              <div className="cd-quick-name">Horário, entrega e Pix</div>
+              <div className="cd-quick-desc cd-quick-desc--2l">Endereço, pagamento e taxa</div>
             </div>
             <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
           </button>
@@ -493,7 +452,7 @@ export default function Cardapio() {
             varAnt: metricasAnterior.visitas,
           },
           {
-            label: "Pedidos online",
+            label: "Pedidos",
             value: metricas.pedidosCardapio,
             icon: <ShoppingBag size={18} weight="duotone" />,
             color: "var(--text-title)",
@@ -502,7 +461,7 @@ export default function Cardapio() {
             varAnt: metricasAnterior.pedidos,
           },
           {
-            label: "Faturamento online",
+            label: "Vendido",
             value: formatCurrency(metricas.receita),
             icon: <CurrencyDollar size={18} weight="duotone" />,
             color: "#15803D",
@@ -675,42 +634,44 @@ export default function Cardapio() {
         .ch-btn-ghost:disabled { opacity: 0.4; cursor: not-allowed; }
 
         /* ── Seletor de período ── */
+        /* (22/10) período em pílulas cinza com a escolhida em branco (igual ao Financeiro) */
         .ch-periodo-tabs {
-          display: flex;
-          width: 100%;
-          background: var(--bg-card);
-          border: 1px solid var(--border);
-          border-radius: var(--ui-raio-p);
-          overflow: hidden;
+          display: flex; gap: 2px;
+          width: 100%; box-sizing: border-box;
+          padding: 3px;
+          background: rgba(42, 21, 32, .06);
+          border-radius: 12px;
         }
         .ch-periodo-tab {
           flex: 1;
-          padding: var(--space-2) var(--space-2);
+          min-height: 40px;
+          padding: 0 var(--space-2);
           text-align: center;
           border: none;
+          border-radius: 9px;
           background: transparent;
-          color: var(--text-secondary);
-          border-right: 1px solid var(--border);
+          color: var(--ui-texto-2);
           font-family: inherit; font-size: var(--font-helper); font-weight: 500;
           cursor: pointer;
           transition: background var(--dur-fast) var(--ease-out),
                       color var(--dur-fast) var(--ease-out);
         }
-        .ch-periodo-tab:last-child { border-right: none; }
-        .ch-periodo-tab:hover:not(.active) { background: var(--bg-subtle); color: var(--text-title); }
+        .ch-periodo-tab:hover:not(.active) { color: var(--text-title); }
         .ch-periodo-tab.active {
-          background: var(--text-title);
-          color: var(--ui-branco);
+          background: var(--ui-branco);
+          color: var(--ui-texto);
+          font-weight: 600;
+          box-shadow: 0 1px 3px rgba(42, 21, 32, .1);
         }
 
         /* ── Métricas ── */
         .ch-metricas-grid {
           display: grid;
-          grid-template-columns: repeat(2, 1fr);
+          grid-template-columns: repeat(2, minmax(0, 1fr)); /* (22/10) minmax: o rótulo comprido não empurra a coluna pra fora da tela (B2) */
           gap: var(--space-3);
         }
         @media (min-width: 720px) {
-          .ch-metricas-grid { grid-template-columns: repeat(4, 1fr); }
+          .ch-metricas-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
         }
         .ch-metric-card {
           display: flex; align-items: flex-start; gap: var(--space-3);
