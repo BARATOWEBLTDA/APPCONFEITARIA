@@ -87,11 +87,7 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, sem
             <button type="button" key={d.iso} className={`sd-sd${diaSel === d.iso ? " on" : ""}${d.n ? " tem" : ""}`} aria-pressed={diaSel === d.iso}
               onClick={() => setDiaSel(x => x === d.iso ? null : d.iso)} aria-label={`${d.sem} ${d.dia}: ${d.n} ${d.n === 1 ? "pedido" : "pedidos"}${d.iso === hoje && (atrasados > 0 || passaram.length > 0) ? ", com atraso" : ""}`}>
               <b>{d.dia}</b>
-              {/* (22/10) bolinhas como na Agenda: vermelha = tem atraso (só no Hoje), amarela = tem pedido marcado. Embaixo, o dia da semana por extenso (como na Dora) */}
-              <span className="sd-pts" aria-hidden="true">
-                {d.iso === hoje && (atrasados > 0 || passaram.length > 0) && <i className="atr" />}
-                {(d.iso === hoje ? d.n - passaram.length : d.n) > 0 && <i className="prox" />}
-              </span>
+              {/* (22/10) sem bolinhas: só o número e o dia da semana por extenso (como na Dora) */}
               <small>{d.sem}</small>
             </button>
           ))}
