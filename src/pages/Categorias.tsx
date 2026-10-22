@@ -27,9 +27,9 @@ type Categoria = {
 // Ícones prontos (os repetidos da pasta ficam de fora da galeria; categoria antiga com eles continua mostrando)
 const ICONES_PRONTOS = [28, 1, 3, 10, 2, 14, 20, 25, 26, 27, 31, 32, 33, 34, 29, 35, 36, 37, 6, 9, 30, 38, 39, 40, 5, 8, 12].map(n => `/categoriaicones/icone (${n}).png`);
 
-function Icone({ src, grande }: { src?: string; grande?: boolean }) {
+function Icone({ src, grande, foto }: { src?: string; grande?: boolean; foto?: boolean }) {
   return (
-    <span className={`ct-ic${grande ? " g" : ""}`} aria-hidden="true">
+    <span className={`ct-ic${grande ? " g" : ""}${foto ? " foto" : ""}`} aria-hidden="true">
       {src ? <img src={src} alt="" /> : <SquaresFour size={grande ? 28 : 22} weight="bold" />}
     </span>
   );
@@ -39,7 +39,7 @@ export default function Categorias() {
   const navigate = useNavigate();
   const [userId, setUserId] = useState("");
   const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [produtos, setProdutos] = useState<{ categoria: string }[]>([]);
+  const [produtos, setProdutos] = useState<{ categoria: string; imagem_url?: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState<string | null>(null);
   const [modal, setModal] = useState(false);
@@ -75,12 +75,15 @@ export default function Categorias() {
   };
 
   const loadProdutos = async (uid: string): Promise<unknown> => {
-    const { data, error } = await supabase.from("produtos").select("categoria").eq("user_id", uid);
+    const { data, error } = await supabase.from("produtos").select("categoria, imagem_url").eq("user_id", uid).order("created_at");
     if (data && !error) setProdutos(data);
     return error || (data ? null : new Error("sem dados"));
   };
 
   const contarProdutos = (nome: string) => produtos.filter(p => p.categoria === nome).length;
+  // (22/10) categoria sem imagem: mostra a foto do primeiro produto dela (quem escolheu ícone ou imagem continua com o seu)
+  const [cel] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches) // só no celular
+  const fotoDe = (nome: string) => (cel ? produtos.find(p => p.categoria === nome && p.imagem_url)?.imagem_url || undefined : undefined);
 
   const openNova = () => { setForm({ nome: "", imagem_url: "", ordem: categorias.length }); setShowGaleria(false); setModal(true); };
   const openEditar = (c: Categoria) => { setForm({ ...c }); setShowGaleria(false); setModal(true); };
@@ -237,7 +240,7 @@ export default function Categorias() {
             {categorias.map(cat => (
               <div key={cat.id} className="ct-row">
                 <button type="button" className="ct-row-b" onClick={() => openEditar(cat)}>
-                  <Icone src={cat.imagem_url} />
+                  <Icone src={cat.imagem_url || fotoDe(cat.nome)} foto={!cat.imagem_url && !!fotoDe(cat.nome)} />
                   <span className="ct-row-tx"><b>{cat.nome}</b><small>{qtdTexto(contarProdutos(cat.nome))}</small></span>
                 </button>
                 <BotaoIcone rotulo={`Opções de ${cat.nome}`} variante="limpo" onClick={() => setMenuDe(cat)}><DotsThreeVertical size={20} weight="bold" /></BotaoIcone>
