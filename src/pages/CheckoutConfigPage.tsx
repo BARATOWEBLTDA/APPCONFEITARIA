@@ -52,7 +52,9 @@ const pixParaSalvar = (x: PixTela) => ({
 
 /** (17/10) embutido: aparece dentro de Dados da loja (mesma tela), sem o cabeçalho próprio */
 /** (19/10) parte: "entrega" (Dados da loja, sem cupons) ou "cupons" (Marketing › Cupons, só os cupons) */
-export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }: { embutido?: boolean; parte?: "tudo" | "entrega" | "cupons" } = {}) {
+/** (22/10) celular, Dados da loja: o que está na tela, pra lista mostrar o resumo de cada parte */
+export type EstadoEntregaPagamento = { formasPagamento: string[]; formasEntrega: string[]; taxa: number; porBairro: number; pixOnline: boolean; pixPronto: boolean; pixTipo: string; pixModo: string; pixPct: string }
+export default function CheckoutConfigPage({ embutido = false, parte = "tudo", so, onEstado }: { embutido?: boolean; parte?: "tudo" | "entrega" | "cupons"; so?: "pag" | "pix" | "ent"; onEstado?: (e: EstadoEntregaPagamento) => void } = {}) {
   const verEntrega = parte !== "cupons", verCupons = parte !== "entrega"
   const navigate = useNavigate()
   // (15/10) aberta por Configurações: o voltar leva de volta pra lá (senão, pro Cardápio)
@@ -206,9 +208,16 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
   }
   const salvarTudoRef = useRef(salvarTudo)
   // Roda a cada mudança, antes dos efeitos de baixo: deixa nas refs o que está na tela agora
+  const estadoRef = useRef('')
   useEffect(() => {
     telaRef.current = { userId, formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, exibirCampoTroco, cupons, pix: pixTela }
     salvarTudoRef.current = salvarTudo
+    if (onEstado && !loading) {
+      const e: EstadoEntregaPagamento = { formasPagamento, formasEntrega, taxa: numBR(valorEntregaPropria), porBairro: entregaPorBairro.filter(b => b.bairro.trim()).length,
+        pixOnline, pixPronto: !faltaNoPix(pixTela), pixTipo, pixModo, pixPct }
+      const k = JSON.stringify(e)
+      if (k !== estadoRef.current) { estadoRef.current = k; onEstado(e) }
+    }
   })
 
   useEffect(() => {
@@ -314,10 +323,12 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
   }
 
   // (17/10) já preenchido aparece resumido, com "Editar" (o mesmo padrão de Dados da loja). Tudo continua salvando sozinho.
-  const [resumido, setResumido] = useState<{ pag: boolean; ent: boolean } | null>(null)
+  const [resumidoTela, setResumido] = useState<{ pag: boolean; ent: boolean } | null>(null)
+  // (22/10) celular: cada parte abre sozinha numa gaveta, já no formulário (sem o resumo com Editar)
+  const resumido = so ? { pag: false, ent: false } : resumidoTela
   useEffect(() => {
-    if (!loading && !erroCarga && resumido === null) setResumido({ pag: formasPagamento.length > 0, ent: formasEntrega.length > 0 })
-  }, [loading, erroCarga, resumido]) // eslint-disable-line react-hooks/exhaustive-deps
+    if (!loading && !erroCarga && resumidoTela === null) setResumido({ pag: formasPagamento.length > 0, ent: formasEntrega.length > 0 })
+  }, [loading, erroCarga, resumidoTela]) // eslint-disable-line react-hooks/exhaustive-deps
   const botaoEditar = (b: 'pag' | 'ent') => resumido?.[b]
     ? <button type="button" className="ep-editar" onClick={() => setResumido(r => r ? { ...r, [b]: false } : r)}><PencilSimple size={16} weight="bold" aria-hidden="true" />Editar</button>
     : undefined
@@ -360,12 +371,12 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
     <>
       {!embutido && <AppPageHeader title="Entrega e pagamento" subtitle="Pagamento, entrega e cupons" onBack={() => navigate(voltarPara)} />}
       <div className={embutido ? "ep ep--embutido" : "ep"}>
-        {embutido && verEntrega && <h2 className="ep-sec-tit">Entrega e pagamento</h2>}
-        {verEntrega && <p className="ep-salva"><Check size={16} weight="bold" aria-hidden="true" />{embutido ? "Esta parte salva sozinha." : "Tudo aqui salva sozinho."}</p>}
+        {embutido && verEntrega && !so && <h2 className="ep-sec-tit">Entrega e pagamento</h2>}
+        {verEntrega && !so && <p className="ep-salva"><Check size={16} weight="bold" aria-hidden="true" />{embutido ? "Esta parte salva sozinha." : "Tudo aqui salva sozinho."}</p>}
 
         {verEntrega && <>
         {/* Pagamento */}
-        <section className="ep-card">
+        {(!so || so === 'pag') && <section className="ep-card">
           <Cabeca Ic={Wallet} titulo={resumido?.pag ? "Pagamento" : "Formas de pagamento"} apoio={resumido?.pag ? undefined : "Marque só as que você aceita"} acao={botaoEditar('pag')} />
           {resumido?.pag ? (
             <div className="ep-res">
@@ -380,10 +391,11 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
             <Chave on={exibirCampoTroco} rotulo='Perguntar "Troco pra quanto?"' apoio="Quando o cliente pagar em dinheiro" aoMudar={setExibirCampoTroco} />
           )}
           </>)}
-        </section>
+        </section>}
 
         {/* (20/10) Pix pelo cardápio */}
-        {formasPagamento.includes('pix') && (
+        {so === 'pix' && !formasPagamento.includes('pix') && <p className="ep-pix-aviso"><WarningCircle size={18} weight="bold" aria-hidden="true" />Marque Pix em Pagamento pra usar o Pix pelo cardápio.</p>}
+        {(!so || so === 'pix') && formasPagamento.includes('pix') && (
         <section className="ep-card">
           <Cabeca Ic={QrCode} titulo="Pix pelo cardápio" apoio="O cliente paga com QR Code" />
           <Chave on={pixOnline} rotulo="Receber Pix pelo cardápio" apoio={pixOnline ? 'Você confirma em Pedidos' : 'Desligado: paga pelo WhatsApp'} aoMudar={setPixOnline} />
@@ -441,7 +453,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
         )}
 
         {/* Entrega */}
-        <section className="ep-card">
+        {(!so || so === 'ent') && <section className="ep-card">
           <Cabeca Ic={Truck} titulo={resumido?.ent ? "Entrega" : "Formas de entrega"} apoio={resumido?.ent ? undefined : "Marque as que o cliente pode escolher"} acao={botaoEditar('ent')} />
           {resumido?.ent ? (
             <div className="ep-res">
@@ -462,7 +474,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo" }:
             </div>
           )}
           </>)}
-        </section>
+        </section>}
 
         </>}
 

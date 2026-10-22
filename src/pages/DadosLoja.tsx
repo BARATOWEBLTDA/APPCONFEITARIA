@@ -2,16 +2,16 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
-import { Check, Clock, PencilSimple, MapPin, ShareNetwork, Sparkle, Storefront, WarningCircle } from "@phosphor-icons/react";
+import { CaretRight, Check, Clock, PencilSimple, MapPin, QrCode, ShareNetwork, Sparkle, Storefront, Truck, Wallet, WarningCircle } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { LogoFacebook, LogoInstagram } from "@/components/LogosRedes";
 import AppPageHeader from "@/components/AppPageHeader";
 import MapaEndereco, { type BuscaMapa } from "@/components/MapaEndereco";
 import { EXEMPLO_DESCRICAO, EditorHorario, OpcoesMostrar } from "@/components/loja/EditoresLoja";
-import { Botao, Campo, CampoArea, TelaVazia, Titulo, avisar } from "@/components/base";
+import { Botao, Campo, CampoArea, Gaveta, TelaVazia, Titulo, avisar } from "@/components/base";
 import { digitosTelefone, digitosAoDigitar } from "@/lib/telefone";
 import { limparFacebook, limparInstagram } from "@/lib/redesSociais";
-import CheckoutConfigPage from "./CheckoutConfigPage";
+import CheckoutConfigPage, { type EstadoEntregaPagamento } from "./CheckoutConfigPage";
 import "./dadosLoja.css";
 
 /**
@@ -264,15 +264,15 @@ export default function DadosLoja() {
   };
 
   const salvar = async () => {
-    if (!userId) return;
+    if (!userId) return false;
     // (11/10) loja sem nome não salva
-    if (!nome.trim()) { mostrarAviso("Escreva o nome da loja.", "err"); irPara("dl-nome"); return; }
+    if (!nome.trim()) { mostrarAviso("Escreva o nome da loja.", "err"); irPara("dl-nome"); return false; }
     const horarioRuim = problemaNoHorario();
-    if (horarioRuim) { mostrarAviso(horarioRuim, "err"); irPara("dl-horario"); return; }
+    if (horarioRuim) { mostrarAviso(horarioRuim, "err"); irPara("dl-horario"); return false; }
     const insta = instaOn ? limparInstagram(instagram) : "", face = faceOn ? limparFacebook(facebook) : "";
     try { localStorage.setItem(`doonly:redes:${userId}`, JSON.stringify({ instagram: instagram.trim(), facebook: facebook.trim() })); } catch { /* sem armazenamento */ }
-    if (instaOn && instagram.trim() && !insta) { mostrarAviso("Confira o Instagram: escreva só o @ da loja, como @doceformiga.", "err"); irPara("dl-redes"); return; }
-    if (faceOn && facebook.trim() && !face) { mostrarAviso("Confira o Facebook: cole o link da página, como facebook.com/doceformiga.", "err"); irPara("dl-redes"); return; }
+    if (instaOn && instagram.trim() && !insta) { mostrarAviso("Confira o Instagram: escreva só o @ da loja, como @doceformiga.", "err"); irPara("dl-redes"); return false; }
+    if (faceOn && facebook.trim() && !face) { mostrarAviso("Confira o Facebook: cole o link da página, como facebook.com/doceformiga.", "err"); irPara("dl-redes"); return false; }
     setSalvando(true);
     const endereco = JSON.stringify(end);
     const { error } = await supabase.from("profiles").update({
@@ -294,13 +294,14 @@ export default function DadosLoja() {
       if (!r.error) { if (insta) setInstagram("@" + insta); if (face) setFacebook(face); if (!insta) setInstaOn(false); if (!face) setFaceOn(false); }
     }
     setSalvando(false);
-    if (error) mostrarAviso("Não foi possível salvar. Tente de novo.", "err");
-    else if (erroRedes) mostrarAviso("Salvou, menos as redes sociais. Tente de novo.", "err");
+    if (error) { mostrarAviso("Não foi possível salvar. Tente de novo.", "err"); return false; }
+    else if (erroRedes) { mostrarAviso("Salvou, menos as redes sociais. Tente de novo.", "err"); return false; }
     else {
       mostrarAviso("Alterações salvas");
       // (17/10) o que ficou completo volta a aparecer resumido
       setAberto({ loja: !okDe("loja"), redes: !okDe("redes"), endereco: !okDe("endereco"), horario: !okDe("horario") });
       setZapAberto(digitosTelefone(telefone).length < 10);
+      return true;
     }
   };
 
@@ -310,6 +311,49 @@ export default function DadosLoja() {
     const t = window.setTimeout(() => setBusca(end.cidade.trim() ? { rua: end.rua.trim(), numero: end.numero.trim(), cidade: end.cidade.trim(), estado: end.estado.trim() } : null), 700);
     return () => window.clearTimeout(t);
   }, [end.rua, end.numero, end.cidade, end.estado]);
+  // ── (22/10) celular: a tela vira uma lista de 7 partes; cada uma abre numa gaveta e salva sozinha ao fechar ──
+  const [cel, setCel] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 900px)");
+    const f = () => setCel(mq.matches);
+    mq.addEventListener("change", f); return () => mq.removeEventListener("change", f);
+  }, []);
+  type Parte = "loja" | "redes" | "endereco" | "horario" | "pag" | "pix" | "ent";
+  const [parte, setParte] = useState<Parte | null>(null);
+  const [fechando, setFechando] = useState(false);
+  const fotoDados = () => JSON.stringify({ nome, telefone, descricao, end, mostrarLocal, recebeAqui, horario, instagram, facebook, instaOn, faceOn });
+  const fotoAoAbrir = useRef("");
+  const abrirParte = (p: Parte) => {
+    if (p === "loja" || p === "redes" || p === "endereco" || p === "horario") { abrir(p); setZapAberto(digitosTelefone(telefone).length < 10 ? true : zapAberto); }
+    fotoAoAbrir.current = fotoDados();
+    setParte(p);
+  };
+  // fechar = salvar sozinho (só se mudou algo). Se faltar alguma coisa, avisa e a gaveta continua aberta.
+  const fecharParte = async () => {
+    if (fechando) return;
+    if (parte && ["loja", "redes", "endereco", "horario"].includes(parte) && fotoDados() !== fotoAoAbrir.current) {
+      setFechando(true);
+      const ok = await salvar();
+      setFechando(false);
+      if (!ok) return;
+    }
+    setParte(null);
+  };
+  // resumo de Pagamento, Pix e Entrega (lido do perfil e atualizado ao vivo pela gaveta)
+  const [ep, setEp] = useState<EstadoEntregaPagamento | null>(null);
+  useEffect(() => {
+    if (!userId || !cel) return;
+    supabase.from("profiles").select("formas_pagamento, formas_entrega, valor_entrega_propria, entrega_por_bairro, pix_online, pix_chave, pix_modo, pix_sinal_pct").eq("id", userId).maybeSingle().then(({ data }) => {
+      if (!data) return;
+      const d: any = data;
+      setEp(e => e || { formasPagamento: d.formas_pagamento || [], formasEntrega: d.formas_entrega || [], taxa: Number(d.valor_entrega_propria) || 0,
+        porBairro: Array.isArray(d.entrega_por_bairro) ? d.entrega_por_bairro.length : 0, pixOnline: !!d.pix_online, pixPronto: !!d.pix_chave,
+        pixTipo: "", pixModo: d.pix_modo || "escolha", pixPct: String(d.pix_sinal_pct || 50) });
+    });
+  }, [userId, cel]);
+  // veio do "Definir taxa de entrega" (ou do antigo Entrega e pagamento): abre direto a Entrega
+  useEffect(() => { if (cel && !loading && irEntrega) setParte("ent"); }, [cel, loading]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const cidadeUf = [end.cidade.trim(), end.estado.trim()].filter(Boolean).join(", ");
   const seloMapa = !busca ? "Digite o CEP pra achar sua loja" : mostrarLocal === "nada" ? "Endereço escondido no cardápio" : [mostrarLocal === "completo" ? end.bairro.trim() : "", cidadeUf].filter(Boolean).join(" · ");
 
@@ -359,31 +403,9 @@ export default function DadosLoja() {
   const tudo = feitos === itens.length;
   const statusCep = buscandoCep ? <span className="dl-cep">Buscando…</span> : cepOk ? <span className="dl-cep ok"><Check size={16} weight="bold" />Encontrado</span> : null;
 
-  return (
-    <>
-      <AppPageHeader title="Dados da loja" subtitle="Loja, entrega e pagamento" onBack={() => navigate(voltarPara)} />
-
-      <div className="dl-root">
-        {/* Resumo */}
-        {resumoVisivel !== false && <section className="dl-card dl-st">
-          <div className="dl-st-row">
-            <b>{tudo ? "Tudo preenchido" : `${feitos} de ${itens.length} preenchidos`}</b>
-            {faltando.length > 0 && (
-              <span>Falta{faltando.length > 1 ? "m" : ""} {faltando.length > 1 ? faltando.slice(0, -1).join(", ") + " e " + faltando[faltando.length - 1] : faltando[0]}</span>
-            )}
-          </div>
-          <div className="dl-bar" aria-hidden="true"><i className={tudo ? "ok" : ""} style={{ width: `${Math.round((feitos / itens.length) * 100)}%` }} /></div>
-          <div className="dl-chips">
-            {itens.map((i) => (
-              <button key={i.nome} type="button" className={`dl-chip${i.ok ? " ok" : ""}`} onClick={() => irPara(i.alvo)}>
-                {i.ok && <Check size={14} weight="bold" aria-hidden="true" />}{i.nome}
-              </button>
-            ))}
-          </div>
-        </section>}
-
-        {/* Sua loja */}
-        <section className="dl-card dl-loja">
+  // (22/10) as 4 partes viram constantes: no computador ficam na página; no celular cada uma abre numa gaveta
+  const secLoja = (
+    <section className="dl-card dl-loja">
           <Cabeca Ic={Storefront} titulo="Sua loja" apoio="Nome, WhatsApp e descrição" bloco="loja" />
           {!estaAberto("loja") ? (
             <div className="dl-res">
@@ -417,9 +439,9 @@ export default function DadosLoja() {
           </div>
           </>)}
         </section>
-
-        {/* (4.25) Redes sociais: aparecem em "Sobre a loja" no cardápio */}
-        <section className="dl-card" id="dl-redes">
+  );
+  const secRedes = (
+    <section className="dl-card" id="dl-redes">
           <Cabeca Ic={ShareNetwork} titulo="Redes sociais" apoio="Aparecem em Sobre a loja, no cardápio" bloco="redes" />
           {redesNoBanco && !estaAberto("redes") ? (
             <div className="dl-res">
@@ -447,9 +469,9 @@ export default function DadosLoja() {
             <p className="dl-aviso-redes">Falta um ajuste no banco pra usar as redes sociais (SQL 4.25).</p>
           )}
         </section>
-
-        {/* Endereço */}
-        <section className="dl-card" id="dl-endereco">
+  );
+  const secEndereco = (
+    <section className="dl-card" id="dl-endereco">
           <Cabeca Ic={MapPin} titulo="Endereço" apoio="Pra calcular a entrega e mostrar no mapa" bloco="endereco" />
           <MapaEndereco busca={busca} soCidade={mostrarLocal !== "completo"} selo={estaAberto("endereco") ? seloMapa : undefined} />
           {!estaAberto("endereco") ? (
@@ -485,9 +507,9 @@ export default function DadosLoja() {
           </label>
           </>)}
         </section>
-
-        {/* Horário */}
-        <section className="dl-card" id="dl-horario">
+  );
+  const secHorario = (
+    <section className="dl-card" id="dl-horario">
           <Cabeca Ic={Clock} titulo="Horário" apoio="Aparece como “Aberto agora” no cardápio" bloco="horario" />
           {!estaAberto("horario") ? (
             <div className="dl-res">
@@ -499,6 +521,91 @@ export default function DadosLoja() {
             </div>
           )}
         </section>
+  );
+
+  if (cel) {
+    const NOME_PAG: Record<string, string> = { pix: "Pix", dinheiro: "dinheiro", credito: "crédito", debito: "débito" };
+    const listaBR = (xs: string[]) => xs.length <= 1 ? xs.join("") : xs.slice(0, -1).join(", ") + " e " + xs[xs.length - 1];
+    const pagTxt = ep ? listaBR((ep.formasPagamento || []).map(k => NOME_PAG[k] || k)) : "";
+    const temPix = !!ep?.formasPagamento?.includes("pix");
+    const temEntregaPropria = !!ep?.formasEntrega?.includes("entrega_propria");
+    const faltaTaxa = temEntregaPropria && (ep?.taxa || 0) <= 0 && !(ep?.porBairro);
+    const redesTxt = [instaOn && instagram.trim() ? "Instagram" : "", faceOn && facebook.trim() ? "Facebook" : ""].filter(Boolean);
+    type Linha = { k: Parte; Ic: typeof Storefront; t: string; sub: string; st: "ok" | "falta" | "op" };
+    const linhas: Linha[] = [
+      { k: "loja", Ic: Storefront, t: "Sua loja", sub: okDe("loja") ? [nome.trim(), telefone].filter(Boolean).join(" · ") : `Falta ${listaBR(itens.slice(0, 3).filter(i => !i.ok).map(i => i.nome.toLowerCase()))}`, st: okDe("loja") ? "ok" : "falta" },
+      { k: "redes", Ic: ShareNetwork, t: "Redes sociais", sub: redesTxt.length ? `${listaBR(redesTxt)} no cardápio` : "Nenhuma aparece no cardápio", st: redesTxt.length ? "ok" : "op" },
+      { k: "endereco", Ic: MapPin, t: "Endereço", sub: itens[3].ok ? [[end.rua.trim(), end.numero.trim()].filter(Boolean).join(", "), end.bairro.trim()].filter(Boolean).join(" · ") || cidadeUf : "Falta o endereço da loja", st: itens[3].ok ? "ok" : "falta" },
+      { k: "horario", Ic: Clock, t: "Horário", sub: itens[4].ok ? resumoHorario().join(" · ") : "Falta o horário de funcionamento", st: itens[4].ok ? "ok" : "falta" },
+      { k: "pag", Ic: Wallet, t: "Pagamento", sub: !ep ? "…" : pagTxt ? pagTxt.charAt(0).toUpperCase() + pagTxt.slice(1) : "Falta escolher como o cliente paga", st: !ep || pagTxt ? "ok" : "falta" },
+      ...(temPix ? [{ k: "pix" as Parte, Ic: QrCode, t: "Pix pelo cardápio", sub: ep!.pixOnline ? (ep!.pixModo === "total" ? "Ligado · cliente paga o total" : ep!.pixModo === "sinal" ? `Ligado · sinal de ${ep!.pixPct}%` : `Ligado · sinal de ${ep!.pixPct}% ou o total`) : "Desligado · paga pelo WhatsApp", st: (ep!.pixOnline ? "ok" : "op") as Linha["st"] }] : []),
+      { k: "ent", Ic: Truck, t: "Entrega", sub: !ep ? "…" : !(ep.formasEntrega || []).length ? "Falta escolher como o cliente recebe" : faltaTaxa ? "Falta definir a taxa de entrega" : [ep.formasEntrega.includes("retirada") ? "Retirada" : "", temEntregaPropria ? (ep.porBairro ? "entrega por bairro" : `entrega R$ ${ep.taxa.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`) : ""].filter(Boolean).join(" e ") || "Configurada", st: !ep ? "ok" : !(ep.formasEntrega || []).length || faltaTaxa ? "falta" : "ok" },
+    ];
+    const TITULO: Record<Parte, string> = { loja: "Sua loja", redes: "Redes sociais", endereco: "Endereço", horario: "Horário", pag: "Pagamento", pix: "Pix pelo cardápio", ent: "Entrega" };
+    return (
+      <>
+        <AppPageHeader title="Dados da loja" subtitle="Loja, entrega e pagamento" onBack={() => navigate(voltarPara)} />
+        <div className="dl-lista">
+          <div className="dl-lista-c">
+            {linhas.map(l => (
+              <button key={l.k} type="button" className="dl-li" onClick={() => abrirParte(l.k)}>
+                <span className="dl-li-ic" aria-hidden="true"><l.Ic size={20} weight="bold" /></span>
+                <span className="dl-li-tx"><b>{l.t}</b><small className={l.st === "falta" ? "falta" : ""}>{l.sub}</small></span>
+                {l.st === "ok" ? <span className="dl-li-ok" aria-label="Pronto"><Check size={13} weight="bold" /></span> : <em className={`dl-li-st ${l.st}`}>{l.st === "falta" ? "Falta" : "Opcional"}</em>}
+                <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
+              </button>
+            ))}
+          </div>
+          <p className="dl-lista-salva"><Check size={16} weight="bold" aria-hidden="true" />Tudo salva sozinho quando você fecha a parte.</p>
+        </div>
+        <Gaveta aberta={!!parte} aoFechar={fecharParte} titulo={parte ? TITULO[parte] : ""}
+          rodape={<Botao cheio carregando={fechando} onClick={fecharParte}>{fechando ? "Salvando…" : "Pronto"}</Botao>}>
+          <div className="dl-folha">
+            {parte === "loja" && secLoja}
+            {parte === "redes" && secRedes}
+            {parte === "endereco" && secEndereco}
+            {parte === "horario" && secHorario}
+            {(parte === "pag" || parte === "pix" || parte === "ent") && <CheckoutConfigPage embutido parte="entrega" so={parte} onEstado={setEp} />}
+          </div>
+        </Gaveta>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <AppPageHeader title="Dados da loja" subtitle="Loja, entrega e pagamento" onBack={() => navigate(voltarPara)} />
+
+      <div className="dl-root">
+        {/* Resumo */}
+        {resumoVisivel !== false && <section className="dl-card dl-st">
+          <div className="dl-st-row">
+            <b>{tudo ? "Tudo preenchido" : `${feitos} de ${itens.length} preenchidos`}</b>
+            {faltando.length > 0 && (
+              <span>Falta{faltando.length > 1 ? "m" : ""} {faltando.length > 1 ? faltando.slice(0, -1).join(", ") + " e " + faltando[faltando.length - 1] : faltando[0]}</span>
+            )}
+          </div>
+          <div className="dl-bar" aria-hidden="true"><i className={tudo ? "ok" : ""} style={{ width: `${Math.round((feitos / itens.length) * 100)}%` }} /></div>
+          <div className="dl-chips">
+            {itens.map((i) => (
+              <button key={i.nome} type="button" className={`dl-chip${i.ok ? " ok" : ""}`} onClick={() => irPara(i.alvo)}>
+                {i.ok && <Check size={14} weight="bold" aria-hidden="true" />}{i.nome}
+              </button>
+            ))}
+          </div>
+        </section>}
+
+        {/* Sua loja */}
+        {secLoja}
+
+        {/* (4.25) Redes sociais: aparecem em "Sobre a loja" no cardápio */}
+        {secRedes}
+
+        {/* Endereço */}
+        {secEndereco}
+
+        {/* Horário */}
+        {secHorario}
       </div>
 
       {/* (17/10) Entrega e pagamento entrou nesta mesma tela (salva sozinha, separada do botão abaixo) */}

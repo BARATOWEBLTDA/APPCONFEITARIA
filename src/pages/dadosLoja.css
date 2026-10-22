@@ -113,3 +113,29 @@
 .dl-rede-l[aria-checked="true"] .dl-rede-sw { background: #16A34A; }
 .dl-rede-l[aria-checked="true"] .dl-rede-sw::after { transform: translateX(18px); }
 #dl-redes .dl-cab { margin-bottom: 12px; }
+
+/* (22/10) celular: lista das 7 partes (cada uma abre numa gaveta e salva sozinha ao fechar) */
+.dl-lista { max-width: 720px; margin: 0 auto; padding: 16px 16px calc(96px + env(safe-area-inset-bottom, 0px)); font-family: var(--font-base); }
+.dl-lista-c { overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
+.dl-li { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin: 0; padding: 10px 12px; border: 0; background: none; font-family: inherit; color: var(--ui-texto); text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.dl-li + .dl-li { border-top: 1px solid var(--ui-linha); }
+.dl-li:active { background: #F7F1F3; }
+.dl-li:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
+.dl-li-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-rosa); color: var(--ui-branco); }
+.dl-li-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.dl-li-tx b { font-size: 15px; font-weight: 700; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dl-li-tx small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dl-li-tx small.falta { color: #9A4A06; font-weight: 600; }
+.dl-li-st { flex: none; padding: 3px 8px; border-radius: 999px; font-style: normal; font-size: 12px; font-weight: 700; }
+.dl-li-st.ok { background: #DDF3E4; color: #157A3C; }
+.dl-li-st.falta { background: #FDECD3; color: #9A4A06; }
+.dl-li-st.op { background: #F3EEF1; color: var(--ui-texto-3); font-weight: 600; }
+.dl-li-seta { flex: none; color: var(--ui-texto-3); }
+.dl-lista-salva { display: flex; align-items: center; gap: 6px; margin: 12px 4px 0; font-size: 13px; color: var(--ui-texto-2); }
+.dl-lista-salva svg { color: var(--ui-verde); }
+/* dentro da gaveta: a parte aparece sem o cartão e sem o título repetido */
+.dl-folha .dl-card, .dl-folha .ep-card { margin: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
+.dl-folha .dl-cab, .dl-folha .ep-cab { display: none; }
+.dl-folha .ep { padding: 0; max-width: none; }
+.ui-gaveta:has(.dl-folha) { width: 100vw; border-radius: 0; }
+.dl-li-ok { flex: none; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #DDF3E4; color: #157A3C; }
