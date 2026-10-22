@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { usePlano } from '@/hooks/usePlano'
 import { apiFetch } from "@/lib/apiFetch";
+import { resumoDoNegocio } from "@/lib/resumoDoo";
 import { Botao, Janela, avisar, confirmar } from '@/components/base'
 import { useSobreposicao } from '@/components/base/useSobreposicao'
 
@@ -683,11 +684,13 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
           return msg.content
         }
 
+        // (21/10) os números do negócio vão junto (vendas, a receber, entregas); se demorar mais de 4 s, segue sem eles
+        const negocio = uid ? await Promise.race([resumoDoNegocio(uid).catch(() => ''), new Promise<string>(r => setTimeout(() => r(''), 4000))]) : ''
         const res = await apiFetch('/api/doo-chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            system: buildSystemPrompt(nomeConfeiteira) + regrasInsumo(insumos) + regrasPedido(catalogoParaDoo(catalogo)),
+            system: buildSystemPrompt(nomeConfeiteira) + negocio + regrasInsumo(insumos) + regrasPedido(catalogoParaDoo(catalogo)),
             messages: historyForApi.map(m => ({ role: m.role, content: buildContent(m) }))
           })
         })
