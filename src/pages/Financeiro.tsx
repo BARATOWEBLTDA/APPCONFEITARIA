@@ -153,6 +153,8 @@ export default function Financeiro() {
   const mesNome = MESES[new Date().getMonth()].toLowerCase();
   const quandoPer = tipo === "hoje" ? "hoje" : tipo === "7" ? "nos últimos 7 dias" : tipo === "30" ? "nos últimos 30 dias"
     : tipo === "mes" ? `em ${mesNome} até hoje` : `de ${extenso(per.ini, per.ate)}`;
+  // (22/10) período sem nenhum movimento: um aviso só no lugar de quatro cartões vazios
+  const semMov = !!ok && movs !== null && movs.length === 0 && ok.recebido === 0 && ok.despesas === 0 && ok.maisVendidos.length === 0;
 
   return (
     <>
@@ -203,7 +205,7 @@ export default function Financeiro() {
         { alvo: ".fd-a-tres .fd-t:nth-child(2)", titulo: "A receber", texto: "O que os clientes ainda vão te pagar, como o resto de um sinal." },
         { alvo: ".fd-a-tres .fd-t:nth-child(3)", titulo: "A pagar", texto: "Suas contas com vencimento. Os custos fixos entram aqui sozinhos todo mês." },
       ]} />
-      <div className={`fd${caixaNeg ? " fd--neg" : ""}`}>
+      <div className={`fd${caixaNeg ? " fd--neg" : ""}${semMov ? " fd--nada" : ""}`}>
         {/* o cartão principal: como foi o período */}
         <div className="fd-a-res fd-card fd-res">
           <small className="fd-res-rot">{ok && ok.resultado < 0 ? "Saiu mais do que entrou" : "Sobrou"} {quandoPer}</small>
@@ -245,11 +247,11 @@ export default function Financeiro() {
           </div>
         )}
 
-        <div className="fd-a-fluxo fd-card">
+        {!semMov && <div className="fd-a-fluxo fd-card">
           <div className="fd-ct fd-ct--fluxo"><span><b>Entrou e saiu por dia</b><small className="fd-ct-sub">{extenso(per.ini, per.ate)}</small></span>
             <span className="fd-lg"><span><i className="e" />Entrou</span><span><i className="s" />Saiu</span></span></div>
           {ok ? <BarrasPorDia dias={ok.dias} /> : <div className="fd-ph" />}
-        </div>
+        </div>}
 
         {/* computador: listas com o botão em cada linha */}
         <div className="fd-a-listas fd-listas">
@@ -283,6 +285,12 @@ export default function Financeiro() {
           </div>
         </div>
 
+        {semMov ? (
+          <div className="fd-a-movs fd-card fd-nada" role="status">
+            <b>{tipo === "hoje" ? "Nada entrou nem saiu hoje" : `Sem movimento ${quandoPer}`}</b>
+            <small>O resumo aparece quando tiver movimento.</small>
+          </div>
+        ) : <>
         {/* últimas movimentações, do jeito de um extrato */}
         <div className="fd-a-movs fd-card">
           <div className="fd-ct"><span><b>Últimas movimentações</b></span>
@@ -325,6 +333,7 @@ export default function Financeiro() {
             </ol>
           )}
         </div>
+        </>}
 
         <div className="fd-a-mais fd-mais">
           <p className="fd-mais-t">Mais</p>
@@ -592,6 +601,20 @@ const CSS = `
   .fd-contas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .fd-k2 { cursor: pointer; } .fd-k2.rec { border-left: 4px solid #F59E0B; } .fd-k2.pag { border-left: 4px solid #EF4444; }
   .fd-card { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 14px; }
+  .fd-nada { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 20px 16px; text-align: center; }
+  .fd-nada b { font-size: 15px; font-weight: 600; color: var(--ui-texto); }
+  .fd-nada small { font-size: 13px; color: var(--ui-texto-2); text-wrap: pretty; }
+  /* sem movimento: as áreas dos cartões escondidos saem da grade (senão sobra espaço vazio) */
+  .fd.fd.fd--nada { grid-template-areas: "res" "tres" "movs" "mais"; }
+  .fd.fd.fd--neg.fd--nada { grid-template-areas: "res" "tres" "aviso" "movs" "mais"; }
+  @media (min-width: 768px) {
+    .fd.fd.fd--nada { grid-template-areas: "res" "tres" "listas" "movs" "mais"; }
+    .fd.fd.fd--neg.fd--nada { grid-template-areas: "res" "tres" "aviso" "listas" "movs" "mais"; }
+  }
+  @media (min-width: 1024px) {
+    .fd.fd.fd--nada { grid-template-areas: "res res res res res res res tres tres tres tres tres" "movs movs movs movs movs movs movs movs movs movs movs movs" "listas listas listas listas listas listas listas listas listas listas listas listas" "mais mais mais mais mais mais mais mais mais mais mais mais"; }
+    .fd.fd.fd--neg.fd--nada { grid-template-areas: "res res res res res res res tres tres tres tres tres" "aviso aviso aviso aviso aviso aviso aviso aviso aviso aviso aviso aviso" "movs movs movs movs movs movs movs movs movs movs movs movs" "listas listas listas listas listas listas listas listas listas listas listas listas" "mais mais mais mais mais mais mais mais mais mais mais mais"; }
+  }
   .fd-ct { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
   .fd-ct b { font-size: 15px; font-weight: 600; color: var(--ui-texto); }
   .fd-lg { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
