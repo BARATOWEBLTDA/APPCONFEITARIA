@@ -45,3 +45,15 @@
   html body .ini-root .ini-hero-sub { margin-top: 1px !important; }
   html body .ini-root .ini-hero-sub .ini-hero-data-mobile { margin: 0 !important; line-height: 1.3 !important; }
 }
+
+/* (22/10) topo mais baixo: letra e círculos um pouco menores */
+@media (max-width: 900px) {
+  html body .ini-root .ini-hero { min-height: 0 !important; padding-top: 10px !important; padding-bottom: 10px !important; }
+  html body .ini-root .ini-hero-greeting h1 { font-size: 15px !important; }
+  html body .ini-root .ini-hero-sub .ini-hero-data-mobile { font-size: 12px !important; }
+  html body .ini-root .ini-hero-acoes { gap: 6px !important; }
+  html body .ini-root .ini-hero-ac { width: 38px !important; height: 38px !important; }
+  html body .ini-root .ini-hero-ac svg { width: 21px !important; height: 21px !important; }
+  html body .ini-root .ini-hero-ac--pro img { width: 22px !important; height: 17px !important; }
+  html body .ini-root .ini-hero-bolinha { min-width: 17px !important; height: 17px !important; font-size: 10px !important; line-height: 13px !important; }
+}
