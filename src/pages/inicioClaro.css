@@ -9,9 +9,9 @@
   html body .ini-root .ini-hero-name-skel { background: var(--ui-cinza) !important; }
   /* PRO: etiqueta cheia em chocolate com a coroa dourada (no branco, o contorno rosa ficava apagado) */
   html body .ini-root .ini-plan-tag--pro { background: var(--chocolate, #3A2219) !important; border-color: var(--chocolate, #3A2219) !important; color: var(--ui-branco) !important; }
-  html body .ini-root .ini-plan-tag--pro svg { color: #F5C76B !important; }
-  /* sino em rosa clarinho com o desenho rosa */
-  html body .ini-root .ini-hero-ac { background: var(--ui-rosa-claro) !important; color: var(--ui-rosa-escuro) !important; }
+  /* sino: cinza quando não tem nada; amarelinho quando tem notificação nova */
+  html body .ini-root .ini-hero-ac { background: var(--ui-cinza, #F2EEF0) !important; color: var(--ui-texto-2) !important; }
+  html body .ini-root .ini-hero-ac.ini-hero-ac--tem { background: #FFF3C4 !important; color: #B7791F !important; }
   html body .ini-root .ini-hero-bolinha { border-color: var(--ui-branco) !important; }
   html body .ini-root .ini-profile-btn { box-shadow: 0 0 0 1px var(--ui-borda) !important; }
   /* atalhos com borda fina (no fundo branco sem ela somem) */

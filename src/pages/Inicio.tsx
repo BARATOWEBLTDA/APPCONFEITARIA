@@ -25,7 +25,7 @@ const GraficoRecebido = lazy(() => import("@/components/inicio/GraficoRecebido")
 import {
   HandCoins, Plus, Bell, CalendarDots, CurrencyDollar, Camera, Users, ChartLineUp,
   CaretRight, Cake, Receipt, ClipboardText,
-  WarningCircle, Clock, Package, TrendUp, Confetti, RocketLaunch, Sparkle, Crown,
+  WarningCircle, Clock, Package, TrendUp, Confetti, RocketLaunch, Sparkle,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
@@ -730,7 +730,7 @@ export default function Inicio() {
 
         {/* (16/10) celular: o sino com as não lidas (antes só pela foto › Notificações, sem aviso nenhum) */}
         <div className="ini-hero-acoes">
-          <button type="button" className="ini-hero-ac" onClick={() => navigate("/notificacoes")} aria-label={notifCount > 0 ? `Notificações, ${notifCount} nova${notifCount > 1 ? "s" : ""}` : "Notificações"} title="Notificações">
+          <button type="button" className={`ini-hero-ac${notifCount > 0 ? " ini-hero-ac--tem" : ""}`} onClick={() => navigate("/notificacoes")} aria-label={notifCount > 0 ? `Notificações, ${notifCount} nova${notifCount > 1 ? "s" : ""}` : "Notificações"} title="Notificações">
             <Bell size={20} weight={notifCount > 0 ? "fill" : "bold"} />
             {notifCount > 0 && <i className="ini-hero-bolinha">{notifCount > 9 ? "9+" : notifCount}</i>}
           </button>
@@ -753,7 +753,7 @@ export default function Inicio() {
             {profile && (
               isPro ? (
                 <span className="ini-plan-tag ini-plan-tag--pc ini-plan-tag--pro" aria-label="Plano PRO">
-                  <Crown size={14} weight="fill" aria-hidden="true" />
+                  <img src="/coroa.png" alt="" className="ini-plan-coroa" aria-hidden="true" />
                   <span>PRO</span>
                 </span>
               ) : (
@@ -763,7 +763,7 @@ export default function Inicio() {
                   onClick={() => navigate("/assinar")}
                   aria-label="Assinar o plano PRO"
                 >
-                  <Crown size={14} weight="fill" aria-hidden="true" />
+                  <img src="/coroa.png" alt="" className="ini-plan-coroa" aria-hidden="true" />
                   <span>Seja PRO</span>
                 </button>
               )
@@ -776,7 +776,7 @@ export default function Inicio() {
               {profile && (
                 isPro ? (
                   <span className="ini-plan-tag ini-plan-tag--mob ini-plan-tag--pro" aria-label="Plano PRO">
-                    <Crown size={14} weight="fill" aria-hidden="true" />
+                    <img src="/coroa.png" alt="" className="ini-plan-coroa" aria-hidden="true" />
                     <span>PRO</span>
                   </span>
                 ) : (
@@ -786,7 +786,7 @@ export default function Inicio() {
                     onClick={() => navigate("/assinar")}
                     aria-label="Assinar o plano PRO"
                   >
-                    <Crown size={14} weight="fill" aria-hidden="true" />
+                    <img src="/coroa.png" alt="" className="ini-plan-coroa" aria-hidden="true" />
                     <span>Seja PRO</span>
                   </button>
                 )
@@ -1278,6 +1278,8 @@ export default function Inicio() {
           box-shadow: 0 2px 6px rgba(0,0,0,0.28);
         }
         .ini-plan-tag svg { display: block; flex-shrink: 0; color: #FF9DC4; }
+        /* (22/10) a coroa oficial do Doonly (a mesma do "Parabéns, você é PRO") */
+        .ini-plan-tag .ini-plan-coroa { display: block; flex-shrink: 0; width: 17px; height: 13px; object-fit: contain; }
         /* Variante PRO (não clicável) — preta/accent, coroa colorida original */
         .ini-plan-tag--pro {
           background: var(--accent);
