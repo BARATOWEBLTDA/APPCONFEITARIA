@@ -62,15 +62,26 @@ export default function NotificacoesSons() {
       : "Este navegador não recebe notificações. Use o Chrome ou instale o app.";
     pushDescClass = "ns-desc ns-desc--warn";
   } else if (permission === "denied") {
+    // (22/10) B7: no celular (Android) não existe "cadeado da barra de endereço": passos certos e em laranja (atenção, não erro)
+    const celular = !ehIphone() && typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches;
     pushDesc = ehIphone()
       ? "Notificações desligadas. Ligue em Ajustes → Notificações → Doonly."
-      : (
+      : celular ? (
+        <>
+          Bloqueadas neste celular.
+          <ol className="ns-passos">
+            <li>1. Abra as <b>Configurações</b> do celular</li>
+            <li>2. <b>Apps</b> › <b>Doonly</b> (ou <b>Chrome</b>)</li>
+            <li>3. <b>Notificações</b> › ligue a chave</li>
+          </ol>
+        </>
+      ) : (
         <>
           Notificações bloqueadas no navegador.
           <br />Pra liberar: clique no cadeado da barra de endereço, depois em Notificações e escolha Permitir.
         </>
       );
-    pushDescClass = "ns-desc ns-desc--warn";
+    pushDescClass = celular ? "ns-desc ns-desc--atencao" : "ns-desc ns-desc--warn";
   } else {
     pushDesc = loading
       ? (isSubscribed ? "Desativando..." : "Ativando...")
@@ -173,6 +184,9 @@ export default function NotificacoesSons() {
         .ns-desc { font-size: 12px; color: #888780; margin-top: 2px; line-height: 1.4; }
         .ns-desc--on { color: #16a34a; }
         .ns-desc--warn { color: var(--ui-vermelho); }
+        .ns-desc--atencao { color: #B45309; font-weight: 600; }
+        .ns-passos { list-style: none; margin: 10px 0 0; padding: 10px 12px; border: 1px solid #F5C99B; border-radius: 12px; background: #FFF8EF; font-weight: 400; font-size: 13.5px; line-height: 1.6; color: var(--ui-texto); }
+        .ns-passos li { white-space: nowrap; }
         .ns-row--off .ns-name, .ns-row--off .ns-ico { opacity: 0.45; }
         .ns-note {
           margin: 0 16px 14px; padding: 10px 12px; border-radius: var(--ui-raio-p);
