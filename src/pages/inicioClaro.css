@@ -38,3 +38,10 @@
   .bottom-nav--claro .bn-novo-c { box-shadow: 0 4px 12px rgba(214, 63, 117, .35), 0 0 0 4px var(--ui-branco) !important; }
   .bottom-nav--claro .bn-item:focus-visible { outline-color: rgba(var(--ui-rosa-rgb), .45); }
 }
+
+/* (22/10) nome e data mais juntos no topo (como o iFood: saudação e endereço colados) */
+@media (max-width: 900px) {
+  html body .ini-root .ini-hero-greeting h1 { line-height: 1.2 !important; margin: 0 !important; }
+  html body .ini-root .ini-hero-sub { margin-top: 1px !important; }
+  html body .ini-root .ini-hero-sub .ini-hero-data-mobile { margin: 0 !important; line-height: 1.3 !important; }
+}
