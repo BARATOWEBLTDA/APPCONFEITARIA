@@ -17,6 +17,20 @@
     <meta name="apple-mobile-web-app-title" content="Doonly" />
     <link rel="manifest" href="/manifest.json" />
     <title>Doonly - Confeitaria Inteligente</title>
+    <!-- (22/10) console no celular: abra com ?debug=1 no endereço (ex.: doonly.com.br/inicio?debug=1) e aparece a engrenagem do Eruda -->
+    <script>
+      (function () {
+        try {
+          var liga = /[?&]debug=1/.test(location.search);
+          if (liga) sessionStorage.setItem("doonly_debug", "1");
+          if (!liga && sessionStorage.getItem("doonly_debug") !== "1") return;
+          var s = document.createElement("script");
+          s.src = "https://cdn.jsdelivr.net/npm/eruda@3.4.1/eruda.js";
+          s.onload = function () { window.eruda && window.eruda.init(); };
+          document.head.appendChild(s);
+        } catch (e) { /* sem debug */ }
+      })();
+    </script>
   </head>
   <body>
     <script>
