@@ -209,7 +209,7 @@ export default function Categorias() {
 
   return (
     <>
-      <AppPageHeader title="Categorias" subtitle="Organize os produtos do seu cardápio"
+      <AppPageHeader title="Categorias" voltar="/cadastros" subtitle="Organize os produtos do seu cardápio"
         infoContent={<>
           <p>As categorias <strong>separam os produtos no seu cardápio</strong>, como Bolos, Doces e Salgados.</p>
           <p>O cliente acha o que quer mais rápido. O cardápio mostra as categorias na ordem desta lista.</p>

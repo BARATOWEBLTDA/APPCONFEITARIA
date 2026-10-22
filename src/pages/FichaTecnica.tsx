@@ -504,7 +504,7 @@ export default function FichaTecnica() {
   });
   const totalComFicha = produtos.filter(p => (p.produto_insumos || []).length > 0).length;
 
-  if (loading) return <><AppPageHeader title="Ficha técnica" subtitle="O custo e o lucro de cada produto" /><div className="cl9"><div className="cl9-esq" aria-label="Carregando">{[0, 1, 2, 3].map(k => <span key={k} />)}</div></div></>;
+  if (loading) return <><AppPageHeader title="Ficha técnica" subtitle="O custo e o lucro de cada produto" voltar="/cadastros" /><div className="cl9"><div className="cl9-esq" aria-label="Carregando">{[0, 1, 2, 3].map(k => <span key={k} />)}</div></div></>;
 
   /* DETAIL / EDIT VIEW */
   if (selected) {
@@ -955,7 +955,7 @@ export default function FichaTecnica() {
   ] as const).filter(([k, , n]) => k === "todos" || n > 0 || filtro === k);
   return (
     <>
-    <AppPageHeader
+    <AppPageHeader voltar="/cadastros"
       title="Ficha técnica"
       subtitle={produtos.length === 0 ? "O custo e o lucro de cada produto" : `${totalComFicha} de ${produtos.length} com ficha técnica`}
       infoContent={

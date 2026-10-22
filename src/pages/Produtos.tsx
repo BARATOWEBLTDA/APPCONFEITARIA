@@ -1650,7 +1650,7 @@ export default function Produtos() {
     <>
       {limiteAberto && <LimitePlano tipo="produtos" limite={LIMITE_PRODUTOS_GRATIS} onClose={() => setLimiteAberto(false)} />}
     <AppPageHeader
-      title="Produtos"
+      title="Produtos" voltar="/cadastros"
       subtitle="O que aparece no seu cardápio"
       infoIcon="🎂"
       infoContent={

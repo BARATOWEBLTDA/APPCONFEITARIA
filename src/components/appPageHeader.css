@@ -116,3 +116,6 @@
   .cab-ver-cardapio:hover { background: rgba(255, 255, 255, .14); }
   .cab-ver-cardapio:focus-visible { outline: 3px solid rgba(255, 255, 255, .6); outline-offset: 2px; }
 }
+
+/* (22/10) a seta das telas de Cadastros é só do celular */
+@media (min-width: 901px) { .cab-voltar--cel { display: none !important; } }

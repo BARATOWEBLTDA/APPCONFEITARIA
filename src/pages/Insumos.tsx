@@ -134,7 +134,7 @@ export default function Insumos() {
   };
 
   const cabecalho = (
-    <AppPageHeader
+    <AppPageHeader voltar="/cadastros"
       title="Ingredientes"
       subtitle={loading || insumos.length === 0 ? "O que você compra pra produzir" : `${insumos.length} ${insumos.length === 1 ? "cadastrado" : "cadastrados"}`}
       infoContent={

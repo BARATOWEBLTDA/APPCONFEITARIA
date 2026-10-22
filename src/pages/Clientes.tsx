@@ -771,7 +771,7 @@ export default function Clientes() {
   return (
     <>
       {limiteAberto && <LimitePlano tipo="clientes" limite={LIMITE_CLIENTES_GRATIS} onClose={() => setLimiteAberto(false)} />}
-    <AppPageHeader
+    <AppPageHeader voltar="/cadastros"
       title="Clientes"
       subtitle="Quem compra de você"
       infoContent={

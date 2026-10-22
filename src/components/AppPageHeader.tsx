@@ -37,6 +37,8 @@ interface AppPageHeaderProps {
   rightActions?: ReactNode
   /** Mostra botão de voltar à esquerda do título */
   onBack?: () => void
+  /** (22/10) celular: seta de voltar (volta pra tela anterior do app; se abriu direto, vai pra este caminho). No computador não aparece */
+  voltar?: string
 }
 
 const ICONE_DO_EMOJI: Record<string, Icon> = {
@@ -44,7 +46,9 @@ const ICONE_DO_EMOJI: Record<string, Icon> = {
   '📑': ListDashes, '📦': Package, '📰': Newspaper, '🔔': Bell, '🛍️': ShoppingBag, '🛒': ShoppingCart, '🧮': Calculator, '🧾': Invoice, '📋': Receipt,
 }
 
-export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, infoContent, infoTip, rightActions, onBack }: AppPageHeaderProps) {
+export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, infoContent, infoTip, rightActions, onBack, voltar }: AppPageHeaderProps) {
+  const navegar = useNavigate()
+  const voltarCel = () => { if (((window.history.state as any)?.idx ?? 0) > 0) navegar(-1); else if (voltar) navegar(voltar) }
   const [mostrarInfo, setMostrarInfo] = useState(false)
   const IconeInfo = (infoIcon && ICONE_DO_EMOJI[infoIcon]) || Info
 
@@ -54,6 +58,9 @@ export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, in
       <header className="cab">
         {onBack && (
           <BotaoIcone rotulo="Voltar" variante="claro" className="cab-voltar" onClick={onBack}><CaretLeft size={24} weight="bold" /></BotaoIcone>
+        )}
+        {!onBack && voltar && (
+          <BotaoIcone rotulo="Voltar" variante="claro" className="cab-voltar cab-voltar--cel" onClick={voltarCel}><CaretLeft size={24} weight="bold" /></BotaoIcone>
         )}
         <div className="cab-txt">
           <div className="cab-linha">
