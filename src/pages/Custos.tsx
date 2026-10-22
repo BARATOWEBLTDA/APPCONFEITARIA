@@ -113,8 +113,6 @@ export default function Custos() {
         </>}
       />
       <EstiloFinanceiro />
-      {/* (4.29) mesma faixa rosa do Financeiro: os números ficam "pousados" nela */}
-      <div className="cu-faixa" aria-hidden="true" />
       <div className="cu">
         {erro ? (
           <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os custos" texto="Confira a internet e tente de novo."
@@ -425,10 +423,7 @@ function MaoObraSheet({ uid, atual, totalFixos, onClose, onFeito }: { uid: strin
 }
 
 const CSS = `
-  .cu-faixa { height: 58px; background: var(--ui-rosa); width: 100vw; margin: 0 calc(50% - 50vw); }
-  @media (min-width: 901px) { .cu-faixa { width: auto; margin: 0 -2rem; } }
-  .cu-faixa + .cu { position: relative; margin-top: -58px; }
-  .cu { max-width: 1120px; margin: 0 auto; padding: 22px 0 96px; font-family: var(--font-base); color: var(--ui-texto); display: flex; flex-direction: column; gap: 16px; }
+  .cu { max-width: 1120px; margin: 0 auto; padding: 14px 0 96px; font-family: var(--font-base); color: var(--ui-texto); display: flex; flex-direction: column; gap: 16px; }
   .cu-resumo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   @media (min-width: 900px) { .cu-resumo { grid-template-columns: repeat(4, 1fr); } }
   .cu-k { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px; padding: 12px; min-width: 0; }

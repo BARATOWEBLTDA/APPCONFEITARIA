@@ -137,8 +137,6 @@ export default function FinanceiroTransacoes() {
           </div>
         }
       />
-      {/* (4.29) mesma faixa rosa do painel: o período fica "pousado" nela */}
-      <div className="tx-faixa" aria-hidden="true" />
       <EstiloFinanceiro />
       <div className="tx">
         <div className="tx-topo">
@@ -232,12 +230,9 @@ function DetalheSheet({ m, semEstorno, onClose, onAbrirPedido, onEstornado }: { 
 }
 
 const CSS = `
-  .tx-faixa { height: 58px; background: var(--ui-rosa); width: 100vw; margin: 0 calc(50% - 50vw); }
-  @media (min-width: 901px) { .tx-faixa { width: auto; margin: 0 -2rem; } }
-  .tx-per { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 16px; padding: 6px; box-shadow: 0 1px 3px rgba(42,21,32,.05); }
-  .tx-per .pf-seg { background: #F4EEF1; border-radius: 12px; }
+  .tx-per .pf-seg { background: rgba(42,21,32,.06); border-radius: 12px; }
   .tx-per .pf-seg button { font-weight: 500; white-space: nowrap; }
-  .tx-per .pf-seg button.on { color: var(--ui-rosa-escuro); font-weight: 600; }
+  .tx-per .pf-seg button.on { color: var(--ui-texto); font-weight: 600; }
   .tx-per .pf-mes { border: 0; padding: 2px; }
   .tx-per .pf-mes b { font-weight: 600; }
   .tx-hd { display: flex; align-items: center; gap: 8px; }
@@ -252,7 +247,7 @@ const CSS = `
     .tx-per .pf-mes { width: 300px; }
     .tx-per .pf-datas { width: 360px; }
   }
-  .tx { position: relative; max-width: 980px; margin: -58px auto 0; padding: 22px 0 96px; font-family: var(--font-base); color: var(--ui-texto); display: flex; flex-direction: column; gap: 14px; }
+  .tx { position: relative; max-width: 980px; margin: 0 auto; padding: 14px 0 96px; font-family: var(--font-base); color: var(--ui-texto); display: flex; flex-direction: column; gap: 14px; }
   .tx-topo { display: flex; flex-direction: column; gap: 10px; }
   @media (min-width: 900px) { .tx-topo { flex-direction: row; align-items: flex-start; justify-content: space-between; } .tx-topo .pf { flex: 1; max-width: 520px; } }
   .tx-bts { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; }

@@ -176,7 +176,7 @@ export default function Financeiro() {
       <EstiloFinanceiro />
       <CaixaEstilos />
 
-      {/* (4.29 · resultado em destaque) o período fica no rosa; o cartão do resultado "pousa" nele */}
+      {/* (22/10) período em pílulas cinza sobre o fundo da tela (saiu a faixa rosa) */}
       <div className="fd-hero">
         <div className="fd-hero-in">
           <div className="fd-hero-per" role="tablist" aria-label="Período">
@@ -608,16 +608,17 @@ const CSS = `
   .fd-mais-g b { font-size: 14px; font-weight: 700; } .fd-mais-g small { font-size: 13px; color: var(--ui-texto-2); }
 
   /* ═══ (4.29 · resultado em destaque) ═══ */
-  .fd { margin-top: -50px; padding-top: 0; padding-bottom: 150px; grid-template-areas: "res" "tres" "movs" "fluxo" "formas" "vend" "mais"; }
+  .fd { margin-top: 0; padding-top: 14px; padding-bottom: 150px; grid-template-areas: "res" "tres" "movs" "fluxo" "formas" "vend" "mais"; }
   .fd.fd--neg { grid-template-areas: "res" "tres" "aviso" "movs" "fluxo" "formas" "vend" "mais"; }
   .fd-a-res { grid-area: res; } .fd-a-movs { grid-area: movs; } .fd-a-tres { grid-area: tres; }
   .fd-a-contas { display: none !important; }
-  .fd-hero { background: var(--ui-rosa); width: 100vw; margin: 0 calc(50% - 50vw); padding: 2px 12px 62px; box-sizing: border-box; font-family: var(--font-base); }
+  .fd-hero { padding: 14px 0 0; box-sizing: border-box; font-family: var(--font-base); }
   .fd-hero-in { max-width: 1160px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
-  .fd-hero-per { display: flex; gap: 2px; padding: 4px; border-radius: 13px; background: rgba(255,255,255,.18); }
-  .fd-hero-per button { flex: 1; min-width: 0; min-height: 40px; padding: 0 8px; border: 0; border-radius: 10px; background: none; font-family: inherit; font-size: 13.5px; font-weight: 500; color: rgba(255,255,255,.92); white-space: nowrap; cursor: pointer; }
-  .fd-hero-per button.on { background: var(--ui-branco); color: var(--ui-rosa-escuro); font-weight: 600; }
-  .fd-hero-datas { padding: 8px; border-radius: 14px; background: var(--ui-branco); }
+  .fd-hero-per { display: flex; gap: 2px; padding: 3px; border-radius: 12px; background: rgba(42,21,32,.06); }
+  .fd-hero-per button { flex: 1; min-width: 0; min-height: 40px; padding: 0 8px; border: 0; border-radius: 9px; background: none; font-family: inherit; font-size: 13.5px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; cursor: pointer; }
+  .fd-hero-per button.on { background: var(--ui-branco); color: var(--ui-texto); font-weight: 600; box-shadow: 0 1px 3px rgba(42,21,32,.10); }
+  .fd-hero-per button:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
+  .fd-hero-datas { padding: 8px; border-radius: 14px; background: var(--ui-branco); border: 1px solid #F0EBED; }
   .fd-hero-datas .fd-per-datas { width: auto; margin: 0; }
   .fd-hero .fd-so-cel { display: none; }
   @media (max-width: 767px) { .fd-hero .fd-so-pc { display: none; } .fd-hero .fd-so-cel { display: inline; } }
@@ -671,7 +672,7 @@ const CSS = `
     .fd-hero-per { width: 460px; }
     .fd-hero-datas { width: 340px; }
   }
-  @media (min-width: 901px) { .fd-hero { width: auto; margin: 0 -2rem; padding: 4px 2rem 70px; } .fd { margin-top: -54px; } }
+  @media (min-width: 901px) { .fd-hero { padding-top: 18px; } }
   @media (min-width: 1024px) {
     .fd, .fd.fd--sem-caixa { grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: stretch;
       grid-template-areas: "res res res res res res res tres tres tres tres tres" "listas listas listas listas listas listas listas listas listas listas listas listas" "fluxo fluxo fluxo fluxo fluxo fluxo fluxo formas formas formas formas formas" "movs movs movs movs movs movs vend vend vend vend vend vend" "mais mais mais mais mais mais mais mais mais mais mais mais"; }
