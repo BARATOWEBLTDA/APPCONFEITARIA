@@ -56,13 +56,6 @@
 .mais-at i { position: absolute; top: 6px; right: calc(50% - 26px); min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: var(--ui-rosa); color: var(--ui-branco); font-style: normal; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
 .mais-corpo { gap: 16px; }
 .mais-at + .mais-doo { margin-bottom: 0; }
-.mais-lista { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; overflow: visible; border: 0; background: none; box-shadow: none; }
-.mais-it { flex-direction: column; justify-content: center; gap: 6px; min-height: 84px; padding: 12px 4px 10px; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); text-align: center; }
-.mais-it + .mais-it { border-top: 1px solid var(--ui-borda); }
-.mais-it-ic { width: 36px; height: 36px; border-radius: 10px; }
-.mais-it .mais-it-txt { align-items: center; width: 100%; }
-.mais-it .mais-it-txt b { max-width: 100%; font-size: 12.5px; font-weight: 600; }
-.mais-it .mais-it-txt small { display: none; }
-.mais-it--atual { border-color: var(--ui-rosa); }
-.mais-it--atual .mais-it-txt b { font-weight: 700; }
+/* (21/10) as telas voltaram a ser uma lista única (ícone rosa, nome e explicação), igual à tela de Cadastros */
+.mais-it { min-height: 60px; padding: 10px 12px; }
 .mais-doo { margin: 0; }

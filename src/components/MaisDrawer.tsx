@@ -124,9 +124,9 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
             <span className="mais-it-txt"><b>Doo IA</b><small>Sua assistente de confeitaria</small></span>
             <CaretRight size={16} weight="bold" className="mais-it-seta" aria-hidden="true" />
           </button>
-          {GRUPOS.map(grupo => (
-            <section key={grupo.label} className="mais-grupo" aria-label={grupo.label}>
-              <p className="mais-grupo-t">{grupo.label}</p>
+          {/* (21/10) uma lista só, sem título de grupo (sobraram poucos itens) */}
+          {[{ label: "Telas", items: GRUPOS.flatMap(g => g.items) }].map(grupo => (
+            <section key={grupo.label} className="mais-grupo" aria-label="Telas do app">
               <div className="mais-lista">
                 {grupo.items.map(item => {
                   const destino = item.path === "/assinar" && isPro ? "/minha-assinatura" : item.path;
@@ -139,6 +139,7 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
                       {({ isActive }) => (<>
                         <span className="mais-it-ic" aria-hidden="true"><item.Icone size={20} weight={isActive ? "fill" : "bold"} /></span>
                         <span className="mais-it-txt"><b>{item.label}</b><small>{item.desc}</small></span>
+                        <CaretRight size={16} weight="bold" className="mais-it-seta" aria-hidden="true" />
                       </>)}
                     </NavLink>
                   );
