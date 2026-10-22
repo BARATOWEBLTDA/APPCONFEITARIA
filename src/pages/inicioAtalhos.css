@@ -1,15 +1,15 @@
 /* (22/10) Acesso rápido no celular no estilo do iFood: quadrado rosa com o ícone branco (opção C) e só o nome embaixo
    (sai o subtítulo e a seta: menos texto, o ícone grande se reconhece mais rápido). 3 por linha. */
 @media (max-width: 900px) {
-  html body .ini-root .ini-section--nav .ini-nav-grid { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 14px 8px !important; }
+  html body .ini-root .ini-section--nav .ini-nav-grid { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 12px 8px !important; }
   html body .ini-root .ini-section--nav .ini-nav-card { flex-direction: column !important; align-items: center !important; justify-content: flex-start !important; gap: 6px !important; min-width: 0; min-height: 0 !important; padding: 0 0 2px !important; background: none !important; border: 0 !important; box-shadow: none !important; -webkit-tap-highlight-color: transparent; }
-  html body .ini-root .ini-section--nav .ini-nav-card .ini-nav-icon { display: flex !important; align-items: center !important; justify-content: center !important; width: 68px !important; height: 68px !important; margin: 0 !important; border-radius: 20px !important; background: var(--ui-rosa) !important; color: var(--ui-branco) !important; box-shadow: none !important; transition: transform .12s ease; }
-  html body .ini-root .ini-section--nav .ini-nav-card .ini-nav-icon svg { width: 32px !important; height: 32px !important; }
+  html body .ini-root .ini-section--nav .ini-nav-card .ini-nav-icon { display: flex !important; align-items: center !important; justify-content: center !important; width: 56px !important; height: 56px !important; margin: 0 !important; border-radius: 17px !important; background: var(--ui-rosa) !important; color: var(--ui-branco) !important; box-shadow: none !important; transition: transform .12s ease; }
+  html body .ini-root .ini-section--nav .ini-nav-card .ini-nav-icon svg { width: 26px !important; height: 26px !important; }
   html body .ini-root .ini-section--nav .ini-nav-card:active .ini-nav-icon { transform: scale(.94); }
   html body .ini-root .ini-section--nav .ini-nav-card:focus-visible { outline: none; }
   html body .ini-root .ini-section--nav .ini-nav-card:focus-visible .ini-nav-icon { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
   html body .ini-root .ini-section--nav .ini-nav-meta { margin: 0 !important; align-items: center !important; text-align: center !important; max-width: 100%; }
-  html body .ini-root .ini-section--nav .ini-nav-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap !important; font-size: 13.5px !important; font-weight: 500 !important; color: var(--ui-texto) !important; }
+  html body .ini-root .ini-section--nav .ini-nav-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap !important; font-size: 12.5px !important; font-weight: 500 !important; color: var(--ui-texto) !important; }
   html body .ini-root .ini-section--nav .ini-nav-sub, html body .ini-root .ini-section--nav .ini-nav-arrow { display: none !important; }
 }
 
