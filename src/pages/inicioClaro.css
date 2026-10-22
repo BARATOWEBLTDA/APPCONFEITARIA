@@ -1,7 +1,7 @@
 /* (22/10) TESTE do visual claro, só no Início do celular: topo e menu de baixo brancos (estilo iFood e Dora).
    A cor fica pros botões, pro PRO e pro item ativo. Se aprovar, vai pro app todo. */
 @media (max-width: 900px) {
-  html body .ini-root .ini-hero { background: var(--ui-branco) !important; border-bottom: 1px solid var(--ui-borda); border-radius: 0 !important; box-shadow: none !important; }
+  html body .ini-root .ini-hero { background: var(--ui-branco) !important; border-bottom: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
   html body .ini-root .ini-hero-bg, html body .ini-root .ini-hero-sparkles { display: none !important; }
   html body .ini-root .ini-hero-greeting h1, html body .ini-root .ini-hero-greeting h1 > span:first-child { color: var(--ui-texto) !important; }
   html body .ini-root .ini-hero-data-mobile, html body .ini-root .ini-hero-greeting p { color: var(--ui-texto-2) !important; }
@@ -9,6 +9,10 @@
   html body .ini-root .ini-hero-name-skel { background: var(--ui-cinza) !important; }
   /* PRO: etiqueta cheia em chocolate com a coroa dourada (no branco, o contorno rosa ficava apagado) */
   html body .ini-root .ini-plan-tag--pro { background: var(--chocolate, #3A2219) !important; border-color: var(--chocolate, #3A2219) !important; color: var(--ui-branco) !important; }
+  /* "Seja PRO": antes era branco transparente (feito pro topo escuro) e no branco só a coroa aparecia */
+  html body .ini-root .ini-plan-tag--upgrade { background: var(--chocolate, #3A2219) !important; border-color: var(--chocolate, #3A2219) !important; color: var(--ui-branco) !important; }
+  html body .ini-root .ini-plan-tag--upgrade:active { background: var(--chocolate-escuro, #2A1812) !important; }
+  html body .ini-root .ini-plan-tag--upgrade:focus-visible { outline-color: rgba(var(--ui-rosa-rgb), .45) !important; }
   /* sino: cinza quando não tem nada; amarelinho quando tem notificação nova */
   html body .ini-root .ini-hero-ac { background: var(--ui-cinza, #F2EEF0) !important; color: var(--ui-texto-2) !important; }
   html body .ini-root .ini-hero-ac.ini-hero-ac--tem { background: #FFF3C4 !important; color: #B7791F !important; }
