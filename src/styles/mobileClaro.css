@@ -35,3 +35,11 @@
   html body .bottom-nav--claro .bn-item--active:hover { color: var(--ui-rosa-escuro); }
 }
 @media (max-width: 389px) { html body .cab-t { font-size: 16.5px; } html body .cab-foto { width: 38px; height: 38px; } }
+
+/* (22/10) "Seu cardápio está no ar": verde é só pra dinheiro entrando. O cartão fica neutro, só o check verde (deu certo),
+   e o Compartilhar vira rosa (ação principal) */
+@media (max-width: 900px) {
+  html body .lpc { border-color: var(--ui-borda); box-shadow: var(--ui-sombra-cartao, none); }
+  html body .lpc-b--pri { background: var(--ui-rosa); color: var(--ui-branco); box-shadow: 0 2px 0 var(--ui-rosa-escuro); }
+  html body .lpc-b--pri:active { background: var(--ui-rosa-escuro); }
+}
