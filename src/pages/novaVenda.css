@@ -211,3 +211,6 @@ button.nv3-tab-l:active .nv3-radio, .nv3-tab-outro.on .nv3-radio { border: 6px s
   .nv3-lado-falta { color: var(--ui-laranja); font-weight: 700; }
   .nv3-lado-bts { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
 }
+
+/* (22/10) B9 celular: os botões ficam acima do "+" do menu de baixo (antes o + tampava o Continuar) */
+@media (max-width: 900px) { .nv3-pe-in { padding-bottom: 26px; } }
