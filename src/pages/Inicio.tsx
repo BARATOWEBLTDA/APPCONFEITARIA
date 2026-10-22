@@ -32,6 +32,7 @@ import { supabase } from "@/lib/supabase";
 import { useProfile, perfilAtual, avatarDaConta } from "@/hooks/useProfile";
 import { useIsMobile } from "@/hooks/use-mobile";
 import UpdatesFeed from "@/components/UpdatesFeed";
+import "./inicioClaro.css";
 import AdminBannerMobile from "@/components/AdminBannerMobile";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 

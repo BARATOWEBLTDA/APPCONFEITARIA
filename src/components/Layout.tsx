@@ -259,7 +259,7 @@ export default function Layout() {
 
       {/* ── Bottom nav Mobile ── */}
       {!isPrevia && (
-        <nav className="bottom-nav" aria-label="Menu principal">
+        <nav className={`bottom-nav${location.pathname === "/inicio" || location.pathname === "/" ? " bottom-nav--claro" : ""}`} aria-label="Menu principal">
           <div className="bottom-nav-pill">
             {/* (16/10) Início · Cardápio · [+ Nova venda] · Pedidos · Mais. O Doo IA foi pro topo do Início e pro menu da foto */}
             {([

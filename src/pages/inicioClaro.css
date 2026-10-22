@@ -1,0 +1,27 @@
+/* (22/10) TESTE do visual claro, só no Início do celular: topo e menu de baixo brancos (estilo iFood e Dora).
+   A cor fica pros botões, pro PRO e pro item ativo. Se aprovar, vai pro app todo. */
+@media (max-width: 900px) {
+  html body .ini-root .ini-hero { background: var(--ui-branco) !important; border-bottom: 1px solid var(--ui-borda); border-radius: 0 !important; box-shadow: none !important; }
+  html body .ini-root .ini-hero-bg, html body .ini-root .ini-hero-sparkles { display: none !important; }
+  html body .ini-root .ini-hero-greeting h1, html body .ini-root .ini-hero-greeting h1 > span:first-child { color: var(--ui-texto) !important; }
+  html body .ini-root .ini-hero-data-mobile, html body .ini-root .ini-hero-greeting p { color: var(--ui-texto-2) !important; }
+  html body .ini-root .ini-hero-msg, html body .ini-root .ini-hero-msg .ini-hero-msg-hl { color: var(--ui-texto-2) !important; }
+  html body .ini-root .ini-hero-name-skel { background: var(--ui-cinza) !important; }
+  /* PRO: etiqueta cheia em chocolate com a coroa dourada (no branco, o contorno rosa ficava apagado) */
+  html body .ini-root .ini-plan-tag--pro { background: var(--chocolate, #3A2219) !important; border-color: var(--chocolate, #3A2219) !important; color: var(--ui-branco) !important; }
+  html body .ini-root .ini-plan-tag--pro svg { color: #F5C76B !important; }
+  /* sino em rosa clarinho com o desenho rosa */
+  html body .ini-root .ini-hero-ac { background: var(--ui-rosa-claro) !important; color: var(--ui-rosa-escuro) !important; }
+  html body .ini-root .ini-hero-bolinha { border-color: var(--ui-branco) !important; }
+  html body .ini-root .ini-profile-btn { box-shadow: 0 0 0 1px var(--ui-borda) !important; }
+  /* atalhos com borda fina (no fundo branco sem ela somem) */
+  html body .ini-root .ini-nav-card { background: var(--ui-branco) !important; border: 1px solid var(--ui-borda) !important; box-shadow: none !important; }
+
+  /* menu de baixo claro (o Layout põe a classe só quando a tela é o Início) */
+  .bottom-nav.bottom-nav--claro { background: var(--ui-branco) !important; border-top: 1px solid var(--ui-borda); box-shadow: 0 -2px 10px rgba(44, 18, 25, .05) !important; }
+  .bottom-nav--claro .bn-item { color: var(--ui-texto-3) !important; }
+  .bottom-nav--claro .bn-item--active { color: var(--ui-rosa-escuro) !important; }
+  .bottom-nav--claro .bn-bolinha { box-shadow: 0 0 0 2px var(--ui-branco) !important; }
+  .bottom-nav--claro .bn-novo-c { box-shadow: 0 4px 12px rgba(214, 63, 117, .35), 0 0 0 4px var(--ui-branco) !important; }
+  .bottom-nav--claro .bn-item:focus-visible { outline-color: rgba(var(--ui-rosa-rgb), .45); }
+}
