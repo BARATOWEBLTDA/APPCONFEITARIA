@@ -63,6 +63,7 @@ import CardapioResumo from "@/pages/CardapioResumo";
 import Produtos from "@/pages/Produtos";
 import Categorias from "@/pages/Categorias";
 import Clientes from "@/pages/Clientes";
+import Cadastros from "@/pages/Cadastros";
 import Complementos from "@/pages/Complementos";
 import Marketing from "@/pages/Marketing";
 import ClientePerfil from "@/pages/ClientePerfil";
@@ -458,6 +459,7 @@ export default function App() {
           <Route path="/insumos" element={<Insumos />} />
           <Route path="/ficha-tecnica" element={<FichaTecnica />} />
           <Route path="/clientes" element={<Clientes />} />
+          <Route path="/cadastros" element={<Cadastros />} />
           <Route path="/complementos" element={<Complementos />} />
           <Route path="/clientes/:id" element={<ClientePerfil />} />
           <Route path="/financeiro" element={<Financeiro />} />

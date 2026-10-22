@@ -1,6 +1,8 @@
 import { useNotifications } from "@/context/NotificationContext";
 import { ROTAS_CARDAPIO } from "@/components/CardapioSubnav";
 const ROTAS_CATALOGO = ["/produtos", "/produtos/categorias", "/categorias", "/complementos"];
+// (21/10) telas que acendem a aba Cadastros do menu de baixo
+const ROTAS_CADASTROS = [...ROTAS_CATALOGO, "/insumos", "/ficha-tecnica", "/clientes", "/cardapio"];
 import { PausarPedidos } from "@/components/loja/PausarPedidos";
 import { NavLink, Outlet, useNavigate, useLocation, useNavigationType } from "react-router-dom";
 // deploy: Proposta D - nova arquitetura de navegação (Entrega 1)
@@ -12,7 +14,7 @@ import MaisDrawer from "@/components/MaisDrawer";
 import PerguntaSons from "@/components/PerguntaSons";
 import { useState, useEffect, type ReactNode } from "react";
 import { ClipboardText, ChartBar, Stack, Palette, Truck, Storefront, ArrowSquareOut, ArrowsDownUp, CalendarCheck, Tag, ChartLineUp, Megaphone, HandCoins, CaretDoubleLeft, CaretDoubleRight,
-  House, CalendarDots, ShoppingBag, Users, BookOpen,
+  House, CalendarDots, ShoppingBag, Users, BookOpen, Notebook,
   Package, CurrencyDollar, Gear, CaretDown, Cake,
   SquaresFour, Camera, Plus,
   Receipt, Sparkle, Crown, Bell,
@@ -264,7 +266,8 @@ export default function Layout() {
             {/* (16/10) Início · Cardápio · [+ Nova venda] · Pedidos · Mais. O Doo IA foi pro topo do Início e pro menu da foto */}
             {([
               { to: "/inicio",   Icone: House,       label: "Início",   tour: undefined },
-              { to: "/cardapio", Icone: ShoppingBag, label: "Cardápio", tour: "cardapio" },
+              // (21/10) "Cardápio" virou "Cadastros": um lugar só pra cadastrar tudo (o cardápio digital é uma linha de lá)
+              { to: "/cadastros", Icone: Notebook, label: "Cadastros", tour: "cardapio" },
               { to: "/vendas/novo", Icone: Plus, label: "Nova venda", tour: undefined, mais: true },
               { to: "/pedidos",  Icone: Receipt,     label: "Pedidos",  tour: undefined },
             ] as { to: string; Icone: Icon; label: string; tour?: string; mais?: boolean }[]).map((item) => {
@@ -284,7 +287,8 @@ export default function Layout() {
               // com o Mais aberto, só ele fica aceso
               const isActive = !maisOpen && (
                 location.pathname === item.to ||
-                location.pathname.startsWith(item.to + "/"));
+                location.pathname.startsWith(item.to + "/") ||
+                (item.to === "/cadastros" && ROTAS_CADASTROS.some(r => location.pathname === r || location.pathname.startsWith(r + "/") || location.pathname.startsWith(r + "-"))));
               return (
                 <NavLink
                   key={item.to}
