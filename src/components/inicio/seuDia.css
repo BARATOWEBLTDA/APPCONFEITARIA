@@ -97,3 +97,12 @@
 .sd-sd small { text-transform: none; font-size: 12px; font-weight: 500; }
 .sd-sd .sd-pts { margin: 2px 0 1px; height: 7px; }
 .sd-sd .sd-pts i { width: 6px; height: 6px; }
+
+/* (22/10) dias maiores, como na Dora: mês em cima, número grande e o dia por extenso; os que já passaram em cinza */
+.sd-sem { gap: 8px; padding: 2px 16px 4px; scroll-snap-type: none; }
+.sd-sd { flex: 0 0 70px; min-width: 70px; gap: 2px; padding: 10px 0 9px; border-radius: 14px; }
+.sd-sd .sd-sd-mes { font-size: 12px; font-weight: 500; line-height: 1.2; color: var(--ui-texto-3); }
+.sd-sd b { font-size: 24px; font-weight: 700; line-height: 1.15; }
+.sd-sd--passado { border-color: transparent; background: #F1F2F2; }
+.sd-sd--passado b, .sd-sd--passado small, .sd-sd--passado .sd-sd-mes { color: #A3A6A8; }
+.sd-sd.on .sd-sd-mes { color: var(--ui-branco); }

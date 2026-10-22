@@ -510,15 +510,16 @@ export default function Inicio() {
           .in("status", STATUS_ATIVOS)
           .order("horario_entrega", { ascending: true, nullsFirst: false })
           .order("id"),
-        // (16/10) a semana: de hoje até daqui a 6 dias (a faixa conta os pedidos de cada dia)
+        // (16/10) a faixa de dias (22/10: de 7 dias atrás até daqui a 13)
         supabase
           .from("pedidos")
           .select("id, numero, cliente_nome, data_entrega, valor_total, horario_entrega, tipo_entrega, status, origem, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(forma_venda, imagem_url))")
           .eq("user_id", userId)
-          .gte("data_entrega", hojeISO)
-          .lte("data_entrega", dataISO(new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 6)))
-          .in("status", STATUS_ATIVOS)
-          .limit(300),
+          .gte("data_entrega", dataISO(new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - 7)))
+          .lte("data_entrega", dataISO(new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 13)))
+          // (22/10) a faixa volta 7 dias: os já entregues também aparecem nos dias que passaram
+          .in("status", [...STATUS_ATIVOS, "entregue", "concluido"])
+          .limit(500),
         supabase.from("custos_fixos").select("valor, ativo").eq("user_id", userId),
       ]);
       if (n !== numCarga.current) return; // chegou uma busca mais nova

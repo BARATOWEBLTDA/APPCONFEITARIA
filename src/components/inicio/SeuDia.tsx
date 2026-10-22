@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CaretRight, Cake } from "@phosphor-icons/react";
 import { Botao } from "@/components/base";
@@ -42,12 +42,21 @@ const hhmm = (h?: string | null) => (h ? String(h).slice(0, 5) : "");
 export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, semana, novos = 0, atrasados = 0 }: Props) {
   const navigate = useNavigate();
   const [diaSel, setDiaSel] = useState<string | null>(null);
-  // (16/10) faixa da semana: os 7 dias a partir de hoje, com quantos pedidos cada um tem
-  const dias7 = Array.from({ length: 7 }, (_, i) => {
+  // (22/10) faixa de dias como a da Dora: 7 dias pra trás (cinza) e 13 pra frente; abre no "Hoje"
+  const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+  const dias7 = Array.from({ length: 21 }, (_, k) => {
+    const i = k - 7;
     const d = new Date(hoje + "T12:00:00"); d.setDate(d.getDate() + i);
     const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    return { iso, n: (semana || []).filter(e => e.data === iso).length, sem: i === 0 ? "Hoje" : ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"][d.getDay()], dia: d.getDate() };
+    return { iso, passado: i < 0, n: (semana || []).filter(e => e.data === iso).length, mes: MESES[d.getMonth()], sem: i === 0 ? "Hoje" : ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"][d.getDay()], dia: d.getDate() };
   });
+  const faixaRef = useRef<HTMLDivElement>(null);
+  const mostraFaixa = !!semana && !erro && !carregando;
+  useLayoutEffect(() => {
+    const f = faixaRef.current; if (!f) return;
+    const h = f.querySelector<HTMLElement>(".sd-sd--hoje");
+    if (h) f.scrollLeft = h.offsetLeft - f.offsetLeft - 16;
+  }, [mostraFaixa, hoje]);
 
   // 11/10: destaque = a primeira entrega de hoje com hora de AGORA em diante (sem nenhuma, a primeira sem horário).
   // As de hora já passada que ainda não foram entregues viram o aviso "N passaram do horário" e saem da lista.
@@ -81,13 +90,14 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, sem
         </button>
       </div>
 
-      {semana && !erro && !carregando && (
-        <div className="sd-sem" role="group" aria-label="Pedidos da semana">
+      {mostraFaixa && (
+        <div className="sd-sem" ref={faixaRef} role="group" aria-label="Pedidos por dia">
           {dias7.map(d => (
-            <button type="button" key={d.iso} className={`sd-sd${diaSel === d.iso ? " on" : ""}${d.n ? " tem" : ""}`} aria-pressed={diaSel === d.iso}
+            <button type="button" key={d.iso} className={`sd-sd${diaSel === d.iso ? " on" : ""}${d.n ? " tem" : ""}${d.passado ? " sd-sd--passado" : ""}${d.iso === hoje ? " sd-sd--hoje" : ""}`} aria-pressed={diaSel === d.iso}
               onClick={() => setDiaSel(x => x === d.iso ? null : d.iso)} aria-label={`${d.sem} ${d.dia}: ${d.n} ${d.n === 1 ? "pedido" : "pedidos"}${d.iso === hoje && (atrasados > 0 || passaram.length > 0) ? ", com atraso" : ""}`}>
+              {/* (22/10) como na Dora: mês em cima, número grande, dia da semana por extenso embaixo */}
+              <span className="sd-sd-mes">{d.mes}</span>
               <b>{d.dia}</b>
-              {/* (22/10) sem bolinhas: só o número e o dia da semana por extenso (como na Dora) */}
               <small>{d.sem}</small>
             </button>
           ))}
@@ -114,7 +124,7 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, sem
           {/* (16/10) dia vazio com a altura de uma entrega: o cartão não encolhe (antes o de baixo subia e parecia abrir) */}
           {doDia && lista.length === 0 && (
             <div className="sd-dvazio">
-              <span>Nada marcado pro dia {Number(diaSel!.slice(8, 10))}</span>
+              <span>{diaSel! < hoje ? "Nada entregue no dia" : "Nada marcado pro dia"} {Number(diaSel!.slice(8, 10))}</span>
               <button type="button" onClick={() => setDiaSel(null)}>Ver todas</button>
             </div>
           )}
