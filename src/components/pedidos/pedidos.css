@@ -160,3 +160,39 @@
 @media (min-width: 901px) and (hover: hover) { .pdl:hover { background: var(--ui-rosa-claro); } }
 @media (prefers-reduced-motion: reduce) { .pdc-seta svg { transition: none; } }
 .pdc-pix { margin-top: 12px; }
+
+/* (22/10) celular: abas por situação e o pedido numa linha (estilo iFood Gestor) */
+.pdk-abas { display: flex; gap: 8px; margin: 12px 0 4px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.pdk-abas::-webkit-scrollbar { display: none; }
+.pdk-aba { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 38px; margin: 0; padding: 0 14px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto-2); font-family: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.pdk-aba i { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--ui-cinza); color: var(--ui-texto-2); font-style: normal; font-size: 12px; line-height: 20px; text-align: center; }
+.pdk-aba.alerta i { background: #FDECD3; color: #9A4A06; }
+.pdk-aba[aria-selected="true"] { border-color: var(--ui-texto); background: var(--ui-texto); color: var(--ui-branco); }
+.pdk-aba[aria-selected="true"] i { background: rgba(255, 255, 255, .2); color: var(--ui-branco); }
+.pdk-aba:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
+.pdk-grupos { gap: 12px; }
+.pdk-topo { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 4px 2px 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
+.pdk-todos { position: relative; flex: none; margin: 0; padding: 0; border: 0; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; }
+.pdk-todos::after { content: ""; position: absolute; inset: -12px -6px; }
+.pdk-t { display: flex; align-items: center; gap: 6px; margin: 4px 2px 8px; font-size: 14px; font-weight: 700; color: var(--ui-texto); }
+.pdk-t i { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--ui-cinza); color: var(--ui-texto-2); font-style: normal; font-size: 12px; line-height: 20px; text-align: center; }
+.pdk-t.t-vermelho { color: var(--ui-vermelho); }
+.pdk-lista { overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
+.pdk { display: flex; align-items: center; gap: 12px; min-height: 76px; padding: 10px 12px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.pdk + .pdk { border-top: 1px solid var(--ui-linha); }
+.pdk:active { background: #FBF8F9; }
+.pdk:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
+.pdk .pdc-foto { width: 48px; height: 48px; }
+.pdk-tx { flex: 1; min-width: 0; }
+.pdk-tx p { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pdk-nome { display: flex; align-items: baseline; gap: 4px; }
+.pdk-nome b { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 14.5px; font-weight: 700; color: var(--ui-texto); }
+.pdk-nome span { flex: none; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-3); }
+.pdk-s { font-size: 12.5px; font-weight: 500; line-height: 1.45; color: var(--ui-texto-2); }
+.pdk-q.t-vermelho { color: var(--ui-vermelho); font-weight: 700; }
+.pdk-pg { font-size: 12.5px; font-weight: 700; line-height: 1.45; color: var(--ui-texto-2); }
+.pdk-pg.t-laranja { color: #B45309; }
+.pdk-pg.t-verde { color: var(--ui-verde); }
+.pdk-dir { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.pdk-v { font-size: 14px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ui-bt.pdk-bt { min-height: 34px; padding: 0 12px; font-size: 13px; }

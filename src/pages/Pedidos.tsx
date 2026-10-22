@@ -7,7 +7,7 @@ import AppPageHeader from '@/components/AppPageHeader'
 import { Botao, BotaoIcone, Janela, TelaVazia, Titulo, avisar, confirmar } from '@/components/base'
 import FinalizarPedidoSheet from '@/components/pedidos/FinalizarPedidoSheet'
 import FiltroLateral, { STATUS_PADRAO, bateData } from '@/components/pedidos/FiltroPedidos'
-import { CartaoPedido, LinhaPedido } from '@/components/pedidos/CartaoPedido'
+import { LinhaCompacta, LinhaPedido } from '@/components/pedidos/CartaoPedido'
 import MenuPedido from '@/components/pedidos/MenuPedido'
 import type { AcaoMenu } from '@/components/pedidos/MenuPedido'
 import QuadroPedidos from '@/components/pedidos/QuadroPedidos'
@@ -37,6 +37,13 @@ import '@/components/pedidos/pedidos.css'
  * (3.14) Pedidos pra aceitar ficam no topo, em destaque. Toda mudança de situação mostra um aviso curto; entregue também toca um som.
  */
 const MEDIDA_COMPUTADOR = '(min-width: 901px)'
+type Sit = 'aceitar' | 'agenda' | 'prontos' | 'concluidos'
+const SITS: { k: Sit; nome: string }[] = [
+  { k: 'aceitar', nome: 'Pra aceitar' }, { k: 'agenda', nome: 'Agendados' }, { k: 'prontos', nome: 'Prontos' }, { k: 'concluidos', nome: 'Concluídos' },
+]
+/** Em que aba do celular o pedido fica: em produção e esperando pagamento ficam em Agendados */
+const sitDe = (p: Pedido): Sit => terminou(p) ? 'concluidos' : precisaAceitar(p) ? 'aceitar'
+  : ['finalizado', 'aguardando_retirada', 'em_entrega'].includes(grupoDoStatus(p.status)) ? 'prontos' : 'agenda'
 const MEDIDA_TABLET = '(min-width: 768px)'
 
 /**
@@ -79,6 +86,8 @@ export default function Pedidos() {
   const [filtroAguardando, setFiltroAguardando] = useState(params.get('filtro') === 'aguardando')
   const [filtroAtrasados, setFiltroAtrasados] = useState(params.get('filtro') === 'atrasados')
 
+  // (22/10) celular: abas por situação (Pra aceitar, Agendados, Prontos, Concluídos). null = escolhe sozinho
+  const [sit, setSit] = useState<Sit | null>(params.get('filtro') === 'aguardando' ? 'aceitar' : null)
   const [busca, setBusca] = useState('')
   const [aba, setAba] = useState<'encomenda' | 'pronta_entrega'>('encomenda')
   const [modo, setModo] = useState<'lista' | 'quadro'>('lista')
@@ -406,6 +415,25 @@ export default function Pedidos() {
     }
   }
 
+  // (22/10) "Aceitar todos": os pedidos novos do cardápio vão pra agenda de uma vez (um aviso só)
+  const aceitandoTodos = useRef(false)
+  const aceitarTodos = async (lista: Pedido[]) => {
+    const ids = lista.filter(p => precisaAceitar(p) && acaoDe(p)?.proximo === 'agendado' && !mudandoRef.current.has(p.id)).map(p => p.id)
+    if (!ids.length || aceitandoTodos.current) return
+    const ok = await confirmar({ titulo: `Aceitar os ${ids.length} pedidos?`, texto: 'Eles entram na sua agenda.', rotulo: 'Aceitar todos', rotuloVoltar: 'Agora não' })
+    if (!ok) return
+    aceitandoTodos.current = true
+    ids.forEach(id => travar(id, true))
+    try {
+      const { error } = await supabase.from('pedidos').update({ status: 'agendado' }).in('id', ids)
+      if (error) { avisar('Não deu pra aceitar os pedidos. Confira a internet e tente de novo.', { tipo: 'erro' }); return }
+      ids.forEach(id => registrarEtapa(id, 'agendado'))
+      mudarPedidos(prev => prev.map(p => ids.includes(p.id) ? { ...p, status: 'agendado' } : p))
+      avisar(ids.length === 1 ? 'Pedido aceito.' : `${ids.length} pedidos aceitos.`)
+      setSit(null) // a aba vazia some: volta pra aba que tem pedido (Agendados)
+    } finally { ids.forEach(id => travar(id, false)); aceitandoTodos.current = false }
+  }
+
   const abrirPedido = (p: Pedido) => navigate(`/pedidos/${p.id}/editar`)
   const verEndereco = (p: Pedido) => navigate(`/pedidos/${p.id}/editar?aba=entrega`)
 
@@ -413,18 +441,18 @@ export default function Pedidos() {
     const q = semAcento(busca)
     return pedidos.filter(p => {
       // (10/10) a mesma regra do "X pra aceitar" do Início (STATUS_PENDENTES em pages/Inicio.tsx), de qualquer origem
-      if (filtroAguardando) return ['aguardando_aceite', 'aguardando_pagamento', 'novo', 'pendente'].includes(p.status)
+      if (filtroAguardando && computador) return ['aguardando_aceite', 'aguardando_pagamento', 'novo', 'pendente'].includes(p.status)
       if (filtroAtrasados) return pedidoAtrasado(p as any, hoje)
-      if ((p.tipo_venda || 'encomenda') !== aba) return false
+      if (computador && (p.tipo_venda || 'encomenda') !== aba) return false
       const okStatus = statusSelecionados.includes(grupoDoStatus(p.status))
       const okBusca = !q || semAcento(p.cliente_nome || '').includes(q) || String(p.numero).includes(q)
       const okData = bateData(p, periodoFiltro === 'custom' ? 'personalizado' : periodoFiltro, dataInicio, dataFim)
       return okStatus && okBusca && okData
     })
-  }, [pedidos, busca, aba, statusSelecionados, periodoFiltro, dataInicio, dataFim, filtroAguardando, filtroAtrasados, hoje]) // "hoje": os filtros de data e de atrasado andam com o dia
+  }, [pedidos, busca, aba, statusSelecionados, periodoFiltro, dataInicio, dataFim, filtroAguardando, filtroAtrasados, hoje, computador]) // "hoje": os filtros de data e de atrasado andam com o dia
 
   // Agrupado por dia: Atrasado, Hoje, Amanhã, os próximos dias, Sem data e Concluídos
-  const grupos = useMemo(() => {
+  const agrupar = useCallback((lista: Pedido[]) => {
     // (11/10) "hoje" vem do useDiaAtual: com a lista aberta de um dia pro outro, os grupos se refazem sozinhos
     const [ah, mh, dh] = hoje.split('-').map(Number)
     const hojeIso = hoje, amanhaIso = dataISO(new Date(ah, mh - 1, dh + 1))
@@ -434,8 +462,8 @@ export default function Pedidos() {
     const g: { chave: string; titulo: string; itens: Pedido[] }[] = []
     const add = (chave: string, titulo: string, itens: Pedido[]) => { if (itens.length) g.push({ chave, titulo, itens }) }
     // pedidos pra aceitar vêm primeiro, em destaque (3.14); os outros seguem agrupados por dia
-    add('aceitar', 'Pra aceitar', pedidosFiltrados.filter(p => !terminou(p) && precisaAceitar(p)).sort(porHora))
-    const ativos = pedidosFiltrados.filter(p => !terminou(p) && !precisaAceitar(p)).sort(porHora)
+    add('aceitar', 'Pra aceitar', lista.filter(p => !terminou(p) && precisaAceitar(p)).sort(porHora))
+    const ativos = lista.filter(p => !terminou(p) && !precisaAceitar(p)).sort(porHora)
     // (11/10) "Atrasado" pela regra única (lib/pedidoStatus): a data passou E o pedido ainda não ficou pronto.
     // O que já está pronto (ou saiu pra entrega) e é de um dia anterior não é atraso: fica num grupo à parte, pra não sumir da lista.
     const passados = ativos.filter(p => p.data_entrega && p.data_entrega.slice(0, 10) < hojeIso)
@@ -446,9 +474,18 @@ export default function Pedidos() {
     const futuros = ativos.filter(p => p.data_entrega && p.data_entrega > amanhaIso)
     ;[...new Set(futuros.map(p => p.data_entrega))].forEach(d => { const t = rot(d); add('d' + d, t.charAt(0).toUpperCase() + t.slice(1), futuros.filter(p => p.data_entrega === d)) })
     add('semdata', 'Sem data', ativos.filter(p => !p.data_entrega))
-    add('concluidos', 'Concluídos', pedidosFiltrados.filter(terminou).sort((a, b) => -porHora(a, b)))
+    add('concluidos', 'Concluídos', lista.filter(terminou).sort((a, b) => -porHora(a, b)))
     return g
-  }, [pedidosFiltrados, hoje])
+  }, [hoje])
+  const grupos = useMemo(() => agrupar(pedidosFiltrados), [agrupar, pedidosFiltrados])
+  // celular: quantos em cada aba, a aba escolhida (ou a primeira com pedido) e os grupos dela
+  const nSit = useMemo(() => {
+    const n: Record<Sit, number> = { aceitar: 0, agenda: 0, prontos: 0, concluidos: 0 }
+    pedidosFiltrados.forEach(p => { n[sitDe(p)]++ })
+    return n
+  }, [pedidosFiltrados])
+  const sitAtual: Sit = sit ?? (nSit.aceitar > 0 ? 'aceitar' : nSit.agenda > 0 || nSit.prontos === 0 ? 'agenda' : 'prontos')
+  const gruposCel = useMemo(() => agrupar(pedidosFiltrados.filter(p => sitDe(p) === sitAtual)), [agrupar, pedidosFiltrados, sitAtual])
 
   const nFiltros = (statusSelecionados.length !== STATUS_PADRAO.length || !STATUS_PADRAO.every(s => statusSelecionados.includes(s)) ? 1 : 0) + (periodoFiltro !== 'todos' ? 1 : 0)
   const filtrando = nFiltros > 0 || !!busca.trim()
@@ -488,14 +525,14 @@ export default function Pedidos() {
         {parada ?? (
           <>
             <div className="pd-barra">
-              <div className="pd-abas" role="tablist" aria-label="Tipo de venda">
+              {computador && <div className="pd-abas" role="tablist" aria-label="Tipo de venda">
                 <button type="button" role="tab" aria-selected={aba === 'encomenda'} className="pd-aba" onClick={() => setAba('encomenda')}>
                   <CalendarDots size={20} weight={aba === 'encomenda' ? 'fill' : 'bold'} aria-hidden="true" /><span>Encomendas</span><i>{nEncomendas}</i>
                 </button>
                 <button type="button" role="tab" aria-selected={aba === 'pronta_entrega'} className="pd-aba" onClick={() => setAba('pronta_entrega')}>
                   <Lightning size={20} weight={aba === 'pronta_entrega' ? 'fill' : 'bold'} aria-hidden="true" /><span>Pronta entrega</span><i>{nPronta}</i>
                 </button>
-              </div>
+              </div>}
               <div className="pd-busca-l">
                 <div className="ui-campo-c pd-busca" onClick={e => { if (e.target === e.currentTarget) e.currentTarget.querySelector('input')?.focus() }}>
                   <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
@@ -512,11 +549,22 @@ export default function Pedidos() {
                     <button type="button" aria-pressed={modo === 'quadro'} onClick={() => setModo('quadro')}><Kanban size={20} weight="bold" aria-hidden="true" /><span>Quadro</span></button>
                   </div>
                 )}
-                <Botao className="pd-novo" icone={<Plus size={20} weight="bold" />} onClick={handleNovoPedido}>Nova venda</Botao>
+                {/* (22/10) no celular o "+" do menu de baixo já faz a nova venda */}
+                {computador && <Botao className="pd-novo" icone={<Plus size={20} weight="bold" />} onClick={handleNovoPedido}>Nova venda</Botao>}
               </div>
             </div>
 
-            {(filtroAguardando || filtroAtrasados) && (
+            {!computador && !quadro && !filtroAtrasados && pedidos.length > 0 && (
+              <div className="pdk-abas" role="tablist" aria-label="Situação dos pedidos">
+                {SITS.map(t => (
+                  <button key={t.k} type="button" role="tab" aria-selected={sitAtual === t.k} className={`pdk-aba${t.k === 'aceitar' && nSit.aceitar > 0 ? ' alerta' : ''}`} onClick={() => { setSit(t.k); window.scrollTo(0, 0) }}>
+                    {t.nome}{t.k !== 'concluidos' && <i>{nSit[t.k]}</i>}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {(computador ? (filtroAguardando || filtroAtrasados) : filtroAtrasados) && (
               <div className={`pd-rapido${filtroAtrasados ? ' atr' : ''}`}>
                 <div>
                   <b>{filtroAtrasados ? 'Pedidos atrasados' : 'Pedidos pra aceitar'}</b>
@@ -536,15 +584,34 @@ export default function Pedidos() {
             ) : quadro ? (
               // o Quadro mostra o "carregando" de um pedido por vez (a trava em si é por pedido, aqui na lista)
               <QuadroPedidos pedidos={pedidosFiltrados} aoAbrir={abrirPedido} aoAvancar={avancar} aoMover={moverNoQuadro} mudando={mudando.values().next().value ?? null} />
+            ) : !computador ? (
+              /* (22/10) celular: a aba da situação, em linhas compactas; dentro de Agendados e Prontos, separado por dia */
+              gruposCel.length === 0 ? (
+                <TelaVazia icone={<Receipt size={30} />} titulo={sitAtual === 'aceitar' ? 'Nenhum pedido pra aceitar' : sitAtual === 'prontos' ? 'Nenhum pedido pronto' : sitAtual === 'concluidos' ? 'Nenhum pedido concluído' : 'Nenhum pedido agendado'}
+                  texto={sitAtual === 'aceitar' ? 'Os pedidos do cardápio aparecem aqui pra você aceitar.' : 'Quando tiver, eles aparecem aqui.'} />
+              ) : (
+              <div className="pd-grupos pdk-grupos">
+                {gruposCel.map(g => {
+                  const unico = gruposCel.length === 1 && (g.chave === 'aceitar' || g.chave === 'concluidos')
+                  return (
+                    <section key={g.chave} className="pd-grupo" aria-label={g.titulo}>
+                      {g.chave === 'aceitar' ? (
+                        <div className="pdk-topo"><span>{g.itens.length === 1 ? 'Chegou pelo cardápio' : 'Chegaram pelo cardápio'}</span>
+                          {g.itens.length > 1 && <button type="button" className="pdk-todos" onClick={() => aceitarTodos(g.itens)}>Aceitar todos</button>}</div>
+                      ) : !unico && <p className={`pdk-t${g.chave === 'atrasado' ? ' t-vermelho' : ''}`}>{g.titulo}<i>{g.itens.length}</i></p>}
+                      <div className="pdk-lista">{g.itens.map(p => <LinhaCompacta key={p.id} {...props(p)} />)}</div>
+                    </section>
+                  )
+                })}
+              </div>
+              )
             ) : (
               <div className="pd-grupos">
                 {computador && <div className="pdl-cab" aria-hidden="true"><span>Cliente e pedido</span><span>Situação</span><span>Pagamento</span><span>Entrega</span><span /><span /></div>}
                 {grupos.map(g => (
                   <section key={g.chave} className="pd-grupo" aria-label={g.titulo}>
                     <Titulo contagem={g.itens.length} tom={g.chave === 'atrasado' ? 'vermelho' : undefined} apoio={g.chave === 'aceitar' ? (g.itens.length === 1 ? 'Chegou pelo cardápio. Aceite pra entrar na sua agenda.' : 'Chegaram pelo cardápio. Aceite pra entrar na sua agenda.') : undefined}>{g.titulo}</Titulo>
-                    {computador
-                      ? <div className="pdl-tabela" role="table">{g.itens.map(p => <LinhaPedido key={p.id} {...props(p)} comDia={g.chave === 'concluidos' || g.chave === 'semdata' || g.chave === 'antes'} />)}</div>
-                      : <div className="pdc-lista">{g.itens.map(p => <CartaoPedido key={p.id} {...props(p)} />)}</div>}
+                    <div className="pdl-tabela" role="table">{g.itens.map(p => <LinhaPedido key={p.id} {...props(p)} comDia={g.chave === 'concluidos' || g.chave === 'semdata' || g.chave === 'antes'} />)}</div>
                   </section>
                 ))}
               </div>

@@ -3,7 +3,7 @@ import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { ArrowRight, Bag, CaretDown, DotsThreeVertical } from '@phosphor-icons/react'
 import { Botao, BotaoIcone, Linha } from '@/components/base'
 import type { Pedido } from './pedidoTexto'
-import { pixDoPedido, acaoDe, atrasado, precisaAceitar, criadoEm, dataLonga, enderecoCurto, formaDoItem, fotoDoPedido, horaCurta, itensOrdenados, nomeCliente, nomeDoItem, partesDaQtd, recebidoPedido, resumoItens, rs, saldoPedido, situacaoDe, telefoneBonito, grupoDoStatus } from './pedidoTexto'
+import { pixDoPedido, acaoDe, atrasado, precisaAceitar, criadoEm, dataCurta, dataLonga, enderecoCurto, formaDoItem, fotoDoPedido, horaCurta, itensOrdenados, nomeCliente, nomeDoItem, partesDaQtd, recebidoPedido, resumoItens, rs, saldoPedido, situacaoDe, telefoneBonito, grupoDoStatus } from './pedidoTexto'
 import { r2 } from '@/lib/moeda'
 
 /**
@@ -154,6 +154,40 @@ export function LinhaPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudando
       </div>
       <div role="cell">
         <BotaoIcone rotulo="Mais ações" variante="limpo" tamanho="p" onClick={parar(() => aoMenu(p))}><DotsThreeVertical size={20} weight="bold" /></BotaoIcone>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * (22/10) Celular: o pedido numa linha (estilo iFood Gestor). Foto, cliente, itens, quando, pagamento,
+ * valor e um botão só, o da próxima etapa. O resto (Pix, endereço, detalhes) fica ao abrir o pedido.
+ */
+export function LinhaCompacta({ p, aoAbrir, aoAvancar, mudando }: Props) {
+  const acao = acaoDe(p)
+  const atr = atrasado(p)
+  const aceitar = precisaAceitar(p)
+  const cancelado = grupoDoStatus(p.status) === 'cancelado'
+  const falta = saldoPedido(p)
+  const pg = textoPagamento(p, falta)
+  const quando = !p.data_entrega && p.tipo_venda === 'pronta_entrega' ? 'Pronta entrega' : dataCurta(p.data_entrega, p.horario_entrega)
+  const dm = p.data_entrega ? `${p.data_entrega.slice(8, 10)}/${p.data_entrega.slice(5, 7)}` : ''
+  // botão curto pra caber na linha: "Marcar pronto" vira "Pronto", "Marcar entregue" vira "Entregue"
+  const rot = acao ? acao.rotulo.replace(/^Marcar /, '').replace(/^./, c => c.toUpperCase()) : ''
+  return (
+    <div className={`pdk${atr ? ' atr' : ''}`} role="button" tabIndex={0} aria-label={`Pedido #${p.numero || ''} de ${nomeCliente(p)}`} onClick={() => aoAbrir(p)} onKeyDown={teclaAbre(() => aoAbrir(p))}>
+      <Foto p={p} />
+      <div className="pdk-tx">
+        <p className="pdk-nome"><b>{nomeCliente(p)}</b><span>#{p.numero || '—'}</span></p>
+        <p className="pdk-s">{resumoItens(p)}</p>
+        <p className={`pdk-s pdk-q${atr ? ' t-vermelho' : ''}`}>{atr ? `Atrasado · era pra ${dm}` : quando}</p>
+        {cancelado
+          ? <p className="pdk-pg">Cancelado</p>
+          : <p className={`pdk-pg t-${pg.tom}`}>{pg.texto}</p>}
+      </div>
+      <div className="pdk-dir">
+        <b className="pdk-v">{rs(p.valor_total)}</b>
+        {acao && <Botao className={aceitar ? 'pdk-bt' : 'pdk-bt pd-passo'} tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{rot}</Botao>}
       </div>
     </div>
   )
