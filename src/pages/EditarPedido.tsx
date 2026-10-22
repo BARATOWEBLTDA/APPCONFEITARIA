@@ -7,7 +7,7 @@ import { type DialogoOpcoes, type IconeDialogo } from '@/components/DialogoApp'
 import AppPageHeader from '@/components/AppPageHeader'
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, Linha, Titulo, avisar as avisarBase, confirmar, informar } from '@/components/base'
 import { ArrowsLeftRight, Clock, CreditCard, DotsThreeVertical, MagnifyingGlass, Package, Truck } from '@phosphor-icons/react'
-import { pixDoPedido, SITUACOES, VERBOS, avisoDaMudanca, dataLonga, grupoDoStatus, nomeDaSituacao, nomeDeProduto, itemComQtd, proximoPasso, telefoneValido } from '@/components/pedidos/pedidoTexto'
+import { pixDoPedido, SITUACOES, VERBOS, avisoDaMudanca, dataCurta, dataLonga, grupoDoStatus, nomeDaSituacao, nomeDeProduto, itemComQtd, proximoPasso, telefoneValido } from '@/components/pedidos/pedidoTexto'
 import { NomeComQtd } from '@/components/pedidos/CartaoPedido'
 import { tocarSom } from '@/hooks/useSom'
 import '@/components/pedidos/telaPedido.css'
@@ -302,6 +302,13 @@ export default function EditarPedido() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const location = useLocation()
+  // (22/10) celular (até 900px): etapas curtas com "Novo" e a data curta; o computador fica como está
+  const [cel, setCel] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 900px)')
+    const f = () => setCel(mq.matches)
+    mq.addEventListener('change', f); return () => mq.removeEventListener('change', f)
+  }, [])
   // (11/10) o quadro de pedidos manda abrir já na janela de cancelar: navigate(`/pedidos/${id}/editar`, { state: { abrirCancelar: true } }).
   // O pedido é guardado aqui e o state é limpo na hora, pra o "voltar" e o recarregar não abrirem a janela de novo.
   const abrirCancelarRef = useRef((location.state as any)?.abrirCancelar === true)
@@ -1232,15 +1239,23 @@ export default function EditarPedido() {
   // Etapas dinâmicas (03/10): mudam com o tipo (entrega/retirada) e com o status
   // 10/10: o mesmo caminho da lista. Retirada: Em produção → Pronto pra retirar → Retirado.
   // Entrega: Em produção → Pronto → Saiu pra entrega → Entregue.
-  const ETAPAS: string[] = tipoEntrega === 'retirada'
+  const ETAPAS_PC: string[] = tipoEntrega === 'retirada'
     ? ['Agendado', 'Em produção', 'Pronto pra retirar', 'Retirado']
     : ['Agendado', 'Em produção', 'Pronto', 'Saiu pra entrega', 'Entregue']
-  const posEtapa = (() => {
+  const posEtapaPc = (() => {
     const g = grupoDoStatus(statusPedido)
     if (g === 'em_producao') return 1
     if (tipoEntrega === 'retirada') return ['finalizado', 'aguardando_retirada'].includes(g) ? 2 : g === 'entregue' ? 3 : 0
     return g === 'finalizado' || g === 'aguardando_retirada' ? 2 : g === 'em_entrega' ? 3 : g === 'entregue' ? 4 : 0
   })()
+  // (22/10) celular: sempre 5 etapas de nome curto, começando no "Novo" (o pedido não aceito acende o Novo, em laranja).
+  // Na entrega, a última etapa diz "A caminho" enquanto o pedido está saindo e "Entregue" depois.
+  const gEtapa = grupoDoStatus(statusPedido)
+  const ehNovoPedido = ['aguardando_aceite', 'aguardando_pagamento'].includes(gEtapa)
+  const ETAPAS_CEL: string[] = ['Novo', 'Agendado', 'Produção', 'Pronto', tipoEntrega === 'retirada' ? 'Retirado' : gEtapa === 'em_entrega' ? 'A caminho' : 'Entregue']
+  const posEtapaCel = ehNovoPedido ? 0 : gEtapa === 'em_producao' ? 2 : ['finalizado', 'aguardando_retirada'].includes(gEtapa) ? 3 : gEtapa === 'em_entrega' ? 4 : gEtapa === 'entregue' ? 5 : 1
+  const ETAPAS = cel ? ETAPAS_CEL : ETAPAS_PC
+  const posEtapa = cel ? posEtapaCel : posEtapaPc
   // O botão do próximo passo usa os mesmos verbos da lista (VERBOS). Aqui "Aguardando pagamento" só aceita:
   // o recebimento é registrado na parte de Pagamentos, logo abaixo.
   const proximaEtapa: { s: string; l: string } | null = (() => {
@@ -1361,7 +1376,7 @@ export default function EditarPedido() {
         <div className="tpd-sit-l">
           <div className="tpd-sit-tx">
             <Linha rotulo="Situação" tom={situacao.tom}>{situacao.nome}</Linha>
-            <Linha rotulo={tipoEntrega === 'entrega' ? 'Entrega' : 'Retirada'} tom={atrasadoHoje ? 'vermelho' : undefined}>{dataLonga(dataEntrega, horarioEntrega)}</Linha>
+            <Linha rotulo={tipoEntrega === 'entrega' ? 'Entrega' : 'Retirada'} tom={atrasadoHoje ? 'vermelho' : undefined}>{cel ? dataCurta(dataEntrega, horarioEntrega) : dataLonga(dataEntrega, horarioEntrega)}</Linha>
             {tipoEntrega === 'retirada' && statusPedido === 'entregue' && (
               <Linha rotulo="Retirado por">
                 {(pedido as any).retirado_por || 'Não informado'}{' '}
@@ -1377,8 +1392,9 @@ export default function EditarPedido() {
           <ol className="tpd-passos" aria-label="Etapas do pedido">
             {ETAPAS.map((n, i) => {
               const feita = i < posEtapa || statusPedido === 'entregue'
-              const atual = !feita && i === posEtapa && !['aguardando_pagamento', 'aguardando_aceite'].includes(statusPedido)
-              return <li key={i} className={feita ? 'feita' : atual ? 'atual' : ''} aria-current={atual ? 'step' : undefined}><i>{feita ? <Check size={14} weight="bold" /> : i + 1}</i><span>{n}</span></li>
+              const atual = !feita && i === posEtapa && (cel || !['aguardando_pagamento', 'aguardando_aceite'].includes(statusPedido))
+              const novo = cel && atual && i === 0
+              return <li key={i} className={feita ? 'feita' : atual ? `atual${novo ? ' novo' : ''}` : ''} aria-current={atual ? 'step' : undefined}><i>{feita ? <Check size={14} weight="bold" /> : i + 1}</i><span>{n}</span></li>
             })}
           </ol>
         )}
@@ -1879,7 +1895,7 @@ export default function EditarPedido() {
             <div className="tpj-resumo">
               <Linha rotulo="Pedido">#{pedido?.numero || '—'}{clienteNome ? ` · ${toTitleCase(clienteNome.trim())}` : ''}</Linha>
               <Linha rotulo="Situação" tom={situacao.tom}>{situacao.nome}</Linha>
-              <Linha rotulo={tipoEntrega === 'entrega' ? 'Entrega' : 'Retirada'} tom={atrasadoHoje ? 'vermelho' : undefined}>{dataLonga(dataEntrega, horarioEntrega)}</Linha>
+              <Linha rotulo={tipoEntrega === 'entrega' ? 'Entrega' : 'Retirada'} tom={atrasadoHoje ? 'vermelho' : undefined}>{cel ? dataCurta(dataEntrega, horarioEntrega) : dataLonga(dataEntrega, horarioEntrega)}</Linha>
               {atrasadoHoje && <p className="tpd-aviso atr">A data de entrega já passou.</p>}
             </div>
             {historicoCarregando ? (

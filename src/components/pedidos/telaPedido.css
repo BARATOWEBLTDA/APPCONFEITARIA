@@ -271,3 +271,12 @@
 .ep2-pix b { font-size: 15px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; }
 .ep2-pix small { font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
 .ep2-pix .ui-bt { margin-top: 8px; }
+
+/* (22/10) celular: 5 etapas de nome curto numa linha só; o pedido novo acende o "Novo" em laranja */
+@media (max-width: 900px) {
+  .tpd-passos li { font-size: 12px; letter-spacing: -.01em; }
+  .tpd-passos li span { white-space: nowrap; }
+  .tpd-passos li.atual { font-weight: 600; }
+  .tpd-passos li.atual.novo { color: #B45309; }
+  .tpd-passos li.atual.novo i { background: #EA8A1A; color: var(--ui-branco); box-shadow: 0 0 0 4px #FDECD3; }
+}
