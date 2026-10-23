@@ -156,6 +156,11 @@ export default function Layout() {
   useEffect(() => {
     document.documentElement.style.setProperty("--sidebar-w", recolhido ? "72px" : "236px");
   }, [recolhido]);
+  // (22/10) letra mais leve e títulos menos pretos só no app da confeiteira (ver index.css, "Geist App")
+  useEffect(() => {
+    document.documentElement.classList.add("app-conf");
+    return () => document.documentElement.classList.remove("app-conf");
+  }, []);
   // Menu da foto → "Assistente virtual" abre o mesmo chat do menu de baixo
   useEffect(() => {
     const abrir = () => setDooOpen(true);
