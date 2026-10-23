@@ -107,24 +107,24 @@ export const COMO_FINANCEIRO: Como = {
 /** (23/10) A receber: o (i) do topo e o tour */
 export const COMO_A_RECEBER: Como = {
   tela: { nome: "A receber", Icone: HandCoins },
-  resumo: "Pedidos que ainda têm valor a receber: o total menos o que o cliente já pagou.",
+  resumo: "Pedidos com valor pendente: o total do pedido menos o que o cliente já pagou.",
   tit: "Exemplo · bolo de aniversário",
   linhas: [["Total do pedido", "R$ 200,00"], ["Sinal pago", "R$ 100,00"]],
   total: ["Falta receber", "R$ 100,00"],
-  fluxo: ["Sinal pago", "Receber o resto", "Quitado"],
+  fluxo: ["Sinal pago", "Receber saldo", "Quitado"],
   dicas: [
-    [WarningCircle, <><b>Atrasados</b> aparecem primeiro: a data combinada para o pagamento já passou.</>],
-    [CalendarBlank, <>A data usada é a combinada para o pagamento ou, sem ela, a da entrega.</>],
-    [Coins, <>Toque em <b>Receber</b> quando o cliente pagar. O valor entra no Financeiro na data escolhida.</>],
-    [CheckCircle, <>Quando o pedido é <b>quitado</b>, ele sai desta lista automaticamente.</>],
+    [WarningCircle, <>Os pedidos <b>atrasados</b> aparecem primeiro, quando a data de pagamento já passou.</>],
+    [CalendarBlank, <>A data considerada é a combinada para o pagamento ou, se não houver, a da entrega.</>],
+    [Coins, <>Use <b>Receber</b> quando o cliente pagar. O valor entra no Financeiro na data informada.</>],
+    [CheckCircle, <>Pedidos <b>quitados</b> saem desta lista automaticamente.</>],
   ],
 };
 
 export const TOUR_A_RECEBER: PassoTour[] = [
-  { el: ".far-resumo", titulo: "Resumo", texto: "Quanto falta receber, separado em atrasados, próximos 7 dias e depois." },
-  { el: ".far-grupo", titulo: "Pedidos com saldo", texto: "Cada pedido mostra o total, quanto já foi pago e quanto falta. Os atrasados aparecem primeiro." },
-  { el: ".far-rec", titulo: "Receber", texto: "Registre o pagamento quando o cliente pagar. Dá para receber o valor total ou só uma parte." },
-  { el: ".far-ver", titulo: "Abrir pedido", texto: "Abre o pedido completo, com os itens, a entrega e os pagamentos já feitos." },
+  { el: ".far-resumo", titulo: "Resumo", texto: "Total pendente, separado em atrasados, próximos 7 dias e depois." },
+  { el: ".far-grupo", titulo: "Pedidos com saldo", texto: "Cada pedido mostra o valor total, o que já foi pago e o que falta. Os atrasados aparecem primeiro." },
+  { el: ".far-rec", titulo: "Receber", texto: "Registre o pagamento quando o cliente pagar. É possível receber o valor total ou apenas uma parte." },
+  { el: ".far-ver", titulo: "Abrir pedido", texto: "Abre o pedido completo, com os itens, a entrega e o histórico de pagamentos." },
 ];
 
 export const COMO_CARDAPIO: Como = {
