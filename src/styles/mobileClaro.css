@@ -23,11 +23,11 @@
   html body .cab-voltar:focus-visible, html body .cab-i:focus-visible, html body .cab-foto:focus-visible, html body .cab-foto-cam:focus-visible { outline-color: rgba(var(--ui-rosa-rgb), .45); }
 
   /* ── menu de baixo (22/10, teste: chocolate escuro) ── */
-  html body .bottom-nav.bottom-nav--claro { background: var(--chocolate-escuro, #22130E); border-top: 0; box-shadow: 0 -2px 12px rgba(34, 19, 14, .18); }
+  html body .bottom-nav.bottom-nav--claro { background: #140A07; border-top: 0; box-shadow: 0 -2px 12px rgba(20, 10, 7, .2); }
   html body .bottom-nav--claro .bn-item { color: rgba(255, 255, 255, .62); }
   html body .bottom-nav--claro .bn-item--active { color: #FF9DC4; }
-  html body .bottom-nav--claro .bn-bolinha { box-shadow: 0 0 0 2px var(--chocolate-escuro, #22130E); }
-  html body .bottom-nav--claro .bn-novo-c { box-shadow: 0 4px 12px rgba(0, 0, 0, .35), 0 0 0 4px var(--chocolate-escuro, #22130E); }
+  html body .bottom-nav--claro .bn-bolinha { box-shadow: 0 0 0 2px #140A07; }
+  html body .bottom-nav--claro .bn-novo-c { box-shadow: 0 4px 12px rgba(0, 0, 0, .35), 0 0 0 4px #140A07; }
   html body .bottom-nav--claro .bn-item:focus-visible { outline-color: rgba(255, 157, 196, .6); }
 }
 @media (max-width: 900px) and (hover: hover) {
