@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "re
 import { createPortal } from "react-dom";
 import { ArrowRight, Check, Info, PlayCircle, Question } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
-import { contarPassos, fazerTour, type PassoTour } from "./tour";
+import { contarPassos, fazerTour, travarFundo, type PassoTour } from "./tour";
 import "./comoFunciona.css";
 
 /**
@@ -86,6 +86,12 @@ export function BotaoAjuda({ c, rotulo, tipo = "info", className = "", tour }: {
     };
     medir(); window.addEventListener("resize", medir); window.addEventListener("scroll", medir, true);
     return () => { window.removeEventListener("resize", medir); window.removeEventListener("scroll", medir, true); };
+  }, [aberto]);
+  // (23/10) com o balão aberto, a tela de fundo não rola (dentro do balão rola normal)
+  useEffect(() => {
+    if (!aberto) return;
+    travarFundo(true, ".cf-pop");
+    return () => travarFundo(false, ".cf-pop");
   }, [aberto]);
   useEffect(() => {
     if (!aberto) return;

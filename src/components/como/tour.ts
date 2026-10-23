@@ -70,11 +70,35 @@ export async function fazerTour(passos: PassoTour[]) {
 }
 
 // (22/10) a tela de fundo não rola durante o tour (o próprio tour leva até cada parte)
-const bloquear = (e: Event) => { if (!(e.target as HTMLElement)?.closest?.(".driver-popover")) e.preventDefault(); };
-const teclas = (e: KeyboardEvent) => { if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(e.key)) e.preventDefault(); };
 function travarRolagem(sim: boolean) {
-  const op = { passive: false } as AddEventListenerOptions;
   document.documentElement.classList.toggle("tour-ativo", sim);
-  if (sim) { window.addEventListener("wheel", bloquear, op); window.addEventListener("touchmove", bloquear, op); window.addEventListener("keydown", teclas, op); }
-  else { window.removeEventListener("wheel", bloquear, op); window.removeEventListener("touchmove", bloquear, op); window.removeEventListener("keydown", teclas, op); }
+  travarFundo(sim, ".driver-popover");
+}
+
+/**
+ * (23/10) Trava a rolagem da tela de fundo enquanto um balão está aberto (tour e o (i) de cada tela).
+ * Só bloqueia o gesto: nada muda de lugar (o topo e o balão continuam onde estão). Dentro do balão a rolagem segue normal.
+ */
+const dentroDe: string[] = [];
+const bloquear = (e: Event) => { const t = e.target as HTMLElement | null; if (!dentroDe.some(sel => t?.closest?.(sel))) e.preventDefault(); };
+const teclas = (e: KeyboardEvent) => {
+  const t = e.target as HTMLElement | null;
+  if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+  if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(e.key)) e.preventDefault();
+};
+export function travarFundo(sim: boolean, permitido: string) {
+  const op = { passive: false } as AddEventListenerOptions;
+  if (sim) {
+    if (!dentroDe.length) {
+      document.documentElement.classList.add("fundo-travado");
+      window.addEventListener("wheel", bloquear, op); window.addEventListener("touchmove", bloquear, op); window.addEventListener("keydown", teclas, op);
+    }
+    dentroDe.push(permitido);
+  } else {
+    const k = dentroDe.indexOf(permitido); if (k >= 0) dentroDe.splice(k, 1);
+    if (!dentroDe.length) {
+      document.documentElement.classList.remove("fundo-travado");
+      window.removeEventListener("wheel", bloquear, op); window.removeEventListener("touchmove", bloquear, op); window.removeEventListener("keydown", teclas, op);
+    }
+  }
 }

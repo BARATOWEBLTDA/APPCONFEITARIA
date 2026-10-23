@@ -65,3 +65,6 @@ html.tour-ativo, html.tour-ativo body { overflow: hidden !important; overscroll-
 .cf-pop-fundo { position: fixed; inset: 0; z-index: 3499; background: transparent; -webkit-tap-highlight-color: transparent; }
 /* (22/10) o driver.js esconde o que passa da caixa do pai da parte acesa: cortava o topo do + da barra de baixo */
 html body .bn-novo:has(> .driver-active-element) { overflow: visible !important; }
+
+/* (23/10) balão aberto (tour ou o (i)): a tela de fundo não rola */
+html.fundo-travado, html.fundo-travado body { overflow: hidden !important; overscroll-behavior: none; }
