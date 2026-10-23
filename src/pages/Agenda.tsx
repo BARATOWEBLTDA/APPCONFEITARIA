@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { COMO_AGENDA } from "@/lib/comoTelas";
+import { COMO_AGENDA, TOUR_AGENDA } from "@/lib/comoTelas";
 import { montarMensagem, dadosDoPedido } from "@/lib/mensagens";
 import { useNavigate, useNavigationType } from "react-router-dom";
 import { CalendarBlank, CaretLeft, CaretRight, Check, Copy, FilePdf, Funnel, MagnifyingGlass, Package, PencilSimple, Printer, Trash, WarningCircle, X } from "@phosphor-icons/react";
@@ -528,7 +528,7 @@ export default function Agenda() {
     <AppPageHeader
       title="Agenda"
       subtitle="Seus pedidos por data de entrega"
-      infoIcon="📅" infoComo={COMO_AGENDA}
+      infoIcon="📅" infoComo={COMO_AGENDA} infoTour={TOUR_AGENDA}
       infoContent={
         <>
           <p>Aqui ficam os seus <strong>pedidos por data de entrega</strong>. Veja o que precisa produzir hoje, amanhã e nos próximos dias.</p>
@@ -756,13 +756,13 @@ function Atencao({ atr, prox, hoje, ocupados, acaoDe, aoAbrir, aoVerDia }: any) 
   return (
     <>
       {atr.length > 0 && (
-        <section className="ag3-at">
+        <section className="ag3-at ag3-at--atr">
           <h3 className="ag3-at-t atr">Precisa de atenção</h3>
           {atr.map((p: any) => item(p, true))}
         </section>
       )}
       {prox.length > 0 && (
-        <section className="ag3-at">
+        <section className="ag3-at ag3-at--prox">
           <h3 className="ag3-at-t">Próximos dias</h3>
           {prox.map((p: any) => item(p, pedidoAtrasado(p, hoje)))}
           {diaProx && <Botao variante="link" className="ag3-at-ver" onClick={() => aoVerDia(diaProx)}>Ver os pedidos de {relativo(diaProx).toLowerCase() || diaMes(diaProx)}</Botao>}

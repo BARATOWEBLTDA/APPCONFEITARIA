@@ -79,6 +79,17 @@ export const COMO_AGENDA: Como = {
   ],
 };
 
+/** (22/10) tour da Agenda, no (i) do topo (celular e computador; só entram os passos que estão na tela) */
+export const TOUR_AGENDA: PassoTour[] = [
+  { el: ".ag3-busca", titulo: "Buscar", texto: "Ache um pedido pelo nome do cliente ou pelo número." },
+  { el: ".ag3-filtro", titulo: "Filtro", texto: "Escolha quais situações aparecem. Dá pra esconder os concluídos, por exemplo." },
+  { el: ".ag3-cal", titulo: "Calendário", texto: "Os pedidos de cada dia aparecem na cor da situação. Vermelho é atrasado. Toque num dia pra ver os pedidos dele." },
+  { el: ".ag3-dia", titulo: "Dia escolhido", texto: "O dia que você tocou e quanto ainda falta receber dos pedidos dele." },
+  { el: ".ag3-at--atr", titulo: "Precisa de atenção", texto: "Pedidos atrasados, com o botão pra seguir pra próxima etapa." },
+  { el: ".ag3-at--prox", titulo: "Próximos dias", texto: "Quando o dia escolhido está vazio, aqui aparecem os próximos pedidos." },
+  { el: ".ag3-lista", titulo: "Pedidos do dia", texto: "Toque num pedido pra abrir. Marcar pronto e chamar no WhatsApp ficam no próprio cartão." },
+];
+
 export const COMO_FINANCEIRO: Como = {
   tela: { nome: "Financeiro", Icone: CurrencyDollar },
   tit: "Exemplo · um dia de vendas",
