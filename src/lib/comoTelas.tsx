@@ -34,21 +34,21 @@ export const COMO_INICIO: Como = {
 
 /** tour do Início no celular (só entram os passos que estão na tela) */
 export const TOUR_INICIO_CEL: PassoTour[] = [
-  { el: ".ini-section--novos", titulo: "Avisos", texto: "Pedido novo pra aceitar e pedido atrasado aparecem aqui, antes de tudo." },
-  { el: ".ini-busca", titulo: "Buscar", texto: "Digite o que você procura, como \"pix\", \"cupom\" ou \"horário\", e vá direto pra tela certa." },
-  { el: ".ini-section--nav", titulo: "Acesso rápido", texto: "As telas que você mais usa. O resto do app está no Menu, aqui embaixo." },
-  { el: ".ini-section--dia", titulo: "Próximas entregas", texto: "Os pedidos dos próximos dias. Toque num dia pra ver só os pedidos dele." },
-  { el: ".ini-falta .pf", titulo: "Pra fazer", texto: "O que falta resolver, com o botão pra fazer na hora. Não dá agora? Toque em Agora não." },
-  { el: ".bn-novo-c", titulo: "Nova venda", texto: "Toque aqui pra registrar uma venda ou encomenda. Ele fica em todas as telas.", redondo: true },
+  { el: ".ini-section--novos", titulo: "Avisos", texto: "Pedidos novos para aceitar e pedidos atrasados aparecem aqui primeiro." },
+  { el: ".ini-busca", titulo: "Buscar", texto: "Digite o que procura, como \"pix\", \"cupom\" ou \"horário\", e vá direto para a tela certa." },
+  { el: ".ini-section--nav", titulo: "Acesso rápido", texto: "Atalhos para as telas mais usadas. As demais ficam no Menu, na barra inferior." },
+  { el: ".ini-section--dia", titulo: "Próximas entregas", texto: "Pedidos dos próximos dias. Toque em um dia para ver apenas os pedidos dele." },
+  { el: ".ini-falta .pf", titulo: "Pra fazer", texto: "Pendências da sua loja, com o botão para resolver na hora. Se preferir deixar para depois, toque em Agora não." },
+  { el: ".bn-novo-c", titulo: "Nova venda", texto: "Registre uma venda ou encomenda a qualquer momento. O botão aparece em todas as telas.", redondo: true },
 ];
 
 /** tour do Início no computador */
 export const TOUR_INICIO_PC: PassoTour[] = [
-  { el: ".ini-dk-kpis", titulo: "Seus números", texto: "O que entrou no mês, os pedidos da semana, as entregas de hoje e quanto vale cada pedido." },
-  { el: ".dkg-entregas", titulo: "Próximas entregas", texto: "Os pedidos dos próximos dias. Clique num pedido pra abrir." },
-  { el: ".dkg-fazer .pf", titulo: "Pra fazer", texto: "O que falta resolver, com o botão pra fazer na hora." },
-  { el: ".cab-busca", titulo: "Buscar", texto: "Ache qualquer tela ou ação. Atalho: Ctrl K." },
-  { el: ".sb-pausar", titulo: "Sua loja", texto: "Mostra se a loja está aberta e liga ou desliga os pedidos pelo cardápio." },
+  { el: ".ini-dk-kpis", titulo: "Seus números", texto: "Recebido no mês, pedidos dos últimos 7 dias, entregas de hoje e ticket médio." },
+  { el: ".dkg-entregas", titulo: "Próximas entregas", texto: "Pedidos dos próximos dias. Clique em um pedido para ver os detalhes." },
+  { el: ".dkg-fazer .pf", titulo: "Pra fazer", texto: "Pendências da sua loja, com o botão para resolver na hora." },
+  { el: ".cab-busca", titulo: "Buscar", texto: "Encontre qualquer tela ou ação do sistema. Atalho: Ctrl + K." },
+  { el: ".sb-pausar", titulo: "Sua loja", texto: "Mostra se a loja está aberta e permite pausar ou retomar os pedidos pelo cardápio." },
 ];
 
 export const COMO_PEDIDOS: Como = {
@@ -81,13 +81,13 @@ export const COMO_AGENDA: Como = {
 
 /** (22/10) tour da Agenda, no (i) do topo (celular e computador; só entram os passos que estão na tela) */
 export const TOUR_AGENDA: PassoTour[] = [
-  { el: ".ag3-busca", titulo: "Buscar", texto: "Ache um pedido pelo nome do cliente ou pelo número." },
-  { el: ".ag3-filtro", titulo: "Filtro", texto: "Escolha quais situações aparecem. Dá pra esconder os concluídos, por exemplo." },
-  { el: ".ag3-cal", titulo: "Calendário", texto: "Os pedidos de cada dia aparecem na cor da situação. Vermelho é atrasado. Toque num dia pra ver os pedidos dele." },
-  { el: ".ag3-dia", titulo: "Dia escolhido", texto: "O dia que você tocou e quanto ainda falta receber dos pedidos dele." },
-  { el: ".ag3-at--atr", titulo: "Precisa de atenção", texto: "Pedidos atrasados, com o botão pra seguir pra próxima etapa." },
-  { el: ".ag3-at--prox", titulo: "Próximos dias", texto: "Quando o dia escolhido está vazio, aqui aparecem os próximos pedidos." },
-  { el: ".ag3-lista", titulo: "Pedidos do dia", texto: "Toque num pedido pra abrir. Marcar pronto e chamar no WhatsApp ficam no próprio cartão." },
+  { el: ".ag3-busca", titulo: "Buscar", texto: "Encontre um pedido pelo nome do cliente ou pelo número." },
+  { el: ".ag3-filtro", titulo: "Filtro", texto: "Escolha quais situações aparecem na agenda. Por exemplo, oculte os pedidos concluídos." },
+  { el: ".ag3-cal", titulo: "Calendário", texto: "Cada pedido aparece no dia da entrega, na cor da sua situação. Vermelho indica atraso. Selecione um dia para ver os pedidos dele." },
+  { el: ".ag3-dia", titulo: "Dia escolhido", texto: "Mostra o dia selecionado e quanto ainda falta receber dos pedidos desse dia." },
+  { el: ".ag3-at--atr", titulo: "Precisa de atenção", texto: "Pedidos com entrega atrasada. Use o botão ao lado para avançar cada um para a próxima etapa." },
+  { el: ".ag3-at--prox", titulo: "Próximos dias", texto: "Quando o dia selecionado não tem pedidos, aqui aparecem as próximas entregas." },
+  { el: ".ag3-lista", titulo: "Pedidos do dia", texto: "Selecione um pedido para ver os detalhes. Marcar como pronto e chamar o cliente no WhatsApp ficam no próprio cartão." },
 ];
 
 export const COMO_FINANCEIRO: Como = {
