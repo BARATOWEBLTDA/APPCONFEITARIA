@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
@@ -64,7 +64,11 @@ function formatPhone(v: string, digitando = false) {
   return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
 }
 
-export default function DadosLoja() {
+/**
+ * (23/10) embutido: a mesma lista, sem o topo, dentro da "Minha loja" do celular (tela Cardápio), em dois blocos:
+ * "A loja para o cliente" e "Como você vende". extras = linhas da Minha loja que entram no primeiro bloco (logo e aparência).
+ */
+export default function DadosLoja({ embutido = false, extras }: { embutido?: boolean; extras?: { antes?: ReactNode; depois?: ReactNode } } = {}) {
   const navigate = useNavigate();
   // (15/10) aberta por Configurações: o voltar leva de volta pra lá (senão, pro Cardápio)
   const voltarPara = (useLocation().state as any)?.de === "/configuracoes" ? "/configuracoes" : "/cardapio";
@@ -361,12 +365,12 @@ export default function DadosLoja() {
   const salvoPc = useRef("");
   const fotoAgora = fotoDados();
   useEffect(() => {
-    if (cel || loading || erroCarga) return;
+    if (cel || embutido || loading || erroCarga) return;
     if (!salvoPc.current) { salvoPc.current = fotoAgora; return; }
     if (fotoAgora === salvoPc.current) return;
     const t = window.setTimeout(async () => { if (await salvar({ silencioso: true })) salvoPc.current = fotoAgora; }, 900);
     return () => window.clearTimeout(t);
-  }, [cel, loading, erroCarga, fotoAgora]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [cel, embutido, loading, erroCarga, fotoAgora]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const cidadeUf = [end.cidade.trim(), end.estado.trim()].filter(Boolean).join(", ");
   const seloMapa = !busca ? "Digite o CEP pra achar sua loja" : mostrarLocal === "nada" ? "Endereço escondido no cardápio" : [mostrarLocal === "completo" ? end.bairro.trim() : "", cidadeUf].filter(Boolean).join(" · ");
@@ -397,6 +401,10 @@ export default function DadosLoja() {
     return linhas;
   };
 
+  if (embutido && (loading || erroCarga)) {
+    return loading ? <div className="dl-emb-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
+      : <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os dados da loja" texto="Confira a internet e tente de novo." acao={<Botao variante="suave" tamanho="m" onClick={() => setTentativa(t => t + 1)}>Tentar de novo</Botao>} />;
+  }
   if (loading) {
     return (
       <>
@@ -554,6 +562,46 @@ export default function DadosLoja() {
     { k: "ent", Ic: Truck, t: "Entrega", sub: !ep ? "…" : !(ep.formasEntrega || []).length ? "Falta escolher como o cliente recebe" : faltaTaxa ? "Falta definir a taxa de entrega" : [ep.formasEntrega.includes("retirada") ? "Retirada" : "", temEntregaPropria ? (ep.porBairro ? "entrega por bairro" : `entrega R$ ${ep.taxa.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`) : ""].filter(Boolean).join(" e ") || "Configurada", st: !ep ? "ok" : !(ep.formasEntrega || []).length || faltaTaxa ? "falta" : "ok" },
   ];
   const TITULO: Record<Parte, string> = { loja: "Sua loja", redes: "Redes sociais", endereco: "Endereço", horario: "Horário", pag: "Pagamento", pix: "Pix pelo cardápio", ent: "Entrega" };
+  const gaveta = (
+    <Gaveta aberta={!!parte} aoFechar={fecharParte} titulo={parte ? TITULO[parte] : ""}
+      rodape={<Botao cheio carregando={fechando} onClick={fecharParte}>{fechando ? "Salvando…" : "Pronto"}</Botao>}>
+      <div className="dl-folha">
+        {parte === "loja" && secLoja}
+        {parte === "redes" && secRedes}
+        {parte === "endereco" && secEndereco}
+        {parte === "horario" && secHorario}
+        {(parte === "pag" || parte === "pix" || parte === "ent") && <CheckoutConfigPage embutido parte="entrega" so={parte} onEstado={setEp} />}
+      </div>
+    </Gaveta>
+  );
+  if (embutido) {
+    // (23/10) no estilo do Dora: cada linha mostra o valor atual e só o que falta ganha destaque (sem os vistos verdes)
+    const linhaEmb = (k: Parte, titulo?: string) => {
+      const l = linhas.find(x => x.k === k);
+      if (!l) return null;
+      return (
+        <button key={l.k} type="button" className="dl-li" onClick={() => abrirParte(l.k)}>
+          <span className="dl-li-ic" aria-hidden="true"><l.Ic size={20} weight="bold" /></span>
+          <span className="dl-li-tx"><b>{titulo || l.t}</b><small className={l.st === "falta" ? "falta" : ""}>{l.sub}</small></span>
+          {l.st === "falta" && <em className="dl-li-st falta">Falta</em>}
+          <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
+        </button>
+      );
+    };
+    return (
+      <>
+        <section className="dl-emb ml-cliente" aria-label="A loja para o cliente">
+          <h2 className="dl-emb-t">A loja para o cliente</h2>
+          <div className="dl-lista-c">{extras?.antes}{linhaEmb("loja", "Nome e WhatsApp")}{extras?.depois}{linhaEmb("redes")}</div>
+        </section>
+        <section className="dl-emb ml-vende" aria-label="Como você vende">
+          <h2 className="dl-emb-t">Como você vende</h2>
+          <div className="dl-lista-c">{linhaEmb("horario")}{linhaEmb("ent")}{linhaEmb("pag")}{linhaEmb("pix")}{linhaEmb("endereco")}</div>
+        </section>
+        {gaveta}
+      </>
+    );
+  }
   if (cel) {
     return (
       <>
@@ -571,16 +619,7 @@ export default function DadosLoja() {
           </div>
           <p className="dl-lista-salva"><Check size={16} weight="bold" aria-hidden="true" />Tudo salva sozinho quando você fecha a parte.</p>
         </div>
-        <Gaveta aberta={!!parte} aoFechar={fecharParte} titulo={parte ? TITULO[parte] : ""}
-          rodape={<Botao cheio carregando={fechando} onClick={fecharParte}>{fechando ? "Salvando…" : "Pronto"}</Botao>}>
-          <div className="dl-folha">
-            {parte === "loja" && secLoja}
-            {parte === "redes" && secRedes}
-            {parte === "endereco" && secEndereco}
-            {parte === "horario" && secHorario}
-            {(parte === "pag" || parte === "pix" || parte === "ent") && <CheckoutConfigPage embutido parte="entrega" so={parte} onEstado={setEp} />}
-          </div>
-        </Gaveta>
+        {gaveta}
       </>
     );
   }

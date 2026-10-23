@@ -62,7 +62,7 @@ export default function BuscaRapida() {
       { g: "Cadastros", t: "Ingredientes", ic: Basket, rota: "/insumos", chaves: "insumos compras mercado" },
       { g: "Cadastros", t: "Ficha técnica", ic: ListChecks, rota: "/ficha-tecnica", chaves: "receita custo lucro margem" },
       { g: "Cadastros", t: "Clientes", ic: Users, rota: "/clientes", chaves: "aniversario contatos" },
-      { g: "Cardápio digital", t: "Cardápio digital", ic: ShoppingBag, rota: "/cardapio", chaves: "link qr code visitas compartilhar" },
+      { g: "Cardápio digital", t: "Cardápio digital", ic: ShoppingBag, rota: "/cardapio", chaves: "minha loja link qr code visitas compartilhar" },
       { g: "Cardápio digital", t: "Aparência do cardápio", ic: Palette, rota: "/cardapio-design", chaves: "cores logo banner foto tema natal" },
       { g: "Cardápio digital", t: "Dados da loja", ic: Storefront, rota: "/cardapio-config", chaves: "pix chave horario endereco entrega taxa whatsapp telefone nome loja redes instagram facebook pagamento retirada" },
       ...(link ? [{ g: "Cardápio digital", t: "Ver meu cardápio", ic: ArrowSquareOut, fazer: () => window.open(link, "_blank", "noopener,noreferrer"), chaves: "abrir como cliente" }] : []),

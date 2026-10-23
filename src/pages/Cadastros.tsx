@@ -19,6 +19,13 @@ export default function Cadastros() {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const [n, setN] = useState<Contas | null>(null);
+  // (23/10) celular: o cardápio digital virou "Minha loja" (com os dados da loja dentro). No computador continua igual
+  const [cel, setCel] = useState(() => typeof window !== "undefined" && !window.matchMedia("(min-width: 1024px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const f = () => setCel(!mq.matches);
+    mq.addEventListener("change", f); return () => mq.removeEventListener("change", f);
+  }, []);
 
   useEffect(() => {
     const uid = profile?.id;
@@ -43,11 +50,12 @@ export default function Cadastros() {
   }, [profile?.id]);
 
   const loja = useMemo(() => {
-    if ((profile as any)?.loja_pausada === true) return { txt: "Pausado · link e aparência", tom: "lar" };
+    const resto = cel ? "cardápio e entrega" : "link e aparência";
+    if ((profile as any)?.loja_pausada === true) return { txt: `Pausado · ${resto}`, tom: "lar" };
     const s = situacaoLoja((profile as any)?.horario);
-    if (!s) return { txt: "Link, aparência e compartilhar", tom: "" };
-    return s.aberto ? { txt: "Aberto agora · link e aparência", tom: "ok" } : { txt: "Fechado agora · link e aparência", tom: "lar" };
-  }, [profile]);
+    if (!s) return { txt: cel ? "Cardápio, horário e entrega" : "Link, aparência e compartilhar", tom: "" };
+    return s.aberto ? { txt: `Aberto agora · ${resto}`, tom: "ok" } : { txt: `Fechado agora · ${resto}`, tom: "lar" };
+  }, [profile, cel]);
 
   const comFicha = n && n.produtos >= 0 ? n.produtos - n.semFicha : -1;
   // (22/10) no computador o número vem com o nome ("7 produtos"): a página vira uma grade de cartões
@@ -77,7 +85,7 @@ export default function Cadastros() {
           {linha(Cake, "Produtos", n && n.semFicha > 0 ? `${n.semFicha} sem ficha técnica` : "Cadastre e gerencie seus produtos", () => navigate("/produtos"), n?.produtos, n && n.semFicha > 0 ? "lar" : "", ["produto", "produtos"])}
           {linha(SquaresFour, "Categorias", "Organize seus produtos", () => navigate("/categorias"), n?.categorias, "", ["categoria", "categorias"])}
           {linha(Stack, "Complementos", "Sabores, recheios e adicionais", () => navigate("/complementos"), n?.complementos, "", ["complemento", "complementos"])}
-          {linha(ShoppingBag, "Cardápio digital", loja.txt, () => navigate("/cardapio"), undefined, loja.tom)}
+          {linha(cel ? Storefront : ShoppingBag, cel ? "Minha loja" : "Cardápio digital", loja.txt, () => navigate("/cardapio"), undefined, loja.tom)}
         </div>
 
         <p className="cad-t">Do que é feito</p>
@@ -86,11 +94,11 @@ export default function Cadastros() {
           {linha(ClipboardText, "Ficha técnica", "Custo e lucro de cada produto", () => navigate("/ficha-tecnica"), comFicha, "", ["com ficha", "com ficha"])}
         </div>
 
-        <p className="cad-t">Quem compra e como paga</p>
+        <p className="cad-t">{cel ? "Quem compra" : "Quem compra e como paga"}</p>
         <div className="cad-c cad-c--compra">
           {linha(Users, "Clientes", "Quem já comprou com você", () => navigate("/clientes"), n?.clientes, "", ["cliente", "clientes"])}
-          {linha(Storefront, "Dados da loja", "Entrega, pagamento e Pix", () => navigate("/cardapio-config"))}
-          {linha(ChatCircleText, "Mensagens do WhatsApp", "Textos prontos pro cliente", () => navigate("/configuracoes/mensagens", { state: { de: "/cadastros" } }))}
+          {!cel && linha(Storefront, "Dados da loja", "Entrega, pagamento e Pix", () => navigate("/cardapio-config"))}
+          {linha(ChatCircleText, "Mensagens do WhatsApp", "Textos prontos para o cliente", () => navigate("/configuracoes/mensagens", { state: { de: "/cadastros" } }))}
         </div>
       </div>
     </>

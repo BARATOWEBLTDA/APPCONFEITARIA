@@ -150,6 +150,21 @@ export const COMO_CARDAPIO: Como = {
   ],
 };
 
+/** (23/10) a mesma tela no celular, como "Minha loja": tudo da loja em um lugar só */
+export const COMO_MINHA_LOJA: Como = {
+  tela: { nome: "Minha loja", Icone: Storefront },
+  resumo: "Tudo da sua loja em uma tela: o link, o que o cliente vê, como você vende e o que você vende.",
+  tit: "Exemplo · últimos 7 dias",
+  linhas: [["Visitas no cardápio", "200"], ["Pedidos pelo cardápio", "14"]],
+  total: ["Conversão", "7%"],
+  fluxo: ["Seu link", "Cliente pede", "Pedidos"],
+  dicas: [
+    [ShareNetwork, <>Envie o <b>link</b> pelo WhatsApp e pelo Instagram. O <b>QR Code</b> é para imprimir.</>],
+    [PauseCircle, <><b>Pausar pedidos</b> fecha o cardápio na hora, sem alterar o horário.</>],
+    [Palette, <>Cada linha mostra como está agora. Toque para alterar; o que falta aparece em <b>Falta</b>.</>],
+  ],
+};
+
 /* ══════ (23/10) Atalhos do Início: Clientes, Produtos, Ficha técnica e Lucratividade ══════ */
 
 export const COMO_CLIENTES: Como = {
@@ -289,7 +304,9 @@ export const TOUR_CARDAPIO: PassoTour[] = [
   { el: ".clc-bts", titulo: "Divulgar", texto: "Compartilhe o link, copie, veja o cardápio como cliente ou baixe o QR Code para imprimir." },
   { el: ".vgd-hero", titulo: "Seu cardápio", texto: "A situação da loja, o link do cardápio e os botões para enviar pelo WhatsApp, copiar o link ou ver como cliente." },
   { el: ".vgd-qr", titulo: "QR Code", texto: "Baixe e imprima para os clientes abrirem o cardápio pelo celular." },
-  { el: ".cd-quick", titulo: "Sua loja online", texto: "Acesse os dados da loja (horário, entrega e Pix) e a aparência do cardápio." },
+  { el: ".ml-cliente", titulo: "A loja para o cliente", texto: "Logo, nome e WhatsApp, aparência e redes sociais: o que o cliente vê no cardápio. Cada linha mostra como está agora." },
+  { el: ".ml-vende", titulo: "Como você vende", texto: "Horário, entrega, pagamento, Pix e endereço. O que ainda falta configurar aparece marcado como Falta." },
+  { el: ".ml-produtos", titulo: "O que você vende", texto: "Produtos, categorias e complementos que aparecem no cardápio." },
   { el: ".ch-metricas-grid, .vgd-kp", titulo: "Desempenho", texto: "Visitas, pedidos, valor vendido e conversão do cardápio no período escolhido." },
   { el: ".vgd-gr", titulo: "Visitas por dia", texto: "Quantas pessoas abriram o cardápio em cada dia do período." },
   { el: ".ch-block--vendidos", titulo: "Mais vendidos", texto: "Os produtos mais pedidos pelo cardápio no período." },
@@ -312,9 +329,9 @@ export const COMO_CADASTROS: Como = {
 };
 export const TOUR_CADASTROS: PassoTour[] = [
   { el: ".cad-at", titulo: "Precisa de atenção", texto: "Pendências dos cadastros, como produtos sem ficha técnica. Selecione para resolver." },
-  { el: ".cad-c--vende", titulo: "O que você vende", texto: "Produtos, categorias, complementos e o cardápio digital." },
+  { el: ".cad-c--vende", titulo: "O que você vende", texto: "Produtos, categorias, complementos e a sua loja (o cardápio digital)." },
   { el: ".cad-c--feito", titulo: "Do que é feito", texto: "Ingredientes e fichas técnicas, que calculam o custo e o lucro de cada produto." },
-  { el: ".cad-c--compra", titulo: "Quem compra e como paga", texto: "Clientes, dados da loja e as mensagens prontas do WhatsApp." },
+  { el: ".cad-c--compra", titulo: "Quem compra", texto: "Seus clientes e as mensagens prontas do WhatsApp." },
 ];
 
 export const COMO_CATEGORIAS: Como = {

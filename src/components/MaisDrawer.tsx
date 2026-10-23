@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   ChartLineUp, ClipboardText, Gear, PaintBrush, Crown, SquaresFour, UserPlus, X, CaretRight,
-  Megaphone, CalendarDots, Users, Stack, Truck, Storefront, Eye, Basket, ArrowsDownUp,
+  Megaphone, CalendarDots, Users, Stack, Truck, Storefront, Basket, ArrowsDownUp,
   HandCoins, CalendarCheck, Tag, Cake, ChatCircleText, Newspaper, Sparkle, Bell, ChartPieSlice, Shapes, Notebook, PaperPlaneRight,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
@@ -41,9 +41,10 @@ const GRUPOS: Grupo[] = [
   {
     label: "Dia a dia",
     items: [
-      { label: "Agenda",       desc: "Entregas por dia",              path: "/agenda",           Icone: CalendarDots },
-      { label: "Cadastros",    desc: "Produtos, clientes e cardápio", path: "/cadastros",        Icone: Notebook },
-      { label: "Ver cardápio", desc: "Como o cliente vê",             path: "/cardapio-preview", Icone: Eye },
+      // (23/10) "Minha loja" em primeiro: cardápio, horário, entrega e produtos em uma tela só (o "Ver" do cardápio fica lá dentro)
+      { label: "Minha loja",   desc: "Cardápio, horário e entrega",       path: "/cardapio",  Icone: Storefront },
+      { label: "Agenda",       desc: "Entregas por dia",                  path: "/agenda",    Icone: CalendarDots },
+      { label: "Cadastros",    desc: "Clientes, ingredientes e produtos", path: "/cadastros", Icone: Notebook },
     ],
   },
   {

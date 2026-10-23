@@ -1,15 +1,14 @@
 import { PausarPedidos } from "@/components/loja/PausarPedidos";
-import { COMO_CARDAPIO, TOUR_CARDAPIO } from "@/lib/comoTelas";
+import { COMO_CARDAPIO, COMO_MINHA_LOJA, TOUR_CARDAPIO } from "@/lib/comoTelas";
 import { compartilharCardapio } from "@/lib/compartilharCardapio";
 import { useState, useEffect, useRef, type ReactElement } from "react";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
 import VisaoGeralDesktop from "@/components/cardapio/VisaoGeralDesktop";
 import { useNavigate } from "react-router-dom";
 import {
-  ChartBar, Eye, Storefront, Sliders, PaintBrush, Tag,
-  Share, Percent, ForkKnife, Copy, CheckCircle, Warning, Lightbulb,
+  ChartBar, Warning, Lightbulb,
   TrendUp, TrendDown, ShoppingBag, Users as UsersIcon, CurrencyDollar,
-  CaretRight, Crown, Package, WarningCircle,
+  CaretRight, Package, WarningCircle,
 } from "@phosphor-icons/react";
 import { Botao, TelaVazia } from "@/components/base";
 import { useProfile, getCardapioUrl, isPro } from "@/hooks/useProfile";
@@ -19,6 +18,7 @@ import { buscarTudo } from "@/lib/buscarTudo";
 import AppPageHeader from "@/components/AppPageHeader";
 import PassoAPassoCardapio from "@/components/PassoAPassoCardapio";
 import CartaoLojaCelular from "@/components/cardapio/CartaoLojaCelular";
+import MinhaLoja from "@/components/cardapio/MinhaLoja";
 
 type Periodo = "hoje" | "7d" | "30d" | "tudo";
 
@@ -340,9 +340,9 @@ export default function Cardapio() {
   return (
     <>
     <AppPageHeader
-      title="Cardápio digital"
-      subtitle="A loja online da sua confeitaria"
-      infoIcon="🛍️" infoComo={COMO_CARDAPIO} infoTour={TOUR_CARDAPIO}
+      title={ehComputador ? "Cardápio digital" : "Minha loja"}
+      subtitle={ehComputador ? "A loja online da sua confeitaria" : "Cardápio, horário e entrega"}
+      infoIcon="🛍️" infoComo={ehComputador ? COMO_CARDAPIO : COMO_MINHA_LOJA} infoTour={TOUR_CARDAPIO}
       infoContent={
         <>
           <p>Este é o <strong>cardápio digital</strong> que seus clientes acessam. Personalize as cores, adicione produtos, configure entrega e pagamento.</p>
@@ -368,47 +368,8 @@ export default function Cardapio() {
           onShareClick={handleShare}
         />
       )}
-      {/* (22/10) "Sua loja online": só o que é da loja (Produtos, Complementos, Categorias e Mensagens já estão em Cadastros) */}
-      <div className="cd-card cd-quick">
-        <div className="cd-quick-hdr">
-          <div className="cd-quick-title">Sua loja online</div>
-        </div>
-        <div className="cd-quick-list">
-          <button className="cd-quick-item" onClick={() => navigate("/cardapio-config")}>
-            <span className="cd-quick-ico cd-quick-ico--pink">
-              <Storefront size={20} weight="bold" />
-            </span>
-            <div className="cd-quick-info">
-              <div className="cd-quick-name">Horário, entrega e Pix</div>
-              <div className="cd-quick-desc cd-quick-desc--2l">Endereço, pagamento e taxa</div>
-            </div>
-            <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
-          </button>
-          {/* (17/10) Aparência e Métricas viraram itens da lista, com o ícone em destaque */}
-          <button className="cd-quick-item" onClick={() => navigate("/cardapio-design")}>
-            <span className="cd-quick-ico cd-quick-ico--grad">
-              <PaintBrush size={20} weight="bold" />
-            </span>
-            <div className="cd-quick-info">
-              <div className="cd-quick-name">Aparência</div>
-              <div className="cd-quick-desc cd-quick-desc--2l">Logo, banners e cores</div>
-            </div>
-            <CaretRight size={16} weight="bold" className="cd-quick-arrow" />
-          </button>
-          {!isPro(profile) && (
-            <button className="cd-quick-item" onClick={() => navigate("/assinar")}>
-              <span className="cd-quick-ico cd-quick-ico--pro">
-                <ChartBar size={20} weight="bold" />
-              </span>
-              <div className="cd-quick-info">
-                <div className="cd-quick-name">Métricas</div>
-                <div className="cd-quick-desc cd-quick-desc--2l">Visitas e pedidos pelo link</div>
-              </div>
-              <span className="cd-quick-pro"><Crown size={13} weight="fill" aria-hidden="true" />PRO</span>
-            </button>
-          )}
-        </div>
-      </div>
+      {/* (23/10) "Minha loja", no estilo do Dora: a loja para o cliente, como você vende e o que você vende, cada linha com o valor atual */}
+      <MinhaLoja uid={profile?.id} pro={isPro(profile)} />
 
       {/* ── Métricas de performance (função PRO) ── */}
       {isPro(profile) ? (
@@ -843,39 +804,6 @@ export default function Cardapio() {
           margin-bottom: var(--space-4);
           overflow: hidden;
         }
-        .cd-quick { padding: 4px 0 4px; }
-        .cd-quick-hdr { padding: 14px 18px 10px; }
-        .cd-quick-title { font-size: 16px; font-weight: 700; color: var(--ui-texto); letter-spacing: -0.01em; }
-        .cd-quick-sub { font-size: 12px; color: #888780; margin-top: 3px; }
-        .cd-quick-list { display: flex; flex-direction: column; }
-        .cd-quick-item {
-          all: unset;
-          box-sizing: border-box;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          width: 100%;
-          padding: 12px 18px;
-          cursor: pointer;
-          font-family: var(--font-base) !important;
-          transition: background 0.15s ease;
-        }
-        .cd-quick-item:hover, .cd-quick-item:active { background: #FAF8F5; }
-        .cd-quick-ico {
-          width: 40px; height: 40px;
-          border-radius: var(--ui-raio-p);
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
-        }
-        .cd-quick-ico--pink  { background: var(--primary-light); color: #993556; }
-        .cd-quick-ico--amber { background: #FEF0DF; color: #854F0B; }
-        .cd-quick-ico--red   { background: var(--ui-vermelho-fundo); color: #B91C1C; }
-        .cd-quick-ico--blue  { background: #E6F1FB; color: var(--ui-azul); }
-        .cd-quick-ico--gray  { background: #F0EBED; color: #5F5E5A; }
-        .cd-quick-info { flex: 1; min-width: 0; text-align: left; }
-        .cd-quick-name { font-size: 14px; font-weight: 700; color: var(--ui-texto); letter-spacing: -0.01em; line-height: 1.2; }
-        .cd-quick-desc { font-size: 12px; color: #888780; margin-top: 3px; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
-        .cd-quick-arrow { color: #B4B2A9; flex-shrink: 0; }
 
         /* ─── Métricas locked (PRO upsell) ─── */
         .cd-metricas-locked {
@@ -1098,22 +1026,6 @@ export default function Cardapio() {
 
         /* ── 08/10 · 3.21: no padrão do guia (lista de 56px, títulos sem caixa alta, PRO em rosa) ── */
         .cardapio-hub { padding: 16px 8px 112px; gap: 12px; }
-        .cardapio-hub .cd-card.cd-quick { padding: 16px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); background: var(--ui-branco); }
-        .cardapio-hub .cd-quick-hdr { margin: 0 0 8px; padding: 0; border: 0; }
-        .cardapio-hub .cd-quick-title { font-size: 16px; font-weight: 700; color: var(--ui-texto); }
-        .cardapio-hub .cd-quick-list { margin: 0 -8px; padding: 0; }
-        .cardapio-hub .cd-quick-item { min-height: 56px; padding: 8px; border-radius: 0; gap: 12px; }
-        .cardapio-hub .cd-quick-item + .cd-quick-item { border-top: 1px solid var(--ui-linha); }
-        .cardapio-hub .cd-quick-ico { width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-rosa) !important; color: var(--ui-branco) !important; } /* (16/10) rosa forte com ícone branco */
-        .cardapio-hub .cd-quick-name { font-size: 15px; font-weight: 700; color: var(--ui-texto); }
-        .cardapio-hub .cd-quick-desc { font-size: 13px; color: var(--ui-texto-2); margin-top: 2px; }
-        /* (17/10) texto fixo: em tela estreita quebra em 2 linhas equilibradas, sem cortar */
-        .cardapio-hub .cd-quick-desc--2l { -webkit-line-clamp: 2; text-wrap: balance; }
-        /* (17/10) ícones em destaque na lista: Aparência em degradê, Métricas com cara de PRO */
-        .cardapio-hub .cd-quick-ico--grad { background: linear-gradient(135deg, #F472B6, #A855F7) !important; color: #fff !important; box-shadow: 0 3px 8px rgba(168,85,247,.28); }
-        .cardapio-hub .cd-quick-ico--pro { background: linear-gradient(135deg, #3A2219, #6B3A28) !important; color: #F5C76B !important; box-shadow: 0 3px 8px rgba(58,34,25,.25); }
-        .cardapio-hub .cd-quick-pro { flex: none; display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; padding: 4px 9px; border-radius: 7px; background: var(--chocolate, #3A2219); color: #F5C76B; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
-        .cardapio-hub .cd-quick-arrow { color: var(--ui-texto-3); }
         /* (16/10) PRO: uma faixa fina no fim, não um cartão grande */
         .cd-pro { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); color: var(--ui-texto); font-family: var(--font-base); text-align: left; cursor: pointer; }
         .cd-pro-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
