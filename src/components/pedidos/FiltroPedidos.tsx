@@ -87,7 +87,7 @@ export default function FiltroLateral({ statusSelecionados, setStatusSelecionado
             ))}
           </div>
         </div>
-        <div className="fl-f"><button className="fl-limpar" onClick={limpar}>Limpar</button><button className="fl-ver" onClick={aplicar}>Ver {resultado} {resultado === 1 ? 'pedido' : 'pedidos'}</button></div>
+        <div className="fl-f"><button className="fl-limpar" onClick={limpar}>Limpar</button><button className="fl-ver" onClick={aplicar} disabled={resultado === 0}>{resultado === 0 ? 'Nenhum pedido' : `Ver ${resultado} ${resultado === 1 ? 'pedido' : 'pedidos'}`}</button></div>
       </div>
       <style>{`
         .fl-ov { position: fixed; inset: 0; z-index: 10040; background: rgba(45,31,38,.45); animation: flFundo .2s ease; font-family: var(--font-base); }
@@ -120,6 +120,7 @@ export default function FiltroLateral({ statusSelecionados, setStatusSelecionado
         .fl-f { display: flex; align-items: center; gap: 10px; padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--ui-cinza); }
         .fl-limpar { border: none; background: none; padding: 10px 6px; font-family: inherit; font-size: 14.5px; font-weight: 700; color: var(--ui-texto-3); cursor: pointer; }
         .fl-ver { flex: 1; border: none; border-radius: var(--ui-raio-botao); padding: 14px; background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
+        .fl-ver:disabled { background: #E7E4E5; color: var(--ui-texto-3); box-shadow: none; cursor: default; } /* (22/10) 0 pedidos: cinza, sem tocar */
       `}</style>
     </div>, document.body)
 }

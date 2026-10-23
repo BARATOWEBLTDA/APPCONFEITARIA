@@ -488,6 +488,13 @@ export default function Pedidos() {
   const sitAtual: Sit = sit ?? (nSit.aceitar > 0 ? 'aceitar' : nSit.agenda > 0 || nSit.prontos === 0 ? 'agenda' : 'prontos')
   const gruposCel = useMemo(() => agrupar(pedidosFiltrados.filter(p => sitDe(p) === sitAtual)), [agrupar, pedidosFiltrados, sitAtual])
 
+  // (22/10) o filtro conta só o que a aba aberta vai mostrar (celular: a aba da situação; computador: Encomendas ou Pronta entrega)
+  const pedidosDoFiltro = useMemo(() => {
+    const q = semAcento(busca)
+    return pedidos.filter(p => (computador ? (p.tipo_venda || 'encomenda') === aba : sitDe(p) === sitAtual)
+      && (!q || semAcento(p.cliente_nome || '').includes(q) || String(p.numero).includes(q)))
+  }, [pedidos, busca, computador, aba, sitAtual])
+
   const nFiltros = (statusSelecionados.length !== STATUS_PADRAO.length || !STATUS_PADRAO.every(s => statusSelecionados.includes(s)) ? 1 : 0) + (periodoFiltro !== 'todos' ? 1 : 0)
   const filtrando = nFiltros > 0 || !!busca.trim()
   const limparTudo = () => { setBusca(''); setStatusSelecionados(STATUS_PADRAO); setPeriodoFiltro('todos'); setDataInicio(''); setDataFim('') }
@@ -623,12 +630,12 @@ export default function Pedidos() {
 
       {showFiltro && (
         <FiltroLateral
-          statusSelecionados={statusSelecionados} setStatusSelecionados={setStatusSelecionados}
+          statusSelecionados={statusSelecionados} setStatusSelecionados={v => { setStatusSelecionados(v); if (!computador) setSit(sitAtual) }}
           periodoFiltro={periodoFiltro} setPeriodoFiltro={setPeriodoFiltro}
           dataInicio={dataInicio} setDataInicio={setDataInicio}
           dataFim={dataFim} setDataFim={setDataFim}
           onClose={() => setShowFiltro(false)}
-          pedidos={pedidos}
+          pedidos={pedidosDoFiltro}
         />
       )}
 

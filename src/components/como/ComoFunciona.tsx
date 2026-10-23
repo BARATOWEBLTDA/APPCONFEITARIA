@@ -102,13 +102,16 @@ export function BotaoAjuda({ c, rotulo, tipo = "info", className = "", tour }: {
         aria-label={`Como funciona: ${rotulo}`} title="Como funciona" aria-expanded={aberto}>
         <Ic size={tipo === "pergunta" ? 18 : 20} weight="bold" aria-hidden="true" />
       </button>
-      {aberto && createPortal(
+      {aberto && createPortal(<>
+        {/* (22/10) toque fora só fecha o balão: não abre o que estiver atrás sem querer */}
+        <div className="cf-pop-fundo" aria-hidden="true" onClick={e => { e.stopPropagation(); setAberto(false); }} />
         <div className="cf-pop" ref={caixa} style={{ top: pos.top, left: pos.left }}>
           <span className="cab-pop-seta" style={{ left: pos.seta }} aria-hidden="true" />
           <div className="cf-pop-rolo" style={{ maxHeight: pos.max }}>
             <ConteudoComo c={c} rotulo={rotulo} tour={tour && nPassos > 1 ? { passos: nPassos, fazer: () => { setAberto(false); window.setTimeout(() => { void fazerTour(tour); }, 150); } } : undefined} />
           </div>
-        </div>,
+        </div>
+      </>,
         document.body,
       )}
     </span>

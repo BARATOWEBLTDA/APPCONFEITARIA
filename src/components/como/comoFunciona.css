@@ -61,3 +61,7 @@
 html.tour-ativo, html.tour-ativo body { overflow: hidden !important; overscroll-behavior: none; touch-action: none; }
 /* (22/10) balão do + da barra de baixo: a setinha aponta pro meio, onde está o + */
 .driver-popover.tour-centro .driver-popover-arrow-side-top { left: 50% !important; right: auto !important; margin-left: -5px; }
+/* (22/10) fundo invisível do balão (i): o toque fora só fecha */
+.cf-pop-fundo { position: fixed; inset: 0; z-index: 3499; background: transparent; -webkit-tap-highlight-color: transparent; }
+/* (22/10) o driver.js esconde o que passa da caixa do pai da parte acesa: cortava o topo do + da barra de baixo */
+html body .bn-novo:has(> .driver-active-element) { overflow: visible !important; }

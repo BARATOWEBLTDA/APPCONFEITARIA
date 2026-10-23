@@ -39,7 +39,7 @@ export const TOUR_INICIO_CEL: PassoTour[] = [
   { el: ".ini-section--nav", titulo: "Acesso rápido", texto: "As telas que você mais usa. O resto do app está no Menu, aqui embaixo." },
   { el: ".ini-section--dia", titulo: "Próximas entregas", texto: "Os pedidos dos próximos dias. Toque num dia pra ver só os pedidos dele." },
   { el: ".ini-falta .pf", titulo: "Pra fazer", texto: "O que falta resolver, com o botão pra fazer na hora. Não dá agora? Toque em Agora não." },
-  { el: ".bn-novo-c", titulo: "Nova venda", texto: "O + registra uma venda de qualquer tela do app.", redondo: true },
+  { el: ".bn-novo-c", titulo: "Nova venda", texto: "Toque aqui pra registrar uma venda ou encomenda. Ele fica em todas as telas.", redondo: true },
 ];
 
 /** tour do Início no computador */

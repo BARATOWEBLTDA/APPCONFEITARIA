@@ -26,11 +26,11 @@ export async function fazerTour(passos: PassoTour[]) {
     // (22/10) durante o tour não dá pra tocar na parte acesa (antes abria a tela e estragava o tour)
     disableActiveInteraction: true,
     onDestroyed: () => travarRolagem(false),
-    // (22/10) botão redondo (o + da barra de baixo): o recorte aceso vira um círculo em volta dele, não um quadrado atrás
+    // (22/10) botão redondo (o + da barra de baixo): o recorte aceso é o próprio círculo dele, com a borda escura (antes vazava o que estava atrás)
     onHighlightStarted: (el) => {
       const p = ok.find(x => el?.matches(x.el));
       const raio = p?.redondo ? 999 : 16;
-      if (d.getConfig().stageRadius !== raio) d.setConfig({ ...d.getConfig(), stageRadius: raio, stagePadding: p?.redondo ? 5 : 6 });
+      if (d.getConfig().stageRadius !== raio) d.setConfig({ ...d.getConfig(), stageRadius: raio, stagePadding: p?.redondo ? 4 : 6 });
     },
     onPopoverRender: (pop) => {
       const dr = d;
