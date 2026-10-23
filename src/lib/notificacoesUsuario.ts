@@ -92,8 +92,11 @@ export async function contarNovidadesNaoLidas(): Promise<number> {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return 0;
+    // (23/10) conta nova entra com o sino zerado: só conta o que foi publicado depois que a conta foi criada
+    let q = supabase.from("admin_noticias").select("id").eq("ativo", true);
+    if (session.user.created_at) q = q.gte("publicado_em", session.user.created_at);
     const [{ data: ns }, { data: lidas }] = await Promise.all([
-      supabase.from("admin_noticias").select("id").eq("ativo", true).order("publicado_em", { ascending: false }).limit(60),
+      q.order("publicado_em", { ascending: false }).limit(60),
       supabase.from("noticias_lidas").select("noticia_id").eq("user_id", session.user.id),
     ]);
     const vistas = new Set((lidas || []).map((x: any) => x.noticia_id));

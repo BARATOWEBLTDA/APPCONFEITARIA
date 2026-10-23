@@ -76,6 +76,9 @@ export default function Noticias() {
   const [noticias, setNoticias] = useState<Noticia[]>([]);
   // (21/10) as que ela já abriu (sem a bolinha rosa)
   const [lidas, setLidas] = useState<Set<string>>(new Set());
+  // (23/10) o que foi publicado antes de a conta existir já aparece como lido (conta nova não "herda" pendências)
+  const [criadaEm, setCriadaEm] = useState("");
+  useEffect(() => { void supabase.auth.getSession().then(({ data }) => setCriadaEm(data.session?.user?.created_at || "")); }, []);
   useEffect(() => {
     void supabase.from("noticias_lidas").select("noticia_id").then(({ data, error }) => { if (!error && data) setLidas(new Set(data.map((x: any) => x.noticia_id))); });
   }, []);
@@ -157,7 +160,7 @@ export default function Noticias() {
               <ul className="nl-lista">
                 {noticias.map(n => {
                   const capa = n.imagem_capa || n.icone_url;
-                  const lida = lidas.has(n.id);
+                  const lida = lidas.has(n.id) || (!!criadaEm && !!n.publicado_em && Date.parse(n.publicado_em) < Date.parse(criadaEm));
                   const Ic = iconeDaCategoria(n.categoria);
                   return (
                     <li key={n.id}>

@@ -17,19 +17,7 @@ const UTEIS = DIAS.slice(0, 5).map(d => d.nome);
 const DIAS_CURTO = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"]; // índice do Date.getDay()
 
 /** Caixinha "O que escrever?" da descrição da loja */
-export function DicaDescricao() {
-  return (
-    <div className="ppf-d-dica">
-      <p>O que escrever?</p>
-      <ul>
-        <li><b>O que você faz:</b> bolos, doces</li>
-        <li><b>Pra quando:</b> festas, dia a dia</li>
-        <li><b>Seu diferencial:</b> receita da família</li>
-      </ul>
-    </div>
-  );
-}
-export const EXEMPLO_DESCRICAO = "Ex.: Bolos e doces feitos em casa, com receita de família. Encomendas pra aniversários e casamentos.";
+export const EXEMPLO_DESCRICAO = "Ex.: Bolos e doces feitos em casa, com receita de família. Encomendas para aniversários e casamentos.";
 
 type End = { rua: string; numero: string; bairro: string; cidade: string; estado: string };
 export type Mostrar = "completo" | "cidade" | "nada";

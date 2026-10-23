@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import MapaEndereco, { type BuscaMapa } from "@/components/MapaEndereco";
-import { DicaDescricao, EXEMPLO_DESCRICAO, EditorHorario, OpcoesMostrar, type Horario } from "@/components/loja/EditoresLoja";
+import { EXEMPLO_DESCRICAO, EditorHorario, OpcoesMostrar, type Horario } from "@/components/loja/EditoresLoja";
 import { useNavigate } from "react-router-dom";
 import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, Wallet, Coins, Sparkle, CaretRight, Camera } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
@@ -15,6 +15,7 @@ import { lerPassos, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk
 
 import { Botao, avisar } from "@/components/base";
 import { LojaProntaCartao } from "@/components/loja/LojaPronta";
+import PreviaTopoCardapio, { type DadosPrevia } from "@/components/cardapio/PreviaTopoCardapio";
 import { erroDeConexao, SEM_INTERNET } from "@/lib/erros";
 import { definirSaldoInicial } from "@/lib/caixa";
 import { mascaraBRL, lerBRL } from "@/lib/moeda";
@@ -391,30 +392,44 @@ type FolhaProps = { uid: string; perfil: any; onClose: () => void; onSalvo: (pat
 
 const FAZ = ["Bolos", "Doces", "Salgados", "Tortas", "Kit festa", "Outros"];
 
+const QUANDO = ["Festas", "Casamentos", "Dia a dia"];
 function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
   const [txt, setTxt] = useState(String(perfil?.descricao_loja || ""));
   const nomeLoja = String(perfil?.nome_loja || "Sua confeitaria").trim() || "Sua confeitaria";
   const [gerando, setGerando] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
-  // (13/10) a Doo IA pergunta o que ela faz antes de escrever
+  // (23/10) Doo IA: 3 perguntas (o que faz, para quando, diferencial) e 3 opções para escolher
   const [perguntando, setPerguntando] = useState(false);
   const [faz, setFaz] = useState<string[]>([]);
-  const [escreveu, setEscreveu] = useState(false);
+  const [quando, setQuando] = useState<string[]>([]);
+  const [diferencial, setDiferencial] = useState("");
+  const [opcoes, setOpcoes] = useState<string[] | null>(null);
+  const [escolhida, setEscolhida] = useState(0);
+  const alternar = (lista: string[], set: (v: string[]) => void, v: string) => set(lista.includes(v) ? lista.filter(x => x !== v) : [...lista, v]);
   const gerar = async () => {
     setGerando(true); setErro("");
     const oQue = faz.filter(f => f !== "Outros").map(f => f.toLowerCase());
+    const ocasioes = quando.map(q => q.toLowerCase());
+    const dif = diferencial.trim().slice(0, 80);
+    const prompt = `Crie 3 opções diferentes de descrição para uma confeitaria chamada "${nomeLoja}"`
+      + (oQue.length ? `, que faz ${oQue.join(", ")}` : "")
+      + (ocasioes.length ? `, para ${ocasioes.join(", ")}` : "")
+      + (dif ? `. O diferencial dela: ${dif}` : "")
+      + `. Cada opção com 110 a 160 caracteres (umas 3 linhas no celular), em português do Brasil, linguagem profissional e acolhedora, `
+      + `dizendo o que a confeitaria faz e para quais ocasiões. Sem emojis, sem aspas, sem numeração. Responda APENAS com as 3 opções, uma por linha.`;
     try {
-      const res = await apiFetch("/api/gerar-descricao", { method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: `Crie uma descrição atraente para uma confeitaria chamada "${nomeLoja}"${oQue.length ? `, que faz ${oQue.join(", ")}` : ""}. Entre 110 e 160 caracteres (umas 3 linhas no celular), português brasileiro, diga o que a confeitaria faz e pra quais ocasiões, transmita carinho e qualidade. Sem emojis. Retorne APENAS a descrição, sem aspas.` }) });
+      const res = await apiFetch("/api/gerar-descricao", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt }) });
       const data = await res.json();
       if (data?.error === "limite_diario") { setErro(data.message || "Você chegou ao limite de hoje. Amanhã libera de novo."); setGerando(false); return; }
-      const t = data.content?.[0]?.text?.trim();
-      if (t) { setTxt(t.replace(/^["“]|["”]$/g, "").slice(0, 200)); setEscreveu(true); setPerguntando(false); }
+      const bruto = String(data.content?.[0]?.text || "");
+      const lista = bruto.split(/\n+/).map(l => l.replace(/^\s*(\d+[.)-]|[-•*])\s*/, "").replace(/^["“]|["”]$/g, "").trim()).filter(l => l.length >= 40).map(l => l.slice(0, 200)).slice(0, 3);
+      if (lista.length) { setOpcoes(lista); setEscolhida(0); }
       else setErro("A Doo IA não conseguiu escrever agora. Tente de novo.");
     } catch { setErro("Sem internet agora. Tente de novo em instantes."); }
     setGerando(false);
   };
+  const usarOpcao = () => { if (!opcoes) return; setTxt(opcoes[escolhida] || ""); setOpcoes(null); setPerguntando(false); };
   const salvar = async () => {
     if (!txt.trim()) return;
     setSalvando(true); setErro("");
@@ -428,36 +443,69 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!txt.trim()} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
       <div className="ppf-d">
         <PassoTopo k="descricao" />
-        {/* (15/10) saiu a prévia do topo do cardápio (sem foto ficava estranha): no lugar, uma dica do que escrever */}
-        <DicaDescricao />
 
         {perguntando ? (
-          <div className="ppf-d-perg">
-            <p className="ppf-d-perg-t"><i><Sparkle size={14} weight="fill" /></i>O que você faz?</p>
-            <p className="ppf-d-perg-s">Marque e a Doo IA escreve pra você.</p>
-            <div className="ppf-d-opc">
-              {FAZ.map(f => {
-                const on = faz.includes(f);
-                return <button type="button" key={f} className={on ? "on" : ""} aria-pressed={on} onClick={() => setFaz(l => on ? l.filter(x => x !== f) : [...l, f])}>{f}</button>;
-              })}
-            </div>
-            <div className="ppf-d-perg-pe">
-              <button type="button" className="ppf-d-voltar" onClick={() => setPerguntando(false)}>Voltar</button>
-              <Botao tamanho="m" carregando={gerando} onClick={gerar}>Escrever</Botao>
-            </div>
+          <div className="ppf-ia">
+            {opcoes ? (
+              <>
+                <div className="ppf-ia-cab"><img src="/Sistema/doo.png" alt="" aria-hidden="true" /><b>Escolha a que mais combina</b></div>
+                <div className="ppf-ia-ops" role="radiogroup" aria-label="Opções da Doo IA">
+                  {opcoes.map((t, i) => (
+                    <button type="button" key={i} role="radio" aria-checked={escolhida === i} className={escolhida === i ? "on" : ""} onClick={() => setEscolhida(i)}>
+                      <i aria-hidden="true" />{t}
+                    </button>
+                  ))}
+                </div>
+                <div className="ppf-ia-pe">
+                  <button type="button" className="ppf-ia-outras" disabled={gerando} onClick={gerar}><Sparkle size={15} weight="fill" aria-hidden="true" />{gerando ? "Escrevendo…" : "Escrever outras"}</button>
+                  <Botao tamanho="m" onClick={usarOpcao}>Usar esta</Botao>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="ppf-ia-cab"><img src="/Sistema/doo.png" alt="" aria-hidden="true" /><span><b>A Doo IA escreve para você</b><small>Responda e escolha entre 3 opções</small></span></div>
+                <p className="ppf-ia-l">O que você faz?</p>
+                <div className="ppf-d-opc">
+                  {FAZ.map(f => <button type="button" key={f} className={faz.includes(f) ? "on" : ""} aria-pressed={faz.includes(f)} onClick={() => alternar(faz, setFaz, f)}>{f}</button>)}
+                </div>
+                <p className="ppf-ia-l">Para quando?</p>
+                <div className="ppf-d-opc">
+                  {QUANDO.map(f => <button type="button" key={f} className={quando.includes(f) ? "on" : ""} aria-pressed={quando.includes(f)} onClick={() => alternar(quando, setQuando, f)}>{f}</button>)}
+                </div>
+                <label className="ppf-ia-l" htmlFor="pp-dif">Seu diferencial <span>(se quiser)</span></label>
+                <input id="pp-dif" className="ppf-ia-in" autoComplete="off" maxLength={80} value={diferencial} placeholder="Ex.: receita da família" onChange={e => setDiferencial(e.target.value)} />
+                <div className="ppf-ia-pe">
+                  <button type="button" className="ppf-d-voltar" onClick={() => setPerguntando(false)}>Voltar</button>
+                  <Botao tamanho="m" carregando={gerando} icone={<Sparkle size={16} weight="fill" />} onClick={gerar}>Escrever 3 opções</Botao>
+                </div>
+              </>
+            )}
           </div>
         ) : (
-          <div className="ppf-d-campo">
-            <textarea id="pp-desc" autoComplete="off" value={txt} maxLength={200} aria-label="Descrição da sua confeitaria"
-              placeholder={EXEMPLO_DESCRICAO}
-              onChange={e => setTxt(e.target.value)} />
-            <div className="ppf-d-pe">
-              <button type="button" className="ppf-doo" onMouseDown={e => e.preventDefault()} onClick={() => setPerguntando(true)}>
-                <Sparkle size={16} weight="fill" aria-hidden="true" />{escreveu ? "Escrever de novo" : "Escrever com a Doo IA"}
-              </button>
-              <span>{txt.length}/200</span>
+          <>
+            <label className="ppf-d-l" htmlFor="pp-desc">Descrição da loja</label>
+            <div className="ppf-d-campo">
+              <textarea id="pp-desc" autoComplete="off" value={txt} maxLength={200}
+                placeholder={EXEMPLO_DESCRICAO}
+                onChange={e => setTxt(e.target.value)} />
+              <div className="ppf-d-pe">
+                <button type="button" className="ppf-doo" onMouseDown={e => e.preventDefault()} onClick={() => { setOpcoes(null); setPerguntando(true); }}>
+                  <Sparkle size={16} weight="fill" aria-hidden="true" />{txt.trim() ? "Escrever de novo com a Doo IA" : "Escrever com a Doo IA"}
+                </button>
+                <span>{txt.length}/200</span>
+              </div>
             </div>
-          </div>
+            {/* (23/10) a ajuda vem embaixo do campo (antes era uma caixa rosa em cima) */}
+            <div className="ppf-d-ajuda">
+              <p>O que escrever</p>
+              <ul>
+                <li><Check size={14} weight="bold" aria-hidden="true" /><b>O que você faz:</b> bolos, doces, salgados</li>
+                <li><Check size={14} weight="bold" aria-hidden="true" /><b>Para quando:</b> festas, dia a dia</li>
+                <li><Check size={14} weight="bold" aria-hidden="true" /><b>Seu diferencial:</b> receita da família</li>
+              </ul>
+              <small>Aparece embaixo do nome, no topo do cardápio.</small>
+            </div>
+          </>
         )}
         {erro && <p className="ppf-erro">{erro}</p>}
       </div>
@@ -507,6 +555,14 @@ function FolhaLogo({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
   const temFoto = !!perfil?.foto_url && !perfil?.logo_url;
   const nomeLoja = String(perfil?.nome_loja || "Sua confeitaria").trim() || "Sua confeitaria";
   const escolherFoto = () => ref.current?.click();
+  // cores, foto do topo e horário da loja, para a prévia ficar igual ao cardápio
+  const [design, setDesign] = useState<DadosPrevia>({});
+  useEffect(() => {
+    let vivo = true;
+    supabase.from("profiles").select("cor_navbar, cor_borda, cor_nome, banner_topo_url, horario, loja_pausada").eq("id", uid).maybeSingle()
+      .then(({ data }) => { if (vivo && data) setDesign(data as DadosPrevia); }, () => {});
+    return () => { vivo = false; };
+  }, [uid]);
   return (
     <>
       <Janelinha foco titulo="Logo da loja" onClose={onClose}
@@ -515,17 +571,10 @@ function FolhaLogo({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
           : <><Botao variante="secundario" disabled={enviando} onClick={onDepois}>Agora não</Botao><Botao cheio carregando={enviando} onClick={escolherFoto}>Escolher foto</Botao></>}>
         <input ref={ref} type="file" accept="image/*" hidden onChange={escolher} />
         <PassoTopo k="logo" />
-        <div className="ppf-lg2">
-          <div className="ppf-lg2-cap" />
-          <div className="ppf-lg2-corpo">
-            <button type="button" className={`ppf-lg2-logo${atual ? "" : " vazio"}`} onClick={escolherFoto} aria-label={atual ? "Trocar a foto" : "Escolher o logo"}>
-              {atual
-                ? <><img src={atual} alt="" /><i><Camera size={15} weight="fill" /></i></>
-                : <span><Camera size={28} weight="fill" /><small>Toque aqui</small></span>}
-            </button>
-            <b>{nomeLoja}</b>
-            <small>Assim aparece no seu cardápio</small>
-          </div>
+        {/* (23/10) a prévia é o topo do cardápio de verdade (mesmas peças e cores da loja), com a logo à direita */}
+        <div className="ppf-lg3">
+          <PreviaTopoCardapio d={{ ...design, ...perfil, nome_loja: nomeLoja }} onLogo={escolherFoto} enviando={enviando} />
+          <p>É assim que o cliente vê o topo do seu cardápio.</p>
         </div>
       </Janelinha>
       {crop && <ImageCropper imageSrc={crop} cropShape="round" aspect={1} onCancel={() => setCrop(null)} onCropDone={enviar} />}
@@ -730,16 +779,39 @@ const CSS = `
     font-family: inherit; font-size: 16px; font-weight: 500; line-height: 1.45; color: var(--ui-texto); }
   .ppf-d-campo textarea::placeholder { color: var(--ui-texto-3); }
   .ppf-d-pe { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 8px 8px; }
+  .ppf-lg3 { margin-top: 18px; }
+  .ppf-lg3 > p { margin: 10px 2px 0; font-size: 13px; color: var(--ui-texto-2); text-align: center; white-space: nowrap; }
   .ppf-d-pe .ppf-doo { margin: 0; height: 36px; border: 0; padding: 0 12px; font-size: 13.5px; }
   .ppf-d-pe span { font-size: 12px; color: var(--ui-texto-3); padding-right: 4px; white-space: nowrap; }
-  .ppf-d-perg { margin-top: 14px; border: 1.5px solid #F4C6D7; border-radius: 16px; background: #FFF8FB; padding: 14px; }
-  .ppf-d-perg-t { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 15px; font-weight: 600; }
-  .ppf-d-perg-t i { width: 26px; height: 26px; border-radius: 8px; background: var(--ui-rosa); color: var(--ui-branco); display: inline-flex; align-items: center; justify-content: center; }
-  .ppf-d-perg-s { margin: 4px 0 10px; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; }
   .ppf-d-opc { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
   .ppf-d-opc button { height: 42px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; cursor: pointer; }
   .ppf-d-opc button.on { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-weight: 600; }
-  .ppf-d-perg-pe { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+  .ppf-d-l { display: block; margin: 16px 2px 8px; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
+  .ppf-d-l + .ppf-d-campo { margin-top: 0; }
+  .ppf-d-ajuda { margin-top: 14px; padding: 0 2px; }
+  .ppf-d-ajuda > p { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
+  .ppf-d-ajuda ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .ppf-d-ajuda li { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ppf-d-ajuda li svg { flex: none; color: #16A34A; }
+  .ppf-d-ajuda li b { font-weight: 600; color: var(--ui-texto); }
+  .ppf-d-ajuda > small { display: block; margin-top: 10px; font-size: 12.5px; color: var(--ui-texto-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ppf-ia { margin-top: 14px; border: 1.5px solid #F4C6D7; border-radius: 16px; background: #FFF8FB; padding: 14px; }
+  .ppf-ia-cab { display: flex; align-items: center; gap: 10px; }
+  .ppf-ia-cab img { flex: none; width: 34px; height: 34px; object-fit: contain; }
+  .ppf-ia-cab b { display: block; font-size: 15px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; }
+  .ppf-ia-cab small { display: block; font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; }
+  .ppf-ia-l { display: block; margin: 14px 0 6px; font-size: 13px; font-weight: 600; color: var(--ui-texto); }
+  .ppf-ia-l span { font-weight: 400; color: var(--ui-texto-3); }
+  .ppf-ia-in { display: block; width: 100%; height: 44px; box-sizing: border-box; padding: 0 12px; border: 1.5px solid var(--ui-borda-campo); border-radius: 10px; background: var(--ui-branco); font-family: inherit; font-size: 16px; color: var(--ui-texto); outline: none; }
+  .ppf-ia-in:focus { border-color: var(--ui-rosa); }
+  .ppf-ia-pe { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; }
+  .ppf-ia-ops { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .ppf-ia-ops button { display: flex; align-items: flex-start; gap: 10px; width: 100%; padding: 12px; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); font-family: inherit; font-size: 14px; line-height: 1.4; color: var(--ui-texto); text-align: left; cursor: pointer; }
+  .ppf-ia-ops button.on { border: 2px solid var(--ui-rosa); padding: 11px; }
+  .ppf-ia-ops i { flex: none; width: 20px; height: 20px; margin-top: 1px; box-sizing: border-box; border: 2px solid #CFC6CA; border-radius: 50%; }
+  .ppf-ia-ops button.on i { border: 6px solid var(--ui-rosa); }
+  .ppf-ia-outras { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); white-space: nowrap; cursor: pointer; }
+  .ppf-ia-outras:disabled { opacity: .6; }
   .ppf-d-voltar { min-height: 40px; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-texto-2); cursor: pointer; }
   .ppf-in--g { min-height: 52px; font-size: 17px; }
   .ppf-e-lnk { min-height: 44px; margin-top: 4px; padding: 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
@@ -766,20 +838,6 @@ const CSS = `
   .ppf-cx-dica { margin-top: 24px; }
   .ppf-cx-av { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); font-size: 13px; line-height: 1.45; color: var(--ui-texto-2); }
   .ppf-cx-av b { display: block; margin-bottom: 2px; font-size: 13.5px; color: var(--ui-texto); }
-  .ppf-lg2 { margin-top: 18px; border: 1px solid var(--ui-borda); border-radius: 18px; overflow: hidden; }
-  .ppf-lg2-cap { height: 64px; background: linear-gradient(120deg, #F7B2CB, var(--ui-rosa)); }
-  .ppf-lg2-corpo { display: flex; flex-direction: column; align-items: center; padding: 0 16px 18px; margin-top: -48px; text-align: center; }
-  .ppf-lg2-corpo > b { margin-top: 10px; font-size: 16px; font-weight: 600; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ppf-lg2-corpo > small { margin-top: 2px; font-size: 13px; color: var(--ui-texto-3); }
-  .ppf-lg2-logo { position: relative; width: 104px; height: 104px; padding: 0; border: 4px solid var(--ui-branco); border-radius: 50%; background: var(--ui-branco);
-    box-shadow: 0 4px 14px rgba(44, 18, 25, .12); cursor: pointer; font-family: inherit; }
-  .ppf-lg2-logo img { display: block; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-  .ppf-lg2-logo.vazio span { width: 100%; height: 100%; border-radius: 50%; border: 2px dashed #F0A9C3; background: #FFF6FA; color: var(--ui-rosa-escuro);
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
-  .ppf-lg2-logo.vazio small { font-size: 12px; font-weight: 600; }
-  .ppf-lg2-logo i { position: absolute; right: -4px; bottom: 0; width: 32px; height: 32px; border: 3px solid var(--ui-branco); border-radius: 50%; background: var(--ui-rosa); color: var(--ui-branco);
-    display: flex; align-items: center; justify-content: center; }
-  .ppf-lg2-logo:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
   .ppf-topo { display: flex; align-items: center; gap: 12px; margin: 2px 0 0; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; }
   .ppf-topo b { font-weight: 600; color: var(--ui-rosa-escuro); }
   .ppf-barra { display: flex; gap: 4px; flex: 1; }
@@ -805,8 +863,6 @@ const CSS = `
   .ppf-l { display: block; font-size: 13px; font-weight: 700; color: var(--ui-cinza-texto); margin: 16px 0 6px; }
   .ppf-lrow { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; margin-bottom: 6px; }
   .ppf-lrow .ppf-l { margin: 0; }
-  .ppf-ia { min-height: 44px; border: none; border-radius: var(--ui-raio); background: var(--ui-vinho, #2C1219); color: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 700; padding: 0 14px; cursor: pointer; }
-  .ppf-ia:disabled { opacity: .6; }
   .ppf-in { width: 100%; box-sizing: border-box; min-height: 48px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); padding: 0 12px; font-family: inherit; font-size: 16px; font-weight: 500; color: var(--ui-texto); background: var(--ui-branco); }
   .ppf-in:focus { outline: none; border-color: var(--ui-rosa); }
   .ppf-ta { min-height: 112px; padding: 12px; resize: none; line-height: 1.45; display: block; }
