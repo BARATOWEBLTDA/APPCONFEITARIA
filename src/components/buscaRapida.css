@@ -23,8 +23,9 @@
 .br-pe kbd { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 5px; border: 1px solid var(--ui-borda); border-radius: 5px; background: #FAFAFA; font-family: inherit; font-size: 11px; color: var(--ui-texto-2); }
 /* celular: mais perto do topo, sem as dicas de teclado */
 @media (max-width: 900px) {
-  .br-fundo { padding: calc(12px + env(safe-area-inset-top, 0px)) 12px 12px; }
-  .br { max-height: 80vh; }
+  /* (22/10) abaixo do topo do app (antes colava lá em cima), como na Dora */
+  .br-fundo { padding: calc(84px + env(safe-area-inset-top, 0px)) 12px 12px; }
+  .br { max-height: calc(100dvh - 84px - 90px - env(safe-area-inset-top, 0px)); }
   .br-pe { display: none; }
   .br-campo input { font-size: 16px; } /* 16px: o iPhone não dá zoom ao tocar */
 }
