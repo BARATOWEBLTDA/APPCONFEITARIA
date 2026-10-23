@@ -134,10 +134,14 @@
   .cab-cel-bolinha { position: absolute; top: -3px; right: -3px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px; background: var(--ui-vermelho); border: 2px solid var(--ui-branco); font-style: normal; font-size: 10px; font-weight: 700; line-height: 13px; text-align: center; color: var(--ui-branco); }
 }
 
-/* (23/10) celular: título no meio, sem coroa e sino (Novidades, no jeito do iFood); a seta à esquerda e um espaço igual à direita */
-@media (max-width: 900px) {
-  .cab--centro .cab-cel-acoes { display: none; }
-  .cab--centro .cab-txt { text-align: center; }
-  .cab--centro .cab-linha { justify-content: center; }
-  .cab--centro::after { content: ""; flex: none; width: 38px; }
+/* (23/10) celular (até 767px), em todas as telas, no jeito do iFood: seta à esquerda, título no meio e o (i) à direita.
+   Coroa e sino ficam só no Início. Cada lado tem um botão só, então o título tem espaço e não corta. */
+@media (max-width: 767px) {
+  .cab-foto-area { display: none; }
+  /* presos nas pontas, centrados na altura do topo (sem transform: o toque dos botões usa scale) */
+  .cab .cab-voltar { position: absolute; left: 12px; top: calc(50% + env(safe-area-inset-top, 0px) / 2 - 19px); }
+  .cab .cab-ajuda { position: absolute; right: 12px; top: calc(50% + env(safe-area-inset-top, 0px) / 2 - 16px); display: flex; align-items: center; height: 32px; }
+  .cab .cab-i { position: absolute; right: 16px; top: calc(50% + env(safe-area-inset-top, 0px) / 2 - 12px); }
+  .cab-txt { text-align: center; padding: 0 48px; }
+  .cab .cab-linha { position: static; justify-content: center; }
 }
