@@ -50,7 +50,13 @@ export default function FinanceiroAPagar() {
   const [erro, setErro] = useState(false); // não deu pra carregar (10/10)
   const [pagar, setPagar] = useState<Conta | null>(null);
   // (16/10) veio do "Ver"/"Pagar" do Seus próximos passos: abre a janela de pagar aquela conta
-  useAbrirPedido(!carregando && contas.length > 0, p => { const id = p.startsWith("pagar:") ? p.slice(6) : ""; const c = contas.find(x => x.id === id); if (c) setPagar(c); });
+  // (22/10) "Revisar" do Pra fazer: abre a conta pra corrigir (digitou errado) ou cancelar (não existe)
+  const [revisar, setRevisar] = useState<Conta | null>(null);
+  useAbrirPedido(!carregando && contas.length > 0, p => {
+    const [tipo, id] = p.split(":"); const c = contas.find(x => x.id === id);
+    if (!c) return;
+    if (tipo === "pagar") setPagar(c); else if (tipo === "revisar") setRevisar(c);
+  });
   const [nova, setNova] = useState(false);
 
   const numBusca = useRef(0); // 10/10: só vale a resposta da última busca
@@ -215,6 +221,8 @@ export default function FinanceiroAPagar() {
 
       {pagar && <PagarSheet conta={pagar} onClose={() => setPagar(null)} onFeito={(doCaixa) => { setPagar(null); avisar(doCaixa ? "Conta paga. A saída entrou no financeiro." : "Conta marcada como paga. O caixa não mudou."); carregar(); }} />}
       {nova && <NovaContaSheet onClose={() => setNova(false)} onFeito={(fixa) => { setNova(false); avisar(fixa ? "Conta fixa cadastrada. Ela aparece aqui todo mês." : "Conta cadastrada."); carregar(); }} />}
+      {revisar && <NovaContaSheet conta={revisar} onClose={() => setRevisar(null)} onFeito={() => { setRevisar(null); avisar("Conta corrigida."); carregar(); }}
+        onCancelar={async () => { const c = revisar; setRevisar(null); await cancelar(c); }} />}
       <style>{CSS}</style>
     </div>
   );
@@ -268,13 +276,14 @@ export function PagarSheet({ conta, onClose, onFeito }: { conta: Conta; onClose:
   );
 }
 
-function NovaContaSheet({ onClose, onFeito }: { onClose: () => void; onFeito: (fixa: boolean) => void }) {
+function NovaContaSheet({ onClose, onFeito, conta, onCancelar }: { onClose: () => void; onFeito: (fixa: boolean) => void; conta?: Conta; onCancelar?: () => void }) {
   // (13/10) conta fixa (todo mês) vira um custo fixo da conta, com o dia de vencimento: aparece aqui sozinha todo mês
+  // (22/10) com `conta`: revisar uma conta já cadastrada (corrigir ou cancelar)
   const [fixa, setFixa] = useState(false);
-  const [descricao, setDescricao] = useState("");
-  const [categoria, setCategoria] = useState("Insumos");
-  const [valor, setValor] = useState("");
-  const [vencimento, setVencimento] = useState(isoDia(7));
+  const [descricao, setDescricao] = useState(conta?.descricao || "");
+  const [categoria, setCategoria] = useState(conta?.categoria || "Insumos");
+  const [valor, setValor] = useState(conta ? Number(conta.valor || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "");
+  const [vencimento, setVencimento] = useState(conta?.vencimento?.slice(0, 10) || isoDia(7));
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
   const salvar = async () => {
@@ -283,6 +292,12 @@ function NovaContaSheet({ onClose, onFeito }: { onClose: () => void; onFeito: (f
     if (v <= 0) { setErro("Digite o valor"); return; }
     if (!vencimento) { setErro("Escolha o vencimento"); return; }
     setSalvando(true); setErro("");
+    if (conta) {
+      const { error } = await supabase.from("contas_pagar").update({ descricao: descricao.trim(), categoria, valor: v, vencimento }).eq("id", conta.id);
+      setSalvando(false);
+      if (error) { setErro("Não foi possível salvar agora. Confira a internet e tente de novo."); return; }
+      onFeito(false); return;
+    }
     const { data: { user } } = await supabase.auth.getUser();
     if (fixa) {
       const dia = Number(vencimento.slice(8, 10));
@@ -297,11 +312,13 @@ function NovaContaSheet({ onClose, onFeito }: { onClose: () => void; onFeito: (f
     onFeito(false);
   };
   return (
-    <Folha titulo="Nova conta a pagar" sub="Ela só sai do caixa quando você pagar" onClose={onClose} umaAcao
-      acoes={<Botao cheio carregando={salvando} onClick={salvar}>{fixa ? "Cadastrar conta fixa" : "Cadastrar conta"}</Botao>}>
-      <p className="fo-lb">Essa conta se repete todo mês?</p>
-      <div className="fo-seg"><button type="button" className={!fixa ? "on" : ""} onClick={() => setFixa(false)}>Só esta vez</button><button type="button" className={fixa ? "on" : ""} onClick={() => setFixa(true)}>Todo mês</button></div>
-      {fixa && <div className="fo-dica">Ela fica nos seus custos fixos e aparece aqui todo mês, no mesmo dia.</div>}
+    <Folha titulo={conta ? "Revisar conta" : "Nova conta a pagar"} sub={conta ? "Corrija o que estiver errado" : "Ela só sai do caixa quando você pagar"} onClose={onClose} umaAcao
+      acoes={<Botao cheio carregando={salvando} onClick={salvar}>{conta ? "Salvar" : fixa ? "Cadastrar conta fixa" : "Cadastrar conta"}</Botao>}>
+      {!conta && <>
+        <p className="fo-lb">Essa conta se repete todo mês?</p>
+        <div className="fo-seg"><button type="button" className={!fixa ? "on" : ""} onClick={() => setFixa(false)}>Só esta vez</button><button type="button" className={fixa ? "on" : ""} onClick={() => setFixa(true)}>Todo mês</button></div>
+        {fixa && <div className="fo-dica">Ela fica nos seus custos fixos e aparece aqui todo mês, no mesmo dia.</div>}
+      </>}
       <label className="fo-lb" htmlFor="fap-d">Conta</label>
       <input id="fap-d" className="fo-txt" placeholder="Ex.: Fornecedor de chocolate" value={descricao} onChange={e => { setDescricao(e.target.value); setErro(""); }} />
       {!fixa && <p className="fo-lb">Categoria</p>}
@@ -311,6 +328,9 @@ function NovaContaSheet({ onClose, onFeito }: { onClose: () => void; onFeito: (f
         <div><label className="fo-lb" htmlFor="fap-venc">{fixa ? "Próximo vencimento" : "Vencimento"}</label><CampoData id="fap-venc" valor={vencimento} onChange={setVencimento} titulo="Vencimento" curto /></div>
       </div>
       {erro && <p className="fo-erro">{erro}</p>}
+      {conta && onCancelar && (
+        <button type="button" className="fap-revisar-cancelar" onClick={onCancelar}>Essa conta não existe · Cancelar a conta</button>
+      )}
     </Folha>
   );
 }
@@ -328,6 +348,7 @@ const CSS = `
   .fap-l-c { display: none; }
   @media (max-width: 599px) { .fap-l-g { display: none; } .fap-l-c { display: inline; } }
   .fap-nova-bt { flex: none; }
+  .fap-revisar-cancelar { display: block; width: 100%; min-height: 44px; margin: 14px 0 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-vermelho); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
   @media (max-width: 899px) { .fap-nova-bt { width: 100%; } }
   .fap-vazio--p { padding: 22px 16px; } .fap-vazio--p b { margin-top: 0; }
   .fap-it { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "d m v" "d m b"; align-items: center; column-gap: 12px; row-gap: 8px; }
