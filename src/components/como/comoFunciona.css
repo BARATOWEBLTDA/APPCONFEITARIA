@@ -69,3 +69,6 @@ html body .bn-novo:has(> .driver-active-element) { overflow: visible !important;
 
 /* (23/10) balão aberto (tour ou o (i)): a tela de fundo não rola */
 html.fundo-travado, html.fundo-travado body { overflow: hidden !important; overscroll-behavior: none; }
+html.fundo-travado.tour-rola, html.fundo-travado.tour-rola body { overflow: auto !important; }
+/* (23/10) espaço no fim da página nesse passo: o fim da parte acesa consegue subir acima do balão do tour */
+html.tour-rola body::after { content: ""; display: block; height: 260px; }

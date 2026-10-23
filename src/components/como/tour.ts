@@ -54,6 +54,8 @@ export async function fazerTour(passos: PassoTour[]) {
       const raio = p?.redondo ? 999 : 16;
       if (d.getConfig().stageRadius !== raio) d.setConfig({ ...d.getConfig(), stageRadius: raio, stagePadding: p?.redondo ? 4 : 6 });
     },
+    // (23/10) parte acesa maior que a tela: a tela de fundo volta a rolar só neste passo (o recorte aceso acompanha)
+    onHighlighted: () => { document.documentElement.classList.toggle("tour-rola", naoCabe()); },
     onPopoverRender: (pop) => {
       const dr = d;
       if (!dr.isLastStep()) {
@@ -72,6 +74,7 @@ export async function fazerTour(passos: PassoTour[]) {
 // (22/10) a tela de fundo não rola durante o tour (o próprio tour leva até cada parte)
 function travarRolagem(sim: boolean) {
   document.documentElement.classList.toggle("tour-ativo", sim);
+  if (!sim) document.documentElement.classList.remove("tour-rola");
   travarFundo(sim, ".driver-popover");
 }
 
@@ -80,10 +83,13 @@ function travarRolagem(sim: boolean) {
  * Só bloqueia o gesto: nada muda de lugar (o topo e o balão continuam onde estão). Dentro do balão a rolagem segue normal.
  */
 const dentroDe: string[] = [];
-const bloquear = (e: Event) => { const t = e.target as HTMLElement | null; if (!dentroDe.some(sel => t?.closest?.(sel))) e.preventDefault(); };
+// (23/10) parte acesa maior que a tela (ex.: o "Pra fazer" com vários itens em celular baixo): libera a rolagem para ver tudo
+const naoCabe = () => { const a = document.querySelector(".driver-active-element"); return !!a && a.getBoundingClientRect().height > window.innerHeight - 140; };
+const bloquear = (e: Event) => { const t = e.target as HTMLElement | null; if (naoCabe()) return; if (!dentroDe.some(sel => t?.closest?.(sel))) e.preventDefault(); };
 const teclas = (e: KeyboardEvent) => {
   const t = e.target as HTMLElement | null;
   if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+  if (naoCabe()) return;
   if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(e.key)) e.preventDefault();
 };
 export function travarFundo(sim: boolean, permitido: string) {
