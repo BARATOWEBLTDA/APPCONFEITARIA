@@ -128,7 +128,10 @@ export function useSobreposicao(aberta: boolean, aoFechar: () => void, caixa: Re
     // foco: entra na janela, fica preso nela e depois volta pra onde estava
     const antes = document.activeElement as HTMLElement | null
     const el = caixa.current
-    if (el) (el.querySelector<HTMLElement>('[data-foco-inicial]') || el).focus({ preventScroll: true })
+    // (22/10) sem abrir o teclado sozinho: se o foco inicial é um campo de digitar, o foco fica na janela (o teclado só abre quando ela tocar no campo)
+    const ini = el?.querySelector<HTMLElement>('[data-foco-inicial]')
+    const ehCampo = !!ini && ini.matches('input, textarea, select, [contenteditable="true"]')
+    if (el) ((ini && !ehCampo) ? ini : el).focus({ preventScroll: true })
     const prender = (e: KeyboardEvent) => {
       const dentro = caixa.current
       if (e.key !== 'Tab' || !dentro || pilha[pilha.length - 1] !== eu) return

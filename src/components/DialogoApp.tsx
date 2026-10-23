@@ -37,7 +37,7 @@ export default function DialogoApp({ tipo = 'aviso', titulo, texto, icone = 'inf
             <button className={`dlg-b1 ${perigo ? 'perigo' : ''}`} onClick={() => onConfirmar?.()}>{rotuloConfirmar}</button>
           </div>
         ) : (
-          <button className="dlg-b1 dlg-full" onClick={onFechar} autoFocus>Entendi</button>
+          <button className="dlg-b1 dlg-full" onClick={onFechar}>Entendi</button>
         )}
       </div>
       <style>{`

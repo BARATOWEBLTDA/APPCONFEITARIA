@@ -280,7 +280,7 @@ export default function CatalogoNatal({ design, config, isPro, produtos, categor
         {buscaAberta && (
           <div className="ctn-busca">
             <MagnifyingGlass size={18} weight="bold" aria-hidden="true" />
-            <input type="search" autoFocus placeholder="Buscar no cardápio" aria-label="Buscar no cardápio" value={busca} onChange={e => setBusca(e.target.value)} />
+            <input type="search" placeholder="Buscar no cardápio" aria-label="Buscar no cardápio" value={busca} onChange={e => setBusca(e.target.value)} />
             {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={16} weight="bold" /></button>}
           </div>
         )}

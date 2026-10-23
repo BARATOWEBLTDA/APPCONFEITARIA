@@ -500,7 +500,7 @@ function CartaoTamanho({ form, setForm }: { form: any; setForm: Props["setForm"]
           <li>
             {verOutroPeso ? (
               <div className="esc-peso-novo">
-                <input autoFocus placeholder={unNovo === "kg" ? "Ex.: 1,5" : "Ex.: 800"} value={novo} inputMode="decimal" onChange={e => setNovo(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addPeso(); } }} aria-label="Outro peso" />
+                <input placeholder={unNovo === "kg" ? "Ex.: 1,5" : "Ex.: 800"} value={novo} inputMode="decimal" onChange={e => setNovo(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addPeso(); } }} aria-label="Outro peso" />
                 <span className="esc-seg esc-seg--2 esc-kgg" role="radiogroup" aria-label="Unidade do peso">
                   <button type="button" role="radio" aria-checked={unNovo === "kg"} className={unNovo === "kg" ? "on" : ""} onClick={() => setUnNovo("kg")}>kg</button>
                   <button type="button" role="radio" aria-checked={unNovo === "g"} className={unNovo === "g" ? "on" : ""} onClick={() => setUnNovo("g")}>g</button>
@@ -724,7 +724,7 @@ function JanelaRendimento({ g, set, onFechar, nomeProduto = "" }: { g: GrupoTam;
       <Janela aberta={perguntar} aoFechar={() => setPerguntar(false)} titulo="Salvar como predefinição?" tipo="aviso"
         icone={<Sparkle size={32} />} texto="Dê um nome e, nos próximos produtos, é só tocar nele: o rendimento vem preenchido e o cadastro fica bem mais rápido."
         acoes={<><Botao variante="secundario" onClick={() => { setPerguntar(false); gravar(""); }}>Agora não</Botao><Botao onClick={salvarComoPredefEGravar} disabled={!nomeAviso.trim()}>Salvar e usar</Botao></>}>
-        <input className="esc-aviso-in" autoFocus placeholder={exemploPredef(nomeProduto)} value={nomeAviso} maxLength={40}
+        <input className="esc-aviso-in" placeholder={exemploPredef(nomeProduto)} value={nomeAviso} maxLength={40}
           onChange={e => setNomeAviso(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); salvarComoPredefEGravar(); } }} aria-label="Nome da predefinição" />
         {predefs.some(p => norm(p.nome) === norm(nomeAviso.trim())) && nomeAviso.trim() && <div className="esc-aviso esc-aviso--nota"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>Já existe uma com esse nome: ela será substituída.</p></div>}
       </Janela>

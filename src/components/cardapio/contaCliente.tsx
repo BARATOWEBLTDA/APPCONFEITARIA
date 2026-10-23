@@ -143,18 +143,18 @@ export function JanelaEntrar({ aberta, aoFechar, loja, cor, aoEntrar }: { aberta
       acoes={<button type="button" className="cc-bt" style={{ background: cor }} disabled={indo} onClick={entrar}>{indo ? 'Entrando…' : etapa === 'novo' ? 'Criar e entrar' : etapa === 'numero' ? 'Entrar' : 'Continuar'}</button>} umaAcao>
       <div className="cc-entrar">
         <p>{texto}</p>
-        <Campo rotulo="WhatsApp" value={tel} inputMode="tel" autoComplete="tel" placeholder="(41) 9 9999-0000" autoFocus={etapa === 'tel'}
+        <Campo rotulo="WhatsApp" value={tel} inputMode="tel" autoComplete="tel" placeholder="(41) 9 9999-0000"
           onChange={e => { setTel(mascaraTel(e.target.value, true)); setEtapa('tel'); setErro('') }}
           onKeyDown={e => { if (e.key === 'Enter') entrar() }}
           erro={etapa === 'tel' && erro ? erro : undefined} />
         {etapa === 'numero' && (
-          <Campo rotulo="Número de um pedido seu" value={numero} inputMode="numeric" placeholder="Ex.: 1049" autoFocus
+          <Campo rotulo="Número de um pedido seu" value={numero} inputMode="numeric" placeholder="Ex.: 1049"
             onChange={e => { setNumero(e.target.value.replace(/\D/g, '').slice(0, 9)); setErro('') }}
             onKeyDown={e => { if (e.key === 'Enter') entrar() }}
             erro={erro || undefined} />
         )}
         {etapa === 'novo' && (
-          <Campo rotulo="Nome" value={nome} autoComplete="name" placeholder="Como você se chama?" autoFocus
+          <Campo rotulo="Nome" value={nome} autoComplete="name" placeholder="Como você se chama?"
             onChange={e => { setNome(e.target.value); setErro('') }}
             onKeyDown={e => { if (e.key === 'Enter') entrar() }}
             erro={erro || undefined} />

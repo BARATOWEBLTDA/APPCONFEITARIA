@@ -39,6 +39,12 @@
   .ui-veu.mais-veu { bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
   .mais-veu .mais-corpo { padding-bottom: 16px; }
 }
+/* (22/10) celular: o Menu ocupa a altura toda (do topo até o menu de baixo), como uma tela */
+@media (max-width: 900px) {
+  .ui-veu.mais-veu .ui-janela.mais { height: 100%; max-height: none; max-width: none; border-radius: 0; padding-top: env(safe-area-inset-top, 0px); }
+  .ui-veu.mais-veu .ui-janela.mais .ui-janela-alca { display: none; }
+  .ui-veu.mais-veu .mais-cab { padding-top: 14px; }
+}
 /* (16/10) Doo IA no topo do Mais */
 .mais-doo { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0 0 14px; padding: 12px 14px; border: 0; border-radius: var(--ui-raio-cartao, 16px); background: linear-gradient(135deg, var(--chocolate, #3A2219), var(--chocolate-escuro, #22130E)); color: #fff; font-family: inherit; text-align: left; cursor: pointer; }
 .mais-doo .mais-it-txt b { color: #fff; }

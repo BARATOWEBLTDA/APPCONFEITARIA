@@ -141,7 +141,7 @@ export function SaldoSheet({ atual, uid, onClose, onSalvo }: { atual: number | n
         <b className="cxs-t">{atual == null ? "Quanto tem hoje no caixa?" : "Acertar o saldo"}</b>
         {atual != null && <p className="cxs-s">{`O app calcula ${brl(atual)}. Se você contou e deu diferente, informe o valor certo: o caixa recomeça a partir de agora.`}</p>}
         <label className="cxs-lb" htmlFor="cxs-v">Saldo agora</label>
-        <div className="cxs-in"><span>R$</span><input id="cxs-v" inputMode="numeric" autoComplete="off" placeholder="0,00" value={txt} onChange={e => { setTxt(mascaraBRL(e.target.value)); setErro(""); }} autoFocus data-foco-inicial /></div>
+        <div className="cxs-in"><span>R$</span><input id="cxs-v" inputMode="numeric" autoComplete="off" placeholder="0,00" value={txt} onChange={e => { setTxt(mascaraBRL(e.target.value)); setErro(""); }} data-foco-inicial /></div>
         {erro && <p className="cxs-erro">{erro}</p>}
         {/* (15/10) primeira vez: o mesmo do passo "Saldo do caixa" (Começo do zero, Por que isso e o aviso do sinal) */}
         {atual == null && (<>

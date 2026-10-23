@@ -883,7 +883,7 @@ function CartContent({
             ) : cupomAberto ? (
               <>
                 <div className="sc-cupom">
-                  <Campo rotulo="Código do cupom" value={cupomDigitado} autoFocus autoCapitalize="characters" placeholder="Ex.: DOCE10"
+                  <Campo rotulo="Código do cupom" value={cupomDigitado} autoCapitalize="characters" placeholder="Ex.: DOCE10"
                     onChange={e => { setCupomDigitado(e.target.value.toUpperCase()); setCupomErro('') }}
                     onKeyDown={e => { if (e.key === 'Enter') aplicarCupom() }} />
                   <button type="button" className="sc-cupom-bt" style={{ alignSelf: 'flex-end' }} onClick={() => aplicarCupom()} disabled={!cupomDigitado.trim() || validandoCupom}>{validandoCupom ? '…' : 'Aplicar'}</button>

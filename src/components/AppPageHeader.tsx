@@ -14,6 +14,7 @@ import { useLojaPronta } from '@/lib/primeirosPassos'
 import { useAvatarUpload } from '@/hooks/useAvatarUpload'
 import { useNavigate } from 'react-router-dom'
 import { usePlano } from '@/hooks/usePlano'
+import { useNotifications } from '@/context/NotificationContext'
 import './appPageHeader.css'
 
 /**
@@ -113,9 +114,23 @@ export function LogoDaLoja({ className = '' }: { className?: string }) {
   // (21/10) computador: atalho pro cardápio da loja (só quando ele tem o que mostrar, igual ao link de vendas)
   const linkCardapio = profile ? getCardapioUrl(profile) : ''
   const pronta = useLojaPronta(profile?.id)
+  const { notifCount } = useNotifications()
   return (
     <>
       <div className={`cab-foto-area ${className}`}>
+        {/* (22/10) celular: coroa e sino, iguais ao Início (no lugar da logo da loja) */}
+        <div className="cab-cel-acoes">
+          {profile && (
+            <button type="button" className="cab-cel-ac cab-cel-ac--pro" onClick={() => navigate(isPro ? '/minha-assinatura' : '/assinar')}
+              aria-label={isPro ? 'Minha assinatura PRO' : 'Assinar o plano PRO'}>
+              <img src="/coroa.png" alt="" aria-hidden="true" />
+            </button>
+          )}
+          <button type="button" className="cab-cel-ac" onClick={() => navigate('/notificacoes')} aria-label={notifCount > 0 ? `Notificações, ${notifCount} nova${notifCount > 1 ? 's' : ''}` : 'Notificações'}>
+            <Bell size={21} weight="regular" />
+            {notifCount > 0 && <i className="cab-cel-bolinha">{notifCount > 9 ? '9+' : notifCount}</i>}
+          </button>
+        </div>
         {/* (22/10) busca rápida (Ctrl+K), só no computador */}
         <button type="button" className="cab-busca" onClick={abrirBuscaRapida} aria-label="Buscar no app (Ctrl+K)">
           <MagnifyingGlass size={15} weight="bold" aria-hidden="true" /><span>Buscar</span><kbd>Ctrl K</kbd>

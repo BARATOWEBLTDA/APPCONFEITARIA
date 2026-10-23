@@ -119,3 +119,17 @@
 
 /* (22/10) a seta das telas de Cadastros é só do celular */
 @media (min-width: 901px) { .cab-voltar--cel { display: none !important; } }
+
+/* (22/10) celular: no canto direito a coroa do PRO e o sino (iguais ao Início), no lugar da logo da loja */
+.cab-cel-acoes { display: none; }
+@media (max-width: 900px) {
+  html body .cab .cab-foto-caixa { display: none; }
+  .cab-cel-acoes { display: flex; align-items: center; gap: 6px; }
+  .cab-cel-ac { position: relative; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; margin: 0; padding: 0; border: 0; border-radius: 50%; background: #F2EFF0; color: var(--ui-texto); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .cab-cel-ac:active { background: #E8E3E5; }
+  .cab-cel-ac--pro { background: #FFF8E3; }
+  .cab-cel-ac--pro:active { background: #FFEFC4; }
+  .cab-cel-ac--pro img { display: block; width: 22px; height: 17px; object-fit: contain; }
+  .cab-cel-ac:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
+  .cab-cel-bolinha { position: absolute; top: -3px; right: -3px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px; background: var(--ui-vermelho); border: 2px solid var(--ui-branco); font-style: normal; font-size: 10px; font-weight: 700; line-height: 13px; text-align: center; color: var(--ui-branco); }
+}

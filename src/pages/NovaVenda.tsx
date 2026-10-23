@@ -999,7 +999,7 @@ export default function NovaVenda() {
                   {o.chave === 'parcial' && situacaoPag === 'parcial' && (
                     <div className="nv3-op-mais">
                       <Campo
-                        rotulo="Quanto ele já pagou" prefixo="R$" inputMode="numeric" placeholder="0,00" autoFocus
+                        rotulo="Quanto ele já pagou" prefixo="R$" inputMode="numeric" placeholder="0,00"
                         value={formatMaskMoney(valorParcial)} onChange={e => setValorParcial(parseMaskMoney(e.target.value))}
                         erro={valorParcial > 0 && r2(valorParcial) >= total ? `Precisa ser menos que ${rs(total)}. Se ele pagou tudo, escolha "Tudo agora".` : undefined}
                         dica={valorParcial > 0 && r2(valorParcial) < total ? `Falta ${rs(r2(total - valorParcial))}` : undefined}

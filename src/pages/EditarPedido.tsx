@@ -1761,7 +1761,7 @@ export default function EditarPedido() {
       <Janela aberta={retiradaAberta} aoFechar={() => setRetiradaAberta(false)} tipo="conteudo" titulo="Quem retirou?"
         acoes={<><Botao variante="secundario" onClick={() => { if (depoisRetirada === 'etapa') confirmarRetirada(''); else setRetiradaAberta(false) }}>{depoisRetirada === 'etapa' ? 'Pular' : 'Agora não'}</Botao><Botao onClick={() => confirmarRetirada()}>{depoisRetirada === 'etapa' ? 'Marcar como retirado' : 'Salvar'}</Botao></>}>
         <div className="tpj-ret">
-          <Campo rotulo="Nome de quem retirou" opcional placeholder="Ex.: o próprio cliente, Maria (irmã)" value={quemRetirou} onChange={e => setQuemRetirou(e.target.value)} autoFocus />
+          <Campo rotulo="Nome de quem retirou" opcional placeholder="Ex.: o próprio cliente, Maria (irmã)" value={quemRetirou} onChange={e => setQuemRetirou(e.target.value)} />
           <p>Fica salvo no pedido, no histórico e no PDF.</p>
         </div>
       </Janela>
@@ -3689,7 +3689,7 @@ function AjusteSheet({ total, recebido = 0, onClose, onAplicar }: { total: numbe
       <p className="fo-lb">O que é?</p>
       <div className="fo-seg"><button type="button" className={tipo === 'desconto' ? 'on' : ''} onClick={() => { setTipo('desconto'); setMotivo('') }}>Desconto</button><button type="button" className={tipo === 'acrescimo' ? 'on' : ''} onClick={() => { setTipo('acrescimo'); setMotivo('') }}>Acréscimo</button></div>
       <label className="fo-lb" htmlFor="aj-v">Valor</label>
-      <div className="fo-in"><span>R$</span><input id="aj-v" inputMode="numeric" placeholder="0,00" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro('') }} autoFocus /></div>
+      <div className="fo-in"><span>R$</span><input id="aj-v" inputMode="numeric" placeholder="0,00" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro('') }} /></div>
       <p className="fo-lb">Motivo <em>(opcional)</em></p>
       <div className="fo-chips">{MOTIVOS.map(m => <button type="button" key={m} className={motivo === m ? 'on' : ''} onClick={() => setMotivo(m)}>{m}</button>)}</div>
       <input className="fo-txt" style={{ marginTop: 8 }} placeholder="Ou escreva o motivo" value={MOTIVOS.includes(motivo) ? '' : motivo} onChange={e => setMotivo(e.target.value)} />

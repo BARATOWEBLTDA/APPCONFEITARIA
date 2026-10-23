@@ -162,9 +162,9 @@
 .pdc-pix { margin-top: 12px; }
 
 /* (22/10) celular: abas por situação e o pedido numa linha (estilo iFood Gestor) */
-.pdk-abas { display: flex; gap: 8px; margin: 12px 0 4px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.pdk-abas { display: flex; gap: 8px; margin: 12px 0 16px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .pdk-abas::-webkit-scrollbar { display: none; }
-.pdk-aba { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 38px; margin: 0; padding: 0 14px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto-2); font-family: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.pdk-aba { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 38px; margin: 0; padding: 0 14px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); color: var(--ui-texto-2); font-family: inherit; font-size: 14px; font-weight: 700; /* (22/10) cantos de 10px (antes pílula) */ white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .pdk-aba i { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--ui-cinza); color: var(--ui-texto-2); font-style: normal; font-size: 12px; line-height: 20px; text-align: center; }
 .pdk-aba.alerta i { background: #FDECD3; color: #9A4A06; }
 .pdk-aba[aria-selected="true"] { border-color: var(--ui-texto); background: var(--ui-texto); color: var(--ui-branco); }

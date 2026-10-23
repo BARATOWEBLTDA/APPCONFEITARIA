@@ -41,7 +41,8 @@ export default function BuscaRapida() {
     window.addEventListener("keydown", tecla);
     return () => { window.removeEventListener("doonly:busca", abrir); window.removeEventListener("keydown", tecla); };
   }, []);
-  useEffect(() => { if (aberta) window.setTimeout(() => inputRef.current?.focus(), 30); }, [aberta]);
+  // (22/10) só no computador o cursor já entra no campo; no celular o teclado só abre quando ela tocar no campo
+  useEffect(() => { if (aberta && window.matchMedia("(min-width: 901px)").matches) window.setTimeout(() => inputRef.current?.focus(), 30); }, [aberta]);
   // fecha ao trocar de tela
   useEffect(() => { setAberta(false); }, [pathname]);
 

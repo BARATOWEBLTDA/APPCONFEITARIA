@@ -2116,7 +2116,6 @@ export default function Produtos() {
                         placeholder="Ex.: bolos, doces, salgados"
                         value={novaCategoria}
                         onChange={e => setNovaCategoria(e.target.value)}
-                        autoFocus
                         onKeyDown={e => {
                           if (e.key === "Enter" && novaCategoria.trim()) {
                             const icone = novaCategoriaIcone || SYSTEM_ICONS[0];
