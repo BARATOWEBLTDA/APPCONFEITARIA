@@ -40,14 +40,14 @@ interface Noticia {
   fixada: boolean;
 }
 
-/** (23/10) "agora", "5 min", "3 h", "2 d", "3 sem" e depois a data (como no iFood) */
+/** (23/10) "agora", "5min", "3h", "2d", "3sem" e depois a data (como no iFood) */
 function tempoCurto(iso: string): string {
   const min = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
   if (min < 1) return "agora";
-  if (min < 60) return `${min} min`;
-  const h = Math.round(min / 60); if (h < 24) return `${h} h`;
-  const d = Math.round(h / 24); if (d < 7) return `${d} d`;
-  if (d < 35) return `${Math.round(d / 7)} sem`;
+  if (min < 60) return `${min}min`;
+  const h = Math.round(min / 60); if (h < 24) return `${h}h`;
+  const d = Math.round(h / 24); if (d < 7) return `${d}d`;
+  if (d < 35) return `${Math.round(d / 7)}sem`;
   const dt = new Date(iso); return `${String(dt.getDate()).padStart(2, "0")}/${String(dt.getMonth() + 1).padStart(2, "0")}`;
 }
 /** sem capa: a ilustração da categoria no quadrado rosa */
@@ -112,7 +112,7 @@ export default function Noticias() {
   return (
     <>
       <AppPageHeader
-        title="Novidades"
+        title="Novidades" centro voltar="/inicio"
         subtitle="Dicas, novidades e tutoriais do Doonly" infoComo={COMO_NOVIDADES} infoTour={TOUR_NOVIDADES}
         infoIcon="📰"
         infoContent={
@@ -163,7 +163,7 @@ export default function Noticias() {
                     <li key={n.id}>
                       <Link to={`/noticias/${n.slug}`} className={`nl-it${lida ? " nl-it--lida" : ""}`} aria-label={`${lida ? "" : "Não lida: "}${tituloSemCategoria(n.titulo, n.categoria)}`}>
                         <span className="nl-it-img" aria-hidden="true">
-                          <Ic size={30} weight="duotone" />
+                          <Ic size={24} weight="duotone" />
                           {capa && <img src={capa} alt="" loading="lazy" onError={e => { e.currentTarget.style.display = "none"; }} />}
                         </span>
                         <span className="nl-it-tx">

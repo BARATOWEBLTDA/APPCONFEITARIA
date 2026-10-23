@@ -47,6 +47,8 @@ interface AppPageHeaderProps {
   onBack?: () => void
   /** (22/10) celular: seta de voltar (volta pra tela anterior do app; se abriu direto, vai pra este caminho). No computador não aparece */
   voltar?: string
+  /** (23/10) celular: título no meio e sem coroa e sino (Novidades, no jeito do iFood) */
+  centro?: boolean
 }
 
 const ICONE_DO_EMOJI: Record<string, Icon> = {
@@ -54,7 +56,7 @@ const ICONE_DO_EMOJI: Record<string, Icon> = {
   '📑': ListDashes, '📦': Package, '📰': Newspaper, '🔔': Bell, '🛍️': ShoppingBag, '🛒': ShoppingCart, '🧮': Calculator, '🧾': Invoice, '📋': Receipt,
 }
 
-export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, infoContent, infoTip, infoComo, infoTour, rightActions, onBack, voltar }: AppPageHeaderProps) {
+export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, infoContent, infoTip, infoComo, infoTour, rightActions, onBack, voltar, centro }: AppPageHeaderProps) {
   const navegar = useNavigate()
   const voltarCel = () => { if (((window.history.state as any)?.idx ?? 0) > 0) navegar(-1); else if (voltar) navegar(voltar) }
   const [mostrarInfo, setMostrarInfo] = useState(false)
@@ -63,7 +65,7 @@ export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, in
   return (
     <>
       {/* (13/10) as abas do Cardápio digital saíram da faixa: viraram um grupo no menu da esquerda */}
-      <header className="cab">
+      <header className={`cab${centro ? " cab--centro" : ""}`}>
         {onBack && (
           <BotaoIcone rotulo="Voltar" variante="claro" className="cab-voltar" onClick={onBack}><CaretLeft size={24} weight="bold" /></BotaoIcone>
         )}

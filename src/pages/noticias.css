@@ -28,21 +28,21 @@
 html:has(.layout-root[data-rota="/noticias"]) body,
 html body .layout-root[data-rota="/noticias"], html body .layout-root[data-rota="/noticias"] .layout-main { background: var(--ui-branco) !important; }
 .nl-lista { margin: 0 calc(50% - 50vw); padding: 0; list-style: none; }
-.nl-it { display: flex; align-items: flex-start; gap: 16px; padding: 22px 20px; background: var(--ui-branco); color: var(--ui-texto); text-decoration: none; -webkit-tap-highlight-color: transparent; transition: background-color var(--dur-fast) linear; }
+.nl-it { display: flex; align-items: flex-start; gap: 14px; padding: 18px 16px; background: var(--ui-branco); color: var(--ui-texto); text-decoration: none; -webkit-tap-highlight-color: transparent; transition: background-color var(--dur-fast) linear; }
 .nl-it--lida { background: #F3F3F3; }
 .nl-lista > li + li .nl-it:not(.nl-it--lida) { box-shadow: inset 0 1px 0 #EFEFEF; }
 @media (hover: hover) { .nl-it:hover { background: #FAFAFA; } .nl-it--lida:hover { background: #EDEDED; } }
 .nl-it:active { background: #EDEDED; }
 .nl-it:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
-.nl-it-img { position: relative; flex: none; display: flex; align-items: center; justify-content: center; width: 68px; height: 68px; overflow: hidden; border-radius: 6px; background: #FDE7F0; color: var(--ui-rosa-escuro); }
+.nl-it-img { position: relative; flex: none; display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; overflow: hidden; border-radius: 4px; background: #FDE7F0; color: var(--ui-rosa-escuro); }
 .nl-it-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.nl-it-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; padding-top: 1px; }
-.nl-it-t { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; font-size: 16.5px; font-weight: 500; line-height: 1.3; color: #3B3537; }
-.nl-it-d { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; font-size: 15px; font-weight: 400; line-height: 1.4; color: #5A5356; }
-.nl-it time { flex: none; padding-top: 2px; font-size: 14px; font-weight: 400; color: #5A5356; white-space: nowrap; }
+.nl-it-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.nl-it-t { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 15px; font-weight: 500; line-height: 1.3; color: #231E20; }
+.nl-it-d { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; font-size: 14px; font-weight: 400; line-height: 1.4; color: #3D3739; }
+.nl-it time { flex: none; padding-top: 1px; font-size: 13px; font-weight: 400; color: #3D3739; white-space: nowrap; }
 @media (min-width: 768px) {
   .nl-lista { margin: 0; border-radius: 0; }
-  .nl-it { padding: 22px 16px; }
+  .nl-it { padding: 18px 16px; }
 }
 /* convites: Sugerir e Relatar */
 .nl-conv { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); }

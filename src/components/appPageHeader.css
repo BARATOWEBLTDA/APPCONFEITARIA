@@ -133,3 +133,11 @@
   .cab-cel-ac:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
   .cab-cel-bolinha { position: absolute; top: -3px; right: -3px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px; background: var(--ui-vermelho); border: 2px solid var(--ui-branco); font-style: normal; font-size: 10px; font-weight: 700; line-height: 13px; text-align: center; color: var(--ui-branco); }
 }
+
+/* (23/10) celular: título no meio, sem coroa e sino (Novidades, no jeito do iFood); a seta à esquerda e um espaço igual à direita */
+@media (max-width: 900px) {
+  .cab--centro .cab-cel-acoes { display: none; }
+  .cab--centro .cab-txt { text-align: center; }
+  .cab--centro .cab-linha { justify-content: center; }
+  .cab--centro::after { content: ""; flex: none; width: 38px; }
+}
