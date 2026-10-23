@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, BellSlash, Buildings, CalendarCheck, CaretDown, ClipboardText, Clock, Coins, CreditCard, ImageSquare, Info, TextAlignLeft, Truck } from "@phosphor-icons/react";
+import { ArrowRight, Basket, Bell, BellSlash, Buildings, CalendarCheck, CaretDown, ChartLineUp, Check, ClipboardText, Clock, Coins, CreditCard, ImageSquare, Info, ListChecks, MapPin, Storefront, TextAlignLeft, Truck, WarningCircle } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { useLojaPronta } from "@/lib/primeirosPassos";
@@ -24,7 +24,7 @@ import { avisar } from "@/components/base";
  */
 type Item = { chave: string; nivel: "urgente" | "atencao" | "normal"; Ic: Icon; t: string; s: string; acao: string; link: string; estado?: { abrir: string }; fechar?: boolean; ordem: number; aoTocar?: () => void;
   /** (22/10) frase do porquê (até 2 linhas) e, na conta, o vencimento em vermelho em cima dela */
-  txt?: string; alerta?: string; comoFunciona?: string; revisar?: { abrir: string } };
+  txt?: string; alerta?: string; comoFunciona?: Como; revisar?: { abrir: string } };
 
 /** (21/10) o botão de cada linha diz o que fazer */
 const ACAO: Record<AvisoCadastro["icone"], string> = { custos: "Definir", maquininha: "Definir", ficha: "Fazer", caixa: "Informar", conta: "Pagar", entrega: "Definir", descricao: "Escrever", banner: "Colocar" };
@@ -33,11 +33,45 @@ const ICONE: Record<AvisoCadastro["icone"], Icon> = { custos: Buildings, maquini
 const DIA = 86400000;
 const PESO = { urgente: 0, atencao: 1, normal: 2 };
 const VISIVEIS = 3;
-/** (22/10) "Como funciona": exemplo com números, como nas Pendências da Dora */
-const COMO: Record<string, string> = {
-  entrega: "Exemplo: uma entrega custa uns R$ 12,00 de gasolina. Sem taxa, o cardápio mostra entrega grátis e esses R$ 12,00 saem do seu lucro. Com taxa de R$ 10,00, o cliente vê o valor antes de pedir e paga junto.",
-  ficha: "Exemplo: um bolo de R$ 120,00 gasta R$ 38,00 de ingredientes e R$ 4,00 de embalagem. Com a ficha, o app mostra o lucro de R$ 78,00 (65%). Sem ela, o custo fica zerado e o lucro parece 100%.",
-  custos: "Exemplo: aluguel de R$ 800,00 e luz de R$ 200,00 por mês. Se você vende 100 bolos, cada um carrega R$ 10,00 desses custos. Sem cadastrar, o lucro de cada venda parece maior do que é.",
+/** (22/10) "Como funciona": janelinha com um exemplo em números, o caminho e as dicas (igual às Pendências da Dora) */
+type Como = { tit: string; linhas: [string, string][]; total: [string, string]; fluxo: string[]; dicas: [Icon, ReactNode][] };
+const COMO: Record<string, Como> = {
+  entrega: {
+    tit: "Exemplo · entrega de 5 km",
+    linhas: [["Gasolina da entrega", "R$ 12,00"], ["Cliente paga de taxa", "R$ 10,00"]],
+    total: ["Sai do seu bolso", "R$ 2,00"],
+    fluxo: ["Você define", "Cardápio", "Cliente paga"],
+    dicas: [
+      [Truck, <><b>Taxa fixa:</b> um valor só pra toda entrega.</>],
+      [MapPin, <><b>Por bairro:</b> um valor pra cada bairro.</>],
+      [Storefront, <>Retirada no local continua <b>sem taxa</b>.</>],
+      [WarningCircle, <>Sem taxa, o cardápio mostra <b>entrega grátis</b> e os R$ 12,00 saem do seu lucro.</>],
+    ],
+  },
+  ficha: {
+    tit: "Exemplo · bolo de R$ 120,00",
+    linhas: [["Ingredientes", "R$ 38,00"], ["Embalagem", "R$ 4,00"], ["Gás e perdas (25%)", "R$ 9,50"]],
+    total: ["Seu lucro", "R$ 68,50 (57%)"],
+    fluxo: ["Ingredientes", "Ficha", "Lucro real"],
+    dicas: [
+      [Basket, <>Cadastre os ingredientes com o <b>preço que você paga</b>.</>],
+      [ListChecks, <>Monte a receita: <b>quanto vai de cada um</b>.</>],
+      [ChartLineUp, <>O app calcula <b>custo, lucro e margem</b> sozinho.</>],
+      [WarningCircle, <>Sem ficha, o custo fica zerado e o lucro parece <b>100%</b>.</>],
+    ],
+  },
+  custos: {
+    tit: "Exemplo · mês com 100 bolos",
+    linhas: [["Aluguel", "R$ 800,00"], ["Luz e gás", "R$ 200,00"]],
+    total: ["Cada bolo carrega", "R$ 10,00"],
+    fluxo: ["Custos", "Por venda", "Preço certo"],
+    dicas: [
+      [Buildings, <><b>Fixos:</b> aluguel, luz e internet, que vêm todo mês.</>],
+      [CreditCard, <><b>Maquininha:</b> a taxa muda no débito e no crédito.</>],
+      [Coins, <>Seu <b>salário</b> também entra como custo.</>],
+      [Check, <>Com eles, a Lucratividade mostra o <b>lucro real</b>.</>],
+    ],
+  },
 };
 /** (16/10) texto de cada novidade aqui: do tamanho de 2 linhas cheias no celular (sem 1 palavra sobrando embaixo) */
 const TEXTO_NOVIDADE: Record<string, string> = {
@@ -61,6 +95,13 @@ export default function PraFazer() {
   const [menu, setMenu] = useState<string | null>(null);
   const [como, setComo] = useState<string | null>(null);
   const raiz = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!como) return;
+    const fora = (e: MouseEvent | TouchEvent) => { const t = e.target as HTMLElement; if (!t?.closest?.(".pf-cf") && !t?.closest?.(".pf-como")) setComo(null); };
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setComo(null); };
+    document.addEventListener("mousedown", fora); document.addEventListener("touchstart", fora); document.addEventListener("keydown", esc);
+    return () => { document.removeEventListener("mousedown", fora); document.removeEventListener("touchstart", fora); document.removeEventListener("keydown", esc); };
+  }, [como]);
   useEffect(() => {
     if (!menu) return;
     const fora = (e: MouseEvent | TouchEvent) => { if (!(e.target as HTMLElement)?.closest?.(".pf-nao-w")) setMenu(null); };
@@ -149,7 +190,21 @@ export default function PraFazer() {
               <b>{x.t}</b>
               {x.alerta && <span className="pf-alerta">{x.alerta}</span>}
               <p>{x.txt || x.s}{x.comoFunciona && <> <button type="button" className="pf-como" aria-expanded={como === x.chave} onClick={() => setComo(c => c === x.chave ? null : x.chave)}>Como funciona <Info size={14} weight="bold" aria-hidden="true" /></button></>}</p>
-              {como === x.chave && x.comoFunciona && <p className="pf-ex">{x.comoFunciona}</p>}
+              {como === x.chave && x.comoFunciona && (
+                <div className="pf-cf" role="dialog" aria-label={`Como funciona: ${x.t}`}>
+                  <div className="pf-cf-ex">
+                    <p className="pf-cf-t">{x.comoFunciona.tit}</p>
+                    {x.comoFunciona.linhas.map(([l, v]) => <div key={l} className="pf-cf-l"><span>{l}</span><span>{v}</span></div>)}
+                    <div className="pf-cf-l pf-cf-tot"><span>{x.comoFunciona.total[0]}</span><span>{x.comoFunciona.total[1]}</span></div>
+                    <div className="pf-cf-fluxo">
+                      {x.comoFunciona.fluxo.map((f, i) => <span key={f} className="pf-cf-pass">{i > 0 && <ArrowRight size={12} weight="bold" aria-hidden="true" />}<em className={i === 1 ? "on" : ""}>{f}</em></span>)}
+                    </div>
+                  </div>
+                  <ul className="pf-cf-dicas">
+                    {x.comoFunciona.dicas.map(([Ic, t], i) => <li key={i}><Ic size={16} aria-hidden="true" /><span>{t}</span></li>)}
+                  </ul>
+                </div>
+              )}
               <div className="pf-bts">
                 {x.revisar ? (
                   <button type="button" className="pf-nao" onClick={() => navigate(x.link, { state: x.revisar })}>Revisar</button>
@@ -198,7 +253,21 @@ const CSS = `
   .pf-it--atencao .pf-alerta { color: #B45309; }
   .pf-tx > p { margin: 2px 0 0; font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
   .pf-como { display: inline-flex; align-items: center; gap: 3px; margin: 0; padding: 0; border: 0; background: none; font: inherit; font-weight: 600; color: var(--ui-texto); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
-  .pf-tx > p.pf-ex { margin-top: 8px; padding: 10px 12px; border-radius: 10px; background: #F7F5F6; color: var(--ui-texto-2); }
+  /* "Como funciona": janelinha por cima, com o exemplo em cima (fundo cinza) e as dicas embaixo, igual à Dora */
+  .pf-tx { position: relative; }
+  .pf-cf { position: absolute; left: -48px; right: 0; top: auto; z-index: 25; margin-top: 8px; overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: 14px; box-shadow: 0 16px 40px rgba(20, 10, 7, .18); }
+  .pf-cf-ex { padding: 14px 16px 12px; background: #F7F6F6; border-bottom: 1px solid var(--ui-linha); }
+  .pf-cf-t { margin: 0 0 8px; font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ui-texto-3); }
+  .pf-cf-l { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; font-size: 13.5px; color: var(--ui-texto-2); white-space: nowrap; }
+  .pf-cf-tot { margin-top: 6px; padding-top: 8px; border-top: 1px solid #E8E4E6; font-weight: 700; color: var(--ui-texto); }
+  .pf-cf-fluxo { display: flex; align-items: center; flex-wrap: nowrap; gap: 3px; margin-top: 10px; }
+  .pf-cf-pass { display: inline-flex; align-items: center; gap: 3px; color: var(--ui-texto-3); }
+  .pf-cf-pass em { padding: 3px 6px; border: 1px solid var(--ui-borda); border-radius: 6px; background: var(--ui-branco); font-style: normal; font-size: 11.5px; color: var(--ui-texto-2); white-space: nowrap; }
+  .pf-cf-pass em.on { background: #ECE9EA; border-color: #E0DBDD; color: var(--ui-texto); font-weight: 600; }
+  .pf-cf-dicas { margin: 0; padding: 10px 16px 14px; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .pf-cf-dicas li { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.45; color: var(--ui-texto-2); }
+  .pf-cf-dicas svg { flex: none; margin-top: 2px; color: var(--ui-texto-3); }
+  .pf-cf-dicas b { font-weight: 600; color: var(--ui-texto); }
   .pf-bts { position: relative; display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 10px; }
   .pf-nao-w { position: static; }
   .pf-nao { display: inline-flex; align-items: center; gap: 4px; min-height: 40px; margin: 0; padding: 0 10px; border: 0; border-radius: 10px; background: none; font-family: inherit; font-size: 13.5px; font-weight: 500; color: var(--ui-texto-2); cursor: pointer; }
