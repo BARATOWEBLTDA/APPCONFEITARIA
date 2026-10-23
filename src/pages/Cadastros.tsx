@@ -49,11 +49,12 @@ export default function Cadastros() {
   }, [profile]);
 
   const comFicha = n && n.produtos >= 0 ? n.produtos - n.semFicha : -1;
-  const linha = (Ic: any, titulo: string, sub: ReactNode, ir: () => void, qtd?: number, tom = "") => (
+  // (22/10) no computador o número vem com o nome ("7 produtos"): a página vira uma grade de cartões
+  const linha = (Ic: any, titulo: string, sub: ReactNode, ir: () => void, qtd?: number, tom = "", un?: [string, string]) => (
     <button type="button" className="cad-it" onClick={ir}>
       <span className="cad-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span>
       <span className="cad-tx"><b>{titulo}</b><small className={tom}>{sub}</small></span>
-      {qtd != null && qtd >= 0 && <span className="cad-n">{qtd}</span>}
+      {qtd != null && qtd >= 0 && <span className="cad-n">{qtd}{un && <small className="cad-un">{qtd === 1 ? un[0] : un[1]}</small>}</span>}
       <CaretRight size={16} weight="bold" className="cad-seta" aria-hidden="true" />
     </button>
   );
@@ -72,21 +73,21 @@ export default function Cadastros() {
 
         <p className="cad-t">O que você vende</p>
         <div className="cad-c">
-          {linha(Cake, "Produtos", n && n.semFicha > 0 ? `${n.semFicha} sem ficha técnica` : "Cadastre e gerencie seus produtos", () => navigate("/produtos"), n?.produtos, n && n.semFicha > 0 ? "lar" : "")}
-          {linha(SquaresFour, "Categorias", "Organize seus produtos", () => navigate("/categorias"), n?.categorias)}
-          {linha(Stack, "Complementos", "Sabores, recheios e adicionais", () => navigate("/complementos"), n?.complementos)}
+          {linha(Cake, "Produtos", n && n.semFicha > 0 ? `${n.semFicha} sem ficha técnica` : "Cadastre e gerencie seus produtos", () => navigate("/produtos"), n?.produtos, n && n.semFicha > 0 ? "lar" : "", ["produto", "produtos"])}
+          {linha(SquaresFour, "Categorias", "Organize seus produtos", () => navigate("/categorias"), n?.categorias, "", ["categoria", "categorias"])}
+          {linha(Stack, "Complementos", "Sabores, recheios e adicionais", () => navigate("/complementos"), n?.complementos, "", ["complemento", "complementos"])}
           {linha(ShoppingBag, "Cardápio digital", loja.txt, () => navigate("/cardapio"), undefined, loja.tom)}
         </div>
 
         <p className="cad-t">Do que é feito</p>
         <div className="cad-c">
-          {linha(Basket, "Ingredientes", "O que você compra", () => navigate("/insumos"), n?.ingredientes)}
-          {linha(ClipboardText, "Ficha técnica", "Custo e lucro de cada produto", () => navigate("/ficha-tecnica"), comFicha)}
+          {linha(Basket, "Ingredientes", "O que você compra", () => navigate("/insumos"), n?.ingredientes, "", ["ingrediente", "ingredientes"])}
+          {linha(ClipboardText, "Ficha técnica", "Custo e lucro de cada produto", () => navigate("/ficha-tecnica"), comFicha, "", ["com ficha", "com ficha"])}
         </div>
 
         <p className="cad-t">Quem compra e como paga</p>
         <div className="cad-c">
-          {linha(Users, "Clientes", "Quem já comprou com você", () => navigate("/clientes"), n?.clientes)}
+          {linha(Users, "Clientes", "Quem já comprou com você", () => navigate("/clientes"), n?.clientes, "", ["cliente", "clientes"])}
           {linha(Storefront, "Dados da loja", "Entrega, pagamento e Pix", () => navigate("/cardapio-config"))}
           {linha(ChatCircleText, "Mensagens do WhatsApp", "Textos prontos pro cliente", () => navigate("/configuracoes/mensagens", { state: { de: "/cadastros" } }))}
         </div>

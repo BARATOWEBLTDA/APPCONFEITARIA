@@ -139,3 +139,17 @@
 .dl-folha .ep { padding: 0; max-width: none; }
 .ui-gaveta:has(.dl-folha) { width: 100vw; border-radius: 0; }
 .dl-li-ok { flex: none; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #DDF3E4; color: #157A3C; }
+
+/* (22/10) computador: a lista das 7 partes à esquerda e a parte escolhida à direita (salva sozinha) */
+.dl-pc { display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr); align-items: start; gap: 24px; max-width: 1140px; margin: 0; padding: 24px 0 64px; font-family: var(--font-base); }
+.dl-lista.dl-lista--pc { position: sticky; top: 84px; max-width: none; margin: 0; padding: 0; }
+.dl-lista--pc .dl-li { position: relative; }
+@media (hover: hover) { .dl-lista--pc .dl-li:hover { background: #FBF8F9; } }
+.dl-lista--pc .dl-li.on { background: var(--ui-rosa-claro); }
+.dl-lista--pc .dl-li.on::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 0 3px 3px 0; background: var(--ui-rosa); }
+.dl-painel { min-width: 0; padding: 20px 24px 24px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
+.dl-painel-cab { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--ui-linha); }
+.dl-painel-cab h2 { margin: 0; font-family: var(--font-base); font-size: 17px; font-weight: 700; color: var(--ui-texto); }
+.dl-painel-st { display: inline-flex; align-items: center; gap: 5px; flex: none; font-size: 13px; font-weight: 500; color: var(--ui-verde); white-space: nowrap; }
+.dl-painel-st.falta { color: #9A4A06; white-space: normal; text-align: right; }
+.dl-painel .dl-folha .dl-card, .dl-painel .dl-folha .chk-card { padding: 0 !important; border: 0 !important; border-radius: 0 !important; background: none !important; box-shadow: none !important; }

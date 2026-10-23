@@ -12,6 +12,7 @@ import MaisDrawer from "@/components/MaisDrawer";
 import PerguntaSons from "@/components/PerguntaSons";
 import { useState, useEffect, type ReactNode } from "react";
 import "@/styles/mobileClaro.css";
+import "@/styles/desktopPadrao.css";
 import { ClipboardText, ChartBar, Stack, Palette, Truck, Storefront, ArrowSquareOut, ArrowsDownUp, CalendarCheck, Tag, ChartLineUp, Megaphone, HandCoins, CaretDoubleLeft, CaretDoubleRight,
   House, CalendarDots, ShoppingBag, Users, BookOpen,
   Package, CurrencyDollar, Gear, CaretDown, Cake,
@@ -184,7 +185,7 @@ export default function Layout() {
   }, [location.pathname]);
 
   return (
-    <div className={`layout-root${recolhido ? " menu-recolhido" : ""}`}>
+    <div className={`layout-root${recolhido ? " menu-recolhido" : ""}`} data-rota={location.pathname}>
       {/* (13/10) as telas do Cardápio digital agora têm abas na faixa rosa (AppPageHeader), não um 2º menu lateral */}
       {/* ── Sidebar Desktop ── */}
       <aside className="sidebar">
@@ -236,15 +237,17 @@ export default function Layout() {
             <SubitemMenu to="/configuracoes" end icone={Gear}>Configurações</SubitemMenu>
             <SubitemMenu to={isPro ? "/minha-assinatura" : "/assinar"} icone={Crown} tambem={["/assinar", "/minha-assinatura"]}>Minha assinatura</SubitemMenu>
           </GrupoMenu>
-          {/* (19/10) Notificações (já está em Configurações) e Conquistas (escondida nas Configurações) saíram do menu.
-              "Loja em montagem" (abrir e pausar os pedidos) por último, dentro do menu: rola junto e não come o espaço dos grupos */}
-          {!recolhido && <div className="sb-pausar"><PausarPedidos escuro /></div>}
+          {/* (19/10) Notificações (já está em Configurações) e Conquistas (escondida nas Configurações) saíram do menu. */}
         </nav>
+        {/* (22/10) o cartão da loja fica fixo embaixo, fora do menu que rola: no notebook (1366 × 768) ele ficava cortado */}
         <div className="sb-pe">
-          {!recolhido && <span className="sb-versao">v{VERSAO_APP}</span>}
-          <button type="button" className="sb-recolher" onClick={alternarRecolhido} aria-label={recolhido ? "Abrir o menu" : "Recolher o menu"} title={recolhido ? "Abrir o menu" : "Recolher o menu"}>
-            {recolhido ? <CaretDoubleRight size={16} weight="bold" /> : <CaretDoubleLeft size={16} weight="bold" />}
-          </button>
+          {!recolhido && <div className="sb-pausar"><PausarPedidos escuro /></div>}
+          <div className="sb-pe-l">
+            {!recolhido && <span className="sb-versao">v{VERSAO_APP}</span>}
+            <button type="button" className="sb-recolher" onClick={alternarRecolhido} aria-label={recolhido ? "Abrir o menu" : "Recolher o menu"} title={recolhido ? "Abrir o menu" : "Recolher o menu"}>
+              {recolhido ? <CaretDoubleRight size={16} weight="bold" /> : <CaretDoubleLeft size={16} weight="bold" />}
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -525,7 +528,8 @@ export default function Layout() {
         .sb-plano--seja { background: var(--ui-branco); color: var(--primary); cursor: pointer; } .sb-plano--seja:hover { transform: translateY(-1px); }
         .sb-plano--skel { width: 56px; height: 17px; background: rgba(255,255,255,0.12); }
         .sb-linha2 { display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; }
-        .sb-pausar { margin: 12px 0 28px; flex-shrink: 0; } /* o 28px é o espaço da sombra do fim do menu, que não pode apagar o cartão */
+        .sb-pausar { flex-shrink: 0; }
+        .sb-pausar .lj-pausa.escuro { margin-top: 0; }
         /* (19/10) a linha embaixo do logo fecha na mesma altura da faixa de cima (60px) */
         .sidebar:not(.x) .sb-topo { box-sizing: border-box; height: 60px; min-height: 60px; margin: -1rem -1rem 8px; padding: 0 1rem 0 calc(1rem + 4px); }
         @media (max-height: 820px) { .sidebar:not(.x) .sb-topo { margin-top: -0.5rem; } }
@@ -537,7 +541,8 @@ export default function Layout() {
         .nav-grupo .nav-group-body { margin-left: 12px; padding-left: 8px; }
         .nav-grupo .nav-group-body .nav-subitem { min-height: 36px; padding: 0 8px; gap: 7px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .nav-sec { margin: 8px 0 2px 10px; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
-        .sb-pe { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+        .sb-pe { flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; margin-top: 6px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); }
+        .sb-pe-l { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
         .sb-versao { padding-left: 6px; font-size: 11.5px; color: rgba(255,255,255,0.45); }
         .sb-recolher { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 0; border-radius: 8px; background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); cursor: pointer; }
         .sb-recolher:hover { background: rgba(255,255,255,0.12); color: var(--ui-branco); }
@@ -546,7 +551,7 @@ export default function Layout() {
         .menu-recolhido .sb-topo { flex-direction: column; gap: 10px; }
         .menu-recolhido .sb-quem, .menu-recolhido .nav-rotulo, .menu-recolhido .nav-seta { display: none; }
         .menu-recolhido .nav-item { justify-content: center; padding: 0; }
-        .menu-recolhido .sb-pe { justify-content: center; }
+        .menu-recolhido .sb-pe-l { justify-content: center; }
         .menu-recolhido .sidebar-nav { margin-right: 0; padding-right: 0; }
         .nav-group-body--fin .nav-subitem { min-height: 34px; font-size: 13px; }
         .nav-group-body { display: flex; flex-direction: column; gap: 2px; margin: 2px 0 6px 21px; padding-left: 9px; border-left: 1px solid rgba(255,255,255,0.14); }

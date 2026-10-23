@@ -151,6 +151,23 @@ export default function FinanceiroAReceber() {
                   </div>
                 ))}
               </div>
+              {/* (22/10) computador: tabela (como em Pedidos), cabe tudo numa tela. O celular continua com os cartões */}
+              <div className="far-tab" role="table" aria-label={titulo}>
+                <div className="far-tr far-th" role="row"><span role="columnheader">Pedido</span><span role="columnheader">Entrega</span><span role="columnheader">Total</span><span role="columnheader">Pago</span><span role="columnheader">Falta</span><span role="columnheader" aria-label="Ações" /></div>
+                {lista.map(it => (
+                  <div key={it.id} className="far-tr" role="row">
+                    <span role="cell" className="far-td-p"><b>{it.cliente_nome || "Cliente"}</b>{it.numero ? <em>#{it.numero}</em> : null}<span className={`far-tg ${it.dias !== null && it.dias < 0 ? "far-tg--atr" : ""}`}>{quando(it.dias)}</span></span>
+                    <span role="cell">{it.data_entrega ? (d => d.charAt(0).toUpperCase() + d.slice(1))(dataCurta(it.data_entrega)) : "Sem data"}</span>
+                    <span role="cell">{brl(it.total)}</span>
+                    <span role="cell" className="far-td-pg">{brl(it.recebido)}<i className="far-bar" aria-hidden="true"><i style={{ width: `${Math.min(100, (it.recebido / (it.total || 1)) * 100)}%` }} /></i></span>
+                    <span role="cell" className="far-td-f">{brl(it.falta)}</span>
+                    <span role="cell" className="far-bts">
+                      <button type="button" className="far-ver" onClick={() => navigate(`/pedidos/${it.id}/editar`)} aria-label={`Abrir o pedido${it.numero ? ` #${it.numero}` : ""}`}><span>Abrir</span></button>
+                      <button type="button" className="far-rec" onClick={() => setReceber(it)}>Receber</button>
+                    </span>
+                  </div>
+                ))}
+              </div>
             </section>
           ))}
       </div>
@@ -239,6 +256,22 @@ const CSS = `
   .far-gt { margin: 0 0 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-3); }
   .far-gt span { color: var(--ui-texto-2); }
   .far-lista { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .far-tab { display: none; }
+  @media (min-width: 901px) {
+    .far-grupo .far-lista { display: none; }
+    .far-tab { display: block; overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: 16px; box-shadow: var(--ui-sombra-cartao); }
+    .far-tr { display: grid; grid-template-columns: minmax(0, 2.3fr) minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr) 168px; align-items: center; gap: 12px; min-height: 56px; padding: 0 16px; font-size: 13.5px; color: var(--ui-texto); }
+    .far-tr + .far-tr { border-top: 1px solid var(--ui-linha); }
+    .far-th { min-height: 38px; background: #FAFAFA; font-size: 12px; font-weight: 500; color: var(--ui-texto-2); }
+    .far-td-p { display: flex; align-items: center; gap: 6px; min-width: 0; white-space: nowrap; }
+    .far-td-p b { overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+    .far-td-p em { flex: none; font-style: normal; font-size: 12.5px; color: var(--ui-texto-2); }
+    .far-td-p .far-tg { flex: none; margin-left: 4px; }
+    .far-td-pg { display: flex; flex-direction: column; gap: 4px; }
+    .far-td-pg .far-bar { display: block; width: 90px; margin: 0; }
+    .far-td-f { font-weight: 700; color: var(--ui-laranja); white-space: nowrap; }
+    .far-tr .far-bts { justify-content: flex-end; }
+  }
   @media (min-width: 900px) { .far-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .far-it { min-width: 0; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px; padding: 14px; }
   .far-it-h { display: flex; justify-content: space-between; align-items: center; gap: 8px; }

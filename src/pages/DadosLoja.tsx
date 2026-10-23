@@ -153,11 +153,13 @@ export default function DadosLoja() {
       { nome: "Horário", ok: !!temHorario, alvo: "dl-horario" },
     ];
   }, [nome, telefone, descricao, end, horario]);
-  const feitos = itens.filter((i) => i.ok).length;
-  // 09/10: se já abriu tudo preenchido, o resumo não aparece (só aparece pra quem ainda tem o que preencher)
-  const [resumoVisivel, setResumoVisivel] = useState<boolean | null>(null);
-  useEffect(() => { if (!loading && resumoVisivel === null) setResumoVisivel(feitos < itens.length); }, [loading, feitos, itens.length, resumoVisivel]);
-  const faltando = itens.filter((i) => !i.ok).map((i) => i.nome);
+  // (22/10) celular: lista de 7 partes, cada uma numa gaveta. Computador: a mesma lista à esquerda e a parte escolhida à direita
+  const [cel, setCel] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 900px)");
+    const f = () => setCel(mq.matches);
+    mq.addEventListener("change", f); return () => mq.removeEventListener("change", f);
+  }, []);
 
   // (17/10) Card já preenchido aparece resumido, com "Editar"; vazio (ou faltando algo) já abre o formulário
   type Bloco = "loja" | "redes" | "endereco" | "horario";
@@ -169,7 +171,8 @@ export default function DadosLoja() {
     if (!loading && !erroCarga && aberto === null) setAberto({ loja: !okDe("loja"), redes: !okDe("redes"), endereco: !okDe("endereco"), horario: !okDe("horario") });
   }, [loading, erroCarga, aberto]); // eslint-disable-line react-hooks/exhaustive-deps
   const abrir = (b: Bloco) => setAberto((a) => ({ ...(a || { loja: true, redes: true, endereco: true, horario: true }), [b]: true }));
-  const estaAberto = (b: Bloco) => aberto?.[b] !== false;
+  // no computador a parte escolhida já abre editando (o resumo fica na lista da esquerda)
+  const estaAberto = (b: Bloco) => !cel || aberto?.[b] !== false;
 
   // (16/10) WhatsApp já preenchido vira um cartão verde em destaque (com Editar); vazio, já abre o campo
   const [zapAberto, setZapAberto] = useState<boolean | null>(null);
@@ -263,16 +266,21 @@ export default function DadosLoja() {
     return null;
   };
 
-  const salvar = async () => {
+  // (22/10) silencioso = salvar sozinho do computador: não mostra aviso a cada pausa; o que falta aparece no topo da parte
+  const [faltaPc, setFaltaPc] = useState("");
+  const salvar = async (opc?: { silencioso?: boolean }) => {
     if (!userId) return false;
+    const quieto = !!opc?.silencioso;
+    const barrar = (txt: string, alvo: string) => { if (quieto) setFaltaPc(txt); else { mostrarAviso(txt, "err"); irPara(alvo); } return false; };
     // (11/10) loja sem nome não salva
-    if (!nome.trim()) { mostrarAviso("Escreva o nome da loja.", "err"); irPara("dl-nome"); return false; }
+    if (!nome.trim()) return barrar("Escreva o nome da loja.", "dl-nome");
     const horarioRuim = problemaNoHorario();
-    if (horarioRuim) { mostrarAviso(horarioRuim, "err"); irPara("dl-horario"); return false; }
+    if (horarioRuim) return barrar(horarioRuim, "dl-horario");
     const insta = instaOn ? limparInstagram(instagram) : "", face = faceOn ? limparFacebook(facebook) : "";
     try { localStorage.setItem(`doonly:redes:${userId}`, JSON.stringify({ instagram: instagram.trim(), facebook: facebook.trim() })); } catch { /* sem armazenamento */ }
-    if (instaOn && instagram.trim() && !insta) { mostrarAviso("Confira o Instagram: escreva só o @ da loja, como @doceformiga.", "err"); irPara("dl-redes"); return false; }
-    if (faceOn && facebook.trim() && !face) { mostrarAviso("Confira o Facebook: cole o link da página, como facebook.com/doceformiga.", "err"); irPara("dl-redes"); return false; }
+    if (instaOn && instagram.trim() && !insta) return barrar("Confira o Instagram: escreva só o @ da loja, como @doceformiga.", "dl-redes");
+    if (faceOn && facebook.trim() && !face) return barrar("Confira o Facebook: cole o link da página, como facebook.com/doceformiga.", "dl-redes");
+    setFaltaPc("");
     setSalvando(true);
     const endereco = JSON.stringify(end);
     const { error } = await supabase.from("profiles").update({
@@ -297,6 +305,7 @@ export default function DadosLoja() {
     if (error) { mostrarAviso("Não foi possível salvar. Tente de novo.", "err"); return false; }
     else if (erroRedes) { mostrarAviso("Salvou, menos as redes sociais. Tente de novo.", "err"); return false; }
     else {
+      if (quieto) return true;
       mostrarAviso("Alterações salvas");
       // (17/10) o que ficou completo volta a aparecer resumido
       setAberto({ loja: !okDe("loja"), redes: !okDe("redes"), endereco: !okDe("endereco"), horario: !okDe("horario") });
@@ -312,12 +321,6 @@ export default function DadosLoja() {
     return () => window.clearTimeout(t);
   }, [end.rua, end.numero, end.cidade, end.estado]);
   // ── (22/10) celular: a tela vira uma lista de 7 partes; cada uma abre numa gaveta e salva sozinha ao fechar ──
-  const [cel, setCel] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches);
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 900px)");
-    const f = () => setCel(mq.matches);
-    mq.addEventListener("change", f); return () => mq.removeEventListener("change", f);
-  }, []);
   type Parte = "loja" | "redes" | "endereco" | "horario" | "pag" | "pix" | "ent";
   const [parte, setParte] = useState<Parte | null>(null);
   const [fechando, setFechando] = useState(false);
@@ -342,7 +345,7 @@ export default function DadosLoja() {
   // resumo de Pagamento, Pix e Entrega (lido do perfil e atualizado ao vivo pela gaveta)
   const [ep, setEp] = useState<EstadoEntregaPagamento | null>(null);
   useEffect(() => {
-    if (!userId || !cel) return;
+    if (!userId) return;
     supabase.from("profiles").select("formas_pagamento, formas_entrega, valor_entrega_propria, entrega_por_bairro, pix_online, pix_chave, pix_modo, pix_sinal_pct").eq("id", userId).maybeSingle().then(({ data }) => {
       if (!data) return;
       const d: any = data;
@@ -350,9 +353,19 @@ export default function DadosLoja() {
         porBairro: Array.isArray(d.entrega_por_bairro) ? d.entrega_por_bairro.length : 0, pixOnline: !!d.pix_online, pixPronto: !!d.pix_chave,
         pixTipo: "", pixModo: d.pix_modo || "escolha", pixPct: String(d.pix_sinal_pct || 50) });
     });
-  }, [userId, cel]);
+  }, [userId]);
   // veio do "Definir taxa de entrega" (ou do antigo Entrega e pagamento): abre direto a Entrega
-  useEffect(() => { if (cel && !loading && irEntrega) setParte("ent"); }, [cel, loading]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (!loading && irEntrega) setParte("ent"); }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
+  // (22/10) computador: salva sozinho quando ela para de digitar (sem botão Salvar)
+  const salvoPc = useRef("");
+  const fotoAgora = fotoDados();
+  useEffect(() => {
+    if (cel || loading || erroCarga) return;
+    if (!salvoPc.current) { salvoPc.current = fotoAgora; return; }
+    if (fotoAgora === salvoPc.current) return;
+    const t = window.setTimeout(async () => { if (await salvar({ silencioso: true })) salvoPc.current = fotoAgora; }, 900);
+    return () => window.clearTimeout(t);
+  }, [cel, loading, erroCarga, fotoAgora]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const cidadeUf = [end.cidade.trim(), end.estado.trim()].filter(Boolean).join(", ");
   const seloMapa = !busca ? "Digite o CEP pra achar sua loja" : mostrarLocal === "nada" ? "Endereço escondido no cardápio" : [mostrarLocal === "completo" ? end.bairro.trim() : "", cidadeUf].filter(Boolean).join(" · ");
@@ -400,7 +413,6 @@ export default function DadosLoja() {
     );
   }
 
-  const tudo = feitos === itens.length;
   const statusCep = buscandoCep ? <span className="dl-cep">Buscando…</span> : cepOk ? <span className="dl-cep ok"><Check size={16} weight="bold" />Encontrado</span> : null;
 
   // (22/10) as 4 partes viram constantes: no computador ficam na página; no celular cada uma abre numa gaveta
@@ -523,25 +535,25 @@ export default function DadosLoja() {
         </section>
   );
 
+  const NOME_PAG: Record<string, string> = { pix: "Pix", dinheiro: "dinheiro", credito: "crédito", debito: "débito" };
+  const listaBR = (xs: string[]) => xs.length <= 1 ? xs.join("") : xs.slice(0, -1).join(", ") + " e " + xs[xs.length - 1];
+  const pagTxt = ep ? listaBR((ep.formasPagamento || []).map(k => NOME_PAG[k] || k)) : "";
+  const temPix = !!ep?.formasPagamento?.includes("pix");
+  const temEntregaPropria = !!ep?.formasEntrega?.includes("entrega_propria");
+  const faltaTaxa = temEntregaPropria && (ep?.taxa || 0) <= 0 && !(ep?.porBairro);
+  const redesTxt = [instaOn && instagram.trim() ? "Instagram" : "", faceOn && facebook.trim() ? "Facebook" : ""].filter(Boolean);
+  type Linha = { k: Parte; Ic: typeof Storefront; t: string; sub: string; st: "ok" | "falta" | "op" };
+  const linhas: Linha[] = [
+    { k: "loja", Ic: Storefront, t: "Sua loja", sub: okDe("loja") ? [nome.trim(), telefone].filter(Boolean).join(" · ") : `Falta ${listaBR(itens.slice(0, 3).filter(i => !i.ok).map(i => i.nome.toLowerCase()))}`, st: okDe("loja") ? "ok" : "falta" },
+    { k: "redes", Ic: ShareNetwork, t: "Redes sociais", sub: redesTxt.length ? `${listaBR(redesTxt)} no cardápio` : "Nenhuma aparece no cardápio", st: redesTxt.length ? "ok" : "op" },
+    { k: "endereco", Ic: MapPin, t: "Endereço", sub: itens[3].ok ? [[end.rua.trim(), end.numero.trim()].filter(Boolean).join(", "), end.bairro.trim()].filter(Boolean).join(" · ") || cidadeUf : "Falta o endereço da loja", st: itens[3].ok ? "ok" : "falta" },
+    { k: "horario", Ic: Clock, t: "Horário", sub: itens[4].ok ? resumoHorario().join(" · ") : "Falta o horário de funcionamento", st: itens[4].ok ? "ok" : "falta" },
+    { k: "pag", Ic: Wallet, t: "Pagamento", sub: !ep ? "…" : pagTxt ? pagTxt.charAt(0).toUpperCase() + pagTxt.slice(1) : "Falta escolher como o cliente paga", st: !ep || pagTxt ? "ok" : "falta" },
+    ...(temPix ? [{ k: "pix" as Parte, Ic: QrCode, t: "Pix pelo cardápio", sub: ep!.pixOnline ? (ep!.pixModo === "total" ? "Ligado · cliente paga o total" : ep!.pixModo === "sinal" ? `Ligado · sinal de ${ep!.pixPct}%` : `Ligado · sinal de ${ep!.pixPct}% ou o total`) : "Desligado · paga pelo WhatsApp", st: (ep!.pixOnline ? "ok" : "op") as Linha["st"] }] : []),
+    { k: "ent", Ic: Truck, t: "Entrega", sub: !ep ? "…" : !(ep.formasEntrega || []).length ? "Falta escolher como o cliente recebe" : faltaTaxa ? "Falta definir a taxa de entrega" : [ep.formasEntrega.includes("retirada") ? "Retirada" : "", temEntregaPropria ? (ep.porBairro ? "entrega por bairro" : `entrega R$ ${ep.taxa.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`) : ""].filter(Boolean).join(" e ") || "Configurada", st: !ep ? "ok" : !(ep.formasEntrega || []).length || faltaTaxa ? "falta" : "ok" },
+  ];
+  const TITULO: Record<Parte, string> = { loja: "Sua loja", redes: "Redes sociais", endereco: "Endereço", horario: "Horário", pag: "Pagamento", pix: "Pix pelo cardápio", ent: "Entrega" };
   if (cel) {
-    const NOME_PAG: Record<string, string> = { pix: "Pix", dinheiro: "dinheiro", credito: "crédito", debito: "débito" };
-    const listaBR = (xs: string[]) => xs.length <= 1 ? xs.join("") : xs.slice(0, -1).join(", ") + " e " + xs[xs.length - 1];
-    const pagTxt = ep ? listaBR((ep.formasPagamento || []).map(k => NOME_PAG[k] || k)) : "";
-    const temPix = !!ep?.formasPagamento?.includes("pix");
-    const temEntregaPropria = !!ep?.formasEntrega?.includes("entrega_propria");
-    const faltaTaxa = temEntregaPropria && (ep?.taxa || 0) <= 0 && !(ep?.porBairro);
-    const redesTxt = [instaOn && instagram.trim() ? "Instagram" : "", faceOn && facebook.trim() ? "Facebook" : ""].filter(Boolean);
-    type Linha = { k: Parte; Ic: typeof Storefront; t: string; sub: string; st: "ok" | "falta" | "op" };
-    const linhas: Linha[] = [
-      { k: "loja", Ic: Storefront, t: "Sua loja", sub: okDe("loja") ? [nome.trim(), telefone].filter(Boolean).join(" · ") : `Falta ${listaBR(itens.slice(0, 3).filter(i => !i.ok).map(i => i.nome.toLowerCase()))}`, st: okDe("loja") ? "ok" : "falta" },
-      { k: "redes", Ic: ShareNetwork, t: "Redes sociais", sub: redesTxt.length ? `${listaBR(redesTxt)} no cardápio` : "Nenhuma aparece no cardápio", st: redesTxt.length ? "ok" : "op" },
-      { k: "endereco", Ic: MapPin, t: "Endereço", sub: itens[3].ok ? [[end.rua.trim(), end.numero.trim()].filter(Boolean).join(", "), end.bairro.trim()].filter(Boolean).join(" · ") || cidadeUf : "Falta o endereço da loja", st: itens[3].ok ? "ok" : "falta" },
-      { k: "horario", Ic: Clock, t: "Horário", sub: itens[4].ok ? resumoHorario().join(" · ") : "Falta o horário de funcionamento", st: itens[4].ok ? "ok" : "falta" },
-      { k: "pag", Ic: Wallet, t: "Pagamento", sub: !ep ? "…" : pagTxt ? pagTxt.charAt(0).toUpperCase() + pagTxt.slice(1) : "Falta escolher como o cliente paga", st: !ep || pagTxt ? "ok" : "falta" },
-      ...(temPix ? [{ k: "pix" as Parte, Ic: QrCode, t: "Pix pelo cardápio", sub: ep!.pixOnline ? (ep!.pixModo === "total" ? "Ligado · cliente paga o total" : ep!.pixModo === "sinal" ? `Ligado · sinal de ${ep!.pixPct}%` : `Ligado · sinal de ${ep!.pixPct}% ou o total`) : "Desligado · paga pelo WhatsApp", st: (ep!.pixOnline ? "ok" : "op") as Linha["st"] }] : []),
-      { k: "ent", Ic: Truck, t: "Entrega", sub: !ep ? "…" : !(ep.formasEntrega || []).length ? "Falta escolher como o cliente recebe" : faltaTaxa ? "Falta definir a taxa de entrega" : [ep.formasEntrega.includes("retirada") ? "Retirada" : "", temEntregaPropria ? (ep.porBairro ? "entrega por bairro" : `entrega R$ ${ep.taxa.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`) : ""].filter(Boolean).join(" e ") || "Configurada", st: !ep ? "ok" : !(ep.formasEntrega || []).length || faltaTaxa ? "falta" : "ok" },
-    ];
-    const TITULO: Record<Parte, string> = { loja: "Sua loja", redes: "Redes sociais", endereco: "Endereço", horario: "Horário", pag: "Pagamento", pix: "Pix pelo cardápio", ent: "Entrega" };
     return (
       <>
         <AppPageHeader title="Dados da loja" subtitle="Loja, entrega e pagamento" onBack={() => navigate(voltarPara)} />
@@ -572,50 +584,42 @@ export default function DadosLoja() {
     );
   }
 
+  // (22/10) computador: a lista das 7 partes à esquerda e a parte escolhida à direita, salvando sozinha
+  const parteVista: Parte = parte ?? (linhas.find(l => l.st === "falta")?.k || "loja");
+  const sujo = !!salvoPc.current && fotoAgora !== salvoPc.current;
+  const ehDaPagina = parteVista === "loja" || parteVista === "redes" || parteVista === "endereco" || parteVista === "horario";
   return (
     <>
       <AppPageHeader title="Dados da loja" subtitle="Loja, entrega e pagamento" onBack={() => navigate(voltarPara)} />
-
-      <div className="dl-root">
-        {/* Resumo */}
-        {resumoVisivel !== false && <section className="dl-card dl-st">
-          <div className="dl-st-row">
-            <b>{tudo ? "Tudo preenchido" : `${feitos} de ${itens.length} preenchidos`}</b>
-            {faltando.length > 0 && (
-              <span>Falta{faltando.length > 1 ? "m" : ""} {faltando.length > 1 ? faltando.slice(0, -1).join(", ") + " e " + faltando[faltando.length - 1] : faltando[0]}</span>
-            )}
-          </div>
-          <div className="dl-bar" aria-hidden="true"><i className={tudo ? "ok" : ""} style={{ width: `${Math.round((feitos / itens.length) * 100)}%` }} /></div>
-          <div className="dl-chips">
-            {itens.map((i) => (
-              <button key={i.nome} type="button" className={`dl-chip${i.ok ? " ok" : ""}`} onClick={() => irPara(i.alvo)}>
-                {i.ok && <Check size={14} weight="bold" aria-hidden="true" />}{i.nome}
+      <div className="dl-pc">
+        <div className="dl-lista dl-lista--pc">
+          <div className="dl-lista-c">
+            {linhas.map(l => (
+              <button key={l.k} type="button" className={`dl-li${l.k === parteVista ? " on" : ""}`} aria-current={l.k === parteVista ? "true" : undefined} onClick={() => { abrirParte(l.k); }}>
+                <span className="dl-li-ic" aria-hidden="true"><l.Ic size={20} weight="bold" /></span>
+                <span className="dl-li-tx"><b>{l.t}</b><small className={l.st === "falta" ? "falta" : ""}>{l.sub}</small></span>
+                {l.st === "ok" ? <span className="dl-li-ok" aria-label="Pronto"><Check size={13} weight="bold" /></span> : <em className={`dl-li-st ${l.st}`}>{l.st === "falta" ? "Falta" : "Opcional"}</em>}
+                <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
               </button>
             ))}
           </div>
-        </section>}
-
-        {/* Sua loja */}
-        {secLoja}
-
-        {/* (4.25) Redes sociais: aparecem em "Sobre a loja" no cardápio */}
-        {secRedes}
-
-        {/* Endereço */}
-        {secEndereco}
-
-        {/* Horário */}
-        {secHorario}
+          <p className="dl-lista-salva"><Check size={16} weight="bold" aria-hidden="true" />Tudo salva sozinho.</p>
+        </div>
+        <section className="dl-painel" aria-label={TITULO[parteVista]}>
+          <div className="dl-painel-cab">
+            <h2>{TITULO[parteVista]}</h2>
+            {ehDaPagina && (faltaPc ? <span className="dl-painel-st falta">{faltaPc}</span>
+              : <span className="dl-painel-st">{sujo || salvando ? "Salvando…" : <><Check size={14} weight="bold" aria-hidden="true" />Tudo salvo</>}</span>)}
+          </div>
+          <div className="dl-folha">
+            {parteVista === "loja" && secLoja}
+            {parteVista === "redes" && secRedes}
+            {parteVista === "endereco" && secEndereco}
+            {parteVista === "horario" && secHorario}
+            {(parteVista === "pag" || parteVista === "pix" || parteVista === "ent") && <CheckoutConfigPage key={parteVista} embutido parte="entrega" so={parteVista} onEstado={setEp} />}
+          </div>
+        </section>
       </div>
-
-      {/* (17/10) Entrega e pagamento entrou nesta mesma tela (salva sozinha, separada do botão abaixo) */}
-      <div id="entrega-pagamento" className="dl-ep"><CheckoutConfigPage embutido parte="entrega" /></div>
-
-      {/* Salvar fixo */}
-      <div className="dl-savebar">
-        <Botao cheio className="dl-save" carregando={salvando} onClick={salvar}>{salvando ? "Salvando…" : "Salvar dados da loja"}</Botao>
-      </div>
-
     </>
   );
 }

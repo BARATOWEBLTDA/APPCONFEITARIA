@@ -363,6 +363,15 @@ const CSS = `
   .fap-lista { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; min-width: 0; }
   @media (min-width: 900px) { .fap-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .fap-it { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px; padding: 14px; }
+  /* (22/10) computador: as contas viram linhas de uma tabela só (como A receber e Pedidos) */
+  @media (min-width: 901px) {
+    .fap-lista { grid-template-columns: minmax(0, 1fr); gap: 0; overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: 16px; box-shadow: var(--ui-sombra-cartao); }
+    .fap-lista > .fap-it { grid-template-columns: 44px minmax(0, 1fr) 160px auto; grid-template-areas: "d m v b"; border: 0; border-radius: 0; padding: 10px 16px; }
+    .fap-lista > .fap-it + .fap-it { border-top: 1px solid var(--ui-linha); }
+    .fap-lista .fap-it-d { width: 44px; height: 44px; }
+    .fap-lista .fap-it-d b { font-size: 16px; }
+    .fap-lista .fap-it-d small { font-size: 11px; margin-top: 1px; }
+  }
   .fap-it-h { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .fap-it-h b { font-size: 14.5px; font-weight: 700; color: var(--ui-texto); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .fap-tg { flex-shrink: 0; font-size: 12px; font-weight: 700; color: #92400E; background: var(--ui-laranja-fundo); padding: 3px 8px; border-radius: 7px; }

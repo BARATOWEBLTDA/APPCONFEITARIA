@@ -23,7 +23,7 @@ import { useNavigate } from "react-router-dom";
 // (15/10) o gráfico (recharts) só é baixado quando aparece
 const GraficoRecebido = lazy(() => import("@/components/inicio/GraficoRecebido"));
 import {
-  HandCoins, Plus, Bell, CalendarDots, CurrencyDollar, Camera, Users, ChartLineUp,
+  HandCoins, Bell, CalendarDots, CurrencyDollar, Camera, Users, ChartLineUp,
   CaretRight, Cake, Receipt, ClipboardText,
   WarningCircle, Clock, Package, TrendUp, Confetti, RocketLaunch, Sparkle,
 } from "@phosphor-icons/react";
@@ -845,9 +845,7 @@ export default function Inicio() {
                 </p>
               </div>
               <div className="ini-dk-bts">
-                <button type="button" className="ini-dk-bt ini-dk-bt--1" onClick={() => navigate("/vendas/novo")}><Plus size={16} weight="bold" /> Nova venda</button>
-                {/* (13/10) o "Ver agenda" saiu daqui (fica no cartão Próximas entregas e no menu): a Nova venda é a ação do topo.
-                    A linha separa a ação da conta (Seja PRO e a logo da loja, no canto, como nas outras telas). */}
+                {/* (22/10) o "Nova venda" saiu daqui: já é o 2º item do menu da esquerda */}
               </div>
             </div>
             <div className="ini-dk-kpis">
@@ -1984,7 +1982,7 @@ export default function Inicio() {
           .ini-dk-dt b { font-size: 16px; line-height: 1; color: var(--ui-texto); } .ini-dk-dt small { font-size: 12.5px; font-weight: 700; color: var(--ui-rosa-escuro); }
           .ini-dk-ei { flex: 1; min-width: 0; display: flex; flex-direction: column; }
           .ini-dk-ei b { font-size: 15px; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ini-dk-ei small { font-size: 12.5px; color: var(--ui-texto-3); }
-          .ini-dk-ev { font-weight: 700; font-size: 13.5px; color: var(--ui-verde); white-space: nowrap; }
+          .ini-dk-ev { font-weight: 700; font-size: 13.5px; color: var(--ui-texto); white-space: nowrap; } /* (22/10) sem verde: é dinheiro que ainda não entrou */
           .ini-dk-side .mu-root { margin: 0; }
           /* acesso rápido no estilo do celular: cartão branco, ícone rosa, nome + descrição, 4 por linha */
           .ini-section--nav { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 18px; }
