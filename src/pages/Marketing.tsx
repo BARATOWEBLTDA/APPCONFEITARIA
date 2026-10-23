@@ -4,6 +4,7 @@ import { CheckCircle, FacebookLogo, Lightbulb, Megaphone, Ticket } from "@phosph
 import CheckoutConfigPage from "./CheckoutConfigPage";
 import { useLocation } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
+import { COMO_MARKETING, TOUR_MARKETING } from "@/lib/comoTelas";
 import { Botao, Campo, avisar } from "@/components/base";
 import { supabase } from "@/lib/supabase";
 import { useProfile, refreshProfile } from "@/hooks/useProfile";
@@ -45,7 +46,7 @@ export default function Marketing() {
 
   return (
     <>
-      <AppPageHeader title="Marketing" subtitle="Ferramentas pra divulgar e vender mais"
+      <AppPageHeader title="Marketing" subtitle="Ferramentas pra divulgar e vender mais" infoComo={COMO_MARKETING} infoTour={TOUR_MARKETING}
         infoContent={<><p>Aqui ficam as ferramentas pra divulgar sua confeitaria.</p><p>O <strong>Pixel do Facebook</strong> conta pro Facebook e pro Instagram quem visitou o seu cardápio e quem fez pedido. Com isso os anúncios chegam em quem tem mais chance de comprar.</p></>} />
       <div className="mk">
         <div className="mk-abas" role="tablist" aria-label="Ferramentas de marketing">

@@ -9,6 +9,7 @@ import Folha from "@/components/financeiro/Folha";
 import { useNavigate } from "react-router-dom";
 import { CalendarBlank, CheckCircle, Plus, Receipt, WarningCircle, X } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
+import { COMO_A_PAGAR, TOUR_A_PAGAR } from "@/lib/comoTelas";
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { erroDeConexao } from "@/lib/erros";
@@ -135,7 +136,7 @@ export default function FinanceiroAPagar() {
   return (
     <div className="fap-root">
       <AppPageHeader
-        title="A pagar"
+        title="A pagar" infoComo={COMO_A_PAGAR} infoTour={TOUR_A_PAGAR}
         subtitle={carregando ? "Carregando…" : erro ? "Não deu pra carregar" : contas.length ? `${brl(total)} em ${contas.length} ${contas.length === 1 ? "conta" : "contas"}` : "Nenhuma conta pendente"}
         onBack={() => navigate("/financeiro")}
         infoIcon="🧾"

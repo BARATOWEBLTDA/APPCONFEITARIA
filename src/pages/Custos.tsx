@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Buildings, Percent, Clock, Plus, CaretRight, Receipt, WarningCircle, CreditCard, Fire, PencilSimple } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
+import { COMO_CUSTOS, TOUR_CUSTOS } from "@/lib/comoTelas";
 import { Botao, TelaVazia } from "@/components/base";
 import { erroDeConexao, explicarErro } from "@/lib/erros";
 import Folha, { FOLHA_CSS } from "@/components/financeiro/Folha";
@@ -101,7 +102,7 @@ export default function Custos() {
     <>
       <AppPageHeader
         title="Custos"
-        subtitle="O que a confeitaria gasta"
+        subtitle="O que a confeitaria gasta" infoComo={COMO_CUSTOS} infoTour={TOUR_CUSTOS}
         onBack={() => navigate("/financeiro")}
         infoIcon="🧮"
         infoContent={<>

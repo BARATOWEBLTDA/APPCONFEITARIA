@@ -4,6 +4,7 @@ import { Camera, Check, DotsThreeVertical, Info, MagnifyingGlass, Package, Penci
 import { supabase } from "@/lib/supabase";
 import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
+import { COMO_COMPLEMENTOS, TOUR_COMPLEMENTOS } from "@/lib/comoTelas";
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
 import "./categorias.css";
 import "./complementos.css";
@@ -143,7 +144,7 @@ export default function Complementos() {
 
   const cabecalho = (
     <AppPageHeader voltar="/cadastros"
-      title="Complementos"
+      title="Complementos" infoComo={COMO_COMPLEMENTOS} infoTour={TOUR_COMPLEMENTOS}
       subtitle={loading || items.length === 0 ? "Extras que o cliente escolhe no pedido" : `${items.length} ${items.length === 1 ? "cadastrado" : "cadastrados"}`}
       infoContent={<>
         <p>Complementos são opções que o cliente escolhe ao pedir um produto: topo de bolo, escrita, papel de arroz, tema.</p>

@@ -10,6 +10,7 @@ import { r2 } from '@/lib/moeda'
 import { digitosTelefone } from '@/lib/telefone'
 import { voltarOuIr } from '@/lib/voltar'
 import AppPageHeader from '@/components/AppPageHeader'
+import { COMO_NOVA_VENDA, TOUR_NOVA_VENDA } from "@/lib/comoTelas";
 import HorarioSheet from '@/components/HorarioSheet'
 import { tocarSom } from '@/hooks/useSom'
 import { Bank, CalendarBlank, CalendarDots, Check, Clock, Copy, CreditCard, Lightning, MagnifyingGlass, Minus, Money, Package, Plus, QrCode, Storefront, Trash, Truck, UserPlus, WarningCircle, X } from '@phosphor-icons/react'
@@ -658,7 +659,7 @@ export default function NovaVenda() {
   // subtítulo (10/10): no passo 1 explica a escolha; depois mostra o tipo escolhido; no fim, que a venda foi registrada
   const subtituloTopo = sucessoAberto ? 'Venda registrada' : etapa === 1 || !tipo ? 'Encomenda ou pronta entrega' : tipo === 'pronta_entrega' ? 'Pronta entrega' : 'Encomenda'
   // (16/10) a seta do topo volta um passo (no primeiro, pergunta antes de cancelar), igual ao "Voltar" de baixo
-  const cabecalho = <AppPageHeader title="Nova venda" subtitle={subtituloTopo} onBack={sucessoAberto ? () => navigate('/pedidos') : voltarEtapa} />
+  const cabecalho = <AppPageHeader title="Nova venda" subtitle={subtituloTopo} infoComo={COMO_NOVA_VENDA} infoTour={TOUR_NOVA_VENDA} onBack={sucessoAberto ? () => navigate('/pedidos') : voltarEtapa} />
 
   // ═══ Venda registrada ═══
   if (sucessoAberto && pedidoCriado) {
@@ -791,7 +792,7 @@ export default function NovaVenda() {
             {!tipo && (itens.length > 0 || tentou) && <p className="nv3-dica nv3-falta">Escolha o tipo de venda pra continuar.</p>}
           </section>
 
-          <section className="nv3-card">
+          <section className="nv3-card nv3-card--produtos">
             <Titulo contagem={itens.length}>Produtos</Titulo>
             {itens.length === 0 ? (
               <div className="nv3-vz">

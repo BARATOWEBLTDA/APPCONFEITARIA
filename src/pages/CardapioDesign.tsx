@@ -10,6 +10,7 @@ import { ArrowCounterClockwise, ArrowsClockwise, CalendarBlank, Camera, Check, E
 import { SeloVerificado } from "@/components/cardapio/SeloVerificado";
 import { situacaoLoja } from "@/lib/agendaCardapio";
 import AppPageHeader from "@/components/AppPageHeader";
+import { COMO_APARENCIA, TOUR_APARENCIA } from "@/lib/comoTelas";
 import { Botao, BotaoIcone, Janela, Titulo, avisar } from "@/components/base";
 import { lerBannersProntos, CATEGORIAS_BANNER, CATEGORIA_CAPA_NATAL, type BannerPronto } from "@/lib/bannersProntos";
 import { COR_BOTOES, PADRAO, PRONTAS, corDoItem, topoEscurecido, type CampoCor } from "@/lib/coresCardapio";
@@ -439,7 +440,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     {recorteTopo.janela}{recorteBanner.janela}{recorteCapa.janela}
     {!identityCard && (
       <AppPageHeader title="Aparência" subtitle="Logo, banners e cores" onBack={() => navigate(voltarPara)}
-        infoIcon="🎨"
+        infoIcon="🎨" infoComo={COMO_APARENCIA} infoTour={TOUR_APARENCIA}
         infoContent={<>
           <p>Aqui você deixa o <strong>cardápio com a cara da sua confeitaria</strong>: a logo, os banners de promoção e as cores.</p>
           <p>Tudo é salvo na hora e já aparece pros seus clientes. Use o <strong>"Ver meu cardápio"</strong> pra conferir como ficou.</p>
@@ -450,7 +451,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     <div className="ap">
 
       {/* (18/10) Tema do cardápio: Normal ou Natal (outros temas depois) */}
-      <section className="ap-card ap-largo">
+      <section className="ap-card ap-largo ap-sec-tema">
         <Cabeca Ic={Sparkle} titulo="Tema do cardápio" apoio="Enfeita o cardápio nas datas especiais" />
         <div className="ap-temas" role="radiogroup" aria-label="Tema do cardápio">
           <button type="button" role="radio" aria-checked={tema === "normal"} className="ap-tema" onClick={() => escolherTema("normal")}>
@@ -508,7 +509,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       </section>
 
       {/* (18/10) Topo do cardápio: foto do topo e logo numa prévia só, do jeito que o cliente vê */}
-      <section className="ap-card ap-largo">
+      <section className="ap-card ap-largo ap-sec-topo">
         <Cabeca Ic={Storefront} titulo="Topo do cardápio" apoio="É assim que o cliente vê" />
         <input ref={logoRef} type="file" accept="image/*" hidden onChange={handleLogoUpload} />
         <input ref={bannerTopoRef} type="file" accept="image/*" hidden onChange={recorteTopo.escolher} />
@@ -541,7 +542,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       </section>
 
       {/* Banners de promoção */}
-      <section className="ap-card ap-largo">
+      <section className="ap-card ap-largo ap-sec-banners">
         <Cabeca Ic={Images} titulo="Banners de promoção"
           apoio={isPro ? "Em carrossel · deitado, 1200 × 675" : "Deitado, 1200 × 675"} />
         <div className="ap-banners">
@@ -573,7 +574,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
 
       {/* (18/10) Modelo do cardápio oculto: só o Clássico por enquanto */}
       {false && (
-      <section className="ap-card ap-largo">
+      <section className="ap-card ap-largo ap-sec-modelo">
         <Cabeca Ic={Layout} titulo="Modelo do cardápio" apoio="Como o cliente vê a sua loja" />
         <div className="ap-modelos" role="radiogroup" aria-label="Modelo do cardápio">
           <button type="button" role="radio" aria-checked={modeloAtivo === "modelo1"} className="ap-modelo" onClick={() => escolherModelo("modelo1")} disabled={salvandoModelo}>
@@ -602,7 +603,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       )}
 
       {/* Cores (18/10): só as três do topo da loja. Grátis: cores prontas; PRO: qualquer cor */}
-      <section className={`ap-card ap-largo${tema === "natal" ? " ap-cores-off" : ""}`}>
+      <section className={`ap-card ap-largo ap-sec-cores${tema === "natal" ? " ap-cores-off" : ""}`}>
         <Cabeca Ic={Palette} titulo="Cores do topo" apoio="Os números mostram onde cada cor fica" />
         {tema === "natal" && <p className="ap-cores-tema"><Info size={16} weight="bold" aria-hidden="true" />O tema de Natal está usando as cores dele</p>}
         <div className="ap-mini" aria-hidden="true">

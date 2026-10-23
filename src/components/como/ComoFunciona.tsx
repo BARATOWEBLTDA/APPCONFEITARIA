@@ -55,7 +55,7 @@ export function ConteudoComo({ c, rotulo, className = "", tour }: { c: Como; rot
       {tour && (
         <button type="button" className="cf-tour" onClick={tour.fazer}>
           <PlayCircle size={22} aria-hidden="true" />
-          <span><small>Tour da tela · {tour.passos} passos</small><b>Fazer o tour</b></span>
+          <span><small>Tour da tela · {tour.passos} {tour.passos === 1 ? "passo" : "passos"}</small><b>Fazer o tour</b></span>
           <ArrowRight size={18} weight="bold" aria-hidden="true" />
         </button>
       )}
@@ -108,7 +108,7 @@ export function BotaoAjuda({ c, rotulo, tipo = "info", className = "", tour }: {
         <div className="cf-pop" ref={caixa} style={{ top: pos.top, left: pos.left }}>
           <span className="cab-pop-seta" style={{ left: pos.seta }} aria-hidden="true" />
           <div className="cf-pop-rolo" style={{ maxHeight: pos.max }}>
-            <ConteudoComo c={c} rotulo={rotulo} tour={tour && nPassos > 1 ? { passos: nPassos, fazer: () => { setAberto(false); window.setTimeout(() => { void fazerTour(tour); }, 150); } } : undefined} />
+            <ConteudoComo c={c} rotulo={rotulo} tour={tour && nPassos > 0 ? { passos: nPassos, fazer: () => { setAberto(false); window.setTimeout(() => { void fazerTour(tour); }, 150); } } : undefined} />
           </div>
         </div>
       </>,

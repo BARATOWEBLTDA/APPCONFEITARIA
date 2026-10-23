@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { carregarNotificacoes, marcarLidas, type Notif } from "@/lib/notificacoesUsuario";
 import { Bell, Buildings, CalendarCheck, Camera, Checks, ChartLineUp, ClipboardText, Clock, Coins, Crown, Gift, HandCoins, Newspaper, ShoppingBag, Storefront, Trophy, Users, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
+import { COMO_NOTIFICACOES, TOUR_NOTIFICACOES } from "@/lib/comoTelas";
 import { quandoFoi } from "@/lib/noticias";
 import { supabase } from "@/lib/supabase";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
@@ -123,7 +124,7 @@ export default function Notificacoes() {
   return (
     <>
       <AppPageHeader
-        title="Notificações"
+        title="Notificações" infoComo={COMO_NOTIFICACOES} infoTour={TOUR_NOTIFICACOES}
         subtitle={naoLidas.length > 0 ? `${naoLidas.length} nova${naoLidas.length > 1 ? "s" : ""}` : (notificacoes.length ? "Tudo lido" : "Avisos do Doonly")}
         infoIcon="🔔"
         infoContent="Aqui ficam seus pedidos novos, avisos da sua loja e do seu plano, conquistas e as novidades do Doonly."

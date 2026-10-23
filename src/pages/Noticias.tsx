@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Lightbulb, MagnifyingGlass, Newspaper, PushPin, WarningCircle, X } from "@phosphor-icons/react";
 import { Mascote } from "@/components/marca/Mascote";
 import AppPageHeader from "@/components/AppPageHeader";
+import { COMO_NOVIDADES, TOUR_NOVIDADES } from "@/lib/comoTelas";
 import { Botao, BotaoIcone, TelaVazia } from "@/components/base";
 import { supabase } from "@/lib/supabase";
 import { linhaDeTempo, semAcento } from "@/lib/noticias";
@@ -107,7 +108,7 @@ export default function Noticias() {
     <>
       <AppPageHeader
         title="Novidades"
-        subtitle="Dicas, novidades e tutoriais do Doonly"
+        subtitle="Dicas, novidades e tutoriais do Doonly" infoComo={COMO_NOVIDADES} infoTour={TOUR_NOVIDADES}
         infoIcon="📰"
         infoContent={
           <>

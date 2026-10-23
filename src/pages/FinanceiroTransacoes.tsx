@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowUp, ArrowDown, MagnifyingGlass, DownloadSimple, ArrowSquareOut, ArrowCounterClockwise, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
+import { COMO_TRANSACOES, TOUR_TRANSACOES } from "@/lib/comoTelas";
 import { Botao, TelaVazia, avisar as avisarBase } from "@/components/base";
 import { erroDeConexao } from "@/lib/erros";
 import PeriodoFiltro, { iso as isoPeriodo, periodoInicial, rotuloPeriodo, type Periodo } from "@/components/financeiro/PeriodoFiltro";
@@ -121,7 +122,7 @@ export default function FinanceiroTransacoes() {
     <>
       <AppPageHeader
         title="Transações"
-        subtitle="Extrato de entradas e saídas"
+        subtitle="Extrato de entradas e saídas" infoComo={COMO_TRANSACOES} infoTour={TOUR_TRANSACOES}
         onBack={() => navigate("/financeiro")}
         infoIcon="📑"
         infoContent={<>

@@ -5,6 +5,7 @@ import { ArrowDown, ArrowUp, DotsThreeVertical, Image as ImageIcon, Info, Pencil
 import { supabase } from "@/lib/supabase";
 import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
+import { COMO_CATEGORIAS, TOUR_CATEGORIAS } from "@/lib/comoTelas";
 import { Botao, BotaoIcone, Campo, Janela, TelaVazia, Titulo, avisar, confirmar, informar } from "@/components/base";
 import "./categorias.css";
 
@@ -212,7 +213,7 @@ export default function Categorias() {
 
   return (
     <>
-      <AppPageHeader title="Categorias" voltar="/cadastros" subtitle="Organize os produtos do seu cardápio"
+      <AppPageHeader title="Categorias" voltar="/cadastros" subtitle="Organize os produtos do seu cardápio" infoComo={COMO_CATEGORIAS} infoTour={TOUR_CATEGORIAS}
         infoContent={<>
           <p>As categorias <strong>separam os produtos no seu cardápio</strong>, como Bolos, Doces e Salgados.</p>
           <p>O cliente acha o que quer mais rápido. O cardápio mostra as categorias na ordem desta lista.</p>

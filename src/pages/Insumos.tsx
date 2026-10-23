@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { explicarErro } from "@/lib/erros";
 import QuickAddInsumo, { InsumoQuick, custoNaReceita, descreverCompra, formatarCusto, rotuloCategoria } from "@/components/QuickAddInsumo";
 import AppPageHeader from "@/components/AppPageHeader";
+import { COMO_INGREDIENTES, TOUR_INGREDIENTES } from "@/lib/comoTelas";
 import { Botao, TelaVazia, avisar, confirmar } from "@/components/base";
 import "./clientes.css";
 import "@/components/ingredientes.css";
@@ -135,7 +136,7 @@ export default function Insumos() {
 
   const cabecalho = (
     <AppPageHeader voltar="/cadastros"
-      title="Ingredientes"
+      title="Ingredientes" infoComo={COMO_INGREDIENTES} infoTour={TOUR_INGREDIENTES}
       subtitle={loading || insumos.length === 0 ? "O que você compra pra produzir" : `${insumos.length} ${insumos.length === 1 ? "cadastrado" : "cadastrados"}`}
       infoContent={
         <>

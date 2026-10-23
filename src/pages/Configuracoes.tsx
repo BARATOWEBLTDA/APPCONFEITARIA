@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { explicarErro, erroDeConexao, SEM_INTERNET } from "@/lib/erros";
 import { mascaraTelefone } from "@/lib/telefone";
 import AppPageHeader from "@/components/AppPageHeader";
+import { COMO_CONFIGURACOES, TOUR_CONFIGURACOES } from "@/lib/comoTelas";
 import { Botao, Campo, Janela, TelaVazia, avisar, informar } from "@/components/base";
 import { fotoDaLoja, refreshProfile, sairDaConta } from "@/hooks/useProfile";
 import { useRecorte } from "@/components/ui/useRecorte";
@@ -228,7 +229,7 @@ export default function Configuracoes() {
 
   return (
     <>
-      <AppPageHeader title="Configurações" subtitle="Sua conta e o app" />
+      <AppPageHeader title="Configurações" subtitle="Sua conta e o app" infoComo={COMO_CONFIGURACOES} infoTour={TOUR_CONFIGURACOES} />
       <div className="cf9">
         {loading ? (
           <div className="cl9-esq" aria-label="Carregando">{[0, 1, 2].map(k => <span key={k} />)}</div>

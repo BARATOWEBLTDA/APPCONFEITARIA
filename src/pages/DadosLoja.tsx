@@ -6,6 +6,7 @@ import { CaretRight, Check, Clock, PencilSimple, MapPin, QrCode, ShareNetwork, S
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { LogoFacebook, LogoInstagram } from "@/components/LogosRedes";
 import AppPageHeader from "@/components/AppPageHeader";
+import { COMO_DADOS_LOJA, TOUR_DADOS_LOJA } from "@/lib/comoTelas";
 import MapaEndereco, { type BuscaMapa } from "@/components/MapaEndereco";
 import { EXEMPLO_DESCRICAO, EditorHorario, OpcoesMostrar } from "@/components/loja/EditoresLoja";
 import { Botao, Campo, CampoArea, Gaveta, TelaVazia, Titulo, avisar } from "@/components/base";
@@ -556,7 +557,7 @@ export default function DadosLoja() {
   if (cel) {
     return (
       <>
-        <AppPageHeader title="Dados da loja" subtitle="Loja, entrega e pagamento" onBack={() => navigate(voltarPara)} />
+        <AppPageHeader title="Dados da loja" subtitle="Loja, entrega e pagamento" onBack={() => navigate(voltarPara)} infoComo={COMO_DADOS_LOJA} infoTour={TOUR_DADOS_LOJA} />
         <div className="dl-lista">
           <div className="dl-lista-c">
             {linhas.map(l => (
@@ -590,7 +591,7 @@ export default function DadosLoja() {
   const ehDaPagina = parteVista === "loja" || parteVista === "redes" || parteVista === "endereco" || parteVista === "horario";
   return (
     <>
-      <AppPageHeader title="Dados da loja" subtitle="Loja, entrega e pagamento" onBack={() => navigate(voltarPara)} />
+      <AppPageHeader title="Dados da loja" subtitle="Loja, entrega e pagamento" onBack={() => navigate(voltarPara)} infoComo={COMO_DADOS_LOJA} infoTour={TOUR_DADOS_LOJA} />
       <div className="dl-pc">
         <div className="dl-lista dl-lista--pc">
           <div className="dl-lista-c">

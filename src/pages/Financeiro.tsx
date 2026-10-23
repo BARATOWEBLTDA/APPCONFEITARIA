@@ -1,6 +1,6 @@
 // Financeiro — painel (Passo 7, 03/10; 4.29: por período, com comparação, formas de pagamento e mais vendidos). Junta o que antes ficava na Visão Geral e no menu:
 // saldo em caixa, os números do mês, a receber, a pagar, previstos, fluxo e últimas movimentações.
-import { COMO_FINANCEIRO } from "@/lib/comoTelas";
+import { COMO_FINANCEIRO, TOUR_FINANCEIRO } from "@/lib/comoTelas";
 import { useAbrirPedido } from "@/hooks/useAbrirPedido";
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { useEffect, useRef, useState } from "react";
@@ -161,7 +161,7 @@ export default function Financeiro() {
       <AppPageHeader
         title="Financeiro"
         subtitle="Seu dinheiro, sem mistério"
-        infoIcon="💰" infoComo={COMO_FINANCEIRO}
+        infoIcon="💰" infoComo={COMO_FINANCEIRO} infoTour={TOUR_FINANCEIRO}
         rightActions={
           <div className="fd-hd">
             <button type="button" className="fd-hd-bt r" onClick={() => abrirReceber()}><CurrencyCircleDollar size={17} weight="bold" />Receber pedido{qtdReceber > 0 && <em>{qtdReceber}</em>}</button>

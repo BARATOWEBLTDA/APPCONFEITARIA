@@ -4,6 +4,7 @@ import { ArrowCounterClockwise, CaretRight, ChatCircleText, Info } from "@phosph
 import { supabase } from "@/lib/supabase";
 import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
+import { COMO_MENSAGENS, TOUR_MENSAGENS } from "@/lib/comoTelas";
 import { Botao, CampoArea, Janela, avisar } from "@/components/base";
 import { refreshProfile, useProfile } from "@/hooks/useProfile";
 import { MODELOS, exemplo, montarMensagem, type Modelo } from "@/lib/mensagens";
@@ -91,7 +92,7 @@ export default function MensagensWhatsApp() {
 
   return (
     <>
-      <AppPageHeader title="Mensagens" subtitle="Os textos do WhatsApp que o app escreve por você" onBack={() => navigate(voltarPara)} />
+      <AppPageHeader title="Mensagens" subtitle="Os textos do WhatsApp que o app escreve por você" infoComo={COMO_MENSAGENS} infoTour={TOUR_MENSAGENS} onBack={() => navigate(voltarPara)} />
       <div className="mz">
         <p className="mz-intro"><Info size={20} weight="bold" aria-hidden="true" />O app abre o WhatsApp com a mensagem pronta. Aqui você troca o texto do seu jeito.</p>
         <section className="mz-lista">

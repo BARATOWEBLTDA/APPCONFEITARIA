@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Basket, Cake, CaretRight, ChatCircleText, ClipboardText, ShoppingBag, SquaresFour, Stack, Storefront, Users, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
+import { COMO_CADASTROS, TOUR_CADASTROS } from "@/lib/comoTelas";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/lib/supabase";
 import { situacaoLoja } from "@/lib/agendaCardapio";
@@ -61,7 +62,7 @@ export default function Cadastros() {
 
   return (
     <>
-      <AppPageHeader title="Cadastros" subtitle="Produtos, clientes e cardápio" />
+      <AppPageHeader title="Cadastros" subtitle="Produtos, clientes e cardápio" infoComo={COMO_CADASTROS} infoTour={TOUR_CADASTROS} />
       <div className="cad">
         {n && n.semFicha > 0 && (
           <button type="button" className="cad-at" onClick={() => navigate("/ficha-tecnica")}>
@@ -72,7 +73,7 @@ export default function Cadastros() {
         )}
 
         <p className="cad-t">O que você vende</p>
-        <div className="cad-c">
+        <div className="cad-c cad-c--vende">
           {linha(Cake, "Produtos", n && n.semFicha > 0 ? `${n.semFicha} sem ficha técnica` : "Cadastre e gerencie seus produtos", () => navigate("/produtos"), n?.produtos, n && n.semFicha > 0 ? "lar" : "", ["produto", "produtos"])}
           {linha(SquaresFour, "Categorias", "Organize seus produtos", () => navigate("/categorias"), n?.categorias, "", ["categoria", "categorias"])}
           {linha(Stack, "Complementos", "Sabores, recheios e adicionais", () => navigate("/complementos"), n?.complementos, "", ["complemento", "complementos"])}
@@ -80,13 +81,13 @@ export default function Cadastros() {
         </div>
 
         <p className="cad-t">Do que é feito</p>
-        <div className="cad-c">
+        <div className="cad-c cad-c--feito">
           {linha(Basket, "Ingredientes", "O que você compra", () => navigate("/insumos"), n?.ingredientes, "", ["ingrediente", "ingredientes"])}
           {linha(ClipboardText, "Ficha técnica", "Custo e lucro de cada produto", () => navigate("/ficha-tecnica"), comFicha, "", ["com ficha", "com ficha"])}
         </div>
 
         <p className="cad-t">Quem compra e como paga</p>
-        <div className="cad-c">
+        <div className="cad-c cad-c--compra">
           {linha(Users, "Clientes", "Quem já comprou com você", () => navigate("/clientes"), n?.clientes, "", ["cliente", "clientes"])}
           {linha(Storefront, "Dados da loja", "Entrega, pagamento e Pix", () => navigate("/cardapio-config"))}
           {linha(ChatCircleText, "Mensagens do WhatsApp", "Textos prontos pro cliente", () => navigate("/configuracoes/mensagens", { state: { de: "/cadastros" } }))}

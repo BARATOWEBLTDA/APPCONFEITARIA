@@ -1,5 +1,5 @@
 import { PausarPedidos } from "@/components/loja/PausarPedidos";
-import { COMO_CARDAPIO } from "@/lib/comoTelas";
+import { COMO_CARDAPIO, TOUR_CARDAPIO } from "@/lib/comoTelas";
 import { compartilharCardapio } from "@/lib/compartilharCardapio";
 import { useState, useEffect, useRef, type ReactElement } from "react";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
@@ -342,7 +342,7 @@ export default function Cardapio() {
     <AppPageHeader
       title="Cardápio digital"
       subtitle="A loja online da sua confeitaria"
-      infoIcon="🛍️" infoComo={COMO_CARDAPIO}
+      infoIcon="🛍️" infoComo={COMO_CARDAPIO} infoTour={TOUR_CARDAPIO}
       infoContent={
         <>
           <p>Este é o <strong>cardápio digital</strong> que seus clientes acessam. Personalize as cores, adicione produtos, configure entrega e pagamento.</p>
@@ -519,7 +519,7 @@ export default function Cardapio() {
 
       {/* Top 3 produtos */}
       {!erroLeitura && metricas.topProdutos.length > 0 && (
-        <div className="ch-block">
+        <div className="ch-block ch-block--vendidos">
           <h2 className="ch-block-title">Mais vendidos no cardápio</h2>
           <div className="ch-top-list">
             {metricas.topProdutos.map((p, idx) => (
@@ -542,7 +542,7 @@ export default function Cardapio() {
 
       {/* Alertas */}
       {alertas.length > 0 && (
-        <div className="ch-block">
+        <div className="ch-block ch-block--atencao">
           <h2 className="ch-block-title">Atenção</h2>
           <div className="ch-alertas">
             {alertas.map((a, idx) => (
