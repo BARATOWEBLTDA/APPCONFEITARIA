@@ -176,7 +176,7 @@ export default function AdminNoticias() {
       },
     });
     if (error) throw new Error(error.message || "falha no envio");
-    return (data?.sent as number | undefined) ?? 0;
+    return { enviados: (data?.sent as number | undefined) ?? 0, total: (data?.total as number | undefined) ?? 0, falhas: (data?.failed as number | undefined) ?? 0 };
   };
 
   const salvar = async () => {
@@ -235,9 +235,12 @@ export default function AdminNoticias() {
           }
         } catch { semAviso = true; /* não impede o push */ }
         try {
-          const enviados = await enviarPushNoticia(salvaId, salvaSlug);
-          if (semAviso) showMsg(`${acao}! Push enviado para ${enviados} ${enviados === 1 ? "aparelho" : "aparelhos"}, mas o aviso da aba Notificações não gravou.`, "err");
-          else showMsg(`${acao}! Notificação enviada para ${enviados} ${enviados === 1 ? "aparelho" : "aparelhos"}.`, "ok");
+          // (23/10) diz quantos aparelhos receberam de quantos têm os avisos ligados, e quantos falharam
+          const { enviados, total, falhas } = await enviarPushNoticia(salvaId, salvaSlug);
+          const ap = (n: number) => `${n} ${n === 1 ? "aparelho" : "aparelhos"}`;
+          const resumo = total === 0 ? "nenhum aparelho está com os avisos ativados ainda" : `aviso no celular enviado para ${ap(enviados)} de ${total}${falhas ? ` (${falhas} falharam)` : ""}`;
+          if (semAviso) showMsg(`${acao}! ${resumo.charAt(0).toUpperCase() + resumo.slice(1)}, mas o aviso dentro do app não gravou.`, "err");
+          else showMsg(`${acao}! ${resumo.charAt(0).toUpperCase() + resumo.slice(1)}.`, total === 0 || falhas ? "err" : "ok");
         } catch (pushErr: any) {
           showMsg(`${acao}, mas a notificação falhou: ${pushErr.message}`, "err");
         }

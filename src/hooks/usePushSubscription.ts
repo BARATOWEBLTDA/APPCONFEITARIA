@@ -57,6 +57,20 @@ export async function desfazerPushDesteAparelho(): Promise<void> {
 const MARCA_REATIVAR = 'doonly_push_reativar'
 
 /**
+ * (23/10) Guarda este aparelho na conta que está aberta. Pela função do banco o aparelho "troca de dona"
+ * (antes, quem entrava com outra conta no mesmo celular não conseguia registrar e não recebia os avisos dela).
+ * Sem a função no banco ainda, faz como antes (upsert pelo endereço).
+ */
+async function salvarAparelho(userId: string, endpoint: string, p256dh: string, auth: string): Promise<{ error: unknown }> {
+  const r = await supabase.rpc('registrar_aparelho_push', { p_endpoint: endpoint, p_p256dh: p256dh, p_auth: auth })
+  if (!r.error) return { error: null }
+  const semFuncao = r.error.code === 'PGRST202' || /registrar_aparelho_push/.test(r.error.message || '')
+  if (!semFuncao) return { error: r.error }
+  const { error } = await supabase.from('push_subscriptions').upsert({ user_id: userId, endpoint, p256dh, auth }, { onConflict: 'endpoint' })
+  return { error }
+}
+
+/**
  * (11/10) Quem saiu da conta com os avisos ligados e entrou de novo neste aparelho: liga os avisos de novo, sozinho
  * (a permissão do navegador continua dada, então não precisa de toque). Chamar com a conta aberta. Nunca lança.
  */
@@ -73,7 +87,7 @@ export async function reativarPushSeSaiu(): Promise<void> {
     const j = sub.toJSON()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user || !j.endpoint || !j.keys?.p256dh || !j.keys?.auth) return
-    const { error } = await supabase.from('push_subscriptions').upsert({ user_id: user.id, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth }, { onConflict: 'endpoint' })
+    const { error } = await salvarAparelho(user.id, j.endpoint, j.keys.p256dh, j.keys.auth)
     if (!error) localStorage.removeItem(MARCA_REATIVAR)
   } catch (e) { console.warn('[Doonly] não deu pra religar os avisos:', e) }
 }
@@ -109,12 +123,7 @@ export function usePushSubscription() {
               const j = sub.toJSON()
               const { data: { user } } = await supabase.auth.getUser()
               if (user && j.endpoint && j.keys?.p256dh && j.keys?.auth) {
-                await supabase.from('push_subscriptions').upsert({
-                  user_id: user.id,
-                  endpoint: j.endpoint,
-                  p256dh: j.keys.p256dh,
-                  auth: j.keys.auth,
-                }, { onConflict: 'endpoint' })
+                await salvarAparelho(user.id, j.endpoint, j.keys.p256dh, j.keys.auth)
               }
             }
           }
@@ -177,14 +186,7 @@ export function usePushSubscription() {
         return false
       }
 
-      const { error: dbError } = await supabase
-        .from('push_subscriptions')
-        .upsert({
-          user_id: user.id,
-          endpoint,
-          p256dh,
-          auth,
-        }, { onConflict: 'endpoint' })
+      const { error: dbError } = await salvarAparelho(user.id, endpoint, p256dh, auth)
 
       if (dbError) {
         console.error('Erro ao salvar subscription:', dbError)

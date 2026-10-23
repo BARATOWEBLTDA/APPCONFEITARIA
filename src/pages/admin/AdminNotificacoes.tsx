@@ -91,7 +91,11 @@ export default function AdminNotificacoes() {
         },
       });
       if (error) { console.error("Push error:", error); avisar("A notificação ficou salva no app, mas o aviso no celular não saiu.", { tipo: "info", duracao: 6000 }); }
-      else console.log("Push result:", data);
+      else {
+        // (23/10) diz pra quantos aparelhos o aviso saiu
+        const t = Number(data?.total) || 0, e = Number(data?.sent) || 0, f = Number(data?.failed) || 0;
+        avisar(t === 0 ? "Notificação salva. Nenhum aparelho está com os avisos ativados ainda." : `Aviso no celular enviado para ${e} de ${t} ${t === 1 ? "aparelho" : "aparelhos"}${f ? ` (${f} falharam)` : ""}.`, { tipo: t === 0 || f ? "info" : "ok", duracao: 7000 });
+      }
     } catch (err) {
       console.warn("Push dispatch failed (notifications still saved in-app):", err);
       avisar("A notificação ficou salva no app, mas o aviso no celular não saiu.", { tipo: "info", duracao: 6000 });

@@ -316,3 +316,28 @@
 
 /* (15/10) foto fixa do cardápio no notebook (já cabe inteira, sem rolar) */
 .bv-pc-print { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top center; pointer-events: none; user-select: none; -webkit-user-drag: none; }
+
+/* (23/10) tela dos avisos: "Agora não" discreto embaixo do botão e o aviso chegando na tela do celular */
+.bv-base { flex-direction: column; align-items: center; gap: 4px; }
+.bv-agora-nao { min-height: 44px; padding: 0 16px; border: 0; background: none; color: rgba(255, 255, 255, .72); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.bv-agora-nao:focus-visible { outline: 3px solid rgba(255, 255, 255, .75); border-radius: 10px; }
+.bv-notif { width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 10px; }
+.bv-notif-hora { display: flex; flex-direction: column; align-items: center; margin-bottom: 6px; color: var(--ui-branco); }
+.bv-notif-hora b { font-size: 46px; font-weight: 600; letter-spacing: -.02em; line-height: 1; }
+.bv-notif-hora span { margin-top: 4px; font-size: 13px; color: rgba(255, 255, 255, .72); }
+.bv-notif-cartao { padding: 10px 12px 12px; border-radius: 18px; background: rgba(255, 255, 255, .94); color: #1F1A1C; box-shadow: 0 10px 26px rgba(0, 0, 0, .28); animation: bvNotif .5s var(--ease-out) .25s both; }
+.bv-notif-cartao--2 { opacity: .78; transform: scale(.96); animation-delay: .55s; }
+.bv-notif-cab { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #6B6266; }
+.bv-notif-cab img { width: 18px; height: 18px; border-radius: 5px; }
+.bv-notif-cab span { flex: 1; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; font-size: 11px; }
+.bv-notif-cab em { font-style: normal; }
+.bv-notif-corpo { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+.bv-notif-corpo > div { flex: 1; min-width: 0; }
+.bv-notif-corpo b { display: block; font-size: 14.5px; font-weight: 700; }
+.bv-notif-corpo p { margin: 2px 0 0; font-size: 13.5px; line-height: 1.35; color: #3D3437; }
+.bv-notif-corpo > img { flex: none; width: 48px; height: 48px; border-radius: 10px; object-fit: cover; }
+@keyframes bvNotif { from { opacity: 0; transform: translateY(-14px); } }
+.bv-notif-cartao--2 { animation-name: bvNotif2; }
+@keyframes bvNotif2 { from { opacity: 0; transform: translateY(-14px) scale(.96); } }
+@media (prefers-reduced-motion: reduce) { .bv-notif-cartao { animation: none; } }
+@media (min-width: 900px), (min-width: 640px) and (max-height: 520px) { .bv-base { align-items: flex-start; } .bv-agora-nao { padding-left: 4px; } }

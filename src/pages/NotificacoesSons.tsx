@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { DeviceMobile, SpeakerHigh, CashRegister } from "@phosphor-icons/react";
+import { DeviceMobile, SpeakerHigh, CashRegister, PaperPlaneTilt } from "@phosphor-icons/react";
+import { supabase } from "@/lib/supabase";
+import { Botao, avisar } from "@/components/base";
 import AppPageHeader from "@/components/AppPageHeader";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
 import { precisaInstalarNoIphone, ehIphone } from "@/lib/notifications";
@@ -19,6 +21,20 @@ import {
 export default function NotificacoesSons() {
   const navigate = useNavigate();
   const { isSupported, isSubscribed, permission, loading, error, subscribe, unsubscribe } = usePushSubscription();
+
+  // (23/10) manda um aviso de teste pros aparelhos desta conta e diz o que aconteceu
+  const [testando, setTestando] = useState(false);
+  const testar = async () => {
+    setTestando(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("push-pessoal", { body: { teste: true } });
+      if (error) throw error;
+      if (data?.sent > 0) avisar(`Aviso de teste enviado para ${data.sent} ${data.sent === 1 ? "aparelho" : "aparelhos"}. Ele chega em alguns segundos.`, { tipo: "ok", duracao: 6000 });
+      else avisar(data?.motivo || "Nenhum aparelho recebeu o aviso. Ative as notificações neste aparelho e tente de novo.", { tipo: "info", duracao: 7000 });
+    } catch {
+      avisar("Não deu para enviar o aviso de teste. Confira a internet e tente de novo.", { tipo: "erro" });
+    } finally { setTestando(false); }
+  };
 
   const [somGeral, setSomGeral] = useState(sonsHabilitados());
   const [somVenda, setSomVenda] = useState(somPedidoHabilitado());
@@ -121,6 +137,16 @@ export default function NotificacoesSons() {
             </div>
             {pushToggle}
           </div>
+          {isSubscribed && (
+            <div className="ns-row">
+              <span className="ns-ico"><PaperPlaneTilt size={20} /></span>
+              <div className="ns-txt">
+                <div className="ns-name">Testar os avisos</div>
+                <div className="ns-desc">Manda um aviso para os seus aparelhos</div>
+              </div>
+              <Botao variante="secundario" tamanho="m" carregando={testando} onClick={testar}>Testar</Botao>
+            </div>
+          )}
           <p className="ns-note">
             Vale só para este aparelho. Se você usa o Doonly em outro celular ou no computador, ative lá também.
             No iPhone, o app precisa estar instalado na tela inicial.

@@ -8,12 +8,14 @@ import { acaoDe, type Pedido } from '@/components/pedidos/pedidoTexto'
 import '@/components/pedidos/pedidos.css'
 import { tocarSom } from '@/hooks/useSom'
 import { nomeApresentavel } from '@/lib/nomeApresentavel'
+import { usePushSubscription } from '@/hooks/usePushSubscription'
+import { precisaInstalarNoIphone } from '@/lib/notifications'
 import './boasVindas.css'
 
 /**
  * Boas-vindas (refeita em 07/10 no desenho do login) — a apresentação que aparece logo depois de criar a conta.
  * (09/10 · 3.68) As demonstrações de pedidos, dinheiro e custos copiam as telas reais do app.
- * 6 telas: Boas-vindas · Cardápio · Pedidos · Dinheiro · Custos · Primeiro passo.
+ * 7 telas: Boas-vindas · Cardápio · Pedidos · Dinheiro · Custos · Avisos (23/10) · Primeiro passo.
  * (09/10 · 3.67) Textos refeitos pelo guia de marketing do onboarding: benefício concreto em cada tela, sem culpar,
  * tela nova do dinheiro (quem pagou e quem falta pagar) e o botão final leva aos Primeiros passos do Início.
  * Quem controla é o App (isOpen + onClose). O que foi mantido da versão antiga: as 3 demonstrações
@@ -30,7 +32,9 @@ type Props = {
   nome?: string
 }
 
-const TOTAL = 6
+const TOTAL = 7
+/** (23/10) a tela que pede pra ligar os avisos do celular (pedido novo e novidades chegam na hora) */
+const AVISOS = 5
 
 /**
  * Pra navegar logo depois que as boas-vindas fecham: elas acabaram de pedir um "voltar" pra tirar a entrada
@@ -63,6 +67,14 @@ const IMAGENS = ['/tutorial/cardapio-exemplo.jpg?v=2', '/tutorial/cardapio-exemp
 
 export default function BoasVindas({ isOpen, onClose, nome }: Props) {
   const [tela, setTela] = useState(0)
+  // (23/10) avisos do celular: já pede aqui, na primeira entrada (quem negar vê o pedido de novo no Pra fazer do Início)
+  const push = usePushSubscription()
+  const iphoneSemApp = precisaInstalarNoIphone()
+  const podeAtivar = !iphoneSemApp && push.isSupported && !push.isSubscribed && push.permission !== 'denied'
+  const podeAtivarRef = useRef(podeAtivar)
+  podeAtivarRef.current = podeAtivar
+  const ativarRef = useRef(async () => {})
+  ativarRef.current = async () => { const ok = await push.subscribe(); if (ok) tocarSom('sucesso') }
   const nomeOk = nomeApresentavel(nome)
   const [saindo, setSaindo] = useState(false)
   const telaRef = useRef(0)
@@ -96,6 +108,11 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
   }, [])
 
   const avancar = useCallback(() => {
+    if (telaRef.current === AVISOS && podeAtivarRef.current) {
+      // o toque no botão pede a permissão do aparelho (precisa sair direto do toque); ativando ou não, segue
+      void ativarRef.current().finally(() => setTela(t => Math.min(TOTAL - 1, t + 1)))
+      return
+    }
     if (telaRef.current < TOTAL - 1) {
       tocarSom('click')
       vibrarLeve()
@@ -158,7 +175,7 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
 
   const ultima = tela === TOTAL - 1
   const marca = tela === 0 || ultima // telas sem demonstração: o mascote fica em cima do texto
-  const textoBotao = tela === 0 ? 'Ver como funciona' : ultima ? 'Configurar minha confeitaria' : 'Próximo'
+  const textoBotao = tela === 0 ? 'Ver como funciona' : ultima ? 'Configurar minha confeitaria' : tela === AVISOS && podeAtivar ? 'Ativar avisos' : 'Próximo'
 
   return (
     <div className={`bv-root bv-tela-${tela}${saindo ? ' bv-root--saindo' : ''}`} role="dialog" aria-modal="true" aria-label="Boas-vindas ao Doonly" onTouchStart={aoTocar} onTouchEnd={aoSoltar}>
@@ -202,7 +219,15 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
               <h1 className="bv-h">Descubra quanto custa <em>produzir</em></h1>
               <p className="bv-p">Monte a ficha técnica e veja quanto sobra em cada venda.</p>
             </>)}
-            {tela === 5 && (<>
+            {tela === AVISOS && (<>
+              <p className="bv-sobre">Não perca nenhum pedido</p>
+              <h1 className="bv-h">Ative os <em>avisos</em> no seu celular</h1>
+              <p className="bv-p">{push.isSubscribed ? 'Pronto: os avisos estão ativados neste aparelho.'
+                : iphoneSemApp ? 'No iPhone, os avisos funcionam com o Doonly instalado na tela de início. No app, mostramos como fazer.'
+                : push.permission === 'denied' ? 'Os avisos estão bloqueados neste navegador. Você pode liberar depois, em Configurações.'
+                : 'Quando um cliente fizer um pedido pelo cardápio, o aviso chega na hora, mesmo com o app fechado. Novidades e dicas do Doonly também.'}</p>
+            </>)}
+            {tela === 6 && (<>
               <p className="bv-sobre">Agora é com você</p>
               {/* fecha com o nome, como abriu (sem nome válido, fica só "Sua confeitaria começa aqui") */}
               <h1 className="bv-h">{nomeOk ? <>{nomeOk}, sua confeitaria <em>começa aqui</em></> : <>Sua confeitaria <em>começa aqui</em></>}</h1>
@@ -210,7 +235,8 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
             </>)}
           </div>
           <div className="bv-base">
-            <Botao cheio className="bv-botao" onClick={avancar} carregando={saindo} iconeDepois={<CaretRight size={18} weight="bold" />}>{textoBotao}</Botao>
+            <Botao cheio className="bv-botao" onClick={avancar} carregando={saindo || (tela === AVISOS && push.loading)} iconeDepois={<CaretRight size={18} weight="bold" />}>{textoBotao}</Botao>
+            {tela === AVISOS && podeAtivar && <button type="button" className="bv-agora-nao" onClick={() => { vibrarLeve(); setTela(t => Math.min(TOTAL - 1, t + 1)) }}>Agora não</button>}
           </div>
         </div>
 
@@ -220,7 +246,8 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
           {tela === 2 && <DemoPedidos />}
           {tela === 3 && <DemoDinheiro />}
           {tela === 4 && <DemoLucro />}
-          {tela === 5 && <DemoMarca pose="comemorando" />}
+          {tela === AVISOS && <DemoAviso />}
+          {tela === 6 && <DemoMarca pose="comemorando" />}
         </div>
         <span className="bv-esp" aria-hidden="true" />
       </div>
@@ -236,6 +263,26 @@ function DemoMarca({ comMarca = false, pose = 'acenando' }: { comMarca?: boolean
     <div className="bv-marca">
       <Mascote pose={pose} className="bv-marca-masc" />
       {comMarca && <NomeDoonly cor="branco" className="bv-marca-nome" />}
+    </div>
+  )
+}
+
+/* ───────── 6 · avisos: o aviso de pedido novo chegando na tela do celular ───────── */
+function DemoAviso() {
+  return (
+    <div className="bv-notif" aria-hidden="true">
+      <div className="bv-notif-hora"><b>09:41</b><span>sexta-feira, 24 de outubro</span></div>
+      <div className="bv-notif-cartao">
+        <div className="bv-notif-cab"><img src="/Sistema/icon-192.png" alt="" /><span>Doonly</span><em>agora</em></div>
+        <div className="bv-notif-corpo">
+          <div><b>Novo pedido</b><p>Juliana fez um pedido de R$ 120,00. Toque para ver.</p></div>
+          <img src={PRODUTO.bolo} alt="" />
+        </div>
+      </div>
+      <div className="bv-notif-cartao bv-notif-cartao--2">
+        <div className="bv-notif-cab"><img src="/Sistema/icon-192.png" alt="" /><span>Doonly</span><em>1 h</em></div>
+        <div className="bv-notif-corpo"><div><b>Pix recebido</b><p>Sinal de R$ 60,00 do pedido #128.</p></div></div>
+      </div>
     </div>
   )
 }

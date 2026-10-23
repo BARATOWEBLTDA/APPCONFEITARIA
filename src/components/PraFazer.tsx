@@ -5,6 +5,7 @@ import type { Icon } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { useLojaPronta } from "@/lib/primeirosPassos";
 import { useAoVoltar } from "@/hooks/useAoVoltar";
+import { precisaInstalarNoIphone } from "@/lib/notifications";
 import { lerAvisosCadastro, notificarAvisosCadastro, type AvisoCadastro } from "@/lib/avisosCadastro";
 import { useAtualizacoes } from "@/components/MinhasAtualizacoes";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
@@ -151,8 +152,13 @@ export default function PraFazer() {
     if (ok) { avisar("Notificações ligadas. Você vai saber na hora quando chegar pedido.", { tipo: "ok" }); setMexeu(n => n + 1); }
     else if (Notification.permission === "denied") navigate("/configuracoes/notificacoes");
   };
-  const itemNotif: Item[] = uid && push.isSupported && !push.isSubscribed ? [{
-    chave: "ativar_notificacoes", nivel: "atencao", Ic: Bell, ordem: -100, acao: push.permission === "denied" ? "Liberar" : "Ativar", link: "/configuracoes/notificacoes", fechar: true,
+  // (23/10) sem "Agora não": enquanto os avisos não estiverem ligados, o pedido continua aqui (é o que garante que a novidade chega)
+  const itemNotif: Item[] = uid && precisaInstalarNoIphone() ? [{
+    chave: "instalar_iphone", nivel: "atencao", Ic: Bell, ordem: -100, acao: "Ver como", link: "/configuracoes/notificacoes", fechar: false,
+    t: "Instale o Doonly no iPhone", s: "Para receber os avisos de pedido",
+    txt: "No iPhone, os avisos só chegam com o Doonly instalado na tela de início.",
+  }] : uid && push.isSupported && !push.isSubscribed ? [{
+    chave: "ativar_notificacoes", nivel: "atencao", Ic: Bell, ordem: -100, acao: push.permission === "denied" ? "Liberar" : "Ativar", link: "/configuracoes/notificacoes", fechar: false,
     t: push.permission === "denied" ? "Notificações bloqueadas" : "Ativar notificações",
     s: push.permission === "denied" ? "Libere pra ver pedido novo" : "Pra não perder nenhum pedido",
     txt: "Libere pra o celular tocar quando chegar pedido, mesmo com o app fechado.",
