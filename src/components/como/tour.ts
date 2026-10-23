@@ -2,7 +2,9 @@
 /** (22/10) tour da tela (driver.js): fundo escurecido, a parte explicada acesa e um balão com Pular, Voltar e Próximo */
 export type PassoTour = { el: string; titulo: string; texto: string; redondo?: boolean };
 
-const existe = (p: PassoTour) => { const e = document.querySelector<HTMLElement>(p.el); return !!e && e.getClientRects().length > 0; };
+/** (23/10) o primeiro que está visível (telas com versão de celular e de computador na página, uma delas escondida) */
+const achar = (sel: string) => [...document.querySelectorAll<HTMLElement>(sel)].find(e => e.getClientRects().length > 0);
+const existe = (p: PassoTour) => !!achar(p.el);
 export const contarPassos = (passos: PassoTour[]) => passos.filter(existe).length;
 
 export async function fazerTour(passos: PassoTour[]) {
@@ -41,7 +43,7 @@ export async function fazerTour(passos: PassoTour[]) {
         pop.footerButtons.prepend(b);
       }
     },
-    steps: ok.map(p => ({ element: p.el, popover: { title: p.titulo, description: p.texto, ...(p.redondo ? { side: "top" as const, align: "center" as const, popoverClass: "doonly-tour tour-centro" } : {}) } })),
+    steps: ok.map(p => ({ element: achar(p.el) || p.el, popover: { title: p.titulo, description: p.texto, ...(p.redondo ? { side: "top" as const, align: "center" as const, popoverClass: "doonly-tour tour-centro" } : {}) } })),
   });
   travarRolagem(true);
   d.drive();

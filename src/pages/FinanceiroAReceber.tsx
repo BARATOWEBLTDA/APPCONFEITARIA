@@ -8,6 +8,7 @@ import Folha from "@/components/financeiro/Folha";
 import { useNavigate } from "react-router-dom";
 import { CalendarBlank, CheckCircle, ArrowSquareOut, Wallet, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
+import { COMO_A_RECEBER, TOUR_A_RECEBER } from "@/lib/comoTelas";
 import { Botao, TelaVazia, avisar as avisarBase } from "@/components/base";
 import { erroDeConexao } from "@/lib/erros";
 import { supabase } from "@/lib/supabase";
@@ -90,7 +91,7 @@ export default function FinanceiroAReceber() {
         title="A receber"
         subtitle={carregando ? "Carregando…" : erro ? "Não deu pra carregar" : itens.length ? `${brl(total)} em ${itens.length} ${itens.length === 1 ? "pedido" : "pedidos"}` : "Tudo recebido por aqui"}
         onBack={() => navigate("/financeiro")}
-        infoIcon="💰"
+        infoIcon="💰" infoComo={COMO_A_RECEBER} infoTour={TOUR_A_RECEBER}
         infoContent={<>
           <p>Aqui ficam os <strong>pedidos que ainda têm valor a receber</strong>: o total menos o que já entrou (sinal, parcelas…).</p>
           <p>Use <strong>Receber</strong> quando o cliente pagar. O valor entra no financeiro na data que você escolher, e o pedido sai daqui quando estiver quitado.</p>
