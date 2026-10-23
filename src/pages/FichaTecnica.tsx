@@ -325,11 +325,11 @@ export default function FichaTecnica() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, produtos, location.state]);
 
-  // (16/10) veio do "Ver" do Seus próximos passos: abre a ficha do primeiro produto sem ficha
+  // (22/10) veio do "Fazer" do Pra fazer (ou dos próximos passos): abre a lista já no filtro "Sem ficha".
+  // Antes abria direto a ficha do primeiro produto, e ela não via quais eram os outros.
   useAbrirPedido(!loading && produtos.length > 0, p => {
     if (p !== "sem-ficha") return;
-    const sem = produtos.find(x => !calcular(x, maoConta, cvConta).temFicha);
-    if (sem) { abrirFicha(sem); window.scrollTo(0, 0); }
+    setFiltro("sem"); window.scrollTo(0, 0);
   });
 
   // (11/10) Retrato da ficha como foi aberta (ou salva pela última vez): a seta de voltar pergunta antes de descartar mudanças.
