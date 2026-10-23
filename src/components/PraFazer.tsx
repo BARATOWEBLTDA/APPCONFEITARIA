@@ -8,7 +8,7 @@ import { useAoVoltar } from "@/hooks/useAoVoltar";
 import { lerAvisosCadastro, notificarAvisosCadastro, type AvisoCadastro } from "@/lib/avisosCadastro";
 import { useAtualizacoes } from "@/components/MinhasAtualizacoes";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
-import { avisar } from "@/components/base";
+import { Botao, Janela, avisar } from "@/components/base";
 
 /**
  * (15/10) "Pra fazer": um cartão só no Início, no lugar do "Complete seu app" e do "Suas atualizações".
@@ -34,9 +34,10 @@ const DIA = 86400000;
 const PESO = { urgente: 0, atencao: 1, normal: 2 };
 const VISIVEIS = 3;
 /** (22/10) "Como funciona": janelinha com um exemplo em números, o caminho e as dicas (igual às Pendências da Dora) */
-type Como = { tit: string; linhas: [string, string][]; total: [string, string]; fluxo: string[]; dicas: [Icon, ReactNode][] };
+type Como = { nome: string; acao: string; tit: string; linhas: [string, string][]; total: [string, string]; fluxo: string[]; dicas: [Icon, ReactNode][] };
 const COMO: Record<string, Como> = {
   entrega: {
+    nome: "Taxa de entrega", acao: "Definir a taxa de entrega",
     tit: "Exemplo · entrega de 5 km",
     linhas: [["Gasolina da entrega", "R$ 12,00"], ["Cliente paga de taxa", "R$ 10,00"]],
     total: ["Sai do seu bolso", "R$ 2,00"],
@@ -49,6 +50,7 @@ const COMO: Record<string, Como> = {
     ],
   },
   ficha: {
+    nome: "Ficha técnica", acao: "Montar as fichas",
     tit: "Exemplo · bolo de R$ 120,00",
     linhas: [["Ingredientes", "R$ 38,00"], ["Embalagem", "R$ 4,00"], ["Gás e perdas (25%)", "R$ 9,50"]],
     total: ["Seu lucro", "R$ 68,50 (57%)"],
@@ -61,6 +63,7 @@ const COMO: Record<string, Como> = {
     ],
   },
   custos: {
+    nome: "Custos e taxas", acao: "Cadastrar os custos",
     tit: "Exemplo · mês com 100 bolos",
     linhas: [["Aluguel", "R$ 800,00"], ["Luz e gás", "R$ 200,00"]],
     total: ["Cada bolo carrega", "R$ 10,00"],
@@ -95,8 +98,15 @@ export default function PraFazer() {
   const [menu, setMenu] = useState<string | null>(null);
   const [como, setComo] = useState<string | null>(null);
   const raiz = useRef<HTMLElement>(null);
+  // (22/10) no celular o "Como funciona" abre numa gaveta de baixo (fundo escurecido); no computador, a janelinha na lista
+  const [cel, setCel] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches);
   useEffect(() => {
-    if (!como) return;
+    const mq = window.matchMedia("(max-width: 900px)");
+    const f = () => setCel(mq.matches);
+    mq.addEventListener("change", f); return () => mq.removeEventListener("change", f);
+  }, []);
+  useEffect(() => {
+    if (!como || cel) return;
     // (22/10) fecha só com um toque fora (click), não ao rolar a tela: antes o toque de rolar fechava antes de dar pra ler
     const fora = (e: MouseEvent) => { const t = e.target as HTMLElement; if (!t?.closest?.(".pf-cf") && !t?.closest?.(".pf-como")) setComo(null); };
     const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setComo(null); };
@@ -104,7 +114,7 @@ export default function PraFazer() {
     const t = window.setTimeout(() => raiz.current?.querySelector(".pf-cf")?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
     document.addEventListener("click", fora); document.addEventListener("keydown", esc);
     return () => { window.clearTimeout(t); document.removeEventListener("click", fora); document.removeEventListener("keydown", esc); };
-  }, [como]);
+  }, [como, cel]);
   useEffect(() => {
     if (!menu) return;
     const fora = (e: MouseEvent) => { if (!(e.target as HTMLElement)?.closest?.(".pf-nao-w")) setMenu(null); };
@@ -194,21 +204,7 @@ export default function PraFazer() {
               <b>{x.t}</b>
               {x.alerta && <span className="pf-alerta">{x.alerta}</span>}
               <p>{x.txt || x.s}{x.comoFunciona && <> <button type="button" className="pf-como" aria-expanded={como === x.chave} onClick={() => setComo(c => c === x.chave ? null : x.chave)}>Como funciona <Info size={14} weight="bold" aria-hidden="true" /></button></>}</p>
-              {como === x.chave && x.comoFunciona && (
-                <div className="pf-cf" role="dialog" aria-label={`Como funciona: ${x.t}`}>
-                  <div className="pf-cf-ex">
-                    <p className="pf-cf-t">{x.comoFunciona.tit}</p>
-                    {x.comoFunciona.linhas.map(([l, v]) => <div key={l} className="pf-cf-l"><span>{l}</span><span>{v}</span></div>)}
-                    <div className="pf-cf-l pf-cf-tot"><span>{x.comoFunciona.total[0]}</span><span>{x.comoFunciona.total[1]}</span></div>
-                    <div className="pf-cf-fluxo">
-                      {x.comoFunciona.fluxo.map((f, i) => <span key={f} className="pf-cf-pass">{i > 0 && <ArrowRight size={12} weight="bold" aria-hidden="true" />}<em className={i === 1 ? "on" : ""}>{f}</em></span>)}
-                    </div>
-                  </div>
-                  <ul className="pf-cf-dicas">
-                    {x.comoFunciona.dicas.map(([Ic, t], i) => <li key={i}><Ic size={16} aria-hidden="true" /><span>{t}</span></li>)}
-                  </ul>
-                </div>
-              )}
+              {!cel && como === x.chave && x.comoFunciona && <ConteudoComo c={x.comoFunciona} rotulo={x.t} />}
               <div className="pf-bts">
                 {x.revisar ? (
                   <button type="button" className="pf-nao" onClick={() => navigate(x.link, { state: x.revisar })}>Revisar</button>
@@ -230,6 +226,16 @@ export default function PraFazer() {
           </li>
         ))}
       </ul>
+      {cel && (() => {
+        const x = itens.find(i => i.chave === como);
+        const c = x?.comoFunciona;
+        return (
+          <Janela aberta={!!(x && c)} aoFechar={() => setComo(null)} titulo={c?.nome || ""} tipo="conteudo" umaAcao
+            acoes={x && c ? <Botao cheio onClick={() => { setComo(null); ir(x); }}>{c.acao}</Botao> : undefined}>
+            {c && <div className="pf-cf-folha"><ConteudoComo c={c} rotulo={c.nome} /></div>}
+          </Janela>
+        );
+      })()}
       {resto > 0 && (
         <button type="button" className="pf-ver" onClick={() => setAberto(a => !a)} aria-expanded={aberto}>
           {aberto ? "Ver menos" : resto === 1 ? "Ver o outro" : `Ver os outros ${resto}`}
@@ -237,6 +243,24 @@ export default function PraFazer() {
       )}
       <style>{CSS}</style>
     </section>
+  );
+}
+
+function ConteudoComo({ c, rotulo }: { c: Como; rotulo: string }) {
+  return (
+    <div className="pf-cf" role="group" aria-label={`Como funciona: ${rotulo}`}>
+      <div className="pf-cf-ex">
+        <p className="pf-cf-t">{c.tit}</p>
+        {c.linhas.map(([l, v]) => <div key={l} className="pf-cf-l"><span>{l}</span><span>{v}</span></div>)}
+        <div className="pf-cf-l pf-cf-tot"><span>{c.total[0]}</span><span>{c.total[1]}</span></div>
+        <div className="pf-cf-fluxo">
+          {c.fluxo.map((f, i) => <span key={f} className="pf-cf-pass">{i > 0 && <ArrowRight size={12} weight="bold" aria-hidden="true" />}<em className={i === 1 ? "on" : ""}>{f}</em></span>)}
+        </div>
+      </div>
+      <ul className="pf-cf-dicas">
+        {c.dicas.map(([Ic, t], i) => <li key={i}><Ic size={16} aria-hidden="true" /><span>{t}</span></li>)}
+      </ul>
+    </div>
   );
 }
 
@@ -259,6 +283,8 @@ const CSS = `
   .pf-como { display: inline-flex; align-items: center; gap: 3px; margin: 0; padding: 0; border: 0; background: none; font: inherit; font-weight: 600; color: var(--ui-texto); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
   /* "Como funciona": janelinha por cima, com o exemplo em cima (fundo cinza) e as dicas embaixo, igual à Dora */
   .pf-tx { position: relative; }
+  /* na gaveta do celular: o mesmo conteúdo, sem sombra (a gaveta já é a caixa) */
+  .pf-cf-folha .pf-cf { margin: 0; box-shadow: none; }
   .pf-cf, .pf-menu { scroll-margin-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); scroll-margin-top: 80px; }
   /* dentro do fluxo (empurra o resto pra baixo): perto do fim da tela, absoluta ficava atrás do menu de baixo sem dar pra rolar */
   .pf-cf { position: relative; z-index: 2; margin: 10px 0 0 -48px; overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: 14px; box-shadow: 0 16px 40px rgba(20, 10, 7, .18); }
