@@ -500,16 +500,13 @@ export const COMO_NOVIDADES: Como = {
     [Bell, <>Cada novidade nova chega como <b>aviso no celular</b>. O toque abre o texto completo.</>],
     [Circle, <>As <b>não lidas</b> ficam em branco. Depois de abertas, ficam em cinza.</>],
     [PushPin, <>A novidade <b>fixada</b> fica sempre no topo.</>],
-    [Funnel, <>Escolha uma <b>categoria</b> para ver apenas dicas, novidades ou tutoriais.</>],
+    [Lightbulb, <>Tem uma ideia? Use <b>Sugerir uma melhoria</b>, no Menu.</>],
   ],
 };
 export const TOUR_NOVIDADES: PassoTour[] = [
-  { el: ".nl-busca", titulo: "Buscar", texto: "Encontre uma publicação pelo título." },
-  { el: ".nl-filtros", titulo: "Categorias", texto: "Veja todas as publicações ou apenas novidades, dicas ou tutoriais." },
-  { el: ".nl-barra", titulo: "Não lidas", texto: "Quantas publicações você ainda não leu, com a opção de marcar todas como lidas." },
-  { el: ".nl-lista", titulo: "Publicações", texto: "Da mais nova para a mais antiga. As não lidas ficam em branco e as lidas, em cinza. Toque para ler.",
-    vazio: { el: ".nl-vazia", texto: "Ainda não há publicações para mostrar. As novidades do Doonly aparecem aqui." } },
-  { el: ".nl-conv--d", titulo: "Tem uma ideia?", texto: "Envie sugestões de melhoria para a equipe do Doonly." },
+  { el: ".nl-lista > li:first-child", titulo: "Novidade", texto: "Imagem, título, resumo e quando foi publicada. Toque para ler o texto completo." },
+  { el: ".nl-it--lida", titulo: "Já lida", texto: "Depois de aberta, a novidade fica em cinza. As não lidas ficam em branco." },
+  { el: ".cab-cel-ac:not(.cab-cel-ac--pro), .sidebar-sino", titulo: "Sino", texto: "O número no sino mostra quantas novidades você ainda não leu." },
 ];
 
 export const COMO_DADOS_LOJA: Como = {
