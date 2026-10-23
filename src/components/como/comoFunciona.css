@@ -39,8 +39,9 @@
 /* botão de ajuda solto (ex.: o (?) do "Olá" no Início do celular) */
 .cf-ajuda { position: relative; display: inline-flex; vertical-align: middle; }
 .cf-ajuda-bt { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; margin: 0; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--ui-texto-3); cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.cf-ajuda-bt--pergunta { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
-.cf-ajuda-bt.on { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); box-shadow: 0 0 0 2px rgba(var(--ui-rosa-rgb), .35); }
+/* (22/10) discreto: só o ícone cinza; aberto, fica rosa (sem fundo nem anel) */
+.cf-ajuda-bt--pergunta { background: none; color: var(--ui-texto-3); }
+.cf-ajuda-bt.on { background: none; color: var(--ui-rosa-escuro); }
 .cf-pop { position: fixed; z-index: 3500; width: min(380px, calc(100vw - 24px)); font-weight: 400; white-space: normal; text-align: left; letter-spacing: normal; text-transform: none; }
 .cf-pop-rolo { overflow-y: auto; overscroll-behavior: contain; border-radius: 14px; box-shadow: 0 16px 40px rgba(20, 10, 7, .18); }
 .cf-pop-rolo .cf { box-shadow: none; }
@@ -56,3 +57,7 @@
 .driver-popover.doonly-tour .driver-popover-next-btn { background: var(--ui-rosa) !important; color: #fff !important; font-weight: 700 !important; }
 .driver-popover.doonly-tour .driver-popover-close-btn { width: 32px; height: 32px; color: var(--ui-texto-3); }
 .driver-popover.doonly-tour .tour-pular { margin-right: auto; background: none !important; color: var(--ui-texto-3) !important; padding: 0 4px !important; font-weight: 500 !important; }
+
+html.tour-ativo, html.tour-ativo body { overflow: hidden !important; overscroll-behavior: none; touch-action: none; }
+/* (22/10) balão do + da barra de baixo: a setinha aponta pro meio, onde está o + */
+.driver-popover.tour-centro .driver-popover-arrow-side-top { left: 50% !important; right: auto !important; margin-left: -5px; }
