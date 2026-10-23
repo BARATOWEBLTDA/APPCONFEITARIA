@@ -97,17 +97,21 @@ export default function PraFazer() {
   const raiz = useRef<HTMLElement>(null);
   useEffect(() => {
     if (!como) return;
-    const fora = (e: MouseEvent | TouchEvent) => { const t = e.target as HTMLElement; if (!t?.closest?.(".pf-cf") && !t?.closest?.(".pf-como")) setComo(null); };
+    // (22/10) fecha só com um toque fora (click), não ao rolar a tela: antes o toque de rolar fechava antes de dar pra ler
+    const fora = (e: MouseEvent) => { const t = e.target as HTMLElement; if (!t?.closest?.(".pf-cf") && !t?.closest?.(".pf-como")) setComo(null); };
     const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setComo(null); };
-    document.addEventListener("mousedown", fora); document.addEventListener("touchstart", fora); document.addEventListener("keydown", esc);
-    return () => { document.removeEventListener("mousedown", fora); document.removeEventListener("touchstart", fora); document.removeEventListener("keydown", esc); };
+    // e rola até a janelinha aparecer inteira (sem ficar atrás do menu de baixo)
+    const t = window.setTimeout(() => raiz.current?.querySelector(".pf-cf")?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
+    document.addEventListener("click", fora); document.addEventListener("keydown", esc);
+    return () => { window.clearTimeout(t); document.removeEventListener("click", fora); document.removeEventListener("keydown", esc); };
   }, [como]);
   useEffect(() => {
     if (!menu) return;
-    const fora = (e: MouseEvent | TouchEvent) => { if (!(e.target as HTMLElement)?.closest?.(".pf-nao-w")) setMenu(null); };
+    const fora = (e: MouseEvent) => { if (!(e.target as HTMLElement)?.closest?.(".pf-nao-w")) setMenu(null); };
     const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setMenu(null); };
-    document.addEventListener("mousedown", fora); document.addEventListener("touchstart", fora); document.addEventListener("keydown", esc);
-    return () => { document.removeEventListener("mousedown", fora); document.removeEventListener("touchstart", fora); document.removeEventListener("keydown", esc); };
+    const t = window.setTimeout(() => raiz.current?.querySelector(".pf-menu")?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
+    document.addEventListener("click", fora); document.addEventListener("keydown", esc);
+    return () => { window.clearTimeout(t); document.removeEventListener("click", fora); document.removeEventListener("keydown", esc); };
   }, [menu]);
   const kAte = (chave: string) => `doonly_aviso_ate_${uid}_${chave}`;
   const kOff = (chave: string) => `doonly_aviso_off_${uid}_${chave}`; // o X antigo (escondia por 7 dias)
@@ -255,7 +259,9 @@ const CSS = `
   .pf-como { display: inline-flex; align-items: center; gap: 3px; margin: 0; padding: 0; border: 0; background: none; font: inherit; font-weight: 600; color: var(--ui-texto); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
   /* "Como funciona": janelinha por cima, com o exemplo em cima (fundo cinza) e as dicas embaixo, igual à Dora */
   .pf-tx { position: relative; }
-  .pf-cf { position: absolute; left: -48px; right: 0; top: auto; z-index: 25; margin-top: 8px; overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: 14px; box-shadow: 0 16px 40px rgba(20, 10, 7, .18); }
+  .pf-cf, .pf-menu { scroll-margin-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); scroll-margin-top: 80px; }
+  /* dentro do fluxo (empurra o resto pra baixo): perto do fim da tela, absoluta ficava atrás do menu de baixo sem dar pra rolar */
+  .pf-cf { position: relative; z-index: 2; margin: 10px 0 0 -48px; overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: 14px; box-shadow: 0 16px 40px rgba(20, 10, 7, .18); }
   .pf-cf-ex { padding: 14px 16px 12px; background: #F7F6F6; border-bottom: 1px solid var(--ui-linha); }
   .pf-cf-t { margin: 0 0 8px; font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ui-texto-3); }
   .pf-cf-l { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; font-size: 13.5px; color: var(--ui-texto-2); white-space: nowrap; }
