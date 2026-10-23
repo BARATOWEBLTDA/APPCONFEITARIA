@@ -492,41 +492,22 @@ export const TOUR_MARKETING: PassoTour[] = [
   { el: ".mk-card", titulo: "Pixel do Facebook", texto: "Informe o código do Pixel para os anúncios do Facebook e do Instagram chegarem a quem visitou o cardápio." },
 ];
 
-export const COMO_NOTIFICACOES: Como = {
-  tela: { nome: "Notificações", Icone: Bell },
-  resumo: "Pedidos novos, avisos da loja e do plano, conquistas e novidades do Doonly.",
-  fluxo: ["Aviso chega", "Você lê", "Resolve"],
-  dicas: [
-    [Bell, <>Os avisos <b>não lidos</b> têm uma bolinha. A aba Não lidas mostra apenas eles.</>],
-    [Checks, <><b>Marcar todas como lidas</b> limpa os avisos de uma vez.</>],
-    [ArrowRight, <>Avisos com atalho levam direto para a <b>tela relacionada</b>.</>],
-    [SpeakerHigh, <>Ajuste os avisos e os sons do celular em <b>Configurações</b>.</>],
-  ],
-};
-export const TOUR_NOTIFICACOES: PassoTour[] = [
-  { el: ".ntf-seg", titulo: "Todas e não lidas", texto: "Veja todos os avisos ou apenas os que ainda não foram lidos." },
-  { el: ".ntf-todas", titulo: "Marcar como lidas", texto: "Marca todos os avisos como lidos de uma vez." },
-  { el: ".ntf-item", titulo: "Aviso", texto: "Cada aviso mostra o tipo, o horário e a descrição. Selecione para abrir a tela relacionada.",
-    vazio: { el: ".ntf-empty", texto: "Não há avisos para mostrar. Pedidos novos, avisos da loja e novidades aparecem aqui." } },
-  { el: ".ntf-lado .ntf-cartao", titulo: "Mostrar", texto: "Filtre os avisos por assunto." },
-  { el: ".ntf-blq", titulo: "Avisos do aparelho", texto: "Ligue ou libere os avisos para saber na hora quando chegar um pedido novo." },
-];
-
 export const COMO_NOVIDADES: Como = {
   tela: { nome: "Novidades", Icone: Newspaper },
   resumo: "Dicas para vender mais, novidades do app, tutoriais e avisos importantes do Doonly.",
+  fluxo: ["Publicada", "Aviso no celular", "Leitura"],
   dicas: [
-    [PushPin, <>A novidade <b>fixada</b> fica sempre no topo, em destaque.</>],
+    [Bell, <>Cada novidade nova chega como <b>aviso no celular</b>. O toque abre o texto completo.</>],
+    [Circle, <>As <b>não lidas</b> ficam em branco. Depois de abertas, ficam em cinza.</>],
+    [PushPin, <>A novidade <b>fixada</b> fica sempre no topo.</>],
     [Funnel, <>Escolha uma <b>categoria</b> para ver apenas dicas, novidades ou tutoriais.</>],
-    [Circle, <>A <b>bolinha</b> indica o que você ainda não leu.</>],
-    [Lightbulb, <>Tem uma ideia? Use <b>Sugerir</b> para enviar à equipe do Doonly.</>],
   ],
 };
 export const TOUR_NOVIDADES: PassoTour[] = [
   { el: ".nl-busca", titulo: "Buscar", texto: "Encontre uma publicação pelo título." },
   { el: ".nl-filtros", titulo: "Categorias", texto: "Veja todas as publicações ou apenas novidades, dicas ou tutoriais." },
-  { el: ".nl-fix", titulo: "Fixada", texto: "A publicação mais importante do momento fica em destaque no topo." },
-  { el: ".nl-lista", titulo: "Publicações", texto: "Da mais nova para a mais antiga. A bolinha indica o que você ainda não leu.",
+  { el: ".nl-barra", titulo: "Não lidas", texto: "Quantas publicações você ainda não leu, com a opção de marcar todas como lidas." },
+  { el: ".nl-lista", titulo: "Publicações", texto: "Da mais nova para a mais antiga. As não lidas ficam em branco e as lidas, em cinza. Toque para ler.",
     vazio: { el: ".nl-vazia", texto: "Ainda não há publicações para mostrar. As novidades do Doonly aparecem aqui." } },
   { el: ".nl-conv--d", titulo: "Tem uma ideia?", texto: "Envie sugestões de melhoria para a equipe do Doonly." },
 ];

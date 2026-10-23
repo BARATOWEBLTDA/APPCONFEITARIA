@@ -756,7 +756,7 @@ export default function Inicio() {
               <img src="/coroa.png" alt="" aria-hidden="true" />
             </button>
           )}
-          <button type="button" className={`ini-hero-ac${notifCount > 0 ? " ini-hero-ac--tem" : ""}`} onClick={() => navigate("/notificacoes")} aria-label={notifCount > 0 ? `Notificações, ${notifCount} nova${notifCount > 1 ? "s" : ""}` : "Notificações"} title="Notificações">
+          <button type="button" className={`ini-hero-ac${notifCount > 0 ? " ini-hero-ac--tem" : ""}`} onClick={() => navigate("/noticias")} aria-label={notifCount > 0 ? `Novidades, ${notifCount} não lida${notifCount > 1 ? "s" : ""}` : "Novidades"} title="Novidades">
             <Bell size={24} weight="regular" />
             {notifCount > 0 && <i className="ini-hero-bolinha">{notifCount > 9 ? "9+" : notifCount}</i>}
           </button>

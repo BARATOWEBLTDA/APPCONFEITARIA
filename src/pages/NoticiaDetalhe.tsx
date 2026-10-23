@@ -94,7 +94,7 @@ export default function NoticiaDetalhe() {
       // conta a leitura (não espera a resposta)
       supabase.rpc("incrementar_view_noticia", { noticia_slug: slug }).then(() => {});
       // (21/10) marca como lida pra ela (some a bolinha na lista de Novidades)
-      if (user) supabase.from("noticias_lidas").upsert({ user_id: user.id, noticia_id: n.id }, { onConflict: "user_id,noticia_id" }).then(() => {});
+      if (user) supabase.from("noticias_lidas").upsert({ user_id: user.id, noticia_id: n.id }, { onConflict: "user_id,noticia_id" }).then(() => { window.dispatchEvent(new CustomEvent("doonly:notif-mudou")); });
       setEstado("pronto");
       window.scrollTo(0, 0);
     } catch {

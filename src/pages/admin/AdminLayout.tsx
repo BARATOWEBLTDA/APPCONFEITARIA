@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import {
   ChartLine, UsersThree, Newspaper, PenNib, Image as ImageIcon, Images,
-  Cake, Medal, FilePdf, Bell, ChartBar, Lightbulb,
+  Cake, Medal, FilePdf, ChartBar, Lightbulb,
   ArrowLeft, SignOut, DotsThreeOutline, CaretRight, X,
 } from "@phosphor-icons/react";
 
@@ -28,7 +28,7 @@ const menuSections: MenuSection[] = [
   {
     title: "Conteúdo",
     items: [
-      { path: "/admin/noticias", label: "Notícias", icon: <Newspaper size={20} weight="bold" /> },
+      { path: "/admin/noticias", label: "Notícias e avisos", icon: <Newspaper size={20} weight="bold" /> }, // (23/10) o aviso no celular sai daqui, junto com a notícia
       { path: "/admin/autores", label: "Autores", icon: <PenNib size={20} weight="bold" /> },
       { path: "/admin/banner", label: "Banner do celular", icon: <ImageIcon size={20} weight="bold" /> },
       { path: "/admin/banners-prontos", label: "Banners prontos", icon: <Images size={20} weight="bold" /> },
@@ -45,7 +45,6 @@ const menuSections: MenuSection[] = [
   {
     title: "Comunicação",
     items: [
-      { path: "/admin/notificacoes", label: "Notificações", icon: <Bell size={20} weight="bold" /> },
       { path: "/admin/ideias", label: "Ideias", icon: <Lightbulb size={20} weight="bold" /> },
     ],
   },
@@ -62,7 +61,7 @@ const BOTTOM_NAV: { path: string; label: string; icon: React.ReactNode }[] = [
   { path: "/admin", label: "Painel", icon: <ChartLine size={22} weight="bold" /> },
   { path: "/admin/ideias", label: "Ideias", icon: <Lightbulb size={22} weight="bold" /> },
   { path: "/admin/noticias", label: "Notícias", icon: <Newspaper size={22} weight="bold" /> },
-  { path: "/admin/notificacoes", label: "Avisos", icon: <Bell size={22} weight="bold" /> },
+  { path: "/admin/usuarios", label: "Usuários", icon: <UsersThree size={22} weight="bold" /> },
 ];
 const BOTTOM_PATHS = BOTTOM_NAV.map(i => i.path);
 const MAIS_ITEMS = menuSections.flatMap(s => s.items).filter(i => !BOTTOM_PATHS.includes(i.path));

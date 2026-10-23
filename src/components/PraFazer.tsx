@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { Basket, Bell, BellSlash, Buildings, CalendarCheck, CaretDown, ChartLineUp, Check, ClipboardText, Clock, Coins, CreditCard, ImageSquare, Info, ListChecks, MapPin, Storefront, TextAlignLeft, Truck, WarningCircle } from "@phosphor-icons/react";
+import { Basket, Bell, BellSlash, Crown, Buildings, CalendarCheck, CaretDown, ChartLineUp, Check, ClipboardText, Clock, Coins, CreditCard, ImageSquare, Info, ListChecks, MapPin, Storefront, TextAlignLeft, Truck, WarningCircle } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { useLojaPronta } from "@/lib/primeirosPassos";
 import { useAoVoltar } from "@/hooks/useAoVoltar";
 import { precisaInstalarNoIphone } from "@/lib/notifications";
 import { lerAvisosCadastro, notificarAvisosCadastro, type AvisoCadastro } from "@/lib/avisosCadastro";
+import { avisoDoPro } from "@/lib/notificacoesUsuario";
 import { useAtualizacoes } from "@/components/MinhasAtualizacoes";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
 import { Botao, Janela, avisar } from "@/components/base";
@@ -165,8 +166,18 @@ export default function PraFazer() {
     aoTocar: () => { void ativarNotif(); },
   }] : [];
 
+  // (23/10) plano PRO vencendo ou em atraso: antes só aparecia na tela Notificações (que saiu)
+  const avisoPro = (profile as any)?.pro_expira_em ? avisoDoPro((profile as any).pro_expira_em) : null;
+  const itemPro: Item[] = avisoPro ? [{
+    chave: `${avisoPro.chave}`, nivel: avisoPro.tipo === "pro_atrasado" ? "urgente" : "atencao", Ic: Crown, ordem: -90, acao: "Renovar", link: "/assinar", fechar: false,
+    t: avisoPro.tipo === "pro_atrasado" ? "Mensalidade do PRO em atraso" : "Seu PRO vence em breve",
+    s: avisoPro.tipo === "pro_atrasado" ? "Regularize para voltar ao PRO" : `Vence no dia ${/dia (\d\d\/\d\d)/.exec(avisoPro.mensagem)?.[1] || ""}`.trim(),
+    txt: avisoPro.mensagem,
+  }] : [];
+
   const itens: Item[] = [
     ...itemNotif,
+    ...itemPro,
     ...avisos.map((a, i): Item => ({
       chave: a.chave, nivel: a.nivel, Ic: ICONE[a.icone], t: a.curto.t, s: a.curto.s, link: a.link, estado: a.estado, ordem: i,
       acao: ACAO[a.icone] || "Ver", fechar: a.icone !== "conta",

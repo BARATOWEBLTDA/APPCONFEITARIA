@@ -114,10 +114,10 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
         <div className="mais-corpo">
           {/* (21/10) atalhos: avisos (com os não lidos), novidades e assinatura */}
           <div className="mais-at">
-            <button type="button" onClick={() => ir("/notificacoes")} aria-label={notifCount > 0 ? `Avisos, ${notifCount} não lidos` : "Avisos"}>
-              <Bell size={20} weight="fill" aria-hidden="true" />Avisos{notifCount > 0 && <i>{notifCount > 9 ? "9+" : notifCount}</i>}
+            {/* (23/10) a tela Notificações saiu: as novidades (com as não lidas) ficam no lugar dela */}
+            <button type="button" onClick={() => ir("/noticias")} aria-label={notifCount > 0 ? `Novidades, ${notifCount} não lidas` : "Novidades"}>
+              <Newspaper size={20} weight="fill" aria-hidden="true" />Novidades{notifCount > 0 && <i>{notifCount > 9 ? "9+" : notifCount}</i>}
             </button>
-            <button type="button" onClick={() => ir("/noticias")}><Newspaper size={20} weight="fill" aria-hidden="true" />Novidades</button>
             <button type="button" onClick={() => ir(isPro ? "/minha-assinatura" : "/assinar")}><Crown size={20} weight="fill" aria-hidden="true" />Assinatura</button>
           </div>
           {/* (16/10) o Doo IA saiu do menu de baixo (lá entrou o "+ Nova venda"): fica no topo do Mais */}

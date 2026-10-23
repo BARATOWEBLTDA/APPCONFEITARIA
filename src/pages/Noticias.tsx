@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Lightbulb, MagnifyingGlass, Newspaper, PushPin, WarningCircle, X } from "@phosphor-icons/react";
+import { Checks, Lightbulb, MagnifyingGlass, Newspaper, PlayCircle, PushPin, Sparkle, WarningCircle, X } from "@phosphor-icons/react";
 import { Mascote } from "@/components/marca/Mascote";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_NOVIDADES, TOUR_NOVIDADES } from "@/lib/comoTelas";
 import { Botao, BotaoIcone, TelaVazia } from "@/components/base";
 import { supabase } from "@/lib/supabase";
-import { linhaDeTempo, semAcento } from "@/lib/noticias";
+import { semAcento } from "@/lib/noticias";
 import "./noticias.css";
 
 /** Tira do título o nome da categoria quando ele começa igual ("Novidade: ..." com a etiqueta "Novidade" ao lado). */
@@ -41,6 +41,25 @@ interface Noticia {
   fixada: boolean;
 }
 
+/** (23/10) "agora", "5 min", "3 h", "2 d", "3 sem" e depois a data (como no iFood) */
+function tempoCurto(iso: string): string {
+  const min = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+  if (min < 1) return "agora";
+  if (min < 60) return `${min} min`;
+  const h = Math.round(min / 60); if (h < 24) return `${h} h`;
+  const d = Math.round(h / 24); if (d < 7) return `${d} d`;
+  if (d < 35) return `${Math.round(d / 7)} sem`;
+  const dt = new Date(iso); return `${String(dt.getDate()).padStart(2, "0")}/${String(dt.getMonth() + 1).padStart(2, "0")}`;
+}
+/** sem capa: a ilustração da categoria no quadrado rosa */
+function iconeDaCategoria(c: string | null) {
+  const k = semAcento(c || "");
+  if (k.startsWith("dica")) return Lightbulb;
+  if (k.startsWith("tutorial")) return PlayCircle;
+  if (k.startsWith("novidade")) return Sparkle;
+  return Newspaper;
+}
+
 /** (21/10) Convites úteis no fim da lista e na tela vazia */
 function Convite({ titulo, texto, botao, para, destaque }: { titulo: string; texto: string; botao: string; para: string; destaque?: boolean }) {
   const navigate = useNavigate();
@@ -61,6 +80,13 @@ export default function Noticias() {
   useEffect(() => {
     void supabase.from("noticias_lidas").select("noticia_id").then(({ data, error }) => { if (!error && data) setLidas(new Set(data.map((x: any) => x.noticia_id))); });
   }, []);
+  const lerTodas = async (ids: string[]) => {
+    setLidas(prev => new Set([...prev, ...ids]));
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user || !ids.length) return;
+    await supabase.from("noticias_lidas").upsert(ids.map(id => ({ user_id: session.user.id, noticia_id: id })), { onConflict: "user_id,noticia_id" });
+    window.dispatchEvent(new CustomEvent("doonly:notif-mudou"));
+  };
   const [estado, setEstado] = useState<"carregando" | "erro" | "pronto">("carregando");
   const [demorou, setDemorou] = useState(false);
   const [categoria, setCategoria] = useState("todas");
@@ -181,51 +207,39 @@ export default function Noticias() {
           />
         ) : (
           (() => {
-            // (21/10) a fixada (sem filtro nem busca) em destaque com a capa larga; as outras em linhas compactas
-            const fix = !filtrando ? filtradas.find(n => n.fixada) : undefined;
-            const resto = filtradas.filter(n => n !== fix);
+            // (23/10) no jeito do iFood: uma linha por novidade; não lida em branco, lida em cinza e apagadinha. Não dá pra apagar.
+            const naoLidas = filtradas.filter(n => !lidas.has(n.id));
             return (
-              <div className={`nl-grade${fix ? " nl-grade--fix" : ""}`}>
-                {fix && (() => {
-                  const capa = fix.imagem_capa || fix.icone_url;
-                  return (
-                    <Link to={`/noticias/${fix.slug}`} className="nl-fix">
-                      <span className="nl-fix-capa" aria-hidden="true">{capa ? <img src={capa} alt="" onError={e => { e.currentTarget.style.display = "none"; }} /> : <Newspaper size={40} weight="bold" />}</span>
-                      <span className="nl-fix-tx">
-                        <span className="nl-cat"><span className="nl-fixa"><PushPin size={16} weight="bold" aria-hidden="true" />Fixada</span>{fix.categoria && <><span aria-hidden="true">·</span><span>{fix.categoria}</span></>}</span>
-                        <b>{tituloSemCategoria(fix.titulo, fix.categoria)}{!lidas.has(fix.id) && <i className="nl-pt" aria-label="Não lida" />}</b>
-                        {fix.descricao && <small>{fix.descricao}</small>}
-                      </span>
-                    </Link>
-                  );
-                })()}
-                <div className="nl-col">
-                  {resto.length > 0 && (
-                    <ul className="nl-lista">
-                      {resto.map(n => {
-                        const capa = n.icone_url || n.imagem_capa;
-                        const tempo = linhaDeTempo(n.publicado_em, n.tempo_leitura);
-                        const nova = !lidas.has(n.id);
-                        return (
-                          <li key={n.id}>
-                            <Link to={`/noticias/${n.slug}`} className={`nl-item${nova ? " nl-item--nova" : ""}`}>
-                              <span className="nl-capa" aria-hidden="true">
-                                <Newspaper size={20} weight="bold" />
-                                {capa && <img src={capa} alt="" loading="lazy" onError={e => { e.currentTarget.style.display = "none"; }} />}
-                              </span>
-                              <span className="nl-corpo">
-                                <span className="nl-t">{tituloSemCategoria(n.titulo, n.categoria)}</span>
-                                <span className="nl-q">{n.fixada && <><b className="nl-fixa-p">Fixada</b> · </>}{n.categoria && <><b>{n.categoria}</b>{tempo ? " · " : ""}</>}{tempo}</span>
-                              </span>
-                              {nova && <i className="nl-pt" aria-label="Não lida" />}
-                            </Link>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                  <Convite destaque titulo="Tem uma ideia?" texto="Conta o que ajudaria você." botao="Sugerir" para="/solicitar-recurso" />
+              <div className="nl-col">
+                <div className="nl-barra">
+                  <small>{naoLidas.length ? `${naoLidas.length} ${naoLidas.length === 1 ? "não lida" : "não lidas"}` : "Tudo lido"}</small>
+                  {naoLidas.length > 0 && <button type="button" className="nl-ler-todas" onClick={() => void lerTodas(naoLidas.map(n => n.id))}><Checks size={18} weight="bold" aria-hidden="true" />Marcar todas como lidas</button>}
                 </div>
+                <ul className="nl-lista">
+                  {filtradas.map(n => {
+                    const capa = n.imagem_capa || n.icone_url;
+                    const lida = lidas.has(n.id);
+                    const Ic = iconeDaCategoria(n.categoria);
+                    return (
+                      <li key={n.id}>
+                        <Link to={`/noticias/${n.slug}`} className={`nl-it${lida ? " nl-it--lida" : ""}`} aria-label={`${lida ? "" : "Não lida: "}${tituloSemCategoria(n.titulo, n.categoria)}`}>
+                          <span className="nl-it-img" aria-hidden="true">
+                            <Ic size={28} weight="duotone" />
+                            {capa && <img src={capa} alt="" loading="lazy" onError={e => { e.currentTarget.style.display = "none"; }} />}
+                          </span>
+                          <span className="nl-it-tx">
+                            <span className="nl-it-l1"><b className="nl-it-t">{tituloSemCategoria(n.titulo, n.categoria)}</b><time dateTime={n.publicado_em}>{tempoCurto(n.publicado_em)}</time></span>
+                            {n.descricao && <span className="nl-it-d">{n.descricao}</span>}
+                            {(n.fixada || n.categoria) && (
+                              <span className="nl-it-q">{n.fixada && <><PushPin size={13} weight="bold" aria-hidden="true" />Fixada</>}{n.fixada && n.categoria && <span>·</span>}{n.categoria}{n.tempo_leitura ? <span>· {n.tempo_leitura} min de leitura</span> : null}</span>
+                            )}
+                          </span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+                <Convite destaque titulo="Tem uma ideia?" texto="Conta o que ajudaria você." botao="Sugerir" para="/solicitar-recurso" />
               </div>
             );
           })()

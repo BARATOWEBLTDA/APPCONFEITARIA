@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { carregarNotificacoes, marcarLidas } from "@/lib/notificacoesUsuario";
+import { contarNovidadesNaoLidas, marcarLidas } from "@/lib/notificacoesUsuario";
 
 interface Notification {
   id: string;
@@ -28,7 +28,7 @@ const UsarContext = createContext<(() => () => void) | null>(null);
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const [notifCount, setNotifCount] = useState(0);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [notificacoes, setNotificacoes] = useState<Notification[]>([]);
+  const [notificacoes] = useState<Notification[]>([]);
   const notifRef = useRef<HTMLDivElement>(null);
   // (11/10) Só busca enquanto alguma tela estiver usando useNotifications(). Hoje nenhuma usa, e este provider envolve o
   // app inteiro (até o cardápio público): eram 3 requisições por minuto, pra sempre, por um resultado que ninguém lia.
@@ -38,11 +38,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     if (telasUsando === 0) return;
     // Conta as não lidas (guardado na conta, não só no aparelho) e atualiza quando algo muda
-    const load = async () => {
-      const lista = await carregarNotificacoes(30);
-      setNotificacoes(lista.slice(0, 10) as any);
-      setNotifCount(lista.filter(n => !n.lida).length);
-    };
+    // (23/10) a tela Notificações saiu: o sino conta as novidades que ela ainda não leu
+    const load = async () => { setNotifCount(await contarNovidadesNaoLidas()); };
     load();
     window.addEventListener("doonly:notif-mudou", load);
     const t = window.setInterval(() => { if (document.visibilityState === "visible") load(); }, 60000);

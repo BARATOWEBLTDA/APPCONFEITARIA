@@ -71,10 +71,10 @@ export function avisoDoPro(proExpiraEm: string, agora: Date = new Date()): { tip
   const venceu = exp.getTime() <= agora.getTime();
   if (!venceu && dias <= 3) {
     const dia = `${String(exp.getDate()).padStart(2, "0")}/${String(exp.getMonth() + 1).padStart(2, "0")}`;
-    return { tipo: "pro_vencendo", mensagem: `Seu plano PRO vence no dia ${dia}. Renove pra não perder os recursos.`, chave: `pro-vencendo-${ref}` };
+    return { tipo: "pro_vencendo", mensagem: `Seu plano PRO vence no dia ${dia}. Renove para não perder os recursos.`, chave: `pro-vencendo-${ref}` };
   }
   if (venceu && dias >= -30) {
-    return { tipo: "pro_atrasado", mensagem: "Seu plano PRO venceu. Regularize pra voltar a usar o assistente virtual e os recursos PRO.", chave: `pro-atrasado-${ref}` };
+    return { tipo: "pro_atrasado", mensagem: "Seu plano PRO venceu. Regularize para voltar a usar o assistente virtual e os recursos PRO.", chave: `pro-atrasado-${ref}` };
   }
   return null;
 }
@@ -84,5 +84,19 @@ export async function verificarAvisosPro(profile: any) {
   if (!profile?.pro_expira_em) return;
   const aviso = avisoDoPro(profile.pro_expira_em);
   if (!aviso) return;
-  await criarNotificacaoPessoal({ ...aviso, titulo: aviso.tipo === "pro_vencendo" ? "Seu PRO vence em breve ⏰" : "Mensalidade em atraso ⚠️", link: "/assinar" });
+  await criarNotificacaoPessoal({ ...aviso, titulo: aviso.tipo === "pro_vencendo" ? "Seu PRO vence em breve" : "Mensalidade do PRO em atraso", link: "/assinar" });
+}
+
+/** (23/10) Quantas novidades ela ainda não leu (o sino e o Menu mostram este número). Nunca lança. */
+export async function contarNovidadesNaoLidas(): Promise<number> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return 0;
+    const [{ data: ns }, { data: lidas }] = await Promise.all([
+      supabase.from("admin_noticias").select("id").eq("ativo", true).order("publicado_em", { ascending: false }).limit(60),
+      supabase.from("noticias_lidas").select("noticia_id").eq("user_id", session.user.id),
+    ]);
+    const vistas = new Set((lidas || []).map((x: any) => x.noticia_id));
+    return (ns || []).filter((n: any) => !vistas.has(n.id)).length;
+  } catch { return 0; }
 }

@@ -33,7 +33,6 @@ import Insumos from "@/pages/Insumos";
 import Assinar from "@/pages/Assinar";
 import ReceitasV2 from "@/pages/ReceitasV2";
 const RECEITAS_ATIVAS = false;
-import Notificacoes from "@/pages/Notificacoes";
 import SolicitarRecurso from "@/pages/SolicitarRecurso";
 import RelatarProblema from "@/pages/RelatarProblema";
 import AssistenteVirtual from "@/pages/AssistenteVirtual";
@@ -46,7 +45,6 @@ import AdminUsuarios from "@/pages/admin/AdminUsuarios";
 import AdminReceitas from "@/pages/admin/AdminReceitas";
 import AdminReceitasDoonly from "@/pages/admin/AdminReceitasDoonly";
 import AdminPDFs from "@/pages/admin/AdminPDFs";
-import AdminNotificacoes from "@/pages/admin/AdminNotificacoes";
 import AdminNotifTemplates from "@/pages/admin/AdminNotifTemplates";
 import AdminBanner from "@/pages/admin/AdminBanner";
 import AdminBannersProntos from "@/pages/admin/AdminBannersProntos";
@@ -441,7 +439,7 @@ export default function App() {
           <Route path="/assinar" element={<Assinar />} />
           {/* 13/10: Receitas escondida das confeiteiras até as fotos ficarem prontas (pra voltar: element={<ReceitasV2 />}) */}
           <Route path="/receitas" element={RECEITAS_ATIVAS ? <ReceitasV2 /> : <Navigate to="/inicio" replace />} />
-          <Route path="/notificacoes" element={<Notificacoes />} />
+          <Route path="/notificacoes" element={<Navigate to="/noticias" replace />} />
           <Route path="/solicitar-recurso" element={<SolicitarRecurso />} />
           <Route path="/relatar-problema" element={<RelatarProblema />} />
           <Route path="/assistente-virtual" element={<AssistenteVirtual />} />
@@ -495,7 +493,7 @@ export default function App() {
           <Route path="receitas" element={<AdminReceitas />} />
           <Route path="receitas-doonly" element={<AdminReceitasDoonly />} />
           <Route path="pdfs" element={<AdminPDFs />} />
-          <Route path="notificacoes" element={<AdminNotificacoes />} />
+          <Route path="notificacoes" element={<Navigate to="/admin/noticias" replace />} />
           <Route path="notif-templates" element={<AdminNotifTemplates />} />
           <Route path="banner" element={<AdminBanner />} />
           <Route path="banners-prontos" element={<AdminBannersProntos />} />

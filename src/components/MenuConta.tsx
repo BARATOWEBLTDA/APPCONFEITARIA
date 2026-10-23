@@ -56,7 +56,6 @@ export default function MenuConta({ aberto, aoFechar, ancora }: Props) {
   };
 
   const itens: { nome: string; Icone: Icon; acao: () => void }[] = [
-    { nome: "Notificações", Icone: Bell, acao: () => ir("/notificacoes") },
     { nome: "Novidades", Icone: Newspaper, acao: () => ir("/noticias") }, // (21/10) caminho fixo pras novidades do Doonly
     { nome: "Configurações", Icone: Gear, acao: () => ir("/configuracoes") },
     { nome: "Doo IA", Icone: Sparkle, acao: () => { if (isPro) { aoFechar(); abrirDooIA(); } else ir("/assistente-virtual"); } },

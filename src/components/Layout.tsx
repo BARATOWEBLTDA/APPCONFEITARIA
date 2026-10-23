@@ -57,9 +57,9 @@ function SinoMenu() {
   const { pathname } = useLocation();
   const n = notifCount > 9 ? "9+" : String(notifCount);
   return (
-    <button type="button" className={`sidebar-sino${pathname === "/notificacoes" ? " ativo" : ""}${notifCount > 0 ? " sidebar-sino--novo" : ""}`} onClick={() => navigate("/notificacoes")}
-      aria-label={notifCount > 0 ? `Notificações, ${notifCount} nova${notifCount > 1 ? "s" : ""}` : "Notificações"}>
-      <Bell size={20} weight={pathname === "/notificacoes" || notifCount > 0 ? "fill" : "bold"} />
+    <button type="button" className={`sidebar-sino${pathname === "/noticias" ? " ativo" : ""}${notifCount > 0 ? " sidebar-sino--novo" : ""}`} onClick={() => navigate("/noticias")}
+      aria-label={notifCount > 0 ? `Novidades, ${notifCount} não lida${notifCount > 1 ? "s" : ""}` : "Novidades"}>
+      <Bell size={20} weight={pathname === "/noticias" || notifCount > 0 ? "fill" : "bold"} />
       {notifCount > 0 && <span className="sidebar-sino-n" aria-hidden="true">{n}</span>}
     </button>
   );

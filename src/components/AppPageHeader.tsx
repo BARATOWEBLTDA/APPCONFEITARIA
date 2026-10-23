@@ -134,7 +134,7 @@ export function LogoDaLoja({ className = '' }: { className?: string }) {
               <img src="/coroa.png" alt="" aria-hidden="true" />
             </button>
           )}
-          <button type="button" className="cab-cel-ac" onClick={() => navigate('/notificacoes')} aria-label={notifCount > 0 ? `Notificações, ${notifCount} nova${notifCount > 1 ? 's' : ''}` : 'Notificações'}>
+          <button type="button" className="cab-cel-ac" onClick={() => navigate('/noticias')} aria-label={notifCount > 0 ? `Novidades, ${notifCount} não lida${notifCount > 1 ? 's' : ''}` : 'Novidades'}>
             <Bell size={21} weight="regular" />
             {notifCount > 0 && <i className="cab-cel-bolinha">{notifCount > 9 ? '9+' : notifCount}</i>}
           </button>
